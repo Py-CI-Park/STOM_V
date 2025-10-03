@@ -1,4 +1,3 @@
-import numpy as np
 from coin.binance_receiver_tick import BinanceReceiverTick
 from utility.setting import ui_num
 from utility.static import now

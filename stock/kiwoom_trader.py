@@ -228,8 +228,8 @@ class KiwoomTrader:
             if 잔고없음 or 매도주문중: 주문취소 = True
         elif 주문구분 == '매수':
             inthms = int(str_hms())
-            거래횟수 = len(set([v['체결시간'] for k, v in self.dict_td.items() if v['종목명'] == 종목명]))
-            손절횟수 = len(set([v['체결시간'] for k, v in self.dict_td.items() if v['종목명'] == 종목명 and v['수익률'] < 0]))
+            거래횟수 = len(set([v['체결시간'] for v in self.dict_td.values() if v['종목명'] == 종목명]))
+            손절횟수 = len(set([v['체결시간'] for v in self.dict_td.values() if v['종목명'] == 종목명 and v['수익률'] < 0]))
             if self.dict_set['주식매수금지거래횟수'] and self.dict_set['주식매수금지거래횟수값'] <= 거래횟수:
                 주문취소 = True
             elif self.dict_set['주식매수금지손절횟수'] and self.dict_set['주식매수금지손절횟수값'] <= 손절횟수:
@@ -278,6 +278,9 @@ class KiwoomTrader:
                 self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형)
             else:
                 self.PutOrderComplete(f'{주문구분}취소', 종목코드)
+
+    def PutOrderComplete(self, cmsg, code):
+        self.sstgQs[self.dict_sgbn[code]].put((cmsg, code))
 
     def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형):
         주문유형 = self.주문유형[주문구분]
@@ -365,26 +368,24 @@ class KiwoomTrader:
             for code, gubun in modify_list:
                 self.ModifyOrder(code, gubun)
 
-    def GetNameChejan(self, name, gubun):
-        return {k: v for k, v in self.dict_cj.items() if v['종목명'] == name and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun} 접수')}
+    def GetChejanLastValue(self, name, gubun):
+        return [v for v in self.dict_cj.values() if v['종목명'] == name and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun} 접수')][-1]
 
     def CancelOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
-        dict_cj = self.GetNameChejan(종목명, 주문구분)
-        if dict_cj:
-            last_key = list(dict_cj)[-1]
-            미체결수량 = dict_cj[last_key]['미체결수량']
+        last_value = self.GetChejanLastValue(종목명, 주문구분)
+        if last_value:
+            미체결수량 = last_value['미체결수량']
             if 미체결수량 > 0:
                 현재시간 = now()
-                주문번호 = dict_cj[last_key]['주문번호']
+                주문번호 = last_value['주문번호']
                 self.CreateOrder(f'{주문구분}취소', 종목코드, 종목명, 0, 미체결수량, 주문번호, 현재시간, False, None)
 
     def ModifyOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
-        dict_cj = self.GetNameChejan(종목명, 주문구분)
-        if dict_cj:
-            last_key = list(dict_cj)[-1]
-            미체결수량 = dict_cj[last_key]['미체결수량']
+        last_value = self.GetChejanLastValue(종목명, 주문구분)
+        if last_value:
+            미체결수량 = last_value['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == '매수':
                     주문가격 = self.dict_curc[종목코드] - self.dict_order[주문구분][종목코드][3] * self.dict_set[f'주식{주문구분}정정호가']
@@ -392,7 +393,7 @@ class KiwoomTrader:
                     주문가격 = self.dict_curc[종목코드] + self.dict_order[주문구분][종목코드][3] * self.dict_set[f'주식{주문구분}정정호가']
 
                 현재시간 = now()
-                주문번호 = dict_cj[last_key]['주문번호']
+                주문번호 = last_value['주문번호']
                 self.CreateOrder(f'{주문구분}정정', 종목코드, 종목명, 주문가격, 미체결수량, 주문번호, 현재시간, False, None)
 
     def UpdateJango(self, data):
@@ -452,10 +453,10 @@ class KiwoomTrader:
             df = pd.read_sql('SELECT * FROM s_tradelist', con)
             con.close()
             총수익금 = df['수익금'].sum()
-            총매입금액 = sum([v['매입금액'] for k, v in self.dict_jg.items()]) if self.dict_jg else 0
+            총매입금액 = sum([v['매입금액'] for v in self.dict_jg.values()]) if self.dict_jg else 0
             예수금 = 100_000_000 - 총매입금액 + 총수익금
             if 예수금 < 100_000_000: 예수금 = 100_000_000
-            총평가금액 = sum([v['평가금액'] for k, v in self.dict_jg.items()]) if self.dict_jg else 0
+            총평가금액 = sum([v['평가금액'] for v in self.dict_jg.values()]) if self.dict_jg else 0
             추정예탁자산 = 예수금 + 총평가금액
             self.dict_intg.update({
                 '예수금': 예수금,
@@ -619,9 +620,6 @@ class KiwoomTrader:
         self.sreceivQ.put(('잔고목록', tuple(self.dict_jg)))
         self.sreceivQ.put(('주문목록', self.GetOrderCodeList()))
 
-    def PutOrderComplete(self, cmsg, code):
-        self.sstgQs[self.dict_sgbn[code]].put((cmsg, code))
-
     def GetOrderCodeList(self):
         return tuple(self.dict_order['매수']) + tuple(self.dict_order['매도'])
 
@@ -643,12 +641,12 @@ class KiwoomTrader:
         self.UpdateTotaltradelist()
 
     def UpdateTotaltradelist(self, first=False):
-        거래횟수 = len(set([(v['종목명'], v['체결시간']) for k, v in self.dict_td.items()]))
-        총매수금액 = sum([v['매수금액'] for k, v in self.dict_td.items()])
-        총매도금액 = sum([v['매도금액'] for k, v in self.dict_td.items()])
-        총수익금액 = sum([v['수익금'] for k, v in self.dict_td.items() if v['수익금'] >= 0])
-        총손실금액 = sum([v['수익금'] for k, v in self.dict_td.items() if v['수익금'] < 0])
-        수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
+        거래횟수 = len(set([(v['종목명'], v['체결시간']) for v in self.dict_td.values()]))
+        총매수금액 = sum([v['매수금액'] for v in self.dict_td.values()])
+        총매도금액 = sum([v['매도금액'] for v in self.dict_td.values()])
+        총수익금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] >= 0])
+        총손실금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] < 0])
+        수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
         # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
@@ -696,9 +694,9 @@ class KiwoomTrader:
     def UpdateTotaljango(self):
         # ['추정예탁자산', '추정예수금', '보유종목수', '수익률', '총평가손익', '총매입금액', '총평가금액']
         if self.dict_jg:
-            총평가손익 = sum([v['평가손익'] for k, v in self.dict_jg.items()])
-            총매입금액 = sum([v['매입금액'] for k, v in self.dict_jg.items()])
-            총평가금액 = sum([v['평가금액'] for k, v in self.dict_jg.items()])
+            총평가손익 = sum([v['평가손익'] for v in self.dict_jg.values()])
+            총매입금액 = sum([v['매입금액'] for v in self.dict_jg.values()])
+            총평가금액 = sum([v['평가금액'] for v in self.dict_jg.values()])
             총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
             잔고수량 = len(self.dict_jg)
             추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
@@ -716,8 +714,8 @@ class KiwoomTrader:
             '총평가금액': 총평가금액
         }
 
-        잔고평가손익합계 = sum([v['평가손익'] for k, v in self.dict_jg.items()])
-        거래수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
+        잔고평가손익합계 = sum([v['평가손익'] for v in self.dict_jg.values()])
+        거래수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
         총평가손익 = 잔고평가손익합계 + 거래수익금합계
         if self.dict_set['주식손실중지']:
             기준손실금 = self.dict_intg['추정예탁자산'] * self.dict_set['주식손실중지수익률'] / 100

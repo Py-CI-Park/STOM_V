@@ -1,6 +1,5 @@
 import os
 import sqlite3
-import numpy as np
 import pandas as pd
 from utility.setting import ui_num, columns_hj, DB_PATH, DB_COIN_TICK, DB_STOCK_TICK, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_TICK, DICT_SET, DB_COIN_BACK_MIN, DB_COIN_MIN, DB_STOCK_BACK_MIN, DB_STOCK_MIN, DB_FUTURE_BACK_MIN, \
@@ -17,9 +16,9 @@ class Hoga:
         self.hogaQ     = qlist[5]
         self.gubun     = None
         self.hoga_name = None
-        self.df_hj     = None
-        self.df_hc     = None
-        self.df_hg     = None
+        self.dict_hj   = None
+        self.dict_hc   = None
+        self.dict_hg   = None
         self.dict_set  = DICT_SET
         self.InitHoga('S')
         self.Start()
@@ -39,68 +38,77 @@ class Hoga:
                 if self.hoga_name == data[0]:
                     self.UpdateHogajalryang(data)
                     if self.gubun is not None:
-                        if self.df_hj is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가종목'], self.df_hj))
-                        if self.df_hc is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가체결'], self.df_hc))
-                        if self.df_hg is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가잔량'], self.df_hg))
+                        if self.dict_hj is not None:
+                            self.windowQ.put((ui_num[f'{self.gubun}호가종목'], pd.DataFrame([self.dict_hj])))
+                        if self.dict_hc is not None:
+                            self.windowQ.put((ui_num[f'{self.gubun}호가체결'], pd.DataFrame(self.dict_hc)))
+                        if self.dict_hg is not None:
+                            self.windowQ.put((ui_num[f'{self.gubun}호가잔량'], pd.DataFrame(self.dict_hg)))
 
     def InitHoga(self, gubun):
-        zero_list = np.zeros(12).tolist()
-        self.df_hj = pd.DataFrame({'종목명': [''], '현재가': [0.], '등락율': [0.], '시가총액': [0], 'UVI': [0], '시가': [0], '고가': [0], '저가': [0]})
-        self.df_hc = pd.DataFrame({'체결수량': zero_list, '체결강도': zero_list})
-        self.df_hg = pd.DataFrame({'잔량': zero_list, '호가': zero_list})
-        self.windowQ.put((ui_num[f'{gubun}호가종목'], self.df_hj))
-        self.windowQ.put((ui_num[f'{gubun}호가체결'], self.df_hc))
-        self.windowQ.put((ui_num[f'{gubun}호가잔량'], self.df_hg))
+        self.dict_hj = {
+            '종목명': '', '현재가': 0., '등락율': 0., '시가총액': 0, 'UVI': 0., '시가': 0., '고가': 0., '저가': 0.
+        }
+        self.dict_hc = {
+            '체결수량': [0.] * 12, '체결강도': [0.] * 12
+        }
+        self.dict_hg = {
+            '잔량': [0.] * 12, '호가': [0.] * 12
+        }
+        self.windowQ.put((ui_num[f'{gubun}호가종목'], pd.DataFrame([self.dict_hj])))
+        self.windowQ.put((ui_num[f'{gubun}호가체결'], pd.DataFrame(self.dict_hc)))
+        self.windowQ.put((ui_num[f'{gubun}호가잔량'], pd.DataFrame(self.dict_hg)))
         self.hoga_name = ''
 
     def UpdateHogaJongmok(self, data):
-        hoga_name = data[0]
-        self.gubun = 'C' if 'KRW' in hoga_name or 'USDT' in hoga_name else 'S'
-        if self.hoga_name != hoga_name:
+        종목명, 현재가, 등락율, 시가총액, UVI, 시가, 고가, 저가 = data
+        self.gubun = 'C' if 'KRW' in 종목명 or 'USDT' in 종목명 else 'S'
+        if self.hoga_name != 종목명:
             self.InitHoga(self.gubun)
-            self.hoga_name = hoga_name
-        self.df_hj = pd.DataFrame([list(data)], columns=columns_hj)
+            self.hoga_name = 종목명
+
+        self.dict_hj = {
+            '종목명': 종목명, '현재가': 현재가, '등락율': 등락율, '시가총액': 시가총액,
+            'UVI': UVI, '시가': 시가, '고가': 고가, '저가': 저가
+        }
 
     def UpdateChegeolcount(self, data):
         v, ch = data
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name:
             if v > 0:
-                tbc = round(self.df_hc['체결수량'][0] + v, 8)
-                tsc = round(self.df_hc['체결수량'][11], 8)
+                tbc = round(self.dict_hc['체결수량'][0] + v, 8)
+                tsc = round(self.dict_hc['체결수량'][11], 8)
             else:
-                tbc = round(self.df_hc['체결수량'][0], 8)
-                tsc = round(self.df_hc['체결수량'][11] + abs(v), 8)
+                tbc = round(self.dict_hc['체결수량'][0], 8)
+                tsc = round(self.dict_hc['체결수량'][11] + abs(v), 8)
         else:
             if v > 0:
-                tbc = self.df_hc['체결수량'][0] + v
-                tsc = self.df_hc['체결수량'][11]
+                tbc = self.dict_hc['체결수량'][0] + v
+                tsc = self.dict_hc['체결수량'][11]
             else:
-                tbc = self.df_hc['체결수량'][0]
-                tsc = self.df_hc['체결수량'][11] + abs(v)
+                tbc = self.dict_hc['체결수량'][0]
+                tsc = self.dict_hc['체결수량'][11] + abs(v)
 
-        hch = self.df_hc['체결강도'][0]
-        lch = self.df_hc['체결강도'][11]
+        hch = self.dict_hc['체결강도'][0]
+        lch = self.dict_hc['체결강도'][11]
 
         if hch < ch:
             hch = ch
         if lch == 0 or lch > ch:
             lch = ch
 
-        self.df_hc = self.df_hc.shift(1)
-        self.df_hc.loc[0]  = tbc, hch
-        self.df_hc.loc[1]  = v, ch
-        self.df_hc.loc[11] = tsc, lch
+        self.dict_hc['체결수량'] = [tbc, v] + self.dict_hc['체결수량'][1:11] + [tsc]
+        self.dict_hc['체결강도'] = [hch, ch] + self.dict_hc['체결강도'][1:11] + [lch]
 
     def UpdateHogajalryang(self, data):
         jr = [data[1]] + list(data[13:23]) + [data[2]]
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name or '해외선물' in self.dict_set['증권사']:
-            hg = [self.df_hj['고가'][0]] + list(data[3:13]) + [self.df_hj['저가'][0]]
+            hg = [self.dict_hj['고가']] + list(data[3:13]) + [self.dict_hj['저가']]
         else:
-            hg = [data[23]] + list(data[3:13]) + [data[24]]
-        self.df_hg = pd.DataFrame({'잔량': jr, '호가': hg})
+            hg = [self.dict_hj['고가']] + [round(x) for x in data[3:13]] + [self.dict_hj['저가']]
+
+        self.dict_hg['잔량'] = jr
+        self.dict_hg['호가'] = hg
 
     def UpdateHogaForChart(self, data):
         cmd, code, name, index = data
@@ -154,8 +162,6 @@ class Hoga:
             else:
                 hj = [name, data[1], data[5], data[12], data[17], data[2], data[3], data[4]]
 
-            self.df_hj = pd.DataFrame([hj], columns=columns_hj)
-
             if gubun == 'C':
                 if self.dict_set['코인타임프레임']:
                     jr = [data[12]] + data[24:34] + [data[13]]
@@ -179,7 +185,7 @@ class Hoga:
                         jr = [data[15]] + data[27:37] + [data[16]]
                         hg = [data[3]]  + data[17:27] + [data[4]]
 
-            self.df_hg = pd.DataFrame({'잔량': jr, '호가': hg})
-
-            self.windowQ.put((ui_num[f'{gubun}호가종목'], self.df_hj, str(int(data[0]))))
-            self.windowQ.put((ui_num[f'{gubun}호가잔량'], self.df_hg))
+            df_hj = pd.DataFrame([hj], columns=columns_hj)
+            df_hg = pd.DataFrame({'잔량': jr, '호가': hg})
+            self.windowQ.put((ui_num[f'{gubun}호가종목'], df_hj, str(int(data[0]))))
+            self.windowQ.put((ui_num[f'{gubun}호가잔량'], df_hg))

@@ -138,18 +138,6 @@ class KiwoomReceiverTick:
         elif gubun == '프로파일링결과':
             self.pr.print_stats(sort='cumulative')
 
-    def InsertGsjmlist(self, code):
-        if code not in self.list_gsjm:
-            self.list_gsjm.append(code)
-            if self.dict_set['주식매도취소관심진입']:
-                self.straderQ.put(('관심진입', code))
-
-    def DeleteGsjmlist(self, code):
-        if code in self.list_gsjm:
-            self.list_gsjm.remove(code)
-            if self.dict_set['주식매수취소관심이탈']:
-                self.straderQ.put(('관심이탈', code))
-
     def UpdateString(self, data):
         if data == '프로세스종료':
             threading_timer(180, self.sreceivQ.put, '프로세스종료실행')
@@ -162,6 +150,18 @@ class KiwoomReceiverTick:
             self.straderQ.put('프로세스종료')
             time.sleep(5)
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료')))
+
+    def InsertGsjmlist(self, code):
+        if code not in self.list_gsjm:
+            self.list_gsjm.append(code)
+            if self.dict_set['주식매도취소관심진입']:
+                self.straderQ.put(('관심진입', code))
+
+    def DeleteGsjmlist(self, code):
+        if code in self.list_gsjm:
+            self.list_gsjm.remove(code)
+            if self.dict_set['주식매수취소관심이탈']:
+                self.straderQ.put(('관심이탈', code))
 
     def SaveData(self):
         codes = set()

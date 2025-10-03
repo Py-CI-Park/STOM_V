@@ -1,4 +1,3 @@
-import numpy as np
 from coin.upbit_receiver_tick import UpbitReceiverTick
 from utility.setting import ui_num
 from utility.static import now

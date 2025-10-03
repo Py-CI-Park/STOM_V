@@ -9,7 +9,7 @@ from coin.kimp_upbit_binance import Kimp
 from utility.static import qtest_qwait
 from utility.setting import columns_hc, DB_STRATEGY, DB_COIN_BACK_TICK, DB_COIN_TICK, DB_STOCK_BACK_TICK, DB_STOCK_TICK, \
     DB_PATH, DB_COIN_BACK_MIN, DB_STOCK_MIN, DB_STOCK_BACK_MIN, DB_COIN_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_MIN, \
-    DB_FUTURE_BACK_TICK, DB_FUTURE_TICK, columns_jg, columns_jgf, columns_jgcf
+    DB_FUTURE_BACK_TICK, DB_FUTURE_TICK
 from ui.set_style import style_bc_bt, style_bc_bb
 
 
