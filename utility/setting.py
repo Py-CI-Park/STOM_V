@@ -5,6 +5,7 @@ from traceback import print_exc
 from cryptography import fernet
 from utility.static import read_key, de_text
 
+EN_KEY              = read_key()
 OPENAPI_PATH        = 'C:/OpenAPI'
 ICON_PATH           = './icon'
 LOGIN_PATH          = './stock/login_kiwoom'
@@ -31,6 +32,24 @@ DB_FUTURE_BACK_MIN  = './_database/future_min_back.db'
 DB_CODE_INFO        = './_database/code_info.db'
 
 
+with open('./utility/blacklist_stock.txt') as f:
+    stockreadlines = f.readlines()
+with open('./utility/blacklist_future.txt') as f:
+    futurereadlines = f.readlines()
+with open('./utility/blacklist_coin.txt') as f:
+    coinreadlines = f.readlines()
+
+blacklist_stock  = []
+blacklist_future = []
+blacklist_coin   = []
+for readline in stockreadlines:
+    blacklist_stock.append(readline.strip())
+for readline in futurereadlines:
+    blacklist_future.append(readline.strip())
+for readline in coinreadlines:
+    blacklist_coin.append(readline.strip())
+
+
 def database_load():
     con  = sqlite3.connect(DB_SETTING)
     df1  = pd.read_sql('SELECT * FROM main', con).set_index('index')
@@ -51,30 +70,15 @@ def database_load():
 
 df_m, df_s, df_c, df_sa, df_ca, df_t, df_sb, df_ss, df_cb, df_cs, df_e, df_b = database_load()
 
-with open('./utility/blacklist_stock.txt') as f:
-    stockreadlines = f.readlines()
-with open('./utility/blacklist_future.txt') as f:
-    futurereadlines = f.readlines()
-with open('./utility/blacklist_coin.txt') as f:
-    coinreadlines = f.readlines()
-
-blacklist_stock  = []
-blacklist_future = []
-blacklist_coin   = []
-for readline in stockreadlines:
-    blacklist_stock.append(readline.strip())
-for readline in futurereadlines:
-    blacklist_future.append(readline.strip())
-for readline in coinreadlines:
-    blacklist_coin.append(readline.strip())
-
-EN_KEY = read_key()
-
 binance_leverage_ = []
 for text_ in df_m['바이낸스선물변동레버리지값'][0].split('^'):
     lvrg_list_ = text_.split(';')
     lvrg_list_ = [float(x) for x in lvrg_list_]
     binance_leverage_.append(lvrg_list_)
+
+df_sa_not_empty = True if len(df_sa) > 0 else False
+df_ca_not_empty = True if len(df_ca) > 0 else False
+df_t_not_empty  = True if len(df_t) > 0 else False
 
 try:
     DICT_SET = {
@@ -96,60 +100,60 @@ try:
         '버전업':                df_m['버전업'][0],
         '리시버공유':             df_m['리시버공유'][0],
 
-        '아이디1':        de_text(EN_KEY, df_sa['아이디'][1])         if len(df_sa) > 0 and df_sa['아이디'][1] else None,
-        '비밀번호1':      de_text(EN_KEY, df_sa['비밀번호'][1])       if len(df_sa) > 0 and df_sa['비밀번호'][1] else None,
-        '인증서비밀번호1': de_text(EN_KEY, df_sa['인증서비밀번호'][1])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][1] else None,
-        '계좌비밀번호1':   de_text(EN_KEY, df_sa['계좌비밀번호'][1])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][1] else None,
-        '아이디2':        de_text(EN_KEY, df_sa['아이디'][2])         if len(df_sa) > 0 and df_sa['아이디'][2] else None,
-        '비밀번호2':      de_text(EN_KEY, df_sa['비밀번호'][2])        if len(df_sa) > 0 and df_sa['비밀번호'][2] else None,
-        '인증서비밀번호2': de_text(EN_KEY, df_sa['인증서비밀번호'][2])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][2] else None,
-        '계좌비밀번호2':   de_text(EN_KEY, df_sa['계좌비밀번호'][2])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][2] else None,
-        '아이디3':        de_text(EN_KEY, df_sa['아이디'][3])         if len(df_sa) > 0 and df_sa['아이디'][3] else None,
-        '비밀번호3':      de_text(EN_KEY, df_sa['비밀번호'][3])        if len(df_sa) > 0 and df_sa['비밀번호'][3] else None,
-        '인증서비밀번호3': de_text(EN_KEY, df_sa['인증서비밀번호'][3])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][3] else None,
-        '계좌비밀번호3':   de_text(EN_KEY, df_sa['계좌비밀번호'][3])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][3] else None,
-        '아이디4':        de_text(EN_KEY, df_sa['아이디'][4])         if len(df_sa) > 0 and df_sa['아이디'][4] else None,
-        '비밀번호4':      de_text(EN_KEY, df_sa['비밀번호'][4])        if len(df_sa) > 0 and df_sa['비밀번호'][4] else None,
-        '인증서비밀번호4': de_text(EN_KEY, df_sa['인증서비밀번호'][4])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][4] else None,
-        '계좌비밀번호4':   de_text(EN_KEY, df_sa['계좌비밀번호'][4])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][4] else None,
-        '아이디5':        de_text(EN_KEY, df_sa['아이디'][5])         if len(df_sa) > 0 and df_sa['아이디'][5] else None,
-        '비밀번호5':      de_text(EN_KEY, df_sa['비밀번호'][5])       if len(df_sa) > 0 and df_sa['비밀번호'][5] else None,
-        '인증서비밀번호5': de_text(EN_KEY, df_sa['인증서비밀번호'][5])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][5] else None,
-        '계좌비밀번호5':   de_text(EN_KEY, df_sa['계좌비밀번호'][5])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][5] else None,
-        '아이디6':        de_text(EN_KEY, df_sa['아이디'][6])         if len(df_sa) > 0 and df_sa['아이디'][6] else None,
-        '비밀번호6':      de_text(EN_KEY, df_sa['비밀번호'][6])        if len(df_sa) > 0 and df_sa['비밀번호'][6] else None,
-        '인증서비밀번호6': de_text(EN_KEY, df_sa['인증서비밀번호'][6])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][6] else None,
-        '계좌비밀번호6':   de_text(EN_KEY, df_sa['계좌비밀번호'][6])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][6] else None,
-        '아이디7':        de_text(EN_KEY, df_sa['아이디'][7])         if len(df_sa) > 0 and df_sa['아이디'][7] else None,
-        '비밀번호7':      de_text(EN_KEY, df_sa['비밀번호'][7])        if len(df_sa) > 0 and df_sa['비밀번호'][7] else None,
-        '인증서비밀번호7': de_text(EN_KEY, df_sa['인증서비밀번호'][7])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][7] else None,
-        '계좌비밀번호7':   de_text(EN_KEY, df_sa['계좌비밀번호'][7])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][7] else None,
-        '아이디8':        de_text(EN_KEY, df_sa['아이디'][8])         if len(df_sa) > 0 and df_sa['아이디'][8] else None,
-        '비밀번호8':      de_text(EN_KEY, df_sa['비밀번호'][8])        if len(df_sa) > 0 and df_sa['비밀번호'][8] else None,
-        '인증서비밀번호8': de_text(EN_KEY, df_sa['인증서비밀번호'][8])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][8] else None,
-        '계좌비밀번호8':   de_text(EN_KEY, df_sa['계좌비밀번호'][8])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][8] else None,
+        '아이디1':        de_text(EN_KEY, df_sa['아이디'][1])         if df_sa_not_empty and df_sa['아이디'][1] else None,
+        '비밀번호1':      de_text(EN_KEY, df_sa['비밀번호'][1])       if df_sa_not_empty and df_sa['비밀번호'][1] else None,
+        '인증서비밀번호1': de_text(EN_KEY, df_sa['인증서비밀번호'][1])   if df_sa_not_empty and df_sa['인증서비밀번호'][1] else None,
+        '계좌비밀번호1':   de_text(EN_KEY, df_sa['계좌비밀번호'][1])    if df_sa_not_empty and df_sa['계좌비밀번호'][1] else None,
+        '아이디2':        de_text(EN_KEY, df_sa['아이디'][2])         if df_sa_not_empty and df_sa['아이디'][2] else None,
+        '비밀번호2':      de_text(EN_KEY, df_sa['비밀번호'][2])        if df_sa_not_empty and df_sa['비밀번호'][2] else None,
+        '인증서비밀번호2': de_text(EN_KEY, df_sa['인증서비밀번호'][2])   if df_sa_not_empty and df_sa['인증서비밀번호'][2] else None,
+        '계좌비밀번호2':   de_text(EN_KEY, df_sa['계좌비밀번호'][2])    if df_sa_not_empty and df_sa['계좌비밀번호'][2] else None,
+        '아이디3':        de_text(EN_KEY, df_sa['아이디'][3])         if df_sa_not_empty and df_sa['아이디'][3] else None,
+        '비밀번호3':      de_text(EN_KEY, df_sa['비밀번호'][3])        if df_sa_not_empty and df_sa['비밀번호'][3] else None,
+        '인증서비밀번호3': de_text(EN_KEY, df_sa['인증서비밀번호'][3])   if df_sa_not_empty and df_sa['인증서비밀번호'][3] else None,
+        '계좌비밀번호3':   de_text(EN_KEY, df_sa['계좌비밀번호'][3])    if df_sa_not_empty and df_sa['계좌비밀번호'][3] else None,
+        '아이디4':        de_text(EN_KEY, df_sa['아이디'][4])         if df_sa_not_empty and df_sa['아이디'][4] else None,
+        '비밀번호4':      de_text(EN_KEY, df_sa['비밀번호'][4])        if df_sa_not_empty and df_sa['비밀번호'][4] else None,
+        '인증서비밀번호4': de_text(EN_KEY, df_sa['인증서비밀번호'][4])   if df_sa_not_empty and df_sa['인증서비밀번호'][4] else None,
+        '계좌비밀번호4':   de_text(EN_KEY, df_sa['계좌비밀번호'][4])    if df_sa_not_empty and df_sa['계좌비밀번호'][4] else None,
+        '아이디5':        de_text(EN_KEY, df_sa['아이디'][5])         if df_sa_not_empty and df_sa['아이디'][5] else None,
+        '비밀번호5':      de_text(EN_KEY, df_sa['비밀번호'][5])       if df_sa_not_empty and df_sa['비밀번호'][5] else None,
+        '인증서비밀번호5': de_text(EN_KEY, df_sa['인증서비밀번호'][5])   if df_sa_not_empty and df_sa['인증서비밀번호'][5] else None,
+        '계좌비밀번호5':   de_text(EN_KEY, df_sa['계좌비밀번호'][5])    if df_sa_not_empty and df_sa['계좌비밀번호'][5] else None,
+        '아이디6':        de_text(EN_KEY, df_sa['아이디'][6])         if df_sa_not_empty and df_sa['아이디'][6] else None,
+        '비밀번호6':      de_text(EN_KEY, df_sa['비밀번호'][6])        if df_sa_not_empty and df_sa['비밀번호'][6] else None,
+        '인증서비밀번호6': de_text(EN_KEY, df_sa['인증서비밀번호'][6])   if df_sa_not_empty and df_sa['인증서비밀번호'][6] else None,
+        '계좌비밀번호6':   de_text(EN_KEY, df_sa['계좌비밀번호'][6])    if df_sa_not_empty and df_sa['계좌비밀번호'][6] else None,
+        '아이디7':        de_text(EN_KEY, df_sa['아이디'][7])         if df_sa_not_empty and df_sa['아이디'][7] else None,
+        '비밀번호7':      de_text(EN_KEY, df_sa['비밀번호'][7])        if df_sa_not_empty and df_sa['비밀번호'][7] else None,
+        '인증서비밀번호7': de_text(EN_KEY, df_sa['인증서비밀번호'][7])   if df_sa_not_empty and df_sa['인증서비밀번호'][7] else None,
+        '계좌비밀번호7':   de_text(EN_KEY, df_sa['계좌비밀번호'][7])    if df_sa_not_empty and df_sa['계좌비밀번호'][7] else None,
+        '아이디8':        de_text(EN_KEY, df_sa['아이디'][8])         if df_sa_not_empty and df_sa['아이디'][8] else None,
+        '비밀번호8':      de_text(EN_KEY, df_sa['비밀번호'][8])        if df_sa_not_empty and df_sa['비밀번호'][8] else None,
+        '인증서비밀번호8': de_text(EN_KEY, df_sa['인증서비밀번호'][8])   if df_sa_not_empty and df_sa['인증서비밀번호'][8] else None,
+        '계좌비밀번호8':   de_text(EN_KEY, df_sa['계좌비밀번호'][8])    if df_sa_not_empty and df_sa['계좌비밀번호'][8] else None,
 
-        'Access_key1':   de_text(EN_KEY, df_ca['Access_key'][1])    if len(df_ca) > 0 and df_ca['Access_key'][1] else None,
-        'Secret_key1':   de_text(EN_KEY, df_ca['Secret_key'][1])    if len(df_ca) > 0 and df_ca['Secret_key'][1] else None,
-        'Access_key2':   de_text(EN_KEY, df_ca['Access_key'][2])    if len(df_ca) > 0 and df_ca['Access_key'][2] else None,
-        'Secret_key2':   de_text(EN_KEY, df_ca['Secret_key'][2])    if len(df_ca) > 0 and df_ca['Secret_key'][2] else None,
+        'Access_key1':   de_text(EN_KEY, df_ca['Access_key'][1])    if df_ca_not_empty and df_ca['Access_key'][1] else None,
+        'Secret_key1':   de_text(EN_KEY, df_ca['Secret_key'][1])    if df_ca_not_empty and df_ca['Secret_key'][1] else None,
+        'Access_key2':   de_text(EN_KEY, df_ca['Access_key'][2])    if df_ca_not_empty and df_ca['Access_key'][2] else None,
+        'Secret_key2':   de_text(EN_KEY, df_ca['Secret_key'][2])    if df_ca_not_empty and df_ca['Secret_key'][2] else None,
 
-        '텔레그램봇토큰1':      de_text(EN_KEY, df_t['str_bot'][1])      if len(df_t) > 0 and df_t['str_bot'][1] else None,
-        '텔레그램사용자아이디1': int(de_text(EN_KEY, df_t['int_id'][1]))  if len(df_t) > 0 and df_t['int_id'][1]  else None,
-        '텔레그램봇토큰2':      de_text(EN_KEY, df_t['str_bot'][2])      if len(df_t) > 0 and df_t['str_bot'][2] else None,
-        '텔레그램사용자아이디2': int(de_text(EN_KEY, df_t['int_id'][2]))  if len(df_t) > 0 and df_t['int_id'][2]  else None,
-        '텔레그램봇토큰3':      de_text(EN_KEY, df_t['str_bot'][3])      if len(df_t) > 0 and df_t['str_bot'][3] else None,
-        '텔레그램사용자아이디3': int(de_text(EN_KEY, df_t['int_id'][3]))  if len(df_t) > 0 and df_t['int_id'][3]  else None,
-        '텔레그램봇토큰4':      de_text(EN_KEY, df_t['str_bot'][4])      if len(df_t) > 0 and df_t['str_bot'][4] else None,
-        '텔레그램사용자아이디4': int(de_text(EN_KEY, df_t['int_id'][4]))  if len(df_t) > 0 and df_t['int_id'][4]  else None,
-        '텔레그램봇토큰5':      de_text(EN_KEY, df_t['str_bot'][5])      if len(df_t) > 0 and df_t['str_bot'][5] else None,
-        '텔레그램사용자아이디5': int(de_text(EN_KEY, df_t['int_id'][5]))  if len(df_t) > 0 and df_t['int_id'][5]  else None,
-        '텔레그램봇토큰6':      de_text(EN_KEY, df_t['str_bot'][6])      if len(df_t) > 0 and df_t['str_bot'][6] else None,
-        '텔레그램사용자아이디6': int(de_text(EN_KEY, df_t['int_id'][6]))  if len(df_t) > 0 and df_t['int_id'][6]  else None,
-        '텔레그램봇토큰7':      de_text(EN_KEY, df_t['str_bot'][7])      if len(df_t) > 0 and df_t['str_bot'][7] else None,
-        '텔레그램사용자아이디7': int(de_text(EN_KEY, df_t['int_id'][7]))  if len(df_t) > 0 and df_t['int_id'][7]  else None,
-        '텔레그램봇토큰8':      de_text(EN_KEY, df_t['str_bot'][8])      if len(df_t) > 0 and df_t['str_bot'][8] else None,
-        '텔레그램사용자아이디8': int(de_text(EN_KEY, df_t['int_id'][8]))  if len(df_t) > 0 and df_t['int_id'][8]  else None,
+        '텔레그램봇토큰1':      de_text(EN_KEY, df_t['str_bot'][1])      if df_t_not_empty and df_t['str_bot'][1] else None,
+        '텔레그램사용자아이디1': int(de_text(EN_KEY, df_t['int_id'][1]))  if df_t_not_empty and df_t['int_id'][1]  else None,
+        '텔레그램봇토큰2':      de_text(EN_KEY, df_t['str_bot'][2])      if df_t_not_empty and df_t['str_bot'][2] else None,
+        '텔레그램사용자아이디2': int(de_text(EN_KEY, df_t['int_id'][2]))  if df_t_not_empty and df_t['int_id'][2]  else None,
+        '텔레그램봇토큰3':      de_text(EN_KEY, df_t['str_bot'][3])      if df_t_not_empty and df_t['str_bot'][3] else None,
+        '텔레그램사용자아이디3': int(de_text(EN_KEY, df_t['int_id'][3]))  if df_t_not_empty and df_t['int_id'][3]  else None,
+        '텔레그램봇토큰4':      de_text(EN_KEY, df_t['str_bot'][4])      if df_t_not_empty and df_t['str_bot'][4] else None,
+        '텔레그램사용자아이디4': int(de_text(EN_KEY, df_t['int_id'][4]))  if df_t_not_empty and df_t['int_id'][4]  else None,
+        '텔레그램봇토큰5':      de_text(EN_KEY, df_t['str_bot'][5])      if df_t_not_empty and df_t['str_bot'][5] else None,
+        '텔레그램사용자아이디5': int(de_text(EN_KEY, df_t['int_id'][5]))  if df_t_not_empty and df_t['int_id'][5]  else None,
+        '텔레그램봇토큰6':      de_text(EN_KEY, df_t['str_bot'][6])      if df_t_not_empty and df_t['str_bot'][6] else None,
+        '텔레그램사용자아이디6': int(de_text(EN_KEY, df_t['int_id'][6]))  if df_t_not_empty and df_t['int_id'][6]  else None,
+        '텔레그램봇토큰7':      de_text(EN_KEY, df_t['str_bot'][7])      if df_t_not_empty and df_t['str_bot'][7] else None,
+        '텔레그램사용자아이디7': int(de_text(EN_KEY, df_t['int_id'][7]))  if df_t_not_empty and df_t['int_id'][7]  else None,
+        '텔레그램봇토큰8':      de_text(EN_KEY, df_t['str_bot'][8])      if df_t_not_empty and df_t['str_bot'][8] else None,
+        '텔레그램사용자아이디8': int(de_text(EN_KEY, df_t['int_id'][8]))  if df_t_not_empty and df_t['int_id'][8]  else None,
 
         '주식블랙리스트': blacklist_stock,
         '해선블랙리스트': blacklist_future,

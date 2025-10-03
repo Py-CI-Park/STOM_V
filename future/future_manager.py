@@ -308,7 +308,6 @@ class FutureManager:
         self.FutureStrategyProcessKill()
         self.FutureTraderProcessKill()
         self.FutureKiwoomProcessKill()
-        qtest_qwait(3)
         sys.exit()
 
 

@@ -319,7 +319,7 @@ if 'c_jangolist_future' not in table_list:
     cur.execute('CREATE INDEX "ix_c_jangolist_future_index"ON "c_jangolist_future" ("index")')
 
 if 'c_totaltradelist' not in table_list:
-    query = 'CREATE TABLE "c_totaltradelist" ( "index" TEXT, "총매수금액" INTEGER, "총매도금액" INTEGER, "총수익금액" INTEGER, ' \
+    query = 'CREATE TABLE "c_totaltradelist" ( "index" TEXT, "거래횟수" INTEGER, "총매수금액" INTEGER, "총매도금액" INTEGER, "총수익금액" INTEGER, ' \
             '"총손실금액" INTEGER, "수익률" REAL, "수익금합계" INTEGER )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_c_totaltradelist_index" ON "c_totaltradelist" ( "index" )')
@@ -349,7 +349,7 @@ if 's_jangolist' not in table_list:
     cur.execute('CREATE INDEX "ix_s_jangolist_index"ON "s_jangolist" ("index")')
 
 if 's_totaltradelist' not in table_list:
-    query = 'CREATE TABLE "s_totaltradelist" ( "index" TEXT, "총매수금액" INTEGER, "총매도금액" INTEGER, ' \
+    query = 'CREATE TABLE "s_totaltradelist" ( "index" TEXT, "거래횟수" INTEGER, "총매수금액" INTEGER, "총매도금액" INTEGER, ' \
             '"총수익금액" INTEGER, "총손실금액" INTEGER, "수익률" REAL, "수익금합계" INTEGER)'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_s_totaltradelist_index" ON "s_totaltradelist" ( "index" )')
@@ -373,7 +373,7 @@ if 'f_jangolist' not in table_list:
     cur.execute('CREATE INDEX "ix_f_jangolist_index"ON "f_jangolist" ("index")')
 
 if 'f_totaltradelist' not in table_list:
-    query = 'CREATE TABLE "f_totaltradelist" ( "index" TEXT, "총매수금액" REAL, "총매도금액" REAL, ' \
+    query = 'CREATE TABLE "f_totaltradelist" ( "index" TEXT, "거래횟수" INTEGER, "총매수금액" REAL, "총매도금액" REAL, ' \
             '"총수익금액" REAL, "총손실금액" REAL, "수익률" REAL, "수익금합계" REAL)'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_f_totaltradelist_index" ON "f_totaltradelist" ( "index" )')

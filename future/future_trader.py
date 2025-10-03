@@ -182,10 +182,10 @@ class FutureTrader:
 
     def CheckOrder(self, data):
         if len(data) == 7:
-            주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 수동주문 = data
+            주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 잔고청산 = data
             수동주문유형 = None
         else:
-            주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 수동주문, 수동주문유형 = data
+            주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형 = data
 
         잔고없음 = 종목코드 not in self.dict_jg.keys()
         롱매수주문중 = 종목코드 in self.dict_order['BUY_LONG'].keys()
@@ -197,7 +197,7 @@ class FutureTrader:
         원주문번호 = ''
         주문취소 = False
         현재시간 = now()
-        if 수동주문:
+        if 잔고청산:
             if (주문구분 == 'SELL_LONG' and (잔고없음 or 롱매도주문중)) or (주문구분 == 'BUY_SHORT' and (잔고없음 or 숏매도주문중)):
                 주문취소 = True
         elif 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
@@ -218,7 +218,7 @@ class FutureTrader:
                 주문취소 = True
             elif self.dict_intg['추정예수금'] < 주문수량 * self.dict_info[종목코드]['위탁증거금']:
                 if 현재시간 > self.dict_info[종목코드]['시드부족시간']:
-                    self.CreateOrder('시드부족', 종목코드, 종목명, 주문가격, 주문수량, str_hmsf(now_cme()), 시그널시간, 수동주문, 0, None)
+                    self.CreateOrder('시드부족', 종목코드, 종목명, 주문가격, 주문수량, str_hmsf(now_cme()), 시그널시간, 잔고청산, 0, None)
                     self.dict_info[종목코드]['시드부족시간'] = timedelta_sec(180)
                 주문취소 = True
             elif 포지션 == 'LONG' and 'SHORT' in 주문구분: 주문취소 = True
@@ -243,11 +243,11 @@ class FutureTrader:
             if 'CANCEL' not in 주문구분:
                 self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
         else:
-            if 수동주문 and 'CANCEL' not in 주문구분:
+            if 잔고청산 and 'CANCEL' not in 주문구분:
                 self.sstgQ.put((f'{주문구분}_MANUAL', 종목코드))
 
             if 주문수량 > 0:
-                self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 수동주문, 0, 수동주문유형)
+                self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 0, 수동주문유형)
             else:
                 if 주문구분 == 'BUY_LONG':
                     if self.dict_set['주식매도취소매수시그널'] and 롱매도주문중: self.CancelOrder(종목코드, 주문구분)
@@ -259,7 +259,7 @@ class FutureTrader:
                     if self.dict_set['주식매수취소매도시그널'] and 숏매수주문중: self.CancelOrder(종목코드, 주문구분)
                 self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
 
-    def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형):
+    def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형):
         주문유형 = 0
         if 주문구분 in ('SELL_LONG', 'BUY_SHORT'):                 주문유형 = 1
         elif 주문구분 in ('BUY_LONG', 'SELL_SHORT'):               주문유형 = 2
@@ -268,7 +268,7 @@ class FutureTrader:
         elif 주문구분 in ('SELL_LONG_MODIFY', 'BUY_SHORT_MODIFY'): 주문유형 = 5
         elif 주문구분 in ('BUY_LONG_MODIFY', 'SELL_SHORT_MODIFY'): 주문유형 = 6
 
-        if 수동주문:
+        if 잔고청산:
             거래구분 = '1'
         elif 'BUY_LONG' in 주문구분 or 'BUY_SHORT' in 주문구분:
             거래구분 = self.거래구분[self.dict_set['주식매수주문구분']] if 수동주문유형 is None else self.거래구분[수동주문유형]
@@ -297,7 +297,7 @@ class FutureTrader:
                     data = (종목코드, 종목명, '접수불가', 주문구분, '매수', 주문수량, 0, 주문가격, ct, 원주문번호, 0, 0)
                 else:
                     주문구분 = '매수' if 주문구분 in ('BUY_LONG', 'SELL_SHORT') else '매도'
-                    data = (종목코드, 종목명, '체결', '신규', 주문구분, 주문수량, 0, 주문가격, ct, 원주문번호, 주문수량, 주문가격)
+                    data = (종목코드, 종목명, '체결', '체결', 주문구분, 주문수량, 0, 주문가격, ct, 원주문번호, 주문수량, 주문가격)
                 self.UpdateChejanData(data)
             else:
                 data = [주문구분, '', '', 주문유형, 종목코드, 주문수량, 주문가격, '', 거래구분, 원주문번호, 종목명, 시그널시간]
@@ -343,8 +343,8 @@ class FutureTrader:
     def CancelOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
         dict_cj = self.GetNameChejan(종목명, 주문구분)
-        last_key = list(dict_cj.keys())[-1]
-        if len(dict_cj) > 0:
+        if dict_cj:
+            last_key = list(dict_cj.keys())[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 현재시간 = now()
@@ -354,8 +354,8 @@ class FutureTrader:
     def ModifyOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
         dict_cj = self.GetNameChejan(종목명, 주문구분)
-        last_key = list(dict_cj.keys())[-1]
-        if len(dict_cj) > 0:
+        if dict_cj:
+            last_key = list(dict_cj.keys())[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == 'BUY_LONG':
@@ -415,7 +415,7 @@ class FutureTrader:
                 if self.dict_set['주식모의투자']:
                     self.dict_signal[종목코드] = 주문구분
                     ct = str_ymdhms(now_cme())
-                    data = (종목코드, 종목명, '체결', '신규', '매도', 보유수량, 0, 현재가, ct, '', 보유수량, 현재가)
+                    data = (종목코드, 종목명, '체결', '체결', '매도', 보유수량, 0, 현재가, ct, '', 보유수량, 현재가)
                     self.UpdateChejanData(data)
                 else:
                     self.CheckOrder((주문구분, 종목코드, 종목명, 현재가, 보유수량, now(), True))
@@ -461,6 +461,18 @@ class FutureTrader:
             while index in self.dict_cj.keys():
                 index = str(int(index) + 1)
         return index
+
+    """
+    gubun:1, 종목코드:NQU25, 주문상태:확인, 주문구분:정정, 매도수구분:매수, 주문수량:2, 미체결수량:2, 주문가격:23825.50, 주문번호:000000909010126, 주문시간:20250908072509, 체결수량:0, 체결가격:0.000000
+    gubun:1, 종목코드:NQU25, 주문상태:확인, 주문구분:취소, 매도수구분:매수, 주문수량:2, 미체결수량:0, 주문가격:23825.50, 주문번호:000000909010135, 주문시간:20250908072509, 체결수량:0, 체결가격:0.000000
+    gubun:0, 종목코드:NQU25, 주문상태:접수, 주문구분:신규, 매도수구분:매수, 주문수량:2, 미체결수량:2, 주문가격:23826.25, 주문번호:000000909010141, 주문시간:20250908072509, 체결수량:0, 체결가격:0.000000
+    gubun:1, 종목코드:NQU25, 주문상태:확인, 주문구분:취소, 매도수구분:매수, 주문수량:2, 미체결수량:0, 주문가격:23826.25, 주문번호:000000909010151, 주문시간:20250908072509, 체결수량:0, 체결가격:0.000000
+    gubun:0, 종목코드:NQU25, 주문상태:접수, 주문구분:신규, 매도수구분:매수, 주문수량:2, 미체결수량:2, 주문가격:23827.50, 주문번호:000000909010177, 주문시간:20250908072509, 체결수량:0, 체결가격:0.000000
+    gubun:1, 종목코드:NQU25, 주문상태:체결, 주문구분:체결, 매도수구분:매수, 주문수량:2, 미체결수량:0, 주문가격:23827.50, 주문번호:000000909010177, 주문시간:20250908072509, 체결수량:2, 체결가격:23827.500000
+    gubun:0, 종목코드:NQU25, 주문상태:접수, 주문구분:신규, 매도수구분:매도, 주문수량:2, 미체결수량:2, 주문가격:23828.75, 주문번호:000000909010238, 주문시간:20250908072509, 체결수량:2, 체결가격:23827.500000
+    gubun:1, 종목코드:NQU25, 주문상태:체결, 주문구분:체결, 매도수구분:매도, 주문수량:2, 미체결수량:0, 주문가격:23828.75, 주문번호:000000909010238, 주문시간:20250908072509, 체결수량:2, 체결가격:23828.750000
+    gubun:0, 종목코드:NQU25, 주문상태:접수, 주문구분:신규, 매도수구분:매도, 주문수량:2, 미체결수량:2, 주문가격:23830.25, 주문번호:000000909010259, 주문시간:20250908072509, 체결수량:2, 체결가격:23828.750000
+    """
 
     @error_decorator
     def UpdateChejanData(self, data):
@@ -513,7 +525,7 @@ class FutureTrader:
                         포지션 = 'SHORT'
                         평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
                     self.dict_jg[종목코드] = {
-                        '종목명': 종목코드,
+                        '종목명': 종목명,
                         '포지션': 포지션,
                         '매입가': 체결가격,
                         '현재가': 체결가격,
@@ -530,8 +542,8 @@ class FutureTrader:
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
                         self.dict_jg[종목코드]['분할매수횟수'] += 1
-                    if 종목코드 in self.dict_order[주문구분].keys():
-                        del self.dict_order[주문구분][종목코드]
+                    if 종목코드 in self.dict_order[gubun].keys():
+                        del self.dict_order[gubun][종목코드]
 
             else:
                 if 종목코드 not in self.dict_jg.keys(): return
@@ -560,8 +572,8 @@ class FutureTrader:
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
                         self.dict_jg[종목코드]['분할매도횟수'] += 1
-                    if 종목코드 in self.dict_order[주문구분].keys():
-                        del self.dict_order[주문구분][종목코드]
+                    if 종목코드 in self.dict_order[gubun].keys():
+                        del self.dict_order[gubun][종목코드]
 
                 매입금액 = self.dict_info[종목코드]['위탁증거금'] * 체결수량
                 평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 체결수량
@@ -652,8 +664,9 @@ class FutureTrader:
         수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        # ['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+        # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
         self.dict_tt[self.str_today] = {
+            '거래횟수': 거래횟수,
             '총매수금액': 총매수금액,
             '총매도금액': 총매도금액,
             '총수익금액': 총수익금액,

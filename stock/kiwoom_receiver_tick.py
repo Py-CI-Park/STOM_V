@@ -3,7 +3,6 @@ import sys
 import zmq
 import time
 import sqlite3
-import numpy as np
 import pandas as pd
 from threading import Thread
 from multiprocessing import Queue
@@ -243,32 +242,31 @@ class KiwoomReceiverTick:
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                index = 0
-                for i, price in enumerate(hoga_seprice[::-1]):
-                    if price >= csp:
-                        index = i
-                        break
-                if index <= 5:
-                    hoga_seprice = hoga_seprice[5 - index:10 - index]
-                    hoga_samount = hoga_samount[5 - index:10 - index]
+                index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
+                if index is not None:
+                    start_idx = (5 - index) if index < 5 else 0
+                    end_idx   = 10 - index
+                    add_cnt   = max(0, index - 5)
+                    hoga_seprice = (0,) * add_cnt + hoga_seprice[start_idx:end_idx]
+                    hoga_samount = (0,) * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
-                    hoga_seprice = tuple(np.zeros(index - 5)) + hoga_seprice[:10 - index]
-                    hoga_samount = tuple(np.zeros(index - 5)) + hoga_samount[:10 - index]
+                    hoga_seprice = (0,) * 5
+                    hoga_samount = (0,) * 5
             else:
                 hoga_seprice = hoga_seprice[-5:]
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                index = 0
-                for i, price in enumerate(hoga_buprice):
-                    if price <= cbp:
-                        index = i
-                        break
-                hoga_buprice = hoga_buprice[index:index + 5]
-                hoga_bamount = hoga_bamount[index:index + 5]
-                if index > 5:
-                    hoga_buprice = hoga_buprice + tuple(np.zeros(index - 5))
-                    hoga_bamount = hoga_bamount + tuple(np.zeros(index - 5))
+                index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
+                if index is not None:
+                    start_idx = 0 + index
+                    end_idx   = 5 + index
+                    add_cnt   = max(0, index - 5)
+                    hoga_buprice = hoga_buprice[start_idx:end_idx] + (0,) * add_cnt
+                    hoga_bamount = hoga_bamount[start_idx:end_idx] + (0,) * add_cnt
+                else:
+                    hoga_buprice = (0,) * 5
+                    hoga_bamount = (0,) * 5
             else:
                 hoga_buprice = hoga_buprice[:5]
                 hoga_bamount = hoga_bamount[:5]
@@ -278,9 +276,11 @@ class KiwoomReceiverTick:
             hgjrt = sum(hoga_samount + hoga_bamount)
             logt  = now() if self.int_logt < dt_min else 0
             gsjm  = 1 if code in self.list_gsjm else 0
-            data  = (dt,) + tuple(self.dict_data[code]) + (sm, hlp) + hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + (hgjrt, gsjm, code, name, logt)
+            data  = (dt,) + tuple(self.dict_data[code]) + (sm, hlp) + hoga_tamount + hoga_seprice + hoga_buprice + \
+                hoga_samount + hoga_bamount + (hgjrt, gsjm, code, name, logt)
 
             self.sstgQs[self.dict_sgbn[code]].put(data)
+
             if code in self.tuple_jango or code in self.tuple_order:
                 self.straderQ.put(('잔고갱신', (code, c)))
 

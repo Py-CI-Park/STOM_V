@@ -12,6 +12,8 @@ class WebSocketReceiver:
         self.debug     = debug
         self.wsk_trade = None
         self.wsk_order = None
+        self.con_trade = False
+        self.con_order = False
 
         loop = asyncio.get_event_loop()
         asyncio.ensure_future(self.run_trade())
@@ -19,82 +21,105 @@ class WebSocketReceiver:
         loop.run_forever()
 
     async def run_trade(self):
-        await self.connect_ticker()
-        await self.receive_trader()
+        while True:
+            try:
+                if not self.con_trade:
+                    await self.connect_trader()
+                await self.receive_trader()
+            except Exception as e:
+                print(f"Error WebSocketReceiver trade: {e}, reconnecting...")
+
+            self.con_trade = False
+            await asyncio.sleep(5)
 
     async def run_order(self):
-        await self.connect_orderb()
-        await self.receive_orderb()
+        while True:
+            try:
+                if not self.con_order:
+                    await self.connect_order()
+                await self.receive_order()
+            except Exception as e:
+                print(f"Error WebSocketReceiver order: {e}, reconnecting...")
 
-    async def connect_ticker(self):
+            self.con_order = False
+            await asyncio.sleep(5)
+
+    async def connect_trader(self):
         stream_list = []
         for code in self.codes:
             stream_list.append(f'{code.lower()}@aggTrade')
         client = await AsyncClient.create()
         bsm    = BinanceSocketManager(client)
         self.wsk_trade = bsm.futures_multiplex_socket(stream_list)
+        self.con_trade = True
 
-    async def connect_orderb(self):
+    async def connect_order(self):
         stream_list = []
         for code in self.codes:
             stream_list.append(f'{code.lower()}@depth10')
         client = await AsyncClient.create()
         bsm    = BinanceSocketManager(client)
         self.wsk_order = bsm.futures_multiplex_socket(stream_list)
+        self.con_order = True
 
     async def receive_trader(self):
-        async with self.wsk_trade:
-            while True:
-                try:
-                    data = await self.wsk_trade.recv()
-                    if not self.debug:
-                        self.q.put(['trade', data])
-                    else:
-                        print(data)
-                except Exception as e:
-                    print('Error WebSocketReceiver receive_trader', e)
+        async with self.wsk_trade as ws:
+            while self.con_trade:
+                data = await ws.recv()
+                if not self.debug:
+                    self.q.put(['trade', data])
+                else:
+                    print(data)
 
-    async def receive_orderb(self):
-        async with self.wsk_order:
-            while True:
-                try:
-                    data = await self.wsk_order.recv()
-                    if not self.debug:
-                        self.q.put(['depth', data])
-                    else:
-                        print(data)
-                except Exception as e:
-                    print('Error WebSocketReceiver receive_orderb', e)
+    async def receive_order(self):
+        async with self.wsk_order as ws:
+            while self.con_order:
+                data = await ws.recv()
+                if not self.debug:
+                    self.q.put(['depth', data])
+                else:
+                    print(data)
 
 
 class WebSocketTrader:
-    def __init__(self, api_key, scret_key, q):
+    def __init__(self, api_key, scret_key, q, debug=False):
         self.api_key   = api_key
         self.scret_key = scret_key
         self.q         = q
+        self.debug     = debug
         self.websocket = None
+        self.connected = False
 
         loop = asyncio.get_event_loop()
         asyncio.ensure_future(self.run())
         loop.run_forever()
 
     async def run(self):
-        await self.connect()
-        await self.receive_msgs()
+        while True:
+            try:
+                if not self.connected:
+                    await self.connect()
+                await self.receive_msgs()
+            except Exception as e:
+                print(f"Error WebSocketTrader: {e}, reconnecting...")
+
+            self.connected = False
+            await asyncio.sleep(5)
 
     async def connect(self):
         client = await AsyncClient.create(self.api_key, self.scret_key)
         bsm    = BinanceSocketManager(client)
         self.websocket = bsm.futures_user_socket()
+        self.connected = True
 
     async def receive_msgs(self):
-        async with self.websocket:
-            while True:
-                try:
-                    data = await self.websocket.recv()
+        async with self.websocket as ws:
+            while self.connected:
+                data = await ws.recv()
+                if not self.debug:
                     self.q.put(['user', data])
-                except Exception as e:
-                    print('Error WebSocketTrader receive_msgs', e)
+                else:
+                    print(data)
 
 
 if __name__ == '__main__':

@@ -135,7 +135,7 @@ class Total:
                     if code + '\n' not in coinreadlines:
                         coinreadlines.append(code + '\n')
                         self.insertlist.append(code)
-        if len(self.insertlist) > 0:
+        if self.insertlist:
             if self.ui_gubun == 'S':
                 with open('./utility/blacklist_stock.txt', 'w') as f:
                     f.write(''.join(stockreadlines))

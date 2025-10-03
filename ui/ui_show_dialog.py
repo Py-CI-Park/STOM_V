@@ -9,7 +9,7 @@ from coin.kimp_upbit_binance import Kimp
 from utility.static import qtest_qwait
 from utility.setting import columns_hc, DB_STRATEGY, DB_COIN_BACK_TICK, DB_COIN_TICK, DB_STOCK_BACK_TICK, DB_STOCK_TICK, \
     DB_PATH, DB_COIN_BACK_MIN, DB_STOCK_MIN, DB_STOCK_BACK_MIN, DB_COIN_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_MIN, \
-    DB_FUTURE_BACK_TICK, DB_FUTURE_TICK
+    DB_FUTURE_BACK_TICK, DB_FUTURE_TICK, columns_jg, columns_jgf, columns_jgcf
 from ui.set_style import style_bc_bt, style_bc_bb
 
 
@@ -111,39 +111,10 @@ def show_dialog_hoga(ui, show, coin, code):
     if ui.dialog_hoga.isVisible():
         ui.PutHogaCode(coin, code)
     if ui.dialog_order.isVisible():
-        change = False
-        if 'KRW' not in code and 'USDT' not in code:
-            name = ui.dict_name[code]
-            if name not in ui.order_combo_name_list:
-                ui.od_comboBoxxxxx_01.addItem(name)
-            ui.od_comboBoxxxxx_01.setCurrentText(name)
-            for i in range(100):
-                item = ui.sjg_tableWidgettt.item(i, 0)
-                if item is not None:
-                    if name == item.text():
-                        count = ui.sjg_tableWidgettt.item(i, 7).text()
-                        ui.od_lineEdittttt_02.setText(count)
-                        change = True
-                        break
-                else:
-                    break
-        else:
-            if code not in ui.order_combo_name_list:
-                ui.od_comboBoxxxxx_01.addItem(code)
-            ui.od_comboBoxxxxx_01.setCurrentText(code)
-            for i in range(100):
-                item = ui.cjg_tableWidgettt.item(i, 0)
-                if item is not None:
-                    if code == item.text():
-                        count = ui.cjg_tableWidgettt.item(i, 7 if 'KRW' in code else 8).text()
-                        ui.od_lineEdittttt_02.setText(count)
-                        change = True
-                        break
-                else:
-                    break
-        if not change:
-            ui.od_lineEdittttt_01.setText('')
-            ui.od_lineEdittttt_02.setText('')
+        name = ui.dict_name[code] if code in ui.dict_name.keys() else code
+        if name not in ui.order_combo_name_list:
+            ui.od_comboBoxxxxx_01.addItem(name)
+        ui.od_comboBoxxxxx_01.setCurrentText(name)
 
 
 def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, endtime, detail, buytimes):

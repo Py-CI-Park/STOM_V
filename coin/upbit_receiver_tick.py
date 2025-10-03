@@ -2,7 +2,6 @@ import zmq
 import time
 import sqlite3
 import pyupbit
-import numpy as np
 import pandas as pd
 from threading import Thread
 from multiprocessing import Process, Queue
@@ -240,34 +239,34 @@ class UpbitReceiverTick:
 
         if send:
             c = self.dict_data[code][0]
+            csp, cbp = c, c
 
-            if hoga_seprice[-1] < c:
-                index = 0
-                for i, price in enumerate(hoga_seprice[::-1]):
-                    if price >= c:
-                        index = i
-                        break
-                if index <= 5:
-                    hoga_seprice = hoga_seprice[5 - index:10 - index]
-                    hoga_samount = hoga_samount[5 - index:10 - index]
+            if hoga_seprice[-1] < csp:
+                index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
+                if index is not None:
+                    start_idx = (5 - index) if index < 5 else 0
+                    end_idx   = 10 - index
+                    add_cnt   = max(0, index - 5)
+                    hoga_seprice = (0.,) * add_cnt + hoga_seprice[start_idx:end_idx]
+                    hoga_samount = (0.,) * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
-                    hoga_seprice = tuple(np.zeros(index - 5)) + hoga_seprice[:10 - index]
-                    hoga_samount = tuple(np.zeros(index - 5)) + hoga_samount[:10 - index]
+                    hoga_seprice = (0.,) * 5
+                    hoga_samount = (0.,) * 5
             else:
                 hoga_seprice = hoga_seprice[-5:]
                 hoga_samount = hoga_samount[-5:]
 
-            if hoga_buprice[0] > c:
-                index = 0
-                for i, price in enumerate(hoga_buprice):
-                    if price <= c:
-                        index = i
-                        break
-                hoga_buprice = hoga_buprice[index:index + 5]
-                hoga_bamount = hoga_bamount[index:index + 5]
-                if index > 5:
-                    hoga_buprice = hoga_buprice + tuple(np.zeros(index - 5))
-                    hoga_bamount = hoga_bamount + tuple(np.zeros(index - 5))
+            if hoga_buprice[0] > cbp:
+                index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
+                if index is not None:
+                    start_idx = 0 + index
+                    end_idx   = 5 + index
+                    add_cnt   = max(0, index - 5)
+                    hoga_buprice = hoga_buprice[start_idx:end_idx] + (0.,) * add_cnt
+                    hoga_bamount = hoga_bamount[start_idx:end_idx] + (0.,) * add_cnt
+                else:
+                    hoga_buprice = (0.,) * 5
+                    hoga_bamount = (0.,) * 5
             else:
                 hoga_buprice = hoga_buprice[:5]
                 hoga_bamount = hoga_bamount[:5]
@@ -314,10 +313,10 @@ class UpbitReceiverTick:
             list_mtop = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
             insert_set = set(list_mtop) - set(self.list_gsjm)
             delete_set = set(self.list_gsjm) - set(list_mtop)
-            if len(insert_set) > 0:
+            if insert_set:
                 for code in insert_set:
                     self.InsertGsjmlist(code)
-            if len(delete_set) > 0:
+            if delete_set:
                 for code in delete_set:
                     self.DeleteGsjmlist(code)
 

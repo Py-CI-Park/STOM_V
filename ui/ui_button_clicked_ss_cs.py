@@ -91,7 +91,7 @@ def ssbutton_clicked_05(ui):
         if len(df) > 0:
             gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
             ui.backdetail_list = [x for x in df['name'].to_list()[::-1] if gubun in x and ('t_' in x or 'v_' in x or 'c_' in x or 'vc_' in x)]
-            if len(ui.backdetail_list) > 0:
+            if ui.backdetail_list:
                 ui.backcheckbox_list = []
                 count = len(ui.backdetail_list)
                 ui.cp_tableWidget_01.setRowCount(count)
@@ -202,7 +202,7 @@ def csbutton_clicked_05(ui):
         if len(df) > 0:
             ui.backdetail_list = [x for x in df['name'].to_list()[::-1] if 'coin' in x and ('t_' in x or 'v_' in x or 'c_' in x or 'h_' in x)]
 
-        if len(ui.backdetail_list) > 0:
+        if ui.backdetail_list:
             ui.backcheckbox_list = []
             count = len(ui.backdetail_list)
             ui.cp_tableWidget_01.setRowCount(count)

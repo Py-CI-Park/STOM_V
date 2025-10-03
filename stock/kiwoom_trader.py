@@ -204,10 +204,10 @@ class KiwoomTrader:
 
     def CheckOrder(self, data):
         if len(data) == 7:
-            주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 수동주문 = data
+            주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 잔고청산 = data
             수동주문유형 = None
         else:
-            주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 수동주문, 수동주문유형 = data
+            주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형 = data
 
         잔고없음 = 종목코드 not in self.dict_jg.keys()
         매수주문중 = 종목코드 in self.dict_order['매수'].keys()
@@ -216,7 +216,7 @@ class KiwoomTrader:
         원주문번호 = ''
         주문취소 = False
         현재시간 = now()
-        if 수동주문:
+        if 잔고청산:
             if 잔고없음 or 매도주문중: 주문취소 = True
         elif 주문구분 == '매수':
             inthms = int(str_hms())
@@ -236,7 +236,7 @@ class KiwoomTrader:
                 주문취소 = True
             elif self.dict_intg['추정예수금'] < 주문수량 * 주문가격:
                 if 현재시간 > self.dict_info[종목코드]['시드부족시간']:
-                    self.CreateOrder('시드부족', 종목코드, 종목명, 주문가격, 주문수량, '', 시그널시간, 수동주문, None)
+                    self.CreateOrder('시드부족', 종목코드, 종목명, 주문가격, 주문수량, '', 시그널시간, 잔고청산, None)
                     self.dict_info[종목코드]['시드부족시간'] = timedelta_sec(180)
                 주문취소 = True
             elif 매수주문중:
@@ -256,7 +256,7 @@ class KiwoomTrader:
             if '취소' not in 주문구분:
                 self.PutOrderComplete(f'{주문구분}취소', 종목코드)
         else:
-            if 수동주문 and 주문구분 in ('매수', '매도'):
+            if 잔고청산 and 주문구분 in ('매수', '매도'):
                 self.PutOrderComplete(f'{주문구분}주문', 종목코드)
 
             if 주문구분 == '매수':
@@ -267,11 +267,11 @@ class KiwoomTrader:
                     self.CancelOrder(종목코드, 주문구분)
 
             if 주문수량 > 0:
-                self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 수동주문, 수동주문유형)
+                self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형)
             else:
                 self.PutOrderComplete(f'{주문구분}취소', 종목코드)
 
-    def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 수동주문, 수동주문유형):
+    def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형):
         주문유형 = 0
         주문취소 = False
         if 주문구분 == '매수':      주문유형 = 1
@@ -281,14 +281,14 @@ class KiwoomTrader:
         elif 주문구분 == '매수정정': 주문유형 = 5
         elif 주문구분 == '매도정정': 주문유형 = 6
 
-        if 수동주문:
+        if 잔고청산:
             거래구분 = '03'
         elif '매수' in 주문구분:
             거래구분 = self.거래구분[self.dict_set['주식매수주문구분']] if 수동주문유형 is None else self.거래구분[수동주문유형]
         else:
             거래구분 = self.거래구분[self.dict_set['주식매도주문구분']] if 수동주문유형 is None else self.거래구분[수동주문유형]
 
-        if 수동주문:
+        if 잔고청산:
             if not (self.dict_set['주식모의투자'] or 주문구분 == '시드부족'):
                 주문가격 = 0
         elif 주문구분 == '매수':
@@ -369,8 +369,8 @@ class KiwoomTrader:
     def CancelOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
         dict_cj = self.GetNameChejan(종목명, 주문구분)
-        last_key = list(dict_cj.keys())[-1]
-        if len(dict_cj) > 0:
+        if dict_cj:
+            last_key = list(dict_cj.keys())[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 현재시간 = now()
@@ -380,8 +380,8 @@ class KiwoomTrader:
     def ModifyOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
         dict_cj = self.GetNameChejan(종목명, 주문구분)
-        last_key = list(dict_cj.keys())[-1]
-        if len(dict_cj) > 0:
+        if dict_cj:
+            last_key = list(dict_cj.keys())[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == '매수':
@@ -471,7 +471,6 @@ class KiwoomTrader:
         df = pd.read_sql(f"SELECT * FROM s_totaltradelist WHERE `index` = '{self.str_today}'", con)
         con.close()
         if len(df) == 0:
-            # [총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
             self.kwzservQ.put(('query', ('거래디비', df, 's_totaltradelist', 'append')))
             if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
@@ -650,8 +649,9 @@ class KiwoomTrader:
         수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        # ['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+        # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
         self.dict_tt[self.str_today] = {
+            '거래횟수': 거래횟수,
             '총매수금액': 총매수금액,
             '총매도금액': 총매도금액,
             '총수익금액': 총수익금액,

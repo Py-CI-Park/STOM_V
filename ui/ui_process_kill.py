@@ -41,21 +41,18 @@ def process_kill(ui):
     if ui.qtimer3.isActive(): ui.qtimer3.stop()
     if ui.qtimer4.isActive(): ui.qtimer4.stop()
 
+    ui.wdzservQ.put(('manager', '통신종료'))
     if ui.CoinKimpProcessAlive():
-        ui.kimpQ.put('프로세스종료')
+        ui.ui.proc_coin_kimp.kill()
     if ui.CoinReceiverProcessAlive():
-        ui.creceivQ.put('프로세스종료')
         ui.proc_receiver_coin.kill()
     if ui.CoinTraderProcessAlive():
-        if ui.dict_set['거래소'] == '바이낸스선물':
-            ui.ctraderQ.put('프로세스종료')
         ui.proc_trader_coin.kill()
     if ui.CoinStrategyProcessAlive():
         ui.proc_strategy_coin.kill()
     if ui.BacktestProcessAlive():
         ui.BacktestProcessKill(1)
 
-    ui.wdzservQ.put(('manager', '통신종료'))
     factor_choice = ''
     for checkbox in ui.factor_checkbox_list:
         factor_choice = f"{factor_choice}{'1' if checkbox.isChecked() else '0'};"
@@ -84,8 +81,9 @@ def process_kill(ui):
         geometry += f"{ui.dialog_order.x()};{ui.dialog_order.y() - 31 if geo_len > 21 and ui.dict_set['창위치'][21] + 31 == ui.dialog_order.y() else ui.dialog_order.y()}"
         query = f"UPDATE etc SET 창위치 = '{geometry}'"
         ui.queryQ.put(('설정디비', query))
-    ui.queryQ.put('프로세스종료')
 
+    ui.queryQ.put('프로세스종료')
+    while ui.proc_query.is_alive():
+        qtest_qwait(0.01)
     opstarter_kill()
-    qtest_qwait(3)
     sys.exit()

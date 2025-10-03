@@ -134,7 +134,7 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
 
         if self.int_mtdt is None:
             self.int_mtdt = dt_min
-        elif self.int_mtdt < dt_min and str(self.int_mtdt)[-4:] < '1520':
+        elif self.int_mtdt < dt_min:
             self.dict_mtop[self.int_mtdt] = ';'.join(self.list_gsjm)
             self.int_mtdt = dt_min
 

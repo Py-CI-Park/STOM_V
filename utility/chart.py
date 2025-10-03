@@ -258,7 +258,7 @@ class Chart:
                 if len(df2) > 0:
                     for index in df2.index:
                         cgtime = int(float(str(df2['체결시간'][index])[:12] if is_min else df2['체결시간'][index]))
-                        if 'KRW' in code or '키움증권' in self.dict_set['증권사']:
+                        if 'KRW' in code or ('USDT' not in code and '키움증권' in self.dict_set['증권사']):
                             if df2['주문구분'][index] == '매수':
                                 while cgtime not in df.index:
                                     onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))

@@ -1,6 +1,5 @@
 import os
 import sys
-import time
 import shutil
 import sqlite3
 import pandas as pd
@@ -408,5 +407,4 @@ class Query:
                 break
             self.windowQ.put((ui_num['DB관리'], 'DB업데이트완료'))
 
-        time.sleep(1)
         sys.exit()

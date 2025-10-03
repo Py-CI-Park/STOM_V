@@ -191,8 +191,8 @@ class Kiwooom:
         if self.debug: print('send_order', body)
         return ret, ord_no
 
-    def websoket_start(self, receiverQ, traderQ, debug=False):
-        self.wproc = Process(target=WebSocketManager, args=(self.token, receiverQ, traderQ, debug))
+    def websoket_start(self, kiwoomQ, receiverQ, traderQ, debug=False):
+        self.wproc = Process(target=WebSocketManager, args=(self.token, kiwoomQ, receiverQ, traderQ, debug))
         self.wproc.start()
 
     def websoket_kill(self):
@@ -200,8 +200,9 @@ class Kiwooom:
 
 
 class WebSocketManager:
-    def __init__(self, token_, receiverQ, traderQ, debug=False):
+    def __init__(self, token_, kiwoomQ, receiverQ, traderQ, debug=False):
         self.token     = token_
+        self.kiwoomQ   = kiwoomQ
         self.receiverQ = receiverQ
         self.traderQ   = traderQ
         self.debug     = debug
@@ -214,25 +215,27 @@ class WebSocketManager:
         loop.run_forever()
 
     async def run(self):
-        await self.connect()
-        await self.receive_msgs()
-        await asyncio.sleep(1)
-        await self.run()
+        try:
+            if not self.connected:
+                await self.connect()
+            await self.receive_msgs()
+        except Exception as e:
+            print('Error WebSocketManager:', e)
+
+        await self.disconnect()
 
     async def connect(self):
-        try:
-            uri = 'wss://api.kiwoom.com:10000/api/dostk/websocket'
-            self.websocket = await websockets.connect(uri)
-            self.connected = True
-            await asyncio.sleep(1)
-            msg = {'trnm': 'LOGIN', 'token': self.token}
-            await self.send_msg(msg)
-        except:
-            self.connected = False
+        uri = 'wss://api.kiwoom.com:10000/api/dostk/websocket'
+        self.websocket = await websockets.connect(uri)
+        self.connected = True
+        await asyncio.sleep(1)
+        msg = {'trnm': 'LOGIN', 'token': self.token}
+        await self.send_msg(msg)
 
     async def disconnect(self):
-        await self.websocket.close()
         self.connected = False
+        await self.websocket.close()
+        await asyncio.sleep(5)
 
     async def send_msg(self, msg):
         if self.connected:
@@ -242,71 +245,67 @@ class WebSocketManager:
 
     async def receive_msgs(self):
         while self.connected:
-            try:
-                recv_data = await self.websocket.recv()
-                recv_data = json.loads(recv_data)
-                trnm = recv_data['trnm']
-                if trnm == 'REAL':
-                    data = recv_data['data']
-                    name = data['name']
-                    if not self.debug:
-                        if name == '주문체결':
-                            self.traderQ.put(data)
-                        elif name == '장시작시간':
-                            self.receiverQ.put(data)
-                            self.traderQ.put(data)
-                        else:
-                            self.receiverQ.put(data)
+            recv_data = await self.websocket.recv()
+            recv_data = json.loads(recv_data)
+            trnm = recv_data['trnm']
+            if trnm == 'REAL':
+                realtype = recv_data['data']['name']
+                code = recv_data['data']['item']
+                data = recv_data['data']['values']
+                if not self.debug:
+                    if realtype == '주문체결':
+                        self.traderQ.put((code, data))
+                    elif realtype == '장시작시간':
+                        self.kiwoomQ.put(data)
                     else:
-                        print(f'REAL {name}', data)
-                elif trnm == 'PING':
-                    await self.send_msg(recv_data)
-                elif trnm == 'LOGIN':
-                    if recv_data['return_code'] == 0:
-                        if self.debug: print('LOGIN', recv_data)
-                        msg = {'trnm': 'CNSRLST'}
-                        await self.send_msg(msg)
-                    else:
-                        await self.disconnect()
-                elif trnm == 'CNSRLST':
-                    data = recv_data['data']
-                    if self.debug: print('CNSRLST', data)
-                    msg = {'trnm': 'CNSRREQ', 'seq': '1', 'search_type': '1', 'stex_tp': 'K'}
+                        self.receiverQ.put(data)
+                else:
+                    print(f'REAL {realtype} {code}', data)
+            elif trnm == 'PING':
+                await self.send_msg(recv_data)
+            elif trnm == 'LOGIN':
+                if recv_data['return_code'] == 0:
+                    if self.debug: print('LOGIN', recv_data)
+                    msg = {'trnm': 'CNSRLST'}
                     await self.send_msg(msg)
-                elif trnm == 'CNSRREQ':
-                    data = recv_data['data']
-                    if not self.codes:
-                        self.codes = [d['jmcode'][1:] for d in data]
-                        if self.debug: print('CNSRREQ', self.codes)
-                        msg = {'trnm': 'CNSRCLR', 'seq': '1'}
-                        await self.send_msg(msg)
-                        msg = {'trnm': 'CNSRREQ', 'seq': '0', 'search_type': '1', 'stex_tp': 'K'}
-                        await self.send_msg(msg)
-                    else:
-                        if self.debug: print('CNSRREQ', [d['jmcode'][1:] for d in data])
-                        msg = {'trnm': 'REG', 'grp_no': '1', 'refresh': '0', 'data': [{'item': [''], 'type': ['00']}]}
-                        await self.send_msg(msg)
-                        msg['refresh'] = '1'
-                        msg['data'] = [{'item': [''], 'type': ['0s']}]
-                        await self.send_msg(msg)
-                        msg['data'] = [{'item': [''], 'type': ['1h']}]
-                        await self.send_msg(msg)
-                        msg['data'] = [{'item': ['001', '101'], 'type': ['0J']}]
-                        await self.send_msg(msg)
-                        msg['data'] = [{'item': self.codes[:98], 'type': ['0B', '0D']}]
-                        await self.send_msg(msg)
-                        # k = 0
-                        # for i in range(0, len(self.codes), 100):
-                        #     msg['grp_no'] = str(grp_no + k)
-                        # grp_no = 2000
-                        #     msg['data']   = [{'item': self.codes[i:i+100], 'type': ['0B', '0D']}]
-                        #     await self.send_msg(msg)
-                        #     k += 1
-                elif trnm == 'REG':
-                    if self.debug: print('REG', recv_data)
-            except Exception as e:
-                if self.debug: print('Error', e)
-                await self.disconnect()
+                else:
+                    await self.disconnect()
+            elif trnm == 'CNSRLST':
+                data = recv_data['data']
+                if self.debug: print('CNSRLST', data)
+                msg = {'trnm': 'CNSRREQ', 'seq': '1', 'search_type': '1', 'stex_tp': 'K'}
+                await self.send_msg(msg)
+            elif trnm == 'CNSRREQ':
+                data = recv_data['data']
+                if not self.codes:
+                    self.codes = [d['jmcode'][1:] for d in data]
+                    if self.debug: print('CNSRREQ', self.codes)
+                    msg = {'trnm': 'CNSRCLR', 'seq': '1'}
+                    await self.send_msg(msg)
+                    msg = {'trnm': 'CNSRREQ', 'seq': '0', 'search_type': '1', 'stex_tp': 'K'}
+                    await self.send_msg(msg)
+                else:
+                    if self.debug: print('CNSRREQ', [d['jmcode'][1:] for d in data])
+                    msg = {'trnm': 'REG', 'grp_no': '1', 'refresh': '0', 'data': [{'item': [''], 'type': ['00']}]}
+                    await self.send_msg(msg)
+                    msg['refresh'] = '1'
+                    msg['data'] = [{'item': [''], 'type': ['0s']}]
+                    await self.send_msg(msg)
+                    msg['data'] = [{'item': [''], 'type': ['1h']}]
+                    await self.send_msg(msg)
+                    msg['data'] = [{'item': ['001', '101'], 'type': ['0J']}]
+                    await self.send_msg(msg)
+                    msg['data'] = [{'item': self.codes[:98], 'type': ['0B', '0D']}]
+                    await self.send_msg(msg)
+                    # k = 0
+                    # for i in range(0, len(self.codes), 100):
+                    #     msg['grp_no'] = str(grp_no + k)
+                    # grp_no = 2000
+                    #     msg['data']   = [{'item': self.codes[i:i+100], 'type': ['0B', '0D']}]
+                    #     await self.send_msg(msg)
+                    #     k += 1
+            elif trnm == 'REG':
+                if self.debug: print('REG', recv_data)
 
 
 if __name__ == '__main__':
@@ -320,5 +319,5 @@ if __name__ == '__main__':
     kw.get_code_list(10)
     kw.get_code_list(0)
 
-    receiverQ_, traderQ_ = Queue(), Queue()
-    kw.websoket_start(receiverQ_, traderQ_, debug=True)
+    kiwoomQ_, receiverQ_, traderQ_ = Queue(), Queue(), Queue()
+    kw.websoket_start(kiwoomQ_, receiverQ_, traderQ_, debug=True)

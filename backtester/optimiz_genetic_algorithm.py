@@ -349,7 +349,7 @@ class OptimizeGeneticAlgorithm:
                     for _ in range(1000):
                         data = mq.get()
                         if type(data) == str:
-                            if len(self.result) > 0:
+                            if self.result:
                                 self.SaveVarslist(100, optistandard, buystg, sellstg)
                             self.SysExit(True)
                         else:
@@ -365,7 +365,7 @@ class OptimizeGeneticAlgorithm:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 모든 경우의 수 탐색 완료'))
                 break
 
-            if len(self.result) > 0: self.SetOptilist(k, int(vc / 4) if vc / 4 > 5 else 5, goal)
+            if self.result: self.SetOptilist(k, int(vc / 4) if vc / 4 > 5 else 5, goal)
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 현재 경우의수[{self.total_count:,.0f}] 목표 경우의수[{goal:,.0f}]'))
             k += 1
 

@@ -149,7 +149,7 @@ class Hoga:
 
         if df is not None and len(df) > 0:
             data = list(df.iloc[0])
-            if gubun == 'C':
+            if gubun == 'C' or '해외선물' in self.dict_set['증권사']:
                 hj = [name, data[1], data[5], 0, 0, data[2], data[3], data[4]]
             else:
                 hj = [name, data[1], data[5], data[12], data[17], data[2], data[3], data[4]]

@@ -19,20 +19,19 @@ sn_gsjm = 2000
 
 
 def parseDat(trcode):
-    enc   = zipfile.ZipFile(f'{OPENAPI_PATH}/data/{trcode}.enc')
-    lines = enc.read(trcode.upper() + '.dat').decode('cp949')
-    lines = lines.split('\n')
-    start = [i for i, x in enumerate(lines) if x.startswith('@START')]
-    end   = [i for i, x in enumerate(lines) if x.startswith('@END')]
-    block = zip(start, end)
-    enc_data = {'trcode': trcode, 'input': [], 'output': []}
-    for start, end in block:
-        block_data = lines[start - 1:end + 1]
-        record = block_data[1].split('_')[1].strip().split('=')[0]
-        field_name = [line.split('=')[0].strip() for line in block_data[2:-1]]
-        fields = {record: field_name}
-        enc_data['input'].append(fields) if 'INPUT' in block_data[0] else enc_data['output'].append(fields)
-    return enc_data
+    enc    = zipfile.ZipFile(f'{OPENAPI_PATH}/data/{trcode}.enc')
+    lines  = enc.read(trcode.upper() + '.dat').decode('cp949')
+    lines  = lines.split('\n')
+    start  = [i for i, x in enumerate(lines) if x.startswith('@START')]
+    end    = [i for i, x in enumerate(lines) if x.startswith('@END')]
+    blocks = zip(start, end)
+    dict_enc = {}
+    for start, end in blocks:
+        block  = lines[start - 1:end + 1]
+        blname = block[1].split('_')[1].strip().split('=')[0]
+        fields = [line.split('=')[0].strip() for line in block[2:-1]]
+        if 'INPUT' not in block[0]: dict_enc[blname] = fields
+    return dict_enc
 
 
 class Updater(QThread):
@@ -103,9 +102,8 @@ class Kiwoom:
         self.order_time  = now()
         self.intg_odsn   = 3000
         self.operation   = 1 if int(str_hms()) < 85900 else 3
-        self.dict_item   = None
-        self.list_trcd   = None
-        self.tr_name     = None
+        self.tr_fields   = None
+        self.tr_cdlist   = None
         self.tr_df       = None
 
         self.CommConnect()
@@ -196,7 +194,7 @@ class Kiwoom:
         if self.operation == 1:
             if 90100 < inthms and self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
                 self.ProcessKill()
-        elif self.operation in (3, 2):
+        elif self.operation in (3, 2, 4):
             if self.dict_set['리시버공유'] < 2 and not self.dict_bool['실시간조건검색시작']:
                 self.ConditionSearchStart()
             if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
@@ -325,16 +323,16 @@ class Kiwoom:
 
     def Block_Request(self, *args, **kwargs):
         trcode = args[0].lower()
-        self.dict_item = parseDat(trcode)
-        self.tr_name = kwargs['output']
-        nnext = kwargs['next']
+        self.tr_fields = parseDat(trcode)
+        rqname = kwargs['output']
+        nnext  = kwargs['next']
         for i in kwargs:
             if i.lower() != 'output' and i.lower() != 'next':
                 self.ocx.dynamicCall('SetInputValue(QString, QString)', i, kwargs[i])
         self.dict_bool['TR수신'] = False
         self.dict_bool['TR다음'] = False
         sn_num = sn_brrd if trcode == 'opt10054' else sn_brrq
-        self.ocx.dynamicCall('CommRqData(QString, QString, int, QString)', self.tr_name, trcode, nnext, sn_num)
+        self.ocx.dynamicCall('CommRqData(QString, QString, int, QString)', rqname, trcode, nnext, sn_num)
         sleeptime = datetime.datetime.now() + datetime.timedelta(seconds=0.25)
         while not self.dict_bool['TR수신'] or datetime.datetime.now() < sleeptime:
             qtest_qwait(0.01)
@@ -351,7 +349,7 @@ class Kiwoom:
         sleeptime = datetime.datetime.now() + datetime.timedelta(seconds=0.25)
         while not self.dict_bool['CD수신'] or datetime.datetime.now() < sleeptime:
             qtest_qwait(0.01)
-        return self.list_trcd
+        return self.tr_cdlist
 
     def OnEventConnect(self, err_code):
         if err_code == 0: self.dict_bool['로그인'] = True
@@ -363,33 +361,24 @@ class Kiwoom:
     # noinspection PyUnusedLocal
     def OnReceiveTrCondition(self, screen, code_list, cond_name, cond_index, nnext):
         codes = code_list.split(';')[:-1]
-        self.list_trcd = codes
+        self.tr_cdlist = codes
         self.dict_bool['CD수신'] = True
 
     # noinspection PyUnusedLocal
     def OnReceiveTrData(self, screen, rqname, trcode, record, nnext):
-        if 'ORD' in trcode:
-            return
-
-        items = None
+        if 'ORD' in trcode: return
         self.dict_bool['TR다음'] = True if nnext == '2' else False
-        for output in self.dict_item['output']:
-            record = list(output.keys())[0]
-            items = list(output.values())[0]
-            if record == self.tr_name:
-                break
-        rows = self.ocx.dynamicCall('GetRepeatCnt(QString, QString)', trcode, rqname)
-        if rows == 0:
-            rows = 1
-        df2 = []
+        fields = self.tr_fields[rqname]
+        rows   = self.ocx.dynamicCall('GetRepeatCnt(QString, QString)', trcode, rqname)
+        if rows == 0: rows = 1
+        data_list = []
         for row in range(rows):
             row_data = []
-            for item in items:
+            for item in fields:
                 data = self.ocx.dynamicCall('GetCommData(QString, QString, int, QString)', trcode, rqname, row, item)
                 row_data.append(data.strip())
-            df2.append(row_data)
-        df = pd.DataFrame(df2, columns=items)
-        self.tr_df = df
+            data_list.append(row_data)
+        self.tr_df = pd.DataFrame(data_list, columns=fields)
         self.dict_bool['TR수신'] = True
 
     # noinspection PyUnusedLocal

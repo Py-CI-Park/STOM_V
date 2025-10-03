@@ -335,7 +335,7 @@ class OptimizeConditions:
                 for _ in range(20):
                     data = mq.get()
                     if type(data) == str:
-                        if len(self.result) > 0:
+                        if self.result:
                             self.ShowTopCondlist(5)
                             self.ShowTopConds()
                         self.SysExit(True)
@@ -346,11 +346,11 @@ class OptimizeConditions:
             else:
                 break
 
-        time.sleep(2)
+        time.sleep(6)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 최적화 완료'))
         time.sleep(1)
 
-        if len(self.result) > 0:
+        if self.result:
             self.ShowTopCondlist(5)
             self.ShowTopConds()
         else:

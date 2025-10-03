@@ -66,12 +66,12 @@ class FutureKiwoom:
             '호가잔량필드같음': False
         }
 
-        self.str_tr_next = ''
         self.str_account = ''
         self.str_pass    = self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:])}"]
         self.str_today   = str_ymd(now_cme())
         self.order_time  = now()
         self.intg_odsn   = 3000
+        self.tr_next     = None
         self.tr_df       = None
 
         cme_hms = int(str_hms(now_cme()))
@@ -151,8 +151,8 @@ class FutureKiwoom:
                 df = self.SearchDeposit(gubun, nnext)      # 상품코드별 종목명, 위탁증거금, 유지증거금을 조회한다
                 df_list.append(df)
                 qtest_qwait(0.25)
-                if self.str_tr_next.strip() != '':
-                    nnext = self.str_tr_next
+                if self.tr_next:
+                    nnext = self.tr_next
                 else:
                     break
         df = pd.concat(df_list)
@@ -199,6 +199,7 @@ class FutureKiwoom:
     def OnReceiveRealData(self, code, realtype, realdata):
         if self.dict_bool['프로세스종료'] or self.dict_set['리시버공유'] == 2:
             return
+
         if realtype == '해외선물시세':
             try:
                 if not self.dict_bool['해선체결필드확인']:
@@ -240,10 +241,15 @@ class FutureKiwoom:
                     csp     = float(self.GetCommRealData(code, 27))
                     cbp     = float(self.GetCommRealData(code, 28))
 
-                cme_hms = str_hms_cme_from_str(dt)
-                if not self.test_mode and ((not self.dict_set['주식타임프레임'] and int(cme_hms) < 90000) or (self.dict_set['주식타임프레임'] and int(cme_hms) < 93000)):
-                    return
-                dt = int(f'{self.str_today}{cme_hms}')
+                int_cme_hms = int(str_hms_cme_from_str(dt))
+                if not self.test_mode:
+                    if self.dict_set['주식타임프레임']:
+                        if int_cme_hms < 93000:
+                            return
+                    else:
+                        if int_cme_hms < 90000:
+                            return
+                dt = int(f'{self.str_today}{int_cme_hms}')
             except:
                 pass
             else:
@@ -289,23 +295,17 @@ class FutureKiwoom:
                     hoga_tamount = (
                         int(data[43]), int(data[46])
                     )
-                    hoga_seprice5 = abs(float(data[35]))
                     hoga_seprice = (
-                        hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5,
-                        abs(float(data[27])), abs(float(data[19])), abs(float(data[11])), abs(float(data[3]))
+                        abs(float(data[35])), abs(float(data[27])), abs(float(data[19])), abs(float(data[11])), abs(float(data[3]))
                     )
-                    hoga_buprice5 = abs(float(data[39]))
                     hoga_buprice = (
-                        abs(float(data[7])), abs(float(data[15])), abs(float(data[23])), abs(float(data[31])),
-                        hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5
+                        abs(float(data[7])), abs(float(data[15])), abs(float(data[23])), abs(float(data[31])), abs(float(data[39]))
                     )
                     hoga_samount = (
-                        0, 0, 0, 0, 0,
                         int(data[36]), int(data[28]), int(data[20]), int(data[12]), int(data[4])
                     )
                     hoga_bamount = (
-                        int(data[8]), int(data[16]), int(data[24]), int(data[32]), int(data[40]),
-                        0, 0, 0, 0, 0
+                        int(data[8]), int(data[16]), int(data[24]), int(data[32]), int(data[40])
                     )
                 else:
                     dt = self.GetCommRealData(code, 21)
@@ -313,24 +313,21 @@ class FutureKiwoom:
                         int(self.GetCommRealData(code, 121)),
                         int(self.GetCommRealData(code, 125))
                     )
-                    hoga_seprice5 = abs(float(self.GetCommRealData(code, 45)))
                     hoga_seprice = (
-                        hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5,
+                        abs(float(self.GetCommRealData(code, 45))),
                         abs(float(self.GetCommRealData(code, 44))),
                         abs(float(self.GetCommRealData(code, 43))),
                         abs(float(self.GetCommRealData(code, 42))),
                         abs(float(self.GetCommRealData(code, 41)))
                     )
-                    hoga_buprice5 = abs(float(self.GetCommRealData(code, 55)))
                     hoga_buprice = (
                         abs(float(self.GetCommRealData(code, 51))),
                         abs(float(self.GetCommRealData(code, 52))),
                         abs(float(self.GetCommRealData(code, 53))),
                         abs(float(self.GetCommRealData(code, 54))),
-                        hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5
+                        abs(float(self.GetCommRealData(code, 55)))
                     )
                     hoga_samount = (
-                        0, 0, 0, 0, 0,
                         int(self.GetCommRealData(code, 65)),
                         int(self.GetCommRealData(code, 64)),
                         int(self.GetCommRealData(code, 63)),
@@ -342,14 +339,18 @@ class FutureKiwoom:
                         int(self.GetCommRealData(code, 72)),
                         int(self.GetCommRealData(code, 73)),
                         int(self.GetCommRealData(code, 74)),
-                        int(self.GetCommRealData(code, 75)),
-                        0, 0, 0, 0, 0
+                        int(self.GetCommRealData(code, 75))
                     )
 
-                cme_hms = str_hms_cme_from_str(dt)
-                if not self.test_mode and ((not self.dict_set['주식타임프레임'] and int(cme_hms) < 90000) or (self.dict_set['주식타임프레임'] and int(cme_hms) < 93000)):
-                    return
-                dt = int(f'{self.str_today}{cme_hms}')
+                int_cme_hms = int(str_hms_cme_from_str(dt))
+                if not self.test_mode:
+                    if self.dict_set['주식타임프레임']:
+                        if int_cme_hms < 93000:
+                            return
+                    else:
+                        if int_cme_hms < 90000:
+                            return
+                dt = int(f'{self.str_today}{int_cme_hms}')
                 name = self.dict_info[code]['종목명']
             except:
                 pass
@@ -402,12 +403,11 @@ class FutureKiwoom:
         if self.dict_set['리시버공유'] < 2 and not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
-        if not self.test_mode:
-            inthms = int(str_hms(now_cme()))
-            if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
-                self.ProcessKill()
-            if 160500 < inthms and not self.dict_bool['프로세스종료']:
-                self.ProcessKill()
+        inthms = int(str_hms(now_cme()))
+        if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
+            self.ProcessKill()
+        if 160500 < inthms and not self.dict_bool['프로세스종료']:
+            self.ProcessKill()
 
     def GetAccountjanGo(self):
         self.dict_bool['계좌조회'] = True
@@ -459,7 +459,7 @@ class FutureKiwoom:
             self.dict_bool['실시간등록'] = True
             return
 
-        self.str_tr_next = nnext
+        self.tr_next = nnext.strip()
         columns_, columns = None, None
         if trcode == 'opw50004':
             columns_ = ['파생품목코드', '파생품목명', '위탁증거금', '유지증거금', '틱단위수', '틱가치', '해외거래소코드']

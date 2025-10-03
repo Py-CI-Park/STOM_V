@@ -141,7 +141,7 @@ class FutureReceiverMin(FutureReceiverTick):
 
         if self.int_mtdt is None:
             self.int_mtdt = dt_min
-        elif self.int_mtdt < dt_min and str(self.int_mtdt)[-4:] < '1600':
+        elif self.int_mtdt < dt_min:
             self.dict_mtop[self.int_mtdt] = ';'.join(self.list_gsjm)
             self.int_mtdt = dt_min
             self.list_gsjm = []

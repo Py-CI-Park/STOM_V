@@ -528,8 +528,8 @@ class BinanceTrader:
 
     def CancelOrder(self, 종목코드, 주문구분):
         dict_cj = self.GetCodeChejan(종목코드, 주문구분)
-        last_key = list(dict_cj.keys())[-1]
-        if len(dict_cj) > 0:
+        if dict_cj:
+            last_key = list(dict_cj.keys())[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 주문번호, 주문가격 = dict_cj[last_key]['주문번호'], dict_cj[last_key]['주문가격']
@@ -537,8 +537,8 @@ class BinanceTrader:
 
     def ModifyOrder(self, 종목코드, 주문구분):
         dict_cj = self.GetCodeChejan(종목코드, 주문구분)
-        last_key = list(dict_cj.keys())[-1]
-        if len(dict_cj) > 0:
+        if dict_cj:
+            last_key = list(dict_cj.keys())[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == 'BUY_LONG':
@@ -785,8 +785,9 @@ class BinanceTrader:
         수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        # ['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+        # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
         self.dict_tt[self.str_today] = {
+            '거래횟수': 거래횟수,
             '총매수금액': 총매수금액,
             '총매도금액': 총매도금액,
             '총수익금액': 총수익금액,

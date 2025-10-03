@@ -343,7 +343,6 @@ class KiwoomManager:
         self.StockStrategyProcessKill()
         self.StockTraderProcessKill()
         self.StockKiwoomProcessKill()
-        qtest_qwait(3)
         sys.exit()
 
 
