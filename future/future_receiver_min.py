@@ -8,18 +8,19 @@ from utility.static import now
 
 
 class FutureReceiverMin(FutureReceiverTick):
-    def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
+    def UpdateTickData(self, data):
+        code, dt, c, o, h, low, per, v, csp, cbp = data
         if self.dict_set['리시버공유'] == 1:
             self.recvservQ.put(('tickdata', (code, c, dt)))
 
         if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
-            self.straderQ.put((code, c))
+            self.straderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
 
-        if code in self.dict_data.keys():
-            dm, _, bids, asks, tbids, tasks = self.dict_data[code][5:11]
-        else:
+        if code not in self.dict_data.keys():
             dm, bids, asks, tbids, tasks = 0, 0, 0, 0, 0
+        else:
+            dm, _, bids, asks, tbids, tasks = self.dict_data[code][5:11]
 
         if bids == 0 and asks == 0:
             mo = mh = ml = c
@@ -65,7 +66,8 @@ class FutureReceiverMin(FutureReceiverTick):
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, receivetime):
+    def UpdateHogaData(self, data):
+        dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, receivetime = data
         mm     = 0
         dm     = 0
         send   = False
@@ -123,7 +125,7 @@ class FutureReceiverMin(FutureReceiverTick):
 
             self.sstgQ.put(data)
             if send:
-                if code in self.tuple_jango or code in self.tuple_order:
+                if code in self.tuple_order:
                     self.straderQ.put(('주문확인', code, c))
 
                 if self.dict_set['리시버공유'] == 1:

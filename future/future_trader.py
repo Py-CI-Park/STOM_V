@@ -1,185 +1,156 @@
 import os
 import sys
+import time
 import sqlite3
-from future_kiwoom import *
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import pyqtSignal, QThread, QTimer
+import pandas as pd
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num, columns_cj, DB_TRADELIST, DICT_SET, columns_tdf, columns_jgf
-from utility.static import now, timedelta_sec, qtest_qwait, GetFutureLongPgSgSp, GetFutureShortPgSgSp, str_ymd, \
-    now_cme, error_decorator, str_hms_cme_from_str, opstarter_kill, str_ymdhms, str_hms, str_ymdhmsf, str_hmsf, dt_hms
-
-
-class Updater(QThread):
-    signal1 = pyqtSignal(tuple)
-    signal2 = pyqtSignal(str)
-
-    def __init__(self, straderQ):
-        super().__init__()
-        self.straderQ = straderQ
-
-    def run(self):
-        while True:
-            data = self.straderQ.get()
-            if type(data) == tuple:
-                self.signal1.emit(data)
-            elif type(data) == str:
-                self.signal2.emit(data)
+from utility.static import now, timedelta_sec, GetFutureLongPgSgSp, GetFutureShortPgSgSp, str_ymd, now_cme, \
+    error_decorator, str_ymdhms, str_hms, str_ymdhmsf, str_hmsf, dt_hms, threading_timer
 
 
 class FutureTrader:
     def __init__(self, qlist):
-        app = QApplication(sys.argv)
+        """
+        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ
+                0            1              2             3           4
+        """
+        self.kwzservQ    = qlist[0]
+        self.sreceivQ    = qlist[1]
+        self.straderQ    = qlist[2]
+        self.sstgQ       = qlist[3]
+        self.futureQ     = qlist[4]
+        self.dict_set    = DICT_SET
 
-        self.kwzservQ  = qlist[0]
-        self.sreceivQ  = qlist[1]
-        self.straderQ  = qlist[2]
-        self.sstgQ     = qlist[3]
-        self.dict_set  = DICT_SET
-
-        if self.dict_set['트레이더프로파일링']:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
-
-        self.dict_cj = {}  # 체결목록
-        self.dict_jg = {}  # 잔고목록
-        self.dict_tj = {}  # 잔고평가
-        self.dict_td = {}  # 거래목록
-        self.dict_tt = {}  # 평가손익
-
-        self.dict_order  = {'BUY_LONG': {}, 'SELL_LONG': {}, 'SELL_SHORT': {}, 'BUY_SHORT': {}}
+        self.dict_cj     = {}  # 체결목록
+        self.dict_jg     = {}  # 잔고목록
+        self.dict_tj     = {}  # 잔고평가
+        self.dict_td     = {}  # 거래목록
+        self.dict_tt     = {}  # 평가손익
         self.dict_signal = {}
         self.dict_curc   = {}
         self.dict_info   = {}
+        self.dict_order  = {
+            'BUY_LONG': {},
+            'SELL_LONG': {},
+            'SELL_SHORT': {},
+            'BUY_SHORT': {}
+        }
         self.dict_intg   = {
             '예수금': 0,
             '추정예수금': 0,
             '예탁자산': 0,
             '추정예탁자산': 0
         }
-        self.dict_strg = {
-            '당일날짜': str_ymd(now_cme()),
-            '계좌번호': '',
-            '비밀번호': self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:]) * 2 - 1}"]
-        }
         self.dict_bool = {
-            '계좌조회': False,
             '해선잔고청산': False,
             '프로세스종료': False
-        }
-
-        self.order_time = now()
-        self.intg_odsn  = 3000                                   # 주문용 화면번호
-        self.dict_sncd  = {}                                     # 사용한 화면번호의 종목코드 키:화면번호, 벨류:종목코드
-        self.jgcs_time  = self.get_jgcs_time()                   # 잔고청산용 전략종료시간 2분전 시간
-
-        self.LoadDatabase()
-        self.ft = Future(self, 'Trader')
-        self.FutureLogin()
-
-        self.updater = Updater(self.straderQ)
-        self.updater.signal1.connect(self.UpdateTuple)
-        self.updater.signal2.connect(self.UpdateString)
-        self.updater.start()
-
-        self.qtimer1 = QTimer()
-        self.qtimer1.setInterval(1 * 1000)
-        self.qtimer1.timeout.connect(self.Scheduler)
-        self.qtimer1.start()
-
-        self.qtimer2 = QTimer()
-        self.qtimer2.setInterval(500)
-        self.qtimer2.timeout.connect(self.PutJangoDF)
-        self.qtimer2.start()
-
-        self.매도수구분 = {
-            '1': '매도',
-            '2': '매수'
-        }
-        self.주문상태 = {
-            '0': '미접수',
-            '1': '접수',
-            '2': '확인',
-            '3': '체결',
-            'C': '취소',
-            'X': '거부'
-        }
-        self.주문구분 = {
-            '0': {
-                '1': '신규',
-                '2': '정정',
-                '3': '취소'
-            },
-            '1': {
-                '10': '원주문',
-                '11': '정정주문',
-                '12': '취소주문',
-                '21': '체결',
-                '22': '정정',
-                '23': '취소',
-                '24': '주문거부',
-                '25': '주문접수'
-            }
         }
         self.주문유형 = {
             '시장가': '1',
             '지정가': '2'
         }
 
-        app.exec_()
+        self.order_time  = now()
+        self.jgcs_time   = self.get_jgcs_time()                   # 잔고청산용 전략종료시간 2분전 시간
+        self.str_today   = str_ymd(now_cme())
+
+        self.LoadDatabase()
+        self.Mainloop()
 
     def get_jgcs_time(self):
         return int(str_hms(timedelta_sec(-120, dt_hms(str(self.dict_set['주식전략종료시간'])))))
 
     def LoadDatabase(self):
         con = sqlite3.connect(DB_TRADELIST)
-        df_cj = pd.read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{self.dict_strg['당일날짜']}%'", con).set_index('index')
-        df_td = pd.read_sql(f"SELECT * FROM f_tradelist WHERE 체결시간 LIKE '{self.dict_strg['당일날짜']}%'", con).set_index('index')
-        self.dict_cj = df_cj.to_dict('index')
-        self.dict_td = df_td.to_dict('index')
-
-        if len(df_cj) > 0: self.kwzservQ.put(('window', (ui_num['S체결목록'], df_cj[::-1])))
-        if len(df_td) > 0: self.kwzservQ.put(('window', (ui_num['S거래목록'], df_td[::-1])))
+        df_cj = pd.read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_td = pd.read_sql(f"SELECT * FROM f_tradelist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        if len(df_cj) > 0:
+            self.dict_cj = df_cj.to_dict('index')
+            self.kwzservQ.put(('window', (ui_num['S체결목록'], df_cj[::-1])))
+        if len(df_td) > 0:
+            self.dict_td = df_td.to_dict('index')
+            self.kwzservQ.put(('window', (ui_num['S거래목록'], df_td[::-1])))
+            self.UpdateTotaltradelist(first=True)
         if self.dict_set['주식모의투자']:
             df_jg = pd.read_sql(f'SELECT * FROM f_jangolist', con).set_index('index')
-            self.dict_jg = df_jg.to_dict('index')
-            if self.dict_jg: self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+            if len(df_jg) > 0:
+                self.dict_jg = df_jg.to_dict('index')
+                self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
         con.close()
-
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 정보 불러오기 완료')))
 
-    def FutureLogin(self):
-        self.ft.CommConnect()
-        self.ft.ShowAccountWindow()
-        opstarter_kill()
+    def Mainloop(self):
+        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작')))
+        inthms = int(str_hms(now_cme()))
+        while True:
+            if not self.straderQ.empty():
+                data = self.straderQ.get()
+                if type(data) == tuple:
+                    self.UpdateTuple(data)
+                elif type(data) == str:
+                    self.UpdateString(data)
 
-        self.dict_strg['계좌번호'] = self.ft.GetAccountNumber()
-        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
-        text = '해선 전략연산 및 트레이더를 시작하였습니다.'
-        if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', text))
-        self.kwzservQ.put(('tele', text))
+            if int(str_hms(now_cme())) > inthms:
+                inthms = int(str_hms(now_cme()))
+                if self.dict_set['주식타임프레임'] and inthms < self.dict_set['주식전략종료시간']:
+                    self.OrderTimeControl()
+                if self.jgcs_time < inthms and not self.dict_bool['해선잔고청산']:
+                    self.JangoCheongsan('자동')
+                if not self.dict_bool['프로세스종료']:
+                    self.PutDictjango()
+                self.UpdateTotaljango()
+
+            time.sleep(0.01)
 
     def UpdateTuple(self, data):
         if len(data) in (7, 8):
             self.CheckOrder(data)
         elif len(data) == 2:
-            if type(data[1]) in (int, float):
-                self.UpdateJango(data)
-            elif data[0] == '설정변경':
-                self.dict_set  = data[1]
-                self.jgcs_time = self.get_jgcs_time()
+            if data[0] == '체잔통보':
+                self.UpdateChejanData(data[1])
+            elif data[0] == '주문전송':
+                code, gubun = data[1]
+                self.dict_signal[code] = gubun
+            elif data[0] == '잔고갱신':
+                self.UpdateJango(data[1])
+            elif data[0] == '주문확인':
+                code, c = data
+                self.dict_curc[code] = c
+                self.OrderTimeControl(code)
+            elif data[0] == '증거금부족':
+                gubun = self.dict_signal[data[1]]
+                self.PutOrderComplete(f'{gubun}_CANCEL', data[1])
             elif data[0] == '종목정보':
                 self.dict_info = data[1]
-                dummy_time = timedelta_sec(-3600)
+                dummy_time = timedelta_sec(-3600, now_cme())
                 for code in self.dict_info.keys():
                     self.dict_info[code]['시드부족시간'] = dummy_time
                     self.dict_info[code]['최종거래시간'] = dummy_time
                     self.dict_info[code]['손절거래시간'] = dummy_time
-        elif len(data) == 3:
-            _, code, c = data
-            self.dict_curc[code] = c
-            self.OrderTimeControl(code)
+            elif data[0] == '잔고조회':
+                self.UpdateYesugm(data[1])
+            elif data[0] == '설정변경':
+                self.dict_set  = data[1]
+                self.jgcs_time = self.get_jgcs_time()
+
+    def UpdateString(self, data):
+        if data == '체결목록':
+            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
+            self.kwzservQ.put(('tele', df_cj)) if len(df_cj) > 0 else self.kwzservQ.put(('tele', '현재는 체결목록이 없습니다.'))
+        elif data == '거래목록':
+            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+            self.kwzservQ.put(('tele', df_td)) if len(df_td) > 0 else self.kwzservQ.put(('tele', '현재는 거래목록이 없습니다.'))
+        elif data == '잔고평가':
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            self.kwzservQ.put(('tele', df_jg)) if len(df_jg) > 0 else self.kwzservQ.put(('tele', '현재는 잔고목록이 없습니다.'))
+        elif data == '잔고청산':
+            self.JangoCheongsan('수동')
+        elif data == '프로세스종료':
+            self.dict_bool['프로세스종료'] = True
+            threading_timer(180, self.sreceivQ.put, '프로세스종료실행')
+        elif data == '프로세스종료실행':
+            self.SysExit()
 
     def CheckOrder(self, data):
         if len(data) == 7:
@@ -298,55 +269,12 @@ class FutureTrader:
                     주문구분 = '매수' if 주문구분 in ('BUY_LONG', 'SELL_SHORT') else '매도'
                     self.UpdateChejanData(종목코드, 종목명, '체결', '신규', 주문구분, 주문수량, 0, 주문가격, ct, 주문번호, 주문수량, 주문가격)
             else:
-                data = [주문구분, '', self.dict_strg['계좌번호'], 주문구분번호, 종목코드, 주문수량, 주문가격, '', 주문유형, 주문번호, 종목명, 시그널시간]
-                self.SendOrder(data)
+                data = [주문구분, '', '', 주문구분번호, 종목코드, 주문수량, 주문가격, '', 주문유형, 주문번호, 종목명, 시그널시간]
+                self.futureQ.put(data)
 
-    def SendOrder(self, order):
-        curr_time = now()
-        if curr_time < self.order_time:
-            next_time = (self.order_time - curr_time).total_seconds()
-            QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(order))
-            return
-
-        self.intg_odsn = self.intg_odsn + 1 if self.intg_odsn + 1 < 9000 else 3000
-        order[1] = str(self.intg_odsn)
-
-        name, signal_time = order[-2:]
-        self.OrderTimeLog(signal_time)
-        code = order[4]
-        ret = self.ft.SendOrder(order[:-2])
-        if ret == 0:
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] [{order[0]}] {name} | {order[6]} | {order[5]}')))
-            self.order_time = timedelta_sec(0.2)
-            self.dict_sncd[self.intg_odsn] = order[4]
-            self.dict_signal[code] = order[0]
-        else:
-            self.PutOrderComplete(f'{order[0]}_CANCEL', order[4])
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] [{order[0]}] {name} | {order[6]} | {order[5]}')))
-
-    def UpdateJango(self, data):
-        종목코드, 현재가 = data
-        self.dict_curc[종목코드] = 현재가
-        try:
-            # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
-            if 현재가 != self.dict_jg[종목코드]['현재가']:
-                포지션 = self.dict_jg[종목코드]['포지션']
-                매입가 = self.dict_jg[종목코드]['매입가']
-                매입금액 = self.dict_jg[종목코드]['매입금액']
-                보유수량 = self.dict_jg[종목코드]['보유수량']
-                평가금액 = 매입금액 + (현재가 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
-                if 포지션 == 'LONG':
-                    평가금액, 평가손익, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
-                else:
-                    평가금액, 평가손익, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                self.dict_jg[종목코드].update({
-                    '현재가': 현재가,
-                    '수익률': 수익률,
-                    '평가손익': 평가손익,
-                    '평가금액': 평가금액
-                })
-        except:
-            pass
+    def OrderTimeLog(self, signal_time):
+        gap = (now() - signal_time).total_seconds()
+        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
 
     def OrderTimeControl(self, code_=None):
         cancel_list = []
@@ -377,6 +305,9 @@ class FutureTrader:
         if modify_list:
             for code, gubun in modify_list:
                 self.ModifyOrder(code, gubun)
+
+    def GetNameChejan(self, name, gubun):
+        return {k: v for k, v in self.dict_cj.items() if v['종목명'] == name and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun}_REG')}
 
     def CancelOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
@@ -410,24 +341,29 @@ class FutureTrader:
                 주문번호 = dict_cj[last_key]['주문번호']
                 self.CreateOrder(f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 주문번호, 현재시간, False, 정정횟수, None)
 
-    def UpdateString(self, data):
-        if data == '체결목록':
-            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
-            self.kwzservQ.put(('tele', df_cj)) if len(df_cj) > 0 else self.kwzservQ.put(('tele', '현재는 체결목록이 없습니다.'))
-        elif data == '거래목록':
-            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
-            self.kwzservQ.put(('tele', df_td)) if len(df_td) > 0 else self.kwzservQ.put(('tele', '현재는 거래목록이 없습니다.'))
-        elif data == '잔고평가':
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
-            self.kwzservQ.put(('tele', df_jg)) if len(df_jg) > 0 else self.kwzservQ.put(('tele', '현재는 잔고목록이 없습니다.'))
-        elif data == '잔고청산':
-            self.JangoCheongsan('수동')
-        elif data == '프로파일링결과':
-            self.pr.print_stats(sort='cumulative')
-        elif data == '프로세스종료':
-            if not self.dict_bool['프로세스종료']:
-                self.dict_bool['프로세스종료'] = True
-                QTimer.singleShot(180 * 1000, self.SysExit)
+    def UpdateJango(self, data):
+        종목코드, 현재가 = data
+        self.dict_curc[종목코드] = 현재가
+        try:
+            # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+            if 현재가 != self.dict_jg[종목코드]['현재가']:
+                포지션 = self.dict_jg[종목코드]['포지션']
+                매입가 = self.dict_jg[종목코드]['매입가']
+                매입금액 = self.dict_jg[종목코드]['매입금액']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
+                평가금액 = 매입금액 + (현재가 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
+                if 포지션 == 'LONG':
+                    평가금액, 평가손익, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                else:
+                    평가금액, 평가손익, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                self.dict_jg[종목코드].update({
+                    '현재가': 현재가,
+                    '수익률': 수익률,
+                    '평가손익': 평가손익,
+                    '평가금액': 평가금액
+                })
+        except:
+            pass
 
     def JangoCheongsan(self, gubun):
         self.dict_bool['해선잔고청산'] = True
@@ -457,118 +393,50 @@ class FutureTrader:
         elif not self.dict_jg and gubun == '수동':
             self.kwzservQ.put(('tele', '현재는 해선 보유종목이 없습니다.'))
 
-    def Scheduler(self):
-        inthms = int(str_hms(now_cme()))
-        if not self.dict_bool['계좌조회']:
-            self.GetAccountjanGo()
-        if self.dict_set['주식타임프레임'] and inthms < self.dict_set['주식전략종료시간']:
-            self.OrderTimeControl()
-        if self.jgcs_time < inthms and not self.dict_bool['해선잔고청산']:
-            self.JangoCheongsan('자동')
-        self.UpdateTotaljango()
+    def PutDictjango(self):
+        data = ('잔고목록', self.dict_jg)
+        self.sstgQ.put(data)
 
-    def GetAccountjanGo(self):
-        self.dict_bool['계좌조회'] = True
-
-        if self.dict_set['주식모의투자']:
-            con = sqlite3.connect(DB_TRADELIST)
-            df = pd.read_sql('SELECT * FROM f_tradelist', con)
-            con.close()
-            self.dict_intg['예수금'] = 1_000_000_000 + df['수익금'].sum()
-            if self.dict_intg['예수금'] < 1_000_000_000: self.dict_intg['예수금'] = 1_000_000_000
-        else:
-            df = self.ft.GetBalances(self.dict_strg['계좌번호'], self.dict_strg['비밀번호'])
-            df.set_index('통화코드', inplace=True)
-            self.dict_intg['예수금'] = round(df['원화대용평가금액']['USD'] / 100, 2)
-
-            df = self.ft.GetJango(self.dict_strg['계좌번호'], self.dict_strg['비밀번호'])
-            if len(df) > 0:
-                df['종목명'] = ''
-                columns = ['종목코드', '종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
-                df = df[[columns]]
-                df['분할매수횟수'] = 5
-                df['분할매도횟수'] = 0
-                df['매수시간'] = self.dict_strg['당일날짜'] + '093000'
-                df['종목명'] = df['종목코드'].apply(lambda x: self.dict_info[x]['종목명'])
-                df.set_index('index', inplace=True)
-                self.dict_jg = df.to_dict('index')
-
-        self.dict_intg['추정예수금'] = self.dict_intg['예수금']
-        self.dict_intg['예탁자산'] = self.dict_intg['예수금']
-        self.dict_intg['추정예탁자산'] = self.dict_intg['예수금']
-
-        if self.dict_jg:
+    def UpdateYesugm(self, data):
+        yesugm, dict_jg = data
+        self.dict_intg = {
+            '예수금': yesugm,
+            '추정예수금': yesugm,
+            '예탁자산': yesugm,
+            '추정예탁자산': yesugm
+        }
+        if dict_jg:
+            self.dict_jg = dict_jg
             for index in self.dict_jg.keys():
                 yesugm = self.dict_jg[index]['보유수량'] * self.dict_info[index]['위탁증거금']
                 self.dict_intg['예수금'] -= yesugm
             self.dict_intg['추정예수금'] = self.dict_intg['예수금']
 
-        if self.dict_td: self.UpdateTotaltradelist(first=True)
-        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 계좌 조회 완료')))
-
     def SysExit(self):
-        if self.qtimer1.isActive():  self.qtimer1.stop()
-        if self.updater.isRunning(): self.updater.quit()
         self.SaveDayData()
-        self.kwzservQ.put(('tele', '해선 트레이더 종료'))
-        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 트레이더 종료')))
-        qtest_qwait(5)
-        sys.exit()
+        time.sleep(5)
+        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 트레이더 종료')))
 
     def SaveDayData(self):
         con = sqlite3.connect(DB_TRADELIST)
-        df = pd.read_sql(f"SELECT * FROM f_totaltradelist WHERE `index` = '{self.dict_strg['당일날짜']}'", con)
+        df = pd.read_sql(f"SELECT * FROM f_totaltradelist WHERE `index` = '{self.str_today}'", con)
         con.close()
         if len(df) == 0:
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
-            df.drop(columns=['거래횟수'], inplace=True)
             self.kwzservQ.put(('query', ('거래디비', df, 'f_totaltradelist', 'append')))
             if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료')))
 
-    # noinspection PyUnusedLocal
-    def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
-        print(f'[{now()}]{sMsg}')
-        self.kwzservQ.put(('window', (ui_num['S오더텍스트'], f'{sMsg}')))
-        if '매수증거금' in sMsg:
-            sn = int(sScrNo)
-            code = self.dict_sncd[sn] if sn in self.dict_sncd.keys() else ''
-            gubun = self.dict_signal[code]
-            self.PutOrderComplete(f'{gubun}_CANCEL', code)
-
-    # noinspection PyUnusedLocal
-    def OnReceiveChejanData(self, gubun, itemcnt, fidlist):
-        if self.dict_set['주식모의투자']:
-            return
-
-        if gubun in ('0', '1'):
-            try:
-                종목코드 = self.ft.GetChejanData(9001)
-                종목명 = self.dict_info[종목코드]['종목명']
-                주문상태 = self.ft.GetChejanData(913)
-                주문구분 = self.ft.GetChejanData(905)
-                매도수구분 = self.ft.GetChejanData(907)
-                주문수량 = int(self.ft.GetChejanData(900))
-                미체결수량 = int(self.ft.GetChejanData(902))
-                주문가격 = float(self.ft.GetChejanData(901))
-                주문번호 = self.ft.GetChejanData(9203)
-                주문시간 = f"{self.dict_strg['당일날짜']}{str_hms_cme_from_str(self.ft.GetChejanData(908))}"
-            except Exception as e:
-                self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - OnReceiveChejanData 0 {e}')))
-            else:
-                try:
-                    체결수량 = int(self.ft.GetChejanData(911))
-                    체결가격 = float(self.ft.GetChejanData(910))
-                except:
-                    체결수량 = 0
-                    체결가격 = 0
-                주문상태 = self.주문상태[주문상태]
-                주문구분 = self.주문구분[gubun][주문구분]
-                매도수구분 = self.매도수구분[매도수구분]
-                self.UpdateChejanData(종목코드, 종목명, 주문상태, 주문구분, 매도수구분, 주문수량, 미체결수량, 주문가격, 주문시간, 주문번호, 체결수량, 체결가격)
+    def GetIndex(self):
+        index = str_ymdhmsf(now_cme())
+        if index in self.dict_cj.keys():
+            while index in self.dict_cj.keys():
+                index = str(int(index) + 1)
+        return index
 
     @error_decorator
-    def UpdateChejanData(self, 종목코드, 종목명, 주문상태, 주문구분, 매도수구분, 주문수량, 미체결수량, 주문가격, 주문시간, 주문번호, 체결수량, 체결가격):
+    def UpdateChejanData(self, data):
+        종목코드, 종목명, 주문상태, 주문구분, 매도수구분, 주문수량, 미체결수량, 주문가격, 주문시간, 주문번호, 체결수량, 체결가격 = data
         index = self.GetIndex()
         gubun = self.dict_signal[종목코드]
 
@@ -678,7 +546,7 @@ class FutureTrader:
 
             sorted_items = sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True)
             self.dict_jg = {k: v for k, v in sorted_items}
-            self.PutJangoDF()
+            self.PutDictjango()
 
             if 미체결수량 == 0: self.PutOrderComplete(f'{gubun}_COMPLETE', 종목코드)
             self.UpdateChegeollist(index, 종목코드, 종목명, gubun, 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
@@ -723,6 +591,13 @@ class FutureTrader:
         self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
         self.sreceivQ.put(('주문목록', self.GetOrderCodeList()))
 
+    def PutOrderComplete(self, cmsg, code):
+        self.sstgQ.put((cmsg, code))
+
+    def GetOrderCodeList(self):
+        return tuple(self.dict_order['BUY_LONG'].keys()) + tuple(self.dict_order['SELL_SHORT'].keys()) + \
+            tuple(self.dict_order['SELL_LONG'].keys()) + tuple(self.dict_order['BUY_SHORT'].keys())
+
     def UpdateTradelist(self, index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
         # ['종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익률', '수익금', '체결시간']
         self.dict_td[index] = {
@@ -750,9 +625,8 @@ class FutureTrader:
         수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
-        self.dict_tt[self.dict_strg['당일날짜']] = {
-            '거래횟수': 거래횟수,
+        # ['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+        self.dict_tt[self.str_today] = {
             '총매수금액': 총매수금액,
             '총매도금액': 총매도금액,
             '총수익금액': 총수익금액,
@@ -764,8 +638,7 @@ class FutureTrader:
         self.kwzservQ.put(('window', (ui_num['S실현손익'], df_tt)))
 
         if not first:
-            self.kwzservQ.put(('tele', f'거래횟수 {거래횟수}회 / 총매수금액 {int(총매수금액):,}원 / 총매도금액 {int(총매도금액):,}원 / 총수익금액 {int(총수익금액):,}원 / '
-                                       f'총손실금액 {int(총손실금액):,}원 / 수익률 {수익률:.2f}% / 수익금합계 {int(수익금합계):,}원'))
+            self.kwzservQ.put(('tele', f'총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}'))
 
         if self.dict_set['스톰라이브']:
             수익률 = round(수익금합계 / 총매수금액 * 100, 2)
@@ -806,7 +679,7 @@ class FutureTrader:
             총평가손익, 총매입금액, 총평가금액, 총수익률, 잔고수량 = 0, 0, 0, 0., 0
             추정예탁자산 = self.dict_intg['예수금']
 
-        self.dict_tj[self.dict_strg['당일날짜']] = {
+        self.dict_tj[self.str_today] = {
             '추정예탁자산': 추정예탁자산,
             '추정예수금': self.dict_intg['예수금'],
             '보유종목수': 잔고수량,
@@ -834,32 +707,6 @@ class FutureTrader:
         self.kwzservQ.put(('window', (ui_num['S잔고목록'], df_jg)))
         self.kwzservQ.put(('window', (ui_num['S잔고평가'], df_tj)))
 
-    def PutJangoDF(self):
-        if not self.dict_bool['프로세스종료']:
-            data = ('잔고목록', self.dict_jg)
-            self.sstgQ.put(data)
-
     def StrategyStop(self):
         self.sstgQ.put('매수전략중지')
         self.JangoCheongsan('수동')
-
-    def PutOrderComplete(self, cmsg, code):
-        self.sstgQ.put((cmsg, code))
-
-    def OrderTimeLog(self, signal_time):
-        gap = (now() - signal_time).total_seconds()
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
-
-    def GetOrderCodeList(self):
-        return tuple(self.dict_order['BUY_LONG'].keys()) + tuple(self.dict_order['SELL_SHORT'].keys()) + \
-            tuple(self.dict_order['SELL_LONG'].keys()) + tuple(self.dict_order['BUY_SHORT'].keys())
-
-    def GetNameChejan(self, name, gubun):
-        return {k: v for k, v in self.dict_cj.items() if v['종목명'] == name and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun}_REG')}
-
-    def GetIndex(self):
-        index = str_ymdhmsf(now_cme())
-        if index in self.dict_cj.keys():
-            while index in self.dict_cj.keys():
-                index = str(int(index) + 1)
-        return index

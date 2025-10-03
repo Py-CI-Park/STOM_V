@@ -1,5 +1,5 @@
 import sys
-from utility.static import qtest_qwait
+from utility.static import qtest_qwait, opstarter_kill
 
 
 def process_kill(ui):
@@ -86,5 +86,6 @@ def process_kill(ui):
         ui.queryQ.put(('설정디비', query))
     ui.queryQ.put('프로세스종료')
 
+    opstarter_kill()
     qtest_qwait(3)
     sys.exit()

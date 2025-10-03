@@ -1,18 +1,18 @@
 import os
 import sys
 import zmq
+import time
 import sqlite3
 import numpy as np
-from future_kiwoom import *
+import pandas as pd
+from threading import Thread
 from multiprocessing import Queue
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QThread, QTimer, pyqtSignal
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from utility.setting import DICT_SET, ui_num, DB_CODE_INFO, DB_FUTURE_MIN
-from utility.static import now, qtest_qwait, str_hms_cme_from_str, opstarter_kill, now_cme, str_hms, str_ymd
+from utility.setting import DICT_SET, ui_num, DB_FUTURE_MIN
+from utility.static import now, threading_timer
 
 
-class ZmqServ(QThread):
+class ZmqServ(Thread):
     def __init__(self, recvservQ):
         super().__init__()
         self.recvservQ = recvservQ
@@ -27,46 +27,18 @@ class ZmqServ(QThread):
             self.sock.send_pyobj(data)
 
 
-class Updater(QThread):
-    signal = pyqtSignal(tuple)
-
-    def __init__(self, sreceivQ):
-        super().__init__()
-        self.sreceivQ = sreceivQ
-
-    def run(self):
-        while True:
-            data = self.sreceivQ.get()
-            self.signal.emit(data)
-
-
 class FutureReceiverTick:
     def __init__(self, qlist):
         """
-        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ
-                0            1              2             3
+        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ
+                0            1              2             3           4
         """
-        app = QApplication(sys.argv)
-
         self.kwzservQ = qlist[0]
         self.sreceivQ = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQ    = qlist[3]
         self.dict_set = DICT_SET
 
-        if self.dict_set['리시버프로파일링']:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
-
-        self.dict_bool = {
-            '리시버시작': False,
-            '프로세스종료': False,
-            '해선체결필드확인': False,
-            '해선체결필드같음': False,
-            '호가잔량필드확인': False,
-            '호가잔량필드같음': False
-        }
         self.dict_tmdt   = {}
         self.dict_hgbs   = {}
         self.dict_data   = {}
@@ -75,102 +47,38 @@ class FutureReceiverTick:
         self.dict_mtop   = {}
 
         self.list_gsjm   = []
-        self.real_codes  = []
         self.list_hgdt   = [0, 0, 0, 0]
         self.tuple_jango = ()
         self.tuple_order = ()
 
-        self.str_tday    = str_ymd(now_cme())
         self.int_logt    = 0
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
-        cme_hms          = int(str_hms(now_cme()))
-        if self.dict_set['주식타임프레임']:
-            self.test_mode = True if cme_hms > 103000 or cme_hms > self.dict_set['주식전략종료시간'] else False
-        else:
-            self.test_mode = True if cme_hms > 160000 or cme_hms > self.dict_set['주식전략종료시간'] else False
-        self.recvservQ   = Queue()
 
+        self.recvservQ = Queue()
         if self.dict_set['리시버공유'] == 1:
             self.zmqserver = ZmqServ(self.recvservQ)
             self.zmqserver.start()
 
-        self.ft = Future(self, 'Receiver')
-        self.FutureLogin()
+        self.Mainloop()
 
-        self.updater = Updater(self.sreceivQ)
-        self.updater.signal.connect(self.UpdateTuple)
-        self.updater.start()
-
-        self.qtimer = QTimer()
-        self.qtimer.setInterval(1 * 1000)
-        self.qtimer.timeout.connect(self.Scheduler)
-        self.qtimer.start()
-
-        app.exec_()
-
-    def FutureLogin(self):
-        self.ft.CommConnect()
-        opstarter_kill()
-
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
-        text = '해외선물 리시버를 시작하였습니다.'
-        if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', text))
-        self.kwzservQ.put(('tele', text))
-
-        con = sqlite3.connect(DB_CODE_INFO)
-        df = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
-        con.close()
-        self.dict_info = df.to_dict('index')
-
-        df_list = []
-        # IDX:지수, CUR:통화, MTL:금속, ENG:에너지, CMD:농축산물, OPT:해외옵션, INT:금리
-        for gubun in ['IDX', 'CUR']:
-            df = self.ft.SearchDeposit(gubun)                       # 상품코드별 종목명, 위탁증거금, 유지증거금을 조회한다
-            df_list.append(df)
-            qtest_qwait(0.25)
-        df = pd.concat(df_list)
-        df = df[df['거래소'] == 'CME']
-        df.set_index('종목코드', inplace=True)
-
-        # 품목코드를 추가하려면 HTS에서 코드를 확인 후 여기에 추가하면 됩니다.
-        # 추가된 품목코드가 지수나 통화 상품이 아닐 경우 상단 for문에서 상품코드를 추가해야합니다.
-        # 현재는 CME 거래소에서 거래량이 많은 지수 및 코인 품목만 포함되어 있으며
-        # 크루드오일 등 에너지는 CBOT 거래소의 실시간시세 이용료를 납부해야합니다.
-        code_list = ['NQ', 'RTY', 'ES', 'EMD', 'MNQ', 'M2K', 'MES', 'BTC', 'MBT', 'ETH', 'MET']
-        for code in code_list:
-            str_codes = self.ft.GetGlobalFutureCodelist(code)       # 품목코드로 종목코드 목록을 조회한다
-            df_gs = self.ft.SearchInterest(str_codes)               # 조회된 종목코드의 틱단위, 틱가치를 조회한다
-            if len(df_gs) > 0:
-                df_gs.sort_values(by=['누적거래량'], ascending=False, inplace=True)
-                max_code  = df_gs['종목코드'].iloc[0]                # 조회된 종목코드 중 당일 거래량이 가장 많은 종목을 선택한다
-                tick_unit = df['호가단위'][code]
-                point_cnt = len(str(tick_unit).split('.')[1]) if '.' in str(tick_unit) else 5 if str(tick_unit) == '5e-05' else 0
-                self.real_codes.append(max_code)
-                self.dict_info[max_code] = {
-                    '종목명': df['종목명'][code],
-                    '위탁증거금': int(df['위탁증거금'][code] / 100),
-                    '호가단위': tick_unit,
-                    '틱가치': round(df['틱가치'][code] / 1000 / tick_unit, 2),
-                    '소숫점자리수': point_cnt
-                }
-            qtest_qwait(0.25)
-
-        dict_name = {code: self.dict_info[code]['종목명'] for code in self.dict_info.keys()}
-        dict_code = {self.dict_info[code]['종목명']: code for code in self.dict_info.keys()}
-        self.kwzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
-        self.straderQ.put(('종목정보', self.dict_info))
-        self.sstgQ.put(('종목정보', self.dict_info))
-        if self.dict_set['리시버공유'] == 1:
-            self.recvservQ.put(('logininfo', self.dict_info))
-
-        df = pd.DataFrame.from_dict(self.dict_info, orient='index')
-        self.kwzservQ.put(('query', ('종목디비', df, 'futureinfo', 'replace')))
+    def Mainloop(self):
+        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 리시버 시작')))
+        while True:
+            data = self.sreceivQ.get()
+            if type(data) == tuple:
+                self.UpdateTuple(data)
+            elif type(data) == str:
+                self.UpdateString(data)
 
     def UpdateTuple(self, data):
         gubun, data = data
-        if gubun == '잔고목록':
+        if gubun == '호가정보':
+            self.UpdateHogaData(data)
+        elif gubun == '체결정보':
+            self.UpdateTickData(data)
+        elif gubun == '잔고목록':
             self.tuple_jango = data
         elif gubun == '주문목록':
             self.tuple_order = data
@@ -178,44 +86,24 @@ class FutureReceiverTick:
             self.hoga_code = data
         elif gubun == '차트종목코드':
             self.chart_code = data
+        elif gubun == '종목정보':
+            self.dict_info = data
+            if self.dict_set['리시버공유'] == 1:
+                self.recvservQ.put(('logininfo', self.dict_info))
         elif gubun == '설정변경':
             self.dict_set = data
-        elif gubun == '프로파일링결과':
-            self.pr.print_stats(sort='cumulative')
 
-    def Scheduler(self):
-        if not self.dict_bool['리시버시작']:
-            self.OperationRealreg()
-        if not self.test_mode:
-            inthms = int(str_hms(now_cme()))
-            if self.dict_set['주식전략종료시간'] < inthms and not self.dict_bool['프로세스종료'] and self.dict_set['주식프로세스종료']:
-                self.ReceiverProcKill()
-            if 160500 < inthms and not self.dict_bool['프로세스종료']:
-                self.ReceiverProcKill()
-
-    def OperationRealreg(self):
-        self.dict_bool['리시버시작'] = True
-        self.ft.SetRealReg(self.real_codes)
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 실시간 등록 완료')))
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작')))
-
-    def ReceiverProcKill(self):
-        self.dict_bool['프로세스종료'] = True
-        self.straderQ.put('프로세스종료')
-        QTimer.singleShot(180 * 1000, self.SysExit)
-        if self.dict_set['주식알림소리']:
-            self.kwzservQ.put(('sound', '해외선물 시스템을 3분 후 종료합니다.'))
+    def UpdateString(self, data):
+        if data == '프로그램종료':
+            threading_timer(180, self.sreceivQ.put, '프로세스종료실행')
+        elif data == '프로세스종료실행':
+            self.SysExit()
 
     def SysExit(self):
-        if self.qtimer.isActive():  self.qtimer.stop()
-        if self.updater.isRunning(): self.updater.quit()
         if self.dict_set['주식데이터저장']:
             self.SaveData()
-        else:
-            self.sstgQ.put('프로세스종료')
-        qtest_qwait(5)
+        time.sleep(5)
         self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료')))
-        qtest_qwait(1)
 
     def SaveData(self):
         if self.dict_mtop:
@@ -232,181 +120,13 @@ class FutureReceiverTick:
             con.close()
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 데이터수집목록 저장 완료')))
 
-        self.sstgQ.put('데이터저장')
+    def UpdateTickData(self, data):
+        code, dt, c, o, h, low, per, v, csp, cbp = data
 
-    def OnReceiveRealData(self, code, realtype, realdata):
-        if self.dict_bool['프로세스종료']:
-            return
-
-        if realtype == '해외선물시세':
-            try:
-                if not self.dict_bool['해선체결필드확인']:
-                    data = realdata.split(';')
-                    if data[0]                             == self.ft.GetCommRealData(code, 20) and \
-                            float(data[2])           == float(self.ft.GetCommRealData(code, 140)) and \
-                            float(data[4])           == float(self.ft.GetCommRealData(code, 12)) and \
-                            data[7]                        == self.ft.GetCommRealData(code, 15) and \
-                            abs(float(data[9]))  == abs(float(self.ft.GetCommRealData(code, 16))) and \
-                            abs(float(data[10])) == abs(float(self.ft.GetCommRealData(code, 17))) and \
-                            abs(float(data[11])) == abs(float(self.ft.GetCommRealData(code, 18))) and \
-                            float(data[5])           == float(self.ft.GetCommRealData(code, 27)) and \
-                            float(data[6])           == float(self.ft.GetCommRealData(code, 28)):
-                        self.dict_bool['해선체결필드같음'] = True
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
-                    else:
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 해선체결 필드값이 다릅니다. 필드값 갱신요망!!')))
-                    self.dict_bool['해선체결필드확인'] = True
-
-                if self.dict_bool['해선체결필드같음']:
-                    data  = realdata.split(';')
-                    dt            = data[0]
-                    c       = float(data[2])
-                    per     = float(data[4])
-                    v             = data[7]
-                    o   = abs(float(data[9]))
-                    h   = abs(float(data[10]))
-                    low = abs(float(data[11]))
-                    csp     = float(data[5])
-                    cbp     = float(data[6])
-                else:
-                    dt            = self.ft.GetCommRealData(code, 20)
-                    c             = self.ft.GetCommRealData(code, 10)
-                    per     = float(self.ft.GetCommRealData(code, 12))
-                    v             = self.ft.GetCommRealData(code, 15)
-                    o   = abs(float(self.ft.GetCommRealData(code, 16)))
-                    h   = abs(float(self.ft.GetCommRealData(code, 17)))
-                    low = abs(float(self.ft.GetCommRealData(code, 18)))
-                    csp     = float(self.ft.GetCommRealData(code, 27))
-                    cbp     = float(self.ft.GetCommRealData(code, 28))
-
-                cme_hms = str_hms_cme_from_str(dt)
-                if not self.test_mode and ((not self.dict_set['주식타임프레임'] and int(cme_hms) < 90000) or (self.dict_set['주식타임프레임'] and int(cme_hms) < 93000)):
-                    return
-                dt = int(f'{self.str_tday}{cme_hms}')
-            except:
-                pass
-            else:
-                self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
-
-        elif realtype == '해외선물호가':
-            try:
-                start = now()
-                if not self.dict_bool['호가잔량필드확인']:
-                    data = realdata.split(';')
-                    if data[0]                             == self.ft.GetCommRealData(code, 21) and \
-                            int(data[43])              == int(self.ft.GetCommRealData(code, 121)) and \
-                            int(data[46])              == int(self.ft.GetCommRealData(code, 125)) and \
-                            abs(float(data[35])) == abs(float(self.ft.GetCommRealData(code, 45))) and \
-                            abs(float(data[27])) == abs(float(self.ft.GetCommRealData(code, 44))) and \
-                            abs(float(data[19])) == abs(float(self.ft.GetCommRealData(code, 43))) and \
-                            abs(float(data[11]))  == abs(float(self.ft.GetCommRealData(code, 42))) and \
-                            abs(float(data[3]))  == abs(float(self.ft.GetCommRealData(code, 41))) and \
-                            abs(float(data[7]))  == abs(float(self.ft.GetCommRealData(code, 51))) and \
-                            abs(float(data[15])) == abs(float(self.ft.GetCommRealData(code, 52))) and \
-                            abs(float(data[23])) == abs(float(self.ft.GetCommRealData(code, 53))) and \
-                            abs(float(data[31])) == abs(float(self.ft.GetCommRealData(code, 54))) and \
-                            abs(float(data[39])) == abs(float(self.ft.GetCommRealData(code, 55))) and \
-                            int(data[36])              == int(self.ft.GetCommRealData(code, 65)) and \
-                            int(data[28])              == int(self.ft.GetCommRealData(code, 64)) and \
-                            int(data[20])              == int(self.ft.GetCommRealData(code, 63)) and \
-                            int(data[12])               == int(self.ft.GetCommRealData(code, 62)) and \
-                            int(data[4])               == int(self.ft.GetCommRealData(code, 61)) and \
-                            int(data[8])               == int(self.ft.GetCommRealData(code, 71)) and \
-                            int(data[16])              == int(self.ft.GetCommRealData(code, 72)) and \
-                            int(data[24])              == int(self.ft.GetCommRealData(code, 73)) and \
-                            int(data[32])              == int(self.ft.GetCommRealData(code, 74)) and \
-                            int(data[40])              == int(self.ft.GetCommRealData(code, 75)):
-                        self.dict_bool['호가잔량필드같음'] = True
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 해선호가잔량 필드값 같음')))
-                    else:
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - 해선호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
-                    self.dict_bool['호가잔량필드확인'] = True
-
-                if self.dict_bool['호가잔량필드같음']:
-                    data = realdata.split(';')
-                    dt = data[0]
-                    hoga_tamount = (
-                        int(data[43]), int(data[46])
-                    )
-                    hoga_seprice5 = abs(float(data[35]))
-                    hoga_seprice = (
-                        hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5,
-                        abs(float(data[27])), abs(float(data[19])), abs(float(data[11])), abs(float(data[3]))
-                    )
-                    hoga_buprice5 = abs(float(data[39]))
-                    hoga_buprice = (
-                        abs(float(data[7])), abs(float(data[15])), abs(float(data[23])), abs(float(data[31])),
-                        hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5
-                    )
-                    hoga_samount = (
-                        0, 0, 0, 0, 0,
-                        int(data[36]), int(data[28]), int(data[20]), int(data[12]), int(data[4])
-                    )
-                    hoga_bamount = (
-                        int(data[8]), int(data[16]), int(data[24]), int(data[32]), int(data[40]),
-                        0, 0, 0, 0, 0
-                    )
-                else:
-                    dt = self.ft.GetCommRealData(code, 21)
-                    hoga_tamount = (
-                        int(self.ft.GetCommRealData(code, 121)),
-                        int(self.ft.GetCommRealData(code, 125))
-                    )
-                    hoga_seprice5 = abs(float(self.ft.GetCommRealData(code, 45)))
-                    hoga_seprice = (
-                        hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5, hoga_seprice5,
-                        abs(float(self.ft.GetCommRealData(code, 44))),
-                        abs(float(self.ft.GetCommRealData(code, 43))),
-                        abs(float(self.ft.GetCommRealData(code, 42))),
-                        abs(float(self.ft.GetCommRealData(code, 41)))
-                    )
-                    hoga_buprice5 = abs(float(self.ft.GetCommRealData(code, 55)))
-                    hoga_buprice = (
-                        abs(float(self.ft.GetCommRealData(code, 51))),
-                        abs(float(self.ft.GetCommRealData(code, 52))),
-                        abs(float(self.ft.GetCommRealData(code, 53))),
-                        abs(float(self.ft.GetCommRealData(code, 54))),
-                        hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5, hoga_buprice5
-                    )
-                    hoga_samount = (
-                        0, 0, 0, 0, 0,
-                        int(self.ft.GetCommRealData(code, 65)),
-                        int(self.ft.GetCommRealData(code, 64)),
-                        int(self.ft.GetCommRealData(code, 63)),
-                        int(self.ft.GetCommRealData(code, 62)),
-                        int(self.ft.GetCommRealData(code, 61))
-                    )
-                    hoga_bamount = (
-                        int(self.ft.GetCommRealData(code, 71)),
-                        int(self.ft.GetCommRealData(code, 72)),
-                        int(self.ft.GetCommRealData(code, 73)),
-                        int(self.ft.GetCommRealData(code, 74)),
-                        int(self.ft.GetCommRealData(code, 75)),
-                        0, 0, 0, 0, 0
-                    )
-
-                cme_hms = str_hms_cme_from_str(dt)
-                if not self.test_mode and ((not self.dict_set['주식타임프레임'] and int(cme_hms) < 90000) or (self.dict_set['주식타임프레임'] and int(cme_hms) < 93000)):
-                    return
-                dt = int(f'{self.str_tday}{cme_hms}')
-                name = self.dict_info[code]['종목명']
-            except:
-                pass
-            else:
-                self.UpdateHogaData(int(dt), hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start)
-
-    def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
-        if self.dict_set['리시버공유'] == 1:
-            self.recvservQ.put(('tickdata', (code, c, dt)))
-
-        if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
-            self.straderQ.put((code, c))
-            self.dict_jgdt[code] = dt
-
-        if code in self.dict_data.keys():
-            dm, _, bids, asks, tbids, tasks = self.dict_data[code][5:]
-        else:
+        if code not in self.dict_data.keys():
             dm, bids, asks, tbids, tasks = 0, 0, 0, 0, 0
+        else:
+            dm, _, bids, asks, tbids, tasks = self.dict_data[code][5:11]
 
         bids_, asks_ = 0, 0
         wtm = self.dict_info[code]['위탁증거금']
@@ -445,7 +165,8 @@ class FutureReceiverTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, receivetime):
+    def UpdateHogaData(self, data):
+        dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, receivetime = data
         sm     = 0
         dm     = 0
         send   = False
@@ -502,7 +223,7 @@ class FutureReceiverTick:
 
             self.sstgQ.put(data)
             if code in self.tuple_jango or code in self.tuple_order:
-                self.straderQ.put(('주문확인', code, c))
+                self.straderQ.put(('잔고갱신', (code, c)))
 
             if self.dict_set['리시버공유'] == 1:
                 self.recvservQ.put(('tickdata', data))

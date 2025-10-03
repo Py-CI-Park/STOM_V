@@ -6,6 +6,7 @@ import subprocess
 from multiprocessing import Process, Queue
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
+from future_kiwoom import FutureKiwoom
 from future_trader import FutureTrader
 from future_receiver_min import FutureReceiverMin
 from future_strategy_min import FutureStrategyMin
@@ -105,26 +106,24 @@ def set_password(password: str):
                 click_button(win32gui.GetDlgItem(hwnd, 0x2))
             except:
                 pass
-            qtest_qwait(1)
             print('계좌비밀번호 등록 완료')
             break
-        else:
-            qtest_qwait(0.1)
+        qtest_qwait(0.1)
 
 
 class FutureManager:
     def __init__(self, port_num):
         app = QApplication(sys.argv)
 
-        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ = Queue(), Queue(), Queue(), Queue()
-        self.qlist    = [self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ]
+        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ = Queue(), Queue(), Queue(), Queue(), Queue()
+        self.qlist    = [self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ]
         self.dict_set = DICT_SET
 
-        self.login_progress       = False
         self.backtest_engine      = False
         self.proc_receiver_future = None
         self.proc_strategy_future = None
         self.proc_trader_future   = None
+        self.proc_future_kiwoom   = None
 
         self.zmqrecv = ZmqRecv(self.qlist, port_num)
         self.zmqrecv.signal1.connect(self.UpdateString)
@@ -146,6 +145,7 @@ class FutureManager:
             self.FutureStrategyProcessKill()
         elif data == '트레이더 종료':
             self.FutureTraderProcessKill()
+            self.FutureKiwoomProcessKill()
         elif data == '통신종료':
             self.ManagerProcessKill()
         elif data == '백테엔진구동':
@@ -154,12 +154,14 @@ class FutureManager:
     def UpdateTuple(self, data):
         if data[0] == '설정변경':
             self.dict_set = data[1]
-            if self.FutureStrategyProcessAlive():
-                self.sstgQ.put(('설정변경', self.dict_set))
             if self.FutureReceiverProcessAlive():
                 self.sreceivQ.put(('설정변경', self.dict_set))
+            if self.FutureStrategyProcessAlive():
+                self.sstgQ.put(('설정변경', self.dict_set))
             if self.FutureTraderProcessAlive():
                 self.straderQ.put(('설정변경', self.dict_set))
+            if self.FutureKiwoomProcessAlive():
+                self.futureQ.put(self.dict_set)
 
     def FutureManualStart(self):
         if self.backtest_engine:
@@ -167,29 +169,12 @@ class FutureManager:
             return
         if self.dict_set['버전업']:
             self.FutureVersionUp()
-        if self.dict_set['주식리시버'] and not self.FutureReceiverProcessAlive():
+        if self.dict_set['주식리시버'] and self.dict_set['주식트레이더']:
             self.FutureReceiverStart()
-        if self.dict_set['주식트레이더'] and self.FutureReceiverProcessAlive() and not self.FutureTraderProcessAlive():
             self.FutureTraderStart()
+            self.FutureKiwoomStart()
 
-    def FutureReceiverProcessKill(self):
-        if self.FutureReceiverProcessAlive(): self.proc_receiver_future.kill()
-
-    def FutureStrategyProcessKill(self):
-        if self.FutureStrategyProcessAlive(): self.proc_strategy_future.kill()
-
-    def FutureTraderProcessKill(self):
-        if self.FutureTraderProcessAlive(): self.proc_trader_future.kill()
-
-    def ManagerProcessKill(self):
-        self.kwzservQ.put(('window', '통신종료'))
-        self.FutureReceiverProcessKill()
-        self.FutureStrategyProcessKill()
-        self.FutureTraderProcessKill()
-        qtest_qwait(3)
-        sys.exit()
-
-    def OpenapiLoginWait(self, gubun):
+    def OpenapiLoginWait(self, is_main):
         result = True
         lwopen = True
         update = False
@@ -205,11 +190,8 @@ class FutureManager:
             qtest_qwait(0.1)
 
         if lwopen:
-            if gubun in (1, 2):
-                if gubun == 1:
-                    id_num = int(self.dict_set['증권사'][4:]) * 2 - 1
-                else:
-                    id_num = int(self.dict_set['증권사'][4:]) * 2
+            if is_main:
+                id_num = int(self.dict_set['증권사'][4:]) * 2 - 1
                 print('아이디 및 패스워드 입력 대기 중 ...')
                 qtest_qwait(2)
                 manual_login(id_num)
@@ -253,7 +235,7 @@ class FutureManager:
     def FutureVersionUp(self):
         while True:
             proc = subprocess.Popen('python ./future/login_future/versionupdater.py')
-            if self.OpenapiLoginWait(3):
+            if self.OpenapiLoginWait(False):
                 break
             else:
                 print('버전 업그레이드 실패, 잠시 후 재실행합니다.')
@@ -262,49 +244,67 @@ class FutureManager:
 
     def FutureReceiverStart(self):
         if self.dict_set['리시버공유'] < 2:
-            while True:
-                if not self.FutureReceiverProcessAlive():
-                    target = FutureReceiverTick if self.dict_set['주식타임프레임'] else FutureReceiverMin
-                    self.proc_receiver_future = Process(target=target, args=(self.qlist,), daemon=True)
-                    self.proc_receiver_future.start()
-                    if self.OpenapiLoginWait(2):
-                        break
-                    else:
-                        self.proc_receiver_future.kill()
-                        print('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
-                qtest_qwait(0.1)
+            target = FutureReceiverTick if self.dict_set['주식타임프레임'] else FutureReceiverMin
+            self.proc_receiver_future = Process(target=target, args=(self.qlist,), daemon=True)
+            self.proc_receiver_future.start()
         else:
-            if not self.FutureReceiverProcessAlive():
-                self.proc_receiver_future = Process(target=FutureReceiverClient, args=(self.qlist,), daemon=True)
-                self.proc_receiver_future.start()
+            self.proc_receiver_future = Process(target=FutureReceiverClient, args=(self.qlist,), daemon=True)
+            self.proc_receiver_future.start()
 
     def FutureTraderStart(self):
         target = FutureStrategyTick if self.dict_set['주식타임프레임'] else FutureStrategyMin
         self.proc_strategy_future = Process(target=target, args=(self.qlist,), daemon=True)
         self.proc_strategy_future.start()
+        self.proc_trader_future = Process(target=FutureTrader, args=(self.qlist,))
+        self.proc_trader_future.start()
+
+    def FutureKiwoomStart(self):
         password = self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:]) * 2 - 1}"]
         while True:
-            if not self.FutureTraderProcessAlive():
+            if not self.FutureKiwoomProcessAlive():
                 set_pass_proc = Process(target=set_password, args=(password,))
                 set_pass_proc.start()
-                self.proc_trader_future = Process(target=FutureTrader, args=(self.qlist,))
-                self.proc_trader_future.start()
-                if self.OpenapiLoginWait(1):
+                self.proc_future_kiwoom = Process(target=FutureKiwoom, args=(self.qlist,), daemon=True)
+                self.proc_future_kiwoom.start()
+                if self.OpenapiLoginWait(True):
                     break
                 else:
-                    if set_pass_proc.is_alive(): set_pass_proc.kill()
-                    self.proc_trader_future.kill()
+                    self.proc_future_kiwoom.kill()
                     print('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
             qtest_qwait(0.1)
 
     def FutureReceiverProcessAlive(self):
         return self.proc_receiver_future is not None and self.proc_receiver_future.is_alive()
 
+    def FutureStrategyProcessAlive(self):
+        return self.proc_strategy_future is not None and self.proc_strategy_future.is_alive()
+
     def FutureTraderProcessAlive(self):
         return self.proc_trader_future is not None and self.proc_trader_future.is_alive()
 
-    def FutureStrategyProcessAlive(self):
-        return self.proc_strategy_future is not None and self.proc_strategy_future.is_alive()
+    def FutureKiwoomProcessAlive(self):
+        return self.proc_future_kiwoom is not None and self.proc_future_kiwoom.is_alive()
+
+    def FutureReceiverProcessKill(self):
+        if self.FutureReceiverProcessAlive(): self.proc_receiver_future.kill()
+
+    def FutureStrategyProcessKill(self):
+        if self.FutureStrategyProcessAlive(): self.proc_strategy_future.kill()
+
+    def FutureTraderProcessKill(self):
+        if self.FutureTraderProcessAlive(): self.proc_trader_future.kill()
+
+    def FutureKiwoomProcessKill(self):
+        if self.FutureKiwoomProcessAlive(): self.proc_future_kiwoom.kill()
+
+    def ManagerProcessKill(self):
+        self.kwzservQ.put(('window', '통신종료'))
+        self.FutureReceiverProcessKill()
+        self.FutureStrategyProcessKill()
+        self.FutureTraderProcessKill()
+        self.FutureKiwoomProcessKill()
+        qtest_qwait(3)
+        sys.exit()
 
 
 if __name__ == '__main__':

@@ -60,9 +60,6 @@ class Kiwoom:
             self.ocx.OnReceiveMsg.connect(user_class.OnReceiveMsg)
             self.ocx.OnReceiveRealData.connect(user_class.OnReceiveRealData)
             self.ocx.OnReceiveChejanData.connect(user_class.OnReceiveChejanData)
-        elif gubun == 'Downloader':
-            self.ocx.OnReceiveTrCondition.connect(self.OnReceiveTrCondition)
-            self.ocx.OnReceiveConditionVer.connect(self.OnReceiveConditionVer)
 
     def CommConnect(self):
         self.ocx.dynamicCall('CommConnect()')

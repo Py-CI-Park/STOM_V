@@ -15,30 +15,30 @@ class UpbitTrader:
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
-        self.windowQ          = qlist[0]
-        self.soundQ           = qlist[1]
-        self.queryQ           = qlist[2]
-        self.teleQ            = qlist[3]
-        self.creceivQ         = qlist[8]
-        self.ctraderQ         = qlist[9]
-        self.cstgQ            = qlist[10]
-        self.liveQ            = qlist[11]
-        self.dict_set         = DICT_SET
+        self.windowQ       = qlist[0]
+        self.soundQ        = qlist[1]
+        self.queryQ        = qlist[2]
+        self.teleQ         = qlist[3]
+        self.creceivQ      = qlist[8]
+        self.ctraderQ      = qlist[9]
+        self.cstgQ         = qlist[10]
+        self.liveQ         = qlist[11]
+        self.dict_set      = DICT_SET
 
-        self.upbit            = None
-        self.dict_info        = {}
-        self.dict_curc        = {}
-        self.dict_order_cc    = {}
-        self.dict_order       = {'매수': {}, '매도': {}, '매수취소': {}, '매도취소': {}}
-
-        self.dict_cj = {}  # 체결목록
-        self.dict_jg = {}  # 잔고목록
-        self.dict_tj = {}  # 잔고평가
-        self.dict_td = {}  # 거래목록
-        self.dict_tt = {}  # 평가손익
-
-        self.str_today = str_ymd(now_utc())
-
+        self.dict_cj       = {}  # 체결목록
+        self.dict_jg       = {}  # 잔고목록
+        self.dict_tj       = {}  # 잔고평가
+        self.dict_td       = {}  # 거래목록
+        self.dict_tt       = {}  # 평가손익
+        self.dict_info     = {}
+        self.dict_curc     = {}
+        self.dict_order_cc = {}
+        self.dict_order    = {
+            '매수': {},
+            '매도': {},
+            '매수취소': {},
+            '매도취소': {}
+        }
         self.dict_intg = {
             '예수금': 0,
             '추정예수금': 0,
@@ -58,10 +58,14 @@ class UpbitTrader:
             '잔고갱신및주문취소확인': curr_time
         }
 
+        self.upbit     = None
+        self.str_today = str_ymd(now_utc())
+
         self.UpdateDictName()
         self.LoadDatabase()
         self.GetKey()
         self.GetBalances()
+
         self.MainLoop()
 
     def UpdateDictName(self):
@@ -161,8 +165,12 @@ class UpbitTrader:
         elif len(data) == 9:
             self.SendOrder(data)
         elif len(data) == 2:
-            if type(data[1]) in (int, float):
-                self.UpdateJango(data)
+            if data[0] == '잔고갱신':
+                self.UpdateJango(data[1])
+            elif data[0] == '주문확인':
+                code, c = data
+                self.dict_curc[code] = c
+                self.OrderTimeControl(code)
             if data[0] == '관심진입':
                 if data[1] in self.dict_order['매도'].keys():
                     self.CancelOrder(data[1], '매도')
@@ -171,10 +179,6 @@ class UpbitTrader:
                     self.CancelOrder(data[1], '매수')
             elif data[0] == '설정변경':
                 self.dict_set = data[1]
-        elif len(data) == 3:
-            _, code, c = data
-            self.dict_curc[code] = c
-            self.OrderTimeControl(code)
 
     def CheckOrder(self, data):
         if len(data) == 6:
@@ -516,7 +520,6 @@ class UpbitTrader:
         con.close()
         if len(df) == 0:
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
-            df.drop(columns=['거래횟수'], inplace=True)
             self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
             if self.dict_set['코인알림소리']: self.soundQ.put('일별실현손익를 저장하였습니다.')
             self.soundQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료'))
@@ -661,9 +664,8 @@ class UpbitTrader:
         수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+        # ['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
         self.dict_tt[self.str_today] = {
-            '거래횟수': 거래횟수,
             '총매수금액': 총매수금액,
             '총매도금액': 총매도금액,
             '총수익금액': 총수익금액,
@@ -675,7 +677,7 @@ class UpbitTrader:
         self.windowQ.put((ui_num['C실현손익'], df_tt))
 
         if not first:
-            self.teleQ.put(f'손익 알림 - 총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}')
+            self.teleQ.put(f'총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}')
 
         if self.dict_set['스톰라이브']:
             수익률 = round(수익금합계 / 총매수금액 * 100, 2)

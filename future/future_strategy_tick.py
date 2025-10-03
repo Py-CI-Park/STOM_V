@@ -8,25 +8,21 @@ import pandas as pd
 from traceback import print_exc
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, dgree, DB_FUTURE_TICK
-from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms
+from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
+    threading_timer
 
 
 # noinspection PyUnusedLocal
 class FutureStrategyTick:
     def __init__(self, qlist):
         """
-        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ
-                0            1              2             3
+        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ
+                0            1              2             3           4
         """
         self.kwzservQ         = qlist[0]
         self.straderQ         = qlist[2]
         self.sstgQ            = qlist[3]
         self.dict_set         = DICT_SET
-
-        if self.dict_set['전략연산프로파일링']:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
 
         self.buystrategy      = None
         self.sellstrategy     = None
@@ -101,7 +97,6 @@ class FutureStrategyTick:
 
     def Start(self):
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
-
         while True:
             data = self.sstgQ.get()
             if type(data) == tuple:
@@ -111,11 +106,6 @@ class FutureStrategyTick:
                     self.UpdateTuple(data)
             elif type(data) == str:
                 self.UpdateString(data)
-                if data == '프로세스종료':
-                    break
-
-        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
-        time.sleep(1)
 
     def UpdateTuple(self, data):
         gubun, data = data
@@ -161,10 +151,10 @@ class FutureStrategyTick:
         elif data == '매도전략중지':
             self.sellstrategy = None
             self.kwzservQ.put(('tele', '해선 매도전략 중지 완료'))
-        elif data == '데이터저장':
-            self.SaveData()
-        elif data == '프로파일링결과':
-            self.pr.print_stats(sort='cumulative')
+        elif data == '프로세스종료':
+            threading_timer(180, self.sstgQ.put, '프로세스종료실행')
+        elif data == '프로세스종료실행':
+            self.SysExit()
 
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량, \
@@ -714,6 +704,12 @@ class FutureStrategyTick:
                 if code not in self.dict_jg.keys():
                     del self.dict_hilo[code]
 
+    def SysExit(self):
+        if self.dict_set['주식데이터저장']:
+            self.SaveData()
+        time.sleep(5)
+        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
+
     def SaveData(self):
         if self.dict_set['주식타임프레임']:
             columns_ts = [
@@ -747,5 +743,3 @@ class FutureStrategyTick:
             text = f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], text)))
         con.close()
-
-        self.sstgQ.put('프로세스종료')

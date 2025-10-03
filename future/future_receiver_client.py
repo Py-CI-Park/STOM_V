@@ -1,20 +1,16 @@
 import os
 import sys
 import zmq
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QThread, QTimer, pyqtSignal
+from threading import Thread
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, ui_num
-from utility.static import now_cme, str_hms
+from utility.static import threading_timer
 
 
-class ZmqRecv(QThread):
-    signal1 = pyqtSignal(tuple)
-    signal2 = pyqtSignal(tuple)
-
-    def __init__(self, sstgQ):
+class ZmqRecv(Thread):
+    def __init__(self, sreceivQ):
         super().__init__()
-        self.sstgQ = sstgQ
+        self.sreceivQ = sreceivQ
         zctx = zmq.Context()
         self.sock = zctx.socket(zmq.SUB)
         self.sock.connect('tcp://localhost:5777')
@@ -24,29 +20,15 @@ class ZmqRecv(QThread):
         while True:
             msg  = self.sock.recv_string()
             data = self.sock.recv_pyobj()
-            if msg == 'tickdata':
-                self.signal1.emit(data)
-            elif msg == 'logininfo':
-                self.signal2.emit(data)
-
-
-class Updater(QThread):
-    signal = pyqtSignal(tuple)
-
-    def __init__(self, sreceivQ):
-        super().__init__()
-        self.sreceivQ = sreceivQ
-
-    def run(self):
-        while True:
-            data = self.sreceivQ.get()
-            self.signal.emit(data)
+            self.sreceivQ.put((msg, data))
 
 
 class FutureReceiverClient:
     def __init__(self, qlist):
-        app = QApplication(sys.argv)
-
+        """
+        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ
+                0            1              2             3           4
+        """
         self.kwzservQ = qlist[0]
         self.sreceivQ = qlist[1]
         self.straderQ = qlist[2]
@@ -58,33 +40,28 @@ class FutureReceiverClient:
 
         self.tuple_jango = ()
         self.tuple_order = ()
-        self.operation   = 1
-        self.dict_bool   = {'프로세스종료': False}
 
-        self.updater = Updater(self.sreceivQ)
-        self.updater.signal.connect(self.UpdateTuple)
-        self.updater.start()
-
-        self.zmqrecv = ZmqRecv(self.sstgQ)
-        self.zmqrecv.signal1.connect(self.UpdateTickData)
-        self.zmqrecv.signal2.connect(self.UpdateLoginInfo)
+        self.zmqrecv = ZmqRecv(self.sreceivQ)
         self.zmqrecv.start()
 
-        self.qtimer = QTimer()
-        self.qtimer.setInterval(1 * 1000)
-        self.qtimer.timeout.connect(self.Scheduler)
-        self.qtimer.start()
+        self.Mainloop()
 
-        text = '해선 리시버를 시작하였습니다.'
-        if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', text))
-        self.kwzservQ.put(('tele', text))
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작')))
-
-        app.exec_()
+    def Mainloop(self):
+        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 리시버 시작')))
+        while True:
+            data = self.sreceivQ.get()
+            if type(data) == tuple:
+                self.UpdateTuple(data)
+            elif type(data) == str:
+                self.UpdateString(data)
 
     def UpdateTuple(self, data):
         gubun, data = data
-        if gubun == '잔고목록':
+        if gubun == 'tickdata':
+            self.UpdateTickData(data)
+        elif gubun == 'logininfo':
+            self.UpdateLoginInfo(data)
+        elif gubun == '잔고목록':
             self.tuple_jango = data
         elif gubun == '주문목록':
             self.tuple_order = data
@@ -95,14 +72,18 @@ class FutureReceiverClient:
         if len(data) == 3:
             code, c, dt = data
             if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
-                self.straderQ.put((code, c))
+                self.straderQ.put(('잔고갱신', (code, c)))
                 self.dict_jgdt[code] = dt
         else:
             try:
                 code, c = data[-4], data[1]
                 self.sstgQ.put(data)
-                if code in self.tuple_jango or code in self.tuple_order:
-                    self.straderQ.put(('주문확인', code, c))
+                if self.dict_set['주식타임프레인']:
+                    if code in self.tuple_jango or code in self.tuple_order:
+                        self.straderQ.put(('주문확인', code, c))
+                else:
+                    if code in self.tuple_order:
+                        self.straderQ.put(('주문확인', code, c))
             except:
                 print('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
 
@@ -114,20 +95,8 @@ class FutureReceiverClient:
         self.straderQ.put(('종목정보', self.dict_info))
         self.sstgQ.put(('종목정보', self.dict_info))
 
-    def Scheduler(self):
-        inthms = int(str_hms(now_cme()))
-        if self.dict_set['주식전략종료시간'] < inthms and not self.dict_bool['프로세스종료'] and self.dict_set['주식프로세스종료']:
-            self.ReceiverProcKill()
-        if 160500 < inthms and not self.dict_bool['프로세스종료']:
-            self.ReceiverProcKill()
-
-    def ReceiverProcKill(self):
-        self.dict_bool['프로세스종료'] = True
-        self.straderQ.put('프로세스종료')
-        QTimer.singleShot(180 * 1000, self.SysExit)
-
-    def SysExit(self):
-        if self.qtimer.isActive():   self.qtimer.stop()
-        if self.updater.isRunning(): self.updater.quit()
-        self.sstgQ.put('프로세스종료')
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료')))
+    def UpdateString(self, data):
+        if data == '프로그램종료':
+            threading_timer(180, self.sreceivQ.put, '프로세스종료실행')
+        elif data == '프로세스종료실행':
+            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료')))

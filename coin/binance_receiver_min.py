@@ -10,7 +10,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
             self.recvservQ.put(('tickdata', (code, c, dt)))
 
         if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
-            self.ctraderQ.put((code, c))
+            self.ctraderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
 
         ymd = str(dt)[:8]
@@ -20,11 +20,11 @@ class BinanceReceiverMin(BinanceReceiverTick):
             o, h, low = c, c, c
             dm = round(v * c, 2)
         else:
-            bids, asks, pretbids, pretasks = self.dict_data[code][7:11]
+            dm, _, bids, asks, pretbids, pretasks = self.dict_data[code][5:11]
             o, h, low = self.dict_data[code][1:4]
             if c > h: h = c
             if c < low: low = c
-            dm = round(self.dict_data[code][5] + v * c, 2)
+            dm = round(dm + v * c, 2)
 
         if bids == 0 and asks == 0:
             mo = mh = ml = c
@@ -124,7 +124,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
 
             self.cstgQ.put(data)
             if send:
-                if code in self.tuple_order or code in self.tuple_jango:
+                if code in self.tuple_jango:
                     self.ctraderQ.put(('주문확인', code, c))
 
                 if self.dict_set['리시버공유'] == 1:

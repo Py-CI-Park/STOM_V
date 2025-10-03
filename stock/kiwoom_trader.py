@@ -29,27 +29,25 @@ class KiwoomTrader:
     def __init__(self, qlist):
         app = QApplication(sys.argv)
 
-        self.kwzservQ  = qlist[0]
-        self.sreceivQ  = qlist[1]
-        self.straderQ  = qlist[2]
-        self.sstgQs    = qlist[3]
-        self.dict_set  = DICT_SET
+        self.kwzservQ   = qlist[0]
+        self.sreceivQ   = qlist[1]
+        self.straderQ   = qlist[2]
+        self.sstgQs     = qlist[3]
+        self.dict_set   = DICT_SET
 
-        if self.dict_set['트레이더프로파일링']:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
-
-        self.dict_cj = {}  # 체결목록
-        self.dict_jg = {}  # 잔고목록
-        self.dict_tj = {}  # 잔고평가
-        self.dict_td = {}  # 거래목록
-        self.dict_tt = {}  # 평가손익
-
-        self.dict_order = {'매수': {}, '매도': {}}
+        self.dict_cj    = {}  # 체결목록
+        self.dict_jg    = {}  # 잔고목록
+        self.dict_tj    = {}  # 잔고평가
+        self.dict_td    = {}  # 거래목록
+        self.dict_tt    = {}  # 평가손익
         self.dict_info  = {}
         self.dict_curc  = {}
         self.dict_sgbn  = {}
+        self.dict_sncd  = {}
+        self.dict_order = {
+            '매수': {},
+            '매도': {}
+        }
         self.dict_intg  = {
             '장운영상태': 1,
             '예수금': 0,
@@ -57,23 +55,31 @@ class KiwoomTrader:
             '추정예탁자산': 0,
             '종목당투자금': 0
         }
-        self.dict_strg = {
-            '당일날짜': str_ymd(),
-            '계좌번호': ''
-        }
-        self.dict_bool = {
+        self.dict_bool  = {
             '계좌조회': False,
             '트레이더시작': False,
             '주식잔고청산': False,
             '프로세스종료': False
         }
+        self.주문유형 = {
+            '지정가': '00',
+            '시장가': '03',
+            '최유리지정가': '06',
+            '최우선지정가': '07',
+            '지정가IOC': '10',
+            '시장가IOC': '13',
+            '최유리IOC': '16',
+            '지정가FOK': '20',
+            '시장가FOK': '23',
+            '최유리FOK': '26'
+        }
 
-        self.order_time = now()
-        self.int_hgtime = int(str_ymdhms())
-        self.tuple_kosd = None
-
-        self.intg_odsn = 3000                                   # 주문용 화면번호
-        self.dict_sncd = {}                                     # 사용한 화면번호의 종목코드 키:화면번호, 벨류:종목코드
+        self.str_account = ''
+        self.str_today   = str_ymd()
+        self.order_time  = now()
+        self.int_hgtime  = int(str_ymdhms())
+        self.intg_odsn   = 3000
+        self.tuple_kosd  = None
 
         self.LoadDatabase()
         self.kw = Kiwoom(self, 'Trader')
@@ -94,25 +100,17 @@ class KiwoomTrader:
         self.qtimer2.timeout.connect(self.PutJangoDF)
         self.qtimer2.start()
 
-        self.주문유형 = {
-            '지정가': '00',
-            '시장가': '03',
-            '최유리지정가': '06',
-            '최우선지정가': '07',
-            '지정가IOC': '10',
-            '시장가IOC': '13',
-            '최유리IOC': '16',
-            '지정가FOK': '20',
-            '시장가FOK': '23',
-            '최유리FOK': '26'
-        }
+        if self.dict_set['트레이더프로파일링']:
+            import cProfile
+            self.pr = cProfile.Profile()
+            self.pr.enable()
 
         app.exec_()
 
     def LoadDatabase(self):
         con = sqlite3.connect(DB_TRADELIST)
-        df_cj = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{self.dict_strg['당일날짜']}%'", con).set_index('index')
-        df_td = pd.read_sql(f"SELECT * FROM s_tradelist WHERE 체결시간 LIKE '{self.dict_strg['당일날짜']}%'", con).set_index('index')
+        df_cj = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_td = pd.read_sql(f"SELECT * FROM s_tradelist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
         self.dict_cj = df_cj.to_dict('index')
         self.dict_td = df_td.to_dict('index')
 
@@ -129,7 +127,7 @@ class KiwoomTrader:
     def KiwoomLogin(self):
         self.kw.CommConnect()
 
-        self.dict_strg['계좌번호'] = self.kw.GetAccountNumber()
+        self.str_account = self.kw.GetAccountNumber()
         self.tuple_kosd = self.kw.GetCodeListByMarket('10')
         list_code = self.kw.GetCodeListByMarket('0') + self.tuple_kosd
         dummy_time = timedelta_sec(-3600)
@@ -153,8 +151,12 @@ class KiwoomTrader:
         if len(data) in (7, 8):
             self.CheckOrder(data)
         elif len(data) == 2:
-            if type(data[1]) in (int, float):
-                self.UpdateJango(data)
+            if data[0] == '잔고갱신':
+                self.UpdateJango(data[1])
+            elif data[0] == '주문확인':
+                code, c = data
+                self.dict_curc[code] = c
+                self.OrderTimeControl(code)
             elif data[0] == '관심진입':
                 if data[1] in self.dict_order['매도'].keys():
                     self.CancelOrder(data[1], '매도')
@@ -165,10 +167,6 @@ class KiwoomTrader:
                 self.dict_set = data[1]
             elif data[0] == '종목구분번호':
                 self.dict_sgbn = data[1]
-        elif len(data) == 3:
-            _, code, c = data
-            self.dict_curc[code] = c
-            self.OrderTimeControl(code)
 
     def CheckOrder(self, data):
         if len(data) == 7:
@@ -291,7 +289,7 @@ class KiwoomTrader:
                 else:
                     self.UpdateChejanData(종목코드, 종목명, 주문가격, '체결', 주문구분, 주문수량, 주문수량, 0, 주문가격, 주문가격, ct, 주문번호)
             else:
-                data = [주문구분, 0, self.dict_strg['계좌번호'], 주문구분번호, 종목코드, int(주문수량), int(주문가격), 주문유형, 주문번호, 종목명, 시그널시간]
+                data = [주문구분, 0, self.str_account, 주문구분번호, 종목코드, int(주문수량), int(주문가격), 주문유형, 주문번호, 종목명, 시그널시간]
                 self.SendOrder(data)
 
     def SendOrder(self, order):
@@ -454,7 +452,7 @@ class KiwoomTrader:
         self.dict_bool['계좌조회'] = True
 
         while True:
-            df = self.kw.Block_Request('opw00004', 계좌번호=self.dict_strg['계좌번호'], 비밀번호='', 상장폐지조회구분=0, 비밀번호입력매체구분='00', output='계좌평가현황', next=0)
+            df = self.kw.Block_Request('opw00004', 계좌번호=self.str_account, 비밀번호='', 상장폐지조회구분=0, 비밀번호입력매체구분='00', output='계좌평가현황', next=0)
             if df['D+2추정예수금'][0]:
                 if self.dict_set['주식모의투자']:
                     con = sqlite3.connect(DB_TRADELIST)
@@ -472,7 +470,7 @@ class KiwoomTrader:
                 qtest_qwait(3.35)
 
         if not self.dict_set['주식모의투자']:
-            df = self.kw.Block_Request('opw00018', 계좌번호=self.dict_strg['계좌번호'], 비밀번호='', 비밀번호입력매체구분='00', 조회구분=2, output='계좌평가잔고개별합산', next=0)
+            df = self.kw.Block_Request('opw00018', 계좌번호=self.str_account, 비밀번호='', 비밀번호입력매체구분='00', 조회구분=2, output='계좌평가잔고개별합산', next=0)
             if df['종목명'][0]:
                 df.rename(columns={'종목번호': 'index', '수익률(%)': '수익률'}, inplace=True)
                 df['index'] = df['index'].apply(lambda x: x.strip()[1:])
@@ -482,14 +480,14 @@ class KiwoomTrader:
                 df['평가손익'] = df['평가금액'] - df['매입금액']
                 df['분할매수횟수'] = 5
                 df['분할매도횟수'] = 0
-                df['매수시간'] = self.dict_strg['당일날짜'] + '080000'
+                df['매수시간'] = self.str_today + '080000'
                 columns = ['index', '종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 df = df[columns]
                 df.set_index('index', inplace=True)
                 self.dict_jg = df.to_dict('index')
 
         while True:
-            df = self.kw.Block_Request('opw00018', 계좌번호=self.dict_strg['계좌번호'], 비밀번호='', 비밀번호입력매체구분='00', 조회구분=2, output='계좌평가결과', next=0)
+            df = self.kw.Block_Request('opw00018', 계좌번호=self.str_account, 비밀번호='', 비밀번호입력매체구분='00', 조회구분=2, output='계좌평가결과', next=0)
             if df['추정예탁자산'][0]:
                 if self.dict_set['주식모의투자']:
                     총평가금액 = sum([v['평가금액'] for k, v in self.dict_jg.items()])
@@ -528,12 +526,11 @@ class KiwoomTrader:
 
     def SaveDayData(self):
         con = sqlite3.connect(DB_TRADELIST)
-        df = pd.read_sql(f"SELECT * FROM s_totaltradelist WHERE `index` = '{self.dict_strg['당일날짜']}'", con)
+        df = pd.read_sql(f"SELECT * FROM s_totaltradelist WHERE `index` = '{self.str_today}'", con)
         con.close()
         if len(df) == 0:
-            # [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
+            # [총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
-            df.drop(columns=['거래횟수'], inplace=True)
             self.kwzservQ.put(('query', ('거래디비', df, 's_totaltradelist', 'append')))
             if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료')))
@@ -575,8 +572,8 @@ class KiwoomTrader:
             elif current == '085950':
                 self.kwzservQ.put(('sound', '장시작 10초 전입니다.'))
             elif current == '090000':
-                self.kwzservQ.put(('sound', f"{self.dict_strg['당일날짜'][:4]}년 {self.dict_strg['당일날짜'][4:6]}월 "
-                                            f"{self.dict_strg['당일날짜'][6:]}일 장이 시작되었습니다."))
+                self.kwzservQ.put(('sound', f"{self.str_today[:4]}년 {self.str_today[4:6]}월 "
+                                            f"{self.str_today[6:]}일 장이 시작되었습니다."))
             elif current == '152000':
                 self.kwzservQ.put(('sound', '장마감 10분 전입니다.'))
             elif current == '152500':
@@ -590,8 +587,8 @@ class KiwoomTrader:
             elif current == '152950':
                 self.kwzservQ.put(('sound', '장마감 10초 전입니다.'))
             elif current == '153000':
-                self.kwzservQ.put(('sound', f"{self.dict_strg['당일날짜'][:4]}년 {self.dict_strg['당일날짜'][4:6]}월 "
-                                            f"{self.dict_strg['당일날짜'][6:]}일 장이 종료되었습니다."))
+                self.kwzservQ.put(('sound', f"{self.str_today[:4]}년 {self.str_today[4:6]}월 "
+                                            f"{self.str_today[6:]}일 장이 종료되었습니다."))
 
     # noinspection PyUnusedLocal
     def OnReceiveChejanData(self, gubun, itemcnt, fidlist):
@@ -609,7 +606,7 @@ class KiwoomTrader:
                 미체결수량 = int(self.kw.GetChejanData(902))
                 주문번호 = self.kw.GetChejanData(9203)
                 최우선매도호가 = abs(int(self.kw.GetChejanData(27)))
-                주문시간 = self.dict_strg['당일날짜'] + self.kw.GetChejanData(908)
+                주문시간 = self.str_today + self.kw.GetChejanData(908)
             except Exception as e:
                 self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - OnReceiveChejanData 0 {e}')))
             else:
@@ -781,9 +778,8 @@ class KiwoomTrader:
         수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
-        self.dict_tt[self.dict_strg['당일날짜']] = {
-            '거래횟수': 거래횟수,
+        # ['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+        self.dict_tt[self.str_today] = {
             '총매수금액': 총매수금액,
             '총매도금액': 총매도금액,
             '총수익금액': 총수익금액,
@@ -795,8 +791,7 @@ class KiwoomTrader:
         self.kwzservQ.put(('window', (ui_num['S실현손익'], df_tt)))
 
         if not first:
-            self.kwzservQ.put(('tele', f'거래횟수 {거래횟수}회 / 총매수금액 {int(총매수금액):,}원 / 총매도금액 {int(총매도금액):,}원 / 총수익금액 {int(총수익금액):,}원 / '
-                                       f'총손실금액 {int(총손실금액):,}원 / 수익률 {수익률:.2f}% / 수익금합계 {int(수익금합계):,}원'))
+            self.kwzservQ.put(('tele', f'총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}'))
 
         if self.dict_set['스톰라이브']:
             수익률 = round(수익금합계 / 총매수금액 * 100, 2)
@@ -837,7 +832,7 @@ class KiwoomTrader:
             총평가손익, 총매입금액, 총평가금액, 총수익률, 잔고수량 = 0, 0, 0, 0., 0
             추정예탁자산 = self.dict_intg['예수금']
 
-        self.dict_tj[self.dict_strg['당일날짜']] = {
+        self.dict_tj[self.str_today] = {
             '추정예탁자산': 추정예탁자산,
             '추정예수금': self.dict_intg['예수금'],
             '보유종목수': 잔고수량,

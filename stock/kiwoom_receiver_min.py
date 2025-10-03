@@ -16,7 +16,7 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
             self.recvservQ.put(('tickdata', (code, c, dt)))
 
         if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
-            self.straderQ.put((code, c))
+            self.straderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
 
         if code not in self.dict_vipr.keys():
@@ -118,8 +118,8 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
 
             self.sstgQs[self.dict_sgbn[code]].put(data)
             if send:
-                if code in self.tuple_jango or code in self.tuple_order:
-                    self.straderQ.put(('주문확인', code, c))
+                if code in self.tuple_order:
+                    self.straderQ.put(('주문확인', (code, c)))
 
                 if self.dict_set['리시버공유'] == 1:
                     self.recvservQ.put(('tickdata', data))

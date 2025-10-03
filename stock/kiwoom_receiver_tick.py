@@ -47,26 +47,12 @@ class KiwoomReceiverTick:
         """
         app = QApplication(sys.argv)
 
-        self.kwzservQ = qlist[0]
-        self.sreceivQ = qlist[1]
-        self.straderQ = qlist[2]
-        self.sstgQs   = qlist[3]
-        self.dict_set = DICT_SET
+        self.kwzservQ    = qlist[0]
+        self.sreceivQ    = qlist[1]
+        self.straderQ    = qlist[2]
+        self.sstgQs      = qlist[3]
+        self.dict_set    = DICT_SET
 
-        if self.dict_set['리시버프로파일링']:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
-
-        self.dict_bool = {
-            '리시버시작': False,
-            '실시간조건검색시작': False,
-            '프로세스종료': False,
-            '주식체결필드확인': False,
-            '주식체결필드같음': False,
-            '호가잔량필드확인': False,
-            '호가잔량필드같음': False
-        }
         self.dict_name   = {}
         self.dict_code   = {}
         self.dict_tmdt   = {}
@@ -94,6 +80,21 @@ class KiwoomReceiverTick:
         self.hoga_code   = None
         self.chart_code  = None
         self.recvservQ   = Queue()
+
+        self.dict_bool = {
+            '리시버시작': False,
+            '실시간조건검색시작': False,
+            '프로세스종료': False,
+            '주식체결필드확인': False,
+            '주식체결필드같음': False,
+            '호가잔량필드확인': False,
+            '호가잔량필드같음': False
+        }
+
+        if self.dict_set['리시버프로파일링']:
+            import cProfile
+            self.pr = cProfile.Profile()
+            self.pr.enable()
 
         if self.dict_set['리시버공유'] == 1:
             self.zmqserver = ZmqServ(self.recvservQ)
@@ -664,7 +665,7 @@ class KiwoomReceiverTick:
 
             self.sstgQs[self.dict_sgbn[code]].put(data)
             if code in self.tuple_jango or code in self.tuple_order:
-                self.straderQ.put((code, c))
+                self.straderQ.put(('잔고갱신', (code, c)))
 
             if self.dict_set['리시버공유'] == 1:
                 self.recvservQ.put(('tickdata', data))

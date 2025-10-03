@@ -27,11 +27,6 @@ class KiwoomStrategyTick:
         self.sstgQ            = qlist[3][self.gubun]
         self.dict_set         = DICT_SET
 
-        if self.gubun == 0 and self.dict_set['전략연산프로파일링']:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
-
         self.buystrategy      = None
         self.sellstrategy     = None
         self.chart_code       = None
@@ -58,6 +53,11 @@ class KiwoomStrategyTick:
         self.indexb           = 0
         self.jgrv_count       = 0
         self.int_tujagm       = 0
+
+        if self.gubun == 0 and self.dict_set['전략연산프로파일링']:
+            import cProfile
+            self.pr = cProfile.Profile()
+            self.pr.enable()
 
         self.UpdateStringategy()
         self.Start()

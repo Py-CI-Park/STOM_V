@@ -34,25 +34,15 @@ class UpbitReceiverTick:
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
-        self.windowQ  = qlist[0]
-        self.soundQ   = qlist[1]
-        self.queryQ   = qlist[2]
-        self.teleQ    = qlist[3]
-        self.hogaQ    = qlist[5]
-        self.creceivQ = qlist[8]
-        self.ctraderQ = qlist[9]
-        self.cstgQ    = qlist[10]
-        self.dict_set = DICT_SET
-
-        self.dict_bool = {
-            '프로세스종료': False
-        }
-
-        curr_time = now()
-        self.dict_time = {
-            '거래대금순위전송': curr_time,
-            '거래대금순위검색': curr_time
-        }
+        self.windowQ     = qlist[0]
+        self.soundQ      = qlist[1]
+        self.queryQ      = qlist[2]
+        self.teleQ       = qlist[3]
+        self.hogaQ       = qlist[5]
+        self.creceivQ    = qlist[8]
+        self.ctraderQ    = qlist[9]
+        self.cstgQ       = qlist[10]
+        self.dict_set    = DICT_SET
 
         self.dict_tmdt   = {}
         self.dict_jgdt   = {}
@@ -72,7 +62,17 @@ class UpbitReceiverTick:
         self.proc_webs   = None
         self.codes       = None
 
-        self.recvservQ   = Queue()
+        self.dict_bool   = {
+            '프로세스종료': False
+        }
+
+        curr_time = now()
+        self.dict_time = {
+            '거래대금순위전송': curr_time,
+            '거래대금순위검색': curr_time
+        }
+
+        self.recvservQ = Queue()
         if self.dict_set['리시버공유'] == 1:
             self.zmqserver = ZmqServ(self.recvservQ)
             self.zmqserver.start()
@@ -282,7 +282,7 @@ class UpbitReceiverTick:
 
             self.cstgQ.put(data)
             if code in self.tuple_order or code in self.tuple_jango:
-                self.ctraderQ.put((code, c))
+                self.ctraderQ.put(('잔고갱신', (code, c)))
 
             if self.dict_set['리시버공유'] == 1:
                 self.recvservQ.put(('tickdata', data))

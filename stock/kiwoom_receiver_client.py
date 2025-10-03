@@ -53,11 +53,11 @@ class KiwoomReceiverClient:
     def __init__(self, qlist):
         app = QApplication(sys.argv)
 
-        self.kwzservQ = qlist[0]
-        self.sreceivQ = qlist[1]
-        self.straderQ = qlist[2]
-        self.sstgQs   = qlist[3]
-        self.dict_set = DICT_SET
+        self.kwzservQ    = qlist[0]
+        self.sreceivQ    = qlist[1]
+        self.straderQ    = qlist[2]
+        self.sstgQs      = qlist[3]
+        self.dict_set    = DICT_SET
 
         self.dict_sgbn   = {}
         self.dict_jgdt   = {}
