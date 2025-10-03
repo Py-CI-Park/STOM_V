@@ -148,8 +148,8 @@ class UpbitReceiverTick:
                 self.MoneyTopSearch()
                 self.dict_time['거래대금순위검색'] = timedelta_sec(10)
 
-            if (self.dict_set['코인전략종료시간'] < inthmsutc < self.dict_set['코인전략종료시간'] + 10 and not self.dict_bool['프로세스종료'] and self.dict_set['코인프로세스종료']) or \
-                    (235000 < inthmsutc < 235010 and not self.dict_bool['프로세스종료']):
+            if not self.dict_bool['프로세스종료'] and \
+                    ((self.dict_set['코인전략종료시간'] < inthmsutc < self.dict_set['코인전략종료시간'] + 10 and self.dict_set['코인프로세스종료']) or 235000 < inthmsutc < 235010):
                 self.ReceiverProcKill()
 
     def WebSocketsStart(self, q):

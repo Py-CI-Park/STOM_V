@@ -194,7 +194,7 @@ class FutureStrategyMin(FutureStrategyTick):
         def 최저체결강도(tick, pre=0):
             return Parameter_Area(50, 7, tick, pre, 'min')
 
-        def 최고초당매수수량(tick, pre=0):
+        def 최고분당매수수량(tick, pre=0):
             return Parameter_Area(51, 8, tick, pre, 'max')
 
         def 최고분당매도수량(tick, pre=0):
@@ -361,9 +361,9 @@ class FutureStrategyMin(FutureStrategyTick):
                23       24        25       26       27        28       29        30       31       32        33
             매수잔량3, 매수잔량4, 매수잔량5, 매도수5호가잔량합, 관심종목, 이동평균005, 이동평균010, 이동평균020, 이동평균060, 이동평균120,
                 34      35        36          37          38        39          40         41          42         43
-            최고현재가_, 최저현재가_, 최고분봉고가_, 최저분봉저가_, 체결강도평균_, 최고체결강도_, 최저체결강도_, 최고초당매수수량_,
+            최고현재가_, 최저현재가_, 최고분봉고가_, 최저분봉저가_, 체결강도평균_, 최고체결강도_, 최저체결강도_, 최고분당매수수량_,
                  44           45           46             47             48             49             50               51
-            최고초당매도수량_, 누적초당매수수량_, 누적초당매도수량_, 분당거래대금평균_, 등락율각도_, 당일거래대금각도_,
+            최고분당매도수량_, 누적분당매수수량_, 누적분당매도수량_, 분당거래대금평균_, 등락율각도_, 당일거래대금각도_,
                   52             53              54              55           56           57     
             AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV,
             58    59    60    61    62      63     64   65   66   67   68   69   70    71    72    73     74   75  76

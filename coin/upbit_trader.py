@@ -559,7 +559,7 @@ class UpbitTrader:
         con = sqlite3.connect(DB_TRADELIST)
         df = pd.read_sql(f"SELECT * FROM c_totaltradelist WHERE `index` = '{self.str_today}'", con)
         con.close()
-        if len(df) == 0:
+        if len(df) == 0 and self.dict_tt:
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
             self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
             if self.dict_set['코인알림소리']: self.soundQ.put('일별실현손익를 저장하였습니다.')

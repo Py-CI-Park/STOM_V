@@ -92,7 +92,7 @@ def str_hms_cme_from_str(std_hms=None):
     return str_hms(std_time)
 
 
-def str_ms(std_time):
+def str_hm(std_time):
     return strf_time('%H%M', std_time)
 
 

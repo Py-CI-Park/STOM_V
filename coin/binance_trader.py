@@ -199,7 +199,8 @@ class BinanceTrader:
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작'))
-        self.WebSocketsStart(self.ctraderQ)
+        if not self.dict_set['코인모의투자']:
+            self.WebSocketsStart(self.ctraderQ)
         while True:
             data = self.ctraderQ.get()
             if type(data) == tuple:
@@ -606,7 +607,8 @@ class BinanceTrader:
             self.teleQ.put('tele', '현재는 코인 보유종목이 없습니다.')
 
     def SysExit(self):
-        self.WebProcessKill()
+        if not self.dict_set['코인모의투자']:
+            self.WebProcessKill()
         self.SaveDayData()
         time.sleep(5)
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 종료'))
@@ -615,7 +617,7 @@ class BinanceTrader:
         con = sqlite3.connect(DB_TRADELIST)
         df = pd.read_sql(f"SELECT * FROM c_totaltradelist WHERE `index` = '{self.str_today}'", con)
         con.close()
-        if len(df) == 0:
+        if len(df) == 0 and self.dict_tt:
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
             self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
             if self.dict_set['코인알림소리']: self.soundQ.put('일별실현손익를 저장하였습니다.')

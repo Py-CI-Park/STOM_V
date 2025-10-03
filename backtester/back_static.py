@@ -1,5 +1,4 @@
 import math
-import random
 import pyupbit
 import numpy as np
 import pandas as pd
@@ -11,7 +10,7 @@ from matplotlib import pyplot as plt
 from optuna_dashboard import run_server
 from matplotlib import font_manager, gridspec
 from utility.setting import ui_num, GRAPH_PATH, DB_OPTUNA, dgree
-from utility.static import thread_decorator, str_hms, str_ms, dt_ymdhms, dt_ymdhm, dt_hms, dt_hm, dt_ymd
+from utility.static import thread_decorator, str_hms, str_hm, dt_ymdhms, dt_ymdhm, dt_hms, dt_hm, dt_ymd
 
 
 @thread_decorator
@@ -578,11 +577,10 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
 
     df_tsg['이익금액'] = df_tsg['수익금'].apply(lambda x: x if x >= 0 else 0)
     df_tsg['손실금액'] = df_tsg['수익금'].apply(lambda x: x if x < 0 else 0)
-    sig_list = df_tsg['수익금'].to_list()
+    sig_array = df_tsg['수익금'].values
     mdd_list = []
     for i in range(30):
-        random.shuffle(sig_list)
-        df_tsg[f'수익금{i}'] = sig_list
+        df_tsg[f'수익금{i}'] = np.random.permutation(sig_array)
         df_tsg[f'수익금합계{i}'] = df_tsg[f'수익금{i}'].cumsum()
         df_tsg.drop(columns=[f'수익금{i}'], inplace=True)
         try:
@@ -596,9 +594,7 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
 
     is_min = len(str(endtime)) < 5
     df_sg = df_tsg[['수익금']].copy()
-    df_sg['일자'] = df_sg.index
-    df_sg['일자'] = df_sg['일자'].apply(lambda x: dt_ymdhms(x) if not is_min else dt_ymdhm(x))
-    df_sg = df_sg.set_index('일자')
+    df_sg.index = df_sg.index.map(lambda x: dt_ymdhms(x) if not is_min else dt_ymdhm(x))
 
     df_ts = df_sg.resample('D').sum()
     df_ts['수익금합계'] = df_ts['수익금'].cumsum()
@@ -606,8 +602,10 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
 
     df_kp, df_kd, df_nd, df_bc = None, None, None, None
     if dict_cn is not None and '005930' in dict_cn:
-        df_kp = df_kp_[(df_kp_['index'] >= str(startday)) & (df_kp_['index'] <= str(endday))].copy()
-        df_kd = df_kd_[(df_kd_['index'] >= str(startday)) & (df_kd_['index'] <= str(endday))].copy()
+        start_str = str(startday)
+        end_str = str(endday)
+        df_kp = df_kp_[(df_kp_['index'] >= start_str) & (df_kp_['index'] <= end_str)].copy()
+        df_kd = df_kd_[(df_kd_['index'] >= start_str) & (df_kd_['index'] <= end_str)].copy()
         df_kp['종가'] = (df_kp['종가'] / df_kp['종가'].iloc[0] - 1) * 100
         df_kd['종가'] = (df_kd['종가'] / df_kd['종가'].iloc[0] - 1) * 100
         df_kp['일자'] = df_kp['index'].apply(lambda x: dt_ymd(x))
@@ -616,8 +614,10 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
         df_kd.set_index('일자', inplace=True)
     elif dict_cn is not None and '005930' not in dict_cn:
         try:
-            startday = f'{str(startday)[:4]}-{str(startday)[4:6]}-{str(startday)[6:8]}'
-            endday   = f'{str(endday)[:4]}-{str(endday)[4:6]}-{str(endday)[6:8]}'
+            start_str = str(startday)
+            end_str   = str(endday)
+            startday  = f'{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}'
+            endday    = f'{end_str[:4]}-{end_str[4:6]}-{end_str[6:8]}'
             df_nd = yf.Ticker('QQQ').history(start=startday, end=endday, interval="1d")
             df_nd['종가'] = (df_nd['Close'] / df_nd['Close'].iloc[0] - 1) * 100
         except:
@@ -630,10 +630,8 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
         df_bc = df_bc[(df_bc['일자'] >= startday) & (df_bc['일자'] <= endday)]
         df_bc['종가'] = (df_bc['close'] / df_bc['close'].iloc[0] - 1) * 100
 
-    df_st = df_tsg[['수익금']].copy()
-    df_st['시간'] = df_st.index
-    df_st['시간'] = df_st['시간'].apply(lambda x: dt_hms(x[8:]) if not is_min else dt_hm(x[8:]))
-    df_st.set_index('시간', inplace=True)
+    df_st = pd.DataFrame({'수익금': df_tsg['수익금']})
+    df_st.index = df_sg.index.map(lambda x: dt_hms(x[8:]) if not is_min else dt_hm(x[8:]))
     if not is_min:
         start_time = dt_hms(str(starttime).zfill(6))
         end_time = dt_hms(str(endtime).zfill(6))
@@ -641,18 +639,17 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
         start_time = dt_hm(str(starttime).zfill(4))
         end_time = dt_hm(str(endtime).zfill(4))
     total_sec = (end_time - start_time).total_seconds()
-    df_st = df_st.resample(f'{total_sec / 600 if total_sec >= 1800 else 3}min').sum()
-    df_st['시간'] = df_st.index
-    df_st['시간'] = df_st['시간'].apply(lambda x: str_hms(x) if not is_min else str_ms(x))
+    interval = f'{total_sec / 600}min' if total_sec >= 1800 else '3min'
+    df_st = df_st.resample(interval).sum()
+    df_st.index = df_sg.index.map(lambda x: str_hms(x) if not is_min else str_hm(x))
     if not is_min:
-        df_st['시간'] = df_st['시간'].apply(lambda x: f'{x[:2]}:{x[2:4]}:{x[4:]}')
+        df_st.index = df_sg.index.map(lambda x: f'{x[:2]}:{x[2:4]}:{x[4:]}')
     else:
-        df_st['시간'] = df_st['시간'].apply(lambda x: f'{x[:2]}:{x[2:]}')
-    df_st.set_index('시간', inplace=True)
+        df_st.index = df_sg.index.map(lambda x: f'{x[:2]}:{x[2:]}')
     df_st['이익금액'] = df_st['수익금'].apply(lambda x: x if x >= 0 else 0)
     df_st['손실금액'] = df_st['수익금'].apply(lambda x: x if x < 0 else 0)
 
-    df_wt = df_tsg[['수익금']].copy()
+    df_wt = pd.DataFrame({'수익금': df_tsg['수익금']})
     df_wt['요일'] = df_wt.index
     df_wt['요일'] = df_wt['요일'].apply(lambda x: dt_ymdhms(x).weekday() if not is_min else dt_ymdhm(x).weekday())
     sum_0 = df_wt[df_wt['요일'] == 0]['수익금'].sum()
@@ -676,12 +673,10 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
             wt_datap.append(0)
             wt_datam.append(data)
 
-    df_tsg['index'] = df_tsg.index
     if not is_min:
-        df_tsg['index'] = df_tsg['index'].apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
+        df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
     else:
-        df_tsg['index'] = df_tsg['index'].apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:]}')
-    df_tsg.set_index('index', inplace=True)
+        df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:]}')
 
     endx_list = None
     if gubun == '최적화':

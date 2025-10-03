@@ -191,7 +191,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
         def 최저체결강도(tick, pre=0):
             return Parameter_Area(50, 7, tick, pre, 'min')
 
-        def 최고초당매수수량(tick, pre=0):
+        def 최고분당매수수량(tick, pre=0):
             return Parameter_Area(51, 8, tick, pre, 'max')
 
         def 최고분당매도수량(tick, pre=0):

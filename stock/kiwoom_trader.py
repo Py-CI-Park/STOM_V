@@ -473,7 +473,7 @@ class KiwoomTrader:
         con = sqlite3.connect(DB_TRADELIST)
         df = pd.read_sql(f"SELECT * FROM s_totaltradelist WHERE `index` = '{self.str_today}'", con)
         con.close()
-        if len(df) == 0:
+        if len(df) == 0 and self.dict_tt:
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
             self.kwzservQ.put(('query', ('거래디비', df, 's_totaltradelist', 'append')))
             if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))

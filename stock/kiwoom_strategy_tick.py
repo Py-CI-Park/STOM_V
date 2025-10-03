@@ -734,7 +734,7 @@ class KiwoomStrategyTick:
                     del self.dict_hilo[code]
 
     def SaveData(self, codes):
-        for code in self.dict_arry:
+        for code in self.dict_arry.copy():
             if code not in codes:
                 del self.dict_arry[code]
 

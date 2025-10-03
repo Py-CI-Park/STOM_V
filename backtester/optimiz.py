@@ -801,11 +801,8 @@ class Optimize:
 
     def OptimizeOptuna(self, mq, back_count, len_vars, vars_, only_buy, only_sell, buy_first, buy_num, sell_num,
                        optuna_fixvars, optuna_count, optuna_autostep, optuna_sampler, buystg_name):
-        if optuna_count == 0:
-            total_count = back_count * (len_vars + 1)
-        else:
-            total_count = back_count * optuna_count
 
+        total_count = back_count * ((len_vars + 1) if optuna_count == 0 else optuna_count)
         self.tq.put(('경우의수', total_count, back_count))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} OPTUNA 최적화 시작'))
 
@@ -813,39 +810,18 @@ class Optimize:
             simple_vars = []
             optuna_vars = []
             for j, var_ in enumerate(list(self.vars.values())):
-                if j < 10:
-                    trial_name = f'00{j}'
-                elif j < 100:
-                    trial_name = f'0{j}'
-                else:
-                    trial_name = f'{j}'
-
+                trial_name = f'{j:03d}'
                 fixed = ((only_buy and ((buy_first and j > sell_num) or (not buy_first and j <= buy_num))) or
                          (only_sell and ((buy_first and j <= sell_num) or (not buy_first and j > buy_num))))
                 varsint = type(var_[0][2]) == int
                 if not (var_[0][2] == 0 or j in optuna_fixvars or fixed):
+                    suggest_func = trial.suggest_int if varsint else trial.suggest_float
+                    min_val, max_val = sorted((var_[0][0], var_[0][1]))
                     if optuna_autostep:
-                        if varsint:
-                            if var_[0][0] < var_[0][1]:
-                                trial_ = trial.suggest_int(trial_name, var_[0][0], var_[0][1])
-                            else:
-                                trial_ = trial.suggest_int(trial_name, var_[0][1], var_[0][0])
-                        else:
-                            if var_[0][0] < var_[0][1]:
-                                trial_ = trial.suggest_float(trial_name, var_[0][0], var_[0][1])
-                            else:
-                                trial_ = trial.suggest_float(trial_name, var_[0][1], var_[0][0])
+                        trial_ = suggest_func(trial_name, min_val, max_val)
                     else:
-                        if varsint:
-                            if var_[0][0] < var_[0][1]:
-                                trial_ = trial.suggest_int(trial_name, var_[0][0], var_[0][1], step=var_[0][2])
-                            else:
-                                trial_ = trial.suggest_int(trial_name, var_[0][1], var_[0][0], step=-var_[0][2])
-                        else:
-                            if var_[0][0] < var_[0][1]:
-                                trial_ = trial.suggest_float(trial_name, var_[0][0], var_[0][1], step=var_[0][2])
-                            else:
-                                trial_ = trial.suggest_float(trial_name, var_[0][1], var_[0][0], step=-var_[0][2])
+                        step = var_[0][2] if min_val == var_[0][0] else -var_[0][2]
+                        trial_ = suggest_func(trial_name, min_val, max_val, step=step)
                 else:
                     if varsint:
                         trial_ = trial.suggest_int(trial_name, var_[1], var_[1])

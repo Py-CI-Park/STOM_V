@@ -210,7 +210,10 @@ def start_backengine(ui, gubun):
     day_codes = {}
     for day in day_list:
         df_mt_ = df_mt[df_mt['일자'] == day]
-        day_codes[day] = list(set(';'.join(df_mt_['거래대금순위'].to_list()).split(';')))
+        code_list = set()
+        for mt_text in df_mt_.values():
+            code_list.update(mt_text.split(';'))
+        day_codes[day] = list(code_list)
 
     code_days = {}
     for code in table_list:

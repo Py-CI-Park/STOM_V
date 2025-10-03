@@ -101,10 +101,11 @@ class BackSubTotal:
         self.ddict_tsg[vturn][vkey].append(data)
 
         arry_bct  = self.ddict_bct[vturn][vkey]
-        arry_bct_ = arry_bct[(매수시간 <= arry_bct[:, 0]) & (arry_bct[:, 0] <= 매도시간)]
+        mask = (매수시간 <= arry_bct[:, 0]) & (arry_bct[:, 0] <= 매도시간)
+        arry_bct_ = arry_bct[mask]
         arry_bct_[:, 2] += 매수금액
         if 잔량없음: arry_bct_[:, 1] += 1
-        arry_bct[(매수시간 <= arry_bct[:, 0]) & (arry_bct[:, 0] <= 매도시간)] = arry_bct_
+        arry_bct[mask] = arry_bct_
         self.ddict_bct[vturn][vkey] = arry_bct
 
     def DivideData(self):
@@ -121,16 +122,16 @@ class BackSubTotal:
         else:
             self.arry_bct[:, 1] += arry_bct[:, 1]
             self.arry_bct[:, 2] += arry_bct[:, 2]
-        self.list_tsg += list_tsg
+        self.list_tsg.extend(list_tsg)
 
     def SendSubTotal1(self):
         if self.ddict_tsg:
             columns = ['index', '보유시간', '매도시간', '수익률', '수익금']
-            for vturn, dict_tsg in self.ddict_tsg.items():
-                for vkey, list_tsg in dict_tsg.items():
-                    arry_bct = self.ddict_bct[vturn][vkey]
-                    data = (columns, list_tsg, arry_bct)
-                    if self.list_days is not None:
+            if self.list_days is not None:
+                for vturn, dict_tsg in self.ddict_tsg.items():
+                    for vkey, list_tsg in dict_tsg.items():
+                        arry_bct = self.ddict_bct[vturn][vkey]
+                        data = (columns, list_tsg, arry_bct)
                         train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
                         if valid_days is not None:
                             for i, vdays in enumerate(valid_days):
@@ -140,12 +141,20 @@ class BackSubTotal:
                         else:
                             data_ = data + (train_days[2], vturn, vkey)
                             self.Result(0, data_)
-                    elif self.valid_days is not None:
+            elif self.valid_days is not None:
+                for vturn, dict_tsg in self.ddict_tsg.items():
+                    for vkey, list_tsg in dict_tsg.items():
+                        arry_bct = self.ddict_bct[vturn][vkey]
+                        data = (columns, list_tsg, arry_bct)
                         for i, vdays in enumerate(self.valid_days):
                             data_ = data + (vdays[0], vdays[1], vdays[2], vdays[3], i, vturn, vkey)
                             self.Result(1, data_)
                             self.Result(0, data_)
-                    else:
+            else:
+                for vturn, dict_tsg in self.ddict_tsg.items():
+                    for vkey, list_tsg in dict_tsg.items():
+                        arry_bct = self.ddict_bct[vturn][vkey]
+                        data = (columns, list_tsg, arry_bct)
                         data_ = data + (self.day_count, vturn, vkey)
                         self.Result(0, data_)
 
@@ -186,8 +195,7 @@ class BackSubTotal:
         df_tsg.sort_index(inplace=True)
         df_tsg['수익금합계'] = df_tsg['수익금'].cumsum()
         arry_tsg = np.array(df_tsg, dtype='float64')
-        arry_bct = arry_bct[arry_bct[:, 1] > 0]
-        arry_bct = np.sort(arry_bct, axis=0)[::-1]
+        arry_bct = np.sort(arry_bct[arry_bct[:, 1] > 0], axis=0)[::-1]
         if arry_bct[0, 0] > 999911220000:
             cf_day, cf_hms = 1000000, 240000
         else:

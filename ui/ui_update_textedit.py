@@ -144,19 +144,20 @@ class UpdateTextedit:
                 self.ui.BacktestProcessKill(0)
             elif data[0] == ui_num['S단순텍스트'] and '리시버 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '리시버 종료'))
-            elif data[0] == ui_num['S단순텍스트'] and '해외선물 휴무 종료' in data[1]:
-                self.StockShutDownCheck()
+            elif data[0] == ui_num['S로그텍스트'] and '트레이더 종료' in data[1]:
+                self.ui.wdzservQ.put(('manager', '트레이더 종료'))
             elif data[0] == ui_num['S로그텍스트'] and '전략연산 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '전략연산 종료'))
                 if self.ui.data_save and self.ui.dict_set['디비자동관리']:
                     self.AutoDataBase(1)
                 else:
                     self.StockShutDownCheck()
-            elif data[0] == ui_num['S로그텍스트'] and '트레이더 종료' in data[1]:
-                self.ui.wdzservQ.put(('manager', '트레이더 종료'))
             elif data[0] == ui_num['C단순텍스트'] and '리시버 종료' in data[1]:
                 if self.ui.CoinReceiverProcessAlive():
                     self.ui.proc_receiver_coin.kill()
+            elif data[0] == ui_num['C로그텍스트'] and '트레이더 종료' in data[1]:
+                if self.ui.CoinTraderProcessAlive():
+                    self.ui.proc_trader_coin.kill()
             elif data[0] == ui_num['C로그텍스트'] and '전략연산 종료' in data[1]:
                 if self.ui.CoinStrategyProcessAlive():
                     self.ui.proc_strategy_coin.kill()
@@ -164,9 +165,8 @@ class UpdateTextedit:
                     self.AutoDataBase(4)
                 else:
                     self.CoinShutDownCheck()
-            elif data[0] == ui_num['C로그텍스트'] and '트레이더 종료' in data[1]:
-                if self.ui.CoinTraderProcessAlive():
-                    self.ui.proc_trader_coin.kill()
+            elif data[0] == ui_num['S단순텍스트'] and '해외선물 휴무 종료' in data[1]:
+                self.StockShutDownCheck()
             elif data[0] == ui_num['DB관리']:
                 if data[1] == 'DB업데이트완료':
                     self.ui.database_control = False
