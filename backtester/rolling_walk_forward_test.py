@@ -104,7 +104,7 @@ class Total:
                             fast_proc_list.append(procn)
                             if len(fast_proc_list) == divid_multi:
                                 divid_time = now()
-                        if len(fast_proc_list) > divid_multi and procn not in slow_proc_dict.keys():
+                        if len(fast_proc_list) > divid_multi and procn not in slow_proc_dict:
                             slow_proc_dict[procn] = cnt
                 elif self.opti_turn in (0, 2):
                     self.wq.put((ui_num[f'{self.ui_gubun}백테바'], bc, self.total_count, start))
@@ -151,15 +151,14 @@ class Total:
                 sc += 1
                 _, vkey, _dict_dummy = data
                 if _dict_dummy:
-                    for vturn in _dict_dummy.keys():
+                    for vturn in _dict_dummy:
                         dict_dummy[vturn][vkey] = 0
 
                 if sc == 20:
                     sc = 0
-                    for vturn in list(dict_dummy.keys()):
+                    for vturn in dict_dummy:
                         curr_vars_count = len(self.vars_list[vturn][0])
-                        key_list = list(dict_dummy[vturn].keys())
-                        zero_key_list = [x for x in range(curr_vars_count) if x not in key_list]
+                        zero_key_list = [x for x in range(curr_vars_count) if x not in dict_dummy[vturn]]
                         if zero_key_list:
                             for vkey in zero_key_list:
                                 self.stdp = SendTextAndStd(self.GetSendData(vturn, vkey), None)
@@ -172,17 +171,17 @@ class Total:
 
             elif data[0] in ('TRAIN', 'VALID'):
                 gubun, num, data, vturn, vkey = data
-                if vturn not in self.dict_t.keys():
+                if vturn not in self.dict_t:
                     self.dict_t[vturn] = {}
-                if vkey not in self.dict_t[vturn].keys():
+                if vkey not in self.dict_t[vturn]:
                     self.dict_t[vturn][vkey] = {}
-                if vturn not in self.dict_v.keys():
+                if vturn not in self.dict_v:
                     self.dict_v[vturn] = {}
-                if vkey not in self.dict_v[vturn].keys():
+                if vkey not in self.dict_v[vturn]:
                     self.dict_v[vturn][vkey] = {}
-                if vturn not in st.keys():
+                if vturn not in st:
                     st[vturn] = {}
-                if vkey not in st[vturn].keys():
+                if vkey not in st[vturn]:
                     st[vturn][vkey] = 0
 
                 if gubun == 'TRAIN':
@@ -785,7 +784,7 @@ class RollingWalkForwardTest:
                 optuna_vars.append(['', trial_])
 
             str_simple_vars = str(simple_vars)
-            if str_simple_vars not in self.dict_simple_vars.keys():
+            if str_simple_vars not in self.dict_simple_vars:
                 self.PutData(('변수정보', optuna_vars, 4, startday, endday, i))
                 data_ = mq.get()
                 if type(data_) == str:

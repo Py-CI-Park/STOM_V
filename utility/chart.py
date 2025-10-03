@@ -248,7 +248,7 @@ class Chart:
                 if coin:
                     df2 = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{code}'", con).set_index('index')
                 else:
-                    name = self.dict_name[code] if code in self.dict_name.keys() else code
+                    name = self.dict_name[code] if code in self.dict_name else code
                     if '키움증권' in self.dict_set['증권사']:
                         df2 = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
                     else:

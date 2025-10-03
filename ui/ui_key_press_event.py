@@ -35,7 +35,7 @@ def key_press_event(ui, event):
                 linetext   = ui.ct_lineEdittttt_03.text()
                 tickcount  = int(linetext) if linetext else 30
                 searchdate = str_ymd(now_utc()) if not stock else str_ymd() if '키움증권' in ui.dict_set['증권사'] else str_ymd(now_cme())
-                code       = ui.dict_code[name] if name in ui.dict_code.keys() else name
+                code       = ui.dict_code[name] if name in ui.dict_code else name
                 ui.ct_lineEdittttt_04.setText(code)
                 ui.ct_lineEdittttt_05.setText(name)
                 ui.ShowDialog(name, tickcount, searchdate, col)
@@ -50,7 +50,7 @@ def key_press_event(ui, event):
                 name      = item.text()
                 linetext  = ui.ct_lineEdittttt_03.text()
                 tickcount = int(linetext) if linetext else 30
-                code      = ui.dict_code[name] if name in ui.dict_code.keys() else name
+                code      = ui.dict_code[name] if name in ui.dict_code else name
                 ui.ct_lineEdittttt_04.setText(code)
                 ui.ct_lineEdittttt_05.setText(name)
                 ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
@@ -95,7 +95,7 @@ def key_press_event(ui, event):
                 detail     = [buytime, buyprice, selltime, sellprice]
                 buytimes   = tableWidget.item(row, 13).text()
                 coin       = True if 'KRW' in name or 'USDT' in name else False
-                code       = ui.dict_code[name] if name in ui.dict_code.keys() else name
+                code       = ui.dict_code[name] if name in ui.dict_code else name
                 starttime  = ui.ct_lineEdittttt_01.text()
                 endtime    = ui.ct_lineEdittttt_02.text()
                 if (len(starttime) > 4 or len(endtime) > 4) and \

@@ -232,7 +232,7 @@ class BackEngineFutureTick:
 
     def RecvdData(self, data):
         _, code, arry = data
-        if code in self.dict_arry.keys():
+        if code in self.dict_arry:
             arry = np.r_[self.dict_arry[code], arry]
         self.dict_arry[code] = arry
         if code not in self.code_list:
@@ -626,8 +626,8 @@ class BackEngineFutureTick:
             return Parameter_Dgree(51, 6, tick, pre, dgree['future']['tick'][1])
 
         def 경과틱수(조건명):
-            if 종목코드 in self.dict_cond_indexn.keys() and \
-                    조건명 in self.dict_cond_indexn[종목코드].keys() and self.dict_cond_indexn[종목코드][조건명] != 0:
+            if 종목코드 in self.dict_cond_indexn and \
+                    조건명 in self.dict_cond_indexn[종목코드] and self.dict_cond_indexn[종목코드][조건명] != 0:
                 return self.indexn - self.dict_cond_indexn[종목코드][조건명]
             return 0
 
@@ -640,18 +640,18 @@ class BackEngineFutureTick:
         self.shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
         if self.dict_condition:
-            if 종목코드 not in self.dict_cond_indexn.keys():
+            if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 exec(v)
 
         if self.opti_turn == 1:
-            for vturn in self.trade_info.keys():
+            for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
                     break
 
-                for vkey in self.trade_info[vturn].keys():
+                for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
                     if self.tick_count < self.vars[0]:
                         continue
@@ -668,8 +668,8 @@ class BackEngineFutureTick:
                         exec(self.sellstg)
 
         elif self.opti_turn == 3:
-            for vturn in self.trade_info.keys():
-                for vkey in self.trade_info[vturn].keys():
+            for vturn in self.trade_info:
+                for vkey in self.trade_info[vturn]:
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]
@@ -812,8 +812,8 @@ class BackEngineFutureTick:
         bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         bhogainfo = bhogainfo[:self.dict_set['주식매도시장가잔량범위']]
 
-        for vturn in self.trade_info.keys():
-            for vkey in self.trade_info[vturn].keys():
+        for vturn in self.trade_info:
+            for vkey in self.trade_info[vturn]:
                 if self.trade_info[vturn][vkey]['보유중'] > 0:
                     매도금액 = 0
                     보유수량 = 미체결수량 = self.trade_info[vturn][vkey]['보유수량']

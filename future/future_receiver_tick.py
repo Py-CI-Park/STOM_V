@@ -116,8 +116,8 @@ class FutureReceiverTick:
                 last_index = df['index'][0]
             except:
                 pass
-            df = {key: value for key, value in self.dict_mtop.items() if key > last_index}
-            df = pd.DataFrame(df.values(), columns=['거래대금순위'], index=list(df.keys()))
+            dict_mtop = {key: value for key, value in self.dict_mtop.items() if key > last_index}
+            df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 데이터수집목록 저장 완료')))
@@ -125,7 +125,7 @@ class FutureReceiverTick:
     def UpdateTickData(self, data):
         code, dt, c, o, h, low, per, v, csp, cbp = data
 
-        if code not in self.dict_data.keys():
+        if code not in self.dict_data:
             dm, bids, asks, tbids, tasks = 0, 0, 0, 0, 0
         else:
             dm, _, bids, asks, tbids, tasks = self.dict_data[code][5:11]
@@ -161,7 +161,7 @@ class FutureReceiverTick:
             if asks_ > 0: asks += asks_
             self.list_hgdt[2:4] = bids, asks
             if dt > self.list_hgdt[0]:
-                self.kwzservQ.put(('hoga', (self.dict_info[code]['종목명'], c, per, 0, 0, o, h, low)))
+                self.kwzservQ.put(('hoga', (self.dict_info[code]['종목명'], c, per, 0, -1, o, h, low)))
                 if asks > 0: self.kwzservQ.put(('hoga', (-asks, ch)))
                 if bids > 0: self.kwzservQ.put(('hoga', (bids, ch)))
                 self.list_hgdt[0] = dt
@@ -174,9 +174,9 @@ class FutureReceiverTick:
         send   = False
         dt_min = int(str(dt)[:12])
 
-        if code in self.dict_data.keys():
+        if code in self.dict_data:
             dm = self.dict_data[code][5]
-            if code in self.dict_tmdt.keys():
+            if code in self.dict_tmdt:
                 if dt > self.dict_tmdt[code][0]:
                     send = True
             else:
@@ -189,28 +189,20 @@ class FutureReceiverTick:
             if hoga_seprice[-1] < csp:
                 index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
                 if index is not None:
-                    end_idx      = 5 - index
-                    hoga_seprice = (0.,) * index + hoga_seprice[:end_idx]
-                    hoga_samount = (0,) * index + hoga_samount[:end_idx]
+                    hoga_seprice = (0.,) * index + hoga_seprice[:-index]
+                    hoga_samount = (0,) * index + hoga_samount[:-index]
                 else:
                     hoga_seprice = (0.,) * 5
                     hoga_samount = (0,) * 5
-            else:
-                hoga_seprice = hoga_seprice[-5:]
-                hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
                 index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
                 if index is not None:
-                    start_idx    = 5 - index
-                    hoga_buprice = hoga_buprice[start_idx:] + (0.,) * index
-                    hoga_bamount = hoga_bamount[start_idx:] + (0,) * index
+                    hoga_buprice = hoga_buprice[index:] + (0.,) * index
+                    hoga_bamount = hoga_bamount[index:] + (0,) * index
                 else:
                     hoga_buprice = (0.,) * 5
                     hoga_bamount = (0,) * 5
-            else:
-                hoga_buprice = hoga_buprice[:5]
-                hoga_bamount = hoga_bamount[:5]
 
             c     = self.dict_data[code][0]
             hlp   = round((c / ((self.dict_data[code][2] + self.dict_data[code][3]) / 2) - 1) * 100, 2)

@@ -84,11 +84,11 @@ class BackSubTotal:
         _, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, \
             추가매수시간, 잔량없음, vturn, vkey = data
 
-        if vturn not in self.ddict_tsg.keys():
+        if vturn not in self.ddict_tsg:
             self.dummy_tsg[vturn] = {}
             self.ddict_tsg[vturn] = {}
             self.ddict_bct[vturn] = {}
-        if vkey not in self.ddict_tsg[vturn].keys():
+        if vkey not in self.ddict_tsg[vturn]:
             self.dummy_tsg[vturn][vkey] = 0
             self.ddict_tsg[vturn][vkey] = []
             self.ddict_bct[vturn][vkey] = self.arry_bct_.copy()

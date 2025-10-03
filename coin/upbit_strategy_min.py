@@ -224,8 +224,8 @@ class UpbitStrategyMin(UpbitStrategyTick):
             return Parameter_Dgree(57, 6, tick, pre, dgree['coin']['min'][1])
 
         def 경과틱수(조건명):
-            if 종목코드 in self.dict_cond_indexn.keys() and \
-                    조건명 in self.dict_cond_indexn[종목코드].keys() and self.dict_cond_indexn[종목코드][조건명] != 0:
+            if 종목코드 in self.dict_cond_indexn and \
+                    조건명 in self.dict_cond_indexn[종목코드] and self.dict_cond_indexn[종목코드][조건명] != 0:
                 return self.indexn - self.dict_cond_indexn[종목코드][조건명]
             return 0
 
@@ -327,7 +327,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
         self.bhogainfo = bhogainfo[:self.dict_set['코인매수시장가잔량범위']]
         self.shogainfo = shogainfo[:self.dict_set['코인매도시장가잔량범위']]
 
-        if 종목코드 in self.dict_arry.keys():
+        if 종목코드 in self.dict_arry:
             len_array = len(self.dict_arry[종목코드])
             if len_array >=   4: 이동평균005 = round((self.dict_arry[종목코드][-4:,   1].sum() + 현재가) / 5, 8)
             if len_array >=   9: 이동평균010 = round((self.dict_arry[종목코드][-9:,   1].sum() + 현재가) / 10, 8)
@@ -445,7 +445,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
             MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR
         ]
 
-        if 종목코드 not in self.dict_arry.keys():
+        if 종목코드 not in self.dict_arry:
             self.dict_arry[종목코드] = np.array([new_data_tick])
         else:
             if 체결시간 != self.dict_arry[종목코드][-1, 0]:
@@ -457,7 +457,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
         self.indexn = 데이터길이 - 1
 
         if self.dict_condition and 전략연산 and 체결시간 < self.dict_set['코인전략종료시간']:
-            if 종목코드 not in self.dict_cond_indexn.keys():
+            if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 try:
@@ -467,8 +467,8 @@ class UpbitStrategyMin(UpbitStrategyTick):
                     self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류'))
 
         if 체결강도평균_ != 0 and 전략연산 and 체결시간 < self.dict_set['코인전략종료시간']:
-            if 종목코드 in self.dict_jg.keys():
-                if 종목코드 not in self.dict_buy_num.keys():
+            if 종목코드 in self.dict_jg:
+                if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
                 매수틱번호 = self.dict_buy_num[종목코드]
                 매입가 = self.dict_jg[종목코드]['매입가']
@@ -479,7 +479,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
                 _, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
                 매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
                 보유시간 = int((now_utc() - 매수시간).total_seconds() / 60)
-                if 종목코드 not in self.dict_hilo.keys():
+                if 종목코드 not in self.dict_hilo:
                     self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
                     if 수익률 > self.dict_hilo[종목코드][0]:

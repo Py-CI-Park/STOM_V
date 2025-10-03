@@ -9,12 +9,12 @@ df = pd.DataFrame(data, columns=['보유종목수'], index=index)
 dict_bct = {}
 start = time.time()
 for index in df.index:
-    if index in dict_bct.keys():
+    if index in dict_bct:
         dict_bct[index] += 1
     else:
         dict_bct[index] = 1
 for index in df.index:
-    if index in dict_bct.keys():
+    if index in dict_bct:
         dict_bct[index] += 1
     else:
         dict_bct[index] = 1

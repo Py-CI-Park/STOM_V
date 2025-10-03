@@ -12,11 +12,11 @@ def return_press_01(ui):
             name = ui.ct_lineEdittttt_04.text()
         else:
             name = ui.ct_lineEdittttt_05.text()
-        if name in ui.dict_code.keys():
+        if name in ui.dict_code:
             code = ui.dict_code[name]
         else:
             code = name
-            name = ui.dict_name[code] if code in ui.dict_name.keys() else code
+            name = ui.dict_name[code] if code in ui.dict_name else code
         ui.ct_lineEdittttt_04.setText(code)
         ui.ct_lineEdittttt_05.setText(name)
         ui.ShowDialog(name, tickcount, searchdate, 4)
@@ -27,7 +27,7 @@ def return_press_01(ui):
             return
         name       = item.text()
         coin       = True if 'KRW' in name or 'USDT' in name else False
-        code       = ui.dict_code[name] if name in ui.dict_code.keys() else name
+        code       = ui.dict_code[name] if name in ui.dict_code else name
         searchdate = ui.ct_dateEdittttt_02.date().toString('yyyyMMdd')
         linetext   = ui.ct_lineEdittttt_03.text()
         tickcount  = int(linetext) if linetext else 30

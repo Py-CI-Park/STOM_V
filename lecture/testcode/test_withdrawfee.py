@@ -23,7 +23,7 @@ for x in data:
 data = bn.get_all_coins_info()
 for x in data:
     code = x['coin']
-    if code in codes and code in dict_close.keys():
+    if code in codes and code in dict_close:
         count_ = 1000000
         for network in x['networkList']:
             name   = network['network']

@@ -78,7 +78,7 @@ class BinanceReceiverClient:
     def UpdateTickData(self, data):
         if len(data) == 3:
             code, c, dt = data
-            if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
+            if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
                 self.ctraderQ.put((code, c))
                 self.dict_jgdt[code] = dt
         else:

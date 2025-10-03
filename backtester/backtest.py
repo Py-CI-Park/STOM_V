@@ -116,7 +116,7 @@ class Total:
         name_list = list(set(self.df_tsg['종목명'].to_list()))
         dict_code = {name: code for code, name in self.dict_cn.items()}
         for name in name_list:
-            if name not in dict_code.keys():
+            if name not in dict_code:
                 continue
             code = dict_code[name]
             df_tsg = self.df_tsg[self.df_tsg['종목명'] == name]

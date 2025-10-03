@@ -49,7 +49,7 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
                 continue
 
             self.code = code
-            self.name = self.dict_cn[self.code] if self.code in self.dict_cn.keys() else self.code
+            self.name = self.dict_cn[self.code] if self.code in self.dict_cn else self.code
             self.SetArrayTick(code, same_days, same_time)
             last = len(self.arry_data) - 1
             if last > 0:
@@ -296,8 +296,8 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
             return Parameter_Dgree(61, 9, tick, pre, 1)
 
         def 경과틱수(조건명):
-            if 종목코드 in self.dict_cond_indexn.keys() and \
-                    조건명 in self.dict_cond_indexn[종목코드].keys() and self.dict_cond_indexn[종목코드][조건명] != 0:
+            if 종목코드 in self.dict_cond_indexn and \
+                    조건명 in self.dict_cond_indexn[종목코드] and self.dict_cond_indexn[종목코드][조건명] != 0:
                 return self.indexn - self.dict_cond_indexn[종목코드][조건명]
             return 0
 
@@ -315,18 +315,18 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
         self.shogainfo = shogainfo[:self.dict_set['주식매도시장가잔량범위']]
 
         if self.dict_condition:
-            if 종목코드 not in self.dict_cond_indexn.keys():
+            if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 exec(v)
 
         if self.opti_turn == 1:
-            for vturn in self.trade_info.keys():
+            for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
                     break
 
-                for vkey in self.trade_info[vturn].keys():
+                for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
                     if self.tick_count < self.vars[0]:
                         continue
@@ -364,8 +364,8 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
                                 exec(self.sellstg)
 
         elif self.opti_turn == 3:
-            for vturn in self.trade_info.keys():
-                for vkey in self.trade_info[vturn].keys():
+            for vturn in self.trade_info:
+                for vkey in self.trade_info[vturn]:
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]

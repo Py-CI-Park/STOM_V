@@ -191,7 +191,7 @@ class UpbitReceiverTick:
                 self.creceivQ.put('프로세스종료')
 
     def UpdateTickData(self, code, c, o, h, low, per, dm, tbids, tasks, dt):
-        if code in self.dict_data.keys():
+        if code in self.dict_data:
             bids, asks, pretbids, pretasks = self.dict_data[code][7:]
         else:
             bids, asks, pretbids, pretasks = 0, 0, tbids, tasks
@@ -215,7 +215,7 @@ class UpbitReceiverTick:
             if asks_ > 0: asks += asks_
             self.list_hgdt[2:4] = bids, asks
             if dt > self.list_hgdt[0]:
-                self.hogaQ.put((code, c, per, 0, 0, o, h, low))
+                self.hogaQ.put((code, c, per, 0, -1, o, h, low))
                 if asks > 0: self.hogaQ.put((-asks, ch))
                 if bids > 0: self.hogaQ.put((bids, ch))
                 self.list_hgdt[0] = dt
@@ -227,9 +227,9 @@ class UpbitReceiverTick:
         send   = False
         dt_min = int(str(dt)[:12])
 
-        if code in self.dict_data.keys():
+        if code in self.dict_data:
             dm = self.dict_data[code][5]
-            if code in self.dict_tmdt.keys():
+            if code in self.dict_tmdt:
                 if dt > self.dict_tmdt[code][0]:
                     send = True
             else:
@@ -246,7 +246,7 @@ class UpbitReceiverTick:
                 if index is not None:
                     start_idx = (5 - index) if index < 5 else 0
                     end_idx   = 10 - index
-                    add_cnt   = max(0, index - 5)
+                    add_cnt   = (index - 5) if index > 5 else 0
                     hoga_seprice = (0.,) * add_cnt + hoga_seprice[start_idx:end_idx]
                     hoga_samount = (0.,) * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
@@ -259,9 +259,9 @@ class UpbitReceiverTick:
             if hoga_buprice[0] > cbp:
                 index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
                 if index is not None:
-                    start_idx = 0 + index
-                    end_idx   = 5 + index
-                    add_cnt   = max(0, index - 5)
+                    start_idx = index
+                    end_idx   = index + 5
+                    add_cnt   = (index - 5) if index > 5 else 0
                     hoga_buprice = hoga_buprice[start_idx:end_idx] + (0.,) * add_cnt
                     hoga_bamount = hoga_bamount[start_idx:end_idx] + (0.,) * add_cnt
                 else:
@@ -349,9 +349,10 @@ class UpbitReceiverTick:
         self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료'))
 
     def SaveData(self):
-        codes = []
+        codes = set()
         if self.dict_mtop:
-            codes = list(set(';'.join(list(self.dict_mtop.values())).split(';')))
+            for mtop_text in self.dict_mtop.values():
+                codes.update(mtop_text.split(';'))
             con = sqlite3.connect(DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN)
             last_index = 0
             try:
@@ -359,8 +360,8 @@ class UpbitReceiverTick:
                 last_index = df['index'][0]
             except:
                 pass
-            df = {key: value for key, value in self.dict_mtop.items() if key > last_index}
-            df = pd.DataFrame(df.values(), columns=['거래대금순위'], index=list(df.keys()))
+            dict_mtop = {key: value for key, value in self.dict_mtop.items() if key > last_index}
+            df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))

@@ -34,10 +34,10 @@ class Scheduler(Thread):
             if int(str_hms(now_utc())) > inthms:
                 inthms = int(str_hms(now_utc()))
                 if self.main.dict_set['코인타임프레임'] and inthms < self.main.dict_set['코인전략종료시간']:
-                    self.main.straderQ.put('OrderTimeControl')
+                    self.main.ctraderQ.put('OrderTimeControl')
                 if self.main.jgcs_time < inthms and not self.main.dict_bool['코인잔고청산']:
-                    self.main.straderQ.put('JangoCheongsan')
-                self.main.straderQ.put('UpdateTotaljango')
+                    self.main.ctraderQ.put('JangoCheongsan')
+                self.main.ctraderQ.put('UpdateTotaljango')
             time.sleep(0.01)
 
 
@@ -136,7 +136,7 @@ class UpbitTrader:
             df_jg = pd.read_sql(f'SELECT * FROM c_jangolist', con).set_index('index')
             if len(df_jg) > 0:
                 self.dict_jg = df_jg.to_dict('index')
-                self.creceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+                self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
         con.close()
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
 
@@ -192,10 +192,10 @@ class UpbitTrader:
                 self.dict_curc[code] = c
                 self.OrderTimeControl(code)
             if data[0] == '관심진입':
-                if data[1] in self.dict_order['매도'].keys():
+                if data[1] in self.dict_order['매도']:
                     self.CancelOrder(data[1], '매도')
             elif data[0] == '관심이탈':
-                if data[1] in self.dict_order['매수'].keys():
+                if data[1] in self.dict_order['매수']:
                     self.CancelOrder(data[1], '매수')
             elif data[0] == '설정변경':
                 self.dict_set = data[1]
@@ -230,9 +230,9 @@ class UpbitTrader:
         else:
             주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 수동주문, 수동주문유형 = data
 
-        잔고없음 = 종목코드 not in self.dict_jg.keys()
-        매수주문중 = 종목코드 in self.dict_order['매수'].keys()
-        매도주문중 = 종목코드 in self.dict_order['매도'].keys()
+        잔고없음 = 종목코드 not in self.dict_jg
+        매수주문중 = 종목코드 in self.dict_order['매수']
+        매도주문중 = 종목코드 in self.dict_order['매도']
 
         주문번호 = ''
         주문취소 = False
@@ -378,7 +378,7 @@ class UpbitTrader:
 
     def CheckChegeol(self):
         order_info_list = []
-        for gubun in self.dict_order.keys():
+        for gubun in self.dict_order:
             for code, orders in self.dict_order[gubun].items():
                 order_info = self.GetOrderInfo(code, orders[0])
                 if order_info is not None:
@@ -417,7 +417,7 @@ class UpbitTrader:
                     총체결수량 = round(총체결수량, 8)
 
             if 총체결수량 > 0:
-                if 주문번호 not in self.dict_order_cc.keys():
+                if 주문번호 not in self.dict_order_cc:
                     order_info = [종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호]
                     self.dict_order_cc[주문번호] = 총체결수량
                 else:
@@ -426,7 +426,7 @@ class UpbitTrader:
                         order_info = [종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 주문번호]
                         self.dict_order_cc[주문번호] = 총체결수량
 
-                if 미체결수량 == 0 and 주문번호 in self.dict_order_cc.keys():
+                if 미체결수량 == 0 and 주문번호 in self.dict_order_cc:
                     del self.dict_order_cc[주문번호]
 
         return order_info
@@ -453,9 +453,9 @@ class UpbitTrader:
         cancel_list = []
         modify_list = []
 
-        for gubun in self.dict_order.keys():
+        for gubun in self.dict_order:
             if gubun in ('매수', '매도'):
-                for code in self.dict_order[gubun].keys():
+                for code in self.dict_order[gubun]:
                     if code_ is None or code == code_:
                         order_info = self.dict_order[gubun][code]
                         if gubun == '매수':
@@ -465,11 +465,11 @@ class UpbitTrader:
                             if self.dict_set['코인매도취소시간'] and now() > order_info[1]:
                                 cancel_list.append((code, gubun))
                         if gubun == '매수':
-                            if order_info[2] < self.dict_set['코인매수정정횟수'] and code in self.dict_curc.keys() and \
+                            if order_info[2] < self.dict_set['코인매수정정횟수'] and code in self.dict_curc and \
                                     self.dict_curc[code] >= order_info[3] + order_info[4] * self.dict_set['코인매수정정호가차이']:
                                 modify_list.append((code, gubun))
                         else:
-                            if order_info[2] < self.dict_set['코인매도정정횟수'] and code in self.dict_curc.keys() and \
+                            if order_info[2] < self.dict_set['코인매도정정횟수'] and code in self.dict_curc and \
                                     self.dict_curc[code] <= order_info[3] - order_info[4] * self.dict_set['코인매도정정호가차이']:
                                 modify_list.append((code, gubun))
 
@@ -483,7 +483,7 @@ class UpbitTrader:
     def CancelOrder(self, 종목코드, 주문구분):
         dict_cj = self.GetCodeChejan(종목코드, 주문구분)
         if dict_cj:
-            last_key = list(dict_cj.keys())[-1]
+            last_key = list(dict_cj)[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 주문번호, 주문가격 = dict_cj[last_key]['주문번호'], dict_cj[last_key]['주문가격']
@@ -492,7 +492,7 @@ class UpbitTrader:
     def ModifyOrder(self, 종목코드, 주문구분):
         dict_cj = self.GetCodeChejan(종목코드, 주문구분)
         if dict_cj:
-            last_key = list(dict_cj.keys())[-1]
+            last_key = list(dict_cj)[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == '매수':
@@ -509,15 +509,15 @@ class UpbitTrader:
     def JangoCheongsan(self, gubun):
         self.dict_bool['코인잔고청산'] = True
 
-        for 주문구분 in self.dict_order.keys():
+        for 주문구분 in self.dict_order:
             if 주문구분 in ('매수', '매도'):
-                for 종목코드 in self.dict_order[주문구분].keys():
+                for 종목코드 in self.dict_order[주문구분]:
                     self.CancelOrder(종목코드, 주문구분)
 
         if self.dict_jg and (gubun == '수동' or self.dict_set['코인잔고청산']):
             if gubun == '수동':
                 self.teleQ.put('tele', '코인 잔고청산 주문을 전송합니다.')
-            for 종목코드 in self.dict_jg.keys():
+            for 종목코드 in self.dict_jg:
                 현재가 = self.dict_jg[종목코드]['현재가']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
                 if self.dict_set['코인모의투자']:
@@ -558,7 +558,7 @@ class UpbitTrader:
         if 주문구분 in ('매수', '매도'):
             if 주문구분 == '매수':
                 # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
-                if 종목코드 in self.dict_jg.keys():
+                if 종목코드 in self.dict_jg:
                     보유수량 = round(self.dict_jg[종목코드]['보유수량'] + 체결수량, 8)
                     매입금액 = int(self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격)
                     매입가 = round(매입금액 / 보유수량, 4)
@@ -592,11 +592,11 @@ class UpbitTrader:
 
                 if 미체결수량 == 0:
                     self.dict_jg[종목코드]['분할매수횟수'] += 1
-                    if 종목코드 in self.dict_order[주문구분].keys():
+                    if 종목코드 in self.dict_order[주문구분]:
                         del self.dict_order[주문구분][종목코드]
 
             else:
-                if 종목코드 not in self.dict_jg.keys(): return
+                if 종목코드 not in self.dict_jg: return
                 매입가 = self.dict_jg[종목코드]['매입가']
                 보유수량 = round(self.dict_jg[종목코드]['보유수량'] - 체결수량, 8)
                 if 보유수량 != 0:
@@ -617,7 +617,7 @@ class UpbitTrader:
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
                         self.dict_jg[종목코드]['분할매도횟수'] += 1
-                    if 종목코드 in self.dict_order[주문구분].keys():
+                    if 종목코드 in self.dict_order[주문구분]:
                         del self.dict_order[주문구분][종목코드]
 
                 매입금액 = 매입가 * 체결수량
@@ -650,9 +650,9 @@ class UpbitTrader:
         elif 주문구분 in ('매수취소', '매도취소'):
             if 주문구분 == '매수취소':
                 self.dict_intg['추정예수금'] += 주문수량 * 주문가격
-                if 종목코드 in self.dict_order[주문구분].keys():
+                if 종목코드 in self.dict_order[주문구분]:
                     del self.dict_order[주문구분][종목코드]
-            elif 종목코드 in self.dict_order[주문구분].keys():
+            elif 종목코드 in self.dict_order[주문구분]:
                 del self.dict_order[주문구분][종목코드]
 
             self.cstgQ.put((주문구분, 종목코드))
@@ -661,7 +661,7 @@ class UpbitTrader:
             if self.dict_set['코인알림소리']: self.soundQ.put(f"{종목코드} {주문구분}하였습니다.")
             self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {주문가격} | {주문수량}'))
 
-        self.creceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+        self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
 
     def UpdateTradelist(self, index, 종목코드, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
@@ -791,20 +791,20 @@ class UpbitTrader:
         self.windowQ.put((ui_num['C단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
 
     def CheckError(self, ret):
-        if type(ret) == dict and list(ret.keys())[0] == 'error':
+        if type(ret) == dict and list(ret)[0] == 'error':
             self.windowQ.put((ui_num['C로그텍스트'], f"시스템 명령 오류 알림 - {ret['error']['name']} : {ret['error']['message']}"))
             return False
         return True
 
     def GetOrderCodeList(self):
-        return tuple(self.dict_order['매수'].keys()) + tuple(self.dict_order['매도'].keys())
+        return tuple(self.dict_order['매수']) + tuple(self.dict_order['매도'])
 
     def GetCodeChejan(self, code, gubun):
         return {k: v for k, v in self.dict_cj.items() if v['종목명'] == code and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun} 접수')}
 
     def GetIndex(self):
         index = str_ymdhmsf(now_utc())
-        if index in self.dict_cj.keys():
-            while index in self.dict_cj.keys():
+        if index in self.dict_cj:
+            while index in self.dict_cj:
                 index = str(int(index) + 1)
         return index

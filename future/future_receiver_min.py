@@ -1,6 +1,5 @@
 import os
 import sys
-import numpy as np
 from future_receiver_tick import FutureReceiverTick
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num
@@ -13,11 +12,11 @@ class FutureReceiverMin(FutureReceiverTick):
         if self.dict_set['리시버공유'] == 1:
             self.recvservQ.put(('tickdata', (code, c, dt)))
 
-        if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
+        if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
             self.straderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
 
-        if code not in self.dict_data.keys():
+        if code not in self.dict_data:
             dm, bids, asks, tbids, tasks = 0, 0, 0, 0, 0
         else:
             dm, _, bids, asks, tbids, tasks = self.dict_data[code][5:11]
@@ -60,7 +59,7 @@ class FutureReceiverMin(FutureReceiverTick):
             if asks_ > 0: asks += asks_
             self.list_hgdt[2:4] = bids, asks
             if dt > self.list_hgdt[0]:
-                self.kwzservQ.put(('hoga', (self.dict_info[code]['종목명'], c, per, 0, 0, o, h, low)))
+                self.kwzservQ.put(('hoga', (self.dict_info[code]['종목명'], c, per, 0, -1, o, h, low)))
                 if asks > 0: self.kwzservQ.put(('hoga', (-asks, ch)))
                 if bids > 0: self.kwzservQ.put(('hoga', (bids, ch)))
                 self.list_hgdt[0] = dt
@@ -73,9 +72,9 @@ class FutureReceiverMin(FutureReceiverTick):
         send   = False
         dt_min = int(str(dt)[:12])
 
-        if code in self.dict_data.keys():
+        if code in self.dict_data:
             dm = self.dict_data[code][5]
-            if code in self.dict_tmdt.keys():
+            if code in self.dict_tmdt:
                 if dt_min > self.dict_tmdt[code][0]:
                     send = True
             else:
@@ -86,35 +85,22 @@ class FutureReceiverMin(FutureReceiverTick):
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                index = 0
-                for i, price in enumerate(hoga_seprice[::-1]):
-                    if price >= csp:
-                        index = i
-                        break
-                if index <= 5:
-                    hoga_seprice = hoga_seprice[5 - index:10 - index]
-                    hoga_samount = hoga_samount[5 - index:10 - index]
+                index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
+                if index is not None:
+                    hoga_seprice = (0.,) * index + hoga_seprice[:-index]
+                    hoga_samount = (0,) * index + hoga_samount[:-index]
                 else:
-                    hoga_seprice = tuple(np.zeros(index - 5)) + hoga_seprice[:10 - index]
-                    hoga_samount = tuple(np.zeros(index - 5)) + hoga_samount[:10 - index]
-            else:
-                hoga_seprice = hoga_seprice[-5:]
-                hoga_samount = hoga_samount[-5:]
+                    hoga_seprice = (0.,) * 5
+                    hoga_samount = (0,) * 5
 
             if hoga_buprice[0] > cbp:
-                index = 0
-                for i, price in enumerate(hoga_buprice):
-                    if price <= cbp:
-                        index = i
-                        break
-                hoga_buprice = hoga_buprice[index:index + 5]
-                hoga_bamount = hoga_bamount[index:index + 5]
-                if index > 5:
-                    hoga_buprice = hoga_buprice + tuple(np.zeros(index - 5))
-                    hoga_bamount = hoga_bamount + tuple(np.zeros(index - 5))
-            else:
-                hoga_buprice = hoga_buprice[:5]
-                hoga_bamount = hoga_bamount[:5]
+                index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
+                if index is not None:
+                    hoga_buprice = hoga_buprice[index:] + (0.,) * index
+                    hoga_bamount = hoga_bamount[index:] + (0,) * index
+                else:
+                    hoga_buprice = (0.,) * 5
+                    hoga_bamount = (0,) * 5
 
             c     = self.dict_data[code][0]
             hlp   = round((c / ((self.dict_data[code][2] + self.dict_data[code][3]) / 2) - 1) * 100, 2)

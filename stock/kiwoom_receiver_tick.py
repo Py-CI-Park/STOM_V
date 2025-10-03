@@ -115,8 +115,8 @@ class KiwoomReceiverTick:
             self.DeleteGsjmlist(data)
         elif gubun == 'VI발동해제':
             gubun_, code, name = data
-            if gubun_ == '1' and code in self.dict_name.keys() and \
-                    (code not in self.dict_vipr.keys() or (self.dict_vipr[code][0] and now() > self.dict_vipr[code][1])):
+            if gubun_ == '1' and code in self.dict_name and \
+                    (code not in self.dict_vipr or (self.dict_vipr[code][0] and now() > self.dict_vipr[code][1])):
                 self.UpdateViPrice(code, name)
         elif gubun == '잔고목록':
             self.tuple_jango = data
@@ -164,13 +164,15 @@ class KiwoomReceiverTick:
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료')))
 
     def SaveData(self):
-        codes = []
+        codes = set()
         if self.dict_mtop:
             if self.dict_set['주식타임프레임']:
-                codes = list(set(';'.join(list(self.dict_mtop.values())[29:]).split(';')))
+                for mtop_text in list(self.dict_mtop.values())[29:]:
+                    codes.update(mtop_text.split(';'))
                 con = sqlite3.connect(DB_STOCK_TICK)
             else:
-                codes = list(set(';'.join(list(self.dict_mtop.values())).split(';')))
+                for mtop_text in self.dict_mtop.values():
+                    codes.update(mtop_text.split(';'))
                 con = sqlite3.connect(DB_STOCK_MIN)
             last_index = 0
             try:
@@ -178,8 +180,8 @@ class KiwoomReceiverTick:
                 last_index = df['index'][0]
             except:
                 pass
-            df = {key: value for key, value in self.dict_mtop.items() if key > last_index}
-            df = pd.DataFrame(df.values(), columns=['거래대금순위'], index=list(df.keys()))
+            dict_mtop = {key: value for key, value in self.dict_mtop.items() if key > last_index}
+            df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료')))
@@ -189,12 +191,12 @@ class KiwoomReceiverTick:
     def UpdateTickData(self, data):
         code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp = data
 
-        if code not in self.dict_vipr.keys():
+        if code not in self.dict_vipr:
             self.InsertViPrice(code, o)
         elif not self.dict_vipr[code][0] and now() > self.dict_vipr[code][1]:
             self.UpdateViPrice(code, c)
 
-        if code in self.dict_data.keys():
+        if code in self.dict_data:
             bids, asks = self.dict_data[code][13:15]
         else:
             bids, asks = 0, 0
@@ -228,9 +230,9 @@ class KiwoomReceiverTick:
         send   = False
         dt_min = int(str(dt)[:12])
 
-        if code in self.dict_data.keys():
+        if code in self.dict_data:
             dm = self.dict_data[code][5]
-            if code in self.dict_tmdt.keys():
+            if code in self.dict_tmdt:
                 if dt > self.dict_tmdt[code][0] and hoga_bamount[4] != 0:
                     send = True
             else:
@@ -246,7 +248,7 @@ class KiwoomReceiverTick:
                 if index is not None:
                     start_idx = (5 - index) if index < 5 else 0
                     end_idx   = 10 - index
-                    add_cnt   = max(0, index - 5)
+                    add_cnt   = (index - 5) if index > 5 else 0
                     hoga_seprice = (0,) * add_cnt + hoga_seprice[start_idx:end_idx]
                     hoga_samount = (0,) * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
@@ -259,9 +261,9 @@ class KiwoomReceiverTick:
             if hoga_buprice[0] > cbp:
                 index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
                 if index is not None:
-                    start_idx = 0 + index
-                    end_idx   = 5 + index
-                    add_cnt   = max(0, index - 5)
+                    start_idx = index
+                    end_idx   = index + 5
+                    add_cnt   = (index - 5) if index > 5 else 0
                     hoga_buprice = hoga_buprice[start_idx:end_idx] + (0,) * add_cnt
                     hoga_bamount = hoga_bamount[start_idx:end_idx] + (0,) * add_cnt
                 else:
@@ -303,7 +305,7 @@ class KiwoomReceiverTick:
 
         if self.hoga_code == code and dt > self.list_hgdt[1]:
             self.list_hgdt[1] = dt
-            if code in self.dict_sghg.keys():
+            if code in self.dict_sghg:
                 shg, hhg = self.dict_sghg[code]
             else:
                 shg, hhg = GetSangHahanga(code in self.tuple_kosd, lastprice, self.int_hgtime)
@@ -316,7 +318,7 @@ class KiwoomReceiverTick:
 
     def UpdateViPrice(self, code, key):
         if type(key) == str:
-            if code in self.dict_vipr.keys():
+            if code in self.dict_vipr:
                 self.dict_vipr[code][:2] = False, timedelta_sec(5)
             else:
                 self.dict_vipr[code] = [False, timedelta_sec(5), 0, 0, 0]

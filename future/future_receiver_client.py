@@ -72,7 +72,7 @@ class FutureReceiverClient:
     def UpdateTickData(self, data):
         if len(data) == 3:
             code, c, dt = data
-            if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
+            if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
                 self.straderQ.put(('잔고갱신', (code, c)))
                 self.dict_jgdt[code] = dt
         else:
@@ -90,8 +90,8 @@ class FutureReceiverClient:
 
     def UpdateLoginInfo(self, data):
         self.dict_info = data
-        dict_name = {code: self.dict_info[code]['종목명'] for code in self.dict_info.keys()}
-        dict_code = {self.dict_info[code]['종목명']: code for code in self.dict_info.keys()}
+        dict_name = {code: self.dict_info[code]['종목명'] for code in self.dict_info}
+        dict_code = {self.dict_info[code]['종목명']: code for code in self.dict_info}
         self.kwzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
         self.straderQ.put(('종목정보', self.dict_info))
         self.sstgQ.put(('종목정보', self.dict_info))

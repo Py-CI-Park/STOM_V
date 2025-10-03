@@ -74,11 +74,10 @@ class FutureKiwoom:
         self.tr_next     = None
         self.tr_df       = None
 
-        cme_hms = int(str_hms(now_cme()))
-        if self.dict_set['주식타임프레임']:
-            self.test_mode = True if cme_hms > 103000 or cme_hms > self.dict_set['주식전략종료시간'] else False
-        else:
-            self.test_mode = True if cme_hms > 160000 or cme_hms > self.dict_set['주식전략종료시간'] else False
+        int_cme_hms = int(str_hms(now_cme()))
+        test_time1  = 93000 if self.dict_set['주식타임프레임'] else 90000
+        test_time2  = 90000 if self.dict_set['주식타임프레임'] else 83000
+        self.test_mode = True if test_time1 < int_cme_hms or int_cme_hms < test_time2 else False
 
         self.CommConnect()
 
@@ -182,8 +181,8 @@ class FutureKiwoom:
                 }
             qtest_qwait(0.25)
 
-        dict_name = {code: self.dict_info[code]['종목명'] for code in self.dict_info.keys()}
-        dict_code = {self.dict_info[code]['종목명']: code for code in self.dict_info.keys()}
+        dict_name = {code: self.dict_info[code]['종목명'] for code in self.dict_info}
+        dict_code = {self.dict_info[code]['종목명']: code for code in self.dict_info}
         self.kwzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
         self.sreceivQ.put(('종목정보', self.dict_info))
         self.straderQ.put(('종목정보', self.dict_info))
@@ -241,15 +240,15 @@ class FutureKiwoom:
                     csp     = float(self.GetCommRealData(code, 27))
                     cbp     = float(self.GetCommRealData(code, 28))
 
-                int_cme_hms = int(str_hms_cme_from_str(dt))
+                str_cme_hms = str_hms_cme_from_str(dt)
                 if not self.test_mode:
                     if self.dict_set['주식타임프레임']:
-                        if int_cme_hms < 93000:
+                        if int(str_cme_hms) < 93000:
                             return
                     else:
-                        if int_cme_hms < 90000:
+                        if int(str_cme_hms) < 90000:
                             return
-                dt = int(f'{self.str_today}{int_cme_hms}')
+                dt = int(f'{self.str_today}{str_cme_hms}')
             except:
                 pass
             else:
@@ -342,15 +341,15 @@ class FutureKiwoom:
                         int(self.GetCommRealData(code, 75))
                     )
 
-                int_cme_hms = int(str_hms_cme_from_str(dt))
+                str_cme_hms = str_hms_cme_from_str(dt)
                 if not self.test_mode:
                     if self.dict_set['주식타임프레임']:
-                        if int_cme_hms < 93000:
+                        if int(str_cme_hms) < 93000:
                             return
                     else:
-                        if int_cme_hms < 90000:
+                        if int(str_cme_hms) < 90000:
                             return
-                dt = int(f'{self.str_today}{int_cme_hms}')
+                dt = int(f'{self.str_today}{str_cme_hms}')
                 name = self.dict_info[code]['종목명']
             except:
                 pass
@@ -363,7 +362,7 @@ class FutureKiwoom:
         self.kwzservQ.put(('window', (ui_num['S오더텍스트'], f'{sMsg}')))
         if '매수증거금' in sMsg:
             sn = int(sScrNo)
-            code = self.dict_sncd[sn] if sn in self.dict_sncd.keys() else ''
+            code = self.dict_sncd[sn] if sn in self.dict_sncd else ''
             self.straderQ.put(('증거금부족', code))
 
     # noinspection PyUnusedLocal
@@ -403,11 +402,12 @@ class FutureKiwoom:
         if self.dict_set['리시버공유'] < 2 and not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
-        inthms = int(str_hms(now_cme()))
-        if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
-            self.ProcessKill()
-        if 160500 < inthms and not self.dict_bool['프로세스종료']:
-            self.ProcessKill()
+        if not self.test_mode:
+            inthms = int(str_hms(now_cme()))
+            if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
+                self.ProcessKill()
+            if 160500 < inthms and not self.dict_bool['프로세스종료']:
+                self.ProcessKill()
 
     def GetAccountjanGo(self):
         self.dict_bool['계좌조회'] = True
@@ -422,7 +422,7 @@ class FutureKiwoom:
         else:
             df = self.GetBalances(self.str_account, self.str_pass)
             df.set_index('통화코드', inplace=True)
-            yesugm = round(df['원화대용평가금액']['USD'] / 100, 2)
+            yesugm = round(df['원화대용평가금액']['USD'] / 100, 2) if len(df) > 0 else 0
 
             df = self.GetJango(self.str_account, self.str_pass)
             if len(df) > 0:
@@ -511,7 +511,7 @@ class FutureKiwoom:
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '계좌번호', acc_num)
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '비밀번호', pass_num)
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '비밀번호입력매체', '00')
-        self.ocx.dynamicCall('CommRqData(QString, QString, QString, QString)', '예수금조회', 'opw30009', '', 1000)
+        self.ocx.dynamicCall('CommRqData(QString, QString, QString, QString)', '예수금및증거금현황조회', 'opw30009', '', 1000)
         sleeptime = datetime.datetime.now() + datetime.timedelta(seconds=0.25)
         while not self.dict_bool['TR수신'] or datetime.datetime.now() < sleeptime:
             qtest_qwait(0.01)
@@ -523,7 +523,7 @@ class FutureKiwoom:
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '비밀번호', pass_num)
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '비밀번호입력매체', '00')
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '통화코드', 'USD')
-        self.ocx.dynamicCall('CommRqData(QString, QString, QString, QString)', '잔고조회', 'opw30003', '', 1000)
+        self.ocx.dynamicCall('CommRqData(QString, QString, QString, QString)', '미체결잔고내역조회', 'opw30003', '', 1000)
         sleeptime = datetime.datetime.now() + datetime.timedelta(seconds=0.25)
         while not self.dict_bool['TR수신'] or datetime.datetime.now() < sleeptime:
             qtest_qwait(0.01)
@@ -555,7 +555,7 @@ class FutureKiwoom:
         for code in code_list:
             self.dict_bool['실시간등록'] = False
             self.ocx.dynamicCall('SetInputValue(QString, QString)', '종목코드', code)
-            self.ocx.dynamicCall('CommRqData(QString, QString, QString, QString)', '실시간시세등록', 'opt10001', '', sn)
+            self.ocx.dynamicCall('CommRqData(QString, QString, QString, QString)', '종목정보조회', 'opt10001', '', sn)
             sleeptime = datetime.datetime.now() + datetime.timedelta(seconds=0.25)
             while not self.dict_bool['실시간등록'] or datetime.datetime.now() < sleeptime:
                 qtest_qwait(0.01)

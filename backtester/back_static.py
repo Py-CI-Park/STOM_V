@@ -605,7 +605,7 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
     df_ts['수익금합계'] = ((df_ts['수익금합계'] + seed) / seed - 1) * 100
 
     df_kp, df_kd, df_nd, df_bc = None, None, None, None
-    if dict_cn is not None and '005930' in dict_cn.keys():
+    if dict_cn is not None and '005930' in dict_cn:
         df_kp = df_kp_[(df_kp_['index'] >= str(startday)) & (df_kp_['index'] <= str(endday))].copy()
         df_kd = df_kd_[(df_kd_['index'] >= str(startday)) & (df_kd_['index'] <= str(endday))].copy()
         df_kp['종가'] = (df_kp['종가'] / df_kp['종가'].iloc[0] - 1) * 100
@@ -614,7 +614,7 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
         df_kd['일자'] = df_kd['index'].apply(lambda x: dt_ymd(x))
         df_kp.set_index('일자', inplace=True)
         df_kd.set_index('일자', inplace=True)
-    elif dict_cn is not None and '005930' not in dict_cn.keys():
+    elif dict_cn is not None and '005930' not in dict_cn:
         try:
             startday = f'{str(startday)[:4]}-{str(startday)[4:6]}-{str(startday)[6:8]}'
             endday   = f'{str(endday)[:4]}-{str(endday)[4:6]}-{str(endday)[6:8]}'

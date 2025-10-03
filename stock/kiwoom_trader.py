@@ -90,6 +90,14 @@ class KiwoomTrader:
             '시장가FOK': '23',
             '최유리FOK': '26'
         }
+        self.주문유형 = {
+            '매수': 1,
+            '매도': 2,
+            '매수취소': 3,
+            '매도취소': 4,
+            '매수정정': 5,
+            '매도정정': 6
+        }
 
         self.str_account = ''
         self.str_today   = str_ymd()
@@ -130,7 +138,7 @@ class KiwoomTrader:
             df_jg = pd.read_sql('SELECT * FROM s_jangolist', con).set_index('index')
             if len(df_jg) > 0:
                 self.dict_jg = df_jg.to_dict('index')
-                self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+                self.sreceivQ.put(('잔고목록', tuple(self.dict_jg)))
         con.close()
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 정보 불러오기 완료')))
 
@@ -156,10 +164,10 @@ class KiwoomTrader:
                 self.dict_curc[code] = c
                 self.OrderTimeControl(code)
             elif data[0] == '관심진입':
-                if data[1] in self.dict_order['매도'].keys():
+                if data[1] in self.dict_order['매도']:
                     self.CancelOrder(data[1], '매도')
             elif data[0] == '관심이탈':
-                if data[1] in self.dict_order['매수'].keys():
+                if data[1] in self.dict_order['매수']:
                     self.CancelOrder(data[1], '매수')
             elif data[0] == '증거금부족':
                 self.PutOrderComplete('매수취소', data[1])
@@ -171,7 +179,7 @@ class KiwoomTrader:
             elif data[0] == '종목정보':
                 self.dict_sgbn, dict_name = data[1]
                 dummy_time = timedelta_sec(-3600)
-                for code in dict_name.keys():
+                for code in dict_name:
                     self.dict_info[code] = {
                         '종목명': dict_name[code],
                         '시드부족시간': dummy_time,
@@ -209,9 +217,9 @@ class KiwoomTrader:
         else:
             주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형 = data
 
-        잔고없음 = 종목코드 not in self.dict_jg.keys()
-        매수주문중 = 종목코드 in self.dict_order['매수'].keys()
-        매도주문중 = 종목코드 in self.dict_order['매도'].keys()
+        잔고없음 = 종목코드 not in self.dict_jg
+        매수주문중 = 종목코드 in self.dict_order['매수']
+        매도주문중 = 종목코드 in self.dict_order['매도']
 
         원주문번호 = ''
         주문취소 = False
@@ -272,14 +280,8 @@ class KiwoomTrader:
                 self.PutOrderComplete(f'{주문구분}취소', 종목코드)
 
     def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형):
-        주문유형 = 0
+        주문유형 = self.주문유형[주문구분]
         주문취소 = False
-        if 주문구분 == '매수':      주문유형 = 1
-        elif 주문구분 == '매도':    주문유형 = 2
-        elif 주문구분 == '매수취소': 주문유형 = 3
-        elif 주문구분 == '매도취소': 주문유형 = 4
-        elif 주문구분 == '매수정정': 주문유형 = 5
-        elif 주문구분 == '매도정정': 주문유형 = 6
 
         if 잔고청산:
             거래구분 = '03'
@@ -337,8 +339,8 @@ class KiwoomTrader:
         cancel_list = []
         modify_list = []
 
-        for gubun in self.dict_order.keys():
-            for code in self.dict_order[gubun].keys():
+        for gubun in self.dict_order:
+            for code in self.dict_order[gubun]:
                 if code_ is None or code == code_:
                     order_info = self.dict_order[gubun][code]
                     if gubun == '매수':
@@ -348,11 +350,11 @@ class KiwoomTrader:
                         if self.dict_set['주식매도취소시간'] and now() > order_info[0]:
                             cancel_list.append((code, gubun))
                     if gubun == '매수':
-                        if order_info[1] < self.dict_set['주식매수정정횟수'] and code in self.dict_curc.keys() and \
+                        if order_info[1] < self.dict_set['주식매수정정횟수'] and code in self.dict_curc and \
                                 self.dict_curc[code] >= order_info[2] + order_info[3] * self.dict_set['주식매수정정호가차이']:
                             modify_list.append((code, gubun))
                     else:
-                        if order_info[1] < self.dict_set['주식매도정정횟수'] and code in self.dict_curc.keys() and \
+                        if order_info[1] < self.dict_set['주식매도정정횟수'] and code in self.dict_curc and \
                                 self.dict_curc[code] <= order_info[2] - order_info[3] * self.dict_set['주식매도정정호가차이']:
                             modify_list.append((code, gubun))
 
@@ -370,7 +372,7 @@ class KiwoomTrader:
         종목명 = self.dict_info[종목코드]['종목명']
         dict_cj = self.GetNameChejan(종목명, 주문구분)
         if dict_cj:
-            last_key = list(dict_cj.keys())[-1]
+            last_key = list(dict_cj)[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 현재시간 = now()
@@ -381,7 +383,7 @@ class KiwoomTrader:
         종목명 = self.dict_info[종목코드]['종목명']
         dict_cj = self.GetNameChejan(종목명, 주문구분)
         if dict_cj:
-            last_key = list(dict_cj.keys())[-1]
+            last_key = list(dict_cj)[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == '매수':
@@ -414,14 +416,14 @@ class KiwoomTrader:
     def JangoCheongsan(self, gubun):
         self.dict_bool['주식잔고청산'] = True
 
-        for 주문구분 in self.dict_order.keys():
-            for 종목코드 in self.dict_order[주문구분].keys():
+        for 주문구분 in self.dict_order:
+            for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
 
         if self.dict_jg and (gubun == '수동' or self.dict_set['주식잔고청산']):
             if gubun == '수동':
                 self.kwzservQ.put(('tele', '주식 잔고청산 주문을 전송합니다.'))
-            for 종목코드 in self.dict_jg.keys():
+            for 종목코드 in self.dict_jg:
                 종목명 = self.dict_jg[종목코드]['종목명']
                 현재가 = self.dict_jg[종목코드]['현재가']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
@@ -478,8 +480,8 @@ class KiwoomTrader:
 
     def GetIndex(self):
         index = str_ymdhmsf()
-        if index in self.dict_cj.keys():
-            while index in self.dict_cj.keys():
+        if index in self.dict_cj:
+            while index in self.dict_cj:
                 index = str(int(index) + 1)
         return index
 
@@ -504,7 +506,7 @@ class KiwoomTrader:
         elif 주문상태 == '체결' and 주문구분 in ('매수', '매도'):
             if 주문구분 == '매수':
                 # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
-                if 종목코드 in self.dict_jg.keys():
+                if 종목코드 in self.dict_jg:
                     보유수량 = self.dict_jg[종목코드]['보유수량'] + 체결수량
                     매입금액 = self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격
                     매입가 = int(round(매입금액 / 보유수량))
@@ -540,11 +542,11 @@ class KiwoomTrader:
 
                 if 미체결수량 == 0:
                     self.dict_jg[종목코드]['분할매수횟수'] += 1
-                    if 종목코드 in self.dict_order[주문구분].keys():
+                    if 종목코드 in self.dict_order[주문구분]:
                         del self.dict_order[주문구분][종목코드]
 
             else:
-                if 종목코드 not in self.dict_jg.keys(): return
+                if 종목코드 not in self.dict_jg: return
                 보유수량 = self.dict_jg[종목코드]['보유수량'] - 체결수량
                 매입가 = self.dict_jg[종목코드]['매입가']
                 if 보유수량 != 0:
@@ -565,7 +567,7 @@ class KiwoomTrader:
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
                         self.dict_jg[종목코드]['분할매도횟수'] += 1
-                    if 종목코드 in self.dict_order[주문구분].keys():
+                    if 종목코드 in self.dict_order[주문구분]:
                         del self.dict_order[주문구분][종목코드]
 
                 매입금액 = 매입가 * 체결수량
@@ -603,9 +605,9 @@ class KiwoomTrader:
             else:
                 if 주문구분 == '매수취소':
                     self.dict_intg['추정예수금'] += 미체결수량 * 주문가격
-                    if 종목코드 in self.dict_order[주문구분_].keys():
+                    if 종목코드 in self.dict_order[주문구분_]:
                         del self.dict_order[주문구분_][종목코드]
-                elif 종목코드 in self.dict_order[주문구분_].keys():
+                elif 종목코드 in self.dict_order[주문구분_]:
                     del self.dict_order[주문구분_][종목코드]
                 self.PutOrderComplete(주문구분, 종목코드)
 
@@ -614,14 +616,14 @@ class KiwoomTrader:
             if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', f'{종목명} {주문수량}주를 {주문구분}하였습니다'))
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
 
-        self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+        self.sreceivQ.put(('잔고목록', tuple(self.dict_jg)))
         self.sreceivQ.put(('주문목록', self.GetOrderCodeList()))
 
     def PutOrderComplete(self, cmsg, code):
         self.sstgQs[self.dict_sgbn[code]].put((cmsg, code))
 
     def GetOrderCodeList(self):
-        return tuple(self.dict_order['매수'].keys()) + tuple(self.dict_order['매도'].keys())
+        return tuple(self.dict_order['매수']) + tuple(self.dict_order['매도'])
 
     def UpdateTradelist(self, index, 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
         # ['종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금', '체결시간']

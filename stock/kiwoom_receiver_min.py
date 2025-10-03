@@ -1,6 +1,5 @@
 import os
 import sys
-import numpy as np
 from kiwoom_receiver_tick import KiwoomReceiverTick
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num
@@ -14,16 +13,16 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
         if self.dict_set['리시버공유'] == 1:
             self.recvservQ.put(('tickdata', (code, c, dt)))
 
-        if code in self.tuple_jango and (code not in self.dict_jgdt.keys() or dt > self.dict_jgdt[code]):
+        if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
             self.straderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
 
-        if code not in self.dict_vipr.keys():
+        if code not in self.dict_vipr:
             self.InsertViPrice(code, o)
         elif not self.dict_vipr[code][0] and now() > self.dict_vipr[code][1]:
             self.UpdateViPrice(code, c)
 
-        if code in self.dict_data.keys():
+        if code in self.dict_data:
             bids, asks = self.dict_data[code][13:15]
         else:
             bids, asks = 0, 0
@@ -64,9 +63,9 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
         send   = False
         dt_min = int(str(dt)[:12])
 
-        if code in self.dict_data.keys():
+        if code in self.dict_data:
             dm = self.dict_data[code][5]
-            if code in self.dict_tmdt.keys():
+            if code in self.dict_tmdt:
                 if dt_min > self.dict_tmdt[code][0] and hoga_bamount[4] != 0:
                     send = True
             else:
@@ -78,32 +77,31 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                index = 0
-                for i, price in enumerate(hoga_seprice[::-1]):
-                    if price >= csp:
-                        index = i
-                        break
-                if index <= 5:
-                    hoga_seprice = hoga_seprice[5 - index:10 - index]
-                    hoga_samount = hoga_samount[5 - index:10 - index]
+                index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
+                if index is not None:
+                    start_idx = (5 - index) if index < 5 else 0
+                    end_idx   = 10 - index
+                    add_cnt   = (index - 5) if index > 5 else 0
+                    hoga_seprice = (0,) * add_cnt + hoga_seprice[start_idx:end_idx]
+                    hoga_samount = (0,) * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
-                    hoga_seprice = tuple(np.zeros(index - 5)) + hoga_seprice[:10 - index]
-                    hoga_samount = tuple(np.zeros(index - 5)) + hoga_samount[:10 - index]
+                    hoga_seprice = (0,) * 5
+                    hoga_samount = (0,) * 5
             else:
                 hoga_seprice = hoga_seprice[-5:]
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                index = 0
-                for i, price in enumerate(hoga_buprice):
-                    if price <= cbp:
-                        index = i
-                        break
-                hoga_buprice = hoga_buprice[index:index + 5]
-                hoga_bamount = hoga_bamount[index:index + 5]
-                if index > 5:
-                    hoga_buprice = hoga_buprice + tuple(np.zeros(index - 5))
-                    hoga_bamount = hoga_bamount + tuple(np.zeros(index - 5))
+                index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
+                if index is not None:
+                    start_idx = index
+                    end_idx   = index + 5
+                    add_cnt   = (index - 5) if index > 5 else 0
+                    hoga_buprice = hoga_buprice[start_idx:end_idx] + (0,) * add_cnt
+                    hoga_bamount = hoga_bamount[start_idx:end_idx] + (0,) * add_cnt
+                else:
+                    hoga_buprice = (0,) * 5
+                    hoga_bamount = (0,) * 5
             else:
                 hoga_buprice = hoga_buprice[:5]
                 hoga_bamount = hoga_bamount[:5]
@@ -140,7 +138,7 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
 
         if self.hoga_code == code and dt > self.list_hgdt[1]:
             self.list_hgdt[1] = dt
-            if code in self.dict_sghg.keys():
+            if code in self.dict_sghg:
                 shg, hhg = self.dict_sghg[code]
             else:
                 shg, hhg = GetSangHahanga(code in self.tuple_kosd, lastprice, self.int_hgtime)

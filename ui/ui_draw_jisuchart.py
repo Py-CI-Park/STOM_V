@@ -13,13 +13,13 @@ class DrawRealJisuChart:
 
         gubun, xticks, ydatas = data
         if gubun == ui_num['코스피']:
-            if 100 not in self.ui.ctpg_item.keys():
+            if 100 not in self.ui.ctpg_item:
                 self.ui.ctpg_item[100] = self.ui.jspg[1].plot(x=xticks, y=ydatas, pen=(255, 0, 0))
                 self.ui.jspg[1].enableAutoRange()
             else:
                 self.ui.ctpg_item[100].setData(x=xticks, y=ydatas)
         elif gubun == ui_num['코스닥']:
-            if 101 not in self.ui.ctpg_item.keys():
+            if 101 not in self.ui.ctpg_item:
                 self.ui.ctpg_item[101] = self.ui.jspg[2].plot(x=xticks, y=ydatas, pen=(0, 0, 255))
                 self.ui.jspg[2].enableAutoRange()
             else:

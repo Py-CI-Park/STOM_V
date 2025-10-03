@@ -64,31 +64,31 @@ class Total:
                 sc += 1
                 _, vkey, _dict_dummy = data
                 if _dict_dummy:
-                    for vturn in _dict_dummy.keys():
-                        if vturn not in dict_dummy.keys():
+                    for vturn in _dict_dummy:
+                        if vturn not in dict_dummy:
                             dict_dummy[vturn] = {}
                         dict_dummy[vturn][vkey] = 0
 
                 if sc == 20:
                     sc = 0
                     for vkey in range(20):
-                        if vkey not in dict_dummy[0].keys():
+                        if vkey not in dict_dummy[0]:
                             self.stdp = SendTextAndStd(self.GetSendData(), None)
                     dict_dummy = {}
 
             elif data[0] in ('TRAIN', 'VALID'):
                 gubun, num, data, vturn, vkey = data
-                if vturn not in self.dict_t.keys():
+                if vturn not in self.dict_t:
                     self.dict_t[vturn] = {}
-                if vkey not in self.dict_t[vturn].keys():
+                if vkey not in self.dict_t[vturn]:
                     self.dict_t[vturn][vkey] = {}
-                if vturn not in self.dict_v.keys():
+                if vturn not in self.dict_v:
                     self.dict_v[vturn] = {}
-                if vkey not in self.dict_v[vturn].keys():
+                if vkey not in self.dict_v[vturn]:
                     self.dict_v[vturn][vkey] = {}
-                if vturn not in st.keys():
+                if vturn not in st:
                     st[vturn] = {}
-                if vkey not in st[vturn].keys():
+                if vkey not in st[vturn]:
                     st[vturn][vkey] = 0
 
                 if gubun == 'TRAIN':
@@ -249,7 +249,7 @@ class OptimizeConditions:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
-        day_list  = list(set(df_mt['일자'].to_list()))
+        day_list = list(set(df_mt['일자'].to_list()))
         day_list.sort()
 
         valid_days = None
@@ -404,12 +404,12 @@ class OptimizeConditions:
         opti_dict  = {x: y for x, y in rs_list}
         for key, value in opti_dict.items():
             for cond in value[0]:
-                if cond in buy_conds_freq.keys():
+                if cond in buy_conds_freq:
                     buy_conds_freq[cond] += 1
                 else:
                     buy_conds_freq[cond] = 1
             for cond in value[1]:
-                if cond in sell_conds_freq.keys():
+                if cond in sell_conds_freq:
                     sell_conds_freq[cond] += 1
                 else:
                     sell_conds_freq[cond] = 1

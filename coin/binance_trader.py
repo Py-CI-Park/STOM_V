@@ -36,10 +36,10 @@ class Scheduler(Thread):
             if int(str_hms(now_utc())) > inthms:
                 inthms = int(str_hms(now_utc()))
                 if self.main.dict_set['코인타임프레임'] and inthms < self.main.dict_set['코인전략종료시간']:
-                    self.main.straderQ.put('OrderTimeControl')
+                    self.main.ctraderQ.put('OrderTimeControl')
                 if self.main.jgcs_time < inthms and not self.main.dict_bool['코인잔고청산']:
-                    self.main.straderQ.put('JangoCheongsan')
-                self.main.straderQ.put('UpdateTotaljango')
+                    self.main.ctraderQ.put('JangoCheongsan')
+                self.main.ctraderQ.put('UpdateTotaljango')
             time.sleep(0.01)
 
 
@@ -126,7 +126,7 @@ class BinanceTrader:
             df_jg = pd.read_sql(f'SELECT * FROM c_jangolist_future', con).set_index('index')
             if len(df_jg) > 0:
                 self.dict_jg = df_jg.to_dict('index')
-                self.creceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+                self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
         con.close()
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
 
@@ -169,17 +169,16 @@ class BinanceTrader:
             } for x in datas
         }
 
-        codes = list(self.dict_info.keys())
         if self.dict_set['바이낸스선물고정레버리지']:
-            self.dict_lvrg = {x: self.dict_set['바이낸스선물고정레버리지값'] for x in codes}
+            self.dict_lvrg = {x: self.dict_set['바이낸스선물고정레버리지값'] for x in self.dict_info}
         else:
-            self.dict_lvrg = {x: 1 for x in codes}
+            self.dict_lvrg = {x: 1 for x in self.dict_info}
 
         self.cstgQ.put(('바낸선물단위정보', self.dict_info))
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 호가단위 및 소숫점자리수 조회 완료'))
 
         if not self.dict_set['코인모의투자']:
-            for code in codes:
+            for code in self.dict_info:
                 try:
                     if self.dict_set['바이낸스선물고정레버리지']:
                         self.binance.futures_change_leverage(symbol=code, leverage=self.dict_set['바이낸스선물고정레버리지값'])
@@ -232,14 +231,14 @@ class BinanceTrader:
             elif data[0] == '저가대비고가등락율':
                 self.SetLeverage(data[1])
             elif data[0] == '관심진입':
-                if data[1] in self.dict_order['SELL_LONG'].keys():
+                if data[1] in self.dict_order['SELL_LONG']:
                     self.CancelOrder(data[1], 'SELL_LONG')
-                if data[1] in self.dict_order['BUY_SHORT'].keys():
+                if data[1] in self.dict_order['BUY_SHORT']:
                     self.CancelOrder(data[1], 'BUY_SHORT')
             elif data[0] == '관심이탈':
-                if data[1] in self.dict_order['BUY_LONG'].keys():
+                if data[1] in self.dict_order['BUY_LONG']:
                     self.CancelOrder(data[1], 'BUY_LONG')
-                if data[1] in self.dict_order['SELL_SHORT'].keys():
+                if data[1] in self.dict_order['SELL_SHORT']:
                     self.CancelOrder(data[1], 'SELL_SHORT')
             elif data[0] == '설정변경':
                 self.dict_set = data[1]
@@ -301,12 +300,12 @@ class BinanceTrader:
         else:
             주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 수동주문, 수동주문유형 = data
 
-        잔고없음 = 종목코드 not in self.dict_jg.keys()
-        롱매수주문중 = 종목코드 in self.dict_order['BUY_LONG'].keys()
-        숏매수주문중 = 종목코드 in self.dict_order['SELL_SHORT'].keys()
-        롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG'].keys()
-        숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT'].keys()
-        포지션 = self.dict_jg[종목코드]['포지션'] if 종목코드 in self.dict_jg.keys() else None
+        잔고없음 = 종목코드 not in self.dict_jg
+        롱매수주문중 = 종목코드 in self.dict_order['BUY_LONG']
+        숏매수주문중 = 종목코드 in self.dict_order['SELL_SHORT']
+        롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG']
+        숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT']
+        포지션 = self.dict_jg[종목코드]['포지션'] if 종목코드 in self.dict_jg else None
 
         주문번호 = ''
         주문취소 = False
@@ -479,7 +478,7 @@ class BinanceTrader:
             pass
 
     def SetLeverage(self, dict_dlhp):
-        for code in list(self.dict_info.keys()):
+        for code in self.dict_info:
             try:
                 leverage = self.GetLeverage(dict_dlhp[code][1])
                 self.dict_lvrg[code] = leverage
@@ -500,8 +499,8 @@ class BinanceTrader:
         cancel_list = []
         modify_list = []
 
-        for gubun in self.dict_order.keys():
-            for code in self.dict_order[gubun].keys():
+        for gubun in self.dict_order:
+            for code in self.dict_order[gubun]:
                 if code_ is None or code == code_:
                     order_info = self.dict_order[gubun][code]
                     if gubun in ('BUY_LONG', 'SELL_SHORT'):
@@ -511,11 +510,11 @@ class BinanceTrader:
                         if self.dict_set['코인매수취소시간'] and now() > order_info[0]:
                             cancel_list.append((code, gubun))
                     if gubun in ('BUY_LONG', 'BUY_SHORT'):
-                        if order_info[1] < self.dict_set['코인매수정정횟수'] and code in self.dict_curc.keys() and \
+                        if order_info[1] < self.dict_set['코인매수정정횟수'] and code in self.dict_curc and \
                                 self.dict_curc[code] >= order_info[2] + self.dict_info[code]['호가단위'] * self.dict_set['코인매수정정호가차이']:
                             modify_list.append((code, gubun))
                     else:
-                        if order_info[1] < self.dict_set['코인매도정정횟수'] and code in self.dict_curc.keys() and \
+                        if order_info[1] < self.dict_set['코인매도정정횟수'] and code in self.dict_curc and \
                                 self.dict_curc[code] <= order_info[2] - self.dict_info[code]['호가단위'] * self.dict_set['코인매도정정호가차이']:
                             modify_list.append((code, gubun))
 
@@ -529,7 +528,7 @@ class BinanceTrader:
     def CancelOrder(self, 종목코드, 주문구분):
         dict_cj = self.GetCodeChejan(종목코드, 주문구분)
         if dict_cj:
-            last_key = list(dict_cj.keys())[-1]
+            last_key = list(dict_cj)[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 주문번호, 주문가격 = dict_cj[last_key]['주문번호'], dict_cj[last_key]['주문가격']
@@ -538,7 +537,7 @@ class BinanceTrader:
     def ModifyOrder(self, 종목코드, 주문구분):
         dict_cj = self.GetCodeChejan(종목코드, 주문구분)
         if dict_cj:
-            last_key = list(dict_cj.keys())[-1]
+            last_key = list(dict_cj)[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == 'BUY_LONG':
@@ -559,14 +558,14 @@ class BinanceTrader:
     def JangoCheongsan(self, gubun):
         self.dict_bool['코인잔고청산'] = True
 
-        for 주문구분 in self.dict_order.keys():
-            for 종목코드 in self.dict_order[주문구분].keys():
+        for 주문구분 in self.dict_order:
+            for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
 
         if self.dict_jg and (gubun == '수동' or self.dict_set['코인잔고청산']):
             if gubun == '수동':
                 self.teleQ.put('tele', '코인 잔고청산 주문을 전송합니다.')
-            for 종목코드 in self.dict_jg.keys():
+            for 종목코드 in self.dict_jg:
                 포지션 = self.dict_jg[종목코드]['포지션']
                 현재가 = self.dict_jg[종목코드]['현재가']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
@@ -620,7 +619,7 @@ class BinanceTrader:
         if 주문구분 in ('BUY_LONG', 'SELL_SHORT', 'SELL_LONG', 'BUY_SHORT'):
             if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
                 # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
-                if 종목코드 in self.dict_jg.keys():
+                if 종목코드 in self.dict_jg:
                     보유수량 = round(self.dict_jg[종목코드]['보유수량'] + 체결수량, self.dict_info[종목코드]['소숫점자리수'])
                     매입금액 = round(self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격, 4)
                     매입가 = round(매입금액 / 보유수량, 8)
@@ -666,11 +665,11 @@ class BinanceTrader:
 
                 if 미체결수량 == 0:
                     self.dict_jg[종목코드]['분할매수횟수'] += 1
-                    if 종목코드 in self.dict_order[주문구분].keys():
+                    if 종목코드 in self.dict_order[주문구분]:
                         del self.dict_order[주문구분][종목코드]
 
             else:
-                if 종목코드 not in self.dict_jg.keys(): return
+                if 종목코드 not in self.dict_jg: return
                 포지션 = self.dict_jg[종목코드]['포지션']
                 매입가 = self.dict_jg[종목코드]['매입가']
                 보유수량 = round(self.dict_jg[종목코드]['보유수량'] - 체결수량, self.dict_info[종목코드]['소숫점자리수'])
@@ -696,7 +695,7 @@ class BinanceTrader:
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
                         self.dict_jg[종목코드]['분할매도횟수'] += 1
-                    if 종목코드 in self.dict_order[주문구분].keys():
+                    if 종목코드 in self.dict_order[주문구분]:
                         del self.dict_order[주문구분][종목코드]
 
                 매입금액 = round(매입가 * 체결수량, 4)
@@ -740,7 +739,7 @@ class BinanceTrader:
             if 주문구분 in ('BUY_LONG_CANCEL', 'SELL_SHORT_CANCEL'):
                 self.dict_intg['추정예수금'] += 주문수량 * 주문가격
             gubun_ = 주문구분.replace('_CANCEL', '')
-            if 종목코드 in self.dict_order[gubun_].keys():
+            if 종목코드 in self.dict_order[gubun_]:
                 del self.dict_order[gubun_][종목코드]
 
             self.cstgQ.put((주문구분, 종목코드))
@@ -755,7 +754,7 @@ class BinanceTrader:
                 self.soundQ.put(f"{종목코드} {text}하였습니다.")
             self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {주문가격} | {주문수량}'))
 
-        self.creceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+        self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
 
     def UpdateTradelist(self, index, 종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
@@ -884,15 +883,15 @@ class BinanceTrader:
         self.windowQ.put((ui_num['C단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
 
     def GetOrderCodeList(self):
-        return tuple(self.dict_order['BUY_LONG'].keys()) + tuple(self.dict_order['SELL_SHORT'].keys()) + \
-            tuple(self.dict_order['SELL_LONG'].keys()) + tuple(self.dict_order['BUY_SHORT'].keys())
+        return tuple(self.dict_order['BUY_LONG']) + tuple(self.dict_order['SELL_SHORT']) + \
+            tuple(self.dict_order['SELL_LONG']) + tuple(self.dict_order['BUY_SHORT'])
 
     def GetCodeChejan(self, code, gubun):
         return {k: v for k, v in self.dict_cj.items() if v['종목명'] == code and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun}_REG')}
 
     def GetIndex(self):
         index = str_ymdhmsf(now_utc())
-        if index in self.dict_cj.keys():
-            while index in self.dict_cj.keys():
+        if index in self.dict_cj:
+            while index in self.dict_cj:
                 index = str(int(index) + 1)
         return index

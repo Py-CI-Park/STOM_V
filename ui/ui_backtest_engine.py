@@ -47,7 +47,7 @@ def backengine_show(ui, gubun):
         pass
     con.close()
     if table_list:
-        name_list = [ui.dict_name[code] if code in ui.dict_name.keys() else code for code in table_list]
+        name_list = [ui.dict_name[code] if code in ui.dict_name else code for code in table_list]
         name_list.sort()
         ui.be_comboBoxxxxx_02.clear()
         for name in name_list:
@@ -95,7 +95,7 @@ def start_backengine(ui, gubun):
     multi         = int(ui.be_lineEdittttt_04.text())
     divid_mode    = ui.be_comboBoxxxxx_01.currentText()
     one_name      = ui.be_comboBoxxxxx_02.currentText()
-    one_code      = ui.dict_code[one_name] if one_name in ui.dict_code.keys() else one_name
+    one_code      = ui.dict_code[one_name] if one_name in ui.dict_code else one_name
     ui.multi      = multi
     ui.divid_mode = divid_mode
 
@@ -202,7 +202,10 @@ def start_backengine(ui, gubun):
 
     ui.dict_mt = df_mt['거래대금순위'].to_dict()
     day_list = list(set(df_mt['일자'].to_list()))
-    table_list = list(set(';'.join(list(ui.dict_mt.values())).split(';')))
+    table_list = set()
+    for mt_text in ui.dict_mt.values():
+        table_list.update(mt_text.split(';'))
+    table_list = list(table_list)
 
     day_codes = {}
     for day in day_list:
@@ -223,7 +226,7 @@ def start_backengine(ui, gubun):
         ui.BacktestEngineKill()
         return
 
-    if divid_mode == '한종목 로딩' and one_code not in code_days.keys():
+    if divid_mode == '한종목 로딩' and one_code not in code_days:
         ui.windowQ.put((ui_num['백테엔진'], f'{one_name} 종목은 선택한 일자에 데이터가 존재하지 않습니다.'))
         ui.BacktestEngineKill()
         return

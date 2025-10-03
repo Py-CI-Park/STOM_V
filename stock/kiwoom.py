@@ -106,6 +106,9 @@ class Kiwoom:
         self.tr_cdlist   = None
         self.tr_df       = None
 
+        int_hms = int(str_hms())
+        self.test_mode   = True if 90000 < int_hms or int_hms < 70000 else False
+
         self.CommConnect()
 
         self.updater = Updater(self.kiwoomQ)
@@ -144,7 +147,7 @@ class Kiwoom:
         for q in self.sstgQs:
             q.put(('코스닥목록', tuple_kosd))
 
-        df = pd.DataFrame(self.dict_name.values(), columns=['종목명'], index=list(self.dict_name.keys()))
+        df = pd.DataFrame(self.dict_name.values(), columns=['종목명'], index=list(self.dict_name))
         df['코스닥'] = [True if x in tuple_kosd else False for x in df.index]
         self.kwzservQ.put(('query', ('종목디비', df, 'stockinfo', 'replace')))
 
@@ -191,17 +194,18 @@ class Kiwoom:
         if self.dict_set['리시버공유'] < 2 and not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
-        if self.operation == 1:
-            if 90100 < inthms and self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
-                self.ProcessKill()
-        elif self.operation in (3, 2, 4):
-            if self.dict_set['리시버공유'] < 2 and not self.dict_bool['실시간조건검색시작']:
-                self.ConditionSearchStart()
-            if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
-                self.ProcessKill()
-        elif self.operation == 8:
-            if 153500 < inthms and not self.dict_bool['프로세스종료']:
-                self.ProcessKill()
+        if not self.test_mode:
+            if self.operation == 1:
+                if 90100 < inthms and self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
+                    self.ProcessKill()
+            elif self.operation in (3, 2, 4):
+                if self.dict_set['리시버공유'] < 2 and not self.dict_bool['실시간조건검색시작']:
+                    self.ConditionSearchStart()
+                if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
+                    self.ProcessKill()
+            elif self.operation == 8:
+                if 153500 < inthms and not self.dict_bool['프로세스종료']:
+                    self.ProcessKill()
 
     def GetAccountjanGo(self):
         self.dict_bool['계좌조회'] = True
@@ -318,7 +322,7 @@ class Kiwoom:
         self.kwzservQ.put(('window', (ui_num['S오더텍스트'], f'{sMsg}')))
         if '매수증거금' in sMsg:
             sn = int(sScrNo)
-            code = self.dict_sncd[sn] if sn in self.dict_sncd.keys() else ''
+            code = self.dict_sncd[sn] if sn in self.dict_sncd else ''
             self.straderQ.put(('증거금부족', code))
 
     def Block_Request(self, *args, **kwargs):

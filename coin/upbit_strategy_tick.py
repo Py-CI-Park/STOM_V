@@ -113,7 +113,7 @@ class UpbitStrategyTick:
     def UpdateTuple(self, data):
         gubun, data = data
         if gubun == '관심목록':
-            drop_index_list = list(set(list(self.dict_gj.keys())) - set(data))
+            drop_index_list = [k for k in self.dict_gj if k not in set(data)]
             if drop_index_list:
                 for k in drop_index_list:
                     del self.dict_gj[k]
@@ -121,10 +121,7 @@ class UpbitStrategyTick:
             if data in self.list_buy:
                 self.list_buy.remove(data)
             if gubun == '매수완료':
-                if data in self.dict_signal_num.keys():
-                    self.dict_buy_num[data] = self.dict_signal_num[data]
-                else:
-                    self.dict_buy_num[data] = len(self.dict_arry[data]) - 1
+                self.dict_buy_num[data] = self.dict_signal_num.get(data, len(self.dict_arry[data]) - 1)
         elif gubun in ('매도완료', '매도취소'):
             if data in self.list_sell:
                 self.list_sell.remove(data)
@@ -363,13 +360,13 @@ class UpbitStrategyTick:
             return Parameter_Dgree(51, 6, tick, pre, dgree['coin']['tick'][1])
 
         def 경과틱수(조건명):
-            if 종목코드 in self.dict_cond_indexn.keys() and \
-                    조건명 in self.dict_cond_indexn[종목코드].keys() and self.dict_cond_indexn[종목코드][조건명] != 0:
+            if 종목코드 in self.dict_cond_indexn and \
+                    조건명 in self.dict_cond_indexn[종목코드] and self.dict_cond_indexn[종목코드][조건명] != 0:
                 return self.indexn - self.dict_cond_indexn[종목코드][조건명]
             return 0
 
         시분초, 호가단위 = int(str(체결시간)[8:]), GetUpbitHogaunit(현재가)
-        데이터길이 = len(self.dict_arry[종목코드]) + 1 if 종목코드 in self.dict_arry.keys() else 1
+        데이터길이 = len(self.dict_arry[종목코드]) + 1 if 종목코드 in self.dict_arry else 1
         평균값계산틱수 = self.dict_set['코인평균값계산틱수']
         이동평균0060, 이동평균0300, 이동평균0600, 이동평균1200, 최고현재가_, 최저현재가_ = 0., 0., 0., 0., 0, 0
         체결강도평균_, 최고체결강도_, 최저체결강도_, 최고초당매수수량_, 최고초당매도수량_ = 0., 0., 0., 0, 0
@@ -380,7 +377,7 @@ class UpbitStrategyTick:
         self.bhogainfo = bhogainfo[:self.dict_set['코인매수시장가잔량범위']]
         self.shogainfo = shogainfo[:self.dict_set['코인매도시장가잔량범위']]
 
-        if 종목코드 in self.dict_arry.keys():
+        if 종목코드 in self.dict_arry:
             len_array = len(self.dict_arry[종목코드])
             if len_array >=   59: 이동평균0060 = round((self.dict_arry[종목코드][  -59:, 1].sum() + 현재가) /   60, 8)
             if len_array >=  299: 이동평균0300 = round((self.dict_arry[종목코드][ -299:, 1].sum() + 현재가) /  300, 8)
@@ -422,7 +419,7 @@ class UpbitStrategyTick:
             누적초당매도수량_, 초당거래대금평균_, 등락율각도_, 당일거래대금각도_
         ]
 
-        if 종목코드 not in self.dict_arry.keys():
+        if 종목코드 not in self.dict_arry:
             self.dict_arry[종목코드] = np.array([new_data_tick])
         else:
             self.dict_arry[종목코드] = np.r_[self.dict_arry[종목코드], np.array([new_data_tick])]
@@ -431,7 +428,7 @@ class UpbitStrategyTick:
         self.indexn = 데이터길이 - 1
 
         if self.dict_condition and 체결시간 < self.dict_set['코인전략종료시간']:
-            if 종목코드 not in self.dict_cond_indexn.keys():
+            if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 try:
@@ -441,8 +438,8 @@ class UpbitStrategyTick:
                     self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류'))
 
         if 체결강도평균_ != 0 and 체결시간 < self.dict_set['코인전략종료시간']:
-            if 종목코드 in self.dict_jg.keys():
-                if 종목코드 not in self.dict_buy_num.keys():
+            if 종목코드 in self.dict_jg:
+                if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
                 매수틱번호 = self.dict_buy_num[종목코드]
                 매입가 = self.dict_jg[종목코드]['매입가']
@@ -453,7 +450,7 @@ class UpbitStrategyTick:
                 _, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
                 매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
                 보유시간 = (now_utc() - 매수시간).total_seconds()
-                if 종목코드 not in self.dict_hilo.keys():
+                if 종목코드 not in self.dict_hilo:
                     self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
                     if 수익률 > self.dict_hilo[종목코드][0]:
@@ -671,12 +668,12 @@ class UpbitStrategyTick:
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.windowQ.put((ui_num['C관심종목'], df_gj))
         if self.dict_hilo:
-            for code in list(self.dict_hilo.keys()):
-                if code not in self.dict_jg.keys():
+            for code in self.dict_hilo:
+                if code not in self.dict_jg:
                     del self.dict_hilo[code]
 
     def SaveData(self, codes):
-        for code in list(self.dict_arry.keys()):
+        for code in self.dict_arry:
             if code not in codes:
                 del self.dict_arry[code]
 
@@ -701,7 +698,7 @@ class UpbitStrategyTick:
         if last > 0:
             start = now()
             cllen = len(columns_ts)
-            for i, code in enumerate(list(self.dict_arry.keys())):
+            for i, code in enumerate(self.dict_arry):
                 df = pd.DataFrame(self.dict_arry[code][:, :cllen], columns=columns_ts)
                 df[['index']] = df[['index']].astype('int64')
                 df.set_index('index', inplace=True)

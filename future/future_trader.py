@@ -115,7 +115,7 @@ class FutureTrader:
             df_jg = pd.read_sql(f'SELECT * FROM f_jangolist', con).set_index('index')
             if len(df_jg) > 0:
                 self.dict_jg = df_jg.to_dict('index')
-                self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+                self.sreceivQ.put(('잔고목록', tuple(self.dict_jg)))
         con.close()
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 정보 불러오기 완료')))
 
@@ -149,7 +149,7 @@ class FutureTrader:
             elif data[0] == '종목정보':
                 self.dict_info = data[1]
                 dummy_time = timedelta_sec(-3600, now_cme())
-                for code in self.dict_info.keys():
+                for code in self.dict_info:
                     self.dict_info[code]['시드부족시간'] = dummy_time
                     self.dict_info[code]['최종거래시간'] = dummy_time
                     self.dict_info[code]['손절거래시간'] = dummy_time
@@ -187,12 +187,12 @@ class FutureTrader:
         else:
             주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형 = data
 
-        잔고없음 = 종목코드 not in self.dict_jg.keys()
-        롱매수주문중 = 종목코드 in self.dict_order['BUY_LONG'].keys()
-        숏매수주문중 = 종목코드 in self.dict_order['SELL_SHORT'].keys()
-        롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG'].keys()
-        숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT'].keys()
-        포지션 = self.dict_jg[종목코드]['포지션'] if 종목코드 in self.dict_jg.keys() else None
+        잔고없음 = 종목코드 not in self.dict_jg
+        롱매수주문중 = 종목코드 in self.dict_order['BUY_LONG']
+        숏매수주문중 = 종목코드 in self.dict_order['SELL_SHORT']
+        롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG']
+        숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT']
+        포지션 = self.dict_jg[종목코드]['포지션'] if 종목코드 in self.dict_jg else None
 
         원주문번호 = ''
         주문취소 = False
@@ -311,8 +311,8 @@ class FutureTrader:
         cancel_list = []
         modify_list = []
 
-        for gubun in self.dict_order.keys():
-            for code in self.dict_order[gubun].keys():
+        for gubun in self.dict_order:
+            for code in self.dict_order[gubun]:
                 if code_ is None or code == code_:
                     order_info = self.dict_order[gubun][code]
                     if gubun in ('BUY_LONG', 'SELL_SHORT'):
@@ -322,11 +322,11 @@ class FutureTrader:
                         if self.dict_set['주식매수취소시간'] and now() > order_info[0]:
                             cancel_list.append((code, gubun))
                     if gubun in ('BUY_LONG', 'BUY_SHORT'):
-                        if order_info[1] < self.dict_set['주식매수정정횟수'] and code in self.dict_curc.keys() and \
+                        if order_info[1] < self.dict_set['주식매수정정횟수'] and code in self.dict_curc and \
                                 self.dict_curc[code] >= order_info[2] + self.dict_info[code]['호가단위'] * self.dict_set['주식매수정정호가차이']:
                             modify_list.append((code, gubun))
                     else:
-                        if order_info[1] < self.dict_set['주식매도정정횟수'] and code in self.dict_curc.keys() and \
+                        if order_info[1] < self.dict_set['주식매도정정횟수'] and code in self.dict_curc and \
                                 self.dict_curc[code] <= order_info[2] - self.dict_info[code]['호가단위'] * self.dict_set['주식매도정정호가차이']:
                             modify_list.append((code, gubun))
 
@@ -344,7 +344,7 @@ class FutureTrader:
         종목명 = self.dict_info[종목코드]['종목명']
         dict_cj = self.GetNameChejan(종목명, 주문구분)
         if dict_cj:
-            last_key = list(dict_cj.keys())[-1]
+            last_key = list(dict_cj)[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 현재시간 = now()
@@ -355,7 +355,7 @@ class FutureTrader:
         종목명 = self.dict_info[종목코드]['종목명']
         dict_cj = self.GetNameChejan(종목명, 주문구분)
         if dict_cj:
-            last_key = list(dict_cj.keys())[-1]
+            last_key = list(dict_cj)[-1]
             미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == 'BUY_LONG':
@@ -399,14 +399,14 @@ class FutureTrader:
     def JangoCheongsan(self, gubun):
         self.dict_bool['해선잔고청산'] = True
 
-        for 주문구분 in self.dict_order.keys():
-            for 종목코드 in self.dict_order[주문구분].keys():
+        for 주문구분 in self.dict_order:
+            for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
 
         if self.dict_jg and (gubun == '수동' or self.dict_set['주식잔고청산']):
             if gubun == '수동':
                 self.kwzservQ.put(('tele', '해선 잔고청산 주문을 전송합니다.'))
-            for 종목코드 in self.dict_jg.keys():
+            for 종목코드 in self.dict_jg:
                 포지션 = self.dict_jg[종목코드]['포지션']
                 종목명 = self.dict_jg[종목코드]['종목명']
                 현재가 = self.dict_jg[종목코드]['현재가']
@@ -435,7 +435,7 @@ class FutureTrader:
         }
         if dict_jg:
             self.dict_jg = dict_jg
-            for index in self.dict_jg.keys():
+            for index in self.dict_jg:
                 yesugm = self.dict_jg[index]['보유수량'] * self.dict_info[index]['위탁증거금']
                 self.dict_intg['예수금'] -= yesugm
             self.dict_intg['추정예수금'] = self.dict_intg['예수금']
@@ -457,8 +457,8 @@ class FutureTrader:
 
     def GetIndex(self):
         index = str_ymdhmsf(now_cme())
-        if index in self.dict_cj.keys():
-            while index in self.dict_cj.keys():
+        if index in self.dict_cj:
+            while index in self.dict_cj:
                 index = str(int(index) + 1)
         return index
 
@@ -493,7 +493,7 @@ class FutureTrader:
         elif 주문상태 == '체결' and 주문구분 == '체결' and 매도수구분 in ('매수', '매도'):
             if 매도수구분 == '매수':
                 # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
-                if 종목코드 in self.dict_jg.keys():
+                if 종목코드 in self.dict_jg:
                     직전매입가 = self.dict_jg[종목코드]['매입가']
                     직전보유수량 = self.dict_jg[종목코드]['보유수량']
                     직전매입금액 = self.dict_jg[종목코드]['매입금액']
@@ -542,11 +542,11 @@ class FutureTrader:
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
                         self.dict_jg[종목코드]['분할매수횟수'] += 1
-                    if 종목코드 in self.dict_order[gubun].keys():
+                    if 종목코드 in self.dict_order[gubun]:
                         del self.dict_order[gubun][종목코드]
 
             else:
-                if 종목코드 not in self.dict_jg.keys(): return
+                if 종목코드 not in self.dict_jg: return
                 포지션 = self.dict_jg[종목코드]['포지션']
                 매입가 = self.dict_jg[종목코드]['매입가']
                 보유수량 = self.dict_jg[종목코드]['보유수량'] - 체결수량
@@ -572,7 +572,7 @@ class FutureTrader:
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
                         self.dict_jg[종목코드]['분할매도횟수'] += 1
-                    if 종목코드 in self.dict_order[gubun].keys():
+                    if 종목코드 in self.dict_order[gubun]:
                         del self.dict_order[gubun][종목코드]
 
                 매입금액 = self.dict_info[종목코드]['위탁증거금'] * 체결수량
@@ -615,7 +615,7 @@ class FutureTrader:
                 gubun_ = gubun.replace('_CANCEL', '')
                 if 매도수구분 == '매수':
                     self.dict_intg['추정예수금'] += 주문수량 * self.dict_info[종목코드]['위탁증거금']
-                if 종목코드 in self.dict_order[gubun_].keys():
+                if 종목코드 in self.dict_order[gubun_]:
                     del self.dict_order[gubun_][종목코드]
                 self.PutOrderComplete(gubun, 종목코드)
 
@@ -627,15 +627,15 @@ class FutureTrader:
         elif 주문상태 in ('미접수', '취소', '거부'):
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{주문상태}][{gubun}] {종목명} | {주문가격} | {주문수량}')))
 
-        self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+        self.sreceivQ.put(('잔고목록', tuple(self.dict_jg)))
         self.sreceivQ.put(('주문목록', self.GetOrderCodeList()))
 
     def PutOrderComplete(self, cmsg, code):
         self.sstgQ.put((cmsg, code))
 
     def GetOrderCodeList(self):
-        return tuple(self.dict_order['BUY_LONG'].keys()) + tuple(self.dict_order['SELL_SHORT'].keys()) + \
-            tuple(self.dict_order['SELL_LONG'].keys()) + tuple(self.dict_order['BUY_SHORT'].keys())
+        return tuple(self.dict_order['BUY_LONG']) + tuple(self.dict_order['SELL_SHORT']) + \
+            tuple(self.dict_order['SELL_LONG']) + tuple(self.dict_order['BUY_SHORT'])
 
     def UpdateTradelist(self, index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
         # ['종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익률', '수익금', '체결시간']
