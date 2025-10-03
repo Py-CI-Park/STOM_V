@@ -285,10 +285,10 @@ class KiwoomManager:
                     if inthms < 85000 and fast_ip1 in server_ip_select:
                         print(f'빠른 서버 접속 완료 [{server_ip_select}]')
                         break
-                    elif 85000 < inthms < 85500 and (fast_ip1 in server_ip_select or fast_ip2 in server_ip_select):
+                    elif 85000 < inthms < 85900 and (fast_ip1 in server_ip_select or fast_ip2 in server_ip_select):
                         print(f'빠른 서버 접속 완료 [{server_ip_select}]')
                         break
-                    elif inthms < 80000 or 85500 < inthms or now().weekday() > 4:
+                    elif inthms < 80000 or 85900 < inthms or now().weekday() > 4:
                         print(f'접속 시간 초과, 마지막 접속 유지 [{server_ip_select}]')
                         break
                     else:

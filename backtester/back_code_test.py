@@ -1,62 +1,80 @@
-import sys
-import time
 from traceback import print_exc
+from PyQt5.QtCore import QThread
 from utility.setting import indicator
 # noinspection PyUnresolvedReferences
-from utility.static import timedelta_sec
+from utility.static import timedelta_sec, qtest_qwait
 
 
 # noinspection PyUnusedLocal
-class BackCodeTest:
+class BackCodeTest(QThread):
     def __init__(self, testQ, stg, var=None, ga=False):
+        super().__init__()
         self.testQ = testQ
-        self.vars  = {0: []}
+        self.stg   = stg
+        self.vars  = None
+        self.var   = var
+        self.ga    = ga
         self.indicator = indicator
 
-        if var is None:
-            self.vars = {i: 1 for i in range(200)}
-        else:
+    def run(self):
+        if self.stg is None:
+            self.vars = {i: [[1, 2, 1], 1] for i in range(300)}
+
+            error = False
             try:
-                exec(compile(var, '<string>', 'exec'))
+                exec(compile(self.var, '<string>', 'exec'))
             except:
                 print_exc()
-                self.ErrorEnd()
+                error = True
 
-            for i, var in enumerate(list(self.vars.values())):
+            for i, var in enumerate(self.vars.values()):
                 if len(var) != 2:
                     print(f'self.vars[{i}]의 범위 설정 방법 오류')
-                    self.ErrorEnd()
-                if not ga:
+                    error = True
+                if not self.ga:
                     if len(var[0]) != 3:
                         print(f'self.vars[{i}]의 범위 설정 방법 오류')
-                        self.ErrorEnd()
+                        error = True
                     if var[0][2] != 0 and (var[0][1] - var[0][0]) / var[0][2] + 1 > 20:
                         print(f'self.vars[{i}]의 범위 설정 갯수 20개 초과')
-                        self.ErrorEnd()
+                        error = True
                     if (var[0][0] < var[0][1] and var[0][2] < 0) or (var[0][0] > var[0][1] and var[0][2] > 0):
                         print(f'self.vars[{i}]의 범위 간격 부호 오류')
-                        self.ErrorEnd()
-            self.noErrorEnd()
+                        error = True
 
-        if not self.CheckFactor(stg): self.ErrorEnd()
-        try:
-            self.stg = compile(stg, '<string>', 'exec')
-        except:
-            print_exc()
-            self.ErrorEnd()
-        self.Test()
+            if error:
+                self.ErrorEnd()
+            else:
+                self.noErrorEnd()
 
-    @staticmethod
-    def CheckFactor(stg):
+        else:
+            self.vars = {i: 1 for i in range(300)}
+
+            error = False
+            if not self.CheckFactor():
+                error = True
+
+            try:
+                self.stg = compile(self.stg, '<string>', 'exec')
+            except:
+                print_exc()
+                error = True
+
+            if error:
+                self.ErrorEnd()
+            else:
+                self.Test()
+
+    def CheckFactor(self):
         error = False
         gugan_factors = [
-            '이동평균', '최고현재가', '최저현재가', '초당거래대금평균', '체결강도평균', '최고체결강도', '최저체결강도',
-            '누적초당매수수량', '누적초당매도수량', '최고초당매수수량', '최고초당매도수량', '당일거래대금각도', '전일비각도',
+            '이동평균', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도',
+            '초당거래대금평균', '누적초당매수수량', '누적초당매도수량', '최고초당매수수량', '최고초당매도수량', '당일거래대금각도', '전일비각도',
             '분당거래대금평균', '누적분당매수수량', '누적분당매도수량', '최고분당매수수량', '최고분당매도수량', '최고분봉고가', '최저분봉저가'
         ]
         for factor in gugan_factors:
-            if factor in stg:
-                _stg = stg.replace(factor, f'{factor};')
+            if factor in self.stg:
+                _stg = self.stg.replace(factor, f'{factor};')
                 _stg_list = _stg.split(';')
                 for i, txt in enumerate(_stg_list):
                     if '#' not in txt and factor in txt and _stg_list[i+1][0] != '(':
@@ -69,13 +87,11 @@ class BackCodeTest:
 
     def ErrorEnd(self):
         self.testQ.put('전략테스트오류')
-        time.sleep(1)
-        sys.exit()
+        qtest_qwait(1)
 
     def noErrorEnd(self):
         self.testQ.put('전략테스트완료')
-        time.sleep(1)
-        sys.exit()
+        qtest_qwait(1)
 
     def Buy(self, *args):
         pass

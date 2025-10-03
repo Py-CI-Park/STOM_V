@@ -1,7 +1,7 @@
 import os
 import re
 from PyQt5.QtCore import QTimer
-from ui.set_style import color_fg_rt, color_fg_dk, color_fg_bt
+from ui.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
 from utility.setting import ui_num
 from utility.static import error_decorator, now, qtest_qwait, timedelta_sec, str_hms
 
@@ -22,7 +22,7 @@ class UpdateTextedit:
                 self.ui.lgicon_alert = True
     
             time_ = str(now())[:-7] if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']) else str(now())
-            log_  = f'<font color=#FF32FF>{data[1]}</font>' if '오류' in data[1] else data[1]
+            log_  = f'<font color=#f7455d>{data[1]}</font>' if '오류' in data[1] else data[1]
             text  = f'[{time_}] {log_}' if '</font>' not in log_ else f'<font color=white>[{time_}]</font> {log_}'
     
             if data[0] == ui_num['백테엔진']:
@@ -62,86 +62,83 @@ class UpdateTextedit:
                 except:
                     pass
 
-            elif data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
-                if '배팅금액' in data[1] or 'OUT' in data[1] or '결과' in data[1] or '최적값' in data[1] or \
-                        '백테스트 시작' in data[1] or ']단계' in data[1]:
+            elif data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']):
+                if 'self.vars' in data[1] and 'MERGE' not in data[1]:
+                    color = color_bt_yl
+                elif '배팅금액' in data[1] or 'OUT' in data[1] or '결과' in data[1] or '백테스트 시작' in data[1] or \
+                        ']단계' in data[1] or '최적값' in data[1]:
                     color = color_fg_rt
                 elif ('AP' in data[1] and '-' in data[1].split('AP')[1]) or \
                         ('수익률' in data[1] and '-' in data[1].split('수익률')[1]):
                     color = color_fg_dk
                 else:
                     color = color_fg_bt
-                if '텍스트에디터 클리어' in data[1]: self.ui.ss_textEditttt_09.clear()
-                self.ui.ss_textEditttt_09.setTextColor(color)
-                self.ui.ss_textEditttt_09.append(text)
-                if self.ui.dict_set['최적화로그기록안함']:
-                    if '백테스트 시작' in data[1] or '인샘플 최적화 시작' in data[1]: self.logging = False
-                    elif '최적화 완료' in data[1] or '인샘플 최적화 완료' in data[1]: self.logging = True
-                if self.logging: self.ui.log6.info(re.sub('(<([^>]+)>)', '', text))
-                if data[1] in ('백테스트 완료', '백파인더 완료', '최적화O 완료', '최적화OV 완료',
-                               '최적화OVC 완료', '최적화B 완료', '최적화BV 완료', '최적화BVC 완료', '최적화OT 완료',
-                               '최적화OVT 완료', '최적화OVCT 완료', '최적화BT 완료', '최적화BVT 완료', '최적화BVCT 완료',
-                               '전진분석OR 완료', '전진분석ORV 완료', '전진분석ORVC 완료', '전진분석BR 완료', '전진분석BRV 완료',
-                               '전진분석BRVC 완료', '최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료', '최적화OC 완료',
-                               '최적화OCV 완료', '최적화OCVC 완료'):
-                    if data[1] in ('최적화O 완료', '최적화OV 완료', '최적화OVC 완료', '최적화B 완료', '최적화BV 완료', '최적화BVC 완료'):
-                        self.ui.sActivated_04()
-                    if data[1] in ('최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료'):
-                        self.ui.sActivated_06()
-                    if not self.ui.dict_set['그래프띄우지않기'] and data[1] not in \
-                            ('백파인더 완료', '최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료', '최적화OC 완료',
-                             '최적화OCV 완료', '최적화OCVC 완료'):
-                        self.ui.svjButtonClicked_08()
-                    self.ui.BacktestProcessKill(0)
-                    self.ui.ssicon_alert = False
-                    self.ui.main_btn_list[2].setIcon(self.ui.icon_stocks)
-                    if self.ui.back_schedul:
-                        qtest_qwait(3)
-                        self.ui.sdButtonClicked_02()
-            elif data[0] in (ui_num['C백테스트'], ui_num['CF백테스트']):
-                if '배팅금액' in data[1] or 'OUT' in data[1] or '결과' in data[1] or '최적값' in data[1] or \
-                        '백테스트 시작' in data[1] or ']단계' in data[1]:
-                    color = color_fg_rt
-                elif ('AP' in data[1] and '-' in data[1].split('AP')[1]) or \
-                        ('수익률' in data[1] and '-' in data[1].split('수익률')[1].split('KRW')[0]):
-                    color = color_fg_dk
+
+                if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
+                    if '텍스트에디터 클리어' in data[1]:
+                        self.ui.ss_textEditttt_09.clear()
+                    self.ui.ss_textEditttt_09.setTextColor(color)
+                    self.ui.ss_textEditttt_09.append(text)
                 else:
-                    color = color_fg_bt
-                if '텍스트에디터 클리어' in data[1]: self.ui.cs_textEditttt_09.clear()
-                self.ui.cs_textEditttt_09.setTextColor(color)
-                self.ui.cs_textEditttt_09.append(text)
+                    if '텍스트에디터 클리어' in data[1]:
+                        self.ui.cs_textEditttt_09.clear()
+                    self.ui.cs_textEditttt_09.setTextColor(color)
+                    self.ui.cs_textEditttt_09.append(text)
+
                 if self.ui.dict_set['최적화로그기록안함']:
                     if '백테스트 시작' in data[1] or '인샘플 최적화 시작' in data[1]: self.logging = False
                     elif '최적화 완료' in data[1] or '인샘플 최적화 완료' in data[1]: self.logging = True
                 if self.logging: self.ui.log6.info(re.sub('(<([^>]+)>)', '', text))
-                if data[1] in ('백테스트 완료', '백파인더 완료', '최적화O 완료', '최적화OV 완료',
-                               '최적화OVC 완료', '최적화B 완료', '최적화BV 완료', '최적화BVC 완료', '최적화OT 완료',
-                               '최적화OVT 완료', '최적화OVCT 완료', '최적화BT 완료', '최적화BVT 완료', '최적화BVCT 완료',
-                               '전진분석OR 완료', '전진분석ORV 완료', '전진분석ORVC 완료', '전진분석BR 완료', '전진분석BRV 완료',
-                               '전진분석BRVC 완료', '최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료', '최적화OC 완료',
-                               '최적화OCV 완료', '최적화OCVC 완료'):
-                    if data[1] in ('최적화O 완료', '최적화OV 완료', '최적화OVC 완료', '최적화B 완료', '최적화BV 완료', '최적화BVC 완료'):
-                        self.ui.cActivated_04()
-                    if data[1] in ('최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료'):
-                        self.ui.cActivated_06()
+
+                if 'COMPLETE' in data[1]:
+                    if data[1] in ('최적화O COMPLETE', '최적화OV COMPLETE', '최적화OVC COMPLETE', '최적화B COMPLETE',
+                                   '최적화BV COMPLETE', '최적화BVC COMPLETE'):
+                        if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
+                            self.ui.sActivated_04()
+                        else:
+                            self.ui.cActivated_04()
+
+                    if data[1] in ('최적화OG COMPLETE', '최적화OGV COMPLETE', '최적화OGVC COMPLETE'):
+                        if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
+                            self.ui.sActivated_06()
+                        else:
+                            self.ui.cActivated_06()
+
                     if not self.ui.dict_set['그래프띄우지않기'] and data[1] not in \
-                            ('백파인더 완료', '최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료', '최적화OC 완료',
-                             '최적화OCV 완료', '최적화OCVC 완료'):
-                        self.ui.cvjButtonClicked_08()
+                            ('백파인더 COMPLETE', '최적화OG COMPLETE', '최적화OGV COMPLETE', '최적화OGVC COMPLETE',
+                             '최적화OC COMPLETE', '최적화OCV COMPLETE', '최적화OCVC COMPLETE'):
+                        if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
+                            self.ui.svjButtonClicked_08()
+                        else:
+                            self.ui.cvjButtonClicked_08()
+
                     self.ui.BacktestProcessKill(0)
-                    self.ui.csicon_alert = False
-                    self.ui.main_btn_list[3].setIcon(self.ui.icon_coins)
+                    if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
+                        self.ui.ssicon_alert = False
+                        self.ui.main_btn_list[2].setIcon(self.ui.icon_stocks)
+                    else:
+                        self.ui.csicon_alert = False
+                        self.ui.main_btn_list[3].setIcon(self.ui.icon_coins)
+
                     if self.ui.back_schedul:
                         qtest_qwait(3)
                         self.ui.sdButtonClicked_02()
+
+                elif 'STOP' in data[1]:
+                    self.ui.BacktestProcessKill(0)
+                    if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
+                        self.ui.ssicon_alert = False
+                        self.ui.main_btn_list[2].setIcon(self.ui.icon_stocks)
+                    else:
+                        self.ui.csicon_alert = False
+                        self.ui.main_btn_list[3].setIcon(self.ui.icon_coins)
+
             elif data[0] == ui_num['기업개요']:
                 self.ui.gg_textEdittttt_01.clear()
                 self.ui.gg_textEdittttt_01.append(data[1])
 
             if '전략연산 프로세스 데이터 저장 중' in text:
                 self.ui.data_save = True
-            elif '백테스트를 중지합니다' in data[1] and not self.ui.back_cancelling:
-                self.ui.BacktestProcessKill(0)
             elif data[0] == ui_num['S단순텍스트'] and '리시버 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '리시버 종료'))
             elif data[0] == ui_num['S로그텍스트'] and '트레이더 종료' in data[1]:

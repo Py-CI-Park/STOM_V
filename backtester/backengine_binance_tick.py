@@ -39,6 +39,8 @@ class BackEngineBinanceTick:
         self.endday_      = None
         self.starttime_   = None
         self.endtime_     = None
+        self.same_days    = False
+        self.same_time    = False
 
         self.buystg       = None
         self.sellstg      = None
@@ -104,8 +106,11 @@ class BackEngineBinanceTick:
                         self.endtime   = data[6]
                         self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
                         self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
-                        self.CheckAvglist(avg_list)
-                        if self.buystg is None or self.sellstg is None: self.BackStop()
+                        if self.buystg is None or self.sellstg is None:
+                            self.BackStop()
+                        else:
+                            self.CheckAvglist(avg_list)
+                            self.CheckDayAndTime()
                     elif data[0] == '변수정보':
                         self.vars_list = data[1]
                         self.opti_turn = data[2]
@@ -117,12 +122,17 @@ class BackEngineBinanceTick:
                     if data[0] == '백테정보':
                         self.betting   = data[1]
                         avg_list       = data[2]
-                        self.starttime = data[3]
-                        self.endtime   = data[4]
-                        self.buystg, self.indistg = GetBuyStgFuture(data[5], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStgFuture(data[6], self.gubun)
-                        self.CheckAvglist(avg_list)
-                        if self.buystg is None or self.sellstg is None: self.BackStop()
+                        self.startday  = data[3]
+                        self.endday    = data[4]
+                        self.starttime = data[5]
+                        self.endtime   = data[6]
+                        self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
+                        self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
+                        if self.buystg is None or self.sellstg is None:
+                            self.BackStop()
+                        else:
+                            self.CheckAvglist(avg_list)
+                            self.CheckDayAndTime()
                     elif data[0] == '변수정보':
                         self.vars_list = data[1]
                         self.opti_turn = data[2]
@@ -142,8 +152,11 @@ class BackEngineBinanceTick:
                         self.endtime   = data[6]
                         self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
                         self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
-                        self.CheckAvglist(avg_list)
-                        if self.buystg is None or self.sellstg is None: self.BackStop()
+                        if self.buystg is None or self.sellstg is None:
+                            self.BackStop()
+                        else:
+                            self.CheckAvglist(avg_list)
+                            self.CheckDayAndTime()
                     elif data[0] == '변수정보':
                         self.vars_lists = data[1]
                         self.InitDivid()
@@ -157,6 +170,7 @@ class BackEngineBinanceTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
+                        self.CheckDayAndTime()
                     elif data[0] == '조건정보':
                         self.dict_buystg  = {}
                         self.dict_sellstg = {}
@@ -169,11 +183,11 @@ class BackEngineBinanceTick:
                             self.dict_sellstg[i] = sellstg
                             self.dict_sconds[i]  = dict_cond
                             if buystg is None or sellstg is None: error = True
-                        self.InitDivid()
-                        self.InitTradeInfo()
                         if error:
                             self.BackStop()
                         else:
+                            self.InitDivid()
+                            self.InitTradeInfo()
                             self.BackTest()
                 elif self.back_type == '백테스트':
                     if data[0] == '백테정보':
@@ -185,11 +199,12 @@ class BackEngineBinanceTick:
                         self.endtime   = data[6]
                         self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
                         self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
-                        self.InitDivid()
-                        self.InitTradeInfo()
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
+                            self.CheckDayAndTime()
+                            self.InitDivid()
+                            self.InitTradeInfo()
                             self.BackTest()
                 elif self.back_type == '백파인더':
                     if data[0] == '백테정보':
@@ -198,14 +213,15 @@ class BackEngineBinanceTick:
                         self.endday    = data[3]
                         self.starttime = data[4]
                         self.endtime   = data[5]
-                        self.InitDivid()
-                        self.InitTradeInfo()
                         try:
                             self.buystg = compile(data[6], '<string>', 'exec')
                         except:
                             print_exc()
                             self.BackStop()
                         else:
+                            self.CheckDayAndTime()
+                            self.InitDivid()
+                            self.InitTradeInfo()
                             self.BackTest()
             elif data[0] == '백테유형':
                 self.back_type = data[1]
@@ -219,7 +235,7 @@ class BackEngineBinanceTick:
             elif data == '전체틱수계산':
                 self.GetTickCount()
             elif data == '백테중지':
-                self.BackStop(cancel=True)
+                self.BackStop(2)
 
     def InitDivid(self):
         self.sell_count = 0
@@ -238,70 +254,58 @@ class BackEngineBinanceTick:
             self.trade_info = {0: {0: v}}
 
     def DataLoad(self, data):
-        def data_load(df_):
-            df_ = AddAvgData(df_, 8, is_tick, avg_list)
-            array = np.array(df_)
-            if self.dict_set['백테일괄로딩']:
-                name = f'back_{self.gubun}_{i}'
-                shm = shared_memory.SharedMemory(name=name, create=True, size=array.nbytes)
-                shared_array = np.ndarray(array.shape, dtype=array.dtype, buffer=shm.buf)
-                np.copyto(shared_array, array)
-                shared_info.append({
-                    'code': code,
-                    'len': len(array),
-                    'shm_name': shm.name,
-                    'shape': array.shape,
-                    'dtype': array.dtype
-                })
-                self.shared_list.append(shm)
+        def data_load(days):
+            try:
+                df = pd.read_sql(GetBackloadCodeQuery(code, days, starttime, endtime), con)
+            except:
+                pass
             else:
-                file_name = f'{BACK_TEMP}/back_{self.gubun}_{i}'
-                pickle_write(file_name, array)
-                shared_info.append({
-                    'code': code,
-                    'len': len(array),
-                    'file_name': file_name
-                })
+                if len(df) > 0:
+                    df = AddAvgData(df, 8, is_tick, avg_list)
+                    array = np.array(df)
+                    if self.dict_set['백테일괄로딩']:
+                        name = f'back_{self.gubun}_{i}'
+                        shm = shared_memory.SharedMemory(name=name, create=True, size=array.nbytes)
+                        shared_array = np.ndarray(array.shape, dtype=array.dtype, buffer=shm.buf)
+                        np.copyto(shared_array, array)
+                        shared_info.append({
+                            'code': code,
+                            'len': len(array),
+                            'shm_name': shm.name,
+                            'shape': array.shape,
+                            'dtype': array.dtype
+                        })
+                        self.shared_list.append(shm)
+                    else:
+                        file_name = f'{BACK_TEMP}/back_{self.gubun}_{i}'
+                        pickle_write(file_name, array)
+                        shared_info.append({
+                            'code': code,
+                            'len': len(array),
+                            'file_name': file_name
+                        })
 
         divid_mode = data[-1]
         is_tick = self.dict_set['코인타임프레임']
         con = sqlite3.connect(DB_COIN_BACK_TICK if is_tick else DB_COIN_BACK_MIN)
-
         shared_info = []
         if divid_mode == '종목코드별 분류':
             _, startday, endday, starttime, endtime, code_list, avg_list, code_days, _, _, _ = data
             for i, code in enumerate(code_list):
-                try:
-                    df = pd.read_sql(GetBackloadCodeQuery(code, code_days[code], starttime, endtime), con)
-                except:
-                    pass
-                else:
-                    if len(df) > 0: data_load(df)
+                data_load(code_days[code])
         elif divid_mode == '일자별 분류':
-            _, startday, endday, starttime, endtime, day_list, avg_list, code_days, day_codes, _, _ = data
-            code_list = []
+            _, startday, endday, starttime, endtime, day_list, avg_list, _, day_codes, _, _ = data
+            code_list = set()
             for day in day_list:
-                for code in day_codes[day]:
-                    if code not in code_list:
-                        code_list.append(code)
+                code_list.update(day_codes[day])
             for i, code in enumerate(code_list):
-                try:
-                    df = pd.read_sql(GetBackloadCodeQuery(code, day_list, starttime, endtime), con)
-                except:
-                    pass
-                else:
-                    if len(df) > 0: data_load(df)
+                data_load(day_list)
         else:
             _, startday, endday, starttime, endtime, day_list, avg_list, _, _, code, _ = data
             for i, day in enumerate(day_list):
-                try:
-                    df = pd.read_sql(GetBackloadCodeQuery(code, [day], starttime, endtime), con)
-                except:
-                    pass
-                else:
-                    if len(df) > 0: data_load(df)
-
+                data_load([day])
         con.close()
+
         self.avg_list = avg_list
         self.startday_, self.endday_, self.starttime_, self.endtime_ = startday, endday, starttime, endtime
         self.bq.put(shared_info)
@@ -313,14 +317,18 @@ class BackEngineBinanceTick:
             self.wq.put((ui_num['C백테스트'], '누락된 평균값 틱수를 추가하여 백테엔진을 재시작하십시오.'))
             self.BackStop()
 
-    def BackStop(self, cancel=False):
+    def CheckDayAndTime(self):
+        self.same_days = self.startday_ == self.startday and self.endday_ == self.endday
+        self.same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
+
+    def BackStop(self, gubun=0):
         self.back_type = None
-        if self.gubun == 0:
-            self.wq.put((ui_num['C백테스트'], '백테스트를 중지하였습니다.'))
-        if cancel:
+        if gubun in (0, 1):
+            if self.gubun == 0: self.wq.put((ui_num['C백테스트'], '백테스트 엔진 중지 완료'))
+        if gubun in (1, 2):
             self.bq.put('백테중지완료')
 
-    def SetArrayTick(self, same_days, same_time):
+    def GetArrayData(self):
         shared_info = None
         with self.shared_lock:
             shared_counter = self.shared_counter.value
@@ -347,12 +355,12 @@ class BackEngineBinanceTick:
                 unit = 1000000
                 hour = 240000
 
-            if same_days and same_time:
+            if self.same_days and self.same_time:
                 pass
-            elif same_time:
+            elif self.same_time:
                 self.arry_data = self.arry_data[(self.arry_data[:, 0] >= self.startday * unit) &
                                                 (self.arry_data[:, 0] <= self.endday * unit + hour)]
-            elif same_days:
+            elif self.same_days:
                 self.arry_data = self.arry_data[(self.arry_data[:, 0] % unit >= self.starttime) &
                                                 (self.arry_data[:, 0] % unit <= self.endtime)]
             else:
@@ -363,11 +371,9 @@ class BackEngineBinanceTick:
             return code
 
     def GetTickCount(self):
-        same_days = self.startday_ == self.startday and self.endday_ == self.endday
-        same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
         total_ticks = 0
         while True:
-            code = self.SetArrayTick(same_days, same_time)
+            code = self.GetArrayData()
             if code is not None:
                 total_ticks += len(self.arry_data)
             else:
@@ -380,12 +386,9 @@ class BackEngineBinanceTick:
             self.pr = cProfile.Profile()
             self.pr.enable()
 
-        same_days = self.startday_ == self.startday and self.endday_ == self.endday
-        same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
-
         j = 0
         while True:
-            code = self.SetArrayTick(same_days, same_time)
+            code = self.GetArrayData()
             if code is not None:
                 self.code = code
                 last = len(self.arry_data) - 1
@@ -412,7 +415,7 @@ class BackEngineBinanceTick:
                                 if self.opti_turn in (1, 3):
                                     self.tq.put('탐색완료')
                                 if not self.beq.empty() and self.beq.get() == '백테중지':
-                                    self.BackStop(cancel=True)
+                                    self.BackStop(1)
                                     return
 
                         j += 1

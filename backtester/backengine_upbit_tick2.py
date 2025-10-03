@@ -29,12 +29,9 @@ class BackEngineUpbitTick2(BackEngineUpbitTick):
             self.pr = cProfile.Profile()
             self.pr.enable()
 
-        same_days = self.startday_ == self.startday and self.endday_ == self.endday
-        same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
-
         j = 0
         while True:
-            code = self.SetArrayTick(same_days, same_time)
+            code = self.GetArrayData()
             if code is not None:
                 if self.dict_set['코인매수금지블랙리스트'] and self.code in self.dict_set['코인블랙리스트'] and self.back_type != '백파인더':
                     self.tq.put('백테완료')

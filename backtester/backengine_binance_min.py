@@ -162,7 +162,7 @@ class BackEngineBinanceMin(BackEngineBinanceTick):
                 return 0
 
         def GetArrayIndex(aindex):
-            return aindex + 12 * self.avg_list.index(self.avgtime if self.back_type in ('백테스트', '조건최적화', '백파인더') else self.vars[0])
+            return aindex + 14 * self.avg_list.index(self.avgtime if self.back_type in ('백테스트', '조건최적화', '백파인더') else self.vars[0])
 
         def Parameter_Area(aindex, vindex, tick, pre, gubun_):
             if tick in self.avg_list:

@@ -14,9 +14,10 @@ qfont14.setFamily('나눔고딕')
 qfont14.setPixelSize(14)
 
 # 테마와 상관없이 공통 색깔
-color_fg_rt  = QColor(110, 255, 110)
 color_cs_hr  = QColor(255, 255, 255)
 color_ct_hg  = QColor(255, 255, 0)
+color_fg_rt  = QColor(160, 255, 160)
+color_bt_yl  = QColor(255, 255, 160)
 
 color_ma05   = QColor(219, 27, 180)
 color_ma10   = QColor(10, 41, 174)

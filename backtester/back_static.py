@@ -1,5 +1,4 @@
 import math
-import pyupbit
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -355,7 +354,7 @@ def SetSellCondFuture(selllist):
 
 
 def SendTextAndStd(result, dict_train, dict_valid=None, exponential=False):
-    gubun, ui_gubun, wq, mq, stdp, optistd, opti_turn, vturn, vkey, vars_list, startday, endday, std_list, betting = result
+    gubun, ui_gubun, wq, mq, pre_stdp, optistd, opti_turn, vturn, vkey, vars_list, startday, endday, std_list, betting = result
     if gubun in ('최적화', '최적화테스트'):
         text1 = GetText1(opti_turn, vturn, vars_list)
     elif gubun == 'GA최적화':
@@ -365,7 +364,6 @@ def SendTextAndStd(result, dict_train, dict_valid=None, exponential=False):
     else:
         text1 = ''
 
-    stdp_ = 0
     if dict_valid is not None:
         tuple_train = sorted(dict_train.items(), key=lambda x: x[0])
         tuple_valid = sorted(dict_valid.items(), key=lambda x: x[0])
@@ -384,7 +382,7 @@ def SendTextAndStd(result, dict_train, dict_valid=None, exponential=False):
             valid_data.append(std)
 
         std = GetOptiValidStd(train_data, valid_data, optistd, betting, exponential)
-        text3, stdp_ = GetText3(std, stdp)
+        text3, stdp = GetText3(std, pre_stdp)
         if opti_turn == 2: text3 = ''
 
         wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text3}'))
@@ -394,51 +392,48 @@ def SendTextAndStd(result, dict_train, dict_valid=None, exponential=False):
             wq.put((ui_num[f'{ui_gubun}백테스트'], text))
     elif dict_train is not None:
         if gubun == '최적화테스트':
-            text2, std = GetText2('TEST', optistd, std_list, betting, dict_train)
-            text3 = ''
+            text2, std  = GetText2('TEST', optistd, std_list, betting, dict_train)
+            text3, stdp = '', pre_stdp
         else:
-            text2, std = GetText2('TOTAL', optistd, std_list, betting, dict_train)
-            text3, stdp_ = GetText3(std, stdp)
+            text2, std  = GetText2('TOTAL', optistd, std_list, betting, dict_train)
+            text3, stdp = GetText3(std, pre_stdp)
         wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}{text3}'))
     else:
-        stdp_ = stdp
-        std = -2_000_000_000
+        stdp  = pre_stdp
+        std   = -2_000_000_000
         text2 = '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'
         wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
 
     if opti_turn != 2:
         mq.put((vturn, vkey, std))
-    return stdp_
+    return stdp
 
 
 def GetText1(opti_turn, vturn, vars_list):
-    prev_vars, curr_vars, next_vars = '', '', ''
     if opti_turn != 1:
-        next_vars = f'<font color=#6eff6e> V{vars_list} </font>'
+        text = f'<font color=#a0ffa0> V{vars_list}</font>\n'
     else:
-        prev_vars = f' V{vars_list[:vturn]}'.split(']')[0]
-        prev_vars = f'<font color=white>{prev_vars}</font>' if vturn == 0 else f'<font color=white>{prev_vars}, </font>'
-        curr_vars = f'<font color=#6eff6e>{vars_list[vturn]}</font>'
-        next_vars = f'{vars_list[vturn + 1:]}'.split('[')[1]
-        if next_vars != ']': next_vars = f', {next_vars}'
-        next_vars = f'<font color=white>{next_vars} </font>'
-    return f'{prev_vars}{curr_vars}{next_vars}'
+        hipen = '-' * 50
+        text = f'<font color=#ffffa0> self.vars[{vturn}] = {vars_list[vturn]} {hipen}</font>\n'
+    return text
 
 
 def GetText2(gubun, optistd, std_list, betting, result):
     tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
     if tpp < 0 < tsg: tsg = -2_147_483_648
-    mddt = f'{mdd_:,.0f}' if 'G' in optistd else f'{mdd:,.2f}%'
-    text = f'{gubun} TC[{tc:,.0f}] ATC[{atc:,.1f}] MH[{mhct}] WR[{wr:,.2f}%] MDD[{mddt}] CAGR[{cagr:,.2f}] TPI[{tpi:,.2f}] AP[{app:,.2f}%] TP[{tpp:,.2f}%] TG[{tsg:,.0f}]'
-    std, text = GetOptiStdText(optistd, std_list, betting, result, text)
-    text = f'<font color=white>{text}</font>' if tsg >= 0 else f'<font color=#96969b>{text}</font>'
+    mddt  = f'{mdd_:,.0f}' if 'G' in optistd else f'{mdd:,.2f}%'
+    color = '#ffa3d7' if 'TRAIN' not in gubun else '#a1afff'
+    text  = f"<font color={color}>{gubun}</font>"
+    text  = f"{text} <font color={color if tsg >= 0 else '#96969b'}>TC[{tc:,.0f}] ATC[{atc:,.1f}] MH[{mhct}] " \
+            f"WR[{wr:,.2f}%] MDD[{mddt}] CAGR[{cagr:,.2f}] TPI[{tpi:,.2f}] AP[{app:,.2f}%] TP[{tpp:,.2f}%] TG[{tsg:,.0f}]"
+    text, std = GetOptiStdText(optistd, std_list, betting, result, text)
     return text, std
 
 
 def GetText3(std, stdp):
-    text = f'<font color=#f78645>MERGE[{std:,.2f}]</font>'
+    text = f'<font color=#ffffa0> MERGE[{std:,.2f}]</font>'
     if std >= stdp:
-        text = f'{text}<font color=#6eff6e>[기준값갱신]</font>' if std > stdp else f'{text}<font color=white>[기준값동일]</font>'
+        text = f'{text}<font color=#54d2f9>[기준값갱신]</font>' if std > stdp else f'{text}<font color=white>[기준값동일]</font>'
         stdp = std
     return text, stdp
 
@@ -460,7 +455,10 @@ def GetOptiValidStd(train_data, valid_data, optistd, betting, exponential):
     for i in range(count):
         ex = (count - i) * 2 / count
         std_ = train_data[i] * valid_data[i] * ex if exponential and count > 1 else train_data[i] * valid_data[i]
-        std = std - std_ if train_data[i] < 0 and valid_data[i] < 0 else std + std_
+        if train_data[i] < 0 and valid_data[i] < 0:
+            std -= std_
+        else:
+            std += std_
     std = round(std / count / betting, 2) if optistd == 'TG' else round(std / count, 2)
     return std
 
@@ -470,101 +468,52 @@ def GetOptiStdText(optistd, std_list, betting, result, pre_text):
     tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
     std_true = (mdd_low <= mdd <= mdd_high and mhct_low <= mhct <= mhct_high and wr_low <= wr <= wr_high and
                 ap_low <= app <= ap_high and atc_low <= atc <= atc_high and cagr_low <= cagr <= cagr_high and tpi_low <= tpi <= tpi_high)
-    std, pm, p2m, pam, pwm, ptm, gm, g2m, gam, gwm, gtm, text = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ''
+    std = 0
     std_false_point = -2_222_222_222
     if tc > 0:
+        sign = 1 if cagr >= 0 else -1
+        optistd_handlers = {
+            'TP':   lambda: tpp,
+            'TPI':  lambda: tpi,
+            'PM':   lambda: round(tpp / mdd, 2),
+            'P2M':  lambda: sign * abs(round(tpp * tpp / mdd / 100, 2)),
+            'PAM':  lambda: sign * abs(round(tpp * app / mdd, 2)),
+            'PWM':  lambda: round(tpp * wr / mdd / 100, 2),
+            'PTM':  lambda: sign * abs(round(tpp * app * wr * tpi * cagr / mdd / 100, 2)),
+            'TG':   lambda: tsg,
+            'GM':   lambda: round(tsg / mdd_, 2),
+            'G2M':  lambda: sign * abs(round(tsg * tsg / mdd_ / betting, 2)),
+            'GAM':  lambda: sign * abs(round(tsg * app / mdd_, 2)),
+            'GWM':  lambda: round(tsg * wr / mdd_ / 100, 2),
+            'GTM':  lambda: sign * abs(round(tsg * app * wr * tpi * cagr / mdd_ / 100, 2)),
+            'CAGR': lambda: cagr
+        }
         if 'TRAIN' in pre_text or 'TOTAL' in pre_text:
-            if 'P' in optistd:
-                if optistd == 'TP':
-                    std = tpp if std_true else std_false_point
-                elif optistd == 'TPI':
-                    std = tpi if std_true else std_false_point
-                elif optistd == 'PM':
-                    std = pm = round(tpp / mdd, 2) if std_true else std_false_point
-                elif optistd == 'P2M':
-                    std = p2m = round(tpp * tpp / mdd / 100, 2) if std_true else std_false_point
-                elif optistd == 'PAM':
-                    std = pam = round(tpp * app / mdd, 2) if std_true else std_false_point
-                elif optistd == 'PWM':
-                    std = pwm = round(tpp * wr / mdd / 100, 2) if std_true else std_false_point
-                elif optistd == 'PTM':
-                    std = ptm = round(tpp * app * wr * tpi * cagr / mdd / 10000, 2) if std_true else std_false_point
-            elif 'G' in optistd:
-                if optistd == 'TG':
-                    std = tsg if std_true else std_false_point
-                elif optistd == 'GM':
-                    std = gm = round(tsg / mdd_, 2) if std_true else std_false_point
-                elif optistd == 'G2M':
-                    std = g2m = round(tsg * tsg / mdd_ / betting, 2) if std_true else std_false_point
-                elif optistd == 'GAM':
-                    std = gam = round(tsg * app / mdd_, 2) if std_true else std_false_point
-                elif optistd == 'GWM':
-                    std = gwm = round(tsg * wr / mdd_ / 100, 2) if std_true else std_false_point
-                elif optistd == 'GTM':
-                    std = gtm = round(tsg * app * wr * tpi * cagr / mdd_ / 10000, 2) if std_true else std_false_point
-                elif optistd == 'CAGR':
-                    std = cagr if std_true else std_false_point
+            if std_true:
+                std = optistd_handlers[optistd]()
+            else:
+                std = std_false_point
         else:
-            if 'P' in optistd:
-                if optistd == 'TP':
-                    std = tpp
-                elif optistd == 'TPI':
-                    std = tpi
-                elif optistd == 'PM':
-                    std = pm = round(tpp / mdd, 2)
-                elif optistd == 'P2M':
-                    std = p2m = round(tpp * tpp / mdd / 100, 2)
-                elif optistd == 'PAM':
-                    std = pam = round(tpp * app / mdd, 2)
-                elif optistd == 'PWM':
-                    std = pwm = round(tpp * wr / mdd / 100, 2)
-                elif optistd == 'PTM':
-                    std = ptm = round(tpp * app * wr * tpi * cagr / mdd / 10000, 2)
-            elif 'G' in optistd:
-                if optistd == 'TG':
-                    std = tsg
-                elif optistd == 'GM':
-                    std = gm = round(tsg / mdd_, 2)
-                elif optistd == 'G2M':
-                    std = g2m = round(tsg * tsg / mdd_ / betting, 2)
-                elif optistd == 'GAM':
-                    std = gam = round(tsg * app / mdd_, 2)
-                elif optistd == 'GWM':
-                    std = gwm = round(tsg * wr / mdd_ / 100, 2)
-                elif optistd == 'GTM':
-                    std = gtm = round(tsg * app * wr * tpi * cagr / mdd_ / 10000, 2)
-                elif optistd == 'CAGR':
-                    std = cagr
+            std = optistd_handlers[optistd]()
 
-    if optistd == 'TP':
-        text = pre_text
-    elif optistd == 'TG':
-        text = pre_text
-    elif optistd == 'TPI':
-        text = pre_text
-    elif optistd == 'CAGR':
-        text = pre_text
-    elif optistd == 'PM':
-        text = f'{pre_text} PM[{pm:.2f}]'
-    elif optistd == 'P2M':
-        text = f'{pre_text} P2M[{p2m:.2f}]'
-    elif optistd == 'PAM':
-        text = f'{pre_text} PAM[{pam:.2f}]'
-    elif optistd == 'PWM':
-        text = f'{pre_text} PWM[{pwm:.2f}]'
-    elif optistd == 'PTM':
-        text = f'{pre_text} PTM[{ptm:.2f}]'
-    elif optistd == 'GM':
-        text = f'{pre_text} GM[{gm:.2f}]'
-    elif optistd == 'G2M':
-        text = f'{pre_text} G2M[{g2m:.2f}]'
-    elif optistd == 'GAM':
-        text = f'{pre_text} GAM[{gam:.2f}]'
-    elif optistd == 'GWM':
-        text = f'{pre_text} GWM[{gwm:.2f}]'
-    elif optistd == 'GTM':
-        text = f'{pre_text} GTM[{gtm:.2f}]'
-    return std, text
+    text_handlers = {
+        'TP':   lambda: f'{pre_text}</font>',
+        'TG':   lambda: f'{pre_text}</font>',
+        'TPI':  lambda: f'{pre_text}</font>',
+        'CAGR': lambda: f'{pre_text}</font>',
+        'PM':   lambda: f'{pre_text} PM[{std:.2f}]</font>',
+        'P2M':  lambda: f'{pre_text} P2M[{std:.2f}]</font>',
+        'PAM':  lambda: f'{pre_text} PAM[{std:.2f}]</font>',
+        'PWM':  lambda: f'{pre_text} PWM[{std:.2f}]</font>',
+        'PTM':  lambda: f'{pre_text} PTM[{std:.2f}]</font>',
+        'GM':   lambda: f'{pre_text} GM[{std:.2f}]</font>',
+        'G2M':  lambda: f'{pre_text} G2M[{std:.2f}]</font>',
+        'GAM':  lambda: f'{pre_text} GAM[{std:.2f}]</font>',
+        'GWM':  lambda: f'{pre_text} GWM[{std:.2f}]</font>',
+        'GTM':  lambda: f'{pre_text} GTM[{std:.2f}]</font>'
+    }
+    text = text_handlers[optistd]()
+    return text, std
 
 
 def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
@@ -626,8 +575,8 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
         except:
             pass
 
-    df_st = pd.DataFrame({'수익금': df_tsg['수익금']})
-    df_st.index = df_sg.index.map(lambda x: dt_hms(x[8:]) if not is_min else dt_hm(x[8:]))
+    df_st = df_tsg[['수익금']].copy()
+    df_st.index = df_st.index.map(lambda x: dt_hms(x[8:]) if not is_min else dt_hm(x[8:]))
     if not is_min:
         start_time = dt_hms(str(starttime).zfill(6))
         end_time = dt_hms(str(endtime).zfill(6))
@@ -637,15 +586,15 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
     total_sec = (end_time - start_time).total_seconds()
     interval = f'{total_sec / 600}min' if total_sec >= 1800 else '3min'
     df_st = df_st.resample(interval).sum()
-    df_st.index = df_sg.index.map(lambda x: str_hms(x) if not is_min else str_hm(x))
+    df_st.index = df_st.index.map(lambda x: str_hms(x) if not is_min else str_hm(x))
     if not is_min:
-        df_st.index = df_sg.index.map(lambda x: f'{x[:2]}:{x[2:4]}:{x[4:]}')
+        df_st.index = df_st.index.map(lambda x: f'{x[:2]}:{x[2:4]}:{x[4:]}')
     else:
-        df_st.index = df_sg.index.map(lambda x: f'{x[:2]}:{x[2:]}')
+        df_st.index = df_st.index.map(lambda x: f'{x[:2]}:{x[2:]}')
     df_st['이익금액'] = df_st['수익금'].apply(lambda x: x if x >= 0 else 0)
     df_st['손실금액'] = df_st['수익금'].apply(lambda x: x if x < 0 else 0)
 
-    df_wt = pd.DataFrame({'수익금': df_tsg['수익금']})
+    df_wt = df_tsg[['수익금']].copy()
     df_wt['요일'] = df_wt.index
     df_wt['요일'] = df_wt['요일'].apply(lambda x: dt_ymdhms(x).weekday() if not is_min else dt_ymdhm(x).weekday())
     sum_0 = df_wt[df_wt['요일'] == 0]['수익금'].sum()
@@ -809,11 +758,11 @@ def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
 def AddMdd(arry_tsg, result):
     """
     arry_tsg
-    보유시간, 매도시간, 수익률, 수익금, 수익금합계
-      0       1       2       3      4
+    체결시간, 보유시간, 매도시간, 수익률, 수익금, 수익금합계
+       0       1       2       3      4      5
     """
     try:
-        array = arry_tsg[:, 4]
+        array = arry_tsg[:, 5]
         lower = np.argmax(np.maximum.accumulate(array) - array)
         upper = np.argmax(array[:lower])
         mdd   = round(abs(array[upper] - array[lower]) / (array[upper] + result[10]) * 100, 2)
@@ -827,11 +776,11 @@ def AddMdd(arry_tsg, result):
 
 @jit(nopython=True, cache=True)
 def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
-    """ dtype = 'float64'
-    arry_tsg
+    """
+    arry_tsg dtype 'float64'
     보유시간, 매도시간, 수익률, 수익금, 수익금합계
-      0       1       2       3      4
-    arry_bct
+       0       1       2      3      4
+    arry_bct dtype 'float64'
     체결시간, 보유중목수, 보유금액
       0         1        2
     """
@@ -839,19 +788,19 @@ def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     if tc == 0:
         return (0,) * 13
 
-    profits = arry_tsg[:, 3]
+    profits   = arry_tsg[:, 3]
     is_profit = profits >= 0
-    arry_p = arry_tsg[is_profit]
-    arry_m = arry_tsg[~is_profit]
+    arry_p    = arry_tsg[is_profit]
+    arry_m    = arry_tsg[~is_profit]
 
-    pc = len(arry_p)
-    mc = tc - pc
+    pc  = len(arry_p)
+    mc  = tc - pc
     atc = tc / day_count
-    wr = (pc / tc) * 100
+    wr  = (pc / tc) * 100
 
-    ah = arry_tsg[:, 0].mean()
-    app = arry_tsg[:, 2].mean()
-    tsg = profits.sum()
+    ah   = arry_tsg[:, 0].mean()
+    app  = arry_tsg[:, 2].mean()
+    tsg  = profits.sum()
 
     appp = arry_p[:, 2].mean() if len(arry_p) > 0 else 0
     ampp = abs(arry_m[:, 2].mean()) if len(arry_m) > 0 else 0
@@ -860,10 +809,11 @@ def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     except: mhct = 0
     try:    seed = int(arry_bct[int(len(arry_bct) * 0.01):, 2].max())
     except: seed = betting
+    if seed < betting: seed = betting
 
-    tpp = tsg / (seed if seed > 0 else betting) * 100
+    tpp  = tsg / (seed if seed > betting else betting) * 100
     cagr = tpp / day_count * (365 if 'C' in ui_gubun else 250)
-    tpi = wr / 100 * (1 + appp / ampp) if ampp != 0 else 1.0
+    tpi  = wr / 100 * (1 + appp / ampp) if ampp != 0 else 1.0
 
     return (
         tc,              # 거래횟수

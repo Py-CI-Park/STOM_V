@@ -151,8 +151,7 @@ class Total:
         self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
         if self.blacklist: self.InsertBlacklist()
 
-        _df_tsg    = self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
-        arry_tsg   = np.array(_df_tsg, dtype='float64')
+        arry_tsg   = np.array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
         arry_bct   = np.sort(arry_bct, axis=0)[::-1]
         result     = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, self.day_count)
         result     = AddMdd(arry_tsg, result)
@@ -337,7 +336,8 @@ class BackTest:
             self.SysExit(True)
 
     def SysExit(self, cancel):
-        if cancel: self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
-        else:      self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
-        time.sleep(1)
-        sys.exit()
+        if cancel:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} STOP'))
+        else:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))

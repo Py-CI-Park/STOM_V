@@ -139,7 +139,8 @@ class BackFinder:
         self.SysExit(False) if data == '백파인더 완료' else self.SysExit(True)
 
     def SysExit(self, cancel):
-        if cancel: self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
-        else:      self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 완료'))
-        time.sleep(1)
-        sys.exit()
+        if cancel:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 STOP'))
+        else:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 COMPLETE'))

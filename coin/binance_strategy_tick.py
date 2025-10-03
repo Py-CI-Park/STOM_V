@@ -736,7 +736,7 @@ class BinanceStrategyTick:
             cllen = len(columns_ts)
             for i, code in enumerate(self.dict_arry):
                 df = pd.DataFrame(self.dict_arry[code][:, :cllen], columns=columns_ts)
-                df[['index']] = df[['index']].astype('int64')
+                df['index'] = df['index'].astype('int64')
                 df.set_index('index', inplace=True)
                 df.to_sql(code, con, if_exists='append', chunksize=1000)
                 text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... {i + 1}/{last}'

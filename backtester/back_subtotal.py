@@ -1,11 +1,10 @@
 import numpy as np
-import pandas as pd
 from backtester.back_static import GetBackResult, AddMdd
 
 
 class BackSubTotal:
-    def __init__(self, vk, tq, bctqs, buystd):
-        self.vkey   = vk
+    def __init__(self, vkey, tq, bctqs, buystd):
+        self.vkey       = vkey
         self.tq         = tq
         self.bstqs      = bctqs
         self.bstq       = self.bstqs[self.vkey]
@@ -20,7 +19,6 @@ class BackSubTotal:
         self.separation = None
         self.complete1  = False
         self.complete2  = False
-        self.cencel     = False
 
         self.ui_gubun   = None
         self.list_days  = None
@@ -29,14 +27,12 @@ class BackSubTotal:
         self.betting    = None
         self.day_count  = None
         self.in_out_cnt = None
+
         self.MainLoop()
 
     def MainLoop(self):
         while True:
             data = self.bstq.get()
-            if self.cencel:
-                continue
-
             if data[0] == '백테결과':
                 self.CollectData(data)
 
@@ -62,7 +58,6 @@ class BackSubTotal:
                 self.day_count  = data[6]
 
             elif data[0] == '백테시작':
-                self.cencel     = False
                 self.opti_turn  = data[1]
                 self.dummy_tsg  = {}
                 self.ddict_tsg  = {}
@@ -76,25 +71,6 @@ class BackSubTotal:
                     self.in_out_cnt = None
                 else:
                     self.in_out_cnt = data[2]
-
-            elif data == '백테중지':
-                self.cencel     = True
-                self.opti_turn  = 0
-                self.dummy_tsg  = {}
-                self.ddict_tsg  = {}
-                self.ddict_bct  = {}
-                self.list_tsg   = []
-                self.arry_bct   = None
-                self.separation = None
-                self.complete1  = False
-                self.complete2  = False
-                self.ui_gubun   = None
-                self.list_days  = None
-                self.valid_days = None
-                self.arry_bct_  = None
-                self.betting    = None
-                self.day_count  = None
-                self.in_out_cnt = None
 
             if self.complete1 and self.bstq.empty():
                 if self.separation == '분리집계':
@@ -120,7 +96,6 @@ class BackSubTotal:
             self.ddict_tsg[vturn] = {}
             self.ddict_bct[vturn] = {}
         if vkey not in self.ddict_tsg[vturn]:
-            self.dummy_tsg[vturn][vkey] = 0
             self.ddict_tsg[vturn][vkey] = []
             self.ddict_bct[vturn][vkey] = self.arry_bct_.copy()
 
@@ -157,12 +132,11 @@ class BackSubTotal:
 
     def SendSubTotal1(self):
         if self.ddict_tsg:
-            columns = ['index', '보유시간', '매도시간', '수익률', '수익금']
             if self.list_days is not None:
                 for vturn, dict_tsg in self.ddict_tsg.items():
                     for vkey, list_tsg in dict_tsg.items():
                         arry_bct = self.ddict_bct[vturn][vkey]
-                        data = (columns, list_tsg, arry_bct)
+                        data = (list_tsg, arry_bct)
                         train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
                         if valid_days is not None:
                             for i, vdays in enumerate(valid_days):
@@ -176,7 +150,7 @@ class BackSubTotal:
                 for vturn, dict_tsg in self.ddict_tsg.items():
                     for vkey, list_tsg in dict_tsg.items():
                         arry_bct = self.ddict_bct[vturn][vkey]
-                        data = (columns, list_tsg, arry_bct)
+                        data = (list_tsg, arry_bct)
                         for i, vdays in enumerate(self.valid_days):
                             data_ = data + (vdays[0], vdays[1], vdays[2], vdays[3], i, vturn, vkey)
                             self.Result(1, data_)
@@ -185,7 +159,7 @@ class BackSubTotal:
                 for vturn, dict_tsg in self.ddict_tsg.items():
                     for vkey, list_tsg in dict_tsg.items():
                         arry_bct = self.ddict_bct[vturn][vkey]
-                        data = (columns, list_tsg, arry_bct)
+                        data = (list_tsg, arry_bct)
                         data_ = data + (self.day_count, vturn, vkey)
                         self.Result(0, data_)
 
@@ -194,8 +168,7 @@ class BackSubTotal:
             self.tq.put(('결과없음',))
             return
 
-        columns = ['index', '보유시간', '매도시간', '수익률', '수익금']
-        data = (columns, self.list_tsg, self.arry_bct)
+        data = (self.list_tsg, self.arry_bct)
         if self.list_days is not None:
             train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
             if valid_days is not None:
@@ -217,22 +190,21 @@ class BackSubTotal:
 
     def Result(self, gubun, data):
         """
+        arry_tsg
         보유시간, 매도시간, 수익률, 수익금, 수익금합계
-          0       1       2       3      4
+           0       1       2      3      4
         """
-        columns, list_data, arry_bct = data[:3]
-        df_tsg = pd.DataFrame(list_data, columns=columns)
-        df_tsg.set_index('index', inplace=True)
-        df_tsg.sort_index(inplace=True)
-        df_tsg['수익금합계'] = df_tsg['수익금'].cumsum()
-        arry_tsg = np.array(df_tsg, dtype='float64')
+        list_data, arry_bct = data[:2]
+        arry_tsg = np.array(list_data, dtype='float64')
+        arry_tsg = arry_tsg[np.argsort(arry_tsg[:, 0])][:, 1:]
+        arry_tsg = np.column_stack((arry_tsg, np.cumsum(arry_tsg[:, 3])))
         arry_bct = np.sort(arry_bct[arry_bct[:, 1] > 0], axis=0)[::-1]
-        if arry_bct[0, 0] > 999911220000:
+        if arry_bct[0, 0] * 1e-12 > 1:
             cf_day, cf_hms = 1000000, 240000
         else:
             cf_day, cf_hms = 10000, 2400
-        if len(data) == 11:
-            vsday, veday, tsday, tdaycnt, vdaycnt, index, vturn, vkey = data[3:]
+        if len(data) == 10:
+            vsday, veday, tsday, tdaycnt, vdaycnt, index, vturn, vkey = data[2:]
             if gubun:
                 arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * cf_day) | ((veday * cf_day + cf_hms < arry_tsg[:, 1]) & (arry_tsg[:, 1] < tsday * cf_day))]
                 arry_bct = arry_bct[(arry_bct[:, 0] < vsday * cf_day) | ((veday * cf_day + cf_hms < arry_bct[:, 0]) & (arry_bct[:, 0] < tsday * cf_day))]
@@ -243,8 +215,8 @@ class BackSubTotal:
                 result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, vdaycnt)
             result = AddMdd(arry_tsg, result)
             self.tq.put(('TRAIN' if gubun else 'VALID', index, result, vturn, vkey))
-        elif len(data) == 10:
-            vsday, veday, tdaycnt, vdaycnt, index, vturn, vkey = data[3:]
+        elif len(data) == 9:
+            vsday, veday, tdaycnt, vdaycnt, index, vturn, vkey = data[2:]
             if gubun:
                 arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * cf_day) | (veday * cf_day + cf_hms < arry_tsg[:, 1])]
                 arry_bct = arry_bct[(arry_bct[:, 0] < vsday * cf_day) | (veday * cf_day + cf_hms > arry_bct[:, 0])]
@@ -256,7 +228,7 @@ class BackSubTotal:
             result = AddMdd(arry_tsg, result)
             self.tq.put(('TRAIN' if gubun else 'VALID', index, result, vturn, vkey))
         else:
-            daycnt, vturn, vkey = data[3:]
+            daycnt, vturn, vkey = data[2:]
             result = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, daycnt)
             result = AddMdd(arry_tsg, result)
             self.tq.put(('ALL', 0, result, vturn, vkey))

@@ -157,6 +157,7 @@ def start_backengine(ui, gubun):
             db = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
         else:
             db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+
         con = sqlite3.connect(db)
         if gubun == '주식':
             try:
@@ -168,12 +169,13 @@ def start_backengine(ui, gubun):
             df_cn = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
             dict_info = df_cn.to_dict('index')
             ui.dict_cn = df_cn['종목명'].to_dict()
+
         gubun_ = 'S' if gubun == '주식' else 'X'
         query = GetMoneytopQuery(gubun_, ui.startday, ui.endday, ui.starttime, ui.endtime)
         df_mt = pd.read_sql(query, con)
-        con.close()
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
         df_mt.set_index('index', inplace=True)
+        con.close()
     except:
         if gubun in ('주식', '해선'):
             if ui.dict_cn is None:
@@ -192,30 +194,30 @@ def start_backengine(ui, gubun):
         ui.BacktestEngineKill()
         return
 
-    mt_list = df_mt['거래대금순위'].to_list()
-    day_list = set(df_mt['일자'].to_list())
-    table_list = set()
-    for mt_text in mt_list:
-        table_list.update(mt_text.split(';'))
+    day_set = set(df_mt['일자'].to_list())
+
+    code_set = set()
+    for mt_text in df_mt['거래대금순위'].values:
+        code_set.update(mt_text.split(';'))
 
     day_codes = {}
-    for day in day_list:
+    for day in day_set:
         df_mt_ = df_mt[df_mt['일자'] == day]
-        code_list = set()
-        for mt_text in df_mt_['거래대금순위'].to_list():
-            code_list.update(mt_text.split(';'))
-        day_codes[day] = code_list
+        codes = set()
+        for mt_text in df_mt_['거래대금순위'].values:
+            codes.update(mt_text.split(';'))
+        day_codes[day] = codes
 
     code_days = {}
-    for code in table_list:
-        code_days[code] = [day for day, codes in day_codes.items() if code in codes]
+    for code in code_set:
+        code_days[code] = {day for day, codes in day_codes.items() if code in codes}
 
-    if divid_mode == '종목코드별 분류' and len(code_days) < multi:
+    if divid_mode == '종목코드별 분류' and len(code_set) < multi:
         ui.windowQ.put((ui_num['백테엔진'], '선택한 일자의 종목의 개수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
         ui.BacktestEngineKill()
         return
 
-    if divid_mode == '일자별 분류' and len(day_codes) < multi:
+    if divid_mode == '일자별 분류' and len(day_set) < multi:
         ui.windowQ.put((ui_num['백테엔진'], '선택한 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
         ui.BacktestEngineKill()
         return
@@ -244,7 +246,7 @@ def start_backengine(ui, gubun):
     if log_gubun == '한종목': log_gubun = f'{log_gubun} 일자별'
 
     ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 시작'))
-    data_list  = table_list if log_gubun == '종목코드별' else day_list if log_gubun == '일자별' else code_days[one_code]
+    data_list  = code_set if log_gubun == '종목코드별' else day_set if log_gubun == '일자별' else code_days[one_code]
     data_lists = []
     for i in range(multi):
         data_lists.append([data for j, data in enumerate(data_list) if j % multi == i])
@@ -268,20 +270,24 @@ def start_backengine(ui, gubun):
     ui.windowQ.put((ui_num['백테엔진'], '백테엔진 준비 완료'))
 
 
-def back_code_test1(stg_code, testQ):
+def back_code_test1(stg, testQ):
     print('전략 코드 오류 테스트 시작')
     while not testQ.empty():
         testQ.get()
-    Process(target=BackCodeTest, args=(testQ, stg_code), daemon=True).start()
-    return back_code_test_wait('전략', testQ)
+    thread = BackCodeTest(testQ, stg)
+    thread.start()
+    thread.wait()
+    return get_code_test_result('전략', testQ)
 
 
 def back_code_test2(vars_code, testQ, ga):
     print('범위 코드 오류 테스트 시작')
     while not testQ.empty():
         testQ.get()
-    Process(target=BackCodeTest, args=(testQ, '', vars_code, ga), daemon=True).start()
-    return back_code_test_wait('범위', testQ)
+    thread = BackCodeTest(testQ, None, vars_code, ga)
+    thread.start()
+    thread.wait()
+    return get_code_test_result('범위', testQ)
 
 
 def back_code_test3(gubun, conds_code, testQ):
@@ -294,11 +300,13 @@ def back_code_test3(gubun, conds_code, testQ):
         conds_code = 'if ' + ':\n    매수 = False\nelif '.join(conds_code) + ':\n    매수 = False'
     else:
         conds_code = 'if ' + ':\n    매도 = True\nelif '.join(conds_code) + ':\n    매도 = True'
-    Process(target=BackCodeTest, args=(testQ, conds_code), daemon=True).start()
-    return back_code_test_wait('조건', testQ)
+    thread = BackCodeTest(testQ, conds_code)
+    thread.start()
+    thread.wait()
+    return get_code_test_result('조건', testQ)
 
 
-def back_code_test_wait(gubun, testQ):
+def get_code_test_result(gubun, testQ):
     data = testQ.get()
     if data == '전략테스트오류':
         print(f'{gubun}에 오류가 있어 저장하지 못하였습니다.')
@@ -320,8 +328,6 @@ def clear_backtestQ(ui):
 def backtest_process_kill(ui, gubun):
     ui.back_cancelling = True
     for q in ui.back_eques:
-        q.put('백테중지')
-    for q in ui.back_sques:
         q.put('백테중지')
     ui.totalQ.put('백테중지')
 
