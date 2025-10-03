@@ -2,15 +2,14 @@ import math
 from talib import stream
 from backtester.back_static import GetIndicator
 from backtester.backengine_upbit_tick import BackEngineUpbitTick
-from utility.setting import BACK_TEMP
-# noinspection PyUnresolvedReferences
-from utility.static import strp_time, timedelta_sec, pickle_read, GetUvilower5
+from utility.setting import BACK_TEMP, dgree
+from utility.static import pickle_read, dt_ymdhm
 
 
 # noinspection PyUnusedLocal
 class BackEngineUpbitMin(BackEngineUpbitTick):
     def SetDictCondition(self):
-        if self.dict_set['코인경과틱수설정'] != '':
+        if self.dict_set['코인경과틱수설정']:
             def compile_condition(x):
                 return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn', '<string>', 'exec')
             text_list  = self.dict_set['코인경과틱수설정'].split(';')
@@ -39,8 +38,8 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                                                   (self.dict_arry[code][:, 0] % 10000 <= self.endtime)]
 
     def Strategy(self):
-        def now_utc():
-            return strp_time('%Y%m%d%H%M', str(self.index))
+        def now():
+            return dt_ymdhm(str(self.index))
 
         def Parameter_Previous(aindex, pre):
             if pre < 데이터길이:
@@ -248,10 +247,10 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                 return 0
 
         def 등락율각도(tick, pre=0):
-            return Parameter_Dgree(56, 5, tick, pre, 10)
+            return Parameter_Dgree(56, 5, tick, pre, dgree['coin']['min'][0])
 
         def 당일거래대금각도(tick, pre=0):
-            return Parameter_Dgree(57, 6, tick, pre, 0.00000001)
+            return Parameter_Dgree(57, 6, tick, pre, dgree['coin']['min'][1])
 
         def 경과틱수(조건명):
             조건명 = f'{조건명}{vturn}{vkey}'
@@ -447,7 +446,7 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                         self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         exec(self.buystg)
                     else:
-                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now_utc())
+                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         exec(self.sellstg)
 
         elif self.opti_turn == 3:
@@ -482,7 +481,7 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                         else:
                             exec(self.dict_buystg[index_])
                     else:
-                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now_utc())
+                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         if self.back_type != '조건최적화':
                             exec(self.sellstg)
                         else:
@@ -515,5 +514,5 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                 self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                 exec(self.buystg)
             else:
-                수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now_utc())
+                수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                 exec(self.sellstg)

@@ -7,8 +7,9 @@ from ui.ui_get_label_text import get_label_text
 from utility.chart_items import ChuseItem, CandlestickItem, VolumeBarsItem
 from ui.set_style import qfont12, color_fg_bt, color_bg_bt, color_bg_ld
 from stock.login_kiwoom.manuallogin import leftClick, enter_keys, press_keys
-from utility.setting import list_stock_tick, list_stock_min, list_coin_min1, list_coin_min2, list_coin_tick1, list_coin_tick2
-from utility.static import error_decorator, strf_time, from_timestamp, thread_decorator
+from utility.static import error_decorator, from_timestamp, thread_decorator, str_ymd
+from utility.setting import list_stock_tick, list_stock_min, list_coin_min1, list_coin_min2, list_coin_tick1, \
+    list_coin_tick2
 
 
 class DrawChart:
@@ -20,11 +21,11 @@ class DrawChart:
     def draw_chart(self, data):
         def fi(fname):
             if is_min:
-                if not coin:        return list_stock_min.index(fname)
+                if gubun == 'S':    return list_stock_min.index(fname)
                 elif 'KRW' in code: return list_coin_min1.index(fname)
                 else:               return list_coin_min2.index(fname)
             else:
-                if not coin:        return list_stock_tick.index(fname)
+                if gubun == 'S':    return list_stock_tick.index(fname)
                 elif 'KRW' in code: return list_coin_tick1.index(fname)
                 else:               return list_coin_tick2.index(fname)
 
@@ -32,15 +33,15 @@ class DrawChart:
         if not self.ui.dialog_chart.isVisible():
             return
 
-        coin, self.ui.ctpg_xticks, self.ui.ctpg_arry, self.ui.buy_index, self.ui.sell_index = data[1:]
-        if coin == '차트오류':
+        gubun, self.ui.ctpg_xticks, self.ui.ctpg_arry, self.ui.buy_index, self.ui.sell_index = data[1:]
+        if gubun == '차트오류':
             QMessageBox.critical(self.ui.dialog_chart, '오류 알림', '해당 날짜의 데이터가 존재하지 않습니다.\n')
             return
 
         xmin, xmax = self.ui.ctpg_xticks[0], self.ui.ctpg_xticks[-1]
         code = self.ui.ct_lineEdittttt_04.text()
-        date = strf_time('%Y%m%d', from_timestamp(xmin))
-        if not coin: self.KiwoomHTSChart(code, date)
+        date = str_ymd(from_timestamp(xmin))
+        if gubun == 'S': self.KiwoomHTSChart(code, date)
         chart_count = len(self.ui.ctpg)
         is_min = chart_count in (6, 10) or (chart_count == 8 and self.ui.ct_pushButtonnn_04.text() == 'CHART 12')
         hms = from_timestamp(xmax).strftime('%H:%M' if is_min else '%H:%M:%S')
@@ -59,7 +60,7 @@ class DrawChart:
         if self.ui.ft_checkBoxxxxx_11.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_11.text())
         if self.ui.ft_checkBoxxxxx_12.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_12.text())
         if self.ui.ft_checkBoxxxxx_13.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_13.text())
-        if not coin:
+        if gubun == 'S':
             if self.ui.ft_checkBoxxxxx_14.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_14.text())
             if self.ui.ft_checkBoxxxxx_15.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_15.text())
             if self.ui.ft_checkBoxxxxx_16.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_16.text())
@@ -87,7 +88,7 @@ class DrawChart:
             if self.ui.ft_checkBoxxxxx_37.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_37.text())
             if self.ui.ft_checkBoxxxxx_38.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_38.text())
 
-        if not coin:
+        if gubun == 'S':
             if is_min:
                 tuple_factor = (
                     fi('등락율'), fi('분당매수수량'), fi('분당매도수량'), fi('고저평균대비등락율'), fi('분당거래대금'),
@@ -293,9 +294,9 @@ class DrawChart:
             else:
                 pen = (100, 200, 100)
                 if is_min:
-                    if coin and fi(factor) > 57:
+                    if gubun != 'S' and fi(factor) > 57:
                         pen = (100, 200, 200)
-                    elif not coin and fi(factor) > 67:
+                    elif gubun == 'S' and fi(factor) > 67:
                         pen = (100, 200, 200)
                 ymax = self.ui.ctpg_data[fi(factor)].max()
                 ymin = self.ui.ctpg_data[fi(factor)].min()
@@ -304,7 +305,7 @@ class DrawChart:
 
             if self.ui.ct_checkBoxxxxx_02.isChecked():
                 legend = pg.TextItem(anchor=(1, 0), color=color_fg_bt, border=color_bg_bt, fill=color_bg_ld)
-                legend.setText(get_label_text(False, coin, code, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
+                legend.setText(get_label_text(False, gubun, code, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
                 legend.setFont(qfont12)
                 legend.setPos(xmax, ymax)
                 self.ui.ctpg[i].addItem(legend)
@@ -328,29 +329,29 @@ class DrawChart:
         if self.ui.ct_checkBoxxxxx_01.isChecked():
             if chart_count == 6:
                 self.crosshair.crosshair(
-                    False, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                    False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                     self.ui.ctpg[4], self.ui.ctpg[5]
                 )
             elif chart_count == 8:
                 self.crosshair.crosshair(
-                    False, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                    False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                     self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7]
                 )
             elif chart_count == 10:
                 self.crosshair.crosshair(
-                    False, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                    False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                     self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
                     self.ui.ctpg[9]
                 )
             elif chart_count == 12:
                 self.crosshair.crosshair(
-                    False, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                    False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                     self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
                     self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11]
                 )
             elif chart_count == 16:
                 self.crosshair.crosshair(
-                    False, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                    False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                     self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
                     self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11], self.ui.ctpg[12], self.ui.ctpg[13],
                     self.ui.ctpg[14], self.ui.ctpg[15]
@@ -359,7 +360,7 @@ class DrawChart:
         self.ui.ctpg_name = self.ui.ct_lineEdittttt_05.text()
         if not self.ui.database_chart: self.ui.database_chart = True
 
-        if self.ui.dialog_hoga.isVisible() and self.ui.hg_labellllllll_01.text() != '':
+        if self.ui.dialog_hoga.isVisible() and self.ui.hg_labellllllll_01.text():
             self.ui.hgButtonClicked_02('매수')
 
     @thread_decorator

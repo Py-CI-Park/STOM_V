@@ -8,9 +8,9 @@ from utility.static import text_not_in_special_characters
 from ui.set_text import famous_saying, example_opti_vars, example_vars, example_buyconds, example_sellconds, \
     example_coin_buy, example_coin_future_buy, example_coin_sell, example_coin_future_sell, example_coinopti_buy1, \
     example_coinopti_future_buy1, example_coinopti_buy2, example_coinopti_future_buy2, example_coinopti_sell1, \
-    example_coinopti_future_sell1, example_coinopti_sell2, example_coinopti_future_sell2, example_opti_future_vars, \
-    example_future_vars, example_future_buyconds, example_future_sellconds, example_coinopti_buy3, \
-    example_coinopti_future_buy3
+    example_coinopti_future_sell1, example_coinopti_sell2, example_coinopti_future_sell2, example_opti_vars2, \
+    example_vars2, example_future_buyconds, example_future_sellconds, example_coinopti_buy3, example_vars3, \
+    example_coinopti_future_buy3, example_coinopti_sell3, example_coinopti_future_sell3, example_opti_vars3
 
 
 def cvc_button_clicked_01(ui):
@@ -137,8 +137,7 @@ def cvc_button_clicked_07(ui):
     if ui.cs_textEditttt_03.isVisible():
         ui.cs_textEditttt_03.clear()
         if ui.cvc_pushButton_24.isVisible():
-            ui.cs_textEditttt_03.append(
-                example_coinopti_buy1 if ui.dict_set['거래소'] == '업비트' else example_coinopti_future_buy1)
+            ui.cs_textEditttt_03.append(example_coinopti_buy1 if ui.dict_set['거래소'] == '업비트' else example_coinopti_future_buy1)
         else:
             if ui.dict_set['거래소'] == '업비트':
                 ui.cs_textEditttt_03.append(example_coinopti_buy2 if ui.dict_set['코인타임프레임'] else example_coinopti_buy3)
@@ -147,17 +146,24 @@ def cvc_button_clicked_07(ui):
     if ui.cs_textEditttt_04.isVisible():
         ui.cs_textEditttt_04.clear()
         if ui.cvc_pushButton_24.isVisible():
-            ui.cs_textEditttt_04.append(
-                example_coinopti_sell1 if ui.dict_set['거래소'] == '업비트' else example_coinopti_future_sell1)
+            ui.cs_textEditttt_04.append(example_coinopti_sell1 if ui.dict_set['거래소'] == '업비트' else example_coinopti_future_sell1)
         else:
-            ui.cs_textEditttt_04.append(
-                example_coinopti_sell2 if ui.dict_set['거래소'] == '업비트' else example_coinopti_future_sell2)
+            if ui.dict_set['거래소'] == '업비트':
+                ui.cs_textEditttt_04.append(example_coinopti_sell2 if ui.dict_set['코인타임프레임'] else example_coinopti_sell3)
+            else:
+                ui.cs_textEditttt_04.append(example_coinopti_future_sell2 if ui.dict_set['코인타임프레임'] else example_coinopti_future_sell3)
     if ui.cs_textEditttt_05.isVisible():
         ui.cs_textEditttt_05.clear()
-        ui.cs_textEditttt_05.append(example_opti_vars if ui.dict_set['거래소'] == '업비트' else example_opti_future_vars)
+        if ui.dict_set['거래소'] == '업비트':
+            ui.cs_textEditttt_05.append(example_opti_vars)
+        else:
+            ui.cs_textEditttt_05.append(example_opti_vars2 if ui.dict_set['코인타임프레임'] else example_opti_vars3)
     if ui.cs_textEditttt_06.isVisible():
         ui.cs_textEditttt_06.clear()
-        ui.cs_textEditttt_06.append(example_vars if ui.dict_set['거래소'] == '업비트' else example_future_vars)
+        if ui.dict_set['거래소'] == '업비트':
+            ui.cs_textEditttt_06.append(example_vars)
+        else:
+            ui.cs_textEditttt_06.append(example_vars2 if ui.dict_set['코인타임프레임'] else example_vars3)
     if ui.cs_textEditttt_07.isVisible():
         ui.cs_textEditttt_07.clear()
         ui.cs_textEditttt_07.append(example_buyconds if ui.dict_set['거래소'] == '업비트' else example_future_buyconds)

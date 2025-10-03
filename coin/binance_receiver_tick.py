@@ -10,7 +10,7 @@ from threading import Thread
 from multiprocessing import Process, Queue
 from coin.binance_websocket import WebSocketReceiver
 from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
-from utility.static import now, strf_time, timedelta_sec, from_timestamp, int_hms_utc, threading_timer
+from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, now_utc, str_hms, str_ymd
 
 
 class ZmqServ(Thread):
@@ -67,7 +67,7 @@ class BinanceReceiverTick:
         self.tuple_jango = ()
         self.tuple_order = ()
 
-        self.int_logt    = int(strf_time('%Y%m%d%H%M', timedelta_sec(-32400)))
+        self.int_logt    = 0
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
@@ -92,14 +92,14 @@ class BinanceReceiverTick:
         while True:
             data = self.creceivQ.get()
             curr_time = now()
-            inthmsutc = int_hms_utc()
+            inthmsutc = int(str_hms(now_utc()))
             if type(data) == tuple:
                 self.UpdateTuple(data)
             elif type(data) == list:
                 if data[0] == 'trade':
                     try:
                         data = data[1]['data']
-                        dt   = int(strf_time('%Y%m%d%H%M%S', from_timestamp(int(data['T']) / 1000 - 32400)))
+                        dt   = int(str_ymdhms_utc(data['T']))
                         code = data['s']
                         c    = float(data['p'])
                         v    = float(data['q'])
@@ -111,7 +111,7 @@ class BinanceReceiverTick:
                 elif data[0] == 'depth':
                     try:
                         data = data[1]['data']
-                        dt   = int(strf_time('%Y%m%d%H%M%S', from_timestamp(int(data['T']) / 1000 - 32400)))
+                        dt   = int(str_ymdhms_utc(data['T']))
                         if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]): continue
                         code = data['s']
                         hoga_seprice = (
@@ -173,7 +173,7 @@ class BinanceReceiverTick:
             print(e)
         else:
             datas = [data for data in datas if re.search('USDT$', data['symbol']) is not None]
-            ymd   = strf_time('%Y%m%d', timedelta_sec(-32400))
+            ymd   = str_ymd(now_utc())
             for data in datas:
                 code = data['symbol']
                 if code not in self.dict_data.keys():
@@ -215,15 +215,15 @@ class BinanceReceiverTick:
         ymd = str(dt)[:8]
         if ymd != self.dict_tddt[code][0]:
             self.dict_tddt[code] = [ymd, self.dict_data[code][0]]
-            bids, asks, pretbids, pretasks = 0, 0, 0, 0
+            dm, bids, asks, pretbids, pretasks = 0, 0, 0, 0, 0
             o, h, low = c, c, c
             dm = round(v * c, 2)
         else:
-            bids, asks, pretbids, pretasks = self.dict_data[code][7:]
+            dm, _, bids, asks, pretbids, pretasks = self.dict_data[code][5:]
             o, h, low = self.dict_data[code][1:4]
             if c > h: h = c
             if c < low: low = c
-            dm = round(self.dict_data[code][5] + v * c, 2)
+            dm = round(dm + v * c, 2)
 
         bids_ = v if not m else 0
         asks_ = 0 if not m else v

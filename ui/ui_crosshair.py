@@ -9,7 +9,7 @@ class CrossHair:
     def __init__(self, ui):
         self.ui = ui
 
-    def crosshair(self, real, coin, is_min, main_pg1, sub_pg2, sub_pg3, sub_pg4, sub_pg5, sub_pg6, sub_pg7=None, sub_pg8=None,
+    def crosshair(self, real, gubun, is_min, main_pg1, sub_pg2, sub_pg3, sub_pg4, sub_pg5, sub_pg6, sub_pg7=None, sub_pg8=None,
                   sub_pg9=None, sub_pg10=None, sub_pg11=None, sub_pg12=None, sub_pg13=None, sub_pg14=None,
                   sub_pg15=None, sub_pg16=None):
         def setInfiniteLine(angle=None):
@@ -186,9 +186,9 @@ class CrossHair:
                     for n, labell in enumerate(self.ui.ctpg_labels):
                         foctor = self.ui.ctpg_factors[n]
                         if index == n:
-                            text = f'Y축 {round(mousePoint.y(), 2):,}\n{get_label_text(real, coin, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)}'
+                            text = f'Y축 {round(mousePoint.y(), 2):,}\n{get_label_text(real, gubun, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)}'
                         else:
-                            text = get_label_text(real, coin, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)
+                            text = get_label_text(real, gubun, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)
                         labell.setText(text)
                         lxmin, lxmax = self.ui.ctpg_cvb[n].state['viewRange'][0]
                         lymin, lymax = self.ui.ctpg_cvb[n].state['viewRange'][1]

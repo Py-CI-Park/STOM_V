@@ -7,9 +7,10 @@ import pandas as pd
 from traceback import print_exc
 from matplotlib import font_manager
 from matplotlib import pyplot as plt
-from utility.static import strp_time, timedelta_sec, strf_time, error_decorator
+from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms
 from utility.setting import ui_num, DICT_SET, DB_TRADELIST, DB_SETTING, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
-    DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_STRATEGY
+    DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_STRATEGY, DB_CODE_INFO, DB_FUTURE_BACK_MIN, dgree, \
+    DB_FUTURE_BACK_TICK
 
 
 class Chart:
@@ -18,25 +19,23 @@ class Chart:
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
-        self.windowQ  = qlist[0]
-        self.chartQ   = qlist[4]
-        self.dict_set = DICT_SET
+        self.windowQ   = qlist[0]
+        self.chartQ    = qlist[4]
+        self.dict_set  = DICT_SET
+        self.dict_name = {}
 
-        con1 = sqlite3.connect(DB_SETTING)
-        con2 = sqlite3.connect(DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN)
-        try:
-            df = pd.read_sql('SELECT * FROM codename', con1).set_index('index')
-        except:
-            df = pd.read_sql('SELECT * FROM codename', con2).set_index('index')
-        con1.close()
-        con2.close()
+        con = sqlite3.connect(DB_CODE_INFO)
+        df = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
+        self.dict_name.update(df['종목명'].to_dict())
+        df = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
+        self.dict_name.update(df['종목명'].to_dict())
+        con.close()
 
         font_name = 'C:/Windows/Fonts/malgun.ttf'
         font_family = font_manager.FontProperties(fname=font_name).get_name()
         plt.rcParams['font.family'] = font_family
         plt.rcParams['axes.unicode_minus'] = False
 
-        self.dict_name  = df['종목명'].to_dict()
         self.arry_kosp  = None
         self.arry_kosd  = None
         self.Start()
@@ -59,7 +58,7 @@ class Chart:
         con = sqlite3.connect(DB_BACKTEST)
         for table in backdetail_list:
             df = pd.read_sql(f'SELECT `index`, `수익금` FROM {table}', con)
-            df['index'] = df['index'].apply(lambda x: strp_time('%Y%m%d%H%M%S', x))
+            df['index'] = df['index'].apply(lambda x: dt_ymdhms(x))
             df.set_index('index', inplace=True)
             df = df.resample('D').sum()
             df['수익금합계'] = df['수익금'].cumsum()
@@ -79,14 +78,14 @@ class Chart:
                     self.arry_kosp = np.array([jisu_data])
                 else:
                     self.arry_kosp = np.r_[self.arry_kosp, np.array([jisu_data])]
-                xticks = [strp_time('%Y%m%d%H%M%S', str(int(x))).timestamp() for x in self.arry_kosp[:, 0]]
+                xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosp[:, 0]]
                 self.windowQ.put((ui_num['코스피'], xticks, self.arry_kosp[:, 1]))
             elif gubun == '코스닥':
                 if self.arry_kosd is None:
                     self.arry_kosd = np.array([jisu_data])
                 else:
                     self.arry_kosd = np.r_[self.arry_kosd, np.array([jisu_data])]
-                xticks = [strp_time('%Y%m%d%H%M%S', str(int(x))).timestamp() for x in self.arry_kosd[:, 0]]
+                xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosd[:, 0]]
                 self.windowQ.put((ui_num['코스닥'], xticks, self.arry_kosd[:, 1]))
         except:
             pass
@@ -95,9 +94,17 @@ class Chart:
     def UpdateChart(self, data):
         if len(data) == 7:
             coin, code, tickcount, searchdate, starttime, endtime, k = data
-            detail, buytimes = None, None
+            detail, buytimes, cf1, cf2 = None, None, None, None
+        elif len(data) == 9:
+            coin, code, tickcount, searchdate, starttime, endtime, k = data[:7]
+            if type(data[7]) == list:
+                detail, buytimes = data[7:]
+                cf1, cf2 = None, None
+            else:
+                detail, buytimes = None, None
+                cf1, cf2 = data[7:]
         else:
-            coin, code, tickcount, searchdate, starttime, endtime, k, detail, buytimes = data
+            coin, code, tickcount, searchdate, starttime, endtime, k, detail, buytimes, cf1, cf2 = data
 
         con = sqlite3.connect(DB_STRATEGY)
         is_min = False
@@ -116,19 +123,31 @@ class Chart:
                            f"`index` % 10000 >= {starttime} and " \
                            f"`index` % 10000 <= {endtime}"
         else:
-            if self.dict_set['주식타임프레임']:
-                db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db'
-                db_name2 = DB_STOCK_BACK_TICK
-                query1   = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
-                           f"`index` % 1000000 >= {starttime} and " \
-                           f"`index` % 1000000 <= {endtime}"
+            if '키움증권' in self.dict_set['증권사']:
+                if self.dict_set['주식타임프레임']:
+                    db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db'
+                    db_name2 = DB_STOCK_BACK_TICK
+                else:
+                    is_min   = True
+                    db_name1 = f'{DB_PATH}/stock_min_{searchdate}.db'
+                    db_name2 = DB_STOCK_BACK_MIN
             else:
-                is_min   = True
-                db_name1 = f'{DB_PATH}/stock_min_{searchdate}.db'
-                db_name2 = DB_STOCK_BACK_MIN
-                query1   = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
-                           f"`index` % 10000 >= {starttime} and " \
-                           f"`index` % 10000 <= {endtime}"
+                if self.dict_set['주식타임프레임']:
+                    db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db'
+                    db_name2 = DB_FUTURE_BACK_TICK
+                else:
+                    is_min   = True
+                    db_name1 = f'{DB_PATH}/future_min_{searchdate}.db'
+                    db_name2 = DB_FUTURE_BACK_MIN
+
+            if self.dict_set['주식타임프레임']:
+                query1 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
+                         f"`index` % 1000000 >= {starttime} and " \
+                         f"`index` % 1000000 <= {endtime}"
+            else:
+                query1 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
+                         f"`index` % 10000 >= {starttime} and " \
+                         f"`index` % 10000 <= {endtime}"
         con.close()
 
         df = None
@@ -136,11 +155,11 @@ class Chart:
         try:
             if os.path.isfile(db_name1):
                 con = sqlite3.connect(db_name1)
-                df = pd.read_sql(query1 if starttime != '' and endtime != '' else query2, con).set_index('index')
+                df = pd.read_sql(query1 if starttime and endtime else query2, con).set_index('index')
                 con.close()
             elif os.path.isfile(db_name2):
                 con = sqlite3.connect(db_name2)
-                df = pd.read_sql(query1 if starttime != '' and endtime != '' else query2, con).set_index('index')
+                df = pd.read_sql(query1 if starttime and endtime else query2, con).set_index('index')
                 con.close()
         except:
             pass
@@ -152,7 +171,10 @@ class Chart:
                 round_unit = 8
                 if tickcount == '': tickcount = self.dict_set['코인평균값계산틱수']
             else:
-                round_unit = 3
+                if '키움증권' in self.dict_set['증권사']:
+                    round_unit = 3
+                else:
+                    round_unit = 8
                 if tickcount == '': tickcount = self.dict_set['주식평균값계산틱수']
 
             df['체결시간'] = df.index
@@ -193,21 +215,31 @@ class Chart:
             df['등락율차이'] = df['등락율'] - df[f'등락율N{tickcount}']
             df[f'당일거래대금N{tickcount}'] = df['당일거래대금'].shift(tickcount - 1)
             df['당일거래대금차이'] = df['당일거래대금'] - df[f'당일거래대금N{tickcount}']
-            if not coin:
-                df['등락율각도'] = df['등락율차이'].apply(lambda x: round(math.atan2(x * 5, tickcount) / (2 * math.pi) * 360, 2))
-                df['당일거래대금각도'] = df['당일거래대금차이'].apply(lambda x: round(math.atan2(x / 100, tickcount) / (2 * math.pi) * 360, 2))
+
+            if cf1 is None:
+                gubun = 'tick' if is_min else 'min'
+                if coin:
+                    cf1, cf2 = dgree['coin'][gubun]
+                elif '해외선물' in self.dict_set['증권사']:
+                    cf1, cf2 = dgree['future'][gubun]
+                else:
+                    cf1, cf2 = dgree['stock'][gubun]
+
+            if not coin and '키움증권' in self.dict_set['증권사']:
+                df['등락율각도'] = df['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, tickcount) / (2 * math.pi) * 360, 2))
+                df['당일거래대금각도'] = df['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, tickcount) / (2 * math.pi) * 360, 2))
                 df[f'전일비N{tickcount}'] = df['전일비'].shift(tickcount - 1)
                 df['전일비차이'] = df['전일비'] - df[f'전일비N{tickcount}']
                 df['전일비각도'] = df['전일비차이'].apply(lambda x: round(math.atan2(x, tickcount) / (2 * math.pi) * 360, 2))
             else:
-                df['등락율각도'] = df['등락율차이'].apply(lambda x: round(math.atan2(x * 10, tickcount) / (2 * math.pi) * 360, 2))
-                df['당일거래대금각도'] = df['당일거래대금차이'].apply(lambda x: round(math.atan2(x / 100_000_000, tickcount) / (2 * math.pi) * 360, 2))
+                df['등락율각도'] = df['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, tickcount) / (2 * math.pi) * 360, 2))
+                df['당일거래대금각도'] = df['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, tickcount) / (2 * math.pi) * 360, 2))
 
             buy_index  = []
             sell_index = []
             df['매수가'] = 0
             df['매도가'] = 0
-            if coin:
+            if coin or '해외선물' in self.dict_set['증권사']:
                 df['매수가2'] = 0
                 df['매도가2'] = 0
 
@@ -217,48 +249,51 @@ class Chart:
                     df2 = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{code}'", con).set_index('index')
                 else:
                     name = self.dict_name[code] if code in self.dict_name.keys() else code
-                    df2 = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
+                    if '키움증권' in self.dict_set['증권사']:
+                        df2 = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
+                    else:
+                        df2 = pd.read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
                 con.close()
 
                 if len(df2) > 0:
                     for index in df2.index:
                         cgtime = int(float(str(df2['체결시간'][index])[:12] if is_min else df2['체결시간'][index]))
-                        if 'USDT' not in code:
+                        if 'KRW' in code or '키움증권' in self.dict_set['증권사']:
                             if df2['주문구분'][index] == '매수':
                                 while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, strp_time('%Y%m%d%H%M%S', str(cgtime)))
-                                    cgtime = int(strf_time('%Y%m%d%H%M%S', onesecago))
+                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
+                                    cgtime = int(str_ymdhms(onesecago))
                                 buy_index.append(cgtime)
                                 df.loc[cgtime, '매수가'] = df2['체결가'][index]
                             elif df2['주문구분'][index] == '매도':
                                 while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, strp_time('%Y%m%d%H%M%S', str(cgtime)))
-                                    cgtime = int(strf_time('%Y%m%d%H%M%S', onesecago))
+                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
+                                    cgtime = int(str_ymdhms(onesecago))
                                 sell_index.append(cgtime)
                                 df.loc[cgtime, '매도가'] = df2['체결가'][index]
                         else:
                             if df2['주문구분'][index] == 'BUY_LONG':
                                 while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, strp_time('%Y%m%d%H%M%S', str(cgtime)))
-                                    cgtime = int(strf_time('%Y%m%d%H%M%S', onesecago))
+                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
+                                    cgtime = int(str_ymdhms(onesecago))
                                 buy_index.append(cgtime)
                                 df.loc[cgtime, '매수가'] = df2['체결가'][index]
                             elif df2['주문구분'][index] == 'SELL_LONG':
                                 while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, strp_time('%Y%m%d%H%M%S', str(cgtime)))
-                                    cgtime = int(strf_time('%Y%m%d%H%M%S', onesecago))
+                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
+                                    cgtime = int(str_ymdhms(onesecago))
                                 sell_index.append(cgtime)
                                 df.loc[cgtime, '매도가'] = df2['체결가'][index]
                             elif df2['주문구분'][index] == 'SELL_SHORT':
                                 while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, strp_time('%Y%m%d%H%M%S', str(cgtime)))
-                                    cgtime = int(strf_time('%Y%m%d%H%M%S', onesecago))
+                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
+                                    cgtime = int(str_ymdhms(onesecago))
                                 buy_index.append(cgtime)
                                 df.loc[cgtime, '매수가2'] = df2['체결가'][index]
                             elif df2['주문구분'][index] == 'BUY_SHORT':
                                 while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, strp_time('%Y%m%d%H%M%S', str(cgtime)))
-                                    cgtime = int(strf_time('%Y%m%d%H%M%S', onesecago))
+                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
+                                    cgtime = int(str_ymdhms(onesecago))
                                 sell_index.append(cgtime)
                                 df.loc[cgtime, '매도가2'] = df2['체결가'][index]
             else:
@@ -267,7 +302,7 @@ class Chart:
                 sell_index.append(매도시간)
                 df.loc[매수시간, '매수가'] = 매수가
                 df.loc[매도시간, '매도가'] = 매도가
-                if buytimes != '':
+                if buytimes:
                     buytimes = buytimes.split('^')
                     buytimes = [x.split(';') for x in buytimes]
                     for x in buytimes:
@@ -275,7 +310,27 @@ class Chart:
                         buy_index.append(추가매수시간)
                         df.loc[추가매수시간, '매수가'] = 추가매수가
 
-            if not coin:
+            if coin or '해외선물' in self.dict_set['증권사']:
+                if is_min:
+                    columns = [
+                        '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '분당매수수량', '분당매도수량', '분봉시가',
+                        '분봉고가', '분봉저가', '분당거래대금', '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3',
+                        '매도호가2', '매도호가1', '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3',
+                        '매도잔량2', '매도잔량1', '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목',
+                        '이동평균005', '이동평균010', '이동평균020', '이동평균060', '이동평균120', '최고현재가', '최저현재가', '최고분봉고가',
+                        '최저분봉저가', '체결강도평균', '최고체결강도', '최저체결강도', '최고분당매수수량', '최고분당매도수량', '누적분당매수수량',
+                        '누적분당매도수량', '분당거래대금평균', '등락율각도', '당일거래대금각도'
+                    ]
+                else:
+                    columns = [
+                        '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '초당매수수량', '초당매도수량', '초당거래대금',
+                        '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3', '매도호가2', '매도호가1', '매수호가1',
+                        '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3', '매도잔량2', '매도잔량1', '매수잔량1',
+                        '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목', '이동평균0060', '이동평균0300', '이동평균0600',
+                        '이동평균1200', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도', '최고초당매수수량', '최고초당매도수량',
+                        '누적초당매수수량', '누적초당매도수량', '초당거래대금평균', '등락율각도', '당일거래대금각도'
+                    ]
+            else:
                 if is_min:
                     columns = [
                         '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '거래대금증감', '전일비', '회전율',
@@ -297,29 +352,9 @@ class Chart:
                         '이동평균0600', '이동평균1200', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도', '최고초당매수수량',
                         '최고초당매도수량', '누적초당매수수량', '누적초당매도수량', '초당거래대금평균', '등락율각도', '당일거래대금각도', '전일비각도'
                     ]
-            else:
-                if is_min:
-                    columns = [
-                        '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '분당매수수량', '분당매도수량', '분봉시가',
-                        '분봉고가', '분봉저가', '분당거래대금', '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3',
-                        '매도호가2', '매도호가1', '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3',
-                        '매도잔량2', '매도잔량1', '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목',
-                        '이동평균005', '이동평균010', '이동평균020', '이동평균060', '이동평균120', '최고현재가', '최저현재가', '최고분봉고가',
-                        '최저분봉저가', '체결강도평균', '최고체결강도', '최저체결강도', '최고분당매수수량', '최고분당매도수량', '누적분당매수수량',
-                        '누적분당매도수량', '분당거래대금평균', '등락율각도', '당일거래대금각도'
-                    ]
-                else:
-                    columns = [
-                        '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '초당매수수량', '초당매도수량', '초당거래대금',
-                        '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3', '매도호가2', '매도호가1', '매수호가1',
-                        '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3', '매도잔량2', '매도잔량1', '매수잔량1',
-                        '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목', '이동평균0060', '이동평균0300', '이동평균0600',
-                        '이동평균1200', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도', '최고초당매수수량', '최고초당매도수량',
-                        '누적초당매수수량', '누적초당매도수량', '초당거래대금평균', '등락율각도', '당일거래대금각도'
-                    ]
 
             columns += ['매수가', '매도가']
-            if coin:
+            if coin or '해외선물' in self.dict_set['증권사']:
                 columns += ['매수가2', '매도가2']
             df = df[columns]
             df.fillna(0, inplace=True)
@@ -329,7 +364,7 @@ class Chart:
                 arry_tick = np.r_['1', arry_tick, np.zeros((len(arry_tick), 28))]
                 try:
                     mc = arry_tick[:, 1]
-                    if coin:
+                    if coin or '해외선물' in self.dict_set['증권사']:
                         mh = arry_tick[:, 11]
                         ml = arry_tick[:, 12]
                         mv = arry_tick[:, 13]
@@ -412,5 +447,6 @@ class Chart:
                     print_exc()
 
             if arry_tick is not None:
-                xticks = [strp_time('%Y%m%d%H%M%S', f'{str(int(x))}00' if is_min else str(int(x))).timestamp() for x in df.index]
-                self.windowQ.put((ui_num['차트'], coin, xticks, arry_tick, buy_index, sell_index))
+                xticks = [dt_ymdhms(f'{str(int(x))}00' if is_min else str(int(x))).timestamp() for x in df.index]
+                gubun = 'C' if coin else 'S' if '키움증권' in self.dict_set['증권사'] else 'F'
+                self.windowQ.put((ui_num['차트'], gubun, xticks, arry_tick, buy_index, sell_index))

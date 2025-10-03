@@ -5,25 +5,30 @@ from traceback import print_exc
 from cryptography import fernet
 from utility.static import read_key, de_text
 
-OPENAPI_PATH       = 'C:/OpenAPI'
-ICON_PATH          = './icon'
-LOGIN_PATH         = './stock/login_kiwoom'
-GRAPH_PATH         = './backtester/graph'
-BACK_TEMP          = './backtester/temp'
-DB_PATH            = './_database'
-DB_SETTING         = './_database/setting.db'
-DB_BACKTEST        = './_database/backtest.db'
-DB_TRADELIST       = './_database/tradelist.db'
-DB_STOCK_TICK      = './_database/stock_tick.db'
-DB_STOCK_MIN       = './_database/stock_min.db'
-DB_STOCK_BACK_TICK = './_database/stock_tick_back.db'
-DB_STOCK_BACK_MIN  = './_database/stock_min_back.db'
-DB_COIN_TICK       = './_database/coin_tick.db'
-DB_COIN_MIN        = './_database/coin_min.db'
-DB_COIN_BACK_TICK  = './_database/coin_tick_back.db'
-DB_COIN_BACK_MIN   = './_database/coin_min_back.db'
-DB_STRATEGY        = './_database/strategy.db'
-DB_OPTUNA          = 'sqlite:///./_database/optuna.db'
+OPENAPI_PATH        = 'C:/OpenAPI'
+ICON_PATH           = './icon'
+LOGIN_PATH          = './stock/login_kiwoom'
+GRAPH_PATH          = './backtester/graph'
+BACK_TEMP           = './backtester/temp'
+DB_PATH             = './_database'
+DB_SETTING          = './_database/setting.db'
+DB_BACKTEST         = './_database/backtest.db'
+DB_TRADELIST        = './_database/tradelist.db'
+DB_STRATEGY         = './_database/strategy.db'
+DB_OPTUNA           = 'sqlite:///./_database/optuna.db'
+DB_STOCK_TICK       = './_database/stock_tick.db'
+DB_STOCK_MIN        = './_database/stock_min.db'
+DB_STOCK_BACK_TICK  = './_database/stock_tick_back.db'
+DB_STOCK_BACK_MIN   = './_database/stock_min_back.db'
+DB_COIN_TICK        = './_database/coin_tick.db'
+DB_COIN_MIN         = './_database/coin_min.db'
+DB_COIN_BACK_TICK   = './_database/coin_tick_back.db'
+DB_COIN_BACK_MIN    = './_database/coin_min_back.db'
+DB_FUTURE_TICK      = './_database/future_tick.db'
+DB_FUTURE_MIN       = './_database/future_min.db'
+DB_FUTURE_BACK_TICK = './_database/future_tick_back.db'
+DB_FUTURE_BACK_MIN  = './_database/future_min_back.db'
+DB_CODE_INFO        = './_database/code_info.db'
 
 
 def database_load():
@@ -48,13 +53,18 @@ df_m, df_s, df_c, df_sa, df_ca, df_t, df_sb, df_ss, df_cb, df_cs, df_e, df_b = d
 
 with open('./utility/blacklist_stock.txt') as f:
     stockreadlines = f.readlines()
+with open('./utility/blacklist_future.txt') as f:
+    futurereadlines = f.readlines()
 with open('./utility/blacklist_coin.txt') as f:
     coinreadlines = f.readlines()
 
-blacklist_stock = []
-blacklist_coin = []
+blacklist_stock  = []
+blacklist_future = []
+blacklist_coin   = []
 for readline in stockreadlines:
     blacklist_stock.append(readline.strip())
+for readline in futurereadlines:
+    blacklist_future.append(readline.strip())
 for readline in coinreadlines:
     blacklist_coin.append(readline.strip())
 
@@ -86,54 +96,95 @@ try:
         '버전업':                df_m['버전업'][0],
         '리시버공유':             df_m['리시버공유'][0],
 
-        '아이디1':        de_text(EN_KEY, df_sa['아이디'][1])         if len(df_sa) > 0 and df_sa['아이디'][1] != '' else None,
-        '비밀번호1':      de_text(EN_KEY, df_sa['비밀번호'][1])       if len(df_sa) > 0 and df_sa['비밀번호'][1] != '' else None,
-        '인증서비밀번호1': de_text(EN_KEY, df_sa['인증서비밀번호'][1])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][1] != '' else None,
-        '계좌비밀번호1':   de_text(EN_KEY, df_sa['계좌비밀번호'][1])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][1] != '' else None,
-        '아이디2':        de_text(EN_KEY, df_sa['아이디'][2])         if len(df_sa) > 0 and df_sa['아이디'][2] != '' else None,
-        '비밀번호2':      de_text(EN_KEY, df_sa['비밀번호'][2])        if len(df_sa) > 0 and df_sa['비밀번호'][2] != '' else None,
-        '인증서비밀번호2': de_text(EN_KEY, df_sa['인증서비밀번호'][2])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][2] != '' else None,
-        '계좌비밀번호2':   de_text(EN_KEY, df_sa['계좌비밀번호'][2])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][2] != '' else None,
-        '아이디3':        de_text(EN_KEY, df_sa['아이디'][3])         if len(df_sa) > 0 and df_sa['아이디'][3] != '' else None,
-        '비밀번호3':      de_text(EN_KEY, df_sa['비밀번호'][3])        if len(df_sa) > 0 and df_sa['비밀번호'][3] != '' else None,
-        '인증서비밀번호3': de_text(EN_KEY, df_sa['인증서비밀번호'][3])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][3] != '' else None,
-        '계좌비밀번호3':   de_text(EN_KEY, df_sa['계좌비밀번호'][3])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][3] != '' else None,
-        '아이디4':        de_text(EN_KEY, df_sa['아이디'][4])         if len(df_sa) > 0 and df_sa['아이디'][4] != '' else None,
-        '비밀번호4':      de_text(EN_KEY, df_sa['비밀번호'][4])        if len(df_sa) > 0 and df_sa['비밀번호'][4] != '' else None,
-        '인증서비밀번호4': de_text(EN_KEY, df_sa['인증서비밀번호'][4])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][4] != '' else None,
-        '계좌비밀번호4':   de_text(EN_KEY, df_sa['계좌비밀번호'][4])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][4] != '' else None,
-        '아이디5':        de_text(EN_KEY, df_sa['아이디'][5])         if len(df_sa) > 0 and df_sa['아이디'][5] != '' else None,
-        '비밀번호5':      de_text(EN_KEY, df_sa['비밀번호'][5])       if len(df_sa) > 0 and df_sa['비밀번호'][5] != '' else None,
-        '인증서비밀번호5': de_text(EN_KEY, df_sa['인증서비밀번호'][5])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][5] != '' else None,
-        '계좌비밀번호5':   de_text(EN_KEY, df_sa['계좌비밀번호'][5])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][5] != '' else None,
-        '아이디6':        de_text(EN_KEY, df_sa['아이디'][6])         if len(df_sa) > 0 and df_sa['아이디'][6] != '' else None,
-        '비밀번호6':      de_text(EN_KEY, df_sa['비밀번호'][6])        if len(df_sa) > 0 and df_sa['비밀번호'][6] != '' else None,
-        '인증서비밀번호6': de_text(EN_KEY, df_sa['인증서비밀번호'][6])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][6] != '' else None,
-        '계좌비밀번호6':   de_text(EN_KEY, df_sa['계좌비밀번호'][6])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][6] != '' else None,
-        '아이디7':        de_text(EN_KEY, df_sa['아이디'][7])         if len(df_sa) > 0 and df_sa['아이디'][7] != '' else None,
-        '비밀번호7':      de_text(EN_KEY, df_sa['비밀번호'][7])        if len(df_sa) > 0 and df_sa['비밀번호'][7] != '' else None,
-        '인증서비밀번호7': de_text(EN_KEY, df_sa['인증서비밀번호'][7])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][7] != '' else None,
-        '계좌비밀번호7':   de_text(EN_KEY, df_sa['계좌비밀번호'][7])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][7] != '' else None,
-        '아이디8':        de_text(EN_KEY, df_sa['아이디'][8])         if len(df_sa) > 0 and df_sa['아이디'][8] != '' else None,
-        '비밀번호8':      de_text(EN_KEY, df_sa['비밀번호'][8])        if len(df_sa) > 0 and df_sa['비밀번호'][8] != '' else None,
-        '인증서비밀번호8': de_text(EN_KEY, df_sa['인증서비밀번호'][8])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][8] != '' else None,
-        '계좌비밀번호8':   de_text(EN_KEY, df_sa['계좌비밀번호'][8])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][8] != '' else None,
+        '아이디1':        de_text(EN_KEY, df_sa['아이디'][1])         if len(df_sa) > 0 and df_sa['아이디'][1] else None,
+        '비밀번호1':      de_text(EN_KEY, df_sa['비밀번호'][1])       if len(df_sa) > 0 and df_sa['비밀번호'][1] else None,
+        '인증서비밀번호1': de_text(EN_KEY, df_sa['인증서비밀번호'][1])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][1] else None,
+        '계좌비밀번호1':   de_text(EN_KEY, df_sa['계좌비밀번호'][1])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][1] else None,
+        '아이디2':        de_text(EN_KEY, df_sa['아이디'][2])         if len(df_sa) > 0 and df_sa['아이디'][2] else None,
+        '비밀번호2':      de_text(EN_KEY, df_sa['비밀번호'][2])        if len(df_sa) > 0 and df_sa['비밀번호'][2] else None,
+        '인증서비밀번호2': de_text(EN_KEY, df_sa['인증서비밀번호'][2])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][2] else None,
+        '계좌비밀번호2':   de_text(EN_KEY, df_sa['계좌비밀번호'][2])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][2] else None,
+        '아이디3':        de_text(EN_KEY, df_sa['아이디'][3])         if len(df_sa) > 0 and df_sa['아이디'][3] else None,
+        '비밀번호3':      de_text(EN_KEY, df_sa['비밀번호'][3])        if len(df_sa) > 0 and df_sa['비밀번호'][3] else None,
+        '인증서비밀번호3': de_text(EN_KEY, df_sa['인증서비밀번호'][3])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][3] else None,
+        '계좌비밀번호3':   de_text(EN_KEY, df_sa['계좌비밀번호'][3])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][3] else None,
+        '아이디4':        de_text(EN_KEY, df_sa['아이디'][4])         if len(df_sa) > 0 and df_sa['아이디'][4] else None,
+        '비밀번호4':      de_text(EN_KEY, df_sa['비밀번호'][4])        if len(df_sa) > 0 and df_sa['비밀번호'][4] else None,
+        '인증서비밀번호4': de_text(EN_KEY, df_sa['인증서비밀번호'][4])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][4] else None,
+        '계좌비밀번호4':   de_text(EN_KEY, df_sa['계좌비밀번호'][4])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][4] else None,
+        '아이디5':        de_text(EN_KEY, df_sa['아이디'][5])         if len(df_sa) > 0 and df_sa['아이디'][5] else None,
+        '비밀번호5':      de_text(EN_KEY, df_sa['비밀번호'][5])       if len(df_sa) > 0 and df_sa['비밀번호'][5] else None,
+        '인증서비밀번호5': de_text(EN_KEY, df_sa['인증서비밀번호'][5])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][5] else None,
+        '계좌비밀번호5':   de_text(EN_KEY, df_sa['계좌비밀번호'][5])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][5] else None,
+        '아이디6':        de_text(EN_KEY, df_sa['아이디'][6])         if len(df_sa) > 0 and df_sa['아이디'][6] else None,
+        '비밀번호6':      de_text(EN_KEY, df_sa['비밀번호'][6])        if len(df_sa) > 0 and df_sa['비밀번호'][6] else None,
+        '인증서비밀번호6': de_text(EN_KEY, df_sa['인증서비밀번호'][6])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][6] else None,
+        '계좌비밀번호6':   de_text(EN_KEY, df_sa['계좌비밀번호'][6])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][6] else None,
+        '아이디7':        de_text(EN_KEY, df_sa['아이디'][7])         if len(df_sa) > 0 and df_sa['아이디'][7] else None,
+        '비밀번호7':      de_text(EN_KEY, df_sa['비밀번호'][7])        if len(df_sa) > 0 and df_sa['비밀번호'][7] else None,
+        '인증서비밀번호7': de_text(EN_KEY, df_sa['인증서비밀번호'][7])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][7] else None,
+        '계좌비밀번호7':   de_text(EN_KEY, df_sa['계좌비밀번호'][7])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][7] else None,
+        '아이디8':        de_text(EN_KEY, df_sa['아이디'][8])         if len(df_sa) > 0 and df_sa['아이디'][8] else None,
+        '비밀번호8':      de_text(EN_KEY, df_sa['비밀번호'][8])        if len(df_sa) > 0 and df_sa['비밀번호'][8] else None,
+        '인증서비밀번호8': de_text(EN_KEY, df_sa['인증서비밀번호'][8])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][8] else None,
+        '계좌비밀번호8':   de_text(EN_KEY, df_sa['계좌비밀번호'][8])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][8] else None,
+        '아이디9':        de_text(EN_KEY, df_sa['아이디'][9])         if len(df_sa) > 0 and df_sa['아이디'][9] else None,
+        '비밀번호9':      de_text(EN_KEY, df_sa['비밀번호'][9])       if len(df_sa) > 0 and df_sa['비밀번호'][9] else None,
+        '인증서비밀번호9': de_text(EN_KEY, df_sa['인증서비밀번호'][9])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][9] else None,
+        '계좌비밀번호9':   de_text(EN_KEY, df_sa['계좌비밀번호'][9])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][9] else None,
+        '아이디10':        de_text(EN_KEY, df_sa['아이디'][10])         if len(df_sa) > 0 and df_sa['아이디'][10] else None,
+        '비밀번호10':      de_text(EN_KEY, df_sa['비밀번호'][10])        if len(df_sa) > 0 and df_sa['비밀번호'][10] else None,
+        '인증서비밀번호10': de_text(EN_KEY, df_sa['인증서비밀번호'][10])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][10] else None,
+        '계좌비밀번호10':   de_text(EN_KEY, df_sa['계좌비밀번호'][10])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][10] else None,
+        '아이디11':        de_text(EN_KEY, df_sa['아이디'][11])         if len(df_sa) > 0 and df_sa['아이디'][11] else None,
+        '비밀번호11':      de_text(EN_KEY, df_sa['비밀번호'][11])        if len(df_sa) > 0 and df_sa['비밀번호'][11] else None,
+        '인증서비밀번호11': de_text(EN_KEY, df_sa['인증서비밀번호'][11])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][11] else None,
+        '계좌비밀번호11':   de_text(EN_KEY, df_sa['계좌비밀번호'][11])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][11] else None,
+        '아이디12':        de_text(EN_KEY, df_sa['아이디'][12])         if len(df_sa) > 0 and df_sa['아이디'][12] else None,
+        '비밀번호12':      de_text(EN_KEY, df_sa['비밀번호'][12])        if len(df_sa) > 0 and df_sa['비밀번호'][12] else None,
+        '인증서비밀번호12': de_text(EN_KEY, df_sa['인증서비밀번호'][12])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][12] else None,
+        '계좌비밀번호12':   de_text(EN_KEY, df_sa['계좌비밀번호'][12])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][12] else None,
+        '아이디13':        de_text(EN_KEY, df_sa['아이디'][13])         if len(df_sa) > 0 and df_sa['아이디'][13] else None,
+        '비밀번호13':      de_text(EN_KEY, df_sa['비밀번호'][13])       if len(df_sa) > 0 and df_sa['비밀번호'][13] else None,
+        '인증서비밀번호13': de_text(EN_KEY, df_sa['인증서비밀번호'][13])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][13] else None,
+        '계좌비밀번호13':   de_text(EN_KEY, df_sa['계좌비밀번호'][13])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][13] else None,
+        '아이디14':        de_text(EN_KEY, df_sa['아이디'][14])         if len(df_sa) > 0 and df_sa['아이디'][14] else None,
+        '비밀번호14':      de_text(EN_KEY, df_sa['비밀번호'][14])        if len(df_sa) > 0 and df_sa['비밀번호'][14] else None,
+        '인증서비밀번호14': de_text(EN_KEY, df_sa['인증서비밀번호'][14])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][14] else None,
+        '계좌비밀번호14':   de_text(EN_KEY, df_sa['계좌비밀번호'][14])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][14] else None,
+        '아이디15':        de_text(EN_KEY, df_sa['아이디'][15])         if len(df_sa) > 0 and df_sa['아이디'][15] else None,
+        '비밀번호15':      de_text(EN_KEY, df_sa['비밀번호'][15])        if len(df_sa) > 0 and df_sa['비밀번호'][15] else None,
+        '인증서비밀번호15': de_text(EN_KEY, df_sa['인증서비밀번호'][15])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][15] else None,
+        '계좌비밀번호15':   de_text(EN_KEY, df_sa['계좌비밀번호'][15])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][15] else None,
+        '아이디16':        de_text(EN_KEY, df_sa['아이디'][16])         if len(df_sa) > 0 and df_sa['아이디'][16] else None,
+        '비밀번호16':      de_text(EN_KEY, df_sa['비밀번호'][16])        if len(df_sa) > 0 and df_sa['비밀번호'][16] else None,
+        '인증서비밀번호16': de_text(EN_KEY, df_sa['인증서비밀번호'][16])   if len(df_sa) > 0 and df_sa['인증서비밀번호'][16] else None,
+        '계좌비밀번호16':   de_text(EN_KEY, df_sa['계좌비밀번호'][16])    if len(df_sa) > 0 and df_sa['계좌비밀번호'][16] else None,
 
-        'Access_key1':   de_text(EN_KEY, df_ca['Access_key'][1])    if len(df_ca) > 0 and df_ca['Access_key'][1] != '' else None,
-        'Secret_key1':   de_text(EN_KEY, df_ca['Secret_key'][1])    if len(df_ca) > 0 and df_ca['Secret_key'][1] != '' else None,
-        'Access_key2':   de_text(EN_KEY, df_ca['Access_key'][2])    if len(df_ca) > 0 and df_ca['Access_key'][2] != '' else None,
-        'Secret_key2':   de_text(EN_KEY, df_ca['Secret_key'][2])    if len(df_ca) > 0 and df_ca['Secret_key'][2] != '' else None,
+        'Access_key1':   de_text(EN_KEY, df_ca['Access_key'][1])    if len(df_ca) > 0 and df_ca['Access_key'][1] else None,
+        'Secret_key1':   de_text(EN_KEY, df_ca['Secret_key'][1])    if len(df_ca) > 0 and df_ca['Secret_key'][1] else None,
+        'Access_key2':   de_text(EN_KEY, df_ca['Access_key'][2])    if len(df_ca) > 0 and df_ca['Access_key'][2] else None,
+        'Secret_key2':   de_text(EN_KEY, df_ca['Secret_key'][2])    if len(df_ca) > 0 and df_ca['Secret_key'][2] else None,
 
-        '텔레그램봇토큰1':      de_text(EN_KEY, df_t['str_bot'][1])      if len(df_t) > 0 and df_t['str_bot'][1] != '' else None,
-        '텔레그램사용자아이디1': int(de_text(EN_KEY, df_t['int_id'][1]))  if len(df_t) > 0 and df_t['int_id'][1]  != '' else None,
-        '텔레그램봇토큰2':      de_text(EN_KEY, df_t['str_bot'][2])      if len(df_t) > 0 and df_t['str_bot'][2] != '' else None,
-        '텔레그램사용자아이디2': int(de_text(EN_KEY, df_t['int_id'][2]))  if len(df_t) > 0 and df_t['int_id'][2]  != '' else None,
-        '텔레그램봇토큰3':      de_text(EN_KEY, df_t['str_bot'][3])      if len(df_t) > 0 and df_t['str_bot'][3] != '' else None,
-        '텔레그램사용자아이디3': int(de_text(EN_KEY, df_t['int_id'][3]))  if len(df_t) > 0 and df_t['int_id'][3]  != '' else None,
-        '텔레그램봇토큰4':      de_text(EN_KEY, df_t['str_bot'][4])      if len(df_t) > 0 and df_t['str_bot'][4] != '' else None,
-        '텔레그램사용자아이디4': int(de_text(EN_KEY, df_t['int_id'][4]))  if len(df_t) > 0 and df_t['int_id'][4]  != '' else None,
+        '텔레그램봇토큰1':      de_text(EN_KEY, df_t['str_bot'][1])      if len(df_t) > 0 and df_t['str_bot'][1] else None,
+        '텔레그램사용자아이디1': int(de_text(EN_KEY, df_t['int_id'][1]))  if len(df_t) > 0 and df_t['int_id'][1]  else None,
+        '텔레그램봇토큰2':      de_text(EN_KEY, df_t['str_bot'][2])      if len(df_t) > 0 and df_t['str_bot'][2] else None,
+        '텔레그램사용자아이디2': int(de_text(EN_KEY, df_t['int_id'][2]))  if len(df_t) > 0 and df_t['int_id'][2]  else None,
+        '텔레그램봇토큰3':      de_text(EN_KEY, df_t['str_bot'][3])      if len(df_t) > 0 and df_t['str_bot'][3] else None,
+        '텔레그램사용자아이디3': int(de_text(EN_KEY, df_t['int_id'][3]))  if len(df_t) > 0 and df_t['int_id'][3]  else None,
+        '텔레그램봇토큰4':      de_text(EN_KEY, df_t['str_bot'][4])      if len(df_t) > 0 and df_t['str_bot'][4] else None,
+        '텔레그램사용자아이디4': int(de_text(EN_KEY, df_t['int_id'][4]))  if len(df_t) > 0 and df_t['int_id'][4]  else None,
+        '텔레그램봇토큰5':      de_text(EN_KEY, df_t['str_bot'][5])      if len(df_t) > 0 and df_t['str_bot'][5] else None,
+        '텔레그램사용자아이디5': int(de_text(EN_KEY, df_t['int_id'][5]))  if len(df_t) > 0 and df_t['int_id'][5]  else None,
+        '텔레그램봇토큰6':      de_text(EN_KEY, df_t['str_bot'][6])      if len(df_t) > 0 and df_t['str_bot'][6] else None,
+        '텔레그램사용자아이디6': int(de_text(EN_KEY, df_t['int_id'][6]))  if len(df_t) > 0 and df_t['int_id'][6]  else None,
+        '텔레그램봇토큰7':      de_text(EN_KEY, df_t['str_bot'][7])      if len(df_t) > 0 and df_t['str_bot'][7] else None,
+        '텔레그램사용자아이디7': int(de_text(EN_KEY, df_t['int_id'][7]))  if len(df_t) > 0 and df_t['int_id'][7]  else None,
+        '텔레그램봇토큰8':      de_text(EN_KEY, df_t['str_bot'][8])      if len(df_t) > 0 and df_t['str_bot'][8] else None,
+        '텔레그램사용자아이디8': int(de_text(EN_KEY, df_t['int_id'][8]))  if len(df_t) > 0 and df_t['int_id'][8]  else None,
 
         '주식블랙리스트': blacklist_stock,
+        '해선블랙리스트': blacklist_future,
         '코인블랙리스트': blacklist_coin,
 
         '주식모의투자':         df_s['주식모의투자'][0],
@@ -150,9 +201,9 @@ try:
         '주식투자금고정':       df_s['주식투자금고정'][0],
         '주식투자금':          df_s['주식투자금'][0],
         '주식손실중지':         df_s['주식손실중지'][0],
-        '주식손실중지수익률':    df_s['주식손실중지수익률'][0],
+        '주식손실중지수익율':    df_s['주식손실중지수익율'][0],
         '주식수익중지':         df_s['주식수익중지'][0],
-        '주식수익중지수익률':    df_s['주식수익중지수익률'][0],
+        '주식수익중지수익율':    df_s['주식수익중지수익율'][0],
         '주식경과틱수설정':      df_s['주식경과틱수설정'][0],
 
         '코인모의투자':         df_c['코인모의투자'][0],
@@ -169,9 +220,9 @@ try:
         '코인투자금고정':       df_c['코인투자금고정'][0],
         '코인투자금':           df_c['코인투자금'][0],
         '코인손실중지':         df_c['코인손실중지'][0],
-        '코인손실중지수익률':    df_c['코인손실중지수익률'][0],
+        '코인손실중지수익율':    df_c['코인손실중지수익율'][0],
         '코인수익중지':         df_c['코인수익중지'][0],
-        '코인수익중지수익률':    df_c['코인수익중지수익률'][0],
+        '코인수익중지수익율':    df_c['코인수익중지수익율'][0],
         '코인경과틱수설정':      df_c['코인경과틱수설정'][0],
 
         '블랙리스트추가':        df_b['블랙리스트추가'][0],
@@ -203,11 +254,12 @@ try:
         '휴무프로세스종료':      df_e['휴무프로세스종료'][0],
         '휴무컴퓨터종료':       df_e['휴무컴퓨터종료'][0],
         '창위치기억':          df_e['창위치기억'][0],
-        '창위치':             [int(x) for x in df_e['창위치'][0].split(';')] if df_e['창위치'][0] != '' else None,
+        '창위치':             [int(x) for x in df_e['창위치'][0].split(';')] if df_e['창위치'][0] else None,
         '스톰라이브':          df_e['스톰라이브'][0],
         '프로그램종료':        df_e['프로그램종료'][0],
         '테마':               df_e['테마'][0],
         '팩터선택':            df_e['팩터선택'][0],
+        '시리얼키':            de_text(EN_KEY, df_e['시리얼키'][0]) if len(df_e) > 0 and df_e['시리얼키'][0] else None,
 
         '주식매수주문구분':      df_sb['주식매수주문구분'][0],
         '주식매수분할횟수':      df_sb['주식매수분할횟수'][0],
@@ -215,9 +267,9 @@ try:
         '주식매수분할시그널':    df_sb['주식매수분할시그널'][0],
         '주식매수분할하방':      df_sb['주식매수분할하방'][0],
         '주식매수분할상방':      df_sb['주식매수분할상방'][0],
-        '주식매수분할하방수익률': df_sb['주식매수분할하방수익률'][0],
-        '주식매수분할상방수익률': df_sb['주식매수분할상방수익률'][0],
-        '주식매수분할고정수익률': df_sb['주식매수분할고정수익률'][0],
+        '주식매수분할하방수익율': df_sb['주식매수분할하방수익율'][0],
+        '주식매수분할상방수익율': df_sb['주식매수분할상방수익율'][0],
+        '주식매수분할고정수익율': df_sb['주식매수분할고정수익율'][0],
         '주식매수지정가기준가격': df_sb['주식매수지정가기준가격'][0],
         '주식매수지정가호가번호': df_sb['주식매수지정가호가번호'][0],
         '주식매수시장가잔량범위': df_sb['주식매수시장가잔량범위'][0],
@@ -250,8 +302,8 @@ try:
         '주식매도분할시그널':    df_ss['주식매도분할시그널'][0],
         '주식매도분할하방':      df_ss['주식매도분할하방'][0],
         '주식매도분할상방':      df_ss['주식매도분할상방'][0],
-        '주식매도분할하방수익률': df_ss['주식매도분할하방수익률'][0],
-        '주식매도분할상방수익률': df_ss['주식매도분할상방수익률'][0],
+        '주식매도분할하방수익율': df_ss['주식매도분할하방수익율'][0],
+        '주식매도분할상방수익율': df_ss['주식매도분할상방수익율'][0],
         '주식매도지정가기준가격': df_ss['주식매도지정가기준가격'][0],
         '주식매도지정가호가번호': df_ss['주식매도지정가호가번호'][0],
         '주식매도시장가잔량범위': df_ss['주식매도시장가잔량범위'][0],
@@ -259,8 +311,8 @@ try:
         '주식매도취소매수시그널': df_ss['주식매도취소매수시그널'][0],
         '주식매도취소시간':      df_ss['주식매도취소시간'][0],
         '주식매도취소시간초':    df_ss['주식매도취소시간초'][0],
-        '주식매도손절수익률청산': df_ss['주식매도손절수익률청산'][0],
-        '주식매도손절수익률':    df_ss['주식매도손절수익률'][0],
+        '주식매도손절수익율청산': df_ss['주식매도손절수익율청산'][0],
+        '주식매도손절수익율':    df_ss['주식매도손절수익율'][0],
         '주식매도손절수익금청산': df_ss['주식매도손절수익금청산'][0],
         '주식매도손절수익금':    df_ss['주식매도손절수익금'][0],
         '주식매도금지매수횟수':   df_ss['주식매도금지매수횟수'][0],
@@ -282,9 +334,9 @@ try:
         '코인매수분할시그널':    df_cb['코인매수분할시그널'][0],
         '코인매수분할하방':      df_cb['코인매수분할하방'][0],
         '코인매수분할상방':      df_cb['코인매수분할상방'][0],
-        '코인매수분할하방수익률': df_cb['코인매수분할하방수익률'][0],
-        '코인매수분할상방수익률': df_cb['코인매수분할상방수익률'][0],
-        '코인매수분할고정수익률': df_cb['코인매수분할고정수익률'][0],
+        '코인매수분할하방수익율': df_cb['코인매수분할하방수익율'][0],
+        '코인매수분할상방수익율': df_cb['코인매수분할상방수익율'][0],
+        '코인매수분할고정수익율': df_cb['코인매수분할고정수익율'][0],
         '코인매수지정가기준가격': df_cb['코인매수지정가기준가격'][0],
         '코인매수지정가호가번호': df_cb['코인매수지정가호가번호'][0],
         '코인매수시장가잔량범위': df_cb['코인매수시장가잔량범위'][0],
@@ -316,8 +368,8 @@ try:
         '코인매도분할시그널':    df_cs['코인매도분할시그널'][0],
         '코인매도분할하방':      df_cs['코인매도분할하방'][0],
         '코인매도분할상방':      df_cs['코인매도분할상방'][0],
-        '코인매도분할하방수익률': df_cs['코인매도분할하방수익률'][0],
-        '코인매도분할상방수익률': df_cs['코인매도분할상방수익률'][0],
+        '코인매도분할하방수익율': df_cs['코인매도분할하방수익율'][0],
+        '코인매도분할상방수익율': df_cs['코인매도분할상방수익율'][0],
         '코인매도지정가기준가격': df_cs['코인매도지정가기준가격'][0],
         '코인매도지정가호가번호': df_cs['코인매도지정가호가번호'][0],
         '코인매도시장가잔량범위': df_cs['코인매도시장가잔량범위'][0],
@@ -325,8 +377,8 @@ try:
         '코인매도취소매수시그널': df_cs['코인매도취소매수시그널'][0],
         '코인매도취소시간':      df_cs['코인매도취소시간'][0],
         '코인매도취소시간초':    df_cs['코인매도취소시간초'][0],
-        '코인매도손절수익률청산': df_cs['코인매도손절수익률청산'][0],
-        '코인매도손절수익률':    df_cs['코인매도손절수익률'][0],
+        '코인매도손절수익율청산': df_cs['코인매도손절수익율청산'][0],
+        '코인매도손절수익율':    df_cs['코인매도손절수익율'][0],
         '코인매도손절수익금청산': df_cs['코인매도손절수익금청산'][0],
         '코인매도손절수익금':    df_cs['코인매도손절수익금'][0],
         '코인매도금지매수횟수':   df_cs['코인매도금지매수횟수'][0],
@@ -355,41 +407,42 @@ except KeyError:
 
 ui_num = {'설정로그': 1, '종목명데이터': 1.2, 'S오더텍스트': 1.3, '백테엔진': 1.4,
           'S단순텍스트': 2, 'S로그텍스트': 3, 'C단순텍스트': 4, 'C로그텍스트': 5,
-          'S백테스트': 6, 'C백테스트': 7, 'CF백테스트': 7.5, 'S백테바': 8, 'C백테바': 9, 'CF백테바': 9.5, 'DB관리': 10,
+          'S백테스트': 6, 'SF백테스트': 6.5, 'C백테스트': 7, 'CF백테스트': 7.5,
+          'S백테바': 8, 'SF백테바': 8.5, 'C백테바': 9, 'CF백테바': 9.5, 'DB관리': 10,
           'S실현손익': 11, 'S거래목록': 12, 'S잔고평가': 13, 'S잔고목록': 14, 'S체결목록': 15,
           'S당일합계': 16, 'S당일상세': 17, 'S누적합계': 18, 'S누적상세': 19, 'S관심종목': 20,
           'C실현손익': 21, 'C거래목록': 22, 'C잔고평가': 23, 'C잔고목록': 24, 'C체결목록': 25,
           'C당일합계': 26, 'C당일상세': 27, 'C누적합계': 28, 'C누적상세': 29, 'C관심종목': 30,
           'S호가종목': 31, 'S호가체결': 32, 'S호가잔량': 33, 'C호가종목': 34, 'C호가체결': 35, 'C호가잔량': 36,
           'S호가체결2': 36.1, 'C호가체결2': 36.2,
-          '스톰라이브1': 37.1, '스톰라이브2': 37.2, '스톰라이브3': 37.3, '스톰라이브4': 37.4,
-          '스톰라이브5': 37.5, '스톰라이브6': 37.6, '스톰라이브7': 37.7, '스톰라이브8': 37.8, '김프': 40,
-          '기업개요': 41, '기업공시': 42, '기업뉴스': 43, '재무년도': 44, '재무분기': 45, 'S상세기록': 46, 'C상세기록': 47,
+          '스톰라이브1': 37.1, '스톰라이브2': 37.2, '스톰라이브3': 37.3, '스톰라이브4': 37.4, '스톰라이브5': 37.5, '스톰라이브6': 37.6,
+          '스톰라이브7': 37.7, '스톰라이브8': 37.8, '스톰라이브9': 37.9, '스톰라이브10': 37.91, '스톰라이브11': 37.92,
+          '김프': 40, '기업개요': 41, '기업공시': 42, '기업뉴스': 43, '재무년도': 44, '재무분기': 45, 'S상세기록': 46, 'C상세기록': 47,
           '차트': 51, '실시간차트': 52, '코스피': 53, '코스닥': 54, '트리맵': 61, '트리맵1': 62, '트리맵2': 63, '풍경사진': 70}
 
-columns_tt   = ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
-columns_td   = ['종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금', '체결시간']
-columns_tdf  = ['종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익률', '수익금', '체결시간']
-columns_tj   = ['추정예탁자산', '추정예수금', '보유종목수', '수익률', '총평가손익', '총매입금액', '총평가금액']
-columns_jg   = ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+columns_tt   = ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익율', '수익금합계']
+columns_td   = ['종목명', '매수금액', '매도금액', '주문수량', '수익율', '수익금', '체결시간']
+columns_tdf  = ['종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익율', '수익금', '체결시간']
+columns_tj   = ['추정예탁자산', '추정예수금', '보유종목수', '수익율', '총평가손익', '총매입금액', '총평가금액']
+columns_jg   = ['종목명', '매입가', '현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
 columns_cj   = ['종목명', '주문구분', '주문수량', '체결수량', '미체결수량', '체결가', '체결시간', '주문가격', '주문번호']
-columns_gj   = ['종목명', 'per', 'hlml_per', 's_money', 'sm_avg', 'd_money', 'ch', 'ch_avg', 'ch_high']
-columns_jgf  = ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+columns_gj   = ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
+columns_jgf  = ['종목명', '포지션', '매입가', '현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
 
-columns_btf  = ['종목명', '포지션', '매수시간', '매도시간', '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간']
-columns_bt   = ['종목명', '시가총액', '매수시간', '매도시간', '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간']
-columns_dt   = ['거래일자', '누적매수금액', '누적매도금액', '누적수익금액', '누적손실금액', '수익률', '누적수익금']
-columns_dd   = ['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금']
-columns_nt   = ['기간', '누적매수금액', '누적매도금액', '누적수익금액', '누적손실금액', '누적수익률', '누적수익금']
-columns_nd   = ['일자', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+columns_btf  = ['종목명', '포지션', '매수시간', '매도시간', '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익율', '수익금', '수익금합계', '매도조건', '추가매수시간']
+columns_bt   = ['종목명', '시가총액', '매수시간', '매도시간', '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익율', '수익금', '수익금합계', '매도조건', '추가매수시간']
+columns_dt   = ['거래일자', '누적매수금액', '누적매도금액', '누적수익금액', '누적손실금액', '수익율', '누적수익금']
+columns_dd   = ['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익율', '수익금']
+columns_nt   = ['기간', '누적매수금액', '누적매도금액', '누적수익금액', '누적손실금액', '누적수익율', '누적수익금']
+columns_nd   = ['일자', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익율', '수익금합계']
 columns_sb   = ['구분', '백테스트', '백파인더', '최적화', '최적화V', '최적화VC', '최적화T', '최적화VT', '최적화VCT',
                 '최적화OG', '최적화OGV', '최적화OGVC', '최적화OC', '최적화OCV', '최적화OCVC', '전진분석', '전진분석V', '전진분석VC', '합계']
-columns_sd   = ['period', 'time', 'dc', 'at', 'bettings', 'seed', 'ttc', 'atc', 'mhc', 'aht', 'pc', 'mc', 'wr', 'app', 'tpp', 'mdd', 'tsg', 'cagr']
+columns_sd   = ['period', 'time', 'dc', 'at', 'bet', 'seed', 'ttc', 'atc', 'mhc', 'aht', 'pc', 'mc', 'wr', 'app', 'tpp', 'mdd', 'tsg', 'cagr']
 
 columns_vj   = ['배팅금액', '필요자금', '거래횟수', '일평균거래횟수', '최대보유종목수', '평균보유기간', '익절', '손절',
-                '승률', '평균수익률', '수익률합계', '최대낙폭률', '수익금합계', '매매성능지수', '연간예상수익률', '매수전략', '매도전략']
+                '승률', '평균수익율', '수익율합계', '최대낙폭률', '수익금합계', '매매성능지수', '연간예상수익율', '매수전략', '매도전략']
 columns_vc   = ['변수', '배팅금액', '필요자금', '거래횟수', '일평균거래횟수', '최대보유종목수', '평균보유기간', '익절', '손절', '승률',
-                '평균수익률', '수익률합계', '최대낙폭률', '수익금합계', '매매성능지수', '연간예상수익률', '매수전략', '매도전략', '범위설정']
+                '평균수익율', '수익율합계', '최대낙폭률', '수익금합계', '매매성능지수', '연간예상수익율', '매수전략', '매도전략', '범위설정']
 
 columns_hj   = ['종목명', '현재가', '등락율', '시가총액', 'UVI', '시가', '고가', '저가']
 columns_hc   = ['체결수량', '체결강도']
@@ -460,19 +513,6 @@ list_coin_min2      = list_coin_min_real + list_chegyeol_colum2 + list_indicator
 list_stock_min_real = list_stock_min_real + list_indicator
 list_coin_min_real  = list_coin_min_real + list_indicator
 
-dict_order = {
-    '지정가': '00',
-    '시장가': '03',
-    '최유리지정가': '06',
-    '최우선지정가': '07',
-    '지정가IOC': '10',
-    '시장가IOC': '13',
-    '최유리IOC': '16',
-    '지정가FOK': '20',
-    '시장가FOK': '23',
-    '최유리FOK': '26'
-}
-
 dict_order_ratio = {
     1: {
         5: {
@@ -524,6 +564,21 @@ dict_order_ratio = {
         1: {
             0: 100.00
         }
+    }
+}
+
+dgree = {
+    'stock': {
+        'tick': [5, 0.01],
+        'min': [5, 0.01]
+    },
+    'coin': {
+        'tick': [10, 0.000_000_01],
+        'min': [10, 0.000_000_01]
+    },
+    'future': {
+        'tick': [100, 0.000_000_05],
+        'min': [100, 0.000_000_05]
     }
 }
 

@@ -8,7 +8,8 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from coin.kimp_upbit_binance import Kimp
 from utility.static import qtest_qwait
 from utility.setting import columns_hc, DB_STRATEGY, DB_COIN_BACK_TICK, DB_COIN_TICK, DB_STOCK_BACK_TICK, DB_STOCK_TICK, \
-    DB_PATH, DB_COIN_BACK_MIN, DB_STOCK_MIN, DB_STOCK_BACK_MIN, DB_COIN_MIN
+    DB_PATH, DB_COIN_BACK_MIN, DB_STOCK_MIN, DB_STOCK_BACK_MIN, DB_COIN_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_MIN, \
+    DB_FUTURE_BACK_TICK, DB_FUTURE_TICK
 from ui.set_style import style_bc_bt, style_bc_bb
 
 
@@ -155,12 +156,20 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
                 ui.ct_lineEdittttt_01.setText('0')
                 ui.ct_lineEdittttt_02.setText('2359')
         else:
-            if ui.dict_set['주식타임프레임']:
-                ui.ct_lineEdittttt_01.setText('90000')
-                ui.ct_lineEdittttt_02.setText('93000')
+            if '키움증권' in ui.dict_set['증권사']:
+                if ui.dict_set['주식타임프레임']:
+                    ui.ct_lineEdittttt_01.setText('90000')
+                    ui.ct_lineEdittttt_02.setText('93000')
+                else:
+                    ui.ct_lineEdittttt_01.setText('900')
+                    ui.ct_lineEdittttt_02.setText('1519')
             else:
-                ui.ct_lineEdittttt_01.setText('900')
-                ui.ct_lineEdittttt_02.setText('1519')
+                if ui.dict_set['주식타임프레임']:
+                    ui.ct_lineEdittttt_01.setText('93000')
+                    ui.ct_lineEdittttt_02.setText('103000')
+                else:
+                    ui.ct_lineEdittttt_01.setText('900')
+                    ui.ct_lineEdittttt_02.setText('1559')
         ui.dialog_chart.show()
     if ui.dialog_chart.isVisible() and ui.proc_chart.is_alive():
         if real:
@@ -173,10 +182,11 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
                 if not ui.dict_set['주식타임프레임']: ui.wdzservQ.put(('receiver', ('차트종목코드', code)))
         else:
             ui.ChartClear()
-            if detail is None:
-                ui.chartQ.put((coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code)))
-            else:
-                ui.chartQ.put((coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code), detail, buytimes))
+            cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
+            data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code))
+            if detail is not None: data += (detail, buytimes)
+            if cf1 and cf2:        data += (float(cf1), float(cf2))
+            ui.chartQ.put(data)
 
 
 def show_qsize(ui):
@@ -201,12 +211,20 @@ def show_chart(ui):
             else:
                 ui.ct_lineEdittttt_02.setText('2359')
         else:
-            if ui.dict_set['주식타임프레임']:
-                ui.ct_lineEdittttt_01.setText('90000')
-                ui.ct_lineEdittttt_02.setText('93000')
+            if '키움증권' in ui.dict_set['증권사']:
+                if ui.dict_set['주식타임프레임']:
+                    ui.ct_lineEdittttt_01.setText('90000')
+                    ui.ct_lineEdittttt_02.setText('93000')
+                else:
+                    ui.ct_lineEdittttt_01.setText('900')
+                    ui.ct_lineEdittttt_02.setText('1519')
             else:
-                ui.ct_lineEdittttt_01.setText('900')
-                ui.ct_lineEdittttt_02.setText('1519')
+                if ui.dict_set['주식타임프레임']:
+                    ui.ct_lineEdittttt_01.setText('93000')
+                    ui.ct_lineEdittttt_02.setText('103000')
+                else:
+                    ui.ct_lineEdittttt_01.setText('900')
+                    ui.ct_lineEdittttt_02.setText('1559')
         ui.dialog_chart.show()
     else:
         ui.dialog_chart.close()
@@ -271,8 +289,8 @@ def show_db(ui):
     ui.db_tableWidgett_05.clearContents()
 
     con = sqlite3.connect(DB_STRATEGY)
-
-    stock_stg_list = ['stockbuy', 'stocksell', 'stockoptibuy', 'stockoptisell']
+    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+    stock_stg_list = [f'{gubun}buy', f'{gubun}sell', f'{gubun}optibuy', f'{gubun}optisell']
     maxlow = 0
     for i, stock_stg in enumerate(stock_stg_list):
         df = pd.read_sql(f'SELECT * FROM {stock_stg}', con)
@@ -288,7 +306,7 @@ def show_db(ui):
     if maxlow < 8:
         ui.db_tableWidgett_01.setRowCount(8)
 
-    stock_stg_list = ['stockoptivars', 'stockvars', 'stockbuyconds', 'stocksellconds']
+    stock_stg_list = [f'{gubun}optivars', f'{gubun}vars', f'{gubun}buyconds', f'{gubun}sellconds']
     maxlow = 0
     for i, stock_stg in enumerate(stock_stg_list):
         df = pd.read_sql(f'SELECT * FROM {stock_stg}', con)
@@ -419,9 +437,15 @@ def chart_moneytop_list(ui):
             query = f"SELECT * FROM moneytop WHERE `index` LIKE '{searchdate}%' and `index` % 10000 >= {starttime} and `index` % 10000 <= {endtime}"
             is_min = True
     else:
-        db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db' if ui.dict_set['주식타임프레임'] else f'{DB_PATH}/stock_min_{searchdate}.db'
-        db_name2 = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
-        db_name3 = DB_STOCK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN
+        if '키움증권' in ui.dict_set['증권사']:
+            db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db' if ui.dict_set['주식타임프레임'] else f'{DB_PATH}/stock_min_{searchdate}.db'
+            db_name2 = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            db_name3 = DB_STOCK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN
+        else:
+            db_name1 = f'{DB_PATH}/future_min_{searchdate}.db'
+            db_name2 = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            db_name3 = DB_FUTURE_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN
+
         if ui.dict_set['주식타임프레임']:
             query = f"SELECT * FROM moneytop WHERE `index` LIKE '{searchdate}%' and `index` % 1000000 >= {starttime} and `index` % 1000000 <= {endtime}"
         else:

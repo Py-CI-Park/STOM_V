@@ -3,7 +3,7 @@ import re
 from PyQt5.QtCore import QTimer
 from ui.set_style import color_fg_rt, color_fg_dk, color_fg_bt
 from utility.setting import ui_num
-from utility.static import error_decorator, now, qtest_qwait, timedelta_sec, int_hms
+from utility.static import error_decorator, now, qtest_qwait, timedelta_sec, str_hms
 
 
 class UpdateTextedit:
@@ -21,7 +21,7 @@ class UpdateTextedit:
             if '시스템 명령 오류 알림' in data[1]:
                 self.ui.lgicon_alert = True
     
-            time_ = str(now())[:-7] if data[0] in (ui_num['S백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']) else str(now())
+            time_ = str(now())[:-7] if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']) else str(now())
             log_  = f'<font color=#FF32FF>{data[1]}</font>' if '오류' in data[1] else data[1]
             text  = f'[{time_}] {log_}' if '</font>' not in log_ else f'<font color=white>[{time_}]</font> {log_}'
     
@@ -61,12 +61,13 @@ class UpdateTextedit:
                     self.ui.log5.info(text)
                 except:
                     pass
-            elif data[0] == ui_num['S백테스트']:
+
+            elif data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
                 if '배팅금액' in data[1] or 'OUT' in data[1] or '결과' in data[1] or '최적값' in data[1] or \
                         '백테스트 시작' in data[1] or ']단계' in data[1]:
                     color = color_fg_rt
                 elif ('AP' in data[1] and '-' in data[1].split('AP')[1]) or \
-                        ('수익률' in data[1] and '-' in data[1].split('수익률')[1]):
+                        ('수익율' in data[1] and '-' in data[1].split('수익율')[1]):
                     color = color_fg_dk
                 else:
                     color = color_fg_bt
@@ -77,15 +78,13 @@ class UpdateTextedit:
                     if '백테스트 시작' in data[1] or '인샘플 최적화 시작' in data[1]: self.logging = False
                     elif '최적화 완료' in data[1] or '인샘플 최적화 완료' in data[1]: self.logging = True
                 if self.logging: self.ui.log6.info(re.sub('(<([^>]+)>)', '', text))
-                if '백테스트를 중지합니다' in data[1] and not self.ui.back_cancelling: self.ui.BacktestProcessKill(0)
                 if data[1] in ('백테스트 완료', '백파인더 완료', '최적화O 완료', '최적화OV 완료',
                                '최적화OVC 완료', '최적화B 완료', '최적화BV 완료', '최적화BVC 완료', '최적화OT 완료',
                                '최적화OVT 완료', '최적화OVCT 완료', '최적화BT 완료', '최적화BVT 완료', '최적화BVCT 완료',
                                '전진분석OR 완료', '전진분석ORV 완료', '전진분석ORVC 완료', '전진분석BR 완료', '전진분석BRV 완료',
                                '전진분석BRVC 완료', '최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료', '최적화OC 완료',
                                '최적화OCV 완료', '최적화OCVC 완료'):
-                    if data[1] in ('최적화O 완료', '최적화OV 완료', '최적화OVC 완료', '최적화B 완료',
-                                   '최적화BV 완료', '최적화BVC 완료'):
+                    if data[1] in ('최적화O 완료', '최적화OV 완료', '최적화OVC 완료', '최적화B 완료', '최적화BV 완료', '최적화BVC 완료'):
                         self.ui.sActivated_04()
                     if data[1] in ('최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료'):
                         self.ui.sActivated_06()
@@ -104,7 +103,7 @@ class UpdateTextedit:
                         '백테스트 시작' in data[1] or ']단계' in data[1]:
                     color = color_fg_rt
                 elif ('AP' in data[1] and '-' in data[1].split('AP')[1]) or \
-                        ('수익률' in data[1] and '-' in data[1].split('수익률')[1].split('KRW')[0]):
+                        ('수익율' in data[1] and '-' in data[1].split('수익율')[1].split('KRW')[0]):
                     color = color_fg_dk
                 else:
                     color = color_fg_bt
@@ -115,15 +114,13 @@ class UpdateTextedit:
                     if '백테스트 시작' in data[1] or '인샘플 최적화 시작' in data[1]: self.logging = False
                     elif '최적화 완료' in data[1] or '인샘플 최적화 완료' in data[1]: self.logging = True
                 if self.logging: self.ui.log6.info(re.sub('(<([^>]+)>)', '', text))
-                if '백테스트를 중지합니다' in data[1] and not self.ui.back_cancelling: self.ui.BacktestProcessKill(0)
                 if data[1] in ('백테스트 완료', '백파인더 완료', '최적화O 완료', '최적화OV 완료',
                                '최적화OVC 완료', '최적화B 완료', '최적화BV 완료', '최적화BVC 완료', '최적화OT 완료',
                                '최적화OVT 완료', '최적화OVCT 완료', '최적화BT 완료', '최적화BVT 완료', '최적화BVCT 완료',
                                '전진분석OR 완료', '전진분석ORV 완료', '전진분석ORVC 완료', '전진분석BR 완료', '전진분석BRV 완료',
                                '전진분석BRVC 완료', '최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료', '최적화OC 완료',
                                '최적화OCV 완료', '최적화OCVC 완료'):
-                    if data[1] in ('최적화O 완료', '최적화OV 완료', '최적화OVC 완료', '최적화B 완료',
-                                   '최적화BV 완료', '최적화BVC 완료'):
+                    if data[1] in ('최적화O 완료', '최적화OV 완료', '최적화OVC 완료', '최적화B 완료', '최적화BV 완료', '최적화BVC 완료'):
                         self.ui.cActivated_04()
                     if data[1] in ('최적화OG 완료', '최적화OGV 완료', '최적화OGVC 완료'):
                         self.ui.cActivated_06()
@@ -143,8 +140,12 @@ class UpdateTextedit:
 
             if '전략연산 프로세스 데이터 저장 중' in text:
                 self.ui.data_save = True
+            elif '백테스트를 중지합니다' in data[1] and not self.ui.back_cancelling:
+                self.ui.BacktestProcessKill(0)
             elif data[0] == ui_num['S단순텍스트'] and '리시버 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '리시버 종료'))
+            elif data[0] == ui_num['S단순텍스트'] and '해외선물 휴무 종료' in data[1]:
+                self.StockShutDownCheck()
             elif data[0] == ui_num['S로그텍스트'] and '전략연산 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '전략연산 종료'))
                 if self.ui.data_save and self.ui.dict_set['디비자동관리']:
@@ -172,18 +173,17 @@ class UpdateTextedit:
                 else:
                     self.ui.db_textEdittttt_01.append(text)
                 if self.ui.auto_mode:
-                    if data[1] == '주식 날짜별 DB 생성 완료':
+                    if data[1] in ('주식 날짜별 DB 생성 완료', '해선 날짜별 DB 생성 완료'):
                         self.AutoDataBase(2)
-                    elif data[1] == '주식 당일 데이터 백테디비로 추가 완료':
+                    elif data[1] in ('주식 당일 데이터 백테디비로 추가 완료', '해선 당일 데이터 백테디비로 추가 완료'):
                         self.AutoDataBase(3)
                     elif data[1] == '코인 날짜별 DB 생성 완료':
                         self.AutoDataBase(5)
                     elif data[1] == '코인 당일 데이터 백테디비로 추가 완료':
                         self.AutoDataBase(6)
-        elif len(data) == 5:
+        elif len(data) == 3:
             self.ui.dict_name = data[1]
             self.ui.dict_code = data[2]
-            self.ui.dict_sgbn = data[3]
         elif len(data) == 4:
             if data[1] <= data[2]:
                 curr_time = now()
@@ -199,7 +199,7 @@ class UpdateTextedit:
                         self.ui.list_progressBarrr[self.ui.back_scount].setFormat('%p%')
                         self.ui.list_progressBarrr[self.ui.back_scount].setValue(data[1])
                         self.ui.list_progressBarrr[self.ui.back_scount].setRange(0, data[2])
-                    if data[0] == ui_num['S백테바']:
+                    if data[0] in (ui_num['S백테바'], ui_num['SF백테바']):
                         self.ui.ss_progressBar_01.setFormat(
                             f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
                         self.ui.ss_progressBar_01.setValue(data[1])
@@ -260,7 +260,9 @@ class UpdateTextedit:
             if self.ui.dict_set['프로그램종료']:
                 QTimer.singleShot(180 * 1000, self.ui.ProcessKill)
             if self.ui.dict_set['리시버공유'] < 2:
-                if self.ui.dict_set['주식컴퓨터종료'] or (90000 < int_hms() < 90500 and self.ui.dict_set['휴무컴퓨터종료']):
+                if self.ui.dict_set['주식컴퓨터종료'] or \
+                        ('키움증권' in self.ui.dict_set['증권사'] and 90000 < int(str_hms()) < 90500 and self.ui.dict_set['휴무컴퓨터종료']) or \
+                        ('해외선물' in self.ui.dict_set['증권사'] and 213000 < int(str_hms()) < 223000 and self.ui.dict_set['휴무컴퓨터종료']):
                     os.system('shutdown /s /t 300')
 
     def CoinShutDownCheck(self):

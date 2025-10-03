@@ -42,9 +42,10 @@ def get_k_list(ui, code):
             try:
                 con = sqlite3.connect(DB_STRATEGY)
                 if 'KRW' not in code and 'USDT' not in code:
+                    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                     stg_name = ui.dict_set['주식매수전략']
-                    df1 = pd.read_sql('SELECT * FROM stockbuy', con).set_index('index')
-                    df2 = pd.read_sql('SELECT * FROM stockoptibuy', con).set_index('index')
+                    df1 = pd.read_sql(f'SELECT * FROM {gubun}buy', con).set_index('index')
+                    df2 = pd.read_sql(f'SELECT * FROM {gubun}optibuy', con).set_index('index')
                 else:
                     stg_name = ui.dict_set['코인매수전략']
                     df1 = pd.read_sql('SELECT * FROM coinbuy', con).set_index('index')
@@ -65,7 +66,7 @@ def get_k_list(ui, code):
                     for line in buystg.split('\n'):
                         if 'self.indicator' in line and '#' not in line:
                             indistg += f"{line.replace('self.indicator', 'indicator_')}\n"
-                if indistg != '':
+                if indistg:
                     indicator_ = indicator
                     if vars_ is not None: indistg = indistg.replace('self.vars', 'vars_')
                     exec(compile(indistg, '<string>', 'exec'))

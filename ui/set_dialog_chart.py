@@ -228,6 +228,9 @@ class SetDialogChart:
         self.ui.ft_lineEdittttt_34 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[33], style=style_bc_dk)
         self.ui.ft_lineEdittttt_35 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[34], style=style_bc_dk)
 
+        self.ui.ft_lineEdittttt_36 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, style=style_bc_dk)
+        self.ui.ft_lineEdittttt_37 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, style=style_bc_dk)
+
         text = '매수전략으로 설정된\n보조지표값 사용하기\n체크를 해제하면\n좌측 설정값으로 표시됨'
         self.ui.ft_checkBoxxxxx_39 = self.wc.setCheckBox(text, self.ui.jp_groupBoxxxxx_01, checked=False, style=style_ck_bx)
         self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.ctButtonClicked_01)
@@ -420,6 +423,9 @@ class SetDialogChart:
         self.ui.ft_lineEdittttt_33.setGeometry(330, 550, 40, 20)
         self.ui.ft_lineEdittttt_34.setGeometry(480, 550, 40, 20)
         self.ui.ft_lineEdittttt_35.setGeometry(180, 575, 40, 20)
+
+        self.ui.ft_lineEdittttt_36.setGeometry(685, 125, 150, 20)
+        self.ui.ft_lineEdittttt_37.setGeometry(685, 150, 150, 20)
 
         self.ui.ft_checkBoxxxxx_39.setGeometry(685, 300, 150, 80)
         self.ui.ft_pushButtonnn_01.setGeometry(685, 385, 150, 30)

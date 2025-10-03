@@ -47,7 +47,8 @@ class SetTable:
         self.ui.slv_tapWidgett_01 = QTabWidget(self.ui.lv_tab)
         self.ui.slv_index1 = self.ui.slv_tapWidgett_01.addTab(self.ui.slv_tab, '주식 라이브')
         self.ui.slv_index2 = self.ui.slv_tapWidgett_01.addTab(self.ui.clv_tab, '코인 라이브')
-        self.ui.slv_index3 = self.ui.slv_tapWidgett_01.addTab(self.ui.blv_tab, '백테 라이브')
+        self.ui.slv_index3 = self.ui.slv_tapWidgett_01.addTab(self.ui.flv_tab, '해선 라이브')
+        self.ui.slv_index4 = self.ui.slv_tapWidgett_01.addTab(self.ui.blv_tab, '백테 라이브')
 
         self.ui.slsd_tableWidgett = self.wc.setTablewidget(self.ui.slv_tab, columns_tt, 30)
         self.ui.slsn_tableWidgett = self.wc.setTablewidget(self.ui.slv_tab, columns_nt, 1)
@@ -56,6 +57,10 @@ class SetTable:
         self.ui.slcd_tableWidgett = self.wc.setTablewidget(self.ui.clv_tab, columns_tt, 30)
         self.ui.slcn_tableWidgett = self.wc.setTablewidget(self.ui.clv_tab, columns_nt, 1)
         self.ui.slct_tableWidgett = self.wc.setTablewidget(self.ui.clv_tab, columns_nd, 28)
+
+        self.ui.slfd_tableWidgett = self.wc.setTablewidget(self.ui.flv_tab, columns_tt, 30)
+        self.ui.slfn_tableWidgett = self.wc.setTablewidget(self.ui.flv_tab, columns_nt, 1)
+        self.ui.slft_tableWidgett = self.wc.setTablewidget(self.ui.flv_tab, columns_nd, 28)
 
         self.ui.slbd_tableWidgett = self.wc.setTablewidget(self.ui.blv_tab, columns_sb, 3)
         self.ui.slbt_tableWidgett = self.wc.setTablewidget(self.ui.blv_tab, columns_sd, 26, vscroll=True)
@@ -120,6 +125,10 @@ class SetTable:
         self.ui.slcd_tableWidgett.setGeometry(5, 5, 663, 702)
         self.ui.slcn_tableWidgett.setGeometry(672, 5, 662, 42)
         self.ui.slct_tableWidgett.setGeometry(672, 52, 662, 655)
+
+        self.ui.slfd_tableWidgett.setGeometry(5, 5, 663, 702)
+        self.ui.slfn_tableWidgett.setGeometry(672, 5, 662, 42)
+        self.ui.slft_tableWidgett.setGeometry(672, 52, 662, 655)
 
         self.ui.slbd_tableWidgett.setGeometry(5, 5, 1328, 89)
         self.ui.slbt_tableWidgett.setGeometry(5, 100, 1328, 607)

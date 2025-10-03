@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
 from backtester.back_static import SendTextAndStd, GetMoneytopQuery
-from utility.static import strf_time, now, timedelta_day, timedelta_sec, strp_time, threading_timer
+from utility.static import now, timedelta_day, timedelta_sec, threading_timer, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_COIN_BACK_TICK, \
-    DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN
+    DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
@@ -176,15 +176,21 @@ class OptimizeGeneticAlgorithm:
         self.vars        = {}
         self.total_count = 0
         self.dict_set    = DICT_SET
-        self.gubun       = 'stock' if self.ui_gubun == 'S' else 'coin'
+        if self.ui_gubun == 'S':
+            self.gubun = 'stock'
+        elif self.ui_gubun == 'SF':
+            self.gubun = 'future'
+        else:
+            self.gubun = 'coin'
         self.savename    = f'{self.gubun}_{self.backname.replace("최적화", "").lower()}'
+        self.orignal_vars_list = []
         self.Start()
 
     def Start(self):
         self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
-        if self.ui_gubun != 'CF':
+        if self.ui_gubun not in ('CF', 'SF'):
             betting = float(data[0]) * 1000000
         else:
             betting = float(data[0])
@@ -206,28 +212,28 @@ class OptimizeGeneticAlgorithm:
         if weeks_train != 'ALL':
             weeks_train = int(weeks_train)
         else:
-            allweeks = int(((strp_time('%Y%m%d', backengin_eday) - strp_time('%Y%m%d', backengin_sday)).days + 1) / 7)
+            allweeks = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
             if 'V' in self.backname:
                 weeks_train = allweeks - weeks_valid
             else:
                 weeks_train = allweeks
 
         if 'V' not in self.backname: weeks_valid = 0
-        dt_endday   = strp_time('%Y%m%d', backengin_eday)
+        dt_endday   = dt_ymd(backengin_eday)
         startday    = timedelta_day(-(weeks_train + weeks_valid) * 7 + 1, dt_endday)
         sweek       = startday.weekday()
         if sweek != 0: startday = timedelta_day(7 - sweek, startday)
-        startday    = int(strf_time('%Y%m%d', startday))
+        startday    = int(str_ymd(startday))
         endday      = int(backengin_eday)
         valid_days_ = []
         if 'VC' in self.backname:
             for i in range(int(weeks_train / weeks_valid) + 1):
                 valid_days_.append([
-                    int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid * 7 * (i + 1)) + 1, dt_endday))),
-                    int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid * 7 * i), dt_endday)))
+                    int(str_ymd(timedelta_day(-(weeks_valid * 7 * (i + 1)) + 1, dt_endday))),
+                    int(str_ymd(timedelta_day(-(weeks_valid * 7 * i), dt_endday)))
                 ])
         elif 'V' in self.backname:
-            valid_days_.append([int(strf_time('%Y%m%d', timedelta_day(-weeks_valid * 7 + 1, dt_endday))), endday])
+            valid_days_.append([int(str_ymd(timedelta_day(-weeks_valid * 7 + 1, dt_endday))), endday])
         else:
             valid_days_ = None
 
@@ -240,6 +246,8 @@ class OptimizeGeneticAlgorithm:
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+        elif self.ui_gubun == 'SF':
+            db = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
         else:
             db = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
         con   = sqlite3.connect(db)
@@ -302,6 +310,7 @@ class OptimizeGeneticAlgorithm:
             self.total_count *= len(value[0])
             self.vars_list.append(value[0])
             self.high_list.append(value[1])
+        self.orignal_vars_list = self.vars_list.copy()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수전략 설정 완료'))
 
         mq = Queue()
@@ -426,12 +435,18 @@ class OptimizeGeneticAlgorithm:
                 text += f' 기준값 [{std:.2f}] 변수 {vars_list}\n'
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
 
+        elif self.total_count > goal * count:
+            for i, vars_list in enumerate(self.orignal_vars_list):
+                vars_ = random.choice(vars_list)
+                if vars_ not in self.vars_list[i]:
+                    self.vars_list[i].append(vars_)
+
     def SaveVarslist(self, rank, optistandard, buystg, sellstg):
         rs_list = sorted(self.result.items(), key=operator.itemgetter(0), reverse=True)
         con = sqlite3.connect(DB_BACKTEST)
         for std, vars_list in rs_list[:rank]:
             data = [[optistandard, std, f'{vars_list}', buystg, sellstg]]
-            df = pd.DataFrame(data, columns=['기준', '기준값', '범위설정', '매수코드', '매도코드'], index=[strf_time('%Y%m%d%H%M%S')])
+            df = pd.DataFrame(data, columns=['기준', '기준값', '범위설정', '매수코드', '매도코드'], index=[str_ymdhms()])
             df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
         con.close()
         self.high_vars = rs_list[0][1]
@@ -439,9 +454,7 @@ class OptimizeGeneticAlgorithm:
         threading_timer(5, self.wq.put, data)
 
     def SysExit(self, cancel):
-        if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
-        else:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
+        if cancel: self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
+        else:      self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
         time.sleep(1)
         sys.exit()

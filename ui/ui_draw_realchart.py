@@ -4,7 +4,7 @@ from ui.ui_get_label_text import get_label_text
 from ui.set_style import qfont12, color_fg_bt, color_bg_bt, color_bg_ld
 from utility.chart_items import CandlestickItem, VolumeBarsItem
 from utility.setting import list_stock_tick_real, list_coin_tick_real, list_stock_min_real, list_coin_min_real
-from utility.static import error_decorator, from_timestamp, strp_time
+from utility.static import error_decorator, from_timestamp, dt_ymdhms
 
 
 class DrawRealChart:
@@ -17,9 +17,9 @@ class DrawRealChart:
     def draw_realchart(self, data):
         def fi(fname):
             if is_min:
-                return list_stock_min_real.index(fname) if not coin else list_coin_min_real.index(fname)
+                return list_stock_min_real.index(fname) if gubun == 'S' else list_coin_min_real.index(fname)
             else:
-                return list_stock_tick_real.index(fname) if not coin else list_coin_tick_real.index(fname)
+                return list_stock_tick_real.index(fname) if gubun == 'S' else list_coin_tick_real.index(fname)
 
         def ci():
             self.chart_item_index += 1
@@ -27,13 +27,15 @@ class DrawRealChart:
 
         self.chart_item_index = 0
         name, self.ui.ctpg_arry = data[1:]
-        coin = True if 'KRW' in name or 'USDT' in name else False
+        if 'KRW' in name or 'USDT' in name:         gubun = 'C'
+        elif '키움증권' in self.ui.dict_set['증권사']: gubun = 'S'
+        else:                                       gubun = 'F'
         chart_count = len(self.ui.ctpg)
         is_min = chart_count in (6, 10) or (chart_count == 8 and self.ui.ct_pushButtonnn_04.text() == 'CHART 12')
 
         if not self.ui.dialog_chart.isVisible():
             self.ui.ChartClear()
-            if coin:
+            if gubun == 'C':
                 if self.ui.CoinStrategyProcessAlive(): self.ui.cstgQ.put(('차트종목코드', None))
                 if not self.ui.dict_set['코인타임프레임'] and self.ui.CoinReceiverProcessAlive(): self.ui.creceivQ.put(('차트종목코드', None))
             else:
@@ -59,7 +61,7 @@ class DrawRealChart:
             if self.ui.ft_checkBoxxxxx_11.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_11.text())
             if self.ui.ft_checkBoxxxxx_12.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_12.text())
             if self.ui.ft_checkBoxxxxx_13.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_13.text())
-            if not coin:
+            if gubun == 'S':
                 if self.ui.ft_checkBoxxxxx_14.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_14.text())
                 if self.ui.ft_checkBoxxxxx_15.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_15.text())
                 if self.ui.ft_checkBoxxxxx_16.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_16.text())
@@ -87,7 +89,7 @@ class DrawRealChart:
                 if self.ui.ft_checkBoxxxxx_37.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_37.text())
                 if self.ui.ft_checkBoxxxxx_38.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_38.text())
 
-        if not coin:
+        if gubun == 'S':
             if is_min:
                 tuple_factor = (
                     fi('등락율'), fi('분당매수수량'), fi('분당매도수량'), fi('고저평균대비등락율'), fi('분당거래대금'),
@@ -123,7 +125,7 @@ class DrawRealChart:
             else:
                 self.ui.ctpg_data[i] = tick_arry[tick_arry != 0]
 
-        self.ui.ctpg_xticks = [strp_time('%Y%m%d%H%M%S', f'{str(int(x))}00' if is_min else str(int(x))).timestamp() for x in self.ui.ctpg_data[0]]
+        self.ui.ctpg_xticks = [dt_ymdhms(f'{str(int(x))}00' if is_min else str(int(x))).timestamp() for x in self.ui.ctpg_data[0]]
         xmin, xmax = self.ui.ctpg_xticks[0], self.ui.ctpg_xticks[-1]
         hms = from_timestamp(xmax).strftime('%H:%M' if is_min else '%H:%M:%S')
 
@@ -252,9 +254,9 @@ class DrawRealChart:
                     if len(self.ui.ctpg_data[fi(factor)]) > 0:
                         pen = (100, 200, 100)
                         if is_min:
-                            if coin and fi(factor) > 57:
+                            if gubun != 'S' and fi(factor) > 57:
                                 pen = (100, 200, 200)
-                            elif not coin and fi(factor) > 67:
+                            elif gubun == 'S' and fi(factor) > 67:
                                 pen = (100, 200, 200)
                         ymax = self.ui.ctpg_data[fi(factor)].max()
                         ymin = self.ui.ctpg_data[fi(factor)].min()
@@ -262,7 +264,7 @@ class DrawRealChart:
 
                 if self.ui.ct_checkBoxxxxx_02.isChecked():
                     legend = pg.TextItem(anchor=(0, 0), color=color_fg_bt, border=color_bg_bt, fill=color_bg_ld)
-                    legend.setText(get_label_text(True, coin, name, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
+                    legend.setText(get_label_text(True, gubun, name, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
                     legend.setFont(qfont12)
                     legend.setPos(xmax, ymax)
                     self.ui.ctpg[i].addItem(legend)
@@ -286,29 +288,29 @@ class DrawRealChart:
             if self.ui.ct_checkBoxxxxx_01.isChecked():
                 if chart_count == 6:
                     self.crosshair.crosshair(
-                        True, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                        True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                         self.ui.ctpg[4], self.ui.ctpg[5]
                     )
                 elif chart_count == 8:
                     self.crosshair.crosshair(
-                        True, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                        True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                         self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7]
                     )
                 elif chart_count == 10:
                     self.crosshair.crosshair(
-                        True, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                        True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                         self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
                         self.ui.ctpg[9]
                     )
                 elif chart_count == 12:
                     self.crosshair.crosshair(
-                        True, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                        True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                         self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
                         self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11]
                     )
                 elif chart_count == 16:
                     self.crosshair.crosshair(
-                        True, coin, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                        True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                         self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
                         self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11], self.ui.ctpg[12], self.ui.ctpg[13],
                         self.ui.ctpg[14], self.ui.ctpg[15]
@@ -440,7 +442,7 @@ class DrawRealChart:
                     self.ui.ctpg_labels[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][0])
                 if self.ui.ct_checkBoxxxxx_02.isChecked():
                     self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
-                    self.ui.ctpg_legend[i].setText(get_label_text(True, coin, name, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
+                    self.ui.ctpg_legend[i].setText(get_label_text(True, gubun, name, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
 
                 if i == chart_count - 1: break
 

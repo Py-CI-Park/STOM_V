@@ -49,7 +49,7 @@ def sj_button_cicked_02(ui):
     seconnum = int(comob_name[4:]) * 2
     firstnum = seconnum - 1
     if len(df) > 0:
-        if df['아이디'][firstnum] != '' and df['아이디'][seconnum] != '':
+        if df['아이디'][firstnum] and df['아이디'][seconnum]:
             ui.sj_sacc_liEdit_01.setText(de_text(ui.dict_set['키'], df['아이디'][firstnum]))
             ui.sj_sacc_liEdit_02.setText(de_text(ui.dict_set['키'], df['비밀번호'][firstnum]))
             ui.sj_sacc_liEdit_03.setText(de_text(ui.dict_set['키'], df['인증서비밀번호'][firstnum]))
@@ -68,10 +68,10 @@ def sj_button_cicked_03(ui):
     con.close()
     combo_name = ui.sj_main_comBox_02.currentText()
     if len(df) > 0:
-        if combo_name == '업비트' and df['Access_key'][1] != '' and df['Secret_key'][1] != '':
+        if combo_name == '업비트' and df['Access_key'][1] and df['Secret_key'][1]:
             ui.sj_cacc_liEdit_01.setText(de_text(ui.dict_set['키'], df['Access_key'][1]))
             ui.sj_cacc_liEdit_02.setText(de_text(ui.dict_set['키'], df['Secret_key'][1]))
-        elif combo_name == '바이낸스선물' and df['Access_key'][2] != '' and df['Secret_key'][2] != '':
+        elif combo_name == '바이낸스선물' and df['Access_key'][2] and df['Secret_key'][2]:
             ui.sj_cacc_liEdit_01.setText(de_text(ui.dict_set['키'], df['Access_key'][2]))
             ui.sj_cacc_liEdit_02.setText(de_text(ui.dict_set['키'], df['Secret_key'][2]))
     else:
@@ -83,7 +83,7 @@ def sj_button_cicked_04(ui):
     df = pd.read_sql('SELECT * FROM telegram', con).set_index('index')
     con.close()
     gubun = int(ui.sj_main_comBox_01.currentText()[4:])
-    if len(df) > 0 and df['str_bot'][gubun] != '':
+    if len(df) > 0 and df['str_bot'][gubun]:
         ui.sj_tele_liEdit_01.setText(de_text(ui.dict_set['키'], df['str_bot'][gubun]))
         ui.sj_tele_liEdit_02.setText(de_text(ui.dict_set['키'], df['int_id'][gubun]))
     else:
@@ -94,11 +94,12 @@ def sj_button_cicked_05(ui):
     con  = sqlite3.connect(DB_SETTING)
     df   = pd.read_sql('SELECT * FROM stock', con).set_index('index')
     con.close()
+    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     con  = sqlite3.connect(DB_STRATEGY)
-    dfb  = pd.read_sql('SELECT * FROM stockbuy', con).set_index('index')
-    dfs  = pd.read_sql('SELECT * FROM stocksell', con).set_index('index')
-    dfob = pd.read_sql('SELECT * FROM stockoptibuy', con).set_index('index')
-    dfos = pd.read_sql('SELECT * FROM stockoptisell', con).set_index('index')
+    dfb  = pd.read_sql(f'SELECT * FROM {gubun}buy', con).set_index('index')
+    dfs  = pd.read_sql(f'SELECT * FROM {gubun}sell', con).set_index('index')
+    dfob = pd.read_sql(f'SELECT * FROM {gubun}optibuy', con).set_index('index')
+    dfos = pd.read_sql(f'SELECT * FROM {gubun}optisell', con).set_index('index')
     con.close()
     if len(df) > 0:
         ui.sj_stock_ckBox_01.setChecked(True) if df['주식모의투자'][0] else ui.sj_stock_ckBox_01.setChecked(False)
@@ -126,7 +127,7 @@ def sj_button_cicked_05(ui):
             stg_list.sort()
             for stg in stg_list:
                 ui.sj_stock_cbBox_01.addItem(stg)
-        if df['주식매수전략'][0] != '':
+        if df['주식매수전략'][0]:
             ui.sj_stock_cbBox_01.setCurrentText(df['주식매수전략'][0])
         if len(dfs) > 0:
             stg_list = list(dfs.index)
@@ -138,12 +139,12 @@ def sj_button_cicked_05(ui):
             stg_list.sort()
             for stg in stg_list:
                 ui.sj_stock_cbBox_02.addItem(stg)
-        if df['주식매도전략'][0] != '':
+        if df['주식매도전략'][0]:
             ui.sj_stock_cbBox_02.setCurrentText(df['주식매도전략'][0])
         ui.sj_stock_cbBox_03.setCurrentText('1초스냅샷' if df['주식타임프레임'][0] else '1분봉')
         ui.sj_stock_lEdit_07.setText(str(df['주식투자금'][0]))
-        ui.sj_stock_lEdit_09.setText(str(df['주식손실중지수익률'][0]))
-        ui.sj_stock_lEdit_10.setText(str(df['주식수익중지수익률'][0]))
+        ui.sj_stock_lEdit_09.setText(str(df['주식손실중지수익율'][0]))
+        ui.sj_stock_lEdit_10.setText(str(df['주식수익중지수익율'][0]))
         if 152000 <= df['주식전략종료시간'][0] <= 152759:
             QMessageBox.critical(ui, '오류 알림', '주식전략의 종료시간을\n152000 ~ 152759 구간으로 설정할 수 없습니다.\n')
             return
@@ -187,7 +188,7 @@ def sj_button_cicked_06(ui):
             stg_list.sort()
             for stg in stg_list:
                 ui.sj_coin_comBox_01.addItem(stg)
-        if df['코인매수전략'][0] != '':
+        if df['코인매수전략'][0]:
             ui.sj_coin_comBox_01.setCurrentText(df['코인매수전략'][0])
         if len(dfs) > 0:
             stg_list = list(dfs.index)
@@ -199,12 +200,12 @@ def sj_button_cicked_06(ui):
             stg_list.sort()
             for stg in stg_list:
                 ui.sj_coin_comBox_02.addItem(stg)
-        if df['코인매도전략'][0] != '':
+        if df['코인매도전략'][0]:
             ui.sj_coin_comBox_02.setCurrentText(df['코인매도전략'][0])
         ui.sj_coin_comBox_03.setCurrentText('1초스냅샷' if df['코인타임프레임'][0] else '1분봉')
         ui.sj_coin_liEdit_07.setText(str(df['코인투자금'][0]))
-        ui.sj_coin_liEdit_09.setText(str(df['코인손실중지수익률'][0]))
-        ui.sj_coin_liEdit_10.setText(str(df['코인수익중지수익률'][0]))
+        ui.sj_coin_liEdit_09.setText(str(df['코인손실중지수익율'][0]))
+        ui.sj_coin_liEdit_10.setText(str(df['코인수익중지수익율'][0]))
         if df['코인전략종료시간'][0] > 235000:
             QMessageBox.critical(ui, '오류 알림', '코인 전략의 종료시간은\n235000이하로 설정하십시오.\n')
     else:
@@ -266,6 +267,8 @@ def sj_button_cicked_08(ui):
         ui.sj_etc_checBox_03.setChecked(True) if df['창위치기억'][0] else ui.sj_etc_checBox_03.setChecked(False)
         ui.sj_etc_checBox_06.setChecked(True) if df['스톰라이브'][0] else ui.sj_etc_checBox_06.setChecked(False)
         ui.sj_etc_checBox_07.setChecked(True) if df['프로그램종료'][0] else ui.sj_etc_checBox_07.setChecked(False)
+        if df['시리얼키'][0]:
+            ui.sj_etc_liEditt_01.setText(de_text(ui.dict_set['키'], df['시리얼키'][0]))
         ui.sj_etc_comBoxx_01.setCurrentText(df['테마'][0])
     else:
         QMessageBox.critical(ui, '오류 알림', '기타 설정값이\n존재하지 않습니다.\n')
@@ -310,6 +313,12 @@ def sj_button_cicked_09(ui):
     ui.dict_set['버전업'] = vu
     ui.dict_set['리시버공유'] = rg
 
+    if '키움증권' in ui.dict_set['증권사']:
+        ui.sj_stock_label_03.setText(
+            '종목당투자금                          백만원                                  전략중지 및 잔고청산   |')
+    else:
+        ui.sj_stock_label_03.setText(
+            '종목당투자금                          계약수                                  전략중지 및 잔고청산   |')
     if ui.dict_set['거래소'] == '업비트':
         ui.sj_coin_labell_03.setText(
             '종목당투자금                          백만원                                  전략중지 및 잔고청산   |')
@@ -429,41 +438,53 @@ def sj_button_cicked_13(ui):
     if '' in (at1, bc1, se1, sc, cmp, cpp):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
     else:
-        at1, bc1, se1, sc, cmp, cpp = int(at1), int(bc1), int(se1), float(sc), float(cmp), float(cpp)
-        if 152000 <= se1 <= 152759:
-            QMessageBox.critical(ui, '오류 알림', '주식 전략의 종료시간을\n152000~152759, 152901~ 구간으로 설정할 수 없습니다.\n')
-            return
-        if by1 == '사용안함':
-            by1 = ''
-        if sl1 == '사용안함':
-            sl1 = ''
+        if '해외선물' in ui.dict_set['증권사']:
+            buttonReply = QMessageBox.question(
+                ui, "경고", "해외선물의 전략 종료시간은 미국시카고 기준입니다.\n일반적으로 160000로 설정하시면 됩니다.\n",
+                QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+            )
+        else:
+            buttonReply = QMessageBox.Yes
 
-        if ui.proc_query.is_alive():
-            query = f"UPDATE stock SET 주식모의투자 = {me}, 주식알림소리 = {sd}, 주식매수전략 = '{by1}', 주식타임프레임 = {tp}, " \
-                    f"주식매도전략 = '{sl1}', 주식평균값계산틱수 = {at1}, 주식최대매수종목수 = {bc1}, 주식전략종료시간 = {se1}, " \
-                    f"주식잔고청산 = {cs1}, 주식프로세스종료 = {pc1}, 주식컴퓨터종료 = {ce1}, 주식투자금고정 = {ts}, 주식투자금 = {sc}, " \
-                    f"주식손실중지 = {cm}, 주식손실중지수익률 = {cmp}, 주식수익중지 = {cp}, 주식수익중지수익률 = {cpp}"
-            ui.queryQ.put(('설정디비', query))
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+        if buttonReply == QMessageBox.Yes:
+            at1, bc1, se1, sc, cmp, cpp = int(at1), int(bc1), int(se1), float(sc), float(cmp), float(cpp)
+            if '키움증권' in ui.dict_set['증권사'] and (152000 <= se1 <= 152759 or 152901 <= se1):
+                QMessageBox.critical(ui, '오류 알림', '주식 전략의 종료시간을\n152000~152759, 152901~ 구간으로 설정할 수 없습니다.\n')
+                return
+            elif '해외선물' in ui.dict_set['증권사'] and (160001 <= se1):
+                QMessageBox.critical(ui, '오류 알림', '해선 전략의 종료시간을\n160001~ 구간으로 설정할 수 없습니다.\n')
+                return
+            if by1 == '사용안함':
+                by1 = ''
+            if sl1 == '사용안함':
+                sl1 = ''
 
-        ui.dict_set['주식모의투자'] = me
-        ui.dict_set['주식알림소리'] = sd
-        ui.dict_set['주식매수전략'] = by1
-        ui.dict_set['주식매도전략'] = sl1
-        ui.dict_set['주식타임프레임'] = tp
-        ui.dict_set['주식평균값계산틱수'] = at1
-        ui.dict_set['주식최대매수종목수'] = bc1
-        ui.dict_set['주식전략종료시간'] = se1
-        ui.dict_set['주식잔고청산'] = cs1
-        ui.dict_set['주식프로세스종료'] = pc1
-        ui.dict_set['주식컴퓨터종료'] = ce1
-        ui.dict_set['주식투자금고정'] = ts
-        ui.dict_set['주식투자금'] = sc
-        ui.dict_set['주식손실중지'] = cm
-        ui.dict_set['주식손실중지수익률'] = cmp
-        ui.dict_set['주식수익중지'] = cp
-        ui.dict_set['주식수익중지수익률'] = cpp
-        ui.UpdateDictSet()
+            if ui.proc_query.is_alive():
+                query = f"UPDATE stock SET 주식모의투자 = {me}, 주식알림소리 = {sd}, 주식매수전략 = '{by1}', 주식타임프레임 = {tp}, " \
+                        f"주식매도전략 = '{sl1}', 주식평균값계산틱수 = {at1}, 주식최대매수종목수 = {bc1}, 주식전략종료시간 = {se1}, " \
+                        f"주식잔고청산 = {cs1}, 주식프로세스종료 = {pc1}, 주식컴퓨터종료 = {ce1}, 주식투자금고정 = {ts}, 주식투자금 = {sc}, " \
+                        f"주식손실중지 = {cm}, 주식손실중지수익율 = {cmp}, 주식수익중지 = {cp}, 주식수익중지수익율 = {cpp}"
+                ui.queryQ.put(('설정디비', query))
+            QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+
+            ui.dict_set['주식모의투자'] = me
+            ui.dict_set['주식알림소리'] = sd
+            ui.dict_set['주식매수전략'] = by1
+            ui.dict_set['주식매도전략'] = sl1
+            ui.dict_set['주식타임프레임'] = tp
+            ui.dict_set['주식평균값계산틱수'] = at1
+            ui.dict_set['주식최대매수종목수'] = bc1
+            ui.dict_set['주식전략종료시간'] = se1
+            ui.dict_set['주식잔고청산'] = cs1
+            ui.dict_set['주식프로세스종료'] = pc1
+            ui.dict_set['주식컴퓨터종료'] = ce1
+            ui.dict_set['주식투자금고정'] = ts
+            ui.dict_set['주식투자금'] = sc
+            ui.dict_set['주식손실중지'] = cm
+            ui.dict_set['주식손실중지수익율'] = cmp
+            ui.dict_set['주식수익중지'] = cp
+            ui.dict_set['주식수익중지수익율'] = cpp
+            ui.UpdateDictSet()
 
 
 def sj_button_cicked_14(ui):
@@ -506,7 +527,7 @@ def sj_button_cicked_14(ui):
                 query = f"UPDATE coin SET 코인모의투자 = {me}, 코인알림소리 = {sd}, 코인매수전략 = '{by1}', 코인타임프레임 = {tp},  " \
                         f"코인매도전략 = '{sl1}', 코인평균값계산틱수 = {at1}, 코인최대매수종목수 = {bc1}, 코인전략종료시간 = {se1}, " \
                         f"코인잔고청산 = {cs1}, 코인프로세스종료 = {pc1}, 코인컴퓨터종료 = {ce1}, 코인투자금고정 = {tc}, 코인투자금 = {sc}, " \
-                        f"코인손실중지 = {cm}, 코인손실중지수익률 = {cmp}, 코인수익중지 = {cp}, 코인수익중지수익률 = {cpp}"
+                        f"코인손실중지 = {cm}, 코인손실중지수익율 = {cmp}, 코인수익중지 = {cp}, 코인수익중지수익율 = {cpp}"
                 ui.queryQ.put(('설정디비', query))
             QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -524,9 +545,9 @@ def sj_button_cicked_14(ui):
             ui.dict_set['코인투자금고정'] = tc
             ui.dict_set['코인투자금'] = sc
             ui.dict_set['코인손실중지'] = cm
-            ui.dict_set['코인손실중지수익률'] = cmp
+            ui.dict_set['코인손실중지수익율'] = cmp
             ui.dict_set['코인수익중지'] = cp
-            ui.dict_set['코인수익중지수익률'] = cpp
+            ui.dict_set['코인수익중지수익율'] = cpp
             ui.UpdateDictSet()
 
 
@@ -601,10 +622,12 @@ def sj_button_cicked_16(ui):
     ce  = 1 if ui.sj_etc_checBox_05.isChecked() else 0
     slv = 1 if ui.sj_etc_checBox_06.isChecked() else 0
     pex = 1 if ui.sj_etc_checBox_07.isChecked() else 0
+    key = ui.sj_etc_liEditt_01.text()
+    en_key = en_text(ui.dict_set['키'], key)
 
     if ui.proc_query.is_alive():
         query = f"UPDATE etc SET 테마 = '{the}', 저해상도 = {ldp}, 창위치기억 = {cgo}, " \
-                f"휴무프로세스종료 = {pe}, 휴무컴퓨터종료 = {ce}, 스톰라이브 = {slv}, 프로그램종료 = {pex}"
+                f"휴무프로세스종료 = {pe}, 휴무컴퓨터종료 = {ce}, 스톰라이브 = {slv}, 프로그램종료 = {pex}, 시리얼키 = '{en_key}'"
         ui.queryQ.put(('설정디비', query))
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -615,6 +638,7 @@ def sj_button_cicked_16(ui):
     ui.dict_set['휴무컴퓨터종료'] = ce
     ui.dict_set['스톰라이브'] = slv
     ui.dict_set['프로그램종료'] = pex
+    ui.dict_set['시리얼키'] = key
     ui.UpdateDictSet()
 
 
@@ -636,6 +660,7 @@ def sj_button_cicked_17(ui):
         ui.sj_cacc_liEdit_02.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_01.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_02.setEchoMode(QLineEdit.Password)
+        ui.sj_etc_liEditt_01.setEchoMode(QLineEdit.Password)
         ui.sj_etc_pButton_01.setText('계정 텍스트 보기')
         ui.sj_etc_pButton_01.setStyleSheet(style_bc_bt)
 
@@ -663,9 +688,9 @@ def sj_button_cicked_19(ui):
         ui.sj_sodb_checkBox_14.setChecked(True) if df['주식매수분할시그널'][0] else ui.sj_sodb_checkBox_14.setChecked(False)
         ui.sj_sodb_checkBox_15.setChecked(True) if df['주식매수분할하방'][0] else ui.sj_sodb_checkBox_15.setChecked(False)
         ui.sj_sodb_checkBox_16.setChecked(True) if df['주식매수분할상방'][0] else ui.sj_sodb_checkBox_16.setChecked(False)
-        ui.sj_sodb_lineEdit_02.setText(str(df['주식매수분할하방수익률'][0]))
-        ui.sj_sodb_lineEdit_03.setText(str(df['주식매수분할상방수익률'][0]))
-        ui.sj_sodb_checkBox_27.setChecked(True) if df['주식매수분할고정수익률'][0] else ui.sj_sodb_checkBox_27.setChecked(False)
+        ui.sj_sodb_lineEdit_02.setText(str(df['주식매수분할하방수익율'][0]))
+        ui.sj_sodb_lineEdit_03.setText(str(df['주식매수분할상방수익율'][0]))
+        ui.sj_sodb_checkBox_27.setChecked(True) if df['주식매수분할고정수익율'][0] else ui.sj_sodb_checkBox_27.setChecked(False)
         ui.sj_sodb_comboBox_01.setCurrentText(str(df['주식매수지정가기준가격'][0]))
         ui.sj_sodb_comboBox_02.setCurrentText(str(df['주식매수지정가호가번호'][0]))
         ui.sj_sodb_comboBox_03.setCurrentText(str(df['주식매수시장가잔량범위'][0]))
@@ -717,8 +742,8 @@ def sj_button_cicked_20(ui):
         ui.sj_sods_checkBox_14.setChecked(True) if df['주식매도분할시그널'][0] else ui.sj_sods_checkBox_14.setChecked(False)
         ui.sj_sods_checkBox_15.setChecked(True) if df['주식매도분할하방'][0] else ui.sj_sods_checkBox_15.setChecked(False)
         ui.sj_sods_checkBox_16.setChecked(True) if df['주식매도분할상방'][0] else ui.sj_sods_checkBox_16.setChecked(False)
-        ui.sj_sods_lineEdit_02.setText(str(df['주식매도분할하방수익률'][0]))
-        ui.sj_sods_lineEdit_03.setText(str(df['주식매도분할상방수익률'][0]))
+        ui.sj_sods_lineEdit_02.setText(str(df['주식매도분할하방수익율'][0]))
+        ui.sj_sods_lineEdit_03.setText(str(df['주식매도분할상방수익율'][0]))
         ui.sj_sods_comboBox_01.setCurrentText(str(df['주식매도지정가기준가격'][0]))
         ui.sj_sods_comboBox_02.setCurrentText(str(df['주식매도지정가호가번호'][0]))
         ui.sj_sods_comboBox_03.setCurrentText(str(df['주식매도시장가잔량범위'][0]))
@@ -726,8 +751,8 @@ def sj_button_cicked_20(ui):
         ui.sj_sods_checkBox_18.setChecked(True) if df['주식매도취소매수시그널'][0] else ui.sj_sods_checkBox_18.setChecked(False)
         ui.sj_sods_checkBox_19.setChecked(True) if df['주식매도취소시간'][0] else ui.sj_sods_checkBox_19.setChecked(False)
         ui.sj_sods_lineEdit_04.setText(str(df['주식매도취소시간초'][0]))
-        ui.sj_sods_checkBox_20.setChecked(True) if df['주식매도손절수익률청산'][0] else ui.sj_sods_checkBox_20.setChecked(False)
-        ui.sj_sods_lineEdit_05.setText(str(df['주식매도손절수익률'][0]))
+        ui.sj_sods_checkBox_20.setChecked(True) if df['주식매도손절수익율청산'][0] else ui.sj_sods_checkBox_20.setChecked(False)
+        ui.sj_sods_lineEdit_05.setText(str(df['주식매도손절수익율'][0]))
         ui.sj_sods_checkBox_21.setChecked(True) if df['주식매도손절수익금청산'][0] else ui.sj_sods_checkBox_21.setChecked(False)
         ui.sj_sods_lineEdit_06.setText(str(df['주식매도손절수익금'][0]))
         ui.sj_sods_checkBox_22.setChecked(True) if df['주식매도금지매수횟수'][0] else ui.sj_sods_checkBox_22.setChecked(False)
@@ -763,9 +788,9 @@ def sj_button_cicked_21(ui):
         ui.sj_codb_checkBox_06.setChecked(True) if df['코인매수분할시그널'][0] else ui.sj_codb_checkBox_06.setChecked(False)
         ui.sj_codb_checkBox_07.setChecked(True) if df['코인매수분할하방'][0] else ui.sj_codb_checkBox_07.setChecked(False)
         ui.sj_codb_checkBox_08.setChecked(True) if df['코인매수분할상방'][0] else ui.sj_codb_checkBox_08.setChecked(False)
-        ui.sj_codb_lineEdit_02.setText(str(df['코인매수분할하방수익률'][0]))
-        ui.sj_codb_lineEdit_03.setText(str(df['코인매수분할상방수익률'][0]))
-        ui.sj_codb_checkBox_27.setChecked(True) if df['코인매수분할고정수익률'][0] else ui.sj_codb_checkBox_27.setChecked(False)
+        ui.sj_codb_lineEdit_02.setText(str(df['코인매수분할하방수익율'][0]))
+        ui.sj_codb_lineEdit_03.setText(str(df['코인매수분할상방수익율'][0]))
+        ui.sj_codb_checkBox_27.setChecked(True) if df['코인매수분할고정수익율'][0] else ui.sj_codb_checkBox_27.setChecked(False)
         ui.sj_codb_comboBox_01.setCurrentText(str(df['코인매수지정가기준가격'][0]))
         ui.sj_codb_comboBox_02.setCurrentText(str(df['코인매수지정가호가번호'][0]))
         ui.sj_codb_comboBox_03.setCurrentText(str(df['코인매수시장가잔량범위'][0]))
@@ -810,8 +835,8 @@ def sj_button_cicked_22(ui):
         ui.sj_cods_checkBox_06.setChecked(True) if df['코인매도분할시그널'][0] else ui.sj_cods_checkBox_06.setChecked(False)
         ui.sj_cods_checkBox_07.setChecked(True) if df['코인매도분할하방'][0] else ui.sj_cods_checkBox_07.setChecked(False)
         ui.sj_cods_checkBox_08.setChecked(True) if df['코인매도분할상방'][0] else ui.sj_cods_checkBox_08.setChecked(False)
-        ui.sj_cods_lineEdit_02.setText(str(df['코인매도분할하방수익률'][0]))
-        ui.sj_cods_lineEdit_03.setText(str(df['코인매도분할상방수익률'][0]))
+        ui.sj_cods_lineEdit_02.setText(str(df['코인매도분할하방수익율'][0]))
+        ui.sj_cods_lineEdit_03.setText(str(df['코인매도분할상방수익율'][0]))
         ui.sj_cods_comboBox_01.setCurrentText(str(df['코인매도지정가기준가격'][0]))
         ui.sj_cods_comboBox_02.setCurrentText(str(df['코인매도지정가호가번호'][0]))
         ui.sj_cods_comboBox_03.setCurrentText(str(df['코인매도시장가잔량범위'][0]))
@@ -819,8 +844,8 @@ def sj_button_cicked_22(ui):
         ui.sj_cods_checkBox_10.setChecked(True) if df['코인매도취소매수시그널'][0] else ui.sj_cods_checkBox_10.setChecked(False)
         ui.sj_cods_checkBox_11.setChecked(True) if df['코인매도취소시간'][0] else ui.sj_cods_checkBox_11.setChecked(False)
         ui.sj_cods_lineEdit_04.setText(str(df['코인매도취소시간초'][0]))
-        ui.sj_cods_checkBox_12.setChecked(True) if df['코인매도손절수익률청산'][0] else ui.sj_cods_checkBox_12.setChecked(False)
-        ui.sj_cods_lineEdit_05.setText(str(df['코인매도손절수익률'][0]))
+        ui.sj_cods_checkBox_12.setChecked(True) if df['코인매도손절수익율청산'][0] else ui.sj_cods_checkBox_12.setChecked(False)
+        ui.sj_cods_lineEdit_05.setText(str(df['코인매도손절수익율'][0]))
         ui.sj_cods_checkBox_13.setChecked(True) if df['코인매도손절수익금청산'][0] else ui.sj_cods_checkBox_13.setChecked(False)
         ui.sj_cods_lineEdit_06.setText(str(df['코인매도손절수익금'][0]))
         ui.sj_cods_checkBox_14.setChecked(True) if df['코인매도금지매수횟수'][0] else ui.sj_cods_checkBox_14.setChecked(False)
@@ -899,13 +924,16 @@ def sj_button_cicked_23(ui):
                 bb5s < 0 or bb5e < 0 or bb6s < 0 or bb7s < 0 or bb8 < 0 or bb8c < 0 or bb8h < 0:
             QMessageBox.critical(ui, '오류 알림', '지정가 호가 외 모든 입력값은 양수여야합니다.\n')
             return
-        if dc > 5:
+        elif dc > 5:
             QMessageBox.critical(ui, '오류 알림', '매수분할횟수는 5을 초과할 수 없습니다.\n')
+            return
+        elif '해외선물' in ui.dict_set['증권사'] and od not in ('시장가', '지정가'):
+            QMessageBox.critical(ui, '오류 알림', '해외선물의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
             return
         if ui.proc_query.is_alive():
             query = f"UPDATE stockbuyorder SET 주식매수주문구분 = '{od}', 주식매수분할횟수 = {dc}, 주식매수분할방법 = {ds}, 주식매수분할시그널 = {ds1}, " \
-                    f"주식매수분할하방 = {ds2}, 주식매수분할상방 = {ds3}, 주식매수분할하방수익률 = {ds2c}, 주식매수분할상방수익률 = {ds3c}, " \
-                    f"주식매수분할고정수익률 = {bf}, 주식매수지정가기준가격 = '{bp}', 주식매수지정가호가번호 = {ju}, 주식매수시장가잔량범위 = {su}, " \
+                    f"주식매수분할하방 = {ds2}, 주식매수분할상방 = {ds3}, 주식매수분할하방수익율 = {ds2c}, 주식매수분할상방수익율 = {ds3c}, " \
+                    f"주식매수분할고정수익율 = {bf}, 주식매수지정가기준가격 = '{bp}', 주식매수지정가호가번호 = {ju}, 주식매수시장가잔량범위 = {su}, " \
                     f"주식매수취소관심이탈 = {bc1}, 주식매수취소매도시그널 = {bc2}, 주식매수취소시간 = {bc3}, 주식매수취소시간초 = {bc3c}, " \
                     f"주식매수금지블랙리스트 = {bb1}, 주식매수금지라운드피겨 = {bb2}, 주식매수금지라운드호가 = {bb2c}, 주식매수금지손절횟수 = {bb3}, " \
                     f"주식매수금지손절횟수값 = {bb3c}, 주식매수금지거래횟수 = {bb4}, 주식매수금지거래횟수값 = {bb4c}, 주식매수금지시간 = {bb5}, " \
@@ -921,9 +949,9 @@ def sj_button_cicked_23(ui):
         ui.dict_set['주식매수분할시그널'] = ds1
         ui.dict_set['주식매수분할하방'] = ds2
         ui.dict_set['주식매수분할상방'] = ds3
-        ui.dict_set['주식매수분할하방수익률'] = ds2c
-        ui.dict_set['주식매수분할상방수익률'] = ds3c
-        ui.dict_set['주식매수분할고정수익률'] = bf
+        ui.dict_set['주식매수분할하방수익율'] = ds2c
+        ui.dict_set['주식매수분할상방수익율'] = ds3c
+        ui.dict_set['주식매수분할고정수익율'] = bf
         ui.dict_set['주식매수지정가기준가격'] = bp
         ui.dict_set['주식매수지정가호가번호'] = ju
         ui.dict_set['주식매수시장가잔량범위'] = su
@@ -1019,10 +1047,10 @@ def sj_button_cicked_24(ui):
             return
         if ui.proc_query.is_alive():
             query = f"UPDATE stocksellorder SET 주식매도주문구분 = '{od}', 주식매도분할횟수 = {dc}, 주식매도분할방법 = {ds}, " \
-                    f"주식매도분할시그널 = {ds1}, 주식매도분할하방 = {ds2}, 주식매도분할상방 = {ds3}, 주식매도분할하방수익률 = {ds2c}, " \
-                    f"주식매도분할상방수익률 = {ds3c}, 주식매도지정가기준가격 = '{bp}', 주식매도지정가호가번호 = {ju}, 주식매도시장가잔량범위 = {su}, " \
+                    f"주식매도분할시그널 = {ds1}, 주식매도분할하방 = {ds2}, 주식매도분할상방 = {ds3}, 주식매도분할하방수익율 = {ds2c}, " \
+                    f"주식매도분할상방수익율 = {ds3c}, 주식매도지정가기준가격 = '{bp}', 주식매도지정가호가번호 = {ju}, 주식매도시장가잔량범위 = {su}, " \
                     f"주식매도취소관심진입 = {bc1}, 주식매도취소매수시그널 = {bc2}, 주식매도취소시간 = {bc3}, 주식매도취소시간초 = {bc3c}, " \
-                    f"주식매도손절수익률청산 = {bb0}, 주식매도손절수익률 = {bb0c}, 주식매도손절수익금청산 = {bb6}, 주식매도손절수익금 = {bb6c}, " \
+                    f"주식매도손절수익율청산 = {bb0}, 주식매도손절수익율 = {bb0c}, 주식매도손절수익금청산 = {bb6}, 주식매도손절수익금 = {bb6c}, " \
                     f"주식매도금지매수횟수 = {bb1}, 주식매도금지매수횟수값 = {bb1c}, 주식매도금지라운드피겨 = {bb2}, 주식매도금지라운드호가 = {bb2c}, " \
                     f"주식매도금지시간 = {bb3}, 주식매도금지시작시간 = {bb3s}, 주식매도금지종료시간 = {bb3e}, 주식매도금지간격 = {bb4}, " \
                     f"주식매도금지간격초 = {bb4s}, 주식매도정정횟수 = {bb5}, 주식매도정정호가차이 = {bb5c}, 주식매도정정호가 = {bb5h}"
@@ -1035,8 +1063,8 @@ def sj_button_cicked_24(ui):
         ui.dict_set['주식매도분할시그널'] = ds1
         ui.dict_set['주식매도분할하방'] = ds2
         ui.dict_set['주식매도분할상방'] = ds3
-        ui.dict_set['주식매도분할하방수익률'] = ds2c
-        ui.dict_set['주식매도분할상방수익률'] = ds3c
+        ui.dict_set['주식매도분할하방수익율'] = ds2c
+        ui.dict_set['주식매도분할상방수익율'] = ds3c
         ui.dict_set['주식매도지정가기준가격'] = bp
         ui.dict_set['주식매도지정가호가번호'] = ju
         ui.dict_set['주식매도시장가잔량범위'] = su
@@ -1044,8 +1072,8 @@ def sj_button_cicked_24(ui):
         ui.dict_set['주식매도취소매수시그널'] = bc2
         ui.dict_set['주식매도취소시간'] = bc3
         ui.dict_set['주식매도취소시간초'] = bc3c
-        ui.dict_set['주식매도손절수익률청산'] = bb0
-        ui.dict_set['주식매도손절수익률'] = bb0c
+        ui.dict_set['주식매도손절수익율청산'] = bb0
+        ui.dict_set['주식매도손절수익율'] = bb0c
         ui.dict_set['주식매도손절수익금청산'] = bb6
         ui.dict_set['주식매도손절수익금'] = bb6c
         ui.dict_set['주식매도금지매수횟수'] = bb1
@@ -1118,13 +1146,16 @@ def sj_button_cicked_25(ui):
                 bb5s < 0 or bb5e < 0 or bb6s < 0 or bb7s < 0:
             QMessageBox.critical(ui, '오류 알림', '지정가 호가 외 모든 입력값은 양수여야합니다.\n')
             return
-        if dc > 5:
+        elif dc > 5:
             QMessageBox.critical(ui, '오류 알림', '매수분할횟수는 5를 초과할 수 없습니다.\n')
+            return
+        elif ui.dict_set['거래소'] == '업비트' and od not in ('시장가', '지정가'):
+            QMessageBox.critical(ui, '오류 알림', '업비트의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
             return
         if ui.proc_query.is_alive():
             query = f"UPDATE coinbuyorder SET 코인매수주문구분 = '{od}', 코인매수분할횟수 = {dc}, 코인매수분할방법 = {ds}, 코인매수분할시그널 = {ds1}, " \
-                    f"코인매수분할하방 = {ds2}, 코인매수분할상방 = {ds3}, 코인매수분할하방수익률 = {ds2c}, 코인매수분할상방수익률 = {ds3c}, " \
-                    f"코인매수분할고정수익률 = {bf}, 코인매수지정가기준가격 = '{bp}', 코인매수지정가호가번호 = {ju}, 코인매수시장가잔량범위 = {su}, " \
+                    f"코인매수분할하방 = {ds2}, 코인매수분할상방 = {ds3}, 코인매수분할하방수익율 = {ds2c}, 코인매수분할상방수익율 = {ds3c}, " \
+                    f"코인매수분할고정수익율 = {bf}, 코인매수지정가기준가격 = '{bp}', 코인매수지정가호가번호 = {ju}, 코인매수시장가잔량범위 = {su}, " \
                     f"코인매수취소관심이탈 = {bc1}, 코인매수취소매도시그널 = {bc2}, 코인매수취소시간 = {bc3}, 코인매수취소시간초 = {bc3c}, " \
                     f"코인매수금지블랙리스트 = {bb1}, 코인매수금지200원이하 = {bb2}, 코인매수금지손절횟수 = {bb3}, 코인매수금지손절횟수값 = {bb3c}, " \
                     f"코인매수금지거래횟수 = {bb4}, 코인매수금지거래횟수값 = {bb4c}, 코인매수금지시간 = {bb5}, 코인매수금지시작시간 = {bb5s}, " \
@@ -1139,9 +1170,9 @@ def sj_button_cicked_25(ui):
         ui.dict_set['코인매수분할시그널'] = ds1
         ui.dict_set['코인매수분할하방'] = ds2
         ui.dict_set['코인매수분할상방'] = ds3
-        ui.dict_set['코인매수분할하방수익률'] = ds2c
-        ui.dict_set['코인매수분할상방수익률'] = ds3c
-        ui.dict_set['코인매수분할고정수익률'] = bf
+        ui.dict_set['코인매수분할하방수익율'] = ds2c
+        ui.dict_set['코인매수분할상방수익율'] = ds3c
+        ui.dict_set['코인매수분할고정수익율'] = bf
         ui.dict_set['코인매수지정가기준가격'] = bp
         ui.dict_set['코인매수지정가호가번호'] = ju
         ui.dict_set['코인매수시장가잔량범위'] = su
@@ -1228,10 +1259,10 @@ def sj_button_cicked_26(ui):
             return
         if ui.proc_query.is_alive():
             query = f"UPDATE coinsellorder SET 코인매도주문구분 = '{od}', 코인매도분할횟수 = {dc}, 코인매도분할방법 = {ds}, " \
-                    f"코인매도분할시그널 = {ds1}, 코인매도분할하방 = {ds2}, 코인매도분할상방 = {ds3}, 코인매도분할하방수익률 = {ds2c}, " \
-                    f"코인매도분할상방수익률 = {ds3c}, 코인매도지정가기준가격 = '{bp}', 코인매도지정가호가번호 = {ju}, 코인매도시장가잔량범위 = {su}, " \
+                    f"코인매도분할시그널 = {ds1}, 코인매도분할하방 = {ds2}, 코인매도분할상방 = {ds3}, 코인매도분할하방수익율 = {ds2c}, " \
+                    f"코인매도분할상방수익율 = {ds3c}, 코인매도지정가기준가격 = '{bp}', 코인매도지정가호가번호 = {ju}, 코인매도시장가잔량범위 = {su}, " \
                     f"코인매도취소관심진입 = {bc1}, 코인매도취소매수시그널 = {bc2}, 코인매도취소시간 = {bc3}, 코인매도취소시간초 = {bc3c}, " \
-                    f"코인매도손절수익률청산 = {bb0}, 코인매도손절수익률 = {bb0c}, 코인매도손절수익금청산 = {bb6}, 코인매도손절수익금 = {bb6c}, " \
+                    f"코인매도손절수익율청산 = {bb0}, 코인매도손절수익율 = {bb0c}, 코인매도손절수익금청산 = {bb6}, 코인매도손절수익금 = {bb6c}, " \
                     f"코인매도금지매수횟수 = {bb1}, 코인매도금지매수횟수값 = {bb1c}, 코인매도금지시간 = {bb3}, 코인매도금지시작시간 = {bb3s}, " \
                     f"코인매도금지종료시간 = {bb3e}, 코인매도금지간격 = {bb4}, 코인매도금지간격초 = {bb4s}, 코인매도정정횟수 = {bb5}, " \
                     f"코인매도정정호가차이 = {bb5c}, 코인매도정정호가 = {bb5h}"
@@ -1244,8 +1275,8 @@ def sj_button_cicked_26(ui):
         ui.dict_set['코인매도분할시그널'] = ds1
         ui.dict_set['코인매도분할하방'] = ds2
         ui.dict_set['코인매도분할상방'] = ds3
-        ui.dict_set['코인매도분할하방수익률'] = ds2c
-        ui.dict_set['코인매도분할상방수익률'] = ds3c
+        ui.dict_set['코인매도분할하방수익율'] = ds2c
+        ui.dict_set['코인매도분할상방수익율'] = ds3c
         ui.dict_set['코인매도지정가기준가격'] = bp
         ui.dict_set['코인매도지정가호가번호'] = ju
         ui.dict_set['코인매도시장가잔량범위'] = su
@@ -1253,8 +1284,8 @@ def sj_button_cicked_26(ui):
         ui.dict_set['코인매도취소매수시그널'] = bc2
         ui.dict_set['코인매도취소시간'] = bc3
         ui.dict_set['코인매도취소시간초'] = bc3c
-        ui.dict_set['코인매도손절수익률청산'] = bb0
-        ui.dict_set['코인매도손절수익률'] = bb0c
+        ui.dict_set['코인매도손절수익율청산'] = bb0
+        ui.dict_set['코인매도손절수익율'] = bb0c
         ui.dict_set['코인매도손절수익금청산'] = bb6
         ui.dict_set['코인매도손절수익금'] = bb6c
         ui.dict_set['코인매도금지매수횟수'] = bb1

@@ -4,10 +4,10 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from traceback import print_exc
-from utility.setting import DB_COIN_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, indicator, DB_COIN_BACK_MIN
-# noinspection PyUnresolvedReferences
-from utility.static import strp_time, timedelta_sec, pickle_read, pickle_write, GetBinanceLongPgSgSp, GetBinanceShortPgSgSp
-from backtester.back_static import GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture, GetBackloadCodeQuery, GetBackloadDayQuery, AddAvgData, GetTradeInfo
+from utility.setting import DB_COIN_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, indicator, DB_COIN_BACK_MIN, dgree
+from utility.static import pickle_read, pickle_write, GetBinanceLongPgSgSp, GetBinanceShortPgSgSp, dt_ymdhms, dt_ymdhm
+from backtester.back_static import GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture, \
+    GetBackloadCodeQuery, GetBackloadDayQuery, AddAvgData, GetTradeInfo
 
 
 # noinspection PyUnusedLocal
@@ -77,7 +77,7 @@ class BackEngineBinanceTick:
         self.MainLoop()
 
     def SetDictCondition(self):
-        if self.dict_set['코인경과틱수설정'] != '':
+        if self.dict_set['코인경과틱수설정']:
             def compile_condition(x):
                 return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
             text_list  = self.dict_set['코인경과틱수설정'].split(';')
@@ -424,8 +424,8 @@ class BackEngineBinanceTick:
         if self.profile: self.pr.print_stats(sort='cumulative')
 
     def Strategy(self):
-        def now_utc():
-            return strp_time('%Y%m%d%H%M%S', str(self.index))
+        def now():
+            return dt_ymdhms(str(self.index))
 
         def Parameter_Previous(aindex, pre):
             if pre < 데이터길이:
@@ -616,10 +616,10 @@ class BackEngineBinanceTick:
                 return 0
 
         def 등락율각도(tick, pre=0):
-            return Parameter_Dgree(50, 5, tick, pre, 10)
+            return Parameter_Dgree(50, 5, tick, pre, dgree['coin']['tick'][0])
 
         def 당일거래대금각도(tick, pre=0):
-            return Parameter_Dgree(51, 6, tick, pre, 0.00000001)
+            return Parameter_Dgree(51, 6, tick, pre, dgree['coin']['tick'][1])
 
         def 경과틱수(조건명):
             if 종목코드 in self.dict_cond_indexn.keys() and \
@@ -659,7 +659,7 @@ class BackEngineBinanceTick:
                         self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         exec(self.buystg)
                     else:
-                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now_utc())
+                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
                         exec(self.sellstg)
 
@@ -684,7 +684,7 @@ class BackEngineBinanceTick:
                         else:
                             exec(self.dict_buystg[index_])
                     else:
-                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now_utc())
+                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
                         if self.back_type != '조건최적화':
                             exec(self.sellstg)
@@ -706,7 +706,7 @@ class BackEngineBinanceTick:
                 self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                 exec(self.buystg)
             else:
-                수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now_utc())
+                수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                 포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
                 exec(self.sellstg)
 
@@ -755,30 +755,30 @@ class BackEngineBinanceTick:
                     '매도가': 0,
                     '주문수량': 0,
                     '보유수량': 주문수량,
-                    '최고수익률': 0.,
-                    '최저수익률': 0.,
+                    '최고수익율': 0.,
+                    '최저수익율': 0.,
                     '매수틱번호': self.indexn,
-                    '매수시간': strp_time('%Y%m%d%H%M%S', str(self.index)) if len(str(self.index)) == 14 else strp_time('%Y%m%d%H%M', str(self.index))
+                    '매수시간': dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index))
                 }
 
     def SetSellCount(self, vturn, vkey, 현재가, now_time):
-        _, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
+        _, 매수가, _, _, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         if self.trade_info[vturn][vkey]['보유중'] == 1:
-            _, 수익금, 수익률 = GetBinanceLongPgSgSp(
+            _, _, 수익율 = GetBinanceLongPgSgSp(
                 보유수량 * 매수가, 보유수량 * 현재가,
                 '시장가' in self.dict_set['코인매수주문구분'],
                 '시장가' in self.dict_set['코인매도주문구분'])
         else:
-            _, 수익금, 수익률 = GetBinanceShortPgSgSp(
+            _, _, 수익율 = GetBinanceShortPgSgSp(
                 보유수량 * 매수가, 보유수량 * 현재가,
                 '시장가' in self.dict_set['코인매수주문구분'],
                 '시장가' in self.dict_set['코인매도주문구분'])
-        if 수익률 > 최고수익률:   self.trade_info[vturn][vkey]['최고수익률'] = 최고수익률 = 수익률
-        elif 수익률 < 최저수익률: self.trade_info[vturn][vkey]['최저수익률'] = 최저수익률 = 수익률
+        if 수익율 > 최고수익율:   self.trade_info[vturn][vkey]['최고수익율'] = 최고수익율 = 수익율
+        elif 수익율 < 최저수익율: self.trade_info[vturn][vkey]['최저수익율'] = 최저수익율 = 수익율
         보유시간 = (now_time - 매수시간).total_seconds() if len(str(self.index)) == 14 else int((now_time - 매수시간).total_seconds() / 60)
         self.indexb = 매수틱번호
         self.trade_info[vturn][vkey]['주문수량'] = 보유수량
-        return 수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호
+        return 수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호
 
     def Sell(self, vturn, vkey, gubun, sell_cond):
         매도금액 = 0
@@ -840,23 +840,23 @@ class BackEngineBinanceTick:
 
     def CalculationEyun(self, vturn, vkey):
         """
-        보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
+        보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         """
-        _, bp, sp, oc, _, _, _, bi, bdt = self.trade_info[vturn][vkey].values()
+        _, 매수가, 매도가, 주문수량, _, _, _, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         if len(str(self.index)) == 14:
-            ht = int((strp_time('%Y%m%d%H%M%S', str(self.index)) - bdt).total_seconds())
+            보유시간 = int((dt_ymdhms(str(self.index)) - 매수시간).total_seconds())
         else:
-            ht = int((strp_time('%Y%m%d%H%M', str(self.index)) - bdt).total_seconds() / 60)
-        bt, st, bg = int(self.arry_data[bi, 0]), self.index, oc * bp
+            보유시간 = int((dt_ymdhm(str(self.index)) - 매수시간).total_seconds() / 60)
+        매수시간, 매도시간, 매입금액 = int(self.arry_data[매수틱번호, 0]), self.index, 주문수량 * 매수가
         if self.trade_info[vturn][vkey]['보유중'] == 1:
-            ps = 'LONG'
-            pg, sg, pp = GetBinanceLongPgSgSp(bg, oc * sp, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+            포지션 = 'LONG'
+            평가금액, 수익금, 수익율 = GetBinanceLongPgSgSp(매입금액, 주문수량 * 매도가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
         else:
-            ps = 'SHORT'
-            pg, sg, pp = GetBinanceShortPgSgSp(bg, oc * sp, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-        sc = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
-        abt, bcx = '', True
-        data = ('백테결과', self.name, ps, bt, st, ht, bp, sp, bg, pg, pp, sg, sc, abt, bcx, vturn, vkey)
+            포지션 = 'SHORT'
+            평가금액, 수익금, 수익율 = GetBinanceShortPgSgSp(매입금액, 주문수량 * 매도가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+        매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
+        추가매수시간, 잔고없음 = '', True
+        data = ('백테결과', self.name, 포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익율, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
         self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
         self.trade_info[vturn][vkey] = GetTradeInfo(1)

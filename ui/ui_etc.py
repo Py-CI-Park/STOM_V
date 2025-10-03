@@ -4,12 +4,11 @@ import sqlite3
 import pandas as pd
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtMultimedia import QMediaPlayer
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from ui.set_text import famous_saying
 from utility.setting import DB_TRADELIST
 from utility.setting import columns_dt, columns_dd, ui_num
-from utility.static import thread_decorator, qtest_qwait, strf_time
+from utility.static import thread_decorator, qtest_qwait, str_ymdhmsf, str_ymdhms
 
 
 def update_image(ui, data):
@@ -93,7 +92,7 @@ def chart_clear(ui):
 
 def calendar_clicked(ui, gubun):
     if gubun == 'S':
-        table = 's_tradelist'
+        table = 's_tradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_tradelist'
         searchday = ui.s_calendarWidgett.selectedDate().toString('yyyyMMdd')
     else:
         table = 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
@@ -103,10 +102,10 @@ def calendar_clicked(ui, gubun):
     con.close()
     if len(df1) > 0:
         df1.sort_values(by=['체결시간'], ascending=True, inplace=True)
-        if table == 'c_tradelist_future':
-            df1 = df1[['체결시간', '종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익률', '수익금']]
+        if table in ('f_tradelist', 'c_tradelist_future'):
+            df1 = df1[['체결시간', '종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익율', '수익금']]
         else:
-            df1 = df1[['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금']]
+            df1 = df1[['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익율', '수익금']]
         nbg, nsg = df1['매수금액'].sum(), df1['매도금액'].sum()
         sp = round((nsg / nbg - 1) * 100, 2)
         npg, nmg, nsig = df1[df1['수익금'] > 0]['수익금'].sum(), df1[df1['수익금'] < 0]['수익금'].sum(), df1['수익금'].sum()
@@ -119,35 +118,33 @@ def calendar_clicked(ui, gubun):
     ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}당일상세'], df1))
 
 
-def video_widget_close(ui, state):
-    if state == QMediaPlayer.StoppedState:
-        ui.videoWidget.setVisible(False)
-
-
 def stom_live_screenshot(ui, cmd):
     ui.mnButtonClicked_01(4)
     qtest_qwait(1)
-    if cmd == 'S스톰라이브':
+    if cmd == '주식':
         mid = 'S'
         ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index1)
-    elif cmd == 'C스톰라이브':
+    elif cmd == '코인':
         mid = 'C'
         ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index2)
+    elif cmd == '해선':
+        mid = 'F'
+        ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index3)
     else:
         mid = 'B'
-        ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index3)
+        ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index4)
     qtest_qwait(1)
-    file_name = f'./_log/StomLive_{mid}_{strf_time("%Y%m%d%H%M%S")}.png'
+    file_name = f'./_log/StomLive_{mid}_{str_ymdhms()}.png'
     screen = QApplication.primaryScreen()
     screenshot = screen.grabWindow(ui.winId())
     screenshot.save(file_name, 'png')
     ui.teleQ.put(file_name)
-    ui.mnButtonClicked_01(0)
+    ui.mnButtonClicked_01(0 if cmd != '코인' else 1)
 
 
 def chart_screenshot(ui):
     if ui.dialog_chart.isVisible():
-        file_name = f'./_log/chart_{strf_time("%Y%m%d%H%M%S%f")}.png'
+        file_name = f'./_log/chart_{str_ymdhmsf()}.png'
         screen = QApplication.primaryScreen()
         screenshot = screen.grabWindow(ui.dialog_chart.winId())
         screenshot.save(file_name, 'png')
@@ -157,7 +154,7 @@ def chart_screenshot(ui):
 
 def chart_screenshot2(ui):
     if ui.dialog_chart.isVisible():
-        file_name = f'./_log/chart_{strf_time("%Y%m%d%H%M%S%f")}.png'
+        file_name = f'./_log/chart_{str_ymdhmsf()}.png'
         screen = QApplication.primaryScreen()
         screenshot = screen.grabWindow(ui.dialog_chart.winId())
         screenshot.save(file_name, 'png')

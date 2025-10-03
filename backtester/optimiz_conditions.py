@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
 from backtester.back_static import SendTextAndStd, GetMoneytopQuery
-from utility.static import factorial, strf_time, now, timedelta_day, strp_time, timedelta_sec
+from utility.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import ui_num, DB_STRATEGY, DICT_SET, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
-    DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN
+    DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
@@ -157,14 +157,18 @@ class OptimizeConditions:
         self.ui_gubun     = ui_gubun
         self.result       = {}
         self.opti_list    = []
-        self.bst_procs    = []
         self.bcount       = None
         self.scount       = None
         self.buyconds     = None
         self.sellconds    = None
         self.optistandard = None
         self.dict_set     = DICT_SET
-        self.gubun        = 'stock' if self.ui_gubun == 'S' else 'coin'
+        if self.ui_gubun == 'S':
+            self.gubun = 'stock'
+        elif self.ui_gubun == 'SF':
+            self.gubun = 'future'
+        else:
+            self.gubun = 'coin'
         self.savename     = f'{self.gubun}_{self.backname.replace("최적화", "").lower()}'
         self.Start()
 
@@ -172,7 +176,7 @@ class OptimizeConditions:
         self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
-        if self.ui_gubun != 'CF':
+        if self.ui_gubun not in ('CF', 'SF'):
             betting = float(data[0]) * 1000000
         else:
             betting = float(data[0])
@@ -196,28 +200,28 @@ class OptimizeConditions:
         if weeks_train != 'ALL':
             weeks_train = int(weeks_train)
         else:
-            allweeks = int(((strp_time('%Y%m%d', backengin_eday) - strp_time('%Y%m%d', backengin_sday)).days + 1) / 7)
+            allweeks = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
             if 'V' in self.backname:
                 weeks_train = allweeks - weeks_valid
             else:
                 weeks_train = allweeks
 
         if 'V' not in self.backname: weeks_valid = 0
-        dt_endday   = strp_time('%Y%m%d', backengin_eday)
+        dt_endday   = dt_ymd(backengin_eday)
         startday    = timedelta_day(-(weeks_train + weeks_valid) * 7 + 1, dt_endday)
         sweek       = startday.weekday()
         if sweek != 0: startday = timedelta_day(7 - sweek, startday)
-        startday    = int(strf_time('%Y%m%d', startday))
+        startday    = int(str_ymd(startday))
         endday      = int(backengin_eday)
         valid_days_ = []
         if 'VC' in self.backname:
             for i in range(int(weeks_train / weeks_valid) + 1):
                 valid_days_.append([
-                    int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid * 7 * (i + 1)) + 1, dt_endday))),
-                    int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid * 7 * i), dt_endday)))
+                    int(str_ymd(timedelta_day(-(weeks_valid * 7 * (i + 1)) + 1, dt_endday))),
+                    int(str_ymd(timedelta_day(-(weeks_valid * 7 * i), dt_endday)))
                 ])
         elif 'V' in self.backname:
-            valid_days_.append([int(strf_time('%Y%m%d', timedelta_day(-weeks_valid * 7 + 1, dt_endday))), endday])
+            valid_days_.append([int(str_ymd(timedelta_day(-weeks_valid * 7 + 1, dt_endday))), endday])
         else:
             valid_days_ = None
 
@@ -230,6 +234,8 @@ class OptimizeConditions:
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+        elif self.ui_gubun == 'SF':
+            db = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
         else:
             db = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
         con   = sqlite3.connect(db)
@@ -289,8 +295,8 @@ class OptimizeConditions:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '롱숏구분(#LONG 또는 #SHORT)이 없거나 매도수 구분이 다릅니다.\n'))
                 self.SysExit(True)
 
-        self.buyconds  = [x for x in self.buyconds if x != '' and '#' not in x]
-        self.sellconds = [x for x in self.sellconds if x != '' and '#' not in x]
+        self.buyconds  = [x for x in self.buyconds if x and '#' not in x]
+        self.sellconds = [x for x in self.sellconds if x and '#' not in x]
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수조건 설정 완료'))
 
         bc = factorial(len(self.buyconds)) / (factorial(self.bcount) * factorial(len(self.buyconds) - self.bcount))
@@ -386,7 +392,7 @@ class OptimizeConditions:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매수조건\n{buyconds}\n'))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매도조건\n{sellconds}\n'))
             data = [[self.optistandard, key, buyconds, sellconds]]
-            df = pd.DataFrame(data, columns=['기준', '기준값', '매수코드', '매도코드'], index=[strf_time('%Y%m%d%H%M%S')])
+            df = pd.DataFrame(data, columns=['기준', '기준값', '매수코드', '매도코드'], index=[str_ymdhms()])
             con = sqlite3.connect(DB_BACKTEST)
             df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
             con.close()
@@ -424,17 +430,13 @@ class OptimizeConditions:
             text += f'[{value}] {key}\n'
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'[{value}] {key}'))
 
-        df = pd.DataFrame({'조건별출현빈도': [text]}, index=[strf_time('%Y%m%d%H%M%S')])
+        df = pd.DataFrame({'조건별출현빈도': [text]}, index=[str_ymdhms()])
         con = sqlite3.connect(DB_BACKTEST)
         df.to_sql(f'{self.savename}_conds', con, if_exists='append', chunksize=1000)
         con.close()
 
     def SysExit(self, cancel):
-        for proc in self.bst_procs:
-            proc.kill()
-        if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
-        else:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
+        if cancel: self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
+        else:      self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
         time.sleep(1)
         sys.exit()

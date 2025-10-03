@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
 from backtester.back_static import SendTextAndStd, GetMoneytopQuery, PltShow, GetResultDataframe, GetBackResult, AddMdd
-from utility.static import strf_time, now, timedelta_day, strp_time, threading_timer
+from utility.static import now, timedelta_day, threading_timer, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
-    DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN
+    DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
@@ -33,7 +33,7 @@ class Total:
 
         self.back_count   = None
         self.in_out_count = None
-        self.file_name    = strf_time('%Y%m%d%H%M%S')
+        self.file_name    = str_ymdhms()
 
         self.dict_cn      = None
         self.buystg_name  = None
@@ -275,7 +275,7 @@ class Total:
             self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
             self.df_ttsg.append(self.df_tsg)
             self.df_tbct.append(self.df_bct)
-            pc     = len(self.df_tsg[self.df_tsg['수익률'] >= 0])
+            pc     = len(self.df_tsg[self.df_tsg['수익율'] >= 0])
             wr     = round(pc / tc * 100, 2)
             tsg    = int(self.df_tsg['수익금'].sum())
             df_bct = self.df_bct.sort_values(by=['보유종목수'], ascending=False)
@@ -307,7 +307,7 @@ class Total:
             df_ttsg['index'] = df_ttsg['index'].apply(lambda x: x[:8])
             out_day_count = len(list(set(df_ttsg['index'].to_list())))
 
-            df_tsg   = self.df_ttsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
+            df_tsg   = self.df_ttsg[['보유시간', '매도시간', '수익율', '수익금', '수익금합계']].copy()
             df_tbc   = self.df_tbct.copy()
             df_tbc['체결시간'] = df_tbc.index
             df_tbc['체결시간'] = df_tbc['체결시간'].apply(lambda x: float(x))
@@ -325,17 +325,23 @@ class Total:
             starttime = starttime[:2] + ':' + starttime[2:4] + ':' + starttime[4:]
             endtime   = endtime[:2] + ':' + endtime[2:4] + ':' + endtime[4:]
             bet_unit  = '원' if self.ui_gubun != 'CF' else 'USDT'
+            mdd_test  = f'최대낙폭금액 {mdd_:,.0f}{bet_unit}' if 'G' in self.optistandard else f'최대낙폭률 {mdd:,.2f}%'
+            if self.ui_gubun == 'S':
+                bc_unit = '초' if self.dict_set['주식타임프레임'] else '분'
+            elif self.ui_gubun in ('C', 'CF'):
+                bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
+            else:
+                bc_unit = '분'
 
             if self.weeks_valid == 0:
                 back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습+검증/확인기간 : {self.weeks_train}/{self.weeks_test}, 거래일수 : {out_day_count}'
             else:
                 back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습/검증/확인기간 : {self.weeks_train}/{self.weeks_valid}/{self.weeks_test}, 거래일수 : {out_day_count}'
 
-            mdd_test   = f'최대낙폭금액 {mdd_:,.0f}{bet_unit}' if 'G' in self.optistandard else f'최대낙폭률 {mdd:,.2f}%'
             label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{bet_unit}, ' \
-                         f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}초\n' \
-                         f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, ' \
-                         f'{mdd_test}, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
+                         f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
+                         f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익율 {app:.2f}%, 수익율합계 {tpp:.2f}%, ' \
+                         f'{mdd_test}, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익율 {cagr:.2f}%'
 
             save_file_name = f"{self.savename}_{self.buystg_name}_{self.optistandard}_{self.file_name}"
             con = sqlite3.connect(DB_BACKTEST)
@@ -387,7 +393,12 @@ class RollingWalkForwardTest:
         self.backname   = backname
         self.ui_gubun   = ui_gubun
         self.dict_set   = DICT_SET
-        self.gubun      = 'stock' if self.ui_gubun == 'S' else 'coin'
+        if self.ui_gubun == 'S':
+            self.gubun = 'stock'
+        elif self.ui_gubun == 'SF':
+            self.gubun = 'future'
+        else:
+            self.gubun = 'coin'
         self.vars       = {}
         self.study      = None
         self.dict_simple_vars = {}
@@ -397,7 +408,7 @@ class RollingWalkForwardTest:
         self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
-        if self.ui_gubun != 'CF':
+        if self.ui_gubun not in ('CF', 'SF'):
             betting = float(data[0]) * 1000000
         else:
             betting = float(data[0])
@@ -436,7 +447,7 @@ class RollingWalkForwardTest:
         else:
             sampler = None
         optuna_fixvars = []
-        if data[22] != '':
+        if data[22]:
             try:
                 optuna_fixvars  = [int(x.strip()) for x in data[22].split(',')]
             except:
@@ -447,18 +458,20 @@ class RollingWalkForwardTest:
         random_optivars  = data[25]
 
         if 'V' in self.backname:
-            int_day = int(strf_time('%Y%m%d', timedelta_day(-(weeks_train + weeks_valid + weeks_test + 1) * 7 + 3, strp_time('%Y%m%d', str(endday)))))
+            int_day = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test + 1) * 7 + 3, dt_ymd(str(endday)))))
             if int(backengin_sday) > int_day or startday > int_day or endday > int(backengin_eday):
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 검증기간 + 확인기간 + 1)주 만큼의 데이터가 필요합니다'))
                 self.SysExit(True)
         else:
-            int_day = int(strf_time('%Y%m%d', timedelta_day(-(weeks_train + weeks_test + 1) * 7 + 3, strp_time('%Y%m%d', str(endday)))))
+            int_day = int(str_ymd(timedelta_day(-(weeks_train + weeks_test + 1) * 7 + 3, dt_ymd(str(endday)))))
             if int(backengin_sday) > int_day or startday > int_day or endday > int(backengin_eday):
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 확인기간 + 1)주 만큼의 데이터가 필요합니다'))
                 self.SysExit(True)
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+        elif self.ui_gubun == 'SF':
+            db = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
         else:
             db = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
         con   = sqlite3.connect(db)
@@ -578,33 +591,33 @@ class RollingWalkForwardTest:
     def GetListDays(self, startday, endday, weeks_train, weeks_valid, weeks_test, day_list):
         k = 0
         list_days_ = []
-        dt_endday  = strp_time('%Y%m%d', str(endday))
-        startday_  = int(strf_time('%Y%m%d', timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday)))
+        dt_endday  = dt_ymd(str(endday))
+        startday_  = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday)))
         while startday_ >= startday:
             train_days = [
-                startday_, int(strf_time('%Y%m%d', timedelta_day(-weeks_test * (k + 1) * 7, dt_endday)))
+                startday_, int(str_ymd(timedelta_day(-weeks_test * (k + 1) * 7, dt_endday)))
             ]
             valid_days_ = []
             if 'VC' in self.backname:
                 for i in range(int(weeks_train / weeks_valid) + 1):
                     valid_days_.append([
-                        int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid * (i + 1) + weeks_test * (k + 1)) * 7 + 3, dt_endday))),
-                        int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid * i + weeks_test * (k + 1)) * 7, dt_endday)))
+                        int(str_ymd(timedelta_day(-(weeks_valid * (i + 1) + weeks_test * (k + 1)) * 7 + 3, dt_endday))),
+                        int(str_ymd(timedelta_day(-(weeks_valid * i + weeks_test * (k + 1)) * 7, dt_endday)))
                     ])
             elif 'V' in self.backname:
                 valid_days_.append([
-                    int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday))),
-                    int(strf_time('%Y%m%d', timedelta_day(-(weeks_test * (k + 1)) * 7, dt_endday)))
+                    int(str_ymd(timedelta_day(-(weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday))),
+                    int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7, dt_endday)))
                 ])
             else:
                 valid_days_ = None
             test_days = [
-                int(strf_time('%Y%m%d', timedelta_day(-(weeks_test * (k + 1)) * 7 + 3, dt_endday))),
-                int(strf_time('%Y%m%d', timedelta_day(-(weeks_test * k) * 7, dt_endday)))
+                int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7 + 3, dt_endday))),
+                int(str_ymd(timedelta_day(-(weeks_test * k) * 7, dt_endday)))
             ]
             list_days_.append([train_days, valid_days_, test_days])
             k += 1
-            startday_ = int(strf_time('%Y%m%d', timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday)))
+            startday_ = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday)))
 
         list_days = []
         for train_days_, valid_days_, test_days_ in list_days_:
@@ -786,7 +799,7 @@ class RollingWalkForwardTest:
                 ostd = self.dict_simple_vars[str_simple_vars]
             return ostd
 
-        study_name = f'{self.backname}_{buystg_name}_{strf_time("%Y%m%d%H%M%S")}'
+        study_name = f'{self.backname}_{buystg_name}_{str_ymdhms()}'
         optuna.logging.disable_default_handler()
         if sampler is None:
             self.study = optuna.create_study(storage=DB_OPTUNA, study_name=study_name, direction='maximize')
@@ -808,9 +821,7 @@ class RollingWalkForwardTest:
             q.put(data[:5])
 
     def SysExit(self, cancel):
-        if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
-        else:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
+        if cancel: self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
+        else:      self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
         time.sleep(1)
         sys.exit()

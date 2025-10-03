@@ -45,9 +45,10 @@ class TelegramMsg:
             self.updater.stop()
 
     def UpdateBot(self):
-        if self.updater is None and self.dict_set[f'텔레그램봇토큰{self.gubun}'] is not None:
+        token = self.dict_set[f'텔레그램봇토큰{self.gubun}']
+        if self.updater is None and token is not None:
             try:
-                self.bot = telegram.Bot(self.dict_set[f'텔레그램봇토큰{self.gubun}'])
+                self.bot = telegram.Bot(token)
             except:
                 print('텔레그램 설정 오류 알림 - 텔레그램 봇토큰이 잘못되어 봇을 만들 수 없습니다.')
             else:
@@ -109,7 +110,7 @@ class TelegramMsg:
             text = ''
             for index in df.index:
                 ct    = df['체결시간'][index][8:10] + ':' + df['체결시간'][index][10:12]
-                per   = df['수익률'][index]
+                per   = df['수익율'][index]
                 sg    = df['수익금'][index]
                 name  = df['종목명'][index]
                 text += f'{ct} {per:.2f}% {sg:,.0f}원 {name}\n'
@@ -118,7 +119,7 @@ class TelegramMsg:
             text   = ''
             m_unit = '원' if df.columns[1] == '매입가' else 'USDT'
             for index in df.index:
-                per   = df['수익률'][index]
+                per   = df['수익율'][index]
                 sg    = df['평가손익'][index]
                 name  = df['종목명'][index]
                 if df.columns[1] == '매입가':

@@ -42,6 +42,8 @@ class Window(QtWidgets.QMainWindow):
 
 if __name__ == '__main__':
     opstarter_kill()
+    time.sleep(3)
+
     autologin_dat = f'{OPENAPI_PATH}/system/Autologin.dat'
     if os.path.isfile(autologin_dat): os.remove(autologin_dat)
     print('자동 로그인 설정 파일 삭제 완료')
@@ -57,14 +59,8 @@ if __name__ == '__main__':
     print('아이디 및 패스워드 입력 대기 중 ...')
     time.sleep(2)
 
-    if DICT_SET['증권사'] == '키움증권1':
-        manual_login(2)
-    elif DICT_SET['증권사'] == '키움증권2':
-        manual_login(4)
-    elif DICT_SET['증권사'] == '키움증권3':
-        manual_login(6)
-    elif DICT_SET['증권사'] == '키움증권4':
-        manual_login(8)
+    id_num = int(DICT_SET['증권사'][4:]) * 2
+    manual_login(id_num)
     print('아이디 및 패스워드 입력 완료')
 
     update = False
@@ -85,6 +81,7 @@ if __name__ == '__main__':
                 static_hwnd = win32gui.GetDlgItem(hwnd, 0xFFFF)
                 text = win32gui.GetWindowText(static_hwnd)
                 if '버전처리' in text:
+                    time.sleep(3)
                     if proc.is_alive(): proc.kill()
                     click_button(win32gui.GetDlgItem(hwnd, 0x2))
                     print('버전 업그레이드 완료')

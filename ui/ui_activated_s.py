@@ -6,9 +6,10 @@ from utility.setting import DB_STRATEGY
 
 def sactivated_01(ui):
     strategy_name = ui.svjb_comboBoxx_01.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stockbuy WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}buy WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.ss_textEditttt_01.clear()
@@ -20,9 +21,10 @@ def sactivated_01(ui):
 
 def sactivated_02(ui):
     strategy_name = ui.svjs_comboBoxx_01.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stocksell WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}sell WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.ss_textEditttt_02.clear()
@@ -34,9 +36,10 @@ def sactivated_02(ui):
 
 def sactivated_03(ui):
     strategy_name = ui.svc_comboBoxxx_01.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stockoptibuy WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.ss_textEditttt_03.clear()
@@ -48,9 +51,10 @@ def sactivated_03(ui):
 
 def sactivated_04(ui):
     strategy_name = ui.svc_comboBoxxx_02.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stockoptivars WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}optivars WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.ss_textEditttt_05.clear()
@@ -62,9 +66,10 @@ def sactivated_04(ui):
 
 def sactivated_05(ui):
     strategy_name = ui.svc_comboBoxxx_08.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stockoptisell WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}optisell WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.ss_textEditttt_04.clear()
@@ -76,9 +81,10 @@ def sactivated_05(ui):
 
 def sactivated_06(ui):
     strategy_name = ui.sva_comboBoxxx_01.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stockvars WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}vars WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.ss_textEditttt_06.clear()
@@ -90,9 +96,10 @@ def sactivated_06(ui):
 
 def sactivated_07(ui):
     strategy_name = ui.svo_comboBoxxx_01.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stockbuyconds WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}buyconds WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.ss_textEditttt_07.clear()
@@ -104,9 +111,10 @@ def sactivated_07(ui):
 
 def sactivated_08(ui):
     strategy_name = ui.svo_comboBoxxx_02.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stocksellconds WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}sellconds WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.ss_textEditttt_08.clear()
@@ -118,9 +126,10 @@ def sactivated_08(ui):
 
 def sactivated_09(ui):
     strategy_name = ui.sj_stock_cbBox_01.currentText()
-    if strategy_name != '':
+    if strategy_name:
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM stockoptibuy WHERE `index` = '{strategy_name}'", con).set_index('index')
+        df = pd.read_sql(f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'", con).set_index('index')
         con.close()
         if len(df) > 0:
             try:

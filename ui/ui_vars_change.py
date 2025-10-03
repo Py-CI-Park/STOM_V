@@ -1,15 +1,21 @@
 from traceback import print_exc
 from ui.set_text import stock_buy_signal, coin_buy_signal, coin_future_buy_signal, stock_sell_signal, coin_sell_signal, \
-    coin_future_sell_signal
+    coin_future_sell_signal, future_buy_signal, future_sell_signal
 
 
 def get_fix_strategy(ui, strategy, gubun):
     if gubun == '매수':
         if ui.focusWidget() in (ui.svjb_pushButon_02, ui.svc_pushButton_02, ui.ss_textEditttt_01, ui.ss_textEditttt_03, ui.ss_textEditttt_07):
-            if '\nif 매수:' in strategy:
-                strategy = strategy.split('\nif 매수:')[0] + stock_buy_signal
-            elif 'self.tickdata' not in strategy and stock_buy_signal not in strategy:
-                strategy += '\n' + stock_buy_signal
+            if '키움증권' in ui.dict_set['증권사']:
+                if '\nif 매수:' in strategy:
+                    strategy = strategy.split('\nif 매수:')[0] + stock_buy_signal
+                elif 'self.tickdata' not in strategy and stock_buy_signal not in strategy:
+                    strategy += '\n' + stock_buy_signal
+            else:
+                if '\nif BUY_LONG or SELL_SHORT:' in strategy:
+                    strategy = strategy.split('\nif BUY_LONG or SELL_SHORT:')[0] + future_buy_signal
+                elif future_buy_signal not in strategy:
+                    strategy += '\n' + future_buy_signal
         else:
             if ui.dict_set['거래소'] == '업비트':
                 if '\nif 매수:' in strategy:
@@ -23,10 +29,16 @@ def get_fix_strategy(ui, strategy, gubun):
                     strategy += '\n' + coin_future_buy_signal
     else:
         if ui.focusWidget() in (ui.svjs_pushButon_02, ui.svc_pushButton_10, ui.ss_textEditttt_02, ui.ss_textEditttt_04, ui.ss_textEditttt_08):
-            if '\nif 매도:' in strategy:
-                strategy = strategy.split('\nif 매도:')[0] + stock_sell_signal
-            elif 'self.tickdata' not in strategy and stock_sell_signal not in strategy:
-                strategy += '\n' + stock_sell_signal
+            if '키움증권' in ui.dict_set['증권사']:
+                if '\nif 매도:' in strategy:
+                    strategy = strategy.split('\nif 매도:')[0] + stock_sell_signal
+                elif 'self.tickdata' not in strategy and stock_sell_signal not in strategy:
+                    strategy += '\n' + stock_sell_signal
+            else:
+                if "\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):" in strategy:
+                    strategy = strategy.split("\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):")[0] + future_sell_signal
+                elif future_sell_signal not in strategy:
+                    strategy += '\n' + future_sell_signal
         else:
             if ui.dict_set['거래소'] == '업비트':
                 if '\nif 매도:' in strategy:
@@ -35,8 +47,7 @@ def get_fix_strategy(ui, strategy, gubun):
                     strategy += '\n' + coin_sell_signal
             else:
                 if "\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):" in strategy:
-                    strategy = strategy.split("\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):")[
-                                   0] + coin_future_sell_signal
+                    strategy = strategy.split("\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):")[0] + coin_future_sell_signal
                 elif coin_future_sell_signal not in strategy:
                     strategy += '\n' + coin_future_sell_signal
     return strategy
@@ -105,62 +116,38 @@ def get_stgtxt_to_varstxt(ui, buystg, sellstg):
     cnt = 1
     sellstg_str, buystg_str = '', ''
     if ui.focusWidget() == ui.svc_pushButton_24:
-        if buystg != '' and '변수' in buystg:
-            buystg = buystg.split('\n')
-            for line in buystg:
-                if '변수' in line:
-                    for text in line:
-                        buystg_str += text
-                        if buystg_str[-2:] == '변수':
-                            buystg_str = buystg_str.replace('변수', f'self.vars[{cnt}]')
-                            cnt += 1
-                    buystg_str += '\n'
-                else:
-                    buystg_str += line + '\n'
-        if sellstg != '' and '변수' in sellstg:
-            sellstg = sellstg.split('\n')
-            for line in sellstg:
-                if '변수' in line:
-                    for text in line:
-                        sellstg_str += text
-                        if sellstg_str[-2:] == '변수':
-                            sellstg_str = sellstg_str.replace('변수', f'self.vars[{cnt}]')
-                            cnt += 1
-                    sellstg_str += '\n'
-                else:
-                    sellstg_str += line + '\n'
+        if buystg and '변수' in buystg:
+            for text in buystg:
+                buystg_str += text
+                if buystg_str[-2:] == '변수':
+                    buystg_str = f'{buystg_str[:-2]}self.vars[{cnt}]'
+                    cnt += 1
+        if sellstg and '변수' in sellstg:
+            for text in sellstg:
+                sellstg_str += text
+                if sellstg_str[-2:] == '변수':
+                    sellstg_str = f'{sellstg_str[:-2]}self.vars[{cnt}]'
+                    cnt += 1
     else:
-        if sellstg != '' and '변수' in sellstg:
-            sellstg = sellstg.split('\n')
-            for line in sellstg:
-                if '변수' in line:
-                    for text in line:
-                        sellstg_str += text
-                        if sellstg_str[-2:] == '변수':
-                            sellstg_str = sellstg_str.replace('변수', f'self.vars[{cnt}]')
-                            cnt += 1
-                    sellstg_str += '\n'
-                else:
-                    sellstg_str += line + '\n'
-        if buystg != '' and '변수' in buystg:
-            buystg = buystg.split('\n')
-            for line in buystg:
-                if '변수' in line:
-                    for text in line:
-                        buystg_str += text
-                        if buystg_str[-2:] == '변수':
-                            buystg_str = buystg_str.replace('변수', f'self.vars[{cnt}]')
-                            cnt += 1
-                    buystg_str += '\n'
-                else:
-                    buystg_str += line + '\n'
+        if sellstg and '변수' in sellstg:
+            for text in sellstg:
+                sellstg_str += text
+                if sellstg_str[-2:] == '변수':
+                    sellstg_str = f'{sellstg_str[:-2]}self.vars[{cnt}]'
+                    cnt += 1
+        if buystg and '변수' in buystg:
+            for text in buystg:
+                buystg_str += text
+                if buystg_str[-2:] == '변수':
+                    buystg_str = f'{buystg_str[:-2]}self.vars[{cnt}]'
+                    cnt += 1
 
-    return buystg_str[:-1], sellstg_str[:-1]
+    return buystg_str, sellstg_str
 
 
 def get_stgtxt_sort(buystg, sellstg):
     buystg_str, sellstg_str = '', ''
-    if buystg != '' and sellstg != '' and 'self.vars' in buystg and 'self.vars' in sellstg:
+    if buystg and sellstg and 'self.vars' in buystg and 'self.vars' in sellstg:
         buy_num = int(buystg.split('self.vars[')[1].split(']')[0])
         sell_num = int(sellstg.split('self.vars[')[1].split(']')[0])
         cnt = 1
@@ -250,7 +237,7 @@ def get_stgtxt_sort(buystg, sellstg):
 
 def get_stgtxt_sort2(optivars, gavars):
     optivars_str, gavars_str = '', ''
-    if optivars != '' and 'self.vars' in optivars:
+    if optivars and 'self.vars' in optivars:
         cnt = 0
         optivars = optivars.split('\n')
         for line in optivars:
@@ -272,7 +259,7 @@ def get_stgtxt_sort2(optivars, gavars):
                 optivars_str += '\n'
             else:
                 optivars_str += line + '\n'
-    if gavars != '' and 'self.vars' in gavars:
+    if gavars and 'self.vars' in gavars:
         cnt = 0
         gavars = gavars.split('\n')
         for line in gavars:

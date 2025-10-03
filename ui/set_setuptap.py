@@ -13,7 +13,6 @@ class SetSetupTap:
 
         self.ui.ssd_tab = QWidget()
         self.ui.sod_tab = QWidget()
-        self.ui.cer_tab = QWidget()
 
         self.ui.sj_set_labelll_01 = QLabel('설정 관리', self.ui.sj_tab)
         self.ui.sj_set_comBoxx_01 = self.wc.setCombobox(self.ui.sj_tab, activated=self.ui.Activated_02)
@@ -27,22 +26,22 @@ class SetSetupTap:
         self.ui.set_tapWidgett_01.addTab(self.ui.sod_tab, '주문설정')
 
         self.ui.sj_bs_groupBox_01 = QGroupBox(' 증권사, 거래소, 프로세스 : 사용할 증권사 및 거래소를 선택하고 실행될 프로세스를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_02 = QGroupBox(' 주식 계정 : 트레이더용 첫번째 계정과 리시버용 두번째 계정을 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_02 = QGroupBox(' 주식 및 해선 계정 : 트레이더용 첫번째 계정과 리시버용 두번째 계정을 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_03 = QGroupBox(' 코인 계정 : Access 키와 Secret 키를 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_04 = QGroupBox(' 텔레그램 : 봇토큰 및 사용자 채팅 아이디를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_05 = QGroupBox(' 주식 : 모의투자, 알림소리, 전략를 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_05 = QGroupBox(' 주식 및 해선 : 모의투자, 알림소리, 전략를 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_06 = QGroupBox(' 코인 : 모의투자, 알림소리, 전략를 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_07 = QGroupBox(' 백테 : 백테스트 엔진 및 백테 관련 옵션을 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_08 = QGroupBox(' 기타 : 휴장 종료 유무, 해상도, 창위치, 스톰라이브를 설정한다.', self.ui.ssd_tab)
 
-        self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, tip='사용할 증권사를 선택하십시오.', items=['키움증권1', '키움증권2', '키움증권3', '키움증권4'])
-        self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('주식 리시버', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_01, tip='두번째 계정으로 로그인하여 실시간조건검색 및 데이터를 수신한다.')
-        self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('주식 트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_02, tip='첫번째 계정으로 로그인하여 주문 및 잔고 관리하는 프로세스와\n리시버로부터 데이터를 넘겨받아 전략연산하는 프로세스로 분리되어 있다.')
+        self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, tip='사용할 증권사를 선택하십시오.', items=['키움증권1', '키움증권2', '키움증권3', '키움증권4', '해외선물5', '해외선물6', '해외선물7', '해외선물8'])
+        self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('리시버', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_01, tip='두번째 계정으로 로그인하여 실시간조건검색 및 데이터를 수신한다.')
+        self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_02, tip='첫번째 계정으로 로그인하여 주문 및 잔고 관리하는 프로세스와\n리시버로부터 데이터를 넘겨받아 전략연산하는 프로세스로 분리되어 있다.')
         self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_03, tip='전략연산 프로세스가 모아둔 데이터를 데이터베이스에 저장한다.')
 
         self.ui.sj_main_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, tip='사용할 거래소를 선택하십시오.', items=['업비트', '바이낸스선물'])
-        self.ui.sj_main_cheBox_04 = self.wc.setCheckBox('코인 리시버', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_04, tip='코인 리시버는 체결정보와 호가정보 프로세스로 분리하여 수신한다.')
-        self.ui.sj_main_cheBox_05 = self.wc.setCheckBox('코인 트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_05, tip='트레이더는 전략연산과 주문 및 잔고 관리 프로세스로 분리되어 있다.')
+        self.ui.sj_main_cheBox_04 = self.wc.setCheckBox('리시버', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_04, tip='코인 리시버는 체결정보와 호가정보 프로세스로 분리하여 수신한다.')
+        self.ui.sj_main_cheBox_05 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_05, tip='트레이더는 전략연산과 주문 및 잔고 관리 프로세스로 분리되어 있다.')
         self.ui.sj_main_cheBox_06 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_06, tip='전략연산 프로세스가 모아둔 데이터를 데이터베이스에 저장한다.')
 
         self.ui.sj_main_cheBox_07 = self.wc.setCheckBox('버전 업그레이드', self.ui.sj_bs_groupBox_01, tip='버전업을 실행합니다. 멀티 스톰일 경우 첫번째 실행할 클라이언트에서 실행하십시오.')
@@ -106,9 +105,9 @@ class SetSetupTap:
         self.ui.sj_stock_label_03 = QLabel('종목당투자금                          백만원                                  전략중지 및 잔고청산   |', self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_lEdit_07 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
 
-        self.ui.sj_stock_ckBox_10 = self.wc.setCheckBox('손실중지 - 총자산 대비 수익률 (-)           %', self.ui.sj_bs_groupBox_05)
+        self.ui.sj_stock_ckBox_10 = self.wc.setCheckBox('손실중지 - 총자산 대비 수익율 (-)           %', self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_lEdit_09 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
-        self.ui.sj_stock_ckBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익률 (+)           %', self.ui.sj_bs_groupBox_05)
+        self.ui.sj_stock_ckBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익율 (+)           %', self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_lEdit_10 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
 
         self.ui.sj_coin_cheBox_01 = self.wc.setCheckBox('모의투자    |', self.ui.sj_bs_groupBox_06, changed=self.ui.CheckboxChanged_08, tip='모의투자 체크 시 주문이 전송되지 않고\n매수, 매도를 기록한다. 체크 해제 시 실제 주문이 전송된다.')
@@ -128,9 +127,9 @@ class SetSetupTap:
         self.ui.sj_coin_labell_03 = QLabel('종목당투자금                          백만원                                  전략중지 및 잔고청산   |', self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_liEdit_07 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
 
-        self.ui.sj_coin_cheBox_10 = self.wc.setCheckBox('손실중지 - 총자산 대비 수익률 (-)           %', self.ui.sj_bs_groupBox_06)
+        self.ui.sj_coin_cheBox_10 = self.wc.setCheckBox('손실중지 - 총자산 대비 수익율 (-)           %', self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_liEdit_09 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
-        self.ui.sj_coin_cheBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익률 (+)           %', self.ui.sj_bs_groupBox_06)
+        self.ui.sj_coin_cheBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익율 (+)           %', self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_liEdit_10 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
 
         self.ui.sj_back_cheBox_01 = self.wc.setCheckBox('백테스트 시 거래횟수 10회 이상이며 수익금이 마이너스일 경우 블랙리스트에 추가하기', self.ui.sj_bs_groupBox_07)
@@ -171,6 +170,9 @@ class SetSetupTap:
         self.ui.sj_etc_checBox_05 = self.wc.setCheckBox('휴무종료일 경우 프로세스 종료 후 컴퓨터 종료', self.ui.sj_bs_groupBox_08)
         self.ui.sj_etc_checBox_06 = self.wc.setCheckBox('스톰라이브 참여하기', self.ui.sj_bs_groupBox_08, tip='당일실현손익 정보를 공유하고 익명으로 된 스토머분들의 정보 및 통계를 볼 수 있음')
         self.ui.sj_etc_checBox_07 = self.wc.setCheckBox('프로세스 종료 시 프로그램종료', self.ui.sj_bs_groupBox_08)
+        self.ui.sj_etc_labelll_02 = QLabel('▣  시리얼키', self.ui.sj_bs_groupBox_08)
+        self.ui.sj_etc_liEditt_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_08, passhide=True)
+        self.ui.sj_etc_daEditt_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_08)
 
         self.ui.sj_load_Button_01 = self.wc.setPushbutton('불러오기', box=self.ui.sj_bs_groupBox_01, click=self.ui.sjButtonClicked_01)
         self.ui.sj_load_Button_02 = self.wc.setPushbutton('불러오기', box=self.ui.sj_bs_groupBox_02, click=self.ui.sjButtonClicked_02)
@@ -328,6 +330,9 @@ class SetSetupTap:
         self.ui.sj_etc_checBox_05.setGeometry(500, 50, 300, 20)
         self.ui.sj_etc_checBox_06.setGeometry(835, 50, 130, 20)
         self.ui.sj_etc_checBox_07.setGeometry(970, 50, 200, 20)
+        self.ui.sj_etc_labelll_02.setGeometry(10, 75, 80, 20)
+        self.ui.sj_etc_liEditt_01.setGeometry(80, 75, 940, 20)
+        self.ui.sj_etc_daEditt_01.setGeometry(1030, 75, 110, 20)
 
         self.ui.sj_load_Button_01.setGeometry(1175, 25, 70, 20)
         self.ui.sj_load_Button_02.setGeometry(1175, 25, 70, 20)

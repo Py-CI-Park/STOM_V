@@ -177,10 +177,16 @@ class SetDialogBack:
         ]
 
         if self.ui.dict_set['주식리시버']:
-            if self.ui.dict_set['주식타임프레임']:
-                starttime, endtime = '90000', '93000'
+            if '키움증권' in self.ui.dict_set['증권사']:
+                if self.ui.dict_set['주식타임프레임']:
+                    starttime, endtime = '90000', '93000'
+                else:
+                    starttime, endtime = '900', '1519'
             else:
-                starttime, endtime = '900', '1519'
+                if self.ui.dict_set['주식타임프레임']:
+                    starttime, endtime = '93000', '103000'
+                else:
+                    starttime, endtime = '900', '1559'
         else:
             if self.ui.dict_set['코인타임프레임']:
                 starttime, endtime = '0', '235959'

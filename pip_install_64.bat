@@ -22,6 +22,7 @@ if '%errorlevel%' NEQ '0' (
     python64 -m pip install --upgrade pip
     python64 -m pip install numpy==1.26.4 pandas==2.0.3 python-telegram-bot==13.15 numba
     python64 -m pip install websockets cryptography psutil pyqt5 PyQtWebEngine BeautifulSoup4 optuna optuna-dashboard
-    python64 -m pip install cmaes lxml squarify matplotlib pyqtgraph pyupbit ntplib python-dateutil python-binance pyzmq pyttsx3
+    python64 -m pip install cmaes lxml squarify matplotlib pyqtgraph pyupbit ntplib python-dateutil python-binance
+    python64 -m pip install exchange_calendars pyzmq pyttsx3 yfinance
     python64 -m pip install ./utility/TA_Lib-0.4.25-cp311-cp311-win_amd64.whl
     pause

@@ -21,14 +21,10 @@ class WebSocketReceiver:
     async def run_trade(self):
         await self.connect_ticker()
         await self.receive_trader()
-        await asyncio.sleep(1)
-        await self.run_trade()
 
     async def run_order(self):
         await self.connect_orderb()
         await self.receive_orderb()
-        await asyncio.sleep(1)
-        await self.run_order()
 
     async def connect_ticker(self):
         stream_list = []
@@ -55,8 +51,8 @@ class WebSocketReceiver:
                         self.q.put(['trade', data])
                     else:
                         print(data)
-                except:
-                    break
+                except Exception as e:
+                    print('Error WebSocketReceiver receive_trader', e)
 
     async def receive_orderb(self):
         async with self.wsk_order:
@@ -67,8 +63,8 @@ class WebSocketReceiver:
                         self.q.put(['depth', data])
                     else:
                         print(data)
-                except:
-                    break
+                except Exception as e:
+                    print('Error WebSocketReceiver receive_orderb', e)
 
 
 class WebSocketTrader:
@@ -85,8 +81,6 @@ class WebSocketTrader:
     async def run(self):
         await self.connect()
         await self.receive_msgs()
-        await asyncio.sleep(1)
-        await self.run()
 
     async def connect(self):
         client = await AsyncClient.create(self.api_key, self.scret_key)
@@ -99,8 +93,8 @@ class WebSocketTrader:
                 try:
                     data = await self.websocket.recv()
                     self.q.put(['user', data])
-                except:
-                    break
+                except Exception as e:
+                    print('Error WebSocketTrader receive_msgs', e)
 
 
 if __name__ == '__main__':

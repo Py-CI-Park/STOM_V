@@ -3,7 +3,7 @@ import pandas as pd
 from PyQt5.QtCore import QDate, QUrl
 from PyQt5.QtWidgets import QMessageBox
 from utility.setting import columns_jg, columns_jgf, DB_TRADELIST, ui_num, DB_STRATEGY
-from utility.static import strf_time, timedelta_sec, comma2int, comma2float, now
+from utility.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme
 
 
 def cell_clicked_01(ui, row, col):
@@ -15,8 +15,8 @@ def cell_clicked_01(ui, row, col):
         return
     name       = item.text()
     linetext   = ui.ct_lineEdittttt_03.text()
-    tickcount  = int(linetext) if linetext != '' else 30
-    searchdate = strf_time('%Y%m%d') if stock else strf_time('%Y%m%d', timedelta_sec(-32400))
+    tickcount  = int(linetext) if linetext else 30
+    searchdate = str_ymd(now_utc()) if not stock else str_ymd() if '키움증권' in ui.dict_set['증권사'] else str_ymd(now_cme())
     code       = ui.dict_code[name] if name in ui.dict_code.keys() else name
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
@@ -28,14 +28,21 @@ def cell_clicked_02(ui, row):
     if item is None:
         return
     name = item.text()
-    oc = comma2int(ui.sjg_tableWidgettt.item(row, columns_jg.index('보유수량')).text())
-    c = comma2int(ui.sjg_tableWidgettt.item(row, columns_jg.index('현재가')).text())
+    gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
+    columns = columns_jg if gubun == '주식' else columns_jgf
+    oc = comma2int(ui.sjg_tableWidgettt.item(row, columns.index('보유수량')).text())
+    c = comma2int(ui.sjg_tableWidgettt.item(row, columns.index('현재가')).text())
     buttonReply = QMessageBox.question(
-        ui, '주식 시장가 매도', f'{name} {oc}주를 시장가매도합니다.\n계속하시겠습니까?\n',
+        ui, f'{gubun} 시장가 매도', f'{name} {oc}주를 시장가매도합니다.\n계속하시겠습니까?\n',
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        ui.wdzservQ.put(('trader', ('매도', ui.dict_code[name], name, c, oc, now(), True)))
+        if gubun == '주식':
+            ui.wdzservQ.put(('trader', ('매도', ui.dict_code[name], name, c, oc, now(), True)))
+        else:
+            p = ui.sjg_tableWidgettt.item(row, columns.index('포지션')).text()
+            p = 'SELL_LONG' if p == 'LONG' else 'BUY_SHORT'
+            ui.wdzservQ.put(('trader', (p, ui.dict_code[name], name, c, oc, now(), True)))
 
 
 def cell_clicked_03(ui, row):
@@ -55,7 +62,7 @@ def cell_clicked_03(ui, row):
             if 'KRW' in code:
                 ui.ctraderQ.put(('매도', code, c, oc, now(), True))
             else:
-                p = ui.cjg_tableWidgettt.item(row, columns_jgf.index('포지션')).text()
+                p = ui.cjg_tableWidgettt.item(row, columns.index('포지션')).text()
                 p = 'SELL_LONG' if p == 'LONG' else 'BUY_SHORT'
                 ui.ctraderQ.put((p, code, c, oc, now(), True))
 
@@ -71,7 +78,7 @@ def cell_clicked_04(ui, row):
         return
     name      = item.text()
     linetext  = ui.ct_lineEdittttt_03.text()
-    tickcount = int(linetext) if linetext != '' else 30
+    tickcount = int(linetext) if linetext else 30
     code      = ui.dict_code[name] if name in ui.dict_code.keys() else name
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
@@ -88,7 +95,10 @@ def cell_clicked_05(ui, row):
         return
     date = item.text()
     date = date.replace('.', '')
-    table_name = 's_tradelist' if gubun == '주식' else 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
+    if gubun == '주식':
+        table_name = 's_tradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_tradelist'
+    else:
+        table_name = 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
 
     con = sqlite3.connect(DB_TRADELIST)
     df = pd.read_sql(f"SELECT * FROM {table_name} WHERE 체결시간 LIKE '{date}%'", con)
@@ -152,7 +162,7 @@ def cell_clicked_07(ui, row):
     code       = ui.dict_code[name] if name in ui.dict_code.keys() else name
     searchdate = ui.ct_dateEdittttt_02.date().toString('yyyyMMdd')
     linetext   = ui.ct_lineEdittttt_03.text()
-    tickcount  = int(linetext) if linetext != '' else 30
+    tickcount  = int(linetext) if linetext else 30
     starttime  = ui.ct_lineEdittttt_01.text()
     endtime    = ui.ct_lineEdittttt_02.text()
     is_min     = coin and not ui.dict_set['코인타임프레임'] or not coin and not ui.dict_set['주식타임프레임']
@@ -162,7 +172,10 @@ def cell_clicked_07(ui, row):
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
     ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-    ui.chartQ.put((coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code)))
+    data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code))
+    cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
+    if cf1 and cf2: data += (float(cf1), float(cf2))
+    ui.chartQ.put(data)
 
 
 def cell_clicked_08(ui, row):
@@ -179,21 +192,23 @@ def cell_clicked_09(ui, row, col):
         if item is None:
             return
         stg_name = item.text()
+        gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
         buttonReply = QMessageBox.question(
-            ui.dialog_db, '전략 삭제', f'주식전략 "{stg_name}"을(를) 삭제합니다.\n계속하시겠습니까?\n',
+            ui.dialog_db, '전략 삭제', f'{gubun}전략 "{stg_name}"을(를) 삭제합니다.\n계속하시겠습니까?\n',
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if buttonReply == QMessageBox.Yes:
+            gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
             con = sqlite3.connect(DB_STRATEGY)
             cur = con.cursor()
             if col == 0:
-                query = f'DELETE FROM stockbuy WHERE "index" = "{stg_name}"'
+                query = f'DELETE FROM {gubun}buy WHERE "index" = "{stg_name}"'
             elif col == 1:
-                query = f'DELETE FROM stocksell WHERE "index" = "{stg_name}"'
+                query = f'DELETE FROM {gubun}sell WHERE "index" = "{stg_name}"'
             elif col == 2:
-                query = f'DELETE FROM stockoptibuy WHERE "index" = "{stg_name}"'
+                query = f'DELETE FROM {gubun}optibuy WHERE "index" = "{stg_name}"'
             else:
-                query = f'DELETE FROM stockoptisell WHERE "index" = "{stg_name}"'
+                query = f'DELETE FROM {gubun}optisell WHERE "index" = "{stg_name}"'
             cur.execute(query)
             con.commit()
             con.close()
@@ -203,21 +218,23 @@ def cell_clicked_09(ui, row, col):
         if item is None:
             return
         stg_name = item.text()
+        gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
         buttonReply = QMessageBox.question(
-            ui.dialog_db, '범위 또는 조건 삭제', f'주식 범위 또는 조건 "{stg_name}"을(를) 삭제합니다.\n계속하시겠습니까?\n',
+            ui.dialog_db, '범위 또는 조건 삭제', f'{gubun} 범위 또는 조건 "{stg_name}"을(를) 삭제합니다.\n계속하시겠습니까?\n',
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if buttonReply == QMessageBox.Yes:
+            gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
             con = sqlite3.connect(DB_STRATEGY)
             cur = con.cursor()
             if col == 0:
-                query = f'DELETE FROM stockoptivars WHERE "index" = "{stg_name}"'
+                query = f'DELETE FROM {gubun}optivars WHERE "index" = "{stg_name}"'
             elif col == 1:
-                query = f'DELETE FROM stockvars WHERE "index" = "{stg_name}"'
+                query = f'DELETE FROM {gubun}vars WHERE "index" = "{stg_name}"'
             elif col == 2:
-                query = f'DELETE FROM stockbuyconds WHERE "index" = "{stg_name}"'
+                query = f'DELETE FROM {gubun}buyconds WHERE "index" = "{stg_name}"'
             else:
-                query = f'DELETE FROM stocksellconds WHERE "index" = "{stg_name}"'
+                query = f'DELETE FROM {gubun}sellconds WHERE "index" = "{stg_name}"'
             cur.execute(query)
             con.commit()
             con.close()
@@ -304,8 +321,10 @@ def cell_clicked_10(ui, row, col):
 
 
 def cell_clicked_11(ui):
-    table_name = 's_tradelist' if ui.focusWidget() == ui.snt_tableWidgettt else 'c_tradelist' if ui.dict_set[
-                                                                                                     '거래소'] == '업비트' else 'c_tradelist_future'
+    if ui.focusWidget() == ui.snt_tableWidgettt:
+        table_name = 's_tradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_tradelist'
+    else:
+        table_name = 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
     con = sqlite3.connect(DB_TRADELIST)
     df = pd.read_sql(f"SELECT * FROM {table_name}", con)
     con.close()

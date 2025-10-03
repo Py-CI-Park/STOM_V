@@ -1167,7 +1167,7 @@ def cvj_button_clicked_17(ui, back_name):
 
 def cvj_button_clicked_18(ui):
     opti_vars_text = ui.cs_textEditttt_05.toPlainText()
-    if opti_vars_text != '':
+    if opti_vars_text:
         ga_vars_text = ui.GetOptivarsToGavars(opti_vars_text)
         ui.cs_textEditttt_06.clear()
         ui.cs_textEditttt_06.append(ga_vars_text)
@@ -1177,7 +1177,7 @@ def cvj_button_clicked_18(ui):
 
 def cvj_button_clicked_19(ui):
     ga_vars_text = ui.cs_textEditttt_06.toPlainText()
-    if ga_vars_text != '':
+    if ga_vars_text:
         opti_vars_text = ui.GetGavarsToOptivars(ga_vars_text)
         ui.cs_textEditttt_05.clear()
         ui.cs_textEditttt_05.append(opti_vars_text)

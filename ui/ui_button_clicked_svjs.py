@@ -7,13 +7,15 @@ from utility.setting import DB_STRATEGY
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
 from ui.set_text import famous_saying, stock_sell_var, stock_sell1, stock_sell2, stock_sell3, stock_sell4, stock_sell5, \
-    stock_sell6, stock_sell7, stock_sell8, stock_sell_signal, stock_sell_var2
+    stock_sell6, stock_sell7, stock_sell8, stock_sell_signal, stock_sell_var2, future_sell_signal, future_sell_var2, \
+    future_sell_var
 
 
 def svjs_button_clicked_01(ui):
     if ui.ss_textEditttt_02.isVisible():
+        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql('SELECT * FROM stocksell', con).set_index('index')
+        df = pd.read_sql(f'SELECT * FROM {gubun}sell', con).set_index('index')
         con.close()
         if len(df) > 0:
             ui.svjs_comboBoxx_01.clear()
@@ -41,16 +43,20 @@ def svjs_button_clicked_02(ui):
         if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(
                 strategy):
             if ui.proc_query.is_alive():
-                ui.queryQ.put(('전략디비', f"DELETE FROM stocksell WHERE `index` = '{strategy_name}'"))
+                gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+                ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}sell WHERE `index` = '{strategy_name}'"))
                 df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                ui.queryQ.put(('전략디비', df, 'stocksell', 'append'))
+                ui.queryQ.put(('전략디비', df, f'{gubun}sell', 'append'))
             ui.svjs_pushButon_04.setStyleSheet(style_bc_st)
             QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 def svjs_button_clicked_03(ui):
     ui.ss_textEditttt_02.clear()
-    ui.ss_textEditttt_02.append(stock_sell_var if ui.dict_set['주식타임프레임'] else stock_sell_var2)
+    if '해외선물' in ui.dict_set['증권사']:
+        ui.ss_textEditttt_02.append(future_sell_var if ui.dict_set['주식타임프레임'] else future_sell_var2)
+    else:
+        ui.ss_textEditttt_02.append(stock_sell_var if ui.dict_set['주식타임프레임'] else stock_sell_var2)
     ui.svjs_pushButon_04.setStyleSheet(style_bc_st)
 
 
@@ -102,7 +108,8 @@ def svjs_button_clicked_12(ui):
 
 
 def svjs_button_clicked_13(ui):
-    ui.ss_textEditttt_02.append(stock_sell_signal)
+    signal = stock_sell_signal if '키움증권' in ui.dict_set['증권사'] else future_sell_signal
+    ui.ss_textEditttt_02.append(signal)
 
 
 def svjs_button_clicked_14(ui):

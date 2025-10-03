@@ -7,7 +7,7 @@ def return_press_01(ui):
     if ui.dialog_chart.focusWidget() in (ui.ct_lineEdittttt_04, ui.ct_lineEdittttt_05, ui.ct_pushButtonnn_01):
         searchdate = ui.ct_dateEdittttt_01.date().toString('yyyyMMdd')
         linetext   = ui.ct_lineEdittttt_03.text()
-        tickcount  = int(linetext) if linetext != '' else 30
+        tickcount  = int(linetext) if linetext else 30
         if ui.dialog_chart.focusWidget() == ui.ct_lineEdittttt_04:
             name = ui.ct_lineEdittttt_04.text()
         else:
@@ -30,7 +30,7 @@ def return_press_01(ui):
         code       = ui.dict_code[name] if name in ui.dict_code.keys() else name
         searchdate = ui.ct_dateEdittttt_02.date().toString('yyyyMMdd')
         linetext   = ui.ct_lineEdittttt_03.text()
-        tickcount  = int(linetext) if linetext != '' else 30
+        tickcount  = int(linetext) if linetext else 30
         starttime  = ui.ct_lineEdittttt_01.text()
         endtime    = ui.ct_lineEdittttt_02.text()
         if (len(starttime) > 4 or len(endtime) > 4) and \
@@ -40,7 +40,10 @@ def return_press_01(ui):
         ui.ct_lineEdittttt_04.setText(code)
         ui.ct_lineEdittttt_05.setText(name)
         ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-        ui.chartQ.put((coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code)))
+        data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code))
+        cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
+        if cf1 and cf2: data += (float(cf1), float(cf2))
+        ui.chartQ.put(data)
 
 
 def return_press_02(ui):
@@ -58,6 +61,7 @@ def return_press_02(ui):
         ui.sj_cacc_liEdit_02.setEchoMode(QLineEdit.Normal)
         ui.sj_tele_liEdit_01.setEchoMode(QLineEdit.Normal)
         ui.sj_tele_liEdit_02.setEchoMode(QLineEdit.Normal)
+        ui.sj_etc_liEditt_01.setEchoMode(QLineEdit.Normal)
         ui.sj_etc_pButton_01.setText('계정 텍스트 가리기')
         ui.sj_etc_pButton_01.setStyleSheet(style_bc_dk)
         ui.dialog_pass.close()

@@ -3,8 +3,8 @@ import numpy as np
 from talib import stream
 from traceback import print_exc
 from coin.upbit_strategy_tick import UpbitStrategyTick
-from utility.setting import ui_num
-from utility.static import now, now_utc, strp_time, GetUpbitHogaunit, GetUpbitPgSgSp
+from utility.setting import ui_num, dgree
+from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, dt_ymdhms
 
 
 # noinspection PyUnusedLocal
@@ -218,10 +218,10 @@ class UpbitStrategyMin(UpbitStrategyTick):
                 return 0
 
         def 등락율각도(tick, pre=0):
-            return Parameter_Dgree(56, 5, tick, pre, 10)
+            return Parameter_Dgree(56, 5, tick, pre, dgree['coin']['min'][0])
 
         def 당일거래대금각도(tick, pre=0):
-            return Parameter_Dgree(57, 6, tick, pre, 0.00000001)
+            return Parameter_Dgree(57, 6, tick, pre, dgree['coin']['min'][1])
 
         def 경과틱수(조건명):
             if 종목코드 in self.dict_cond_indexn.keys() and \
@@ -314,7 +314,6 @@ class UpbitStrategyMin(UpbitStrategyTick):
             return Parameter_Previous(85, pre)
 
         시분초, 호가단위 = int(str(체결시간)[8:] + '00'), GetUpbitHogaunit(현재가)
-        데이터길이 = len(self.dict_arry[종목코드]) + 1 if 종목코드 in self.dict_arry.keys() else 1
         평균값계산틱수 = self.dict_set['코인평균값계산틱수']
         이동평균005, 이동평균010, 이동평균020, 이동평균060, 이동평균120, 최고현재가_, 최저현재가_, 최고분봉고가_, 최저분봉저가_ = 0., 0., 0., 0., 0., 0, 0, 0, 0
         체결강도평균_, 최고체결강도_, 최저체결강도_, 최고분당매수수량_, 최고분당매도수량_ = 0., 0., 0., 0, 0
@@ -348,8 +347,8 @@ class UpbitStrategyMin(UpbitStrategyTick):
                 최고분봉고가_    = max(self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 11].max(), 분봉고가)
                 최저분봉저가_    = min(self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 12].min(), 분봉저가)
                 분당거래대금평균_ = int((self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 13].sum() + 분당거래대금) / 평균값계산틱수)
-                등락율각도_      = round(math.atan2((등락율 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 5]) * 10, 평균값계산틱수) / (2 * math.pi) * 360, 2)
-                당일거래대금각도_ = round(math.atan2((당일거래대금 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 6]) / 100_000_000, 평균값계산틱수) / (2 * math.pi) * 360, 2)
+                등락율각도_      = round(math.atan2((등락율 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 5]) * dgree['coin']['min'][0], 평균값계산틱수) / (2 * math.pi) * 360, 2)
+                당일거래대금각도_ = round(math.atan2((당일거래대금 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 6]) * dgree['coin']['min'][1], 평균값계산틱수) / (2 * math.pi) * 360, 2)
 
             """
             체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, 분봉시가, 분봉고가, 분봉저가,
@@ -457,7 +456,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
         데이터길이 = len(self.dict_arry[종목코드])
         self.indexn = 데이터길이 - 1
 
-        if self.dict_condition and 전략연산:
+        if self.dict_condition and 전략연산 and 체결시간 < self.dict_set['코인전략종료시간']:
             if 종목코드 not in self.dict_cond_indexn.keys():
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
@@ -467,29 +466,29 @@ class UpbitStrategyMin(UpbitStrategyTick):
                     print_exc()
                     self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류'))
 
-        if 체결강도평균_ != 0 and 전략연산:
+        if 체결강도평균_ != 0 and 전략연산 and 체결시간 < self.dict_set['코인전략종료시간']:
             if 종목코드 in self.df_jg.index:
                 if 종목코드 not in self.dict_buy_num.keys():
-                    self.dict_buy_num[종목코드] = len(self.dict_arry[종목코드]) - 1
+                    self.dict_buy_num[종목코드] = self.indexn
                 매수틱번호 = self.dict_buy_num[종목코드]
                 매입가 = self.df_jg['매입가'][종목코드]
                 보유수량 = self.df_jg['보유수량'][종목코드]
                 매입금액 = self.df_jg['매입금액'][종목코드]
                 분할매수횟수 = int(self.df_jg['분할매수횟수'][종목코드])
                 분할매도횟수 = int(self.df_jg['분할매도횟수'][종목코드])
-                _, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
-                매수시간 = strp_time('%Y%m%d%H%M%S', self.df_jg['매수시간'][종목코드])
-                보유시간 = (now_utc() - 매수시간).total_seconds()
+                _, 수익금, 수익율 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
+                매수시간 = dt_ymdhms(self.df_jg['매수시간'][종목코드])
+                보유시간 = int((now_utc() - 매수시간).total_seconds() / 60)
                 if 종목코드 not in self.dict_hilo.keys():
-                    self.dict_hilo[종목코드] = [수익률, 수익률]
+                    self.dict_hilo[종목코드] = [수익율, 수익율]
                 else:
-                    if 수익률 > self.dict_hilo[종목코드][0]:
-                        self.dict_hilo[종목코드][0] = 수익률
-                    elif 수익률 < self.dict_hilo[종목코드][1]:
-                        self.dict_hilo[종목코드][1] = 수익률
-                최고수익률, 최저수익률 = self.dict_hilo[종목코드]
+                    if 수익율 > self.dict_hilo[종목코드][0]:
+                        self.dict_hilo[종목코드][0] = 수익율
+                    elif 수익율 < self.dict_hilo[종목코드][1]:
+                        self.dict_hilo[종목코드][1] = 수익율
+                최고수익율, 최저수익율 = self.dict_hilo[종목코드]
             else:
-                매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = 0, 0, 0, 0, 0, 0, 0, now_utc(), 0, 0, 0
+                매수틱번호, 수익금, 수익율, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익율, 최저수익율 = 0, 0, 0, 0, 0, 0, 0, now_utc(), 0, 0, 0
             self.indexb = 매수틱번호
 
             BBT = not self.dict_set['코인매수금지시간'] or not (self.dict_set['코인매수금지시작시간'] < 시분초 < self.dict_set['코인매수금지종료시간'])
@@ -519,11 +518,11 @@ class UpbitStrategyMin(UpbitStrategyTick):
                             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy'))
                 elif C:
                     매수 = False
-                    분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set[
-                        '코인매수분할고정수익률'] else 수익률
-                    if self.dict_set['코인매수분할하방'] and 분할매수기준수익률 < -self.dict_set['코인매수분할하방수익률']:
+                    분할매수기준수익율 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set[
+                        '코인매수분할고정수익율'] else 수익율
+                    if self.dict_set['코인매수분할하방'] and 분할매수기준수익율 < -self.dict_set['코인매수분할하방수익율']:
                         매수 = True
-                    elif self.dict_set['코인매수분할상방'] and 분할매수기준수익률 > self.dict_set['코인매수분할상방수익률']:
+                    elif self.dict_set['코인매수분할상방'] and 분할매수기준수익율 > self.dict_set['코인매수분할상방수익율']:
                         매수 = True
 
                     if 매수:
@@ -538,7 +537,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
             B = self.dict_set['코인매도분할시그널']
             C = NIB and NIS and SCC and 매입가 != 0 and 분할매도횟수 < self.dict_set['코인매도분할횟수']
             D = NIS and self.dict_set['코인매수취소매도시그널'] and not NIB
-            E = NIB and NIS and 매입가 != 0 and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
+            E = NIB and NIS and 매입가 != 0 and self.dict_set['코인매도손절수익율청산'] and 수익율 < -self.dict_set['코인매도손절수익율']
             F = NIB and NIS and 매입가 != 0 and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
 
             if SBT and (A or (B and C) or C or D or E or F):
@@ -562,9 +561,9 @@ class UpbitStrategyMin(UpbitStrategyTick):
                     if 강제청산:
                         매도 = True
                     elif C:
-                        if self.dict_set['코인매도분할하방'] and 수익률 < -self.dict_set['코인매도분할하방수익률'] * (분할매도횟수 + 1):
+                        if self.dict_set['코인매도분할하방'] and 수익율 < -self.dict_set['코인매도분할하방수익율'] * (분할매도횟수 + 1):
                             매도 = True
-                        elif self.dict_set['코인매도분할상방'] and 수익률 > self.dict_set['코인매도분할상방수익률'] * (분할매도횟수 + 1):
+                        elif self.dict_set['코인매도분할상방'] and 수익율 > self.dict_set['코인매도분할상방수익율'] * (분할매도횟수 + 1):
                             매도 = True
 
                     if 매도:
@@ -573,7 +572,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
         if 관심종목 and 전략연산:
             self.df_gj.loc[종목코드] = 종목코드, 등락율, 고저평균대비등락율, 분당거래대금, 분당거래대금평균_, 당일거래대금, 체결강도, 체결강도평균_, 최고체결강도_
 
-        if len(self.dict_arry[종목코드]) >= 평균값계산틱수 and self.chart_code == 종목코드:
+        if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
             self.windowQ.put((ui_num['실시간차트'], 종목코드, self.dict_arry[종목코드]))
 
         if 틱수신시간 != 0:

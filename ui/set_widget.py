@@ -272,7 +272,7 @@ class WidgetCreater:
             tableWidget.setVisible(False)
         if clicked is not None:
             tableWidget.cellClicked.connect(clicked)
-        if columns[-1] == 'ch_high':
+        if columns[-1] == 'chh':
             if tab == self.ui.st_tab:
                 tableWidget.setColumnWidth(0, 122)
                 tableWidget.setColumnWidth(1, 68)
@@ -306,7 +306,7 @@ class WidgetCreater:
                 tableWidget.setColumnWidth(13, 55)
                 tableWidget.setColumnWidth(14, 55)
         elif columns in (columns_nt, columns_nd):
-            if tab in (self.ui.slv_tab, self.ui.clv_tab):
+            if tab in (self.ui.slv_tab, self.ui.clv_tab, self.ui.flv_tab):
                 tableWidget.setColumnWidth(0, 94)
             else:
                 tableWidget.setColumnWidth(0, 100)
@@ -477,7 +477,7 @@ class WidgetCreater:
         elif columns == ['백테스트 상세기록']:
             tableWidget.setColumnWidth(0, 333)
         else:
-            if tab in (self.ui.slv_tab, self.ui.clv_tab):
+            if tab in (self.ui.slv_tab, self.ui.clv_tab, self.ui.flv_tab):
                 tableWidget.setColumnWidth(0, 121)
             elif tab == self.ui.ct_tab:
                 tableWidget.setColumnWidth(0, 96)

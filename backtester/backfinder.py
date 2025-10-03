@@ -3,7 +3,7 @@ import time
 import sqlite3
 import pandas as pd
 from multiprocessing import Process
-from utility.static import strf_time, now
+from utility.static import now, str_ymdhms
 from utility.setting import DB_STRATEGY, DB_BACKTEST, ui_num, DICT_SET
 
 
@@ -65,7 +65,7 @@ class Total:
                 sys.exit()
 
         if len(self.df_back) > 0:
-            save_time = strf_time('%Y%m%d%H%M%S')
+            save_time = str_ymdhms()
             con = sqlite3.connect(DB_BACKTEST)
             self.df_back.to_sql(f"{self.gubun}_bf_{self.buystg_name}_{save_time}", con, if_exists='append', chunksize=1000)
             con.close()
@@ -88,7 +88,12 @@ class BackFinder:
         self.beq_list = beq_list
         self.ui_gubun = ui_gubun
         self.dict_set = DICT_SET
-        self.gubun    = 'stock' if self.ui_gubun == 'S' else 'coin'
+        if self.ui_gubun == 'S':
+            self.gubun = 'stock'
+        elif self.ui_gubun == 'SF':
+            self.gubun = 'future'
+        else:
+            self.gubun = 'coin'
         self.tickcols = None
         self.Start()
 
@@ -131,9 +136,7 @@ class BackFinder:
         self.SysExit(False) if data == '백파인더 완료' else self.SysExit(True)
 
     def SysExit(self, cancel):
-        if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
-        else:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 완료'))
+        if cancel: self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
+        else:      self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 완료'))
         time.sleep(1)
         sys.exit()

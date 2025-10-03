@@ -2,15 +2,15 @@ import math
 from talib import stream
 from backtester.back_static import GetIndicator
 from backtester.backengine_kiwoom_tick import BackEngineKiwoomTick
-from utility.setting import BACK_TEMP
+from utility.setting import BACK_TEMP, dgree
 # noinspection PyUnresolvedReferences
-from utility.static import strp_time, timedelta_sec, pickle_read, GetUvilower5
+from utility.static import timedelta_sec, pickle_read, GetUvilower5, dt_ymdhm, dt_ymdhms
 
 
 # noinspection PyUnusedLocal
 class BackEngineKiwoomMin(BackEngineKiwoomTick):
     def SetDictCondition(self):
-        if self.dict_set['주식경과틱수설정'] != '':
+        if self.dict_set['주식경과틱수설정']:
             def compile_condition(x):
                 return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn', '<string>', 'exec')
             text_list  = self.dict_set['주식경과틱수설정'].split(';')
@@ -40,7 +40,7 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
 
     def Strategy(self):
         def now():
-            return strp_time('%Y%m%d%H%M', str(self.index))
+            return dt_ymdhm(str(self.index))
 
         def Parameter_Previous(aindex, pre):
             if pre < 데이터길이:
@@ -266,10 +266,10 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                 return 0
 
         def 등락율각도(tick, pre=0):
-            return Parameter_Dgree(65, 5, tick, pre, 5)
+            return Parameter_Dgree(65, 5, tick, pre, dgree['stock']['min'][0])
 
         def 당일거래대금각도(tick, pre=0):
-            return Parameter_Dgree(66, 6, tick, pre, 0.01)
+            return Parameter_Dgree(66, 6, tick, pre, dgree['stock']['min'][1])
 
         def 전일비각도(tick, pre=0):
             return Parameter_Dgree(67, 9, tick, pre, 1)
@@ -428,7 +428,7 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
             매수호가3, 매수호가4, 매수호가5, 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, \
             매수잔량4, 매수잔량5, 매도수5호가잔량합, 관심종목 = self.arry_data[self.indexn, 1:48]
         호가단위 = 매도호가2 - 매도호가1
-        VI해제시간, VI아래5호가 = strp_time('%Y%m%d%H%M%S', str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
+        VI해제시간, VI아래5호가 = dt_ymdhms(str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
         bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
         self.bhogainfo = bhogainfo[:self.dict_set['주식매수시장가잔량범위']]
@@ -469,7 +469,7 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                         self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
                         exec(self.buystg)
                     else:
-                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         exec(self.sellstg)
 
         elif self.opti_turn == 3:
@@ -504,7 +504,7 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                         else:
                             exec(self.dict_buystg[index_])
                     else:
-                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         if self.back_type != '조건최적화':
                             exec(self.sellstg)
                         else:
@@ -537,5 +537,5 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                 self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
                 exec(self.buystg)
             else:
-                수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                 exec(self.sellstg)

@@ -4,10 +4,11 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from traceback import print_exc
-from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_STOCK_BACK_MIN, indicator
+from backtester.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
+    GetBackloadDayQuery, AddAvgData, GetTradeInfo
+from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_STOCK_BACK_MIN, indicator, dgree
 # noinspection PyUnresolvedReferences
-from utility.static import strp_time, timedelta_sec, pickle_read, pickle_write, GetKiwoomPgSgSp, GetUvilower5, GetHogaunit
-from backtester.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, GetBackloadDayQuery, AddAvgData, GetTradeInfo
+from utility.static import timedelta_sec, pickle_read, pickle_write, GetKiwoomPgSgSp, GetUvilower5, dt_ymdhms, dt_ymdhm
 
 
 # noinspection PyUnusedLocal
@@ -77,7 +78,7 @@ class BackEngineKiwoomTick:
         self.MainLoop()
 
     def SetDictCondition(self):
-        if self.dict_set['주식경과틱수설정'] != '':
+        if self.dict_set['주식경과틱수설정']:
             def compile_condition(x):
                 return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
             text_list  = self.dict_set['주식경과틱수설정'].split(';')
@@ -429,7 +430,7 @@ class BackEngineKiwoomTick:
 
     def Strategy(self):
         def now():
-            return strp_time('%Y%m%d%H%M%S', str(self.index))
+            return dt_ymdhms(str(self.index))
 
         def Parameter_Previous(aindex, pre):
             if pre < 데이터길이:
@@ -638,10 +639,10 @@ class BackEngineKiwoomTick:
                 return 0
 
         def 등락율각도(tick, pre=0):
-            return Parameter_Dgree(59, 5, tick, pre, 5)
+            return Parameter_Dgree(59, 5, tick, pre, dgree['stock']['tick'][0])
 
         def 당일거래대금각도(tick, pre=0):
-            return Parameter_Dgree(60, 6, tick, pre, 0.01)
+            return Parameter_Dgree(60, 6, tick, pre, dgree['stock']['tick'][1])
 
         def 전일비각도(tick, pre=0):
             return Parameter_Dgree(61, 9, tick, pre, 1)
@@ -659,7 +660,7 @@ class BackEngineKiwoomTick:
             매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
             매도수5호가잔량합, 관심종목 = self.arry_data[self.indexn, 1:45]
         호가단위 = 매도호가2 - 매도호가1
-        VI해제시간, VI아래5호가 = strp_time('%Y%m%d%H%M%S', str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
+        VI해제시간, VI아래5호가 = dt_ymdhms(str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
         bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
         self.bhogainfo = bhogainfo[:self.dict_set['주식매수시장가잔량범위']]
@@ -688,7 +689,7 @@ class BackEngineKiwoomTick:
                         self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
                         exec(self.buystg)
                     else:
-                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         exec(self.sellstg)
 
         elif self.opti_turn == 3:
@@ -711,7 +712,7 @@ class BackEngineKiwoomTick:
                         else:
                             exec(self.dict_buystg[index_])
                     else:
-                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         if self.back_type != '조건최적화':
                             exec(self.sellstg)
                         else:
@@ -732,7 +733,7 @@ class BackEngineKiwoomTick:
                 self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
                 exec(self.buystg)
             else:
-                수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                 exec(self.sellstg)
 
     def SetBuyCount(self, vturn, vkey, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 전일비, 회전율, 전일동시간비):
@@ -784,21 +785,21 @@ class BackEngineKiwoomTick:
                     '매도가': 0,
                     '주문수량': 0,
                     '보유수량': 주문수량,
-                    '최고수익률': 0.,
-                    '최저수익률': 0.,
+                    '최고수익율': 0.,
+                    '최저수익율': 0.,
                     '매수틱번호': self.indexn,
-                    '매수시간': strp_time('%Y%m%d%H%M%S', str(self.index)) if len(str(self.index)) == 14 else strp_time('%Y%m%d%H%M', str(self.index))
+                    '매수시간': dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index))
                 }
 
     def SetSellCount(self, vturn, vkey, 현재가, now_time):
-        _, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
-        _, _, 수익률 = GetKiwoomPgSgSp(보유수량 * 매수가, 보유수량 * 현재가)
-        if 수익률 > 최고수익률:   self.trade_info[vturn][vkey]['최고수익률'] = 최고수익률 = 수익률
-        elif 수익률 < 최저수익률: self.trade_info[vturn][vkey]['최저수익률'] = 최저수익률 = 수익률
+        _, 매수가, _, _, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
+        _, _, 수익율 = GetKiwoomPgSgSp(보유수량 * 매수가, 보유수량 * 현재가)
+        if 수익율 > 최고수익율:   self.trade_info[vturn][vkey]['최고수익율'] = 최고수익율 = 수익율
+        elif 수익율 < 최저수익율: self.trade_info[vturn][vkey]['최저수익율'] = 최저수익율 = 수익율
         보유시간 = (now_time - 매수시간).total_seconds() if len(str(self.index)) == 14 else int((now_time - 매수시간).total_seconds() / 60)
         self.indexb = 매수틱번호
         self.trade_info[vturn][vkey]['주문수량'] = 보유수량
-        return 수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호
+        return 수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호
 
     def Sell(self, vturn, vkey, sell_cond):
         매도금액 = 0
@@ -854,19 +855,19 @@ class BackEngineKiwoomTick:
 
     def CalculationEyun(self, vturn, vkey):
         """
-        보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
+        보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         """
-        _, bp, sp, oc, _, _, _, bi, bdt = self.trade_info[vturn][vkey].values()
-        sgtg = int(self.arry_data[self.indexn, 12])
+        _, 매수가, 매도가, 주문수량, _, _, _, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         if len(str(self.index)) == 14:
-            ht = int((strp_time('%Y%m%d%H%M%S', str(self.index)) - bdt).total_seconds())
+            보유시간 = int((dt_ymdhms(str(self.index)) - 매수시간).total_seconds())
         else:
-            ht = int((strp_time('%Y%m%d%H%M', str(self.index)) - bdt).total_seconds() / 60)
-        bt, st, bg = int(self.arry_data[bi, 0]), self.index, oc * bp
-        pg, sg, pp = GetKiwoomPgSgSp(bg, oc * sp)
-        sc = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
-        abt, bcx = '', True
-        data = ('백테결과', self.name, sgtg, bt, st, ht, bp, sp, bg, pg, pp, sg, sc, abt, bcx, vturn, vkey)
+            보유시간 = int((dt_ymdhm(str(self.index)) - 매수시간).total_seconds() / 60)
+        시가총액 = int(self.arry_data[self.indexn, 12])
+        매수시간, 매도시간, 매입금액 = int(self.arry_data[매수틱번호, 0]), self.index, 주문수량 * 매수가
+        평가금액, 수익금, 수익율 = GetKiwoomPgSgSp(매입금액, 주문수량 * 매도가)
+        매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
+        추가매수시간, 잔고없음 = '', True
+        data = ('백테결과', self.name, 시가총액, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익율, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
         self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
         self.trade_info[vturn][vkey] = GetTradeInfo(1)

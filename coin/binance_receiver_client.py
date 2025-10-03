@@ -2,7 +2,7 @@ import zmq
 import time
 from threading import Thread
 from utility.setting import ui_num, DICT_SET
-from utility.static import int_hms_utc, threading_timer
+from utility.static import threading_timer, str_hms, now_utc
 
 
 class ZmqRecv(Thread):
@@ -72,7 +72,7 @@ class BinanceReceiverClient:
             if data == '프로세스종료':
                 break
 
-            inthmsutc = int_hms_utc()
+            inthmsutc = int(str_hms(now_utc()))
             if self.dict_set['코인전략종료시간'] < inthmsutc < self.dict_set['코인전략종료시간'] + 10:
                 if self.dict_set['코인프로세스종료'] and not self.dict_bool['프로세스종료']:
                     self.ReceiverProcKill()

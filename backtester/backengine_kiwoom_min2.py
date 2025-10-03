@@ -2,15 +2,15 @@ import math
 from talib import stream
 from backtester.back_static import GetIndicator
 from backtester.backengine_kiwoom_tick2 import BackEngineKiwoomTick2
-from utility.setting import BACK_TEMP
+from utility.setting import BACK_TEMP, dgree
 # noinspection PyUnresolvedReferences
-from utility.static import strp_time, timedelta_sec, GetUvilower5, pickle_read
+from utility.static import timedelta_sec, GetUvilower5, pickle_read, dt_ymdhm, dt_ymdhms
 
 
 # noinspection PyUnusedLocal
 class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
     def SetDictCondition(self):
-        if self.dict_set['주식경과틱수설정'] != '':
+        if self.dict_set['주식경과틱수설정']:
             def compile_condition(x):
                 return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn', '<string>', 'exec')
             text_list  = self.dict_set['주식경과틱수설정'].split(';')
@@ -40,7 +40,7 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
 
     def Strategy(self):
         def now():
-            return strp_time('%Y%m%d%H%M', str(self.index))
+            return dt_ymdhm(str(self.index))
 
         def Parameter_Previous(aindex, pre):
             if pre < 데이터길이:
@@ -266,10 +266,10 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                 return 0
 
         def 등락율각도(tick, pre=0):
-            return Parameter_Dgree(65, 5, tick, pre, 5)
+            return Parameter_Dgree(65, 5, tick, pre, dgree['stock']['min'][0])
 
         def 당일거래대금각도(tick, pre=0):
-            return Parameter_Dgree(66, 6, tick, pre, 0.01)
+            return Parameter_Dgree(66, 6, tick, pre, dgree['stock']['min'][1])
 
         def 전일비각도(tick, pre=0):
             return Parameter_Dgree(67, 9, tick, pre, 1)
@@ -428,7 +428,7 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
             매수호가3, 매수호가4, 매수호가5, 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, \
             매수잔량4, 매수잔량5, 매도수5호가잔량합, 관심종목 = self.arry_data[self.indexn, 1:48]
         호가단위 = 매도호가2 - 매도호가1
-        VI해제시간, VI아래5호가 = strp_time('%Y%m%d%H%M%S', str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
+        VI해제시간, VI아래5호가 = dt_ymdhms(str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
         bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
         self.bhogainfo = bhogainfo[:self.dict_set['주식매수시장가잔량범위']]
@@ -451,11 +451,11 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                     if self.tick_count < self.vars[0]:
                         continue
 
-                    보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
+                    보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                         매도분할횟수, 매수주문취소시간, 매도주문취소시간 = self.trade_info[vturn][vkey].values()
-                    수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
-                        self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
+                    수익금, 수익율, 최고수익율, 최저수익율, 보유시간 = \
+                        self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익율, 최저수익율, 매수시간, now())
 
                     gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
                     if gubun is None: continue
@@ -481,18 +481,18 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                         if not 보유중:
                             exec(self.buystg)
                         else:
-                            if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['주식매수분할시그널']:
+                            if not self.CheckDividBuy(현재가, 추가매수가, 수익율, vturn, vkey) and self.dict_set['주식매수분할시그널']:
                                 exec(self.buystg)
 
                     if '매도' in gubun:
-                        if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
+                        if self.CheckSonjeol(수익율, 수익금, vturn, vkey): continue
                         if self.CancelSellOrder(현재가, 매수분할횟수, now(), vturn, vkey): continue
                         self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
                                            전일비, 회전율, 전일동시간비, 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['주식매도분할횟수'] == 1:
                             exec(self.sellstg)
                         else:
-                            if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['주식매도분할시그널']:
+                            if not self.CheckDividSell(수익율, 매도분할횟수, vturn, vkey) and self.dict_set['주식매도분할시그널']:
                                 exec(self.sellstg)
 
         elif self.opti_turn == 3:
@@ -506,11 +506,11 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                     elif self.tick_count < self.avgtime:
                         break
 
-                    보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
+                    보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                         매도분할횟수, 매수주문취소시간, 매도주문취소시간 = self.trade_info[vturn][vkey].values()
-                    수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
-                        self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
+                    수익금, 수익율, 최고수익율, 최저수익율, 보유시간 = \
+                        self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익율, 최저수익율, 매수시간, now())
 
                     gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
                     if gubun is None: continue
@@ -539,14 +539,14 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                             else:
                                 exec(self.dict_buystg[index_])
                         else:
-                            if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['주식매도분할시그널']:
+                            if not self.CheckDividBuy(현재가, 추가매수가, 수익율, vturn, vkey) and self.dict_set['주식매도분할시그널']:
                                 if self.back_type != '조건최적화':
                                     exec(self.buystg)
                                 else:
                                     exec(self.dict_buystg[index_])
 
                     if '매도' in gubun:
-                        if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
+                        if self.CheckSonjeol(수익율, 수익금, vturn, vkey): continue
                         if self.CancelSellOrder(현재가, 매수분할횟수, now(), vturn, vkey): continue
                         self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
                                            전일비, 회전율, 전일동시간비, 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
@@ -556,7 +556,7 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                             else:
                                 exec(self.dict_sellstg[index_])
                         else:
-                            if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['주식매도분할시그널']:
+                            if not self.CheckDividSell(수익율, 매도분할횟수, vturn, vkey) and self.dict_set['주식매도분할시그널']:
                                 if self.back_type != '조건최적화':
                                     exec(self.sellstg)
                                 else:
@@ -571,11 +571,11 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                 if self.tick_count < self.avgtime:
                     return
 
-            보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
+            보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                 매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                 매도분할횟수, 매수주문취소시간, 매도주문취소시간 = self.trade_info[vturn][vkey].values()
-            수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
-                self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
+            수익금, 수익율, 최고수익율, 최저수익율, 보유시간 = \
+                self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익율, 최저수익율, 매수시간, now())
 
             gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
             if gubun is None: return
@@ -601,16 +601,16 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                 if not 보유중:
                     exec(self.buystg)
                 else:
-                    if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['주식매수분할시그널']:
+                    if not self.CheckDividBuy(현재가, 추가매수가, 수익율, vturn, vkey) and self.dict_set['주식매수분할시그널']:
                         exec(self.buystg)
 
             if '매도' in gubun:
-                if self.CheckSonjeol(수익률, 수익금, vturn, vkey): return
+                if self.CheckSonjeol(수익율, 수익금, vturn, vkey): return
                 if self.CancelSellOrder(현재가, 매수분할횟수, now(), vturn, vkey): return
                 self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비,
                                    회전율, 전일동시간비, 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if self.dict_set['주식매도분할횟수'] == 1:
                     exec(self.sellstg)
                 else:
-                    if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['주식매도분할시그널']:
+                    if not self.CheckDividSell(수익율, 매도분할횟수, vturn, vkey) and self.dict_set['주식매도분할시그널']:
                         exec(self.sellstg)

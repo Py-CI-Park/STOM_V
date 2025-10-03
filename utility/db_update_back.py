@@ -22,7 +22,8 @@ for db_name in file_list:
     table_list = df_tb['name'].to_list()
     table_list.remove('moneytop')
     try:
-        table_list.remove('codename')
+        table_list.remove('stockinfo')
+        table_list.remove('futureinfo')
     except:
         pass
     last = len(table_list)

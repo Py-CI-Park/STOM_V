@@ -9,7 +9,7 @@ from threading import Thread
 from multiprocessing import Process, Queue
 from coin.upbit_websocket import WebSocketReceiver
 from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
-from utility.static import now, strf_time, timedelta_sec, from_timestamp, int_hms_utc, threading_timer
+from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc
 
 
 class ZmqServ(Thread):
@@ -64,7 +64,7 @@ class UpbitReceiverTick:
         self.tuple_jango = ()
         self.tuple_order = ()
 
-        self.int_logt    = int(strf_time('%Y%m%d%H%M', timedelta_sec(-32400)))
+        self.int_logt    = 0
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
@@ -88,13 +88,13 @@ class UpbitReceiverTick:
         while True:
             data = self.creceivQ.get()
             curr_time = now()
-            inthmsutc = int_hms_utc()
+            inthmsutc = int(str_hms(now_utc()))
             if type(data) == tuple:
                 self.UpdateTuple(data)
             elif type(data) == dict:
                 if data['type'] == 'ticker':
                     try:
-                        dt        = int(strf_time('%Y%m%d%H%M%S', from_timestamp(int(data['timestamp'] / 1000 - 32400))))
+                        dt = int(str_ymdhms_utc(data['timestamp']))
                         if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]): continue
                         code      = data['code']
                         c         = data['trade_price']
@@ -111,7 +111,7 @@ class UpbitReceiverTick:
                         self.UpdateTickData(code, c, o, h, low, per, dm, tbids, tasks, dt)
                 elif data['type'] == 'orderbook':
                     try:
-                        dt   = int(strf_time('%Y%m%d%H%M%S', from_timestamp(int(data['timestamp'] / 1000 - 32400))))
+                        dt = int(str_ymdhms_utc(data['timestamp']))
                         if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]): continue
                         code = data['code']
                         hoga_tamount = (

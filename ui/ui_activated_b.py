@@ -10,7 +10,7 @@ def bactivated_01(ui):
         gubun = ui.list_checkBoxxxxxx.index(ui.dialog_scheduler.focusWidget())
     except:
         gubun = ui.list_gcomboBoxxxxx.index(ui.dialog_scheduler.focusWidget())
-    gubun2 = 'stock' if ui.sd_pushButtonnn_01.text() == '주식' else 'coin'
+    gubun2 = 'coin' if ui.sd_pushButtonnn_01.text() == '코인' else 'stock' if ui.sd_pushButtonnn_01.text() == '주식' else 'future'
 
     ui.list_bcomboBoxxxxx[gubun].clear()
     ui.list_scomboBoxxxxx[gubun].clear()

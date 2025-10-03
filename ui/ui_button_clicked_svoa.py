@@ -9,8 +9,9 @@ from utility.static import text_not_in_special_characters
 
 
 def sva_button_clicked_01(ui):
+    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql('SELECT * FROM stockvars', con).set_index('index')
+    df = pd.read_sql(f'SELECT * FROM {gubun}vars', con).set_index('index')
     con.close()
     if len(df) > 0:
         ui.sva_comboBoxxx_01.clear()
@@ -34,15 +35,17 @@ def sva_button_clicked_02(ui):
     else:
         if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy, ga=True):
             if ui.proc_query.is_alive():
-                ui.queryQ.put(('전략디비', f"DELETE FROM stockvars WHERE `index` = '{strategy_name}'"))
+                gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+                ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}vars WHERE `index` = '{strategy_name}'"))
                 df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                ui.queryQ.put(('전략디비', df, 'stockvars', 'append'))
+                ui.queryQ.put(('전략디비', df, f'{gubun}vars', 'append'))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 def svo_button_clicked_01(ui):
+    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql('SELECT * FROM stockbuyconds', con).set_index('index')
+    df = pd.read_sql(f'SELECT * FROM {gubun}buyconds', con).set_index('index')
     con.close()
     if len(df) > 0:
         ui.svo_comboBoxxx_01.clear()
@@ -66,15 +69,17 @@ def svo_button_clicked_02(ui):
     else:
         if ui.BackCodeTest3('매수', strategy):
             if ui.proc_query.is_alive():
-                ui.queryQ.put(('전략디비', f"DELETE FROM stockbuyconds WHERE `index` = '{strategy_name}'"))
+                gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+                ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}buyconds WHERE `index` = '{strategy_name}'"))
                 df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                ui.queryQ.put(('전략디비', df, 'stockbuyconds', 'append'))
+                ui.queryQ.put(('전략디비', df, f'{gubun}buyconds', 'append'))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 def svo_button_clicked_03(ui):
+    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql('SELECT * FROM stocksellconds', con).set_index('index')
+    df = pd.read_sql(f'SELECT * FROM {gubun}sellconds', con).set_index('index')
     con.close()
     if len(df) > 0:
         ui.svo_comboBoxxx_02.clear()
@@ -98,7 +103,8 @@ def svo_button_clicked_04(ui):
     else:
         if ui.BackCodeTest3('매도', strategy):
             if ui.proc_query.is_alive():
-                ui.queryQ.put(('전략디비', f"DELETE FROM stocksellconds WHERE `index` = '{strategy_name}'"))
+                gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+                ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}sellconds WHERE `index` = '{strategy_name}'"))
                 df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                ui.queryQ.put(('전략디비', df, 'stocksellconds', 'append'))
+                ui.queryQ.put(('전략디비', df, f'{gubun}sellconds', 'append'))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))

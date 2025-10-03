@@ -1,25 +1,34 @@
-from utility.static import int_hms, now, strf_time
+from utility.static import now, summer_t, now_utc, now_cme, str_ymdhms_ios, str_hms
 
 
 def process_starter(ui):
-    inthms = int_hms()
+    inthms = int(str_hms())
 
     if not ui.backtest_engine and ui.dict_set['스톰라이브'] and ui.StomLiveProcessAlive():
-        if (ui.int_time < 93100 <= inthms) or (ui.int_time < 152000 <= inthms):
-            if ui.dict_set['주식트레이더']:   ui.StomliveScreenshot('S스톰라이브')
-            elif ui.dict_set['코인트레이더']: ui.StomliveScreenshot('C스톰라이브')
+        if ui.dict_set['주식트레이더'] and '키움증권' in ui.dict_set['증권사'] and \
+           ((ui.int_time < 93100 <= inthms) or (ui.int_time < 152000 <= inthms)):
+            ui.StomliveScreenshot('주식')
+        elif ui.dict_set['주식트레이더'] and '해외선물' in ui.dict_set['증권사'] and \
+                ((ui.int_time < 50000 <= inthms and summer_t != 0) or (ui.int_time < 60000 <= inthms)):
+            ui.StomliveScreenshot('해선')
+        elif ui.dict_set['코인트레이더'] and ui.int_time < 235000 <= inthms:
+            ui.StomliveScreenshot('코인')
 
     if ui.dict_set['백테스케쥴실행'] and not ui.backtest_engine and now().weekday() == ui.dict_set['백테스케쥴요일']:
         if ui.int_time < ui.dict_set['백테스케쥴시간'] <= inthms:
             ui.AutoBackSchedule(1)
 
-    if ui.auto_run == 1:
-        ui.mnButtonClicked_03(login=1)
-        ui.auto_run = 0
+    if not ui.proc_tele.is_alive():  ui.proc_tele.start()
+    if not ui.proc_webc.is_alive():  ui.proc_webc.start()
+    if not ui.proc_sound.is_alive(): ui.proc_sound.start()
+    if not ui.proc_query.is_alive(): ui.proc_query.start()
+    if not ui.proc_chart.is_alive(): ui.proc_chart.start()
+    if not ui.proc_hoga.is_alive():  ui.proc_hoga.start()
 
-    if ui.auto_run == 2:
-        ui.mnButtonClicked_03(login=2)
+    if ui.auto_run > 0:
+        login_num = ui.auto_run
         ui.auto_run = 0
+        ui.mnButtonClicked_03(login=login_num)
 
     UpdateWindowTitle(ui)
     ui.int_time = inthms
@@ -35,8 +44,8 @@ def UpdateWindowTitle(ui):
         text = f'{text} | 바이낸스선물'
     elif ui.dict_set['거래소'] == '업비트' and ui.dict_set['코인트레이더']:
         text = f'{text} | 업비트'
-    elif ui.dict_set['증권사'] == '키움증권해외선물' and ui.dict_set['주식트레이더']:
-        text = f'{text} | 키움증권해외선물'
+    elif '해외선물' in ui.dict_set['증권사'] and ui.dict_set['주식트레이더']:
+        text = f'{text} | 해외선물'
     elif ui.dict_set['주식트레이더']:
         text = f'{text} | 키움증권'
     if ui.showQsize:
@@ -54,5 +63,10 @@ def UpdateWindowTitle(ui):
         elif ui.dict_set['주식트레이더']:
             text = f'{text} | 모의' if ui.dict_set['주식모의투자'] else f'{text} | 실전'
             text = f'{text} | {ui.dict_set["주식매수전략"] if ui.dict_set["주식매수전략"] != "" else "전략사용안함"}'
-        text = f"{text} | {strf_time('%Y-%m-%d %H:%M:%S')}"
+        if ui.dict_set['거래소'] == '바이낸스선물' and ui.dict_set['코인트레이더']:
+            text = f"{text} | {str_ymdhms_ios(now_utc())}"
+        elif '해외선물' in ui.dict_set['증권사'] and ui.dict_set['주식트레이더']:
+            text = f"{text} | {str_ymdhms_ios(now_cme())}"
+        else:
+            text = f"{text} | {str_ymdhms_ios()}"
     ui.setWindowTitle(text)

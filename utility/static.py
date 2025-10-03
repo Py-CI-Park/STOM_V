@@ -1,15 +1,152 @@
 import os
 import re
+import time
+import pytz
 import psutil
 import _pickle
 import datetime
-import numpy as np
+import requests
 import winreg as reg
-from io import BytesIO
+import exchange_calendars as ec
 from threading import Thread, Timer
 from PyQt5.QtTest import QTest
 from traceback import print_exc
 from cryptography.fernet import Fernet
+
+now_utc_ = datetime.datetime.now(pytz.utc)
+now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
+summer_t = int(now_cme_.dst().total_seconds())
+time_gap = int(summer_t - 50400)
+
+
+def now():
+    return datetime.datetime.now()
+
+
+def now_utc():
+    return timedelta_sec(-32400)
+
+
+def now_cme():
+    return timedelta_sec(time_gap)
+
+
+def str_ymdhmsf(std_time=None):
+    if std_time is not None:
+        return strf_time('%Y%m%d%H%M%S%f', std_time)
+    else:
+        return strf_time('%Y%m%d%H%M%S%f')
+
+
+def str_ymdhms_ios(std_time=None):
+    if std_time is not None:
+        return strf_time('%Y-%m-%d %H:%M:%S', std_time)
+    else:
+        return strf_time('%Y-%m-%d %H:%M:%S')
+
+
+def str_ymdhms(std_time=None):
+    if std_time is not None:
+        return strf_time('%Y%m%d%H%M%S', std_time)
+    else:
+        return strf_time('%Y%m%d%H%M%S')
+
+
+def str_ymdhms_utc(time_):
+    return int(str_ymdhms(from_timestamp(int(time_ / 1000 - 32400))))
+
+
+def str_ymd(std_time=None):
+    if std_time is not None:
+        return strf_time('%Y%m%d', std_time)
+    else:
+        return strf_time('%Y%m%d')
+
+
+def str_hmsf(std_time=None):
+    if std_time is not None:
+        return strf_time('%H%M%S%f', std_time)
+    else:
+        return strf_time('%H%M%S%f')
+
+
+def str_hms(std_time=None):
+    if std_time is not None:
+        return strf_time('%H%M%S', std_time)
+    else:
+        return strf_time('%H%M%S')
+
+
+def str_hms_cme_from_str(std_hms=None):
+    if std_hms is not None:
+        std_time = timedelta_sec(time_gap, dt_hms(std_hms))
+    else:
+        std_time = now_cme()
+    return str_hms(std_time)
+
+
+def str_ms(std_time):
+    return strf_time('%H%M', std_time)
+
+
+def dt_ymdhms_ios(str_time):
+    return datetime.datetime.fromisoformat(str_time)
+
+
+def dt_ymdhms(str_time):
+    str_time = f'{str_time[:4]}-{str_time[4:6]}-{str_time[6:8]} {str_time[8:10]}:{str_time[10:12]}:{str_time[12:14]}'
+    return datetime.datetime.fromisoformat(str_time)
+
+
+def dt_ymdhm(str_time):
+    str_time = f'{str_time[:4]}-{str_time[4:6]}-{str_time[6:8]} {str_time[8:10]}:{str_time[10:12]}'
+    return datetime.datetime.fromisoformat(str_time)
+
+
+def dt_ymd(str_time):
+    str_time = f'{str_time[:4]}-{str_time[4:6]}-{str_time[6:8]}'
+    return datetime.datetime.fromisoformat(str_time)
+
+
+def dt_hms(str_time):
+    str_time = f'2000-01-01 {str_time[:2]}:{str_time[2:4]}:{str_time[4:6]}'
+    return datetime.datetime.fromisoformat(str_time)
+
+
+def dt_hm(str_time):
+    str_time = f'2000-01-01 {str_time[:2]}:{str_time[2:4]}'
+    return datetime.datetime.fromisoformat(str_time)
+
+
+def strf_time(timetype, std_time=None):
+    return now().strftime(timetype) if std_time is None else std_time.strftime(timetype)
+
+
+def from_timestamp(time_):
+    return datetime.datetime.fromtimestamp(time_)
+
+
+def timedelta_sec(second, std_time=None):
+    return now() + datetime.timedelta(seconds=float(second)) if std_time is None else std_time + datetime.timedelta(seconds=float(second))
+
+
+def timedelta_day(day, std_time=None):
+    return now() + datetime.timedelta(days=float(day)) if std_time is None else std_time + datetime.timedelta(days=float(day))
+
+
+def thread_decorator(func):
+    def wrapper(*args):
+        Thread(target=func, args=args, daemon=True).start()
+    return wrapper
+
+
+def error_decorator(func):
+    def wrapper(*args):
+        try:
+            func(*args)
+        except:
+            print_exc()
+    return wrapper
 
 
 def threading_timer(sec, func, args=None):
@@ -30,18 +167,8 @@ def win_proc_alive(name):
 def opstarter_kill():
     if win_proc_alive('opstarter'):
         os.system('C:/Windows/System32/taskkill /f /im opstarter.exe')
-
-
-def array_to_bytes(x: np.ndarray) -> bytes:
-    np_bytes = BytesIO()
-    # noinspection PyTypeChecker
-    np.save(np_bytes, x, allow_pickle=True)
-    return np_bytes.getvalue()
-
-
-def bytes_to_array(b: bytes) -> np.ndarray:
-    np_bytes = BytesIO(b)
-    return np.load(np_bytes, allow_pickle=True)
+    if win_proc_alive('nfstarter'):
+        os.system('C:/Windows/System32/taskkill /f /im nfstarter.exe')
 
 
 def pickle_write(file, data):
@@ -57,79 +184,9 @@ def pickle_read(file):
     return data
 
 
-def pickle_delete(file):
-    if os.path.isfile(file):
-        os.remove(file)
-
-
-def thread_decorator(func):
-    def wrapper(*args):
-        Thread(target=func, args=args, daemon=True).start()
-
-    return wrapper
-
-
-def error_decorator(func):
-    def wrapper(*args):
-        try:
-            func(*args)
-        except:
-            print_exc()
-
-    return wrapper
-
-
 def qtest_qwait(sec):
     # noinspection PyArgumentList
     QTest.qWait(int(sec * 1000))
-
-
-def now():
-    return datetime.datetime.now()
-
-
-def now_utc():
-    return timedelta_sec(-32400)
-
-
-def int_hms():
-    return int(strf_time('%H%M%S'))
-
-
-def int_hms_utc():
-    return int(strf_time('%H%M%S', timedelta_sec(-32400)))
-
-
-def timedelta_sec(second, std_time=None):
-    return now() + datetime.timedelta(seconds=float(second)) if std_time is None else std_time + datetime.timedelta(
-        seconds=float(second))
-
-
-def timedelta_day(day, std_time=None):
-    return now() + datetime.timedelta(days=float(day)) if std_time is None else std_time + datetime.timedelta(
-        days=float(day))
-
-
-def strp_time(timetype, str_time):
-    if timetype == '%Y%m%d%H%M%S':
-        str_time = f'{str_time[:4]}-{str_time[4:6]}-{str_time[6:8]} {str_time[8:10]}:{str_time[10:12]}:{str_time[12:14]}'
-    elif timetype == '%Y%m%d%H%M':
-        str_time = f'{str_time[:4]}-{str_time[4:6]}-{str_time[6:8]} {str_time[8:10]}:{str_time[10:12]}'
-    elif timetype == '%Y%m%d':
-        str_time = f'{str_time[:4]}-{str_time[4:6]}-{str_time[6:8]}'
-    elif timetype == '%H%M%S':
-        str_time = f'2000-01-01 {str_time[:2]}:{str_time[2:4]}:{str_time[4:6]}'
-    else:
-        str_time = f'2000-01-01 {str_time[:2]}:{str_time[2:4]}'
-    return datetime.datetime.fromisoformat(str_time)
-
-
-def strf_time(timetype, std_time=None):
-    return now().strftime(timetype) if std_time is None else std_time.strftime(timetype)
-
-
-def from_timestamp(time):
-    return datetime.datetime.fromtimestamp(time)
 
 
 def change_format(text, dotdowndel=False, dotdown4=False, dotdown8=False):
@@ -205,6 +262,30 @@ def text_not_in_special_characters(t):
     return False
 
 
+def get_ip():
+    ip = None
+    while ip is None:
+        try:
+            ip = requests.get('https://api.ipify.org').text
+        except:
+            time.sleep(1)
+    return ip
+
+
+def cme_normal_open():
+    str_day  = str_ymd(now_cme())
+    today    = dt_ymdhms_ios(f'{str_day} 17:00:00')
+    ec_cme   = ec.get_calendar('CMES')
+    day_list = ec_cme.sessions_in_range(start=str_day, end=str_day)
+    if len(day_list) > 0:
+        close_time = ec_cme.session_close(day_list[0]).tz_convert('America/Chicago').time()
+        if today.time() != close_time:
+            return False
+    else:
+        return False
+    return True
+
+
 def get_buy_indi_stg(buytxt):
     buystg  = ''
     indistg = ''
@@ -213,14 +294,14 @@ def get_buy_indi_stg(buytxt):
             indistg += f'{line}\n'
         else:
             buystg += f'{line}\n'
-    if buystg != '':
+    if buystg:
         try:
             buystg = compile(buystg, '<string>', 'exec')
         except:
             buystg = None
     else:
         buystg = None
-    if indistg != '':
+    if indistg:
         try:
             indistg = compile(indistg, '<string>', 'exec')
         except:
@@ -391,6 +472,24 @@ try:
 
 
     @jit(nopython=True, cache=True)
+    def GetFutureLongPgSgSp(bg, cg, code):
+        fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
+        pg = round(cg - fee * 2, 1)
+        sg = round(pg - bg, 1)
+        sp = round(sg / bg * 100, 2)
+        return pg, sg, sp
+
+
+    @jit(nopython=True, cache=True)
+    def GetFutureShortPgSgSp(bg, cg, code):
+        fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
+        pg = round(bg + bg - cg - fee * 2, 1)
+        sg = round(pg - bg, 1)
+        sp = round(sg / bg * 100, 2)
+        return pg, sg, sp
+
+
+    @jit(nopython=True, cache=True)
     def GetVIPrice(kosd, std_price, index):
         uvi = int(std_price * 1.1)
         x = GetHogaunit(kosd, uvi, index)
@@ -501,6 +600,21 @@ except:
         sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
         pg = round(bg + bg - cg - bfee - sfee, 4)
         sg = round(pg - bg, 4)
+        sp = round(sg / bg * 100, 2)
+        return pg, sg, sp
+
+    def GetFutureLongPgSgSp(bg, cg, code):
+        fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
+        pg = round(cg - fee * 2, 1)
+        sg = round(pg - bg, 1)
+        sp = round(sg / bg * 100, 2)
+        return pg, sg, sp
+
+
+    def GetFutureShortPgSgSp(bg, cg, code):
+        fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
+        pg = round(bg + bg - cg - fee * 2, 1)
+        sg = round(pg - bg, 1)
         sp = round(sg / bg * 100, 2)
         return pg, sg, sp
 

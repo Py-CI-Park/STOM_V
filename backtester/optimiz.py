@@ -8,9 +8,9 @@ import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
 from backtester.back_static import SendTextAndStd, PltShow, GetMoneytopQuery, GetBackResult, GetResultDataframe, AddMdd
-from utility.static import strf_time, strp_time, now, timedelta_day, threading_timer
+from utility.static import now, timedelta_day, threading_timer, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, columns_vc, \
-    DICT_SET, DB_SETTING, DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN
+    DICT_SET, DB_SETTING, DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
@@ -33,7 +33,7 @@ class Total:
         self.savename     = f'{gubun_text}_{self.backname.replace("최적화", "").lower()}'
 
         self.back_count   = None
-        self.file_name    = strf_time('%Y%m%d%H%M%S')
+        self.file_name    = str_ymdhms()
 
         self.dict_cn      = None
         self.buystg_name  = None
@@ -268,7 +268,7 @@ class Total:
             _, _, test_days = self.list_days
             df_tsg = self.df_tsg[(test_days[0] * 1000000 <= self.df_tsg['매도시간']) & (self.df_tsg['매도시간'] <= test_days[1] * 1000000 + 240000)]
             _arry_bct = arry_bct[(test_days[0] * 1000000 <= arry_bct[:, 0]) & (arry_bct[:, 0] <= test_days[1] * 1000000 + 240000)]
-            _df_tsg   = df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
+            _df_tsg   = df_tsg[['보유시간', '매도시간', '수익율', '수익금', '수익금합계']].copy()
             _arry_tsg = np.array(_df_tsg, dtype='float64')
             _arry_bct = np.sort(_arry_bct, axis=0)[::-1]
             result    = GetBackResult(_arry_tsg, _arry_bct, self.betting, self.ui_gubun, test_days[2])
@@ -277,7 +277,7 @@ class Total:
             senddata[0] = '최적화테스트'
             SendTextAndStd(senddata, result)
 
-        _df_tsg  = self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
+        _df_tsg  = self.df_tsg[['보유시간', '매도시간', '수익율', '수익금', '수익금합계']].copy()
         arry_tsg = np.array(_df_tsg, dtype='float64')
         arry_bct = np.sort(arry_bct, axis=0)[::-1]
         result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, self.day_count)
@@ -291,6 +291,13 @@ class Total:
         starttime = starttime[:2] + ':' + starttime[2:4] + ':' + starttime[4:]
         endtime   = endtime[:2] + ':' + endtime[2:4] + ':' + endtime[4:]
         bet_unit  = '원' if self.ui_gubun != 'CF' else 'USDT'
+        mdd_text  = f'최대낙폭금액 {mdd_:,.0f}{bet_unit}' if 'G' in self.optistandard else f'최대낙폭률 {mdd:,.2f}%'
+        if self.ui_gubun == 'S':
+            bc_unit = '초' if self.dict_set['주식타임프레임'] else '분'
+        elif self.ui_gubun in ('C', 'CF'):
+            bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
+        else:
+            bc_unit = '분'
 
         if self.weeks_valid == 0 and self.weeks_test == 0:
             back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습+검증기간 : {self.weeks_train}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.vars[0]}'
@@ -301,16 +308,17 @@ class Total:
         else:
             back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습/검증/확인기간 : {self.weeks_train}/{self.weeks_valid}/{self.weeks_test}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.vars[0]}'
 
-        mdd_text   = f'최대낙폭금액 {mdd_:,.0f}{bet_unit}' if 'G' in self.optistandard else f'최대낙폭률 {mdd:,.2f}%'
         label_text = f'변수 {self.vars}\n종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{bet_unit}, ' \
-                     f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}초\n' \
-                     f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, ' \
-                     f'{mdd_text}, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
+                     f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
+                     f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익율 {app:.2f}%, 수익율합계 {tpp:.2f}%, ' \
+                     f'{mdd_text}, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익율 {cagr:.2f}%'
 
         if self.dict_set['스톰라이브']:
-            backlive_text = f'back;{startday}~{endday};{starttime}~{endtime};{self.day_count};{self.vars[0]};{int(self.betting)};'\
-                            f'{seed};{tc};{atc};{mhct};{ah:.2f};{pc};{mc};{wr:.2f};{app:.2f};{tpp:.2f};{mdd:.2f};{tsg};{cagr:.2f}'
-            self.lq.put(backlive_text)
+            data_list = [
+                f'{startday}~{endday}', f'{starttime}~{endtime}', self.day_count, self.vars[0], int(self.betting),
+                seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, cagr
+            ]
+            self.lq.put(('back', data_list))
 
         if 'T' not in self.backname:
             con = sqlite3.connect(DB_SETTING)
@@ -382,9 +390,14 @@ class Optimize:
         self.multi      = multi
         self.divid_mode = divid_mode
         self.backname   = backname
-        self.ui_gubun   = ui_gubun   # 'S', 'C', 'CF'
+        self.ui_gubun   = ui_gubun
         self.dict_set   = DICT_SET
-        self.gubun      = 'stock' if self.ui_gubun == 'S' else 'coin'
+        if self.ui_gubun == 'S':
+            self.gubun = 'stock'
+        elif self.ui_gubun == 'SF':
+            self.gubun = 'future'
+        else:
+            self.gubun = 'coin'
         self.vars       = {}
         self.study      = None
         self.dict_simple_vars = {}
@@ -394,10 +407,10 @@ class Optimize:
         self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
-        if self.ui_gubun != 'CF':
-            betting = float(data[0]) * 1000000  # 주식용 백만원 단위로 입력된 값
+        if self.ui_gubun not in ('CF', 'SF'):
+            betting = float(data[0]) * 1000000
         else:
-            betting = float(data[0])            # 바이낸스 선물용 단위 USDT
+            betting = float(data[0])
         starttime   = int(data[1])
         endtime     = int(data[2])
         buystg_name     = data[3]
@@ -420,7 +433,7 @@ class Optimize:
         optuna_sampler  = data[19]
 
         optuna_fixvars = []
-        if data[20] != '':
+        if data[20]:
             try:
                 optuna_fixvars = [int(x.strip()) for x in data[20].split(',')]
             except:
@@ -435,7 +448,7 @@ class Optimize:
         if weeks_train != 'ALL':
             weeks_train = int(weeks_train)
         else:
-            allweeks = int(((strp_time('%Y%m%d', backengin_eday) - strp_time('%Y%m%d', backengin_sday)).days + 1) / 7)
+            allweeks = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
             if 'T' in self.backname:
                 weeks_train = allweeks - weeks_valid - weeks_test
             elif 'V' in self.backname:
@@ -445,9 +458,9 @@ class Optimize:
 
         if 'V' not in self.backname: weeks_valid = 0
         if 'T' not in self.backname: weeks_test  = 0
-        dt_endday = strp_time('%Y%m%d', backengin_eday)
+        dt_endday = dt_ymd(backengin_eday)
         startday  = timedelta_day(-(weeks_train + weeks_valid + weeks_test) * 7 + 3, dt_endday)
-        startday  = int(strf_time('%Y%m%d', startday))
+        startday  = int(str_ymd(startday))
         endday    = int(backengin_eday)
 
         if int(backengin_sday) > startday:
@@ -461,6 +474,8 @@ class Optimize:
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+        elif self.ui_gubun == 'SF':
+            db = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
         else:
             db = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
         con   = sqlite3.connect(db)
@@ -575,25 +590,25 @@ class Optimize:
         self.SysExit(False)
 
     def GetListDays(self, startday, endday, dt_endday, day_list, weeks_train, weeks_valid, weeks_test):
-        train_days_ = [startday, int(strf_time('%Y%m%d', timedelta_day(-weeks_test * 7, dt_endday)))]
+        train_days_ = [startday, int(str_ymd(timedelta_day(-weeks_test * 7, dt_endday)))]
         valid_days_ = []
         if 'VC' in self.backname:
             for i in range(int(weeks_train / weeks_valid) + 1):
                 valid_days_.append([
-                    int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid * (i + 1) + weeks_test) * 7 + 1, dt_endday))),
-                    int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid * i + weeks_test) * 7, dt_endday)))
+                    int(str_ymd(timedelta_day(-(weeks_valid * (i + 1) + weeks_test) * 7 + 1, dt_endday))),
+                    int(str_ymd(timedelta_day(-(weeks_valid * i + weeks_test) * 7, dt_endday)))
                 ])
         elif 'V' in self.backname:
             valid_days_.append([
-                int(strf_time('%Y%m%d', timedelta_day(-(weeks_valid + weeks_test) * 7 + 1, dt_endday))),
-                int(strf_time('%Y%m%d', timedelta_day(-weeks_test * 7, dt_endday)))
+                int(str_ymd(timedelta_day(-(weeks_valid + weeks_test) * 7 + 1, dt_endday))),
+                int(str_ymd(timedelta_day(-weeks_test * 7, dt_endday)))
             ])
         else:
             valid_days_ = None
         if 'T' in self.backname:
-            test_days = [int(strf_time('%Y%m%d', timedelta_day(-weeks_test * 7 + 1, dt_endday))), endday]
+            test_days = [int(str_ymd(timedelta_day(-weeks_test * 7 + 1, dt_endday))), endday]
         else:
-            next_day  = int(strf_time('%Y%m%d', timedelta_day(1, dt_endday)))
+            next_day  = int(str_ymd(timedelta_day(1, dt_endday)))
             test_days = [next_day, next_day]
 
         train_days_list = [x for x in day_list if train_days_[0] <= x <= train_days_[1]]
@@ -856,7 +871,7 @@ class Optimize:
                 ostd = self.dict_simple_vars[str_simple_vars]
             return ostd
 
-        study_name = f'{self.backname}_{buystg_name}_{strf_time("%Y%m%d%H%M%S")}'
+        study_name = f'{self.backname}_{buystg_name}_{str_ymdhms()}'
         optuna.logging.disable_default_handler()
 
         if optuna_sampler == 'TPESampler':
@@ -918,9 +933,7 @@ class Optimize:
             q.put(data)
 
     def SysExit(self, cancel):
-        if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
-        else:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
+        if cancel: self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
+        else:      self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
         time.sleep(1)
         sys.exit()

@@ -81,8 +81,9 @@ class BackSubTotal:
                 self.complete2 = False
 
     def CollectData(self, data):
-        _, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, \
+        _, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익율, 수익금, 매도조건, \
             추가매수시간, 잔량없음, vturn, vkey = data
+
         if vturn not in self.ddict_tsg.keys():
             self.dummy_tsg[vturn] = {}
             self.ddict_tsg[vturn] = {}
@@ -94,9 +95,9 @@ class BackSubTotal:
 
         index = str(매수시간) if self.buystd else str(매도시간)
         if self.opti_turn != 2:
-            data = [index, 보유시간, 매도시간, 수익률, 수익금]
+            data = [index, 보유시간, 매도시간, 수익율, 수익금]
         else:
-            data = [index, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, 추가매수시간]
+            data = [index, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익율, 수익금, 매도조건, 추가매수시간]
         self.ddict_tsg[vturn][vkey].append(data)
 
         arry_bct  = self.ddict_bct[vturn][vkey]
@@ -124,7 +125,7 @@ class BackSubTotal:
 
     def SendSubTotal1(self):
         if self.ddict_tsg:
-            columns = ['index', '보유시간', '매도시간', '수익률', '수익금']
+            columns = ['index', '보유시간', '매도시간', '수익율', '수익금']
             for vturn, dict_tsg in self.ddict_tsg.items():
                 for vkey, list_tsg in dict_tsg.items():
                     arry_bct = self.ddict_bct[vturn][vkey]
@@ -153,7 +154,7 @@ class BackSubTotal:
             self.tq.put(('결과없음',))
             return
 
-        columns = ['index', '보유시간', '매도시간', '수익률', '수익금']
+        columns = ['index', '보유시간', '매도시간', '수익율', '수익금']
         data = (columns, self.list_tsg, self.arry_bct)
         if self.list_days is not None:
             train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
@@ -176,7 +177,7 @@ class BackSubTotal:
 
     def Result(self, gubun, data):
         """
-        보유시간, 매도시간, 수익률, 수익금, 수익금합계
+        보유시간, 매도시간, 수익율, 수익금, 수익금합계
           0       1       2       3      4
         """
         columns, list_data, arry_bct = data[:3]
@@ -187,27 +188,31 @@ class BackSubTotal:
         arry_tsg = np.array(df_tsg, dtype='float64')
         arry_bct = arry_bct[arry_bct[:, 1] > 0]
         arry_bct = np.sort(arry_bct, axis=0)[::-1]
+        if arry_bct[0, 0] > 999911220000:
+            cf_day, cf_hms = 1000000, 240000
+        else:
+            cf_day, cf_hms = 10000, 2400
         if len(data) == 11:
             vsday, veday, tsday, tdaycnt, vdaycnt, index, vturn, vkey = data[3:]
             if gubun:
-                arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * 1000000) | ((veday * 1000000 + 240000 < arry_tsg[:, 1]) & (arry_tsg[:, 1] < tsday * 1000000))]
-                arry_bct = arry_bct[(arry_bct[:, 0] < vsday * 1000000) | ((veday * 1000000 + 240000 < arry_bct[:, 0]) & (arry_bct[:, 0] < tsday * 1000000))]
+                arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * cf_day) | ((veday * cf_day + cf_hms < arry_tsg[:, 1]) & (arry_tsg[:, 1] < tsday * cf_day))]
+                arry_bct = arry_bct[(arry_bct[:, 0] < vsday * cf_day) | ((veday * cf_day + cf_hms < arry_bct[:, 0]) & (arry_bct[:, 0] < tsday * cf_day))]
                 result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, tdaycnt)
             else:
-                arry_tsg = arry_tsg[(vsday * 1000000 <= arry_tsg[:, 1]) & (arry_tsg[:, 1] <= veday * 1000000 + 240000)]
-                arry_bct = arry_bct[(vsday * 1000000 <= arry_bct[:, 0]) & (arry_bct[:, 0] <= veday * 1000000 + 240000)]
+                arry_tsg = arry_tsg[(vsday * cf_day <= arry_tsg[:, 1]) & (arry_tsg[:, 1] <= veday * cf_day + cf_hms)]
+                arry_bct = arry_bct[(vsday * cf_day <= arry_bct[:, 0]) & (arry_bct[:, 0] <= veday * cf_day + cf_hms)]
                 result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, vdaycnt)
             result = AddMdd(arry_tsg, result)
             self.tq.put(('TRAIN' if gubun else 'VALID', index, result, vturn, vkey))
         elif len(data) == 10:
             vsday, veday, tdaycnt, vdaycnt, index, vturn, vkey = data[3:]
             if gubun:
-                arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * 1000000) | (veday * 1000000 + 240000 < arry_tsg[:, 1])]
-                arry_bct = arry_bct[(vsday * 1000000 < arry_bct[:, 0]) | (arry_bct[:, 0] > veday * 1000000 + 240000)]
+                arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * cf_day) | (veday * cf_day + cf_hms < arry_tsg[:, 1])]
+                arry_bct = arry_bct[(vsday * cf_day < arry_bct[:, 0]) | (arry_bct[:, 0] > veday * cf_day + cf_hms)]
                 result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, tdaycnt)
             else:
-                arry_tsg = arry_tsg[(vsday * 1000000 <= arry_tsg[:, 1]) & (arry_tsg[:, 1] <= veday * 1000000 + 240000)]
-                arry_bct = arry_bct[(vsday * 1000000 <= arry_bct[:, 0]) & (arry_bct[:, 0] <= veday * 1000000 + 240000)]
+                arry_tsg = arry_tsg[(vsday * cf_day <= arry_tsg[:, 1]) & (arry_tsg[:, 1] <= veday * cf_day + cf_hms)]
+                arry_bct = arry_bct[(vsday * cf_day <= arry_bct[:, 0]) & (arry_bct[:, 0] <= veday * cf_day + cf_hms)]
                 result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, vdaycnt)
             result = AddMdd(arry_tsg, result)
             self.tq.put(('TRAIN' if gubun else 'VALID', index, result, vturn, vkey))

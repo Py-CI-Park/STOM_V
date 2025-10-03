@@ -3,8 +3,8 @@ import numpy as np
 from talib import stream
 from traceback import print_exc
 from coin.binance_strategy_tick import BinanceStrategyTick
-from utility.setting import ui_num
-from utility.static import now, now_utc, strp_time, GetBinanceShortPgSgSp, GetBinanceLongPgSgSp
+from utility.setting import ui_num, dgree
+from utility.static import GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, now_utc, dt_ymdhms, now
 
 
 # noinspection PyUnusedLocal
@@ -218,10 +218,10 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 return 0
 
         def 등락율각도(tick, pre=0):
-            return Parameter_Dgree(56, 5, tick, pre, 10)
+            return Parameter_Dgree(56, 5, tick, pre, dgree['coin']['min'][0])
 
         def 당일거래대금각도(tick, pre=0):
-            return Parameter_Dgree(57, 6, tick, pre, 0.00000001)
+            return Parameter_Dgree(57, 6, tick, pre, dgree['coin']['min'][1])
 
         def 경과틱수(조건명):
             if 종목코드 in self.dict_cond_indexn.keys() and \
@@ -323,10 +323,8 @@ class BinanceStrategyMin(BinanceStrategyTick):
             PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-        bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-        self.bhogainfo = bhogainfo[:self.dict_set['코인매수시장가잔량범위']]
-        self.shogainfo = shogainfo[:self.dict_set['코인매도시장가잔량범위']]
+        self.bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
+        self.shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
         if 종목코드 in self.dict_arry.keys():
             len_array = len(self.dict_arry[종목코드])
@@ -335,7 +333,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
             if len_array >=  19: 이동평균020 = round((self.dict_arry[종목코드][-19:,  1].sum() + 현재가) / 20, 8)
             if len_array >=  59: 이동평균060 = round((self.dict_arry[종목코드][-59:,  1].sum() + 현재가) / 60, 8)
             if len_array >= 119: 이동평균120 = round((self.dict_arry[종목코드][-119:, 1].sum() + 현재가) / 120, 8)
-            if len(self.dict_arry[종목코드]) >= 평균값계산틱수 - 1:
+            if len_array >= 평균값계산틱수 - 1:
                 최고현재가_      = max(self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 1].max(), 현재가)
                 최저현재가_      = min(self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 1].min(), 현재가)
                 체결강도평균_    = round((self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 7].sum() + 체결강도) / 평균값계산틱수, 3)
@@ -348,8 +346,8 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 최고분봉고가_    = max(self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 11].max(), 분봉고가)
                 최저분봉저가_    = min(self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 12].min(), 분봉저가)
                 분당거래대금평균_ = int((self.dict_arry[종목코드][-(평균값계산틱수 - 1):, 13].sum() + 분당거래대금) / 평균값계산틱수)
-                등락율각도_      = round(math.atan2((등락율 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 5]) * 10, 평균값계산틱수) / (2 * math.pi) * 360, 2)
-                당일거래대금각도_ = round(math.atan2((당일거래대금 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 6]) / 100_000_000, 평균값계산틱수) / (2 * math.pi) * 360, 2)
+                등락율각도_      = round(math.atan2((등락율 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 5]) * dgree['coin']['min'][0], 평균값계산틱수) / (2 * math.pi) * 360, 2)
+                당일거래대금각도_ = round(math.atan2((당일거래대금 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 6]) * dgree['coin']['min'][1], 평균값계산틱수) / (2 * math.pi) * 360, 2)
 
             """
             체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, 분봉시가, 분봉고가, 분봉저가,
@@ -361,7 +359,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
             매수잔량3, 매수잔량4, 매수잔량5, 매도수5호가잔량합, 관심종목, 이동평균005, 이동평균010, 이동평균020, 이동평균060, 이동평균120,
                 34      35        36          37          38        39          40         41          42         43
             최고현재가_, 최저현재가_, 최고분봉고가_, 최저분봉저가_, 체결강도평균_, 최고체결강도_, 최저체결강도_, 최고초당매수수량_,
-               44         45          46          47           48            49         50            51
+                 44           45           46             47             48             49             50               51
             최고초당매도수량_, 누적초당매수수량_, 누적초당매도수량_, 분당거래대금평균_, 등락율각도_, 당일거래대금각도_,
                   52             53              54              55           56           57     
             AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV,
@@ -457,7 +455,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
         데이터길이 = len(self.dict_arry[종목코드])
         self.indexn = 데이터길이 - 1
 
-        if self.dict_condition and 전략연산:
+        if self.dict_condition and 전략연산 and 체결시간 < self.dict_set['코인전략종료시간']:
             if 종목코드 not in self.dict_cond_indexn.keys():
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
@@ -467,10 +465,10 @@ class BinanceStrategyMin(BinanceStrategyTick):
                     print_exc()
                     self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류'))
 
-        if 체결강도평균_ != 0 and 전략연산:
+        if 체결강도평균_ != 0 and 전략연산 and 체결시간 < self.dict_set['코인전략종료시간']:
             if 종목코드 in self.df_jg.index:
                 if 종목코드 not in self.dict_buy_num.keys():
-                    self.dict_buy_num[종목코드] = len(self.dict_arry[종목코드]) - 1
+                    self.dict_buy_num[종목코드] = self.indexn
                 매수틱번호 = self.dict_buy_num[종목코드]
                 포지션 = self.df_jg['포지션'][종목코드]
                 매입가 = self.df_jg['매입가'][종목코드]
@@ -480,21 +478,21 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 분할매수횟수 = int(self.df_jg['분할매수횟수'][종목코드])
                 분할매도횟수 = int(self.df_jg['분할매도횟수'][종목코드])
                 if 포지션 == 'LONG':
-                    _, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                    _, 수익금, 수익율 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                 else:
-                    _, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                매수시간 = strp_time('%Y%m%d%H%M%S', self.df_jg['매수시간'][종목코드])
-                보유시간 = (now_utc() - 매수시간).total_seconds()
+                    _, 수익금, 수익율 = GetBinanceShortPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                매수시간 = dt_ymdhms(self.df_jg['매수시간'][종목코드])
+                보유시간 = int((now_utc() - 매수시간).total_seconds() / 60)
                 if 종목코드 not in self.dict_hilo.keys():
-                    self.dict_hilo[종목코드] = [수익률, 수익률]
+                    self.dict_hilo[종목코드] = [수익율, 수익율]
                 else:
-                    if 수익률 > self.dict_hilo[종목코드][0]:
-                        self.dict_hilo[종목코드][0] = 수익률
-                    elif 수익률 < self.dict_hilo[종목코드][1]:
-                        self.dict_hilo[종목코드][1] = 수익률
-                최고수익률, 최저수익률 = self.dict_hilo[종목코드]
+                    if 수익율 > self.dict_hilo[종목코드][0]:
+                        self.dict_hilo[종목코드][0] = 수익율
+                    elif 수익율 < self.dict_hilo[종목코드][1]:
+                        self.dict_hilo[종목코드][1] = 수익율
+                최고수익율, 최저수익율 = self.dict_hilo[종목코드]
             else:
-                포지션, 매수틱번호, 수익금, 수익률, 레버리지, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = None, 0, 0, 0, 1, 0, 0, 0, 0, now(), 0, 0, 0
+                포지션, 매수틱번호, 수익금, 수익율, 레버리지, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익율, 최저수익율 = None, 0, 0, 0, 1, 0, 0, 0, 0, now(), 0, 0, 0
             self.indexb = 매수틱번호
 
             BBT  = not self.dict_set['코인매수금지시간'] or not (self.dict_set['코인매수금지시작시간'] < 시분초 < self.dict_set['코인매수금지종료시간'])
@@ -527,16 +525,16 @@ class BinanceStrategyMin(BinanceStrategyTick):
                             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy'))
                 elif D or E:
                     BUY_LONG, SELL_SHORT = False, False
-                    분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['코인매수분할고정수익률'] else 수익률
+                    분할매수기준수익율 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['코인매수분할고정수익율'] else 수익율
                     if D:
-                        if self.dict_set['코인매수분할하방'] and 분할매수기준수익률 < -self.dict_set['코인매수분할하방수익률']:
+                        if self.dict_set['코인매수분할하방'] and 분할매수기준수익율 < -self.dict_set['코인매수분할하방수익율']:
                             BUY_LONG   = True
-                        elif self.dict_set['코인매수분할상방'] and 분할매수기준수익률 > self.dict_set['코인매수분할상방수익률']:
+                        elif self.dict_set['코인매수분할상방'] and 분할매수기준수익율 > self.dict_set['코인매수분할상방수익율']:
                             BUY_LONG   = True
                     elif E:
-                        if self.dict_set['코인매수분할하방'] and 분할매수기준수익률 < -self.dict_set['코인매수분할하방수익률']:
+                        if self.dict_set['코인매수분할하방'] and 분할매수기준수익율 < -self.dict_set['코인매수분할하방수익율']:
                             SELL_SHORT = True
-                        elif self.dict_set['코인매수분할상방'] and 분할매수기준수익률 > self.dict_set['코인매수분할상방수익률']:
+                        elif self.dict_set['코인매수분할상방'] and 분할매수기준수익율 > self.dict_set['코인매수분할상방수익율']:
                             SELL_SHORT = True
 
                     if BUY_LONG or SELL_SHORT:
@@ -554,12 +552,12 @@ class BinanceStrategyMin(BinanceStrategyTick):
             E    = NISS and NIBS and SCC and 포지션 == 'SHORT' and 분할매도횟수 < self.dict_set['코인매도분할횟수']
             F    = NISL and self.dict_set['코인매수취소매도시그널'] and not NIBL
             G    = NIBS and self.dict_set['코인매수취소매도시그널'] and not NISS
-            H    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
-            J    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
+            H    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도손절수익율청산'] and 수익율 < -self.dict_set['코인매도손절수익율']
+            J    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도손절수익율청산'] and 수익율 < -self.dict_set['코인매도손절수익율']
             K    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
             L    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
-            M    = NIBL and NISL and 포지션 == 'LONG' and 수익률 * 레버리지 < -90
-            N    = NISS and NIBS and 포지션 == 'SHORT' and 수익률 * 레버리지 < -90
+            M    = NIBL and NISL and 포지션 == 'LONG' and 수익율 * 레버리지 < -90
+            N    = NISS and NIBS and 포지션 == 'SHORT' and 수익율 * 레버리지 < -90
 
             if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N):
                 SELL_LONG, BUY_SHORT = False, False
@@ -569,7 +567,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 if A or B or H or J or K or L or M or N:
                     매도수량 = 보유수량
                 elif not (F or G):
-                    매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), self.dict_info[종목코드]['소숫점자리수'])
+                    매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), self.dict_info[종목코드]['소숫점자리수'])
 
                 if A or B or (C and (D or E)) or F or G:
                     if self.sellstrategy is not None:
@@ -584,14 +582,14 @@ class BinanceStrategyMin(BinanceStrategyTick):
                     elif J or L or N:
                         BUY_SHORT = True
                     elif D:
-                        if self.dict_set['코인매도분할하방'] and 수익률 < -self.dict_set['코인매도분할하방수익률'] * (분할매도횟수 + 1):
+                        if self.dict_set['코인매도분할하방'] and 수익율 < -self.dict_set['코인매도분할하방수익율'] * (분할매도횟수 + 1):
                             SELL_LONG = True
-                        elif self.dict_set['코인매도분할상방'] and 수익률 > self.dict_set['코인매도분할상방수익률'] * (분할매도횟수 + 1):
+                        elif self.dict_set['코인매도분할상방'] and 수익율 > self.dict_set['코인매도분할상방수익율'] * (분할매도횟수 + 1):
                             SELL_LONG = True
                     elif E:
-                        if self.dict_set['코인매도분할하방'] and 수익률 < -self.dict_set['코인매도분할하방수익률'] * (분할매도횟수 + 1):
+                        if self.dict_set['코인매도분할하방'] and 수익율 < -self.dict_set['코인매도분할하방수익율'] * (분할매도횟수 + 1):
                             BUY_SHORT = True
-                        elif self.dict_set['코인매도분할상방'] and 수익률 > self.dict_set['코인매도분할상방수익률'] * (분할매도횟수 + 1):
+                        elif self.dict_set['코인매도분할상방'] and 수익율 > self.dict_set['코인매도분할상방수익율'] * (분할매도횟수 + 1):
                             BUY_SHORT = True
 
                     if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):
@@ -600,7 +598,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
         if 관심종목 and 전략연산:
             self.df_gj.loc[종목코드] = 종목코드, 등락율, 고저평균대비등락율, 분당거래대금, 분당거래대금평균_, 당일거래대금, 체결강도, 체결강도평균_, 최고체결강도_
 
-        if len(self.dict_arry[종목코드]) >= 평균값계산틱수 and self.chart_code == 종목코드:
+        if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
             self.windowQ.put((ui_num['실시간차트'], 종목코드, self.dict_arry[종목코드]))
 
         if 틱수신시간 != 0:

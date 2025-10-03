@@ -15,7 +15,7 @@ from kiwoom_receiver_client import KiwoomReceiverClient
 from login_kiwoom.manuallogin import find_window
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, LOGIN_PATH
-from utility.static import now, timedelta_sec, int_hms, qtest_qwait, opstarter_kill
+from utility.static import now, timedelta_sec, qtest_qwait, opstarter_kill, str_hms
 
 
 class ZmqRecv(QThread):
@@ -69,17 +69,17 @@ class ZmqServ(QThread):
         self.sock.bind(f'tcp://*:{port_num}')
 
     def run(self):
-        int_hms_ = int_hms()
+        int_hms_ = int(str_hms())
         while True:
             msg, data = self.kwzservQ.get()
             self.sock.send_string(msg, zmq.SNDMORE)
             self.sock.send_pyobj(data)
-            if int_hms() > int_hms_:
+            if int(str_hms()) > int_hms_:
                 sstgQs_size = sum([q.qsize() for q in self.sstgQs])
                 qsize_data  = ('qsize', (self.sreceivQ.qsize(), self.straderQ.qsize(), sstgQs_size))
                 self.sock.send_string('qsize', zmq.SNDMORE)
                 self.sock.send_pyobj(qsize_data)
-                int_hms_ = int_hms()
+                int_hms_ = int(str_hms())
             if type(data) == str and data == '통신종료':
                 QThread.sleep(1)
                 break
@@ -117,11 +117,11 @@ class KiwoomManager:
         self.zmqserv = ZmqServ(self.qlist, port_num + 1)
         self.zmqserv.start()
 
-        QTimer.singleShot(5 * 1000, lambda: self.kwzservQ.put(('window', '키움매니저구동완료')))
+        QTimer.singleShot(5 * 1000, lambda: self.kwzservQ.put(('window', '매니저구동완료')))
         app.exec_()
 
     def UpdateString(self, data):
-        if data == '주식수동시작':
+        if data == '수동시작':
             self.StockManualStart()
         elif data == '리시버 종료':
             self.StockReceiverProcessKill()
@@ -149,13 +149,11 @@ class KiwoomManager:
         if self.backtest_engine:
             print('백테엔진 구동 중에는 로그인할 수 없습니다.')
             return
-        if self.dict_set['리시버공유'] < 2 and self.dict_set['아이디2'] is None:
-            print('두번째 계정이 설정되지 않아 리시버를 시작할 수 없습니다. 계정 설정 후 다시 시작하십시오.')
-        elif self.dict_set['주식리시버'] and not self.StockReceiverProcessAlive():
+        if self.dict_set['버전업']:
+            self.StockVersionUp()
+        if self.dict_set['주식리시버'] and not self.StockReceiverProcessAlive():
             self.StockReceiverStart()
-        if self.dict_set['아이디1'] is None:
-            print('첫번째 계정이 설정되지 않아 트레이더를 시작할 수 없습니다. 계정 설정 후 다시 시작하십시오.')
-        elif self.dict_set['주식트레이더'] and self.StockReceiverProcessAlive() and not self.StockTraderProcessAlive():
+        if self.dict_set['주식트레이더'] and self.StockReceiverProcessAlive() and not self.StockTraderProcessAlive():
             self.StockTraderStart()
 
     def StockReceiverProcessKill(self):
@@ -193,6 +191,7 @@ class KiwoomManager:
         result = True
         lwopen = True
         update = False
+        verup  = False
 
         time_out_open = timedelta_sec(10)
         while find_window('Open API login') == 0:
@@ -205,8 +204,16 @@ class KiwoomManager:
 
         if lwopen:
             time_out_update = timedelta_sec(30)
-            time_out_close  = timedelta_sec(90)
+            time_out_close  = timedelta_sec(60)
             while find_window('Open API login') != 0:
+                if not verup:
+                    try:
+                        text = win32gui.GetWindowText(win32gui.GetDlgItem(find_window('opstarter'), 0xFFFF))
+                        if '버전처리' in text:
+                            verup = True
+                    except:
+                        pass
+
                 if not update:
                     try:
                         text = win32gui.GetWindowText(win32gui.GetDlgItem(find_window('Open API login'), 0x40D))
@@ -214,26 +221,32 @@ class KiwoomManager:
                             update = True
                     except:
                         pass
+
                     if now() > time_out_update:
                         result = False
                         print('로그인 오류 알림 : 업데이트가 확인되지 않아 잠시 후 재시도합니다.')
                         break
+
                 if now() > time_out_close:
                     result = False
                     print('로그인 오류 알림 : 업데이트 제한 시간 초과로 잠시 후 재시도합니다.')
                     break
+
                 qtest_qwait(0.01)
 
+        qtest_qwait(10) if verup else qtest_qwait(2)
         if not result: opstarter_kill()
-
         return result
 
     def StockVersionUp(self):
-        subprocess.Popen(f'python {LOGIN_PATH}/versionupdater.py')
-        while not self.OpenapiLoginWait():
-            qtest_qwait(0.1)
-            subprocess.Popen(f'python {LOGIN_PATH}/versionupdater.py')
-        qtest_qwait(10)
+        while True:
+            proc = subprocess.Popen(f'python {LOGIN_PATH}/versionupdater.py')
+            if self.OpenapiLoginWait():
+                break
+            else:
+                print('버전 업그레이드 실패, 잠시 후 재실행합니다.')
+                proc.kill()
+            qtest_qwait(1)
 
     def StockAutoLogin1(self):
         subprocess.Popen(f'python {LOGIN_PATH}/autologin1.py')
@@ -251,83 +264,71 @@ class KiwoomManager:
 
     def StockReceiverStart(self):
         if self.dict_set['리시버공유'] < 2:
-            if self.dict_set['아이디2'] is not None:
-                if self.dict_set['버전업']:
-                    self.StockVersionUp()
-                self.StockAutoLogin2()
+            self.StockAutoLogin2()
+            with open('C:/OpenAPI/system/ip_api.dat') as file:
+                text = file.read()
+            fast_ip1 = text.split('IP=')[1].split('PORT=')[0].strip()[:7]
+            fast_ip2 = text.split('IP=')[2].split('PORT=')[0].strip()[:7]
 
-                with open('C:/OpenAPI/system/ip_api.dat') as file:
-                    text = file.read()
-                fast_ip1 = text.split('IP=')[1].split('PORT=')[0].strip()[:7]
-                fast_ip2 = text.split('IP=')[2].split('PORT=')[0].strip()[:7]
-
-                while True:
-                    qtest_qwait(0.1)
-                    if not self.StockReceiverProcessAlive():
-                        target = KiwoomReceiverTick if self.dict_set['주식타임프레임'] else KiwoomReceiverMin
-                        self.proc_receiver_stock = Process(target=target, args=(self.qlist,), daemon=True)
-                        self.proc_receiver_stock.start()
-                        if self.OpenapiLoginWait():
-                            with open('C:/OpenAPI/system/opcomms.ini') as file:
-                                text = file.read()
-                            server_ip_select = text.split('SERVER_IP_SELECT=')[1].split('PROBLEM_CONNECTIP=')[0].strip()
-                            inthms = int_hms()
-                            if inthms < 85000 and fast_ip1 in server_ip_select:
-                                print(f'빠른 서버 접속 완료 [{server_ip_select}]')
-                                break
-                            elif 85000 < inthms < 85500 and (fast_ip1 in server_ip_select or fast_ip2 in server_ip_select):
-                                print(f'빠른 서버 접속 완료 [{server_ip_select}]')
-                                break
-                            elif inthms < 80000 or 85500 < inthms or now().weekday() > 4:
-                                print(f'접속 시간 초과, 마지막 접속 유지 [{server_ip_select}]')
-                                break
-                            else:
-                                self.proc_receiver_stock.kill()
-                                print('빠른 서버 접속 실패, 잠시 후 재접속합니다.')
+            while True:
+                if not self.StockReceiverProcessAlive():
+                    target = KiwoomReceiverTick if self.dict_set['주식타임프레임'] else KiwoomReceiverMin
+                    self.proc_receiver_stock = Process(target=target, args=(self.qlist,), daemon=True)
+                    self.proc_receiver_stock.start()
+                    if self.OpenapiLoginWait():
+                        with open('C:/OpenAPI/system/opcomms.ini') as file:
+                            text = file.read()
+                        server_ip_select = text.split('SERVER_IP_SELECT=')[1].split('PROBLEM_CONNECTIP=')[0].strip()
+                        inthms = int(str_hms())
+                        if inthms < 85000 and fast_ip1 in server_ip_select:
+                            print(f'빠른 서버 접속 완료 [{server_ip_select}]')
+                            break
+                        elif 85000 < inthms < 85500 and (fast_ip1 in server_ip_select or fast_ip2 in server_ip_select):
+                            print(f'빠른 서버 접속 완료 [{server_ip_select}]')
+                            break
+                        elif inthms < 80000 or 85500 < inthms or now().weekday() > 4:
+                            print(f'접속 시간 초과, 마지막 접속 유지 [{server_ip_select}]')
+                            break
                         else:
                             self.proc_receiver_stock.kill()
-                            print('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
-            else:
-                print('두번째 계정이 설정되지 않아 리시버를 시작할 수 없습니다. 계정 설정 후 다시 시작하십시오.')
+                            print('빠른 서버 접속 실패, 잠시 후 재접속합니다.')
+                    else:
+                        self.proc_receiver_stock.kill()
+                        print('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
+                qtest_qwait(0.1)
         else:
-            if self.dict_set['버전업']:
-                self.StockVersionUp()
-
             if not self.StockReceiverProcessAlive():
                 self.proc_receiver_stock = Process(target=KiwoomReceiverClient, args=(self.qlist,), daemon=True)
                 self.proc_receiver_stock.start()
 
     def StockTraderStart(self):
-        if self.dict_set['아이디1'] is not None:
-            self.StockAutoLogin1()
-            target = KiwoomStrategyTick if self.dict_set['주식타임프레임'] else KiwoomStrategyMin
-            self.proc_strategy_stock1 = Process(target=target, args=(0, self.qlist), daemon=True)
-            self.proc_strategy_stock2 = Process(target=target, args=(1, self.qlist), daemon=True)
-            self.proc_strategy_stock3 = Process(target=target, args=(2, self.qlist), daemon=True)
-            self.proc_strategy_stock4 = Process(target=target, args=(3, self.qlist), daemon=True)
-            self.proc_strategy_stock5 = Process(target=target, args=(4, self.qlist), daemon=True)
-            self.proc_strategy_stock6 = Process(target=target, args=(5, self.qlist), daemon=True)
-            self.proc_strategy_stock7 = Process(target=target, args=(6, self.qlist), daemon=True)
-            self.proc_strategy_stock8 = Process(target=target, args=(7, self.qlist), daemon=True)
-            self.proc_strategy_stock1.start()
-            self.proc_strategy_stock2.start()
-            self.proc_strategy_stock3.start()
-            self.proc_strategy_stock4.start()
-            self.proc_strategy_stock5.start()
-            self.proc_strategy_stock6.start()
-            self.proc_strategy_stock7.start()
-            self.proc_strategy_stock8.start()
-            while True:
-                qtest_qwait(1)
-                if not self.StockTraderProcessAlive():
-                    self.proc_trader_stock = Process(target=KiwoomTrader, args=(self.qlist,), daemon=True)
-                    self.proc_trader_stock.start()
-                    if self.OpenapiLoginWait():
-                        break
-                    else:
-                        self.proc_trader_stock.kill()
-        else:
-            print('첫번째 계정이 설정되지 않아 트레이더를 시작할 수 없습니다. 계정 설정 후 다시 시작하십시오.')
+        self.StockAutoLogin1()
+        target = KiwoomStrategyTick if self.dict_set['주식타임프레임'] else KiwoomStrategyMin
+        self.proc_strategy_stock1 = Process(target=target, args=(0, self.qlist), daemon=True)
+        self.proc_strategy_stock2 = Process(target=target, args=(1, self.qlist), daemon=True)
+        self.proc_strategy_stock3 = Process(target=target, args=(2, self.qlist), daemon=True)
+        self.proc_strategy_stock4 = Process(target=target, args=(3, self.qlist), daemon=True)
+        self.proc_strategy_stock5 = Process(target=target, args=(4, self.qlist), daemon=True)
+        self.proc_strategy_stock6 = Process(target=target, args=(5, self.qlist), daemon=True)
+        self.proc_strategy_stock7 = Process(target=target, args=(6, self.qlist), daemon=True)
+        self.proc_strategy_stock8 = Process(target=target, args=(7, self.qlist), daemon=True)
+        self.proc_strategy_stock1.start()
+        self.proc_strategy_stock2.start()
+        self.proc_strategy_stock3.start()
+        self.proc_strategy_stock4.start()
+        self.proc_strategy_stock5.start()
+        self.proc_strategy_stock6.start()
+        self.proc_strategy_stock7.start()
+        self.proc_strategy_stock8.start()
+        while True:
+            if not self.StockTraderProcessAlive():
+                self.proc_trader_stock = Process(target=KiwoomTrader, args=(self.qlist,), daemon=True)
+                self.proc_trader_stock.start()
+                if self.OpenapiLoginWait():
+                    break
+                else:
+                    self.proc_trader_stock.kill()
+            qtest_qwait(0.1)
 
     def StockReceiverProcessAlive(self):
         return self.proc_receiver_stock is not None and self.proc_receiver_stock.is_alive()

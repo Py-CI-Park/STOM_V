@@ -127,20 +127,20 @@ class Kiwooom:
                 '총매입금액': int(body['tot_pur_amt']),
                 '총평가금액': int(body['tot_evlt_amt']),
                 '총평가손익금액': int(body['tot_evlt_pl']),
-                '총수익률': float(body['tot_prft_rt']),
+                '총수익율': float(body['tot_prft_rt']),
                 '추정예탁자산': int(body['prsm_dpst_aset_amt'])
             }
             row_data = []
             for dict_jango in body['acnt_evlt_remn_indv_tot']:
                 row_data.append(list(dict_jango.values()))
             columns = [
-                '종목번호', '종목명', '평가손익', '수익률', '매입가', '전일종가', '보유수량', '매매가능수량', '현재가', '전일매수수량',
+                '종목번호', '종목명', '평가손익', '수익율', '매입가', '전일종가', '보유수량', '매매가능수량', '현재가', '전일매수수량',
                 '전일매도수량', '금일매수수량', '금일매도수량', '매입금액', '매입수수료', '평가금액', '평가수수료', '세금', '수수료합',
                 '보유비중', '신용구분', '신용구분명', '대출일'
             ]
             df = pd.DataFrame(row_data, columns=columns)
             df['종목번호'] = df['종목번호'].apply(lambda x: x.strip()[1:])
-            columns = ['보유비중', '수익률']
+            columns = ['보유비중', '수익율']
             df[columns] = df[columns].astype(float)
             columns = [
                 '평가손익', '매입가', '전일종가', '보유수량', '매매가능수량', '현재가', '전일매수수량', '전일매도수량', '금일매수수량',

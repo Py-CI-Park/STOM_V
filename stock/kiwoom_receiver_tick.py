@@ -7,7 +7,8 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, QTimer, pyqtSignal
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, DB_STOCK_TICK, ui_num, DB_STOCK_MIN
-from utility.static import now, strf_time, strp_time, timedelta_sec, int_hms, roundfigure_upper5, qtest_qwait, GetVIPrice, GetSangHahanga
+from utility.static import now, timedelta_sec, roundfigure_upper5, qtest_qwait, GetVIPrice, str_ymdhms, str_hms, \
+    GetSangHahanga, str_ymd
 
 
 class ZmqServ(QThread):
@@ -86,25 +87,20 @@ class KiwoomReceiverTick:
         self.tuple_kosd  = ()
 
         self.operation   = 1
-        self.str_tday    = strf_time('%Y%m%d')
-        self.int_logt    = int(strf_time('%Y%m%d%H%M'))
-        self.int_hgtime  = int(strf_time('%Y%m%d%H%M%S'))
+        self.int_logt    = 0
+        self.str_tday    = str_ymd()
+        self.int_hgtime  = int(str_ymdhms())
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
-
-        curr_time = now()
-        remaintime = (strp_time('%Y%m%d%H%M%S', self.str_tday + '090100') - curr_time).total_seconds()
-        self.holiday_time = timedelta_sec(remaintime) if remaintime > 0 else None
-
-        self.recvservQ = Queue()
-
-        self.kw = Kiwoom(self, 'Receiver')
-        self.KiwoomLogin()
+        self.recvservQ   = Queue()
 
         if self.dict_set['리시버공유'] == 1:
             self.zmqserver = ZmqServ(self.recvservQ)
             self.zmqserver.start()
+
+        self.kw = Kiwoom(self, 'Receiver')
+        self.KiwoomLogin()
 
         self.updater = Updater(self.sreceivQ)
         self.updater.signal.connect(self.UpdateTuple)
@@ -119,30 +115,30 @@ class KiwoomReceiverTick:
 
     def KiwoomLogin(self):
         self.kw.CommConnect()
+
         qtest_qwait(5)
         self.kw.GetConditionLoad()
-
         self.tuple_kosd = tuple(self.kw.GetCodeListByMarket('10'))
         list_code = self.kw.GetCodeListByMarket('0') + self.kw.GetCodeListByMarket('8') + list(self.tuple_kosd)
         self.dict_sgbn = {code: i % 8 for i, code in enumerate(list_code)}
         self.dict_name = {code: self.kw.GetMasterCodeName(code) for code in list_code}
         self.dict_code = {name: code for code, name in self.dict_name.items()}
 
-        self.kwzservQ.put(('window', (ui_num['종목명데이터'], self.dict_name, self.dict_code, self.dict_sgbn, '더미')))
+        self.kwzservQ.put(('window', (ui_num['종목명데이터'], self.dict_name, self.dict_code)))
         self.straderQ.put(('종목구분번호', self.dict_sgbn))
         for q in self.sstgQs:
             q.put(('종목구분번호', self.dict_sgbn))
             q.put(('코스닥목록', self.tuple_kosd))
 
-        if self.dict_set['리시버공유'] == 1 and int_hms() > 85900:
+        if self.dict_set['리시버공유'] == 1:
             data = (self.tuple_kosd, self.dict_sgbn, self.dict_name, self.dict_code)
             self.recvservQ.put(('logininfo', data))
-            if int_hms() > 90000:
+            if int(str_hms()) > 90000:
                 self.recvservQ.put(('operation', 3))
 
         df = pd.DataFrame(self.dict_name.values(), columns=['종목명'], index=list(self.dict_name.keys()))
         df['코스닥'] = [True if x in self.tuple_kosd else False for x in df.index]
-        self.kwzservQ.put(('query', ('설정디비', df, 'codename', 'replace')))
+        self.kwzservQ.put(('query', ('종목디비', df, 'stockinfo', 'replace')))
 
         error = True
         while error:
@@ -178,23 +174,22 @@ class KiwoomReceiverTick:
             self.pr.print_stats(sort='cumulative')
 
     def Scheduler(self):
-        curr_time = now()
-        inthms = int_hms()
+        inthms = int(str_hms())
         if not self.dict_bool['리시버시작']:
             self.OperationRealreg()
 
-        if self.operation == 1 and self.holiday_time is not None and self.holiday_time <= curr_time:
-            if self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
-                self.ReceiverProcKill()
+        if self.operation == 1 and 90100 < inthms and \
+                self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
+            self.ReceiverProcKill()
 
         if self.operation in (2, 3):
             if 85000 < inthms < self.dict_set['주식전략종료시간'] and not self.dict_bool['실시간조건검색시작']:
                 self.ConditionSearchStart()
 
-            if self.dict_set['주식전략종료시간'] <= inthms and not self.dict_bool['프로세스종료'] and self.dict_set['주식프로세스종료']:
+            if self.dict_set['주식전략종료시간'] < inthms and not self.dict_bool['프로세스종료'] and self.dict_set['주식프로세스종료']:
                 self.ReceiverProcKill()
 
-        if self.operation == 8 and 153500 <= inthms and not self.dict_bool['프로세스종료']:
+        if self.operation == 8 and 153500 < inthms and not self.dict_bool['프로세스종료']:
             self.ReceiverProcKill()
 
         if len(self.list_gsjm) > 0:
@@ -488,9 +483,9 @@ class KiwoomReceiverTick:
                             int(data[53])          == int(self.kw.GetCommRealData(code, 79)) and \
                             int(data[59])          == int(self.kw.GetCommRealData(code, 80)):
                         self.dict_bool['호가잔량필드같음'] = True
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 호가잔량 필드값 같음')))
+                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 주식호가잔량 필드값 같음')))
                     else:
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - 호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
+                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - 주식호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
                     self.dict_bool['호가잔량필드확인'] = True
 
                 name = self.dict_name[code]

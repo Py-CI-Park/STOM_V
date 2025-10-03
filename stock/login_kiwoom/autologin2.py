@@ -63,14 +63,8 @@ if __name__ == '__main__':
     print('아이디 및 패스워드 입력 대기 중 ...')
     time.sleep(2)
 
-    if DICT_SET['증권사'] == '키움증권1':
-        manual_login(2)
-    elif DICT_SET['증권사'] == '키움증권2':
-        manual_login(4)
-    elif DICT_SET['증권사'] == '키움증권3':
-        manual_login(6)
-    elif DICT_SET['증권사'] == '키움증권4':
-        manual_login(8)
+    id_num = int(DICT_SET['증권사'][4:]) * 2
+    manual_login(id_num)
     print('아이디 및 패스워드 입력 완료')
 
     while find_window('Open API login') != 0:
@@ -82,6 +76,7 @@ if __name__ == '__main__':
                 TelegramMassage('인증서 만료기간이 얼마남지 않았습니다.\n인증서를 갱신하십시오.')
         except:
             pass
+        time.sleep(0.1)
 
     time.sleep(5)
     sys.exit()

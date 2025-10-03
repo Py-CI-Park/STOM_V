@@ -1,18 +1,18 @@
 import math
 import random
 import pyupbit
-import sqlite3
 import operator
 import numpy as np
 import pandas as pd
+import yfinance as yf
 from numba import jit
 from talib import stream
 from traceback import print_exc
 from matplotlib import pyplot as plt
 from optuna_dashboard import run_server
 from matplotlib import font_manager, gridspec
-from utility.static import strp_time, strf_time, thread_decorator
-from utility.setting import ui_num, GRAPH_PATH, DB_SETTING, DB_OPTUNA
+from utility.setting import ui_num, GRAPH_PATH, DB_OPTUNA, dgree
+from utility.static import thread_decorator, str_hms, str_ms, dt_ymdhms, dt_ymdhm, dt_hms, dt_hm, dt_ymd
 
 
 @thread_decorator
@@ -24,6 +24,7 @@ def RunOptunaServer():
 
 
 def GetTradeInfo(gubun):
+    buy_time = dt_ymd('20000101')
     if gubun == 1:
         v = {
             '보유중': 0,
@@ -31,10 +32,10 @@ def GetTradeInfo(gubun):
             '매도가': 0,
             '주문수량': 0,
             '보유수량': 0,
-            '최고수익률': 0.,
-            '최저수익률': 0.,
+            '최고수익율': 0.,
+            '최저수익율': 0.,
             '매수틱번호': 0,
-            '매수시간': strp_time('%Y%m%d', '20000101')
+            '매수시간': buy_time
         }
     elif gubun == 2:
         v = {
@@ -43,10 +44,10 @@ def GetTradeInfo(gubun):
             '매도가': 0,
             '주문수량': 0,
             '보유수량': 0,
-            '최고수익률': 0.,
-            '최저수익률': 0.,
+            '최고수익율': 0.,
+            '최저수익율': 0.,
             '매수틱번호': 0,
-            '매수시간': strp_time('%Y%m%d', '20000101'),
+            '매수시간': buy_time,
             '추가매수시간': [],
             '매수호가': 0,
             '매도호가': 0,
@@ -59,15 +60,15 @@ def GetTradeInfo(gubun):
             '매도정정횟수': 0,
             '매수분할횟수': 0,
             '매도분할횟수': 0,
-            '매수주문취소시간': strp_time('%Y%m%d', '20000101'),
-            '매도주문취소시간': strp_time('%Y%m%d', '20000101')
+            '매수주문취소시간': buy_time,
+            '매도주문취소시간': buy_time
         }
     else:
         v = {
             '손절횟수': 0,
             '거래횟수': 0,
-            '직전거래시간': strp_time('%Y%m%d', '20000101'),
-            '손절매도시간': strp_time('%Y%m%d', '20000101')
+            '직전거래시간': buy_time,
+            '손절매도시간': buy_time
         }
     return v
 
@@ -128,7 +129,7 @@ def GetMoneytopQuery(gubun, startday, endday, starttime, endtime):
     return query
 
 
-def AddAvgData(df, round_unit, is_tick, avg_list):
+def AddAvgData(df, round_unit, is_tick, avg_list, future=False):
     if is_tick:
         df['이평0060'] = df['현재가'].rolling(window=60).mean().round(round_unit)
         df['이평0300'] = df['현재가'].rolling(window=300).mean().round(round_unit)
@@ -161,7 +162,8 @@ def AddAvgData(df, round_unit, is_tick, avg_list):
             df[f'누적분당매수수량{avg}'] = df['분당매수수량'].rolling(window=avg).sum()
             df[f'누적분당매도수량{avg}'] = df['분당매도수량'].rolling(window=avg).sum()
             df[f'분당거래대금평균{avg}'] = df['분당거래대금'].rolling(window=avg).mean().round(0)
-        if round_unit == 3:
+        if round_unit == 3 and not future:
+            cf1, cf2 = dgree['stock']['tick'] if is_tick else dgree['stock']['min']
             df2 = df[['등락율', '당일거래대금', '전일비']].copy()
             df2[f'등락율N{avg}'] = df2['등락율'].shift(avg - 1)
             df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
@@ -169,8 +171,8 @@ def AddAvgData(df, round_unit, is_tick, avg_list):
             df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
             df2[f'전일비N{avg}'] = df2['전일비'].shift(avg - 1)
             df2['전일비차이'] = df2['전일비'] - df2[f'전일비N{avg}']
-            df['등락율각도'] = df2['등락율차이'].apply(lambda x: round(math.atan2(x * 5, avg) / (2 * math.pi) * 360, 2))
-            df['당일거래대금각도'] = df2['당일거래대금차이'].apply(lambda x: round(math.atan2(x / 100, avg) / (2 * math.pi) * 360, 2))
+            df['등락율각도'] = df2['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, avg) / (2 * math.pi) * 360, 2))
+            df['당일거래대금각도'] = df2['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, avg) / (2 * math.pi) * 360, 2))
             df['전일비각도'] = df2['전일비차이'].apply(lambda x: round(math.atan2(x, avg) / (2 * math.pi) * 360, 2))
         else:
             df2 = df[['등락율', '당일거래대금']].copy()
@@ -178,23 +180,15 @@ def AddAvgData(df, round_unit, is_tick, avg_list):
             df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
             df2[f'당일거래대금N{avg}'] = df2['당일거래대금'].shift(avg - 1)
             df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
-            df['등락율각도'] = df2['등락율차이'].apply(lambda x: round(math.atan2(x * 10, avg) / (2 * math.pi) * 360, 2))
-            df['당일거래대금각도'] = df2['당일거래대금차이'].apply(lambda x: round(math.atan2(x / 100_000_000, avg) / (2 * math.pi) * 360, 2))
+            if future:
+                cf1, cf2 = dgree['future']['tick'] if is_tick else dgree['future']['min']
+                df['등락율각도'] = df2['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, avg) / (2 * math.pi) * 360, 2))
+                df['당일거래대금각도'] = df2['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, avg) / (2 * math.pi) * 360, 2))
+            else:
+                cf1, cf2 = dgree['coin']['tick'] if is_tick else dgree['coin']['min']
+                df['등락율각도'] = df2['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, avg) / (2 * math.pi) * 360, 2))
+                df['당일거래대금각도'] = df2['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, avg) / (2 * math.pi) * 360, 2))
     return df
-
-
-def LoadOrderSetting(gubun):
-    con = sqlite3.connect(DB_SETTING)
-    if 'S' in gubun:
-        df1 = pd.read_sql('SELECT * FROM stockbuyorder', con).set_index('index')
-        df2 = pd.read_sql('SELECT * FROM stocksellorder', con).set_index('index')
-    else:
-        df1 = pd.read_sql('SELECT * FROM coinbuyorder', con).set_index('index')
-        df2 = pd.read_sql('SELECT * FROM coinsellorder', con).set_index('index')
-    con.close()
-    buy_setting = str(list(df1.iloc[0]))
-    sell_setting = str(list(df2.iloc[0]))
-    return buy_setting, sell_setting
 
 
 def GetBuyStg(buytxt, gubun):
@@ -206,7 +200,7 @@ def GetBuyStg(buytxt, gubun):
             indistg += f'{line}\n'
         else:
             buystg += f'{line}\n'
-    if buystg != '':
+    if buystg:
         try:
             buystg = compile(buystg, '<string>', 'exec')
         except:
@@ -214,7 +208,7 @@ def GetBuyStg(buytxt, gubun):
             if gubun == 0: print_exc()
     else:
         buystg = None
-    if indistg != '':
+    if indistg:
         try:
             indistg = compile(indistg, '<string>', 'exec')
         except:
@@ -267,7 +261,7 @@ def SetSellCond(selllist):
             dict_cond[count] = selllist[i - 1]
             sellstg = f"{sellstg}{text.split('매도')[0]}sell_cond = {count}\n"
             count += 1
-        if text != '':
+        if text:
             sellstg = f"{sellstg}{text}\n"
     return sellstg, dict_cond
 
@@ -282,7 +276,7 @@ def GetBuyStgFuture(buystg, gubun):
             indistg += f'{line}\n'
         else:
             buystg += f'{line}\n'
-    if buystg != '':
+    if buystg:
         try:
             buystg = compile(buystg, '<string>', 'exec')
         except:
@@ -290,7 +284,7 @@ def GetBuyStgFuture(buystg, gubun):
             if gubun == 0: print_exc()
     else:
         buystg = None
-    if indistg != '':
+    if indistg:
         try:
             indistg = compile(indistg, '<string>', 'exec')
         except:
@@ -357,7 +351,7 @@ def SetSellCondFuture(selllist):
                 dict_cond[count] = selllist[i - 1]
                 sellstg = f"{sellstg}{text.split('BUY_SHORT')[0]}sell_cond = {count}\n"
                 count += 1
-        if text != '':
+        if text:
             sellstg = f"{sellstg}{text}\n"
     return sellstg, dict_cond
 
@@ -604,47 +598,53 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
     is_min = len(str(endtime)) < 5
     df_sg = df_tsg[['수익금']].copy()
     df_sg['일자'] = df_sg.index
-    df_sg['일자'] = df_sg['일자'].apply(lambda x: strp_time('%Y%m%d%H%M%S' if not is_min else '%Y%m%d%H%M', x))
+    df_sg['일자'] = df_sg['일자'].apply(lambda x: dt_ymdhms(x) if not is_min else dt_ymdhm(x))
     df_sg = df_sg.set_index('일자')
 
     df_ts = df_sg.resample('D').sum()
     df_ts['수익금합계'] = df_ts['수익금'].cumsum()
     df_ts['수익금합계'] = ((df_ts['수익금합계'] + seed) / seed - 1) * 100
 
-    df_kp, df_kd, df_bc = None, None, None
-    if dict_cn is not None:
+    df_kp, df_kd, df_nd, df_bc = None, None, None, None
+    if dict_cn is not None and '005930' in dict_cn.keys():
         df_kp = df_kp_[(df_kp_['index'] >= str(startday)) & (df_kp_['index'] <= str(endday))].copy()
         df_kd = df_kd_[(df_kd_['index'] >= str(startday)) & (df_kd_['index'] <= str(endday))].copy()
         df_kp['종가'] = (df_kp['종가'] / df_kp['종가'].iloc[0] - 1) * 100
         df_kd['종가'] = (df_kd['종가'] / df_kd['종가'].iloc[0] - 1) * 100
-        df_kp['일자'] = df_kp['index'].apply(lambda x: strp_time('%Y%m%d', x))
-        df_kd['일자'] = df_kd['index'].apply(lambda x: strp_time('%Y%m%d', x))
-        df_kp.drop(columns=['index'], inplace=True)
-        df_kd.drop(columns=['index'], inplace=True)
+        df_kp['일자'] = df_kp['index'].apply(lambda x: dt_ymd(x))
+        df_kd['일자'] = df_kd['index'].apply(lambda x: dt_ymd(x))
         df_kp.set_index('일자', inplace=True)
         df_kd.set_index('일자', inplace=True)
+    elif dict_cn is not None and '005930' not in dict_cn.keys():
+        try:
+            startday = f'{str(startday)[:4]}-{str(startday)[4:6]}-{str(startday)[6:8]}'
+            endday   = f'{str(endday)[:4]}-{str(endday)[4:6]}-{str(endday)[6:8]}'
+            df_nd = yf.Ticker('QQQ').history(start=startday, end=endday, interval="1d")
+            df_nd['종가'] = (df_nd['Close'] / df_nd['Close'].iloc[0] - 1) * 100
+        except:
+            pass
     else:
         df_bc = pyupbit.get_ohlcv()
         df_bc['일자'] = df_bc.index
-        startday = strp_time('%Y%m%d', str(startday))
-        endday = strp_time('%Y%m%d%H%M%S', str(endday) + '235959')
+        startday = dt_ymd(str(startday))
+        endday = dt_ymdhms(str(endday) + '235959')
         df_bc = df_bc[(df_bc['일자'] >= startday) & (df_bc['일자'] <= endday)]
-        df_bc['close'] = (df_bc['close'] / df_bc['close'].iloc[0] - 1) * 100
+        df_bc['종가'] = (df_bc['close'] / df_bc['close'].iloc[0] - 1) * 100
 
     df_st = df_tsg[['수익금']].copy()
     df_st['시간'] = df_st.index
-    df_st['시간'] = df_st['시간'].apply(lambda x: strp_time('%H%M%S' if not is_min else '%H%M', x[8:]))
+    df_st['시간'] = df_st['시간'].apply(lambda x: dt_hms(x[8:]) if not is_min else dt_hm(x[8:]))
     df_st.set_index('시간', inplace=True)
     if not is_min:
-        start_time = strp_time('%H%M%S', str(starttime).zfill(6))
-        end_time = strp_time('%H%M%S', str(endtime).zfill(6))
+        start_time = dt_hms(str(starttime).zfill(6))
+        end_time = dt_hms(str(endtime).zfill(6))
     else:
-        start_time = strp_time('%H%M', str(starttime).zfill(4))
-        end_time = strp_time('%H%M', str(endtime).zfill(4))
+        start_time = dt_hm(str(starttime).zfill(4))
+        end_time = dt_hm(str(endtime).zfill(4))
     total_sec = (end_time - start_time).total_seconds()
     df_st = df_st.resample(f'{total_sec / 600 if total_sec >= 1800 else 3}min').sum()
     df_st['시간'] = df_st.index
-    df_st['시간'] = df_st['시간'].apply(lambda x: strf_time('%H%M%S' if not is_min else '%H%M', x))
+    df_st['시간'] = df_st['시간'].apply(lambda x: str_hms(x) if not is_min else str_ms(x))
     if not is_min:
         df_st['시간'] = df_st['시간'].apply(lambda x: f'{x[:2]}:{x[2:4]}:{x[4:]}')
     else:
@@ -655,7 +655,7 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
 
     df_wt = df_tsg[['수익금']].copy()
     df_wt['요일'] = df_wt.index
-    df_wt['요일'] = df_wt['요일'].apply(lambda x: strp_time('%Y%m%d%H%M%S' if not is_min else '%Y%m%d%H%M', x).weekday())
+    df_wt['요일'] = df_wt['요일'].apply(lambda x: dt_ymdhms(x).weekday() if not is_min else dt_ymdhm(x).weekday())
     sum_0 = df_wt[df_wt['요일'] == 0]['수익금'].sum()
     sum_1 = df_wt[df_wt['요일'] == 1]['수익금'].sum()
     sum_2 = df_wt[df_wt['요일'] == 2]['수익금'].sum()
@@ -720,13 +720,15 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
     plt.grid()
     # noinspection PyTypeChecker
     plt.subplot(gs[1])
-    plt.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익률', color='orange')
-    if dict_cn is not None:
+    plt.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익율', color='orange')
+    if df_kp is not None:
         plt.plot(df_kp.index, df_kp['종가'], linewidth=0.5, label='코스피', color='r')
         plt.plot(df_kd.index, df_kd['종가'], linewidth=0.5, label='코스닥', color='b')
-    else:
-        plt.plot(df_bc.index, df_bc['close'], linewidth=0.5, label='KRW-BTC', color='r')
-    plt.title('지수비교' if dict_cn is not None else 'BTC비교')
+    elif df_nd is not None:
+        plt.plot(df_nd.index, df_nd['종가'], linewidth=0.5, label='NQ', color='r')
+    elif df_bc is not None:
+        plt.plot(df_bc.index, df_bc['종가'], linewidth=0.5, label='KRW-BTC', color='r')
+    plt.title('지수비교' if df_bc is None else 'BTC비교')
     count = int(len(df_ts) / 20) if int(len(df_ts) / 20) >= 1 else 1
     plt.xticks(list(df_ts.index[::count]), rotation=45)
     plt.legend(loc='best')
@@ -796,12 +798,12 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
 
 def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
     columns1 = [
-        'index', '종목명', '시가총액' if ui_gubun != 'CF' else '포지션', '매수시간', '매도시간',
-        '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '매도조건', '추가매수시간'
+        'index', '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
+        '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익율', '수익금', '매도조건', '추가매수시간'
     ]
     columns2 = [
-        '종목명', '시가총액' if ui_gubun != 'CF' else '포지션', '매수시간', '매도시간', '보유시간', '매수가', '매도가',
-        '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간'
+        '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
+        '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익율', '수익금', '수익금합계', '매도조건', '추가매수시간'
     ]
     df_tsg = pd.DataFrame(list_tsg, columns=columns1)
     df_tsg.set_index('index', inplace=True)
@@ -817,7 +819,7 @@ def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
 def AddMdd(arry_tsg, result):
     """
     arry_tsg
-    보유시간, 매도시간, 수익률, 수익금, 수익금합계
+    보유시간, 매도시간, 수익율, 수익금, 수익금합계
       0       1       2       3      4
     """
     try:
@@ -837,7 +839,7 @@ def AddMdd(arry_tsg, result):
 def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     """ dtype = 'float64'
     arry_tsg
-    보유시간, 매도시간, 수익률, 수익금, 수익금합계
+    보유시간, 매도시간, 수익율, 수익금, 수익금합계
       0       1       2       3      4
     arry_bct
     체결시간, 보유중목수, 보유금액

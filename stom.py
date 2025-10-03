@@ -11,8 +11,9 @@ if __name__ == '__main__':
     kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), 128)
     auto_run = 0
     if len(sys.argv) > 1:
-        if sys.argv[1] == 'stock':  auto_run = 1
-        elif sys.argv[1] == 'coin': auto_run = 2
+        if sys.argv[1] == 'stock':    auto_run = 1
+        elif sys.argv[1] == 'coin':   auto_run = 2
+        elif sys.argv[1] == 'future': auto_run = 3
     timesync()
     app = QApplication(sys.argv)
     app.setStyle('fusion')

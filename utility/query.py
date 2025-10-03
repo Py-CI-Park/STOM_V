@@ -6,7 +6,7 @@ import sqlite3
 import pandas as pd
 from utility.setting import ui_num, DB_TRADELIST, DB_SETTING, DB_STRATEGY, DB_COIN_TICK, DB_PATH, DB_STOCK_BACK_TICK, \
     DB_COIN_BACK_TICK, DB_STOCK_TICK, DB_BACKTEST, DICT_SET, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_STOCK_MIN, \
-    DB_COIN_MIN
+    DB_COIN_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_MIN, DB_CODE_INFO, DB_FUTURE_BACK_TICK, DB_FUTURE_TICK
 
 
 class Query:
@@ -23,6 +23,7 @@ class Query:
         self.cur2     = self.con2.cursor()
         self.con3     = sqlite3.connect(DB_STRATEGY)
         self.cur3     = self.con3.cursor()
+        self.con4     = sqlite3.connect(DB_CODE_INFO)
         self.dict_set = DICT_SET
         self.Start()
 
@@ -30,6 +31,7 @@ class Query:
         self.con1.close()
         self.con2.close()
         self.con3.close()
+        self.con4.close()
 
     def Start(self):
         while True:
@@ -49,11 +51,6 @@ class Query:
                         self.con1.commit()
                     elif len(query) == 4:
                         query[1].to_sql(query[2], self.con1, if_exists=query[3], chunksize=1000)
-                        if query[2] == 'codename':
-                            con2 = sqlite3.connect(DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN)
-                            df = pd.read_sql('SELECT * FROM codename', self.con1)
-                            df.to_sql('codename', con2, index=False, if_exists='replace', chunksize=1000)
-                            con2.close()
                 except Exception as e:
                     self.windowQ.put((ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - Query 설정디비 {e}'))
             elif query[0] == '거래디비':
@@ -75,6 +72,12 @@ class Query:
                         query[1].to_sql(query[2], self.con3, if_exists=query[3], chunksize=1000)
                 except Exception as e:
                     self.windowQ.put((ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - Query 전략디비 {e}'))
+            elif query[0] == '종목디비':
+                try:
+                    if len(query) == 4:
+                        query[1].to_sql(query[2], self.con4, if_exists=query[3], chunksize=1000)
+                except Exception as e:
+                    self.windowQ.put((ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - Query 종목디비 {e}'))
             elif query[0] == '백테디비':
                 try:
                     con = sqlite3.connect(DB_BACKTEST)
@@ -86,7 +89,10 @@ class Query:
                     self.windowQ.put((ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - Query 백테디비 {e}'))
             elif '백테DB지정일자삭제' in query[0]:
                 if '주식' in query[0]:
-                    BACK_FILE = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+                    if '키움증권' in self.dict_set['증권사']:
+                        BACK_FILE = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+                    else:
+                        BACK_FILE = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
                 else:
                     BACK_FILE = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
                 con = sqlite3.connect(BACK_FILE)
@@ -103,7 +109,10 @@ class Query:
                 self.windowQ.put((ui_num['DB관리'], '백테DB 지정일자 데이터 삭제 완료'))
             elif '일자DB지정일자삭제' in query[0]:
                 if '주식' in query[0]:
-                    firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                    if '키움증권' in self.dict_set['증권사']:
+                        firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                    else:
+                        firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
                 else:
                     firstname = 'coin_tick_' if self.dict_set['코인타임프레임'] else 'coin_min_'
                 file_name = f'{DB_PATH}/{firstname}' + query[1] + '.db'
@@ -115,7 +124,10 @@ class Query:
             elif '일자DB지정시간이후삭제' in query[0]:
                 file_list = os.listdir(DB_PATH)
                 if '주식' in query[0]:
-                    firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                    if '키움증권' in self.dict_set['증권사']:
+                        firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                    else:
+                        firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
                 else:
                     firstname = 'coin_tick_' if self.dict_set['코인타임프레임'] else 'coin_min_'
                 file_list = [x for x in file_list if firstname in x and '.db' in x and 'back' not in x]
@@ -153,7 +165,10 @@ class Query:
             elif '당일데이터지정시간이후삭제' in query[0]:
                 try:
                     if '주식' in query[0]:
-                        DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
+                        if '키움증권' in self.dict_set['증권사']:
+                            DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
+                        else:
+                            DB_FILE = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
                     else:
                         DB_FILE = DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN
                     con = sqlite3.connect(DB_FILE)
@@ -169,15 +184,6 @@ class Query:
                     mtlist = list(set(';'.join(df['거래대금순위'].to_list()[29:]).split(';')))
                     df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                     table_list = df['name'].to_list()
-                    if '코인' in query[0]:
-                        if 'dist' in table_list:
-                            table_list.remove('dist')
-                        if 'dist_chk' in table_list:
-                            table_list.remove('dist_chk')
-                        if 'sqlite_sequence' in table_list:
-                            table_list.remove('sqlite_sequence')
-                        if 'temp' in table_list:
-                            table_list.remove('temp')
                     last = len(table_list)
                     if last > 0:
                         for i, code in enumerate(table_list):
@@ -198,7 +204,10 @@ class Query:
                     self.windowQ.put((ui_num['DB관리'], '지정시간 이후 데이터 삭제 완료'))
             elif query[0] == '주식체결시간조정':
                 try:
-                    con = sqlite3.connect(DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN)
+                    if '키움증권' in self.dict_set['증권사']:
+                        con = sqlite3.connect(DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN)
+                    else:
+                        con = sqlite3.connect(DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN)
                     cur = con.cursor()
                 except:
                     self.windowQ.put((ui_num['DB관리'], '데이터가 존재하지 않습니다.'))
@@ -222,8 +231,12 @@ class Query:
             elif '백테DB생성' in query[0]:
                 file_list = os.listdir(DB_PATH)
                 if '주식' in query[0]:
-                    BACK_FILE = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
-                    firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                    if '키움증권' in self.dict_set['증권사']:
+                        BACK_FILE = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+                        firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                    else:
+                        BACK_FILE = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+                        firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
                 else:
                     BACK_FILE = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
                     firstname = 'coin_tick_' if self.dict_set['코인타임프레임'] else 'coin_min_'
@@ -236,8 +249,11 @@ class Query:
                         self.windowQ.put((ui_num['DB관리'], f'{BACK_FILE} 삭제 완료'))
                     con = sqlite3.connect(BACK_FILE)
                     if 'stock' in firstname:
-                        df = pd.read_sql('SELECT * FROM codename', self.con1)
-                        df.to_sql('codename', con, index=False, if_exists='replace', chunksize=1000)
+                        df = pd.read_sql('SELECT * FROM stockinfo', self.con4)
+                        df.to_sql('stockinfo', con, index=False, if_exists='replace', chunksize=1000)
+                    elif 'future' in firstname:
+                        df = pd.read_sql('SELECT * FROM futureinfo', self.con4)
+                        df.to_sql('futureinfo', con, index=False, if_exists='replace', chunksize=1000)
                     file_list = [x for x in file_list if int(query[1]) <= int(x.split(firstname)[1].replace('.db', '')) <= int(query[2])]
                     if file_list:
                         for db_name in file_list:
@@ -257,8 +273,12 @@ class Query:
             elif '백테디비추가1' in query[0]:
                 file_list = os.listdir(DB_PATH)
                 if '주식' in query[0]:
-                    BACK_FILE = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
-                    firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                    if '키움증권' in self.dict_set['증권사']:
+                        BACK_FILE = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+                        firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                    else:
+                        BACK_FILE = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+                        firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
                 else:
                     BACK_FILE = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
                     firstname = 'coin_tick_' if self.dict_set['코인타임프레임'] else 'coin_min_'
@@ -268,8 +288,11 @@ class Query:
                 else:
                     con = sqlite3.connect(BACK_FILE)
                     if firstname in ('stock_tick_', 'stock_min_'):
-                        df = pd.read_sql('SELECT * FROM codename', self.con1)
-                        df.to_sql('codename', con, index=False, if_exists='replace', chunksize=1000)
+                        df = pd.read_sql('SELECT * FROM stockinfo', self.con4)
+                        df.to_sql('stockinfo', con, index=False, if_exists='replace', chunksize=1000)
+                    elif firstname == 'future_min_':
+                        df = pd.read_sql('SELECT * FROM futureinfo', self.con4)
+                        df.to_sql('futureinfo', con, index=False, if_exists='replace', chunksize=1000)
                     for db_name in file_list:
                         date = int(db_name.split(firstname)[1].replace('.db', ''))
                         if int(query[1]) <= date <= int(query[2]):
@@ -286,7 +309,10 @@ class Query:
                     self.windowQ.put((ui_num['DB관리'], f'{query[1]} ~ {query[2]} 추가 완료'))
             elif '백테디비추가2' in query[0]:
                 if '주식' in query[0]:
-                    DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
+                    if '키움증권' in self.dict_set['증권사']:
+                        DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
+                    else:
+                        DB_FILE = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
                 else:
                     DB_FILE = DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN
                 con = sqlite3.connect(DB_FILE)
@@ -296,9 +322,14 @@ class Query:
                     self.windowQ.put((ui_num['DB관리'], '저장한 데이터가 존재하지 않습니다.'))
                 else:
                     if '주식' in query[0]:
-                        gubun     = '주식'
-                        BACK_FILE = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
-                        firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                        if '키움증권' in self.dict_set['증권사']:
+                            gubun     = '주식'
+                            BACK_FILE = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+                            firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                        else:
+                            gubun     = '해선'
+                            BACK_FILE = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+                            firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
                     else:
                         gubun     = '코인'
                         BACK_FILE = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
@@ -315,19 +346,13 @@ class Query:
                         con.close()
                     else:
                         if firstname in ('stock_tick_', 'stock_min_'):
-                            df = pd.read_sql('SELECT * FROM codename', self.con1)
-                            df.to_sql('codename', con2, index=False, if_exists='replace', chunksize=1000)
+                            df = pd.read_sql('SELECT * FROM stockinfo', self.con4)
+                            df.to_sql('stockinfo', con2, index=False, if_exists='replace', chunksize=1000)
+                        elif firstname == 'future_min_':
+                            df = pd.read_sql('SELECT * FROM futureinfo', self.con4)
+                            df.to_sql('futureinfo', con2, index=False, if_exists='replace', chunksize=1000)
                         df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                         table_list = df['name'].to_list()
-                        if '코인' in query[0]:
-                            if 'dist' in table_list:
-                                table_list.remove('dist')
-                            if 'dist_chk' in table_list:
-                                table_list.remove('dist_chk')
-                            if 'sqlite_sequence' in table_list:
-                                table_list.remove('sqlite_sequence')
-                            if 'temp' in table_list:
-                                table_list.remove('temp')
                         last = len(table_list)
                         for i, code in enumerate(table_list):
                             df = pd.read_sql(f'SELECT * FROM "{code}"', con)
@@ -342,8 +367,12 @@ class Query:
                             self.windowQ.put((ui_num['DB관리'], f'{DB_FILE} 삭제 완료'))
             elif '일자DB분리' in query[0]:
                 if '주식' in query[0]:
-                    gubun   = '주식'
-                    DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
+                    if '키움증권' in self.dict_set['증권사']:
+                        gubun   = '주식'
+                        DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
+                    else:
+                        gubun   = '해선'
+                        DB_FILE = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
                 else:
                     gubun   = '코인'
                     DB_FILE = DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN
@@ -357,22 +386,16 @@ class Query:
                     day_list = list(set(df['일자'].to_list()))
                     df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                     table_list = df['name'].to_list()
-                    if '코인' in query[0]:
-                        if 'dist' in table_list:
-                            table_list.remove('dist')
-                        if 'dist_chk' in table_list:
-                            table_list.remove('dist_chk')
-                        if 'sqlite_sequence' in table_list:
-                            table_list.remove('sqlite_sequence')
-                        if 'temp' in table_list:
-                            table_list.remove('temp')
                     last = len(table_list)
                     for i, code in enumerate(table_list):
                         for day in day_list:
                             df = pd.read_sql(f'SELECT * FROM "{code}" WHERE "index" LIKE "{day}%"', con)
                             if len(df) > 0:
                                 if '주식' in query[0]:
-                                    firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                                    if '키움증권' in self.dict_set['증권사']:
+                                        firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
+                                    else:
+                                        firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
                                 else:
                                     firstname = 'coin_tick_' if self.dict_set['코인타임프레임'] else 'coin_min_'
                                 con2 = sqlite3.connect(f'{DB_PATH}/{firstname}{day}.db')

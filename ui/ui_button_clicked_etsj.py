@@ -21,7 +21,7 @@ def set_button_clicked_02(ui):
     con = sqlite3.connect(DB_SETTING)
     df  = pd.read_sql('SELECT * FROM stock', con).set_index('index')
     con.close()
-    if df['주식경과틱수설정'][0] != '':
+    if df['주식경과틱수설정'][0]:
         text_list  = df['주식경과틱수설정'][0].split(';')
         half_cnt   = int(len(text_list) / 2)
         key_list   = text_list[:half_cnt]
@@ -36,13 +36,13 @@ def set_button_clicked_03(ui):
     text = ''
     for i, lineedit in enumerate(ui.scn_lineedit_list):
         ltext = lineedit.text()
-        if ltext != '' and ui.scc_lineedit_list[i].text() != '':
+        if ltext and ui.scc_lineedit_list[i].text():
             text = f'{text}{ltext};'
     for i, lineedit in enumerate(ui.scc_lineedit_list):
         ltext = lineedit.text()
-        if ltext != '' and ui.scn_lineedit_list[i].text() != '':
+        if ltext and ui.scn_lineedit_list[i].text():
             text = f'{text}{ltext};'
-    if text != '':
+    if text:
         text = text[:-1]
         if ui.proc_query.is_alive():
             query = f"UPDATE stock SET 주식경과틱수설정 = '{text}'"
@@ -65,7 +65,7 @@ def cet_button_clicked_02(ui):
     con = sqlite3.connect(DB_SETTING)
     df  = pd.read_sql('SELECT * FROM coin', con).set_index('index')
     con.close()
-    if df['코인경과틱수설정'][0] != '':
+    if df['코인경과틱수설정'][0]:
         text_list  = df['코인경과틱수설정'][0].split(';')
         half_cnt   = int(len(text_list) / 2)
         key_list   = text_list[:half_cnt]
@@ -80,13 +80,13 @@ def cet_button_clicked_03(ui):
     text = ''
     for i, lineedit in enumerate(ui.ccn_lineedit_list):
         ltext = lineedit.text()
-        if ltext != '' and ui.ccc_lineedit_list[i].text() != '':
+        if ltext and ui.ccc_lineedit_list[i].text():
             text = f'{text}{ltext};'
     for i, lineedit in enumerate(ui.ccc_lineedit_list):
         ltext = lineedit.text()
-        if ltext != '' and ui.ccn_lineedit_list[i].text() != '':
+        if ltext and ui.ccn_lineedit_list[i].text():
             text = f'{text}{ltext};'
-    if text != '':
+    if text:
         text = text[:-1]
         if ui.proc_query.is_alive():
             query = f"UPDATE coin SET 코인경과틱수설정 = '{text}'"

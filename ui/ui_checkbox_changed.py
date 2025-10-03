@@ -1,7 +1,4 @@
-import sqlite3
-import pandas as pd
 from PyQt5.QtCore import Qt
-from utility.setting import DB_SETTING
 from PyQt5.QtWidgets import QPushButton, QMessageBox
 
 

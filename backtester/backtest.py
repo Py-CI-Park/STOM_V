@@ -6,9 +6,10 @@ import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
 from backtester.back_static import PltShow, GetMoneytopQuery, GetBackResult, GetResultDataframe, AddMdd
-from utility.static import now, strf_time
+from utility.static import now, str_ymdhms
 from utility.setting import DB_STRATEGY, DB_BACKTEST, ui_num, stockreadlines, columns_vj, DICT_SET, DB_STOCK_BACK_TICK, \
-    DB_COIN_BACK_TICK, coinreadlines, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN
+    DB_COIN_BACK_TICK, coinreadlines, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, futurereadlines, \
+    DB_FUTURE_BACK_TICK
 
 
 class Total:
@@ -121,18 +122,26 @@ class Total:
             df_tsg = self.df_tsg[self.df_tsg['종목명'] == name]
             trade_count = len(df_tsg)
             total_eyun = df_tsg['수익금'].sum()
-            if self.ui_gubun == 'S':
-                if trade_count >= 10 and total_eyun < 0 and code + '\n' not in stockreadlines:
-                    stockreadlines.append(code + '\n')
-                    self.insertlist.append(code)
-            else:
-                if trade_count >= 10 and total_eyun < 0 and code + '\n' not in coinreadlines:
-                    coinreadlines.append(code + '\n')
-                    self.insertlist.append(code)
+            if trade_count >= 10 and total_eyun < 0:
+                if self.ui_gubun == 'S':
+                    if code + '\n' not in stockreadlines:
+                        stockreadlines.append(code + '\n')
+                        self.insertlist.append(code)
+                elif self.ui_gubun == 'F':
+                    if code + '\n' not in futurereadlines:
+                        futurereadlines.append(code + '\n')
+                        self.insertlist.append(code)
+                else:
+                    if code + '\n' not in coinreadlines:
+                        coinreadlines.append(code + '\n')
+                        self.insertlist.append(code)
         if len(self.insertlist) > 0:
             if self.ui_gubun == 'S':
                 with open('./utility/blacklist_stock.txt', 'w') as f:
                     f.write(''.join(stockreadlines))
+            elif self.ui_gubun == 'F':
+                with open('./utility/blacklist_future.txt', 'w') as f:
+                    f.write(''.join(futurereadlines))
             else:
                 with open('./utility/blacklist_coin.txt', 'w') as f:
                     f.write(''.join(coinreadlines))
@@ -146,30 +155,38 @@ class Total:
         self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
         if self.blacklist: self.InsertBlacklist()
 
-        _df_tsg    = self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
+        _df_tsg    = self.df_tsg[['보유시간', '매도시간', '수익율', '수익금', '수익금합계']].copy()
         arry_tsg   = np.array(_df_tsg, dtype='float64')
         arry_bct   = np.sort(arry_bct, axis=0)[::-1]
         result     = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, self.day_count)
         result     = AddMdd(arry_tsg, result)
         tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
-        save_time  = strf_time('%Y%m%d%H%M%S')
+        save_time  = str_ymdhms()
         startday, endday, starttime, endtime = str(self.startday), str(self.endday), str(self.starttime).zfill(6), str(self.endtime).zfill(6)
         startday   = startday[:4] + '-' + startday[4:6] + '-' + startday[6:]
         endday     = endday[:4] + '-' + endday[4:6] + '-' + endday[6:]
         starttime  = starttime[:2] + ':' + starttime[2:4] + ':' + starttime[4:]
         endtime    = endtime[:2] + ':' + endtime[2:4] + ':' + endtime[4:]
-        bet_unit   = '원' if self.ui_gubun != 'CF' else 'USDT'
+        bet_unit   = '원' if self.ui_gubun in ('S', 'C') else '계약' if self.ui_gubun == 'F' else 'USDT'
+        if self.ui_gubun == 'S':
+            bc_unit = '초' if self.dict_set['주식타임프레임'] else '분'
+        elif self.ui_gubun in ('C', 'CF'):
+            bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
+        else:
+            bc_unit = '분'
         back_text  = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.avgtime}'
         label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{bet_unit}, '\
-                     f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}초\n' \
-                     f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, '\
-                     f'최대낙폭률 {mdd:.2f}%, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
+                     f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
+                     f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익율 {app:.2f}%, 수익율합계 {tpp:.2f}%, '\
+                     f'최대낙폭률 {mdd:.2f}%, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익율 {cagr:.2f}%'
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테스팅 결과\n' + label_text))
 
         if self.dict_set['스톰라이브']:
-            backlive_text = f'back;{startday}~{endday};{starttime}~{endtime};{self.day_count};{self.avgtime};{int(self.betting)};'\
-                            f'{seed};{tc};{atc};{mhct};{ah:.2f};{pc};{mc};{wr:.2f};{app:.2f};{tpp:.2f};{mdd:.2f};{tsg};{cagr:.2f}'
-            self.lq.put(backlive_text)
+            data_list = [
+                f'{startday}~{endday}', f'{starttime}~{endtime}', self.day_count, self.avgtime, int(self.betting),
+                seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, cagr
+            ]
+            self.lq.put(('back', data_list))
 
         data = [int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg]
         df = pd.DataFrame([data], columns=columns_vj, index=[save_time])
@@ -186,7 +203,7 @@ class Total:
 
         if self.back_club:
             buystg_text  = ('\n'.join([x for x in self.buystg.split('if 매수:')[0].split('\n') if '#' not in x])).split(' ')
-            buystg_text  = [x for x in buystg_text if x != '매수' and re.compile('[가-힣]+').findall(x) != []]
+            buystg_text  = [x for x in buystg_text if x != '매수' and re.compile('[가-힣]+').findall(x)]
             buystg_text  = [x.replace('(', '').replace(')', '').replace(':', '').replace('\n', '') for x in set(buystg_text)]
             buy_vars = '------------------------------------------------------------------------------------ 매수변수목록 ------------------------------------------------------------------------------------\n'
             for i, text in enumerate(buystg_text):
@@ -197,7 +214,7 @@ class Total:
                 else:
                     buy_vars = f'{buy_vars}, {text}'
             sellstg_text = ('\n'.join([x for x in self.sellstg.split('if 매도:')[0].split('\n') if '#' not in x])).split(' ')
-            sellstg_text = [x for x in sellstg_text if x != '매도' and re.compile('[가-힣]+').findall(x) != []]
+            sellstg_text = [x for x in sellstg_text if x != '매도' and re.compile('[가-힣]+').findall(x)]
             sellstg_text = [x.replace('(', '').replace(')', '').replace(':', '').replace('\n', '') for x in set(sellstg_text)]
             sell_vars = '------------------------------------------------------------------------------------ 매도변수목록 ------------------------------------------------------------------------------------\n'
             for i, text in enumerate(sellstg_text):
@@ -231,14 +248,19 @@ class BackTest:
         self.backname  = backname
         self.ui_gubun  = ui_gubun
         self.dict_set  = DICT_SET
-        self.gubun     = 'stock' if self.ui_gubun == 'S' else 'coin'
+        if self.ui_gubun == 'S':
+            self.gubun = 'stock'
+        elif self.ui_gubun == 'SF':
+            self.gubun = 'future'
+        else:
+            self.gubun = 'coin'
         self.Start()
 
     def Start(self):
         self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
-        if self.ui_gubun != 'CF':
+        if self.ui_gubun not in ('CF', 'SF'):
             betting = float(data[0]) * 1000000
         else:
             betting = float(data[0])
@@ -259,6 +281,8 @@ class BackTest:
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+        elif self.ui_gubun == 'SF':
+            db = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
         else:
             db = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
         con   = sqlite3.connect(db)
@@ -317,9 +341,7 @@ class BackTest:
             self.SysExit(True)
 
     def SysExit(self, cancel):
-        if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
-        else:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
+        if cancel: self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
+        else:      self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 완료'))
         time.sleep(1)
         sys.exit()

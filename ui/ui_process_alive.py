@@ -1,5 +1,5 @@
 def stom_live_process_alive(ui):
-    return ui.proc_live is not None and ui.proc_live.is_alive()
+    return ui.proc_livec is not None and ui.proc_livec.is_alive()
 
 
 def coin_receiver_process_alive(ui):

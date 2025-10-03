@@ -1,5 +1,5 @@
 import logging
-from utility.static import strf_time
+from utility.static import str_ymd
 
 
 class SetLogFile:
@@ -8,7 +8,7 @@ class SetLogFile:
         self.set()
 
     def set(self):
-        name = strf_time('%Y%m%d')
+        name = str_ymd()
         if self.ui.dict_set['주식트레이더']:
             self.ui.log1 = self.setLog('TraderStock', f"./_log/ST_{name}.txt")
             self.ui.log2 = self.setLog('ReceiverStock', f"./_log/SR_{name}.txt")

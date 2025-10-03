@@ -13,6 +13,47 @@ def process_kill(ui):
         ui.wdzservQ.put(('strategy', '프로파일링결과'))
         qtest_qwait(3)
 
+    if ui.dialog_factor.isVisible():     ui.dialog_factor.close()
+    if ui.dialog_scheduler.isVisible():  ui.dialog_scheduler.close()
+    if ui.dialog_chart.isVisible():      ui.dialog_chart.close()
+    if ui.dialog_jisu.isVisible():       ui.dialog_jisu.close()
+    if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
+    if ui.dialog_hoga.isVisible():       ui.dialog_hoga.close()
+    if ui.dialog_info.isVisible():       ui.dialog_info.close()
+    if ui.dialog_web.isVisible():        ui.dialog_web.close()
+    if ui.dialog_tree.isVisible():       ui.dialog_tree.close()
+    if ui.dialog_graph.isVisible():      ui.dialog_graph.close()
+    if ui.dialog_db.isVisible():         ui.dialog_db.close()
+    if ui.dialog_order.isVisible():      ui.dialog_order.close()
+    if ui.dialog_pass.isVisible():       ui.dialog_pass.close()
+    if ui.dialog_comp.isVisible():       ui.dialog_comp.close()
+    if ui.dialog_kimp.isVisible():       ui.dialog_kimp.close()
+    if ui.dialog_bjjs.isVisible():       ui.dialog_bjjs.close()
+    if ui.dialog_bjjc.isVisible():       ui.dialog_bjjc.close()
+    if ui.dialog_std.isVisible():        ui.dialog_std.close()
+    if ui.dialog_leverage.isVisible():   ui.dialog_leverage.close()
+    if ui.dialog_setsj.isVisible():      ui.dialog_setsj.close()
+    if ui.dialog_cetsj.isVisible():      ui.dialog_cetsj.close()
+
+    if ui.writer.isRunning(): ui.writer.terminate()
+    if ui.qtimer1.isActive(): ui.qtimer1.stop()
+    if ui.qtimer2.isActive(): ui.qtimer2.stop()
+    if ui.qtimer3.isActive(): ui.qtimer3.stop()
+
+    if ui.CoinKimpProcessAlive():
+        ui.kimpQ.put('프로세스종료')
+    if ui.CoinReceiverProcessAlive():
+        ui.creceivQ.put('프로세스종료')
+        ui.proc_receiver_coin.kill()
+    if ui.CoinTraderProcessAlive():
+        if ui.dict_set['거래소'] == '바이낸스선물':
+            ui.ctraderQ.put('프로세스종료')
+        ui.proc_trader_coin.kill()
+    if ui.CoinStrategyProcessAlive():
+        ui.proc_strategy_coin.kill()
+    if ui.BacktestProcessAlive():
+        ui.BacktestProcessKill(1)
+
     ui.wdzservQ.put(('manager', '통신종료'))
     factor_choice = ''
     for checkbox in ui.factor_checkbox_list:
@@ -43,48 +84,6 @@ def process_kill(ui):
         query = f"UPDATE etc SET 창위치 = '{geometry}'"
         ui.queryQ.put(('설정디비', query))
     ui.queryQ.put('프로세스종료')
-
-    if ui.writer.isRunning(): ui.writer.terminate()
-    if ui.qtimer1.isActive(): ui.qtimer1.stop()
-    if ui.qtimer2.isActive(): ui.qtimer2.stop()
-    if ui.qtimer3.isActive(): ui.qtimer3.stop()
-
-    if ui.dialog_factor.isVisible():     ui.dialog_factor.close()
-    if ui.dialog_scheduler.isVisible():  ui.dialog_scheduler.close()
-    if ui.dialog_chart.isVisible():      ui.dialog_chart.close()
-    if ui.dialog_jisu.isVisible():       ui.dialog_jisu.close()
-    if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
-    if ui.dialog_hoga.isVisible():       ui.dialog_hoga.close()
-    if ui.dialog_info.isVisible():       ui.dialog_info.close()
-    if ui.dialog_web.isVisible():        ui.dialog_web.close()
-    if ui.dialog_tree.isVisible():       ui.dialog_tree.close()
-    if ui.dialog_graph.isVisible():      ui.dialog_graph.close()
-    if ui.dialog_db.isVisible():         ui.dialog_db.close()
-    if ui.dialog_order.isVisible():      ui.dialog_order.close()
-    if ui.dialog_pass.isVisible():       ui.dialog_pass.close()
-    if ui.dialog_comp.isVisible():       ui.dialog_comp.close()
-    if ui.dialog_kimp.isVisible():       ui.dialog_kimp.close()
-    if ui.dialog_bjjs.isVisible():       ui.dialog_bjjs.close()
-    if ui.dialog_bjjc.isVisible():       ui.dialog_bjjc.close()
-    if ui.dialog_std.isVisible():        ui.dialog_std.close()
-    if ui.dialog_leverage.isVisible():   ui.dialog_leverage.close()
-    if ui.dialog_setsj.isVisible():      ui.dialog_setsj.close()
-    if ui.dialog_cetsj.isVisible():      ui.dialog_cetsj.close()
-    if ui.StomLiveProcessAlive():        ui.proc_live.kill()
-
-    if ui.CoinKimpProcessAlive():
-        ui.kimpQ.put('프로세스종료')
-    if ui.CoinReceiverProcessAlive():
-        ui.creceivQ.put('프로세스종료')
-        ui.proc_receiver_coin.kill()
-    if ui.CoinTraderProcessAlive():
-        if ui.dict_set['거래소'] == '바이낸스선물':
-            ui.ctraderQ.put('프로세스종료')
-        ui.proc_trader_coin.kill()
-    if ui.CoinStrategyProcessAlive():
-        ui.proc_strategy_coin.kill()
-    if ui.BacktestProcessAlive():
-        ui.BacktestProcessKill(1)
 
     qtest_qwait(3)
     sys.exit()

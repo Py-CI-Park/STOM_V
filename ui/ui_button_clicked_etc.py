@@ -10,7 +10,8 @@ from utility.setting import DB_TRADELIST, columns_nt, ui_num, columns_nd, DB_SET
 from backtester.back_static import RunOptunaServer
 
 
-def opbutton_clicked_01():
+# noinspection PyUnusedLocal
+def opbutton_clicked_01(ui):
     RunOptunaServer()
     qtest_qwait(3)
     webbrowser.open_new('http://localhost:8080/')
@@ -31,7 +32,10 @@ def cpbutton_clicked_01(ui):
 def ttbutton_clicked_01(ui, cmd):
     if '집계' in cmd:
         gubun = 'S' if 'S' in cmd else 'C'
-        table = 's_totaltradelist' if 'S' in cmd else 'c_totaltradelist'
+        if 'S' in cmd:
+            table = 's_totaltradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_totaltradelist'
+        else:
+            table = 'c_totaltradelist'
         con = sqlite3.connect(DB_TRADELIST)
         df = pd.read_sql(f'SELECT * FROM {table}', con)
         con.close()
@@ -39,7 +43,7 @@ def ttbutton_clicked_01(ui, cmd):
         if len(df) > 0:
             pr = len(df)
             nsp = 100
-            for sp in df['수익률'].to_list()[::-1]:
+            for sp in df['수익율'].to_list()[::-1]:
                 nsp = nsp + nsp * sp / 100
             nsp = round(nsp - 100, 2)
             nbg, nsg = df['총매수금액'].sum(), df['총매도금액'].sum()

@@ -3,7 +3,7 @@ import pandas as pd
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from utility.setting import DB_TRADELIST
-from utility.static import strf_time, timedelta_sec, comma2int, comma2float
+from utility.static import comma2int, comma2float, str_ymd, now_cme, now_utc
 
 
 def key_press_event(ui, event):
@@ -33,8 +33,8 @@ def key_press_event(ui, event):
             if item is not None:
                 name       = item.text()
                 linetext   = ui.ct_lineEdittttt_03.text()
-                tickcount  = int(linetext) if linetext != '' else 30
-                searchdate = strf_time('%Y%m%d') if stock else strf_time('%Y%m%d', timedelta_sec(-32400))
+                tickcount  = int(linetext) if linetext else 30
+                searchdate = str_ymd(now_utc()) if not stock else str_ymd() if '키움증권' in ui.dict_set['증권사'] else str_ymd(now_cme())
                 code       = ui.dict_code[name] if name in ui.dict_code.keys() else name
                 ui.ct_lineEdittttt_04.setText(code)
                 ui.ct_lineEdittttt_05.setText(name)
@@ -49,7 +49,7 @@ def key_press_event(ui, event):
             if item is not None:
                 name      = item.text()
                 linetext  = ui.ct_lineEdittttt_03.text()
-                tickcount = int(linetext) if linetext != '' else 30
+                tickcount = int(linetext) if linetext else 30
                 code      = ui.dict_code[name] if name in ui.dict_code.keys() else name
                 ui.ct_lineEdittttt_04.setText(code)
                 ui.ct_lineEdittttt_05.setText(name)
@@ -66,11 +66,9 @@ def key_press_event(ui, event):
                 date = item.text()
                 date = date.replace('.', '')
                 if gubun == '주식':
-                    table_name = 's_tradelist'
-                elif ui.dict_set['거래소'] == '업비트':
-                    table_name = 'c_tradelist'
+                    table_name = 's_tradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_tradelist'
                 else:
-                    table_name = 'c_tradelist_future'
+                    table_name = 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
                 con = sqlite3.connect(DB_TRADELIST)
                 df  = pd.read_sql(f"SELECT * FROM {table_name} WHERE 체결시간 LIKE '{date}%'", con)
                 con.close()

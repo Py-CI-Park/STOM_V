@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, QTimer, pyqtSignal
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, ui_num
-from utility.static import now, strf_time, strp_time, timedelta_sec, int_hms
+from utility.static import now, str_hms
 
 
 class ZmqRecv(QThread):
@@ -59,19 +59,12 @@ class KiwoomReceiverClient:
         self.sstgQs   = qlist[3]
         self.dict_set = DICT_SET
 
-        self.dict_name   = {}
-        self.dict_code   = {}
         self.dict_sgbn   = {}
         self.dict_jgdt   = {}
         self.tuple_jango = ()
         self.tuple_order = ()
-        self.tuple_kosd  = ()
         self.operation   = 1
         self.dict_bool   = {'프로세스종료': False}
-
-        curr_time = now()
-        remaintime = (strp_time('%Y%m%d%H%M%S', strf_time('%Y%m%d') + '090100') - curr_time).total_seconds()
-        self.holiday_time = timedelta_sec(remaintime) if remaintime > 0 else None
 
         self.updater = Updater(self.sreceivQ)
         self.updater.signal.connect(self.UpdateTuple)
@@ -123,20 +116,20 @@ class KiwoomReceiverClient:
                 print('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
 
     def UpdateLoginInfo(self, data):
-        self.tuple_kosd, self.dict_sgbn, self.dict_name, self.dict_code = data
-        self.kwzservQ.put(('window', (ui_num['종목명데이터'], self.dict_name, self.dict_code, self.dict_sgbn, '더미')))
+        tuple_kosd, self.dict_sgbn, dict_name, dict_code = data
+        self.kwzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
         self.straderQ.put(('종목구분번호', self.dict_sgbn))
         for q in self.sstgQs:
             q.put(('종목구분번호', self.dict_sgbn))
-            q.put(('코스닥목록', self.tuple_kosd))
+            q.put(('코스닥목록', tuple_kosd))
 
     def UpdateOperation(self, data):
         self.operation = data
 
     def Scheduler(self):
         curr_time = now()
-        inthms = int_hms()
-        if self.operation == 1 and self.holiday_time is not None and self.holiday_time <= curr_time:
+        inthms = int(str_hms())
+        if self.operation == 1 and 90100 <= curr_time:
             if self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
                 self.ReceiverProcKill()
         if self.operation in (2, 3):

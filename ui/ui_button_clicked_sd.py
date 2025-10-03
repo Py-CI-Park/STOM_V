@@ -21,8 +21,9 @@ def bebutton_clicked_01(ui):
         return
 
     if ui.main_btn == 2 or (ui.dialog_scheduler.isVisible() and ui.sd_pushButtonnn_01.text() == '주식'):
+        gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
         if not ui.backtest_engine:
-            ui.StartBacktestEngine('주식')
+            ui.StartBacktestEngine(gubun)
         else:
             buttonReply = QMessageBox.question(
                 ui.dialog_backengine, '백테엔진', '이미 백테스트 엔진이 구동중입니다.\n엔진을 재시작하시겠습니까?\n',
@@ -31,7 +32,8 @@ def bebutton_clicked_01(ui):
             if buttonReply == QMessageBox.Yes:
                 ui.BacktestEngineKill()
                 qtest_qwait(3)
-                ui.StartBacktestEngine('주식')
+                ui.StartBacktestEngine(gubun)
+
     elif ui.main_btn == 3 or (ui.dialog_scheduler.isVisible() and ui.sd_pushButtonnn_01.text() == '코인'):
         if not ui.backtest_engine:
             ui.StartBacktestEngine('코인')
@@ -72,6 +74,8 @@ def sdbutton_clicked_01(ui):
     if type(ui.dialog_scheduler.focusWidget()) != QLineEdit:
         if ui.sd_pushButtonnn_01.text() == '주식':
             ui.sd_pushButtonnn_01.setText('코인')
+        elif ui.sd_pushButtonnn_01.text() == '코인':
+            ui.sd_pushButtonnn_01.setText('해선')
         else:
             ui.sd_pushButtonnn_01.setText('주식')
 
@@ -128,7 +132,7 @@ def sdbutton_clicked_02(ui):
                 if bt_gubun == '주식':
                     ui.backQ.put((betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, ui.dict_cn,
                                   ui.back_count, bl, True, ui.df_kp, ui.df_kd, False))
-                    gubun = 'S'
+                    gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                     ui.proc_backtester_bs = Process(
                         target=BackTest,
                         args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
@@ -178,11 +182,9 @@ def sdbutton_clicked_02(ui):
                     bengineeday
                 ))
                 if bt_gubun == '주식':
-                    gubun = 'S'
-                elif ui.dict_set['거래소'] == '업비트':
-                    gubun = 'C'
+                    gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                 else:
-                    gubun = 'CF'
+                    gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'
 
                 if back_name == '조건 최적화':
                     ui.proc_backtester_oc = Process(
@@ -234,7 +236,7 @@ def sdbutton_clicked_02(ui):
                         betting, starttime, endtime, buystg, sellstg, optivars, ui.dict_cn, ui.dict_set['최적화기준값제한'],
                         optistd, ui.back_count, weeks_train, weeks_valid, weeks_test, benginesday, bengineeday
                     ))
-                    gubun = 'S'
+                    gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                 else:
                     ui.backQ.put((
                         betting, starttime, endtime, buystg, sellstg, optivars, None, ui.dict_set['최적화기준값제한'],
@@ -301,7 +303,7 @@ def sdbutton_clicked_02(ui):
                         ui.df_kd, weeks_train, weeks_valid, weeks_test, benginesday, bengineeday, optunasampl,
                         optunafixv, optunacount, optunaautos, False
                     ))
-                    gubun = 'S'
+                    gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                 else:
                     ui.backQ.put((
                         betting, startday, endday, starttime, endtime, buystg, sellstg, optivars, None, ccount,
@@ -392,7 +394,7 @@ def sdbutton_clicked_02(ui):
                         weeks_train, weeks_valid, weeks_test, benginesday, bengineeday, optunasampl, optunafixv,
                         optunacount, optunaautos, False, False, False
                     ))
-                    gubun = 'S'
+                    gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                 else:
                     ui.backQ.put((
                         betting, starttime, endtime, buystg, sellstg, optivars, None, ccount,
@@ -513,7 +515,7 @@ def StopScheduler(ui, gubun=False):
 
 
 def sdbutton_clicked_03(ui):
-    if ui.sd_pushButtonnn_01.text() == '주식':
+    if ui.sd_pushButtonnn_01.text() in ('주식', '해선'):
         ui.ssButtonClicked_06()
     else:
         ui.csButtonClicked_06()

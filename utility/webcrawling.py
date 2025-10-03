@@ -71,14 +71,14 @@ class WebCrawling:
 
     @thread_decorator
     def GugyCrawling(self, code):
-        url    = f'https://finance.naver.com/item/coinfo.nhn?code={code}'
+        url    = f'https://finance.naver.com/item/coinfo.naver?code={code}'
         source = requests.get(url).text
         html   = BeautifulSoup(source, 'lxml')
         gugy_result = ''
         titles = html.select('.summary_info > p')
         for title in titles:
             title = title.get_text().replace('.', '. ')
-            if title != '':
+            if title:
                 gugy_result += title
         self.windowQ.put((ui_num['기업개요'], gugy_result))
 
@@ -86,7 +86,7 @@ class WebCrawling:
     def GugsCrawling(self, code):
         date_list, jbjg_list, gygs_list, link_list = [], [], [], []
         for i in (1, 2):
-            url    = f'https://finance.naver.com/item/news_notice.nhn?code={code}&page={i}'
+            url    = f'https://finance.naver.com/item/news_notice.naver?code={code}&page={i}'
             source = requests.get(url).text
             html   = BeautifulSoup(source, 'lxml')
             dates  = html.select('.date')
@@ -99,7 +99,7 @@ class WebCrawling:
                     try:
                         link_list.append('https://finance.naver.com' + title.find('a')['href'])
                         title = title.get_text().strip()
-                        if title != '':
+                        if title:
                             gygs_list.append(title)
                     except:
                         pass
@@ -110,7 +110,7 @@ class WebCrawling:
     def JmnsCrawling(self, code):
         date_list, title_list, ulsa_list, link_list = [], [], [], []
         for i in (1, 2):
-            url    = f'https://finance.naver.com/item/news_news.nhn?code={code}&page={i}'
+            url    = f'https://finance.naver.com/item/news_news.naver?code={code}&page={i}'
             source = requests.get(url).text
             html   = BeautifulSoup(source, 'lxml')
             dates  = html.select('.date')
@@ -123,7 +123,7 @@ class WebCrawling:
                     try:
                         link_list.append('https://finance.naver.com' + title.find('a')['href'])
                         title = title.get_text().strip()
-                        if title != '':
+                        if title:
                             title_list.append(title)
                     except:
                         pass

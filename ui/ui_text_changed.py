@@ -45,14 +45,14 @@ def text_changed_04(ui):
 
 def text_changed_05(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
-    if name != '':
+    if name:
+        order_price = float(ui.od_lineEdittttt_01.text())
         if 'KRW' in name:
-            order_price = float(ui.od_lineEdittttt_01.text())
             order_count = round(ui.dict_set['코인투자금'] * 1_000_000 / order_price, 8)
         elif 'USDT' in name:
-            order_price = float(ui.od_lineEdittttt_01.text())
             order_count = round(ui.dict_set['코인투자금'] / order_price, 8)
-        else:
-            order_price = int(ui.od_lineEdittttt_01.text())
+        elif '키움증권' in ui.dict_set['증권사']:
             order_count = int(ui.dict_set['주식투자금'] * 1_000_000 / order_price)
+        else:
+            order_count = int(ui.dict_set['주식투자금'])
         ui.od_lineEdittttt_02.setText(str(order_count))

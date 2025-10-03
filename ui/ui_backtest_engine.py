@@ -9,6 +9,10 @@ from backtester.backengine_kiwoom_tick import BackEngineKiwoomTick
 from backtester.backengine_kiwoom_tick2 import BackEngineKiwoomTick2
 from backtester.backengine_kiwoom_min import BackEngineKiwoomMin
 from backtester.backengine_kiwoom_min2 import BackEngineKiwoomMin2
+from backtester.backengine_future_tick import BackEngineFutureTick
+from backtester.backengine_future_tick2 import BackEngineFutureTick2
+from backtester.backengine_future_min import BackEngineFutureMin
+from backtester.backengine_future_min2 import BackEngineFutureMin2
 from backtester.backengine_upbit_tick import BackEngineUpbitTick
 from backtester.backengine_upbit_tick2 import BackEngineUpbitTick2
 from backtester.backengine_upbit_min import BackEngineUpbitMin
@@ -19,23 +23,27 @@ from backtester.backengine_binance_min import BackEngineBinanceMin
 from backtester.backengine_binance_min2 import BackEngineBinanceMin2
 from backtester.back_subtotal import BackSubTotal
 from ui.set_style import style_bc_dk
-from utility.static import thread_decorator, qtest_qwait
+from utility.static import thread_decorator
 from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, BACK_TEMP, DB_STOCK_BACK_MIN, \
-    DB_COIN_BACK_MIN
+    DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 def backengine_show(ui, gubun):
     table_list = []
     if gubun == '주식':
-        db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+        if '키움증권' in ui.dict_set['증권사']:
+            db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+        else:
+            db = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
     else:
         db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
     con = sqlite3.connect(db)
     try:
         df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
-        table_list.remove('codename')
         table_list.remove('moneytop')
+        table_list.remove('stockinfo')
+        table_list.remove('futureinfo')
     except:
         pass
     con.close()
@@ -46,8 +54,28 @@ def backengine_show(ui, gubun):
         for name in name_list:
             ui.be_comboBoxxxxx_02.addItem(name)
     if gubun == '주식':
-        ui.be_lineEdittttt_01.setText('90000' if ui.dict_set['주식타임프레임'] else '900')
-        ui.be_lineEdittttt_02.setText('93000' if ui.dict_set['주식타임프레임'] else '1519')
+        if '키움증권' in ui.dict_set['증권사']:
+            if ui.dict_set['주식타임프레임']:
+                starttime = '90000'
+            else:
+                starttime = '900'
+        else:
+            if ui.dict_set['주식타임프레임']:
+                starttime = '93000'
+            else:
+                starttime = '900'
+        if '키움증권' in ui.dict_set['증권사']:
+            if ui.dict_set['주식타임프레임']:
+                endtime = '93000'
+            else:
+                endtime = '1519'
+        else:
+            if ui.dict_set['주식타임프레임']:
+                endtime = '103000'
+            else:
+                endtime = '1559'
+        ui.be_lineEdittttt_01.setText(starttime)
+        ui.be_lineEdittttt_02.setText(endtime)
     else:
         ui.be_lineEdittttt_01.setText('0')
         ui.be_lineEdittttt_02.setText('235959' if ui.dict_set['코인타임프레임'] else '2359')
@@ -91,6 +119,11 @@ def start_backengine(ui, gubun):
                 target = BackEngineKiwoomTick if ui.dict_set['주식타임프레임'] else BackEngineKiwoomMin
             else:
                 target = BackEngineKiwoomTick2 if ui.dict_set['주식타임프레임'] else BackEngineKiwoomMin2
+        elif gubun == '해선':
+            if not ui.dict_set['백테주문관리적용']:
+                target = BackEngineFutureTick if ui.dict_set['주식타임프레임'] else BackEngineFutureMin
+            else:
+                target = BackEngineFutureTick2 if ui.dict_set['주식타임프레임'] else BackEngineFutureMin2
         else:
             if ui.dict_set['거래소'] == '업비트':
                 if not ui.dict_set['백테주문관리적용']:
@@ -125,26 +158,36 @@ def start_backengine(ui, gubun):
             os.remove(f'{BACK_TEMP}/{file}')
         ui.windowQ.put((ui_num['백테엔진'], '이전 임시파일 삭제 완료'))
 
+    dict_info = {}
     try:
         if gubun == '주식':
             db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+        elif gubun == '해선':
+            db = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
         else:
             db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
         con = sqlite3.connect(db)
         if gubun == '주식':
-            df_cn = pd.read_sql('SELECT * FROM codename', con).set_index('index')
+            try:
+                df_cn = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
+            except:
+                df_cn = pd.read_sql('SELECT * FROM codename', con).set_index('index')
             ui.dict_cn = df_cn['종목명'].to_dict()
-        gubun_ = 'S' if gubun == '주식' else 'CF' if gubun == '코인' and ui.dict_set['거래소'] == '바이낸스선물' else 'C'
+        elif gubun == '해선':
+            df_cn = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
+            dict_info = df_cn.to_dict('index')
+            ui.dict_cn = df_cn['종목명'].to_dict()
+        gubun_ = 'S' if gubun == '주식' else 'X'
         query = GetMoneytopQuery(gubun_, ui.startday, ui.endday, ui.starttime, ui.endtime)
         df_mt = pd.read_sql(query, con)
         con.close()
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
         df_mt.set_index('index', inplace=True)
     except:
-        if gubun == '주식':
+        if gubun in ('주식', '해선'):
             if ui.dict_cn is None:
                 ui.windowQ.put((ui_num['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
-            elif len(ui.dict_cn) < 100:
+            elif gubun == '주식' and len(ui.dict_cn) < 100:
                 ui.windowQ.put((ui_num['백테엔진'], '종목명 테이블이 갱신되지 않았습니다. 수동로그인(Alt + S)을 1회 실행하시오.'))
             else:
                 ui.windowQ.put((ui_num['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
@@ -193,166 +236,66 @@ def start_backengine(ui, gubun):
 
     ui.wdzservQ.put(('manager', '백테엔진구동'))
 
-    for i in range(multi):
-        if gubun == '주식':
-            ui.back_eques[i].put(('종목명', ui.dict_cn))
+    if gubun in ('주식', '해선'):
+        for i in range(multi):
+            if gubun == '주식':
+                ui.back_eques[i].put(('종목명', ui.dict_cn))
+            else:
+                ui.back_eques[i].put(('종목명', dict_info))
     ui.windowQ.put((ui_num['백테엔진'], '거래대금순위 및 종목코드 추출 완료'))
 
-    if divid_mode == '종목코드별 분류':
-        ui.windowQ.put((ui_num['백테엔진'], '종목별 데이터 크기 추출 시작'))
-        code_lists = []
-        for i in range(multi):
-            code_lists.append([code for j, code in enumerate(table_list) if j % multi == i])
-        for i, codes in enumerate(code_lists):
-            ui.back_eques[i].put(('데이터크기', ui.startday, ui.endday, ui.starttime, ui.endtime, codes, ui.avg_list,
-                                  code_days, day_codes, one_code, divid_mode))
+    log_gubun = divid_mode.split()[0]
+    if log_gubun == '한종목': log_gubun = f'{log_gubun} 일자별'
 
-        dict_lendf = {}
-        last = len(table_list)
-        for i in range(last):
-            data = ui.backQ.get()
-            if data[1] != 0:
-                dict_lendf[data[0]] = data[1]
-            if (i + 1) % 100 == 0:
-                ui.windowQ.put((ui_num['백테엔진'], f'종목별 데이터 크기 추출 중 ... [{i + 1}/{last}]'))
-        ui.windowQ.put((ui_num['백테엔진'], '종목별 데이터 크기 추출 완료'))
+    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 크기 추출 시작'))
+    data_list  = table_list if log_gubun == '종목코드별' else day_list if log_gubun == '일자별' else code_days[one_code]
+    data_lists = []
+    for i in range(multi):
+        data_lists.append([data for j, data in enumerate(data_list) if j % multi == i])
+    for i, datas in enumerate(data_lists):
+        ui.back_eques[i].put(('데이터크기', ui.startday, ui.endday, ui.starttime, ui.endtime, datas, ui.avg_list, code_days, day_codes, one_code, divid_mode))
 
-        code_lists = [[] for _ in range(multi)]
-        total_list = [0 for _ in range(multi)]
-        total_ticks = sum(dict_lendf.values())
-        divid_lendf = int(total_ticks / multi)
-        add_count = 0
-        multi_num = 0
-        reverse = False
-        sort_lendf = sorted(dict_lendf.items(), key=operator.itemgetter(1), reverse=True)
-        for code, lendf in sort_lendf:
-            code_lists[multi_num].append(code)
-            total_list[multi_num] += lendf
-            while True:
-                add_count += 1
-                if add_count % multi == 0:
-                    if reverse:
-                        reverse = False
-                        multi_num = 0
-                    else:
-                        reverse = True
-                        multi_num = multi - 1
+    dict_lendf = {}
+    last = len(data_list)
+    for i in range(last):
+        data = ui.backQ.get()
+        if data[1] != 0:
+            dict_lendf[data[0]] = data[1]
+        if (i + 1) % (100 if log_gubun == '종목코드별' else 10) == 0:
+            ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 크기 추출 중 ... [{i + 1}/{last}]'))
+    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 크기 추출 완료'))
+
+    data_lists = [[] for _ in range(multi)]
+    total_list = [0 for _ in range(multi)]
+    total_ticks = sum(dict_lendf.values())
+    divid_lendf = int(total_ticks / multi)
+    add_count = 0
+    multi_num = 0
+    reverse = False
+    sort_lendf = sorted(dict_lendf.items(), key=operator.itemgetter(1), reverse=True)
+    for code, lendf in sort_lendf:
+        data_lists[multi_num].append(code)
+        total_list[multi_num] += lendf
+        while True:
+            add_count += 1
+            if add_count % multi == 0:
+                if reverse:
+                    reverse = False
+                    multi_num = 0
                 else:
-                    if reverse:
-                        multi_num -= 1
-                    else:
-                        multi_num += 1
-                if total_list[multi_num] < divid_lendf:
-                    break
-
-        ui.windowQ.put((ui_num['백테엔진'], '종목코드별 분류 완료'))
-        for i, codes in enumerate(code_lists):
-            ui.back_eques[i].put(('데이터로딩', ui.startday, ui.endday, ui.starttime, ui.endtime, codes, ui.avg_list,
-                                  code_days, day_codes, one_code, divid_mode))
-
-    elif divid_mode == '일자별 분류':
-        ui.windowQ.put((ui_num['백테엔진'], '일자별 데이터 크기 추출 시작'))
-        day_lists = []
-        for i in range(multi):
-            day_lists.append([day for j, day in enumerate(day_list) if j % multi == i])
-        for i, days in enumerate(day_lists):
-            ui.back_eques[i].put(('데이터크기', ui.startday, ui.endday, ui.starttime, ui.endtime, days, ui.avg_list,
-                                  code_days, day_codes, one_code, divid_mode))
-
-        dict_lendf = {}
-        last = len(day_list)
-        for i in range(last):
-            data = ui.backQ.get()
-            if data[1] != 0:
-                dict_lendf[data[0]] = data[1]
-            if (i + 1) % 10 == 0:
-                ui.windowQ.put((ui_num['백테엔진'], f'일자별 데이터 크기 추출 중 ... [{i + 1}/{last}]'))
-        ui.windowQ.put((ui_num['백테엔진'], '일자별 데이터 크기 추출 완료'))
-
-        day_lists = [[] for _ in range(multi)]
-        total_list = [0 for _ in range(multi)]
-        total_ticks = sum(dict_lendf.values())
-        divid_lendf = int(total_ticks / multi)
-        add_count = 0
-        multi_num = 0
-        reverse = False
-        sort_lendf = sorted(dict_lendf.items(), key=operator.itemgetter(1), reverse=True)
-        for day, lendf in sort_lendf:
-            day_lists[multi_num].append(day)
-            total_list[multi_num] += lendf
-            while True:
-                add_count += 1
-                if add_count % multi == 0:
-                    if reverse:
-                        reverse = False
-                        multi_num = 0
-                    else:
-                        reverse = True
-                        multi_num = multi - 1
+                    reverse = True
+                    multi_num = multi - 1
+            else:
+                if reverse:
+                    multi_num -= 1
                 else:
-                    if reverse:
-                        multi_num -= 1
-                    else:
-                        multi_num += 1
-                if total_list[multi_num] < divid_lendf:
-                    break
+                    multi_num += 1
+            if total_list[multi_num] < divid_lendf:
+                break
 
-        ui.windowQ.put((ui_num['백테엔진'], '일자별 분류 완료'))
-        for i, days in enumerate(day_lists):
-            ui.back_eques[i].put(('데이터로딩', ui.startday, ui.endday, ui.starttime, ui.endtime, days, ui.avg_list,
-                                  code_days, day_codes, one_code, divid_mode))
-    else:
-        ui.windowQ.put((ui_num['백테엔진'], f'{one_code} 일자별 데이터 크기 추출 시작'))
-        day_list = code_days[one_code]
-        day_lists = []
-        for i in range(multi):
-            day_lists.append([day for j, day in enumerate(day_list) if j % multi == i])
-        for i, days in enumerate(day_lists):
-            ui.back_eques[i].put(('데이터크기', ui.startday, ui.endday, ui.starttime, ui.endtime, days, ui.avg_list,
-                                  code_days, day_codes, one_code, divid_mode))
-
-        dict_lendf = {}
-        last = len(day_list)
-        for i in range(last):
-            data = ui.backQ.get()
-            if data[1] != 0:
-                dict_lendf[data[0]] = data[1]
-            if (i + 1) % 10 == 0:
-                ui.windowQ.put((ui_num['백테엔진'], f'{one_code} 일자별 데이터 크기 추출 중 ... [{i + 1}/{last}]'))
-        ui.windowQ.put((ui_num['백테엔진'], f'{one_code} 일자별 데이터 크기 추출 완료'))
-
-        day_lists = [[] for _ in range(multi)]
-        total_list = [0 for _ in range(multi)]
-        total_ticks = sum(dict_lendf.values())
-        divid_lendf = int(total_ticks / multi)
-        add_count = 0
-        multi_num = 0
-        reverse = False
-        sort_lendf = sorted(dict_lendf.items(), key=operator.itemgetter(1), reverse=True)
-        for day, lendf in sort_lendf:
-            day_lists[multi_num].append(day)
-            total_list[multi_num] += lendf
-            while True:
-                add_count += 1
-                if add_count % multi == 0:
-                    if reverse:
-                        reverse = False
-                        multi_num = 0
-                    else:
-                        reverse = True
-                        multi_num = multi - 1
-                else:
-                    if reverse:
-                        multi_num -= 1
-                    else:
-                        multi_num += 1
-                if total_list[multi_num] < divid_lendf:
-                    break
-
-        ui.windowQ.put((ui_num['백테엔진'], f'{one_code} 일자별 분류 완료'))
-        for i, days in enumerate(day_lists):
-            ui.back_eques[i].put(('데이터로딩', ui.startday, ui.endday, ui.starttime, ui.endtime, days, ui.avg_list,
-                                  code_days, day_codes, one_code, divid_mode))
+    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 분류 완료'))
+    for i, datas in enumerate(data_lists):
+        ui.back_eques[i].put(('데이터로딩', ui.startday, ui.endday, ui.starttime, ui.endtime, datas, ui.avg_list, code_days, day_codes, one_code, divid_mode))
 
     for _ in range(multi):
         data = ui.backQ.get()
@@ -385,7 +328,7 @@ def back_code_test3(gubun, conds_code, testQ):
     while not testQ.empty():
         testQ.get()
     conds_code = conds_code.split('\n')
-    conds_code = [x for x in conds_code if x != '' and '#' not in x]
+    conds_code = [x for x in conds_code if x and '#' not in x]
     if gubun == '매수':
         conds_code = 'if ' + ':\n    매수 = False\nelif '.join(conds_code) + ':\n    매수 = False'
     else:
@@ -416,7 +359,6 @@ def clear_backtestQ(ui):
 def backtest_process_kill(ui, gubun):
     ui.back_cancelling = True
     ui.totalQ.put('백테중지')
-    qtest_qwait(3)
 
     if ui.proc_backtester_bs   is not None and ui.proc_backtester_bs.is_alive():   ui.proc_backtester_bs.kill()
     if ui.proc_backtester_bf   is not None and ui.proc_backtester_bf.is_alive():   ui.proc_backtester_bf.kill()
