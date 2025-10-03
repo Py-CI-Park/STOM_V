@@ -46,8 +46,6 @@ class Total:
 
         self.df_tsg       = None
         self.df_bct       = None
-        self.df_kp        = None
-        self.df_kd        = None
         self.back_club    = None
 
         self.insertlist   = []
@@ -60,7 +58,7 @@ class Total:
         start = now()
         while True:
             data = self.tq.get()
-            if data[0] == '백테완료':
+            if data == '백테완료':
                 bc += 1
                 self.wq.put((ui_num[f'{self.ui_gubun}백테바'], bc, self.back_count, start))
 
@@ -101,9 +99,7 @@ class Total:
                 self.day_count   = data[12]
                 self.blacklist   = data[13]
                 self.schedul     = data[14]
-                self.df_kp       = data[15]
-                self.df_kd       = data[16]
-                self.back_club   = data[17]
+                self.back_club   = data[15]
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
@@ -225,18 +221,21 @@ class Total:
                 else:
                     sell_vars = f'{sell_vars}, {text}'
 
-            PltShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday, self.endday, self.starttime, self.endtime,
-                    self.df_kp, self.df_kd, None, self.backname, back_text, label_text, save_file_name, self.schedul, False, buy_vars=buy_vars, sell_vars=sell_vars)
+            PltShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
+                    self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
+                    save_file_name, self.schedul, False, buy_vars=buy_vars, sell_vars=sell_vars)
         else:
             if not self.dict_set['그래프저장하지않기']:
-                PltShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday, self.endday, self.starttime, self.endtime,
-                        self.df_kp, self.df_kd, None, self.backname, back_text, label_text, save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
+                PltShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
+                        self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
+                        save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
 
         self.mq.put(f'{self.backname} 완료')
 
 
 class BackTest:
-    def __init__(self, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, ui_gubun):
+        self.shared_counter = sc
         self.wq        = wq
         self.bq        = bq
         self.sq        = sq
@@ -275,9 +274,7 @@ class BackTest:
         back_count    = data[9]
         bl            = data[10]
         schedul       = data[11]
-        df_kp         = data[12]
-        df_kq         = data[13]
-        back_club     = data[14]
+        back_club     = data[12]
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
@@ -321,16 +318,15 @@ class BackTest:
         ).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
         self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg_name, buystg, sellstg,
-                     dict_cn, back_count, day_count, bl, schedul, df_kp, df_kq, back_club))
+                     dict_cn, back_count, day_count, bl, schedul, back_club))
 
-        time.sleep(1)
+        self.shared_counter.value = 0
         data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg)
         for q in self.bstq_list:
             q.put(('백테시작', 2))
         for q in self.beq_list:
             q.put(data)
 
-        time.sleep(2)
         data = mq.get()
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))

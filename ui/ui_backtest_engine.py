@@ -1,7 +1,6 @@
-import os
 import sqlite3
 import pandas as pd
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, Value, Lock
 from backtester.back_code_test import BackCodeTest
 from backtester.back_static import GetMoneytopQuery
 from backtester.backengine_kiwoom_tick import BackEngineKiwoomTick
@@ -22,9 +21,9 @@ from backtester.backengine_binance_min import BackEngineBinanceMin
 from backtester.backengine_binance_min2 import BackEngineBinanceMin2
 from backtester.back_subtotal import BackSubTotal
 from ui.set_style import style_bc_dk
-from utility.static import thread_decorator
-from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, BACK_TEMP, DB_STOCK_BACK_MIN, \
-    DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.static import thread_decorator, qtest_qwait
+from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
+    DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 def backengine_show(ui, gubun):
@@ -108,6 +107,9 @@ def start_backengine(ui, gubun):
         ui.back_sprocs.append(proc)
         ui.windowQ.put((ui_num['백테엔진'], f'중간집계용 프로세스{i + 1} 생성 완료'))
 
+    ui.shared_counter = Value('i', 0)
+    ui.shared_lock    = Lock()
+
     for i in range(multi):
         beq = Queue()
         ui.back_eques.append(beq)
@@ -137,25 +139,15 @@ def start_backengine(ui, gubun):
 
         if i == 0 and ui.dict_set['백테엔진프로파일링']:
             proc = Process(
-                target=target, args=(i, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques, True), daemon=True
+                target=target, args=(i, ui.shared_counter, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques, True), daemon=True
             )
         else:
             proc = Process(
-                target=target, args=(i, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques), daemon=True
+                target=target, args=(i, ui.shared_counter, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques), daemon=True
             )
         proc.start()
         ui.back_eprocs.append(proc)
         ui.windowQ.put((ui_num['백테엔진'], f'연산용 프로세스{i + 1} 생성 완료'))
-
-    if gubun == '주식':
-        ui.webcQ.put(('지수차트', ui.startday))
-        ui.df_kp, ui.df_kd = ui.backQ.get()
-
-    if not ui.dict_set['백테일괄로딩']:
-        file_list = os.listdir(BACK_TEMP)
-        for file in file_list:
-            os.remove(f'{BACK_TEMP}/{file}')
-        ui.windowQ.put((ui_num['백테엔진'], '이전 임시파일 삭제 완료'))
 
     dict_info = {}
     try:
@@ -200,20 +192,19 @@ def start_backengine(ui, gubun):
         ui.BacktestEngineKill()
         return
 
-    ui.dict_mt = df_mt['거래대금순위'].to_dict()
-    day_list = list(set(df_mt['일자'].to_list()))
+    mt_list = df_mt['거래대금순위'].to_list()
+    day_list = set(df_mt['일자'].to_list())
     table_list = set()
-    for mt_text in ui.dict_mt.values():
+    for mt_text in mt_list:
         table_list.update(mt_text.split(';'))
-    table_list = list(table_list)
 
     day_codes = {}
     for day in day_list:
         df_mt_ = df_mt[df_mt['일자'] == day]
         code_list = set()
-        for mt_text in df_mt_.values():
+        for mt_text in df_mt_['거래대금순위'].to_list():
             code_list.update(mt_text.split(';'))
-        day_codes[day] = list(code_list)
+        day_codes[day] = code_list
 
     code_days = {}
     for code in table_list:
@@ -252,60 +243,25 @@ def start_backengine(ui, gubun):
     log_gubun = divid_mode.split()[0]
     if log_gubun == '한종목': log_gubun = f'{log_gubun} 일자별'
 
-    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 크기 추출 시작'))
+    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 시작'))
     data_list  = table_list if log_gubun == '종목코드별' else day_list if log_gubun == '일자별' else code_days[one_code]
     data_lists = []
     for i in range(multi):
         data_lists.append([data for j, data in enumerate(data_list) if j % multi == i])
     for i, datas in enumerate(data_lists):
-        ui.back_eques[i].put(('데이터크기', ui.startday, ui.endday, ui.starttime, ui.endtime, datas, ui.avg_list, code_days, day_codes, one_code, divid_mode))
-
-    dict_lendf = {}
-    last = len(data_list)
-    for i in range(last):
-        data = ui.backQ.get()
-        if data[1] != 0:
-            dict_lendf[data[0]] = data[1]
-        if (i + 1) % (100 if log_gubun == '종목코드별' else 10) == 0:
-            ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 크기 추출 중 ... [{i + 1}/{last}]'))
-    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 크기 추출 완료'))
-
-    data_lists = [[] for _ in range(multi)]
-    total_list = [0 for _ in range(multi)]
-    total_ticks = sum(dict_lendf.values())
-    divid_lendf = int(total_ticks / multi)
-    add_count = 0
-    multi_num = 0
-    reverse = False
-    sort_lendf = sorted(dict_lendf.items(), key=lambda x: x[1], reverse=True)
-    for code, lendf in sort_lendf:
-        data_lists[multi_num].append(code)
-        total_list[multi_num] += lendf
-        while True:
-            add_count += 1
-            if add_count % multi == 0:
-                if reverse:
-                    reverse = False
-                    multi_num = 0
-                else:
-                    reverse = True
-                    multi_num = multi - 1
-            else:
-                if reverse:
-                    multi_num -= 1
-                else:
-                    multi_num += 1
-            if total_list[multi_num] < divid_lendf:
-                break
-
-    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 분류 완료'))
-    for i, datas in enumerate(data_lists):
         ui.back_eques[i].put(('데이터로딩', ui.startday, ui.endday, ui.starttime, ui.endtime, datas, ui.avg_list, code_days, day_codes, one_code, divid_mode))
 
-    for _ in range(multi):
-        data = ui.backQ.get()
-        ui.back_count += data
-        ui.windowQ.put((ui_num['백테엔진'], f'백테엔진 데이터 로딩 중 ... [{data}]'))
+    ui.shared_info = []
+    for i in range(multi):
+        shared_info_ = ui.backQ.get()
+        ui.shared_info += shared_info_
+        ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
+    ui.shared_info = sorted(ui.shared_info, key=lambda x: x['len'], reverse=True)
+    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 완료'))
+
+    ui.back_count = len(ui.shared_info)
+    for q in ui.back_eques:
+        q.put(('공유데이터', ui.back_count, ui.shared_info))
 
     ui.back_engining = False
     ui.backtest_engine = True
@@ -363,6 +319,10 @@ def clear_backtestQ(ui):
 
 def backtest_process_kill(ui, gubun):
     ui.back_cancelling = True
+    for q in ui.back_eques:
+        q.put('백테중지')
+    for q in ui.back_sques:
+        q.put('백테중지')
     ui.totalQ.put('백테중지')
 
     if ui.proc_backtester_bs   is not None and ui.proc_backtester_bs.is_alive():   ui.proc_backtester_bs.kill()
@@ -391,6 +351,16 @@ def backtest_process_kill(ui, gubun):
     if ui.proc_backtester_oc   is not None and ui.proc_backtester_oc.is_alive():   ui.proc_backtester_oc.kill()
     if ui.proc_backtester_ocv  is not None and ui.proc_backtester_ocv.is_alive():  ui.proc_backtester_ocv.kill()
     if ui.proc_backtester_ocvc is not None and ui.proc_backtester_ocvc.is_alive(): ui.proc_backtester_ocvc.kill()
+
+    count = 0
+    while True:
+        if not ui.backQ.empty():
+            data = ui.backQ.get()
+            if data == '백테중지완료':
+                count += 1
+                if count == ui.multi:
+                    break
+        qtest_qwait(0.01)
 
     if ui.main_btn == 2:   ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
     elif ui.main_btn == 3: ui.cs_pushButtonn_08.setStyleSheet(style_bc_dk)

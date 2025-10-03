@@ -4,7 +4,7 @@ import sqlite3
 import pandas as pd
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QLineEdit, QMessageBox, QApplication
-from multiprocessing import Process
+from multiprocessing import Process, shared_memory
 from backtester.optimiz import Optimize
 from backtester.backtest import BackTest
 from backtester.optimiz_conditions import OptimizeConditions
@@ -49,6 +49,36 @@ def bebutton_clicked_01(ui):
 
 
 def backtest_engine_kill(ui):
+    if ui.shared_info and 'shm_name' in ui.shared_info[0].keys():
+        if ui.dialog_backengine.isVisible():
+            ui.windowQ.put((ui_num['백테엔진'], '<font color=#45cdf7>공유메모리 삭제 중 ...</font>'))
+        else:
+            print('공유메모리 삭제 중 ...')
+        for shared_info in ui.shared_info:
+            try:
+                shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
+                shm.close()
+                shm.unlink()
+            except:
+                pass
+        if ui.dialog_backengine.isVisible():
+            ui.windowQ.put((ui_num['백테엔진'], '<font color=#45cdf7>공유메모리 삭제 완료</font>'))
+        else:
+            print('공유메모리 삭제 완료')
+    elif ui.shared_info and 'file_name' in ui.shared_info[0].keys():
+        if ui.dialog_backengine.isVisible():
+            ui.windowQ.put((ui_num['백테엔진'], '<font color=#45cdf7>임시파일 삭제 중 ...</font>'))
+        else:
+            print('임시파일 삭제 중 ...')
+        for shared_info in ui.shared_info:
+            try:
+                os.remove(shared_info['file_name'])
+            except:
+                pass
+        if ui.dialog_backengine.isVisible():
+            ui.windowQ.put((ui_num['백테엔진'], '<font color=#45cdf7>임시파일 삭제 완료</font>'))
+        else:
+            print('임시파일 삭제 완료')
     ui.ClearBacktestQ()
     for p in ui.back_sprocs:
         p.kill()
@@ -63,11 +93,11 @@ def backtest_engine_kill(ui):
     ui.back_eques  = []
     ui.back_sques  = []
     ui.dict_cn     = None
-    ui.dict_mt     = None
     ui.back_count  = 0
     ui.back_engining   = False
     ui.backtest_engine = False
-    ui.windowQ.put((ui_num['백테엔진'], '<font color=#45cdf7>모든 백테엔진 프로세스가 종료되었습니다.</font>'))
+    if ui.dialog_backengine.isVisible():
+        ui.windowQ.put((ui_num['백테엔진'], '<font color=#45cdf7>백테엔진 프로세스가 종료되었습니다.</font>'))
 
 
 def sdbutton_clicked_01(ui):
@@ -131,12 +161,12 @@ def sdbutton_clicked_02(ui):
 
                 if bt_gubun == '주식':
                     ui.backQ.put((betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, ui.dict_cn,
-                                  ui.back_count, bl, True, ui.df_kp, ui.df_kd, False))
+                                  ui.back_count, bl, True, False))
                     gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                     ui.proc_backtester_bs = Process(
                         target=BackTest,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                              ui.back_sques, back_name, gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, back_name, gubun)
                     )
                     ui.proc_backtester_bs.start()
                     ui.svjButtonClicked_07()
@@ -144,12 +174,12 @@ def sdbutton_clicked_02(ui):
                     ui.ssicon_alert = True
                 else:
                     ui.backQ.put((betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, None,
-                                  ui.back_count, bl, True, None, None, False))
+                                  ui.back_count, bl, True, False))
                     gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'
                     ui.proc_backtester_bs = Process(
                         target=BackTest,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                              ui.back_sques, back_name, gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, back_name, gubun)
                     )
                     ui.proc_backtester_bs.start()
                     ui.cvjButtonClicked_07()
@@ -189,19 +219,22 @@ def sdbutton_clicked_02(ui):
                 if back_name == '조건 최적화':
                     ui.proc_backtester_oc = Process(
                         target=OptimizeConditions,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, '최적화OC', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                              ui.back_sques, '최적화OC', gubun)
                     )
                     ui.proc_backtester_oc.start()
                 elif back_name == '검증 조건 최적화':
                     ui.proc_backtester_ocv = Process(
                         target=OptimizeConditions,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, '최적화OCV', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                              ui.back_sques, '최적화OCV', gubun)
                     )
                     ui.proc_backtester_ocv.start()
                 elif back_name == '교차검증 조건 최적화':
                     ui.proc_backtester_ocvc = Process(
                         target=OptimizeConditions,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, '최적화OCVC', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                              ui.back_sques, '최적화OCVC', gubun)
                     )
                     ui.proc_backtester_ocvc.start()
 
@@ -247,19 +280,22 @@ def sdbutton_clicked_02(ui):
                 if back_name == 'GA 최적화':
                     ui.proc_backtester_og = Process(
                         target=OptimizeGeneticAlgorithm,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, '최적화OG', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                              ui.back_sques, '최적화OG', gubun)
                     )
                     ui.proc_backtester_og.start()
                 elif back_name == '검증 GA 최적화':
                     ui.proc_backtester_ogv = Process(
                         target=OptimizeGeneticAlgorithm,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, '최적화OGV', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                              ui.back_sques, '최적화OGV', gubun)
                     )
                     ui.proc_backtester_ogv.start()
                 elif back_name == '교차검증 GA 최적화':
                     ui.proc_backtester_ogvc = Process(
                         target=OptimizeGeneticAlgorithm,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, '최적화OGVC', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                              ui.back_sques, '최적화OGVC', gubun)
                     )
                     ui.proc_backtester_ogvc.start()
 
@@ -299,60 +335,59 @@ def sdbutton_clicked_02(ui):
                 if bt_gubun == '주식':
                     ui.backQ.put((
                         betting, startday, endday, starttime, endtime, buystg, sellstg, optivars, ui.dict_cn,
-                        ccount, ui.dict_set['최적화기준값제한'], optistd, ui.back_count, True, ui.df_kp,
-                        ui.df_kd, weeks_train, weeks_valid, weeks_test, benginesday, bengineeday, optunasampl,
-                        optunafixv, optunacount, optunaautos, False
+                        ccount, ui.dict_set['최적화기준값제한'], optistd, ui.back_count, True, weeks_train,
+                        weeks_valid, weeks_test, benginesday, bengineeday, optunasampl, optunafixv, optunacount,
+                        optunaautos, False
                     ))
                     gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                 else:
                     ui.backQ.put((
                         betting, startday, endday, starttime, endtime, buystg, sellstg, optivars, None, ccount,
-                        ui.dict_set['최적화기준값제한'], optistd, ui.back_count, True, None, None, weeks_train,
-                        weeks_valid, weeks_test, benginesday, bengineeday, optunasampl, optunafixv, optunacount,
-                        optunaautos, False
+                        ui.dict_set['최적화기준값제한'], optistd, ui.back_count, True, weeks_train, weeks_valid,
+                        weeks_test, benginesday, bengineeday, optunasampl, optunafixv, optunacount, optunaautos, False
                     ))
                     gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'
 
                 if back_name == '그리드 최적화 전진분석':
                     ui.proc_backtester_or = Process(
                         target=RollingWalkForwardTest,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '전진분석OR', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '전진분석OR', gubun)
                     )
                     ui.proc_backtester_or.start()
                 elif back_name == '그리드 검증 최적화 전진분석':
                     ui.proc_backtester_orv = Process(
                         target=RollingWalkForwardTest,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '전진분석ORV', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '전진분석ORV', gubun)
                     )
                     ui.proc_backtester_orv.start()
                 elif back_name == '그리드 교차검증 최적화 전진분석':
                     ui.proc_backtester_orvc = Process(
                         target=RollingWalkForwardTest,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '전진분석ORVC', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '전진분석ORVC', gubun)
                     )
                     ui.proc_backtester_orvc.start()
                 elif back_name == '베이지안 최적화 전진분석':
                     ui.proc_backtester_br = Process(
                         target=RollingWalkForwardTest,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '전진분석BR', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '전진분석BR', gubun)
                     )
                     ui.proc_backtester_br.start()
                 elif back_name == '베이지안 검증 최적화 전진분석':
                     ui.proc_backtester_brv = Process(
                         target=RollingWalkForwardTest,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '전진분석BRV', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '전진분석BRV', gubun)
                     )
                     ui.proc_backtester_brv.start()
                 elif back_name == '베이지안 교차검증 최적화 전진분석':
                     ui.proc_backtester_brvc = Process(
                         target=RollingWalkForwardTest,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '전진분석BRVC', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '전진분석BRVC', gubun)
                     )
                     ui.proc_backtester_brvc.start()
 
@@ -390,102 +425,102 @@ def sdbutton_clicked_02(ui):
                 if bt_gubun == '주식':
                     ui.backQ.put((
                         betting, starttime, endtime, buystg, sellstg, optivars, ui.dict_cn, ccount,
-                        ui.dict_set['최적화기준값제한'], optistd, ui.back_count, True, ui.df_kp, ui.df_kd,
-                        weeks_train, weeks_valid, weeks_test, benginesday, bengineeday, optunasampl, optunafixv,
-                        optunacount, optunaautos, False, False, False
+                        ui.dict_set['최적화기준값제한'], optistd, ui.back_count, True, weeks_train, weeks_valid,
+                        weeks_test, benginesday, bengineeday, optunasampl, optunafixv, optunacount, optunaautos,
+                        False, False, False
                     ))
                     gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                 else:
                     ui.backQ.put((
                         betting, starttime, endtime, buystg, sellstg, optivars, None, ccount,
-                        ui.dict_set['최적화기준값제한'], optistd, ui.back_count, True, None, None, weeks_train,
-                        weeks_valid, weeks_test, benginesday, bengineeday, optunasampl, optunafixv, optunacount,
-                        optunaautos, False, False, False
+                        ui.dict_set['최적화기준값제한'], optistd, ui.back_count, True, weeks_train, weeks_valid,
+                        weeks_test, benginesday, bengineeday, optunasampl, optunafixv, optunacount, optunaautos,
+                        False, False, False
                     ))
                     gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'
 
                 if back_name == '그리드 최적화':
                     ui.proc_backtester_o = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화O', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화O', gubun)
                     )
                     ui.proc_backtester_o.start()
                 elif back_name == '그리드 검증 최적화':
                     ui.proc_backtester_ov = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화OV', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화OV', gubun)
                     )
                     ui.proc_backtester_ov.start()
                 elif back_name == '그리드 교차검증 최적화':
                     ui.proc_backtester_ovc = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화OVC', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화OVC', gubun)
                     )
                     ui.proc_backtester_ovc.start()
                 elif back_name == '베이지안 최적화':
                     ui.proc_backtester_b = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화B', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화B', gubun)
                     )
                     ui.proc_backtester_b.start()
                 elif back_name == '베이지안 검증 최적화':
                     ui.proc_backtester_bv = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화BV', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화BV', gubun)
                     )
                     ui.proc_backtester_bv.start()
                 elif back_name == '베이지안 교차검증 최적화':
                     ui.proc_backtester_bvc = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화BVC', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화BVC', gubun)
                     )
                     ui.proc_backtester_bvc.start()
                 elif back_name == '그리드 최적화 테스트':
                     ui.proc_backtester_ot = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화OT', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화OT', gubun)
                     )
                     ui.proc_backtester_ot.start()
                 elif back_name == '그리드 검증 최적화 테스트':
                     ui.proc_backtester_ovt = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화OVT', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화OVT', gubun)
                     )
                     ui.proc_backtester_ovt.start()
                 elif back_name == '그리드 교차검증 최적화 테스트':
                     ui.proc_backtester_ovct = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화OVCT', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화OVCT', gubun)
                     )
                     ui.proc_backtester_ovct.start()
                 elif back_name == '베이지안 최적화 테스트':
                     ui.proc_backtester_bt = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화BT', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화BT', gubun)
                     )
                     ui.proc_backtester_bt.start()
                 elif back_name == '베이지안 검증 최적화 테스트':
                     ui.proc_backtester_bvt = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화BVT', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화BVT', gubun)
                     )
                     ui.proc_backtester_bvt.start()
                 elif back_name == '베이지안 교차검증 최적화 테스트':
                     ui.proc_backtester_bvct = Process(
                         target=Optimize,
-                        args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                              ui.multi, ui.divid_mode, '최적화BVCT', gubun)
+                        args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, ui.multi, ui.divid_mode, '최적화BVCT', gubun)
                     )
                     ui.proc_backtester_bvct.start()
 

@@ -704,14 +704,13 @@ class BinanceStrategyTick:
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.windowQ.put((ui_num['C관심종목'], df_gj))
         if self.dict_hilo:
-            for code in self.dict_hilo:
+            for code in self.dict_hilo.copy():
                 if code not in self.dict_jg:
                     del self.dict_hilo[code]
 
     def SaveData(self, codes):
         for code in self.dict_arry.copy():
             if code not in codes:
-                print('SaveData del dict', code)
                 del self.dict_arry[code]
 
         if self.dict_set['코인타임프레임']:

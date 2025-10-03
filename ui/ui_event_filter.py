@@ -3,7 +3,10 @@ from PyQt5.QtWidgets import QMainWindow, QMessageBox
 
 
 def event_filter(ui, widget, event):
-    if event.type() == QEvent.KeyPress and event.key() == Qt.Key_Tab:
+    if event.type() != QEvent.KeyPress:
+        return QMainWindow.eventFilter(ui, widget, event)
+
+    if event.key() == Qt.Key_Tab:
         if widget == ui.ss_textEditttt_01:
             ui.ss_textEditttt_01.insertPlainText('    ')
         elif widget == ui.ss_textEditttt_02:
@@ -21,7 +24,7 @@ def event_filter(ui, widget, event):
         elif widget == ui.cs_textEditttt_04:
             ui.cs_textEditttt_04.insertPlainText('    ')
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_Escape:
+    elif event.key() == Qt.Key_Escape:
         if not ui.svc_pushButton_24.isVisible():
             if widget in (ui.ss_textEditttt_01, ui.ss_textEditttt_03):
                 ui.szooButtonClicked_01()
@@ -33,7 +36,7 @@ def event_filter(ui, widget, event):
             elif widget in (ui.cs_textEditttt_02, ui.cs_textEditttt_04):
                 ui.czooButtonClicked_02()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F1:
+    elif event.key() == Qt.Key_F1:
         if ui.main_btn == 2:
             if ui.svj_pushButton_01.isVisible():
                 ui.ss_textEditttt_01.setFocus()
@@ -55,7 +58,7 @@ def event_filter(ui, widget, event):
                 ui.cs_textEditttt_08.setFocus()
                 ui.cvoButtonClicked_01()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F2:
+    elif event.key() == Qt.Key_F2:
         if ui.main_btn == 2:
             if ui.svj_pushButton_01.isVisible():
                 ui.ss_textEditttt_01.setFocus()
@@ -77,7 +80,7 @@ def event_filter(ui, widget, event):
                 ui.cs_textEditttt_08.setFocus()
                 ui.cvo_comboBoxxx_01.showPopup()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F3:
+    elif event.key() == Qt.Key_F3:
         if ui.main_btn == 2:
             if ui.svj_pushButton_01.isVisible():
                 ui.svjb_lineEditt_01.setFocus()
@@ -93,7 +96,7 @@ def event_filter(ui, widget, event):
             elif ui.cvo_pushButton_05.isVisible():
                 ui.cvo_lineEdittt_01.setFocus()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F5:
+    elif event.key() == Qt.Key_F5:
         if ui.main_btn == 2:
             if ui.svj_pushButton_01.isVisible():
                 ui.ss_textEditttt_02.setFocus()
@@ -115,7 +118,7 @@ def event_filter(ui, widget, event):
                 ui.cs_textEditttt_06.setFocus()
                 ui.cvoButtonClicked_03()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F6:
+    elif event.key() == Qt.Key_F6:
         if ui.main_btn == 2:
             if ui.svj_pushButton_01.isVisible():
                 ui.ss_textEditttt_02.setFocus()
@@ -137,7 +140,7 @@ def event_filter(ui, widget, event):
                 ui.cs_textEditttt_05.setFocus()
                 ui.cvo_comboBoxxx_02.showPopup()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F7:
+    elif event.key() == Qt.Key_F7:
         if ui.main_btn == 2:
             if ui.svj_pushButton_01.isVisible():
                 ui.svjs_lineEditt_01.setFocus()
@@ -153,7 +156,7 @@ def event_filter(ui, widget, event):
             elif ui.cvo_pushButton_05.isVisible():
                 ui.cvo_lineEdittt_02.setFocus()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F9:
+    elif event.key() == Qt.Key_F9:
         if ui.main_btn == 2:
             if ui.svc_pushButton_06.isVisible():
                 ui.ss_textEditttt_05.setFocus()
@@ -169,7 +172,7 @@ def event_filter(ui, widget, event):
                 ui.cs_textEditttt_07.setFocus()
                 ui.cvaButtonClicked_02()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F10:
+    elif event.key() == Qt.Key_F10:
         if ui.main_btn == 2:
             if ui.svc_pushButton_06.isVisible():
                 ui.ss_textEditttt_05.setFocus()
@@ -185,7 +188,7 @@ def event_filter(ui, widget, event):
                 ui.cs_textEditttt_07.setFocus()
                 ui.cva_comboBoxxx_01.showPopup()
         return True
-    elif event.type() == QEvent.KeyPress and event.key() == Qt.Key_F11:
+    elif event.key() == Qt.Key_F11:
         if ui.main_btn == 2:
             if ui.svc_pushButton_06.isVisible():
                 ui.svc_lineEdittt_02.setFocus()

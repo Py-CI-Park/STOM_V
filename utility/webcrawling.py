@@ -45,8 +45,6 @@ class WebCrawling:
             self.UjTmCrawlingDetail(data, 2)
         elif cmd == '트리맵중단':
             self.treemap = False
-        elif cmd == '지수차트':
-            self.JisuCrawling(data)
         elif cmd == '풍경사진요청':
             self.GetImage()
 
@@ -210,30 +208,3 @@ class WebCrawling:
             self.windowQ.put((ui_num['트리맵1'], df, '', color_list, ''))
         else:
             self.windowQ.put((ui_num['트리맵2'], '', df, '', color_list))
-
-    @thread_decorator
-    def JisuCrawling(self, startday):
-        self.windowQ.put((ui_num['백테엔진'], '지수차트 웹크롤링 시작'))
-
-        def crawl_index(code):
-            page = 1
-            df   = []
-            while True:
-                url        = f'https://finance.naver.com/sise/sise_index_day.nhn?code={code}&page={page}'
-                source     = requests.get(url).text
-                html       = BeautifulSoup(source, 'lxml')
-                day_list   = [item.get_text().replace('.', '') for item in html.select('.date')]
-                close_list = [float(item.get_text().replace(',', '')) for i, item in enumerate(html.select('.number_1')) if i % 4 == 0]
-                df.append(pd.DataFrame(dict(zip(['index', '종가'], [day_list, close_list]))))
-                page += 1
-                if int(day_list[-1]) < startday:
-                    break
-            df = pd.concat(df)
-            df = df[df['index'] >= str(startday)][::-1]
-            return df
-
-        df_kp = crawl_index('KOSPI')
-        df_kd = crawl_index('KOSDAQ')
-        self.windowQ.put((ui_num['백테엔진'], '코스피 지수차트 웹크롤링 완료'))
-        self.windowQ.put((ui_num['백테엔진'], '코스닥 지수차트 웹크롤링 완료'))
-        self.backQ.put((df_kp, df_kd))

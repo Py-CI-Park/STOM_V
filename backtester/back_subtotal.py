@@ -20,6 +20,7 @@ class BackSubTotal:
         self.separation = None
         self.complete1  = False
         self.complete2  = False
+        self.cencel     = False
 
         self.ui_gubun   = None
         self.list_days  = None
@@ -33,17 +34,25 @@ class BackSubTotal:
     def MainLoop(self):
         while True:
             data = self.bstq.get()
+            if self.cencel:
+                continue
+
             if data[0] == '백테결과':
                 self.CollectData(data)
+
             elif data[0] == '백테완료':
                 self.complete1 = True
                 self.separation = data[1]
+
             elif data == '결과분리':
                 self.DivideData()
+
             elif data[0] == '분리결과':
                 self.ConcatData(data)
+
             elif data == '결과전송':
                 self.complete2 = True
+
             elif data[0] == '백테정보':
                 self.ui_gubun   = data[1]
                 self.list_days  = data[2]
@@ -51,7 +60,9 @@ class BackSubTotal:
                 self.arry_bct_  = data[4]
                 self.betting    = data[5]
                 self.day_count  = data[6]
+
             elif data[0] == '백테시작':
+                self.cencel     = False
                 self.opti_turn  = data[1]
                 self.dummy_tsg  = {}
                 self.ddict_tsg  = {}
@@ -65,6 +76,26 @@ class BackSubTotal:
                     self.in_out_cnt = None
                 else:
                     self.in_out_cnt = data[2]
+
+            elif data == '백테중지':
+                self.cencel     = True
+                self.opti_turn  = 0
+                self.dummy_tsg  = {}
+                self.ddict_tsg  = {}
+                self.ddict_bct  = {}
+                self.list_tsg   = []
+                self.arry_bct   = None
+                self.separation = None
+                self.complete1  = False
+                self.complete2  = False
+                self.ui_gubun   = None
+                self.list_days  = None
+                self.valid_days = None
+                self.arry_bct_  = None
+                self.betting    = None
+                self.day_count  = None
+                self.in_out_cnt = None
+
             if self.complete1 and self.bstq.empty():
                 if self.separation == '분리집계':
                     self.tq.put('집계완료')

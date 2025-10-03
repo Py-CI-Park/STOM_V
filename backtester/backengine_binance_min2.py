@@ -2,8 +2,8 @@ import math
 from talib import stream
 from backtester.back_static import GetIndicator
 from backtester.backengine_binance_tick2 import BackEngineBinanceTick2
-from utility.setting import BACK_TEMP, dgree
-from utility.static import pickle_read, dt_ymdhm
+from utility.setting import dgree
+from utility.static import dt_ymdhm
 
 
 # noinspection PyUnusedLocal
@@ -18,24 +18,6 @@ class BackEngineBinanceMin2(BackEngineBinanceTick2):
             value_list = text_list[half_cnt:]
             value_list = [compile_condition(x) for x in value_list]
             self.dict_condition = dict(zip(key_list, value_list))
-
-    def SetArrayTick(self, code, same_days, same_time):
-        if not self.dict_set['백테일괄로딩']:
-            self.dict_arry = {code: pickle_read(f'{BACK_TEMP}/{self.gubun}_{code}_tick')}
-
-        if same_days and same_time:
-            self.arry_data = self.dict_arry[code]
-        elif same_time:
-            self.arry_data = self.dict_arry[code][(self.dict_arry[code][:, 0] >= self.startday * 10000) &
-                                                  (self.dict_arry[code][:, 0] <= self.endday * 10000 + 2400)]
-        elif same_days:
-            self.arry_data = self.dict_arry[code][(self.dict_arry[code][:, 0] % 10000 >= self.starttime) &
-                                                  (self.dict_arry[code][:, 0] % 10000 <= self.endtime)]
-        else:
-            self.arry_data = self.dict_arry[code][(self.dict_arry[code][:, 0] >= self.startday * 10000) &
-                                                  (self.dict_arry[code][:, 0] <= self.endday * 10000 + 2400) &
-                                                  (self.dict_arry[code][:, 0] % 10000 >= self.starttime) &
-                                                  (self.dict_arry[code][:, 0] % 10000 <= self.endtime)]
 
     def Strategy(self):
         def now():

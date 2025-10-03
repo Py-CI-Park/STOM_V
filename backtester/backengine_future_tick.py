@@ -1,28 +1,29 @@
-import gc
 import math
 import sqlite3
 import numpy as np
 import pandas as pd
 from traceback import print_exc
-from utility.setting import BACK_TEMP, ui_num, DICT_SET, indicator, DB_FUTURE_BACK_MIN, dgree
+from multiprocessing import shared_memory
+from utility.setting import BACK_TEMP, ui_num, DICT_SET, indicator, DB_FUTURE_BACK_MIN, dgree, DB_FUTURE_BACK_TICK
 from utility.static import pickle_read, pickle_write, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhm, dt_ymdhms
 from backtester.back_static import GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture, \
-    GetBackloadCodeQuery, GetBackloadDayQuery, AddAvgData, GetTradeInfo
+    GetBackloadCodeQuery, AddAvgData, GetTradeInfo
 
 
 # noinspection PyUnusedLocal
 class BackEngineFutureTick:
-    def __init__(self, gubun, wq, tq, bq, beq_list, bstq_list, profile=False):
-        gc.disable()
-        self.gubun        = gubun
-        self.wq           = wq
-        self.tq           = tq
-        self.bq           = bq
-        self.beq_list     = beq_list
-        self.beq          = beq_list[gubun]
-        self.bstq_list    = bstq_list
-        self.profile      = profile
-        self.dict_set     = DICT_SET
+    def __init__(self, gubun, shared_counter, lock, wq, tq, bq, beq_list, bstq_list, profile=False):
+        self.gubun          = gubun
+        self.shared_counter = shared_counter
+        self.shared_lock    = lock
+        self.wq             = wq
+        self.tq             = tq
+        self.bq             = bq
+        self.beq_list       = beq_list
+        self.beq            = beq_list[gubun]
+        self.bstq_list      = bstq_list
+        self.profile        = profile
+        self.dict_set       = DICT_SET
 
         self.pr           = None
         self.back_type    = None
@@ -70,7 +71,9 @@ class BackEngineFutureTick:
         self.tick_count   = 0
         self.sell_count   = 0
 
-        self.tick_calcul      = False
+        self.shared_list      = []
+        self.shared_count     = None
+        self.shared_info      = None
         self.dict_condition   = {}
         self.dict_cond_indexn = {}
         self.SetDictCondition()
@@ -127,7 +130,6 @@ class BackEngineFutureTick:
                         self.vars      = [var[1] for var in self.vars_list]
                         self.startday  = data[3]
                         self.endday    = data[4]
-                        if self.opti_turn == 1: self.tick_calcul = False
                         self.InitDivid()
                         self.InitTradeInfo()
                         self.BackTest()
@@ -208,35 +210,19 @@ class BackEngineFutureTick:
                             self.BackTest()
             elif data[0] == '백테유형':
                 self.back_type = data[1]
-                self.tick_calcul = False
             elif data[0] == '설정변경':
                 self.dict_set = data[1]
             elif data[0] == '종목명':
                 self.dict_info = data[1]
-            elif data[0] in ('데이터크기', '데이터로딩'):
+            elif data[0] == '데이터로딩':
                 self.DataLoad(data)
-            elif data[0] == '데이터이동':
-                self.SendData(data)
-            elif data[0] == '데이터전송':
-                self.RecvdData(data)
-
-    def SendData(self, data):
-        _, cnt, procn = data
-        for i, code in enumerate(self.code_list):
-            if i >= cnt:
-                data = ('데이터전송', code, self.dict_arry[code])
-                self.beq_list[procn].put(data)
-                del self.dict_arry[code]
-                print(f'백테엔진 데이터 재분배: 종목코드[{code}] 엔진번호[{self.gubun}->{procn}]')
-        self.code_list = self.code_list[:cnt]
-
-    def RecvdData(self, data):
-        _, code, arry = data
-        if code in self.dict_arry:
-            arry = np.r_[self.dict_arry[code], arry]
-        self.dict_arry[code] = arry
-        if code not in self.code_list:
-            self.code_list.append(code)
+            elif data[0] == '공유데이터':
+                self.shared_count = data[1]
+                self.shared_info  = data[2]
+            elif data == '전체틱수계산':
+                self.GetTickCount()
+            elif data == '백테중지':
+                self.BackStop(cancel=True)
 
     def InitDivid(self):
         self.sell_count = 0
@@ -255,99 +241,73 @@ class BackEngineFutureTick:
             self.trade_info = {0: {0: v}}
 
     def DataLoad(self, data):
-        bk = 0
+        def data_load(df_):
+            df_ = AddAvgData(df_, 8, is_tick, avg_list, future=True)
+            array = np.array(df_)
+            if self.dict_set['백테일괄로딩']:
+                name = f'back_{self.gubun}_{i}'
+                shm = shared_memory.SharedMemory(name=name, create=True, size=array.nbytes)
+                shared_array = np.ndarray(array.shape, dtype=array.dtype, buffer=shm.buf)
+                np.copyto(shared_array, array)
+                shared_info.append({
+                    'code': code,
+                    'len': len(array),
+                    'shm_name': shm.name,
+                    'shape': array.shape,
+                    'dtype': array.dtype
+                })
+                self.shared_list.append(shm)
+            else:
+                file_name = f'{BACK_TEMP}/back_{self.gubun}_{i}'
+                pickle_write(file_name, array)
+                shared_info.append({
+                    'code': code,
+                    'len': len(array),
+                    'file_name': file_name
+                })
+
         divid_mode = data[-1]
         is_tick = self.dict_set['주식타임프레임']
-        con = sqlite3.connect(DB_FUTURE_BACK_MIN)
+        con = sqlite3.connect(DB_FUTURE_BACK_TICK if is_tick else DB_FUTURE_BACK_MIN)
 
+        shared_info = []
         if divid_mode == '종목코드별 분류':
-            gubun, startday, endday, starttime, endtime, code_list, avg_list, code_days, _, _, _ = data
-            for code in code_list:
-                df_tick, len_df_tick = None, 0
+            _, startday, endday, starttime, endtime, code_list, avg_list, code_days, _, _, _ = data
+            for i, code in enumerate(code_list):
                 try:
-                    df_tick = pd.read_sql(GetBackloadCodeQuery(code, code_days[code], starttime, endtime), con)
-                    len_df_tick = len(df_tick)
+                    df = pd.read_sql(GetBackloadCodeQuery(code, code_days[code], starttime, endtime), con)
                 except:
                     pass
-                if gubun == '데이터크기':
-                    self.bq.put((code, len_df_tick))
-                elif len_df_tick > 0:
-                    df_tick = AddAvgData(df_tick, 8, is_tick, avg_list, future=True)
-                    arry_tick = np.array(df_tick)
-                    if self.dict_set['백테일괄로딩']:
-                        self.dict_arry[code] = arry_tick
-                    else:
-                        pickle_write(f'{BACK_TEMP}/{self.gubun}_{code}_tick', arry_tick)
-                    self.code_list.append(code)
-                    bk += 1
+                else:
+                    if len(df) > 0: data_load(df)
         elif divid_mode == '일자별 분류':
-            gubun, startday, endday, starttime, endtime, day_list, avg_list, code_days, day_codes, _, _ = data
-            if gubun == '데이터크기':
-                for day in day_list:
-                    len_df_tick = 0
-                    for code in day_codes[day]:
-                        try:
-                            df_tick = pd.read_sql(GetBackloadDayQuery(day, code, starttime, endtime), con)
-                            len_df_tick += len(df_tick)
-                        except:
-                            pass
-                    self.bq.put((day, len_df_tick))
-            elif gubun == '데이터로딩':
-                code_list = []
-                for day in day_list:
-                    for code in day_codes[day]:
-                        if code not in code_list:
-                            code_list.append(code)
-                for code in code_list:
-                    days = [day for day in day_list if day in code_days[code]]
-                    df_tick, len_df_tick = None, 0
-                    try:
-                        df_tick = pd.read_sql(GetBackloadCodeQuery(code, days, starttime, endtime), con)
-                        len_df_tick += len(df_tick)
-                    except:
-                        pass
-                    if len_df_tick > 0:
-                        df_tick = AddAvgData(df_tick, 8, is_tick, avg_list, future=True)
-                        arry_tick = np.array(df_tick)
-                        if self.dict_set['백테일괄로딩']:
-                            self.dict_arry[code] = arry_tick
-                        else:
-                            pickle_write(f'{BACK_TEMP}/{self.gubun}_{code}_tick', arry_tick)
-                        self.code_list.append(code)
-                        bk += 1
-        else:
-            gubun, startday, endday, starttime, endtime, day_list, avg_list, _, _, code, _ = data
-            if gubun == '데이터크기':
-                for day in day_list:
-                    len_df_tick = 0
-                    try:
-                        df_tick = pd.read_sql(GetBackloadDayQuery(day, code, starttime, endtime), con)
-                        len_df_tick = len(df_tick)
-                    except:
-                        pass
-                    self.bq.put((day, len_df_tick))
-            elif gubun == '데이터로딩':
-                df_tick, len_df_tick = None, 0
+            _, startday, endday, starttime, endtime, day_list, avg_list, code_days, day_codes, _, _ = data
+            code_list = []
+            for day in day_list:
+                for code in day_codes[day]:
+                    if code not in code_list:
+                        code_list.append(code)
+            for i, code in enumerate(code_list):
                 try:
-                    df_tick = pd.read_sql(GetBackloadCodeQuery(code, day_list, starttime, endtime), con)
-                    len_df_tick = len(df_tick)
+                    df = pd.read_sql(GetBackloadCodeQuery(code, day_list, starttime, endtime), con)
                 except:
                     pass
-                if len_df_tick > 0:
-                    df_tick = AddAvgData(df_tick, 8, is_tick, avg_list, future=True)
-                    arry_tick = np.array(df_tick)
-                    if self.dict_set['백테일괄로딩']:
-                        self.dict_arry[code] = arry_tick
-                    else:
-                        pickle_write(f'{BACK_TEMP}/{self.gubun}_{code}_tick', arry_tick)
-                    self.code_list.append(code)
-                    bk += 1
+                else:
+                    if len(df) > 0: data_load(df)
+        else:
+            _, startday, endday, starttime, endtime, day_list, avg_list, _, _, code, _ = data
+            for i, day in enumerate(day_list):
+                try:
+                    df = pd.read_sql(GetBackloadCodeQuery(code, [day], starttime, endtime), con)
+                except:
+                    pass
+                else:
+                    if len(df) > 0: data_load(df)
 
         con.close()
-        if gubun == '데이터로딩':
-            self.bq.put(bk)
-            self.avg_list = avg_list
-            self.startday_, self.endday_, self.starttime_, self.endtime_ = startday, endday, starttime, endtime
+        self.avg_list = avg_list
+        self.startday_, self.endday_, self.starttime_, self.endtime_ = startday, endday, starttime, endtime
+        self.bq.put(shared_info)
 
     def CheckAvglist(self, avg_list):
         not_in_list = [x for x in avg_list if x not in self.avg_list]
@@ -356,28 +316,66 @@ class BackEngineFutureTick:
             self.wq.put((ui_num['S백테스트'], '누락된 평균값 틱수를 추가하여 백테엔진을 재시작하십시오.'))
             self.BackStop()
 
-    def BackStop(self):
+    def BackStop(self, cancel=False):
         self.back_type = None
         if self.gubun == 0:
-            self.wq.put((ui_num['S백테스트'], '전략 코드 오류로 백테스트를 중지합니다.'))
+            self.wq.put((ui_num['S백테스트'], '백테스트를 중지하였습니다.'))
+        if cancel:
+            self.bq.put('백테중지완료')
 
-    def SetArrayTick(self, code, same_days, same_time):
-        if not self.dict_set['백테일괄로딩']:
-            self.dict_arry = {code: pickle_read(f'{BACK_TEMP}/{self.gubun}_{code}_tick')}
+    def SetArrayTick(self, same_days, same_time):
+        shared_info = None
+        with self.shared_lock:
+            shared_counter = self.shared_counter.value
+            if shared_counter != -1 and shared_counter < self.shared_count:
+                shared_info = self.shared_info[shared_counter]
+                self.shared_counter.value += 1
 
-        if same_days and same_time:
-            self.arry_data = self.dict_arry[code]
-        elif same_time:
-            self.arry_data = self.dict_arry[code][(self.dict_arry[code][:, 0] >= self.startday * 1000000) &
-                                                  (self.dict_arry[code][:, 0] <= self.endday * 1000000 + 240000)]
-        elif same_days:
-            self.arry_data = self.dict_arry[code][(self.dict_arry[code][:, 0] % 1000000 >= self.starttime) &
-                                                  (self.dict_arry[code][:, 0] % 1000000 <= self.endtime)]
+        if shared_info is None:
+            return None
         else:
-            self.arry_data = self.dict_arry[code][(self.dict_arry[code][:, 0] >= self.startday * 1000000) &
-                                                  (self.dict_arry[code][:, 0] <= self.endday * 1000000 + 240000) &
-                                                  (self.dict_arry[code][:, 0] % 1000000 >= self.starttime) &
-                                                  (self.dict_arry[code][:, 0] % 1000000 <= self.endtime)]
+            if self.dict_set['백테일괄로딩']:
+                code = shared_info['code']
+                shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
+                self.arry_data = np.ndarray(shared_info['shape'], dtype=shared_info['dtype'], buffer=shm.buf).copy()
+                shm.close()
+            else:
+                code = shared_info['code']
+                self.arry_data = pickle_read(shared_info['file_name'])
+
+            if len(str(self.starttime)) < 5:
+                unit = 10000
+                hour = 2400
+            else:
+                unit = 1000000
+                hour = 240000
+
+            if same_days and same_time:
+                pass
+            elif same_time:
+                self.arry_data = self.arry_data[(self.arry_data[:, 0] >= self.startday * unit) &
+                                                (self.arry_data[:, 0] <= self.endday * unit + hour)]
+            elif same_days:
+                self.arry_data = self.arry_data[(self.arry_data[:, 0] % unit >= self.starttime) &
+                                                (self.arry_data[:, 0] % unit <= self.endtime)]
+            else:
+                self.arry_data = self.arry_data[(self.arry_data[:, 0] >= self.startday * unit) &
+                                                (self.arry_data[:, 0] <= self.endday * unit + hour) &
+                                                (self.arry_data[:, 0] % unit >= self.starttime) &
+                                                (self.arry_data[:, 0] % unit <= self.endtime)]
+            return code
+
+    def GetTickCount(self):
+        same_days = self.startday_ == self.startday and self.endday_ == self.endday
+        same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
+        total_ticks = 0
+        while True:
+            code = self.SetArrayTick(same_days, same_time)
+            if code is not None:
+                total_ticks += len(self.arry_data)
+            else:
+                break
+        self.bq.put(total_ticks)
 
     def BackTest(self):
         if self.profile:
@@ -388,42 +386,50 @@ class BackEngineFutureTick:
         same_days = self.startday_ == self.startday and self.endday_ == self.endday
         same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
 
-        if not self.tick_calcul and self.opti_turn in (1, 3):
-            total_ticks = 0
-            for code in self.code_list:
-                self.SetArrayTick(code, same_days, same_time)
-                total_ticks += len(self.arry_data)
-            self.tq.put(('전체틱수', int(total_ticks / 100)))
-            self.tick_calcul = True
-
         j = 0
-        len_codes = len(self.code_list)
-        for k, code in enumerate(self.code_list):
-            self.code = code
-            self.name = self.dict_info[code]['종목명']
-            self.SetArrayTick(code, same_days, same_time)
-            last = len(self.arry_data) - 1
-            if last > 0:
-                for i, index in enumerate(self.arry_data[:, 0]):
-                    self.index  = int(index)
-                    self.indexn = i
-                    self.tick_count += 1
-                    next_day_change = i == last or str(index)[:8] != str(self.arry_data[i + 1, 0])[:8]
-                    if not next_day_change:
-                        try:
-                            self.Strategy()
-                        except:
-                            print_exc()
-                            self.BackStop()
-                            return
-                    else:
+        while True:
+            code = self.SetArrayTick(same_days, same_time)
+            if code is not None:
+                self.code = code
+                self.name = self.dict_info[code]['종목명']
+                last = len(self.arry_data) - 1
+                if last > 0:
+                    indexs = self.arry_data[:, 0]
+                    day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
+                    day_last_indexs.append(last)
+
+                    start_idx = 0
+                    for end_idx in day_last_indexs:
+                        for i in range(start_idx, end_idx):
+                            self.index  = int(indexs[i])
+                            self.indexn = i
+                            self.tick_count += 1
+                            try:
+                                self.Strategy()
+                            except:
+                                print_exc()
+                                self.BackStop()
+                                return
+
+                            j += 1
+                            if j % 1000 == 0:
+                                if self.opti_turn in (1, 3):
+                                    self.tq.put('탐색완료')
+                                if not self.beq.empty() and self.beq.get() == '백테중지':
+                                    self.BackStop(cancel=True)
+                                    return
+
+                        j += 1
+                        self.index  = int(indexs[end_idx])
+                        self.indexn = end_idx
+                        self.tick_count += 1
                         self.LastSell()
                         self.InitTradeInfo()
+                        start_idx = end_idx + 1
 
-                    j += 1
-                    if self.opti_turn in (1, 3) and j % 100 == 0: self.tq.put('탐색완료')
-
-            self.tq.put(('백테완료', self.gubun, k+1, len_codes))
+                self.tq.put('백테완료')
+            else:
+                break
 
         if self.profile: self.pr.print_stats(sort='cumulative')
 

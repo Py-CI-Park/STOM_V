@@ -694,7 +694,7 @@ class FutureStrategyTick:
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.kwzservQ.put(('window', (ui_num[f'S관심종목'], df_gj)))
         if self.dict_hilo:
-            for code in self.dict_hilo:
+            for code in self.dict_hilo.copy():
                 if code not in self.dict_jg:
                     del self.dict_hilo[code]
 

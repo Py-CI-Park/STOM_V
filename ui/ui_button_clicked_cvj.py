@@ -675,12 +675,12 @@ def cvj_button_clicked_11(ui):
 
         ui.backQ.put((
             betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, None, ui.back_count,
-            bl, False, None, None, back_club
+            bl, False, back_club
         ))
         ui.proc_backtester_bs = Process(
             target=BackTest,
-            args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques, '백테스트',
-                  'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+            args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                  ui.back_sques, '백테스트', 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
         )
         ui.proc_backtester_bs.start()
         ui.cvjButtonClicked_07()
@@ -732,7 +732,7 @@ def cvj_button_clicked_12(ui):
         ui.backQ.put((avgtime, startday, endday, starttime, endtime, buystg, ui.back_count))
         ui.proc_backtester_bf = Process(
             target=BackFinder,
-            args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+            args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
         )
         ui.proc_backtester_bf.start()
         ui.cvjButtonClicked_07()
@@ -809,91 +809,91 @@ def cvj_button_clicked_14(ui, back_name):
 
         ui.backQ.put((
             betting, starttime, endtime, buystg, sellstg, optivars, None, ccount, ui.dict_set['최적화기준값제한'],
-            optistd, ui.back_count, False, None, None, weeks_train, weeks_valid, weeks_test, benginesday, bengineeday,
-            optunasampl, optunafixv, optunacount, optunaautos, randomopti, onlybuy, onlysell
+            optistd, ui.back_count, False, weeks_train, weeks_valid, weeks_test, benginesday, bengineeday, optunasampl,
+            optunafixv, optunacount, optunaautos, randomopti, onlybuy, onlysell
         ))
         if back_name == '최적화O':
             ui.proc_backtester_o = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_o.start()
         elif back_name == '최적화OV':
             ui.proc_backtester_ov = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ov.start()
         elif back_name == '최적화OVC':
             ui.proc_backtester_ovc = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ovc.start()
         elif back_name == '최적화B':
             ui.proc_backtester_b = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_b.start()
         elif back_name == '최적화BV':
             ui.proc_backtester_bv = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_bv.start()
         elif back_name == '최적화BVC':
             ui.proc_backtester_bvc = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_bvc.start()
         elif back_name == '최적화OT':
             ui.proc_backtester_ot = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ot.start()
         elif back_name == '최적화OVT':
             ui.proc_backtester_ovt = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ovt.start()
         elif back_name == '최적화OVCT':
             ui.proc_backtester_ovct = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ovct.start()
         elif back_name == '최적화BT':
             ui.proc_backtester_bt = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_bt.start()
         elif back_name == '최적화BVT':
             ui.proc_backtester_bvt = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_bvt.start()
         else:
             ui.proc_backtester_bvct = Process(
                 target=Optimize,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_bvct.start()
         ui.cvjButtonClicked_07()
@@ -964,43 +964,43 @@ def cvj_button_clicked_15(ui, back_name):
         if back_name == '전진분석OR':
             ui.proc_backtester_or = Process(
                 target=RollingWalkForwardTest,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_or.start()
         elif back_name == '전진분석ORV':
             ui.proc_backtester_orv = Process(
                 target=RollingWalkForwardTest,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_orv.start()
         elif back_name == '전진분석ORVC':
             ui.proc_backtester_orvc = Process(
                 target=RollingWalkForwardTest,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_orvc.start()
         elif back_name == '전진분석BR':
             ui.proc_backtester_br = Process(
                 target=RollingWalkForwardTest,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_br.start()
         elif back_name == '전진분석BRV':
             ui.proc_backtester_brv = Process(
                 target=RollingWalkForwardTest,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_brv.start()
         else:
             ui.proc_backtester_brvc = Process(
                 target=RollingWalkForwardTest,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques, ui.back_sques,
-                      ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                      ui.back_sques, ui.multi, ui.divid_mode, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_brvc.start()
         ui.cvjButtonClicked_07()
@@ -1062,22 +1062,22 @@ def cvj_button_clicked_16(ui, back_name):
         if back_name == '최적화OG':
             ui.proc_backtester_og = Process(
                 target=OptimizeGeneticAlgorithm,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, back_name,
-                      'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                      ui.back_sques, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_og.start()
         elif back_name == '최적화OGV':
             ui.proc_backtester_ogv = Process(
                 target=OptimizeGeneticAlgorithm,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, back_name,
-                      'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                      ui.back_sques, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ogv.start()
         else:
             ui.proc_backtester_ogvc = Process(
                 target=OptimizeGeneticAlgorithm,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, back_name,
-                      'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                      ui.back_sques, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ogvc.start()
         ui.cvjButtonClicked_07()
@@ -1142,22 +1142,22 @@ def cvj_button_clicked_17(ui, back_name):
         if back_name == '최적화OC':
             ui.proc_backtester_oc = Process(
                 target=OptimizeConditions,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, back_name,
-                      'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                      ui.back_sques, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_oc.start()
         elif back_name == '최적화OCV':
             ui.proc_backtester_ocv = Process(
                 target=OptimizeConditions,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, back_name,
-                      'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                      ui.back_sques, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ocv.start()
         else:
             ui.proc_backtester_ocvc = Process(
                 target=OptimizeConditions,
-                args=(ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, ui.back_sques, back_name,
-                      'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
+                args=(ui.shared_counter, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques,
+                      ui.back_sques, back_name, 'C' if ui.dict_set['거래소'] == '업비트' else 'CF')
             )
             ui.proc_backtester_ocvc.start()
         ui.cvjButtonClicked_07()

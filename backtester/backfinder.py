@@ -40,7 +40,7 @@ class Total:
                 self.df_back.loc[index] = data
                 index += 1
 
-            elif data[0] == '백테완료':
+            elif data == '백테완료':
                 bc += 1
                 self.wq.put((ui_num[f'{self.ui_gubun}백테바'], bc, self.back_count, start))
                 if bc == self.back_count:
@@ -72,6 +72,7 @@ class Total:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인터 결과값 저장 완료'))
         else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '조건을 만족하는 종목이 없어 결과를 표시할 수 없습니다.'))
+
         self.sq.put('백파인더를 완료하였습니다.')
         self.bq.put('백파인더 완료')
         time.sleep(1)
@@ -79,7 +80,8 @@ class Total:
 
 
 class BackFinder:
-    def __init__(self, wq, bq, sq, tq, lq, beq_list, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, ui_gubun):
+        self.shared_counter = sc
         self.wq       = wq
         self.bq       = bq
         self.sq       = sq
@@ -125,6 +127,7 @@ class BackFinder:
         Process(target=Total, args=(self.wq, self.sq, self.tq, self.bq, self.ui_gubun, self.gubun)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 집계용 프로세스 생성 완료'))
 
+        self.shared_counter.value = 0
         self.tq.put(('백테정보', avgtime, startday, endday, starttime, endtime, buystg_name, back_count, self.tickcols))
         data = ('백테정보', avgtime, startday, endday, starttime, endtime, buystg, None)
         for q in self.beq_list:

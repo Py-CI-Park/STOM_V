@@ -12,12 +12,13 @@ from utility.setting import ui_num, DB_STRATEGY, DICT_SET, DB_BACKTEST, DB_STOCK
 
 
 class Total:
-    def __init__(self, wq, tq, mq, bstq_list, ui_gubun):
+    def __init__(self, wq, tq, mq, bstq_list, ui_gubun, tick_count):
         self.wq           = wq
         self.tq           = tq
         self.mq           = mq
         self.bstq_list    = bstq_list
         self.ui_gubun     = ui_gubun
+        self.tick_count   = tick_count
         self.dict_set     = DICT_SET
 
         self.back_count   = None
@@ -39,7 +40,6 @@ class Total:
         self.stdp         = -2_000_000_000
         self.sub_total    = 0
         self.total_count  = 0
-        self.total_count2 = 0
 
         self.MainLoop()
 
@@ -53,12 +53,16 @@ class Total:
         dict_dummy = {}
         while True:
             data = self.tq.get()
-            if data[0] == '백테완료':
-                bc  += 1
+            if data == '백테완료':
+                bc += 1
                 if bc == self.back_count:
                     bc = 0
                     for stq in self.bstq_list:
                         stq.put(('백테완료', '미분리집계'))
+
+            elif data == '탐색완료':
+                tt += 1
+                self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count * vc, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -107,15 +111,12 @@ class Total:
 
             elif data[0] == '백테정보':
                 self.BackInfo(data)
+
             elif data[0] == '경우의수':
                 self.total_count = data[1]
                 self.back_count  = data[2]
                 vc = int(self.total_count / self.back_count)
-            elif data[0] == '전체틱수':
-                self.total_count2 += data[1]
-            elif data == '탐색완료':
-                tt += 1
-                self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.total_count2 * vc, start))
+
             elif data == '백테중지':
                 self.mq.put('백테중지')
                 break
@@ -144,7 +145,8 @@ class Total:
 
 
 class OptimizeConditions:
-    def __init__(self, wq, bq, sq, tq, lq, beq_list, bstq_list, backname, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun):
+        self.shared_counter = sc
         self.wq           = wq
         self.bq           = bq
         self.sq           = sq
@@ -152,6 +154,7 @@ class OptimizeConditions:
         self.lq           = lq
         self.beq_list     = beq_list
         self.bstq_list    = bstq_list
+        self.multi        = multi
         self.backname     = backname
         self.ui_gubun     = ui_gubun
         self.result       = {}
@@ -306,23 +309,37 @@ class OptimizeConditions:
         rcount = int(rcount / 20)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 전체 경우의 수 계산 완료 [{total_count:,.0f}]'))
 
+        data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime)
+        for q in self.beq_list:
+            q.put(data)
+
+        time.sleep(1)
+
+        self.shared_counter.value = 0
+        for q in self.beq_list:
+            q.put('전체틱수계산')
+
+        tick_count = 0
+        for _ in range(self.multi):
+            data = self.bq.get()
+            tick_count += data
+        tick_count = int(tick_count / 1000)
+
         mq = Queue()
-        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun)).start()
+        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, tick_count)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
         self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, std_text, self.optistandard, valid_days, len(day_list)))
 
         time.sleep(1)
-        data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime)
-        for q in self.beq_list:
-            q.put(data)
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
 
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
         self.tq.put(('경우의수', rcount * back_count, back_count))
         hstd = -2_000_000_000
         for i in range(rcount):
             buy_conds, sell_conds = self.GetCondlist()
             if len(buy_conds) == 20:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 [{i+1}/{rcount}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
+                self.shared_counter.value = 0
                 for q in self.bstq_list:
                     q.put(('백테시작', 3))
                 if is_long is None:

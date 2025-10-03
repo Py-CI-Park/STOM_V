@@ -33,45 +33,54 @@ class BackEngineFutureTick2(BackEngineFutureTick):
         same_days = self.startday_ == self.startday and self.endday_ == self.endday
         same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
 
-        if not self.tick_calcul and self.opti_turn in (1, 3):
-            total_ticks = 0
-            for code in self.code_list:
-                self.SetArrayTick(code, same_days, same_time)
-                total_ticks += len(self.arry_data)
-            self.tq.put(('전체틱수', int(total_ticks / 100)))
-            self.tick_calcul = True
-
         j = 0
-        len_codes = len(self.code_list)
-        for k, code in enumerate(self.code_list):
-            if self.dict_set['주식매수금지블랙리스트'] and code in self.dict_set['주식블랙리스트'] and self.back_type != '백파인더':
-                self.tq.put(('백테완료', 0, self.gubun, k+1, len_codes))
-                continue
+        while True:
+            code = self.SetArrayTick(same_days, same_time)
+            if code is not None:
+                if self.dict_set['주식매수금지블랙리스트'] and code in self.dict_set['해선블랙리스트'] and self.back_type != '백파인더':
+                    self.tq.put('백테완료')
+                    continue
 
-            self.code = self.name = code
-            self.SetArrayTick(code, same_days, same_time)
-            last = len(self.arry_data) - 1
-            if last > 0:
-                for i, index in enumerate(self.arry_data[:, 0]):
-                    self.index  = int(index)
-                    self.indexn = i
-                    self.tick_count += 1
-                    next_day_change = i == last or str(index)[:8] != str(self.arry_data[i + 1, 0])[:8]
-                    if not next_day_change:
-                        try:
-                            self.Strategy()
-                        except:
-                            print_exc()
-                            self.BackStop()
-                            return
-                    else:
+                self.code = code
+                self.name = self.dict_info[code]['종목명']
+                last = len(self.arry_data) - 1
+                if last > 0:
+                    indexs = self.arry_data[:, 0]
+                    day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
+                    day_last_indexs.append(last)
+
+                    start_idx = 0
+                    for end_idx in day_last_indexs:
+                        for i in range(start_idx, end_idx):
+                            self.index  = int(indexs[i])
+                            self.indexn = i
+                            self.tick_count += 1
+                            try:
+                                self.Strategy()
+                            except:
+                                print_exc()
+                                self.BackStop()
+                                return
+
+                            j += 1
+                            if j % 1000 == 0:
+                                if self.opti_turn in (1, 3):
+                                    self.tq.put('탐색완료')
+                                if not self.beq.empty() and self.beq.get() == '백테중지':
+                                    self.BackStop(cancel=True)
+                                    return
+
+                        j += 1
+                        self.index  = int(indexs[end_idx])
+                        self.indexn = end_idx
+                        self.tick_count += 1
                         self.LastSell()
                         self.InitTradeInfo()
+                        start_idx = end_idx + 1
 
-                    j += 1
-                    if self.opti_turn in (1, 3) and j % 100 == 0: self.tq.put('탐색완료')
-
-            self.tq.put(('백테완료', self.gubun, k+1, len_codes))
+                self.tq.put('백테완료')
+            else:
+                break
 
         if self.profile: self.pr.print_stats(sort='cumulative')
 

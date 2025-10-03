@@ -567,7 +567,7 @@ def GetOptiStdText(optistd, std_list, betting, result, pre_text):
     return std, text
 
 
-def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, df_kp_, df_kd_, list_days,
+def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
             backname, back_text, label_text, save_file_name, schedul, plotgraph, buy_vars=None, sell_vars=None):
     df_tsg['수익금합계020'] = df_tsg['수익금합계'].rolling(window=20).mean().round(2)
     df_tsg['수익금합계060'] = df_tsg['수익금합계'].rolling(window=60).mean().round(2)
@@ -601,34 +601,30 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
     df_ts['수익금합계'] = ((df_ts['수익금합계'] + seed) / seed - 1) * 100
 
     df_kp, df_kd, df_nd, df_bc = None, None, None, None
+    start_str = str(startday)
+    end_str   = str(endday)
+    startday  = f'{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}'
+    endday    = f'{end_str[:4]}-{end_str[4:6]}-{end_str[6:8]}'
     if dict_cn is not None and '005930' in dict_cn:
-        start_str = str(startday)
-        end_str = str(endday)
-        df_kp = df_kp_[(df_kp_['index'] >= start_str) & (df_kp_['index'] <= end_str)].copy()
-        df_kd = df_kd_[(df_kd_['index'] >= start_str) & (df_kd_['index'] <= end_str)].copy()
-        df_kp['종가'] = (df_kp['종가'] / df_kp['종가'].iloc[0] - 1) * 100
-        df_kd['종가'] = (df_kd['종가'] / df_kd['종가'].iloc[0] - 1) * 100
-        df_kp['일자'] = df_kp['index'].apply(lambda x: dt_ymd(x))
-        df_kd['일자'] = df_kd['index'].apply(lambda x: dt_ymd(x))
-        df_kp.set_index('일자', inplace=True)
-        df_kd.set_index('일자', inplace=True)
+        try:
+            df_kp = yf.Ticker('^KS11').history(start=startday, end=endday, interval="1d")
+            df_kp['종가'] = (df_kp['Close'] / df_kp['Close'].iloc[0] - 1) * 100
+            df_kd = yf.Ticker('^KQ11').history(start=startday, end=endday, interval="1d")
+            df_kd['종가'] = (df_kd['Close'] / df_kd['Close'].iloc[0] - 1) * 100
+        except:
+            pass
     elif dict_cn is not None and '005930' not in dict_cn:
         try:
-            start_str = str(startday)
-            end_str   = str(endday)
-            startday  = f'{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}'
-            endday    = f'{end_str[:4]}-{end_str[4:6]}-{end_str[6:8]}'
             df_nd = yf.Ticker('QQQ').history(start=startday, end=endday, interval="1d")
             df_nd['종가'] = (df_nd['Close'] / df_nd['Close'].iloc[0] - 1) * 100
         except:
             pass
     else:
-        df_bc = pyupbit.get_ohlcv()
-        df_bc['일자'] = df_bc.index
-        startday = dt_ymd(str(startday))
-        endday = dt_ymdhms(str(endday) + '235959')
-        df_bc = df_bc[(df_bc['일자'] >= startday) & (df_bc['일자'] <= endday)]
-        df_bc['종가'] = (df_bc['close'] / df_bc['close'].iloc[0] - 1) * 100
+        try:
+            df_bc = yf.Ticker('BTC-USD').history(start=startday, end=endday, interval="1d")
+            df_bc['종가'] = (df_bc['Close'] / df_bc['Close'].iloc[0] - 1) * 100
+        except:
+            pass
 
     df_st = pd.DataFrame({'수익금': df_tsg['수익금']})
     df_st.index = df_sg.index.map(lambda x: dt_hms(x[8:]) if not is_min else dt_hm(x[8:]))
@@ -839,29 +835,51 @@ def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     체결시간, 보유중목수, 보유금액
       0         1        2
     """
-    tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi = 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     tc = len(arry_tsg)
-    if tc > 0:
-        arry_p = arry_tsg[arry_tsg[:, 3] >= 0]
-        arry_m = arry_tsg[arry_tsg[:, 3] < 0]
-        atc    = round(tc / day_count, 1)
-        pc     = len(arry_p)
-        mc     = len(arry_m)
-        wr     = round(pc / tc * 100, 2)
-        ah     = round(arry_tsg[:, 0].sum() / tc, 2)
-        app    = round(arry_tsg[:, 2].sum() / tc, 2)
-        tsg    = int(arry_tsg[:, 3].sum())
-        appp   = arry_p[:, 2].mean() if len(arry_p) > 0 else 0
-        ampp   = abs(arry_m[:, 2].mean()) if len(arry_m) > 0 else 0
-        try:    mhct = int(arry_bct[int(len(arry_bct) * 0.01):, 1].max())
-        except: mhct = 0
-        try:    seed = int(arry_bct[int(len(arry_bct) * 0.01):, 2].max())
-        except: seed = betting
-        tpp    = round(tsg / (seed if seed != 0 else betting) * 100, 2)
-        cagr   = round(tpp / day_count * (250 if ui_gubun == 'S' else 365), 2)
-        tpi    = round(wr / 100 * (1 + appp / ampp), 2) if ampp != 0 else 1.0
+    if tc == 0:
+        return (0,) * 13
 
-    return tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi
+    profits = arry_tsg[:, 3]
+    is_profit = profits >= 0
+    arry_p = arry_tsg[is_profit]
+    arry_m = arry_tsg[~is_profit]
+
+    pc = len(arry_p)
+    mc = tc - pc
+    atc = tc / day_count
+    wr = (pc / tc) * 100
+
+    ah = arry_tsg[:, 0].mean()
+    app = arry_tsg[:, 2].mean()
+    tsg = profits.sum()
+
+    appp = arry_p[:, 2].mean() if len(arry_p) > 0 else 0
+    ampp = abs(arry_m[:, 2].mean()) if len(arry_m) > 0 else 0
+
+    try:    mhct = int(arry_bct[int(len(arry_bct) * 0.01):, 1].max())
+    except: mhct = 0
+    try:    seed = int(arry_bct[int(len(arry_bct) * 0.01):, 2].max())
+    except: seed = betting
+
+    tpp = tsg / (seed if seed > 0 else betting) * 100
+    cagr = tpp / day_count * (365 if 'C' in ui_gubun else 250)
+    tpi = wr / 100 * (1 + appp / ampp) if ampp != 0 else 1.0
+
+    return (
+        tc,              # 거래횟수
+        round(atc, 1),   # 일평균 거래횟수
+        pc,              # 수익 거래횟수
+        mc,              # 손실 거래횟수
+        round(wr, 2),    # 승률
+        round(ah, 2),    # 평균보유시간
+        round(app, 2),   # 평균수익률
+        round(tpp, 2),   # 총수익률
+        int(tsg),        # 총수익금
+        mhct,            # 최대 보유종목수
+        seed,            # 필요 자금
+        round(cagr, 2),  # 연간 예상 수익률
+        round(tpi, 2)    # 거래 성과 지수
+    )
 
 
 def GetIndicator(mc, mh, ml, mv, k):

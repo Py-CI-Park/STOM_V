@@ -12,12 +12,13 @@ from utility.setting import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST
 
 
 class Total:
-    def __init__(self, wq, tq, mq, bstq_list, ui_gubun):
+    def __init__(self, wq, tq, mq, bstq_list, ui_gubun, tick_count):
         self.wq           = wq
         self.tq           = tq
         self.mq           = mq
         self.bstq_list    = bstq_list
         self.ui_gubun     = ui_gubun
+        self.tick_count   = tick_count
         self.dict_set     = DICT_SET
 
         self.back_count   = None
@@ -42,7 +43,6 @@ class Total:
         self.stdp         = -2_000_000_000
         self.sub_total    = 0
         self.total_count  = 0
-        self.total_count2 = 0
 
         self.MainLoop()
 
@@ -55,12 +55,16 @@ class Total:
         dict_dummy = {}
         while True:
             data = self.tq.get()
-            if data[0] == '백테완료':
+            if data == '백테완료':
                 bc  += 1
                 if bc == self.back_count:
                     bc = 0
                     for q in self.bstq_list:
                         q.put(('백테완료', '미분리집계'))
+
+            elif data == '탐색완료':
+                tt += 1
+                self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -114,18 +118,16 @@ class Total:
 
             elif data[0] == '백테정보':
                 self.BackInfo(data)
+
             elif data[0] == '변수정보':
                 self.vars_lists = data[1]
                 start = now()
                 tt = 0
+
             elif data[0] == '경우의수':
                 self.total_count = data[1]
                 self.back_count  = data[2]
-            elif data[0] == '전체틱수':
-                self.total_count2 += data[1]
-            elif data == '탐색완료':
-                tt += 1
-                self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.total_count2, start))
+
             elif data == '백테중지':
                 self.mq.put('백테중지')
                 break
@@ -157,7 +159,8 @@ class Total:
 
 
 class OptimizeGeneticAlgorithm:
-    def __init__(self, wq, bq, sq, tq, lq, beq_list, bstq_list, backname, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun):
+        self.shared_counter = sc
         self.wq          = wq
         self.bq          = bq
         self.sq          = sq
@@ -165,6 +168,7 @@ class OptimizeGeneticAlgorithm:
         self.lq          = lq
         self.beq_list    = beq_list
         self.bstq_list   = bstq_list
+        self.multi       = multi
         self.backname    = backname
         self.ui_gubun    = ui_gubun
         self.high_list   = []
@@ -312,18 +316,31 @@ class OptimizeGeneticAlgorithm:
         self.orignal_vars_list = self.vars_list.copy()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수전략 설정 완료'))
 
+        data = ('백테정보', betting, self.vars[0][0], startday, endday, starttime, endtime, buystg, sellstg)
+        for q in self.beq_list:
+            q.put(data)
+
+        time.sleep(1)
+
+        self.shared_counter.value = 0
+        for q in self.beq_list:
+            q.put('전체틱수계산')
+
+        tick_count = 0
+        for _ in range(self.multi):
+            data = self.bq.get()
+            tick_count += data
+        tick_count = int(tick_count / 1000)
+
         mq = Queue()
-        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun)).start()
+        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, tick_count)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
         self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg, sellstg, dict_cn, std_text,
                      optistandard, valid_days, len(day_list)))
 
         time.sleep(1)
-        data = ('백테정보', betting, self.vars[0][0], startday, endday, starttime, endtime, buystg, sellstg)
-        for q in self.beq_list:
-            q.put(data)
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
 
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
         k    = 1
         vc   = len(self.vars_list)
         hstd = -2_000_000_000
@@ -339,6 +356,7 @@ class OptimizeGeneticAlgorithm:
                     data = (ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 [{k}][{i+1}/{vc}]단계 시작, 최고 기준값[{hstd:,.2f}]')
                     threading_timer(6, self.wq.put, data)
 
+                    self.shared_counter.value = 0
                     data = ('변수정보', vars_lists)
                     self.tq.put(data)
                     for q in self.bstq_list:
