@@ -51,8 +51,8 @@ class Future:
         elif trcode == 'opw30009':
             columns_ = columns = ['통화코드', '원화대용평가금액', '주문가능금액']
         elif trcode == 'opw30003':
-            columns_ = ['종목코드', '매도수구분', '평균단가', '현재가격', '수익율', '평가손익', '약정금액', '평가금액', '수량']
-            columns  = ['종목코드', '포지션', '매입가', '현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량']
+            columns_ = ['종목코드', '매도수구분', '평균단가', '현재가격', '수익률', '평가손익', '약정금액', '평가금액', '수량']
+            columns  = ['종목코드', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
 
         rows = self.ocx.dynamicCall('GetRepeatCnt(QString, QString)', trcode, rqname)
         if rows == 0: rows = 1
@@ -81,7 +81,7 @@ class Future:
                 columns = ['원화대용평가금액', '주문가능금액']
                 self.tr_df[columns] = self.tr_df[columns].astype(int)
             elif trcode == 'opw30003':
-                columns = ['매입가', '현재가', '수익율']
+                columns = ['매입가', '현재가', '수익률']
                 self.tr_df[columns] = self.tr_df[columns].astype(float)
                 columns = ['평가손익', '약정금액', '평가금액', '보유수량']
                 self.tr_df[columns] = self.tr_df[columns].astype(int)

@@ -82,7 +82,7 @@ if 'stock' not in table_list:
     columns = [
         "index", "주식모의투자", "주식알림소리", "주식매수전략", "주식매도전략", "주식타임프레임", "주식평균값계산틱수", "주식최대매수종목수",
         "주식전략종료시간", "주식잔고청산", "주식프로세스종료", "주식컴퓨터종료", "주식투자금고정", "주식투자금", "주식손실중지",
-        "주식손실중지수익율", "주식수익중지", "주식수익중지수익율", "주식경과틱수설정"
+        "주식손실중지수익률", "주식수익중지", "주식수익중지수익률", "주식경과틱수설정"
     ]
     data = [0, 1, 1, '', '', 1, 30, 10, 93000, 1, 1, 0, 1, 20.0, 0, 2.0, 0, 2.0, '']
     df = pd.DataFrame([data], columns=columns).set_index('index')
@@ -92,7 +92,7 @@ if 'coin' not in table_list:
     columns = [
         "index", "코인모의투자", "코인알림소리", "코인매수전략", "코인매도전략", "코인타임프레임", "코인평균값계산틱수", "코인최대매수종목수",
         "코인전략종료시간", "코인잔고청산", "코인프로세스종료", "코인컴퓨터종료", "코인투자금고정", "코인투자금", "코인손실중지",
-        "코인손실중지수익율", "코인수익중지", "코인수익중지수익율", "코인경과틱수설정"
+        "코인손실중지수익률", "코인수익중지", "코인수익중지수익률", "코인경과틱수설정"
     ]
     data = [0, 1, 1, '', '', 0, 30, 10, 235000, 1, 0, 0, 1, 1000.0, 0, 2.0, 0, 2.0, '']
     df = pd.DataFrame([data], columns=columns).set_index('index')
@@ -121,7 +121,7 @@ if 'etc' not in table_list:
 if 'stockbuyorder' not in table_list:
     columns = [
         'index', '주식매수주문구분', '주식매수분할횟수', '주식매수분할방법', '주식매수분할시그널', '주식매수분할하방', '주식매수분할상방',
-        '주식매수분할하방수익율', '주식매수분할상방수익율', '주식매수분할고정수익율', '주식매수지정가기준가격', '주식매수지정가호가번호',
+        '주식매수분할하방수익률', '주식매수분할상방수익률', '주식매수분할고정수익률', '주식매수지정가기준가격', '주식매수지정가호가번호',
         '주식매수시장가잔량범위', '주식매수취소관심이탈', '주식매수취소매도시그널', '주식매수취소시간', '주식매수취소시간초', '주식매수금지블랙리스트',
         '주식매수금지라운드피겨', '주식매수금지라운드호가', '주식매수금지손절횟수', '주식매수금지손절횟수값', '주식매수금지거래횟수',
         '주식매수금지거래횟수값', '주식매수금지시간', '주식매수금지시작시간', '주식매수금지종료시간', '주식매수금지간격', '주식매수금지간격초',
@@ -135,8 +135,8 @@ if 'stockbuyorder' not in table_list:
 if 'stocksellorder' not in table_list:
     columns = [
         'index', '주식매도주문구분', '주식매도분할횟수', '주식매도분할방법', '주식매도분할시그널', '주식매도분할하방', '주식매도분할상방',
-        '주식매도분할하방수익율', '주식매도분할상방수익율', '주식매도지정가기준가격', '주식매도지정가호가번호', '주식매도시장가잔량범위',
-        '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초', '주식매도손절수익율청산', '주식매도손절수익율',
+        '주식매도분할하방수익률', '주식매도분할상방수익률', '주식매도지정가기준가격', '주식매도지정가호가번호', '주식매도시장가잔량범위',
+        '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초', '주식매도손절수익률청산', '주식매도손절수익률',
         '주식매도손절수익금청산', '주식매도손절수익금', '주식매도금지매수횟수', '주식매도금지매수횟수값', '주식매도금지라운드피겨',
         '주식매도금지라운드호가', '주식매도금지시간', '주식매도금지시작시간', '주식매도금지종료시간', '주식매도금지간격', '주식매도금지간격초',
         '주식매도정정횟수', '주식매도정정호가차이', '주식매도정정호가'
@@ -148,7 +148,7 @@ if 'stocksellorder' not in table_list:
 if 'coinbuyorder' not in table_list:
     columns = [
         'index', '코인매수주문구분', '코인매수분할횟수', '코인매수분할방법', '코인매수분할시그널', '코인매수분할하방', '코인매수분할상방',
-        '코인매수분할하방수익율', '코인매수분할상방수익율', '코인매수분할고정수익율', '코인매수지정가기준가격', '코인매수지정가호가번호',
+        '코인매수분할하방수익률', '코인매수분할상방수익률', '코인매수분할고정수익률', '코인매수지정가기준가격', '코인매수지정가호가번호',
         '코인매수시장가잔량범위', '코인매수취소관심이탈', '코인매수취소매도시그널', '코인매수취소시간', '코인매수취소시간초', '코인매수금지블랙리스트',
         '코인매수금지200원이하', '코인매수금지손절횟수', '코인매수금지손절횟수값', '코인매수금지거래횟수', '코인매수금지거래횟수값', '코인매수금지시간',
         '코인매수금지시작시간', '코인매수금지종료시간', '코인매수금지간격', '코인매수금지간격초', '코인매수금지손절간격', '코인매수금지손절간격초',
@@ -162,8 +162,8 @@ if 'coinbuyorder' not in table_list:
 if 'coinsellorder' not in table_list:
     columns = [
         'index', '코인매도주문구분', '코인매도분할횟수', '코인매도분할방법', '코인매도분할시그널', '코인매도분할하방', '코인매도분할상방',
-        '코인매도분할하방수익율', '코인매도분할상방수익율', '코인매도지정가기준가격', '코인매도지정가호가번호', '코인매도시장가잔량범위',
-        '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도손절수익율청산', '코인매도손절수익율',
+        '코인매도분할하방수익률', '코인매도분할상방수익률', '코인매도지정가기준가격', '코인매도지정가호가번호', '코인매도시장가잔량범위',
+        '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도손절수익률청산', '코인매도손절수익률',
         '코인매도손절수익금청산', '코인매도손절수익금', '코인매도금지매수횟수', '코인매도금지매수횟수값', '코인매도금지시간', '코인매도금지시작시간',
         '코인매도금지종료시간', '코인매도금지간격', '코인매도금지간격초', '코인매도정정횟수', '코인매도정정호가차이', '코인매도정정호가'
     ]
@@ -315,32 +315,32 @@ if 'c_chegeollist' not in table_list:
     cur.execute('CREATE INDEX "ix_c_chegeollist_index" ON "c_chegeollist" ( "index" )')
 
 if 'c_jangolist' not in table_list:
-    query = 'CREATE TABLE "c_jangolist" ( "index" TEXT, "종목명" TEXT, "매입가" REAL, "현재가" REAL, "수익율" REAL, ' \
+    query = 'CREATE TABLE "c_jangolist" ( "index" TEXT, "종목명" TEXT, "매입가" REAL, "현재가" REAL, "수익률" REAL, ' \
             '"평가손익" INTEGER, "매입금액" INTEGER, "평가금액" INTEGER, "보유수량" REAL, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_c_jangolist_index"ON "c_jangolist" ("index")')
 
 if 'c_jangolist_future' not in table_list:
-    query = 'CREATE TABLE "c_jangolist_future" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매입가" REAL, "현재가" REAL, "수익율" REAL, ' \
+    query = 'CREATE TABLE "c_jangolist_future" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매입가" REAL, "현재가" REAL, "수익률" REAL, ' \
             '"평가손익" INTEGER, "매입금액" INTEGER, "평가금액" INTEGER, "보유수량" REAL, "레버리지" INTEGER, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_c_jangolist_future_index"ON "c_jangolist_future" ("index")')
 
 if 'c_totaltradelist' not in table_list:
     query = 'CREATE TABLE "c_totaltradelist" ( "index" TEXT, "총매수금액" INTEGER, "총매도금액" INTEGER, "총수익금액" INTEGER, ' \
-            '"총손실금액" INTEGER, "수익율" REAL, "수익금합계" INTEGER )'
+            '"총손실금액" INTEGER, "수익률" REAL, "수익금합계" INTEGER )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_c_totaltradelist_index" ON "c_totaltradelist" ( "index" )')
 
 if 'c_tradelist' not in table_list:
     query = 'CREATE TABLE "c_tradelist" ( "index" TEXT, "종목명" TEXT, "매수금액" INTEGER, "매도금액" INTEGER, ' \
-            '"주문수량" REAL, "수익율" REAL, "수익금" INTEGER, "체결시간" TEXT )'
+            '"주문수량" REAL, "수익률" REAL, "수익금" INTEGER, "체결시간" TEXT )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_c_tradelist_index" ON "c_tradelist" ( "index" )')
 
 if 'c_tradelist_future' not in table_list:
     query = 'CREATE TABLE "c_tradelist_future" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매수금액" INTEGER, "매도금액" INTEGER, ' \
-            '"주문수량" REAL, "수익율" REAL, "수익금" INTEGER, "체결시간" TEXT )'
+            '"주문수량" REAL, "수익률" REAL, "수익금" INTEGER, "체결시간" TEXT )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_c_tradelist_future_index" ON "c_tradelist_future" ( "index" )')
 
@@ -351,20 +351,20 @@ if 's_chegeollist' not in table_list:
     cur.execute('CREATE INDEX "ix_s_chegeollist_index" ON "s_chegeollist" ( "index" )')
 
 if 's_jangolist' not in table_list:
-    query = 'CREATE TABLE "s_jangolist" ( "index" TEXT, "종목명" TEXT, "매입가" INTEGER, "현재가" INTEGER, "수익율" REAL, ' \
+    query = 'CREATE TABLE "s_jangolist" ( "index" TEXT, "종목명" TEXT, "매입가" INTEGER, "현재가" INTEGER, "수익률" REAL, ' \
             '"평가손익" INTEGER, "매입금액" INTEGER, "평가금액" INTEGER, "보유수량" INTEGER, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_s_jangolist_index"ON "s_jangolist" ("index")')
 
 if 's_totaltradelist' not in table_list:
     query = 'CREATE TABLE "s_totaltradelist" ( "index" TEXT, "총매수금액" INTEGER, "총매도금액" INTEGER, ' \
-            '"총수익금액" INTEGER, "총손실금액" INTEGER, "수익율" REAL, "수익금합계" INTEGER)'
+            '"총수익금액" INTEGER, "총손실금액" INTEGER, "수익률" REAL, "수익금합계" INTEGER)'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_s_totaltradelist_index" ON "s_totaltradelist" ( "index" )')
 
 if 's_tradelist' not in table_list:
     query = 'CREATE TABLE "s_tradelist" ( "index" TEXT, "종목명" TEXT, "매수금액" INTEGER, "매도금액" INTEGER, ' \
-            '"주문수량" INTEGER, "수익율" REAL, "수익금" INTEGER, "체결시간" TEXT )'
+            '"주문수량" INTEGER, "수익률" REAL, "수익금" INTEGER, "체결시간" TEXT )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_s_tradelist_index" ON "s_tradelist" ( "index" )')
 
@@ -375,20 +375,20 @@ if 'f_chegeollist' not in table_list:
     cur.execute('CREATE INDEX "ix_f_chegeollist_index" ON "f_chegeollist" ( "index" )')
 
 if 'f_jangolist' not in table_list:
-    query = 'CREATE TABLE "f_jangolist" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매입가" REAL, "현재가" REAL, "수익율" REAL, ' \
+    query = 'CREATE TABLE "f_jangolist" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매입가" REAL, "현재가" REAL, "수익률" REAL, ' \
             '"평가손익" REAL, "매입금액" REAL, "평가금액" REAL, "보유수량" INTEGER, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_f_jangolist_index"ON "f_jangolist" ("index")')
 
 if 'f_totaltradelist' not in table_list:
     query = 'CREATE TABLE "f_totaltradelist" ( "index" TEXT, "총매수금액" REAL, "총매도금액" REAL, ' \
-            '"총수익금액" REAL, "총손실금액" REAL, "수익율" REAL, "수익금합계" REAL)'
+            '"총수익금액" REAL, "총손실금액" REAL, "수익률" REAL, "수익금합계" REAL)'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_f_totaltradelist_index" ON "f_totaltradelist" ( "index" )')
 
 if 'f_tradelist' not in table_list:
     query = 'CREATE TABLE "f_tradelist" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매수금액" REAL, "매도금액" REAL, ' \
-            '"주문수량" REAL, "수익율" REAL, "수익금" REAL, "체결시간" TEXT )'
+            '"주문수량" REAL, "수익률" REAL, "수익금" REAL, "체결시간" TEXT )'
     cur.execute(query)
     cur.execute('CREATE INDEX "ix_f_tradelist_index" ON "f_tradelist" ( "index" )')
 

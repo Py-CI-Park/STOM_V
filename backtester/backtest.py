@@ -155,7 +155,7 @@ class Total:
         self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
         if self.blacklist: self.InsertBlacklist()
 
-        _df_tsg    = self.df_tsg[['보유시간', '매도시간', '수익율', '수익금', '수익금합계']].copy()
+        _df_tsg    = self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
         arry_tsg   = np.array(_df_tsg, dtype='float64')
         arry_bct   = np.sort(arry_bct, axis=0)[::-1]
         result     = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, self.day_count)
@@ -177,8 +177,8 @@ class Total:
         back_text  = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.avgtime}'
         label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{bet_unit}, '\
                      f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
-                     f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익율 {app:.2f}%, 수익율합계 {tpp:.2f}%, '\
-                     f'최대낙폭률 {mdd:.2f}%, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익율 {cagr:.2f}%'
+                     f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, '\
+                     f'최대낙폭률 {mdd:.2f}%, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테스팅 결과\n' + label_text))
 
         if self.dict_set['스톰라이브']:

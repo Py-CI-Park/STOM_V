@@ -101,6 +101,10 @@ def set_password(password: str):
             click_button(win32gui.GetDlgItem(hwnd, 0x3EC))
             qtest_qwait(1)
             click_button(win32gui.GetDlgItem(hwnd, 0x2))
+            try:
+                click_button(win32gui.GetDlgItem(hwnd, 0x2))
+            except:
+                pass
             qtest_qwait(1)
             print('계좌비밀번호 등록 완료')
             break

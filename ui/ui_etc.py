@@ -103,9 +103,9 @@ def calendar_clicked(ui, gubun):
     if len(df1) > 0:
         df1.sort_values(by=['체결시간'], ascending=True, inplace=True)
         if table in ('f_tradelist', 'c_tradelist_future'):
-            df1 = df1[['체결시간', '종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익율', '수익금']]
+            df1 = df1[['체결시간', '종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익률', '수익금']]
         else:
-            df1 = df1[['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익율', '수익금']]
+            df1 = df1[['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금']]
         nbg, nsg = df1['매수금액'].sum(), df1['매도금액'].sum()
         sp = round((nsg / nbg - 1) * 100, 2)
         npg, nmg, nsig = df1[df1['수익금'] > 0]['수익금'].sum(), df1[df1['수익금'] < 0]['수익금'].sum(), df1['수익금'].sum()
@@ -121,13 +121,13 @@ def calendar_clicked(ui, gubun):
 def stom_live_screenshot(ui, cmd):
     ui.mnButtonClicked_01(4)
     qtest_qwait(1)
-    if cmd == '주식':
+    if '주식' in cmd:
         mid = 'S'
         ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index1)
-    elif cmd == '코인':
+    elif '코인' in cmd:
         mid = 'C'
         ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index2)
-    elif cmd == '해선':
+    elif '해선' in cmd:
         mid = 'F'
         ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index3)
     else:
@@ -139,7 +139,7 @@ def stom_live_screenshot(ui, cmd):
     screenshot = screen.grabWindow(ui.winId())
     screenshot.save(file_name, 'png')
     ui.teleQ.put(file_name)
-    ui.mnButtonClicked_01(0 if cmd != '코인' else 1)
+    ui.mnButtonClicked_01(0 if '코인' in cmd else 1)
 
 
 def chart_screenshot(ui):

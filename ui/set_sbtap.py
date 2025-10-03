@@ -88,7 +88,7 @@ class SetStockBack:
         self.ui.svjs_pushButon_04 = self.wc.setPushbutton('매도전략 시작', box=self.ui.ss_tab, click=self.ui.svjsButtonClicked_04, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
         self.ui.svjs_pushButon_05 = self.wc.setPushbutton('손절라인청산', box=self.ui.ss_tab, click=self.ui.svjsButtonClicked_05)
         self.ui.svjs_pushButon_06 = self.wc.setPushbutton('익절라인청산', box=self.ui.ss_tab, click=self.ui.svjsButtonClicked_06)
-        self.ui.svjs_pushButon_07 = self.wc.setPushbutton('수익율보존청산', box=self.ui.ss_tab, click=self.ui.svjsButtonClicked_07)
+        self.ui.svjs_pushButon_07 = self.wc.setPushbutton('수익률보존청산', box=self.ui.ss_tab, click=self.ui.svjsButtonClicked_07)
         self.ui.svjs_pushButon_08 = self.wc.setPushbutton('보유시간기준청산', box=self.ui.ss_tab, click=self.ui.svjsButtonClicked_08)
         self.ui.svjs_pushButon_09 = self.wc.setPushbutton('VI직전매도', box=self.ui.ss_tab, click=self.ui.svjsButtonClicked_09)
         self.ui.svjs_pushButon_10 = self.wc.setPushbutton('고저평균등락율', box=self.ui.ss_tab, click=self.ui.svjsButtonClicked_10)

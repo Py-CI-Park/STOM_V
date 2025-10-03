@@ -16,6 +16,7 @@ class UpbitStrategyTick:
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
         self.windowQ          = qlist[0]
+        self.teleQ            = qlist[3]
         self.ctraderQ         = qlist[9]
         self.cstgQ            = qlist[10]
         self.dict_set         = DICT_SET
@@ -159,8 +160,10 @@ class UpbitStrategyTick:
     def UpdateString(self, data):
         if data == '매수전략중지':
             self.buystrategy = None
+            self.teleQ.put('코인 매수전략 중지 완료')
         elif data == '매도전략중지':
             self.sellstrategy = None
+            self.teleQ.put('코인 매도전략 중지 완료')
 
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량, \
@@ -447,19 +450,19 @@ class UpbitStrategyTick:
                 매입금액 = self.df_jg['매입금액'][종목코드]
                 분할매수횟수 = int(self.df_jg['분할매수횟수'][종목코드])
                 분할매도횟수 = int(self.df_jg['분할매도횟수'][종목코드])
-                _, 수익금, 수익율 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
+                _, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
                 매수시간 = dt_ymdhms(self.df_jg['매수시간'][종목코드])
                 보유시간 = (now_utc() - 매수시간).total_seconds()
                 if 종목코드 not in self.dict_hilo.keys():
-                    self.dict_hilo[종목코드] = [수익율, 수익율]
+                    self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
-                    if 수익율 > self.dict_hilo[종목코드][0]:
-                        self.dict_hilo[종목코드][0] = 수익율
-                    elif 수익율 < self.dict_hilo[종목코드][1]:
-                        self.dict_hilo[종목코드][1] = 수익율
-                최고수익율, 최저수익율 = self.dict_hilo[종목코드]
+                    if 수익률 > self.dict_hilo[종목코드][0]:
+                        self.dict_hilo[종목코드][0] = 수익률
+                    elif 수익률 < self.dict_hilo[종목코드][1]:
+                        self.dict_hilo[종목코드][1] = 수익률
+                최고수익률, 최저수익률 = self.dict_hilo[종목코드]
             else:
-                매수틱번호, 수익금, 수익율, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익율, 최저수익율 = 0, 0, 0, 0, 0, 0, 0, now_utc(), 0, 0, 0
+                매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = 0, 0, 0, 0, 0, 0, 0, now_utc(), 0, 0, 0
             self.indexb = 매수틱번호
 
             BBT = not self.dict_set['코인매수금지시간'] or not (self.dict_set['코인매수금지시작시간'] < 시분초 < self.dict_set['코인매수금지종료시간'])
@@ -489,10 +492,10 @@ class UpbitStrategyTick:
                             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy'))
                 elif C:
                     매수 = False
-                    분할매수기준수익율 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['코인매수분할고정수익율'] else 수익율
-                    if self.dict_set['코인매수분할하방'] and 분할매수기준수익율 < -self.dict_set['코인매수분할하방수익율']:
+                    분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['코인매수분할고정수익률'] else 수익률
+                    if self.dict_set['코인매수분할하방'] and 분할매수기준수익률 < -self.dict_set['코인매수분할하방수익률']:
                         매수 = True
-                    elif self.dict_set['코인매수분할상방'] and 분할매수기준수익율 > self.dict_set['코인매수분할상방수익율']:
+                    elif self.dict_set['코인매수분할상방'] and 분할매수기준수익률 > self.dict_set['코인매수분할상방수익률']:
                         매수 = True
 
                     if 매수:
@@ -506,7 +509,7 @@ class UpbitStrategyTick:
             B = self.dict_set['코인매도분할시그널']
             C = NIB and NIS and SCC and 매입가 != 0 and 분할매도횟수 < self.dict_set['코인매도분할횟수']
             D = NIS and self.dict_set['코인매수취소매도시그널'] and not NIB
-            E = NIB and NIS and 매입가 != 0 and self.dict_set['코인매도손절수익율청산'] and 수익율 < -self.dict_set['코인매도손절수익율']
+            E = NIB and NIS and 매입가 != 0 and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
             F = NIB and NIS and 매입가 != 0 and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
 
             if SBT and (A or (B and C) or C or D or E or F):
@@ -530,8 +533,8 @@ class UpbitStrategyTick:
                     if 강제청산:
                         매도 = True
                     elif C:
-                        if self.dict_set['코인매도분할하방'] and 수익율 < -self.dict_set['코인매도분할하방수익율'] * (분할매도횟수 + 1):  매도 = True
-                        elif self.dict_set['코인매도분할상방'] and 수익율 > self.dict_set['코인매도분할상방수익율'] * (분할매도횟수 + 1): 매도 = True
+                        if self.dict_set['코인매도분할하방'] and 수익률 < -self.dict_set['코인매도분할하방수익률'] * (분할매도횟수 + 1):  매도 = True
+                        elif self.dict_set['코인매도분할상방'] and 수익률 > self.dict_set['코인매도분할상방수익률'] * (분할매도횟수 + 1): 매도 = True
 
                     if 매도:
                         self.Sell(종목코드, 현재가, 매도호가1, 매수호가1, 매도수량, 강제청산)

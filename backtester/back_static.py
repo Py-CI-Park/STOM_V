@@ -32,8 +32,8 @@ def GetTradeInfo(gubun):
             '매도가': 0,
             '주문수량': 0,
             '보유수량': 0,
-            '최고수익율': 0.,
-            '최저수익율': 0.,
+            '최고수익률': 0.,
+            '최저수익률': 0.,
             '매수틱번호': 0,
             '매수시간': buy_time
         }
@@ -44,8 +44,8 @@ def GetTradeInfo(gubun):
             '매도가': 0,
             '주문수량': 0,
             '보유수량': 0,
-            '최고수익율': 0.,
-            '최저수익율': 0.,
+            '최고수익률': 0.,
+            '최저수익률': 0.,
             '매수틱번호': 0,
             '매수시간': buy_time,
             '추가매수시간': [],
@@ -720,7 +720,7 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
     plt.grid()
     # noinspection PyTypeChecker
     plt.subplot(gs[1])
-    plt.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익율', color='orange')
+    plt.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익률', color='orange')
     if df_kp is not None:
         plt.plot(df_kp.index, df_kp['종가'], linewidth=0.5, label='코스피', color='r')
         plt.plot(df_kd.index, df_kd['종가'], linewidth=0.5, label='코스닥', color='b')
@@ -799,11 +799,11 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
 def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
     columns1 = [
         'index', '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
-        '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익율', '수익금', '매도조건', '추가매수시간'
+        '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '매도조건', '추가매수시간'
     ]
     columns2 = [
         '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
-        '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익율', '수익금', '수익금합계', '매도조건', '추가매수시간'
+        '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간'
     ]
     df_tsg = pd.DataFrame(list_tsg, columns=columns1)
     df_tsg.set_index('index', inplace=True)
@@ -819,7 +819,7 @@ def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
 def AddMdd(arry_tsg, result):
     """
     arry_tsg
-    보유시간, 매도시간, 수익율, 수익금, 수익금합계
+    보유시간, 매도시간, 수익률, 수익금, 수익금합계
       0       1       2       3      4
     """
     try:
@@ -839,7 +839,7 @@ def AddMdd(arry_tsg, result):
 def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     """ dtype = 'float64'
     arry_tsg
-    보유시간, 매도시간, 수익율, 수익금, 수익금합계
+    보유시간, 매도시간, 수익률, 수익금, 수익금합계
       0       1       2       3      4
     arry_bct
     체결시간, 보유중목수, 보유금액

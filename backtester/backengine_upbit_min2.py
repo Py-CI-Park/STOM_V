@@ -428,11 +428,11 @@ class BackEngineUpbitMin2(BackEngineUpbitTick2):
                     if self.tick_count < self.vars[0]:
                         continue
 
-                    보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
+                    보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                         매도분할횟수, 매수주문취소시간, 매도주문취소시간 = self.trade_info[vturn][vkey].values()
-                    수익금, 수익율, 최고수익율, 최저수익율, 보유시간 = \
-                        self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익율, 최저수익율, 매수시간, now())
+                    수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
+                        self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
 
                     gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
                     if gubun is None: continue
@@ -457,17 +457,17 @@ class BackEngineUpbitMin2(BackEngineUpbitTick2):
                         if not 보유중:
                             exec(self.buystg)
                         else:
-                            if not self.CheckDividBuy(현재가, 추가매수가, 수익율, vturn, vkey) and self.dict_set['코인매수분할시그널']:
+                            if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['코인매수분할시그널']:
                                 exec(self.buystg)
 
                     if '매도' in gubun:
-                        if self.CheckSonjeol(수익율, 수익금, vturn, vkey): continue
+                        if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
                         if self.CancelSellOrder(현재가, 매수분할횟수, now(), vturn, vkey): continue
                         self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['코인매도분할횟수'] == 1:
                             exec(self.sellstg)
                         else:
-                            if not self.CheckDividSell(수익율, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
+                            if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
                                 exec(self.sellstg)
 
         elif self.opti_turn == 3:
@@ -481,11 +481,11 @@ class BackEngineUpbitMin2(BackEngineUpbitTick2):
                     elif self.tick_count < self.avgtime:
                         break
 
-                    보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
+                    보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                         매도분할횟수, 매수주문취소시간, 매도주문취소시간 = self.trade_info[vturn][vkey].values()
-                    수익금, 수익율, 최고수익율, 최저수익율, 보유시간 = \
-                        self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익율, 최저수익율, 매수시간, now())
+                    수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
+                        self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
 
                     gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
                     if gubun is None: continue
@@ -513,14 +513,14 @@ class BackEngineUpbitMin2(BackEngineUpbitTick2):
                             else:
                                 exec(self.dict_buystg[index_])
                         else:
-                            if not self.CheckDividBuy(현재가, 추가매수가, 수익율, vturn, vkey) and self.dict_set['코인매도분할시그널']:
+                            if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['코인매도분할시그널']:
                                 if self.back_type != '조건최적화':
                                     exec(self.buystg)
                                 else:
                                     exec(self.dict_buystg[index_])
 
                     if '매도' in gubun:
-                        if self.CheckSonjeol(수익율, 수익금, vturn, vkey): continue
+                        if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
                         if self.CancelSellOrder(현재가, 매수분할횟수, now(), vturn, vkey): continue
                         self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['코인매도분할횟수'] == 1:
@@ -529,7 +529,7 @@ class BackEngineUpbitMin2(BackEngineUpbitTick2):
                             else:
                                 exec(self.dict_sellstg[index_])
                         else:
-                            if not self.CheckDividSell(수익율, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
+                            if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
                                 if self.back_type != '조건최적화':
                                     exec(self.sellstg)
                                 else:
@@ -543,11 +543,11 @@ class BackEngineUpbitMin2(BackEngineUpbitTick2):
                 if self.tick_count < self.avgtime:
                     return
 
-            보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
+            보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                 매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                 매도분할횟수, 매수주문취소시간, 매도주문취소시간 = self.trade_info[vturn][vkey].values()
-            수익금, 수익율, 최고수익율, 최저수익율, 보유시간 = \
-                self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익율, 최저수익율, 매수시간, now())
+            수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
+                self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
 
             gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
             if gubun is None: return
@@ -572,15 +572,15 @@ class BackEngineUpbitMin2(BackEngineUpbitTick2):
                 if not 보유중:
                     exec(self.buystg)
                 else:
-                    if not self.CheckDividBuy(현재가, 추가매수가, 수익율, vturn, vkey) and self.dict_set['코인매수분할시그널']:
+                    if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['코인매수분할시그널']:
                         exec(self.buystg)
 
             if '매도' in gubun:
-                if self.CheckSonjeol(수익율, 수익금, vturn, vkey): return
+                if self.CheckSonjeol(수익률, 수익금, vturn, vkey): return
                 if self.CancelSellOrder(현재가, 매수분할횟수, now(), vturn, vkey): return
                 self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if self.dict_set['코인매도분할횟수'] == 1:
                     exec(self.sellstg)
                 else:
-                    if not self.CheckDividSell(수익율, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
+                    if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
                         exec(self.sellstg)

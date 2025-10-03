@@ -88,7 +88,7 @@ class SetCoinBack:
         self.ui.cvjs_pushButon_04 = self.wc.setPushbutton('매도전략 시작', box=self.ui.cs_tab, click=self.ui.cvjsButtonClicked_04, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
         self.ui.cvjs_pushButon_05 = self.wc.setPushbutton('손절라인청산', box=self.ui.cs_tab, click=self.ui.cvjsButtonClicked_05)
         self.ui.cvjs_pushButon_06 = self.wc.setPushbutton('익절라인청산', box=self.ui.cs_tab, click=self.ui.cvjsButtonClicked_06)
-        self.ui.cvjs_pushButon_07 = self.wc.setPushbutton('수익율보존청산', box=self.ui.cs_tab, click=self.ui.cvjsButtonClicked_07)
+        self.ui.cvjs_pushButon_07 = self.wc.setPushbutton('수익률보존청산', box=self.ui.cs_tab, click=self.ui.cvjsButtonClicked_07)
         self.ui.cvjs_pushButon_08 = self.wc.setPushbutton('보유시간기준청산', box=self.ui.cs_tab, click=self.ui.cvjsButtonClicked_08)
         self.ui.cvjs_pushButon_09 = self.wc.setPushbutton('체결강도평균비교', box=self.ui.cs_tab, click=self.ui.cvjsButtonClicked_09)
         self.ui.cvjs_pushButon_10 = self.wc.setPushbutton('최고체결강도비교', box=self.ui.cs_tab, click=self.ui.cvjsButtonClicked_10)

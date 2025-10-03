@@ -81,7 +81,7 @@ class BackSubTotal:
                 self.complete2 = False
 
     def CollectData(self, data):
-        _, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익율, 수익금, 매도조건, \
+        _, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, \
             추가매수시간, 잔량없음, vturn, vkey = data
 
         if vturn not in self.ddict_tsg.keys():
@@ -95,9 +95,9 @@ class BackSubTotal:
 
         index = str(매수시간) if self.buystd else str(매도시간)
         if self.opti_turn != 2:
-            data = [index, 보유시간, 매도시간, 수익율, 수익금]
+            data = [index, 보유시간, 매도시간, 수익률, 수익금]
         else:
-            data = [index, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익율, 수익금, 매도조건, 추가매수시간]
+            data = [index, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, 추가매수시간]
         self.ddict_tsg[vturn][vkey].append(data)
 
         arry_bct  = self.ddict_bct[vturn][vkey]
@@ -125,7 +125,7 @@ class BackSubTotal:
 
     def SendSubTotal1(self):
         if self.ddict_tsg:
-            columns = ['index', '보유시간', '매도시간', '수익율', '수익금']
+            columns = ['index', '보유시간', '매도시간', '수익률', '수익금']
             for vturn, dict_tsg in self.ddict_tsg.items():
                 for vkey, list_tsg in dict_tsg.items():
                     arry_bct = self.ddict_bct[vturn][vkey]
@@ -154,7 +154,7 @@ class BackSubTotal:
             self.tq.put(('결과없음',))
             return
 
-        columns = ['index', '보유시간', '매도시간', '수익율', '수익금']
+        columns = ['index', '보유시간', '매도시간', '수익률', '수익금']
         data = (columns, self.list_tsg, self.arry_bct)
         if self.list_days is not None:
             train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
@@ -177,7 +177,7 @@ class BackSubTotal:
 
     def Result(self, gubun, data):
         """
-        보유시간, 매도시간, 수익율, 수익금, 수익금합계
+        보유시간, 매도시간, 수익률, 수익금, 수익금합계
           0       1       2       3      4
         """
         columns, list_data, arry_bct = data[:3]

@@ -67,7 +67,7 @@ class UpdateTextedit:
                         '백테스트 시작' in data[1] or ']단계' in data[1]:
                     color = color_fg_rt
                 elif ('AP' in data[1] and '-' in data[1].split('AP')[1]) or \
-                        ('수익율' in data[1] and '-' in data[1].split('수익율')[1]):
+                        ('수익률' in data[1] and '-' in data[1].split('수익률')[1]):
                     color = color_fg_dk
                 else:
                     color = color_fg_bt
@@ -103,7 +103,7 @@ class UpdateTextedit:
                         '백테스트 시작' in data[1] or ']단계' in data[1]:
                     color = color_fg_rt
                 elif ('AP' in data[1] and '-' in data[1].split('AP')[1]) or \
-                        ('수익율' in data[1] and '-' in data[1].split('수익율')[1].split('KRW')[0]):
+                        ('수익률' in data[1] and '-' in data[1].split('수익률')[1].split('KRW')[0]):
                     color = color_fg_dk
                 else:
                     color = color_fg_bt

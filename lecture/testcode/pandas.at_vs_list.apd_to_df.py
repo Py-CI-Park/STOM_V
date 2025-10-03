@@ -4,8 +4,8 @@ import pandas as pd
 index_list = []
 data_list  = [[], [], [], [], [], [], []]
 total_list = []
-columns1 = ['거래횟수', '보유기간합계', '익절', '손절', '승률', '수익율', '수익금']
-columns2 = ['index', '거래횟수', '보유기간합계', '익절', '손절', '승률', '수익율', '수익금']
+columns1 = ['거래횟수', '보유기간합계', '익절', '손절', '승률', '수익률', '수익금']
+columns2 = ['index', '거래횟수', '보유기간합계', '익절', '손절', '승률', '수익률', '수익금']
 df = pd.DataFrame(columns=columns1)
 
 start = time.time()

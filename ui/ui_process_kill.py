@@ -39,6 +39,7 @@ def process_kill(ui):
     if ui.qtimer1.isActive(): ui.qtimer1.stop()
     if ui.qtimer2.isActive(): ui.qtimer2.stop()
     if ui.qtimer3.isActive(): ui.qtimer3.stop()
+    if ui.qtimer4.isActive(): ui.qtimer4.stop()
 
     if ui.CoinKimpProcessAlive():
         ui.kimpQ.put('프로세스종료')

@@ -109,6 +109,7 @@ def dt_ymd(str_time):
 
 
 def dt_hms(str_time):
+    if len(str_time) == 5: str_time = str_time.zfill(6)
     str_time = f'2000-01-01 {str_time[:2]}:{str_time[2:4]}:{str_time[4:6]}'
     return datetime.datetime.fromisoformat(str_time)
 

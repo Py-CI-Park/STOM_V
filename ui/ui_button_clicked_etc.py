@@ -43,7 +43,7 @@ def ttbutton_clicked_01(ui, cmd):
         if len(df) > 0:
             pr = len(df)
             nsp = 100
-            for sp in df['수익율'].to_list()[::-1]:
+            for sp in df['수익률'].to_list()[::-1]:
                 nsp = nsp + nsp * sp / 100
             nsp = round(nsp - 100, 2)
             nbg, nsg = df['총매수금액'].sum(), df['총매도금액'].sum()

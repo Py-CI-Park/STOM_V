@@ -507,19 +507,19 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                 매입금액 = self.df_jg['매입금액'][종목코드]
                 분할매수횟수 = int(self.df_jg['분할매수횟수'][종목코드])
                 분할매도횟수 = int(self.df_jg['분할매도횟수'][종목코드])
-                _, 수익금, 수익율 = GetKiwoomPgSgSp(매입금액, 보유수량 * 현재가)
+                _, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 현재가)
                 매수시간 = dt_ymdhms(self.df_jg['매수시간'][종목코드])
                 보유시간 = int((now() - 매수시간).total_seconds() / 60)
                 if 종목코드 not in self.dict_hilo.keys():
-                    self.dict_hilo[종목코드] = [수익율, 수익율]
+                    self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
-                    if 수익율 > self.dict_hilo[종목코드][0]:
-                        self.dict_hilo[종목코드][0] = 수익율
-                    elif 수익율 < self.dict_hilo[종목코드][1]:
-                        self.dict_hilo[종목코드][1] = 수익율
-                최고수익율, 최저수익율 = self.dict_hilo[종목코드]
+                    if 수익률 > self.dict_hilo[종목코드][0]:
+                        self.dict_hilo[종목코드][0] = 수익률
+                    elif 수익률 < self.dict_hilo[종목코드][1]:
+                        self.dict_hilo[종목코드][1] = 수익률
+                최고수익률, 최저수익률 = self.dict_hilo[종목코드]
             else:
-                매수틱번호, 수익금, 수익율, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익율, 최저수익율 = 0, 0, 0, 0, 0, 0, 0, now(), 0, 0, 0
+                매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = 0, 0, 0, 0, 0, 0, 0, now(), 0, 0, 0
             self.indexb = 매수틱번호
 
             BBT = not self.dict_set['주식매수금지시간'] or not (self.dict_set['주식매수금지시작시간'] < 시분초 < self.dict_set['주식매수금지종료시간'])
@@ -548,10 +548,10 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
                 elif C:
                     매수 = False
-                    분할매수기준수익율 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익율'] else 수익율
-                    if self.dict_set['주식매수분할하방'] and 분할매수기준수익율 < -self.dict_set['주식매수분할하방수익율']:
+                    분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
+                    if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
                         매수 = True
-                    elif self.dict_set['주식매수분할상방'] and 분할매수기준수익율 > self.dict_set['주식매수분할상방수익율']:
+                    elif self.dict_set['주식매수분할상방'] and 분할매수기준수익률 > self.dict_set['주식매수분할상방수익률']:
                         매수 = True
 
                     if 매수:
@@ -565,7 +565,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
             B = self.dict_set['주식매도분할시그널']
             C = NIB and NIS and SCC and 매입가 != 0 and 분할매도횟수 < self.dict_set['주식매도분할횟수']
             D = NIS and self.dict_set['주식매수취소매도시그널'] and not NIB
-            E = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익율청산'] and 수익율 < -self.dict_set['주식매도손절수익율']
+            E = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
             F = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
 
             if SBT and (A or (B and C) or C or D or E or F):
@@ -589,9 +589,9 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                     if 강제청산:
                         매도 = True
                     elif C:
-                        if self.dict_set['주식매도분할하방'] and 수익율 < -self.dict_set['주식매도분할하방수익율'] * (분할매도횟수 + 1):
+                        if self.dict_set['주식매도분할하방'] and 수익률 < -self.dict_set['주식매도분할하방수익률'] * (분할매도횟수 + 1):
                             매도 = True
-                        elif self.dict_set['주식매도분할상방'] and 수익율 > self.dict_set['주식매도분할상방수익율'] * (분할매도횟수 + 1):
+                        elif self.dict_set['주식매도분할상방'] and 수익률 > self.dict_set['주식매도분할상방수익률'] * (분할매도횟수 + 1):
                             매도 = True
 
                     if 매도:

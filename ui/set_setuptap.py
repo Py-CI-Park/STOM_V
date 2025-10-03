@@ -105,9 +105,9 @@ class SetSetupTap:
         self.ui.sj_stock_label_03 = QLabel('종목당투자금                          백만원                                  전략중지 및 잔고청산   |', self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_lEdit_07 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
 
-        self.ui.sj_stock_ckBox_10 = self.wc.setCheckBox('손실중지 - 총자산 대비 수익율 (-)           %', self.ui.sj_bs_groupBox_05)
+        self.ui.sj_stock_ckBox_10 = self.wc.setCheckBox('손실중지 - 총자산 대비 수익률 (-)           %', self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_lEdit_09 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
-        self.ui.sj_stock_ckBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익율 (+)           %', self.ui.sj_bs_groupBox_05)
+        self.ui.sj_stock_ckBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익률 (+)           %', self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_lEdit_10 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
 
         self.ui.sj_coin_cheBox_01 = self.wc.setCheckBox('모의투자    |', self.ui.sj_bs_groupBox_06, changed=self.ui.CheckboxChanged_08, tip='모의투자 체크 시 주문이 전송되지 않고\n매수, 매도를 기록한다. 체크 해제 시 실제 주문이 전송된다.')
@@ -127,9 +127,9 @@ class SetSetupTap:
         self.ui.sj_coin_labell_03 = QLabel('종목당투자금                          백만원                                  전략중지 및 잔고청산   |', self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_liEdit_07 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
 
-        self.ui.sj_coin_cheBox_10 = self.wc.setCheckBox('손실중지 - 총자산 대비 수익율 (-)           %', self.ui.sj_bs_groupBox_06)
+        self.ui.sj_coin_cheBox_10 = self.wc.setCheckBox('손실중지 - 총자산 대비 수익률 (-)           %', self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_liEdit_09 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
-        self.ui.sj_coin_cheBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익율 (+)           %', self.ui.sj_bs_groupBox_06)
+        self.ui.sj_coin_cheBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익률 (+)           %', self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_liEdit_10 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
 
         self.ui.sj_back_cheBox_01 = self.wc.setCheckBox('백테스트 시 거래횟수 10회 이상이며 수익금이 마이너스일 경우 블랙리스트에 추가하기', self.ui.sj_bs_groupBox_07)

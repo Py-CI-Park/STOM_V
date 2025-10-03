@@ -40,11 +40,11 @@ class SetOrderTap:
         self.ui.sj_sodb_checkBox_13 = self.wc.setCheckBox('비율 증가', self.ui.sj_od_groupBoxxx_01, changed=self.ui.sbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 두배로 매수(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
         self.ui.sj_sodb_labellll_04 = QLabel('▣ 추가매수방법 : 복수선택가능', self.ui.sj_od_groupBoxxx_01)
         self.ui.sj_sodb_checkBox_14 = self.wc.setCheckBox('매수시그널', self.ui.sj_od_groupBoxxx_01, tip='매수시그널을 통해서 추가매수')
-        self.ui.sj_sodb_checkBox_15 = self.wc.setCheckBox('하방 고정 수익율 (-)', self.ui.sj_od_groupBoxxx_01, tip='잔고의 - 수익율를 기준으로 추가매수')
+        self.ui.sj_sodb_checkBox_15 = self.wc.setCheckBox('하방 고정 수익률 (-)', self.ui.sj_od_groupBoxxx_01, tip='잔고의 - 수익률를 기준으로 추가매수')
         self.ui.sj_sodb_lineEdit_02 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_01)
-        self.ui.sj_sodb_checkBox_16 = self.wc.setCheckBox('상방 고정 수익율', self.ui.sj_od_groupBoxxx_01, tip='잔고의 + 수익율를 기준으로 추가매수')
+        self.ui.sj_sodb_checkBox_16 = self.wc.setCheckBox('상방 고정 수익률', self.ui.sj_od_groupBoxxx_01, tip='잔고의 + 수익률를 기준으로 추가매수')
         self.ui.sj_sodb_lineEdit_03 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_01)
-        self.ui.sj_sodb_checkBox_27 = self.wc.setCheckBox('단계별 수익율로 변경', self.ui.sj_od_groupBoxxx_01, tip='마지막 매수시점의 현재가 기준 수익율로 추가매수')
+        self.ui.sj_sodb_checkBox_27 = self.wc.setCheckBox('단계별 수익률로 변경', self.ui.sj_od_groupBoxxx_01, tip='마지막 매수시점의 현재가 기준 수익률로 추가매수')
 
         self.ui.sodb_checkbox_list2 = [self.ui.sj_sodb_checkBox_11, self.ui.sj_sodb_checkBox_12, self.ui.sj_sodb_checkBox_13]
 
@@ -109,9 +109,9 @@ class SetOrderTap:
         self.ui.sj_sods_checkBox_13 = self.wc.setCheckBox('비율 증가', self.ui.sj_od_groupBoxxx_02, changed=self.ui.ssCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 두배로 매도(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
         self.ui.sj_sods_labellll_04 = QLabel('▣ 추가매도방법 : 복수선택가능', self.ui.sj_od_groupBoxxx_02)
         self.ui.sj_sods_checkBox_14 = self.wc.setCheckBox('매도시그널', self.ui.sj_od_groupBoxxx_02, tip='매도시그널을 통해서 추가매도')
-        self.ui.sj_sods_checkBox_15 = self.wc.setCheckBox('하방 단계 수익율 (-)', self.ui.sj_od_groupBoxxx_02, tip='잔고의 마이너스 수익율를 기준으로 추가매도(0.5설정 시 예 0: -0.5, 1: -1.0, 2: -1.5, 3: -2.0, 4: -2.5)')
+        self.ui.sj_sods_checkBox_15 = self.wc.setCheckBox('하방 단계 수익률 (-)', self.ui.sj_od_groupBoxxx_02, tip='잔고의 마이너스 수익률를 기준으로 추가매도(0.5설정 시 예 0: -0.5, 1: -1.0, 2: -1.5, 3: -2.0, 4: -2.5)')
         self.ui.sj_sods_lineEdit_02 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_02)
-        self.ui.sj_sods_checkBox_16 = self.wc.setCheckBox('상방 단계 수익율', self.ui.sj_od_groupBoxxx_02, tip='잔고의 플러스 수익율를 기준으로 추가매도(0.5설정 시 예 0: +0.5, 1: +1.0, 2: +1.5, 3: +2.0, 4: +2.5)')
+        self.ui.sj_sods_checkBox_16 = self.wc.setCheckBox('상방 단계 수익률', self.ui.sj_od_groupBoxxx_02, tip='잔고의 플러스 수익률를 기준으로 추가매도(0.5설정 시 예 0: +0.5, 1: +1.0, 2: +1.5, 3: +2.0, 4: +2.5)')
         self.ui.sj_sods_lineEdit_03 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_02)
 
         self.ui.sods_checkbox_list2 = [self.ui.sj_sods_checkBox_11, self.ui.sj_sods_checkBox_12, self.ui.sj_sods_checkBox_13]
@@ -126,7 +126,7 @@ class SetOrderTap:
         self.ui.sj_sods_checkBox_18 = self.wc.setCheckBox('매수시그널', self.ui.sj_od_groupBoxxx_02)
         self.ui.sj_sods_checkBox_19 = self.wc.setCheckBox('주문 후               초 경과', self.ui.sj_od_groupBoxxx_02)
         self.ui.sj_sods_lineEdit_04 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_02)
-        self.ui.sj_sods_checkBox_20 = self.wc.setCheckBox('손절전량청산 수익율 (-)', self.ui.sj_od_groupBoxxx_02)
+        self.ui.sj_sods_checkBox_20 = self.wc.setCheckBox('손절전량청산 수익률 (-)', self.ui.sj_od_groupBoxxx_02)
         self.ui.sj_sods_lineEdit_05 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_02)
         self.ui.sj_sods_checkBox_21 = self.wc.setCheckBox('손절전량청산 수익금 (-)', self.ui.sj_od_groupBoxxx_02, tip='만원 단위의 금액을 입력하십시오.')
         self.ui.sj_sods_lineEdit_06 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_02)
@@ -164,11 +164,11 @@ class SetOrderTap:
         self.ui.sj_codb_checkBox_05 = self.wc.setCheckBox('비율 증가', self.ui.sj_od_groupBoxxx_03, changed=self.ui.cbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 두배로 매수(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
         self.ui.sj_codb_labellll_04 = QLabel('▣ 추가매수방법 : 복수선택가능', self.ui.sj_od_groupBoxxx_03)
         self.ui.sj_codb_checkBox_06 = self.wc.setCheckBox('매수시그널', self.ui.sj_od_groupBoxxx_03, tip='매수시그널을 통해서 추가매수')
-        self.ui.sj_codb_checkBox_07 = self.wc.setCheckBox('하방 고정 수익율 (-)', self.ui.sj_od_groupBoxxx_03, tip='잔고의 - 수익율를 기준으로 추가매수')
+        self.ui.sj_codb_checkBox_07 = self.wc.setCheckBox('하방 고정 수익률 (-)', self.ui.sj_od_groupBoxxx_03, tip='잔고의 - 수익률를 기준으로 추가매수')
         self.ui.sj_codb_lineEdit_02 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_03)
-        self.ui.sj_codb_checkBox_08 = self.wc.setCheckBox('상방 고정 수익율', self.ui.sj_od_groupBoxxx_03, tip='잔고의 + 수익율를 기준으로 추가매수')
+        self.ui.sj_codb_checkBox_08 = self.wc.setCheckBox('상방 고정 수익률', self.ui.sj_od_groupBoxxx_03, tip='잔고의 + 수익률를 기준으로 추가매수')
         self.ui.sj_codb_lineEdit_03 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_03)
-        self.ui.sj_codb_checkBox_27 = self.wc.setCheckBox('단계별 수익율로 변경', self.ui.sj_od_groupBoxxx_03, tip='마지막 매수시점의 현재가 기준 수익율로 추가매수')
+        self.ui.sj_codb_checkBox_27 = self.wc.setCheckBox('단계별 수익률로 변경', self.ui.sj_od_groupBoxxx_03, tip='마지막 매수시점의 현재가 기준 수익률로 추가매수')
 
         self.ui.codb_checkbox_list2 = [self.ui.sj_codb_checkBox_03, self.ui.sj_codb_checkBox_04, self.ui.sj_codb_checkBox_05]
 
@@ -221,9 +221,9 @@ class SetOrderTap:
         self.ui.sj_cods_checkBox_05 = self.wc.setCheckBox('비율 증가', self.ui.sj_od_groupBoxxx_04, changed=self.ui.csCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 두배로 매도(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
         self.ui.sj_cods_labellll_04 = QLabel('▣ 추가매도방법 : 복수선택가능', self.ui.sj_od_groupBoxxx_04)
         self.ui.sj_cods_checkBox_06 = self.wc.setCheckBox('매도시그널', self.ui.sj_od_groupBoxxx_04, tip='매도시그널을 통해서 추가매도')
-        self.ui.sj_cods_checkBox_07 = self.wc.setCheckBox('하방 단계 수익율 (-)', self.ui.sj_od_groupBoxxx_04, tip='잔고의 마이너스 수익율를 기준으로 추가매도(0.5설정 시 예 0: -0.5, 1: -1.0, 2: -1.5, 3: -2.0, 4: -2.5)')
+        self.ui.sj_cods_checkBox_07 = self.wc.setCheckBox('하방 단계 수익률 (-)', self.ui.sj_od_groupBoxxx_04, tip='잔고의 마이너스 수익률를 기준으로 추가매도(0.5설정 시 예 0: -0.5, 1: -1.0, 2: -1.5, 3: -2.0, 4: -2.5)')
         self.ui.sj_cods_lineEdit_02 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_04)
-        self.ui.sj_cods_checkBox_08 = self.wc.setCheckBox('상방 단계 수익율', self.ui.sj_od_groupBoxxx_04, tip='잔고의 플러스 수익율를 기준으로 추가매도(0.5설정 시 예 0: +0.5, 1: +1.0, 2: +1.5, 3: +2.0, 4: +2.5)')
+        self.ui.sj_cods_checkBox_08 = self.wc.setCheckBox('상방 단계 수익률', self.ui.sj_od_groupBoxxx_04, tip='잔고의 플러스 수익률를 기준으로 추가매도(0.5설정 시 예 0: +0.5, 1: +1.0, 2: +1.5, 3: +2.0, 4: +2.5)')
         self.ui.sj_cods_lineEdit_03 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_04)
 
         self.ui.cods_checkbox_list2 = [self.ui.sj_cods_checkBox_03, self.ui.sj_cods_checkBox_04, self.ui.sj_cods_checkBox_05]
@@ -238,7 +238,7 @@ class SetOrderTap:
         self.ui.sj_cods_checkBox_10 = self.wc.setCheckBox('매수시그널', self.ui.sj_od_groupBoxxx_04)
         self.ui.sj_cods_checkBox_11 = self.wc.setCheckBox('주문 후               초 경과', self.ui.sj_od_groupBoxxx_04)
         self.ui.sj_cods_lineEdit_04 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_04)
-        self.ui.sj_cods_checkBox_12 = self.wc.setCheckBox('손절전량청산 수익율 (-)', self.ui.sj_od_groupBoxxx_04)
+        self.ui.sj_cods_checkBox_12 = self.wc.setCheckBox('손절전량청산 수익률 (-)', self.ui.sj_od_groupBoxxx_04)
         self.ui.sj_cods_lineEdit_05 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_04)
         self.ui.sj_cods_checkBox_13 = self.wc.setCheckBox('손절전량청산 수익금 (-)', self.ui.sj_od_groupBoxxx_04, tip='만원 또는 USDT 단위의 금액을 입력하십시오.')
         self.ui.sj_cods_lineEdit_06 = self.wc.setLineedit(self.ui.sj_od_groupBoxxx_04)

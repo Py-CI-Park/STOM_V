@@ -663,7 +663,7 @@ class BackEngineFutureTick:
                         self.SetBuyCount(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         exec(self.buystg)
                     else:
-                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
                         exec(self.sellstg)
 
@@ -688,7 +688,7 @@ class BackEngineFutureTick:
                         else:
                             exec(self.dict_buystg[index_])
                     else:
-                        수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                        수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
                         if self.back_type != '조건최적화':
                             exec(self.sellstg)
@@ -710,7 +710,7 @@ class BackEngineFutureTick:
                 self.SetBuyCount(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                 exec(self.buystg)
             else:
-                수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
+                수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                 포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
                 exec(self.sellstg)
 
@@ -759,26 +759,26 @@ class BackEngineFutureTick:
                     '매도가': 0,
                     '주문수량': 0,
                     '보유수량': 주문수량,
-                    '최고수익율': 0.,
-                    '최저수익율': 0.,
+                    '최고수익률': 0.,
+                    '최저수익률': 0.,
                     '매수틱번호': self.indexn,
                     '매수시간': dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index))
                 }
 
     def SetSellCount(self, vturn, vkey, 현재가, now_time):
-        _, 매수가, _, _, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
+        _, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         매입금액 = self.dict_info[self.code]['위탁증거금'] * 보유수량
         평가금액 = 매입금액 + (현재가 - 매수가) * self.dict_info[self.code]['틱가치'] * 보유수량
         if self.trade_info[vturn][vkey]['보유중'] == 1:
-            _, _, 수익율 = GetFutureLongPgSgSp(매입금액, 평가금액, self.code)
+            _, _, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, self.code)
         else:
-            _, _, 수익율 = GetFutureShortPgSgSp(매입금액, 평가금액, self.code)
-        if 수익율 > 최고수익율:   self.trade_info[vturn][vkey]['최고수익율'] = 최고수익율 = 수익율
-        elif 수익율 < 최저수익율: self.trade_info[vturn][vkey]['최저수익율'] = 최저수익율 = 수익율
+            _, _, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, self.code)
+        if 수익률 > 최고수익률:   self.trade_info[vturn][vkey]['최고수익률'] = 최고수익률 = 수익률
+        elif 수익률 < 최저수익률: self.trade_info[vturn][vkey]['최저수익률'] = 최저수익률 = 수익률
         보유시간 = (now_time - 매수시간).total_seconds() if len(str(self.index)) == 14 else int((now_time - 매수시간).total_seconds() / 60)
         self.indexb = 매수틱번호
         self.trade_info[vturn][vkey]['주문수량'] = 보유수량
-        return 수익율, 최고수익율, 최저수익율, 보유시간, 매수틱번호
+        return 수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호
 
     def Sell(self, vturn, vkey, gubun, sell_cond):
         매도금액 = 0
@@ -840,7 +840,7 @@ class BackEngineFutureTick:
 
     def CalculationEyun(self, vturn, vkey):
         """
-        보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익율, 최저수익율, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
+        보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         """
         _, 매수가, 매도가, 주문수량, _, _, _, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         if len(str(self.index)) == 14:
@@ -852,13 +852,13 @@ class BackEngineFutureTick:
         평가금액 = 매입금액 + (매도가 - 매수가) * self.dict_info[self.code]['틱가치'] * 주문수량
         if self.trade_info[vturn][vkey]['보유중'] == 1:
             포지션 = 'LONG'
-            평가금액, 수익금, 수익율 = GetFutureLongPgSgSp(매입금액, 평가금액, self.code)
+            평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, self.code)
         else:
             포지션 = 'SHORT'
-            평가금액, 수익금, 수익율 = GetFutureShortPgSgSp(매입금액, 평가금액, self.code)
+            평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, self.code)
         매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
         추가매수시간, 잔고없음 = '', True
-        data = ('백테결과', self.name, 포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익율, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
+        data = ('백테결과', self.name, 포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
         self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
         self.trade_info[vturn][vkey] = GetTradeInfo(1)

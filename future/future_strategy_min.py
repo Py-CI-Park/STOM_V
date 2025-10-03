@@ -481,21 +481,21 @@ class FutureStrategyMin(FutureStrategyTick):
                 분할매수횟수 = int(self.df_jg['분할매수횟수'][종목코드])
                 분할매도횟수 = int(self.df_jg['분할매도횟수'][종목코드])
                 if 포지션 == 'LONG':
-                    _, 수익금, 수익율 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                    _, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                 else:
-                    _, 수익금, 수익율 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                    _, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
                 매수시간 = dt_ymdhms(self.df_jg['매수시간'][종목코드])
                 보유시간 = int((now_cme() - 매수시간).total_seconds() / 60)
                 if 종목코드 not in self.dict_hilo.keys():
-                    self.dict_hilo[종목코드] = [수익율, 수익율]
+                    self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
-                    if 수익율 > self.dict_hilo[종목코드][0]:
-                        self.dict_hilo[종목코드][0] = 수익율
-                    elif 수익율 < self.dict_hilo[종목코드][1]:
-                        self.dict_hilo[종목코드][1] = 수익율
-                최고수익율, 최저수익율 = self.dict_hilo[종목코드]
+                    if 수익률 > self.dict_hilo[종목코드][0]:
+                        self.dict_hilo[종목코드][0] = 수익률
+                    elif 수익률 < self.dict_hilo[종목코드][1]:
+                        self.dict_hilo[종목코드][1] = 수익률
+                최고수익률, 최저수익률 = self.dict_hilo[종목코드]
             else:
-                포지션, 매수틱번호, 수익금, 수익율, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익율, 최저수익율 = None, 0, 0, 0, 0, 0, 0, 0, now_cme(), 0, 0, 0
+                포지션, 매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = None, 0, 0, 0, 0, 0, 0, 0, now_cme(), 0, 0, 0
             self.indexb = 매수틱번호
 
             BBT  = not self.dict_set['주식매수금지시간'] or not (self.dict_set['주식매수금지시작시간'] < 시분초 < self.dict_set['주식매수금지종료시간'])
@@ -527,16 +527,16 @@ class FutureStrategyMin(FutureStrategyTick):
                             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
                 elif D or E:
                     BUY_LONG, SELL_SHORT = False, False
-                    분할매수기준수익율 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익율'] else 수익율
+                    분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
                     if D:
-                        if self.dict_set['주식매수분할하방'] and 분할매수기준수익율 < -self.dict_set['주식매수분할하방수익율']:
+                        if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
                             BUY_LONG   = True
-                        elif self.dict_set['주식매수분할상방'] and 분할매수기준수익율 > self.dict_set['주식매수분할상방수익율']:
+                        elif self.dict_set['주식매수분할상방'] and 분할매수기준수익률 > self.dict_set['주식매수분할상방수익률']:
                             BUY_LONG   = True
                     elif E:
-                        if self.dict_set['주식매수분할하방'] and 분할매수기준수익율 < -self.dict_set['주식매수분할하방수익율']:
+                        if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
                             SELL_SHORT = True
-                        elif self.dict_set['주식매수분할상방'] and 분할매수기준수익율 > self.dict_set['주식매수분할상방수익율']:
+                        elif self.dict_set['주식매수분할상방'] and 분할매수기준수익률 > self.dict_set['주식매수분할상방수익률']:
                             SELL_SHORT = True
 
                     if BUY_LONG or SELL_SHORT:
@@ -555,8 +555,8 @@ class FutureStrategyMin(FutureStrategyTick):
             E    = NISS and NIBS and SCC and 포지션 == 'SHORT' and 분할매도횟수 < self.dict_set['주식매도분할횟수']
             F    = NISL and self.dict_set['주식매수취소매도시그널'] and not NIBL
             G    = NIBS and self.dict_set['주식매수취소매도시그널'] and not NISS
-            H    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도손절수익율청산'] and 수익율 < -self.dict_set['주식매도손절수익율']
-            J    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도손절수익율청산'] and 수익율 < -self.dict_set['주식매도손절수익율']
+            H    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
+            J    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
             K    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
             L    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
             M    = NIBL and NISL and 포지션 == 'LONG' and GJCS
@@ -585,14 +585,14 @@ class FutureStrategyMin(FutureStrategyTick):
                     elif J or L or N:
                         BUY_SHORT = True
                     elif D:
-                        if self.dict_set['주식매도분할하방'] and 수익율 < -self.dict_set['주식매도분할하방수익율'] * (분할매도횟수 + 1):
+                        if self.dict_set['주식매도분할하방'] and 수익률 < -self.dict_set['주식매도분할하방수익률'] * (분할매도횟수 + 1):
                             SELL_LONG = True
-                        elif self.dict_set['주식매도분할상방'] and 수익율 > self.dict_set['주식매도분할상방수익율'] * (분할매도횟수 + 1):
+                        elif self.dict_set['주식매도분할상방'] and 수익률 > self.dict_set['주식매도분할상방수익률'] * (분할매도횟수 + 1):
                             SELL_LONG = True
                     elif E:
-                        if self.dict_set['주식매도분할하방'] and 수익율 < -self.dict_set['주식매도분할하방수익율'] * (분할매도횟수 + 1):
+                        if self.dict_set['주식매도분할하방'] and 수익률 < -self.dict_set['주식매도분할하방수익률'] * (분할매도횟수 + 1):
                             BUY_SHORT = True
-                        elif self.dict_set['주식매도분할상방'] and 수익율 > self.dict_set['주식매도분할상방수익율'] * (분할매도횟수 + 1):
+                        elif self.dict_set['주식매도분할상방'] and 수익률 > self.dict_set['주식매도분할상방수익률'] * (분할매도횟수 + 1):
                             BUY_SHORT = True
 
                     if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):

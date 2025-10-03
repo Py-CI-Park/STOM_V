@@ -1,17 +1,17 @@
 optistandard = 'TG : 수익금합계\n' \
-               'TP : 수익율합계\n' \
-               'TPI : 승률 / 100 * (1 + 평균이익수익율 / 평균손실수익율)\n' \
-               'CAGR : 연간예상수익율\n' \
+               'TP : 수익률합계\n' \
+               'TPI : 승률 / 100 * (1 + 평균이익수익률 / 평균손실수익률)\n' \
+               'CAGR : 연간예상수익률\n' \
                'GM : 수익금합계 / 최대낙폭금액\n' \
-               'PM : 수익율합계 / 최대낙폭률\n' \
+               'PM : 수익률합계 / 최대낙폭률\n' \
                'G2M : 수익금합계 * 수익금합계 / 최대낙폭금액 / 100_000_000\n' \
-               'P2M : 수익율합계 * 수익율합계 / 최대낙폭률 / 1000\n' \
-               'GAM : 수익금합계 * 평균수익율 / 최대낙폭금액\n' \
-               'PAM : 수익율합계 * 평균수익율 / 최대낙폭률\n' \
+               'P2M : 수익률합계 * 수익률합계 / 최대낙폭률 / 1000\n' \
+               'GAM : 수익금합계 * 평균수익률 / 최대낙폭금액\n' \
+               'PAM : 수익률합계 * 평균수익률 / 최대낙폭률\n' \
                'GWM : 수익금합계 * 승률 / 최대낙폭금액 / 100\n' \
-               'PWM : 수익율합계 * 승률 / 최대낙폭률 / 100\n' \
-               'GTM : 수익금합계 * 평균수익율 * 승률 * TPI * CAGR / 최대낙폭금액 / 10000\n' \
-               'PTM : 수익율합계 * 평균수익율 * 승률 * TPI * CAGR / 최대낙폭률 / 10000'
+               'PWM : 수익률합계 * 승률 / 최대낙폭률 / 100\n' \
+               'GTM : 수익금합계 * 평균수익률 * 승률 * TPI * CAGR / 최대낙폭금액 / 10000\n' \
+               'PTM : 수익률합계 * 평균수익률 * 승률 * TPI * CAGR / 최대낙폭률 / 10000'
 
 optitext = ' - 최적화 백테스트는 일반, 검증, 교차검증 세가지이며\n' \
            ' - 일반은 데이터를 구분하지 않고 전체를 사용하며\n' \
@@ -139,7 +139,7 @@ stock_sell_var = '''"""
 VI해제시간(datetime), VI가격(int), VI호가단위(int), VI아래5호가(int), 호가단위(int), 데이터길이(int), 시분초(int),
 종목명(str), 종목코드(str), 매도(False)
 # 잔고종목 변수들, 보유시간은 초단위이다.
-수익율(float), 최고수익율(float), 최저수익율(float), 보유수량(int), 보유시간(int), 매수틱번호(int)
+수익률(float), 최고수익률(float), 최저수익률(float), 보유수량(int), 보유시간(int), 매수틱번호(int)
 매수틱번호 : 기록된 틱데이터(2차원 어레이)에서 매수시점에 해당하는 어레이의 번호
 # 이전값 조회 시 틱수 입력은 1부터 평균값계산틱수까지이다. -1입력은 모든 변수의 매수시점정보를 조회한다.
 """'''
@@ -222,7 +222,7 @@ OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR
 VI해제시간(datetime), VI가격(int), VI호가단위(int), VI아래5호가(int), 호가단위(int), 데이터길이(int), 시분초(int),
 종목명(str), 종목코드(str), 매도(False)
 # 잔고종목 변수들, 보유시간은 분단위이다.
-수익율(float), 최고수익율(float), 최저수익율(float), 보유수량(int), 보유시간(int), 매수틱번호(int)
+수익률(float), 최고수익률(float), 최저수익률(float), 보유수량(int), 보유시간(int), 매수틱번호(int)
 매수틱번호 : 기록된 분봉데이터(2차원 어레이)에서 매수시점에 해당하는 어레이의 번호
 # 이전값 조회 시 봉수 입력은 1부터 평균값계산수치까지이다. -1입력은 모든 변수의 매수시점정보를 조회한다.
 """'''
@@ -284,7 +284,7 @@ coin_sell_var = '''"""
 # 그외 변수들
 관심종목(int), 호가단위(int), 데이터길이(int), 시분초(int), 종목코드(str), 매도(False)
 # 잔고종목 변수들, 보유시간은 초단위이다.
-수익율(float), 최고수익율(float), 최저수익율(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
+수익률(float), 최고수익률(float), 최저수익률(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
 매수틱번호 : 기록된 틱데이터(2차원 어레이)에서 매수시점에 해당하는 어레이의 번호
 # 이전값 조회 시 틱수 입력은 1부터 평균값계산틱수까지이다. -1입력은 모든 변수의 매수시점정보를 조회한다.
 """'''
@@ -357,7 +357,7 @@ OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR
 # 그외 변수들
 관심종목(int), 호가단위(int), 데이터길이(int), 시분초(int), 종목코드(str), 매도(False)
 # 잔고종목 변수들, 보유시간은 분단위이다.
-수익율(float), 최고수익율(float), 최저수익율(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
+수익률(float), 최고수익률(float), 최저수익률(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
 매수틱번호 : 기록된 틱데이터(2차원 어레이)에서 매수시점에 해당하는 어레이의 번호
 # 이전값 조회 시 봉수 입력은 1부터 평균값계산수치까지이다. -1입력은 모든 변수의 매수시점정보를 조회한다.
 """'''
@@ -418,7 +418,7 @@ coin_future_sell_var = '''"""
 # 그외 변수들
 호가단위(int), 데이터길이(int), 시분초(int), 종목코드(str), SELL_LONG(False), BUY_SHORT(False)
 # 잔고종목 변수들, 보유시간은 초단위이다.
-수익율(float), 최고수익율(float), 최저수익율(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
+수익률(float), 최고수익률(float), 최저수익률(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
 매수틱번호 : 기록된 틱데이터(2차원 어레이)에서 매수시점에 해당하는 어레이의 번호
 # 이전값 조회 시 틱수 입력은 1부터 평균값계산틱수까지이다. -1입력은 모든 변수의 매수시점정보를 조회한다.
 """'''
@@ -490,7 +490,7 @@ OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR
 # 그외 변수들
 호가단위(int), 데이터길이(int), 시분초(int), 종목코드(str), SELL_LONG(False), BUY_SHORT(False)
 # 잔고종목 변수들, 보유시간은 분단위이다.
-수익율(float), 최고수익율(float), 최저수익율(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
+수익률(float), 최고수익률(float), 최저수익률(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
 매수틱번호 : 기록된 틱데이터(2차원 어레이)에서 매수시점에 해당하는 어레이의 번호
 # 이전값 조회 시 봉수 입력은 1부터 평균값계산수치까지이다. -1입력은 모든 변수의 매수시점정보를 조회한다.
 """'''
@@ -551,7 +551,7 @@ future_sell_var = '''"""
 # 그외 변수들
 호가단위(int), 데이터길이(int), 시분초(int), 종목코드(str), SELL_LONG(False), BUY_SHORT(False)
 # 잔고종목 변수들, 보유시간은 초단위이다.
-수익율(float), 최고수익율(float), 최저수익율(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
+수익률(float), 최고수익률(float), 최저수익률(float), 보유수량(float), 보유시간(int), 매수틱번호(int)
 매수틱번호 : 기록된 틱데이터(2차원 어레이)에서 매수시점에 해당하는 어레이의 번호
 # 이전값 조회 시 틱수 입력은 1부터 평균값계산틱수까지이다. -1입력은 모든 변수의 매수시점정보를 조회한다.
 """'''
@@ -622,7 +622,7 @@ OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR
 # 그외 변수들
 호가단위(int), 데이터길이(int), 시분초(int), 종목코드(str), SELL_LONG(False), BUY_SHORT(False)
 # 잔고종목 변수들, 보유시간은 분단위이다.
-수익율(float), 최고수익율(float), 최저수익율(float), 보유수량(int), 보유시간(int), 매수틱번호(int)
+수익률(float), 최고수익률(float), 최저수익률(float), 보유수량(int), 보유시간(int), 매수틱번호(int)
 매수틱번호 : 기록된 틱데이터(2차원 어레이)에서 매수시점에 해당하는 어레이의 번호
 # 이전값 조회 시 봉수 입력은 1부터 평균값계산수치까지이다. -1입력은 모든 변수의 매수시점정보를 조회한다.
 """'''
@@ -634,9 +634,9 @@ stock_buy4  = 'elif not (고저평균대비등락율 >= 0):\n    매수 = False'
 stock_buy5  = 'elif not (체결강도 >= 100):\n    매수 = False'
 stock_buy6  = 'elif not (체결강도 >= 체결강도평균(30) + 5):\n    매수 = False'
 
-stock_sell1 = 'elif 수익율 <= -2:\n    매도 = True'
-stock_sell2 = 'elif 수익율 >= 3:\n    매도 = True'
-stock_sell3 = 'elif 최고수익율 > 3 and 수익율 < 최고수익율 * 0.75:\n    매도 = True'
+stock_sell1 = 'elif 수익률 <= -2:\n    매도 = True'
+stock_sell2 = 'elif 수익률 >= 3:\n    매도 = True'
+stock_sell3 = 'elif 최고수익률 > 3 and 수익률 < 최고수익률 * 0.75:\n    매도 = True'
 stock_sell4 = 'elif 보유시간 > 1800\n    매도 = True'
 stock_sell5 = 'elif 현재가 >= VI가격 - VI호가단위 * 2:\n    매도 = True'
 stock_sell6 = 'elif 고저평균대비등락율 < 0:\n    매도 = True'
@@ -653,9 +653,9 @@ coin_buy7   = 'elif not (당일거래대금 >= 10000000000):\n    매수 = False
 coin_buy8   = 'elif not (초당거래대금 >= 초당거래대금평균(30) + 10000000):\n    매수 = False'
 coin_buy9   = 'elif not (매도총잔량 > 매수총잔량):\n    매수 = False'
 
-coin_sell1  = 'elif 수익율 <= -2:\n    매도 = True'
-coin_sell2  = 'elif 수익율 >= 3:\n    매도 = True'
-coin_sell3  = 'elif 최고수익율 > 3 and 수익율 < 최고수익율 * 0.75:\n    매도 = True'
+coin_sell1  = 'elif 수익률 <= -2:\n    매도 = True'
+coin_sell2  = 'elif 수익률 >= 3:\n    매도 = True'
+coin_sell3  = 'elif 최고수익률 > 3 and 수익률 < 최고수익률 * 0.75:\n    매도 = True'
 coin_sell4  = 'elif 보유시간 > 1800\n    매도 = True'
 coin_sell5  = 'elif 체결강도 < 체결강도평균(30) + 5:\n    매도 = True'
 coin_sell6  = 'elif 체결강도 <= 최고체결강도(30) - 5:\n    매도 = True'
@@ -705,7 +705,7 @@ elif not (체결강도 >= 100):
 elif not (체결강도 >= 체결강도평균(30) + 5):
     매수 = False'''
 
-example_stock_sell = '''if 등락율 > 29 or 수익율 <= -2 or 수익율 >= 3:
+example_stock_sell = '''if 등락율 > 29 or 수익률 <= -2 or 수익률 >= 3:
     매도 = True'''
 
 example_stockopti_buy1 = '''# 최적화할 값들을 self.vars[1] 형태로 변경해야합니다.
@@ -725,7 +725,7 @@ elif not (체결강도 >= 변수):
 elif not (체결강도 >= 체결강도평균(30) + 변수):
     매수 = False'''
 
-example_stockopti_sell1 = '''if 등락율 > 변수 or 수익율 <= 변수 or 수익율 >= 변수:
+example_stockopti_sell1 = '''if 등락율 > 변수 or 수익률 <= 변수 or 수익률 >= 변수:
     매도 = True'''
 
 example_stockopti_buy2 = '''# 최적화할 값들을 self.vars[1] 형태로 변경하십시오.
@@ -744,7 +744,7 @@ elif not (체결강도 >= self.vars[5]):
 elif not (체결강도 >= 체결강도평균(30) + self.vars[6]):
     매수 = False'''
 
-example_stockopti_sell2 = '''if 등락율 > self.vars[7] or 수익율 <= self.vars[8] or 수익율 >= self.vars[9]:
+example_stockopti_sell2 = '''if 등락율 > self.vars[7] or 수익률 <= self.vars[8] or 수익률 >= self.vars[9]:
     매도 = True'''
 
 example_stockopti_buy3 = '''# 최적화할 값들을 self.vars[1] 형태로 변경하십시오.
@@ -805,7 +805,7 @@ elif not (체결강도 >= 체결강도평균(30) + self.vars[6]):
 #     'WILLR_timeperiod': 0
 # }'''
 
-example_stockopti_sell3 = '''if 등락율 > self.vars[8] or 수익율 <= self.vars[9] or 수익율 >= self.vars[10]:
+example_stockopti_sell3 = '''if 등락율 > self.vars[8] or 수익률 <= self.vars[9] or 수익률 >= self.vars[10]:
     매도 = True'''
 
 example_coin_buy = '''if not (3 <= 등락율 <= 25):
@@ -819,7 +819,7 @@ elif not (체결강도 >= 100):
 elif not (체결강도 >= 체결강도평균(30) + 5):
     매수 = False'''
 
-example_coin_sell = '''if 등락율 > 29 or 수익율 <= -2 or 수익율 >= 3:
+example_coin_sell = '''if 등락율 > 29 or 수익률 <= -2 or 수익률 >= 3:
     매도 = True'''
 
 example_coinopti_buy1 = '''# 최적화할 값들을 self.vars[1] 형태로 변경해야합니다.
@@ -839,7 +839,7 @@ elif not (체결강도 >= 변수):
 elif not (체결강도 >= 체결강도평균(30) + 변수):
     매수 = False'''
 
-example_coinopti_sell1 = '''if 등락율 > 변수 or 수익율 <= 변수 or 수익율 >= 변수:
+example_coinopti_sell1 = '''if 등락율 > 변수 or 수익률 <= 변수 or 수익률 >= 변수:
     매도 = True'''
 
 example_coinopti_buy2 = '''# 최적화할 값들을 self.vars[1] 형태로 변경하십시오.
@@ -858,7 +858,7 @@ elif not (체결강도 >= self.vars[5]):
 elif not (체결강도 >= 체결강도평균(30) + self.vars[6]):
     매수 = False'''
 
-example_coinopti_sell2 = '''if 등락율 > self.vars[7] or 수익율 <= self.vars[8] or 수익율 >= self.vars[9]:
+example_coinopti_sell2 = '''if 등락율 > self.vars[7] or 수익률 <= self.vars[8] or 수익률 >= self.vars[9]:
     매도 = True'''
 
 example_coinopti_buy3 = '''# 최적화할 값들을 self.vars[1] 형태로 변경하십시오.
@@ -919,7 +919,7 @@ elif not (체결강도 >= 체결강도평균(30) + self.vars[6]):
 #     'WILLR_timeperiod': 0
 # }'''
 
-example_coinopti_sell3 = '''if 등락율 > self.vars[8] or 수익율 <= self.vars[9] or 수익율 >= self.vars[10]:
+example_coinopti_sell3 = '''if 등락율 > self.vars[8] or 수익률 <= self.vars[9] or 수익률 >= self.vars[10]:
     매도 = True'''
 
 example_coin_future_buy = '''if not (고저평균대비등락율 >= 0):
@@ -936,10 +936,10 @@ elif not (체결강도 < 체결강도평균(30)):
 elif not (체결강도 < 100):
     SELL_SHORT = False'''
 
-example_coin_future_sell = '''if 수익율 <= -2 or 수익율 >= 3:
+example_coin_future_sell = '''if 수익률 <= -2 or 수익률 >= 3:
     SELL_LONG = True
 
-if 수익율 <= -2 or 수익율 >= 3:
+if 수익률 <= -2 or 수익률 >= 3:
     BUY_SHORT = True'''
 
 example_coinopti_future_buy1 = '''# 최적화할 값들을 self.vars[1] 형태로 변경해야합니다.
@@ -962,10 +962,10 @@ elif not (체결강도 < 체결강도평균(30) + 변수):
 elif not (체결강도 < 변수):
     SELL_SHORT = False'''
 
-example_coinopti_future_sell1 = '''if 수익율 <= 변수 or 수익율 >= 변수:
+example_coinopti_future_sell1 = '''if 수익률 <= 변수 or 수익률 >= 변수:
     SELL_LONG = True
 
-if 수익율 <= 변수 or 수익율 >= 변수:
+if 수익률 <= 변수 or 수익률 >= 변수:
     BUY_SHORT = True'''
 
 example_coinopti_future_buy2 = '''# 최적화할 값들을 self.vars[1] 형태로 변경하십시오.
@@ -987,10 +987,10 @@ elif not (체결강도 < 체결강도평균(30) + self.vars[5]):
 elif not (체결강도 < self.vars[6]):
     SELL_SHORT = False'''
 
-example_coinopti_future_sell2 = '''if 수익율 <= -self.vars[7] or 수익율 >= self.vars[8]:
+example_coinopti_future_sell2 = '''if 수익률 <= -self.vars[7] or 수익률 >= self.vars[8]:
     SELL_LONG = True
 
-if 수익율 <= -self.vars[9] or 수익율 >= self.vars[10]:
+if 수익률 <= -self.vars[9] or 수익률 >= self.vars[10]:
     BUY_SHORT = True'''
 
 example_coinopti_future_buy3 = '''# 최적화할 값들을 self.vars[1] 형태로 변경하십시오.
@@ -1054,10 +1054,10 @@ elif not (체결강도 < self.vars[6]):
 #     'WILLR_timeperiod': 0
 # }'''
 
-example_coinopti_future_sell3 = '''if 수익율 <= -self.vars[8] or 수익율 >= self.vars[9]:
+example_coinopti_future_sell3 = '''if 수익률 <= -self.vars[8] or 수익률 >= self.vars[9]:
     SELL_LONG = True
 
-if 수익율 <= -self.vars[10] or 수익율 >= self.vars[11]:
+if 수익률 <= -self.vars[10] or 수익률 >= self.vars[11]:
     BUY_SHORT = True'''
 
 example_finder = '''# 탐색틱수에 현재틱 이후의 범위를 입력하십시오.
@@ -1345,10 +1345,10 @@ example_sellconds = '''# 조건 편집기 작성 방법 안내
 # 대충 만든 조건 보다는 의미있는 조건들로
 # 설정개수보다 최소 두배 이상의 조건을 작성하십시오.
 
-# 수익율
-수익율 <= -2
-수익율 >= 3
-최고수익율 > 3 and 수익율 < 최고수익율 * 0.75
+# 수익률
+수익률 <= -2
+수익률 >= 3
+최고수익률 > 3 and 수익률 < 최고수익률 * 0.75
 
 # 등락율
 등락율 > 29
@@ -1389,10 +1389,10 @@ not (매도잔량1 > 매수잔량1)'''
 
 example_future_sellconds = '''# LONG : 롱 또는 숏 구분용 삭제 금지
 
-# 수익율
-수익율 <= -2
-수익율 >= 3
-최고수익율 > 3 and 수익율 < 최고수익율 * 0.75
+# 수익률
+수익률 <= -2
+수익률 >= 3
+최고수익률 > 3 and 수익률 < 최고수익률 * 0.75
 
 # 등락율
 등락율 > 29

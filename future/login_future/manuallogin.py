@@ -78,4 +78,7 @@ def manual_login(gubun):
     doubleClick(15, 15, win32gui.GetDlgItem(hwnd, 0x3EA))
     enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), DICT_SET[f'인증서비밀번호{gubun}'])
     click_button(win32gui.GetDlgItem(hwnd, 0x1))
-    click_button(win32gui.GetDlgItem(hwnd, 0x1))
+    try:
+        click_button(win32gui.GetDlgItem(hwnd, 0x1))
+    except:
+        pass

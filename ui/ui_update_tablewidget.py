@@ -242,7 +242,7 @@ class UpdateTablewidget:
                                ui_num['스톰라이브4'], ui_num['스톰라이브6'], ui_num['스톰라이브7'], ui_num['스톰라이브9'],
                                ui_num['스톰라이브10'], ui_num['김프']):
                     value = str(arry[i, j])
-                    if column in ('수익율', '누적수익율', 'per', 'hlp', 'ch', 'cha', 'chh', '대비(원)',
+                    if column in ('수익률', '누적수익률', 'per', 'hlp', 'ch', 'cha', 'chh', '대비(원)',
                                   '대비율(%)', 'aht', 'wr', 'app', 'tpp', 'mdd', 'cagr'):
                         item = NumericItem(change_format(value))
                     elif (gubun == ui_num['C상세기록'] and column in ('매수가', '매도가')) or column == '바이낸스(달러)':
@@ -256,7 +256,7 @@ class UpdateTablewidget:
                     if column != '매도조건':
                         value = float(value)
                         item.setData(Qt.UserRole, value)
-                elif column not in ('수익율', '누적수익율', '등락율', '체결강도'):
+                elif column not in ('수익률', '누적수익률', '등락율', '체결강도'):
                     item = QTableWidgetItem(change_format(arry[i, j], dotdowndel=True))
                 else:
                     item = QTableWidgetItem(change_format(arry[i, j]))

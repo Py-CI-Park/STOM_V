@@ -202,7 +202,7 @@ class FutureTrader:
             inthms = int(str_hms(now_cme()))
             if self.dict_set['주식매수금지거래횟수'] and self.dict_set['주식매수금지거래횟수값'] <= len(self.df_td[self.df_td['종목명'] == 종목명].drop_duplicates('체결시간')):
                 주문취소 = True
-            elif self.dict_set['주식매수금지손절횟수'] and self.dict_set['주식매수금지손절횟수값'] <= len(self.df_td[(self.df_td['종목명'] == 종목명) & (self.df_td['수익율'] < 0)].drop_duplicates('체결시간')):
+            elif self.dict_set['주식매수금지손절횟수'] and self.dict_set['주식매수금지손절횟수값'] <= len(self.df_td[(self.df_td['종목명'] == 종목명) & (self.df_td['수익률'] < 0)].drop_duplicates('체결시간')):
                 주문취소 = True
             elif 잔고없음 and inthms < self.dict_set['주식전략종료시간'] and len(self.df_jg) >= self.dict_set['주식최대매수종목수']:
                 주문취소 = True
@@ -330,11 +330,11 @@ class FutureTrader:
                 보유수량 = self.df_jg['보유수량'][종목코드]
                 평가금액 = 매입금액 + (현재가 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
                 if 포지션 == 'LONG':
-                    평가금액, 평가손익, 수익율 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                    평가금액, 평가손익, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                 else:
-                    평가금액, 평가손익, 수익율 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                columns = ['현재가', '수익율', '평가손익', '평가금액']
-                self.df_jg.loc[종목코드, columns] = 현재가, 수익율, 평가손익, 평가금액
+                    평가금액, 평가손익, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                columns = ['현재가', '수익률', '평가손익', '평가금액']
+                self.df_jg.loc[종목코드, columns] = 현재가, 수익률, 평가손익, 평가금액
         except:
             pass
 
@@ -399,13 +399,13 @@ class FutureTrader:
                 self.CreateOrder(f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 주문번호, 현재시간, False, 정정횟수, None)
 
     def UpdateString(self, data):
-        if data == 'S체결목록':
+        if data == '체결목록':
             self.kwzservQ.put(('tele', self.df_cj)) if len(self.df_cj) > 0 else self.kwzservQ.put(('tele', '현재는 체결목록이 없습니다.'))
-        elif data == 'S거래목록':
+        elif data == '거래목록':
             self.kwzservQ.put(('tele', self.df_td)) if len(self.df_td) > 0 else self.kwzservQ.put(('tele', '현재는 거래목록이 없습니다.'))
-        elif data == 'S잔고평가':
+        elif data == '잔고평가':
             self.kwzservQ.put(('tele', self.df_jg)) if len(self.df_jg) > 0 else self.kwzservQ.put(('tele', '현재는 잔고목록이 없습니다.'))
-        elif data == 'S잔고청산':
+        elif data == '잔고청산':
             self.JangoCheongsan('수동')
         elif data == '프로파일링결과':
             self.pr.print_stats(sort='cumulative')
@@ -421,7 +421,9 @@ class FutureTrader:
             for 종목코드 in self.dict_order[주문구분].keys():
                 self.CancelOrder(종목코드, 주문구분)
 
-        if (gubun == '수동' or self.dict_set['주식잔고청산']) and len(self.df_jg) > 0:
+        if len(self.df_jg) > 0 and (gubun == '수동' or self.dict_set['주식잔고청산']):
+            if gubun == '수동':
+                self.kwzservQ.put(('tele', '해선 잔고청산 주문을 전송합니다.'))
             for 종목코드 in self.df_jg.index:
                 포지션 = self.df_jg['포지션'][종목코드]
                 종목명 = self.df_jg['종목명'][종목코드]
@@ -434,10 +436,11 @@ class FutureTrader:
                     self.UpdateChejanData(종목코드, 종목명, '체결', '신규', '매도', 보유수량, 0, 현재가, ct, '', 보유수량, 현재가)
                 else:
                     self.CheckOrder((주문구분, 종목코드, 종목명, 현재가, 보유수량, now(), True))
-
             if self.dict_set['주식알림소리']:
                 self.kwzservQ.put(('sound', '해선 잔고청산 주문을 전송하였습니다.'))
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 해선 잔고청산 주문 완료')))
+        elif self.df_jg.empty and gubun == '수동':
+            self.kwzservQ.put(('tele', '현재는 해선 보유종목이 없습니다.'))
 
     def Scheduler(self):
         inthms = int(str_hms(now_cme()))
@@ -466,7 +469,7 @@ class FutureTrader:
             df = self.ft.GetJango(self.dict_strg['계좌번호'], self.dict_strg['비밀번호'])
             if len(df) > 0:
                 df['종목명'] = ''
-                columns = ['종목코드', '종목명', '포지션', '매입가', '현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량']
+                columns = ['종목코드', '종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
                 df = df[[columns]]
                 df['분할매수횟수'] = 5
                 df['분할매도횟수'] = 0
@@ -486,7 +489,7 @@ class FutureTrader:
             self.dict_intg['추정예수금'] = self.dict_intg['예수금']
 
             bjc = len(self.df_jg)
-            tpp = self.df_jg['수익율'].sum()
+            tpp = self.df_jg['수익률'].sum()
             tsg = self.df_jg['평가손익'].sum()
             tbg = self.df_jg['매입금액'].sum()
             tpg = self.df_jg['평가금액'].sum()
@@ -510,7 +513,7 @@ class FutureTrader:
             df = pd.read_sql(f"SELECT * FROM f_totaltradelist WHERE `index` = '{self.dict_strg['당일날짜']}'", con)
             con.close()
             if len(df) == 0:
-                df = self.df_tt[['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익율', '수익금합계']]
+                df = self.df_tt[['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']]
                 self.kwzservQ.put(('query', ('거래디비', df, 'f_totaltradelist', 'append')))
                 if self.dict_set['주식알림소리']:
                     self.kwzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
@@ -582,20 +585,20 @@ class FutureTrader:
                     매입가 = round((직전매입가 * 직전보유수량 + 체결가격 * 체결수량) / 보유수량, self.dict_info[종목코드]['소숫점자리수'] + 1)
                     평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
                     if 'LONG' in gubun:
-                        평가금액, 수익금, 수익율 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                        평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                     else:
-                        평가금액, 수익금, 수익율 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                    columns = ['매입가', '현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량', '매수시간']
-                    self.df_jg.loc[종목코드, columns] = 매입가, 체결가격, 수익율, 수익금, 매입금액, 평가금액, 보유수량, 주문시간
+                        평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                    columns = ['매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '매수시간']
+                    self.df_jg.loc[종목코드, columns] = 매입가, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량, 주문시간
                 else:
                     매입금액 = 평가금액 = self.dict_info[종목코드]['위탁증거금'] * 체결수량
                     if 'LONG' in gubun:
                         포지션 = 'LONG'
-                        평가금액, 수익금, 수익율 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                        평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                     else:
                         포지션 = 'SHORT'
-                        평가금액, 수익금, 수익율 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                    self.df_jg.loc[종목코드] = 종목명, 포지션, 체결가격, 체결가격, 수익율, 수익금, 매입금액, 평가금액, 체결수량, 0, 0, 주문시간
+                        평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                    self.df_jg.loc[종목코드] = 종목명, 포지션, 체결가격, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 체결수량, 0, 0, 주문시간
 
                 if 미체결수량 == 0:
                     self.df_jg.loc[종목코드, '분할매수횟수'] = self.df_jg['분할매수횟수'][종목코드] + 1
@@ -614,11 +617,11 @@ class FutureTrader:
                     매입금액 = self.dict_info[종목코드]['위탁증거금'] * 보유수량
                     평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
                     if 'LONG' in gubun:
-                        평가금액, 수익금, 수익율 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                        평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                     else:
-                        평가금액, 수익금, 수익율 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                    columns = ['현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량']
-                    self.df_jg.loc[종목코드, columns] = 체결가격, 수익율, 수익금, 매입금액, 평가금액, 보유수량
+                        평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                    columns = ['현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
+                    self.df_jg.loc[종목코드, columns] = 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량
                 else:
                     self.df_jg.drop(index=종목코드, inplace=True)
 
@@ -631,11 +634,11 @@ class FutureTrader:
                 매입금액 = self.dict_info[종목코드]['위탁증거금'] * 체결수량
                 평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 체결수량
                 if 'LONG' in gubun:
-                    평가금액, 수익금, 수익율 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                    평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                 else:
-                    평가금액, 수익금, 수익율 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                if -100 < 수익율 < 100: self.UpdateTradelist(index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간)
-                if 수익율 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['주식매수금지손절간격초'])
+                    평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                if -100 < 수익률 < 100: self.UpdateTradelist(index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간)
+                if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['주식매수금지손절간격초'])
 
             self.df_jg.sort_values(by=['매입금액'], ascending=False, inplace=True)
             self.PutJangoDF()
@@ -682,10 +685,10 @@ class FutureTrader:
         self.sreceivQ.put(('잔고목록', tuple(self.df_jg.index)))
         self.sreceivQ.put(('주문목록', self.GetOrderCodeList()))
 
-    def UpdateTradelist(self, index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간):
-        self.df_td.loc[index] = 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간
+    def UpdateTradelist(self, index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
+        self.df_td.loc[index] = 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간
         self.kwzservQ.put(('window', (ui_num['S거래목록'], self.df_td[::-1])))
-        df = pd.DataFrame([[종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간]], columns=columns_tdf, index=[index])
+        df = pd.DataFrame([[종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_tdf, index=[index])
         self.kwzservQ.put(('query', ('거래디비', df, 'f_tradelist', 'append')))
         self.UpdateTotaltradelist()
 
@@ -696,17 +699,17 @@ class FutureTrader:
         총수익금액 = self.df_td[self.df_td['수익금'] > 0]['수익금'].sum()
         총손실금액 = self.df_td[self.df_td['수익금'] < 0]['수익금'].sum()
         수익금합계 = self.df_td['수익금'].sum()
-        수익율 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
-        self.df_tt.loc[self.dict_strg['당일날짜']] = 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익율, 수익금합계
+        수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
+        self.df_tt.loc[self.dict_strg['당일날짜']] = 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계
         self.kwzservQ.put(('window', (ui_num['S실현손익'], self.df_tt)))
 
         if not first:
             self.kwzservQ.put(('tele', f'거래횟수 {거래횟수}회 / 총매수금액 {int(총매수금액):,}원 / 총매도금액 {int(총매도금액):,}원 / 총수익금액 {int(총수익금액):,}원 / '
-                                       f'총손실금액 {int(총손실금액):,}원 / 수익율 {수익율:.2f}% / 수익금합계 {int(수익금합계):,}원'))
+                                       f'총손실금액 {int(총손실금액):,}원 / 수익률 {수익률:.2f}% / 수익금합계 {int(수익금합계):,}원'))
 
         if self.dict_set['스톰라이브']:
-            수익율 = round(수익금합계 / 총매수금액 * 100, 2)
-            data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익율, 수익금합계]
+            수익률 = round(수익금합계 / 총매수금액 * 100, 2)
+            data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
             self.kwzservQ.put(('live', ('해선', data_list)))
 
     def UpdateChegeollist(self, index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호):
@@ -722,19 +725,19 @@ class FutureTrader:
             총매입금액 = self.df_jg['매입금액'].sum()
             총평가금액 = self.df_jg['평가금액'].sum()
             잔고수량 = len(self.df_jg)
-            총수익율 = round(총평가손익 / 총매입금액 * 100, 2)
+            총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
             추정예탁자산 = self.dict_intg['추정예탁자산'] + 총평가손익
-            self.df_tj.loc[self.dict_strg['당일날짜']] = 추정예탁자산, self.dict_intg['예수금'], 잔고수량, 총수익율, 총평가손익, 총매입금액, 총평가금액
+            self.df_tj.loc[self.dict_strg['당일날짜']] = 추정예탁자산, self.dict_intg['예수금'], 잔고수량, 총수익률, 총평가손익, 총매입금액, 총평가금액
         else:
             추정예탁자산 = self.dict_intg['예수금']
             self.df_tj.loc[self.dict_strg['당일날짜']] = 추정예탁자산, self.dict_intg['예수금'], 0, 0.0, 0, 0, 0
 
         총평가손익 = self.df_jg['평가손익'].sum() + self.df_td['수익금'].sum()
         if self.dict_set['주식손실중지']:
-            기준손실금 = self.dict_intg['예탁자산'] * self.dict_set['주식손실중지수익율'] / 100
+            기준손실금 = self.dict_intg['예탁자산'] * self.dict_set['주식손실중지수익률'] / 100
             if 기준손실금 < -총평가손익: self.StrategyStop()
         if self.dict_set['주식수익중지']:
-            기준수익금 = self.dict_intg['예탁자산'] * self.dict_set['주식수익중지수익율'] / 100
+            기준수익금 = self.dict_intg['예탁자산'] * self.dict_set['주식수익중지수익률'] / 100
             if 기준수익금 < 총평가손익: self.StrategyStop()
 
         self.kwzservQ.put(('window', (ui_num['S잔고목록'], self.df_jg)))

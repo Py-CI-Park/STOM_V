@@ -187,7 +187,7 @@ class KiwoomTrader:
             inthms = int(str_hms())
             if self.dict_set['주식매수금지거래횟수'] and self.dict_set['주식매수금지거래횟수값'] <= len(self.df_td[self.df_td['종목명'] == 종목명].drop_duplicates('체결시간')):
                 주문취소 = True
-            elif self.dict_set['주식매수금지손절횟수'] and self.dict_set['주식매수금지손절횟수값'] <= len(self.df_td[(self.df_td['종목명'] == 종목명) & (self.df_td['수익율'] < 0)].drop_duplicates('체결시간')):
+            elif self.dict_set['주식매수금지손절횟수'] and self.dict_set['주식매수금지손절횟수값'] <= len(self.df_td[(self.df_td['종목명'] == 종목명) & (self.df_td['수익률'] < 0)].drop_duplicates('체결시간')):
                 주문취소 = True
             elif 잔고없음 and inthms < self.dict_set['주식전략종료시간'] and len(self.df_jg) >= self.dict_set['주식최대매수종목수']:
                 주문취소 = True
@@ -317,9 +317,9 @@ class KiwoomTrader:
             if 현재가 != self.df_jg['현재가'][종목코드]:
                 매입금액 = self.df_jg['매입금액'][종목코드]
                 보유수량 = int(self.df_jg['보유수량'][종목코드])
-                평가금액, 평가손익, 수익율 = GetKiwoomPgSgSp(매입금액, 보유수량 * 현재가)
-                columns = ['현재가', '수익율', '평가손익', '평가금액']
-                self.df_jg.loc[종목코드, columns] = 현재가, 수익율, 평가손익, 평가금액
+                평가금액, 평가손익, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 현재가)
+                columns = ['현재가', '수익률', '평가손익', '평가금액']
+                self.df_jg.loc[종목코드, columns] = 현재가, 수익률, 평가손익, 평가금액
         except:
             pass
 
@@ -379,13 +379,13 @@ class KiwoomTrader:
                 self.CreateOrder(f'{주문구분}정정', 종목코드, 종목명, 주문가격, 미체결수량, 주문번호, 현재시간, False, None)
 
     def UpdateString(self, data):
-        if data == 'S체결목록':
-            self.kwzservQ.put(('tele', self.df_cj)) if len(self.df_cj) > 0 else self.kwzservQ.put(('tele', '현재는 주식체결목록이 없습니다.'))
-        elif data == 'S거래목록':
-            self.kwzservQ.put(('tele', self.df_td)) if len(self.df_td) > 0 else self.kwzservQ.put(('tele', '현재는 주식거래목록이 없습니다.'))
-        elif data == 'S잔고평가':
-            self.kwzservQ.put(('tele', self.df_jg)) if len(self.df_jg) > 0 else self.kwzservQ.put(('tele', '현재는 주식잔고목록이 없습니다.'))
-        elif data == 'S잔고청산':
+        if data == '체결목록':
+            self.kwzservQ.put(('tele', self.df_cj)) if len(self.df_cj) > 0 else self.kwzservQ.put(('tele', '현재는 주식 체결목록이 없습니다.'))
+        elif data == '거래목록':
+            self.kwzservQ.put(('tele', self.df_td)) if len(self.df_td) > 0 else self.kwzservQ.put(('tele', '현재는 주식 거래목록이 없습니다.'))
+        elif data == '잔고평가':
+            self.kwzservQ.put(('tele', self.df_jg)) if len(self.df_jg) > 0 else self.kwzservQ.put(('tele', '현재는 주식 잔고목록이 없습니다.'))
+        elif data == '잔고청산':
             self.JangoCheongsan('수동')
         elif data == '프로파일링결과':
             self.pr.print_stats(sort='cumulative')
@@ -401,7 +401,9 @@ class KiwoomTrader:
             for 종목코드 in self.dict_order[주문구분].keys():
                 self.CancelOrder(종목코드, 주문구분)
 
-        if (gubun == '수동' or self.dict_set['주식잔고청산']) and len(self.df_jg) > 0:
+        if len(self.df_jg) > 0 and (gubun == '수동' or self.dict_set['주식잔고청산']):
+            if gubun == '수동':
+                self.kwzservQ.put(('tele', '주식 잔고청산 주문을 전송합니다.'))
             for 종목코드 in self.df_jg.index:
                 종목명 = self.df_jg['종목명'][종목코드]
                 현재가 = self.df_jg['현재가'][종목코드]
@@ -410,10 +412,11 @@ class KiwoomTrader:
                     self.UpdateChejanData(종목코드, 종목명, 현재가, '체결', '매도', 보유수량, 보유수량, 0, 현재가, 현재가, str_ymdhms(), '')
                 else:
                     self.CheckOrder(('매도', 종목코드, 종목명, 현재가, 보유수량, now(), True))
-
             if self.dict_set['주식알림소리']:
                 self.kwzservQ.put(('sound', f'주식 잔고청산 주문을 전송하였습니다.'))
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 주식 잔고청산 주문 완료')))
+        elif self.df_jg.empty and gubun == '수동':
+            self.kwzservQ.put(('tele', '현재는 주식 보유종목이 없습니다.'))
 
     def Scheduler(self):
         if not self.dict_bool['계좌조회']:
@@ -456,16 +459,16 @@ class KiwoomTrader:
         if not self.dict_set['주식모의투자']:
             df = self.kw.Block_Request('opw00018', 계좌번호=self.dict_strg['계좌번호'], 비밀번호='', 비밀번호입력매체구분='00', 조회구분=2, output='계좌평가잔고개별합산', next=0)
             if df['종목명'][0]:
-                df.rename(columns={'종목번호': 'index', '수익률(%)': '수익율'}, inplace=True)
+                df.rename(columns={'종목번호': 'index', '수익률(%)': '수익률'}, inplace=True)
                 df['index'] = df['index'].apply(lambda x: x.strip()[1:])
-                df['수익율'] = df['수익율'].apply(lambda x: round(float(x) / 100, 2))
+                df['수익률'] = df['수익률'].apply(lambda x: round(float(x) / 100, 2))
                 columns = ['매입가', '현재가', '평가손익', '매입금액', '평가금액', '보유수량']
                 df[columns] = df[columns].astype(int)
                 df['평가손익'] = df['평가금액'] - df['매입금액']
                 df['분할매수횟수'] = 5
                 df['분할매도횟수'] = 0
                 df['매수시간'] = self.dict_strg['당일날짜'] + '080000'
-                columns = ['index', '종목명', '매입가', '현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                columns = ['index', '종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 df = df[columns]
                 self.df_jg = df.set_index('index')
 
@@ -518,7 +521,7 @@ class KiwoomTrader:
             df = pd.read_sql(f"SELECT * FROM s_totaltradelist WHERE `index` = '{self.dict_strg['당일날짜']}'", con)
             con.close()
             if len(df) == 0:
-                df = self.df_tt[['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익율', '수익금합계']]
+                df = self.df_tt[['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']]
                 self.kwzservQ.put(('query', ('거래디비', df, 's_totaltradelist', 'append')))
                 if self.dict_set['주식알림소리']:
                     self.kwzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
@@ -630,15 +633,15 @@ class KiwoomTrader:
                     보유수량 = self.df_jg['보유수량'][종목코드] + 체결수량
                     매입금액 = self.df_jg['매입금액'][종목코드] + 체결수량 * 체결가격
                     매입가 = int(round(매입금액 / 보유수량))
-                    평가금액, 수익금, 수익율 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
-                    columns = ['매입가', '현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량', '매수시간']
-                    self.df_jg.loc[종목코드, columns] = 매입가, 체결가격, 수익율, 수익금, 매입금액, 평가금액, 보유수량, 주문시간
+                    평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
+                    columns = ['매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '매수시간']
+                    self.df_jg.loc[종목코드, columns] = 매입가, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량, 주문시간
                 else:
                     보유수량 = 체결수량
                     매입금액 = 체결수량 * 체결가격
                     매입가 = 체결가격
-                    평가금액, 수익금, 수익율 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
-                    self.df_jg.loc[종목코드] = 종목명, 매입가, 체결가격, 수익율, 수익금, 매입금액, 평가금액, 보유수량, 0, 0, 주문시간
+                    평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
+                    self.df_jg.loc[종목코드] = 종목명, 매입가, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량, 0, 0, 주문시간
 
                 if 미체결수량 == 0:
                     self.df_jg.loc[종목코드, '분할매수횟수'] = self.df_jg['분할매수횟수'][종목코드] + 1
@@ -653,9 +656,9 @@ class KiwoomTrader:
                 매입가 = self.df_jg['매입가'][종목코드]
                 if 보유수량 != 0:
                     매입금액 = 매입가 * 보유수량
-                    평가금액, 수익금, 수익율 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
-                    columns = ['현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량']
-                    self.df_jg.loc[종목코드, columns] = 체결가격, 수익율, 수익금, 매입금액, 평가금액, 보유수량
+                    평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
+                    columns = ['현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
+                    self.df_jg.loc[종목코드, columns] = 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량
                 else:
                     self.df_jg.drop(index=종목코드, inplace=True)
 
@@ -666,9 +669,9 @@ class KiwoomTrader:
                         del self.dict_order[주문구분][종목코드]
 
                 매입금액 = 매입가 * 체결수량
-                평가금액, 수익금, 수익율 = GetKiwoomPgSgSp(매입금액, 체결수량 * 체결가격)
-                if -100 < 수익율 < 100: self.UpdateTradelist(index, 종목명, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간)
-                if 수익율 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['주식매수금지손절간격초'])
+                평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 체결수량 * 체결가격)
+                if -100 < 수익률 < 100: self.UpdateTradelist(index, 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간)
+                if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['주식매수금지손절간격초'])
 
             columns = ['매입가', '현재가', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수']
             self.df_jg[columns] = self.df_jg[columns].astype(int)
@@ -715,10 +718,10 @@ class KiwoomTrader:
         self.sreceivQ.put(('잔고목록', tuple(self.df_jg.index)))
         self.sreceivQ.put(('주문목록', self.GetOrderCodeList()))
 
-    def UpdateTradelist(self, index, 종목명, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간):
-        self.df_td.loc[index] = 종목명, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간
+    def UpdateTradelist(self, index, 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
+        self.df_td.loc[index] = 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간
         self.kwzservQ.put(('window', (ui_num['S거래목록'], self.df_td[::-1])))
-        df = pd.DataFrame([[종목명, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간]], columns=columns_td, index=[index])
+        df = pd.DataFrame([[종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_td, index=[index])
         self.kwzservQ.put(('query', ('거래디비', df, 's_tradelist', 'append')))
         self.UpdateTotaltradelist()
 
@@ -729,18 +732,18 @@ class KiwoomTrader:
         총수익금액 = self.df_td[self.df_td['수익금'] > 0]['수익금'].sum()
         총손실금액 = self.df_td[self.df_td['수익금'] < 0]['수익금'].sum()
         수익금합계 = self.df_td['수익금'].sum()
-        수익율 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
+        수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        self.df_tt.loc[self.dict_strg['당일날짜']] = 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익율, 수익금합계
+        self.df_tt.loc[self.dict_strg['당일날짜']] = 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계
         self.kwzservQ.put(('window', (ui_num['S실현손익'], self.df_tt)))
 
         if not first:
             self.kwzservQ.put(('tele', f'거래횟수 {거래횟수}회 / 총매수금액 {int(총매수금액):,}원 / 총매도금액 {int(총매도금액):,}원 / 총수익금액 {int(총수익금액):,}원 / '
-                                       f'총손실금액 {int(총손실금액):,}원 / 수익율 {수익율:.2f}% / 수익금합계 {int(수익금합계):,}원'))
+                                       f'총손실금액 {int(총손실금액):,}원 / 수익률 {수익률:.2f}% / 수익금합계 {int(수익금합계):,}원'))
 
         if self.dict_set['스톰라이브']:
-            수익율 = round(수익금합계 / 총매수금액 * 100, 2)
-            data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익율, 수익금합계]
+            수익률 = round(수익금합계 / 총매수금액 * 100, 2)
+            data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
             self.kwzservQ.put(('live', ('주식', data_list)))
 
     def UpdateChegeollist(self, index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호):
@@ -756,18 +759,18 @@ class KiwoomTrader:
             총매입금액 = self.df_jg['매입금액'].sum()
             총평가금액 = self.df_jg['평가금액'].sum()
             잔고수량 = len(self.df_jg)
-            총수익율 = round(총평가손익 / 총매입금액 * 100, 2)
+            총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
             추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
-            self.df_tj.loc[self.dict_strg['당일날짜']] = 추정예탁자산, self.dict_intg['예수금'], 잔고수량, 총수익율, 총평가손익, 총매입금액, 총평가금액
+            self.df_tj.loc[self.dict_strg['당일날짜']] = 추정예탁자산, self.dict_intg['예수금'], 잔고수량, 총수익률, 총평가손익, 총매입금액, 총평가금액
         else:
             self.df_tj.loc[self.dict_strg['당일날짜']] = self.dict_intg['예수금'], self.dict_intg['예수금'], 0, 0.0, 0, 0, 0
 
         총평가손익 = self.df_jg['평가손익'].sum() + self.df_td['수익금'].sum()
         if self.dict_set['주식손실중지']:
-            기준손실금 = self.dict_intg['추정예탁자산'] * self.dict_set['주식손실중지수익율'] / 100
+            기준손실금 = self.dict_intg['추정예탁자산'] * self.dict_set['주식손실중지수익률'] / 100
             if 기준손실금 < -총평가손익: self.StrategyStop()
         if self.dict_set['주식수익중지']:
-            기준수익금 = self.dict_intg['추정예탁자산'] * self.dict_set['주식수익중지수익율'] / 100
+            기준수익금 = self.dict_intg['추정예탁자산'] * self.dict_set['주식수익중지수익률'] / 100
             if 기준수익금 < 총평가손익: self.StrategyStop()
 
         if self.dict_set['주식투자금고정']:

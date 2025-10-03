@@ -243,20 +243,6 @@ class BinanceTrader:
             self.dict_curc[code] = c
             self.OrderTimeControl(code)
 
-    def UpdateString(self, data):
-        if data == 'C체결목록':
-            self.teleQ.put(self.df_cj) if len(self.df_cj) > 0 else self.teleQ.put('현재는 체결목록이 없습니다.')
-        elif data == 'C거래목록':
-            self.teleQ.put(self.df_td) if len(self.df_td) > 0 else self.teleQ.put('현재는 거래목록이 없습니다.')
-        elif data == 'C잔고평가':
-            self.teleQ.put(('잔고목록', self.df_jg)) if len(self.df_jg) > 0 else self.teleQ.put('현재는 잔고목록이 없습니다.')
-        elif data == 'C잔고청산':
-            self.JangoCheongsan('수동')
-        elif data == '프로세스종료':
-            if not self.dict_bool['프로세스종료']:
-                self.dict_bool['프로세스종료'] = True
-                QTimer.singleShot(180 * 1000, self.SysExit)
-
     def CheckOrder(self, data):
         if len(data) == 6:
             주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 수동주문 = data
@@ -281,7 +267,7 @@ class BinanceTrader:
             inthmsutc = int(str_hms(now_utc()))
             if self.dict_set['코인매수금지거래횟수'] and self.dict_set['코인매수금지거래횟수값'] <= len(self.df_td[self.df_td['종목명'] == 종목코드].drop_duplicates('체결시간')):
                 주문취소 = True
-            elif self.dict_set['코인매수금지손절횟수'] and self.dict_set['코인매수금지손절횟수값'] <= len(self.df_td[(self.df_td['종목명'] == 종목코드) & (self.df_td['수익율'] < 0)].drop_duplicates('체결시간')):
+            elif self.dict_set['코인매수금지손절횟수'] and self.dict_set['코인매수금지손절횟수값'] <= len(self.df_td[(self.df_td['종목명'] == 종목코드) & (self.df_td['수익률'] < 0)].drop_duplicates('체결시간')):
                 주문취소 = True
             elif 잔고없음 and inthmsutc < self.dict_set['코인전략종료시간'] and len(self.df_jg) >= self.dict_set['코인최대매수종목수']:
                 주문취소 = True
@@ -424,11 +410,11 @@ class BinanceTrader:
                 매입금액 = self.df_jg['매입금액'][종목코드]
                 보유수량 = self.df_jg['보유수량'][종목코드]
                 if 포지션 == 'LONG':
-                    평가금액, 평가손익, 수익율 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                    평가금액, 평가손익, 수익률 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                 else:
-                    평가금액, 평가손익, 수익율 = GetBinanceShortPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                columns = ['현재가', '수익율', '평가손익', '평가금액']
-                self.df_jg.loc[종목코드, columns] = 현재가, 수익율, 평가손익, 평가금액
+                    평가금액, 평가손익, 수익률 = GetBinanceShortPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                columns = ['현재가', '수익률', '평가손익', '평가금액']
+                self.df_jg.loc[종목코드, columns] = 현재가, 수익률, 평가손익, 평가금액
         except:
             pass
 
@@ -508,6 +494,20 @@ class BinanceTrader:
                 self.CreateOrder(f'{주문구분}_CANCEL', 종목코드, 주문가격, 미체결수량, 주문번호, 현재시간, False, 0, None)
                 self.CreateOrder(주문구분, 종목코드, 정정가격, 미체결수량, '', 현재시간, False, 정정횟수, None)
 
+    def UpdateString(self, data):
+        if data == '체결목록':
+            self.teleQ.put(self.df_cj) if len(self.df_cj) > 0 else self.teleQ.put('현재는 체결목록이 없습니다.')
+        elif data == '거래목록':
+            self.teleQ.put(self.df_td) if len(self.df_td) > 0 else self.teleQ.put('현재는 거래목록이 없습니다.')
+        elif data == '잔고평가':
+            self.teleQ.put(('잔고목록', self.df_jg)) if len(self.df_jg) > 0 else self.teleQ.put('현재는 잔고목록이 없습니다.')
+        elif data == '잔고청산':
+            self.JangoCheongsan('수동')
+        elif data == '프로세스종료':
+            if not self.dict_bool['프로세스종료']:
+                self.dict_bool['프로세스종료'] = True
+                QTimer.singleShot(180 * 1000, self.SysExit)
+
     def JangoCheongsan(self, gubun):
         self.dict_bool['코인잔고청산'] = True
 
@@ -515,7 +515,9 @@ class BinanceTrader:
             for 종목코드 in self.dict_order[주문구분].keys():
                 self.CancelOrder(종목코드, 주문구분)
 
-        if (gubun == '수동' or self.dict_set['코인잔고청산']) and len(self.df_jg) > 0:
+        if len(self.df_jg) > 0 and (gubun == '수동' or self.dict_set['코인잔고청산']):
+            if gubun == '수동':
+                self.teleQ.put('tele', '코인 잔고청산 주문을 전송합니다.')
             for 종목코드 in self.df_jg.index:
                 포지션 = self.df_jg['포지션'][종목코드]
                 현재가 = self.df_jg['현재가'][종목코드]
@@ -541,10 +543,11 @@ class BinanceTrader:
                             self.UpdateChegeollist(dt, 종목코드, 'BUY_SHORT_REG', 보유수량, 0, 보유수량, 0, dt[:14], 현재가, orderId)
                             self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [BUY_SHORT_REG] {종목코드} | {현재가} | {보유수량}'))
                     time.sleep(0.3)
-
             if self.dict_set['코인알림소리']:
                 self.soundQ.put(f'코인 {gubun} 전략 잔고청산 주문을 전송하였습니다.')
             self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 실행 알림 - {gubun} 전략 잔고청산 주문 완료'))
+        elif self.df_jg.empty and gubun == '수동':
+            self.teleQ.put('tele', '현재는 코인 보유종목이 없습니다.')
 
     def SysExit(self):
         self.WebProcessKill()
@@ -559,7 +562,7 @@ class BinanceTrader:
             df = pd.read_sql(f"SELECT * FROM c_totaltradelist WHERE `index` = '{self.str_today}'", con)
             con.close()
             if len(df) == 0:
-                df = self.df_tt[['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익율', '수익금합계']]
+                df = self.df_tt[['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']]
                 self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
                 if self.dict_set['코인알림소리']:
                     self.soundQ.put('일별실현손익를 저장하였습니다.')
@@ -577,21 +580,21 @@ class BinanceTrader:
                     매입가 = round(매입금액 / 보유수량, 8)
                     평가금액 = round(체결가격 * 보유수량, 4)
                     if 주문구분 == 'BUY_LONG':
-                        평가금액, 수익금, 수익율 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                        평가금액, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                     else:
-                        평가금액, 수익금, 수익율 = GetBinanceShortPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                    columns = ['매입가', '현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량', '매수시간']
-                    self.df_jg.loc[종목코드, columns] = 매입가, 체결가격, 수익율, 수익금, 매입금액, 평가금액, 보유수량, dt[:14]
+                        평가금액, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                    columns = ['매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '매수시간']
+                    self.df_jg.loc[종목코드, columns] = 매입가, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량, dt[:14]
                 else:
                     매입금액 = round(체결가격 * 체결수량, 4)
                     레버리지 = self.dict_set['바이낸스선물고정레버리지값'] if self.dict_set['바이낸스선물고정레버리지'] else self.dict_order[주문구분][종목코드][3]
                     if 주문구분 == 'BUY_LONG':
                         포지션 = 'LONG'
-                        평가금액, 수익금, 수익율 = GetBinanceLongPgSgSp(매입금액, 매입금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                        평가금액, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 매입금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                     else:
                         포지션 = 'SHORT'
-                        평가금액, 수익금, 수익율 = GetBinanceShortPgSgSp(매입금액, 매입금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                    self.df_jg.loc[종목코드] = 종목코드, 포지션, 체결가격, 체결가격, 수익율, 수익금, 매입금액, 평가금액, 체결수량, 레버리지, 0, 0, dt[:14]
+                        평가금액, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 매입금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                    self.df_jg.loc[종목코드] = 종목코드, 포지션, 체결가격, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 체결수량, 레버리지, 0, 0, dt[:14]
 
                 if 미체결수량 == 0:
                     self.df_jg.loc[종목코드, '분할매수횟수'] = self.df_jg['분할매수횟수'][종목코드] + 1
@@ -606,11 +609,11 @@ class BinanceTrader:
                     매입금액 = round(매입가 * 보유수량, 4)
                     평가금액 = round(체결가격 * 보유수량, 4)
                     if 주문구분 == 'SELL_LONG':
-                        평가금액, 수익금, 수익율 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                        평가금액, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                     else:
-                        평가금액, 수익금, 수익율 = GetBinanceShortPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                    columns = ['현재가', '수익율', '평가손익', '매입금액', '평가금액', '보유수량']
-                    self.df_jg.loc[종목코드, columns] = 체결가격, 수익율, 수익금, 매입금액, 평가금액, 보유수량
+                        평가금액, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                    columns = ['현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
+                    self.df_jg.loc[종목코드, columns] = 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량
                 else:
                     self.df_jg.drop(index=종목코드, inplace=True)
 
@@ -623,11 +626,11 @@ class BinanceTrader:
                 매입금액 = round(매입가 * 체결수량, 4)
                 평가금액 = round(체결가격 * 체결수량, 4)
                 if 주문구분 == 'SELL_LONG':
-                    평가금액, 수익금, 수익율 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                    평가금액, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                 else:
-                    평가금액, 수익금, 수익율 = GetBinanceShortPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                if -100 < 수익율 < 100: self.UpdateTradelist(dt, 종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익율, 수익금, dt[:14])
-                if 수익율 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['코인매수금지손절간격초'])
+                    평가금액, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
+                if -100 < 수익률 < 100: self.UpdateTradelist(dt, 종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, dt[:14])
+                if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['코인매수금지손절간격초'])
 
             self.df_jg.sort_values(by=['매입금액'], ascending=False, inplace=True)
             self.cstgQ.put(('잔고목록', self.df_jg))
@@ -678,10 +681,10 @@ class BinanceTrader:
         self.creceivQ.put(('잔고목록', tuple(self.df_jg.index)))
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
 
-    def UpdateTradelist(self, index, 종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간):
-        self.df_td.loc[index] = 종목코드, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간
+    def UpdateTradelist(self, index, 종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
+        self.df_td.loc[index] = 종목코드, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간
         self.windowQ.put((ui_num['C거래목록'], self.df_td[::-1]))
-        df = pd.DataFrame([[종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익율, 수익금, 주문시간]], columns=columns_tdf, index=[index])
+        df = pd.DataFrame([[종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_tdf, index=[index])
         self.queryQ.put(('거래디비', df, 'c_tradelist_future', 'append'))
         self.UpdateTotaltradelist()
 
@@ -692,17 +695,17 @@ class BinanceTrader:
         총수익금액 = self.df_td[self.df_td['수익금'] > 0]['수익금'].sum()
         총손실금액 = self.df_td[self.df_td['수익금'] < 0]['수익금'].sum()
         수익금합계 = self.df_td['수익금'].sum()
-        수익율 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
+        수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        self.df_tt.loc[self.str_today] = 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익율, 수익금합계
+        self.df_tt.loc[self.str_today] = 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계
         self.windowQ.put((ui_num['C실현손익'], self.df_tt))
 
         if not first:
             self.teleQ.put(f'손익 알림 - 총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}')
 
         if self.dict_set['스톰라이브']:
-            수익율 = round(수익금합계 / 총매수금액 * 100, 2)
-            data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익율, 수익금합계]
+            수익률 = round(수익금합계 / 총매수금액 * 100, 2)
+            data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
             self.liveQ.put(('코인', data_list))
 
     def UpdateChegeollist(self, index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호):
@@ -718,18 +721,18 @@ class BinanceTrader:
             총매입금액 = self.df_jg['매입금액'].sum()
             총평가금액 = self.df_jg['평가금액'].sum()
             잔고수량 = len(self.df_jg)
-            총수익율 = round(총평가손익 / 총매입금액 * 100, 2)
+            총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
             self.dict_intg['추정예탁자산'] = self.dict_intg['예수금'] + 총평가금액
-            self.df_tj = pd.DataFrame([[self.dict_intg['추정예탁자산'], self.dict_intg['예수금'], 잔고수량, 총수익율, 총평가손익, 총매입금액, 총평가금액]], columns=columns_tj, index=[self.str_today])
+            self.df_tj = pd.DataFrame([[self.dict_intg['추정예탁자산'], self.dict_intg['예수금'], 잔고수량, 총수익률, 총평가손익, 총매입금액, 총평가금액]], columns=columns_tj, index=[self.str_today])
         else:
             self.df_tj = pd.DataFrame([[self.dict_intg['추정예탁자산'], self.dict_intg['예수금'], 0, 0.0, 0, 0, 0]], columns=columns_tj, index=[self.str_today])
 
         총평가손익 = self.df_jg['평가손익'].sum() + self.df_td['수익금'].sum()
         if self.dict_set['코인손실중지']:
-            기준손실금 = self.dict_intg['추정예탁자산'] * self.dict_set['코인손실중지수익율'] / 100
+            기준손실금 = self.dict_intg['추정예탁자산'] * self.dict_set['코인손실중지수익률'] / 100
             if 기준손실금 < -총평가손익: self.StrategyStop()
         if self.dict_set['코인수익중지']:
-            기준수익금 = self.dict_intg['추정예탁자산'] * self.dict_set['코인수익중지수익율'] / 100
+            기준수익금 = self.dict_intg['추정예탁자산'] * self.dict_set['코인수익중지수익률'] / 100
             if 기준수익금 < 총평가손익: self.StrategyStop()
 
         if self.dict_set['코인투자금고정']:

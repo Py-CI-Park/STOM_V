@@ -18,13 +18,6 @@ def process_starter(ui):
         if ui.int_time < ui.dict_set['백테스케쥴시간'] <= inthms:
             ui.AutoBackSchedule(1)
 
-    if not ui.proc_tele.is_alive():  ui.proc_tele.start()
-    if not ui.proc_webc.is_alive():  ui.proc_webc.start()
-    if not ui.proc_sound.is_alive(): ui.proc_sound.start()
-    if not ui.proc_query.is_alive(): ui.proc_query.start()
-    if not ui.proc_chart.is_alive(): ui.proc_chart.start()
-    if not ui.proc_hoga.is_alive():  ui.proc_hoga.start()
-
     if ui.auto_run > 0:
         login_num = ui.auto_run
         ui.auto_run = 0

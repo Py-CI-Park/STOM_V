@@ -275,7 +275,7 @@ class Total:
             self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
             self.df_ttsg.append(self.df_tsg)
             self.df_tbct.append(self.df_bct)
-            pc     = len(self.df_tsg[self.df_tsg['수익율'] >= 0])
+            pc     = len(self.df_tsg[self.df_tsg['수익률'] >= 0])
             wr     = round(pc / tc * 100, 2)
             tsg    = int(self.df_tsg['수익금'].sum())
             df_bct = self.df_bct.sort_values(by=['보유종목수'], ascending=False)
@@ -307,7 +307,7 @@ class Total:
             df_ttsg['index'] = df_ttsg['index'].apply(lambda x: x[:8])
             out_day_count = len(list(set(df_ttsg['index'].to_list())))
 
-            df_tsg   = self.df_ttsg[['보유시간', '매도시간', '수익율', '수익금', '수익금합계']].copy()
+            df_tsg   = self.df_ttsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
             df_tbc   = self.df_tbct.copy()
             df_tbc['체결시간'] = df_tbc.index
             df_tbc['체결시간'] = df_tbc['체결시간'].apply(lambda x: float(x))
@@ -340,8 +340,8 @@ class Total:
 
             label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{bet_unit}, ' \
                          f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
-                         f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익율 {app:.2f}%, 수익율합계 {tpp:.2f}%, ' \
-                         f'{mdd_test}, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익율 {cagr:.2f}%'
+                         f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, ' \
+                         f'{mdd_test}, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
 
             save_file_name = f"{self.savename}_{self.buystg_name}_{self.optistandard}_{self.file_name}"
             con = sqlite3.connect(DB_BACKTEST)
