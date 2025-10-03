@@ -289,7 +289,7 @@ class KiwoomReceiverTick:
 
     def SaveData(self):
         codes = []
-        if len(self.dict_mtop) > 0:
+        if self.dict_mtop:
             if self.dict_set['주식타임프레임']:
                 codes = list(set(';'.join(list(self.dict_mtop.values())[29:]).split(';')))
                 con = sqlite3.connect(DB_STOCK_TICK)
@@ -426,8 +426,8 @@ class KiwoomReceiverTick:
                     sgta      = int(self.kw.GetCommRealData(code, 311))
                     csp       = int(self.kw.GetCommRealData(code, 27))
                     cbp       = int(self.kw.GetCommRealData(code, 28))
-            except Exception as e:
-                self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'시스템 명령 오류 알림 - OnReceiveRealData 주식체결 {e}')))
+            except:
+                pass
             else:
                 self.UpdateTickData(code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp)
 
@@ -564,8 +564,8 @@ class KiwoomReceiverTick:
                         int(self.kw.GetCommRealData(code, 79)),
                         int(self.kw.GetCommRealData(code, 80))
                     )
-            except Exception as e:
-                self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'시스템 명령 오류 알림 - OnReceiveRealData 주식호가잔량 {e}')))
+            except:
+                pass
             else:
                 self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start)
 

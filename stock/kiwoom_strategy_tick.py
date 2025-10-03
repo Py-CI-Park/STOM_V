@@ -7,8 +7,7 @@ import numpy as np
 import pandas as pd
 from traceback import print_exc
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from utility.setting import DB_STRATEGY, DICT_SET, ui_num, columns_jg, columns_gj, dict_order_ratio, DB_STOCK_TICK, \
-    DB_STOCK_MIN, indicator, dgree
+from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, dgree
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetUvilower5, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
     str_ymdhms, dt_ymdhms
@@ -47,6 +46,8 @@ class KiwoomStrategyTick:
         self.bhogainfo        = {}
         self.shogainfo        = {}
         self.dict_hilo        = {}
+        self.dict_gj          = {}
+        self.dict_jg          = {}
         self.indicator        = indicator
 
         self.tuple_kosd       = ()
@@ -57,8 +58,6 @@ class KiwoomStrategyTick:
         self.indexb           = 0
         self.jgrv_count       = 0
         self.int_tujagm       = 0
-        self.df_gj            = pd.DataFrame(columns=columns_gj)
-        self.df_jg            = pd.DataFrame(columns=columns_jg)
 
         self.UpdateStringategy()
         self.Start()
@@ -131,8 +130,10 @@ class KiwoomStrategyTick:
     def UpdateTuple(self, data):
         gubun, data = data
         if gubun == '관심목록':
-            drop_index_list = list(set(list(self.df_gj.index)) - set(data))
-            if drop_index_list: self.df_gj.drop(index=drop_index_list, inplace=True)
+            drop_index_list = list(set(list(self.dict_gj.keys())) - set(data))
+            if drop_index_list:
+                for k in drop_index_list:
+                    del self.dict_gj[k]
         elif gubun in ('매수완료', '매수취소'):
             if data in self.list_buy:
                 self.list_buy.remove(data)
@@ -151,7 +152,7 @@ class KiwoomStrategyTick:
             if data not in self.list_sell:
                 self.list_sell.append(data)
         elif gubun == '잔고목록':
-            self.df_jg = data
+            self.dict_jg = data
             self.jgrv_count += 1
             if self.jgrv_count == 2:
                 self.jgrv_count = 0
@@ -492,17 +493,17 @@ class KiwoomStrategyTick:
                     self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
 
         if 체결강도평균_ != 0 and not (매수잔량5 == 0 and 매도잔량5 == 0) and 체결시간 < self.dict_set['주식전략종료시간']:
-            if 종목코드 in self.df_jg.index:
+            if 종목코드 in self.dict_jg.keys():
                 if 종목코드 not in self.dict_buy_num.keys():
                     self.dict_buy_num[종목코드] = self.indexn
                 매수틱번호 = self.dict_buy_num[종목코드]
-                매입가 = self.df_jg['매입가'][종목코드]
-                보유수량 = self.df_jg['보유수량'][종목코드]
-                매입금액 = self.df_jg['매입금액'][종목코드]
-                분할매수횟수 = int(self.df_jg['분할매수횟수'][종목코드])
-                분할매도횟수 = int(self.df_jg['분할매도횟수'][종목코드])
+                매입가 = self.dict_jg[종목코드]['매입가']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
+                매입금액 = self.dict_jg[종목코드]['매입금액']
+                분할매수횟수 = self.dict_jg[종목코드]['분할매수횟수']
+                분할매도횟수 = self.dict_jg[종목코드]['분할매도횟수']
                 _, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 현재가)
-                매수시간 = dt_ymdhms(self.df_jg['매수시간'][종목코드])
+                매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
                 보유시간 = (now() - 매수시간).total_seconds()
                 if 종목코드 not in self.dict_hilo.keys():
                     self.dict_hilo[종목코드] = [수익률, 수익률]
@@ -592,7 +593,18 @@ class KiwoomStrategyTick:
                         self.Sell(종목코드, 종목명, 매도수량, 현재가, 매도호가1, 매수호가1, 강제청산)
 
         if 관심종목:
-            self.df_gj.loc[종목코드] = 종목명, 등락율, 고저평균대비등락율, 초당거래대금, 초당거래대금평균_, 당일거래대금, 체결강도, 체결강도평균_, 최고체결강도_
+            # ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
+            self.dict_gj[종목코드] = {
+                '종목명': 종목명,
+                'per': 등락율,
+                'hlp': 고저평균대비등락율,
+                'sm': 초당거래대금,
+                'sma': 초당거래대금평균_,
+                'dm': 당일거래대금,
+                'ch': 체결강도,
+                'cha': 체결강도평균_,
+                'chh': 최고체결강도_
+            }
 
         if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
             self.kwzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드][-1800:, :])))
@@ -718,11 +730,14 @@ class KiwoomStrategyTick:
                 self.straderQ.put(('매도', 종목코드, 종목명, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
     def PutGsjmAndDeleteHilo(self):
-        if len(self.df_gj) > 0:
-            self.kwzservQ.put(('window', (ui_num[f'S관심종목'], self.gubun, self.df_gj)))
-        if len(self.dict_hilo) > 0:
+        if self.dict_gj:
+            sorted_items = sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True)
+            self.dict_gj = {k: v for k, v in sorted_items}
+            df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
+            self.kwzservQ.put(('window', (ui_num[f'S관심종목'], self.gubun, df_gj)))
+        if self.dict_hilo:
             for code in list(self.dict_hilo.keys()):
-                if code not in self.df_jg.index:
+                if code not in self.dict_jg.keys():
                     del self.dict_hilo[code]
 
     def SaveData(self, codes):

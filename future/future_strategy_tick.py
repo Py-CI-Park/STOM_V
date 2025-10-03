@@ -7,8 +7,7 @@ import numpy as np
 import pandas as pd
 from traceback import print_exc
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from utility.setting import DB_STRATEGY, DICT_SET, ui_num, columns_gj, dict_order_ratio, indicator, columns_jgf, \
-    DB_FUTURE_MIN, dgree, DB_FUTURE_TICK
+from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, dgree, DB_FUTURE_TICK
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms
 
 
@@ -42,15 +41,15 @@ class FutureStrategyTick:
         self.bhogainfo        = {}
         self.shogainfo        = {}
         self.dict_hilo        = {}
-        self.indicator        = indicator
+        self.dict_gj          = {}
+        self.dict_jg          = {}
         self.dict_info        = {}
+        self.indicator        = indicator
         self.dict_signal      = {'BUY_LONG': [], 'SELL_SHORT': [], 'SELL_LONG': [], 'BUY_SHORT': []}
 
         self.indexn           = 0
         self.indexb           = 0
         self.jgrv_count       = 0
-        self.df_gj            = pd.DataFrame(columns=columns_gj)
-        self.df_jg            = pd.DataFrame(columns=columns_jgf)
 
         self.UpdateStringategy()
         self.Start()
@@ -138,7 +137,7 @@ class FutureStrategyTick:
             if data not in self.dict_signal[gubun]:
                 self.dict_signal[gubun].append(data)
         elif gubun == '잔고목록':
-            self.df_jg = data
+            self.dict_jg = data
             self.jgrv_count += 1
             if self.jgrv_count == 2:
                 self.jgrv_count = 0
@@ -444,22 +443,22 @@ class FutureStrategyTick:
                     self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
 
         if 체결강도평균_ != 0 and 체결시간 < self.dict_set['주식전략종료시간']:
-            if 종목코드 in self.df_jg.index:
+            if 종목코드 in self.dict_jg.keys():
                 if 종목코드 not in self.dict_buy_num.keys():
                     self.dict_buy_num[종목코드] = self.indexn
                 매수틱번호 = self.dict_buy_num[종목코드]
-                포지션 = self.df_jg['포지션'][종목코드]
-                매입가 = self.df_jg['매입가'][종목코드]
-                보유수량 = self.df_jg['보유수량'][종목코드]
-                매입금액 = self.df_jg['매입금액'][종목코드]
+                포지션 = self.dict_jg[종목코드]['포지션']
+                매입가 = self.dict_jg[종목코드]['매입가']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
+                매입금액 = self.dict_jg[종목코드]['매입금액']
                 평가금액 = 매입금액 + (현재가 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
-                분할매수횟수 = int(self.df_jg['분할매수횟수'][종목코드])
-                분할매도횟수 = int(self.df_jg['분할매도횟수'][종목코드])
+                분할매수횟수 = self.dict_jg[종목코드]['분할매수횟수']
+                분할매도횟수 = self.dict_jg[종목코드]['분할매도횟수']
                 if 포지션 == 'LONG':
                     _, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                 else:
                     _, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                매수시간 = dt_ymdhms(self.df_jg['매수시간'][종목코드])
+                매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
                 보유시간 = (now_cme() - 매수시간).total_seconds()
                 if 종목코드 not in self.dict_hilo.keys():
                     self.dict_hilo[종목코드] = [수익률, 수익률]
@@ -574,7 +573,18 @@ class FutureStrategyTick:
                         self.Sell(종목코드, 종목명, SELL_LONG, 현재가, 매도호가1, 매수호가1, 매도수량, 강제청산)
 
         if 관심종목:
-            self.df_gj.loc[종목코드] = 종목명, 등락율, 고저평균대비등락율, 초당거래대금, 초당거래대금평균_, 당일거래대금, 체결강도, 체결강도평균_, 최고체결강도_
+            # ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
+            self.dict_gj[종목코드] = {
+                '종목명': 종목명,
+                'per': 등락율,
+                'hlp': 고저평균대비등락율,
+                'sm': 초당거래대금,
+                'sma': 초당거래대금평균_,
+                'dm': 당일거래대금,
+                'ch': 체결강도,
+                'cha': 체결강도평균_,
+                'chh': 최고체결강도_
+            }
 
         if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
             self.kwzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드])))
@@ -694,11 +704,14 @@ class FutureStrategyTick:
                 self.straderQ.put((구분, 종목코드, 종목명, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
     def PutGsjmAndDeleteHilo(self):
-        if len(self.df_gj) > 0:
-            self.kwzservQ.put(('window', (ui_num[f'S관심종목'], self.df_gj)))
-        if len(self.dict_hilo) > 0:
+        if self.dict_gj:
+            sorted_items = sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True)
+            self.dict_gj = {k: v for k, v in sorted_items}
+            df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
+            self.kwzservQ.put(('window', (ui_num[f'S관심종목'], df_gj)))
+        if self.dict_hilo:
             for code in list(self.dict_hilo.keys()):
-                if code not in self.df_jg.index:
+                if code not in self.dict_jg.keys():
                     del self.dict_hilo[code]
 
     def SaveData(self):

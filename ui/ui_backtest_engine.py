@@ -1,6 +1,5 @@
 import os
 import sqlite3
-import operator
 import pandas as pd
 from multiprocessing import Process, Queue
 from backtester.back_code_test import BackCodeTest
@@ -272,7 +271,7 @@ def start_backengine(ui, gubun):
     add_count = 0
     multi_num = 0
     reverse = False
-    sort_lendf = sorted(dict_lendf.items(), key=operator.itemgetter(1), reverse=True)
+    sort_lendf = sorted(dict_lendf.items(), key=lambda x: x[1], reverse=True)
     for code, lendf in sort_lendf:
         data_lists[multi_num].append(code)
         total_list[multi_num] += lendf

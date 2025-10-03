@@ -8,7 +8,7 @@ from traceback import print_exc
 from matplotlib import font_manager
 from matplotlib import pyplot as plt
 from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms
-from utility.setting import ui_num, DICT_SET, DB_TRADELIST, DB_SETTING, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
+from utility.setting import ui_num, DICT_SET, DB_TRADELIST, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_STRATEGY, DB_CODE_INFO, DB_FUTURE_BACK_MIN, dgree, \
     DB_FUTURE_BACK_TICK
 

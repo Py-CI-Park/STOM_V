@@ -1,8 +1,9 @@
+from traceback import print_exc
+
 import zmq
 import time
 import sqlite3
 import pyupbit
-import operator
 import numpy as np
 import pandas as pd
 from threading import Thread
@@ -105,8 +106,8 @@ class UpbitReceiverTick:
                         tbids     = data['acc_bid_volume']
                         tasks     = data['acc_ask_volume']
                         dm        = data['acc_trade_price']
-                    except Exception as e:
-                        self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - 웹소켓 ticker {e}'))
+                    except:
+                        pass
                     else:
                         self.UpdateTickData(code, c, o, h, low, per, dm, tbids, tasks, dt)
                 elif data['type'] == 'orderbook':
@@ -134,8 +135,8 @@ class UpbitReceiverTick:
                             data[0]['bid_size'], data[1]['bid_size'], data[2]['bid_size'], data[3]['bid_size'], data[4]['bid_size'],
                             data[5]['bid_size'], data[6]['bid_size'], data[7]['bid_size'], data[8]['bid_size'], data[9]['bid_size']
                         )
-                    except Exception as e:
-                        self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - 웹소켓 orderbook {e}'))
+                    except:
+                        pass
                     else:
                         self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, curr_time)
             elif data == '프로세스종료':
@@ -171,7 +172,7 @@ class UpbitReceiverTick:
                 self.dict_daym[code] = df['value'].iloc[-1]
             print(f'분봉 데이터 조회 중 ... [{i+1}/{last}][{code}]')
 
-        self.list_gsjm = [x for x, y in sorted(self.dict_daym.items(), key=operator.itemgetter(1), reverse=True)[:10]]
+        self.list_gsjm = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
         data = tuple(self.list_gsjm)
         self.cstgQ.put(('관심목록', data))
         if self.dict_set['리시버공유'] == 1:
@@ -311,8 +312,8 @@ class UpbitReceiverTick:
             self.recvservQ.put(('focuscodes', ('관심목록', data)))
 
     def MoneyTopSearch(self):
-        if len(self.dict_daym) > 0:
-            list_mtop = [x for x, y in sorted(self.dict_daym.items(), key=operator.itemgetter(1), reverse=True)[:10]]
+        if self.dict_daym:
+            list_mtop = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
             insert_set = set(list_mtop) - set(self.list_gsjm)
             delete_set = set(self.list_gsjm) - set(list_mtop)
             if len(insert_set) > 0:
@@ -353,7 +354,7 @@ class UpbitReceiverTick:
 
     def SaveData(self):
         codes = []
-        if len(self.dict_mtop) > 0:
+        if self.dict_mtop:
             codes = list(set(';'.join(list(self.dict_mtop.values())).split(';')))
             con = sqlite3.connect(DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN)
             last_index = 0

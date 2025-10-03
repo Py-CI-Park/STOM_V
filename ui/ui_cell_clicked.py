@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 from PyQt5.QtCore import QDate, QUrl
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import columns_jg, columns_jgf, DB_TRADELIST, ui_num, DB_STRATEGY
+from utility.setting import columns_jg, columns_jgf, columns_jgcf, DB_TRADELIST, ui_num, DB_STRATEGY
 from utility.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme
 
 
@@ -50,7 +50,7 @@ def cell_clicked_03(ui, row):
     if item is None:
         return
     code    = item.text()
-    columns = columns_jg if 'KRW' in code else columns_jgf
+    columns = columns_jg if 'KRW' in code else columns_jgcf
     oc      = comma2float(ui.cjg_tableWidgettt.item(row, columns.index('보유수량')).text())
     c       = comma2float(ui.cjg_tableWidgettt.item(row, columns.index('현재가')).text())
     buttonReply = QMessageBox.question(

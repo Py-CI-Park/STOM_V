@@ -1,7 +1,6 @@
 import math
 import random
 import pyupbit
-import operator
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -369,8 +368,8 @@ def SendTextAndStd(result, dict_train, dict_valid=None, exponential=False):
 
     stdp_ = 0
     if dict_valid is not None:
-        tuple_train = sorted(dict_train.items(), key=operator.itemgetter(0))
-        tuple_valid = sorted(dict_valid.items(), key=operator.itemgetter(0))
+        tuple_train = sorted(dict_train.items(), key=lambda x: x[0])
+        tuple_valid = sorted(dict_valid.items(), key=lambda x: x[0])
         train_text = []
         valid_text = []
         train_data = []

@@ -4,7 +4,7 @@ import pyupbit
 import sqlite3
 import pandas as pd
 from PyQt5.QtCore import QTimer
-from utility.setting import columns_cj, columns_tj, columns_jg, columns_td, columns_tt, ui_num, DB_TRADELIST, DICT_SET
+from utility.setting import columns_cj, columns_td, ui_num, DB_TRADELIST, DICT_SET, columns_jg
 from utility.static import now, timedelta_sec, GetUpbitHogaunit, GetUpbitPgSgSp, now_utc, str_ymdhmsf, str_hmsf, \
     threading_timer, error_decorator, str_hms, str_ymd
 
@@ -31,11 +31,11 @@ class UpbitTrader:
         self.dict_order_cc    = {}
         self.dict_order       = {'매수': {}, '매도': {}, '매수취소': {}, '매도취소': {}}
 
-        self.df_cj = pd.DataFrame(columns=columns_cj)
-        self.df_jg = pd.DataFrame(columns=columns_jg)
-        self.df_tj = pd.DataFrame(columns=columns_tj)
-        self.df_td = pd.DataFrame(columns=columns_td)
-        self.df_tt = pd.DataFrame(columns=columns_tt)
+        self.dict_cj = {}  # 체결목록
+        self.dict_jg = {}  # 잔고목록
+        self.dict_tj = {}  # 잔고평가
+        self.dict_td = {}  # 거래목록
+        self.dict_tt = {}  # 평가손익
 
         self.str_today = str_ymd(now_utc())
 
@@ -78,14 +78,18 @@ class UpbitTrader:
 
     def LoadDatabase(self):
         con = sqlite3.connect(DB_TRADELIST)
-        self.df_cj = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
-        self.df_td = pd.read_sql(f"SELECT * FROM c_tradelist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
-        self.df_jg = pd.read_sql(f'SELECT * FROM c_jangolist', con).set_index('index')
-        con.close()
+        df_cj = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_td = pd.read_sql(f"SELECT * FROM c_tradelist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        self.dict_cj = df_cj.to_dict('index')
+        self.dict_td = df_td.to_dict('index')
 
-        if len(self.df_cj) > 0: self.windowQ.put((ui_num['C체결목록'], self.df_cj[::-1]))
-        if len(self.df_td) > 0: self.windowQ.put((ui_num['C거래목록'], self.df_td[::-1]))
-        if len(self.df_jg) > 0: self.creceivQ.put(('잔고목록', tuple(self.df_jg.index)))
+        if len(df_cj) > 0: self.windowQ.put((ui_num['C체결목록'], df_cj[::-1]))
+        if len(df_td) > 0: self.windowQ.put((ui_num['C거래목록'], df_td[::-1]))
+        if self.dict_set['코인모의투자']:
+            df_jg = pd.read_sql(f'SELECT * FROM c_jangolist', con).set_index('index')
+            self.dict_jg = df_jg.to_dict('index')
+            if len(df_jg) > 0: self.creceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
+        con.close()
 
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
 
@@ -94,7 +98,6 @@ class UpbitTrader:
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 주문 및 체결확인용 업비트 객체 생성 완료'))
 
     def GetBalances(self):
-        cbg = self.df_jg['매입금액'].sum()
         if self.dict_set['코인모의투자']:
             con = sqlite3.connect(DB_TRADELIST)
             df = pd.read_sql('SELECT * FROM c_tradelist', con)
@@ -108,12 +111,12 @@ class UpbitTrader:
             else:
                 chujeonjasan = 0
 
-        self.dict_intg['예수금'] = int(chujeonjasan - cbg)
-        self.dict_intg['추정예수금'] = self.dict_intg['예수금']
+        총매입금액 = sum([v['매입금액'] for k, v in self.dict_jg.items()]) if self.dict_jg else 0
+        self.dict_intg['예수금'] = int(chujeonjasan - 총매입금액)
+        self.dict_intg['추정예수금'] = int(chujeonjasan - 총매입금액)
         self.dict_intg['추정예탁자산'] = chujeonjasan
 
-        if len(self.df_td) > 0:
-            self.UpdateTotaltradelist(first=True)
+        if self.dict_td: self.UpdateTotaltradelist(first=True)
 
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 예수금 조회 완료'))
 
@@ -143,7 +146,8 @@ class UpbitTrader:
                 self.dict_time['잔고갱신및주문취소확인'] = timedelta_sec(1)
 
             if curr_time > self.dict_time['잔고전송'] and not self.dict_bool['프로세스종료']:
-                self.cstgQ.put(('잔고목록', self.df_jg))
+                df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+                self.cstgQ.put(('잔고목록', df_jg))
                 self.dict_time['잔고전송'] = timedelta_sec(0.5)
 
             if self.dict_set['코인전략종료시간'] < inthmsutc < self.dict_set['코인전략종료시간'] + 10 and not self.dict_bool['코인잔고청산']:
@@ -179,7 +183,7 @@ class UpbitTrader:
         else:
             주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 수동주문, 수동주문유형 = data
 
-        잔고없음 = 종목코드 not in self.df_jg.index
+        잔고없음 = 종목코드 not in self.dict_jg.keys()
         매수주문중 = 종목코드 in self.dict_order['매수'].keys()
         매도주문중 = 종목코드 in self.dict_order['매도'].keys()
 
@@ -191,17 +195,19 @@ class UpbitTrader:
             elif 매도주문중: 주문취소 = True
         elif 주문구분 == '매수':
             inthmsutc = int(str_hms(now_utc()))
-            if self.dict_set['코인매수금지거래횟수'] and self.dict_set['코인매수금지거래횟수값'] <= len(self.df_td[self.df_td['종목명'] == 종목코드].drop_duplicates('체결시간')):
+            거래횟수 = len(set([v['체결시간'] for k, v in self.dict_td.items() if v['종목명'] == 종목코드]))
+            손절횟수 = len(set([v['체결시간'] for k, v in self.dict_td.items() if v['종목명'] == 종목코드 and v['수익률'] < 0]))
+            if self.dict_set['코인매수금지거래횟수'] and self.dict_set['코인매수금지거래횟수값'] <= 거래횟수:
                 주문취소 = True
-            elif self.dict_set['코인매수금지손절횟수'] and self.dict_set['코인매수금지손절횟수값'] <= len(self.df_td[(self.df_td['종목명'] == 종목코드) & (self.df_td['수익률'] < 0)].drop_duplicates('체결시간')):
+            elif self.dict_set['코인매수금지손절횟수'] and self.dict_set['코인매수금지손절횟수값'] <= 손절횟수:
                 주문취소 = True
-            elif 잔고없음 and inthmsutc < self.dict_set['코인전략종료시간'] and len(self.df_jg) >= self.dict_set['코인최대매수종목수']:
+            elif 잔고없음 and inthmsutc < self.dict_set['코인전략종료시간'] and len(self.dict_jg) >= self.dict_set['코인최대매수종목수']:
                 주문취소 = True
             elif self.dict_set['코인매수금지간격'] and 현재시간 < self.dict_info[종목코드]['최종거래시간']:
                 주문취소 = True
             elif self.dict_set['코인매수금지손절간격'] and 현재시간 < self.dict_info[종목코드]['손절거래시간']:
                 주문취소 = True
-            elif not 잔고없음 and self.df_jg['분할매수횟수'][종목코드] >= self.dict_set['코인매수분할횟수']:
+            elif not 잔고없음 and self.dict_jg[종목코드]['분할매수횟수'] >= self.dict_set['코인매수분할횟수']:
                 주문취소 = True
             elif self.dict_intg['추정예수금'] < 주문수량 * 주문가격:
                 if 현재시간 > self.dict_info[종목코드]['시드부족시간']:
@@ -380,12 +386,17 @@ class UpbitTrader:
         종목코드, 현재가 = data
         self.dict_curc[종목코드] = 현재가
         try:
-            if 현재가 != self.df_jg['현재가'][종목코드]:
-                매입금액 = self.df_jg['매입금액'][종목코드]
-                보유수량 = self.df_jg['보유수량'][종목코드]
+            # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+            if 현재가 != self.dict_jg[종목코드]['현재가']:
+                매입금액 = self.dict_jg[종목코드]['매입금액']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
                 평가금액, 평가손익, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
-                columns = ['현재가', '수익률', '평가손익', '평가금액']
-                self.df_jg.loc[종목코드, columns] = 현재가, 수익률, 평가손익, 평가금액
+                self.dict_jg[종목코드].update({
+                    '현재가': 현재가,
+                    '수익률': 수익률,
+                    '평가손익': 평가손익,
+                    '평가금액': 평가금액
+                })
         except:
             pass
 
@@ -421,19 +432,20 @@ class UpbitTrader:
                 self.ModifyOrder(code, gubun)
 
     def CancelOrder(self, 종목코드, 주문구분):
-        df = self.GetMichegeolDF(종목코드, 주문구분)
-        if len(df) > 0:
-            미체결수량 = df['미체결수량'].iloc[-1]
+        dict_cj = self.GetCodeChejan(종목코드, 주문구분)
+        last_key = list(dict_cj.keys())[-1]
+        if len(dict_cj) > 0:
+            미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
-                주문번호, 주문가격 = df['주문번호'].iloc[-1], df['주문가격'].iloc[-1]
+                주문번호, 주문가격 = dict_cj[last_key]['주문번호'], dict_cj[last_key]['주문가격']
                 self.CreateOrder(f'{주문구분}취소', 종목코드, 주문가격, 미체결수량, 주문번호, now(), False, 0, None)
 
     def ModifyOrder(self, 종목코드, 주문구분):
-        df = self.GetMichegeolDF(종목코드, 주문구분)
-        if len(df) > 0:
-            미체결수량 = df['미체결수량'].iloc[-1]
+        dict_cj = self.GetCodeChejan(종목코드, 주문구분)
+        last_key = list(dict_cj.keys())[-1]
+        if len(dict_cj) > 0:
+            미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
-                주문번호, 주문가격 = df['주문번호'].iloc[-1], df['주문가격'].iloc[-1]
                 if 주문구분 == '매수':
                     정정가격 = self.dict_curc[종목코드] - self.dict_order[주문구분][종목코드][4] * self.dict_set['코인매수정정호가']
                 else:
@@ -441,16 +453,20 @@ class UpbitTrader:
 
                 현재시간 = now()
                 정정횟수 = self.dict_order[주문구분][종목코드][2] + 1
+                주문번호, 주문가격 = dict_cj[last_key]['주문번호'], dict_cj[last_key]['주문가격']
                 self.CreateOrder(f'{주문구분}취소', 종목코드, 주문가격, 미체결수량, 주문번호, 현재시간, False, 0, None)
                 self.CreateOrder(주문구분, 종목코드, 정정가격, 미체결수량, '', 현재시간, False, 정정횟수, None)
 
     def UpdateString(self, data):
         if data == '체결목록':
-            self.teleQ.put(self.df_cj) if len(self.df_cj) > 0 else self.teleQ.put('현재는 코인체결목록이 없습니다.')
+            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
+            self.teleQ.put(df_cj) if len(df_cj) > 0 else self.teleQ.put('현재는 코인체결목록이 없습니다.')
         elif data == '거래목록':
-            self.teleQ.put(self.df_td) if len(self.df_td) > 0 else self.teleQ.put('현재는 코인거래목록이 없습니다.')
+            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+            self.teleQ.put(df_td) if len(df_td) > 0 else self.teleQ.put('현재는 코인거래목록이 없습니다.')
         elif data == '잔고평가':
-            self.teleQ.put(('잔고목록', self.df_jg)) if len(self.df_jg) > 0 else self.teleQ.put('현재는 코인잔고목록이 없습니다.')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            self.teleQ.put(('잔고목록', df_jg)) if len(df_jg) > 0 else self.teleQ.put('현재는 코인잔고목록이 없습니다.')
         elif data == '잔고청산':
             self.JangoCheongsan('수동')
         elif data == '프로세스종료':
@@ -461,33 +477,31 @@ class UpbitTrader:
     def JangoCheongsan(self, gubun):
         self.dict_bool['코인잔고청산'] = True
 
-        if len(self.dict_order) > 0:
-            for code in list(self.dict_order.keys()):
-                self.CancelOrder(code, '매수')
+        for 주문구분 in self.dict_order.keys():
+            if 주문구분 in ('매수', '매도'):
+                for 종목코드 in self.dict_order[주문구분].keys():
+                    self.CancelOrder(종목코드, 주문구분)
 
-        if len(self.dict_order) > 0:
-            for code in list(self.dict_order.keys()):
-                self.CancelOrder(code, '매도')
-
-        if len(self.df_jg) > 0 and (gubun == '수동' or self.dict_set['코인잔고청산']):
+        if self.dict_jg and (gubun == '수동' or self.dict_set['코인잔고청산']):
             if gubun == '수동':
                 self.teleQ.put('tele', '코인 잔고청산 주문을 전송합니다.')
-            for code in self.df_jg.index:
-                c, oc = self.df_jg['현재가'][code], self.df_jg['보유수량'][code]
+            for 종목코드 in self.dict_jg.keys():
+                현재가 = self.dict_jg[종목코드]['현재가']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
                 if self.dict_set['코인모의투자']:
-                    self.UpdateChejanData('매도', code, oc, oc, 0, c, c, '')
+                    self.UpdateChejanData('매도', 종목코드, 보유수량, 보유수량, 0, 현재가, 현재가, '')
                 else:
-                    ret = self.upbit.sell_market_order(code, oc)
+                    ret = self.upbit.sell_market_order(종목코드, 보유수량)
                     if ret is not None:
                         if self.CheckError(ret):
-                            self.dict_order[gubun][code] = [ret['uuid'], now()]
+                            self.dict_order[gubun][종목코드] = [ret['uuid'], now()]
                     else:
-                        self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {code} | {c} | {oc} | 매도'))
+                        self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {종목코드} | {현재가} | {보유수량} | 매도'))
                     time.sleep(0.3)
             if self.dict_set['코인알림소리']:
                 self.soundQ.put(f'코인 {gubun} 전략 잔고청산 주문을 전송하였습니다.')
             self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 실행 알림 - {gubun} 전략 잔고청산 주문 완료'))
-        elif self.df_jg.empty and gubun == '수동':
+        elif not self.dict_jg and gubun == '수동':
             self.teleQ.put('tele', '현재는 코인 보유종목이 없습니다.')
 
     def SysExit(self):
@@ -501,10 +515,10 @@ class UpbitTrader:
         df = pd.read_sql(f"SELECT * FROM c_totaltradelist WHERE `index` = '{self.str_today}'", con)
         con.close()
         if len(df) == 0:
-            df = self.df_tt[['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']]
+            df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
+            df.drop(columns=['거래횟수'], inplace=True)
             self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
-            if self.dict_set['코인알림소리']:
-                self.soundQ.put('일별실현손익를 저장하였습니다.')
+            if self.dict_set['코인알림소리']: self.soundQ.put('일별실현손익를 저장하였습니다.')
             self.soundQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료'))
 
     @error_decorator
@@ -513,39 +527,66 @@ class UpbitTrader:
 
         if 주문구분 in ('매수', '매도'):
             if 주문구분 == '매수':
-                if 종목코드 in self.df_jg.index:
-                    보유수량 = round(self.df_jg['보유수량'][종목코드] + 체결수량, 8)
-                    매입금액 = int(self.df_jg['매입금액'][종목코드] + 체결수량 * 체결가격)
+                # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                if 종목코드 in self.dict_jg.keys():
+                    보유수량 = round(self.dict_jg[종목코드]['보유수량'] + 체결수량, 8)
+                    매입금액 = int(self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격)
                     매입가 = round(매입금액 / 보유수량, 4)
                     평가금액, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 체결가격)
-                    columns = ['매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '매수시간']
-                    self.df_jg.loc[종목코드, columns] = 매입가, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량, index[:14]
+                    self.dict_jg[종목코드].update({
+                        '매입가': 매입가,
+                        '현재가': 체결가격,
+                        '수익률': 수익률,
+                        '평가손익': 수익금,
+                        '매입금액': 매입금액,
+                        '평가금액': 평가금액,
+                        '보유수량': 보유수량,
+                        '매수시간': index[:14]
+                    })
                 else:
-                    보유수량 = 체결수량
                     매입금액 = int(체결수량 * 체결가격)
-                    매입가 = 체결가격
-                    평가금액, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 체결가격)
-                    self.df_jg.loc[종목코드] = 종목코드, 매입가, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량, 0, 0, index[:14]
+                    평가금액, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 체결수량 * 체결가격)
+                    self.dict_jg[종목코드] = {
+                        '종목명': 종목코드,
+                        '매입가': 체결가격,
+                        '현재가': 체결가격,
+                        '수익률': 수익률,
+                        '평가손익': 수익금,
+                        '매입금액': 매입금액,
+                        '평가금액': 평가금액,
+                        '보유수량': 체결수량,
+                        '분할매수횟수': 0,
+                        '분할매도횟수': 0,
+                        '매수시간': index[:14]
+                    }
 
                 if 미체결수량 == 0:
-                    self.df_jg.loc[종목코드, '분할매수횟수'] = self.df_jg['분할매수횟수'][종목코드] + 1
+                    self.dict_jg[종목코드]['분할매수횟수'] += 1
                     if 종목코드 in self.dict_order[주문구분].keys():
                         del self.dict_order[주문구분][종목코드]
 
             else:
-                보유수량 = round(self.df_jg['보유수량'][종목코드] - 체결수량, 8)
-                매입가 = self.df_jg['매입가'][종목코드]
+                if 종목코드 not in self.dict_jg.keys(): return
+                매입가 = self.dict_jg[종목코드]['매입가']
+                보유수량 = round(self.dict_jg[종목코드]['보유수량'] - 체결수량, 8)
                 if 보유수량 != 0:
                     매입금액 = int(매입가 * 보유수량)
                     평가금액, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 체결가격)
-                    columns = ['현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
-                    self.df_jg.loc[종목코드, columns] = 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량
+                    # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                    self.dict_jg[종목코드].update({
+                        '현재가': 체결가격,
+                        '수익률': 수익률,
+                        '평가손익': 수익금,
+                        '매입금액': 매입금액,
+                        '평가금액': 평가금액,
+                        '보유수량': 보유수량
+                    })
                 else:
-                    self.df_jg.drop(index=종목코드, inplace=True)
+                    del self.dict_jg[종목코드]
 
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
-                        self.df_jg.loc[종목코드, '분할매도횟수'] = self.df_jg['분할매도횟수'][종목코드] + 1
+                        self.dict_jg[종목코드]['분할매도횟수'] += 1
                     if 종목코드 in self.dict_order[주문구분].keys():
                         del self.dict_order[주문구분][종목코드]
 
@@ -554,10 +595,9 @@ class UpbitTrader:
                 if -100 < 수익률 < 100: self.UpdateTradelist(index, 종목코드, 매입금액, 평가금액, 체결수량, 수익률, 수익금, index[:14])
                 if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['코인매수금지손절간격초'])
 
-            columns = ['평가손익', '매입금액', '평가금액', '분할매수횟수', '분할매도횟수']
-            self.df_jg[columns] = self.df_jg[columns].astype(int)
-            self.df_jg.sort_values(by=['매입금액'], ascending=False, inplace=True)
-            self.cstgQ.put(('잔고목록', self.df_jg))
+            sorted_items = sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True)
+            self.dict_jg = {k: v for k, v in sorted_items}
+            self.cstgQ.put(('잔고목록', self.dict_jg))
 
             if 미체결수량 == 0: self.cstgQ.put((주문구분 + '완료', 종목코드))
             self.UpdateChegeollist(index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, index[:14], 주문가격, 주문번호)
@@ -570,7 +610,8 @@ class UpbitTrader:
                 self.dict_intg['예수금'] += 매입금액 + 수익금
                 self.dict_intg['추정예수금'] += 매입금액 + 수익금
 
-            self.queryQ.put(('거래디비', self.df_jg, 'c_jangolist', 'replace'))
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            self.queryQ.put(('거래디비', df_jg, 'c_jangolist', 'replace'))
             if self.dict_set['코인알림소리']: self.soundQ.put(f"{종목코드} {주문구분}하였습니다.")
             self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}체결] {종목코드} | {체결가격} | {체결수량}'))
 
@@ -591,27 +632,47 @@ class UpbitTrader:
             if self.dict_set['코인알림소리']: self.soundQ.put(f"{종목코드} {주문구분}하였습니다.")
             self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {주문가격} | {주문수량}'))
 
-        self.creceivQ.put(('잔고목록', tuple(self.df_jg.index)))
+        self.creceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
 
-    def UpdateTradelist(self, index, 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
-        self.df_td.loc[index] = 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간
-        self.windowQ.put((ui_num['C거래목록'], self.df_td[::-1]))
-        df = pd.DataFrame([[종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_td, index=[index])
+    def UpdateTradelist(self, index, 종목코드, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
+        # ['종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금', '체결시간']
+        self.dict_td[index] = {
+            '종목명': 종목코드,
+            '매수금액': 매입금액,
+            '매도금액': 평가금액,
+            '주문수량': 체결수량,
+            '수익률': 수익률,
+            '수익금': 수익금,
+            '체결시간': 주문시간
+        }
+        df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+        self.windowQ.put((ui_num['C거래목록'], df_td[::-1]))
+        df = pd.DataFrame([[종목코드, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_td, index=[index])
         self.queryQ.put(('거래디비', df, 'c_tradelist', 'append'))
         self.UpdateTotaltradelist()
 
     def UpdateTotaltradelist(self, first=False):
-        거래횟수 = len(self.df_td.drop_duplicates(['종목명', '체결시간']))
-        총매수금액 = self.df_td['매수금액'].sum()
-        총매도금액 = self.df_td['매도금액'].sum()
-        총수익금액 = self.df_td[self.df_td['수익금'] > 0]['수익금'].sum()
-        총손실금액 = self.df_td[self.df_td['수익금'] < 0]['수익금'].sum()
-        수익금합계 = self.df_td['수익금'].sum()
+        거래횟수 = len(set([(v['종목명'], v['체결시간']) for k, v in self.dict_td.items()]))
+        총매수금액 = sum([v['매수금액'] for k, v in self.dict_td.items()])
+        총매도금액 = sum([v['매도금액'] for k, v in self.dict_td.items()])
+        총수익금액 = sum([v['수익금'] for k, v in self.dict_td.items() if v['수익금'] >= 0])
+        총손실금액 = sum([v['수익금'] for k, v in self.dict_td.items() if v['수익금'] < 0])
+        수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
-        self.df_tt.loc[self.str_today] = 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계
-        self.windowQ.put((ui_num['C실현손익'], self.df_tt))
+        # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+        self.dict_tt[self.str_today] = {
+            '거래횟수': 거래횟수,
+            '총매수금액': 총매수금액,
+            '총매도금액': 총매도금액,
+            '총수익금액': 총수익금액,
+            '총손실금액': 총손실금액,
+            '수익률': 수익률,
+            '수익금합계': 수익금합계
+        }
+        df_tt = pd.DataFrame.from_dict(self.dict_tt, orient='index')
+        self.windowQ.put((ui_num['C실현손익'], df_tt))
 
         if not first:
             self.teleQ.put(f'손익 알림 - 총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}')
@@ -622,25 +683,52 @@ class UpbitTrader:
             self.liveQ.put(('코인', data_list))
 
     def UpdateChegeollist(self, index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호):
+        # ['종목명', '주문구분', '주문수량', '체결수량', '미체결수량', '체결가', '체결시간', '주문가격', '주문번호']
         self.dict_info[종목코드]['최종거래시간'] = timedelta_sec(self.dict_set['코인매수금지간격초'])
-        self.df_cj.loc[index] = 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호
-        self.windowQ.put((ui_num['C체결목록'], self.df_cj[::-1]))
+        self.dict_cj[index] = {
+            '종목명': 종목코드,
+            '주문구분': 주문구분,
+            '주문수량': 주문수량,
+            '체결수량': 체결수량,
+            '미체결수량': 미체결수량,
+            '체결가': 체결가격,
+            '체결시간': 체결시간,
+            '주문가격': 주문가격,
+            '주문번호': 주문번호
+        }
+        sorted_items = sorted(self.dict_cj.items(), key=lambda x: x[0])
+        self.dict_cj = {k: v for k, v in sorted_items}
+        df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
+        self.windowQ.put((ui_num['C체결목록'], df_cj[::-1]))
         df = pd.DataFrame([[종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
         self.queryQ.put(('거래디비', df, 'c_chegeollist', 'append'))
 
     def UpdateTotaljango(self):
-        if len(self.df_jg) > 0:
-            총평가손익 = self.df_jg['평가손익'].sum()
-            총매입금액 = self.df_jg['매입금액'].sum()
-            총평가금액 = self.df_jg['평가금액'].sum()
-            잔고수량 = len(self.df_jg)
+        # ['추정예탁자산', '추정예수금', '보유종목수', '수익률', '총평가손익', '총매입금액', '총평가금액']
+        if self.dict_jg:
+            총평가손익 = sum([v['평가손익'] for k, v in self.dict_jg.items()])
+            총매입금액 = sum([v['매입금액'] for k, v in self.dict_jg.items()])
+            총평가금액 = sum([v['평가금액'] for k, v in self.dict_jg.items()])
             총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
-            self.dict_intg['추정예탁자산'] = self.dict_intg['예수금'] + 총평가금액
-            self.df_tj = pd.DataFrame([[self.dict_intg['추정예탁자산'], self.dict_intg['예수금'], 잔고수량, 총수익률, 총평가손익, 총매입금액, 총평가금액]], columns=columns_tj, index=[self.str_today])
+            잔고수량 = len(self.dict_jg)
+            추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
         else:
-            self.df_tj = pd.DataFrame([[self.dict_intg['추정예탁자산'], self.dict_intg['예수금'], 0, 0.0, 0, 0, 0]], columns=columns_tj, index=[self.str_today])
+            총평가손익, 총매입금액, 총평가금액, 총수익률, 잔고수량 = 0, 0, 0, 0., 0
+            추정예탁자산 = self.dict_intg['예수금']
 
-        총평가손익 = self.df_jg['평가손익'].sum() + self.df_td['수익금'].sum()
+        self.dict_tj[self.str_today] = {
+            '추정예탁자산': 추정예탁자산,
+            '추정예수금': self.dict_intg['예수금'],
+            '보유종목수': 잔고수량,
+            '수익률': 총수익률,
+            '총평가손익': 총평가손익,
+            '총매입금액': 총매입금액,
+            '총평가금액': 총평가금액
+        }
+
+        잔고평가손익합계 = sum([v['평가손익'] for k, v in self.dict_jg.items()])
+        거래수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
+        총평가손익 = 잔고평가손익합계 + 거래수익금합계
         if self.dict_set['코인손실중지']:
             기준손실금 = self.dict_intg['추정예탁자산'] * self.dict_set['코인손실중지수익률'] / 100
             if 기준손실금 < -총평가손익: self.StrategyStop()
@@ -657,8 +745,13 @@ class UpbitTrader:
             self.dict_intg['종목당투자금'] = 종목당투자금
             self.cstgQ.put(('종목당투자금', self.dict_intg['종목당투자금']))
 
-        self.windowQ.put((ui_num['C잔고목록'], self.df_jg))
-        self.windowQ.put((ui_num['C잔고평가'], self.df_tj))
+        if self.dict_jg:
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+        else:
+            df_jg = pd.DataFrame(columns=columns_jg)
+        df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
+        self.windowQ.put((ui_num['C잔고목록'], df_jg))
+        self.windowQ.put((ui_num['C잔고평가'], df_tj))
 
     def StrategyStop(self):
         self.cstgQ.put('매수전략중지')
@@ -677,12 +770,12 @@ class UpbitTrader:
     def GetOrderCodeList(self):
         return tuple(self.dict_order['매수'].keys()) + tuple(self.dict_order['매도'].keys())
 
-    def GetMichegeolDF(self, code, gubun):
-        return self.df_cj[(self.df_cj['종목명'] == code) & ((self.df_cj['주문구분'] == gubun) | (self.df_cj['주문구분'] == f'{gubun} 접수'))]
+    def GetCodeChejan(self, code, gubun):
+        return {k: v for k, v in self.dict_cj.items() if v['종목명'] == code and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun} 접수')}
 
     def GetIndex(self):
         index = str_ymdhmsf(now_utc())
-        if index in self.df_cj.index:
-            while index in self.df_cj.index:
+        if index in self.dict_cj.keys():
+            while index in self.dict_cj.keys():
                 index = str(int(index) + 1)
         return index

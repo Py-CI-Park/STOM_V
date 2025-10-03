@@ -3,7 +3,6 @@ import time
 import optuna
 import random
 import sqlite3
-import operator
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
@@ -733,7 +732,7 @@ class Optimize:
                     elif std == -2_000_000_000:
                         del_vars_list[vturn].append(curr_var)
 
-            list_turn_hvar = sorted(dict_turn_hvar.items(), key=operator.itemgetter(0))
+            list_turn_hvar = sorted(dict_turn_hvar.items(), key=lambda x: x[0])
             for vturn, high_var in list_turn_hvar:
                 if high_var != vars_[vturn][1]:
                     total_change += 1

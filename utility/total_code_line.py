@@ -1,6 +1,6 @@
 import os
 import glob
-import operator
+key=lambda x: x[0]
 
 ROOT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 extensions = ['*.py', '*.bat']
@@ -41,7 +41,7 @@ for file_name_with_path in files_grabbed:
     line_count_dict[file_name_with_path] = line_count
     total_line_count += line_count
     total_file_count += 1
-sorted_line_count = sorted(line_count_dict.items(), key=operator.itemgetter(1), reverse=True)
+sorted_line_count = sorted(line_count_dict.items(), key=lambda x: x[1], reverse=True)
 
 for file, count in sorted_line_count:
     print('{:>5} {}'.format(count, file))

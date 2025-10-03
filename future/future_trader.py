@@ -5,7 +5,7 @@ from future_kiwoom import *
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import pyqtSignal, QThread, QTimer
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from utility.setting import ui_num, columns_cj, columns_tj, columns_tt, DB_TRADELIST, DICT_SET, columns_tdf, columns_jgf
+from utility.setting import ui_num, columns_cj, DB_TRADELIST, DICT_SET, columns_tdf, columns_jgf
 from utility.static import now, timedelta_sec, qtest_qwait, GetFutureLongPgSgSp, GetFutureShortPgSgSp, str_ymd, \
     now_cme, error_decorator, str_hms_cme_from_str, opstarter_kill, str_ymdhms, str_hms, str_ymdhmsf, str_hmsf, dt_hms
 
@@ -42,11 +42,11 @@ class FutureTrader:
             self.pr = cProfile.Profile()
             self.pr.enable()
 
-        self.df_cj = pd.DataFrame(columns=columns_cj)
-        self.df_jg = pd.DataFrame(columns=columns_jgf)
-        self.df_tj = pd.DataFrame(columns=columns_tj)
-        self.df_td = pd.DataFrame(columns=columns_tdf)
-        self.df_tt = pd.DataFrame(columns=columns_tt)
+        self.dict_cj = {}  # 체결목록
+        self.dict_jg = {}  # 잔고목록
+        self.dict_tj = {}  # 잔고평가
+        self.dict_td = {}  # 거래목록
+        self.dict_tt = {}  # 평가손익
 
         self.dict_order  = {'BUY_LONG': {}, 'SELL_LONG': {}, 'SELL_SHORT': {}, 'BUY_SHORT': {}}
         self.dict_signal = {}
@@ -134,14 +134,17 @@ class FutureTrader:
 
     def LoadDatabase(self):
         con = sqlite3.connect(DB_TRADELIST)
-        self.df_cj = pd.read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{self.dict_strg['당일날짜']}%'", con).set_index('index')
-        self.df_td = pd.read_sql(f"SELECT * FROM f_tradelist WHERE 체결시간 LIKE '{self.dict_strg['당일날짜']}%'", con).set_index('index')
+        df_cj = pd.read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{self.dict_strg['당일날짜']}%'", con).set_index('index')
+        df_td = pd.read_sql(f"SELECT * FROM f_tradelist WHERE 체결시간 LIKE '{self.dict_strg['당일날짜']}%'", con).set_index('index')
+        self.dict_cj = df_cj.to_dict('index')
+        self.dict_td = df_td.to_dict('index')
 
-        if len(self.df_cj) > 0: self.kwzservQ.put(('window', (ui_num['S체결목록'], self.df_cj[::-1])))
-        if len(self.df_td) > 0: self.kwzservQ.put(('window', (ui_num['S거래목록'], self.df_td[::-1])))
+        if len(df_cj) > 0: self.kwzservQ.put(('window', (ui_num['S체결목록'], df_cj[::-1])))
+        if len(df_td) > 0: self.kwzservQ.put(('window', (ui_num['S거래목록'], df_td[::-1])))
         if self.dict_set['주식모의투자']:
-            self.df_jg = pd.read_sql('SELECT * FROM f_jangolist', con).set_index('index')
-            if len(self.df_jg) > 0: self.sreceivQ.put(('잔고목록', tuple(self.df_jg.index)))
+            df_jg = pd.read_sql(f'SELECT * FROM f_jangolist', con).set_index('index')
+            self.dict_jg = df_jg.to_dict('index')
+            if self.dict_jg: self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
         con.close()
 
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 정보 불러오기 완료')))
@@ -185,12 +188,12 @@ class FutureTrader:
         else:
             주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 수동주문, 수동주문유형 = data
 
-        잔고없음 = 종목코드 not in self.df_jg.index
+        잔고없음 = 종목코드 not in self.dict_jg.keys()
         롱매수주문중 = 종목코드 in self.dict_order['BUY_LONG'].keys()
         숏매수주문중 = 종목코드 in self.dict_order['SELL_SHORT'].keys()
         롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG'].keys()
         숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT'].keys()
-        포지션 = self.df_jg['포지션'][종목코드] if 종목코드 in self.df_jg.index else None
+        포지션 = self.dict_jg[종목코드]['포지션'] if 종목코드 in self.dict_jg.keys() else None
 
         주문번호 = ''
         주문취소 = False
@@ -200,17 +203,19 @@ class FutureTrader:
                 주문취소 = True
         elif 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
             inthms = int(str_hms(now_cme()))
-            if self.dict_set['주식매수금지거래횟수'] and self.dict_set['주식매수금지거래횟수값'] <= len(self.df_td[self.df_td['종목명'] == 종목명].drop_duplicates('체결시간')):
+            거래횟수 = len(set([v['체결시간'] for k, v in self.dict_td.items() if v['종목명'] == 종목명]))
+            손절횟수 = len(set([v['체결시간'] for k, v in self.dict_td.items() if v['종목명'] == 종목명 and v['수익률'] < 0]))
+            if self.dict_set['주식매수금지거래횟수'] and self.dict_set['주식매수금지거래횟수값'] <= 거래횟수:
                 주문취소 = True
-            elif self.dict_set['주식매수금지손절횟수'] and self.dict_set['주식매수금지손절횟수값'] <= len(self.df_td[(self.df_td['종목명'] == 종목명) & (self.df_td['수익률'] < 0)].drop_duplicates('체결시간')):
+            elif self.dict_set['주식매수금지손절횟수'] and self.dict_set['주식매수금지손절횟수값'] <= 손절횟수:
                 주문취소 = True
-            elif 잔고없음 and inthms < self.dict_set['주식전략종료시간'] and len(self.df_jg) >= self.dict_set['주식최대매수종목수']:
+            elif 잔고없음 and inthms < self.dict_set['주식전략종료시간'] and len(self.dict_jg) >= self.dict_set['주식최대매수종목수']:
                 주문취소 = True
             elif self.dict_set['주식매수금지간격'] and 현재시간 < self.dict_info[종목코드]['최종거래시간']:
                 주문취소 = True
             elif self.dict_set['주식매수금지손절간격'] and 현재시간 < self.dict_info[종목코드]['손절거래시간']:
                 주문취소 = True
-            elif not 잔고없음 and self.df_jg['분할매수횟수'][종목코드] >= self.dict_set['주식매수분할횟수']:
+            elif not 잔고없음 and self.dict_jg[종목코드]['분할매수횟수'] >= self.dict_set['주식매수분할횟수']:
                 주문취소 = True
             elif self.dict_intg['추정예수금'] < 주문수량 * self.dict_info[종목코드]['위탁증거금']:
                 if 현재시간 > self.dict_info[종목코드]['시드부족시간']:
@@ -323,18 +328,23 @@ class FutureTrader:
         종목코드, 현재가 = data
         self.dict_curc[종목코드] = 현재가
         try:
-            if 현재가 != self.df_jg['현재가'][종목코드]:
-                포지션 = self.df_jg['포지션'][종목코드]
-                매입가 = self.df_jg['매입가'][종목코드]
-                매입금액 = self.df_jg['매입금액'][종목코드]
-                보유수량 = self.df_jg['보유수량'][종목코드]
+            # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+            if 현재가 != self.dict_jg[종목코드]['현재가']:
+                포지션 = self.dict_jg[종목코드]['포지션']
+                매입가 = self.dict_jg[종목코드]['매입가']
+                매입금액 = self.dict_jg[종목코드]['매입금액']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
                 평가금액 = 매입금액 + (현재가 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
                 if 포지션 == 'LONG':
                     평가금액, 평가손익, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                 else:
                     평가금액, 평가손익, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                columns = ['현재가', '수익률', '평가손익', '평가금액']
-                self.df_jg.loc[종목코드, columns] = 현재가, 수익률, 평가손익, 평가금액
+                self.dict_jg[종목코드].update({
+                    '현재가': 현재가,
+                    '수익률': 수익률,
+                    '평가손익': 평가손익,
+                    '평가금액': 평가금액
+                })
         except:
             pass
 
@@ -370,19 +380,21 @@ class FutureTrader:
 
     def CancelOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
-        df = self.GetMichegeolDF(종목명, 주문구분)
-        if len(df) > 0:
-            미체결수량 = df['미체결수량'].iloc[-1]
+        dict_cj = self.GetNameChejan(종목명, 주문구분)
+        last_key = list(dict_cj.keys())[-1]
+        if len(dict_cj) > 0:
+            미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 현재시간 = now()
-                주문번호 = df['주문번호'].iloc[-1]
+                주문번호 = dict_cj[last_key]['주문번호']
                 self.CreateOrder(f'{주문구분}_CANCEL', 종목코드, 종목명, 0, 미체결수량, 주문번호, 현재시간, False, 0, None)
 
     def ModifyOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
-        df = self.GetMichegeolDF(종목명, 주문구분)
-        if len(df) > 0:
-            미체결수량 = df['미체결수량'].iloc[-1]
+        dict_cj = self.GetNameChejan(종목명, 주문구분)
+        last_key = list(dict_cj.keys())[-1]
+        if len(dict_cj) > 0:
+            미체결수량 = dict_cj[last_key]['미체결수량']
             if 미체결수량 > 0:
                 if 주문구분 == 'BUY_LONG':
                     정정가격 = self.dict_curc[종목코드] - self.dict_info[종목코드]['호가단위'] * self.dict_set['주식매수정정호가']
@@ -395,16 +407,19 @@ class FutureTrader:
 
                 현재시간 = now()
                 정정횟수 = self.dict_order[주문구분][종목코드][1] + 1
-                주문번호 = df['주문번호'].iloc[-1]
+                주문번호 = dict_cj[last_key]['주문번호']
                 self.CreateOrder(f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 주문번호, 현재시간, False, 정정횟수, None)
 
     def UpdateString(self, data):
         if data == '체결목록':
-            self.kwzservQ.put(('tele', self.df_cj)) if len(self.df_cj) > 0 else self.kwzservQ.put(('tele', '현재는 체결목록이 없습니다.'))
+            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
+            self.kwzservQ.put(('tele', df_cj)) if len(df_cj) > 0 else self.kwzservQ.put(('tele', '현재는 체결목록이 없습니다.'))
         elif data == '거래목록':
-            self.kwzservQ.put(('tele', self.df_td)) if len(self.df_td) > 0 else self.kwzservQ.put(('tele', '현재는 거래목록이 없습니다.'))
+            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+            self.kwzservQ.put(('tele', df_td)) if len(df_td) > 0 else self.kwzservQ.put(('tele', '현재는 거래목록이 없습니다.'))
         elif data == '잔고평가':
-            self.kwzservQ.put(('tele', self.df_jg)) if len(self.df_jg) > 0 else self.kwzservQ.put(('tele', '현재는 잔고목록이 없습니다.'))
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            self.kwzservQ.put(('tele', df_jg)) if len(df_jg) > 0 else self.kwzservQ.put(('tele', '현재는 잔고목록이 없습니다.'))
         elif data == '잔고청산':
             self.JangoCheongsan('수동')
         elif data == '프로파일링결과':
@@ -421,14 +436,14 @@ class FutureTrader:
             for 종목코드 in self.dict_order[주문구분].keys():
                 self.CancelOrder(종목코드, 주문구분)
 
-        if len(self.df_jg) > 0 and (gubun == '수동' or self.dict_set['주식잔고청산']):
+        if self.dict_jg and (gubun == '수동' or self.dict_set['주식잔고청산']):
             if gubun == '수동':
                 self.kwzservQ.put(('tele', '해선 잔고청산 주문을 전송합니다.'))
-            for 종목코드 in self.df_jg.index:
-                포지션 = self.df_jg['포지션'][종목코드]
-                종목명 = self.df_jg['종목명'][종목코드]
-                현재가 = self.df_jg['현재가'][종목코드]
-                보유수량 = self.df_jg['보유수량'][종목코드]
+            for 종목코드 in self.dict_jg.keys():
+                포지션 = self.dict_jg[종목코드]['포지션']
+                종목명 = self.dict_jg[종목코드]['종목명']
+                현재가 = self.dict_jg[종목코드]['현재가']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
                 주문구분 = 'SELL_LONG' if 포지션 == 'LONG' else 'BUY_SHORT'
                 if self.dict_set['주식모의투자']:
                     self.dict_signal[종목코드] = 주문구분
@@ -439,7 +454,7 @@ class FutureTrader:
             if self.dict_set['주식알림소리']:
                 self.kwzservQ.put(('sound', '해선 잔고청산 주문을 전송하였습니다.'))
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 해선 잔고청산 주문 완료')))
-        elif self.df_jg.empty and gubun == '수동':
+        elif not self.dict_jg and gubun == '수동':
             self.kwzservQ.put(('tele', '현재는 해선 보유종목이 없습니다.'))
 
     def Scheduler(self):
@@ -475,27 +490,20 @@ class FutureTrader:
                 df['분할매도횟수'] = 0
                 df['매수시간'] = self.dict_strg['당일날짜'] + '093000'
                 df['종목명'] = df['종목코드'].apply(lambda x: self.dict_info[x]['종목명'])
-                self.df_jg = df.set_index('종목코드')
-                self.sreceivQ.put(('잔고목록', tuple(self.df_jg.index)))
+                df.set_index('index', inplace=True)
+                self.dict_jg = df.to_dict('index')
 
         self.dict_intg['추정예수금'] = self.dict_intg['예수금']
         self.dict_intg['예탁자산'] = self.dict_intg['예수금']
         self.dict_intg['추정예탁자산'] = self.dict_intg['예수금']
 
-        if len(self.df_jg) > 0:
-            for index in self.df_jg.index:
-                yesugm = self.df_jg['보유수량'][index] * self.dict_info[index]['위탁증거금']
+        if self.dict_jg:
+            for index in self.dict_jg.keys():
+                yesugm = self.dict_jg[index]['보유수량'] * self.dict_info[index]['위탁증거금']
                 self.dict_intg['예수금'] -= yesugm
             self.dict_intg['추정예수금'] = self.dict_intg['예수금']
 
-            bjc = len(self.df_jg)
-            tpp = self.df_jg['수익률'].sum()
-            tsg = self.df_jg['평가손익'].sum()
-            tbg = self.df_jg['매입금액'].sum()
-            tpg = self.df_jg['평가금액'].sum()
-            self.df_tj.loc[self.dict_strg['당일날짜']] = self.dict_intg['추정예탁자산'], self.dict_intg['예수금'], bjc, tpp, tsg, tbg, tpg
-
-        if len(self.df_td) > 0: self.UpdateTotaltradelist(first=True)
+        if self.dict_td: self.UpdateTotaltradelist(first=True)
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 계좌 조회 완료')))
 
     def SysExit(self):
@@ -508,16 +516,15 @@ class FutureTrader:
         sys.exit()
 
     def SaveDayData(self):
-        if len(self.df_td) > 0:
-            con = sqlite3.connect(DB_TRADELIST)
-            df = pd.read_sql(f"SELECT * FROM f_totaltradelist WHERE `index` = '{self.dict_strg['당일날짜']}'", con)
-            con.close()
-            if len(df) == 0:
-                df = self.df_tt[['총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']]
-                self.kwzservQ.put(('query', ('거래디비', df, 'f_totaltradelist', 'append')))
-                if self.dict_set['주식알림소리']:
-                    self.kwzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
-                self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료')))
+        con = sqlite3.connect(DB_TRADELIST)
+        df = pd.read_sql(f"SELECT * FROM f_totaltradelist WHERE `index` = '{self.dict_strg['당일날짜']}'", con)
+        con.close()
+        if len(df) == 0:
+            df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
+            df.drop(columns=['거래횟수'], inplace=True)
+            self.kwzservQ.put(('query', ('거래디비', df, 'f_totaltradelist', 'append')))
+            if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
+            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료')))
 
     # noinspection PyUnusedLocal
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
@@ -564,6 +571,7 @@ class FutureTrader:
     def UpdateChejanData(self, 종목코드, 종목명, 주문상태, 주문구분, 매도수구분, 주문수량, 미체결수량, 주문가격, 주문시간, 주문번호, 체결수량, 체결가격):
         index = self.GetIndex()
         gubun = self.dict_signal[종목코드]
+
         if 주문상태 == '접수' and 주문구분 == '신규' and 매도수구분 in ('매수', '매도'):
             취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if 매도수구분 == '매수' else '주식매도취소시간초'])
             if 매도수구분 == '매수': self.dict_intg['추정예수금'] -= 주문수량 * self.dict_info[종목코드]['위탁증거금']
@@ -576,10 +584,11 @@ class FutureTrader:
 
         elif 주문상태 == '체결' and 주문구분 == '체결' and 매도수구분 in ('매수', '매도'):
             if 매도수구분 == '매수':
-                if 종목코드 in self.df_jg.index:
-                    직전매입가 = self.df_jg['매입가'][종목코드]
-                    직전보유수량 = self.df_jg['보유수량'][종목코드]
-                    직전매입금액 = self.df_jg['매입금액'][종목코드]
+                # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                if 종목코드 in self.dict_jg.keys():
+                    직전매입가 = self.dict_jg[종목코드]['매입가']
+                    직전보유수량 = self.dict_jg[종목코드]['보유수량']
+                    직전매입금액 = self.dict_jg[종목코드]['매입금액']
                     보유수량 = 직전보유수량 + 체결수량
                     매입금액 = 직전매입금액 + self.dict_info[종목코드]['위탁증거금'] * 체결수량
                     매입가 = round((직전매입가 * 직전보유수량 + 체결가격 * 체결수량) / 보유수량, self.dict_info[종목코드]['소숫점자리수'] + 1)
@@ -588,9 +597,18 @@ class FutureTrader:
                         평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                     else:
                         평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                    columns = ['매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '매수시간']
-                    self.df_jg.loc[종목코드, columns] = 매입가, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량, 주문시간
+                    self.dict_jg[종목코드].update({
+                        '매입가': 매입가,
+                        '현재가': 체결가격,
+                        '수익률': 수익률,
+                        '평가손익': 수익금,
+                        '매입금액': 매입금액,
+                        '평가금액': 평가금액,
+                        '보유수량': 보유수량,
+                        '매수시간': index[:14]
+                    })
                 else:
+                    보유수량 = 체결수량
                     매입금액 = 평가금액 = self.dict_info[종목코드]['위탁증거금'] * 체결수량
                     if 'LONG' in gubun:
                         포지션 = 'LONG'
@@ -598,21 +616,32 @@ class FutureTrader:
                     else:
                         포지션 = 'SHORT'
                         평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                    self.df_jg.loc[종목코드] = 종목명, 포지션, 체결가격, 체결가격, 수익률, 수익금, 매입금액, 평가금액, 체결수량, 0, 0, 주문시간
+                    self.dict_jg[종목코드] = {
+                        '종목명': 종목코드,
+                        '포지션': 포지션,
+                        '매입가': 체결가격,
+                        '현재가': 체결가격,
+                        '수익률': 수익률,
+                        '평가손익': 수익금,
+                        '매입금액': 매입금액,
+                        '평가금액': 평가금액,
+                        '보유수량': 체결수량,
+                        '분할매수횟수': 0,
+                        '분할매도횟수': 0,
+                        '매수시간': index[:14]
+                    }
 
                 if 미체결수량 == 0:
-                    self.df_jg.loc[종목코드, '분할매수횟수'] = self.df_jg['분할매수횟수'][종목코드] + 1
-                    if 종목코드 in self.dict_order[gubun].keys():
-                        del self.dict_order[gubun][종목코드]
+                    if 보유수량 > 0:
+                        self.dict_jg[종목코드]['분할매수횟수'] += 1
+                    if 종목코드 in self.dict_order[주문구분].keys():
+                        del self.dict_order[주문구분][종목코드]
 
             else:
-                if 종목코드 not in self.df_jg.index:
-                    return
-
-                포지션 = self.df_jg['포지션'][종목코드]
-                매입가 = self.df_jg['매입가'][종목코드]
-                직전보유수량 = self.df_jg['보유수량'][종목코드]
-                보유수량 = 직전보유수량 - 체결수량
+                if 종목코드 not in self.dict_jg.keys(): return
+                포지션 = self.dict_jg[종목코드]['포지션']
+                매입가 = self.dict_jg[종목코드]['매입가']
+                보유수량 = self.dict_jg[종목코드]['보유수량'] - 체결수량
                 if 보유수량 != 0:
                     매입금액 = self.dict_info[종목코드]['위탁증거금'] * 보유수량
                     평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
@@ -620,16 +649,23 @@ class FutureTrader:
                         평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                     else:
                         평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                    columns = ['현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
-                    self.df_jg.loc[종목코드, columns] = 체결가격, 수익률, 수익금, 매입금액, 평가금액, 보유수량
+                    # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+                    self.dict_jg[종목코드].update({
+                        '현재가': 체결가격,
+                        '수익률': 수익률,
+                        '평가손익': 수익금,
+                        '매입금액': 매입금액,
+                        '평가금액': 평가금액,
+                        '보유수량': 보유수량
+                    })
                 else:
-                    self.df_jg.drop(index=종목코드, inplace=True)
+                    del self.dict_jg[종목코드]
 
                 if 미체결수량 == 0:
                     if 보유수량 > 0:
-                        self.df_jg.loc[종목코드, '분할매도횟수'] = self.df_jg['분할매도횟수'][종목코드] + 1
-                    if 종목코드 in self.dict_order[gubun].keys():
-                        del self.dict_order[gubun][종목코드]
+                        self.dict_jg[종목코드]['분할매도횟수'] += 1
+                    if 종목코드 in self.dict_order[주문구분].keys():
+                        del self.dict_order[주문구분][종목코드]
 
                 매입금액 = self.dict_info[종목코드]['위탁증거금'] * 체결수량
                 평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 체결수량
@@ -640,7 +676,8 @@ class FutureTrader:
                 if -100 < 수익률 < 100: self.UpdateTradelist(index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간)
                 if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['주식매수금지손절간격초'])
 
-            self.df_jg.sort_values(by=['매입금액'], ascending=False, inplace=True)
+            sorted_items = sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True)
+            self.dict_jg = {k: v for k, v in sorted_items}
             self.PutJangoDF()
 
             if 미체결수량 == 0: self.PutOrderComplete(f'{gubun}_COMPLETE', 종목코드)
@@ -656,7 +693,8 @@ class FutureTrader:
                 self.dict_intg['예수금'] += 총위탁증거금 + 수익금
                 self.dict_intg['추정예수금'] += 총위탁증거금 + 수익금
 
-            self.kwzservQ.put(('query', ('거래디비', self.df_jg, 'f_jangolist', 'replace')))
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            self.kwzservQ.put(('query', ('거래디비', df_jg, 'f_jangolist', 'replace')))
             if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', f'{종목명} {체결수량}주를 {주문구분}하였습니다'))
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{gubun}] {종목명} | {체결가격} | {체결수량}')))
 
@@ -682,26 +720,48 @@ class FutureTrader:
         elif 주문상태 in ('미접수', '취소', '거부'):
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{주문상태}][{gubun}] {종목명} | {주문가격} | {주문수량}')))
 
-        self.sreceivQ.put(('잔고목록', tuple(self.df_jg.index)))
+        self.sreceivQ.put(('잔고목록', tuple(self.dict_jg.keys())))
         self.sreceivQ.put(('주문목록', self.GetOrderCodeList()))
 
     def UpdateTradelist(self, index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간):
-        self.df_td.loc[index] = 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간
-        self.kwzservQ.put(('window', (ui_num['S거래목록'], self.df_td[::-1])))
+        # ['종목명', '포지션', '매수금액', '매도금액', '주문수량', '수익률', '수익금', '체결시간']
+        self.dict_td[index] = {
+            '종목명': 종목명,
+            '포지션': 포지션,
+            '매수금액': 매입금액,
+            '매도금액': 평가금액,
+            '주문수량': 체결수량,
+            '수익률': 수익률,
+            '수익금': 수익금,
+            '체결시간': 주문시간
+        }
+        df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+        self.kwzservQ.put(('window', (ui_num['S거래목록'], df_td[::-1])))
         df = pd.DataFrame([[종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_tdf, index=[index])
         self.kwzservQ.put(('query', ('거래디비', df, 'f_tradelist', 'append')))
         self.UpdateTotaltradelist()
 
     def UpdateTotaltradelist(self, first=False):
-        거래횟수 = len(self.df_td.drop_duplicates(['종목명', '체결시간']))
-        총매수금액 = self.df_td['매수금액'].sum()
-        총매도금액 = self.df_td['매도금액'].sum()
-        총수익금액 = self.df_td[self.df_td['수익금'] > 0]['수익금'].sum()
-        총손실금액 = self.df_td[self.df_td['수익금'] < 0]['수익금'].sum()
-        수익금합계 = self.df_td['수익금'].sum()
+        거래횟수 = len(set([(v['종목명'], v['체결시간']) for k, v in self.dict_td.items()]))
+        총매수금액 = sum([v['매수금액'] for k, v in self.dict_td.items()])
+        총매도금액 = sum([v['매도금액'] for k, v in self.dict_td.items()])
+        총수익금액 = sum([v['수익금'] for k, v in self.dict_td.items() if v['수익금'] >= 0])
+        총손실금액 = sum([v['수익금'] for k, v in self.dict_td.items() if v['수익금'] < 0])
+        수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
         수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
-        self.df_tt.loc[self.dict_strg['당일날짜']] = 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계
-        self.kwzservQ.put(('window', (ui_num['S실현손익'], self.df_tt)))
+
+        # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
+        self.dict_tt[self.dict_strg['당일날짜']] = {
+            '거래횟수': 거래횟수,
+            '총매수금액': 총매수금액,
+            '총매도금액': 총매도금액,
+            '총수익금액': 총수익금액,
+            '총손실금액': 총손실금액,
+            '수익률': 수익률,
+            '수익금합계': 수익금합계
+        }
+        df_tt = pd.DataFrame.from_dict(self.dict_tt, orient='index')
+        self.kwzservQ.put(('window', (ui_num['S실현손익'], df_tt)))
 
         if not first:
             self.kwzservQ.put(('tele', f'거래횟수 {거래횟수}회 / 총매수금액 {int(총매수금액):,}원 / 총매도금액 {int(총매도금액):,}원 / 총수익금액 {int(총수익금액):,}원 / '
@@ -713,26 +773,52 @@ class FutureTrader:
             self.kwzservQ.put(('live', ('해선', data_list)))
 
     def UpdateChegeollist(self, index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호):
-        self.dict_info[종목코드]['최종거래시간'] = timedelta_sec(self.dict_set['주식매수금지간격초'])
-        self.df_cj.loc[index] = 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호
-        self.kwzservQ.put(('window', (ui_num['S체결목록'], self.df_cj[::-1])))
+        # ['종목명', '주문구분', '주문수량', '체결수량', '미체결수량', '체결가', '체결시간', '주문가격', '주문번호']
+        self.dict_info[종목코드]['최종거래시간'] = timedelta_sec(self.dict_set['코인매수금지간격초'])
+        self.dict_cj[index] = {
+            '종목명': 종목코드,
+            '주문구분': 주문구분,
+            '주문수량': 주문수량,
+            '체결수량': 체결수량,
+            '미체결수량': 미체결수량,
+            '체결가': 체결가격,
+            '체결시간': 체결시간,
+            '주문가격': 주문가격,
+            '주문번호': 주문번호
+        }
+        sorted_items = sorted(self.dict_cj.items(), key=lambda x: x[0])
+        self.dict_cj = {k: v for k, v in sorted_items}
+        df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
+        self.kwzservQ.put(('window', (ui_num['S체결목록'], df_cj[::-1])))
         df = pd.DataFrame([[종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
         self.kwzservQ.put(('query', ('거래디비', df, 'f_chegeollist', 'append')))
 
     def UpdateTotaljango(self):
-        if len(self.df_jg) > 0:
-            총평가손익 = self.df_jg['평가손익'].sum()
-            총매입금액 = self.df_jg['매입금액'].sum()
-            총평가금액 = self.df_jg['평가금액'].sum()
-            잔고수량 = len(self.df_jg)
+        # ['추정예탁자산', '추정예수금', '보유종목수', '수익률', '총평가손익', '총매입금액', '총평가금액']
+        if self.dict_jg:
+            총평가손익 = sum([v['평가손익'] for k, v in self.dict_jg.items()])
+            총매입금액 = sum([v['매입금액'] for k, v in self.dict_jg.items()])
+            총평가금액 = sum([v['평가금액'] for k, v in self.dict_jg.items()])
             총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
-            추정예탁자산 = self.dict_intg['추정예탁자산'] + 총평가손익
-            self.df_tj.loc[self.dict_strg['당일날짜']] = 추정예탁자산, self.dict_intg['예수금'], 잔고수량, 총수익률, 총평가손익, 총매입금액, 총평가금액
+            잔고수량 = len(self.dict_jg)
+            추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
         else:
+            총평가손익, 총매입금액, 총평가금액, 총수익률, 잔고수량 = 0, 0, 0, 0., 0
             추정예탁자산 = self.dict_intg['예수금']
-            self.df_tj.loc[self.dict_strg['당일날짜']] = 추정예탁자산, self.dict_intg['예수금'], 0, 0.0, 0, 0, 0
 
-        총평가손익 = self.df_jg['평가손익'].sum() + self.df_td['수익금'].sum()
+        self.dict_tj[self.dict_strg['당일날짜']] = {
+            '추정예탁자산': 추정예탁자산,
+            '추정예수금': self.dict_intg['예수금'],
+            '보유종목수': 잔고수량,
+            '수익률': 총수익률,
+            '총평가손익': 총평가손익,
+            '총매입금액': 총매입금액,
+            '총평가금액': 총평가금액
+        }
+
+        잔고평가손익합계 = sum([v['평가손익'] for k, v in self.dict_jg.items()])
+        거래수익금합계 = sum([v['수익금'] for k, v in self.dict_td.items()])
+        총평가손익 = 잔고평가손익합계 + 거래수익금합계
         if self.dict_set['주식손실중지']:
             기준손실금 = self.dict_intg['예탁자산'] * self.dict_set['주식손실중지수익률'] / 100
             if 기준손실금 < -총평가손익: self.StrategyStop()
@@ -740,12 +826,17 @@ class FutureTrader:
             기준수익금 = self.dict_intg['예탁자산'] * self.dict_set['주식수익중지수익률'] / 100
             if 기준수익금 < 총평가손익: self.StrategyStop()
 
-        self.kwzservQ.put(('window', (ui_num['S잔고목록'], self.df_jg)))
-        self.kwzservQ.put(('window', (ui_num['S잔고평가'], self.df_tj)))
+        if self.dict_jg:
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+        else:
+            df_jg = pd.DataFrame(columns=columns_jgf)
+        df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
+        self.kwzservQ.put(('window', (ui_num['S잔고목록'], df_jg)))
+        self.kwzservQ.put(('window', (ui_num['S잔고평가'], df_tj)))
 
     def PutJangoDF(self):
         if not self.dict_bool['프로세스종료']:
-            data = ('잔고목록', self.df_jg)
+            data = ('잔고목록', self.dict_jg)
             self.sstgQ.put(data)
 
     def StrategyStop(self):
@@ -763,12 +854,12 @@ class FutureTrader:
         return tuple(self.dict_order['BUY_LONG'].keys()) + tuple(self.dict_order['SELL_SHORT'].keys()) + \
             tuple(self.dict_order['SELL_LONG'].keys()) + tuple(self.dict_order['BUY_SHORT'].keys())
 
-    def GetMichegeolDF(self, name, gubun):
-        return self.df_cj[(self.df_cj['종목명'] == name) & ((self.df_cj['주문구분'] == gubun) | (self.df_cj['주문구분'] == f'{gubun}_REG'))]
+    def GetNameChejan(self, name, gubun):
+        return {k: v for k, v in self.dict_cj.items() if v['종목명'] == name and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun}_REG')}
 
     def GetIndex(self):
         index = str_ymdhmsf(now_cme())
-        if index in self.df_cj.index:
-            while index in self.df_cj.index:
+        if index in self.dict_cj.keys():
+            while index in self.dict_cj.keys():
                 index = str(int(index) + 1)
         return index

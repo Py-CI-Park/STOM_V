@@ -498,17 +498,17 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                     self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
 
         if 체결강도평균_ != 0 and not (매수잔량5 == 0 and 매도잔량5 == 0) and 전략연산 and 체결시간 < self.dict_set['주식전략종료시간']:
-            if 종목코드 in self.df_jg.index:
+            if 종목코드 in self.dict_jg.keys():
                 if 종목코드 not in self.dict_buy_num.keys():
                     self.dict_buy_num[종목코드] = self.indexn
                 매수틱번호 = self.dict_buy_num[종목코드]
-                매입가 = self.df_jg['매입가'][종목코드]
-                보유수량 = self.df_jg['보유수량'][종목코드]
-                매입금액 = self.df_jg['매입금액'][종목코드]
-                분할매수횟수 = int(self.df_jg['분할매수횟수'][종목코드])
-                분할매도횟수 = int(self.df_jg['분할매도횟수'][종목코드])
+                매입가 = self.dict_jg[종목코드]['매입가']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
+                매입금액 = self.dict_jg[종목코드]['매입금액']
+                분할매수횟수 = self.dict_jg[종목코드]['분할매수횟수']
+                분할매도횟수 = self.dict_jg[종목코드]['분할매도횟수']
                 _, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 현재가)
-                매수시간 = dt_ymdhms(self.df_jg['매수시간'][종목코드])
+                매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
                 보유시간 = int((now() - 매수시간).total_seconds() / 60)
                 if 종목코드 not in self.dict_hilo.keys():
                     self.dict_hilo[종목코드] = [수익률, 수익률]
@@ -598,7 +598,18 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                         self.Sell(종목코드, 종목명, 매도수량, 현재가, 매도호가1, 매수호가1, 강제청산)
 
         if 관심종목 and 전략연산:
-            self.df_gj.loc[종목코드] = 종목명, 등락율, 고저평균대비등락율, 분당거래대금, 분당거래대금평균_, 당일거래대금, 체결강도, 체결강도평균_, 최고체결강도_
+            # ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
+            self.dict_gj[종목코드] = {
+                '종목명': 종목명,
+                'per': 등락율,
+                'hlp': 고저평균대비등락율,
+                'sm': 분당거래대금,
+                'sma': 분당거래대금평균_,
+                'dm': 당일거래대금,
+                'ch': 체결강도,
+                'cha': 체결강도평균_,
+                'chh': 최고체결강도_
+            }
 
         if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
             self.kwzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드])))

@@ -3,7 +3,6 @@ import time
 import optuna
 import random
 import sqlite3
-import operator
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
@@ -721,7 +720,7 @@ class RollingWalkForwardTest:
                         dict_turn_hvar[vturn] = curr_var
                         if std > hstd: hstd = std
 
-            list_turn_hvar = sorted(dict_turn_hvar.items(), key=operator.itemgetter(0))
+            list_turn_hvar = sorted(dict_turn_hvar.items(), key=lambda x: x[0])
             for vturn, high_var in list_turn_hvar:
                 if high_var != vars_[vturn][1]:
                     total_change += 1

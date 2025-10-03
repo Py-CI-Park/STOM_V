@@ -1,9 +1,10 @@
 import re
+from traceback import print_exc
+
 import zmq
 import time
 import sqlite3
 import binance
-import operator
 import numpy as np
 import pandas as pd
 from threading import Thread
@@ -104,8 +105,8 @@ class BinanceReceiverTick:
                         c    = float(data['p'])
                         v    = float(data['q'])
                         m    = data['m']
-                    except Exception as e:
-                        self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - 웹소켓 trade {e}'))
+                    except:
+                        pass
                     else:
                         self.UpdateTradeData(code, c, v, m, dt)
                 elif data[0] == 'depth':
@@ -133,8 +134,8 @@ class BinanceReceiverTick:
                         hoga_tamount = (
                             round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
                         )
-                    except Exception as e:
-                        self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - 웹소켓 depth {e}'))
+                    except:
+                        pass
                     else:
                         self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, curr_time)
             elif data == '프로세스종료':
@@ -150,7 +151,7 @@ class BinanceReceiverTick:
                 self.dict_time['거래대금순위검색'] = timedelta_sec(10)
 
             if not self.dict_set['바이낸스선물고정레버리지'] and curr_time > self.dict_time['저가대비고가등락율갱신']:
-                if len(self.dict_dlhp) > 0:
+                if self.dict_dlhp:
                     self.ctraderQ.put(('저가대비고가등락율', self.dict_dlhp))
                 self.dict_time['저가대비고가등락율갱신'] = timedelta_sec(300)
 
@@ -188,7 +189,7 @@ class BinanceReceiverTick:
                     self.dict_tddt[code] = [ymd, prec]
                     dict_daym[code] = dm
 
-        self.list_gsjm = [x for x, y in sorted(dict_daym.items(), key=operator.itemgetter(1), reverse=True)[:10]]
+        self.list_gsjm = [x for x, y in sorted(dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
         data = tuple(self.list_gsjm)
         self.cstgQ.put(('관심목록', data))
         if self.dict_set['리시버공유'] == 1:
@@ -345,8 +346,8 @@ class BinanceReceiverTick:
             self.recvservQ.put(('focuscodes', ('관심목록', data)))
 
     def MoneyTopSearch(self):
-        if len(self.dict_daym) > 0:
-            list_mtop = [x for x, y in sorted(self.dict_daym.items(), key=operator.itemgetter(1), reverse=True)[:10]]
+        if self.dict_daym:
+            list_mtop = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
             insert_set = set(list_mtop) - set(self.list_gsjm)
             delete_set = set(self.list_gsjm) - set(list_mtop)
             if len(insert_set) > 0:
@@ -387,7 +388,7 @@ class BinanceReceiverTick:
 
     def SaveData(self):
         codes = []
-        if len(self.dict_mtop) > 0:
+        if self.dict_mtop:
             codes = list(set(';'.join(list(self.dict_mtop.values())).split(';')))
             con = sqlite3.connect(DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN)
             last_index = 0

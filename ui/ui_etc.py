@@ -119,6 +119,7 @@ def calendar_clicked(ui, gubun):
 
 
 def stom_live_screenshot(ui, cmd):
+    prev_main_btn = ui.main_btn
     ui.mnButtonClicked_01(4)
     qtest_qwait(1)
     if '주식' in cmd:
@@ -139,7 +140,7 @@ def stom_live_screenshot(ui, cmd):
     screenshot = screen.grabWindow(ui.winId())
     screenshot.save(file_name, 'png')
     ui.teleQ.put(file_name)
-    ui.mnButtonClicked_01(0 if '코인' in cmd else 1)
+    ui.mnButtonClicked_01(prev_main_btn)
 
 
 def chart_screenshot(ui):

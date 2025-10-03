@@ -2,7 +2,6 @@ import sys
 import time
 import random
 import sqlite3
-import operator
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
@@ -384,7 +383,7 @@ class OptimizeConditions:
         return buyconds, sellconds
 
     def ShowTopCondlist(self, rank):
-        rs_list = sorted(self.result.items(), key=operator.itemgetter(0), reverse=True)
+        rs_list = sorted(self.result.items(), key=lambda x: x[0], reverse=True)
         for key, value in rs_list[:rank]:
             buyconds  = 'if ' + ':\n    매수 = False\nelif '.join(value[0]) + ':\n    매수 = False'
             sellconds = 'if ' + ':\n    매도 = True\nelif '.join(value[1]) + ':\n    매도 = True'
@@ -401,7 +400,7 @@ class OptimizeConditions:
         buy_conds_freq  = {}
         sell_conds_freq = {}
 
-        rs_list    = sorted(self.result.items(), key=operator.itemgetter(0), reverse=True)
+        rs_list    = sorted(self.result.items(), key=lambda x: x[0], reverse=True)
         opti_dict  = {x: y for x, y in rs_list}
         for key, value in opti_dict.items():
             for cond in value[0]:
@@ -415,8 +414,8 @@ class OptimizeConditions:
                 else:
                     sell_conds_freq[cond] = 1
 
-        buy_conds_freq  = sorted(buy_conds_freq.items(), key=operator.itemgetter(1), reverse=True)
-        sell_conds_freq = sorted(sell_conds_freq.items(), key=operator.itemgetter(1), reverse=True)
+        buy_conds_freq  = sorted(buy_conds_freq.items(), key=lambda x: x[1], reverse=True)
+        sell_conds_freq = sorted(sell_conds_freq.items(), key=lambda x: x[1], reverse=True)
 
         text = '조건회적화 결과 - 매수조건 출현빈도\n'
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매수조건 출현빈도'))

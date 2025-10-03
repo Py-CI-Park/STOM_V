@@ -218,7 +218,7 @@ class FutureReceiverTick:
         qtest_qwait(1)
 
     def SaveData(self):
-        if len(self.dict_mtop) > 0:
+        if self.dict_mtop:
             con = sqlite3.connect(DB_FUTURE_MIN)
             last_index = 0
             try:
@@ -283,8 +283,8 @@ class FutureReceiverTick:
                 if not self.test_mode and ((not self.dict_set['주식타임프레임'] and int(cme_hms) < 90000) or (self.dict_set['주식타임프레임'] and int(cme_hms) < 93000)):
                     return
                 dt = int(f'{self.str_tday}{cme_hms}')
-            except Exception as e:
-                self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'시스템 명령 오류 알림 - OnReceiveRealData 해선체결 {e}')))
+            except:
+                pass
             else:
                 self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
 
@@ -390,8 +390,8 @@ class FutureReceiverTick:
                     return
                 dt = int(f'{self.str_tday}{cme_hms}')
                 name = self.dict_info[code]['종목명']
-            except Exception as e:
-                self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'시스템 명령 오류 알림 - OnReceiveRealData 해선호가잔량 {e}')))
+            except:
+                pass
             else:
                 self.UpdateHogaData(int(dt), hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start)
 

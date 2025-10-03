@@ -121,7 +121,6 @@ class TelegramBot:
                 name  = df['종목명'][index]
                 text += f'{ct} {per:.2f}% {sg:,.0f}원(USD) {name}\n'
         elif '매입가' in df.columns:
-            text   = ''
             m_unit = '원' if df.columns[1] == '매입가' else 'USD'
             for index in df.index:
                 per   = df['수익률'][index]
@@ -138,7 +137,6 @@ class TelegramBot:
             tpp   = round(tsg / tbg * 100, 2)
             text += f'{tbg:,.0f}{m_unit} {tpg:,.0f}{m_unit} {tpp:.2f}% {tsg:,.0f}{m_unit}\n'
         elif '주문구분' in df.columns:
-            text = ''
             for index in df.index:
                 ct   = df['체결시간'][index][8:10] + ':' + df['체결시간'][index][10:12]
                 bs   = df['주문구분'][index]

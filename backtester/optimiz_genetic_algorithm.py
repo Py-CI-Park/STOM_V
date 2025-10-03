@@ -2,7 +2,6 @@ import sys
 import time
 import random
 import sqlite3
-import operator
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
@@ -412,7 +411,7 @@ class OptimizeGeneticAlgorithm:
 
     def SetOptilist(self, count, rank, goal):
         self.vars_list = [[] for _ in self.vars_list]
-        rs_list = sorted(self.result.items(), key=operator.itemgetter(0), reverse=True)
+        rs_list = sorted(self.result.items(), key=lambda x: x[0], reverse=True)
 
         text = f'{self.backname} 결과\n'
         for std, vars_list in rs_list[:rank]:
@@ -442,7 +441,7 @@ class OptimizeGeneticAlgorithm:
                     self.vars_list[i].append(vars_)
 
     def SaveVarslist(self, rank, optistandard, buystg, sellstg):
-        rs_list = sorted(self.result.items(), key=operator.itemgetter(0), reverse=True)
+        rs_list = sorted(self.result.items(), key=lambda x: x[0], reverse=True)
         con = sqlite3.connect(DB_BACKTEST)
         for std, vars_list in rs_list[:rank]:
             data = [[optistandard, std, f'{vars_list}', buystg, sellstg]]
