@@ -94,6 +94,7 @@ class DrawRealChart:
                 tuple_factor = (
                     fi('등락율'), fi('분당매수수량'), fi('분당매도수량'), fi('고저평균대비등락율'), fi('분당거래대금'),
                     fi('분당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('전일비각도'), fi('관심종목'),
+                    fi('매도총잔량'),
                     fi('AD'), fi('ADOSC'), fi('APO'), fi('AROOND'), fi('AROONU'), fi('CCI'), fi('MACD'),
                     fi('MACDS'), fi('MACDH'), fi('MFI'), fi('MOM'), fi('PPO'), fi('ROC'), fi('RSI'),
                     fi('STOCHSK'), fi('STOCHSD'), fi('STOCHFK'), fi('STOCHFD'), fi('WILLR')
@@ -101,7 +102,8 @@ class DrawRealChart:
             else:
                 tuple_factor = (
                     fi('등락율'), fi('초당매수수량'), fi('초당매도수량'), fi('고저평균대비등락율'), fi('초당거래대금'),
-                    fi('초당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('전일비각도'), fi('관심종목')
+                    fi('초당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('전일비각도'), fi('관심종목'),
+                    fi('매도총잔량')
                 )
         else:
             if is_min:

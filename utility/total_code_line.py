@@ -1,6 +1,5 @@
 import os
 import glob
-key=lambda x: x[0]
 
 ROOT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 extensions = ['*.py', '*.bat']

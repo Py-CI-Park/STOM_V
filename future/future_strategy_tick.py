@@ -8,8 +8,7 @@ import pandas as pd
 from traceback import print_exc
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, dgree, DB_FUTURE_TICK
-from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
-    threading_timer
+from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms
 
 
 # noinspection PyUnusedLocal
@@ -48,7 +47,7 @@ class FutureStrategyTick:
         self.jgrv_count       = 0
 
         self.UpdateStringategy()
-        self.Start()
+        self.Mainloop()
 
     def UpdateStringategy(self):
         con  = sqlite3.connect(DB_STRATEGY)
@@ -95,7 +94,7 @@ class FutureStrategyTick:
             else:
                 print(self.indicator)
 
-    def Start(self):
+    def Mainloop(self):
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
         while True:
             data = self.sstgQ.get()
@@ -152,8 +151,6 @@ class FutureStrategyTick:
             self.sellstrategy = None
             self.kwzservQ.put(('tele', '해선 매도전략 중지 완료'))
         elif data == '프로세스종료':
-            threading_timer(180, self.sstgQ.put, '프로세스종료실행')
-        elif data == '프로세스종료실행':
             self.SysExit()
 
     def Strategy(self, data):

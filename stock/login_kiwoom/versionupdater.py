@@ -59,7 +59,7 @@ if __name__ == '__main__':
     print('아이디 및 패스워드 입력 대기 중 ...')
     time.sleep(2)
 
-    id_num = int(DICT_SET['증권사'][4:]) * 2
+    id_num = int(DICT_SET['증권사'][4:])
     manual_login(id_num)
     print('아이디 및 패스워드 입력 완료')
 

@@ -8,7 +8,7 @@ import pandas as pd
 from threading import Thread
 from multiprocessing import Queue
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from utility.setting import DICT_SET, ui_num, DB_FUTURE_MIN
+from utility.setting import DICT_SET, ui_num, DB_FUTURE_MIN, DB_FUTURE_TICK
 from utility.static import now, threading_timer
 
 
@@ -59,6 +59,7 @@ class FutureReceiverTick:
         self.recvservQ = Queue()
         if self.dict_set['리시버공유'] == 1:
             self.zmqserver = ZmqServ(self.recvservQ)
+            self.zmqserver.daemon = True
             self.zmqserver.start()
 
         self.Mainloop()
@@ -75,9 +76,9 @@ class FutureReceiverTick:
     def UpdateTuple(self, data):
         gubun, data = data
         if gubun == '호가정보':
-            self.UpdateHogaData(data)
+            if self.dict_info: self.UpdateHogaData(data)
         elif gubun == '체결정보':
-            self.UpdateTickData(data)
+            if self.dict_info: self.UpdateTickData(data)
         elif gubun == '잔고목록':
             self.tuple_jango = data
         elif gubun == '주문목록':
@@ -94,7 +95,7 @@ class FutureReceiverTick:
             self.dict_set = data
 
     def UpdateString(self, data):
-        if data == '프로그램종료':
+        if data == '프로세스종료':
             threading_timer(180, self.sreceivQ.put, '프로세스종료실행')
         elif data == '프로세스종료실행':
             self.SysExit()
@@ -102,12 +103,14 @@ class FutureReceiverTick:
     def SysExit(self):
         if self.dict_set['주식데이터저장']:
             self.SaveData()
+        self.sstgQ.put('프로세스종료')
+        self.straderQ.put('프로세스종료')
         time.sleep(5)
         self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료')))
 
     def SaveData(self):
         if self.dict_mtop:
-            con = sqlite3.connect(DB_FUTURE_MIN)
+            con = sqlite3.connect(DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN)
             last_index = 0
             try:
                 df = pd.read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)

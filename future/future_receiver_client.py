@@ -42,6 +42,7 @@ class FutureReceiverClient:
         self.tuple_order = ()
 
         self.zmqrecv = ZmqRecv(self.sreceivQ)
+        self.zmqrecv.daemon = True
         self.zmqrecv.start()
 
         self.Mainloop()
@@ -76,7 +77,7 @@ class FutureReceiverClient:
                 self.dict_jgdt[code] = dt
         else:
             try:
-                code, c = data[-4], data[1]
+                code, c = data[-3] if self.dict_set['주식타임프레임'] else data[-4], data[1]
                 self.sstgQ.put(data)
                 if self.dict_set['주식타임프레인']:
                     if code in self.tuple_jango or code in self.tuple_order:
@@ -96,7 +97,7 @@ class FutureReceiverClient:
         self.sstgQ.put(('종목정보', self.dict_info))
 
     def UpdateString(self, data):
-        if data == '프로그램종료':
+        if data == '프로세스종료':
             threading_timer(180, self.sreceivQ.put, '프로세스종료실행')
         elif data == '프로세스종료실행':
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료')))

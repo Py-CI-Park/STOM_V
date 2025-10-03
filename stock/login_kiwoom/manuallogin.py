@@ -56,30 +56,9 @@ def enter_keys(hwndd, data):
 
 
 def press_keys(data):
-    key = None
-    if data == 0:
-        key = 0x30
-    elif data == 1:
-        key = 0x31
-    elif data == 2:
-        key = 0x32
-    elif data == 3:
-        key = 0x33
-    elif data == 4:
-        key = 0x34
-    elif data == 5:
-        key = 0x35
-    elif data == 6:
-        key = 0x36
-    elif data == 7:
-        key = 0x37
-    elif data == 8:
-        key = 0x38
-    elif data == 9:
-        key = 0x39
-    if key is not None:
-        win32api.keybd_event(key, 0, 0, 0)
-        win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
+    key = 0x30 + data
+    win32api.keybd_event(key, 0, 0, 0)
+    win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
 
 
 def manual_login(gubun):
@@ -115,18 +94,7 @@ def auto_on(gubun):
     hwnd = find_window('계좌비밀번호')
     if hwnd != 0:
         edit = win32gui.GetDlgItem(hwnd, 0xCC)
-        if DICT_SET['증권사'] == '키움증권1':
-            if gubun == 1:   enter_keys(edit, DICT_SET['계좌비밀번호1'])
-            elif gubun == 2: enter_keys(edit, DICT_SET['계좌비밀번호2'])
-        elif DICT_SET['증권사'] == '키움증권2':
-            if gubun == 1:   enter_keys(edit, DICT_SET['계좌비밀번호3'])
-            elif gubun == 2: enter_keys(edit, DICT_SET['계좌비밀번호4'])
-        elif DICT_SET['증권사'] == '키움증권3':
-            if gubun == 1:   enter_keys(edit, DICT_SET['계좌비밀번호5'])
-            elif gubun == 2: enter_keys(edit, DICT_SET['계좌비밀번호6'])
-        elif DICT_SET['증권사'] == '키움증권4':
-            if gubun == 1:   enter_keys(edit, DICT_SET['계좌비밀번호7'])
-            elif gubun == 2: enter_keys(edit, DICT_SET['계좌비밀번호8'])
+        enter_keys(edit, DICT_SET[f'계좌비밀번호{gubun}'])
         click_button(win32gui.GetDlgItem(hwnd, 0xD4))
         click_button(win32gui.GetDlgItem(hwnd, 0xD3))
         click_button(win32gui.GetDlgItem(hwnd, 0x01))

@@ -109,11 +109,6 @@ class UpbitStrategyTick:
                     self.UpdateTuple(data)
             elif type(data) == str:
                 self.UpdateString(data)
-                if data == '프로세스종료':
-                    break
-
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료'))
-        time.sleep(1)
 
     def UpdateTuple(self, data):
         gubun, data = data
@@ -166,6 +161,9 @@ class UpbitStrategyTick:
         elif data == '매도전략중지':
             self.sellstrategy = None
             self.teleQ.put('코인 매도전략 중지 완료')
+        elif data == '프로세스종료':
+            time.sleep(5)
+            self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료'))
 
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량, \

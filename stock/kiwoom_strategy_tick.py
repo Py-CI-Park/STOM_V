@@ -10,15 +10,15 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, dgree
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetUvilower5, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
-    str_ymdhms, dt_ymdhms
+    str_ymdhms, dt_ymdhms, threading_timer
 
 
 # noinspection PyUnusedLocal
 class KiwoomStrategyTick:
     def __init__(self, gubun, qlist):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
+        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQs, self.kiwoomQ
+                0            1              2             3           4
         """
         self.gubun            = gubun
         self.kwzservQ         = qlist[0]
@@ -30,7 +30,6 @@ class KiwoomStrategyTick:
         self.buystrategy      = None
         self.sellstrategy     = None
         self.chart_code       = None
-        self.dict_stgn        = None
 
         self.vars             = {}
         self.dict_arry        = {}
@@ -44,10 +43,12 @@ class KiwoomStrategyTick:
         self.dict_gj          = {}
         self.dict_jg          = {}
         self.indicator        = indicator
+        self.dict_signal      = {
+            '매수': [],
+            '매도': []
+        }
 
         self.tuple_kosd       = ()
-        self.list_buy         = []
-        self.list_sell        = []
 
         self.indexn           = 0
         self.indexb           = 0
@@ -60,7 +61,7 @@ class KiwoomStrategyTick:
             self.pr.enable()
 
         self.UpdateStringategy()
-        self.Start()
+        self.Mainloop()
 
     def UpdateStringategy(self):
         con  = sqlite3.connect(DB_STRATEGY)
@@ -107,7 +108,7 @@ class KiwoomStrategyTick:
             else:
                 print(self.indicator)
 
-    def Start(self):
+    def Mainloop(self):
         if self.gubun == 7:
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
 
@@ -120,12 +121,6 @@ class KiwoomStrategyTick:
                     self.UpdateTuple(data)
             elif type(data) == str:
                 self.UpdateString(data)
-                if data == '프로세스종료':
-                    break
-
-        if self.gubun == 7:
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
-        time.sleep(1)
 
     def UpdateTuple(self, data):
         gubun, data = data
@@ -135,22 +130,22 @@ class KiwoomStrategyTick:
                 for k in drop_index_list:
                     del self.dict_gj[k]
         elif gubun in ('매수완료', '매수취소'):
-            if data in self.list_buy:
-                self.list_buy.remove(data)
+            if data in self.dict_signal['매수']:
+                self.dict_signal['매수'].remove(data)
             if gubun == '매수완료':
                 if data in self.dict_signal_num.keys():
                     self.dict_buy_num[data] = self.dict_signal_num[data]
                 else:
                     self.dict_buy_num[data] = len(self.dict_arry[data]) - 1
         elif gubun in ('매도완료', '매도취소'):
-            if data in self.list_sell:
-                self.list_sell.remove(data)
+            if data in self.dict_signal['매도']:
+                self.dict_signal['매도'].remove(data)
         elif gubun == '매수주문':
-            if data not in self.list_buy:
-                self.list_buy.append(data)
+            if data not in self.dict_signal['매수']:
+                self.dict_signal['매수'].append(data)
         elif gubun == '매도주문':
-            if data not in self.list_sell:
-                self.list_sell.append(data)
+            if data not in self.dict_signal['매도']:
+                self.dict_signal['매도'].append(data)
         elif gubun == '잔고목록':
             self.dict_jg = data
             self.jgrv_count += 1
@@ -170,8 +165,6 @@ class KiwoomStrategyTick:
             self.UpdateStringategy()
         elif gubun == '코스닥목록':
             self.tuple_kosd = data
-        elif gubun == '종목구분번호':
-            self.dict_stgn = data
         elif gubun == '데이터저장':
             self.SaveData(data)
 
@@ -185,6 +178,9 @@ class KiwoomStrategyTick:
         elif data == '프로파일링결과':
             if self.gubun == 0:
                 self.pr.print_stats(sort='cumulative')
+        elif data == '프로세스종료':
+            time.sleep(5)
+            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
 
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, \
@@ -519,8 +515,8 @@ class KiwoomStrategyTick:
 
             BBT = not self.dict_set['주식매수금지시간'] or not (self.dict_set['주식매수금지시작시간'] < 시분초 < self.dict_set['주식매수금지종료시간'])
             BLK = not self.dict_set['주식매수금지블랙리스트'] or 종목코드 not in self.dict_set['주식블랙리스트']
-            NIB = 종목코드 not in self.list_buy
-            NIS = 종목코드 not in self.list_sell
+            NIB = 종목코드 not in self.dict_signal['매수']
+            NIS = 종목코드 not in self.dict_signal['매도']
 
             A = 관심종목 and NIB and 매입가 == 0
             B = self.dict_set['주식매수분할시그널']
@@ -554,7 +550,7 @@ class KiwoomStrategyTick:
 
             SBT = not self.dict_set['주식매도금지시간'] or not (self.dict_set['주식매도금지시작시간'] < 시분초 < self.dict_set['주식매도금지종료시간'])
             SCC = self.dict_set['주식매수분할횟수'] == 1 or not self.dict_set['주식매도금지매수횟수'] or 분할매수횟수 > self.dict_set['주식매도금지매수횟수값']
-            NIB = 종목코드 not in self.list_buy
+            NIB = 종목코드 not in self.dict_signal['매수']
 
             A = NIB and NIS and SCC and 매입가 != 0 and self.dict_set['주식매도분할횟수'] == 1
             B = self.dict_set['주식매도분할시그널']
@@ -686,7 +682,7 @@ class KiwoomStrategyTick:
             기준가격 = 현재가
             if self.dict_set['주식매수지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1
             if self.dict_set['주식매수지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1
-            self.list_buy.append(종목코드)
+            self.dict_signal['매수'].append(종목코드)
             self.dict_signal_num[종목코드] = 데이터길이 - 1
             self.straderQ.put(('매수', 종목코드, 종목명, 기준가격, 매수수량, now(), False))
         else:
@@ -702,7 +698,7 @@ class KiwoomStrategyTick:
                     미체결수량 -= 매도잔량
             if 미체결수량 <= 0:
                 예상체결가 = int(round(매수금액 / 매수수량)) if 매수수량 != 0 else 0
-                self.list_buy.append(종목코드)
+                self.dict_signal['매수'].append(종목코드)
                 self.dict_signal_num[종목코드] = 데이터길이 - 1
                 self.straderQ.put(('매수', 종목코드, 종목명, 예상체결가, 매수수량, now(), False))
 
@@ -711,7 +707,7 @@ class KiwoomStrategyTick:
             기준가격 = 현재가
             if self.dict_set['주식매도지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1
             if self.dict_set['주식매도지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1
-            self.list_sell.append(종목코드)
+            self.dict_signal['매도'].append(종목코드)
             self.straderQ.put(('매도', 종목코드, 종목명, 기준가격, 매도수량, now(), False))
         else:
             매도금액 = 0
@@ -726,7 +722,7 @@ class KiwoomStrategyTick:
                     미체결수량 -= 매수잔량
             if 미체결수량 <= 0:
                 예상체결가 = int(round(매도금액 / 매도수량)) if 매도수량 != 0 else 0
-                self.list_sell.append(종목코드)
+                self.dict_signal['매도'].append(종목코드)
                 self.straderQ.put(('매도', 종목코드, 종목명, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
     def PutGsjmAndDeleteHilo(self):
@@ -783,5 +779,4 @@ class KiwoomStrategyTick:
         if self.gubun != 7:
             self.sstgQs[self.gubun + 1].put(('데이터저장', codes))
         else:
-            for q in self.sstgQs:
-                q.put('프로세스종료')
+            self.sstgQs[self.gubun].put('프로세스종료')

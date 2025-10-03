@@ -70,6 +70,13 @@ def str_hmsf(std_time=None):
         return strf_time('%H%M%S%f')
 
 
+def float_hmsf(std_time=None):
+    if std_time is not None:
+        return float(strf_time('%H%M%S.%f', std_time))
+    else:
+        return float(strf_time('%H%M%S.%f'))
+
+
 def str_hms(std_time=None):
     if std_time is not None:
         return strf_time('%H%M%S', std_time)

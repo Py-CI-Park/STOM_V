@@ -23,8 +23,9 @@ def TelegramMassage(txt):
 class Window(QtWidgets.QMainWindow):
     app = QtWidgets.QApplication(sys.argv)
 
-    def __init__(self):
+    def __init__(self, id_num_):
         super().__init__()
+        self.id_num = id_num_
         self.bool_connected = False
         self.ocx = QAxWidget('KHOPENAPI.KHOpenAPICtrl.1')
         self.ocx.OnEventConnect.connect(self.OnEventConnect)
@@ -42,7 +43,7 @@ class Window(QtWidgets.QMainWindow):
 
     def AutoLoginOn(self):
         print('자동 로그인 설정 대기 중 ...')
-        QTimer.singleShot(1000, lambda: auto_on(2))
+        QTimer.singleShot(1000, lambda: auto_on(self.id_num))
         self.ocx.dynamicCall('KOA_Functions(QString, QString)', 'ShowAccountWindow', '')
         opstarter_kill()
 
@@ -53,7 +54,8 @@ if __name__ == '__main__':
     if os.path.isfile(autologin_dat): os.remove(autologin_dat)
     print('자동 로그인 설정 파일 삭제 완료')
 
-    Process(target=Window, daemon=True).start()
+    id_num = int(DICT_SET['증권사'][4:])
+    Process(target=Window, args=(id_num,), daemon=True).start()
     print('자동 로그인 설정용 프로세스 시작')
 
     while find_window('Open API login') == 0:
@@ -63,7 +65,6 @@ if __name__ == '__main__':
     print('아이디 및 패스워드 입력 대기 중 ...')
     time.sleep(2)
 
-    id_num = int(DICT_SET['증권사'][4:]) * 2
     manual_login(id_num)
     print('아이디 및 패스워드 입력 완료')
 

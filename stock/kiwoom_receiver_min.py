@@ -8,9 +8,8 @@ from utility.static import now, roundfigure_upper5, GetSangHahanga
 
 
 class KiwoomReceiverMin(KiwoomReceiverTick):
-    def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
-        if self.operation == 1:
-            self.operation = 3
+    def UpdateTickData(self, data):
+        code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp = data
 
         if self.dict_set['리시버공유'] == 1:
             self.recvservQ.put(('tickdata', (code, c, dt)))
@@ -58,7 +57,8 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, receivetime):
+    def UpdateHogaData(self, data):
+        dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, receivetime, lastprice = data
         mm     = 0
         dm     = 0
         send   = False
@@ -143,6 +143,6 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
             if code in self.dict_sghg.keys():
                 shg, hhg = self.dict_sghg[code]
             else:
-                shg, hhg = GetSangHahanga(code in self.tuple_kosd, self.kw.GetMasterLastPrice(code), self.int_hgtime)
+                shg, hhg = GetSangHahanga(code in self.tuple_kosd, lastprice, self.int_hgtime)
                 self.dict_sghg[code] = (shg, hhg)
             self.kwzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + (shg, hhg)))

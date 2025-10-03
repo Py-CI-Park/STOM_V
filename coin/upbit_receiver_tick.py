@@ -1,5 +1,3 @@
-from traceback import print_exc
-
 import zmq
 import time
 import sqlite3
@@ -75,6 +73,7 @@ class UpbitReceiverTick:
         self.recvservQ = Queue()
         if self.dict_set['리시버공유'] == 1:
             self.zmqserver = ZmqServ(self.recvservQ)
+            self.zmqserver.daemon = True
             self.zmqserver.start()
 
         self.MainLoop()
@@ -141,7 +140,6 @@ class UpbitReceiverTick:
                         self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, curr_time)
             elif data == '프로세스종료':
                 self.SysExit()
-                break
 
             if curr_time > self.dict_time['거래대금순위전송']:
                 self.UpdateMoneyTop()
@@ -337,7 +335,6 @@ class UpbitReceiverTick:
 
     def ReceiverProcKill(self):
         self.dict_bool['프로세스종료'] = True
-        self.ctraderQ.put('프로세스종료')
         self.WebProcessKill()
         threading_timer(180, self.creceivQ.put, '프로세스종료')
         if self.dict_set['코인알림소리']:
@@ -348,9 +345,9 @@ class UpbitReceiverTick:
             self.SaveData()
         else:
             self.cstgQ.put('프로세스종료')
+        self.ctraderQ.put('프로세스종료')
         time.sleep(5)
         self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료'))
-        time.sleep(1)
 
     def SaveData(self):
         codes = []

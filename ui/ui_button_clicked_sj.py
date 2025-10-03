@@ -46,18 +46,13 @@ def sj_button_cicked_02(ui):
     df = pd.read_sql('SELECT * FROM sacc', con).set_index('index')
     con.close()
     comob_name = ui.sj_main_comBox_01.currentText()
-    seconnum = int(comob_name[4:]) * 2
-    firstnum = seconnum - 1
+    id_num = int(comob_name[4:])
     if len(df) > 0:
-        if df['아이디'][firstnum] and df['아이디'][seconnum]:
-            ui.sj_sacc_liEdit_01.setText(de_text(ui.dict_set['키'], df['아이디'][firstnum]))
-            ui.sj_sacc_liEdit_02.setText(de_text(ui.dict_set['키'], df['비밀번호'][firstnum]))
-            ui.sj_sacc_liEdit_03.setText(de_text(ui.dict_set['키'], df['인증서비밀번호'][firstnum]))
-            ui.sj_sacc_liEdit_04.setText(de_text(ui.dict_set['키'], df['계좌비밀번호'][firstnum]))
-            ui.sj_sacc_liEdit_05.setText(de_text(ui.dict_set['키'], df['아이디'][seconnum]))
-            ui.sj_sacc_liEdit_06.setText(de_text(ui.dict_set['키'], df['비밀번호'][seconnum]))
-            ui.sj_sacc_liEdit_07.setText(de_text(ui.dict_set['키'], df['인증서비밀번호'][seconnum]))
-            ui.sj_sacc_liEdit_08.setText(de_text(ui.dict_set['키'], df['계좌비밀번호'][seconnum]))
+        if df['아이디'][id_num]:
+            ui.sj_sacc_liEdit_01.setText(de_text(ui.dict_set['키'], df['아이디'][id_num]))
+            ui.sj_sacc_liEdit_02.setText(de_text(ui.dict_set['키'], df['비밀번호'][id_num]))
+            ui.sj_sacc_liEdit_03.setText(de_text(ui.dict_set['키'], df['인증서비밀번호'][id_num]))
+            ui.sj_sacc_liEdit_04.setText(de_text(ui.dict_set['키'], df['계좌비밀번호'][id_num]))
     else:
         QMessageBox.critical(ui, '오류 알림', '주식 계정 설정값이\n존재하지 않습니다.\n')
 
@@ -145,9 +140,10 @@ def sj_button_cicked_05(ui):
         ui.sj_stock_lEdit_07.setText(str(df['주식투자금'][0]))
         ui.sj_stock_lEdit_09.setText(str(df['주식손실중지수익률'][0]))
         ui.sj_stock_lEdit_10.setText(str(df['주식수익중지수익률'][0]))
-        if 152000 <= df['주식전략종료시간'][0] <= 152759:
-            QMessageBox.critical(ui, '오류 알림', '주식전략의 종료시간을\n152000 ~ 152759 구간으로 설정할 수 없습니다.\n')
-            return
+        if gubun == 'stock' and 153000 < df['주식전략종료시간'][0]:
+            QMessageBox.critical(ui, '오류 알림', '주식전략의 종료시간을\n153001 이후 시간으로 설정할 수 없습니다.\n')
+        elif gubun == 'future' and 160000 < df['주식전략종료시간'][0]:
+            QMessageBox.critical(ui, '오류 알림', '해선전략의 종료시간을\n160001 이후 시간으로 설정할 수 없습니다.\n')
     else:
         QMessageBox.critical(ui, '오류 알림', '주식 전략 설정값이\n존재하지 않습니다.\n')
 
@@ -334,41 +330,24 @@ def sj_button_cicked_10(ui):
     ps1 = ui.sj_sacc_liEdit_02.text()
     cp1 = ui.sj_sacc_liEdit_03.text()
     ap1 = ui.sj_sacc_liEdit_04.text()
-    id2 = ui.sj_sacc_liEdit_05.text()
-    ps2 = ui.sj_sacc_liEdit_06.text()
-    cp2 = ui.sj_sacc_liEdit_07.text()
-    ap2 = ui.sj_sacc_liEdit_08.text()
     comob_name = ui.sj_main_comBox_01.currentText()
-    if '' in (id1, ps1, cp1, ap1, id2, ps2, cp2, ap2):
+    if '' in (id1, ps1, cp1, ap1):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
     else:
         en_id1 = en_text(ui.dict_set['키'], id1)
         en_ps1 = en_text(ui.dict_set['키'], ps1)
         en_cp1 = en_text(ui.dict_set['키'], cp1)
         en_ap1 = en_text(ui.dict_set['키'], ap1)
-        en_id2 = en_text(ui.dict_set['키'], id2)
-        en_ps2 = en_text(ui.dict_set['키'], ps2)
-        en_cp2 = en_text(ui.dict_set['키'], cp2)
-        en_ap2 = en_text(ui.dict_set['키'], ap2)
-        seconnum = int(comob_name[4:]) * 2
-        firstnum = seconnum - 1
+        id_num = int(comob_name[4:])
         if ui.proc_query.is_alive():
             query = f"UPDATE sacc SET " \
                     f"아이디 = '{en_id1}', 비밀번호 = '{en_ps1}', 인증서비밀번호 = '{en_cp1}', 계좌비밀번호 = '{en_ap1}'" \
-                    f"WHERE `index` = {firstnum}"
+                    f"WHERE `index` = {id_num}"
             ui.queryQ.put(('설정디비', query))
-            query = f"UPDATE sacc SET " \
-                    f"아이디 = '{en_id2}', 비밀번호 = '{en_ps2}', 인증서비밀번호 = '{en_cp2}', 계좌비밀번호 = '{en_ap2}'" \
-                    f"WHERE `index` = {seconnum}"
-            ui.queryQ.put(('설정디비', query))
-        ui.dict_set[f'아이디{firstnum}']        = id1
-        ui.dict_set[f'비밀번호{firstnum}']      = ps1
-        ui.dict_set[f'인증서비밀번호{firstnum}'] = cp1
-        ui.dict_set[f'계좌비밀번호{firstnum}']   = ap1
-        ui.dict_set[f'아이디{seconnum}']        = id2
-        ui.dict_set[f'비밀번호{seconnum}']      = ps2
-        ui.dict_set[f'인증서비밀번호{seconnum}'] = cp2
-        ui.dict_set[f'계좌비밀번호{seconnum}']   = ap2
+        ui.dict_set[f'아이디{id_num}']        = id1
+        ui.dict_set[f'비밀번호{id_num}']      = ps1
+        ui.dict_set[f'인증서비밀번호{id_num}'] = cp1
+        ui.dict_set[f'계좌비밀번호{id_num}']   = ap1
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -447,11 +426,11 @@ def sj_button_cicked_13(ui):
 
         if buttonReply == QMessageBox.Yes:
             at1, bc1, se1, sc, cmp, cpp = int(at1), int(bc1), int(se1), float(sc), float(cmp), float(cpp)
-            if '키움증권' in ui.dict_set['증권사'] and (152000 <= se1 <= 152759 or 152901 <= se1):
-                QMessageBox.critical(ui, '오류 알림', '주식 전략의 종료시간을\n152000~152759, 152901~ 구간으로 설정할 수 없습니다.\n')
+            if '키움증권' in ui.dict_set['증권사'] and 153000 < se1:
+                QMessageBox.critical(ui, '오류 알림', '주식 전략의 종료시간을\n153001 이후 시간으로 설정할 수 없습니다.\n')
                 return
-            elif '해외선물' in ui.dict_set['증권사'] and (160001 <= se1):
-                QMessageBox.critical(ui, '오류 알림', '해선 전략의 종료시간을\n160001~ 구간으로 설정할 수 없습니다.\n')
+            elif '해외선물' in ui.dict_set['증권사'] and 160000 < se1:
+                QMessageBox.critical(ui, '오류 알림', '해선 전략의 종료시간을\n160001 이후 시간으로 설정할 수 없습니다.\n')
                 return
             if by1 == '사용안함':
                 by1 = ''
@@ -651,10 +630,6 @@ def sj_button_cicked_17(ui):
         ui.sj_sacc_liEdit_02.setEchoMode(QLineEdit.Password)
         ui.sj_sacc_liEdit_03.setEchoMode(QLineEdit.Password)
         ui.sj_sacc_liEdit_04.setEchoMode(QLineEdit.Password)
-        ui.sj_sacc_liEdit_05.setEchoMode(QLineEdit.Password)
-        ui.sj_sacc_liEdit_06.setEchoMode(QLineEdit.Password)
-        ui.sj_sacc_liEdit_07.setEchoMode(QLineEdit.Password)
-        ui.sj_sacc_liEdit_08.setEchoMode(QLineEdit.Password)
         ui.sj_cacc_liEdit_01.setEchoMode(QLineEdit.Password)
         ui.sj_cacc_liEdit_02.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_01.setEchoMode(QLineEdit.Password)

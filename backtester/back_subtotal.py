@@ -208,7 +208,7 @@ class BackSubTotal:
             vsday, veday, tdaycnt, vdaycnt, index, vturn, vkey = data[3:]
             if gubun:
                 arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * cf_day) | (veday * cf_day + cf_hms < arry_tsg[:, 1])]
-                arry_bct = arry_bct[(vsday * cf_day < arry_bct[:, 0]) | (arry_bct[:, 0] > veday * cf_day + cf_hms)]
+                arry_bct = arry_bct[(arry_bct[:, 0] < vsday * cf_day) | (veday * cf_day + cf_hms > arry_bct[:, 0])]
                 result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, tdaycnt)
             else:
                 arry_tsg = arry_tsg[(vsday * cf_day <= arry_tsg[:, 1]) & (arry_tsg[:, 1] <= veday * cf_day + cf_hms)]

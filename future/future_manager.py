@@ -69,19 +69,24 @@ class ZmqServ(QThread):
         self.sock.bind(f'tcp://*:{port_num}')
 
     def run(self):
-        int_hms_ = int(str_hms())
+        inthms = int(str_hms())
         while True:
-            msg, data = self.kwzservQ.get()
-            self.sock.send_string(msg, zmq.SNDMORE)
-            self.sock.send_pyobj(data)
-            if int(str_hms()) > int_hms_:
+            if not self.kwzservQ.empty():
+                msg, data = self.kwzservQ.get()
+                self.sock.send_string(msg, zmq.SNDMORE)
+                self.sock.send_pyobj(data)
+                if type(data) == str and data == '통신종료':
+                    qtest_qwait(1)
+                    break
+
+            if int(str_hms()) > inthms:
+                inthms = int(str_hms())
                 qsize_data  = ('qsize', (self.sreceivQ.qsize(), self.straderQ.qsize(), self.sstgQ.qsize()))
                 self.sock.send_string('qsize', zmq.SNDMORE)
                 self.sock.send_pyobj(qsize_data)
-                int_hms_ = int(str_hms())
-            if type(data) == str and data == '통신종료':
-                QThread.sleep(1)
-                break
+
+            qtest_qwait(0.01)
+
         self.sock.close()
         self.zctx.term()
 
@@ -191,7 +196,7 @@ class FutureManager:
 
         if lwopen:
             if is_main:
-                id_num = int(self.dict_set['증권사'][4:]) * 2 - 1
+                id_num = int(self.dict_set['증권사'][4:])
                 print('아이디 및 패스워드 입력 대기 중 ...')
                 qtest_qwait(2)
                 manual_login(id_num)
@@ -259,7 +264,7 @@ class FutureManager:
         self.proc_trader_future.start()
 
     def FutureKiwoomStart(self):
-        password = self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:]) * 2 - 1}"]
+        password = self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:])}"]
         while True:
             if not self.FutureKiwoomProcessAlive():
                 set_pass_proc = Process(target=set_password, args=(password,))
@@ -271,7 +276,7 @@ class FutureManager:
                 else:
                     self.proc_future_kiwoom.kill()
                     print('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
-            qtest_qwait(0.1)
+            qtest_qwait(0.01)
 
     def FutureReceiverProcessAlive(self):
         return self.proc_receiver_future is not None and self.proc_receiver_future.is_alive()

@@ -140,10 +140,9 @@ def mnbutton_c_clicked_03(ui, login):
             ui.wdzservQ.put(('manager', '전략연산 종료'))
             ui.wdzservQ.put(('manager', '트레이더 종료'))
             qtest_qwait(3)
-            if ui.dict_set['리시버공유'] < 2 and '키움증권' in ui.dict_set['증권사'] and ui.dict_set[f"아이디{int(ui.dict_set['증권사'][-1:])*2}"] is None:
-                QMessageBox.critical(ui, '오류 알림', '두번째 계정이 설정되지 않아\n리시버를 시작할 수 없습니다.\n계정 설정 후 다시 시작하십시오.\n')
-            elif ui.dict_set[f"아이디{int(ui.dict_set['증권사'][-1:])*2-1}"] is None:
-                QMessageBox.critical(ui, '오류 알림', '첫번째 계정이 설정되지 않아\n트레이더를 시작할 수 없습니다.\n계정 설정 후 다시 시작하십시오.\n')
+            id_num = ui.dict_set['증권사'][4:]
+            if ui.dict_set[f"아이디{id_num}"] is None:
+                QMessageBox.critical(ui, '오류 알림', '계정이 설정되지 않아 시작할 수 없습니다.\n계정 설정 후 다시 시작하십시오.\n')
             elif ui.dict_set['주식리시버'] and ui.dict_set['주식트레이더']:
                 if ui.dict_set['주식알림소리']:
                     ui.soundQ.put(f"{ui.dict_set['증권사'][:4]} OPEN API에 로그인을 시작합니다.")

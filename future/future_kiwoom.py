@@ -13,7 +13,7 @@ from utility.static import now, str_hms_cme_from_str, qtest_qwait, opstarter_kil
 
 
 class Updater(QThread):
-    signal1 = pyqtSignal(tuple)
+    signal1 = pyqtSignal(list)
     signal2 = pyqtSignal(dict)
 
     def __init__(self, futureQ):
@@ -68,8 +68,8 @@ class FutureKiwoom:
 
         self.str_tr_next = ''
         self.str_account = ''
-        self.str_pass    = self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:]) * 2 - 1}"]
-        self.str_tday    = str_ymd(now_cme())
+        self.str_pass    = self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:])}"]
+        self.str_today   = str_ymd(now_cme())
         self.order_time  = now()
         self.intg_odsn   = 3000
         self.tr_df       = None
@@ -130,12 +130,13 @@ class FutureKiwoom:
             qtest_qwait(0.01)
         self.ShowAccountWindow()
         opstarter_kill()
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
 
-        self.str_account = self.GetAccountNumber()
+        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
         text = '해외선물 시스템을 시작하였습니다.'
         if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', text))
         self.kwzservQ.put(('tele', text))
+
+        self.str_account = self.GetAccountNumber()
 
         con = sqlite3.connect(DB_CODE_INFO)
         df = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
@@ -242,7 +243,7 @@ class FutureKiwoom:
                 cme_hms = str_hms_cme_from_str(dt)
                 if not self.test_mode and ((not self.dict_set['주식타임프레임'] and int(cme_hms) < 90000) or (self.dict_set['주식타임프레임'] and int(cme_hms) < 93000)):
                     return
-                dt = int(f'{self.str_tday}{cme_hms}')
+                dt = int(f'{self.str_today}{cme_hms}')
             except:
                 pass
             else:
@@ -348,7 +349,7 @@ class FutureKiwoom:
                 cme_hms = str_hms_cme_from_str(dt)
                 if not self.test_mode and ((not self.dict_set['주식타임프레임'] and int(cme_hms) < 90000) or (self.dict_set['주식타임프레임'] and int(cme_hms) < 93000)):
                     return
-                dt = int(f'{self.str_tday}{cme_hms}')
+                dt = int(f'{self.str_today}{cme_hms}')
                 name = self.dict_info[code]['종목명']
             except:
                 pass
@@ -380,7 +381,7 @@ class FutureKiwoom:
                 미체결수량 = int(self.GetChejanData(902))
                 주문가격 = float(self.GetChejanData(901))
                 주문번호 = self.GetChejanData(9203)
-                주문시간 = f"{self.str_tday}{str_hms_cme_from_str(self.GetChejanData(908))}"
+                주문시간 = f"{self.str_today}{str_hms_cme_from_str(self.GetChejanData(908))}"
             except:
                 pass
             else:
@@ -403,7 +404,7 @@ class FutureKiwoom:
 
         if not self.test_mode:
             inthms = int(str_hms(now_cme()))
-            if self.dict_set['주식전략종료시간'] < inthms and not self.dict_bool['프로세스종료'] and self.dict_set['주식프로세스종료']:
+            if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
                 self.ProcessKill()
             if 160500 < inthms and not self.dict_bool['프로세스종료']:
                 self.ProcessKill()
@@ -430,7 +431,7 @@ class FutureKiwoom:
                 df = df[[columns]]
                 df['분할매수횟수'] = 5
                 df['분할매도횟수'] = 0
-                df['매수시간'] = self.str_tday + '093000'
+                df['매수시간'] = self.str_today + '093000'
                 df['종목명'] = df['종목코드'].apply(lambda x: self.dict_info[x]['종목명'])
                 df.set_index('index', inplace=True)
                 dict_jg = df.to_dict('index')
@@ -447,9 +448,7 @@ class FutureKiwoom:
         self.dict_bool['프로세스종료'] = True
         if self.dict_set['주식알림소리']:
             self.kwzservQ.put(('sound', '해외선물 시스템을 3분 후 종료합니다.'))
-        self.sreceivQ.put('프로그램종료')
-        self.straderQ.put('프로그램종료')
-        self.sstgQ.put('프로그램종료')
+        self.sreceivQ.put('프로세스종료')
 
     # noinspection PyUnusedLocal
     def OnReceiveTrData(self, screen, rqname, trcode, record, nnext):
@@ -581,6 +580,7 @@ class FutureKiwoom:
         return self.ocx.dynamicCall('GetChejanData(int)', fid)
 
     def ReceivOrder(self, order):
+        # [주문구분, 화면번호, 계좌번호, 주문유형, 종목코드, 주문수량, 주문가격, Stop단가, 거래구분, 원주문번호], 종목명, 시그널시간
         curr_time = now()
         if curr_time < self.order_time:
             next_time = (self.order_time - curr_time).total_seconds()
@@ -591,35 +591,24 @@ class FutureKiwoom:
         order[1] = str(self.intg_odsn)
         order[2] = self.str_account
 
-        name, signal_time = order[-2:]
-        self.OrderTimeLog(signal_time)
+        주문구분, _, _, _, 종목코드, 주문수량, 주문가격, _, _, _, 종목명, 시그널시간 = order
+
+        self.OrderTimeLog(시그널시간)
         ret = self.SendOrder(order[:-2])
         if ret == 0:
-            self.straderQ.put(('주문전송', (order[4], order[0])))
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] [{order[0]}] {name} | {order[6]} | {order[5]}')))
+            self.straderQ.put(('주문전송', (종목코드, 주문구분)))
+            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
             self.order_time = timedelta_sec(0.2)
-            self.dict_sncd[self.intg_odsn] = order[4]
+            self.dict_sncd[self.intg_odsn] = 종목코드
         else:
-            self.sstgQ.put((f'{order[0]}_CANCEL', order[4]))
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] [{order[0]}] {name} | {order[6]} | {order[5]}')))
+            self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
+            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
+
+    def SendOrder(self, order: list):
+        return self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, QString, QString, QString, QString)', order)
 
     def ChangeDictset(self, data):
         self.dict_set = data
-
-    def SendOrder(self, order: list):
-        """
-        sRQName     STR     사용사지정명
-        sScreenNo   STR     화면번호
-        sAccNo      STR     계좌번호
-        nOrderType  LONG    주문유형 (1:신규매도, 2:신규매수 3:매도취소, 4:매수취소, 5:매도정정, 6:매수정정)
-        sCode       STR     종목코드
-        nQty        LONG    주문수량
-        sPrice      STR     주문단가
-        sStop       STR     Stop단가
-        sHogaGb     STR     거래구분 (1:시장가, 2:지정가, 3:STOP, 4:STOP LIMIT)
-        sOrgOrderNo STR     원주문번호
-        """
-        return self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, QString, QString, QString, QString)', order)
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()

@@ -53,7 +53,7 @@ class SetSetupTap:
         self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=self.ui.cActivated_10)
         self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=self.ui.cActivated_11)
 
-        text = '첫번째 계정 아이디                                                         ' \
+        text = '키움증권  아이디                                                             ' \
                '비밀번호                                                           ' \
                '인증서비밀번호                                                       ' \
                '계좌비밀번호'
@@ -62,16 +62,6 @@ class SetSetupTap:
         self.ui.sj_sacc_liEdit_02 = self.wc.setLineedit(self.ui.sj_bs_groupBox_02, passhide=True)
         self.ui.sj_sacc_liEdit_03 = self.wc.setLineedit(self.ui.sj_bs_groupBox_02, passhide=True)
         self.ui.sj_sacc_liEdit_04 = self.wc.setLineedit(self.ui.sj_bs_groupBox_02, passhide=True)
-
-        text = '두번째 계정 아이디                                                         ' \
-               '비밀번호                                                           ' \
-               '인증서비밀번호                                                       ' \
-               '계좌비밀번호'
-        self.ui.sj_sacc_labell_02 = QLabel(text, self.ui.sj_bs_groupBox_02)
-        self.ui.sj_sacc_liEdit_05 = self.wc.setLineedit(self.ui.sj_bs_groupBox_02, passhide=True)
-        self.ui.sj_sacc_liEdit_06 = self.wc.setLineedit(self.ui.sj_bs_groupBox_02, passhide=True)
-        self.ui.sj_sacc_liEdit_07 = self.wc.setLineedit(self.ui.sj_bs_groupBox_02, passhide=True)
-        self.ui.sj_sacc_liEdit_08 = self.wc.setLineedit(self.ui.sj_bs_groupBox_02, passhide=True)
 
         text = 'Access Key                                                                                  ' \
                '                                                            Secret Key'
@@ -192,7 +182,7 @@ class SetSetupTap:
         self.ui.sj_save_Button_07 = self.wc.setPushbutton('저장하기', box=self.ui.sj_bs_groupBox_07, click=self.ui.sjButtonClicked_15)
         self.ui.sj_save_Button_08 = self.wc.setPushbutton('저장하기', box=self.ui.sj_bs_groupBox_08, click=self.ui.sjButtonClicked_16)
 
-        self.ui.sj_etc_pButton_01 = self.wc.setPushbutton('계정 텍스트 보기', box=self.ui.sj_bs_groupBox_02, click=self.ui.sjButtonClicked_17)
+        self.ui.sj_etc_pButton_01 = self.wc.setPushbutton('계정 텍스트 보기', box=self.ui.ssd_tab, click=self.ui.sjButtonClicked_17)
         self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', box=self.ui.sj_bs_groupBox_05, click=self.ui.sjButtonClicked_33)
         self.ui.sj_etc_pButton_03 = self.wc.setPushbutton('경과틱수 변수설정', box=self.ui.sj_bs_groupBox_06, click=self.ui.sjButtonClicked_34)
 
@@ -206,13 +196,13 @@ class SetSetupTap:
         self.ui.sj_set_pButton_04.setGeometry(1297, 10, 50, 20)
 
         self.ui.sj_bs_groupBox_01.setGeometry(5, 5, 1326, 75)
-        self.ui.sj_bs_groupBox_02.setGeometry(5, 90, 1326, 75)
-        self.ui.sj_bs_groupBox_03.setGeometry(5, 175, 1326, 50)
-        self.ui.sj_bs_groupBox_04.setGeometry(5, 235, 1326, 50)
-        self.ui.sj_bs_groupBox_05.setGeometry(5, 295, 1326, 75)
-        self.ui.sj_bs_groupBox_06.setGeometry(5, 380, 1326, 75)
-        self.ui.sj_bs_groupBox_07.setGeometry(5, 465, 1326, 125)
-        self.ui.sj_bs_groupBox_08.setGeometry(5, 600, 1326, 107)
+        self.ui.sj_bs_groupBox_02.setGeometry(5, 90, 1326, 50)
+        self.ui.sj_bs_groupBox_03.setGeometry(5, 150, 1326, 50)
+        self.ui.sj_bs_groupBox_04.setGeometry(5, 210, 1326, 50)
+        self.ui.sj_bs_groupBox_05.setGeometry(5, 270, 1326, 75)
+        self.ui.sj_bs_groupBox_06.setGeometry(5, 355, 1326, 75)
+        self.ui.sj_bs_groupBox_07.setGeometry(5, 440, 1326, 125)
+        self.ui.sj_bs_groupBox_08.setGeometry(5, 575, 1326, 132)
 
         self.ui.sj_main_comBox_01.setGeometry(10, 25, 140, 20)
         self.ui.sj_main_cheBox_01.setGeometry(170, 25, 90, 20)
@@ -238,11 +228,6 @@ class SetSetupTap:
         self.ui.sj_sacc_liEdit_02.setGeometry(330, 25, 130, 20)
         self.ui.sj_sacc_liEdit_03.setGeometry(585, 25, 130, 20)
         self.ui.sj_sacc_liEdit_04.setGeometry(820, 25, 130, 20)
-        self.ui.sj_sacc_labell_02.setGeometry(10, 50, 1000, 20)
-        self.ui.sj_sacc_liEdit_05.setGeometry(115, 50, 130, 20)
-        self.ui.sj_sacc_liEdit_06.setGeometry(330, 50, 130, 20)
-        self.ui.sj_sacc_liEdit_07.setGeometry(585, 50, 130, 20)
-        self.ui.sj_sacc_liEdit_08.setGeometry(820, 50, 130, 20)
 
         self.ui.sj_cacc_labell_01.setGeometry(10, 25, 1000, 20)
         self.ui.sj_cacc_liEdit_01.setGeometry(85, 25, 375, 20)
@@ -330,9 +315,9 @@ class SetSetupTap:
         self.ui.sj_etc_checBox_05.setGeometry(500, 50, 300, 20)
         self.ui.sj_etc_checBox_06.setGeometry(835, 50, 130, 20)
         self.ui.sj_etc_checBox_07.setGeometry(970, 50, 200, 20)
-        self.ui.sj_etc_labelll_02.setGeometry(10, 75, 80, 20)
-        self.ui.sj_etc_liEditt_01.setGeometry(80, 75, 940, 20)
-        self.ui.sj_etc_daEditt_01.setGeometry(1030, 75, 110, 20)
+        self.ui.sj_etc_labelll_02.setGeometry(10, 100, 80, 20)
+        self.ui.sj_etc_liEditt_01.setGeometry(80, 100, 940, 20)
+        self.ui.sj_etc_daEditt_01.setGeometry(1030, 100, 110, 20)
 
         self.ui.sj_load_Button_01.setGeometry(1175, 25, 70, 20)
         self.ui.sj_load_Button_02.setGeometry(1175, 25, 70, 20)
@@ -352,6 +337,6 @@ class SetSetupTap:
         self.ui.sj_save_Button_07.setGeometry(1250, 25, 70, 20)
         self.ui.sj_save_Button_08.setGeometry(1250, 25, 70, 20)
 
-        self.ui.sj_etc_pButton_01.setGeometry(1175, 50, 145, 20)
+        self.ui.sj_etc_pButton_01.setGeometry(1180, 85, 145, 20)
         self.ui.sj_etc_pButton_02.setGeometry(1175, 50, 145, 20)
         self.ui.sj_etc_pButton_03.setGeometry(1175, 50, 145, 20)

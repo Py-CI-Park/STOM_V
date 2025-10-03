@@ -5,9 +5,10 @@ from PyQt5.QtWidgets import QPushButton, QMessageBox
 def checkbox_changed_01(ui, state):
     if type(ui.focusWidget()) != QPushButton:
         if state == Qt.Checked:
-            if ui.dict_set['아이디2'] is None:
+            id_num = ui.dict_set['증권사'][4:]
+            if ui.dict_set[f'아이디{id_num}'] is None:
                 ui.sj_main_cheBox_01.nextCheckState()
-                QMessageBox.critical(ui, '오류 알림', '두번째 계정이 설정되지 않아\n리시버를 선택할 수 없습니다.\n계정 설정 후 다시 선택하십시오.\n')
+                QMessageBox.critical(ui, '오류 알림', '계정이 설정되지 않아 리시버를 선택할 수 없습니다.\n계정 설정 후 다시 선택하십시오.\n')
             elif not ui.sj_main_cheBox_02.isChecked():
                 ui.sj_main_cheBox_02.nextCheckState()
         else:
@@ -18,9 +19,10 @@ def checkbox_changed_01(ui, state):
 def checkbox_changed_02(ui, state):
     if type(ui.focusWidget()) != QPushButton:
         if state == Qt.Checked:
-            if ui.dict_set['아이디1'] is None:
+            id_num = ui.dict_set['증권사'][4:]
+            if ui.dict_set[f'아이디{id_num}'] is None:
                 ui.sj_main_cheBox_02.nextCheckState()
-                QMessageBox.critical(ui, '오류 알림', '첫번째 계정이 설정되지 않아\n트레이더를 선택할 수 없습니다.\n계정 설정 후 다시 선택하십시오.\n')
+                QMessageBox.critical(ui, '오류 알림', '계정이 설정되지 않아 트레이더를 선택할 수 없습니다.\n계정 설정 후 다시 선택하십시오.\n')
             elif not ui.sj_main_cheBox_01.isChecked():
                 ui.sj_main_cheBox_01.nextCheckState()
         else:
@@ -32,7 +34,7 @@ def checkbox_changed_03(ui, state):
     if type(ui.focusWidget()) != QPushButton and state == Qt.Checked:
         if ui.sj_main_cheBox_09.isChecked():
             ui.sj_main_cheBox_03.nextCheckState()
-            QMessageBox.critical(ui, '오류 알림', '클라이언트용 스톰은\n틱데이터를 저장할 수 없습니다.\n서버용 스톰으로 저장하십시오.\n')
+            QMessageBox.critical(ui, '오류 알림', '클라이언트용 스톰은 데이터를 저장할 수 없습니다.\n서버용 스톰으로 저장하십시오.\n')
         else:
             if not ui.sj_main_cheBox_01.isChecked():
                 ui.sj_main_cheBox_01.nextCheckState()
@@ -64,7 +66,7 @@ def checkbox_changed_06(ui, state):
     if type(ui.focusWidget()) != QPushButton and state == Qt.Checked:
         if ui.sj_main_cheBox_09.isChecked():
             ui.sj_main_cheBox_03.nextCheckState()
-            QMessageBox.critical(ui, '오류 알림', '클라이언트용 스톰은\n틱데이터를 저장할 수 없습니다.\n서버용 스톰으로 저장하십시오.\n')
+            QMessageBox.critical(ui, '오류 알림', '클라이언트용 스톰은 데이터를 저장할 수 없습니다.\n서버용 스톰으로 저장하십시오.\n')
         else:
             if not ui.sj_main_cheBox_04.isChecked():
                 ui.sj_main_cheBox_04.nextCheckState()
