@@ -92,10 +92,10 @@ class KiwoomReceiverClient:
                 self.sstgQs[self.dict_sgbn[code]].put(data)
                 if self.dict_set['주식타임프레인']:
                     if code in self.tuple_jango or code in self.tuple_order:
-                        self.straderQ.put(('주문확인', code, c))
+                        self.straderQ.put(('주문확인', (code, c)))
                 else:
                     if code in self.tuple_order:
-                        self.straderQ.put(('주문확인', code, c))
+                        self.straderQ.put(('주문확인', (code, c)))
             except:
                 self.logger.error('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
 

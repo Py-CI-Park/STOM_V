@@ -7,9 +7,8 @@ from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from coin.kimp_upbit_binance import Kimp
 from utility.static import qtest_qwait
-from utility.setting import columns_hc, DB_STRATEGY, DB_COIN_BACK_TICK, DB_COIN_TICK, DB_STOCK_BACK_TICK, DB_STOCK_TICK, \
-    DB_PATH, DB_COIN_BACK_MIN, DB_STOCK_MIN, DB_STOCK_BACK_MIN, DB_COIN_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_MIN, \
-    DB_FUTURE_BACK_TICK, DB_FUTURE_TICK
+from utility.setting import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
+    DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 from ui.set_style import style_bc_bt, style_bc_bb
 
 
@@ -259,12 +258,11 @@ def show_db(ui):
     ui.db_tableWidgett_04.clearContents()
     ui.db_tableWidgett_05.clearContents()
 
-    con = sqlite3.connect(DB_STRATEGY)
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     stock_stg_list = [f'{gubun}buy', f'{gubun}sell', f'{gubun}optibuy', f'{gubun}optisell']
     maxlow = 0
     for i, stock_stg in enumerate(stock_stg_list):
-        df = pd.read_sql(f'SELECT * FROM {stock_stg}', con)
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {stock_stg}')
         stg_names = df['index'].to_list()
         stg_names.sort()
         if len(df) > maxlow:
@@ -280,7 +278,7 @@ def show_db(ui):
     stock_stg_list = [f'{gubun}optivars', f'{gubun}vars', f'{gubun}buyconds', f'{gubun}sellconds']
     maxlow = 0
     for i, stock_stg in enumerate(stock_stg_list):
-        df = pd.read_sql(f'SELECT * FROM {stock_stg}', con)
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {stock_stg}')
         stg_names = df['index'].to_list()
         stg_names.sort()
         if len(df) > maxlow:
@@ -296,7 +294,7 @@ def show_db(ui):
     maxlow = 0
     coin_stg_list = ['coinbuy', 'coinsell', 'coinoptibuy', 'coinoptisell']
     for i, coin_stg in enumerate(coin_stg_list):
-        df = pd.read_sql(f'SELECT * FROM {coin_stg}', con)
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {coin_stg}')
         stg_names = df['index'].to_list()
         stg_names.sort()
         if len(df) > maxlow:
@@ -312,7 +310,7 @@ def show_db(ui):
     stock_stg_list = ['coinoptivars', 'coinvars', 'coinbuyconds', 'coinsellconds']
     maxlow = 0
     for i, stock_stg in enumerate(stock_stg_list):
-        df = pd.read_sql(f'SELECT * FROM {stock_stg}', con)
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {stock_stg}')
         stg_names = df['index'].to_list()
         stg_names.sort()
         if len(df) > maxlow:
@@ -325,7 +323,7 @@ def show_db(ui):
     if maxlow < 8:
         ui.db_tableWidgett_04.setRowCount(8)
 
-    df = pd.read_sql(f'SELECT * FROM schedule', con)
+    df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM schedule')
     stg_names = df['index'].to_list()
     stg_names.sort()
     if len(df) > maxlow:
@@ -337,8 +335,6 @@ def show_db(ui):
         ui.db_tableWidgett_05.setItem(j, 0, item)
     if maxlow < 8:
         ui.db_tableWidgett_05.setRowCount(8)
-
-    con.close()
 
 
 def show_backscheduler(ui):
@@ -401,7 +397,6 @@ def chart_moneytop_list(ui):
     if coin:
         db_name1 = f'{DB_PATH}/coin_tick_{searchdate}.db' if ui.dict_set['코인타임프레임'] else f'{DB_PATH}/coin_min_{searchdate}.db'
         db_name2 = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
-        db_name3 = DB_COIN_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN
         if ui.dict_set['코인타임프레임']:
             query = f"SELECT * FROM moneytop WHERE `index` LIKE '{searchdate}%' and `index` % 1000000 >= {starttime} and `index` % 1000000 <= {endtime}"
         else:
@@ -411,11 +406,9 @@ def chart_moneytop_list(ui):
         if '키움증권' in ui.dict_set['증권사']:
             db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db' if ui.dict_set['주식타임프레임'] else f'{DB_PATH}/stock_min_{searchdate}.db'
             db_name2 = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
-            db_name3 = DB_STOCK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN
         else:
             db_name1 = f'{DB_PATH}/future_min_{searchdate}.db'
             db_name2 = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
-            db_name3 = DB_FUTURE_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN
 
         if ui.dict_set['주식타임프레임']:
             query = f"SELECT * FROM moneytop WHERE `index` LIKE '{searchdate}%' and `index` % 1000000 >= {starttime} and `index` % 1000000 <= {endtime}"
@@ -431,10 +424,6 @@ def chart_moneytop_list(ui):
             con.close()
         elif os.path.isfile(db_name2):
             con = sqlite3.connect(db_name2)
-            df = pd.read_sql(query, con)
-            con.close()
-        elif os.path.isfile(db_name3):
-            con = sqlite3.connect(db_name3)
             df = pd.read_sql(query, con)
             con.close()
     except:

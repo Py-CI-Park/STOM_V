@@ -306,11 +306,13 @@ def GetSellStgFuture(sellstg, gubun):
 
 def GetBuyCondsFuture(is_long, buy_conds, gubun):
     if is_long:
-        buy_conds = 'if ' + ':\n    BUY_LONG = False\nelif '.join(
-            buy_conds) + ':\n    BUY_LONG = False\nif BUY_LONG:\n    self.Buy(vturn, vkey, "LONG")'
+        buy_conds = 'if not (' + \
+                    '):\n    BUY_LONG = False\nelif not ('.join(buy_conds) + \
+                    '):\n    BUY_LONG = False\nif BUY_LONG:\n    self.Buy(vturn, vkey, "LONG")'
     else:
-        buy_conds = 'if ' + ':\n    SELL_SHORT = False\nelif '.join(
-            buy_conds) + ':\n    SELL_SHORT = False\nif SELL_SHORT:\n    self.Buy(vturn, vkey, "SHORT")'
+        buy_conds = 'if not (' + \
+                    '):\n    SELL_SHORT = False\nelif not ('.join(buy_conds) + \
+                    '):\n    SELL_SHORT = False\nif SELL_SHORT:\n    self.Buy(vturn, vkey, "SHORT")'
     try:
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except:

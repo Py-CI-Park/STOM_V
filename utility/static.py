@@ -1,12 +1,10 @@
 import os
 import re
 import sys
-import time
 import pytz
 import psutil
 import _pickle
 import datetime
-import requests
 import winreg as reg
 from loguru import logger
 import exchange_calendars as ec
@@ -284,7 +282,13 @@ def de_text(key, text):
 
 
 def factorial(x):
-    return 1 if x <= 1 else factorial(x - 1) * x
+    if x <= 1: return 1
+    result  = 1
+    current = 2
+    while current <= x:
+        result *= current
+        current += 1
+    return result
 
 
 def text_not_in_special_characters(t):

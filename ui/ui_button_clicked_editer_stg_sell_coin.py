@@ -1,9 +1,7 @@
 import random
-import sqlite3
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.setting import DB_STRATEGY
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
 from ui.set_text import famous_saying, coin_sell_var, coin_future_sell_var, coin_sell1, coin_sell2, coin_sell3, \
@@ -13,9 +11,7 @@ from ui.set_text import famous_saying, coin_sell_var, coin_future_sell_var, coin
 
 def coin_sell_stg_load(ui):
     if ui.cs_textEditttt_02.isVisible():
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql('SELECT * FROM coinsell', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinsell').set_index('index')
         if len(df) > 0:
             ui.cvjs_comboBoxx_01.clear()
             indexs = list(df.index)

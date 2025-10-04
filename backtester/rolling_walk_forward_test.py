@@ -249,7 +249,7 @@ class Total:
             self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
             self.df_ttsg.append(self.df_tsg)
             self.df_tbct.append(self.df_bct)
-            day_cnt  = len(set([str(x)[:8] for x in arry_bct[:, 0]]))
+            day_cnt  = len(np.unique(np.array([str(x)[:8] for x in arry_bct[:, 0]])))
             arry_tsg = np.array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
             arry_bct = np.sort(arry_bct, axis=0)[::-1]
             result   = GetResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, day_cnt)
@@ -278,7 +278,7 @@ class Total:
             arry_tsg = np.array(df_tsg, dtype='float64')
             arry_bct = np.array(df_tbc, dtype='float64')
             arry_bct = np.sort(arry_bct, axis=0)[::-1]
-            day_cnt  = len(set([str(x)[:8] for x in arry_bct[:, 0]]))
+            day_cnt  = len(np.unique(np.array([str(x)[:8] for x in arry_bct[:, 0]])))
             result   = GetResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, day_cnt)
             result   = AddMdd(arry_tsg, result)
             tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result

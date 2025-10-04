@@ -88,11 +88,9 @@ class BackCodeTest(QThread):
 
     def ErrorEnd(self):
         self.testQ.put('전략테스트오류')
-        qtest_qwait(1)
 
     def noErrorEnd(self):
         self.testQ.put('전략테스트완료')
-        qtest_qwait(1)
 
     def Buy(self, *args):
         pass

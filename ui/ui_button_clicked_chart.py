@@ -1,9 +1,7 @@
 import random
-import sqlite3
-import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import famous_saying
-from utility.setting import DB_SETTING, indi_base, DB_STRATEGY, indicator
+from utility.setting import indi_base, indicator
 
 
 def indicator_setting_basic(ui):
@@ -13,11 +11,9 @@ def indicator_setting_basic(ui):
 
 
 def indicator_setting_load(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM back', con)
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back')
     k_list = df['보조지표설정'][0]
     k_list = k_list.split(';')
-    con.close()
     for i, linedit in enumerate(ui.factor_linedit_list):
         linedit.setText(k_list[i])
 
@@ -40,17 +36,15 @@ def get_indicator_detail(ui, code):
             buystg = None
             vars_  = None
             try:
-                con = sqlite3.connect(DB_STRATEGY)
                 if 'KRW' not in code and 'USDT' not in code:
                     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                     stg_name = ui.dict_set['주식매수전략']
-                    df1 = pd.read_sql(f'SELECT * FROM {gubun}buy', con).set_index('index')
-                    df2 = pd.read_sql(f'SELECT * FROM {gubun}optibuy', con).set_index('index')
+                    df1 = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buy').set_index('index')
+                    df2 = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optibuy').set_index('index')
                 else:
                     stg_name = ui.dict_set['코인매수전략']
-                    df1 = pd.read_sql('SELECT * FROM coinbuy', con).set_index('index')
-                    df2 = pd.read_sql('SELECT * FROM coinoptibuy', con).set_index('index')
-                con.close()
+                    df1 = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinbuy').set_index('index')
+                    df2 = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptibuy').set_index('index')
                 if stg_name in df1.index:
                     buystg = df1['전략코드'][stg_name]
                 elif stg_name in df2.index:

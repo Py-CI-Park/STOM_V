@@ -1,9 +1,7 @@
 import random
-import sqlite3
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.setting import DB_STRATEGY
 from utility.static import text_not_in_special_characters
 from ui.set_text import famous_saying, example_opti_vars, example_vars, example_buyconds, example_sellconds, \
     example_coin_buy, example_coin_future_buy, example_coin_sell, example_coin_future_sell, example_coinopti_buy1, \
@@ -15,9 +13,7 @@ from ui.set_text import famous_saying, example_opti_vars, example_vars, example_
 
 def coin_opti_buy_load(ui):
     if ui.cs_textEditttt_03.isVisible():
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql('SELECT * FROM coinoptibuy', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptibuy').set_index('index')
         if len(df) > 0:
             ui.cvc_comboBoxxx_01.clear()
             indexs = list(df.index)
@@ -43,9 +39,7 @@ def coin_opti_buy_save(ui):
         else:
             if 'self.tickcols' in strategy or (
                     QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
-                con = sqlite3.connect(DB_STRATEGY)
-                df = pd.read_sql(f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'", con)
-                con.close()
+                df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'")
                 if ui.proc_query.is_alive():
                     if len(df) > 0:
                         query = f"UPDATE coinoptibuy SET 전략코드 = '{strategy}' WHERE `index` = '{strategy_name}'"
@@ -58,9 +52,7 @@ def coin_opti_buy_save(ui):
 
 def coin_opti_vars_load(ui):
     if ui.cs_textEditttt_05.isVisible():
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql('SELECT * FROM coinoptivars', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptivars').set_index('index')
         if len(df) > 0:
             ui.cvc_comboBoxxx_02.clear()
             indexs = list(df.index)
@@ -92,9 +84,7 @@ def coin_opti_vars_save(ui):
 
 def coin_opti_sell_load(ui):
     if ui.cs_textEditttt_04.isVisible():
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql('SELECT * FROM coinoptisell', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptisell').set_index('index')
         if len(df) > 0:
             ui.cvc_comboBoxxx_08.clear()
             indexs = list(df.index)
@@ -184,12 +174,10 @@ def coin_opti_to_buy_save(ui):
         QMessageBox.critical(ui, '오류 알림', '매수전략의 이름에 특문이 포함되어 있습니다.\n언더바(_)를 제외한 특문을 제거하십시오.\n')
         return
 
-    con = sqlite3.connect(DB_STRATEGY)
-    df  = pd.read_sql('SELECT * FROM coinoptibuy', con).set_index('index')
+    df  = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptibuy').set_index('index')
     stg = df['전략코드'][stgy]
-    df  = pd.read_sql(f'SELECT * FROM "{tabl}"', con).set_index('index')
+    df  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM "{tabl}"').set_index('index')
     opt = df['전략코드'][opti]
-    con.close()
 
     try:
         vars_ = {}
@@ -220,12 +208,10 @@ def coin_opti_to_sell_save(ui):
         QMessageBox.critical(ui, '오류 알림', '매도전략의 이름에 특문이 포함되어 있습니다.\n언더바(_)를 제외한 특문을 제거하십시오.\n')
         return
 
-    con = sqlite3.connect(DB_STRATEGY)
-    df  = pd.read_sql('SELECT * FROM coinoptisell', con).set_index('index')
+    df  = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptisell').set_index('index')
     stg = df['전략코드'][stgy]
-    df  = pd.read_sql(f'SELECT * FROM "{tabl}"', con).set_index('index')
+    df  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM "{tabl}"').set_index('index')
     opt = df['전략코드'][opti]
-    con.close()
 
     try:
         vars_ = {}

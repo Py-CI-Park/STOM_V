@@ -1,18 +1,14 @@
 import random
-import sqlite3
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying
-from utility.setting import DB_STRATEGY
 from utility.static import text_not_in_special_characters
 
 
 def stock_gavars_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-    con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql(f'SELECT * FROM {gubun}vars', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}vars').set_index('index')
     if len(df) > 0:
         ui.sva_comboBoxxx_01.clear()
         indexs = list(df.index)
@@ -44,9 +40,7 @@ def stock_gavars_save(ui):
 
 def stock_condbuy_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-    con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql(f'SELECT * FROM {gubun}buyconds', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buyconds').set_index('index')
     if len(df) > 0:
         ui.svo_comboBoxxx_01.clear()
         indexs = list(df.index)
@@ -78,9 +72,7 @@ def stock_condbuy_save(ui):
 
 def stock_condsell_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-    con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql(f'SELECT * FROM {gubun}sellconds', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}sellconds').set_index('index')
     if len(df) > 0:
         ui.svo_comboBoxxx_02.clear()
         indexs = list(df.index)

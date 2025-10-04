@@ -1,5 +1,4 @@
 import os
-import sqlite3
 import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
@@ -17,7 +16,7 @@ from coin.upbit_receiver_tick import UpbitReceiverTick
 from coin.upbit_strategy_tick import UpbitStrategyTick
 from coin.upbit_receiver_client import UpbitReceiverClient
 from ui.set_style import style_bc_bt, style_bc_bb
-from utility.setting import GRAPH_PATH, DB_BACKTEST, ui_num
+from utility.setting import GRAPH_PATH, ui_num
 from utility.static import qtest_qwait, cme_normal_open
 
 
@@ -184,9 +183,7 @@ def mnbutton_c_clicked_05(ui):
         for file_name in file_list:
             os.remove(f'{GRAPH_PATH}/{file_name}')
         if ui.proc_query.is_alive():
-            con = sqlite3.connect(DB_BACKTEST)
-            df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
-            con.close()
+            df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
             table_list = df['name'].to_list()
             for table_name in table_list:
                 ui.queryQ.put(('백테디비', f'DROP TABLE {table_name}'))

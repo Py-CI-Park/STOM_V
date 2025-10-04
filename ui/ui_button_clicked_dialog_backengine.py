@@ -1,6 +1,5 @@
 import os
 import random
-import sqlite3
 import pandas as pd
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QLineEdit, QMessageBox, QApplication
@@ -11,7 +10,7 @@ from backtester.optimiz_conditions import OptimizeConditions
 from backtester.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from backtester.rolling_walk_forward_test import RollingWalkForwardTest
 from ui.set_text import famous_saying
-from utility.setting import DB_STRATEGY, ui_num
+from utility.setting import ui_num
 from utility.static import qtest_qwait
 
 
@@ -559,9 +558,7 @@ def sdbutton_clicked_03(ui):
 
 
 def sdbutton_clicked_04(ui):
-    con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql('SELECT * FROM schedule', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
     if len(df) > 0:
         if ui.sd_scheckBoxxxx_01.isChecked():
             ui.sd_scheckBoxxxx_01.nextCheckState()

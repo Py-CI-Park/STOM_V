@@ -1,9 +1,6 @@
 import random
-import sqlite3
-import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import famous_saying
-from utility.setting import DB_SETTING
 
 
 def setting_stock_elapsed_tick_number_sample(ui):
@@ -18,9 +15,7 @@ def setting_stock_elapsed_tick_number_load(ui):
         lineedit.clear()
     for lineedit in ui.scc_lineedit_list:
         lineedit.clear()
-    con = sqlite3.connect(DB_SETTING)
-    df  = pd.read_sql('SELECT * FROM stock', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stock').set_index('index')
     if df['주식경과틱수설정'][0]:
         text_list  = df['주식경과틱수설정'][0].split(';')
         half_cnt   = int(len(text_list) / 2)
@@ -62,9 +57,7 @@ def setting_coin_elapsed_tick_number_load(ui):
         lineedit.clear()
     for lineedit in ui.ccc_lineedit_list:
         lineedit.clear()
-    con = sqlite3.connect(DB_SETTING)
-    df  = pd.read_sql('SELECT * FROM coin', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coin').set_index('index')
     if df['코인경과틱수설정'][0]:
         text_list  = df['코인경과틱수설정'][0].split(';')
         half_cnt   = int(len(text_list) / 2)

@@ -1,17 +1,13 @@
 import random
-import sqlite3
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying
-from utility.setting import DB_STRATEGY
 from utility.static import text_not_in_special_characters
 
 
 def coin_gavars_load(ui):
-    con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql('SELECT * FROM coinvars', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinvars').set_index('index')
     if len(df) > 0:
         ui.cva_comboBoxxx_01.clear()
         indexs = list(df.index)
@@ -41,9 +37,7 @@ def coin_gavars_save(ui):
 
 
 def coin_condbuy_load(ui):
-    con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql('SELECT * FROM coinbuyconds', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinbuyconds').set_index('index')
     if len(df) > 0:
         ui.cvo_comboBoxxx_01.clear()
         indexs = list(df.index)
@@ -73,9 +67,7 @@ def coin_condbuy_save(ui):
 
 
 def coin_condsell_load(ui):
-    con = sqlite3.connect(DB_STRATEGY)
-    df = pd.read_sql('SELECT * FROM coinsellconds', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinsellconds').set_index('index')
     if len(df) > 0:
         ui.cvo_comboBoxxx_02.clear()
         indexs = list(df.index)

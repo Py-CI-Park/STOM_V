@@ -1,9 +1,7 @@
 import random
-import sqlite3
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.setting import DB_STRATEGY
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
 from ui.set_text import famous_saying, stock_buy_var, stock_buy1, stock_buy2, stock_buy3, stock_buy4, stock_buy5, \
@@ -13,9 +11,7 @@ from ui.set_text import famous_saying, stock_buy_var, stock_buy1, stock_buy2, st
 def stock_buy_stg_load(ui):
     if ui.ss_textEditttt_01.isVisible():
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f'SELECT * FROM {gubun}buy', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buy').set_index('index')
         if len(df) > 0:
             ui.svjb_comboBoxx_01.clear()
             indexs = list(df.index)

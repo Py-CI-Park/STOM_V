@@ -1,10 +1,7 @@
 import random
-import sqlite3
-import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QPushButton
 from ui.set_text import famous_saying
-from utility.setting import DB_SETTING
 
 
 def setting_stock_weight_cotrol_load(ui):
@@ -15,9 +12,7 @@ def setting_stock_weight_cotrol_load(ui):
     ui.bjs_checkBoxxx_05.setChecked(False)
     ui.bjs_checkBoxxx_06.setChecked(False)
     ui.bjs_checkBoxxx_07.setChecked(False)
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM stockbuyorder', con)
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stockbuyorder')
     bjjj_list = df['주식비중조절'][0]
     bjjj_list = bjjj_list.split(';')
     if bjjj_list[0] == '0':   ui.bjs_checkBoxxx_01.setChecked(True)
@@ -86,9 +81,7 @@ def setting_coin_weight_cotrol_load(ui):
     ui.bjc_checkBoxxx_02.setChecked(False)
     ui.bjc_checkBoxxx_03.setChecked(False)
     ui.bjc_checkBoxxx_04.setChecked(False)
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM coinbuyorder', con)
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coinbuyorder')
     bjjj_list = df['코인비중조절'][0]
     bjjj_list = bjjj_list.split(';')
     if bjjj_list[0] == '0':   ui.bjc_checkBoxxx_01.setChecked(True)

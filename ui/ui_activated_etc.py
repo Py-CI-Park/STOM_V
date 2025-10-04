@@ -1,7 +1,5 @@
-import sqlite3
-import pandas as pd
 from PyQt5.QtWidgets import QPushButton
-from utility.setting import DB_BACKTEST, ui_num
+from utility.setting import ui_num
 
 
 def dactivated_01(ui):
@@ -14,9 +12,7 @@ def dactivated_01(ui):
         if table_name is None:
             return
 
-        con = sqlite3.connect(DB_BACKTEST)
-        df = pd.read_sql(f"SELECT * FROM '{table_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{table_name}'").set_index('index')
         ui.update_tablewidget.update_tablewidget((ui_num[ui_num_text], df))
 
 

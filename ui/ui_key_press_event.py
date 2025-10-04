@@ -1,8 +1,5 @@
-import sqlite3
-import pandas as pd
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QApplication, QMessageBox
-from utility.setting import DB_TRADELIST
 from utility.static import comma2int, comma2float, str_ymd, now_cme, now_utc
 
 
@@ -69,9 +66,7 @@ def key_press_event(ui, event):
                     table_name = 's_tradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_tradelist'
                 else:
                     table_name = 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
-                con = sqlite3.connect(DB_TRADELIST)
-                df  = pd.read_sql(f"SELECT * FROM {table_name} WHERE 체결시간 LIKE '{date}%'", con)
-                con.close()
+                df = ui.dbreader.read_sql('거래디비', f"SELECT * FROM {table_name} WHERE 체결시간 LIKE '{date}%'")
                 if len(date) == 6 and gubun == '코인':
                     df['구분용체결시간'] = df['체결시간'].apply(lambda x: x[:6])
                     df = df[df['구분용체결시간'] == date]

@@ -53,7 +53,6 @@ class BackEngineFutureTick:
         self.vars         = []
         self.vars_list    = []
         self.vars_lists   = []
-        self.dict_arry    = {}
         self.bhogainfo    = {}
         self.shogainfo    = {}
         self.dict_buystg  = {}

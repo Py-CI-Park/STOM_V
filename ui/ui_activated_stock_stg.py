@@ -1,16 +1,11 @@
-import sqlite3
-import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import DB_STRATEGY
 
 
 def sactivated_01(ui):
     strategy_name = ui.svjb_comboBoxx_01.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}buy WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}buy WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.ss_textEditttt_01.clear()
             ui.ss_textEditttt_01.append(df['전략코드'][strategy_name])
@@ -23,9 +18,7 @@ def sactivated_02(ui):
     strategy_name = ui.svjs_comboBoxx_01.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}sell WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}sell WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.ss_textEditttt_02.clear()
             ui.ss_textEditttt_02.append(df['전략코드'][strategy_name])
@@ -38,9 +31,7 @@ def sactivated_03(ui):
     strategy_name = ui.svc_comboBoxxx_01.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.ss_textEditttt_03.clear()
             ui.ss_textEditttt_03.append(df['전략코드'][strategy_name])
@@ -53,9 +44,7 @@ def sactivated_04(ui):
     strategy_name = ui.svc_comboBoxxx_02.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}optivars WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}optivars WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.ss_textEditttt_05.clear()
             ui.ss_textEditttt_05.append(df['전략코드'][strategy_name])
@@ -68,9 +57,7 @@ def sactivated_05(ui):
     strategy_name = ui.svc_comboBoxxx_08.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}optisell WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}optisell WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.ss_textEditttt_04.clear()
             ui.ss_textEditttt_04.append(df['전략코드'][strategy_name])
@@ -83,9 +70,7 @@ def sactivated_06(ui):
     strategy_name = ui.sva_comboBoxxx_01.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}vars WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}vars WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.ss_textEditttt_06.clear()
             ui.ss_textEditttt_06.append(df['전략코드'][strategy_name])
@@ -98,9 +83,7 @@ def sactivated_07(ui):
     strategy_name = ui.svo_comboBoxxx_01.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}buyconds WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}buyconds WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.ss_textEditttt_07.clear()
             ui.ss_textEditttt_07.append(df['전략코드'][strategy_name])
@@ -113,9 +96,7 @@ def sactivated_08(ui):
     strategy_name = ui.svo_comboBoxxx_02.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}sellconds WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}sellconds WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.ss_textEditttt_08.clear()
             ui.ss_textEditttt_08.append(df['전략코드'][strategy_name])
@@ -128,9 +109,7 @@ def sactivated_09(ui):
     strategy_name = ui.sj_stock_cbBox_01.currentText()
     if strategy_name:
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             try:
                 optivars = [float(i) if '.' in i else int(i) for i in df['변수값'][strategy_name].split(';')]

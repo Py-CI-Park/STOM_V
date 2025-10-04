@@ -92,7 +92,7 @@ class BinanceReceiverClient:
                     if self.dict_set['코인타임프레임']:
                         self.ctraderQ.put((code, c))
                     else:
-                        self.ctraderQ.put(('주문확인', code, c))
+                        self.ctraderQ.put(('주문확인', (code, c)))
             except:
                 self.logger.error('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
 

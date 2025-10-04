@@ -1,12 +1,10 @@
 import psutil
 import random
-import sqlite3
 import pandas as pd
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from ui.set_text import famous_saying
-from utility.setting import DB_TRADELIST
 from utility.setting import columns_dt, columns_dd, ui_num
 from utility.static import thread_decorator, qtest_qwait, str_ymdhmsf, str_ymdhms
 
@@ -97,9 +95,7 @@ def calendar_clicked(ui, gubun):
     else:
         table = 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
         searchday = ui.c_calendarWidgett.selectedDate().toString('yyyyMMdd')
-    con = sqlite3.connect(DB_TRADELIST)
-    df1 = pd.read_sql(f"SELECT * FROM {table} WHERE 체결시간 LIKE '{searchday}%'", con).set_index('index')
-    con.close()
+    df1 = ui.dbreader.read_sql('거래디비', f"SELECT * FROM {table} WHERE 체결시간 LIKE '{searchday}%'").set_index('index')
     if len(df1) > 0:
         df1.sort_values(by=['체결시간'], ascending=True, inplace=True)
         if table in ('f_tradelist', 'c_tradelist_future'):

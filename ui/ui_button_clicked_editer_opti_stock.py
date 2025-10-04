@@ -1,9 +1,7 @@
 import random
-import sqlite3
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.setting import DB_STRATEGY
 from utility.static import text_not_in_special_characters
 from ui.set_text import famous_saying, example_stock_buy, example_stock_sell, example_stockopti_buy1, \
     example_stockopti_buy2, example_stockopti_sell1, example_stockopti_sell2, example_opti_vars, example_vars, \
@@ -16,9 +14,7 @@ from ui.set_text import famous_saying, example_stock_buy, example_stock_sell, ex
 def stock_opti_buy_load(ui):
     if ui.ss_textEditttt_03.isVisible():
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f'SELECT * FROM {gubun}optibuy', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optibuy').set_index('index')
         if len(df) > 0:
             ui.svc_comboBoxxx_01.clear()
             indexs = list(df.index)
@@ -45,9 +41,7 @@ def stock_opti_buy_save(ui):
             if 'self.tickcols' in strategy or (
                     QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                con = sqlite3.connect(DB_STRATEGY)
-                df = pd.read_sql(f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'", con)
-                con.close()
+                df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'")
                 if ui.proc_query.is_alive():
                     if len(df) > 0:
                         query = f"UPDATE {gubun}optibuy SET 전략코드 = '{strategy}' WHERE `index` = '{strategy_name}'"
@@ -61,9 +55,7 @@ def stock_opti_buy_save(ui):
 def stock_opti_vars_load(ui):
     if ui.ss_textEditttt_05.isVisible():
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f'SELECT * FROM {gubun}optivars', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optivars').set_index('index')
         if len(df) > 0:
             ui.svc_comboBoxxx_02.clear()
             indexs = list(df.index)
@@ -97,9 +89,7 @@ def stock_opti_vars_save(ui):
 def stock_opti_sell_load(ui):
     if ui.ss_textEditttt_04.isVisible():
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f'SELECT * FROM {gubun}optisell', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optisell').set_index('index')
         if len(df) > 0:
             ui.svc_comboBoxxx_08.clear()
             indexs = list(df.index)
@@ -185,12 +175,10 @@ def stock_opti_to_buy_save(ui):
         QMessageBox.critical(ui, '오류 알림', '매수전략의 이름에 특문이 포함되어 있습니다.\n언더바(_)를 제외한 특문을 제거하십시오.\n')
         return
 
-    con = sqlite3.connect(DB_STRATEGY)
-    df  = pd.read_sql(f'SELECT * FROM {gubun}optibuy', con).set_index('index')
+    df  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optibuy').set_index('index')
     stg = df['전략코드'][stgy]
-    df  = pd.read_sql(f'SELECT * FROM "{tabl}"', con).set_index('index')
+    df  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM "{tabl}"').set_index('index')
     opt = df['전략코드'][opti]
-    con.close()
 
     try:
         vars_ = {}
@@ -222,12 +210,10 @@ def stock_opti_to_sell_save(ui):
         QMessageBox.critical(ui, '오류 알림', '매도전략의 이름에 특문이 포함되어 있습니다.\n언더바(_)를 제외한 특문을 제거하십시오.\n')
         return
 
-    con = sqlite3.connect(DB_STRATEGY)
-    df  = pd.read_sql(f'SELECT * FROM {gubun}optisell', con).set_index('index')
+    df  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optisell').set_index('index')
     stg = df['전략코드'][stgy]
-    df  = pd.read_sql(f'SELECT * FROM "{tabl}"', con).set_index('index')
+    df  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM "{tabl}"').set_index('index')
     opt = df['전략코드'][opti]
-    con.close()
 
     try:
         vars_ = {}

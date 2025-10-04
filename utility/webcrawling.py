@@ -53,12 +53,12 @@ class WebCrawling:
         try:
             if self.imagelist1 is None:
                 url = 'https://search.naver.com/search.naver?sm=tab_hty.top&where=image&ssc=tab.image.all&query=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&oquery=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&tqi=iAM7jwqVN8VsslwnmiossssstI4-416434'
-                self.imagelist1 = requests.get(url).text.split('viewerThumb:"')[1:]
+                self.imagelist1 = requests.get(url).text.split('"viewerThumb":"')[1:]
                 self.imagelist1 = [x.split('.jpg')[0] + '.jpg' for x in self.imagelist1]
                 self.imagelist1 = [x for x in self.imagelist1 if 'lensThumb' not in x]
             if self.imagelist2 is None:
                 url = 'https://search.naver.com/search.naver?sm=tab_hty.top&where=image&ssc=tab.image.all&query=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EC%84%B8%EB%A1%9C%EC%82%AC%EC%A7%84&oquery=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&tqi=iAM7OdqVOsVssAwVjfossssstwd-182384'
-                self.imagelist2 = requests.get(url).text.split('viewerThumb:"')[1:]
+                self.imagelist2 = requests.get(url).text.split('"viewerThumb":"')[1:]
                 self.imagelist2 = [x.split('.jpg')[0] + '.jpg' for x in self.imagelist2]
                 self.imagelist2 = [x for x in self.imagelist2 if 'lensThumb' not in x]
             webimage1 = request.urlopen(random.choice(self.imagelist1)).read()

@@ -163,7 +163,7 @@ class KiwoomTrader:
             elif data[0] == '잔고갱신':
                 self.UpdateJango(data[1])
             elif data[0] == '주문확인':
-                code, c = data
+                code, c = data[1]
                 self.dict_curc[code] = c
                 self.OrderTimeControl(code)
             elif data[0] == '관심진입':

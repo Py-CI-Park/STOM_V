@@ -1,8 +1,6 @@
-import sqlite3
-import pandas as pd
 from PyQt5.QtCore import QDate, QUrl
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import columns_jg, columns_jgf, columns_jgcf, DB_TRADELIST, ui_num, DB_STRATEGY
+from utility.setting import columns_jg, columns_jgf, columns_jgcf, ui_num
 from utility.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme
 
 
@@ -100,9 +98,7 @@ def cell_clicked_05(ui, row):
     else:
         table_name = 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
 
-    con = sqlite3.connect(DB_TRADELIST)
-    df = pd.read_sql(f"SELECT * FROM {table_name} WHERE 체결시간 LIKE '{date}%'", con)
-    con.close()
+    df = ui.dbreader.read_sql('거래디비', f"SELECT * FROM {table_name} WHERE 체결시간 LIKE '{date}%'")
 
     df['index'] = df['index'].apply(lambda x: str(x))
     if len(date) == 6 and gubun == '코인':
@@ -199,8 +195,6 @@ def cell_clicked_09(ui, row, col):
         )
         if buttonReply == QMessageBox.Yes:
             gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-            con = sqlite3.connect(DB_STRATEGY)
-            cur = con.cursor()
             if col == 0:
                 query = f'DELETE FROM {gubun}buy WHERE "index" = "{stg_name}"'
             elif col == 1:
@@ -209,9 +203,7 @@ def cell_clicked_09(ui, row, col):
                 query = f'DELETE FROM {gubun}optibuy WHERE "index" = "{stg_name}"'
             else:
                 query = f'DELETE FROM {gubun}optisell WHERE "index" = "{stg_name}"'
-            cur.execute(query)
-            con.commit()
-            con.close()
+            ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 주식전략 "{stg_name}" 삭제 완료'))
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_02:
         item = ui.db_tableWidgett_02.item(row, col)
@@ -225,8 +217,6 @@ def cell_clicked_09(ui, row, col):
         )
         if buttonReply == QMessageBox.Yes:
             gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-            con = sqlite3.connect(DB_STRATEGY)
-            cur = con.cursor()
             if col == 0:
                 query = f'DELETE FROM {gubun}optivars WHERE "index" = "{stg_name}"'
             elif col == 1:
@@ -235,9 +225,7 @@ def cell_clicked_09(ui, row, col):
                 query = f'DELETE FROM {gubun}buyconds WHERE "index" = "{stg_name}"'
             else:
                 query = f'DELETE FROM {gubun}sellconds WHERE "index" = "{stg_name}"'
-            cur.execute(query)
-            con.commit()
-            con.close()
+            ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 주식 범위 또는 조건 "{stg_name}" 삭제 완료'))
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_03:
         item = ui.db_tableWidgett_03.item(row, col)
@@ -249,8 +237,6 @@ def cell_clicked_09(ui, row, col):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if buttonReply == QMessageBox.Yes:
-            con = sqlite3.connect(DB_STRATEGY)
-            cur = con.cursor()
             if col == 0:
                 query = f'DELETE FROM coinbuy WHERE "index" = "{stg_name}"'
             elif col == 1:
@@ -259,9 +245,7 @@ def cell_clicked_09(ui, row, col):
                 query = f'DELETE FROM coinoptibuy WHERE "index" = "{stg_name}"'
             else:
                 query = f'DELETE FROM coinoptisell WHERE "index" = "{stg_name}"'
-            cur.execute(query)
-            con.commit()
-            con.close()
+            ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 코인전략 "{stg_name}" 삭제 완료'))
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_04:
         item = ui.db_tableWidgett_04.item(row, col)
@@ -273,8 +257,6 @@ def cell_clicked_09(ui, row, col):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if buttonReply == QMessageBox.Yes:
-            con = sqlite3.connect(DB_STRATEGY)
-            cur = con.cursor()
             if col == 0:
                 query = f'DELETE FROM coinoptivars WHERE "index" = "{stg_name}"'
             elif col == 1:
@@ -283,9 +265,7 @@ def cell_clicked_09(ui, row, col):
                 query = f'DELETE FROM coinbuyconds WHERE "index" = "{stg_name}"'
             else:
                 query = f'DELETE FROM coinsellconds WHERE "index" = "{stg_name}"'
-            cur.execute(query)
-            con.commit()
-            con.close()
+            ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 코인 범위 또는 조건 "{stg_name}" 삭제 완료'))
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_05:
         item = ui.db_tableWidgett_05.item(row, col)
@@ -297,12 +277,8 @@ def cell_clicked_09(ui, row, col):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if buttonReply == QMessageBox.Yes:
-            con = sqlite3.connect(DB_STRATEGY)
-            cur = con.cursor()
             query = f'DELETE FROM schedule WHERE "index" = "{stg_name}"'
-            cur.execute(query)
-            con.commit()
-            con.close()
+            ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 스케쥴 "{stg_name}" 삭제 완료'))
 
     ui.ShowDB()
@@ -325,9 +301,7 @@ def cell_clicked_11(ui):
         table_name = 's_tradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_tradelist'
     else:
         table_name = 'c_tradelist' if ui.dict_set['거래소'] == '업비트' else 'c_tradelist_future'
-    con = sqlite3.connect(DB_TRADELIST)
-    df = pd.read_sql(f"SELECT * FROM {table_name}", con)
-    con.close()
+    df = ui.dbreader.read_sql('거래디비', f"SELECT * FROM {table_name}")
     df['index'] = df['index'].apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
     df.set_index('index', inplace=True)
     ui.ShowDialogGraph(df)

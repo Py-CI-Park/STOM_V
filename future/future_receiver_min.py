@@ -112,7 +112,7 @@ class FutureReceiverMin(FutureReceiverTick):
             self.sstgQ.put(data)
             if send:
                 if code in self.tuple_order:
-                    self.straderQ.put(('주문확인', code, c))
+                    self.straderQ.put(('주문확인', (code, c)))
 
                 if self.dict_set['리시버공유'] == 1:
                     self.recvservQ.put(('tickdata', data))

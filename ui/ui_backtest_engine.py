@@ -271,7 +271,6 @@ def backengine_start(ui, gubun):
 
 
 def back_code_test1(ui, stg, testQ):
-    ui.logger.info('전략 코드 오류 테스트 시작')
     while not testQ.empty():
         testQ.get()
     thread = BackCodeTest(testQ, stg)
@@ -281,7 +280,6 @@ def back_code_test1(ui, stg, testQ):
 
 
 def back_code_test2(ui, vars_code, testQ, ga):
-    ui.logger.info('범위 코드 오류 테스트 시작')
     while not testQ.empty():
         testQ.get()
     thread = BackCodeTest(testQ, None, vars_code, ga)
@@ -291,13 +289,12 @@ def back_code_test2(ui, vars_code, testQ, ga):
 
 
 def back_code_test3(ui, gubun, conds_code, testQ):
-    ui.logger.info('조건 코드 오류 테스트 시작')
     while not testQ.empty():
         testQ.get()
     conds_code = conds_code.split('\n')
     conds_code = [x for x in conds_code if x and '#' not in x]
     if gubun == '매수':
-        conds_code = 'if ' + ':\n    매수 = False\nelif '.join(conds_code) + ':\n    매수 = False'
+        conds_code = 'if not (' + '):\n    매수 = False\nelif not ('.join(conds_code) + '):\n    매수 = False'
     else:
         conds_code = 'if ' + ':\n    매도 = True\nelif '.join(conds_code) + ':\n    매도 = True'
     thread = BackCodeTest(testQ, conds_code)
@@ -312,7 +309,6 @@ def get_code_test_result(ui, gubun, testQ):
         ui.logger.error(f'{gubun}에 오류가 있어 저장하지 못하였습니다.')
         return False
     else:
-        ui.logger.info(f'{gubun} 코드 오류 테스트 완료')
         return True
 
 

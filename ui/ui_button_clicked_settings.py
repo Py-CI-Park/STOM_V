@@ -1,20 +1,16 @@
 import os
 import random
 import shutil
-import sqlite3
-import pandas as pd
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox, QLineEdit
 from ui.set_style import style_bc_bt
 from ui.set_text import famous_saying
-from utility.setting import DB_SETTING, DB_STRATEGY, DB_PATH
+from utility.setting import DB_PATH
 from utility.static import de_text, en_text, qtest_qwait
 
 
 def setting_load_01(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM main', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
     if len(df) > 0:
         ui.sj_main_comBox_01.setCurrentText(df['증권사'][0])
         ui.sj_main_cheBox_01.setChecked(True) if df['주식리시버'][0] else ui.sj_main_cheBox_01.setChecked(False)
@@ -41,9 +37,7 @@ def setting_load_01(ui):
 
 
 def setting_load_02(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM sacc', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM sacc').set_index('index')
     comob_name = ui.sj_main_comBox_01.currentText()
     id_num = int(comob_name[4:])
     if len(df) > 0:
@@ -57,9 +51,7 @@ def setting_load_02(ui):
 
 
 def setting_load_03(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM cacc', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM cacc').set_index('index')
     combo_name = ui.sj_main_comBox_02.currentText()
     if len(df) > 0:
         if combo_name == '업비트' and df['Access_key'][1] and df['Secret_key'][1]:
@@ -73,9 +65,7 @@ def setting_load_03(ui):
 
 
 def setting_load_04(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM telegram', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM telegram').set_index('index')
     gubun = int(ui.sj_main_comBox_01.currentText()[4:])
     if len(df) > 0 and df['str_bot'][gubun]:
         ui.sj_tele_liEdit_01.setText(de_text(ui.dict_set['키'], df['str_bot'][gubun]))
@@ -85,16 +75,12 @@ def setting_load_04(ui):
 
 
 def setting_load_05(ui):
-    con  = sqlite3.connect(DB_SETTING)
-    df   = pd.read_sql('SELECT * FROM stock', con).set_index('index')
-    con.close()
+    df   = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stock').set_index('index')
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-    con  = sqlite3.connect(DB_STRATEGY)
-    dfb  = pd.read_sql(f'SELECT * FROM {gubun}buy', con).set_index('index')
-    dfs  = pd.read_sql(f'SELECT * FROM {gubun}sell', con).set_index('index')
-    dfob = pd.read_sql(f'SELECT * FROM {gubun}optibuy', con).set_index('index')
-    dfos = pd.read_sql(f'SELECT * FROM {gubun}optisell', con).set_index('index')
-    con.close()
+    dfb  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buy').set_index('index')
+    dfs  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}sell').set_index('index')
+    dfob = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optibuy').set_index('index')
+    dfos = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optisell').set_index('index')
     if len(df) > 0:
         ui.sj_stock_ckBox_01.setChecked(True) if df['주식모의투자'][0] else ui.sj_stock_ckBox_01.setChecked(False)
         ui.sj_stock_ckBox_02.setChecked(True) if df['주식알림소리'][0] else ui.sj_stock_ckBox_02.setChecked(False)
@@ -148,15 +134,11 @@ def setting_load_05(ui):
 
 
 def setting_load_06(ui):
-    con  = sqlite3.connect(DB_SETTING)
-    df   = pd.read_sql('SELECT * FROM coin', con).set_index('index')
-    con.close()
-    con  = sqlite3.connect(DB_STRATEGY)
-    dfb  = pd.read_sql('SELECT * FROM coinbuy', con).set_index('index')
-    dfs  = pd.read_sql('SELECT * FROM coinsell', con).set_index('index')
-    dfob = pd.read_sql('SELECT * FROM coinoptibuy', con).set_index('index')
-    dfos = pd.read_sql('SELECT * FROM coinoptisell', con).set_index('index')
-    con.close()
+    df   = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coin').set_index('index')
+    dfb  = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinbuy').set_index('index')
+    dfs  = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinsell').set_index('index')
+    dfob = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptibuy').set_index('index')
+    dfos = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptisell').set_index('index')
     if len(df) > 0:
         ui.sj_coin_cheBox_01.setChecked(True) if df['코인모의투자'][0] else ui.sj_coin_cheBox_01.setChecked(False)
         ui.sj_coin_cheBox_02.setChecked(True) if df['코인알림소리'][0] else ui.sj_coin_cheBox_02.setChecked(False)
@@ -208,9 +190,7 @@ def setting_load_06(ui):
 
 
 def setting_load_07(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM back', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
     if len(df) > 0:
         ui.sj_back_cheBox_01.setChecked(True) if df['블랙리스트추가'][0] else ui.sj_back_cheBox_01.setChecked(False)
         ui.sj_back_cheBox_02.setChecked(True) if df['백테주문관리적용'][0] else ui.sj_back_cheBox_02.setChecked(False)
@@ -224,9 +204,7 @@ def setting_load_07(ui):
         ui.sj_back_cheBox_21.setChecked(True) if df['최적화로그기록안함'][0] else ui.sj_back_cheBox_21.setChecked(False)
         ui.sj_back_comBox_04.clear()
         ui.sj_back_cheBox_19.setChecked(True) if df['백테스케쥴실행'][0] else ui.sj_back_cheBox_19.setChecked(False)
-        con = sqlite3.connect(DB_STRATEGY)
-        dfs = pd.read_sql('SELECT * FROM schedule', con).set_index('index')
-        con.close()
+        dfs = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
         indexs = list(dfs.index)
         indexs.sort()
         for index in indexs:
@@ -252,9 +230,7 @@ def setting_load_07(ui):
 
 
 def setting_load_08(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM etc', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM etc').set_index('index')
     if len(df) > 0:
         ui.sj_etc_checBox_02.setChecked(True) if df['저해상도'][0] else ui.sj_etc_checBox_02.setChecked(False)
         ui.sj_etc_checBox_04.setChecked(True) if df['휴무프로세스종료'][0] else ui.sj_etc_checBox_04.setChecked(False)
@@ -638,9 +614,7 @@ def setting_acc_view(ui):
 
 
 def setting_order_load_01(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM stockbuyorder', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stockbuyorder').set_index('index')
 
     if len(df) > 0:
         ui.sj_sodb_checkBox_01.setChecked(True) if df['주식매수주문구분'][0] == '시장가' else ui.sj_sodb_checkBox_01.setChecked(False)
@@ -692,9 +666,7 @@ def setting_order_load_01(ui):
 
 
 def setting_order_load_02(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM stocksellorder', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stocksellorder').set_index('index')
 
     if len(df) > 0:
         ui.sj_sods_checkBox_01.setChecked(True) if df['주식매도주문구분'][0] == '시장가' else ui.sj_sods_checkBox_01.setChecked(False)
@@ -744,9 +716,7 @@ def setting_order_load_02(ui):
 
 
 def setting_order_load_03(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM coinbuyorder', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coinbuyorder').set_index('index')
 
     if len(df) > 0:
         ui.sj_codb_checkBox_01.setChecked(True) if df['코인매수주문구분'][0] == '시장가' else ui.sj_codb_checkBox_01.setChecked(False)
@@ -791,9 +761,7 @@ def setting_order_load_03(ui):
 
 
 def setting_order_load_04(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM coinsellorder', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coinsellorder').set_index('index')
 
     if len(df) > 0:
         ui.sj_cods_checkBox_01.setChecked(True) if df['코인매도주문구분'][0] == '시장가' else ui.sj_cods_checkBox_01.setChecked(False)

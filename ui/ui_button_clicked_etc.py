@@ -1,12 +1,11 @@
 import random
-import sqlite3
 import webbrowser
 import pandas as pd
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtWidgets import QMessageBox, QPushButton
 from ui.set_text import famous_saying
 from utility.static import qtest_qwait, strf_time
-from utility.setting import DB_TRADELIST, columns_nt, ui_num, columns_nd, DB_SETTING
+from utility.setting import columns_nt, ui_num, columns_nd
 from backtester.back_static import RunOptunaServer
 
 
@@ -36,9 +35,7 @@ def ttbutton_clicked_01(ui, cmd):
             table = 's_totaltradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_totaltradelist'
         else:
             table = 'c_totaltradelist'
-        con = sqlite3.connect(DB_TRADELIST)
-        df = pd.read_sql(f'SELECT * FROM {table}', con)
-        con.close()
+        df = ui.dbreader.read_sql('거래디비', f'SELECT * FROM {table}')
         df = df[::-1]
         if len(df) > 0:
             pr = len(df)
@@ -110,9 +107,7 @@ def change_back_edate(ui):
 
 
 def stbutton_clicked_01(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM back', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
     std_text = df['최적화기준값제한'][0].split(';')
     ui.st_lineEditttt_01.setText(std_text[0])
     ui.st_lineEditttt_02.setText(std_text[1])
@@ -163,9 +158,7 @@ def lvbutton_clicked_01(ui):
 
 
 def lvbutton_clicked_02(ui):
-    con = sqlite3.connect(DB_SETTING)
-    df = pd.read_sql('SELECT * FROM main', con).set_index('index')
-    con.close()
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
     if len(df) > 0:
         ui.lv_checkBoxxxx_01.setChecked(True) if df['바이낸스선물고정레버리지'][0] else ui.lv_checkBoxxxx_01.setChecked(False)
         ui.lv_checkBoxxxx_02.setChecked(True) if not df['바이낸스선물고정레버리지'][0] else ui.lv_checkBoxxxx_02.setChecked(False)

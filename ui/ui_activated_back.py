@@ -1,8 +1,5 @@
-import sqlite3
-import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import opti_standard, train_period, valid_period, test_period, optimized_count
-from utility.setting import DB_STRATEGY
 
 
 def bactivated_01(ui):
@@ -22,16 +19,14 @@ def bactivated_01(ui):
     ui.list_tcomboBoxxxxx[gubun].clear()
     back_name = ui.list_gcomboBoxxxxx[gubun].currentText()
     if back_name == '백테스트':
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f'SELECT * FROM {gubun2}buy', con).set_index('index')
+        df  = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun2}buy').set_index('index')
         if len(df) > 0:
             indexs = list(df.index)
             indexs.sort()
             for i, index in enumerate(indexs):
                 ui.list_bcomboBoxxxxx[gubun].addItem(index)
 
-        df = pd.read_sql(f'SELECT * FROM {gubun2}sell', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun2}sell').set_index('index')
         if len(df) > 0:
             indexs = list(df.index)
             indexs.sort()
@@ -39,16 +34,15 @@ def bactivated_01(ui):
                 ui.list_scomboBoxxxxx[gubun].addItem(index)
         ui.list_alineEdittttt[gubun].setText('30')
     else:
-        con = sqlite3.connect(DB_STRATEGY)
         if '조건' in back_name:
-            df = pd.read_sql(f'SELECT * FROM {gubun2}buyconds', con).set_index('index')
+            df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun2}buyconds').set_index('index')
             if len(df) > 0:
                 indexs = list(df.index)
                 indexs.sort()
                 for i, index in enumerate(indexs):
                     ui.list_bcomboBoxxxxx[gubun].addItem(index)
 
-            df = pd.read_sql(f'SELECT * FROM {gubun2}sellconds', con).set_index('index')
+            df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun2}sellconds').set_index('index')
             if len(df) > 0:
                 indexs = list(df.index)
                 indexs.sort()
@@ -56,14 +50,14 @@ def bactivated_01(ui):
                     ui.list_scomboBoxxxxx[gubun].addItem(index)
             ui.list_alineEdittttt[gubun].setText('30')
         else:
-            df = pd.read_sql(f'SELECT * FROM {gubun2}optibuy', con).set_index('index')
+            df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun2}optibuy').set_index('index')
             if len(df) > 0:
                 indexs = list(df.index)
                 indexs.sort()
                 for i, index in enumerate(indexs):
                     ui.list_bcomboBoxxxxx[gubun].addItem(index)
 
-            df = pd.read_sql(f'SELECT * FROM {gubun2}optisell', con).set_index('index')
+            df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun2}optisell').set_index('index')
             if len(df) > 0:
                 indexs = list(df.index)
                 indexs.sort()
@@ -71,16 +65,15 @@ def bactivated_01(ui):
                     ui.list_scomboBoxxxxx[gubun].addItem(index)
 
             if 'GA' in back_name:
-                df = pd.read_sql(f'SELECT * FROM {gubun2}vars', con).set_index('index')
+                df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun2}vars').set_index('index')
             else:
-                df = pd.read_sql(f'SELECT * FROM {gubun2}optivars', con).set_index('index')
+                df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun2}optivars').set_index('index')
             if len(df) > 0:
                 indexs = list(df.index)
                 indexs.sort()
                 for i, index in enumerate(indexs):
                     ui.list_vcomboBoxxxxx[gubun].addItem(index)
             ui.list_alineEdittttt[gubun].setText('')
-        con.close()
 
         for item in opti_standard:
             ui.list_tcomboBoxxxxx[gubun].addItem(item)
@@ -139,9 +132,7 @@ def bactivated_03(ui):
             ui.sd_scheckBoxxxx_01.nextCheckState()
         schedule_name = ui.sd_dcomboBoxxxx_01.currentText()
         ui.sd_dlineEditttt_01.setText(schedule_name)
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql('SELECT * FROM schedule', con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
         schedule = df['스케쥴'][schedule_name]
         schedule = schedule.split('^')
         last = len(schedule) - 1

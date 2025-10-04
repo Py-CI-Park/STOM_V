@@ -1,59 +1,51 @@
-import sqlite3
-import pandas as pd
 from PIL import Image
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import DB_BACKTEST, ui_num, GRAPH_PATH
+from utility.setting import ui_num, GRAPH_PATH
 
 
 def ssbutton_clicked_01(ui):
-    con = sqlite3.connect(DB_BACKTEST)
-    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_01.clear()
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     for table in df['name'].to_list()[::-1]:
         if gubun in table and '_bt_' in table:
             ui.ss_comboBoxxxx_01.addItem(table)
     try:
-        df = pd.read_sql(f"SELECT * FROM '{ui.ss_comboBoxxxx_01.currentText()}'", con).set_index('index')
+        df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.ss_comboBoxxxx_01.currentText()}'").set_index('index')
     except:
         pass
     else:
         ui.update_tablewidget.update_tablewidget((ui_num['S상세기록'], df))
-    con.close()
 
 
 def ssbutton_clicked_02(ui):
-    con = sqlite3.connect(DB_BACKTEST)
-    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_02.clear()
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     for table in df['name'].to_list()[::-1]:
         if gubun in table and ('o_' in table or 'ov_' in table or 'ovc_' in table or 'b_' in table or 'bv_' in table or 'bvc_' in table):
             ui.ss_comboBoxxxx_02.addItem(table)
     try:
-        df = pd.read_sql(f"SELECT * FROM '{ui.ss_comboBoxxxx_02.currentText()}'", con).set_index('index')
+        df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.ss_comboBoxxxx_02.currentText()}'").set_index('index')
     except:
         pass
     else:
         ui.update_tablewidget.update_tablewidget((ui_num['S상세기록'], df))
-    con.close()
 
 
 def ssbutton_clicked_03(ui):
-    con = sqlite3.connect(DB_BACKTEST)
-    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_03.clear()
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     for table in df['name'].to_list()[::-1]:
         if gubun in table and '_bt_' not in table and ('t_' in table or 'or_' in table or 'orv_' in table or 'orvc_' in table or 'br_' in table or 'brv_' in table or 'brvc_' in table):
             ui.ss_comboBoxxxx_03.addItem(table)
     try:
-        df = pd.read_sql(f"SELECT * FROM '{ui.ss_comboBoxxxx_03.currentText()}'", con).set_index('index')
+        df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.ss_comboBoxxxx_03.currentText()}'").set_index('index')
     except:
         pass
     else:
         ui.update_tablewidget.update_tablewidget((ui_num['S상세기록'], df))
-    con.close()
 
 
 def ssbutton_clicked_04(ui):
@@ -83,9 +75,7 @@ def ssbutton_clicked_05(ui):
     if not ui.dialog_comp.isVisible():
         ui.dialog_comp.show()
 
-        con = sqlite3.connect(DB_BACKTEST)
-        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
-        con.close()
+        df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
 
         if len(df) > 0:
             gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
@@ -114,51 +104,45 @@ def ssbutton_clicked_06(ui):
 
 
 def csbutton_clicked_01(ui):
-    con = sqlite3.connect(DB_BACKTEST)
-    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.cs_comboBoxxxx_01.clear()
     for table in df['name'].to_list()[::-1]:
         if 'coin' in table and '_bt_' in table:
             ui.cs_comboBoxxxx_01.addItem(table)
     try:
-        df = pd.read_sql(f"SELECT * FROM '{ui.cs_comboBoxxxx_01.currentText()}'", con).set_index('index')
+        df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.cs_comboBoxxxx_01.currentText()}'").set_index('index')
     except:
         pass
     else:
         ui.update_tablewidget.update_tablewidget((ui_num['C상세기록'], df))
-    con.close()
 
 
 def csbutton_clicked_02(ui):
-    con = sqlite3.connect(DB_BACKTEST)
-    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.cs_comboBoxxxx_02.clear()
     for table in df['name'].to_list()[::-1]:
         if 'coin' in table and ('o_' in table or 'ov_' in table or 'ovc_' in table or 'b_' in table or 'bv_' in table or 'bvc_' in table):
             ui.cs_comboBoxxxx_02.addItem(table)
     try:
-        df = pd.read_sql(f"SELECT * FROM '{ui.cs_comboBoxxxx_02.currentText()}'", con).set_index('index')
+        df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.cs_comboBoxxxx_02.currentText()}'").set_index('index')
     except:
         pass
     else:
         ui.update_tablewidget.update_tablewidget((ui_num['C상세기록'], df))
-    con.close()
 
 
 def csbutton_clicked_03(ui):
-    con = sqlite3.connect(DB_BACKTEST)
-    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.cs_comboBoxxxx_03.clear()
     for table in df['name'].to_list()[::-1]:
         if 'coin' in table and '_bt_' not in table and ('t_' in table or 'or_' in table or 'orv_' in table or 'orvc_' in table or 'br_' in table or 'brv_' in table or 'brvc_' in table):
             ui.cs_comboBoxxxx_03.addItem(table)
     try:
-        df = pd.read_sql(f"SELECT * FROM '{ui.cs_comboBoxxxx_03.currentText()}'", con).set_index('index')
+        df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.cs_comboBoxxxx_03.currentText()}'").set_index('index')
     except:
         pass
     else:
         ui.update_tablewidget.update_tablewidget((ui_num['C상세기록'], df))
-    con.close()
 
 
 def csbutton_clicked_04(ui):
@@ -188,9 +172,7 @@ def csbutton_clicked_05(ui):
     if not ui.dialog_comp.isVisible():
         ui.dialog_comp.show()
 
-        con = sqlite3.connect(DB_BACKTEST)
-        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
-        con.close()
+        df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
 
         if len(df) > 0:
             ui.backdetail_list = [x for x in df['name'].to_list()[::-1] if 'coin' in x and ('t_' in x or 'v_' in x or 'c_' in x or 'h_' in x)]

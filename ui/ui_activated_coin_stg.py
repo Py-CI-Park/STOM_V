@@ -1,15 +1,10 @@
-import sqlite3
-import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import DB_STRATEGY
 
 
 def cactivated_01(ui):
     strategy_name = ui.cvjb_comboBoxx_01.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinbuy WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinbuy WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.cs_textEditttt_01.clear()
             ui.cs_textEditttt_01.append(df['전략코드'][strategy_name])
@@ -21,9 +16,7 @@ def cactivated_01(ui):
 def cactivated_02(ui):
     strategy_name = ui.cvjs_comboBoxx_01.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinsell WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinsell WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.cs_textEditttt_02.clear()
             ui.cs_textEditttt_02.append(df['전략코드'][strategy_name])
@@ -35,9 +28,7 @@ def cactivated_02(ui):
 def cactivated_03(ui):
     strategy_name = ui.cvc_comboBoxxx_01.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.cs_textEditttt_03.clear()
             ui.cs_textEditttt_03.append(df['전략코드'][strategy_name])
@@ -49,9 +40,7 @@ def cactivated_03(ui):
 def cactivated_04(ui):
     strategy_name = ui.cvc_comboBoxxx_02.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinoptivars WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinoptivars WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.cs_textEditttt_05.clear()
             ui.cs_textEditttt_05.append(df['전략코드'][strategy_name])
@@ -63,9 +52,7 @@ def cactivated_04(ui):
 def cactivated_05(ui):
     strategy_name = ui.cvc_comboBoxxx_08.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinoptisell WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinoptisell WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.cs_textEditttt_04.clear()
             ui.cs_textEditttt_04.append(df['전략코드'][strategy_name])
@@ -77,9 +64,7 @@ def cactivated_05(ui):
 def cactivated_06(ui):
     strategy_name = ui.cva_comboBoxxx_01.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinvars WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinvars WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.cs_textEditttt_06.clear()
             ui.cs_textEditttt_06.append(df['전략코드'][strategy_name])
@@ -91,9 +76,7 @@ def cactivated_06(ui):
 def cactivated_07(ui):
     strategy_name = ui.cvo_comboBoxxx_01.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinbuyconds WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinbuyconds WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.cs_textEditttt_07.clear()
             ui.cs_textEditttt_07.append(df['전략코드'][strategy_name])
@@ -105,9 +88,7 @@ def cactivated_07(ui):
 def cactivated_08(ui):
     strategy_name = ui.cvo_comboBoxxx_02.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinsellconds WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinsellconds WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             ui.cs_textEditttt_08.clear()
             ui.cs_textEditttt_08.append(df['전략코드'][strategy_name])
@@ -119,9 +100,7 @@ def cactivated_08(ui):
 def cactivated_09(ui):
     strategy_name = ui.sj_coin_comBox_01.currentText()
     if strategy_name:
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'", con).set_index('index')
-        con.close()
+        df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'").set_index('index')
         if len(df) > 0:
             try:
                 optivars = [float(i) if '.' in i else int(i) for i in df['변수값'][strategy_name].split(';')]
