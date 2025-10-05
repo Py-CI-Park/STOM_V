@@ -115,11 +115,14 @@ class BinanceStrategyTick:
 
     def UpdateTuple(self, data):
         gubun, data = data
-        if gubun == '관심목록':
-            drop_index_list = [k for k in self.dict_gj if k not in set(data)]
-            if drop_index_list:
-                for k in drop_index_list:
-                    del self.dict_gj[k]
+        if gubun == '잔고목록':
+            self.dict_jg = data
+            self.jgrv_count += 1
+            if self.jgrv_count == 2:
+                self.jgrv_count = 0
+                self.PutGsjmAndDeleteHilo()
+        elif gubun == '관심목록':
+            self.dict_gj = {k: v for k, v in self.dict_gj.copy().items() if k in data}
         elif '_COMPLETE' in gubun:
             gubun = gubun.replace('_COMPLETE', '')
             if data in self.dict_signal[gubun]:
@@ -134,12 +137,6 @@ class BinanceStrategyTick:
             gubun = gubun.replace('_MANUAL', '')
             if data not in self.dict_signal[gubun]:
                 self.dict_signal[gubun].append(data)
-        elif gubun == '잔고목록':
-            self.dict_jg = data
-            self.jgrv_count += 1
-            if self.jgrv_count == 2:
-                self.jgrv_count = 0
-                self.PutGsjmAndDeleteHilo()
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
@@ -444,20 +441,12 @@ class BinanceStrategyTick:
             if 종목코드 in self.dict_jg:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
-                매수틱번호 = self.dict_buy_num[종목코드]
-                포지션 = self.dict_jg[종목코드]['포지션']
-                매입가 = self.dict_jg[종목코드]['매입가']
-                보유수량 = self.dict_jg[종목코드]['보유수량']
-                매입금액 = self.dict_jg[종목코드]['매입금액']
-                레버리지 = self.dict_jg[종목코드]['레버리지']
-                분할매수횟수 = self.dict_jg[종목코드]['분할매수횟수']
-                분할매도횟수 = self.dict_jg[종목코드]['분할매도횟수']
+                # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+                _, 포지션, 매입가, _, _, _, 매입금액, _, 보유수량, 레버리지, 분할매수횟수, 분할매도횟수, 매수시간 = self.dict_jg[종목코드].values()
                 if 포지션 == 'LONG':
                     _, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                 else:
                     _, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
-                보유시간 = (now_utc() - 매수시간).total_seconds()
                 if 종목코드 not in self.dict_hilo:
                     self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
@@ -466,6 +455,8 @@ class BinanceStrategyTick:
                     elif 수익률 < self.dict_hilo[종목코드][1]:
                         self.dict_hilo[종목코드][1] = 수익률
                 최고수익률, 최저수익률 = self.dict_hilo[종목코드]
+                보유시간 = (now_utc() - dt_ymdhms(매수시간)).total_seconds()
+                매수틱번호 = self.dict_buy_num[종목코드]
             else:
                 포지션, 매수틱번호, 수익금, 수익률, 레버리지, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = None, 0, 0, 0, 1, 0, 0, 0, 0, now(), 0, 0, 0
             self.indexb = 매수틱번호
@@ -708,9 +699,7 @@ class BinanceStrategyTick:
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.windowQ.put((ui_num['C관심종목'], df_gj))
         if self.dict_hilo:
-            for code in self.dict_hilo.copy():
-                if code not in self.dict_jg:
-                    del self.dict_hilo[code]
+            self.dict_hilo = {k: v for k, v in self.dict_hilo.copy().items() if k in self.dict_jg}
 
     def SaveData(self, codes):
         for code in self.dict_arry.copy():

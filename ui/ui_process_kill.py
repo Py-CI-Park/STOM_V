@@ -43,7 +43,7 @@ def process_kill(ui):
 
     ui.wdzservQ.put(('manager', '통신종료'))
     if ui.CoinKimpProcessAlive():
-        ui.ui.proc_coin_kimp.kill()
+        ui.proc_coin_kimp.kill()
     if ui.CoinReceiverProcessAlive():
         ui.proc_receiver_coin.kill()
     if ui.CoinTraderProcessAlive():

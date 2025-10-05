@@ -112,7 +112,13 @@ class FutureStrategyTick:
 
     def UpdateTuple(self, data):
         gubun, data = data
-        if '_COMPLETE' in gubun:
+        if gubun == '잔고목록':
+            self.dict_jg = data
+            self.jgrv_count += 1
+            if self.jgrv_count == 2:
+                self.jgrv_count = 0
+                self.PutGsjmAndDeleteHilo()
+        elif '_COMPLETE' in gubun:
             gubun = gubun.replace('_COMPLETE', '')
             if data in self.dict_signal[gubun]:
                 self.dict_signal[gubun].remove(data)
@@ -126,12 +132,6 @@ class FutureStrategyTick:
             gubun = gubun.replace('_MANUAL', '')
             if data not in self.dict_signal[gubun]:
                 self.dict_signal[gubun].append(data)
-        elif gubun == '잔고목록':
-            self.dict_jg = data
-            self.jgrv_count += 1
-            if self.jgrv_count == 2:
-                self.jgrv_count = 0
-                self.PutGsjmAndDeleteHilo()
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
@@ -434,20 +434,13 @@ class FutureStrategyTick:
             if 종목코드 in self.dict_jg:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
-                매수틱번호 = self.dict_buy_num[종목코드]
-                포지션 = self.dict_jg[종목코드]['포지션']
-                매입가 = self.dict_jg[종목코드]['매입가']
-                보유수량 = self.dict_jg[종목코드]['보유수량']
-                매입금액 = self.dict_jg[종목코드]['매입금액']
+                # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                _, 포지션, 매입가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간 = self.dict_jg[종목코드].values()
                 평가금액 = 매입금액 + (현재가 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
-                분할매수횟수 = self.dict_jg[종목코드]['분할매수횟수']
-                분할매도횟수 = self.dict_jg[종목코드]['분할매도횟수']
                 if 포지션 == 'LONG':
                     _, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                 else:
                     _, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
-                보유시간 = (now_cme() - 매수시간).total_seconds()
                 if 종목코드 not in self.dict_hilo:
                     self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
@@ -456,6 +449,8 @@ class FutureStrategyTick:
                     elif 수익률 < self.dict_hilo[종목코드][1]:
                         self.dict_hilo[종목코드][1] = 수익률
                 최고수익률, 최저수익률 = self.dict_hilo[종목코드]
+                보유시간 = (now_cme() - dt_ymdhms(매수시간)).total_seconds()
+                매수틱번호 = self.dict_buy_num[종목코드]
             else:
                 포지션, 매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = None, 0, 0, 0, 0, 0, 0, 0, now_cme(), 0, 0, 0
             self.indexb = 매수틱번호
@@ -698,9 +693,7 @@ class FutureStrategyTick:
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.kwzservQ.put(('window', (ui_num[f'S관심종목'], df_gj)))
         if self.dict_hilo:
-            for code in self.dict_hilo.copy():
-                if code not in self.dict_jg:
-                    del self.dict_hilo[code]
+            self.dict_hilo = {k: v for k, v in self.dict_hilo.copy().items() if k in self.dict_jg}
 
     def SysExit(self):
         if self.dict_set['주식데이터저장']:

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from traceback import print_exc
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, dgree
-from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_buy_indi_stg, dt_ymdhms, get_logger
+from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_buy_indi_stg, get_logger, dt_ymdhms
 
 
 # noinspection PyUnusedLocal
@@ -115,11 +115,14 @@ class UpbitStrategyTick:
 
     def UpdateTuple(self, data):
         gubun, data = data
-        if gubun == '관심목록':
-            drop_index_list = [k for k in self.dict_gj if k not in set(data)]
-            if drop_index_list:
-                for k in drop_index_list:
-                    del self.dict_gj[k]
+        if gubun == '잔고목록':
+            self.dict_jg = data
+            self.jgrv_count += 1
+            if self.jgrv_count == 2:
+                self.jgrv_count = 0
+                self.PutGsjmAndDeleteHilo()
+        elif gubun == '관심목록':
+            self.dict_gj = {k: v for k, v in self.dict_gj.copy().items() if k in data}
         elif gubun in ('매수완료', '매수취소'):
             if data in self.list_buy:
                 self.list_buy.remove(data)
@@ -134,12 +137,6 @@ class UpbitStrategyTick:
         elif gubun == '매도주문':
             if data not in self.list_sell:
                 self.list_sell.append(data)
-        elif gubun == '잔고목록':
-            self.dict_jg = data
-            self.jgrv_count += 1
-            if self.jgrv_count == 2:
-                self.jgrv_count = 0
-                self.PutGsjmAndDeleteHilo()
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
@@ -444,15 +441,9 @@ class UpbitStrategyTick:
             if 종목코드 in self.dict_jg:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
-                매수틱번호 = self.dict_buy_num[종목코드]
-                매입가 = self.dict_jg[종목코드]['매입가']
-                보유수량 = self.dict_jg[종목코드]['보유수량']
-                매입금액 = self.dict_jg[종목코드]['매입금액']
-                분할매수횟수 = self.dict_jg[종목코드]['분할매수횟수']
-                분할매도횟수 = self.dict_jg[종목코드]['분할매도횟수']
+                # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                _, 매입가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간 = self.dict_jg[종목코드].values()
                 _, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
-                매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
-                보유시간 = (now_utc() - 매수시간).total_seconds()
                 if 종목코드 not in self.dict_hilo:
                     self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
@@ -461,6 +452,8 @@ class UpbitStrategyTick:
                     elif 수익률 < self.dict_hilo[종목코드][1]:
                         self.dict_hilo[종목코드][1] = 수익률
                 최고수익률, 최저수익률 = self.dict_hilo[종목코드]
+                보유시간 = (now_utc() - dt_ymdhms(매수시간)).total_seconds()
+                매수틱번호 = self.dict_buy_num[종목코드]
             else:
                 매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = 0, 0, 0, 0, 0, 0, 0, now_utc(), 0, 0, 0
             self.indexb = 매수틱번호
@@ -671,9 +664,7 @@ class UpbitStrategyTick:
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.windowQ.put((ui_num['C관심종목'], df_gj))
         if self.dict_hilo:
-            for code in self.dict_hilo.copy():
-                if code not in self.dict_jg:
-                    del self.dict_hilo[code]
+            self.dict_hilo = {k: v for k, v in self.dict_hilo.copy().items() if k in self.dict_jg}
 
     def SaveData(self, codes):
         for code in self.dict_arry.copy():

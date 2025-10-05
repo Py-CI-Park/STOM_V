@@ -469,20 +469,12 @@ class BinanceStrategyMin(BinanceStrategyTick):
             if 종목코드 in self.dict_jg:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
-                매수틱번호 = self.dict_buy_num[종목코드]
-                포지션 = self.dict_jg[종목코드]['포지션']
-                매입가 = self.dict_jg[종목코드]['매입가']
-                보유수량 = self.dict_jg[종목코드]['보유수량']
-                매입금액 = self.dict_jg[종목코드]['매입금액']
-                레버리지 = self.dict_jg[종목코드]['레버리지']
-                분할매수횟수 = self.dict_jg[종목코드]['분할매수횟수']
-                분할매도횟수 = self.dict_jg[종목코드]['분할매도횟수']
+                # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+                _, 포지션, 매입가, _, _, _, 매입금액, _, 보유수량, 레버리지, 분할매수횟수, 분할매도횟수, 매수시간 = self.dict_jg[종목코드].values()
                 if 포지션 == 'LONG':
                     _, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                 else:
                     _, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                매수시간 = dt_ymdhms(self.dict_jg[종목코드]['매수시간'])
-                보유시간 = int((now_utc() - 매수시간).total_seconds() / 60)
                 if 종목코드 not in self.dict_hilo:
                     self.dict_hilo[종목코드] = [수익률, 수익률]
                 else:
@@ -491,6 +483,8 @@ class BinanceStrategyMin(BinanceStrategyTick):
                     elif 수익률 < self.dict_hilo[종목코드][1]:
                         self.dict_hilo[종목코드][1] = 수익률
                 최고수익률, 최저수익률 = self.dict_hilo[종목코드]
+                보유시간 = (now_utc() - dt_ymdhms(매수시간)).total_seconds()
+                매수틱번호 = self.dict_buy_num[종목코드]
             else:
                 포지션, 매수틱번호, 수익금, 수익률, 레버리지, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = None, 0, 0, 0, 1, 0, 0, 0, 0, now(), 0, 0, 0
             self.indexb = 매수틱번호

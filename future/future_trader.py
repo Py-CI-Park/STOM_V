@@ -127,40 +127,41 @@ class FutureTrader:
         while True:
             data = self.straderQ.get()
             if type(data) == tuple:
-                self.UpdateTuple(data)
+                if len(data) in (7, 8):
+                    self.CheckOrder(data)
+                else:
+                    self.UpdateTuple(data)
             elif type(data) == str:
                 self.UpdateString(data)
 
     def UpdateTuple(self, data):
-        if len(data) in (7, 8):
-            self.CheckOrder(data)
-        elif len(data) == 2:
-            if data[0] == '체잔통보':
-                self.UpdateChejanData(data[1])
-            elif data[0] == '주문전송':
-                code, gubun = data[1]
-                self.dict_signal[code] = gubun
-            elif data[0] == '잔고갱신':
-                self.UpdateJango(data[1])
-            elif data[0] == '주문확인':
-                code, c = data[1]
-                self.dict_curc[code] = c
-                self.OrderTimeControl(code)
-            elif data[0] == '증거금부족':
-                gubun = self.dict_signal[data[1]]
-                self.PutOrderComplete(f'{gubun}_CANCEL', data[1])
-            elif data[0] == '종목정보':
-                self.dict_info = data[1]
-                dummy_time = timedelta_sec(-3600, now_cme())
-                for code in self.dict_info:
-                    self.dict_info[code]['시드부족시간'] = dummy_time
-                    self.dict_info[code]['최종거래시간'] = dummy_time
-                    self.dict_info[code]['손절거래시간'] = dummy_time
-            elif data[0] == '잔고조회':
-                self.UpdateYesugm(data[1])
-            elif data[0] == '설정변경':
-                self.dict_set  = data[1]
-                self.jgcs_time = self.get_jgcs_time()
+        gubun, data = data
+        if gubun == '체잔통보':
+            self.UpdateChejanData(data)
+        elif gubun == '잔고갱신':
+            self.UpdateJango(data)
+        elif gubun == '주문전송':
+            code, gubun = data
+            self.dict_signal[code] = gubun
+        elif gubun == '주문확인':
+            code, c = data
+            self.dict_curc[code] = c
+            self.OrderTimeControl(code)
+        elif gubun == '증거금부족':
+            gubun = self.dict_signal[data]
+            self.PutOrderComplete(f'{gubun}_CANCEL', data)
+        elif gubun == '종목정보':
+            self.dict_info = data
+            dummy_time = timedelta_sec(-3600, now_cme())
+            for code in self.dict_info:
+                self.dict_info[code]['시드부족시간'] = dummy_time
+                self.dict_info[code]['최종거래시간'] = dummy_time
+                self.dict_info[code]['손절거래시간'] = dummy_time
+        elif gubun == '잔고조회':
+            self.UpdateYesugm(data)
+        elif gubun == '설정변경':
+            self.dict_set  = data
+            self.jgcs_time = self.get_jgcs_time()
 
     def UpdateString(self, data):
         if data == 'UpdateTotaljango':

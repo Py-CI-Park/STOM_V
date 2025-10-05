@@ -207,7 +207,12 @@ class BinanceTrader:
         while True:
             data = self.ctraderQ.get()
             if type(data) == tuple:
-                self.UpdateTuple(data)
+                if len(data) in (6, 7):
+                    self.CheckOrder(data)
+                elif len(data) == 9:
+                    self.SendOrder(data)
+                else:
+                    self.UpdateTuple(data)
             elif type(data) == str:
                 self.UpdateString(data)
             elif type(data) == list:
@@ -221,31 +226,27 @@ class BinanceTrader:
         if self.proc_webs is not None and self.proc_webs.is_alive(): self.proc_webs.kill()
 
     def UpdateTuple(self, data):
-        if len(data) in (6, 7):
-            self.CheckOrder(data)
-        elif len(data) == 9:
-            self.SendOrder(data)
-        elif len(data) == 2:
-            if data[0] == '잔고갱신':
-                self.UpdateJango(data[1])
-            elif data[0] == '주문확인':
-                code, c = data[1]
-                self.dict_curc[code] = c
-                self.OrderTimeControl(code)
-            elif data[0] == '저가대비고가등락율':
-                self.SetLeverage(data[1])
-            elif data[0] == '관심진입':
-                if data[1] in self.dict_order['SELL_LONG']:
-                    self.CancelOrder(data[1], 'SELL_LONG')
-                if data[1] in self.dict_order['BUY_SHORT']:
-                    self.CancelOrder(data[1], 'BUY_SHORT')
-            elif data[0] == '관심이탈':
-                if data[1] in self.dict_order['BUY_LONG']:
-                    self.CancelOrder(data[1], 'BUY_LONG')
-                if data[1] in self.dict_order['SELL_SHORT']:
-                    self.CancelOrder(data[1], 'SELL_SHORT')
-            elif data[0] == '설정변경':
-                self.dict_set = data[1]
+        gubun, data = data
+        if gubun == '잔고갱신':
+            self.UpdateJango(data)
+        elif gubun == '주문확인':
+            code, c = data
+            self.dict_curc[code] = c
+            self.OrderTimeControl(code)
+        elif gubun == '저가대비고가등락율':
+            self.SetLeverage(data)
+        elif gubun == '관심진입':
+            if data in self.dict_order['SELL_LONG']:
+                self.CancelOrder(data, 'SELL_LONG')
+            if data in self.dict_order['BUY_SHORT']:
+                self.CancelOrder(data, 'BUY_SHORT')
+        elif gubun == '관심이탈':
+            if data in self.dict_order['BUY_LONG']:
+                self.CancelOrder(data, 'BUY_LONG')
+            if data in self.dict_order['SELL_SHORT']:
+                self.CancelOrder(data, 'SELL_SHORT')
+        elif gubun == '설정변경':
+            self.dict_set = data
 
     def UpdateString(self, data):
         if data == 'UpdateTotaljango':
