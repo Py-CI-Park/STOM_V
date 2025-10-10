@@ -1,8 +1,10 @@
 import os
 import sqlite3
 import pandas as pd
-from static import read_key, write_key
+from static import read_key, write_key, get_logger
 
+
+logger_ = get_logger('DatabaseCheck')
 os.makedirs('./_database', exist_ok=True)
 os.makedirs('./_log', exist_ok=True)
 
@@ -13,10 +15,10 @@ DB_CODE_INFO  = './_database/code_info.db'
 
 try:
     read_key()
-    print('시스템 명령 실행 알림 - 암호화키 확인 완료')
+    logger_.info('암호화키 확인 완료')
 except:
     write_key()
-    print('시스템 명령 실행 알림 - 암호화키 생성 완료')
+    logger_.info('암호화키 생성 완료')
 
 con = sqlite3.connect(DB_SETTING)
 df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
@@ -387,4 +389,4 @@ if 'f_tradelist' not in table_list:
 con.commit()
 con.close()
 
-print('시스템 명령 실행 알림 - 데이터베이스 확인 완료')
+logger_.info('데이터베이스 확인 완료')

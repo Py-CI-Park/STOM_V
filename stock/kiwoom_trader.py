@@ -7,7 +7,7 @@ from threading import Thread
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num, columns_cj, columns_td, DB_TRADELIST, DICT_SET, columns_jg
 from utility.static import now, timedelta_sec, str_hms, roundfigure_lower, roundfigure_upper, GetKiwoomPgSgSp, \
-    GetHogaunit, error_decorator, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, float_hmsf
+    GetHogaunit, error_decorator, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, float_hmsf, get_logger
 
 
 class PutDictjango(Thread):
@@ -56,6 +56,8 @@ class KiwoomTrader:
         self.sstgQs     = qlist[3]
         self.kiwoomQ    = qlist[4]
         self.dict_set   = DICT_SET
+
+        self.logger     = get_logger(self.__class__.__name__)
 
         self.dict_cj    = {}  # 체결목록
         self.dict_jg    = {}  # 잔고목록
@@ -144,6 +146,7 @@ class KiwoomTrader:
 
     def Mainloop(self):
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작')))
+        self.logger.info('트레이더 시작 완료')
         while True:
             data = self.straderQ.get()
             if type(data) == tuple:
@@ -746,6 +749,7 @@ class KiwoomTrader:
         self.kwzservQ.put(('window', (ui_num['S잔고평가'], df_tj)))
 
     def StrategyStop(self):
+        self.logger.info('매수전략중지')
         for q in self.sstgQs:
             q.put('매수전략중지')
         self.JangoCheongsan('수동')

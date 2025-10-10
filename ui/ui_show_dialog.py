@@ -154,7 +154,7 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
         else:
             ui.ChartClear()
             cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
-            data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code))
+            data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetIndicatorDetail(code))
             if detail is not None: data += (detail, buytimes)
             if cf1 and cf2:        data += (float(cf1), float(cf2))
             ui.chartQ.put(data)

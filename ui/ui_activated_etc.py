@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QPushButton
 from utility.setting import DB_BACKTEST, ui_num
 
 
-def activated_01(ui):
+def dactivated_01(ui):
     if type(ui.focusWidget()) != QPushButton:
         table_name = ui.focusWidget().currentText()
         if ui.focusWidget() in (ui.ss_comboBoxxxx_01, ui.ss_comboBoxxxx_02, ui.ss_comboBoxxxx_03):
@@ -20,12 +20,12 @@ def activated_01(ui):
         ui.update_tablewidget.update_tablewidget((ui_num[ui_num_text], df))
 
 
-def activated_02(ui):
+def dactivated_02(ui):
     name = ui.sj_set_comBoxx_01.currentText()
     ui.sj_set_liEditt_01.setText(name)
 
 
-def activated_03(ui):
+def dactivated_03(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     ui.od_comboBoxxxxx_02.clear()
     if 'KRW' in name or '해외선물' in ui.dict_set['증권사']:

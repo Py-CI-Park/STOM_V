@@ -8,7 +8,7 @@ from threading import Thread
 from multiprocessing import Queue
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, ui_num, DB_FUTURE_MIN, DB_FUTURE_TICK
-from utility.static import now, threading_timer
+from utility.static import now, threading_timer, get_logger
 
 
 class ZmqServ(Thread):
@@ -38,6 +38,8 @@ class FutureReceiverTick:
         self.sstgQ    = qlist[3]
         self.dict_set = DICT_SET
 
+        self.logger   = get_logger(self.__class__.__name__)
+
         self.dict_tmdt   = {}
         self.dict_hgbs   = {}
         self.dict_data   = {}
@@ -65,6 +67,7 @@ class FutureReceiverTick:
 
     def Mainloop(self):
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 리시버 시작')))
+        self.logger.info('리시버 시작 완료')
         while True:
             data = self.sreceivQ.get()
             if type(data) == tuple:
@@ -121,6 +124,7 @@ class FutureReceiverTick:
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 데이터수집목록 저장 완료')))
+            self.logger.info('데이터수집목록 저장 완료')
 
     def UpdateTickData(self, data):
         code, dt, c, o, h, low, per, v, csp, cbp = data

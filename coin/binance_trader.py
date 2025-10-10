@@ -8,7 +8,7 @@ from multiprocessing import Process
 from coin.binance_websocket import WebSocketTrader
 from utility.setting import columns_cj, columns_tdf, ui_num, DB_TRADELIST, DICT_SET, columns_jgcf
 from utility.static import now, timedelta_sec, GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, str_ymd, str_hms, \
-    threading_timer, error_decorator, now_utc, str_ymdhmsf, str_hmsf, float_hmsf, dt_hms
+    threading_timer, error_decorator, now_utc, str_ymdhmsf, str_hmsf, float_hmsf, dt_hms, get_logger
 
 
 class PutDictjango(Thread):
@@ -58,6 +58,8 @@ class BinanceTrader:
         self.cstgQ      = qlist[10]
         self.liveQ      = qlist[11]
         self.dict_set   = DICT_SET
+
+        self.logger     = get_logger(self.__class__.__name__)
 
         self.dict_cj    = {}  # 체결목록
         self.dict_jg    = {}  # 잔고목록
@@ -199,6 +201,7 @@ class BinanceTrader:
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작'))
+        self.logger.info('트레이더 시작 완료')
         if not self.dict_set['코인모의투자']:
             self.WebSocketsStart(self.ctraderQ)
         while True:
@@ -289,7 +292,7 @@ class BinanceTrader:
                     op = float(data['p'])
                     on = int(data['i'])
                 except:
-                    print('바이낸스 홈페이지 주문은 기록되지 않습니다.')
+                    self.logger.error('바이낸스 홈페이지 주문은 기록되지 않습니다.')
                 else:
                     if cc > 0 or 'CANCEL' in p:
                         self.UpdateChejanData(p, code, oc, cc, mc, cp, op, on)
@@ -437,6 +440,7 @@ class BinanceTrader:
                     ret = self.binance.futures_create_order(symbol=종목코드, side=매도수구분, type='LIMIT', price=주문가격, timeInForce='FOK', quantity=주문수량)
             except Exception as e:
                 self.cstgQ.put((f'{주문구분}_CANCEL', 종목코드))
+                self.logger.error(f'[주문실패] {주문구분} | {종목코드} | {주문가격} | {주문수량}')
                 self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {e}'))
             else:
                 orderId = int(ret['orderId'])
@@ -448,6 +452,7 @@ class BinanceTrader:
                     self.dict_order[주문구분][종목코드] = [timedelta_sec(self.dict_set['코인매도취소시간초']), 정정횟수, 주문가격]
                 self.dict_pos[종목코드] = 포지션
                 self.UpdateChegeollist(dt, 종목코드, f'{주문구분}_REG', 주문수량, 0, 주문수량, 0, dt[:14], 주문가격, orderId)
+                self.logger.info(f'[주문전송] {주문구분} | {종목코드} | {주문가격} | {주문수량}')
                 self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}_REG] {종목코드} | {주문가격} | {주문수량} | '))
         else:
             try:
@@ -893,5 +898,6 @@ class BinanceTrader:
         self.windowQ.put((ui_num['C잔고평가'], df_tj))
 
     def StrategyStop(self):
+        self.logger.info('매수전략중지')
         self.cstgQ.put('매수전략중지')
         self.JangoCheongsan('수동')

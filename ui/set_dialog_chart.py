@@ -233,9 +233,9 @@ class SetDialogChart:
 
         text = '매수전략으로 설정된\n보조지표값 사용하기\n체크를 해제하면\n좌측 설정값으로 표시됨'
         self.ui.ft_checkBoxxxxx_39 = self.wc.setCheckBox(text, self.ui.jp_groupBoxxxxx_01, checked=False, style=style_ck_bx)
-        self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.ctButtonClicked_01)
-        self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.ctButtonClicked_02)
-        self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.ctButtonClicked_03)
+        self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingBasic)
+        self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingLoad)
+        self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingSave)
 
         self.ui.factor_checkbox_list = [
             self.ui.ft_checkBoxxxxx_01, self.ui.ft_checkBoxxxxx_02, self.ui.ft_checkBoxxxxx_03, self.ui.ft_checkBoxxxxx_04,

@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, dgree
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetUvilower5, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
-    str_ymdhms, dt_ymdhms, threading_timer
+    str_ymdhms, dt_ymdhms, get_logger
 
 
 # noinspection PyUnusedLocal
@@ -26,6 +26,8 @@ class KiwoomStrategyTick:
         self.sstgQs           = qlist[3]
         self.sstgQ            = qlist[3][self.gubun]
         self.dict_set         = DICT_SET
+
+        self.logger           = get_logger(self.__class__.__name__)
 
         self.buystrategy      = None
         self.sellstrategy     = None
@@ -106,12 +108,12 @@ class KiwoomStrategyTick:
             except:
                 pass
             else:
-                print(self.indicator)
+                self.logger.info(self.indicator)
 
     def Mainloop(self):
         if self.gubun == 7:
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
-
+            self.logger.info('전략연산 시작 완료')
         while True:
             data = self.sstgQ.get()
             if type(data) == tuple:
@@ -439,21 +441,20 @@ class KiwoomStrategyTick:
                 당일거래대금각도_ = round(math.atan2((당일거래대금 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 6]) * dgree['stock']['tick'][1], 평균값계산틱수) / (2 * math.pi) * 360, 2)
                 전일비각도_      = round(math.atan2(전일비 - self.dict_arry[종목코드][-(평균값계산틱수 - 1), 9], 평균값계산틱수) / (2 * math.pi) * 360, 2)
 
-            """
-            체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, 라운드피겨위5호가이내,
-               0      1     2    3    4     5         6         7         8        9      10       11        12           13
-            초당매수수량, 초당매도수량, VI해제시간, VI가격, VI호가단위, 초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량,
-                14         15          16      17       18         19            20            21        22
-            매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5,
-               23       24       25        26       27        28       29        30       31        32
-            매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, 매도수5호가잔량합, 관심종목
-               33       34       35        36       37        38       39        40       41       42          43           44
-            이동평균0060, 이동평균0300, 이동평균0600, 이동평균1200, 최고현재가_, 최저현재가_, 체결강도평균_, 최고체결강도_, 최저체결강도,
-                 45          46           47          48          49         50         51           52           53
-            최고초당매수수량_, 최고초당매도수량_, 누적초당매수수량_, 누적초당매도수량_, 초당거래대금평균_, 등락율각도_, 당일거래대금각도_, 전일비각도_
-                  54            55               56              57              58             59         60            61
-            """
-
+        """
+        체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, 라운드피겨위5호가이내,
+           0      1     2    3    4     5         6         7         8        9      10       11        12           13
+        초당매수수량, 초당매도수량, VI해제시간, VI가격, VI호가단위, 초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량,
+            14         15          16      17       18         19            20            21        22
+        매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5,
+           23       24       25        26       27        28       29        30       31        32
+        매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, 매도수5호가잔량합, 관심종목
+           33       34       35        36       37        38       39        40       41       42          43           44
+        이동평균0060, 이동평균0300, 이동평균0600, 이동평균1200, 최고현재가_, 최저현재가_, 체결강도평균_, 최고체결강도_, 최저체결강도,
+             45          46           47          48          49         50         51           52           53
+        최고초당매수수량_, 최고초당매도수량_, 누적초당매수수량_, 누적초당매도수량_, 초당거래대금평균_, 등락율각도_, 당일거래대금각도_, 전일비각도_
+              54            55               56              57              58             59         60            61
+        """
         new_data_tick = [
             체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액,
             라운드피겨위5호가이내, 초당매수수량, 초당매도수량, VI해제시간_, VI가격, VI호가단위, 초당거래대금, 고저평균대비등락율,
@@ -776,4 +777,5 @@ class KiwoomStrategyTick:
         if self.gubun != 7:
             self.sstgQs[self.gubun + 1].put(('데이터저장', codes))
         else:
+            self.logger.info('데이터 저장 완료')
             self.sstgQs[self.gubun].put('프로세스종료')

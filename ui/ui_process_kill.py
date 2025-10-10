@@ -51,7 +51,7 @@ def process_kill(ui):
     if ui.CoinStrategyProcessAlive():
         ui.proc_strategy_coin.kill()
     if ui.shared_counter is not None:
-        ui.BacktestProcessKill(1)
+        ui.BacktestProcessKill(True, True)
 
     factor_choice = ''
     for checkbox in ui.factor_checkbox_list:

@@ -8,7 +8,8 @@ import pandas as pd
 from traceback import print_exc
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, dgree, DB_FUTURE_TICK
-from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms
+from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
+    get_logger
 
 
 # noinspection PyUnusedLocal
@@ -22,6 +23,8 @@ class FutureStrategyTick:
         self.straderQ         = qlist[2]
         self.sstgQ            = qlist[3]
         self.dict_set         = DICT_SET
+
+        self.logger           = get_logger(self.__class__.__name__)
 
         self.buystrategy      = None
         self.sellstrategy     = None
@@ -92,10 +95,11 @@ class FutureStrategyTick:
             except:
                 pass
             else:
-                print(self.indicator)
+                self.logger.info(self.indicator)
 
     def Mainloop(self):
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
+        self.logger.info('전략연산 시작 완료')
         while True:
             data = self.sstgQ.get()
             if type(data) == tuple:
@@ -737,3 +741,5 @@ class FutureStrategyTick:
             text = f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], text)))
         con.close()
+
+        self.logger.info('데이터 저장 완료')

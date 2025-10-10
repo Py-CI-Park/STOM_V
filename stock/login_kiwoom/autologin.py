@@ -7,7 +7,7 @@ from PyQt5.QtCore import QTimer
 from multiprocessing import Process
 from PyQt5.QAxContainer import QAxWidget
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from utility.static import opstarter_kill
+from utility.static import opstarter_kill, get_logger
 from utility.setting import OPENAPI_PATH, DICT_SET
 
 
@@ -17,7 +17,7 @@ def TelegramMassage(txt):
         bot = telegram.Bot(DICT_SET[f'텔레그램봇토큰{gubun}'])
         bot.sendMessage(chat_id=DICT_SET[f'텔레그램사용자아이디{gubun}'], text=txt)
     except:
-        print(txt)
+        logger.info(txt)
 
 
 class Window(QtWidgets.QMainWindow):
@@ -42,31 +42,34 @@ class Window(QtWidgets.QMainWindow):
         self.AutoLoginOn()
 
     def AutoLoginOn(self):
-        print('자동 로그인 설정 대기 중 ...')
+        logger_ = get_logger('AutoLogin')
+        logger_.info('자동 로그인 설정 대기 중 ...')
         QTimer.singleShot(1000, lambda: auto_on(self.id_num))
         self.ocx.dynamicCall('KOA_Functions(QString, QString)', 'ShowAccountWindow', '')
+        logger_.info('자동 로그인 설정 완료')
         opstarter_kill()
 
 
 if __name__ == '__main__':
+    logger = get_logger('AutoLogin')
     opstarter_kill()
     autologin_dat = f'{OPENAPI_PATH}/system/Autologin.dat'
     if os.path.isfile(autologin_dat): os.remove(autologin_dat)
-    print('자동 로그인 설정 파일 삭제 완료')
+    logger.info('자동 로그인 설정 파일 삭제 완료')
 
     id_num = int(DICT_SET['증권사'][4:])
     Process(target=Window, args=(id_num,), daemon=True).start()
-    print('자동 로그인 설정용 프로세스 시작')
+    logger.info('자동 로그인 설정용 프로세스 시작')
 
     while find_window('Open API login') == 0:
-        print('로그인창 열림 대기 중 ...')
+        logger.info('로그인창 열림 대기 중 ...')
         time.sleep(1)
 
-    print('아이디 및 패스워드 입력 대기 중 ...')
+    logger.info('아이디 및 패스워드 입력 대기 중 ...')
     time.sleep(2)
 
     manual_login(id_num)
-    print('아이디 및 패스워드 입력 완료')
+    logger.info('아이디 및 패스워드 입력 완료')
 
     while find_window('Open API login') != 0:
         try:

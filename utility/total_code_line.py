@@ -1,6 +1,8 @@
 import os
 import glob
+from static import get_logger
 
+logger = get_logger('TotalCodeline')
 ROOT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 extensions = ['*.py', '*.bat']
 ignore_paths = [
@@ -43,7 +45,7 @@ for file_name_with_path in files_grabbed:
 sorted_line_count = sorted(line_count_dict.items(), key=lambda x: x[1], reverse=True)
 
 for file, count in sorted_line_count:
-    print('{:>5} {}'.format(count, file))
+    logger.info('{:>5} {}'.format(count, file))
 
-print(f'\n프로젝트 전체 파일 수 :   {total_file_count} 개')
-print(f'프로젝트 전체 라인 수 : {total_line_count} 줄')
+logger.info(f'프로젝트 전체 파일 수 :   {total_file_count} 개')
+logger.info(f'프로젝트 전체 라인 수 : {total_line_count} 줄')

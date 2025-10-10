@@ -1,4 +1,4 @@
-def szoo_button_clicked_01(ui):
+def sz_button_clicked_01(ui):
     if ui.svj_pushButton_01.isVisible():
         if ui.szoo_pushButon_01.text() == '확대(esc)':
             ui.szoo_pushButon_01.setText('축소(esc)')
@@ -35,7 +35,7 @@ def szoo_button_clicked_01(ui):
             ui.szoo_pushButon_02.setVisible(True)
 
 
-def szoo_button_clicked_02(ui):
+def sz_button_clicked_02(ui):
     if ui.svj_pushButton_01.isVisible():
         if ui.szoo_pushButon_02.text() == '확대(esc)':
             ui.szoo_pushButon_02.setText('축소(esc)')
@@ -73,7 +73,7 @@ def szoo_button_clicked_02(ui):
             ui.szoo_pushButon_01.setVisible(True)
 
 
-def czoo_button_clicked_01(ui):
+def cz_button_clicked_01(ui):
     if ui.cvj_pushButton_01.isVisible():
         if ui.czoo_pushButon_01.text() == '확대(esc)':
             ui.czoo_pushButon_01.setText('축소(esc)')
@@ -110,7 +110,7 @@ def czoo_button_clicked_01(ui):
             ui.czoo_pushButon_02.setVisible(True)
 
 
-def czoo_button_clicked_02(ui):
+def cz_button_clicked_02(ui):
     if ui.cvj_pushButton_01.isVisible():
         if ui.czoo_pushButon_02.text() == '확대(esc)':
             ui.czoo_pushButon_02.setText('축소(esc)')

@@ -3,11 +3,12 @@ import ntplib
 import win32api
 from dateutil import tz
 from datetime import datetime
-from utility.static import thread_decorator
+from utility.static import thread_decorator, get_logger
 
 
 @thread_decorator
 def timesync():
+    logger_ = get_logger('TimeSync')
     try:
         ntp_client = ntplib.NTPClient()
         while True:
@@ -26,9 +27,9 @@ def timesync():
                     localtime.second,
                     localtime.microsecond // 1000
                 )
-                print(f'표준시간 동기화 중 ... 현재 표준시간과의 차이는 [{offset:.6f}]초입니다.')
+                logger_.info(f'표준시간 동기화 중 ... 현재 표준시간과의 차이는 [{offset:.6f}]초입니다.')
             else:
-                print(f'표준시간 동기화 완 ... 현재 표준시간과의 차이는 [{offset:.6f}]초입니다.')
+                logger_.info(f'표준시간 동기화 완 ... 현재 표준시간과의 차이는 [{offset:.6f}]초입니다.')
                 break
             time.sleep(1)
     except:

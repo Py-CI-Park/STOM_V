@@ -4,7 +4,7 @@ import zmq
 from threading import Thread
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, ui_num
-from utility.static import threading_timer
+from utility.static import threading_timer, get_logger
 
 
 class ZmqRecv(Thread):
@@ -35,6 +35,8 @@ class KiwoomReceiverClient:
         self.sstgQs      = qlist[3]
         self.dict_set    = DICT_SET
 
+        self.logger      = get_logger(self.__class__.__name__)
+
         self.dict_sgbn   = {}
         self.dict_jgdt   = {}
 
@@ -54,6 +56,7 @@ class KiwoomReceiverClient:
 
     def Mainloop(self):
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 리시버 시작')))
+        self.logger.info('리시버 시작 완료')
         while True:
             data = self.sreceivQ.get()
             if type(data) == tuple:
@@ -94,7 +97,7 @@ class KiwoomReceiverClient:
                     if code in self.tuple_order:
                         self.straderQ.put(('주문확인', code, c))
             except:
-                print('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
+                self.logger.error('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
 
     def UpdateLoginInfo(self, data):
         tuple_kosd, self.dict_sgbn, dict_name, dict_code = data

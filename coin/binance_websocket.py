@@ -3,6 +3,7 @@ import asyncio
 import binance
 from multiprocessing import Queue
 from binance import AsyncClient, BinanceSocketManager
+from utility.static import get_logger
 
 
 class WebSocketReceiver:
@@ -14,6 +15,8 @@ class WebSocketReceiver:
         self.wsk_order = None
         self.con_trade = False
         self.con_order = False
+
+        self.logger    = get_logger(self.__class__.__name__)
 
         loop = asyncio.get_event_loop()
         asyncio.ensure_future(self.run_trade())
@@ -27,7 +30,7 @@ class WebSocketReceiver:
                     await self.connect_trader()
                 await self.receive_trader()
             except Exception as e:
-                print(f"Error WebSocketReceiver trade: {e}, reconnecting...")
+                self.logger.error(f"run_trade {e}, reconnecting...")
 
             self.con_trade = False
             await asyncio.sleep(5)
@@ -39,7 +42,7 @@ class WebSocketReceiver:
                     await self.connect_order()
                 await self.receive_order()
             except Exception as e:
-                print(f"Error WebSocketReceiver order: {e}, reconnecting...")
+                self.logger.error(f"run_order {e}, reconnecting...")
 
             self.con_order = False
             await asyncio.sleep(5)
@@ -69,7 +72,7 @@ class WebSocketReceiver:
                 if not self.debug:
                     self.q.put(['trade', data])
                 else:
-                    print(data)
+                    self.logger.info(data)
 
     async def receive_order(self):
         async with self.wsk_order as ws:
@@ -78,7 +81,7 @@ class WebSocketReceiver:
                 if not self.debug:
                     self.q.put(['depth', data])
                 else:
-                    print(data)
+                    self.logger.info(data)
 
 
 class WebSocketTrader:
@@ -89,6 +92,8 @@ class WebSocketTrader:
         self.debug     = debug
         self.websocket = None
         self.connected = False
+
+        self.logger    = get_logger(self.__class__.__name__)
 
         loop = asyncio.get_event_loop()
         asyncio.ensure_future(self.run())
@@ -101,7 +106,7 @@ class WebSocketTrader:
                     await self.connect()
                 await self.receive_msgs()
             except Exception as e:
-                print(f"Error WebSocketTrader: {e}, reconnecting...")
+                self.logger.error(f"run: {e}, reconnecting...")
 
             self.connected = False
             await asyncio.sleep(5)
@@ -119,7 +124,7 @@ class WebSocketTrader:
                 if not self.debug:
                     self.q.put(['user', data])
                 else:
-                    print(data)
+                    self.logger.info(data)
 
 
 if __name__ == '__main__':

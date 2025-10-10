@@ -16,7 +16,7 @@ from kiwoom_receiver_client import KiwoomReceiverClient
 from login_kiwoom.manuallogin import find_window
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, LOGIN_PATH
-from utility.static import now, timedelta_sec, qtest_qwait, opstarter_kill, str_hms
+from utility.static import now, timedelta_sec, qtest_qwait, opstarter_kill, str_hms, get_logger
 
 
 class ZmqRecv(QThread):
@@ -103,6 +103,8 @@ class KiwoomManager:
         self.qlist    = [self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQs, self.kiwoomQ]
         self.dict_set = DICT_SET
 
+        self.logger   = get_logger(self.__class__.__name__)
+
         self.backtest_engine      = False
         self.proc_receiver_stock  = None
         self.proc_strategy_stock1 = None
@@ -157,7 +159,7 @@ class KiwoomManager:
 
     def StockManualStart(self):
         if self.backtest_engine:
-            print('백테엔진 구동 중에는 로그인할 수 없습니다.')
+            self.logger.error('백테엔진 구동 중에는 로그인할 수 없습니다.')
             return
         if self.dict_set['버전업']:
             self.StockVersionUp()
@@ -166,8 +168,7 @@ class KiwoomManager:
             self.StockTraderStart()
             self.StockKiwoomStart()
 
-    @staticmethod
-    def OpenapiLoginWait(is_main):
+    def OpenapiLoginWait(self, is_main):
         result = True
         lwopen = True
         update = False
@@ -178,7 +179,7 @@ class KiwoomManager:
             if now() > time_out_open:
                 result = False
                 lwopen = False
-                print('로그인 오류 알림 : 로그인창이 열리지 않아 잠시 후 재시도합니다.')
+                self.logger.error('로그인 오류 알림 : 로그인창이 열리지 않아 잠시 후 재시도합니다.')
                 break
             qtest_qwait(0.1)
 
@@ -204,12 +205,12 @@ class KiwoomManager:
 
                     if now() > time_out_update:
                         result = False
-                        print('로그인 오류 알림 : 업데이트가 확인되지 않아 잠시 후 재시도합니다.')
+                        self.logger.error('로그인 오류 알림 : 업데이트가 확인되지 않아 잠시 후 재시도합니다.')
                         break
 
                 if now() > time_out_close:
                     result = False
-                    print('로그인 오류 알림 : 업데이트 제한 시간 초과로 잠시 후 재시도합니다.')
+                    self.logger.error('로그인 오류 알림 : 업데이트 제한 시간 초과로 잠시 후 재시도합니다.')
                     break
 
                 qtest_qwait(0.01)
@@ -224,7 +225,7 @@ class KiwoomManager:
             if self.OpenapiLoginWait(False):
                 break
             else:
-                print('버전 업그레이드 실패, 잠시 후 재실행합니다.')
+                self.logger.error('버전 업그레이드 실패, 잠시 후 재실행합니다.')
                 proc.kill()
             qtest_qwait(1)
 
@@ -283,20 +284,20 @@ class KiwoomManager:
                     server_ip_select = text.split('SERVER_IP_SELECT=')[1].split('PROBLEM_CONNECTIP=')[0].strip()
                     inthms = int(str_hms())
                     if inthms < 85000 and fast_ip1 in server_ip_select:
-                        print(f'빠른 서버 접속 완료 [{server_ip_select}]')
+                        self.logger.info(f'빠른 서버 접속 완료 [{server_ip_select}]')
                         break
                     elif 85000 < inthms < 85900 and (fast_ip1 in server_ip_select or fast_ip2 in server_ip_select):
-                        print(f'빠른 서버 접속 완료 [{server_ip_select}]')
+                        self.logger.info(f'빠른 서버 접속 완료 [{server_ip_select}]')
                         break
                     elif inthms < 80000 or 85900 < inthms or now().weekday() > 4:
-                        print(f'접속 시간 초과, 마지막 접속 유지 [{server_ip_select}]')
+                        self.logger.info(f'접속 시간 초과, 마지막 접속 유지 [{server_ip_select}]')
                         break
                     else:
                         self.proc_kiwoom_stock.kill()
-                        print('빠른 서버 접속 실패, 잠시 후 재접속합니다.')
+                        self.logger.error('빠른 서버 접속 실패, 잠시 후 재접속합니다.')
                 else:
                     self.proc_kiwoom_stock.kill()
-                    print('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
+                    self.logger.error('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
             qtest_qwait(0.01)
 
     def StockReceiverProcessAlive(self):

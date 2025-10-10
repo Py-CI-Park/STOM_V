@@ -2,7 +2,7 @@ from traceback import print_exc
 from PyQt5.QtCore import QThread
 from utility.setting import indicator
 # noinspection PyUnresolvedReferences
-from utility.static import timedelta_sec, qtest_qwait
+from utility.static import timedelta_sec, qtest_qwait, get_logger
 
 
 # noinspection PyUnusedLocal
@@ -15,6 +15,7 @@ class BackCodeTest(QThread):
         self.var   = var
         self.ga    = ga
         self.indicator = indicator
+        self.logger    = get_logger(self.__class__.__name__)
 
     def run(self):
         if self.stg is None:
@@ -29,17 +30,17 @@ class BackCodeTest(QThread):
 
             for i, var in enumerate(self.vars.values()):
                 if len(var) != 2:
-                    print(f'self.vars[{i}]의 범위 설정 방법 오류')
+                    self.logger.error(f'self.vars[{i}]의 범위 설정 방법 오류')
                     error = True
                 if not self.ga:
                     if len(var[0]) != 3:
-                        print(f'self.vars[{i}]의 범위 설정 방법 오류')
+                        self.logger.error(f'self.vars[{i}]의 범위 설정 방법 오류')
                         error = True
                     if var[0][2] != 0 and (var[0][1] - var[0][0]) / var[0][2] + 1 > 20:
-                        print(f'self.vars[{i}]의 범위 설정 갯수 20개 초과')
+                        self.logger.error(f'self.vars[{i}]의 범위 설정 갯수 20개 초과')
                         error = True
                     if (var[0][0] < var[0][1] and var[0][2] < 0) or (var[0][0] > var[0][1] and var[0][2] > 0):
-                        print(f'self.vars[{i}]의 범위 간격 부호 오류')
+                        self.logger.error(f'self.vars[{i}]의 범위 간격 부호 오류')
                         error = True
 
             if error:
@@ -78,7 +79,7 @@ class BackCodeTest(QThread):
                 _stg_list = _stg.split(';')
                 for i, txt in enumerate(_stg_list):
                     if '#' not in txt and factor in txt and _stg_list[i+1][0] != '(':
-                        print(f'{factor}(30), {factor}(30, 1) 형태로 사용하십시오.')
+                        self.logger.error(f'{factor}(30), {factor}(30, 1) 형태로 사용하십시오.')
                         error = True
         if error:
             return False

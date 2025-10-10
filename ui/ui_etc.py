@@ -43,7 +43,7 @@ def auto_back_schedule(ui, gubun):
         qtest_qwait(2)
         ui.BacktestEngineKill()
         qtest_qwait(3)
-        ui.StartBacktestEngine(ui.dict_set['백테스케쥴구분'])
+        ui.BacktestEngineStart(ui.dict_set['백테스케쥴구분'])
     elif gubun == 2:
         if not ui.dialog_scheduler.isVisible():
             ui.dialog_scheduler.show()

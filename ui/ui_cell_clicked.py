@@ -172,7 +172,7 @@ def cell_clicked_07(ui, row):
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
     ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-    data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetKlist(code))
+    data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetIndicatorDetail(code))
     cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
     if cf1 and cf2: data += (float(cf1), float(cf2))
     ui.chartQ.put(data)

@@ -7,7 +7,7 @@ from threading import Thread
 from multiprocessing import Process, Queue
 from coin.upbit_websocket import WebSocketReceiver
 from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
-from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc
+from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc, get_logger
 
 
 class ZmqServ(Thread):
@@ -40,6 +40,8 @@ class UpbitReceiverTick:
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
         self.dict_set    = DICT_SET
+
+        self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_tmdt   = {}
         self.dict_jgdt   = {}
@@ -82,6 +84,7 @@ class UpbitReceiverTick:
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
         self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작'))
+        self.logger.info('리시버 시작 완료')
         self.GetTickers()
         self.WebSocketsStart(self.creceivQ)
         while True:
@@ -167,7 +170,7 @@ class UpbitReceiverTick:
             df = pyupbit.get_ohlcv(ticker=code)
             if df is not None:
                 self.dict_daym[code] = df['value'].iloc[-1]
-            print(f'분봉 데이터 조회 중 ... [{i+1}/{last}][{code}]')
+            self.logger.info(f'분봉 데이터 조회 중 ... [{i+1}/{last}][{code}]')
 
         self.list_gsjm = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
         data = tuple(self.list_gsjm)
@@ -366,4 +369,5 @@ class UpbitReceiverTick:
             con.close()
             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))
 
+        self.logger.info('거래대금순위 저장 완료')
         self.cstgQ.put(('데이터저장', codes))

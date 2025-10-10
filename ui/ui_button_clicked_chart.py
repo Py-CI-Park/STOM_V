@@ -6,13 +6,13 @@ from ui.set_text import famous_saying
 from utility.setting import DB_SETTING, indi_base, DB_STRATEGY, indicator
 
 
-def ct_button_clicked_01(ui):
+def indicator_setting_basic(ui):
     k = list(indi_base.values())
     for i, linedit in enumerate(ui.factor_linedit_list):
         linedit.setText(str(k[i]))
 
 
-def ct_button_clicked_02(ui):
+def indicator_setting_load(ui):
     con = sqlite3.connect(DB_SETTING)
     df = pd.read_sql('SELECT * FROM back', con)
     k_list = df['보조지표설정'][0]
@@ -22,7 +22,7 @@ def ct_button_clicked_02(ui):
         linedit.setText(k_list[i])
 
 
-def ct_button_clicked_03(ui):
+def indicator_setting_save(ui):
     k_list = []
     for linedit in ui.factor_linedit_list:
         k_list.append(linedit.text())
@@ -33,7 +33,7 @@ def ct_button_clicked_03(ui):
         QMessageBox.information(ui.dialog_factor, '저장 완료', random.choice(famous_saying))
 
 
-def get_k_list(ui, code):
+def get_indicator_detail(ui, code):
     k_list = None
     if not ui.dict_set['주식타임프레임'] or not ui.dict_set['코인타임프레임']:
         if ui.ft_checkBoxxxxx_39.isChecked():

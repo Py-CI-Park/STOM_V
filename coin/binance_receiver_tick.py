@@ -8,7 +8,7 @@ from threading import Thread
 from multiprocessing import Process, Queue
 from coin.binance_websocket import WebSocketReceiver
 from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
-from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, now_utc, str_hms, str_ymd
+from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, now_utc, str_hms, str_ymd, get_logger
 
 
 class ZmqServ(Thread):
@@ -40,6 +40,8 @@ class BinanceReceiverTick:
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
         self.dict_set    = DICT_SET
+
+        self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_tmdt   = {}
         self.dict_jgdt   = {}
@@ -86,6 +88,7 @@ class BinanceReceiverTick:
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
         self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작'))
+        self.logger.info('리시버 시작 완료')
         self.codes = self.GetTickers()
         self.WebSocketsStart(self.creceivQ)
         while True:
@@ -168,7 +171,7 @@ class BinanceReceiverTick:
         try:
             datas = self.binance.futures_ticker()
         except Exception as e:
-            print(e)
+            self.logger.error(e)
         else:
             datas = [data for data in datas if re.search('USDT$', data['symbol']) is not None]
             ymd   = str_ymd(now_utc())
@@ -400,5 +403,5 @@ class BinanceReceiverTick:
             con.close()
             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))
 
-        print('데이터저장', codes)
+        self.logger.info('거래대금순위 저장 완료')
         self.cstgQ.put(('데이터저장', codes))

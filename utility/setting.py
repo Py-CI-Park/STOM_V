@@ -3,8 +3,9 @@ import sqlite3
 import pandas as pd
 from traceback import print_exc
 from cryptography import fernet
-from utility.static import read_key, de_text
+from utility.static import read_key, de_text, get_logger
 
+logger_             = get_logger('Setting')
 EN_KEY              = read_key()
 OPENAPI_PATH        = 'C:/OpenAPI'
 ICON_PATH           = './icon'
@@ -370,14 +371,14 @@ try:
         '백테엔진프로파일링': False
     }
 except fernet.InvalidToken:
-    print('이 컴퓨터의 암호키로 생성된 계정이 아닙니다. setting.db를 삭제 후 재실행 하십시오.')
+    logger_.critical('이 컴퓨터의 암호키로 생성된 계정이 아닙니다. setting.db를 삭제 후 재실행 하십시오.')
     sys.exit()
 except KeyError:
     print_exc()
-    print('setting.db가 구버전 상태입니다. 삭제 후 재실행 하십시오.')
+    logger_.error('setting.db가 구버전 상태입니다. 삭제 후 재실행 하십시오.')
     sys.exit()
 
-ui_num = {'설정로그': 1, '종목명데이터': 1.2, 'S오더텍스트': 1.3, '백테엔진': 1.4,
+ui_num = {'설정로그': 1, '종목명데이터': 1.2, '백테엔진': 1.4,
           'S단순텍스트': 2, 'S로그텍스트': 3, 'C단순텍스트': 4, 'C로그텍스트': 5,
           'S백테스트': 6, 'SF백테스트': 6.5, 'C백테스트': 7, 'CF백테스트': 7.5,
           'S백테바': 8, 'SF백테바': 8.5, 'C백테바': 9, 'CF백테바': 9.5, 'DB관리': 10,

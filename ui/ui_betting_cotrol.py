@@ -7,7 +7,7 @@ from ui.set_text import famous_saying
 from utility.setting import DB_SETTING
 
 
-def bjs_button_clicked_01(ui):
+def setting_stock_weight_cotrol_load(ui):
     ui.bjs_checkBoxxx_01.setChecked(False)
     ui.bjs_checkBoxxx_02.setChecked(False)
     ui.bjs_checkBoxxx_03.setChecked(False)
@@ -38,7 +38,7 @@ def bjs_button_clicked_01(ui):
     ui.bjs_lineEdittt_09.setText(bjjj_list[9])
 
 
-def bjs_button_clicked_02(ui):
+def setting_stock_weight_cotrol_save(ui):
     bjjj_list = []
     if ui.bjs_checkBoxxx_01.isChecked():   bjjj_list.append('0')
     elif ui.bjs_checkBoxxx_02.isChecked(): bjjj_list.append('1')
@@ -81,7 +81,7 @@ def bjs_button_clicked_02(ui):
     ui.UpdateDictSet()
 
 
-def bjc_button_clicked_01(ui):
+def setting_coin_weight_cotrol_load(ui):
     ui.bjc_checkBoxxx_01.setChecked(False)
     ui.bjc_checkBoxxx_02.setChecked(False)
     ui.bjc_checkBoxxx_03.setChecked(False)
@@ -106,7 +106,7 @@ def bjc_button_clicked_01(ui):
     ui.bjc_lineEdittt_09.setText(bjjj_list[9])
 
 
-def bjc_button_clicked_02(ui):
+def setting_coin_weight_cotrol_save(ui):
     bjjj_list = []
     if ui.bjc_checkBoxxx_01.isChecked():   bjjj_list.append('0')
     elif ui.bjc_checkBoxxx_02.isChecked(): bjjj_list.append('1')
@@ -146,7 +146,7 @@ def bjc_button_clicked_02(ui):
     ui.UpdateDictSet()
 
 
-def bjs_check_changed_01(ui, state):
+def setting_stock_weight_cotrol_changed(ui, state):
     if type(ui.dialog_bjjs.focusWidget()) != QPushButton:
         if state == Qt.Checked:
             for widget in ui.bjs_check_button_list:
@@ -155,7 +155,7 @@ def bjs_check_changed_01(ui, state):
                         widget.nextCheckState()
 
 
-def bjc_check_changed_01(ui, state):
+def setting_coin_weight_cotrol_changed(ui, state):
     if type(ui.dialog_bjjc.focusWidget()) != QPushButton:
         if state == Qt.Checked:
             for widget in ui.bjc_check_button_list:

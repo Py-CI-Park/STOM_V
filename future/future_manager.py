@@ -16,7 +16,7 @@ from future_receiver_client import FutureReceiverClient
 from login_future.manuallogin import find_window, manual_login, leftClick, doubleClick, press_keys, click_button
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET
-from utility.static import now, timedelta_sec, qtest_qwait, opstarter_kill, str_hms
+from utility.static import now, timedelta_sec, qtest_qwait, opstarter_kill, str_hms, get_logger
 
 
 class ZmqRecv(QThread):
@@ -92,6 +92,7 @@ class ZmqServ(QThread):
 
 
 def set_password(password: str):
+    logger = get_logger('FutureManager')
     while True:
         hwnd = find_window('계좌번호관리')
         if hwnd != 0:
@@ -111,7 +112,7 @@ def set_password(password: str):
                 click_button(win32gui.GetDlgItem(hwnd, 0x2))
             except:
                 pass
-            print('계좌비밀번호 등록 완료')
+            logger.info('계좌비밀번호 등록 완료')
             break
         qtest_qwait(0.1)
 
@@ -123,6 +124,8 @@ class FutureManager:
         self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ = Queue(), Queue(), Queue(), Queue(), Queue()
         self.qlist    = [self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ]
         self.dict_set = DICT_SET
+
+        self.logger   = get_logger(self.__class__.__name__)
 
         self.backtest_engine      = False
         self.proc_receiver_future = None
@@ -170,7 +173,7 @@ class FutureManager:
 
     def FutureManualStart(self):
         if self.backtest_engine:
-            print('백테엔진 구동 중에는 로그인할 수 없습니다.')
+            self.logger.error('백테엔진 구동 중에는 로그인할 수 없습니다.')
             return
         if self.dict_set['버전업']:
             self.FutureVersionUp()
@@ -190,17 +193,17 @@ class FutureManager:
             if now() > time_out_open:
                 result = False
                 lwopen = False
-                print('로그인 오류 알림 : 로그인창이 열리지 않아 잠시 후 재시도합니다.')
+                self.logger.error('로그인 오류 알림 : 로그인창이 열리지 않아 잠시 후 재시도합니다.')
                 break
             qtest_qwait(0.1)
 
         if lwopen:
             if is_main:
                 id_num = int(self.dict_set['증권사'][4:])
-                print('아이디 및 패스워드 입력 대기 중 ...')
+                self.logger.info('아이디 및 패스워드 입력 대기 중 ...')
                 qtest_qwait(2)
                 manual_login(id_num)
-                print('아이디 및 패스워드 입력 완료')
+                self.logger.info('아이디 및 패스워드 입력 완료')
 
             time_out_update = timedelta_sec(30)
             time_out_close  = timedelta_sec(60)
@@ -223,12 +226,12 @@ class FutureManager:
 
                     if now() > time_out_update:
                         result = False
-                        print('로그인 오류 알림 : 업데이트가 확인되지 않아 잠시 후 재시도합니다.')
+                        self.logger.error('로그인 오류 알림 : 업데이트가 확인되지 않아 잠시 후 재시도합니다.')
                         break
 
                 if now() > time_out_close:
                     result = False
-                    print('로그인 오류 알림 : 업데이트 제한 시간 초과로 잠시 후 재시도합니다.')
+                    self.logger.error('로그인 오류 알림 : 업데이트 제한 시간 초과로 잠시 후 재시도합니다.')
                     break
 
                 qtest_qwait(0.01)
@@ -243,7 +246,7 @@ class FutureManager:
             if self.OpenapiLoginWait(False):
                 break
             else:
-                print('버전 업그레이드 실패, 잠시 후 재실행합니다.')
+                self.logger.error('버전 업그레이드 실패, 잠시 후 재실행합니다.')
                 proc.kill()
             qtest_qwait(1)
 
@@ -275,7 +278,7 @@ class FutureManager:
                     break
                 else:
                     self.proc_future_kiwoom.kill()
-                    print('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
+                    self.logger.error('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
             qtest_qwait(0.01)
 
     def FutureReceiverProcessAlive(self):

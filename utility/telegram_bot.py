@@ -5,6 +5,7 @@ from threading import Thread
 from utility.setting import DICT_SET
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from utility.static import get_logger
 
 
 class TelegramBot:
@@ -19,6 +20,7 @@ class TelegramBot:
         self.cstgQ       = qlist[10]
         self.wdzservQ    = qlist[13]
         self.dict_set    = DICT_SET
+        self.logger      = get_logger(self.__class__.__name__)
         gubun            = self.dict_set['증권사'][4:]
         self.token       = self.dict_set[f'텔레그램봇토큰{gubun}']
         self.chat_id     = self.dict_set[f'텔레그램사용자아이디{gubun}']
@@ -108,7 +110,7 @@ class TelegramBot:
         while not self.running:
             data = self.teleQ.get()
             if type(data) in (str, pd.DataFrame):
-                print('텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다')
+                self.logger.error('텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다')
 
     @staticmethod
     def GetTextFromDataframe(df):

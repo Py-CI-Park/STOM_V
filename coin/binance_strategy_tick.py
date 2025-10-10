@@ -5,7 +5,8 @@ import numpy as np
 import pandas as pd
 from traceback import print_exc
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, dgree
-from utility.static import now, now_utc, GetBinanceShortPgSgSp, dt_ymdhms, get_buy_indi_stg, GetBinanceLongPgSgSp
+from utility.static import now, now_utc, GetBinanceShortPgSgSp, dt_ymdhms, get_buy_indi_stg, GetBinanceLongPgSgSp, \
+    get_logger
 
 
 # noinspection PyUnusedLocal
@@ -20,6 +21,8 @@ class BinanceStrategyTick:
         self.ctraderQ         = qlist[9]
         self.cstgQ            = qlist[10]
         self.dict_set         = DICT_SET
+
+        self.logger           = get_logger(self.__class__.__name__)
 
         self.buystrategy      = None
         self.sellstrategy     = None
@@ -95,10 +98,11 @@ class BinanceStrategyTick:
             except:
                 pass
             else:
-                print(self.indicator)
+                self.logger.info(self.indicator)
 
     def MainLoop(self):
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 전략 연산 시작'))
+        self.logger.info('전략연산 시작 완료')
         while True:
             data = self.cstgQ.get()
             if type(data) == tuple:
@@ -746,4 +750,5 @@ class BinanceStrategyTick:
             self.windowQ.put((ui_num['C단순텍스트'], text))
         con.close()
 
+        self.logger.info('데이터 저장 완료')
         self.cstgQ.put('프로세스종료')

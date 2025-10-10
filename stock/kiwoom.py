@@ -8,8 +8,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import OPENAPI_PATH, DICT_SET, ui_num
-from utility.static import now, qtest_qwait, str_ymd, str_hms, timedelta_sec
-
+from utility.static import now, qtest_qwait, str_ymd, str_hms, timedelta_sec, get_logger
 
 sn_brrq = 1000
 sn_brrd = 1001
@@ -65,6 +64,7 @@ class Kiwoom:
         self.sstgQs   = qlist[3]
         self.kiwoomQ  = qlist[4]
         self.dict_set = DICT_SET
+        self.logger   = get_logger(self.__class__.__name__)
 
         self.ocx = QAxWidget('KHOPENAPI.KHOpenAPICtrl.1')
         self.ocx.OnReceiveMsg.connect(self.OnReceiveMsg)
@@ -129,6 +129,7 @@ class Kiwoom:
             qtest_qwait(0.01)
 
         qtest_qwait(5)
+        self.logger.info('OpenAPI 로그인 완료')
         self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
         text = '주식 시스템을 시작하였습니다.'
         if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', text))
@@ -160,7 +161,7 @@ class Kiwoom:
                 if self.list_cond[0][0] == 0 and self.list_cond[1][0] == 1:
                     self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 조건검색식 불러오기 완료')))
             except:
-                print('조건검색식 불러오기 실패, 2초후 재시도합니다.')
+                self.logger.error('조건검색식 불러오기 실패, 2초후 재시도합니다.')
             else:
                 error = False
                 self.kwzservQ.put(('window', (ui_num['S단순텍스트'], self.list_cond)))
@@ -264,8 +265,8 @@ class Kiwoom:
 
         self.list_code = self.SendCondition([sn_cond, self.list_cond[1][1], self.list_cond[1][0], 0])
         if len(self.list_code) > 2400:
-            print('조건검색식 설정이 잘못되었습니다.')
-            print('감시종목수가 너무 많으니 조건검색식을 재설정하십시오.')
+            self.logger.error('조건검색식 설정이 잘못되었습니다.')
+            self.logger.error('감시종목수가 너무 많으니 조건검색식을 재설정하십시오.')
 
         k = 0
         for i in range(0, len(self.list_code), 100):
@@ -276,8 +277,8 @@ class Kiwoom:
             k += 1
 
         if k < 10:
-            print('조건검색식 설정이 잘못되었습니다.')
-            print('감시종목수가 너무 적으니 조건검색식을 재설정하십시오.')
+            self.logger.error('조건검색식 설정이 잘못되었습니다.')
+            self.logger.error('감시종목수가 너무 적으니 조건검색식을 재설정하십시오.')
 
         self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 실시간 등록 완료')))
 
@@ -318,12 +319,11 @@ class Kiwoom:
 
     # noinspection PyUnusedLocal
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
-        print(f'[{now()}]{sScrNo} {sRQName} {sTrCode} {sMsg}')
-        self.kwzservQ.put(('window', (ui_num['S오더텍스트'], f'{sMsg}')))
         if '매수증거금' in sMsg:
             sn = int(sScrNo)
             code = self.dict_sncd[sn] if sn in self.dict_sncd else ''
             self.straderQ.put(('증거금부족', code))
+            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'{sMsg}')))
 
     def Block_Request(self, *args, **kwargs):
         trcode = args[0].lower()
@@ -732,10 +732,12 @@ class Kiwoom:
         ret = self.SendOrder(order[:-2])
         if ret == 0:
             self.dict_sncd[self.intg_odsn] = 종목코드
+            self.logger.info(f'[주문전송] {종목명} | {주문가격} | {주문수량} | {주문구분}')
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] {종목명} | {주문가격} | {주문수량} | {주문구분}')))
             self.order_time = timedelta_sec(0.2)
         else:
             self.sstgQs[self.dict_sgbn[종목코드]].put((f'{주문구분}취소', 종목코드))
+            self.logger.error(f'[주문실패] {종목명} | {주문가격} | {주문수량} | {주문구분}')
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] {종목명} | {주문가격} | {주문수량} | {주문구분}')))
 
     def SendOrder(self, order):

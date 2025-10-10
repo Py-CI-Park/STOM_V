@@ -9,7 +9,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, ui_num, DB_CODE_INFO, DB_TRADELIST
 from utility.static import now, str_hms_cme_from_str, qtest_qwait, opstarter_kill, str_ymd, now_cme, str_hms, \
-    timedelta_sec
+    timedelta_sec, get_logger
 
 
 class Updater(QThread):
@@ -43,6 +43,8 @@ class FutureKiwoom:
         self.sstgQ    = qlist[3]
         self.futureQ  = qlist[4]
         self.dict_set = DICT_SET
+
+        self.logger   = get_logger(self.__class__.__name__)
 
         self.ocx = QAxWidget('KFOPENAPI.KFOpenAPICtrl.1')
         self.ocx.OnReceiveMsg.connect(self.OnReceiveMsg)
@@ -130,6 +132,7 @@ class FutureKiwoom:
         self.ShowAccountWindow()
         opstarter_kill()
 
+        self.logger.info('OpenAPI 로그인 완료')
         self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
         text = '해외선물 시스템을 시작하였습니다.'
         if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', text))
@@ -219,7 +222,7 @@ class FutureKiwoom:
                     self.dict_bool['해선체결필드확인'] = True
 
                 if self.dict_bool['해선체결필드같음']:
-                    data  = realdata.split(';')
+                    data = realdata.split(';')
                     dt            = data[0]
                     c       = float(data[2])
                     per     = float(data[4])
@@ -358,12 +361,11 @@ class FutureKiwoom:
 
     # noinspection PyUnusedLocal
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
-        print(f'[{now()}]{sScrNo} {sRQName} {sTrCode} {sMsg}')
-        self.kwzservQ.put(('window', (ui_num['S오더텍스트'], f'{sMsg}')))
         if '매수증거금' in sMsg:
             sn = int(sScrNo)
             code = self.dict_sncd[sn] if sn in self.dict_sncd else ''
             self.straderQ.put(('증거금부족', code))
+            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'{sMsg}')))
 
     # noinspection PyUnusedLocal
     def OnReceiveChejanData(self, gubun, itemcnt, fidlist):
@@ -597,11 +599,13 @@ class FutureKiwoom:
         ret = self.SendOrder(order[:-2])
         if ret == 0:
             self.straderQ.put(('주문전송', (종목코드, 주문구분)))
+            self.logger.info(f'[주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
             self.order_time = timedelta_sec(0.2)
             self.dict_sncd[self.intg_odsn] = 종목코드
         else:
             self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
+            self.logger.error(f'[주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')
             self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
 
     def SendOrder(self, order: list):

@@ -9,7 +9,7 @@ from multiprocessing import Queue
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, DB_STOCK_TICK, ui_num, DB_STOCK_MIN
 from utility.static import now, timedelta_sec, roundfigure_upper5, GetVIPrice, str_ymdhms, GetSangHahanga, \
-    threading_timer
+    threading_timer, get_logger
 
 
 class ZmqServ(Thread):
@@ -53,6 +53,8 @@ class KiwoomReceiverTick:
         self.sstgQs      = qlist[3]
         self.dict_set    = DICT_SET
 
+        self.logger      = get_logger(self.__class__.__name__)
+
         self.dict_name   = {}
         self.dict_tmdt   = {}
         self.dict_hgbs   = {}
@@ -94,6 +96,7 @@ class KiwoomReceiverTick:
 
     def Mainloop(self):
         self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 리시버 시작')))
+        self.logger.info('리시버 시작 완료')
         while True:
             data = self.sreceivQ.get()
             if type(data) == tuple:
@@ -186,6 +189,7 @@ class KiwoomReceiverTick:
             con.close()
             self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료')))
 
+        self.logger.info('거래대금순위 저장 완료')
         self.sstgQs[0].put(('데이터저장', codes))
 
     def UpdateTickData(self, data):

@@ -4,6 +4,7 @@ import asyncio
 import pyupbit
 import websockets
 from multiprocessing import Queue
+from utility.static import get_logger
 
 
 class WebSocketReceiver:
@@ -17,6 +18,8 @@ class WebSocketReceiver:
         self.con_trader = False
         self.con_order  = False
 
+        self.logger     = get_logger(self.__class__.__name__)
+
         loop = asyncio.get_event_loop()
         asyncio.ensure_future(self.run_trader())
         asyncio.ensure_future(self.run_order())
@@ -29,7 +32,7 @@ class WebSocketReceiver:
                     await self.connect_trader()
                 await self.receive_ticker()
             except Exception as e:
-                print(f'Error WebSocketReceiver trader: {e}, reconnecting...')
+                self.logger.error(f'run_trader {e}, reconnecting...')
 
             await self.disconnect_trader()
 
@@ -40,7 +43,7 @@ class WebSocketReceiver:
                     await self.connect_order()
                 await self.receive_order()
             except Exception as e:
-                print(f'Error WebSocketReceiver order: {e}, reconnecting...')
+                self.logger.error(f'run_order {e}, reconnecting...')
 
             await self.disconnect_order()
 
@@ -63,7 +66,7 @@ class WebSocketReceiver:
             if not self.debug:
                 self.q.put(data)
             else:
-                print(data)
+                self.logger.info(data)
 
     async def receive_order(self):
         while self.con_order:
@@ -72,7 +75,7 @@ class WebSocketReceiver:
             if not self.debug:
                 self.q.put(data)
             else:
-                print(data)
+                self.logger.info(data)
 
     async def disconnect_trader(self):
         self.con_trader = False

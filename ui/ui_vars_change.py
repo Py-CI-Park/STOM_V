@@ -53,7 +53,8 @@ def get_fix_strategy(ui, strategy, gubun):
     return strategy
 
 
-def get_optivars_to_gavars(opti_vars_text):
+# noinspection PyUnusedLocal
+def get_optivars_to_gavars(ui, opti_vars_text):
     ga_vars_text = ''
     try:
         vars_ = {}
@@ -87,7 +88,8 @@ def get_optivars_to_gavars(opti_vars_text):
     return ga_vars_text[:-1]
 
 
-def get_gavars_to_optivars(ga_vars_text):
+# noinspection PyUnusedLocal
+def get_gavars_to_optivars(ui, ga_vars_text):
     opti_vars_text = ''
     try:
         vars_ = {}
@@ -145,7 +147,8 @@ def get_stgtxt_to_varstxt(ui, buystg, sellstg):
     return buystg_str, sellstg_str
 
 
-def get_stgtxt_sort(buystg, sellstg):
+# noinspection PyUnusedLocal
+def get_stgtxt_sort(ui, buystg, sellstg):
     buystg_str, sellstg_str = '', ''
     if buystg and sellstg and 'self.vars' in buystg and 'self.vars' in sellstg:
         buy_num = int(buystg.split('self.vars[')[1].split(']')[0])
@@ -235,7 +238,8 @@ def get_stgtxt_sort(buystg, sellstg):
     return buystg_str[:-1], sellstg_str[:-1]
 
 
-def get_stgtxt_sort2(optivars, gavars):
+# noinspection PyUnusedLocal
+def get_stgtxt_sort2(ui, optivars, gavars):
     optivars_str, gavars_str = '', ''
     if optivars and 'self.vars' in optivars:
         cnt = 0

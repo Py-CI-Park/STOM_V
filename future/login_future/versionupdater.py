@@ -6,7 +6,7 @@ from PyQt5 import QtWidgets
 from multiprocessing import Process
 from PyQt5.QAxContainer import QAxWidget
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))
-from utility.static import now, timedelta_sec, opstarter_kill
+from utility.static import now, timedelta_sec, opstarter_kill, get_logger
 from utility.setting import DICT_SET
 
 
@@ -16,7 +16,7 @@ def TelegramMassage(txt):
         bot = telegram.Bot(DICT_SET[f'텔레그램봇토큰{gubun}'])
         bot.sendMessage(chat_id=DICT_SET[f'텔레그램사용자아이디{gubun}'], text=txt)
     except:
-        print(txt)
+        logger.error(txt)
 
 
 class Window(QtWidgets.QMainWindow):
@@ -41,23 +41,24 @@ class Window(QtWidgets.QMainWindow):
 
 
 if __name__ == '__main__':
+    logger = get_logger('VersionUpdater')
     opstarter_kill()
     time.sleep(3)
 
     proc = Process(target=Window, daemon=True)
     proc.start()
 
-    print('버전처리용 로그인 프로세스 시작')
+    logger.info('버전처리용 로그인 프로세스 시작')
     while find_window('영웅문W login') == 0:
-        print('로그인창 열림 대기 중 ...')
+        logger.info('로그인창 열림 대기 중 ...')
         time.sleep(1)
 
-    print('아이디 및 패스워드 입력 대기 중 ...')
+    logger.info('아이디 및 패스워드 입력 대기 중 ...')
     time.sleep(2)
 
     id_num = int(DICT_SET['증권사'][4:])
     manual_login(id_num)
-    print('아이디 및 패스워드 입력 완료')
+    logger.info('아이디 및 패스워드 입력 완료')
 
     update = False
     endtime = timedelta_sec(90)
@@ -68,7 +69,7 @@ if __name__ == '__main__':
                 static_hwnd = win32gui.GetDlgItem(hwnd, 0xFFFF)
                 text = win32gui.GetWindowText(static_hwnd)
                 if '키움증권을 이용해 주셔서 감사드립니다' in text:
-                    print('키움증권 홈페이지, 해외파생 OPENAPI 게시판에서 시세이용신청 및 이용료납부를 완료해야만 접속가능합니다.')
+                    logger.error('키움증권 홈페이지, 해외파생 OPENAPI 게시판에서 시세이용신청 및 이용료납부를 완료해야만 접속가능합니다.')
                     time.sleep(3)
                     click_button(win32gui.GetDlgItem(hwnd, 0x2))
                     break
@@ -93,7 +94,7 @@ if __name__ == '__main__':
                     time.sleep(3)
                     if proc.is_alive(): proc.kill()
                     click_button(win32gui.GetDlgItem(hwnd, 0x2))
-                    print('버전 업그레이드 완료')
+                    logger.info('버전 업그레이드 완료')
                     update = True
             except:
                 pass
@@ -101,7 +102,7 @@ if __name__ == '__main__':
         if not proc.is_alive():
             break
 
-        print('버전처리 및 로그인창 닫힘 대기 중 ...')
+        logger.info('버전처리 및 로그인창 닫힘 대기 중 ...')
         time.sleep(1)
         if now() > endtime:
             opstarter_kill()
@@ -112,7 +113,7 @@ if __name__ == '__main__':
         hwnd = find_window('업그레이드 확인')
         if hwnd != 0:
             win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
-        print('버전 업그레이드 확인 완료')
+        logger.info('버전 업그레이드 확인 완료')
 
     opstarter_kill()
     sys.exit()

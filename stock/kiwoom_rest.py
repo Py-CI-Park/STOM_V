@@ -1,9 +1,13 @@
+import os
+import sys
 import json
 import asyncio
 import requests
 import websockets
 import pandas as pd
 from multiprocessing import Process, Queue
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+from utility.static import get_logger
 
 
 class Kiwooom:
@@ -16,6 +20,7 @@ class Kiwooom:
         self.cont_yn = False
         self.wproc   = None
         self.hosturl = 'https://api.kiwoom.com'
+        self.logger  = get_logger(self.__class__.__name__)
 
     def _url(self, endurl):
         return f'{self.hosturl}{endurl}'
@@ -28,7 +33,7 @@ class Kiwooom:
         self.nextkey = response.headers.get('next-key')
         body = response.json()
         ret  = True if body['return_code'] == 0 else False
-        if not ret and self.debug: print('_post', body)
+        if not ret and self.debug: self.logger.debug('_post', body)
         return ret, body
 
     def _headers(self, api_id=None, contyn='N', nextkey=''):
@@ -79,7 +84,7 @@ class Kiwooom:
         params    = self._params(gubun='create')
         ret, body = self._post(url, headers, params)
         if ret: self.token = body['token']
-        if self.debug: print('create_token', body)
+        if self.debug: self.logger.debug('create_token', body)
         return ret, self.token
 
     def revoke_token(self):
@@ -88,7 +93,7 @@ class Kiwooom:
         params    = self._params(gubun='revoke')
         ret, body = self._post(url, headers, params)
         if ret: self.token = None
-        if self.debug: print('revoke_token', body)
+        if self.debug: self.logger.debug('revoke_token', body)
         return ret
 
     def get_code_list(self, gubun):
@@ -104,7 +109,7 @@ class Kiwooom:
         if ret:
             for data in body['list']:
                 dict_[data['code']] = data['name']
-        if self.debug: print('get_code_list', dict_)
+        if self.debug: self.logger.debug('get_code_list', dict_)
         return ret, dict_
 
     def get_balances(self):
@@ -113,7 +118,7 @@ class Kiwooom:
         params    = self._params(gubun='tr')
         ret, body = self._post(url, headers, params)
         balances  = int(body['d2_entra']) if ret else 0
-        if self.debug: print('get_balances', balances)
+        if self.debug: self.logger.debug('get_balances', balances)
         return ret, balances
 
     def get_jango(self, 연속조회='N'):
@@ -147,7 +152,7 @@ class Kiwooom:
                 '금일매도수량', '매입금액', '매입수수료', '평가금액', '평가수수료', '세금', '수수료합',
             ]
             df[columns] = df[columns].astype(int)
-        if self.debug: print('get_jango', dict_, df)
+        if self.debug: self.logger.debug('get_jango', dict_, df)
         return ret, dict_, df
 
     def send_order(self, 구분, 종목코드='', 주문수량='', 주문단가='', 매매구분='', 조건단가='', 원주문번호='',
@@ -188,7 +193,7 @@ class Kiwooom:
         """
         ret, body = self._post(url, headers, params)
         ord_no    = body['ord_no']
-        if self.debug: print('send_order', body)
+        if self.debug: self.logger.debug('send_order', body)
         return ret, ord_no
 
     def websoket_start(self, kiwoomQ, receiverQ, traderQ, debug=False):
@@ -209,6 +214,7 @@ class WebSocketManager:
         self.codes     = []
         self.websocket = None
         self.connected = False
+        self.logger    = get_logger(self.__class__.__name__)
 
         loop = asyncio.get_event_loop()
         asyncio.ensure_future(self.run())
@@ -220,7 +226,7 @@ class WebSocketManager:
                 await self.connect()
             await self.receive_msgs()
         except Exception as e:
-            print('Error WebSocketManager:', e)
+            self.logger.error(f'Error: {e}')
 
         await self.disconnect()
 
@@ -260,32 +266,32 @@ class WebSocketManager:
                     else:
                         self.receiverQ.put(data)
                 else:
-                    print(f'REAL {realtype} {code}', data)
+                    self.logger.debug(f'REAL {realtype} {code}', data)
             elif trnm == 'PING':
                 await self.send_msg(recv_data)
             elif trnm == 'LOGIN':
                 if recv_data['return_code'] == 0:
-                    if self.debug: print('LOGIN', recv_data)
+                    if self.debug: self.logger.debug('LOGIN', recv_data)
                     msg = {'trnm': 'CNSRLST'}
                     await self.send_msg(msg)
                 else:
                     await self.disconnect()
             elif trnm == 'CNSRLST':
                 data = recv_data['data']
-                if self.debug: print('CNSRLST', data)
+                if self.debug: self.logger.debug('CNSRLST', data)
                 msg = {'trnm': 'CNSRREQ', 'seq': '1', 'search_type': '1', 'stex_tp': 'K'}
                 await self.send_msg(msg)
             elif trnm == 'CNSRREQ':
                 data = recv_data['data']
                 if not self.codes:
                     self.codes = [d['jmcode'][1:] for d in data]
-                    if self.debug: print('CNSRREQ', self.codes)
+                    if self.debug: self.logger.debug('CNSRREQ', self.codes)
                     msg = {'trnm': 'CNSRCLR', 'seq': '1'}
                     await self.send_msg(msg)
                     msg = {'trnm': 'CNSRREQ', 'seq': '0', 'search_type': '1', 'stex_tp': 'K'}
                     await self.send_msg(msg)
                 else:
-                    if self.debug: print('CNSRREQ', [d['jmcode'][1:] for d in data])
+                    if self.debug: self.logger.debug('CNSRREQ', [d['jmcode'][1:] for d in data])
                     msg = {'trnm': 'REG', 'grp_no': '1', 'refresh': '0', 'data': [{'item': [''], 'type': ['00']}]}
                     await self.send_msg(msg)
                     msg['refresh'] = '1'
@@ -305,7 +311,7 @@ class WebSocketManager:
                     #     await self.send_msg(msg)
                     #     k += 1
             elif trnm == 'REG':
-                if self.debug: print('REG', recv_data)
+                if self.debug: self.logger.debug('REG', recv_data)
 
 
 if __name__ == '__main__':

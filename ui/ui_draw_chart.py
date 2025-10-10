@@ -430,7 +430,7 @@ class DrawChart:
             press_keys(int(date[6]))
             press_keys(int(date[7]))
         except:
-            print('키움HTS에 멀티차트가 없거나 일봉, 분봉 차트 두개로 설정되어 있지 않습니다.')
-            print('2x1로 좌측은 일봉, 우측은 분봉, 종목일괄변경으로 설정하신 다음 실행하십시오.')
+            self.ui.logger.error('키움HTS에 멀티차트가 없거나 일봉, 분봉 차트 두개로 설정되어 있지 않습니다.')
+            self.ui.logger.error('2x1로 좌측은 일봉, 우측은 분봉, 종목일괄변경으로 설정하신 다음 실행하십시오.')
 
         win32gui.SetForegroundWindow(int(self.ui.winId()))

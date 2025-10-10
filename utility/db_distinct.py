@@ -2,12 +2,14 @@ import os
 import sqlite3
 import pandas as pd
 from multiprocessing import Process
+from static import get_logger
 
 DB_PATH = '../_database'
 
 
 def Updater(gubun, file_list_):
-    print(f'[{gubun}] 데이터베이스 중복 확인 시작')
+    logger = get_logger('DBDistinct')
+    logger.info(f'[{gubun}] 데이터베이스 중복 확인 시작')
     last = len(file_list_)
     count = 0
     for k, db_name in enumerate(file_list_):
@@ -21,12 +23,12 @@ def Updater(gubun, file_list_):
                 if len(df1) != len(df2):
                     df1.to_sql(code, con, if_exists='replace', chunksize=1000)
                     count += 1
-                    print(f'[{gubun}] 데이터베이스 중복 제거 [{code}]')
-        print(f'[{gubun}] 데이터베이스 중복 확인 중 ... [{k + 1}/{last}]')
+                    logger.info(f'[{gubun}] 데이터베이스 중복 제거 [{code}]')
+        logger.info(f'[{gubun}] 데이터베이스 중복 확인 중 ... [{k + 1}/{last}]')
         con.commit()
         con.close()
-    print(f'[{gubun}] 데이터베이스 중복 제거 건수 [{count}]')
-    print(f'[{gubun}] 데이터베이스 중복 확인 완료')
+    logger.info(f'[{gubun}] 데이터베이스 중복 제거 건수 [{count}]')
+    logger.info(f'[{gubun}] 데이터베이스 중복 확인 완료')
 
 
 if __name__ == '__main__':

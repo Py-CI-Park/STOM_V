@@ -7,10 +7,9 @@ import pandas as pd
 from traceback import print_exc
 from matplotlib import font_manager
 from matplotlib import pyplot as plt
-from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms
+from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms, get_logger
 from utility.setting import ui_num, DICT_SET, DB_TRADELIST, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
-    DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_STRATEGY, DB_CODE_INFO, DB_FUTURE_BACK_MIN, dgree, \
-    DB_FUTURE_BACK_TICK
+    DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_CODE_INFO, DB_FUTURE_BACK_MIN, dgree, DB_FUTURE_BACK_TICK
 
 
 class Chart:
@@ -22,6 +21,7 @@ class Chart:
         self.windowQ   = qlist[0]
         self.chartQ    = qlist[4]
         self.dict_set  = DICT_SET
+        self.logger    = get_logger(self.__class__.__name__)
         self.dict_name = {}
 
         con = sqlite3.connect(DB_CODE_INFO)
@@ -106,7 +106,6 @@ class Chart:
         else:
             coin, code, tickcount, searchdate, starttime, endtime, k, detail, buytimes, cf1, cf2 = data
 
-        con = sqlite3.connect(DB_STRATEGY)
         is_min = False
         if coin:
             if self.dict_set['코인타임프레임']:
@@ -148,7 +147,6 @@ class Chart:
                 query1 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
                          f"`index` % 10000 >= {starttime} and " \
                          f"`index` % 10000 <= {endtime}"
-        con.close()
 
         df = None
         query2 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%'"
@@ -443,7 +441,7 @@ class Chart:
                     arry_tick = np.nan_to_num(arry_tick)
                 except:
                     arry_tick = None
-                    print(f'보조지표의 설정값이 잘못되었습니다.')
+                    self.logger.error(f'보조지표의 설정값이 잘못되었습니다.')
                     print_exc()
 
             if arry_tick is not None:

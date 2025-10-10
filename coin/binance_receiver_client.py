@@ -2,7 +2,7 @@ import zmq
 import time
 from threading import Thread
 from utility.setting import ui_num, DICT_SET
-from utility.static import threading_timer, str_hms, now_utc
+from utility.static import threading_timer, str_hms, now_utc, get_logger
 
 
 class ZmqRecv(Thread):
@@ -43,6 +43,8 @@ class BinanceReceiverClient:
         self.cstgQ       = qlist[10]
         self.dict_set    = DICT_SET
 
+        self.logger      = get_logger(self.__class__.__name__)
+
         self.dict_bool   = {'프로세스종료': False}
         self.tuple_jango = ()
         self.tuple_order = ()
@@ -60,6 +62,7 @@ class BinanceReceiverClient:
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
         self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작'))
+        self.logger.info('리시버 시작 완료')
         while True:
             data = self.creceivQ.get()
             if type(data) == tuple:
@@ -91,7 +94,7 @@ class BinanceReceiverClient:
                     else:
                         self.ctraderQ.put(('주문확인', code, c))
             except:
-                print('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
+                self.logger.error('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
 
     def UpdateTuple(self, data):
         gubun, data = data

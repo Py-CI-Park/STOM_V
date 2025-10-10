@@ -98,4 +98,3 @@ def auto_on(gubun):
         click_button(win32gui.GetDlgItem(hwnd, 0xD4))
         click_button(win32gui.GetDlgItem(hwnd, 0xD3))
         click_button(win32gui.GetDlgItem(hwnd, 0x01))
-    print('자동 로그인 설정 완료')
