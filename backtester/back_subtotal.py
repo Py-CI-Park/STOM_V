@@ -1,5 +1,5 @@
 import numpy as np
-from backtester.back_static import GetBackResult, AddMdd
+from backtester.back_static import GetResult, AddMdd
 
 
 class BackSubTotal:
@@ -77,12 +77,12 @@ class BackSubTotal:
                     self.tq.put('집계완료')
                 else:
                     self.tq.put(('더미결과', self.vkey, self.dummy_tsg))
-                    self.SendSubTotal1()
+                    self.SendSubTotal()
                 self.complete1 = False
 
             if self.complete2 and self.bstq.empty():
                 if self.opti_turn != 2:
-                    self.SendSubTotal2()
+                    self.SendSubTotal()
                 else:
                     self.tq.put(('백테결과', self.list_tsg, self.arry_bct))
                 self.complete2 = False
@@ -106,13 +106,10 @@ class BackSubTotal:
             data = [index, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, 추가매수시간]
         self.ddict_tsg[vturn][vkey].append(data)
 
-        arry_bct  = self.ddict_bct[vturn][vkey]
+        arry_bct = self.ddict_bct[vturn][vkey]
         mask = (매수시간 <= arry_bct[:, 0]) & (arry_bct[:, 0] <= 매도시간)
-        arry_bct_ = arry_bct[mask]
-        arry_bct_[:, 2] += 매수금액
-        if 잔량없음: arry_bct_[:, 1] += 1
-        arry_bct[mask] = arry_bct_
-        self.ddict_bct[vturn][vkey] = arry_bct
+        arry_bct[mask, 2] += 매수금액
+        if 잔량없음: arry_bct[mask, 1] += 1
 
     def DivideData(self):
         try:
@@ -126,109 +123,95 @@ class BackSubTotal:
         if self.arry_bct is None:
             self.arry_bct = arry_bct
         else:
-            self.arry_bct[:, 1] += arry_bct[:, 1]
-            self.arry_bct[:, 2] += arry_bct[:, 2]
+            self.arry_bct[:, 1:] += arry_bct[:, 1:]
         self.list_tsg.extend(list_tsg)
 
-    def SendSubTotal1(self):
-        if self.ddict_tsg:
+    def SendSubTotal(self):
+        def send_result():
             if self.list_days is not None:
-                for vturn, dict_tsg in self.ddict_tsg.items():
-                    for vkey, list_tsg in dict_tsg.items():
-                        arry_bct = self.ddict_bct[vturn][vkey]
-                        data = (list_tsg, arry_bct)
-                        train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
-                        if valid_days is not None:
-                            for i, vdays in enumerate(valid_days):
-                                data_ = data + (vdays[0], vdays[1], test_days[0], train_days[2] - vdays[2], vdays[2], i, vturn, vkey)
-                                self.Result(1, data_)
-                                self.Result(0, data_)
-                        else:
-                            data_ = data + (train_days[2], vturn, vkey)
-                            self.Result(0, data_)
+                train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
+                if valid_days is not None:
+                    for i, vdays in enumerate(valid_days):
+                        data = (arry_tsg, arry_bct, vdays[0], vdays[1], test_days[0], train_days[2] - vdays[2], vdays[2], i, vturn, vkey)
+                        self.SendResult(data)
+                else:
+                    data = (arry_tsg, arry_bct, train_days[2], vturn, vkey)
+                    self.SendResult(data)
+
             elif self.valid_days is not None:
-                for vturn, dict_tsg in self.ddict_tsg.items():
-                    for vkey, list_tsg in dict_tsg.items():
-                        arry_bct = self.ddict_bct[vturn][vkey]
-                        data = (list_tsg, arry_bct)
-                        for i, vdays in enumerate(self.valid_days):
-                            data_ = data + (vdays[0], vdays[1], vdays[2], vdays[3], i, vturn, vkey)
-                            self.Result(1, data_)
-                            self.Result(0, data_)
+                for i, vdays in enumerate(self.valid_days):
+                    data = (arry_tsg, arry_bct, vdays[0], vdays[1], vdays[2], vdays[3], i, vturn, vkey)
+                    self.SendResult(data)
             else:
-                for vturn, dict_tsg in self.ddict_tsg.items():
-                    for vkey, list_tsg in dict_tsg.items():
-                        arry_bct = self.ddict_bct[vturn][vkey]
-                        data = (list_tsg, arry_bct)
-                        data_ = data + (self.day_count, vturn, vkey)
-                        self.Result(0, data_)
+                data = (arry_tsg, arry_bct, self.day_count, vturn, vkey)
+                self.SendResult(data)
 
-    def SendSubTotal2(self):
-        if not self.list_tsg:
-            self.tq.put(('결과없음',))
-            return
-
-        data = (self.list_tsg, self.arry_bct)
-        if self.list_days is not None:
-            train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
-            if valid_days is not None:
-                for i, vdays in enumerate(valid_days):
-                    data_ = data + (vdays[0], vdays[1], test_days[0], train_days[2] - vdays[2], vdays[2], i, 0, 0)
-                    self.Result(1, data_)
-                    self.Result(0, data_)
-            else:
-                data_ = data + (train_days[2], 0, 0)
-                self.Result(0, data_)
-        elif self.valid_days is not None:
-            for i, vdays in enumerate(self.valid_days):
-                data_ = data + (vdays[0], vdays[1], vdays[2], vdays[3], i, 0, 0)
-                self.Result(1, data_)
-                self.Result(0, data_)
+        if self.separation == '미분리집계':
+            if not self.ddict_tsg:
+                return
+            for vturn, dict_tsg in self.ddict_tsg.items():
+                for vkey, list_tsg in dict_tsg.items():
+                    arry_tsg, arry_bct = self.GetSortedArray(list_tsg, self.ddict_bct[vturn][vkey])
+                    send_result()
         else:
-            data_ = data + (self.day_count, 0, 0)
-            self.Result(0, data_)
+            if not self.list_tsg:
+                self.tq.put(('결과없음',))
+                return
+            arry_tsg, arry_bct = self.GetSortedArray(self.list_tsg, self.arry_bct)
+            vturn, vkey = 0, 0
+            send_result()
 
-    def Result(self, gubun, data):
+    @staticmethod
+    def GetSortedArray(list_tsg, arry_bct):
+        arry_tsg = np.array(list_tsg, dtype='float64')
+        arry_tsg = arry_tsg[np.argsort(arry_tsg[:, 0])][:, 1:]
+        arry_bct = np.sort(arry_bct[arry_bct[:, 1] > 0], axis=0)[::-1]
+        return arry_tsg, arry_bct
+
+    def SendResult(self, data):
         """
-        arry_tsg
+        arry_tsg dtype 'float64'
         보유시간, 매도시간, 수익률, 수익금, 수익금합계
            0       1       2      3      4
+        arry_bct dtype 'float64'
+        체결시간, 보유중목수, 보유금액
+          0         1        2
         """
-        list_data, arry_bct = data[:2]
-        arry_tsg = np.array(list_data, dtype='float64')
-        arry_tsg = arry_tsg[np.argsort(arry_tsg[:, 0])][:, 1:]
-        arry_tsg = np.column_stack((arry_tsg, np.cumsum(arry_tsg[:, 3])))
-        arry_bct = np.sort(arry_bct[arry_bct[:, 1] > 0], axis=0)[::-1]
-        if arry_bct[0, 0] * 1e-12 > 1:
-            cf_day, cf_hms = 1000000, 240000
-        else:
-            cf_day, cf_hms = 10000, 2400
-        if len(data) == 10:
-            vsday, veday, tsday, tdaycnt, vdaycnt, index, vturn, vkey = data[2:]
-            if gubun:
-                arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * cf_day) | ((veday * cf_day + cf_hms < arry_tsg[:, 1]) & (arry_tsg[:, 1] < tsday * cf_day))]
-                arry_bct = arry_bct[(arry_bct[:, 0] < vsday * cf_day) | ((veday * cf_day + cf_hms < arry_bct[:, 0]) & (arry_bct[:, 0] < tsday * cf_day))]
-                result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, tdaycnt)
+        arry_tsg, arry_bct = data[:2]
+        len_data = len(data)
+
+        if len_data > 5:
+            if arry_bct[0, 0] * 1e-12 > 1:
+                cf_day, cf_hms = 1000000, 240000
             else:
-                arry_tsg = arry_tsg[(vsday * cf_day <= arry_tsg[:, 1]) & (arry_tsg[:, 1] <= veday * cf_day + cf_hms)]
-                arry_bct = arry_bct[(vsday * cf_day <= arry_bct[:, 0]) & (arry_bct[:, 0] <= veday * cf_day + cf_hms)]
-                result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, vdaycnt)
-            result = AddMdd(arry_tsg, result)
-            self.tq.put(('TRAIN' if gubun else 'VALID', index, result, vturn, vkey))
-        elif len(data) == 9:
-            vsday, veday, tdaycnt, vdaycnt, index, vturn, vkey = data[2:]
-            if gubun:
-                arry_tsg = arry_tsg[(arry_tsg[:, 1] < vsday * cf_day) | (veday * cf_day + cf_hms < arry_tsg[:, 1])]
-                arry_bct = arry_bct[(arry_bct[:, 0] < vsday * cf_day) | (veday * cf_day + cf_hms > arry_bct[:, 0])]
-                result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, tdaycnt)
+                cf_day, cf_hms = 10000, 2400
+
+            tsg_time_idx = arry_tsg[:, 1]
+            bct_time_idx = arry_bct[:, 0]
+
+            if len_data == 10:
+                vsday, veday, tsday, tdaycnt, vdaycnt, index, vturn, vkey = data[2:]
+                arry_bct_ = arry_bct[(bct_time_idx < vsday * cf_day) | ((veday * cf_day + cf_hms < bct_time_idx) & (bct_time_idx < tsday * cf_day))]
+                arry_tsg_ = arry_tsg[(tsg_time_idx < vsday * cf_day) | ((veday * cf_day + cf_hms < tsg_time_idx) & (tsg_time_idx < tsday * cf_day))]
             else:
-                arry_tsg = arry_tsg[(vsday * cf_day <= arry_tsg[:, 1]) & (arry_tsg[:, 1] <= veday * cf_day + cf_hms)]
-                arry_bct = arry_bct[(vsday * cf_day <= arry_bct[:, 0]) & (arry_bct[:, 0] <= veday * cf_day + cf_hms)]
-                result   = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, vdaycnt)
-            result = AddMdd(arry_tsg, result)
-            self.tq.put(('TRAIN' if gubun else 'VALID', index, result, vturn, vkey))
+                vsday, veday, tdaycnt, vdaycnt, index, vturn, vkey = data[2:]
+                arry_bct_ = arry_bct[(bct_time_idx < vsday * cf_day) | (veday * cf_day + cf_hms < bct_time_idx)]
+                arry_tsg_ = arry_tsg[(tsg_time_idx < vsday * cf_day) | (veday * cf_day + cf_hms < tsg_time_idx)]
+
+            arry_tsg_ = np.column_stack((arry_tsg_, np.cumsum(arry_tsg_[:, 3])))
+            result    = GetResult(arry_tsg_, arry_bct_, self.betting, self.ui_gubun, tdaycnt)
+            result    = AddMdd(arry_tsg_, result)
+            self.tq.put(('TRAIN', index, result, vturn, vkey))
+
+            arry_bct_ = arry_bct[(vsday * cf_day <= bct_time_idx) & (bct_time_idx <= veday * cf_day + cf_hms)]
+            arry_tsg_ = arry_tsg[(vsday * cf_day <= tsg_time_idx) & (tsg_time_idx <= veday * cf_day + cf_hms)]
+            arry_tsg_ = np.column_stack((arry_tsg_, np.cumsum(arry_tsg_[:, 3])))
+            result    = GetResult(arry_tsg_, arry_bct_, self.betting, self.ui_gubun, vdaycnt)
+            result    = AddMdd(arry_tsg_, result)
+            self.tq.put(('VALID', index, result, vturn, vkey))
+
         else:
             daycnt, vturn, vkey = data[2:]
-            result = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, daycnt)
+            result = GetResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, daycnt)
             result = AddMdd(arry_tsg, result)
             self.tq.put(('ALL', 0, result, vturn, vkey))

@@ -5,7 +5,7 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
-from backtester.back_static import SendTextAndStd, GetMoneytopQuery
+from backtester.back_static import SendResult, GetMoneytopQuery
 from utility.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import ui_num, DB_STRATEGY, DICT_SET, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
@@ -37,7 +37,7 @@ class Total:
         self.dict_t       = {}
         self.dict_v       = {}
 
-        self.stdp         = -2_000_000_000
+        self.stdp         = -2_147_483_648
         self.sub_total    = 0
         self.total_count  = 0
 
@@ -74,7 +74,7 @@ class Total:
                     sc = 0
                     for vkey in range(20):
                         if vkey not in dict_dummy:
-                            self.stdp = SendTextAndStd(self.GetSendData(), None)
+                            self.stdp = SendResult(self.GetSendData(), None)
                     dict_dummy = {}
 
             elif data[0] in ('TRAIN', 'VALID'):
@@ -99,7 +99,7 @@ class Total:
                 st[vturn][vkey] += 1
 
                 if st[vturn][vkey] == self.sub_total:
-                    self.stdp = SendTextAndStd(
+                    self.stdp = SendResult(
                         self.GetSendData(vturn, vkey),
                         self.dict_t[vturn][vkey],
                         self.dict_v[vturn][vkey],
@@ -109,7 +109,7 @@ class Total:
 
             elif data[0] == 'ALL':
                 _, _, data, vturn, vkey = data
-                self.stdp = SendTextAndStd(self.GetSendData(vturn, vkey), data)
+                self.stdp = SendResult(self.GetSendData(vturn, vkey), data)
 
             elif data[0] == '백테정보':
                 self.BackInfo(data)
@@ -121,6 +121,9 @@ class Total:
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
+                break
+
+            elif data == '백테완료중지':
                 break
 
         time.sleep(1)
@@ -336,7 +339,7 @@ class OptimizeConditions:
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
         self.tq.put(('경우의수', rcount * back_count, back_count))
-        hstd = -2_000_000_000
+        hstd = -2_147_483_648
         for i in range(rcount):
             buy_conds, sell_conds = self.GetCondlist()
             if len(buy_conds) == 20:
@@ -458,4 +461,7 @@ class OptimizeConditions:
             self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} STOP'))
         else:
+            self.tq.put('백테완료중지')
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))
+        time.sleep(1)
+        sys.exit()

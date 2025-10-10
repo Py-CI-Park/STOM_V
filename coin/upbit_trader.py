@@ -5,7 +5,7 @@ import pandas as pd
 from threading import Thread
 from utility.setting import columns_cj, columns_td, ui_num, DB_TRADELIST, DICT_SET, columns_jg
 from utility.static import now, timedelta_sec, GetUpbitHogaunit, GetUpbitPgSgSp, now_utc, str_ymdhmsf, str_hmsf, \
-    threading_timer, error_decorator, str_hms, str_ymd, float_hmsf, dt_hms
+    threading_timer, error_decorator, str_hms, str_ymd, float_hmsf, dt_hms, get_logger
 
 
 class CheckChegeolPutDictjango(Thread):
@@ -56,6 +56,8 @@ class UpbitTrader:
         self.cstgQ         = qlist[10]
         self.liveQ         = qlist[11]
         self.dict_set      = DICT_SET
+
+        self.logger        = get_logger(self.__class__.__name__)
 
         self.dict_cj       = {}  # 체결목록
         self.dict_jg       = {}  # 잔고목록
@@ -178,6 +180,7 @@ class UpbitTrader:
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작'))
+        self.logger.info('트레이더 시작 완료')
         while True:
             data = self.ctraderQ.get()
             if type(data) == tuple:
@@ -367,9 +370,11 @@ class UpbitTrader:
                         dt = self.GetIndex()
                         self.dict_order[주문구분][종목코드] = [ret['uuid'], timedelta_sec(self.dict_set['코인매도취소시간초']), 정정횟수, 주문가격, GetUpbitHogaunit(주문가격)]
                         self.UpdateChegeollist(dt, 종목코드, f'{주문구분} 접수', 주문수량, 0, 주문수량, 0, dt[:14], 주문가격, ret['uuid'])
+                        self.logger.error(f'[주문전송] {종목코드} | {주문가격} | {주문수량} | {주문구분}')
                         self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목코드} | {주문가격} | {주문수량}'))
                 else:
                     self.cstgQ.put(('매도취소', 종목코드))
+                    self.logger.info(f'[주문실패] {종목코드} | {주문가격} | {주문수량} | {주문구분}')
                     self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문실패] {종목코드} | {주문가격} | {주문수량} | {주문구분}'))
 
             elif 주문구분 in ('매수취소', '매도취소'):
@@ -399,8 +404,8 @@ class UpbitTrader:
                 time.sleep(0.1)
     
         if order_info_list:
-            for 종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호 in order_info_list:
-                self.UpdateChejanData(종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호)
+            for 주문구분, 종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호 in order_info_list:
+                self.UpdateChejanData(주문구분, 종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호)
 
     def GetOrderInfo(self, 종목코드, 주문번호):
         order_info = None
@@ -804,5 +809,6 @@ class UpbitTrader:
         self.windowQ.put((ui_num['C잔고평가'], df_tj))
 
     def StrategyStop(self):
+        self.logger.info('매수전략중지')
         self.cstgQ.put('매수전략중지')
         self.JangoCheongsan('수동')
