@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import time
 import pytz
 import psutil
@@ -7,16 +8,32 @@ import _pickle
 import datetime
 import requests
 import winreg as reg
+from loguru import logger
 import exchange_calendars as ec
 from threading import Thread, Timer
 from PyQt5.QtTest import QTest
 from traceback import print_exc
 from cryptography.fernet import Fernet
 
+
 now_utc_ = datetime.datetime.now(pytz.utc)
 now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
 summer_t = int(now_cme_.dst().total_seconds())
 time_gap = int(summer_t - 50400)
+
+
+def get_logger(name):
+    logger.remove()
+    logger.add(
+        sys.stderr,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+               "<level>{level: <5}</level> | "
+               f"<cyan>{name}</cyan> : "
+               "<level>{message}</level>",
+        level="DEBUG",
+        colorize=True
+    )
+    return logger
 
 
 def now():
@@ -173,10 +190,17 @@ def win_proc_alive(name):
 
 
 def opstarter_kill():
+    import subprocess
     if win_proc_alive('opstarter'):
-        os.system('C:/Windows/System32/taskkill /f /im opstarter.exe')
+        subprocess.run('C:/Windows/System32/taskkill /f /im opstarter.exe',
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL,
+                       shell=True)
     if win_proc_alive('nfstarter'):
-        os.system('C:/Windows/System32/taskkill /f /im nfstarter.exe')
+        subprocess.run('C:/Windows/System32/taskkill /f /im nfstarter.exe',
+                       stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL,
+                       shell=True)
 
 
 def pickle_write(file, data):
@@ -268,16 +292,6 @@ def text_not_in_special_characters(t):
     if t == re.findall(r'\w+', t)[0]:
         return True
     return False
-
-
-def get_ip():
-    ip = None
-    while ip is None:
-        try:
-            ip = requests.get('https://api.ipify.org').text
-        except:
-            time.sleep(1)
-    return ip
 
 
 def cme_normal_open():

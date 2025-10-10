@@ -24,43 +24,28 @@ class UpdateTextedit:
             time_ = str(now())[:-7] if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']) else str(now())
             log_  = f'<font color=#f7455d>{data[1]}</font>' if '오류' in data[1] else data[1]
             text  = f'[{time_}] {log_}' if '</font>' not in log_ else f'<font color=white>[{time_}]</font> {log_}'
-    
-            if data[0] == ui_num['백테엔진']:
+
+            if data[0] in (ui_num['S로그텍스트'], ui_num['S단순텍스트'], ui_num['C로그텍스트'], ui_num['C단순텍스트'], ):
+                try:
+                    self.ui.log.info(text)
+                except:
+                    pass
+
+            if data[0] == ui_num['S로그텍스트']:
+                self.ui.sst_textEditttt_01.append(text)
+            elif data[0] == ui_num['S단순텍스트']:
+                self.ui.src_textEditttt_01.append(text)
+            elif data[0] == ui_num['C로그텍스트']:
+                self.ui.cst_textEditttt_01.append(text)
+            elif data[0] == ui_num['C단순텍스트']:
+                self.ui.crc_textEditttt_01.append(text)
+            elif data[0] == ui_num['백테엔진']:
                 self.ui.be_textEditxxxx_01.append(text)
                 if data[1] == '백테엔진 준비 완료' and self.ui.auto_mode:
                     if self.ui.dialog_backengine.isVisible():
                         self.ui.dialog_backengine.close()
                     qtest_qwait(2)
                     self.ui.AutoBackSchedule(2)
-            elif data[0] == ui_num['S로그텍스트']:
-                self.ui.sst_textEditttt_01.append(text)
-                try:
-                    self.ui.log1.info(text)
-                except:
-                    pass
-            elif data[0] == ui_num['S단순텍스트']:
-                self.ui.src_textEditttt_01.append(text)
-                try:
-                    self.ui.log2.info(text)
-                except:
-                    pass
-            elif data[0] == ui_num['S오더텍스트']:
-                try:
-                    self.ui.log3.info(text)
-                except:
-                    pass
-            elif data[0] == ui_num['C로그텍스트']:
-                self.ui.cst_textEditttt_01.append(text)
-                try:
-                    self.ui.log4.info(text)
-                except:
-                    pass
-            elif data[0] == ui_num['C단순텍스트']:
-                self.ui.crc_textEditttt_01.append(text)
-                try:
-                    self.ui.log5.info(text)
-                except:
-                    pass
 
             elif data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']):
                 if 'self.vars' in data[1] and 'MERGE' not in data[1]:
@@ -85,10 +70,17 @@ class UpdateTextedit:
                     self.ui.cs_textEditttt_09.setTextColor(color)
                     self.ui.cs_textEditttt_09.append(text)
 
+                if '백테스트 엔진 전략연산 오류 자동 중지 중 ...' in data[1]:
+                    if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
+                        self.ui.BacktestProcessKill(False, False)
+                    else:
+                        self.ui.BacktestProcessKill(True, False)
+
                 if self.ui.dict_set['최적화로그기록안함']:
                     if '백테스트 시작' in data[1] or '인샘플 최적화 시작' in data[1]: self.logging = False
                     elif '최적화 완료' in data[1] or '인샘플 최적화 완료' in data[1]: self.logging = True
-                if self.logging: self.ui.log6.info(re.sub('(<([^>]+)>)', '', text))
+
+                if self.logging: self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
 
                 if 'COMPLETE' in data[1]:
                     if data[1] in ('최적화O COMPLETE', '최적화OV COMPLETE', '최적화OVC COMPLETE', '최적화B COMPLETE',
@@ -108,11 +100,10 @@ class UpdateTextedit:
                             ('백파인더 COMPLETE', '최적화OG COMPLETE', '최적화OGV COMPLETE', '최적화OGVC COMPLETE',
                              '최적화OC COMPLETE', '최적화OCV COMPLETE', '최적화OCVC COMPLETE'):
                         if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
-                            self.ui.svjButtonClicked_08()
+                            self.ui.StockBacktestDetail()
                         else:
-                            self.ui.cvjButtonClicked_08()
+                            self.ui.CoinBacktestDetail()
 
-                    self.ui.BacktestProcessKill(0)
                     if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
                         self.ui.ssicon_alert = False
                         self.ui.main_btn_list[2].setIcon(self.ui.icon_stocks)
@@ -123,15 +114,6 @@ class UpdateTextedit:
                     if self.ui.back_schedul:
                         qtest_qwait(3)
                         self.ui.sdButtonClicked_02()
-
-                elif 'STOP' in data[1]:
-                    self.ui.BacktestProcessKill(0)
-                    if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
-                        self.ui.ssicon_alert = False
-                        self.ui.main_btn_list[2].setIcon(self.ui.icon_stocks)
-                    else:
-                        self.ui.csicon_alert = False
-                        self.ui.main_btn_list[3].setIcon(self.ui.icon_coins)
 
             elif data[0] == ui_num['기업개요']:
                 self.ui.gg_textEdittttt_01.clear()

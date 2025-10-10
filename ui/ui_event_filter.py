@@ -27,36 +27,36 @@ def event_filter(ui, widget, event):
     elif event.key() == Qt.Key_Escape:
         if not ui.svc_pushButton_24.isVisible():
             if widget in (ui.ss_textEditttt_01, ui.ss_textEditttt_03):
-                ui.szooButtonClicked_01()
+                ui.szButtonClicked_01()
             elif widget in (ui.ss_textEditttt_02, ui.ss_textEditttt_04):
-                ui.szooButtonClicked_02()
+                ui.szButtonClicked_02()
         if not ui.cvc_pushButton_24.isVisible():
             if widget in (ui.cs_textEditttt_01, ui.cs_textEditttt_03):
-                ui.czooButtonClicked_01()
+                ui.czButtonClicked_01()
             elif widget in (ui.cs_textEditttt_02, ui.cs_textEditttt_04):
-                ui.czooButtonClicked_02()
+                ui.czButtonClicked_02()
         return True
     elif event.key() == Qt.Key_F1:
         if ui.main_btn == 2:
             if ui.svj_pushButton_01.isVisible():
                 ui.ss_textEditttt_01.setFocus()
-                ui.svjbButtonClicked_01()
+                ui.StockBuyStgLoad()
             elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
                 ui.ss_textEditttt_03.setFocus()
-                ui.svcButtonClicked_01()
+                ui.StockOptiBuyLoad()
             elif ui.svo_pushButton_05.isVisible():
                 ui.ss_textEditttt_07.setFocus()
-                ui.svoButtonClicked_01()
+                ui.StockCondbuyLoad()
         elif ui.main_btn == 3:
             if ui.cvj_pushButton_01.isVisible():
                 ui.cs_textEditttt_01.setFocus()
-                ui.cvjbButtonClicked_01()
+                ui.CoinBuyStgLoad()
             elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
                 ui.cs_textEditttt_04.setFocus()
-                ui.cvcButtonClicked_01()
+                ui.CoinOptiBuyLoad()
             elif ui.cvo_pushButton_05.isVisible():
                 ui.cs_textEditttt_08.setFocus()
-                ui.cvoButtonClicked_01()
+                ui.CoinCondbuyLoad()
         return True
     elif event.key() == Qt.Key_F2:
         if ui.main_btn == 2:
@@ -100,23 +100,23 @@ def event_filter(ui, widget, event):
         if ui.main_btn == 2:
             if ui.svj_pushButton_01.isVisible():
                 ui.ss_textEditttt_02.setFocus()
-                ui.svjsButtonClicked_01()
+                ui.StockSellStgLoad()
             elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
                 ui.ss_textEditttt_04.setFocus()
-                ui.svcButtonClicked_05()
+                ui.StockOptiSellLoad()
             elif ui.svo_pushButton_05.isVisible():
                 ui.ss_textEditttt_05.setFocus()
-                ui.svoButtonClicked_03()
+                ui.StockCondsellLoad()
         elif ui.main_btn == 3:
             if ui.cvj_pushButton_01.isVisible():
                 ui.cs_textEditttt_02.setFocus()
-                ui.cvjsButtonClicked_01()
+                ui.CoinSellStgLoad()
             elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
                 ui.cs_textEditttt_05.setFocus()
-                ui.cvcButtonClicked_07()
+                ui.CoinOptiSample()
             elif ui.cvo_pushButton_05.isVisible():
                 ui.cs_textEditttt_06.setFocus()
-                ui.cvoButtonClicked_03()
+                ui.CoinCondsellLoad()
         return True
     elif event.key() == Qt.Key_F6:
         if ui.main_btn == 2:
@@ -160,17 +160,17 @@ def event_filter(ui, widget, event):
         if ui.main_btn == 2:
             if ui.svc_pushButton_06.isVisible():
                 ui.ss_textEditttt_05.setFocus()
-                ui.svcButtonClicked_03()
+                ui.StockOptiVarsLoad()
             elif ui.sva_pushButton_03.isVisible():
                 ui.ss_textEditttt_06.setFocus()
-                ui.svaButtonClicked_01()
+                ui.StockGavarsLoad()
         elif ui.main_btn == 3:
             if ui.cvc_pushButton_06.isVisible():
                 ui.cs_textEditttt_06.setFocus()
-                ui.cvcButtonClicked_03()
+                ui.CoinOptiVarsLoad()
             elif ui.cva_pushButton_01.isVisible():
                 ui.cs_textEditttt_07.setFocus()
-                ui.cvaButtonClicked_02()
+                ui.CoinGavarsSave()
         return True
     elif event.key() == Qt.Key_F10:
         if ui.main_btn == 2:
