@@ -84,7 +84,7 @@ def backengine_show(ui, gubun):
 
 
 @thread_decorator
-def start_backengine(ui, gubun):
+def backengine_start(ui, gubun):
     ui.back_engining = True
     ui.startday   = int(ui.be_dateEdittttt_01.date().toString('yyyyMMdd'))
     ui.endday     = int(ui.be_dateEdittttt_02.date().toString('yyyyMMdd'))
@@ -105,7 +105,7 @@ def start_backengine(ui, gubun):
         proc = Process(target=BackSubTotal, args=(i, ui.totalQ, ui.back_sques, ui.dict_set['백테매수시간기준']), daemon=True)
         proc.start()
         ui.back_sprocs.append(proc)
-        ui.windowQ.put((ui_num['백테엔진'], f'중간집계용 프로세스{i + 1} 생성 완료'))
+        ui.windowQ.put((ui_num['백테엔진'], f'중간집계 프로세스{i + 1} 생성 완료'))
 
     ui.shared_counter = Value('i', 0)
     ui.shared_lock    = Lock()
@@ -147,7 +147,7 @@ def start_backengine(ui, gubun):
             )
         proc.start()
         ui.back_eprocs.append(proc)
-        ui.windowQ.put((ui_num['백테엔진'], f'연산용 프로세스{i + 1} 생성 완료'))
+        ui.windowQ.put((ui_num['백테엔진'], f'엔진 프로세스{i + 1} 생성 완료'))
 
     dict_info = {}
     try:
@@ -270,28 +270,28 @@ def start_backengine(ui, gubun):
     ui.windowQ.put((ui_num['백테엔진'], '백테엔진 준비 완료'))
 
 
-def back_code_test1(stg, testQ):
-    print('전략 코드 오류 테스트 시작')
+def back_code_test1(ui, stg, testQ):
+    ui.logger.info('전략 코드 오류 테스트 시작')
     while not testQ.empty():
         testQ.get()
     thread = BackCodeTest(testQ, stg)
     thread.start()
     thread.wait()
-    return get_code_test_result('전략', testQ)
+    return get_code_test_result(ui, '전략', testQ)
 
 
-def back_code_test2(vars_code, testQ, ga):
-    print('범위 코드 오류 테스트 시작')
+def back_code_test2(ui, vars_code, testQ, ga):
+    ui.logger.info('범위 코드 오류 테스트 시작')
     while not testQ.empty():
         testQ.get()
     thread = BackCodeTest(testQ, None, vars_code, ga)
     thread.start()
     thread.wait()
-    return get_code_test_result('범위', testQ)
+    return get_code_test_result(ui, '범위', testQ)
 
 
-def back_code_test3(gubun, conds_code, testQ):
-    print('조건 코드 오류 테스트 시작')
+def back_code_test3(ui, gubun, conds_code, testQ):
+    ui.logger.info('조건 코드 오류 테스트 시작')
     while not testQ.empty():
         testQ.get()
     conds_code = conds_code.split('\n')
@@ -303,16 +303,16 @@ def back_code_test3(gubun, conds_code, testQ):
     thread = BackCodeTest(testQ, conds_code)
     thread.start()
     thread.wait()
-    return get_code_test_result('조건', testQ)
+    return get_code_test_result(ui, '조건', testQ)
 
 
-def get_code_test_result(gubun, testQ):
+def get_code_test_result(ui, gubun, testQ):
     data = testQ.get()
     if data == '전략테스트오류':
-        print(f'{gubun}에 오류가 있어 저장하지 못하였습니다.')
+        ui.logger.error(f'{gubun}에 오류가 있어 저장하지 못하였습니다.')
         return False
     else:
-        print(f'{gubun} 코드 오류 테스트 완료')
+        ui.logger.info(f'{gubun} 코드 오류 테스트 완료')
         return True
 
 
@@ -325,38 +325,11 @@ def clear_backtestQ(ui):
             ui.totalQ.get()
 
 
-def backtest_process_kill(ui, gubun):
+def backtest_process_kill(ui, coin, enginekill):
     ui.back_cancelling = True
     for q in ui.back_eques:
         q.put('백테중지')
     ui.totalQ.put('백테중지')
-
-    if ui.proc_backtester_bs   is not None and ui.proc_backtester_bs.is_alive():   ui.proc_backtester_bs.kill()
-    if ui.proc_backtester_bf   is not None and ui.proc_backtester_bf.is_alive():   ui.proc_backtester_bf.kill()
-    if ui.proc_backtester_o    is not None and ui.proc_backtester_o.is_alive():    ui.proc_backtester_o.kill()
-    if ui.proc_backtester_ov   is not None and ui.proc_backtester_ov.is_alive():   ui.proc_backtester_ov.kill()
-    if ui.proc_backtester_ovc  is not None and ui.proc_backtester_ovc.is_alive():  ui.proc_backtester_ovc.kill()
-    if ui.proc_backtester_ot   is not None and ui.proc_backtester_ot.is_alive():   ui.proc_backtester_ot.kill()
-    if ui.proc_backtester_ovt  is not None and ui.proc_backtester_ovt.is_alive():  ui.proc_backtester_ovt.kill()
-    if ui.proc_backtester_ovct is not None and ui.proc_backtester_ovct.is_alive(): ui.proc_backtester_ovct.kill()
-    if ui.proc_backtester_or   is not None and ui.proc_backtester_or.is_alive():   ui.proc_backtester_or.kill()
-    if ui.proc_backtester_orv  is not None and ui.proc_backtester_orv.is_alive():  ui.proc_backtester_orv.kill()
-    if ui.proc_backtester_orvc is not None and ui.proc_backtester_orvc.is_alive(): ui.proc_backtester_orvc.kill()
-    if ui.proc_backtester_b    is not None and ui.proc_backtester_b.is_alive():    ui.proc_backtester_b.kill()
-    if ui.proc_backtester_bv   is not None and ui.proc_backtester_bv.is_alive():   ui.proc_backtester_bv.kill()
-    if ui.proc_backtester_bvc  is not None and ui.proc_backtester_bvc.is_alive():  ui.proc_backtester_bvc.kill()
-    if ui.proc_backtester_bt   is not None and ui.proc_backtester_bt.is_alive():   ui.proc_backtester_bt.kill()
-    if ui.proc_backtester_bvt  is not None and ui.proc_backtester_bvt.is_alive():  ui.proc_backtester_bvt.kill()
-    if ui.proc_backtester_bvct is not None and ui.proc_backtester_bvct.is_alive(): ui.proc_backtester_bvct.kill()
-    if ui.proc_backtester_br   is not None and ui.proc_backtester_br.is_alive():   ui.proc_backtester_br.kill()
-    if ui.proc_backtester_brv  is not None and ui.proc_backtester_brv.is_alive():  ui.proc_backtester_brv.kill()
-    if ui.proc_backtester_brvc is not None and ui.proc_backtester_brvc.is_alive(): ui.proc_backtester_brvc.kill()
-    if ui.proc_backtester_og   is not None and ui.proc_backtester_og.is_alive():   ui.proc_backtester_og.kill()
-    if ui.proc_backtester_ogv  is not None and ui.proc_backtester_ogv.is_alive():  ui.proc_backtester_ogv.kill()
-    if ui.proc_backtester_ogvc is not None and ui.proc_backtester_ogvc.is_alive(): ui.proc_backtester_ogvc.kill()
-    if ui.proc_backtester_oc   is not None and ui.proc_backtester_oc.is_alive():   ui.proc_backtester_oc.kill()
-    if ui.proc_backtester_ocv  is not None and ui.proc_backtester_ocv.is_alive():  ui.proc_backtester_ocv.kill()
-    if ui.proc_backtester_ocvc is not None and ui.proc_backtester_ocvc.is_alive(): ui.proc_backtester_ocvc.kill()
 
     count = 0
     while True:
@@ -368,7 +341,22 @@ def backtest_process_kill(ui, gubun):
                     break
         qtest_qwait(0.01)
 
-    if ui.main_btn == 2:   ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
-    elif ui.main_btn == 3: ui.cs_pushButtonn_08.setStyleSheet(style_bc_dk)
-    if gubun: ui.BacktestEngineKill()
+    ui.windowQ.put((ui_num['C백테스트' if coin else 'S백테스트'], '백테스트 중지 완료'))
+    if not coin:
+        ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
+        ui.ssicon_alert = False
+        ui.main_btn_list[2].setIcon(ui.icon_stocks)
+        ui.ss_progressBar_01.setValue(0)
+        ui.ss_progressBar_01.setFormat('%p%')
+    else:
+        ui.cs_pushButtonn_08.setStyleSheet(style_bc_dk)
+        ui.csicon_alert = False
+        ui.main_btn_list[3].setIcon(ui.icon_coins)
+        ui.cs_progressBar_01.setValue(0)
+        ui.cs_progressBar_01.setFormat('%p%')
+
+    ui.back_scount = 0
+    ui.back_schedul = False
+
+    if enginekill: ui.BacktestEngineKill()
     ui.back_cancelling = False

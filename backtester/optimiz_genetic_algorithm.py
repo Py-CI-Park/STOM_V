@@ -1,12 +1,13 @@
 import sys
 import time
+import copy
 import random
 import sqlite3
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
-from backtester.back_static import SendTextAndStd, GetMoneytopQuery
-from utility.static import now, timedelta_day, timedelta_sec, threading_timer, str_ymd, str_ymdhms, dt_ymd
+from backtester.back_static import SendResult, GetMoneytopQuery
+from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
@@ -40,7 +41,7 @@ class Total:
         self.dict_v       = {}
 
         self.vars_lists   = None
-        self.stdp         = -2_000_000_000
+        self.stdp         = -2_147_483_648
         self.sub_total    = 0
         self.total_count  = 0
 
@@ -78,7 +79,7 @@ class Total:
                     for vturn in range(50):
                         for vkey in range(20):
                             if vkey not in dict_dummy[vturn]:
-                                self.stdp = SendTextAndStd(self.GetSendData(vturn, vkey), None)
+                                self.stdp = SendResult(self.GetSendData(vturn, vkey), None)
                     dict_dummy = {}
 
             elif data[0] in ('TRAIN', 'VALID'):
@@ -103,7 +104,7 @@ class Total:
                 st[vturn][vkey] += 1
 
                 if st[vturn][vkey] == self.sub_total:
-                    self.stdp = SendTextAndStd(
+                    self.stdp = SendResult(
                         self.GetSendData(vturn, vkey),
                         self.dict_t[vturn][vkey],
                         self.dict_v[vturn][vkey],
@@ -113,7 +114,7 @@ class Total:
 
             elif data[0] == 'ALL':
                 _, _, data, vturn, vkey = data
-                self.stdp = SendTextAndStd(self.GetSendData(vturn, vkey), data)
+                self.stdp = SendResult(self.GetSendData(vturn, vkey), data)
 
             elif data[0] == '백테정보':
                 self.BackInfo(data)
@@ -130,6 +131,9 @@ class Total:
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
+                break
+
+            elif data == '백테완료중지':
                 break
 
         time.sleep(1)
@@ -313,7 +317,7 @@ class OptimizeGeneticAlgorithm:
             self.total_count *= len(value[0])
             self.vars_list.append(value[0])
             self.high_list.append(value[1])
-        self.orignal_vars_list = self.vars_list.copy()
+        self.orignal_vars_list = copy.deepcopy(self.vars_list)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수전략 설정 완료'))
 
         data = ('백테정보', betting, self.vars[0][0], startday, endday, starttime, endtime, buystg, sellstg)
@@ -343,7 +347,7 @@ class OptimizeGeneticAlgorithm:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
         k    = 1
         vc   = len(self.vars_list)
-        hstd = -2_000_000_000
+        hstd = -2_147_483_648
         goal = 2 ** int(round(vc / 2))
         self.opti_lists = []
         while self.total_count > goal:
@@ -353,8 +357,7 @@ class OptimizeGeneticAlgorithm:
             for i in range(vc):
                 vars_lists = self.GetVarslist()
                 if len(vars_lists) == 1000:
-                    data = (ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 [{k}][{i+1}/{vc}]단계 시작, 최고 기준값[{hstd:,.2f}]')
-                    threading_timer(6, self.wq.put, data)
+                    self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 [{k}][{i+1}/{vc}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
 
                     self.shared_counter.value = 0
                     data = ('변수정보', vars_lists)
@@ -467,12 +470,14 @@ class OptimizeGeneticAlgorithm:
             df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
         con.close()
         self.high_vars = rs_list[0][1]
-        data = (ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 상위100위 결과 저장 완료')
-        threading_timer(5, self.wq.put, data)
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 상위100위 결과 저장 완료'))
 
     def SysExit(self, cancel):
         if cancel:
             self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} STOP'))
         else:
+            self.tq.put('백테완료중지')
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))
+        time.sleep(1)
+        sys.exit()

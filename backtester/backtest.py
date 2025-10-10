@@ -5,7 +5,7 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
-from backtester.back_static import PltShow, GetMoneytopQuery, GetBackResult, GetResultDataframe, AddMdd
+from backtester.back_static import PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd
 from utility.static import now, str_ymdhms
 from utility.setting import DB_STRATEGY, DB_BACKTEST, ui_num, stockreadlines, columns_vj, DICT_SET, DB_STOCK_BACK_TICK, \
     DB_COIN_BACK_TICK, coinreadlines, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, futurereadlines, \
@@ -123,7 +123,7 @@ class Total:
                     if code + '\n' not in stockreadlines:
                         stockreadlines.append(code + '\n')
                         self.insertlist.append(code)
-                elif self.ui_gubun == 'F':
+                elif self.ui_gubun == 'SF':
                     if code + '\n' not in futurereadlines:
                         futurereadlines.append(code + '\n')
                         self.insertlist.append(code)
@@ -135,7 +135,7 @@ class Total:
             if self.ui_gubun == 'S':
                 with open('./utility/blacklist_stock.txt', 'w') as f:
                     f.write(''.join(stockreadlines))
-            elif self.ui_gubun == 'F':
+            elif self.ui_gubun == 'SF':
                 with open('./utility/blacklist_future.txt', 'w') as f:
                     f.write(''.join(futurereadlines))
             else:
@@ -151,29 +151,37 @@ class Total:
         self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
         if self.blacklist: self.InsertBlacklist()
 
-        arry_tsg   = np.array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
-        arry_bct   = np.sort(arry_bct, axis=0)[::-1]
-        result     = GetBackResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, self.day_count)
-        result     = AddMdd(arry_tsg, result)
+        arry_tsg = np.array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
+        arry_bct = np.sort(arry_bct, axis=0)[::-1]
+        result   = GetResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, self.day_count)
+        result   = AddMdd(arry_tsg, result)
         tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
-        save_time  = str_ymdhms()
-        startday, endday, starttime, endtime = str(self.startday), str(self.endday), str(self.starttime).zfill(6), str(self.endtime).zfill(6)
-        startday   = startday[:4] + '-' + startday[4:6] + '-' + startday[6:]
-        endday     = endday[:4] + '-' + endday[4:6] + '-' + endday[6:]
-        starttime  = starttime[:2] + ':' + starttime[2:4] + ':' + starttime[4:]
-        endtime    = endtime[:2] + ':' + endtime[2:4] + ':' + endtime[4:]
-        bet_unit   = '원' if self.ui_gubun in ('S', 'C') else '계약' if self.ui_gubun == 'F' else 'USDT'
-        if self.ui_gubun == 'S':
-            bc_unit = '초' if self.dict_set['주식타임프레임'] else '분'
-        elif self.ui_gubun in ('C', 'CF'):
-            bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
+
+        startday, endday = str(self.startday), str(self.endday)
+        startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
+        endday   = f'{endday[:4]}-{endday[4:6]}-{endday[6:]}'
+        if len(str(self.starttime)) > 4:
+            starttime, endtime = str(self.starttime).zfill(6), str(self.endtime).zfill(6)
+            starttime = f'{starttime[:2]}:{starttime[2:4]}:{starttime[4:]}'
+            endtime   = f'{endtime[:2]}:{endtime[2:4]}:{endtime[4:]}'
         else:
-            bc_unit = '분'
+            starttime, endtime = str(self.starttime).zfill(4), str(self.endtime).zfill(4)
+            starttime = f'{starttime[:2]}:{starttime[2:]}'
+            endtime   = f'{endtime[:2]}:{endtime[2:]}'
+
+        bet_unit = '원' if self.ui_gubun in ('S', 'C') else '계약' if self.ui_gubun == 'SF' else 'USDT'
+        tsg_unit = '원' if self.ui_gubun in ('S', 'C') else 'USD' if self.ui_gubun == 'SF' else 'USDT'
+        if self.ui_gubun in ('S', 'SF'):
+            bc_unit = '초' if self.dict_set['주식타임프레임'] else '분'
+        else:
+            bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
+
         back_text  = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.avgtime}'
-        label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{bet_unit}, '\
-                     f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
-                     f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, '\
-                     f'최대낙폭률 {mdd:.2f}%, 수익금합계 {tsg:,}{bet_unit}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
+        label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{tsg_unit}, 거래횟수 {tc}회, '\
+                     f'일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}, 익절 {pc}회, 손절 {mc}회\n'\
+                     f'승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, 수익금합계 {tsg:,}{tsg_unit}, '\
+                     f'최대낙폭금액 {mdd_:,.0f}{tsg_unit}, 최대낙폭률 {mdd:.2f}%, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
+
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테스팅 결과\n' + label_text))
 
         if self.dict_set['스톰라이브']:
@@ -183,9 +191,9 @@ class Total:
             ]
             self.lq.put(('back', data_list))
 
+        save_time = str_ymdhms()
         data = [int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg]
         df = pd.DataFrame([data], columns=columns_vj, index=[save_time])
-
         save_file_name = f'{self.savename}_{self.buystg_name}_{save_time}'
         con = sqlite3.connect(DB_BACKTEST)
         df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
@@ -195,6 +203,7 @@ class Total:
 
         if self.blacklist: self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'블랙리스트 추가 {self.insertlist}'))
         self.sq.put(f'{self.backname}를 완료하였습니다.')
+        self.mq.put(f'{self.backname} 완료')
 
         if self.back_club:
             buystg_text  = ('\n'.join([x for x in self.buystg.split('if 매수:')[0].split('\n') if '#' not in x])).split(' ')
@@ -220,16 +229,18 @@ class Total:
                 else:
                     sell_vars = f'{sell_vars}, {text}'
 
-            PltShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
-                    self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
-                    save_file_name, self.schedul, False, buy_vars=buy_vars, sell_vars=sell_vars)
+            PlotShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
+                     self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
+                     save_file_name, self.schedul, False, buy_vars=buy_vars, sell_vars=sell_vars)
         else:
             if not self.dict_set['그래프저장하지않기']:
-                PltShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
-                        self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
-                        save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
+                PlotShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
+                         self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
+                         save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
 
         self.mq.put(f'{self.backname} 완료')
+        time.sleep(1)
+        sys.exit()
 
 
 class BackTest:
@@ -327,10 +338,10 @@ class BackTest:
             q.put(data)
 
         data = mq.get()
-
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))
-        if self.dict_set['스톰라이브']: self.lq.put(self.backname)
         if data == f'{self.backname} 완료':
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))
+            if self.dict_set['스톰라이브']: self.lq.put(self.backname)
+            _ = mq.get()
             self.SysExit(False)
         else:
             self.SysExit(True)
@@ -341,3 +352,5 @@ class BackTest:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} STOP'))
         else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))
+        time.sleep(1)
+        sys.exit()

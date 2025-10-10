@@ -32,6 +32,7 @@ class Total:
         bc = 0
         index = 0
         start = now()
+        complete = True
         while True:
             data = self.tq.get()
             if data[0] == '백파결과':
@@ -57,24 +58,23 @@ class Total:
                 self.df_back     = pd.DataFrame(columns=['종목코드', '체결시간'] + data[8])
 
             elif data == '백테중지':
-                try:
-                    self.bq.put('백테중지')
-                except:
-                    pass
-                time.sleep(1)
-                sys.exit()
+                self.bq.put('백테중지')
+                complete = False
+                break
 
-        if len(self.df_back) > 0:
-            save_time = str_ymdhms()
-            con = sqlite3.connect(DB_BACKTEST)
-            self.df_back.to_sql(f"{self.gubun}_bf_{self.buystg_name}_{save_time}", con, if_exists='append', chunksize=1000)
-            con.close()
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인터 결과값 저장 완료'))
-        else:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '조건을 만족하는 종목이 없어 결과를 표시할 수 없습니다.'))
+        if complete:
+            if len(self.df_back) > 0:
+                save_time = str_ymdhms()
+                con = sqlite3.connect(DB_BACKTEST)
+                self.df_back.to_sql(f"{self.gubun}_bf_{self.buystg_name}_{save_time}", con, if_exists='append', chunksize=1000)
+                con.close()
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인터 결과값 저장 완료'))
+            else:
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '조건을 만족하는 종목이 없어 결과를 표시할 수 없습니다.'))
 
-        self.sq.put('백파인더를 완료하였습니다.')
-        self.bq.put('백파인더 완료')
+            self.sq.put('백파인더를 완료하였습니다.')
+            self.bq.put('백파인더 완료')
+
         time.sleep(1)
         sys.exit()
 
@@ -144,3 +144,5 @@ class BackFinder:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 STOP'))
         else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 COMPLETE'))
+        time.sleep(1)
+        sys.exit()

@@ -83,7 +83,10 @@ class BackEngineUpbitTick:
     def SetDictCondition(self):
         if self.dict_set['코인경과틱수설정']:
             def compile_condition(x):
-                return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                if self.dict_set['코인타임프레임']:
+                    return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                else:
+                    return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn', '<string>', 'exec')
             text_list  = self.dict_set['코인경과틱수설정'].split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
@@ -234,7 +237,7 @@ class BackEngineUpbitTick:
             elif data == '전체틱수계산':
                 self.GetTickCount()
             elif data == '백테중지':
-                self.BackStop(2)
+                self.BackStop(3)
 
     def InitDivid(self):
         self.sell_count = 0
@@ -322,16 +325,18 @@ class BackEngineUpbitTick:
 
     def BackStop(self, gubun=0):
         self.back_type = None
-        if gubun in (0, 1):
-            if self.gubun == 0: self.wq.put((ui_num['C백테스트'], '백테스트 엔진 중지 완료'))
-        if gubun in (1, 2):
+        if gubun == 1:
+            if self.gubun == 0: self.wq.put((ui_num['C백테스트'], '백테스트 엔진 전략연산 오류 자동 중지 중 ...'))
+        if gubun in (0, 2):
+            if self.gubun == 0: self.wq.put((ui_num['C백테스트'], '백테스트 엔진 중지 중 ...'))
+        if gubun in (2, 3):
             self.bq.put('백테중지완료')
 
     def GetArrayData(self):
         shared_info = None
         with self.shared_lock:
             shared_counter = self.shared_counter.value
-            if shared_counter != -1 and shared_counter < self.shared_count:
+            if shared_counter < self.shared_count:
                 shared_info = self.shared_info[shared_counter]
                 self.shared_counter.value += 1
 
@@ -392,33 +397,34 @@ class BackEngineUpbitTick:
                 self.code = code
                 last = len(self.arry_data) - 1
                 if last > 0:
-                    indexs = self.arry_data[:, 0]
+                    indexs = self.arry_data[:, 0].astype(np.int64)
                     day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
                     day_last_indexs.append(last)
 
                     start_idx = 0
                     for end_idx in day_last_indexs:
                         for i in range(start_idx, end_idx):
-                            self.index  = int(indexs[i])
+                            self.index  = indexs[i]
                             self.indexn = i
                             self.tick_count += 1
                             try:
                                 self.Strategy()
                             except:
                                 print_exc()
-                                self.BackStop()
+                                self.BackStop(1)
                                 return
 
                             j += 1
-                            if j % 1000 == 0:
+                            if j == 1000:
+                                j = 0
                                 if self.opti_turn in (1, 3):
                                     self.tq.put('탐색완료')
                                 if not self.beq.empty() and self.beq.get() == '백테중지':
-                                    self.BackStop(1)
+                                    self.BackStop(2)
                                     return
 
                         j += 1
-                        self.index  = int(indexs[end_idx])
+                        self.index  = indexs[end_idx]
                         self.indexn = end_idx
                         self.tick_count += 1
                         self.LastSell()

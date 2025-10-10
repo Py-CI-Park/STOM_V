@@ -8,17 +8,6 @@ from utility.static import dt_ymdhm
 
 # noinspection PyUnusedLocal
 class BackEngineFutureMin2(BackEngineFutureTick2):
-    def SetDictCondition(self):
-        if self.dict_set['주식경과틱수설정']:
-            def compile_condition(x):
-                return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn', '<string>', 'exec')
-            text_list  = self.dict_set['주식경과틱수설정'].split(';')
-            half_cnt   = int(len(text_list) / 2)
-            key_list   = text_list[:half_cnt]
-            value_list = text_list[half_cnt:]
-            value_list = [compile_condition(x) for x in value_list]
-            self.dict_condition = dict(zip(key_list, value_list))
-
     def Strategy(self):
         def now():
             return dt_ymdhm(str(self.index))
