@@ -1,4 +1,3 @@
-import math
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -160,7 +159,6 @@ def AddAvgData(df, round_unit, is_tick, avg_list, future=False):
             df[f'누적분당매도수량{avg}'] = df['분당매도수량'].rolling(window=avg).sum()
             df[f'분당거래대금평균{avg}'] = df['분당거래대금'].rolling(window=avg).mean().round(0)
         if round_unit == 3 and not future:
-            cf1, cf2 = dgree['stock']['tick'] if is_tick else dgree['stock']['min']
             df2 = df[['등락율', '당일거래대금', '전일비']].copy()
             df2[f'등락율N{avg}'] = df2['등락율'].shift(avg - 1)
             df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
@@ -168,9 +166,10 @@ def AddAvgData(df, round_unit, is_tick, avg_list, future=False):
             df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
             df2[f'전일비N{avg}'] = df2['전일비'].shift(avg - 1)
             df2['전일비차이'] = df2['전일비'] - df2[f'전일비N{avg}']
-            df['등락율각도'] = df2['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, avg) / (2 * math.pi) * 360, 2))
-            df['당일거래대금각도'] = df2['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, avg) / (2 * math.pi) * 360, 2))
-            df['전일비각도'] = df2['전일비차이'].apply(lambda x: round(math.atan2(x, avg) / (2 * math.pi) * 360, 2))
+            cf1, cf2 = dgree['stock']['tick'] if is_tick else dgree['stock']['min']
+            df['등락율각도'] = np.round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
+            df['당일거래대금각도'] = np.round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
+            df['전일비각도'] = np.round(np.arctan2(df2['전일비차이'], avg) / (2 * np.pi) * 360, 2)
         else:
             df2 = df[['등락율', '당일거래대금']].copy()
             df2[f'등락율N{avg}'] = df2['등락율'].shift(avg - 1)
@@ -179,12 +178,12 @@ def AddAvgData(df, round_unit, is_tick, avg_list, future=False):
             df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
             if future:
                 cf1, cf2 = dgree['future']['tick'] if is_tick else dgree['future']['min']
-                df['등락율각도'] = df2['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, avg) / (2 * math.pi) * 360, 2))
-                df['당일거래대금각도'] = df2['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, avg) / (2 * math.pi) * 360, 2))
+                df['등락율각도'] = np.round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
+                df['당일거래대금각도'] = np.round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
             else:
                 cf1, cf2 = dgree['coin']['tick'] if is_tick else dgree['coin']['min']
-                df['등락율각도'] = df2['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, avg) / (2 * math.pi) * 360, 2))
-                df['당일거래대금각도'] = df2['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, avg) / (2 * math.pi) * 360, 2))
+                df['등락율각도'] = np.round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
+                df['당일거래대금각도'] = np.round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
     return df
 
 
@@ -227,8 +226,9 @@ def GetSellStg(sellstg, gubun):
 
 
 def GetBuyConds(buy_conds, gubun):
-    buy_conds = 'if ' + ':\n    매수 = False\nelif '.join(
-        buy_conds) + ':\n    매수 = False\nif 매수:\n    self.Buy(vturn, vkey)'
+    buy_conds = 'if not (' + \
+                '):\n    매수 = False\nelif not ('.join(buy_conds) + \
+                '):\n    매수 = False\nif 매수:\n    self.Buy(vturn, vkey)'
     try:
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except:
@@ -238,8 +238,9 @@ def GetBuyConds(buy_conds, gubun):
 
 
 def GetSellConds(sell_conds, gubun):
-    sell_conds = 'sell_cond = 0\nif ' + ':\n    매도 = True\nelif '.join(
-        sell_conds) + ':\n    매도 = True\nif 매도:\n    self.Sell(vturn, vkey, sell_cond)'
+    sell_conds = 'sell_cond = 0\nif not (' + \
+                 '):\n    매도 = True\nelif not ('.join(sell_conds) + \
+                 '):\n    매도 = True\nif 매도:\n    self.Sell(vturn, vkey, sell_cond)'
     sell_conds, dict_cond = SetSellCond(sell_conds.split('\n'))
     try:
         sell_conds = compile(sell_conds, '<string>', 'exec')
@@ -353,14 +354,15 @@ def SetSellCondFuture(selllist):
     return sellstg, dict_cond
 
 
-def SendTextAndStd(result, dict_train, dict_valid=None, exponential=False):
-    gubun, ui_gubun, wq, mq, pre_stdp, optistd, opti_turn, vturn, vkey, vars_list, startday, endday, std_list, betting = result
+def SendResult(result, dict_train, dict_valid=None, exponential=False):
+    gubun, ui_gubun, wq, mq, pre_hstd, optistd, opti_turn, vturn, vkey, vars_list, _, _, std_list, _ = result
     if gubun in ('최적화', '최적화테스트'):
-        text1 = GetText1(opti_turn, vturn, vars_list)
+        if opti_turn == 1:
+            text1 = f"<font color=#ffffa0> self.vars[{vturn}] = {vars_list[vturn]} {'-' * 50}</font>\n"
+        else:
+            text1 = f'<font color=#a0ffa0> V{vars_list}</font>\n'
     elif gubun == 'GA최적화':
         text1 = f'<font color=white> V{vars_list} </font>'
-    elif gubun == '전진분석':
-        text1 = f'<font color=#f78645>[IN] P[{startday}~{endday}]</font>{GetText1(opti_turn, vturn, vars_list)}'
     else:
         text1 = ''
 
@@ -369,80 +371,81 @@ def SendTextAndStd(result, dict_train, dict_valid=None, exponential=False):
         tuple_valid = sorted(dict_valid.items(), key=lambda x: x[0])
         train_text = []
         valid_text = []
-        train_data = []
-        valid_data = []
+        train_stds = []
+        valid_stds = []
 
         for k, v in tuple_train:
-            text2, std = GetText2(f'TRAIN{k + 1}', optistd, std_list, betting, v)
-            train_text.append(text2)
-            train_data.append(std)
+            text3, std = GetText3(f'TRAIN{k + 1}', optistd, std_list, v)
+            train_text.append(text3)
+            train_stds.append(std)
         for k, v in tuple_valid:
-            text2, std = GetText2(f'VALID{k + 1}', optistd, std_list, betting, v)
-            valid_text.append(text2)
-            valid_data.append(std)
+            text3, std = GetText3(f'VALID{k + 1}', optistd, std_list, v)
+            valid_text.append(text3)
+            valid_stds.append(std)
 
-        std = GetOptiValidStd(train_data, valid_data, optistd, betting, exponential)
-        text3, stdp = GetText3(std, pre_stdp)
-        if opti_turn == 2: text3 = ''
+        train_stds = np.array(train_stds, dtype=np.float64)
+        valid_stds = np.array(valid_stds, dtype=np.float64)
+        divide = True if optistd in ('TG', 'G2M') else False
+        std = GetOptiValidStd(train_stds, valid_stds, divide, exponential)
+        text2, hstd, sendtext = GetText2(std, pre_hstd)
 
-        wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text3}'))
-        for text in train_text:
-            wq.put((ui_num[f'{ui_gubun}백테스트'], text))
-        for text in valid_text:
-            wq.put((ui_num[f'{ui_gubun}백테스트'], text))
+        if sendtext:
+            wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
+            for text3 in train_text:
+                wq.put((ui_num[f'{ui_gubun}백테스트'], text3))
+            for text3 in valid_text:
+                wq.put((ui_num[f'{ui_gubun}백테스트'], text3))
+
     elif dict_train is not None:
         if gubun == '최적화테스트':
-            text2, std  = GetText2('TEST', optistd, std_list, betting, dict_train)
-            text3, stdp = '', pre_stdp
+            text3, std  = GetText3('TEST', optistd, std_list, dict_train)
+            text2, hstd, sendtext = '', pre_hstd, False
         else:
-            text2, std  = GetText2('TOTAL', optistd, std_list, betting, dict_train)
-            text3, stdp = GetText3(std, pre_stdp)
-        wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}{text3}'))
+            text3, std  = GetText3('TOTAL', optistd, std_list, dict_train)
+            text2, hstd, sendtext = GetText2(std, pre_hstd)
+
+        if sendtext or opti_turn == 2:
+            wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
+            wq.put((ui_num[f'{ui_gubun}백테스트'], text3))
+
     else:
-        stdp  = pre_stdp
-        std   = -2_000_000_000
-        text2 = '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'
-        wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
+        hstd = pre_hstd
+        std  = -2_000_000_000
 
     if opti_turn != 2:
         mq.put((vturn, vkey, std))
-    return stdp
+
+    return hstd
 
 
-def GetText1(opti_turn, vturn, vars_list):
-    if opti_turn != 1:
-        text = f'<font color=#a0ffa0> V{vars_list}</font>\n'
+def GetText2(std, pre_hstd):
+    text = f'<font color=#ffffa0> MERGE[{std:,.2f}]</font>'
+    if std > pre_hstd:
+        text = f'{text}<font color=#54d2f9> [기준값갱신]</font>'
+        return text, std, True
+    elif std == pre_hstd:
+        text = f'{text}<font color=white> [기준값동일]</font>'
+        return text, std, False
     else:
-        hipen = '-' * 50
-        text = f'<font color=#ffffa0> self.vars[{vturn}] = {vars_list[vturn]} {hipen}</font>\n'
-    return text
+        return text, pre_hstd, False
 
 
-def GetText2(gubun, optistd, std_list, betting, result):
+def GetText3(gubun, optistd, std_list, result):
     tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
     if tpp < 0 < tsg: tsg = -2_147_483_648
-    mddt  = f'{mdd_:,.0f}' if 'G' in optistd else f'{mdd:,.2f}%'
+    mddt  = f'{mdd_:,.0f}' if 'G' in optistd and optistd != 'CAGR' else f'{mdd:,.2f}%'
     color = '#ffa3d7' if 'TRAIN' not in gubun else '#a1afff'
     text  = f"<font color={color}>{gubun}</font>"
     text  = f"{text} <font color={color if tsg >= 0 else '#96969b'}>TC[{tc:,.0f}] ATC[{atc:,.1f}] MH[{mhct}] " \
-            f"WR[{wr:,.2f}%] MDD[{mddt}] CAGR[{cagr:,.2f}] TPI[{tpi:,.2f}] AP[{app:,.2f}%] TP[{tpp:,.2f}%] TG[{tsg:,.0f}]"
-    text, std = GetOptiStdText(optistd, std_list, betting, result, text)
+            f"WR[{wr:,.2f}%] AP[{app:,.2f}%] TP[{tpp:,.2f}%] TG[{tsg:,.0f}] MDD[{mddt}] TPI[{tpi:,.2f}] CAGR[{cagr:,.2f}]"
+    text, std = GetOptiStdText(optistd, std_list, result, text)
     return text, std
 
 
-def GetText3(std, stdp):
-    text = f'<font color=#ffffa0> MERGE[{std:,.2f}]</font>'
-    if std >= stdp:
-        text = f'{text}<font color=#54d2f9>[기준값갱신]</font>' if std > stdp else f'{text}<font color=white>[기준값동일]</font>'
-        stdp = std
-    return text, stdp
-
-
-def GetOptiValidStd(train_data, valid_data, optistd, betting, exponential):
-    std = 0
-    count = len(train_data)
+@jit(nopython=True, cache=True)
+def GetOptiValidStd(train_stds, valid_stds, divide, exponential):
     """
-    가중치(exponential) 예제
+    가중치(exs) 예제
     10개 : 2.00, 1.80, 1.60, 1.40, 1.20, 1.00, 0.80, 0.60, 0.40, 0.20
     8개  : 2.00, 1.75, 1.50, 1.25, 1.00, 0.75, 0.50, 0.25
     7개  : 2.00, 1.71, 1.42, 1.14, 0.86, 0.57, 0.29
@@ -452,72 +455,66 @@ def GetOptiValidStd(train_data, valid_data, optistd, betting, exponential):
     3개  : 2.00, 1.33, 0.66
     2개  : 2.00, 1.0
     """
+    merge = 0.
+    count = len(train_stds)
     for i in range(count):
-        ex = (count - i) * 2 / count
-        std_ = train_data[i] * valid_data[i] * ex if exponential and count > 1 else train_data[i] * valid_data[i]
-        if train_data[i] < 0 and valid_data[i] < 0:
-            std -= std_
-        else:
-            std += std_
-    std = round(std / count / betting, 2) if optistd == 'TG' else round(std / count, 2)
-    return std
+        sign = -1. if train_stds[i] < 0 and valid_stds[i] < 0 else 1.
+        ostd = sign * train_stds[i] * valid_stds[i]
+        if exponential and count > 1:
+            ostd *= (count - i) * 2 / count
+        merge += ostd
+    merge = round(merge / count / 1000, 2) if divide else round(merge / count, 2)
+    return merge if merge != 0 else -2_147_483_648
 
 
-def GetOptiStdText(optistd, std_list, betting, result, pre_text):
+def GetOptiStdText(optistd, std_list, result, pre_text):
     mdd_low, mdd_high, mhct_low, mhct_high, wr_low, wr_high, ap_low, ap_high, atc_low, atc_high, cagr_low, cagr_high, tpi_low, tpi_high = std_list
     tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
     std_true = (mdd_low <= mdd <= mdd_high and mhct_low <= mhct <= mhct_high and wr_low <= wr <= wr_high and
                 ap_low <= app <= ap_high and atc_low <= atc <= atc_high and cagr_low <= cagr <= cagr_high and tpi_low <= tpi <= tpi_high)
-    std = 0
-    std_false_point = -2_222_222_222
+
+    std = -2_147_483_648
     if tc > 0:
         sign = 1 if cagr >= 0 else -1
         optistd_handlers = {
             'TP':   lambda: tpp,
-            'TPI':  lambda: tpi,
             'PM':   lambda: round(tpp / mdd, 2),
-            'P2M':  lambda: sign * abs(round(tpp * tpp / mdd / 100, 2)),
+            'P2M':  lambda: sign * abs(round(tpp * tpp / mdd, 2)),
             'PAM':  lambda: sign * abs(round(tpp * app / mdd, 2)),
             'PWM':  lambda: round(tpp * wr / mdd / 100, 2),
-            'PTM':  lambda: sign * abs(round(tpp * app * wr * tpi * cagr / mdd / 100, 2)),
-            'TG':   lambda: tsg,
+            'TG':   lambda: round(tsg / 1000, 2),
             'GM':   lambda: round(tsg / mdd_, 2),
-            'G2M':  lambda: sign * abs(round(tsg * tsg / mdd_ / betting, 2)),
+            'G2M':  lambda: sign * abs(round(tsg * tsg / mdd_ / 1000, 2)),
             'GAM':  lambda: sign * abs(round(tsg * app / mdd_, 2)),
             'GWM':  lambda: round(tsg * wr / mdd_ / 100, 2),
-            'GTM':  lambda: sign * abs(round(tsg * app * wr * tpi * cagr / mdd_ / 100, 2)),
             'CAGR': lambda: cagr
         }
         if 'TRAIN' in pre_text or 'TOTAL' in pre_text:
             if std_true:
                 std = optistd_handlers[optistd]()
-            else:
-                std = std_false_point
         else:
             std = optistd_handlers[optistd]()
+        if std == 0: std = -2_147_483_648
 
     text_handlers = {
         'TP':   lambda: f'{pre_text}</font>',
         'TG':   lambda: f'{pre_text}</font>',
-        'TPI':  lambda: f'{pre_text}</font>',
         'CAGR': lambda: f'{pre_text}</font>',
-        'PM':   lambda: f'{pre_text} PM[{std:.2f}]</font>',
-        'P2M':  lambda: f'{pre_text} P2M[{std:.2f}]</font>',
-        'PAM':  lambda: f'{pre_text} PAM[{std:.2f}]</font>',
-        'PWM':  lambda: f'{pre_text} PWM[{std:.2f}]</font>',
-        'PTM':  lambda: f'{pre_text} PTM[{std:.2f}]</font>',
-        'GM':   lambda: f'{pre_text} GM[{std:.2f}]</font>',
-        'G2M':  lambda: f'{pre_text} G2M[{std:.2f}]</font>',
-        'GAM':  lambda: f'{pre_text} GAM[{std:.2f}]</font>',
-        'GWM':  lambda: f'{pre_text} GWM[{std:.2f}]</font>',
-        'GTM':  lambda: f'{pre_text} GTM[{std:.2f}]</font>'
+        'PM':   lambda: f'{pre_text} PM[{std:,.2f}]</font>',
+        'P2M':  lambda: f'{pre_text} P2M[{std:,.2f}]</font>',
+        'PAM':  lambda: f'{pre_text} PAM[{std:,.2f}]</font>',
+        'PWM':  lambda: f'{pre_text} PWM[{std:,.2f}]</font>',
+        'GM':   lambda: f'{pre_text} GM[{std:,.2f}]</font>',
+        'G2M':  lambda: f'{pre_text} G2M[{std:,.2f}]</font>',
+        'GAM':  lambda: f'{pre_text} GAM[{std:,.2f}]</font>',
+        'GWM':  lambda: f'{pre_text} GWM[{std:,.2f}]</font>'
     }
     text = text_handlers[optistd]()
     return text, std
 
 
-def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
-            backname, back_text, label_text, save_file_name, schedul, plotgraph, buy_vars=None, sell_vars=None):
+def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
+             backname, back_text, label_text, save_file_name, schedul, plotgraph, buy_vars=None, sell_vars=None):
     df_tsg['수익금합계020'] = df_tsg['수익금합계'].rolling(window=20).mean().round(2)
     df_tsg['수익금합계060'] = df_tsg['수익금합계'].rolling(window=60).mean().round(2)
     df_tsg['수익금합계120'] = df_tsg['수익금합계'].rolling(window=120).mean().round(2)
@@ -529,14 +526,12 @@ def PltShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, 
     sig_array = df_tsg['수익금'].values
     mdd_list = []
     for i in range(30):
-        df_tsg[f'수익금{i}'] = np.random.permutation(sig_array)
-        df_tsg[f'수익금합계{i}'] = df_tsg[f'수익금{i}'].cumsum()
-        df_tsg.drop(columns=[f'수익금{i}'], inplace=True)
+        random_cumsum = np.cumsum(np.random.permutation(sig_array))
+        df_tsg[f'수익금합계{i}'] = random_cumsum
         try:
-            array = np.array(df_tsg[f'수익금합계{i}'], dtype=np.float64)
-            lower = np.argmax(np.maximum.accumulate(array) - array)
-            upper = np.argmax(array[:lower])
-            mdd_ = round(abs(array[upper] - array[lower]) / (array[upper] + seed) * 100, 2)
+            lower = np.argmax(np.maximum.accumulate(random_cumsum) - random_cumsum)
+            upper = np.argmax(random_cumsum[:lower])
+            mdd_ = round(abs(random_cumsum[upper] - random_cumsum[lower]) / (random_cumsum[upper] + seed) * 100, 2)
         except:
             mdd_ = 0.
         mdd_list.append(mdd_)
@@ -758,11 +753,11 @@ def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
 def AddMdd(arry_tsg, result):
     """
     arry_tsg
-    체결시간, 보유시간, 매도시간, 수익률, 수익금, 수익금합계
-       0       1       2       3      4      5
+    보유시간, 매도시간, 수익률, 수익금, 수익금합계
+       0       1       2       3      4
     """
     try:
-        array = arry_tsg[:, 5]
+        array = arry_tsg[:, 4]
         lower = np.argmax(np.maximum.accumulate(array) - array)
         upper = np.argmax(array[:lower])
         mdd   = round(abs(array[upper] - array[lower]) / (array[upper] + result[10]) * 100, 2)
@@ -775,7 +770,7 @@ def AddMdd(arry_tsg, result):
 
 
 @jit(nopython=True, cache=True)
-def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
+def GetResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     """
     arry_tsg dtype 'float64'
     보유시간, 매도시간, 수익률, 수익금, 수익금합계
@@ -802,12 +797,13 @@ def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     app  = arry_tsg[:, 2].mean()
     tsg  = profits.sum()
 
-    appp = arry_p[:, 2].mean() if len(arry_p) > 0 else 0
-    ampp = abs(arry_m[:, 2].mean()) if len(arry_m) > 0 else 0
+    appp = arry_p[:, 2].mean() if pc > 0 else 0
+    ampp = abs(arry_m[:, 2].mean()) if mc > 0 else 0
 
-    try:    mhct = int(arry_bct[int(len(arry_bct) * 0.01):, 1].max())
+    exclud_top10per = int(len(arry_bct) / 100)
+    try:    mhct = int(arry_bct[exclud_top10per:, 1].max())
     except: mhct = 0
-    try:    seed = int(arry_bct[int(len(arry_bct) * 0.01):, 2].max())
+    try:    seed = int(arry_bct[exclud_top10per:, 2].max())
     except: seed = betting
     if seed < betting: seed = betting
 
@@ -816,19 +812,19 @@ def GetBackResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     tpi  = wr / 100 * (1 + appp / ampp) if ampp != 0 else 1.0
 
     return (
-        tc,              # 거래횟수
-        round(atc, 1),   # 일평균 거래횟수
-        pc,              # 수익 거래횟수
-        mc,              # 손실 거래횟수
-        round(wr, 2),    # 승률
-        round(ah, 2),    # 평균보유시간
-        round(app, 2),   # 평균수익률
-        round(tpp, 2),   # 총수익률
-        int(tsg),        # 총수익금
-        mhct,            # 최대 보유종목수
-        seed,            # 필요 자금
-        round(cagr, 2),  # 연간 예상 수익률
-        round(tpi, 2)    # 거래 성과 지수
+        tc,              # 0 거래횟수
+        round(atc, 1),   # 1 일평균 거래횟수
+        pc,              # 2 수익 거래횟수
+        mc,              # 3 손실 거래횟수
+        round(wr, 2),    # 4 승률
+        round(ah, 2),    # 5 평균보유시간
+        round(app, 2),   # 6 평균수익률
+        round(tpp, 2),   # 7 총수익률
+        int(tsg),        # 8 총수익금
+        mhct,            # 9 최대 보유종목수
+        seed,            # 10 필요 자금
+        round(cagr, 2),  # 11 연간 예상 수익률
+        round(tpi, 2)    # 12 거래 성과 지수
     )
 
 
