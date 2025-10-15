@@ -1,17 +1,19 @@
 import re
+import sys
 import zmq
 import time
 import sqlite3
 import binance
 import pandas as pd
-from threading import Thread
-from multiprocessing import Process, Queue
+from multiprocessing import Queue
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from coin.binance_websocket import WebSocketReceiver
 from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
 from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, now_utc, str_hms, str_ymd, get_logger
 
 
-class ZmqServ(Thread):
+class ZmqServ(QThread):
     def __init__(self, recvservQ):
         super().__init__()
         self.recvservQ = recvservQ
@@ -26,12 +28,31 @@ class ZmqServ(Thread):
             self.sock.send_pyobj(data)
 
 
+class Updater(QThread):
+    signal1 = pyqtSignal(tuple)
+    signal2 = pyqtSignal()
+
+    def __init__(self, creceivQ):
+        super().__init__()
+        self.creceivQ = creceivQ
+
+    def run(self):
+        while True:
+            data = self.creceivQ.get()
+            if type(data) == tuple:
+                self.signal1.emit(data)
+            elif type(data) == str:
+                self.signal2.emit()
+
+
 class BinanceReceiverTick:
     def __init__(self, qlist):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
+        app = QApplication(sys.argv)
+
         self.windowQ     = qlist[0]
         self.soundQ      = qlist[1]
         self.teleQ       = qlist[3]
@@ -60,7 +81,6 @@ class BinanceReceiverTick:
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
-        self.proc_webs   = None
         self.codes       = None
         self.last_gsjm   = None
         self.binance     = binance.Client()
@@ -71,101 +91,34 @@ class BinanceReceiverTick:
 
         curr_time = now()
         self.dict_time = {
-            '거래대금순위전송': curr_time,
             '거래대금순위검색': curr_time,
             '저가대비고가등락율갱신': curr_time
         }
 
+        self.GetTickers()
+
         self.recvservQ = Queue()
-        if self.dict_set['리시버공유'] == 1:
+        if self.dict_set['에이전트공유'] == 1:
             self.zmqserver = ZmqServ(self.recvservQ)
             self.zmqserver.daemon = True
             self.zmqserver.start()
 
-        self.MainLoop()
+        self.ws_thread = WebSocketReceiver(self.codes)
+        self.ws_thread.signal1.connect(self.UpdateTickData)
+        self.ws_thread.signal2.connect(self.UpdateHogaData)
+        self.ws_thread.start()
 
-    def MainLoop(self):
-        text = '코인 리시버를 시작하였습니다.'
-        if self.dict_set['코인알림소리']: self.soundQ.put(text)
-        self.teleQ.put(text)
-        self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작'))
-        self.logger.info('리시버 시작 완료')
-        self.codes = self.GetTickers()
-        self.WebSocketsStart(self.creceivQ)
-        while True:
-            data = self.creceivQ.get()
-            curr_time = now()
-            inthmsutc = int(str_hms(now_utc()))
-            if type(data) == tuple:
-                self.UpdateTuple(data)
-            elif type(data) == list:
-                if data[0] == 'trade':
-                    try:
-                        data = data[1]['data']
-                        dt   = int(str_ymdhms_utc(data['T']))
-                        code = data['s']
-                        c    = float(data['p'])
-                        v    = float(data['q'])
-                        m    = data['m']
-                    except:
-                        pass
-                    else:
-                        self.UpdateTradeData(code, c, v, m, dt)
-                elif data[0] == 'depth':
-                    try:
-                        data = data[1]['data']
-                        dt   = int(str_ymdhms_utc(data['T']))
-                        if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]): continue
-                        code = data['s']
-                        hoga_seprice = (
-                            float(data['a'][9][0]), float(data['a'][8][0]), float(data['a'][7][0]), float(data['a'][6][0]), float(data['a'][5][0]),
-                            float(data['a'][4][0]), float(data['a'][3][0]), float(data['a'][2][0]), float(data['a'][1][0]), float(data['a'][0][0])
-                        )
-                        hoga_buprice = (
-                            float(data['b'][0][0]), float(data['b'][1][0]), float(data['b'][2][0]), float(data['b'][3][0]), float(data['b'][4][0]),
-                            float(data['b'][5][0]), float(data['b'][6][0]), float(data['b'][7][0]), float(data['b'][8][0]), float(data['b'][9][0])
-                        )
-                        hoga_samount = (
-                            float(data['a'][9][1]), float(data['a'][8][1]), float(data['a'][7][1]), float(data['a'][6][1]), float(data['a'][5][1]),
-                            float(data['a'][4][1]), float(data['a'][3][1]), float(data['a'][2][1]), float(data['a'][1][1]), float(data['a'][0][1])
-                        )
-                        hoga_bamount = (
-                            float(data['b'][0][1]), float(data['b'][1][1]), float(data['b'][2][1]), float(data['b'][3][1]), float(data['b'][4][1]),
-                            float(data['b'][5][1]), float(data['b'][6][1]), float(data['b'][7][1]), float(data['b'][8][1]), float(data['b'][9][1])
-                        )
-                        hoga_tamount = (
-                            round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
-                        )
-                    except:
-                        pass
-                    else:
-                        self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, curr_time)
-            elif data == '프로세스종료':
-                self.SysExit()
+        self.qtimer = QTimer()
+        self.qtimer.setInterval(1 * 1000)
+        self.qtimer.timeout.connect(self.Scheduler)
+        self.qtimer.start()
 
-            if curr_time > self.dict_time['거래대금순위전송']:
-                self.UpdateMoneyTop()
-                self.dict_time['거래대금순위전송'] = timedelta_sec(1)
+        self.updater = Updater(self.creceivQ)
+        self.updater.signal1.connect(self.UpdateTuple)
+        self.updater.signal2.connect(self.SysExit)
+        self.updater.start()
 
-            if curr_time > self.dict_time['거래대금순위검색']:
-                self.MoneyTopSearch()
-                self.dict_time['거래대금순위검색'] = timedelta_sec(10)
-
-            if not self.dict_set['바이낸스선물고정레버리지'] and curr_time > self.dict_time['저가대비고가등락율갱신']:
-                if self.dict_dlhp:
-                    self.ctraderQ.put(('저가대비고가등락율', self.dict_dlhp))
-                self.dict_time['저가대비고가등락율갱신'] = timedelta_sec(300)
-
-            if not self.dict_bool['프로세스종료'] and \
-                    ((self.dict_set['코인전략종료시간'] < inthmsutc < self.dict_set['코인전략종료시간'] + 10 and self.dict_set['코인프로세스종료']) or 235000 < inthmsutc < 235010):
-                self.ReceiverProcKill()
-
-    def WebSocketsStart(self, q):
-        self.proc_webs = Process(target=WebSocketReceiver, args=(self.codes, q), daemon=True)
-        self.proc_webs.start()
-
-    def WebProcessKill(self):
-        if self.proc_webs is not None and self.proc_webs.is_alive(): self.proc_webs.kill()
+        app.exec_()
 
     def GetTickers(self):
         dict_daym = {}
@@ -190,30 +143,30 @@ class BinanceReceiverTick:
                     self.dict_tddt[code] = [ymd, prec]
                     dict_daym[code] = dm
 
+        self.codes = list(self.dict_data)
         self.list_gsjm = [x for x, y in sorted(dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
         data = tuple(self.list_gsjm)
         self.cstgQ.put(('관심목록', data))
-        if self.dict_set['리시버공유'] == 1:
+        if self.dict_set['에이전트공유'] == 1:
             self.recvservQ.put(('focuscodes', ('관심목록', data)))
 
-        return list(self.dict_data)
+        text = '코인 리시버를 시작하였습니다.'
+        if self.dict_set['코인알림소리']: self.soundQ.put(text)
+        self.teleQ.put(text)
+        self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작'))
+        self.logger.info('리시버 시작 완료')
 
-    def UpdateTuple(self, data):
-        gubun, data = data
-        if gubun == '잔고목록':
-            self.tuple_jango = data
-        elif gubun == '주문목록':
-            self.tuple_order = data
-        elif gubun == '호가종목코드':
-            self.hoga_code = data
-        elif gubun == '차트종목코드':
-            self.chart_code = data
-        elif gubun == '설정변경':
-            self.dict_set = data
-            if not self.dict_set['코인리시버'] and not self.dict_set['코인트레이더']:
-                self.creceivQ.put('프로세스종료')
+    def UpdateTickData(self, data):
+        try:
+            data = data['data']
+            dt   = int(str_ymdhms_utc(data['T']))
+            code = data['s']
+            c    = float(data['p'])
+            v    = float(data['q'])
+            m    = data['m']
+        except:
+            return
 
-    def UpdateTradeData(self, code, c, v, m, dt):
         ymd = str(dt)[:8]
         if ymd != self.dict_tddt[code][0]:
             self.dict_tddt[code] = [ymd, self.dict_data[code][0]]
@@ -259,7 +212,37 @@ class BinanceReceiverTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, receivetime):
+    def UpdateHogaData(self, data):
+        try:
+            data = data['data']
+            dt = int(str_ymdhms_utc(data['T']))
+            if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]):
+                return
+
+            code = data['s']
+            hoga_seprice = (
+                float(data['a'][9][0]), float(data['a'][8][0]), float(data['a'][7][0]), float(data['a'][6][0]), float(data['a'][5][0]),
+                float(data['a'][4][0]), float(data['a'][3][0]), float(data['a'][2][0]), float(data['a'][1][0]), float(data['a'][0][0])
+            )
+            hoga_buprice = (
+                float(data['b'][0][0]), float(data['b'][1][0]), float(data['b'][2][0]), float(data['b'][3][0]), float(data['b'][4][0]),
+                float(data['b'][5][0]), float(data['b'][6][0]), float(data['b'][7][0]), float(data['b'][8][0]), float(data['b'][9][0])
+            )
+            hoga_samount = (
+                float(data['a'][9][1]), float(data['a'][8][1]), float(data['a'][7][1]), float(data['a'][6][1]), float(data['a'][5][1]),
+                float(data['a'][4][1]), float(data['a'][3][1]), float(data['a'][2][1]), float(data['a'][1][1]), float(data['a'][0][1])
+            )
+            hoga_bamount = (
+                float(data['b'][0][1]), float(data['b'][1][1]), float(data['b'][2][1]), float(data['b'][3][1]), float(data['b'][4][1]),
+                float(data['b'][5][1]), float(data['b'][6][1]), float(data['b'][7][1]), float(data['b'][8][1]), float(data['b'][9][1])
+            )
+            hoga_tamount = (
+                round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
+            )
+            receivetime = now()
+        except:
+            return
+
         sm     = 0
         dm     = 0
         send   = False
@@ -313,13 +296,15 @@ class BinanceReceiverTick:
             hgjrt = sum(hoga_samount + hoga_bamount)
             logt  = now() if self.int_logt < dt_min else 0
             gsjm  = 1 if code in self.list_gsjm else 0
-            data  = (dt,) + tuple(self.dict_data[code][:9]) + (sm, hlp) + hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + (hgjrt, gsjm, code, logt)
+            data  = (dt,) + tuple(self.dict_data[code][:9]) + (sm, hlp) + \
+                hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
+                (hgjrt, gsjm, code, logt)
 
             self.cstgQ.put(data)
             if code in self.tuple_order or code in self.tuple_jango:
                 self.ctraderQ.put(('잔고갱신', (code, c)))
 
-            if self.dict_set['리시버공유'] == 1:
+            if self.dict_set['에이전트공유'] == 1:
                 self.recvservQ.put(('tickdata', data))
 
             self.dict_tmdt[code] = [dt, dm]
@@ -340,11 +325,29 @@ class BinanceReceiverTick:
             self.list_hgdt[1] = dt
             self.hogaQ.put((code,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5])
 
+    def Scheduler(self):
+        self.UpdateMoneyTop()
+
+        curr_time = now()
+        inthmsutc = int(str_hms(now_utc()))
+        if curr_time > self.dict_time['거래대금순위검색']:
+            self.MoneyTopSearch()
+            self.dict_time['거래대금순위검색'] = timedelta_sec(10)
+
+        if not self.dict_set['바이낸스선물고정레버리지'] and curr_time > self.dict_time['저가대비고가등락율갱신']:
+            if self.dict_dlhp:
+                self.ctraderQ.put(('저가대비고가등락율', self.dict_dlhp))
+            self.dict_time['저가대비고가등락율갱신'] = timedelta_sec(300)
+
+        if not self.dict_bool['프로세스종료'] and \
+                ((self.dict_set['코인전략종료시간'] < inthmsutc < self.dict_set['코인전략종료시간'] + 10 and self.dict_set['코인프로세스종료']) or 235000 < inthmsutc < 235010):
+            self.ReceiverProcKill()
+
     def UpdateMoneyTop(self):
         current_gsjm = tuple(self.list_gsjm)
         if current_gsjm != self.last_gsjm:
             self.cstgQ.put(('관심목록', current_gsjm))
-            if self.dict_set['리시버공유'] == 1:
+            if self.dict_set['에이전트공유'] == 1:
                 self.recvservQ.put(('focuscodes', ('관심목록', current_gsjm)))
             self.last_gsjm = current_gsjm
 
@@ -378,6 +381,26 @@ class BinanceReceiverTick:
         threading_timer(180, self.creceivQ.put, '프로세스종료')
         if self.dict_set['코인알림소리']:
             self.soundQ.put('바이낸스 시스템을 3분 후 종료합니다.')
+
+    def WebProcessKill(self):
+        if self.ws_thread:
+            self.ws_thread.stop()
+            self.ws_thread.terminate()
+
+    def UpdateTuple(self, data):
+        gubun, data = data
+        if gubun == '잔고목록':
+            self.tuple_jango = data
+        elif gubun == '주문목록':
+            self.tuple_order = data
+        elif gubun == '호가종목코드':
+            self.hoga_code = data
+        elif gubun == '차트종목코드':
+            self.chart_code = data
+        elif gubun == '설정변경':
+            self.dict_set = data
+            if not self.dict_set['코인리시버'] and not self.dict_set['코인트레이더']:
+                self.creceivQ.put('프로세스종료')
 
     def SysExit(self):
         if self.dict_set['코인데이터저장']:

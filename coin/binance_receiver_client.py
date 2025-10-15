@@ -50,7 +50,7 @@ class BinanceReceiverClient:
         self.tuple_order = ()
         self.dict_jgdt   = {}
 
-        if self.dict_set['리시버공유'] == 1:
+        if self.dict_set['에이전트공유'] == 1:
             self.zmqserver = ZmqRecv(self.creceivQ, self.cstgQ, self.ctraderQ)
             self.zmqserver.daemon = True
             self.zmqserver.start()

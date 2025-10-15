@@ -9,8 +9,8 @@ from utility.static import error_decorator, now, qtest_qwait, timedelta_sec, str
 class UpdateTextedit:
     def __init__(self, ui):
         """
-        windowQ, soundQ, ui.queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
+           0        1      2       3      4       5      6      7       8         9         10     11     12      13       14
         """
         self.ui      = ui
         self.logging = True
@@ -121,8 +121,8 @@ class UpdateTextedit:
 
             if '전략연산 프로세스 데이터 저장 중' in text:
                 self.ui.data_save = True
-            elif data[0] == ui_num['S단순텍스트'] and '리시버 종료' in data[1]:
-                self.ui.wdzservQ.put(('manager', '리시버 종료'))
+            elif data[0] == ui_num['S단순텍스트'] and '에이전트 종료' in data[1]:
+                self.ui.wdzservQ.put(('manager', '에이전트 종료'))
             elif data[0] == ui_num['S로그텍스트'] and '트레이더 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '트레이더 종료'))
             elif data[0] == ui_num['S로그텍스트'] and '전략연산 종료' in data[1]:
@@ -238,7 +238,7 @@ class UpdateTextedit:
         else:
             if self.ui.dict_set['프로그램종료']:
                 QTimer.singleShot(180 * 1000, self.ui.ProcessKill)
-            if self.ui.dict_set['리시버공유'] < 2:
+            if self.ui.dict_set['에이전트공유'] < 2:
                 if self.ui.dict_set['주식컴퓨터종료'] or \
                         ('키움증권' in self.ui.dict_set['증권사'] and 90000 < int(str_hms()) < 90500 and self.ui.dict_set['휴무컴퓨터종료']) or \
                         ('해외선물' in self.ui.dict_set['증권사'] and 213000 < int(str_hms()) < 233000 and self.ui.dict_set['휴무컴퓨터종료']):
@@ -251,5 +251,5 @@ class UpdateTextedit:
         else:
             if self.ui.dict_set['프로그램종료']:
                 QTimer.singleShot(180 * 1000, self.ui.ProcessKill)
-            if self.ui.dict_set['리시버공유'] < 2 and self.ui.dict_set['코인컴퓨터종료']:
+            if self.ui.dict_set['에이전트공유'] < 2 and self.ui.dict_set['코인컴퓨터종료']:
                 os.system('shutdown /s /t 300')

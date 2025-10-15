@@ -135,7 +135,7 @@ def mnbutton_c_clicked_03(ui, login):
                 ui.logger.info('해외선물은 휴무 또는 조기마감일입니다.')
                 ui.windowQ.put((ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 해외선물 휴무 종료'))
                 return
-            ui.wdzservQ.put(('manager', '리시버 종료'))
+            ui.wdzservQ.put(('manager', '에이전트 종료'))
             ui.wdzservQ.put(('manager', '전략연산 종료'))
             ui.wdzservQ.put(('manager', '트레이더 종료'))
             qtest_qwait(3)
@@ -251,7 +251,7 @@ def mnbutton_c_clicked_06(ui):
 
 def CoinReceiverStart(ui):
     if not ui.CoinReceiverProcessAlive():
-        if ui.dict_set['리시버공유'] < 2:
+        if ui.dict_set['에이전트공유'] < 2:
             if ui.dict_set['코인타임프레임']:
                 target = UpbitReceiverTick if ui.dict_set['거래소'] == '업비트' else BinanceReceiverTick
             else:

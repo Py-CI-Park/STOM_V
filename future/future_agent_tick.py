@@ -1,47 +1,63 @@
 import os
 import sys
+import zmq
 import sqlite3
 import datetime
 import pandas as pd
+from multiprocessing import Queue
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from utility.setting import DICT_SET, ui_num, DB_CODE_INFO, DB_TRADELIST
+from utility.setting import DICT_SET, ui_num, DB_CODE_INFO, DB_TRADELIST, DB_FUTURE_TICK, DB_FUTURE_MIN
 from utility.static import now, str_hms_cme_from_str, qtest_qwait, opstarter_kill, str_ymd, now_cme, str_hms, \
     timedelta_sec, get_logger
 
 
-class Updater(QThread):
-    signal1 = pyqtSignal(list)
-    signal2 = pyqtSignal(dict)
-
-    def __init__(self, futureQ):
+class ZmqSendToClient(QThread):
+    def __init__(self, agzservQ):
         super().__init__()
-        self.futureQ = futureQ
+        self.agzservQ = agzservQ
+        zctx = zmq.Context()
+        self.sock = zctx.socket(zmq.PUB)
+        self.sock.bind('tcp://*:5777')
 
     def run(self):
         while True:
-            data = self.futureQ.get()
+            msg, data = self.agzservQ.get()
+            self.sock.send_string(msg, zmq.SNDMORE)
+            self.sock.send_pyobj(data)
+
+
+class Updater(QThread):
+    signal1 = pyqtSignal(list)
+    signal2 = pyqtSignal(tuple)
+
+    def __init__(self, sagentQ):
+        super().__init__()
+        self.sagentQ = sagentQ
+
+    def run(self):
+        while True:
+            data = self.sagentQ.get()
             if type(data) == list:
                 self.signal1.emit(data)
-            elif type(data) == dict:
+            elif type(data) == tuple:
                 self.signal2.emit(data)
 
 
-class FutureKiwoom:
+class FutureAgentTick:
     def __init__(self, qlist):
         """
-        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ
-                0            1              2             3           4
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
+                0            1             2            3
         """
         app = QApplication(sys.argv)
 
-        self.kwzservQ = qlist[0]
-        self.sreceivQ = qlist[1]
+        self.mgzservQ = qlist[0]
+        self.sagentQ  = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQ    = qlist[3]
-        self.futureQ  = qlist[4]
         self.dict_set = DICT_SET
 
         self.logger   = get_logger(self.__class__.__name__)
@@ -81,17 +97,39 @@ class FutureKiwoom:
         test_time2  = 90000 if self.dict_set['주식타임프레임'] else 83000
         self.test_mode = True if test_time1 < int_cme_hms or int_cme_hms < test_time2 else False
 
-        self.CommConnect()
+        self.dict_tmdt   = {}
+        self.dict_hgbs   = {}
+        self.dict_data   = {}
+        self.dict_info   = {}
+        self.dict_mtop   = {}
+        self.dict_jgdt   = {}
 
-        self.updater = Updater(self.futureQ)
-        self.updater.signal1.connect(self.ReceivOrder)
-        self.updater.signal2.connect(self.ChangeDictset)
-        self.updater.start()
+        self.list_gsjm   = []
+        self.list_hgdt   = [0, 0, 0, 0]
+        self.tuple_jango = ()
+        self.tuple_order = ()
+
+        self.int_logt    = 0
+        self.int_mtdt    = None
+        self.hoga_code   = None
+        self.chart_code  = None
+        self.agzservQ    = Queue()
+
+        self.CommConnect()
 
         self.qtimer = QTimer()
         self.qtimer.setInterval(1 * 1000)
         self.qtimer.timeout.connect(self.Scheduler)
         self.qtimer.start()
+
+        self.updater = Updater(self.sagentQ)
+        self.updater.signal1.connect(self.ReceivOrder)
+        self.updater.signal2.connect(self.UpdateTuple)
+        self.updater.start()
+
+        if self.dict_set['에이전트공유'] == 1:
+            self.zmqserver = ZmqSendToClient(self.agzservQ)
+            self.zmqserver.start()
 
         self.매도수구분 = {
             '1': '매도',
@@ -123,6 +161,11 @@ class FutureKiwoom:
             }
         }
 
+        if self.dict_set['에이전트프로파일링']:
+            import cProfile
+            self.pr = cProfile.Profile()
+            self.pr.enable()
+
         app.exec_()
 
     def CommConnect(self):
@@ -133,10 +176,7 @@ class FutureKiwoom:
         opstarter_kill()
 
         self.logger.info('OpenAPI 로그인 완료')
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
-        text = '해외선물 시스템을 시작하였습니다.'
-        if self.dict_set['주식알림소리']: self.kwzservQ.put(('sound', text))
-        self.kwzservQ.put(('tele', text))
+        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
 
         self.str_account = self.GetAccountNumber()
 
@@ -186,20 +226,27 @@ class FutureKiwoom:
 
         dict_name = {code: self.dict_info[code]['종목명'] for code in self.dict_info}
         dict_code = {self.dict_info[code]['종목명']: code for code in self.dict_info}
-        self.kwzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
-        self.sreceivQ.put(('종목정보', self.dict_info))
+        self.mgzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
         self.straderQ.put(('종목정보', self.dict_info))
         self.sstgQ.put(('종목정보', self.dict_info))
+        if self.dict_set['에이전트공유'] == 1:
+            self.agzservQ.put(('logininfo', self.dict_info))
 
         df = pd.DataFrame.from_dict(self.dict_info, orient='index')
-        self.kwzservQ.put(('query', ('종목디비', df, 'futureinfo', 'replace')))
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 종목 정보 검색 완료')))
+        self.mgzservQ.put(('query', ('종목디비', df, 'futureinfo', 'replace')))
+        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 종목 정보 검색 완료')))
+
+        text = '해외선물 시스템을 시작하였습니다.'
+        if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', text))
+        self.mgzservQ.put(('tele', text))
+        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 에이전트 시작')))
+        self.logger.info('에이전트 시작 완료')
 
     def OnEventConnect(self, err_code):
         if err_code == 0: self.dict_bool['로그인'] = True
 
     def OnReceiveRealData(self, code, realtype, realdata):
-        if self.dict_bool['프로세스종료'] or self.dict_set['리시버공유'] == 2:
+        if self.dict_bool['프로세스종료'] or self.dict_set['에이전트공유'] == 2:
             return
 
         if realtype == '해외선물시세':
@@ -216,9 +263,9 @@ class FutureKiwoom:
                             float(data[5])           == float(self.GetCommRealData(code, 27)) and \
                             float(data[6])           == float(self.GetCommRealData(code, 28)):
                         self.dict_bool['해선체결필드같음'] = True
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
+                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
                     else:
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 해선체결 필드값이 다릅니다. 필드값 갱신요망!!')))
+                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 해선체결 필드값이 다릅니다. 필드값 갱신요망!!')))
                     self.dict_bool['해선체결필드확인'] = True
 
                 if self.dict_bool['해선체결필드같음']:
@@ -255,7 +302,7 @@ class FutureKiwoom:
             except:
                 pass
             else:
-                self.sreceivQ.put(('체결정보', (code, dt, c, o, h, low, per, v, csp, cbp)))
+                self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
 
         elif realtype == '해외선물호가':
             try:
@@ -286,9 +333,9 @@ class FutureKiwoom:
                             int(data[32])              == int(self.GetCommRealData(code, 74)) and \
                             int(data[40])              == int(self.GetCommRealData(code, 75)):
                         self.dict_bool['호가잔량필드같음'] = True
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 해선호가잔량 필드값 같음')))
+                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 해선호가잔량 필드값 같음')))
                     else:
-                        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - 해선호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
+                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - 해선호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
                     self.dict_bool['호가잔량필드확인'] = True
 
                 if self.dict_bool['호가잔량필드같음']:
@@ -357,7 +404,121 @@ class FutureKiwoom:
             except:
                 pass
             else:
-                self.sreceivQ.put(('호가정보', (dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start)))
+                self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start)
+
+    def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
+        if code not in self.dict_data:
+            dm, bids, asks, tbids, tasks = 0, 0, 0, 0, 0
+        else:
+            dm, _, bids, asks, tbids, tasks = self.dict_data[code][5:11]
+
+        bids_, asks_ = 0, 0
+        wtm = self.dict_info[code]['위탁증거금']
+        if '+' in v:
+            bids_ = abs(int(v))
+            dm   += int(bids_ * wtm)
+        if '-' in v:
+            asks_ = abs(int(v))
+            dm   += int(asks_ * wtm)
+        bids += bids_
+        asks += asks_
+        tbids += bids_
+        tasks += asks_
+
+        try:
+            ch = round(tbids / tasks * 100, 2)
+        except:
+            ch = 500.
+        if ch > 500: ch = 500.
+
+        self.dict_hgbs[code] = (csp, cbp)
+        self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
+
+        if code not in self.list_gsjm:
+            self.list_gsjm.append(code)
+
+        if self.hoga_code == code:
+            bids, asks = self.list_hgdt[2:4]
+            if bids_ > 0: bids += bids_
+            if asks_ > 0: asks += asks_
+            self.list_hgdt[2:4] = bids, asks
+            if dt > self.list_hgdt[0]:
+                self.mgzservQ.put(('hoga', (self.dict_info[code]['종목명'], c, per, 0, -1, o, h, low)))
+                if asks > 0: self.mgzservQ.put(('hoga', (-asks, ch)))
+                if bids > 0: self.mgzservQ.put(('hoga', (bids, ch)))
+                self.list_hgdt[0] = dt
+                self.list_hgdt[2:4] = [0, 0]
+
+    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount,
+                       code, name, receivetime):
+        sm     = 0
+        dm     = 0
+        send   = False
+        dt_min = int(str(dt)[:12])
+
+        if code in self.dict_data:
+            dm = self.dict_data[code][5]
+            if code in self.dict_tmdt:
+                if dt > self.dict_tmdt[code][0]:
+                    send = True
+            else:
+                self.dict_tmdt[code] = [dt, 0]
+            sm = dm - self.dict_tmdt[code][1]
+
+        if send:
+            csp, cbp = self.dict_hgbs[code]
+
+            if hoga_seprice[-1] < csp:
+                index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
+                if index is not None:
+                    hoga_seprice = (0.,) * index + hoga_seprice[:-index]
+                    hoga_samount = (0,) * index + hoga_samount[:-index]
+                else:
+                    hoga_seprice = (0.,) * 5
+                    hoga_samount = (0,) * 5
+
+            if hoga_buprice[0] > cbp:
+                index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
+                if index is not None:
+                    hoga_buprice = hoga_buprice[index:] + (0.,) * index
+                    hoga_bamount = hoga_bamount[index:] + (0,) * index
+                else:
+                    hoga_buprice = (0.,) * 5
+                    hoga_bamount = (0,) * 5
+
+            c     = self.dict_data[code][0]
+            hlp   = round((c / ((self.dict_data[code][2] + self.dict_data[code][3]) / 2) - 1) * 100, 2)
+            hgjrt = sum(hoga_samount + hoga_bamount)
+            logt  = now() if self.int_logt < dt_min else 0
+            data  = (dt,) + tuple(self.dict_data[code][:9]) + (sm, hlp) + \
+                hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
+                (hgjrt, 1, code, name, logt)
+
+            self.sstgQ.put(data)
+            if code in self.tuple_jango or code in self.tuple_order:
+                self.straderQ.put(('잔고갱신', (code, c)))
+
+            if self.dict_set['에이전트공유'] == 1:
+                self.agzservQ.put(('tickdata', data))
+
+            self.dict_tmdt[code] = [dt, dm]
+            self.dict_data[code][7:9] = [0, 0]
+
+            if logt != 0:
+                gap = (now() - receivetime).total_seconds()
+                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+                self.int_logt = dt_min
+
+        if self.int_mtdt is None:
+            self.int_mtdt = dt
+        elif self.int_mtdt < dt:
+            self.dict_mtop[self.int_mtdt] = ';'.join(self.list_gsjm)
+            self.int_mtdt = dt
+            self.list_gsjm = []
+
+        if self.hoga_code == code and dt > self.list_hgdt[1]:
+            self.list_hgdt[1] = dt
+            self.mgzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5]))
 
     # noinspection PyUnusedLocal
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
@@ -365,7 +526,7 @@ class FutureKiwoom:
             sn = int(sScrNo)
             code = self.dict_sncd[sn] if sn in self.dict_sncd else ''
             self.straderQ.put(('증거금부족', code))
-            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'{sMsg}')))
+            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'{sMsg}')))
 
     # noinspection PyUnusedLocal
     def OnReceiveChejanData(self, gubun, itemcnt, fidlist):
@@ -401,7 +562,7 @@ class FutureKiwoom:
     def Scheduler(self):
         if not self.dict_bool['계좌조회']:
             self.GetAccountjanGo()
-        if self.dict_set['리시버공유'] < 2 and not self.dict_bool['실시간등록']:
+        if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
         if not self.test_mode:
@@ -439,18 +600,93 @@ class FutureKiwoom:
                 dict_jg = df.to_dict('index')
 
         self.straderQ.put(('잔고조회', (yesugm, dict_jg)))
-        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 계좌 조회 완료')))
+        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 계좌 조회 완료')))
 
     def OperationRealreg(self):
         self.dict_bool['실시간등록'] = True
         self.SetRealReg(self.real_codes)
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 실시간 등록 완료')))
+        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 실시간 등록 완료')))
 
     def ProcessKill(self):
         self.dict_bool['프로세스종료'] = True
         if self.dict_set['주식알림소리']:
-            self.kwzservQ.put(('sound', '해외선물 시스템을 3분 후 종료합니다.'))
-        self.sreceivQ.put('프로세스종료')
+            self.mgzservQ.put(('sound', '해외선물 시스템을 3분 후 종료합니다.'))
+        if self.dict_set['에이전트공유'] == 1:
+            self.agzservQ.put('프로세스종료')
+        QTimer.singleShot(180 * 1000, self.SysExit)
+
+    def SysExit(self):
+        if self.dict_set['주식데이터저장']:
+            self.SaveData()
+        self.sstgQ.put('프로세스종료')
+        self.straderQ.put('프로세스종료')
+        qtest_qwait(5)
+        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 에이전트 종료')))
+
+    def SaveData(self):
+        if self.dict_mtop:
+            con = sqlite3.connect(DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN)
+            last_index = 0
+            try:
+                df = pd.read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
+                last_index = df['index'][0]
+            except:
+                pass
+            dict_mtop = {key: value for key, value in self.dict_mtop.items() if key > last_index}
+            df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
+            df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
+            con.close()
+            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 데이터수집목록 저장 완료')))
+            self.logger.info('데이터수집목록 저장 완료')
+
+    def ReceivOrder(self, order):
+        # [주문구분, 화면번호, 계좌번호, 주문유형, 종목코드, 주문수량, 주문가격, Stop단가, 거래구분, 원주문번호], 종목명, 시그널시간
+        curr_time = now()
+        if curr_time < self.order_time:
+            next_time = (self.order_time - curr_time).total_seconds()
+            QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(order))
+            return
+
+        self.intg_odsn = self.intg_odsn + 1 if self.intg_odsn + 1 < 9000 else 3000
+        order[1] = str(self.intg_odsn)
+        order[2] = self.str_account
+
+        주문구분, _, _, _, 종목코드, 주문수량, 주문가격, _, _, _, 종목명, 시그널시간 = order
+
+        self.OrderTimeLog(시그널시간)
+        ret = self.SendOrder(order[:-2])
+        if ret == 0:
+            self.straderQ.put(('주문전송', (종목코드, 주문구분)))
+            self.logger.info(f'[주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')
+            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
+            self.order_time = timedelta_sec(0.2)
+            self.dict_sncd[self.intg_odsn] = 종목코드
+        else:
+            self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
+            self.logger.error(f'[주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')
+            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
+
+    def SendOrder(self, order: list):
+        return self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, QString, QString, QString, QString)', order)
+
+    def OrderTimeLog(self, signal_time):
+        gap = (now() - signal_time).total_seconds()
+        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
+
+    def UpdateTuple(self, data):
+        gubun, data = data
+        if gubun == '잔고목록':
+            self.tuple_jango = data
+        elif gubun == '주문목록':
+            self.tuple_order = data
+        elif gubun == '호가종목코드':
+            self.hoga_code = data
+        elif gubun == '차트종목코드':
+            self.chart_code = data
+        elif gubun == '설정변경':
+            self.dict_set = data
+        elif gubun == '프로파일링결과':
+            self.pr.print_stats(sort='cumulative')
 
     # noinspection PyUnusedLocal
     def OnReceiveTrData(self, screen, rqname, trcode, record, nnext):
@@ -580,40 +816,3 @@ class FutureKiwoom:
 
     def GetChejanData(self, fid: int):
         return self.ocx.dynamicCall('GetChejanData(int)', fid)
-
-    def ReceivOrder(self, order):
-        # [주문구분, 화면번호, 계좌번호, 주문유형, 종목코드, 주문수량, 주문가격, Stop단가, 거래구분, 원주문번호], 종목명, 시그널시간
-        curr_time = now()
-        if curr_time < self.order_time:
-            next_time = (self.order_time - curr_time).total_seconds()
-            QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(order))
-            return
-
-        self.intg_odsn = self.intg_odsn + 1 if self.intg_odsn + 1 < 9000 else 3000
-        order[1] = str(self.intg_odsn)
-        order[2] = self.str_account
-
-        주문구분, _, _, _, 종목코드, 주문수량, 주문가격, _, _, _, 종목명, 시그널시간 = order
-
-        self.OrderTimeLog(시그널시간)
-        ret = self.SendOrder(order[:-2])
-        if ret == 0:
-            self.straderQ.put(('주문전송', (종목코드, 주문구분)))
-            self.logger.info(f'[주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
-            self.order_time = timedelta_sec(0.2)
-            self.dict_sncd[self.intg_odsn] = 종목코드
-        else:
-            self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
-            self.logger.error(f'[주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
-
-    def SendOrder(self, order: list):
-        return self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, QString, QString, QString, QString)', order)
-
-    def ChangeDictset(self, data):
-        self.dict_set = data
-
-    def OrderTimeLog(self, signal_time):
-        gap = (now() - signal_time).total_seconds()
-        self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))

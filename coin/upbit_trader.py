@@ -1,44 +1,33 @@
-import time
+import sys
 import pyupbit
 import sqlite3
 import pandas as pd
-from threading import Thread
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from utility.setting import columns_cj, columns_td, ui_num, DB_TRADELIST, DICT_SET, columns_jg
 from utility.static import now, timedelta_sec, GetUpbitHogaunit, GetUpbitPgSgSp, now_utc, str_ymdhmsf, str_hmsf, \
-    threading_timer, error_decorator, str_hms, str_ymd, float_hmsf, dt_hms, get_logger
+    error_decorator, str_hms, str_ymd, dt_hms, get_logger, qtest_qwait
 
 
-class CheckChegeolPutDictjango(Thread):
-    def __init__(self, main):
+class Updater(QThread):
+    signal1 = pyqtSignal(tuple)
+    signal2 = pyqtSignal(tuple)
+    signal3 = pyqtSignal(str)
+
+    def __init__(self, ctraderQ):
         super().__init__()
-        self.main = main
+        self.ctraderQ = ctraderQ
 
     def run(self):
-        floathmsf = float_hmsf()
         while True:
-            if float_hmsf() > floathmsf + 0.5:
-                floathmsf = float_hmsf()
-                self.main.cstgQ.put(('잔고목록', self.main.dict_jg.copy()))
-                self.main.ctraderQ.put('CheckChegeol')
-            time.sleep(0.01)
-
-
-class Scheduler(Thread):
-    def __init__(self, main):
-        super().__init__()
-        self.main = main
-
-    def run(self):
-        inthms = int(str_hms(now_utc()))
-        while True:
-            if int(str_hms(now_utc())) > inthms:
-                inthms = int(str_hms(now_utc()))
-                if self.main.dict_set['코인타임프레임'] and inthms < self.main.dict_set['코인전략종료시간']:
-                    self.main.ctraderQ.put('OrderTimeControl')
-                if self.main.jgcs_time < inthms and not self.main.dict_bool['코인잔고청산']:
-                    self.main.ctraderQ.put('JangoCheongsan')
-                self.main.ctraderQ.put('UpdateTotaljango')
-            time.sleep(0.01)
+            data = self.ctraderQ.get()
+            if type(data) == tuple:
+                if len(data) in (6, 7):
+                    self.signal1.emit(data)
+                else:
+                    self.signal2.emit(data)
+            elif type(data) == str:
+                self.signal3.emit(data)
 
 
 class UpbitTrader:
@@ -47,6 +36,8 @@ class UpbitTrader:
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
+        app = QApplication(sys.argv)
+
         self.windowQ       = qlist[0]
         self.soundQ        = qlist[1]
         self.queryQ        = qlist[2]
@@ -82,32 +73,37 @@ class UpbitTrader:
         self.dict_bool = {
             '코인잔고청산': False
         }
-        curr_time = now()
         self.dict_time = {
-            '주문시간': curr_time,
-            '주문확인': curr_time,
-            '잔고전송': curr_time,
-            '잔고갱신및주문취소확인': curr_time
+            '주문시간': now()
         }
 
-        self.upbit     = None
+        self.upbit = None
+        if not self.dict_set['코인모의투자']:
+            self.upbit = pyupbit.Upbit(self.dict_set['Access_key1'], self.dict_set['Secret_key1'])
         self.jgcs_time = self.get_jgcs_time()
         self.str_today = str_ymd(now_utc())
 
-        self.put_dict_jango = CheckChegeolPutDictjango(self)
-        self.put_dict_jango.daemon = True
-        self.put_dict_jango.start()
-
-        self.scheduler = Scheduler(self)
-        self.scheduler.daemon = True
-        self.scheduler.start()
-
         self.UpdateDictName()
         self.LoadDatabase()
-        self.GetKey()
         self.GetBalances()
 
-        self.MainLoop()
+        self.qtimer1 = QTimer()
+        self.qtimer1.setInterval(500)
+        self.qtimer1.timeout.connect(self.Scheduler1)
+        self.qtimer1.start()
+
+        self.qtimer2 = QTimer()
+        self.qtimer2.setInterval(1 * 1000)
+        self.qtimer2.timeout.connect(self.Scheduler2)
+        self.qtimer2.start()
+
+        self.updater = Updater(self.ctraderQ)
+        self.updater.signal1.connect(self.CheckOrder)
+        self.updater.signal2.connect(self.UpdateTuple)
+        self.updater.signal3.connect(self.UpdateString)
+        self.updater.start()
+
+        app.exec_()
 
     def get_jgcs_time(self):
         return int(str_hms(timedelta_sec(-120, dt_hms(str(self.dict_set['코인전략종료시간'])))))
@@ -142,10 +138,6 @@ class UpbitTrader:
         con.close()
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
 
-    def GetKey(self):
-        self.upbit = pyupbit.Upbit(self.dict_set['Access_key1'], self.dict_set['Secret_key1'])
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 주문 및 체결확인용 업비트 객체 생성 완료'))
-
     def GetBalances(self):
         if self.dict_set['코인모의투자']:
             con = sqlite3.connect(DB_TRADELIST)
@@ -169,69 +161,29 @@ class UpbitTrader:
 
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 예수금 조회 완료'))
 
+        text = '코인 전략연산 및 트레이더를 시작하였습니다.'
+        if self.dict_set['코인알림소리']: self.soundQ.put(text)
+        self.teleQ.put(text)
+        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작'))
+        self.logger.info('트레이더 시작 완료')
+
     def CheckError(self, ret):
         if type(ret) == dict and list(ret)[0] == 'error':
             self.windowQ.put((ui_num['C로그텍스트'], f"시스템 명령 오류 알림 - {ret['error']['name']} : {ret['error']['message']}"))
             return False
         return True
 
-    def MainLoop(self):
-        text = '코인 전략연산 및 트레이더를 시작하였습니다.'
-        if self.dict_set['코인알림소리']: self.soundQ.put(text)
-        self.teleQ.put(text)
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작'))
-        self.logger.info('트레이더 시작 완료')
-        while True:
-            data = self.ctraderQ.get()
-            if type(data) == tuple:
-                if len(data) in (6, 7):
-                    self.CheckOrder(data)
-                elif len(data) == 9:
-                    self.SendOrder(data)
-                else:
-                    self.UpdateTuple(data)
-            elif type(data) == str:
-                self.UpdateString(data)
+    def Scheduler1(self):
+        self.cstgQ.put(('잔고목록', self.dict_jg.copy()))
+        if not self.dict_set['코인모의투자']: self.CheckChegeol()
 
-    def UpdateTuple(self, data):
-        gubun, data = data
-        if gubun == '잔고갱신':
-            self.UpdateJango(data)
-        elif gubun == '주문확인':
-            code, c = data
-            self.dict_curc[code] = c
-            self.OrderTimeControl(code)
-        if gubun == '관심진입':
-            if data in self.dict_order['매도']:
-                self.CancelOrder(data, '매도')
-        elif gubun == '관심이탈':
-            if data in self.dict_order['매수']:
-                self.CancelOrder(data, '매수')
-        elif gubun == '설정변경':
-            self.dict_set = data
-
-    def UpdateString(self, data):
-        if data == 'CheckChegeol':
-            self.CheckChegeol()
-        elif data == 'UpdateTotaljango':
-            self.UpdateTotaljango()
-        elif data == 'OrderTimeControl':
+    def Scheduler2(self):
+        inthms = int(str_hms(now_utc()))
+        if self.dict_set['코인타임프레임'] and inthms < self.dict_set['코인전략종료시간']:
             self.OrderTimeControl()
-        elif data == 'JangoCheongsan':
+        if self.jgcs_time < inthms and not self.dict_bool['코인잔고청산']:
             self.JangoCheongsan('자동')
-        elif data == '체결목록':
-            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
-            self.teleQ.put(df_cj) if len(df_cj) > 0 else self.teleQ.put('현재는 코인체결목록이 없습니다.')
-        elif data == '거래목록':
-            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
-            self.teleQ.put(df_td) if len(df_td) > 0 else self.teleQ.put('현재는 코인거래목록이 없습니다.')
-        elif data == '잔고평가':
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
-            self.teleQ.put(('잔고목록', df_jg)) if len(df_jg) > 0 else self.teleQ.put('현재는 코인잔고목록이 없습니다.')
-        elif data == '잔고청산':
-            self.JangoCheongsan('수동')
-        elif data == '프로세스종료':
-            self.SysExit()
+        self.UpdateTotaljango()
 
     def CheckOrder(self, data):
         if len(data) == 6:
@@ -331,7 +283,7 @@ class UpbitTrader:
         curr_time = now()
         if curr_time < self.dict_time['주문시간']:
             next_time = (self.dict_time['주문시간'] - curr_time).total_seconds()
-            threading_timer(next_time, self.ctraderQ.put, data)
+            QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(data))
             return
 
         주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형 = data
@@ -391,6 +343,38 @@ class UpbitTrader:
     def GetOrderCodeList(self):
         return tuple(self.dict_order['매수']) + tuple(self.dict_order['매도'])
 
+    def UpdateTuple(self, data):
+        gubun, data = data
+        if gubun == '잔고갱신':
+            self.UpdateJango(data)
+        elif gubun == '주문확인':
+            code, c = data
+            self.dict_curc[code] = c
+            self.OrderTimeControl(code)
+        if gubun == '관심진입':
+            if data in self.dict_order['매도']:
+                self.CancelOrder(data, '매도')
+        elif gubun == '관심이탈':
+            if data in self.dict_order['매수']:
+                self.CancelOrder(data, '매수')
+        elif gubun == '설정변경':
+            self.dict_set = data
+
+    def UpdateString(self, data):
+        if data == '체결목록':
+            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
+            self.teleQ.put(df_cj) if len(df_cj) > 0 else self.teleQ.put('현재는 코인체결목록이 없습니다.')
+        elif data == '거래목록':
+            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+            self.teleQ.put(df_td) if len(df_td) > 0 else self.teleQ.put('현재는 코인거래목록이 없습니다.')
+        elif data == '잔고평가':
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            self.teleQ.put(('잔고목록', df_jg)) if len(df_jg) > 0 else self.teleQ.put('현재는 코인잔고목록이 없습니다.')
+        elif data == '잔고청산':
+            self.JangoCheongsan('수동')
+        elif data == '프로세스종료':
+            self.SysExit()
+
     def CheckChegeol(self):
         order_info_list = []
         for gubun in self.dict_order:
@@ -398,8 +382,8 @@ class UpbitTrader:
                 order_info = self.GetOrderInfo(code, orders[0])
                 if order_info is not None:
                     order_info_list.append([gubun] + order_info)
-                time.sleep(0.1)
-    
+                qtest_qwait(0.1)
+
         if order_info_list:
             for 주문구분, 종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호 in order_info_list:
                 self.UpdateChejanData(주문구분, 종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호)
@@ -445,6 +429,24 @@ class UpbitTrader:
                     del self.dict_order_cc[주문번호]
 
         return order_info
+
+    def UpdateJango(self, data):
+        종목코드, 현재가 = data
+        self.dict_curc[종목코드] = 현재가
+        try:
+            # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+            if 현재가 != self.dict_jg[종목코드]['현재가']:
+                매입금액 = self.dict_jg[종목코드]['매입금액']
+                보유수량 = self.dict_jg[종목코드]['보유수량']
+                평가금액, 평가손익, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
+                self.dict_jg[종목코드].update({
+                    '현재가': 현재가,
+                    '수익률': 수익률,
+                    '평가손익': 평가손익,
+                    '평가금액': 평가금액
+                })
+        except:
+            pass
 
     def OrderTimeControl(self, code_=None):
         cancel_list = []
@@ -504,24 +506,6 @@ class UpbitTrader:
                 self.CreateOrder(f'{주문구분}취소', 종목코드, 주문가격, 미체결수량, 주문번호, 현재시간, False, 0, None)
                 self.CreateOrder(주문구분, 종목코드, 정정가격, 미체결수량, '', 현재시간, False, 정정횟수, None)
 
-    def UpdateJango(self, data):
-        종목코드, 현재가 = data
-        self.dict_curc[종목코드] = 현재가
-        try:
-            # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
-            if 현재가 != self.dict_jg[종목코드]['현재가']:
-                매입금액 = self.dict_jg[종목코드]['매입금액']
-                보유수량 = self.dict_jg[종목코드]['보유수량']
-                평가금액, 평가손익, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 현재가)
-                self.dict_jg[종목코드].update({
-                    '현재가': 현재가,
-                    '수익률': 수익률,
-                    '평가손익': 평가손익,
-                    '평가금액': 평가금액
-                })
-        except:
-            pass
-
     def JangoCheongsan(self, gubun):
         self.dict_bool['코인잔고청산'] = True
 
@@ -545,7 +529,7 @@ class UpbitTrader:
                             self.dict_order[gubun][종목코드] = [ret['uuid'], now()]
                     else:
                         self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {종목코드} | {현재가} | {보유수량} | 매도'))
-                    time.sleep(0.3)
+                    qtest_qwait(0.3)
             if self.dict_set['코인알림소리']:
                 self.soundQ.put(f'코인 {gubun} 전략 잔고청산 주문을 전송하였습니다.')
             self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 실행 알림 - {gubun} 전략 잔고청산 주문 완료'))
@@ -554,7 +538,7 @@ class UpbitTrader:
 
     def SysExit(self):
         self.SaveDayData()
-        time.sleep(5)
+        qtest_qwait(5)
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 종료'))
 
     def SaveDayData(self):

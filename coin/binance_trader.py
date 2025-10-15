@@ -1,46 +1,35 @@
 import re
-import time
+import sys
 import sqlite3
 import binance
 import pandas as pd
-from threading import Thread
-from multiprocessing import Process
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from coin.binance_websocket import WebSocketTrader
 from utility.setting import columns_cj, columns_tdf, ui_num, DB_TRADELIST, DICT_SET, columns_jgcf
 from utility.static import now, timedelta_sec, GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, str_ymd, str_hms, \
-    threading_timer, error_decorator, now_utc, str_ymdhmsf, str_hmsf, float_hmsf, dt_hms, get_logger
+    error_decorator, now_utc, str_ymdhmsf, str_hmsf, dt_hms, get_logger, qtest_qwait
 
 
-class PutDictjango(Thread):
-    def __init__(self, main):
+class Updater(QThread):
+    signal1 = pyqtSignal(tuple)
+    signal2 = pyqtSignal(tuple)
+    signal3 = pyqtSignal(str)
+
+    def __init__(self, ctraderQ):
         super().__init__()
-        self.main = main
+        self.ctraderQ = ctraderQ
 
     def run(self):
-        floathmsf = float_hmsf()
         while True:
-            if float_hmsf() > floathmsf + 0.5:
-                floathmsf = float_hmsf()
-                self.main.cstgQ.put(('잔고목록', self.main.dict_jg.copy()))
-            time.sleep(0.01)
-
-
-class Scheduler(Thread):
-    def __init__(self, main):
-        super().__init__()
-        self.main = main
-
-    def run(self):
-        inthms = int(str_hms(now_utc()))
-        while True:
-            if int(str_hms(now_utc())) > inthms:
-                inthms = int(str_hms(now_utc()))
-                if self.main.dict_set['코인타임프레임'] and inthms < self.main.dict_set['코인전략종료시간']:
-                    self.main.ctraderQ.put('OrderTimeControl')
-                if self.main.jgcs_time < inthms and not self.main.dict_bool['코인잔고청산']:
-                    self.main.ctraderQ.put('JangoCheongsan')
-                self.main.ctraderQ.put('UpdateTotaljango')
-            time.sleep(0.01)
+            data = self.ctraderQ.get()
+            if type(data) == tuple:
+                if len(data) in (6, 7):
+                    self.signal1.emit(data)
+                else:
+                    self.signal2.emit(data)
+            elif type(data) == str:
+                self.signal3.emit(data)
 
 
 class BinanceTrader:
@@ -49,6 +38,8 @@ class BinanceTrader:
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
+        app = QApplication(sys.argv)
+
         self.windowQ    = qlist[0]
         self.soundQ     = qlist[1]
         self.queryQ     = qlist[2]
@@ -85,31 +76,45 @@ class BinanceTrader:
         self.dict_bool  = {
             '코인잔고청산': False
         }
-        curr_time = now()
         self.dict_time = {
-            '주문시간': curr_time,
-            '잔고전송': curr_time,
-            '잔고갱신및주문취소확인': curr_time
+            '주문시간': now()
         }
 
-        self.proc_webs = None
+        self.binance = None
+        if not self.dict_set['코인모의투자']:
+            self.binance = binance.Client(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
+
         self.jgcs_time = self.get_jgcs_time()
         self.str_today = str_ymd(now_utc())
 
-        self.put_dict_jango = PutDictjango(self)
-        self.put_dict_jango.daemon = True
-        self.put_dict_jango.start()
-
-        self.scheduler = Scheduler(self)
-        self.scheduler.daemon = True
-        self.scheduler.start()
-
-        self.binance = binance.Client(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
         self.LoadDatabase()
         self.GetBalances()
-        self.SetPosition()
+        if not self.dict_set['코인모의투자']:
+            self.SetPosition()
 
-        self.MainLoop()
+        self.ws_thread = None
+        if not self.dict_set['코인모의투자']:
+            self.ws_thread = WebSocketTrader(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
+            self.ws_thread.signal1.connect(self.UpdateUserData)
+            self.ws_thread.start()
+
+        self.qtimer1 = QTimer()
+        self.qtimer1.setInterval(500)
+        self.qtimer1.timeout.connect(self.Scheduler1)
+        self.qtimer1.start()
+
+        self.qtimer2 = QTimer()
+        self.qtimer2.setInterval(1 * 1000)
+        self.qtimer2.timeout.connect(self.Scheduler2)
+        self.qtimer2.start()
+
+        self.updater = Updater(self.ctraderQ)
+        self.updater.signal1.connect(self.CheckOrder)
+        self.updater.signal2.connect(self.UpdateTuple)
+        self.updater.signal3.connect(self.UpdateString)
+        self.updater.start()
+
+        app.exec_()
 
     def get_jgcs_time(self):
         return int(str_hms(timedelta_sec(-120, dt_hms(str(self.dict_set['코인전략종료시간'])))))
@@ -196,107 +201,22 @@ class BinanceTrader:
 
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 마진타입 및 레버리지 설정 완료'))
 
-    def MainLoop(self):
         text = '코인 전략연산 및 트레이더를 시작하였습니다.'
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작'))
         self.logger.info('트레이더 시작 완료')
-        if not self.dict_set['코인모의투자']:
-            self.WebSocketsStart(self.ctraderQ)
-        while True:
-            data = self.ctraderQ.get()
-            if type(data) == tuple:
-                if len(data) in (6, 7):
-                    self.CheckOrder(data)
-                elif len(data) == 9:
-                    self.SendOrder(data)
-                else:
-                    self.UpdateTuple(data)
-            elif type(data) == str:
-                self.UpdateString(data)
-            elif type(data) == list:
-                self.UpdateUserData(data)
 
-    def WebSocketsStart(self, q):
-        self.proc_webs = Process(target=WebSocketTrader, args=(self.dict_set['Access_key2'], self.dict_set['Secret_key2'], q), daemon=True)
-        self.proc_webs.start()
+    def Scheduler1(self):
+        self.cstgQ.put(('잔고목록', self.dict_jg.copy()))
 
-    def WebProcessKill(self):
-        if self.proc_webs is not None and self.proc_webs.is_alive(): self.proc_webs.kill()
-
-    def UpdateTuple(self, data):
-        gubun, data = data
-        if gubun == '잔고갱신':
-            self.UpdateJango(data)
-        elif gubun == '주문확인':
-            code, c = data
-            self.dict_curc[code] = c
-            self.OrderTimeControl(code)
-        elif gubun == '저가대비고가등락율':
-            self.SetLeverage(data)
-        elif gubun == '관심진입':
-            if data in self.dict_order['SELL_LONG']:
-                self.CancelOrder(data, 'SELL_LONG')
-            if data in self.dict_order['BUY_SHORT']:
-                self.CancelOrder(data, 'BUY_SHORT')
-        elif gubun == '관심이탈':
-            if data in self.dict_order['BUY_LONG']:
-                self.CancelOrder(data, 'BUY_LONG')
-            if data in self.dict_order['SELL_SHORT']:
-                self.CancelOrder(data, 'SELL_SHORT')
-        elif gubun == '설정변경':
-            self.dict_set = data
-
-    def UpdateString(self, data):
-        if data == 'UpdateTotaljango':
-            self.UpdateTotaljango()
-        elif data == 'OrderTimeControl':
+    def Scheduler2(self):
+        inthms = int(str_hms(now_utc()))
+        if self.dict_set['코인타임프레임'] and inthms < self.dict_set['코인전략종료시간']:
             self.OrderTimeControl()
-        elif data == 'JangoCheongsan':
+        if self.jgcs_time < inthms and not self.dict_bool['코인잔고청산']:
             self.JangoCheongsan('자동')
-        elif data == '체결목록':
-            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
-            self.teleQ.put(df_cj) if len(df_cj) > 0 else self.teleQ.put('현재는 체결목록이 없습니다.')
-        elif data == '거래목록':
-            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
-            self.teleQ.put(df_td) if len(df_td) > 0 else self.teleQ.put('현재는 거래목록이 없습니다.')
-        elif data == '잔고평가':
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
-            self.teleQ.put(('잔고목록', df_jg)) if len(df_jg) > 0 else self.teleQ.put('현재는 잔고목록이 없습니다.')
-        elif data == '잔고청산':
-            self.JangoCheongsan('수동')
-        elif data == '프로세스종료':
-            self.SysExit()
-
-    def UpdateUserData(self, data):
-        if data[0] == 'user':
-            data = data[1]
-            if data['e'] == 'ACCOUNT_UPDATE':
-                try:
-                    data = data['a']
-                    self.dict_intg['추정예탁자산'] = float(data['B'][0]['wb'])
-                    self.dict_intg['예수금'] = float(data['B'][0]['cw'])
-                except Exception as e:
-                    self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - 웹소켓 user {e}'))
-            elif data['e'] == 'ORDER_TRADE_UPDATE':
-                try:
-                    data = data['o']
-                    code = data['s']
-                    p = f"{data['S']}_{self.dict_pos[code]}"
-                    if data['X'] == 'CANCELED':
-                        p = f'{p}_CANCEL'
-                    oc = float(data['q'])
-                    cc = float(data['l'])
-                    mc = round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
-                    cp = float(data['L'])
-                    op = float(data['p'])
-                    on = int(data['i'])
-                except:
-                    self.logger.error('바이낸스 홈페이지 주문은 기록되지 않습니다.')
-                else:
-                    if cc > 0 or 'CANCEL' in p:
-                        self.UpdateChejanData(p, code, oc, cc, mc, cp, op, on)
+        self.UpdateTotaljango()
 
     def CheckOrder(self, data):
         if len(data) == 6:
@@ -419,7 +339,7 @@ class BinanceTrader:
         curr_time = now()
         if curr_time < self.dict_time['주문시간']:
             next_time = (self.dict_time['주문시간'] - curr_time).total_seconds()
-            threading_timer(next_time, self.ctraderQ.put, data)
+            QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(data))
             return
 
         주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형 = data
@@ -466,6 +386,44 @@ class BinanceTrader:
     def GetOrderCodeList(self):
         return tuple(self.dict_order['BUY_LONG']) + tuple(self.dict_order['SELL_SHORT']) + \
             tuple(self.dict_order['SELL_LONG']) + tuple(self.dict_order['BUY_SHORT'])
+
+    def UpdateTuple(self, data):
+        gubun, data = data
+        if gubun == '잔고갱신':
+            self.UpdateJango(data)
+        elif gubun == '주문확인':
+            code, c = data
+            self.dict_curc[code] = c
+            self.OrderTimeControl(code)
+        elif gubun == '저가대비고가등락율':
+            self.SetLeverage(data)
+        elif gubun == '관심진입':
+            if data in self.dict_order['SELL_LONG']:
+                self.CancelOrder(data, 'SELL_LONG')
+            if data in self.dict_order['BUY_SHORT']:
+                self.CancelOrder(data, 'BUY_SHORT')
+        elif gubun == '관심이탈':
+            if data in self.dict_order['BUY_LONG']:
+                self.CancelOrder(data, 'BUY_LONG')
+            if data in self.dict_order['SELL_SHORT']:
+                self.CancelOrder(data, 'SELL_SHORT')
+        elif gubun == '설정변경':
+            self.dict_set = data
+
+    def UpdateString(self, data):
+        if data == '체결목록':
+            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
+            self.teleQ.put(df_cj) if len(df_cj) > 0 else self.teleQ.put('현재는 체결목록이 없습니다.')
+        elif data == '거래목록':
+            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+            self.teleQ.put(df_td) if len(df_td) > 0 else self.teleQ.put('현재는 거래목록이 없습니다.')
+        elif data == '잔고평가':
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            self.teleQ.put(('잔고목록', df_jg)) if len(df_jg) > 0 else self.teleQ.put('현재는 잔고목록이 없습니다.')
+        elif data == '잔고청산':
+            self.JangoCheongsan('수동')
+        elif data == '프로세스종료':
+            self.SysExit()
 
     def UpdateJango(self, data):
         종목코드, 현재가 = data
@@ -519,6 +477,25 @@ class BinanceTrader:
             for code, gubun in modify_list:
                 self.ModifyOrder(code, gubun)
 
+    def SetLeverage(self, dict_dlhp):
+        if not self.dict_set['코인모의투자']:
+            for code in self.dict_info:
+                try:
+                    leverage = self.GetLeverage(dict_dlhp[code][1])
+                    self.dict_lvrg[code] = leverage
+                    if not self.dict_set['코인모의투자']:
+                        self.binance.futures_change_leverage(symbol=code, leverage=leverage)
+                except:
+                    pass
+
+    def GetLeverage(self, dlhp):
+        leverage = 1
+        for min_area, max_area, lvrg in self.dict_set['바이낸스선물변동레버리지값']:
+            if min_area <= dlhp < max_area:
+                leverage = lvrg
+                break
+        return leverage
+
     def GetChejanLastValue(self, code, gubun):
         return [v for v in self.dict_cj.values() if v['종목명'] == code and (v['주문구분'] == gubun or v['주문구분'] == f'{gubun}_REG')][-1]
 
@@ -549,24 +526,6 @@ class BinanceTrader:
                 주문번호, 주문가격 = last_value['주문번호'], last_value['주문가격']
                 self.CreateOrder(f'{주문구분}_CANCEL', 종목코드, 주문가격, 미체결수량, 주문번호, 현재시간, False, 0, None)
                 self.CreateOrder(주문구분, 종목코드, 정정가격, 미체결수량, '', 현재시간, False, 정정횟수, None)
-
-    def SetLeverage(self, dict_dlhp):
-        for code in self.dict_info:
-            try:
-                leverage = self.GetLeverage(dict_dlhp[code][1])
-                self.dict_lvrg[code] = leverage
-                if not self.dict_set['코인모의투자']:
-                    self.binance.futures_change_leverage(symbol=code, leverage=leverage)
-            except:
-                pass
-
-    def GetLeverage(self, dlhp):
-        leverage = 1
-        for min_area, max_area, lvrg in self.dict_set['바이낸스선물변동레버리지값']:
-            if min_area <= dlhp < max_area:
-                leverage = lvrg
-                break
-        return leverage
 
     def JangoCheongsan(self, gubun):
         self.dict_bool['코인잔고청산'] = True
@@ -602,7 +561,7 @@ class BinanceTrader:
                         else:
                             self.UpdateChegeollist(dt, 종목코드, 'BUY_SHORT_REG', 보유수량, 0, 보유수량, 0, dt[:14], 현재가, orderId)
                             self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [BUY_SHORT_REG] {종목코드} | {현재가} | {보유수량}'))
-                    time.sleep(0.3)
+                    qtest_qwait(0.3)
             if self.dict_set['코인알림소리']:
                 self.soundQ.put(f'코인 {gubun} 전략 잔고청산 주문을 전송하였습니다.')
             self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 실행 알림 - {gubun} 전략 잔고청산 주문 완료'))
@@ -613,8 +572,13 @@ class BinanceTrader:
         if not self.dict_set['코인모의투자']:
             self.WebProcessKill()
         self.SaveDayData()
-        time.sleep(5)
+        qtest_qwait(5)
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 종료'))
+
+    def WebProcessKill(self):
+        if self.ws_thread:
+            self.ws_thread.stop()
+            self.ws_thread.terminate()
 
     def SaveDayData(self):
         con = sqlite3.connect(DB_TRADELIST)
@@ -625,6 +589,33 @@ class BinanceTrader:
             self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
             if self.dict_set['코인알림소리']: self.soundQ.put('일별실현손익를 저장하였습니다.')
             self.soundQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료'))
+
+    def UpdateUserData(self, data):
+        if data['e'] == 'ACCOUNT_UPDATE':
+            try:
+                data = data['a']
+                self.dict_intg['추정예탁자산'] = float(data['B'][0]['wb'])
+                self.dict_intg['예수금'] = float(data['B'][0]['cw'])
+            except Exception as e:
+                self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - 웹소켓 user {e}'))
+        elif data['e'] == 'ORDER_TRADE_UPDATE':
+            try:
+                data = data['o']
+                code = data['s']
+                p = f"{data['S']}_{self.dict_pos[code]}"
+                if data['X'] == 'CANCELED':
+                    p = f'{p}_CANCEL'
+                oc = float(data['q'])
+                cc = float(data['l'])
+                mc = round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
+                cp = float(data['L'])
+                op = float(data['p'])
+                on = int(data['i'])
+            except:
+                self.logger.error('바이낸스 홈페이지 주문은 기록되지 않습니다.')
+            else:
+                if cc > 0 or 'CANCEL' in p:
+                    self.UpdateChejanData(p, code, oc, cc, mc, cp, op, on)
 
     def GetIndex(self):
         index = str_ymdhmsf(now_utc())

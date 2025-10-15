@@ -18,8 +18,8 @@ class NumericItem(QTableWidgetItem):
 class UpdateTablewidget:
     def __init__(self, ui):
         """
-        windowQ, soundQ, ui.queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
+           0        1      2       3      4       5      6      7       8         9         10     11     12      13       14
         """
         self.ui = ui
         self.dict_arry = {}
@@ -140,7 +140,7 @@ class UpdateTablewidget:
             tableWidget = self.ui.hj_tableWidgett_01
         elif gubun in (ui_num['C호가체결'], ui_num['S호가체결']):
             if not self.ui.dialog_hoga.isVisible():
-                self.ui.wdzservQ.put(('receiver', ('호가종목코드', '000000')))
+                self.ui.wdzservQ.put(('agent', ('호가종목코드', '000000')))
                 if self.ui.CoinReceiverProcessAlive():  self.ui.creceivQ.put('000000')
                 return
             tableWidget = self.ui.hc_tableWidgett_01

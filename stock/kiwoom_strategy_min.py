@@ -487,7 +487,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
         데이터길이 = len(self.dict_arry[종목코드])
         self.indexn = 데이터길이 - 1
 
-        if self.dict_condition and 전략연산 and 체결시간 < self.dict_set['주식전략종료시간']:
+        if self.dict_condition and 전략연산:
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
@@ -495,9 +495,9 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                     exec(v)
                 except:
                     print_exc()
-                    self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
+                    self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
 
-        if 체결강도평균_ != 0 and not (매수잔량5 == 0 and 매도잔량5 == 0) and 전략연산 and 체결시간 < self.dict_set['주식전략종료시간']:
+        if 체결강도평균_ != 0 and not (매수잔량5 == 0 and 매도잔량5 == 0) and 전략연산:
             if 종목코드 in self.dict_jg:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
@@ -541,7 +541,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                             exec(self.buystrategy)
                         except:
                             print_exc()
-                            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
                 elif C:
                     매수 = False
                     분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
@@ -580,7 +580,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                             exec(self.sellstrategy)
                         except:
                             print_exc()
-                            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
+                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
                 elif C or E or F:
                     if 강제청산:
                         매도 = True
@@ -608,8 +608,8 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
             }
 
         if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
-            self.kwzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드])))
+            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드])))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))

@@ -7,10 +7,10 @@ from utility.setting import DICT_SET, ui_num
 from utility.static import threading_timer, get_logger
 
 
-class ZmqRecv(Thread):
-    def __init__(self, sreceivQ):
+class ZmqRecvFromAgent(Thread):
+    def __init__(self, sagentQ):
         super().__init__()
-        self.sreceivQ = sreceivQ
+        self.sagentQ = sagentQ
         zctx = zmq.Context()
         self.sock = zctx.socket(zmq.SUB)
         self.sock.connect('tcp://localhost:5777')
@@ -20,40 +20,43 @@ class ZmqRecv(Thread):
         while True:
             msg  = self.sock.recv_string()
             data = self.sock.recv_pyobj()
-            self.sreceivQ.put((msg, data))
+            self.sagentQ.put((msg, data))
 
 
-class FutureReceiverClient:
+class KiwoomAgentClient:
     def __init__(self, qlist):
         """
-        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ
-                0            1              2             3           4
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
+                0            1             2            3
         """
-        self.kwzservQ    = qlist[0]
-        self.sreceivQ    = qlist[1]
+        self.mgzservQ    = qlist[0]
+        self.sagentQ     = qlist[1]
         self.straderQ    = qlist[2]
-        self.sstgQ       = qlist[3]
+        self.sstgQs      = qlist[3]
         self.dict_set    = DICT_SET
 
         self.logger      = get_logger(self.__class__.__name__)
 
+        self.dict_sgbn   = {}
         self.dict_jgdt   = {}
-        self.dict_info   = {}
 
         self.tuple_jango = ()
         self.tuple_order = ()
 
-        self.zmqrecv = ZmqRecv(self.sreceivQ)
+        self.zmqrecv = ZmqRecvFromAgent(self.sagentQ)
         self.zmqrecv.daemon = True
         self.zmqrecv.start()
 
         self.Mainloop()
 
     def Mainloop(self):
-        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 리시버 시작')))
-        self.logger.info('리시버 시작 완료')
+        text = '주식 시스템를 시작하였습니다.'
+        if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', text))
+        self.mgzservQ.put(('tele', text))
+        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 에이전트 시작')))
+        self.logger.info('에이전트 시작 완료')
         while True:
-            data = self.sreceivQ.get()
+            data = self.sagentQ.get()
             if type(data) == tuple:
                 self.UpdateTuple(data)
             elif type(data) == str:
@@ -63,6 +66,9 @@ class FutureReceiverClient:
         gubun, data = data
         if gubun == 'tickdata':
             self.UpdateTickData(data)
+        elif gubun == 'focuscodes':
+            for q in self.sstgQs:
+                q.put(data)
         elif gubun == 'logininfo':
             self.UpdateLoginInfo(data)
         elif gubun == '잔고목록':
@@ -76,12 +82,12 @@ class FutureReceiverClient:
         if len(data) == 3:
             code, c, dt = data
             if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
-                self.straderQ.put(('잔고갱신', (code, c)))
+                self.straderQ.put((code, c))
                 self.dict_jgdt[code] = dt
         else:
             try:
                 code, c = data[-3] if self.dict_set['주식타임프레임'] else data[-4], data[1]
-                self.sstgQ.put(data)
+                self.sstgQs[self.dict_sgbn[code]].put(data)
                 if self.dict_set['주식타임프레인']:
                     if code in self.tuple_jango or code in self.tuple_order:
                         self.straderQ.put(('주문확인', (code, c)))
@@ -92,15 +98,17 @@ class FutureReceiverClient:
                 self.logger.error('리시버 공유모드는 클라이언트부터 실행하고 서버를 마지막에 실행해야합니다.')
 
     def UpdateLoginInfo(self, data):
-        self.dict_info = data
-        dict_name = {code: self.dict_info[code]['종목명'] for code in self.dict_info}
-        dict_code = {self.dict_info[code]['종목명']: code for code in self.dict_info}
-        self.kwzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
-        self.straderQ.put(('종목정보', self.dict_info))
-        self.sstgQ.put(('종목정보', self.dict_info))
+        tuple_kosd, self.dict_sgbn, dict_name, dict_code = data
+        self.mgzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
+        self.straderQ.put(('종목구분번호', self.dict_sgbn))
+        for q in self.sstgQs:
+            q.put(('코스닥목록', tuple_kosd))
 
     def UpdateString(self, data):
         if data == '프로세스종료':
-            threading_timer(180, self.sreceivQ.put, '프로세스종료실행')
+            threading_timer(180, self.sagentQ.put, '프로세스종료실행')
         elif data == '프로세스종료실행':
-            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료')))
+            for q in self.sstgQs:
+                q.put('프로세스종료')
+            self.straderQ.put('프로세스종료')
+            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 에이전트 종료')))

@@ -17,11 +17,11 @@ from utility.static import now, timedelta_sec, GetUvilower5, GetKiwoomPgSgSp, Ge
 class KiwoomStrategyTick:
     def __init__(self, gubun, qlist):
         """
-        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQs, self.kiwoomQ
-                0            1              2             3           4
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
+                0            1             2            3
         """
         self.gubun            = gubun
-        self.kwzservQ         = qlist[0]
+        self.mgzservQ         = qlist[0]
         self.straderQ         = qlist[2]
         self.sstgQs           = qlist[3]
         self.sstgQ            = qlist[3][self.gubun]
@@ -112,7 +112,7 @@ class KiwoomStrategyTick:
 
     def Mainloop(self):
         if self.gubun == 7:
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
+            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
             self.logger.info('전략연산 시작 완료')
         while True:
             data = self.sstgQ.get()
@@ -167,16 +167,16 @@ class KiwoomStrategyTick:
     def UpdateString(self, data):
         if data == '매수전략중지':
             self.buystrategy = None
-            self.kwzservQ.put(('tele', '주식 매수전략 중지 완료'))
+            self.mgzservQ.put(('tele', '주식 매수전략 중지 완료'))
         elif data == '매도전략중지':
             self.sellstrategy = None
-            self.kwzservQ.put(('tele', '주식 매도전략 중지 완료'))
+            self.mgzservQ.put(('tele', '주식 매도전략 중지 완료'))
         elif data == '프로파일링결과':
             if self.gubun == 0:
                 self.pr.print_stats(sort='cumulative')
         elif data == '프로세스종료':
             time.sleep(5)
-            self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
+            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
 
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, \
@@ -470,10 +470,10 @@ class KiwoomStrategyTick:
         데이터길이 = len(self.dict_arry[종목코드])
         self.indexn = 데이터길이 - 1
 
-        if 데이터길이 > 1800 and (self.dict_set['리시버공유'] == 2 or not self.dict_set['주식데이터저장']):
+        if 데이터길이 > 1800 and (self.dict_set['에이전트공유'] == 2 or not self.dict_set['주식데이터저장']):
             self.dict_arry[종목코드] = np.delete(self.dict_arry[종목코드], 0, 0)
 
-        if self.dict_condition and 체결시간 < self.dict_set['주식전략종료시간']:
+        if self.dict_condition:
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
@@ -481,9 +481,9 @@ class KiwoomStrategyTick:
                     exec(v)
                 except:
                     print_exc()
-                    self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
+                    self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
 
-        if 체결강도평균_ != 0 and not (매수잔량5 == 0 and 매도잔량5 == 0) and 체결시간 < self.dict_set['주식전략종료시간']:
+        if 체결강도평균_ != 0 and not (매수잔량5 == 0 and 매도잔량5 == 0):
             if 종목코드 in self.dict_jg:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
@@ -527,7 +527,7 @@ class KiwoomStrategyTick:
                             exec(self.buystrategy)
                         except:
                             print_exc()
-                            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
                 elif C:
                     매수 = False
                     분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
@@ -566,7 +566,7 @@ class KiwoomStrategyTick:
                             exec(self.sellstrategy)
                         except:
                             print_exc()
-                            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
+                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
                 elif C or E or F:
                     if 강제청산:
                         매도 = True
@@ -594,11 +594,11 @@ class KiwoomStrategyTick:
             }
 
         if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
-            self.kwzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드][-1800:, :])))
+            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드][-1800:, :])))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
 
     def SetBuyCount(self, 분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 전일비, 회전율, 전일동시간비):
         if self.dict_set['주식비중조절'][0] == 0:
@@ -720,7 +720,7 @@ class KiwoomStrategyTick:
         if self.dict_gj:
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
-            self.kwzservQ.put(('window', (ui_num[f'S관심종목'], self.gubun, df_gj)))
+            self.mgzservQ.put(('window', (ui_num[f'S관심종목'], self.gubun, df_gj)))
         if self.dict_hilo:
             self.dict_hilo = {k: v for k, v in self.dict_hilo.copy().items() if k in self.dict_jg}
 
@@ -758,10 +758,10 @@ class KiwoomStrategyTick:
                 df.set_index('index', inplace=True)
                 df.to_sql(code, con, if_exists='append', chunksize=1000)
                 text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... [{self.gubun + 1}]{i + 1}/{last}'
-                self.kwzservQ.put(('window', (ui_num['S단순텍스트'], text)))
+                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], text)))
             save_time = (now() - start).total_seconds()
             text = f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'
-            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], text)))
+            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], text)))
         con.close()
 
         if self.gubun != 7:

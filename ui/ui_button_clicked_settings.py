@@ -23,13 +23,13 @@ def setting_load_01(ui):
         ui.sj_main_comBox_03.setCurrentText('격리' if df['바이낸스선물마진타입'][0] == 'ISOLATED' else '교차')
         ui.sj_main_comBox_04.setCurrentText('단방향' if df['바이낸스선물포지션'][0] == 'false' else '양방향')
         ui.sj_main_cheBox_07.setChecked(True) if df['버전업'][0] else ui.sj_main_cheBox_07.setChecked(False)
-        if df['리시버공유'][0] == 0:
+        if df['에이전트공유'][0] == 0:
             ui.sj_main_cheBox_08.setChecked(False)
             ui.sj_main_cheBox_09.setChecked(False)
-        elif df['리시버공유'][0] == 1:
+        elif df['에이전트공유'][0] == 1:
             ui.sj_main_cheBox_08.setChecked(True)
             ui.sj_main_cheBox_09.setChecked(False)
-        elif df['리시버공유'][0] == 2:
+        elif df['에이전트공유'][0] == 2:
             ui.sj_main_cheBox_08.setChecked(False)
             ui.sj_main_cheBox_09.setChecked(True)
     else:
@@ -267,7 +267,7 @@ def setting_save_01(ui):
     if ui.proc_query.is_alive():
         query = f"UPDATE main SET 증권사 = '{sg}', 주식리시버 = {sr}, 주식트레이더 = {st}, 주식데이터저장 = {ss}, " \
                 f"거래소 = '{cg}', 코인리시버 = {cr}, 코인트레이더 = {ct}, 코인데이터저장 = {cs}, " \
-                f"바이낸스선물마진타입 = '{mt}', 바이낸스선물포지션 = '{pt}', '버전업' = {vu}, '리시버공유' = {rg}"
+                f"바이낸스선물마진타입 = '{mt}', 바이낸스선물포지션 = '{pt}', '버전업' = {vu}, '에이전트공유' = {rg}"
         ui.queryQ.put(('설정디비', query))
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -282,7 +282,7 @@ def setting_save_01(ui):
     ui.dict_set['바이낸스선물마진타입'] = mt
     ui.dict_set['바이낸스선물포지션'] = pt
     ui.dict_set['버전업'] = vu
-    ui.dict_set['리시버공유'] = rg
+    ui.dict_set['에이전트공유'] = rg
 
     if '키움증권' in ui.dict_set['증권사']:
         ui.sj_stock_label_03.setText(

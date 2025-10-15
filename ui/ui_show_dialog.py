@@ -104,7 +104,7 @@ def show_dialog_web(ui, show, code):
 
 
 def show_dialog_hoga(ui, show, coin, code):
-    if ui.dict_set['리시버공유'] == 2: return
+    if ui.dict_set['에이전트공유'] == 2: return
     if show and not ui.dialog_hoga.isVisible():
         ui.dialog_hoga.show()
     if ui.dialog_hoga.isVisible():
@@ -149,7 +149,7 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
                 if not ui.dict_set['코인타임프레임'] and ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('차트종목코드', code))
             else:
                 ui.wdzservQ.put(('strategy', ('차트종목코드', code)))
-                if not ui.dict_set['주식타임프레임']: ui.wdzservQ.put(('receiver', ('차트종목코드', code)))
+                if not ui.dict_set['주식타임프레임']: ui.wdzservQ.put(('agent', ('차트종목코드', code)))
         else:
             ui.ChartClear()
             cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
@@ -380,11 +380,11 @@ def show_order(ui):
 
 def put_hoga_code(ui, coin, code):
     if coin:
-        ui.wdzservQ.put(('receiver', ('호가종목코드', '000000')))
+        ui.wdzservQ.put(('agent', ('호가종목코드', '000000')))
         if ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('호가종목코드', code))
     else:
         if ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('호가종목코드', '000000'))
-        ui.wdzservQ.put(('receiver', ('호가종목코드', code)))
+        ui.wdzservQ.put(('agent', ('호가종목코드', code)))
 
 
 def chart_moneytop_list(ui):

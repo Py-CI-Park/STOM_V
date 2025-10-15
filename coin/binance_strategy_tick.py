@@ -427,7 +427,7 @@ class BinanceStrategyTick:
         데이터길이 = len(self.dict_arry[종목코드])
         self.indexn = 데이터길이 - 1
 
-        if self.dict_condition and 체결시간 < self.dict_set['코인전략종료시간']:
+        if self.dict_condition:
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
@@ -437,7 +437,7 @@ class BinanceStrategyTick:
                     print_exc()
                     self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류'))
 
-        if 체결강도평균_ != 0 and 체결시간 < self.dict_set['코인전략종료시간']:
+        if 체결강도평균_ != 0:
             if 종목코드 in self.dict_jg:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn

@@ -1,34 +1,40 @@
 import json
 import uuid
 import asyncio
-import pyupbit
 import websockets
-from multiprocessing import Queue
+from PyQt5.QtCore import QThread, pyqtSignal
 from utility.static import get_logger
 
 
-class WebSocketReceiver:
-    def __init__(self, codes, q, debug=False):
-        self.codes      = codes
-        self.q          = q
-        self.debug      = debug
-        self.url        = 'wss://api.upbit.com/websocket/v1'
-        self.wsk_trader = None
-        self.wsk_order  = None
-        self.con_trader = False
-        self.con_order  = False
+class WebSocketReceiver(QThread):
+    signal1 = pyqtSignal(dict)
+    signal2 = pyqtSignal(dict)
 
-        self.logger     = get_logger(self.__class__.__name__)
+    def __init__(self, codes):
+        super().__init__()
+        self.codes       = codes
+        self.loop        = None
+        self.wsk_trade   = None
+        self.wsk_order   = None
+        self.con_trade   = False
+        self.con_order   = False
+        self.url         = 'wss://api.upbit.com/websocket/v1'
+        self.logger      = get_logger(self.__class__.__name__)
 
-        loop = asyncio.get_event_loop()
-        asyncio.ensure_future(self.run_trader())
-        asyncio.ensure_future(self.run_order())
-        loop.run_forever()
+    def run(self):
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self._run())
 
-    async def run_trader(self):
+    async def _run(self):
+        trader_task = asyncio.create_task(self.run_trade())
+        order_task = asyncio.create_task(self.run_order())
+        await asyncio.gather(trader_task, order_task)
+
+    async def run_trade(self):
         while True:
             try:
-                if not self.con_trader:
+                if not self.con_trade:
                     await self.connect_trader()
                 await self.receive_ticker()
             except Exception as e:
@@ -48,47 +54,41 @@ class WebSocketReceiver:
             await self.disconnect_order()
 
     async def connect_trader(self):
-        self.wsk_trader = await websockets.connect(self.url, ping_interval=60)
-        self.con_trader = True
+        self.con_trade = True
+        self.wsk_trade = await websockets.connect(self.url, ping_interval=60)
         data = [{'ticket': str(uuid.uuid4())[:6]}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
-        await self.wsk_trader.send(json.dumps(data))
+        await self.wsk_trade.send(json.dumps(data))
 
     async def connect_order(self):
-        self.wsk_order = await websockets.connect(self.url, ping_interval=60)
         self.con_order = True
+        self.wsk_order = await websockets.connect(self.url, ping_interval=60)
         data = [{'ticket': str(uuid.uuid4())[:6]}, {'type': 'orderbook', 'codes': self.codes, 'isOnlyRealtime': True}]
         await self.wsk_order.send(json.dumps(data))
 
     async def receive_ticker(self):
-        while self.con_trader:
-            data = await self.wsk_trader.recv()
+        while self.con_trade:
+            data = await self.wsk_trade.recv()
             data = json.loads(data)
-            if not self.debug:
-                self.q.put(data)
-            else:
-                self.logger.info(data)
+            self.signal1.emit(data)
 
     async def receive_order(self):
         while self.con_order:
             data = await self.wsk_order.recv()
             data = json.loads(data)
-            if not self.debug:
-                self.q.put(data)
-            else:
-                self.logger.info(data)
+            self.signal2.emit(data)
 
     async def disconnect_trader(self):
-        self.con_trader = False
-        await self.wsk_trader.close()
+        self.con_trade = False
+        if self.wsk_trade is not None:
+            await self.wsk_trade.close()
         await asyncio.sleep(5)
 
     async def disconnect_order(self):
         self.con_order = False
-        await self.wsk_order.close()
+        if self.wsk_order is not None:
+            await self.wsk_order.close()
         await asyncio.sleep(5)
 
-
-if __name__ == '__main__':
-    codes_ = pyupbit.get_tickers(fiat="KRW")
-    q_     = Queue()
-    WebSocketReceiver(codes_, q_, debug=True)
+    def stop(self):
+        if self.loop and self.loop.is_running():
+            self.loop.stop()

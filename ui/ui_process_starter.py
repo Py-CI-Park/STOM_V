@@ -29,9 +29,9 @@ def process_starter(ui):
 
 def UpdateWindowTitle(ui):
     text = 'STOM'
-    if ui.dict_set['리시버공유'] == 1:
+    if ui.dict_set['에이전트공유'] == 1:
         text = f'{text} Server'
-    elif ui.dict_set['리시버공유'] == 2:
+    elif ui.dict_set['에이전트공유'] == 2:
         text = f'{text} Client'
     if ui.dict_set['거래소'] == '바이낸스선물' and ui.dict_set['코인트레이더']:
         text = f'{text} | 바이낸스선물'
@@ -44,7 +44,7 @@ def UpdateWindowTitle(ui):
     if ui.showQsize:
         beqsize = sum((stq.qsize() for stq in ui.back_eques)) if ui.back_eques else 0
         bstqsize = sum((ctq.qsize() for ctq in ui.back_sques)) if ui.back_sques else 0
-        text = f'{text} | sreceivQ[{ui.srqsize}] | straderQ[{ui.stqsize}] | sstrateyQ[{ui.ssqsize}] | ' \
+        text = f'{text} | sagentQ[{ui.saqsize}] | straderQ[{ui.stqsize}] | sstrateyQ[{ui.ssqsize}] | ' \
                f'creceivQ[{ui.creceivQ.qsize()}] | ctraderQ[{ui.ctraderQ.qsize()}] | cstrateyQ[{ui.cstgQ.qsize()}] | ' \
                f'windowQ[{ui.windowQ.qsize()}] | queryQ[{ui.queryQ.qsize()}] | chartQ[{ui.chartQ.qsize()}] | ' \
                f'hogaQ[{ui.hogaQ.qsize()}] | soundQ[{ui.soundQ.qsize()}] | backegQ[{beqsize}] | backstQ[{bstqsize}] | ' \

@@ -16,10 +16,10 @@ from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, 
 class FutureStrategyTick:
     def __init__(self, qlist):
         """
-        self.kwzservQ, self.sreceivQ, self.straderQ, self.sstgQ, self.futureQ
-                0            1              2             3           4
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
+                0            1             2            3
         """
-        self.kwzservQ         = qlist[0]
+        self.mgzservQ         = qlist[0]
         self.straderQ         = qlist[2]
         self.sstgQ            = qlist[3]
         self.dict_set         = DICT_SET
@@ -48,6 +48,11 @@ class FutureStrategyTick:
         self.indexn           = 0
         self.indexb           = 0
         self.jgrv_count       = 0
+
+        if self.dict_set['전략연산프로파일링']:
+            import cProfile
+            self.pr = cProfile.Profile()
+            self.pr.enable()
 
         self.UpdateStringategy()
         self.Mainloop()
@@ -98,7 +103,7 @@ class FutureStrategyTick:
                 self.logger.info(self.indicator)
 
     def Mainloop(self):
-        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
+        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
         self.logger.info('전략연산 시작 완료')
         while True:
             data = self.sstgQ.get()
@@ -143,14 +148,16 @@ class FutureStrategyTick:
             self.UpdateStringategy()
         elif gubun == '종목정보':
             self.dict_info = data
+        elif data == '프로파일링결과':
+            self.pr.print_stats(sort='cumulative')
 
     def UpdateString(self, data):
         if data == '매수전략중지':
             self.buystrategy = None
-            self.kwzservQ.put(('tele', '해선 매수전략 중지 완료'))
+            self.mgzservQ.put(('tele', '해선 매수전략 중지 완료'))
         elif data == '매도전략중지':
             self.sellstrategy = None
-            self.kwzservQ.put(('tele', '해선 매도전략 중지 완료'))
+            self.mgzservQ.put(('tele', '해선 매도전략 중지 완료'))
         elif data == '프로세스종료':
             self.SysExit()
 
@@ -420,7 +427,7 @@ class FutureStrategyTick:
         데이터길이 = len(self.dict_arry[종목코드])
         self.indexn = 데이터길이 - 1
 
-        if self.dict_condition and 체결시간 < self.dict_set['주식전략종료시간']:
+        if self.dict_condition:
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
@@ -428,9 +435,9 @@ class FutureStrategyTick:
                     exec(v)
                 except:
                     print_exc()
-                    self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
+                    self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
 
-        if 체결강도평균_ != 0 and 체결시간 < self.dict_set['주식전략종료시간']:
+        if 체결강도평균_ != 0:
             if 종목코드 in self.dict_jg:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
@@ -481,7 +488,7 @@ class FutureStrategyTick:
                             exec(self.buystrategy)
                         except:
                             print_exc()
-                            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
                 elif D or E:
                     BUY_LONG, SELL_SHORT = False, False
                     분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
@@ -535,7 +542,7 @@ class FutureStrategyTick:
                             exec(self.sellstrategy)
                         except:
                             print_exc()
-                            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
+                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
                 elif D or E or H or J or K or L or M or N:
                     if H or K or M:
                         SELL_LONG = True
@@ -570,11 +577,11 @@ class FutureStrategyTick:
             }
 
         if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
-            self.kwzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드])))
+            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드])))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
 
     def SetBuyCount(self, 분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도):
         if self.dict_set['주식비중조절'][0] == 0:
@@ -690,7 +697,7 @@ class FutureStrategyTick:
         if self.dict_gj:
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
-            self.kwzservQ.put(('window', (ui_num[f'S관심종목'], df_gj)))
+            self.mgzservQ.put(('window', (ui_num[f'S관심종목'], df_gj)))
         if self.dict_hilo:
             self.dict_hilo = {k: v for k, v in self.dict_hilo.copy().items() if k in self.dict_jg}
 
@@ -698,7 +705,7 @@ class FutureStrategyTick:
         if self.dict_set['주식데이터저장']:
             self.SaveData()
         time.sleep(5)
-        self.kwzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
+        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
 
     def SaveData(self):
         if self.dict_set['주식타임프레임']:
@@ -728,10 +735,10 @@ class FutureStrategyTick:
                 df.set_index('index', inplace=True)
                 df.to_sql(code, con, if_exists='append', chunksize=1000)
                 text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... {i + 1}/{last}'
-                self.kwzservQ.put(('window', (ui_num['S단순텍스트'], text)))
+                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], text)))
             save_time = (now() - start).total_seconds()
             text = f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'
-            self.kwzservQ.put(('window', (ui_num['S단순텍스트'], text)))
+            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], text)))
         con.close()
 
         self.logger.info('데이터 저장 완료')

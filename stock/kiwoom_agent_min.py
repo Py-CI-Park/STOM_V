@@ -1,17 +1,15 @@
 import os
 import sys
-from kiwoom_receiver_tick import KiwoomReceiverTick
+from kiwoom_agent_tick import KiwoomAgentTick
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num
 from utility.static import now, roundfigure_upper5, GetSangHahanga
 
 
-class KiwoomReceiverMin(KiwoomReceiverTick):
-    def UpdateTickData(self, data):
-        code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp = data
-
-        if self.dict_set['리시버공유'] == 1:
-            self.recvservQ.put(('tickdata', (code, c, dt)))
+class KiwoomAgentMin(KiwoomAgentTick):
+    def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
+        if self.dict_set['에이전트공유'] == 1:
+            self.agzservQ.put(('tickdata', (code, c, dt)))
 
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
             self.straderQ.put(('잔고갱신', (code, c)))
@@ -42,7 +40,8 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
         asks += asks_
 
         self.dict_hgbs[code] = (csp, cbp)
-        self.dict_data[code] = [c, o, h, low, per, dm, ch, dmp, jvp, vrp, jsvp, sgta, rf, bids, asks, self.dict_vipr[code][1], self.dict_vipr[code][2], self.dict_vipr[code][-1], mo, mh, ml]
+        self.dict_data[code] = [c, o, h, low, per, dm, ch, dmp, jvp, vrp, jsvp, sgta, rf, bids, asks,
+                                self.dict_vipr[code][1], self.dict_vipr[code][2], self.dict_vipr[code][-1], mo, mh, ml]
 
         if self.hoga_code == code:
             bids, asks = self.list_hgdt[2:4]
@@ -50,14 +49,14 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
             if asks_ > 0: asks += asks_
             self.list_hgdt[2:4] = bids, asks
             if dt > self.list_hgdt[0]:
-                self.kwzservQ.put(('hoga', (self.dict_name[code], c, per, sgta, self.dict_vipr[code][2], o, h, low)))
-                if asks > 0: self.kwzservQ.put(('hoga', (-asks, ch)))
-                if bids > 0: self.kwzservQ.put(('hoga', (bids, ch)))
+                self.mgzservQ.put(('hoga', (self.dict_name[code], c, per, sgta, self.dict_vipr[code][2], o, h, low)))
+                if asks > 0: self.mgzservQ.put(('hoga', (-asks, ch)))
+                if bids > 0: self.mgzservQ.put(('hoga', (bids, ch)))
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, data):
-        dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, receivetime, lastprice = data
+    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount,
+                       code, name, receivetime, lastprice):
         mm     = 0
         dm     = 0
         send   = False
@@ -112,22 +111,24 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
             logt  = now() if self.int_logt < dt_min else 0
             gsjm  = 1 if code in self.list_gsjm else 0
             dt_   = self.dict_tmdt[code][0]
-            data  = (dt_,) + tuple(self.dict_data[code]) + (mm, hlp) + hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + (hgjrt, gsjm, code, name, logt, send)
+            data  = (dt_,) + tuple(self.dict_data[code]) + (mm, hlp) + \
+                hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
+                (hgjrt, gsjm, code, name, logt, send)
 
             self.sstgQs[self.dict_sgbn[code]].put(data)
             if send:
                 if code in self.tuple_order:
                     self.straderQ.put(('주문확인', (code, c)))
 
-                if self.dict_set['리시버공유'] == 1:
-                    self.recvservQ.put(('tickdata', data))
+                if self.dict_set['에이전트공유'] == 1:
+                    self.agzservQ.put(('tickdata', data))
 
                 self.dict_tmdt[code] = [dt_min, dm]
                 self.dict_data[code][13:15] = [0, 0]
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:
@@ -143,4 +144,4 @@ class KiwoomReceiverMin(KiwoomReceiverTick):
             else:
                 shg, hhg = GetSangHahanga(code in self.tuple_kosd, lastprice, self.int_hgtime)
                 self.dict_sghg[code] = (shg, hhg)
-            self.kwzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + (shg, hhg)))
+            self.mgzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + (shg, hhg)))

@@ -40,7 +40,7 @@ class DrawRealChart:
                 if not self.ui.dict_set['코인타임프레임'] and self.ui.CoinReceiverProcessAlive(): self.ui.creceivQ.put(('차트종목코드', None))
             else:
                 self.ui.wdzservQ.put(('strategy', ('차트종목코드', None)))
-                if not self.ui.dict_set['주식타임프레임']: self.ui.wdzservQ.put(('receiver', ('차트종목코드', None)))
+                if not self.ui.dict_set['주식타임프레임']: self.ui.wdzservQ.put(('agent', ('차트종목코드', None)))
             return
 
         if self.ui.ctpg_name != name:

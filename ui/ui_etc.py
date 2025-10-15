@@ -23,7 +23,7 @@ def update_image(ui, data):
 
 
 def update_sqsize(ui, data):
-    ui.srqsize, ui.stqsize, ui.ssqsize = data
+    ui.saqsize, ui.stqsize, ui.ssqsize = data
 
 
 @thread_decorator

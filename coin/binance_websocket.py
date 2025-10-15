@@ -1,27 +1,32 @@
-import re
 import asyncio
-import binance
-from multiprocessing import Queue
+from PyQt5.QtCore import QThread, pyqtSignal
 from binance import AsyncClient, BinanceSocketManager
 from utility.static import get_logger
 
 
-class WebSocketReceiver:
-    def __init__(self, codes, q, debug=False):
-        self.codes     = codes
-        self.q         = q
-        self.debug     = debug
-        self.wsk_trade = None
-        self.wsk_order = None
-        self.con_trade = False
-        self.con_order = False
+class WebSocketReceiver(QThread):
+    signal1 = pyqtSignal(dict)
+    signal2 = pyqtSignal(dict)
 
-        self.logger    = get_logger(self.__class__.__name__)
+    def __init__(self, codes):
+        super().__init__()
+        self.codes       = codes
+        self.loop        = None
+        self.wsk_trade   = None
+        self.wsk_order   = None
+        self.con_trade   = False
+        self.con_order   = False
+        self.logger      = get_logger(self.__class__.__name__)
 
-        loop = asyncio.get_event_loop()
-        asyncio.ensure_future(self.run_trade())
-        asyncio.ensure_future(self.run_order())
-        loop.run_forever()
+    def run(self):
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self._run())
+
+    async def _run(self):
+        trader_task = asyncio.create_task(self.run_trade())
+        order_task = asyncio.create_task(self.run_order())
+        await asyncio.gather(trader_task, order_task)
 
     async def run_trade(self):
         while True:
@@ -69,37 +74,41 @@ class WebSocketReceiver:
         async with self.wsk_trade as ws:
             while self.con_trade:
                 data = await ws.recv()
-                if not self.debug:
-                    self.q.put(['trade', data])
-                else:
-                    self.logger.info(data)
+                self.signal1.emit(data)
 
     async def receive_order(self):
         async with self.wsk_order as ws:
             while self.con_order:
                 data = await ws.recv()
-                if not self.debug:
-                    self.q.put(['depth', data])
-                else:
-                    self.logger.info(data)
+                self.signal2.emit(data)
+
+    def stop(self):
+        if self.loop and self.loop.is_running():
+            self.loop.stop()
 
 
-class WebSocketTrader:
-    def __init__(self, api_key, scret_key, q, debug=False):
-        self.api_key   = api_key
-        self.scret_key = scret_key
-        self.q         = q
-        self.debug     = debug
-        self.websocket = None
-        self.connected = False
+class WebSocketTrader(QThread):
+    signal1 = pyqtSignal(dict)
 
-        self.logger    = get_logger(self.__class__.__name__)
+    def __init__(self, api_key, scret_key):
+        super().__init__()
+        self.api_key     = api_key
+        self.scret_key   = scret_key
+        self.loop        = None
+        self.websocket   = None
+        self.connected   = False
+        self.logger      = get_logger(self.__class__.__name__)
 
-        loop = asyncio.get_event_loop()
-        asyncio.ensure_future(self.run())
-        loop.run_forever()
+    def run(self):
+        self.loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
+        self.loop.run_until_complete(self._run())
 
-    async def run(self):
+    async def _run(self):
+        trader_task = asyncio.create_task(self.run_user())
+        await asyncio.gather(trader_task)
+
+    async def run_user(self):
         while True:
             try:
                 if not self.connected:
@@ -121,19 +130,8 @@ class WebSocketTrader:
         async with self.websocket as ws:
             while self.connected:
                 data = await ws.recv()
-                if not self.debug:
-                    self.q.put(['user', data])
-                else:
-                    self.logger.info(data)
+                self.signal1.emit(data)
 
-
-if __name__ == '__main__':
-    binance = binance.Client()
-    data_   = binance.futures_ticker()
-    data_   = [x for x in data_ if re.search('USDT$', x['symbol']) is not None]
-    codes_  = []
-    for x in data_:
-        codes_.append(x['symbol'])
-
-    q_ = Queue()
-    WebSocketReceiver(codes_, q_, debug=True)
+    def stop(self):
+        if self.loop and self.loop.is_running():
+            self.loop.stop()

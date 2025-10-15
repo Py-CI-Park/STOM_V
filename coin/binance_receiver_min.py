@@ -1,11 +1,21 @@
 from coin.binance_receiver_tick import BinanceReceiverTick
 from utility.setting import ui_num
-from utility.static import now
+from utility.static import now, str_ymdhms_utc
 
 
 class BinanceReceiverMin(BinanceReceiverTick):
-    def UpdateTradeData(self, code, c, v, m, dt):
-        if self.dict_set['리시버공유'] == 1:
+    def UpdateTickData(self, data):
+        try:
+            data = data['data']
+            dt   = int(str_ymdhms_utc(data['T']))
+            code = data['s']
+            c    = float(data['p'])
+            v    = float(data['q'])
+            m    = data['m']
+        except:
+            return
+
+        if self.dict_set['에이전트공유'] == 1:
             self.recvservQ.put(('tickdata', (code, c, dt)))
 
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
@@ -64,7 +74,37 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, receivetime):
+    def UpdateHogaData(self, data):
+        try:
+            data = data['data']
+            dt   = int(str_ymdhms_utc(data['T']))
+            if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]):
+                return
+
+            code = data['s']
+            hoga_seprice = (
+                float(data['a'][9][0]), float(data['a'][8][0]), float(data['a'][7][0]), float(data['a'][6][0]), float(data['a'][5][0]),
+                float(data['a'][4][0]), float(data['a'][3][0]), float(data['a'][2][0]), float(data['a'][1][0]), float(data['a'][0][0])
+            )
+            hoga_buprice = (
+                float(data['b'][0][0]), float(data['b'][1][0]), float(data['b'][2][0]), float(data['b'][3][0]), float(data['b'][4][0]),
+                float(data['b'][5][0]), float(data['b'][6][0]), float(data['b'][7][0]), float(data['b'][8][0]), float(data['b'][9][0])
+            )
+            hoga_samount = (
+                float(data['a'][9][1]), float(data['a'][8][1]), float(data['a'][7][1]), float(data['a'][6][1]), float(data['a'][5][1]),
+                float(data['a'][4][1]), float(data['a'][3][1]), float(data['a'][2][1]), float(data['a'][1][1]), float(data['a'][0][1])
+            )
+            hoga_bamount = (
+                float(data['b'][0][1]), float(data['b'][1][1]), float(data['b'][2][1]), float(data['b'][3][1]), float(data['b'][4][1]),
+                float(data['b'][5][1]), float(data['b'][6][1]), float(data['b'][7][1]), float(data['b'][8][1]), float(data['b'][9][1])
+            )
+            hoga_tamount = (
+                round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
+            )
+            receivetime = now()
+        except:
+            return
+
         mm     = 0
         dm     = 0
         send   = False
@@ -119,14 +159,16 @@ class BinanceReceiverMin(BinanceReceiverTick):
             logt  = now() if self.int_logt < dt_min else 0
             gsjm  = 1 if code in self.list_gsjm else 0
             dt_   = self.dict_tmdt[code][0]
-            data  = (dt_,) + tuple(self.dict_data[code][:9]) + tuple(self.dict_data[code][11:]) + (mm, hlp) + hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + (hgjrt, gsjm, code, logt, send)
+            data  = (dt_,) + tuple(self.dict_data[code][:9]) + tuple(self.dict_data[code][11:]) + (mm, hlp) + \
+                hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
+                (hgjrt, gsjm, code, logt, send)
 
             self.cstgQ.put(data)
             if send:
                 if code in self.tuple_jango:
                     self.ctraderQ.put(('주문확인', (code, c)))
 
-                if self.dict_set['리시버공유'] == 1:
+                if self.dict_set['에이전트공유'] == 1:
                     self.recvservQ.put(('tickdata', data))
 
                 self.dict_tmdt[code] = [dt_min, dm]

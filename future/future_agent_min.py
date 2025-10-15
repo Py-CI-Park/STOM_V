@@ -1,16 +1,15 @@
 import os
 import sys
-from future_receiver_tick import FutureReceiverTick
+from future_agent_tick import FutureAgentTick
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num
 from utility.static import now
 
 
-class FutureReceiverMin(FutureReceiverTick):
-    def UpdateTickData(self, data):
-        code, dt, c, o, h, low, per, v, csp, cbp = data
-        if self.dict_set['리시버공유'] == 1:
-            self.recvservQ.put(('tickdata', (code, c, dt)))
+class FutureAgentMin(FutureAgentTick):
+    def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
+        if self.dict_set['에이전트공유'] == 1:
+            self.agzservQ.put(('tickdata', (code, c, dt)))
 
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
             self.straderQ.put(('잔고갱신', (code, c)))
@@ -59,14 +58,14 @@ class FutureReceiverMin(FutureReceiverTick):
             if asks_ > 0: asks += asks_
             self.list_hgdt[2:4] = bids, asks
             if dt > self.list_hgdt[0]:
-                self.kwzservQ.put(('hoga', (self.dict_info[code]['종목명'], c, per, 0, -1, o, h, low)))
-                if asks > 0: self.kwzservQ.put(('hoga', (-asks, ch)))
-                if bids > 0: self.kwzservQ.put(('hoga', (bids, ch)))
+                self.mgzservQ.put(('hoga', (self.dict_info[code]['종목명'], c, per, 0, -1, o, h, low)))
+                if asks > 0: self.mgzservQ.put(('hoga', (-asks, ch)))
+                if bids > 0: self.mgzservQ.put(('hoga', (bids, ch)))
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, data):
-        dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, receivetime = data
+    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount,
+                       code, name, receivetime):
         mm     = 0
         dm     = 0
         send   = False
@@ -107,22 +106,24 @@ class FutureReceiverMin(FutureReceiverTick):
             hgjrt = sum(hoga_samount + hoga_bamount)
             logt  = now() if self.int_logt < dt_min else 0
             dt_   = self.dict_tmdt[code][0]
-            data  = (dt_,) + tuple(self.dict_data[code][:9]) + tuple(self.dict_data[code][11:]) + (mm, hlp) + hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + (hgjrt, 1, code, name, logt, send)
+            data  = (dt_,) + tuple(self.dict_data[code][:9]) + tuple(self.dict_data[code][11:]) + (mm, hlp) + \
+                hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
+                (hgjrt, 1, code, name, logt, send)
 
             self.sstgQ.put(data)
             if send:
                 if code in self.tuple_order:
                     self.straderQ.put(('주문확인', (code, c)))
 
-                if self.dict_set['리시버공유'] == 1:
-                    self.recvservQ.put(('tickdata', data))
+                if self.dict_set['에이전트공유'] == 1:
+                    self.agzservQ.put(('tickdata', data))
 
                 self.dict_tmdt[code] = [dt_min, dm]
                 self.dict_data[code][7:9] = [0, 0]
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.kwzservQ.put(('window', (ui_num['S단순텍스트'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:
@@ -134,4 +135,4 @@ class FutureReceiverMin(FutureReceiverTick):
 
         if self.hoga_code == code and dt > self.list_hgdt[1]:
             self.list_hgdt[1] = dt
-            self.kwzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5]))
+            self.mgzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5]))

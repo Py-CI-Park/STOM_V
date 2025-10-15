@@ -6,8 +6,8 @@ from utility.static import error_decorator
 class DrawTremap:
     def __init__(self, ui):
         """
-        windowQ, soundQ, ui.queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
+           0        1      2       3      4       5      6      7       8         9         10     11     12      13       14
         """
         self.ui = ui
 

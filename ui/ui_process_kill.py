@@ -3,8 +3,8 @@ from utility.static import qtest_qwait, opstarter_kill
 
 
 def process_kill(ui):
-    if ui.dict_set['리시버프로파일링']:
-        ui.wdzservQ.put(('receiver', '프로파일링결과'))
+    if ui.dict_set['에이전트프로파일링']:
+        ui.wdzservQ.put(('agent', '프로파일링결과'))
         qtest_qwait(3)
     if ui.dict_set['트레이더프로파일링']:
         ui.wdzservQ.put(('trader', '프로파일링결과'))
@@ -36,10 +36,6 @@ def process_kill(ui):
     if ui.dialog_cetsj.isVisible():      ui.dialog_cetsj.close()
 
     if ui.writer.isRunning(): ui.writer.terminate()
-    if ui.qtimer1.isActive(): ui.qtimer1.stop()
-    if ui.qtimer2.isActive(): ui.qtimer2.stop()
-    if ui.qtimer3.isActive(): ui.qtimer3.stop()
-    if ui.qtimer4.isActive(): ui.qtimer4.stop()
 
     ui.wdzservQ.put(('manager', '통신종료'))
     if ui.CoinKimpProcessAlive():

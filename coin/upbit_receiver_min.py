@@ -1,11 +1,28 @@
 from coin.upbit_receiver_tick import UpbitReceiverTick
 from utility.setting import ui_num
-from utility.static import now
+from utility.static import now, str_ymdhms_utc
 
 
 class UpbitReceiverMin(UpbitReceiverTick):
-    def UpdateTickData(self, code, c, o, h, low, per, dm, tbids, tasks, dt):
-        if self.dict_set['리시버공유'] == 1:
+    def UpdateTickData(self, data):
+        try:
+            dt = int(str_ymdhms_utc(data['timestamp']))
+            if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]):
+                return
+
+            code  = data['code']
+            c     = data['trade_price']
+            o     = data['opening_price']
+            h     = data['high_price']
+            low   = data['low_price']
+            per   = round(data['signed_change_rate'] * 100, 2)
+            tbids = data['acc_bid_volume']
+            tasks = data['acc_ask_volume']
+            dm    = data['acc_trade_price']
+        except:
+            return
+
+        if self.dict_set['에이전트공유'] == 1:
             self.recvservQ.put(('tickdata', (code, c, dt)))
 
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
@@ -49,7 +66,41 @@ class UpbitReceiverMin(UpbitReceiverTick):
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, receivetime):
+    def UpdateHogaData(self, data):
+        try:
+            dt = int(str_ymdhms_utc(data['timestamp']))
+            if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]):
+                return
+
+            code = data['code']
+            hoga_tamount = (
+                data['total_ask_size'], data['total_bid_size']
+            )
+            data = data['orderbook_units']
+            hoga_seprice = (
+                data[9]['ask_price'], data[8]['ask_price'], data[7]['ask_price'], data[6]['ask_price'],
+                data[5]['ask_price'],
+                data[4]['ask_price'], data[3]['ask_price'], data[2]['ask_price'], data[1]['ask_price'],
+                data[0]['ask_price']
+            )
+            hoga_buprice = (
+                data[0]['bid_price'], data[1]['bid_price'], data[2]['bid_price'], data[3]['bid_price'],
+                data[4]['bid_price'],
+                data[5]['bid_price'], data[6]['bid_price'], data[7]['bid_price'], data[8]['bid_price'],
+                data[9]['bid_price']
+            )
+            hoga_samount = (
+                data[9]['ask_size'], data[8]['ask_size'], data[7]['ask_size'], data[6]['ask_size'], data[5]['ask_size'],
+                data[4]['ask_size'], data[3]['ask_size'], data[2]['ask_size'], data[1]['ask_size'], data[0]['ask_size']
+            )
+            hoga_bamount = (
+                data[0]['bid_size'], data[1]['bid_size'], data[2]['bid_size'], data[3]['bid_size'], data[4]['bid_size'],
+                data[5]['bid_size'], data[6]['bid_size'], data[7]['bid_size'], data[8]['bid_size'], data[9]['bid_size']
+            )
+            receivetime = now()
+        except:
+            return
+
         mm     = 0
         dm     = 0
         send   = False
@@ -104,14 +155,16 @@ class UpbitReceiverMin(UpbitReceiverTick):
             logt  = now() if self.int_logt < dt_min else 0
             gsjm  = 1 if code in self.list_gsjm else 0
             dt_   = self.dict_tmdt[code][0]
-            data  = (dt_,) + tuple(self.dict_data[code][:9]) + tuple(self.dict_data[code][11:]) + (mm, hlp) + hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + (hgjrt, gsjm, code, logt, send)
+            data  = (dt_,) + tuple(self.dict_data[code][:9]) + tuple(self.dict_data[code][11:]) + (mm, hlp) + \
+                hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
+                (hgjrt, gsjm, code, logt, send)
 
             self.cstgQ.put(data)
             if send:
                 if code in self.tuple_order:
                     self.ctraderQ.put(('주문확인', (code, c)))
 
-                if self.dict_set['리시버공유'] == 1:
+                if self.dict_set['에이전트공유'] == 1:
                     self.recvservQ.put(('tickdata', data))
 
                 self.dict_tmdt[code] = [dt_min, dm]
