@@ -659,8 +659,7 @@ class UpbitStrategyTick:
 
     def PutGsjmAndDeleteHilo(self):
         if self.dict_gj:
-            sorted_items = sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True)
-            self.dict_gj = {k: v for k, v in sorted_items}
+            self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.windowQ.put((ui_num['C관심종목'], df_gj))
         if self.dict_hilo:

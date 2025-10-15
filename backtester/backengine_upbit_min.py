@@ -379,8 +379,8 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
         호가단위 = 매도호가2 - 매도호가1
         bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-        self.bhogainfo = bhogainfo[:self.dict_set['코인매수시장가잔량범위']]
-        self.shogainfo = shogainfo[:self.dict_set['코인매도시장가잔량범위']]
+        self.bhogainfo = bhogainfo[:self.buy_hj_limit]
+        self.shogainfo = shogainfo[:self.sell_hj_limit]
 
         start, end = self.indexn+1-self.tick_count, self.indexn+1
         mc = self.arry_data[start:end, 1]
@@ -414,7 +414,7 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                     매수, 매도 = True, False
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
-                        self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
+                        self.SetBuyCount2(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         exec(self.buystg)
                     else:
                         수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
@@ -446,7 +446,7 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                     매수, 매도 = True, False
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
-                        self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
+                        self.SetBuyCount2(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         if self.back_type != '조건최적화':
                             exec(self.buystg)
                         else:
@@ -482,7 +482,7 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
             매수, 매도 = True, False
             if not self.trade_info[vturn][vkey]['보유중']:
                 if not 관심종목: return
-                self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
+                self.SetBuyCount2(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                 exec(self.buystg)
             else:
                 수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())

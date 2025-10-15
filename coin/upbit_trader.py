@@ -248,8 +248,10 @@ class UpbitTrader:
         주문취소 = False
         현재시간 = now()
         if 수동주문:
-            if 잔고없음:   주문취소 = True
-            elif 매도주문중: 주문취소 = True
+            if 잔고없음 or 매도주문중:
+                주문취소 = True
+        elif self.dict_bool['코인잔고청산']:
+            주문취소 = True
         elif 주문구분 == '매수':
             inthmsutc = int(str_hms(now_utc()))
             거래횟수 = len(set([v['체결시간'] for v in self.dict_td.values() if v['종목명'] == 종목코드]))
@@ -279,28 +281,23 @@ class UpbitTrader:
             elif self.dict_set['코인매도금지간격'] and 현재시간 < self.dict_info[종목코드]['최종거래시간']:
                 주문취소 = True
         elif '취소' in 주문구분:
-            if 주문구분 == '매수취소' and not 매수주문중:   주문취소 = True
-            elif 주문구분 == '매도취소' and not 매도주문중: 주문취소 = True
-        elif self.dict_bool['코인잔고청산']:
-            주문취소 = True
+            if 주문구분 == '매수취소' and not 매수주문중:
+                주문취소 = True
+            elif 주문구분 == '매도취소' and not 매도주문중:
+                주문취소 = True
 
         if 주문취소:
             if '취소' not in 주문구분:
                 self.cstgQ.put((f'{주문구분}취소', 종목코드))
         else:
-            if 수동주문 and 주문구분 in ('매수', '매도'):
-                self.cstgQ.put((f'{주문구분}주문', 종목코드))
-
-            if 주문구분 == '매수':
-                if self.dict_set['코인매도취소매수시그널'] and 매도주문중:
-                    self.CancelOrder(종목코드, 주문구분)
-            elif 주문구분 == '매도':
-                if self.dict_set['코인매수취소매도시그널'] and 매수주문중:
-                    self.CancelOrder(종목코드, 주문구분)
-
             if 주문수량 > 0:
+                if 수동주문 and 주문구분 in ('매수', '매도'): self.cstgQ.put((f'{주문구분}주문', 종목코드))
                 self.CreateOrder(주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 0, 수동주문유형)
             else:
+                if 주문구분 == '매수':
+                    if self.dict_set['코인매도취소매수시그널'] and 매도주문중: self.CancelOrder(종목코드, 주문구분)
+                elif 주문구분 == '매도':
+                    if self.dict_set['코인매수취소매도시그널'] and 매수주문중: self.CancelOrder(종목코드, 주문구분)
                 self.cstgQ.put((f'{주문구분}취소', 종목코드))
 
     def CreateOrder(self, 주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형):
@@ -316,16 +313,15 @@ class UpbitTrader:
             self.cstgQ.put((f'{주문구분}취소', 종목코드))
             return
 
-        if 주문수량 > 0:
-            if self.dict_set['코인모의투자'] or 주문구분 == '시드부족':
-                self.OrderTimeLog(시그널시간)
-                if 주문구분 == '시드부족':
-                    self.UpdateChejanData(주문구분, 종목코드, 주문수량, 0, 주문수량, 주문가격, 0, '')
-                else:
-                    self.UpdateChejanData(주문구분, 종목코드, 주문수량, 주문수량, 0, 주문가격, 주문가격, '')
+        if self.dict_set['코인모의투자'] or 주문구분 == '시드부족':
+            self.OrderTimeLog(시그널시간)
+            if 주문구분 == '시드부족':
+                self.UpdateChejanData(주문구분, 종목코드, 주문수량, 0, 주문수량, 주문가격, 0, '')
             else:
-                data = (주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형)
-                self.SendOrder(data)
+                self.UpdateChejanData(주문구분, 종목코드, 주문수량, 주문수량, 0, 주문가격, 주문가격, '')
+        else:
+            data = (주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형)
+            self.SendOrder(data)
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()
@@ -652,8 +648,7 @@ class UpbitTrader:
                 if -100 < 수익률 < 100: self.UpdateTradelist(index, 종목코드, 매입금액, 평가금액, 체결수량, 수익률, 수익금, index[:14])
                 if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['코인매수금지손절간격초'])
 
-            sorted_items = sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True)
-            self.dict_jg = {k: v for k, v in sorted_items}
+            self.dict_jg = dict(sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True))
 
             if 미체결수량 == 0: self.cstgQ.put((주문구분 + '완료', 종목코드))
             self.UpdateChegeollist(index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, index[:14], 주문가격, 주문번호)
@@ -752,8 +747,7 @@ class UpbitTrader:
             '주문가격': 주문가격,
             '주문번호': 주문번호
         }
-        sorted_items = sorted(self.dict_cj.items(), key=lambda x: x[0])
-        self.dict_cj = {k: v for k, v in sorted_items}
+        self.dict_cj = dict(sorted(self.dict_cj.items(), key=lambda x: x[0]))
         df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
         self.windowQ.put((ui_num['C체결목록'], df_cj[::-1]))
         df = pd.DataFrame([[종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])

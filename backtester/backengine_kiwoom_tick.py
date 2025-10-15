@@ -6,7 +6,8 @@ from traceback import print_exc
 from multiprocessing import shared_memory
 from backtester.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
     AddAvgData, GetTradeInfo
-from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_STOCK_BACK_MIN, indicator, dgree
+from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_STOCK_BACK_MIN, indicator, dgree, \
+    DB_FUTURE_BACK_TICK, DB_FUTURE_BACK_MIN, DB_COIN_BACK_TICK, DB_COIN_BACK_MIN
 # noinspection PyUnresolvedReferences
 from utility.static import timedelta_sec, pickle_read, pickle_write, GetKiwoomPgSgSp, GetUvilower5, dt_ymdhms, dt_ymdhm
 
@@ -48,6 +49,9 @@ class BackEngineKiwoomTick:
         self.indistg      = None
         self.dict_cn      = None
         self.arry_data    = None
+        self.is_long      = None
+        self.unit         = None
+        self.hour         = None
         self.indicator    = indicator
 
         self.code_list    = []
@@ -61,6 +65,7 @@ class BackEngineKiwoomTick:
         self.dict_sconds  = {}
         self.day_info     = {}
         self.trade_info   = {}
+        self.dict_info    = {}
 
         self.code         = ''
         self.name         = ''
@@ -72,23 +77,43 @@ class BackEngineKiwoomTick:
         self.tick_count   = 0
         self.sell_count   = 0
 
+        self.avg_gubun     = None
+        self.is_oms        = None
+        self.is_tick       = None
+        self.ui_num_txt    = None
+        self.buy_hj_limit  = None
+        self.sell_hj_limit = None
+        self.set_dict_cond = None
+        self.set_weight    = None
+
         self.shared_list      = []
         self.shared_count     = None
         self.shared_info      = None
         self.dict_condition   = {}
         self.dict_cond_indexn = {}
-        self.SetDictCondition()
 
+        self.Settings()
+        self.SetDictCondition()
         self.MainLoop()
 
+    def Settings(self):
+        self.avg_gubun     = 1
+        self.ui_num_txt    = 'S백테스트'
+        self.is_oms        = self.dict_set['백테주문관리적용']
+        self.is_tick       = self.dict_set['주식타임프레임']
+        self.buy_hj_limit  = self.dict_set['주식매수시장가잔량범위']
+        self.sell_hj_limit = self.dict_set['주식매도시장가잔량범위']
+        self.set_dict_cond = self.dict_set['주식경과틱수설정']
+        self.set_weight    = self.dict_set['주식비중조절']
+
     def SetDictCondition(self):
-        if self.dict_set['주식경과틱수설정']:
+        if self.set_dict_cond:
             def compile_condition(x):
-                if self.dict_set['주식타임프레임']:
+                if self.is_tick:
                     return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
                 else:
                     return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn', '<string>', 'exec')
-            text_list  = self.dict_set['주식경과틱수설정'].split(';')
+            text_list  = self.set_dict_cond.split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
             value_list = text_list[half_cnt:]
@@ -251,13 +276,26 @@ class BackEngineKiwoomTick:
     def InitTradeInfo(self):
         self.dict_cond_indexn = {}
         self.tick_count = 0
-        v = GetTradeInfo(1)
-        if self.opti_turn == 1:
-            self.trade_info = {t: {k: v for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
-        elif self.opti_turn == 3:
-            self.trade_info = {t: {k: v for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+        if self.is_oms:
+            v1 = GetTradeInfo(3)
+            v2 = GetTradeInfo(2)
+            if self.opti_turn == 1:
+                self.day_info   = {t: {k: v1 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+                self.trade_info = {t: {k: v2 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+            elif self.opti_turn == 3:
+                self.day_info   = {t: {k: v1 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+                self.trade_info = {t: {k: v2 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+            else:
+                self.day_info   = {0: {0: v1}}
+                self.trade_info = {0: {0: v2}}
         else:
-            self.trade_info = {0: {0: v}}
+            v = GetTradeInfo(1)
+            if self.opti_turn == 1:
+                self.trade_info = {t: {k: v for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+            elif self.opti_turn == 3:
+                self.trade_info = {t: {k: v for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+            else:
+                self.trade_info = {0: {0: v}}
 
     def DataLoad(self, data):
         def data_load(days):
@@ -267,7 +305,7 @@ class BackEngineKiwoomTick:
                 pass
             else:
                 if len(df) > 0:
-                    df = AddAvgData(df, 3, is_tick, avg_list)
+                    df = AddAvgData(df, self.avg_gubun, self.is_tick, avg_list)
                     array = np.array(df)
                     if self.dict_set['백테일괄로딩']:
                         name = f'back_{self.gubun}_{i}'
@@ -292,8 +330,12 @@ class BackEngineKiwoomTick:
                         })
 
         divid_mode = data[-1]
-        is_tick = self.dict_set['주식타임프레임']
-        con = sqlite3.connect(DB_STOCK_BACK_TICK if is_tick else DB_STOCK_BACK_MIN)
+        if self.avg_gubun == 1:
+            con = sqlite3.connect(DB_STOCK_BACK_TICK if self.is_tick else DB_STOCK_BACK_MIN)
+        elif self.avg_gubun == 2:
+            con = sqlite3.connect(DB_FUTURE_BACK_TICK if self.is_tick else DB_FUTURE_BACK_MIN)
+        else:
+            con = sqlite3.connect(DB_COIN_BACK_TICK if self.is_tick else DB_COIN_BACK_MIN)
         shared_info = []
         if divid_mode == '종목코드별 분류':
             _, startday, endday, starttime, endtime, code_list, avg_list, code_days, _, _, _ = data
@@ -319,20 +361,27 @@ class BackEngineKiwoomTick:
     def CheckAvglist(self, avg_list):
         not_in_list = [x for x in avg_list if x not in self.avg_list]
         if len(not_in_list) > 0 and self.gubun == 0:
-            self.wq.put((ui_num['S백테스트'], '백테엔진 구동 시 포함되지 않은 평균값 틱수를 사용하여 중지되었습니다.'))
-            self.wq.put((ui_num['S백테스트'], '누락된 평균값 틱수를 추가하여 백테엔진을 재시작하십시오.'))
+            self.wq.put((ui_num[self.ui_num_txt], '백테엔진 구동 시 포함되지 않은 평균값 틱수를 사용하여 중지되었습니다.'))
+            self.wq.put((ui_num[self.ui_num_txt], '누락된 평균값 틱수를 추가하여 백테엔진을 재시작하십시오.'))
             self.BackStop()
 
     def CheckDayAndTime(self):
         self.same_days = self.startday_ == self.startday and self.endday_ == self.endday
         self.same_time = self.starttime_ == self.starttime and self.endtime_ == self.endtime
 
+        if len(str(self.starttime)) < 5:
+            self.unit = 10000
+            self.hour = 2400
+        else:
+            self.unit = 1000000
+            self.hour = 240000
+
     def BackStop(self, gubun=0):
         self.back_type = None
         if gubun == 1:
-            if self.gubun == 0: self.wq.put((ui_num['S백테스트'], '백테스트 엔진 전략연산 오류 자동 중지 중 ...'))
+            if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 전략연산 오류 자동 중지 중 ...'))
         if gubun in (0, 2):
-            if self.gubun == 0: self.wq.put((ui_num['S백테스트'], '백테스트 엔진 중지 중 ...'))
+            if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 중지 중 ...'))
         if gubun in (2, 3):
             self.bq.put('백테중지완료')
 
@@ -346,37 +395,29 @@ class BackEngineKiwoomTick:
 
         if shared_info is None:
             return None
+
+        code = shared_info['code']
+        if self.dict_set['백테일괄로딩']:
+            shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
+            self.arry_data = np.ndarray(shared_info['shape'], dtype=shared_info['dtype'], buffer=shm.buf).copy()
+            shm.close()
         else:
-            if self.dict_set['백테일괄로딩']:
-                code = shared_info['code']
-                shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
-                self.arry_data = np.ndarray(shared_info['shape'], dtype=shared_info['dtype'], buffer=shm.buf).copy()
-                shm.close()
-            else:
-                code = shared_info['code']
-                self.arry_data = pickle_read(shared_info['file_name'])
+            self.arry_data = pickle_read(shared_info['file_name'])
 
-            if len(str(self.starttime)) < 5:
-                unit = 10000
-                hour = 2400
-            else:
-                unit = 1000000
-                hour = 240000
-
-            if self.same_days and self.same_time:
-                pass
-            elif self.same_time:
-                self.arry_data = self.arry_data[(self.arry_data[:, 0] >= self.startday * unit) &
-                                                (self.arry_data[:, 0] <= self.endday * unit + hour)]
-            elif self.same_days:
-                self.arry_data = self.arry_data[(self.arry_data[:, 0] % unit >= self.starttime) &
-                                                (self.arry_data[:, 0] % unit <= self.endtime)]
-            else:
-                self.arry_data = self.arry_data[(self.arry_data[:, 0] >= self.startday * unit) &
-                                                (self.arry_data[:, 0] <= self.endday * unit + hour) &
-                                                (self.arry_data[:, 0] % unit >= self.starttime) &
-                                                (self.arry_data[:, 0] % unit <= self.endtime)]
-            return code
+        if self.same_days and self.same_time:
+            pass
+        elif self.same_time:
+            self.arry_data = self.arry_data[(self.arry_data[:, 0] >= self.startday * self.unit) &
+                                            (self.arry_data[:, 0] <= self.endday * self.unit + self.hour)]
+        elif self.same_days:
+            self.arry_data = self.arry_data[(self.arry_data[:, 0] % self.unit >= self.starttime) &
+                                            (self.arry_data[:, 0] % self.unit <= self.endtime)]
+        else:
+            self.arry_data = self.arry_data[(self.arry_data[:, 0] >= self.startday * self.unit) &
+                                            (self.arry_data[:, 0] <= self.endday * self.unit + self.hour) &
+                                            (self.arry_data[:, 0] % self.unit >= self.starttime) &
+                                            (self.arry_data[:, 0] % self.unit <= self.endtime)]
+        return code
 
     def GetTickCount(self):
         total_ticks = 0
@@ -397,48 +438,47 @@ class BackEngineKiwoomTick:
         j = 0
         while True:
             code = self.GetArrayData()
-            if code is not None:
-                self.code = code
-                self.name = self.dict_cn[self.code] if self.code in self.dict_cn else self.code
-                last = len(self.arry_data) - 1
-                if last > 0:
-                    indexs = self.arry_data[:, 0].astype(np.int64)
-                    day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
-                    day_last_indexs.append(last)
-
-                    start_idx = 0
-                    for end_idx in day_last_indexs:
-                        for i in range(start_idx, end_idx):
-                            self.index  = indexs[i]
-                            self.indexn = i
-                            self.tick_count += 1
-                            try:
-                                self.Strategy()
-                            except:
-                                print_exc()
-                                self.BackStop(1)
-                                return
-
-                            j += 1
-                            if j == 1000:
-                                j = 0
-                                if self.opti_turn in (1, 3):
-                                    self.tq.put('탐색완료')
-                                if not self.beq.empty() and self.beq.get() == '백테중지':
-                                    self.BackStop(2)
-                                    return
-
-                        j += 1
-                        self.index  = indexs[end_idx]
-                        self.indexn = end_idx
-                        self.tick_count += 1
-                        self.LastSell()
-                        self.InitTradeInfo()
-                        start_idx = end_idx + 1
-
-                self.tq.put('백테완료')
-            else:
+            if code is None:
                 break
+
+            self.code = code
+            self.name = self.dict_cn[self.code] if self.code in self.dict_cn else self.code
+            last = len(self.arry_data) - 1
+            indexs = self.arry_data[:, 0].astype(np.int64)
+            day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
+            day_last_indexs.append(last)
+
+            start_idx = 0
+            for end_idx in day_last_indexs:
+                for i in range(start_idx, end_idx):
+                    self.index  = indexs[i]
+                    self.indexn = i
+                    self.tick_count += 1
+                    try:
+                        self.Strategy()
+                    except:
+                        print_exc()
+                        self.BackStop(1)
+                        return
+
+                    j += 1
+                    if j == 1000:
+                        j = 0
+                        if self.opti_turn in (1, 3):
+                            self.tq.put('탐색완료')
+                        if not self.beq.empty() and self.beq.get() == '백테중지':
+                            self.BackStop(2)
+                            return
+
+                j += 1
+                self.index  = indexs[end_idx]
+                self.indexn = end_idx
+                self.tick_count += 1
+                self.LastSell()
+                self.InitTradeInfo()
+                start_idx = end_idx + 1
+
+            self.tq.put('백테완료')
 
         if self.profile: self.pr.print_stats(sort='cumulative')
 
@@ -677,8 +717,8 @@ class BackEngineKiwoomTick:
         VI해제시간, VI아래5호가 = dt_ymdhms(str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
         bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-        self.bhogainfo = bhogainfo[:self.dict_set['주식매수시장가잔량범위']]
-        self.shogainfo = shogainfo[:self.dict_set['주식매도시장가잔량범위']]
+        self.bhogainfo = bhogainfo[:self.buy_hj_limit]
+        self.shogainfo = shogainfo[:self.sell_hj_limit]
 
         if self.dict_condition:
             if 종목코드 not in self.dict_cond_indexn:
@@ -751,36 +791,36 @@ class BackEngineKiwoomTick:
                 exec(self.sellstg)
 
     def SetBuyCount(self, vturn, vkey, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 전일비, 회전율, 전일동시간비):
-        if self.dict_set['주식비중조절'][0] == 0:
+        if self.set_weight[0] == 0:
             betting = self.betting
         else:
-            if self.dict_set['주식비중조절'][0] == 1:
+            if self.set_weight[0] == 1:
                 비중조절기준 = round((고가 / 저가 - 1) * 100, 2)
-            elif self.dict_set['주식비중조절'][0] == 2:
+            elif self.set_weight[0] == 2:
                 비중조절기준 = 등락율각도
-            elif self.dict_set['주식비중조절'][0] == 3:
+            elif self.set_weight[0] == 3:
                 비중조절기준 = 당일거래대금각도
-            elif self.dict_set['주식비중조절'][0] == 4:
+            elif self.set_weight[0] == 4:
                 비중조절기준 = 전일비
-            elif self.dict_set['주식비중조절'][0] == 5:
+            elif self.set_weight[0] == 5:
                 비중조절기준 = 회전율
             else:
                 비중조절기준 = 전일동시간비
 
-            if 비중조절기준 < self.dict_set['주식비중조절'][1]:
-                betting = self.betting * self.dict_set['주식비중조절'][5]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][2]:
-                betting = self.betting * self.dict_set['주식비중조절'][6]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][3]:
-                betting = self.betting * self.dict_set['주식비중조절'][7]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][4]:
-                betting = self.betting * self.dict_set['주식비중조절'][8]
+            if 비중조절기준 < self.set_weight[1]:
+                betting = self.betting * self.set_weight[5]
+            elif 비중조절기준 < self.set_weight[2]:
+                betting = self.betting * self.set_weight[6]
+            elif 비중조절기준 < self.set_weight[3]:
+                betting = self.betting * self.set_weight[7]
+            elif 비중조절기준 < self.set_weight[4]:
+                betting = self.betting * self.set_weight[8]
             else:
-                betting = self.betting * self.dict_set['주식비중조절'][9]
+                betting = self.betting * self.set_weight[9]
 
         self.trade_info[vturn][vkey]['주문수량'] = int(betting / 현재가)
 
-    def Buy(self, vturn, vkey):
+    def Buy(self, vturn, vkey, gubun=None):
         매수금액 = 0
         주문수량 = 미체결수량 = self.trade_info[vturn][vkey]['주문수량']
         if 주문수량 > 0:
@@ -802,7 +842,7 @@ class BackEngineKiwoomTick:
                     '최고수익률': 0.,
                     '최저수익률': 0.,
                     '매수틱번호': self.indexn,
-                    '매수시간': dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index))
+                    '매수시간': dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
                 }
 
     def SetSellCount(self, vturn, vkey, 현재가, now_time):
@@ -810,12 +850,12 @@ class BackEngineKiwoomTick:
         _, _, 수익률 = GetKiwoomPgSgSp(보유수량 * 매수가, 보유수량 * 현재가)
         if 수익률 > 최고수익률:   self.trade_info[vturn][vkey]['최고수익률'] = 최고수익률 = 수익률
         elif 수익률 < 최저수익률: self.trade_info[vturn][vkey]['최저수익률'] = 최저수익률 = 수익률
-        보유시간 = (now_time - 매수시간).total_seconds() if len(str(self.index)) == 14 else int((now_time - 매수시간).total_seconds() / 60)
+        보유시간 = (now_time - 매수시간).total_seconds() if self.is_tick else int((now_time - 매수시간).total_seconds() / 60)
         self.indexb = 매수틱번호
         self.trade_info[vturn][vkey]['주문수량'] = 보유수량
         return 수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호
 
-    def Sell(self, vturn, vkey, sell_cond):
+    def Sell(self, vturn, vkey, sell_cond, gubun=None):
         매도금액 = 0
         주문수량 = 미체결수량 = self.trade_info[vturn][vkey]['주문수량']
         for 매수호가, 매수잔량 in self.shogainfo:
@@ -832,7 +872,7 @@ class BackEngineKiwoomTick:
             self.CalculationEyun(vturn, vkey)
 
     def LastSell(self):
-        if self.dict_set['주식타임프레임']:
+        if self.is_tick:
             매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5 = \
                 self.arry_data[self.indexn, 23:43]
@@ -841,7 +881,7 @@ class BackEngineKiwoomTick:
                 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5 = \
                 self.arry_data[self.indexn, 26:46]
         shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-        shogainfo = shogainfo[:self.dict_set['주식매도시장가잔량범위']]
+        shogainfo = shogainfo[:self.sell_hj_limit]
 
         for vturn in self.trade_info:
             for vkey in self.trade_info[vturn]:
@@ -872,7 +912,7 @@ class BackEngineKiwoomTick:
         보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
         """
         _, 매수가, 매도가, 주문수량, _, _, _, 매수틱번호, 매수시간 = self.trade_info[vturn][vkey].values()
-        if len(str(self.index)) == 14:
+        if self.is_tick:
             보유시간 = int((dt_ymdhms(str(self.index)) - 매수시간).total_seconds())
         else:
             보유시간 = int((dt_ymdhm(str(self.index)) - 매수시간).total_seconds() / 60)

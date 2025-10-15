@@ -70,13 +70,9 @@ def GetTradeInfo(gubun):
 
 
 def GetBackloadCodeQuery(code, days, starttime, endtime):
-    last = len(days) - 1
-    like_text = '( '
-    for i, day in enumerate(days):
-        if i != last:
-            like_text += f"`index` LIKE '{day}%' or "
-        else:
-            like_text += f"`index` LIKE '{day}%' )"
+    like_text = " or ".join([f"`index` LIKE '{day}%'" for day in days])
+    like_text = f"({like_text})"
+
     if len(str(endtime)) < 5:
         query = f"SELECT * FROM '{code}' WHERE {like_text} and " \
                 f"`index` % 10000 >= {starttime} and " \
@@ -125,7 +121,16 @@ def GetMoneytopQuery(gubun, startday, endday, starttime, endtime):
     return query
 
 
-def AddAvgData(df, round_unit, is_tick, avg_list, future=False):
+def AddAvgData(df, avg_gubun, is_tick, avg_list):
+    """
+    avg_gubun = 1   # 주식
+    avg_gubun = 2   # 해선
+    avg_gubun = 3   # 코인
+    """
+    if avg_gubun == 1:
+        round_unit = 3
+    else:
+        round_unit = 8
     if is_tick:
         df['이평0060'] = df['현재가'].rolling(window=60).mean().round(round_unit)
         df['이평0300'] = df['현재가'].rolling(window=300).mean().round(round_unit)
@@ -158,7 +163,7 @@ def AddAvgData(df, round_unit, is_tick, avg_list, future=False):
             df[f'누적분당매수수량{avg}'] = df['분당매수수량'].rolling(window=avg).sum()
             df[f'누적분당매도수량{avg}'] = df['분당매도수량'].rolling(window=avg).sum()
             df[f'분당거래대금평균{avg}'] = df['분당거래대금'].rolling(window=avg).mean().round(0)
-        if round_unit == 3 and not future:
+        if avg_gubun == 1:
             df2 = df[['등락율', '당일거래대금', '전일비']].copy()
             df2[f'등락율N{avg}'] = df2['등락율'].shift(avg - 1)
             df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
@@ -176,7 +181,7 @@ def AddAvgData(df, round_unit, is_tick, avg_list, future=False):
             df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
             df2[f'당일거래대금N{avg}'] = df2['당일거래대금'].shift(avg - 1)
             df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
-            if future:
+            if avg_gubun == 2:
                 cf1, cf2 = dgree['future']['tick'] if is_tick else dgree['future']['min']
                 df['등락율각도'] = np.round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
                 df['당일거래대금각도'] = np.round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
@@ -294,7 +299,7 @@ def GetBuyStgFuture(buystg, gubun):
 
 def GetSellStgFuture(sellstg, gubun):
     sellstg = 'sell_cond = 0\n' + sellstg.split("if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):")[
-        0] + "if 포지션 == 'LONG' and SELL_LONG:\n    self.Sell(vturn, vkey, 'LONG', sell_cond)\nelif 포지션 == 'SHORT' and BUY_SHORT:\n    self.Sell(vturn, vkey, 'SHORT', sell_cond)"
+        0] + "if 포지션 == 'LONG' and SELL_LONG:\n    self.Sell(vturn, vkey, sell_cond, 'LONG')\nelif 포지션 == 'SHORT' and BUY_SHORT:\n    self.Sell(vturn, vkey, sell_cond, 'SHORT')"
     sellstg, dict_cond = SetSellCondFuture(sellstg.split('\n'))
     try:
         sellstg = compile(sellstg, '<string>', 'exec')
@@ -324,10 +329,10 @@ def GetBuyCondsFuture(is_long, buy_conds, gubun):
 def GetSellCondsFuture(is_long, sell_conds, gubun):
     if is_long:
         sell_conds = 'sell_cond = 0\nif ' + ':\n    SELL_LONG = True\nelif '.join(
-            sell_conds) + ':\n    SELL_LONG = True\nif SELL_LONG:\n    self.Sell(vturn, vkey, "SELL_LONG", sell_cond)'
+            sell_conds) + ':\n    SELL_LONG = True\nif SELL_LONG:\n    self.Sell(vturn, vkey, sell_cond, "LONG")'
     else:
         sell_conds = 'sell_cond = 0\nif ' + ':\n    BUY_SHORT = True\nelif '.join(
-            sell_conds) + ':\n    BUY_SHORT = True\nif BUY_SHORT:\n    self.Sell(vturn, vkey, "BUY_SHORT", sell_cond)'
+            sell_conds) + ':\n    BUY_SHORT = True\nif BUY_SHORT:\n    self.Sell(vturn, vkey, sell_cond, "SHORT")'
     sell_conds, dict_cond = SetSellCondFuture(sell_conds.split('\n'))
     try:
         sell_conds = compile(sell_conds, '<string>', 'exec')
@@ -790,10 +795,10 @@ def GetResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     arry_p    = arry_tsg[is_profit]
     arry_m    = arry_tsg[~is_profit]
 
-    pc  = len(arry_p)
-    mc  = tc - pc
-    atc = tc / day_count
-    wr  = (pc / tc) * 100
+    pc   = len(arry_p)
+    mc   = tc - pc
+    atc  = tc / day_count
+    wr   = (pc / tc) * 100
 
     ah   = arry_tsg[:, 0].mean()
     app  = arry_tsg[:, 2].mean()

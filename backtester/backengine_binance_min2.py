@@ -422,7 +422,7 @@ class BackEngineBinanceMin2(BackEngineBinanceTick2):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(현재가, now(), vturn, vkey): continue
-                        self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             exec(self.buystg)
                         else:
@@ -477,7 +477,7 @@ class BackEngineBinanceMin2(BackEngineBinanceTick2):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(현재가, now(), vturn, vkey): continue
-                        self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             if self.back_type != '조건최적화':
                                 exec(self.buystg)
@@ -541,7 +541,7 @@ class BackEngineBinanceMin2(BackEngineBinanceTick2):
             if '매수' in gubun:
                 if not 관심종목: return
                 if self.CancelBuyOrder(현재가, now(), vturn, vkey): return
-                self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if not 보유중:
                     exec(self.buystg)
                 else:

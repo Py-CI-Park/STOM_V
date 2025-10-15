@@ -422,8 +422,7 @@ class OptimizeConditions:
         buy_conds_freq  = {}
         sell_conds_freq = {}
 
-        rs_list    = sorted(self.result.items(), key=lambda x: x[0], reverse=True)
-        opti_dict  = {x: y for x, y in rs_list}
+        opti_dict = dict(sorted(self.result.items(), key=lambda x: x[0], reverse=True))
         for key, value in opti_dict.items():
             for cond in value[0]:
                 if cond in buy_conds_freq:

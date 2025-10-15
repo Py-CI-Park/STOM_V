@@ -62,6 +62,7 @@ class BinanceReceiverTick:
         self.chart_code  = None
         self.proc_webs   = None
         self.codes       = None
+        self.last_gsjm   = None
         self.binance     = binance.Client()
 
         self.dict_bool = {
@@ -340,10 +341,12 @@ class BinanceReceiverTick:
             self.hogaQ.put((code,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5])
 
     def UpdateMoneyTop(self):
-        data = tuple(self.list_gsjm)
-        self.cstgQ.put(('관심목록', data))
-        if self.dict_set['리시버공유'] == 1:
-            self.recvservQ.put(('focuscodes', ('관심목록', data)))
+        current_gsjm = tuple(self.list_gsjm)
+        if current_gsjm != self.last_gsjm:
+            self.cstgQ.put(('관심목록', current_gsjm))
+            if self.dict_set['리시버공유'] == 1:
+                self.recvservQ.put(('focuscodes', ('관심목록', current_gsjm)))
+            self.last_gsjm = current_gsjm
 
     def MoneyTopSearch(self):
         if self.dict_daym:

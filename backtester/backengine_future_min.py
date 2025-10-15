@@ -411,7 +411,7 @@ class BackEngineFutureMin(BackEngineFutureTick):
                     SELL_LONG, BUY_SHORT = False, False
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
-                        self.SetBuyCount(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
+                        self.SetBuyCount2(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         exec(self.buystg)
                     else:
                         수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
@@ -445,7 +445,7 @@ class BackEngineFutureMin(BackEngineFutureTick):
                     SELL_LONG, BUY_SHORT = False, False
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
-                        self.SetBuyCount(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
+                        self.SetBuyCount2(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         if self.back_type != '조건최적화':
                             exec(self.buystg)
                         else:
@@ -482,7 +482,7 @@ class BackEngineFutureMin(BackEngineFutureTick):
             SELL_LONG, BUY_SHORT = False, False
             if not self.trade_info[vturn][vkey]['보유중']:
                 if not 관심종목: return
-                self.SetBuyCount(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
+                self.SetBuyCount2(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                 exec(self.buystg)
             else:
                 수익률, 최고수익률, 최저수익률, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())

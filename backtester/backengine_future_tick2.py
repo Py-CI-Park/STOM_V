@@ -9,22 +9,6 @@ from utility.static import  timedelta_sec, GetFutureLongPgSgSp, GetFutureShortPg
 
 # noinspection PyUnusedLocal
 class BackEngineFutureTick2(BackEngineFutureTick):
-    def InitTradeInfo(self):
-        self.dict_cond_indexn = {}
-        self.tick_count = 0
-        v1 = GetTradeInfo(3)
-        v2 = GetTradeInfo(2)
-        v2['주문포지션'] = ''
-        if self.opti_turn == 1:
-            self.day_info   = {t: {k: v1 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
-            self.trade_info = {t: {k: v2 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
-        elif self.opti_turn == 3:
-            self.day_info   = {t: {k: v1 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
-            self.trade_info = {t: {k: v2 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
-        else:
-            self.day_info   = {0: {0: v1}}
-            self.trade_info = {0: {0: v2}}
-
     def BackTest(self):
         if self.profile:
             import cProfile
@@ -34,52 +18,51 @@ class BackEngineFutureTick2(BackEngineFutureTick):
         j = 0
         while True:
             code = self.GetArrayData()
-            if code is not None:
-                if self.dict_set['주식매수금지블랙리스트'] and code in self.dict_set['해선블랙리스트'] and self.back_type != '백파인더':
-                    self.tq.put('백테완료')
-                    continue
-
-                self.code = code
-                self.name = self.dict_info[code]['종목명']
-                last = len(self.arry_data) - 1
-                if last > 0:
-                    indexs = self.arry_data[:, 0].astype(np.int64)
-                    day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
-                    day_last_indexs.append(last)
-
-                    start_idx = 0
-                    for end_idx in day_last_indexs:
-                        for i in range(start_idx, end_idx):
-                            self.index  = indexs[i]
-                            self.indexn = i
-                            self.tick_count += 1
-                            try:
-                                self.Strategy()
-                            except:
-                                print_exc()
-                                self.BackStop(1)
-                                return
-
-                            j += 1
-                            if j == 1000:
-                                j = 0
-                                if self.opti_turn in (1, 3):
-                                    self.tq.put('탐색완료')
-                                if not self.beq.empty() and self.beq.get() == '백테중지':
-                                    self.BackStop(2)
-                                    return
-
-                        j += 1
-                        self.index  = indexs[end_idx]
-                        self.indexn = end_idx
-                        self.tick_count += 1
-                        self.LastSell()
-                        self.InitTradeInfo()
-                        start_idx = end_idx + 1
-
-                self.tq.put('백테완료')
-            else:
+            if code is None:
                 break
+
+            if self.dict_set['주식매수금지블랙리스트'] and code in self.dict_set['해선블랙리스트'] and self.back_type != '백파인더':
+                self.tq.put('백테완료')
+                continue
+
+            self.code = code
+            self.name = self.dict_info[code]['종목명']
+            last = len(self.arry_data) - 1
+            indexs = self.arry_data[:, 0].astype(np.int64)
+            day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
+            day_last_indexs.append(last)
+
+            start_idx = 0
+            for end_idx in day_last_indexs:
+                for i in range(start_idx, end_idx):
+                    self.index  = indexs[i]
+                    self.indexn = i
+                    self.tick_count += 1
+                    try:
+                        self.Strategy()
+                    except:
+                        print_exc()
+                        self.BackStop(1)
+                        return
+
+                    j += 1
+                    if j == 1000:
+                        j = 0
+                        if self.opti_turn in (1, 3):
+                            self.tq.put('탐색완료')
+                        if not self.beq.empty() and self.beq.get() == '백테중지':
+                            self.BackStop(2)
+                            return
+
+                j += 1
+                self.index  = indexs[end_idx]
+                self.indexn = end_idx
+                self.tick_count += 1
+                self.LastSell()
+                self.InitTradeInfo()
+                start_idx = end_idx + 1
+
+            self.tq.put('백테완료')
 
         if self.profile: self.pr.print_stats(sort='cumulative')
 
@@ -327,8 +310,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(now(), vturn, vkey): continue
-                        self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30),
-                                          당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             exec(self.buystg)
                         else:
@@ -372,8 +354,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(now(), vturn, vkey): continue
-                        self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30),
-                                          당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             if self.back_type != '조건최적화':
                                 exec(self.buystg)
@@ -426,8 +407,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             if '매수' in gubun:
                 if not 관심종목: return
                 if self.CancelBuyOrder(now(), vturn, vkey): return
-                self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
-                                  매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if not 보유중:
                     exec(self.buystg)
                 else:
@@ -437,8 +417,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             if '매도' in gubun:
                 if self.CheckSonjeol(수익률, 수익금, vturn, vkey): return
                 if self.CancelSellOrder(매수분할횟수, now(), vturn, vkey): return
-                self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
-                                   매도분할횟수, 매도호가1, 매수호가1, 호가단위)
+                self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if self.dict_set['코인매도분할횟수'] == 1:
                     exec(self.sellstg)
                 else:
@@ -461,7 +440,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                 self.trade_info[vturn][vkey]['최고수익률'] = 최고수익률 = 수익률
             elif 수익률 < 최저수익률:
                 self.trade_info[vturn][vkey]['최저수익률'] = 최저수익률 = 수익률
-            보유시간 = (now_time - 매수시간).total_seconds() if len(str(self.index)) == 14 else int((now_time - 매수시간).total_seconds() / 60)
+            보유시간 = (now_time - 매수시간).total_seconds() if self.is_tick else int((now_time - 매수시간).total_seconds() / 60)
         return 포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간
 
     def CheckBuyOrSell(self, 보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N1, vturn, vkey, 분봉저가=None, 분봉고가=None):
@@ -503,7 +482,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
     def CancelBuyOrder(self, now_time, vturn, vkey):
         cancel = False
         거래횟수, 손절횟수, 직전거래시간, 손절매도시간 = self.day_info[vturn][vkey].values()
-        hms = int(str(self.index)[8:]) if len(str(self.index)) == 14 else int(str(self.index)[8:] + '00')
+        hms = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
         if self.dict_set['주식매수금지거래횟수'] and self.dict_set['주식매수금지거래횟수값'] <= 거래횟수:
             cancel = True
         elif self.dict_set['주식매수금지손절횟수'] and self.dict_set['주식매수금지손절횟수값'] <= 손절횟수:
@@ -516,27 +495,27 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             cancel = True
         return cancel
 
-    def SetBuyCount2(self, vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 매수분할횟수, 매도호가1, 매수호가1, 호가단위):
-        if self.dict_set['주식비중조절'][0] == 0:
+    def SetBuyCount3(self, vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 매수분할횟수, 매도호가1, 매수호가1, 호가단위):
+        if self.set_weight[0] == 0:
             betting = self.betting
         else:
-            if self.dict_set['주식비중조절'][0] == 1:
+            if self.set_weight[0] == 1:
                 비중조절기준 = round((고가 / 저가 - 1) * 100, 2)
-            elif self.dict_set['주식비중조절'][0] == 2:
+            elif self.set_weight[0] == 2:
                 비중조절기준 = 등락율각도
             else:
                 비중조절기준 = 당일거래대금각도
 
-            if 비중조절기준 < self.dict_set['주식비중조절'][1]:
-                betting = self.betting * self.dict_set['주식비중조절'][5]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][2]:
-                betting = self.betting * self.dict_set['주식비중조절'][6]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][3]:
-                betting = self.betting * self.dict_set['주식비중조절'][7]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][4]:
-                betting = self.betting * self.dict_set['주식비중조절'][8]
+            if 비중조절기준 < self.set_weight[1]:
+                betting = self.betting * self.set_weight[5]
+            elif 비중조절기준 < self.set_weight[2]:
+                betting = self.betting * self.set_weight[6]
+            elif 비중조절기준 < self.set_weight[3]:
+                betting = self.betting * self.set_weight[7]
+            elif 비중조절기준 < self.set_weight[4]:
+                betting = self.betting * self.set_weight[8]
             else:
-                betting = self.betting * self.dict_set['주식비중조절'][9]
+                betting = self.betting * self.set_weight[9]
 
         oc_ratio = dict_order_ratio[self.dict_set['주식매수분할방법']][self.dict_set['주식매수분할횟수']][매수분할횟수]
         self.trade_info[vturn][vkey]['주문수량'] = int(betting * oc_ratio / 99.99)
@@ -570,7 +549,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             origin_sell_gubun = self.dict_set['주식매도주문구분']
             self.dict_set['주식매도주문구분'] = '시장가'
             self.trade_info[vturn][vkey]['주문수량'] = self.trade_info[vturn][vkey]['보유수량']
-            self.Sell(vturn, vkey, gubun, 200)
+            self.Sell(vturn, vkey, 200, gubun)
             self.dict_set['주식매도주문구분'] = origin_sell_gubun
             return True
         return False
@@ -585,7 +564,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             cancel = True
             return cancel
 
-        hms = int(str(self.index)[8:]) if len(str(self.index)) == 14 else int(str(self.index)[8:] + '00')
+        hms = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
         if self.dict_set['주식매도금지시간'] and self.dict_set['주식매도금지시작시간'] < hms < self.dict_set['주식매도금지종료시간']:
             cancel = True
         elif self.dict_set['주식매도금지간격'] and now_time <= self.day_info[vturn][vkey]['직전거래시간']:
@@ -595,26 +574,26 @@ class BackEngineFutureTick2(BackEngineFutureTick):
         return cancel
 
     def SetSellCount2(self, vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 매도분할횟수, 매도호가1, 매수호가1, 호가단위):
-        if self.dict_set['주식비중조절'][0] == 0:
+        if self.set_weight[0] == 0:
             betting = self.betting
         else:
-            if self.dict_set['주식비중조절'][0] == 1:
+            if self.set_weight[0] == 1:
                 비중조절기준 = round((고가 / 저가 - 1) * 100, 2)
-            elif self.dict_set['주식비중조절'][0] == 2:
+            elif self.set_weight[0] == 2:
                 비중조절기준 = 등락율각도
             else:
                 비중조절기준 = 당일거래대금각도
 
-            if 비중조절기준 < self.dict_set['주식비중조절'][1]:
-                betting = self.betting * self.dict_set['주식비중조절'][5]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][2]:
-                betting = self.betting * self.dict_set['주식비중조절'][6]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][3]:
-                betting = self.betting * self.dict_set['주식비중조절'][7]
-            elif 비중조절기준 < self.dict_set['주식비중조절'][4]:
-                betting = self.betting * self.dict_set['주식비중조절'][8]
+            if 비중조절기준 < self.set_weight[1]:
+                betting = self.betting * self.set_weight[5]
+            elif 비중조절기준 < self.set_weight[2]:
+                betting = self.betting * self.set_weight[6]
+            elif 비중조절기준 < self.set_weight[3]:
+                betting = self.betting * self.set_weight[7]
+            elif 비중조절기준 < self.set_weight[4]:
+                betting = self.betting * self.set_weight[8]
             else:
-                betting = self.betting * self.dict_set['주식비중조절'][9]
+                betting = self.betting * self.set_weight[9]
 
         oc_ratio = dict_order_ratio[self.dict_set['주식매도분할방법']][self.dict_set['주식매도분할횟수']][매도분할횟수]
         self.trade_info[vturn][vkey]['주문수량'] = int(betting * oc_ratio / 99.99)
@@ -629,26 +608,26 @@ class BackEngineFutureTick2(BackEngineFutureTick):
 
     def CheckDividSell(self, 포지션, 수익률, 매도분할횟수, vturn, vkey):
         if 포지션 == 'LONG' and self.dict_set['주식매도분할하방'] and 수익률 < -self.dict_set['주식매도분할하방수익률'] * (매도분할횟수 + 1):
-            self.Sell(vturn, vkey, 'LONG', 100)
+            self.Sell(vturn, vkey, 100, 'LONG')
             return True
         elif 포지션 == 'LONG' and self.dict_set['주식매도분할상방'] and 수익률 > self.dict_set['주식매도분할상방수익률'] * (매도분할횟수 + 1):
-            self.Sell(vturn, vkey, 'LONG', 100)
+            self.Sell(vturn, vkey, 100, 'LONG')
             return True
         elif 포지션 == 'SHORT' and self.dict_set['주식매도분할하방'] and 수익률 < -self.dict_set['주식매도분할하방수익률'] * (매도분할횟수 + 1):
-            self.Sell(vturn, vkey, 'SHORT', 100)
+            self.Sell(vturn, vkey, 100, 'SHORT')
             return True
         elif 포지션 == 'SHORT' and self.dict_set['주식매도분할상방'] and 수익률 > self.dict_set['주식매도분할상방수익률'] * (매도분할횟수 + 1):
-            self.Sell(vturn, vkey, 'SHORT', 100)
+            self.Sell(vturn, vkey, 100, 'SHORT')
             return True
         return False
 
-    def Buy(self, vturn, vkey, gubun):
+    def Buy(self, vturn, vkey, gubun=None):
         주문수량 = 미체결수량 = self.trade_info[vturn][vkey]['주문수량']
         if 주문수량 > 0:
             if self.dict_set['주식매수주문구분'] == '시장가':
                 매수금액 = 0
                 호가정보 = self.bhogainfo if gubun == 'LONG' else self.shogainfo
-                호가정보 = 호가정보[:self.dict_set['주식매수시장가잔량범위']]
+                호가정보 = 호가정보[:self.buy_hj_limit]
                 for 호가, 잔량 in 호가정보:
                     if 미체결수량 - 잔량 <= 0:
                         매수금액 += 호가 * 미체결수량
@@ -672,7 +651,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                 self.trade_info[vturn][vkey]['매수호가'] = self.trade_info[vturn][vkey]['매수호가_']
                 self.trade_info[vturn][vkey]['매수호가단위'] = self.arry_data[self.indexn, 17] - self.arry_data[self.indexn, 18]
                 self.trade_info[vturn][vkey]['매수주문취소시간'] = \
-                    timedelta_sec(self.dict_set['주식매수취소시간초'], dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index)))
+                    timedelta_sec(self.dict_set['주식매수취소시간초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
 
     def CheckBuy(self, vturn, vkey, 현재가, 분봉저가, 분봉고가):
         """
@@ -683,7 +662,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
         _, 매수가, _, 주문수량, 보유수량, _, _, _, _, _, 매수호가, _, _, _, _, \
             매수호가단위, _, _, _, _, _, 매수주문취소시간, _, 주문포지션 = self.trade_info[vturn][vkey].values()
 
-        if self.dict_set['주식매수취소시간'] and (dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index))) > 매수주문취소시간:
+        if self.dict_set['주식매수취소시간'] and (dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))) > 매수주문취소시간:
             self.trade_info[vturn][vkey]['매수호가'] = 0
         elif 주문포지션 == 'LONG' and self.trade_info[vturn][vkey]['매수정정횟수'] < self.dict_set['주식매수정정횟수'] and \
                 현재가 >= 매수호가 + 매수호가단위 * self.dict_set['주식매수정정호가차이']:
@@ -704,7 +683,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             self.UpdateBuyInfo(vturn, vkey, 주문포지션, True if 매수가 == 0 else False)
 
     def UpdateBuyInfo(self, vturn, vkey, gubun, firstbuy):
-        datetimefromindex = dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index))
+        datetimefromindex = dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
         self.trade_info[vturn][vkey]['보유중'] = 1 if gubun == 'LONG' else 2
         self.trade_info[vturn][vkey]['매수호가'] = 0
         self.trade_info[vturn][vkey]['매수정정횟수'] = 0
@@ -718,12 +697,12 @@ class BackEngineFutureTick2(BackEngineFutureTick):
         self.trade_info[vturn][vkey]['추가매수시간'].append(text)
         self.trade_info[vturn][vkey]['매수분할횟수'] += 1
 
-    def Sell(self, vturn, vkey, gubun, sell_cond):
+    def Sell(self, vturn, vkey, sell_cond, gubun=None):
         if self.dict_set['주식매도주문구분'] == '시장가':
             매도금액 = 0
             주문수량 = 미체결수량 = self.trade_info[vturn][vkey]['주문수량']
             호가정보 = self.shogainfo if gubun == 'LONG' else self.bhogainfo
-            호가정보 = 호가정보[:self.dict_set['주식매도시장가잔량범위']]
+            호가정보 = 호가정보[:self.sell_hj_limit]
             for 호가, 잔량 in 호가정보:
                 if 미체결수량 - 잔량 <= 0:
                     매도금액 += 호가 * 미체결수량
@@ -742,7 +721,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             self.trade_info[vturn][vkey]['매도호가'] = self.trade_info[vturn][vkey]['매도호가_']
             self.trade_info[vturn][vkey]['매도호가단위'] = self.arry_data[self.indexn, 17] - self.arry_data[self.indexn, 18]
             self.trade_info[vturn][vkey]['매도주문취소시간'] = \
-                timedelta_sec(self.dict_set['주식매도취소시간초'], dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index)))
+                timedelta_sec(self.dict_set['주식매도취소시간초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
 
     def CheckSell(self, vturn, vkey, 현재가, 분봉저가, 분봉고가):
         """
@@ -754,7 +733,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             매도호가단위, _, 매도정정횟수, _, _, _, 매도주문취소시간, _ = self.trade_info[vturn][vkey].values()
 
         gubun = 'LONG' if 보유중 == 1 else 'SHORT'
-        if self.dict_set['주식매도취소시간'] and (dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index))) > 매도주문취소시간:
+        if self.dict_set['주식매도취소시간'] and (dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))) > 매도주문취소시간:
             self.trade_info[vturn][vkey]['매도호가'] = 0
         elif gubun == 'LONG' and 매도정정횟수 < self.dict_set['주식매도정정횟수'] and \
                 현재가 <= 매도호가 - 매도호가단위 * self.dict_set['주식매도정정호가차이']:
@@ -775,7 +754,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             매수주문취소시간, 매도주문취소시간, 주문포지션 = self.trade_info[vturn][vkey].values()
         """
         _, 매수가, 매도가, 주문수량, 보유수량, _, _, 매수틱번호, 매수시간, 추가매수시간 = list(self.trade_info[vturn][vkey].values())[:10]
-        if len(str(self.index)) == 14:
+        if self.is_tick:
             보유시간 = int((dt_ymdhms(str(self.index)) - 매수시간).total_seconds())
         else:
             보유시간 = int((dt_ymdhm(str(self.index)) - 매수시간).total_seconds() / 60)
@@ -796,7 +775,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
         if 수익률 < 0:
             self.day_info[vturn][vkey]['손절횟수'] += 1
             self.day_info[vturn][vkey]['손절매도시간'] = \
-                timedelta_sec(self.dict_set['주식매수금지손절간격초'], dt_ymdhms(str(self.index)) if len(str(self.index)) == 14 else dt_ymdhm(str(self.index)))
+                timedelta_sec(self.dict_set['주식매수금지손절간격초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
         if 보유수량 - 주문수량 > 0:
             self.trade_info[vturn][vkey]['매도호가'] = 0
             self.trade_info[vturn][vkey]['보유수량'] -= self.trade_info[vturn][vkey]['주문수량']

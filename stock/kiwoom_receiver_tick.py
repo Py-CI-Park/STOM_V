@@ -31,13 +31,17 @@ class PutListgsjm(Thread):
     def __init__(self, main):
         super().__init__()
         self.main = main
+        self.last_gsjm = None
 
     def run(self):
         while True:
-            for q in self.main.sstgQs:
-                q.put(('관심목록', tuple(self.main.list_gsjm)))
-            if self.main.dict_set['리시버공유'] == 1:
-                self.main.recvservQ.put(('focuscodes', ('관심목록', tuple(self.main.list_gsjm))))
+            current_gsjm = tuple(self.main.list_gsjm)
+            if current_gsjm != self.last_gsjm:
+                for q in self.main.sstgQs:
+                    q.put(('관심목록', current_gsjm))
+                if self.main.dict_set['리시버공유'] == 1:
+                    self.main.recvservQ.put(('focuscodes', ('관심목록', current_gsjm)))
+                self.last_gsjm = current_gsjm
             time.sleep(1)
 
 

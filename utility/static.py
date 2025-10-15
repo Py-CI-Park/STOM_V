@@ -313,13 +313,9 @@ def cme_normal_open():
 
 
 def get_buy_indi_stg(buytxt):
-    buystg  = ''
-    indistg = ''
-    for line in buytxt.split('\n'):
-        if 'self.indicator' in line:
-            indistg += f'{line}\n'
-        else:
-            buystg += f'{line}\n'
+    lines   = [line for line in buytxt.split('\n') if '#' not in line]
+    buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
+    indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
     if buystg:
         try:
             buystg = compile(buystg, '<string>', 'exec')
@@ -428,28 +424,92 @@ def roundfigure_lower(price, unit, index):
 
 
 def GetUpbitHogaunit(price):
-    if price < 0.01:
-        return 0.0001
-    elif price < 1:
-        return 0.001
-    elif price < 10:
-        return 0.01
-    elif price < 100:
-        return 0.1
-    elif price < 1000:
-        return 1
-    elif price < 10000:
-        return 5
-    elif price < 100000:
-        return 10
-    elif price < 500000:
-        return 50
-    elif price < 1000000:
-        return 100
-    elif price < 2000000:
-        return 500
+    hoga_map = [
+        (0.01, 0.0001),
+        (1, 0.001),
+        (10, 0.01),
+        (100, 0.1),
+        (1000, 1),
+        (10000, 5),
+        (100000, 10),
+        (500000, 50),
+        (1000000, 100),
+        (2000000, 500),
+        (float('inf'), 1000)
+    ]
+    return next((hoga for limit, hoga in hoga_map if price < limit), 1000)
+
+
+def GetHogaunit(kosd, price, index):
+    if index < 20230125000000:
+        if kosd:
+            hoga_map = [
+                (1000, 1),
+                (5000, 5),
+                (10000, 10),
+                (50000, 50),
+                (float('inf'), 100)
+            ]
+        else:
+            hoga_map = [
+                (1000, 1),
+                (5000, 5),
+                (10000, 10),
+                (50000, 50),
+                (100000, 100),
+                (500000, 500),
+                (float('inf'), 1000)
+            ]
     else:
-        return 1000
+        hoga_map = [
+            (2000, 1),
+            (5000, 5),
+            (20000, 10),
+            (50000, 50),
+            (200000, 100),
+            (500000, 500),
+            (float('inf'), 1000)
+        ]
+    return next((hoga for limit, hoga in hoga_map if price < limit), 1000)
+
+
+def GetVIPrice(kosd, std_price, index):
+    uvi = int(std_price * 1.1)
+    x = GetHogaunit(kosd, uvi, index)
+    if uvi % x != 0:
+        uvi += x - uvi % x
+    dvi = int(std_price * 0.9)
+    y = GetHogaunit(kosd, dvi, index)
+    if dvi % y != 0:
+        dvi -= dvi % y
+    return int(uvi), int(dvi), int(x)
+
+
+def GetSangHahanga(kosd, predayclose, index):
+    uplimitprice = int(predayclose * 1.30)
+    x = GetHogaunit(kosd, uplimitprice, index)
+    if uplimitprice % x != 0:
+        uplimitprice -= uplimitprice % x
+    downlimitprice = int(predayclose * 0.70)
+    x = GetHogaunit(kosd, downlimitprice, index)
+    if downlimitprice % x != 0:
+        downlimitprice += x - downlimitprice % x
+    return int(uplimitprice), int(downlimitprice)
+
+
+def GetUvilower5(uvi, hogaunit, index):
+    upper5 = uvi - hogaunit * 5
+    if GetHogaunit(True, upper5, index) != hogaunit:
+        k = 0
+        hogaunit2 = 0
+        for i in (1, 2, 3, 4, 5):
+            hogaunit_ = GetHogaunit(True, uvi - hogaunit * i, index)
+            if hogaunit_ != hogaunit:
+                hogaunit2 = hogaunit_
+                break
+            k += 1
+        upper5 = uvi - hogaunit * k - hogaunit2 * (5 - k)
+    return upper5
 
 
 try:
@@ -513,85 +573,6 @@ try:
         sg = round(pg - bg, 1)
         sp = round(sg / bg * 100, 2)
         return pg, sg, sp
-
-
-    @jit(nopython=True, cache=True)
-    def GetVIPrice(kosd, std_price, index):
-        uvi = int(std_price * 1.1)
-        x = GetHogaunit(kosd, uvi, index)
-        if uvi % x != 0:
-            uvi += x - uvi % x
-        dvi = int(std_price * 0.9)
-        y = GetHogaunit(kosd, dvi, index)
-        if dvi % y != 0:
-            dvi -= dvi % y
-        return int(uvi), int(dvi), int(x)
-
-
-    @jit(nopython=True, cache=True)
-    def GetSangHahanga(kosd, predayclose, index):
-        uplimitprice = int(predayclose * 1.30)
-        x = GetHogaunit(kosd, uplimitprice, index)
-        if uplimitprice % x != 0:
-            uplimitprice -= uplimitprice % x
-        downlimitprice = int(predayclose * 0.70)
-        x = GetHogaunit(kosd, downlimitprice, index)
-        if downlimitprice % x != 0:
-            downlimitprice += x - downlimitprice % x
-        return int(uplimitprice), int(downlimitprice)
-
-
-    @jit(nopython=True, cache=True)
-    def GetUvilower5(uvi, hogaunit, index):
-        upper5 = uvi - hogaunit * 5
-        if GetHogaunit(True, upper5, index) != hogaunit:
-            k = 0
-            hogaunit2 = 0
-            for i in (1, 2, 3, 4, 5):
-                hogaunit_ = GetHogaunit(True, uvi - hogaunit * i, index)
-                if hogaunit_ != hogaunit:
-                    hogaunit2 = hogaunit_
-                    break
-                k += 1
-            upper5 = uvi - hogaunit * k - hogaunit2 * (5 - k)
-        return upper5
-
-
-    @jit(nopython=True, cache=True)
-    def GetHogaunit(kosd, price, index):
-        if index < 20230125000000:
-            if price < 1000:
-                x = 1
-            elif price < 5000:
-                x = 5
-            elif price < 10000:
-                x = 10
-            elif price < 50000:
-                x = 50
-            elif kosd:
-                x = 100
-            elif price < 100000:
-                x = 100
-            elif price < 500000:
-                x = 500
-            else:
-                x = 1000
-        else:
-            if price < 2000:
-                x = 1
-            elif price < 5000:
-                x = 5
-            elif price < 20000:
-                x = 10
-            elif price < 50000:
-                x = 50
-            elif price < 200000:
-                x = 100
-            elif price < 500000:
-                x = 500
-            else:
-                x = 1000
-        return x
 except:
     def GetKiwoomPgSgSp(bg, cg):
         texs = int(cg * 0.0018)
@@ -643,78 +624,3 @@ except:
         sg = round(pg - bg, 1)
         sp = round(sg / bg * 100, 2)
         return pg, sg, sp
-
-
-    def GetVIPrice(kosd, std_price, index):
-        uvi = int(std_price * 1.1)
-        x = GetHogaunit(kosd, uvi, index)
-        if uvi % x != 0:
-            uvi += x - uvi % x
-        dvi = int(std_price * 0.9)
-        y = GetHogaunit(kosd, dvi, index)
-        if dvi % y != 0:
-            dvi -= dvi % y
-        return int(uvi), int(dvi), int(x)
-
-
-    def GetSangHahanga(kosd, predayclose, index):
-        uplimitprice = int(predayclose * 1.30)
-        x = GetHogaunit(kosd, uplimitprice, index)
-        if uplimitprice % x != 0:
-            uplimitprice -= uplimitprice % x
-        downlimitprice = int(predayclose * 0.70)
-        x = GetHogaunit(kosd, downlimitprice, index)
-        if downlimitprice % x != 0:
-            downlimitprice += x - downlimitprice % x
-        return int(uplimitprice), int(downlimitprice)
-
-
-    def GetUvilower5(uvi, hogaunit, index):
-        upper5 = uvi - hogaunit * 5
-        if GetHogaunit(True, upper5, index) != hogaunit:
-            k = 0
-            hogaunit2 = 0
-            for i in (1, 2, 3, 4, 5):
-                hogaunit_ = GetHogaunit(True, uvi - hogaunit * i, index)
-                if hogaunit_ != hogaunit:
-                    hogaunit2 = hogaunit_
-                    break
-                k += 1
-            upper5 = uvi - hogaunit * k - hogaunit2 * (5 - k)
-        return upper5
-
-
-    def GetHogaunit(kosd, price, index):
-        if index < 20230125000000:
-            if price < 1000:
-                x = 1
-            elif price < 5000:
-                x = 5
-            elif price < 10000:
-                x = 10
-            elif price < 50000:
-                x = 50
-            elif kosd:
-                x = 100
-            elif price < 100000:
-                x = 100
-            elif price < 500000:
-                x = 500
-            else:
-                x = 1000
-        else:
-            if price < 2000:
-                x = 1
-            elif price < 5000:
-                x = 5
-            elif price < 20000:
-                x = 10
-            elif price < 50000:
-                x = 50
-            elif price < 200000:
-                x = 100
-            elif price < 500000:
-                x = 500
-            else:
-                x = 1000
-        return x

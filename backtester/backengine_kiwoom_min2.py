@@ -402,8 +402,8 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
         VI해제시간, VI아래5호가 = dt_ymdhms(str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
         bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-        self.bhogainfo = bhogainfo[:self.dict_set['주식매수시장가잔량범위']]
-        self.shogainfo = shogainfo[:self.dict_set['주식매도시장가잔량범위']]
+        self.bhogainfo = bhogainfo[:self.buy_hj_limit]
+        self.shogainfo = shogainfo[:self.sell_hj_limit]
 
         start, end = self.indexn+1-self.tick_count, self.indexn+1
         mc = self.arry_data[start:end, 1]

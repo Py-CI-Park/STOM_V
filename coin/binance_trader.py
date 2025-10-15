@@ -318,6 +318,8 @@ class BinanceTrader:
         if 수동주문:
             if (주문구분 == 'SELL_LONG' and (잔고없음 or 롱매도주문중)) or (주문구분 == 'BUY_SHORT' and (잔고없음 or 숏매도주문중)):
                 주문취소 = True
+        elif self.dict_bool['코인잔고청산']:
+            주문취소 = True
         elif 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
             inthmsutc = int(str_hms(now_utc()))
             거래횟수 = len(set([v['체결시간'] for v in self.dict_td.values() if v['종목명'] == 종목코드]))
@@ -355,17 +357,13 @@ class BinanceTrader:
             elif 주문구분 == 'SELL_SHORT_CANCEL' and not 숏매수주문중: 주문취소 = True
             elif 주문구분 == 'SELL_LONG_CANCEL' and not 롱매도주문중:  주문취소 = True
             elif 주문구분 == 'BUY_SHORT_CANCEL' and not 숏매도주문중:  주문취소 = True
-        elif self.dict_bool['코인잔고청산']:
-            주문취소 = True
 
         if 주문취소:
             if 'CANCEL' not in 주문구분:
                 self.cstgQ.put((f'{주문구분}_CANCEL', 종목코드))
         else:
-            if 수동주문 and 'CANCEL' not in 주문구분:
-                self.cstgQ.put((f'{주문구분}_MANUAL', 종목코드))
-
             if 주문수량 > 0:
+                if 수동주문 and 'CANCEL' not in 주문구분: self.cstgQ.put((f'{주문구분}_MANUAL', 종목코드))
                 self.CreateOrder(주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 0, 수동주문유형)
             else:
                 if 주문구분 == 'BUY_LONG':
@@ -402,17 +400,16 @@ class BinanceTrader:
         if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
             주문수량 = round(주문수량 * self.dict_lvrg[종목코드], self.dict_info[종목코드]['소숫점자리수'])
 
-        if 주문수량 > 0:
-            if self.dict_set['코인모의투자'] or 주문구분 == '시드부족':
-                self.OrderTimeLog(시그널시간)
-                if 주문구분 == '시드부족':
-                    self.UpdateChejanData(주문구분, 종목코드, 주문수량, 0, 주문수량, 주문가격, 0, '')
-                else:
-                    self.dict_order[주문구분][종목코드] = [timedelta_sec(self.dict_set['코인매수취소시간초']), 정정횟수, 주문가격, self.dict_lvrg[종목코드]]
-                    self.UpdateChejanData(주문구분, 종목코드, 주문수량, 주문수량, 0, 주문가격, 주문가격, '')
+        if self.dict_set['코인모의투자'] or 주문구분 == '시드부족':
+            self.OrderTimeLog(시그널시간)
+            if 주문구분 == '시드부족':
+                self.UpdateChejanData(주문구분, 종목코드, 주문수량, 0, 주문수량, 주문가격, 0, '')
             else:
-                data = (주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형)
-                self.SendOrder(data)
+                self.dict_order[주문구분][종목코드] = [timedelta_sec(self.dict_set['코인매수취소시간초']), 정정횟수, 주문가격, self.dict_lvrg[종목코드]]
+                self.UpdateChejanData(주문구분, 종목코드, 주문수량, 주문수량, 0, 주문가격, 주문가격, '')
+        else:
+            data = (주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형)
+            self.SendOrder(data)
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()
@@ -731,8 +728,7 @@ class BinanceTrader:
                 if -100 < 수익률 < 100: self.UpdateTradelist(index, 종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, index[:14])
                 if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['코인매수금지손절간격초'])
 
-            sorted_items = sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True)
-            self.dict_jg = {k: v for k, v in sorted_items}
+            self.dict_jg = dict(sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True))
 
             if 미체결수량 == 0: self.cstgQ.put((f'{주문구분}_COMPLETE', 종목코드))
             self.UpdateChegeollist(index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, index[:14], 주문가격, 주문번호)
@@ -843,8 +839,7 @@ class BinanceTrader:
             '주문가격': 주문가격,
             '주문번호': 주문번호
         }
-        df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
-        self.windowQ.put((ui_num['C체결목록'], df_cj[::-1]))
+        self.dict_cj = dict(sorted(self.dict_cj.items(), key=lambda x: x[0]))
         df = pd.DataFrame([[종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
         self.queryQ.put(('거래디비', df, 'c_chegeollist', 'append'))
 

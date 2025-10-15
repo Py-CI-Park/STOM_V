@@ -22,6 +22,7 @@ class UpdateTablewidget:
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
         self.ui = ui
+        self.dict_arry = {}
 
     @error_decorator
     def update_tablewidget(self, data):
@@ -198,50 +199,55 @@ class UpdateTablewidget:
             tableWidget.setSortingEnabled(False)
 
         tableWidget.setRowCount(len_df)
+        pre_arry = self.dict_arry.get(gubun, None)
         arry = df.values
         for i, index in enumerate(df.index):
             for j, column in enumerate(df.columns):
+                value = arry[i, j]
+                if pre_arry is not None and i < len(pre_arry) and value == pre_arry[i, j]:
+                    continue
+
                 if column in ('체결시간', '매수시간', '매도시간'):
-                    cgtime = str(arry[i, j])
+                    cgtime = str(value)
                     if column == '체결시간': cgtime = f'{cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
                     item = QTableWidgetItem(cgtime)
                 elif column in ('거래일자', '일자', '일자 및 시간'):
-                    day = arry[i, j]
+                    day = value
                     if '.' not in day:
                         day = day[:4] + '.' + day[4:6] + '.' + day[6:]
                     item = QTableWidgetItem(day)
                 elif gubun in (ui_num['C체결목록'], ui_num['C잔고목록'], ui_num['C잔고평가'], ui_num['C거래목록'], ui_num['C실현손익']) and \
                         column in ('매입금액', '평가금액', '평가손익', '매수금액', '매도금액', '수익금', '총매수금액', '총매도금액',
                                    '총수익금액', '총손실금액', '수익금합계', '총평가손익', '총매입금액', '총평가금액'):
-                    item = QTableWidgetItem(change_format(arry[i, j], dotdown4=True))
+                    item = QTableWidgetItem(change_format(value, dotdown4=True))
                 elif column in ('종목명', '포지션', '주문번호', '주문구분', '공시', '정보제공', '언론사', '제목', '링크', '구분', 'period', 'time', '추가매수시간') or \
                         gubun in (ui_num['재무년도'], ui_num['재무분기']) or (self.ui.database_chart and column == '체결수량'):
                     try:
-                        item = QTableWidgetItem(str(arry[i, j]))
+                        item = QTableWidgetItem(str(value))
                     except:
                         continue
                 elif '량' in column and gubun in (ui_num['C잔고목록'], ui_num['C체결목록'], ui_num['C거래목록'], ui_num['C호가체결'], ui_num['C호가잔량']):
-                    item = QTableWidgetItem(change_format(arry[i, j], dotdown8=True))
+                    item = QTableWidgetItem(change_format(value, dotdown8=True))
                 elif (gubun == ui_num['C잔고목록'] and column in ('매입가', '현재가')) or \
                         (gubun == ui_num['C체결목록'] and column in ('체결가', '주문가격')) or \
                         (gubun == ui_num['C호가종목'] and column in ('현재가', '시가', '고가', '저가')) or \
                         (gubun == ui_num['C호가잔량'] and column == '호가'):
-                    item = QTableWidgetItem(change_format(arry[i, j], dotdown8=True))
+                    item = QTableWidgetItem(change_format(value, dotdown8=True))
                 elif '량' in column and '해외선물' in self.ui.dict_set['증권사'] and \
                         gubun in (ui_num['S잔고목록'], ui_num['S체결목록'], ui_num['S거래목록'], ui_num['S호가체결'], ui_num['S호가잔량']):
-                    item = QTableWidgetItem(change_format(arry[i, j], dotdowndel=True))
+                    item = QTableWidgetItem(change_format(value, dotdowndel=True))
                 elif '해외선물' in self.ui.dict_set['증권사'] and (
                         (gubun == ui_num['S잔고목록'] and column in ('매입가', '현재가')) or
                         (gubun == ui_num['S체결목록'] and column in ('체결가', '주문가격')) or
                         (gubun == ui_num['S호가종목'] and column in ('현재가', '고가', '저가', '시가')) or
                         (gubun == ui_num['S호가잔량'] and column == '호가')):
-                    item = NumericItem(change_format(arry[i, j]))
+                    item = NumericItem(change_format(value))
                 elif gubun in (ui_num['S관심종목'], ui_num['C관심종목'], ui_num['S상세기록'],
                                ui_num['C상세기록'], ui_num['S당일상세'], ui_num['S누적상세'],
                                ui_num['C당일상세'], ui_num['C누적상세'], ui_num['스톰라이브1'], ui_num['스톰라이브3'],
                                ui_num['스톰라이브4'], ui_num['스톰라이브6'], ui_num['스톰라이브7'], ui_num['스톰라이브9'],
                                ui_num['스톰라이브10'], ui_num['김프']):
-                    value = str(arry[i, j])
+                    value = str(value)
                     if column in ('수익률', '누적수익률', 'per', 'hlp', 'ch', 'cha', 'chh', '대비(원)',
                                   '대비율(%)', 'aht', 'wr', 'app', 'tpp', 'mdd', 'cagr'):
                         item = NumericItem(change_format(value))
@@ -257,9 +263,9 @@ class UpdateTablewidget:
                         value = float(value)
                         item.setData(Qt.UserRole, value)
                 elif column not in ('수익률', '누적수익률', '등락율', '체결강도'):
-                    item = QTableWidgetItem(change_format(arry[i, j], dotdowndel=True))
+                    item = QTableWidgetItem(change_format(value, dotdowndel=True))
                 else:
-                    item = QTableWidgetItem(change_format(arry[i, j]))
+                    item = QTableWidgetItem(change_format(value))
 
                 if column in ('종목명', '공시', '제목', '링크', '매도조건'):
                     item.setTextAlignment(int(Qt.AlignVCenter | Qt.AlignLeft))
@@ -291,11 +297,10 @@ class UpdateTablewidget:
                                 low  = func(self.ui.hj_tableWidgett_01.item(0, columns_hj.index('저가')).text())
                                 uvi  = func(self.ui.hj_tableWidgett_01.item(0, columns_hj.index('UVI')).text())
                                 if o != 0:
-                                    hg = arry[i, j]
-                                    if hg == o:     item.setIcon(self.ui.icon_open)
-                                    elif hg == h:   item.setIcon(self.ui.icon_high)
-                                    elif hg == low: item.setIcon(self.ui.icon_low)
-                                    elif hg == uvi: item.setIcon(self.ui.icon_vi)
+                                    if value == o:     item.setIcon(self.ui.icon_open)
+                                    elif value == h:   item.setIcon(self.ui.icon_high)
+                                    elif value == low: item.setIcon(self.ui.icon_low)
+                                    elif value == uvi: item.setIcon(self.ui.icon_vi)
 
                 if '수익금' in df.columns and gubun not in (ui_num['S상세기록'], ui_num['C상세기록']):
                     color = color_fg_bt if arry[i, list(df.columns).index('수익금')] >= 0 else color_fg_dk
@@ -320,38 +325,38 @@ class UpdateTablewidget:
                 elif gubun in (ui_num['C호가체결'], ui_num['S호가체결']) and not self.ui.database_chart:
                     if column == '체결수량':
                         if i in (0, 11):
-                            color = color_fg_bt if arry[i, j] > arry[11 if i == 0 else 0, 0] else color_fg_dk
+                            color = color_fg_bt if value > arry[11 if i == 0 else 0, 0] else color_fg_dk
                             item.setForeground(color)
                         else:
                             if '해외선물' not in self.ui.dict_set['증권사'] or gubun == ui_num['C호가체결']:
                                 func = comma2int if gubun == ui_num['S호가체결'] else comma2float
                                 c = func(self.ui.hg_tableWidgett_01.item(5, columns_hg.index('호가')).text())
-                                if arry[i, j] > 0:
+                                if value > 0:
                                     item.setForeground(color_fg_bt)
-                                    if arry[i, j] * c > 90_000_000:
+                                    if value * c > 90_000_000:
                                         item.setBackground(color_bf_bt)
                                 else:
                                     item.setForeground(color_fg_dk)
-                                    if arry[i, j] * c < -90_000_000:
+                                    if value * c < -90_000_000:
                                         item.setBackground(color_bf_dk)
                     elif column == '체결강도':
-                        color = color_fg_bt if arry[i, j] >= 100 else color_fg_dk
+                        color = color_fg_bt if value >= 100 else color_fg_dk
                         item.setForeground(color)
                 elif gubun in (ui_num['C호가잔량'], ui_num['S호가잔량']):
                     if column == '잔량':
                         if i in (0, 11):
-                            color = color_fg_bt if arry[i, j] > arry[11 if i == 0 else 0, 0] else color_fg_dk
+                            color = color_fg_bt if value > arry[11 if i == 0 else 0, 0] else color_fg_dk
                             item.setForeground(color)
                         elif i < 11:
                             item.setForeground(color_fg_bt)
                         else:
                             item.setForeground(color_fg_dk)
                     elif column == '호가':
-                        if column == '호가' and arry[i, j] != 0:
+                        if column == '호가' and value != 0:
                             if self.ui.hj_tableWidgett_01.item(0, 0) is not None:
                                 func = comma2int if gubun == ui_num['S호가잔량'] and '키움증권' in self.ui.dict_set['증권사'] else comma2float
                                 c    = func(self.ui.hj_tableWidgett_01.item(0, columns_hj.index('현재가')).text())
-                                if i not in (0, 11) and arry[i, j] == c:
+                                if i not in (0, 11) and value == c:
                                     item.setBackground(color_bf_bt)
                 elif gubun in (ui_num['기업공시'], ui_num['기업뉴스']):
                     text = arry[i, 2]
@@ -362,8 +367,9 @@ class UpdateTablewidget:
                     else:
                         item.setForeground(color_fg_dk)
                 elif gubun in (ui_num['재무년도'],  ui_num['재무분기']):
-                    color = color_fg_bt if '-' not in arry[i, j] else color_fg_dk
+                    color = color_fg_bt if '-' not in value else color_fg_dk
                     item.setForeground(color)
+
                 tableWidget.setItem(i, j, item)
 
         if len_df < 13 and gubun in (ui_num['S거래목록'], ui_num['S잔고목록'], ui_num['C거래목록'], ui_num['C잔고목록']):
@@ -411,6 +417,7 @@ class UpdateTablewidget:
             for column in range(header.count()):
                 header.setSectionResizeMode(column, QHeaderView.Interactive)
                 header.resizeSection(column, int(width[column] * wfactor))
+        self.dict_arry[gubun] = arry
 
     def UpdateHogainfoForChart(self, gubun, ymdhms):
         def fi(fname):

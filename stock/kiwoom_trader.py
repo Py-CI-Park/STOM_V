@@ -101,7 +101,6 @@ class KiwoomTrader:
             '매도정정': 6
         }
 
-        self.str_account = ''
         self.str_today   = str_ymd()
         self.int_hgtime  = int(str_ymdhms())
         self.jgcs_time   = self.get_jgcs_time()
@@ -229,7 +228,10 @@ class KiwoomTrader:
         주문취소 = False
         현재시간 = now()
         if 잔고청산:
-            if 잔고없음 or 매도주문중: 주문취소 = True
+            if 잔고없음 or 매도주문중:
+                주문취소 = True
+        elif self.dict_bool['주식잔고청산']:
+            주문취소 = True
         elif 주문구분 == '매수':
             inthms = int(str_hms())
             거래횟수 = len(set([v['체결시간'] for v in self.dict_td.values() if v['종목명'] == 종목명]))
@@ -259,28 +261,30 @@ class KiwoomTrader:
             elif self.dict_set['주식매도금지간격'] and 현재시간 < self.dict_info[종목코드]['최종거래시간']:
                 주문취소 = True
         elif '취소' in 주문구분:
-            if 주문구분 == '매수취소' and not 매수주문중:   주문취소 = True
-            elif 주문구분 == '매도취소' and not 매도주문중: 주문취소 = True
-        elif self.dict_bool['주식잔고청산']:
+            if 주문구분 == '매수취소' and not 매수주문중:
+                주문취소 = True
+            elif 주문구분 == '매도취소' and not 매도주문중:
+                주문취소 = True
+
+        if self.dict_set['주식매수금지라운드피겨'] and '매수' in 주문구분 and \
+                roundfigure_upper(주문가격, self.dict_set['주식매수금지라운드호가'], self.int_hgtime):
+            주문취소 = True
+        elif self.dict_set['주식매도금지라운드피겨'] and '매도' in 주문구분 and \
+                roundfigure_lower(주문가격, self.dict_set['주식매도금지라운드호가'], self.int_hgtime):
             주문취소 = True
 
         if 주문취소:
             if '취소' not in 주문구분:
                 self.PutOrderComplete(f'{주문구분}취소', 종목코드)
         else:
-            if 잔고청산 and 주문구분 in ('매수', '매도'):
-                self.PutOrderComplete(f'{주문구분}주문', 종목코드)
-
-            if 주문구분 == '매수':
-                if self.dict_set['주식매도취소매수시그널'] and 매도주문중:
-                    self.CancelOrder(종목코드, 주문구분)
-            elif 주문구분 == '매도':
-                if self.dict_set['주식매수취소매도시그널'] and 매수주문중:
-                    self.CancelOrder(종목코드, 주문구분)
-
             if 주문수량 > 0:
+                if 잔고청산: self.PutOrderComplete(f'{주문구분}주문', 종목코드)
                 self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형)
             else:
+                if 주문구분 == '매수':
+                    if self.dict_set['주식매도취소매수시그널'] and 매도주문중: self.CancelOrder(종목코드, 주문구분)
+                elif 주문구분 == '매도':
+                    if self.dict_set['주식매수취소매도시그널'] and 매수주문중: self.CancelOrder(종목코드, 주문구분)
                 self.PutOrderComplete(f'{주문구분}취소', 종목코드)
 
     def PutOrderComplete(self, cmsg, code):
@@ -288,10 +292,9 @@ class KiwoomTrader:
 
     def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형):
         주문유형 = self.주문유형[주문구분]
-        주문취소 = False
 
         if 잔고청산:
-            거래구분 = '03'
+            거래구분 = self.거래구분['시장가']
         elif '매수' in 주문구분:
             거래구분 = self.거래구분[self.dict_set['주식매수주문구분']] if 수동주문유형 is None else self.거래구분[수동주문유형]
         else:
@@ -303,40 +306,27 @@ class KiwoomTrader:
         elif 주문구분 == '매수':
             if self.dict_set['주식매수주문구분'] in ('지정가', '지정가IOC', '지정가FOK'):
                 주문가격 += GetHogaunit(종목코드 in self.tuple_kosd, 주문가격, self.int_hgtime) * self.dict_set['주식매수지정가호가번호']
-            if self.dict_set['주식매수금지라운드피겨'] and roundfigure_upper(주문가격, self.dict_set['주식매수금지라운드호가'], self.int_hgtime):
-                주문취소 = True
             if self.dict_set['주식매수주문구분'] not in ('지정가', '지정가IOC', '지정가FOK'):
                 if not (self.dict_set['주식모의투자'] or 주문구분 == '시드부족'):
                     주문가격 = 0
         elif 주문구분 == '매도':
             if self.dict_set['주식매도주문구분'] in ('지정가', '지정가IOC', '지정가FOK'):
                 주문가격 += GetHogaunit(종목코드 in self.tuple_kosd, 주문가격, self.int_hgtime) * self.dict_set['주식매도지정가호가번호']
-            if self.dict_set['주식매도금지라운드피겨'] and roundfigure_lower(주문가격, self.dict_set['주식매도금지라운드호가'], self.int_hgtime):
-                주문취소 = True
             if self.dict_set['주식매도주문구분'] not in ('지정가', '지정가IOC', '지정가FOK'):
                 if not (self.dict_set['주식모의투자'] or 주문구분 == '시드부족'):
                     주문가격 = 0
-        elif 주문구분 == '매수정정':
-            if self.dict_set['주식매수금지라운드피겨'] and roundfigure_upper(주문가격, self.dict_set['주식매수금지라운드호가'], self.int_hgtime):
-                주문취소 = True
-        elif 주문구분 == '매도정정':
-            if self.dict_set['주식매도금지라운드피겨'] and roundfigure_lower(주문가격, self.dict_set['주식매도금지라운드호가'], self.int_hgtime):
-                주문취소 = True
 
-        if 주문취소:
-            self.PutOrderComplete(f'{주문구분}취소', 종목코드)
-        elif 주문수량 > 0:
-            if self.dict_set['주식모의투자'] or 주문구분 == '시드부족':
-                self.OrderTimeLog(시그널시간)
-                ct = str_ymdhms()
-                if 주문구분 == '시드부족':
-                    data = (종목코드, 종목명, 주문가격, '접수불가', 주문구분, 주문수량, 0, 주문수량, 주문가격, 0, ct, 원주문번호)
-                else:
-                    data = (종목코드, 종목명, 주문가격, '체결', 주문구분, 주문수량, 주문수량, 0, 주문가격, 주문가격, ct, 원주문번호)
-                self.UpdateChejanData(data)
+        if self.dict_set['주식모의투자'] or 주문구분 == '시드부족':
+            self.OrderTimeLog(시그널시간)
+            ct = str_ymdhms()
+            if 주문구분 == '시드부족':
+                data = (종목코드, 종목명, 주문가격, '접수불가', 주문구분, 주문수량, 0, 주문수량, 주문가격, 0, ct, 원주문번호)
             else:
-                data = [주문구분, 0, self.str_account, 주문유형, 종목코드, int(주문수량), int(주문가격), 거래구분, 원주문번호, 종목명, 시그널시간]
-                self.kiwoomQ.put(data)
+                data = (종목코드, 종목명, 주문가격, '체결', 주문구분, 주문수량, 주문수량, 0, 주문가격, 주문가격, ct, 원주문번호)
+            self.UpdateChejanData(data)
+        else:
+            data = [주문구분, '', '', 주문유형, 종목코드, int(주문수량), int(주문가격), 거래구분, 원주문번호, 종목명, 시그널시간]
+            self.kiwoomQ.put(data)
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()
@@ -580,8 +570,7 @@ class KiwoomTrader:
                 if -100 < 수익률 < 100: self.UpdateTradelist(index, 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간)
                 if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['주식매수금지손절간격초'])
 
-            sorted_items = sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True)
-            self.dict_jg = {k: v for k, v in sorted_items}
+            self.dict_jg = dict(sorted(self.dict_jg.items(), key=lambda x: x[1]['매입금액'], reverse=True))
 
             if 미체결수량 == 0: self.PutOrderComplete(주문구분 + '완료', 종목코드)
             self.UpdateChegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
@@ -601,12 +590,10 @@ class KiwoomTrader:
 
         elif 주문상태 == '확인' and 주문구분 in ('매수정정', '매도정정', '매수취소', '매도취소'):
             주문구분_ = 주문구분.replace('정정', '').replace('취소', '')
-            if 주문구분 == '매수정정':
-                fix_count = self.dict_order[주문구분_][종목코드][1] + 1
-                self.dict_order[주문구분_][종목코드] = [timedelta_sec(self.dict_set['주식매수취소시간초']), fix_count, 주문가격, GetHogaunit(종목코드 in self.tuple_kosd, 주문가격, self.int_hgtime)]
-            elif 주문구분 == '매도정정':
-                fix_count = self.dict_order[종목코드][1] + 1
-                self.dict_order[주문구분_][종목코드] = [timedelta_sec(self.dict_set['주식매도취소시간초']), fix_count, 주문가격, GetHogaunit(종목코드 in self.tuple_kosd, 주문가격, self.int_hgtime)]
+            if 주문구분 in ('매수정정', '매도정정'):
+                정정횟수 = self.dict_order[주문구분_][종목코드][1] + 1
+                취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if 주문구분 == '매수정정' else '주식매도취소시간초'])
+                self.dict_order[주문구분_][종목코드] = [취소시간, 정정횟수, 주문가격, GetHogaunit(종목코드 in self.tuple_kosd, 주문가격, self.int_hgtime)]
             else:
                 if 주문구분 == '매수취소':
                     self.dict_intg['추정예수금'] += 미체결수량 * 주문가격
@@ -688,8 +675,7 @@ class KiwoomTrader:
             '주문가격': 주문가격,
             '주문번호': 주문번호
         }
-        sorted_items = sorted(self.dict_cj.items(), key=lambda x: x[0])
-        self.dict_cj = {k: v for k, v in sorted_items}
+        self.dict_cj = dict(sorted(self.dict_cj.items(), key=lambda x: x[0]))
         df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
         self.kwzservQ.put(('window', (ui_num['S체결목록'], df_cj[::-1])))
         df = pd.DataFrame([[종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])

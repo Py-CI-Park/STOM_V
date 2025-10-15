@@ -18,19 +18,16 @@ sn_gsjm = 2000
 
 
 def parseDat(trcode):
-    enc    = zipfile.ZipFile(f'{OPENAPI_PATH}/data/{trcode}.enc')
-    lines  = enc.read(trcode.upper() + '.dat').decode('cp949')
-    lines  = lines.split('\n')
-    start  = [i for i, x in enumerate(lines) if x.startswith('@START')]
-    end    = [i for i, x in enumerate(lines) if x.startswith('@END')]
-    blocks = zip(start, end)
-    dict_enc = {}
-    for start, end in blocks:
-        block  = lines[start - 1:end + 1]
-        blname = block[1].split('_')[1].strip().split('=')[0]
-        fields = [line.split('=')[0].strip() for line in block[2:-1]]
-        if 'INPUT' not in block[0]: dict_enc[blname] = fields
-    return dict_enc
+    enc   = zipfile.ZipFile(f'{OPENAPI_PATH}/data/{trcode}.enc')
+    lines = enc.read(f'{trcode.upper()}.dat').decode('cp949').split('\n')
+    start_indices = [i for i, x in enumerate(lines) if x.startswith('@START')]
+    end_indices   = [i for i, x in enumerate(lines) if x.startswith('@END')]
+    return {
+        block[1].split('_')[1].strip().split('=')[0]:
+        [line.split('=')[0].strip() for line in block[2:-1]]
+        for start, end in zip(start_indices, end_indices)
+        if 'INPUT' not in (block := lines[start-1:end+1])[0]
+    }
 
 
 class Updater(QThread):
@@ -715,7 +712,7 @@ class Kiwoom:
         return self.ocx.dynamicCall('GetChejanData(int)', fid)
 
     def ReceivOrder(self, order):
-        # [주문구분, 화면번호, 계좌번호, 주문유형, 종목코드, 주문수량, 주문가격, 거래구분, 원주문번호], 종목명, 시그널시간
+        # [주문구분, 화면번호, 계좌번호, 주문유형, 종목코드, 주문수량, 주문가격, 거래구분, 원주문번호, 종목명, 시그널시간]
         curr_time = now()
         if curr_time < self.order_time:
             next_time = (self.order_time - curr_time).total_seconds()
