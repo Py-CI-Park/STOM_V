@@ -157,3 +157,15 @@ def chart_screenshot2(ui):
         screenshot.save(file_name, 'png')
         ui.teleQ.put(file_name)
         QMessageBox.information(ui.dialog_chart, '차트 스샷 전송 완료', random.choice(famous_saying))
+
+
+def manual_save_and_exit(ui):
+    buttonReply = QMessageBox.question(
+        ui, '수동종료', '현재까지의 데이터를 저장하고 수동종료합니다.\n계속 하시겠습니까?\n',
+        QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+    )
+    if buttonReply == QMessageBox.Yes:
+        if ui.CoinReceiverProcessAlive():
+            ui.creceivQ.put(('수동데이터저장', 'dummy'))
+        else:
+            ui.wdzservQ.put(('agent', ('수동데이터저장', 'dummy')))

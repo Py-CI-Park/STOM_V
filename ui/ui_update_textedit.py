@@ -12,8 +12,9 @@ class UpdateTextedit:
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1      2       3      4       5      6      7       8         9         10     11     12      13       14
         """
-        self.ui      = ui
-        self.logging = True
+        self.ui        = ui
+        self.logging   = True
+        self.data_save = False
 
     @error_decorator
     def update_texedit(self, data):
@@ -70,7 +71,7 @@ class UpdateTextedit:
                     self.ui.cs_textEditttt_09.setTextColor(color)
                     self.ui.cs_textEditttt_09.append(text)
 
-                if '백테스트 엔진 전략연산 오류 자동 중지 중 ...' in data[1]:
+                if '오류, 자동 중지 중 ...' in data[1]:
                     if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
                         self.ui.BacktestProcessKill(False, False)
                     else:
@@ -120,14 +121,14 @@ class UpdateTextedit:
                 self.ui.gg_textEdittttt_01.append(data[1])
 
             if '전략연산 프로세스 데이터 저장 중' in text:
-                self.ui.data_save = True
+                self.data_save = True
             elif data[0] == ui_num['S단순텍스트'] and '에이전트 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '에이전트 종료'))
             elif data[0] == ui_num['S로그텍스트'] and '트레이더 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '트레이더 종료'))
             elif data[0] == ui_num['S로그텍스트'] and '전략연산 종료' in data[1]:
                 self.ui.wdzservQ.put(('manager', '전략연산 종료'))
-                if self.ui.data_save and self.ui.dict_set['디비자동관리']:
+                if self.data_save and self.ui.dict_set['디비자동관리']:
                     self.AutoDataBase(1)
                 else:
                     self.StockShutDownCheck()
@@ -140,7 +141,7 @@ class UpdateTextedit:
             elif data[0] == ui_num['C로그텍스트'] and '전략연산 종료' in data[1]:
                 if self.ui.CoinStrategyProcessAlive():
                     self.ui.proc_strategy_coin.kill()
-                if self.ui.data_save and self.ui.dict_set['디비자동관리']:
+                if self.data_save and self.ui.dict_set['디비자동관리']:
                     self.AutoDataBase(4)
                 else:
                     self.CoinShutDownCheck()
@@ -179,13 +180,11 @@ class UpdateTextedit:
                         self.ui.list_progressBarrr[self.ui.back_scount].setValue(data[1])
                         self.ui.list_progressBarrr[self.ui.back_scount].setRange(0, data[2])
                     if data[0] in (ui_num['S백테바'], ui_num['SF백테바']):
-                        self.ui.ss_progressBar_01.setFormat(
-                            f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
+                        self.ui.ss_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
                         self.ui.ss_progressBar_01.setValue(data[1])
                         self.ui.ss_progressBar_01.setRange(0, data[2])
                     elif data[0] in (ui_num['C백테바'], ui_num['CF백테바']):
-                        self.ui.cs_progressBar_01.setFormat(
-                            f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
+                        self.ui.cs_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
                         self.ui.cs_progressBar_01.setValue(data[1])
                         self.ui.cs_progressBar_01.setRange(0, data[2])
 
@@ -224,6 +223,7 @@ class UpdateTextedit:
             if self.ui.dialog_db.isVisible():
                 self.ui.dialog_db.close()
             self.ui.teleQ.put('데이터베이스 자동관리 완료')
+            self.ui.logger.info('데이터베이스 자동관리 완료')
             qtest_qwait(2)
             self.ui.auto_mode = False
             if gubun == 3:

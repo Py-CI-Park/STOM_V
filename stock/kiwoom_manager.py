@@ -22,8 +22,13 @@ class ZmqRecvFromUI(QThread):
     signal1 = pyqtSignal(str)
     signal2 = pyqtSignal(tuple)
 
-    def __init__(self, qlist, port_num):
+    def __init__(self, main, qlist, port_num):
+        """
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
+                0            1             2            3
+        """
         super().__init__()
+        self.main     = main
         self.sagentQ  = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQs   = qlist[3]
@@ -38,12 +43,15 @@ class ZmqRecvFromUI(QThread):
             msg  = self.sock.recv_string()
             data = self.sock.recv_pyobj()
             if msg == 'agent':
-                self.sagentQ.put(data)
+                if self.main.StockAgentProcessAlive():
+                    self.sagentQ.put(data)
             elif msg == 'trader':
-                self.straderQ.put(data)
+                if self.main.StockTraderProcessAlive():
+                    self.straderQ.put(data)
             elif msg == 'strategy':
-                for q in self.sstgQs:
-                    q.put(data)
+                if self.main.StockStrategyProcessAlive():
+                    for q in self.sstgQs:
+                        q.put(data)
             elif msg == 'manager':
                 if type(data) == str:
                     self.signal1.emit(data)
@@ -58,6 +66,10 @@ class ZmqRecvFromUI(QThread):
 
 class ZmqSendToUI(QThread):
     def __init__(self, qlist, port_num):
+        """
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
+                0            1             2            3
+        """
         super().__init__()
         self.mgzservQ = qlist[0]
         self.sagentQ  = qlist[1]
@@ -101,7 +113,6 @@ class KiwoomManager:
         self.sstgQs   = [sstg1Q, sstg2Q, sstg3Q, sstg4Q, sstg5Q, sstg6Q, sstg7Q, sstg8Q]
         self.qlist    = [self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs]
         self.dict_set = DICT_SET
-
         self.logger   = get_logger(self.__class__.__name__)
 
         self.backtest_engine = False
@@ -116,7 +127,7 @@ class KiwoomManager:
         self.proc_trader     = None
         self.proc_agent      = None
 
-        self.zmqrecv = ZmqRecvFromUI(self.qlist, port_num)
+        self.zmqrecv = ZmqRecvFromUI(self, self.qlist, port_num)
         self.zmqrecv.signal1.connect(self.UpdateString)
         self.zmqrecv.signal2.connect(self.UpdateTuple)
         self.zmqrecv.start()

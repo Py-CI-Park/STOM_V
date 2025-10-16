@@ -12,7 +12,7 @@ from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
 from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc, get_logger
 
 
-class ZmqServ(QThread):
+class ZmqSendToClient(QThread):
     def __init__(self, recvservQ):
         super().__init__()
         self.recvservQ = recvservQ
@@ -61,7 +61,6 @@ class UpbitReceiverTick:
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
         self.dict_set    = DICT_SET
-
         self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_tmdt   = {}
@@ -93,7 +92,7 @@ class UpbitReceiverTick:
 
         self.recvservQ = Queue()
         if self.dict_set['에이전트공유'] == 1:
-            self.zmqserver = ZmqServ(self.recvservQ)
+            self.zmqserver = ZmqSendToClient(self.recvservQ)
             self.zmqserver.daemon = True
             self.zmqserver.start()
 
@@ -346,9 +345,11 @@ class UpbitReceiverTick:
     def ReceiverProcKill(self):
         self.dict_bool['프로세스종료'] = True
         self.WebProcessKill()
-        threading_timer(180, self.creceivQ.put, '프로세스종료')
         if self.dict_set['코인알림소리']:
             self.soundQ.put('업비트 시스템을 3분 후 종료합니다.')
+        if self.dict_set['에이전트공유'] == 1:
+            self.recvservQ.put('프로세스종료')
+        threading_timer(180, self.creceivQ.put, '프로세스종료')
 
     def WebProcessKill(self):
         if self.ws_thread:
@@ -365,6 +366,8 @@ class UpbitReceiverTick:
             self.hoga_code = data
         elif gubun == '차트종목코드':
             self.chart_code = data
+        elif gubun == '수동데이터저장':
+            self.ReceiverProcKill()
         elif gubun == '설정변경':
             self.dict_set = data
             if not self.dict_set['코인리시버'] and not self.dict_set['코인트레이더']:

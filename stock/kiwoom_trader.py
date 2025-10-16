@@ -34,7 +34,7 @@ class Updater(QThread):
 class KiwoomTrader:
     def __init__(self, qlist):
         """
-        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
                 0            1             2            3
         """
         app = QApplication(sys.argv)
@@ -44,7 +44,6 @@ class KiwoomTrader:
         self.straderQ   = qlist[2]
         self.sstgQs     = qlist[3]
         self.dict_set   = DICT_SET
-
         self.logger     = get_logger(self.__class__.__name__)
 
         self.dict_cj    = {}  # 체결목록
@@ -81,6 +80,7 @@ class KiwoomTrader:
             '최유리FOK': '26'
         }
         self.주문유형 = {
+            '시드부족': 0,
             '매수': 1,
             '매도': 2,
             '매수취소': 3,
@@ -262,7 +262,7 @@ class KiwoomTrader:
             self.OrderTimeLog(시그널시간)
             ct = str_ymdhms()
             if 주문구분 == '시드부족':
-                data = (종목코드, 종목명, 주문가격, '접수불가', 주문구분, 주문수량, 0, 주문수량, 주문가격, 0, ct, 원주문번호)
+                data = (종목코드, 종목명, 주문가격, '시드부족', 주문구분, 주문수량, 0, 주문수량, 주문가격, 0, ct, 원주문번호)
             else:
                 data = (종목코드, 종목명, 주문가격, '체결', 주문구분, 주문수량, 주문수량, 0, 주문가격, 주문가격, ct, 원주문번호)
             self.UpdateChejanData(data)
@@ -298,7 +298,7 @@ class KiwoomTrader:
             self.dict_set = data
             self.jgcs_time = self.get_jgcs_time()
         elif gubun == '종목정보':
-            self.dict_sgbn, dict_name = data
+            self.dict_sgbn, dict_name, self.tuple_kosd = data
             dummy_time = timedelta_sec(-3600)
             for code in dict_name:
                 self.dict_info[code] = {
@@ -488,7 +488,7 @@ class KiwoomTrader:
             self.UpdateChegeollist(index, 종목코드, 종목명, f'{주문구분} {주문상태}', 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}{주문상태}] {종목명} | {주문가격} | {주문수량}')))
 
-        elif 주문상태 == '접수불가':
+        elif 주문상태 == '시드부족':
             self.UpdateChegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
 
         elif 주문상태 == '체결' and 주문구분 in ('매수', '매도'):

@@ -22,12 +22,13 @@ class ZmqRecvFromUI(QThread):
     signal1 = pyqtSignal(str)
     signal2 = pyqtSignal(tuple)
 
-    def __init__(self, qlist, port_num):
+    def __init__(self, main, qlist, port_num):
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
                 0            1             2            3
         """
         super().__init__()
+        self.main     = main
         self.sagentQ  = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQ    = qlist[3]
@@ -42,11 +43,14 @@ class ZmqRecvFromUI(QThread):
             msg  = self.sock.recv_string()
             data = self.sock.recv_pyobj()
             if msg == 'agent':
-                self.sagentQ.put(data)
+                if self.main.FutureAgentProcessAlive():
+                    self.sagentQ.put(data)
             elif msg == 'trader':
-                self.straderQ.put(data)
+                if self.main.FutureTraderProcessAlive():
+                    self.straderQ.put(data)
             elif msg == 'strategy':
-                self.sstgQ.put(data)
+                if self.main.FutureStrategyProcessAlive():
+                    self.sstgQ.put(data)
             elif msg == 'manager':
                 if type(data) == str:
                     self.signal1.emit(data)
@@ -131,7 +135,6 @@ class FutureManager:
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ = Queue(), Queue(), Queue(), Queue()
         self.qlist    = [self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ]
         self.dict_set = DICT_SET
-
         self.logger   = get_logger(self.__class__.__name__)
 
         self.backtest_engine = False
@@ -139,7 +142,7 @@ class FutureManager:
         self.proc_trader     = None
         self.proc_agent      = None
 
-        self.zmqrecv = ZmqRecvFromUI(self.qlist, port_num)
+        self.zmqrecv = ZmqRecvFromUI(self, self.qlist, port_num)
         self.zmqrecv.signal1.connect(self.UpdateString)
         self.zmqrecv.signal2.connect(self.UpdateTuple)
         self.zmqrecv.start()

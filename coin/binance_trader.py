@@ -49,7 +49,6 @@ class BinanceTrader:
         self.cstgQ      = qlist[10]
         self.liveQ      = qlist[11]
         self.dict_set   = DICT_SET
-
         self.logger     = get_logger(self.__class__.__name__)
 
         self.dict_cj    = {}  # 체결목록
@@ -80,17 +79,13 @@ class BinanceTrader:
             '주문시간': now()
         }
 
-        self.binance = None
-        if not self.dict_set['코인모의투자']:
-            self.binance = binance.Client(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
-
+        self.binance   = binance.Client(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
         self.jgcs_time = self.get_jgcs_time()
         self.str_today = str_ymd(now_utc())
 
         self.LoadDatabase()
         self.GetBalances()
-        if not self.dict_set['코인모의투자']:
-            self.SetPosition()
+        self.SetPosition()
 
         self.ws_thread = None
         if not self.dict_set['코인모의투자']:
@@ -478,15 +473,14 @@ class BinanceTrader:
                 self.ModifyOrder(code, gubun)
 
     def SetLeverage(self, dict_dlhp):
-        if not self.dict_set['코인모의투자']:
-            for code in self.dict_info:
-                try:
-                    leverage = self.GetLeverage(dict_dlhp[code][1])
-                    self.dict_lvrg[code] = leverage
-                    if not self.dict_set['코인모의투자']:
-                        self.binance.futures_change_leverage(symbol=code, leverage=leverage)
-                except:
-                    pass
+        for code in self.dict_info:
+            try:
+                leverage = self.GetLeverage(dict_dlhp[code][1])
+                self.dict_lvrg[code] = leverage
+                if not self.dict_set['코인모의투자']:
+                    self.binance.futures_change_leverage(symbol=code, leverage=leverage)
+            except:
+                pass
 
     def GetLeverage(self, dlhp):
         leverage = 1

@@ -44,7 +44,6 @@ class FutureTrader:
         self.straderQ    = qlist[2]
         self.sstgQ       = qlist[3]
         self.dict_set    = DICT_SET
-
         self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_cj     = {}  # 체결목록
@@ -75,6 +74,7 @@ class FutureTrader:
             '지정가': '2'
         }
         self.주문유형 = {
+            '시드부족': 0,
             'SELL_LONG': 1,
             'BUY_SHORT': 1,
             'BUY_LONG': 2,
@@ -145,7 +145,7 @@ class FutureTrader:
         self.sstgQ.put(('잔고목록', self.dict_jg.copy()))
 
     def Scheduler2(self):
-        inthms = int(str_hms())
+        inthms = int(str_hms(now_cme()))
         if self.dict_set['주식타임프레임'] and inthms < self.dict_set['주식전략종료시간']:
             self.OrderTimeControl()
         if self.jgcs_time < inthms and not self.dict_bool['주식잔고청산']:
@@ -265,12 +265,12 @@ class FutureTrader:
             if self.dict_set['주식매도주문구분'] == '시장가' and not (self.dict_set['주식모의투자'] or 주문구분 == '시드부족'):
                 주문가격 = 0
 
+        self.dict_signal[종목코드] = 주문구분
         if self.dict_set['주식모의투자'] or 주문구분 == '시드부족':
-            self.dict_signal[종목코드] = 주문구분
             ct = str_ymdhms(now_cme())
             self.OrderTimeLog(시그널시간)
             if 주문구분 == '시드부족':
-                data = (종목코드, 종목명, '접수불가', 주문구분, '매수', 주문수량, 0, 주문가격, ct, 원주문번호, 0, 0)
+                data = (종목코드, 종목명, '시드부족', 주문구분, '매수', 주문수량, 0, 주문가격, ct, 원주문번호, 0, 0)
             else:
                 주문구분 = '매수' if 주문구분 in ('BUY_LONG', 'SELL_SHORT') else '매도'
                 data = (종목코드, 종목명, '체결', '체결', 주문구분, 주문수량, 0, 주문가격, ct, 원주문번호, 주문수량, 주문가격)
@@ -498,7 +498,10 @@ class FutureTrader:
     def UpdateChejanData(self, data):
         종목코드, 종목명, 주문상태, 주문구분, 매도수구분, 주문수량, 미체결수량, 주문가격, 주문시간, 주문번호, 체결수량, 체결가격 = data
         index = self.GetIndex()
-        gubun = self.dict_signal[종목코드]
+        gubun = self.dict_signal.get(종목코드, None)
+        if gubun is None:
+            self.logger.error('HTS 수동 주문은 포지션 방향을 추적할 수 없어 기록하지 않습니다.')
+            return
 
         if 주문상태 == '접수' and 주문구분 == '신규' and 매도수구분 in ('매수', '매도'):
             취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if 매도수구분 == '매수' else '주식매도취소시간초'])
@@ -507,7 +510,7 @@ class FutureTrader:
             self.UpdateChegeollist(index, 종목코드, 종목명, f'{gubun}_REG', 주문수량, 0, 미체결수량, 0, 주문시간, 주문가격, 주문번호)
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{gubun}_REG] {종목명} | {주문가격} | {주문수량}')))
 
-        elif 주문상태 == '접수불가':
+        elif 주문상태 == '시드부족':
             self.UpdateChegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
 
         elif 주문상태 == '체결' and 주문구분 == '체결' and 매도수구분 in ('매수', '매도'):

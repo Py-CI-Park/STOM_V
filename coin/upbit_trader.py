@@ -47,7 +47,6 @@ class UpbitTrader:
         self.cstgQ         = qlist[10]
         self.liveQ         = qlist[11]
         self.dict_set      = DICT_SET
-
         self.logger        = get_logger(self.__class__.__name__)
 
         self.dict_cj       = {}  # 체결목록
@@ -77,9 +76,7 @@ class UpbitTrader:
             '주문시간': now()
         }
 
-        self.upbit = None
-        if not self.dict_set['코인모의투자']:
-            self.upbit = pyupbit.Upbit(self.dict_set['Access_key1'], self.dict_set['Secret_key1'])
+        self.upbit     = pyupbit.Upbit(self.dict_set['Access_key1'], self.dict_set['Secret_key1'])
         self.jgcs_time = self.get_jgcs_time()
         self.str_today = str_ymd(now_utc())
 

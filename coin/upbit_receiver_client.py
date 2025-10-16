@@ -2,10 +2,10 @@ import zmq
 import time
 from threading import Thread
 from utility.setting import ui_num, DICT_SET
-from utility.static import threading_timer, str_hms, now_utc, get_logger
+from utility.static import threading_timer, get_logger
 
 
-class ZmqRecv(Thread):
+class ZmqRecvFromReceiver(Thread):
     def __init__(self, creceivQ, cstgQ, ctraderQ):
         super().__init__()
         self.creceivQ = creceivQ
@@ -42,7 +42,6 @@ class UpbitReceiverClient:
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
         self.dict_set    = DICT_SET
-
         self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_bool   = {'프로세스종료': False}
@@ -50,10 +49,9 @@ class UpbitReceiverClient:
         self.tuple_order = ()
         self.dict_jgdt   = {}
 
-        if self.dict_set['에이전트공유'] == 1:
-            self.zmqserver = ZmqRecv(self.creceivQ, self.cstgQ, self.ctraderQ)
-            self.zmqserver.daemon = True
-            self.zmqserver.start()
+        self.zmqserver = ZmqRecvFromReceiver(self.creceivQ, self.cstgQ, self.ctraderQ)
+        self.zmqserver.daemon = True
+        self.zmqserver.start()
 
         self.MainLoop()
 
@@ -72,11 +70,6 @@ class UpbitReceiverClient:
                     self.UpdateTuple(data)
             elif type(data) == str:
                 self.UpdateString(data)
-
-            inthmsutc = int(str_hms(now_utc()))
-            if self.dict_set['코인전략종료시간'] < inthmsutc < self.dict_set['코인전략종료시간'] + 10:
-                if self.dict_set['코인프로세스종료'] and not self.dict_bool['프로세스종료']:
-                    self.ReceiverProcKill()
 
     def UpdateTickData(self, data):
         if len(data) == 3:
@@ -105,11 +98,9 @@ class UpbitReceiverClient:
 
     def UpdateString(self, data):
         if data == '프로세스종료':
-            self.ctraderQ.put('프로세스종료')
+            threading_timer(180, self.creceivQ.put, '프로세스종료실행')
+        elif data == '프로세스종료실행':
             self.cstgQ.put('프로세스종료')
+            self.ctraderQ.put('프로세스종료')
             time.sleep(5)
             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료'))
-
-    def ReceiverProcKill(self):
-        self.dict_bool['프로세스종료'] = True
-        threading_timer(180, self.creceivQ.put, '프로세스종료')

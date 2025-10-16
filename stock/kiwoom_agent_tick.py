@@ -69,7 +69,7 @@ class Updater(QThread):
 class KiwoomAgentTick:
     def __init__(self, qlist):
         """
-        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
                 0            1             2            3
         """
         app = QApplication(sys.argv)
@@ -188,7 +188,7 @@ class KiwoomAgentTick:
         dict_code = {name: code for code, name in self.dict_name.items()}
 
         self.mgzservQ.put(('window', (ui_num['종목명데이터'], self.dict_name, dict_code)))
-        self.straderQ.put(('종목정보', (self.dict_sgbn, self.dict_name)))
+        self.straderQ.put(('종목정보', (self.dict_sgbn, self.dict_name, tuple_kosd)))
         for q in self.sstgQs:
             q.put(('코스닥목록', tuple_kosd))
         if self.dict_set['에이전트공유'] == 1:
@@ -212,7 +212,7 @@ class KiwoomAgentTick:
                 error = False
                 self.mgzservQ.put(('window', (ui_num['S단순텍스트'], self.list_cond)))
 
-        text = '해선 시스템을 시작하였습니다.'
+        text = '주식 시스템을 시작하였습니다.'
         if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', text))
         self.mgzservQ.put(('tele', text))
         self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 에이전트 시작')))
@@ -352,8 +352,8 @@ class KiwoomAgentTick:
                             float(data[16])          == float(self.GetCommRealData(code, 31)) and \
                             float(data[25]) / 100    == float(self.GetCommRealData(code, 851)) / 100 and \
                             int(data[19])              == int(self.GetCommRealData(code, 311)) and \
-                            int(data[4])               == int(self.GetCommRealData(code, 27)) and \
-                            int(data[5])               == int(self.GetCommRealData(code, 28)):
+                            abs(int(data[4]))      == abs(int(self.GetCommRealData(code, 27))) and \
+                            abs(int(data[5]))      == abs(int(self.GetCommRealData(code, 28))):
                         self.dict_bool['주식체결필드같음'] = True
                         self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 주식체결 필드값 같음')))
                     else:
@@ -376,8 +376,8 @@ class KiwoomAgentTick:
                     vrp     = float(data[16])
                     jsvp    = float(data[25]) / 100
                     sgta      = int(data[19])
-                    csp       = int(data[4])
-                    cbp       = int(data[5])
+                    csp     = abs(int(data[4]))
+                    cbp     = abs(int(data[5]))
                 else:
                     c     = abs(int(self.GetCommRealData(code, 10)))
                     per     = float(self.GetCommRealData(code, 12))
@@ -392,8 +392,8 @@ class KiwoomAgentTick:
                     vrp     = float(self.GetCommRealData(code, 31))
                     jsvp    = float(self.GetCommRealData(code, 851)) / 100
                     sgta      = int(self.GetCommRealData(code, 311))
-                    csp       = int(self.GetCommRealData(code, 27))
-                    cbp       = int(self.GetCommRealData(code, 28))
+                    csp   = abs(int(self.GetCommRealData(code, 27)))
+                    cbp   = abs(int(self.GetCommRealData(code, 28)))
             except:
                 pass
             else:
@@ -725,13 +725,13 @@ class KiwoomAgentTick:
         return self.ocx.dynamicCall('GetChejanData(int)', fid)
 
     def Scheduler(self):
-        inthms = int(str_hms())
         if not self.dict_bool['계좌조회']:
             self.GetAccountjanGo()
         if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
         if not self.test_mode:
+            inthms = int(str_hms())
             if self.operation == 1:
                 if 90100 < inthms and self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
                     self.ProcessKill()
@@ -870,7 +870,7 @@ class KiwoomAgentTick:
         if self.dict_set['주식알림소리']:
             self.mgzservQ.put(('sound', '주식 시스템을 3분 후 종료합니다.'))
         if self.dict_set['에이전트공유'] == 1:
-            self.agzservQ.put('프로세스종료')
+            self.agzservQ.put(('프로세스종료', '프로세스종료'))
         QTimer.singleShot(180 * 1000, self.SysExit)
 
     def SysExit(self):
@@ -969,6 +969,8 @@ class KiwoomAgentTick:
             self.chart_code = data
         elif gubun == '설정변경':
             self.dict_set = data
+        elif gubun == '수동데이터저장':
+            self.ProcessKill()
         elif gubun == '프로파일링결과':
             self.pr.print_stats(sort='cumulative')
 

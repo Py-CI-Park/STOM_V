@@ -17,7 +17,7 @@ from utility.static import now, timedelta_sec, GetUvilower5, GetKiwoomPgSgSp, Ge
 class KiwoomStrategyTick:
     def __init__(self, gubun, qlist):
         """
-        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
                 0            1             2            3
         """
         self.gubun            = gubun
@@ -26,7 +26,6 @@ class KiwoomStrategyTick:
         self.sstgQs           = qlist[3]
         self.sstgQ            = qlist[3][self.gubun]
         self.dict_set         = DICT_SET
-
         self.logger           = get_logger(self.__class__.__name__)
 
         self.buystrategy      = None

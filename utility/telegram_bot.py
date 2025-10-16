@@ -21,6 +21,7 @@ class TelegramBot:
         self.wdzservQ    = qlist[13]
         self.dict_set    = DICT_SET
         self.logger      = get_logger(self.__class__.__name__)
+
         gubun            = self.dict_set['증권사'][4:]
         self.token       = self.dict_set[f'텔레그램봇토큰{gubun}']
         self.chat_id     = self.dict_set[f'텔레그램사용자아이디{gubun}']

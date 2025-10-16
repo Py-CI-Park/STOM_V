@@ -148,19 +148,19 @@ def mnbutton_c_clicked_03(ui, login):
                 ui.wdzservQ.put(('manager', '수동시작'))
                 ui.ms_pushButton.setStyleSheet(style_bc_bt)
         elif login == 2 or (login == 0 and ui.dict_set['코인리시버']):
-            if ui.CoinReceiverProcessAlive(): ui.proc_receiver_coin.kill()
-            if ui.CoinStrategyProcessAlive(): ui.proc_strategy_coin.kill()
             if ui.CoinTraderProcessAlive():   ui.proc_trader_coin.kill()
+            if ui.CoinStrategyProcessAlive(): ui.proc_strategy_coin.kill()
+            if ui.CoinReceiverProcessAlive(): ui.proc_receiver_coin.kill()
             qtest_qwait(3)
             if ui.dict_set['거래소'] == '업비트' and (ui.dict_set['Access_key1'] is None or ui.dict_set['Secret_key1'] is None):
                 QMessageBox.critical(ui, '오류 알림', '업비트 계정이 설정되지 않아\n트레이더를 시작할 수 없습니다.\n계정 설정 후 다시 시작하십시오.\n')
             elif ui.dict_set['거래소'] == '바이낸스선물' and (ui.dict_set['Access_key2'] is None or ui.dict_set['Secret_key2'] is None):
                 QMessageBox.critical(ui, '오류 알림', '바이낸스선물 계정이 설정되지 않아\n트레이더를 시작할 수 없습니다.\n계정 설정 후 다시 시작하십시오.\n')
             else:
-                if ui.dict_set['코인리시버']:
-                    CoinReceiverStart(ui)
                 if ui.dict_set['코인트레이더']:
                     CoinTraderStart(ui)
+                if ui.dict_set['코인리시버']:
+                    CoinReceiverStart(ui)
                 ui.ms_pushButton.setStyleSheet(style_bc_bt)
 
 

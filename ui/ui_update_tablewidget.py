@@ -141,7 +141,7 @@ class UpdateTablewidget:
         elif gubun in (ui_num['C호가체결'], ui_num['S호가체결']):
             if not self.ui.dialog_hoga.isVisible():
                 self.ui.wdzservQ.put(('agent', ('호가종목코드', '000000')))
-                if self.ui.CoinReceiverProcessAlive():  self.ui.creceivQ.put('000000')
+                if self.ui.CoinReceiverProcessAlive():  self.ui.creceivQ.put(('호가종목코드', '000000'))
                 return
             tableWidget = self.ui.hc_tableWidgett_01
         elif gubun in (ui_num['C호가체결2'], ui_num['S호가체결2']):

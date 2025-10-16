@@ -21,7 +21,6 @@ class BinanceStrategyTick:
         self.ctraderQ         = qlist[9]
         self.cstgQ            = qlist[10]
         self.dict_set         = DICT_SET
-
         self.logger           = get_logger(self.__class__.__name__)
 
         self.buystrategy      = None

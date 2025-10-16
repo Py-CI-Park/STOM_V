@@ -59,7 +59,6 @@ class FutureAgentTick:
         self.straderQ = qlist[2]
         self.sstgQ    = qlist[3]
         self.dict_set = DICT_SET
-
         self.logger   = get_logger(self.__class__.__name__)
 
         self.ocx = QAxWidget('KFOPENAPI.KFOpenAPICtrl.1')
@@ -246,7 +245,7 @@ class FutureAgentTick:
         if err_code == 0: self.dict_bool['로그인'] = True
 
     def OnReceiveRealData(self, code, realtype, realdata):
-        if self.dict_bool['프로세스종료'] or self.dict_set['에이전트공유'] == 2:
+        if self.dict_bool['프로세스종료']:
             return
 
         if realtype == '해외선물시세':
@@ -260,8 +259,8 @@ class FutureAgentTick:
                             abs(float(data[9]))  == abs(float(self.GetCommRealData(code, 16))) and \
                             abs(float(data[10])) == abs(float(self.GetCommRealData(code, 17))) and \
                             abs(float(data[11])) == abs(float(self.GetCommRealData(code, 18))) and \
-                            float(data[5])           == float(self.GetCommRealData(code, 27)) and \
-                            float(data[6])           == float(self.GetCommRealData(code, 28)):
+                            float(data[5])       == abs(float(self.GetCommRealData(code, 27))) and \
+                            float(data[6])       == abs(float(self.GetCommRealData(code, 28))):
                         self.dict_bool['해선체결필드같음'] = True
                         self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
                     else:
@@ -277,8 +276,8 @@ class FutureAgentTick:
                     o   = abs(float(data[9]))
                     h   = abs(float(data[10]))
                     low = abs(float(data[11]))
-                    csp     = float(data[5])
-                    cbp     = float(data[6])
+                    csp = abs(float(data[5]))
+                    cbp = abs(float(data[6]))
                 else:
                     dt            = self.GetCommRealData(code, 20)
                     c             = self.GetCommRealData(code, 10)
@@ -287,8 +286,8 @@ class FutureAgentTick:
                     o   = abs(float(self.GetCommRealData(code, 16)))
                     h   = abs(float(self.GetCommRealData(code, 17)))
                     low = abs(float(self.GetCommRealData(code, 18)))
-                    csp     = float(self.GetCommRealData(code, 27))
-                    cbp     = float(self.GetCommRealData(code, 28))
+                    csp = abs(float(self.GetCommRealData(code, 27)))
+                    cbp = abs(float(self.GetCommRealData(code, 28)))
 
                 str_cme_hms = str_hms_cme_from_str(dt)
                 if not self.test_mode:
@@ -612,7 +611,7 @@ class FutureAgentTick:
         if self.dict_set['주식알림소리']:
             self.mgzservQ.put(('sound', '해외선물 시스템을 3분 후 종료합니다.'))
         if self.dict_set['에이전트공유'] == 1:
-            self.agzservQ.put('프로세스종료')
+            self.agzservQ.put(('프로세스종료', '프로세스종료'))
         QTimer.singleShot(180 * 1000, self.SysExit)
 
     def SysExit(self):
@@ -685,6 +684,8 @@ class FutureAgentTick:
             self.chart_code = data
         elif gubun == '설정변경':
             self.dict_set = data
+        elif gubun == '수동데이터저장':
+            self.ProcessKill()
         elif gubun == '프로파일링결과':
             self.pr.print_stats(sort='cumulative')
 

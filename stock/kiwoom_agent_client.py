@@ -1,6 +1,7 @@
 import os
 import sys
 import zmq
+import time
 from threading import Thread
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, ui_num
@@ -26,7 +27,7 @@ class ZmqRecvFromAgent(Thread):
 class KiwoomAgentClient:
     def __init__(self, qlist):
         """
-        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
+        self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
                 0            1             2            3
         """
         self.mgzservQ    = qlist[0]
@@ -34,7 +35,6 @@ class KiwoomAgentClient:
         self.straderQ    = qlist[2]
         self.sstgQs      = qlist[3]
         self.dict_set    = DICT_SET
-
         self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_sgbn   = {}
@@ -77,6 +77,8 @@ class KiwoomAgentClient:
             self.tuple_order = data
         elif gubun == '설정변경':
             self.dict_set = data
+        elif gubun == '프로세스종료':
+            threading_timer(180, self.sagentQ.put, '프로세스종료실행')
 
     def UpdateTickData(self, data):
         if len(data) == 3:
@@ -88,7 +90,7 @@ class KiwoomAgentClient:
             try:
                 code, c = data[-3] if self.dict_set['주식타임프레임'] else data[-4], data[1]
                 self.sstgQs[self.dict_sgbn[code]].put(data)
-                if self.dict_set['주식타임프레인']:
+                if self.dict_set['주식타임프레임']:
                     if code in self.tuple_jango or code in self.tuple_order:
                         self.straderQ.put(('주문확인', (code, c)))
                 else:
@@ -100,15 +102,14 @@ class KiwoomAgentClient:
     def UpdateLoginInfo(self, data):
         tuple_kosd, self.dict_sgbn, dict_name, dict_code = data
         self.mgzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
-        self.straderQ.put(('종목구분번호', self.dict_sgbn))
+        self.straderQ.put(('종목정보', (self.dict_sgbn, dict_name, tuple_kosd)))
         for q in self.sstgQs:
             q.put(('코스닥목록', tuple_kosd))
 
     def UpdateString(self, data):
-        if data == '프로세스종료':
-            threading_timer(180, self.sagentQ.put, '프로세스종료실행')
-        elif data == '프로세스종료실행':
+        if data == '프로세스종료실행':
             for q in self.sstgQs:
                 q.put('프로세스종료')
             self.straderQ.put('프로세스종료')
+            time.sleep(5)
             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 에이전트 종료')))

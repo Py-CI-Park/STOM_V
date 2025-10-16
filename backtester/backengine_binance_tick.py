@@ -161,7 +161,7 @@ class BackEngineBinanceTick(BackEngineKiwoomTick):
             elif data == '전체틱수계산':
                 self.GetTickCount()
             elif data == '백테중지':
-                self.BackStop(3)
+                self.BackStop(2)
 
     def Strategy(self):
         def now():

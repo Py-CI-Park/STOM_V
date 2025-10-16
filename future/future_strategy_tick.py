@@ -23,7 +23,6 @@ class FutureStrategyTick:
         self.straderQ         = qlist[2]
         self.sstgQ            = qlist[3]
         self.dict_set         = DICT_SET
-
         self.logger           = get_logger(self.__class__.__name__)
 
         self.buystrategy      = None
