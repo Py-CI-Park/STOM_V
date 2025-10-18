@@ -66,17 +66,17 @@ def backengine_show(ui, gubun):
             if ui.dict_set['주식타임프레임']:
                 endtime = '93000'
             else:
-                endtime = '1519'
+                endtime = '1520'
         else:
             if ui.dict_set['주식타임프레임']:
                 endtime = '103000'
             else:
-                endtime = '1559'
+                endtime = '1600'
         ui.be_lineEdittttt_01.setText(starttime)
         ui.be_lineEdittttt_02.setText(endtime)
     else:
         ui.be_lineEdittttt_01.setText('0')
-        ui.be_lineEdittttt_02.setText('235959' if ui.dict_set['코인타임프레임'] else '2359')
+        ui.be_lineEdittttt_02.setText('235000' if ui.dict_set['코인타임프레임'] else '2350')
     if not ui.backengin_window_open:
         ui.be_comboBoxxxxx_01.setCurrentText(ui.dict_set['백테엔진분류방법'])
     ui.dialog_backengine.show()

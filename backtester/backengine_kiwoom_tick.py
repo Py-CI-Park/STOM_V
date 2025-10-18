@@ -382,9 +382,8 @@ class BackEngineKiwoomTick:
             if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 중지 중 ...'))
         if gubun in (1, 2):
             self.bq.put('백테중지완료')
-        if gubun in (3, 4):
-            error = '전략연산' if gubun == 3 else '날짜지정'
-            if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], f'백테스트 엔진 {error} 오류, 자동 중지 중 ...'))
+        if gubun == 3:
+            if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
 
     def GetArrayData(self):
         shared_info = None
@@ -445,43 +444,40 @@ class BackEngineKiwoomTick:
             self.code = code
             self.name = self.dict_cn[self.code] if self.code in self.dict_cn else self.code
             last = len(self.arry_data) - 1
-            if last <= 0:
-                self.BackStop(4)
-                return
+            if last > 0:
+                indexs = self.arry_data[:, 0].astype(np.int64)
+                day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
+                day_last_indexs.append(last)
 
-            indexs = self.arry_data[:, 0].astype(np.int64)
-            day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
-            day_last_indexs.append(last)
-
-            start_idx = 0
-            for end_idx in day_last_indexs:
-                for i in range(start_idx, end_idx):
-                    self.index  = indexs[i]
-                    self.indexn = i
-                    self.tick_count += 1
-                    try:
-                        self.Strategy()
-                    except:
-                        print_exc()
-                        self.BackStop(3)
-                        return
-
-                    j += 1
-                    if j == 1000:
-                        j = 0
-                        if self.opti_turn in (1, 3):
-                            self.tq.put('탐색완료')
-                        if not self.beq.empty() and self.beq.get() == '백테중지':
-                            self.BackStop(1)
+                start_idx = 0
+                for end_idx in day_last_indexs:
+                    for i in range(start_idx, end_idx):
+                        self.index  = indexs[i]
+                        self.indexn = i
+                        self.tick_count += 1
+                        try:
+                            self.Strategy()
+                        except:
+                            print_exc()
+                            self.BackStop(3)
                             return
 
-                j += 1
-                self.index  = indexs[end_idx]
-                self.indexn = end_idx
-                self.tick_count += 1
-                self.LastSell()
-                self.InitTradeInfo()
-                start_idx = end_idx + 1
+                        j += 1
+                        if j == 1000:
+                            j = 0
+                            if self.opti_turn in (1, 3):
+                                self.tq.put('탐색완료')
+                            if not self.beq.empty() and self.beq.get() == '백테중지':
+                                self.BackStop(1)
+                                return
+
+                    j += 1
+                    self.index  = indexs[end_idx]
+                    self.indexn = end_idx
+                    self.tick_count += 1
+                    self.LastSell()
+                    self.InitTradeInfo()
+                    start_idx = end_idx + 1
 
             self.tq.put('백테완료')
 

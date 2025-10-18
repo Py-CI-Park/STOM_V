@@ -302,7 +302,7 @@ class BackTest:
             self.SysExit(True)
 
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
-        day_count = len(list(set(df_mt['일자'].to_list())))
+        day_count = len(set(df_mt['일자'].to_list()))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 
         arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
