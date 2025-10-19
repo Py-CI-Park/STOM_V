@@ -22,6 +22,10 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
             if code is None:
                 break
 
+            if not self.beq.empty() and self.beq.get() == '백테중지':
+                self.BackStop(1)
+                return
+
             if self.dict_set['주식매수금지블랙리스트'] and code in self.dict_set['주식블랙리스트'] and self.back_type != '백파인더':
                 self.tq.put('백테완료')
                 continue
@@ -40,6 +44,7 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
                         self.index  = indexs[i]
                         self.indexn = i
                         self.tick_count += 1
+
                         try:
                             self.Strategy()
                         except:
@@ -50,13 +55,16 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
                         j += 1
                         if j == 1000:
                             j = 0
-                            if self.opti_turn in (1, 3):
-                                self.tq.put('탐색완료')
+                            if self.opti_turn in (1, 3): self.tq.put('탐색완료')
                             if not self.beq.empty() and self.beq.get() == '백테중지':
                                 self.BackStop(1)
                                 return
 
                     j += 1
+                    if j == 1000:
+                        j = 0
+                        if self.opti_turn in (1, 3): self.tq.put('탐색완료')
+
                     self.index  = indexs[end_idx]
                     self.indexn = end_idx
                     self.tick_count += 1
@@ -66,6 +74,7 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
 
             self.tq.put('백테완료')
 
+        if self.opti_turn in (1, 3): self.tq.put(('탐색완료', j))
         if self.profile: self.pr.print_stats(sort='cumulative')
 
     def Strategy(self):

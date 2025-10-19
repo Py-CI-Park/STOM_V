@@ -178,6 +178,10 @@ class BackEngineFutureTick(BackEngineKiwoomTick):
             if code is None:
                 break
 
+            if not self.beq.empty() and self.beq.get() == '백테중지':
+                self.BackStop(1)
+                return
+
             self.code = code
             self.name = self.dict_info[code]['종목명']
             last = len(self.arry_data) - 1
@@ -192,6 +196,7 @@ class BackEngineFutureTick(BackEngineKiwoomTick):
                         self.index  = indexs[i]
                         self.indexn = i
                         self.tick_count += 1
+
                         try:
                             self.Strategy()
                         except:
@@ -202,13 +207,16 @@ class BackEngineFutureTick(BackEngineKiwoomTick):
                         j += 1
                         if j == 1000:
                             j = 0
-                            if self.opti_turn in (1, 3):
-                                self.tq.put('탐색완료')
+                            if self.opti_turn in (1, 3): self.tq.put('탐색완료')
                             if not self.beq.empty() and self.beq.get() == '백테중지':
                                 self.BackStop(1)
                                 return
 
                     j += 1
+                    if j == 1000:
+                        j = 0
+                        if self.opti_turn in (1, 3): self.tq.put('탐색완료')
+
                     self.index  = indexs[end_idx]
                     self.indexn = end_idx
                     self.tick_count += 1
@@ -218,6 +226,7 @@ class BackEngineFutureTick(BackEngineKiwoomTick):
 
             self.tq.put('백테완료')
 
+        if self.opti_turn in (1, 3): self.tq.put(('탐색완료', j))
         if self.profile: self.pr.print_stats(sort='cumulative')
 
     def Strategy(self):

@@ -14,18 +14,18 @@ from utility.static import timedelta_sec, pickle_read, pickle_write, GetKiwoomPg
 
 # noinspection PyUnusedLocal
 class BackEngineKiwoomTick:
-    def __init__(self, gubun, shared_counter, lock, wq, tq, bq, beq_list, bstq_list, profile=False):
-        self.gubun          = gubun
-        self.shared_counter = shared_counter
-        self.shared_lock    = lock
-        self.wq             = wq
-        self.tq             = tq
-        self.bq             = bq
-        self.beq_list       = beq_list
-        self.beq            = beq_list[gubun]
-        self.bstq_list      = bstq_list
-        self.profile        = profile
-        self.dict_set       = DICT_SET
+    def __init__(self, gubun, shared_cnt, lock, wq, tq, bq, beq_list, bstq_list, profile=False):
+        self.gubun        = gubun
+        self.shared_cnt   = shared_cnt
+        self.shared_lock  = lock
+        self.wq           = wq
+        self.tq           = tq
+        self.bq           = bq
+        self.beq_list     = beq_list
+        self.beq          = beq_list[gubun]
+        self.bstq_list    = bstq_list
+        self.profile      = profile
+        self.dict_set     = DICT_SET
 
         self.pr           = None
         self.back_type    = None
@@ -77,20 +77,20 @@ class BackEngineKiwoomTick:
         self.tick_count   = 0
         self.sell_count   = 0
 
-        self.avg_gubun     = None
-        self.is_oms        = None
-        self.is_tick       = None
-        self.ui_num_txt    = None
-        self.buy_hj_limit  = None
-        self.sell_hj_limit = None
-        self.set_dict_cond = None
-        self.set_weight    = None
-
         self.shared_list      = []
         self.shared_count     = None
         self.shared_info      = None
         self.dict_condition   = {}
         self.dict_cond_indexn = {}
+
+        self.avg_gubun        = None
+        self.is_oms           = None
+        self.is_tick          = None
+        self.ui_num_txt       = None
+        self.buy_hj_limit     = None
+        self.sell_hj_limit    = None
+        self.set_dict_cond    = None
+        self.set_weight       = None
 
         self.Settings()
         self.SetDictCondition()
@@ -388,10 +388,10 @@ class BackEngineKiwoomTick:
     def GetArrayData(self):
         shared_info = None
         with self.shared_lock:
-            shared_counter = self.shared_counter.value
-            if shared_counter < self.shared_count:
-                shared_info = self.shared_info[shared_counter]
-                self.shared_counter.value += 1
+            shared_cnt = self.shared_cnt.value
+            if shared_cnt < self.shared_count:
+                shared_info = self.shared_info[shared_cnt]
+                self.shared_cnt.value += 1
 
         if shared_info is None:
             return None
@@ -441,6 +441,10 @@ class BackEngineKiwoomTick:
             if code is None:
                 break
 
+            if not self.beq.empty() and self.beq.get() == '백테중지':
+                self.BackStop(1)
+                return
+
             self.code = code
             self.name = self.dict_cn[self.code] if self.code in self.dict_cn else self.code
             last = len(self.arry_data) - 1
@@ -455,6 +459,7 @@ class BackEngineKiwoomTick:
                         self.index  = indexs[i]
                         self.indexn = i
                         self.tick_count += 1
+
                         try:
                             self.Strategy()
                         except:
@@ -465,13 +470,16 @@ class BackEngineKiwoomTick:
                         j += 1
                         if j == 1000:
                             j = 0
-                            if self.opti_turn in (1, 3):
-                                self.tq.put('탐색완료')
+                            if self.opti_turn in (1, 3): self.tq.put('탐색완료')
                             if not self.beq.empty() and self.beq.get() == '백테중지':
                                 self.BackStop(1)
                                 return
 
                     j += 1
+                    if j == 1000:
+                        j = 0
+                        if self.opti_turn in (1, 3): self.tq.put('탐색완료')
+
                     self.index  = indexs[end_idx]
                     self.indexn = end_idx
                     self.tick_count += 1
@@ -481,6 +489,7 @@ class BackEngineKiwoomTick:
 
             self.tq.put('백테완료')
 
+        if self.opti_turn in (1, 3): self.tq.put(('탐색완료', j))
         if self.profile: self.pr.print_stats(sort='cumulative')
 
     def Strategy(self):

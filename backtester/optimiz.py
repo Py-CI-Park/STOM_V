@@ -62,7 +62,7 @@ class Total:
         self.vars         = None
         self.vars_list    = None
         self.opti_turn    = None
-        self.hstd         = -2_147_483_648
+        self.hstd         = -float('inf')
         self.sub_total    = 0
         self.total_count  = 0
 
@@ -70,6 +70,7 @@ class Total:
 
     def MainLoop(self):
         tt  = 0
+        rt  = 0
         sc  = 0
         bc  = 0
         tbc = 0
@@ -98,6 +99,13 @@ class Total:
                     else:
                         for q in self.bstq_list[:5]:
                             q.put(('백테완료', '분리집계'))
+
+            elif data[0] == '탐색완료':
+                rt += data[1]
+                if rt >= 1000:
+                    rt -= 1000
+                    tt += 1
+                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -178,6 +186,7 @@ class Total:
                 dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
                 if self.opti_turn != 4:
                     tt = 0
+                    rt = 0
                     start = now()
 
             elif data[0] == '경우의수':
@@ -333,31 +342,9 @@ class Total:
         sys.exit()
 
 
-class StopWhenNotUpdateBestCallBack:
-    def __init__(self, wq, tq, back_count, optuna_count, ui_gubun, len_vars):
-        self.wq           = wq
-        self.tq           = tq
-        self.back_count   = back_count
-        self.optuna_count = optuna_count
-        self.ui_gubun     = ui_gubun
-        self.len_vars     = len_vars
-
-    def __call__(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> None:
-        best_opt    = study.best_value
-        best_num    = study.best_trial.number
-        curr_num    = trial.number
-        last_num    = (best_num + self.len_vars) if self.optuna_count == 0 else (best_num + self.optuna_count)
-        rema_num    = last_num - curr_num
-        total_count = self.back_count * (last_num + 1)
-        self.tq.put(('횟수변경', total_count))
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
-        if curr_num == last_num:
-            study.stop()
-
-
 class Optimize:
     def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, multi, backname, ui_gubun):
-        self.shared_counter = sc
+        self.shared_cnt = sc
         self.wq         = wq
         self.bq         = bq
         self.sq         = sq
@@ -377,6 +364,7 @@ class Optimize:
         else:
             self.gubun = 'coin'
         self.vars       = {}
+        self.vars_      = {}
         self.study      = None
         self.dict_simple_vars = {}
         self.Start()
@@ -538,7 +526,7 @@ class Optimize:
 
         time.sleep(1)
 
-        self.shared_counter.value = 0
+        self.shared_cnt.value = 0
         for q in self.beq_list:
             q.put('전체틱수계산')
 
@@ -696,7 +684,7 @@ class Optimize:
             hstd = data[-1]
 
         vars_change_count = None
-        init_std          = -2_147_483_648
+        init_std          = -float('inf')
         deleted_varlist   = [[] for _ in range(len_vars)]
 
         for k in range(ccount if ccount != 0 else 100):
@@ -744,17 +732,16 @@ class Optimize:
                         if std == -2_000_000_000:
                             delete_varlist[vturn].append(cur_turn_var)
 
-            high_ratio = [0, 1, hstd]
+            high_ratio = [0, hstd, hstd]
             if bool_changed_hstd:
-                cf_list = [0.50, 0.60, 0.70, 0.80, 0.90, 0.92, 0.94, 0.96, 0.98]
+                std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 시작'))
-                for i, cf in enumerate(cf_list):
-                    change_std = hstd * cf
+                for std in std_set[1:-1]:
                     vars_copy = copy.deepcopy(vars_)
                     for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
                         pre_turn_hvar = vars_copy[vturn][1]
                         cur_turn_hvar, cur_turn_hstd = hvar_hstd
-                        if cur_turn_hstd >= change_std and pre_turn_hvar != cur_turn_hvar:
+                        if cur_turn_hstd >= std and cur_turn_hvar != pre_turn_hvar:
                             vars_copy[vturn][1] = cur_turn_hvar
 
                     self.BackStart(('변수정보', vars_copy, 0))
@@ -767,17 +754,17 @@ class Optimize:
                             ratio = round((check_hstd / hstd - 1) * 100, 2)
                         else:
                             ratio = round((1 - check_hstd / hstd) * 100, 2)
-                        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합계수[{cf:.2f}] 기준값상승률[{ratio}%]'))
-                        if ratio > 2 and ratio >= high_ratio[0]:
-                            high_ratio = [ratio, cf, check_hstd]
+                        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                        if ratio > high_ratio[0]:
+                            high_ratio = [ratio, std, check_hstd]
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 완료'))
 
                 text = '\n'
-                change_std = hstd * high_ratio[1]
+                high_ratio_std = high_ratio[1]
                 for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
                     pre_turn_hvar = vars_[vturn][1]
                     cur_turn_hvar, cur_turn_hstd = hvar_hstd
-                    if cur_turn_hstd >= change_std and pre_turn_hvar != cur_turn_hvar:
+                    if cur_turn_hstd >= high_ratio_std and cur_turn_hvar != pre_turn_hvar:
                         vars_change_count += 1
                         vars_[vturn][1] = cur_turn_hvar
                         text = f'{text}self.vars[{vturn}]의 최적값 변경 [{pre_turn_hvar} -> {cur_turn_hvar}]\n'
@@ -786,12 +773,12 @@ class Optimize:
             if self.dict_set['범위자동관리'] and hstd > 0:
                 text = '\n'
                 for vturn, var_std in dict_turn_var_std.items():
-                    set_std = len(set(list(var_std.values())))
-                    if set_std <= 2:
+                    len_std_set = len(set(list(var_std.values())))
+                    if len_std_set <= 2:
                         cur_turn_hvar = vars_[vturn][1]
                         vars_[vturn] = [[cur_turn_hvar], cur_turn_hvar]
                         text = f'{text}self.vars[{vturn}]의 범위 고정 [{cur_turn_hvar}]\n'
-                    elif set_std >= 5:
+                    elif len_std_set >= 5:
                         for var, std in var_std.items():
                             if std < hstd / 10 and var not in delete_varlist[vturn]:
                                 delete_varlist[vturn].append(var)
@@ -811,34 +798,33 @@ class Optimize:
                             text = f'{text}self.vars[{i}]의 범위 고정 [{cur_turn_hvar}]\n'
                 if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
 
-            text = '\n'
-            for i in range(len_vars):
-                len_vturn = len(vars_[i][0])
-                if len_vturn >= 5:
-                    first  = vars_[i][0][0]
-                    second = vars_[i][0][1]
-                    last   = vars_[i][0][-1]
-                    high   = vars_[i][1]
-                    gap    = second - first
-                    if high == first:
-                        new = (first - gap) if type(gap) == int else round(first - gap, 2)
-                        if new not in deleted_varlist[i]:
-                            prev_list = vars_[i][0] if len_vturn < 20 else vars_[i][0][:-1]
+            if previous_high_std > 0:
+                text = '\n'
+                for i, var in enumerate(vars_):
+                    len_var = len(var[0])
+                    if len_var >= 5:
+                        first  = var[0][0]
+                        second = var[0][1]
+                        last   = var[0][-1]
+                        high   = var[1]
+                        gap    = second - first
+                        if high == first:
+                            new = (first - gap) if type(gap) == int else round(first - gap, 2)
+                            prev_list = var[0] if len_var < 20 else var[0][:-1]
                             vars_[i][0] = [new] + prev_list
                             text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
-                    elif high == last:
-                        new = (last + gap) if type(gap) == int else round(first + gap, 2)
-                        if new not in deleted_varlist[i]:
-                            prev_list = vars_[i][0] if len_vturn < 20 else vars_[i][0][1:]
+                        elif high == last:
+                            new = (last + gap) if type(gap) == int else round(first + gap, 2)
+                            prev_list = var[0] if len_var < 20 else var[0][1:]
                             vars_[i][0] = prev_list + [new]
                             text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
-            if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
+                if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
 
             if not bool_changed_hstd:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
                 break
 
-            if previous_high_std > 0 and hstd > 0 and high_ratio[0] == 0:
+            if previous_high_std > 0 and hstd > 0 and high_ratio[0] < 2:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최고기준값 상승률 2% 미달성, 최적화를 종료합니다.'))
                 break
 
@@ -850,27 +836,28 @@ class Optimize:
                        optuna_fixvars, optuna_count, optuna_autostep, sampler, buystg_name):
 
         total_count = back_count * ((len_vars + 1) if optuna_count == 0 else optuna_count)
+        self.vars_ = vars_
         self.tq.put(('경우의수', total_count, back_count))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} OPTUNA 최적화 시작'))
 
         def objective(trial):
             optuna_vars = []
             backte_vars = []
-            for i, var_ in enumerate(list(self.vars.values())):
+            for i, var in enumerate(self.vars_):
                 trial_name = f'{i:03d}'
+                step    = abs(self.vars[i][0][2])
+                varsint = type(step) == int
+                suggest_func = trial.suggest_int if varsint else trial.suggest_float
                 fixed = ((only_buy and ((buy_first and i > sell_num) or (not buy_first and i <= buy_num))) or
                          (only_sell and ((buy_first and i <= sell_num) or (not buy_first and i > buy_num))))
-                varsint = type(var_[0][2]) == int
-                suggest_func = trial.suggest_int if varsint else trial.suggest_float
-                if not (var_[0][2] == 0 or i in optuna_fixvars or fixed):
-                    min_val, max_val = sorted((var_[0][0], var_[0][1]))
+                if not (step == 0 or i in optuna_fixvars or fixed):
+                    min_var, max_var = sorted((var[0][0], var[0][-1]))
                     if optuna_autostep:
-                        trial_ = suggest_func(trial_name, min_val, max_val)
+                        trial_ = suggest_func(trial_name, min_var, max_var)
                     else:
-                        step = var_[0][2] if min_val == var_[0][0] else -var_[0][2]
-                        trial_ = suggest_func(trial_name, min_val, max_val, step=step)
+                        trial_ = suggest_func(trial_name, min_var, max_var, step=step)
                 else:
-                    trial_ = suggest_func(trial_name, var_[1], var_[1])
+                    trial_ = suggest_func(trial_name, var[1], var[1])
 
                 optuna_vars.append(trial_)
                 backte_vars.append([[], trial_])
@@ -890,16 +877,44 @@ class Optimize:
             return ostd
 
         optuna.logging.disable_default_handler()
-        self.study = optuna.create_study(storage=DB_OPTUNA, study_name=f'{self.backname}_{buystg_name}_{str_ymdhms()}', direction='maximize', sampler=sampler)
-        self.study.enqueue_trial({f'{i:03d}': var_[1] for i, var_ in enumerate(vars_)})
-        self.study.optimize(objective, n_trials=10000, callbacks=[StopWhenNotUpdateBestCallBack(self.wq, self.tq, back_count, optuna_count, self.ui_gubun, len(self.vars))])
-        for k, high_var in enumerate(list(self.study.best_params.values())):
-            pre_hvar = vars_[k][1]
+        self.study = optuna.create_study(
+            storage=DB_OPTUNA,
+            study_name=f'{self.backname}_{buystg_name}_{str_ymdhms()}',
+            direction='maximize',
+            sampler=sampler
+        )
+        self.study.enqueue_trial({f'{i:03d}': var[1] for i, var in enumerate(vars_)})
+        callback = StopWhenNotUpdateBestCallBack(self, back_count, optuna_count)
+        self.study.optimize(objective, n_trials=10000, callbacks=[callback])
+        for i, high_var in enumerate(self.study.best_params.values()):
+            pre_hvar = self.vars_[i][1]
             if high_var != pre_hvar:
-                vars_[k][1] = high_var
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'self.vars[{k}]의 최적값 변경 [{pre_hvar} -> {high_var}]'))
+                self.vars_[i][1] = high_var
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {high_var}]'))
 
-        return vars_
+        return self.vars_
+
+    def AdjustVarsRange(self, best_params):
+        text = '\n'
+        for i, var in enumerate(self.vars_):
+            len_var = len(var[0])
+            if len_var >= 5:
+                first  = var[0][0]
+                second = var[0][1]
+                last   = var[0][-1]
+                gap    = second - first
+                high   = best_params[i]
+                if high == first:
+                    new = (first - gap) if type(gap) == int else round(first - gap, 2)
+                    prev_list = var[0] if len_var < 20 else var[0][:-1]
+                    self.vars_[i][0] = [new] + prev_list
+                    text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
+                elif high == last:
+                    new = (last + gap) if type(gap) == int else round(first + gap, 2)
+                    prev_list = var[0] if len_var < 20 else var[0][1:]
+                    self.vars_[i][0] = prev_list + [new]
+                    text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
+        if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
 
     def SaveOptiVars(self, text_vars, vars_, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num):
         if 'T' not in self.backname:
@@ -932,7 +947,7 @@ class Optimize:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} {optivars_name}의 최적값 갱신 완료'))
 
     def BackStart(self, data):
-        self.shared_counter.value = 0
+        self.shared_cnt.value = 0
         self.tq.put(data)
         for q in self.bstq_list:
             q.put(('백테시작', data[-1]))
@@ -947,3 +962,26 @@ class Optimize:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))
         time.sleep(1)
         sys.exit()
+
+
+class StopWhenNotUpdateBestCallBack:
+    def __init__(self, main, back_count, optuna_count):
+        self.main         = main
+        self.back_count   = back_count
+        self.optuna_count = optuna_count
+        self.len_vars     = len(self.main.vars_)
+        self.adjust_cnt   = max(self.len_vars, self.optuna_count)
+
+    def __call__(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> None:
+        best_opt    = study.best_value
+        best_num    = study.best_trial.number
+        curr_num    = trial.number
+        last_num    = (best_num + self.len_vars) if self.optuna_count == 0 else (best_num + self.optuna_count)
+        rema_num    = last_num - curr_num
+        total_count = self.back_count * (last_num + 1)
+        self.main.tq.put(('횟수변경', total_count))
+        self.main.wq.put((ui_num[f'{self.main.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
+        if curr_num >= self.adjust_cnt and curr_num == best_num:
+            self.main.AdjustVarsRange(list(study.best_params.values()))
+        if curr_num == last_num:
+            study.stop()

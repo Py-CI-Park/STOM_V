@@ -396,7 +396,7 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
         std = GetOptiValidStd(train_stds, valid_stds, divide, exponential)
         text2, hstd, sendtext = GetText2(std, pre_hstd)
 
-        if sendtext:
+        if sendtext or opti_turn == 4:
             wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
             for text3 in train_text:
                 wq.put((ui_num[f'{ui_gubun}백테스트'], text3))
@@ -411,7 +411,7 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
             text3, std  = GetText3('TOTAL', optistd, std_list, dict_train)
             text2, hstd, sendtext = GetText2(std, pre_hstd)
 
-        if sendtext or opti_turn == 2:
+        if sendtext or opti_turn in (2, 4):
             wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
             wq.put((ui_num[f'{ui_gubun}백테스트'], text3))
 
@@ -439,7 +439,7 @@ def GetText2(std, pre_hstd):
 
 def GetText3(gubun, optistd, std_list, result):
     tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
-    if tpp < 0 < tsg: tsg = -2_147_483_648
+    if tpp < 0 < tsg: tsg = -float('inf')
     mddt  = f'{mdd_:,.0f}' if 'G' in optistd and optistd != 'CAGR' else f'{mdd:,.2f}%'
     color = '#ffa3d7' if 'TRAIN' not in gubun else '#a1afff'
     text  = f"<font color={color}>{gubun}</font>"
@@ -471,7 +471,7 @@ def GetOptiValidStd(train_stds, valid_stds, divide, exponential):
             ostd *= (count - i) * 2 / count
         merge += ostd
     merge = round(merge / count / 1000, 2) if divide else round(merge / count, 2)
-    return merge if merge != 0 else -2_147_483_648
+    return merge if merge != 0 else -float('inf')
 
 
 def GetOptiStdText(optistd, std_list, result, pre_text):
@@ -480,7 +480,7 @@ def GetOptiStdText(optistd, std_list, result, pre_text):
     std_true = (mdd_low <= mdd <= mdd_high and mhct_low <= mhct <= mhct_high and wr_low <= wr <= wr_high and
                 ap_low <= app <= ap_high and atc_low <= atc <= atc_high and cagr_low <= cagr <= cagr_high and tpi_low <= tpi <= tpi_high)
 
-    std = -2_147_483_648
+    std = -float('inf')
     if tc > 0:
         sign = 1 if cagr >= 0 else -1
         optistd_handlers = {
@@ -501,7 +501,7 @@ def GetOptiStdText(optistd, std_list, result, pre_text):
                 std = optistd_handlers[optistd]()
         else:
             std = optistd_handlers[optistd]()
-        if std == 0: std = -2_147_483_648
+        if std == 0: std = -float('inf')
 
     text_handlers = {
         'TP':   lambda: f'{pre_text}</font>',
@@ -556,26 +556,27 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
     end_str   = str(endday)
     startday  = f'{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}'
     endday    = f'{end_str[:4]}-{end_str[4:6]}-{end_str[6:8]}'
-    if dict_cn is not None and '005930' in dict_cn:
-        try:
-            df_kp = yf.Ticker('^KS11').history(start=startday, end=endday, interval="1d")
-            df_kp['종가'] = (df_kp['Close'] / df_kp['Close'].iloc[0] - 1) * 100
-            df_kd = yf.Ticker('^KQ11').history(start=startday, end=endday, interval="1d")
-            df_kd['종가'] = (df_kd['Close'] / df_kd['Close'].iloc[0] - 1) * 100
-        except:
-            pass
-    elif dict_cn is not None and '005930' not in dict_cn:
-        try:
-            df_nd = yf.Ticker('QQQ').history(start=startday, end=endday, interval="1d")
-            df_nd['종가'] = (df_nd['Close'] / df_nd['Close'].iloc[0] - 1) * 100
-        except:
-            pass
-    else:
-        try:
-            df_bc = yf.Ticker('BTC-USD').history(start=startday, end=endday, interval="1d")
-            df_bc['종가'] = (df_bc['Close'] / df_bc['Close'].iloc[0] - 1) * 100
-        except:
-            pass
+    if startday != endday:
+        if dict_cn is not None and '005930' in dict_cn:
+            try:
+                df_kp = yf.Ticker('^KS11').history(start=startday, end=endday, interval="1d")
+                df_kp['종가'] = (df_kp['Close'] / df_kp['Close'].iloc[0] - 1) * 100
+                df_kd = yf.Ticker('^KQ11').history(start=startday, end=endday, interval="1d")
+                df_kd['종가'] = (df_kd['Close'] / df_kd['Close'].iloc[0] - 1) * 100
+            except:
+                pass
+        elif dict_cn is not None and '005930' not in dict_cn:
+            try:
+                df_nd = yf.Ticker('QQQ').history(start=startday, end=endday, interval="1d")
+                df_nd['종가'] = (df_nd['Close'] / df_nd['Close'].iloc[0] - 1) * 100
+            except:
+                pass
+        else:
+            try:
+                df_bc = yf.Ticker('BTC-USD').history(start=startday, end=endday, interval="1d")
+                df_bc['종가'] = (df_bc['Close'] / df_bc['Close'].iloc[0] - 1) * 100
+            except:
+                pass
 
     df_st = df_tsg[['수익금']].copy()
     df_st.index = df_st.index.map(lambda x: dt_hms(x[8:]) if not is_min else dt_hm(x[8:]))

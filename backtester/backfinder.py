@@ -81,15 +81,15 @@ class Total:
 
 class BackFinder:
     def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, ui_gubun):
-        self.shared_counter = sc
-        self.wq       = wq
-        self.bq       = bq
-        self.sq       = sq
-        self.tq       = tq
-        self.lq       = lq
-        self.beq_list = beq_list
-        self.ui_gubun = ui_gubun
-        self.dict_set = DICT_SET
+        self.shared_cnt = sc
+        self.wq         = wq
+        self.bq         = bq
+        self.sq         = sq
+        self.tq         = tq
+        self.lq         = lq
+        self.beq_list   = beq_list
+        self.ui_gubun   = ui_gubun
+        self.dict_set   = DICT_SET
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':
@@ -127,7 +127,7 @@ class BackFinder:
         Process(target=Total, args=(self.wq, self.sq, self.tq, self.bq, self.ui_gubun, self.gubun)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 집계용 프로세스 생성 완료'))
 
-        self.shared_counter.value = 0
+        self.shared_cnt.value = 0
         self.tq.put(('백테정보', avgtime, startday, endday, starttime, endtime, buystg_name, back_count, self.tickcols))
         data = ('백테정보', avgtime, startday, endday, starttime, endtime, buystg, None)
         for q in self.beq_list:

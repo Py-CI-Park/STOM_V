@@ -46,7 +46,7 @@ def process_kill(ui):
         ui.proc_trader_coin.kill()
     if ui.CoinStrategyProcessAlive():
         ui.proc_strategy_coin.kill()
-    if ui.shared_counter is not None:
+    if ui.shared_cnt is not None:
         ui.BacktestProcessKill(True, True)
 
     factor_choice = ''

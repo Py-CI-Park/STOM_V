@@ -67,7 +67,7 @@ class Total:
         self.vars_list    = None
         self.opti_turn    = None
         self.hstd_list    = None
-        self.hstd         = -2_147_483_648
+        self.hstd         = -float('inf')
         self.sub_total    = 0
         self.total_count  = 0
 
@@ -75,6 +75,7 @@ class Total:
 
     def MainLoop(self):
         tt  = 0
+        rt  = 0
         oc  = 0
         sc  = 0
         bc  = 0
@@ -104,6 +105,13 @@ class Total:
                     else:
                         for q in self.bstq_list[:5]:
                             q.put(('백테완료', '분리집계'))
+
+            elif data[0] == '탐색완료':
+                rt += data[1]
+                if rt >= 1000:
+                    rt -= 1000
+                    tt += 1
+                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -185,6 +193,7 @@ class Total:
                 dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
                 if self.opti_turn != 4:
                     tt = 0
+                    rt = 0
                     start = now()
 
             elif data[0] == '경우의수':
@@ -193,7 +202,7 @@ class Total:
                 self.startday     = data[3]
                 self.endday       = data[4]
                 self.in_out_count = data[5]
-                self.hstd         = -2_147_483_648
+                self.hstd         = -float('inf')
 
             elif data[0] == '횟수변경':
                 self.total_count = data[1]
@@ -353,7 +362,7 @@ class StopWhenNotUpdateBestCallBack:
 
 class RollingWalkForwardTest:
     def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, multi, backname, ui_gubun):
-        self.shared_counter = sc
+        self.shared_cnt = sc
         self.wq         = wq
         self.bq         = bq
         self.sq         = sq
@@ -527,7 +536,7 @@ class RollingWalkForwardTest:
 
         time.sleep(1)
 
-        self.shared_counter.value = 0
+        self.shared_cnt.value = 0
         for q in self.beq_list:
             q.put('전체틱수계산')
 
@@ -691,7 +700,7 @@ class RollingWalkForwardTest:
             hstd = data[-1]
 
         vars_change_count = None
-        init_std          = -2_147_483_648
+        init_std          = -float('inf')
         for k in range(ccount if ccount != 0 else 100):
             self.wq.put((
                 ui_num[f'{self.ui_gubun}백테스트'],
@@ -728,17 +737,16 @@ class RollingWalkForwardTest:
                             if not bool_changed_hstd:
                                 bool_changed_hstd = True
 
-            high_ratio = [0, 1, hstd]
+            high_ratio = [0, hstd, hstd]
             if bool_changed_hstd:
-                cf_list = [0.50, 0.60, 0.70, 0.80, 0.90, 0.92, 0.94, 0.96, 0.98]
+                std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 시작'))
-                for i, cf in enumerate(cf_list):
-                    change_std = hstd * cf
+                for std in std_set[1:-1]:
                     vars_copy = copy.deepcopy(vars_)
                     for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
                         pre_turn_hvar = vars_copy[vturn][1]
                         cur_turn_hvar, cur_turn_hstd = hvar_hstd
-                        if cur_turn_hstd >= change_std and pre_turn_hvar != cur_turn_hvar:
+                        if cur_turn_hstd >= std and cur_turn_hvar != pre_turn_hvar:
                             vars_copy[vturn][1] = cur_turn_hvar
 
                     self.BackStart(('변수정보', vars_copy, 0))
@@ -751,17 +759,17 @@ class RollingWalkForwardTest:
                             ratio = round((check_hstd / hstd - 1) * 100, 2)
                         else:
                             ratio = round((1 - check_hstd / hstd) * 100, 2)
-                        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합계수[{cf:.2f}] 기준값상승률[{ratio}%]'))
-                        if ratio > 2 and ratio >= high_ratio[0]:
-                            high_ratio = [ratio, cf, check_hstd]
+                        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                        if ratio > high_ratio[0]:
+                            high_ratio = [ratio, std, check_hstd]
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 완료'))
 
                 text = '\n'
-                change_std = hstd * high_ratio[1]
+                high_ratio_std = high_ratio[1]
                 for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
                     pre_turn_hvar = vars_[vturn][1]
                     cur_turn_hvar, cur_turn_hstd = hvar_hstd
-                    if cur_turn_hstd >= change_std and pre_turn_hvar != cur_turn_hvar:
+                    if cur_turn_hstd >= high_ratio_std and cur_turn_hvar != pre_turn_hvar:
                         vars_change_count += 1
                         vars_[vturn][1] = cur_turn_hvar
                         text = f'{text}self.vars[{vturn}]의 최적값 변경 [{pre_turn_hvar} -> {cur_turn_hvar}]\n'
@@ -771,7 +779,7 @@ class RollingWalkForwardTest:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
                 break
 
-            if previous_high_std > 0 and hstd > 0 and high_ratio[0] == 0:
+            if previous_high_std > 0 and hstd > 0 and high_ratio[0] < 2:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최고기준값 상승률 2% 미달성, 최적화를 종료합니다.'))
                 break
 
@@ -837,7 +845,7 @@ class RollingWalkForwardTest:
         return vars_, self.study.best_value
 
     def BackStart(self, data):
-        self.shared_counter.value = 0
+        self.shared_cnt.value = 0
         self.tq.put(data[:3])
         for q in self.bstq_list:
             q.put(('백테시작', data[2], data[-1]))

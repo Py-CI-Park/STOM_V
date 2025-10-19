@@ -37,7 +37,7 @@ class Total:
         self.dict_t       = {}
         self.dict_v       = {}
 
-        self.stdp         = -2_147_483_648
+        self.stdp         = -float('inf')
         self.sub_total    = 0
         self.total_count  = 0
 
@@ -45,6 +45,7 @@ class Total:
 
     def MainLoop(self):
         tt = 0
+        rt = 0
         sc = 0
         bc = 0
         vc = 0
@@ -63,6 +64,13 @@ class Total:
                     bc = 0
                     for stq in self.bstq_list:
                         stq.put(('백테완료', '미분리집계'))
+
+            elif data[0] == '탐색완료':
+                rt += data[1]
+                if rt >= 1000:
+                    rt -= 1000
+                    tt += 1
+                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -151,7 +159,7 @@ class Total:
 
 class OptimizeConditions:
     def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun):
-        self.shared_counter = sc
+        self.shared_cnt   = sc
         self.wq           = wq
         self.bq           = bq
         self.sq           = sq
@@ -320,7 +328,7 @@ class OptimizeConditions:
 
         time.sleep(1)
 
-        self.shared_counter.value = 0
+        self.shared_cnt.value = 0
         for q in self.beq_list:
             q.put('전체틱수계산')
 
@@ -339,12 +347,12 @@ class OptimizeConditions:
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
         self.tq.put(('경우의수', rcount * back_count, back_count))
-        hstd = -2_147_483_648
+        hstd = -float('inf')
         for i in range(rcount):
             buy_conds, sell_conds = self.GetCondlist()
             if len(buy_conds) == 20:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 [{i+1}/{rcount}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
-                self.shared_counter.value = 0
+                self.shared_cnt.value = 0
                 for q in self.bstq_list:
                     q.put(('백테시작', 3))
                 if is_long is None:

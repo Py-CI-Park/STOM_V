@@ -245,18 +245,18 @@ class Total:
 
 class BackTest:
     def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, ui_gubun):
-        self.shared_counter = sc
-        self.wq        = wq
-        self.bq        = bq
-        self.sq        = sq
-        self.tq        = tq
-        self.lq        = lq
-        self.teleQ     = teleQ
-        self.beq_list  = beq_list
-        self.bstq_list = bstq_list
-        self.backname  = backname
-        self.ui_gubun  = ui_gubun
-        self.dict_set  = DICT_SET
+        self.shared_cnt = sc
+        self.wq         = wq
+        self.bq         = bq
+        self.sq         = sq
+        self.tq         = tq
+        self.lq         = lq
+        self.teleQ      = teleQ
+        self.beq_list   = beq_list
+        self.bstq_list  = bstq_list
+        self.backname   = backname
+        self.ui_gubun   = ui_gubun
+        self.dict_set   = DICT_SET
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':
@@ -330,7 +330,7 @@ class BackTest:
         self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg_name, buystg, sellstg,
                      dict_cn, back_count, day_count, bl, schedul, back_club))
 
-        self.shared_counter.value = 0
+        self.shared_cnt.value = 0
         data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg)
         for q in self.bstq_list:
             q.put(('백테시작', 2))

@@ -107,8 +107,8 @@ def backengine_start(ui, gubun):
         ui.back_sprocs.append(proc)
         ui.windowQ.put((ui_num['백테엔진'], f'중간집계 프로세스{i + 1} 생성 완료'))
 
-    ui.shared_counter = Value('i', 0)
-    ui.shared_lock    = Lock()
+    ui.shared_cnt  = Value('i', 0)
+    ui.shared_lock = Lock()
 
     for i in range(multi):
         beq = Queue()
@@ -139,11 +139,11 @@ def backengine_start(ui, gubun):
 
         if i == 0 and ui.dict_set['백테엔진프로파일링']:
             proc = Process(
-                target=target, args=(i, ui.shared_counter, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques, True), daemon=True
+                target=target, args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques, True), daemon=True
             )
         else:
             proc = Process(
-                target=target, args=(i, ui.shared_counter, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques), daemon=True
+                target=target, args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques), daemon=True
             )
         proc.start()
         ui.back_eprocs.append(proc)

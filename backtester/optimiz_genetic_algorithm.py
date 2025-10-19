@@ -41,7 +41,7 @@ class Total:
         self.dict_v       = {}
 
         self.vars_lists   = None
-        self.stdp         = -2_147_483_648
+        self.stdp         = -float('inf')
         self.sub_total    = 0
         self.total_count  = 0
 
@@ -49,6 +49,7 @@ class Total:
 
     def MainLoop(self):
         tt = 0
+        rt = 0
         sc = 0
         bc = 0
         st = {}
@@ -66,6 +67,13 @@ class Total:
                     bc = 0
                     for q in self.bstq_list:
                         q.put(('백테완료', '미분리집계'))
+
+            elif data[0] == '탐색완료':
+                rt += data[1]
+                if rt >= 1000:
+                    rt -= 1000
+                    tt += 1
+                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -124,6 +132,7 @@ class Total:
                 dict_dummy      = {x: {} for x in range(50)}
                 start = now()
                 tt = 0
+                rt = 0
 
             elif data[0] == '경우의수':
                 self.total_count = data[1]
@@ -164,7 +173,7 @@ class Total:
 
 class OptimizeGeneticAlgorithm:
     def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun):
-        self.shared_counter = sc
+        self.shared_cnt  = sc
         self.wq          = wq
         self.bq          = bq
         self.sq          = sq
@@ -326,7 +335,7 @@ class OptimizeGeneticAlgorithm:
 
         time.sleep(1)
 
-        self.shared_counter.value = 0
+        self.shared_cnt.value = 0
         for q in self.beq_list:
             q.put('전체틱수계산')
 
@@ -347,7 +356,7 @@ class OptimizeGeneticAlgorithm:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
         k    = 1
         vc   = len(self.vars_list)
-        hstd = -2_147_483_648
+        hstd = -float('inf')
         goal = 2 ** int(round(vc / 2))
         self.opti_lists = []
         while self.total_count > goal:
@@ -359,7 +368,7 @@ class OptimizeGeneticAlgorithm:
                 if len(vars_lists) == 1000:
                     self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 [{k}][{i+1}/{vc}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
 
-                    self.shared_counter.value = 0
+                    self.shared_cnt.value = 0
                     data = ('변수정보', vars_lists)
                     self.tq.put(data)
                     for q in self.bstq_list:
