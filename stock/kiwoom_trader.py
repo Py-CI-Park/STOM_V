@@ -89,10 +89,10 @@ class KiwoomTrader:
             '매도정정': 6
         }
 
-        self.str_today   = str_ymd()
-        self.int_hgtime  = int(str_ymdhms())
-        self.jgcs_time   = self.get_jgcs_time()
-        self.tuple_kosd  = None
+        self.str_today  = str_ymd()
+        self.int_hgtime = int(str_ymdhms())
+        self.jgcs_time  = self.get_jgcs_time()
+        self.tuple_kosd = None
 
         self.LoadDatabase()
 
@@ -408,10 +408,10 @@ class KiwoomTrader:
             for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
 
-        if self.dict_jg and (gubun == '수동' or self.dict_set['주식잔고청산']):
+        if self.dict_jg:
             if gubun == '수동':
                 self.mgzservQ.put(('tele', '주식 잔고청산 주문을 전송합니다.'))
-            for 종목코드 in self.dict_jg:
+            for 종목코드 in self.dict_jg.copy():
                 종목명 = self.dict_jg[종목코드]['종목명']
                 현재가 = self.dict_jg[종목코드]['현재가']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
@@ -421,9 +421,9 @@ class KiwoomTrader:
                 else:
                     self.CheckOrder(('매도', 종목코드, 종목명, 현재가, 보유수량, now(), True))
             if self.dict_set['주식알림소리']:
-                self.mgzservQ.put(('sound', f'주식 잔고청산 주문을 전송하였습니다.'))
+                self.mgzservQ.put(('sound', '주식 잔고청산 주문을 전송하였습니다.'))
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 주식 잔고청산 주문 완료')))
-        elif not self.dict_jg and gubun == '수동':
+        elif gubun == '수동':
             self.mgzservQ.put(('tele', '현재는 주식 보유종목이 없습니다.'))
 
     def UpdateYesugm(self, data):

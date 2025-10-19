@@ -60,14 +60,14 @@ class FutureTrader:
             'SELL_SHORT': {},
             'BUY_SHORT': {}
         }
-        self.dict_intg   = {
+        self.dict_intg = {
             '예수금': 0,
             '추정예수금': 0,
             '예탁자산': 0,
             '추정예탁자산': 0
         }
         self.dict_bool = {
-            '해선잔고청산': False
+            '주식잔고청산': False
         }
         self.거래구분 = {
             '시장가': '1',
@@ -172,7 +172,7 @@ class FutureTrader:
         if 잔고청산:
             if (주문구분 == 'SELL_LONG' and (잔고없음 or 롱매도주문중)) or (주문구분 == 'BUY_SHORT' and (잔고없음 or 숏매도주문중)):
                 주문취소 = True
-        elif self.dict_bool['해선잔고청산']:
+        elif self.dict_bool['주식잔고청산']:
             주문취소 = True
         elif 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
             inthms = int(str_hms(now_cme()))
@@ -417,16 +417,16 @@ class FutureTrader:
                 self.CreateOrder(f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 주문번호, 현재시간, False, 정정횟수, None)
 
     def JangoCheongsan(self, gubun):
-        self.dict_bool['해선잔고청산'] = True
+        self.dict_bool['주식잔고청산'] = True
 
         for 주문구분 in self.dict_order:
             for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
 
-        if self.dict_jg and (gubun == '수동' or self.dict_set['주식잔고청산']):
+        if self.dict_jg:
             if gubun == '수동':
                 self.mgzservQ.put(('tele', '해선 잔고청산 주문을 전송합니다.'))
-            for 종목코드 in self.dict_jg:
+            for 종목코드 in self.dict_jg.copy():
                 포지션 = self.dict_jg[종목코드]['포지션']
                 종목명 = self.dict_jg[종목코드]['종목명']
                 현재가 = self.dict_jg[종목코드]['현재가']
@@ -442,7 +442,7 @@ class FutureTrader:
             if self.dict_set['주식알림소리']:
                 self.mgzservQ.put(('sound', '해선 잔고청산 주문을 전송하였습니다.'))
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 해선 잔고청산 주문 완료')))
-        elif not self.dict_jg and gubun == '수동':
+        elif gubun == '수동':
             self.mgzservQ.put(('tele', '현재는 해선 보유종목이 없습니다.'))
 
     def UpdateYesugm(self, data):

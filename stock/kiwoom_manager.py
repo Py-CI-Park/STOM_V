@@ -226,7 +226,7 @@ class KiwoomManager:
 
     def StockVersionUp(self):
         while True:
-            proc = subprocess.Popen(f'python {LOGIN_PATH}/versionupdater.py')
+            proc = subprocess.Popen(f'python32 {LOGIN_PATH}/versionupdater.py')
             if self.OpenapiLoginWait(False):
                 break
             else:
@@ -235,10 +235,10 @@ class KiwoomManager:
             qtest_qwait(1)
 
     def StockAutoLogin(self):
-        subprocess.Popen(f'python {LOGIN_PATH}/autologin.py')
+        subprocess.Popen(f'python32 {LOGIN_PATH}/autologin.py')
         while not self.OpenapiLoginWait(False):
             qtest_qwait(0.1)
-            subprocess.Popen(f'python {LOGIN_PATH}/autologin.py')
+            subprocess.Popen(f'python32 {LOGIN_PATH}/autologin.py')
         qtest_qwait(5)
 
     def StockTraderStart(self):

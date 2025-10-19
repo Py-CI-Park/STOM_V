@@ -96,7 +96,7 @@ class FutureAgentTick:
         test_time2  = 90000 if self.dict_set['주식타임프레임'] else 83000
         self.test_mode = True if test_time1 < int_cme_hms or int_cme_hms < test_time2 else False
 
-        self.dict_tmdt   = {}
+        self.dict_dtdm   = {}
         self.dict_hgbs   = {}
         self.dict_data   = {}
         self.dict_info   = {}
@@ -259,8 +259,8 @@ class FutureAgentTick:
                             abs(float(data[9]))  == abs(float(self.GetCommRealData(code, 16))) and \
                             abs(float(data[10])) == abs(float(self.GetCommRealData(code, 17))) and \
                             abs(float(data[11])) == abs(float(self.GetCommRealData(code, 18))) and \
-                            float(data[5])       == abs(float(self.GetCommRealData(code, 27))) and \
-                            float(data[6])       == abs(float(self.GetCommRealData(code, 28))):
+                            abs(float(data[5]))  == abs(float(self.GetCommRealData(code, 27))) and \
+                            abs(float(data[6]))  == abs(float(self.GetCommRealData(code, 28))):
                         self.dict_bool['해선체결필드같음'] = True
                         self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
                     else:
@@ -280,7 +280,7 @@ class FutureAgentTick:
                     cbp = abs(float(data[6]))
                 else:
                     dt            = self.GetCommRealData(code, 20)
-                    c             = self.GetCommRealData(code, 10)
+                    c       = float(self.GetCommRealData(code, 140))
                     per     = float(self.GetCommRealData(code, 12))
                     v             = self.GetCommRealData(code, 15)
                     o   = abs(float(self.GetCommRealData(code, 16)))
@@ -314,7 +314,7 @@ class FutureAgentTick:
                             abs(float(data[35])) == abs(float(self.GetCommRealData(code, 45))) and \
                             abs(float(data[27])) == abs(float(self.GetCommRealData(code, 44))) and \
                             abs(float(data[19])) == abs(float(self.GetCommRealData(code, 43))) and \
-                            abs(float(data[11]))  == abs(float(self.GetCommRealData(code, 42))) and \
+                            abs(float(data[11])) == abs(float(self.GetCommRealData(code, 42))) and \
                             abs(float(data[3]))  == abs(float(self.GetCommRealData(code, 41))) and \
                             abs(float(data[7]))  == abs(float(self.GetCommRealData(code, 51))) and \
                             abs(float(data[15])) == abs(float(self.GetCommRealData(code, 52))) and \
@@ -324,7 +324,7 @@ class FutureAgentTick:
                             int(data[36])              == int(self.GetCommRealData(code, 65)) and \
                             int(data[28])              == int(self.GetCommRealData(code, 64)) and \
                             int(data[20])              == int(self.GetCommRealData(code, 63)) and \
-                            int(data[12])               == int(self.GetCommRealData(code, 62)) and \
+                            int(data[12])              == int(self.GetCommRealData(code, 62)) and \
                             int(data[4])               == int(self.GetCommRealData(code, 61)) and \
                             int(data[8])               == int(self.GetCommRealData(code, 71)) and \
                             int(data[16])              == int(self.GetCommRealData(code, 72)) and \
@@ -450,19 +450,16 @@ class FutureAgentTick:
 
     def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount,
                        code, name, receivetime):
-        sm     = 0
-        dm     = 0
+
         send   = False
         dt_min = int(str(dt)[:12])
 
         if code in self.dict_data:
-            dm = self.dict_data[code][5]
-            if code in self.dict_tmdt:
-                if dt > self.dict_tmdt[code][0]:
+            if code in self.dict_dtdm:
+                if dt > self.dict_dtdm[code][0]:
                     send = True
             else:
-                self.dict_tmdt[code] = [dt, 0]
-            sm = dm - self.dict_tmdt[code][1]
+                self.dict_dtdm[code] = [dt, 0]
 
         if send:
             csp, cbp = self.dict_hgbs[code]
@@ -485,13 +482,15 @@ class FutureAgentTick:
                     hoga_buprice = (0.,) * 5
                     hoga_bamount = (0,) * 5
 
-            c     = self.dict_data[code][0]
-            hlp   = round((c / ((self.dict_data[code][2] + self.dict_data[code][3]) / 2) - 1) * 100, 2)
-            hgjrt = sum(hoga_samount + hoga_bamount)
-            logt  = now() if self.int_logt < dt_min else 0
-            data  = (dt,) + tuple(self.dict_data[code][:9]) + (sm, hlp) + \
+            c, _, h, low, _, dm = self.dict_data[code][:6]
+            tm = dm - self.dict_dtdm[code][1]
+            if tm == dm and 93500 < int(str(dt)[8:]): tm = 0
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hjt  = sum(hoga_samount + hoga_bamount)
+            logt = now() if self.int_logt < dt_min else 0
+            data = (dt,) + tuple(self.dict_data[code][:9]) + (tm, hlp) + \
                 hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
-                (hgjrt, 1, code, name, logt)
+                (hjt, 1, code, name, logt)
 
             self.sstgQ.put(data)
             if code in self.tuple_jango or code in self.tuple_order:
@@ -500,7 +499,7 @@ class FutureAgentTick:
             if self.dict_set['에이전트공유'] == 1:
                 self.agzservQ.put(('tickdata', data))
 
-            self.dict_tmdt[code] = [dt, dm]
+            self.dict_dtdm[code] = [dt, dm]
             self.dict_data[code][7:9] = [0, 0]
 
             if logt != 0:

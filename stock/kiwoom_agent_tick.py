@@ -35,16 +35,16 @@ def parseDat(trcode):
 
 
 class ZmqSendToClient(QThread):
-    def __init__(self, recvservQ):
+    def __init__(self, agzservQ):
         super().__init__()
-        self.recvservQ = recvservQ
+        self.agzservQ = agzservQ
         zctx = zmq.Context()
         self.sock = zctx.socket(zmq.PUB)
         self.sock.bind('tcp://*:5777')
 
     def run(self):
         while True:
-            msg, data = self.recvservQ.get()
+            msg, data = self.agzservQ.get()
             self.sock.send_string(msg, zmq.SNDMORE)
             self.sock.send_pyobj(data)
 
@@ -125,7 +125,7 @@ class KiwoomAgentTick:
         self.test_mode   = True if 90000 < int_hms or int_hms < 70000 else False
 
         self.dict_name   = {}
-        self.dict_tmdt   = {}
+        self.dict_dtdm   = {}
         self.dict_hgbs   = {}
         self.dict_data   = {}
         self.dict_vipr   = {}
@@ -615,20 +615,16 @@ class KiwoomAgentTick:
 
     def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount,
                        code, name, receivetime, lastprice):
-        sm     = 0
-        dm     = 0
         send   = False
         dt_min = int(str(dt)[:12])
 
         if code in self.dict_data:
-            dm = self.dict_data[code][5]
-            if code in self.dict_tmdt:
-                if dt > self.dict_tmdt[code][0] and hoga_bamount[4] != 0:
+            if code in self.dict_dtdm:
+                if dt > self.dict_dtdm[code][0] and hoga_bamount[4] != 0:
                     send = True
             else:
-                self.dict_tmdt[code] = [dt, 0]
+                self.dict_dtdm[code] = [dt, 0]
                 send = True
-            sm = dm - self.dict_tmdt[code][1]
 
         if send:
             csp, cbp = self.dict_hgbs[code]
@@ -663,14 +659,16 @@ class KiwoomAgentTick:
                 hoga_buprice = hoga_buprice[:5]
                 hoga_bamount = hoga_bamount[:5]
 
-            c     = self.dict_data[code][0]
-            hlp   = round((c / ((self.dict_data[code][2] + self.dict_data[code][3]) / 2) - 1) * 100, 2)
-            hgjrt = sum(hoga_samount + hoga_bamount)
-            logt  = now() if self.int_logt < dt_min else 0
-            gsjm  = 1 if code in self.list_gsjm else 0
-            data  = (dt,) + tuple(self.dict_data[code]) + (sm, hlp) + \
+            c, _, h, low, _, dm = self.dict_data[code][:6]
+            tm = dm - self.dict_dtdm[code][1]
+            if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hjt  = sum(hoga_samount + hoga_bamount)
+            gsjm = 1 if code in self.list_gsjm else 0
+            logt = now() if self.int_logt < dt_min else 0
+            data = (dt,) + tuple(self.dict_data[code]) + (tm, hlp) + \
                 hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
-                (hgjrt, gsjm, code, name, logt)
+                (hjt, gsjm, code, name, logt)
 
             self.sstgQs[self.dict_sgbn[code]].put(data)
 
@@ -680,7 +678,7 @@ class KiwoomAgentTick:
             if self.dict_set['에이전트공유'] == 1:
                 self.agzservQ.put(('tickdata', data))
 
-            self.dict_tmdt[code] = [dt, dm]
+            self.dict_dtdm[code] = [dt, dm]
             self.dict_data[code][13:15] = [0, 0]
 
             if logt != 0:

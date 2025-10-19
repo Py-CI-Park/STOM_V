@@ -105,24 +105,19 @@ class BinanceReceiverMin(BinanceReceiverTick):
         except:
             return
 
-        mm     = 0
-        dm     = 0
         send   = False
         dt_min = int(str(dt)[:12])
 
         if code in self.dict_data:
-            dm = self.dict_data[code][5]
-            if code in self.dict_tmdt:
-                if dt_min > self.dict_tmdt[code][0]:
+            if code in self.dict_dtdm:
+                if dt_min > self.dict_dtdm[code][0]:
                     send = True
             else:
-                self.dict_tmdt[code] = [dt_min, 0]
-            mm = dm - self.dict_tmdt[code][1]
-            if mm == dm and 10000 < int(str(dt)[8:]) < 235000: mm = 0
+                self.dict_dtdm[code] = [dt_min, 0]
 
         if send or code == self.chart_code:
-            c = self.dict_data[code][0]
-            csp, cbp = c, c
+            c, _, h, low, _, dm = self.dict_data[code][:6]
+            csp = cbp = c
 
             if hoga_seprice[-1] < csp:
                 index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
@@ -154,14 +149,16 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 hoga_buprice = hoga_buprice[:5]
                 hoga_bamount = hoga_bamount[:5]
 
-            hlp   = round((c / ((self.dict_data[code][2] + self.dict_data[code][3]) / 2) - 1) * 100, 2)
-            hgjrt = sum(hoga_samount + hoga_bamount)
-            logt  = now() if self.int_logt < dt_min else 0
-            gsjm  = 1 if code in self.list_gsjm else 0
-            dt_   = self.dict_tmdt[code][0]
-            data  = (dt_,) + tuple(self.dict_data[code][:9]) + tuple(self.dict_data[code][11:]) + (mm, hlp) + \
+            tm = dm - self.dict_dtdm[code][1]
+            if tm == dm and 500 < int(str(dt)[8:]): tm = 0
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hjt  = sum(hoga_samount + hoga_bamount)
+            gsjm = 1 if code in self.list_gsjm else 0
+            logt = now() if self.int_logt < dt_min else 0
+            dt_  = self.dict_dtdm[code][0]
+            data = (dt_,) + tuple(self.dict_data[code][:9]) + tuple(self.dict_data[code][11:]) + (tm, hlp) + \
                 hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
-                (hgjrt, gsjm, code, logt, send)
+                (hjt, gsjm, code, logt, send)
 
             self.cstgQ.put(data)
             if send:
@@ -171,7 +168,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 if self.dict_set['에이전트공유'] == 1:
                     self.recvservQ.put(('tickdata', data))
 
-                self.dict_tmdt[code] = [dt_min, dm]
+                self.dict_dtdm[code] = [dt_min, dm]
                 self.dict_data[code][7:9] = [0, 0]
 
             if logt != 0:

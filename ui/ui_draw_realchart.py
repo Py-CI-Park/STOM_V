@@ -91,38 +91,40 @@ class DrawRealChart:
 
         if gubun == 'S':
             if is_min:
-                tuple_factor = (
+                not_drop_zero_factors = (
                     fi('등락율'), fi('분당매수수량'), fi('분당매도수량'), fi('고저평균대비등락율'), fi('분당거래대금'),
                     fi('분당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('전일비각도'), fi('관심종목'),
-                    fi('매도총잔량'),
+                    fi('매도총잔량'), fi('매수총잔량'), fi('매도잔량1'), fi('매수잔량1'),
                     fi('AD'), fi('ADOSC'), fi('APO'), fi('AROOND'), fi('AROONU'), fi('CCI'), fi('MACD'),
                     fi('MACDS'), fi('MACDH'), fi('MFI'), fi('MOM'), fi('PPO'), fi('ROC'), fi('RSI'),
                     fi('STOCHSK'), fi('STOCHSD'), fi('STOCHFK'), fi('STOCHFD'), fi('WILLR')
                 )
             else:
-                tuple_factor = (
+                not_drop_zero_factors = (
                     fi('등락율'), fi('초당매수수량'), fi('초당매도수량'), fi('고저평균대비등락율'), fi('초당거래대금'),
-                    fi('초당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('전일비각도'), fi('관심종목'),
-                    fi('매도총잔량')
+                    fi('초당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('전일비각도'), fi('매수잔량1'), fi('관심종목'),
+                    fi('매도총잔량'), fi('매수총잔량'), fi('매도잔량1'), fi('매수잔량1')
                 )
         else:
             if is_min:
-                tuple_factor = (
+                not_drop_zero_factors = (
                     fi('등락율'), fi('분당매수수량'), fi('분당매도수량'), fi('고저평균대비등락율'), fi('분당거래대금'),
-                    fi('분당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('관심종목'),
+                    fi('분당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('매수잔량1'), fi('관심종목'),
+                    fi('매도총잔량'), fi('매수총잔량'), fi('매도잔량1'), fi('매수잔량1'),
                     fi('AD'), fi('ADOSC'), fi('APO'), fi('AROOND'), fi('AROONU'), fi('CCI'), fi('MACD'),
                     fi('MACDS'), fi('MACDH'), fi('MFI'), fi('MOM'), fi('PPO'), fi('ROC'), fi('RSI'),
                     fi('STOCHSK'), fi('STOCHSD'), fi('STOCHFK'), fi('STOCHFD'), fi('WILLR')
                 )
             else:
-                tuple_factor = (
+                not_drop_zero_factors = (
                     fi('등락율'), fi('초당매수수량'), fi('초당매도수량'), fi('고저평균대비등락율'), fi('초당거래대금'),
-                    fi('초당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('관심종목')
+                    fi('초당거래대금평균'), fi('등락율각도'), fi('당일거래대금각도'), fi('매수잔량1'), fi('관심종목'),
+                    fi('매도총잔량'), fi('매수총잔량'), fi('매도잔량1'), fi('매수잔량1')
                 )
 
         for i in range(len(self.ui.ctpg_arry[0, :])):
             tick_arry = self.ui.ctpg_arry[:, i]
-            if i in tuple_factor:
+            if i in not_drop_zero_factors:
                 self.ui.ctpg_data[i] = tick_arry
             else:
                 self.ui.ctpg_data[i] = tick_arry[tick_arry != 0]

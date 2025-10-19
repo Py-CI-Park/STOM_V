@@ -528,10 +528,10 @@ class BinanceTrader:
             for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
 
-        if self.dict_jg and (gubun == '수동' or self.dict_set['코인잔고청산']):
+        if self.dict_jg:
             if gubun == '수동':
                 self.teleQ.put('tele', '코인 잔고청산 주문을 전송합니다.')
-            for 종목코드 in self.dict_jg:
+            for 종목코드 in self.dict_jg.copy():
                 포지션 = self.dict_jg[종목코드]['포지션']
                 현재가 = self.dict_jg[종목코드]['현재가']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
@@ -557,9 +557,9 @@ class BinanceTrader:
                             self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [BUY_SHORT_REG] {종목코드} | {현재가} | {보유수량}'))
                     qtest_qwait(0.3)
             if self.dict_set['코인알림소리']:
-                self.soundQ.put(f'코인 {gubun} 전략 잔고청산 주문을 전송하였습니다.')
-            self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 실행 알림 - {gubun} 전략 잔고청산 주문 완료'))
-        elif not self.dict_jg and gubun == '수동':
+                self.soundQ.put('코인 잔고청산 주문을 전송하였습니다.')
+            self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))
+        elif gubun == '수동':
             self.teleQ.put('tele', '현재는 코인 보유종목이 없습니다.')
 
     def SysExit(self):
