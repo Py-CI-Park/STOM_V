@@ -476,139 +476,140 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
             MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR
         ]
 
-        if 종목코드 not in self.dict_arry:
-            self.dict_arry[종목코드] = np.array([new_data_tick])
-        else:
-            if 체결시간 != self.dict_arry[종목코드][-1, 0]:
+        if 전략연산:
+            if 종목코드 not in self.dict_arry:
+                self.dict_arry[종목코드] = np.array([new_data_tick])
+            else:
                 self.dict_arry[종목코드] = np.r_[self.dict_arry[종목코드], np.array([new_data_tick])]
-            else:
-                self.dict_arry[종목코드][-1, :] = np.array([new_data_tick])
 
-        데이터길이 = len(self.dict_arry[종목코드])
-        self.indexn = 데이터길이 - 1
+            데이터길이 = len(self.dict_arry[종목코드])
+            self.indexn = 데이터길이 - 1
 
-        if self.dict_condition and 전략연산:
-            if 종목코드 not in self.dict_cond_indexn:
-                self.dict_cond_indexn[종목코드] = {}
-            for k, v in self.dict_condition.items():
-                try:
-                    exec(v)
-                except:
-                    print_exc()
-                    self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
+            if self.dict_condition:
+                if 종목코드 not in self.dict_cond_indexn:
+                    self.dict_cond_indexn[종목코드] = {}
+                for k, v in self.dict_condition.items():
+                    try:
+                        exec(v)
+                    except:
+                        print_exc()
+                        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
 
-        if 체결강도평균_ != 0 and not (매수잔량5 == 0 and 매도잔량5 == 0) and 전략연산:
-            if 종목코드 in self.dict_jg:
-                if 종목코드 not in self.dict_buy_num:
-                    self.dict_buy_num[종목코드] = self.indexn
-                # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
-                _, 매입가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간 = self.dict_jg[종목코드].values()
-                _, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 현재가)
-                if 종목코드 not in self.dict_hilo:
-                    self.dict_hilo[종목코드] = [수익률, 수익률]
+            if 체결강도평균_ != 0 and not (매수잔량5 == 0 and 매도잔량5 == 0):
+                if 종목코드 in self.dict_jg:
+                    if 종목코드 not in self.dict_buy_num:
+                        self.dict_buy_num[종목코드] = self.indexn
+                    # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                    _, 매입가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간 = self.dict_jg[종목코드].values()
+                    _, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 현재가)
+                    if 종목코드 not in self.dict_hilo:
+                        self.dict_hilo[종목코드] = [수익률, 수익률]
+                    else:
+                        if 수익률 > self.dict_hilo[종목코드][0]:
+                            self.dict_hilo[종목코드][0] = 수익률
+                        elif 수익률 < self.dict_hilo[종목코드][1]:
+                            self.dict_hilo[종목코드][1] = 수익률
+                    최고수익률, 최저수익률 = self.dict_hilo[종목코드]
+                    보유시간 = (now() - dt_ymdhms(매수시간)).total_seconds()
+                    매수틱번호 = self.dict_buy_num[종목코드]
                 else:
-                    if 수익률 > self.dict_hilo[종목코드][0]:
-                        self.dict_hilo[종목코드][0] = 수익률
-                    elif 수익률 < self.dict_hilo[종목코드][1]:
-                        self.dict_hilo[종목코드][1] = 수익률
-                최고수익률, 최저수익률 = self.dict_hilo[종목코드]
-                보유시간 = (now() - dt_ymdhms(매수시간)).total_seconds()
-                매수틱번호 = self.dict_buy_num[종목코드]
-            else:
-                매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = 0, 0, 0, 0, 0, 0, 0, now(), 0, 0, 0
-            self.indexb = 매수틱번호
+                    매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = 0, 0, 0, 0, 0, 0, 0, now(), 0, 0, 0
+                self.indexb = 매수틱번호
 
-            BBT = not self.dict_set['주식매수금지시간'] or not (self.dict_set['주식매수금지시작시간'] < 시분초 < self.dict_set['주식매수금지종료시간'])
-            BLK = not self.dict_set['주식매수금지블랙리스트'] or 종목코드 not in self.dict_set['주식블랙리스트']
-            NIB = 종목코드 not in self.dict_signal['매수']
-            NIS = 종목코드 not in self.dict_signal['매도']
+                BBT = not self.dict_set['주식매수금지시간'] or not (self.dict_set['주식매수금지시작시간'] < 시분초 < self.dict_set['주식매수금지종료시간'])
+                BLK = not self.dict_set['주식매수금지블랙리스트'] or 종목코드 not in self.dict_set['주식블랙리스트']
+                NIB = 종목코드 not in self.dict_signal['매수']
+                NIS = 종목코드 not in self.dict_signal['매도']
 
-            A = 관심종목 and NIB and 매입가 == 0
-            B = self.dict_set['주식매수분할시그널']
-            C = NIB and 매입가 != 0 and 분할매수횟수 < self.dict_set['주식매수분할횟수']
-            D = NIB and self.dict_set['주식매도취소매수시그널'] and not NIS
+                A = 관심종목 and NIB and 매입가 == 0
+                B = self.dict_set['주식매수분할시그널']
+                C = NIB and 매입가 != 0 and 분할매수횟수 < self.dict_set['주식매수분할횟수']
+                D = NIB and self.dict_set['주식매도취소매수시그널'] and not NIS
 
-            if BBT and BLK and (A or (B and C) or C or D):
-                매수수량 = 0
+                if BBT and BLK and (A or (B and C) or C or D):
+                    매수수량 = 0
 
-                if A or (B and C) or C:
-                    매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
+                    if A or (B and C) or C:
+                        매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
 
-                if A or (B and C) or D:
-                    매수 = True
-                    if self.buystrategy is not None:
-                        try:
-                            exec(self.buystrategy)
-                        except:
-                            print_exc()
-                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
-                elif C:
-                    매수 = False
-                    분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
-                    if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
+                    if A or (B and C) or D:
                         매수 = True
-                    elif self.dict_set['주식매수분할상방'] and 분할매수기준수익률 > self.dict_set['주식매수분할상방수익률']:
-                        매수 = True
-
-                    if 매수:
-                        self.Buy(종목코드, 종목명, 매수수량, 현재가, 매도호가1, 매수호가1, 데이터길이)
-
-            SBT = not self.dict_set['주식매도금지시간'] or not (self.dict_set['주식매도금지시작시간'] < 시분초 < self.dict_set['주식매도금지종료시간'])
-            SCC = self.dict_set['주식매수분할횟수'] == 1 or not self.dict_set['주식매도금지매수횟수'] or 분할매수횟수 > self.dict_set['주식매도금지매수횟수값']
-            NIB = 종목코드 not in self.dict_signal['매수']
-
-            A = NIB and NIS and SCC and 매입가 != 0 and self.dict_set['주식매도분할횟수'] == 1
-            B = self.dict_set['주식매도분할시그널']
-            C = NIB and NIS and SCC and 매입가 != 0 and 분할매도횟수 < self.dict_set['주식매도분할횟수']
-            D = NIS and self.dict_set['주식매수취소매도시그널'] and not NIB
-            E = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
-            F = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
-
-            if SBT and (A or (B and C) or C or D or E or F):
-                매도 = False
-                매도수량 = 0
-                강제청산 = E or F
-
-                if A or E or F:
-                    매도수량 = 보유수량
-                elif (B and C) or C:
-                    매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
-
-                if A or (B and C) or D:
-                    if self.sellstrategy is not None:
-                        try:
-                            exec(self.sellstrategy)
-                        except:
-                            print_exc()
-                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
-                elif C or E or F:
-                    if 강제청산:
-                        매도 = True
+                        if self.buystrategy is not None:
+                            try:
+                                exec(self.buystrategy)
+                            except:
+                                print_exc()
+                                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
                     elif C:
-                        if self.dict_set['주식매도분할하방'] and 수익률 < -self.dict_set['주식매도분할하방수익률'] * (분할매도횟수 + 1):
+                        매수 = False
+                        분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
+                        if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
+                            매수 = True
+                        elif self.dict_set['주식매수분할상방'] and 분할매수기준수익률 > self.dict_set['주식매수분할상방수익률']:
+                            매수 = True
+
+                        if 매수:
+                            self.Buy(종목코드, 종목명, 매수수량, 현재가, 매도호가1, 매수호가1, 데이터길이)
+
+                SBT = not self.dict_set['주식매도금지시간'] or not (self.dict_set['주식매도금지시작시간'] < 시분초 < self.dict_set['주식매도금지종료시간'])
+                SCC = self.dict_set['주식매수분할횟수'] == 1 or not self.dict_set['주식매도금지매수횟수'] or 분할매수횟수 > self.dict_set['주식매도금지매수횟수값']
+                NIB = 종목코드 not in self.dict_signal['매수']
+
+                A = NIB and NIS and SCC and 매입가 != 0 and self.dict_set['주식매도분할횟수'] == 1
+                B = self.dict_set['주식매도분할시그널']
+                C = NIB and NIS and SCC and 매입가 != 0 and 분할매도횟수 < self.dict_set['주식매도분할횟수']
+                D = NIS and self.dict_set['주식매수취소매도시그널'] and not NIB
+                E = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
+                F = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
+
+                if SBT and (A or (B and C) or C or D or E or F):
+                    매도 = False
+                    매도수량 = 0
+                    강제청산 = E or F
+
+                    if A or E or F:
+                        매도수량 = 보유수량
+                    elif (B and C) or C:
+                        매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
+
+                    if A or (B and C) or D:
+                        if self.sellstrategy is not None:
+                            try:
+                                exec(self.sellstrategy)
+                            except:
+                                print_exc()
+                                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
+                    elif C or E or F:
+                        if 강제청산:
                             매도 = True
-                        elif self.dict_set['주식매도분할상방'] and 수익률 > self.dict_set['주식매도분할상방수익률'] * (분할매도횟수 + 1):
-                            매도 = True
+                        elif C:
+                            if self.dict_set['주식매도분할하방'] and 수익률 < -self.dict_set['주식매도분할하방수익률'] * (분할매도횟수 + 1):
+                                매도 = True
+                            elif self.dict_set['주식매도분할상방'] and 수익률 > self.dict_set['주식매도분할상방수익률'] * (분할매도횟수 + 1):
+                                매도 = True
 
-                    if 매도:
-                        self.Sell(종목코드, 종목명, 매도수량, 현재가, 매도호가1, 매수호가1, 강제청산)
+                        if 매도:
+                            self.Sell(종목코드, 종목명, 매도수량, 현재가, 매도호가1, 매수호가1, 강제청산)
 
-        if 관심종목 and 전략연산:
-            # ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
-            self.dict_gj[종목코드] = {
-                '종목명': 종목명,
-                'per': 등락율,
-                'hlp': 고저평균대비등락율,
-                'sm': 분당거래대금,
-                'sma': 분당거래대금평균_,
-                'dm': 당일거래대금,
-                'ch': 체결강도,
-                'cha': 체결강도평균_,
-                'chh': 최고체결강도_
-            }
+            if 관심종목:
+                # ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
+                self.dict_gj[종목코드] = {
+                    '종목명': 종목명,
+                    'per': 등락율,
+                    'hlp': 고저평균대비등락율,
+                    'sm': 분당거래대금,
+                    'sma': 분당거래대금평균_,
+                    'dm': 당일거래대금,
+                    'ch': 체결강도,
+                    'cha': 체결강도평균_,
+                    'chh': 최고체결강도_
+                }
+        else:
+            데이터길이 = len(self.dict_arry[종목코드]) + 1
 
-        if 데이터길이 >= 평균값계산틱수 and self.chart_code == 종목코드:
-            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.dict_arry[종목코드])))
+        if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
+            chart_arry = self.dict_arry[종목코드] if 전략연산 else np.r_[self.dict_arry[종목코드], np.array([new_data_tick])]
+            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목명, chart_arry)))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()

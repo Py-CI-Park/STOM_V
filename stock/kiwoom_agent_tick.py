@@ -121,9 +121,6 @@ class KiwoomAgentTick:
         self.tr_cdlist   = None
         self.tr_df       = None
 
-        int_hms = int(str_hms())
-        self.test_mode   = True if 90000 < int_hms or int_hms < 70000 else False
-
         self.dict_name   = {}
         self.dict_dtdm   = {}
         self.dict_hgbs   = {}
@@ -730,19 +727,18 @@ class KiwoomAgentTick:
         if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
-        if not self.test_mode:
-            inthms = int(str_hms())
-            if self.operation == 1:
-                if 90100 < inthms and self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
-                    self.ProcessKill()
-            elif self.operation in (3, 2, 4):
-                if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간조건검색시작']:
-                    self.ConditionSearchStart()
-                if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
-                    self.ProcessKill()
-            elif self.operation == 8:
-                if 153500 < inthms and not self.dict_bool['프로세스종료']:
-                    self.ProcessKill()
+        inthms = int(str_hms())
+        if self.operation == 1:
+            if 90100 < inthms and self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
+                self.ProcessKill()
+        elif self.operation in (3, 2, 4):
+            if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간조건검색시작']:
+                self.ConditionSearchStart()
+            if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
+                self.ProcessKill()
+        elif self.operation == 8:
+            if 153500 < inthms and not self.dict_bool['프로세스종료']:
+                self.ProcessKill()
 
         current_gsjm = tuple(self.list_gsjm)
         if current_gsjm != self.last_gsjm:
