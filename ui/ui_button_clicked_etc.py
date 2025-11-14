@@ -47,7 +47,7 @@ def ttbutton_clicked_01(ui, cmd):
             npg, nmg = df['총수익금액'].sum(), df['총손실금액'].sum()
             nsig = df['수익금합계'].sum()
             df2 = pd.DataFrame(columns=columns_nt)
-            df2.loc[0] = pr, nbg, nsg, npg, nmg, nsp, nsig
+            df2.loc[0] = [pr, nbg, nsg, npg, nmg, nsp, nsig]
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적합계'], df2))
         else:
             QMessageBox.critical(ui, '오류 알림', '거래목록이 존재하지 않습니다.\n')
@@ -68,7 +68,7 @@ def ttbutton_clicked_01(ui, cmd):
                     sp = round((tsg / tbg - 1) * 100, 2)
                     tpg, tmg = df3['총수익금액'].sum(), df3['총손실금액'].sum()
                     ttsg = df3['수익금합계'].sum()
-                    df2.loc[month] = month, tbg, tsg, tpg, tmg, sp, ttsg
+                    df2.loc[month] = [month, tbg, tsg, tpg, tmg, sp, ttsg]
                 month = str(int(month) - 89) if int(month[4:]) == 1 else str(int(month) - 1)
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df2))
         elif cmd == f'{gubun}연도별집계':
@@ -83,7 +83,7 @@ def ttbutton_clicked_01(ui, cmd):
                     sp = round((tsg / tbg - 1) * 100, 2)
                     tpg, tmg = df3['총수익금액'].sum(), df3['총손실금액'].sum()
                     ttsg = df3['수익금합계'].sum()
-                    df2.loc[year] = year, tbg, tsg, tpg, tmg, sp, ttsg
+                    df2.loc[year] = [year, tbg, tsg, tpg, tmg, sp, ttsg]
                 year = str(int(year) - 1)
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df2))
 

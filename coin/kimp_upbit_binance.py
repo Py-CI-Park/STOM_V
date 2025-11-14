@@ -39,7 +39,7 @@ class Kimp:
                 data = data[1]
                 code = data['code'].replace('KRW-', '')
                 c    = data['trade_price']
-                self.df.loc[code, ['종목명', '업비트(원)']] = code, c
+                self.df.loc[code, ['종목명', '업비트(원)']] = [code, c]
             elif data[0] == 'binance' and self.usdtokrw is not None:
                 data = data[1]
                 for x in data:

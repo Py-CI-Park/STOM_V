@@ -53,13 +53,6 @@ def str_ymdhmsf(std_time=None):
         return strf_time('%Y%m%d%H%M%S%f')
 
 
-def str_ymdhms_ios(std_time=None):
-    if std_time is not None:
-        return strf_time('%Y-%m-%d %H:%M:%S', std_time)
-    else:
-        return strf_time('%Y-%m-%d %H:%M:%S')
-
-
 def str_ymdhms(std_time=None):
     if std_time is not None:
         return strf_time('%Y%m%d%H%M%S', std_time)
@@ -67,8 +60,15 @@ def str_ymdhms(std_time=None):
         return strf_time('%Y%m%d%H%M%S')
 
 
+def str_ymdhms_ios(std_time=None):
+    if std_time is not None:
+        return strf_time('%Y-%m-%d %H:%M:%S', std_time)
+    else:
+        return strf_time('%Y-%m-%d %H:%M:%S')
+
+
 def str_ymdhms_utc(time_):
-    return int(str_ymdhms(from_timestamp(int(time_ / 1000 - 32400))))
+    return str_ymdhms(from_timestamp(int(time_ / 1000 - 32400)))
 
 
 def str_ymd(std_time=None):
@@ -203,6 +203,7 @@ def opstarter_kill():
 
 def pickle_write(file, data):
     with open(f'{file}.pkl', "wb") as f:
+        # noinspection PyTypeChecker
         _pickle.dump(data, f, protocol=-1)
 
 

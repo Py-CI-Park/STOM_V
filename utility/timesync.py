@@ -9,28 +9,27 @@ from utility.static import thread_decorator, get_logger
 @thread_decorator
 def timesync():
     logger_ = get_logger('TimeSync')
-    try:
-        ntp_client = ntplib.NTPClient()
-        while True:
+    while True:
+        try:
+            ntp_client = ntplib.NTPClient()
             response = ntp_client.request('time.windows.com', version=3)
-            dt = datetime.utcfromtimestamp(response.tx_time + response.delay)
-            localtime = dt.astimezone(tz.tzlocal())
-            offset = abs(response.offset)
-            if offset >= 0.05:
+            offset   = response.offset
+            if abs(offset) >= 0.05:
+                dt = datetime.fromtimestamp(response.tx_time + response.delay - 32400).astimezone(tz.tzlocal())
                 win32api.SetSystemTime(
-                    localtime.year,
-                    localtime.month,
-                    localtime.weekday(),
-                    localtime.day,
-                    localtime.hour,
-                    localtime.minute,
-                    localtime.second,
-                    localtime.microsecond // 1000
+                    dt.year,
+                    dt.month,
+                    dt.weekday(),
+                    dt.day,
+                    dt.hour,
+                    dt.minute,
+                    dt.second,
+                    dt.microsecond // 1000
                 )
                 logger_.info(f'표준시간 동기화 중 ... 현재 표준시간과의 차이는 [{offset:.6f}]초입니다.')
             else:
                 logger_.info(f'표준시간 동기화 완 ... 현재 표준시간과의 차이는 [{offset:.6f}]초입니다.')
                 break
-            time.sleep(1)
-    except:
-        pass
+        except:
+            pass
+        time.sleep(1)

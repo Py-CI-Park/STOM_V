@@ -91,11 +91,6 @@ class FutureAgentTick:
         self.tr_next     = None
         self.tr_df       = None
 
-        int_cme_hms = int(str_hms(now_cme()))
-        test_time1  = 93000 if self.dict_set['주식타임프레임'] else 90000
-        test_time2  = 90000 if self.dict_set['주식타임프레임'] else 83000
-        self.test_mode = True if test_time1 < int_cme_hms or int_cme_hms < test_time2 else False
-
         self.dict_dtdm   = {}
         self.dict_hgbs   = {}
         self.dict_data   = {}
@@ -214,6 +209,7 @@ class FutureAgentTick:
                 tick_unit = df['호가단위'][code]
                 point_cnt = len(str(tick_unit).split('.')[1]) if '.' in str(tick_unit) else 5 if str(tick_unit) == '5e-05' else 0
                 self.real_codes.append(max_code)
+                # noinspection PyTypeChecker
                 self.dict_info[max_code] = {
                     '종목명': df['종목명'][code],
                     '위탁증거금': int(df['위탁증거금'][code] / 100),
@@ -290,13 +286,12 @@ class FutureAgentTick:
                     cbp = abs(float(self.GetCommRealData(code, 28)))
 
                 str_cme_hms = str_hms_cme_from_str(dt)
-                if not self.test_mode:
-                    if self.dict_set['주식타임프레임']:
-                        if int(str_cme_hms) < 93000:
-                            return
-                    else:
-                        if int(str_cme_hms) < 90000:
-                            return
+                if self.dict_set['주식타임프레임']:
+                    if int(str_cme_hms) < 93000:
+                        return
+                else:
+                    if int(str_cme_hms) < 90000:
+                        return
                 dt = int(f'{self.str_today}{str_cme_hms}')
             except:
                 pass
@@ -391,13 +386,12 @@ class FutureAgentTick:
                     )
 
                 str_cme_hms = str_hms_cme_from_str(dt)
-                if not self.test_mode:
-                    if self.dict_set['주식타임프레임']:
-                        if int(str_cme_hms) < 93000:
-                            return
-                    else:
-                        if int(str_cme_hms) < 90000:
-                            return
+                if self.dict_set['주식타임프레임']:
+                    if int(str_cme_hms) < 93000:
+                        return
+                else:
+                    if int(str_cme_hms) < 90000:
+                        return
                 dt = int(f'{self.str_today}{str_cme_hms}')
                 name = self.dict_info[code]['종목명']
             except:
@@ -563,12 +557,11 @@ class FutureAgentTick:
         if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
-        if not self.test_mode:
-            inthms = int(str_hms(now_cme()))
-            if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
-                self.ProcessKill()
-            if 160500 < inthms and not self.dict_bool['프로세스종료']:
-                self.ProcessKill()
+        inthms = int(str_hms(now_cme()))
+        if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
+            self.ProcessKill()
+        if 160500 < inthms and not self.dict_bool['프로세스종료']:
+            self.ProcessKill()
 
     def GetAccountjanGo(self):
         self.dict_bool['계좌조회'] = True
@@ -589,7 +582,7 @@ class FutureAgentTick:
             if len(df) > 0:
                 df['종목명'] = ''
                 columns = ['종목코드', '종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
-                df = df[[columns]]
+                df = df[columns]
                 df['분할매수횟수'] = 5
                 df['분할매도횟수'] = 0
                 df['매수시간'] = self.str_today + '093000'

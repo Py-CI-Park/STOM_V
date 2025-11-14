@@ -11,6 +11,7 @@ for i in range(1000):
     start1 = time.time()
     with open(f'./temp/{i}.pkl', "wb") as f:
         start2 = time.time()
+        # noinspection PyTypeChecker
         _pickle.dump(data, f)
         load_time2 += time.time() - start2
     load_time1 += time.time() - start1
@@ -33,6 +34,7 @@ for i in range(1000):
     start1 = time.time()
     with open(f'./temp/{i}.pkl2', "wb") as f:
         start2 = time.time()
+        # noinspection PyTypeChecker
         _pickle.dump(data, f, protocol=-1)
         load_time2 += time.time() - start2
     load_time1 += time.time() - start1

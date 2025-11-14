@@ -32,7 +32,7 @@ for x in data:
             c      = dict_close[code]
             if name not in ('BNB', 'BSC') and count != 0 and enable and count < count_:
                 count_ = count
-                df.loc[code] = count, c, name, round(count * c, 8)
+                df.loc[code] = [count, c, name, round(count * c, 8)]
 
 df.sort_values(by=['송금수수료'], ascending=True, inplace=True)
 print(df)

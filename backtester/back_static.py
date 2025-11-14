@@ -121,13 +121,13 @@ def GetMoneytopQuery(gubun, startday, endday, starttime, endtime):
     return query
 
 
-def AddAvgData(df, avg_gubun, is_tick, avg_list):
+def AddAvgData(df, market_gubun, is_tick, avg_list):
     """
-    avg_gubun = 1   # 주식
-    avg_gubun = 2   # 해선
-    avg_gubun = 3   # 코인
+    market_gubun = 1   # 주식
+    market_gubun = 2   # 해선
+    market_gubun = 3   # 코인
     """
-    if avg_gubun == 1:
+    if market_gubun == 1:
         round_unit = 3
     else:
         round_unit = 8
@@ -163,7 +163,7 @@ def AddAvgData(df, avg_gubun, is_tick, avg_list):
             df[f'누적분당매수수량{avg}'] = df['분당매수수량'].rolling(window=avg).sum()
             df[f'누적분당매도수량{avg}'] = df['분당매도수량'].rolling(window=avg).sum()
             df[f'분당거래대금평균{avg}'] = df['분당거래대금'].rolling(window=avg).mean().round(0)
-        if avg_gubun == 1:
+        if market_gubun == 1:
             df2 = df[['등락율', '당일거래대금', '전일비']].copy()
             df2[f'등락율N{avg}'] = df2['등락율'].shift(avg - 1)
             df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
@@ -181,26 +181,20 @@ def AddAvgData(df, avg_gubun, is_tick, avg_list):
             df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
             df2[f'당일거래대금N{avg}'] = df2['당일거래대금'].shift(avg - 1)
             df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
-            if avg_gubun == 2:
+            if market_gubun == 2:
                 cf1, cf2 = dgree['future']['tick'] if is_tick else dgree['future']['min']
-                df['등락율각도'] = np.round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
-                df['당일거래대금각도'] = np.round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
             else:
                 cf1, cf2 = dgree['coin']['tick'] if is_tick else dgree['coin']['min']
-                df['등락율각도'] = np.round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
-                df['당일거래대금각도'] = np.round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
+            df['등락율각도'] = np.round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
+            df['당일거래대금각도'] = np.round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
     return df
 
 
 def GetBuyStg(buytxt, gubun):
     buytxt  = buytxt.split('if 매수:')[0] + 'if 매수:\n    self.Buy(vturn, vkey)'
-    buystg  = ''
-    indistg = ''
-    for line in buytxt.split('\n'):
-        if 'self.indicator' in line:
-            indistg += f'{line}\n'
-        else:
-            buystg += f'{line}\n'
+    lines   = [line for line in buytxt.split('\n') if '#' not in line]
+    buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
+    indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
     if buystg:
         try:
             buystg = compile(buystg, '<string>', 'exec')
@@ -270,15 +264,11 @@ def SetSellCond(selllist):
 
 
 def GetBuyStgFuture(buystg, gubun):
-    buytxt  = buystg.split('if BUY_LONG or SELL_SHORT:')[
-                 0] + 'if BUY_LONG:\n    self.Buy(vturn, vkey, "LONG")\nelif SELL_SHORT:\n    self.Buy(vturn, vkey, "SHORT")'
-    buystg  = ''
-    indistg = ''
-    for line in buytxt.split('\n'):
-        if 'self.indicator' in line:
-            indistg += f'{line}\n'
-        else:
-            buystg += f'{line}\n'
+    buytxt  = buystg.split('if BUY_LONG or SELL_SHORT:')[0] + \
+              'if BUY_LONG:\n    self.Buy(vturn, vkey, "LONG")\nelif SELL_SHORT:\n    self.Buy(vturn, vkey, "SHORT")'
+    lines   = [line for line in buytxt.split('\n') if '#' not in line]
+    buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
+    indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
     if buystg:
         try:
             buystg = compile(buystg, '<string>', 'exec')
@@ -664,11 +654,14 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
     plt.subplot(gs[1])
     plt.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익률', color='orange')
     if df_kp is not None:
+        # noinspection PyTypeChecker
         plt.plot(df_kp.index, df_kp['종가'], linewidth=0.5, label='코스피', color='r')
         plt.plot(df_kd.index, df_kd['종가'], linewidth=0.5, label='코스닥', color='b')
     elif df_nd is not None:
+        # noinspection PyTypeChecker
         plt.plot(df_nd.index, df_nd['종가'], linewidth=0.5, label='NQ', color='r')
     elif df_bc is not None:
+        # noinspection PyTypeChecker
         plt.plot(df_bc.index, df_bc['종가'], linewidth=0.5, label='KRW-BTC', color='r')
     plt.title('지수비교' if df_bc is None else 'BTC비교')
     count = int(len(df_ts) / 20) if int(len(df_ts) / 20) >= 1 else 1

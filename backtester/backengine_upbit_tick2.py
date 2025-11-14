@@ -1,6 +1,4 @@
 import math
-import numpy as np
-from traceback import print_exc
 from backtester.back_static import GetTradeInfo
 from backtester.backengine_upbit_tick import BackEngineUpbitTick
 from utility.setting import dict_order_ratio, dgree
@@ -9,72 +7,6 @@ from utility.static import timedelta_sec, GetUpbitPgSgSp, dt_ymdhms, dt_ymdhm
 
 # noinspection PyUnusedLocal
 class BackEngineUpbitTick2(BackEngineUpbitTick):
-    def BackTest(self):
-        if self.profile:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
-
-        j = 0
-        while True:
-            code = self.GetArrayData()
-            if code is None:
-                break
-
-            if not self.beq.empty() and self.beq.get() == '백테중지':
-                self.BackStop(1)
-                return
-
-            if self.dict_set['코인매수금지블랙리스트'] and self.code in self.dict_set['코인블랙리스트'] and self.back_type != '백파인더':
-                self.tq.put('백테완료')
-                continue
-
-            self.code = code
-            last = len(self.arry_data) - 1
-            if last > 0:
-                indexs = self.arry_data[:, 0].astype(np.int64)
-                day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
-                day_last_indexs.append(last)
-
-                start_idx = 0
-                for end_idx in day_last_indexs:
-                    for i in range(start_idx, end_idx):
-                        self.index  = indexs[i]
-                        self.indexn = i
-                        self.tick_count += 1
-
-                        try:
-                            self.Strategy()
-                        except:
-                            print_exc()
-                            self.BackStop(3)
-                            return
-
-                        j += 1
-                        if j == 1000:
-                            j = 0
-                            if self.opti_turn in (1, 3): self.tq.put('탐색완료')
-                            if not self.beq.empty() and self.beq.get() == '백테중지':
-                                self.BackStop(1)
-                                return
-
-                    j += 1
-                    if j == 1000:
-                        j = 0
-                        if self.opti_turn in (1, 3): self.tq.put('탐색완료')
-
-                    self.index  = indexs[end_idx]
-                    self.indexn = end_idx
-                    self.tick_count += 1
-                    self.LastSell()
-                    self.InitTradeInfo()
-                    start_idx = end_idx + 1
-
-            self.tq.put('백테완료')
-
-        if self.opti_turn in (1, 3): self.tq.put(('탐색완료', j))
-        if self.profile: self.pr.print_stats(sort='cumulative')
-
     def Strategy(self):
         def now():
             return dt_ymdhms(str(self.index))

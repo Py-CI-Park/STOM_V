@@ -106,7 +106,7 @@ def calendar_clicked(ui, gubun):
         sp = round((nsg / nbg - 1) * 100, 2)
         npg, nmg, nsig = df1[df1['수익금'] > 0]['수익금'].sum(), df1[df1['수익금'] < 0]['수익금'].sum(), df1['수익금'].sum()
         df2 = pd.DataFrame(columns=columns_dt)
-        df2.loc[0] = searchday, nbg, nsg, npg, nmg, sp, nsig
+        df2.loc[0] = [searchday, nbg, nsg, npg, nmg, sp, nsig]
     else:
         df1 = pd.DataFrame(columns=columns_dd)
         df2 = pd.DataFrame(columns=columns_dt)

@@ -8,7 +8,8 @@ from backtester.back_static import GetTradeInfo
 # noinspection PyUnusedLocal
 class BackEngineUpbitTick(BackEngineKiwoomTick):
     def Settings(self):
-        self.avg_gubun     = 3
+        self.market_gubun  = 3
+        self.is_future     = False
         self.ui_num_txt    = 'C백테스트'
         self.is_oms        = self.dict_set['백테주문관리적용']
         self.is_tick       = self.dict_set['코인타임프레임']

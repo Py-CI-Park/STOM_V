@@ -39,9 +39,11 @@ class KiwoomAgentMin(KiwoomAgentTick):
         bids += bids_
         asks += asks_
 
+        _, vi_dt, uvi, _, vi_hgunit = self.dict_vipr[code]
+
         self.dict_hgbs[code] = (csp, cbp)
         self.dict_data[code] = [c, o, h, low, per, dm, ch, dmp, jvp, vrp, jsvp, sgta, rf, bids, asks,
-                                self.dict_vipr[code][1], self.dict_vipr[code][2], self.dict_vipr[code][-1], mo, mh, ml]
+                                vi_dt, uvi, vi_hgunit, mo, mh, ml]
 
         if self.hoga_code == code:
             bids, asks = self.list_hgdt[2:4]
@@ -49,7 +51,7 @@ class KiwoomAgentMin(KiwoomAgentTick):
             if asks_ > 0: asks += asks_
             self.list_hgdt[2:4] = bids, asks
             if dt > self.list_hgdt[0]:
-                self.mgzservQ.put(('hoga', (self.dict_name[code], c, per, sgta, self.dict_vipr[code][2], o, h, low)))
+                self.mgzservQ.put(('hoga', (self.dict_name[code], c, per, sgta, uvi, o, h, low)))
                 if asks > 0: self.mgzservQ.put(('hoga', (-asks, ch)))
                 if bids > 0: self.mgzservQ.put(('hoga', (bids, ch)))
                 self.list_hgdt[0] = dt

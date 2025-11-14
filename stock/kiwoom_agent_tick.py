@@ -376,8 +376,8 @@ class KiwoomAgentTick:
                     vrp     = float(data[16])
                     jsvp    = float(data[25]) / 100
                     sgta      = int(data[19])
-                    csp     = abs(int(data[4]))
-                    cbp     = abs(int(data[5]))
+                    csp   = abs(int(data[4]))
+                    cbp   = abs(int(data[5]))
                 else:
                     c     = abs(int(self.GetCommRealData(code, 10)))
                     per     = float(self.GetCommRealData(code, 12))
@@ -597,9 +597,11 @@ class KiwoomAgentTick:
         bids += bids_
         asks += asks_
 
+        _, vi_dt, uvi, _, vi_hgunit = self.dict_vipr[code]
+
         self.dict_hgbs[code] = (csp, cbp)
         self.dict_data[code] = [c, o, h, low, per, dm, ch, dmp, jvp, vrp, jsvp, sgta, rf, bids, asks,
-                                self.dict_vipr[code][1], self.dict_vipr[code][2], self.dict_vipr[code][-1]]
+                                vi_dt, uvi, vi_hgunit]
 
         if self.hoga_code == code:
             bids, asks = self.list_hgdt[2:4]
@@ -607,7 +609,7 @@ class KiwoomAgentTick:
             if asks_ > 0: asks += asks_
             self.list_hgdt[2:4] = bids, asks
             if dt > self.list_hgdt[0]:
-                self.mgzservQ.put(('hoga', (self.dict_name[code], c, per, sgta, self.dict_vipr[code][2], o, h, low)))
+                self.mgzservQ.put(('hoga', (self.dict_name[code], c, per, sgta, uvi, o, h, low)))
                 if asks > 0: self.mgzservQ.put(('hoga', (-asks, ch)))
                 if bids > 0: self.mgzservQ.put(('hoga', (bids, ch)))
                 self.list_hgdt[0] = dt
@@ -702,8 +704,8 @@ class KiwoomAgentTick:
             self.mgzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + (shg, hhg)))
 
     def InsertViPrice(self, code, o):
-        uvi, dvi, hogaunit = GetVIPrice(code in self.tuple_kosd, o, self.int_hgtime)
-        self.dict_vipr[code] = [True, timedelta_sec(-3600), uvi, dvi, hogaunit]
+        uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, o, self.int_hgtime)
+        self.dict_vipr[code] = [True, timedelta_sec(-3600), uvi, dvi, vi_hgunit]
 
     def UpdateViPrice(self, code, key):
         if type(key) == str:
@@ -713,8 +715,8 @@ class KiwoomAgentTick:
                 self.dict_vipr[code] = [False, timedelta_sec(5), 0, 0, 0]
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'변동성 완화 장치 발동 - [{code}] {key}')))
         elif type(key) == int:
-            uvi, dvi, hogaunit = GetVIPrice(code in self.tuple_kosd, key, self.int_hgtime)
-            self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, hogaunit]
+            uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, key, self.int_hgtime)
+            self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
     def GetCommRealData(self, code, fid):
         return self.ocx.dynamicCall('GetCommRealData(QString, int)', code, fid)

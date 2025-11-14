@@ -353,12 +353,9 @@ class OptimizeConditions:
             if len(buy_conds) == 20:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 [{i+1}/{rcount}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
                 self.shared_cnt.value = 0
+                data = ('조건정보', is_long, buy_conds, sell_conds, 3)
                 for q in self.bstq_list:
                     q.put(('백테시작', 3))
-                if is_long is None:
-                    data = ('조건정보', buy_conds, sell_conds)
-                else:
-                    data = ('조건정보', is_long, buy_conds, sell_conds)
                 for q in self.beq_list:
                     q.put(data)
 
@@ -376,10 +373,7 @@ class OptimizeConditions:
             else:
                 break
 
-        time.sleep(6)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 최적화 완료'))
-        time.sleep(1)
-
         if self.result:
             self.ShowTopCondlist(5)
             self.ShowTopConds()

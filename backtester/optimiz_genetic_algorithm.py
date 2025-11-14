@@ -369,7 +369,7 @@ class OptimizeGeneticAlgorithm:
                     self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 [{k}][{i+1}/{vc}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
 
                     self.shared_cnt.value = 0
-                    data = ('변수정보', vars_lists)
+                    data = ('변수정보', vars_lists, 3)
                     self.tq.put(data)
                     for q in self.bstq_list:
                         q.put(('백테시작', 3))
@@ -399,10 +399,7 @@ class OptimizeGeneticAlgorithm:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 현재 경우의수[{self.total_count:,.0f}] 목표 경우의수[{goal:,.0f}]'))
             k += 1
 
-        time.sleep(6)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 최적화 완료'))
-        time.sleep(1)
-
         self.SaveVarslist(100, optistandard, buystg, sellstg)
 
         exec(optivars_)

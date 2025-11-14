@@ -246,7 +246,7 @@ class WidgetCreater:
         else:
             dialog = QDialog(tab)
         dialog.setWindowTitle(name)
-        dialog.setWindowModality(Qt.NonModal)
+        dialog.setWindowModality(Qt.WindowModality.NonModal)
         dialog.setWindowIcon(self.ui.icon_main)
         dialog.setFont(qfont12)
         return dialog

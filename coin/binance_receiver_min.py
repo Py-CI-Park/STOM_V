@@ -23,8 +23,8 @@ class BinanceReceiverMin(BinanceReceiverTick):
             self.dict_jgdt[code] = dt
 
         ymd = str(dt)[:8]
-        if ymd != self.dict_tddt[code][0]:
-            self.dict_tddt[code] = [ymd, self.dict_data[code][0]]
+        if ymd != self.dict_prec[code][0]:
+            self.dict_prec[code] = [ymd, self.dict_data[code][0]]
             bids, asks, pretbids, pretasks = 0, 0, 0, 0
             o, h, low = c, c, c
             dm = round(v * c, 2)
@@ -53,7 +53,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
         except:
             ch = 500.
         if ch > 500: ch = 500.
-        per = round((c / self.dict_tddt[code][1] - 1) * 100, 2)
+        per = round((c / self.dict_prec[code][1] - 1) * 100, 2)
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, mo, mh, ml]
         self.dict_daym[code] = dm

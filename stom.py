@@ -8,6 +8,7 @@ from ui.set_style import color_bg_bc, color_fg_bc, color_bg_dk, color_fg_bk, col
 
 if __name__ == '__main__':
     kernel32 = ctypes.windll.kernel32
+    # noinspection PyUnresolvedReferences
     kernel32.SetConsoleMode(kernel32.GetStdHandle(-10), 128)
 
     auto_run = 0

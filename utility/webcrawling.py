@@ -154,10 +154,23 @@ class WebCrawling:
         num_list = [item.get_text(strip=True) for item in soup.select('td')][:130]
         columns1 = ['구분'] + txt_list[3:7]
         columns2 = txt_list[7:13]
-        data1    = [txt_list[-16:-3], [num_list[j] for j in range(0, 130, 10)], [num_list[j] for j in range(1, 130, 10)], [num_list[j] for j in range(2, 130, 10)], [num_list[j] for j in range(3, 130, 10)]]
-        data2    = [[num_list[j] for j in range(4, 130, 10)], [num_list[j] for j in range(5, 130, 10)], [num_list[j] for j in range(6, 130, 10)], [num_list[j] for j in range(7, 130, 10)], [num_list[j] for j in range(8, 130, 10)], [num_list[j] for j in range(9, 130, 10)]]
-        df1      = pd.DataFrame(dict(zip(columns1, data1)))
-        df2      = pd.DataFrame(dict(zip(columns2, data2)))
+        data1 = [
+            txt_list[-16:-3],
+            [num_list[j] for j in range(0, 130, 10)],
+            [num_list[j] for j in range(1, 130, 10)],
+            [num_list[j] for j in range(2, 130, 10)],
+            [num_list[j] for j in range(3, 130, 10)]
+        ]
+        data2 = [
+            [num_list[j] for j in range(4, 130, 10)],
+            [num_list[j] for j in range(5, 130, 10)],
+            [num_list[j] for j in range(6, 130, 10)],
+            [num_list[j] for j in range(7, 130, 10)],
+            [num_list[j] for j in range(8, 130, 10)],
+            [num_list[j] for j in range(9, 130, 10)]
+        ]
+        df1 = pd.DataFrame(dict(zip(columns1, data1)))
+        df2 = pd.DataFrame(dict(zip(columns2, data2)))
         self.windowQ.put((ui_num['재무년도'], df1))
         self.windowQ.put((ui_num['재무분기'], df2))
 
@@ -177,17 +190,23 @@ class WebCrawling:
         name_list2 = [item.get_text(strip=True) for item in soup.select('.col_type1 > a')[1:]]
         per_list2  = [float(item.get_text(strip=True).replace('%', '')) for item in soup.select('.col_type2 > span')]
 
-        df1 = pd.DataFrame({'업종명': name_list1[:len(per_list1)], '등락율': per_list1, 'url': url_list1[:len(per_list1)]})
+        df1 = pd.DataFrame({
+            '업종명': name_list1[:len(per_list1)],
+            '등락율': per_list1,
+            'url': url_list1[:len(per_list1)]
+        })
         df1 = df1[df1['등락율'] > 0]
-        if len(df1) > 30:
-            df1 = df1[:30]
+        if len(df1) > 30: df1 = df1[:30]
         df1['등락율%'] = df1['등락율'].apply(lambda x: str(x) + '%')
         cl1 = [self.cmap(self.norm(value)) for value in df1['등락율']]
 
-        df2 = pd.DataFrame({'테마명': name_list2[:len(per_list2)], '등락율': per_list2, 'url': url_list2[:len(per_list2)]})
+        df2 = pd.DataFrame({
+            '테마명': name_list2[:len(per_list2)],
+            '등락율': per_list2,
+            'url': url_list2[:len(per_list2)]
+        })
         df2 = df2[df2['등락율'] > 0]
-        if len(df2) > 30:
-            df2 = df2[:30]
+        if len(df2) > 30: df2 = df2[:30]
         df2['등락율%'] = df2['등락율'].apply(lambda x: str(x) + '%')
         cl2 = [self.cmap(self.norm(value)) for value in df2['등락율']]
 

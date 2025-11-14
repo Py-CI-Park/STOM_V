@@ -331,7 +331,7 @@ class BackTest:
                      dict_cn, back_count, day_count, bl, schedul, back_club))
 
         self.shared_cnt.value = 0
-        data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg)
+        data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, 2)
         for q in self.bstq_list:
             q.put(('백테시작', 2))
         for q in self.beq_list:

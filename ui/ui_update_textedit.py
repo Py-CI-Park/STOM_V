@@ -3,7 +3,7 @@ import re
 from PyQt5.QtCore import QTimer
 from ui.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
 from utility.setting import ui_num
-from utility.static import error_decorator, now, qtest_qwait, timedelta_sec, str_hms
+from utility.static import now, qtest_qwait, timedelta_sec, str_hms
 
 
 class UpdateTextedit:
@@ -16,7 +16,6 @@ class UpdateTextedit:
         self.logging   = True
         self.data_save = False
 
-    @error_decorator
     def update_texedit(self, data):
         if len(data) == 2:
             if '시스템 명령 오류 알림' in data[1]:

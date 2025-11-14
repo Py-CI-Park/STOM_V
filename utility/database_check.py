@@ -180,13 +180,13 @@ table_list = df['name'].to_list()
 if 'futureinfo' not in table_list:
     columns = ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수']
     df = pd.DataFrame(columns=columns).set_index('index')
-    df.loc['NQU25'] = 'Mini NASDAQ 100', 34197, 0.25, 20.0, 2
+    df.loc['NQU25'] = ['Mini NASDAQ 100', 34197, 0.25, 20.0, 2]
     df.to_sql('futureinfo', con)
 
 if 'stockinfo' not in table_list:
     columns = ['index', '종목명', '코스닥']
     df = pd.DataFrame(columns=columns).set_index('index')
-    df.loc['005930'] = '삼성전자', 0
+    df.loc['005930'] = ['삼성전자', 0]
     df.to_sql('stockinfo', con)
 
 con.close()

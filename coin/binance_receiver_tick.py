@@ -68,7 +68,7 @@ class BinanceReceiverTick:
         self.dict_data   = {}
         self.dict_daym   = {}
         self.dict_mtop   = {}
-        self.dict_tddt   = {}
+        self.dict_prec   = {}
         self.dict_dlhp   = {}
 
         self.list_hgdt   = [0, 0, 0, 0]
@@ -139,7 +139,7 @@ class BinanceReceiverTick:
                     dm   = float(data['quoteVolume'])
                     prec = round(c - float(data['priceChange']), 8)
                     self.dict_data[code] = [c, o, h, low, per, dm, 0, 0, 0, 0, 0, c, c, c]
-                    self.dict_tddt[code] = [ymd, prec]
+                    self.dict_prec[code] = [ymd, prec]
                     dict_daym[code] = dm
 
         self.codes = list(self.dict_data)
@@ -167,8 +167,8 @@ class BinanceReceiverTick:
             return
 
         ymd = str(dt)[:8]
-        if ymd != self.dict_tddt[code][0]:
-            self.dict_tddt[code] = [ymd, self.dict_data[code][0]]
+        if ymd != self.dict_prec[code][0]:
+            self.dict_prec[code] = [ymd, self.dict_data[code][0]]
             bids, asks, pretbids, pretasks = 0, 0, 0, 0
             o, h, low = c, c, c
             dm = round(v * c, 2)
@@ -190,7 +190,7 @@ class BinanceReceiverTick:
         except:
             ch = 500.
         if ch > 500: ch = 500.
-        per = round((c / self.dict_tddt[code][1] - 1) * 100, 2)
+        per = round((c / self.dict_prec[code][1] - 1) * 100, 2)
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
         self.dict_daym[code] = dm

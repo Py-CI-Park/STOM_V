@@ -1,15 +1,15 @@
 import math
-from traceback import print_exc
+from backtester.back_static import GetTradeInfo
 from backtester.backengine_kiwoom_tick import BackEngineKiwoomTick
 from utility.setting import dgree
 from utility.static import GetBinanceLongPgSgSp, GetBinanceShortPgSgSp, dt_ymdhms, dt_ymdhm
-from backtester.back_static import GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture, GetTradeInfo
 
 
 # noinspection PyUnusedLocal
 class BackEngineBinanceTick(BackEngineKiwoomTick):
     def Settings(self):
-        self.avg_gubun     = 3
+        self.market_gubun  = 3
+        self.is_future     = True
         self.ui_num_txt    = 'C백테스트'
         self.is_oms        = self.dict_set['백테주문관리적용']
         self.is_tick       = self.dict_set['코인타임프레임']
@@ -17,151 +17,6 @@ class BackEngineBinanceTick(BackEngineKiwoomTick):
         self.sell_hj_limit = self.dict_set['코인매도시장가잔량범위']
         self.set_dict_cond = self.dict_set['코인경과틱수설정']
         self.set_weight    = self.dict_set['코인비중조절']
-
-    def MainLoop(self):
-        while True:
-            data = self.beq.get()
-            if '정보' in data[0]:
-                if self.back_type == '최적화':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        avg_list       = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
-                        if self.buystg is None or self.sellstg is None:
-                            self.BackStop()
-                        else:
-                            self.CheckAvglist(avg_list)
-                            self.CheckDayAndTime()
-                    elif data[0] == '변수정보':
-                        self.vars_list = data[1]
-                        self.opti_turn = data[2]
-                        self.vars      = [var[1] for var in self.vars_list]
-                        self.InitDivid()
-                        self.InitTradeInfo()
-                        self.BackTest()
-                elif self.back_type == '전진분석':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        avg_list       = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
-                        if self.buystg is None or self.sellstg is None:
-                            self.BackStop()
-                        else:
-                            self.CheckAvglist(avg_list)
-                            self.CheckDayAndTime()
-                    elif data[0] == '변수정보':
-                        self.vars_list = data[1]
-                        self.opti_turn = data[2]
-                        self.vars      = [var[1] for var in self.vars_list]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.InitDivid()
-                        self.InitTradeInfo()
-                        self.BackTest()
-                elif self.back_type == 'GA최적화':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        avg_list       = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
-                        if self.buystg is None or self.sellstg is None:
-                            self.BackStop()
-                        else:
-                            self.CheckAvglist(avg_list)
-                            self.CheckDayAndTime()
-                    elif data[0] == '변수정보':
-                        self.vars_lists = data[1]
-                        self.InitDivid()
-                        self.InitTradeInfo()
-                        self.BackTest()
-                elif self.back_type == '조건최적화':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        self.avgtime   = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        self.CheckDayAndTime()
-                    elif data[0] == '조건정보':
-                        self.dict_buystg  = {}
-                        self.dict_sellstg = {}
-                        self.dict_sconds  = {}
-                        error = False
-                        for i in range(20):
-                            buystg = GetBuyCondsFuture(self.is_long, data[2][i], self.gubun)
-                            sellstg, dict_cond = GetSellCondsFuture(self.is_long, data[3][i], self.gubun)
-                            self.dict_buystg[i]  = buystg
-                            self.dict_sellstg[i] = sellstg
-                            self.dict_sconds[i]  = dict_cond
-                            if buystg is None or sellstg is None: error = True
-                        if error:
-                            self.BackStop()
-                        else:
-                            self.InitDivid()
-                            self.InitTradeInfo()
-                            self.BackTest()
-                elif self.back_type == '백테스트':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        self.avgtime   = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
-                        if self.buystg is None or self.sellstg is None:
-                            self.BackStop()
-                        else:
-                            self.CheckDayAndTime()
-                            self.InitDivid()
-                            self.InitTradeInfo()
-                            self.BackTest()
-                elif self.back_type == '백파인더':
-                    if data[0] == '백테정보':
-                        self.avgtime   = data[1]
-                        self.startday  = data[2]
-                        self.endday    = data[3]
-                        self.starttime = data[4]
-                        self.endtime   = data[5]
-                        try:
-                            self.buystg = compile(data[6], '<string>', 'exec')
-                        except:
-                            print_exc()
-                            self.BackStop()
-                        else:
-                            self.CheckDayAndTime()
-                            self.InitDivid()
-                            self.InitTradeInfo()
-                            self.BackTest()
-            elif data[0] == '백테유형':
-                self.back_type = data[1]
-            elif data[0] == '설정변경':
-                self.dict_set = data[1]
-            elif data[0] == '데이터로딩':
-                self.DataLoad(data)
-            elif data[0] == '공유데이터':
-                self.shared_count = data[1]
-                self.shared_info  = data[2]
-            elif data == '전체틱수계산':
-                self.GetTickCount()
-            elif data == '백테중지':
-                self.BackStop(2)
 
     def Strategy(self):
         def now():

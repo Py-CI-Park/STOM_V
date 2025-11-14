@@ -5,7 +5,7 @@ import pandas as pd
 from traceback import print_exc
 from multiprocessing import shared_memory
 from backtester.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
-    AddAvgData, GetTradeInfo
+    AddAvgData, GetTradeInfo, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture
 from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_STOCK_BACK_MIN, indicator, dgree, \
     DB_FUTURE_BACK_TICK, DB_FUTURE_BACK_MIN, DB_COIN_BACK_TICK, DB_COIN_BACK_MIN
 # noinspection PyUnresolvedReferences
@@ -49,7 +49,6 @@ class BackEngineKiwoomTick:
         self.indistg      = None
         self.dict_cn      = None
         self.arry_data    = None
-        self.is_long      = None
         self.unit         = None
         self.hour         = None
         self.indicator    = indicator
@@ -83,7 +82,8 @@ class BackEngineKiwoomTick:
         self.dict_condition   = {}
         self.dict_cond_indexn = {}
 
-        self.avg_gubun        = None
+        self.market_gubun     = None
+        self.is_future        = None
         self.is_oms           = None
         self.is_tick          = None
         self.ui_num_txt       = None
@@ -97,7 +97,8 @@ class BackEngineKiwoomTick:
         self.MainLoop()
 
     def Settings(self):
-        self.avg_gubun     = 1
+        self.market_gubun  = 1
+        self.is_future     = False
         self.ui_num_txt    = 'S백테스트'
         self.is_oms        = self.dict_set['백테주문관리적용']
         self.is_tick       = self.dict_set['주식타임프레임']
@@ -132,8 +133,12 @@ class BackEngineKiwoomTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
-                        self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                        if not self.is_future:
+                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
+                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                        else:
+                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
+                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
@@ -143,8 +148,6 @@ class BackEngineKiwoomTick:
                         self.vars_list = data[1]
                         self.opti_turn = data[2]
                         self.vars      = [var[1] for var in self.vars_list]
-                        self.InitDivid()
-                        self.InitTradeInfo()
                         self.BackTest()
                 elif self.back_type == '전진분석':
                     if data[0] == '백테정보':
@@ -154,8 +157,12 @@ class BackEngineKiwoomTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
-                        self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                        if not self.is_future:
+                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
+                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                        else:
+                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
+                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
@@ -167,8 +174,6 @@ class BackEngineKiwoomTick:
                         self.vars      = [var[1] for var in self.vars_list]
                         self.startday  = data[3]
                         self.endday    = data[4]
-                        self.InitDivid()
-                        self.InitTradeInfo()
                         self.BackTest()
                 elif self.back_type == 'GA최적화':
                     if data[0] == '백테정보':
@@ -178,8 +183,12 @@ class BackEngineKiwoomTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
-                        self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                        if not self.is_future:
+                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
+                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                        else:
+                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
+                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
@@ -187,8 +196,7 @@ class BackEngineKiwoomTick:
                             self.CheckDayAndTime()
                     elif data[0] == '변수정보':
                         self.vars_lists = data[1]
-                        self.InitDivid()
-                        self.InitTradeInfo()
+                        self.opti_turn  = data[2]
                         self.BackTest()
                 elif self.back_type == '조건최적화':
                     if data[0] == '백테정보':
@@ -205,8 +213,12 @@ class BackEngineKiwoomTick:
                         self.dict_sconds  = {}
                         error = False
                         for i in range(20):
-                            buystg = GetBuyConds(data[1][i], self.gubun)
-                            sellstg, dict_cond = GetSellConds(data[2][i], self.gubun)
+                            if not self.is_future:
+                                buystg = GetBuyConds(data[2][i], self.gubun)
+                                sellstg, dict_cond = GetSellConds(data[3][i], self.gubun)
+                            else:
+                                buystg = GetBuyCondsFuture(data[1], data[2][i], self.gubun)
+                                sellstg, dict_cond = GetSellCondsFuture(data[1], data[3][i], self.gubun)
                             self.dict_buystg[i]  = buystg
                             self.dict_sellstg[i] = sellstg
                             self.dict_sconds[i]  = dict_cond
@@ -214,8 +226,7 @@ class BackEngineKiwoomTick:
                         if error:
                             self.BackStop()
                         else:
-                            self.InitDivid()
-                            self.InitTradeInfo()
+                            self.opti_turn = data[4]
                             self.BackTest()
                 elif self.back_type == '백테스트':
                     if data[0] == '백테정보':
@@ -225,14 +236,17 @@ class BackEngineKiwoomTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
-                        self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
-                        self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                        if not self.is_future:
+                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
+                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                        else:
+                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
+                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
+                            self.opti_turn = data[9]
                             self.CheckDayAndTime()
-                            self.InitDivid()
-                            self.InitTradeInfo()
                             self.BackTest()
                 elif self.back_type == '백파인더':
                     if data[0] == '백테정보':
@@ -247,10 +261,10 @@ class BackEngineKiwoomTick:
                             print_exc()
                             self.BackStop()
                         else:
+                            self.opti_turn = data[7]
                             self.CheckDayAndTime()
-                            self.InitDivid()
-                            self.InitTradeInfo()
                             self.BackTest()
+
             elif data[0] == '백테유형':
                 self.back_type = data[1]
             elif data[0] == '설정변경':
@@ -268,35 +282,6 @@ class BackEngineKiwoomTick:
             elif data == '백테중지':
                 self.BackStop(2)
 
-    def InitDivid(self):
-        self.sell_count = 0
-        if self.back_type in ('백테스트', '백파인더'):     self.opti_turn = 2
-        elif self.back_type in ('GA최적화', '조건최적화'): self.opti_turn = 3
-
-    def InitTradeInfo(self):
-        self.dict_cond_indexn = {}
-        self.tick_count = 0
-        if self.is_oms:
-            v1 = GetTradeInfo(3)
-            v2 = GetTradeInfo(2)
-            if self.opti_turn == 1:
-                self.day_info   = {t: {k: v1 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
-                self.trade_info = {t: {k: v2 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
-            elif self.opti_turn == 3:
-                self.day_info   = {t: {k: v1 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
-                self.trade_info = {t: {k: v2 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
-            else:
-                self.day_info   = {0: {0: v1}}
-                self.trade_info = {0: {0: v2}}
-        else:
-            v = GetTradeInfo(1)
-            if self.opti_turn == 1:
-                self.trade_info = {t: {k: v for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
-            elif self.opti_turn == 3:
-                self.trade_info = {t: {k: v for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
-            else:
-                self.trade_info = {0: {0: v}}
-
     def DataLoad(self, data):
         def data_load(days):
             try:
@@ -305,7 +290,7 @@ class BackEngineKiwoomTick:
                 pass
             else:
                 if len(df) > 0:
-                    df = AddAvgData(df, self.avg_gubun, self.is_tick, avg_list)
+                    df = AddAvgData(df, self.market_gubun, self.is_tick, avg_list)
                     array = np.array(df)
                     if self.dict_set['백테일괄로딩']:
                         name = f'back_{self.gubun}_{i}'
@@ -329,14 +314,15 @@ class BackEngineKiwoomTick:
                             'file_name': file_name
                         })
 
-        divid_mode = data[-1]
-        if self.avg_gubun == 1:
+        if self.market_gubun == 1:
             con = sqlite3.connect(DB_STOCK_BACK_TICK if self.is_tick else DB_STOCK_BACK_MIN)
-        elif self.avg_gubun == 2:
+        elif self.market_gubun == 2:
             con = sqlite3.connect(DB_FUTURE_BACK_TICK if self.is_tick else DB_FUTURE_BACK_MIN)
         else:
             con = sqlite3.connect(DB_COIN_BACK_TICK if self.is_tick else DB_COIN_BACK_MIN)
+
         shared_info = []
+        divid_mode = data[-1]
         if divid_mode == '종목코드별 분류':
             _, startday, endday, starttime, endtime, code_list, avg_list, code_days, _, _, _ = data
             for i, code in enumerate(code_list):
@@ -385,6 +371,40 @@ class BackEngineKiwoomTick:
         if gubun == 3:
             if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
 
+    def GetTickCount(self):
+        total_ticks = 0
+        while True:
+            code = self.GetArrayData()
+            if code is not None:
+                total_ticks += len(self.arry_data)
+            else:
+                break
+        self.bq.put(total_ticks)
+
+    def InitTradeInfo(self):
+        self.tick_count = 0
+        self.dict_cond_indexn = {}
+        if self.is_oms:
+            v1 = GetTradeInfo(3)
+            v2 = GetTradeInfo(2)
+            if self.opti_turn == 1:
+                self.day_info   = {t: {k: v1 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+                self.trade_info = {t: {k: v2 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+            elif self.opti_turn == 3:
+                self.day_info   = {t: {k: v1 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+                self.trade_info = {t: {k: v2 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+            else:
+                self.day_info   = {0: {0: v1}}
+                self.trade_info = {0: {0: v2}}
+        else:
+            v = GetTradeInfo(1)
+            if self.opti_turn == 1:
+                self.trade_info = {t: {k: v for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+            elif self.opti_turn == 3:
+                self.trade_info = {t: {k: v for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+            else:
+                self.trade_info = {0: {0: v}}
+
     def GetArrayData(self):
         shared_info = None
         with self.shared_lock:
@@ -419,21 +439,14 @@ class BackEngineKiwoomTick:
                                             (self.arry_data[:, 0] % self.unit <= self.endtime)]
         return code
 
-    def GetTickCount(self):
-        total_ticks = 0
-        while True:
-            code = self.GetArrayData()
-            if code is not None:
-                total_ticks += len(self.arry_data)
-            else:
-                break
-        self.bq.put(total_ticks)
-
     def BackTest(self):
         if self.profile:
             import cProfile
             self.pr = cProfile.Profile()
             self.pr.enable()
+
+        self.sell_count = 0
+        self.InitTradeInfo()
 
         j = 0
         while True:
@@ -445,8 +458,25 @@ class BackEngineKiwoomTick:
                 self.BackStop(1)
                 return
 
-            self.code = code
-            self.name = self.dict_cn[self.code] if self.code in self.dict_cn else self.code
+            if self.is_oms:
+                if self.market_gubun < 3:
+                    if self.dict_set['주식매수금지블랙리스트'] and code in self.dict_set['주식블랙리스트'] and self.back_type != '백파인더':
+                        self.tq.put('백테완료')
+                        continue
+                else:
+                    if self.dict_set['코인매수금지블랙리스트'] and self.code in self.dict_set['코인블랙리스트'] and self.back_type != '백파인더':
+                        self.tq.put('백테완료')
+                        continue
+
+            if self.market_gubun == 1:
+                self.code = code
+                self.name = self.dict_cn.get(self.code, self.code)
+            elif self.market_gubun == 2:
+                self.code = code
+                self.name = self.dict_info[code]['종목명']
+            else:
+                self.code = self.name = code
+
             last = len(self.arry_data) - 1
             if last > 0:
                 indexs = self.arry_data[:, 0].astype(np.int64)

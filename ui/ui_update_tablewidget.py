@@ -552,7 +552,6 @@ class UpdateTablewidget:
         self.ui.windowQ.put((ui_num[f'{gubun_}호가체결'], df1))
         self.ui.windowQ.put((ui_num[f'{gubun_}호가체결2'], df2))
 
-        coin = gubun == ui_num['C호가종목']
         for i in range(len(self.ui.ctpg_legend)):
-            self.ui.ctpg_legend[i].setText(get_label_text(False, coin, self.ui.ctpg_name, is_min, self.ui.ctpg_arry, xpoint, self.ui.ctpg_factors[i], hms_text))
+            self.ui.ctpg_legend[i].setText(get_label_text(False, gubun_, self.ui.ctpg_name, is_min, self.ui.ctpg_arry, xpoint, self.ui.ctpg_factors[i], hms_text))
             self.ui.ctpg_labels[i].setText('')

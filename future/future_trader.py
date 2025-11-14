@@ -226,10 +226,10 @@ class FutureTrader:
 
         if 주문취소:
             if 'CANCEL' not in 주문구분:
-                self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
+                self.PutOrderComplete(f'{주문구분}_CANCEL', 종목코드)
         else:
             if 주문수량 > 0:
-                if 잔고청산: self.sstgQ.put((f'{주문구분}_MANUAL', 종목코드))
+                if 잔고청산: self.PutOrderComplete(f'{주문구분}_MANUAL', 종목코드)
                 self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 0, 수동주문유형)
             else:
                 if 주문구분 == 'BUY_LONG':
@@ -240,7 +240,10 @@ class FutureTrader:
                     if self.dict_set['주식매수취소매도시그널'] and 롱매수주문중: self.CancelOrder(종목코드, 주문구분)
                 elif 주문구분 == 'BUY_SHORT':
                     if self.dict_set['주식매수취소매도시그널'] and 숏매수주문중: self.CancelOrder(종목코드, 주문구분)
-                self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
+                self.PutOrderComplete(f'{주문구분}_CANCEL', 종목코드)
+
+    def PutOrderComplete(self, cmsg, code):
+        self.sstgQ.put((cmsg, code))
 
     def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형):
         주문유형 = self.주문유형[주문구분]
@@ -651,9 +654,6 @@ class FutureTrader:
 
         self.sagentQ.put(('잔고목록', tuple(self.dict_jg)))
         self.sagentQ.put(('주문목록', self.GetOrderCodeList()))
-
-    def PutOrderComplete(self, cmsg, code):
-        self.sstgQ.put((cmsg, code))
 
     def GetOrderCodeList(self):
         return tuple(self.dict_order['BUY_LONG']) + tuple(self.dict_order['SELL_SHORT']) + \

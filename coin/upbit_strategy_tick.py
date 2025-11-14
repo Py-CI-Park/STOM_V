@@ -68,6 +68,7 @@ class UpbitStrategyTick:
         elif self.dict_set['코인매수전략'] in dfob.index:
             buytxt = dfob['전략코드'][self.dict_set['코인매수전략']]
             vars_text = dfob['변수값'][self.dict_set['코인매수전략']]
+            # noinspection PyPackages
             if vars_text:
                 vars_list = [float(i) if '.' in i else int(i) for i in vars_text.split(';')]
                 self.vars = {i: var for i, var in enumerate(vars_list)}

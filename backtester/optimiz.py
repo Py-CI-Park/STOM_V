@@ -364,7 +364,7 @@ class Optimize:
         else:
             self.gubun = 'coin'
         self.vars       = {}
-        self.vars_      = {}
+        self.vars_      = []
         self.study      = None
         self.dict_simple_vars = {}
         self.Start()
@@ -510,10 +510,12 @@ class Optimize:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - {self.backname} 변수설정 {e}'))
             self.SysExit(True)
 
-        total_count, vars_type, vars_ = self.GetOptomizeVarsList(random_optivars, only_buy, only_sell, buy_first, buy_num, sell_num)
+        total_count, vars_type = self.GetOptomizeVarsList(
+            random_optivars, only_buy, only_sell, buy_first, buy_num, sell_num
+        )
 
-        len_vars     = len(vars_)
-        avg_list     = vars_[0][0]
+        len_vars     = len(self.vars_)
+        avg_list     = self.vars_[0][0]
         total_count *= ccount if ccount != 0 else 1
         total_count += 2
         total_count *= back_count
@@ -560,21 +562,22 @@ class Optimize:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작{add_text}'))
 
         if 'B' not in self.backname:
-            vars_ = self.OptimizeGrid(mq, back_count, len_vars, vars_, only_buy, only_sell, buy_first, buy_num,
-                                      sell_num, vars_type, ccount, random_optivars, text_vars, optivars_name)
+            self.OptimizeGrid(
+                mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num, vars_type,
+                ccount, random_optivars, text_vars, optivars_name
+            )
         else:
-            vars_ = self.OptimizeOptuna(mq, back_count, len_vars, vars_, only_buy, only_sell, buy_first, buy_num,
-                                        sell_num, optuna_fixvars, optuna_count, optuna_autostep, sampler, buystg_name)
+            self.OptimizeOptuna(
+                mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num,
+                optuna_fixvars, optuna_count, optuna_autostep, sampler, buystg_name
+            )
 
-        time.sleep(6)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 최적화 완료'))
-        time.sleep(1)
-
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 백테스트 시작'))
-        self.BackStart(('변수정보', vars_, 2))
+        self.BackStart(('변수정보', self.vars_, 2))
         _ = mq.get()
         if self.dict_set['스톰라이브']: self.lq.put(self.backname.replace('O', '').replace('B', ''))
-        self.SaveOptiVars(text_vars, vars_, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num)
+        self.SaveOptiVars(text_vars, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
         _ = mq.get()
         self.SysExit(False)
@@ -625,8 +628,9 @@ class Optimize:
 
     def GetOptomizeVarsList(self, random_optivars, only_buy, only_sell, buy_first, buy_num, sell_num):
         total_count = 0
-        vars_type = []
-        vars_ = []
+        vars_type   = []
+        self.vars_  = []
+
         for i, var in enumerate(list(self.vars.values())):
             error = False
             if len(var) != 2:
@@ -666,15 +670,15 @@ class Optimize:
                         break
             if opti not in vars_list[0] or random_optivars:
                 vars_list[1] = random.choice(vars_list[0])
-            vars_.append(vars_list)
+            self.vars_.append(vars_list)
 
-        return total_count, vars_type, vars_
+        return total_count, vars_type
 
-    def OptimizeGrid(self, mq, back_count, len_vars, vars_, only_buy, only_sell, buy_first, buy_num, sell_num,
-                     vars_type, ccount, random_optivars, text_vars, optivars_name):
+    def OptimizeGrid(self, mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num, vars_type,
+                     ccount, random_optivars, text_vars, optivars_name):
 
         self.tq.put(('경우의수', back_count, back_count))
-        self.BackStart(('변수정보', vars_, 0))
+        self.BackStart(('변수정보', self.vars_, 0))
 
         hstd = 0
         data = mq.get()
@@ -696,30 +700,30 @@ class Optimize:
             vars_change_count   = 0
             previous_high_std   = hstd
             bool_changed_hstd   = False
-            result_receiv_count = sum([len(x[0]) for x in vars_ if len(x[0]) > 1])
-            dict_turn_hvar_hstd = {i: [x[1], init_std] for i, x in enumerate(vars_) if len(x[0]) > 1}
-            dict_turn_var_std   = {i: {} for i, x in enumerate(vars_) if len(x[0]) > 1}
-            delete_varlist      = [[] for x in vars_ if len(x[0]) > 1]
+            result_receiv_count = sum([len(x[0]) for x in self.vars_ if len(x[0]) > 1])
+            dict_turn_hvar_hstd = {i: [x[1], init_std] for i, x in enumerate(self.vars_) if len(x[0]) > 1}
+            dict_turn_var_std   = {i: {} for i, x in enumerate(self.vars_) if len(x[0]) > 1}
+            delete_varlist      = [[] for x in self.vars_ if len(x[0]) > 1]
 
             if result_receiv_count == 0:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '모든 파라미터 고정, 최적화를 종료합니다.'))
                 break
 
-            self.BackStart(('변수정보', vars_, 1))
+            self.BackStart(('변수정보', self.vars_, 1))
 
             for _ in range(result_receiv_count):
                 data = mq.get()
                 if type(data) == str:
                     if not random_optivars:
-                        self.SaveOptiVars(text_vars, vars_, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num)
+                        self.SaveOptiVars(text_vars, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num)
                     self.SysExit(True)
                 else:
                     vturn, vkey, std = data
                     cur_turn_type = vars_type[vturn]
-                    cur_turn_var  = vars_[vturn][0][vkey]
+                    cur_turn_var  = self.vars_[vturn][0][vkey]
                     pre_turn_hvar, pre_turn_hstd = dict_turn_hvar_hstd[vturn]
-                    same_update1  = std == pre_turn_hstd and cur_turn_type and cur_turn_var > pre_turn_hvar
-                    same_update2  = std == pre_turn_hstd and not cur_turn_type and cur_turn_var < pre_turn_hvar
+                    same_update1 = std == pre_turn_hstd and cur_turn_type and cur_turn_var > pre_turn_hvar
+                    same_update2 = std == pre_turn_hstd and not cur_turn_type and cur_turn_var < pre_turn_hvar
                     if std > pre_turn_hstd or same_update1 or same_update2:
                         dict_turn_hvar_hstd[vturn] = [cur_turn_var, std]
                         if std > hstd:
@@ -734,91 +738,17 @@ class Optimize:
 
             high_ratio = [0, hstd, hstd]
             if bool_changed_hstd:
-                std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 시작'))
-                for std in std_set[1:-1]:
-                    vars_copy = copy.deepcopy(vars_)
-                    for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
-                        pre_turn_hvar = vars_copy[vturn][1]
-                        cur_turn_hvar, cur_turn_hstd = hvar_hstd
-                        if cur_turn_hstd >= std and cur_turn_hvar != pre_turn_hvar:
-                            vars_copy[vturn][1] = cur_turn_hvar
-
-                    self.BackStart(('변수정보', vars_copy, 0))
-                    data = mq.get()
-                    if type(data) == str:
-                        self.SysExit(True)
-                    else:
-                        check_hstd = data[-1]
-                        if hstd > 0:
-                            ratio = round((check_hstd / hstd - 1) * 100, 2)
-                        else:
-                            ratio = round((1 - check_hstd / hstd) * 100, 2)
-                        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
-                        if ratio > high_ratio[0]:
-                            high_ratio = [ratio, std, check_hstd]
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 완료'))
-
-                text = '\n'
-                high_ratio_std = high_ratio[1]
-                for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
-                    pre_turn_hvar = vars_[vturn][1]
-                    cur_turn_hvar, cur_turn_hstd = hvar_hstd
-                    if cur_turn_hstd >= high_ratio_std and cur_turn_hvar != pre_turn_hvar:
-                        vars_change_count += 1
-                        vars_[vturn][1] = cur_turn_hvar
-                        text = f'{text}self.vars[{vturn}]의 최적값 변경 [{pre_turn_hvar} -> {cur_turn_hvar}]\n'
-                if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
+                high_ratio, vars_change_count = self.CheckOptivalueCombination(
+                    mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd
+                )
 
             if self.dict_set['범위자동관리'] and hstd > 0:
-                text = '\n'
-                for vturn, var_std in dict_turn_var_std.items():
-                    len_std_set = len(set(list(var_std.values())))
-                    if len_std_set <= 2:
-                        cur_turn_hvar = vars_[vturn][1]
-                        vars_[vturn] = [[cur_turn_hvar], cur_turn_hvar]
-                        text = f'{text}self.vars[{vturn}]의 범위 고정 [{cur_turn_hvar}]\n'
-                    elif len_std_set >= 5:
-                        for var, std in var_std.items():
-                            if std < hstd / 10 and var not in delete_varlist[vturn]:
-                                delete_varlist[vturn].append(var)
-
-                for i, del_list in enumerate(delete_varlist):
-                    if del_list:
-                        for var in del_list:
-                            if var not in deleted_varlist[i]:
-                                deleted_varlist[i].append(var)
-                        vars_area = [x for x in vars_[i][0] if x not in del_list]
-                        if vars_area:
-                            vars_[i][0] = vars_area
-                            text = f'{text}self.vars[{i}]의 범위 삭제 {del_list}\n'
-                        else:
-                            cur_turn_hvar = vars_[i][1]
-                            vars_[i][0] = [cur_turn_hvar]
-                            text = f'{text}self.vars[{i}]의 범위 고정 [{cur_turn_hvar}]\n'
-                if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
+                deleted_varlist = self.FixAndDeleteVarsRange(
+                    hstd, dict_turn_var_std, delete_varlist, deleted_varlist
+                )
 
             if previous_high_std > 0:
-                text = '\n'
-                for i, var in enumerate(vars_):
-                    len_var = len(var[0])
-                    if len_var >= 5:
-                        first  = var[0][0]
-                        second = var[0][1]
-                        last   = var[0][-1]
-                        high   = var[1]
-                        gap    = second - first
-                        if high == first:
-                            new = (first - gap) if type(gap) == int else round(first - gap, 2)
-                            prev_list = var[0] if len_var < 20 else var[0][:-1]
-                            vars_[i][0] = [new] + prev_list
-                            text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
-                        elif high == last:
-                            new = (last + gap) if type(gap) == int else round(first + gap, 2)
-                            prev_list = var[0] if len_var < 20 else var[0][1:]
-                            vars_[i][0] = prev_list + [new]
-                            text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
-                if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
+                self.AdjustVarsRange()
 
             if not bool_changed_hstd:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
@@ -830,13 +760,102 @@ class Optimize:
 
             hstd = high_ratio[2]
 
-        return vars_
+    def CheckOptivalueCombination(self, mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd):
+        std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 시작'))
+        for std in std_set[1:-1]:
+            vars_copy = copy.deepcopy(self.vars_)
+            for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
+                pre_turn_hvar = vars_copy[vturn][1]
+                cur_turn_hvar, cur_turn_hstd = hvar_hstd
+                if cur_turn_hstd >= std and cur_turn_hvar != pre_turn_hvar:
+                    vars_copy[vturn][1] = cur_turn_hvar
 
-    def OptimizeOptuna(self, mq, back_count, len_vars, vars_, only_buy, only_sell, buy_first, buy_num, sell_num,
+            self.BackStart(('변수정보', vars_copy, 0))
+            data = mq.get()
+            if type(data) == str:
+                self.SysExit(True)
+            else:
+                check_hstd = data[-1]
+                if hstd > 0:
+                    ratio = round((check_hstd / hstd - 1) * 100, 2)
+                else:
+                    ratio = round((1 - check_hstd / hstd) * 100, 2)
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                if ratio > high_ratio[0]:
+                    high_ratio = [ratio, std, check_hstd]
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 완료'))
+
+        text = '\n'
+        high_ratio_std = high_ratio[1]
+        for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
+            pre_turn_hvar = self.vars_[vturn][1]
+            cur_turn_hvar, cur_turn_hstd = hvar_hstd
+            if cur_turn_hstd >= high_ratio_std and cur_turn_hvar != pre_turn_hvar:
+                vars_change_count += 1
+                self.vars_[vturn][1] = cur_turn_hvar
+                text = f'{text}self.vars[{vturn}]의 최적값 변경 [{pre_turn_hvar} -> {cur_turn_hvar}]\n'
+        if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
+        return high_ratio, vars_change_count
+
+    def FixAndDeleteVarsRange(self, hstd, dict_turn_var_std, delete_varlist, deleted_varlist):
+        text = '\n'
+        for vturn, var_std in dict_turn_var_std.items():
+            len_std_set = len(set(list(var_std.values())))
+            if len_std_set <= 2:
+                cur_turn_hvar = self.vars_[vturn][1]
+                self.vars_[vturn] = [[cur_turn_hvar], cur_turn_hvar]
+                text = f'{text}self.vars[{vturn}]의 범위 고정 [{cur_turn_hvar}]\n'
+            elif len_std_set >= 5:
+                for var, std in var_std.items():
+                    if std < hstd / 10 and var not in delete_varlist[vturn]:
+                        delete_varlist[vturn].append(var)
+
+        for i, del_list in enumerate(delete_varlist):
+            if del_list:
+                for var in del_list:
+                    if var not in deleted_varlist[i]:
+                        deleted_varlist[i].append(var)
+                vars_area = [x for x in self.vars_[i][0] if x not in del_list]
+                if vars_area:
+                    self.vars_[i][0] = vars_area
+                    text = f'{text}self.vars[{i}]의 범위 삭제 {del_list}\n'
+                else:
+                    cur_turn_hvar = self.vars_[i][1]
+                    self.vars_[i][0] = [cur_turn_hvar]
+                    text = f'{text}self.vars[{i}]의 범위 고정 [{cur_turn_hvar}]\n'
+        if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
+        return deleted_varlist
+
+    def AdjustVarsRange(self, best_params=None):
+        text = '\n'
+        for i, var in enumerate(self.vars_):
+            len_var = len(var[0])
+            if len_var >= 5:
+                first  = var[0][0]
+                second = var[0][1]
+                last   = var[0][-1]
+                gap    = second - first
+                if best_params is None:
+                    high = var[1]
+                else:
+                    high = best_params[i]
+                if high == first:
+                    new = (first - gap) if type(gap) == int else round(first - gap, 2)
+                    prev_list = var[0] if len_var < 20 else var[0][:-1]
+                    self.vars_[i][0] = [new] + prev_list
+                    text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
+                elif high == last:
+                    new = (last + gap) if type(gap) == int else round(first + gap, 2)
+                    prev_list = var[0] if len_var < 20 else var[0][1:]
+                    self.vars_[i][0] = prev_list + [new]
+                    text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
+        if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
+
+    def OptimizeOptuna(self, mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num,
                        optuna_fixvars, optuna_count, optuna_autostep, sampler, buystg_name):
 
         total_count = back_count * ((len_vars + 1) if optuna_count == 0 else optuna_count)
-        self.vars_ = vars_
         self.tq.put(('경우의수', total_count, back_count))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} OPTUNA 최적화 시작'))
 
@@ -883,7 +902,7 @@ class Optimize:
             direction='maximize',
             sampler=sampler
         )
-        self.study.enqueue_trial({f'{i:03d}': var[1] for i, var in enumerate(vars_)})
+        self.study.enqueue_trial({f'{i:03d}': var[1] for i, var in enumerate(self.vars_)})
         callback = StopWhenNotUpdateBestCallBack(self, back_count, optuna_count)
         self.study.optimize(objective, n_trials=10000, callbacks=[callback])
         for i, high_var in enumerate(self.study.best_params.values()):
@@ -892,31 +911,7 @@ class Optimize:
                 self.vars_[i][1] = high_var
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {high_var}]'))
 
-        return self.vars_
-
-    def AdjustVarsRange(self, best_params):
-        text = '\n'
-        for i, var in enumerate(self.vars_):
-            len_var = len(var[0])
-            if len_var >= 5:
-                first  = var[0][0]
-                second = var[0][1]
-                last   = var[0][-1]
-                gap    = second - first
-                high   = best_params[i]
-                if high == first:
-                    new = (first - gap) if type(gap) == int else round(first - gap, 2)
-                    prev_list = var[0] if len_var < 20 else var[0][:-1]
-                    self.vars_[i][0] = [new] + prev_list
-                    text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
-                elif high == last:
-                    new = (last + gap) if type(gap) == int else round(first + gap, 2)
-                    prev_list = var[0] if len_var < 20 else var[0][1:]
-                    self.vars_[i][0] = prev_list + [new]
-                    text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
-        if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
-
-    def SaveOptiVars(self, text_vars, vars_, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num):
+    def SaveOptiVars(self, text_vars, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num):
         if 'T' not in self.backname:
             change = 0
             text_vars = text_vars.split('self.vars[0]')[0]
@@ -925,12 +920,12 @@ class Optimize:
                          (only_sell and ((buy_first and i <= sell_num) or (not buy_first and i > buy_num))))
                 if not fixed:
                     pre_hvar = self.vars[i][1]
-                    cur_hvar = vars_[i][1]
+                    cur_hvar = self.vars_[i][1]
                     if pre_hvar != cur_hvar:
                         change += 1
                         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {cur_hvar}]'))
-                    first     = vars_[i][0][0]
-                    last      = vars_[i][0][-1]
+                    first     = self.vars_[i][0][0]
+                    last      = self.vars_[i][0][-1]
                     pre_gap   = self.vars[i][0][2]
                     gap       = pre_gap if first != last else 0
                     text_vars += f'self.vars[{i}] = [[{first}, {last}, {gap}], {cur_hvar}]\n'

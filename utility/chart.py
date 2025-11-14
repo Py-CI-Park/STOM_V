@@ -90,6 +90,7 @@ class Chart:
         except:
             pass
 
+    # noinspection PyUnresolvedReferences
     @error_decorator
     def UpdateChart(self, data):
         if len(data) == 7:
