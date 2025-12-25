@@ -152,7 +152,7 @@ class SetSetupTap:
         self.ui.sj_etc_comBoxx_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_08, items=['다크블루', '다크브라운', '다크그린', '다크옐로', '다크라임', '다크퍼플'])
         self.ui.sj_etc_checBox_02 = self.wc.setCheckBox('저해상도 설정 (해상도 1920 x 1080일 경우, 재구동 후 적용)', self.ui.sj_bs_groupBox_08)
         self.ui.sj_etc_checBox_03 = self.wc.setCheckBox('프로그램 종료 시 창위치 기억하기 (재구동 후 적용)', self.ui.sj_bs_groupBox_08)
-        self.ui.sj_etc_checBox_04 = self.wc.setCheckBox('주식 실행 후 9시1분 또는 10분간까지 장운영알림을 받지 못할 경우 프로세스 종료하기', self.ui.sj_bs_groupBox_08)
+        self.ui.sj_etc_checBox_04 = self.wc.setCheckBox('국내주식 실행 후 9시1분까지 장운영알림을 받지 못할 경우 프로세스 종료하기', self.ui.sj_bs_groupBox_08)
         self.ui.sj_etc_checBox_05 = self.wc.setCheckBox('휴무종료일 경우 프로세스 종료 후 컴퓨터 종료', self.ui.sj_bs_groupBox_08)
         self.ui.sj_etc_checBox_06 = self.wc.setCheckBox('스톰라이브 참여하기', self.ui.sj_bs_groupBox_08, tip='당일실현손익 정보를 공유하고 익명으로 된 스토머분들의 정보 및 통계를 볼 수 있음')
         self.ui.sj_etc_checBox_07 = self.wc.setCheckBox('프로세스 종료 시 프로그램종료', self.ui.sj_bs_groupBox_08)

@@ -192,7 +192,7 @@ class FutureTrader:
                 주문취소 = True
             elif self.dict_intg['추정예수금'] < 주문수량 * self.dict_info[종목코드]['위탁증거금']:
                 if 현재시간 > self.dict_info[종목코드]['시드부족시간']:
-                    self.CreateOrder('시드부족', 종목코드, 종목명, 주문가격, 주문수량, str_hmsf(now_cme()), 시그널시간, 잔고청산, 0, None)
+                    self.CreateOrder('시드부족', 종목코드, 종목명, 주문가격, 주문수량, str_hmsf(now_cme()), 시그널시간, 잔고청산, None)
                     self.dict_info[종목코드]['시드부족시간'] = timedelta_sec(180)
                 주문취소 = True
             elif 포지션 == 'LONG' and 'SHORT' in 주문구분:
@@ -230,7 +230,7 @@ class FutureTrader:
         else:
             if 주문수량 > 0:
                 if 잔고청산: self.PutOrderComplete(f'{주문구분}_MANUAL', 종목코드)
-                self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 0, 수동주문유형)
+                self.CreateOrder(주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형)
             else:
                 if 주문구분 == 'BUY_LONG':
                     if self.dict_set['주식매도취소매수시그널'] and 롱매도주문중: self.CancelOrder(종목코드, 주문구분)
@@ -245,7 +245,7 @@ class FutureTrader:
     def PutOrderComplete(self, cmsg, code):
         self.sstgQ.put((cmsg, code))
 
-    def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형):
+    def CreateOrder(self, 주문구분, 종목코드, 종목명, 주문가격, 주문수량, 원주문번호, 시그널시간, 잔고청산, 수동주문유형):
         주문유형 = self.주문유형[주문구분]
 
         if 잔고청산:
@@ -255,13 +255,13 @@ class FutureTrader:
         else:
             거래구분 = self.거래구분[self.dict_set['주식매도주문구분']] if 수동주문유형 is None else self.거래구분[수동주문유형]
 
-        if 주문구분 in ('BUY_LONG', 'SELL_SHORT') and 정정횟수 == 0:
+        if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
             if 수동주문유형 is None and '지정가' in self.dict_set['주식매수주문구분']:
                 gap = self.dict_info[종목코드]['호가단위'] * self.dict_set['주식매수지정가호가번호']
                 주문가격 = round((주문가격 + gap) if 주문구분 == 'BUY_LONG' else (주문가격 - gap), self.dict_info[종목코드]['소숫점자리수'])
             if self.dict_set['주식매수주문구분'] == '시장가' and not (self.dict_set['주식모의투자'] or 주문구분 == '시드부족'):
                 주문가격 = 0
-        elif 주문구분 in ('SELL_LONG', 'BUY_SHORT') and 정정횟수 == 0:
+        elif 주문구분 in ('SELL_LONG', 'BUY_SHORT'):
             if 수동주문유형 is None and '지정가' in self.dict_set['주식매도주문구분']:
                 gap = self.dict_info[종목코드]['호가단위'] * self.dict_set['주식매도지정가호가번호']
                 주문가격 = round((주문가격 + gap) if 주문구분 == 'SELL_LONG' else (주문가격 - gap), self.dict_info[종목코드]['소숫점자리수'])
@@ -399,7 +399,7 @@ class FutureTrader:
             if 미체결수량 > 0:
                 현재시간 = now()
                 주문번호 = last_value['주문번호']
-                self.CreateOrder(f'{주문구분}_CANCEL', 종목코드, 종목명, 0, 미체결수량, 주문번호, 현재시간, False, 0, None)
+                self.CreateOrder(f'{주문구분}_CANCEL', 종목코드, 종목명, 0, 미체결수량, 주문번호, 현재시간, False, None)
 
     def ModifyOrder(self, 종목코드, 주문구분):
         종목명 = self.dict_info[종목코드]['종목명']
@@ -417,9 +417,8 @@ class FutureTrader:
                     정정가격 = self.dict_curc[종목코드] - self.dict_info[종목코드]['호가단위'] * self.dict_set['주식매도정정호가']
 
                 현재시간 = now()
-                정정횟수 = self.dict_order[주문구분][종목코드][1] + 1
                 주문번호 = last_value['주문번호']
-                self.CreateOrder(f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 주문번호, 현재시간, False, 정정횟수, None)
+                self.CreateOrder(f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 주문번호, 현재시간, False, None)
 
     def JangoCheongsan(self, gubun):
         for 주문구분 in self.dict_order:

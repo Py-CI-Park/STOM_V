@@ -488,8 +488,8 @@ class UpbitStrategyMin(UpbitStrategyTick):
                 BBT = not self.dict_set['코인매수금지시간'] or not (self.dict_set['코인매수금지시작시간'] < 시분초 < self.dict_set['코인매수금지종료시간'])
                 BLK = not self.dict_set['코인매수금지블랙리스트'] or 종목코드 not in self.dict_set['코인블랙리스트']
                 C20 = not self.dict_set['코인매수금지200원이하'] or 현재가 > 200
-                NIB = 종목코드 not in self.list_buy
-                NIS = 종목코드 not in self.list_sell
+                NIB = 종목코드 not in self.dict_signal['매수']
+                NIS = 종목코드 not in self.dict_signal['매도']
 
                 A = 관심종목 and NIB and 매입가 == 0
                 B = self.dict_set['코인매수분할시그널']
@@ -525,7 +525,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
                 SBT = not self.dict_set['코인매도금지시간'] or not (self.dict_set['코인매도금지시작시간'] < 시분초 < self.dict_set['코인매도금지종료시간'])
                 SCC = self.dict_set['코인매수분할횟수'] == 1 or not self.dict_set['코인매도금지매수횟수'] or 분할매수횟수 > self.dict_set[
                     '코인매도금지매수횟수값']
-                NIB = 종목코드 not in self.list_buy
+                NIB = 종목코드 not in self.dict_signal['매수']
 
                 A = NIB and NIS and SCC and 매입가 != 0 and self.dict_set['코인매도분할횟수'] == 1
                 B = self.dict_set['코인매도분할시그널']

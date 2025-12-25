@@ -49,6 +49,7 @@ class UpbitTrader:
         self.dict_set      = DICT_SET
         self.logger        = get_logger(self.__class__.__name__)
 
+        self.order_time    = now()
         self.dict_cj       = {}  # 체결목록
         self.dict_jg       = {}  # 잔고목록
         self.dict_tj       = {}  # 잔고평가
@@ -72,15 +73,12 @@ class UpbitTrader:
         self.dict_bool = {
             '코인잔고청산': False
         }
-        self.dict_time = {
-            '주문시간': now()
-        }
 
         self.upbit     = pyupbit.Upbit(self.dict_set['Access_key1'], self.dict_set['Secret_key1'])
         self.jgcs_time = self.get_jgcs_time()
         self.str_today = str_ymd(now_utc())
 
-        self.UpdateDictName()
+        self.UpdateDictInfo()
         self.LoadDatabase()
         self.GetBalances()
 
@@ -105,7 +103,7 @@ class UpbitTrader:
     def get_jgcs_time(self):
         return int(str_hms(timedelta_sec(-120, dt_hms(str(self.dict_set['코인전략종료시간'])))))
 
-    def UpdateDictName(self):
+    def UpdateDictInfo(self):
         dummy_time = timedelta_sec(-3600)
         for dict_ticker in pyupbit.get_tickers(fiat="KRW", verbose=True):
             code = dict_ticker['market']
@@ -141,7 +139,7 @@ class UpbitTrader:
             df = pd.read_sql('SELECT * FROM c_tradelist', con)
             con.close()
             tcg = df['수익금'].sum()
-            chujeonjasan = 100000000 + tcg
+            chujeonjasan = 100_000_000 + tcg
         else:
             ret = self.upbit.get_balances()
             if self.CheckError(ret):
@@ -178,7 +176,7 @@ class UpbitTrader:
         inthms = int(str_hms(now_utc()))
         if self.dict_set['코인타임프레임'] and inthms < self.dict_set['코인전략종료시간']:
             self.OrderTimeControl()
-        if self.dict_set['코인잔고청산'] and not self.dict_bool['코인잔고청산'] and self.jgcs_time < inthms:
+        if self.dict_set['코인잔고청산'] and not self.dict_bool['코인잔고청산'] and self.jgcs_time < inthms < self.jgcs_time + 10:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
@@ -278,8 +276,8 @@ class UpbitTrader:
 
     def SendOrder(self, data):
         curr_time = now()
-        if curr_time < self.dict_time['주문시간']:
-            next_time = (self.dict_time['주문시간'] - curr_time).total_seconds()
+        if curr_time < self.order_time:
+            next_time = (self.order_time - curr_time).total_seconds()
             QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(data))
             return
 
@@ -288,7 +286,7 @@ class UpbitTrader:
         if self.upbit is not None:
             if 주문구분 == '매수':
                 ret = None
-                if 수동주문유형 == '시장가' or (수동주문유형 is None and self.dict_set['코인매수주문구분'] == '시장가') or 잔고청산:
+                if 수동주문유형 == '시장가' or (수동주문유형 is None and self.dict_set['코인매수주문구분'] == '시장가'):
                     ret = self.upbit.buy_market_order(종목코드, int(주문가격 * 주문수량))
                 elif 수동주문유형 == '지정가' or (수동주문유형 is None and self.dict_set['코인매수주문구분'] == '지정가'):
                     ret = self.upbit.buy_limit_order(종목코드, 주문가격, 주문수량)
@@ -327,14 +325,11 @@ class UpbitTrader:
                 ret = self.upbit.cancel_order(주문번호)
                 if ret is not None:
                     if self.CheckError(ret):
-                        if 주문구분 == '매수취소':
-                            self.dict_order[주문구분][종목코드] = ret['uuid']
-                        elif 주문구분 == '매도취소':
-                            self.dict_order[주문구분][종목코드] = ret['uuid']
+                        self.dict_order[주문구분][종목코드] = ret['uuid']
                 else:
                     self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {종목코드} | {주문가격} | {주문수량} | {주문구분}'))
 
-        self.dict_time['주문시간'] = timedelta_sec(0.3)
+        self.order_time = timedelta_sec(0.3)
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
 
     def GetOrderCodeList(self):
@@ -415,13 +410,12 @@ class UpbitTrader:
             if 총체결수량 > 0:
                 if 주문번호 not in self.dict_order_cc:
                     order_info = [종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호]
-                    self.dict_order_cc[주문번호] = 총체결수량
                 else:
                     체결수량 = round(총체결수량 - self.dict_order_cc[주문번호], 8)
                     if 체결수량 > 0:
                         order_info = [종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 주문번호]
-                        self.dict_order_cc[주문번호] = 총체결수량
 
+                self.dict_order_cc[주문번호] = 총체결수량
                 if 미체결수량 == 0 and 주문번호 in self.dict_order_cc:
                     del self.dict_order_cc[주문번호]
 

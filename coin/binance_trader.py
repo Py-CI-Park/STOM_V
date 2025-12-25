@@ -51,6 +51,7 @@ class BinanceTrader:
         self.dict_set   = DICT_SET
         self.logger     = get_logger(self.__class__.__name__)
 
+        self.order_time = now()
         self.dict_cj    = {}  # 체결목록
         self.dict_jg    = {}  # 잔고목록
         self.dict_tj    = {}  # 잔고평가
@@ -74,9 +75,6 @@ class BinanceTrader:
         }
         self.dict_bool  = {
             '코인잔고청산': False
-        }
-        self.dict_time = {
-            '주문시간': now()
         }
 
         self.binance   = binance.Client(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
@@ -138,7 +136,8 @@ class BinanceTrader:
             df = pd.read_sql('SELECT * FROM c_tradelist_future', con)
             con.close()
             tcg = df['수익금'].sum()
-            chujeonjasan = 100000 + tcg
+            chujeonjasan = 100_000 + tcg
+            if chujeonjasan < 100_000: chujeonjasan = 100_000
         else:
             datas = self.binance.futures_account_balance()
             chujeonjasan = [float(data['balance']) for data in datas if data['asset'] == 'USDT'][0]
@@ -209,7 +208,7 @@ class BinanceTrader:
         inthms = int(str_hms(now_utc()))
         if self.dict_set['코인타임프레임'] and inthms < self.dict_set['코인전략종료시간']:
             self.OrderTimeControl()
-        if self.dict_set['코인잔고청산'] and not self.dict_bool['코인잔고청산'] and self.jgcs_time < inthms:
+        if self.dict_set['코인잔고청산'] and not self.dict_bool['코인잔고청산'] and self.jgcs_time < inthms < self.jgcs_time + 10:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
@@ -258,13 +257,13 @@ class BinanceTrader:
                 주문취소 = True
             elif 포지션 == 'LONG' and 'SHORT' in 주문구분: 주문취소 = True
             elif 포지션 == 'SHORT' and 'LONG' in 주문구분: 주문취소 = True
-            elif 주문구분 == 'BUY_LONG' and 롱매수주문중:        주문취소 = True
-            elif 주문구분 == 'SELL_SHORT' and 숏매수주문중:      주문취소 = True
+            elif 주문구분 == 'BUY_LONG' and 롱매수주문중:   주문취소 = True
+            elif 주문구분 == 'SELL_SHORT' and 숏매수주문중: 주문취소 = True
         elif 주문구분 in ('SELL_LONG', 'BUY_SHORT'):
             if 포지션 == 'LONG' and 'SHORT' in 주문구분:   주문취소 = True
             elif 포지션 == 'SHORT' and 'LONG' in 주문구분: 주문취소 = True
-            elif 주문구분 == 'SELL_LONG' and 롱매도주문중:       주문취소 = True
-            elif 주문구분 == 'BUY_SHORT' and 숏매도주문중:       주문취소 = True
+            elif 주문구분 == 'SELL_LONG' and 롱매도주문중:  주문취소 = True
+            elif 주문구분 == 'BUY_SHORT' and 숏매도주문중:  주문취소 = True
             elif self.dict_set['코인매도금지간격'] and 현재시간 < self.dict_info[종목코드]['최종거래시간']:
                 주문취소 = True
         elif 'CANCEL' in 주문구분:
@@ -332,8 +331,8 @@ class BinanceTrader:
 
     def SendOrder(self, data):
         curr_time = now()
-        if curr_time < self.dict_time['주문시간']:
-            next_time = (self.dict_time['주문시간'] - curr_time).total_seconds()
+        if curr_time < self.order_time:
+            next_time = (self.order_time - curr_time).total_seconds()
             QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(data))
             return
 
@@ -375,7 +374,7 @@ class BinanceTrader:
             else:
                 self.dict_pos[종목코드] = 포지션
 
-        self.dict_time['주문시간'] = timedelta_sec(0.3)
+        self.order_time = timedelta_sec(0.3)
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
 
     def GetOrderCodeList(self):

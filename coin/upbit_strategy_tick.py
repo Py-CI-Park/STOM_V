@@ -38,9 +38,10 @@ class UpbitStrategyTick:
         self.dict_gj          = {}
         self.dict_jg          = {}
         self.indicator        = indicator
-
-        self.list_buy         = []
-        self.list_sell        = []
+        self.dict_signal      = {
+            '매수': [],
+            '매도': []
+        }
 
         self.indexn           = 0
         self.indexb           = 0
@@ -56,10 +57,6 @@ class UpbitStrategyTick:
         dfs  = pd.read_sql('SELECT * FROM coinsell', con).set_index('index')
         dfob = pd.read_sql('SELECT * FROM coinoptibuy', con).set_index('index')
         dfos = pd.read_sql('SELECT * FROM coinoptisell', con).set_index('index')
-        try:
-            dfid = pd.read_sql(f"SELECT * FROM coinindi_{self.dict_set['코인매수전략']}", con).set_index('index')
-        except:
-            dfid = None
         con.close()
 
         buytxt = ''
@@ -123,19 +120,19 @@ class UpbitStrategyTick:
         elif gubun == '관심목록':
             self.dict_gj = {k: v for k, v in self.dict_gj.copy().items() if k in data}
         elif gubun in ('매수완료', '매수취소'):
-            if data in self.list_buy:
-                self.list_buy.remove(data)
+            if data in self.dict_signal['매수']:
+                self.dict_signal['매수'].remove(data)
             if gubun == '매수완료':
                 self.dict_buy_num[data] = self.dict_signal_num.get(data, len(self.dict_arry[data]) - 1)
         elif gubun in ('매도완료', '매도취소'):
-            if data in self.list_sell:
-                self.list_sell.remove(data)
+            if data in self.dict_signal['매도']:
+                self.dict_signal['매도'].remove(data)
         elif gubun == '매수주문':
-            if data not in self.list_buy:
-                self.list_buy.append(data)
+            if data not in self.dict_signal['매수']:
+                self.dict_signal['매수'].append(data)
         elif gubun == '매도주문':
-            if data not in self.list_sell:
-                self.list_sell.append(data)
+            if data not in self.dict_signal['매도']:
+                self.dict_signal['매도'].append(data)
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
@@ -460,8 +457,8 @@ class UpbitStrategyTick:
             BBT = not self.dict_set['코인매수금지시간'] or not (self.dict_set['코인매수금지시작시간'] < 시분초 < self.dict_set['코인매수금지종료시간'])
             BLK = not self.dict_set['코인매수금지블랙리스트'] or 종목코드 not in self.dict_set['코인블랙리스트']
             C20 = not self.dict_set['코인매수금지200원이하'] or 현재가 > 200
-            NIB = 종목코드 not in self.list_buy
-            NIS = 종목코드 not in self.list_sell
+            NIB = 종목코드 not in self.dict_signal['매수']
+            NIS = 종목코드 not in self.dict_signal['매도']
 
             A = 관심종목 and NIB and 매입가 == 0
             B = self.dict_set['코인매수분할시그널']
@@ -495,7 +492,7 @@ class UpbitStrategyTick:
 
             SBT = not self.dict_set['코인매도금지시간'] or not (self.dict_set['코인매도금지시작시간'] < 시분초 < self.dict_set['코인매도금지종료시간'])
             SCC = self.dict_set['코인매수분할횟수'] == 1 or not self.dict_set['코인매도금지매수횟수'] or 분할매수횟수 > self.dict_set['코인매도금지매수횟수값']
-            NIB = 종목코드 not in self.list_buy
+            NIB = 종목코드 not in self.dict_signal['매수']
 
             A = NIB and NIS and SCC and 매입가 != 0 and self.dict_set['코인매도분할횟수'] == 1
             B = self.dict_set['코인매도분할시그널']
@@ -613,7 +610,7 @@ class UpbitStrategyTick:
             기준가격 = 현재가
             if self.dict_set['코인매수지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1
             if self.dict_set['코인매수지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1
-            self.list_buy.append(종목코드)
+            self.dict_signal['매수'].append(종목코드)
             self.dict_signal_num[종목코드] = 데이터길이 - 1
             self.ctraderQ.put(('매수', 종목코드, 기준가격, 매수수량, now(), False))
         else:
@@ -629,7 +626,7 @@ class UpbitStrategyTick:
                     미체결수량 -= 매도잔량
             if 미체결수량 <= 0:
                 예상체결가 = round(매수금액 / 매수수량, 4) if 매수수량 != 0 else 0
-                self.list_buy.append(종목코드)
+                self.dict_signal['매수'].append(종목코드)
                 self.dict_signal_num[종목코드] = 데이터길이 - 1
                 self.ctraderQ.put(('매수', 종목코드, 예상체결가, 매수수량, now(), False))
 
@@ -638,7 +635,7 @@ class UpbitStrategyTick:
             기준가격 = 현재가
             if self.dict_set['코인매도지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1
             if self.dict_set['코인매도지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1
-            self.list_sell.append(종목코드)
+            self.dict_signal['매도'].append(종목코드)
             self.ctraderQ.put(('매도', 종목코드, 기준가격, 매도수량, now(), False))
         else:
             매도금액 = 0
@@ -653,7 +650,7 @@ class UpbitStrategyTick:
                     미체결수량 -= 매수잔량
             if 미체결수량 <= 0:
                 예상체결가 = round(매도금액 / 매도수량, 4) if 매도수량 != 0 else 0
-                self.list_sell.append(종목코드)
+                self.dict_signal['매도'].append(종목코드)
                 self.ctraderQ.put(('매도', 종목코드, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
     def PutGsjmAndDeleteHilo(self):

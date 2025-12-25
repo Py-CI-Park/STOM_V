@@ -56,10 +56,6 @@ class BinanceStrategyTick:
         dfs  = pd.read_sql('SELECT * FROM coinsell', con).set_index('index')
         dfob = pd.read_sql('SELECT * FROM coinoptibuy', con).set_index('index')
         dfos = pd.read_sql('SELECT * FROM coinoptisell', con).set_index('index')
-        try:
-            dfid = pd.read_sql(f"SELECT * FROM coinindi_{self.dict_set['코인매수전략']}", con).set_index('index')
-        except:
-            dfid = None
         con.close()
 
         buytxt = ''
