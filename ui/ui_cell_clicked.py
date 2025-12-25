@@ -43,7 +43,8 @@ def cell_clicked_02(ui, row):
             ui.wdzservQ.put(('trader', (p, ui.dict_code[name], name, c, oc, now(), True)))
 
 
-def cell_clicked_03(ui, row):
+# noinspection PyUnusedLocal
+def cell_clicked_03(ui, row, col):
     item = ui.cjg_tableWidgettt.item(row, 0)
     if item is None:
         return

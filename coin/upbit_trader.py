@@ -140,6 +140,7 @@ class UpbitTrader:
             con.close()
             tcg = df['수익금'].sum()
             chujeonjasan = 100_000_000 + tcg
+            if chujeonjasan < 100_000_000: chujeonjasan = 100_000_000
         else:
             ret = self.upbit.get_balances()
             if self.CheckError(ret):
@@ -505,7 +506,7 @@ class UpbitTrader:
 
         if self.dict_jg:
             if gubun == '수동':
-                self.teleQ.put('tele', '코인 잔고청산 주문을 전송합니다.')
+                self.teleQ.put('코인 잔고청산 주문을 전송합니다.')
             for 종목코드 in self.dict_jg.copy():
                 현재가 = self.dict_jg[종목코드]['현재가']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
@@ -517,7 +518,7 @@ class UpbitTrader:
                 self.soundQ.put('코인 잔고청산 주문을 전송하였습니다.')
             self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))
         elif gubun == '수동':
-            self.teleQ.put('tele', '현재는 코인 보유종목이 없습니다.')
+            self.teleQ.put('현재는 코인 보유종목이 없습니다.')
         self.dict_bool['코인잔고청산'] = True
 
     def SysExit(self):
