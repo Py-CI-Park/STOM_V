@@ -368,15 +368,17 @@ class FutureTrader:
                         if self.dict_set['주식매수취소시간'] and now() > order_info[0]:
                             cancel_list.append((code, gubun))
                     else:
-                        if self.dict_set['주식매수취소시간'] and now() > order_info[0]:
+                        if self.dict_set['주식매도취소시간'] and now() > order_info[0]:
                             cancel_list.append((code, gubun))
                     if gubun in ('BUY_LONG', 'BUY_SHORT'):
                         if order_info[1] < self.dict_set['주식매수정정횟수'] and code in self.dict_curc and \
-                                self.dict_curc[code] >= order_info[2] + self.dict_info[code]['호가단위'] * self.dict_set['주식매수정정호가차이']:
+                                self.dict_curc[code] >= order_info[2] + self.dict_info[code]['호가단위'] * \
+                                self.dict_set['주식매수정정호가차이' if gubun == 'BUY_LONG' else '주식매도정정호가차이']:
                             modify_list.append((code, gubun))
                     else:
                         if order_info[1] < self.dict_set['주식매도정정횟수'] and code in self.dict_curc and \
-                                self.dict_curc[code] <= order_info[2] - self.dict_info[code]['호가단위'] * self.dict_set['주식매도정정호가차이']:
+                                self.dict_curc[code] <= order_info[2] - self.dict_info[code]['호가단위'] * \
+                                self.dict_set['주식매도정정호가차이' if gubun == 'SELL_LONG' else '주식매수정정호가차이']:
                             modify_list.append((code, gubun))
 
         if cancel_list:
@@ -420,8 +422,6 @@ class FutureTrader:
                 self.CreateOrder(f'{주문구분}_MODIFY', 종목코드, 종목명, 정정가격, 미체결수량, 주문번호, 현재시간, False, 정정횟수, None)
 
     def JangoCheongsan(self, gubun):
-        self.dict_bool['주식잔고청산'] = True
-
         for 주문구분 in self.dict_order:
             for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
@@ -447,6 +447,7 @@ class FutureTrader:
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 해선 잔고청산 주문 완료')))
         elif gubun == '수동':
             self.mgzservQ.put(('tele', '현재는 해선 보유종목이 없습니다.'))
+        self.dict_bool['주식잔고청산'] = True
 
     def UpdateYesugm(self, data):
         yesugm, dict_jg = data
@@ -507,8 +508,8 @@ class FutureTrader:
             return
 
         if 주문상태 == '접수' and 주문구분 == '신규' and 매도수구분 in ('매수', '매도'):
-            취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if 매도수구분 == '매수' else '주식매도취소시간초'])
-            if 매도수구분 == '매수': self.dict_intg['추정예수금'] -= 주문수량 * self.dict_info[종목코드]['위탁증거금']
+            취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if gubun in ('BUY_LONG', 'SELL_SHORT') else '주식매도취소시간초'])
+            if gubun in ('BUY_LONG', 'SELL_SHORT'): self.dict_intg['추정예수금'] -= 주문수량 * self.dict_info[종목코드]['위탁증거금']
             self.dict_order[gubun][종목코드] = [취소시간, 0, 주문가격]
             self.UpdateChegeollist(index, 종목코드, 종목명, f'{gubun}_REG', 주문수량, 0, 미체결수량, 0, 주문시간, 주문가격, 주문번호)
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{gubun}_REG] {종목명} | {주문가격} | {주문수량}')))
@@ -517,7 +518,7 @@ class FutureTrader:
             self.UpdateChegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
 
         elif 주문상태 == '체결' and 주문구분 == '체결' and 매도수구분 in ('매수', '매도'):
-            if 매도수구분 == '매수':
+            if gubun in ('BUY_LONG', 'SELL_SHORT'):
                 # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 if 종목코드 in self.dict_jg:
                     직전매입가 = self.dict_jg[종목코드]['매입가']
@@ -616,7 +617,7 @@ class FutureTrader:
             self.UpdateChegeollist(index, 종목코드, 종목명, gubun, 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
 
             총위탁증거금 = 체결수량 * self.dict_info[종목코드]['위탁증거금']
-            if 매도수구분 == '매수':
+            if gubun in ('BUY_LONG', 'SELL_SHORT'):
                 self.dict_intg['예수금'] -= 총위탁증거금
                 if self.dict_set['주식모의투자']:
                     self.dict_intg['추정예수금'] -= 총위탁증거금
@@ -634,11 +635,11 @@ class FutureTrader:
             if 주문구분 == '정정':
                 gubun_ = gubun.replace('_MODIFY', '')
                 정정횟수 = self.dict_order[gubun_][종목코드][1] + 1
-                취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if 매도수구분 == '매수' else '주식매도취소시간초'])
+                취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if gubun in ('BUY_LONG', 'SELL_SHORT') else '주식매도취소시간초'])
                 self.dict_order[gubun_][종목코드] = [취소시간, 정정횟수, 주문가격]
             else:
                 gubun_ = gubun.replace('_CANCEL', '')
-                if 매도수구분 == '매수':
+                if gubun in ('BUY_LONG', 'SELL_SHORT'):
                     self.dict_intg['추정예수금'] += 주문수량 * self.dict_info[종목코드]['위탁증거금']
                 if 종목코드 in self.dict_order[gubun_]:
                     del self.dict_order[gubun_][종목코드]

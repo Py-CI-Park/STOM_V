@@ -558,7 +558,7 @@ class FutureAgentTick:
                 df = df[columns]
                 df['분할매수횟수'] = 5
                 df['분할매도횟수'] = 0
-                df['매수시간'] = self.str_today + '093000'
+                df['매수시간'] = self.str_today + '083000'
                 df['종목명'] = df['종목코드'].apply(lambda x: self.dict_info[x]['종목명'])
                 df.set_index('index', inplace=True)
                 dict_jg = df.to_dict('index')
@@ -766,11 +766,11 @@ class FutureAgentTick:
     def ShowAccountWindow(self):
         self.ocx.dynamicCall('GetCommonFunc(QString, QString)', 'ShowAccountWindow', '')
 
+    def DisconnectRealData(self):
+        self.ocx.dynamicCall('DisconnectRealData(QString)', 1000)
+
     def GetAccountNumber(self):
         return self.ocx.dynamicCall('GetLoginInfo(QString)', 'ACCNO').split(';')[0]
-
-    def DisconnectRealData(self):
-        return self.ocx.dynamicCall('DisconnectRealData(QString)', 1000)
 
     def GetGlobalFutureCodelist(self, code: str) -> str:
         return self.ocx.dynamicCall('GetGlobalFutureCodelist(QString)', code)

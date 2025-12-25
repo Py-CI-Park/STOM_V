@@ -418,10 +418,7 @@ class FutureStrategyTick:
         if 종목코드 not in self.dict_arry:
             self.dict_arry[종목코드] = np.array([new_data_tick])
         else:
-            if 체결시간 != self.dict_arry[종목코드][-1, 0]:
-                self.dict_arry[종목코드] = np.r_[self.dict_arry[종목코드], np.array([new_data_tick])]
-            else:
-                self.dict_arry[종목코드][-1, :] = np.array([new_data_tick])
+            self.dict_arry[종목코드] = np.r_[self.dict_arry[종목코드], np.array([new_data_tick])]
 
         데이터길이 = len(self.dict_arry[종목코드])
         self.indexn = 데이터길이 - 1
@@ -530,7 +527,7 @@ class FutureStrategyTick:
                 매도수량 = 0
                 강제청산 = H or J or K or L or M or N
 
-                if A or B or H or J or K or L or M or N:
+                if A or B or 강제청산:
                     매도수량 = 보유수량
                 elif not (F or G):
                     매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
@@ -542,7 +539,7 @@ class FutureStrategyTick:
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
-                elif D or E or H or J or K or L or M or N:
+                elif D or E or 강제청산:
                     if H or K or M:
                         SELL_LONG = True
                     elif J or L or N:

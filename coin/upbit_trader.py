@@ -504,8 +504,6 @@ class UpbitTrader:
                 self.CreateOrder(주문구분, 종목코드, 정정가격, 미체결수량, '', 현재시간, False, 정정횟수, None)
 
     def JangoCheongsan(self, gubun):
-        self.dict_bool['코인잔고청산'] = True
-
         for 주문구분 in self.dict_order:
             if 주문구분 in ('매수', '매도'):
                 for 종목코드 in self.dict_order[주문구분]:
@@ -526,6 +524,7 @@ class UpbitTrader:
             self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))
         elif gubun == '수동':
             self.teleQ.put('tele', '현재는 코인 보유종목이 없습니다.')
+        self.dict_bool['코인잔고청산'] = True
 
     def SysExit(self):
         self.SaveDayData()

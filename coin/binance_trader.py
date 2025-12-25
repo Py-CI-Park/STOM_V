@@ -454,15 +454,17 @@ class BinanceTrader:
                         if self.dict_set['코인매수취소시간'] and now() > order_info[0]:
                             cancel_list.append((code, gubun))
                     else:
-                        if self.dict_set['코인매수취소시간'] and now() > order_info[0]:
+                        if self.dict_set['코인매도취소시간'] and now() > order_info[0]:
                             cancel_list.append((code, gubun))
                     if gubun in ('BUY_LONG', 'BUY_SHORT'):
                         if order_info[1] < self.dict_set['코인매수정정횟수'] and code in self.dict_curc and \
-                                self.dict_curc[code] >= order_info[2] + self.dict_info[code]['호가단위'] * self.dict_set['코인매수정정호가차이']:
+                                self.dict_curc[code] >= order_info[2] + self.dict_info[code]['호가단위'] * \
+                                self.dict_set['코인매수정정호가차이' if gubun == 'BUY_LONG' else '코인매도정정호가차이']:
                             modify_list.append((code, gubun))
                     else:
                         if order_info[1] < self.dict_set['코인매도정정횟수'] and code in self.dict_curc and \
-                                self.dict_curc[code] <= order_info[2] - self.dict_info[code]['호가단위'] * self.dict_set['코인매도정정호가차이']:
+                                self.dict_curc[code] <= order_info[2] - self.dict_info[code]['호가단위'] * \
+                                self.dict_set['코인매도정정호가차이' if gubun == 'SELL_LONG' else '코인매수정정호가차이']:
                             modify_list.append((code, gubun))
 
         if cancel_list:
@@ -522,8 +524,6 @@ class BinanceTrader:
                 self.CreateOrder(주문구분, 종목코드, 정정가격, 미체결수량, '', 현재시간, False, 정정횟수, None)
 
     def JangoCheongsan(self, gubun):
-        self.dict_bool['코인잔고청산'] = True
-
         for 주문구분 in self.dict_order:
             for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
@@ -545,6 +545,7 @@ class BinanceTrader:
             self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))
         elif gubun == '수동':
             self.teleQ.put('tele', '현재는 코인 보유종목이 없습니다.')
+        self.dict_bool['코인잔고청산'] = True
 
     def SysExit(self):
         if not self.dict_set['코인모의투자']:

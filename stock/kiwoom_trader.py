@@ -195,6 +195,9 @@ class KiwoomTrader:
                     self.CreateOrder('시드부족', 종목코드, 종목명, 주문가격, 주문수량, '', 시그널시간, 잔고청산, None)
                     self.dict_info[종목코드]['시드부족시간'] = timedelta_sec(180)
                 주문취소 = True
+            elif self.dict_set['주식매수금지라운드피겨'] and \
+                    roundfigure_upper(주문가격, self.dict_set['주식매수금지라운드호가'], self.int_hgtime):
+                주문취소 = True
             elif 매수주문중:
                 주문취소 = True
         elif 주문구분 == '매도':
@@ -202,18 +205,14 @@ class KiwoomTrader:
                 주문취소 = True
             elif self.dict_set['주식매도금지간격'] and 현재시간 < self.dict_info[종목코드]['최종거래시간']:
                 주문취소 = True
+            elif self.dict_set['주식매도금지라운드피겨'] and \
+                    roundfigure_lower(주문가격, self.dict_set['주식매도금지라운드호가'], self.int_hgtime):
+                주문취소 = True
         elif '취소' in 주문구분:
             if 주문구분 == '매수취소' and not 매수주문중:
                 주문취소 = True
             elif 주문구분 == '매도취소' and not 매도주문중:
                 주문취소 = True
-
-        if self.dict_set['주식매수금지라운드피겨'] and '매수' in 주문구분 and \
-                roundfigure_upper(주문가격, self.dict_set['주식매수금지라운드호가'], self.int_hgtime):
-            주문취소 = True
-        elif self.dict_set['주식매도금지라운드피겨'] and '매도' in 주문구분 and \
-                roundfigure_lower(주문가격, self.dict_set['주식매도금지라운드호가'], self.int_hgtime):
-            주문취소 = True
 
         if 주문취소:
             if '취소' not in 주문구분:
@@ -402,8 +401,6 @@ class KiwoomTrader:
                 self.CreateOrder(f'{주문구분}정정', 종목코드, 종목명, 주문가격, 미체결수량, 주문번호, 현재시간, False, None)
 
     def JangoCheongsan(self, gubun):
-        self.dict_bool['주식잔고청산'] = True
-
         for 주문구분 in self.dict_order:
             for 종목코드 in self.dict_order[주문구분]:
                 self.CancelOrder(종목코드, 주문구분)
@@ -425,6 +422,7 @@ class KiwoomTrader:
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 주식 잔고청산 주문 완료')))
         elif gubun == '수동':
             self.mgzservQ.put(('tele', '현재는 주식 보유종목이 없습니다.'))
+        self.dict_bool['주식잔고청산'] = True
 
     def UpdateYesugm(self, data):
         yesugm, jasan, dict_jg = data
