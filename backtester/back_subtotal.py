@@ -3,10 +3,10 @@ from backtester.back_static import GetResult, AddMdd
 
 
 class BackSubTotal:
-    def __init__(self, vkey, tq, bctqs, buystd):
+    def __init__(self, vkey, tq, bstqs, buystd):
         self.vkey       = vkey
         self.tq         = tq
-        self.bstqs      = bctqs
+        self.bstqs      = bstqs
         self.bstq       = self.bstqs[self.vkey]
         self.buystd     = buystd
 

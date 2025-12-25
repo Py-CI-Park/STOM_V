@@ -229,11 +229,11 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
-                    break
+                    return
 
                 for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
-                    if self.tick_count < self.vars[0]:
+                    if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
                     보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
@@ -251,7 +251,8 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(now(), vturn, vkey): continue
-                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                          매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             exec(self.buystg)
                         else:
@@ -275,10 +276,14 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]
-                        if self.tick_count < self.vars[0]:
-                            break
+                        if vturn != 0:
+                            if self.tick_count < self.vars[0]:
+                                return
+                        else:
+                            if self.tick_count < self.vars[0]:
+                                continue
                     elif self.tick_count < self.avgtime:
-                        break
+                        return
 
                     보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
@@ -295,7 +300,8 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(now(), vturn, vkey): continue
-                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                          매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             if self.back_type != '조건최적화':
                                 exec(self.buystg)
@@ -348,7 +354,8 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             if '매수' in gubun:
                 if not 관심종목: return
                 if self.CancelBuyOrder(now(), vturn, vkey): return
-                self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                  매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if not 보유중:
                     exec(self.buystg)
                 else:
@@ -358,7 +365,8 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             if '매도' in gubun:
                 if self.CheckSonjeol(수익률, 수익금, vturn, vkey): return
                 if self.CancelSellOrder(매수분할횟수, now(), vturn, vkey): return
-                self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
+                self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                   매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if self.dict_set['코인매도분할횟수'] == 1:
                     exec(self.sellstg)
                 else:
@@ -580,9 +588,9 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                 if 미체결수량 <= 0:
                     직전매수가 = self.trade_info[vturn][vkey]['매수가']
                     직전보유수량 = self.trade_info[vturn][vkey]['보유수량']
-                    추가매수가 = round(매수금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'] + 1)
+                    추가매수가 = round(매수금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
                     보유수량 = 직전보유수량 + 주문수량
-                    매수가 = round((직전매수가 * 직전보유수량 + 추가매수가 * 주문수량) / 보유수량, self.dict_info[self.code]['소숫점자리수'] + 1)
+                    매수가 = round((직전매수가 * 직전보유수량 + 추가매수가 * 주문수량) / 보유수량, self.dict_info[self.code]['소숫점자리수'])
                     self.trade_info[vturn][vkey]['매수가'] = 매수가
                     self.trade_info[vturn][vkey]['보유수량'] = 보유수량
                     self.trade_info[vturn][vkey]['추가매수가'] = 추가매수가
@@ -613,7 +621,8 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                 현재가 <= 매수호가 - 매수호가단위 * self.dict_set['주식매수정정호가차이']:
             self.trade_info[vturn][vkey]['매수호가'] = 현재가 + 매수호가단위 * self.dict_set['주식매수정정호가']
             self.trade_info[vturn][vkey]['매수정정횟수'] += 1
-        elif (주문포지션 == 'LONG' and 분봉저가 < 매수호가) or (주문포지션 == 'SHORT' and 분봉고가 > 매수호가):
+        elif (주문포지션 == 'LONG' and ((분봉저가 is None and 현재가 < 매수호가) or (분봉저가 is not None and 분봉저가 < 매수호가))) or \
+                (주문포지션 == 'SHORT' and ((분봉고가 is None and 현재가 > 매수호가) or (분봉고가 is not None and 분봉고가 > 매수호가))):
             직전매수금액 = 매수가 * 보유수량
             매수금액 = 매수호가 * 주문수량
             총수량 = 보유수량 + 주문수량
@@ -684,7 +693,8 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                 현재가 >= 매도호가 + 매도호가단위 * self.dict_set['주식매도정정호가차이']:
             self.trade_info[vturn][vkey]['매도호가'] = 현재가 - 매도호가단위 * self.dict_set['주식매도정정호가']
             self.trade_info[vturn][vkey]['매도정정횟수'] += 1
-        elif (gubun == 'LONG' and 분봉고가 > 매도호가) or (gubun == 'SHORT' and 분봉저가 < 매도호가):
+        elif (gubun == 'LONG' and ((분봉고가 is None and 현재가 > 매도호가) or (분봉고가 is not None and 분봉고가 > 매도호가))) or \
+                (gubun == 'SHORT' and ((분봉저가 is None and 현재가 < 매도호가) or (분봉저가 is not None and 분봉저가 < 매도호가))):
             self.trade_info[vturn][vkey]['매도가'] = 매도호가
             self.CalculationEyun(vturn, vkey)
 
@@ -723,4 +733,6 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             self.trade_info[vturn][vkey]['매도정정횟수'] = 0
             self.trade_info[vturn][vkey]['매도분할횟수'] += 1
         else:
-            self.trade_info[vturn][vkey] = GetTradeInfo(2)
+            v = GetTradeInfo(2)
+            v['주문포지션'] = ''
+            self.trade_info[vturn][vkey] = v

@@ -11,12 +11,12 @@ class Sound:
         self.text2speak = pyttsx3.init()
         self.text2speak.setProperty('rate', 170)
         self.text2speak.setProperty('volume', 1.0)
-        self.Start()
+        self.MainLoop()
 
     def __del__(self):
         self.text2speak.stop()
 
-    def Start(self):
+    def MainLoop(self):
         while True:
             text = self.soundQ.get()
             self.text2speak.say(text)

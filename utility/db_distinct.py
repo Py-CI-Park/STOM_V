@@ -23,9 +23,8 @@ def Updater(gubun, file_list_):
                 if len(df1) != len(df2):
                     df1.to_sql(code, con, if_exists='replace', chunksize=1000)
                     count += 1
-                    logger.info(f'[{gubun}] 데이터베이스 중복 제거 [{code}]')
+                    logger.info(f'[{gubun}] 데이터베이스 중복 제거 [{db_name}]')
         logger.info(f'[{gubun}] 데이터베이스 중복 확인 중 ... [{k + 1}/{last}]')
-        con.commit()
         con.close()
     logger.info(f'[{gubun}] 데이터베이스 중복 제거 건수 [{count}]')
     logger.info(f'[{gubun}] 데이터베이스 중복 확인 완료')
@@ -33,7 +32,7 @@ def Updater(gubun, file_list_):
 
 if __name__ == '__main__':
     file_list = os.listdir(DB_PATH)
-    file_list = [x for x in file_list if '_tick_' in x and '.db' in x and 'back' not in x]
+    file_list = [x for x in file_list if ('_tick_' in x or '_min_' in x) and '.db' in x and 'back' not in x]
 
     file_lists = []
     for i in range(8):

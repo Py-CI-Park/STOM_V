@@ -256,11 +256,11 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
-                    break
+                    return
 
                 for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
-                    if self.tick_count < self.vars[0]:
+                    if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
                     보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
@@ -301,10 +301,14 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]
-                        if self.tick_count < self.vars[0]:
-                            break
+                        if vturn != 0:
+                            if self.tick_count < self.vars[0]:
+                                return
+                        else:
+                            if self.tick_count < self.vars[0]:
+                                continue
                     elif self.tick_count < self.avgtime:
-                        break
+                        return
 
                     보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \

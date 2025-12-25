@@ -286,9 +286,9 @@ class Total:
             bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
 
         if self.weeks_valid == 0 and self.weeks_test == 0:
-            back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습+검증기간 : {self.weeks_train}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.vars[0]}'
+            back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습기간 : {self.weeks_train}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.vars[0]}'
         elif self.weeks_valid == 0 and self.weeks_test != 0:
-            back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습+검증/확인기간 : {self.weeks_train}/{self.weeks_test}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.vars[0]}'
+            back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습/확인기간 : {self.weeks_train}/{self.weeks_test}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.vars[0]}'
         elif self.weeks_test == 0:
             back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습/검증기간 : {self.weeks_train}/{self.weeks_valid}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.vars[0]}'
         else:
@@ -309,10 +309,11 @@ class Total:
         if 'T' not in self.backname:
             con = sqlite3.connect(DB_SETTING)
             cur = con.cursor()
-            df = pd.read_sql(f'SELECT * FROM {self.gubun}', con).set_index('index')
-            gubun = '주식' if self.gubun == 'stock' else '코인'
+            table_name = 'stock' if self.gubun in ('stock', 'future') else 'coin'
+            df = pd.read_sql(f'SELECT * FROM {table_name}', con).set_index('index')
+            gubun = '주식' if self.gubun in ('stock', 'future') else '코인'
             if self.buystg_name == df[f'{gubun}매수전략'][0]:
-                cur.execute(f'UPDATE {self.gubun} SET {gubun}평균값계산틱수={self.vars[0]}')
+                cur.execute(f'UPDATE {table_name} SET {gubun}평균값계산틱수={self.vars[0]}')
             con.commit()
             con.close()
 
@@ -425,22 +426,17 @@ class Optimize:
         only_buy         = data[22]
         only_sell        = data[23]
 
+        if 'V' not in self.backname: weeks_valid = 0
+        if 'T' not in self.backname: weeks_test  = 0
+
         if weeks_train != 'ALL':
             weeks_train = int(weeks_train)
         else:
             allweeks = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
-            if 'T' in self.backname:
-                weeks_train = allweeks - weeks_valid - weeks_test
-            elif 'V' in self.backname:
-                weeks_train = allweeks - weeks_valid
-            else:
-                weeks_train = allweeks
-
-        if 'V' not in self.backname: weeks_valid = 0
-        if 'T' not in self.backname: weeks_test  = 0
+            weeks_train = allweeks - weeks_valid - weeks_test
 
         dt_endday = dt_ymd(backengin_eday)
-        startday  = timedelta_day(-(weeks_train + weeks_valid + weeks_test) * 7 + 3, dt_endday)
+        startday  = timedelta_day(-(weeks_train + weeks_valid + weeks_test) * 7 + 1, dt_endday)
         startday  = int(str_ymd(startday))
         endday    = int(backengin_eday)
 
@@ -514,7 +510,7 @@ class Optimize:
             self.SysExit(True)
 
         total_count, vars_type = self.GetOptomizeVarsList(
-            random_optivars, only_buy, only_sell, buy_first, buy_num, sell_num
+            random_optivars, only_buy, only_sell, buy_first, sell_num
         )
 
         len_vars     = len(self.vars_)
@@ -566,13 +562,13 @@ class Optimize:
 
         if 'B' not in self.backname:
             self.OptimizeGrid(
-                mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num, vars_type,
-                ccount, random_optivars, text_vars, optivars_name
+                mq, back_count, len_vars, only_buy, only_sell, buy_first, sell_num, vars_type, ccount, random_optivars,
+                text_vars, optivars_name
             )
         else:
             self.OptimizeOptuna(
-                mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num,
-                optuna_fixvars, optuna_count, optuna_autostep, sampler, buystg_name
+                mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num, optuna_fixvars,
+                optuna_count, optuna_autostep, sampler, buystg_name
             )
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 최적화 완료'))
@@ -582,7 +578,7 @@ class Optimize:
         data = mq.get()
         if data == '백테스트 완료':
             if self.dict_set['스톰라이브']: self.lq.put(self.backname.replace('O', '').replace('B', ''))
-            self.SaveOptiVars(text_vars, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num)
+            self.SaveOptiVars(text_vars, optivars_name, only_buy, only_sell, buy_first, sell_num)
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
         if data == '백테스트 완료':
@@ -614,20 +610,23 @@ class Optimize:
             test_days = [next_day, next_day]
 
         train_days_list = [x for x in day_list if train_days_[0] <= x <= train_days_[1]]
-        train_days = [train_days_list[0], train_days_list[-1], len(train_days_list)]
         if 'V' in self.backname:
+            total_vdays_count = 0
             valid_days = []
             for vdays in valid_days_:
                 try:
                     valid_days_list = [x for x in day_list if vdays[0] <= x <= vdays[1]]
-                    valid_days.append([valid_days_list[0], valid_days_list[-1], len(valid_days_list)])
+                    vdays_count = len(valid_days_list)
+                    total_vdays_count += vdays_count
+                    valid_days.append([valid_days_list[0], valid_days_list[-1], vdays_count])
                 except:
-                    self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'백테엔진 마지막 일자와 실제 로딩된 데이터의 마지막 일자가 다릅니다.'))
-                    self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'마지막 일자를 실제 데이터의 마지막 일자로 변경하여 재구동하십시오.'))
+                    self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'[{vdays[0]} ~ {vdays[1]}] 구간의 데이터가 존재하지 않습니다.'))
                     self.SysExit(True)
+            avg_vdays_count = int(total_vdays_count / len(valid_days))
+            train_days = [train_days_list[0], train_days_list[-1], len(train_days_list) - avg_vdays_count]
         else:
             valid_days = None
-
+            train_days = [train_days_list[0], train_days_list[-1], len(train_days_list)]
         if 'T' in self.backname:
             test_days_list = [x for x in day_list if test_days[0] <= x <= test_days[1]]
             test_days = [test_days_list[0], test_days_list[-1], len(test_days_list)]
@@ -635,7 +634,7 @@ class Optimize:
         list_days = [train_days, valid_days, test_days]
         return list_days
 
-    def GetOptomizeVarsList(self, random_optivars, only_buy, only_sell, buy_first, buy_num, sell_num):
+    def GetOptomizeVarsList(self, random_optivars, only_buy, only_sell, buy_first, sell_num):
         total_count = 0
         vars_type   = []
         self.vars_  = []
@@ -662,8 +661,8 @@ class Optimize:
             lowhigh = low < high
             vars_type.append(lowhigh)
             vars_list = [[], opti]
-            fixed = ((only_buy and ((buy_first and i > sell_num) or (not buy_first and i <= buy_num))) or
-                     (only_sell and ((buy_first and i <= sell_num) or (not buy_first and i > buy_num))))
+            fixed = ((only_buy and ((buy_first and i >= sell_num) or (not buy_first and i <= sell_num))) or
+                     (only_sell and ((buy_first and i < sell_num) or (not buy_first and i > sell_num))))
             if gap == 0 or fixed:
                 vars_list[0].append(opti)
             else:
@@ -683,8 +682,8 @@ class Optimize:
 
         return total_count, vars_type
 
-    def OptimizeGrid(self, mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num, vars_type,
-                     ccount, random_optivars, text_vars, optivars_name):
+    def OptimizeGrid(self, mq, back_count, len_vars, only_buy, only_sell, buy_first, sell_num, vars_type, ccount,
+                     random_optivars, text_vars, optivars_name):
 
         self.tq.put(('경우의수', back_count, back_count))
         self.BackStart(('변수정보', self.vars_, 0))
@@ -712,7 +711,7 @@ class Optimize:
             result_receiv_count = sum([len(x[0]) for x in self.vars_ if len(x[0]) > 1])
             dict_turn_hvar_hstd = {i: [x[1], init_std] for i, x in enumerate(self.vars_) if len(x[0]) > 1}
             dict_turn_var_std   = {i: {} for i, x in enumerate(self.vars_) if len(x[0]) > 1}
-            delete_varlist      = [[] for x in self.vars_ if len(x[0]) > 1]
+            delete_varlist      = [[] for _ in range(len_vars)]
 
             if result_receiv_count == 0:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '모든 파라미터 고정, 최적화를 종료합니다.'))
@@ -724,7 +723,7 @@ class Optimize:
                 data = mq.get()
                 if type(data) == str:
                     if not random_optivars:
-                        self.SaveOptiVars(text_vars, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num)
+                        self.SaveOptiVars(text_vars, optivars_name, only_buy, only_sell, buy_first, sell_num)
                     self.SysExit(True)
                 else:
                     vturn, vkey, std = data
@@ -740,7 +739,7 @@ class Optimize:
                             if not bool_changed_hstd:
                                 bool_changed_hstd = True
 
-                    if self.dict_set['범위자동관리']:
+                    if self.dict_set['범위자동관리'] and hstd > 0:
                         dict_turn_var_std[vturn][cur_turn_var] = std
                         if std == -2_000_000_000:
                             delete_varlist[vturn].append(cur_turn_var)
@@ -757,7 +756,7 @@ class Optimize:
                 )
 
             if previous_high_std > 0:
-                self.AdjustVarsRange()
+                self.AdjustVarsRange(deleted_varlist=deleted_varlist)
 
             if not bool_changed_hstd:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
@@ -836,7 +835,7 @@ class Optimize:
         if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
         return deleted_varlist
 
-    def AdjustVarsRange(self, best_params=None):
+    def AdjustVarsRange(self, best_params=None, deleted_varlist=None):
         text = '\n'
         for i, var in enumerate(self.vars_):
             len_var = len(var[0])
@@ -851,14 +850,16 @@ class Optimize:
                     high = best_params[i]
                 if high == first:
                     new = (first - gap) if type(gap) == int else round(first - gap, 2)
-                    prev_list = var[0] if len_var < 20 else var[0][:-1]
-                    self.vars_[i][0] = [new] + prev_list
-                    text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
+                    if deleted_varlist is None or new not in deleted_varlist[i]:
+                        prev_list = var[0] if len_var < 20 else var[0][:-1]
+                        self.vars_[i][0] = [new] + prev_list
+                        text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
                 elif high == last:
                     new = (last + gap) if type(gap) == int else round(first + gap, 2)
-                    prev_list = var[0] if len_var < 20 else var[0][1:]
-                    self.vars_[i][0] = prev_list + [new]
-                    text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
+                    if deleted_varlist is None or new not in deleted_varlist[i]:
+                        prev_list = var[0] if len_var < 20 else var[0][1:]
+                        self.vars_[i][0] = prev_list + [new]
+                        text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
         if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
 
     def OptimizeOptuna(self, mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num,
@@ -920,13 +921,13 @@ class Optimize:
                 self.vars_[i][1] = high_var
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {high_var}]'))
 
-    def SaveOptiVars(self, text_vars, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num):
+    def SaveOptiVars(self, text_vars, optivars_name, only_buy, only_sell, buy_first, sell_num):
         if 'T' not in self.backname:
             change = 0
             text_vars = text_vars.split('self.vars[0]')[0]
             for i in range(len(self.vars)):
-                fixed = ((only_buy and ((buy_first and i > sell_num) or (not buy_first and i <= buy_num))) or
-                         (only_sell and ((buy_first and i <= sell_num) or (not buy_first and i > buy_num))))
+                fixed = ((only_buy and ((buy_first and i >= sell_num) or (not buy_first and i <= sell_num))) or
+                         (only_sell and ((buy_first and i < sell_num) or (not buy_first and i > sell_num))))
                 if not fixed:
                     pre_hvar = self.vars[i][1]
                     cur_hvar = self.vars_[i][1]
@@ -986,6 +987,6 @@ class StopWhenNotUpdateBestCallBack:
         self.main.tq.put(('횟수변경', total_count))
         self.main.wq.put((ui_num[f'{self.main.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
         if curr_num >= self.adjust_cnt and curr_num == best_num:
-            self.main.AdjustVarsRange(list(study.best_params.values()))
+            self.main.AdjustVarsRange(best_params=list(study.best_params.values()))
         if curr_num == last_num:
             study.stop()

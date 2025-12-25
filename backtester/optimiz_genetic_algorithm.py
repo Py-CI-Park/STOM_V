@@ -43,7 +43,6 @@ class Total:
         self.vars_lists   = None
         self.stdp         = -float('inf')
         self.sub_total    = 0
-        self.total_count  = 0
 
         self.MainLoop()
 
@@ -135,8 +134,7 @@ class Total:
                 rt = 0
 
             elif data[0] == '경우의수':
-                self.total_count = data[1]
-                self.back_count  = data[2]
+                self.back_count = data[1]
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
@@ -225,20 +223,17 @@ class OptimizeGeneticAlgorithm:
         _           = int(data[12])
         backengin_sday  = data[13]
         backengin_eday  = data[14]
+
+        if 'V' not in self.backname: weeks_valid = 0
+
         if weeks_train != 'ALL':
             weeks_train = int(weeks_train)
         else:
             allweeks = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
-            if 'V' in self.backname:
-                weeks_train = allweeks - weeks_valid
-            else:
-                weeks_train = allweeks
+            weeks_train = allweeks - weeks_valid
 
-        if 'V' not in self.backname: weeks_valid = 0
         dt_endday   = dt_ymd(backengin_eday)
         startday    = timedelta_day(-(weeks_train + weeks_valid) * 7 + 1, dt_endday)
-        sweek       = startday.weekday()
-        if sweek != 0: startday = timedelta_day(7 - sweek, startday)
         startday    = int(str_ymd(startday))
         endday      = int(backengin_eday)
         valid_days_ = []
@@ -361,7 +356,7 @@ class OptimizeGeneticAlgorithm:
         self.opti_lists = []
         while self.total_count > goal:
             if k > 1: self.SaveVarslist(100, optistandard, buystg, sellstg)
-            self.tq.put(('경우의수', vc * back_count, back_count))
+            self.tq.put(('경우의수', back_count))
 
             for i in range(vc):
                 vars_lists = self.GetVarslist()
@@ -453,7 +448,7 @@ class OptimizeGeneticAlgorithm:
             if count < 4 and self.high_list[i] not in vars_:
                 self.vars_list[i].append(self.high_list[i])
             self.vars_list[i].sort()
-            self.total_count *= len(vars_)
+            self.total_count *= len(self.vars_list[i])
 
         if self.total_count <= goal:
             text = ''

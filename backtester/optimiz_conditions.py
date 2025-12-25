@@ -70,7 +70,7 @@ class Total:
                 if rt >= 1000:
                     rt -= 1000
                     tt += 1
-                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
+                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count * vc, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -212,20 +212,17 @@ class OptimizeConditions:
         _             = int(data[14])
         backengin_sday    = data[15]
         backengin_eday    = data[16]
+
+        if 'V' not in self.backname: weeks_valid = 0
+
         if weeks_train != 'ALL':
             weeks_train = int(weeks_train)
         else:
             allweeks = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
-            if 'V' in self.backname:
-                weeks_train = allweeks - weeks_valid
-            else:
-                weeks_train = allweeks
+            weeks_train = allweeks - weeks_valid
 
-        if 'V' not in self.backname: weeks_valid = 0
         dt_endday   = dt_ymd(backengin_eday)
         startday    = timedelta_day(-(weeks_train + weeks_valid) * 7 + 1, dt_endday)
-        sweek       = startday.weekday()
-        if sweek != 0: startday = timedelta_day(7 - sweek, startday)
         startday    = int(str_ymd(startday))
         endday      = int(backengin_eday)
         valid_days_ = []
@@ -301,7 +298,7 @@ class OptimizeConditions:
         self.sellconds = dfs['전략코드'][sellstg_name].split('\n')
 
         is_long = None
-        if self.ui_gubun == 'CF':
+        if self.ui_gubun in ('CF', 'SF'):
             if '#' in self.buyconds[0] and 'LONG' in self.buyconds[0] and '#' in self.sellconds[0] and 'LONG' in self.sellconds[0]:
                 is_long = True
             elif '#' in self.buyconds[0] and 'SHORT' in self.buyconds[0] and '#' in self.sellconds[0] and 'SHORT' in self.sellconds[0]:
@@ -363,7 +360,7 @@ class OptimizeConditions:
                     data = mq.get()
                     if type(data) == str:
                         if self.result:
-                            self.ShowTopCondlist(5)
+                            self.ShowTopCondlist(5, is_long)
                             self.ShowTopConds()
                         self.SysExit(True)
                     else:
@@ -375,7 +372,7 @@ class OptimizeConditions:
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 최적화 완료'))
         if self.result:
-            self.ShowTopCondlist(5)
+            self.ShowTopCondlist(5, is_long)
             self.ShowTopConds()
         else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기준값 0을 초과하는 조합이 없습니다.'))
@@ -406,11 +403,28 @@ class OptimizeConditions:
                     break
         return buyconds, sellconds
 
-    def ShowTopCondlist(self, rank):
+    def ShowTopCondlist(self, rank, is_long):
         rs_list = sorted(self.result.items(), key=lambda x: x[0], reverse=True)
         for key, value in rs_list[:rank]:
-            buyconds  = 'if ' + ':\n    매수 = False\nelif '.join(value[0]) + ':\n    매수 = False'
-            sellconds = 'if ' + ':\n    매도 = True\nelif '.join(value[1]) + ':\n    매도 = True'
+            if self.ui_gubun in ('CF', 'SF'):
+                if is_long:
+                    buyconds = 'if not (' + \
+                               '):\n    BUY_LONG = False\nelif not ('.join(value[0]) + \
+                               '):\n    BUY_LONG = False'
+                    sellconds = 'if ' + \
+                                ':\n    SELL_LONG = True\nelif '.join(value[1]) + \
+                                ':\n    SELL_LONG = True'
+                else:
+                    buyconds = 'if not (' + \
+                               '):\n    SELL_SHORT = False\nelif not ('.join(value[0]) + \
+                               '):\n    SELL_SHORT = False'
+                    sellconds = 'if ' + \
+                                ':\n    BUY_SHORT = True\nelif '.join(value[1]) + \
+                                ':\n    BUY_SHORT = True'
+            else:
+                buyconds  = 'if not (' + '):\n    매수 = False\nelif not ('.join(value[0]) + '):\n    매수 = False'
+                sellconds = 'if ' + ':\n    매도 = True\nelif '.join(value[1]) + ':\n    매도 = True'
+
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - {self.optistandard}[{key:,.2f}]\n'))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매수조건\n{buyconds}\n'))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매도조건\n{sellconds}\n'))

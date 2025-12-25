@@ -30,7 +30,7 @@ class Total:
         self.savename     = f'{gubun_text}_{self.backname.replace("전진분석", "").lower()}'
 
         self.back_count   = None
-        self.in_out_count = None
+        self.out_count    = None
         self.file_name    = str_ymdhms()
 
         self.dict_cn      = None
@@ -201,7 +201,7 @@ class Total:
                 self.back_count   = data[2]
                 self.startday     = data[3]
                 self.endday       = data[4]
-                self.in_out_count = data[5]
+                self.out_count    = data[5]
                 self.hstd         = -float('inf')
 
             elif data[0] == '횟수변경':
@@ -246,7 +246,7 @@ class Total:
             vars_copy[vturn] = self.vars_list[vturn][0][vkey]
         return ['최적화', self.ui_gubun, self.wq, self.mq, self.hstd, self.optistandard, self.opti_turn, vturn, vkey, vars_copy, self.startday, self.endday, self.std_list, self.betting]
 
-    def Report(self, list_tsg, arry_bct: np.ndarray, oc):
+    def Report(self, list_tsg, arry_bct, oc):
         startday = self.hstd_list[oc - 1][0]
         endday   = self.hstd_list[oc - 1][1]
         merge    = self.hstd_list[oc - 1][2]
@@ -274,7 +274,7 @@ class Total:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text2))
         self.mq.put('아웃샘플 백테스트 완료')
 
-        if oc == self.in_out_count:
+        if oc == self.out_count:
             self.df_ttsg = pd.concat(self.df_ttsg)
             self.df_ttsg['수익금합계'] = self.df_ttsg['수익금'].cumsum()
             self.df_tbct = pd.concat(self.df_tbct)
@@ -313,7 +313,7 @@ class Total:
                 bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
 
             if self.weeks_valid == 0:
-                back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습+검증/확인기간 : {self.weeks_train}/{self.weeks_test}, 거래일수 : {day_cnt}'
+                back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습/확인기간 : {self.weeks_train}/{self.weeks_test}, 거래일수 : {day_cnt}'
             else:
                 back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습/검증/확인기간 : {self.weeks_train}/{self.weeks_valid}/{self.weeks_test}, 거래일수 : {day_cnt}'
 
@@ -419,7 +419,7 @@ class RollingWalkForwardTest:
         random_optivars  = data[23]
 
         if 'V' in self.backname:
-            int_day = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test + 1) * 7 + 3, dt_ymd(str(endday)))))
+            int_day = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * 2) * 7 + 1, dt_ymd(str(endday)))))
             if int(backengin_sday) > int_day:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 검증기간 + 확인기간 + 1)주 만큼의 데이터가 필요합니다'))
                 self.SysExit(True)
@@ -430,7 +430,7 @@ class RollingWalkForwardTest:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '전진분석 종료 일자가 잘못되었습니다. 백테엔진 데이터 로딩 마지막 일자로 선택하십시오.'))
                 self.SysExit(True)
         else:
-            int_day = int(str_ymd(timedelta_day(-(weeks_train + weeks_test + 1) * 7 + 3, dt_ymd(str(endday)))))
+            int_day = int(str_ymd(timedelta_day(-(weeks_train + weeks_test * 2) * 7 + 1, dt_ymd(str(endday)))))
             if int(backengin_sday) > int_day:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 확인기간 + 1)주 만큼의 데이터가 필요합니다'))
                 self.SysExit(True)
@@ -503,7 +503,6 @@ class RollingWalkForwardTest:
         avg_list    = self.vars_[0][0]
         total_count *= ccount if ccount != 0 else 1
         total_count += 1
-        total_count *= out_count
         total_count += out_count
         total_count *= back_count
         text = f'{self.backname} 매도수전략 및 변수 설정 완료' if not random_optivars else f'{self.backname} 매도수전략 및 변수 최적값 랜덤 설정 완료'
@@ -580,44 +579,49 @@ class RollingWalkForwardTest:
         k = 0
         list_days_ = []
         dt_endday  = dt_ymd(str(endday))
-        startday_  = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday)))
+        startday_  = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 1, dt_endday)))
         while startday_ >= startday:
-            train_days = [
+            train_days_ = [
                 startday_, int(str_ymd(timedelta_day(-weeks_test * (k + 1) * 7, dt_endday)))
             ]
             valid_days_ = []
             if 'VC' in self.backname:
                 for i in range(int(weeks_train / weeks_valid) + 1):
                     valid_days_.append([
-                        int(str_ymd(timedelta_day(-(weeks_valid * (i + 1) + weeks_test * (k + 1)) * 7 + 3, dt_endday))),
+                        int(str_ymd(timedelta_day(-(weeks_valid * (i + 1) + weeks_test * (k + 1)) * 7 + 1, dt_endday))),
                         int(str_ymd(timedelta_day(-(weeks_valid * i + weeks_test * (k + 1)) * 7, dt_endday)))
                     ])
             elif 'V' in self.backname:
                 valid_days_.append([
-                    int(str_ymd(timedelta_day(-(weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday))),
+                    int(str_ymd(timedelta_day(-(weeks_valid + weeks_test * (k + 1)) * 7 + 1, dt_endday))),
                     int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7, dt_endday)))
                 ])
             else:
                 valid_days_ = None
-            test_days = [
-                int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7 + 3, dt_endday))),
+            test_days_ = [
+                int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7 + 1, dt_endday))),
                 int(str_ymd(timedelta_day(-(weeks_test * k) * 7, dt_endday)))
             ]
-            list_days_.append([train_days, valid_days_, test_days])
+            list_days_.append([train_days_, valid_days_, test_days_])
             k += 1
-            startday_ = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 3, dt_endday)))
+            startday_ = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 1, dt_endday)))
 
         list_days = []
         for train_days_, valid_days_, test_days_ in list_days_:
             train_days_list = [x for x in day_list if train_days_[0] <= x <= train_days_[1]]
-            train_days = [train_days_list[0], train_days_list[-1], len(train_days_list)]
-            valid_days = []
             if 'V' in self.backname:
+                total_vdays_count = 0
+                valid_days = []
                 for vsday, veday in valid_days_:
                     valid_days_list = [x for x in day_list if vsday <= x <= veday]
-                    valid_days.append([valid_days_list[0], valid_days_list[-1], len(valid_days_list)])
+                    vdays_count = len(valid_days_list)
+                    total_vdays_count += vdays_count
+                    valid_days.append([valid_days_list[0], valid_days_list[-1], vdays_count])
+                avg_vdays_count = int(total_vdays_count / len(valid_days))
+                train_days = [train_days_list[0], train_days_list[-1], len(train_days_list) - avg_vdays_count]
             else:
                 valid_days = None
+                train_days = [train_days_list[0], train_days_list[-1], len(train_days_list)]
             test_days_list = [x for x in day_list if test_days_[0] <= x <= test_days_[1]]
             test_days = [test_days_list[0], test_days_list[-1]]
             list_days.append([train_days, valid_days, test_days])

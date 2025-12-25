@@ -125,7 +125,8 @@ def AddAvgData(df, market_gubun, is_tick, avg_list):
     """
     market_gubun = 1   # 주식
     market_gubun = 2   # 해선
-    market_gubun = 3   # 코인
+    market_gubun = 3   # 업비트
+    market_gubun = 4   # 바이낸스선물
     """
     if market_gubun == 1:
         round_unit = 3
@@ -663,7 +664,7 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
     elif df_bc is not None:
         # noinspection PyTypeChecker
         plt.plot(df_bc.index, df_bc['종가'], linewidth=0.5, label='KRW-BTC', color='r')
-    plt.title('지수비교' if df_bc is None else 'BTC비교')
+    plt.title('지수비교')
     count = int(len(df_ts) / 20) if int(len(df_ts) / 20) >= 1 else 1
     plt.xticks(list(df_ts.index[::count]), rotation=45)
     plt.legend(loc='best')
@@ -718,7 +719,7 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
         plt.axvspan(endx_list[0], df_tsg.index[-1], facecolor='gray', alpha=0.1)
     count = int(len(df_tsg) / 20) if int(len(df_tsg) / 20) >= 1 else 1
     plt.xticks(list(df_tsg.index[::count]), rotation=45)
-    plt.legend(loc='upper left')
+    plt.legend(loc='best')
     plt.grid()
     plt.tight_layout()
     plt.savefig(f"{GRAPH_PATH}/{save_file_name}.png")
@@ -801,14 +802,14 @@ def GetResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     appp = arry_p[:, 2].mean() if pc > 0 else 0
     ampp = abs(arry_m[:, 2].mean()) if mc > 0 else 0
 
-    exclud_top10per = int(len(arry_bct) / 100)
-    try:    mhct = int(arry_bct[exclud_top10per:, 1].max())
+    exclud_top1per = int(len(arry_bct) / 100)
+    try:    mhct = int(arry_bct[exclud_top1per:, 1].max())
     except: mhct = 0
-    try:    seed = int(arry_bct[exclud_top10per:, 2].max())
+    try:    seed = int(arry_bct[exclud_top1per:, 2].max())
     except: seed = betting
     if seed < betting: seed = betting
 
-    tpp  = tsg / (seed if seed > betting else betting) * 100
+    tpp  = tsg / seed * 100
     cagr = tpp / day_count * (365 if 'C' in ui_gubun else 250)
     tpi  = wr / 100 * (1 + appp / ampp) if ampp != 0 else 1.0
 

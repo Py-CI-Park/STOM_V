@@ -392,11 +392,11 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
-                    break
+                    return
 
                 for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
-                    if self.tick_count < self.vars[0]:
+                    if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
                     if self.indistg is not None:
@@ -426,10 +426,14 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]
-                        if self.tick_count < self.vars[0]:
-                            break
+                        if vturn != 0:
+                            if self.tick_count < self.vars[0]:
+                                return
+                        else:
+                            if self.tick_count < self.vars[0]:
+                                continue
                     elif self.tick_count < self.avgtime:
-                        break
+                        return
 
                     if self.indistg is not None:
                         exec(self.indistg)

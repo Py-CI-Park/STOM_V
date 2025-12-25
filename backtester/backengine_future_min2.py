@@ -151,7 +151,7 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
                 return 0
 
         def GetArrayIndex(aindex):
-            return aindex + 12 * self.avg_list.index(self.avgtime if self.back_type in ('백테스트', '조건최적화', '백파인더') else self.vars[0])
+            return aindex + 14 * self.avg_list.index(self.avgtime if self.back_type in ('백테스트', '조건최적화', '백파인더') else self.vars[0])
 
         def Parameter_Area(aindex, vindex, tick, pre, gubun_):
             if tick in self.avg_list:
@@ -388,11 +388,11 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
-                    break
+                    return
 
                 for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
-                    if self.tick_count < self.vars[0]:
+                    if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
                     보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
@@ -401,7 +401,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
                     포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
                         self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
 
-                    gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
+                    gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey,
+                                                분봉저가=분봉저가, 분봉고가=분봉고가)
                     if gubun is None: continue
 
                     if self.indistg is not None:
@@ -422,7 +423,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(now(), vturn, vkey): continue
-                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                          매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             exec(self.buystg)
                         else:
@@ -432,7 +434,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
                     if '매도' in gubun:
                         if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
                         if self.CancelSellOrder(매수분할횟수, now(), vturn, vkey): continue
-                        self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                           매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['주식매도분할횟수'] == 1:
                             exec(self.sellstg)
                         else:
@@ -445,10 +448,14 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]
-                        if self.tick_count < self.vars[0]:
-                            break
+                        if vturn != 0:
+                            if self.tick_count < self.vars[0]:
+                                return
+                        else:
+                            if self.tick_count < self.vars[0]:
+                                continue
                     elif self.tick_count < self.avgtime:
-                        break
+                        return
 
                     보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
@@ -456,7 +463,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
                     포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
                         self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
 
-                    gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
+                    gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey,
+                                                분봉저가=분봉저가, 분봉고가=분봉고가)
                     if gubun is None: continue
 
                     if self.indistg is not None:
@@ -477,7 +485,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(now(), vturn, vkey): continue
-                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                          매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             if self.back_type != '조건최적화':
                                 exec(self.buystg)
@@ -493,7 +502,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
                     if '매도' in gubun:
                         if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
                         if self.CancelSellOrder(매수분할횟수, now(), vturn, vkey): continue
-                        self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
+                        self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                           매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['주식매도분할횟수'] == 1:
                             if self.back_type != '조건최적화':
                                 exec(self.sellstg)
@@ -520,7 +530,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
             포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
                 self.GetSellInfo(vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now())
 
-            gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey, 분봉저가=분봉저가, 분봉고가=분봉고가)
+            gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 관심종목N(1), vturn, vkey,
+                                        분봉저가=분봉저가, 분봉고가=분봉고가)
             if gubun is None: return
 
             if self.indistg is not None:
@@ -541,7 +552,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
             if '매수' in gubun:
                 if not 관심종목: return
                 if self.CancelBuyOrder(now(), vturn, vkey): return
-                self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매수분할횟수, 매도호가1, 매수호가1, 호가단위)
+                self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                  매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if not 보유중:
                     exec(self.buystg)
                 else:
@@ -551,7 +563,8 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
             if '매도' in gubun:
                 if self.CheckSonjeol(수익률, 수익금, vturn, vkey): return
                 if self.CancelSellOrder(매수분할횟수, now(), vturn, vkey): return
-                self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 매도분할횟수, 매도호가1, 매수호가1, 호가단위)
+                self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                                   매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if self.dict_set['주식매도분할횟수'] == 1:
                     exec(self.sellstg)
                 else:

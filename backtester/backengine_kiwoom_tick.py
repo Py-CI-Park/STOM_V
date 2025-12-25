@@ -83,7 +83,6 @@ class BackEngineKiwoomTick:
         self.dict_cond_indexn = {}
 
         self.market_gubun     = None
-        self.is_future        = None
         self.is_oms           = None
         self.is_tick          = None
         self.ui_num_txt       = None
@@ -98,7 +97,6 @@ class BackEngineKiwoomTick:
 
     def Settings(self):
         self.market_gubun  = 1
-        self.is_future     = False
         self.ui_num_txt    = 'S백테스트'
         self.is_oms        = self.dict_set['백테주문관리적용']
         self.is_tick       = self.dict_set['주식타임프레임']
@@ -133,7 +131,7 @@ class BackEngineKiwoomTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
-                        if not self.is_future:
+                        if self.market_gubun in (1, 3):
                             self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
                             self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
                         else:
@@ -157,7 +155,7 @@ class BackEngineKiwoomTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
-                        if not self.is_future:
+                        if self.market_gubun in (1, 3):
                             self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
                             self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
                         else:
@@ -183,7 +181,7 @@ class BackEngineKiwoomTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
-                        if not self.is_future:
+                        if self.market_gubun in (1, 3):
                             self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
                             self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
                         else:
@@ -213,7 +211,7 @@ class BackEngineKiwoomTick:
                         self.dict_sconds  = {}
                         error = False
                         for i in range(20):
-                            if not self.is_future:
+                            if self.market_gubun in (1, 3):
                                 buystg = GetBuyConds(data[2][i], self.gubun)
                                 sellstg, dict_cond = GetSellConds(data[3][i], self.gubun)
                             else:
@@ -236,7 +234,7 @@ class BackEngineKiwoomTick:
                         self.endday    = data[4]
                         self.starttime = data[5]
                         self.endtime   = data[6]
-                        if not self.is_future:
+                        if self.market_gubun in (1, 3):
                             self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
                             self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
                         else:
@@ -271,7 +269,10 @@ class BackEngineKiwoomTick:
                 self.dict_set = data[1]
                 self.SetDictCondition()
             elif data[0] == '종목명':
-                self.dict_cn = data[1]
+                if self.market_gubun == 1:
+                    self.dict_cn = data[1]
+                else:
+                    self.dict_info = data[1]
             elif data[0] == '데이터로딩':
                 self.DataLoad(data)
             elif data[0] == '공유데이터':
@@ -387,6 +388,9 @@ class BackEngineKiwoomTick:
         if self.is_oms:
             v1 = GetTradeInfo(3)
             v2 = GetTradeInfo(2)
+            if self.market_gubun in (1, 3):
+                v2['주문포지션'] = ''
+
             if self.opti_turn == 1:
                 self.day_info   = {t: {k: v1 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
                 self.trade_info = {t: {k: v2 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
@@ -770,11 +774,11 @@ class BackEngineKiwoomTick:
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
-                    break
+                    return
 
                 for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
-                    if self.tick_count < self.vars[0]:
+                    if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
                     매수, 매도 = True, False
@@ -792,10 +796,14 @@ class BackEngineKiwoomTick:
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]
-                        if self.tick_count < self.vars[0]:
-                            break
+                        if vturn != 0:
+                            if self.tick_count < self.vars[0]:
+                                return
+                        else:
+                            if self.tick_count < self.vars[0]:
+                                continue
                     elif self.tick_count < self.avgtime:
-                        break
+                        return
 
                     매수, 매도 = True, False
                     if not self.trade_info[vturn][vkey]['보유중']:

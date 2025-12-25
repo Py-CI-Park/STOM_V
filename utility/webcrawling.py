@@ -18,14 +18,13 @@ class WebCrawling:
         """
         self.windowQ    = qlist[0]
         self.webcQ      = qlist[6]
-        self.backQ      = qlist[7]
         self.cmap       = matplotlib.colormaps['rainbow']
         self.norm       = matplotlib.colors.Normalize(vmin=0, vmax=29)
 
-        self.base_url   = "https://finance.naver.com"
+        self.base_url   = 'https://finance.naver.com/'
         self.headers    = {
             'User-Agent': UserAgent().chrome,
-            'Referer': 'https://finance.naver.com/'
+            'Referer': self.base_url
         }
         self.session    = requests.Session()
 
@@ -33,9 +32,9 @@ class WebCrawling:
         self.imagelist1 = None
         self.imagelist2 = None
 
-        self.Start()
+        self.MainLoop()
 
-    def Start(self):
+    def MainLoop(self):
         while True:
             data = self.webcQ.get()
             self.Crawling(data)
@@ -62,22 +61,20 @@ class WebCrawling:
     @thread_decorator
     def GetImage(self):
         try:
-            headers = {
-                'User-Agent': UserAgent().chrome,
-                'Referer': 'https:/search.naver.com/'
-            }
             if self.imagelist1 is None:
                 url   = 'https://search.naver.com/search.naver?sm=tab_hty.top&where=image&ssc=tab.image.all&query=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&oquery=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&tqi=iAM7jwqVN8VsslwnmiossssstI4-416434'
-                resp  = self.session.get(url, headers=headers)
+                resp  = self.session.get(url, headers=self.headers)
                 datas = resp.text.split('"viewerThumb":"')[1:]
+                datas = [x.split('lensThumb')[0] for x in datas]
                 datas = [x.split('.jpg')[0] + '.jpg' for x in datas]
-                self.imagelist1 = [x for x in datas if 'lensThumb' not in x]
+                self.imagelist1 = [x for x in datas if '\\' not in x]
             if self.imagelist2 is None:
                 url  = 'https://search.naver.com/search.naver?sm=tab_hty.top&where=image&ssc=tab.image.all&query=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EC%84%B8%EB%A1%9C%EC%82%AC%EC%A7%84&oquery=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&tqi=iAM7OdqVOsVssAwVjfossssstwd-182384'
-                resp  = self.session.get(url, headers=headers)
+                resp  = self.session.get(url, headers=self.headers)
                 datas = resp.text.split('"viewerThumb":"')[1:]
+                datas = [x.split('lensThumb')[0] for x in datas]
                 datas = [x.split('.jpg')[0] + '.jpg' for x in datas]
-                self.imagelist2 = [x for x in datas if 'lensThumb' not in x]
+                self.imagelist2 = [x for x in datas if '\\' not in x]
             webimage1 = request.urlopen(random.choice(self.imagelist1)).read()
             webimage2 = request.urlopen(random.choice(self.imagelist2)).read()
             self.windowQ.put((ui_num['풍경사진'], webimage1, webimage2))
@@ -101,7 +98,7 @@ class WebCrawling:
     def GugsCrawling(self, code):
         date_list, jbjg_list, gygs_list, link_list = [], [], [], []
         for i in (1, 2):
-            url  = f'{self.base_url}/item/news_notice.naver?code={code}&page={i}'
+            url  = f'{self.base_url}/item//news_notice.naver?code={code}&page={i}'
             resp = self.session.get(url, headers=self.headers)
             soup = BeautifulSoup(resp.text, 'html.parser')
             tits = soup.select('a.tit')
@@ -122,7 +119,7 @@ class WebCrawling:
     def JmnsCrawling(self, code):
         data_list = []
         for i in (1, 2):
-            url   = f'{self.base_url}/item/news_news.naver?code={code}&page={i}'
+            url   = f'{self.base_url}/item/news_news.naver?code={code}&page={i}&clusterId='
             resp  = self.session.get(url, headers=self.headers)
             soup  = BeautifulSoup(resp.text, 'html.parser')
             news_list = soup.select('table.type5 > tbody > tr')
@@ -149,7 +146,7 @@ class WebCrawling:
     def JmjpCrawling(self, code):
         url      = f'{self.base_url}/item/main.naver?code={code}'
         resp     = self.session.get(url, headers=self.headers)
-        soup     = BeautifulSoup(resp.text, 'html.parser').select('div.section.cop_analysis div.sub_section')[0]
+        soup     = BeautifulSoup(resp.text, 'html.parser').select('div.section.cop_analysis > div.sub_section')[0]
         txt_list = [item.get_text(strip=True) for item in soup.select('th')]
         num_list = [item.get_text(strip=True) for item in soup.select('td')][:130]
         columns1 = ['구분'] + txt_list[3:7]

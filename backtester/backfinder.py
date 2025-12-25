@@ -24,7 +24,8 @@ class Total:
         self.starttime    = None
         self.endtime      = None
         self.avgtime      = None
-        self.df_back      = None
+        self.tickcols     = None
+        self.dict_back    = {}
 
         self.MainLoop()
 
@@ -38,7 +39,7 @@ class Total:
             if data[0] == '백파결과':
                 data = data[1:]
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], data))
-                self.df_back.loc[index] = data
+                self.dict_back[index] = dict(zip(self.tickcols, data))
                 index += 1
 
             elif data == '백테완료':
@@ -55,7 +56,7 @@ class Total:
                 self.endtime     = data[5]
                 self.buystg_name = data[6]
                 self.back_count  = data[7]
-                self.df_back     = pd.DataFrame(columns=['종목코드', '체결시간'] + data[8])
+                self.tickcols    = data[8]
 
             elif data == '백테중지':
                 self.bq.put('백테중지')
@@ -63,10 +64,11 @@ class Total:
                 break
 
         if complete:
-            if len(self.df_back) > 0:
+            if self.dict_back:
                 save_time = str_ymdhms()
                 con = sqlite3.connect(DB_BACKTEST)
-                self.df_back.to_sql(f"{self.gubun}_bf_{self.buystg_name}_{save_time}", con, if_exists='append', chunksize=1000)
+                df = pd.DataFrame.from_dict(self.dict_back, orient='index')
+                df.to_sql(f"{self.gubun}_bf_{self.buystg_name}_{save_time}", con, if_exists='append', chunksize=1000)
                 con.close()
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인터 결과값 저장 완료'))
             else:
@@ -96,7 +98,6 @@ class BackFinder:
             self.gubun = 'future'
         else:
             self.gubun = 'coin'
-        self.tickcols = None
         self.Start()
 
     def Start(self):
@@ -122,14 +123,14 @@ class BackFinder:
             self.SysExit(True)
 
         buystg_ = buystg.split('self.tickcols = [')[1].split(']')[0]
-        self.tickcols = [x.strip() for x in buystg_.split(',')]
+        tickcols = ['종목코드', '체결시간'] + [x.strip() for x in buystg_.split(',')]
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 매수전략 설정 완료'))
 
         Process(target=Total, args=(self.wq, self.sq, self.tq, self.bq, self.ui_gubun, self.gubun)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 집계용 프로세스 생성 완료'))
 
         self.shared_cnt.value = 0
-        self.tq.put(('백테정보', avgtime, startday, endday, starttime, endtime, buystg_name, back_count, self.tickcols))
+        self.tq.put(('백테정보', avgtime, startday, endday, starttime, endtime, buystg_name, back_count, tickcols))
         data = ('백테정보', avgtime, startday, endday, starttime, endtime, buystg, 2)
         for q in self.beq_list:
             q.put(data)

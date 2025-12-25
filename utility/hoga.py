@@ -1,9 +1,8 @@
 import os
 import sqlite3
 import pandas as pd
-from utility.setting import ui_num, columns_hj, DB_PATH, DB_COIN_TICK, DB_STOCK_TICK, DB_COIN_BACK_TICK, \
-    DB_STOCK_BACK_TICK, DICT_SET, DB_COIN_BACK_MIN, DB_COIN_MIN, DB_STOCK_BACK_MIN, DB_STOCK_MIN, DB_FUTURE_BACK_MIN, \
-    DB_FUTURE_MIN, DB_FUTURE_BACK_TICK, DB_FUTURE_TICK
+from utility.setting import ui_num, columns_hj, DB_PATH, DB_COIN_BACK_TICK, \
+    DB_STOCK_BACK_TICK, DICT_SET, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Hoga:
@@ -21,9 +20,9 @@ class Hoga:
         self.dict_hg   = None
         self.dict_set  = DICT_SET
         self.InitHoga('S')
-        self.Start()
+        self.MainLoop()
 
-    def Start(self):
+    def MainLoop(self):
         while True:
             data = self.hogaQ.get()
             if data[0] == '설정변경':
@@ -97,15 +96,15 @@ class Hoga:
         if lch == 0 or lch > ch:
             lch = ch
 
-        self.dict_hc['체결수량'] = [tbc, v] + self.dict_hc['체결수량'][1:11] + [tsc]
-        self.dict_hc['체결강도'] = [hch, ch] + self.dict_hc['체결강도'][1:11] + [lch]
+        self.dict_hc['체결수량'] = [tbc, v] + self.dict_hc['체결수량'][1:10] + [tsc]
+        self.dict_hc['체결강도'] = [hch, ch] + self.dict_hc['체결강도'][1:10] + [lch]
 
     def UpdateHogajalryang(self, data):
         jr = [data[1]] + list(data[13:23]) + [data[2]]
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name or '해외선물' in self.dict_set['증권사']:
             hg = [self.dict_hj['고가']] + list(data[3:13]) + [self.dict_hj['저가']]
         else:
-            hg = [self.dict_hj['고가']] + [round(x) for x in data[3:13]] + [self.dict_hj['저가']]
+            hg = [data[23]] + [round(x) for x in data[3:13]] + [data[24]]
 
         self.dict_hg['잔량'] = jr
         self.dict_hg['호가'] = hg
@@ -120,16 +119,13 @@ class Hoga:
         if gubun == 'C':
             db_name1 = f'{DB_PATH}/coin_tick_{searchdate}.db' if self.dict_set['코인타임프레임'] else f'{DB_PATH}/coin_min_{searchdate}.db'
             db_name2 = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
-            db_name3 = DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN
         else:
             if '키움증권' in self.dict_set['증권사']:
                 db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db' if self.dict_set['주식타임프레임'] else f'{DB_PATH}/stock_min_{searchdate}.db'
                 db_name2 = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
-                db_name3 = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
             else:
                 db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db' if self.dict_set['주식타임프레임'] else f'{DB_PATH}/future_min_{searchdate}.db'
                 db_name2 = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
-                db_name3 = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
 
         if cmd == '이전호가정보요청':
             query = f"SELECT * FROM '{code}' WHERE `index` < {index} ORDER BY `index` DESC LIMIT 1"
@@ -148,10 +144,6 @@ class Hoga:
                 con = sqlite3.connect(db_name2)
                 df = pd.read_sql(query, con)
                 con.close()
-            elif os.path.isfile(db_name3):
-                con = sqlite3.connect(db_name3)
-                df = pd.read_sql(query, con)
-                con.close()
         except:
             pass
 
@@ -159,31 +151,23 @@ class Hoga:
             data = list(df.iloc[0])
             if gubun == 'C' or '해외선물' in self.dict_set['증권사']:
                 hj = [name, data[1], data[5], 0, 0, data[2], data[3], data[4]]
-            else:
-                hj = [name, data[1], data[5], data[12], data[17], data[2], data[3], data[4]]
 
-            if gubun == 'C':
-                if self.dict_set['코인타임프레임']:
+                if (gubun == 'C' and self.dict_set['코인타임프레임']) or \
+                        ('해외선물' in self.dict_set['증권사'] and self.dict_set['주식타임프레임']):
                     jr = [data[12]] + data[24:34] + [data[13]]
                     hg = [data[3]]  + data[14:24] + [data[4]]
                 else:
                     jr = [data[15]] + data[27:37] + [data[16]]
                     hg = [data[3]]  + data[17:27] + [data[4]]
             else:
-                if '키움증권' in self.dict_set['증권사']:
-                    if self.dict_set['주식타임프레임']:
-                        jr = [data[21]] + data[33:43] + [data[22]]
-                        hg = [data[17]] + data[23:33] + [0]
-                    else:
-                        jr = [data[24]] + data[36:46] + [data[25]]
-                        hg = [data[17]] + data[26:36] + [0]
+                hj = [name, data[1], data[5], data[12], data[17], data[2], data[3], data[4]]
+
+                if self.dict_set['주식타임프레임']:
+                    jr = [data[21]] + data[33:43] + [data[22]]
+                    hg = [data[3]] + data[23:33] + [data[4]]
                 else:
-                    if self.dict_set['주식타임프레임']:
-                        jr = [data[12]] + data[24:34] + [data[13]]
-                        hg = [data[3]]  + data[14:24] + [data[4]]
-                    else:
-                        jr = [data[15]] + data[27:37] + [data[16]]
-                        hg = [data[3]]  + data[17:27] + [data[4]]
+                    jr = [data[24]] + data[36:46] + [data[25]]
+                    hg = [data[3]] + data[26:36] + [data[4]]
 
             df_hj = pd.DataFrame([hj], columns=columns_hj)
             df_hg = pd.DataFrame({'잔량': jr, '호가': hg})

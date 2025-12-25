@@ -9,7 +9,6 @@ from backtester.back_static import GetTradeInfo
 class BackEngineUpbitTick(BackEngineKiwoomTick):
     def Settings(self):
         self.market_gubun  = 3
-        self.is_future     = False
         self.ui_num_txt    = 'C백테스트'
         self.is_oms        = self.dict_set['백테주문관리적용']
         self.is_tick       = self.dict_set['코인타임프레임']
@@ -242,11 +241,11 @@ class BackEngineUpbitTick(BackEngineKiwoomTick):
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
-                    break
+                    return
 
                 for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
-                    if self.tick_count < self.vars[0]:
+                    if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
                     매수, 매도 = True, False
@@ -264,10 +263,14 @@ class BackEngineUpbitTick(BackEngineKiwoomTick):
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]
-                        if self.tick_count < self.vars[0]:
-                            break
+                        if vturn != 0:
+                            if self.tick_count < self.vars[0]:
+                                return
+                        else:
+                            if self.tick_count < self.vars[0]:
+                                continue
                     elif self.tick_count < self.avgtime:
-                        break
+                        return
 
                     매수, 매도 = True, False
                     if not self.trade_info[vturn][vkey]['보유중']:

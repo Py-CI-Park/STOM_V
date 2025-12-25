@@ -38,9 +38,9 @@ class Chart:
 
         self.arry_kosp  = None
         self.arry_kosd  = None
-        self.Start()
+        self.MainLoop()
 
-    def Start(self):
+    def MainLoop(self):
         while True:
             data = self.chartQ.get()
             if data[0] == '설정변경':
@@ -93,6 +93,12 @@ class Chart:
     # noinspection PyUnresolvedReferences
     @error_decorator
     def UpdateChart(self, data):
+        def get_cgtime(cgtime_):
+            while cgtime_ not in df.index:
+                onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime_)))
+                cgtime_ = int(str_ymdhms(onesecago))
+            return cgtime_
+
         if len(data) == 7:
             coin, code, tickcount, searchdate, starttime, endtime, k = data
             detail, buytimes, cf1, cf2 = None, None, None, None
@@ -259,41 +265,27 @@ class Chart:
                         cgtime = int(float(str(df2['체결시간'][index])[:12] if is_min else df2['체결시간'][index]))
                         if 'KRW' in code or ('USDT' not in code and '키움증권' in self.dict_set['증권사']):
                             if df2['주문구분'][index] == '매수':
-                                while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
-                                    cgtime = int(str_ymdhms(onesecago))
-                                buy_index.append(cgtime)
+                                buy_index.append(get_cgtime(cgtime))
                                 df.loc[cgtime, '매수가'] = df2['체결가'][index]
+
                             elif df2['주문구분'][index] == '매도':
-                                while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
-                                    cgtime = int(str_ymdhms(onesecago))
-                                sell_index.append(cgtime)
+                                sell_index.append(get_cgtime(cgtime))
                                 df.loc[cgtime, '매도가'] = df2['체결가'][index]
                         else:
                             if df2['주문구분'][index] == 'BUY_LONG':
-                                while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
-                                    cgtime = int(str_ymdhms(onesecago))
-                                buy_index.append(cgtime)
+                                buy_index.append(get_cgtime(cgtime))
                                 df.loc[cgtime, '매수가'] = df2['체결가'][index]
+
                             elif df2['주문구분'][index] == 'SELL_LONG':
-                                while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
-                                    cgtime = int(str_ymdhms(onesecago))
-                                sell_index.append(cgtime)
+                                sell_index.append(get_cgtime(cgtime))
                                 df.loc[cgtime, '매도가'] = df2['체결가'][index]
+
                             elif df2['주문구분'][index] == 'SELL_SHORT':
-                                while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
-                                    cgtime = int(str_ymdhms(onesecago))
-                                buy_index.append(cgtime)
+                                buy_index.append(get_cgtime(cgtime))
                                 df.loc[cgtime, '매수가2'] = df2['체결가'][index]
+
                             elif df2['주문구분'][index] == 'BUY_SHORT':
-                                while cgtime not in df.index:
-                                    onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime)))
-                                    cgtime = int(str_ymdhms(onesecago))
-                                sell_index.append(cgtime)
+                                sell_index.append(get_cgtime(cgtime))
                                 df.loc[cgtime, '매도가2'] = df2['체결가'][index]
             else:
                 매수시간, 매수가, 매도시간, 매도가 = detail

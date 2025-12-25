@@ -9,7 +9,6 @@ from utility.static import GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhm, 
 class BackEngineFutureTick(BackEngineKiwoomTick):
     def Settings(self):
         self.market_gubun  = 2
-        self.is_future     = True
         self.ui_num_txt    = 'S백테스트'
         self.is_oms        = self.dict_set['백테주문관리적용']
         self.is_tick       = self.dict_set['주식타임프레임']
@@ -240,11 +239,11 @@ class BackEngineFutureTick(BackEngineKiwoomTick):
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
-                    break
+                    return
 
                 for vkey in self.trade_info[vturn]:
                     self.vars[vturn] = self.vars_list[vturn][0][vkey]
-                    if self.tick_count < self.vars[0]:
+                    if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
                     BUY_LONG, SELL_SHORT = True, True
@@ -264,10 +263,14 @@ class BackEngineFutureTick(BackEngineKiwoomTick):
                     index_ = vturn * 20 + vkey
                     if self.back_type != '조건최적화':
                         self.vars = self.vars_lists[index_]
-                        if self.tick_count < self.vars[0]:
-                            break
+                        if vturn != 0:
+                            if self.tick_count < self.vars[0]:
+                                return
+                        else:
+                            if self.tick_count < self.vars[0]:
+                                continue
                     elif self.tick_count < self.avgtime:
-                        break
+                        return
 
                     BUY_LONG, SELL_SHORT = True, True
                     SELL_LONG, BUY_SHORT = False, False
@@ -385,7 +388,7 @@ class BackEngineFutureTick(BackEngineKiwoomTick):
                 매도금액 += 호가 * 잔량
                 미체결수량 -= 잔량
         if 미체결수량 <= 0:
-            self.trade_info[vturn][vkey]['매도가'] = round(매도금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'] + 1)
+            self.trade_info[vturn][vkey]['매도가'] = round(매도금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
             self.sell_cond = sell_cond
             self.CalculationEyun(vturn, vkey)
 
@@ -409,14 +412,14 @@ class BackEngineFutureTick(BackEngineKiwoomTick):
                     매도금액 = 0
                     보유수량 = 미체결수량 = self.trade_info[vturn][vkey]['보유수량']
                     호가정보 = shogainfo if self.trade_info[vturn][vkey]['보유중'] == 1 else bhogainfo
-                    for 매수호가, 매수잔량 in 호가정보:
-                        if 미체결수량 - 매수잔량 <= 0:
-                            매도금액 += 매수호가 * 미체결수량
-                            미체결수량 -= 매수잔량
+                    for 호가, 잔량 in 호가정보:
+                        if 미체결수량 - 잔량 <= 0:
+                            매도금액 += 호가 * 미체결수량
+                            미체결수량 -= 잔량
                             break
                         else:
-                            매도금액 += 매수호가 * 매수잔량
-                            미체결수량 -= 매수잔량
+                            매도금액 += 호가 * 잔량
+                            미체결수량 -= 잔량
 
                     if 미체결수량 <= 0:
                         self.trade_info[vturn][vkey]['매도가'] = round(매도금액 / 보유수량, self.dict_info[self.code]['소숫점자리수'])
