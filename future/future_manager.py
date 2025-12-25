@@ -9,7 +9,6 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from future_trader import FutureTrader
 from future_agent_min import FutureAgentMin
 from future_agent_tick import FutureAgentTick
-from future_agent_client import FutureAgentClient
 from future_strategy_min import FutureStrategyMin
 from future_strategy_tick import FutureStrategyTick
 from login_future.manuallogin import find_window, manual_login, leftClick, doubleClick, press_keys, click_button
@@ -57,7 +56,7 @@ class ZmqRecvFromUI(QThread):
                 elif type(data) == tuple:
                     self.signal2.emit(data)
                 if data == '통신종료':
-                    QThread.sleep(1)
+                    qtest_qwait(1)
                     break
         self.sock.close()
         self.zctx.term()
@@ -181,9 +180,9 @@ class FutureManager:
         if self.backtest_engine:
             self.logger.error('백테엔진 구동 중에는 로그인할 수 없습니다.')
             return
-        if self.dict_set['버전업']:
+
+        if self.dict_set['주식에이전트'] and self.dict_set['주식트레이더']:
             self.FutureVersionUp()
-        if self.dict_set['주식리시버'] and self.dict_set['주식트레이더']:
             self.FutureTraderStart()
             self.FutureAgentStart()
 
@@ -263,25 +262,21 @@ class FutureManager:
         self.proc_trader.start()
 
     def FutureAgentStart(self):
-        if self.dict_set['에이전트공유'] < 2:
-            target = FutureAgentTick if self.dict_set['주식타임프레임'] else FutureAgentMin
-            password = self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:])}"]
-            while True:
-                if not self.FutureAgentProcessAlive():
-                    set_pass_proc = Process(target=set_password, args=(password,))
-                    set_pass_proc.start()
-                    self.proc_agent = Process(target=target, args=(self.qlist,), daemon=True)
-                    self.proc_agent.start()
-                    if self.OpenapiLoginWait(True):
-                        break
-                    else:
-                        set_pass_proc.kill()
-                        self.proc_agent.kill()
-                        self.logger.error('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
-                qtest_qwait(0.01)
-        else:
-            self.proc_agent = Process(target=FutureAgentClient, args=(self.qlist,), daemon=True)
-            self.proc_agent.start()
+        target = FutureAgentTick if self.dict_set['주식타임프레임'] else FutureAgentMin
+        password = self.dict_set[f"계좌비밀번호{int(self.dict_set['증권사'][4:])}"]
+        while True:
+            if not self.FutureAgentProcessAlive():
+                set_pass_proc = Process(target=set_password, args=(password,))
+                set_pass_proc.start()
+                self.proc_agent = Process(target=target, args=(self.qlist,), daemon=True)
+                self.proc_agent.start()
+                if self.OpenapiLoginWait(True):
+                    break
+                else:
+                    set_pass_proc.kill()
+                    self.proc_agent.kill()
+                    self.logger.error('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
+            qtest_qwait(0.01)
 
     def FutureStrategyProcessAlive(self):
         return self.proc_strategy is not None and self.proc_strategy.is_alive()

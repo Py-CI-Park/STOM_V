@@ -148,7 +148,7 @@ class FutureTrader:
         inthms = int(str_hms(now_cme()))
         if self.dict_set['주식타임프레임'] and inthms < self.dict_set['주식전략종료시간']:
             self.OrderTimeControl()
-        if self.jgcs_time < inthms and not self.dict_bool['주식잔고청산']:
+        if self.dict_set['주식잔고청산'] and not self.dict_bool['주식잔고청산'] and self.jgcs_time < inthms:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
@@ -170,7 +170,7 @@ class FutureTrader:
         주문취소 = False
         현재시간 = now()
         if 잔고청산:
-            if (주문구분 == 'SELL_LONG' and (잔고없음 or 롱매도주문중)) or (주문구분 == 'BUY_SHORT' and (잔고없음 or 숏매도주문중)):
+            if 잔고없음 or (주문구분 == 'SELL_LONG' and 롱매도주문중) or (주문구분 == 'BUY_SHORT' and 숏매도주문중):
                 주문취소 = True
         elif self.dict_bool['주식잔고청산']:
             주문취소 = True

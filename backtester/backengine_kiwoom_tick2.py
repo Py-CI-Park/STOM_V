@@ -489,7 +489,7 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
                 betting = self.betting * self.set_weight[9]
 
         oc_ratio = dict_order_ratio[self.dict_set['주식매수분할방법']][self.dict_set['주식매수분할횟수']][매수분할횟수]
-        self.trade_info[vturn][vkey]['주문수량'] = int(betting / (현재가 if not 보유중 else 매수가) * oc_ratio / 99.99)
+        self.trade_info[vturn][vkey]['주문수량'] = int(betting / (현재가 if not 보유중 else 매수가) * oc_ratio / 100)
 
         if self.dict_set['주식매수주문구분'] == '지정가':
             기준가격 = 현재가
@@ -572,7 +572,7 @@ class BackEngineKiwoomTick2(BackEngineKiwoomTick):
                     betting = self.betting * self.set_weight[9]
 
             oc_ratio = dict_order_ratio[self.dict_set['주식매도분할방법']][self.dict_set['주식매도분할횟수']][매도분할횟수]
-            self.trade_info[vturn][vkey]['주문수량'] = int(betting / self.trade_info[vturn][vkey]['매수가'] * oc_ratio / 99.99)
+            self.trade_info[vturn][vkey]['주문수량'] = int(betting / self.trade_info[vturn][vkey]['매수가'] * oc_ratio / 100)
             if self.trade_info[vturn][vkey]['주문수량'] > 보유수량 or 매도분할횟수 + 1 == self.dict_set['주식매도분할횟수']:
                 self.trade_info[vturn][vkey]['주문수량'] = 보유수량
 

@@ -8,9 +8,6 @@ from utility.static import now
 
 class FutureAgentMin(FutureAgentTick):
     def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
-        if self.dict_set['에이전트공유'] == 1:
-            self.agzservQ.put(('tickdata', (code, c, dt)))
-
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
             self.straderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
@@ -113,9 +110,6 @@ class FutureAgentMin(FutureAgentTick):
             if send:
                 if code in self.tuple_order:
                     self.straderQ.put(('주문확인', (code, c)))
-
-                if self.dict_set['에이전트공유'] == 1:
-                    self.agzservQ.put(('tickdata', data))
 
                 self.dict_dtdm[code] = [dt_min, dm]
                 self.dict_data[code][7:9] = [0, 0]

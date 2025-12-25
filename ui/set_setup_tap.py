@@ -26,7 +26,7 @@ class SetSetupTap:
         self.ui.set_tapWidgett_01.addTab(self.ui.sod_tab, '주문설정')
 
         self.ui.sj_bs_groupBox_01 = QGroupBox(' 증권사, 거래소, 프로세스 : 사용할 증권사 및 거래소를 선택하고 실행될 프로세스를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_02 = QGroupBox(' 주식 및 해선 계정 : 트레이더용 첫번째 계정과 리시버용 두번째 계정을 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_02 = QGroupBox(' 주식 및 해선 계정 : 계정 아이디, 비밀번호, 인증서비밀번호를 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_03 = QGroupBox(' 코인 계정 : Access 키와 Secret 키를 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_04 = QGroupBox(' 텔레그램 : 봇토큰 및 사용자 채팅 아이디를 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_05 = QGroupBox(' 주식 및 해선 : 모의투자, 알림소리, 전략를 설정한다.', self.ui.ssd_tab)
@@ -35,18 +35,14 @@ class SetSetupTap:
         self.ui.sj_bs_groupBox_08 = QGroupBox(' 기타 : 휴장 종료 유무, 해상도, 창위치, 스톰라이브를 설정한다.', self.ui.ssd_tab)
 
         self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, tip='사용할 증권사를 선택하십시오.', items=['키움증권1', '키움증권2', '키움증권3', '키움증권4', '해외선물5', '해외선물6', '해외선물7', '해외선물8'])
-        self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('리시버', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_01, tip='두번째 계정으로 로그인하여 실시간조건검색 및 데이터를 수신한다.')
-        self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_02, tip='첫번째 계정으로 로그인하여 주문 및 잔고 관리하는 프로세스와\n리시버로부터 데이터를 넘겨받아 전략연산하는 프로세스로 분리되어 있다.')
+        self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('에이전트', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_01, tip='실시간조건검색 및 데이터를 수신하고 주문을 전송한다.')
+        self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_02, tip='주문 및 잔고 관리하는 프로세스와\n리시버로부터 데이터를 넘겨받아 전략연산하는 프로세스로 분리되어 있다.')
         self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_03, tip='전략연산 프로세스가 모아둔 데이터를 데이터베이스에 저장한다.')
 
         self.ui.sj_main_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, tip='사용할 거래소를 선택하십시오.', items=['업비트', '바이낸스선물'])
         self.ui.sj_main_cheBox_04 = self.wc.setCheckBox('리시버', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_04, tip='코인 리시버는 체결정보와 호가정보 프로세스로 분리하여 수신한다.')
         self.ui.sj_main_cheBox_05 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_05, tip='트레이더는 전략연산과 주문 및 잔고 관리 프로세스로 분리되어 있다.')
         self.ui.sj_main_cheBox_06 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_06, tip='전략연산 프로세스가 모아둔 데이터를 데이터베이스에 저장한다.')
-
-        self.ui.sj_main_cheBox_07 = self.wc.setCheckBox('버전 업그레이드', self.ui.sj_bs_groupBox_01, tip='버전업을 실행합니다. 멀티 스톰일 경우 첫번째 실행할 클라이언트에서 실행하십시오.')
-        self.ui.sj_main_cheBox_08 = self.wc.setCheckBox('서버 (동일PC에서 하나만 지정)', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_18, tip='로컬에서 서버 역활을 한다. 이 리시버에서 받은 데이터를 ZMQ를 이용하여 클라이언트로 보낸다.')
-        self.ui.sj_main_cheBox_09 = self.wc.setCheckBox('클라이언트 (여러개 가능)', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_18, tip='로컬에서 클라이언트 역활을 한다. 동일 PC에서 서버는 하나만 가능하지만, 클라이언트는 여러개가 가능하다.')
 
         self.ui.sj_main_labell_01 = QLabel('바이낸스 선물   |                                                         마진타입                     포지션', self.ui.sj_bs_groupBox_01)
         self.ui.sj_lvrg_Button_01 = self.wc.setPushbutton('레버리지 유형 및 수치 설정', box=self.ui.sj_bs_groupBox_01, click=self.ui.lvButtonClicked_01, tip='바이낸스 선물 레버리지를 고정, 변동 형태 중 선택하여 설정한다.')
@@ -213,10 +209,6 @@ class SetSetupTap:
         self.ui.sj_main_cheBox_04.setGeometry(660, 25, 90, 20)
         self.ui.sj_main_cheBox_05.setGeometry(760, 25, 90, 20)
         self.ui.sj_main_cheBox_06.setGeometry(860, 25, 90, 20)
-
-        self.ui.sj_main_cheBox_07.setGeometry(10, 50, 200, 20)
-        self.ui.sj_main_cheBox_08.setGeometry(120, 50, 220, 20)
-        self.ui.sj_main_cheBox_09.setGeometry(305, 50, 220, 20)
 
         self.ui.sj_main_labell_01.setGeometry(500, 50, 500, 20)
         self.ui.sj_lvrg_Button_01.setGeometry(590, 50, 150, 20)

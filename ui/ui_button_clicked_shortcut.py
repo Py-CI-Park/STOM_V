@@ -8,13 +8,11 @@ from coin.binance_receiver_min import BinanceReceiverMin
 from coin.binance_strategy_min import BinanceStrategyMin
 from coin.binance_receiver_tick import BinanceReceiverTick
 from coin.binance_strategy_tick import BinanceStrategyTick
-from coin.binance_receiver_client import BinanceReceiverClient
 from coin.upbit_trader import UpbitTrader
 from coin.upbit_receiver_min import UpbitReceiverMin
 from coin.upbit_strategy_min import UpbitStrategyMin
 from coin.upbit_receiver_tick import UpbitReceiverTick
 from coin.upbit_strategy_tick import UpbitStrategyTick
-from coin.upbit_receiver_client import UpbitReceiverClient
 from ui.set_style import style_bc_bt, style_bc_bb
 from utility.setting import GRAPH_PATH, ui_num
 from utility.static import qtest_qwait, cme_normal_open
@@ -110,7 +108,7 @@ def mnbutton_c_clicked_03(ui, login):
         if ui.dialog_web.isVisible():
             QMessageBox.critical(ui, '오류 알림', '웹뷰어창이 열린 상태에서는 수동시작할 수 없습니다.\n웹뷰어창을 닫고 재시도하십시오.\n')
             return
-        if ui.dict_set['주식리시버']:
+        if ui.dict_set['주식에이전트']:
             if '키움증권' in ui.dict_set['증권사']:
                 buttonReply = QMessageBox.question(
                     ui, '주식 수동 시작', '주식 리시버 또는 트레이더를 시작합니다.\n이미 실행 중이라면 기존 프로세스는 종료됩니다.\n계속하시겠습니까?\n',
@@ -130,7 +128,7 @@ def mnbutton_c_clicked_03(ui, login):
             buttonReply = QMessageBox.No
 
     if buttonReply == QMessageBox.Yes:
-        if login in (1, 3) or (login == 0 and ui.dict_set['주식리시버']):
+        if login in (1, 3) or (login == 0 and ui.dict_set['주식에이전트']):
             if login == 3 and not cme_normal_open():
                 ui.logger.info('해외선물은 휴무 또는 조기마감일입니다.')
                 ui.windowQ.put((ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 해외선물 휴무 종료'))
@@ -142,7 +140,7 @@ def mnbutton_c_clicked_03(ui, login):
             id_num = ui.dict_set['증권사'][4:]
             if ui.dict_set[f"아이디{id_num}"] is None:
                 QMessageBox.critical(ui, '오류 알림', '계정이 설정되지 않아 시작할 수 없습니다.\n계정 설정 후 다시 시작하십시오.\n')
-            elif ui.dict_set['주식리시버'] and ui.dict_set['주식트레이더']:
+            elif ui.dict_set['주식에이전트'] and ui.dict_set['주식트레이더']:
                 if ui.dict_set['주식알림소리']:
                     ui.soundQ.put(f"{ui.dict_set['증권사'][:4]} OPEN API에 로그인을 시작합니다.")
                 ui.wdzservQ.put(('manager', '수동시작'))
@@ -251,14 +249,11 @@ def mnbutton_c_clicked_06(ui):
 
 def CoinReceiverStart(ui):
     if not ui.CoinReceiverProcessAlive():
-        if ui.dict_set['에이전트공유'] < 2:
-            if ui.dict_set['코인타임프레임']:
-                target = UpbitReceiverTick if ui.dict_set['거래소'] == '업비트' else BinanceReceiverTick
-            else:
-                target = UpbitReceiverMin if ui.dict_set['거래소'] == '업비트' else BinanceReceiverMin
-            ui.proc_receiver_coin = Process(target=target, args=(ui.qlist,))
+        if ui.dict_set['코인타임프레임']:
+            target = UpbitReceiverTick if ui.dict_set['거래소'] == '업비트' else BinanceReceiverTick
         else:
-            ui.proc_receiver_coin = Process(target=UpbitReceiverClient if ui.dict_set['거래소'] == '업비트' else BinanceReceiverClient, args=(ui.qlist,))
+            target = UpbitReceiverMin if ui.dict_set['거래소'] == '업비트' else BinanceReceiverMin
+        ui.proc_receiver_coin = Process(target=target, args=(ui.qlist,))
         ui.proc_receiver_coin.start()
 
 

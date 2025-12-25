@@ -68,8 +68,7 @@ class BinanceStrategyTick:
         elif self.dict_set['코인매수전략'] in dfob.index:
             buytxt = dfob['전략코드'][self.dict_set['코인매수전략']]
             vars_text = dfob['변수값'][self.dict_set['코인매수전략']]
-            # noinspection PyPackages
-            if vars_text:
+            if vars_text != '':
                 vars_list = [float(i) if '.' in i else int(i) for i in vars_text.split(';')]
                 self.vars = {i: var for i, var in enumerate(vars_list)}
 
@@ -106,9 +105,9 @@ class BinanceStrategyTick:
         while True:
             data = self.cstgQ.get()
             if type(data) == tuple:
-                if len(data) > 3:
+                if len(data) != 2:
                     self.Strategy(data)
-                elif len(data) == 2:
+                else:
                     self.UpdateTuple(data)
             elif type(data) == str:
                 self.UpdateString(data)
@@ -605,7 +604,7 @@ class BinanceStrategyTick:
                 betting = self.int_tujagm * self.dict_set['코인비중조절'][9]
 
         oc_ratio = dict_order_ratio[self.dict_set['코인매수분할방법']][self.dict_set['코인매수분할횟수']][분할매수횟수]
-        매수수량 = round(betting / (현재가 if 매입가 == 0 else 매입가) * oc_ratio / 99.99, 소숫점자리수)
+        매수수량 = round(betting / (현재가 if 매입가 == 0 else 매입가) * oc_ratio / 100, 소숫점자리수)
         return 매수수량
 
     def SetSellCount(self, 분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도, 당일거래대금각도, 소숫점자리수):
@@ -634,7 +633,7 @@ class BinanceStrategyTick:
                     betting = self.int_tujagm * self.dict_set['코인비중조절'][9]
 
             oc_ratio = dict_order_ratio[self.dict_set['코인매도분할방법']][self.dict_set['코인매도분할횟수']][분할매도횟수]
-            매도수량 = round(betting / 매입가 * oc_ratio / 99.99, 소숫점자리수)
+            매도수량 = round(betting / 매입가 * oc_ratio / 100, 소숫점자리수)
             if 매도수량 > 보유수량 or 분할매도횟수 + 1 == self.dict_set['코인매도분할횟수']: 매도수량 = 보유수량
             return 매도수량
 

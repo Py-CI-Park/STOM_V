@@ -22,9 +22,6 @@ class UpbitReceiverMin(UpbitReceiverTick):
         except:
             return
 
-        if self.dict_set['에이전트공유'] == 1:
-            self.recvservQ.put(('tickdata', (code, c, dt)))
-
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
             self.ctraderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
@@ -160,9 +157,6 @@ class UpbitReceiverMin(UpbitReceiverTick):
             if send:
                 if code in self.tuple_order:
                     self.ctraderQ.put(('주문확인', (code, c)))
-
-                if self.dict_set['에이전트공유'] == 1:
-                    self.recvservQ.put(('tickdata', data))
 
                 self.dict_dtdm[code] = [dt_min, dm]
                 self.dict_data[code][7:9] = [0, 0]

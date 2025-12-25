@@ -26,17 +26,22 @@ table_list = df['name'].to_list()
 
 if 'main' not in table_list:
     columns = [
-        'index', '증권사', '주식리시버', '주식트레이더', '주식데이터저장', '거래소', '코인리시버', '코인트레이더', '코인데이터저장',
-        '바이낸스선물고정레버리지', '바이낸스선물고정레버리지값', '바이낸스선물변동레버리지값', '바이낸스선물마진타입', '바이낸스선물포지션',
-        '버전업', '에이전트공유'
+        'index', '증권사', '주식에이전트', '주식트레이더', '주식데이터저장', '거래소', '코인리시버', '코인트레이더', '코인데이터저장',
+        '바이낸스선물고정레버리지', '바이낸스선물고정레버리지값', '바이낸스선물변동레버리지값', '바이낸스선물마진타입', '바이낸스선물포지션'
     ]
-    data = [0, '키움증권1', 0, 0, 0, '바이낸스선물', 0, 0, 0, 1, 1, '0;5;1^5;10;2^10;20;3^20;30;4^30;100;5', 'ISOLATED', 'false', 1, 0]
+    data = [0, '키움증권1', 0, 0, 0, '바이낸스선물', 0, 0, 0, 1, 1, '0;5;1^5;10;2^10;20;3^20;30;4^30;100;5', 'ISOLATED', 'false']
     df = pd.DataFrame([data], columns=columns).set_index('index')
     df.to_sql('main', con)
 else:
+    update = False
     df = pd.read_sql("SELECT * FROM main", con).set_index('index')
-    if '에이전트공유' not in df.columns:
-        df.rename(columns={'리시버공유': '에이전트공유'}, inplace=True)
+    if '주식리시버' in df.columns:
+        df.rename(columns={'주식리시버': '주식에이전트'}, inplace=True)
+        update = True
+    if '버전업' in df.columns:
+        df.drop(columns=['버전업', '에이전트공유'], inplace=True)
+        update = True
+    if update:
         df.to_sql('main', con, if_exists='replace')
 
 if 'sacc' not in table_list:

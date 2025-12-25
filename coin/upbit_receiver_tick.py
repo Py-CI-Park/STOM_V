@@ -1,30 +1,13 @@
 import sys
-import zmq
 import time
 import sqlite3
 import pyupbit
 import pandas as pd
-from multiprocessing import Queue
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from coin.upbit_websocket import WebSocketReceiver
 from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
 from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc, get_logger
-
-
-class ZmqSendToClient(QThread):
-    def __init__(self, recvservQ):
-        super().__init__()
-        self.recvservQ = recvservQ
-        zctx = zmq.Context()
-        self.sock = zctx.socket(zmq.PUB)
-        self.sock.bind(f'tcp://*:5778')
-
-    def run(self):
-        while True:
-            msg, data = self.recvservQ.get()
-            self.sock.send_string(msg, zmq.SNDMORE)
-            self.sock.send_pyobj(data)
 
 
 class Updater(QThread):
@@ -90,12 +73,6 @@ class UpbitReceiverTick:
 
         self.GetTickers()
 
-        self.recvservQ = Queue()
-        if self.dict_set['에이전트공유'] == 1:
-            self.zmqserver = ZmqSendToClient(self.recvservQ)
-            self.zmqserver.daemon = True
-            self.zmqserver.start()
-
         self.ws_thread = WebSocketReceiver(self.codes)
         self.ws_thread.signal1.connect(self.UpdateTickData)
         self.ws_thread.signal2.connect(self.UpdateHogaData)
@@ -123,8 +100,6 @@ class UpbitReceiverTick:
         self.list_gsjm = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
         data = tuple(self.list_gsjm)
         self.cstgQ.put(('관심목록', data))
-        if self.dict_set['에이전트공유'] == 1:
-            self.recvservQ.put(('focuscodes', ('관심목록', data)))
 
         text = '코인 리시버를 시작하였습니다.'
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
@@ -274,9 +249,6 @@ class UpbitReceiverTick:
             if code in self.tuple_order or code in self.tuple_jango:
                 self.ctraderQ.put(('잔고갱신', (code, c)))
 
-            if self.dict_set['에이전트공유'] == 1:
-                self.recvservQ.put(('tickdata', data))
-
             self.dict_dtdm[code] = [dt, dm]
             self.dict_data[code][7:9] = [0, 0]
 
@@ -312,8 +284,6 @@ class UpbitReceiverTick:
         current_gsjm = tuple(self.list_gsjm)
         if current_gsjm != self.last_gsjm:
             self.cstgQ.put(('관심목록', current_gsjm))
-            if self.dict_set['에이전트공유'] == 1:
-                self.recvservQ.put(('focuscodes', ('관심목록', current_gsjm)))
             self.last_gsjm = current_gsjm
 
     def MoneyTopSearch(self):
@@ -345,8 +315,6 @@ class UpbitReceiverTick:
         self.WebProcessKill()
         if self.dict_set['코인알림소리']:
             self.soundQ.put('업비트 시스템을 3분 후 종료합니다.')
-        if self.dict_set['에이전트공유'] == 1:
-            self.recvservQ.put('프로세스종료')
         threading_timer(180, self.creceivQ.put, '프로세스종료')
 
     def WebProcessKill(self):

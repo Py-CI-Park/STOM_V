@@ -58,7 +58,7 @@ class SetDialogChart:
         self.ui.ctpg_cvb = {}
         pg.setConfigOption('background', color_bg_bk)
         self.ui.ctpg_layout = pg.GraphicsLayoutWidget()
-        if (self.ui.dict_set['주식리시버'] and not self.ui.dict_set['주식타임프레임']) or \
+        if (self.ui.dict_set['주식에이전트'] and not self.ui.dict_set['주식타임프레임']) or \
                 (self.ui.dict_set['코인리시버'] and not self.ui.dict_set['코인타임프레임']):
             self.ui.ctpg[0], self.ui.ctpg_cvb[0] = self.wc.setaddPlot(self.ui.ctpg_layout, 0, 0, colspan=2)
             self.ui.ctpg[1], self.ui.ctpg_cvb[1] = self.wc.setaddPlot(self.ui.ctpg_layout, 1, 0, colspan=2)
@@ -108,7 +108,7 @@ class SetDialogChart:
         self.ui.dialog_factor.geometry().center()
         self.ui.jp_groupBoxxxxx_01 = QGroupBox(' ', self.ui.dialog_factor)
 
-        is_min = (self.ui.dict_set['주식리시버'] and not self.ui.dict_set['주식타임프레임']) or \
+        is_min = (self.ui.dict_set['주식에이전트'] and not self.ui.dict_set['주식타임프레임']) or \
                  (self.ui.dict_set['코인리시버'] and not self.ui.dict_set['코인타임프레임'])
         checkbox_choice = [int(x) for x in DICT_SET['팩터선택'].split(';')]
         self.ui.ft_checkBoxxxxx_01 = self.wc.setCheckBox('현재가', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[0] else False, changed=self.ui.CheckboxChanged_10, style=style_ck_bx)

@@ -510,7 +510,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                         elif 수익률 < self.dict_hilo[종목코드][1]:
                             self.dict_hilo[종목코드][1] = 수익률
                     최고수익률, 최저수익률 = self.dict_hilo[종목코드]
-                    보유시간 = (now() - dt_ymdhms(매수시간)).total_seconds()
+                    보유시간 = int((now() - dt_ymdhms(매수시간)).total_seconds() / 60)
                     매수틱번호 = self.dict_buy_num[종목코드]
                 else:
                     매수틱번호, 수익금, 수익률, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = 0, 0, 0, 0, 0, 0, 0, now(), 0, 0, 0

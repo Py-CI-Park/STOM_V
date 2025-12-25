@@ -32,14 +32,10 @@ def checkbox_changed_02(ui, state):
 
 def checkbox_changed_03(ui, state):
     if type(ui.focusWidget()) != QPushButton and state == Qt.Checked:
-        if ui.sj_main_cheBox_09.isChecked():
-            ui.sj_main_cheBox_03.nextCheckState()
-            QMessageBox.critical(ui, '오류 알림', '클라이언트용 스톰은 데이터를 저장할 수 없습니다.\n서버용 스톰으로 저장하십시오.\n')
-        else:
-            if not ui.sj_main_cheBox_01.isChecked():
-                ui.sj_main_cheBox_01.nextCheckState()
-            if not ui.sj_main_cheBox_02.isChecked():
-                ui.sj_main_cheBox_02.nextCheckState()
+        if not ui.sj_main_cheBox_01.isChecked():
+            ui.sj_main_cheBox_01.nextCheckState()
+        if not ui.sj_main_cheBox_02.isChecked():
+            ui.sj_main_cheBox_02.nextCheckState()
 
 
 def checkbox_changed_04(ui, state):
@@ -64,14 +60,10 @@ def checkbox_changed_05(ui, state):
 
 def checkbox_changed_06(ui, state):
     if type(ui.focusWidget()) != QPushButton and state == Qt.Checked:
-        if ui.sj_main_cheBox_09.isChecked():
-            ui.sj_main_cheBox_03.nextCheckState()
-            QMessageBox.critical(ui, '오류 알림', '클라이언트용 스톰은 데이터를 저장할 수 없습니다.\n서버용 스톰으로 저장하십시오.\n')
-        else:
-            if not ui.sj_main_cheBox_04.isChecked():
-                ui.sj_main_cheBox_04.nextCheckState()
-            if not ui.sj_main_cheBox_05.isChecked():
-                ui.sj_main_cheBox_05.nextCheckState()
+        if not ui.sj_main_cheBox_04.isChecked():
+            ui.sj_main_cheBox_04.nextCheckState()
+        if not ui.sj_main_cheBox_05.isChecked():
+            ui.sj_main_cheBox_05.nextCheckState()
 
 
 def checkbox_changed_07(ui, state):
@@ -175,21 +167,8 @@ def checkbox_changed_17(ui, state):
                 ui.sj_back_cheBox_17.nextCheckState()
 
 
-def checkbox_changed_18(ui, state):
-    if type(ui.focusWidget()) != QPushButton:
-        if state == Qt.Checked:
-            if ui.focusWidget() == ui.sj_main_cheBox_08:
-                if ui.sj_main_cheBox_09.isChecked():
-                    ui.sj_main_cheBox_09.nextCheckState()
-            else:
-                if ui.sj_main_cheBox_08.isChecked():
-                    ui.sj_main_cheBox_08.nextCheckState()
-        elif not ui.sj_main_cheBox_09.isChecked() and not ui.sj_main_cheBox_08.isChecked() and not ui.sj_main_cheBox_07.isChecked():
-            ui.sj_main_cheBox_07.nextCheckState()
-
-
 # noinspection PyUnusedLocal
-def checkbox_changed_19(ui, state):
+def checkbox_changed_18(ui, state):
     ui.ctpg_name = None
 
 

@@ -29,10 +29,6 @@ def process_starter(ui):
 
 def UpdateWindowTitle(ui):
     text = 'STOM'
-    if ui.dict_set['에이전트공유'] == 1:
-        text = f'{text} Server'
-    elif ui.dict_set['에이전트공유'] == 2:
-        text = f'{text} Client'
     if ui.dict_set['거래소'] == '바이낸스선물' and ui.dict_set['코인트레이더']:
         text = f'{text} | 바이낸스선물'
     elif ui.dict_set['거래소'] == '업비트' and ui.dict_set['코인트레이더']:

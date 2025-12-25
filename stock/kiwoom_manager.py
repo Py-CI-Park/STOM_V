@@ -9,7 +9,6 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from kiwoom_trader import KiwoomTrader
 from kiwoom_agent_min import KiwoomAgentMin
 from kiwoom_agent_tick import KiwoomAgentTick
-from kiwoom_agent_client import KiwoomAgentClient
 from kiwoom_strategy_min import KiwoomStrategyMin
 from kiwoom_strategy_tick import KiwoomStrategyTick
 from login_kiwoom.manuallogin import find_window
@@ -58,7 +57,7 @@ class ZmqRecvFromUI(QThread):
                 elif type(data) == tuple:
                     self.signal2.emit(data)
                 if data == '통신종료':
-                    QThread.sleep(1)
+                    qtest_qwait(1)
                     break
         self.sock.close()
         self.zctx.term()
@@ -167,9 +166,9 @@ class KiwoomManager:
         if self.backtest_engine:
             self.logger.error('백테엔진 구동 중에는 로그인할 수 없습니다.')
             return
-        if self.dict_set['버전업']:
+
+        if self.dict_set['주식에이전트'] and self.dict_set['주식트레이더']:
             self.StockVersionUp()
-        if self.dict_set['주식리시버'] and self.dict_set['주식트레이더']:
             self.StockTraderStart()
             self.StockAgentStart()
 
@@ -265,40 +264,36 @@ class KiwoomManager:
     def StockAgentStart(self):
         self.StockAutoLogin()
 
-        if self.dict_set['에이전트공유'] < 2:
-            with open('C:/OpenAPI/system/ip_api.dat') as file:
-                text = file.read()
-            fast_ip1 = text.split('IP=')[1].split('PORT=')[0].strip()[:7]
-            fast_ip2 = text.split('IP=')[2].split('PORT=')[0].strip()[:7]
-            target = KiwoomAgentTick if self.dict_set['주식타임프레임'] else KiwoomAgentMin
-            while True:
-                if not self.StockAgentProcessAlive():
-                    self.proc_agent = Process(target=target, args=(self.qlist,), daemon=True)
-                    self.proc_agent.start()
-                    if self.OpenapiLoginWait(True):
-                        with open('C:/OpenAPI/system/opcomms.ini') as file:
-                            text = file.read()
-                        server_ip_select = text.split('SERVER_IP_SELECT=')[1].split('PROBLEM_CONNECTIP=')[0].strip()
-                        inthms = int(str_hms())
-                        if inthms < 85000 and fast_ip1 in server_ip_select:
-                            self.logger.info(f'빠른 서버 접속 완료 [{server_ip_select}]')
-                            break
-                        elif 85000 < inthms < 85900 and (fast_ip1 in server_ip_select or fast_ip2 in server_ip_select):
-                            self.logger.info(f'빠른 서버 접속 완료 [{server_ip_select}]')
-                            break
-                        elif inthms < 80000 or 85900 < inthms or now().weekday() > 4:
-                            self.logger.info(f'접속 시간 초과, 마지막 접속 유지 [{server_ip_select}]')
-                            break
-                        else:
-                            self.proc_agent.kill()
-                            self.logger.error('빠른 서버 접속 실패, 잠시 후 재접속합니다.')
+        with open('C:/OpenAPI/system/ip_api.dat') as file:
+            text = file.read()
+        fast_ip1 = text.split('IP=')[1].split('PORT=')[0].strip()[:7]
+        fast_ip2 = text.split('IP=')[2].split('PORT=')[0].strip()[:7]
+        target = KiwoomAgentTick if self.dict_set['주식타임프레임'] else KiwoomAgentMin
+        while True:
+            if not self.StockAgentProcessAlive():
+                self.proc_agent = Process(target=target, args=(self.qlist,), daemon=True)
+                self.proc_agent.start()
+                if self.OpenapiLoginWait(True):
+                    with open('C:/OpenAPI/system/opcomms.ini') as file:
+                        text = file.read()
+                    server_ip_select = text.split('SERVER_IP_SELECT=')[1].split('PROBLEM_CONNECTIP=')[0].strip()
+                    inthms = int(str_hms())
+                    if inthms < 85000 and fast_ip1 in server_ip_select:
+                        self.logger.info(f'빠른 서버 접속 완료 [{server_ip_select}]')
+                        break
+                    elif 85000 < inthms < 85900 and (fast_ip1 in server_ip_select or fast_ip2 in server_ip_select):
+                        self.logger.info(f'빠른 서버 접속 완료 [{server_ip_select}]')
+                        break
+                    elif inthms < 80000 or 85900 < inthms or now().weekday() > 4:
+                        self.logger.info(f'접속 시간 초과, 마지막 접속 유지 [{server_ip_select}]')
+                        break
                     else:
                         self.proc_agent.kill()
-                        self.logger.error('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
-                qtest_qwait(0.01)
-        else:
-            self.proc_agent = Process(target=KiwoomAgentClient, args=(self.qlist,), daemon=True)
-            self.proc_agent.start()
+                        self.logger.error('빠른 서버 접속 실패, 잠시 후 재접속합니다.')
+                else:
+                    self.proc_agent.kill()
+                    self.logger.error('로그인 또는 업데이트 실패, 잠시 후 재접속합니다.')
+            qtest_qwait(0.01)
 
     def StockTraderProcessAlive(self):
         return self.proc_trader is not None and self.proc_trader.is_alive()

@@ -13,7 +13,7 @@ def setting_load_01(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
     if len(df) > 0:
         ui.sj_main_comBox_01.setCurrentText(df['증권사'][0])
-        ui.sj_main_cheBox_01.setChecked(True) if df['주식리시버'][0] else ui.sj_main_cheBox_01.setChecked(False)
+        ui.sj_main_cheBox_01.setChecked(True) if df['주식에이전트'][0] else ui.sj_main_cheBox_01.setChecked(False)
         ui.sj_main_cheBox_02.setChecked(True) if df['주식트레이더'][0] else ui.sj_main_cheBox_02.setChecked(False)
         ui.sj_main_cheBox_03.setChecked(True) if df['주식데이터저장'][0] else ui.sj_main_cheBox_03.setChecked(False)
         ui.sj_main_comBox_02.setCurrentText(df['거래소'][0])
@@ -22,16 +22,6 @@ def setting_load_01(ui):
         ui.sj_main_cheBox_06.setChecked(True) if df['코인데이터저장'][0] else ui.sj_main_cheBox_06.setChecked(False)
         ui.sj_main_comBox_03.setCurrentText('격리' if df['바이낸스선물마진타입'][0] == 'ISOLATED' else '교차')
         ui.sj_main_comBox_04.setCurrentText('단방향' if df['바이낸스선물포지션'][0] == 'false' else '양방향')
-        ui.sj_main_cheBox_07.setChecked(True) if df['버전업'][0] else ui.sj_main_cheBox_07.setChecked(False)
-        if df['에이전트공유'][0] == 0:
-            ui.sj_main_cheBox_08.setChecked(False)
-            ui.sj_main_cheBox_09.setChecked(False)
-        elif df['에이전트공유'][0] == 1:
-            ui.sj_main_cheBox_08.setChecked(True)
-            ui.sj_main_cheBox_09.setChecked(False)
-        elif df['에이전트공유'][0] == 2:
-            ui.sj_main_cheBox_08.setChecked(False)
-            ui.sj_main_cheBox_09.setChecked(True)
     else:
         QMessageBox.critical(ui, '오류 알림', '기본 설정값이\n존재하지 않습니다.\n')
 
@@ -256,23 +246,16 @@ def setting_save_01(ui):
     cs = 1 if ui.sj_main_cheBox_06.isChecked() else 0
     mt = 'ISOLATED' if ui.sj_main_comBox_03.currentText() == '격리' else 'CROSSED'
     pt = 'false' if ui.sj_main_comBox_04.currentText() == '단방향' else 'true'
-    vu = 1 if ui.sj_main_cheBox_07.isChecked() else 0
-    if ui.sj_main_cheBox_08.isChecked():
-        rg = 1
-    elif ui.sj_main_cheBox_09.isChecked():
-        rg = 2
-    else:
-        rg = 0
 
     if ui.proc_query.is_alive():
-        query = f"UPDATE main SET 증권사 = '{sg}', 주식리시버 = {sr}, 주식트레이더 = {st}, 주식데이터저장 = {ss}, " \
+        query = f"UPDATE main SET 증권사 = '{sg}', 주식에이전트 = {sr}, 주식트레이더 = {st}, 주식데이터저장 = {ss}, " \
                 f"거래소 = '{cg}', 코인리시버 = {cr}, 코인트레이더 = {ct}, 코인데이터저장 = {cs}, " \
-                f"바이낸스선물마진타입 = '{mt}', 바이낸스선물포지션 = '{pt}', '버전업' = {vu}, '에이전트공유' = {rg}"
+                f"바이낸스선물마진타입 = '{mt}', 바이낸스선물포지션 = '{pt}'"
         ui.queryQ.put(('설정디비', query))
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
     ui.dict_set['증권사'] = sg
-    ui.dict_set['주식리시버'] = sr
+    ui.dict_set['주식에이전트'] = sr
     ui.dict_set['주식트레이더'] = st
     ui.dict_set['주식데이터저장'] = ss
     ui.dict_set['거래소'] = cg
@@ -281,8 +264,6 @@ def setting_save_01(ui):
     ui.dict_set['코인데이터저장'] = cs
     ui.dict_set['바이낸스선물마진타입'] = mt
     ui.dict_set['바이낸스선물포지션'] = pt
-    ui.dict_set['버전업'] = vu
-    ui.dict_set['에이전트공유'] = rg
 
     if '키움증권' in ui.dict_set['증권사']:
         ui.sj_stock_label_03.setText(

@@ -178,16 +178,16 @@ class UpbitTrader:
         inthms = int(str_hms(now_utc()))
         if self.dict_set['코인타임프레임'] and inthms < self.dict_set['코인전략종료시간']:
             self.OrderTimeControl()
-        if self.jgcs_time < inthms and not self.dict_bool['코인잔고청산']:
+        if self.dict_set['코인잔고청산'] and not self.dict_bool['코인잔고청산'] and self.jgcs_time < inthms:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
     def CheckOrder(self, data):
         if len(data) == 6:
-            주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 수동주문 = data
+            주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 잔고청산 = data
             수동주문유형 = None
         else:
-            주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 수동주문, 수동주문유형 = data
+            주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 잔고청산, 수동주문유형 = data
 
         잔고없음 = 종목코드 not in self.dict_jg
         매수주문중 = 종목코드 in self.dict_order['매수']
@@ -196,7 +196,7 @@ class UpbitTrader:
         주문번호 = ''
         주문취소 = False
         현재시간 = now()
-        if 수동주문:
+        if 잔고청산:
             if 잔고없음 or 매도주문중:
                 주문취소 = True
         elif self.dict_bool['코인잔고청산']:
@@ -219,7 +219,7 @@ class UpbitTrader:
                 주문취소 = True
             elif self.dict_intg['추정예수금'] < 주문수량 * 주문가격:
                 if 현재시간 > self.dict_info[종목코드]['시드부족시간']:
-                    self.CreateOrder('시드부족', 종목코드, 주문가격, 주문수량, str_hmsf(now_utc()), 시그널시간, 수동주문, 0, None)
+                    self.CreateOrder('시드부족', 종목코드, 주문가격, 주문수량, str_hmsf(now_utc()), 시그널시간, 잔고청산, 0, None)
                     self.dict_info[종목코드]['시드부족시간'] = timedelta_sec(180)
                 주문취소 = True
             elif 매수주문중:
@@ -240,8 +240,8 @@ class UpbitTrader:
                 self.cstgQ.put((f'{주문구분}취소', 종목코드))
         else:
             if 주문수량 > 0:
-                if 수동주문 and 주문구분 in ('매수', '매도'): self.cstgQ.put((f'{주문구분}주문', 종목코드))
-                self.CreateOrder(주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 0, 수동주문유형)
+                if 잔고청산: self.cstgQ.put((f'{주문구분}주문', 종목코드))
+                self.CreateOrder(주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 잔고청산, 0, 수동주문유형)
             else:
                 if 주문구분 == '매수':
                     if self.dict_set['코인매도취소매수시그널'] and 매도주문중: self.CancelOrder(종목코드, 주문구분)
@@ -249,7 +249,7 @@ class UpbitTrader:
                     if self.dict_set['코인매수취소매도시그널'] and 매수주문중: self.CancelOrder(종목코드, 주문구분)
                 self.cstgQ.put((f'{주문구분}취소', 종목코드))
 
-    def CreateOrder(self, 주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형):
+    def CreateOrder(self, 주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형):
         if 주문구분 == '매수' and 정정횟수 == 0:
             if 수동주문유형 is None and '지정가' in self.dict_set['코인매수주문구분']:
                 주문가격 = round(주문가격 + GetUpbitHogaunit(주문가격) * self.dict_set['코인매수지정가호가번호'], 8)
@@ -269,7 +269,7 @@ class UpbitTrader:
             else:
                 self.UpdateChejanData(주문구분, 종목코드, 주문수량, 주문수량, 0, 주문가격, 주문가격, '')
         else:
-            data = (주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형)
+            data = (주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형)
             self.SendOrder(data)
 
     def OrderTimeLog(self, signal_time):
@@ -283,12 +283,12 @@ class UpbitTrader:
             QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(data))
             return
 
-        주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 수동주문, 정정횟수, 수동주문유형 = data
+        주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형 = data
         self.OrderTimeLog(시그널시간)
         if self.upbit is not None:
             if 주문구분 == '매수':
                 ret = None
-                if 수동주문유형 == '시장가' or (수동주문유형 is None and self.dict_set['코인매수주문구분'] == '시장가') or 수동주문:
+                if 수동주문유형 == '시장가' or (수동주문유형 is None and self.dict_set['코인매수주문구분'] == '시장가') or 잔고청산:
                     ret = self.upbit.buy_market_order(종목코드, int(주문가격 * 주문수량))
                 elif 수동주문유형 == '지정가' or (수동주문유형 is None and self.dict_set['코인매수주문구분'] == '지정가'):
                     ret = self.upbit.buy_limit_order(종목코드, 주문가격, 주문수량)
@@ -306,7 +306,7 @@ class UpbitTrader:
 
             elif 주문구분 == '매도':
                 ret = None
-                if 수동주문유형 == '시장가' or self.dict_set['코인매도주문구분'] == '시장가' or 수동주문:
+                if 수동주문유형 == '시장가' or self.dict_set['코인매도주문구분'] == '시장가' or 잔고청산:
                     ret = self.upbit.sell_market_order(종목코드, 주문수량)
                 elif 수동주문유형 == '지정가' or self.dict_set['코인매도주문구분'] == '지정가':
                     ret = self.upbit.sell_limit_order(종목코드, 주문가격, 주문수량)
@@ -520,13 +520,7 @@ class UpbitTrader:
                 if self.dict_set['코인모의투자']:
                     self.UpdateChejanData('매도', 종목코드, 보유수량, 보유수량, 0, 현재가, 현재가, '')
                 else:
-                    ret = self.upbit.sell_market_order(종목코드, 보유수량)
-                    if ret is not None:
-                        if self.CheckError(ret):
-                            self.dict_order[gubun][종목코드] = [ret['uuid'], now()]
-                    else:
-                        self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {종목코드} | {현재가} | {보유수량} | 매도'))
-                    qtest_qwait(0.3)
+                    self.CheckOrder(('매도', 종목코드, 현재가, 보유수량, now(), True))
             if self.dict_set['코인알림소리']:
                 self.soundQ.put('코인 잔고청산 주문을 전송하였습니다.')
             self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))

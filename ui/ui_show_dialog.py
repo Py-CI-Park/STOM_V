@@ -104,7 +104,6 @@ def show_dialog_web(ui, show, code):
 
 
 def show_dialog_hoga(ui, show, coin, code):
-    if ui.dict_set['에이전트공유'] == 2: return
     if show and not ui.dialog_hoga.isVisible():
         ui.dialog_hoga.show()
     if ui.dialog_hoga.isVisible():

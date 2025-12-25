@@ -8,9 +8,6 @@ from utility.static import now, roundfigure_upper5, GetSangHahanga
 
 class KiwoomAgentMin(KiwoomAgentTick):
     def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
-        if self.dict_set['에이전트공유'] == 1:
-            self.agzservQ.put(('tickdata', (code, c, dt)))
-
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
             self.straderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
@@ -119,9 +116,6 @@ class KiwoomAgentMin(KiwoomAgentTick):
             if send:
                 if code in self.tuple_order:
                     self.straderQ.put(('주문확인', (code, c)))
-
-                if self.dict_set['에이전트공유'] == 1:
-                    self.agzservQ.put(('tickdata', data))
 
                 self.dict_dtdm[code] = [dt_min, dm]
                 self.dict_data[code][13:15] = [0, 0]

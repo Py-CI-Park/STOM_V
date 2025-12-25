@@ -1,10 +1,8 @@
 import os
 import sys
-import zmq
 import sqlite3
 import datetime
 import pandas as pd
-from multiprocessing import Queue
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
@@ -12,21 +10,6 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DICT_SET, ui_num, DB_CODE_INFO, DB_TRADELIST, DB_FUTURE_TICK, DB_FUTURE_MIN
 from utility.static import now, str_hms_cme_from_str, qtest_qwait, opstarter_kill, str_ymd, now_cme, str_hms, \
     timedelta_sec, get_logger
-
-
-class ZmqSendToClient(QThread):
-    def __init__(self, agzservQ):
-        super().__init__()
-        self.agzservQ = agzservQ
-        zctx = zmq.Context()
-        self.sock = zctx.socket(zmq.PUB)
-        self.sock.bind('tcp://*:5777')
-
-    def run(self):
-        while True:
-            msg, data = self.agzservQ.get()
-            self.sock.send_string(msg, zmq.SNDMORE)
-            self.sock.send_pyobj(data)
 
 
 class Updater(QThread):
@@ -107,7 +90,6 @@ class FutureAgentTick:
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
-        self.agzservQ    = Queue()
 
         self.CommConnect()
 
@@ -120,10 +102,6 @@ class FutureAgentTick:
         self.updater.signal1.connect(self.ReceivOrder)
         self.updater.signal2.connect(self.UpdateTuple)
         self.updater.start()
-
-        if self.dict_set['에이전트공유'] == 1:
-            self.zmqserver = ZmqSendToClient(self.agzservQ)
-            self.zmqserver.start()
 
         self.매도수구분 = {
             '1': '매도',
@@ -224,8 +202,6 @@ class FutureAgentTick:
         self.mgzservQ.put(('window', (ui_num['종목명데이터'], dict_name, dict_code)))
         self.straderQ.put(('종목정보', self.dict_info))
         self.sstgQ.put(('종목정보', self.dict_info))
-        if self.dict_set['에이전트공유'] == 1:
-            self.agzservQ.put(('logininfo', self.dict_info))
 
         df = pd.DataFrame.from_dict(self.dict_info, orient='index')
         self.mgzservQ.put(('query', ('종목디비', df, 'futureinfo', 'replace')))
@@ -490,9 +466,6 @@ class FutureAgentTick:
             if code in self.tuple_jango or code in self.tuple_order:
                 self.straderQ.put(('잔고갱신', (code, c)))
 
-            if self.dict_set['에이전트공유'] == 1:
-                self.agzservQ.put(('tickdata', data))
-
             self.dict_dtdm[code] = [dt, dm]
             self.dict_data[code][7:9] = [0, 0]
 
@@ -554,7 +527,7 @@ class FutureAgentTick:
     def Scheduler(self):
         if not self.dict_bool['계좌조회']:
             self.GetAccountjanGo()
-        if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간등록']:
+        if not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
         inthms = int(str_hms(now_cme()))
@@ -602,8 +575,6 @@ class FutureAgentTick:
         self.dict_bool['프로세스종료'] = True
         if self.dict_set['주식알림소리']:
             self.mgzservQ.put(('sound', '해외선물 시스템을 3분 후 종료합니다.'))
-        if self.dict_set['에이전트공유'] == 1:
-            self.agzservQ.put(('프로세스종료', '프로세스종료'))
         QTimer.singleShot(180 * 1000, self.SysExit)
 
     def SysExit(self):
@@ -635,7 +606,7 @@ class FutureAgentTick:
         curr_time = now()
         if curr_time < self.order_time:
             next_time = (self.order_time - curr_time).total_seconds()
-            QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(order))
+            QTimer.singleShot(int(next_time * 1000), lambda: self.ReceivOrder(order))
             return
 
         self.intg_odsn = self.intg_odsn + 1 if self.intg_odsn + 1 < 9000 else 3000

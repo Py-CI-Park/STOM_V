@@ -473,7 +473,7 @@ class BackEngineBinanceTick2(BackEngineBinanceTick):
                 betting = self.betting * self.set_weight[9]
 
         oc_ratio = dict_order_ratio[self.dict_set['코인매수분할방법']][self.dict_set['코인매수분할횟수']][매수분할횟수]
-        self.trade_info[vturn][vkey]['주문수량'] = round(betting / (현재가 if not 보유중 else 매수가) * oc_ratio / 99.99, 8)
+        self.trade_info[vturn][vkey]['주문수량'] = round(betting / (현재가 if not 보유중 else 매수가) * oc_ratio / 100, 8)
 
         if self.dict_set['코인매수주문구분'] == '지정가':
             기준가격 = 현재가
@@ -551,7 +551,7 @@ class BackEngineBinanceTick2(BackEngineBinanceTick):
                 betting = self.betting * self.set_weight[9]
 
         oc_ratio = dict_order_ratio[self.dict_set['코인매도분할방법']][self.dict_set['코인매도분할횟수']][매도분할횟수]
-        self.trade_info[vturn][vkey]['주문수량'] = round(betting / self.trade_info[vturn][vkey]['매수가'] * oc_ratio / 99.99, 8)
+        self.trade_info[vturn][vkey]['주문수량'] = round(betting / self.trade_info[vturn][vkey]['매수가'] * oc_ratio / 100, 8)
         if self.trade_info[vturn][vkey]['주문수량'] > 보유수량 or 매도분할횟수 + 1 == self.dict_set['코인매도분할횟수']:
             self.trade_info[vturn][vkey]['주문수량'] = 보유수량
 

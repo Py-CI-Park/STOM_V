@@ -1,11 +1,9 @@
 import os
 import sys
-import zmq
 import zipfile
 import sqlite3
 import datetime
 import pandas as pd
-from multiprocessing import Queue
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
@@ -32,21 +30,6 @@ def parseDat(trcode):
         for start, end in zip(start_indices, end_indices)
         if 'INPUT' not in (block := lines[start-1:end+1])[0]
     }
-
-
-class ZmqSendToClient(QThread):
-    def __init__(self, agzservQ):
-        super().__init__()
-        self.agzservQ = agzservQ
-        zctx = zmq.Context()
-        self.sock = zctx.socket(zmq.PUB)
-        self.sock.bind('tcp://*:5777')
-
-    def run(self):
-        while True:
-            msg, data = self.agzservQ.get()
-            self.sock.send_string(msg, zmq.SNDMORE)
-            self.sock.send_pyobj(data)
 
 
 class Updater(QThread):
@@ -143,7 +126,6 @@ class KiwoomAgentTick:
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
-        self.agzservQ    = Queue()
 
         self.CommConnect()
 
@@ -156,10 +138,6 @@ class KiwoomAgentTick:
         self.updater.signal1.connect(self.ReceivOrder)
         self.updater.signal2.connect(self.UpdateTuple)
         self.updater.start()
-
-        if self.dict_set['에이전트공유'] == 1:
-            self.zmqserver = ZmqSendToClient(self.agzservQ)
-            self.zmqserver.start()
 
         if self.dict_set['에이전트프로파일링']:
             import cProfile
@@ -188,8 +166,6 @@ class KiwoomAgentTick:
         self.straderQ.put(('종목정보', (self.dict_sgbn, self.dict_name, tuple_kosd)))
         for q in self.sstgQs:
             q.put(('코스닥목록', tuple_kosd))
-        if self.dict_set['에이전트공유'] == 1:
-            self.agzservQ.put(('logininfo', (tuple_kosd, self.dict_sgbn, self.dict_name, dict_code)))
 
         df = pd.DataFrame(self.dict_name.values(), columns=['종목명'], index=list(self.dict_name))
         df['코스닥'] = [True if x in tuple_kosd else False for x in df.index]
@@ -674,9 +650,6 @@ class KiwoomAgentTick:
             if code in self.tuple_jango or code in self.tuple_order:
                 self.straderQ.put(('잔고갱신', (code, c)))
 
-            if self.dict_set['에이전트공유'] == 1:
-                self.agzservQ.put(('tickdata', data))
-
             self.dict_dtdm[code] = [dt, dm]
             self.dict_data[code][13:15] = [0, 0]
 
@@ -724,7 +697,7 @@ class KiwoomAgentTick:
     def Scheduler(self):
         if not self.dict_bool['계좌조회']:
             self.GetAccountjanGo()
-        if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간등록']:
+        if not self.dict_bool['실시간등록']:
             self.OperationRealreg()
 
         inthms = int(str_hms())
@@ -732,7 +705,7 @@ class KiwoomAgentTick:
             if 90100 < inthms and self.dict_set['휴무프로세스종료'] and not self.dict_bool['프로세스종료']:
                 self.ProcessKill()
         elif self.operation in (3, 2, 4):
-            if self.dict_set['에이전트공유'] < 2 and not self.dict_bool['실시간조건검색시작']:
+            if not self.dict_bool['실시간조건검색시작']:
                 self.ConditionSearchStart()
             if self.dict_set['주식전략종료시간'] < inthms and self.dict_set['주식프로세스종료'] and not self.dict_bool['프로세스종료']:
                 self.ProcessKill()
@@ -744,8 +717,6 @@ class KiwoomAgentTick:
         if current_gsjm != self.last_gsjm:
             for q in self.sstgQs:
                 q.put(('관심목록', current_gsjm))
-            if self.dict_set['에이전트공유'] == 1:
-                self.agzservQ.put(('focuscodes', ('관심목록', current_gsjm)))
             self.last_gsjm = current_gsjm
 
     def GetAccountjanGo(self):
@@ -865,8 +836,6 @@ class KiwoomAgentTick:
         self.RemoveAllRealreg()
         if self.dict_set['주식알림소리']:
             self.mgzservQ.put(('sound', '주식 시스템을 3분 후 종료합니다.'))
-        if self.dict_set['에이전트공유'] == 1:
-            self.agzservQ.put(('프로세스종료', '프로세스종료'))
         QTimer.singleShot(180 * 1000, self.SysExit)
 
     def SysExit(self):
@@ -925,7 +894,7 @@ class KiwoomAgentTick:
         curr_time = now()
         if curr_time < self.order_time:
             next_time = (self.order_time - curr_time).total_seconds()
-            QTimer.singleShot(int(next_time * 1000), lambda: self.SendOrder(order))
+            QTimer.singleShot(int(next_time * 1000), lambda: self.ReceivOrder(order))
             return
 
         self.intg_odsn = self.intg_odsn + 1 if self.intg_odsn + 1 < 9000 else 3000

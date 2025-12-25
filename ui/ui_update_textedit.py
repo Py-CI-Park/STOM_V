@@ -237,11 +237,10 @@ class UpdateTextedit:
         else:
             if self.ui.dict_set['프로그램종료']:
                 QTimer.singleShot(180 * 1000, self.ui.ProcessKill)
-            if self.ui.dict_set['에이전트공유'] < 2:
-                if self.ui.dict_set['주식컴퓨터종료'] or \
-                        ('키움증권' in self.ui.dict_set['증권사'] and 90000 < int(str_hms()) < 90500 and self.ui.dict_set['휴무컴퓨터종료']) or \
-                        ('해외선물' in self.ui.dict_set['증권사'] and 213000 < int(str_hms()) < 233000 and self.ui.dict_set['휴무컴퓨터종료']):
-                    os.system('shutdown /s /t 300')
+            if self.ui.dict_set['주식컴퓨터종료'] or \
+                    ('키움증권' in self.ui.dict_set['증권사'] and 90000 < int(str_hms()) < 90500 and self.ui.dict_set['휴무컴퓨터종료']) or \
+                    ('해외선물' in self.ui.dict_set['증권사'] and 213000 < int(str_hms()) < 233000 and self.ui.dict_set['휴무컴퓨터종료']):
+                os.system('shutdown /s /t 300')
 
     def CoinShutDownCheck(self):
         if self.ui.dict_set['백테스케쥴실행'] and now().weekday() == self.ui.dict_set['백테스케쥴요일']:
@@ -250,5 +249,5 @@ class UpdateTextedit:
         else:
             if self.ui.dict_set['프로그램종료']:
                 QTimer.singleShot(180 * 1000, self.ui.ProcessKill)
-            if self.ui.dict_set['에이전트공유'] < 2 and self.ui.dict_set['코인컴퓨터종료']:
+            if self.ui.dict_set['코인컴퓨터종료']:
                 os.system('shutdown /s /t 300')

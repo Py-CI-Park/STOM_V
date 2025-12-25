@@ -17,7 +17,7 @@ def chart_count_change(ui):
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
         pg.setConfigOption('background', color_bg_bk)
         ui.ctpg_layout = pg.GraphicsLayoutWidget()
-        if (ui.dict_set['주식리시버'] and not ui.dict_set['주식타임프레임']) or \
+        if (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
                 (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임']):
             ui.ctpg[0], ui.ctpg_cvb[0] = ui.wc.setaddPlot(ui.ctpg_layout, 0, 0, colspan=3)
             ui.ctpg[1], ui.ctpg_cvb[1] = ui.wc.setaddPlot(ui.ctpg_layout, 1, 0, colspan=3)
@@ -52,7 +52,7 @@ def chart_count_change(ui):
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
         pg.setConfigOption('background', color_bg_bk)
         ui.ctpg_layout = pg.GraphicsLayoutWidget()
-        if (ui.dict_set['주식리시버'] and not ui.dict_set['주식타임프레임']) or \
+        if (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
                 (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임']):
             ui.ctpg[0], ui.ctpg_cvb[0] = ui.wc.setaddPlot(ui.ctpg_layout, 0, 0, colspan=4)
             ui.ctpg[1], ui.ctpg_cvb[1] = ui.wc.setaddPlot(ui.ctpg_layout, 1, 0, colspan=4)
@@ -93,7 +93,7 @@ def chart_count_change(ui):
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
         pg.setConfigOption('background', color_bg_bk)
         ui.ctpg_layout = pg.GraphicsLayoutWidget()
-        if (ui.dict_set['주식리시버'] and not ui.dict_set['주식타임프레임']) or \
+        if (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
                 (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임']):
             ui.ctpg[0], ui.ctpg_cvb[0] = ui.wc.setaddPlot(ui.ctpg_layout, 0, 0, colspan=2)
             ui.ctpg[1], ui.ctpg_cvb[1] = ui.wc.setaddPlot(ui.ctpg_layout, 1, 0, colspan=2)
@@ -112,7 +112,7 @@ def chart_count_change(ui):
             ui.ctpg[7], ui.ctpg_cvb[7] = ui.wc.setaddPlot(ui.ctpg_layout, 3, 1)
         ui.ctpg_vboxLayout.addWidget(ui.ctpg_layout)
 
-    if (ui.dict_set['주식리시버'] and not ui.dict_set['주식타임프레임']) or \
+    if (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
             (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임']):
         qGraphicsGridLayout = ui.ctpg_layout.ci.layout
         qGraphicsGridLayout.setRowStretchFactor(0, 3)

@@ -78,8 +78,7 @@ class KiwoomStrategyTick:
         elif self.dict_set['주식매수전략'] in dfob.index:
             buytxt = dfob['전략코드'][self.dict_set['주식매수전략']]
             vars_text = dfob['변수값'][self.dict_set['주식매수전략']]
-            # noinspection PyPackages
-            if vars_text:
+            if vars_text != '':
                 vars_list = [float(i) if '.' in i else int(i) for i in vars_text.split(';')]
                 self.vars = {i: var for i, var in enumerate(vars_list)}
 
@@ -119,7 +118,7 @@ class KiwoomStrategyTick:
             if type(data) == tuple:
                 if len(data) != 2:
                     self.Strategy(data)
-                elif len(data) == 2:
+                else:
                     self.UpdateTuple(data)
             elif type(data) == str:
                 self.UpdateString(data)
@@ -470,7 +469,7 @@ class KiwoomStrategyTick:
         데이터길이 = len(self.dict_arry[종목코드])
         self.indexn = 데이터길이 - 1
 
-        if 데이터길이 > 1800 and (self.dict_set['에이전트공유'] == 2 or not self.dict_set['주식데이터저장']):
+        if 데이터길이 > 1800 and not self.dict_set['주식데이터저장']:
             self.dict_arry[종목코드] = np.delete(self.dict_arry[종목코드], 0, 0)
 
         if self.dict_condition:
@@ -629,7 +628,7 @@ class KiwoomStrategyTick:
                 betting = self.int_tujagm * self.dict_set['주식비중조절'][9]
 
         oc_ratio = dict_order_ratio[self.dict_set['주식매수분할방법']][self.dict_set['주식매수분할횟수']][분할매수횟수]
-        매수수량 = int(betting / (현재가 if 매입가 == 0 else 매입가) * oc_ratio / 99.99)
+        매수수량 = int(betting / (현재가 if 매입가 == 0 else 매입가) * oc_ratio / 100)
         return 매수수량
 
     def SetSellCount(self, 분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도, 당일거래대금각도, 전일비, 회전율, 전일동시간비):
@@ -664,7 +663,7 @@ class KiwoomStrategyTick:
                     betting = self.int_tujagm * self.dict_set['주식비중조절'][9]
 
             oc_ratio = dict_order_ratio[self.dict_set['주식매도분할방법']][self.dict_set['주식매도분할횟수']][분할매도횟수]
-            매도수량 = int(betting / 매입가 * oc_ratio / 99.99)
+            매도수량 = int(betting / 매입가 * oc_ratio / 100)
             if 매도수량 > 보유수량 or 분할매도횟수 + 1 == self.dict_set['주식매도분할횟수']: 매도수량 = 보유수량
             return 매도수량
 

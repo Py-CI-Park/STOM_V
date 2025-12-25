@@ -176,7 +176,7 @@ class SetDialogBack:
             self.ui.sd_edateEditttt_13, self.ui.sd_edateEditttt_14, self.ui.sd_edateEditttt_15, self.ui.sd_edateEditttt_16
         ]
 
-        if self.ui.dict_set['주식리시버']:
+        if self.ui.dict_set['주식에이전트']:
             if '키움증권' in self.ui.dict_set['증권사']:
                 if self.ui.dict_set['주식타임프레임']:
                     starttime, endtime = '90000', '93000'

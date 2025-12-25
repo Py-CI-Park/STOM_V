@@ -151,7 +151,7 @@ class KiwoomTrader:
         inthms = int(str_hms())
         if self.dict_set['주식타임프레임'] and inthms < self.dict_set['주식전략종료시간']:
             self.OrderTimeControl()
-        if self.jgcs_time < inthms and not self.dict_bool['주식잔고청산']:
+        if self.dict_set['주식잔고청산'] and not self.dict_bool['주식잔고청산'] and self.jgcs_time < inthms:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
