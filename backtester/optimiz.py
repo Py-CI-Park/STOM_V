@@ -236,8 +236,9 @@ class Total:
     def Report(self, list_tsg, arry_bct):
         if not list_tsg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
-            self.mq.put('백테스트 완료')
-            return
+            self.mq.put('백테스트 중지')
+            time.sleep(1)
+            sys.exit()
 
         self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
 
@@ -331,12 +332,14 @@ class Total:
         df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
         self.df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
         con.close()
+
         self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], self.df_tsg))
         self.mq.put('백테스트 완료')
         self.sq.put(f'{self.backname} 백테스트를 완료하였습니다.')
         PlotShow('최적화', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday, self.endday,
                  self.starttime, self.endtime, self.list_days, self.backname, back_text, label_text, save_file_name,
                  self.schedul, False)
+
         self.mq.put('백테스트 완료')
         time.sleep(1)
         sys.exit()
@@ -575,12 +578,18 @@ class Optimize:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 최적화 완료'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 백테스트 시작'))
         self.BackStart(('변수정보', self.vars_, 2))
-        _ = mq.get()
-        if self.dict_set['스톰라이브']: self.lq.put(self.backname.replace('O', '').replace('B', ''))
-        self.SaveOptiVars(text_vars, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num)
+
+        data = mq.get()
+        if data == '백테스트 완료':
+            if self.dict_set['스톰라이브']: self.lq.put(self.backname.replace('O', '').replace('B', ''))
+            self.SaveOptiVars(text_vars, optivars_name, only_buy, only_sell, buy_first, buy_num, sell_num)
+
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
-        _ = mq.get()
-        self.SysExit(False)
+        if data == '백테스트 완료':
+            _ = mq.get()
+            self.SysExit(False)
+        else:
+            self.SysExit(True)
 
     def GetListDays(self, startday, endday, dt_endday, day_list, weeks_train, weeks_valid, weeks_test):
         train_days_ = [startday, int(str_ymd(timedelta_day(-weeks_test * 7, dt_endday)))]

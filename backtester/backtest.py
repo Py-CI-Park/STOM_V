@@ -145,8 +145,9 @@ class Total:
     def Report(self, list_tsg, arry_bct):
         if not list_tsg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
-            self.mq.put('백테스트 완료')
-            return
+            self.mq.put('백테스트 중지')
+            time.sleep(1)
+            sys.exit()
 
         self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
         if self.blacklist: self.InsertBlacklist()
@@ -338,8 +339,8 @@ class BackTest:
             q.put(data)
 
         data = mq.get()
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))
         if data == f'{self.backname} 완료':
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))
             if self.dict_set['스톰라이브']: self.lq.put(self.backname)
             _ = mq.get()
             self.SysExit(False)

@@ -320,13 +320,13 @@ class FutureTrader:
     def UpdateString(self, data):
         if data == '체결목록':
             df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
-            self.mgzservQ.put(('tele', df_cj)) if len(df_cj) > 0 else self.mgzservQ.put(('tele', '현재는 체결목록이 없습니다.'))
+            self.mgzservQ.put(('tele', df_cj)) if len(df_cj) > 0 else self.mgzservQ.put(('tele', '현재는 해선 체결목록이 없습니다.'))
         elif data == '거래목록':
             df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
-            self.mgzservQ.put(('tele', df_td)) if len(df_td) > 0 else self.mgzservQ.put(('tele', '현재는 거래목록이 없습니다.'))
+            self.mgzservQ.put(('tele', df_td)) if len(df_td) > 0 else self.mgzservQ.put(('tele', '현재는 해선 거래목록이 없습니다.'))
         elif data == '잔고평가':
             df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
-            self.mgzservQ.put(('tele', df_jg)) if len(df_jg) > 0 else self.mgzservQ.put(('tele', '현재는 잔고목록이 없습니다.'))
+            self.mgzservQ.put(('tele', df_jg)) if len(df_jg) > 0 else self.mgzservQ.put(('tele', '현재는 해선 잔고목록이 없습니다.'))
         elif data == '잔고청산':
             self.JangoCheongsan('수동')
         elif data == '프로세스종료':
