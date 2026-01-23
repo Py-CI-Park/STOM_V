@@ -10,7 +10,6 @@ from utility.static import error_decorator, change_format, comma2int, comma2floa
 
 
 class NumericItem(QTableWidgetItem):
-    # noinspection PyUnresolvedReferences
     def __lt__(self, other):
         return self.data(Qt.UserRole) < other.data(Qt.UserRole)
 
@@ -22,7 +21,6 @@ class UpdateTablewidget:
            0        1      2       3      4       5      6      7       8         9         10     11     12      13       14
         """
         self.ui = ui
-        self.dict_arry = {}
 
     @error_decorator
     def update_tablewidget(self, data):
@@ -199,14 +197,10 @@ class UpdateTablewidget:
             tableWidget.setSortingEnabled(False)
 
         tableWidget.setRowCount(len_df)
-        pre_arry = self.dict_arry.get(gubun, None)
         arry = df.values
         for i, index in enumerate(df.index):
             for j, column in enumerate(df.columns):
                 value = arry[i, j]
-                if pre_arry is not None and i < len(pre_arry) and value == pre_arry[i, j]:
-                    continue
-
                 if column in ('체결시간', '매수시간', '매도시간'):
                     cgtime = str(value)
                     if column == '체결시간': cgtime = f'{cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
@@ -417,7 +411,6 @@ class UpdateTablewidget:
             for column in range(header.count()):
                 header.setSectionResizeMode(column, QHeaderView.Interactive)
                 header.resizeSection(column, int(width[column] * wfactor))
-        self.dict_arry[gubun] = arry
 
     def UpdateHogainfoForChart(self, gubun, ymdhms):
         def fi(fname):
