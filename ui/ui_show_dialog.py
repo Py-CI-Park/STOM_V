@@ -88,12 +88,7 @@ def show_dialog(ui, code_or_name, tickcount, searchdate, col):
 
 def show_dialog_web(ui, show, code):
     if ui.webEngineView is None:
-        ui.webEngineView = QWebEngineView()
-        p = QuietPage(ui.webEngineView)
-        ui.webEngineView.setPage(p)
-        web_layout = QVBoxLayout(ui.dialog_web)
-        web_layout.setContentsMargins(0, 0, 0, 0)
-        web_layout.addWidget(ui.webEngineView)
+        webengineview_set(ui)
     if show and not ui.dialog_web.isVisible():
         ui.dialog_web.show()
     if show and not ui.dialog_info.isVisible():
@@ -101,6 +96,15 @@ def show_dialog_web(ui, show, code):
     if ui.dialog_web.isVisible() and ui.dialog_info.isVisible():
         ui.webEngineView.load(QUrl(f'https://finance.naver.com/item/main.naver?code={code}'))
         ui.webcQ.put(('기업정보', code))
+
+
+def webengineview_set(ui):
+    ui.webEngineView = QWebEngineView()
+    p = QuietPage(ui.webEngineView)
+    ui.webEngineView.setPage(p)
+    web_layout = QVBoxLayout(ui.dialog_web)
+    web_layout.setContentsMargins(0, 0, 0, 0)
+    web_layout.addWidget(ui.webEngineView)
 
 
 def show_dialog_hoga(ui, show, coin, code):
@@ -117,28 +121,8 @@ def show_dialog_hoga(ui, show, coin, code):
 
 def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, endtime, detail, buytimes):
     if not ui.dialog_chart.isVisible():
-        if ui.main_btn in (1, 3):
-            if ui.dict_set['코인타임프레임']:
-                ui.ct_lineEdittttt_01.setText('0')
-                ui.ct_lineEdittttt_02.setText('235959')
-            else:
-                ui.ct_lineEdittttt_01.setText('0')
-                ui.ct_lineEdittttt_02.setText('2359')
-        else:
-            if '키움증권' in ui.dict_set['증권사']:
-                if ui.dict_set['주식타임프레임']:
-                    ui.ct_lineEdittttt_01.setText('90000')
-                    ui.ct_lineEdittttt_02.setText('93000')
-                else:
-                    ui.ct_lineEdittttt_01.setText('900')
-                    ui.ct_lineEdittttt_02.setText('1519')
-            else:
-                if ui.dict_set['주식타임프레임']:
-                    ui.ct_lineEdittttt_01.setText('93000')
-                    ui.ct_lineEdittttt_02.setText('103000')
-                else:
-                    ui.ct_lineEdittttt_01.setText('900')
-                    ui.ct_lineEdittttt_02.setText('1559')
+        chart_factortext_change(ui)
+        chart_lineedit_change(ui)
         ui.dialog_chart.show()
     if ui.dialog_chart.isVisible() and ui.proc_chart.is_alive():
         if real:
@@ -158,6 +142,38 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
             ui.chartQ.put(data)
 
 
+def chart_factortext_change(ui):
+    is_min = (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
+             (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임'])
+    if is_min and ui.ft_checkBoxxxxx_02.text() != '분당거래대금': ui.ft_checkBoxxxxx_02.setText('분당거래대금')
+    if is_min and ui.ft_checkBoxxxxx_04.text() != '분당체결수량': ui.ft_checkBoxxxxx_04.setText('분당체결수량')
+    if is_min and ui.ft_checkBoxxxxx_11.text() != '누적분당매도수수량': ui.ft_checkBoxxxxx_11.setText('누적분당매도수수량')
+
+
+def chart_lineedit_change(ui):
+    if ui.main_btn in (1, 3):
+        ui.ct_lineEdittttt_01.setText('0')
+        if ui.dict_set['코인타임프레임']:
+            ui.ct_lineEdittttt_02.setText('235959')
+        else:
+            ui.ct_lineEdittttt_02.setText('2359')
+    else:
+        if '키움증권' in ui.dict_set['증권사']:
+            if ui.dict_set['주식타임프레임']:
+                ui.ct_lineEdittttt_01.setText('90000')
+                ui.ct_lineEdittttt_02.setText('93000')
+            else:
+                ui.ct_lineEdittttt_01.setText('900')
+                ui.ct_lineEdittttt_02.setText('1519')
+        else:
+            if ui.dict_set['주식타임프레임']:
+                ui.ct_lineEdittttt_01.setText('93000')
+                ui.ct_lineEdittttt_02.setText('103000')
+            else:
+                ui.ct_lineEdittttt_01.setText('900')
+                ui.ct_lineEdittttt_02.setText('1559')
+
+
 def show_qsize(ui):
     if not ui.showQsize:
         ui.qs_pushButton.setStyleSheet(style_bc_bt)
@@ -173,27 +189,8 @@ def show_dialog_factor(ui):
 
 def show_chart(ui):
     if not ui.dialog_chart.isVisible():
-        if ui.main_btn in (1, 3):
-            ui.ct_lineEdittttt_01.setText('0')
-            if ui.dict_set['코인타임프레임']:
-                ui.ct_lineEdittttt_02.setText('235959')
-            else:
-                ui.ct_lineEdittttt_02.setText('2359')
-        else:
-            if '키움증권' in ui.dict_set['증권사']:
-                if ui.dict_set['주식타임프레임']:
-                    ui.ct_lineEdittttt_01.setText('90000')
-                    ui.ct_lineEdittttt_02.setText('93000')
-                else:
-                    ui.ct_lineEdittttt_01.setText('900')
-                    ui.ct_lineEdittttt_02.setText('1519')
-            else:
-                if ui.dict_set['주식타임프레임']:
-                    ui.ct_lineEdittttt_01.setText('93000')
-                    ui.ct_lineEdittttt_02.setText('103000')
-                else:
-                    ui.ct_lineEdittttt_01.setText('900')
-                    ui.ct_lineEdittttt_02.setText('1559')
+        chart_factortext_change(ui)
+        chart_lineedit_change(ui)
         ui.dialog_chart.show()
     else:
         ui.dialog_chart.close()
@@ -221,12 +218,7 @@ def show_hoga(ui):
 
 def show_giup(ui):
     if ui.webEngineView is None:
-        ui.webEngineView = QWebEngineView()
-        p = QuietPage(ui.webEngineView)
-        ui.webEngineView.setPage(p)
-        web_layout = QVBoxLayout(ui.dialog_web)
-        web_layout.setContentsMargins(0, 0, 0, 0)
-        web_layout.addWidget(ui.webEngineView)
+        webengineview_set(ui)
     if not ui.dialog_web.isVisible():
         ui.dialog_web.show()
         ui.webEngineView.load(QUrl('https://markets.hankyung.com/'))

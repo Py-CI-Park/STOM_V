@@ -388,7 +388,7 @@ class BackEngineKiwoomTick:
         if self.is_oms:
             v1 = GetTradeInfo(3)
             v2 = GetTradeInfo(2)
-            if self.market_gubun in (1, 3):
+            if self.market_gubun in (2, 4):
                 v2['주문포지션'] = ''
 
             if self.opti_turn == 1:

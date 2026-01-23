@@ -381,8 +381,11 @@ def setting_save_05(ui):
 
         if buttonReply == QMessageBox.Yes:
             at1, bc1, se1, sc, cmp, cpp = int(at1), int(bc1), int(se1), float(sc), float(cmp), float(cpp)
-            if '키움증권' in ui.dict_set['증권사'] and 153000 < se1:
-                QMessageBox.critical(ui, '오류 알림', '주식 전략의 종료시간을\n153001 이후 시간으로 설정할 수 없습니다.\n')
+            if se1 < 10000:
+                QMessageBox.critical(ui, '오류 알림', '주식 전략의 종료시간을\n초단위 시간까지 입력하십시오.\n')
+                return
+            elif '키움증권' in ui.dict_set['증권사'] and 152000 < se1:
+                QMessageBox.critical(ui, '오류 알림', '주식 전략의 종료시간을\n152001 이후 시간으로 설정할 수 없습니다.\n')
                 return
             elif '해외선물' in ui.dict_set['증권사'] and 160000 < se1:
                 QMessageBox.critical(ui, '오류 알림', '해선 전략의 종료시간을\n160001 이후 시간으로 설정할 수 없습니다.\n')
@@ -447,7 +450,10 @@ def setting_save_06(ui):
         )
         if buttonReply == QMessageBox.Yes:
             at1, bc1, se1, sc, cmp, cpp = int(at1), int(bc1), int(se1), float(sc), float(cmp), float(cpp)
-            if se1 > 235000:
+            if se1 < 10000:
+                QMessageBox.critical(ui, '오류 알림', '코인 전략의 종료시간을\n초단위 시간까지 입력하십시오.\n')
+                return
+            elif se1 > 235000:
                 QMessageBox.critical(ui, '오류 알림', '코인 전략의 종료시간은\n235000이하로 설정하십시오.\n')
                 return
 
@@ -960,11 +966,14 @@ def setting_order_save_02(ui):
                 bb3e < 0 or bb4s < 0 or bb5 < 0 or bb5c < 0 or bb5h < 0 or bb6c < 0:
             QMessageBox.critical(ui, '오류 알림', '모든 값은 양수로 입력하십시오.\n')
             return
-        if dc > 5:
+        elif dc > 5:
             QMessageBox.critical(ui, '오류 알림', '매도분할횟수는 5을 초과할 수 없습니다.\n')
             return
-        if bb1c > 4:
+        elif bb1c > 4:
             QMessageBox.critical(ui, '오류 알림', '매도금지 매수횟수는 5미만으로 입력하십시오.\n')
+            return
+        elif '해외선물' in ui.dict_set['증권사'] and od not in ('시장가', '지정가'):
+            QMessageBox.critical(ui, '오류 알림', '해외선물의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
             return
         if ui.proc_query.is_alive():
             query = f"UPDATE stocksellorder SET 주식매도주문구분 = '{od}', 주식매도분할횟수 = {dc}, 주식매도분할방법 = {ds}, " \
@@ -1172,11 +1181,14 @@ def setting_order_save_04(ui):
                 bb4s < 0 or bb5 < 0 or bb5c < 0 or bb5h < 0 or bb6c < 0:
             QMessageBox.critical(ui, '오류 알림', '모든 값은 양수로 입력하십시오.\n')
             return
-        if dc > 5:
+        elif dc > 5:
             QMessageBox.critical(ui, '오류 알림', '매도분할횟수는 5을 초과할 수 없습니다.\n')
             return
-        if bb1c > 4:
+        elif bb1c > 4:
             QMessageBox.critical(ui, '오류 알림', '매도금지 매수횟수는 5미만으로 입력하십시오.\n')
+            return
+        elif ui.dict_set['거래소'] == '업비트' and od not in ('시장가', '지정가'):
+            QMessageBox.critical(ui, '오류 알림', '업비트의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
             return
         if ui.proc_query.is_alive():
             query = f"UPDATE coinsellorder SET 코인매도주문구분 = '{od}', 코인매도분할횟수 = {dc}, 코인매도분할방법 = {ds}, " \
