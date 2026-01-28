@@ -8,7 +8,7 @@
 
 **STOM (System Trading Optimization Machine)** - 틱데이터 기반 초단타 시스템 트레이딩 도구
 
-현재 브랜치 `STOM_Version_1U`는 V1 코드베이스에 V2의 33개 커밋 변경사항을 **코드 이해 기반으로 재구현**하는 프로젝트입니다.
+현재 브랜치 `STOM_Version_1U`는 V1 코드베이스에 V2의 36개 커밋 변경사항을 **코드 이해 기반으로 재구현**하는 프로젝트입니다.
 
 ---
 
@@ -21,7 +21,7 @@
 docs/dev_plan/STOM_Version_1U_Development_Plan.md
 ```
 - 이 프로젝트의 **모든 개발 작업의 근거**이자 **실행 명세서**
-- 34단계 순차 개발 계획, V2 커밋 분석, ui_mainwindow.py 추론 방법론 포함
+- 37단계 순차 개발 계획, V2 커밋 분석, ui_mainwindow.py 추론 방법론 포함
 - **어떤 작업이든 이 문서를 먼저 확인한 후 진행**
 
 ### 2. 에이전트 가이드 (상세 참조)
