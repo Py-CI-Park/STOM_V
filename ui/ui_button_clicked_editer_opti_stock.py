@@ -44,7 +44,7 @@ def stock_opti_buy_save(ui):
                 df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'")
                 if ui.proc_query.is_alive():
                     if len(df) > 0:
-                        query = f"UPDATE {gubun}optibuy SET 전략코드 = '{strategy}' WHERE `index` = '{strategy_name}'"
+                        query = f'UPDATE {gubun}optibuy SET 전략코드 = "{strategy}" WHERE `index` = "{strategy_name}"'
                         ui.queryQ.put(('전략디비', query))
                     else:
                         df = pd.DataFrame([[strategy, '']], columns=['전략코드', '변수값'], index=[strategy_name])

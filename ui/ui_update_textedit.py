@@ -82,7 +82,7 @@ class UpdateTextedit:
 
                 if self.logging: self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
 
-                if 'COMPLETE' in data[1]:
+                if 'COMPLETE' in data[1] or 'STOP' in data[1]:
                     if data[1] in ('최적화O COMPLETE', '최적화OV COMPLETE', '최적화OVC COMPLETE', '최적화B COMPLETE',
                                    '최적화BV COMPLETE', '최적화BVC COMPLETE'):
                         if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
@@ -96,7 +96,7 @@ class UpdateTextedit:
                         else:
                             self.ui.cActivated_06()
 
-                    if not self.ui.dict_set['그래프띄우지않기'] and data[1] not in \
+                    if not self.ui.dict_set['그래프띄우지않기'] and 'STOP' not in data[1] and data[1] not in \
                             ('백파인더 COMPLETE', '최적화OG COMPLETE', '최적화OGV COMPLETE', '최적화OGVC COMPLETE',
                              '최적화OC COMPLETE', '최적화OCV COMPLETE', '최적화OCVC COMPLETE'):
                         if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):

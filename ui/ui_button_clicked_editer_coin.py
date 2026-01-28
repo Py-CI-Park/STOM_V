@@ -71,7 +71,7 @@ def coin_opti_test_editer(ui):
     ui.cvc_pushButton_25.setVisible(False)
     ui.cvc_pushButton_26.setVisible(False)
 
-    ui.cvj_pushButton_09.setFocus()
+    ui.cvj_pushButton_06.setFocus()
     cChangeSvjButtonColor(ui)
 
 
@@ -135,7 +135,7 @@ def coin_rwf_test_editer(ui):
     ui.cvc_pushButton_25.setVisible(False)
     ui.cvc_pushButton_26.setVisible(False)
 
-    ui.cvj_pushButton_07.setFocus()
+    ui.cvj_pushButton_05.setFocus()
     cChangeSvjButtonColor(ui)
 
 
@@ -203,7 +203,7 @@ def coin_opti_ga_editer(ui):
     ui.cvc_pushButton_25.setVisible(False)
     ui.cvc_pushButton_26.setVisible(False)
 
-    ui.cvj_pushButton_08.setFocus()
+    ui.cvj_pushButton_09.setFocus()
     cChangeSvjButtonColor(ui)
 
 
@@ -285,7 +285,7 @@ def coin_opti_vars_editer(ui):
     ui.cvc_pushButton_25.setVisible(False)
     ui.cvc_pushButton_26.setVisible(False)
 
-    ui.cvj_pushButton_12.setFocus()
+    ui.cvj_pushButton_11.setFocus()
     cChangeSvjButtonColor(ui)
 
 
@@ -348,7 +348,7 @@ def coin_opti_editer(ui):
     ui.cvc_pushButton_25.setVisible(False)
     ui.cvc_pushButton_26.setVisible(False)
 
-    ui.cvj_pushButton_11.setFocus()
+    ui.cvj_pushButton_07.setFocus()
     cChangeSvjButtonColor(ui)
 
 
@@ -421,27 +421,27 @@ def coin_vars_editer(ui):
     ui.cvc_pushButton_25.setVisible(True)
     ui.cvc_pushButton_26.setVisible(True)
 
-    ui.cvj_pushButton_16.setFocus()
+    ui.cvj_pushButton_12.setFocus()
     cChangeSvjButtonColor(ui)
 
 
 def change_pre_button_edit(ui):
     if ui.cvj_pushButton_01.isVisible():
-        ui.cvj_pushButton_15.setStyleSheet(style_bc_bd)
-    elif ui.cvc_pushButton_32.isVisible():
-        ui.cvj_pushButton_09.setStyleSheet(style_bc_bd)
-    elif ui.cvc_pushButton_35.isVisible():
-        ui.cvj_pushButton_07.setStyleSheet(style_bc_bd)
-    elif ui.cva_pushButton_03.isVisible():
         ui.cvj_pushButton_08.setStyleSheet(style_bc_bd)
+    elif ui.cvc_pushButton_32.isVisible():
+        ui.cvj_pushButton_06.setStyleSheet(style_bc_bd)
+    elif ui.cvc_pushButton_35.isVisible():
+        ui.cvj_pushButton_05.setStyleSheet(style_bc_bd)
+    elif ui.cva_pushButton_03.isVisible():
+        ui.cvj_pushButton_09.setStyleSheet(style_bc_bd)
     elif ui.cvo_pushButton_08.isVisible():
         ui.cvj_pushButton_10.setStyleSheet(style_bc_bd)
     elif ui.cvc_pushButton_23.isVisible():
-        ui.cvj_pushButton_12.setStyleSheet(style_bc_bd)
-    elif ui.cvc_pushButton_26.isVisible():
-        ui.cvj_pushButton_16.setStyleSheet(style_bc_bd)
-    elif ui.cvc_pushButton_29.isVisible():
         ui.cvj_pushButton_11.setStyleSheet(style_bc_bd)
+    elif ui.cvc_pushButton_26.isVisible():
+        ui.cvj_pushButton_12.setStyleSheet(style_bc_bd)
+    elif ui.cvc_pushButton_29.isVisible():
+        ui.cvj_pushButton_07.setStyleSheet(style_bc_bd)
 
 
 def coin_backtest_log(ui):
@@ -557,7 +557,7 @@ def coin_stg_editer(ui):
     ui.cvc_pushButton_25.setVisible(False)
     ui.cvc_pushButton_26.setVisible(False)
 
-    ui.cvj_pushButton_15.setFocus()
+    ui.cvj_pushButton_08.setFocus()
     cChangeSvjButtonColor(ui)
 
 

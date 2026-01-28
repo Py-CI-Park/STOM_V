@@ -49,7 +49,7 @@ def get_indicator_detail(ui, code):
                     buystg = df1['전략코드'][stg_name]
                 elif stg_name in df2.index:
                     buystg = df2['전략코드'][stg_name]
-                    vars_text = ['변수값'][stg_name]
+                    vars_text = df2['변수값'][stg_name]
                     vars_list = [float(i) if '.' in i else int(i) for i in vars_text.split(';')]
                     vars_ = {i: var for i, var in enumerate(vars_list)}
             except:
@@ -58,7 +58,7 @@ def get_indicator_detail(ui, code):
                 indistg = ''
                 if buystg is not None:
                     for line in buystg.split('\n'):
-                        if 'self.indicator' in line and '#' not in line:
+                        if 'self.indicator' in line:
                             indistg += f"{line.replace('self.indicator', 'indicator_')}\n"
                 if indistg:
                     indicator_ = indicator

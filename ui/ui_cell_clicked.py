@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QDate, QUrl
 from PyQt5.QtWidgets import QMessageBox
 from utility.setting import columns_jg, columns_jgf, columns_jgcf, ui_num
-from utility.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme
+from utility.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme, qtest_qwait
 
 
 def cell_clicked_01(ui, row, col):
@@ -122,6 +122,7 @@ def cell_clicked_06(ui, row):
         tableWidget = ui.cs_tableWidget_01
     if tableWidget is None:
         return
+
     item = tableWidget.item(row, 0)
     if item is None:
         return
@@ -136,6 +137,13 @@ def cell_clicked_06(ui, row):
     buytimes   = tableWidget.item(row, 13).text()
 
     coin = True if 'KRW' in name or 'USDT' in name else False
+    if len(str(buytime)) > 12 and (coin and not ui.dict_set['코인타임프레임'] or not coin and not ui.dict_set['주식타임프레임']):
+        QMessageBox.critical(ui, '오류 알림', '현재 전략설정의 데이터타입은 1분봉 상태입니다.\n1초스냅샷용 백테결과는 차트를 표시할 수 없습니다.\n')
+        return
+    elif len(str(buytime)) < 14 and (coin and ui.dict_set['코인타임프레임'] or not coin and ui.dict_set['주식타임프레임']):
+        QMessageBox.critical(ui, '오류 알림', '현재 전략설정의 데이터타입은 1초스냅샷 상태입니다.\n1분봉용 백테결과는 차트를 표시할 수 없습니다.\n')
+        return
+
     code = ui.dict_code[name] if name in ui.dict_code else name
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
@@ -147,6 +155,7 @@ def cell_clicked_06(ui, row):
             (coin and not ui.dict_set['코인타임프레임'] or not coin and not ui.dict_set['주식타임프레임']):
         QMessageBox.critical(ui, '오류 알림', '분봉차트의 시작 및 종료시간은\n분단위로 입력하십시오. (예: 900, 1520)\n')
         return
+
     ui.ShowDialogChart(False, coin, code, tickcount, searchdate, starttime, endtime, detail, buytimes)
 
 
@@ -282,6 +291,7 @@ def cell_clicked_09(ui, row, col):
             ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 스케쥴 "{stg_name}" 삭제 완료'))
 
+    qtest_qwait(1)
     ui.ShowDB()
 
 

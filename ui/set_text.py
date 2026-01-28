@@ -634,7 +634,7 @@ stock_buy6  = 'elif not (체결강도 >= 체결강도평균(30) + 5):\n    매�
 stock_sell1 = 'elif 수익률 <= -2:\n    매도 = True'
 stock_sell2 = 'elif 수익률 >= 3:\n    매도 = True'
 stock_sell3 = 'elif 최고수익률 > 3 and 수익률 < 최고수익률 * 0.75:\n    매도 = True'
-stock_sell4 = 'elif 보유시간 > 1800\n    매도 = True'
+stock_sell4 = 'elif 보유시간 > 1800:\n    매도 = True'
 stock_sell5 = 'elif 현재가 >= VI가격 - VI호가단위 * 2:\n    매도 = True'
 stock_sell6 = 'elif 고저평균대비등락율 < 0:\n    매도 = True'
 stock_sell7 = 'elif 체결강도 <= 최고체결강도(30) - 5:\n    매도 = True'
@@ -653,7 +653,7 @@ coin_buy9   = 'elif not (매도총잔량 > 매수총잔량):\n    매수 = False
 coin_sell1  = 'elif 수익률 <= -2:\n    매도 = True'
 coin_sell2  = 'elif 수익률 >= 3:\n    매도 = True'
 coin_sell3  = 'elif 최고수익률 > 3 and 수익률 < 최고수익률 * 0.75:\n    매도 = True'
-coin_sell4  = 'elif 보유시간 > 1800\n    매도 = True'
+coin_sell4  = 'elif 보유시간 > 1800:\n    매도 = True'
 coin_sell5  = 'elif 체결강도 < 체결강도평균(30) + 5:\n    매도 = True'
 coin_sell6  = 'elif 체결강도 <= 최고체결강도(30) - 5:\n    매도 = True'
 coin_sell7  = 'elif 고저평균대비등락율 < 0:\n    매도 = True'
@@ -764,42 +764,43 @@ elif not (체결강도 >= self.vars[5]):
 elif not (체결강도 >= 체결강도평균(30) + self.vars[6]):
     매수 = False
 
+# 보조지표 세부설정은 실제 0의 값이며 아래는 기본값의 예시입니다. 
 # indicator = {
-#     'ADOSC_fastperiod': 0,
-#     'ADOSC_slowperiod': 0,
-#     'ADXR_timeperiod': 0,
-#     'APO_fastperiod': 0,
-#     'APO_slowperiod': 0,
+#     'ADOSC_fastperiod': 3,
+#     'ADOSC_slowperiod': 10,
+#     'ADXR_timeperiod': 14,
+#     'APO_fastperiod': 12,
+#     'APO_slowperiod': 26,
 #     'APO_matype': 0,
-#     'AROON_timeperiod': 0,
-#     'ATR_timeperiod': 0,
-#     'BBANDS_timeperiod': 0,
-#     'BBANDS_nbdevup': 0,
-#     'BBANDS_nbdevdn': 0,
+#     'AROON_timeperiod': 14,
+#     'ATR_timeperiod': 14,
+#     'BBANDS_timeperiod': 5,
+#     'BBANDS_nbdevup': 2,
+#     'BBANDS_nbdevdn': 2,
 #     'BBANDS_matype': 0,
-#     'CCI_timeperiod': 0,
-#     'DI_timeperiod': 0,
-#     'MACD_fastperiod': 0,
-#     'MACD_slowperiod': 0,
-#     'MACD_signalperiod': 0,
-#     'MFI_timeperiod': 0,
-#     'MOM_timeperiod': 0,
-#     'PPO_fastperiod': 0,
-#     'PPO_slowperiod': 0,
+#     'CCI_timeperiod': 14,
+#     'DI_timeperiod': 14,
+#     'MACD_fastperiod': 12,
+#     'MACD_slowperiod': 26,
+#     'MACD_signalperiod': 9,
+#     'MFI_timeperiod': 14,
+#     'MOM_timeperiod': 10,
+#     'PPO_fastperiod': 12,
+#     'PPO_slowperiod': 26,
 #     'PPO_matype': 0,
-#     'ROC_timeperiod': 0,
-#     'RSI_timeperiod': 0,
-#     'SAR_acceleration': 0,
-#     'SAR_maximum': 0,
-#     'STOCHS_fastk_period': 0,
-#     'STOCHS_slowk_period': 0,
+#     'ROC_timeperiod': 10,
+#     'RSI_timeperiod': 14,
+#     'SAR_acceleration': 0.02,
+#     'SAR_maximum': 0.2,
+#     'STOCHS_fastk_period': 5,
+#     'STOCHS_slowk_period': 3,
 #     'STOCHS_slowk_matype': 0,
-#     'STOCHS_slowd_period': 0,
+#     'STOCHS_slowd_period': 3,
 #     'STOCHS_slowd_matype': 0,
-#     'STOCHF_fastk_period': 0,
-#     'STOCHF_fastd_period': 0,
+#     'STOCHF_fastk_period': 5,
+#     'STOCHF_fastd_period': 3,
 #     'STOCHF_fastd_matype': 0,
-#     'WILLR_timeperiod': 0
+#     'WILLR_timeperiod': 14
 # }'''
 
 example_stockopti_sell3 = '''if 등락율 > self.vars[8] or 수익률 <= self.vars[9] or 수익률 >= self.vars[10]:
@@ -878,42 +879,43 @@ elif not (체결강도 >= self.vars[5]):
 elif not (체결강도 >= 체결강도평균(30) + self.vars[6]):
     매수 = False
 
+# 보조지표 세부설정은 실제 0의 값이며 아래는 기본값의 예시입니다. 
 # indicator = {
-#     'ADOSC_fastperiod': 0,
-#     'ADOSC_slowperiod': 0,
-#     'ADXR_timeperiod': 0,
-#     'APO_fastperiod': 0,
-#     'APO_slowperiod': 0,
+#     'ADOSC_fastperiod': 3,
+#     'ADOSC_slowperiod': 10,
+#     'ADXR_timeperiod': 14,
+#     'APO_fastperiod': 12,
+#     'APO_slowperiod': 26,
 #     'APO_matype': 0,
-#     'AROON_timeperiod': 0,
-#     'ATR_timeperiod': 0,
-#     'BBANDS_timeperiod': 0,
-#     'BBANDS_nbdevup': 0,
-#     'BBANDS_nbdevdn': 0,
+#     'AROON_timeperiod': 14,
+#     'ATR_timeperiod': 14,
+#     'BBANDS_timeperiod': 5,
+#     'BBANDS_nbdevup': 2,
+#     'BBANDS_nbdevdn': 2,
 #     'BBANDS_matype': 0,
-#     'CCI_timeperiod': 0,
-#     'DI_timeperiod': 0,
-#     'MACD_fastperiod': 0,
-#     'MACD_slowperiod': 0,
-#     'MACD_signalperiod': 0,
-#     'MFI_timeperiod': 0,
-#     'MOM_timeperiod': 0,
-#     'PPO_fastperiod': 0,
-#     'PPO_slowperiod': 0,
+#     'CCI_timeperiod': 14,
+#     'DI_timeperiod': 14,
+#     'MACD_fastperiod': 12,
+#     'MACD_slowperiod': 26,
+#     'MACD_signalperiod': 9,
+#     'MFI_timeperiod': 14,
+#     'MOM_timeperiod': 10,
+#     'PPO_fastperiod': 12,
+#     'PPO_slowperiod': 26,
 #     'PPO_matype': 0,
-#     'ROC_timeperiod': 0,
-#     'RSI_timeperiod': 0,
-#     'SAR_acceleration': 0,
-#     'SAR_maximum': 0,
-#     'STOCHS_fastk_period': 0,
-#     'STOCHS_slowk_period': 0,
+#     'ROC_timeperiod': 10,
+#     'RSI_timeperiod': 14,
+#     'SAR_acceleration': 0.02,
+#     'SAR_maximum': 0.2,
+#     'STOCHS_fastk_period': 5,
+#     'STOCHS_slowk_period': 3,
 #     'STOCHS_slowk_matype': 0,
-#     'STOCHS_slowd_period': 0,
+#     'STOCHS_slowd_period': 3,
 #     'STOCHS_slowd_matype': 0,
-#     'STOCHF_fastk_period': 0,
-#     'STOCHF_fastd_period': 0,
+#     'STOCHF_fastk_period': 5,
+#     'STOCHF_fastd_period': 3,
 #     'STOCHF_fastd_matype': 0,
-#     'WILLR_timeperiod': 0
+#     'WILLR_timeperiod': 14
 # }'''
 
 example_coinopti_sell3 = '''if 등락율 > self.vars[8] or 수익률 <= self.vars[9] or 수익률 >= self.vars[10]:
@@ -1013,42 +1015,43 @@ elif not (체결강도 < 체결강도평균(30) + self.vars[5]):
 elif not (체결강도 < self.vars[6]):
     SELL_SHORT = False
 
+# 보조지표 세부설정은 실제 0의 값이며 아래는 기본값의 예시입니다. 
 # indicator = {
-#     'ADOSC_fastperiod': 0,
-#     'ADOSC_slowperiod': 0,
-#     'ADXR_timeperiod': 0,
-#     'APO_fastperiod': 0,
-#     'APO_slowperiod': 0,
+#     'ADOSC_fastperiod': 3,
+#     'ADOSC_slowperiod': 10,
+#     'ADXR_timeperiod': 14,
+#     'APO_fastperiod': 12,
+#     'APO_slowperiod': 26,
 #     'APO_matype': 0,
-#     'AROON_timeperiod': 0,
-#     'ATR_timeperiod': 0,
-#     'BBANDS_timeperiod': 0,
-#     'BBANDS_nbdevup': 0,
-#     'BBANDS_nbdevdn': 0,
+#     'AROON_timeperiod': 14,
+#     'ATR_timeperiod': 14,
+#     'BBANDS_timeperiod': 5,
+#     'BBANDS_nbdevup': 2,
+#     'BBANDS_nbdevdn': 2,
 #     'BBANDS_matype': 0,
-#     'CCI_timeperiod': 0,
-#     'DI_timeperiod': 0,
-#     'MACD_fastperiod': 0,
-#     'MACD_slowperiod': 0,
-#     'MACD_signalperiod': 0,
-#     'MFI_timeperiod': 0,
-#     'MOM_timeperiod': 0,
-#     'PPO_fastperiod': 0,
-#     'PPO_slowperiod': 0,
+#     'CCI_timeperiod': 14,
+#     'DI_timeperiod': 14,
+#     'MACD_fastperiod': 12,
+#     'MACD_slowperiod': 26,
+#     'MACD_signalperiod': 9,
+#     'MFI_timeperiod': 14,
+#     'MOM_timeperiod': 10,
+#     'PPO_fastperiod': 12,
+#     'PPO_slowperiod': 26,
 #     'PPO_matype': 0,
-#     'ROC_timeperiod': 0,
-#     'RSI_timeperiod': 0,
-#     'SAR_acceleration': 0,
-#     'SAR_maximum': 0,
-#     'STOCHS_fastk_period': 0,
-#     'STOCHS_slowk_period': 0,
+#     'ROC_timeperiod': 10,
+#     'RSI_timeperiod': 14,
+#     'SAR_acceleration': 0.02,
+#     'SAR_maximum': 0.2,
+#     'STOCHS_fastk_period': 5,
+#     'STOCHS_slowk_period': 3,
 #     'STOCHS_slowk_matype': 0,
-#     'STOCHS_slowd_period': 0,
+#     'STOCHS_slowd_period': 3,
 #     'STOCHS_slowd_matype': 0,
-#     'STOCHF_fastk_period': 0,
-#     'STOCHF_fastd_period': 0,
+#     'STOCHF_fastk_period': 5,
+#     'STOCHF_fastd_period': 3,
 #     'STOCHF_fastd_matype': 0,
-#     'WILLR_timeperiod': 0
+#     'WILLR_timeperiod': 14
 # }'''
 
 example_coinopti_future_sell3 = '''if 수익률 <= -self.vars[8] or 수익률 >= self.vars[9]:
@@ -1309,18 +1312,18 @@ example_buyconds = '''# 등락율 및 현재가
 # 거래대금
 당일거래대금 >= 2000
 초당거래대금 >= 100
-초당거래대금 > 초당거래대금평균(30)
-초당거래대금평균(30) > 초당거래대금평균(30, 1)
+데이터길이 >= 30 and 초당거래대금 > 초당거래대금평균(30)
+데이터길이 >= 31 and 초당거래대금평균(30) > 초당거래대금평균(30, 1)
 
 # 초당매도수수량
 초당매수수량 > 초당매도수량
 초당매수수량 > 초당매수수량N(1)
 
 # 이동평균선
-이동평균(60) > 이동평균(60, 1)
+데이터길이 >= 61 and 이동평균(60) > 이동평균(60, 1)
 
 # 체결강도
-체결강도 >= 체결강도평균(30) + 3
+데이터길이 >= 30 and 체결강도 >= 체결강도평균(30) + 3
 
 # 호가정보
 매도총잔량 > 매수총잔량

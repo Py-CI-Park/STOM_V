@@ -78,7 +78,7 @@ class SetStockBack:
 
         self.ui.svj_pushButton_01 = self.wc.setPushbutton('백테스트', box=self.ui.ss_tab, click=self.ui.StockBacktestStart, color=2, tip='(Alt+Enter) 기본전략을 백테스팅한다.\nCtrl키와 함께 누르면 백테스트 엔진을 재시작할 수 있습니다.\nCtrl + Alt 키와 함계 누르면 백테 완료 후 변수목록이 포함된 그래프가 저장됩니다.')
         self.ui.svj_pushButton_02 = self.wc.setPushbutton('백파인더', box=self.ui.ss_tab, click=self.ui.StockBackfinderStart, color=2, tip='구간등락율을 기준으로 변수를 탐색한다.')
-        self.ui.svj_pushButton_05 = self.wc.setPushbutton('백파인더 예제', box=self.ui.ss_tab, click=self.ui.StockBackfinderSample, color=3)
+        self.ui.svj_pushButton_03 = self.wc.setPushbutton('백파인더 예제', box=self.ui.ss_tab, click=self.ui.StockBackfinderSample, color=3)
 
         self.ui.svjs_comboBoxx_01 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_02)
         self.ui.svjs_lineEditt_01 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
@@ -102,11 +102,11 @@ class SetStockBack:
             self.ui.svjb_pushButon_03, self.ui.svjb_pushButon_04, self.ui.svjb_pushButon_05, self.ui.svjb_pushButon_06,
             self.ui.svjb_pushButon_07, self.ui.svjb_pushButon_08, self.ui.svjb_pushButon_09, self.ui.svjb_pushButon_10,
             self.ui.svjb_pushButon_11, self.ui.svjb_pushButon_12, self.ui.svj_pushButton_01, self.ui.svj_pushButton_02,
-            self.ui.svj_pushButton_05, self.ui.svjs_comboBoxx_01,
-            self.ui.svjs_lineEditt_01, self.ui.svjs_pushButon_01, self.ui.svjs_pushButon_02, self.ui.svjs_pushButon_03,
-            self.ui.svjs_pushButon_04, self.ui.svjs_pushButon_05, self.ui.svjs_pushButon_06, self.ui.svjs_pushButon_07,
-            self.ui.svjs_pushButon_08, self.ui.svjs_pushButon_09, self.ui.svjs_pushButon_10, self.ui.svjs_pushButon_11,
-            self.ui.svjs_pushButon_12, self.ui.svjs_pushButon_13, self.ui.svjs_pushButon_14
+            self.ui.svj_pushButton_03, self.ui.svjs_comboBoxx_01, self.ui.svjs_lineEditt_01,
+            self.ui.svjs_pushButon_01, self.ui.svjs_pushButon_02, self.ui.svjs_pushButon_03, self.ui.svjs_pushButon_04,
+            self.ui.svjs_pushButon_05, self.ui.svjs_pushButon_06, self.ui.svjs_pushButon_07, self.ui.svjs_pushButon_08,
+            self.ui.svjs_pushButon_09, self.ui.svjs_pushButon_10, self.ui.svjs_pushButon_11, self.ui.svjs_pushButon_12,
+            self.ui.svjs_pushButon_13, self.ui.svjs_pushButon_14
         ]
 
     # =================================================================================================================
@@ -148,21 +148,21 @@ class SetStockBack:
 
     # =================================================================================================================
 
-        self.ui.svj_pushButton_15 = self.wc.setPushbutton('전략 편집기', box=self.ui.ss_tab, click=self.ui.StockStgEditer, color=5, tip='단축키(Alt+1)')
-        self.ui.svj_pushButton_11 = self.wc.setPushbutton('최적화 편집기', box=self.ui.ss_tab, click=self.ui.StockOptiEditer, color=4, tip='단축키(Alt+2)')
-        self.ui.svj_pushButton_09 = self.wc.setPushbutton('테스트 편집기', box=self.ui.ss_tab, click=self.ui.StockOptiTestEditer, color=4, tip='단축키(Alt+3)')
-        self.ui.svj_pushButton_07 = self.wc.setPushbutton('전진분석', box=self.ui.ss_tab, click=self.ui.StockRwfTestEditer, color=4, tip='단축키(Alt+4)')
-        self.ui.svj_pushButton_08 = self.wc.setPushbutton('GA 편집기', box=self.ui.ss_tab, click=self.ui.StockOptiGaEditer, color=4, tip='단축키(Alt+5)')
+        self.ui.svj_pushButton_08 = self.wc.setPushbutton('전략 편집기', box=self.ui.ss_tab, click=self.ui.StockStgEditer, color=5, tip='단축키(Alt+1)')
+        self.ui.svj_pushButton_07 = self.wc.setPushbutton('최적화 편집기', box=self.ui.ss_tab, click=self.ui.StockOptiEditer, color=4, tip='단축키(Alt+2)')
+        self.ui.svj_pushButton_06 = self.wc.setPushbutton('테스트 편집기', box=self.ui.ss_tab, click=self.ui.StockOptiTestEditer, color=4, tip='단축키(Alt+3)')
+        self.ui.svj_pushButton_05 = self.wc.setPushbutton('전진분석', box=self.ui.ss_tab, click=self.ui.StockRwfTestEditer, color=4, tip='단축키(Alt+4)')
+        self.ui.svj_pushButton_09 = self.wc.setPushbutton('GA 편집기', box=self.ui.ss_tab, click=self.ui.StockOptiGaEditer, color=4, tip='단축키(Alt+5)')
         self.ui.svj_pushButton_10 = self.wc.setPushbutton('조건 편집기', box=self.ui.ss_tab, click=self.ui.StockCondEditer, color=4, tip='단축키(Alt+6)')
-        self.ui.svj_pushButton_12 = self.wc.setPushbutton('범위 편집기', box=self.ui.ss_tab, click=self.ui.StockOptiVarsEditer, color=4, tip='단축키(Alt+7)')
-        self.ui.svj_pushButton_16 = self.wc.setPushbutton('변수 편집기', box=self.ui.ss_tab, click=self.ui.StockVarsEditer, color=4, tip='단축키(Alt+8)')
+        self.ui.svj_pushButton_11 = self.wc.setPushbutton('범위 편집기', box=self.ui.ss_tab, click=self.ui.StockOptiVarsEditer, color=4, tip='단축키(Alt+7)')
+        self.ui.svj_pushButton_12 = self.wc.setPushbutton('변수 편집기', box=self.ui.ss_tab, click=self.ui.StockVarsEditer, color=4, tip='단축키(Alt+8)')
         self.ui.svj_pushButton_13 = self.wc.setPushbutton('백테스트 로그', box=self.ui.ss_tab, click=self.ui.StockBacktestLog, color=4, tip='단축키(Alt+9)')
         self.ui.svj_pushButton_14 = self.wc.setPushbutton('상세기록', box=self.ui.ss_tab, click=self.ui.StockBacktestDetail, color=4, tip='단축키(Alt+0)')
 
         self.ui.stock_editer_list = [
-            self.ui.svj_pushButton_07, self.ui.svj_pushButton_08, self.ui.svj_pushButton_09, self.ui.svj_pushButton_10,
-            self.ui.svj_pushButton_11, self.ui.svj_pushButton_12, self.ui.svj_pushButton_13, self.ui.svj_pushButton_14,
-            self.ui.svj_pushButton_15, self.ui.svj_pushButton_16
+            self.ui.svj_pushButton_05, self.ui.svj_pushButton_06, self.ui.svj_pushButton_07, self.ui.svj_pushButton_08,
+            self.ui.svj_pushButton_09, self.ui.svj_pushButton_10, self.ui.svj_pushButton_11, self.ui.svj_pushButton_12,
+            self.ui.svj_pushButton_13, self.ui.svj_pushButton_14
         ]
 
     # =================================================================================================================
@@ -385,7 +385,7 @@ class SetStockBack:
 
         self.ui.svj_pushButton_01.setGeometry(1012, 335, 165, 30)
         self.ui.svj_pushButton_02.setGeometry(1012, 370, 165, 30)
-        self.ui.svj_pushButton_05.setGeometry(1012, 405, 165, 30)
+        self.ui.svj_pushButton_03.setGeometry(1012, 405, 165, 30)
 
         self.ui.svjs_comboBoxx_01.setGeometry(1012, 478, 165, 25)
         self.ui.svjs_lineEditt_01.setGeometry(1182, 478, 165, 25)
@@ -415,16 +415,16 @@ class SetStockBack:
         self.ui.svjb_lineEditt_04.setGeometry(1167, 305, 60, 20)
         self.ui.svjb_lineEditt_05.setGeometry(1287, 305, 60, 20)
 
-        self.ui.svj_pushButton_07.setGeometry(1182, 335, 80, 30)
-        self.ui.svj_pushButton_08.setGeometry(1267, 335, 80, 30)
-        self.ui.svj_pushButton_09.setGeometry(1182, 370, 80, 30)
+        self.ui.svj_pushButton_05.setGeometry(1182, 335, 80, 30)
+        self.ui.svj_pushButton_06.setGeometry(1182, 370, 80, 30)
+        self.ui.svj_pushButton_07.setGeometry(1182, 405, 80, 30)
+        self.ui.svj_pushButton_08.setGeometry(1182, 440, 80, 30)
+        self.ui.svj_pushButton_09.setGeometry(1267, 335, 80, 30)
         self.ui.svj_pushButton_10.setGeometry(1267, 370, 80, 30)
-        self.ui.svj_pushButton_11.setGeometry(1182, 405, 80, 30)
-        self.ui.svj_pushButton_12.setGeometry(1267, 405, 80, 30)
+        self.ui.svj_pushButton_11.setGeometry(1267, 405, 80, 30)
+        self.ui.svj_pushButton_12.setGeometry(1267, 440, 80, 30)
         self.ui.svj_pushButton_13.setGeometry(1012, 440, 80, 30)
         self.ui.svj_pushButton_14.setGeometry(1097, 440, 80, 30)
-        self.ui.svj_pushButton_15.setGeometry(1182, 440, 80, 30)
-        self.ui.svj_pushButton_16.setGeometry(1267, 440, 80, 30)
 
         self.ui.svc_comboBoxxx_01.setGeometry(1012, 45, 165, 30)
         self.ui.svc_lineEdittt_01.setGeometry(1182, 45, 165, 30)

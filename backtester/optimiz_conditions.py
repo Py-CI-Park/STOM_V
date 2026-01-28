@@ -222,12 +222,13 @@ class OptimizeConditions:
             weeks_train = allweeks - weeks_valid
 
         dt_endday   = dt_ymd(backengin_eday)
-        startday    = timedelta_day(-(weeks_train + weeks_valid) * 7 + 1, dt_endday)
+        plus_day    = 3 if 'S' in self.ui_gubun else 1
+        startday    = timedelta_day(-weeks_train * 7 + plus_day, dt_endday)
         startday    = int(str_ymd(startday))
         endday      = int(backengin_eday)
         valid_days_ = []
         if 'VC' in self.backname:
-            for i in range(int(weeks_train / weeks_valid) + 1):
+            for i in range(int(weeks_train / weeks_valid)):
                 valid_days_.append([
                     int(str_ymd(timedelta_day(-(weeks_valid * 7 * (i + 1)) + 1, dt_endday))),
                     int(str_ymd(timedelta_day(-(weeks_valid * 7 * i), dt_endday)))
@@ -238,10 +239,7 @@ class OptimizeConditions:
             valid_days_ = None
 
         if int(backengin_sday) > startday:
-            if 'V' in self.backname:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 학습기간 + 검증기간 만큼의 데이터가 필요합니다'))
-            else:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 학습기간 만큼의 데이터가 필요합니다'))
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 학습기간 만큼의 데이터가 필요합니다'))
             self.SysExit(True)
 
         if self.ui_gubun == 'S':

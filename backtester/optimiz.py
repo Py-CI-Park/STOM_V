@@ -436,14 +436,13 @@ class Optimize:
             weeks_train = allweeks - weeks_valid - weeks_test
 
         dt_endday = dt_ymd(backengin_eday)
-        startday  = timedelta_day(-(weeks_train + weeks_valid + weeks_test) * 7 + 1, dt_endday)
+        plus_day  = 3 if 'S' in self.ui_gubun else 1
+        startday  = timedelta_day(-(weeks_train + weeks_test) * 7 + plus_day, dt_endday)
         startday  = int(str_ymd(startday))
         endday    = int(backengin_eday)
 
         if int(backengin_sday) > startday:
             perio_text = '학습시간'
-            if 'V' in self.backname:
-                perio_text = f'{perio_text} + 검증기간'
             if 'T' in self.backname:
                 perio_text = f'{perio_text} + 확인기간'
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'백테엔진에 로딩된 데이터가 부족합니다. 최소 ({perio_text})주 만큼의 데이터가 필요합니다'))
@@ -591,7 +590,7 @@ class Optimize:
         train_days_ = [startday, int(str_ymd(timedelta_day(-weeks_test * 7, dt_endday)))]
         valid_days_ = []
         if 'VC' in self.backname:
-            for i in range(int(weeks_train / weeks_valid) + 1):
+            for i in range(int(weeks_train / weeks_valid)):
                 valid_days_.append([
                     int(str_ymd(timedelta_day(-(weeks_valid * (i + 1) + weeks_test) * 7 + 1, dt_endday))),
                     int(str_ymd(timedelta_day(-(weeks_valid * i + weeks_test) * 7, dt_endday)))

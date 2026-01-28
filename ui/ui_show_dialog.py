@@ -121,9 +121,7 @@ def show_dialog_hoga(ui, show, coin, code):
 
 def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, endtime, detail, buytimes):
     if not ui.dialog_chart.isVisible():
-        chart_factortext_change(ui)
-        chart_lineedit_change(ui)
-        ui.dialog_chart.show()
+        dialog_chart_show(ui)
     if ui.dialog_chart.isVisible() and ui.proc_chart.is_alive():
         if real:
             ui.ChartClear()
@@ -142,15 +140,24 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
             ui.chartQ.put(data)
 
 
-def chart_factortext_change(ui):
+def dialog_chart_show(ui):
+    # chart_count_change
+    ui.ct_pushButtonnn_04.setText('CHART 16')
+    ui.ChartCountChange()
+
+    # chart_factortext_change
     is_min = (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
              (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임'])
-    if is_min and ui.ft_checkBoxxxxx_02.text() != '분당거래대금': ui.ft_checkBoxxxxx_02.setText('분당거래대금')
-    if is_min and ui.ft_checkBoxxxxx_04.text() != '분당체결수량': ui.ft_checkBoxxxxx_04.setText('분당체결수량')
-    if is_min and ui.ft_checkBoxxxxx_11.text() != '누적분당매도수수량': ui.ft_checkBoxxxxx_11.setText('누적분당매도수수량')
+    if is_min:
+        if ui.ft_checkBoxxxxx_02.text() != '분당거래대금': ui.ft_checkBoxxxxx_02.setText('분당거래대금')
+        if ui.ft_checkBoxxxxx_04.text() != '분당체결수량': ui.ft_checkBoxxxxx_04.setText('분당체결수량')
+        if ui.ft_checkBoxxxxx_11.text() != '누적분당매도수수량': ui.ft_checkBoxxxxx_11.setText('누적분당매도수수량')
+    else:
+        if ui.ft_checkBoxxxxx_02.text() != '초당거래대금': ui.ft_checkBoxxxxx_02.setText('초당거래대금')
+        if ui.ft_checkBoxxxxx_04.text() != '초당체결수량': ui.ft_checkBoxxxxx_04.setText('초당체결수량')
+        if ui.ft_checkBoxxxxx_11.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_11.setText('누적초당매도수수량')
 
-
-def chart_lineedit_change(ui):
+    # chart_lineedit_change
     if ui.main_btn in (1, 3):
         ui.ct_lineEdittttt_01.setText('0')
         if ui.dict_set['코인타임프레임']:
@@ -172,6 +179,7 @@ def chart_lineedit_change(ui):
             else:
                 ui.ct_lineEdittttt_01.setText('900')
                 ui.ct_lineEdittttt_02.setText('1559')
+    ui.dialog_chart.show()
 
 
 def show_qsize(ui):
@@ -189,9 +197,7 @@ def show_dialog_factor(ui):
 
 def show_chart(ui):
     if not ui.dialog_chart.isVisible():
-        chart_factortext_change(ui)
-        chart_lineedit_change(ui)
-        ui.dialog_chart.show()
+        dialog_chart_show(ui)
     else:
         ui.dialog_chart.close()
 

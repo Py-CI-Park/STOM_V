@@ -326,7 +326,7 @@ class Total:
             con = sqlite3.connect(DB_BACKTEST)
             self.df_ttsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
             con.close()
-            self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], self.df_tsg))
+            self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], self.df_ttsg))
 
             self.sq.put(f'{self.backname} 백테스트를 완료하였습니다.')
             self.mq.put('백테스트 완료')
@@ -418,28 +418,17 @@ class RollingWalkForwardTest:
         optuna_autostep  = data[22]
         random_optivars  = data[23]
 
-        if 'V' in self.backname:
-            int_day = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * 2) * 7 + 1, dt_ymd(str(endday)))))
-            if int(backengin_sday) > int_day:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 검증기간 + 확인기간 + 1)주 만큼의 데이터가 필요합니다'))
-                self.SysExit(True)
-            elif startday > int_day:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '전진분석 시작 일자가 잘못되었습니다. 최소 (학습기간 + 검증기간 + 확인기간 + 1)주 이전 일자로 선택하십시오.'))
-                self.SysExit(True)
-            elif endday > int(backengin_eday):
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '전진분석 종료 일자가 잘못되었습니다. 백테엔진 데이터 로딩 마지막 일자로 선택하십시오.'))
-                self.SysExit(True)
-        else:
-            int_day = int(str_ymd(timedelta_day(-(weeks_train + weeks_test * 2) * 7 + 1, dt_ymd(str(endday)))))
-            if int(backengin_sday) > int_day:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 확인기간 + 1)주 만큼의 데이터가 필요합니다'))
-                self.SysExit(True)
-            elif startday > int_day:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '전진분석 시작 일자가 잘못되었습니다. (학습기간 + 확인기간 + 1)주 이전 일자로 선택하십시오.'))
-                self.SysExit(True)
-            elif endday > int(backengin_eday):
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '전진분석 종료 일자가 잘못되었습니다. 백테엔진 데이터 로딩 마지막 일자로 선택하십시오.'))
-                self.SysExit(True)
+        plus_day = 3 if 'S' in self.ui_gubun else 1
+        int_day  = int(str_ymd(timedelta_day(-(weeks_train + weeks_test * 2) * 7 + plus_day, dt_ymd(str(endday)))))
+        if int(backengin_sday) > int_day:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 확인기간 * 2)주 만큼의 데이터가 필요합니다'))
+            self.SysExit(True)
+        elif startday > int_day:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '전진분석 시작 일자가 잘못되었습니다. (학습기간 + 확인기간 * 2)주 이전 일자로 선택하십시오.'))
+            self.SysExit(True)
+        elif endday > int(backengin_eday):
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '전진분석 종료 일자가 잘못되었습니다. 백테엔진 데이터 로딩 마지막 일자로 선택하십시오.'))
+            self.SysExit(True)
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
@@ -579,32 +568,33 @@ class RollingWalkForwardTest:
         k = 0
         list_days_ = []
         dt_endday  = dt_ymd(str(endday))
-        startday_  = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 1, dt_endday)))
+        plus_day   = 3 if 'S' in self.ui_gubun else 1
+        startday_  = int(str_ymd(timedelta_day(-(weeks_train + weeks_test * (k + 1)) * 7 + plus_day, dt_endday)))
         while startday_ >= startday:
             train_days_ = [
                 startday_, int(str_ymd(timedelta_day(-weeks_test * (k + 1) * 7, dt_endday)))
             ]
             valid_days_ = []
             if 'VC' in self.backname:
-                for i in range(int(weeks_train / weeks_valid) + 1):
+                for i in range(int(weeks_train / weeks_valid)):
                     valid_days_.append([
-                        int(str_ymd(timedelta_day(-(weeks_valid * (i + 1) + weeks_test * (k + 1)) * 7 + 1, dt_endday))),
+                        int(str_ymd(timedelta_day(-(weeks_valid * (i + 1) + weeks_test * (k + 1)) * 7 + plus_day, dt_endday))),
                         int(str_ymd(timedelta_day(-(weeks_valid * i + weeks_test * (k + 1)) * 7, dt_endday)))
                     ])
             elif 'V' in self.backname:
                 valid_days_.append([
-                    int(str_ymd(timedelta_day(-(weeks_valid + weeks_test * (k + 1)) * 7 + 1, dt_endday))),
+                    int(str_ymd(timedelta_day(-(weeks_valid + weeks_test * (k + 1)) * 7 + plus_day, dt_endday))),
                     int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7, dt_endday)))
                 ])
             else:
                 valid_days_ = None
             test_days_ = [
-                int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7 + 1, dt_endday))),
+                int(str_ymd(timedelta_day(-(weeks_test * (k + 1)) * 7 + plus_day, dt_endday))),
                 int(str_ymd(timedelta_day(-(weeks_test * k) * 7, dt_endday)))
             ]
             list_days_.append([train_days_, valid_days_, test_days_])
             k += 1
-            startday_ = int(str_ymd(timedelta_day(-(weeks_train + weeks_valid + weeks_test * (k + 1)) * 7 + 1, dt_endday)))
+            startday_ = int(str_ymd(timedelta_day(-(weeks_train + weeks_test * (k + 1)) * 7 + plus_day, dt_endday)))
 
         list_days = []
         for train_days_, valid_days_, test_days_ in list_days_:
@@ -726,7 +716,7 @@ class RollingWalkForwardTest:
             high_ratio = [0, hstd, hstd]
             if bool_changed_hstd:
                 high_ratio, vars_change_count = self.CheckOptivalueCombination(
-                    mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd
+                    mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd, startday, endday, j
                 )
 
             if previous_high_std > 0:
@@ -744,7 +734,7 @@ class RollingWalkForwardTest:
 
         return hstd
 
-    def CheckOptivalueCombination(self, mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd):
+    def CheckOptivalueCombination(self, mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd, startday, endday, j):
         std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 시작'))
         for std in std_set[1:-1]:
@@ -755,7 +745,7 @@ class RollingWalkForwardTest:
                 if cur_turn_hstd >= std and cur_turn_hvar != pre_turn_hvar:
                     vars_copy[vturn][1] = cur_turn_hvar
 
-            self.BackStart(('변수정보', vars_copy, 0))
+            self.BackStart(('변수정보', vars_copy, 0, startday, endday, j))
             data = mq.get()
             if type(data) == str:
                 self.SysExit(True)

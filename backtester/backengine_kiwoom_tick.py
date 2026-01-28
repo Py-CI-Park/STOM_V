@@ -172,6 +172,7 @@ class BackEngineKiwoomTick:
                         self.vars      = [var[1] for var in self.vars_list]
                         self.startday  = data[3]
                         self.endday    = data[4]
+                        self.CheckDayAndTime()
                         self.BackTest()
                 elif self.back_type == 'GA최적화':
                     if data[0] == '백테정보':

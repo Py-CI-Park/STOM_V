@@ -70,7 +70,7 @@ def stock_opti_test_editer(ui):
     ui.svc_pushButton_25.setVisible(False)
     ui.svc_pushButton_26.setVisible(False)
 
-    ui.svj_pushButton_09.setFocus()
+    ui.svj_pushButton_06.setFocus()
     sChangeSvjButtonColor(ui)
 
 
@@ -134,7 +134,7 @@ def stock_rwf_test_editer(ui):
     ui.svc_pushButton_25.setVisible(False)
     ui.svc_pushButton_26.setVisible(False)
 
-    ui.svj_pushButton_07.setFocus()
+    ui.svj_pushButton_05.setFocus()
     sChangeSvjButtonColor(ui)
 
 
@@ -202,7 +202,7 @@ def stock_opti_ga_editer(ui):
     ui.svc_pushButton_25.setVisible(False)
     ui.svc_pushButton_26.setVisible(False)
 
-    ui.svj_pushButton_08.setFocus()
+    ui.svj_pushButton_09.setFocus()
     sChangeSvjButtonColor(ui)
 
 
@@ -284,7 +284,7 @@ def stock_opti_vars_editer(ui):
     ui.svc_pushButton_25.setVisible(False)
     ui.svc_pushButton_26.setVisible(False)
 
-    ui.svj_pushButton_12.setFocus()
+    ui.svj_pushButton_11.setFocus()
     sChangeSvjButtonColor(ui)
 
 
@@ -347,7 +347,7 @@ def stock_opti_editer(ui):
     ui.svc_pushButton_25.setVisible(False)
     ui.svc_pushButton_26.setVisible(False)
 
-    ui.svj_pushButton_11.setFocus()
+    ui.svj_pushButton_07.setFocus()
     sChangeSvjButtonColor(ui)
 
 
@@ -420,27 +420,27 @@ def stock_vars_editer(ui):
     ui.svc_pushButton_25.setVisible(True)
     ui.svc_pushButton_26.setVisible(True)
 
-    ui.svj_pushButton_16.setFocus()
+    ui.svj_pushButton_12.setFocus()
     sChangeSvjButtonColor(ui)
 
 
 def change_pre_button_edit(ui):
     if ui.svj_pushButton_01.isVisible():
-        ui.svj_pushButton_15.setStyleSheet(style_bc_bd)
-    elif ui.svc_pushButton_32.isVisible():
-        ui.svj_pushButton_09.setStyleSheet(style_bc_bd)
-    elif ui.svc_pushButton_35.isVisible():
-        ui.svj_pushButton_07.setStyleSheet(style_bc_bd)
-    elif ui.sva_pushButton_03.isVisible():
         ui.svj_pushButton_08.setStyleSheet(style_bc_bd)
+    elif ui.svc_pushButton_32.isVisible():
+        ui.svj_pushButton_06.setStyleSheet(style_bc_bd)
+    elif ui.svc_pushButton_35.isVisible():
+        ui.svj_pushButton_05.setStyleSheet(style_bc_bd)
+    elif ui.sva_pushButton_03.isVisible():
+        ui.svj_pushButton_09.setStyleSheet(style_bc_bd)
     elif ui.svo_pushButton_08.isVisible():
         ui.svj_pushButton_10.setStyleSheet(style_bc_bd)
     elif ui.svc_pushButton_23.isVisible():
-        ui.svj_pushButton_12.setStyleSheet(style_bc_bd)
-    elif ui.svc_pushButton_26.isVisible():
-        ui.svj_pushButton_16.setStyleSheet(style_bc_bd)
-    elif ui.svc_pushButton_29.isVisible():
         ui.svj_pushButton_11.setStyleSheet(style_bc_bd)
+    elif ui.svc_pushButton_26.isVisible():
+        ui.svj_pushButton_12.setStyleSheet(style_bc_bd)
+    elif ui.svc_pushButton_29.isVisible():
+        ui.svj_pushButton_07.setStyleSheet(style_bc_bd)
 
 
 def stock_backtest_log(ui):
@@ -556,7 +556,7 @@ def stock_stg_editer(ui):
     ui.svc_pushButton_25.setVisible(False)
     ui.svc_pushButton_26.setVisible(False)
 
-    ui.svj_pushButton_15.setFocus()
+    ui.svj_pushButton_08.setFocus()
     sChangeSvjButtonColor(ui)
 
 
