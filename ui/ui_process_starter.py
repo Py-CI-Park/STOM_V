@@ -29,14 +29,18 @@ def process_starter(ui):
 
 def UpdateWindowTitle(ui):
     text = 'STOM'
-    if ui.dict_set['거래소'] == '바이낸스선물' and ui.dict_set['코인트레이더']:
-        text = f'{text} | 바이낸스선물'
-    elif ui.dict_set['거래소'] == '업비트' and ui.dict_set['코인트레이더']:
-        text = f'{text} | 업비트'
-    elif '해외선물' in ui.dict_set['증권사'] and ui.dict_set['주식트레이더']:
-        text = f'{text} | 해외선물'
-    elif ui.dict_set['주식트레이더']:
-        text = f'{text} | 키움증권'
+    if ui.dict_set['주식트레이더']:
+        data_type = '1초스냅샷' if ui.dict_set['주식타임프레임'] else '1분봉'
+        if '키움증권' in ui.dict_set['증권사']:
+            text = f'{text} | 키움증권 | {data_type}'
+        else:
+            text = f'{text} | 해외선물 | {data_type}'
+    elif ui.dict_set['코인트레이더']:
+        data_type = '1초스냅샷' if ui.dict_set['코인타임프레임'] else '1분봉'
+        if ui.dict_set['거래소'] == '바이낸스선물':
+            text = f'{text} | 바이낸스선물 | {data_type}'
+        else:
+            text = f'{text} | 업비트 | {data_type}'
     if ui.showQsize:
         beqsize = sum((stq.qsize() for stq in ui.back_eques)) if ui.back_eques else 0
         bstqsize = sum((ctq.qsize() for ctq in ui.back_sques)) if ui.back_sques else 0
@@ -46,12 +50,12 @@ def UpdateWindowTitle(ui):
                f'hogaQ[{ui.hogaQ.qsize()}] | soundQ[{ui.soundQ.qsize()}] | backegQ[{beqsize}] | backstQ[{bstqsize}] | ' \
                f'backttQ[{ui.totalQ.qsize()}]'
     else:
-        if ui.dict_set['코인트레이더']:
-            text = f'{text} | 모의' if ui.dict_set['코인모의투자'] else f'{text} | 실전'
-            text = f'{text} | {ui.dict_set["코인매수전략"] if ui.dict_set["코인매수전략"] != "" else "전략사용안함"}'
-        elif ui.dict_set['주식트레이더']:
+        if ui.dict_set['주식트레이더']:
             text = f'{text} | 모의' if ui.dict_set['주식모의투자'] else f'{text} | 실전'
             text = f'{text} | {ui.dict_set["주식매수전략"] if ui.dict_set["주식매수전략"] != "" else "전략사용안함"}'
+        elif ui.dict_set['코인트레이더']:
+            text = f'{text} | 모의' if ui.dict_set['코인모의투자'] else f'{text} | 실전'
+            text = f'{text} | {ui.dict_set["코인매수전략"] if ui.dict_set["코인매수전략"] != "" else "전략사용안함"}'
         if ui.dict_set['거래소'] == '바이낸스선물' and ui.dict_set['코인트레이더']:
             text = f"{text} | {str_ymdhms_ios(now_utc())}"
         elif '해외선물' in ui.dict_set['증권사'] and ui.dict_set['주식트레이더']:
