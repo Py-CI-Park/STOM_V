@@ -768,9 +768,11 @@ class Optimize:
             hstd = high_ratio[2]
 
     def CheckOptivalueCombination(self, mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd):
-        std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 시작'))
-        for std in std_set[1:-1]:
+        std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
+        std_set = std_set[:-1]
+        last = len(std_set)
+        for j, std in enumerate(std_set):
             vars_copy = copy.deepcopy(self.vars_)
             for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
                 pre_turn_hvar = vars_copy[vturn][1]
@@ -788,7 +790,7 @@ class Optimize:
                     ratio = round((check_hstd / hstd - 1) * 100, 2)
                 else:
                     ratio = round((1 - check_hstd / hstd) * 100, 2)
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중[{j+1}/{last}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
                 if ratio > high_ratio[0]:
                     high_ratio = [ratio, std, check_hstd]
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 완료'))
@@ -886,6 +888,8 @@ class Optimize:
                         trial_ = suggest_func(trial_name, min_var, max_var, step=step)
                 else:
                     trial_ = suggest_func(trial_name, var[1], var[1])
+
+                if '.' in str(trial_): trial_ = round(trial_, 3)
 
                 optuna_vars.append(trial_)
                 backte_vars.append([[], trial_])

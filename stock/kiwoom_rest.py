@@ -304,9 +304,9 @@ class WebSocketManager:
                     msg['data'] = [{'item': self.codes[:98], 'type': ['0B', '0D']}]
                     await self.send_msg(msg)
                     # k = 0
+                    # grp_no = 2000
                     # for i in range(0, len(self.codes), 100):
                     #     msg['grp_no'] = str(grp_no + k)
-                    # grp_no = 2000
                     #     msg['data']   = [{'item': self.codes[i:i+100], 'type': ['0B', '0D']}]
                     #     await self.send_msg(msg)
                     #     k += 1

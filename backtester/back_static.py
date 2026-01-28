@@ -383,8 +383,7 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
 
         train_stds = np.array(train_stds, dtype=np.float64)
         valid_stds = np.array(valid_stds, dtype=np.float64)
-        divide = True if optistd in ('TG', 'G2M') else False
-        std = GetOptiValidStd(train_stds, valid_stds, divide, exponential)
+        std = GetOptiValidStd(train_stds, valid_stds, exponential)
         text2, hstd, sendtext = GetText2(std, pre_hstd)
 
         if sendtext or opti_turn == 4:
@@ -441,27 +440,21 @@ def GetText3(gubun, optistd, std_list, result):
 
 
 @jit(nopython=True, cache=True)
-def GetOptiValidStd(train_stds, valid_stds, divide, exponential):
+def GetOptiValidStd(train_stds, valid_stds, exponential):
     """
-    가중치(exs) 예제
-    10개 : 2.00, 1.80, 1.60, 1.40, 1.20, 1.00, 0.80, 0.60, 0.40, 0.20
-    8개  : 2.00, 1.75, 1.50, 1.25, 1.00, 0.75, 0.50, 0.25
-    7개  : 2.00, 1.71, 1.42, 1.14, 0.86, 0.57, 0.29
-    6개  : 2.00, 1.66, 1.33, 1.00, 0.66, 0.33
-    5개  : 2.00, 1.60, 1.20, 0.80, 0.40
-    4개  : 2.00, 1.50, 1.00, 0.50
-    3개  : 2.00, 1.33, 0.66
-    2개  : 2.00, 1.0
+    가중치(weight) 예제 : 최고 1.3, 최저 0.7
+    10개 : 1.300, 1.233, 1.166, 1.100, 1.033, 0.966, 0.900, 0.833, 0.766, 0.700
     """
     merge = 0.
     count = len(train_stds)
     for i in range(count):
-        sign = -1. if train_stds[i] < 0 and valid_stds[i] < 0 else 1.
-        ostd = sign * train_stds[i] * valid_stds[i]
+        train_std = train_stds[i] * 0.7
+        valid_std = valid_stds[i] * 0.3
         if exponential and count > 1:
-            ostd *= (count - i) * 2 / count
-        merge += ostd
-    merge = round(merge / count / 1000, 2) if divide else round(merge / count, 2)
+            weight = 1.3 + (0.7 - 1.3) * i / (count - 1)
+            valid_std *= weight
+        merge += train_std + valid_std
+    merge = round(merge / count, 2)
     return merge if merge != 0 else -float('inf')
 
 

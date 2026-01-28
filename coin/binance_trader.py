@@ -571,9 +571,12 @@ class BinanceTrader:
     def UpdateUserData(self, data):
         if data['e'] == 'ACCOUNT_UPDATE':
             try:
-                data = data['a']
-                self.dict_intg['추정예탁자산'] = float(data['B'][0]['wb'])
-                self.dict_intg['예수금'] = float(data['B'][0]['cw'])
+                bal_list = data['a']['B']
+                for bal_dict in bal_list:
+                    if bal_dict['a'] == 'USDT':
+                        self.dict_intg['추정예탁자산'] = float(bal_dict['wb'])
+                        self.dict_intg['예수금'] = float(bal_dict['cw'])
+                        break
             except Exception as e:
                 self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - 웹소켓 user {e}'))
         elif data['e'] == 'ORDER_TRADE_UPDATE':
@@ -702,13 +705,13 @@ class BinanceTrader:
             if 미체결수량 == 0: self.cstgQ.put((f'{주문구분}_COMPLETE', 종목코드))
             self.UpdateChegeollist(index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, index[:14], 주문가격, 주문번호)
 
-            if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
-                self.dict_intg['예수금'] -= 체결수량 * 체결가격
-                if self.dict_set['코인모의투자']:
+            if self.dict_set['코인모의투자']:
+                if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
+                    self.dict_intg['예수금'] -= 체결수량 * 체결가격
                     self.dict_intg['추정예수금'] -= 체결수량 * 체결가격
-            else:
-                self.dict_intg['예수금'] += 매입금액 + 수익금
-                self.dict_intg['추정예수금'] += 매입금액 + 수익금
+                else:
+                    self.dict_intg['예수금'] += 매입금액 + 수익금
+                    self.dict_intg['추정예수금'] += 매입금액 + 수익금
 
             df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
             self.queryQ.put(('거래디비', df_jg, 'c_jangolist_future', 'replace'))

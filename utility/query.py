@@ -262,7 +262,7 @@ class Query:
                             for code in table_list:
                                 df = pd.read_sql(f'SELECT * FROM "{code}"', con2)
                                 if len(df) > 0:
-                                    df.to_sql(code, con, index=False, if_exists='append', chunksize=1000)
+                                    df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
                             con2.close()
                             self.windowQ.put((ui_num['DB관리'], f'{db_name} 데이터 추가 완료'))
                         self.windowQ.put((ui_num['DB관리'], f'{BACK_FILE} 생성 완료'))
