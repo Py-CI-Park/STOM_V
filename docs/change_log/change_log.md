@@ -2,7 +2,28 @@
 
 ## 버전 기록
 
-### V2.36.U2 (2026-02-01) - 런타임 에러 수정
+### V2.36.U1.3 (2026-02-01) - ElapsedTickNumber 메서드 추가
+
+#### 수정된 버그
+
+**1. AttributeError: 'MainWindow' object has no attribute 'SettingStockElapsedTickNumberSample'**
+- 위치: `ui/set_dialog_etc.py:373`
+- 원인: 메서드명 불일치 (setButtonClicked_01 vs SettingStockElapsedTickNumberSample)
+- 해결: `ui/ui_mainwindow.py`에 명시적 메서드 추가
+  - `SettingStockElapsedTickNumberSample()`
+  - `SettingStockElapsedTickNumberLoad()`
+  - `SettingStockElapsedTickNumberSave()`
+  - `SettingCoinElapsedTickNumberSample()`
+  - `SettingCoinElapsedTickNumberLoad()`
+  - `SettingCoinElapsedTickNumberSave()`
+- Legacy alias 유지 (setButtonClicked_*, cetButtonClicked_*)
+
+#### 문서 추가
+- CLAUDE.md: 프로젝트 가이드라인 및 버전 네이밍 규칙 추가
+
+---
+
+### V2.36.U1.2 (2026-02-01) - 런타임 에러 수정
 
 #### 수정된 버그
 
