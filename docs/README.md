@@ -1,7 +1,7 @@
 # STOM 문서 폴더
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.37+
+**버전**: V2.36.U1+
 **최종 업데이트**: 2026-01-31
 
 ---
@@ -31,7 +31,7 @@ docs/
 
 ## 최근 변경사항
 
-### V2.37 (2026-01-31)
+### V2.36.U1 (2026-01-31)
 
 #### ui_mainwindow.pyd → ui_mainwindow.py 마이그레이션
 

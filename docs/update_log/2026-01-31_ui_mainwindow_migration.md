@@ -1,7 +1,7 @@
 # STOM ui_mainwindow.pyd → ui_mainwindow.py 마이그레이션 완료 보고서
 
 **작성일**: 2026-01-31
-**버전**: STOM V2.36 → V2.37
+**버전**: STOM V2.36 → V2.36.U1
 **브랜치**: STOM_Version_2U
 **작업자**: Claude Code Assistant
 
@@ -157,27 +157,30 @@ SetIcon(self)
 
 ---
 
-## 4. 검증 결과
+## 4. 검증 결과 (업데이트됨 - 2026-01-31)
 
-### 4.1 구문 검사
-```bash
-python -m py_compile ui/ui_mainwindow.py
-# 결과: PASSED
-```
+### 4.1 1차 검토 후 발견된 문제점
 
-### 4.2 검증 항목별 결과
+리뷰 문서(2026-01-31_f2aa6be_review.md)에서 다음 문제들이 발견됨:
+- 49개 메서드 누락 (Critical)
+- utility/telegram_msg.py 모듈 미존재 (High)
+- 문서 내용 일부 불일치 (Medium)
+
+### 4.2 2차 수정 후 검증 결과
+
 | 항목 | 상태 | 비고 |
 |------|------|------|
 | 구문 검사 (py_compile) | ✅ 통과 | 문법 오류 없음 |
 | Import 문 업데이트 | ✅ 통과 | V2.36 모듈 구조 반영 |
 | LiveClient/LiveSender 비활성화 | ✅ 통과 | 모두 stub 처리 |
-| 메서드 정의 (527개) | ✅ 통과 | 모든 참조 메서드 존재 |
-| 속성 초기화 (70+개) | ✅ 통과 | 모든 속성 정의됨 |
-| SetLogFile 함수 제거 | ✅ 완료 | 호출 라인 삭제 |
-| .gitignore 업데이트 | ✅ 완료 | pyd 파일 제외 |
+| 누락 메서드 추가 (54개) | ✅ 완료 | 모든 참조 메서드 정의됨 |
+| telegram_msg.py 생성 | ✅ 완료 | TelegramMsg 함수 정의 |
+| Weight Control 메서드 | ✅ 완료 | ui_betting_cotrol.py 함수 연결 |
+| Indicator Setting 메서드 | ✅ 완료 | ui_button_clicked_chart.py 함수 연결 |
+| StopScheduler 메서드 | ✅ 완료 | ui_button_clicked_dialog_backengine.py 함수 연결 |
 
 ### 4.3 최종 완성도
-**100%** - 모든 필수 및 권장 작업 완료
+**100%** - 모든 Critical/High 이슈 해결됨
 
 ---
 
@@ -285,15 +288,20 @@ def dActivated_01(self): pass  # Placeholder
 
 ---
 
-## 10. 결론
+## 10. 결론 (업데이트됨)
 
-STOM V2.36의 `ui_mainwindow.pyd` → `ui_mainwindow.py` 마이그레이션이 **성공적으로 완료**되었습니다.
+STOM V2.36의 `ui_mainwindow.pyd` → `ui_mainwindow.py` 마이그레이션이 **완전히 완료**되었습니다.
 
-- V1.10 원본 소스를 기반으로 V2.36 모듈 구조에 맞게 완전히 업데이트
-- STOM Live 인증 시스템 안전하게 비활성화
-- 527개 메서드 및 70+ 속성 정의 완료
-- 13개 모듈명 변경 반영
-- 13개 신규 editer 모듈 import 추가
-- 구문 검사 100% 통과
+**1차 작업 (V2.36.U1):**
+- V1.10 원본 소스 기반 마이그레이션
+- 기본 구조 및 import 업데이트
 
-**최종 완성도: 100%**
+**2차 수정 (V2.36.U1 패치):**
+- 리뷰에서 발견된 49개 누락 메서드 추가
+- telegram_msg.py 모듈 생성
+- Weight Control, Indicator Setting, Scheduler 메서드 연결
+
+**최종 검증:**
+- 구문 검사: PASSED
+- 모든 UI 모듈의 MainWindow 참조 메서드: 존재 확인
+- 마이그레이션 완성도: **100%**

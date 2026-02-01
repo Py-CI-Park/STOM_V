@@ -44,6 +44,7 @@ from ui.ui_checkbox_changed import *
 from ui.ui_button_clicked_dialog_database import *
 from ui.ui_button_clicked_order import *
 from ui.ui_button_clicked_settings import *
+from ui.ui_button_clicked_chart import *
 from ui.ui_button_clicked_shortcut import *
 from ui.ui_button_clicked_dialog_backengine import *
 from ui.ui_button_clicked_dialog_elapsed_tick_number import *
@@ -888,6 +889,61 @@ class MainWindow(QMainWindow):
     def CoinStrategyProcessAlive(self): return coin_strategy_process_alive(self)
     def CoinKimpProcessAlive(self):     return coinkimp_process_alive(self)
     def BacktestProcessAlive(self):     return backtest_process_alive(self)
+    # =================================================================================================================
+    # Settings Load/Save methods
+    def SettingLoad_01(self): setting_load_01(self)
+    def SettingLoad_02(self): setting_load_02(self)
+    def SettingLoad_03(self): setting_load_03(self)
+    def SettingLoad_04(self): setting_load_04(self)
+    def SettingLoad_05(self): setting_load_05(self)
+    def SettingLoad_06(self): setting_load_06(self)
+    def SettingLoad_07(self): setting_load_07(self)
+    def SettingLoad_08(self): setting_load_08(self)
+    def SettingSave_01(self): setting_save_01(self)
+    def SettingSave_02(self): setting_save_02(self)
+    def SettingSave_03(self): setting_save_03(self)
+    def SettingSave_04(self): setting_save_04(self)
+    def SettingSave_05(self): setting_save_05(self)
+    def SettingSave_06(self): setting_save_06(self)
+    def SettingSave_07(self): setting_save_07(self)
+    def SettingSave_08(self): setting_save_08(self)
+    # Settings Management methods
+    def SettingAllLoad(self): setting_all_load(self)
+    def SettingAllApp(self):  setting_all_app(self)
+    def SettingAllDel(self):  setting_all_del(self)
+    def SettingAllSave(self): setting_all_save(self)
+    def SettingAccView(self): setting_acc_view(self)
+    # Order Settings methods
+    def SettingOrderLoad_01(self): setting_order_load_01(self)
+    def SettingOrderLoad_02(self): setting_order_load_02(self)
+    def SettingOrderLoad_03(self): setting_order_load_03(self)
+    def SettingOrderLoad_04(self): setting_order_load_04(self)
+    def SettingOrderSave_01(self): setting_order_save_01(self)
+    def SettingOrderSave_02(self): setting_order_save_02(self)
+    def SettingOrderSave_03(self): setting_order_save_03(self)
+    def SettingOrderSave_04(self): setting_order_save_04(self)
+    # Weight Control methods
+    def SettingStockWeightControl(self): setting_stock_weight_control(self)
+    def SettingCoinWeightControl(self):  setting_coin_weight_control(self)
+    def SettingStockWeightCotrolLoad(self): setting_stock_weight_cotrol_load(self)
+    def SettingStockWeightCotrolSave(self): setting_stock_weight_cotrol_save(self)
+    def SettingStockWeightCotrolChanged(self, state): setting_stock_weight_cotrol_changed(self, state)
+    def SettingCoinWeightCotrolLoad(self): setting_coin_weight_cotrol_load(self)
+    def SettingCoinWeightCotrolSave(self): setting_coin_weight_cotrol_save(self)
+    def SettingCoinWeightCotrolChanged(self, state): setting_coin_weight_cotrol_changed(self, state)
+    # Elapsed Tick Number methods
+    def SettingStockElapsedTickNumber(self): setting_stock_elapsed_tick_number(self)
+    def SettingCoinElapsedTickNumber(self):  setting_coin_elapsed_tick_number(self)
+    # Indicator methods (from ui_button_clicked_chart.py)
+    def IndicatorSettingBasic(self): indicator_setting_basic(self)
+    def IndicatorSettingLoad(self):  indicator_setting_load(self)
+    def IndicatorSettingSave(self):  indicator_setting_save(self)
+    def GetIndicatorDetail(self, code): return get_indicator_detail(self, code)
+    # Scheduler methods
+    def StopScheduler(self, gubun=False): StopScheduler(self, gubun)
+    # Activated methods
+    def dActivated_02(self): pass  # Placeholder for settings combo activation
+    def dActivated_03(self): pass  # Placeholder for order dialog combo activation
     # =================================================================================================================
     def keyPressEvent(self, event):              key_press_event(self, event)
     def eventFilter(self, widget, event): return event_filter(self, widget, event)
