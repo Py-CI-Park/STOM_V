@@ -99,6 +99,13 @@ def str_hms(std_time=None):
         return strf_time('%H%M%S')
 
 
+def int_hms(std_time=None):
+    if std_time is not None:
+        return int(strf_time('%H%M%S', std_time))
+    else:
+        return int(strf_time('%H%M%S'))
+
+
 def str_hms_cme_from_str(std_hms=None):
     if std_hms is not None:
         std_time = timedelta_sec(time_gap, dt_hms(std_hms))

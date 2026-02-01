@@ -2,6 +2,48 @@
 
 ## 버전 기록
 
+### V2.36.U2 (2026-02-01) - 런타임 에러 수정
+
+#### 수정된 버그
+
+**1. NameError: 'int_hms' is not defined**
+- 위치: `ui/ui_mainwindow.py:298`
+- 원인: `int_hms()` 함수가 utility/static.py에 정의되지 않음
+- 해결: `utility/static.py`에 `int_hms()` 함수 추가
+  ```python
+  def int_hms(std_time=None):
+      if std_time is not None:
+          return int(strf_time('%H%M%S', std_time))
+      else:
+          return int(strf_time('%H%M%S'))
+  ```
+
+**2. AttributeError: 'NoneType' object has no attribute 'read_sql'**
+- 위치: `ui/ui_activated_*.py` 모듈들
+- 원인: `self.dbreader`가 `None`으로 초기화되어 있음
+- 해결:
+  - `DatabaseReadOnly` import 추가
+  - `self.dbreader = DatabaseReadOnly()`로 초기화
+
+**3. AttributeError: 'MainWindow' object has no attribute 'ManualSaveAndExit'**
+- 위치: `ui/set_main_menu.py:71`
+- 원인: `ManualSaveAndExit()` 메서드가 정의되지 않음
+- 해결: `ui/ui_mainwindow.py`에 메서드 추가
+  ```python
+  def ManualSaveAndExit(self):
+      self.SettingAllSave()
+      self.close()
+  ```
+
+#### 검증 결과
+- 구문 검사: 통과
+- int_hms() 함수 테스트: 정상 동작 (예: 181039 반환)
+
+#### 문서 업데이트
+- docs/update_log/2026-01-31_analysis_v1_vs_v2.md: 종합 마이그레이션 분석 보고서 업데이트
+
+---
+
 ### V2.36.U1 (2026-01-31) - ui_mainwindow.pyd → ui_mainwindow.py 마이그레이션
 
 #### 변경 사항

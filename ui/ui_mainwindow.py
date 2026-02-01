@@ -73,6 +73,7 @@ from utility.static import *
 from utility.setting import *
 from utility.webcrawling import *
 from utility.telegram_msg import *
+from utility.database_read_only import DatabaseReadOnly
 
 
 class LiveSender(Thread):
@@ -353,7 +354,7 @@ class MainWindow(QMainWindow):
         self.dict_sgbn        = None
         self.dict_cn          = None
         self.dict_mt          = None
-        self.dbreader         = None
+        self.dbreader         = DatabaseReadOnly()
 
         self.vars             = {}
         self.buy_index        = []
@@ -950,6 +951,9 @@ class MainWindow(QMainWindow):
     def closeEvent(self, a):                     close_event(self, a)
     # =================================================================================================================
     def ProcessKill(self):                       process_kill(self)
+    def ManualSaveAndExit(self):
+        self.SettingAllSave()
+        self.close()
     # =================================================================================================================
     # Legacy svjb/svjs/svc/sva/svo Button Methods (V1.10 compatibility - mapped to new methods)
     def svjbButtonClicked_01(self): self.StockBuyStgLoad()
