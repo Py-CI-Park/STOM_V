@@ -2,6 +2,54 @@
 
 ## 버전 기록
 
+### V2.36.U1.5 (2026-02-01) - 시리얼키 기능 제거
+
+#### 변경 사항
+
+**1. 시리얼키 GUI 요소 제거**
+- 파일: `ui/set_setup_tap.py`
+- 제거된 위젯:
+  - `sj_etc_labelll_02` (시리얼키 라벨)
+  - `sj_etc_liEditt_01` (시리얼키 입력필드)
+  - `sj_etc_daEditt_01` (만료날짜 DateEdit)
+
+**2. 시리얼키 로드/저장 코드 제거**
+- 파일: `ui/ui_button_clicked_settings.py`
+  - `setting_load_08()`: 시리얼키 로드 코드 제거
+  - `setting_save_08()`: 시리얼키 저장 및 암호화 코드 제거
+  - `setting_acc_view()`: 시리얼키 필드 EchoMode 토글 제거
+- 파일: `ui/ui_return_press.py`
+  - `return_press_setting_pass()`: 시리얼키 필드 EchoMode 설정 제거
+
+**3. 시리얼키 dict_set 항목 제거**
+- 파일: `utility/setting.py`
+- 제거: `'시리얼키': de_text(EN_KEY, df_e['시리얼키'][0])` 항목
+
+**4. 시리얼키 DB 스키마 변경**
+- 파일: `utility/database_check.py`
+- 변경: `etc` 테이블에서 `시리얼키` 컬럼 정의 제거
+- 참고: 기존 DB의 시리얼키 컬럼은 유지되며 무시됨 (하위 호환성)
+
+#### 변경 이유
+- .pyd → .py 마이그레이션 완료로 시리얼키 보호 불필요
+- 오픈소스 운영 방침에 따른 인증 기능 제거
+
+#### 유지되는 기능
+- 암호화 인프라 (`en_text()`, `de_text()`, `read_key()`, `write_key()`)
+- 계정, API 키, 텔레그램 토큰 등 민감 정보 암호화
+- STOM Live 체크박스 및 관련 코드 (비활성화 상태 유지)
+
+#### 수정된 파일
+| 파일 | 수정 내용 |
+|------|----------|
+| `ui/set_setup_tap.py` | 시리얼키 라벨, 입력필드, 만료날짜 위젯 제거 |
+| `ui/ui_button_clicked_settings.py` | 시리얼키 로드/저장/암호화 코드 제거 |
+| `ui/ui_return_press.py` | 시리얼키 필드 EchoMode 설정 제거 |
+| `utility/setting.py` | dict_set에서 시리얼키 항목 제거 |
+| `utility/database_check.py` | DB 스키마에서 시리얼키 컬럼 제거 |
+
+---
+
 ### V2.36.U1.4 (2026-02-01) - codename 테이블 에러 핸들링 개선
 
 #### 수정된 버그

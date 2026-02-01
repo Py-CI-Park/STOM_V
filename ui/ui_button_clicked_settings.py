@@ -228,8 +228,6 @@ def setting_load_08(ui):
         ui.sj_etc_checBox_03.setChecked(True) if df['창위치기억'][0] else ui.sj_etc_checBox_03.setChecked(False)
         ui.sj_etc_checBox_06.setChecked(True) if df['스톰라이브'][0] else ui.sj_etc_checBox_06.setChecked(False)
         ui.sj_etc_checBox_07.setChecked(True) if df['프로그램종료'][0] else ui.sj_etc_checBox_07.setChecked(False)
-        if df['시리얼키'][0]:
-            ui.sj_etc_liEditt_01.setText(de_text(ui.dict_set['키'], df['시리얼키'][0]))
         ui.sj_etc_comBoxx_01.setCurrentText(df['테마'][0])
     else:
         QMessageBox.critical(ui, '오류 알림', '기타 설정값이\n존재하지 않습니다.\n')
@@ -561,12 +559,10 @@ def setting_save_08(ui):
     ce  = 1 if ui.sj_etc_checBox_05.isChecked() else 0
     slv = 1 if ui.sj_etc_checBox_06.isChecked() else 0
     pex = 1 if ui.sj_etc_checBox_07.isChecked() else 0
-    key = ui.sj_etc_liEditt_01.text()
-    en_key = en_text(ui.dict_set['키'], key)
 
     if ui.proc_query.is_alive():
         query = f"UPDATE etc SET 테마 = '{the}', 저해상도 = {ldp}, 창위치기억 = {cgo}, " \
-                f"휴무프로세스종료 = {pe}, 휴무컴퓨터종료 = {ce}, 스톰라이브 = {slv}, 프로그램종료 = {pex}, 시리얼키 = '{en_key}'"
+                f"휴무프로세스종료 = {pe}, 휴무컴퓨터종료 = {ce}, 스톰라이브 = {slv}, 프로그램종료 = {pex}"
         ui.queryQ.put(('설정디비', query))
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -577,7 +573,6 @@ def setting_save_08(ui):
     ui.dict_set['휴무컴퓨터종료'] = ce
     ui.dict_set['스톰라이브'] = slv
     ui.dict_set['프로그램종료'] = pex
-    ui.dict_set['시리얼키'] = key
     ui.UpdateDictSet()
 
 
@@ -595,7 +590,6 @@ def setting_acc_view(ui):
         ui.sj_cacc_liEdit_02.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_01.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_02.setEchoMode(QLineEdit.Password)
-        ui.sj_etc_liEditt_01.setEchoMode(QLineEdit.Password)
         ui.sj_etc_pButton_01.setText('계정 텍스트 보기')
         ui.sj_etc_pButton_01.setStyleSheet(style_bc_bt)
 
