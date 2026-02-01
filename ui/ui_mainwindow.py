@@ -313,17 +313,25 @@ class MainWindow(QMainWindow):
 
         con1 = sqlite3.connect(DB_SETTING)
         con2 = sqlite3.connect(DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN)
+        df = None
         try:
             df = pd.read_sql('SELECT * FROM codename', con1).set_index('index')
         except:
-            df = pd.read_sql('SELECT * FROM codename', con2).set_index('index')
+            try:
+                df = pd.read_sql('SELECT * FROM codename', con2).set_index('index')
+            except:
+                print('=' * 60)
+                print('[WARNING] codename 테이블이 존재하지 않습니다.')
+                print('주식로그인을 한번 실행하면 codename 테이블이 생성됩니다.')
+                print('=' * 60)
+                df = pd.DataFrame(columns=['종목명'])
         con1.close()
         con2.close()
 
-        self.dict_name = {code: df['종목명'][code] for code in df.index}
+        self.dict_name = {code: df['종목명'][code] for code in df.index} if len(df) > 0 else {}
         self.dict_code = {name: code for code, name in self.dict_name.items()}
 
-        if len(df) < 10:
+        if 0 < len(df) < 10:
             print('setting.db 내에 codename 테이블이 갱신되지 않았습니다.')
             print('주식로그인을 한번 실행하면 codename 테이블이 갱신됩니다.')
 

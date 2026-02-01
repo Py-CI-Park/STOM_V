@@ -2,6 +2,20 @@
 
 ## 버전 기록
 
+### V2.36.U1.4 (2026-02-01) - codename 테이블 에러 핸들링 개선
+
+#### 수정된 버그
+
+**1. DatabaseError: no such table: codename**
+- 위치: `ui/ui_mainwindow.py:317-319`
+- 원인: 주식 로그인 전 `codename` 테이블이 존재하지 않음
+- 해결:
+  - 중첩 try/except로 양쪽 DB 모두 실패 시 처리
+  - 빈 DataFrame으로 초기화하여 프로그램 계속 실행 가능
+  - 사용자에게 경고 메시지 출력
+
+---
+
 ### V2.36.U1.3 (2026-02-01) - ElapsedTickNumber 메서드 추가
 
 #### 수정된 버그
