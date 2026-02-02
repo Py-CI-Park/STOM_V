@@ -2,7 +2,76 @@
 
 ## 버전 기록
 
-### V2.36.U1.5.C1.1 (2026-02-02) - CLI 인터페이스 버그 수정
+### V2.36.U1.5.C1.1 (2026-02-02) - CLI 백테스트 아키텍처 통합
+
+#### 주요 변경 사항
+
+**1. HeadlessBacktestRunner 완전 재작성 (backtest_runner.py)**
+- 실제 BackTest 클래스와 동일한 아키텍처 구현
+- 6개 큐 생성: windowQ, soundQ, totalQ, backQ, liveQ, teleQ
+- 20개 BackSubTotal 프로세스 관리
+- N개 BackEngine 프로세스 관리 (multi 설정값)
+- 16가지 BackEngine 유형 지원:
+  - 키움증권: Tick/Min × 주문관리 적용/미적용
+  - 해외선물: Tick/Min × 주문관리 적용/미적용
+  - 업비트: Tick/Min × 주문관리 적용/미적용
+  - 바이낸스: Tick/Min × 주문관리 적용/미적용
+- 13-튜플 파라미터 형식 준수 (betting, avgtime, startday, endday, starttime, endtime, buystg_name, sellstg_name, dict_cn, back_count, bl, schedul, back_club)
+- 지연 로딩(Lazy Import)으로 레지스트리 접근 문제 해결
+
+**2. CLI 백테스트 명령어 인터페이스 개선 (backtest.py)**
+- `--buy-strategy`, `--sell-strategy` 분리 (기존 `--strategy` 대체)
+- `--betting` 옵션 추가 (배팅금액: 주식 백만원, 선물 계약, 코인 USDT)
+- `--avgtime` 옵션 추가 (평균값계산틱수, 기본값: 20)
+- `--multi` 옵션 추가 (멀티프로세스 수, 기본값: 1)
+- `--divid-mode` 옵션 추가 (분류방법: 종목코드별/일자별/한종목)
+- `--blacklist/--no-blacklist` 플래그 추가
+
+**3. 지연 로딩 적용 (runners/__init__.py)**
+- `__getattr__` 방식으로 HeadlessBacktestRunner 지연 로딩
+- import 시점의 레지스트리 접근 문제 해결
+- Windows 권한 오류 방지
+
+**4. 종합 보고서 작성**
+- `docs/reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md` 생성
+- 아키텍처 분석, 구현 상세, 사용 예시, Architect 검증 결과 포함
+- 667줄 상세 기술 문서
+
+#### 사용 예시
+
+```bash
+# 주식 백테스트 실행
+python -m cli.main backtest run \
+    --type stock \
+    --buy-strategy "골든크로스" \
+    --sell-strategy "손절매5%" \
+    --start-date 20240101 \
+    --end-date 20240131 \
+    --betting 10 \
+    --multi 4
+
+# 코인 백테스트 실행
+python -m cli.main backtest run \
+    --type coin \
+    --buy-strategy "RSI과매도" \
+    --sell-strategy "RSI과매수" \
+    --start-date 20240101 \
+    --end-date 20240131 \
+    --betting 100
+```
+
+#### 파일 변경
+
+| 파일 | 변경 | 라인 수 |
+|------|------|---------|
+| cli/runners/backtest_runner.py | 재작성 | +676 |
+| cli/commands/backtest.py | 수정 | +161 |
+| cli/runners/__init__.py | 수정 | +14 |
+| docs/reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md | 신규 | +667 |
+
+---
+
+### V2.36.U1.5.C1.1-patch1 (2026-02-02) - CLI 인터페이스 버그 수정
 
 #### 수정 사항
 

@@ -262,3 +262,201 @@ STOM의 CLI 인터페이스가 성공적으로 구현되었습니다. 이제 STO
 5. **원격 접속**: SSH를 통한 원격 제어
 
 모든 핵심 기능이 정상 동작하며, 추가 개선 사항은 Phase 2 이후 단계적으로 진행할 예정입니다.
+
+---
+
+## GUI vs CLI 기능 비교 분석
+
+### 기능 구현 현황
+
+아래 표는 STOM GUI에서 제공하는 모든 기능과 CLI 구현 상태를 보여줍니다.
+
+#### 1. 트레이딩 (Trading)
+
+| GUI 기능 | CLI 지원 | 상태 | 비고 |
+|----------|----------|------|------|
+| 실시간 가격 모니터링 | ❌ | 미구현 | Phase 3 |
+| 호가창 표시 | ❌ | 미구현 | Phase 3 |
+| 포지션 관리 | ❌ | 미구현 | Phase 2 |
+| 거래 내역 조회 | ✅ | 구현됨 | `stom data trades` |
+| 잔고 조회 | ❌ | 미구현 | Phase 2 |
+| 수동 주문 (매수/매도) | ❌ | 미구현 | Phase 2 |
+| 주문 취소 | ❌ | 미구현 | Phase 2 |
+| 자동 매매 시작/중지 | ❌ | 미구현 | Phase 2 |
+
+#### 2. 백테스트 (Backtesting)
+
+| GUI 기능 | CLI 지원 | 상태 | 비고 |
+|----------|----------|------|------|
+| 단순 백테스트 | ✅ | 구현됨 | `stom backtest run` |
+| 조건 최적화 | ❌ | 미구현 | Phase 4 |
+| GA 최적화 | ❌ | 미구현 | Phase 4 |
+| 그리드 최적화 | ❌ | 미구현 | Phase 4 |
+| 베이지안 최적화 | ❌ | 미구현 | Phase 4 |
+| 워크포워드 분석 | ❌ | 미구현 | Phase 4 |
+| 백파인더 | ❌ | 미구현 | Phase 4 |
+| 백테스트 스케줄러 (16슬롯) | ❌ | 미구현 | Phase 4 |
+| 결과 조회 | ✅ | 구현됨 | `stom data backtest-list/result` |
+| 그래프 표시 | ❌ | 미구현 | CLI 특성상 제한 |
+
+#### 3. 전략 관리 (Strategy Management)
+
+| GUI 기능 | CLI 지원 | 상태 | 비고 |
+|----------|----------|------|------|
+| 전략 목록 조회 | ✅ | 구현됨 | `stom strategy list` |
+| 전략 상세 조회 | ✅ | 구현됨 | `stom strategy show` |
+| 전략 내보내기 | ✅ | 구현됨 | `stom strategy export` |
+| 전략 통계 | ✅ | 구현됨 | `stom strategy stats` |
+| 전략 코드 편집 | ❌ | 미구현 | 외부 에디터 사용 권장 |
+| 전략 저장 | ❌ | 미구현 | Phase 5 |
+| 전략 삭제 | ❌ | 미구현 | Phase 5 |
+| 변수 편집 | ❌ | 미구현 | Phase 5 |
+| 전략 시작/중지 | ❌ | 미구현 | Phase 2 |
+
+#### 4. 데이터 관리 (Data Management)
+
+| GUI 기능 | CLI 지원 | 상태 | 비고 |
+|----------|----------|------|------|
+| 거래 내역 조회 | ✅ | 구현됨 | `stom data trades` |
+| 거래 요약 | ✅ | 구현됨 | `stom data summary` |
+| 데이터 내보내기 | ✅ | 구현됨 | `stom data export` |
+| 백테스트 목록 | ✅ | 구현됨 | `stom data backtest-list` |
+| 백테스트 결과 | ✅ | 구현됨 | `stom data backtest-result` |
+| 특정 날짜 삭제 | ❌ | 미구현 | Phase 5 |
+| 시간 이후 삭제 | ❌ | 미구현 | Phase 5 |
+| 백테스트 DB 생성 | ❌ | 미구현 | Phase 5 |
+| 백테스트 DB 추가 | ❌ | 미구현 | Phase 5 |
+
+#### 5. 설정 (Settings)
+
+| GUI 기능 | CLI 지원 | 상태 | 비고 |
+|----------|----------|------|------|
+| 설정 로드 | ✅ | 내부사용 | `settings_adapter.py` |
+| 증권사 선택 | ❌ | 미구현 | GUI 전용 |
+| 거래소 선택 | ❌ | 미구현 | GUI 전용 |
+| 계정 설정 | ❌ | 미구현 | 보안상 GUI 전용 |
+| 텔레그램 설정 | ❌ | 미구현 | GUI 전용 |
+| 레버리지 설정 | ❌ | 미구현 | Phase 2 |
+
+#### 6. 유틸리티 (Utilities)
+
+| GUI 기능 | CLI 지원 | 상태 | 비고 |
+|----------|----------|------|------|
+| 수익 집계 | ❌ | 미구현 | Phase 3 |
+| 차트 표시 | ❌ | 미구현 | CLI 특성상 제한 |
+| 스크린샷 | ❌ | 해당없음 | GUI 전용 |
+| Optuna 서버 | ❌ | 미구현 | Phase 4 |
+
+---
+
+## 구현 통계
+
+### 전체 현황
+
+| 카테고리 | 전체 기능 | CLI 구현 | 구현율 |
+|----------|----------|----------|--------|
+| 트레이딩 | 8 | 1 | 12.5% |
+| 백테스트 | 10 | 2 | 20.0% |
+| 전략 관리 | 9 | 4 | 44.4% |
+| 데이터 관리 | 9 | 5 | 55.6% |
+| 설정 | 6 | 1 | 16.7% |
+| 유틸리티 | 4 | 0 | 0.0% |
+| **총계** | **46** | **13** | **28.3%** |
+
+### CLI 구현 완료 기능 (13개)
+
+1. `stom strategy list` - 전략 목록 조회
+2. `stom strategy show` - 전략 상세 조회
+3. `stom strategy export` - 전략 내보내기
+4. `stom strategy stats` - 전략 통계
+5. `stom data trades` - 거래 내역 조회
+6. `stom data summary` - 거래 요약
+7. `stom data export` - 데이터 내보내기
+8. `stom data backtest-list` - 백테스트 목록
+9. `stom data backtest-result` - 백테스트 결과
+10. `stom backtest run` - 백테스트 실행
+11. `stom backtest list` - 백테스트 작업 목록
+12. `stom backtest status` - 백테스트 상태 조회
+13. `stom backtest cancel` - 백테스트 취소
+
+---
+
+## 잔여 개발 계획
+
+### Phase 2: 트레이딩 제어 (우선순위: 높음)
+
+**목표**: 실거래 시작/중지 및 포지션 관리
+
+| 기능 | 명령어 | 설명 |
+|------|--------|------|
+| 거래 시작 | `stom trade start --type stock\|coin` | 자동 매매 시작 |
+| 거래 중지 | `stom trade stop` | 자동 매매 중지 |
+| 거래 상태 | `stom trade status` | 현재 거래 상태 조회 |
+| 포지션 조회 | `stom positions list` | 보유 포지션 조회 |
+| 주문 조회 | `stom orders list` | 미체결 주문 조회 |
+| 포지션 청산 | `stom positions close --all\|--code` | 포지션 청산 |
+| 주문 취소 | `stom orders cancel --all\|--id` | 주문 취소 |
+
+**예상 작업량**: 약 500줄 (commands/trade.py, runners/trade_runner.py)
+
+### Phase 3: 실시간 모니터링 (우선순위: 중간)
+
+**목표**: 실시간 데이터 스트림 및 모니터링
+
+| 기능 | 명령어 | 설명 |
+|------|--------|------|
+| 실시간 모니터 | `stom monitor live` | 실시간 가격 스트림 |
+| 손익 모니터 | `stom monitor pnl` | 실시간 손익 표시 |
+| 포지션 모니터 | `stom monitor positions` | 포지션 변동 알림 |
+
+**기술 요구사항**: WebSocket 또는 polling 기반 실시간 업데이트
+
+### Phase 4: 최적화 기능 (우선순위: 중간)
+
+**목표**: 다양한 최적화 방법 CLI 지원
+
+| 기능 | 명령어 | 설명 |
+|------|--------|------|
+| 그리드 최적화 | `stom optimize grid --params ...` | 그리드 서치 |
+| 베이지안 최적화 | `stom optimize bayesian --trials N` | Optuna 활용 |
+| GA 최적화 | `stom optimize ga --generations N` | 유전 알고리즘 |
+| 워크포워드 | `stom optimize walkforward` | 시계열 검증 |
+| 백파인더 | `stom optimize backfinder` | 변수 탐색 |
+
+### Phase 5: 데이터 관리 확장 (우선순위: 낮음)
+
+**목표**: 데이터베이스 관리 CLI 지원
+
+| 기능 | 명령어 | 설명 |
+|------|--------|------|
+| DB 생성 | `stom db create --type backtest` | 백테스트 DB 생성 |
+| DB 추가 | `stom db append --date YYYYMMDD` | 데이터 추가 |
+| DB 삭제 | `stom db delete --date YYYYMMDD` | 데이터 삭제 |
+| 전략 저장 | `stom strategy save --name --code` | 전략 저장 |
+| 전략 삭제 | `stom strategy delete --name` | 전략 삭제 |
+
+### Phase 6: Docker 및 배포 (우선순위: 낮음)
+
+**목표**: 컨테이너 기반 배포 지원
+
+- Dockerfile 작성
+- docker-compose.yml 작성
+- CI/CD 파이프라인 구성
+- 환경 변수 기반 설정
+
+---
+
+## 다음 단계 권장 사항
+
+1. **즉시 가능**: Phase 2의 `stom trade status` 구현 (설정 및 프로세스 상태만 표시)
+2. **단기 목표**: Phase 2 완료 후 실제 트레이딩 제어 가능
+3. **중기 목표**: Phase 4 최적화 기능 - AI Agent 자동 전략 최적화에 필수
+4. **장기 목표**: Phase 6 Docker 지원 - 클라우드 배포 및 스케일링
+
+---
+
+## 참고 자료
+
+- [CLI 구현 상세 보고서](../reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md)
+- [CLI 실현가능성 분석](../research/2026-02-01_cli_interface_feasibility_report.md)
+- [변경 이력](../change_log/change_log.md)

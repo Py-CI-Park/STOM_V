@@ -1,8 +1,8 @@
-# STOM 문서 폴더
+# STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1+
-**최종 업데이트**: 2026-01-31
+**버전**: V2.36.U1.5.C1.1
+**최종 업데이트**: 2026-02-02
 
 ---
 
@@ -10,81 +10,112 @@
 
 ```
 docs/
-├── README.md                    # 본 파일 - 문서 폴더 설명
-└── update_log/                  # 업데이트 로그 폴더
-    └── 2026-01-31_ui_mainwindow_migration.md
+├── README.md                    # 문서 관리 인덱스
+├── change_log/
+│   └── change_log.md            # 버전별 변경 이력
+├── update_log/                  # 업데이트 상세 기록
+│   ├── 2026-01-31_f2aa6be_review.md
+│   ├── 2026-01-31_ui_mainwindow_migration.md
+│   ├── 2026-01-31_analysis_v1_vs_v2.md
+│   └── 20260202_cli_interface.md
+├── research/                    # 연구 및 분석 보고서
+│   └── 2026-02-01_cli_interface_feasibility_report.md
+└── reports/                     # 기술 보고서
+    └── CLI_Implementation_Report_V2.36.U1.5.C1.1.md
 ```
 
 ---
 
 ## 문서 목록
 
+### change_log/ - 변경 이력
+
+| 문서 | 설명 |
+|------|------|
+| [change_log.md](change_log/change_log.md) | 전체 버전 변경 이력 |
+
 ### update_log/ - 업데이트 로그
 
-주요 변경사항 및 마이그레이션 기록을 보관합니다.
+업데이트 상세 기록 및 작업 이력을 보관합니다. (YYYYMMDD_제목.md 또는 YYYY-MM-DD_제목.md 형식)
 
 | 날짜 | 문서 | 설명 |
 |------|------|------|
-| 2026-01-31 | [ui_mainwindow_migration.md](update_log/2026-01-31_ui_mainwindow_migration.md) | ui_mainwindow.pyd → ui_mainwindow.py 마이그레이션 |
+| 2026-02-02 | [20260202_cli_interface.md](update_log/20260202_cli_interface.md) | CLI 인터페이스 개발 완료 보고서 |
+| 2026-01-31 | [2026-01-31_ui_mainwindow_migration.md](update_log/2026-01-31_ui_mainwindow_migration.md) | ui_mainwindow.pyd → .py 마이그레이션 |
+| 2026-01-31 | [2026-01-31_analysis_v1_vs_v2.md](update_log/2026-01-31_analysis_v1_vs_v2.md) | V1 vs V2 비교 분석 |
+| 2026-01-31 | [2026-01-31_f2aa6be_review.md](update_log/2026-01-31_f2aa6be_review.md) | 커밋 f2aa6be 리뷰 |
 
----
+### research/ - 연구 보고서
 
-## 최근 변경사항
+기술 타당성 분석 및 설계 연구 보고서를 보관합니다.
 
-### V2.36.U1 (2026-01-31)
+| 날짜 | 문서 | 설명 |
+|------|------|------|
+| 2026-02-01 | [2026-02-01_cli_interface_feasibility_report.md](research/2026-02-01_cli_interface_feasibility_report.md) | CLI 인터페이스 실현가능성 분석 |
 
-#### ui_mainwindow.pyd → ui_mainwindow.py 마이그레이션
+### reports/ - 기술 보고서
 
-**목적**: 컴파일된 pyd 파일을 Python 소스로 대체하여 개발 편의성 향상
+종합 기술 보고서 및 구현 상세 기록을 보관합니다.
 
-**주요 작업**:
-- V1.10 원본 소스를 기반으로 V2.36 모듈 구조에 맞게 업데이트
-- 13개 모듈명 변경 반영
-- 13개 신규 editer 모듈 import 추가
-- STOM Live 인증 시스템 비활성화
-- SetLogFile 호출 제거 (미정의 함수)
-- .gitignore에 pyd 파일 제외 규칙 추가
-
-**변경 파일**:
-- `ui/ui_mainwindow.py` - 신규 생성
-- `ui/ui_mainwindow.pyd` - 삭제됨 (백업: .pyd.backup)
-- `.gitignore` - 업데이트됨
-
-자세한 내용은 [마이그레이션 문서](update_log/2026-01-31_ui_mainwindow_migration.md)를 참조하세요.
+| 문서 | 설명 |
+|------|------|
+| [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md) | CLI 구현 상세 보고서 (667줄) |
 
 ---
 
 ## 문서 작성 규칙
 
 ### 파일명 규칙
+
 ```
-YYYY-MM-DD_작업명.md
+YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ```
 
 예시:
+- `20260202_cli_interface.md`
 - `2026-01-31_ui_mainwindow_migration.md`
-- `2026-02-15_database_schema_update.md`
 
 ### 필수 포함 내용
+
 1. **개요**: 작업 목적 및 배경
-2. **계획 과정**: 분석 및 계획 수립 내용
-3. **실행 과정**: 단계별 실행 내역
-4. **검증 결과**: 테스트 및 검증 결과
-5. **변경 파일 목록**: 생성/수정/삭제된 파일
-6. **결론**: 작업 완료 요약
+2. **상세 내용**: 기술적 세부사항
+3. **결과**: 작업 결과 및 검증
+4. **참고**: 관련 파일 및 링크
 
 ---
 
-## 관련 파일
+## 최근 변경사항
 
-| 파일 | 설명 |
-|------|------|
-| `_update.txt` | 버전별 업데이트 기록 (간략) |
-| `CHANGELOG.md` | 변경 이력 (있는 경우) |
-| `README.md` | 프로젝트 루트 설명 |
+### V2.36.U1.5.C1.1 (2026-02-02)
+
+- CLI 백테스트 아키텍처 완전 통합
+- HeadlessBacktestRunner 재작성 (16가지 엔진 지원)
+- CLI 명령어 인터페이스 개선
+- 종합 기술 보고서 작성
+
+### V2.36.U1.5.C1.0 (2026-02-02)
+
+- CLI 인터페이스 기본 구현
+- 전략 관리, 데이터 조회, 백테스트 명령어
+
+### V2.36.U1 (2026-01-31)
+
+- ui_mainwindow.pyd → ui_mainwindow.py 마이그레이션
 
 ---
 
-## 연락처
+## 빠른 링크
 
-문서 관련 문의사항은 프로젝트 관리자에게 문의하세요.
+- **프로젝트 루트**: [STOM_V](../)
+- **변경 로그**: [change_log.md](change_log/change_log.md)
+- **최신 CLI 보고서**: [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md)
+- **마이그레이션 기록**: [2026-01-31_ui_mainwindow_migration.md](update_log/2026-01-31_ui_mainwindow_migration.md)
+
+---
+
+## 문서 검색 팁
+
+- **최신 정보 찾기**: update_log/ 폴더에서 가장 최근 날짜의 파일 확인
+- **특정 기능 분석**: research/ 폴더에서 관련 보고서 검색
+- **전체 버전 이력**: change_log/change_log.md 참조
+- **상세 구현 정보**: reports/ 폴더의 기술 보고서 참조
