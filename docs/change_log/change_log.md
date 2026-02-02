@@ -2,6 +2,144 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C1.1 (2026-02-02) - CLI 인터페이스 버그 수정
+
+#### 수정 사항
+
+**1. 백테스트 러너 통합**
+- `backtest run` 커맨드가 `HeadlessBacktestRunner`와 연결되어 동기 실행 지원
+- `--async` 플래그 없이 실행 시 즉시 백테스트 실행
+- 실행 상태 (running → completed/failed) 자동 업데이트
+
+**2. SQL Injection 취약점 수정**
+- `strategy.py`: 테이블명 검증 추가 (whitelist 방식)
+- `strategy.py`: SQL 식별자 인용 적용
+
+**3. 중복 DataFrame 읽기 수정**
+- `data.py`: export 함수에서 backtest 타입 중복 읽기 제거
+
+**4. Import 오류 수정**
+- `backtest_runner.py`: `QueueAdapter` → `CLIQueueAdapter` 수정
+- `backtest_runner.py`: `CLIOutputAdapter` → `OutputAdapter` 수정
+
+---
+
+### V2.36.U1.5.C1.0 (2026-02-02) - CLI 인터페이스 개발
+
+#### 개요
+PyQt5 없이 STOM을 CLI(Command Line Interface)로 제어할 수 있는 인터페이스 개발 완료. 서버 환경, Docker 컨테이너, 자동화 스크립트 등 GUI가 불가능한 환경에서 STOM 활용 가능.
+
+#### 신규 추가된 모듈
+
+**1. CLI 패키지 구조**
+```
+cli/
+├── __init__.py              # CLI 패키지 초기화
+├── main.py                  # Click 기반 메인 진입점
+├── adapters/                # PyQt5 → CLI 어댑터들
+│   ├── settings_adapter.py  # 설정 로드 어댑터
+│   ├── queue_adapter.py     # 큐 통신 어댑터
+│   └── output_adapter.py    # 출력 포매팅 어댑터
+├── commands/                # CLI 커맨드 그룹
+│   ├── strategy.py          # 전략 관리 커맨드
+│   ├── data.py              # 데이터 조회 커맨드
+│   └── backtest.py          # 백테스트 커맨드
+└── runners/                 # 헤드리스 실행기
+    └── backtest_runner.py   # 백테스트 헤드리스 러너
+```
+
+**2. settings_adapter.py - PyQt5 없이 설정 로드**
+- `load_settings_without_qt()`: setting.db에서 DICT_SET 로드
+- `get_database_paths()`: 17개 데이터베이스 경로 반환
+- `get_blacklists()`: 주식/선물/코인 블랙리스트 로드
+- 암호화된 계정 정보 복호화 지원 (최대 8개 증권사, 2개 코인 API)
+- 주문 관리 설정 완전 지원 (매수/매도 분할, 취소, 금지 조건)
+
+**3. CLI 커맨드 구현**
+
+전략 관리:
+- `stom strategy list`: 전략 목록 조회
+- `stom strategy show <name>`: 전략 상세 조회
+- `stom strategy export <name> <file>`: 전략 내보내기
+- `stom strategy stats`: 전략 통계
+
+데이터 조회:
+- `stom data trades`: 거래 내역 조회
+- `stom data summary`: 거래 요약
+- `stom data export`: 데이터 내보내기
+- `stom data backtest-list`: 백테스트 목록
+- `stom data backtest-result <id>`: 백테스트 결과
+
+백테스트 실행:
+- `stom backtest run --strategy <name> --type stock|coin|future`: 백테스트 실행
+- `stom backtest list`: 백테스트 목록
+- `stom backtest status <id>`: 상태 조회
+- `stom backtest cancel <id>`: 취소
+- `stom backtest delete <id>`: 결과 삭제
+
+**4. backtest_runner.py - 헤드리스 백테스트**
+- PyQt5 없이 백테스트 엔진 실행
+- 멀티프로세스 기반 비동기 실행 지원
+- BacktestStock, BacktestCoin 엔진 지원
+
+#### 기술 스택
+- CLI 프레임워크: Click 8.x
+- 테이블 출력: tabulate
+- 진행률 표시: tqdm
+- 데이터 처리: pandas, sqlite3
+- 프로세스 통신: multiprocessing.Queue
+
+#### 사용 예시
+```bash
+# 버전 확인
+python -m cli.main --version
+
+# 주식 전략 목록 조회
+python -m cli.main strategy list --type stock
+
+# 백테스트 실행
+python -m cli.main backtest run --strategy "전략1" --type stock --start-date 2024-01-01 --end-date 2024-12-31
+
+# 거래 내역 조회
+python -m cli.main data trades --type stock --date 2024-12-31 --format json
+```
+
+#### 신규 파일
+| 파일 | 라인 수 | 설명 |
+|------|---------|------|
+| `cli/__init__.py` | 11 | CLI 패키지 초기화 |
+| `cli/main.py` | 29 | Click 기반 메인 진입점 |
+| `cli/adapters/__init__.py` | 10 | 어댑터 패키지 |
+| `cli/adapters/settings_adapter.py` | 330 | 설정 로드 어댑터 |
+| `cli/adapters/queue_adapter.py` | 45 | 큐 통신 헬퍼 |
+| `cli/adapters/output_adapter.py` | 103 | 출력 포매팅 |
+| `cli/commands/__init__.py` | 10 | 커맨드 패키지 |
+| `cli/commands/strategy.py` | 112 | 전략 관리 커맨드 |
+| `cli/commands/data.py` | 165 | 데이터 조회 커맨드 |
+| `cli/commands/backtest.py` | 136 | 백테스트 커맨드 |
+| `cli/runners/__init__.py` | 10 | 러너 패키지 |
+| `cli/runners/backtest_runner.py` | 191 | 백테스트 헤드리스 러너 |
+
+**총 12개 파일, 약 1,152 라인**
+
+#### 활용 사례
+1. **서버 환경**: GUI 없는 Linux 서버에서 백테스트 실행
+2. **자동화**: Bash/PowerShell 스크립트로 배치 작업
+3. **CI/CD**: GitHub Actions, Jenkins 등에서 전략 검증
+4. **Docker**: 컨테이너 기반 배포 및 스케일링
+5. **원격 접속**: SSH를 통한 원격 제어
+
+#### 향후 계획
+- Phase 2: 실거래 제어 (trade start/stop/status)
+- Phase 3: 실시간 모니터링 (WebSocket)
+- Phase 4: 스케줄링 (Cron)
+- Phase 5: Docker 지원
+
+#### 상세 문서
+- 전체 개발 보고서: `docs/update_log/20260202_cli_interface.md`
+
+---
+
 ### V2.36.U1.5 (2026-02-01) - 시리얼키 기능 제거
 
 #### 변경 사항
