@@ -30,42 +30,69 @@ def backtest():
 
 
 @backtest.command('run')
-@click.option('--strategy', type=str, required=True,
-              help='실행할 전략 이름')
+@click.option('--buy-strategy', type=str, required=True,
+              help='매수 전략 이름')
+@click.option('--sell-strategy', type=str, required=True,
+              help='매도 전략 이름')
 @click.option('--type', type=click.Choice(['stock', 'coin', 'future']),
               required=True, help='자산 유형')
-@click.option('--start-date', type=str,
-              help='시작 날짜 (YYYY-MM-DD)')
-@click.option('--end-date', type=str,
-              help='종료 날짜 (YYYY-MM-DD)')
-@click.option('--initial-capital', type=float, default=10000000,
-              help='초기 자본 (기본값: 10,000,000)')
+@click.option('--start-date', type=str, required=True,
+              help='시작 날짜 (YYYYMMDD 또는 YYYY-MM-DD)')
+@click.option('--end-date', type=str, required=True,
+              help='종료 날짜 (YYYYMMDD 또는 YYYY-MM-DD)')
+@click.option('--start-time', type=str, default=None,
+              help='시작 시간 (HHMMSS 또는 HHMM, 기본값: 자동)')
+@click.option('--end-time', type=str, default=None,
+              help='종료 시간 (HHMMSS 또는 HHMM, 기본값: 자동)')
+@click.option('--betting', type=float, default=1.0,
+              help='배팅금액 (주식: 백만원, 선물: 계약수, 코인: USDT)')
+@click.option('--avgtime', type=int, default=20,
+              help='평균값계산틱수 (기본값: 20)')
+@click.option('--multi', type=int, default=1,
+              help='멀티 프로세스 수 (기본값: 1)')
+@click.option('--divid-mode', type=click.Choice(['종목코드별 분류', '일자별 분류', '한종목 로딩']),
+              default='종목코드별 분류', help='데이터 분류 방법')
+@click.option('--blacklist/--no-blacklist', default=False,
+              help='블랙리스트 자동 추가')
 @click.option('--format', type=click.Choice(['table', 'json']),
               default='table', help='출력 포맷')
 @click.option('--async', 'is_async', is_flag=True,
-              help='비동기 실행')
-def run(strategy: str, type: str, start_date: Optional[str],
-        end_date: Optional[str], initial_capital: float, format: str, is_async: bool):
-    """백테스트 실행"""
+              help='비동기 실행 (작업 등록만)')
+def run(buy_strategy: str, sell_strategy: str, type: str, start_date: str,
+        end_date: str, start_time: Optional[str], end_time: Optional[str],
+        betting: float, avgtime: int, multi: int, divid_mode: str,
+        blacklist: bool, format: str, is_async: bool):
+    """백테스트 실행
+
+    실제 STOM 백테스트 엔진을 사용하여 백테스트를 실행합니다.
+    매수/매도 전략은 strategy.db에 저장된 전략 이름을 사용합니다.
+
+    예시:
+        stom backtest run --type stock --buy-strategy "골든크로스" --sell-strategy "손절매" \\
+            --start-date 20240101 --end-date 20240131 --betting 10
+    """
     try:
         output_adapter = OutputAdapter(format=OutputFormat(format))
 
-        # 설정 로드
-        try:
-            settings = load_settings_without_qt()
-            logger_.info("Settings loaded successfully")
-        except Exception as e:
-            logger_.warning(f"Failed to load settings: {e}")
-            settings = {}
+        # 날짜 형식 정규화 (YYYY-MM-DD → YYYYMMDD)
+        start_date_norm = start_date.replace('-', '')
+        end_date_norm = end_date.replace('-', '')
 
         # 백테스트 구성
         backtest_config = {
             'id': datetime.now().strftime('%Y%m%d_%H%M%S'),
-            'strategy': strategy,
+            'buy_strategy': buy_strategy,
+            'sell_strategy': sell_strategy,
             'type': type,
-            'start_date': start_date,
-            'end_date': end_date,
-            'initial_capital': initial_capital,
+            'start_date': start_date_norm,
+            'end_date': end_date_norm,
+            'start_time': start_time,
+            'end_time': end_time,
+            'betting': betting,
+            'avgtime': avgtime,
+            'multi': multi,
+            'divid_mode': divid_mode,
+            'blacklist': blacklist,
             'async': is_async,
             'created_at': datetime.now().isoformat(),
             'status': 'pending'
@@ -80,11 +107,18 @@ def run(strategy: str, type: str, start_date: Optional[str],
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS backtest_jobs (
                     id TEXT PRIMARY KEY,
-                    strategy TEXT,
+                    buy_strategy TEXT,
+                    sell_strategy TEXT,
                     type TEXT,
                     start_date TEXT,
                     end_date TEXT,
-                    initial_capital REAL,
+                    start_time TEXT,
+                    end_time TEXT,
+                    betting REAL,
+                    avgtime INTEGER,
+                    multi INTEGER,
+                    divid_mode TEXT,
+                    blacklist INTEGER,
                     async INTEGER,
                     created_at TEXT,
                     started_at TEXT,
@@ -97,15 +131,23 @@ def run(strategy: str, type: str, start_date: Optional[str],
 
             cursor.execute("""
                 INSERT OR REPLACE INTO backtest_jobs
-                (id, strategy, type, start_date, end_date, initial_capital, async, created_at, status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (id, buy_strategy, sell_strategy, type, start_date, end_date, start_time, end_time,
+                 betting, avgtime, multi, divid_mode, blacklist, async, created_at, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 backtest_config['id'],
-                strategy,
+                buy_strategy,
+                sell_strategy,
                 type,
-                start_date,
-                end_date,
-                initial_capital,
+                start_date_norm,
+                end_date_norm,
+                start_time,
+                end_time,
+                betting,
+                avgtime,
+                multi,
+                divid_mode,
+                1 if blacklist else 0,
                 1 if is_async else 0,
                 backtest_config['created_at'],
                 'pending'
@@ -137,14 +179,29 @@ def run(strategy: str, type: str, start_date: Optional[str],
                 con.commit()
                 con.close()
 
-                click.echo("\nStarting backtest...")
+                click.echo("\n" + "=" * 70)
+                click.echo("백테스트 실행 시작")
+                click.echo("=" * 70)
+                click.echo(f"매수전략: {buy_strategy}")
+                click.echo(f"매도전략: {sell_strategy}")
+                click.echo(f"기간: {start_date_norm} ~ {end_date_norm}")
+                click.echo(f"배팅금액: {betting}")
+                click.echo(f"멀티프로세스: {multi}")
+                click.echo("=" * 70 + "\n")
 
                 success = runner.start_backtest(
                     backtest_type=type,
-                    strategy_name=strategy,
-                    start_date=start_date.replace('-', '') if start_date else None,
-                    end_date=end_date.replace('-', '') if end_date else None,
-                    initial_capital=initial_capital
+                    buy_strategy=buy_strategy,
+                    sell_strategy=sell_strategy,
+                    start_date=start_date_norm,
+                    end_date=end_date_norm,
+                    start_time=start_time,
+                    end_time=end_time,
+                    betting=betting,
+                    avgtime=avgtime,
+                    multi=multi,
+                    divid_mode=divid_mode,
+                    blacklist=blacklist
                 )
 
                 # Update status based on result
@@ -156,14 +213,16 @@ def run(strategy: str, type: str, start_date: Optional[str],
                         SET status = 'completed', completed_at = ?
                         WHERE id = ?
                     """, (datetime.now().isoformat(), backtest_config['id']))
-                    click.echo("Backtest completed successfully!")
+                    click.echo("\n" + "=" * 70)
+                    click.echo("백테스트 완료!")
+                    click.echo("=" * 70)
                 else:
                     cursor.execute("""
                         UPDATE backtest_jobs
                         SET status = 'failed', completed_at = ?, error_message = ?
                         WHERE id = ?
                     """, (datetime.now().isoformat(), "Backtest execution failed", backtest_config['id']))
-                    click.echo("Backtest failed.")
+                    click.echo("\n백테스트 실패.")
                 con.commit()
                 con.close()
 
@@ -179,30 +238,26 @@ def run(strategy: str, type: str, start_date: Optional[str],
                 """, (datetime.now().isoformat(), str(e), backtest_config['id']))
                 con.commit()
                 con.close()
+                raise
 
-        # 출력
+        # 출력 (비동기 또는 완료 후)
         if format == 'json':
-            output_adapter.output(backtest_config, title="백테스트 시작")
-        else:
+            output_adapter.output(backtest_config, title="백테스트 정보")
+        elif is_async:
             lines = []
             lines.append("=" * 70)
-            lines.append("백테스트 시작")
+            lines.append("백테스트 작업 등록 완료")
             lines.append("=" * 70)
             lines.append(f"\n백테스트 ID: {backtest_config['id']}")
-            lines.append(f"전략: {strategy}")
+            lines.append(f"매수전략: {buy_strategy}")
+            lines.append(f"매도전략: {sell_strategy}")
             lines.append(f"자산 유형: {type}")
-            if start_date:
-                lines.append(f"시작 날짜: {start_date}")
-            if end_date:
-                lines.append(f"종료 날짜: {end_date}")
-            lines.append(f"초기 자본: {initial_capital:,.0f}")
-            lines.append(f"실행 방식: {'비동기' if is_async else '동기'}")
-            lines.append(f"생성 시간: {backtest_config['created_at']}")
+            lines.append(f"기간: {start_date_norm} ~ {end_date_norm}")
+            lines.append(f"배팅금액: {betting}")
+            lines.append(f"멀티프로세스: {multi}")
             lines.append(f"상태: {backtest_config['status']}")
-
+            lines.append(f"\n상태 확인: stom backtest status {backtest_config['id']}")
             click.echo('\n'.join(lines))
-
-        click.echo(f"\n백테스트 ID로 상태를 확인할 수 있습니다: {backtest_config['id']}")
 
     except Exception as e:
         output_adapter = OutputAdapter(format=OutputFormat(format))
