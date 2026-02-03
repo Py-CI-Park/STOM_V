@@ -68,6 +68,7 @@ docs/
 | 문서 | 설명 |
 |------|------|
 | [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md) | CLI 구현 상세 보고서 (667줄) |
+| [CLI_Test_Report_V2.36.U1.5.C2.3.md](reports/CLI_Test_Report_V2.36.U1.5.C2.3.md) | CLI 테스트 실행 보고서 (202개 통과) |
 
 ---
 
@@ -134,6 +135,7 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 - **CLI 사용자 매뉴얼**: [CLI_User_Manual.md](CLI_User_Manual.md) ⭐
 - **변경 로그**: [change_log.md](change_log/change_log.md)
 - **최신 CLI 보고서**: [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md)
+- **CLI 테스트 보고서**: [CLI_Test_Report_V2.36.U1.5.C2.3.md](reports/CLI_Test_Report_V2.36.U1.5.C2.3.md) ⭐
 - **마이그레이션 기록**: [2026-01-31_ui_mainwindow_migration.md](update_log/2026-01-31_ui_mainwindow_migration.md)
 
 ---
