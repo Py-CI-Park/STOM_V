@@ -1,0 +1,221 @@
+# ==============================================================================
+# STOM CLI Tests - GitHub Actions Workflow
+# ==============================================================================
+# CLI 테스트 자동화 워크플로우
+#
+# 트리거:
+#   - main 또는 cli-research 브랜치에 push
+#   - cli/ 또는 tests/ 디렉토리 변경 시
+#   - Pull Request
+# ==============================================================================
+
+name: STOM CLI Tests
+
+on:
+  push:
+    branches:
+      - main
+      - 'STOM_Version_2U-cli-research*'
+    paths:
+      - 'cli/**'
+      - 'tests/**'
+      - 'pytest.ini'
+      - 'requirements-test.txt'
+      - '.github/workflows/cli-tests.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'cli/**'
+      - 'tests/**'
+
+env:
+  PYTHONUNBUFFERED: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  # ============================================================================
+  # 스모크 테스트 (빠른 검증)
+  # ============================================================================
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install minimal dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install click pandas
+
+    - name: Run smoke tests
+      run: |
+        echo "=== STOM CLI Smoke Tests ==="
+        python -m cli.main --version
+        python -m cli.main --help
+        python -m cli.main strategy --help
+        python -m cli.main db --help
+        echo "=== Smoke Tests Passed ==="
+
+  # ============================================================================
+  # 전체 테스트 (매트릭스)
+  # ============================================================================
+  test:
+    name: Test (Python ${{ matrix.python-version }}, ${{ matrix.os }})
+    needs: smoke-test
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ['3.9', '3.10', '3.11']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        pip install click pandas PyQt5 tabulate
+
+    - name: Create test database directory
+      run: |
+        mkdir -p _database
+
+    - name: Run pytest (Unit Tests)
+      run: |
+        pytest tests/ -v -m "not integration and not slow" --tb=short
+
+    - name: Run pytest (Integration Tests)
+      run: |
+        pytest tests/ -v -m "integration" --tb=short
+      continue-on-error: true
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+        path: |
+          .pytest_cache/
+          htmlcov/
+
+  # ============================================================================
+  # 코드 커버리지
+  # ============================================================================
+  coverage:
+    name: Coverage Report
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-test.txt
+        pip install click pandas PyQt5 tabulate
+
+    - name: Create test database directory
+      run: mkdir -p _database
+
+    - name: Run tests with coverage
+      run: |
+        pytest tests/ -v --cov=cli --cov-report=xml --cov-report=html --cov-report=term-missing
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: htmlcov/
+
+  # ============================================================================
+  # 코드 품질 검사
+  # ============================================================================
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install linting tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install flake8 black isort mypy
+
+    - name: Run flake8
+      run: |
+        flake8 cli/ --max-line-length=120 --ignore=E501,W503,E203 --count --statistics
+      continue-on-error: true
+
+    - name: Check formatting with black
+      run: |
+        black cli/ --check --diff --line-length=120
+      continue-on-error: true
+
+    - name: Check imports with isort
+      run: |
+        isort cli/ --check-only --diff
+      continue-on-error: true
+
+  # ============================================================================
+  # 빌드 검증 (Docker)
+  # ============================================================================
+  docker-build:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: |
+        docker build -t stom-cli:test -f Dockerfile .
+
+    - name: Test Docker image
+      run: |
+        docker run --rm stom-cli:test python -m cli.main --version
+        docker run --rm stom-cli:test python -m cli.main --help
