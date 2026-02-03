@@ -11,7 +11,8 @@
 ```
 docs/
 ├── README.md                    # 문서 관리 인덱스
-├── CLI_User_Manual.md           # CLI 사용자 매뉴얼 (신규)
+├── AGENTS.md                    # AI 에이전트 가이드 (신규)
+├── CLI_User_Manual.md           # CLI 사용자 매뉴얼 (한글)
 ├── change_log/
 │   └── change_log.md            # 버전별 변경 이력
 ├── update_log/                  # 업데이트 상세 기록
@@ -20,20 +21,28 @@ docs/
 │   ├── 2026-01-31_analysis_v1_vs_v2.md
 │   └── 20260202_cli_interface.md
 ├── research/                    # 연구 및 분석 보고서
-│   └── 2026-02-01_cli_interface_feasibility_report.md
+│   ├── 2026-02-01_cli_interface_feasibility_report.md
+│   └── 20260203_cli_test_environment_research.md
 └── reports/                     # 기술 보고서
-    └── CLI_Implementation_Report_V2.36.U1.5.C1.1.md
+    ├── CLI_Implementation_Report_V2.36.U1.5.C1.1.md
+    └── CLI_Test_Report_V2.36.U1.5.C2.3.md
 ```
 
 ---
 
 ## 문서 목록
 
+### AI 에이전트 가이드
+
+| 문서 | 설명 |
+|------|------|
+| [AGENTS.md](AGENTS.md) | AI 에이전트(Claude Code 등)를 위한 프로젝트 가이드 |
+
 ### 사용자 매뉴얼
 
 | 문서 | 설명 |
 |------|------|
-| [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (2,096줄) - 사용자 및 AI Agent용 |
+| [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (한글, 2,096줄) - 사용자 및 AI Agent용 |
 | [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (202개 테스트) |
 
 ### change_log/ - 변경 이력
@@ -59,6 +68,7 @@ docs/
 
 | 날짜 | 문서 | 설명 |
 |------|------|------|
+| 2026-02-03 | [20260203_cli_test_environment_research.md](research/20260203_cli_test_environment_research.md) | CLI 테스트 환경 연구 |
 | 2026-02-01 | [2026-02-01_cli_interface_feasibility_report.md](research/2026-02-01_cli_interface_feasibility_report.md) | CLI 인터페이스 실현가능성 분석 |
 
 ### reports/ - 기술 보고서
@@ -132,6 +142,7 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ## 빠른 링크
 
 - **프로젝트 루트**: [STOM_V](../)
+- **AI 에이전트 가이드**: [AGENTS.md](AGENTS.md) ⭐
 - **CLI 사용자 매뉴얼**: [CLI_User_Manual.md](CLI_User_Manual.md) ⭐
 - **변경 로그**: [change_log.md](change_log/change_log.md)
 - **최신 CLI 보고서**: [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md)
