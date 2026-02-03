@@ -1,8 +1,8 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C1.1
-**최종 업데이트**: 2026-02-02
+**버전**: V2.36.U1.5.C2.0
+**최종 업데이트**: 2026-02-03
 
 ---
 
@@ -11,6 +11,7 @@
 ```
 docs/
 ├── README.md                    # 문서 관리 인덱스
+├── CLI_User_Manual.md           # CLI 사용자 매뉴얼 (신규)
 ├── change_log/
 │   └── change_log.md            # 버전별 변경 이력
 ├── update_log/                  # 업데이트 상세 기록
@@ -27,6 +28,12 @@ docs/
 ---
 
 ## 문서 목록
+
+### 사용자 매뉴얼
+
+| 문서 | 설명 |
+|------|------|
+| [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (2,096줄) - 사용자 및 AI Agent용 |
 
 ### change_log/ - 변경 이력
 
@@ -86,6 +93,14 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 
 ## 최근 변경사항
 
+### V2.36.U1.5.C2.0 (2026-02-03)
+
+- CLI 전체 기능 구현 완료 (Phase 2-6)
+- 트레이딩 제어, 모니터링, 최적화, DB 관리 명령 추가
+- Docker 지원 (Dockerfile, docker-compose.yml)
+- CLI 사용자 매뉴얼 추가 (2,096줄)
+- 구현률 100% (46/46 기능)
+
 ### V2.36.U1.5.C1.1 (2026-02-02)
 
 - CLI 백테스트 아키텍처 완전 통합
@@ -107,6 +122,7 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ## 빠른 링크
 
 - **프로젝트 루트**: [STOM_V](../)
+- **CLI 사용자 매뉴얼**: [CLI_User_Manual.md](CLI_User_Manual.md) ⭐
 - **변경 로그**: [change_log.md](change_log/change_log.md)
 - **최신 CLI 보고서**: [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md)
 - **마이그레이션 기록**: [2026-01-31_ui_mainwindow_migration.md](update_log/2026-01-31_ui_mainwindow_migration.md)
