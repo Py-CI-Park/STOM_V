@@ -2,6 +2,72 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.3 (2026-02-03) - CLI 테스트 시스템 구축 완료
+
+#### 개요
+CLI 인터페이스 자동화 테스트 시스템 완전 구축. pytest와 Click.CliRunner 기반 202개 테스트 작성.
+
+#### Phase 1: 테스트 인프라
+- `tests/` 디렉토리 구조 생성
+- `pytest.ini` 설정 파일 (마커 정의, 기본 옵션)
+- `requirements-test.txt` 테스트 의존성 파일
+- `tests/conftest.py` 공용 픽스처 및 헬퍼 함수
+
+#### Phase 2: 단위 테스트 (179개)
+- `test_cli_basic.py`: 기본 CLI 명령 테스트 (24개)
+- `test_strategy.py`: 전략 관리 명령 테스트 (26개)
+- `test_db.py`: 데이터베이스 관리 명령 테스트 (27개)
+- `test_output_formats.py`: 출력 포맷 테스트 (28개)
+- `test_backtest.py`: 백테스트 명령 테스트 (12개)
+- `test_data.py`: 데이터 조회 테스트 (14개)
+- `test_trade.py`: 트레이딩 제어 테스트 (15개)
+- `test_monitor.py`: 모니터링 테스트 (17개)
+- `test_optimize.py`: 최적화 테스트 (16개)
+
+#### Phase 3: 테스트 데이터 픽스처
+- `fixtures/sample_strategies.py`: 샘플 전략 코드
+- `fixtures/sample_data.json`: JSON 형식 테스트 데이터
+- `fixtures/test_db_creator.py`: 테스트 DB 생성 유틸리티
+
+#### Phase 4: CI/CD 통합
+- `.github/workflows/cli-tests.yml`: GitHub Actions 워크플로우
+- Python 3.9, 3.10, 3.11 매트릭스 테스트
+- 스모크 테스트, 단위 테스트, 통합 테스트
+- 코드 커버리지 리포트
+
+#### Phase 5: 통합 테스트 (23개)
+- `integration/test_workflow.py`: 워크플로우 통합 테스트 (17개)
+- `integration/test_data_consistency.py`: 데이터 일관성 테스트 (6개)
+
+#### 스모크 테스트 스크립트
+- `scripts/run_smoke_tests.sh` (Bash)
+- `scripts/run_smoke_tests.ps1` (PowerShell)
+
+#### 파일 변경 요약
+
+| 파일 | 상태 | 라인 수 |
+|------|------|---------|
+| tests/conftest.py | 신규 | +195 |
+| tests/test_cli_basic.py | 신규 | +186 |
+| tests/test_strategy.py | 신규 | +315 |
+| tests/test_db.py | 신규 | +298 |
+| tests/test_output_formats.py | 신규 | +263 |
+| tests/test_backtest.py | 신규 | +105 |
+| tests/test_data.py | 신규 | +117 |
+| tests/test_trade.py | 신규 | +126 |
+| tests/test_monitor.py | 신규 | +140 |
+| tests/test_optimize.py | 신규 | +178 |
+| tests/integration/*.py | 신규 | +450 |
+| tests/fixtures/*.py | 신규 | +380 |
+| tests/README.md | 신규 | +260 |
+| pytest.ini | 신규 | +45 |
+| requirements-test.txt | 신규 | +25 |
+| scripts/run_smoke_tests.* | 신규 | +200 |
+| .github/workflows/cli-tests.yml | 신규 | +115 |
+| **총계** | | **+3,398** |
+
+---
+
 ### V2.36.U1.5.C2.0 (2026-02-03) - CLI 전체 기능 구현 완료
 
 #### 개요

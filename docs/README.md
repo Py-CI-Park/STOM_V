@@ -1,7 +1,7 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.0
+**버전**: V2.36.U1.5.C2.3
 **최종 업데이트**: 2026-02-03
 
 ---
@@ -34,6 +34,7 @@ docs/
 | 문서 | 설명 |
 |------|------|
 | [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (2,096줄) - 사용자 및 AI Agent용 |
+| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (202개 테스트) |
 
 ### change_log/ - 변경 이력
 
@@ -92,6 +93,14 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.3 (2026-02-03)
+
+- CLI 테스트 시스템 구축 완료 (Phase 1-4)
+- pytest 기반 자동화 테스트 202개 작성
+- 스모크 테스트 스크립트 (Bash/PowerShell)
+- GitHub Actions CI/CD 워크플로우
+- 테스트 커버리지: CLI 전체 명령 대상
 
 ### V2.36.U1.5.C2.0 (2026-02-03)
 
