@@ -17,8 +17,8 @@ from .sample_strategies import (
 )
 
 
-class TestDatabaseCreator:
-    """테스트용 데이터베이스 생성 클래스"""
+class DatabaseCreator:
+    """테스트용 데이터베이스 생성 클래스 (pytest 수집 방지를 위해 Test 접두사 제거)"""
 
     def __init__(self, base_dir: Path):
         """
@@ -257,7 +257,7 @@ def create_test_databases(base_dir: Path, with_data: bool = True) -> Dict[str, P
     Returns:
         DB 이름 -> 경로 매핑
     """
-    creator = TestDatabaseCreator(base_dir)
+    creator = DatabaseCreator(base_dir)
     return creator.create_all_databases(with_data)
 
 
