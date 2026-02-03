@@ -2,6 +2,68 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.0 (2026-02-03) - CLI 전체 기능 구현 완료
+
+#### 개요
+Phase 2-6 CLI 개발 완료. GUI의 모든 주요 기능을 CLI로 사용 가능.
+
+#### Phase 2: 트레이딩 제어
+- `cli/commands/trade.py` 신규 (689줄)
+  - `stom trade start/stop/status` - 자동 매매 제어
+  - `stom positions list/close` - 포지션 관리
+  - `stom orders list/cancel` - 주문 관리
+- `cli/runners/trade_runner.py` 신규 (496줄)
+  - HeadlessTradeRunner 클래스
+
+#### Phase 3: 실시간 모니터링
+- `cli/commands/monitor.py` 신규 (439줄)
+  - `stom monitor live` - 실시간 가격 스트림
+  - `stom monitor pnl` - 손익 모니터링
+  - `stom monitor positions` - 포지션 변동 알림
+
+#### Phase 4: 최적화 기능
+- `cli/commands/optimize.py` 신규 (823줄)
+  - `stom optimize grid` - 그리드 서치
+  - `stom optimize bayesian` - Optuna 베이지안
+  - `stom optimize ga` - 유전 알고리즘
+  - `stom optimize walkforward` - 워크포워드 분석
+  - `stom optimize backfinder` - 변수 탐색
+- `cli/runners/optimize_runner.py` 신규 (699줄)
+  - HeadlessOptimizeRunner 클래스
+
+#### Phase 5: 데이터 관리
+- `cli/commands/db.py` 신규 (458줄)
+  - `stom db create/append/delete` - DB 관리
+  - `stom db info/vacuum/backup` - 유틸리티
+- `cli/commands/strategy.py` 확장 (+200줄)
+  - `stom strategy save/delete/import/validate` 추가
+
+#### Phase 6: Docker 지원
+- `Dockerfile` 신규 - CLI 전용 이미지
+- `docker-compose.yml` 신규 - 서비스 구성
+- `.dockerignore` 신규
+- `requirements-cli.txt` 신규
+
+#### 파일 변경 요약
+
+| 파일 | 상태 | 라인 수 |
+|------|------|---------|
+| cli/commands/trade.py | 신규 | +689 |
+| cli/commands/monitor.py | 신규 | +439 |
+| cli/commands/optimize.py | 신규 | +823 |
+| cli/commands/db.py | 신규 | +458 |
+| cli/commands/strategy.py | 확장 | +200 |
+| cli/runners/trade_runner.py | 신규 | +496 |
+| cli/runners/optimize_runner.py | 신규 | +699 |
+| cli/main.py | 수정 | +20 |
+| Dockerfile | 신규 | +29 |
+| docker-compose.yml | 신규 | +45 |
+| .dockerignore | 신규 | +15 |
+| requirements-cli.txt | 신규 | +26 |
+| **총계** | | **+3,939** |
+
+---
+
 ### V2.36.U1.5.C1.1 (2026-02-02) - CLI 백테스트 아키텍처 통합
 
 #### 주요 변경 사항

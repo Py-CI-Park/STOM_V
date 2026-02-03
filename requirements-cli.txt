@@ -1,0 +1,25 @@
+# STOM CLI Requirements
+# Core CLI dependencies
+click>=8.0
+tabulate>=0.9
+tqdm>=4.64
+
+# Data processing
+pandas>=1.5
+numpy>=1.23
+
+# Database (SQLite is built-in, but may need these for other DBs)
+psycopg2-binary>=2.9  # PostgreSQL support
+
+# Backtesting and analysis
+scikit-learn>=1.0
+
+# Optional: Parallel processing
+joblib>=1.2
+
+# Optional: Progress bars and formatting
+colorama>=0.4
+rich>=13.0
+
+# Optional: Configuration
+pyyaml>=6.0

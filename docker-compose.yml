@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  stom-cli:
+    build: .
+    container_name: stom-cli
+    volumes:
+      - ./_database:/app/_database
+      - ./_log:/app/_log
+      - ./logs:/app/logs
+    environment:
+      - STOM_CLI_MODE=1
+      - PYTHONUNBUFFERED=1
+    stdin_open: true
+    tty: true
+
+  stom-backtest:
+    build: .
+    container_name: stom-backtest
+    volumes:
+      - ./_database:/app/_database
+      - ./_log:/app/_log
+      - ./logs:/app/logs
+    environment:
+      - STOM_CLI_MODE=1
+      - PYTHONUNBUFFERED=1
+    command: ["backtest", "list"]
+
+  stom-optimize:
+    build: .
+    container_name: stom-optimize
+    volumes:
+      - ./_database:/app/_database
+      - ./_log:/app/_log
+      - ./logs:/app/logs
+    environment:
+      - STOM_CLI_MODE=1
+      - PYTHONUNBUFFERED=1
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8G
+    command: ["backtest", "optimize"]

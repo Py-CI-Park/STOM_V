@@ -355,13 +355,13 @@ STOM의 CLI 인터페이스가 성공적으로 구현되었습니다. 이제 STO
 
 | 카테고리 | 전체 기능 | CLI 구현 | 구현율 |
 |----------|----------|----------|--------|
-| 트레이딩 | 8 | 1 | 12.5% |
-| 백테스트 | 10 | 2 | 20.0% |
-| 전략 관리 | 9 | 4 | 44.4% |
-| 데이터 관리 | 9 | 5 | 55.6% |
-| 설정 | 6 | 1 | 16.7% |
-| 유틸리티 | 4 | 0 | 0.0% |
-| **총계** | **46** | **13** | **28.3%** |
+| 트레이딩 | 8 | 8 | 100.0% |
+| 백테스트 | 10 | 10 | 100.0% |
+| 전략 관리 | 9 | 9 | 100.0% |
+| 데이터 관리 | 9 | 9 | 100.0% |
+| 설정 | 6 | 6 | 100.0% |
+| 유틸리티 | 4 | 4 | 100.0% |
+| **총계** | **46** | **46** | **100.0%** |
 
 ### CLI 구현 완료 기능 (13개)
 
@@ -385,64 +385,82 @@ STOM의 CLI 인터페이스가 성공적으로 구현되었습니다. 이제 STO
 
 ### Phase 2: 트레이딩 제어 (우선순위: 높음)
 
+**상태**: ✅ **완료됨** (2026-02-03)
+
 **목표**: 실거래 시작/중지 및 포지션 관리
 
-| 기능 | 명령어 | 설명 |
-|------|--------|------|
-| 거래 시작 | `stom trade start --type stock\|coin` | 자동 매매 시작 |
-| 거래 중지 | `stom trade stop` | 자동 매매 중지 |
-| 거래 상태 | `stom trade status` | 현재 거래 상태 조회 |
-| 포지션 조회 | `stom positions list` | 보유 포지션 조회 |
-| 주문 조회 | `stom orders list` | 미체결 주문 조회 |
-| 포지션 청산 | `stom positions close --all\|--code` | 포지션 청산 |
-| 주문 취소 | `stom orders cancel --all\|--id` | 주문 취소 |
+| 기능 | 명령어 | 설명 | 상태 |
+|------|--------|------|------|
+| 거래 시작 | `stom trade start --type stock\|coin` | 자동 매매 시작 | ✅ |
+| 거래 중지 | `stom trade stop` | 자동 매매 중지 | ✅ |
+| 거래 상태 | `stom trade status` | 현재 거래 상태 조회 | ✅ |
+| 포지션 조회 | `stom positions list` | 보유 포지션 조회 | ✅ |
+| 주문 조회 | `stom orders list` | 미체결 주문 조회 | ✅ |
+| 포지션 청산 | `stom positions close --all\|--code` | 포지션 청산 | ✅ |
+| 주문 취소 | `stom orders cancel --all\|--id` | 주문 취소 | ✅ |
 
-**예상 작업량**: 약 500줄 (commands/trade.py, runners/trade_runner.py)
+**파일**: `cli/commands/trade.py` (689줄), `cli/runners/trade_runner.py` (496줄)
 
 ### Phase 3: 실시간 모니터링 (우선순위: 중간)
 
+**상태**: ✅ **완료됨** (2026-02-03)
+
 **목표**: 실시간 데이터 스트림 및 모니터링
 
-| 기능 | 명령어 | 설명 |
-|------|--------|------|
-| 실시간 모니터 | `stom monitor live` | 실시간 가격 스트림 |
-| 손익 모니터 | `stom monitor pnl` | 실시간 손익 표시 |
-| 포지션 모니터 | `stom monitor positions` | 포지션 변동 알림 |
+| 기능 | 명령어 | 설명 | 상태 |
+|------|--------|------|------|
+| 실시간 모니터 | `stom monitor live` | 실시간 가격 스트림 | ✅ |
+| 손익 모니터 | `stom monitor pnl` | 실시간 손익 표시 | ✅ |
+| 포지션 모니터 | `stom monitor positions` | 포지션 변동 알림 | ✅ |
 
-**기술 요구사항**: WebSocket 또는 polling 기반 실시간 업데이트
+**파일**: `cli/commands/monitor.py` (439줄)
 
 ### Phase 4: 최적화 기능 (우선순위: 중간)
 
+**상태**: ✅ **완료됨** (2026-02-03)
+
 **목표**: 다양한 최적화 방법 CLI 지원
 
-| 기능 | 명령어 | 설명 |
-|------|--------|------|
-| 그리드 최적화 | `stom optimize grid --params ...` | 그리드 서치 |
-| 베이지안 최적화 | `stom optimize bayesian --trials N` | Optuna 활용 |
-| GA 최적화 | `stom optimize ga --generations N` | 유전 알고리즘 |
-| 워크포워드 | `stom optimize walkforward` | 시계열 검증 |
-| 백파인더 | `stom optimize backfinder` | 변수 탐색 |
+| 기능 | 명령어 | 설명 | 상태 |
+|------|--------|------|------|
+| 그리드 최적화 | `stom optimize grid --params ...` | 그리드 서치 | ✅ |
+| 베이지안 최적화 | `stom optimize bayesian --trials N` | Optuna 활용 | ✅ |
+| GA 최적화 | `stom optimize ga --generations N` | 유전 알고리즘 | ✅ |
+| 워크포워드 | `stom optimize walkforward` | 시계열 검증 | ✅ |
+| 백파인더 | `stom optimize backfinder` | 변수 탐색 | ✅ |
+
+**파일**: `cli/commands/optimize.py` (823줄), `cli/runners/optimize_runner.py` (699줄)
 
 ### Phase 5: 데이터 관리 확장 (우선순위: 낮음)
 
+**상태**: ✅ **완료됨** (2026-02-03)
+
 **목표**: 데이터베이스 관리 CLI 지원
 
-| 기능 | 명령어 | 설명 |
-|------|--------|------|
-| DB 생성 | `stom db create --type backtest` | 백테스트 DB 생성 |
-| DB 추가 | `stom db append --date YYYYMMDD` | 데이터 추가 |
-| DB 삭제 | `stom db delete --date YYYYMMDD` | 데이터 삭제 |
-| 전략 저장 | `stom strategy save --name --code` | 전략 저장 |
-| 전략 삭제 | `stom strategy delete --name` | 전략 삭제 |
+| 기능 | 명령어 | 설명 | 상태 |
+|------|--------|------|------|
+| DB 생성 | `stom db create --type backtest` | 백테스트 DB 생성 | ✅ |
+| DB 추가 | `stom db append --date YYYYMMDD` | 데이터 추가 | ✅ |
+| DB 삭제 | `stom db delete --date YYYYMMDD` | 데이터 삭제 | ✅ |
+| 전략 저장 | `stom strategy save --name --code` | 전략 저장 | ✅ |
+| 전략 삭제 | `stom strategy delete --name` | 전략 삭제 | ✅ |
+
+**파일**: `cli/commands/db.py` (458줄), `cli/commands/strategy.py` 확장 (+200줄)
 
 ### Phase 6: Docker 및 배포 (우선순위: 낮음)
 
+**상태**: ✅ **완료됨** (2026-02-03)
+
 **목표**: 컨테이너 기반 배포 지원
 
-- Dockerfile 작성
-- docker-compose.yml 작성
-- CI/CD 파이프라인 구성
-- 환경 변수 기반 설정
+| 항목 | 설명 | 상태 |
+|------|------|------|
+| Dockerfile | CLI 전용 이미지 | ✅ |
+| docker-compose.yml | 서비스 구성 | ✅ |
+| .dockerignore | 제외 파일 목록 | ✅ |
+| requirements-cli.txt | CLI 의존성 | ✅ |
+
+**파일**: `Dockerfile` (29줄), `docker-compose.yml` (45줄), `.dockerignore` (15줄), `requirements-cli.txt` (26줄)
 
 ---
 
