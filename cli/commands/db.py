@@ -88,11 +88,11 @@ def create(db_type: str, force: bool):
         conn.commit()
         conn.close()
 
-        adapter.success(f"Database created: {db_path}")
+        click.echo(OutputAdapter.format_success(f"Database created: {db_path}"))
         logger.info(f"Database created: {db_path}")
 
     except Exception as e:
-        adapter.error(f"Failed to create database: {str(e)}")
+        click.echo(OutputAdapter.format_error(f"Failed to create database: {str(e)}"))
         logger.error(f"Database creation failed: {str(e)}")
         raise click.Abort()
 
@@ -124,29 +124,29 @@ def append(data_type: str, date: str, source: Optional[str]):
             db_tick = DB_COIN_TICK
             db_min = DB_COIN_MIN
         else:
-            adapter.error("Future data not yet supported")
+            click.echo(OutputAdapter.format_error("Future data not yet supported"))
             raise click.Abort()
 
         # Check if databases exist
         if not os.path.exists(db_tick) or not os.path.exists(db_min):
-            adapter.error(f"Database files not found. Create them first.")
+            click.echo(OutputAdapter.format_error(f"Database files not found. Create them first."))
             raise click.Abort()
 
         if source:
-            adapter.info(f"Appending data from {source} to {data_type} databases for {date}")
+            click.echo(OutputAdapter.format_info(f"Appending data from {source} to {data_type} databases for {date}"))
             # TODO: Implement actual data loading logic
-            adapter.warning("Data loading not yet implemented")
+            click.echo(OutputAdapter.format_warning("Data loading not yet implemented"))
         else:
-            adapter.info(f"Would append {data_type} data for {date}")
-            adapter.warning("No source specified - dry run")
+            click.echo(OutputAdapter.format_info(f"Would append {data_type} data for {date}"))
+            click.echo(OutputAdapter.format_warning("No source specified - dry run"))
 
         logger.info(f"Data append: type={data_type}, date={date}")
 
     except ValueError:
-        adapter.error("Invalid date format. Use YYYYMMDD")
+        click.echo(OutputAdapter.format_error("Invalid date format. Use YYYYMMDD"))
         raise click.Abort()
     except Exception as e:
-        adapter.error(f"Failed to append data: {str(e)}")
+        click.echo(OutputAdapter.format_error(f"Failed to append data: {str(e)}"))
         logger.error(f"Data append failed: {str(e)}")
         raise click.Abort()
 
@@ -185,7 +185,7 @@ def delete(data_type: str, date: str, yes: bool):
             db_tick = DB_COIN_TICK
             db_min = DB_COIN_MIN
         else:
-            adapter.error("Future data not yet supported")
+            click.echo(OutputAdapter.format_error("Future data not yet supported"))
             raise click.Abort()
 
         # Delete from both tick and minute databases
@@ -206,14 +206,14 @@ def delete(data_type: str, date: str, yes: bool):
                 conn.commit()
                 conn.close()
 
-        adapter.success(f"Deleted {deleted_count} rows for {date}")
+        click.echo(OutputAdapter.format_success(f"Deleted {deleted_count} rows for {date}"))
         logger.info(f"Data deleted: type={data_type}, date={date}, rows={deleted_count}")
 
     except ValueError:
-        adapter.error("Invalid date format. Use YYYYMMDD")
+        click.echo(OutputAdapter.format_error("Invalid date format. Use YYYYMMDD"))
         raise click.Abort()
     except Exception as e:
-        adapter.error(f"Failed to delete data: {str(e)}")
+        click.echo(OutputAdapter.format_error(f"Failed to delete data: {str(e)}"))
         logger.error(f"Data deletion failed: {str(e)}")
         raise click.Abort()
 
@@ -238,7 +238,7 @@ def info(db_type: str, output_format: str):
         db_path = DB_MAP[db_type]
 
         if not os.path.exists(db_path):
-            adapter.error(f"Database not found: {db_path}")
+            click.echo(OutputAdapter.format_error(f"Database not found: {db_path}"))
             raise click.Abort()
 
         # Get file info
@@ -275,11 +275,11 @@ def info(db_type: str, output_format: str):
         }
 
         # Display summary
-        adapter.info(f"\nDatabase: {db_path}")
-        adapter.info(f"Size: {info_data['size_mb']} MB")
-        adapter.info(f"Modified: {info_data['modified']}")
-        adapter.info(f"Tables: {info_data['tables']}")
-        adapter.info(f"Total Rows: {info_data['total_rows']:,}\n")
+        click.echo(OutputAdapter.format_info(f"\nDatabase: {db_path}"))
+        click.echo(OutputAdapter.format_info(f"Size: {info_data['size_mb']} MB"))
+        click.echo(OutputAdapter.format_info(f"Modified: {info_data['modified']}"))
+        click.echo(OutputAdapter.format_info(f"Tables: {info_data['tables']}"))
+        click.echo(OutputAdapter.format_info(f"Total Rows: {info_data['total_rows']:,}\n"))
 
         # Display table details
         if table_info:
@@ -289,7 +289,7 @@ def info(db_type: str, output_format: str):
         logger.info(f"Database info displayed: {db_type}")
 
     except Exception as e:
-        adapter.error(f"Failed to get database info: {str(e)}")
+        click.echo(OutputAdapter.format_error(f"Failed to get database info: {str(e)}"))
         logger.error(f"Database info failed: {str(e)}")
         raise click.Abort()
 
@@ -322,11 +322,11 @@ def vacuum(db_type: str, yes: bool):
                 abort=True
             )
 
-        adapter.info("Starting database optimization...")
+        click.echo(OutputAdapter.format_info("Starting database optimization..."))
 
         for db_path in db_paths:
             if not os.path.exists(db_path):
-                adapter.warning(f"Skipping {db_path} (not found)")
+                click.echo(OutputAdapter.format_warning(f"Skipping {db_path} (not found)"))
                 continue
 
             try:
@@ -340,19 +340,19 @@ def vacuum(db_type: str, yes: bool):
                 saved = size_before - size_after
                 saved_pct = (saved / size_before * 100) if size_before > 0 else 0
 
-                adapter.success(
+                click.echo(OutputAdapter.format_success(
                     f"Optimized {os.path.basename(db_path)}: "
                     f"saved {saved / (1024*1024):.2f} MB ({saved_pct:.1f}%)"
-                )
+                ))
 
             except Exception as e:
-                adapter.error(f"Failed to vacuum {db_path}: {str(e)}")
+                click.echo(OutputAdapter.format_error(f"Failed to vacuum {db_path}: {str(e)}"))
 
-        adapter.success("Database optimization complete")
+        click.echo(OutputAdapter.format_success("Database optimization complete"))
         logger.info(f"Database vacuum: type={db_type}")
 
     except Exception as e:
-        adapter.error(f"Failed to vacuum databases: {str(e)}")
+        click.echo(OutputAdapter.format_error(f"Failed to vacuum databases: {str(e)}"))
         logger.error(f"Database vacuum failed: {str(e)}")
         raise click.Abort()
 
@@ -376,7 +376,7 @@ def backup(output: str, compress: bool):
         backup_dir = os.path.join(output, f"stom_backup_{timestamp}")
         os.makedirs(backup_dir, exist_ok=True)
 
-        adapter.info(f"Backing up databases to {backup_dir}")
+        click.echo(OutputAdapter.format_info(f"Backing up databases to {backup_dir}"))
 
         backed_up = []
         total_size = 0
@@ -394,7 +394,7 @@ def backup(output: str, compress: bool):
                     'size_mb': round(file_size / (1024 * 1024), 2)
                 })
 
-                adapter.info(f"Backed up {db_name}")
+                click.echo(OutputAdapter.format_info(f"Backed up {db_name}"))
 
         # Create backup manifest
         manifest_path = os.path.join(backup_dir, 'manifest.txt')
@@ -408,18 +408,18 @@ def backup(output: str, compress: bool):
 
         # Compress if requested
         if compress:
-            adapter.info("Compressing backup...")
+            click.echo(OutputAdapter.format_info("Compressing backup..."))
             archive_path = shutil.make_archive(backup_dir, 'zip', backup_dir)
             shutil.rmtree(backup_dir)
-            adapter.success(f"Backup created: {archive_path}")
+            click.echo(OutputAdapter.format_success(f"Backup created: {archive_path}"))
         else:
-            adapter.success(f"Backup created: {backup_dir}")
+            click.echo(OutputAdapter.format_success(f"Backup created: {backup_dir}"))
 
-        adapter.info(f"Total size: {total_size / (1024 * 1024):.2f} MB")
+        click.echo(OutputAdapter.format_info(f"Total size: {total_size / (1024 * 1024):.2f} MB"))
         logger.info(f"Database backup created: {backup_dir}")
 
     except Exception as e:
-        adapter.error(f"Failed to backup databases: {str(e)}")
+        click.echo(OutputAdapter.format_error(f"Failed to backup databases: {str(e)}"))
         logger.error(f"Database backup failed: {str(e)}")
         raise click.Abort()
 

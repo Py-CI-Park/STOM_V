@@ -284,3 +284,13 @@ class OutputAdapter:
         output.write(f"{'='*80}\n\n")
         output.write(f"{info}\n")
         return output.getvalue()
+
+    @staticmethod
+    def format_warning(warning: str, title: str = "Warning") -> str:
+        """경고 메시지를 포맷된 문자열로 변환"""
+        output = StringIO()
+        output.write(f"\n{'='*80}\n")
+        output.write(f"{title}\n")
+        output.write(f"{'='*80}\n\n")
+        output.write(f"{warning}\n")
+        return output.getvalue()
