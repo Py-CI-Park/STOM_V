@@ -232,9 +232,8 @@ def info(db_type: str, output_format: str):
 
     Displays metadata about the database including size, tables, and row counts.
     """
-    adapter = OutputAdapter()
-
     try:
+        adapter = OutputAdapter(format=OutputFormat(output_format))
         db_path = DB_MAP[db_type]
 
         if not os.path.exists(db_path):
@@ -274,17 +273,22 @@ def info(db_type: str, output_format: str):
             'total_rows': sum(t['rows'] for t in table_info)
         }
 
-        # Display summary
-        click.echo(OutputAdapter.format_info(f"\nDatabase: {db_path}"))
-        click.echo(OutputAdapter.format_info(f"Size: {info_data['size_mb']} MB"))
-        click.echo(OutputAdapter.format_info(f"Modified: {info_data['modified']}"))
-        click.echo(OutputAdapter.format_info(f"Tables: {info_data['tables']}"))
-        click.echo(OutputAdapter.format_info(f"Total Rows: {info_data['total_rows']:,}\n"))
+        if output_format == 'json':
+            payload = dict(info_data)
+            payload['table_info'] = table_info
+            adapter.output(payload)
+        else:
+            # Display summary
+            click.echo(OutputAdapter.format_info(f"\nDatabase: {db_path}"))
+            click.echo(OutputAdapter.format_info(f"Size: {info_data['size_mb']} MB"))
+            click.echo(OutputAdapter.format_info(f"Modified: {info_data['modified']}"))
+            click.echo(OutputAdapter.format_info(f"Tables: {info_data['tables']}"))
+            click.echo(OutputAdapter.format_info(f"Total Rows: {info_data['total_rows']:,}\n"))
 
-        # Display table details
-        if table_info:
-            df = pd.DataFrame(table_info)
-            adapter.output(df, OutputFormat(output_format))
+            # Display table details
+            if table_info:
+                df = pd.DataFrame(table_info)
+                adapter.output(df, title="Table Details")
 
         logger.info(f"Database info displayed: {db_type}")
 

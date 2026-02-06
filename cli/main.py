@@ -7,10 +7,11 @@ Click-based CLI 인터페이스 메인 진입점.
 
 import click
 from cli.commands import strategy, data, backtest, trade, monitor, optimize, db
+from cli.version import PROG_NAME, VERSION
 
 
 @click.group()
-@click.version_option(version='2.36.U1.5.C2.0', prog_name='STOM')
+@click.version_option(version=VERSION, prog_name=PROG_NAME)
 def main():
     """
     STOM - System Trading Open Machine
