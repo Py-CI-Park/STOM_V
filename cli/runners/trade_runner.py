@@ -175,9 +175,9 @@ class HeadlessTradeRunner:
                 return False
 
             logger.warning(
-                f"Placeholder close order requested: trade_type={trade_type}, rows={len(targets)}"
+                f"Close position is not supported in headless mode yet: trade_type={trade_type}, rows={len(targets)}"
             )
-            return True
+            return False
         except Exception as e:
             logger.error(f"Failed to close position: {e}")
             print_exc()
@@ -227,9 +227,9 @@ class HeadlessTradeRunner:
                 return False
 
             logger.warning(
-                f"Placeholder cancel order requested: trade_type={trade_type}, rows={len(targets)}"
+                f"Cancel order is not supported in headless mode yet: trade_type={trade_type}, rows={len(targets)}"
             )
-            return True
+            return False
         except Exception as e:
             logger.error(f"Failed to cancel order: {e}")
             print_exc()
