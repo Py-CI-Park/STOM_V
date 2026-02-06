@@ -87,7 +87,14 @@ def backtest_list(limit: int, format: str):
 
         output_adapter.output(df, title="백테스트 결과 목록")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "백테스트 목록 조회 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "백테스트 목록 조회 실패",
+                output_format=OutputFormat(format),
+                error_code="DATA_BACKTEST_LIST_FAILED",
+            )
+        )
         logger_.error(f"Error listing backtest results: {e}")
         raise click.ClickException(str(e))
 
@@ -121,7 +128,14 @@ def backtest_result(backtest_id: str, format: str):
 
         output_adapter.output(df, title=f"백테스트 결과: {backtest_id}")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "백테스트 결과 조회 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "백테스트 결과 조회 실패",
+                output_format=OutputFormat(format),
+                error_code="DATA_BACKTEST_RESULT_FAILED",
+            )
+        )
         logger_.error(f"Error getting backtest result: {e}")
         raise click.ClickException(str(e))
 
@@ -186,7 +200,14 @@ def trades(type: Optional[str], status: Optional[str], limit: int, format: str):
         result_df = pd.concat(all_frames, ignore_index=True)
         output_adapter.output(result_df, title="거래 이력")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "거래 이력 조회 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "거래 이력 조회 실패",
+                output_format=OutputFormat(format),
+                error_code="DATA_TRADES_FAILED",
+            )
+        )
         logger_.error(f"Error listing trades: {e}")
         raise click.ClickException(str(e))
 
@@ -297,7 +318,14 @@ def summary(type: Optional[str], format: str):
 
         click.echo("\n".join(lines))
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "거래 요약 조회 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "거래 요약 조회 실패",
+                output_format=OutputFormat(format),
+                error_code="DATA_SUMMARY_FAILED",
+            )
+        )
         logger_.error(f"Error getting trade summary: {e}")
         raise click.ClickException(str(e))
 
@@ -356,7 +384,14 @@ def export(type: str, output: str, format: str):
         click.echo(f"데이터를 {output_path}로 내보냈습니다. ({len(df)} rows)")
         logger_.info(f"Data exported to {output_path}")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "데이터 내보내기 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "데이터 내보내기 실패",
+                output_format=OutputFormat.JSON if format == "json" else None,
+                error_code="DATA_EXPORT_FAILED",
+            )
+        )
         logger_.error(f"Error exporting data: {e}")
         raise click.ClickException(str(e))
 

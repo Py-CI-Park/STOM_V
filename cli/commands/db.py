@@ -237,7 +237,13 @@ def info(db_type: str, output_format: str):
         db_path = DB_MAP[db_type]
 
         if not os.path.exists(db_path):
-            click.echo(OutputAdapter.format_error(f"Database not found: {db_path}"))
+            click.echo(
+                OutputAdapter.format_error(
+                    f"Database not found: {db_path}",
+                    output_format=OutputFormat(output_format),
+                    error_code="DB_INFO_NOT_FOUND",
+                )
+            )
             raise click.Abort()
 
         # Get file info
@@ -293,7 +299,13 @@ def info(db_type: str, output_format: str):
         logger.info(f"Database info displayed: {db_type}")
 
     except Exception as e:
-        click.echo(OutputAdapter.format_error(f"Failed to get database info: {str(e)}"))
+        click.echo(
+            OutputAdapter.format_error(
+                f"Failed to get database info: {str(e)}",
+                output_format=OutputFormat(output_format),
+                error_code="DB_INFO_FAILED",
+            )
+        )
         logger.error(f"Database info failed: {str(e)}")
         raise click.Abort()
 

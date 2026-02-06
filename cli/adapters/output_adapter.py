@@ -63,7 +63,10 @@ class OutputAdapter:
             elif isinstance(data, list):
                 result = self._format_list(data, title)
             elif isinstance(data, str):
-                result = data
+                if self.format == OutputFormat.JSON:
+                    result = json.dumps({"message": data}, indent=2, ensure_ascii=False)
+                else:
+                    result = data
             else:
                 result = str(data)
 
@@ -82,8 +85,9 @@ class OutputAdapter:
     def _format_dataframe(self, df: pd.DataFrame, title: Optional[str] = None) -> str:
         """DataFrame을 포맷된 문자열로 변환"""
         output = StringIO()
+        show_title = title and self.format not in (OutputFormat.JSON, OutputFormat.CSV)
 
-        if title:
+        if show_title:
             output.write(f"\n{'='*80}\n")
             output.write(f"{title}\n")
             output.write(f"{'='*80}\n\n")
@@ -103,8 +107,9 @@ class OutputAdapter:
     def _format_dict(self, data: Dict, title: Optional[str] = None) -> str:
         """딕셔너리를 포맷된 문자열로 변환"""
         output = StringIO()
+        show_title = title and self.format not in (OutputFormat.JSON, OutputFormat.CSV)
 
-        if title:
+        if show_title:
             output.write(f"\n{'='*80}\n")
             output.write(f"{title}\n")
             output.write(f"{'='*80}\n\n")
@@ -125,8 +130,9 @@ class OutputAdapter:
     def _format_list(self, data: List, title: Optional[str] = None) -> str:
         """리스트를 포맷된 문자열로 변환"""
         output = StringIO()
+        show_title = title and self.format not in (OutputFormat.JSON, OutputFormat.CSV)
 
-        if title:
+        if show_title:
             output.write(f"\n{'='*80}\n")
             output.write(f"{title}\n")
             output.write(f"{'='*80}\n\n")
@@ -255,8 +261,31 @@ class OutputAdapter:
             self.logger.debug("Output to stdout")
 
     @staticmethod
-    def format_error(error: Exception, title: str = "Error") -> str:
+    def format_error(
+        error: Any,
+        title: str = "Error",
+        output_format: Optional[Union["OutputFormat", str]] = None,
+        error_code: str = "CLI_ERROR",
+    ) -> str:
         """에러를 포맷된 문자열로 변환"""
+        normalized_format = None
+        if isinstance(output_format, OutputFormat):
+            normalized_format = output_format.value
+        elif isinstance(output_format, str):
+            normalized_format = output_format.lower()
+
+        if normalized_format == OutputFormat.JSON.value:
+            payload = {
+                "ok": False,
+                "error": {
+                    "code": error_code,
+                    "type": type(error).__name__,
+                    "message": str(error),
+                    "title": title,
+                },
+            }
+            return json.dumps(payload, indent=2, ensure_ascii=False)
+
         output = StringIO()
         output.write(f"\n{'='*80}\n")
         output.write(f"{title}\n")

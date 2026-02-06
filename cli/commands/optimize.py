@@ -204,7 +204,14 @@ def grid(
     except json.JSONDecodeError as e:
         raise click.ClickException(f"Invalid JSON format for --params: {e}")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "Grid optimization failed"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "Grid optimization failed",
+                output_format=OutputFormat(format),
+                error_code="OPT_GRID_FAILED",
+            )
+        )
         logger_.error(f"Error running grid optimization: {e}")
         raise click.ClickException(str(e))
 
@@ -255,7 +262,14 @@ def bayesian(
         if not is_async:
             click.echo("Warning: execution runner integration is not enabled in this command.")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "Bayesian optimization failed"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "Bayesian optimization failed",
+                output_format=OutputFormat(format),
+                error_code="OPT_BAYESIAN_FAILED",
+            )
+        )
         logger_.error(f"Error running bayesian optimization: {e}")
         raise click.ClickException(str(e))
 
@@ -306,7 +320,14 @@ def ga(
         if not is_async:
             click.echo("Warning: execution runner integration is not enabled in this command.")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "GA optimization failed"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "GA optimization failed",
+                output_format=OutputFormat(format),
+                error_code="OPT_GA_FAILED",
+            )
+        )
         logger_.error(f"Error running GA optimization: {e}")
         raise click.ClickException(str(e))
 
@@ -361,7 +382,14 @@ def walkforward(
         if not is_async:
             click.echo("Warning: execution runner integration is not enabled in this command.")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "Walk-forward optimization failed"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "Walk-forward optimization failed",
+                output_format=OutputFormat(format),
+                error_code="OPT_WALKFORWARD_FAILED",
+            )
+        )
         logger_.error(f"Error running walk-forward optimization: {e}")
         raise click.ClickException(str(e))
 
@@ -401,7 +429,14 @@ def backfinder(
         if not is_async:
             click.echo("Warning: execution runner integration is not enabled in this command.")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "Backfinder failed"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "Backfinder failed",
+                output_format=OutputFormat(format),
+                error_code="OPT_BACKFINDER_FAILED",
+            )
+        )
         logger_.error(f"Error running backfinder: {e}")
         raise click.ClickException(str(e))
 
@@ -444,7 +479,14 @@ def status(job_id: str, format: str):
                 lines.append(f"{key}: {value}")
             click.echo("\n".join(lines))
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "Optimization status query failed"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "Optimization status query failed",
+                output_format=OutputFormat(format),
+                error_code="OPT_STATUS_FAILED",
+            )
+        )
         logger_.error(f"Error getting optimization status: {e}")
         raise click.ClickException(str(e))
 
@@ -482,7 +524,14 @@ def list_jobs(limit: int, opt_type: Optional[str], status: Optional[str], format
             return
         output_adapter.output(df, title="최적화 목록")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "Optimization list query failed"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "Optimization list query failed",
+                output_format=OutputFormat(format),
+                error_code="OPT_LIST_FAILED",
+            )
+        )
         logger_.error(f"Error listing optimization jobs: {e}")
         raise click.ClickException(str(e))
 

@@ -2,6 +2,78 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.8 (2026-02-06) - AI-Ready 출력/문서 표준화
+
+#### 개요
+C2.5~C2.8 실행 항목을 기준으로 AI 파싱 안정성을 높이기 위한 출력/에러 표준화와 문서 동기화를 완료.
+
+#### 주요 변경 사항
+- `OutputAdapter` 개선
+  - JSON/CSV 출력 시 title 배너를 제거해 파싱 가능한 출력 유지
+  - JSON 에러 응답 표준 구조(`ok`, `error.code`, `error.message`) 지원
+- 주요 명령(`data`, `monitor`, `optimize`, `backtest`, `db info`)에서 JSON 에러 포맷 연동
+- 문서 동기화
+  - `docs/AGENTS.md`, `docs/README.md`, `docs/CLI_User_Manual.md` 버전/링크 최신화
+  - `docs/reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md` 실행 결과 반영
+  - `docs/update_log/20260206_cli_stabilization_c25_c28.md` 신규 추가
+
+#### 테스트
+- `python -m pytest tests/test_output_formats.py tests/test_data.py tests/test_monitor.py tests/test_optimize.py tests/test_backtest.py tests/test_runners.py tests/test_schema_contract.py -q`
+- 결과: `95 passed, 1 skipped`
+
+---
+
+### V2.36.U1.5.C2.7 (2026-02-06) - 러너 안정화 및 계약 테스트
+
+#### 주요 변경 사항
+- `cli/runners/backtest_runner.py`
+  - 잘못된 `backtest_type` 입력 시 백테스트 모듈 로딩 전에 즉시 실패하도록 경로 정리
+- `cli/runners/trade_runner.py`
+  - 미구현 주문 실행(`close_position`, `cancel_order`)이 성공처럼 보이지 않도록 경계 동작 명확화
+- 테스트 추가
+  - `tests/test_runners.py`: trade/optimize/backtest 러너 핵심 경로 검증
+  - `tests/test_schema_contract.py`: schema adapter 테이블/컬럼 계약 검증
+
+#### 테스트
+- `python -m pytest tests/test_runners.py tests/test_schema_contract.py -q`
+- 결과: `9 passed`
+
+---
+
+### V2.36.U1.5.C2.6 (2026-02-06) - CLI 테스트 신뢰도 복구
+
+#### 주요 변경 사항
+- 대상 테스트 재작성:
+  - `tests/test_data.py`
+  - `tests/test_trade.py`
+  - `tests/test_monitor.py`
+  - `tests/test_backtest.py`
+  - `tests/test_optimize.py`
+- `exit_code in [0, 1, 2]` 형태의 느슨한 검증 제거
+- 실제 CLI 옵션(`--type` 중심) 기준으로 테스트 동기화
+- legacy 옵션 거부 동작 검증 추가
+
+#### 테스트
+- `python -m pytest tests/test_data.py tests/test_trade.py tests/test_monitor.py tests/test_backtest.py tests/test_optimize.py -q`
+- 결과: `70 passed`
+
+---
+
+### V2.36.U1.5.C2.5 (2026-02-06) - DB 스키마 정합성 및 버전 단일화
+
+#### 주요 변경 사항
+- 버전 상수 단일화
+  - `cli/version.py` 신설
+  - `cli/main.py`, `cli/__init__.py`에서 공통 버전 사용
+- 스키마 어댑터 도입
+  - `cli/adapters/schema_adapter.py` 신설
+  - `data/trade/monitor/optimize` 명령의 테이블/컬럼 매핑 정합화
+- `db info --format` 버그 수정
+  - `--format json`에서 실제 JSON 구조 출력 보장
+- `RuntimeWarning` 유발 구조(eager import) 제거
+
+---
+
 ### V2.36.U1.5.C2.3 (2026-02-03) - CLI 테스트 시스템 구축 완료
 
 #### 개요

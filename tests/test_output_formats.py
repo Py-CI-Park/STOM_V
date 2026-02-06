@@ -70,6 +70,17 @@ class TestOutputAdapterUnit:
         assert "Warning" in result
         assert "Warning message" in result
 
+    def test_output_string_json_wraps_message(self, capsys):
+        """JSON 모드에서 문자열은 message 객체로 래핑되어야 함"""
+        adapter = OutputAdapter(format=OutputFormat.JSON)
+        returned = adapter.output("hello")
+        captured = capsys.readouterr().out.strip()
+
+        parsed_returned = json.loads(returned)
+        parsed_captured = json.loads(captured)
+        assert parsed_returned["message"] == "hello"
+        assert parsed_captured["message"] == "hello"
+
 
 class TestOutputAdapterDict:
     """OutputAdapter 딕셔너리 출력 테스트"""
@@ -85,6 +96,15 @@ class TestOutputAdapterDict:
         parsed = json.loads(result)
         assert parsed["name"] == "test"
         assert parsed["value"] == 123
+
+    def test_dict_to_json_with_title_is_parseable(self):
+        """JSON 출력은 title이 있어도 파싱 가능해야 함"""
+        adapter = OutputAdapter(format=OutputFormat.JSON)
+        data = {"name": "test", "value": 123}
+
+        result = adapter._format_dict(data, title="테스트")
+        parsed = json.loads(result)
+        assert parsed["name"] == "test"
 
     def test_dict_to_table(self):
         """딕셔너리 테이블 변환"""
@@ -216,6 +236,17 @@ class TestOutputAdapterDataFrame:
         assert "value" in result
         assert "test1" in result
 
+    def test_dataframe_to_csv_with_title_has_no_banner(self):
+        """CSV 출력은 title 배너를 포함하지 않아야 함"""
+        import pandas as pd
+
+        adapter = OutputAdapter(format=OutputFormat.CSV)
+        df = pd.DataFrame({"name": ["x"], "value": [1]})
+        result = adapter._format_dataframe(df, title="CSV 제목")
+
+        first_line = result.splitlines()[0]
+        assert first_line.startswith("name")
+
     def test_dataframe_to_table(self):
         """DataFrame 테이블 변환"""
         import pandas as pd
@@ -326,3 +357,21 @@ class TestCSVValidation:
                 assert len(rows) >= 0
             except csv.Error:
                 pass
+
+
+class TestStructuredErrorFormat:
+    """구조화 에러 응답 테스트"""
+
+    def test_format_error_json_payload(self):
+        error = ValueError("invalid input")
+        result = OutputAdapter.format_error(
+            error,
+            "요청 실패",
+            output_format=OutputFormat.JSON,
+            error_code="E_TEST",
+        )
+        parsed = json.loads(result)
+
+        assert parsed["ok"] is False
+        assert parsed["error"]["code"] == "E_TEST"
+        assert parsed["error"]["message"] == "invalid input"

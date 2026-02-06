@@ -316,6 +316,70 @@
 
 ---
 
+## 13. 개발 업데이트 실행 결과 (2026-02-06 반영)
+
+본 섹션은 11장 계획(C2.5~C2.8) 기준으로 실제 반영 결과를 업데이트한 내용입니다.
+
+### 13.1 단계별 완료 현황
+
+| 단계 | 상태 | 완료 내용 |
+|------|------|------|
+| C2.5 (Stabilization-1) | 완료 | `schema_adapter` 도입, `data/trade/monitor/db` 스키마 정합화, 버전 상수 단일화, `db info --format` 수정 |
+| C2.6 (Test-Reliability) | 완료 | `test_data/test_trade/test_monitor/test_backtest/test_optimize` 재작성, 느슨한 exit code 허용 제거 |
+| C2.7 (Runner-Hardening) | 완료 | `trade/backtest` 러너 경계 동작 명확화, `tests/test_runners.py`, `tests/test_schema_contract.py` 신규 추가 |
+| C2.8 (AI-Ready CLI) | 완료 | JSON/CSV 출력 파싱 안정화, JSON 에러 응답 표준 구조 도입, 문서 버전/링크 동기화 |
+
+### 13.2 반영 파일 요약
+- 코드:
+  - `cli/adapters/schema_adapter.py`
+  - `cli/adapters/output_adapter.py`
+  - `cli/commands/data.py`
+  - `cli/commands/monitor.py`
+  - `cli/commands/optimize.py`
+  - `cli/commands/backtest.py`
+  - `cli/commands/db.py`
+  - `cli/runners/backtest_runner.py`
+  - `cli/runners/trade_runner.py`
+  - `cli/version.py`
+- 테스트:
+  - `tests/test_data.py`
+  - `tests/test_trade.py`
+  - `tests/test_monitor.py`
+  - `tests/test_backtest.py`
+  - `tests/test_optimize.py`
+  - `tests/test_output_formats.py`
+  - `tests/test_runners.py`
+  - `tests/test_schema_contract.py`
+- 문서:
+  - `docs/AGENTS.md`
+  - `docs/README.md`
+  - `docs/CLI_User_Manual.md`
+  - `docs/change_log/change_log.md`
+  - `docs/update_log/20260206_cli_stabilization_c25_c28.md`
+
+### 13.3 실행 검증 결과
+- `python -m pytest tests/test_data.py tests/test_trade.py tests/test_monitor.py tests/test_backtest.py tests/test_optimize.py -q`
+  - 결과: `70 passed`
+- `python -m pytest tests/test_runners.py tests/test_schema_contract.py tests/test_output_formats.py tests/test_data.py tests/test_monitor.py tests/test_optimize.py tests/test_backtest.py -q`
+  - 결과: `95 passed, 1 skipped`
+
+### 13.4 개발 안내 (운영용)
+1. 신규 명령/쿼리 추가 시, DB 접근은 `schema_adapter`를 경유하고 하드코딩 SQL 가정을 금지한다.
+2. CLI JSON 출력은 파싱 가능해야 하며, title/배너는 JSON/CSV에서 사용하지 않는다.
+3. 예외 처리 시 JSON 포맷 명령은 `OutputAdapter.format_error(..., output_format=OutputFormat.JSON, error_code=...)`를 사용한다.
+4. 러너 계층 변경 시 `tests/test_runners.py`와 `tests/test_schema_contract.py`를 함께 업데이트한다.
+5. 릴리스 전에는 최소 아래 4개를 품질 게이트로 고정한다.
+   - `python -m cli.main --version`
+   - `python -m pytest tests/ -v --tb=short`
+   - `python -m cli.main db info --type strategy --format json`
+   - `python -m cli.main data backtest-list --format json`
+
+### 13.5 잔여 리스크
+- `trade.py` 일부 한글 주석/문자열 인코딩 깨짐이 남아 있어 유지보수 가독성이 낮음(기능 영향은 현재 없음).
+- 러너 계층 커버리지는 추가되었으나, 실제 장시간 백테스트/최적화 실행 시나리오 통합 테스트는 더 보강 필요.
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

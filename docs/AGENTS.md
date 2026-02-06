@@ -1,8 +1,8 @@
 # STOM AI 에이전트 가이드
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.3
-**최종 업데이트**: 2026-02-03
+**버전**: V2.36.U1.5.C2.8
+**최종 업데이트**: 2026-02-06
 
 이 문서는 AI 에이전트(Claude Code, GitHub Copilot 등)가 STOM 프로젝트를 효율적으로 이해하고 작업할 수 있도록 작성되었습니다.
 
@@ -289,6 +289,7 @@ def mock_settings(monkeypatch):
 | [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 전체 명령어 참조 (한글) |
 | [change_log/change_log.md](change_log/change_log.md) | 버전 변경 이력 |
 | [reports/CLI_Test_Report_V2.36.U1.5.C2.3.md](reports/CLI_Test_Report_V2.36.U1.5.C2.3.md) | 테스트 실행 보고서 |
+| [reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md](reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md) | 브랜치 종합 코드 검토 및 실행 계획/결과 |
 | [../CLAUDE.md](../CLAUDE.md) | 프로젝트 루트 가이드라인 |
 
 ---

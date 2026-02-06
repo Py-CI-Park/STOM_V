@@ -1,8 +1,8 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.3
-**최종 업데이트**: 2026-02-03
+**버전**: V2.36.U1.5.C2.8
+**최종 업데이트**: 2026-02-06
 
 ---
 
@@ -19,13 +19,15 @@ docs/
 │   ├── 2026-01-31_f2aa6be_review.md
 │   ├── 2026-01-31_ui_mainwindow_migration.md
 │   ├── 2026-01-31_analysis_v1_vs_v2.md
-│   └── 20260202_cli_interface.md
+│   ├── 20260202_cli_interface.md
+│   └── 20260206_cli_stabilization_c25_c28.md
 ├── research/                    # 연구 및 분석 보고서
 │   ├── 2026-02-01_cli_interface_feasibility_report.md
 │   └── 20260203_cli_test_environment_research.md
 └── reports/                     # 기술 보고서
     ├── CLI_Implementation_Report_V2.36.U1.5.C1.1.md
-    └── CLI_Test_Report_V2.36.U1.5.C2.3.md
+    ├── CLI_Test_Report_V2.36.U1.5.C2.3.md
+    └── 2026-02-06_STOM_Version_2U_cli_research_test_code_review.md
 ```
 
 ---
@@ -57,6 +59,7 @@ docs/
 
 | 날짜 | 문서 | 설명 |
 |------|------|------|
+| 2026-02-06 | [20260206_cli_stabilization_c25_c28.md](update_log/20260206_cli_stabilization_c25_c28.md) | C2.5~C2.8 안정화/테스트/문서 동기화 작업 로그 |
 | 2026-02-02 | [20260202_cli_interface.md](update_log/20260202_cli_interface.md) | CLI 인터페이스 개발 완료 보고서 |
 | 2026-01-31 | [2026-01-31_ui_mainwindow_migration.md](update_log/2026-01-31_ui_mainwindow_migration.md) | ui_mainwindow.pyd → .py 마이그레이션 |
 | 2026-01-31 | [2026-01-31_analysis_v1_vs_v2.md](update_log/2026-01-31_analysis_v1_vs_v2.md) | V1 vs V2 비교 분석 |
@@ -79,7 +82,7 @@ docs/
 |------|------|
 | [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md) | CLI 구현 상세 보고서 (667줄) |
 | [CLI_Test_Report_V2.36.U1.5.C2.3.md](reports/CLI_Test_Report_V2.36.U1.5.C2.3.md) | CLI 테스트 실행 보고서 (202개 통과) |
-| [2026-02-06_STOM_Version_2U_cli_research_test_code_review.md](reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md) | 현재 브랜치 종합 코드 검토 보고서 |
+| [2026-02-06_STOM_Version_2U_cli_research_test_code_review.md](reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md) | 현재 브랜치 종합 코드 검토 + 실행 결과 반영 문서 |
 
 ---
 
@@ -105,6 +108,14 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.8 (2026-02-06)
+
+- C2.5~C2.8 실행 계획 항목 반영 완료 및 문서 동기화
+- JSON/CSV 출력 파싱 안정화(타이틀 배너 제거) 및 JSON 에러 응답 표준화
+- 러너 계층/스키마 계약 테스트 추가로 핵심 실행 경로 검증 강화
+- 코드 리뷰 보고서(`reports/2026-02-06_...`)에 실행 결과/개발 안내 반영
+- update_log 신규 문서 추가: `update_log/20260206_cli_stabilization_c25_c28.md`
 
 ### V2.36.U1.5.C2.3 (2026-02-03)
 
@@ -148,6 +159,7 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 - **변경 로그**: [change_log.md](change_log/change_log.md)
 - **최신 CLI 보고서**: [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md)
 - **CLI 테스트 보고서**: [CLI_Test_Report_V2.36.U1.5.C2.3.md](reports/CLI_Test_Report_V2.36.U1.5.C2.3.md) ⭐
+- **브랜치 코드 리뷰/개선 결과**: [2026-02-06_STOM_Version_2U_cli_research_test_code_review.md](reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md) ⭐
 - **마이그레이션 기록**: [2026-01-31_ui_mainwindow_migration.md](update_log/2026-01-31_ui_mainwindow_migration.md)
 
 ---

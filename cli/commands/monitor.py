@@ -206,7 +206,14 @@ def live(type: str, interval: int, count: int, limit: int, format: str):
     except KeyboardInterrupt:
         click.echo("\nMonitoring stopped by user.")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "실시간 모니터링 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "실시간 모니터링 실패",
+                output_format=OutputFormat(format),
+                error_code="MONITOR_LIVE_FAILED",
+            )
+        )
         logger_.error(f"Error in live monitoring: {e}")
         raise click.ClickException(str(e))
 
@@ -249,7 +256,14 @@ def pnl(type: str, interval: int, count: int, format: str, details: bool):
     except KeyboardInterrupt:
         click.echo("\nMonitoring stopped by user.")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "P&L 모니터링 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "P&L 모니터링 실패",
+                output_format=OutputFormat(format),
+                error_code="MONITOR_PNL_FAILED",
+            )
+        )
         logger_.error(f"Error in PnL monitoring: {e}")
         raise click.ClickException(str(e))
 
@@ -311,7 +325,14 @@ def positions(type: str, interval: int, count: int, format: str, alert: bool):
     except KeyboardInterrupt:
         click.echo("\nMonitoring stopped by user.")
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "포지션 모니터링 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "포지션 모니터링 실패",
+                output_format=OutputFormat(format),
+                error_code="MONITOR_POSITIONS_FAILED",
+            )
+        )
         logger_.error(f"Error in position monitoring: {e}")
         raise click.ClickException(str(e))
 
