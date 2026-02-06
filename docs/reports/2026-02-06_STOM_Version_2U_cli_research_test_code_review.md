@@ -253,7 +253,63 @@
 
 ---
 
-## 11. 최종 판단
+## 11. 문서 통합 기반 개발 업데이트 계획 (브랜치 목적 정렬)
+
+본 섹션은 `docs/` 전체 문서(AGENTS/README/change_log/research/update_log/reports) 맥락을 합쳐, 현재 브랜치 목적에 맞는 실질 업데이트 계획으로 재정의한 것입니다.
+
+### 11.1 브랜치 목적 재정의
+- 1차 목적: AI 에이전트가 **안정적으로 호출 가능한 CLI** 확보
+- 2차 목적: GUI 없이 서버/배치 환경에서 **일관된 결과 재현** 보장
+- 3차 목적: “테스트 통과”가 아니라 “기능 신뢰성”을 보장하는 **검증 체계 고도화**
+- 4차 목적: 버전/문서/명령 동작을 일치시키는 **운영 표준화**
+
+### 11.2 버전 타깃 기반 업데이트 계획
+
+| 버전 타깃 | 기간(권장) | 핵심 목표 | 핵심 작업 | 완료 기준(DoD) |
+|------|------|------|------|------|
+| **C2.5 (Stabilization-1)** | 1주 | DB 정합성 복구 | `data/trade/monitor/db`의 테이블/컬럼 매핑 통일, `db info --format` 버그 수정, `RuntimeWarning` 제거, 버전 상수 단일화 | `data backtest-list`, `positions list`, `orders list`, `db info --format json`가 정상 출력 |
+| **C2.6 (Test-Reliability)** | 1주 | 테스트 신뢰도 복구 | 느슨한 assertion 제거, 테스트 옵션을 실제 CLI와 동기화, 실패 케이스 명시 검증 | `exit_code in [0,1,2]` 패턴 사실상 제거, 잘못된 옵션 테스트 정리 완료 |
+| **C2.7 (Runner-Hardening)** | 1~2주 | 실행 경로 안정화 | 러너 계층(backtest/trade/optimize) 통합 테스트 추가, placeholder 기능은 명확한 비지원 응답/experimental 분리 | 러너 계층 커버리지 유의미하게 상승, 미구현 기능의 오해 소지 제거 |
+| **C2.8 (AI-Ready CLI)** | 1주 | AI 자동화 친화성 강화 | JSON 출력 스키마 표준화, 에러코드/메시지 표준화, CLI 매뉴얼/AGENTS 동기화 | AI가 파싱 가능한 일관 출력 및 오류 응답 체계 확립 |
+
+### 11.3 스트림별 상세 작업
+
+| 스트림 | 범위 파일 | 작업 항목 | 검증 명령 |
+|------|------|------|------|
+| DB 스키마 계약 | `cli/commands/data.py`, `cli/commands/trade.py`, `cli/commands/monitor.py`, `cli/adapters/*` | DB alias/매핑 계층 도입, 하드코딩 쿼리 정리 | `python -m cli.main data backtest-list --format json`, `python -m cli.main positions list --format json` |
+| 테스트 신뢰도 | `tests/test_*.py`, `tests/integration/*.py` | 느슨한 exit code 허용 제거, 실제 옵션 기준 재작성 | `python -m pytest tests/ -v --tb=short` |
+| 러너 안정화 | `cli/runners/*.py`, `tests/integration/*` | 실행/종료/예외/자원정리 경로 검증 | `python -m pytest tests/ --cov=cli --cov-report=term-missing` |
+| 버전/문서 일치 | `cli/main.py`, `cli/__init__.py`, `docs/*` | 단일 버전 소스 적용, 문서 버전 자동 동기화 규칙 적용 | `python -m cli.main --version`, 문서 버전 문자열 교차검증 |
+
+### 11.4 문서 반영 규칙 (운영 강제)
+- 코드 변경과 동시에 아래 3종 문서를 묶어 업데이트
+- 1. `docs/change_log/change_log.md`: 버전/변경 항목
+- 2. `docs/update_log/YYYYMMDD_*.md`: 작업 의도/구현/검증 로그
+- 3. `docs/reports/*.md`: 종합 결과(테스트/품질/리스크)
+
+문서 업데이트가 없는 기능 PR은 “완료”로 간주하지 않음.
+
+### 11.5 이번 브랜치 즉시 실행 순서 (권장)
+1. `C2.5`: DB 정합성 + 버전/경고 이슈를 먼저 처리
+2. `C2.6`: 테스트 재작성으로 회귀 방지 장치 복구
+3. `C2.7`: 러너 경로 통합 테스트 및 미구현 경계 명확화
+4. `C2.8`: AI 파싱 안정화를 위한 JSON/에러 표준화
+
+### 11.6 품질 게이트 (머지 기준)
+- `python -m pytest tests/ -v --tb=short` 통과
+- `python -m pytest tests/ --cov=cli --cov-report=term-missing`에서 이전 대비 하락 없음
+- `python -m cli.main --version` 결과와 `docs` 버전 표기 일치
+- 주요 명령 6개 스모크 테스트 통과:
+  - `strategy list`
+  - `db info --type strategy --format json`
+  - `data backtest-list --format json`
+  - `backtest list --format json`
+  - `positions list --format json`
+  - `optimize list --format json`
+
+---
+
+## 12. 최종 판단
 - 현재 브랜치는 “기능 뼈대와 문서화는 우수하나, 실데이터 정합성과 테스트 엄격성 부족으로 완성도 고도화가 필요한 상태”입니다.
 - 우선순위는 **DB 스키마 정합성 복구 + 테스트 신뢰도 복구**입니다.
 - 위 P0/P1 항목을 처리하면 CLI 신뢰성은 단기간 내 체감 개선이 가능합니다.
@@ -273,4 +329,3 @@
 ## 부록 B. 해석 제한
 - 로컬 DB에 실거래/백테스트 데이터 행이 거의 없는 상태라, 일부 명령의 “정확한 결과값 검증”은 제한됨.
 - 다만 컬럼/테이블 불일치는 쿼리 자체로 재현되어 결함 근거로 충분함.
-
