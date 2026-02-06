@@ -75,3 +75,26 @@ python -m cli.main optimize list --format json
 1. `trade.py` 인코딩 깨짐 주석/문자열 정리(기능 영향은 없으나 유지보수성 저하 요인)
 2. 러너 계층 통합 테스트를 CI 기본 파이프라인에 포함
 3. JSON 출력 스키마를 문서화(`docs/CLI_User_Manual.md`에 명시적 계약 표 추가)
+
+## 5. 후속 진행 상태 (같은 날짜 추가 반영)
+
+### 5.1 완료 항목
+1. `trade.py` 인코딩 깨짐 정리 완료
+2. 러너/스키마 테스트 CI 필수 게이트 추가 완료
+3. JSON 응답 계약 문서화 완료
+
+### 5.2 반영 파일
+- `cli/commands/trade.py`
+- `.github/workflows/cli-tests.yml`
+- `docs/CLI_User_Manual.md`
+
+### 5.3 검증 결과
+- `python -m pytest tests/test_trade.py tests/test_cli_basic.py -q` → `38 passed`
+- `python -m cli.main positions list --format json` → `{"message": ...}` 구조 확인
+- `python -m cli.main orders list --format json` → `{"message": ...}` 구조 확인
+- `python -m cli.main trade status --format json` → 객체 구조 출력 확인
+
+### 5.4 다음 권장 단계
+1. `tests/test_trade.py`에 `positions/orders` JSON 구조 검증 케이스 추가
+2. coverage job에 러너/스키마 전용 리포트 아티팩트 분리
+3. JSON 스키마를 독립 문서(`docs/reports/*` 또는 `docs/contracts/*`)로 승격

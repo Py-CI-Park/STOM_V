@@ -1,7 +1,7 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.8
+**버전**: V2.36.U1.5.C2.9
 **최종 업데이트**: 2026-02-06
 
 ---
@@ -108,6 +108,13 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.9 (2026-02-06)
+
+- `cli/commands/trade.py` 인코딩 깨짐 문자열/주석 정리 및 에러 응답 코드 정비
+- `docs/CLI_User_Manual.md`에 JSON 응답 계약(성공/빈결과/에러 payload) 명시
+- `.github/workflows/cli-tests.yml`에 러너/스키마 계약 테스트 필수 게이트 추가
+- C2.8 후속 권장사항 중 1~3번 항목 실행 완료
 
 ### V2.36.U1.5.C2.8 (2026-02-06)
 

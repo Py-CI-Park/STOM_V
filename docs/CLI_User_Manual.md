@@ -1,6 +1,6 @@
 # STOM CLI 사용자 매뉴얼
 
-**버전**: 2.36.U1.5.C2.8
+**버전**: 2.36.U1.5.C2.9
 **System Trading Open Machine - 명령줄 인터페이스**
 
 ---
@@ -11,9 +11,10 @@
 2. [AI 에이전트 연동 가이드 (Claude Code 통합)](#ai-에이전트-연동-가이드-claude-code-통합)
 3. [명령어 참조](#명령어-참조)
 4. [출력 형식](#출력-형식)
-5. [Docker 사용법](#docker-사용법)
-6. [문제 해결](#문제-해결)
-7. [예제](#예제)
+5. [JSON 응답 계약 (AI 파싱 기준)](#json-응답-계약-ai-파싱-기준)
+6. [Docker 사용법](#docker-사용법)
+7. [문제 해결](#문제-해결)
+8. [예제](#예제)
 
 ---
 
@@ -45,7 +46,7 @@ python cli/main.py --help
 
 ```bash
 stom --version
-# 출력: STOM, version 2.36.U1.5.C2.8
+# 출력: STOM, version 2.36.U1.5.C2.9
 ```
 
 ### 처음 실행할 명령어
@@ -1730,6 +1731,58 @@ stom data trades --format csv > trades.csv
 
 ---
 
+## JSON 응답 계약 (AI 파싱 기준)
+
+이 섹션은 `--format json` 사용 시 파싱 안정성을 위한 최소 계약입니다.
+
+### 공통 규칙
+
+1. JSON/CSV 모드에서는 title 배너(`====`)를 출력하지 않습니다.
+2. 데이터가 없는 문자열 응답도 JSON 객체로 감쌉니다.
+3. JSON 에러 응답은 표준 구조를 따릅니다.
+
+### 빈 결과 응답 (정상)
+
+```json
+{
+  "message": "백테스트 결과가 없습니다."
+}
+```
+
+### 표준 에러 응답
+
+```json
+{
+  "ok": false,
+  "error": {
+    "code": "DATA_BACKTEST_LIST_FAILED",
+    "type": "OperationalError",
+    "message": "no such table: backtest_results",
+    "title": "백테스트 목록 조회 실패"
+  }
+}
+```
+
+### 명령별 JSON 필드 계약
+
+| 명령 | 루트 타입 | 필수 필드 | 선택 필드 |
+|------|------|------|------|
+| `stom db info --format json` | object | `database`, `size_mb`, `modified`, `tables`, `total_rows`, `table_info` | - |
+| `stom data backtest-list --format json` | array 또는 object | (배열일 때) 결과 row 객체들, (객체일 때) `message` | - |
+| `stom positions list --format json` | array 또는 object | (배열일 때) 포지션 row 객체들, (객체일 때) `message` | - |
+| `stom optimize list --format json` | array 또는 object | (배열일 때) 작업 row 객체들, (객체일 때) `message` | - |
+| `stom trade status --format json` | object | `trading_status`, `configuration` | - |
+| JSON 에러 공통 | object | `ok`, `error.code`, `error.type`, `error.message`, `error.title` | - |
+
+### 파서 구현 권장사항
+
+1. 먼저 `returncode` 확인 후, `stdout` JSON 파싱을 시도합니다.
+2. 파싱 후 `ok == false`이면 에러로 처리합니다.
+3. 루트가 배열인 명령과 객체인 명령을 모두 처리하도록 분기합니다.
+4. `message` 단독 응답은 빈 결과로 간주합니다.
+
+---
+
 ## Docker 사용법
 
 ### Docker 이미지 빌드
@@ -2077,6 +2130,7 @@ EOF
 
 ## 버전 히스토리
 
+- **2.36.U1.5.C2.9**: JSON 응답 계약 문서화 + trade 명령 인코딩 정리 + CI 러너/스키마 게이트 추가
 - **2.36.U1.5.C2.8**: C2.5~C2.8 안정화(스키마 정합성/테스트 신뢰도/러너 강화/JSON 에러 표준화) 반영
 - **2.36.U1.5.C2.0**: 전체 명령어 참조를 포함한 CLI 기준 버전
 - **2.36.U1.5.C1.0**: 초기 CLI 개발 검토 릴리스

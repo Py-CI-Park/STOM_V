@@ -375,8 +375,32 @@
    - `python -m cli.main data backtest-list --format json`
 
 ### 13.5 잔여 리스크
-- `trade.py` 일부 한글 주석/문자열 인코딩 깨짐이 남아 있어 유지보수 가독성이 낮음(기능 영향은 현재 없음).
+- `trade.py` 인코딩 깨짐 이슈는 C2.9에서 정리되어 해소됨.
 - 러너 계층 커버리지는 추가되었으나, 실제 장시간 백테스트/최적화 실행 시나리오 통합 테스트는 더 보강 필요.
+
+---
+
+## 14. 후속 단계 진행 Status (C2.9)
+
+### 14.1 진행 결과
+- `trade.py` 인코딩 깨짐 정리: **완료**
+- 러너/스키마 테스트 CI 필수화: **완료**
+- JSON 응답 계약 문서화: **완료**
+
+### 14.2 근거 파일
+- `cli/commands/trade.py`
+- `.github/workflows/cli-tests.yml`
+- `docs/CLI_User_Manual.md` (JSON 응답 계약 섹션)
+
+### 14.3 현재 상태 요약
+- 계획했던 C2.8 후속 권장사항 1~3번은 모두 실행 완료.
+- 실행 버전은 `2.36.U1.5.C2.9`로 상향.
+- 테스트/명령 실행 기준 회귀 없음.
+
+### 14.4 다음 단계(권장)
+1. `tests/test_trade.py`에 `positions/orders` JSON payload 필드 검증 추가
+2. coverage 파이프라인에서 runner/schema 전용 커버리지 추적 지표 추가
+3. JSON 계약을 독립 계약 문서로 분리해 변경 관리 강화
 
 ---
 

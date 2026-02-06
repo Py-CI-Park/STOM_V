@@ -2,6 +2,33 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.9 (2026-02-06) - C2.8 후속 실행(문서/CI/인코딩 정리)
+
+#### 개요
+C2.8 이후 정의한 후속 권장사항을 기반으로 운영 안정성 항목 3가지를 추가 반영.
+
+#### 주요 변경 사항
+- `cli/commands/trade.py`
+  - 깨진 인코딩 문자열/주석/도움말 텍스트를 정리해 유지보수 가독성 개선
+  - `trade/positions/orders` 명령 에러 응답 코드 정비
+- `docs/CLI_User_Manual.md`
+  - `JSON 응답 계약 (AI 파싱 기준)` 섹션 추가
+  - 빈 결과(`{"message": ...}`), 표준 에러(`ok/error`) 구조 명시
+  - 명령별 JSON 필드 계약 표 추가
+- `.github/workflows/cli-tests.yml`
+  - `tests/test_runners.py`, `tests/test_schema_contract.py`를 필수 CI 게이트로 추가
+
+#### 검증
+- `python -m pytest tests/test_trade.py tests/test_cli_basic.py -q`
+  - `38 passed`
+- `python -m cli.main positions list --format json`
+- `python -m cli.main orders list --format json`
+- `python -m cli.main trade status --format json`
+- `python -m cli.main --version`
+  - `STOM, version 2.36.U1.5.C2.9`
+
+---
+
 ### V2.36.U1.5.C2.8 (2026-02-06) - AI-Ready 출력/문서 표준화
 
 #### 개요
