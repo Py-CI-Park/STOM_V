@@ -272,3 +272,20 @@ python -m cli.main optimize list --format json
 - `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
 - 결과: `249 passed, 1 skipped`, 커버리지 약 `57.41%`
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.19`
+
+## 16. C2.20 진행 상태 (runner 실패 시나리오 계약 테스트)
+
+### 16.1 완료 항목
+1. `tests/test_runners.py`에 queue timeout 경계 테스트 추가 완료
+2. `tests/test_runners.py`에 process join timeout 후 `kill()` 강제 종료 테스트 추가 완료
+3. 러너 실패 시나리오 계약 테스트 범위 확장 완료
+
+### 16.2 반영 파일
+- `tests/test_runners.py`
+
+### 16.3 확인 결과
+- `python -m pytest tests/test_runners.py -q --tb=short` 통과 (`13 passed`)
+- `python -m pytest tests/ --collect-only -q` 결과 `252 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
+- 결과: `251 passed, 1 skipped`, 커버리지 약 `57.60%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.20`

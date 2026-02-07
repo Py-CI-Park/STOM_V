@@ -592,6 +592,25 @@
 
 ---
 
+## 25. 다음 단계 실행 Status (C2.20)
+
+### 25.1 실행 완료 항목
+1. runner 실패 시나리오(queue timeout, process join timeout) 계약 테스트 추가: 완료
+2. `tests/test_runners.py`에 `_monitor_results` timeout 예외 경계 테스트 추가: 완료
+3. `tests/test_runners.py`에 `kill_processes` join timeout 이후 `kill()` 경로 테스트 추가: 완료
+
+### 25.2 현재 상태
+- C2.19의 후속 권장 단계 1번(runner 실패 시나리오 계약 테스트)이 반영됨.
+- 버전은 `2.36.U1.5.C2.20`으로 상향됨.
+- 전체 테스트는 `251 passed, 1 skipped`로 통과.
+- 전체 CLI 커버리지는 약 `57.60%`로 55% 하한선을 충족.
+- 전체 테스트 수는 `252`로 증가했으며, 러너 전용 테스트는 `13`건으로 확장됨.
+
+### 25.3 다음 권장 단계
+1. `cli/adapters/settings_adapter.py`, `cli/adapters/queue_adapter.py` 저커버리지 구간 보강
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

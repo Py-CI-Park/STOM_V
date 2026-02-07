@@ -1,6 +1,6 @@
 # STOM CLI 사용자 매뉴얼
 
-**버전**: 2.36.U1.5.C2.19
+**버전**: 2.36.U1.5.C2.20
 **System Trading Open Machine - 명령줄 인터페이스**
 
 ---
@@ -46,7 +46,7 @@ python cli/main.py --help
 
 ```bash
 stom --version
-# 출력: STOM, version 2.36.U1.5.C2.19
+# 출력: STOM, version 2.36.U1.5.C2.20
 ```
 
 ### 처음 실행할 명령어
@@ -2133,6 +2133,7 @@ EOF
 
 ## 버전 히스토리
 
+- **2.36.U1.5.C2.20**: runner 실패 시나리오(queue timeout, process join timeout) 계약 테스트를 추가해 예외/강제종료 경계 동작 검증 강화
 - **2.36.U1.5.C2.19**: runner 계층(backtest/optimize) 경계·오류·정리 경로 테스트를 보강해 runner 커버리지와 전체 CLI 커버리지를 개선
 - **2.36.U1.5.C2.18**: tests/README를 최신 테스트 구조(243개) 기준으로 동기화하고 파일별 테스트 수/실행 가이드를 최신화
 - **2.36.U1.5.C2.17**: backtest/optimize run 실패(JSON 파라미터 오류, DB 오류) 계약을 jsonschema로 확장하고 JSON 에러 종료 경로를 정리해 실패 payload 파싱 안정성 강화

@@ -1,9 +1,9 @@
 # STOM CLI 테스트 시스템
 
-**버전**: V2.36.U1.5.C2.19  
+**버전**: V2.36.U1.5.C2.20  
 **최종 업데이트**: 2026-02-07  
-**총 테스트 수**: 250개  
-**최근 실행 결과**: 249 passed, 1 skipped
+**총 테스트 수**: 252개  
+**최근 실행 결과**: 251 passed, 1 skipped
 
 ---
 
@@ -59,11 +59,11 @@ tests/
 | `tests/test_monitor.py` | 14 |
 | `tests/test_optimize.py` | 23 |
 | `tests/test_json_contract_schema.py` | 20 |
-| `tests/test_runners.py` | 11 |
+| `tests/test_runners.py` | 13 |
 | `tests/test_schema_contract.py` | 5 |
 | `tests/integration/test_workflow.py` | 11 |
 | `tests/integration/test_data_consistency.py` | 12 |
-| **합계** | **250** |
+| **합계** | **252** |
 
 ---
 

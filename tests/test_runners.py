@@ -259,6 +259,27 @@ class TestBacktestRunner:
         runner.windowQ.put(("progress", 1, 2, 3))
         runner._monitor_results()
 
+    def test_monitor_results_handles_queue_timeout_gracefully(self):
+        class TimeoutQueue:
+            def __init__(self):
+                self.calls = 0
+
+            def empty(self):
+                return False
+
+            def get(self, timeout=0.1):
+                self.calls += 1
+                raise queue.Empty()
+
+        runner = HeadlessBacktestRunner()
+        timeout_queue = TimeoutQueue()
+        runner.windowQ = timeout_queue
+        runner.soundQ = queue.Queue()
+
+        # Queue timeout(Empty) 예외가 발생해도 모니터 루프가 중단되어야 한다.
+        runner._monitor_results()
+        assert timeout_queue.calls == 1
+
     def test_kill_processes_terminates_alive_processes(self):
         class DummyProcess:
             def __init__(self):
@@ -294,3 +315,40 @@ class TestBacktestRunner:
         assert engine_proc.terminated is True
         assert subtotal_proc.terminated is True
         assert main_proc.terminated is True
+
+    def test_kill_processes_calls_kill_when_join_timeout(self):
+        class StubbornProcess:
+            def __init__(self):
+                self.terminate_calls = 0
+                self.kill_calls = 0
+                self.join_calls = []
+
+            def is_alive(self):
+                return True
+
+            def terminate(self):
+                self.terminate_calls += 1
+
+            def join(self, timeout=None):
+                self.join_calls.append(timeout)
+
+            def kill(self):
+                self.kill_calls += 1
+
+        runner = HeadlessBacktestRunner()
+        engine_proc = StubbornProcess()
+        subtotal_proc = StubbornProcess()
+        main_proc = StubbornProcess()
+
+        runner.back_eprocs = [engine_proc]
+        runner.back_sprocs = [subtotal_proc]
+        runner.backtest_process = main_proc
+
+        runner.kill_processes()
+
+        assert engine_proc.terminate_calls == 1
+        assert subtotal_proc.terminate_calls == 1
+        assert main_proc.terminate_calls == 1
+        assert engine_proc.kill_calls == 1
+        assert subtotal_proc.kill_calls == 1
+        assert main_proc.kill_calls == 1

@@ -2,6 +2,28 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.20 (2026-02-07) - runner 실패 시나리오 계약 테스트 보강
+
+#### 개요
+C2.19 후속으로 runner 계층의 실패 경계를 명확히 검증하기 위해 queue timeout과 process join timeout 시나리오 계약 테스트를 추가.
+
+#### 주요 변경 사항
+- `tests/test_runners.py`
+  - `_monitor_results`에서 `windowQ.get()` timeout(`queue.Empty`) 예외 발생 시 모니터 루프가 안전하게 중단되는 경로 검증 추가
+  - `kill_processes`에서 `join(timeout=1)` 이후 프로세스가 살아 있는 경우 `kill()`로 강제 종료되는 경로 검증 추가
+- 버전 상향
+  - `2.36.U1.5.C2.20`
+
+#### 검증
+- `python -m pytest tests/test_runners.py -q --tb=short`
+- `python -m pytest tests/ --collect-only -q`
+  - 결과: `252 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `251 passed, 1 skipped`
+  - 총 커버리지: 약 57.60%
+
+---
+
 ### V2.36.U1.5.C2.19 (2026-02-07) - runner 커버리지 보강 스프린트
 
 #### 개요

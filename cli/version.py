@@ -1,4 +1,4 @@
 """Central version constants for STOM CLI."""
 
-VERSION = "2.36.U1.5.C2.19"
+VERSION = "2.36.U1.5.C2.20"
 PROG_NAME = "STOM"
