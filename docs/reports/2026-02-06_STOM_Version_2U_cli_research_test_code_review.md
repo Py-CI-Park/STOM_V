@@ -611,6 +611,29 @@
 
 ---
 
+## 26. 다음 단계 실행 Status (C2.21)
+
+### 26.1 실행 완료 항목
+1. `cli/adapters/settings_adapter.py`, `cli/adapters/queue_adapter.py` 저커버리지 구간 보강: 완료
+2. `tests/test_adapters.py` 신규 추가(13건): 완료
+3. 전체 회귀/커버리지 기준(55%) 재검증: 완료
+
+### 26.2 현재 상태
+- C2.20의 다음 권장 단계 1번(adapter 저커버리지 보강)이 반영됨.
+- 버전은 `2.36.U1.5.C2.21`로 상향됨.
+- 전체 테스트는 `264 passed, 1 skipped`로 통과.
+- 전체 CLI 커버리지는 약 `61.42%`로 55% 하한선을 여유 있게 충족.
+- adapter 커버리지 개선:
+  - `cli/adapters/queue_adapter.py`: `23% -> 80%`
+  - `cli/adapters/settings_adapter.py`: `24% -> 56%`
+- 24.3에서 정의한 남은 단계 1~2번이 모두 완료됨.
+
+### 26.3 다음 권장 단계(선택)
+1. `cli/runners/trade_runner.py`의 미구현 주문 실행(close/cancel) 분기에 대한 명시적 에러코드 계약 테스트 추가
+2. `cli/commands/strategy.py` 저커버리지 구간에 CLI 실패 경계 테스트 집중 보강
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

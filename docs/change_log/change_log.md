@@ -2,6 +2,36 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.21 (2026-02-07) - settings/queue adapter 커버리지 보강
+
+#### 개요
+C2.20 후속으로 저커버리지 구간이었던 `settings_adapter`와 `queue_adapter`에 대한 단위 테스트를 추가해 어댑터 계층 신뢰성과 커버리지를 개선.
+
+#### 주요 변경 사항
+- `tests/test_adapters.py` 신규 추가 (13 tests)
+  - settings adapter
+    - DB 경로/블랙리스트 매핑 검증
+    - `_safe_get`, `_parse_ratios` 경계 검증
+    - `load_settings_without_qt` 최소 데이터 경로 검증
+  - queue adapter
+    - `LoggingQueue`, `NullQueue`, `ProgressQueue` 동작 검증
+    - `CLIQueueAdapter` 팩토리/메시지 처리/완료 감지 검증
+- 커버리지 개선
+  - `cli/adapters/queue_adapter.py`: `23% -> 80%`
+  - `cli/adapters/settings_adapter.py`: `24% -> 56%`
+- 버전 상향
+  - `2.36.U1.5.C2.21`
+
+#### 검증
+- `python -m pytest tests/test_adapters.py -q --tb=short`
+- `python -m pytest tests/ --collect-only -q`
+  - 결과: `265 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `264 passed, 1 skipped`
+  - 총 커버리지: 약 61.42%
+
+---
+
 ### V2.36.U1.5.C2.20 (2026-02-07) - runner 실패 시나리오 계약 테스트 보강
 
 #### 개요

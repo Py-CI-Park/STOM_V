@@ -289,3 +289,23 @@ python -m cli.main optimize list --format json
 - `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
 - 결과: `251 passed, 1 skipped`, 커버리지 약 `57.60%`
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.20`
+
+## 17. C2.21 진행 상태 (adapter 저커버리지 보강)
+
+### 17.1 완료 항목
+1. `tests/test_adapters.py` 신규 추가(13건) 완료
+2. `settings_adapter`/`queue_adapter` 핵심 경계·정상 경로 테스트 보강 완료
+3. 전체 회귀/커버리지 기준(55%) 재검증 완료
+
+### 17.2 반영 파일
+- `tests/test_adapters.py`
+
+### 17.3 확인 결과
+- `python -m pytest tests/test_adapters.py -q --tb=short` 통과 (`13 passed`)
+- `python -m pytest tests/ --collect-only -q` 결과 `265 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
+- 결과: `264 passed, 1 skipped`, 커버리지 약 `61.42%`
+- 어댑터 커버리지 개선
+  - `cli/adapters/queue_adapter.py`: `23% -> 80%`
+  - `cli/adapters/settings_adapter.py`: `24% -> 56%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.21`
