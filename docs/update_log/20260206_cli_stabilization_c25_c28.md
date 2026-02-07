@@ -256,3 +256,19 @@ python -m cli.main optimize list --format json
 ### 14.3 확인 결과
 - `python -m pytest tests/ --collect-only -q` 실행 결과 `243 tests collected` 확인
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.18`
+
+## 15. C2.19 진행 상태 (runner 커버리지 보강)
+
+### 15.1 완료 항목
+1. `tests/test_runners.py`에 runner 경계/오류/정리 분기 테스트 7건 추가 완료
+2. backtest/optimize runner 커버리지 개선 완료
+3. 전체 회귀/커버리지 기준(55%) 재검증 완료
+
+### 15.2 반영 파일
+- `tests/test_runners.py`
+
+### 15.3 확인 결과
+- `python -m pytest tests/test_runners.py -q --tb=short` 통과 (`11 passed`)
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
+- 결과: `249 passed, 1 skipped`, 커버리지 약 `57.41%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.19`

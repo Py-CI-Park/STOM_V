@@ -4,6 +4,7 @@ Runner contract tests for headless CLI execution paths.
 
 from __future__ import annotations
 
+import queue
 import sqlite3
 from pathlib import Path
 
@@ -141,6 +142,55 @@ class TestOptimizeRunner:
 
         runner._cleanup()
 
+    def test_status_and_list_without_db_connection(self):
+        runner = HeadlessOptimizeRunner()
+        assert runner.get_job_status("missing") == {"error": "Database not connected"}
+        assert runner.list_jobs() == []
+
+    def test_save_job_error_returns_error_prefix(self):
+        class BrokenConnection:
+            def cursor(self):
+                raise sqlite3.OperationalError("cursor failure")
+
+        runner = HeadlessOptimizeRunner()
+        runner.con_bt = BrokenConnection()
+        job_id = runner._save_optimization_job(
+            opt_type="grid",
+            backtest_type="stock",
+            buy_strategy="buy_a",
+            sell_strategy="sell_a",
+            start_date="20240101",
+            end_date="20240131",
+            betting=100000,
+            params={"x": [1, 2]},
+        )
+        assert job_id.startswith("error_")
+
+    def test_run_grid_handles_module_load_failure(self, monkeypatch):
+        runner = HeadlessOptimizeRunner()
+        cleanup_called = {"value": False}
+
+        def _raise_modules():
+            raise RuntimeError("module load failure")
+
+        def _mark_cleanup():
+            cleanup_called["value"] = True
+
+        monkeypatch.setattr("cli.runners.optimize_runner._load_optimize_modules", _raise_modules)
+        monkeypatch.setattr(runner, "_cleanup", _mark_cleanup)
+
+        result = runner.run_grid_optimization(
+            backtest_type="stock",
+            buy_strategy="buy_a",
+            sell_strategy="sell_a",
+            start_date="20240101",
+            end_date="20240131",
+            betting=100000,
+        )
+        assert result["success"] is False
+        assert "module load failure" in result["error_message"]
+        assert cleanup_called["value"] is True
+
 
 class TestBacktestRunner:
     def test_invalid_backtest_type_fails_before_module_load(self, monkeypatch):
@@ -167,3 +217,80 @@ class TestBacktestRunner:
             )
             is False
         )
+
+    def test_create_queues_initializes_core_queues(self):
+        runner = HeadlessBacktestRunner()
+        runner._create_queues()
+
+        assert runner.windowQ is not None
+        assert runner.soundQ is not None
+        assert runner.totalQ is not None
+        assert runner.backQ is not None
+        assert runner.liveQ is not None
+        assert runner.teleQ is not None
+
+    def test_start_backtest_returns_false_when_settings_load_fails(self, monkeypatch):
+        runner = HeadlessBacktestRunner()
+        runner.dict_set = None
+        monkeypatch.setattr(runner, "load_settings", lambda: False)
+
+        assert (
+            runner.start_backtest(
+                backtest_type="stock",
+                buy_strategy="buy_a",
+                sell_strategy="sell_a",
+                start_date="20240101",
+                end_date="20240131",
+            )
+            is False
+        )
+
+    def test_monitor_results_stops_when_process_terminates(self):
+        class DeadProcess:
+            def is_alive(self):
+                return False
+
+        runner = HeadlessBacktestRunner()
+        runner.windowQ = queue.Queue()
+        runner.soundQ = queue.Queue()
+        runner.backtest_process = DeadProcess()
+
+        # Covers tuple-handling branch before loop exits by dead process.
+        runner.windowQ.put(("progress", 1, 2, 3))
+        runner._monitor_results()
+
+    def test_kill_processes_terminates_alive_processes(self):
+        class DummyProcess:
+            def __init__(self):
+                self._alive = True
+                self.terminated = False
+                self.killed = False
+
+            def is_alive(self):
+                return self._alive
+
+            def terminate(self):
+                self.terminated = True
+                self._alive = False
+
+            def join(self, timeout=None):
+                return None
+
+            def kill(self):
+                self.killed = True
+                self._alive = False
+
+        runner = HeadlessBacktestRunner()
+        engine_proc = DummyProcess()
+        subtotal_proc = DummyProcess()
+        main_proc = DummyProcess()
+
+        runner.back_eprocs = [engine_proc]
+        runner.back_sprocs = [subtotal_proc]
+        runner.backtest_process = main_proc
+
+        runner.kill_processes()
+
+        assert engine_proc.terminated is True
+        assert subtotal_proc.terminated is True
+        assert main_proc.terminated is True

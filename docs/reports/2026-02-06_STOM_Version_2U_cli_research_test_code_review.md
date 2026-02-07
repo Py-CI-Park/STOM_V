@@ -572,6 +572,26 @@
 
 ---
 
+## 24. 다음 단계 실행 Status (C2.19)
+
+### 24.1 실행 완료 항목
+1. runner 계층 커버리지 보강 스프린트 수행: 완료
+2. `tests/test_runners.py`에 optimize/backtest 러너 경계·오류·정리 테스트 추가: 완료
+3. 전체 회귀/커버리지 기준(55%) 재검증: 완료
+
+### 24.2 현재 상태
+- C2.18에서 제시한 다음 권장 단계 1번(runner 커버리지 보강)이 반영됨.
+- 버전은 `2.36.U1.5.C2.19`로 상향됨.
+- 전체 테스트는 `249 passed, 1 skipped`로 통과.
+- 전체 CLI 커버리지는 약 57.41%로 55% 하한선을 여유 있게 충족.
+- 초기 후속 권장 단계(21.3 기준) 1~3번이 모두 완료됨.
+
+### 24.3 후속 권장 단계(신규)
+1. runner 계층을 대상으로 실패 시나리오(예: queue timeout, 프로세스 join timeout) 계약 테스트 추가
+2. `cli/adapters/settings_adapter.py`, `cli/adapters/queue_adapter.py` 저커버리지 구간 보강
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

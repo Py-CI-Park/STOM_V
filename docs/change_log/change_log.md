@@ -2,6 +2,36 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.19 (2026-02-07) - runner 커버리지 보강 스프린트
+
+#### 개요
+C2.18 후속으로 runner 계층(`cli/runners/*`)의 핵심 경계/오류/정리 분기 테스트를 보강해 커버리지와 회귀 안정성을 개선.
+
+#### 주요 변경 사항
+- `tests/test_runners.py`
+  - optimize runner
+    - DB 미연결 상태(`get_job_status`, `list_jobs`) 경계 검증 추가
+    - `_save_optimization_job` 오류 fallback(`error_*`) 검증 추가
+    - 모듈 로드 실패 시 `run_grid_optimization` 실패/cleanup 경로 검증 추가
+  - backtest runner
+    - `_create_queues` 초기화 검증 추가
+    - 설정 로드 실패 시 `start_backtest` 조기 실패 경로 검증 추가
+    - `_monitor_results` 프로세스 종료 분기 검증 추가
+    - `kill_processes` 종료 경로 검증 추가
+- 버전 상향
+  - `2.36.U1.5.C2.19`
+
+#### 검증
+- `python -m pytest tests/test_runners.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `249 passed, 1 skipped`
+  - 총 커버리지: 약 57.41%
+  - runner 커버리지:
+    - `cli/runners/backtest_runner.py` 34%
+    - `cli/runners/optimize_runner.py` 47%
+
+---
+
 ### V2.36.U1.5.C2.18 (2026-02-07) - 테스트 문서 정합성 동기화
 
 #### 개요
