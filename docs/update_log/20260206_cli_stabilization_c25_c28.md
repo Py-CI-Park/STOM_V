@@ -309,3 +309,30 @@ python -m cli.main optimize list --format json
   - `cli/adapters/queue_adapter.py`: `23% -> 80%`
   - `cli/adapters/settings_adapter.py`: `24% -> 56%`
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.21`
+
+## 18. C2.22 진행 상태 (trade JSON 계약 + strategy 경계 보강)
+
+### 18.1 완료 항목
+1. `tests/test_trade.py` DB 오류 JSON 계약 테스트 4건 추가 완료
+2. `tests/test_strategy_boundaries.py` 신규(13건) 추가 완료
+3. `tests/test_json_contract_schema.py` DB 오류 JSON 스키마 검증 2건 추가 완료
+4. `strategy import`의 `list` shadowing 결함 수정 완료
+5. 전체 회귀/커버리지 기준(55%) 재검증 완료
+
+### 18.2 반영 파일
+- `cli/commands/trade.py`
+- `cli/commands/strategy.py`
+- `tests/test_trade.py`
+- `tests/test_strategy_boundaries.py`
+- `tests/test_json_contract_schema.py`
+
+### 18.3 확인 결과
+- `python -m pytest tests/test_trade.py -q --tb=short` 통과 (`26 passed`)
+- `python -m pytest tests/test_strategy_boundaries.py -q --tb=short` 통과 (`13 passed`)
+- `python -m pytest tests/ --collect-only -q` 결과 `284 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
+- 결과: `283 passed, 1 skipped`, 커버리지 약 `64.59%`
+- 커버리지 개선
+  - `cli/commands/strategy.py`: `43% -> 69%`
+  - `cli/commands/trade.py`: `71% -> 76%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.22`

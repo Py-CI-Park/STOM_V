@@ -251,6 +251,34 @@ class TestJsonContractSchema:
         payload = json.loads(result.output)
         validate(instance=payload, schema=MESSAGE_OR_LIST_SCHEMA)
 
+    def test_positions_list_db_error_schema(
+        self, cli_runner: CliRunner, monkeypatch: pytest.MonkeyPatch
+    ):
+        def _raise_connect(*_args, **_kwargs):
+            raise RuntimeError("db connect failed")
+
+        monkeypatch.setattr("cli.commands.trade.sqlite3.connect", _raise_connect)
+
+        result = cli_runner.invoke(main, ["positions", "list", "--format", "json"])
+        assert result.exit_code != 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=ERROR_SCHEMA)
+        assert payload["error"]["code"] == "POSITIONS_LIST_FAILED"
+
+    def test_orders_list_db_error_schema(
+        self, cli_runner: CliRunner, monkeypatch: pytest.MonkeyPatch
+    ):
+        def _raise_connect(*_args, **_kwargs):
+            raise RuntimeError("db connect failed")
+
+        monkeypatch.setattr("cli.commands.trade.sqlite3.connect", _raise_connect)
+
+        result = cli_runner.invoke(main, ["orders", "list", "--format", "json"])
+        assert result.exit_code != 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=ERROR_SCHEMA)
+        assert payload["error"]["code"] == "ORDERS_LIST_FAILED"
+
     def test_data_backtest_list_schema(self, cli_runner: CliRunner):
         result = cli_runner.invoke(main, ["data", "backtest-list", "--format", "json"])
         assert result.exit_code == 0

@@ -2,6 +2,44 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.22 (2026-02-07) - trade JSON 오류 계약 및 strategy 경계 테스트 보강
+
+#### 개요
+C2.21 후속으로 거래 명령 JSON 에러 계약을 강화하고, `strategy` 명령의 실패/경계 테스트를 보강해 실동작 신뢰성과 커버리지를 개선.
+
+#### 주요 변경 사항
+- `tests/test_trade.py`
+  - DB 연결 실패 시 JSON 에러코드 계약 테스트 4건 추가
+    - `POSITIONS_LIST_FAILED`
+    - `ORDERS_LIST_FAILED`
+    - `POSITIONS_CLOSE_FAILED`
+    - `ORDERS_CANCEL_FAILED`
+- `tests/test_json_contract_schema.py`
+  - `positions list`, `orders list` DB 오류 JSON 계약 스키마 검증 2건 추가
+- `cli/commands/trade.py`
+  - `positions list`, `orders list`의 JSON 모드 실패 경로를 `Exit(1)`로 정리해 단일 JSON payload 보장
+- `tests/test_strategy_boundaries.py` 신규 추가 (13 tests)
+  - `list/show/export/save/delete/import/validate` 실패/경계 케이스 검증
+  - 저장 후 DB 반영, syntax error 검증, unsupported 확장자 거부 검증 포함
+- `cli/commands/strategy.py`
+  - `strategy import` JSON 파싱 시 `list`/`dict` shadowing 버그 수정 (`builtins.list`, `builtins.dict`)
+- 커버리지 개선
+  - `cli/commands/strategy.py`: `43% -> 69%`
+  - `cli/commands/trade.py`: `71% -> 76%`
+- 버전 상향
+  - `2.36.U1.5.C2.22`
+
+#### 검증
+- `python -m pytest tests/test_trade.py -q --tb=short`
+- `python -m pytest tests/test_strategy_boundaries.py -q --tb=short`
+- `python -m pytest tests/ --collect-only -q`
+  - 결과: `284 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `283 passed, 1 skipped`
+  - 총 커버리지: 약 64.59%
+
+---
+
 ### V2.36.U1.5.C2.21 (2026-02-07) - settings/queue adapter 커버리지 보강
 
 #### 개요
@@ -918,3 +956,5 @@ python -m cli.main data trades --type stock --date 2024-12-31 --format json
 
 ### V2.36 (이전)
 - ui_mainwindow.pyd 컴파일 버전 사용
+- `tests/test_json_contract_schema.py`
+  - `positions list`, `orders list` DB 오류 JSON 계약 스키마 검증 2건 추가

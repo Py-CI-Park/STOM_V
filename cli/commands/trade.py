@@ -348,6 +348,8 @@ def list_positions(type: Optional[str], format: str):
             )
         )
         logger_.error(f"Error listing positions: {e}")
+        if format == "json":
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 
@@ -532,6 +534,8 @@ def list_orders(type: Optional[str], status: Optional[str], format: str):
             )
         )
         logger_.error(f"Error listing orders: {e}")
+        if format == "json":
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 

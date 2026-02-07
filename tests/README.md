@@ -1,9 +1,9 @@
 # STOM CLI 테스트 시스템
 
-**버전**: V2.36.U1.5.C2.21  
+**버전**: V2.36.U1.5.C2.22  
 **최종 업데이트**: 2026-02-07  
-**총 테스트 수**: 265개  
-**최근 실행 결과**: 264 passed, 1 skipped
+**총 테스트 수**: 284개  
+**최근 실행 결과**: 283 passed, 1 skipped
 
 ---
 
@@ -33,6 +33,7 @@ tests/
 ├── test_adapters.py
 ├── test_runners.py
 ├── test_schema_contract.py
+├── test_strategy_boundaries.py
 ├── fixtures/
 │   ├── __init__.py
 │   ├── sample_strategies.py
@@ -52,20 +53,21 @@ tests/
 |------|-----------|
 | `tests/test_cli_basic.py` | 24 |
 | `tests/test_strategy.py` | 24 |
+| `tests/test_strategy_boundaries.py` | 13 |
 | `tests/test_db.py` | 30 |
 | `tests/test_output_formats.py` | 32 |
 | `tests/test_backtest.py` | 8 |
 | `tests/test_data.py` | 14 |
-| `tests/test_trade.py` | 22 |
+| `tests/test_trade.py` | 26 |
 | `tests/test_monitor.py` | 14 |
 | `tests/test_optimize.py` | 23 |
-| `tests/test_json_contract_schema.py` | 20 |
+| `tests/test_json_contract_schema.py` | 22 |
 | `tests/test_adapters.py` | 13 |
 | `tests/test_runners.py` | 13 |
 | `tests/test_schema_contract.py` | 5 |
 | `tests/integration/test_workflow.py` | 11 |
 | `tests/integration/test_data_consistency.py` | 12 |
-| **합계** | **265** |
+| **합계** | **284** |
 
 ---
 

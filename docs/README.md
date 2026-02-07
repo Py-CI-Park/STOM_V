@@ -1,7 +1,7 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.21
+**버전**: V2.36.U1.5.C2.22
 **최종 업데이트**: 2026-02-07
 
 ---
@@ -48,7 +48,7 @@ docs/
 |------|------|
 | [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (한글, 2,096줄) - 사용자 및 AI Agent용 |
 | [contracts/CLI_JSON_Contract.md](contracts/CLI_JSON_Contract.md) | CLI JSON 응답 계약서 |
-| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (265개 테스트) |
+| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (284개 테스트) |
 
 ### change_log/ - 변경 이력
 
@@ -111,6 +111,15 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.22 (2026-02-07)
+
+- `tests/test_trade.py`에 DB 오류 시 JSON 에러코드 계약 테스트 4건 추가
+- `tests/test_strategy_boundaries.py` 신규 추가(13건): strategy 명령 실패/경계 경로 검증 강화
+- `cli/commands/strategy.py`에서 `import` JSON 파싱 시 `list` shadowing 버그 수정(`builtins.list/dict` 사용)
+- `cli/commands/trade.py`의 JSON 모드 오류 종료 경로 정리(`positions list`, `orders list`)
+- 전체 테스트 수: `284`, 결과: `283 passed, 1 skipped`
+- 전체 CLI 커버리지: 약 `64.59%`
 
 ### V2.36.U1.5.C2.21 (2026-02-07)
 

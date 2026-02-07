@@ -9,6 +9,7 @@ import click
 import sqlite3
 import pandas as pd
 import json
+import builtins
 from pathlib import Path
 from typing import Optional, List
 from utility.static import get_logger
@@ -397,9 +398,9 @@ def import_cmd(import_file: str, strategy_type: str):
                 data = json.load(f)
 
             # DataFrame으로 변환
-            if isinstance(data, list):
+            if isinstance(data, builtins.list):
                 df = pd.DataFrame(data)
-            elif isinstance(data, dict):
+            elif isinstance(data, builtins.dict):
                 df = pd.DataFrame([data])
             else:
                 raise click.ClickException("지원되지 않는 JSON 형식입니다.")
