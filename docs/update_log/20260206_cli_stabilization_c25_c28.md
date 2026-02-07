@@ -241,3 +241,18 @@ python -m cli.main optimize list --format json
 - `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
 - 결과: `242 passed, 1 skipped`, 커버리지 약 `55.50%`
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.17`
+
+## 14. C2.18 진행 상태 (테스트 문서 정합성 동기화)
+
+### 14.1 완료 항목
+1. `tests/README.md`를 현재 테스트 구조 기준으로 전면 갱신 완료
+2. 파일별 테스트 수/총 테스트 수(243) 반영 완료
+3. 테스트 실행/수집/커버리지 명령 및 유지보수 규칙 최신화 완료
+
+### 14.2 반영 파일
+- `tests/README.md`
+- `docs/README.md`
+
+### 14.3 확인 결과
+- `python -m pytest tests/ --collect-only -q` 실행 결과 `243 tests collected` 확인
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.18`
