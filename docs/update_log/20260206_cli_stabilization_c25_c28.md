@@ -189,3 +189,17 @@ python -m cli.main optimize list --format json
 - `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
 - 결과: `237 passed, 1 skipped`, 커버리지 약 `55.08%`
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.14`
+
+## 11. C2.15 진행 상태 (계약 변경 이력 관리 체계)
+
+### 11.1 완료 항목
+1. `docs/contracts/CLI_JSON_Contract.md`에 명령별 계약 변경 이력 표 추가 완료
+2. 계약 변경 운영 규칙(이력 등록/호환성 표기/테스트 링크) 추가 완료
+3. 계약 문서 내 CI coverage 기준 수치(55) 동기화 완료
+
+### 11.2 반영 파일
+- `docs/contracts/CLI_JSON_Contract.md`
+- `docs/reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md`
+
+### 11.3 확인 결과
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.15`

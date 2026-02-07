@@ -103,4 +103,24 @@
 ## 8. 자동검증 파이프라인
 1. 로컬: `python -m pytest tests/test_json_contract_schema.py -q`
 2. CI(Unit): `pytest tests/ -m "not integration and not slow"`
-3. CI(Coverage): `pytest tests/ --cov=cli --cov-fail-under=50`
+3. CI(Coverage): `pytest tests/ --cov=cli --cov-fail-under=55`
+
+## 9. 명령별 계약 변경 이력
+
+| 명령 | 버전 | 변경 필드/구조 | 호환성 | 테스트 링크 |
+|------|------|----------------|--------|-------------|
+| `trade status` | C2.10 | `trading_status`, `configuration` 필드 계약 명시 | 하위호환 | `tests/test_trade.py::test_trade_status_json` |
+| `positions close` 실패 | C2.11 | 표준 에러(`ok=false`, `error.code=POSITIONS_CLOSE_INVALID_ARGS`) 계약 추가 | 하위호환 | `tests/test_trade.py::test_positions_close_missing_target_json_error_contract` |
+| `orders cancel` 실패 | C2.11 | 표준 에러(`ok=false`, `error.code=ORDERS_CANCEL_INVALID_ARGS`) 계약 추가 | 하위호환 | `tests/test_trade.py::test_orders_cancel_missing_target_json_error_contract` |
+| `positions close --all` 성공 | C2.12 | `ok`, `order_type`, `asset_type`, `status`, `message` 계약 명시 | 하위호환 | `tests/test_trade.py::test_positions_close_all_json_success_contract` |
+| `orders cancel --all` 성공 | C2.12 | `ok`, `cancel_type`, `asset_type`, `status`, `message` 계약 명시 | 하위호환 | `tests/test_trade.py::test_orders_cancel_all_json_success_contract` |
+| `backtest status` | C2.13 | 미존재 ID는 `message`, 존재 ID는 상태 객체(`id`, `status`, `created_at` 등) 계약 명시 | 하위호환 | `tests/test_json_contract_schema.py::test_backtest_status_unknown_schema`, `tests/test_json_contract_schema.py::test_backtest_status_success_schema` |
+| `optimize status` | C2.13 | 미존재 ID는 `message`, 존재 ID는 상태 객체(`id`, `type`, `asset_type`, `status` 등) 계약 명시 | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_status_unknown_schema`, `tests/test_json_contract_schema.py::test_optimize_status_success_schema` |
+| `optimize list` | C2.13 | 배열 또는 `{"message": ...}` 계약 명시 및 jsonschema 자동검증 연동 | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_list_schema` |
+| `backtest list` | C2.13 | 배열 또는 `{"message": ...}` 계약 명시 및 jsonschema 자동검증 연동 | 하위호환 | `tests/test_json_contract_schema.py::test_backtest_list_schema` |
+
+## 10. 계약 변경 운영 규칙
+1. 계약 변경은 명령 단위로 본 문서 9절 이력 표에 반드시 추가한다.
+2. 변경 필드가 있으면 필드명과 타입/의미를 요약하고 호환성(하위호환/비호환)을 명시한다.
+3. 계약 변경은 최소 1개 이상의 자동화 테스트 링크를 함께 등록한다.
+4. CI 커버리지/계약 검증 기준 변경 시 8절 파이프라인 수치를 즉시 동기화한다.

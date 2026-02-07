@@ -1,7 +1,7 @@
 # STOM AI 에이전트 가이드
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.14
+**버전**: V2.36.U1.5.C2.15
 **최종 업데이트**: 2026-02-07
 
 이 문서는 AI 에이전트(Claude Code, GitHub Copilot 등)가 STOM 프로젝트를 효율적으로 이해하고 작업할 수 있도록 작성되었습니다.
