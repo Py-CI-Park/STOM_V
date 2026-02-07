@@ -359,13 +359,27 @@ def list_positions(type: Optional[str], format: str):
     type=click.Choice(["stock", "coin", "future"]),
     help="자산 유형 (--all과 함께 사용)",
 )
+@click.option(
+    "--format",
+    type=click.Choice(["table", "json"]),
+    default="table",
+    help="출력 형식",
+)
 @click.confirmation_option(prompt="정말로 포지션을 청산하시겠습니까?")
-def close_positions(close_all: bool, code: Optional[str], type: Optional[str]):
+def close_positions(close_all: bool, code: Optional[str], type: Optional[str], format: str):
     """포지션 청산 요청 기록."""
     try:
         if not close_all and not code:
-            click.echo("Error: --all 또는 --code 중 하나를 지정해야 합니다.")
-            return
+            message = "--all 또는 --code 중 하나를 지정해야 합니다."
+            click.echo(
+                OutputAdapter.format_error(
+                    ValueError(message),
+                    "포지션 청산 실패",
+                    output_format=OutputFormat(format),
+                    error_code="POSITIONS_CLOSE_INVALID_ARGS",
+                )
+            )
+            click.get_current_context().exit(1)
 
         con = sqlite3.connect(DB_TRADELIST)
         cursor = con.cursor()
@@ -411,16 +425,37 @@ def close_positions(close_all: bool, code: Optional[str], type: Optional[str]):
         con.commit()
         con.close()
 
-        click.echo("\n" + "=" * 70)
-        click.echo("포지션 청산 요청")
-        click.echo("=" * 70)
-        click.echo(f"\n{message}")
-        click.echo("\n참고: 실제 청산은 메인 애플리케이션에서 처리됩니다.")
+        if format == "json":
+            OutputAdapter(format=OutputFormat.JSON).output(
+                {
+                    "ok": True,
+                    "order_type": order_type,
+                    "asset_type": asset_type,
+                    "code": code,
+                    "status": "pending",
+                    "message": message,
+                }
+            )
+        else:
+            click.echo("\n" + "=" * 70)
+            click.echo("포지션 청산 요청")
+            click.echo("=" * 70)
+            click.echo(f"\n{message}")
+            click.echo("\n참고: 실제 청산은 메인 애플리케이션에서 처리됩니다.")
         logger_.info(f"Close order created: {order_type}, code={code}, type={asset_type}")
+    except click.exceptions.Exit:
+        raise
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "포지션 청산 실패", error_code="POSITIONS_CLOSE_FAILED"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "포지션 청산 실패",
+                output_format=OutputFormat(format),
+                error_code="POSITIONS_CLOSE_FAILED",
+            )
+        )
         logger_.error(f"Error closing positions: {e}")
-        raise click.ClickException(str(e))
+        click.get_current_context().exit(1)
 
 
 @click.group()
@@ -508,13 +543,27 @@ def list_orders(type: Optional[str], status: Optional[str], format: str):
     type=click.Choice(["stock", "coin", "future"]),
     help="자산 유형 (--all과 함께 사용)",
 )
+@click.option(
+    "--format",
+    type=click.Choice(["table", "json"]),
+    default="table",
+    help="출력 형식",
+)
 @click.confirmation_option(prompt="정말로 주문을 취소하시겠습니까?")
-def cancel_orders(cancel_all: bool, order_id: Optional[str], type: Optional[str]):
+def cancel_orders(cancel_all: bool, order_id: Optional[str], type: Optional[str], format: str):
     """주문 취소 요청 기록."""
     try:
         if not cancel_all and not order_id:
-            click.echo("Error: --all 또는 --id 중 하나를 지정해야 합니다.")
-            return
+            message = "--all 또는 --id 중 하나를 지정해야 합니다."
+            click.echo(
+                OutputAdapter.format_error(
+                    ValueError(message),
+                    "주문 취소 실패",
+                    output_format=OutputFormat(format),
+                    error_code="ORDERS_CANCEL_INVALID_ARGS",
+                )
+            )
+            click.get_current_context().exit(1)
 
         con = sqlite3.connect(DB_TRADELIST)
         cursor = con.cursor()
@@ -560,16 +609,37 @@ def cancel_orders(cancel_all: bool, order_id: Optional[str], type: Optional[str]
         con.commit()
         con.close()
 
-        click.echo("\n" + "=" * 70)
-        click.echo("주문 취소 요청")
-        click.echo("=" * 70)
-        click.echo(f"\n{message}")
-        click.echo("\n참고: 실제 취소는 메인 애플리케이션에서 처리됩니다.")
+        if format == "json":
+            OutputAdapter(format=OutputFormat.JSON).output(
+                {
+                    "ok": True,
+                    "cancel_type": cancel_type,
+                    "asset_type": asset_type,
+                    "order_id": order_id,
+                    "status": "pending",
+                    "message": message,
+                }
+            )
+        else:
+            click.echo("\n" + "=" * 70)
+            click.echo("주문 취소 요청")
+            click.echo("=" * 70)
+            click.echo(f"\n{message}")
+            click.echo("\n참고: 실제 취소는 메인 애플리케이션에서 처리됩니다.")
         logger_.info(f"Cancel order created: {cancel_type}, order_id={order_id}, type={asset_type}")
+    except click.exceptions.Exit:
+        raise
     except Exception as e:
-        click.echo(OutputAdapter.format_error(e, "주문 취소 실패", error_code="ORDERS_CANCEL_FAILED"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "주문 취소 실패",
+                output_format=OutputFormat(format),
+                error_code="ORDERS_CANCEL_FAILED",
+            )
+        )
         logger_.error(f"Error cancelling orders: {e}")
-        raise click.ClickException(str(e))
+        click.get_current_context().exit(1)
 
 
 @click.group()

@@ -156,7 +156,8 @@ jobs:
       run: |
         pytest tests/test_runners.py tests/test_schema_contract.py -v \
           --cov=cli.runners --cov=cli.adapters.schema_adapter \
-          --cov-report=term-missing --cov-report=xml:runner_schema_coverage.xml | tee runner_schema_coverage.txt
+          --cov-report=term-missing --cov-report=xml:runner_schema_coverage.xml \
+          --cov-fail-under=35 | tee runner_schema_coverage.txt
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4

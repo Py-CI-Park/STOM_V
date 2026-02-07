@@ -2,6 +2,34 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.11 (2026-02-06) - 실패 JSON 계약 강화 및 커버리지 하한선 적용
+
+#### 개요
+C2.10 후속으로 `positions close`/`orders cancel` 실패 경로의 JSON 계약을 강화하고, runner/schema 전용 커버리지 스냅샷에 하한선을 적용.
+
+#### 주요 변경 사항
+- `cli/commands/trade.py`
+  - `positions close`, `orders cancel`에 `--format` 옵션 추가
+  - 필수 인자 누락 시 JSON 표준 에러(`ok=false`) + 에러코드 반환
+  - 신규 에러코드:
+    - `POSITIONS_CLOSE_INVALID_ARGS`
+    - `ORDERS_CANCEL_INVALID_ARGS`
+- `tests/test_trade.py`
+  - 실패 JSON 에러코드 계약 테스트 2건 추가
+- `.github/workflows/cli-tests.yml`
+  - runner/schema focused coverage 단계에 `--cov-fail-under=35` 적용
+- `docs/contracts/CLI_JSON_Contract.md`
+  - 명령별 샘플 응답 및 테스트 링크 표 추가
+- 버전 상향
+  - `2.36.U1.5.C2.11`
+
+#### 검증
+- `python -m pytest tests/test_trade.py -q`
+- `python -m pytest tests/ -q --tb=short`
+- `python -m cli.main --version`
+
+---
+
 ### V2.36.U1.5.C2.10 (2026-02-06) - C2.9 후속 단계(테스트/커버리지/계약 분리)
 
 #### 개요

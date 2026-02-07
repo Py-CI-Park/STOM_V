@@ -1,7 +1,7 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.10
+**버전**: V2.36.U1.5.C2.11
 **최종 업데이트**: 2026-02-06
 
 ---
@@ -48,7 +48,7 @@ docs/
 |------|------|
 | [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (한글, 2,096줄) - 사용자 및 AI Agent용 |
 | [contracts/CLI_JSON_Contract.md](contracts/CLI_JSON_Contract.md) | CLI JSON 응답 계약서 |
-| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (216개 테스트) |
+| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (218개 테스트) |
 
 ### change_log/ - 변경 이력
 
@@ -111,6 +111,13 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.11 (2026-02-06)
+
+- `positions close`/`orders cancel`에 JSON 실패 계약(`ok=false`, 에러코드) 적용
+- `tests/test_trade.py`에 실패 JSON 에러코드 계약 테스트 2건 추가
+- coverage job의 runner/schema 스냅샷에 하한선(`--cov-fail-under=35`) 적용
+- `docs/contracts/CLI_JSON_Contract.md`에 명령별 샘플/테스트 링크 표 추가
 
 ### V2.36.U1.5.C2.10 (2026-02-06)
 

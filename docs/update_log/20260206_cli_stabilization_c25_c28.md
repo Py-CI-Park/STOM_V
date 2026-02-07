@@ -117,3 +117,21 @@ python -m cli.main optimize list --format json
 - `python -m pytest tests/test_trade.py -q` 통과
 - `python -m pytest tests/ -q --tb=short` 통과
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.10`
+
+## 7. C2.11 진행 상태 (추가 후속 실행)
+
+### 7.1 완료 항목
+1. `positions close`/`orders cancel` 실패 JSON 에러코드 계약 테스트 추가 완료
+2. runner/schema 커버리지 하한선(`--cov-fail-under=35`) 적용 완료
+3. JSON 계약 문서에 명령별 샘플/테스트 링크 표 추가 완료
+
+### 7.2 반영 파일
+- `cli/commands/trade.py`
+- `tests/test_trade.py`
+- `.github/workflows/cli-tests.yml`
+- `docs/contracts/CLI_JSON_Contract.md`
+
+### 7.3 확인 결과
+- `python -m pytest tests/test_trade.py -q` 통과
+- `python -m pytest tests/ -q --tb=short` 통과
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.11`

@@ -422,6 +422,24 @@
 
 ---
 
+## 16. 다음 단계 실행 Status (C2.11)
+
+### 16.1 실행 완료 항목
+1. `positions close`/`orders cancel` 실패 JSON 에러 코드 계약 테스트 추가: 완료
+2. runner/schema 커버리지 하한선(`--cov-fail-under=35`) 적용: 완료
+3. JSON 계약 문서 샘플/테스트 링크 표 추가: 완료
+
+### 16.2 현재 상태
+- C2.10에서 제시한 다음 단계 1~3번이 모두 반영됨.
+- 버전은 `2.36.U1.5.C2.11`로 상향됨.
+
+### 16.3 다음 권장 단계
+1. `tests/test_trade.py`에 성공 케이스(`positions close --all`, `orders cancel --all`) JSON payload 필드 상세 검증 추가
+2. CI coverage 하한선을 전체 CLI 단계로 확장할지 기준값 정의
+3. `docs/contracts/CLI_JSON_Contract.md`를 기준으로 명령별 JSON schema 자동검증(예: jsonschema) 도입 검토
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

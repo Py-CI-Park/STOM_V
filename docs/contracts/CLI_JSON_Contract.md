@@ -76,3 +76,15 @@
 - `tests/test_trade.py`
 - `tests/test_data.py`
 - `tests/test_monitor.py`
+
+## 7. 명령별 샘플 및 테스트 링크
+
+| 명령 | 샘플 응답 유형 | 테스트 위치 |
+|------|------|------|
+| `stom trade status --format json` | 객체(`trading_status`, `configuration`) | `tests/test_trade.py` (`test_trade_status_json`) |
+| `stom positions list --format json` | 배열 또는 `{"message": ...}` | `tests/test_trade.py` (`test_positions_list_json_payload_contract`) |
+| `stom orders list --format json` | 배열 또는 `{"message": ...}` | `tests/test_trade.py` (`test_orders_list_json_payload_contract`) |
+| `stom positions close --format json` 실패 | 표준 에러(`ok=false`, `POSITIONS_CLOSE_INVALID_ARGS`) | `tests/test_trade.py` (`test_positions_close_missing_target_json_error_contract`) |
+| `stom orders cancel --format json` 실패 | 표준 에러(`ok=false`, `ORDERS_CANCEL_INVALID_ARGS`) | `tests/test_trade.py` (`test_orders_cancel_missing_target_json_error_contract`) |
+| `stom data backtest-list --format json` | 배열 또는 `{"message": ...}` | `tests/test_data.py` |
+| `stom db info --format json` | 객체(`database`, `table_info` 등) | `tests/test_db.py` |
