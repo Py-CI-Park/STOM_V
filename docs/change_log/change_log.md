@@ -2,6 +2,29 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.13 (2026-02-07) - status/list JSON 계약 검증 확장 및 안정화
+
+#### 개요
+C2.12 후속으로 jsonschema 자동검증 범위를 `backtest/optimize`의 `list/status` 명령까지 확장하고, 테스트 간 DB 쓰기 충돌 리스크를 제거.
+
+#### 주요 변경 사항
+- `tests/test_json_contract_schema.py`
+  - `backtest list`, `optimize list`의 JSON 계약 검증 추가
+  - `backtest status unknown_job_id`, `optimize status unknown_job_id` 메시지 계약 검증 추가
+  - `backtest status`, `optimize status` 성공 계약 검증 추가
+    - DB 최신 작업 ID 조회 기반(`_latest_backtest_job_id`, `_latest_optimize_job_id`)
+    - 미존재 시 `pytest.skip` 처리로 환경 의존성 완화
+- 버전 상향
+  - `2.36.U1.5.C2.13`
+
+#### 검증
+- `python -m pytest tests/test_json_contract_schema.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=50 --tb=short`
+  - 결과: `234 passed, 1 skipped`
+  - 총 커버리지: 약 54.67%
+
+---
+
 ### V2.36.U1.5.C2.12 (2026-02-07) - 성공 JSON 계약/자동검증/전체 커버리지 하한선 적용
 
 #### 개요

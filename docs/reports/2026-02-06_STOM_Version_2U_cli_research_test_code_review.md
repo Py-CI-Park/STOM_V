@@ -459,6 +459,26 @@
 
 ---
 
+## 18. 다음 단계 실행 Status (C2.13)
+
+### 18.1 실행 완료 항목
+1. `tests/test_json_contract_schema.py`에 `backtest/optimize list/status` JSON schema 검증 확대: 완료
+2. `unknown_job_id` 상태 조회 응답(`{"message": ...}`) 계약 검증 추가: 완료
+3. 상태 조회 성공 계약 검증 안정화(DB 최신 작업 ID 기반): 완료
+
+### 18.2 현재 상태
+- C2.12에서 제시한 다음 권장 단계 1번(상태 명령 스키마 검증 확대)이 반영됨.
+- 버전은 `2.36.U1.5.C2.13`으로 상향됨.
+- 전체 테스트는 `234 passed, 1 skipped`로 통과.
+- 전체 CLI 커버리지는 약 54.67%로 50% 하한선을 충족.
+
+### 18.3 다음 권장 단계
+1. CI 전체 coverage 하한선을 `50 -> 55`로 상향하고, 실패 시 리포팅 메시지를 표준화
+2. `docs/contracts/CLI_JSON_Contract.md`에 명령별 계약 변경 이력 표(버전/변경 필드/테스트)를 추가
+3. `optimize/backtest run` 성공 payload에 대한 스키마 검증을 별도 섹션으로 분리해 계약 범위를 명확화
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

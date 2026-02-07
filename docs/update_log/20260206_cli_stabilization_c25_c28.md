@@ -154,3 +154,21 @@ python -m cli.main optimize list --format json
 - `python -m pytest tests/ -q --tb=short` 통과
 - `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=50` 통과
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.12`
+
+## 9. C2.13 진행 상태 (문서 권장 다음 단계 실행)
+
+### 9.1 완료 항목
+1. `backtest/optimize list/status` JSON schema 검증 확장 완료
+2. 상태 조회 미존재 ID(`unknown_job_id`) 메시지 계약 검증 완료
+3. 상태 조회 성공 스키마 검증을 DB 최신 ID 기반으로 안정화(쓰기 충돌 방지) 완료
+
+### 9.2 반영 파일
+- `tests/test_json_contract_schema.py`
+- `docs/contracts/CLI_JSON_Contract.md`
+- `docs/reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md`
+
+### 9.3 확인 결과
+- `python -m pytest tests/test_json_contract_schema.py -q --tb=short` 통과
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=50 --tb=short` 통과
+- 결과: `234 passed, 1 skipped`, 커버리지 약 `54.67%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.13`

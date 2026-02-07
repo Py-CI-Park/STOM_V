@@ -77,6 +77,8 @@
 - `tests/test_data.py`
 - `tests/test_monitor.py`
 - `tests/test_json_contract_schema.py` (jsonschema 자동검증)
+- `tests/test_backtest.py`
+- `tests/test_optimize.py`
 
 ## 7. 명령별 샘플 및 테스트 링크
 
@@ -91,6 +93,12 @@
 | `stom orders cancel --all --format json` 성공 | 객체(`ok=true`, `cancel_type`, `asset_type`, `status`) | `tests/test_trade.py` (`test_orders_cancel_all_json_success_contract`) |
 | `stom data backtest-list --format json` | 배열 또는 `{"message": ...}` | `tests/test_data.py` |
 | `stom db info --format json` | 객체(`database`, `table_info` 등) | `tests/test_db.py` |
+| `stom backtest list --format json` | 배열 또는 `{"message": ...}` | `tests/test_json_contract_schema.py` (`test_backtest_list_schema`) |
+| `stom optimize list --format json` | 배열 또는 `{"message": ...}` | `tests/test_json_contract_schema.py` (`test_optimize_list_schema`) |
+| `stom backtest status unknown_job_id --format json` | 객체(`message`) | `tests/test_json_contract_schema.py` (`test_backtest_status_unknown_schema`) |
+| `stom optimize status unknown_job_id --format json` | 객체(`message`) | `tests/test_json_contract_schema.py` (`test_optimize_status_unknown_schema`) |
+| `stom backtest status <id> --format json` | 객체(`id`, `status`, `created_at` 등) | `tests/test_json_contract_schema.py` (`test_backtest_status_success_schema`) |
+| `stom optimize status <id> --format json` | 객체(`id`, `type`, `asset_type`, `status` 등) | `tests/test_json_contract_schema.py` (`test_optimize_status_success_schema`) |
 
 ## 8. 자동검증 파이프라인
 1. 로컬: `python -m pytest tests/test_json_contract_schema.py -q`

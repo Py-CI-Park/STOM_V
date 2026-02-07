@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 
+import pytest
 from click.testing import CliRunner
 from jsonschema import validate
 
 from cli.main import main
+
+DB_BACKTEST = "./_database/backtest.db"
 
 
 ERROR_SCHEMA = {
@@ -66,6 +70,15 @@ DB_INFO_SCHEMA = {
     "additionalProperties": True,
 }
 
+MESSAGE_SCHEMA = {
+    "type": "object",
+    "required": ["message"],
+    "properties": {
+        "message": {"type": "string"},
+    },
+    "additionalProperties": True,
+}
+
 CLOSE_SUCCESS_SCHEMA = {
     "type": "object",
     "required": ["ok", "order_type", "asset_type", "status", "message"],
@@ -91,6 +104,78 @@ CANCEL_SUCCESS_SCHEMA = {
     },
     "additionalProperties": True,
 }
+
+BACKTEST_STATUS_SCHEMA = {
+    "type": "object",
+    "required": [
+        "id",
+        "buy_strategy",
+        "sell_strategy",
+        "type",
+        "start_date",
+        "end_date",
+        "status",
+        "created_at",
+    ],
+    "properties": {
+        "id": {"type": "string"},
+        "buy_strategy": {"type": ["string", "null"]},
+        "sell_strategy": {"type": ["string", "null"]},
+        "type": {"type": ["string", "null"]},
+        "start_date": {"type": ["string", "null"]},
+        "end_date": {"type": ["string", "null"]},
+        "status": {"type": ["string", "null"]},
+        "created_at": {"type": ["string", "null"]},
+    },
+    "additionalProperties": True,
+}
+
+OPTIMIZE_STATUS_SCHEMA = {
+    "type": "object",
+    "required": [
+        "id",
+        "type",
+        "asset_type",
+        "start_date",
+        "end_date",
+        "status",
+        "created_at",
+    ],
+    "properties": {
+        "id": {"type": "string"},
+        "type": {"type": ["string", "null"]},
+        "asset_type": {"type": ["string", "null"]},
+        "start_date": {"type": ["string", "null"]},
+        "end_date": {"type": ["string", "null"]},
+        "status": {"type": ["string", "null"]},
+        "created_at": {"type": ["string", "null"]},
+    },
+    "additionalProperties": True,
+}
+
+
+def _latest_backtest_job_id() -> str | None:
+    try:
+        con = sqlite3.connect(DB_BACKTEST)
+        cursor = con.cursor()
+        cursor.execute("SELECT id FROM backtest_jobs ORDER BY created_at DESC LIMIT 1")
+        row = cursor.fetchone()
+        con.close()
+        return row[0] if row else None
+    except Exception:
+        return None
+
+
+def _latest_optimize_job_id() -> str | None:
+    try:
+        con = sqlite3.connect(DB_BACKTEST)
+        cursor = con.cursor()
+        cursor.execute("SELECT id FROM optimize_jobs ORDER BY created_at DESC LIMIT 1")
+        row = cursor.fetchone()
+        con.close()
+        return row[0] if row else None
+    except Exception:
+        return None
 
 
 class TestJsonContractSchema:
@@ -124,6 +209,30 @@ class TestJsonContractSchema:
         payload = json.loads(result.output)
         validate(instance=payload, schema=DB_INFO_SCHEMA)
 
+    def test_backtest_list_schema(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(main, ["backtest", "list", "--format", "json"])
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=MESSAGE_OR_LIST_SCHEMA)
+
+    def test_optimize_list_schema(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(main, ["optimize", "list", "--format", "json"])
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=MESSAGE_OR_LIST_SCHEMA)
+
+    def test_backtest_status_unknown_schema(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(main, ["backtest", "status", "unknown_job_id", "--format", "json"])
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=MESSAGE_SCHEMA)
+
+    def test_optimize_status_unknown_schema(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(main, ["optimize", "status", "unknown_job_id", "--format", "json"])
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=MESSAGE_SCHEMA)
+
     def test_positions_close_invalid_error_schema(self, cli_runner: CliRunner):
         result = cli_runner.invoke(main, ["positions", "close", "--yes", "--format", "json"])
         assert result.exit_code != 0
@@ -155,3 +264,27 @@ class TestJsonContractSchema:
         assert result.exit_code == 0
         payload = json.loads(result.output)
         validate(instance=payload, schema=CANCEL_SUCCESS_SCHEMA)
+
+    def test_backtest_status_success_schema(self, cli_runner: CliRunner):
+        job_id = _latest_backtest_job_id()
+        if not job_id:
+            pytest.skip("No backtest job found for success schema validation")
+        status_result = cli_runner.invoke(
+            main,
+            ["backtest", "status", job_id, "--format", "json"],
+        )
+        assert status_result.exit_code == 0
+        status_payload = json.loads(status_result.output)
+        validate(instance=status_payload, schema=BACKTEST_STATUS_SCHEMA)
+
+    def test_optimize_status_success_schema(self, cli_runner: CliRunner):
+        job_id = _latest_optimize_job_id()
+        if not job_id:
+            pytest.skip("No optimize job found for success schema validation")
+        status_result = cli_runner.invoke(
+            main,
+            ["optimize", "status", job_id, "--format", "json"],
+        )
+        assert status_result.exit_code == 0
+        status_payload = json.loads(status_result.output)
+        validate(instance=status_payload, schema=OPTIMIZE_STATUS_SCHEMA)

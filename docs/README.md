@@ -1,8 +1,8 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.12
-**최종 업데이트**: 2026-02-06
+**버전**: V2.36.U1.5.C2.13
+**최종 업데이트**: 2026-02-07
 
 ---
 
@@ -48,7 +48,7 @@ docs/
 |------|------|
 | [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (한글, 2,096줄) - 사용자 및 AI Agent용 |
 | [contracts/CLI_JSON_Contract.md](contracts/CLI_JSON_Contract.md) | CLI JSON 응답 계약서 |
-| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (229개 테스트) |
+| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (235개 테스트) |
 
 ### change_log/ - 변경 이력
 
@@ -111,6 +111,14 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.13 (2026-02-07)
+
+- `tests/test_json_contract_schema.py`에 backtest/optimize `list`/`status` JSON schema 검증 확장
+- 상태 조회 미존재 ID(`unknown_job_id`) 응답을 `{"message": ...}` 계약으로 검증
+- 상태 조회 성공 계약은 DB 최신 작업 ID 기반으로 검증해 ID 충돌/DB lock 리스크 제거
+- 전체 테스트 기준: `234 passed, 1 skipped`
+- 전체 CLI 커버리지 기준치 확인: 약 54.67%
 
 ### V2.36.U1.5.C2.12 (2026-02-07)
 
