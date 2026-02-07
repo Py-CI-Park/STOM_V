@@ -371,6 +371,98 @@ class TestJsonContractSchema:
         payload = json.loads(result.output)
         validate(instance=payload, schema=OPTIMIZE_RUN_SCHEMA)
 
+    def test_backtest_run_db_error_schema(self, cli_runner: CliRunner, monkeypatch: pytest.MonkeyPatch):
+        def _raise_connect(*_args, **_kwargs):
+            raise sqlite3.OperationalError("db unavailable")
+
+        monkeypatch.setattr("cli.commands.backtest.sqlite3.connect", _raise_connect)
+
+        result = cli_runner.invoke(
+            main,
+            [
+                "backtest",
+                "run",
+                "--type",
+                "stock",
+                "--buy-strategy",
+                "test_buy",
+                "--sell-strategy",
+                "test_sell",
+                "--start-date",
+                "20260101",
+                "--end-date",
+                "20260131",
+                "--async",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code != 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=ERROR_SCHEMA)
+        assert payload["error"]["code"] == "BACKTEST_RUN_FAILED"
+
+    def test_optimize_run_invalid_params_error_schema(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(
+            main,
+            [
+                "optimize",
+                "grid",
+                "--type",
+                "stock",
+                "--buy-strategy",
+                "test_buy",
+                "--sell-strategy",
+                "test_sell",
+                "--start-date",
+                "20260101",
+                "--end-date",
+                "20260131",
+                "--params",
+                "{bad-json}",
+                "--async",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code != 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=ERROR_SCHEMA)
+        assert payload["error"]["code"] == "OPT_GRID_INVALID_PARAMS"
+
+    def test_optimize_run_db_error_schema(self, cli_runner: CliRunner, monkeypatch: pytest.MonkeyPatch):
+        def _raise_save(*_args, **_kwargs):
+            raise sqlite3.OperationalError("db unavailable")
+
+        monkeypatch.setattr("cli.commands.optimize.save_optimize_job", _raise_save)
+
+        result = cli_runner.invoke(
+            main,
+            [
+                "optimize",
+                "grid",
+                "--type",
+                "stock",
+                "--buy-strategy",
+                "test_buy",
+                "--sell-strategy",
+                "test_sell",
+                "--start-date",
+                "20260101",
+                "--end-date",
+                "20260131",
+                "--params",
+                "{}",
+                "--async",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code != 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=ERROR_SCHEMA)
+        assert payload["error"]["code"] == "OPT_GRID_FAILED"
+
     def test_backtest_status_success_schema(self, cli_runner: CliRunner):
         job_id = _latest_backtest_job_id()
         if not job_id:

@@ -222,3 +222,22 @@ python -m cli.main optimize list --format json
 - `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
 - 결과: `239 passed, 1 skipped`, 커버리지 약 `55.08%`
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.16`
+
+## 13. C2.17 진행 상태 (run 실패 계약 확장)
+
+### 13.1 완료 항목
+1. run 실패 계약(json 파라미터 오류/DB 오류) jsonschema 검증 추가 완료
+2. JSON 모드 실패 시 단일 JSON payload만 출력하도록 종료 경로 정리 완료
+3. 실패 에러코드 계약 문서화(`BACKTEST_RUN_FAILED`, `OPT_GRID_INVALID_PARAMS`, `OPT_GRID_FAILED`) 완료
+
+### 13.2 반영 파일
+- `tests/test_json_contract_schema.py`
+- `cli/commands/backtest.py`
+- `cli/commands/optimize.py`
+- `docs/contracts/CLI_JSON_Contract.md`
+
+### 13.3 확인 결과
+- `python -m pytest tests/test_json_contract_schema.py -q --tb=short` 통과
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
+- 결과: `242 passed, 1 skipped`, 커버리지 약 `55.50%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.17`

@@ -536,6 +536,25 @@
 
 ---
 
+## 22. 다음 단계 실행 Status (C2.17)
+
+### 22.1 실행 완료 항목
+1. run 실패 payload(json 파라미터 오류/DB 오류) jsonschema 검증 확장: 완료
+2. JSON 모드 실패 시 단일 에러 payload 출력(추가 텍스트 방지) 경로 정리: 완료
+3. 실패 계약 코드(`BACKTEST_RUN_FAILED`, `OPT_GRID_INVALID_PARAMS`, `OPT_GRID_FAILED`) 문서 반영: 완료
+
+### 22.2 현재 상태
+- C2.16 후속 권장 단계 1번(run 실패 계약 확장)이 반영됨.
+- 버전은 `2.36.U1.5.C2.17`로 상향됨.
+- 전체 테스트는 `242 passed, 1 skipped`로 통과.
+- 전체 CLI 커버리지는 약 55.50%로 55% 하한선을 충족.
+
+### 22.3 다음 권장 단계
+1. `tests/README.md`의 테스트 수/파일별 개수를 현재 기준(243개)으로 동기화
+2. runner 계층(`cli/runners/*`) 커버리지 전용 보강 스프린트 진행
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

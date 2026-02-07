@@ -202,6 +202,16 @@ def grid(
         if not is_async:
             click.echo("Warning: execution runner integration is not enabled in this command.")
     except json.JSONDecodeError as e:
+        if format == "json":
+            click.echo(
+                OutputAdapter.format_error(
+                    e,
+                    "Grid optimization failed",
+                    output_format=OutputFormat(format),
+                    error_code="OPT_GRID_INVALID_PARAMS",
+                )
+            )
+            raise click.exceptions.Exit(1)
         raise click.ClickException(f"Invalid JSON format for --params: {e}")
     except Exception as e:
         click.echo(
@@ -213,6 +223,8 @@ def grid(
             )
         )
         logger_.error(f"Error running grid optimization: {e}")
+        if format == "json":
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 

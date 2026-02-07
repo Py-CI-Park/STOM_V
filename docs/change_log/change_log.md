@@ -2,6 +2,32 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.17 (2026-02-07) - run 실패 JSON 계약 확장 및 에러 경로 정리
+
+#### 개요
+C2.16 후속으로 run 실패 케이스(파라미터 오류/DB 오류)에 대한 JSON 계약을 확장하고, JSON 모드에서 실패 출력이 단일 payload로 파싱되도록 종료 경로를 정리.
+
+#### 주요 변경 사항
+- `tests/test_json_contract_schema.py`
+  - `backtest run` DB 오류 실패 계약 검증 추가 (`BACKTEST_RUN_FAILED`)
+  - `optimize grid` 파라미터 오류 실패 계약 검증 추가 (`OPT_GRID_INVALID_PARAMS`)
+  - `optimize grid` DB 오류 실패 계약 검증 추가 (`OPT_GRID_FAILED`)
+- `cli/commands/backtest.py`
+  - JSON 모드 실패 시 에러 payload 출력 후 `Exit(1)` 처리로 추가 텍스트 출력 방지
+- `cli/commands/optimize.py`
+  - `grid` 명령의 JSON 파라미터 오류를 표준 에러 payload(`OPT_GRID_INVALID_PARAMS`)로 통일
+  - JSON 모드 실패 시 에러 payload 출력 후 `Exit(1)` 처리
+- 버전 상향
+  - `2.36.U1.5.C2.17`
+
+#### 검증
+- `python -m pytest tests/test_json_contract_schema.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `242 passed, 1 skipped`
+  - 총 커버리지: 약 55.50%
+
+---
+
 ### V2.36.U1.5.C2.16 (2026-02-07) - run 성공 payload 계약 분리 및 검증 강화
 
 #### 개요

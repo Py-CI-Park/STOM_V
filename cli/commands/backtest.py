@@ -270,6 +270,8 @@ def run(buy_strategy: str, sell_strategy: str, type: str, start_date: str,
             )
         )
         logger_.error(f"Error running backtest: {e}")
+        if format == 'json':
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 

@@ -1,7 +1,7 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.16
+**버전**: V2.36.U1.5.C2.17
 **최종 업데이트**: 2026-02-07
 
 ---
@@ -111,6 +111,13 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.17 (2026-02-07)
+
+- `backtest run`, `optimize grid` 실패 JSON 계약을 jsonschema로 확장(파라미터 오류/DB 오류)
+- JSON 모드 실패 시 순수 JSON payload만 출력되도록 에러 종료 경로 정리
+- `tests/test_json_contract_schema.py` 실패 계약 테스트 3건 추가
+- 전체 테스트 기준: `242 passed, 1 skipped`
 
 ### V2.36.U1.5.C2.16 (2026-02-07)
 

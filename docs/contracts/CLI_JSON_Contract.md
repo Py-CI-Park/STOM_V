@@ -103,6 +103,9 @@
 | `stom optimize status <id> --format json` | 객체(`id`, `type`, `asset_type`, `status` 등) | `tests/test_json_contract_schema.py` (`test_optimize_status_success_schema`) |
 | `stom backtest run --async --format json` | 객체(`id`, `buy_strategy`, `sell_strategy`, `status`, `async` 등) | `tests/test_json_contract_schema.py` (`test_backtest_run_success_schema`) |
 | `stom optimize grid --async --format json` | 객체(`id`, `type`, `asset_type`, `params`, `created_at` 등) | `tests/test_json_contract_schema.py` (`test_optimize_run_success_schema`) |
+| `stom backtest run --format json` 실패(DB) | 표준 에러(`ok=false`, `BACKTEST_RUN_FAILED`) | `tests/test_json_contract_schema.py` (`test_backtest_run_db_error_schema`) |
+| `stom optimize grid --format json` 실패(params) | 표준 에러(`ok=false`, `OPT_GRID_INVALID_PARAMS`) | `tests/test_json_contract_schema.py` (`test_optimize_run_invalid_params_error_schema`) |
+| `stom optimize grid --format json` 실패(DB) | 표준 에러(`ok=false`, `OPT_GRID_FAILED`) | `tests/test_json_contract_schema.py` (`test_optimize_run_db_error_schema`) |
 
 ## 8. 자동검증 파이프라인
 1. 로컬: `python -m pytest tests/test_json_contract_schema.py -q`
@@ -124,6 +127,9 @@
 | `backtest list` | C2.13 | 배열 또는 `{"message": ...}` 계약 명시 및 jsonschema 자동검증 연동 | 하위호환 | `tests/test_json_contract_schema.py::test_backtest_list_schema` |
 | `backtest run` | C2.16 | run 성공 payload 계약을 status/list와 분리(`id`, `buy_strategy`, `sell_strategy`, `status`, `async`) | 하위호환 | `tests/test_json_contract_schema.py::test_backtest_run_success_schema` |
 | `optimize grid run` | C2.16 | run 성공 payload 계약을 status/list와 분리(`id`, `type`, `asset_type`, `params`, `created_at`) | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_run_success_schema` |
+| `backtest run` 실패 | C2.17 | DB 오류 시 표준 에러 payload(`BACKTEST_RUN_FAILED`) 계약 추가 | 하위호환 | `tests/test_json_contract_schema.py::test_backtest_run_db_error_schema` |
+| `optimize grid run` 실패(params) | C2.17 | 파라미터 JSON 오류를 표준 에러 payload(`OPT_GRID_INVALID_PARAMS`)로 계약화 | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_run_invalid_params_error_schema` |
+| `optimize grid run` 실패(DB) | C2.17 | DB 저장 오류 시 표준 에러 payload(`OPT_GRID_FAILED`) 계약 추가 | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_run_db_error_schema` |
 
 ## 10. 계약 변경 운영 규칙
 1. 계약 변경은 명령 단위로 본 문서 9절 이력 표에 반드시 추가한다.
