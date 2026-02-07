@@ -1,6 +1,6 @@
 # STOM CLI 사용자 매뉴얼
 
-**버전**: 2.36.U1.5.C2.9
+**버전**: 2.36.U1.5.C2.10
 **System Trading Open Machine - 명령줄 인터페이스**
 
 ---
@@ -46,7 +46,7 @@ python cli/main.py --help
 
 ```bash
 stom --version
-# 출력: STOM, version 2.36.U1.5.C2.9
+# 출력: STOM, version 2.36.U1.5.C2.10
 ```
 
 ### 처음 실행할 명령어
@@ -1781,6 +1781,9 @@ stom data trades --format csv > trades.csv
 3. 루트가 배열인 명령과 객체인 명령을 모두 처리하도록 분기합니다.
 4. `message` 단독 응답은 빈 결과로 간주합니다.
 
+상세 계약 문서:
+- `docs/contracts/CLI_JSON_Contract.md`
+
 ---
 
 ## Docker 사용법
@@ -2130,6 +2133,7 @@ EOF
 
 ## 버전 히스토리
 
+- **2.36.U1.5.C2.10**: trade JSON 계약 테스트 강화 + runner/schema 커버리지 스냅샷 + 독립 계약 문서 추가
 - **2.36.U1.5.C2.9**: JSON 응답 계약 문서화 + trade 명령 인코딩 정리 + CI 러너/스키마 게이트 추가
 - **2.36.U1.5.C2.8**: C2.5~C2.8 안정화(스키마 정합성/테스트 신뢰도/러너 강화/JSON 에러 표준화) 반영
 - **2.36.U1.5.C2.0**: 전체 명령어 참조를 포함한 CLI 기준 버전

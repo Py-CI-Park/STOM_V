@@ -152,6 +152,12 @@ jobs:
       run: |
         pytest tests/ -v --cov=cli --cov-report=xml --cov-report=html --cov-report=term-missing
 
+    - name: Run runner/schema focused coverage snapshot
+      run: |
+        pytest tests/test_runners.py tests/test_schema_contract.py -v \
+          --cov=cli.runners --cov=cli.adapters.schema_adapter \
+          --cov-report=term-missing --cov-report=xml:runner_schema_coverage.xml | tee runner_schema_coverage.txt
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
       with:
@@ -165,6 +171,14 @@ jobs:
       with:
         name: coverage-report
         path: htmlcov/
+
+    - name: Upload runner/schema coverage snapshot
+      uses: actions/upload-artifact@v4
+      with:
+        name: runner-schema-coverage
+        path: |
+          runner_schema_coverage.xml
+          runner_schema_coverage.txt
 
   # ============================================================================
   # 코드 품질 검사

@@ -1,7 +1,7 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.9
+**버전**: V2.36.U1.5.C2.10
 **최종 업데이트**: 2026-02-06
 
 ---
@@ -13,6 +13,8 @@ docs/
 ├── README.md                    # 문서 관리 인덱스
 ├── AGENTS.md                    # AI 에이전트 가이드 (신규)
 ├── CLI_User_Manual.md           # CLI 사용자 매뉴얼 (한글)
+├── contracts/                   # CLI/자동화 계약 문서
+│   └── CLI_JSON_Contract.md     # JSON 응답 표준 계약
 ├── change_log/
 │   └── change_log.md            # 버전별 변경 이력
 ├── update_log/                  # 업데이트 상세 기록
@@ -45,7 +47,8 @@ docs/
 | 문서 | 설명 |
 |------|------|
 | [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (한글, 2,096줄) - 사용자 및 AI Agent용 |
-| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (202개 테스트) |
+| [contracts/CLI_JSON_Contract.md](contracts/CLI_JSON_Contract.md) | CLI JSON 응답 계약서 |
+| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (216개 테스트) |
 
 ### change_log/ - 변경 이력
 
@@ -108,6 +111,13 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.10 (2026-02-06)
+
+- `tests/test_trade.py`에 positions/orders JSON payload 계약 검증 테스트 추가
+- coverage 파이프라인에 runner/schema 전용 커버리지 스냅샷 단계 및 아티팩트 추가
+- JSON 계약 문서를 독립 문서로 분리: `docs/contracts/CLI_JSON_Contract.md`
+- C2.9 이후 다음 단계 1~3번 항목 실행 완료
 
 ### V2.36.U1.5.C2.9 (2026-02-06)
 

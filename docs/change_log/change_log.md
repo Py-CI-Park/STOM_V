@@ -2,6 +2,31 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.10 (2026-02-06) - C2.9 후속 단계(테스트/커버리지/계약 분리)
+
+#### 개요
+C2.9 완료 후 정의된 다음 단계 3개 항목을 실행해 JSON 계약 검증과 CI 가시성을 강화.
+
+#### 주요 변경 사항
+- `tests/test_trade.py`
+  - `positions/orders`의 JSON payload 계약(배열 또는 message 객체) 검증 테스트 추가
+  - `trade status --format json` 필수 필드(`trading_status`, `configuration`) 검증 추가
+- `.github/workflows/cli-tests.yml`
+  - coverage job에 runner/schema 전용 커버리지 스냅샷 단계 추가
+  - `runner_schema_coverage.xml`, `runner_schema_coverage.txt` 아티팩트 업로드 단계 추가
+- 독립 계약 문서 추가
+  - `docs/contracts/CLI_JSON_Contract.md`
+  - JSON 성공/빈결과/에러 표준 페이로드 및 명령별 필드 계약 정의
+- 버전 상향
+  - `2.36.U1.5.C2.10`
+
+#### 검증
+- `python -m pytest tests/test_trade.py tests/test_output_formats.py tests/test_data.py tests/test_monitor.py -q`
+- `python -m pytest tests/ -q --tb=short`
+- `python -m cli.main --version`
+
+---
+
 ### V2.36.U1.5.C2.9 (2026-02-06) - C2.8 후속 실행(문서/CI/인코딩 정리)
 
 #### 개요

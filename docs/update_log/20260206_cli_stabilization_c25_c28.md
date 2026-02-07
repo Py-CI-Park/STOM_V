@@ -98,3 +98,22 @@ python -m cli.main optimize list --format json
 1. `tests/test_trade.py`에 `positions/orders` JSON 구조 검증 케이스 추가
 2. coverage job에 러너/스키마 전용 리포트 아티팩트 분리
 3. JSON 스키마를 독립 문서(`docs/reports/*` 또는 `docs/contracts/*`)로 승격
+
+## 6. C2.10 진행 상태 (추가 후속 실행)
+
+### 6.1 완료 항목
+1. `tests/test_trade.py` JSON 구조 검증 케이스 추가 완료
+2. coverage job 러너/스키마 리포트 아티팩트 분리 완료
+3. JSON 스키마 독립 문서 분리 완료 (`docs/contracts/CLI_JSON_Contract.md`)
+
+### 6.2 반영 파일
+- `tests/test_trade.py`
+- `.github/workflows/cli-tests.yml`
+- `docs/contracts/CLI_JSON_Contract.md`
+- `docs/README.md`
+- `docs/CLI_User_Manual.md`
+
+### 6.3 확인 결과
+- `python -m pytest tests/test_trade.py -q` 통과
+- `python -m pytest tests/ -q --tb=short` 통과
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.10`

@@ -404,6 +404,24 @@
 
 ---
 
+## 15. 다음 단계 실행 Status (C2.10)
+
+### 15.1 실행 완료 항목
+1. `tests/test_trade.py` JSON payload 검증 추가: 완료
+2. coverage 파이프라인 runner/schema 전용 지표 추가: 완료
+3. JSON 계약 독립 문서 분리: 완료 (`docs/contracts/CLI_JSON_Contract.md`)
+
+### 15.2 현재 상태
+- C2.9에서 제시한 다음 단계 1~3번이 모두 반영됨.
+- 버전은 `2.36.U1.5.C2.10`으로 상향됨.
+
+### 15.3 다음 권장 단계
+1. `tests/test_trade.py`에 `positions close`/`orders cancel` 실패 JSON 에러 코드 계약 테스트 추가
+2. CI coverage 단계에서 runner/schema 커버리지 하한선(`--cov-fail-under`) 도입 검토
+3. JSON 계약 문서에 실제 샘플(성공/빈결과/에러) 회귀 테스트 링크 표 추가
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`
