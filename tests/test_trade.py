@@ -129,6 +129,30 @@ class TestPositionsAndOrdersJSON:
         assert payload["ok"] is False
         assert payload["error"]["code"] == "ORDERS_CANCEL_INVALID_ARGS"
 
+    def test_positions_close_all_json_success_contract(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(
+            main,
+            ["positions", "close", "--all", "--type", "stock", "--yes", "--format", "json"],
+        )
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert payload["ok"] is True
+        assert payload["order_type"] == "close_all"
+        assert payload["asset_type"] == "stock"
+        assert payload["status"] == "pending"
+
+    def test_orders_cancel_all_json_success_contract(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(
+            main,
+            ["orders", "cancel", "--all", "--type", "stock", "--yes", "--format", "json"],
+        )
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert payload["ok"] is True
+        assert payload["cancel_type"] == "cancel_all"
+        assert payload["asset_type"] == "stock"
+        assert payload["status"] == "pending"
+
 
 class TestTradeUnsupported:
     def test_trade_config_not_supported(self, cli_runner: CliRunner):

@@ -150,7 +150,7 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        pytest tests/ -v --cov=cli --cov-report=xml --cov-report=html --cov-report=term-missing
+        pytest tests/ -v --cov=cli --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=50
 
     - name: Run runner/schema focused coverage snapshot
       run: |

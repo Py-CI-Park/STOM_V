@@ -76,6 +76,7 @@
 - `tests/test_trade.py`
 - `tests/test_data.py`
 - `tests/test_monitor.py`
+- `tests/test_json_contract_schema.py` (jsonschema 자동검증)
 
 ## 7. 명령별 샘플 및 테스트 링크
 
@@ -86,5 +87,12 @@
 | `stom orders list --format json` | 배열 또는 `{"message": ...}` | `tests/test_trade.py` (`test_orders_list_json_payload_contract`) |
 | `stom positions close --format json` 실패 | 표준 에러(`ok=false`, `POSITIONS_CLOSE_INVALID_ARGS`) | `tests/test_trade.py` (`test_positions_close_missing_target_json_error_contract`) |
 | `stom orders cancel --format json` 실패 | 표준 에러(`ok=false`, `ORDERS_CANCEL_INVALID_ARGS`) | `tests/test_trade.py` (`test_orders_cancel_missing_target_json_error_contract`) |
+| `stom positions close --all --format json` 성공 | 객체(`ok=true`, `order_type`, `asset_type`, `status`) | `tests/test_trade.py` (`test_positions_close_all_json_success_contract`) |
+| `stom orders cancel --all --format json` 성공 | 객체(`ok=true`, `cancel_type`, `asset_type`, `status`) | `tests/test_trade.py` (`test_orders_cancel_all_json_success_contract`) |
 | `stom data backtest-list --format json` | 배열 또는 `{"message": ...}` | `tests/test_data.py` |
 | `stom db info --format json` | 객체(`database`, `table_info` 등) | `tests/test_db.py` |
+
+## 8. 자동검증 파이프라인
+1. 로컬: `python -m pytest tests/test_json_contract_schema.py -q`
+2. CI(Unit): `pytest tests/ -m "not integration and not slow"`
+3. CI(Coverage): `pytest tests/ --cov=cli --cov-fail-under=50`

@@ -31,6 +31,7 @@ pytest-mock>=3.10.0
 # 테스트 리포트
 pytest-html>=3.2.0
 pytest-json-report>=1.5.0
+jsonschema>=4.20.0
 
 # 벤치마크 (선택사항)
 # pytest-benchmark>=4.0.0

@@ -440,6 +440,25 @@
 
 ---
 
+## 17. 다음 단계 실행 Status (C2.12)
+
+### 17.1 실행 완료 항목
+1. 성공 케이스 JSON payload 검증 추가: 완료
+2. 전체 CLI coverage 하한선 확장(`--cov-fail-under=50`): 완료
+3. jsonschema 자동검증 도입: 완료 (`tests/test_json_contract_schema.py`)
+
+### 17.2 현재 상태
+- C2.11에서 제시한 다음 단계 1~3번이 모두 반영됨.
+- 버전은 `2.36.U1.5.C2.12`로 상향됨.
+- 전체 CLI 커버리지 기준은 약 54%로 하한선(50%)을 충족.
+
+### 17.3 다음 권장 단계
+1. `tests/test_json_contract_schema.py`에 optimize/backtest 상태 명령 스키마 검증 확대
+2. CI에서 커버리지 하한선을 단계적으로 상향(예: 50 → 55)
+3. 계약 문서(`docs/contracts/CLI_JSON_Contract.md`)를 명령별 변경 이력 표와 함께 관리
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

@@ -2,6 +2,35 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.12 (2026-02-07) - 성공 JSON 계약/자동검증/전체 커버리지 하한선 적용
+
+#### 개요
+C2.11 후속으로 성공 경로 JSON 계약 검증을 보강하고, jsonschema 기반 자동 검증 및 전체 CLI 커버리지 하한선을 적용.
+
+#### 주요 변경 사항
+- `tests/test_trade.py`
+  - 성공 계약 테스트 추가:
+    - `positions close --all --format json`
+    - `orders cancel --all --format json`
+- `tests/test_json_contract_schema.py` 신규
+  - jsonschema 기반 계약 자동검증 테스트 9건 추가
+  - 대상: `trade status`, `positions list`, `orders list`, `data backtest-list`, `db info`, close/cancel 성공/실패
+- `.github/workflows/cli-tests.yml`
+  - 전체 coverage 단계에 `--cov-fail-under=50` 적용
+  - runner/schema coverage 단계는 `--cov-fail-under=35` 유지
+- `requirements-test.txt`
+  - `jsonschema>=4.20.0` 명시
+- 버전 상향
+  - `2.36.U1.5.C2.12`
+
+#### 검증
+- `python -m pytest tests/test_trade.py tests/test_json_contract_schema.py -q`
+- `python -m pytest tests/ -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=50`
+  - 총 커버리지: 약 54%
+
+---
+
 ### V2.36.U1.5.C2.11 (2026-02-06) - 실패 JSON 계약 강화 및 커버리지 하한선 적용
 
 #### 개요

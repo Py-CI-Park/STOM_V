@@ -1,6 +1,6 @@
 # STOM CLI 사용자 매뉴얼
 
-**버전**: 2.36.U1.5.C2.11
+**버전**: 2.36.U1.5.C2.12
 **System Trading Open Machine - 명령줄 인터페이스**
 
 ---
@@ -46,7 +46,7 @@ python cli/main.py --help
 
 ```bash
 stom --version
-# 출력: STOM, version 2.36.U1.5.C2.11
+# 출력: STOM, version 2.36.U1.5.C2.12
 ```
 
 ### 처음 실행할 명령어
@@ -2133,6 +2133,7 @@ EOF
 
 ## 버전 히스토리
 
+- **2.36.U1.5.C2.12**: positions/orders 성공 JSON payload 계약 테스트 + jsonschema 자동검증 + 전체 CLI 커버리지 하한선 적용
 - **2.36.U1.5.C2.11**: positions/orders 취소/청산 실패 JSON 에러코드 계약 추가 + runner/schema 커버리지 하한선 적용
 - **2.36.U1.5.C2.10**: trade JSON 계약 테스트 강화 + runner/schema 커버리지 스냅샷 + 독립 계약 문서 추가
 - **2.36.U1.5.C2.9**: JSON 응답 계약 문서화 + trade 명령 인코딩 정리 + CI 러너/스키마 게이트 추가
