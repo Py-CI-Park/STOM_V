@@ -62,6 +62,8 @@
 | `stom orders list --format json` | array 또는 object | 배열일 경우 row 객체 목록, 객체일 경우 `message` |
 | `stom data backtest-list --format json` | array 또는 object | 배열일 경우 row 객체 목록, 객체일 경우 `message` |
 | `stom optimize list --format json` | array 또는 object | 배열일 경우 row 객체 목록, 객체일 경우 `message` |
+| `stom backtest run --async --format json` | object | `id`, `buy_strategy`, `sell_strategy`, `type`, `start_date`, `end_date`, `status`, `async`, `created_at` |
+| `stom optimize grid --async --format json` | object | `id`, `type`, `asset_type`, `buy_strategy`, `sell_strategy`, `start_date`, `end_date`, `params`, `created_at` |
 | JSON 에러 공통 | object | `ok`, `error.code`, `error.type`, `error.message`, `error.title` |
 
 ## 5. 파서 권장 알고리즘
@@ -99,6 +101,8 @@
 | `stom optimize status unknown_job_id --format json` | 객체(`message`) | `tests/test_json_contract_schema.py` (`test_optimize_status_unknown_schema`) |
 | `stom backtest status <id> --format json` | 객체(`id`, `status`, `created_at` 등) | `tests/test_json_contract_schema.py` (`test_backtest_status_success_schema`) |
 | `stom optimize status <id> --format json` | 객체(`id`, `type`, `asset_type`, `status` 등) | `tests/test_json_contract_schema.py` (`test_optimize_status_success_schema`) |
+| `stom backtest run --async --format json` | 객체(`id`, `buy_strategy`, `sell_strategy`, `status`, `async` 등) | `tests/test_json_contract_schema.py` (`test_backtest_run_success_schema`) |
+| `stom optimize grid --async --format json` | 객체(`id`, `type`, `asset_type`, `params`, `created_at` 등) | `tests/test_json_contract_schema.py` (`test_optimize_run_success_schema`) |
 
 ## 8. 자동검증 파이프라인
 1. 로컬: `python -m pytest tests/test_json_contract_schema.py -q`
@@ -118,9 +122,12 @@
 | `optimize status` | C2.13 | 미존재 ID는 `message`, 존재 ID는 상태 객체(`id`, `type`, `asset_type`, `status` 등) 계약 명시 | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_status_unknown_schema`, `tests/test_json_contract_schema.py::test_optimize_status_success_schema` |
 | `optimize list` | C2.13 | 배열 또는 `{"message": ...}` 계약 명시 및 jsonschema 자동검증 연동 | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_list_schema` |
 | `backtest list` | C2.13 | 배열 또는 `{"message": ...}` 계약 명시 및 jsonschema 자동검증 연동 | 하위호환 | `tests/test_json_contract_schema.py::test_backtest_list_schema` |
+| `backtest run` | C2.16 | run 성공 payload 계약을 status/list와 분리(`id`, `buy_strategy`, `sell_strategy`, `status`, `async`) | 하위호환 | `tests/test_json_contract_schema.py::test_backtest_run_success_schema` |
+| `optimize grid run` | C2.16 | run 성공 payload 계약을 status/list와 분리(`id`, `type`, `asset_type`, `params`, `created_at`) | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_run_success_schema` |
 
 ## 10. 계약 변경 운영 규칙
 1. 계약 변경은 명령 단위로 본 문서 9절 이력 표에 반드시 추가한다.
 2. 변경 필드가 있으면 필드명과 타입/의미를 요약하고 호환성(하위호환/비호환)을 명시한다.
 3. 계약 변경은 최소 1개 이상의 자동화 테스트 링크를 함께 등록한다.
 4. CI 커버리지/계약 검증 기준 변경 시 8절 파이프라인 수치를 즉시 동기화한다.
+5. `run` 계약은 `status/list` 계약과 분리해 관리하고, 각 스키마의 필수 필드를 혼합하지 않는다.

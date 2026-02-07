@@ -2,6 +2,32 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.16 (2026-02-07) - run 성공 payload 계약 분리 및 검증 강화
+
+#### 개요
+C2.15 후속으로 `run` 성공 payload 계약을 `status/list`와 분리해 명확화하고, 실행 시 ID 충돌 가능성을 줄여 테스트 안정성을 보강.
+
+#### 주요 변경 사항
+- `tests/test_json_contract_schema.py`
+  - `backtest run --async --format json` 성공 스키마 검증 추가
+  - `optimize grid --async --format json` 성공 스키마 검증 추가
+  - run/status/list 스키마를 분리해 계약 범위를 명확화
+- `cli/commands/backtest.py`
+  - backtest job ID 생성 포맷을 `%Y%m%d_%H%M%S_%f`로 확장
+- `cli/commands/optimize.py`
+  - optimize job ID 생성 포맷을 `%Y%m%d_%H%M%S_%f`로 확장
+  - 대상: `grid`, `bayesian`, `ga`, `walkforward`, `backfinder`
+- 버전 상향
+  - `2.36.U1.5.C2.16`
+
+#### 검증
+- `python -m pytest tests/test_json_contract_schema.py tests/test_optimize.py tests/test_backtest.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `239 passed, 1 skipped`
+  - 총 커버리지: 약 55.08%
+
+---
+
 ### V2.36.U1.5.C2.15 (2026-02-07) - JSON 계약 변경 이력 관리 체계 도입
 
 #### 개요

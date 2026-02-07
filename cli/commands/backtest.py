@@ -80,7 +80,7 @@ def run(buy_strategy: str, sell_strategy: str, type: str, start_date: str,
 
         # 백테스트 구성
         backtest_config = {
-            'id': datetime.now().strftime('%Y%m%d_%H%M%S'),
+            'id': datetime.now().strftime('%Y%m%d_%H%M%S_%f'),
             'buy_strategy': buy_strategy,
             'sell_strategy': sell_strategy,
             'type': type,

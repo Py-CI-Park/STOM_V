@@ -185,7 +185,7 @@ def grid(
             logger_.warning(f"Sell strategy not found: {sell_strategy}")
 
         job_config = {
-            "id": f"grid_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "id": f"grid_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}",
             "type": "grid",
             "asset_type": asset_type,
             "buy_strategy": buy_strategy,
@@ -246,7 +246,7 @@ def bayesian(
             logger_.warning(f"Sell strategy not found: {sell_strategy}")
 
         job_config = {
-            "id": f"bayesian_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "id": f"bayesian_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}",
             "type": "bayesian",
             "asset_type": asset_type,
             "buy_strategy": buy_strategy,
@@ -304,7 +304,7 @@ def ga(
             logger_.warning(f"Sell strategy not found: {sell_strategy}")
 
         job_config = {
-            "id": f"ga_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "id": f"ga_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}",
             "type": "ga",
             "asset_type": asset_type,
             "buy_strategy": buy_strategy,
@@ -362,7 +362,7 @@ def walkforward(
             logger_.warning(f"Strategy not found: {strategy}")
 
         job_config = {
-            "id": f"walkforward_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "id": f"walkforward_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}",
             "type": "walkforward",
             "asset_type": asset_type,
             "buy_strategy": strategy,
@@ -415,7 +415,7 @@ def backfinder(
     try:
         output_adapter = OutputAdapter(format=OutputFormat(format))
         job_config = {
-            "id": f"backfinder_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            "id": f"backfinder_{datetime.now().strftime('%Y%m%d_%H%M%S_%f')}",
             "type": "backfinder",
             "asset_type": asset_type,
             "start_date": _normalize_date(start_date),

@@ -203,3 +203,22 @@ python -m cli.main optimize list --format json
 
 ### 11.3 확인 결과
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.15`
+
+## 12. C2.16 진행 상태 (run 계약 분리 및 검증 강화)
+
+### 12.1 완료 항목
+1. `backtest run`, `optimize grid run` 성공 payload를 run 전용 스키마로 분리 완료
+2. run 성공 jsonschema 검증 테스트 2건 추가 완료
+3. backtest/optimize job ID 생성 포맷 마이크로초 단위 확장 완료
+
+### 12.2 반영 파일
+- `tests/test_json_contract_schema.py`
+- `cli/commands/backtest.py`
+- `cli/commands/optimize.py`
+- `docs/contracts/CLI_JSON_Contract.md`
+
+### 12.3 확인 결과
+- `python -m pytest tests/test_json_contract_schema.py tests/test_optimize.py tests/test_backtest.py -q --tb=short` 통과
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
+- 결과: `239 passed, 1 skipped`, 커버리지 약 `55.08%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.16`

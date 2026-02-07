@@ -130,6 +130,33 @@ BACKTEST_STATUS_SCHEMA = {
     "additionalProperties": True,
 }
 
+BACKTEST_RUN_SCHEMA = {
+    "type": "object",
+    "required": [
+        "id",
+        "buy_strategy",
+        "sell_strategy",
+        "type",
+        "start_date",
+        "end_date",
+        "status",
+        "async",
+        "created_at",
+    ],
+    "properties": {
+        "id": {"type": "string"},
+        "buy_strategy": {"type": ["string", "null"]},
+        "sell_strategy": {"type": ["string", "null"]},
+        "type": {"type": ["string", "null"]},
+        "start_date": {"type": ["string", "null"]},
+        "end_date": {"type": ["string", "null"]},
+        "status": {"type": ["string", "null"]},
+        "async": {"type": "boolean"},
+        "created_at": {"type": ["string", "null"]},
+    },
+    "additionalProperties": True,
+}
+
 OPTIMIZE_STATUS_SCHEMA = {
     "type": "object",
     "required": [
@@ -148,6 +175,33 @@ OPTIMIZE_STATUS_SCHEMA = {
         "start_date": {"type": ["string", "null"]},
         "end_date": {"type": ["string", "null"]},
         "status": {"type": ["string", "null"]},
+        "created_at": {"type": ["string", "null"]},
+    },
+    "additionalProperties": True,
+}
+
+OPTIMIZE_RUN_SCHEMA = {
+    "type": "object",
+    "required": [
+        "id",
+        "type",
+        "asset_type",
+        "buy_strategy",
+        "sell_strategy",
+        "start_date",
+        "end_date",
+        "params",
+        "created_at",
+    ],
+    "properties": {
+        "id": {"type": "string"},
+        "type": {"type": ["string", "null"]},
+        "asset_type": {"type": ["string", "null"]},
+        "buy_strategy": {"type": ["string", "null"]},
+        "sell_strategy": {"type": ["string", "null"]},
+        "start_date": {"type": ["string", "null"]},
+        "end_date": {"type": ["string", "null"]},
+        "params": {"type": "object"},
         "created_at": {"type": ["string", "null"]},
     },
     "additionalProperties": True,
@@ -264,6 +318,58 @@ class TestJsonContractSchema:
         assert result.exit_code == 0
         payload = json.loads(result.output)
         validate(instance=payload, schema=CANCEL_SUCCESS_SCHEMA)
+
+    def test_backtest_run_success_schema(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(
+            main,
+            [
+                "backtest",
+                "run",
+                "--type",
+                "stock",
+                "--buy-strategy",
+                "test_buy",
+                "--sell-strategy",
+                "test_sell",
+                "--start-date",
+                "20260101",
+                "--end-date",
+                "20260131",
+                "--async",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=BACKTEST_RUN_SCHEMA)
+
+    def test_optimize_run_success_schema(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(
+            main,
+            [
+                "optimize",
+                "grid",
+                "--type",
+                "stock",
+                "--buy-strategy",
+                "test_buy",
+                "--sell-strategy",
+                "test_sell",
+                "--start-date",
+                "20260101",
+                "--end-date",
+                "20260131",
+                "--params",
+                "{}",
+                "--async",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        validate(instance=payload, schema=OPTIMIZE_RUN_SCHEMA)
 
     def test_backtest_status_success_schema(self, cli_runner: CliRunner):
         job_id = _latest_backtest_job_id()

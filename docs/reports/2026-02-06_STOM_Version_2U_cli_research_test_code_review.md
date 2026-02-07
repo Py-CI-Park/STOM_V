@@ -516,6 +516,26 @@
 
 ---
 
+## 21. 다음 단계 실행 Status (C2.16)
+
+### 21.1 실행 완료 항목
+1. `backtest run`, `optimize grid run` 성공 payload 스키마를 status/list와 분리: 완료
+2. `tests/test_json_contract_schema.py`에 run 전용 성공 계약 검증 2건 추가: 완료
+3. job ID 생성 포맷을 마이크로초 단위로 확장해 ID 충돌 리스크 완화: 완료
+
+### 21.2 현재 상태
+- C2.15에서 제시한 다음 권장 단계(run 계약 분리/검증)가 반영됨.
+- 버전은 `2.36.U1.5.C2.16`으로 상향됨.
+- 전체 테스트는 `239 passed, 1 skipped`로 통과.
+- 전체 CLI 커버리지는 약 55.08%로 55% 하한선을 충족.
+
+### 21.3 후속 권장 단계
+1. run 실패 payload(파라미터 오류/DB 오류) 계약도 jsonschema로 확장
+2. `tests/README.md`의 테스트 수/파일별 개수를 현재 기준으로 동기화
+3. runner 계층(`cli/runners/*`) 커버리지 전용 보강 스프린트 진행
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

@@ -1,7 +1,7 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.15
+**버전**: V2.36.U1.5.C2.16
 **최종 업데이트**: 2026-02-07
 
 ---
@@ -48,7 +48,7 @@ docs/
 |------|------|
 | [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (한글, 2,096줄) - 사용자 및 AI Agent용 |
 | [contracts/CLI_JSON_Contract.md](contracts/CLI_JSON_Contract.md) | CLI JSON 응답 계약서 |
-| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (238개 테스트) |
+| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (240개 테스트) |
 
 ### change_log/ - 변경 이력
 
@@ -111,6 +111,13 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.16 (2026-02-07)
+
+- `backtest run`, `optimize grid` 성공 JSON payload 스키마를 status/list와 분리해 계약 테스트 추가
+- job ID 생성 포맷을 마이크로초 단위로 확장해 테스트/실행 시 ID 충돌 리스크 완화
+- `tests/test_json_contract_schema.py`에 run 전용 스키마 검증 2건 추가
+- 전체 테스트 기준: `239 passed, 1 skipped`
 
 ### V2.36.U1.5.C2.15 (2026-02-07)
 
