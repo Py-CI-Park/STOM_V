@@ -172,3 +172,20 @@ python -m cli.main optimize list --format json
 - `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=50 --tb=short` 통과
 - 결과: `234 passed, 1 skipped`, 커버리지 약 `54.67%`
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.13`
+
+## 10. C2.14 진행 상태 (커버리지 하한선 상향)
+
+### 10.1 완료 항목
+1. CI 전체 커버리지 하한선 `50 -> 55` 상향 완료
+2. optimize 상태/목록/취소 성공 경로 테스트 3건 추가 완료
+3. 신규 하한선 기준 전체 테스트 검증 완료
+
+### 10.2 반영 파일
+- `.github/workflows/cli-tests.yml`
+- `tests/test_optimize.py`
+
+### 10.3 확인 결과
+- `python -m pytest tests/test_optimize.py -q --tb=short` 통과
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
+- 결과: `237 passed, 1 skipped`, 커버리지 약 `55.08%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.14`

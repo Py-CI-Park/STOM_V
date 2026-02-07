@@ -2,6 +2,29 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.14 (2026-02-07) - 전체 커버리지 하한선 55% 상향
+
+#### 개요
+C2.13 후속으로 CI 전체 커버리지 하한선을 55%로 상향하고, optimize 명령의 핵심 성공 분기 테스트를 추가해 기준을 안정적으로 충족.
+
+#### 주요 변경 사항
+- `tests/test_optimize.py`
+  - `optimize status` 기존 작업(table 출력) 검증 테스트 추가
+  - `optimize list` 기존 작업(table 출력) 검증 테스트 추가
+  - `optimize cancel` pending 작업 취소 성공 경로 테스트 추가
+- `.github/workflows/cli-tests.yml`
+  - 전체 coverage 하한선 `--cov-fail-under=55` 적용
+- 버전 상향
+  - `2.36.U1.5.C2.14`
+
+#### 검증
+- `python -m pytest tests/test_optimize.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `237 passed, 1 skipped`
+  - 총 커버리지: 약 55.08%
+
+---
+
 ### V2.36.U1.5.C2.13 (2026-02-07) - status/list JSON 계약 검증 확장 및 안정화
 
 #### 개요

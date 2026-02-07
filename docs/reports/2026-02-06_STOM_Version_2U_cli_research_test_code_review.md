@@ -479,6 +479,25 @@
 
 ---
 
+## 19. 다음 단계 실행 Status (C2.14)
+
+### 19.1 실행 완료 항목
+1. CI 전체 coverage 하한선 `50 -> 55` 상향: 완료
+2. optimize 성공 분기(status/list/cancel) 테스트 보강: 완료
+3. 55% 기준 전체 회귀 테스트 검증: 완료
+
+### 19.2 현재 상태
+- C2.13에서 제시한 다음 권장 단계 1번(coverage 하한선 상향)이 반영됨.
+- 버전은 `2.36.U1.5.C2.14`로 상향됨.
+- 전체 테스트는 `237 passed, 1 skipped`로 통과.
+- 전체 CLI 커버리지는 약 55.08%로 신규 하한선(55%)을 충족.
+
+### 19.3 다음 권장 단계
+1. `docs/contracts/CLI_JSON_Contract.md`에 명령별 계약 변경 이력 표 추가
+2. `optimize/backtest run` 성공 payload 계약을 status/list와 분리해 문서/테스트 구조화
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

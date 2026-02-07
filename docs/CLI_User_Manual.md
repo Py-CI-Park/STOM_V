@@ -1,6 +1,6 @@
 # STOM CLI 사용자 매뉴얼
 
-**버전**: 2.36.U1.5.C2.13
+**버전**: 2.36.U1.5.C2.14
 **System Trading Open Machine - 명령줄 인터페이스**
 
 ---
@@ -46,7 +46,7 @@ python cli/main.py --help
 
 ```bash
 stom --version
-# 출력: STOM, version 2.36.U1.5.C2.13
+# 출력: STOM, version 2.36.U1.5.C2.14
 ```
 
 ### 처음 실행할 명령어
@@ -2133,6 +2133,7 @@ EOF
 
 ## 버전 히스토리
 
+- **2.36.U1.5.C2.14**: optimize status/list/cancel 성공 경로 분기 테스트를 추가해 전체 커버리지를 55% 기준으로 끌어올리고 CI 하한선을 55로 상향
 - **2.36.U1.5.C2.13**: jsonschema 계약 검증 범위를 backtest/optimize list/status까지 확장하고 상태 조회 성공 검증을 안정화(DB 최신 ID 기반)하여 테스트 충돌 리스크 제거
 - **2.36.U1.5.C2.12**: positions/orders 성공 JSON payload 계약 테스트 + jsonschema 자동검증 + 전체 CLI 커버리지 하한선 적용
 - **2.36.U1.5.C2.11**: positions/orders 취소/청산 실패 JSON 에러코드 계약 추가 + runner/schema 커버리지 하한선 적용
@@ -2154,5 +2155,5 @@ EOF
 
 ---
 
-**문서 마지막 업데이트**: 2026-02-06
+**문서 마지막 업데이트**: 2026-02-07
 **관리자**: STOM 개발팀

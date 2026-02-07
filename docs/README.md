@@ -1,7 +1,7 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.13
+**버전**: V2.36.U1.5.C2.14
 **최종 업데이트**: 2026-02-07
 
 ---
@@ -48,7 +48,7 @@ docs/
 |------|------|
 | [CLI_User_Manual.md](CLI_User_Manual.md) | CLI 사용자 매뉴얼 (한글, 2,096줄) - 사용자 및 AI Agent용 |
 | [contracts/CLI_JSON_Contract.md](contracts/CLI_JSON_Contract.md) | CLI JSON 응답 계약서 |
-| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (235개 테스트) |
+| [tests/README.md](../tests/README.md) | CLI 테스트 시스템 문서 (238개 테스트) |
 
 ### change_log/ - 변경 이력
 
@@ -111,6 +111,13 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.14 (2026-02-07)
+
+- `tests/test_optimize.py`에 status/list/cancel 성공 경로 분기 테스트 3건 추가
+- CI 전체 coverage 하한선을 `--cov-fail-under=55`로 상향
+- 전체 테스트 기준: `237 passed, 1 skipped`
+- 전체 CLI 커버리지 기준치 확인: 약 55.08%
 
 ### V2.36.U1.5.C2.13 (2026-02-07)
 
