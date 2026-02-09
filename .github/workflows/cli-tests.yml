@@ -57,7 +57,7 @@ jobs:
     - name: Install minimal dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install click pandas
+        pip install click pandas pytz
 
     - name: Run smoke tests
       run: |
@@ -99,7 +99,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-test.txt
-        pip install click pandas tabulate
+        pip install click pandas pytz tabulate
 
     - name: Create test database directory
       run: |
@@ -152,7 +152,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-test.txt
-        pip install click pandas tabulate
+        pip install click pandas pytz tabulate
 
     - name: Create test database directory
       run: mkdir -p _database
@@ -248,5 +248,5 @@ jobs:
 
     - name: Test Docker image
       run: |
-        docker run --rm stom-cli:test python -m cli.main --version
-        docker run --rm stom-cli:test python -m cli.main --help
+        docker run --rm stom-cli:test --version
+        docker run --rm stom-cli:test --help

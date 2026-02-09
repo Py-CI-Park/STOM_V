@@ -115,6 +115,8 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ### V2.36.U1.5.C2.23 (2026-02-09)
 
 - GitHub Actions `setup-python` 캐시 경로를 명시해 CI 사전 단계 실패(`cache: pip`)를 해소
+- Smoke/Test/coverage 의존성 설치에 `pytz`를 명시해 리눅스 import 실패를 방지
+- Docker smoke 단계의 엔트리포인트 호출 인자를 수정(`python -m cli.main ...` -> `--version/--help`)
 - `utility/static.py`를 리눅스/헤드리스 호환 fallback 구조로 보강
   - `winreg`, `PyQt5`, `psutil`, `exchange_calendars`, `cryptography`, `loguru` 미설치 환경 import 안전성 개선
   - `read_key`, `qtest_qwait`, `cme_normal_open`, `win_proc_alive`에 플랫폼별 안전 경로 추가

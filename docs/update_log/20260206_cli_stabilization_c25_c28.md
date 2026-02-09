@@ -341,10 +341,11 @@ python -m cli.main optimize list --format json
 
 ### 19.1 완료 항목
 1. `setup-python` pip cache 실패 대응을 위한 `cache-dependency-path` 설정 추가 완료
-2. 테스트/커버리지 job 의존성에서 불필요한 `PyQt5` 설치 제거 완료
-3. `utility/static.py` 플랫폼 의존 import fallback 보강 완료
-4. `tests/test_static_cross_platform.py` 신규(5건) 추가 완료
-5. 버전/문서 동기화 완료 (`2.36.U1.5.C2.23`)
+2. smoke/test/coverage job 의존성에 `pytz` 명시 및 test/coverage의 불필요한 `PyQt5` 제거 완료
+3. Docker smoke 명령을 엔트리포인트 방식(`--version`, `--help`)으로 수정 완료
+4. `utility/static.py` 플랫폼 의존 import fallback 보강 완료
+5. `tests/test_static_cross_platform.py` 신규(5건) 추가 완료
+6. 버전/문서 동기화 완료 (`2.36.U1.5.C2.23`)
 
 ### 19.2 반영 파일
 - `.github/workflows/cli-tests.yml`

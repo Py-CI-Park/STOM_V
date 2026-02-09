@@ -14,7 +14,9 @@ PR 품질 게이트 점검 중 확인된 CI 실패 원인(`setup-python` pip cac
   - `actions/setup-python@v5`의 `cache-dependency-path`를 명시해 캐시 초기화 실패 제거
     - `requirements-test.txt`
     - `requirements-cli.txt`
+  - smoke/test/coverage job 설치 의존성에 `pytz`를 명시해 리눅스 import 실패 방지
   - 테스트/커버리지 job 설치 의존성에서 불필요한 `PyQt5` 설치를 제거해 리눅스 호환성 리스크 완화
+  - Docker smoke 명령을 이미지 엔트리포인트 방식에 맞게 수정(`--version`, `--help`)
 - `utility/static.py`
   - 선택 의존성 fallback 처리 추가:
     - `psutil`, `winreg`, `loguru`, `exchange_calendars`, `PyQt5`, `cryptography`
