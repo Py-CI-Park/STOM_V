@@ -1,11 +1,35 @@
 """Tests for `stom data` command group."""
 
+import sqlite3
 from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
 
 from cli.main import main
+
+DB_BACKTEST = "./_database/backtest.db"
+
+
+def _ensure_backtest_results_table() -> None:
+    con = sqlite3.connect(DB_BACKTEST)
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS backtest_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            strategy_name TEXT,
+            start_date TEXT,
+            end_date TEXT,
+            total_return REAL,
+            sharpe_ratio REAL,
+            max_drawdown REAL,
+            created_at TEXT
+        )
+        """
+    )
+    con.commit()
+    con.close()
 
 
 class TestDataHelp:
@@ -64,6 +88,7 @@ class TestDataExport:
         assert result.exit_code == 0
 
     def test_data_export_backtest_csv(self, cli_runner: CliRunner, tmp_path: Path):
+        _ensure_backtest_results_table()
         output_file = tmp_path / "export.csv"
         result = cli_runner.invoke(
             main,

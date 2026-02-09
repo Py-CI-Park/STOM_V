@@ -14,6 +14,36 @@ from cli.main import main
 DB_BACKTEST = "./_database/backtest.db"
 
 
+def _ensure_optimize_jobs_table() -> None:
+    con = sqlite3.connect(DB_BACKTEST)
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS optimize_jobs (
+            id TEXT PRIMARY KEY,
+            type TEXT,
+            asset_type TEXT,
+            buy_strategy TEXT,
+            sell_strategy TEXT,
+            start_date TEXT,
+            end_date TEXT,
+            betting REAL,
+            params TEXT,
+            trials INTEGER,
+            generations INTEGER,
+            status TEXT,
+            created_at TEXT,
+            started_at TEXT,
+            completed_at TEXT,
+            result TEXT,
+            error_message TEXT
+        )
+        """
+    )
+    con.commit()
+    con.close()
+
+
 ERROR_SCHEMA = {
     "type": "object",
     "required": ["ok", "error"],
@@ -298,6 +328,7 @@ class TestJsonContractSchema:
         validate(instance=payload, schema=MESSAGE_OR_LIST_SCHEMA)
 
     def test_optimize_list_schema(self, cli_runner: CliRunner):
+        _ensure_optimize_jobs_table()
         result = cli_runner.invoke(main, ["optimize", "list", "--format", "json"])
         assert result.exit_code == 0
         payload = json.loads(result.output)
@@ -310,6 +341,7 @@ class TestJsonContractSchema:
         validate(instance=payload, schema=MESSAGE_SCHEMA)
 
     def test_optimize_status_unknown_schema(self, cli_runner: CliRunner):
+        _ensure_optimize_jobs_table()
         result = cli_runner.invoke(main, ["optimize", "status", "unknown_job_id", "--format", "json"])
         assert result.exit_code == 0
         payload = json.loads(result.output)

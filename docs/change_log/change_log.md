@@ -27,6 +27,9 @@ PR 품질 게이트 점검 중 확인된 CI 실패 원인(`setup-python` pip cac
     - `cme_normal_open`: `exchange_calendars` 미설치 시 `False` 반환
 - `tests/test_static_cross_platform.py` 신규 추가 (5 tests)
   - logger fallback, psutil fallback, qwait fallback, read_key fallback, calendar fallback 회귀 검증
+- 테스트 안정화 보강
+  - `tests/test_backtest.py`, `tests/test_optimize.py` Python 3.9 타입힌트 호환성 보강
+  - `tests/test_data.py`, `tests/test_json_contract_schema.py` 클린 DB 환경에서 테이블 선생성 보장
 - 버전 상향
   - `2.36.U1.5.C2.23`
 

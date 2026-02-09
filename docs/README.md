@@ -121,6 +121,8 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
   - `winreg`, `PyQt5`, `psutil`, `exchange_calendars`, `cryptography`, `loguru` 미설치 환경 import 안전성 개선
   - `read_key`, `qtest_qwait`, `cme_normal_open`, `win_proc_alive`에 플랫폼별 안전 경로 추가
 - `tests/test_static_cross_platform.py` 신규 추가(5건): 크로스플랫폼 fallback 동작 회귀 검증
+- `tests/test_backtest.py`, `tests/test_optimize.py`에 Python 3.9 타입힌트 호환(`from __future__ import annotations`) 반영
+- `tests/test_data.py`, `tests/test_json_contract_schema.py`에 테이블 선생성 로직을 추가해 클린 CI 환경에서도 테스트 결정성 보장
 - 목적: PR 품질 게이트(스모크/코드품질/도커 빌드) 통과를 위한 실행환경 의존성 리스크 제거
 
 ### V2.36.U1.5.C2.22 (2026-02-07)
