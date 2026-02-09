@@ -30,6 +30,7 @@ PR 품질 게이트 점검 중 확인된 CI 실패 원인(`setup-python` pip cac
 - 테스트 안정화 보강
   - `tests/test_backtest.py`, `tests/test_optimize.py` Python 3.9 타입힌트 호환성 보강
   - `tests/test_data.py`, `tests/test_json_contract_schema.py` 클린 DB 환경에서 테이블 선생성 보장
+  - `cli/commands/strategy.py`의 import 서브커맨드 명을 명시(`name='import'`)해 Click 버전 차이로 인한 명령 노출 불일치 제거
 - 버전 상향
   - `2.36.U1.5.C2.23`
 

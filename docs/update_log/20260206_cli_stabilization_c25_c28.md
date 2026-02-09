@@ -346,7 +346,8 @@ python -m cli.main optimize list --format json
 4. `utility/static.py` 플랫폼 의존 import fallback 보강 완료
 5. `tests/test_static_cross_platform.py` 신규(5건) 추가 완료
 6. Python 3.9 타입힌트 호환성 보강 + 클린 DB 환경 테이블 선생성 테스트 보강 완료
-7. 버전/문서 동기화 완료 (`2.36.U1.5.C2.23`)
+7. `strategy import` 서브커맨드 명시 등록(`name='import'`)으로 Click 버전 호환성 보강 완료
+8. 버전/문서 동기화 완료 (`2.36.U1.5.C2.23`)
 
 ### 19.2 반영 파일
 - `.github/workflows/cli-tests.yml`

@@ -673,7 +673,8 @@
 4. `utility/static.py` 크로스플랫폼 fallback 보강: 완료
 5. `tests/test_static_cross_platform.py` 신규(5건) 추가: 완료
 6. Python 3.9 타입힌트 호환성 보강 + 클린 DB 환경용 테스트 테이블 선생성 보강: 완료
-7. 버전 상향 및 문서 동기화(`C2.23`): 완료
+7. `strategy import` 서브커맨드 명시 등록(`name='import'`)으로 Click 버전 차이 호환성 보강: 완료
+8. 버전 상향 및 문서 동기화(`C2.23`): 완료
 
 ### 28.3 검증 결과
 - `python -m pytest tests/test_static_cross_platform.py -q --tb=short`

@@ -382,7 +382,7 @@ def delete(name: str, strategy_type: str, is_buy: bool):
         raise click.ClickException(str(e))
 
 
-@strategy.command()
+@strategy.command(name='import')
 @click.option('--file', 'import_file', required=True, type=click.Path(exists=True), help='가져올 파일 경로')
 @click.option('--type', 'strategy_type', required=True,
               type=click.Choice(['stock', 'coin', 'future']), help='전략 타입')
