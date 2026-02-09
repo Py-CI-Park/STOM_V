@@ -1,8 +1,8 @@
 # STOM 문서 관리
 
 **프로젝트**: STOM (System Trading Operation Manager)
-**버전**: V2.36.U1.5.C2.22
-**최종 업데이트**: 2026-02-07
+**버전**: V2.36.U1.5.C2.23
+**최종 업데이트**: 2026-02-09
 
 ---
 
@@ -111,6 +111,15 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 ---
 
 ## 최근 변경사항
+
+### V2.36.U1.5.C2.23 (2026-02-09)
+
+- GitHub Actions `setup-python` 캐시 경로를 명시해 CI 사전 단계 실패(`cache: pip`)를 해소
+- `utility/static.py`를 리눅스/헤드리스 호환 fallback 구조로 보강
+  - `winreg`, `PyQt5`, `psutil`, `exchange_calendars`, `cryptography`, `loguru` 미설치 환경 import 안전성 개선
+  - `read_key`, `qtest_qwait`, `cme_normal_open`, `win_proc_alive`에 플랫폼별 안전 경로 추가
+- `tests/test_static_cross_platform.py` 신규 추가(5건): 크로스플랫폼 fallback 동작 회귀 검증
+- 목적: PR 품질 게이트(스모크/코드품질/도커 빌드) 통과를 위한 실행환경 의존성 리스크 제거
 
 ### V2.36.U1.5.C2.22 (2026-02-07)
 

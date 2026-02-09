@@ -1,9 +1,9 @@
 # STOM CLI 테스트 시스템
 
-**버전**: V2.36.U1.5.C2.22  
-**최종 업데이트**: 2026-02-07  
-**총 테스트 수**: 284개  
-**최근 실행 결과**: 283 passed, 1 skipped
+**버전**: V2.36.U1.5.C2.23  
+**최종 업데이트**: 2026-02-09  
+**총 테스트 수**: 289개  
+**최근 실행 결과**: 288 passed, 1 skipped
 
 ---
 
@@ -33,6 +33,7 @@ tests/
 ├── test_adapters.py
 ├── test_runners.py
 ├── test_schema_contract.py
+├── test_static_cross_platform.py
 ├── test_strategy_boundaries.py
 ├── fixtures/
 │   ├── __init__.py
@@ -65,9 +66,10 @@ tests/
 | `tests/test_adapters.py` | 13 |
 | `tests/test_runners.py` | 13 |
 | `tests/test_schema_contract.py` | 5 |
+| `tests/test_static_cross_platform.py` | 5 |
 | `tests/integration/test_workflow.py` | 11 |
 | `tests/integration/test_data_consistency.py` | 12 |
-| **합계** | **284** |
+| **합계** | **289** |
 
 ---
 

@@ -336,3 +336,31 @@ python -m cli.main optimize list --format json
   - `cli/commands/strategy.py`: `43% -> 69%`
   - `cli/commands/trade.py`: `71% -> 76%`
 - `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.22`
+
+## 19. C2.23 진행 상태 (CI 캐시 오류 + 크로스플랫폼 fallback 안정화)
+
+### 19.1 완료 항목
+1. `setup-python` pip cache 실패 대응을 위한 `cache-dependency-path` 설정 추가 완료
+2. 테스트/커버리지 job 의존성에서 불필요한 `PyQt5` 설치 제거 완료
+3. `utility/static.py` 플랫폼 의존 import fallback 보강 완료
+4. `tests/test_static_cross_platform.py` 신규(5건) 추가 완료
+5. 버전/문서 동기화 완료 (`2.36.U1.5.C2.23`)
+
+### 19.2 반영 파일
+- `.github/workflows/cli-tests.yml`
+- `utility/static.py`
+- `tests/test_static_cross_platform.py`
+- `cli/version.py`
+- `docs/change_log/change_log.md`
+- `docs/reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md`
+- `docs/README.md`
+- `docs/AGENTS.md`
+- `docs/CLI_User_Manual.md`
+- `tests/README.md`
+
+### 19.3 확인 결과
+- `python -m pytest tests/test_static_cross_platform.py -q --tb=short` 통과 (`5 passed`)
+- `python -m pytest tests/ --collect-only -q` 결과 `289 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short` 통과
+- 결과: `288 passed, 1 skipped`, 커버리지 약 `64.59%`
+- `python -m cli.main --version` 결과: `STOM, version 2.36.U1.5.C2.23`

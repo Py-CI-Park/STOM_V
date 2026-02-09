@@ -1,6 +1,6 @@
 # STOM CLI 사용자 매뉴얼
 
-**버전**: 2.36.U1.5.C2.22
+**버전**: 2.36.U1.5.C2.23
 **System Trading Open Machine - 명령줄 인터페이스**
 
 ---
@@ -46,7 +46,7 @@ python cli/main.py --help
 
 ```bash
 stom --version
-# 출력: STOM, version 2.36.U1.5.C2.22
+# 출력: STOM, version 2.36.U1.5.C2.23
 ```
 
 ### 처음 실행할 명령어
@@ -2133,6 +2133,7 @@ EOF
 
 ## 버전 히스토리
 
+- **2.36.U1.5.C2.23**: CI `setup-python` 캐시 경로 오류를 수정하고 `utility/static.py`를 리눅스/헤드리스 fallback 구조로 보강해 스모크/도커 실행 안정성과 크로스플랫폼 호환성을 강화
 - **2.36.U1.5.C2.22**: trade JSON 오류 계약 테스트와 strategy 경계 테스트를 보강하고 `strategy import`의 `list` shadowing 버그를 수정해 전체 CLI 커버리지를 64%대로 개선
 - **2.36.U1.5.C2.21**: settings_adapter/queue_adapter 단위 테스트를 추가해 저커버리지 구간을 보강하고 전체 CLI 커버리지를 61%대로 상승
 - **2.36.U1.5.C2.20**: runner 실패 시나리오(queue timeout, process join timeout) 계약 테스트를 추가해 예외/강제종료 경계 동작 검증 강화
@@ -2163,5 +2164,5 @@ EOF
 
 ---
 
-**문서 마지막 업데이트**: 2026-02-07
+**문서 마지막 업데이트**: 2026-02-09
 **관리자**: STOM 개발팀

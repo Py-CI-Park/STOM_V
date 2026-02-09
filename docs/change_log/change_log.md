@@ -2,6 +2,40 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.23 (2026-02-09) - CI 캐시 오류 수정 및 크로스플랫폼 fallback 안정화
+
+#### 개요
+PR 품질 게이트 점검 중 확인된 CI 실패 원인(`setup-python` pip cache 의존성 경로 미지정)과
+리눅스/헤드리스 환경 import 취약점(`utility/static.py`)을 함께 해소해
+스모크/도커/코드품질 파이프라인의 실행 안정성을 보강.
+
+#### 주요 변경 사항
+- `.github/workflows/cli-tests.yml`
+  - `actions/setup-python@v5`의 `cache-dependency-path`를 명시해 캐시 초기화 실패 제거
+    - `requirements-test.txt`
+    - `requirements-cli.txt`
+  - 테스트/커버리지 job 설치 의존성에서 불필요한 `PyQt5` 설치를 제거해 리눅스 호환성 리스크 완화
+- `utility/static.py`
+  - 선택 의존성 fallback 처리 추가:
+    - `psutil`, `winreg`, `loguru`, `exchange_calendars`, `PyQt5`, `cryptography`
+  - 플랫폼/환경별 안전 경로 보강:
+    - `win_proc_alive`: `psutil` 미설치 시 `False` 반환
+    - `qtest_qwait`: `PyQt5` 미설치 시 `time.sleep` fallback
+    - `read_key`: Windows registry 미지원 시 `STOM_EN_KEY`/기본 fallback 키 사용
+    - `cme_normal_open`: `exchange_calendars` 미설치 시 `False` 반환
+- `tests/test_static_cross_platform.py` 신규 추가 (5 tests)
+  - logger fallback, psutil fallback, qwait fallback, read_key fallback, calendar fallback 회귀 검증
+- 버전 상향
+  - `2.36.U1.5.C2.23`
+
+#### 검증
+- `python -m pytest tests/test_static_cross_platform.py -q --tb=short`
+- `python -m pytest tests/ --collect-only -q`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+- `python -m cli.main --version`
+
+---
+
 ### V2.36.U1.5.C2.22 (2026-02-07) - trade JSON 오류 계약 및 strategy 경계 테스트 보강
 
 #### 개요

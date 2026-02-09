@@ -658,6 +658,44 @@
 
 ---
 
+## 28. PR 품질 게이트 대응 Status (C2.23)
+
+### 28.1 실행 배경
+- 부모 브랜치 PR 생성 이후 GitHub Actions에서 품질 게이트가 `UNSTABLE`로 확인됨.
+- 주요 실패 원인은 기능 결함이 아니라 **CI 설정/실행환경 의존성** 이슈였음.
+  1. `setup-python`의 pip cache가 dependency path를 찾지 못해 `Smoke Test`, `Code Quality` 선행 실패
+  2. 리눅스/헤드리스 환경에서 `utility/static.py`의 플랫폼 특화 import(`winreg`, `PyQt5` 등) 취약성
+
+### 28.2 실행 완료 항목
+1. `.github/workflows/cli-tests.yml`의 `setup-python`에 `cache-dependency-path` 명시: 완료
+2. 테스트/커버리지 job 의존성 설치에서 불필요한 `PyQt5` 제거: 완료
+3. `utility/static.py` 크로스플랫폼 fallback 보강: 완료
+4. `tests/test_static_cross_platform.py` 신규(5건) 추가: 완료
+5. 버전 상향 및 문서 동기화(`C2.23`): 완료
+
+### 28.3 검증 결과
+- `python -m pytest tests/test_static_cross_platform.py -q --tb=short`
+  - 결과: `5 passed`
+- `python -m pytest tests/ --collect-only -q`
+  - 결과: `289 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `288 passed, 1 skipped`
+  - 총 커버리지: `64.59%` (기준 55% 충족)
+- `python -m cli.main --version`
+  - 결과: `STOM, version 2.36.U1.5.C2.23`
+
+### 28.4 현재 종합 판단
+1. 본 브랜치는 부모 브랜치 대비 **필요했던 안정화/계약/검증 체계 강화 작업**을 완료했고, PR 품질 게이트 관점에서도 추가 보강(C2.23)까지 반영됨.
+2. 따라서 부모 브랜치로의 머지는 **기술적으로 권고 가능**한 상태.
+3. 단, 기능 측면의 기존 Known Gap(`db append` 실적재, 실주문 close/cancel placeholder)은 여전히 후속 개발 과제로 유지됨.
+
+### 28.5 머지 후 후속 권장
+1. `db append` 실적재 로직 구현 + 계약 테스트 추가 (P0)
+2. trade runner placeholder(close/cancel) 실제 브로커 연동 또는 명시적 비지원 계약 강화 (P0/P1)
+3. CI soft-fail 단계 hard-gate 전환 범위 점진 확대 (P1)
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`

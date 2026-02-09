@@ -50,6 +50,9 @@ jobs:
       with:
         python-version: '3.11'
         cache: 'pip'
+        cache-dependency-path: |
+          requirements-test.txt
+          requirements-cli.txt
 
     - name: Install minimal dependencies
       run: |
@@ -88,12 +91,15 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
+        cache-dependency-path: |
+          requirements-test.txt
+          requirements-cli.txt
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-test.txt
-        pip install click pandas PyQt5 tabulate
+        pip install click pandas tabulate
 
     - name: Create test database directory
       run: |
@@ -138,12 +144,15 @@ jobs:
       with:
         python-version: '3.11'
         cache: 'pip'
+        cache-dependency-path: |
+          requirements-test.txt
+          requirements-cli.txt
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements-test.txt
-        pip install click pandas PyQt5 tabulate
+        pip install click pandas tabulate
 
     - name: Create test database directory
       run: mkdir -p _database
@@ -197,6 +206,9 @@ jobs:
       with:
         python-version: '3.11'
         cache: 'pip'
+        cache-dependency-path: |
+          requirements-test.txt
+          requirements-cli.txt
 
     - name: Install linting tools
       run: |
