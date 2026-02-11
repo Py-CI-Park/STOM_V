@@ -27,12 +27,12 @@ def strategy():
     pass
 
 
-@strategy.command()
-@click.option('--type', type=click.Choice(['stock', 'coin', 'future']),
+@strategy.command(name='list')
+@click.option('--type', 'type_filter', type=click.Choice(['stock', 'coin', 'future']),
               help='전략 타입 필터링')
 @click.option('--format', type=click.Choice(['table', 'json', 'csv']),
               default='table', help='출력 포맷')
-def list(type: Optional[str], format: str):
+def list_strategies(type_filter: Optional[str], format: str):
     """전략 목록 조회"""
     try:
         output_adapter = OutputAdapter(format=OutputFormat(format))
@@ -71,7 +71,7 @@ def list(type: Optional[str], format: str):
                         strategy_type = 'unknown'
 
                     # 타입 필터링
-                    if type and strategy_type != type:
+                    if type_filter and strategy_type != type_filter:
                         continue
 
                     df['전략타입'] = strategy_type
@@ -85,15 +85,17 @@ def list(type: Optional[str], format: str):
         con.close()
 
         if not all_strategies:
-            output_adapter.output(f"'{type}' 타입의 전략이 없습니다.", title="전략 목록")
+            output_adapter.output(f"'{type_filter}' 타입의 전략이 없습니다.", title="전략 목록")
             return
 
         # 모든 전략 합치기
         result_df = pd.concat(all_strategies, ignore_index=True)
 
         # 필요한 컬럼만 선택
-        display_cols = [col for col in ['전략타입', '테이블'] + list(result_df.columns)
-                       if col in result_df.columns]
+        display_cols = []
+        for col in ['전략타입', '테이블'] + builtins.list(result_df.columns):
+            if col in result_df.columns and col not in display_cols:
+                display_cols.append(col)
         result_df = result_df[display_cols]
 
         output_adapter.output(result_df, title="전략 목록")
@@ -107,9 +109,10 @@ def list(type: Optional[str], format: str):
 
 @strategy.command()
 @click.argument('strategy_name')
+@click.option('--type', 'strategy_type', type=click.Choice(['stock', 'coin', 'future']), required=False)
 @click.option('--format', type=click.Choice(['table', 'json', 'csv']),
               default='table', help='출력 포맷')
-def show(strategy_name: str, format: str):
+def show(strategy_name: str, strategy_type: Optional[str], format: str):
     """특정 전략 조회"""
     try:
         output_adapter = OutputAdapter(format=OutputFormat(format))
