@@ -422,9 +422,6 @@ class HeadlessBacktestRunner:
             if not self.load_settings():
                 return False
 
-        # 백테스트 모듈 지연 로딩
-        _load_backtest_modules()
-
         try:
             # gubun 매핑
             gubun_map = {
@@ -436,6 +433,9 @@ class HeadlessBacktestRunner:
             if not gubun:
                 logger.error(f"Unknown backtest type: {backtest_type}")
                 return False
+
+            # 백테스트 모듈 지연 로딩
+            _load_backtest_modules()
 
             # ui_gubun 매핑
             ui_gubun_map = {

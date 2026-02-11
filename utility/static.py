@@ -1,17 +1,43 @@
 import os
 import re
 import sys
+import time
 import pytz
-import psutil
 import _pickle
 import datetime
-import winreg as reg
-from loguru import logger
-import exchange_calendars as ec
+import logging
 from threading import Thread, Timer
-from PyQt5.QtTest import QTest
 from traceback import print_exc
-from cryptography.fernet import Fernet
+
+try:
+    import psutil
+except ImportError:
+    psutil = None
+
+try:
+    import winreg as reg
+except ImportError:
+    reg = None
+
+try:
+    from loguru import logger as _loguru_logger
+except ImportError:
+    _loguru_logger = None
+
+try:
+    import exchange_calendars as ec
+except ImportError:
+    ec = None
+
+try:
+    from PyQt5.QtTest import QTest
+except ImportError:
+    QTest = None
+
+try:
+    from cryptography.fernet import Fernet
+except ImportError:
+    Fernet = None
 
 
 now_utc_ = datetime.datetime.now(pytz.utc)
@@ -21,17 +47,28 @@ time_gap = int(summer_t - 50400)
 
 
 def get_logger(name):
-    logger.remove()
-    logger.add(
-        sys.stderr,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-               "<level>{level: <5}</level> | "
-               f"<cyan>{name}</cyan> : "
-               "<level>{message}</level>",
-        level="DEBUG",
-        colorize=True
-    )
-    return logger
+    if _loguru_logger is not None:
+        _loguru_logger.remove()
+        _loguru_logger.add(
+            sys.stderr,
+            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+                   "<level>{level: <5}</level> | "
+                   f"<cyan>{name}</cyan> : "
+                   "<level>{message}</level>",
+            level="DEBUG",
+            colorize=True
+        )
+        return _loguru_logger
+
+    fallback_logger = logging.getLogger(name)
+    if not fallback_logger.handlers:
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(logging.Formatter(
+            "%(asctime)s | %(levelname)-5s | " + f"{name} : " + "%(message)s"
+        ))
+        fallback_logger.addHandler(handler)
+    fallback_logger.setLevel(logging.DEBUG)
+    return fallback_logger
 
 
 def now():
@@ -187,6 +224,8 @@ def threading_timer(sec, func, args=None):
 
 
 def win_proc_alive(name):
+    if psutil is None:
+        return False
     alive = False
     for proc in psutil.process_iter():
         if name in proc.name():
@@ -223,8 +262,11 @@ def pickle_read(file):
 
 
 def qtest_qwait(sec):
-    # noinspection PyArgumentList
-    QTest.qWait(int(sec * 1000))
+    if QTest is not None:
+        # noinspection PyArgumentList
+        QTest.qWait(int(sec * 1000))
+        return
+    time.sleep(max(float(sec), 0))
 
 
 def change_format(text, dotdowndel=False, dotdown4=False, dotdown8=False):
@@ -264,15 +306,22 @@ def comma2float(t):
 
 
 def write_key():
+    if Fernet is None:
+        raise RuntimeError('cryptography package is required for key encryption')
     key = str(Fernet.generate_key(), 'utf-8')
+    if reg is None:
+        return key
     reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM')
     reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
     openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
     reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
     reg.CloseKey(openkey)
+    return key
 
 
 def read_key():
+    if reg is None:
+        return os.environ.get('STOM_EN_KEY', 'STOM_CLI_FALLBACK_KEY')
     openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
     key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
     reg.CloseKey(openkey)
@@ -280,11 +329,15 @@ def read_key():
 
 
 def en_text(key, text):
+    if Fernet is None:
+        raise RuntimeError('cryptography package is required for encryption')
     fernet = Fernet(bytes(key, 'utf-8'))
     return str(fernet.encrypt(bytes(text, 'utf-8')), 'utf-8')
 
 
 def de_text(key, text):
+    if Fernet is None:
+        raise RuntimeError('cryptography package is required for decryption')
     fernet = Fernet(bytes(key, 'utf-8'))
     return str(fernet.decrypt(bytes(text, 'utf-8')), 'utf-8')
 
@@ -307,6 +360,8 @@ def text_not_in_special_characters(t):
 
 
 def cme_normal_open():
+    if ec is None:
+        return False
     str_day  = str_ymd(now_cme())
     today    = dt_ymdhms_ios(f'{str_day} 17:00:00')
     ec_cme   = ec.get_calendar('CMES')

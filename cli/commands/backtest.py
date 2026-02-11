@@ -80,7 +80,7 @@ def run(buy_strategy: str, sell_strategy: str, type: str, start_date: str,
 
         # 백테스트 구성
         backtest_config = {
-            'id': datetime.now().strftime('%Y%m%d_%H%M%S'),
+            'id': datetime.now().strftime('%Y%m%d_%H%M%S_%f'),
             'buy_strategy': buy_strategy,
             'sell_strategy': sell_strategy,
             'type': type,
@@ -261,8 +261,17 @@ def run(buy_strategy: str, sell_strategy: str, type: str, start_date: str,
 
     except Exception as e:
         output_adapter = OutputAdapter(format=OutputFormat(format))
-        click.echo(OutputAdapter.format_error(e, "백테스트 실행 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "백테스트 실행 실패",
+                output_format=OutputFormat(format),
+                error_code="BACKTEST_RUN_FAILED",
+            )
+        )
         logger_.error(f"Error running backtest: {e}")
+        if format == 'json':
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 
@@ -315,7 +324,14 @@ def status(backtest_id: str, format: str):
 
     except Exception as e:
         output_adapter = OutputAdapter(format=OutputFormat(format))
-        click.echo(OutputAdapter.format_error(e, "백테스트 상태 조회 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "백테스트 상태 조회 실패",
+                output_format=OutputFormat(format),
+                error_code="BACKTEST_STATUS_FAILED",
+            )
+        )
         logger_.error(f"Error getting backtest status: {e}")
         raise click.ClickException(str(e))
 
@@ -362,7 +378,14 @@ def list_jobs(limit: int, status: Optional[str], format: str):
 
     except Exception as e:
         output_adapter = OutputAdapter(format=OutputFormat(format))
-        click.echo(OutputAdapter.format_error(e, "백테스트 목록 조회 실패"))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "백테스트 목록 조회 실패",
+                output_format=OutputFormat(format),
+                error_code="BACKTEST_LIST_FAILED",
+            )
+        )
         logger_.error(f"Error listing backtest jobs: {e}")
         raise click.ClickException(str(e))
 

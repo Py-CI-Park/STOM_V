@@ -1,13 +1,8 @@
-"""
-STOM CLI Package
-================
+"""STOM CLI package metadata."""
 
-STOM 커맨드라인 인터페이스 모듈.
-"""
+from .version import VERSION
 
-__version__ = "2.36.U1.5.C1"
 __author__ = "STOM Project"
+__version__ = VERSION
 
-from .main import main
-
-__all__ = ["main", "__version__"]
+__all__ = ["__version__"]

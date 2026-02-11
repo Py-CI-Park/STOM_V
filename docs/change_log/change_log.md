@@ -2,6 +2,555 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.23 (2026-02-09) - CI 캐시 오류 수정 및 크로스플랫폼 fallback 안정화
+
+#### 개요
+PR 품질 게이트 점검 중 확인된 CI 실패 원인(`setup-python` pip cache 의존성 경로 미지정)과
+리눅스/헤드리스 환경 import 취약점(`utility/static.py`)을 함께 해소해
+스모크/도커/코드품질 파이프라인의 실행 안정성을 보강.
+
+#### 주요 변경 사항
+- `.github/workflows/cli-tests.yml`
+  - `actions/setup-python@v5`의 `cache-dependency-path`를 명시해 캐시 초기화 실패 제거
+    - `requirements-test.txt`
+    - `requirements-cli.txt`
+  - smoke/test/coverage job 설치 의존성에 `pytz`를 명시해 리눅스 import 실패 방지
+  - 테스트/커버리지 job 설치 의존성에서 불필요한 `PyQt5` 설치를 제거해 리눅스 호환성 리스크 완화
+  - Docker smoke 명령을 이미지 엔트리포인트 방식에 맞게 수정(`--version`, `--help`)
+- `utility/static.py`
+  - 선택 의존성 fallback 처리 추가:
+    - `psutil`, `winreg`, `loguru`, `exchange_calendars`, `PyQt5`, `cryptography`
+  - 플랫폼/환경별 안전 경로 보강:
+    - `win_proc_alive`: `psutil` 미설치 시 `False` 반환
+    - `qtest_qwait`: `PyQt5` 미설치 시 `time.sleep` fallback
+    - `read_key`: Windows registry 미지원 시 `STOM_EN_KEY`/기본 fallback 키 사용
+    - `cme_normal_open`: `exchange_calendars` 미설치 시 `False` 반환
+- `tests/test_static_cross_platform.py` 신규 추가 (5 tests)
+  - logger fallback, psutil fallback, qwait fallback, read_key fallback, calendar fallback 회귀 검증
+- 테스트 안정화 보강
+  - `tests/test_backtest.py`, `tests/test_optimize.py` Python 3.9 타입힌트 호환성 보강
+  - `tests/test_data.py`, `tests/test_json_contract_schema.py` 클린 DB 환경에서 테이블 선생성 보장
+  - `cli/commands/strategy.py`의 import 서브커맨드 명을 명시(`name='import'`)해 Click 버전 차이로 인한 명령 노출 불일치 제거
+- 버전 상향
+  - `2.36.U1.5.C2.23`
+
+#### 검증
+- `python -m pytest tests/test_static_cross_platform.py -q --tb=short`
+- `python -m pytest tests/ --collect-only -q`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+- `python -m cli.main --version`
+
+---
+
+### V2.36.U1.5.C2.22 (2026-02-07) - trade JSON 오류 계약 및 strategy 경계 테스트 보강
+
+#### 개요
+C2.21 후속으로 거래 명령 JSON 에러 계약을 강화하고, `strategy` 명령의 실패/경계 테스트를 보강해 실동작 신뢰성과 커버리지를 개선.
+
+#### 주요 변경 사항
+- `tests/test_trade.py`
+  - DB 연결 실패 시 JSON 에러코드 계약 테스트 4건 추가
+    - `POSITIONS_LIST_FAILED`
+    - `ORDERS_LIST_FAILED`
+    - `POSITIONS_CLOSE_FAILED`
+    - `ORDERS_CANCEL_FAILED`
+- `tests/test_json_contract_schema.py`
+  - `positions list`, `orders list` DB 오류 JSON 계약 스키마 검증 2건 추가
+- `cli/commands/trade.py`
+  - `positions list`, `orders list`의 JSON 모드 실패 경로를 `Exit(1)`로 정리해 단일 JSON payload 보장
+- `tests/test_strategy_boundaries.py` 신규 추가 (13 tests)
+  - `list/show/export/save/delete/import/validate` 실패/경계 케이스 검증
+  - 저장 후 DB 반영, syntax error 검증, unsupported 확장자 거부 검증 포함
+- `cli/commands/strategy.py`
+  - `strategy import` JSON 파싱 시 `list`/`dict` shadowing 버그 수정 (`builtins.list`, `builtins.dict`)
+- 커버리지 개선
+  - `cli/commands/strategy.py`: `43% -> 69%`
+  - `cli/commands/trade.py`: `71% -> 76%`
+- 버전 상향
+  - `2.36.U1.5.C2.22`
+
+#### 검증
+- `python -m pytest tests/test_trade.py -q --tb=short`
+- `python -m pytest tests/test_strategy_boundaries.py -q --tb=short`
+- `python -m pytest tests/ --collect-only -q`
+  - 결과: `284 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `283 passed, 1 skipped`
+  - 총 커버리지: 약 64.59%
+
+---
+
+### V2.36.U1.5.C2.21 (2026-02-07) - settings/queue adapter 커버리지 보강
+
+#### 개요
+C2.20 후속으로 저커버리지 구간이었던 `settings_adapter`와 `queue_adapter`에 대한 단위 테스트를 추가해 어댑터 계층 신뢰성과 커버리지를 개선.
+
+#### 주요 변경 사항
+- `tests/test_adapters.py` 신규 추가 (13 tests)
+  - settings adapter
+    - DB 경로/블랙리스트 매핑 검증
+    - `_safe_get`, `_parse_ratios` 경계 검증
+    - `load_settings_without_qt` 최소 데이터 경로 검증
+  - queue adapter
+    - `LoggingQueue`, `NullQueue`, `ProgressQueue` 동작 검증
+    - `CLIQueueAdapter` 팩토리/메시지 처리/완료 감지 검증
+- 커버리지 개선
+  - `cli/adapters/queue_adapter.py`: `23% -> 80%`
+  - `cli/adapters/settings_adapter.py`: `24% -> 56%`
+- 버전 상향
+  - `2.36.U1.5.C2.21`
+
+#### 검증
+- `python -m pytest tests/test_adapters.py -q --tb=short`
+- `python -m pytest tests/ --collect-only -q`
+  - 결과: `265 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `264 passed, 1 skipped`
+  - 총 커버리지: 약 61.42%
+
+---
+
+### V2.36.U1.5.C2.20 (2026-02-07) - runner 실패 시나리오 계약 테스트 보강
+
+#### 개요
+C2.19 후속으로 runner 계층의 실패 경계를 명확히 검증하기 위해 queue timeout과 process join timeout 시나리오 계약 테스트를 추가.
+
+#### 주요 변경 사항
+- `tests/test_runners.py`
+  - `_monitor_results`에서 `windowQ.get()` timeout(`queue.Empty`) 예외 발생 시 모니터 루프가 안전하게 중단되는 경로 검증 추가
+  - `kill_processes`에서 `join(timeout=1)` 이후 프로세스가 살아 있는 경우 `kill()`로 강제 종료되는 경로 검증 추가
+- 버전 상향
+  - `2.36.U1.5.C2.20`
+
+#### 검증
+- `python -m pytest tests/test_runners.py -q --tb=short`
+- `python -m pytest tests/ --collect-only -q`
+  - 결과: `252 tests collected`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `251 passed, 1 skipped`
+  - 총 커버리지: 약 57.60%
+
+---
+
+### V2.36.U1.5.C2.19 (2026-02-07) - runner 커버리지 보강 스프린트
+
+#### 개요
+C2.18 후속으로 runner 계층(`cli/runners/*`)의 핵심 경계/오류/정리 분기 테스트를 보강해 커버리지와 회귀 안정성을 개선.
+
+#### 주요 변경 사항
+- `tests/test_runners.py`
+  - optimize runner
+    - DB 미연결 상태(`get_job_status`, `list_jobs`) 경계 검증 추가
+    - `_save_optimization_job` 오류 fallback(`error_*`) 검증 추가
+    - 모듈 로드 실패 시 `run_grid_optimization` 실패/cleanup 경로 검증 추가
+  - backtest runner
+    - `_create_queues` 초기화 검증 추가
+    - 설정 로드 실패 시 `start_backtest` 조기 실패 경로 검증 추가
+    - `_monitor_results` 프로세스 종료 분기 검증 추가
+    - `kill_processes` 종료 경로 검증 추가
+- 버전 상향
+  - `2.36.U1.5.C2.19`
+
+#### 검증
+- `python -m pytest tests/test_runners.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `249 passed, 1 skipped`
+  - 총 커버리지: 약 57.41%
+  - runner 커버리지:
+    - `cli/runners/backtest_runner.py` 34%
+    - `cli/runners/optimize_runner.py` 47%
+
+---
+
+### V2.36.U1.5.C2.18 (2026-02-07) - 테스트 문서 정합성 동기화
+
+#### 개요
+C2.17 후속으로 `tests/README.md`의 테스트 수와 구조를 현재 코드 기준으로 동기화해 문서 정합성을 확보.
+
+#### 주요 변경 사항
+- `tests/README.md`
+  - 문서 전면 갱신
+  - 총 테스트 수 `243` 반영
+  - 파일별 테스트 수 표 추가
+  - 실행 명령/마커/유지보수 규칙 최신화
+- `docs/README.md`
+  - 테스트 문서 링크 설명 수치 `243개 테스트`로 동기화
+- 버전 상향
+  - `2.36.U1.5.C2.18`
+
+#### 검증
+- `python -m pytest tests/ --collect-only -q`
+  - 결과: `243 tests collected`
+- `python -m cli.main --version`
+  - 결과: `STOM, version 2.36.U1.5.C2.18`
+
+---
+
+### V2.36.U1.5.C2.17 (2026-02-07) - run 실패 JSON 계약 확장 및 에러 경로 정리
+
+#### 개요
+C2.16 후속으로 run 실패 케이스(파라미터 오류/DB 오류)에 대한 JSON 계약을 확장하고, JSON 모드에서 실패 출력이 단일 payload로 파싱되도록 종료 경로를 정리.
+
+#### 주요 변경 사항
+- `tests/test_json_contract_schema.py`
+  - `backtest run` DB 오류 실패 계약 검증 추가 (`BACKTEST_RUN_FAILED`)
+  - `optimize grid` 파라미터 오류 실패 계약 검증 추가 (`OPT_GRID_INVALID_PARAMS`)
+  - `optimize grid` DB 오류 실패 계약 검증 추가 (`OPT_GRID_FAILED`)
+- `cli/commands/backtest.py`
+  - JSON 모드 실패 시 에러 payload 출력 후 `Exit(1)` 처리로 추가 텍스트 출력 방지
+- `cli/commands/optimize.py`
+  - `grid` 명령의 JSON 파라미터 오류를 표준 에러 payload(`OPT_GRID_INVALID_PARAMS`)로 통일
+  - JSON 모드 실패 시 에러 payload 출력 후 `Exit(1)` 처리
+- 버전 상향
+  - `2.36.U1.5.C2.17`
+
+#### 검증
+- `python -m pytest tests/test_json_contract_schema.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `242 passed, 1 skipped`
+  - 총 커버리지: 약 55.50%
+
+---
+
+### V2.36.U1.5.C2.16 (2026-02-07) - run 성공 payload 계약 분리 및 검증 강화
+
+#### 개요
+C2.15 후속으로 `run` 성공 payload 계약을 `status/list`와 분리해 명확화하고, 실행 시 ID 충돌 가능성을 줄여 테스트 안정성을 보강.
+
+#### 주요 변경 사항
+- `tests/test_json_contract_schema.py`
+  - `backtest run --async --format json` 성공 스키마 검증 추가
+  - `optimize grid --async --format json` 성공 스키마 검증 추가
+  - run/status/list 스키마를 분리해 계약 범위를 명확화
+- `cli/commands/backtest.py`
+  - backtest job ID 생성 포맷을 `%Y%m%d_%H%M%S_%f`로 확장
+- `cli/commands/optimize.py`
+  - optimize job ID 생성 포맷을 `%Y%m%d_%H%M%S_%f`로 확장
+  - 대상: `grid`, `bayesian`, `ga`, `walkforward`, `backfinder`
+- 버전 상향
+  - `2.36.U1.5.C2.16`
+
+#### 검증
+- `python -m pytest tests/test_json_contract_schema.py tests/test_optimize.py tests/test_backtest.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `239 passed, 1 skipped`
+  - 총 커버리지: 약 55.08%
+
+---
+
+### V2.36.U1.5.C2.15 (2026-02-07) - JSON 계약 변경 이력 관리 체계 도입
+
+#### 개요
+C2.14 후속으로 JSON 계약 변경 추적성을 강화하기 위해 계약 문서에 명령별 변경 이력 표와 운영 규칙을 추가.
+
+#### 주요 변경 사항
+- `docs/contracts/CLI_JSON_Contract.md`
+  - 명령별 계약 변경 이력 표 신설
+    - 컬럼: 명령, 버전, 변경 필드, 호환성, 테스트 링크
+  - 계약 변경 운영 규칙(등록 단위/검증/테스트 링크/호환성 표기) 추가
+  - 자동검증 파이프라인의 coverage 하한선 표기를 55% 기준으로 정합화
+- 버전 상향
+  - `2.36.U1.5.C2.15`
+
+#### 검증
+- `python -m cli.main --version`
+  - 결과: `STOM, version 2.36.U1.5.C2.15`
+
+---
+
+### V2.36.U1.5.C2.14 (2026-02-07) - 전체 커버리지 하한선 55% 상향
+
+#### 개요
+C2.13 후속으로 CI 전체 커버리지 하한선을 55%로 상향하고, optimize 명령의 핵심 성공 분기 테스트를 추가해 기준을 안정적으로 충족.
+
+#### 주요 변경 사항
+- `tests/test_optimize.py`
+  - `optimize status` 기존 작업(table 출력) 검증 테스트 추가
+  - `optimize list` 기존 작업(table 출력) 검증 테스트 추가
+  - `optimize cancel` pending 작업 취소 성공 경로 테스트 추가
+- `.github/workflows/cli-tests.yml`
+  - 전체 coverage 하한선 `--cov-fail-under=55` 적용
+- 버전 상향
+  - `2.36.U1.5.C2.14`
+
+#### 검증
+- `python -m pytest tests/test_optimize.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=55 --tb=short`
+  - 결과: `237 passed, 1 skipped`
+  - 총 커버리지: 약 55.08%
+
+---
+
+### V2.36.U1.5.C2.13 (2026-02-07) - status/list JSON 계약 검증 확장 및 안정화
+
+#### 개요
+C2.12 후속으로 jsonschema 자동검증 범위를 `backtest/optimize`의 `list/status` 명령까지 확장하고, 테스트 간 DB 쓰기 충돌 리스크를 제거.
+
+#### 주요 변경 사항
+- `tests/test_json_contract_schema.py`
+  - `backtest list`, `optimize list`의 JSON 계약 검증 추가
+  - `backtest status unknown_job_id`, `optimize status unknown_job_id` 메시지 계약 검증 추가
+  - `backtest status`, `optimize status` 성공 계약 검증 추가
+    - DB 최신 작업 ID 조회 기반(`_latest_backtest_job_id`, `_latest_optimize_job_id`)
+    - 미존재 시 `pytest.skip` 처리로 환경 의존성 완화
+- 버전 상향
+  - `2.36.U1.5.C2.13`
+
+#### 검증
+- `python -m pytest tests/test_json_contract_schema.py -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=50 --tb=short`
+  - 결과: `234 passed, 1 skipped`
+  - 총 커버리지: 약 54.67%
+
+---
+
+### V2.36.U1.5.C2.12 (2026-02-07) - 성공 JSON 계약/자동검증/전체 커버리지 하한선 적용
+
+#### 개요
+C2.11 후속으로 성공 경로 JSON 계약 검증을 보강하고, jsonschema 기반 자동 검증 및 전체 CLI 커버리지 하한선을 적용.
+
+#### 주요 변경 사항
+- `tests/test_trade.py`
+  - 성공 계약 테스트 추가:
+    - `positions close --all --format json`
+    - `orders cancel --all --format json`
+- `tests/test_json_contract_schema.py` 신규
+  - jsonschema 기반 계약 자동검증 테스트 9건 추가
+  - 대상: `trade status`, `positions list`, `orders list`, `data backtest-list`, `db info`, close/cancel 성공/실패
+- `.github/workflows/cli-tests.yml`
+  - 전체 coverage 단계에 `--cov-fail-under=50` 적용
+  - runner/schema coverage 단계는 `--cov-fail-under=35` 유지
+- `requirements-test.txt`
+  - `jsonschema>=4.20.0` 명시
+- 버전 상향
+  - `2.36.U1.5.C2.12`
+
+#### 검증
+- `python -m pytest tests/test_trade.py tests/test_json_contract_schema.py -q`
+- `python -m pytest tests/ -q --tb=short`
+- `python -m pytest tests/ -q --cov=cli --cov-report=term-missing --cov-fail-under=50`
+  - 총 커버리지: 약 54%
+
+---
+
+### V2.36.U1.5.C2.11 (2026-02-06) - 실패 JSON 계약 강화 및 커버리지 하한선 적용
+
+#### 개요
+C2.10 후속으로 `positions close`/`orders cancel` 실패 경로의 JSON 계약을 강화하고, runner/schema 전용 커버리지 스냅샷에 하한선을 적용.
+
+#### 주요 변경 사항
+- `cli/commands/trade.py`
+  - `positions close`, `orders cancel`에 `--format` 옵션 추가
+  - 필수 인자 누락 시 JSON 표준 에러(`ok=false`) + 에러코드 반환
+  - 신규 에러코드:
+    - `POSITIONS_CLOSE_INVALID_ARGS`
+    - `ORDERS_CANCEL_INVALID_ARGS`
+- `tests/test_trade.py`
+  - 실패 JSON 에러코드 계약 테스트 2건 추가
+- `.github/workflows/cli-tests.yml`
+  - runner/schema focused coverage 단계에 `--cov-fail-under=35` 적용
+- `docs/contracts/CLI_JSON_Contract.md`
+  - 명령별 샘플 응답 및 테스트 링크 표 추가
+- 버전 상향
+  - `2.36.U1.5.C2.11`
+
+#### 검증
+- `python -m pytest tests/test_trade.py -q`
+- `python -m pytest tests/ -q --tb=short`
+- `python -m cli.main --version`
+
+---
+
+### V2.36.U1.5.C2.10 (2026-02-06) - C2.9 후속 단계(테스트/커버리지/계약 분리)
+
+#### 개요
+C2.9 완료 후 정의된 다음 단계 3개 항목을 실행해 JSON 계약 검증과 CI 가시성을 강화.
+
+#### 주요 변경 사항
+- `tests/test_trade.py`
+  - `positions/orders`의 JSON payload 계약(배열 또는 message 객체) 검증 테스트 추가
+  - `trade status --format json` 필수 필드(`trading_status`, `configuration`) 검증 추가
+- `.github/workflows/cli-tests.yml`
+  - coverage job에 runner/schema 전용 커버리지 스냅샷 단계 추가
+  - `runner_schema_coverage.xml`, `runner_schema_coverage.txt` 아티팩트 업로드 단계 추가
+- 독립 계약 문서 추가
+  - `docs/contracts/CLI_JSON_Contract.md`
+  - JSON 성공/빈결과/에러 표준 페이로드 및 명령별 필드 계약 정의
+- 버전 상향
+  - `2.36.U1.5.C2.10`
+
+#### 검증
+- `python -m pytest tests/test_trade.py tests/test_output_formats.py tests/test_data.py tests/test_monitor.py -q`
+- `python -m pytest tests/ -q --tb=short`
+- `python -m cli.main --version`
+
+---
+
+### V2.36.U1.5.C2.9 (2026-02-06) - C2.8 후속 실행(문서/CI/인코딩 정리)
+
+#### 개요
+C2.8 이후 정의한 후속 권장사항을 기반으로 운영 안정성 항목 3가지를 추가 반영.
+
+#### 주요 변경 사항
+- `cli/commands/trade.py`
+  - 깨진 인코딩 문자열/주석/도움말 텍스트를 정리해 유지보수 가독성 개선
+  - `trade/positions/orders` 명령 에러 응답 코드 정비
+- `docs/CLI_User_Manual.md`
+  - `JSON 응답 계약 (AI 파싱 기준)` 섹션 추가
+  - 빈 결과(`{"message": ...}`), 표준 에러(`ok/error`) 구조 명시
+  - 명령별 JSON 필드 계약 표 추가
+- `.github/workflows/cli-tests.yml`
+  - `tests/test_runners.py`, `tests/test_schema_contract.py`를 필수 CI 게이트로 추가
+
+#### 검증
+- `python -m pytest tests/test_trade.py tests/test_cli_basic.py -q`
+  - `38 passed`
+- `python -m cli.main positions list --format json`
+- `python -m cli.main orders list --format json`
+- `python -m cli.main trade status --format json`
+- `python -m cli.main --version`
+  - `STOM, version 2.36.U1.5.C2.9`
+
+---
+
+### V2.36.U1.5.C2.8 (2026-02-06) - AI-Ready 출력/문서 표준화
+
+#### 개요
+C2.5~C2.8 실행 항목을 기준으로 AI 파싱 안정성을 높이기 위한 출력/에러 표준화와 문서 동기화를 완료.
+
+#### 주요 변경 사항
+- `OutputAdapter` 개선
+  - JSON/CSV 출력 시 title 배너를 제거해 파싱 가능한 출력 유지
+  - JSON 에러 응답 표준 구조(`ok`, `error.code`, `error.message`) 지원
+- 주요 명령(`data`, `monitor`, `optimize`, `backtest`, `db info`)에서 JSON 에러 포맷 연동
+- 문서 동기화
+  - `docs/AGENTS.md`, `docs/README.md`, `docs/CLI_User_Manual.md` 버전/링크 최신화
+  - `docs/reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md` 실행 결과 반영
+  - `docs/update_log/20260206_cli_stabilization_c25_c28.md` 신규 추가
+
+#### 테스트
+- `python -m pytest tests/test_output_formats.py tests/test_data.py tests/test_monitor.py tests/test_optimize.py tests/test_backtest.py tests/test_runners.py tests/test_schema_contract.py -q`
+- 결과: `95 passed, 1 skipped`
+
+---
+
+### V2.36.U1.5.C2.7 (2026-02-06) - 러너 안정화 및 계약 테스트
+
+#### 주요 변경 사항
+- `cli/runners/backtest_runner.py`
+  - 잘못된 `backtest_type` 입력 시 백테스트 모듈 로딩 전에 즉시 실패하도록 경로 정리
+- `cli/runners/trade_runner.py`
+  - 미구현 주문 실행(`close_position`, `cancel_order`)이 성공처럼 보이지 않도록 경계 동작 명확화
+- 테스트 추가
+  - `tests/test_runners.py`: trade/optimize/backtest 러너 핵심 경로 검증
+  - `tests/test_schema_contract.py`: schema adapter 테이블/컬럼 계약 검증
+
+#### 테스트
+- `python -m pytest tests/test_runners.py tests/test_schema_contract.py -q`
+- 결과: `9 passed`
+
+---
+
+### V2.36.U1.5.C2.6 (2026-02-06) - CLI 테스트 신뢰도 복구
+
+#### 주요 변경 사항
+- 대상 테스트 재작성:
+  - `tests/test_data.py`
+  - `tests/test_trade.py`
+  - `tests/test_monitor.py`
+  - `tests/test_backtest.py`
+  - `tests/test_optimize.py`
+- `exit_code in [0, 1, 2]` 형태의 느슨한 검증 제거
+- 실제 CLI 옵션(`--type` 중심) 기준으로 테스트 동기화
+- legacy 옵션 거부 동작 검증 추가
+
+#### 테스트
+- `python -m pytest tests/test_data.py tests/test_trade.py tests/test_monitor.py tests/test_backtest.py tests/test_optimize.py -q`
+- 결과: `70 passed`
+
+---
+
+### V2.36.U1.5.C2.5 (2026-02-06) - DB 스키마 정합성 및 버전 단일화
+
+#### 주요 변경 사항
+- 버전 상수 단일화
+  - `cli/version.py` 신설
+  - `cli/main.py`, `cli/__init__.py`에서 공통 버전 사용
+- 스키마 어댑터 도입
+  - `cli/adapters/schema_adapter.py` 신설
+  - `data/trade/monitor/optimize` 명령의 테이블/컬럼 매핑 정합화
+- `db info --format` 버그 수정
+  - `--format json`에서 실제 JSON 구조 출력 보장
+- `RuntimeWarning` 유발 구조(eager import) 제거
+
+---
+
+### V2.36.U1.5.C2.3 (2026-02-03) - CLI 테스트 시스템 구축 완료
+
+#### 개요
+CLI 인터페이스 자동화 테스트 시스템 완전 구축. pytest와 Click.CliRunner 기반 202개 테스트 작성.
+
+#### Phase 1: 테스트 인프라
+- `tests/` 디렉토리 구조 생성
+- `pytest.ini` 설정 파일 (마커 정의, 기본 옵션)
+- `requirements-test.txt` 테스트 의존성 파일
+- `tests/conftest.py` 공용 픽스처 및 헬퍼 함수
+
+#### Phase 2: 단위 테스트 (179개)
+- `test_cli_basic.py`: 기본 CLI 명령 테스트 (24개)
+- `test_strategy.py`: 전략 관리 명령 테스트 (26개)
+- `test_db.py`: 데이터베이스 관리 명령 테스트 (27개)
+- `test_output_formats.py`: 출력 포맷 테스트 (28개)
+- `test_backtest.py`: 백테스트 명령 테스트 (12개)
+- `test_data.py`: 데이터 조회 테스트 (14개)
+- `test_trade.py`: 트레이딩 제어 테스트 (15개)
+- `test_monitor.py`: 모니터링 테스트 (17개)
+- `test_optimize.py`: 최적화 테스트 (16개)
+
+#### Phase 3: 테스트 데이터 픽스처
+- `fixtures/sample_strategies.py`: 샘플 전략 코드
+- `fixtures/sample_data.json`: JSON 형식 테스트 데이터
+- `fixtures/test_db_creator.py`: 테스트 DB 생성 유틸리티
+
+#### Phase 4: CI/CD 통합
+- `.github/workflows/cli-tests.yml`: GitHub Actions 워크플로우
+- Python 3.9, 3.10, 3.11 매트릭스 테스트
+- 스모크 테스트, 단위 테스트, 통합 테스트
+- 코드 커버리지 리포트
+
+#### Phase 5: 통합 테스트 (23개)
+- `integration/test_workflow.py`: 워크플로우 통합 테스트 (17개)
+- `integration/test_data_consistency.py`: 데이터 일관성 테스트 (6개)
+
+#### 스모크 테스트 스크립트
+- `scripts/run_smoke_tests.sh` (Bash)
+- `scripts/run_smoke_tests.ps1` (PowerShell)
+
+#### 파일 변경 요약
+
+| 파일 | 상태 | 라인 수 |
+|------|------|---------|
+| tests/conftest.py | 신규 | +195 |
+| tests/test_cli_basic.py | 신규 | +186 |
+| tests/test_strategy.py | 신규 | +315 |
+| tests/test_db.py | 신규 | +298 |
+| tests/test_output_formats.py | 신규 | +263 |
+| tests/test_backtest.py | 신규 | +105 |
+| tests/test_data.py | 신규 | +117 |
+| tests/test_trade.py | 신규 | +126 |
+| tests/test_monitor.py | 신규 | +140 |
+| tests/test_optimize.py | 신규 | +178 |
+| tests/integration/*.py | 신규 | +450 |
+| tests/fixtures/*.py | 신규 | +380 |
+| tests/README.md | 신규 | +260 |
+| pytest.ini | 신규 | +45 |
+| requirements-test.txt | 신규 | +25 |
+| scripts/run_smoke_tests.* | 신규 | +200 |
+| .github/workflows/cli-tests.yml | 신규 | +115 |
+| **총계** | | **+3,398** |
+
+---
+
 ### V2.36.U1.5.C2.0 (2026-02-03) - CLI 전체 기능 구현 완료
 
 #### 개요
@@ -447,3 +996,5 @@ python -m cli.main data trades --type stock --date 2024-12-31 --format json
 
 ### V2.36 (이전)
 - ui_mainwindow.pyd 컴파일 버전 사용
+- `tests/test_json_contract_schema.py`
+  - `positions list`, `orders list` DB 오류 JSON 계약 스키마 검증 2건 추가

@@ -1,0 +1,136 @@
+{
+  "strategies": [
+    {
+      "name": "ma_crossover",
+      "type": "stock",
+      "buy_sell": "buy",
+      "code": "def signal(price, ma20, ma50):\n    return 'BUY' if ma20 > ma50 else 'HOLD'",
+      "description": "이동평균선 교차 전략",
+      "parameters": {
+        "ma_short": 20,
+        "ma_long": 50
+      }
+    },
+    {
+      "name": "rsi_oversold",
+      "type": "stock",
+      "buy_sell": "buy",
+      "code": "def signal(rsi):\n    return 'BUY' if rsi < 30 else 'HOLD'",
+      "description": "RSI 과매도 전략",
+      "parameters": {
+        "oversold": 30
+      }
+    },
+    {
+      "name": "bollinger_bounce",
+      "type": "coin",
+      "buy_sell": "buy",
+      "code": "def signal(price, lower_band):\n    return 'BUY' if price <= lower_band else 'HOLD'",
+      "description": "볼린저 밴드 반등 전략",
+      "parameters": {
+        "period": 20,
+        "std_dev": 2
+      }
+    },
+    {
+      "name": "profit_taking",
+      "type": "stock",
+      "buy_sell": "sell",
+      "code": "def signal(profit):\n    return 'SELL' if profit > 0.1 else 'HOLD'",
+      "description": "10% 수익 실현 전략",
+      "parameters": {
+        "threshold": 0.1
+      }
+    },
+    {
+      "name": "stop_loss",
+      "type": "stock",
+      "buy_sell": "sell",
+      "code": "def signal(loss):\n    return 'SELL' if loss < -0.02 else 'HOLD'",
+      "description": "2% 손절 전략",
+      "parameters": {
+        "threshold": -0.02
+      }
+    }
+  ],
+  "backtest_results": [
+    {
+      "strategy_name": "ma_crossover",
+      "start_date": "20260101",
+      "end_date": "20260131",
+      "total_return": 0.15,
+      "sharpe_ratio": 1.5,
+      "max_drawdown": -0.08,
+      "win_rate": 0.62,
+      "total_trades": 25
+    },
+    {
+      "strategy_name": "rsi_oversold",
+      "start_date": "20260101",
+      "end_date": "20260131",
+      "total_return": 0.08,
+      "sharpe_ratio": 0.9,
+      "max_drawdown": -0.12,
+      "win_rate": 0.55,
+      "total_trades": 18
+    },
+    {
+      "strategy_name": "bollinger_bounce",
+      "start_date": "20260115",
+      "end_date": "20260131",
+      "total_return": 0.22,
+      "sharpe_ratio": 2.1,
+      "max_drawdown": -0.05,
+      "win_rate": 0.71,
+      "total_trades": 14
+    }
+  ],
+  "trades": [
+    {
+      "symbol": "005930",
+      "symbol_name": "삼성전자",
+      "trade_date": "20260101",
+      "trade_time": "093000",
+      "side": "BUY",
+      "quantity": 10,
+      "price": 70000,
+      "amount": 700000
+    },
+    {
+      "symbol": "005930",
+      "symbol_name": "삼성전자",
+      "trade_date": "20260101",
+      "trade_time": "143000",
+      "side": "SELL",
+      "quantity": 10,
+      "price": 71500,
+      "amount": 715000
+    },
+    {
+      "symbol": "000660",
+      "symbol_name": "SK하이닉스",
+      "trade_date": "20260102",
+      "trade_time": "100000",
+      "side": "BUY",
+      "quantity": 5,
+      "price": 120000,
+      "amount": 600000
+    },
+    {
+      "symbol": "BTCUSDT",
+      "symbol_name": "비트코인",
+      "trade_date": "20260101",
+      "trade_time": "120000",
+      "side": "BUY",
+      "quantity": 0.1,
+      "price": 50000,
+      "amount": 5000
+    }
+  ],
+  "settings": {
+    "default_market": "stock",
+    "default_format": "table",
+    "timezone": "Asia/Seoul",
+    "language": "ko"
+  }
+}
