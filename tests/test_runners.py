@@ -8,6 +8,7 @@ import queue
 import sqlite3
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from cli.runners.backtest_runner import HeadlessBacktestRunner
@@ -114,6 +115,46 @@ class TestTradeRunner:
         # 브로커 연동 미구현 경로는 성공을 반환하지 않아야 한다.
         assert runner.close_position("stock", code="005930") is False
         assert runner.cancel_order("stock", order_id="o-1") is False
+
+    def test_close_position_close_all_returns_false_until_broker_integration(self, monkeypatch):
+        runner = HeadlessTradeRunner()
+        monkeypatch.setattr(
+            runner,
+            "get_positions",
+            lambda _trade_type: pd.DataFrame([{"index": "005930", "보유수량": 3}]),
+        )
+
+        assert runner.close_position("stock", close_all=True) is False
+
+    def test_cancel_order_cancel_all_returns_false_until_broker_integration(self, monkeypatch):
+        runner = HeadlessTradeRunner()
+        monkeypatch.setattr(
+            runner,
+            "get_orders",
+            lambda _trade_type: pd.DataFrame([{"order_id": "o-100", "미체결수량": 1}]),
+        )
+
+        assert runner.cancel_order("stock", cancel_all=True) is False
+
+    def test_close_position_with_missing_position_key_column_returns_false(self, monkeypatch):
+        runner = HeadlessTradeRunner()
+        monkeypatch.setattr(
+            runner,
+            "get_positions",
+            lambda _trade_type: pd.DataFrame([{"ticker": "005930", "qty": 3}]),
+        )
+
+        assert runner.close_position("stock", code="005930") is False
+
+    def test_cancel_order_with_missing_order_id_column_returns_false(self, monkeypatch):
+        runner = HeadlessTradeRunner()
+        monkeypatch.setattr(
+            runner,
+            "get_orders",
+            lambda _trade_type: pd.DataFrame([{"code": "005930", "qty": 1}]),
+        )
+
+        assert runner.cancel_order("stock", order_id="o-100") is False
 
 
 class TestOptimizeRunner:
