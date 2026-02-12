@@ -29,7 +29,8 @@ docs/
 └── reports/                     # 기술 보고서
     ├── CLI_Implementation_Report_V2.36.U1.5.C1.1.md
     ├── CLI_Test_Report_V2.36.U1.5.C2.3.md
-    └── 2026-02-06_STOM_Version_2U_cli_research_test_code_review.md
+    ├── 2026-02-06_STOM_Version_2U_cli_research_test_code_review.md
+    └── 2026-02-12_STOM_Version_2U_cli_research_post_merge_comprehensive_review.md
 ```
 
 ---
@@ -86,6 +87,7 @@ docs/
 | [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md) | CLI 구현 상세 보고서 (667줄) |
 | [CLI_Test_Report_V2.36.U1.5.C2.3.md](reports/CLI_Test_Report_V2.36.U1.5.C2.3.md) | CLI 테스트 실행 보고서 (202개 통과) |
 | [2026-02-06_STOM_Version_2U_cli_research_test_code_review.md](reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md) | 현재 브랜치 종합 코드 검토 + 실행 결과 반영 문서 |
+| [2026-02-12_STOM_Version_2U_cli_research_post_merge_comprehensive_review.md](reports/2026-02-12_STOM_Version_2U_cli_research_post_merge_comprehensive_review.md) | 머지 이후 부모 브랜치 기준 종합 코드 검토 보고서 |
 
 ---
 
@@ -279,6 +281,7 @@ YYYYMMDD_제목.md  또는  YYYY-MM-DD_제목.md
 - **최신 CLI 보고서**: [CLI_Implementation_Report_V2.36.U1.5.C1.1.md](reports/CLI_Implementation_Report_V2.36.U1.5.C1.1.md)
 - **CLI 테스트 보고서**: [CLI_Test_Report_V2.36.U1.5.C2.3.md](reports/CLI_Test_Report_V2.36.U1.5.C2.3.md) ⭐
 - **브랜치 코드 리뷰/개선 결과**: [2026-02-06_STOM_Version_2U_cli_research_test_code_review.md](reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md) ⭐
+- **머지 후 종합 코드 검토**: [2026-02-12_STOM_Version_2U_cli_research_post_merge_comprehensive_review.md](reports/2026-02-12_STOM_Version_2U_cli_research_post_merge_comprehensive_review.md) ⭐
 - **마이그레이션 기록**: [2026-01-31_ui_mainwindow_migration.md](update_log/2026-01-31_ui_mainwindow_migration.md)
 
 ---
