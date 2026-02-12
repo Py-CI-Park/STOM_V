@@ -2,6 +2,38 @@
 
 ## 버전 기록
 
+### V2.36.U1.5.C2.23-DevUpdate1 (2026-02-12) - 머지 후 후속 과제(P0/P1) 실행
+
+#### 개요
+`docs/reports/2026-02-06_STOM_Version_2U_cli_research_test_code_review.md`의 28.5 후속 권장을 기준으로
+실행 공백(실적재/동기실행/계약 경계/필수 게이트)을 보강.
+
+#### 주요 변경 사항
+- `db append` 실적재 구현
+  - `cli/commands/db.py`, `tests/test_db.py`
+  - `--apply` 모드, 다중 포맷 소스 적재, 날짜 필터, 테이블 자동 생성/컬럼 확장, row hash 중복방지
+- optimize 동기 실행 연동
+  - `cli/commands/optimize.py`, `tests/test_optimize.py`
+  - `grid/bayesian/ga/walkforward/backfinder` 동기 모드 러너 호출
+  - 상태 전이(`running/completed/failed`) 기록 및 `OPT_*_SYNC_FAILED` 에러코드 계약 적용
+- trade close/cancel 요청기록 전용 계약 명확화
+  - `cli/commands/trade.py`, `tests/test_trade.py`, `tests/test_json_contract_schema.py`
+  - `request_id`, `created_at`, `execution_mode`, `broker_execution`, `requires_external_executor` 필드 추가
+  - `docs/contracts/CLI_JSON_Contract.md` 동기화
+- trade runner 경계 테스트 보강
+  - `tests/test_runners.py`
+  - `close_all/cancel_all` 미구현 분기, 컬럼 누락 분기 검증 추가
+- CI required gate 강화
+  - `.github/workflows/cli-tests.yml`
+  - `contract-gate` job 신설(contracts/schema/runners 필수 통과)
+
+#### 검증
+- `python -m py_compile cli/commands/db.py cli/commands/optimize.py cli/commands/trade.py cli/runners/trade_runner.py`
+- `python -m pytest tests/test_db.py tests/test_optimize.py tests/test_trade.py tests/test_runners.py tests/test_json_contract_schema.py -q --tb=short`
+  - 결과: `124 passed`
+
+---
+
 ### V2.36.U1.5.C2.23 (2026-02-09) - CI 캐시 오류 수정 및 크로스플랫폼 fallback 안정화
 
 #### 개요

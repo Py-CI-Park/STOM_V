@@ -699,6 +699,87 @@
 
 ---
 
+## 29. 후속 개발 실행 Status (2026-02-12, dev-update 브랜치)
+
+### 29.1 실행 범위
+- 기준 문서: 본 보고서 28.5(머지 후 후속 권장)
+- 실행 브랜치: `STOM_Version_2U-cli-research-dev-update-20260212`
+- 목표: P0/P1 권장사항을 실제 코드/테스트/CI에 반영해 “계약은 명확하고, 실패는 빨리 감지되는” 상태로 고도화
+
+### 29.2 단계별 완료 항목
+1. `db append` 실적재 로직 구현 (P0)
+- 파일: `cli/commands/db.py`, `tests/test_db.py`
+- 반영:
+  - `--apply` 실제 적재 모드 도입(기본 dry-run 유지)
+  - 소스 포맷(`csv/json/jsonl/parquet`) 지원 및 디렉터리 재귀 수집
+  - 날짜 필터(`YYYYMMDD`) 적용, 테이블 자동 생성/컬럼 확장
+  - row hash 기반 `INSERT OR IGNORE` 중복 방지
+  - 트랜잭션 처리(`BEGIN/COMMIT/ROLLBACK`) 및 결과 요약 출력
+- 검증: `tests/test_db.py` 기준 `33 passed`
+
+2. optimize 동기 실행 경로 연동 (P0)
+- 파일: `cli/commands/optimize.py`, `tests/test_optimize.py`
+- 반영:
+  - `grid/bayesian/ga/walkforward/backfinder` 동기 모드에서 러너 실제 호출
+  - 상태 전이 `pending -> running -> completed/failed` DB 기록
+  - JSON 실패 시 `OPT_*_SYNC_FAILED` 표준 에러코드 계약 적용
+  - `bayesian` 예외 처리 중복/순서 꼬임 정리
+- 검증: `tests/test_optimize.py` 기준 `26 passed`
+
+3. `trade close/cancel` 요청기록 전용 계약 명확화 (P0/P1)
+- 파일: `cli/commands/trade.py`, `tests/test_trade.py`, `tests/test_json_contract_schema.py`, `docs/contracts/CLI_JSON_Contract.md`
+- 반영:
+  - 성공 payload 필드 확장:
+    - `request_id`, `created_at`
+    - `execution_mode=request_record_only`
+    - `broker_execution=not_supported_in_cli`
+    - `requires_external_executor=true`
+  - CLI 메시지/로그에 “요청만 기록, 실주문 미실행” 경계 명시
+  - jsonschema 및 계약 문서 동기화
+- 검증:
+  - `tests/test_trade.py` 기준 `26 passed`
+  - `tests/test_json_contract_schema.py` 기준 `22 passed`
+
+4. trade runner 미구현 경계 테스트 보강 (P1)
+- 파일: `tests/test_runners.py`
+- 반영:
+  - `close_all`/`cancel_all` 경로에서 미구현 상태(False 반환) 검증
+  - 포지션 키 컬럼 누락/주문 ID 컬럼 누락 분기 검증
+- 검증: `tests/test_runners.py` 기준 `17 passed`
+
+5. CI required gate 강화 (P1)
+- 파일: `.github/workflows/cli-tests.yml`
+- 반영:
+  - `contract-gate` job 신규 추가
+  - `tests/test_json_contract_schema.py`, `tests/test_schema_contract.py`, `tests/test_runners.py`를 별도 필수 게이트로 승격
+  - `test` job은 `contract-gate` 성공 이후 실행되도록 의존성 추가
+- 의도:
+  - lint 전체 hard-gate 전환 전, 계약/스키마/러너 회귀를 먼저 “강제 실패” 영역으로 고정
+
+### 29.3 통합 검증 결과
+- `python -m py_compile cli/commands/db.py cli/commands/optimize.py cli/commands/trade.py cli/runners/trade_runner.py`
+- `python -m pytest tests/test_db.py tests/test_optimize.py tests/test_trade.py tests/test_runners.py tests/test_json_contract_schema.py -q --tb=short`
+  - 결과: `124 passed`
+
+### 29.4 현재 판단
+1. 28.5에서 제시한 후속 권장(P0/P1) 중 즉시 효과가 큰 항목(실적재, 동기 실행, 계약 명확화, 필수 게이트)을 우선 완료.
+2. 특히 `db append`와 `optimize sync`는 “명령은 있는데 실제 실행은 안 됨” 상태를 실질적으로 해소.
+3. `trade close/cancel`은 아직 실브로커 연동 단계는 아니지만, 계약상 오해를 줄이고 자동화 파서의 의미 해석 오류를 방지하는 수준까지 정리됨.
+
+### 29.5 남은 과제(차기 스프린트 권장)
+1. `trade_runner`의 실제 브로커 연동(close/cancel 실행) 또는 명시적 API stub 모듈 분리
+2. lint soft-fail의 점진 hard-gate 전환(변경 파일 범위 기반 → 모듈 단위 확장)
+3. GitHub Actions 매트릭스(3.9/3.10/3.11, ubuntu/windows) 재실행 결과를 기준으로 CI 성능/시간 최적화
+
+### 29.6 개발 안내 (운영 관점)
+1. DB 적재 시에는 기본 dry-run으로 먼저 영향 범위를 확인한 후 `--apply`를 사용한다.
+- 예: `python -m cli.main db append --source <경로> --target both --apply`
+2. optimize 동기 실행은 즉시 결과를 얻는 대신 실행 시간 동안 CLI가 점유되므로, 배치에서는 `--async`, 수동 점검에서는 동기 모드를 권장한다.
+3. `positions close`/`orders cancel`의 JSON 결과에서 `execution_mode`를 먼저 확인해 “요청 기록”과 “실주문 실행”을 구분한다.
+4. CI 실패 분석 시 우선순위는 `contract-gate -> test(matrix) -> coverage -> lint` 순으로 본다.
+
+---
+
 ## 부록 A. 검토 근거 요약
 - 테스트 결과: `202 passed, 1 skipped`
 - 커버리지: `TOTAL 31%`
