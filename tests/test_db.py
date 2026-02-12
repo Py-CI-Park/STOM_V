@@ -8,6 +8,7 @@ STOM CLI Database Command Tests
 import pytest
 import os
 import tempfile
+import sqlite3
 from pathlib import Path
 from click.testing import CliRunner
 
@@ -313,3 +314,122 @@ class TestDBErrorHandling:
         result = cli_runner.invoke(main, ['db', 'vacuum', '--type', 'strategy', '--yes'])
 
         assert result.exit_code in [0, 1]
+
+class TestDBAppendApplyFlow:
+    """Additional db append tests for apply/dedup/multi-source validation."""
+
+    def test_db_append_apply_requires_source(self, cli_runner: CliRunner):
+        result = cli_runner.invoke(
+            main,
+            [
+                "db",
+                "append",
+                "--type",
+                "stock",
+                "--date",
+                "20260101",
+                "--apply",
+            ],
+        )
+        assert result.exit_code != 0
+
+    def test_db_append_apply_inserts_and_deduplicates(
+        self, cli_runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        db_tick = tmp_path / "stock_tick_back.db"
+        db_min = tmp_path / "stock_min_back.db"
+        source_file = tmp_path / "stock_ticks.csv"
+        source_file.write_text(
+            "datetime,symbol,price\n"
+            "20260101090000,005930,70000\n"
+            "20260102090000,005930,71000\n",
+            encoding="utf-8",
+        )
+
+        monkeypatch.setattr("cli.commands.db.DB_STOCK_TICK", str(db_tick))
+        monkeypatch.setattr("cli.commands.db.DB_STOCK_MIN", str(db_min))
+
+        first = cli_runner.invoke(
+            main,
+            [
+                "db",
+                "append",
+                "--type",
+                "stock",
+                "--date",
+                "20260101",
+                "--source",
+                str(source_file),
+                "--target",
+                "tick",
+                "--table",
+                "stock_ticks_import",
+                "--apply",
+            ],
+        )
+        assert first.exit_code == 0
+
+        con = sqlite3.connect(str(db_tick))
+        cursor = con.cursor()
+        cursor.execute('SELECT COUNT(*) FROM "stock_ticks_import"')
+        first_count = cursor.fetchone()[0]
+        con.close()
+        assert first_count == 1
+
+        second = cli_runner.invoke(
+            main,
+            [
+                "db",
+                "append",
+                "--type",
+                "stock",
+                "--date",
+                "20260101",
+                "--source",
+                str(source_file),
+                "--target",
+                "tick",
+                "--table",
+                "stock_ticks_import",
+                "--apply",
+            ],
+        )
+        assert second.exit_code == 0
+
+        con = sqlite3.connect(str(db_tick))
+        cursor = con.cursor()
+        cursor.execute('SELECT COUNT(*) FROM "stock_ticks_import"')
+        second_count = cursor.fetchone()[0]
+        con.close()
+        assert second_count == 1
+
+    def test_db_append_rejects_table_override_for_multi_source(
+        self, cli_runner: CliRunner, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
+        db_tick = tmp_path / "stock_tick_back.db"
+        db_min = tmp_path / "stock_min_back.db"
+        source_dir = tmp_path / "append_sources"
+        source_dir.mkdir()
+        (source_dir / "a.csv").write_text("datetime,symbol\n20260101090000,005930\n", encoding="utf-8")
+        (source_dir / "b.csv").write_text("datetime,symbol\n20260101090100,000660\n", encoding="utf-8")
+
+        monkeypatch.setattr("cli.commands.db.DB_STOCK_TICK", str(db_tick))
+        monkeypatch.setattr("cli.commands.db.DB_STOCK_MIN", str(db_min))
+
+        result = cli_runner.invoke(
+            main,
+            [
+                "db",
+                "append",
+                "--type",
+                "stock",
+                "--date",
+                "20260101",
+                "--source",
+                str(source_dir),
+                "--table",
+                "forced_table",
+                "--apply",
+            ],
+        )
+        assert result.exit_code != 0
