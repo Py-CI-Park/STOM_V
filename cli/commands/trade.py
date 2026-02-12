@@ -410,7 +410,7 @@ def close_positions(close_all: bool, code: Optional[str], type: Optional[str], f
                 """,
                 (order_type, asset_type, now),
             )
-            message = f"모든 {asset_type} 포지션 청산 요청을 등록했습니다."
+            message = f"모든 {asset_type} 포지션 청산 요청을 기록했습니다."
         else:
             order_type = "close_code"
             asset_type = type if type else "unknown"
@@ -422,7 +422,9 @@ def close_positions(close_all: bool, code: Optional[str], type: Optional[str], f
                 """,
                 (order_type, code, asset_type, now),
             )
-            message = f"종목 {code} 포지션 청산 요청을 등록했습니다."
+            message = f"종목 {code} 포지션 청산 요청을 기록했습니다."
+
+        request_id = cursor.lastrowid
 
         con.commit()
         con.close()
@@ -431,10 +433,15 @@ def close_positions(close_all: bool, code: Optional[str], type: Optional[str], f
             OutputAdapter(format=OutputFormat.JSON).output(
                 {
                     "ok": True,
+                    "request_id": request_id,
                     "order_type": order_type,
                     "asset_type": asset_type,
                     "code": code,
                     "status": "pending",
+                    "created_at": now,
+                    "execution_mode": "request_record_only",
+                    "broker_execution": "not_supported_in_cli",
+                    "requires_external_executor": True,
                     "message": message,
                 }
             )
@@ -443,8 +450,12 @@ def close_positions(close_all: bool, code: Optional[str], type: Optional[str], f
             click.echo("포지션 청산 요청")
             click.echo("=" * 70)
             click.echo(f"\n{message}")
-            click.echo("\n참고: 실제 청산은 메인 애플리케이션에서 처리됩니다.")
-        logger_.info(f"Close order created: {order_type}, code={code}, type={asset_type}")
+            click.echo(
+                "\n참고: 이 명령은 요청만 기록합니다. 실제 청산 주문은 CLI에서 직접 실행되지 않습니다."
+            )
+        logger_.info(
+            f"Close order request recorded: id={request_id}, order_type={order_type}, code={code}, type={asset_type}"
+        )
     except click.exceptions.Exit:
         raise
     except Exception as e:
@@ -596,7 +607,7 @@ def cancel_orders(cancel_all: bool, order_id: Optional[str], type: Optional[str]
                 """,
                 (cancel_type, asset_type, now),
             )
-            message = f"모든 {asset_type} 주문 취소 요청을 등록했습니다."
+            message = f"모든 {asset_type} 주문 취소 요청을 기록했습니다."
         else:
             cancel_type = "cancel_id"
             asset_type = type if type else "unknown"
@@ -608,7 +619,9 @@ def cancel_orders(cancel_all: bool, order_id: Optional[str], type: Optional[str]
                 """,
                 (cancel_type, order_id, asset_type, now),
             )
-            message = f"주문 {order_id} 취소 요청을 등록했습니다."
+            message = f"주문 {order_id} 취소 요청을 기록했습니다."
+
+        request_id = cursor.lastrowid
 
         con.commit()
         con.close()
@@ -617,10 +630,15 @@ def cancel_orders(cancel_all: bool, order_id: Optional[str], type: Optional[str]
             OutputAdapter(format=OutputFormat.JSON).output(
                 {
                     "ok": True,
+                    "request_id": request_id,
                     "cancel_type": cancel_type,
                     "asset_type": asset_type,
                     "order_id": order_id,
                     "status": "pending",
+                    "created_at": now,
+                    "execution_mode": "request_record_only",
+                    "broker_execution": "not_supported_in_cli",
+                    "requires_external_executor": True,
                     "message": message,
                 }
             )
@@ -629,8 +647,12 @@ def cancel_orders(cancel_all: bool, order_id: Optional[str], type: Optional[str]
             click.echo("주문 취소 요청")
             click.echo("=" * 70)
             click.echo(f"\n{message}")
-            click.echo("\n참고: 실제 취소는 메인 애플리케이션에서 처리됩니다.")
-        logger_.info(f"Cancel order created: {cancel_type}, order_id={order_id}, type={asset_type}")
+            click.echo(
+                "\n참고: 이 명령은 요청만 기록합니다. 실제 주문 취소는 CLI에서 직접 실행되지 않습니다."
+            )
+        logger_.info(
+            f"Cancel order request recorded: id={request_id}, cancel_type={cancel_type}, order_id={order_id}, type={asset_type}"
+        )
     except click.exceptions.Exit:
         raise
     except Exception as e:

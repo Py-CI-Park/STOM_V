@@ -140,6 +140,11 @@ class TestPositionsAndOrdersJSON:
         assert payload["order_type"] == "close_all"
         assert payload["asset_type"] == "stock"
         assert payload["status"] == "pending"
+        assert isinstance(payload["request_id"], int)
+        assert payload["created_at"]
+        assert payload["execution_mode"] == "request_record_only"
+        assert payload["broker_execution"] == "not_supported_in_cli"
+        assert payload["requires_external_executor"] is True
 
     def test_orders_cancel_all_json_success_contract(self, cli_runner: CliRunner):
         result = cli_runner.invoke(
@@ -152,6 +157,11 @@ class TestPositionsAndOrdersJSON:
         assert payload["cancel_type"] == "cancel_all"
         assert payload["asset_type"] == "stock"
         assert payload["status"] == "pending"
+        assert isinstance(payload["request_id"], int)
+        assert payload["created_at"]
+        assert payload["execution_mode"] == "request_record_only"
+        assert payload["broker_execution"] == "not_supported_in_cli"
+        assert payload["requires_external_executor"] is True
 
 
 class TestTradeUnsupported:

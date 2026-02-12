@@ -60,6 +60,8 @@
 | `stom trade status --format json` | object | `trading_status`, `configuration` |
 | `stom positions list --format json` | array 또는 object | 배열일 경우 row 객체 목록, 객체일 경우 `message` |
 | `stom orders list --format json` | array 또는 object | 배열일 경우 row 객체 목록, 객체일 경우 `message` |
+| `stom positions close --all --format json` | object | `ok`, `request_id`, `order_type`, `asset_type`, `status`, `created_at`, `execution_mode`, `broker_execution`, `requires_external_executor`, `message` |
+| `stom orders cancel --all --format json` | object | `ok`, `request_id`, `cancel_type`, `asset_type`, `status`, `created_at`, `execution_mode`, `broker_execution`, `requires_external_executor`, `message` |
 | `stom data backtest-list --format json` | array 또는 object | 배열일 경우 row 객체 목록, 객체일 경우 `message` |
 | `stom optimize list --format json` | array 또는 object | 배열일 경우 row 객체 목록, 객체일 경우 `message` |
 | `stom backtest run --async --format json` | object | `id`, `buy_strategy`, `sell_strategy`, `type`, `start_date`, `end_date`, `status`, `async`, `created_at` |
@@ -91,8 +93,8 @@
 | `stom orders list --format json` | 배열 또는 `{"message": ...}` | `tests/test_trade.py` (`test_orders_list_json_payload_contract`) |
 | `stom positions close --format json` 실패 | 표준 에러(`ok=false`, `POSITIONS_CLOSE_INVALID_ARGS`) | `tests/test_trade.py` (`test_positions_close_missing_target_json_error_contract`) |
 | `stom orders cancel --format json` 실패 | 표준 에러(`ok=false`, `ORDERS_CANCEL_INVALID_ARGS`) | `tests/test_trade.py` (`test_orders_cancel_missing_target_json_error_contract`) |
-| `stom positions close --all --format json` 성공 | 객체(`ok=true`, `order_type`, `asset_type`, `status`) | `tests/test_trade.py` (`test_positions_close_all_json_success_contract`) |
-| `stom orders cancel --all --format json` 성공 | 객체(`ok=true`, `cancel_type`, `asset_type`, `status`) | `tests/test_trade.py` (`test_orders_cancel_all_json_success_contract`) |
+| `stom positions close --all --format json` 성공 | 객체(`ok=true`, `request_id`, `order_type`, `asset_type`, `status`, `execution_mode`) | `tests/test_trade.py` (`test_positions_close_all_json_success_contract`) |
+| `stom orders cancel --all --format json` 성공 | 객체(`ok=true`, `request_id`, `cancel_type`, `asset_type`, `status`, `execution_mode`) | `tests/test_trade.py` (`test_orders_cancel_all_json_success_contract`) |
 | `stom data backtest-list --format json` | 배열 또는 `{"message": ...}` | `tests/test_data.py` |
 | `stom db info --format json` | 객체(`database`, `table_info` 등) | `tests/test_db.py` |
 | `stom backtest list --format json` | 배열 또는 `{"message": ...}` | `tests/test_json_contract_schema.py` (`test_backtest_list_schema`) |
@@ -130,6 +132,8 @@
 | `backtest run` 실패 | C2.17 | DB 오류 시 표준 에러 payload(`BACKTEST_RUN_FAILED`) 계약 추가 | 하위호환 | `tests/test_json_contract_schema.py::test_backtest_run_db_error_schema` |
 | `optimize grid run` 실패(params) | C2.17 | 파라미터 JSON 오류를 표준 에러 payload(`OPT_GRID_INVALID_PARAMS`)로 계약화 | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_run_invalid_params_error_schema` |
 | `optimize grid run` 실패(DB) | C2.17 | DB 저장 오류 시 표준 에러 payload(`OPT_GRID_FAILED`) 계약 추가 | 하위호환 | `tests/test_json_contract_schema.py::test_optimize_run_db_error_schema` |
+| `positions close --all` 성공 | C2.23 | `request_id`, `created_at`, `execution_mode`, `broker_execution`, `requires_external_executor` 필드 추가로 “요청 기록 전용” 계약 명시 | 하위호환(필드 추가) | `tests/test_trade.py::test_positions_close_all_json_success_contract`, `tests/test_json_contract_schema.py::test_positions_close_success_schema` |
+| `orders cancel --all` 성공 | C2.23 | `request_id`, `created_at`, `execution_mode`, `broker_execution`, `requires_external_executor` 필드 추가로 “요청 기록 전용” 계약 명시 | 하위호환(필드 추가) | `tests/test_trade.py::test_orders_cancel_all_json_success_contract`, `tests/test_json_contract_schema.py::test_orders_cancel_success_schema` |
 
 ## 10. 계약 변경 운영 규칙
 1. 계약 변경은 명령 단위로 본 문서 9절 이력 표에 반드시 추가한다.
