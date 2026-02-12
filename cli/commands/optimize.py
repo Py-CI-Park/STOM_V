@@ -147,6 +147,143 @@ def _render_job(output_adapter: OutputAdapter, job_config: Dict[str, Any], as_js
     click.echo("\n".join(lines))
 
 
+def _mark_job_running(job_id: str) -> str:
+    started_at = datetime.now().isoformat()
+    con = sqlite3.connect(DB_BACKTEST)
+    create_optimize_jobs_table(con)
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        UPDATE optimize_jobs
+        SET status = 'running', started_at = ?, completed_at = NULL, error_message = NULL
+        WHERE id = ?
+        """,
+        (started_at, job_id),
+    )
+    con.commit()
+    con.close()
+    return started_at
+
+
+def _mark_job_completed(job_id: str, result_payload: Any):
+    completed_at = datetime.now().isoformat()
+    try:
+        serialized_result = json.dumps(result_payload, ensure_ascii=False)
+    except TypeError:
+        serialized_result = str(result_payload)
+
+    con = sqlite3.connect(DB_BACKTEST)
+    create_optimize_jobs_table(con)
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        UPDATE optimize_jobs
+        SET status = 'completed', completed_at = ?, result = ?, error_message = NULL
+        WHERE id = ?
+        """,
+        (completed_at, serialized_result, job_id),
+    )
+    con.commit()
+    con.close()
+    return completed_at
+
+
+def _mark_job_failed(job_id: str, error_message: str):
+    completed_at = datetime.now().isoformat()
+    con = sqlite3.connect(DB_BACKTEST)
+    create_optimize_jobs_table(con)
+    cursor = con.cursor()
+    cursor.execute(
+        """
+        UPDATE optimize_jobs
+        SET status = 'failed', completed_at = ?, error_message = ?
+        WHERE id = ?
+        """,
+        (completed_at, error_message, job_id),
+    )
+    con.commit()
+    con.close()
+    return completed_at
+
+
+def _run_sync_optimization(run_kind: str, run_kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    from cli.runners.optimize_runner import HeadlessOptimizeRunner
+
+    runner = HeadlessOptimizeRunner()
+    dispatch = {
+        "grid": runner.run_grid_optimization,
+        "bayesian": runner.run_bayesian_optimization,
+        "ga": runner.run_ga_optimization,
+        "walkforward": runner.run_walkforward,
+        "backfinder": runner.run_backfinder,
+    }
+    if run_kind not in dispatch:
+        raise ValueError(f"Unsupported optimization kind: {run_kind}")
+    return dispatch[run_kind](**run_kwargs)
+
+
+def _execute_sync_job(
+    job_config: Dict[str, Any],
+    run_kind: str,
+    run_kwargs: Dict[str, Any],
+    output_adapter: OutputAdapter,
+    output_format: str,
+    sync_error_code: str,
+):
+    job_id = job_config["id"]
+    started_at = _mark_job_running(job_id)
+
+    try:
+        run_result = _run_sync_optimization(run_kind, run_kwargs)
+    except Exception as e:
+        _mark_job_failed(job_id, str(e))
+        click.echo(
+            OutputAdapter.format_error(
+                e,
+                "Optimization sync execution failed",
+                output_format=OutputFormat(output_format),
+                error_code=sync_error_code,
+            )
+        )
+        if output_format == "json":
+            raise click.exceptions.Exit(1)
+        raise click.ClickException(str(e))
+
+    if run_result.get("success"):
+        completed_at = _mark_job_completed(job_id, run_result.get("result"))
+        payload = dict(job_config)
+        payload.update(
+            {
+                "status": "completed",
+                "started_at": started_at,
+                "completed_at": completed_at,
+                "sync_executed": True,
+                "runner_result": run_result.get("result"),
+            }
+        )
+        if output_format == "json":
+            output_adapter.output(payload, title="Optimization Job")
+        else:
+            _render_job(output_adapter, payload, as_json=False)
+            click.echo("Sync execution completed.")
+        return
+
+    message = run_result.get("error_message") or "Unknown optimization runner error"
+    _mark_job_failed(job_id, message)
+    error = RuntimeError(message)
+    click.echo(
+        OutputAdapter.format_error(
+            error,
+            "Optimization sync execution failed",
+            output_format=OutputFormat(output_format),
+            error_code=sync_error_code,
+        )
+    )
+    if output_format == "json":
+        raise click.exceptions.Exit(1)
+    raise click.ClickException(message)
+
+
 @click.group()
 def optimize():
     """Optimization commands."""
@@ -197,10 +334,26 @@ def grid(
             "created_at": datetime.now().isoformat(),
         }
         save_optimize_job(job_config)
-        _render_job(output_adapter, job_config, format == "json")
-
-        if not is_async:
-            click.echo("Warning: execution runner integration is not enabled in this command.")
+        if is_async:
+            _render_job(output_adapter, job_config, format == "json")
+        else:
+            run_kwargs = {
+                "backtest_type": asset_type,
+                "buy_strategy": buy_strategy,
+                "sell_strategy": sell_strategy,
+                "start_date": _normalize_date(start_date),
+                "end_date": _normalize_date(end_date),
+                "betting": betting,
+                **params_dict,
+            }
+            _execute_sync_job(
+                job_config=job_config,
+                run_kind="grid",
+                run_kwargs=run_kwargs,
+                output_adapter=output_adapter,
+                output_format=format,
+                sync_error_code="OPT_GRID_SYNC_FAILED",
+            )
     except json.JSONDecodeError as e:
         if format == "json":
             click.echo(
@@ -213,6 +366,8 @@ def grid(
             )
             raise click.exceptions.Exit(1)
         raise click.ClickException(f"Invalid JSON format for --params: {e}")
+    except click.exceptions.Exit:
+        raise
     except Exception as e:
         click.echo(
             OutputAdapter.format_error(
@@ -270,9 +425,28 @@ def bayesian(
             "created_at": datetime.now().isoformat(),
         }
         save_optimize_job(job_config)
-        _render_job(output_adapter, job_config, format == "json")
-        if not is_async:
-            click.echo("Warning: execution runner integration is not enabled in this command.")
+        if is_async:
+            _render_job(output_adapter, job_config, format == "json")
+        else:
+            run_kwargs = {
+                "trials": trials,
+                "backtest_type": asset_type,
+                "buy_strategy": buy_strategy,
+                "sell_strategy": sell_strategy,
+                "start_date": _normalize_date(start_date),
+                "end_date": _normalize_date(end_date),
+                "betting": betting,
+            }
+            _execute_sync_job(
+                job_config=job_config,
+                run_kind="bayesian",
+                run_kwargs=run_kwargs,
+                output_adapter=output_adapter,
+                output_format=format,
+                sync_error_code="OPT_BAYESIAN_SYNC_FAILED",
+            )
+    except click.exceptions.Exit:
+        raise
     except Exception as e:
         click.echo(
             OutputAdapter.format_error(
@@ -283,6 +457,8 @@ def bayesian(
             )
         )
         logger_.error(f"Error running bayesian optimization: {e}")
+        if format == "json":
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 
@@ -328,9 +504,28 @@ def ga(
             "created_at": datetime.now().isoformat(),
         }
         save_optimize_job(job_config)
-        _render_job(output_adapter, job_config, format == "json")
-        if not is_async:
-            click.echo("Warning: execution runner integration is not enabled in this command.")
+        if is_async:
+            _render_job(output_adapter, job_config, format == "json")
+        else:
+            run_kwargs = {
+                "generations": generations,
+                "backtest_type": asset_type,
+                "buy_strategy": buy_strategy,
+                "sell_strategy": sell_strategy,
+                "start_date": _normalize_date(start_date),
+                "end_date": _normalize_date(end_date),
+                "betting": betting,
+            }
+            _execute_sync_job(
+                job_config=job_config,
+                run_kind="ga",
+                run_kwargs=run_kwargs,
+                output_adapter=output_adapter,
+                output_format=format,
+                sync_error_code="OPT_GA_SYNC_FAILED",
+            )
+    except click.exceptions.Exit:
+        raise
     except Exception as e:
         click.echo(
             OutputAdapter.format_error(
@@ -341,6 +536,8 @@ def ga(
             )
         )
         logger_.error(f"Error running GA optimization: {e}")
+        if format == "json":
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 
@@ -390,9 +587,30 @@ def walkforward(
             "created_at": datetime.now().isoformat(),
         }
         save_optimize_job(job_config)
-        _render_job(output_adapter, job_config, format == "json")
-        if not is_async:
-            click.echo("Warning: execution runner integration is not enabled in this command.")
+        if is_async:
+            _render_job(output_adapter, job_config, format == "json")
+        else:
+            run_kwargs = {
+                "backtest_type": asset_type,
+                "buy_strategy": strategy,
+                "sell_strategy": strategy,
+                "start_date": _normalize_date(start_date),
+                "end_date": _normalize_date(end_date),
+                "betting": betting,
+                "weeks_train": train_weeks,
+                "weeks_valid": valid_weeks,
+                "weeks_test": test_weeks,
+            }
+            _execute_sync_job(
+                job_config=job_config,
+                run_kind="walkforward",
+                run_kwargs=run_kwargs,
+                output_adapter=output_adapter,
+                output_format=format,
+                sync_error_code="OPT_WALKFORWARD_SYNC_FAILED",
+            )
+    except click.exceptions.Exit:
+        raise
     except Exception as e:
         click.echo(
             OutputAdapter.format_error(
@@ -403,6 +621,8 @@ def walkforward(
             )
         )
         logger_.error(f"Error running walk-forward optimization: {e}")
+        if format == "json":
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 
@@ -437,9 +657,26 @@ def backfinder(
             "created_at": datetime.now().isoformat(),
         }
         save_optimize_job(job_config)
-        _render_job(output_adapter, job_config, format == "json")
-        if not is_async:
-            click.echo("Warning: execution runner integration is not enabled in this command.")
+        if is_async:
+            _render_job(output_adapter, job_config, format == "json")
+        else:
+            run_kwargs = {
+                "backtest_type": asset_type,
+                "buy_strategy": None,
+                "start_date": _normalize_date(start_date),
+                "end_date": _normalize_date(end_date),
+                "min_profit": min_profit,
+            }
+            _execute_sync_job(
+                job_config=job_config,
+                run_kind="backfinder",
+                run_kwargs=run_kwargs,
+                output_adapter=output_adapter,
+                output_format=format,
+                sync_error_code="OPT_BACKFINDER_SYNC_FAILED",
+            )
+    except click.exceptions.Exit:
+        raise
     except Exception as e:
         click.echo(
             OutputAdapter.format_error(
@@ -450,6 +687,8 @@ def backfinder(
             )
         )
         logger_.error(f"Error running backfinder: {e}")
+        if format == "json":
+            raise click.exceptions.Exit(1)
         raise click.ClickException(str(e))
 
 

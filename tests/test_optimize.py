@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 import sqlite3
 
@@ -70,6 +71,38 @@ def _get_optimize_status(job_id: str) -> str | None:
     con = sqlite3.connect(DB_BACKTEST)
     cursor = con.cursor()
     cursor.execute("SELECT status FROM optimize_jobs WHERE id = ?", (job_id,))
+    row = cursor.fetchone()
+    con.close()
+    return row[0] if row else None
+
+
+def _get_optimize_row(job_id: str) -> dict | None:
+    con = sqlite3.connect(DB_BACKTEST)
+    cursor = con.cursor()
+    cursor.execute(
+        "SELECT id, type, status, result, error_message FROM optimize_jobs WHERE id = ?",
+        (job_id,),
+    )
+    row = cursor.fetchone()
+    con.close()
+    if not row:
+        return None
+    return {
+        "id": row[0],
+        "type": row[1],
+        "status": row[2],
+        "result": row[3],
+        "error_message": row[4],
+    }
+
+
+def _latest_optimize_job_id_by_type(opt_type: str) -> str | None:
+    con = sqlite3.connect(DB_BACKTEST)
+    cursor = con.cursor()
+    cursor.execute(
+        "SELECT id FROM optimize_jobs WHERE type = ? ORDER BY created_at DESC LIMIT 1",
+        (opt_type,),
+    )
     row = cursor.fetchone()
     con.close()
     return row[0] if row else None
@@ -315,3 +348,133 @@ class TestOptimizeListStatusCancel:
         assert result.exit_code == 0
         assert "cancelled" in result.output.lower()
         assert _get_optimize_status(job_id) == "cancelled"
+
+
+class TestOptimizeSyncExecution:
+    def test_optimize_grid_sync_success_updates_job_status(
+        self,
+        cli_runner: CliRunner,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        def _mock_run_sync(_run_kind, _run_kwargs):
+            return {"success": True, "result": {"score": 1.23}, "error_message": None}
+
+        monkeypatch.setattr("cli.commands.optimize._run_sync_optimization", _mock_run_sync)
+
+        result = cli_runner.invoke(
+            main,
+            [
+                "optimize",
+                "grid",
+                "--type",
+                "stock",
+                "--buy-strategy",
+                "test_buy",
+                "--sell-strategy",
+                "test_sell",
+                "--start-date",
+                "20260101",
+                "--end-date",
+                "20260131",
+                "--params",
+                "{}",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert payload["status"] == "completed"
+        assert payload["sync_executed"] is True
+
+        job_id = payload["id"]
+        row = _get_optimize_row(job_id)
+        assert row is not None
+        assert row["status"] == "completed"
+        assert row["result"] is not None
+
+    def test_optimize_grid_sync_failure_marks_failed_and_returns_error_json(
+        self,
+        cli_runner: CliRunner,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        def _mock_run_sync(_run_kind, _run_kwargs):
+            return {"success": False, "result": None, "error_message": "runner failed for test"}
+
+        monkeypatch.setattr("cli.commands.optimize._run_sync_optimization", _mock_run_sync)
+
+        result = cli_runner.invoke(
+            main,
+            [
+                "optimize",
+                "grid",
+                "--type",
+                "stock",
+                "--buy-strategy",
+                "test_buy",
+                "--sell-strategy",
+                "test_sell",
+                "--start-date",
+                "20260101",
+                "--end-date",
+                "20260131",
+                "--params",
+                "{}",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code != 0
+        payload = json.loads(result.output)
+        assert payload["error"]["code"] == "OPT_GRID_SYNC_FAILED"
+
+        job_id = _latest_optimize_job_id_by_type("grid")
+        assert job_id is not None
+        row = _get_optimize_row(job_id)
+        assert row is not None
+        assert row["status"] == "failed"
+        assert row["error_message"] is not None
+        assert "runner failed for test" in row["error_message"]
+
+    def test_optimize_bayesian_sync_exception_returns_sync_error_code(
+        self,
+        cli_runner: CliRunner,
+        monkeypatch: pytest.MonkeyPatch,
+    ):
+        def _mock_run_sync(_run_kind, _run_kwargs):
+            raise RuntimeError("sync executor crashed")
+
+        monkeypatch.setattr("cli.commands.optimize._run_sync_optimization", _mock_run_sync)
+
+        result = cli_runner.invoke(
+            main,
+            [
+                "optimize",
+                "bayesian",
+                "--type",
+                "stock",
+                "--buy-strategy",
+                "test_buy",
+                "--sell-strategy",
+                "test_sell",
+                "--start-date",
+                "20260101",
+                "--end-date",
+                "20260131",
+                "--trials",
+                "3",
+                "--format",
+                "json",
+            ],
+        )
+        assert result.exit_code != 0
+        payload = json.loads(result.output)
+        assert payload["error"]["code"] == "OPT_BAYESIAN_SYNC_FAILED"
+
+        job_id = _latest_optimize_job_id_by_type("bayesian")
+        assert job_id is not None
+        row = _get_optimize_row(job_id)
+        assert row is not None
+        assert row["status"] == "failed"
+        assert row["error_message"] is not None
+        assert "sync executor crashed" in row["error_message"]
