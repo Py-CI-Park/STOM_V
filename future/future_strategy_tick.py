@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, dgree, DB_FUTURE_TICK
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
     get_logger
+from utility.safe_exec import safe_compile, guard_exec_code
 
 
 # noinspection PyUnusedLocal
@@ -77,13 +78,18 @@ class FutureStrategyTick:
         self.SetBuyStg(buytxt)
 
         if self.dict_set['주식매도전략'] in dfs.index:
-            self.sellstrategy = compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
+            self.sellstrategy = safe_compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec',
+                                             context='FutureStrategyTick.sellstrategy.db')
         elif self.dict_set['주식매도전략'] in dfos.index:
-            self.sellstrategy = compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
+            self.sellstrategy = safe_compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec',
+                                             context='FutureStrategyTick.sellstrategy.opti')
 
         if self.dict_set['주식경과틱수설정']:
             def compile_condition(x):
-                return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                return safe_compile(
+                    f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn',
+                    '<string>', 'exec', context='FutureStrategyTick.condition'
+                )
             text_list  = self.dict_set['주식경과틱수설정'].split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
@@ -95,7 +101,7 @@ class FutureStrategyTick:
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
         if indistg is not None:
             try:
-                exec(indistg)
+                exec(guard_exec_code(indistg, 'FutureStrategyTick.SetBuyStg.indistg'))
             except:
                 pass
             else:
@@ -139,7 +145,7 @@ class FutureStrategyTick:
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
-            self.sellstrategy = compile(data, '<string>', 'exec')
+            self.sellstrategy = safe_compile(data, '<string>', 'exec', context='FutureStrategyTick.sellstrategy.update')
         elif gubun == '차트종목코드':
             self.chart_code = data
         elif gubun == '설정변경':
@@ -428,7 +434,7 @@ class FutureStrategyTick:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 try:
-                    exec(v)
+                    exec(guard_exec_code(v, f'FutureStrategyTick.condition.{k}'))
                 except:
                     print_exc()
                     self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
@@ -481,7 +487,7 @@ class FutureStrategyTick:
                     BUY_LONG, SELL_SHORT = True, True
                     if self.buystrategy is not None:
                         try:
-                            exec(self.buystrategy)
+                            exec(guard_exec_code(self.buystrategy, 'FutureStrategyTick.buystrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
@@ -535,7 +541,7 @@ class FutureStrategyTick:
                 if A or B or (C and (D or E)) or F or G:
                     if self.sellstrategy is not None:
                         try:
-                            exec(self.sellstrategy)
+                            exec(guard_exec_code(self.sellstrategy, 'FutureStrategyTick.sellstrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
