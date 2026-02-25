@@ -20,7 +20,7 @@ class UnsafeStrategyCodeError(ValueError):
 _BANNED_NAME_TOKENS = {
     '__import__', '__builtins__', 'eval', 'exec', 'open', 'compile',
     'globals', 'locals', 'vars', 'getattr', 'setattr', 'delattr',
-    'os', 'subprocess', 'ctypes', 'socket', 'shutil', 'pathlib'
+    'os', 'subprocess', 'ctypes', 'socket', 'shutil', 'pathlib', 'sys', 'builtins'
 }
 
 _BANNED_IMPORT_OPS = {'IMPORT_NAME', 'IMPORT_FROM', 'IMPORT_STAR'}
@@ -64,6 +64,8 @@ def _assert_safe_ast(source, context='', mode='exec'):
             if isinstance(node.func, ast.Name) and node.func.id in _BANNED_NAME_TOKENS:
                 _raise(f"call to '{node.func.id}' is not allowed", context)
             if isinstance(node.func, ast.Attribute):
+                if node.func.attr in _BANNED_NAME_TOKENS:
+                    _raise(f"use of '{node.func.attr}' is not allowed", context)
                 root = node.func
                 while isinstance(root, ast.Attribute):
                     root = root.value
@@ -72,6 +74,8 @@ def _assert_safe_ast(source, context='', mode='exec'):
 
         if isinstance(node, ast.Attribute):
             if _is_dunder_name(node.attr):
+                _raise(f"use of '{node.attr}' is not allowed", context)
+            if node.attr in _BANNED_NAME_TOKENS:
                 _raise(f"use of '{node.attr}' is not allowed", context)
             root = node
             while isinstance(root, ast.Attribute):
@@ -103,6 +107,7 @@ def _assert_safe_code_obj(code_obj, context=''):
                 _raise(f"use of '{ins.argval}' is not allowed", context)
         if ins.opname in {'LOAD_ATTR', 'LOAD_METHOD'}:
             if isinstance(ins.argval, str) and (
+                ins.argval in _BANNED_NAME_TOKENS or
                 ins.argval in _BANNED_TEXT_TOKENS or
                 _is_dunder_name(ins.argval)
             ):

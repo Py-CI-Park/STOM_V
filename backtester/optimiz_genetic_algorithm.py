@@ -308,8 +308,13 @@ class OptimizeGeneticAlgorithm:
         optivars = df['전략코드'][optivars_name]
         con.close()
 
-        optivars_ = safe_compile(df['전략코드'][optivars_name], '<string>', 'exec', context='OptimizGenetic.optivars')
         try:
+            optivars_ = safe_compile(
+                df['전략코드'][optivars_name],
+                '<string>',
+                'exec',
+                context='OptimizGenetic.optivars'
+            )
             exec(guard_exec_code(optivars_, 'OptimizGenetic.optivars'))
         except Exception as e:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - {self.backname} 변수설정 {e}'))
