@@ -8,6 +8,7 @@ from kiwoom_strategy_tick import KiwoomStrategyTick
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num, dgree
 from utility.static import now, GetUvilower5, GetKiwoomPgSgSp, GetHogaunit, str_ymdhms, dt_ymdhms
+from utility.safe_exec import guard_exec_code
 
 
 # noinspection PyUnusedLocal
@@ -490,7 +491,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                     self.dict_cond_indexn[종목코드] = {}
                 for k, v in self.dict_condition.items():
                     try:
-                        exec(v)
+                        exec(guard_exec_code(v, f'KiwoomStrategyMin.condition.{k}'))
                     except:
                         print_exc()
                         self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
@@ -536,7 +537,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                         매수 = True
                         if self.buystrategy is not None:
                             try:
-                                exec(self.buystrategy)
+                                exec(guard_exec_code(self.buystrategy, 'KiwoomStrategyMin.buystrategy'))
                             except:
                                 print_exc()
                                 self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
@@ -575,7 +576,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                     if A or (B and C) or D:
                         if self.sellstrategy is not None:
                             try:
-                                exec(self.sellstrategy)
+                                exec(guard_exec_code(self.sellstrategy, 'KiwoomStrategyMin.sellstrategy'))
                             except:
                                 print_exc()
                                 self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))

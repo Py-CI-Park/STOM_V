@@ -10,6 +10,7 @@ from backtester.back_static import SendResult, GetMoneytopQuery
 from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.safe_exec import safe_compile, guard_exec_code
 
 
 class Total:
@@ -307,9 +308,9 @@ class OptimizeGeneticAlgorithm:
         optivars = df['전략코드'][optivars_name]
         con.close()
 
-        optivars_ = compile(df['전략코드'][optivars_name], '<string>', 'exec')
+        optivars_ = safe_compile(df['전략코드'][optivars_name], '<string>', 'exec', context='OptimizGenetic.optivars')
         try:
-            exec(optivars_)
+            exec(guard_exec_code(optivars_, 'OptimizGenetic.optivars'))
         except Exception as e:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - {self.backname} 변수설정 {e}'))
             self.SysExit(True)
@@ -395,7 +396,7 @@ class OptimizeGeneticAlgorithm:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 최적화 완료'))
         self.SaveVarslist(100, optistandard, buystg, sellstg)
 
-        exec(optivars_)
+        exec(guard_exec_code(optivars_, 'OptimizGenetic.optivars.final'))
         optivars = optivars.split('self.vars[0]')[0]
         for i in range(len(self.vars)):
             if self.vars[i][1] != self.high_vars[i]:

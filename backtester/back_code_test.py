@@ -3,6 +3,7 @@ from PyQt5.QtCore import QThread
 from utility.setting import indicator
 # noinspection PyUnresolvedReferences
 from utility.static import timedelta_sec, qtest_qwait, get_logger
+from utility.safe_exec import safe_compile, guard_exec_code
 
 
 # noinspection PyUnusedLocal
@@ -23,7 +24,7 @@ class BackCodeTest(QThread):
 
             error = False
             try:
-                exec(compile(self.var, '<string>', 'exec'))
+                exec(safe_compile(self.var, '<string>', 'exec', context='BackCodeTest.var'))
             except:
                 print_exc()
                 error = True
@@ -56,7 +57,7 @@ class BackCodeTest(QThread):
                 error = True
 
             try:
-                self.stg = compile(self.stg, '<string>', 'exec')
+                self.stg = safe_compile(self.stg, '<string>', 'exec', context='BackCodeTest.stg')
             except:
                 print_exc()
                 error = True
@@ -416,7 +417,7 @@ class BackCodeTest(QThread):
         매수, 매도, BUY_LONG, SELL_LONG, SELL_SHORT, BUY_SHORT, 강제청산 = False, False, False, False, False, False, False
 
         try:
-            exec(self.stg)
+            exec(guard_exec_code(self.stg, 'BackCodeTest.exec'))
         except:
             print_exc()
             self.ErrorEnd()

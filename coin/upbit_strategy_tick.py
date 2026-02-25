@@ -6,6 +6,7 @@ import pandas as pd
 from traceback import print_exc
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, dgree
 from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_buy_indi_stg, get_logger, dt_ymdhms
+from utility.safe_exec import safe_compile, guard_exec_code
 
 
 # noinspection PyUnusedLocal
@@ -72,13 +73,13 @@ class UpbitStrategyTick:
         self.SetBuyStg(buytxt)
 
         if self.dict_set['코인매도전략'] in dfs.index:
-            self.sellstrategy = compile(dfs['전략코드'][self.dict_set['코인매도전략']], '<string>', 'exec')
+            self.sellstrategy = safe_compile(dfs['전략코드'][self.dict_set['코인매도전략']], '<string>', 'exec')
         elif self.dict_set['코인매도전략'] in dfos.index:
-            self.sellstrategy = compile(dfos['전략코드'][self.dict_set['코인매도전략']], '<string>', 'exec')
+            self.sellstrategy = safe_compile(dfos['전략코드'][self.dict_set['코인매도전략']], '<string>', 'exec')
 
         if self.dict_set['코인경과틱수설정']:
             def compile_condition(x):
-                return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                return safe_compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
             text_list  = self.dict_set['코인경과틱수설정'].split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
@@ -90,7 +91,7 @@ class UpbitStrategyTick:
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
         if indistg is not None:
             try:
-                exec(indistg)
+                exec(guard_exec_code(indistg, 'UpbitStrategyTick.indistg'))
             except:
                 pass
             else:
@@ -136,7 +137,7 @@ class UpbitStrategyTick:
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
-            self.sellstrategy = compile(data, '<string>', 'exec')
+            self.sellstrategy = safe_compile(data, '<string>', 'exec')
         elif gubun == '종목당투자금':
             self.int_tujagm = data
         elif gubun == '차트종목코드':
@@ -428,7 +429,7 @@ class UpbitStrategyTick:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 try:
-                    exec(v)
+                    exec(guard_exec_code(v, f'UpbitStrategyTick.condition.{k}'))
                 except:
                     print_exc()
                     self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류'))
@@ -475,7 +476,7 @@ class UpbitStrategyTick:
                     매수 = True
                     if self.buystrategy is not None:
                         try:
-                            exec(self.buystrategy)
+                            exec(guard_exec_code(self.buystrategy, 'UpbitStrategyTick.buystrategy'))
                         except:
                             print_exc()
                             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy'))
@@ -514,7 +515,7 @@ class UpbitStrategyTick:
                 if A or (B and C) or D:
                     if self.sellstrategy is not None:
                         try:
-                            exec(self.sellstrategy)
+                            exec(guard_exec_code(self.sellstrategy, 'UpbitStrategyTick.sellstrategy'))
                         except:
                             print_exc()
                             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - SellStrategy'))

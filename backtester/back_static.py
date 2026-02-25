@@ -9,6 +9,7 @@ from optuna_dashboard import run_server
 from matplotlib import font_manager, gridspec
 from utility.setting import ui_num, GRAPH_PATH, DB_OPTUNA, dgree
 from utility.static import thread_decorator, str_hms, str_hm, dt_ymdhms, dt_ymdhm, dt_hms, dt_hm, dt_ymd
+from utility.safe_exec import safe_compile
 
 
 @thread_decorator
@@ -198,7 +199,7 @@ def GetBuyStg(buytxt, gubun):
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
     if buystg:
         try:
-            buystg = compile(buystg, '<string>', 'exec')
+            buystg = safe_compile(buystg, '<string>', 'exec', context='back_static.buystg')
         except:
             buystg = None
             if gubun == 0: print_exc()
@@ -206,7 +207,7 @@ def GetBuyStg(buytxt, gubun):
         buystg = None
     if indistg:
         try:
-            indistg = compile(indistg, '<string>', 'exec')
+            indistg = safe_compile(indistg, '<string>', 'exec', context='back_static.indistg')
         except:
             indistg = None
     else:
@@ -218,7 +219,7 @@ def GetSellStg(sellstg, gubun):
     sellstg = 'sell_cond = 0\n' + sellstg.split('if 매도:')[0] + 'if 매도:\n    self.Sell(vturn, vkey, sell_cond)'
     sellstg, dict_cond = SetSellCond(sellstg.split('\n'))
     try:
-        sellstg = compile(sellstg, '<string>', 'exec')
+        sellstg = safe_compile(sellstg, '<string>', 'exec', context='back_static.sellstg')
     except:
         sellstg = None
         if gubun == 0: print_exc()
@@ -230,7 +231,7 @@ def GetBuyConds(buy_conds, gubun):
                 '):\n    매수 = False\nelif not ('.join(buy_conds) + \
                 '):\n    매수 = False\nif 매수:\n    self.Buy(vturn, vkey)'
     try:
-        buy_conds = compile(buy_conds, '<string>', 'exec')
+        buy_conds = safe_compile(buy_conds, '<string>', 'exec', context='back_static.buy_conds')
     except:
         buy_conds = None
         if gubun == 0: print_exc()
@@ -243,7 +244,7 @@ def GetSellConds(sell_conds, gubun):
                  '):\n    매도 = True\nif 매도:\n    self.Sell(vturn, vkey, sell_cond)'
     sell_conds, dict_cond = SetSellCond(sell_conds.split('\n'))
     try:
-        sell_conds = compile(sell_conds, '<string>', 'exec')
+        sell_conds = safe_compile(sell_conds, '<string>', 'exec', context='back_static.sell_conds')
     except:
         sell_conds = None
         if gubun == 0: print_exc()
@@ -272,7 +273,7 @@ def GetBuyStgFuture(buystg, gubun):
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
     if buystg:
         try:
-            buystg = compile(buystg, '<string>', 'exec')
+            buystg = safe_compile(buystg, '<string>', 'exec', context='back_static.buystg')
         except:
             buystg = None
             if gubun == 0: print_exc()
@@ -280,7 +281,7 @@ def GetBuyStgFuture(buystg, gubun):
         buystg = None
     if indistg:
         try:
-            indistg = compile(indistg, '<string>', 'exec')
+            indistg = safe_compile(indistg, '<string>', 'exec', context='back_static.indistg')
         except:
             indistg = None
     else:
@@ -293,7 +294,7 @@ def GetSellStgFuture(sellstg, gubun):
         0] + "if 포지션 == 'LONG' and SELL_LONG:\n    self.Sell(vturn, vkey, sell_cond, 'LONG')\nelif 포지션 == 'SHORT' and BUY_SHORT:\n    self.Sell(vturn, vkey, sell_cond, 'SHORT')"
     sellstg, dict_cond = SetSellCondFuture(sellstg.split('\n'))
     try:
-        sellstg = compile(sellstg, '<string>', 'exec')
+        sellstg = safe_compile(sellstg, '<string>', 'exec', context='back_static.sellstg')
     except:
         sellstg = None
         if gubun == 0: print_exc()
@@ -310,7 +311,7 @@ def GetBuyCondsFuture(is_long, buy_conds, gubun):
                     '):\n    SELL_SHORT = False\nelif not ('.join(buy_conds) + \
                     '):\n    SELL_SHORT = False\nif SELL_SHORT:\n    self.Buy(vturn, vkey, "SHORT")'
     try:
-        buy_conds = compile(buy_conds, '<string>', 'exec')
+        buy_conds = safe_compile(buy_conds, '<string>', 'exec', context='back_static.buy_conds')
     except:
         buy_conds = None
         if gubun == 0: print_exc()
@@ -326,7 +327,7 @@ def GetSellCondsFuture(is_long, sell_conds, gubun):
             sell_conds) + ':\n    BUY_SHORT = True\nif BUY_SHORT:\n    self.Sell(vturn, vkey, sell_cond, "SHORT")'
     sell_conds, dict_cond = SetSellCondFuture(sell_conds.split('\n'))
     try:
-        sell_conds = compile(sell_conds, '<string>', 'exec')
+        sell_conds = safe_compile(sell_conds, '<string>', 'exec', context='back_static.sell_conds')
     except:
         sell_conds = None
         if gubun == 0: print_exc()

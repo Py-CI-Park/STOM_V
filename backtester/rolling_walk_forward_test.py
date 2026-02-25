@@ -11,6 +11,7 @@ from backtester.back_static import SendResult, GetMoneytopQuery, PlotShow, GetRe
 from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.safe_exec import safe_compile
 
 
 class Total:
@@ -480,7 +481,7 @@ class RollingWalkForwardTest:
         con.close()
 
         try:
-            exec(compile(optivars, '<string>', 'exec'))
+            exec(safe_compile(optivars, '<string>', 'exec', context='RollingWalkForward.optivars'))
         except Exception as e:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - 최적화 변수설정 1단계 {e}'))
             self.SysExit(True)

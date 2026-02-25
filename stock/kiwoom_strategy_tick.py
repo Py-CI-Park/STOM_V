@@ -11,6 +11,7 @@ from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetUvilower5, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
     str_ymdhms, dt_ymdhms, get_logger
+from utility.safe_exec import safe_compile, guard_exec_code
 
 
 # noinspection PyUnusedLocal
@@ -85,13 +86,13 @@ class KiwoomStrategyTick:
         self.SetBuyStg(buytxt)
 
         if self.dict_set['주식매도전략'] in dfs.index:
-            self.sellstrategy = compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
+            self.sellstrategy = safe_compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
         elif self.dict_set['주식매도전략'] in dfos.index:
-            self.sellstrategy = compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
+            self.sellstrategy = safe_compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
 
         if self.dict_set['주식경과틱수설정']:
             def compile_condition(x):
-                return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                return safe_compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
             text_list  = self.dict_set['주식경과틱수설정'].split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
@@ -103,7 +104,7 @@ class KiwoomStrategyTick:
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
         if indistg is not None:
             try:
-                exec(indistg)
+                exec(guard_exec_code(indistg, 'KiwoomStrategyTick.indistg'))
             except:
                 pass
             else:
@@ -150,7 +151,7 @@ class KiwoomStrategyTick:
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
-            self.sellstrategy = compile(data, '<string>', 'exec')
+            self.sellstrategy = safe_compile(data, '<string>', 'exec')
         elif gubun == '종목당투자금':
             self.int_tujagm = data
         elif gubun == '차트종목코드':
@@ -477,7 +478,7 @@ class KiwoomStrategyTick:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 try:
-                    exec(v)
+                    exec(guard_exec_code(v, f'KiwoomStrategyTick.condition.{k}'))
                 except:
                     print_exc()
                     self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
@@ -523,7 +524,7 @@ class KiwoomStrategyTick:
                     매수 = True
                     if self.buystrategy is not None:
                         try:
-                            exec(self.buystrategy)
+                            exec(guard_exec_code(self.buystrategy, 'KiwoomStrategyTick.buystrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
@@ -562,7 +563,7 @@ class KiwoomStrategyTick:
                 if A or (B and C) or D:
                     if self.sellstrategy is not None:
                         try:
-                            exec(self.sellstrategy)
+                            exec(guard_exec_code(self.sellstrategy, 'KiwoomStrategyTick.sellstrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))

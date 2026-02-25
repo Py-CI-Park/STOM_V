@@ -1,4 +1,5 @@
 import math
+import os
 import sqlite3
 import numpy as np
 import pandas as pd
@@ -10,6 +11,7 @@ from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_
     DB_FUTURE_BACK_TICK, DB_FUTURE_BACK_MIN, DB_COIN_BACK_TICK, DB_COIN_BACK_MIN
 # noinspection PyUnresolvedReferences
 from utility.static import timedelta_sec, pickle_read, pickle_write, GetKiwoomPgSgSp, GetUvilower5, dt_ymdhms, dt_ymdhm
+from utility.safe_exec import safe_compile, guard_exec_code, UnsafeStrategyCodeError
 
 
 # noinspection PyUnusedLocal
@@ -109,14 +111,26 @@ class BackEngineKiwoomTick:
         if self.set_dict_cond:
             def compile_condition(x):
                 if self.is_tick:
-                    return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                    return safe_compile(
+                        f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn',
+                        '<string>', 'exec', context='BackEngineKiwoomTick.dict_condition.tick'
+                    )
                 else:
-                    return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn', '<string>', 'exec')
+                    return safe_compile(
+                        f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn',
+                        '<string>', 'exec', context='BackEngineKiwoomTick.dict_condition.min'
+                    )
             text_list  = self.set_dict_cond.split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
             value_list = text_list[half_cnt:]
-            value_list = [compile_condition(x) for x in value_list]
+            try:
+                value_list = [compile_condition(x) for x in value_list]
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.wq.put((ui_num[self.ui_num_txt], f'경과틱수 조건식 검증 실패 - {e}'))
+                self.wq.put((ui_num[self.ui_num_txt], '해당 조건식은 비활성화되어 백테스트를 계속 진행합니다.'))
+                self.dict_condition = {}
+                return
             self.dict_condition = dict(zip(key_list, value_list))
 
     def MainLoop(self):
@@ -255,7 +269,7 @@ class BackEngineKiwoomTick:
                         self.starttime = data[4]
                         self.endtime   = data[5]
                         try:
-                            self.buystg = compile(data[6], '<string>', 'exec')
+                            self.buystg = safe_compile(data[6], '<string>', 'exec', context='BackEngineKiwoomTick.backfinder.buystg')
                         except:
                             print_exc()
                             self.BackStop()
@@ -427,7 +441,20 @@ class BackEngineKiwoomTick:
             self.arry_data = np.ndarray(shared_info['shape'], dtype=shared_info['dtype'], buffer=shm.buf).copy()
             shm.close()
         else:
-            self.arry_data = pickle_read(shared_info['file_name'])
+            file_name = shared_info.get('file_name')
+            if file_name is None:
+                raise ValueError('shared_info missing file_name')
+            back_temp_root = os.path.abspath(BACK_TEMP)
+            target_pkl = os.path.abspath(file_name if str(file_name).endswith('.pkl') else f'{file_name}.pkl')
+            try:
+                in_back_temp = os.path.commonpath([target_pkl, back_temp_root]) == back_temp_root
+            except ValueError:
+                in_back_temp = False
+            if not in_back_temp:
+                raise ValueError(f'Unsafe shared_info file_name: {file_name}')
+            self.arry_data = pickle_read(file_name, allowed_root=back_temp_root)
+            if self.arry_data is None:
+                raise ValueError(f'Failed to load backtest pickle data: {file_name}')
 
         if self.same_days and self.same_time:
             pass
@@ -769,7 +796,7 @@ class BackEngineKiwoomTick:
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
-                exec(v)
+                exec(guard_exec_code(v, f'BackEngineKiwoomTick.condition.{k}'))
 
         if self.opti_turn == 1:
             for vturn in self.trade_info:
@@ -786,10 +813,10 @@ class BackEngineKiwoomTick:
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
                         self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
-                        exec(self.buystg)
+                        exec(guard_exec_code(self.buystg, 'BackEngineKiwoomTick.buystg'))
                     else:
                         수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
-                        exec(self.sellstg)
+                        exec(guard_exec_code(self.sellstg, 'BackEngineKiwoomTick.sellstg'))
 
         elif self.opti_turn == 3:
             for vturn in self.trade_info:
@@ -811,15 +838,15 @@ class BackEngineKiwoomTick:
                         if not 관심종목: continue
                         self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
                         if self.back_type != '조건최적화':
-                            exec(self.buystg)
+                            exec(guard_exec_code(self.buystg, 'BackEngineKiwoomTick.buystg'))
                         else:
-                            exec(self.dict_buystg[index_])
+                            exec(guard_exec_code(self.dict_buystg[index_], f'BackEngineKiwoomTick.dict_buystg.{index_}'))
                     else:
                         수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         if self.back_type != '조건최적화':
-                            exec(self.sellstg)
+                            exec(guard_exec_code(self.sellstg, 'BackEngineKiwoomTick.sellstg'))
                         else:
-                            exec(self.dict_sellstg[index_])
+                            exec(guard_exec_code(self.dict_sellstg[index_], f'BackEngineKiwoomTick.dict_sellstg.{index_}'))
 
         else:
             vturn, vkey = 0, 0
@@ -834,10 +861,10 @@ class BackEngineKiwoomTick:
             if not self.trade_info[vturn][vkey]['보유중']:
                 if not 관심종목: return
                 self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
-                exec(self.buystg)
+                exec(guard_exec_code(self.buystg, 'BackEngineKiwoomTick.buystg'))
             else:
                 수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
-                exec(self.sellstg)
+                exec(guard_exec_code(self.sellstg, 'BackEngineKiwoomTick.sellstg'))
 
     def SetBuyCount(self, vturn, vkey, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 전일비, 회전율, 전일동시간비):
         if self.set_weight[0] == 0:

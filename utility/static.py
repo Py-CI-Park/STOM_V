@@ -8,6 +8,7 @@ import datetime
 import logging
 from threading import Thread, Timer
 from traceback import print_exc
+from utility.safe_exec import safe_compile
 
 try:
     import psutil
@@ -236,15 +237,13 @@ def win_proc_alive(name):
 def opstarter_kill():
     import subprocess
     if win_proc_alive('opstarter'):
-        subprocess.run('C:/Windows/System32/taskkill /f /im opstarter.exe',
+        subprocess.run(['C:/Windows/System32/taskkill', '/f', '/im', 'opstarter.exe'],
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL,
-                       shell=True)
+                       stderr=subprocess.DEVNULL)
     if win_proc_alive('nfstarter'):
-        subprocess.run('C:/Windows/System32/taskkill /f /im nfstarter.exe',
+        subprocess.run(['C:/Windows/System32/taskkill', '/f', '/im', 'nfstarter.exe'],
                        stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL,
-                       shell=True)
+                       stderr=subprocess.DEVNULL)
 
 
 def pickle_write(file, data):
@@ -253,11 +252,36 @@ def pickle_write(file, data):
         _pickle.dump(data, f, protocol=-1)
 
 
-def pickle_read(file):
+def pickle_read(file, allowed_root=None):
     data = None
-    if os.path.isfile(f'{file}.pkl'):
-        with open(f'{file}.pkl', "rb") as f:
-            data = _pickle.load(f)
+    try:
+        file = os.fspath(file)
+    except TypeError:
+        return None
+
+    if not file or '\x00' in file:
+        return None
+
+    pkl_path = file if file.endswith('.pkl') else f'{file}.pkl'
+    real_pkl_path = os.path.realpath(pkl_path)
+
+    if allowed_root is not None:
+        try:
+            root = os.path.realpath(os.fspath(allowed_root))
+        except TypeError:
+            return None
+        try:
+            if os.path.commonpath([real_pkl_path, root]) != root:
+                return None
+        except ValueError:
+            return None
+
+    try:
+        if os.path.isfile(real_pkl_path) and not os.path.islink(real_pkl_path):
+            with open(real_pkl_path, "rb") as f:
+                data = _pickle.load(f)
+    except Exception:
+        return None
     return data
 
 
@@ -381,14 +405,14 @@ def get_buy_indi_stg(buytxt):
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
     if buystg:
         try:
-            buystg = compile(buystg, '<string>', 'exec')
+            buystg = safe_compile(buystg, '<string>', 'exec', context='utility.static.get_buy_indi_stg.buystg')
         except:
             buystg = None
     else:
         buystg = None
     if indistg:
         try:
-            indistg = compile(indistg, '<string>', 'exec')
+            indistg = safe_compile(indistg, '<string>', 'exec', context='utility.static.get_buy_indi_stg.indistg')
         except:
             indistg = None
     else:

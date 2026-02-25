@@ -5,6 +5,7 @@ from backtester.backengine_kiwoom_tick import BackEngineKiwoomTick
 from utility.setting import dgree
 # noinspection PyUnresolvedReferences
 from utility.static import timedelta_sec, pickle_read, GetUvilower5, dt_ymdhm, dt_ymdhms
+from utility.safe_exec import guard_exec_code
 
 
 # noinspection PyUnusedLocal
@@ -423,7 +424,7 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                         continue
 
                     if self.indistg is not None:
-                        exec(self.indistg)
+                        exec(guard_exec_code(self.indistg, 'BackEngineKiwoomMin.indistg'))
                     k = list(self.indicator.values())
                     AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, \
                         OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = GetIndicator(mc, mh, ml, mv, k)
@@ -432,16 +433,16 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                         if 종목코드 not in self.dict_cond_indexn:
                             self.dict_cond_indexn[종목코드] = {}
                         for k, v in self.dict_condition.items():
-                            exec(v)
+                            exec(guard_exec_code(v, f'BackEngineKiwoomMin.condition.{k}'))
 
                     매수, 매도 = True, False
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
                         self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
-                        exec(self.buystg)
+                        exec(guard_exec_code(self.buystg, 'BackEngineKiwoomMin.buystg'))
                     else:
                         수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
-                        exec(self.sellstg)
+                        exec(guard_exec_code(self.sellstg, 'BackEngineKiwoomMin.sellstg'))
 
         elif self.opti_turn == 3:
             for vturn in self.trade_info:
@@ -459,7 +460,7 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                         return
 
                     if self.indistg is not None:
-                        exec(self.indistg)
+                        exec(guard_exec_code(self.indistg, 'BackEngineKiwoomMin.indistg'))
                     k = list(self.indicator.values())
                     AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, \
                         OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = GetIndicator(mc, mh, ml, mv, k)
@@ -468,22 +469,22 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                         if 종목코드 not in self.dict_cond_indexn:
                             self.dict_cond_indexn[종목코드] = {}
                         for k, v in self.dict_condition.items():
-                            exec(v)
+                            exec(guard_exec_code(v, f'BackEngineKiwoomMin.condition.{k}'))
 
                     매수, 매도 = True, False
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
                         self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
                         if self.back_type != '조건최적화':
-                            exec(self.buystg)
+                            exec(guard_exec_code(self.buystg, 'BackEngineKiwoomMin.buystg'))
                         else:
-                            exec(self.dict_buystg[index_])
+                            exec(guard_exec_code(self.dict_buystg[index_], f'BackEngineKiwoomMin.dict_buystg.{index_}'))
                     else:
                         수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         if self.back_type != '조건최적화':
-                            exec(self.sellstg)
+                            exec(guard_exec_code(self.sellstg, 'BackEngineKiwoomMin.sellstg'))
                         else:
-                            exec(self.dict_sellstg[index_])
+                            exec(guard_exec_code(self.dict_sellstg[index_], f'BackEngineKiwoomMin.dict_sellstg.{index_}'))
 
         else:
             vturn, vkey = 0, 0
@@ -495,7 +496,7 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                     return
 
             if self.indistg is not None:
-                exec(self.indistg)
+                exec(guard_exec_code(self.indistg, 'BackEngineKiwoomMin.indistg'))
             k = list(self.indicator.values())
             AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, \
                 OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = GetIndicator(mc, mh, ml, mv, k)
@@ -504,13 +505,13 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
                 if 종목코드 not in self.dict_cond_indexn:
                     self.dict_cond_indexn[종목코드] = {}
                 for k, v in self.dict_condition.items():
-                    exec(v)
+                    exec(guard_exec_code(v, f'BackEngineKiwoomMin.condition.{k}'))
 
             매수, 매도 = True, False
             if not self.trade_info[vturn][vkey]['보유중']:
                 if not 관심종목: return
                 self.SetBuyCount(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
-                exec(self.buystg)
+                exec(guard_exec_code(self.buystg, 'BackEngineKiwoomMin.buystg'))
             else:
                 수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
-                exec(self.sellstg)
+                exec(guard_exec_code(self.sellstg, 'BackEngineKiwoomMin.sellstg'))

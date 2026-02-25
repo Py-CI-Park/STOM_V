@@ -2,6 +2,7 @@ import random
 from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import famous_saying
 from utility.setting import indi_base, indicator
+from utility.safe_exec import safe_compile
 
 
 def indicator_setting_basic(ui):
@@ -63,7 +64,7 @@ def get_indicator_detail(ui, code):
                 if indistg:
                     indicator_ = indicator
                     if vars_ is not None: indistg = indistg.replace('self.vars', 'vars_')
-                    exec(compile(indistg, '<string>', 'exec'))
+                    exec(safe_compile(indistg, '<string>', 'exec'))
                     k_list = list(indicator_.values())
         if k_list is None:
             k_list = [linedit.text() for linedit in ui.factor_linedit_list]
