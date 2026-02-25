@@ -40,16 +40,16 @@ def _raise(reason, context=''):
     raise UnsafeStrategyCodeError(f'Unsafe strategy code{_ctx(context)}: {reason}')
 
 
-def _assert_safe_ast(source, context=''):
+def _assert_safe_ast(source, context='', mode='exec'):
     compact = source.replace(' ', '').replace('\t', '')
     for token in _BANNED_TEXT_TOKENS:
         if token in compact:
             _raise(f"use of '{token}' is not allowed", context)
 
     try:
-        tree = ast.parse(source, mode='exec')
-    except SyntaxError as e:
-        _raise(f'syntax error: {e.msg}', context)
+        tree = ast.parse(source, mode=mode)
+    except SyntaxError:
+        raise
 
     for node in ast.walk(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
@@ -117,12 +117,12 @@ def _assert_safe_code_obj(code_obj, context=''):
             _raise(f"use of '{const}' is not allowed", context)
 
 
-def assert_safe_code(code, context=''):
+def assert_safe_code(code, context='', mode='exec'):
     """
     문자열 또는 compile된 code object를 정적 검증한다.
     """
     if isinstance(code, str):
-        _assert_safe_ast(code, context)
+        _assert_safe_ast(code, context, mode=mode)
     elif isinstance(code, types.CodeType):
         _assert_safe_code_obj(code, context)
     else:
@@ -146,7 +146,7 @@ def safe_compile(source, filename='<string>', mode='exec', context=''):
     """
     compile 전에 소스 검증 후 code object 반환.
     """
-    assert_safe_code(source, context)
+    assert_safe_code(source, context, mode=mode)
     code_obj = compile(source, filename, mode)
     assert_safe_code(code_obj, context)
     return code_obj

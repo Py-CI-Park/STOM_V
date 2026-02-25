@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, dgree, DB_FUTURE_TICK
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
     get_logger
-from utility.safe_exec import safe_compile, guard_exec_code
+from utility.safe_exec import safe_compile, guard_exec_code, UnsafeStrategyCodeError
 
 
 # noinspection PyUnusedLocal
@@ -77,12 +77,16 @@ class FutureStrategyTick:
 
         self.SetBuyStg(buytxt)
 
-        if self.dict_set['주식매도전략'] in dfs.index:
-            self.sellstrategy = safe_compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec',
-                                             context='FutureStrategyTick.sellstrategy.db')
-        elif self.dict_set['주식매도전략'] in dfos.index:
-            self.sellstrategy = safe_compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec',
-                                             context='FutureStrategyTick.sellstrategy.opti')
+        try:
+            if self.dict_set['주식매도전략'] in dfs.index:
+                self.sellstrategy = safe_compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec',
+                                                 context='FutureStrategyTick.sellstrategy.db')
+            elif self.dict_set['주식매도전략'] in dfos.index:
+                self.sellstrategy = safe_compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec',
+                                                 context='FutureStrategyTick.sellstrategy.opti')
+        except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+            self.sellstrategy = None
+            self.ReportCompileError('매도전략', e)
 
         if self.dict_set['주식경과틱수설정']:
             def compile_condition(x):
@@ -94,8 +98,12 @@ class FutureStrategyTick:
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
             value_list = text_list[half_cnt:]
-            value_list = [compile_condition(x) for x in value_list]
-            self.dict_condition = dict(zip(key_list, value_list))
+            try:
+                value_list = [compile_condition(x) for x in value_list]
+                self.dict_condition = dict(zip(key_list, value_list))
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.dict_condition = {}
+                self.ReportCompileError('경과틱수 조건', e)
 
     def SetBuyStg(self, buytxt):
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
@@ -106,6 +114,10 @@ class FutureStrategyTick:
                 pass
             else:
                 self.logger.info(self.indicator)
+
+    def ReportCompileError(self, part, err):
+        self.logger.error(f'{part} 컴파일 실패 - {err}')
+        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'시스템 명령 오류 알림 - {part} 컴파일 실패')))
 
     def Mainloop(self):
         self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
@@ -145,7 +157,16 @@ class FutureStrategyTick:
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
-            self.sellstrategy = safe_compile(data, '<string>', 'exec', context='FutureStrategyTick.sellstrategy.update')
+            try:
+                self.sellstrategy = safe_compile(
+                    data,
+                    '<string>',
+                    'exec',
+                    context='FutureStrategyTick.sellstrategy.update'
+                )
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.sellstrategy = None
+                self.ReportCompileError('매도전략', e)
         elif gubun == '차트종목코드':
             self.chart_code = data
         elif gubun == '설정변경':

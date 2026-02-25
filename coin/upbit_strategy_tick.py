@@ -6,7 +6,7 @@ import pandas as pd
 from traceback import print_exc
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, dgree
 from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_buy_indi_stg, get_logger, dt_ymdhms
-from utility.safe_exec import safe_compile, guard_exec_code
+from utility.safe_exec import safe_compile, guard_exec_code, UnsafeStrategyCodeError
 
 
 # noinspection PyUnusedLocal
@@ -72,20 +72,43 @@ class UpbitStrategyTick:
 
         self.SetBuyStg(buytxt)
 
-        if self.dict_set['코인매도전략'] in dfs.index:
-            self.sellstrategy = safe_compile(dfs['전략코드'][self.dict_set['코인매도전략']], '<string>', 'exec')
-        elif self.dict_set['코인매도전략'] in dfos.index:
-            self.sellstrategy = safe_compile(dfos['전략코드'][self.dict_set['코인매도전략']], '<string>', 'exec')
+        try:
+            if self.dict_set['코인매도전략'] in dfs.index:
+                self.sellstrategy = safe_compile(
+                    dfs['전략코드'][self.dict_set['코인매도전략']],
+                    '<string>',
+                    'exec',
+                    context='UpbitStrategyTick.sellstrategy.db'
+                )
+            elif self.dict_set['코인매도전략'] in dfos.index:
+                self.sellstrategy = safe_compile(
+                    dfos['전략코드'][self.dict_set['코인매도전략']],
+                    '<string>',
+                    'exec',
+                    context='UpbitStrategyTick.sellstrategy.opti'
+                )
+        except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+            self.sellstrategy = None
+            self.ReportCompileError('매도전략', e)
 
         if self.dict_set['코인경과틱수설정']:
             def compile_condition(x):
-                return safe_compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                return safe_compile(
+                    f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn',
+                    '<string>',
+                    'exec',
+                    context='UpbitStrategyTick.condition'
+                )
             text_list  = self.dict_set['코인경과틱수설정'].split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
             value_list = text_list[half_cnt:]
-            value_list = [compile_condition(x) for x in value_list]
-            self.dict_condition = dict(zip(key_list, value_list))
+            try:
+                value_list = [compile_condition(x) for x in value_list]
+                self.dict_condition = dict(zip(key_list, value_list))
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.dict_condition = {}
+                self.ReportCompileError('경과틱수 조건', e)
 
     def SetBuyStg(self, buytxt):
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
@@ -96,6 +119,10 @@ class UpbitStrategyTick:
                 pass
             else:
                 self.logger.info(self.indicator)
+
+    def ReportCompileError(self, part, err):
+        self.logger.error(f'{part} 컴파일 실패 - {err}')
+        self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - {part} 컴파일 실패'))
 
     def MainLoop(self):
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 전략 연산 시작'))
@@ -137,7 +164,16 @@ class UpbitStrategyTick:
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
-            self.sellstrategy = safe_compile(data, '<string>', 'exec')
+            try:
+                self.sellstrategy = safe_compile(
+                    data,
+                    '<string>',
+                    'exec',
+                    context='UpbitStrategyTick.sellstrategy.update'
+                )
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.sellstrategy = None
+                self.ReportCompileError('매도전략', e)
         elif gubun == '종목당투자금':
             self.int_tujagm = data
         elif gubun == '차트종목코드':
