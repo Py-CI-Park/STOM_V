@@ -13,6 +13,7 @@ import builtins
 from pathlib import Path
 from typing import Optional, List
 from utility.static import get_logger
+from utility.safe_exec import safe_compile, UnsafeStrategyCodeError
 from cli.adapters.output_adapter import OutputAdapter, OutputFormat
 
 logger_ = get_logger('StrategyCommand')
@@ -516,9 +517,16 @@ def validate(name: str, strategy_type: str, is_buy: bool):
         errors = []
         warnings = []
 
-        # Python 구문 검사
+        # Python 구문/안전성 검사
         try:
-            compile(code, '<string>', 'exec')
+            safe_compile(
+                code,
+                '<string>',
+                'exec',
+                context=f'CLI.strategy.validate.{table_name}.{name}'
+            )
+        except UnsafeStrategyCodeError as e:
+            errors.append(f"안전성 검사 오류: {e}")
         except SyntaxError as e:
             errors.append(f"구문 오류 (줄 {e.lineno}): {e.msg}")
 
