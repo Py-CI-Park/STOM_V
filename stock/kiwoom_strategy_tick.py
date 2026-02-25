@@ -558,13 +558,14 @@ class KiwoomStrategyTick:
                     매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
 
                 if A or (B and C) or D:
-                    매수 = False
+                    매수 = self.buystrategy is not None
                     if self.buystrategy is not None:
                         try:
                             exec(guard_exec_code(self.buystrategy, 'KiwoomStrategyTick.buystrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                            매수 = False
                 elif C:
                     매수 = False
                     분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률

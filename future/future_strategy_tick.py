@@ -506,13 +506,15 @@ class FutureStrategyTick:
                     매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
 
                 if A or B or (C and (D or E)) or F or G:
-                    BUY_LONG, SELL_SHORT = False, False
+                    BUY_LONG = self.buystrategy is not None
+                    SELL_SHORT = self.buystrategy is not None
                     if self.buystrategy is not None:
                         try:
                             exec(guard_exec_code(self.buystrategy, 'FutureStrategyTick.buystrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                            BUY_LONG, SELL_SHORT = False, False
                 elif D or E:
                     BUY_LONG, SELL_SHORT = False, False
                     분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
