@@ -7,6 +7,7 @@ from traceback import print_exc
 from future_strategy_tick import FutureStrategyTick
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num, dgree
+from utility.safe_exec import guard_exec_code
 from utility.static import now, now_cme, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms
 
 
@@ -461,7 +462,7 @@ class FutureStrategyMin(FutureStrategyTick):
                     self.dict_cond_indexn[종목코드] = {}
                 for k, v in self.dict_condition.items():
                     try:
-                        exec(v)
+                        exec(guard_exec_code(v, f'FutureStrategyMin.condition.{k}'))
                     except:
                         print_exc()
                         self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
@@ -514,7 +515,7 @@ class FutureStrategyMin(FutureStrategyTick):
                         BUY_LONG, SELL_SHORT = True, True
                         if self.buystrategy is not None:
                             try:
-                                exec(self.buystrategy)
+                                exec(guard_exec_code(self.buystrategy, 'FutureStrategyMin.buystrategy'))
                             except:
                                 print_exc()
                                 self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
@@ -568,7 +569,7 @@ class FutureStrategyMin(FutureStrategyTick):
                     if A or B or (C and (D or E)) or F or G:
                         if self.sellstrategy is not None:
                             try:
-                                exec(self.sellstrategy)
+                                exec(guard_exec_code(self.sellstrategy, 'FutureStrategyMin.sellstrategy'))
                             except:
                                 print_exc()
                                 self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
