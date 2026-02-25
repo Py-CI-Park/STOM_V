@@ -549,15 +549,16 @@ class KiwoomStrategyTick:
             B = self.dict_set['주식매수분할시그널']
             C = NIB and 매입가 != 0 and 분할매수횟수 < self.dict_set['주식매수분할횟수']
             D = NIB and self.dict_set['주식매도취소매수시그널'] and not NIS
+            전략준비 = self.buystrategy is not None and self.sellstrategy is not None
 
-            if BBT and BLK and (A or (B and C) or C or D):
+            if BBT and BLK and 전략준비 and (A or (B and C) or C or D):
                 매수수량 = 0
 
                 if A or (B and C) or C:
                     매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
 
                 if A or (B and C) or D:
-                    매수 = True
+                    매수 = False
                     if self.buystrategy is not None:
                         try:
                             exec(guard_exec_code(self.buystrategy, 'KiwoomStrategyTick.buystrategy'))
@@ -586,7 +587,9 @@ class KiwoomStrategyTick:
             E = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
             F = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
 
-            if SBT and (A or (B and C) or C or D or E or F):
+            if SBT and self.sellstrategy is None and NIB and NIS and 매입가 != 0:
+                self.Sell(종목코드, 종목명, 보유수량, 현재가, 매도호가1, 매수호가1, True)
+            elif SBT and (A or (B and C) or C or D or E or F):
                 매도 = False
                 매도수량 = 0
                 강제청산 = E or F
