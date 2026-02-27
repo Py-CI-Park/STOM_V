@@ -100,9 +100,15 @@ class Query:
                 df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                 table_list = df['name'].to_list()
                 last = len(table_list)
+                target_date = str(data[1]).strip()
+                if re.fullmatch(r'\d{8}', target_date) is None:
+                    self.windowQ.put((ui_num['DB관리'], '일자 형식 오류 - YYYYMMDD 형식으로 입력하십시오.'))
+                    con.close()
+                    continue
                 for i, code in enumerate(table_list):
-                    query_del = f"DELETE FROM '{code}' WHERE `index` LIKE '{data[1]}%'"
-                    cur.execute(query_del)
+                    safe_code = str(code).replace('"', '""')
+                    query_del = f'DELETE FROM "{safe_code}" WHERE "index" LIKE ?'
+                    cur.execute(query_del, (f'{target_date}%',))
                     self.windowQ.put((ui_num['DB관리'], f'백테DB {code} 지정일자 데이터 삭제 완료 [{i + 1}/{last}]'))
                 con.commit()
                 con.close()
