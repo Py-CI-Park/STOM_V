@@ -3,6 +3,7 @@ import sys
 import json
 import asyncio
 import requests
+from requests.exceptions import RequestException
 import websockets
 import pandas as pd
 from multiprocessing import Process, Queue
@@ -25,15 +26,51 @@ class Kiwooom:
     def _url(self, endurl):
         return f'{self.hosturl}{endurl}'
 
+    def _sanitize_for_log(self, obj):
+        try:
+            if isinstance(obj, dict):
+                sanitized = {}
+                for k, v in obj.items():
+                    lk = str(k).lower()
+                    if any(x in lk for x in ('token', 'secret', 'authorization', 'appkey', 'secretkey')):
+                        sanitized[k] = '***'
+                    else:
+                        sanitized[k] = self._sanitize_for_log(v)
+                return sanitized
+            if isinstance(obj, list):
+                return [self._sanitize_for_log(v) for v in obj]
+            if isinstance(obj, tuple):
+                return tuple(self._sanitize_for_log(v) for v in obj)
+        except Exception:
+            return '***'
+        return obj
+
     def _post(self, url, headers, params):
         self.cont_yn = False
         self.nextkey = ''
-        response     = requests.post(url, headers=headers, json=params)
-        self.cont_yn = True if response.headers.get('cont-yn') == 'Y' else False
-        self.nextkey = response.headers.get('next-key')
-        body = response.json()
-        ret  = True if body['return_code'] == 0 else False
-        if not ret and self.debug: self.logger.debug('_post', body)
+        try:
+            response = requests.post(url, headers=headers, json=params, timeout=10)
+            status_code = response.status_code
+            self.cont_yn = True if response.headers.get('cont-yn') == 'Y' else False
+            self.nextkey = response.headers.get('next-key') or ''
+            try:
+                body = response.json()
+            except ValueError:
+                body = {'return_code': -1, 'error_message': 'invalid json response'}
+            if not isinstance(body, dict):
+                body = {'return_code': -1, 'error_message': 'invalid response body'}
+            body.setdefault('http_status', status_code)
+            http_ok = 200 <= status_code < 300
+            if not http_ok and body.get('return_code') == 0:
+                body['return_code'] = -1
+        except RequestException as e:
+            if self.debug:
+                self.logger.debug(f'_post request error - {e}')
+            return False, {'return_code': -1, 'error_message': str(e)}
+
+        ret = True if (http_ok and body.get('return_code') == 0) else False
+        if not ret and self.debug:
+            self.logger.debug(f'_post {self._sanitize_for_log(body)}')
         return ret, body
 
     def _headers(self, api_id=None, contyn='N', nextkey=''):
@@ -83,8 +120,18 @@ class Kiwooom:
         headers   = self._headers()
         params    = self._params(gubun='create')
         ret, body = self._post(url, headers, params)
-        if ret: self.token = body['token']
-        if self.debug: self.logger.debug('create_token', body)
+        if ret:
+            token = body.get('token')
+            if token:
+                self.token = token
+            else:
+                ret = False
+                self.token = None
+                if isinstance(body, dict):
+                    body['return_code'] = -1
+                    body.setdefault('error_message', 'token missing in response')
+        if self.debug:
+            self.logger.debug(f'create_token {self._sanitize_for_log(body)}')
         return ret, self.token
 
     def revoke_token(self):
@@ -93,7 +140,7 @@ class Kiwooom:
         params    = self._params(gubun='revoke')
         ret, body = self._post(url, headers, params)
         if ret: self.token = None
-        if self.debug: self.logger.debug('revoke_token', body)
+        if self.debug: self.logger.debug(f'revoke_token {self._sanitize_for_log(body)}')
         return ret
 
     def get_code_list(self, gubun):
@@ -192,13 +239,19 @@ class Kiwooom:
         }
         """
         ret, body = self._post(url, headers, params)
-        ord_no    = body['ord_no']
-        if self.debug: self.logger.debug('send_order', body)
+        ord_no    = body.get('ord_no', '') if isinstance(body, dict) else ''
+        if self.debug: self.logger.debug(f'send_order {self._sanitize_for_log(body)}')
         return ret, ord_no
 
     def websoket_start(self, kiwoomQ, receiverQ, traderQ, debug=False):
-        self.wproc = Process(target=WebSocketManager, args=(self.token, kiwoomQ, receiverQ, traderQ, debug))
+        token = self.token
+        if token is None or not str(token).strip():
+            self.logger.error('websoket_start aborted: missing/blank token (call create_token() first)')
+            return False
+
+        self.wproc = Process(target=WebSocketManager, args=(token, kiwoomQ, receiverQ, traderQ, debug))
         self.wproc.start()
+        return True
 
     def websoket_kill(self):
         if self.wproc is not None and self.wproc.is_alive(): self.wproc.kill()
@@ -220,6 +273,25 @@ class WebSocketManager:
         asyncio.ensure_future(self.run())
         loop.run_forever()
 
+    def _sanitize_for_log(self, obj):
+        try:
+            if isinstance(obj, dict):
+                sanitized = {}
+                for k, v in obj.items():
+                    lk = str(k).lower()
+                    if any(x in lk for x in ('token', 'secret', 'authorization', 'appkey', 'secretkey')):
+                        sanitized[k] = '***'
+                    else:
+                        sanitized[k] = self._sanitize_for_log(v)
+                return sanitized
+            if isinstance(obj, list):
+                return [self._sanitize_for_log(v) for v in obj]
+            if isinstance(obj, tuple):
+                return tuple(self._sanitize_for_log(v) for v in obj)
+        except Exception:
+            return '***'
+        return obj
+
     async def run(self):
         try:
             if not self.connected:
@@ -232,7 +304,7 @@ class WebSocketManager:
 
     async def connect(self):
         uri = 'wss://api.kiwoom.com:10000/api/dostk/websocket'
-        self.websocket = await websockets.connect(uri)
+        self.websocket = await websockets.connect(uri, open_timeout=10)
         self.connected = True
         await asyncio.sleep(1)
         msg = {'trnm': 'LOGIN', 'token': self.token}
@@ -240,7 +312,8 @@ class WebSocketManager:
 
     async def disconnect(self):
         self.connected = False
-        await self.websocket.close()
+        if self.websocket is not None:
+            await self.websocket.close()
         await asyncio.sleep(5)
 
     async def send_msg(self, msg):
@@ -266,32 +339,32 @@ class WebSocketManager:
                     else:
                         self.receiverQ.put(data)
                 else:
-                    self.logger.debug(f'REAL {realtype} {code}', data)
+                    self.logger.debug(f'REAL {realtype} {code} {self._sanitize_for_log(data)}')
             elif trnm == 'PING':
                 await self.send_msg(recv_data)
             elif trnm == 'LOGIN':
                 if recv_data['return_code'] == 0:
-                    if self.debug: self.logger.debug('LOGIN', recv_data)
+                    if self.debug: self.logger.debug(f'LOGIN {self._sanitize_for_log(recv_data)}')
                     msg = {'trnm': 'CNSRLST'}
                     await self.send_msg(msg)
                 else:
                     await self.disconnect()
             elif trnm == 'CNSRLST':
                 data = recv_data['data']
-                if self.debug: self.logger.debug('CNSRLST', data)
+                if self.debug: self.logger.debug(f'CNSRLST {self._sanitize_for_log(data)}')
                 msg = {'trnm': 'CNSRREQ', 'seq': '1', 'search_type': '1', 'stex_tp': 'K'}
                 await self.send_msg(msg)
             elif trnm == 'CNSRREQ':
                 data = recv_data['data']
                 if not self.codes:
                     self.codes = [d['jmcode'][1:] for d in data]
-                    if self.debug: self.logger.debug('CNSRREQ', self.codes)
+                    if self.debug: self.logger.debug(f'CNSRREQ {self._sanitize_for_log(self.codes)}')
                     msg = {'trnm': 'CNSRCLR', 'seq': '1'}
                     await self.send_msg(msg)
                     msg = {'trnm': 'CNSRREQ', 'seq': '0', 'search_type': '1', 'stex_tp': 'K'}
                     await self.send_msg(msg)
                 else:
-                    if self.debug: self.logger.debug('CNSRREQ', [d['jmcode'][1:] for d in data])
+                    if self.debug: self.logger.debug(f'CNSRREQ {self._sanitize_for_log([d["jmcode"][1:] for d in data])}')
                     msg = {'trnm': 'REG', 'grp_no': '1', 'refresh': '0', 'data': [{'item': [''], 'type': ['00']}]}
                     await self.send_msg(msg)
                     msg['refresh'] = '1'
@@ -311,7 +384,7 @@ class WebSocketManager:
                     #     await self.send_msg(msg)
                     #     k += 1
             elif trnm == 'REG':
-                if self.debug: self.logger.debug('REG', recv_data)
+                if self.debug: self.logger.debug(f'REG {self._sanitize_for_log(recv_data)}')
 
 
 if __name__ == '__main__':

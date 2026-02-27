@@ -1,5 +1,6 @@
 import os
 import sys
+import re
 import shutil
 import sqlite3
 import pandas as pd
@@ -114,10 +115,29 @@ class Query:
                         firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
                 else:
                     firstname = 'coin_tick_' if self.dict_set['코인타임프레임'] else 'coin_min_'
-                file_name = f'{DB_PATH}/{firstname}' + data[1] + '.db'
+                target_date = str(data[1]).strip()
+                if re.fullmatch(r'\d{8}', target_date) is None:
+                    self.windowQ.put((ui_num['DB관리'], '일자 형식 오류 - YYYYMMDD 형식으로 입력하십시오.'))
+                    continue
+
+                file_name = os.path.realpath(os.path.join(DB_PATH, f'{firstname}{target_date}.db'))
+                base_path = os.path.realpath(DB_PATH)
+                try:
+                    is_in_db_path = os.path.commonpath([base_path, file_name]) == base_path
+                except ValueError:
+                    is_in_db_path = False
+
+                if not is_in_db_path:
+                    self.windowQ.put((ui_num['DB관리'], '삭제 경로 오류 - 허용되지 않은 경로입니다.'))
+                    continue
+
                 if os.path.isfile(file_name):
-                    os.remove(file_name)
-                    self.windowQ.put((ui_num['DB관리'], f'{file_name} 삭제 완료'))
+                    try:
+                        os.remove(file_name)
+                    except OSError as e:
+                        self.windowQ.put((ui_num['DB관리'], f'파일 삭제 실패 - {e}'))
+                    else:
+                        self.windowQ.put((ui_num['DB관리'], f'{file_name} 삭제 완료'))
                 else:
                     self.windowQ.put((ui_num['DB관리'], '해당 날짜에 데이터가 존재하지 않습니다.'))
             elif '일자DB지정시간이후삭제' in data[0]:
