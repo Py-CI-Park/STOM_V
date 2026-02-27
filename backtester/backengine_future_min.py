@@ -4,6 +4,7 @@ from backtester.back_static import GetIndicator
 from backtester.backengine_future_tick import BackEngineFutureTick
 from utility.setting import dgree
 from utility.static import dt_ymdhm
+from utility.safe_exec import guard_exec_code
 
 
 # noinspection PyUnusedLocal
@@ -396,7 +397,7 @@ class BackEngineFutureMin(BackEngineFutureTick):
                         continue
 
                     if self.indistg is not None:
-                        exec(self.indistg)
+                        exec(guard_exec_code(self.indistg, 'BackEngineFutureMin.indistg'))
                     k = list(self.indicator.values())
                     AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, \
                         OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = GetIndicator(mc, mh, ml, mv, k)
@@ -405,18 +406,18 @@ class BackEngineFutureMin(BackEngineFutureTick):
                         if 종목코드 not in self.dict_cond_indexn:
                             self.dict_cond_indexn[종목코드] = {}
                         for k, v in self.dict_condition.items():
-                            exec(v)
+                            exec(guard_exec_code(v, f'BackEngineFutureMin.condition.{k}'))
 
                     BUY_LONG, SELL_SHORT = True, True
                     SELL_LONG, BUY_SHORT = False, False
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
                         self.SetBuyCount2(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
-                        exec(self.buystg)
+                        exec(guard_exec_code(self.buystg, 'BackEngineFutureMin.buystg'))
                     else:
                         수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
-                        exec(self.sellstg)
+                        exec(guard_exec_code(self.sellstg, 'BackEngineFutureMin.sellstg'))
 
         elif self.opti_turn == 3:
             for vturn in self.trade_info:
@@ -434,7 +435,7 @@ class BackEngineFutureMin(BackEngineFutureTick):
                         return
 
                     if self.indistg is not None:
-                        exec(self.indistg)
+                        exec(guard_exec_code(self.indistg, 'BackEngineFutureMin.indistg'))
                     k = list(self.indicator.values())
                     AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, \
                         OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = GetIndicator(mc, mh, ml, mv, k)
@@ -443,7 +444,7 @@ class BackEngineFutureMin(BackEngineFutureTick):
                         if 종목코드 not in self.dict_cond_indexn:
                             self.dict_cond_indexn[종목코드] = {}
                         for k, v in self.dict_condition.items():
-                            exec(v)
+                            exec(guard_exec_code(v, f'BackEngineFutureMin.condition.{k}'))
 
                     BUY_LONG, SELL_SHORT = True, True
                     SELL_LONG, BUY_SHORT = False, False
@@ -451,16 +452,16 @@ class BackEngineFutureMin(BackEngineFutureTick):
                         if not 관심종목: continue
                         self.SetBuyCount2(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         if self.back_type != '조건최적화':
-                            exec(self.buystg)
+                            exec(guard_exec_code(self.buystg, 'BackEngineFutureMin.buystg'))
                         else:
-                            exec(self.dict_buystg[index_])
+                            exec(guard_exec_code(self.dict_buystg[index_], f'BackEngineFutureMin.dict_buystg.{index_}'))
                     else:
                         수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
                         if self.back_type != '조건최적화':
-                            exec(self.sellstg)
+                            exec(guard_exec_code(self.sellstg, 'BackEngineFutureMin.sellstg'))
                         else:
-                            exec(self.dict_sellstg[index_])
+                            exec(guard_exec_code(self.dict_sellstg[index_], f'BackEngineFutureMin.dict_sellstg.{index_}'))
         else:
             vturn, vkey = 0, 0
             if self.back_type in ('최적화', '전진분석'):
@@ -471,7 +472,7 @@ class BackEngineFutureMin(BackEngineFutureTick):
                     return
 
             if self.indistg is not None:
-                exec(self.indistg)
+                exec(guard_exec_code(self.indistg, 'BackEngineFutureMin.indistg'))
             k = list(self.indicator.values())
             AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, \
                 OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = GetIndicator(mc, mh, ml, mv, k)
@@ -480,15 +481,15 @@ class BackEngineFutureMin(BackEngineFutureTick):
                 if 종목코드 not in self.dict_cond_indexn:
                     self.dict_cond_indexn[종목코드] = {}
                 for k, v in self.dict_condition.items():
-                    exec(v)
+                    exec(guard_exec_code(v, f'BackEngineFutureMin.condition.{k}'))
 
             BUY_LONG, SELL_SHORT = True, True
             SELL_LONG, BUY_SHORT = False, False
             if not self.trade_info[vturn][vkey]['보유중']:
                 if not 관심종목: return
                 self.SetBuyCount2(vturn, vkey, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
-                exec(self.buystg)
+                exec(guard_exec_code(self.buystg, 'BackEngineFutureMin.buystg'))
             else:
                 수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                 포지션 = 'LONG' if self.trade_info[vturn][vkey]['보유중'] == 1 else 'SHORT'
-                exec(self.sellstg)
+                exec(guard_exec_code(self.sellstg, 'BackEngineFutureMin.sellstg'))

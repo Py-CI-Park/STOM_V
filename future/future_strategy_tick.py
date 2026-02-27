@@ -10,6 +10,7 @@ sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, dgree, DB_FUTURE_TICK
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
     get_logger
+from utility.safe_exec import safe_compile, guard_exec_code, UnsafeStrategyCodeError
 
 
 # noinspection PyUnusedLocal
@@ -76,30 +77,47 @@ class FutureStrategyTick:
 
         self.SetBuyStg(buytxt)
 
-        if self.dict_set['주식매도전략'] in dfs.index:
-            self.sellstrategy = compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
-        elif self.dict_set['주식매도전략'] in dfos.index:
-            self.sellstrategy = compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
+        try:
+            if self.dict_set['주식매도전략'] in dfs.index:
+                self.sellstrategy = safe_compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec',
+                                                 context='FutureStrategyTick.sellstrategy.db')
+            elif self.dict_set['주식매도전략'] in dfos.index:
+                self.sellstrategy = safe_compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec',
+                                                 context='FutureStrategyTick.sellstrategy.opti')
+        except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+            self.sellstrategy = None
+            self.ReportCompileError('매도전략', e)
 
         if self.dict_set['주식경과틱수설정']:
             def compile_condition(x):
-                return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                return safe_compile(
+                    f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn',
+                    '<string>', 'exec', context='FutureStrategyTick.condition'
+                )
             text_list  = self.dict_set['주식경과틱수설정'].split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
             value_list = text_list[half_cnt:]
-            value_list = [compile_condition(x) for x in value_list]
-            self.dict_condition = dict(zip(key_list, value_list))
+            try:
+                value_list = [compile_condition(x) for x in value_list]
+                self.dict_condition = dict(zip(key_list, value_list))
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.dict_condition = {}
+                self.ReportCompileError('경과틱수 조건', e)
 
     def SetBuyStg(self, buytxt):
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
         if indistg is not None:
             try:
-                exec(indistg)
+                exec(guard_exec_code(indistg, 'FutureStrategyTick.SetBuyStg.indistg'))
             except:
                 pass
             else:
                 self.logger.info(self.indicator)
+
+    def ReportCompileError(self, part, err):
+        self.logger.error(f'{part} 컴파일 실패 - {err}')
+        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'시스템 명령 오류 알림 - {part} 컴파일 실패')))
 
     def Mainloop(self):
         self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
@@ -139,7 +157,16 @@ class FutureStrategyTick:
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
-            self.sellstrategy = compile(data, '<string>', 'exec')
+            try:
+                self.sellstrategy = safe_compile(
+                    data,
+                    '<string>',
+                    'exec',
+                    context='FutureStrategyTick.sellstrategy.update'
+                )
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.sellstrategy = None
+                self.ReportCompileError('매도전략', e)
         elif gubun == '차트종목코드':
             self.chart_code = data
         elif gubun == '설정변경':
@@ -428,7 +455,7 @@ class FutureStrategyTick:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 try:
-                    exec(v)
+                    exec(guard_exec_code(v, f'FutureStrategyTick.condition.{k}'))
                 except:
                     print_exc()
                     self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
@@ -471,20 +498,23 @@ class FutureStrategyTick:
             E    = NISS and 포지션 == 'SHORT' and 분할매수횟수 < self.dict_set['주식매수분할횟수']
             F    = NIBL and self.dict_set['주식매도취소매수시그널'] and not NISL
             G    = NISS and self.dict_set['주식매도취소매수시그널'] and not NIBS
+            전략준비 = self.buystrategy is not None and self.sellstrategy is not None
 
-            if BBT and BLK and (A or B or (C and D) or (C and E) or D or E or F or G):
+            if BBT and BLK and 전략준비 and (A or B or (C and D) or (C and E) or D or E or F or G):
                 매수수량 = 0
                 if not (F or G):
                     매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
 
                 if A or B or (C and (D or E)) or F or G:
-                    BUY_LONG, SELL_SHORT = True, True
+                    BUY_LONG = self.buystrategy is not None
+                    SELL_SHORT = self.buystrategy is not None
                     if self.buystrategy is not None:
                         try:
-                            exec(self.buystrategy)
+                            exec(guard_exec_code(self.buystrategy, 'FutureStrategyTick.buystrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                            BUY_LONG, SELL_SHORT = False, False
                 elif D or E:
                     BUY_LONG, SELL_SHORT = False, False
                     분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
@@ -522,7 +552,9 @@ class FutureStrategyTick:
             M    = NIBL and NISL and 포지션 == 'LONG' and GJCS
             N    = NISS and NIBS and 포지션 == 'SHORT' and GJCS
 
-            if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N):
+            if SBT and self.sellstrategy is None and 포지션 in ('LONG', 'SHORT') and NIBL and NISS and NISL and NIBS:
+                self.Sell(종목코드, 종목명, 포지션 == 'LONG', 현재가, 매도호가1, 매수호가1, 보유수량, True)
+            elif SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N):
                 SELL_LONG, BUY_SHORT = False, False
                 매도수량 = 0
                 강제청산 = H or J or K or L or M or N
@@ -535,7 +567,7 @@ class FutureStrategyTick:
                 if A or B or (C and (D or E)) or F or G:
                     if self.sellstrategy is not None:
                         try:
-                            exec(self.sellstrategy)
+                            exec(guard_exec_code(self.sellstrategy, 'FutureStrategyTick.sellstrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))

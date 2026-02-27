@@ -3,6 +3,7 @@ from backtester.back_static import GetTradeInfo
 from backtester.backengine_upbit_tick import BackEngineUpbitTick
 from utility.setting import dict_order_ratio, dgree
 from utility.static import timedelta_sec, GetUpbitPgSgSp, dt_ymdhms, dt_ymdhm
+from utility.safe_exec import guard_exec_code
 
 
 # noinspection PyUnusedLocal
@@ -225,7 +226,7 @@ class BackEngineUpbitTick2(BackEngineUpbitTick):
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
-                exec(v)
+                exec(guard_exec_code(v, f'BackEngineUpbitTick2.condition.{k}'))
 
         if self.opti_turn == 1:
             for vturn in self.trade_info:
@@ -254,10 +255,10 @@ class BackEngineUpbitTick2(BackEngineUpbitTick):
                         self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
                                           매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
-                            exec(self.buystg)
+                            exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick2.buystg'))
                         else:
                             if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['코인매수분할시그널']:
-                                exec(self.buystg)
+                                exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick2.buystg'))
 
                     if '매도' in gubun:
                         if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
@@ -265,10 +266,10 @@ class BackEngineUpbitTick2(BackEngineUpbitTick):
                         self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
                                            매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['코인매도분할횟수'] == 1:
-                            exec(self.sellstg)
+                            exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick2.sellstg'))
                         else:
                             if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
-                                exec(self.sellstg)
+                                exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick2.sellstg'))
 
         elif self.opti_turn == 3:
             for vturn in self.trade_info:
@@ -302,15 +303,15 @@ class BackEngineUpbitTick2(BackEngineUpbitTick):
                                           매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             if self.back_type != '조건최적화':
-                                exec(self.buystg)
+                                exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick2.buystg'))
                             else:
-                                exec(self.dict_buystg[index_])
+                                exec(guard_exec_code(self.dict_buystg[index_], f'BackEngineUpbitTick2.dict_buystg.{index_}'))
                         else:
                             if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['코인매도분할시그널']:
                                 if self.back_type != '조건최적화':
-                                    exec(self.buystg)
+                                    exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick2.buystg'))
                                 else:
-                                    exec(self.dict_buystg[index_])
+                                    exec(guard_exec_code(self.dict_buystg[index_], f'BackEngineUpbitTick2.dict_buystg.{index_}'))
 
                     if '매도' in gubun:
                         if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
@@ -319,15 +320,15 @@ class BackEngineUpbitTick2(BackEngineUpbitTick):
                                            매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['코인매도분할횟수'] == 1:
                             if self.back_type != '조건최적화':
-                                exec(self.sellstg)
+                                exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick2.sellstg'))
                             else:
-                                exec(self.dict_sellstg[index_])
+                                exec(guard_exec_code(self.dict_sellstg[index_], f'BackEngineUpbitTick2.dict_sellstg.{index_}'))
                         else:
                             if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
                                 if self.back_type != '조건최적화':
-                                    exec(self.sellstg)
+                                    exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick2.sellstg'))
                                 else:
-                                    exec(self.dict_sellstg[index_])
+                                    exec(guard_exec_code(self.dict_sellstg[index_], f'BackEngineUpbitTick2.dict_sellstg.{index_}'))
         else:
             vturn, vkey = 0, 0
             if self.back_type in ('최적화', '전진분석'):
@@ -353,10 +354,10 @@ class BackEngineUpbitTick2(BackEngineUpbitTick):
                 self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
                                   매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if not 보유중:
-                    exec(self.buystg)
+                    exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick2.buystg'))
                 else:
                     if not self.CheckDividBuy(현재가, 추가매수가, 수익률, vturn, vkey) and self.dict_set['코인매수분할시그널']:
-                        exec(self.buystg)
+                        exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick2.buystg'))
 
             if '매도' in gubun:
                 if self.CheckSonjeol(수익률, 수익금, vturn, vkey): return
@@ -364,10 +365,10 @@ class BackEngineUpbitTick2(BackEngineUpbitTick):
                 self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
                                    매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if self.dict_set['코인매도분할횟수'] == 1:
-                    exec(self.sellstg)
+                    exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick2.sellstg'))
                 else:
                     if not self.CheckDividSell(수익률, 매도분할횟수, vturn, vkey) and self.dict_set['코인매도분할시그널']:
-                        exec(self.sellstg)
+                        exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick2.sellstg'))
 
     def GetSellInfo(self, vturn, vkey, 매수틱번호, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수시간, now_time):
         self.indexb = 매수틱번호

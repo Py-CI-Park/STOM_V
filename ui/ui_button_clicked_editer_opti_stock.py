@@ -9,6 +9,7 @@ from ui.set_text import famous_saying, example_stock_buy, example_stock_sell, ex
     example_coinopti_future_buy1, example_coinopti_future_buy3, example_coinopti_future_sell1, example_vars3, \
     example_future_buyconds, example_future_sellconds, example_opti_vars3, example_coinopti_future_sell3, \
     example_stockopti_sell3, example_coinopti_future_buy2, example_coinopti_future_sell2
+from utility.safe_exec import safe_compile
 
 
 def stock_opti_buy_load(ui):
@@ -183,7 +184,7 @@ def stock_opti_to_buy_save(ui):
     try:
         vars_ = {}
         opt = opt.replace('self.vars', 'vars_')
-        exec(compile(opt, '<string>', 'exec'))
+        exec(safe_compile(opt, '<string>', 'exec'))
         for i in range(len(vars_)):
             stg = stg.replace(f'self.vars[{i}]', f'{vars_[i][1]}')
     except Exception as e:
@@ -218,7 +219,7 @@ def stock_opti_to_sell_save(ui):
     try:
         vars_ = {}
         opt = opt.replace('self.vars', 'vars_')
-        exec(compile(opt, '<string>', 'exec'))
+        exec(safe_compile(opt, '<string>', 'exec'))
         for i in range(len(vars_)):
             stg = stg.replace(f'self.vars[{i}]', f'{vars_[i][1]}')
     except Exception as e:

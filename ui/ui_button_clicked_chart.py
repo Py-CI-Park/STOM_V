@@ -2,6 +2,7 @@ import random
 from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import famous_saying
 from utility.setting import indi_base, indicator
+from utility.safe_exec import safe_compile, UnsafeStrategyCodeError
 
 
 def indicator_setting_basic(ui):
@@ -63,8 +64,12 @@ def get_indicator_detail(ui, code):
                 if indistg:
                     indicator_ = indicator
                     if vars_ is not None: indistg = indistg.replace('self.vars', 'vars_')
-                    exec(compile(indistg, '<string>', 'exec'))
-                    k_list = list(indicator_.values())
+                    try:
+                        exec(safe_compile(indistg, '<string>', 'exec', context='UIChart.get_indicator_detail.indistg'))
+                    except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                        QMessageBox.warning(ui.dialog_factor, '전략 코드 오류', f'보조지표 코드 검증 실패\n{e}')
+                    else:
+                        k_list = list(indicator_.values())
         if k_list is None:
             k_list = [linedit.text() for linedit in ui.factor_linedit_list]
             k_list = [int(x) if '.' not in x else float(x) for x in k_list]

@@ -1,6 +1,7 @@
 import sys
 import time
 import sqlite3
+import requests
 import pyupbit
 import pandas as pd
 from PyQt5.QtWidgets import QApplication
@@ -94,9 +95,21 @@ class UpbitReceiverTick:
         self.codes = pyupbit.get_tickers(fiat="KRW")
         url = "https://api.upbit.com/v1/ticker/all?quote_currencies=KRW"
         headers = {"accept": "application/json"}
-        import requests
-        data = requests.get(url, headers=headers).json()
-        self.dict_daym = {d['market']: int(d['acc_trade_price']) for d in data}
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+        except requests.RequestException as e:
+            self.logger.error(f'티커 정보 조회 실패 - {e}')
+            data = []
+        except ValueError as e:
+            self.logger.error(f'티커 정보 파싱 실패 - {e}')
+            data = []
+
+        if isinstance(data, list):
+            self.dict_daym = {d['market']: int(d['acc_trade_price']) for d in data if 'market' in d and 'acc_trade_price' in d}
+        else:
+            self.dict_daym = {}
         self.list_gsjm = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
         data = tuple(self.list_gsjm)
         self.cstgQ.put(('관심목록', data))

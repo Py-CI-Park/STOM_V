@@ -11,6 +11,7 @@ from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetUvilower5, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
     str_ymdhms, dt_ymdhms, get_logger
+from utility.safe_exec import safe_compile, guard_exec_code, UnsafeStrategyCodeError
 
 
 # noinspection PyUnusedLocal
@@ -84,30 +85,57 @@ class KiwoomStrategyTick:
 
         self.SetBuyStg(buytxt)
 
-        if self.dict_set['주식매도전략'] in dfs.index:
-            self.sellstrategy = compile(dfs['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
-        elif self.dict_set['주식매도전략'] in dfos.index:
-            self.sellstrategy = compile(dfos['전략코드'][self.dict_set['주식매도전략']], '<string>', 'exec')
+        try:
+            if self.dict_set['주식매도전략'] in dfs.index:
+                self.sellstrategy = safe_compile(
+                    dfs['전략코드'][self.dict_set['주식매도전략']],
+                    '<string>',
+                    'exec',
+                    context='KiwoomStrategyTick.sellstrategy.db'
+                )
+            elif self.dict_set['주식매도전략'] in dfos.index:
+                self.sellstrategy = safe_compile(
+                    dfos['전략코드'][self.dict_set['주식매도전략']],
+                    '<string>',
+                    'exec',
+                    context='KiwoomStrategyTick.sellstrategy.opti'
+                )
+        except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+            self.sellstrategy = None
+            self.ReportCompileError('매도전략', e)
 
         if self.dict_set['주식경과틱수설정']:
             def compile_condition(x):
-                return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
+                return safe_compile(
+                    f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn',
+                    '<string>',
+                    'exec',
+                    context='KiwoomStrategyTick.condition'
+                )
             text_list  = self.dict_set['주식경과틱수설정'].split(';')
             half_cnt   = int(len(text_list) / 2)
             key_list   = text_list[:half_cnt]
             value_list = text_list[half_cnt:]
-            value_list = [compile_condition(x) for x in value_list]
-            self.dict_condition = dict(zip(key_list, value_list))
+            try:
+                value_list = [compile_condition(x) for x in value_list]
+                self.dict_condition = dict(zip(key_list, value_list))
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.dict_condition = {}
+                self.ReportCompileError('경과틱수 조건', e)
 
     def SetBuyStg(self, buytxt):
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
         if indistg is not None:
             try:
-                exec(indistg)
+                exec(guard_exec_code(indistg, 'KiwoomStrategyTick.indistg'))
             except:
                 pass
             else:
                 self.logger.info(self.indicator)
+
+    def ReportCompileError(self, part, err):
+        self.logger.error(f'{part} 컴파일 실패 - {err}')
+        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'시스템 명령 오류 알림 - {part} 컴파일 실패')))
 
     def Mainloop(self):
         if self.gubun == 7:
@@ -150,7 +178,16 @@ class KiwoomStrategyTick:
         elif gubun == '매수전략':
             self.SetBuyStg(data)
         elif gubun == '매도전략':
-            self.sellstrategy = compile(data, '<string>', 'exec')
+            try:
+                self.sellstrategy = safe_compile(
+                    data,
+                    '<string>',
+                    'exec',
+                    context='KiwoomStrategyTick.sellstrategy.update'
+                )
+            except (UnsafeStrategyCodeError, SyntaxError, ValueError) as e:
+                self.sellstrategy = None
+                self.ReportCompileError('매도전략', e)
         elif gubun == '종목당투자금':
             self.int_tujagm = data
         elif gubun == '차트종목코드':
@@ -477,7 +514,7 @@ class KiwoomStrategyTick:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 try:
-                    exec(v)
+                    exec(guard_exec_code(v, f'KiwoomStrategyTick.condition.{k}'))
                 except:
                     print_exc()
                     self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
@@ -512,21 +549,23 @@ class KiwoomStrategyTick:
             B = self.dict_set['주식매수분할시그널']
             C = NIB and 매입가 != 0 and 분할매수횟수 < self.dict_set['주식매수분할횟수']
             D = NIB and self.dict_set['주식매도취소매수시그널'] and not NIS
+            전략준비 = self.buystrategy is not None and self.sellstrategy is not None
 
-            if BBT and BLK and (A or (B and C) or C or D):
+            if BBT and BLK and 전략준비 and (A or (B and C) or C or D):
                 매수수량 = 0
 
                 if A or (B and C) or C:
                     매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
 
                 if A or (B and C) or D:
-                    매수 = True
+                    매수 = self.buystrategy is not None
                     if self.buystrategy is not None:
                         try:
-                            exec(self.buystrategy)
+                            exec(guard_exec_code(self.buystrategy, 'KiwoomStrategyTick.buystrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                            매수 = False
                 elif C:
                     매수 = False
                     분할매수기준수익률 = round((현재가 / 현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
@@ -549,7 +588,9 @@ class KiwoomStrategyTick:
             E = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
             F = NIB and NIS and 매입가 != 0 and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
 
-            if SBT and (A or (B and C) or C or D or E or F):
+            if SBT and self.sellstrategy is None and NIB and NIS and 매입가 != 0:
+                self.Sell(종목코드, 종목명, 보유수량, 현재가, 매도호가1, 매수호가1, True)
+            elif SBT and (A or (B and C) or C or D or E or F):
                 매도 = False
                 매도수량 = 0
                 강제청산 = E or F
@@ -562,7 +603,7 @@ class KiwoomStrategyTick:
                 if A or (B and C) or D:
                     if self.sellstrategy is not None:
                         try:
-                            exec(self.sellstrategy)
+                            exec(guard_exec_code(self.sellstrategy, 'KiwoomStrategyTick.sellstrategy'))
                         except:
                             print_exc()
                             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))

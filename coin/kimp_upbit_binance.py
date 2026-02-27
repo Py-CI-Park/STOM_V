@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from multiprocessing import Process
 from binance import AsyncClient, BinanceSocketManager
 from utility.setting import ui_num, columns_kp
-from utility.static import comma2float, threading_timer
+from utility.static import comma2float, threading_timer, get_logger
 
 
 class Kimp:
@@ -26,6 +26,7 @@ class Kimp:
         self.proc_webs = None
         self.codes     = None
         self.threadrun = True
+        self.logger    = get_logger(self.__class__.__name__)
         self.df        = pd.DataFrame(columns=columns_kp)
         self.Start()
 
@@ -62,12 +63,20 @@ class Kimp:
 
     def ConvertedCurrency(self):
         try:
-            html = requests.get('https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_USDKRW').text
+            response = requests.get(
+                'https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_USDKRW',
+                timeout=10
+            )
+            response.raise_for_status()
+            html = response.text
             soup = BeautifulSoup(html, 'html.parser')
-            converted_currency = soup.find('p', class_='no_today').get_text().replace('\n', '').replace('원', '')
+            rate_node = soup.find('p', class_='no_today')
+            if rate_node is None:
+                raise ValueError('no_today element not found')
+            converted_currency = rate_node.get_text().replace('\n', '').replace('원', '')
             self.usdtokrw = comma2float(converted_currency)
-        except:
-            pass
+        except (requests.RequestException, ValueError) as e:
+            self.logger.warning(f'ConvertedCurrency failed - {e}')
 
         if self.threadrun:
             threading_timer(60, self.ConvertedCurrency)
@@ -86,6 +95,7 @@ class WebSocketManager:
         self.q           = q
         self.wsk_upbit   = None
         self.wsk_binance = None
+        self.binance_client = None
         self.con_upbit   = False
         self.con_binance = False
 
@@ -95,33 +105,50 @@ class WebSocketManager:
         loop.run_forever()
 
     async def run_upbit(self):
-        await self.connect_upbit()
-        await self.receive_upbit()
-        await asyncio.sleep(1)
-        await self.run_upbit()
+        backoff = 1
+        while True:
+            await self.connect_upbit()
+            if self.con_upbit:
+                backoff = 1
+                await self.receive_upbit()
+            await self.disconnect_ticker()
+            await asyncio.sleep(backoff)
+            backoff = min(60, backoff * 2)
 
     async def run_binance(self):
-        await self.connect_binance()
-        await self.receive_binance()
-        await asyncio.sleep(1)
-        await self.run_binance()
+        backoff = 1
+        while True:
+            await self.connect_binance()
+            if self.wsk_binance is not None:
+                backoff = 1
+                await self.receive_binance()
+            await self.disconnect_binance()
+            await asyncio.sleep(backoff)
+            backoff = min(60, backoff * 2)
 
     async def connect_upbit(self):
         try:
-            self.wsk_upbit = await websockets.connect('wss://api.upbit.com/websocket/v1', ping_interval=60)
+            self.wsk_upbit = await websockets.connect(
+                'wss://api.upbit.com/websocket/v1',
+                ping_interval=60,
+                open_timeout=10
+            )
             self.con_upbit = True
             data = [{'ticket': str(uuid.uuid4())[:6]}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
             await self.wsk_upbit.send(json.dumps(data))
         except:
             self.con_upbit = False
+            self.wsk_upbit = None
 
     async def connect_binance(self):
         try:
-            client = await AsyncClient.create()
-            bsm = BinanceSocketManager(client)
+            self.binance_client = await AsyncClient.create()
+            bsm = BinanceSocketManager(self.binance_client)
             self.wsk_binance = bsm.miniticker_socket()
         except:
             self.con_binance = False
+            self.wsk_binance = None
+            self.binance_client = None
 
     async def receive_upbit(self):
         while self.con_upbit:
@@ -143,5 +170,20 @@ class WebSocketManager:
                     self.con_binance = False
 
     async def disconnect_ticker(self):
-        await self.wsk_upbit.close()
         self.con_upbit = False
+        if self.wsk_upbit is not None:
+            try:
+                await self.wsk_upbit.close()
+            except:
+                pass
+            self.wsk_upbit = None
+
+    async def disconnect_binance(self):
+        self.con_binance = False
+        self.wsk_binance = None
+        if self.binance_client is not None:
+            try:
+                await self.binance_client.close_connection()
+            except:
+                pass
+            self.binance_client = None

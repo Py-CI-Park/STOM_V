@@ -2,6 +2,7 @@ import math
 from backtester.backengine_kiwoom_tick import BackEngineKiwoomTick
 from utility.setting import dgree
 from utility.static import GetUpbitPgSgSp, dt_ymdhms, dt_ymdhm
+from utility.safe_exec import guard_exec_code
 from backtester.back_static import GetTradeInfo
 
 
@@ -235,7 +236,7 @@ class BackEngineUpbitTick(BackEngineKiwoomTick):
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
-                exec(v)
+                exec(guard_exec_code(v, f'BackEngineUpbitTick.condition.{k}'))
 
         if self.opti_turn == 1:
             for vturn in self.trade_info:
@@ -252,10 +253,10 @@ class BackEngineUpbitTick(BackEngineKiwoomTick):
                     if not self.trade_info[vturn][vkey]['보유중']:
                         if not 관심종목: continue
                         self.SetBuyCount2(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
-                        exec(self.buystg)
+                        exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick.buystg'))
                     else:
                         수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
-                        exec(self.sellstg)
+                        exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick.sellstg'))
 
         elif self.opti_turn == 3:
             for vturn in self.trade_info:
@@ -277,15 +278,15 @@ class BackEngineUpbitTick(BackEngineKiwoomTick):
                         if not 관심종목: continue
                         self.SetBuyCount2(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
                         if self.back_type != '조건최적화':
-                            exec(self.buystg)
+                            exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick.buystg'))
                         else:
-                            exec(self.dict_buystg[index_])
+                            exec(guard_exec_code(self.dict_buystg[index_], f'BackEngineUpbitTick.dict_buystg.{index_}'))
                     else:
                         수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
                         if self.back_type != '조건최적화':
-                            exec(self.sellstg)
+                            exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick.sellstg'))
                         else:
-                            exec(self.dict_sellstg[index_])
+                            exec(guard_exec_code(self.dict_sellstg[index_], f'BackEngineUpbitTick.dict_sellstg.{index_}'))
 
         else:
             vturn, vkey = 0, 0
@@ -300,10 +301,10 @@ class BackEngineUpbitTick(BackEngineKiwoomTick):
             if not self.trade_info[vturn][vkey]['보유중']:
                 if not 관심종목: return
                 self.SetBuyCount2(vturn, vkey, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
-                exec(self.buystg)
+                exec(guard_exec_code(self.buystg, 'BackEngineUpbitTick.buystg'))
             else:
                 수익률, 최고수익률, 최저수익률, 보유수량, 보유시간, 매수틱번호 = self.SetSellCount(vturn, vkey, 현재가, now())
-                exec(self.sellstg)
+                exec(guard_exec_code(self.sellstg, 'BackEngineUpbitTick.sellstg'))
 
     def SetBuyCount2(self, vturn, vkey, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도):
         if self.set_weight[0] == 0:
