@@ -57,7 +57,12 @@ class BinanceReceiverMin(BinanceReceiverTick):
         self.dict_daym[code] = dm
 
         dt_ = int(str(dt)[:13])
-        if code not in self.dict_dlhp or dt_ != self.dict_dlhp[code][0]:
+        data_dlhp = self.dict_dlhp.get(code)
+        if data_dlhp:
+            if dt_ != data_dlhp[0]:
+                data_dlhp[0] = dt_
+                data_dlhp[1] = np.round((h / low - 1) * 100, 2)
+        else:
             self.dict_dlhp[code] = [dt_, np.round((h / low - 1) * 100, 2)]
 
         if self.hoga_code == code:
@@ -178,7 +183,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
                         self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        buy_arr  = self.dict_bmbyp[code]
                     price_idx[c] = idx
                     buy_arr[idx] = buy_money
                     price_idx['count'] += 1
@@ -193,8 +198,8 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 else:
                     idx = price_idx['count']
                     if idx >= len(sell_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
                         self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        sell_arr = self.dict_smbyp[code]
                     price_idx[c] = idx
                     sell_arr[idx] = sell_money
                     price_idx['count'] += 1

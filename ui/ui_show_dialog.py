@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from coin.kimp_upbit_binance import Kimp
 from ui.set_text_stg_button import dict_stg_name
-from utility.static import qtest_qwait, str_hms, dt_hms, str_hm, dt_hm, timedelta_sec
+from utility.static import qtest_qwait, str_hms, dt_hms, str_hm, dt_hm
 from utility.setting import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
     DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 from ui.set_style import style_bc_bt, style_bc_bb
@@ -78,9 +78,8 @@ def show_dialog(ui, code_or_name, tickcount, searchdate, col):
     else:
         starttime = ui.ct_lineEdittttt_01.text()
         endtime   = ui.ct_lineEdittttt_02.text()
-        if (len(starttime) > 4 or len(endtime) > 4) and \
-                (coin and not ui.dict_set['코인타임프레임'] or not coin and not ui.dict_set['주식타임프레임']):
-            QMessageBox.critical(ui, '오류 알림', '분봉차트의 시작 및 종료시간은\n분단위로 입력하십시오. (예: 900, 1520)\n')
+        if len(starttime) < 6 or len(endtime) < 6:
+            QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
             return
         if not coin:
             ui.ShowDialogWeb(False, code)
@@ -161,25 +160,13 @@ def dialog_chart_show(ui):
 
     if ui.main_btn in (0, 2):
         if '키움증권' in ui.dict_set['증권사']:
-            if ui.dict_set['주식타임프레임']:
-                starttime = '090000'
-            else:
-                starttime = '0900'
+            starttime = '090000'
         else:
-            if ui.dict_set['주식타임프레임']:
-                starttime = '093000'
-            else:
-                starttime = '0900'
-        if ui.dict_set['주식타임프레임']:
-            endtime = str_hms(dt_hms(str(ui.dict_set['주식전략종료시간'])))
-        else:
-            endtime = str_hm(dt_hm(str(ui.dict_set['주식전략종료시간'])))
+            starttime = '093000'
+        endtime = str_hms(dt_hms(str(ui.dict_set['주식전략종료시간'])))
     else:
         starttime = '000000'
-        if ui.dict_set['코인타임프레임']:
-            endtime = str_hms(dt_hms(str(ui.dict_set['코인전략종료시간'])))
-        else:
-            endtime = str_hm(dt_hm(str(ui.dict_set['코인전략종료시간'])))
+        endtime = str_hms(dt_hms(str(ui.dict_set['코인전략종료시간'])))
 
     ui.ct_lineEdittttt_01.setText(starttime)
     ui.ct_lineEdittttt_02.setText(endtime)

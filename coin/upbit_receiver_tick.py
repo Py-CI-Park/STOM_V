@@ -141,11 +141,8 @@ class UpbitReceiverTick:
         asks_ = np.round(tasks - pretasks, 8)
         bids += bids_
         asks += asks_
-        try:
-            ch = np.round(tbids / tasks * 100, 2)
-        except:
-            ch = 500.
-        if ch > 500: ch = 500.
+        # noinspection PyTypeChecker
+        ch = min(500, np.round(tbids / tasks * 100, 2)) if tasks > 0 else 500
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
         self.dict_daym[code] = dm
@@ -273,7 +270,7 @@ class UpbitReceiverTick:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
                         self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        buy_arr  = self.dict_bmbyp[code]
                     price_idx[c] = idx
                     buy_arr[idx] = buy_money
                     price_idx['count'] += 1
@@ -288,8 +285,8 @@ class UpbitReceiverTick:
                 else:
                     idx = price_idx['count']
                     if idx >= len(sell_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
                         self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        sell_arr = self.dict_smbyp[code]
                     price_idx[c] = idx
                     sell_arr[idx] = sell_money
                     price_idx['count'] += 1

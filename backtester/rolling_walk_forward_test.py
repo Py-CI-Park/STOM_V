@@ -265,22 +265,19 @@ class Total:
             startday, endday = str(self.startday_), str(self.endday_)
             startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
             endday   = f'{endday[:4]}-{endday[4:6]}-{endday[6:]}'
-            if len(str(self.starttime)) > 4:
-                starttime, endtime = str(self.starttime).zfill(6), str(self.endtime).zfill(6)
-                starttime = f'{starttime[:2]}:{starttime[2:4]}:{starttime[4:]}'
-                endtime   = f'{endtime[:2]}:{endtime[2:4]}:{endtime[4:]}'
-            else:
-                starttime, endtime = str(self.starttime).zfill(4), str(self.endtime).zfill(4)
-                starttime = f'{starttime[:2]}:{starttime[2:]}'
-                endtime   = f'{endtime[:2]}:{endtime[2:]}'
+            starttime, endtime = str(self.starttime).zfill(6), str(self.endtime).zfill(6)
+            starttime = f'{starttime[:2]}:{starttime[2:4]}:{starttime[4:]}'
+            endtime   = f'{endtime[:2]}:{endtime[2:4]}:{endtime[4:]}'
 
             bet_unit  = '원' if self.ui_gubun in ('S', 'C') else '계약' if self.ui_gubun == 'SF' else 'USDT'
             tsg_unit  = '원' if self.ui_gubun in ('S', 'C') else 'USD' if self.ui_gubun == 'SF' else 'USDT'
             mdd_text  = f'최대낙폭금액 {mdd_:,.0f}{tsg_unit}' if 'G' in self.optistandard else f'최대낙폭률 {mdd:,.2f}%'
             if self.ui_gubun in ('S', 'SF'):
                 bc_unit = '초' if self.dict_set['주식타임프레임'] else '분'
+                is_tick = self.dict_set['주식타임프레임']
             else:
                 bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
+                is_tick = self.dict_set['코인타임프레임']
 
             if self.weeks_valid == 0:
                 back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습/확인기간 : {self.weeks_train}/{self.weeks_test}, 거래일수 : {day_cnt}'
@@ -300,7 +297,7 @@ class Total:
 
             self.sq.put(f'{self.backname} 백테스트를 완료하였습니다.')
             self.mq.put('백테스트 완료')
-            PlotShow('전진분석', self.teleQ, self.df_ttsg, self.df_tbct, self.dict_cn, seed, mdd, self.startday,
+            PlotShow('전진분석', is_tick, self.teleQ, self.df_ttsg, self.df_tbct, self.dict_cn, seed, mdd, self.startday,
                      self.endday, self.starttime, self.endtime, self.list_days, self.backname, back_text, label_text,
                      save_file_name, self.schedul, False)
             self.mq.put('백테스트 완료')
@@ -401,13 +398,16 @@ class RollingWalkForwardTest:
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            is_tick = self.dict_set['주식타임프레임']
         elif self.ui_gubun == 'SF':
             db = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            is_tick = self.dict_set['주식타임프레임']
         else:
             db = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+            is_tick = self.dict_set['코인타임프레임']
 
         con   = sqlite3.connect(db)
-        query = GetMoneytopQuery(self.ui_gubun, startday, endday, starttime, endtime)
+        query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
         df_mt = pd.read_sql(query, con)
         con.close()
 

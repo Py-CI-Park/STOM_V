@@ -114,13 +114,17 @@ class BackFinder:
         dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
         con.close()
 
-        buystg = dfb['전략코드'][buystg_name]
+        buystg    = dfb['전략코드'][buystg_name]
+        colm_list = buystg.split('self.tickcols = [')[1].split(']')[0]
+        data_list = buystg.split('self.tickdata = [')[1].split(']')[0]
         if 'self.tickcols' not in buystg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '선택된 전략이 백파인더용 전략이 아닙니다.'))
             self.SysExit(True)
+        if len(colm_list) != len(data_list):
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '칼럼명 리스트와 데이터 리스트의 길이가 다릅니다.'))
+            self.SysExit(True)
 
-        buystg_ = buystg.split('self.tickcols = [')[1].split(']')[0]
-        tickcols = ['종목코드', '체결시간'] + [x.strip() for x in buystg_.split(',')]
+        tickcols = ['종목코드', '체결시간'] + [x.strip() for x in colm_list.split(',')]
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 매수전략 설정 완료'))
 
         Process(target=Total, args=(self.wq, self.sq, self.tq, self.bq, self.ui_gubun, self.gubun)).start()

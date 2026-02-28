@@ -34,9 +34,8 @@ def return_press_01(ui):
         tickcount  = int(linetext) if linetext else 30
         starttime  = ui.ct_lineEdittttt_01.text()
         endtime    = ui.ct_lineEdittttt_02.text()
-        if (len(starttime) > 4 or len(endtime) > 4) and \
-                (coin and not ui.dict_set['코인타임프레임'] or not coin and not ui.dict_set['주식타임프레임']):
-            QMessageBox.critical(ui.dialog_chart, '오류 알림', '분봉차트의 시작 및 종료시간은\n분단위로 입력하십시오. (예: 900, 1520)\n')
+        if len(starttime) < 6 or len(endtime) < 6:
+            QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
             return
         ui.ct_lineEdittttt_04.setText(code)
         ui.ct_lineEdittttt_05.setText(name)

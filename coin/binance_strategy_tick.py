@@ -201,7 +201,7 @@ class BinanceStrategyTick:
 
         시분초 = int(str(체결시간)[8:])
         rw = 평균값계산틱수 = self.dict_set['코인평균값계산틱수']
-        순매수금액 = 초당매수금액 - 초당매수금액
+        순매수금액 = 초당매수금액 - 초당매도금액
         self.hoga_unit = 호가단위 = self.dict_info[종목코드]['호가단위']
 
         self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
@@ -299,7 +299,7 @@ class BinanceStrategyTick:
             G    = NISS and self.dict_set['코인매도취소매수시그널'] and not NIBS
     
             if BBT and BLK and C20 and (A or B or (C and D) or (C and E) or D or E or F or G):
-                self.info_for_signal = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1
+                self.info_for_signal = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1, 소숫점자리수
 
                 if A or B or (C and (D or E)) or F or G:
                     BUY_LONG, SELL_SHORT = True, True
@@ -483,7 +483,7 @@ class BinanceStrategyTick:
         return 매수수량
 
     def Sell(self, SELL_LONG):
-        취소시그널, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1, 소숫점자리수 = self.info_for_signal.values()
+        취소시그널, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1, 소숫점자리수 = self.info_for_signal
         if 취소시그널:
             매도수량 = 0
         elif 전량매도:

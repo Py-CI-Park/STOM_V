@@ -180,26 +180,13 @@ class SetDialogBack:
 
         if self.ui.dict_set['주식에이전트']:
             if '키움증권' in self.ui.dict_set['증권사']:
-                if self.ui.dict_set['주식타임프레임']:
-                    starttime = '090000'
-                else:
-                    starttime = '0900'
+                starttime = '090000'
             else:
-                if self.ui.dict_set['주식타임프레임']:
-                    starttime = '093000'
-                else:
-                    starttime = '0900'
-
-            if self.ui.dict_set['주식타임프레임']:
-                endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간']))))
-            else:
-                endtime = str_hm(timedelta_sec(-120, dt_hm(str(self.ui.dict_set['주식전략종료시간']))))
+                starttime = '093000'
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간']))))
         else:
-            starttime = '0'
-            if self.ui.dict_set['코인타임프레임']:
-                endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간']))))
-            else:
-                endtime = str_hm(timedelta_sec(-120, dt_hm(str(self.ui.dict_set['코인전략종료시간']))))
+            starttime = '000000'
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간']))))
 
         self.ui.sd_slineEditttt_01 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_02, ltext=starttime, style=style_bc_dk, change=self.ui.TextChanged_01)
         self.ui.sd_slineEditttt_02 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_02, ltext=starttime, style=style_bc_dk, change=self.ui.TextChanged_01)

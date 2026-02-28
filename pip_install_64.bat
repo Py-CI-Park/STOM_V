@@ -40,11 +40,21 @@ if '%errorlevel%' NEQ '0' (
     )
 
     echo.
-    echo [3/5] Installing local TA-Lib wheel...
-    if exist "utility\TA_Lib-0.4.25-cp311-cp311-win_amd64.whl" (
-        python -m pip install "./utility/TA_Lib-0.4.25-cp311-cp311-win_amd64.whl"
+    echo [3/5] Installing from requirements64.txt...
+    if exist requirements64-2.txt (
+        python -m pip install -r requirements64-2.txt
     ) else (
-        echo WARNING: TA-Lib wheel file not found. (utility\TA_Lib-0.4.25-cp311-cp311-win_amd64.whl)
+        echo ERROR: requirements64-2.txt file not found!
+        pause
+        exit /b 1
+    )
+
+    echo.
+    echo [4/5] Installing local TA-Lib wheel...
+    if exist "utility\ta_lib-0.6.8-cp311-cp311-win_amd64.whl" (
+        python -m pip install "./utility/ta_lib-0.6.8-cp311-cp311-win_amd64.whl"
+    ) else (
+        echo WARNING: TA-Lib wheel file not found. (utility/ta_lib-0.6.8-cp311-cp311-win_amd64.whl)
     )
 
     echo.

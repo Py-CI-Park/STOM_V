@@ -639,7 +639,7 @@ class BackCodeTest(QThread):
             분당매도수량, 분봉시가, 분봉고가, 분봉저가, 분당거래대금, 분당매수금액, 분당매도금액 = \
             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 
-        시분초, VI아래5호가, 데이터길이, 호가단위, 포지션, 평균값계산틱수 = int(str(체결시간)[8:]), 1, 1800, 1, 'LONG', 30
+        시분초, 데이터길이, 호가단위, 포지션, 평균값계산틱수 = int(str(체결시간)[8:]), 1800, 1, 'LONG', 30
 
         AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, \
             PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
