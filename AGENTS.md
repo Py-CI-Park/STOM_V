@@ -1,9 +1,36 @@
 # STOM_Version_2U - AI Agent Instructions
 
-## 브랜치 개요
+## 브랜치 핵심 목적 (반드시 숙지)
 
-`STOM_Version_2U`는 `STOM_Version_2`의 `.pyd` 컴파일된 바이너리 파일을
-`.py` 소스 파일로 대체한 개발 브랜치입니다.
+> **이 브랜치의 목적은 단순한 일회성 변환(pyd → py)이 아닙니다.**
+
+`STOM_Version_2U`는 `STOM_Version_2`에서 컴파일된 바이너리로만 제공되는
+`ui_mainwindow.pyd`를 **항상 수정·업데이트 가능한 소스 파일** `ui_mainwindow.py`로
+운영하는 **지속적 동기화 개발 브랜치**입니다.
+
+### 이 브랜치가 존재하는 이유
+
+`STOM_Version_2`의 핵심 UI 로직(`MainWindow`)은 `.pyd` 바이너리로만 배포되어
+소스 수정이 불가능합니다. `STOM_Version_2U`는 이 `.pyd`를 소스 형태로 유지하여:
+
+1. **수정 가능성**: UI 로직을 언제든지 수정·개선할 수 있는 구조 유지
+2. **지속적 동기화**: `STOM_Version_2`가 업데이트(pyd 변경)될 때마다 `ui_mainwindow.py` 동기화
+3. **동일 동작 보장**: `ui_mainwindow.py`가 `ui_mainwindow.pyd`와 동일한 인터페이스 및 동작 제공
+
+### 두 브랜치의 관계
+
+| 항목 | STOM_Version_2 | STOM_Version_2U |
+|------|----------------|-----------------|
+| `ui_mainwindow` | `.pyd` (컴파일 바이너리, 수정 불가) | `.py` (소스코드, 수정 가능) |
+| 업데이트 방법 | 재컴파일 후 pyd 교체 | 추론으로 py 파일 업데이트 |
+| 브랜치 성격 | 프로덕션 릴리스 브랜치 | 소스 추적·수정 개발 브랜치 |
+| `stom.py` 진입점 | `from ui.ui_mainwindow import MainWindow` | 동일 |
+
+### 브랜치 운영 원칙
+
+- `STOM_Version_2`의 새 버전이 나오면 → `STOM_Version_2U`도 반드시 동기화
+- `.pyd`는 직접 읽을 수 없으므로 → 주변 `.py` 파일 변화로 추론하여 적용
+- 이 브랜치는 `STOM_Version_2`를 **항상 따라가는 살아있는 추적 브랜치**
 
 ---
 

@@ -1,5 +1,20 @@
 # STOM Project Guidelines
 
+## STOM_Version_2U 브랜치 핵심 목적
+
+> **이 브랜치의 목적은 단순한 일회성 변환(pyd → py)이 아닙니다.**
+
+`STOM_Version_2U`는 `STOM_Version_2`에서 컴파일 바이너리(`ui_mainwindow.pyd`)로만 제공되는
+UI 핵심 로직을 **항상 수정·업데이트 가능한 소스 파일**(`ui_mainwindow.py`)로 운영하는
+**지속적 동기화 개발 브랜치**입니다.
+
+- `STOM_Version_2`가 `ui_mainwindow.pyd`를 업데이트하면 → `STOM_Version_2U`도 반드시 동기화
+- `.pyd`는 직접 읽을 수 없으므로 → 주변 `.py` 파일 변화를 추론하여 `ui_mainwindow.py`에 반영
+- `ui_mainwindow.py`는 `ui_mainwindow.pyd`와 **항상 동일한 공개 인터페이스** 제공
+- 이 브랜치는 `STOM_Version_2`를 **지속적으로 따라가는 살아있는 추적 브랜치**
+
+---
+
 ## Version Naming Convention
 
 ### Format
