@@ -49,12 +49,8 @@ class BinanceReceiverMin(BinanceReceiverTick):
         asks += asks_
         tbids = np.round(pretbids + bids_, 8)
         tasks = np.round(pretasks + asks_, 8)
-        try:
-            # noinspection PyTypeChecker
-            ch = np.round(tbids / tasks * 100, 2)
-        except:
-            ch = 500.
-        if ch > 500: ch = 500.
+        # noinspection PyTypeChecker
+        ch = min(500, np.round(tbids / tasks * 100, 2)) if tasks > 0 else 500
         per = np.round((c / self.dict_prec[code][1] - 1) * 100, 2)
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, mo, mh, ml]
@@ -180,33 +176,28 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 sell_arr  = self.dict_smbyp[code]
 
                 money_arr[0] += buy_money
-                if c in price_idx:
-                    idx = price_idx[c]
-                    buy_arr[idx] += buy_money
+                money_arr[3] += sell_money
+
+                idx = price_idx.get(c)
+                if idx:
+                    buy_arr[idx]  += buy_money
+                    sell_arr[idx] += sell_money
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
                         self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
+                        sell_arr = self.dict_smbyp[code]
                     price_idx[c] = idx
                     buy_arr[idx] = buy_money
+                    sell_arr[idx] = sell_money
                     price_idx['count'] += 1
+
                 if buy_arr[idx] >= money_arr[1]:
                     money_arr[1] = buy_arr[idx]
                     money_arr[2] = c
 
-                money_arr[3] += sell_money
-                if c in price_idx:
-                    idx = price_idx[c]
-                    sell_arr[idx] += sell_money
-                else:
-                    idx = price_idx['count']
-                    if idx >= len(sell_arr):
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
-                        sell_arr = self.dict_smbyp[code]
-                    price_idx[c] = idx
-                    sell_arr[idx] = sell_money
-                    price_idx['count'] += 1
                 if sell_arr[idx] >= money_arr[4]:
                     money_arr[4] = sell_arr[idx]
                     money_arr[5] = c

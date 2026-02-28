@@ -46,7 +46,7 @@ def update_progressbar(ui):
     ui.gu_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_info.isVisible() else style_bc_bt)
     ui.hg_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_hoga.isVisible() else style_bc_bt)
     ui.ct_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_chart.isVisible() else style_bc_bt)
-    ui.ct_pushButtonnn_03.setStyleSheet(style_bc_bt if not ui.dialog_factor.isVisible() else style_bc_bb)
+    ui.ct_pushButtonnn_04.setStyleSheet(style_bc_bt if not ui.dialog_factor.isVisible() else style_bc_bb)
     ui.bs_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_scheduler.isVisible() else style_bc_bt)
     ui.tt_pushButton.setStyleSheet(style_bc_bb if not ui.s_calendarWidgett.isVisible() and not ui.c_calendarWidgett.isVisible() else style_bc_bt)
 

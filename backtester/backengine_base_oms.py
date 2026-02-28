@@ -116,18 +116,18 @@ class BackEngineBaseOms(BackEngineBase):
                     timedelta_sec(self.dict_set[f'{self.market_text}매수취소시간초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
 
     def SetBuyCount(self):
-        보유중, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매수분할횟수, 매도호가1, 매수호가1, _, _ = self.info_for_order
+        보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, _, _ = self.info_for_order
         if self.set_weight[0] == 0:
             betting = self.betting
         else:
             if self.set_weight[0] == 1:
                 비중조절기준 = 저가대비고가등락율
             elif self.set_weight[0] == 2:
-                비중조절기준 = 순매수금액
+                비중조절기준 = self._거래대금평균대비비율(30)
             elif self.set_weight[0] == 3:
-                비중조절기준 = 당일거래대금
-            else:
                 비중조절기준 = self._등락율각도(30)
+            else:
+                비중조절기준 = self._당일거래대금각도(30)
 
             if 비중조절기준 < self.set_weight[1]:
                 betting = self.betting * self.set_weight[5]
@@ -274,7 +274,7 @@ class BackEngineBaseOms(BackEngineBase):
                 timedelta_sec(self.dict_set[f'{self.market_text}매도취소시간초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
 
     def SetSellCount(self):
-        보유중, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수 = self.info_for_order
+        보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수 = self.info_for_order
         if self.dict_set[f'{self.market_text}매도분할횟수'] == 1:
             self.curr_trade_info['주문수량'] = 보유수량
         else:

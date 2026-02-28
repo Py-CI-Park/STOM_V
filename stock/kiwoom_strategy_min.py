@@ -120,7 +120,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                 D = NIB and self.dict_set['주식매도취소매수시그널'] and not NIS
 
                 if BBT and BLK and (A or (B and C) or C or D):
-                    self.info_for_signal = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1
+                    self.info_for_signal = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
                     if A or (B and C) or D:
                         매수 = True
@@ -155,7 +155,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                 if SBT and (A or (B and C) or C or D or E or F):
                     강제청산 = E or F
                     전량매도 = A or 강제청산
-                    self.info_for_signal = D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1
+                    self.info_for_signal = D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
                     매도 = False
                     if A or (B and C) or D:

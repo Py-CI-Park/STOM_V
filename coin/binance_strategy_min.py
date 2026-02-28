@@ -121,7 +121,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 G    = NISS and self.dict_set['코인매도취소매수시그널'] and not NIBS
     
                 if BBT and BLK and C20 and (A or B or (C and D) or (C and E) or D or E or F or G):
-                    self.info_for_signal = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1
+                    self.info_for_signal = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
                     if A or B or (C and (D or E)) or F or G:
                         BUY_LONG, SELL_SHORT = True, True
@@ -170,7 +170,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N):
                     강제청산 = H or J or K or L or M or N
                     전량매도 = A or B or 강제청산
-                    self.info_for_signal = F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1, 소숫점자리수
+                    self.info_for_signal = F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1, 소숫점자리수
 
                     SELL_LONG, BUY_SHORT = False, False
                     if A or B or (C and (D or E)) or F or G:

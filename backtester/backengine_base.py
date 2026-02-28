@@ -635,18 +635,19 @@ class BackEngineBase:
                 self.curr_trade_info['매수시간'] = 매수시간
 
     def SetBuyCount(self):
-        현재가, 저가대비고가등락율, 순매수금액, 당일거래대금 = self.info_for_order
+        현재가, 저가대비고가등락율 = self.info_for_order
         if self.set_weight[0] == 0:
             betting = self.betting
         else:
             if self.set_weight[0] == 1:
                 비중조절기준 = 저가대비고가등락율
             elif self.set_weight[0] == 2:
-                비중조절기준 = 순매수금액
+                비중조절기준 = self._거래대금평균대비비율(30)
             elif self.set_weight[0] == 3:
-                비중조절기준 = 당일거래대금
-            else:
                 비중조절기준 = self._등락율각도(30)
+            else:
+                비중조절기준 = self._당일거래대금각도(30)
+
             if 비중조절기준 < self.set_weight[1]:
                 betting = self.betting * self.set_weight[5]
             elif 비중조절기준 < self.set_weight[2]:
