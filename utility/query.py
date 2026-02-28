@@ -339,7 +339,7 @@ class Query:
                     day_list = df['일자'].unique()
                     file_list = os.listdir(DB_PATH)
                     file_day_list = [x.strip(firstname).strip('.db') for x in file_list if firstname in x and '.db' in x and 'back' not in x]
-                    if len(list(set(day_list) - set(file_day_list))) > 0:
+                    if len(set(day_list) - set(file_day_list)) > 0:
                         self.windowQ.put((ui_num['DB관리'], '경고! 추가 후 당일 DB가 삭제됩니다.'))
                         self.windowQ.put((ui_num['DB관리'], '일자별 분리 후 재실행하십시오.'))
                         con2.close()

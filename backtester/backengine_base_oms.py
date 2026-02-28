@@ -98,16 +98,16 @@ class BackEngineBaseOms(BackEngineBase):
                         매수금액 += 호가 * 잔량
                         미체결수량 -= 잔량
                 if 미체결수량 <= 0:
-                    직전매수가 = self.curr_trade_info['매수가']
-                    직전보유수량 = self.curr_trade_info['보유수량']
-                    추가매수가 = self.GetAddBuyPrice(매수금액, 주문수량)
-                    보유수량 = 직전보유수량 + 주문수량
-                    매수가 = self.GetBuyPrice(직전매수가, 직전보유수량, 매수금액, 보유수량)
+                    매수가 = self.curr_trade_info['매수가']
+                    보유수량 = self.curr_trade_info['보유수량']
+                    총수량 = 보유수량 + 주문수량
+                    추가매수가 = self.GetBuyPrice(매수금액, 주문수량)
+                    평단가 = self.GetBuyPrice(매수가 * 보유수량 + 매수금액, 총수량)
                     주문포지션 = None if self.market_gubun in (1, 3) else 'LONG' if buy_long else 'SHORT'
-                    self.curr_trade_info['매수가'] = 매수가
-                    self.curr_trade_info['보유수량'] = 보유수량
+                    self.curr_trade_info['매수가'] = 평단가
+                    self.curr_trade_info['보유수량'] = 총수량
                     self.curr_trade_info['추가매수가'] = 추가매수가
-                    self.UpdateBuyInfo(주문포지션, True if 직전매수가 == 0 else False)
+                    self.UpdateBuyInfo(주문포지션, True if 매수가 == 0 else False)
 
             elif self.dict_set[f'{self.market_text}매수주문구분'] == '지정가':
                 self.curr_trade_info['매수호가'] = self.curr_trade_info['매수호가_']
@@ -193,13 +193,11 @@ class BackEngineBaseOms(BackEngineBase):
         elif (주문포지션 is None and ((분봉저가 is None and 현재가 < 매수호가) or (분봉저가 is not None and 분봉저가 < 매수호가))) or \
                 (주문포지션 == 'LONG' and ((분봉저가 is None and 현재가 < 매수호가) or (분봉저가 is not None and 분봉저가 < 매수호가))) or \
                 (주문포지션 == 'SHORT' and ((분봉고가 is None and 현재가 > 매수호가) or (분봉고가 is not None and 분봉고가 > 매수호가))):
-            직전매수금액 = 매수가 * 보유수량
-            매수금액 = 매수호가 * 주문수량
             총수량 = 보유수량 + 주문수량
-            평단가 = self.GetBuyPrice(매수가, 보유수량, 매수금액, 총수량)
+            평단가 = self.GetBuyPrice(매수가 * 보유수량 + 매수호가 * 주문수량, 총수량)
             self.curr_trade_info['매수가'] = 평단가
             self.curr_trade_info['보유수량'] = 총수량
-            self.curr_trade_info['추가매수가'] = int(매수호가)
+            self.curr_trade_info['추가매수가'] = 매수호가
             self.UpdateBuyInfo(주문포지션, True if 매수가 == 0 else False)
 
     def UpdateBuyInfo(self, 주문포지션, firstbuy):
@@ -404,6 +402,3 @@ class BackEngineBaseOms(BackEngineBase):
             self.curr_trade_info['매도분할횟수'] += 1
         else:
             self.trade_info[self.vturn][self.vkey] = get_trade_info(2)
-
-    def GetAddBuyPrice(self, 매수금액, 주문수량):
-        return 0

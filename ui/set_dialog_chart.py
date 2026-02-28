@@ -30,7 +30,7 @@ class SetDialogChart:
         self.ui.ct_lineEdittttt_05 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, enter=self.ui.ReturnPress_01, style=style_bc_dk)
         self.ui.ct_pushButtonnn_01 = self.wc.setPushbutton('검색하기', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ReturnPress_01)
         self.ui.ct_checkBoxxxxx_01 = self.wc.setCheckBox('십자선', self.ui.ct_groupBoxxxxx_01, checked=True, style=style_ck_bx)
-        self.ui.ct_checkBoxxxxx_02 = self.wc.setCheckBox('정보창', self.ui.ct_groupBoxxxxx_01, checked=True, style=style_ck_bx)
+        self.ui.ct_checkBoxxxxx_02 = self.wc.setCheckBox('정보창', self.ui.ct_groupBoxxxxx_01, checked=False, style=style_ck_bx)
         text = '1. 시작시간과 종료시간을 설정하면 해당시간의 데이터만 표시됩니다.\n' \
                '2. 평균틱수를 설정하면 평균, 최고, 최저값의 기준이 설정한 값으로 변경됩니다.\n' \
                '3. 날짜선택 후 종목코드 및 종목명으로 차트를 검색할 수 있습니다.\n' \

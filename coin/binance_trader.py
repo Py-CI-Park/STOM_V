@@ -478,14 +478,16 @@ class BinanceTrader:
                 self.ModifyOrder(code, gubun)
 
     def SetLeverage(self, dict_dlhp):
-        for code in self.dict_info:
-            try:
-                leverage = self.GetLeverage(dict_dlhp[code][1])
-                self.dict_lvrg[code] = leverage
-                if not self.dict_set['코인모의투자']:
-                    self.binance.futures_change_leverage(symbol=code, leverage=leverage)
-            except:
-                pass
+        for code in self.dict_info.items():
+            lhp = dict_dlhp.get(code)
+            if lhp:
+                try:
+                    leverage = self.GetLeverage(dict_dlhp[code])
+                    self.dict_lvrg[code] = leverage
+                    if not self.dict_set['코인모의투자']:
+                        self.binance.futures_change_leverage(symbol=code, leverage=leverage)
+                except:
+                    pass
 
     def GetLeverage(self, dlhp):
         leverage = 1

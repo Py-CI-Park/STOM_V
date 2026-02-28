@@ -168,6 +168,8 @@ class BackEngineBase:
             self.dict_condition = dict(zip(key_list, value_comp_list))
             self.conds_text += ';'.join(value_text_list)
 
+        self.SetGlobalsFunc()
+
     def MainLoop(self):
         while True:
             data = self.beq.get()
@@ -180,7 +182,6 @@ class BackEngineBase:
                         self.endday = data[4]
                         self.starttime = data[5]
                         self.endtime = data[6]
-                        self.SetGlobalsFunc(data[7] + data[8])
                         if self.market_gubun in (1, 3):
                             self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
                             self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
@@ -205,7 +206,6 @@ class BackEngineBase:
                         self.endday = data[4]
                         self.starttime = data[5]
                         self.endtime = data[6]
-                        self.SetGlobalsFunc(data[7] + data[8])
                         if self.market_gubun in (1, 3):
                             self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
                             self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
@@ -233,7 +233,6 @@ class BackEngineBase:
                         self.endday = data[4]
                         self.starttime = data[5]
                         self.endtime = data[6]
-                        self.SetGlobalsFunc(data[7] + data[8])
                         if self.market_gubun in (1, 3):
                             self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
                             self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
@@ -262,7 +261,6 @@ class BackEngineBase:
                         self.dict_buystg = {}
                         self.dict_sellstg = {}
                         self.dict_sconds = {}
-                        self.SetGlobalsFunc(self.get_text(data[2], data[3]))
                         error = False
                         for i in range(20):
                             if self.market_gubun in (1, 3):
@@ -288,7 +286,6 @@ class BackEngineBase:
                         self.endday = data[4]
                         self.starttime = data[5]
                         self.endtime = data[6]
-                        self.SetGlobalsFunc(data[7] + data[8])
                         if self.market_gubun in (1, 3):
                             self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
                             self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
@@ -308,7 +305,6 @@ class BackEngineBase:
                         self.endday = data[3]
                         self.starttime = data[4]
                         self.endtime = data[5]
-                        self.SetGlobalsFunc(data[6])
                         try:
                             self.buystg = compile(data[6], '<string>', 'exec')
                         except:
@@ -335,18 +331,8 @@ class BackEngineBase:
             elif data[0] == '공유데이터':
                 self.shared_count = data[1]
                 self.shared_info = data[2]
-            elif data == '전체틱수계산':
-                self.GetTickCount()
             elif data == '백테중지':
                 self.BackStop(2)
-
-    def get_text(self, buystglist, sellstg_list):
-        text = ';'
-        for t in buystglist:
-            text = f'{text};{t}'
-        for t in sellstg_list:
-            text = f'{text};{t}'
-        return text
 
     def DataLoad(self, data):
         def data_load(days):
@@ -390,7 +376,7 @@ class BackEngineBase:
         con.close()
 
         if self.dict_set['백테일괄로딩'] and all_data:
-            name = f'back_unified_{self.gubun}'
+            name = f'backdata_{self.gubun}'
             total_size = sum(item['len'] * item['data'].dtype.itemsize * item['data'].shape[1] for item in all_data)
             shm = shared_memory.SharedMemory(name=name, create=True, size=total_size)
 
@@ -455,16 +441,6 @@ class BackEngineBase:
         if gubun == 3:
             if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
 
-    def GetTickCount(self):
-        total_ticks = 0
-        while True:
-            code = self.GetArrayData()
-            if code is not None:
-                total_ticks += len(self.arry_code)
-            else:
-                break
-        self.bq.put(total_ticks)
-
     def InitTradeInfo(self):
         self.high_low = []
         self.tick_count = 0
@@ -500,7 +476,7 @@ class BackEngineBase:
             shared_cnt = self.shared_cnt.value
             if shared_cnt < self.shared_count:
                 shared_info = self.shared_info[shared_cnt]
-                self.shared_cnt.value += 1
+            self.shared_cnt.value += 1
 
         if shared_info is None:
             return None
@@ -531,66 +507,7 @@ class BackEngineBase:
                                             (self.arry_code[:, 0] <= self.endday * self.unit + self.hour) &
                                             (self.arry_code[:, 0] % self.unit >= self.starttime) &
                                             (self.arry_code[:, 0] % self.unit <= self.endtime)]
-
-        # self.arry_code_min = self.ConvertToMinuteData(self.arry_code)
         return code
-
-    # def ConvertToMinuteData(self, tick_data):
-    #     tick_times = tick_data[:, 0].astype(np.int64)
-    #     minute_times = (tick_times // 100) * 100
-    #     unique_minutes = np.unique(minute_times)
-    #     minute_data = np.zeros((len(unique_minutes), 47), dtype=np.float64)
-    #     minute_data[:, 0] = unique_minutes
-    #     for i, minute_time in enumerate(unique_minutes):
-    #         minute_ticks = tick_data[minute_times == minute_time]
-    #         minute_data[i, 1] = minute_ticks[-1, self._fi('현재가')]
-    #         minute_data[i, 2] = minute_ticks[-1, self._fi('시가')]
-    #         minute_data[i, 3] = minute_ticks[-1, self._fi('고가')]
-    #         minute_data[i, 4] = minute_ticks[-1, self._fi('저가')]
-    #         minute_data[i, 5] = minute_ticks[-1, self._fi('등락율')]
-    #         minute_data[i, 6] = minute_ticks[-1, self._fi('당일거래대금')]
-    #         minute_data[i, 7] = minute_ticks[-1, self._fi('체결강도')]
-    #         minute_data[i, 8] = minute_ticks[-1, self._fi('거래대금증감')]
-    #         minute_data[i, 9] = minute_ticks[-1, self._fi('전일비')]
-    #         minute_data[i, 10] = minute_ticks[-1, self._fi('회전율')]
-    #         minute_data[i, 11] = minute_ticks[-1, self._fi('전일동시간비')]
-    #         minute_data[i, 12] = minute_ticks[-1, self._fi('시가총액')]
-    #         minute_data[i, 13] = minute_ticks[-1, self._fi('라운드피겨위5호가이내')]
-    #         minute_data[i, 14] = np.sum(minute_ticks[:, self._fi('초당매수수량')])
-    #         minute_data[i, 15] = np.sum(minute_ticks[:, self._fi('초당매도수량')])
-    #         minute_data[i, 16] = minute_ticks[-1, self._fi('VI해제시간')]
-    #         minute_data[i, 17] = minute_ticks[-1, self._fi('VI가격')]
-    #         minute_data[i, 18] = minute_ticks[-1, self._fi('VI호가단위')]
-    #         minute_data[i, 19] = minute_ticks[0, self._fi('현재가')]
-    #         minute_data[i, 20] = np.max(minute_ticks[-1, self._fi('현재가')])
-    #         minute_data[i, 21] = np.min(minute_ticks[-1, self._fi('현재가')])
-    #         minute_data[i, 22] = np.sum(minute_ticks[-1, self._fi('초당거래대금')])
-    #         minute_data[i, 23] = minute_ticks[-1, self._fi('고저평균대비등락율')]
-    #         minute_data[i, 24] = minute_ticks[-1, self._fi('매도총잔량')]
-    #         minute_data[i, 25] = minute_ticks[-1, self._fi('매수총잔량')]
-    #         minute_data[i, 26] = minute_ticks[-1, self._fi('매도호가5')]
-    #         minute_data[i, 27] = minute_ticks[-1, self._fi('매도호가4')]
-    #         minute_data[i, 28] = minute_ticks[-1, self._fi('매도호가3')]
-    #         minute_data[i, 29] = minute_ticks[-1, self._fi('매도호가2')]
-    #         minute_data[i, 30] = minute_ticks[-1, self._fi('매도호가1')]
-    #         minute_data[i, 31] = minute_ticks[-1, self._fi('매수호가1')]
-    #         minute_data[i, 32] = minute_ticks[-1, self._fi('매수호가2')]
-    #         minute_data[i, 33] = minute_ticks[-1, self._fi('매수호가3')]
-    #         minute_data[i, 34] = minute_ticks[-1, self._fi('매수호가4')]
-    #         minute_data[i, 35] = minute_ticks[-1, self._fi('매수호가5')]
-    #         minute_data[i, 36] = minute_ticks[-1, self._fi('매도잔량5')]
-    #         minute_data[i, 37] = minute_ticks[-1, self._fi('매도잔량4')]
-    #         minute_data[i, 38] = minute_ticks[-1, self._fi('매도잔량3')]
-    #         minute_data[i, 39] = minute_ticks[-1, self._fi('매도잔량2')]
-    #         minute_data[i, 40] = minute_ticks[-1, self._fi('매도잔량1')]
-    #         minute_data[i, 41] = minute_ticks[-1, self._fi('매수잔량1')]
-    #         minute_data[i, 42] = minute_ticks[-1, self._fi('매수잔량2')]
-    #         minute_data[i, 43] = minute_ticks[-1, self._fi('매수잔량3')]
-    #         minute_data[i, 44] = minute_ticks[-1, self._fi('매수잔량4')]
-    #         minute_data[i, 45] = minute_ticks[-1, self._fi('매수잔량5')]
-    #         minute_data[i, 46] = minute_ticks[-1, self._fi('매도수5호가잔량합')]
-    #         minute_data[i, 46] = minute_ticks[-1, self._fi('관심종목')]
-    #     return minute_data
 
     def BackTest(self):
         if self.profile:
@@ -649,15 +566,9 @@ class BackEngineBase:
                         j += 1
                         if j == 1000:
                             j = 0
-                            if self.opti_turn in (1, 3): self.tq.put('탐색완료')
                             if not self.beq.empty() and self.beq.get() == '백테중지':
                                 self.BackStop(1)
                                 return
-
-                    j += 1
-                    if j == 1000:
-                        j = 0
-                        if self.opti_turn in (1, 3): self.tq.put('탐색완료')
 
                     self.index = indexs[end_idx]
                     self.indexn = end_idx
@@ -668,7 +579,9 @@ class BackEngineBase:
 
             self.tq.put('백테완료')
 
-        if self.opti_turn in (1, 3): self.tq.put(('탐색완료', j))
+        if not self.beq.empty() and self.beq.get() == '백테중지':
+            self.BackStop(1)
+            return
         if self.profile: self.pr.print_stats(sort='cumulative')
 
     def Buy(self, buy_long=False):
@@ -688,7 +601,7 @@ class BackEngineBase:
                     미체결수량 -= 잔량
             if 미체결수량 <= 0:
                 보유중 = 1 if self.market_gubun in (1, 3) or buy_long else 2
-                매수가 = self.GetBuyPrice(0, 0, 매수금액, 주문수량)
+                매수가 = self.GetBuyPrice(매수금액, 주문수량)
                 매수시간 = dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
                 self.curr_trade_info['보유중'] = 보유중
                 self.curr_trade_info['매수가'] = 매수가
@@ -1110,21 +1023,21 @@ class BackEngineBase:
             return self.indexn - self.dict_cond_indexn[self.code][조건명]
         return 0
 
-    def _이평근접개수(self, tick1, tick2=30, per=0.33):
+    def _이평지지(self, tick1, tick2=30, per=0.5, cnt=10):
         if tick1 + tick2 <= self.tick_count and tick1 in self.sma_list:
             sidx, eidx = self._get_double_index(tick2)
             arry_close = self.arry_code[sidx:eidx, self._fi('현재가')]
             arry_sma = self.arry_code[sidx:eidx, self._fi(f'이동평균{tick1}')]
             deviation = np.abs(arry_close - arry_sma) / arry_sma * 100
-            return np.sum(deviation <= per)
+            return np.sum(deviation <= per) >= cnt
         return 0
 
-    def _시가근접개수(self, tick, per=0.5):
+    def _시가지지(self, tick, per=0.5, cnt=10):
         if tick <= self.tick_count:
             sidx, eidx = self._get_double_index(tick)
             arry_close = self.arry_code[sidx:eidx, self._fi('현재가')]
             deviation = np.abs(arry_close - self._시가N(0)) / self._시가N(0) * 100
-            return np.sum(deviation <= per)
+            return np.sum(deviation <= per) >= cnt
         return 0
 
     def _변동성(self, tick, pre=0):
@@ -1312,10 +1225,10 @@ class BackEngineBase:
         return self._최고현재가(tick) > self._시가N(0) and (self._현재가N(0) / self._시가N(0) - 1) * 100 <= -per
 
     def _이평지지후이평돌파(self, tick1, tick2=30, per1=0.5, cnt=10, per2=1.0):
-        return self._이평근접개수(tick1, tick2, per1) >= cnt and self._이평돌파(tick1, per2)
+        return self._이평지지(tick1, tick2, per1, cnt) and self._이평돌파(tick1, per2)
 
     def _이평지지후이평이탈(self, tick1, tick2=30, per1=0.5, cnt=10, per2=1.0):
-        return self._이평근접개수(tick1, tick2, per1) >= cnt and self._이평이탈(tick1, per2)
+        return self._이평지지(tick1, tick2, per1, cnt) and self._이평이탈(tick1, per2)
 
     def _횡보후가격급등(self, tick1, per1=0.5, tick2=10, per2=1.0):
         return self._횡보감지(tick1, per1, tick2) and self._가격급등(tick2, per2)
@@ -1378,10 +1291,10 @@ class BackEngineBase:
         return self._체결강도급락(tick1, ratio1) and self._호가하락압력(tick2, ratio2)
 
     def _시가근접황보후시가돌파(self, tick, per1=0.5, cnt=10, per2=1.0):
-        return self._시가근접개수(tick, per1) >= cnt and self._시가돌파(tick, per2)
+        return self._시가지지(tick, per1, cnt) and self._시가돌파(tick, per2)
 
     def _시가근접황보후시가이탈(self, tick, per1=0.5, cnt=10, per2=1.0):
-        return self._시가근접개수(tick, per1) >= cnt and self._시가이탈(tick, per2)
+        return self._시가지지(tick, per1, cnt) and self._시가이탈(tick, per2)
 
     def _저가갱신후가격급등(self, tick, per=2):
         return self.indexn - self.high_low[3] <= tick and self._가격급등(tick, per)
@@ -1595,12 +1508,9 @@ class BackEngineBase:
         except: WILLR_ = 0
         return WILLR_
 
-    def SetGlobalsFunc(self, stg_text):
-        stg_text += self.conds_text
-        if stg_text == self.cached_stg_text:
-            return
-
+    def SetGlobalsFunc(self):
         dict_add_func = {
+            'now': self._now,
             '현재가N': self._현재가N,
             '시가N': self._시가N,
             '고가N': self._고가N,
@@ -1691,8 +1601,8 @@ class BackEngineBase:
             '전일비각도': self._전일비각도,
             '경과틱수': self._경과틱수,
 
-            '이평근접개수': self._이평근접개수,
-            '시가근접개수': self._시가근접개수,
+            '이평지지': self._이평지지,
+            '시가지지': self._시가지지,
             '변동성': self._변동성,
             '구간저가대비현재가등락율': self._구간저가대비현재가등락율,
             '구간고가대비현재가등락율': self._구간고가대비현재가등락율,
@@ -1792,22 +1702,7 @@ class BackEngineBase:
             'STOCHFD_N': self._STOCHFD_N,
             'WILLR_': self._WILLR_N
         }
-
-        if self.prev_global_list:
-            for name in self.prev_global_list:
-                if name in globals():
-                    del globals()[name]
-
-        dict_update_func = {
-            'now': self._now,
-        }
-        for name, func in dict_add_func.items():
-            if name in stg_text:
-                dict_update_func.update({name: func})
-
-        self.prev_global_list = list(dict_update_func.keys())
-        self.cached_stg_text = stg_text
-        self.UpdateGlobalsFunc(dict_update_func)
+        self.UpdateGlobalsFunc(dict_add_func)
 
     def Strategy(self):
         pass
@@ -1815,20 +1710,20 @@ class BackEngineBase:
     def UpdateMarketGubun(self):
         pass
 
-    def UpdateGlobalsFunc(self, dict_update_func):
+    def UpdateGlobalsFunc(self, dict_add_func):
         pass
-
-    def GetBuyPrice(self, 직전매수가, 직전보유수량, 매수금액, 주문수량):
-        return 0
 
     def GetOrderCount(self, betting, 현재가, 보유중, 매수가, oc_ratio):
         return 0
 
-    def GetProfitInfo(self, 현재가, 매수가, 보유수량):
-        return None, 0, 0, 0
+    def GetBuyPrice(self, 매수금액, 주문수량):
+        return 0
 
     def GetSellPrice(self, 매도금액, 주문수량):
         return 0
 
     def GetLastSellPrice(self, 매도금액, 보유수량, 미체결수량):
         return 0
+
+    def GetProfitInfo(self, 현재가, 매수가, 보유수량):
+        return None, 0, 0, 0

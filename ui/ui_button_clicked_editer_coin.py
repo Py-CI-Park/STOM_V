@@ -686,7 +686,6 @@ def coin_backtest_start(ui):
         )
         ui.proc_backtester_bs.start()
         ui.CoinBacktestLog()
-        ui.back_start_time = now()
         ui.cs_progressBar_01.setValue(0)
         ui.csicon_alert = True
 
@@ -739,7 +738,6 @@ def coin_backfinder_start(ui):
         )
         ui.proc_backtester_bf.start()
         ui.CoinBacktestLog()
-        ui.back_start_time = now()
         ui.cs_progressBar_01.setValue(0)
         ui.csicon_alert = True
 
@@ -901,7 +899,6 @@ def coin_opti_start(ui, back_name):
             )
             ui.proc_backtester_bvct.start()
         ui.CoinBacktestLog()
-        ui.back_start_time = now()
         ui.cs_progressBar_01.setValue(0)
         ui.csicon_alert = True
 
@@ -1009,7 +1006,6 @@ def coin_opti_rwft_start(ui, back_name):
             )
             ui.proc_backtester_brvc.start()
         ui.CoinBacktestLog()
-        ui.back_start_time = now()
         ui.cs_progressBar_01.setValue(0)
         ui.csicon_alert = True
 
@@ -1087,7 +1083,6 @@ def coin_opti_ga_start(ui, back_name):
             )
             ui.proc_backtester_ogvc.start()
         ui.CoinBacktestLog()
-        ui.back_start_time = now()
         ui.cs_progressBar_01.setValue(0)
         ui.csicon_alert = True
 
@@ -1168,7 +1163,6 @@ def coin_opti_cond_start(ui, back_name):
             )
             ui.proc_backtester_ocvc.start()
         ui.CoinBacktestLog()
-        ui.back_start_time = now()
         ui.cs_progressBar_01.setValue(0)
         ui.csicon_alert = True
 

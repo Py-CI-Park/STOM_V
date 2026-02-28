@@ -14,13 +14,12 @@ from utility.setting import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST
 
 
 class Total:
-    def __init__(self, wq, tq, mq, bstq_list, ui_gubun, tick_count):
+    def __init__(self, wq, tq, mq, bstq_list, ui_gubun):
         self.wq           = wq
         self.tq           = tq
         self.mq           = mq
         self.bstq_list    = bstq_list
         self.ui_gubun     = ui_gubun
-        self.tick_count   = tick_count
         self.dict_set     = DICT_SET
 
         self.back_count   = None
@@ -185,7 +184,6 @@ class OptimizeGeneticAlgorithm:
         self.Start()
 
     def Start(self):
-        self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
         if self.ui_gubun not in ('CF', 'SF'):
@@ -310,27 +308,15 @@ class OptimizeGeneticAlgorithm:
         for q in self.beq_list:
             q.put(data)
 
-        time.sleep(1)
-
-        self.shared_cnt.value = 0
-        for q in self.beq_list:
-            q.put('전체틱수계산')
-
-        tick_count = 0
-        for _ in range(self.multi):
-            data = self.bq.get()
-            tick_count += data
-        tick_count = int(tick_count / 1000)
-
         mq = Queue()
-        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, tick_count)).start()
+        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
+
         self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg, sellstg, dict_cn, std_text,
                      optistandard, valid_days, len(day_list)))
 
-        time.sleep(1)
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START'))
 
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
         k    = 1
         vc   = len(self.vars_list)
         hstd = -float('inf')
@@ -457,7 +443,6 @@ class OptimizeGeneticAlgorithm:
 
     def SysExit(self, cancel):
         if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} STOP'))
         else:
             self.tq.put('백테완료중지')

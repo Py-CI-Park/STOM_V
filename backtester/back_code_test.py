@@ -419,10 +419,10 @@ class BackCodeTest(QThread):
         def WILLR_N(pre):
             return 1
 
-        def 이평근접개수(window=60, tick=30, per=0.33):
+        def 이평지지(window=60, tick=30, per=0.5, cnt=0):
             return 0
 
-        def 시가근접개수(tick, per=0.5):
+        def 시가지지(tick, per=0.5):
             return 0
 
         def 변동성(tick, pre=0):
@@ -527,10 +527,10 @@ class BackCodeTest(QThread):
         def 시가이탈(tick, per=1.0):
             return False
 
-        def 이평지지후이평돌파(tick1, tick2=30, per1=0.33, cnt=10, per2=1.0):
+        def 이평지지후이평돌파(tick1, tick2=30, per1=0.5, cnt=10, per2=1.0):
             return False
 
-        def 이평지지후이평이탈(tick1, tick2=30, per1=0.33, cnt=10, per2=1.0):
+        def 이평지지후이평이탈(tick1, tick2=30, per1=0.5, cnt=10, per2=1.0):
             return False
 
         def 횡보후가격급등(tick1, per1=0.5, tick2=2, per2=0.5):

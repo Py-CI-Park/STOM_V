@@ -100,7 +100,6 @@ class BackFinder:
         self.Start()
 
     def Start(self):
-        self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
         avgtime   = int(data[0])
@@ -127,6 +126,8 @@ class BackFinder:
         Process(target=Total, args=(self.wq, self.sq, self.tq, self.bq, self.ui_gubun, self.gubun)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 집계용 프로세스 생성 완료'))
 
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 START'))
+
         self.shared_cnt.value = 0
         self.tq.put(('백테정보', avgtime, startday, endday, starttime, endtime, buystg_name, back_count, tickcols))
         data = ('백테정보', avgtime, startday, endday, starttime, endtime, buystg, 2)
@@ -140,7 +141,6 @@ class BackFinder:
 
     def SysExit(self, cancel):
         if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 STOP'))
         else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 COMPLETE'))

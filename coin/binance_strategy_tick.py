@@ -100,15 +100,10 @@ class BinanceStrategyTick:
 
         self.SetBuyStg(buytxt)
 
-        selltxt = ''
         if self.dict_set['코인매도전략'] in dfs.index:
-            selltxt = dfs['전략코드'][self.dict_set['코인매도전략']]
-            self.sellstrategy = compile(selltxt, '<string>', 'exec')
+            self.sellstrategy = compile(dfs['전략코드'][self.dict_set['코인매도전략']], '<string>', 'exec')
         elif self.dict_set['코인매도전략'] in dfos.index:
-            selltxt = dfos['전략코드'][self.dict_set['코인매도전략']]
-            self.sellstrategy = compile(selltxt, '<string>', 'exec')
-
-        stg_text = buytxt + selltxt
+            self.sellstrategy = compile(dfos['전략코드'][self.dict_set['코인매도전략']], '<string>', 'exec')
 
         if self.dict_set['코인경과틱수설정']:
             def compile_condition(x):
@@ -119,9 +114,8 @@ class BinanceStrategyTick:
             value_text_list = text_list[half_cnt:]
             value_comp_list = [compile_condition(x) for x in value_text_list]
             self.dict_condition = dict(zip(key_list, value_comp_list))
-            stg_text += ';'.join(value_text_list)
 
-        self.UpdateStraegyGlobals(stg_text)
+        self.UpdateStraegyGlobals()
 
     def SetBuyStg(self, buytxt):
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
@@ -862,21 +856,21 @@ class BinanceStrategyTick:
             return self.indexn - self.dict_cond_indexn[self.code][조건명]
         return 0
 
-    def _이평근접개수(self, tick1, tick2=30, per=0.33):
+    def _이평지지(self, tick1, tick2=30, per=0.5, cnt=10):
         if tick1 + tick2 <= self.tick_count and tick1 in self.sma_list:
             sidx, eidx = self._get_double_index(tick2)
             arry_close = self.arry_code[sidx:eidx, self._fi('현재가')]
             arry_sma = self.arry_code[sidx:eidx, self._fi(f'이동평균{tick1}')]
             deviation = np.abs(arry_close - arry_sma) / arry_sma * 100
-            return np.sum(deviation <= per)
+            return np.sum(deviation <= per) >= cnt
         return 0
 
-    def _시가근접개수(self, tick, per=0.5):
+    def _시가지지(self, tick, per=0.5, cnt=10):
         if tick <= self.tick_count:
             sidx, eidx = self._get_double_index(tick)
             arry_close = self.arry_code[sidx:eidx, self._fi('현재가')]
             deviation = np.abs(arry_close - self._시가N(0)) / self._시가N(0) * 100
-            return np.sum(deviation <= per)
+            return np.sum(deviation <= per) >= cnt
         return 0
 
     def _변동성(self, tick, pre=0):
@@ -1062,10 +1056,10 @@ class BinanceStrategyTick:
         return self._최고현재가(tick) > self._시가N(0) and (self._현재가N(0) / self._시가N(0) - 1) * 100 <= -per
 
     def _이평지지후이평돌파(self, tick1, tick2=30, per1=0.5, cnt=10, per2=1.0):
-        return self._이평근접개수(tick1, tick2, per1) >= cnt and self._이평돌파(tick1, per2)
+        return self._이평지지(tick1, tick2, per1, cnt) and self._이평돌파(tick1, per2)
 
     def _이평지지후이평이탈(self, tick1, tick2=30, per1=0.5, cnt=10, per2=1.0):
-        return self._이평근접개수(tick1, tick2, per1) >= cnt and self._이평이탈(tick1, per2)
+        return self._이평지지(tick1, tick2, per1, cnt) and self._이평이탈(tick1, per2)
 
     def _횡보후가격급등(self, tick1, per1=0.5, tick2=10, per2=1.0):
         return self._횡보감지(tick1, per1, tick2) and self._가격급등(tick2, per2)
@@ -1128,10 +1122,10 @@ class BinanceStrategyTick:
         return self._체결강도급락(tick1, ratio1) and self._호가하락압력(tick2, ratio2)
 
     def _시가근접황보후시가돌파(self, tick, per1=0.5, cnt=10, per2=1.0):
-        return self._시가근접개수(tick, per1) >= cnt and self._시가돌파(tick, per2)
+        return self._시가지지(tick, per1, cnt) and self._시가돌파(tick, per2)
 
     def _시가근접황보후시가이탈(self, tick, per1=0.5, cnt=10, per2=1.0):
-        return self._시가근접개수(tick, per1) >= cnt and self._시가이탈(tick, per2)
+        return self._시가지지(tick, per1, cnt) and self._시가이탈(tick, per2)
 
     def _저가갱신후가격급등(self, tick, per=2):
         return self.indexn - self.high_low[self.code][3] <= tick and self._가격급등(tick, per)
@@ -1289,10 +1283,7 @@ class BinanceStrategyTick:
     def _WILLR_N(self, pre):
         return self._Parameter_Previous(self._fi('WILLR'), pre)
 
-    def UpdateStraegyGlobals(self, stg_text):
-        if stg_text == self.cached_stg_text:
-            return
-
+    def UpdateStraegyGlobals(self):
         dict_add_func = {
             '현재가N': self._현재가N,
             '시가N': self._시가N,
@@ -1373,8 +1364,8 @@ class BinanceStrategyTick:
             '당일거래대금각도': self._당일거래대금각도,
             '경과틱수': self._경과틱수,
 
-            '이평근접개수': self._이평근접개수,
-            '시가근접개수': self._시가근접개수,
+            '이평지지': self._이평지지,
+            '시가지지': self._시가지지,
             '변동성': self._변동성,
             '구간저가대비현재가등락율': self._구간저가대비현재가등락율,
             '구간고가대비현재가등락율': self._구간고가대비현재가등락율,
@@ -1474,20 +1465,4 @@ class BinanceStrategyTick:
             'STOCHFD_N': self._STOCHFD_N,
             'WILLR_': self._WILLR_N
         }
-
-        if self.prev_global_list:
-            for name in self.prev_global_list:
-                if name in globals():
-                    del globals()[name]
-
-        dict_update_func = {
-            # 'now': self._now,
-        }
-        for name, func in dict_add_func.items():
-            if name in stg_text:
-                dict_update_func.update({name: func})
-
-        globals().update(dict_update_func)
-
-        self.prev_global_list = list(dict_update_func.keys())
-        self.cached_stg_text  = stg_text
+        globals().update(dict_add_func)

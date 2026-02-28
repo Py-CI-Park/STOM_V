@@ -685,7 +685,6 @@ def stock_backtest_start(ui):
         )
         ui.proc_backtester_bs.start()
         ui.StockBacktestLog()
-        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -739,7 +738,6 @@ def stock_backfinder_start(ui):
         )
         ui.proc_backtester_bf.start()
         ui.StockBacktestLog()
-        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -901,7 +899,6 @@ def stock_opti_start(ui, back_name):
             )
             ui.proc_backtester_bvct.start()
         ui.StockBacktestLog()
-        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -1012,7 +1009,6 @@ def stock_opti_rwft_start(ui, back_name):
             )
             ui.proc_backtester_brvc.start()
         ui.StockBacktestLog()
-        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -1090,7 +1086,6 @@ def stock_opti_ga_start(ui, back_name):
             )
             ui.proc_backtester_ogvc.start()
         ui.StockBacktestLog()
-        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -1171,7 +1166,6 @@ def stock_opti_cond_start(ui, back_name):
             )
             ui.proc_backtester_ocvc.start()
         ui.StockBacktestLog()
-        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 

@@ -1,5 +1,6 @@
 
 import sqlite3
+import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue, Value, Lock
 from backtester.back_subtotal import BackSubTotal
@@ -22,7 +23,7 @@ from backtester.backengine_binance_tick2 import BackEngineBinanceTick2
 from backtester.backengine_binance_min import BackEngineBinanceMin
 from backtester.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
-from utility.static import thread_decorator, qtest_qwait
+from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, str_hm, dt_hm, timedelta_sec
 from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
     DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
@@ -46,38 +47,38 @@ def backengine_show(ui, gubun):
     except:
         pass
     con.close()
+
     if table_list:
         name_list = [ui.dict_name[code] if code in ui.dict_name else code for code in table_list]
         name_list.sort()
         ui.be_comboBoxxxxx_02.clear()
         for name in name_list:
             ui.be_comboBoxxxxx_02.addItem(name)
+
     if gubun == '주식':
         if '키움증권' in ui.dict_set['증권사']:
             if ui.dict_set['주식타임프레임']:
-                starttime = '90000'
+                starttime = '090000'
             else:
-                starttime = '900'
+                starttime = '0900'
         else:
             if ui.dict_set['주식타임프레임']:
-                starttime = '93000'
+                starttime = '093000'
             else:
-                starttime = '900'
-        if '키움증권' in ui.dict_set['증권사']:
-            if ui.dict_set['주식타임프레임']:
-                endtime = '93000'
-            else:
-                endtime = '1520'
+                starttime = '0900'
+        if ui.dict_set['주식타임프레임']:
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['주식전략종료시간']))))
         else:
-            if ui.dict_set['주식타임프레임']:
-                endtime = '103000'
-            else:
-                endtime = '1600'
-        ui.be_lineEdittttt_01.setText(starttime)
-        ui.be_lineEdittttt_02.setText(endtime)
+            endtime = str_hm(timedelta_sec(-120, dt_hm(str(ui.dict_set['주식전략종료시간']))))
     else:
-        ui.be_lineEdittttt_01.setText('0')
-        ui.be_lineEdittttt_02.setText('235000' if ui.dict_set['코인타임프레임'] else '2350')
+        starttime = '000000'
+        if ui.dict_set['코인타임프레임']:
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['코인전략종료시간']))))
+        else:
+            endtime = str_hm(timedelta_sec(-120, dt_hm(str(ui.dict_set['코인전략종료시간']))))
+
+    ui.be_lineEdittttt_01.setText(starttime)
+    ui.be_lineEdittttt_02.setText(endtime)
     if not ui.backengin_window_open:
         ui.be_comboBoxxxxx_01.setCurrentText(ui.dict_set['백테엔진분류방법'])
     ui.dialog_backengine.show()
@@ -261,6 +262,8 @@ def backengine_start(ui, gubun):
         ui.shared_info += shared_info_
         ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
     ui.shared_info = sorted(ui.shared_info, key=lambda x: x['len'], reverse=True)
+    ui.back_tick_cunsum = [x['len'] for x in ui.shared_info]
+    ui.back_tick_cunsum = np.cumsum(ui.back_tick_cunsum)
     ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 완료'))
 
     ui.back_count = len(ui.shared_info)
@@ -269,7 +272,6 @@ def backengine_start(ui, gubun):
 
     ui.back_engining = False
     ui.backtest_engine = True
-    if not ui.qtimer3.isActive(): ui.qtimer3.start()
     ui.windowQ.put((ui_num['백테엔진'], '백테엔진 준비 완료'))
 
 

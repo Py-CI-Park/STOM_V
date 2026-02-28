@@ -15,7 +15,7 @@ from utility.setting import ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_STOCK
 
 
 class Total:
-    def __init__(self, wq, sq, tq, teleQ, mq, bstq_list, backname, ui_gubun, gubun, tick_count):
+    def __init__(self, wq, sq, tq, teleQ, mq, bstq_list, backname, ui_gubun, gubun):
         self.wq           = wq
         self.sq           = sq
         self.tq           = tq
@@ -24,7 +24,6 @@ class Total:
         self.bstq_list    = bstq_list
         self.backname     = backname
         self.ui_gubun     = ui_gubun
-        self.tick_count   = tick_count
         self.gubun        = gubun
         self.dict_set     = DICT_SET
         gubun_text        = f'{self.gubun}_future' if self.ui_gubun == 'CF' else self.gubun
@@ -70,7 +69,6 @@ class Total:
         self.hstd_list    = None
         self.hstd         = -float('inf')
         self.sub_total    = 0
-        self.total_count  = 0
 
         self.MainLoop()
 
@@ -173,15 +171,11 @@ class Total:
                 dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
 
             elif data[0] == '경우의수':
-                self.total_count  = data[1]
-                self.back_count   = data[2]
-                self.startday     = data[3]
-                self.endday       = data[4]
-                self.out_count    = data[5]
+                self.back_count   = data[1]
+                self.startday     = data[2]
+                self.endday       = data[3]
+                self.out_count    = data[4]
                 self.hstd         = -float('inf')
-
-            elif data[0] == '횟수변경':
-                self.total_count = data[1]
 
             elif data[0] == '최적화정보':
                 self.hstd_list = data[1]
@@ -342,7 +336,6 @@ class RollingWalkForwardTest:
         self.Start()
 
     def Start(self):
-        self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
         if self.ui_gubun not in ('CF', 'SF'):
@@ -461,15 +454,8 @@ class RollingWalkForwardTest:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - 최적화 변수설정 1단계 {e}'))
             self.SysExit(True)
 
-        total_count, vars_type = self.GetOptomizeVarsList(random_optivars)
-
-        out_count   = len(list_days)
-        len_vars    = len(self.vars_)
-        avg_list    = self.vars_[0][0]
-        total_count *= ccount if ccount != 0 else 1
-        total_count += 1
-        total_count += out_count
-        total_count *= back_count
+        out_count = len(list_days)
+        vars_type, avg_list = self.GetOptomizeVarsList(random_optivars)
         text = f'{self.backname} 매도수전략 및 변수 설정 완료' if not random_optivars else f'{self.backname} 매도수전략 및 변수 최적값 랜덤 설정 완료'
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text))
 
@@ -477,30 +463,19 @@ class RollingWalkForwardTest:
         for q in self.beq_list:
             q.put(data)
 
-        time.sleep(1)
-
-        self.shared_cnt.value = 0
-        for q in self.beq_list:
-            q.put('전체틱수계산')
-
-        tick_count = 0
-        for _ in range(self.multi):
-            data = self.bq.get()
-            tick_count += data
-        tick_count = int(tick_count / 1000)
-
         mq = Queue()
         Process(
             target=Total,
-            args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.bstq_list, self.backname, self.ui_gubun,
-                  self.gubun, tick_count)
+            args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.bstq_list, self.backname, self.ui_gubun, self.gubun)
         ).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
+
         self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg_name, buystg, sellstg, optivars,
                      dict_cn, list_days, std_text, optistandard, schedul, weeks_train, weeks_valid, weeks_test))
 
         if 'B' in self.backname:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA Sampler : {optuna_sampler}</font>'))
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 인샘플 최적화 시작'))
 
         hstd_list = []
@@ -511,11 +486,11 @@ class RollingWalkForwardTest:
 
             if 'B' not in self.backname:
                 hstd = self.OptimizeGrid(
-                    mq, total_count, back_count, ccount, vars_type, startday, endday, j
+                    mq, back_count, ccount, vars_type, startday, endday, j
                 )
             else:
                 hstd = self.OptimizeOptuna(
-                    mq, optuna_count, back_count, len_vars, optuna_fixvars, optuna_autostep, buystg_name, sampler,
+                    mq, optuna_count, back_count, optuna_fixvars, optuna_autostep, buystg_name, sampler,
                     startday, endday, j
                 )
 
@@ -528,7 +503,7 @@ class RollingWalkForwardTest:
         self.tq.put(('최적화정보', hstd_list))
         for i, days in enumerate(list_days):
             startday, endday = days[2]
-            self.tq.put(('경우의수', total_count, back_count, startday, endday, out_count))
+            self.tq.put(('경우의수', back_count, startday, endday, out_count))
             self.BackStart(('변수정보', hvar_list[i], 2, startday, endday, i))
             _ = mq.get()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 아웃샘플 백테스트 완료'))
@@ -595,7 +570,6 @@ class RollingWalkForwardTest:
         return list_days[::-1]
 
     def GetOptomizeVarsList(self, random_optivars):
-        total_count = 0
         vars_type   = []
         self.vars_  = []
         for i, var in enumerate(list(self.vars.values())):
@@ -623,7 +597,6 @@ class RollingWalkForwardTest:
             if gap == 0:
                 vars_list[0].append(opti)
             else:
-                total_count += 1
                 for k in range(1000):
                     if varint:
                         next_var = low + gap * k
@@ -637,11 +610,10 @@ class RollingWalkForwardTest:
                 vars_list[1] = random.choice(vars_list[0])
             self.vars_.append(vars_list)
 
-        return total_count, vars_type
+        return vars_type, self.vars_[0][0]
 
-    def OptimizeGrid(self, mq, total_count, back_count, ccount, vars_type, startday, endday, j):
-
-        self.tq.put(('경우의수', total_count, back_count, startday, endday, j))
+    def OptimizeGrid(self, mq, back_count, ccount, vars_type, startday, endday, j):
+        self.tq.put(('경우의수', back_count, startday, endday, j))
         self.BackStart(('변수정보', self.vars_, 0, startday, endday, j))
 
         hstd = 0
@@ -774,15 +746,11 @@ class RollingWalkForwardTest:
                     text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
         if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
 
-    def OptimizeOptuna(self, mq, optuna_count, back_count, len_vars, optuna_fixvars, optuna_autostep, buystg_name,
+    def OptimizeOptuna(self, mq, optuna_count, back_count, optuna_fixvars, optuna_autostep, buystg_name,
                        sampler, startday, endday, j):
 
         self.dict_simple_vars = {}
-        if optuna_count == 0:
-            total_count = back_count * (len_vars + 1)
-        else:
-            total_count = back_count * optuna_count
-        self.tq.put(('경우의수', total_count, back_count, startday, endday, j))
+        self.tq.put(('경우의수', back_count, startday, endday, j))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 인샘플 [{j + 1}]구간 OPTUNA 최적화 시작'))
 
         def objective(trial):
@@ -849,7 +817,6 @@ class RollingWalkForwardTest:
 
     def SysExit(self, cancel):
         if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} STOP'))
         else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))
@@ -871,8 +838,6 @@ class StopWhenNotUpdateBestCallBack:
         curr_num    = trial.number
         last_num    = (best_num + self.len_vars) if self.optuna_count == 0 else (best_num + self.optuna_count)
         rema_num    = last_num - curr_num
-        total_count = self.back_count * (last_num + 1)
-        self.main.tq.put(('횟수변경', total_count))
         self.main.wq.put((ui_num[f'{self.main.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
         if curr_num >= self.adjust_cnt and curr_num == best_num:
             self.main.AdjustVarsRange(list(study.best_params.values()))
