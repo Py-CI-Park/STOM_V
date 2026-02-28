@@ -132,7 +132,7 @@ class KiwoomAgentMin(KiwoomAgentTick):
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
                         self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        buy_arr  = self.dict_bmbyp[code]
                     price_idx[c] = idx
                     buy_arr[idx] = buy_money
                     price_idx['count'] += 1
@@ -147,8 +147,8 @@ class KiwoomAgentMin(KiwoomAgentTick):
                 else:
                     idx = price_idx['count']
                     if idx >= len(sell_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
                         self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        sell_arr = self.dict_smbyp[code]
                     price_idx[c] = idx
                     sell_arr[idx] = sell_money
                     price_idx['count'] += 1

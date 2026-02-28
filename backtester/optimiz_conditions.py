@@ -226,12 +226,15 @@ class OptimizeConditions:
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            is_tick = self.dict_set['주식타임프레임']
         elif self.ui_gubun == 'SF':
             db = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            is_tick = self.dict_set['주식타임프레임']
         else:
             db = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+            is_tick = self.dict_set['코인타임프레임']
         con   = sqlite3.connect(db)
-        query = GetMoneytopQuery(self.ui_gubun, startday, endday, starttime, endtime)
+        query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
         df_mt = pd.read_sql(query, con)
         con.close()
 

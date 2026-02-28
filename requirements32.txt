@@ -12,7 +12,6 @@ PyQt5-Qt5==5.15.2
 PyQt5_sip==12.18.0
 
 # Financial & Trading
-TA-Lib==0.4.27
 exchange_calendars==4.13.1
 
 # Web & HTTP
@@ -60,6 +59,3 @@ typing_extensions==4.15.0
 six==1.17.0
 setuptools==65.5.0
 tzdata==2025.3
-
-# 로컬 TA-Lib 휠 파일 (32비트)
-# ./utility/TA_Lib-0.4.27-cp311-cp311-win32.whl

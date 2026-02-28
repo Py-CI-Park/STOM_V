@@ -23,7 +23,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
 
         시분초 = int(str(체결시간)[8:] + '00')
         rw = 평균값계산틱수 = self.dict_set['주식평균값계산틱수']
-        순매수금액 = 분당매수금액 - 분당매수금액
+        순매수금액 = 분당매수금액 - 분당매도금액
         self.hoga_unit = 호가단위 = GetHogaunit(종목코드 in self.tuple_kosd, 현재가, 체결시간)
 
         shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))

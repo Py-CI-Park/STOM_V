@@ -57,25 +57,13 @@ def backengine_show(ui, gubun):
 
     if gubun == '주식':
         if '키움증권' in ui.dict_set['증권사']:
-            if ui.dict_set['주식타임프레임']:
-                starttime = '090000'
-            else:
-                starttime = '0900'
+            starttime = '090000'
         else:
-            if ui.dict_set['주식타임프레임']:
-                starttime = '093000'
-            else:
-                starttime = '0900'
-        if ui.dict_set['주식타임프레임']:
-            endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['주식전략종료시간']))))
-        else:
-            endtime = str_hm(timedelta_sec(-120, dt_hm(str(ui.dict_set['주식전략종료시간']))))
+            starttime = '093000'
+        endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['주식전략종료시간']))))
     else:
         starttime = '000000'
-        if ui.dict_set['코인타임프레임']:
-            endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['코인전략종료시간']))))
-        else:
-            endtime = str_hm(timedelta_sec(-120, dt_hm(str(ui.dict_set['코인전략종료시간']))))
+        endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['코인전략종료시간']))))
 
     ui.be_lineEdittttt_01.setText(starttime)
     ui.be_lineEdittttt_02.setText(endtime)
@@ -155,10 +143,13 @@ def backengine_start(ui, gubun):
     try:
         if gubun == '주식':
             db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            is_tick = ui.dict_set['주식타임프레임']
         elif gubun == '해선':
             db = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            is_tick = ui.dict_set['주식타임프레임']
         else:
             db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+            is_tick = ui.dict_set['코인타임프레임']
 
         con = sqlite3.connect(db)
         if gubun == '주식':
@@ -174,7 +165,7 @@ def backengine_start(ui, gubun):
             ui.dict_cn = df_info['종목명'].to_dict()
 
         gubun_ = 'S' if gubun == '주식' else 'X'
-        query = GetMoneytopQuery(gubun_, ui.startday, ui.endday, ui.starttime, ui.endtime)
+        query = GetMoneytopQuery(is_tick, gubun_, ui.startday, ui.endday, ui.starttime, ui.endtime)
         df_mt = pd.read_sql(query, con)
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
         df_mt.set_index('index', inplace=True)

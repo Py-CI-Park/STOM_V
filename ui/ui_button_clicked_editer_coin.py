@@ -11,7 +11,6 @@ from backtester.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from ui.set_style import style_bc_by, style_bc_dk, style_bc_bs, style_bc_bd
 from ui.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condtext, cedittxt, example_finder, \
     example_finder_future
-from utility.static import now
 
 
 def coin_opti_test_editer(ui):

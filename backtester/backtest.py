@@ -159,21 +159,18 @@ class Total:
         startday, endday = str(self.startday), str(self.endday)
         startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
         endday   = f'{endday[:4]}-{endday[4:6]}-{endday[6:]}'
-        if len(str(self.starttime)) > 4:
-            starttime, endtime = str(self.starttime).zfill(6), str(self.endtime).zfill(6)
-            starttime = f'{starttime[:2]}:{starttime[2:4]}:{starttime[4:]}'
-            endtime   = f'{endtime[:2]}:{endtime[2:4]}:{endtime[4:]}'
-        else:
-            starttime, endtime = str(self.starttime).zfill(4), str(self.endtime).zfill(4)
-            starttime = f'{starttime[:2]}:{starttime[2:]}'
-            endtime   = f'{endtime[:2]}:{endtime[2:]}'
+        starttime, endtime = str(self.starttime).zfill(6), str(self.endtime).zfill(6)
+        starttime = f'{starttime[:2]}:{starttime[2:4]}:{starttime[4:]}'
+        endtime   = f'{endtime[:2]}:{endtime[2:4]}:{endtime[4:]}'
 
         bet_unit = '원' if self.ui_gubun in ('S', 'C') else '계약' if self.ui_gubun == 'SF' else 'USDT'
         tsg_unit = '원' if self.ui_gubun in ('S', 'C') else 'USD' if self.ui_gubun == 'SF' else 'USDT'
         if self.ui_gubun in ('S', 'SF'):
             bc_unit = '초' if self.dict_set['주식타임프레임'] else '분'
+            is_tick = self.dict_set['주식타임프레임']
         else:
             bc_unit = '초' if self.dict_set['코인타임프레임'] else '분'
+            is_tick = self.dict_set['코인타임프레임']
 
         back_text  = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.avgtime}'
         label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{tsg_unit}, 거래횟수 {tc}회, '\
@@ -228,12 +225,12 @@ class Total:
                 else:
                     sell_vars = f'{sell_vars}, {text}'
 
-            PlotShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
+            PlotShow('백테스트', is_tick, self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
                      self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
                      save_file_name, self.schedul, False, buy_vars=buy_vars, sell_vars=sell_vars)
         else:
             if not self.dict_set['그래프저장하지않기']:
-                PlotShow('백테스트', self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
+                PlotShow('백테스트', is_tick, self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
                          self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
                          save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
 
@@ -286,12 +283,15 @@ class BackTest:
 
         if self.ui_gubun == 'S':
             db = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            is_tick = self.dict_set['주식타임프레임']
         elif self.ui_gubun == 'SF':
             db = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            is_tick = self.dict_set['주식타임프레임']
         else:
             db = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+            is_tick = self.dict_set['코인타임프레임']
         con   = sqlite3.connect(db)
-        query = GetMoneytopQuery(self.ui_gubun, startday, endday, starttime, endtime)
+        query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
         df_mt = pd.read_sql(query, con)
         con.close()
 

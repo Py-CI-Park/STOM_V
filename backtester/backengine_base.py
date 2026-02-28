@@ -337,7 +337,7 @@ class BackEngineBase:
     def DataLoad(self, data):
         def data_load(days):
             try:
-                df = pd.read_sql(GetBackloadCodeQuery(code, days, starttime, endtime), con)
+                df = pd.read_sql(GetBackloadCodeQuery(self.is_tick, code, days, starttime, endtime), con)
             except:
                 pass
             else:

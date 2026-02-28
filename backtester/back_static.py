@@ -70,32 +70,32 @@ def get_trade_info(gubun):
     return v
 
 
-def GetBackloadCodeQuery(code, days, starttime, endtime):
+def GetBackloadCodeQuery(is_tick, code, days, starttime, endtime):
     conditions = []
     for day in days:
-        if len(str(endtime)) < 5:
-            sindex = day * 10000 + starttime
-            eindex = day * 10000 + endtime
-        else:
+        if is_tick:
             sindex = day * 1000000 + starttime
             eindex = day * 1000000 + endtime
+        else:
+            sindex = day * 10000 + starttime
+            eindex = day * 10000 + endtime
         conditions.append(f"(`index` >= {sindex} AND `index` <= {eindex})")
     where_clause = " OR ".join(conditions)
     query = f"SELECT * FROM '{code}' WHERE {where_clause}"
     return query
 
 
-def GetMoneytopQuery(gubun, startday, endday, starttime, endtime):
-    if len(str(endtime)) < 5:
-        sindex = startday * 10000 + starttime
-        eindex = endday * 10000 + endtime
-    else:
+def GetMoneytopQuery(is_tick, gubun, startday, endday, starttime, endtime):
+    if is_tick:
         if gubun == 'S' and starttime < 90030:
             sindex = startday * 1000000 + 90030
             eindex = endday * 1000000 + endtime
         else:
             sindex = startday * 1000000 + starttime
             eindex = endday * 1000000 + endtime
+    else:
+        sindex = startday * 10000 + starttime
+        eindex = endday * 10000 + endtime
     query = f"SELECT * FROM moneytop WHERE " \
             f"`index` >= {sindex} AND `index` <= {eindex}"
     return query
@@ -410,7 +410,7 @@ def GetOptiStdText(optistd, std_list, result, pre_text):
     return text, std
 
 
-def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
+def PlotShow(is_tick, gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
              backname, back_text, label_text, save_file_name, schedul, plotgraph, buy_vars=None, sell_vars=None):
     df_tsg['수익금합계020'] = df_tsg['수익금합계'].rolling(window=20).mean()
     df_tsg['수익금합계060'] = df_tsg['수익금합계'].rolling(window=60).mean()
@@ -434,9 +434,8 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
             mdd_ = 0.
         mdd_list.append(mdd_)
 
-    is_min = len(str(endtime)) < 5
     df_sg = df_tsg[['수익금']].copy()
-    df_sg.index = df_sg.index.map(lambda x: dt_ymdhms(x) if not is_min else dt_ymdhm(x))
+    df_sg.index = df_sg.index.map(lambda x: dt_ymdhms(x) if is_tick else dt_ymdhm(x))
 
     df_ts = df_sg.resample('D').sum()
     df_ts['수익금합계'] = df_ts['수익금'].cumsum()
@@ -470,18 +469,14 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
                 pass
 
     df_st = df_tsg[['수익금']].copy()
-    df_st.index = df_st.index.map(lambda x: dt_hms(x[8:]) if not is_min else dt_hm(x[8:]))
-    if not is_min:
-        start_time = dt_hms(str(starttime).zfill(6))
-        end_time = dt_hms(str(endtime).zfill(6))
-    else:
-        start_time = dt_hm(str(starttime).zfill(4))
-        end_time = dt_hm(str(endtime).zfill(4))
+    df_st.index = df_st.index.map(lambda x: dt_hms(x[8:]) if is_tick else dt_hm(x[8:]))
+    start_time = dt_hms(str(starttime).zfill(6))
+    end_time = dt_hms(str(endtime).zfill(6))
     total_sec = (end_time - start_time).total_seconds()
     interval = f'{total_sec / 600}min' if total_sec >= 1800 else '3min'
     df_st = df_st.resample(interval).sum()
-    df_st.index = df_st.index.map(lambda x: str_hms(x) if not is_min else str_hm(x))
-    if not is_min:
+    df_st.index = df_st.index.map(lambda x: str_hms(x) if is_tick else str_hm(x))
+    if is_tick:
         df_st.index = df_st.index.map(lambda x: f'{x[:2]}:{x[2:4]}:{x[4:]}')
     else:
         df_st.index = df_st.index.map(lambda x: f'{x[:2]}:{x[2:]}')
@@ -490,7 +485,7 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
 
     df_wt = df_tsg[['수익금']].copy()
     df_wt['요일'] = df_wt.index
-    df_wt['요일'] = df_wt['요일'].apply(lambda x: dt_ymdhms(x).weekday() if not is_min else dt_ymdhm(x).weekday())
+    df_wt['요일'] = df_wt['요일'].apply(lambda x: dt_ymdhms(x).weekday() if is_tick else dt_ymdhm(x).weekday())
     sum_0 = df_wt[df_wt['요일'] == 0]['수익금'].sum()
     sum_1 = df_wt[df_wt['요일'] == 1]['수익금'].sum()
     sum_2 = df_wt[df_wt['요일'] == 2]['수익금'].sum()
@@ -512,20 +507,20 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
             wt_datap.append(0)
             wt_datam.append(data)
 
-    if not is_min:
+    if is_tick:
         df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
     else:
         df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:]}')
 
     endx_list = None
     if gubun == '최적화':
-        if not is_min:
+        if is_tick:
             endx_list = [df_tsg[df_tsg['매도시간'] < list_days[2][0] * 1000000 + 240000].index[-1]]
         else:
             endx_list = [df_tsg[df_tsg['매도시간'] < list_days[2][0] * 10000 + 2400].index[-1]]
         if list_days[1] is not None:
             for vsday, _, _ in list_days[1]:
-                if not is_min:
+                if is_tick:
                     df_tsg_ = df_tsg[df_tsg['매도시간'] < vsday * 1000000]
                 else:
                     df_tsg_ = df_tsg[df_tsg['매도시간'] < vsday * 10000]

@@ -12,7 +12,7 @@ from backtester.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from backtester.rolling_walk_forward_test import RollingWalkForwardTest
 from ui.set_text import famous_saying
 from utility.setting import ui_num
-from utility.static import qtest_qwait, now
+from utility.static import qtest_qwait
 
 
 def bebutton_clicked_01(ui):
