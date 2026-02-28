@@ -20,6 +20,7 @@ class CustomViewBox(pg.ViewBox):
         self.xmax = 0
         self.ymin = 0
         self.ymax = 0
+        self.linked_views = []
 
     def set_uiclass(self, ui_class):
         self.ui = ui_class
@@ -29,6 +30,19 @@ class CustomViewBox(pg.ViewBox):
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
+
+    def linkX(self, other_view):
+        if other_view not in self.linked_views:
+            self.linked_views.append(other_view)
+            other_view.linked_views.append(self)
+            self.sigXRangeChanged.connect(self._update_linked_views)
+            other_view.sigXRangeChanged.connect(self._update_linked_views)
+
+    def _update_linked_views(self, _, x_range):
+        x_min, x_max = x_range
+        for view in self.linked_views:
+            if view != self:
+                view.setXRange(x_min, x_max, padding=0)
 
     def mouseClickEvent(self, ev):
         if ev.button() == Qt.RightButton:

@@ -38,6 +38,8 @@
         <option value="pywintypes.error" />
         <option value="PyQt5.QtCore.pyqtSignal.*" />
         <option value="win32api.*" />
+        <option value="PyQt5.QtCore.Qt.*" />
+        <option value="PyQt5.QtCore.QEvent.*" />
       </list>
     </option>
   </inspection_tool>

@@ -9,9 +9,8 @@ class CrossHair:
     def __init__(self, ui):
         self.ui = ui
 
-    def crosshair(self, real, gubun, is_min, main_pg1, sub_pg2, sub_pg3, sub_pg4, sub_pg5, sub_pg6, sub_pg7=None, sub_pg8=None,
-                  sub_pg9=None, sub_pg10=None, sub_pg11=None, sub_pg12=None, sub_pg13=None, sub_pg14=None,
-                  sub_pg15=None, sub_pg16=None):
+    def crosshair(self, real, gubun, is_min, main_pg1, sub_pg1, sub_pg2, sub_pg3, sub_pg4, sub_pg5, sub_pg6=None, sub_pg7=None,
+                  sub_pg8=None, sub_pg9=None, sub_pg10=None, sub_pg11=None, sub_pg12=None):
         def setInfiniteLine(angle=None):
             if angle is None:
                 vhline = pg.InfiniteLine()
@@ -33,9 +32,6 @@ class CrossHair:
         hLine11 = setInfiniteLine(angle=0)
         hLine12 = setInfiniteLine(angle=0)
         hLine13 = setInfiniteLine(angle=0)
-        hLine14 = setInfiniteLine(angle=0)
-        hLine15 = setInfiniteLine(angle=0)
-        hLine16 = setInfiniteLine(angle=0)
 
         vLine1  = setInfiniteLine()
         vLine2  = setInfiniteLine()
@@ -50,34 +46,31 @@ class CrossHair:
         vLine11 = setInfiniteLine()
         vLine12 = setInfiniteLine()
         vLine13 = setInfiniteLine()
-        vLine14 = setInfiniteLine()
-        vLine15 = setInfiniteLine()
-        vLine16 = setInfiniteLine()
 
-        pg_list = [main_pg1, sub_pg2, sub_pg3, sub_pg4, sub_pg5, sub_pg6]
+        pg_list = [main_pg1, sub_pg1, sub_pg2, sub_pg3, sub_pg4, sub_pg5]
         hLines  = [hLine1, hLine2, hLine3, hLine4, hLine5, hLine6]
         vLines  = [vLine1, vLine2, vLine3, vLine4, vLine5, vLine6]
         count_  = 6
-        if sub_pg8 is not None:
-            pg_list += [sub_pg7, sub_pg8]
-            hLines  += [hLine7, hLine8]
-            vLines  += [vLine7, vLine8]
-            count_  += 2
-        if sub_pg10 is not None:
-            pg_list += [sub_pg9, sub_pg10]
+        if sub_pg6 is not None:
+            pg_list += [sub_pg6]
+            hLines  += [hLine7]
+            vLines  += [vLine7]
+            count_  += 1
+        if sub_pg7 is not None:
+            pg_list += [sub_pg7]
+            hLines  += [hLine8]
+            vLines  += [vLine8]
+            count_  += 1
+        if sub_pg9 is not None:
+            pg_list += [sub_pg8, sub_pg9]
             hLines  += [hLine9, hLine10]
             vLines  += [vLine9, vLine10]
             count_  += 2
         if sub_pg12 is not None:
-            pg_list += [sub_pg11, sub_pg12]
-            hLines  += [hLine11, hLine12]
-            vLines  += [vLine11, vLine12]
-            count_  += 2
-        if sub_pg16 is not None:
-            pg_list += [sub_pg13, sub_pg14, sub_pg15, sub_pg16]
-            hLines  += [hLine13, hLine14, hLine15, hLine16]
-            vLines  += [vLine13, vLine14, vLine15, vLine16]
-            count_  += 4
+            pg_list += [sub_pg10, sub_pg11, sub_pg12]
+            hLines  += [hLine11, hLine12, hLine13]
+            vLines  += [vLine11, vLine12, vLine13]
+            count_  += 3
 
         self.ui.ctpg_labels = []
 
@@ -95,55 +88,46 @@ class CrossHair:
             main_pg1.addItem(vLine1, ignoreBounds=True)
             main_pg1.addItem(hLine1, ignoreBounds=True)
             main_pg1.addItem(self.ui.ctpg_labels[0])
-            sub_pg2.addItem(vLine2, ignoreBounds=True)
-            sub_pg2.addItem(hLine2, ignoreBounds=True)
-            sub_pg2.addItem(self.ui.ctpg_labels[1])
-            sub_pg3.addItem(vLine3, ignoreBounds=True)
-            sub_pg3.addItem(hLine3, ignoreBounds=True)
-            sub_pg3.addItem(self.ui.ctpg_labels[2])
-            sub_pg4.addItem(vLine4, ignoreBounds=True)
-            sub_pg4.addItem(hLine4, ignoreBounds=True)
-            sub_pg4.addItem(self.ui.ctpg_labels[3])
-            sub_pg5.addItem(vLine5, ignoreBounds=True)
-            sub_pg5.addItem(hLine5, ignoreBounds=True)
-            sub_pg5.addItem(self.ui.ctpg_labels[4])
-            sub_pg6.addItem(vLine6, ignoreBounds=True)
-            sub_pg6.addItem(hLine6, ignoreBounds=True)
-            sub_pg6.addItem(self.ui.ctpg_labels[5])
-            if sub_pg8 is not None:
-                sub_pg7.addItem(vLine7, ignoreBounds=True)
-                sub_pg7.addItem(hLine7, ignoreBounds=True)
-                sub_pg7.addItem(self.ui.ctpg_labels[6])
-                sub_pg8.addItem(vLine8, ignoreBounds=True)
-                sub_pg8.addItem(hLine8, ignoreBounds=True)
-                sub_pg8.addItem(self.ui.ctpg_labels[7])
-            if sub_pg10 is not None:
-                sub_pg9.addItem(vLine9, ignoreBounds=True)
-                sub_pg9.addItem(hLine9, ignoreBounds=True)
-                sub_pg9.addItem(self.ui.ctpg_labels[8])
-                sub_pg10.addItem(vLine10, ignoreBounds=True)
-                sub_pg10.addItem(hLine10, ignoreBounds=True)
-                sub_pg10.addItem(self.ui.ctpg_labels[9])
+            sub_pg1.addItem(vLine2, ignoreBounds=True)
+            sub_pg1.addItem(hLine2, ignoreBounds=True)
+            sub_pg1.addItem(self.ui.ctpg_labels[1])
+            sub_pg2.addItem(vLine3, ignoreBounds=True)
+            sub_pg2.addItem(hLine3, ignoreBounds=True)
+            sub_pg2.addItem(self.ui.ctpg_labels[2])
+            sub_pg3.addItem(vLine4, ignoreBounds=True)
+            sub_pg3.addItem(hLine4, ignoreBounds=True)
+            sub_pg3.addItem(self.ui.ctpg_labels[3])
+            sub_pg4.addItem(vLine5, ignoreBounds=True)
+            sub_pg4.addItem(hLine5, ignoreBounds=True)
+            sub_pg4.addItem(self.ui.ctpg_labels[4])
+            sub_pg5.addItem(vLine6, ignoreBounds=True)
+            sub_pg5.addItem(hLine6, ignoreBounds=True)
+            sub_pg5.addItem(self.ui.ctpg_labels[5])
+            if sub_pg6 is not None:
+                sub_pg6.addItem(vLine7, ignoreBounds=True)
+                sub_pg6.addItem(hLine7, ignoreBounds=True)
+                sub_pg6.addItem(self.ui.ctpg_labels[6])
+            if sub_pg7 is not None:
+                sub_pg7.addItem(vLine8, ignoreBounds=True)
+                sub_pg7.addItem(hLine8, ignoreBounds=True)
+                sub_pg7.addItem(self.ui.ctpg_labels[7])
+            if sub_pg9 is not None:
+                sub_pg8.addItem(vLine9, ignoreBounds=True)
+                sub_pg8.addItem(hLine9, ignoreBounds=True)
+                sub_pg8.addItem(self.ui.ctpg_labels[8])
+                sub_pg9.addItem(vLine10, ignoreBounds=True)
+                sub_pg9.addItem(hLine10, ignoreBounds=True)
+                sub_pg9.addItem(self.ui.ctpg_labels[9])
             if sub_pg12 is not None:
-                sub_pg11.addItem(vLine11, ignoreBounds=True)
-                sub_pg11.addItem(hLine11, ignoreBounds=True)
-                sub_pg11.addItem(self.ui.ctpg_labels[10])
-                sub_pg12.addItem(vLine12, ignoreBounds=True)
-                sub_pg12.addItem(hLine12, ignoreBounds=True)
-                sub_pg12.addItem(self.ui.ctpg_labels[11])
-            if sub_pg16 is not None:
-                sub_pg13.addItem(vLine13, ignoreBounds=True)
-                sub_pg13.addItem(hLine13, ignoreBounds=True)
-                sub_pg13.addItem(self.ui.ctpg_labels[12])
-                sub_pg14.addItem(vLine14, ignoreBounds=True)
-                sub_pg14.addItem(hLine14, ignoreBounds=True)
-                sub_pg14.addItem(self.ui.ctpg_labels[13])
-                sub_pg15.addItem(vLine15, ignoreBounds=True)
-                sub_pg15.addItem(hLine15, ignoreBounds=True)
-                sub_pg15.addItem(self.ui.ctpg_labels[14])
-                sub_pg16.addItem(vLine16, ignoreBounds=True)
-                sub_pg16.addItem(hLine16, ignoreBounds=True)
-                sub_pg16.addItem(self.ui.ctpg_labels[15])
+                sub_pg10.addItem(vLine11, ignoreBounds=True)
+                sub_pg10.addItem(hLine11, ignoreBounds=True)
+                sub_pg10.addItem(self.ui.ctpg_labels[10])
+                sub_pg11.addItem(vLine12, ignoreBounds=True)
+                sub_pg11.addItem(hLine12, ignoreBounds=True)
+                sub_pg11.addItem(self.ui.ctpg_labels[11])
+                sub_pg12.addItem(vLine13, ignoreBounds=True)
+                sub_pg12.addItem(hLine13, ignoreBounds=True)
+                sub_pg12.addItem(self.ui.ctpg_labels[12])
         except:
             pass
 
@@ -151,25 +135,22 @@ class CrossHair:
             pos = evt[0]
             index = -1
             if main_pg1.sceneBoundingRect().contains(pos):       index =  0
-            elif sub_pg2.sceneBoundingRect().contains(pos):      index =  1
-            elif sub_pg3.sceneBoundingRect().contains(pos):      index =  2
-            elif sub_pg4.sceneBoundingRect().contains(pos):      index =  3
-            elif sub_pg5.sceneBoundingRect().contains(pos):      index =  4
-            elif sub_pg6.sceneBoundingRect().contains(pos):      index =  5
+            elif sub_pg1.sceneBoundingRect().contains(pos):      index =  1
+            elif sub_pg2.sceneBoundingRect().contains(pos):      index =  2
+            elif sub_pg3.sceneBoundingRect().contains(pos):      index =  3
+            elif sub_pg4.sceneBoundingRect().contains(pos):      index =  4
+            elif sub_pg5.sceneBoundingRect().contains(pos):      index =  5
+            if sub_pg6 is not None:
+                if sub_pg6.sceneBoundingRect().contains(pos):    index =  6
             if sub_pg7 is not None:
-                if sub_pg7.sceneBoundingRect().contains(pos):    index =  6
-                elif sub_pg8.sceneBoundingRect().contains(pos):  index =  7
+                if sub_pg7.sceneBoundingRect().contains(pos):    index =  7
             if sub_pg9 is not None:
-                if sub_pg9.sceneBoundingRect().contains(pos):    index =  8
-                elif sub_pg10.sceneBoundingRect().contains(pos): index =  9
-            if sub_pg11 is not None:
-                if sub_pg11.sceneBoundingRect().contains(pos):   index = 10
-                elif sub_pg12.sceneBoundingRect().contains(pos): index = 11
-            if sub_pg13 is not None:
-                if sub_pg13.sceneBoundingRect().contains(pos):   index = 12
-                elif sub_pg14.sceneBoundingRect().contains(pos): index = 13
-                elif sub_pg15.sceneBoundingRect().contains(pos): index = 14
-                elif sub_pg16.sceneBoundingRect().contains(pos): index = 15
+                if sub_pg8.sceneBoundingRect().contains(pos):    index =  8
+                elif sub_pg9.sceneBoundingRect().contains(pos):  index =  9
+            if sub_pg12 is not None:
+                if sub_pg10.sceneBoundingRect().contains(pos):   index = 10
+                elif sub_pg11.sceneBoundingRect().contains(pos): index = 11
+                elif sub_pg12.sceneBoundingRect().contains(pos): index = 12
 
             if index != -1:
                 try:

@@ -70,54 +70,45 @@ def GetTradeInfo(gubun):
 
 
 def GetBackloadCodeQuery(code, days, starttime, endtime):
-    like_text = " or ".join([f"`index` LIKE '{day}%'" for day in days])
-    like_text = f"({like_text})"
-
-    if len(str(endtime)) < 5:
-        query = f"SELECT * FROM '{code}' WHERE {like_text} and " \
-                f"`index` % 10000 >= {starttime} and " \
-                f"`index` % 10000 <= {endtime}"
-    else:
-        query = f"SELECT * FROM '{code}' WHERE {like_text} and " \
-                f"`index` % 1000000 >= {starttime} and " \
-                f"`index` % 1000000 <= {endtime}"
+    conditions = []
+    for day in days:
+        if len(str(endtime)) < 5:
+            sindex = day * 10000 + starttime
+            eindex = day * 10000 + endtime
+        else:
+            sindex = day * 1000000 + starttime
+            eindex = day * 1000000 + endtime
+        conditions.append(f"(`index` >= {sindex} AND `index` <= {eindex})")
+    where_clause = " OR ".join(conditions)
+    query = f"SELECT * FROM '{code}' WHERE {where_clause}"
     return query
 
 
 def GetBackloadDayQuery(day, code, starttime, endtime):
     if len(str(endtime)) < 5:
-        query = f"SELECT * FROM '{code}' WHERE " \
-                f"`index` LIKE '{day}%' and " \
-                f"`index` % 10000 >= {starttime} and " \
-                f"`index` % 10000 <= {endtime}"
+        sindex = day * 10000 + starttime
+        eindex = day * 10000 + endtime
     else:
-        query = f"SELECT * FROM '{code}' WHERE " \
-                f"`index` LIKE '{day}%' and " \
-                f"`index` % 1000000 >= {starttime} and " \
-                f"`index` % 1000000 <= {endtime}"
+        sindex = day * 1000000 + starttime
+        eindex = day * 1000000 + endtime
+    query = f"SELECT * FROM '{code}' WHERE " \
+            f"`index` >= {sindex} AND `index` <= {eindex}"
     return query
 
 
 def GetMoneytopQuery(gubun, startday, endday, starttime, endtime):
     if len(str(endtime)) < 5:
-        query = f"SELECT * FROM moneytop WHERE " \
-                f"`index` >= {startday * 10000} and " \
-                f"`index` <= {endday * 10000 + 2400} and " \
-                f"`index` % 10000 >= {starttime} and " \
-                f"`index` % 10000 <= {endtime}"
+        sindex = startday * 10000 + starttime
+        eindex = endday * 10000 + endtime
     else:
         if gubun == 'S' and starttime < 90030:
-            query = f"SELECT * FROM moneytop WHERE " \
-                    f"`index` >= {startday * 1000000} and " \
-                    f"`index` <= {endday * 1000000 + 240000} and " \
-                    f"`index` % 1000000 >= 90030 and " \
-                    f"`index` % 1000000 <= {endtime}"
+            sindex = startday * 1000000 + 90030
+            eindex = endday * 1000000 + endtime
         else:
-            query = f"SELECT * FROM moneytop WHERE " \
-                    f"`index` >= {startday * 1000000} and " \
-                    f"`index` <= {endday * 1000000 + 240000} and " \
-                    f"`index` % 1000000 >= {starttime} and " \
-                    f"`index` % 1000000 <= {endtime}"
+            sindex = startday * 1000000 + starttime
+            eindex = endday * 1000000 + endtime
+    query = f"SELECT * FROM moneytop WHERE " \
+            f"`index` >= {sindex} AND `index` <= {eindex}"
     return query
 
 

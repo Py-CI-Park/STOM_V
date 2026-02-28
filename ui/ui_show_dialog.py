@@ -395,9 +395,13 @@ def chart_moneytop_list(ui):
         db_name1 = f'{DB_PATH}/coin_tick_{searchdate}.db' if ui.dict_set['코인타임프레임'] else f'{DB_PATH}/coin_min_{searchdate}.db'
         db_name2 = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
         if ui.dict_set['코인타임프레임']:
-            query = f"SELECT * FROM moneytop WHERE `index` LIKE '{searchdate}%' and `index` % 1000000 >= {starttime} and `index` % 1000000 <= {endtime}"
+            query = f"SELECT * FROM moneytop WHERE " \
+                    f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
+                    f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
         else:
-            query = f"SELECT * FROM moneytop WHERE `index` LIKE '{searchdate}%' and `index` % 10000 >= {starttime} and `index` % 10000 <= {endtime}"
+            query = f"SELECT * FROM moneytop WHERE " \
+                    f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
+                    f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
             is_min = True
     else:
         if '키움증권' in ui.dict_set['증권사']:
@@ -408,9 +412,13 @@ def chart_moneytop_list(ui):
             db_name2 = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
 
         if ui.dict_set['주식타임프레임']:
-            query = f"SELECT * FROM moneytop WHERE `index` LIKE '{searchdate}%' and `index` % 1000000 >= {starttime} and `index` % 1000000 <= {endtime}"
+            query = f"SELECT * FROM moneytop WHERE " \
+                    f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
+                    f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
         else:
-            query = f"SELECT * FROM moneytop WHERE `index` LIKE '{searchdate}%' and `index` % 10000 >= {starttime} and `index` % 10000 <= {endtime}"
+            query = f"SELECT * FROM moneytop WHERE " \
+                    f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
+                    f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
             is_min = True
 
     df = None

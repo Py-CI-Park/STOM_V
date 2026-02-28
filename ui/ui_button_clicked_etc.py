@@ -221,8 +221,9 @@ def lvbutton_clicked_03(ui):
                 ui.queryQ.put(('설정디비', query))
             ui.dict_set['바이낸스선물고정레버리지'] = lv0
             ui.dict_set['바이낸스선물고정레버리지값'] = lv1
-            ui.dict_set['바이낸스선물변동레버리지값'] = [[lv2, lv3, lv4], [lv5, lv6, lv7], [lv8, lv9, lv10], [lv11, lv12, lv13],
-                                            [lv14, lv15, lv16]]
+            ui.dict_set['바이낸스선물변동레버리지값'] = [
+                [lv2, lv3, lv4], [lv5, lv6, lv7], [lv8, lv9, lv10], [lv11, lv12, lv13], [lv14, lv15, lv16]
+            ]
             ui.UpdateDictSet()
             QMessageBox.information(ui.dialog_leverage, '저장 완료', random.choice(famous_saying))
 
