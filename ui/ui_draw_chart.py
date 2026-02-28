@@ -42,7 +42,7 @@ class DrawChart:
         date = str_ymd(from_timestamp(xmin))
         if gubun == 'S': self.KiwoomHTSChart(code, date)
         chart_count = len(self.ui.ctpg)
-        is_min = chart_count in (6, 8) or (chart_count == 10 and self.ui.ct_pushButtonnn_04.text() == 'CHART 16')
+        is_min = chart_count in (6, 8) or (chart_count == 10 and self.ui.ct_pushButtonnn_05.text() == 'CHART 16')
         hms = from_timestamp(xmax).strftime('%H:%M' if is_min else '%H:%M:%S')
 
         self.ui.ctpg_factors = []

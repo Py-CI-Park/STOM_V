@@ -31,7 +31,7 @@ class DrawRealChart:
         elif '키움증권' in self.ui.dict_set['증권사']: gubun = 'S'
         else:                                       gubun = 'F'
         chart_count = len(self.ui.ctpg)
-        is_min = chart_count in (6, 8) or (chart_count == 10 and self.ui.ct_pushButtonnn_04.text() == 'CHART 16')
+        is_min = chart_count in (6, 8) or (chart_count == 10 and self.ui.ct_pushButtonnn_05.text() == 'CHART 16')
 
         if not self.ui.dialog_chart.isVisible():
             self.ui.ChartClear()

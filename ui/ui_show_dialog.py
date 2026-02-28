@@ -87,12 +87,12 @@ def show_dialog(ui, code_or_name, tickcount, searchdate, col):
         ui.ShowDialogChart(False, coin, code, tickcount, searchdate, starttime, endtime)
 
 
-def show_dialog_web(ui, show, code):
+def show_dialog_web(ui, _show, code):
     if ui.webEngineView is None:
         webengineview_set(ui)
-    if show and not ui.dialog_web.isVisible():
+    if _show and not ui.dialog_web.isVisible():
         ui.dialog_web.show()
-    if show and not ui.dialog_info.isVisible():
+    if _show and not ui.dialog_info.isVisible():
         ui.dialog_info.show()
     if ui.dialog_web.isVisible() and ui.dialog_info.isVisible():
         ui.webEngineView.load(QUrl(f'https://finance.naver.com/item/main.naver?code={code}'))
@@ -108,8 +108,8 @@ def webengineview_set(ui):
     web_layout.addWidget(ui.webEngineView)
 
 
-def show_dialog_hoga(ui, show, coin, code):
-    if show and not ui.dialog_hoga.isVisible():
+def show_dialog_hoga(ui, _show, coin, code):
+    if _show and not ui.dialog_hoga.isVisible():
         ui.dialog_hoga.show()
     if ui.dialog_hoga.isVisible():
         ui.PutHogaCode(coin, code)
@@ -142,7 +142,7 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
 
 
 def dialog_chart_show(ui):
-    ui.ct_pushButtonnn_04.setText('CHART 16')
+    ui.ct_pushButtonnn_05.setText('CHART 16')
     ui.ChartCountChange()
 
     is_min = (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
@@ -449,9 +449,9 @@ def chart_moneytop_list(ui):
 
 def chart_size_change(ui):
     if ui.ct_pushButtonnn_06.text() == '확장':
-        if ui.ct_pushButtonnn_04.text() == 'CHART 8':
+        if ui.ct_pushButtonnn_05.text() == 'CHART 8':
             width = 1528
-        elif ui.ct_pushButtonnn_04.text() == 'CHART 12':
+        elif ui.ct_pushButtonnn_05.text() == 'CHART 12':
             width = 2213
         else:
             width = 2898
@@ -463,9 +463,9 @@ def chart_size_change(ui):
         ui.ct_pushButtonnn_06.setText('코인')
         ui.ChartMoneyTopList()
     elif ui.ct_pushButtonnn_06.text() == '코인':
-        if ui.ct_pushButtonnn_04.text() == 'CHART 8':
+        if ui.ct_pushButtonnn_05.text() == 'CHART 8':
             width = 1403
-        elif ui.ct_pushButtonnn_04.text() == 'CHART 12':
+        elif ui.ct_pushButtonnn_05.text() == 'CHART 12':
             width = 2088
         else:
             width = 2773

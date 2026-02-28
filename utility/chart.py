@@ -168,13 +168,13 @@ class Chart:
                     db_name2 = DB_FUTURE_BACK_MIN
 
             if self.dict_set['주식타임프레임']:
-                query1   = f"SELECT * FROM '{code}' WHERE " \
-                           f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
-                           f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
+                query1 = f"SELECT * FROM '{code}' WHERE " \
+                         f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
+                         f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
             else:
-                query1   = f"SELECT * FROM '{code}' WHERE " \
-                           f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
-                           f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
+                query1 = f"SELECT * FROM '{code}' WHERE " \
+                         f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
+                         f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
 
         df = None
         query2 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%'"

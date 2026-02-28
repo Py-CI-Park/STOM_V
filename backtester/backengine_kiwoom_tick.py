@@ -48,7 +48,7 @@ class BackEngineKiwoomTick(BackEngineBase):
                     매수, 매도 = True, False
                     if not 보유중:
                         if not 관심종목: continue
-                        self.info_for_order = 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금
+                        self.info_for_order = 현재가, 저가대비고가등락율
                         exec(self.buystg)
                     else:
                         포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = self.GetHoldInfo(보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간)
@@ -78,7 +78,7 @@ class BackEngineKiwoomTick(BackEngineBase):
                     매수, 매도 = True, False
                     if not 보유중:
                         if not 관심종목: continue
-                        self.info_for_order = 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금
+                        self.info_for_order = 현재가, 저가대비고가등락율
                         if self.back_type != '조건최적화':
                             exec(self.buystg)
                         else:
@@ -108,7 +108,7 @@ class BackEngineKiwoomTick(BackEngineBase):
             매수, 매도 = True, False
             if not 보유중:
                 if not 관심종목: return
-                self.info_for_order = 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금
+                self.info_for_order = 현재가, 저가대비고가등락율
                 exec(self.buystg)
             else:
                 포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = self.GetHoldInfo(보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간)

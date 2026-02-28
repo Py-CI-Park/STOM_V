@@ -275,7 +275,7 @@ class UpbitStrategyTick:
             D = NIB and self.dict_set['코인매도취소매수시그널'] and not NIS
 
             if BBT and BLK and C20 and (A or (B and C) or C or D):
-                self.info_for_signal = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1
+                self.info_for_signal = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
                 if A or (B and C) or D:
                     매수 = True
@@ -310,7 +310,7 @@ class UpbitStrategyTick:
             if SBT and (A or (B and C) or C or D or E or F):
                 강제청산 = E or F
                 전량매도 = A or 강제청산
-                self.info_for_signal = D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1
+                self.info_for_signal = D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
                 매도 = False
                 if A or (B and C) or D:
@@ -376,11 +376,11 @@ class UpbitStrategyTick:
             ]
 
     def Buy(self):
-        취소시그널, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1 = self.info_for_signal
+        취소시그널, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1 = self.info_for_signal
         if 취소시그널:
             매수수량 = 0
         else:
-            매수수량 = self.GetBuyCount(분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금)
+            매수수량 = self.GetBuyCount(분할매수횟수, 매수가, 현재가, 저가대비고가등락율)
 
         if '지정가' in self.dict_set['코인매수주문구분']:
             기준가격 = 현재가
@@ -406,18 +406,18 @@ class UpbitStrategyTick:
                 self.dict_signal_num[self.code] = self.indexn
                 self.ctraderQ.put(('매수', self.code, 예상체결가, 매수수량, now(), False))
 
-    def GetBuyCount(self, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금):
+    def GetBuyCount(self, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율):
         if self.dict_set['코인비중조절'][0] == 0:
             betting = self.int_tujagm
         else:
             if self.dict_set['코인비중조절'][0] == 1:
                 비중조절기준 = 저가대비고가등락율
             elif self.dict_set['코인비중조절'][0] == 2:
-                비중조절기준 = 순매수금액
+                비중조절기준 = self._거래대금평균대비비율(30)
             elif self.dict_set['코인비중조절'][0] == 3:
-                비중조절기준 = 당일거래대금
-            else:
                 비중조절기준 = self._등락율각도(30)
+            else:
+                비중조절기준 = self._당일거래대금각도(30)
 
             if 비중조절기준 < self.dict_set['코인비중조절'][1]:
                 betting = self.int_tujagm * self.dict_set['코인비중조절'][5]
@@ -435,13 +435,13 @@ class UpbitStrategyTick:
         return 매수수량
 
     def Sell(self):
-        취소시그널, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1 = self.info_for_signal
+        취소시그널, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1 = self.info_for_signal
         if 취소시그널:
             매도수량 = 0
         elif 전량매도:
             매도수량 = 보유수량
         else:
-            매도수량 = self.GetSellCount(분할매도횟수, 보유수량, 매수가, 저가대비고가등락율, 순매수금액, 당일거래대금)
+            매도수량 = self.GetSellCount(분할매도횟수, 보유수량, 매수가, 저가대비고가등락율)
 
         if '지정가' in self.dict_set['코인매도주문구분'] and not 강제청산:
             기준가격 = 현재가
@@ -465,7 +465,7 @@ class UpbitStrategyTick:
                 self.dict_signal['매도'].append(self.code)
                 self.ctraderQ.put(('매도', self.code, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
-    def GetSellCount(self, 분할매도횟수, 보유수량, 매수가, 저가대비고가등락율, 순매수금액, 당일거래대금):
+    def GetSellCount(self, 분할매도횟수, 보유수량, 매수가, 저가대비고가등락율):
         if self.dict_set['코인매도분할횟수'] == 1:
             return 보유수량
         else:
@@ -475,11 +475,11 @@ class UpbitStrategyTick:
                 if self.dict_set['코인비중조절'][0] == 1:
                     비중조절기준 = 저가대비고가등락율
                 elif self.dict_set['코인비중조절'][0] == 2:
-                    비중조절기준 = 순매수금액
+                    비중조절기준 = self._거래대금평균대비비율(30)
                 elif self.dict_set['코인비중조절'][0] == 3:
-                    비중조절기준 = 당일거래대금
-                else:
                     비중조절기준 = self._등락율각도(30)
+                else:
+                    비중조절기준 = self._당일거래대금각도(30)
 
                 if 비중조절기준 < self.dict_set['코인비중조절'][1]:
                     betting = self.int_tujagm * self.dict_set['코인비중조절'][5]
