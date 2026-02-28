@@ -39,7 +39,6 @@ class TelegramBot:
             self.running = True
             Thread(target=self.moniter_queue, daemon=True).start()
             self.loop.create_task(self.process_messages())
-            # noinspection PyTypeChecker
             self.application = (
                 ApplicationBuilder()
                 .token(self.token)

@@ -41,7 +41,7 @@ class BackSubTotal:
                 self.complete1 = True
                 self.separation = data[1]
 
-            elif data == '결과전송':
+            elif data == '결과이동':
                 self.SendData()
 
             elif data[0] == '개별결과':
@@ -75,7 +75,7 @@ class BackSubTotal:
 
             if self.complete1 and self.bstq.empty():
                 if self.separation == '일괄집계':
-                    self.tq.put('수신완료')
+                    self.tq.put('수집완료')
                 else:
                     self.tq.put(('더미결과', self.vkey, self.dummy_tsg))
                     self.SendSubTotal()
@@ -117,7 +117,7 @@ class BackSubTotal:
             self.bstqs[0].put(('개별결과', self.ddict_tsg[0][0], self.ddict_bct[0][0]))
         except:
             pass
-        self.tq.put('전송완료')
+        self.tq.put('이동완료')
 
     def ConcatData(self, data):
         _, list_tsg, arry_bct = data

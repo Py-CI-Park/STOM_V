@@ -222,8 +222,6 @@ class FutureStrategyTick:
         else:
             self.dict_data[종목코드] = np.concatenate([self.dict_data[종목코드], np.array([new_data_tick])])
 
-        self.dict_arry = self.dict_data[종목코드]
-
         self.tick_count = 데이터길이 = len(self.dict_data[종목코드]) + 1
         self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
 
@@ -236,6 +234,7 @@ class FutureStrategyTick:
             self._등락율각도(rw, calc=True), self._당일거래대금각도(rw, calc=True)
         ]
         self.dict_data[종목코드][-1, index1:] = new_data
+        self.dict_arry = self.dict_data[종목코드]
 
         high_low = self.high_low.get(종목코드)
         if high_low is None:
@@ -576,7 +575,7 @@ class FutureStrategyTick:
 
     def _Parameter_Previous(self, cidx, pre):
         if pre < self.tick_count:
-            ridx = (self.indexn - pre) if pre != -1 else self.indexb
+            ridx = self.indexn - pre if pre != -1 else self.indexb
             return self.dict_arry[ridx, cidx]
         return 0
 
@@ -731,13 +730,13 @@ class FutureStrategyTick:
         return self.indexn + 1 - tick, self.indexn + 1
 
     def _get_double_pre_index(self, tick, pre):
-        sidx = (self.indexn + 1 - tick - pre) if pre != -1 else self.indexb + 1 - tick
-        eidx = (self.indexn + 1 - pre) if pre != -1 else self.indexb + 1
+        sidx = self.indexn + 1 - tick - pre if pre != -1 else self.indexb + 1 - tick
+        eidx = self.indexn + 1 - pre if pre != -1 else self.indexb + 1
         return sidx, eidx
 
     def _이동평균(self, tick, pre=0, calc=False):
         if tick + pre <= self.tick_count:
-            if tick in self.sma_list and not calc:
+            if not calc and tick in self.sma_list:
                 return self._Parameter_Previous(self._fi(f'이동평균{tick}'), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
@@ -746,7 +745,7 @@ class FutureStrategyTick:
 
     def _Parameter_Area(self, cidx, fidx, tick, pre, func, calc=False):
         if tick + pre <= self.tick_count:
-            if tick in self.avg_list and not calc:
+            if not calc and tick in self.avg_list:
                 return self._Parameter_Previous(self._get_column_index(cidx), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
@@ -755,7 +754,7 @@ class FutureStrategyTick:
 
     def _Parameter_Dgree(self, cidx, fidx, tick, pre, cf, calc=False):
         if tick + pre <= self.tick_count:
-            if tick in self.avg_list and not calc:
+            if not calc and tick in self.avg_list:
                 return self._Parameter_Previous(self._get_column_index(cidx), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)

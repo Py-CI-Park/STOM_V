@@ -53,8 +53,6 @@ class BinanceStrategyMin(BinanceStrategyTick):
             else:
                 self.dict_data[종목코드] = np.concatenate([self.dict_data[종목코드], np.array([new_data_tick])])
 
-            self.dict_arry = self.dict_data[종목코드]
-
             self.tick_count = 데이터길이 = len(self.dict_data[종목코드]) + 1
             self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
 
@@ -68,6 +66,18 @@ class BinanceStrategyMin(BinanceStrategyTick):
             index2 = index1 + len(new_data)
             self.dict_data[종목코드][-1, index1:index2] = new_data
 
+            k  = list(self.indicator.values())
+            mc = self.dict_data[종목코드][:, self._fi('현재가')]
+            mh = self.dict_data[종목코드][:, self._fi('분봉고가')]
+            ml = self.dict_data[종목코드][:, self._fi('분봉저가')]
+            mv = self.dict_data[종목코드][:, self._fi('분당거래대금')]
+            indicator_list = GetIndicator(mc, mh, ml, mv, k)
+            self.dict_data[종목코드][-1, index2:] = indicator_list
+            self.dict_arry = self.dict_data[종목코드]
+
+            AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, \
+                PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = indicator_list
+
             high_low = self.high_low.get(종목코드)
             if high_low is None:
                 self.high_low[종목코드] = [분봉고가, 분봉저가, self.indexn, self.indexn]
@@ -78,17 +88,6 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 if 분봉저가 < high_low[1]:
                     high_low[1] = 분봉저가
                     high_low[3] = self.indexn
-
-            k  = list(self.indicator.values())
-            mc = self.dict_data[종목코드][:, self._fi('현재가')]
-            mh = self.dict_data[종목코드][:, self._fi('분봉고가')]
-            ml = self.dict_data[종목코드][:, self._fi('분봉저가')]
-            mv = self.dict_data[종목코드][:, self._fi('분당거래대금')]
-            indicator_list = GetIndicator(mc, mh, ml, mv, k)
-            self.dict_data[종목코드][-1, index2:] = indicator_list
-
-            AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, \
-                PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = indicator_list
 
             if self.dict_condition:
                 if 종목코드 not in self.dict_cond_indexn:

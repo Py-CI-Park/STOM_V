@@ -911,7 +911,7 @@ class BackEngineKiwoomTick:
 
     def _Parameter_Previous(self, cidx, pre):
         if pre < self.tick_count:
-            ridx = (self.indexn - pre) if pre != -1 else self.indexb
+            ridx = self.indexn - pre if pre != -1 else self.indexb
             return self.dict_arry[ridx, cidx]
         return 0
 
@@ -1094,13 +1094,13 @@ class BackEngineKiwoomTick:
         return self.indexn + 1 - tick, self.indexn + 1
 
     def _get_double_pre_index(self, tick, pre):
-        sidx = (self.indexn + 1 - tick - pre) if pre != -1 else self.indexb + 1 - tick
-        eidx = (self.indexn + 1 - pre) if pre != -1 else self.indexb + 1
+        sidx = self.indexn + 1 - tick - pre if pre != -1 else self.indexb + 1 - tick
+        eidx = self.indexn + 1 - pre if pre != -1 else self.indexb + 1
         return sidx, eidx
 
     def _이동평균(self, tick, pre=0, calc=False):
         if tick + pre <= self.tick_count:
-            if tick in self.sma_list and not calc:
+            if not calc and tick in self.sma_list:
                 return self._Parameter_Previous(self._fi(f'이동평균{tick}'), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
@@ -1109,7 +1109,7 @@ class BackEngineKiwoomTick:
 
     def _Parameter_Area(self, cidx, fidx, tick, pre, func, calc=False):
         if tick + pre <= self.tick_count:
-            if tick in self.avg_list and not calc:
+            if not calc and tick in self.avg_list:
                 return self._Parameter_Previous(self._get_column_index(cidx), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
@@ -1118,7 +1118,7 @@ class BackEngineKiwoomTick:
 
     def _Parameter_Dgree(self, cidx, fidx, tick, pre, cf, calc=False):
         if tick + pre <= self.tick_count:
-            if tick in self.avg_list and not calc:
+            if not calc and tick in self.avg_list:
                 return self._Parameter_Previous(self._get_column_index(cidx), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)

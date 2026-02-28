@@ -5,8 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from ui.set_style import color_fg_bt, color_fg_dk, color_fg_bc, color_bf_bt, color_bf_dk, color_ct_hg
 from ui.ui_get_label_text import get_label_text
-from utility.setting import ui_num, columns_hg, columns_hj, list_stock_tick_c, list_stock_min_c, list_coin_min_c, \
-    list_coin_min_cf, list_coin_tick_c, list_coin_tick_cf
+from utility.setting import ui_num, columns_hg, columns_hj
 from utility.static import error_decorator, change_format, comma2int, comma2float, dt_ymdhms
 
 
@@ -417,18 +416,18 @@ class UpdateTablewidget:
         def fi(fname):
             if is_min:
                 if gubun == ui_num['S호가종목'] and '키움증권' in self.ui.dict_set['증권사']:
-                    return list_stock_min_c.index(fname)
+                    return self.ui.dict_findex_stock_min2[fname]
                 elif 'KRW' in self.ui.ctpg_name:
-                    return list_coin_min_c.index(fname)
+                    return self.ui.dict_findex_coin_min2[fname]
                 else:
-                    return list_coin_min_cf.index(fname)
+                    return self.ui.dict_findex_future_min2[fname]
             else:
                 if gubun == ui_num['S호가종목'] and '키움증권' in self.ui.dict_set['증권사']:
-                    return list_stock_tick_c.index(fname)
+                    return self.ui.dict_findex_stock_tick2[fname]
                 elif 'KRW' in self.ui.ctpg_name:
-                    return list_coin_tick_c.index(fname)
+                    return self.ui.dict_findex_coin_tick2[fname]
                 else:
-                    return list_coin_tick_cf.index(fname)
+                    return self.ui.dict_findex_future_tick2[fname]
 
         def setInfiniteLine():
             vhline = pg.InfiniteLine()
@@ -541,5 +540,5 @@ class UpdateTablewidget:
         self.ui.windowQ.put((ui_num[f'{gubun_}호가체결2'], df2))
 
         for i in range(len(self.ui.ctpg_legend)):
-            self.ui.ctpg_legend[i].setText(get_label_text(False, gubun_, self.ui.ctpg_name, is_min, self.ui.ctpg_arry, xpoint, self.ui.ctpg_factors[i], hms_text))
+            self.ui.ctpg_legend[i].setText(get_label_text(self.ui, False, gubun_, self.ui.ctpg_name, is_min, xpoint, self.ui.ctpg_factors[i], hms_text))
             self.ui.ctpg_labels[i].setText('')

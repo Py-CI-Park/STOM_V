@@ -118,7 +118,6 @@ class BackFinder:
         con.close()
 
         buystg = dfb['전략코드'][buystg_name]
-        # noinspection PyPackages
         if 'self.tickcols' not in buystg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '선택된 전략이 백파인더용 전략이 아닙니다.'))
             self.SysExit(True)
