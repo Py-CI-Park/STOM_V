@@ -436,6 +436,18 @@ class MainWindow(QMainWindow):
         self.ctpg_factors          = []
         self.ctpg_labels           = []
 
+        # Factor index dictionaries (pyd→py inference from V2.40: 차트 팩터 인덱스를 딕셔너리로 변경)
+        self.dict_findex_stock_tick  = {name: i for i, name in enumerate(list_stock_tick)}
+        self.dict_findex_stock_min   = {name: i for i, name in enumerate(list_stock_min)}
+        self.dict_findex_coin_tick   = {name: i for i, name in enumerate(list_coin_tick)}
+        self.dict_findex_coin_min    = {name: i for i, name in enumerate(list_coin_min)}
+        self.dict_findex_stock_tick2 = {name: i for i, name in enumerate(list_stock_tick2)}
+        self.dict_findex_stock_min2  = {name: i for i, name in enumerate(list_stock_min2)}
+        self.dict_findex_coin_tick2  = {name: i for i, name in enumerate(list_coin_tick2)}
+        self.dict_findex_coin_min2   = {name: i for i, name in enumerate(list_coin_min2)}
+        self.dict_findex_future_tick2 = {name: i for i, name in enumerate(list_future_tick2)}
+        self.dict_findex_future_min2  = {name: i for i, name in enumerate(list_future_min2)}
+
         self.srqsize = 0
         self.stqsize = 0
         self.ssqsize = 0
@@ -1178,7 +1190,7 @@ class MainWindow(QMainWindow):
     def StrategyCustomBottunDel(self):      button_clicked_strategy_delete(self)
     def StrategyCustomBottunSave(self):     button_clicked_strategy_save(self)
     def StrategyCustomDialogShow(self):
-        if self.stg_btn_number <= 200:
+        if self.stg_btn_number <= 205:   # V2.42: 200→205 (매수금액 팩터 5개 추가)
             btn = getattr(self, f'stg_pushButton_{self.stg_btn_number:03d}')
             self.stginput_lineeditt1.setText(btn.text())
             self.stginput_lineeditt2.setText(btn.text())
