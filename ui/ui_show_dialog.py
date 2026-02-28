@@ -70,7 +70,7 @@ def show_dialog(ui, code_or_name, tickcount, searchdate, col):
         if not coin:
             ui.ShowDialogWeb(False, code)
         ui.ShowDialogHoga(True, coin, code)
-    elif col < 4:
+    elif col < 4 or ui.focusWidget() in (ui.sgj_tableWidgettt, ui.scj_tableWidgettt, ui.cgj_tableWidgettt, ui.ccj_tableWidgettt):
         if not coin:
             ui.ShowDialogWeb(False, code)
         ui.ShowDialogHoga(False, coin, code)
@@ -163,10 +163,10 @@ def dialog_chart_show(ui):
             starttime = '090000'
         else:
             starttime = '093000'
-        endtime = str_hms(dt_hms(str(ui.dict_set['주식전략종료시간'])))
+        endtime = str_hms(dt_hms(str(ui.dict_set['주식전략종료시간']))).zfill(6)
     else:
         starttime = '000000'
-        endtime = str_hms(dt_hms(str(ui.dict_set['코인전략종료시간'])))
+        endtime = str_hms(dt_hms(str(ui.dict_set['코인전략종료시간']))).zfill(6)
 
     ui.ct_lineEdittttt_01.setText(starttime)
     ui.ct_lineEdittttt_02.setText(endtime)

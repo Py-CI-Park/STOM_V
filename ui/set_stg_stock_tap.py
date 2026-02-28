@@ -123,11 +123,11 @@ class SetStockBack:
             self.ui.svjb_dateEditt_01 = self.wc.setDateEdit(self.ui.ss_tab, addday=-int(self.ui.dict_set['백테날짜']))
         self.ui.svjb_dateEditt_02 = self.wc.setDateEdit(self.ui.ss_tab)
 
-        if '키움증권' in self.ui.dict_set['증권사']:
-            starttime = '090000'
-        else:
+        if '해외선물' in self.ui.dict_set['증권사'] and self.ui.dict_set['주식타임프레임']:
             starttime = '093000'
-        endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간']))))
+        else:
+            starttime = '090000'
+        endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간'])))).zfill(6)
 
         self.ui.svjb_lineEditt_02 = self.wc.setLineedit(self.ui.ss_tab, ltext=starttime, style=style_bc_dk)
         self.ui.svjb_lineEditt_03 = self.wc.setLineedit(self.ui.ss_tab, ltext=endtime, style=style_bc_dk)

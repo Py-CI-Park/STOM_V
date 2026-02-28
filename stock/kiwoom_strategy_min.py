@@ -63,14 +63,14 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
 
             high_low = self.high_low.get(종목코드)
             if high_low:
-                if 고가 >= high_low[0]:
-                    high_low[0] = 고가
+                if 분봉고가 >= high_low[0]:
+                    high_low[0] = 분봉고가
                     high_low[1] = self.indexn
-                if 저가 <= high_low[2]:
-                    high_low[2] = 저가
+                if 분봉저가 <= high_low[2]:
+                    high_low[2] = 분봉저가
                     high_low[3] = self.indexn
             else:
-                self.high_low[종목코드] = [고가, self.indexn, 저가, self.indexn]
+                self.high_low[종목코드] = [분봉고가, self.indexn, 분봉저가, self.indexn]
 
             if self.dict_condition:
                 if 종목코드 not in self.dict_cond_indexn:
@@ -175,17 +175,17 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                             self.Sell()
 
             if 관심종목:
-                # ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
+                # ['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']
                 self.dict_gj[종목코드] = {
                     '종목명': 종목명,
                     'per': 등락율,
                     'hlp': 고저평균대비등락율,
-                    'sm': 분당거래대금,
-                    'sma': self._분당거래대금평균(rw),
-                    'dm': 당일거래대금,
+                    'lhp': 저가대비고가등락율,
                     'ch': 체결강도,
-                    'cha': self._체결강도평균(rw),
-                    'chh': self._최고체결강도(rw)
+                    'tm': 분당거래대금,
+                    'dm': 당일거래대금,
+                    'bm': 당일매수금액,
+                    'sm': 당일매도금액
                 }
         else:
             pre_data = self.dict_data[종목코드]

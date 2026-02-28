@@ -88,7 +88,18 @@ class DataPreprocessor:
             else:
                 df['index'] = pd.to_datetime(df['index'], format='%Y%m%d%H%M')
             df.set_index('index', inplace=True)
-            
+
+            # 필요없는 칼럼 제거
+            del_columns = [
+                '매도호가5', '매도호가4', '매도호가3', '매도호가2', '매도호가1',
+                '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5',
+                '매도잔량5', '매도잔량4', '매도잔량3', '매도잔량2', '매도잔량1',
+                '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5',
+            ]
+            if self.market == 'stock':
+                del_columns += ['시가총액', '라운드피겨위5호가이내', 'VI해제시간', 'VI가격', 'VI호가단위']
+            df.drop(columns=del_columns, inplace=True)
+
             # 결측치 처리
             df = df.replace([np.inf, -np.inf], np.nan)
             df = df.ffill().bfill()

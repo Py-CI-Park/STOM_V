@@ -179,14 +179,14 @@ class SetDialogBack:
         ]
 
         if self.ui.dict_set['주식에이전트']:
-            if '키움증권' in self.ui.dict_set['증권사']:
-                starttime = '090000'
-            else:
+            if '해외선물' in self.ui.dict_set['증권사'] and self.ui.dict_set['주식타임프레임']:
                 starttime = '093000'
-            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간']))))
+            else:
+                starttime = '090000'
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간'])))).zfill(6)
         else:
             starttime = '000000'
-            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간']))))
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간'])))).zfill(6)
 
         self.ui.sd_slineEditttt_01 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_02, ltext=starttime, style=style_bc_dk, change=self.ui.TextChanged_01)
         self.ui.sd_slineEditttt_02 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_02, ltext=starttime, style=style_bc_dk, change=self.ui.TextChanged_01)

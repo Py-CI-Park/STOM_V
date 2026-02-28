@@ -22,15 +22,7 @@ class BackEngineUpbitMin2(BackEngineUpbitTick2):
         self.shogainfo = shogainfo[:self.buy_hj_limit]
         self.bhogainfo = bhogainfo[:self.sell_hj_limit]
 
-        if self.high_low:
-            if 고가 >= self.high_low[0]:
-                self.high_low[0] = 고가
-                self.high_low[1] = self.indexn
-            if 저가 <= self.high_low[1]:
-                self.high_low[2] = 저가
-                self.high_low[3] = self.indexn
-        else:
-            self.high_low = [고가, self.indexn, 저가, self.indexn]
+        self.UpdateHighLow(분봉고가, 분봉고가)
 
         start, end = self.indexn+1-self.tick_count, self.indexn+1
         arry_indi = self.arry_code[start:end, :]

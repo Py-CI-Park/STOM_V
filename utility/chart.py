@@ -122,13 +122,13 @@ class Chart:
                 cf1, cf2 = data[7:]
         else:
             coin, code, w_unit, searchdate, starttime, endtime, k, detail, buytimes, cf1, cf2 = data
-        if starttime == '': return
 
         is_tick = False
         if coin:
             if 'KRW' in code: market = 3
             else:             market = 4
             if w_unit == '': w_unit = self.dict_set['코인평균값계산틱수']
+            if starttime == '': starttime, endtime = '000000', '235000'
             if self.dict_set['코인타임프레임']:
                 is_tick  = True
                 db_name1 = f'{DB_PATH}/coin_tick_{searchdate}.db'
@@ -148,18 +148,22 @@ class Chart:
                 market = 1
                 if self.dict_set['주식타임프레임']:
                     is_tick  = True
+                    if starttime == '': starttime, endtime = '090000', '093000'
                     db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db'
                     db_name2 = DB_STOCK_BACK_TICK
                 else:
+                    if starttime == '': starttime, endtime = '090000', '152000'
                     db_name1 = f'{DB_PATH}/stock_min_{searchdate}.db'
                     db_name2 = DB_STOCK_BACK_MIN
             else:
                 market = 2
                 if self.dict_set['주식타임프레임']:
                     is_tick  = True
+                    if starttime == '': starttime, endtime = '093000', '103000'
                     db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db'
                     db_name2 = DB_FUTURE_BACK_TICK
                 else:
+                    if starttime == '': starttime, endtime = '090000', '160000'
                     db_name1 = f'{DB_PATH}/future_min_{searchdate}.db'
                     db_name2 = DB_FUTURE_BACK_MIN
 
@@ -186,7 +190,7 @@ class Chart:
         except:
             pass
 
-        if df is None or len(df) == 0:
+        if df is None or df.empty:
             self.windowQ.put((ui_num['차트'], '차트오류', '', '', '', ''))
         else:
             if cf1 is None:
@@ -204,42 +208,42 @@ class Chart:
             if detail is None:
                 con = sqlite3.connect(DB_TRADELIST)
                 if coin:
-                    df2 = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{code}'", con).set_index('index')
+                    df = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{code}'", con).set_index('index')
                 else:
                     name = self.dict_name[code] if code in self.dict_name else code
                     if '키움증권' in self.dict_set['증권사']:
-                        df2 = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
+                        df = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
                     else:
-                        df2 = pd.read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
+                        df = pd.read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
                 con.close()
 
-                if len(df2) > 0:
-                    for index in df2.index:
-                        cgtime = int(df2['체결시간'][index] if is_tick else str(df2['체결시간'][index])[:12])
+                if len(df) > 0:
+                    for index in df.index:
+                        cgtime = int(df['체결시간'][index] if is_tick else str(df['체결시간'][index])[:12])
                         if market in (1, 3):
-                            if df2['주문구분'][index] == '매수':
+                            if df['주문구분'][index] == '매수':
                                 buy_index.append(get_cgtime(cgtime))
-                                arry[arry[:, 0] == cgtime, -2] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -2] = df['체결가'][index]
 
-                            elif df2['주문구분'][index] == '매도':
+                            elif df['주문구분'][index] == '매도':
                                 sell_index.append(get_cgtime(cgtime))
-                                arry[arry[:, 0] == cgtime, -1] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -1] = df['체결가'][index]
                         else:
-                            if df2['주문구분'][index] == 'BUY_LONG':
+                            if df['주문구분'][index] == 'BUY_LONG':
                                 buy_index.append(get_cgtime(cgtime))
-                                arry[arry[:, 0] == cgtime, -4] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -4] = df['체결가'][index]
 
-                            elif df2['주문구분'][index] == 'SELL_LONG':
+                            elif df['주문구분'][index] == 'SELL_LONG':
                                 sell_index.append(get_cgtime(cgtime))
-                                arry[arry[:, 0] == cgtime, -3] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -3] = df['체결가'][index]
 
-                            elif df2['주문구분'][index] == 'SELL_SHORT':
+                            elif df['주문구분'][index] == 'SELL_SHORT':
                                 buy_index.append(get_cgtime(cgtime))
-                                arry[arry[:, 0] == cgtime, -2] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -2] = df['체결가'][index]
 
-                            elif df2['주문구분'][index] == 'BUY_SHORT':
+                            elif df['주문구분'][index] == 'BUY_SHORT':
                                 sell_index.append(get_cgtime(cgtime))
-                                arry[arry[:, 0] == cgtime, -1] =  df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -1] =  df['체결가'][index]
             else:
                 매수시간, 매수가, 매도시간, 매도가 = detail
                 buy_index.append(매수시간)
@@ -257,7 +261,7 @@ class Chart:
                         arry[arry[:, 0] == 추가매수시간, -2] = 추가매수가
 
             if not is_tick:
-                arry = np.r_['1', arry, np.zeros((len(arry), 28))]
+                arry = np.column_stack((arry, np.zeros((arry.shape[0], 28))))
                 try:
                     mc = arry[:, 1]
                     if coin or '해외선물' in self.dict_set['증권사']:

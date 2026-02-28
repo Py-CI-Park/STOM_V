@@ -7,12 +7,9 @@ import joblib
 import logging
 import warnings
 import matplotlib
-import numpy as np
 import pandas as pd
-import seaborn as sns
 import tensorflow as tf
 from datetime import datetime
-import matplotlib.pyplot as plt
 from tensorflow.keras.models import Model
 from data_preprocessor import DataPreprocessor
 from tensorflow.keras.layers import (
@@ -21,7 +18,6 @@ from tensorflow.keras.layers import (
 )
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from multiprocessing_utils import parallel_train_factor_analysis, process_results, print_top_predictions
 
 warnings.filterwarnings('ignore')
@@ -115,7 +111,7 @@ class FactorAnalysisModel:
         self.loadings = None
         self.history = None
         
-        # 모델 ?�??경로 (?��? 경로)
+        # 모델 저장 경로 (절대 경로)
         base_dir_ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.model_dir = os.path.join(base_dir_, 'deeplearning', 'models', f'{market}_{data_type}')
         os.makedirs(self.model_dir, exist_ok=True)
@@ -316,7 +312,7 @@ class FactorAnalysisModel:
             train_score = self.model.evaluate(X_train, y_train, verbose=0)
             val_score = self.model.evaluate(X_val, y_val, verbose=0)
             test_score = self.model.evaluate(X_test, y_test, verbose=0)
-            
+
             self.save_model(code)
             
             return {
@@ -391,91 +387,6 @@ class FactorAnalysisModel:
             logger.error(f"예측 실패: {e}")
             return None
     
-    def evaluate(self, code, n_factors=5):
-        """
-        모델 평가
-        
-        Args:
-            code: 종목 코드
-            n_factors: 요인 개수
-            
-        Returns:
-            평가 지표
-        """
-        try:
-            if self.model is None:
-                return None
-            
-            X_train, X_val, X_test, y_train, y_val, y_test = self.prepare_data(code, n_factors=n_factors)
-            
-            if X_test is None:
-                return None
-            
-            # 예측
-            y_pred = self.model.predict(X_test, verbose=0)
-            
-            # 평가 지표 계산
-            mse = mean_squared_error(y_test, y_pred)
-            mae = mean_absolute_error(y_test, y_pred)
-            r2 = r2_score(y_test, y_pred)
-            
-            direction_accuracy = np.mean((y_test > 0) == (y_pred.flatten() > 0))
-            
-            result = {
-                'mse': mse,
-                'mae': mae,
-                'r2_score': r2,
-                'direction_accuracy': direction_accuracy,
-                'y_true': y_test,
-                'y_pred': y_pred.flatten()
-            }
-            
-            return result
-            
-        except Exception as e:
-            logger.error(f"평가 실패: {e}")
-            return None
-    
-    def analyze_factors(self, code, n_factors=5):
-        """
-        ?�인분석 결과 ?�각??        
-        Args:
-            code: 종목 코드
-            n_factors: ?�인 개수
-        """
-        try:
-            if self.loadings is None:
-                logger.error("요인부하량이 없습니다")
-                return
-            
-            plt.figure(figsize=(12, 8))
-            sns.heatmap(
-                self.loadings, 
-                annot=True, 
-                cmap='coolwarm', 
-                center=0,
-                fmt='.2f'
-            )
-            plt.title(f'Factor Loadings - {code}')
-            plt.xlabel('Factors')
-            plt.ylabel('Variables')
-            plt.tight_layout()
-            
-            plot_path = os.path.join(self.model_dir, f'{code}_factor_analysis_{datetime.now().strftime("%Y%m%d_%H%M%S")}.png')
-            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-            plt.close()  # 창 닫기
-            
-            print(f"\n{code} 요인분석 결과:")
-            for j in range(n_factors):
-                factor_col = f'Factor_{j+1}'
-                top_vars = self.loadings[factor_col].abs().sort_values(ascending=False).head(5)
-                print(f"\nFactor {j+1} 상위 변수:")
-                for var, loading in top_vars.items():
-                    print(f"  {var}: {loading:.3f}")
-            
-        except Exception as e:
-            logger.error(f"요인분석 시각화 실패: {e}")
-    
     def save_model(self, code):
         """
         모델 저장
@@ -539,6 +450,7 @@ class FactorAnalysisModel:
             # 요인부하량 로드
             loadings_path = os.path.join(self.model_dir, f'{code}_loadings_{timestamp}.csv')
             if os.path.exists(loadings_path):
+                # noinspection PyArgumentList
                 self.loadings = pd.read_csv(loadings_path, index_col=0)
             
             return True
@@ -546,53 +458,6 @@ class FactorAnalysisModel:
         except Exception as e:
             logger.error(f"모델 로드 실패: {e}")
             return False
-    
-    def plot_training_history(self):
-        """
-        학습 과정 시각화
-        """
-        try:
-            if self.history is None:
-                logger.error("학습 기록이 없습니다")
-                return
-            
-            plt.figure(figsize=(15, 5))
-            
-            # Loss
-            plt.subplot(1, 3, 1)
-            plt.plot(self.history.history['loss'], label='Train Loss')
-            plt.plot(self.history.history['val_loss'], label='Validation Loss')
-            plt.title('Model Loss')
-            plt.xlabel('Epoch')
-            plt.ylabel('Loss')
-            plt.legend()
-            
-            # MAE
-            plt.subplot(1, 3, 2)
-            plt.plot(self.history.history['mae'], label='Train MAE')
-            plt.plot(self.history.history['val_mae'], label='Validation MAE')
-            plt.title('Model MAE')
-            plt.xlabel('Epoch')
-            plt.ylabel('MAE')
-            plt.legend()
-            
-            # MAPE
-            plt.subplot(1, 3, 3)
-            plt.plot(self.history.history['mape'], label='Train MAPE')
-            plt.plot(self.history.history['val_mape'], label='Validation MAPE')
-            plt.title('Model MAPE')
-            plt.xlabel('Epoch')
-            plt.ylabel('MAPE')
-            plt.legend()
-            
-            plt.tight_layout()
-            
-            plot_path = os.path.join(self.model_dir, f'training_history_{datetime.now().strftime("%Y%m%d_%H%M%S")}.png')
-            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-            plt.close()  # 창 닫기
-            
-        except Exception as e:
-            logger.error(f"시각화 실패: {e}")
 
 
 if __name__ == "__main__":
@@ -600,7 +465,7 @@ if __name__ == "__main__":
     
     # 데이터베이스에서 종목 코드 로드
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    DB_STOCK_BACK_MIN = os.path.join(base_dir, '_database', 'stock_min_back.db')
+    DB_STOCK_BACK_MIN = os.path.join(base_dir, '_database', 'stock_tick_back.db')
     
     try:
         con = sqlite3.connect(DB_STOCK_BACK_MIN)
@@ -609,6 +474,7 @@ if __name__ == "__main__":
         table_list.remove('moneytop')
         table_list.remove('stockinfo')
         con.close()
+        table_list = table_list[:10]
         
         if not table_list:
             print("사용 가능한 종목 테이블이 없습니다.")
@@ -620,13 +486,13 @@ if __name__ == "__main__":
         results = parallel_train_factor_analysis(
             codes=table_list,
             market='stock',
-            data_type='min',
+            data_type='tick',
             model_type='Transformer',
             sequence_length=60,
             n_factors=5,
-            epochs=20,  # CPU만 사용하므로 에포크 감소
+            epochs=50,  # CPU만 사용하므로 에포크 감소
             batch_size=32,
-            max_workers=8  # CPU만 사용하므로 코어 수 증가
+            max_workers=10  # CPU만 사용하므로 코어 수 증가
         )
         
         # 결과 처리

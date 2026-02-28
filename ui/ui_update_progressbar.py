@@ -8,12 +8,10 @@ def update_back_profressbar(ui):
         if ui.optuna_current_cnt == 0:
             total_back_count = ui.back_tick_cunsum[-1]
             curr_shared_cnt  = ui.shared_cnt.value
-            if curr_shared_cnt == 0:
+            if curr_shared_cnt <= ui.multi:
                 curr_back_count = 0
-            elif curr_shared_cnt < ui.back_count + ui.multi:
-                curr_back_count = ui.back_tick_cunsum[curr_shared_cnt - 1 - ui.multi]
             else:
-                curr_back_count = total_back_count
+                curr_back_count = ui.back_tick_cunsum[curr_shared_cnt - 1 - ui.multi]
         else:
             total_back_count = ui.back_count * (ui.optuna_current_cnt + ui.optuna_remain_cnt)
             curr_back_count  = ui.shared_cnt.value + (ui.back_count * ui.optuna_current_cnt)

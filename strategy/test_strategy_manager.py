@@ -232,4 +232,4 @@ if __name__ == "__main__":
     print("시장미시구조 분석 시뮬레이션")
     print("=" * 60)
     
-    example_realtime_simulation('stock', 'tick', 0.75, 0.70)
+    example_realtime_simulation('stock', 'tick', 0.75, 0.65)

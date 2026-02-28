@@ -21,15 +21,7 @@ class BackEngineFutureTick(BackEngineBase):
         self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
-        if self.high_low:
-            if 고가 >= self.high_low[0]:
-                self.high_low[0] = 고가
-                self.high_low[1] = self.indexn
-            if 저가 <= self.high_low[1]:
-                self.high_low[2] = 저가
-                self.high_low[3] = self.indexn
-        else:
-            self.high_low = [고가, self.indexn, 저가, self.indexn]
+        self.UpdateHighLow(현재가)
 
         if self.dict_condition:
             if 종목코드 not in self.dict_cond_indexn:

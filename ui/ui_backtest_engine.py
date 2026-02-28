@@ -56,14 +56,14 @@ def backengine_show(ui, gubun):
             ui.be_comboBoxxxxx_02.addItem(name)
 
     if gubun == '주식':
-        if '키움증권' in ui.dict_set['증권사']:
-            starttime = '090000'
-        else:
+        if '해외선물' in ui.dict_set['증권사'] and ui.dict_set['주식타임프레임']:
             starttime = '093000'
-        endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['주식전략종료시간']))))
+        else:
+            starttime = '090000'
+        endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['주식전략종료시간'])))).zfill(6)
     else:
         starttime = '000000'
-        endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['코인전략종료시간']))))
+        endtime = str_hms(timedelta_sec(-120, dt_hms(str(ui.dict_set['코인전략종료시간'])))).zfill(6)
 
     ui.be_lineEdittttt_01.setText(starttime)
     ui.be_lineEdittttt_02.setText(endtime)

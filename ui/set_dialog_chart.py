@@ -3,6 +3,7 @@ import pyqtgraph as pg
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout
 from ui.set_style import style_bc_dk, style_ck_bx, color_bg_bk
 from utility.setting import DICT_SET, indi_base
+from utility.static import str_hms, dt_hms, timedelta_sec
 
 
 class SetDialogChart:
@@ -17,11 +18,21 @@ class SetDialogChart:
         self.ui.ct_groupBoxxxxx_01 = QGroupBox(' ', self.ui.dialog_chart)
         self.ui.ct_groupBoxxxxx_02 = QGroupBox(' ', self.ui.dialog_chart)
 
+        if self.ui.dict_set['주식에이전트']:
+            if '해외선물' in self.ui.dict_set['증권사'] and self.ui.dict_set['주식타임프레임']:
+                starttime = '093000'
+            else:
+                starttime = '090000'
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간'])))).zfill(6)
+        else:
+            starttime = '000000'
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간'])))).zfill(6)
+
         self.ui.ct_dateEdittttt_01 = self.wc.setDateEdit(self.ui.ct_groupBoxxxxx_01)
         self.ui.ct_labellllllll_01 = QLabel('시작시간', self.ui.ct_groupBoxxxxx_01)
-        self.ui.ct_lineEdittttt_01 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, style=style_bc_dk)
+        self.ui.ct_lineEdittttt_01 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, ltext=starttime, style=style_bc_dk)
         self.ui.ct_labellllllll_02 = QLabel('종료시간', self.ui.ct_groupBoxxxxx_01)
-        self.ui.ct_lineEdittttt_02 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, style=style_bc_dk)
+        self.ui.ct_lineEdittttt_02 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, ltext=endtime, style=style_bc_dk)
         self.ui.ct_labellllllll_03 = QLabel('평균틱수', self.ui.ct_groupBoxxxxx_01)
         self.ui.ct_lineEdittttt_03 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, ltext='30', style=style_bc_dk)
         self.ui.ct_labellllllll_04 = QLabel('종목코드', self.ui.ct_groupBoxxxxx_01)

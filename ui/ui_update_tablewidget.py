@@ -21,6 +21,54 @@ class UpdateTablewidget:
            0        1      2       3      4       5      6      7       8         9         10     11     12      13       14
         """
         self.ui = ui
+        self.dict_table = {
+            ui_num['S실현손익']: self.ui.stt_tableWidgettt,
+            ui_num['S거래목록']: self.ui.std_tableWidgettt,
+            ui_num['S잔고평가']: self.ui.stj_tableWidgettt,
+            ui_num['S잔고목록']: self.ui.sjg_tableWidgettt,
+            ui_num['S체결목록']: self.ui.scj_tableWidgettt,
+            ui_num['S당일합계']: self.ui.sdt_tableWidgettt,
+            ui_num['S당일상세']: self.ui.sds_tableWidgettt,
+            ui_num['S누적합계']: self.ui.snt_tableWidgettt,
+            ui_num['S누적상세']: self.ui.sns_tableWidgettt,
+            ui_num['S관심종목']: self.ui.sgj_tableWidgettt,
+            ui_num['C실현손익']: self.ui.ctt_tableWidgettt,
+            ui_num['C거래목록']: self.ui.ctd_tableWidgettt,
+            ui_num['C잔고평가']: self.ui.ctj_tableWidgettt,
+            ui_num['C잔고목록']: self.ui.cjg_tableWidgettt,
+            ui_num['C체결목록']: self.ui.ccj_tableWidgettt,
+            ui_num['C당일합계']: self.ui.cdt_tableWidgettt,
+            ui_num['C당일상세']: self.ui.cds_tableWidgettt,
+            ui_num['C누적합계']: self.ui.cnt_tableWidgettt,
+            ui_num['C누적상세']: self.ui.cns_tableWidgettt,
+            ui_num['C관심종목']: self.ui.cgj_tableWidgettt,
+            ui_num['S상세기록']: self.ui.ss_tableWidget_01,
+            ui_num['C상세기록']: self.ui.cs_tableWidget_01,
+            ui_num['S호가종목']: self.ui.hj_tableWidgett_01,
+            ui_num['C호가종목']: self.ui.hj_tableWidgett_01,
+            ui_num['C호가체결']: self.ui.hc_tableWidgett_01,
+            ui_num['S호가체결']: self.ui.hc_tableWidgett_01,
+            ui_num['C호가체결2']: self.ui.hc_tableWidgett_02,
+            ui_num['S호가체결2']: self.ui.hc_tableWidgett_02,
+            ui_num['C호가잔량']: self.ui.hg_tableWidgett_01,
+            ui_num['S호가잔량']: self.ui.hg_tableWidgett_01,
+            ui_num['기업공시']: self.ui.gs_tableWidgett_01,
+            ui_num['기업뉴스']: self.ui.ns_tableWidgett_01,
+            ui_num['재무년도']: self.ui.jm_tableWidgett_01,
+            ui_num['재무분기']: self.ui.jm_tableWidgett_02,
+            ui_num['스톰라이브1']: self.ui.slsd_tableWidgett,
+            ui_num['스톰라이브2']: self.ui.slsn_tableWidgett,
+            ui_num['스톰라이브3']: self.ui.slst_tableWidgett,
+            ui_num['스톰라이브4']: self.ui.slcd_tableWidgett,
+            ui_num['스톰라이브5']: self.ui.slcn_tableWidgett,
+            ui_num['스톰라이브6']: self.ui.slct_tableWidgett,
+            ui_num['스톰라이브7']: self.ui.slfd_tableWidgett,
+            ui_num['스톰라이브8']: self.ui.slfn_tableWidgett,
+            ui_num['스톰라이브9']: self.ui.slft_tableWidgett,
+            ui_num['스톰라이브10']: self.ui.slbt_tableWidgett,
+            ui_num['스톰라이브11']: self.ui.slbd_tableWidgett,
+            ui_num['김프']: self.ui.kp_tableWidget_01
+        }
 
     @error_decorator
     def update_tablewidget(self, data):
@@ -81,109 +129,26 @@ class UpdateTablewidget:
                 gubun, df, usdtokrw = data
                 self.ui.dialog_kimp.setWindowTitle(f'STOM KIMP - 환율 {usdtokrw:,}원/달러')
 
-        tableWidget = None
-        if gubun == ui_num['S실현손익']:
-            tableWidget = self.ui.stt_tableWidgettt
-        elif gubun == ui_num['S거래목록']:
-            tableWidget = self.ui.std_tableWidgettt
+        tableWidget = self.dict_table.get(gubun)
+        if tableWidget is None:
+            return
+
+        if gubun in (ui_num['S거래목록'], ui_num['S잔고목록'], ui_num['S당일상세'], ui_num['C거래목록'], ui_num['C잔고목록'], ui_num['C당일상세']):
             tablewidget_change()
-        elif gubun == ui_num['S잔고평가']:
-            tableWidget = self.ui.stj_tableWidgettt
-        elif gubun == ui_num['S잔고목록']:
-            tableWidget = self.ui.sjg_tableWidgettt
-            tablewidget_change()
-        elif gubun == ui_num['S체결목록']:
-            tableWidget = self.ui.scj_tableWidgettt
-        elif gubun == ui_num['S당일합계']:
-            tableWidget = self.ui.sdt_tableWidgettt
-        elif gubun == ui_num['S당일상세']:
-            tableWidget = self.ui.sds_tableWidgettt
-            tablewidget_change()
-        elif gubun == ui_num['S누적합계']:
-            tableWidget = self.ui.snt_tableWidgettt
-        elif gubun == ui_num['S누적상세']:
-            tableWidget = self.ui.sns_tableWidgettt
-        elif gubun == ui_num['S관심종목']:
-            tableWidget = self.ui.sgj_tableWidgettt
-        elif gubun == ui_num['C실현손익']:
-            tableWidget = self.ui.ctt_tableWidgettt
-        elif gubun == ui_num['C거래목록']:
-            tableWidget = self.ui.ctd_tableWidgettt
-            tablewidget_change()
-        elif gubun == ui_num['C잔고평가']:
-            tableWidget = self.ui.ctj_tableWidgettt
-        elif gubun == ui_num['C잔고목록']:
-            tableWidget = self.ui.cjg_tableWidgettt
-            tablewidget_change()
-        elif gubun == ui_num['C체결목록']:
-            tableWidget = self.ui.ccj_tableWidgettt
-        elif gubun == ui_num['C당일합계']:
-            tableWidget = self.ui.cdt_tableWidgettt
-        elif gubun == ui_num['C당일상세']:
-            tableWidget = self.ui.cds_tableWidgettt
-            tablewidget_change()
-        elif gubun == ui_num['C누적합계']:
-            tableWidget = self.ui.cnt_tableWidgettt
-        elif gubun == ui_num['C누적상세']:
-            tableWidget = self.ui.cns_tableWidgettt
-        elif gubun == ui_num['C관심종목']:
-            tableWidget = self.ui.cgj_tableWidgettt
-        elif gubun == ui_num['S상세기록']:
-            tableWidget = self.ui.ss_tableWidget_01
-            tableWidget.setHorizontalHeaderLabels(df.columns)
         elif gubun == ui_num['C상세기록']:
-            tableWidget = self.ui.cs_tableWidget_01
             tableWidget.setHorizontalHeaderLabels(df.columns)
-        elif gubun in (ui_num['S호가종목'], ui_num['C호가종목']):
-            tableWidget = self.ui.hj_tableWidgett_01
+        elif gubun == ui_num['재무년도']:
+            tableWidget.setHorizontalHeaderLabels(df.columns)
+        elif gubun == ui_num['재무분기']:
+            tableWidget.setHorizontalHeaderLabels(df.columns)
         elif gubun in (ui_num['C호가체결'], ui_num['S호가체결']):
             if not self.ui.dialog_hoga.isVisible():
                 self.ui.wdzservQ.put(('agent', ('호가종목코드', '000000')))
                 if self.ui.CoinReceiverProcessAlive():  self.ui.creceivQ.put(('호가종목코드', '000000'))
                 return
-            tableWidget = self.ui.hc_tableWidgett_01
-        elif gubun in (ui_num['C호가체결2'], ui_num['S호가체결2']):
-            tableWidget = self.ui.hc_tableWidgett_02
-        elif gubun in (ui_num['C호가잔량'], ui_num['S호가잔량']):
-            tableWidget = self.ui.hg_tableWidgett_01
-        elif gubun == ui_num['기업공시']:
-            tableWidget = self.ui.gs_tableWidgett_01
-        elif gubun == ui_num['기업뉴스']:
-            tableWidget = self.ui.ns_tableWidgett_01
-        elif gubun == ui_num['재무년도']:
-            tableWidget = self.ui.jm_tableWidgett_01
-            tableWidget.setHorizontalHeaderLabels(df.columns)
-        elif gubun == ui_num['재무분기']:
-            tableWidget = self.ui.jm_tableWidgett_02
-            tableWidget.setHorizontalHeaderLabels(df.columns)
-        elif gubun == ui_num['스톰라이브1']:
-            tableWidget = self.ui.slsd_tableWidgett
-        elif gubun == ui_num['스톰라이브2']:
-            tableWidget = self.ui.slsn_tableWidgett
-        elif gubun == ui_num['스톰라이브3']:
-            tableWidget = self.ui.slst_tableWidgett
-        elif gubun == ui_num['스톰라이브4']:
-            tableWidget = self.ui.slcd_tableWidgett
-        elif gubun == ui_num['스톰라이브5']:
-            tableWidget = self.ui.slcn_tableWidgett
-        elif gubun == ui_num['스톰라이브6']:
-            tableWidget = self.ui.slct_tableWidgett
-        elif gubun == ui_num['스톰라이브7']:
-            tableWidget = self.ui.slfd_tableWidgett
-        elif gubun == ui_num['스톰라이브8']:
-            tableWidget = self.ui.slfn_tableWidgett
-        elif gubun == ui_num['스톰라이브9']:
-            tableWidget = self.ui.slft_tableWidgett
-        elif gubun == ui_num['스톰라이브10']:
-            tableWidget = self.ui.slbt_tableWidgett
-        elif gubun == ui_num['스톰라이브11']:
-            tableWidget = self.ui.slbd_tableWidgett
         elif gubun == ui_num['김프']:
             if not self.ui.dialog_kimp.isVisible():
                 return
-            tableWidget = self.ui.kp_tableWidget_01
-        if tableWidget is None:
-            return
 
         len_df = len(df)
         if len_df == 0:
@@ -220,16 +185,17 @@ class UpdateTablewidget:
                         item = QTableWidgetItem(str(value))
                     except:
                         continue
-                elif '량' in column and gubun in (ui_num['C잔고목록'], ui_num['C체결목록'], ui_num['C거래목록'], ui_num['C호가체결'], ui_num['C호가잔량']):
+                elif '량' in column and \
+                        gubun in (ui_num['C잔고목록'], ui_num['C체결목록'], ui_num['C거래목록'], ui_num['C호가체결'], ui_num['C호가잔량']):
                     item = QTableWidgetItem(change_format(value, dotdown8=True))
+                elif '해외선물' in self.ui.dict_set['증권사'] and '량' in column and \
+                        gubun in (ui_num['S잔고목록'], ui_num['S체결목록'], ui_num['S거래목록'], ui_num['S호가체결'], ui_num['S호가잔량']):
+                    item = QTableWidgetItem(change_format(value, dotdowndel=True))
                 elif (gubun == ui_num['C잔고목록'] and column in ('매수가', '현재가')) or \
                         (gubun == ui_num['C체결목록'] and column in ('체결가', '주문가격')) or \
                         (gubun == ui_num['C호가종목'] and column in ('현재가', '시가', '고가', '저가')) or \
                         (gubun == ui_num['C호가잔량'] and column == '호가'):
                     item = QTableWidgetItem(change_format(value, dotdown8=True))
-                elif '량' in column and '해외선물' in self.ui.dict_set['증권사'] and \
-                        gubun in (ui_num['S잔고목록'], ui_num['S체결목록'], ui_num['S거래목록'], ui_num['S호가체결'], ui_num['S호가잔량']):
-                    item = QTableWidgetItem(change_format(value, dotdowndel=True))
                 elif '해외선물' in self.ui.dict_set['증권사'] and (
                         (gubun == ui_num['S잔고목록'] and column in ('매수가', '현재가')) or
                         (gubun == ui_num['S체결목록'] and column in ('체결가', '주문가격')) or
@@ -242,7 +208,7 @@ class UpdateTablewidget:
                                ui_num['스톰라이브4'], ui_num['스톰라이브6'], ui_num['스톰라이브7'], ui_num['스톰라이브9'],
                                ui_num['스톰라이브10'], ui_num['김프']):
                     value = str(value)
-                    if column in ('수익률', '누적수익률', 'per', 'hlp', 'ch', 'cha', 'chh', '대비(원)',
+                    if column in ('수익률', '누적수익률', 'per', 'hlp', 'lhp', 'ch', '대비(원)',
                                   '대비율(%)', 'aht', 'wr', 'app', 'tpp', 'mdd', 'cagr'):
                         item = NumericItem(change_format(value))
                     elif (gubun == ui_num['C상세기록'] and column in ('매수가', '매도가')) or column == '바이낸스(달러)':
