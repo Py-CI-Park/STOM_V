@@ -1,11 +1,12 @@
+
 import pandas as pd
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from ui.set_style import color_fg_bt, color_fg_dk, color_fg_bc, color_bf_bt, color_bf_dk, color_ct_hg
 from ui.ui_get_label_text import get_label_text
-from utility.setting import ui_num, columns_hg, columns_hj, list_stock_tick, list_stock_min, list_coin_min1, \
-    list_coin_min2, list_coin_tick1, list_coin_tick2
+from utility.setting import ui_num, columns_hg, columns_hj, list_stock_tick_c, list_stock_min_c, list_coin_min_c, \
+    list_coin_min_cf, list_coin_tick_c, list_coin_tick_cf
 from utility.static import error_decorator, change_format, comma2int, comma2float, dt_ymdhms
 
 
@@ -73,7 +74,7 @@ class UpdateTablewidget:
         if len(data) == 2:
             gubun, df = data
         else:
-            if type(data[2]) == str:
+            if data[2].__class__ == str:
                 gubun, df, ymshms = data
                 if self.ui.ctpg_xticks is not None:
                     self.UpdateHogainfoForChart(gubun, ymshms)
@@ -416,18 +417,18 @@ class UpdateTablewidget:
         def fi(fname):
             if is_min:
                 if gubun == ui_num['S호가종목'] and '키움증권' in self.ui.dict_set['증권사']:
-                    return list_stock_min.index(fname)
+                    return list_stock_min_c.index(fname)
                 elif 'KRW' in self.ui.ctpg_name:
-                    return list_coin_min1.index(fname)
+                    return list_coin_min_c.index(fname)
                 else:
-                    return list_coin_min2.index(fname)
+                    return list_coin_min_cf.index(fname)
             else:
                 if gubun == ui_num['S호가종목'] and '키움증권' in self.ui.dict_set['증권사']:
-                    return list_stock_tick.index(fname)
+                    return list_stock_tick_c.index(fname)
                 elif 'KRW' in self.ui.ctpg_name:
-                    return list_coin_tick1.index(fname)
+                    return list_coin_tick_c.index(fname)
                 else:
-                    return list_coin_tick2.index(fname)
+                    return list_coin_tick_cf.index(fname)
 
         def setInfiniteLine():
             vhline = pg.InfiniteLine()
@@ -458,9 +459,6 @@ class UpdateTablewidget:
             vLine11 = setInfiniteLine()
             vLine12 = setInfiniteLine()
             vLine13 = setInfiniteLine()
-            vLine14 = setInfiniteLine()
-            vLine15 = setInfiniteLine()
-            vLine16 = setInfiniteLine()
 
             self.ui.ctpg[0].addItem(vLine1)
             self.ui.ctpg[1].addItem(vLine2)
@@ -471,22 +469,19 @@ class UpdateTablewidget:
             self.ui.ctpg_hline = [vLine1, vLine2, vLine3, vLine4, vLine5, vLine6]
             if len(self.ui.ctpg) > 6:
                 self.ui.ctpg[6].addItem(vLine7)
+                self.ui.ctpg_hline += [vLine7]
+            if len(self.ui.ctpg) > 7:
                 self.ui.ctpg[7].addItem(vLine8)
-                self.ui.ctpg_hline += [vLine7, vLine8]
-            if len(self.ui.ctpg) > 8:
+                self.ui.ctpg_hline += [vLine8]
+            if len(self.ui.ctpg) > 9:
                 self.ui.ctpg[8].addItem(vLine9)
                 self.ui.ctpg[9].addItem(vLine10)
                 self.ui.ctpg_hline += [vLine9, vLine10]
-            if len(self.ui.ctpg) > 10:
+            if len(self.ui.ctpg) > 12:
                 self.ui.ctpg[10].addItem(vLine11)
                 self.ui.ctpg[11].addItem(vLine12)
-                self.ui.ctpg_hline += [vLine11, vLine12]
-            if len(self.ui.ctpg) > 12:
                 self.ui.ctpg[12].addItem(vLine13)
-                self.ui.ctpg[13].addItem(vLine14)
-                self.ui.ctpg[14].addItem(vLine15)
-                self.ui.ctpg[15].addItem(vLine16)
-                self.ui.ctpg_hline += [vLine13, vLine14, vLine15, vLine16]
+                self.ui.ctpg_hline += [vLine11, vLine12, vLine13]
 
         for vline in self.ui.ctpg_hline:
             vline.setPos(x)
@@ -499,12 +494,12 @@ class UpdateTablewidget:
 
         if is_min:
             info = [
-                '이동평균005', '이동평균010', '이동평균020', '이동평균060', '체결강도', '체결강도평균', '최고체결강도',
+                '이동평균5', '이동평균10', '이동평균20', '이동평균60', '체결강도', '체결강도평균', '최고체결강도',
                 '최저체결강도', '분당거래대금', '분당거래대금평균', '분당매수수량', '분당매도수량'
             ]
         else:
             info = [
-                '이동평균0060', '이동평균0300', '이동평균0600', '이동평균1200', '체결강도', '체결강도평균', '최고체결강도',
+                '이동평균60', '이동평균150', '이동평균300', '이동평균600', '체결강도', '체결강도평균', '최고체결강도',
                 '최저체결강도', '초당거래대금', '초당거래대금평균', '초당매수수량', '초당매도수량'
             ]
 

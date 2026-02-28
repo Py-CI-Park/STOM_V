@@ -1,3 +1,5 @@
+
+import numpy as np
 from utility.setting import columns_jg, columns_jgf, columns_jgcf
 
 
@@ -67,9 +69,9 @@ def text_changed_05(ui):
                     order_count = int(ui.dict_set['주식투자금'])
             else:
                 if 'KRW' in name:
-                    order_count = round(ui.dict_set['코인투자금'] * 1_000_000 / order_price, 8)
+                    order_count = np.round(ui.dict_set['코인투자금'] * 1_000_000 / order_price, 8)
                 else:
-                    order_count = round(ui.dict_set['코인투자금'] / order_price, 8)
+                    order_count = np.round(ui.dict_set['코인투자금'] / order_price, 8)
         else:
             if ui.main_btn == 0:
                 order_count = ui.sjg_tableWidgettt.item(row_num, col_num).text()

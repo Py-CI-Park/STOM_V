@@ -1,3 +1,5 @@
+
+import numpy as np
 from traceback import print_exc
 from ui.set_text import stock_buy_signal, coin_buy_signal, coin_future_buy_signal, stock_sell_signal, coin_sell_signal, \
     coin_future_sell_signal, future_buy_signal, future_sell_signal
@@ -72,14 +74,14 @@ def get_optivars_to_gavars(ui, opti_vars_text):
                     ga_vars_text = f'{ga_vars_text}{vars_curr}, '
                     vars_curr += vars_gap
                     if vars_gap < 0:
-                        vars_curr = round(vars_curr, 2)
+                        vars_curr = np.round(vars_curr, 2)
                 ga_vars_text = f'{ga_vars_text[:-2]}], {vars_high}]\n'
             else:
                 while vars_curr >= vars_last:
                     ga_vars_text = f'{ga_vars_text}{vars_curr}, '
                     vars_curr += vars_gap
                     if vars_gap < 0:
-                        vars_curr = round(vars_curr, 2)
+                        vars_curr = np.round(vars_curr, 2)
                 ga_vars_text = f'{ga_vars_text[:-2]}], {vars_high}]\n'
     except:
         print_exc()
@@ -103,7 +105,7 @@ def get_gavars_to_optivars(ui, ga_vars_text):
                 vars_end = vars_high
             else:
                 vars_high, vars_gap = vars_[i][1], vars_[i][0][1] - vars_[i][0][0]
-                if type(vars_gap) == float: vars_gap = round(vars_gap, 2)
+                if vars_gap.__class__ == float: vars_gap = np.round(vars_gap, 2)
                 vars_start = vars_[i][0][0]
                 vars_end = vars_[i][0][-1]
             opti_vars_text = f'{opti_vars_text}vars_[{i}] = [[{vars_start}, {vars_end}, {vars_gap}], {vars_high}]\n'
@@ -158,7 +160,7 @@ def get_stgtxt_sort(ui, buystg, sellstg):
         sellstg = sellstg.split('\n')
         if buy_num < sell_num:
             for line in buystg:
-                if 'self.vars' in line and '#' not in line:
+                if 'self.vars' in line and line[0] != '#':
                     str_pass = False
                     for text in line:
                         if str_pass:
@@ -177,7 +179,7 @@ def get_stgtxt_sort(ui, buystg, sellstg):
                 else:
                     buystg_str += line + '\n'
             for line in sellstg:
-                if 'self.vars' in line and '#' not in line:
+                if 'self.vars' in line and line[0] != '#':
                     str_pass = False
                     for text in line:
                         if str_pass:
@@ -197,7 +199,7 @@ def get_stgtxt_sort(ui, buystg, sellstg):
                     sellstg_str += line + '\n'
         else:
             for line in sellstg:
-                if 'self.vars' in line and '#' not in line:
+                if 'self.vars' in line and line[0] != '#':
                     str_pass = False
                     for text in line:
                         if str_pass:
@@ -216,7 +218,7 @@ def get_stgtxt_sort(ui, buystg, sellstg):
                 else:
                     sellstg_str += line + '\n'
             for line in buystg:
-                if 'self.vars' in line and '#' not in line:
+                if 'self.vars' in line and line[0] != '#':
                     str_pass = False
                     for text in line:
                         if str_pass:
@@ -245,7 +247,7 @@ def get_stgtxt_sort2(ui, optivars, gavars):
         cnt = 0
         optivars = optivars.split('\n')
         for line in optivars:
-            if 'self.vars' in line and '#' not in line:
+            if 'self.vars' in line and line[0] != '#':
                 str_pass = False
                 for text in line:
                     if str_pass:
@@ -267,7 +269,7 @@ def get_stgtxt_sort2(ui, optivars, gavars):
         cnt = 0
         gavars = gavars.split('\n')
         for line in gavars:
-            if 'self.vars' in line and '#' not in line:
+            if 'self.vars' in line and line[0] != '#':
                 str_pass = False
                 for text in line:
                     if str_pass:

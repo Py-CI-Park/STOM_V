@@ -1,3 +1,4 @@
+
 import re
 import sys
 import time
@@ -65,20 +66,20 @@ class Total:
                 if bc == self.back_count:
                     bc = 0
                     for q in self.bstq_list[:5]:
-                        q.put(('백테완료', '분리집계'))
+                        q.put(('백테완료', '일괄집계'))
 
-            elif data == '집계완료':
+            elif data == '수신완료':
                 sc += 1
                 if sc == 5:
                     sc = 0
                     for q in self.bstq_list[:5]:
-                        q.put('결과분리')
+                        q.put('결과전송')
 
-            elif data == '분리완료':
+            elif data == '전송완료':
                 sc += 1
                 if sc == 5:
                     sc = 0
-                    self.bstq_list[0].put('결과전송')
+                    self.bstq_list[0].put('결과집계')
 
             elif data[0] == '백테결과':
                 _, list_tsg, arry_bct = data
@@ -179,7 +180,7 @@ class Total:
 
         back_text  = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.avgtime}'
         label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{tsg_unit}, 거래횟수 {tc}회, '\
-                     f'일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}, 익절 {pc}회, 손절 {mc}회\n'\
+                     f'일평균거래횟수 {atc:.1f}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}, 익절 {pc}회, 손절 {mc}회\n'\
                      f'승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, 수익금합계 {tsg:,}{tsg_unit}, '\
                      f'최대낙폭금액 {mdd_:,.0f}{tsg_unit}, 최대낙폭률 {mdd:.2f}%, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
 
@@ -207,7 +208,7 @@ class Total:
         self.mq.put(f'{self.backname} 완료')
 
         if self.back_club:
-            buystg_text  = ('\n'.join([x for x in self.buystg.split('if 매수:')[0].split('\n') if '#' not in x])).split(' ')
+            buystg_text  = ('\n'.join([x for x in self.buystg.split('if 매수:')[0].split('\n') if x and x[0] != '#'])).split(' ')
             buystg_text  = [x for x in buystg_text if x != '매수' and re.compile('[가-힣]+').findall(x)]
             buystg_text  = [x.replace('(', '').replace(')', '').replace(':', '').replace('\n', '') for x in set(buystg_text)]
             buy_vars = '------------------------------------------------------------------------------------ 매수변수목록 ------------------------------------------------------------------------------------\n'
@@ -218,7 +219,7 @@ class Total:
                     buy_vars = f'{buy_vars}{text}'
                 else:
                     buy_vars = f'{buy_vars}, {text}'
-            sellstg_text = ('\n'.join([x for x in self.sellstg.split('if 매도:')[0].split('\n') if '#' not in x])).split(' ')
+            sellstg_text = ('\n'.join([x for x in self.sellstg.split('if 매도:')[0].split('\n') if x and x[0] != '#'])).split(' ')
             sellstg_text = [x for x in sellstg_text if x != '매도' and re.compile('[가-힣]+').findall(x)]
             sellstg_text = [x.replace('(', '').replace(')', '').replace(':', '').replace('\n', '') for x in set(sellstg_text)]
             sell_vars = '------------------------------------------------------------------------------------ 매도변수목록 ------------------------------------------------------------------------------------\n'

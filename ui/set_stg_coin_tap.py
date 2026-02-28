@@ -1,3 +1,4 @@
+
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QLabel
 from ui.set_style import qfont12, qfont13, qfont14, style_pgbar, style_bc_dk
@@ -67,18 +68,19 @@ class SetCoinBack:
         self.ui.cvjb_pushButon_02 = self.wc.setPushbutton('매수전략 저장(F4)', box=self.ui.cs_tab, click=self.ui.CoinBuyStgSave, color=1, tip='작성된 매수전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.cvjb_pushButon_03 = self.wc.setPushbutton('매수변수 로딩', box=self.ui.cs_tab, click=self.ui.CoinBuyFactor, color=1, tip='매수전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.cvjb_pushButon_04 = self.wc.setPushbutton('매수전략 시작', box=self.ui.cs_tab, click=self.ui.CoinBuyStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
-        self.ui.cvjb_pushButon_05 = self.wc.setPushbutton('등락율제한', box=self.ui.cs_tab, click=self.ui.CoinBuyPerLimit)
-        self.ui.cvjb_pushButon_06 = self.wc.setPushbutton('고저평균등락율', box=self.ui.cs_tab, click=self.ui.CoinBuyLowHighAvgPer)
-        self.ui.cvjb_pushButon_07 = self.wc.setPushbutton('현재가시가비교', box=self.ui.cs_tab, click=self.ui.CoinBuyOpenCloseComparison)
-        self.ui.cvjb_pushButon_08 = self.wc.setPushbutton('체결강도하한', box=self.ui.cs_tab, click=self.ui.CoinBuyChLowerLimit)
-        self.ui.cvjb_pushButon_09 = self.wc.setPushbutton('체결강도평균차이', box=self.ui.cs_tab, click=self.ui.CoinBuyChAvgGap)
-        self.ui.cvjb_pushButon_10 = self.wc.setPushbutton('최고체결강도', box=self.ui.cs_tab, click=self.ui.CoinBuyChHigh)
+        self.ui.cvjb_pushButon_05 = self.wc.setPushbutton('등락율제한', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=215)
+        self.ui.cvjb_pushButon_06 = self.wc.setPushbutton('고저평균등락율', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=216)
+        self.ui.cvjb_pushButon_07 = self.wc.setPushbutton('현재가시가비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=217)
+        self.ui.cvjb_pushButon_08 = self.wc.setPushbutton('체결강도하한', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=218)
+        self.ui.cvjb_pushButon_09 = self.wc.setPushbutton('체결강도평균차이', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=219)
+        self.ui.cvjb_pushButon_10 = self.wc.setPushbutton('최고체결강도', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=220)
         self.ui.cvjb_pushButon_11 = self.wc.setPushbutton('매수시그널', box=self.ui.cs_tab, click=self.ui.CoinBuySignalInsert, color=3)
         self.ui.cvjb_pushButon_12 = self.wc.setPushbutton('매수전략 중지', box=self.ui.cs_tab, click=self.ui.CoinBuyStgStop, color=1, tip='실행중인 매수전략을 중지한다.')
 
         self.ui.cvj_pushButton_01 = self.wc.setPushbutton('백테스트', box=self.ui.cs_tab, click=self.ui.CoinBacktestStart, color=2, tip='(Alt+Enter) 기본전략을 백테스팅한다.\nCtrl키와 함께 누르면 백테스트 엔진을 재시작할 수 있습니다.\nCtrl + Alt 키와 함계 누르면 백테 완료 후 변수목록이 포함된 그래프가 저장됩니다.')
         self.ui.cvj_pushButton_02 = self.wc.setPushbutton('백파인더', box=self.ui.cs_tab, click=self.ui.CoinBackfinderStart, color=2, tip='구간등락율을 기준으로 변수를 탐색한다.')
         self.ui.cvj_pushButton_03 = self.wc.setPushbutton('백파인더 예제', box=self.ui.cs_tab, click=self.ui.CoinBackfinderSample, color=3)
+        self.ui.cvj_pushButton_04 = self.wc.setPushbutton('추가버튼', box=self.ui.cs_tab, click=self.ui.StrategyCustomButtonShow, color=3)
 
         self.ui.cvjs_comboBoxx_01 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_02)
         self.ui.cvjs_lineEditt_01 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
@@ -86,14 +88,14 @@ class SetCoinBack:
         self.ui.cvjs_pushButon_02 = self.wc.setPushbutton('매도전략 저장(F8)', box=self.ui.cs_tab, click=self.ui.CoinSellStgSave, color=1, tip='작성된 매도전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.cvjs_pushButon_03 = self.wc.setPushbutton('매도변수 로딩', box=self.ui.cs_tab, click=self.ui.CoinSellFactor, color=1, tip='매도전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.cvjs_pushButon_04 = self.wc.setPushbutton('매도전략 시작', box=self.ui.cs_tab, click=self.ui.CoinSellStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
-        self.ui.cvjs_pushButon_05 = self.wc.setPushbutton('손절라인청산', box=self.ui.cs_tab, click=self.ui.CoinSellDeadLine)
-        self.ui.cvjs_pushButon_06 = self.wc.setPushbutton('익절라인청산', box=self.ui.cs_tab, click=self.ui.CoinSellProfitLine)
-        self.ui.cvjs_pushButon_07 = self.wc.setPushbutton('수익률보존청산', box=self.ui.cs_tab, click=self.ui.CoinSellProfitSave)
-        self.ui.cvjs_pushButon_08 = self.wc.setPushbutton('보유시간기준청산', box=self.ui.cs_tab, click=self.ui.CoinSellHoldTime)
-        self.ui.cvjs_pushButon_09 = self.wc.setPushbutton('체결강도평균비교', box=self.ui.cs_tab, click=self.ui.CoinSellChAvgComparison)
-        self.ui.cvjs_pushButon_10 = self.wc.setPushbutton('최고체결강도비교', box=self.ui.cs_tab, click=self.ui.CoinSellChHighComparison)
-        self.ui.cvjs_pushButon_11 = self.wc.setPushbutton('고저평균등락율', box=self.ui.cs_tab, click=self.ui.CoinSellLowHighAvgPer)
-        self.ui.cvjs_pushButon_12 = self.wc.setPushbutton('호가총잔량비교', box=self.ui.cs_tab, click=self.ui.CoinSellAskPriceRamainCount)
+        self.ui.cvjs_pushButon_05 = self.wc.setPushbutton('손절라인청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=221)
+        self.ui.cvjs_pushButon_06 = self.wc.setPushbutton('익절라인청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=222)
+        self.ui.cvjs_pushButon_07 = self.wc.setPushbutton('수익률보존청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=223)
+        self.ui.cvjs_pushButon_08 = self.wc.setPushbutton('보유시간기준청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=224)
+        self.ui.cvjs_pushButon_09 = self.wc.setPushbutton('체결강도평균비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=225)
+        self.ui.cvjs_pushButon_10 = self.wc.setPushbutton('최고체결강도비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=226)
+        self.ui.cvjs_pushButon_11 = self.wc.setPushbutton('고저평균등락율', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=227)
+        self.ui.cvjs_pushButon_12 = self.wc.setPushbutton('호가총잔량비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=228)
         self.ui.cvjs_pushButon_13 = self.wc.setPushbutton('매도시그널', box=self.ui.cs_tab, click=self.ui.CoinSellSignalInsert, color=3)
         self.ui.cvjs_pushButon_14 = self.wc.setPushbutton('매도전략 중지', box=self.ui.cs_tab, click=self.ui.CoinSellStgStop, color=1, tip='실행중인 매도전략을 당장 중지한다.')
 
@@ -121,28 +123,28 @@ class SetCoinBack:
         self.ui.cvjb_dateEditt_02 = self.wc.setDateEdit(self.ui.cs_tab)
         self.ui.cvjb_lineEditt_02 = self.wc.setLineedit(self.ui.cs_tab, ltext='0', style=style_bc_dk)
         self.ui.cvjb_lineEditt_03 = self.wc.setLineedit(self.ui.cs_tab, ltext='235959' if self.ui.dict_set['코인타임프레임'] else '2359', style=style_bc_dk)
-        self.ui.cvjb_lineEditt_04 = self.wc.setLineedit(self.ui.cs_tab, ltext='20', style=style_bc_dk)
+        self.ui.cvjb_lineEditt_04 = self.wc.setLineedit(self.ui.cs_tab, ltext=str(self.ui.dict_set['코인투자금']), style=style_bc_dk)
         self.ui.cvjb_lineEditt_05 = self.wc.setLineedit(self.ui.cs_tab, ltext='30', style=style_bc_dk)
 
         self.ui.coin_datedt_list  = [self.ui.cvjb_labelllll_01, self.ui.cvjb_dateEditt_01, self.ui.cvjb_dateEditt_02, self.ui.cvjb_lineEditt_05]
 
     # =================================================================================================================
 
-        self.ui.cvj_pushButton_08 = self.wc.setPushbutton('전략 편집기', box=self.ui.cs_tab, click=self.ui.CoinStgEditer, color=5, tip='단축키(Alt+1)')
-        self.ui.cvj_pushButton_07 = self.wc.setPushbutton('최적화 편집기', box=self.ui.cs_tab, click=self.ui.CoinOptiEditer, color=4, tip='단축키(Alt+2)')
-        self.ui.cvj_pushButton_06 = self.wc.setPushbutton('테스트 편집기', box=self.ui.cs_tab, click=self.ui.CoinOptiTestEditer, color=4, tip='단축키(Alt+3)')
-        self.ui.cvj_pushButton_05 = self.wc.setPushbutton('전진분석', box=self.ui.cs_tab, click=self.ui.CoinRwfTestEditer, color=4, tip='단축키(Alt+4)')
-        self.ui.cvj_pushButton_09 = self.wc.setPushbutton('GA 편집기', box=self.ui.cs_tab, click=self.ui.CoinOptiGaEditer, color=4, tip='단축키(Alt+5)')
-        self.ui.cvj_pushButton_10 = self.wc.setPushbutton('조건 편집기', box=self.ui.cs_tab, click=self.ui.CoinCondEditer, color=4, tip='단축키(Alt+6)')
-        self.ui.cvj_pushButton_11 = self.wc.setPushbutton('범위 편집기', box=self.ui.cs_tab, click=self.ui.CoinOptiVarsEditer, color=4, tip='단축키(Alt+7)')
-        self.ui.cvj_pushButton_12 = self.wc.setPushbutton('변수 편집기', box=self.ui.cs_tab, click=self.ui.CoinVarsEditer, color=4, tip='단축키(Alt+8)')
-        self.ui.cvj_pushButton_13 = self.wc.setPushbutton('백테스트 로그', box=self.ui.cs_tab, click=self.ui.CoinBacktestLog, color=4, tip='단축키(Alt+9)')
-        self.ui.cvj_pushButton_14 = self.wc.setPushbutton('상세기록', box=self.ui.cs_tab, click=self.ui.CoinBacktestDetail, color=4, tip='단축키(Alt+0)')
+        self.ui.cvj_pushButton_09 = self.wc.setPushbutton('전략 편집기', box=self.ui.cs_tab, click=self.ui.CoinStgEditer, color=5, tip='단축키(Alt+1)')
+        self.ui.cvj_pushButton_08 = self.wc.setPushbutton('최적화 편집기', box=self.ui.cs_tab, click=self.ui.CoinOptiEditer, color=4, tip='단축키(Alt+2)')
+        self.ui.cvj_pushButton_07 = self.wc.setPushbutton('테스트 편집기', box=self.ui.cs_tab, click=self.ui.CoinOptiTestEditer, color=4, tip='단축키(Alt+3)')
+        self.ui.cvj_pushButton_06 = self.wc.setPushbutton('전진분석', box=self.ui.cs_tab, click=self.ui.CoinRwfTestEditer, color=4, tip='단축키(Alt+4)')
+        self.ui.cvj_pushButton_10 = self.wc.setPushbutton('GA 편집기', box=self.ui.cs_tab, click=self.ui.CoinOptiGaEditer, color=4, tip='단축키(Alt+5)')
+        self.ui.cvj_pushButton_11 = self.wc.setPushbutton('조건 편집기', box=self.ui.cs_tab, click=self.ui.CoinCondEditer, color=4, tip='단축키(Alt+6)')
+        self.ui.cvj_pushButton_12 = self.wc.setPushbutton('범위 편집기', box=self.ui.cs_tab, click=self.ui.CoinOptiVarsEditer, color=4, tip='단축키(Alt+7)')
+        self.ui.cvj_pushButton_13 = self.wc.setPushbutton('변수 편집기', box=self.ui.cs_tab, click=self.ui.CoinVarsEditer, color=4, tip='단축키(Alt+8)')
+        self.ui.cvj_pushButton_14 = self.wc.setPushbutton('백테스트 로그', box=self.ui.cs_tab, click=self.ui.CoinBacktestLog, color=4, tip='단축키(Alt+9)')
+        self.ui.cvj_pushButton_15 = self.wc.setPushbutton('상세기록', box=self.ui.cs_tab, click=self.ui.CoinBacktestDetail, color=4, tip='단축키(Alt+0)')
 
         self.ui.coin_editer_list  = [
-            self.ui.cvj_pushButton_05, self.ui.cvj_pushButton_06, self.ui.cvj_pushButton_07, self.ui.cvj_pushButton_08,
-            self.ui.cvj_pushButton_09, self.ui.cvj_pushButton_10, self.ui.cvj_pushButton_11, self.ui.cvj_pushButton_12,
-            self.ui.cvj_pushButton_13, self.ui.cvj_pushButton_14
+            self.ui.cvj_pushButton_06, self.ui.cvj_pushButton_07, self.ui.cvj_pushButton_08, self.ui.cvj_pushButton_09,
+            self.ui.cvj_pushButton_10, self.ui.cvj_pushButton_11, self.ui.cvj_pushButton_12, self.ui.cvj_pushButton_13,
+            self.ui.cvj_pushButton_14, self.ui.cvj_pushButton_15
         ]
 
     # =================================================================================================================
@@ -365,7 +367,8 @@ class SetCoinBack:
 
         self.ui.cvj_pushButton_01.setGeometry(1012, 335, 165, 30)
         self.ui.cvj_pushButton_02.setGeometry(1012, 370, 165, 30)
-        self.ui.cvj_pushButton_03.setGeometry(1012, 405, 165, 30)
+        self.ui.cvj_pushButton_03.setGeometry(1012, 405, 80, 30)
+        self.ui.cvj_pushButton_04.setGeometry(1097, 405, 80, 30)
 
         self.ui.cvjs_comboBoxx_01.setGeometry(1012, 478, 165, 25)
         self.ui.cvjs_lineEditt_01.setGeometry(1182, 478, 165, 25)
@@ -395,16 +398,16 @@ class SetCoinBack:
         self.ui.cvjb_lineEditt_04.setGeometry(1167, 305, 60, 20)
         self.ui.cvjb_lineEditt_05.setGeometry(1287, 305, 60, 20)
 
-        self.ui.cvj_pushButton_05.setGeometry(1182, 335, 80, 30)
-        self.ui.cvj_pushButton_06.setGeometry(1182, 370, 80, 30)
-        self.ui.cvj_pushButton_07.setGeometry(1182, 405, 80, 30)
-        self.ui.cvj_pushButton_08.setGeometry(1182, 440, 80, 30)
-        self.ui.cvj_pushButton_09.setGeometry(1267, 335, 80, 30)
-        self.ui.cvj_pushButton_10.setGeometry(1267, 370, 80, 30)
-        self.ui.cvj_pushButton_11.setGeometry(1267, 405, 80, 30)
-        self.ui.cvj_pushButton_12.setGeometry(1267, 440, 80, 30)
-        self.ui.cvj_pushButton_13.setGeometry(1012, 440, 80, 30)
-        self.ui.cvj_pushButton_14.setGeometry(1097, 440, 80, 30)
+        self.ui.cvj_pushButton_06.setGeometry(1182, 335, 80, 30)
+        self.ui.cvj_pushButton_07.setGeometry(1182, 370, 80, 30)
+        self.ui.cvj_pushButton_08.setGeometry(1182, 405, 80, 30)
+        self.ui.cvj_pushButton_09.setGeometry(1182, 440, 80, 30)
+        self.ui.cvj_pushButton_10.setGeometry(1267, 335, 80, 30)
+        self.ui.cvj_pushButton_11.setGeometry(1267, 370, 80, 30)
+        self.ui.cvj_pushButton_12.setGeometry(1267, 405, 80, 30)
+        self.ui.cvj_pushButton_13.setGeometry(1267, 440, 80, 30)
+        self.ui.cvj_pushButton_14.setGeometry(1012, 440, 80, 30)
+        self.ui.cvj_pushButton_15.setGeometry(1097, 440, 80, 30)
 
         self.ui.cvc_comboBoxxx_01.setGeometry(1012, 45, 165, 30)
         self.ui.cvc_lineEdittt_01.setGeometry(1182, 45, 165, 30)

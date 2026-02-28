@@ -1,3 +1,4 @@
+
 from traceback import print_exc
 from PyQt5.QtCore import QThread
 from utility.setting import indicator
@@ -69,16 +70,17 @@ class BackCodeTest(QThread):
     def CheckFactor(self):
         error = False
         gugan_factors = [
-            '이동평균', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도',
+            '이동평균', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도', '등락율각도', '경과틱수',
             '초당거래대금평균', '누적초당매수수량', '누적초당매도수량', '최고초당매수수량', '최고초당매도수량', '당일거래대금각도', '전일비각도',
-            '분당거래대금평균', '누적분당매수수량', '누적분당매도수량', '최고분당매수수량', '최고분당매도수량', '최고분봉고가', '최저분봉저가'
+            '분당거래대금평균', '누적분당매수수량', '누적분당매도수량', '최고분당매수수량', '최고분당매도수량', '최고분봉고가', '최저분봉저가',
+            'N'
         ]
         for factor in gugan_factors:
             if factor in self.stg:
                 _stg = self.stg.replace(factor, f'{factor};')
                 _stg_list = _stg.split(';')
                 for i, txt in enumerate(_stg_list):
-                    if '#' not in txt and factor in txt and _stg_list[i+1][0] != '(':
+                    if factor in txt and _stg_list[i+1][0] != '(':
                         self.logger.error(f'{factor}(30), {factor}(30, 1) 형태로 사용하십시오.')
                         error = True
         if error:
@@ -392,6 +394,213 @@ class BackCodeTest(QThread):
 
         def WILLR_N(pre):
             return 1
+
+        def 이평근접개수(window=60, tick=30, per=0.33):
+            return 0
+
+        def 시가근접개수(tick, per=0.5):
+            return 0
+
+        def 변동성(tick, pre=0):
+            return 0
+
+        def 구간저가대비현재가등락율(tick):
+            return 0
+
+        def 구간고가대비현재가등락율(tick):
+            return 0
+
+        def 거래대금평균대비비율(tick, pre=0):
+            return 0
+
+        def 체결강도평균대비비율(tick, pre=0):
+            return 0
+
+        def 구간호가총잔량비율(tick, pre=0):
+            return 0
+
+        def 매수수량변동성(tick, pre=0):
+            return 0
+
+        def 매도수량변동성(tick, pre=0):
+            return 0
+
+        def 횡보감지(tick, per=0.5, pre=0):
+            return 0
+
+        def 고가미갱신지속틱수():
+            return 1
+
+        def 저가미갱신지속틱수():
+            return 1
+
+        def 고점기준등락율각도(cf):
+            return 0
+
+        def _저점기준등락율각도(cf):
+            return 0
+
+        def 연속상승(tick):
+            return False
+
+        def 연속하락(tick):
+            return False
+
+        def 호가갭발생(hogagap, pre=0):
+            return False
+
+        def 변동성급증(tick, ratio=2):
+            return False
+
+        def 변동성급감(tick, ratio=2):
+            return False
+
+        def 가격급등(tick, per=0.7):
+            return False
+
+        def 가격급락(tick, per=0.7):
+            return False
+
+        def 거래대금급증(tick, ratio=3):
+            return False
+
+        def 거래대금급감(tick, ratio=0.7):
+            return False
+
+        def 체결강도급등(tick, ratio=1.1):
+            return False
+
+        def 체결강도급락(tick, ratio=0.9):
+            return False
+
+        def 호가상승압력(tick, ratio=0.7):
+            return False
+
+        def 호가하락압력(tick, ratio=0.3):
+            return False
+
+        def 매수수량급증(tick, ratio=3):
+            return False
+
+        def 매수수량급감(tick, ratio=0.3):
+            return False
+
+        def 매도수량급증(tick, ratio=3):
+            return False
+
+        def 매도수량급감(tick, ratio=0.3):
+            return False
+
+        def 이평돌파(tick, per=1.0):
+            return False
+
+        def 이평이탈(tick, per=1.0):
+            return False
+
+        def 시가돌파(tick, per=1.0):
+            return False
+
+        def 시가이탈(tick, per=1.0):
+            return False
+
+        def 이평지지후이평돌파(tick1, tick2=30, per1=0.33, cnt=10, per2=1.0):
+            return False
+
+        def 이평지지후이평이탈(tick1, tick2=30, per1=0.33, cnt=10, per2=1.0):
+            return False
+
+        def 횡보후가격급등(tick1, per1=0.5, tick2=2, per2=0.5):
+            return False
+
+        def 횡보후가격급락(tick1, per1=0.5, tick2=2, per2=0.5):
+            return False
+
+        def 횡보후연속상승(tick1, per1=0.5, tick2=3):
+            return False
+
+        def 횡보후연속하락(tick1, per1=0.5, tick2=3):
+            return False
+
+        def 연속상승및가격급등(tick1, tick2=2, per=0.5):
+            return False
+
+        def 연속하락및가격급락(tick1, tick2=2, per=0.5):
+            return False
+
+        def 거래대금급증및연속상승(tick1, ratio=2, tick2=5):
+            return False
+
+        def 호가상승압력및매수수량급증(tick, ratio1=0.7, ratio2=3):
+            return False
+
+        def 호가하락압력및매도수량급증(tick, ratio=0.3, ratio2=3):
+            return False
+
+        def 매수수량급증및가격급등(tick, ratio=3, tick2=5, per=0.7):
+            return False
+
+        def 매도수량급증후가격급락(tick, ratio=3, tick2=5, per=0.7):
+            return False
+
+        def 변동성급증및구간최고가갱신(tick, ratio=2):
+            return False
+
+        def 변동성급감및구간최저가갱신(tick, ratio=2):
+            return False
+
+        def 거래대금급증및구간최고가갱신(tick, ratio=2):
+            return False
+
+        def 거래대금급감후구간최저가갱신(tick, ratio=0.5):
+            return False
+
+        def 거래대금급증및가격급등(tick1, ratio=2, tick2=5, per=0.7):
+            return False
+
+        def 거래대금급감및가격급락(tick1, ratio=0.5, tick2=5, per=0.7):
+            return False
+
+        def 체결강도급등및호가상승압력(tick1, ratio1=1.1, tick2=10, ratio2=0.7):
+            return False
+
+        def 체결강도급락및호가하락압력(tick1, ratio1=0.9, tick2=10, ratio2=0.3):
+            return False
+
+        def 시가근접황보후시가돌파(tick, per1=0.5, cnt=7, per2=1.0):
+            return False
+
+        def 시가근접황보후시가이탈(tick, per1=0.5, cnt=7, per2=1.0):
+            return False
+
+        def 저가갱신후가격급등(tick, per=2):
+            return False
+
+        def 고가갱신후가격급락(tick, per=2):
+            return False
+
+        def 횡보상태장기보유(tick, per=0.5, time_=600):
+            return False
+
+        def 변동성급증_역추세매도(vol_tick, ratio=2.5, reversal_per=1.0):
+            return False
+
+        def 장기보유종목_동적익절청산(tick, time_=600, minper=0.3, multi=1):
+            return False
+
+        def 거래대금비율기반_동적청산(tick, ratio1=0.3, ratio2=3):
+            return False
+
+        def 호가압력기반_동적청산(tick, buy_pressure=0.8, sell_pressure=0.2):
+            return False
+
+        def 이평기반_동적청산(short, long=60, deviation1=0.5, deviation2=0.5):
+            return False
+
+        def 변동성기반_동적청산(tick, ratio1=3, ratio2=1.5):
+            return False
+
+        def 변동성급증기반_동적청산(tick, multi=2, ratio1=3, ratio2=1.5):
+            return False
 
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, \
             라운드피겨위5호가이내, 초당매수수량, 초당매도수량, VI해제시간, VI가격, VI호가단위, 초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량, \

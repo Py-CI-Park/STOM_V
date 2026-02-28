@@ -1,3 +1,5 @@
+
+import numpy as np
 from coin.binance_receiver_tick import BinanceReceiverTick
 from utility.setting import ui_num
 from utility.static import now, str_ymdhms_utc
@@ -24,13 +26,13 @@ class BinanceReceiverMin(BinanceReceiverTick):
             self.dict_prec[code] = [ymd, self.dict_data[code][0]]
             bids, asks, pretbids, pretasks = 0, 0, 0, 0
             o, h, low = c, c, c
-            dm = round(v * c, 2)
+            dm = np.round(v * c, 2)
         else:
             dm, _, bids, asks, pretbids, pretasks = self.dict_data[code][5:11]
             o, h, low = self.dict_data[code][1:4]
             if c > h: h = c
             if c < low: low = c
-            dm = round(dm + v * c, 2)
+            dm = np.round(dm + v * c, 2)
 
         if bids == 0 and asks == 0:
             mo = mh = ml = c
@@ -43,21 +45,22 @@ class BinanceReceiverMin(BinanceReceiverTick):
         asks_ = 0 if not m else v
         bids += bids_
         asks += asks_
-        tbids = round(pretbids + bids_, 8)
-        tasks = round(pretasks + asks_, 8)
+        tbids = np.round(pretbids + bids_, 8)
+        tasks = np.round(pretasks + asks_, 8)
         try:
-            ch = round(tbids / tasks * 100, 2)
+            # noinspection PyTypeChecker
+            ch = np.round(tbids / tasks * 100, 2)
         except:
             ch = 500.
         if ch > 500: ch = 500.
-        per = round((c / self.dict_prec[code][1] - 1) * 100, 2)
+        per = np.round((c / self.dict_prec[code][1] - 1) * 100, 2)
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, mo, mh, ml]
         self.dict_daym[code] = dm
 
         dt_ = int(str(dt)[:13])
         if code not in self.dict_dlhp or dt_ != self.dict_dlhp[code][0]:
-            self.dict_dlhp[code] = [dt_, round((h / low - 1) * 100, 2)]
+            self.dict_dlhp[code] = [dt_, np.round((h / low - 1) * 100, 2)]
 
         if self.hoga_code == code:
             bids, asks = self.list_hgdt[2:4]
@@ -96,7 +99,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 float(data['b'][5][1]), float(data['b'][6][1]), float(data['b'][7][1]), float(data['b'][8][1]), float(data['b'][9][1])
             )
             hoga_tamount = (
-                round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
+                np.round(sum(hoga_samount), 8), np.round(sum(hoga_bamount), 8)
             )
             receivetime = now()
         except:
@@ -148,7 +151,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
 
             tm = dm - self.dict_dtdm[code][1]
             if tm == dm and 500 < int(str(dt)[8:]): tm = 0
-            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0

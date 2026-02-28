@@ -1,3 +1,4 @@
+
 from ui.set_style import style_bc_dk
 from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
 
@@ -156,6 +157,9 @@ class SetSetupTap:
         self.ui.sj_etc_checBox_05 = self.wc.setCheckBox('휴무종료일 경우 프로세스 종료 후 컴퓨터 종료', self.ui.sj_bs_groupBox_08)
         self.ui.sj_etc_checBox_06 = self.wc.setCheckBox('스톰라이브 참여하기', self.ui.sj_bs_groupBox_08, tip='당일실현손익 정보를 공유하고 익명으로 된 스토머분들의 정보 및 통계를 볼 수 있음')
         self.ui.sj_etc_checBox_07 = self.wc.setCheckBox('프로세스 종료 시 프로그램종료', self.ui.sj_bs_groupBox_08)
+        self.ui.sj_etc_labelll_02 = QLabel('▣  시리얼키', self.ui.sj_bs_groupBox_08)
+        self.ui.sj_etc_liEditt_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_08, passhide=True)
+        self.ui.sj_etc_daEditt_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_08)
 
         self.ui.sj_load_Button_01 = self.wc.setPushbutton('불러오기', box=self.ui.sj_bs_groupBox_01, click=self.ui.SettingLoad_01)
         self.ui.sj_load_Button_02 = self.wc.setPushbutton('불러오기', box=self.ui.sj_bs_groupBox_02, click=self.ui.SettingLoad_02)
@@ -304,6 +308,9 @@ class SetSetupTap:
         self.ui.sj_etc_checBox_05.setGeometry(500, 50, 300, 20)
         self.ui.sj_etc_checBox_06.setGeometry(835, 50, 130, 20)
         self.ui.sj_etc_checBox_07.setGeometry(970, 50, 200, 20)
+        self.ui.sj_etc_labelll_02.setGeometry(10, 100, 80, 20)
+        self.ui.sj_etc_liEditt_01.setGeometry(80, 100, 940, 20)
+        self.ui.sj_etc_daEditt_01.setGeometry(1030, 100, 110, 20)
 
         self.ui.sj_load_Button_01.setGeometry(1175, 25, 70, 20)
         self.ui.sj_load_Button_02.setGeometry(1175, 25, 70, 20)

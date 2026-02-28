@@ -1,5 +1,7 @@
+
 import pytz
 import asyncio
+import numpy as np
 import pandas as pd
 from threading import Thread
 from utility.setting import DICT_SET
@@ -110,7 +112,7 @@ class TelegramBot:
     def moniter_queue2(self):
         while not self.running:
             data = self.teleQ.get()
-            if type(data) in (str, pd.DataFrame):
+            if data.__class__ in (str, pd.DataFrame):
                 self.logger.error('텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다')
 
     @staticmethod
@@ -137,7 +139,7 @@ class TelegramBot:
             tbg   = df['매입금액'].sum()
             tpg   = df['평가금액'].sum()
             tsg   = df['평가손익'].sum()
-            tpp   = round(tsg / tbg * 100, 2)
+            tpp   = np.round(tsg / tbg * 100, 2)
             text += f'{tbg:,.0f}{m_unit} {tpg:,.0f}{m_unit} {tpp:.2f}% {tsg:,.0f}{m_unit}\n'
         elif '주문구분' in df.columns:
             for index in df.index:

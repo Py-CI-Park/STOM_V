@@ -1,3 +1,4 @@
+
 import os
 import sys
 import zmq
@@ -51,9 +52,9 @@ class ZmqRecvFromUI(QThread):
                 if self.main.FutureStrategyProcessAlive():
                     self.sstgQ.put(data)
             elif msg == 'manager':
-                if type(data) == str:
+                if data.__class__ == str:
                     self.signal1.emit(data)
-                elif type(data) == tuple:
+                elif data.__class__ == tuple:
                     self.signal2.emit(data)
                 if data == '통신종료':
                     qtest_qwait(1)
@@ -85,7 +86,7 @@ class ZmqSendToUI(QThread):
                 msg, data = self.mgzservQ.get()
                 self.sock.send_string(msg, zmq.SNDMORE)
                 self.sock.send_pyobj(data)
-                if type(data) == str and data == '통신종료':
+                if data.__class__ == str and data == '통신종료':
                     qtest_qwait(1)
                     break
 

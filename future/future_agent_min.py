@@ -1,5 +1,7 @@
+
 import os
 import sys
+import numpy as np
 from future_agent_tick import FutureAgentTick
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num
@@ -38,7 +40,7 @@ class FutureAgentMin(FutureAgentTick):
         tasks += asks_
 
         try:
-            ch = round(tbids / tasks * 100, 2)
+            ch = np.round(tbids / tasks * 100, 2)
         except:
             ch = 500.
         if ch > 500: ch = 500.
@@ -98,7 +100,7 @@ class FutureAgentMin(FutureAgentTick):
             c, _, h, low, _, dm = self.dict_data[code][:6]
             tm = dm - self.dict_dtdm[code][1]
             if tm == dm and 93500 < int(str(dt)[8:]): tm = 0
-            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             logt = now() if self.int_logt < dt_min else 0
             dt_  = self.dict_dtdm[code][0]

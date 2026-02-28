@@ -1,5 +1,7 @@
+
 import random
 import webbrowser
+import numpy as np
 import pandas as pd
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtWidgets import QMessageBox, QPushButton
@@ -42,7 +44,7 @@ def ttbutton_clicked_01(ui, cmd):
             nsp = 100
             for sp in df['수익률'].to_list()[::-1]:
                 nsp = nsp + nsp * sp / 100
-            nsp = round(nsp - 100, 2)
+            nsp = np.round(nsp - 100, 2)
             nbg, nsg = df['총매수금액'].sum(), df['총매도금액'].sum()
             npg, nmg = df['총수익금액'].sum(), df['총손실금액'].sum()
             nsig = df['수익금합계'].sum()
@@ -65,7 +67,7 @@ def ttbutton_clicked_01(ui, cmd):
                 df3 = df[df['연월'] == month]
                 if len(df3) > 0:
                     tbg, tsg = df3['총매수금액'].sum(), df3['총매도금액'].sum()
-                    sp = round((tsg / tbg - 1) * 100, 2)
+                    sp = np.round((tsg / tbg - 1) * 100, 2)
                     tpg, tmg = df3['총수익금액'].sum(), df3['총손실금액'].sum()
                     ttsg = df3['수익금합계'].sum()
                     df2.loc[month] = [month, tbg, tsg, tpg, tmg, sp, ttsg]
@@ -80,7 +82,7 @@ def ttbutton_clicked_01(ui, cmd):
                 df3 = df[df['연도'] == year]
                 if len(df3) > 0:
                     tbg, tsg = df3['총매수금액'].sum(), df3['총매도금액'].sum()
-                    sp = round((tsg / tbg - 1) * 100, 2)
+                    sp = np.round((tsg / tbg - 1) * 100, 2)
                     tpg, tmg = df3['총수익금액'].sum(), df3['총손실금액'].sum()
                     ttsg = df3['수익금합계'].sum()
                     df2.loc[year] = [year, tbg, tsg, tpg, tmg, sp, ttsg]
@@ -229,7 +231,7 @@ def lvbutton_clicked_03(ui):
 
 
 def lvcheck_changed_01(ui, state):
-    if type(ui.dialog_leverage.focusWidget()) != QPushButton and state == Qt.Checked:
+    if ui.dialog_leverage.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.lv_checkbox_listt:
             if widget != ui.dialog_leverage.focusWidget():
                 if widget.isChecked():

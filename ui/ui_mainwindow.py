@@ -74,6 +74,9 @@ from utility.setting import *
 from utility.webcrawling import *
 from utility.telegram_msg import *
 from utility.database_read_only import DatabaseReadOnly
+from ui.set_dialog_strategy import SetDialogStrategy
+from ui.set_text_stg_button import *
+from ui.ui_button_clicked_strategy import *
 
 
 class LiveSender(Thread):

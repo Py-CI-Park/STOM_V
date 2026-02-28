@@ -1,6 +1,8 @@
+
 import sys
 import pyupbit
 import sqlite3
+import numpy as np
 import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
@@ -21,12 +23,12 @@ class Updater(QThread):
     def run(self):
         while True:
             data = self.ctraderQ.get()
-            if type(data) == tuple:
+            if data.__class__ == tuple:
                 if len(data) in (6, 7):
                     self.signal1.emit(data)
                 else:
                     self.signal2.emit(data)
-            elif type(data) == str:
+            elif data.__class__ == str:
                 self.signal3.emit(data)
 
 
@@ -164,7 +166,7 @@ class UpbitTrader:
         self.logger.info('트레이더 시작 완료')
 
     def CheckError(self, ret):
-        if type(ret) == dict and list(ret)[0] == 'error':
+        if ret.__class__ == dict and list(ret)[0] == 'error':
             self.windowQ.put((ui_num['C로그텍스트'], f"시스템 명령 오류 알림 - {ret['error']['name']} : {ret['error']['message']}"))
             return False
         return True
@@ -251,10 +253,10 @@ class UpbitTrader:
     def CreateOrder(self, 주문구분, 종목코드, 주문가격, 주문수량, 주문번호, 시그널시간, 잔고청산, 정정횟수, 수동주문유형):
         if 주문구분 == '매수' and 정정횟수 == 0:
             if 수동주문유형 is None and '지정가' in self.dict_set['코인매수주문구분']:
-                주문가격 = round(주문가격 + GetUpbitHogaunit(주문가격) * self.dict_set['코인매수지정가호가번호'], 8)
+                주문가격 = np.round(주문가격 + GetUpbitHogaunit(주문가격) * self.dict_set['코인매수지정가호가번호'], 8)
         elif 주문구분 == '매도' and 정정횟수 == 0:
             if 수동주문유형 is None and '지정가' in self.dict_set['코인매도주문구분']:
-                주문가격 = round(주문가격 + GetUpbitHogaunit(주문가격) * self.dict_set['코인매도지정가호가번호'], 8)
+                주문가격 = np.round(주문가격 + GetUpbitHogaunit(주문가격) * self.dict_set['코인매도지정가호가번호'], 8)
 
         if 주문수량 * 주문가격 < 5000:
             self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - 주문금액이 5천원미만입니다.'))
@@ -405,14 +407,14 @@ class UpbitTrader:
                     매입금액 += float(trades[i]['funds'])
                     총체결수량 += float(trades[i]['volume'])
                 if 총체결수량 > 0:
-                    체결가격 = round(매입금액 / 총체결수량, 4)
-                    총체결수량 = round(총체결수량, 8)
+                    체결가격 = np.round(매입금액 / 총체결수량, 4)
+                    총체결수량 = np.round(총체결수량, 8)
 
             if 총체결수량 > 0:
                 if 주문번호 not in self.dict_order_cc:
                     order_info = [종목코드, 주문수량, 총체결수량, 미체결수량, 체결가격, 주문가격, 주문번호]
                 else:
-                    체결수량 = round(총체결수량 - self.dict_order_cc[주문번호], 8)
+                    체결수량 = np.round(총체결수량 - self.dict_order_cc[주문번호], 8)
                     if 체결수량 > 0:
                         order_info = [종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 주문번호]
 
@@ -551,9 +553,9 @@ class UpbitTrader:
             if 주문구분 == '매수':
                 # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 if 종목코드 in self.dict_jg:
-                    보유수량 = round(self.dict_jg[종목코드]['보유수량'] + 체결수량, 8)
+                    보유수량 = np.round(self.dict_jg[종목코드]['보유수량'] + 체결수량, 8)
                     매입금액 = int(self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격)
-                    매입가 = round(매입금액 / 보유수량, 4)
+                    매입가 = np.round(매입금액 / 보유수량, 4)
                     평가금액, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 체결가격)
                     self.dict_jg[종목코드].update({
                         '매입가': 매입가,
@@ -590,7 +592,7 @@ class UpbitTrader:
             else:
                 if 종목코드 not in self.dict_jg: return
                 매입가 = self.dict_jg[종목코드]['매입가']
-                보유수량 = round(self.dict_jg[종목코드]['보유수량'] - 체결수량, 8)
+                보유수량 = np.round(self.dict_jg[종목코드]['보유수량'] - 체결수량, 8)
                 if 보유수량 != 0:
                     매입금액 = int(매입가 * 보유수량)
                     평가금액, 수익금, 수익률 = GetUpbitPgSgSp(매입금액, 보유수량 * 체결가격)
@@ -679,7 +681,7 @@ class UpbitTrader:
         총수익금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] >= 0])
         총손실금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] < 0])
         수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
-        수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
+        수익률 = np.round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
         # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
         self.dict_tt[self.str_today] = {
@@ -698,7 +700,7 @@ class UpbitTrader:
             self.teleQ.put(f'총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}')
 
         if self.dict_set['스톰라이브']:
-            수익률 = round(수익금합계 / 총매수금액 * 100, 2)
+            수익률 = np.round(수익금합계 / 총매수금액 * 100, 2)
             data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
             self.liveQ.put(('코인', data_list))
 
@@ -728,7 +730,7 @@ class UpbitTrader:
             총평가손익 = sum([v['평가손익'] for v in self.dict_jg.values()])
             총매입금액 = sum([v['매입금액'] for v in self.dict_jg.values()])
             총평가금액 = sum([v['평가금액'] for v in self.dict_jg.values()])
-            총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
+            총수익률 = np.round(총평가손익 / 총매입금액 * 100, 2)
             잔고수량 = len(self.dict_jg)
             추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
         else:

@@ -1,6 +1,8 @@
-from coin.upbit_receiver_tick import UpbitReceiverTick
+
+import numpy as np
 from utility.setting import ui_num
 from utility.static import now, str_ymdhms_utc
+from coin.upbit_receiver_tick import UpbitReceiverTick
 
 
 class UpbitReceiverMin(UpbitReceiverTick):
@@ -15,7 +17,7 @@ class UpbitReceiverMin(UpbitReceiverTick):
             o     = data['opening_price']
             h     = data['high_price']
             low   = data['low_price']
-            per   = round(data['signed_change_rate'] * 100, 2)
+            per   = np.round(data['signed_change_rate'] * 100, 2)
             tbids = data['acc_bid_volume']
             tasks = data['acc_ask_volume']
             dm    = data['acc_trade_price']
@@ -38,12 +40,12 @@ class UpbitReceiverMin(UpbitReceiverTick):
             if mh < c: mh = c
             if ml > c: ml = c
 
-        bids_ = round(tbids - pretbids, 8)
-        asks_ = round(tasks - pretasks, 8)
+        bids_ = np.round(tbids - pretbids, 8)
+        asks_ = np.round(tasks - pretasks, 8)
         bids += bids_
         asks += asks_
         try:
-            ch = round(tbids / tasks * 100, 2)
+            ch = np.round(tbids / tasks * 100, 2)
         except:
             ch = 500.
         if ch > 500: ch = 500.
@@ -144,7 +146,7 @@ class UpbitReceiverMin(UpbitReceiverTick):
 
             tm = dm - self.dict_dtdm[code][1]
             if tm == dm and 500 < int(str(dt)[8:]): tm = 0
-            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0

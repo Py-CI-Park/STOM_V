@@ -1,3 +1,4 @@
+
 import sys
 import time
 import copy
@@ -101,10 +102,10 @@ class Total:
                     bc = 0
                     if self.opti_turn == 1:
                         for q in self.bstq_list:
-                            q.put(('백테완료', '미분리집계'))
+                            q.put(('백테완료', '분리집계'))
                     else:
                         for q in self.bstq_list[:5]:
-                            q.put(('백테완료', '분리집계'))
+                            q.put(('백테완료', '일괄집계'))
 
             elif data[0] == '탐색완료':
                 rt += data[1]
@@ -128,18 +129,18 @@ class Total:
                                 self.hstd = SendResult(self.GetSendData(vturn, vkey), None)
                     dict_dummy = {}
 
-            elif data == '집계완료':
+            elif data == '수신완료':
                 sc += 1
                 if sc == 5:
                     sc = 0
                     for q in self.bstq_list[:5]:
-                        q.put('결과분리')
+                        q.put('결과전송')
 
-            elif data == '분리완료':
+            elif data == '전송완료':
                 sc += 1
                 if sc == 5:
                     sc = 0
-                    self.bstq_list[0].put('결과전송')
+                    self.bstq_list[0].put('결과집계')
 
             elif data[0] == '결과없음':
                 self.hstd = SendResult(self.GetSendData(), None)
@@ -318,7 +319,7 @@ class Total:
                 back_text = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 학습/검증/확인기간 : {self.weeks_train}/{self.weeks_valid}/{self.weeks_test}, 거래일수 : {day_cnt}'
 
             label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{tsg_unit}, ' \
-                         f'거래횟수 {tc}회, 일평균거래횟수 {atc}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
+                         f'거래횟수 {tc}회, 일평균거래횟수 {atc:.1f}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
                          f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, ' \
                          f'수익금합계 {tsg:,}{tsg_unit}, {mdd_text}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
 
@@ -640,7 +641,7 @@ class RollingWalkForwardTest:
                 self.SysExit(True)
             low, high, gap = var[0]
             opti = var[1]
-            varint = type(gap) == int
+            varint = gap.__class__ == int
             lowhigh = low < high
             vars_type.append(lowhigh)
             vars_list = [[], opti]
@@ -652,7 +653,7 @@ class RollingWalkForwardTest:
                     if varint:
                         next_var = low + gap * k
                     else:
-                        next_var = round(low + gap * k, 2)
+                        next_var = np.round(low + gap * k, 2)
                     if (lowhigh and next_var <= high) or (not lowhigh and next_var >= high):
                         vars_list[0].append(next_var)
                     else:
@@ -670,7 +671,7 @@ class RollingWalkForwardTest:
 
         hstd = 0
         data = mq.get()
-        if type(data) == str:
+        if data.__class__ == str:
             self.SysExit(True)
         else:
             hstd = data[-1]
@@ -697,7 +698,7 @@ class RollingWalkForwardTest:
 
             for _ in range(result_receiv_count):
                 data = mq.get()
-                if type(data) == str:
+                if data.__class__ == str:
                     self.SysExit(True)
                 else:
                     vturn, vkey, std = data
@@ -747,14 +748,14 @@ class RollingWalkForwardTest:
 
             self.BackStart(('변수정보', vars_copy, 0, startday, endday, j))
             data = mq.get()
-            if type(data) == str:
+            if data.__class__ == str:
                 self.SysExit(True)
             else:
                 check_hstd = data[-1]
                 if hstd > 0:
-                    ratio = round((check_hstd / hstd - 1) * 100, 2)
+                    ratio = np.round((check_hstd / hstd - 1) * 100, 2)
                 else:
-                    ratio = round((1 - check_hstd / hstd) * 100, 2)
+                    ratio = np.round((1 - check_hstd / hstd) * 100, 2)
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
                 if ratio > high_ratio[0]:
                     high_ratio = [ratio, std, check_hstd]
@@ -786,12 +787,12 @@ class RollingWalkForwardTest:
                 else:
                     high = best_params[i]
                 if high == first:
-                    new = (first - gap) if type(gap) == int else round(first - gap, 2)
+                    new = (first - gap) if gap.__class__ == int else np.round(first - gap, 2)
                     prev_list = var[0] if len_var < 20 else var[0][:-1]
                     self.vars_[i][0] = [new] + prev_list
                     text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
                 elif high == last:
-                    new = (last + gap) if type(gap) == int else round(first + gap, 2)
+                    new = (last + gap) if gap.__class__ == int else np.round(first + gap, 2)
                     prev_list = var[0] if len_var < 20 else var[0][1:]
                     self.vars_[i][0] = prev_list + [new]
                     text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
@@ -813,7 +814,7 @@ class RollingWalkForwardTest:
             backte_vars = []
             for i, var_ in enumerate(self.vars_):
                 trial_name = f'{i:03d}'
-                varsint = type(var_[0][2]) == int
+                varsint = var_[0][2].__class__ == int
                 suggest_func = trial.suggest_int if varsint else trial.suggest_float
                 if not (var_[0][2] == 0 or i in optuna_fixvars):
                     min_val, max_val = sorted((var_[0][0], var_[0][1]))
@@ -825,7 +826,7 @@ class RollingWalkForwardTest:
                 else:
                     trial_ = suggest_func(trial_name, var_[1], var_[1])
 
-                if '.' in str(trial_): trial_ = round(trial_, 3)
+                if '.' in str(trial_): trial_ = np.round(trial_, 3)
 
                 optuna_vars.append(trial_)
                 backte_vars.append([[], trial_])
@@ -834,7 +835,7 @@ class RollingWalkForwardTest:
             if str_simple_vars not in self.dict_simple_vars:
                 self.BackStart(('변수정보', backte_vars, 4, startday, endday, j))
                 data_ = mq.get()
-                if type(data_) == str:
+                if data_.__class__ == str:
                     ostd = 0
                     self.SysExit(True)
                 else:

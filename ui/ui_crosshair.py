@@ -1,3 +1,5 @@
+
+import numpy as np
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt
 from ui.ui_get_label_text import get_label_text
@@ -167,7 +169,7 @@ class CrossHair:
                     for n, labell in enumerate(self.ui.ctpg_labels):
                         foctor = self.ui.ctpg_factors[n]
                         if index == n:
-                            text = f'Y축 {round(mousePoint.y(), 2):,}\n{get_label_text(real, gubun, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)}'
+                            text = f'Y축 {np.round(mousePoint.y(), 2):,}\n{get_label_text(real, gubun, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)}'
                         else:
                             text = get_label_text(real, gubun, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)
                         labell.setText(text)

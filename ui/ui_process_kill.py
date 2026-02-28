@@ -1,3 +1,4 @@
+
 import sys
 from utility.static import qtest_qwait, opstarter_kill
 
@@ -13,31 +14,9 @@ def process_kill(ui):
         ui.wdzservQ.put(('strategy', '프로파일링결과'))
         qtest_qwait(3)
 
-    if ui.dialog_factor.isVisible():     ui.dialog_factor.close()
-    if ui.dialog_scheduler.isVisible():  ui.dialog_scheduler.close()
-    if ui.dialog_chart.isVisible():      ui.dialog_chart.close()
-    if ui.dialog_jisu.isVisible():       ui.dialog_jisu.close()
-    if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
-    if ui.dialog_hoga.isVisible():       ui.dialog_hoga.close()
-    if ui.dialog_info.isVisible():       ui.dialog_info.close()
-    if ui.dialog_web.isVisible():        ui.dialog_web.close()
-    if ui.dialog_tree.isVisible():       ui.dialog_tree.close()
-    if ui.dialog_graph.isVisible():      ui.dialog_graph.close()
-    if ui.dialog_db.isVisible():         ui.dialog_db.close()
-    if ui.dialog_order.isVisible():      ui.dialog_order.close()
-    if ui.dialog_pass.isVisible():       ui.dialog_pass.close()
-    if ui.dialog_comp.isVisible():       ui.dialog_comp.close()
-    if ui.dialog_kimp.isVisible():       ui.dialog_kimp.close()
-    if ui.dialog_bjjs.isVisible():       ui.dialog_bjjs.close()
-    if ui.dialog_bjjc.isVisible():       ui.dialog_bjjc.close()
-    if ui.dialog_std.isVisible():        ui.dialog_std.close()
-    if ui.dialog_leverage.isVisible():   ui.dialog_leverage.close()
-    if ui.dialog_setsj.isVisible():      ui.dialog_setsj.close()
-    if ui.dialog_cetsj.isVisible():      ui.dialog_cetsj.close()
-
-    if ui.writer.isRunning(): ui.writer.terminate()
-
     ui.wdzservQ.put(('manager', '통신종료'))
+    ui.logger.info('Manager Process Terminate Completed')
+
     if ui.CoinKimpProcessAlive():
         ui.proc_coin_kimp.kill()
     if ui.CoinReceiverProcessAlive():
@@ -46,8 +25,17 @@ def process_kill(ui):
         ui.proc_trader_coin.kill()
     if ui.CoinStrategyProcessAlive():
         ui.proc_strategy_coin.kill()
+        ui.logger.info('Coin Process Terminate Completed')
+
+    if ui.writer.isRunning():  ui.writer.terminate()
+    if ui.zmqrecv.isRunning(): ui.zmqrecv.terminate()
+    if ui.zmqserv.isRunning():
+        ui.zmqserv.terminate()
+        ui.logger.info('QThread Terminate Completed')
+
     if ui.shared_cnt is not None:
         ui.BacktestProcessKill(True, True)
+        ui.logger.info('Backtest Engine Process Terminate Completed')
 
     factor_choice = ''
     for checkbox in ui.factor_checkbox_list:
@@ -74,12 +62,15 @@ def process_kill(ui):
         geometry += f"{ui.dialog_kimp.x()};{ui.dialog_kimp.y() - 31 if geo_len > 15 and ui.dict_set['창위치'][15] + 31 == ui.dialog_kimp.y() else ui.dialog_kimp.y()};"
         geometry += f"{ui.dialog_hoga.x()};{ui.dialog_hoga.y() - 31 if geo_len > 17 and ui.dict_set['창위치'][17] + 31 == ui.dialog_hoga.y() else ui.dialog_hoga.y()};"
         geometry += f"{ui.dialog_backengine.x()};{ui.dialog_backengine.y() - 31 if geo_len > 19 and ui.dict_set['창위치'][19] + 31 == ui.dialog_backengine.y() else ui.dialog_backengine.y()};"
-        geometry += f"{ui.dialog_order.x()};{ui.dialog_order.y() - 31 if geo_len > 21 and ui.dict_set['창위치'][21] + 31 == ui.dialog_order.y() else ui.dialog_order.y()}"
+        geometry += f"{ui.dialog_order.x()};{ui.dialog_order.y() - 31 if geo_len > 21 and ui.dict_set['창위치'][21] + 31 == ui.dialog_order.y() else ui.dialog_order.y()};"
+        geometry += f"{ui.dialog_strategy.x()};{ui.dialog_strategy.y() - 31 if geo_len > 23 and ui.dict_set['창위치'][23] + 31 == ui.dialog_strategy.y() else ui.dialog_strategy.y()}"
         query = f"UPDATE etc SET 창위치 = '{geometry}'"
         ui.queryQ.put(('설정디비', query))
 
+    ui.logger.info('Etc Setting Save Completed')
     ui.queryQ.put('프로세스종료')
     while ui.proc_query.is_alive():
-        qtest_qwait(0.01)
+        qtest_qwait(0.1)
     opstarter_kill()
+    ui.logger.info('Main Process Terminate Completed')
     sys.exit()

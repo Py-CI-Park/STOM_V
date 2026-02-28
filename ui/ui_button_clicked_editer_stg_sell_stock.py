@@ -1,12 +1,12 @@
+
 import random
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
-from ui.set_text import famous_saying, stock_sell_var, stock_sell1, stock_sell2, stock_sell3, stock_sell4, stock_sell5, \
-    stock_sell6, stock_sell7, stock_sell8, stock_sell_signal, stock_sell_var2, future_sell_signal, future_sell_var2, \
-    future_sell_var
+from ui.set_text import famous_saying, stock_sell_var, stock_sell_signal, stock_sell_var2, future_sell_signal, \
+    future_sell_var2, future_sell_var
 
 
 def stock_sell_stg_load(ui):
@@ -69,38 +69,6 @@ def stock_sell_stg_start(ui):
             ui.wdzservQ.put(('strategy', ('매도전략', strategy)))
             ui.svjs_pushButon_04.setStyleSheet(style_bc_dk)
             ui.svjs_pushButon_14.setStyleSheet(style_bc_st)
-
-
-def stock_sell_dead_line(ui):
-    ui.ss_textEditttt_02.append(stock_sell1)
-
-
-def stock_sell_profit_line(ui):
-    ui.ss_textEditttt_02.append(stock_sell2)
-
-
-def stock_sell_profit_save(ui):
-    ui.ss_textEditttt_02.append(stock_sell3)
-
-
-def stock_sell_hold_time(ui):
-    ui.ss_textEditttt_02.append(stock_sell4)
-
-
-def stock_sell_before_vi(ui):
-    ui.ss_textEditttt_02.append(stock_sell5)
-
-
-def stock_sell_low_high_avg_per(ui):
-    ui.ss_textEditttt_02.append(stock_sell6)
-
-
-def stock_sell_ch_high_comparison(ui):
-    ui.ss_textEditttt_02.append(stock_sell7)
-
-
-def stock_sell_ask_price_ramain_count(ui):
-    ui.ss_textEditttt_02.append(stock_sell8)
 
 
 def stock_sell_signal_insert(ui):

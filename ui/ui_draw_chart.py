@@ -1,3 +1,4 @@
+
 import win32api
 import win32gui
 import pyqtgraph as pg
@@ -8,8 +9,8 @@ from utility.chart_items import ChuseItem, CandlestickItem, VolumeBarsItem
 from ui.set_style import qfont12, color_fg_bt, color_bg_bt, color_bg_ld
 from stock.login_kiwoom.manuallogin import leftClick, enter_keys, press_keys
 from utility.static import error_decorator, from_timestamp, thread_decorator, str_ymd
-from utility.setting import list_stock_tick, list_stock_min, list_coin_min1, list_coin_min2, list_coin_tick1, \
-    list_coin_tick2
+from utility.setting import list_stock_tick_c, list_stock_min_c, list_coin_min_c, list_coin_min_cf, list_coin_tick_c, \
+    list_coin_tick_cf
 
 
 class DrawChart:
@@ -21,13 +22,13 @@ class DrawChart:
     def draw_chart(self, data):
         def fi(fname):
             if is_min:
-                if gubun == 'S':    return list_stock_min.index(fname)
-                elif 'KRW' in code: return list_coin_min1.index(fname)
-                else:               return list_coin_min2.index(fname)
+                if gubun == 'S':    return list_stock_min_c.index(fname)
+                elif 'KRW' in code: return list_coin_min_c.index(fname)
+                else:               return list_coin_min_cf.index(fname)
             else:
-                if gubun == 'S':    return list_stock_tick.index(fname)
-                elif 'KRW' in code: return list_coin_tick1.index(fname)
-                else:               return list_coin_tick2.index(fname)
+                if gubun == 'S':    return list_stock_tick_c.index(fname)
+                elif 'KRW' in code: return list_coin_tick_c.index(fname)
+                else:               return list_coin_tick_cf.index(fname)
 
         self.ui.ChartClear()
         if not self.ui.dialog_chart.isVisible():
@@ -143,11 +144,11 @@ class DrawChart:
                     ymax = self.ui.ctpg_data[fi('분봉고가')].max()
                     ymin = self.ui.ctpg_data[fi('분봉저가')].min()
                     if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
-                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균005')]:], y=self.ui.ctpg_data[fi('이동평균005')], pen=(180, 180, 180))
-                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균010')]:], y=self.ui.ctpg_data[fi('이동평균010')], pen=(140, 140, 140))
-                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균020')]:], y=self.ui.ctpg_data[fi('이동평균020')], pen=(100, 100, 100))
-                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균060')]:], y=self.ui.ctpg_data[fi('이동평균060')], pen=(80, 80, 80))
-                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균120')]:], y=self.ui.ctpg_data[fi('이동평균120')], pen=(80, 80, 80))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균5')]:], y=self.ui.ctpg_data[fi('이동평균5')], pen=(180, 180, 180))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균10')]:], y=self.ui.ctpg_data[fi('이동평균10')], pen=(140, 140, 140))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균20')]:], y=self.ui.ctpg_data[fi('이동평균20')], pen=(100, 100, 100))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균60')]:], y=self.ui.ctpg_data[fi('이동평균60')], pen=(80, 80, 80))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균120')]:], y=self.ui.ctpg_data[fi('이동평균120')], pen=(60, 60, 60))
                     self.ui.ctpg[i].addItem(CandlestickItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi('분봉고가'), fi('분봉저가')], self.ui.ctpg_xticks))
                     for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가')]):
                         if price > 0:
@@ -174,9 +175,10 @@ class DrawChart:
                     ymax = self.ui.ctpg_data[fi('현재가')].max()
                     ymin = self.ui.ctpg_data[fi('현재가')].min()
                     if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
-                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균0060')]:], y=self.ui.ctpg_data[fi('이동평균0060')], pen=(180, 180, 180))
-                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균0300')]:], y=self.ui.ctpg_data[fi('이동평균0300')], pen=(140, 140, 140))
-                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균0600')]:], y=self.ui.ctpg_data[fi('이동평균0600')], pen=(100, 100, 100))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균60')]:], y=self.ui.ctpg_data[fi('이동평균60')], pen=(180, 180, 180))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균150')]:], y=self.ui.ctpg_data[fi('이동평균150')], pen=(140, 140, 140))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균300')]:], y=self.ui.ctpg_data[fi('이동평균300')], pen=(100, 100, 100))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균600')]:], y=self.ui.ctpg_data[fi('이동평균600')], pen=(80, 80, 80))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균1200')]:], y=self.ui.ctpg_data[fi('이동평균1200')], pen=(60, 60, 60))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('현재가')]:], y=self.ui.ctpg_data[fi('현재가')], pen=(200, 100, 100))
                     for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가')]):

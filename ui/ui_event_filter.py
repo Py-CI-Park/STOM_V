@@ -1,3 +1,4 @@
+
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 
@@ -23,6 +24,10 @@ def event_filter(ui, widget, event):
             ui.cs_textEditttt_03.insertPlainText('    ')
         elif widget == ui.cs_textEditttt_04:
             ui.cs_textEditttt_04.insertPlainText('    ')
+        elif widget == ui.stginput_textEditt1:
+            ui.stginput_textEditt1.insertPlainText('    ')
+        elif widget == ui.stginput_textEditt2:
+            ui.stginput_textEditt2.insertPlainText('    ')
         return True
     elif event.key() == Qt.Key_Escape:
         if not ui.svc_pushButton_24.isVisible():

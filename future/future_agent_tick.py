@@ -1,3 +1,4 @@
+
 import os
 import sys
 import sqlite3
@@ -23,9 +24,9 @@ class Updater(QThread):
     def run(self):
         while True:
             data = self.sagentQ.get()
-            if type(data) == list:
+            if data.__class__ == list:
                 self.signal1.emit(data)
-            elif type(data) == tuple:
+            elif data.__class__ == tuple:
                 self.signal2.emit(data)
 
 
@@ -193,7 +194,7 @@ class FutureAgentTick:
                     '종목명': df['종목명'][code],
                     '위탁증거금': int(df['위탁증거금'][code] / 100),
                     '호가단위': tick_unit,
-                    '틱가치': round(df['틱가치'][code] / 1000 / tick_unit, 2),
+                    '틱가치': np.round(df['틱가치'][code] / 1000 / tick_unit, 2),
                     '소숫점자리수': point_cnt
                 }
             qtest_qwait(0.25)
@@ -396,7 +397,7 @@ class FutureAgentTick:
         tasks += asks_
 
         try:
-            ch = round(tbids / tasks * 100, 2)
+            ch = np.round(tbids / tasks * 100, 2)
         except:
             ch = 500.
         if ch > 500: ch = 500.
@@ -456,7 +457,7 @@ class FutureAgentTick:
             c, _, h, low, _, dm = self.dict_data[code][:6]
             tm = dm - self.dict_dtdm[code][1]
             if tm == dm and 93500 < int(str(dt)[8:]): tm = 0
-            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             logt = now() if self.int_logt < dt_min else 0
             data = (dt,) + tuple(self.dict_data[code][:9]) + (tm, hlp) + \
@@ -550,7 +551,7 @@ class FutureAgentTick:
         else:
             df = self.GetBalances(self.str_account, self.str_pass)
             df.set_index('통화코드', inplace=True)
-            yesugm = round(df['원화대용평가금액']['USD'] / 100, 2) if len(df) > 0 else 0
+            yesugm = np.round(df['원화대용평가금액']['USD'] / 100, 2) if len(df) > 0 else 0
 
             df = self.GetJango(self.str_account, self.str_pass)
             if len(df) > 0:

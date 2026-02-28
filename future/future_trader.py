@@ -1,6 +1,8 @@
+
 import os
 import sys
 import sqlite3
+import numpy as np
 import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
@@ -22,12 +24,12 @@ class Updater(QThread):
     def run(self):
         while True:
             data = self.straderQ.get()
-            if type(data) == tuple:
+            if data.__class__ == tuple:
                 if len(data) in (7, 8):
                     self.signal1.emit(data)
                 else:
                     self.signal2.emit(data)
-            elif type(data) == str:
+            elif data.__class__ == str:
                 self.signal3.emit(data)
 
 
@@ -258,13 +260,13 @@ class FutureTrader:
         if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
             if 수동주문유형 is None and '지정가' in self.dict_set['주식매수주문구분']:
                 gap = self.dict_info[종목코드]['호가단위'] * self.dict_set['주식매수지정가호가번호']
-                주문가격 = round((주문가격 + gap) if 주문구분 == 'BUY_LONG' else (주문가격 - gap), self.dict_info[종목코드]['소숫점자리수'])
+                주문가격 = np.round((주문가격 + gap) if 주문구분 == 'BUY_LONG' else (주문가격 - gap), self.dict_info[종목코드]['소숫점자리수'])
             if self.dict_set['주식매수주문구분'] == '시장가' and not (self.dict_set['주식모의투자'] or 주문구분 == '시드부족'):
                 주문가격 = 0
         elif 주문구분 in ('SELL_LONG', 'BUY_SHORT'):
             if 수동주문유형 is None and '지정가' in self.dict_set['주식매도주문구분']:
                 gap = self.dict_info[종목코드]['호가단위'] * self.dict_set['주식매도지정가호가번호']
-                주문가격 = round((주문가격 + gap) if 주문구분 == 'SELL_LONG' else (주문가격 - gap), self.dict_info[종목코드]['소숫점자리수'])
+                주문가격 = np.round((주문가격 + gap) if 주문구분 == 'SELL_LONG' else (주문가격 - gap), self.dict_info[종목코드]['소숫점자리수'])
             if self.dict_set['주식매도주문구분'] == '시장가' and not (self.dict_set['주식모의투자'] or 주문구분 == '시드부족'):
                 주문가격 = 0
 
@@ -525,7 +527,7 @@ class FutureTrader:
                     직전매입금액 = self.dict_jg[종목코드]['매입금액']
                     보유수량 = 직전보유수량 + 체결수량
                     매입금액 = 직전매입금액 + self.dict_info[종목코드]['위탁증거금'] * 체결수량
-                    매입가 = round((직전매입가 * 직전보유수량 + 체결가격 * 체결수량) / 보유수량, self.dict_info[종목코드]['소숫점자리수'] + 1)
+                    매입가 = np.round((직전매입가 * 직전보유수량 + 체결가격 * 체결수량) / 보유수량, self.dict_info[종목코드]['소숫점자리수'] + 1)
                     평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
                     if 'LONG' in gubun:
                         평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
@@ -684,7 +686,7 @@ class FutureTrader:
         총수익금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] >= 0])
         총손실금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] < 0])
         수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
-        수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
+        수익률 = np.round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
         # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
         self.dict_tt[self.str_today] = {
@@ -703,7 +705,7 @@ class FutureTrader:
             self.mgzservQ.put(('tele', f'총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}'))
 
         if self.dict_set['스톰라이브']:
-            수익률 = round(수익금합계 / 총매수금액 * 100, 2)
+            수익률 = np.round(수익금합계 / 총매수금액 * 100, 2)
             data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
             self.mgzservQ.put(('live', ('해선', data_list)))
 
@@ -733,7 +735,7 @@ class FutureTrader:
             총평가손익 = sum([v['평가손익'] for v in self.dict_jg.values()])
             총매입금액 = sum([v['매입금액'] for v in self.dict_jg.values()])
             총평가금액 = sum([v['평가금액'] for v in self.dict_jg.values()])
-            총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
+            총수익률 = np.round(총평가손익 / 총매입금액 * 100, 2)
             잔고수량 = len(self.dict_jg)
             추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
         else:

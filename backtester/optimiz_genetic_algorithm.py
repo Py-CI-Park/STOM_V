@@ -1,3 +1,4 @@
+
 import sys
 import time
 import copy
@@ -65,7 +66,7 @@ class Total:
                 if bc == self.back_count:
                     bc = 0
                     for q in self.bstq_list:
-                        q.put(('백테완료', '미분리집계'))
+                        q.put(('백테완료', '분리집계'))
 
             elif data[0] == '탐색완료':
                 rt += data[1]
@@ -350,7 +351,7 @@ class OptimizeGeneticAlgorithm:
         k    = 1
         vc   = len(self.vars_list)
         hstd = -float('inf')
-        goal = 2 ** int(round(vc / 2))
+        goal = 2 ** int(np.round(vc / 2))
         self.opti_lists = []
         while self.total_count > goal:
             if k > 1: self.SaveVarslist(100, optistandard, buystg, sellstg)
@@ -371,7 +372,7 @@ class OptimizeGeneticAlgorithm:
 
                     for _ in range(1000):
                         data = mq.get()
-                        if type(data) == str:
+                        if data.__class__ == str:
                             if self.result:
                                 self.SaveVarslist(100, optistandard, buystg, sellstg)
                             self.SysExit(True)

@@ -1,3 +1,4 @@
+
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QLineEdit, QMessageBox
 from ui.set_style import style_bc_dk
@@ -57,6 +58,7 @@ def return_press_02(ui):
         ui.sj_cacc_liEdit_02.setEchoMode(QLineEdit.Normal)
         ui.sj_tele_liEdit_01.setEchoMode(QLineEdit.Normal)
         ui.sj_tele_liEdit_02.setEchoMode(QLineEdit.Normal)
+        ui.sj_etc_liEditt_01.setEchoMode(QLineEdit.Normal)
         ui.sj_etc_pButton_01.setText('계정 텍스트 가리기')
         ui.sj_etc_pButton_01.setStyleSheet(style_bc_dk)
         ui.dialog_pass.close()

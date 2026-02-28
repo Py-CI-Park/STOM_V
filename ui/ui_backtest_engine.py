@@ -1,6 +1,8 @@
+
 import sqlite3
 import pandas as pd
 from multiprocessing import Process, Queue, Value, Lock
+from backtester.back_subtotal import BackSubTotal
 from backtester.back_code_test import BackCodeTest
 from backtester.back_static import GetMoneytopQuery
 from backtester.backengine_kiwoom_tick import BackEngineKiwoomTick
@@ -19,7 +21,6 @@ from backtester.backengine_binance_tick import BackEngineBinanceTick
 from backtester.backengine_binance_tick2 import BackEngineBinanceTick2
 from backtester.backengine_binance_min import BackEngineBinanceMin
 from backtester.backengine_binance_min2 import BackEngineBinanceMin2
-from backtester.back_subtotal import BackSubTotal
 from ui.set_style import style_bc_dk
 from utility.static import thread_decorator, qtest_qwait
 from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
@@ -149,7 +150,7 @@ def backengine_start(ui, gubun):
         ui.back_eprocs.append(proc)
         ui.windowQ.put((ui_num['백테엔진'], f'엔진 프로세스{i + 1} 생성 완료'))
 
-    dict_info = {}
+    dict_info = None
     try:
         if gubun == '주식':
             db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
@@ -161,14 +162,15 @@ def backengine_start(ui, gubun):
         con = sqlite3.connect(db)
         if gubun == '주식':
             try:
-                df_cn = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
+                df_info = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
             except:
-                df_cn = pd.read_sql('SELECT * FROM codename', con).set_index('index')
-            ui.dict_cn = df_cn['종목명'].to_dict()
+                df_info = pd.read_sql('SELECT * FROM codename', con).set_index('index')
+            dict_info  = df_info['코스닥'].to_dict()
+            ui.dict_cn = df_info['종목명'].to_dict()
         elif gubun == '해선':
-            df_cn = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
-            dict_info = df_cn.to_dict('index')
-            ui.dict_cn = df_cn['종목명'].to_dict()
+            df_info = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
+            dict_info  = df_info.to_dict('index')
+            ui.dict_cn = df_info['종목명'].to_dict()
 
         gubun_ = 'S' if gubun == '주식' else 'X'
         query = GetMoneytopQuery(gubun_, ui.startday, ui.endday, ui.starttime, ui.endtime)
@@ -237,7 +239,7 @@ def backengine_start(ui, gubun):
     if gubun in ('주식', '해선'):
         for i in range(multi):
             if gubun == '주식':
-                ui.back_eques[i].put(('종목명', ui.dict_cn))
+                ui.back_eques[i].put(('종목명', ui.dict_cn, dict_info))
             else:
                 ui.back_eques[i].put(('종목명', dict_info))
     ui.windowQ.put((ui_num['백테엔진'], '거래대금순위 및 종목코드 추출 완료'))
@@ -292,7 +294,7 @@ def back_code_test3(ui, gubun, conds_code, testQ):
     while not testQ.empty():
         testQ.get()
     conds_code = conds_code.split('\n')
-    conds_code = [x for x in conds_code if x and '#' not in x]
+    conds_code = [x for x in conds_code if x and x[0] != '#']
     if gubun == '매수':
         conds_code = 'if not (' + '):\n    매수 = False\nelif not ('.join(conds_code) + '):\n    매수 = False'
     else:

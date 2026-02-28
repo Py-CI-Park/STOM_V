@@ -1,11 +1,11 @@
+
 import random
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
-from ui.set_text import famous_saying, coin_sell_var, coin_future_sell_var, coin_sell1, coin_sell2, coin_sell3, \
-    coin_sell4, coin_sell5, coin_sell6, coin_sell7, coin_sell8, coin_sell_signal, coin_future_sell_signal, \
+from ui.set_text import famous_saying, coin_sell_var, coin_future_sell_var, coin_sell_signal, coin_future_sell_signal, \
     coin_sell_var2, coin_future_sell_var2
 
 
@@ -68,38 +68,6 @@ def coin_sell_stg_start(ui):
                 ui.cstgQ.put(('매도전략', strategy))
             ui.cvjs_pushButon_04.setStyleSheet(style_bc_dk)
             ui.cvjs_pushButon_14.setStyleSheet(style_bc_st)
-
-
-def coin_sell_dead_line(ui):
-    ui.cs_textEditttt_02.append(coin_sell1)
-
-
-def coin_sell_profit_line(ui):
-    ui.cs_textEditttt_02.append(coin_sell2)
-
-
-def coin_sell_profit_save(ui):
-    ui.cs_textEditttt_02.append(coin_sell3)
-
-
-def coin_sell_hold_time(ui):
-    ui.cs_textEditttt_02.append(coin_sell4)
-
-
-def coin_sell_ch_avg_comparison(ui):
-    ui.cs_textEditttt_02.append(coin_sell5)
-
-
-def coin_sell_ch_high_comparison(ui):
-    ui.cs_textEditttt_02.append(coin_sell6)
-
-
-def coin_sell_low_high_avg_per(ui):
-    ui.cs_textEditttt_02.append(coin_sell7)
-
-
-def coin_sell_ask_price_ramain_count(ui):
-    ui.cs_textEditttt_02.append(coin_sell8)
 
 
 def coin_sell_signal_insert(ui):

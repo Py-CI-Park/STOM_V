@@ -1,9 +1,10 @@
+
 from PyQt5.QtWidgets import QPushButton
 from utility.setting import ui_num
 
 
 def dactivated_01(ui):
-    if type(ui.focusWidget()) != QPushButton:
+    if ui.focusWidget().__class__ != QPushButton:
         table_name = ui.focusWidget().currentText()
         if ui.focusWidget() in (ui.ss_comboBoxxxx_01, ui.ss_comboBoxxxx_02, ui.ss_comboBoxxxx_03):
             ui_num_text = 'S상세기록'
