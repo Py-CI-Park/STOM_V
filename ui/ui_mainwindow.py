@@ -313,6 +313,7 @@ class MainWindow(QMainWindow):
         SetDialogChart(self, self.wc)
         SetDialogEtc(self, self.wc)
         SetDialogBack(self, self.wc)
+        SetDialogStrategy(self, self.wc)
 
         con1 = sqlite3.connect(DB_SETTING)
         con2 = sqlite3.connect(DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN)
@@ -412,6 +413,8 @@ class MainWindow(QMainWindow):
 
         self.proc_receiver_coin    = None
         self.proc_strategy_coin    = None
+        self.stg_btn_number   = 1
+        self.dict_stg_btn     = dict(dict_stg_button)
         self.proc_trader_coin      = None
         self.proc_coin_kimp        = None
 
@@ -1170,3 +1173,22 @@ class MainWindow(QMainWindow):
     def bjsCheckChanged_01(self, state): bjs_check_changed_01(self, state)
     def bjcCheckChanged_01(self, state): bjc_check_changed_01(self, state)
     # =================================================================================================================
+    # Strategy Dialog Methods (pyd→py inference from V2.39 SetDialogStrategy / ui_button_clicked_strategy.py)
+    def StrategyButtonClicked(self, cmd):   button_clicked_strategy(self, cmd)
+    def StrategyCustomBottunDel(self):      button_clicked_strategy_delete(self)
+    def StrategyCustomBottunSave(self):     button_clicked_strategy_save(self)
+    def StrategyCustomDialogShow(self):
+        if self.stg_btn_number <= 200:
+            btn = getattr(self, f'stg_pushButton_{self.stg_btn_number:03d}')
+            self.stginput_lineeditt1.setText(btn.text())
+            self.stginput_lineeditt2.setText(btn.text())
+            self.stginput_textEditt1.clear()
+            self.stginput_textEditt1.insertPlainText(self.dict_stg_btn.get(self.stg_btn_number, ''))
+            self.dialog_stg_input1.show()
+        else:
+            btn = getattr(self, f'stg_pushButton_{self.stg_btn_number:03d}')
+            self.stginput_lineeditt3.setText(btn.text())
+            self.stginput_lineeditt4.setText(btn.text())
+            self.stginput_textEditt2.clear()
+            self.stginput_textEditt2.insertPlainText(self.dict_stg_btn.get(self.stg_btn_number, ''))
+            self.dialog_stg_input2.show()

@@ -59,3 +59,45 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 ### Known Issues
 - STOM Live 기능 비활성화 (의도적)
 - 일부 메서드는 패치를 통해 점진적 추가
+
+---
+
+## STOM_Version_2U 업데이트 규칙 (필수)
+
+### pyd 파일 변경 → py 파일 추론 업데이트 규칙
+
+**STOM_Version_2에서 `.pyd` 파일이 변경(M/A)된 경우, STOM_Version_2U의 대응하는 `.py` 파일도 반드시 업데이트해야 합니다.**
+
+#### 적용 대상
+- `ui/ui_mainwindow.pyd` 변경 → `ui/ui_mainwindow.py` 추론 업데이트
+
+#### 추론 방법
+1. **변경 규모 파악**: `git show {prev}:ui/ui_mainwindow.pyd | wc -c` vs `git show {curr}:ui/ui_mainwindow.pyd | wc -c` 비교
+2. **크기 변화 없음 (0 diff)**: 재컴파일로 인한 변경 → py 파일 업데이트 불필요
+3. **크기 변화 있음**: 실질적 코드 변경 → 아래 방법으로 추론:
+   - 해당 버전에서 새로 추가된 `set_*.py`, `ui_*.py` 파일들의 내용 분석
+   - 새 파일에서 `self.ui.XXX()` 형태로 호출하는 메서드 파악
+   - 해당 메서드가 `ui_mainwindow.py`에 없으면 추론하여 추가
+
+#### 추론 패턴
+```python
+# 새 Set* 클래스가 초기화 단계에서 호출되어야 함
+SetDialogStrategy(self, self.wc)  # __init__에 추가
+
+# 새 Set* 클래스가 self.ui.XXX()를 호출하면 mainwindow에 메서드 추가
+def StrategyButtonClicked(self, cmd): button_clicked_strategy(self, cmd)
+def StrategyCustomDialogShow(self):   ...
+
+# 새 속성이 필요하면 __init__에 초기화
+self.stg_btn_number = 1
+self.dict_stg_btn   = dict(dict_stg_button)
+```
+
+#### 커밋 형식 (pyd 변경 반영)
+```
+STOM V{version}.U1.2 - {설명} (pyd 변경분 반영)
+
+수정 내용:
+- ui_mainwindow.pyd 변경사항을 ui_mainwindow.py에 추론 적용
+- {구체적 변경 내용}
+```
