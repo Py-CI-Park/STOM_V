@@ -393,9 +393,6 @@ class MoneyTrackingChart(QMainWindow):
             print(f"선택된 종목: {self.code}")
             conn.close()
 
-            df['idx'] = df['index']
-            df.set_index('idx', inplace=True)
-
             print(f"데이터 로드 완료: {len(df)}개")
 
             self.all_data = df

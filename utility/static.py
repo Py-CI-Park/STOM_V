@@ -28,11 +28,8 @@ def get_ema_list(is_tick):
 
 
 def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
-    df['idx'] = df['index']
-    df.set_index('idx', inplace=True)
-
     for window in get_ema_list(is_tick):
-        df[f'이동평균{window}'] = df['현재가'].rolling(window=window).mean()
+        df[f'이동평균{window}'] = df['현재가'].rolling(window=window).mean().round(3 if market == 1 else 8)
 
     for avg in avg_list:
         df[f'최고현재가{avg}'] = df['현재가'].rolling(window=avg).max()
@@ -506,22 +503,6 @@ try:
 
 
     @jit(nopython=True, cache=True)
-    def GetUvilower5(uvi, hogaunit, index):
-        upper5 = uvi - hogaunit * 5
-        if GetHogaunit(True, upper5, index) != hogaunit:
-            k = 0
-            hogaunit2 = 0
-            for i in (1, 2, 3, 4, 5):
-                hogaunit_ = GetHogaunit(True, uvi - hogaunit * i, index)
-                if hogaunit_ != hogaunit:
-                    hogaunit2 = hogaunit_
-                    break
-                k += 1
-            upper5 = uvi - hogaunit * k - hogaunit2 * (5 - k)
-        return upper5
-
-
-    @jit(nopython=True, cache=True)
     def GetUpbitHogaunit(price):
         if price < 0.01:
             return 0.0001
@@ -759,21 +740,6 @@ except:
         if downlimitprice % x != 0:
             downlimitprice += x - downlimitprice % x
         return int(uplimitprice), int(downlimitprice)
-
-
-    def GetUvilower5(uvi, hogaunit, index):
-        upper5 = uvi - hogaunit * 5
-        if GetHogaunit(True, upper5, index) != hogaunit:
-            k = 0
-            hogaunit2 = 0
-            for i in (1, 2, 3, 4, 5):
-                hogaunit_ = GetHogaunit(True, uvi - hogaunit * i, index)
-                if hogaunit_ != hogaunit:
-                    hogaunit2 = hogaunit_
-                    break
-                k += 1
-            upper5 = uvi - hogaunit * k - hogaunit2 * (5 - k)
-        return upper5
 
 
     def GetUpbitHogaunit(price):

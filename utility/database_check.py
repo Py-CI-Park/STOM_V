@@ -120,7 +120,7 @@ def database_check():
 
     if 'etc' not in table_list:
         columns = ["index", "테마", "저해상도", "휴무프로세스종료", "휴무컴퓨터종료", "창위치기억", "창위치", "스톰라이브", "프로그램종료", "팩터선택", "시리얼키"]
-        data = [0, '다크블루', 0, 1, 0, 1, '', 1, 0, '1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1', '']
+        data = [0, '다크블루', 0, 1, 0, 1, '', 1, 0, '1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1', '']
         df = pd.DataFrame([data], columns=columns).set_index('index')
         df.to_sql('etc', con)
 
@@ -324,16 +324,26 @@ def database_check():
         cur.execute('CREATE INDEX "ix_c_chegeollist_index" ON "c_chegeollist" ( "index" )')
 
     if 'c_jangolist' not in table_list:
-        query = 'CREATE TABLE "c_jangolist" ( "index" TEXT, "종목명" TEXT, "매입가" REAL, "현재가" REAL, "수익률" REAL, ' \
+        query = 'CREATE TABLE "c_jangolist" ( "index" TEXT, "종목명" TEXT, "매수가" REAL, "현재가" REAL, "수익률" REAL, ' \
                 '"평가손익" INTEGER, "매입금액" INTEGER, "평가금액" INTEGER, "보유수량" REAL, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
         cur.execute(query)
         cur.execute('CREATE INDEX "ix_c_jangolist_index"ON "c_jangolist" ("index")')
+    else:
+        df = pd.read_sql('SELECT * FROM c_jangolist', con).set_index('index')
+        if '매입가' in df.columns:
+            df.rename(columns={'매입가': '매수가'}, inplace=True)
+            df.to_sql('c_jangolist', con, if_exists='replace')
 
     if 'c_jangolist_future' not in table_list:
-        query = 'CREATE TABLE "c_jangolist_future" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매입가" REAL, "현재가" REAL, "수익률" REAL, ' \
+        query = 'CREATE TABLE "c_jangolist_future" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매수가" REAL, "현재가" REAL, "수익률" REAL, ' \
                 '"평가손익" INTEGER, "매입금액" INTEGER, "평가금액" INTEGER, "보유수량" REAL, "레버리지" INTEGER, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
         cur.execute(query)
         cur.execute('CREATE INDEX "ix_c_jangolist_future_index"ON "c_jangolist_future" ("index")')
+    else:
+        df = pd.read_sql('SELECT * FROM c_jangolist_future', con).set_index('index')
+        if '매입가' in df.columns:
+            df.rename(columns={'매입가': '매수가'}, inplace=True)
+            df.to_sql('c_jangolist_future', con, if_exists='replace')
 
     if 'c_totaltradelist' not in table_list:
         query = 'CREATE TABLE "c_totaltradelist" ( "index" TEXT, "거래횟수" INTEGER, "총매수금액" INTEGER, "총매도금액" INTEGER, "총수익금액" INTEGER, ' \
@@ -360,10 +370,15 @@ def database_check():
         cur.execute('CREATE INDEX "ix_s_chegeollist_index" ON "s_chegeollist" ( "index" )')
 
     if 's_jangolist' not in table_list:
-        query = 'CREATE TABLE "s_jangolist" ( "index" TEXT, "종목명" TEXT, "매입가" INTEGER, "현재가" INTEGER, "수익률" REAL, ' \
+        query = 'CREATE TABLE "s_jangolist" ( "index" TEXT, "종목명" TEXT, "매수가" INTEGER, "현재가" INTEGER, "수익률" REAL, ' \
                 '"평가손익" INTEGER, "매입금액" INTEGER, "평가금액" INTEGER, "보유수량" INTEGER, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
         cur.execute(query)
         cur.execute('CREATE INDEX "ix_s_jangolist_index"ON "s_jangolist" ("index")')
+    else:
+        df = pd.read_sql('SELECT * FROM s_jangolist', con).set_index('index')
+        if '매입가' in df.columns:
+            df.rename(columns={'매입가': '매수가'}, inplace=True)
+            df.to_sql('s_jangolist', con, if_exists='replace')
 
     if 's_totaltradelist' not in table_list:
         query = 'CREATE TABLE "s_totaltradelist" ( "index" TEXT, "거래횟수" INTEGER, "총매수금액" INTEGER, "총매도금액" INTEGER, ' \
@@ -384,10 +399,15 @@ def database_check():
         cur.execute('CREATE INDEX "ix_f_chegeollist_index" ON "f_chegeollist" ( "index" )')
 
     if 'f_jangolist' not in table_list:
-        query = 'CREATE TABLE "f_jangolist" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매입가" REAL, "현재가" REAL, "수익률" REAL, ' \
+        query = 'CREATE TABLE "f_jangolist" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매수가" REAL, "현재가" REAL, "수익률" REAL, ' \
                 '"평가손익" REAL, "매입금액" REAL, "평가금액" REAL, "보유수량" INTEGER, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
         cur.execute(query)
         cur.execute('CREATE INDEX "ix_f_jangolist_index"ON "f_jangolist" ("index")')
+    else:
+        df = pd.read_sql('SELECT * FROM f_jangolist', con).set_index('index')
+        if '매입가' in df.columns:
+            df.rename(columns={'매입가': '매수가'}, inplace=True)
+            df.to_sql('f_jangolist', con, if_exists='replace')
 
     if 'f_totaltradelist' not in table_list:
         query = 'CREATE TABLE "f_totaltradelist" ( "index" TEXT, "거래횟수" INTEGER, "총매수금액" REAL, "총매도금액" REAL, ' \

@@ -336,7 +336,7 @@ class Query:
                         firstname = 'coin_tick_' if self.dict_set['코인타임프레임'] else 'coin_min_'
                     con2 = sqlite3.connect(BACK_FILE)
                     df['일자'] = df['index'].apply(lambda x: str(x)[:8])
-                    day_list = list(set(df['일자'].to_list()))
+                    day_list = df['일자'].unique()
                     file_list = os.listdir(DB_PATH)
                     file_day_list = [x.strip(firstname).strip('.db') for x in file_list if firstname in x and '.db' in x and 'back' not in x]
                     if len(list(set(day_list) - set(file_day_list))) > 0:
@@ -383,7 +383,7 @@ class Query:
                     self.windowQ.put((ui_num['DB관리'], '당일 데이터가 존재하지 않습니다.'))
                 else:
                     df['일자'] = df['index'].apply(lambda x: int(str(x)[:8]))
-                    day_list = list(set(df['일자'].to_list()))
+                    day_list = df['일자'].unique()
                     df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                     table_list = df['name'].to_list()
                     last = len(table_list)

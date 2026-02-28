@@ -79,14 +79,33 @@ def get_label_text(ui, real, gubun, code, is_min, xpoint, factor, hms):
                        f"이평0600 {ui.ctpg_arry[xpoint, fi('이동평균600')]:,.8f}\n" \
                        f"이평1200 {ui.ctpg_arry[xpoint, fi('이동평균1200')]:,.8f}\n" \
                        f"현재가       {ui.ctpg_arry[xpoint, fi('현재가')]:,.4f}"
+    elif factor == '초당거래대금':
+        text =     f"초당거래대금        {ui.ctpg_arry[xpoint, fi('초당거래대금')]:,.0f}\n" \
+                   f"초당거래대금평균 {ui.ctpg_arry[xpoint, fi('초당거래대금평균')]:,.0f}"
+    elif factor == '초당매도수금액':
+        text =     f"초당매수금액 {ui.ctpg_arry[xpoint, fi('초당매수금액')]:,.0f}\n" \
+                   f"초당매도금액 {ui.ctpg_arry[xpoint, fi('초당매도금액')]:,.0f}"
+    elif factor == '분당매도수금액':
+        text =     f"분당매수금액 {ui.ctpg_arry[xpoint, fi('분당매수금액')]:,.0f}\n" \
+                   f"분당매도금액 {ui.ctpg_arry[xpoint, fi('분당매도금액')]:,.0f}"
+    elif factor == '당일매도수금액':
+        text =     f"당일매수금액 {ui.ctpg_arry[xpoint, fi('당일매수금액')]:,.0f}\n" \
+                   f"당일매도금액 {ui.ctpg_arry[xpoint, fi('당일매도금액')]:,.0f}"
+    elif factor == '최고매도수금액':
+        text =     f"최고매수금액 {ui.ctpg_arry[xpoint, fi('최고매수금액')]:,.0f}\n" \
+                   f"최고매도금액 {ui.ctpg_arry[xpoint, fi('최고매도금액')]:,.0f}"
+    elif factor == '최고매도수가격':
+        if gubun == 'S':
+            text = f"최고매수가격 {ui.ctpg_arry[xpoint, fi('최고매수가격')]:,.0f}\n" \
+                   f"최고매도가격 {ui.ctpg_arry[xpoint, fi('최고매도가격')]:,.0f}"
+        else:
+            text = f"최고매수가격 {ui.ctpg_arry[xpoint, fi('최고매수가격')]:,.8f}\n" \
+                   f"최고매도가격 {ui.ctpg_arry[xpoint, fi('최고매도가격')]:,.8f}"
     elif factor == '체결강도':
         text =     f"체결강도        {ui.ctpg_arry[xpoint, fi('체결강도')]:,.2f}\n" \
                    f"체결강도평균 {ui.ctpg_arry[xpoint, fi('체결강도평균')]:,.2f}\n" \
                    f"최고체결강도 {ui.ctpg_arry[xpoint, fi('최고체결강도')]:,.2f}\n" \
                    f"최저체결강도 {ui.ctpg_arry[xpoint, fi('최저체결강도')]:,.2f}"
-    elif factor == '초당거래대금':
-        text =     f"초당거래대금        {ui.ctpg_arry[xpoint, fi('초당거래대금')]:,.0f}\n" \
-                   f"초당거래대금평균 {ui.ctpg_arry[xpoint, fi('초당거래대금평균')]:,.0f}"
     elif factor == '분당거래대금':
         text =     f"분당거래대금        {ui.ctpg_arry[xpoint, fi('분당거래대금')]:,.0f}\n" \
                    f"분당거래대금평균 {ui.ctpg_arry[xpoint, fi('분당거래대금평균')]:,.0f}"

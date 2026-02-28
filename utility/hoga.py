@@ -4,7 +4,8 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from utility.setting import ui_num, columns_hj, DB_PATH, DB_COIN_BACK_TICK, \
-    DB_STOCK_BACK_TICK, DICT_SET, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+    DB_STOCK_BACK_TICK, DICT_SET, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
+    list_stock_tick, list_stock_min, list_coin_tick, list_coin_min
 
 
 class Hoga:
@@ -22,6 +23,45 @@ class Hoga:
         self.dict_hg   = None
         self.dict_set  = DICT_SET
         self.InitHoga('S')
+
+        self.fi = {
+            '현재가': list_stock_tick.index('현재가'),
+            '시가': list_stock_tick.index('시가'),
+            '고가': list_stock_tick.index('고가'),
+            '저가': list_stock_tick.index('저가'),
+            '등락율': list_stock_tick.index('등락율'),
+            '시가총액': list_stock_tick.index('시가총액'),
+            'VI가격': list_stock_tick.index('VI가격'),
+
+            '주식틱봉호가시작': list_stock_tick.index('매도호가5'),
+            '주식틱봉호가종료': list_stock_tick.index('매수호가5') + 1,
+            '주식틱봉잔량시작': list_stock_tick.index('매도잔량5'),
+            '주식틱봉잔량종료': list_stock_tick.index('매수잔량5') + 1,
+            '주식틱봉매도총잔': list_stock_tick.index('매도총잔량'),
+            '주식틱봉매수총잔': list_stock_tick.index('매수총잔량'),
+
+            '주식분봉호가시작': list_stock_min.index('매도호가5'),
+            '주식분봉호가종료': list_stock_min.index('매수호가5') + 1,
+            '주식분봉잔량시작': list_stock_min.index('매도잔량5'),
+            '주식분봉잔량종료': list_stock_min.index('매수잔량5') + 1,
+            '주식분봉매도총잔': list_stock_min.index('매도총잔량'),
+            '주식분봉매수총잔': list_stock_min.index('매수총잔량'),
+
+            '그외틱봉호가시작': list_coin_tick.index('매도호가5'),
+            '그외틱봉호가종료': list_coin_tick.index('매수호가5') + 1,
+            '그외틱봉잔량시작': list_coin_tick.index('매도잔량5'),
+            '그외틱봉잔량종료': list_coin_tick.index('매수잔량5') + 1,
+            '그외틱봉매도총잔': list_coin_tick.index('매도총잔량'),
+            '그외틱봉매수총잔': list_coin_tick.index('매수총잔량'),
+
+            '그외분봉호가시작': list_coin_min.index('매도호가5'),
+            '그외분봉호가종료': list_coin_min.index('매수호가5') + 1,
+            '그외분봉잔량시작': list_coin_min.index('매도잔량5'),
+            '그외분봉잔량종료': list_coin_min.index('매수잔량5') + 1,
+            '그외분봉매도총잔': list_coin_min.index('매도총잔량'),
+            '그외분봉매수총잔': list_coin_min.index('매수총잔량')
+        }
+
         self.MainLoop()
 
     def MainLoop(self):
@@ -152,24 +192,30 @@ class Hoga:
         if df is not None and len(df) > 0:
             data = list(df.iloc[0])
             if gubun == 'C' or '해외선물' in self.dict_set['증권사']:
-                hj = [name, data[1], data[5], 0, 0, data[2], data[3], data[4]]
+                hj = [
+                    name, data[self.fi['현재가']], data[self.fi['등락율']], 0, 0,
+                    data[self.fi['시가']], data[self.fi['고가']], data[self.fi['저가']]
+                ]
 
                 if (gubun == 'C' and self.dict_set['코인타임프레임']) or \
                         ('해외선물' in self.dict_set['증권사'] and self.dict_set['주식타임프레임']):
-                    jr = [data[12]] + data[24:34] + [data[13]]
-                    hg = [data[3]]  + data[14:24] + [data[4]]
+                    jr = [data[self.fi['그외틱봉매도총잔']]] + data[self.fi['그외틱봉잔량시작']:self.fi['그외틱봉잔량종료']] + [data[self.fi['그외틱봉매수총잔']]]
+                    hg = [data[self.fi['고가']]]  + data[self.fi['그외틱봉호가시작']:self.fi['그외틱봉호가종료']] + [self.fi['저가']]
                 else:
-                    jr = [data[15]] + data[27:37] + [data[16]]
-                    hg = [data[3]]  + data[17:27] + [data[4]]
+                    jr = [data[self.fi['그외분봉매도총잔']]] + data[self.fi['그외분봉잔량시작']:self.fi['그외분봉잔량종료']] + [data[self.fi['그외분봉매수총잔']]]
+                    hg = [data[self.fi['고가']]]  + data[self.fi['그외분봉호가시작']:self.fi['그외분봉호가종료']] + [data[self.fi['저가']]]
             else:
-                hj = [name, data[1], data[5], data[12], data[17], data[2], data[3], data[4]]
+                hj = [
+                    name, data[self.fi['현재가']], data[self.fi['등락율']], data[self.fi['시가총액']], data[self.fi['VI가격']],
+                    data[self.fi['시가']], data[self.fi['고가']], data[self.fi['저가']]
+                ]
 
                 if self.dict_set['주식타임프레임']:
-                    jr = [data[21]] + data[33:43] + [data[22]]
-                    hg = [data[3]] + data[23:33] + [data[4]]
+                    jr = [data[self.fi['주식틱봉매도총잔']]] + data[self.fi['주식틱봉잔량시작']:self.fi['주식틱봉잔량종료']] + [data[self.fi['주식틱봉매수총잔']]]
+                    hg = [data[self.fi['고가']]] + data[self.fi['주식틱봉호가시작']:self.fi['주식틱봉호가종료']] + [data[self.fi['저가']]]
                 else:
-                    jr = [data[24]] + data[36:46] + [data[25]]
-                    hg = [data[3]] + data[26:36] + [data[4]]
+                    jr = [data[self.fi['주식분봉매도총잔']]] + data[self.fi['주식분봉잔량시작']:self.fi['주식분봉잔량종료']] + [data[self.fi['주식분봉매수총잔']]]
+                    hg = [data[self.fi['고가']]] + data[self.fi['주식분봉호가시작']:self.fi['주식분봉호가종료']] + [data[self.fi['저가']]]
 
             df_hj = pd.DataFrame([hj], columns=columns_hj)
             df_hg = pd.DataFrame({'잔량': jr, '호가': hg})

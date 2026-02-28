@@ -1,57 +1,32 @@
 
 import numpy as np
 from traceback import print_exc
-from ui.set_text import stock_buy_signal, coin_buy_signal, coin_future_buy_signal, stock_sell_signal, coin_sell_signal, \
-    coin_future_sell_signal, future_buy_signal, future_sell_signal
+from ui.set_text import buy_signal, sell_signal, future_buy_signal, future_sell_signal
 
 
 def get_fix_strategy(ui, strategy, gubun):
     if gubun == '매수':
-        if ui.focusWidget() in (ui.svjb_pushButon_02, ui.svc_pushButton_02, ui.ss_textEditttt_01, ui.ss_textEditttt_03, ui.ss_textEditttt_07):
-            if '키움증권' in ui.dict_set['증권사']:
-                if '\nif 매수:' in strategy:
-                    strategy = strategy.split('\nif 매수:')[0] + stock_buy_signal
-                elif 'self.tickdata' not in strategy and stock_buy_signal not in strategy:
-                    strategy += '\n' + stock_buy_signal
-            else:
-                if '\nif BUY_LONG or SELL_SHORT:' in strategy:
-                    strategy = strategy.split('\nif BUY_LONG or SELL_SHORT:')[0] + future_buy_signal
-                elif 'self.tickdata' not in strategy and future_buy_signal not in strategy:
-                    strategy += '\n' + future_buy_signal
+        if '키움증권' in ui.dict_set['증권사'] or ui.dict_set['거래소'] == '업비트':
+            if '\nif 매수:' in strategy:
+                strategy = strategy.split('\nif 매수:')[0] + buy_signal
+            elif 'self.tickdata' not in strategy and buy_signal not in strategy:
+                strategy += '\n' + buy_signal
         else:
-            if ui.dict_set['거래소'] == '업비트':
-                if '\nif 매수:' in strategy:
-                    strategy = strategy.split('\nif 매수:')[0] + coin_buy_signal
-                elif 'self.tickdata' not in strategy and coin_buy_signal not in strategy:
-                    strategy += '\n' + coin_buy_signal
-            else:
-                if '\nif BUY_LONG or SELL_SHORT:' in strategy:
-                    strategy = strategy.split('\nif BUY_LONG or SELL_SHORT:')[0] + coin_future_buy_signal
-                elif coin_future_buy_signal not in strategy:
-                    strategy += '\n' + coin_future_buy_signal
+            if '\nif BUY_LONG or SELL_SHORT:' in strategy:
+                strategy = strategy.split('\nif BUY_LONG or SELL_SHORT:')[0] + future_buy_signal
+            elif 'self.tickdata' not in strategy and future_buy_signal not in strategy:
+                strategy += '\n' + future_buy_signal
     else:
-        if ui.focusWidget() in (ui.svjs_pushButon_02, ui.svc_pushButton_10, ui.ss_textEditttt_02, ui.ss_textEditttt_04, ui.ss_textEditttt_08):
-            if '키움증권' in ui.dict_set['증권사']:
-                if '\nif 매도:' in strategy:
-                    strategy = strategy.split('\nif 매도:')[0] + stock_sell_signal
-                elif 'self.tickdata' not in strategy and stock_sell_signal not in strategy:
-                    strategy += '\n' + stock_sell_signal
-            else:
-                if "\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):" in strategy:
-                    strategy = strategy.split("\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):")[0] + future_sell_signal
-                elif 'self.tickdata' not in strategy and future_sell_signal not in strategy:
-                    strategy += '\n' + future_sell_signal
+        if '키움증권' in ui.dict_set['증권사'] or ui.dict_set['거래소'] == '업비트':
+            if '\nif 매도:' in strategy:
+                strategy = strategy.split('\nif 매도:')[0] + sell_signal
+            elif 'self.tickdata' not in strategy and sell_signal not in strategy:
+                strategy += '\n' + sell_signal
         else:
-            if ui.dict_set['거래소'] == '업비트':
-                if '\nif 매도:' in strategy:
-                    strategy = strategy.split('\nif 매도:')[0] + coin_sell_signal
-                elif 'self.tickdata' not in strategy and coin_sell_signal not in strategy:
-                    strategy += '\n' + coin_sell_signal
-            else:
-                if "\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):" in strategy:
-                    strategy = strategy.split("\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):")[0] + coin_future_sell_signal
-                elif 'self.tickdata' not in strategy and coin_future_sell_signal not in strategy:
-                    strategy += '\n' + coin_future_sell_signal
+            if "\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):" in strategy:
+                strategy = strategy.split("\nif (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):")[0] + future_sell_signal
+            elif 'self.tickdata' not in strategy and future_sell_signal not in strategy:
+                strategy += '\n' + future_sell_signal
     return strategy
 
 

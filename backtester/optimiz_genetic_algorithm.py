@@ -48,32 +48,18 @@ class Total:
         self.MainLoop()
 
     def MainLoop(self):
-        tt = 0
-        rt = 0
         sc = 0
         bc = 0
         st = {}
-        start = now()
         dict_dummy = {}
         while True:
             data = self.tq.get()
-            if data == '탐색완료':
-                tt += 1
-                self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
-
-            elif data == '백테완료':
+            if data == '백테완료':
                 bc  += 1
                 if bc == self.back_count:
                     bc = 0
                     for q in self.bstq_list:
                         q.put(('백테완료', '분리집계'))
-
-            elif data[0] == '탐색완료':
-                rt += data[1]
-                if rt >= 1000:
-                    rt -= 1000
-                    tt += 1
-                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -130,9 +116,6 @@ class Total:
             elif data[0] == '변수정보':
                 self.vars_lists = data[1]
                 dict_dummy      = {x: {} for x in range(50)}
-                start = now()
-                tt = 0
-                rt = 0
 
             elif data[0] == '경우의수':
                 self.back_count = data[1]
@@ -272,7 +255,7 @@ class OptimizeGeneticAlgorithm:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
-        day_list = list(set(df_mt['일자'].to_list()))
+        day_list = df_mt['일자'].unique()
         day_list.sort()
 
         valid_days = None

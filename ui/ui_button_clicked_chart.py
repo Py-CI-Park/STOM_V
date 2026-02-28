@@ -33,7 +33,7 @@ def indicator_setting_save(ui):
 def get_indicator_detail(ui, code):
     k_list = None
     if not ui.dict_set['주식타임프레임'] or not ui.dict_set['코인타임프레임']:
-        if ui.ft_checkBoxxxxx_39.isChecked():
+        if ui.ft_checkBoxxxxx_44.isChecked():
             buystg = None
             vars_  = None
             try:

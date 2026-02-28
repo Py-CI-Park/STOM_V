@@ -33,7 +33,6 @@ class Total:
     def MainLoop(self):
         bc = 0
         index = 0
-        start = now()
         complete = True
         while True:
             data = self.tq.get()
@@ -45,7 +44,6 @@ class Total:
 
             elif data == '백테완료':
                 bc += 1
-                self.wq.put((ui_num[f'{self.ui_gubun}백테바'], bc, self.back_count, start))
                 if bc == self.back_count:
                     break
 

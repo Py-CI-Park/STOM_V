@@ -61,33 +61,38 @@ class DrawRealChart:
             if self.ui.ft_checkBoxxxxx_11.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_11.text())
             if self.ui.ft_checkBoxxxxx_12.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_12.text())
             if self.ui.ft_checkBoxxxxx_13.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_13.text())
+            if self.ui.ft_checkBoxxxxx_14.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_14.text())
+            if self.ui.ft_checkBoxxxxx_15.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_15.text())
+            if self.ui.ft_checkBoxxxxx_16.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_16.text())
+            if self.ui.ft_checkBoxxxxx_17.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_17.text())
+            if self.ui.ft_checkBoxxxxx_18.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_18.text())
             if gubun == 'S':
-                if self.ui.ft_checkBoxxxxx_14.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_14.text())
-                if self.ui.ft_checkBoxxxxx_15.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_15.text())
-                if self.ui.ft_checkBoxxxxx_16.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_16.text())
-                if self.ui.ft_checkBoxxxxx_17.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_17.text())
-                if self.ui.ft_checkBoxxxxx_18.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_18.text())
+                if self.ui.ft_checkBoxxxxx_19.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_14.text())
+                if self.ui.ft_checkBoxxxxx_20.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_15.text())
+                if self.ui.ft_checkBoxxxxx_21.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_16.text())
+                if self.ui.ft_checkBoxxxxx_22.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_17.text())
+                if self.ui.ft_checkBoxxxxx_23.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_18.text())
             if is_min:
-                if self.ui.ft_checkBoxxxxx_19.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_19.text())
-                if self.ui.ft_checkBoxxxxx_20.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_20.text())
-                if self.ui.ft_checkBoxxxxx_21.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_21.text())
-                if self.ui.ft_checkBoxxxxx_22.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_22.text())
-                if self.ui.ft_checkBoxxxxx_23.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_23.text())
-                if self.ui.ft_checkBoxxxxx_24.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_24.text())
-                if self.ui.ft_checkBoxxxxx_25.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_25.text())
-                if self.ui.ft_checkBoxxxxx_26.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_26.text())
-                if self.ui.ft_checkBoxxxxx_27.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_27.text())
-                if self.ui.ft_checkBoxxxxx_28.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_28.text())
-                if self.ui.ft_checkBoxxxxx_29.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_29.text())
-                if self.ui.ft_checkBoxxxxx_30.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_30.text())
-                if self.ui.ft_checkBoxxxxx_31.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_31.text())
-                if self.ui.ft_checkBoxxxxx_32.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_32.text())
-                if self.ui.ft_checkBoxxxxx_33.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_33.text())
-                if self.ui.ft_checkBoxxxxx_34.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_34.text())
-                if self.ui.ft_checkBoxxxxx_35.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_35.text())
-                if self.ui.ft_checkBoxxxxx_36.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_36.text())
-                if self.ui.ft_checkBoxxxxx_37.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_37.text())
-                if self.ui.ft_checkBoxxxxx_38.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_38.text())
+                if self.ui.ft_checkBoxxxxx_24.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_19.text())
+                if self.ui.ft_checkBoxxxxx_25.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_20.text())
+                if self.ui.ft_checkBoxxxxx_26.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_21.text())
+                if self.ui.ft_checkBoxxxxx_27.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_22.text())
+                if self.ui.ft_checkBoxxxxx_28.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_23.text())
+                if self.ui.ft_checkBoxxxxx_29.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_24.text())
+                if self.ui.ft_checkBoxxxxx_30.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_25.text())
+                if self.ui.ft_checkBoxxxxx_31.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_26.text())
+                if self.ui.ft_checkBoxxxxx_32.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_27.text())
+                if self.ui.ft_checkBoxxxxx_33.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_28.text())
+                if self.ui.ft_checkBoxxxxx_34.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_29.text())
+                if self.ui.ft_checkBoxxxxx_35.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_30.text())
+                if self.ui.ft_checkBoxxxxx_36.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_31.text())
+                if self.ui.ft_checkBoxxxxx_37.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_32.text())
+                if self.ui.ft_checkBoxxxxx_38.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_33.text())
+                if self.ui.ft_checkBoxxxxx_39.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_34.text())
+                if self.ui.ft_checkBoxxxxx_40.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_35.text())
+                if self.ui.ft_checkBoxxxxx_41.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_36.text())
+                if self.ui.ft_checkBoxxxxx_42.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_37.text())
+                if self.ui.ft_checkBoxxxxx_43.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_38.text())
 
         if gubun == 'S':
             if is_min:
@@ -177,6 +182,34 @@ class DrawRealChart:
                     else:
                         self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi(factor)]:], y=self.ui.ctpg_data[fi(factor)], pen=(200, 100, 100))
                     self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi(f'{factor}평균')]:], y=self.ui.ctpg_data[fi(f'{factor}평균')], pen=(100, 200, 100))
+                elif factor in ('초당매도수금액', '분당매도수금액'):
+                    if is_min:
+                        ymax = max(self.ui.ctpg_data[fi('분당매수금액')].max(), self.ui.ctpg_data[fi('분당매도금액')].max())
+                        ymin = min(self.ui.ctpg_data[fi('분당매수금액')].min(), self.ui.ctpg_data[fi('분당매도금액')].min())
+                    else:
+                        ymax = max(self.ui.ctpg_data[fi('초당매수금액')].max(), self.ui.ctpg_data[fi('초당매도금액')].max())
+                        ymin = min(self.ui.ctpg_data[fi('초당매수금액')].min(), self.ui.ctpg_data[fi('초당매도금액')].min())
+                    if is_min:
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('분당매도금액')]:], y=self.ui.ctpg_data[fi('분당매도금액')], pen=(100, 100, 200))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('분당매수금액')]:], y=self.ui.ctpg_data[fi('분당매수금액')], pen=(200, 100, 100))
+                    else:
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('초당매도금액')]:], y=self.ui.ctpg_data[fi('초당매도금액')], pen=(100, 100, 200))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('초당매수금액')]:], y=self.ui.ctpg_data[fi('초당매수금액')], pen=(200, 100, 100))
+                elif factor == '당일매도수금액':
+                    ymax = max(self.ui.ctpg_data[fi('당일매수금액')].max(), self.ui.ctpg_data[fi('당일매도금액')].max())
+                    ymin = min(self.ui.ctpg_data[fi('당일매수금액')].min(), self.ui.ctpg_data[fi('당일매도금액')].min())
+                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('당일매도금액')]:], y=self.ui.ctpg_data[fi('당일매도금액')], pen=(100, 100, 200))
+                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('당일매수금액')]:], y=self.ui.ctpg_data[fi('당일매수금액')], pen=(200, 100, 100))
+                elif factor == '최고매도수금액':
+                    ymax = max(self.ui.ctpg_data[fi('최고매수금액')].max(), self.ui.ctpg_data[fi('최고매도금액')].max())
+                    ymin = min(self.ui.ctpg_data[fi('최고매수금액')].min(), self.ui.ctpg_data[fi('최고매도금액')].min())
+                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매도금액')]:], y=self.ui.ctpg_data[fi('최고매도금액')], pen=(100, 100, 200))
+                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매수금액')]:], y=self.ui.ctpg_data[fi('최고매수금액')], pen=(200, 100, 100))
+                elif factor == '최고매도수가격':
+                    ymax = max(self.ui.ctpg_data[fi('최고매수가격')].max(), self.ui.ctpg_data[fi('최고매도가격')].max())
+                    ymin = min(self.ui.ctpg_data[fi('최고매수가격')].min(), self.ui.ctpg_data[fi('최고매도가격')].min())
+                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매도가격')]:], y=self.ui.ctpg_data[fi('최고매도가격')], pen=(100, 100, 200))
+                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매수가격')]:], y=self.ui.ctpg_data[fi('최고매수가격')], pen=(200, 100, 100))
                 elif factor == '체결강도':
                     ymax = max(self.ui.ctpg_data[fi('체결강도')].max(), self.ui.ctpg_data[fi('최고체결강도')].max())
                     ymin = min(self.ui.ctpg_data[fi('체결강도')].min(), self.ui.ctpg_data[fi('최저체결강도')].min())
@@ -347,6 +380,22 @@ class DrawRealChart:
                     else:
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi(factor)]:], y=self.ui.ctpg_data[fi(factor)], pen=(200, 100, 100))
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi(f'{factor}평균')]:], y=self.ui.ctpg_data[fi(f'{factor}평균')], pen=(100, 200, 100))
+                elif factor in ('초당매도수금액', '분당매도수금액'):
+                    if is_min:
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('분당매도금액')]:], y=self.ui.ctpg_data[fi('분당매도금액')], pen=(100, 100, 200))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('분당매수금액')]:], y=self.ui.ctpg_data[fi('분당매수금액')], pen=(200, 100, 100))
+                    else:
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('초당매도금액')]:], y=self.ui.ctpg_data[fi('초당매도금액')], pen=(100, 100, 200))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('초당매수금액')]:], y=self.ui.ctpg_data[fi('초당매수금액')], pen=(200, 100, 100))
+                elif factor == '당일매도수금액':
+                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('당일매도금액')]:], y=self.ui.ctpg_data[fi('당일매도금액')], pen=(100, 100, 200))
+                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('당일매수금액')]:], y=self.ui.ctpg_data[fi('당일매수금액')], pen=(200, 100, 100))
+                elif factor == '최고매도수금액':
+                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최고매도금액')]:], y=self.ui.ctpg_data[fi('최고매도금액')], pen=(100, 100, 200))
+                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최고매수금액')]:], y=self.ui.ctpg_data[fi('최고매수금액')], pen=(200, 100, 100))
+                elif factor == '최고매도수가격':
+                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최고매도가격')]:], y=self.ui.ctpg_data[fi('최고매도가격')], pen=(100, 100, 200))
+                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최고매수가격')]:], y=self.ui.ctpg_data[fi('최고매수가격')], pen=(200, 100, 100))
                 elif factor == '체결강도':
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))

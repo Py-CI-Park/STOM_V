@@ -9,7 +9,8 @@ from matplotlib import font_manager
 from matplotlib import pyplot as plt
 from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms, get_logger, add_rolling_data, dt_ymdhm
 from utility.setting import ui_num, DICT_SET, DB_TRADELIST, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
-    DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_CODE_INFO, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+    DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_CODE_INFO, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
+    list_stock_min, list_coin_min
 
 
 class Chart:
@@ -38,6 +39,16 @@ class Chart:
 
         self.arry_kosp  = None
         self.arry_kosd  = None
+
+        self.factor_index = {
+            '주식분봉고가': list_stock_min.index('분봉고가'),
+            '주식분봉저가': list_stock_min.index('분봉저가'),
+            '주식거래대금': list_stock_min.index('분당거래대금'),
+            '그외분봉고가': list_coin_min.index('분봉고가'),
+            '그외분봉저가': list_coin_min.index('분봉저가'),
+            '그외거래대금': list_coin_min.index('분당거래대금')
+        }
+
         self.MainLoop()
 
     def MainLoop(self):
@@ -250,13 +261,13 @@ class Chart:
                 try:
                     mc = arry[:, 1]
                     if coin or '해외선물' in self.dict_set['증권사']:
-                        mh = arry[:, 11]
-                        ml = arry[:, 12]
-                        mv = arry[:, 13]
+                        mh = arry[:, self.factor_index['그외분봉고가']]
+                        ml = arry[:, self.factor_index['그외분봉저가']]
+                        mv = arry[:, self.factor_index['그외거래대금']]
                     else:
-                        mh = arry[:, 20]
-                        ml = arry[:, 21]
-                        mv = arry[:, 22]
+                        mh = arry[:, self.factor_index['주식분봉고가']]
+                        ml = arry[:, self.factor_index['주식분봉저가']]
+                        mv = arry[:, self.factor_index['주식거래대금']]
 
                     AD = talib.AD(mh, ml, mc, mv)
                     arry[:, -28] = AD

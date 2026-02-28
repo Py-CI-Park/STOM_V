@@ -150,12 +150,14 @@ def dialog_chart_show(ui):
              (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임'])
     if is_min:
         if ui.ft_checkBoxxxxx_02.text() != '분당거래대금': ui.ft_checkBoxxxxx_02.setText('분당거래대금')
-        if ui.ft_checkBoxxxxx_04.text() != '분당체결수량': ui.ft_checkBoxxxxx_04.setText('분당체결수량')
-        if ui.ft_checkBoxxxxx_11.text() != '누적분당매도수수량': ui.ft_checkBoxxxxx_11.setText('누적분당매도수수량')
+        if ui.ft_checkBoxxxxx_03.text() != '분당매도수금액': ui.ft_checkBoxxxxx_03.setText('분당매도수금액')
+        if ui.ft_checkBoxxxxx_08.text() != '분당체결수량': ui.ft_checkBoxxxxx_08.setText('분당체결수량')
+        if ui.ft_checkBoxxxxx_16.text() != '누적분당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적분당매도수수량')
     else:
         if ui.ft_checkBoxxxxx_02.text() != '초당거래대금': ui.ft_checkBoxxxxx_02.setText('초당거래대금')
-        if ui.ft_checkBoxxxxx_04.text() != '초당체결수량': ui.ft_checkBoxxxxx_04.setText('초당체결수량')
-        if ui.ft_checkBoxxxxx_11.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_11.setText('누적초당매도수수량')
+        if ui.ft_checkBoxxxxx_03.text() != '초당매도수금액': ui.ft_checkBoxxxxx_03.setText('초당매도수금액')
+        if ui.ft_checkBoxxxxx_08.text() != '초당체결수량': ui.ft_checkBoxxxxx_08.setText('초당체결수량')
+        if ui.ft_checkBoxxxxx_16.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적초당매도수수량')
 
     if ui.main_btn in (1, 3):
         ui.ct_lineEdittttt_01.setText('0')
@@ -487,9 +489,9 @@ def strategy_custom_button_show(ui):
 
 
 def strategy_custom_dialog_show(ui):
-    if (ui.stg_btn_number <= 200 and not ui.dialog_stg_input1.isVisible()) or \
-            (ui.stg_btn_number > 200 and not ui.dialog_stg_input2.isVisible()):
-        if ui.stg_btn_number <= 200:
+    if (ui.stg_btn_number <= 205 and not ui.dialog_stg_input1.isVisible()) or \
+            (ui.stg_btn_number > 205 and not ui.dialog_stg_input2.isVisible()):
+        if ui.stg_btn_number <= 205:
             ui.stginput_lineeditt1.setText('')
             ui.stginput_textEditt1.clear()
         else:
@@ -500,7 +502,7 @@ def strategy_custom_dialog_show(ui):
         stg_text = ui.dict_stg_btn[ui.stg_btn_number]
         if stg_text[-1] != '\n': stg_text = f'{stg_text}\n'
 
-        if ui.stg_btn_number <= 200:
+        if ui.stg_btn_number <= 205:
             stg_name = ui.dialog_strategy.focusWidget().text()
             ui.stginput_lineeditt1.setText(stg_name)
             ui.stginput_lineeditt2.setText(ori_name)
@@ -511,6 +513,6 @@ def strategy_custom_dialog_show(ui):
             ui.stginput_lineeditt4.setText(ori_name)
             ui.stginput_textEditt2.insertPlainText(stg_text)
 
-        ui.dialog_stg_input1.show() if ui.stg_btn_number <= 200 else ui.dialog_stg_input2.show()
+        ui.dialog_stg_input1.show() if ui.stg_btn_number <= 205 else ui.dialog_stg_input2.show()
     else:
-        ui.dialog_stg_input1.close() if ui.stg_btn_number <= 200 else ui.dialog_stg_input2.close()
+        ui.dialog_stg_input1.close() if ui.stg_btn_number <= 205 else ui.dialog_stg_input2.close()

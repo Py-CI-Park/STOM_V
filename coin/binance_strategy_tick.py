@@ -28,6 +28,8 @@ class BinanceStrategyTick:
         self.buystrategy      = None
         self.sellstrategy     = None
         self.chart_code       = None
+        self.arry_code        = None
+        self.info_for_signal  = None
 
         self.vars             = {}
         self.dict_data        = {}
@@ -35,15 +37,21 @@ class BinanceStrategyTick:
         self.dict_buy_num     = {}
         self.dict_condition   = {}
         self.dict_cond_indexn = {}
-        self.bhogainfo        = {}
         self.shogainfo        = {}
+        self.bhogainfo        = {}
         self.dict_profit      = {}
         self.high_low         = {} 
         self.dict_gj          = {}
         self.dict_jg          = {}
         self.dict_info        = {}
         self.indicator        = indicator
-        self.dict_signal      = {'BUY_LONG': [], 'SELL_SHORT': [], 'SELL_LONG': [], 'BUY_SHORT': []}
+        self.indi_settings    = []
+        self.dict_signal      = {
+            'BUY_LONG': [],
+            'SELL_SHORT': [],
+            'SELL_LONG': [],
+            'BUY_SHORT': []
+        }
 
         self.tick_count       = 0
         self.index            = 0
@@ -61,8 +69,11 @@ class BinanceStrategyTick:
         self.avg_list         = [self.dict_set['코인평균값계산틱수']]
         self.sma_list         = get_ema_list(self.is_tick)
         self.data_cnt         = len(list_coin_tick) if self.is_tick else len(list_coin_min)
-        factor_list           = list_coin_tick if self.is_tick else list_coin_min
-        self.dict_findex      = {name: i for i, name in enumerate(factor_list)}
+        self.dict_findex      = {name: i for i, name in enumerate(list_coin_tick if self.is_tick else list_coin_min)}
+        self.base_cnt         = self.dict_findex['관심종목'] + 1
+        self.area_cnt         = self.dict_findex['전일비각도' if self.market_gubun == 1 else '당일거래대금각도'] + 1
+        self.angle_pct_cf     = get_angle_cf(self.market_gubun, self.is_tick, 0)
+        self.angle_dtm_cf     = get_angle_cf(self.market_gubun, self.is_tick, 1)
         self.cached_stg_text  = None
         self.prev_global_list = []
 
@@ -121,17 +132,17 @@ class BinanceStrategyTick:
                 pass
             else:
                 self.logger.info(self.indicator)
+            self.indi_settings = list(self.indicator.values())
 
     def MainLoop(self):
         self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 전략 연산 시작'))
         self.logger.info('전략연산 시작 완료')
         while True:
             data = self.cstgQ.get()
-            if data.__class__ == tuple:
-                if len(data) != 2:
-                    self.Strategy(data)
-                else:
-                    self.UpdateTuple(data)
+            if data.__class__ == list:
+                self.Strategy(data)
+            elif data.__class__ == tuple:
+                self.UpdateTuple(data)
             elif data.__class__ == str:
                 self.UpdateString(data)
 
@@ -188,63 +199,56 @@ class BinanceStrategyTick:
 
     # noinspection PyUnusedLocal
     def Strategy(self, data):
-        체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량, \
+        체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
+            초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
             매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
             매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
-            매도수5호가잔량합, 관심종목, 종목코드, 틱수신시간 = data
+            매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목, 종목코드, 틱수신시간 = data
 
-        시분초 = int(str(체결시간)[8:]), 
-        평균값계산틱수 = self.dict_set['코인평균값계산틱수']
-        저가대비고가등락율 = np.round((고가 / 저가 - 1) * 100, 2)
-        순매수금액 = int((초당매수수량 - 초당매도수량) * 현재가 / 1_000_000)
+        시분초 = int(str(체결시간)[8:])
+        rw = 평균값계산틱수 = self.dict_set['코인평균값계산틱수']
+        순매수금액 = 초당매수금액 - 초당매수금액
         self.hoga_unit = 호가단위 = self.dict_info[종목코드]['호가단위']
 
-        self.bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        self.shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-
-        if not self.high_low:
-            self.high_low = [현재가, 현재가, self.indexn, self.indexn]
-        else:
-            if 현재가 > self.high_low[0]:
-                self.high_low[0] = 현재가
-                self.high_low[2] = self.indexn
-            if 현재가 < self.high_low[1]:
-                self.high_low[1] = 현재가
-                self.high_low[3] = self.indexn
-
-        rw = 평균값계산틱수
-        new_data_tick = np.zeros(self.data_cnt, dtype=np.float64)
-        new_data = [
-            체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도,
-            초당매수수량, 초당매도수량,
-            초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량,
-            매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5,
-            매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5,
-            매도수5호가잔량합, 관심종목
-        ]
-        index1 = len(new_data)
-        new_data_tick[:index1] = new_data
-
-        if 종목코드 not in self.dict_data:
-            self.dict_data[종목코드] = np.array([new_data_tick])
-        else:
-            self.dict_data[종목코드] = np.concatenate([self.dict_data[종목코드], np.array([new_data_tick])])
-
-        self.tick_count = 데이터길이 = len(self.dict_data[종목코드]) + 1
-        self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
-
-        self.dict_data[종목코드][-1, index1:] = self.GetParameterArea(rw)
+        self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
+        self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
         high_low = self.high_low.get(종목코드)
-        if high_low is None:
-            self.high_low[종목코드] = [현재가, 현재가, self.indexn, self.indexn]
-        else:
-            if 현재가 > high_low[0]:
-                high_low[0] = 현재가
-                high_low[2] = self.indexn
-            if 현재가 < high_low[1]:
-                high_low[1] = 현재가
+        if high_low:
+            if 고가 >= high_low[0]:
+                high_low[0] = 고가
+                high_low[1] = self.indexn
+            if 저가 <= high_low[2]:
+                high_low[2] = 저가
                 high_low[3] = self.indexn
+        else:
+            self.high_low[종목코드] = [고가, self.indexn, 저가, self.indexn]
+
+        new_data_tick = np.zeros(self.data_cnt, dtype=np.float64)
+        new_data_tick[:self.base_cnt] = data[:self.base_cnt]
+
+        pre_data = self.dict_data.get(종목코드)
+        if pre_data is not None:
+            self.dict_data[종목코드] = np.concatenate([pre_data, np.array([new_data_tick])])
+        else:
+            self.dict_data[종목코드] = np.array([new_data_tick])
+
+        self.arry_code = self.dict_data[종목코드]
+        self.tick_count = 데이터길이 = len(self.arry_code)
+        self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
+
+        if 데이터길이 >= 평균값계산틱수: self.arry_code[-1, self.base_cnt:] = self.GetParameterArea(rw)
+
+        high_low = self.high_low.get(종목코드)
+        if high_low:
+            if 고가 >= high_low[0]:
+                high_low[0] = 고가
+                high_low[1] = self.indexn
+            if 저가 <= high_low[2]:
+                high_low[2] = 저가
+                high_low[3] = self.indexn
+        else:
+            self.high_low[종목코드] = [고가, self.indexn, 저가, self.indexn]
 
         if self.dict_condition:
             if 종목코드 not in self.dict_cond_indexn:
@@ -257,27 +261,32 @@ class BinanceStrategyTick:
                     self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류'))
 
         if 데이터길이 >= 평균값계산틱수:
-            if 종목코드 in self.dict_jg:
+            jg_data = self.dict_jg.get(종목코드)
+            if jg_data:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
-                # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
-                _, 포지션, 매입가, _, _, _, 매입금액, _, 보유수량, 레버리지, 분할매수횟수, 분할매도횟수, 매수시간 = self.dict_jg[종목코드].values()
+                # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+                _, 포지션, 매수가, _, _, _, 매입금액, _, 보유수량, 레버리지, 분할매수횟수, 분할매도횟수, 매수시간 = jg_data.values()
                 if 포지션 == 'LONG':
                     _, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                 else:
                     _, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                if 종목코드 not in self.dict_profit:
-                    self.dict_profit[종목코드] = [수익률, 수익률]
+                profit_data = self.dict_profit.get(종목코드)
+                if profit_data:
+                    if 수익률 > profit_data[0]:
+                        profit_data[0] = 수익률
+                    elif 수익률 < profit_data[1]:
+                        profit_data[1] = 수익률
+                    최고수익률, 최저수익률 = profit_data
                 else:
-                    if 수익률 > self.dict_profit[종목코드][0]:
-                        self.dict_profit[종목코드][0] = 수익률
-                    elif 수익률 < self.dict_profit[종목코드][1]:
-                        self.dict_profit[종목코드][1] = 수익률
-                최고수익률, 최저수익률 = self.dict_profit[종목코드]
+                    self.dict_profit[종목코드] = [수익률, 수익률]
+                    최고수익률 = 최저수익률 = 수익률
                 보유시간 = (now_utc() - dt_ymdhms(매수시간)).total_seconds()
                 매수틱번호 = self.dict_buy_num[종목코드]
             else:
-                포지션, 매수틱번호, 수익금, 수익률, 레버리지, 매입가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = None, 0, 0, 0, 1, 0, 0, 0, 0, now_utc(), 0, 0, 0
+                포지션, 매수틱번호, 수익금, 수익률, 레버리지, 매수가, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 보유시간, 최고수익률, 최저수익률 = None, 0, 0, 0, 1, 0, 0, 0, 0, now_utc(), 0, 0, 0
+
+            소숫점자리수 = self.dict_info[종목코드]['소숫점자리수']
             self.profit, self.hold_time, self.indexb = 수익률, 보유시간, 매수틱번호
     
             BBT  = not self.dict_set['코인매수금지시간'] or not (self.dict_set['코인매수금지시작시간'] < 시분초 < self.dict_set['코인매수금지종료시간'])
@@ -296,10 +305,8 @@ class BinanceStrategyTick:
             G    = NISS and self.dict_set['코인매도취소매수시그널'] and not NIBS
     
             if BBT and BLK and C20 and (A or B or (C and D) or (C and E) or D or E or F or G):
-                매수수량 = 0
-                if not (F or G):
-                    매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, self.dict_info[종목코드]['소숫점자리수'])
-    
+                self.info_for_signal = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1
+
                 if A or B or (C and (D or E)) or F or G:
                     BUY_LONG, SELL_SHORT = True, True
                     if self.buystrategy is not None:
@@ -323,7 +330,7 @@ class BinanceStrategyTick:
                             SELL_SHORT = True
     
                     if BUY_LONG or SELL_SHORT:
-                        self.Buy(종목코드, BUY_LONG, 현재가, 매도호가1, 매수호가1, 매수수량, 데이터길이)
+                        self.Buy(BUY_LONG)
     
             SBT  = not self.dict_set['코인매도금지시간'] or not (self.dict_set['코인매도금지시작시간'] < 시분초 < self.dict_set['코인매도금지종료시간'])
             SCC  = self.dict_set['코인매수분할횟수'] == 1 or not self.dict_set['코인매도금지매수횟수'] or 분할매수횟수 > self.dict_set['코인매도금지매수횟수값']
@@ -345,15 +352,11 @@ class BinanceStrategyTick:
             N    = NISS and NIBS and 포지션 == 'SHORT' and 수익률 * 레버리지 < -90
     
             if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N):
-                SELL_LONG, BUY_SHORT = False, False
-                매도수량 = 0
                 강제청산 = H or J or K or L or M or N
-    
-                if A or B or H or J or K or L or M or N:
-                    매도수량 = 보유수량
-                elif not (F or G):
-                    매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 저가대비고가등락율, 순매수금액, 당일거래대금, self.dict_info[종목코드]['소숫점자리수'])
-    
+                전량매도 = A or B or 강제청산
+                self.info_for_signal = F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1, 소숫점자리수
+
+                SELL_LONG, BUY_SHORT = False, False
                 if A or B or (C and (D or E)) or F or G:
                     if self.sellstrategy is not None:
                         try:
@@ -361,7 +364,7 @@ class BinanceStrategyTick:
                         except:
                             print_exc()
                             self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 오류 알림 - SellStrategy'))
-                elif D or E or H or J or K or L or M or N:
+                elif D or E or 강제청산:
                     if H or K or M:
                         SELL_LONG = True
                     elif J or L or N:
@@ -378,7 +381,7 @@ class BinanceStrategyTick:
                             BUY_SHORT = True
     
                     if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):
-                        self.Sell(종목코드, SELL_LONG, 현재가, 매도호가1, 매수호가1, 매도수량, 강제청산)
+                        self.Sell(SELL_LONG)
 
         if 관심종목:
             # ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
@@ -395,7 +398,7 @@ class BinanceStrategyTick:
             }
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
-            self.windowQ.put((ui_num['실시간차트'], 종목코드, self.dict_data[종목코드]))
+            self.windowQ.put((ui_num['실시간차트'], 종목코드, self.arry_code))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
@@ -423,7 +426,41 @@ class BinanceStrategyTick:
                 self._분당거래대금평균(rw, calc=True), self._등락율각도(rw, calc=True), self._당일거래대금각도(rw, calc=True)
             ]
 
-    def SetBuyCount(self, 분할매수횟수, 매입가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 소숫점자리수):
+    def Buy(self, BUY_LONG):
+        취소시그널, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1, 소숫점자리수 = self.info_for_signal
+        if 취소시그널:
+            매수수량 = 0
+        else:
+            매수수량 = self.GetBuyCount(분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 소숫점자리수)
+
+        구분 = 'BUY_LONG' if BUY_LONG else 'SELL_SHORT'
+        if '지정가' in self.dict_set['코인매수주문구분']:
+            기준가격 = 현재가
+            if self.dict_set['코인매수지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1 if BUY_LONG else 매수호가1
+            if self.dict_set['코인매수지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1 if BUY_LONG else 매도호가1
+            self.dict_signal[구분].append(self.code)
+            self.dict_signal_num[self.code] = self.indexn
+            self.ctraderQ.put((구분, self.code, 기준가격, 매수수량, now(), False))
+        else:
+            매수금액 = 0
+            미체결수량 = 매수수량
+            hogainfo = self.shogainfo if BUY_LONG else self.bhogainfo
+            hogainfo = hogainfo[:self.dict_set['코인매수시장가잔량범위']]
+            for 호가, 잔량 in hogainfo:
+                if 미체결수량 - 잔량 <= 0:
+                    매수금액 += 호가 * 미체결수량
+                    미체결수량 -= 잔량
+                    break
+                else:
+                    매수금액 += 호가 * 잔량
+                    미체결수량 -= 잔량
+            if 미체결수량 <= 0:
+                예상체결가 = np.round(매수금액 / 매수수량, 8) if 매수수량 != 0 else 0
+                self.dict_signal[구분].append(self.code)
+                self.dict_signal_num[self.code] = self.indexn
+                self.ctraderQ.put((구분, self.code, 예상체결가, 매수수량, now(), False))
+
+    def GetBuyCount(self, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 소숫점자리수):
         if self.dict_set['코인비중조절'][0] == 0:
             betting = self.int_tujagm
         else:
@@ -448,10 +485,44 @@ class BinanceStrategyTick:
                 betting = self.int_tujagm * self.dict_set['코인비중조절'][9]
 
         oc_ratio = dict_order_ratio[self.dict_set['코인매수분할방법']][self.dict_set['코인매수분할횟수']][분할매수횟수]
-        매수수량 = np.round(betting / (현재가 if 매입가 == 0 else 매입가) * oc_ratio / 100, 소숫점자리수)
+        매수수량 = np.round(betting / (현재가 if 매수가 == 0 else 매수가) * oc_ratio / 100, 소숫점자리수)
         return 매수수량
 
-    def SetSellCount(self, 분할매도횟수, 보유수량, 매입가, 저가대비고가등락율, 순매수금액, 당일거래대금, 소숫점자리수):
+    def Sell(self, SELL_LONG):
+        취소시그널, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 매도호가1, 매수호가1, 소숫점자리수 = self.info_for_signal.values()
+        if 취소시그널:
+            매도수량 = 0
+        elif 전량매도:
+            매도수량 = 보유수량
+        else:
+            매도수량 = self.GetSellCount(분할매도횟수, 보유수량, 매수가, 저가대비고가등락율, 순매수금액, 당일거래대금, 소숫점자리수)
+
+        구분 = 'SELL_LONG' if SELL_LONG else 'BUY_SHORT'
+        if '지정가' in self.dict_set['코인매도주문구분'] and not 강제청산:
+            기준가격 = 현재가
+            if self.dict_set['코인매도지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1 if 구분 == 'SELL_LONG' else 매수호가1
+            if self.dict_set['코인매도지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1 if 구분 == 'SELL_LONG' else 매도호가1
+            self.dict_signal[구분].append(self.code)
+            self.ctraderQ.put((구분, self.code, 기준가격, 매도수량, now(), False))
+        else:
+            매도금액 = 0
+            미체결수량 = 매도수량
+            hogainfo = self.bhogainfo if 구분 == 'SELL_LONG' else self.shogainfo
+            hogainfo = hogainfo[:self.dict_set['코인매도시장가잔량범위']]
+            for 호가, 잔량 in hogainfo:
+                if 미체결수량 - 잔량 <= 0:
+                    매도금액 += 호가 * 미체결수량
+                    미체결수량 -= 잔량
+                    break
+                else:
+                    매도금액 += 호가 * 잔량
+                    미체결수량 -= 잔량
+            if 미체결수량 <= 0:
+                예상체결가 = np.round(매도금액 / 매도수량, 8) if 매도수량 != 0 else 0
+                self.dict_signal[구분].append(self.code)
+                self.ctraderQ.put((구분, self.code, 예상체결가, 매도수량, now(), True if 강제청산 else False))
+
+    def GetSellCount(self, 분할매도횟수, 보유수량, 매수가, 저가대비고가등락율, 순매수금액, 당일거래대금, 소숫점자리수):
         if self.dict_set['코인매도분할횟수'] == 1:
             return 보유수량
         else:
@@ -479,63 +550,9 @@ class BinanceStrategyTick:
                     betting = self.int_tujagm * self.dict_set['코인비중조절'][9]
 
             oc_ratio = dict_order_ratio[self.dict_set['코인매도분할방법']][self.dict_set['코인매도분할횟수']][분할매도횟수]
-            매도수량 = np.round(betting / 매입가 * oc_ratio / 100, 소숫점자리수)
+            매도수량 = np.round(betting / 매수가 * oc_ratio / 100, 소숫점자리수)
             if 매도수량 > 보유수량 or 분할매도횟수 + 1 == self.dict_set['코인매도분할횟수']: 매도수량 = 보유수량
             return 매도수량
-
-    def Buy(self, 종목코드, BUY_LONG, 현재가, 매도호가1, 매수호가1, 매수수량, 데이터길이):
-        구분 = 'BUY_LONG' if BUY_LONG else 'SELL_SHORT'
-        if '지정가' in self.dict_set['코인매수주문구분']:
-            기준가격 = 현재가
-            if self.dict_set['코인매수지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1 if BUY_LONG else 매수호가1
-            if self.dict_set['코인매수지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1 if BUY_LONG else 매도호가1
-            self.dict_signal[구분].append(종목코드)
-            self.dict_signal_num[종목코드] = 데이터길이 - 1
-            self.ctraderQ.put((구분, 종목코드, 기준가격, 매수수량, now(), False))
-        else:
-            매수금액 = 0
-            미체결수량 = 매수수량
-            hogainfo = self.bhogainfo if BUY_LONG else self.shogainfo
-            hogainfo = hogainfo[:self.dict_set['코인매수시장가잔량범위']]
-            for 호가, 잔량 in hogainfo:
-                if 미체결수량 - 잔량 <= 0:
-                    매수금액 += 호가 * 미체결수량
-                    미체결수량 -= 잔량
-                    break
-                else:
-                    매수금액 += 호가 * 잔량
-                    미체결수량 -= 잔량
-            if 미체결수량 <= 0:
-                예상체결가 = np.round(매수금액 / 매수수량, 8) if 매수수량 != 0 else 0
-                self.dict_signal[구분].append(종목코드)
-                self.dict_signal_num[종목코드] = 데이터길이 - 1
-                self.ctraderQ.put((구분, 종목코드, 예상체결가, 매수수량, now(), False))
-
-    def Sell(self, 종목코드, SELL_LONG, 현재가, 매도호가1, 매수호가1, 매도수량, 강제청산):
-        구분 = 'SELL_LONG' if SELL_LONG else 'BUY_SHORT'
-        if '지정가' in self.dict_set['코인매도주문구분'] and not 강제청산:
-            기준가격 = 현재가
-            if self.dict_set['코인매도지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1 if 구분 == 'SELL_LONG' else 매수호가1
-            if self.dict_set['코인매도지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1 if 구분 == 'SELL_LONG' else 매도호가1
-            self.dict_signal[구분].append(종목코드)
-            self.ctraderQ.put((구분, 종목코드, 기준가격, 매도수량, now(), False))
-        else:
-            매도금액 = 0
-            미체결수량 = 매도수량
-            hogainfo = self.shogainfo if 구분 == 'SELL_LONG' else self.bhogainfo
-            hogainfo = hogainfo[:self.dict_set['코인매도시장가잔량범위']]
-            for 호가, 잔량 in hogainfo:
-                if 미체결수량 - 잔량 <= 0:
-                    매도금액 += 호가 * 미체결수량
-                    미체결수량 -= 잔량
-                    break
-                else:
-                    매도금액 += 호가 * 잔량
-                    미체결수량 -= 잔량
-            if 미체결수량 <= 0:
-                예상체결가 = np.round(매도금액 / 매도수량, 8) if 매도수량 != 0 else 0
-                self.dict_signal[구분].append(종목코드)
-                self.ctraderQ.put((구분, 종목코드, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
     def PutGsjmAndDeleteHilo(self):
         if self.dict_gj:
@@ -550,32 +567,16 @@ class BinanceStrategyTick:
             if code not in codes:
                 del self.dict_data[code]
 
-        if self.dict_set['코인타임프레임']:
-            columns_ts = [
-                'index', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '초당매수수량', '초당매도수량',
-                '초당거래대금', '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3', '매도호가2',
-                '매도호가1', '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3',
-                '매도잔량2', '매도잔량1', '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목'
-            ]
-        else:
-            columns_ts = [
-                'index', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '분당매수수량', '분당매도수량',
-                '분봉시가', '분봉고가', '분봉저가', '분당거래대금', '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5',
-                '매도호가4', '매도호가3', '매도호가2', '매도호가1', '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5',
-                '매도잔량5', '매도잔량4', '매도잔량3', '매도잔량2', '매도잔량1', '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4',
-                '매수잔량5', '매도수5호가잔량합', '관심종목'
-            ]
-
         last = len(self.dict_data)
+        columns_ = list_coin_tick[:self.base_cnt] if self.dict_set['코인타임프레임'] else list_coin_min[:self.base_cnt]
         con  = sqlite3.connect(DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN)
         if last > 0:
             start = now()
-            cllen = len(columns_ts)
+            cllen = len(columns_)
             for i, code in enumerate(self.dict_data):
-                df = pd.DataFrame(self.dict_data[code][:, :cllen], columns=columns_ts)
+                df = pd.DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
                 df['index'] = df['index'].astype('int64')
-                df.set_index('index', inplace=True)
-                df.to_sql(code, con, if_exists='append', chunksize=1000)
+                df.to_sql(code, con, index=False, if_exists='append', chunksize=1000)
                 text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... {i + 1}/{last}'
                 self.windowQ.put((ui_num['C단순텍스트'], text))
             save_time = (now() - start).total_seconds()
@@ -595,7 +596,7 @@ class BinanceStrategyTick:
     def _Parameter_Previous(self, cidx, pre):
         if pre < self.tick_count:
             ridx = self.indexn - pre if pre != -1 else self.indexb
-            return self.dict_data[self.code][ridx, cidx]
+            return self.arry_code[ridx, cidx]
         return 0
 
     def _현재가N(self, pre):
@@ -631,11 +632,32 @@ class BinanceStrategyTick:
     def _고저평균대비등락율N(self, pre):
         return self._Parameter_Previous(self._fi('고저평균대비등락율'), pre)
 
-    def _매도총잔량N(self, pre):
-        return self._Parameter_Previous(self._fi('매도총잔량'), pre)
+    def _저가대비고가등락율N(self, pre):
+        return self._Parameter_Previous(self._fi('저가대비고가등락율'), pre)
 
-    def _매수총잔량N(self, pre):
-        return self._Parameter_Previous(self._fi('매수총잔량'), pre)
+    def _초당매수금액N(self, pre):
+        return self._Parameter_Previous(self._fi('초당매수금액'), pre)
+
+    def _초당매도금액N(self, pre):
+        return self._Parameter_Previous(self._fi('초당매도금액'), pre)
+
+    def _당일매수금액N(self, pre):
+        return self._Parameter_Previous(self._fi('당일매수금액'), pre)
+
+    def _최고매수금액N(self, pre):
+        return self._Parameter_Previous(self._fi('최고매수금액'), pre)
+
+    def _최고매수가격N(self, pre):
+        return self._Parameter_Previous(self._fi('최고매수가격'), pre)
+
+    def _당일매도금액N(self, pre):
+        return self._Parameter_Previous(self._fi('당일매도금액'), pre)
+
+    def _최고매도금액N(self, pre):
+        return self._Parameter_Previous(self._fi('최고매도금액'), pre)
+
+    def _최고매도가격N(self, pre):
+        return self._Parameter_Previous(self._fi('최고매도가격'), pre)
 
     def _매도호가5N(self, pre):
         return self._Parameter_Previous(self._fi('매도호가5'), pre)
@@ -697,6 +719,12 @@ class BinanceStrategyTick:
     def _매수잔량5N(self, pre):
         return self._Parameter_Previous(self._fi('매수잔량5'), pre)
 
+    def _매도총잔량N(self, pre):
+        return self._Parameter_Previous(self._fi('매도총잔량'), pre)
+
+    def _매수총잔량N(self, pre):
+        return self._Parameter_Previous(self._fi('매수총잔량'), pre)
+
     def _매도수5호가잔량합N(self, pre):
         return self._Parameter_Previous(self._fi('매도수5호가잔량합'), pre)
 
@@ -727,6 +755,12 @@ class BinanceStrategyTick:
     def _분당거래대금N(self, pre):
         return self._Parameter_Previous(self._fi('분당거래대금'), pre)
 
+    def _분당매수금액N(self, pre):
+        return self._Parameter_Previous(self._fi('분당매수금액'), pre)
+
+    def _분당매도금액N(self, pre):
+        return self._Parameter_Previous(self._fi('분당매도금액'), pre)
+
     def _최고분당매수수량(self, tick, pre=0, calc=False):
         return self._Parameter_Area(self._fi('최고분당매수수량'), self._fi('분당매수수량'), tick, pre, np.max, calc=calc)
 
@@ -753,13 +787,18 @@ class BinanceStrategyTick:
         eidx = self.indexn + 1 - pre if pre != -1 else self.indexb + 1
         return sidx, eidx
 
+    def _get_angle_double_pre_index(self, tick, pre):
+        sidx = self.indexn - tick - pre if pre != -1 else self.indexb - tick
+        eidx = self.indexn - pre if pre != -1 else self.indexb
+        return sidx, eidx
+
     def _이동평균(self, tick, pre=0, calc=False):
         if tick + pre <= self.tick_count:
             if not calc and tick in self.sma_list:
                 return self._Parameter_Previous(self._fi(f'이동평균{tick}'), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
-                return np.round(self.dict_data[self.code][sidx:eidx, self._fi('현재가')].mean(), self.ma_round_unit)
+                return np.round(self.arry_code[sidx:eidx, self._fi('현재가')].mean(), self.ma_round_unit)
         return 0
 
     def _Parameter_Area(self, cidx, fidx, tick, pre, func, calc=False):
@@ -768,16 +807,16 @@ class BinanceStrategyTick:
                 return self._Parameter_Previous(self._get_column_index(cidx), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
-                return func(self.dict_data[self.code][sidx:eidx, fidx])
+                return func(self.arry_code[sidx:eidx, fidx])
         return 0
 
-    def _Parameter_Dgree(self, cidx, fidx, tick, pre, cf, calc=False):
+    def _Parameter_Angle(self, cidx, fidx, tick, pre, cf, calc=False):
         if tick + pre <= self.tick_count:
             if not calc and tick in self.avg_list:
                 return self._Parameter_Previous(self._get_column_index(cidx), pre)
             else:
-                sidx, eidx = self._get_double_pre_index(tick, pre)
-                diff = self.dict_data[self.code][eidx, fidx] - self.dict_data[self.code][sidx, fidx]
+                sidx, eidx = self._get_angle_double_pre_index(tick, pre)
+                diff = self.arry_code[eidx, fidx] - self.arry_code[sidx, fidx]
                 return np.round(math.atan2(diff * cf, tick) / (2 * math.pi) * 360, 2)
         return 0
 
@@ -812,10 +851,10 @@ class BinanceStrategyTick:
         return int(self._Parameter_Area(self._fi('초당거래대금평균'), self._fi('초당거래대금'), tick, pre, np.mean, calc=calc))
 
     def _등락율각도(self, tick, pre=0, calc=False):
-        return self._Parameter_Dgree(self._fi('등락율각도'), self._fi('등락율'), tick, pre, get_angle_cf(self.market_gubun, self.is_tick, 0), calc=calc)
+        return self._Parameter_Angle(self._fi('등락율각도'), self._fi('등락율'), tick, pre, self.angle_pct_cf, calc=calc)
 
     def _당일거래대금각도(self, tick, pre=0, calc=False):
-        return self._Parameter_Dgree(self._fi('당일거래대금각도'), self._fi('당일거래대금'), tick, pre, get_angle_cf(self.market_gubun, self.is_tick, 1), calc=calc)
+        return self._Parameter_Angle(self._fi('당일거래대금각도'), self._fi('당일거래대금'), tick, pre, self.angle_dtm_cf, calc=calc)
 
     def _경과틱수(self, 조건명):
         if self.code in self.dict_cond_indexn and \
@@ -826,8 +865,8 @@ class BinanceStrategyTick:
     def _이평근접개수(self, tick1, tick2=30, per=0.33):
         if tick1 + tick2 <= self.tick_count and tick1 in self.sma_list:
             sidx, eidx = self._get_double_index(tick2)
-            arry_close = self.dict_data[self.code][sidx:eidx, self._fi('현재가')]
-            arry_sma = self.dict_data[self.code][sidx:eidx, self._fi(f'이동평균{tick1}')]
+            arry_close = self.arry_code[sidx:eidx, self._fi('현재가')]
+            arry_sma = self.arry_code[sidx:eidx, self._fi(f'이동평균{tick1}')]
             deviation = np.abs(arry_close - arry_sma) / arry_sma * 100
             return np.sum(deviation <= per)
         return 0
@@ -835,7 +874,7 @@ class BinanceStrategyTick:
     def _시가근접개수(self, tick, per=0.5):
         if tick <= self.tick_count:
             sidx, eidx = self._get_double_index(tick)
-            arry_close = self.dict_data[self.code][sidx:eidx, self._fi('현재가')]
+            arry_close = self.arry_code[sidx:eidx, self._fi('현재가')]
             deviation = np.abs(arry_close - self._시가N(0)) / self._시가N(0) * 100
             return np.sum(deviation <= per)
         return 0
@@ -844,11 +883,11 @@ class BinanceStrategyTick:
         if tick + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
             if self.is_tick:
-                arry_close = self.dict_data[self.code][sidx:eidx, self._fi('현재가')]
+                arry_close = self.arry_code[sidx:eidx, self._fi('현재가')]
                 volatility = np.std(arry_close) / np.mean(arry_close) * 100
             else:
-                arry_high  = self.dict_data[self.code][sidx:eidx, self._fi('분봉고가')]
-                arry_low   = self.dict_data[self.code][sidx:eidx, self._fi('분봉저가')]
+                arry_high  = self.arry_code[sidx:eidx, self._fi('분봉고가')]
+                arry_low   = self.arry_code[sidx:eidx, self._fi('분봉저가')]
                 volatility = np.std(arry_high - arry_low) / np.mean(arry_high - arry_low) * 100
             return volatility
         return 0
@@ -889,8 +928,8 @@ class BinanceStrategyTick:
     def _구간호가총잔량비율(self, tick, pre=0):
         if tick + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
-            sum_bids = self.dict_data[self.code][sidx:eidx, self._fi('매수총잔량')].sum()
-            sum_asks = self.dict_data[self.code][sidx:eidx, self._fi('매도총잔량')].sum()
+            sum_bids = self.arry_code[sidx:eidx, self._fi('매수총잔량')].sum()
+            sum_asks = self.arry_code[sidx:eidx, self._fi('매도총잔량')].sum()
             total_cnt = sum_bids + sum_asks
             return sum_bids / total_cnt if total_cnt != 0 else 0
         return 0
@@ -898,16 +937,16 @@ class BinanceStrategyTick:
     def _매수수량변동성(self, tick, pre=0):
         if tick * 2 + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
-            cur_avg_buys = self.dict_data[self.code][sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
-            pre_avg_buys = self.dict_data[self.code][sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
+            cur_avg_buys = self.arry_code[sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
+            pre_avg_buys = self.arry_code[sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
             return cur_avg_buys / pre_avg_buys if pre_avg_buys != 0 else 0
         return 0
 
     def _매도수량변동성(self, tick, pre=0):
         if tick * 2 + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
-            cur_arry_sells = self.dict_data[self.code][sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
-            pre_arry_sells = self.dict_data[self.code][sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
+            cur_arry_sells = self.arry_code[sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
+            pre_arry_sells = self.arry_code[sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
             return cur_arry_sells / pre_arry_sells if pre_arry_sells != 0 else 0
         return 0
 
@@ -917,19 +956,19 @@ class BinanceStrategyTick:
         return 0
 
     def _고가미갱신지속틱수(self):
-        return self.indexn - self.high_low[self.code][2]
+        return self.indexn - self.high_low[self.code][1]
 
     def _저가미갱신지속틱수(self):
         return self.indexn - self.high_low[self.code][3]
 
     def _고점기준등락율각도(self, cf):
-        diff_tick = self.indexn - self.high_low[self.code][2]
+        diff_tick = self.indexn - self.high_low[self.code][1]
         diff_pct  = (self._현재가N(0) / self.high_low[self.code][0] - 1) * 100
         return np.round(math.atan2(diff_pct * cf, diff_tick) / (2 * math.pi) * 360, 2)
 
     def _저점기준등락율각도(self, cf):
         diff_tick = self.indexn - self.high_low[self.code][3]
-        diff_pct  = (self._현재가N(0) / self.high_low[self.code][1] - 1) * 100
+        diff_pct  = (self._현재가N(0) / self.high_low[self.code][2] - 1) * 100
         return np.round(math.atan2(diff_pct * cf, diff_tick) / (2 * math.pi) * 360, 2)
 
     def _연속상승(self, tick):
@@ -1098,7 +1137,7 @@ class BinanceStrategyTick:
         return self.indexn - self.high_low[self.code][3] <= tick and self._가격급등(tick, per)
 
     def _고가갱신후가격급락(self, tick, per=2):
-        return self.indexn - self.high_low[self.code][2] <= tick and self._가격급락(tick, per)
+        return self.indexn - self.high_low[self.code][1] <= tick and self._가격급락(tick, per)
 
     def _횡보상태장기보유(self, tick, per=0.5, time_=600):
         return self._횡보감지(tick, per) and self.hold_time >= time_
@@ -1259,10 +1298,20 @@ class BinanceStrategyTick:
             '시가N': self._시가N,
             '고가N': self._고가N,
             '저가N': self._저가N,
+            '등락율N': self._등락율N,
             '당일거래대금N': self._당일거래대금N,
             '체결강도N': self._체결강도N,
-            '등락율N': self._등락율N,
+
             '고저평균대비등락율N': self._고저평균대비등락율N,
+            '저가대비고가등락율N': self._저가대비고가등락율N,
+            '초당매수금액N': self._초당매수금액N,
+            '초당매도금액N': self._초당매도금액N,
+            '당일매수금액N': self._당일매수금액N,
+            '최고매수금액N': self._최고매수금액N,
+            '최고매수가격N': self._최고매수가격N,
+            '당일매도금액N': self._당일매도금액N,
+            '최고매도금액N': self._최고매도금액N,
+            '최고매도가격N': self._최고매도가격N,
 
             '초당매수수량N': self._초당매수수량N,
             '초당매도수량N': self._초당매도수량N,
@@ -1276,19 +1325,19 @@ class BinanceStrategyTick:
             '분봉시가N': self._분봉시가N,
             '분봉고가N': self._분봉고가N,
             '분봉저가N': self._분봉저가N,
-            '최고분봉고가': self._최고분봉고가,
-            '최저분봉저가': self._최저분봉저가,
             '분당매수수량N': self._분당매수수량N,
             '분당매도수량N': self._분당매도수량N,
             '분당거래대금N': self._분당거래대금N,
+            '분당매수금액N': self._분당매수금액N,
+            '분당매도금액N': self._분당매도금액N,
+            '최고분봉고가': self._최고분봉고가,
+            '최저분봉저가': self._최저분봉저가,
             '최고분당매수수량': self._최고분당매수수량,
             '최고분당매도수량': self._최고분당매도수량,
             '누적분당매수수량': self._누적분당매수수량,
             '누적분당매도수량': self._누적분당매도수량,
             '분당거래대금평균': self._분당거래대금평균,
 
-            '매도총잔량N': self._매도총잔량N,
-            '매수총잔량N': self._매수총잔량N,
             '매도호가5N': self._매도호가5N,
             '매도호가4N': self._매도호가4N,
             '매도호가3N': self._매도호가3N,
@@ -1309,6 +1358,8 @@ class BinanceStrategyTick:
             '매수잔량3N': self._매수잔량3N,
             '매수잔량4N': self._매수잔량4N,
             '매수잔량5N': self._매수잔량5N,
+            '매도총잔량N': self._매도총잔량N,
+            '매수총잔량N': self._매수총잔량N,
             '매도수5호가잔량합N': self._매도수5호가잔량합N,
             '관심종목N': self._관심종목N,
 

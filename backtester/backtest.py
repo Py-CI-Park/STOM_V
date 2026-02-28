@@ -56,13 +56,10 @@ class Total:
     def MainLoop(self):
         bc = 0
         sc = 0
-        start = now()
         while True:
             data = self.tq.get()
             if data == '백테완료':
                 bc += 1
-                self.wq.put((ui_num[f'{self.ui_gubun}백테바'], bc, self.back_count, start))
-
                 if bc == self.back_count:
                     bc = 0
                     for q in self.bstq_list[:5]:
@@ -110,7 +107,7 @@ class Total:
         sys.exit()
 
     def InsertBlacklist(self):
-        name_list = list(set(self.df_tsg['종목명'].to_list()))
+        name_list = self.df_tsg['종목명'].unique()
         dict_code = {name: code for code, name in self.dict_cn.items()}
         for name in name_list:
             if name not in dict_code:
@@ -211,7 +208,7 @@ class Total:
             buystg_text  = ('\n'.join([x for x in self.buystg.split('if 매수:')[0].split('\n') if x and x[0] != '#'])).split(' ')
             buystg_text  = [x for x in buystg_text if x != '매수' and re.compile('[가-힣]+').findall(x)]
             buystg_text  = [x.replace('(', '').replace(')', '').replace(':', '').replace('\n', '') for x in set(buystg_text)]
-            buy_vars = '------------------------------------------------------------------------------------ 매수변수목록 ------------------------------------------------------------------------------------\n'
+            buy_vars = f"{'-' * 80} 매수변수목록 {'-' * 80}\n"
             for i, text in enumerate(buystg_text):
                 if (i + 1) % 11 == 0:
                     buy_vars = f'{buy_vars}, {text},\n'
@@ -222,7 +219,7 @@ class Total:
             sellstg_text = ('\n'.join([x for x in self.sellstg.split('if 매도:')[0].split('\n') if x and x[0] != '#'])).split(' ')
             sellstg_text = [x for x in sellstg_text if x != '매도' and re.compile('[가-힣]+').findall(x)]
             sellstg_text = [x.replace('(', '').replace(')', '').replace(':', '').replace('\n', '') for x in set(sellstg_text)]
-            sell_vars = '------------------------------------------------------------------------------------ 매도변수목록 ------------------------------------------------------------------------------------\n'
+            sell_vars = f"{'-' * 80} 매도변수목록 {'-' * 80}\n"
             for i, text in enumerate(sellstg_text):
                 if (i + 1) % 11 == 0:
                     sell_vars = f'{sell_vars}, {text},\n'
@@ -304,7 +301,7 @@ class BackTest:
             self.SysExit(True)
 
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
-        day_count = len(set(df_mt['일자'].to_list()))
+        day_count = len(df_mt['일자'].unique())
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 
         arry_bct = np.zeros((len(df_mt), 3), dtype='float64')

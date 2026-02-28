@@ -94,10 +94,10 @@ class BackCodeTest(QThread):
     def noErrorEnd(self):
         self.testQ.put('전략테스트완료')
 
-    def Buy(self, *args):
+    def Buy(*args):
         pass
 
-    def Sell(self, *args):
+    def Sell(*args):
         pass
 
     def Test(self):
@@ -269,6 +269,30 @@ class BackCodeTest(QThread):
         def 초당거래대금평균(tick, pre=0):
             return 1
 
+        def 초당매수금액N(pre):
+            return 1
+    
+        def 초당매도금액N(pre):
+            return 1
+    
+        def 당일매수금액N(pre):
+            return 1
+    
+        def 최고매수금액N(pre):
+            return 1
+    
+        def 최고매수가격N(pre):
+            return 1
+    
+        def 당일매도금액N(pre):
+            return 1
+    
+        def 최고매도금액N(pre):
+            return 1
+    
+        def 최고매도가격N(pre):
+            return 1
+
         def 분당매수수량N(pre):
             return 1
 
@@ -437,7 +461,7 @@ class BackCodeTest(QThread):
         def 고점기준등락율각도(cf):
             return 0
 
-        def _저점기준등락율각도(cf):
+        def 저점기준등락율각도(cf):
             return 0
 
         def 연속상승(tick):
@@ -611,17 +635,20 @@ class BackCodeTest(QThread):
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, '005930', now(), '삼성전자'
             ]
 
+        초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, 분당매수수량, \
+            분당매도수량, 분봉시가, 분봉고가, 분봉저가, 분당거래대금, 분당매수금액, 분당매도금액 = \
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+
+        시분초, VI아래5호가, 데이터길이, 호가단위, 포지션, 평균값계산틱수 = int(str(체결시간)[8:]), 1, 1800, 1, 'LONG', 30
+
         AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, \
             PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-        bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
+        shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
+        bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
-        시분초, VI아래5호가, 데이터길이, 호가단위, 포지션, 평균값계산틱수 = int(str(체결시간)[8:]), 1, 1800, 1, 'LONG', 30
-        분봉시가, 분봉고가, 분봉저가, 분당거래대금 = 1, 1, 1, 1
-
-        수익률, 매입가, 보유수량, 매도수량, 분할매수횟수, 분할매도횟수, 보유시간, 최고수익률, 최저수익률 = 1, 1, 1, 1, 1, 0, 0, 1, 0
+        수익률, 매수가, 보유수량, 매도수량, 분할매수횟수, 분할매도횟수, 보유시간, 최고수익률, 최저수익률 = 1, 1, 1, 1, 1, 0, 0, 1, 0
         매수, 매도, BUY_LONG, SELL_LONG, SELL_SHORT, BUY_SHORT, 강제청산 = False, False, False, False, False, False, False
 
         try:
