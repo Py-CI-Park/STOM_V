@@ -1197,7 +1197,7 @@ class BackEngineKiwoomTick:
             else:
                 arry_high  = self.dict_arry[sidx:eidx, self._fi('분봉고가')]
                 arry_low   = self.dict_arry[sidx:eidx, self._fi('분봉저가')]
-                volatility = np.where(arry_high - arry_low > 0, np.std(arry_high - arry_low) / np.mean(arry_high - arry_low) * 100, 0)
+                volatility = np.std(arry_high - arry_low) / np.mean(arry_high - arry_low) * 100
             return volatility
         return 0
 

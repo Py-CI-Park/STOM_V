@@ -19,9 +19,37 @@ if '%errorlevel%' NEQ '0' (
 :gotAdmin
     pushd "%CD%"
     CD /D "%~dp0"
+
+    echo.
+    echo ========================================
+    echo    STOM 32-bit Library Installation
+    echo ========================================
+    echo.
+
+    echo [1/5] Upgrading pip...
     python32 -m pip install --upgrade pip
-    python32 -m pip install numpy==1.26.4 pandas==2.0.3 python-telegram-bot==22.4
-    python32 -m pip install psutil pyqt5 pyzmq pywin32 cryptography requests exchange_calendars loguru
-    python32 -m pip install --upgrade apscheduler pytz tzlocal
-    python32 -m pip install ./utility/ta_lib-0.6.3-cp312-cp312-win32.whl
+
+    echo.
+    echo [2/5] Installing from requirements32.txt...
+    if exist requirements32.txt (
+        python32 -m pip install -r requirements32.txt
+    ) else (
+        echo ERROR: requirements32.txt file not found!
+        pause
+        exit /b 1
+    )
+
+    echo.
+    echo [3/5] Installing local TA-Lib wheel...
+    if exist "utility\TA_Lib-0.4.27-cp311-cp311-win32.whl" (
+        python32 -m pip install "./utility\TA_Lib-0.4.27-cp311-cp311-win32.whl"
+    ) else (
+        echo WARNING: TA-Lib wheel file not found. (utility\TA_Lib-0.4.27-cp311-cp311-win32.whl)
+    )
+
+    echo.
+    echo ========================================
+    echo    32-bit Library Installation Complete!
+    echo ========================================
+    echo.
     pause

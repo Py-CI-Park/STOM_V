@@ -19,11 +19,37 @@ if '%errorlevel%' NEQ '0' (
 :gotAdmin
     pushd "%CD%"
     CD /D "%~dp0"
+
+    echo.
+    echo ========================================
+    echo    STOM 64-bit Library Installation
+    echo ========================================
+    echo.
+
+    echo [1/5] Upgrading pip...
     python -m pip install --upgrade pip
-    python -m pip install llvmlite==0.44.0 numpy==1.26.4 pandas==2.0.3 python-telegram-bot==22.4 numba
-    python -m pip install websockets cryptography psutil pyqt5 PyQtWebEngine BeautifulSoup4 optuna optuna-dashboard
-    python -m pip install cmaes lxml squarify matplotlib pyqtgraph pyupbit ntplib python-dateutil python-binance
-    python -m pip install exchange_calendars pyzmq pyttsx3 yfinance cython loguru fake_useragent
-    python -m pip install --upgrade apscheduler pytz tzlocal
-    python -m pip install ./utility/ta_lib-0.6.3-cp312-cp312-win_amd64.whl
+
+    echo.
+    echo [2/5] Installing from requirements64.txt...
+    if exist requirements64.txt (
+        python -m pip install -r requirements64.txt
+    ) else (
+        echo ERROR: requirements64.txt file not found!
+        pause
+        exit /b 1
+    )
+
+    echo.
+    echo [3/5] Installing local TA-Lib wheel...
+    if exist "utility\TA_Lib-0.4.25-cp311-cp311-win_amd64.whl" (
+        python -m pip install "./utility/TA_Lib-0.4.25-cp311-cp311-win_amd64.whl"
+    ) else (
+        echo WARNING: TA-Lib wheel file not found. (utility\TA_Lib-0.4.25-cp311-cp311-win_amd64.whl)
+    )
+
+    echo.
+    echo ========================================
+    echo    64-bit Library Installation Complete!
+    echo ========================================
+    echo.
     pause
