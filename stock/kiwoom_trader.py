@@ -301,9 +301,9 @@ class KiwoomTrader:
         elif gubun == '종목정보':
             self.dict_sgbn, dict_name, self.tuple_kosd = data
             dummy_time = timedelta_sec(-3600)
-            for code in dict_name:
+            for code, name in dict_name.items():
                 self.dict_info[code] = {
-                    '종목명': dict_name[code],
+                    '종목명': name,
                     '시드부족시간': dummy_time,
                     '최종거래시간': dummy_time,
                     '손절거래시간': dummy_time

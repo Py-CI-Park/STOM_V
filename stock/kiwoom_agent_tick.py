@@ -91,11 +91,6 @@ class KiwoomAgentTick:
             '호가잔량필드같음': False,
             '실시간조건검색시작': False
         }
-        self.dict_name   = {}
-        self.dict_sgbn   = {}
-        self.dict_sncd   = {}
-        self.list_code   = []
-        self.list_cond   = []
 
         self.str_account = ''
         self.str_today   = str_ymd()
@@ -114,6 +109,7 @@ class KiwoomAgentTick:
         self.dict_sghg   = {}
         self.dict_mtop   = {}
         self.dict_sgbn   = {}
+        self.dict_sncd   = {}
         self.dict_jgdt   = {}
         self.dict_money  = {}
         self.dict_bmbyp  = {}
@@ -121,6 +117,8 @@ class KiwoomAgentTick:
         self.dict_index  = {}
 
         self.list_hgdt   = [0, 0, 0, 0]
+        self.list_code   = []
+        self.list_cond   = []
         self.list_gsjm   = []
         self.tuple_jango = ()
         self.tuple_order = ()

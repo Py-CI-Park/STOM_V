@@ -53,9 +53,6 @@ class FutureAgentTick:
         self.ocx.OnReceiveRealData.connect(self.OnReceiveRealData)
         self.ocx.OnReceiveChejanData.connect(self.OnReceiveChejanData)
 
-        self.real_codes = []
-        self.dict_info  = {}
-        self.dict_sncd  = {}
         self.dict_bool = {
             '로그인': False,
             'TR수신': False,
@@ -82,13 +79,15 @@ class FutureAgentTick:
         self.dict_info   = {}
         self.dict_mtop   = {}
         self.dict_jgdt   = {}
+        self.dict_sncd   = {}
         self.dict_money  = {}
         self.dict_bmbyp  = {}
         self.dict_smbyp  = {}
         self.dict_index  = {}
 
-        self.list_gsjm   = []
         self.list_hgdt   = [0, 0, 0, 0]
+        self.real_codes  = []
+        self.list_gsjm   = []
         self.tuple_jango = ()
         self.tuple_order = ()
 

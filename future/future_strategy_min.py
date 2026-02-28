@@ -42,7 +42,7 @@ class FutureStrategyMin(FutureStrategyTick):
 
             self.arry_code = self.dict_data[종목코드]
             self.tick_count = 데이터길이 = len(self.arry_code)
-            self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
+            self.code, self.name, self.index, self.indexn = 종목코드, 종목명, 체결시간, 데이터길이 - 1
 
             if 데이터길이 >= 평균값계산틱수: self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
 
