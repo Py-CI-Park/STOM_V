@@ -1,5 +1,29 @@
 
+from utility.static import now, timedelta_sec
 from ui.set_style import style_bc_bb, style_bc_bt, style_bc_by, style_bc_sl
+
+
+def update_back_profressbar(ui):
+    if ui.BacktestProcessAlive():
+        total_back_count = ui.back_count
+        curr_back_count = ui.shared_cnt.value
+        if 0 < curr_back_count <= total_back_count:
+            curr_time = now()
+            left_backtime = curr_time - ui.back_start_time
+            left_total_sec = left_backtime.total_seconds()
+            remain_backtime = timedelta_sec(left_total_sec / curr_back_count * (total_back_count - curr_back_count)) - curr_time
+            if ui.back_schedul:
+                ui.list_progressBarrr[ui.back_scount].setFormat('%p%')
+                ui.list_progressBarrr[ui.back_scount].setValue(curr_back_count)
+                ui.list_progressBarrr[ui.back_scount].setRange(0, total_back_count)
+            if ui.main_btn == 2:
+                ui.ss_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
+                ui.ss_progressBar_01.setValue(curr_back_count)
+                ui.ss_progressBar_01.setRange(0, total_back_count)
+            elif ui.main_btn == 3:
+                ui.cs_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
+                ui.cs_progressBar_01.setValue(curr_back_count)
+                ui.cs_progressBar_01.setRange(0, total_back_count)
 
 
 def update_progressbar(ui):

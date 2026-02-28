@@ -82,6 +82,10 @@ class FutureAgentTick:
         self.dict_info   = {}
         self.dict_mtop   = {}
         self.dict_jgdt   = {}
+        self.dict_money  = {}
+        self.dict_bmbyp  = {}
+        self.dict_smbyp  = {}
+        self.dict_index  = {}
 
         self.list_gsjm   = []
         self.list_hgdt   = [0, 0, 0, 0]
@@ -258,55 +262,55 @@ class FutureAgentTick:
                 if self.dict_bool['호가잔량필드같음']:
                     data = realdata.split(';')
                     dt = data[0]
-                    hoga_tamount = (
+                    hoga_tamount = [
                         int(data[43]), int(data[46])
-                    )
-                    hoga_seprice = (
+                    ]
+                    hoga_seprice = [
                         abs(float(data[35])), abs(float(data[27])), abs(float(data[19])), abs(float(data[11])), abs(float(data[3]))
-                    )
-                    hoga_buprice = (
+                    ]
+                    hoga_buprice = [
                         abs(float(data[7])), abs(float(data[15])), abs(float(data[23])), abs(float(data[31])), abs(float(data[39]))
-                    )
-                    hoga_samount = (
+                    ]
+                    hoga_samount = [
                         int(data[36]), int(data[28]), int(data[20]), int(data[12]), int(data[4])
-                    )
-                    hoga_bamount = (
+                    ]
+                    hoga_bamount = [
                         int(data[8]), int(data[16]), int(data[24]), int(data[32]), int(data[40])
-                    )
+                    ]
                 else:
                     dt = self.GetCommRealData(code, 21)
-                    hoga_tamount = (
+                    hoga_tamount = [
                         int(self.GetCommRealData(code, 121)),
                         int(self.GetCommRealData(code, 125))
-                    )
-                    hoga_seprice = (
+                    ]
+                    hoga_seprice = [
                         abs(float(self.GetCommRealData(code, 45))),
                         abs(float(self.GetCommRealData(code, 44))),
                         abs(float(self.GetCommRealData(code, 43))),
                         abs(float(self.GetCommRealData(code, 42))),
                         abs(float(self.GetCommRealData(code, 41)))
-                    )
-                    hoga_buprice = (
+                    ]
+                    hoga_buprice = [
                         abs(float(self.GetCommRealData(code, 51))),
                         abs(float(self.GetCommRealData(code, 52))),
                         abs(float(self.GetCommRealData(code, 53))),
                         abs(float(self.GetCommRealData(code, 54))),
                         abs(float(self.GetCommRealData(code, 55)))
-                    )
-                    hoga_samount = (
+                    ]
+                    hoga_samount = [
                         int(self.GetCommRealData(code, 65)),
                         int(self.GetCommRealData(code, 64)),
                         int(self.GetCommRealData(code, 63)),
                         int(self.GetCommRealData(code, 62)),
                         int(self.GetCommRealData(code, 61))
-                    )
-                    hoga_bamount = (
+                    ]
+                    hoga_bamount = [
                         int(self.GetCommRealData(code, 71)),
                         int(self.GetCommRealData(code, 72)),
                         int(self.GetCommRealData(code, 73)),
                         int(self.GetCommRealData(code, 74)),
                         int(self.GetCommRealData(code, 75))
-                    )
+                    ]
 
                 str_cme_hms = str_hms_cme_from_str(dt)
                 if self.dict_set['주식타임프레임']:
@@ -320,7 +324,7 @@ class FutureAgentTick:
             except:
                 pass
             else:
-                self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start)
+                self.UpdateHogaData(dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount, code, name, start)
 
         elif realtype == '해외선물시세':
             try:
@@ -377,10 +381,11 @@ class FutureAgentTick:
                 self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
 
     def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
-        if code not in self.dict_data:
-            dm, bids, asks, tbids, tasks = 0, 0, 0, 0, 0
+        data = self.dict_data.get(code)
+        if data:
+            dm, _, bids, asks, tbids, tasks = data[5:11]
         else:
-            dm, _, bids, asks, tbids, tasks = self.dict_data[code][5:11]
+            dm, bids, asks, tbids, tasks = 0, 0, 0, 0, 0
 
         bids_, asks_ = 0, 0
         wtm = self.dict_info[code]['위탁증거금']
@@ -419,56 +424,117 @@ class FutureAgentTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount,
+    def UpdateHogaData(self, dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount,
                        code, name, receivetime):
 
         send   = False
         dt_min = int(str(dt)[:12])
 
+        code_dtdm = self.dict_dtdm.get(code)
         if code in self.dict_data:
-            if code in self.dict_dtdm:
-                if dt > self.dict_dtdm[code][0]:
+            if code_dtdm:
+                if dt > code_dtdm[0]:
                     send = True
             else:
                 self.dict_dtdm[code] = [dt, 0]
+                code_dtdm = self.dict_dtdm[code]
+                send = True
 
         if send:
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
+                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
+                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
                 if index is not None:
-                    hoga_seprice = (0.,) * index + hoga_seprice[:-index]
-                    hoga_samount = (0,) * index + hoga_samount[:-index]
+                    hoga_seprice = [0.] * (5 - index) + hoga_seprice[:index]
+                    hoga_samount = [0] * (5 - index) + hoga_samount[:index]
                 else:
-                    hoga_seprice = (0.,) * 5
-                    hoga_samount = (0,) * 5
+                    hoga_seprice = [0.] * 5
+                    hoga_samount = [0] * 5
 
             if hoga_buprice[0] > cbp:
-                index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
+                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
+                index = valid_indices[0] if len(valid_indices) > 0 else None
                 if index is not None:
-                    hoga_buprice = hoga_buprice[index:] + (0.,) * index
-                    hoga_bamount = hoga_bamount[index:] + (0,) * index
+                    hoga_buprice = hoga_buprice[index:] + [0.] * index
+                    hoga_bamount = hoga_bamount[index:] + [0] * index
                 else:
-                    hoga_buprice = (0.,) * 5
-                    hoga_bamount = (0,) * 5
+                    hoga_buprice = [0.] * 5
+                    hoga_bamount = [0] * 5
 
-            c, _, h, low, _, dm = self.dict_data[code][:6]
-            tm = dm - self.dict_dtdm[code][1]
+            code_data = self.dict_data[code]
+            c, _, h, low, _, dm, _, bids, asks = code_data[:9]
+            wtm = self.dict_info[code]['위탁증거금']
+            buy_money = int(wtm * bids)
+            sell_money = int(wtm * asks)
+
+            if code not in self.dict_money:
+                self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
+                self.dict_index[code] = {c: 0}
+                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code][0] = buy_money
+                self.dict_smbyp[code][0] = sell_money
+                self.dict_index[code]['count'] = 1
+                money_arr = self.dict_money[code]
+            else:
+                money_arr = self.dict_money[code]
+                price_idx = self.dict_index[code]
+                buy_arr   = self.dict_bmbyp[code]
+                sell_arr  = self.dict_smbyp[code]
+
+                money_arr[0] += buy_money
+                if c in price_idx:
+                    idx = price_idx[c]
+                    buy_arr[idx] += buy_money
+                else:
+                    idx = price_idx['count']
+                    if idx >= len(buy_arr):
+                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                    price_idx[c] = idx
+                    buy_arr[idx] = buy_money
+                    price_idx['count'] += 1
+                if buy_arr[idx] >= money_arr[1]:
+                    money_arr[1] = buy_arr[idx]
+                    money_arr[2] = c
+
+                money_arr[3] += sell_money
+                if c in price_idx:
+                    idx = price_idx[c]
+                    sell_arr[idx] += sell_money
+                else:
+                    idx = price_idx['count']
+                    if idx >= len(sell_arr):
+                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                    price_idx[c] = idx
+                    sell_arr[idx] = sell_money
+                    price_idx['count'] += 1
+                if sell_arr[idx] >= money_arr[4]:
+                    money_arr[4] = sell_arr[idx]
+                    money_arr[5] = c
+
+            tm = dm - code_dtdm[1]
             if tm == dm and 93500 < int(str(dt)[8:]): tm = 0
             hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = np.round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             logt = now() if self.int_logt < dt_min else 0
-            data = (dt,) + tuple(self.dict_data[code][:9]) + (tm, hlp) + \
-                hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
-                (hjt, 1, code, name, logt)
+
+            data = [dt] + code_data[:9] + [tm, hlp, lhp, buy_money, sell_money] + money_arr + \
+                hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + hoga_tamount + \
+                [hjt, 1, code, name, logt]
 
             self.sstgQ.put(data)
             if code in self.tuple_jango or code in self.tuple_order:
                 self.straderQ.put(('잔고갱신', (code, c)))
 
-            self.dict_dtdm[code] = [dt, dm]
-            self.dict_data[code][7:9] = [0, 0]
+            code_dtdm[0] = dt
+            code_dtdm[1] = dm
+            code_data[7] = 0
+            code_data[8] = 0
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
@@ -484,13 +550,13 @@ class FutureAgentTick:
 
         if self.hoga_code == code and dt > self.list_hgdt[1]:
             self.list_hgdt[1] = dt
-            self.mgzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5]))
+            self.mgzservQ.put(('hoga', [name] + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5]))
 
     # noinspection PyUnusedLocal
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
         if '매수증거금' in sMsg:
             sn = int(sScrNo)
-            code = self.dict_sncd[sn] if sn in self.dict_sncd else ''
+            code = self.dict_sncd.get(sn, '')
             self.straderQ.put(('증거금부족', code))
             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'{sMsg}')))
 
@@ -555,7 +621,7 @@ class FutureAgentTick:
             df = self.GetJango(self.str_account, self.str_pass)
             if len(df) > 0:
                 df['종목명'] = ''
-                columns = ['종목코드', '종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
+                columns = ['종목코드', '종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
                 df = df[columns]
                 df['분할매수횟수'] = 5
                 df['분할매도횟수'] = 0
@@ -673,7 +739,7 @@ class FutureAgentTick:
             columns_ = columns = ['통화코드', '원화대용평가금액', '주문가능금액']
         elif trcode == 'opw30003':
             columns_ = ['종목코드', '매도수구분', '평균단가', '현재가격', '수익률', '평가손익', '약정금액', '평가금액', '수량']
-            columns  = ['종목코드', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
+            columns  = ['종목코드', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량']
 
         rows = self.ocx.dynamicCall('GetRepeatCnt(QString, QString)', trcode, rqname)
         if rows == 0: rows = 1
@@ -702,7 +768,7 @@ class FutureAgentTick:
                 columns = ['원화대용평가금액', '주문가능금액']
                 self.tr_df[columns] = self.tr_df[columns].astype(int)
             elif trcode == 'opw30003':
-                columns = ['매입가', '현재가', '수익률']
+                columns = ['매수가', '현재가', '수익률']
                 self.tr_df[columns] = self.tr_df[columns].astype(float)
                 columns = ['평가손익', '약정금액', '평가금액', '보유수량']
                 self.tr_df[columns] = self.tr_df[columns].astype(int)

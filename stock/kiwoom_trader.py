@@ -330,7 +330,7 @@ class KiwoomTrader:
         종목코드, 현재가 = data
         self.dict_curc[종목코드] = 현재가
         try:
-            # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+            # ['종목명', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
             if 현재가 != self.dict_jg[종목코드]['현재가']:
                 매입금액 = self.dict_jg[종목코드]['매입금액']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
@@ -493,14 +493,14 @@ class KiwoomTrader:
 
         elif 주문상태 == '체결' and 주문구분 in ('매수', '매도'):
             if 주문구분 == '매수':
-                # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                # ['종목명', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 if 종목코드 in self.dict_jg:
                     보유수량 = self.dict_jg[종목코드]['보유수량'] + 체결수량
                     매입금액 = self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격
-                    매입가 = int(np.round(매입금액 / 보유수량))
+                    매수가 = int(np.round(매입금액 / 보유수량))
                     평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
                     self.dict_jg[종목코드].update({
-                        '매입가': 매입가,
+                        '매수가': 매수가,
                         '현재가': 체결가격,
                         '수익률': 수익률,
                         '평가손익': 수익금,
@@ -512,11 +512,11 @@ class KiwoomTrader:
                 else:
                     보유수량 = 체결수량
                     매입금액 = 체결수량 * 체결가격
-                    매입가 = 체결가격
+                    매수가 = 체결가격
                     평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
                     self.dict_jg[종목코드] = {
                         '종목명': 종목명,
-                        '매입가': 매입가,
+                        '매수가': 매수가,
                         '현재가': 체결가격,
                         '수익률': 수익률,
                         '평가손익': 수익금,
@@ -536,11 +536,11 @@ class KiwoomTrader:
             else:
                 if 종목코드 not in self.dict_jg: return
                 보유수량 = self.dict_jg[종목코드]['보유수량'] - 체결수량
-                매입가 = self.dict_jg[종목코드]['매입가']
+                매수가 = self.dict_jg[종목코드]['매수가']
                 if 보유수량 != 0:
-                    매입금액 = 매입가 * 보유수량
+                    매입금액 = 매수가 * 보유수량
                     평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
-                    # ['종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                    # ['종목명', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                     self.dict_jg[종목코드].update({
                         '현재가': 체결가격,
                         '수익률': 수익률,
@@ -558,7 +558,7 @@ class KiwoomTrader:
                     if 종목코드 in self.dict_order[주문구분]:
                         del self.dict_order[주문구분][종목코드]
 
-                매입금액 = 매입가 * 체결수량
+                매입금액 = 매수가 * 체결수량
                 평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 체결수량 * 체결가격)
                 if -100 < 수익률 < 100: self.UpdateTradelist(index, 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간)
                 if 수익률 < 0: self.dict_info[종목코드]['손절거래시간'] = timedelta_sec(self.dict_set['주식매수금지손절간격초'])
@@ -625,12 +625,13 @@ class KiwoomTrader:
         self.UpdateTotaltradelist()
 
     def UpdateTotaltradelist(self, first=False):
-        거래횟수 = len(set([(v['종목명'], v['체결시간']) for v in self.dict_td.values()]))
-        총매수금액 = sum([v['매수금액'] for v in self.dict_td.values()])
-        총매도금액 = sum([v['매도금액'] for v in self.dict_td.values()])
-        총수익금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] >= 0])
-        총손실금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] < 0])
-        수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
+        td_values = self.dict_td.values()
+        거래횟수 = len(set([(v['종목명'], v['체결시간']) for v in td_values]))
+        총매수금액 = sum([v['매수금액'] for v in td_values])
+        총매도금액 = sum([v['매도금액'] for v in td_values])
+        총수익금액 = sum([v['수익금'] for v in td_values if v['수익금'] >= 0])
+        총손실금액 = sum([v['수익금'] for v in td_values if v['수익금'] < 0])
+        수익금합계 = sum([v['수익금'] for v in td_values])
         수익률 = np.round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
         # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
@@ -677,9 +678,10 @@ class KiwoomTrader:
     def UpdateTotaljango(self):
         # ['추정예탁자산', '추정예수금', '보유종목수', '수익률', '총평가손익', '총매입금액', '총평가금액']
         if self.dict_jg:
-            총평가손익 = sum([v['평가손익'] for v in self.dict_jg.values()])
-            총매입금액 = sum([v['매입금액'] for v in self.dict_jg.values()])
-            총평가금액 = sum([v['평가금액'] for v in self.dict_jg.values()])
+            jg_values = self.dict_jg.values()
+            총평가손익 = sum([v['평가손익'] for v in jg_values])
+            총매입금액 = sum([v['매입금액'] for v in jg_values])
+            총평가금액 = sum([v['평가금액'] for v in jg_values])
             총수익률 = np.round(총평가손익 / 총매입금액 * 100, 2)
             잔고수량 = len(self.dict_jg)
             추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
@@ -697,15 +699,14 @@ class KiwoomTrader:
             '총평가금액': 총평가금액
         }
 
-        잔고평가손익합계 = sum([v['평가손익'] for v in self.dict_jg.values()])
         거래수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
-        총평가손익 = 잔고평가손익합계 + 거래수익금합계
+        당일평가손익 = 총평가손익 + 거래수익금합계
         if self.dict_set['주식손실중지']:
             기준손실금 = self.dict_intg['추정예탁자산'] * self.dict_set['주식손실중지수익률'] / 100
-            if 기준손실금 < -총평가손익: self.StrategyStop()
+            if 기준손실금 < -당일평가손익: self.StrategyStop()
         if self.dict_set['주식수익중지']:
             기준수익금 = self.dict_intg['추정예탁자산'] * self.dict_set['주식수익중지수익률'] / 100
-            if 기준수익금 < 총평가손익: self.StrategyStop()
+            if 기준수익금 < 당일평가손익: self.StrategyStop()
 
         if self.dict_set['주식투자금고정']:
             종목당투자금 = int(self.dict_set['주식투자금'] * 1_000_000)

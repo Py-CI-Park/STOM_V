@@ -166,7 +166,8 @@ class FutureTrader:
         숏매수주문중 = 종목코드 in self.dict_order['SELL_SHORT']
         롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG']
         숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT']
-        포지션 = self.dict_jg[종목코드]['포지션'] if 종목코드 in self.dict_jg else None
+        jg_data = self.dict_jg.get(종목코드)
+        포지션 = jg_data['포지션'] if jg_data else None
 
         원주문번호 = ''
         주문취소 = False
@@ -338,13 +339,13 @@ class FutureTrader:
         종목코드, 현재가 = data
         self.dict_curc[종목코드] = 현재가
         try:
-            # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+            # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
             if 현재가 != self.dict_jg[종목코드]['현재가']:
                 포지션 = self.dict_jg[종목코드]['포지션']
-                매입가 = self.dict_jg[종목코드]['매입가']
+                매수가 = self.dict_jg[종목코드]['매수가']
                 매입금액 = self.dict_jg[종목코드]['매입금액']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
-                평가금액 = 매입금액 + (현재가 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
+                평가금액 = 매입금액 + (현재가 - 매수가) * self.dict_info[종목코드]['틱가치'] * 보유수량
                 if 포지션 == 'LONG':
                     평가금액, 평가손익, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                 else:
@@ -520,21 +521,21 @@ class FutureTrader:
 
         elif 주문상태 == '체결' and 주문구분 == '체결' and 매도수구분 in ('매수', '매도'):
             if gubun in ('BUY_LONG', 'SELL_SHORT'):
-                # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 if 종목코드 in self.dict_jg:
-                    직전매입가 = self.dict_jg[종목코드]['매입가']
+                    직전매수가 = self.dict_jg[종목코드]['매수가']
                     직전보유수량 = self.dict_jg[종목코드]['보유수량']
                     직전매입금액 = self.dict_jg[종목코드]['매입금액']
                     보유수량 = 직전보유수량 + 체결수량
                     매입금액 = 직전매입금액 + self.dict_info[종목코드]['위탁증거금'] * 체결수량
-                    매입가 = np.round((직전매입가 * 직전보유수량 + 체결가격 * 체결수량) / 보유수량, self.dict_info[종목코드]['소숫점자리수'] + 1)
-                    평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
+                    매수가 = np.round((직전매수가 * 직전보유수량 + 체결가격 * 체결수량) / 보유수량, self.dict_info[종목코드]['소숫점자리수'] + 1)
+                    평가금액 = 매입금액 + (체결가격 - 매수가) * self.dict_info[종목코드]['틱가치'] * 보유수량
                     if 'LONG' in gubun:
                         평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                     else:
                         평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
                     self.dict_jg[종목코드].update({
-                        '매입가': 매입가,
+                        '매수가': 매수가,
                         '현재가': 체결가격,
                         '수익률': 수익률,
                         '평가손익': 수익금,
@@ -555,7 +556,7 @@ class FutureTrader:
                     self.dict_jg[종목코드] = {
                         '종목명': 종목명,
                         '포지션': 포지션,
-                        '매입가': 체결가격,
+                        '매수가': 체결가격,
                         '현재가': 체결가격,
                         '수익률': 수익률,
                         '평가손익': 수익금,
@@ -576,16 +577,16 @@ class FutureTrader:
             else:
                 if 종목코드 not in self.dict_jg: return
                 포지션 = self.dict_jg[종목코드]['포지션']
-                매입가 = self.dict_jg[종목코드]['매입가']
+                매수가 = self.dict_jg[종목코드]['매수가']
                 보유수량 = self.dict_jg[종목코드]['보유수량'] - 체결수량
                 if 보유수량 != 0:
                     매입금액 = self.dict_info[종목코드]['위탁증거금'] * 보유수량
-                    평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 보유수량
+                    평가금액 = 매입금액 + (체결가격 - 매수가) * self.dict_info[종목코드]['틱가치'] * 보유수량
                     if 'LONG' in gubun:
                         평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                     else:
                         평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
-                    # ['종목명', '포지션', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+                    # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
                     self.dict_jg[종목코드].update({
                         '현재가': 체결가격,
                         '수익률': 수익률,
@@ -604,7 +605,7 @@ class FutureTrader:
                         del self.dict_order[gubun][종목코드]
 
                 매입금액 = self.dict_info[종목코드]['위탁증거금'] * 체결수량
-                평가금액 = 매입금액 + (체결가격 - 매입가) * self.dict_info[종목코드]['틱가치'] * 체결수량
+                평가금액 = 매입금액 + (체결가격 - 매수가) * self.dict_info[종목코드]['틱가치'] * 체결수량
                 if 'LONG' in gubun:
                     평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
                 else:
@@ -680,12 +681,13 @@ class FutureTrader:
         self.UpdateTotaltradelist()
 
     def UpdateTotaltradelist(self, first=False):
-        거래횟수 = len(set([(v['종목명'], v['체결시간']) for v in self.dict_td.values()]))
-        총매수금액 = sum([v['매수금액'] for v in self.dict_td.values()])
-        총매도금액 = sum([v['매도금액'] for v in self.dict_td.values()])
-        총수익금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] >= 0])
-        총손실금액 = sum([v['수익금'] for v in self.dict_td.values() if v['수익금'] < 0])
-        수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
+        td_values = self.dict_td.values()
+        거래횟수 = len(set([(v['종목명'], v['체결시간']) for v in td_values]))
+        총매수금액 = sum([v['매수금액'] for v in td_values])
+        총매도금액 = sum([v['매도금액'] for v in td_values])
+        총수익금액 = sum([v['수익금'] for v in td_values if v['수익금'] >= 0])
+        총손실금액 = sum([v['수익금'] for v in td_values if v['수익금'] < 0])
+        수익금합계 = sum([v['수익금'] for v in td_values])
         수익률 = np.round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
         # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
@@ -732,9 +734,10 @@ class FutureTrader:
     def UpdateTotaljango(self):
         # ['추정예탁자산', '추정예수금', '보유종목수', '수익률', '총평가손익', '총매입금액', '총평가금액']
         if self.dict_jg:
-            총평가손익 = sum([v['평가손익'] for v in self.dict_jg.values()])
-            총매입금액 = sum([v['매입금액'] for v in self.dict_jg.values()])
-            총평가금액 = sum([v['평가금액'] for v in self.dict_jg.values()])
+            jg_values = self.dict_jg.values()
+            총평가손익 = sum([v['평가손익'] for v in jg_values])
+            총매입금액 = sum([v['매입금액'] for v in jg_values])
+            총평가금액 = sum([v['평가금액'] for v in jg_values])
             총수익률 = np.round(총평가손익 / 총매입금액 * 100, 2)
             잔고수량 = len(self.dict_jg)
             추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
@@ -752,15 +755,14 @@ class FutureTrader:
             '총평가금액': 총평가금액
         }
 
-        잔고평가손익합계 = sum([v['평가손익'] for v in self.dict_jg.values()])
         거래수익금합계 = sum([v['수익금'] for v in self.dict_td.values()])
-        총평가손익 = 잔고평가손익합계 + 거래수익금합계
+        당일평가손익 = 총평가손익 + 거래수익금합계
         if self.dict_set['주식손실중지']:
             기준손실금 = self.dict_intg['예탁자산'] * self.dict_set['주식손실중지수익률'] / 100
-            if 기준손실금 < -총평가손익: self.StrategyStop()
+            if 기준손실금 < -당일평가손익: self.StrategyStop()
         if self.dict_set['주식수익중지']:
             기준수익금 = self.dict_intg['예탁자산'] * self.dict_set['주식수익중지수익률'] / 100
-            if 기준수익금 < 총평가손익: self.StrategyStop()
+            if 기준수익금 < 당일평가손익: self.StrategyStop()
 
         if self.dict_jg:
             df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')

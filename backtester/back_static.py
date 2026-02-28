@@ -19,23 +19,6 @@ def RunOptunaServer():
         pass
 
 
-def get_add_cnt(maket_gubun, is_tick):
-    if maket_gubun > 2: maket_gubun = 2
-    dict_ = {
-        1: {
-            'tick': 13,
-            'min':  15
-        },
-        2: {
-            'tick': 12,
-            'min':  14
-        }
-    }
-    if is_tick:
-        return dict_[maket_gubun]['tick']
-    return dict_[maket_gubun]['min']
-
-
 def get_trade_info(gubun):
     buy_time = dt_ymd('20000101')
     if gubun == 1:
@@ -74,7 +57,8 @@ def get_trade_info(gubun):
             '매수분할횟수': 0,
             '매도분할횟수': 0,
             '매수주문취소시간': buy_time,
-            '매도주문취소시간': buy_time
+            '매도주문취소시간': buy_time,
+            '주문포지션': None
         }
     else:
         v = {
@@ -118,7 +102,6 @@ def GetMoneytopQuery(gubun, startday, endday, starttime, endtime):
 
 
 def GetBuyStg(buytxt, gubun):
-    buytxt  = buytxt.split('if 매수:')[0] + 'if 매수:\n    self.Buy(vturn, vkey)'
     lines   = [line for line in buytxt.split('\n') if line and line[0] != '#']
     buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
@@ -141,7 +124,7 @@ def GetBuyStg(buytxt, gubun):
 
 
 def GetSellStg(sellstg, gubun):
-    sellstg = 'sell_cond = 0\n' + sellstg.split('if 매도:')[0] + 'if 매도:\n    self.Sell(vturn, vkey, sell_cond)'
+    sellstg = 'self.sell_cond = 0\n' + sellstg
     sellstg, dict_cond = SetSellCond(sellstg.split('\n'))
     try:
         sellstg = compile(sellstg, '<string>', 'exec')
@@ -154,7 +137,7 @@ def GetSellStg(sellstg, gubun):
 def GetBuyConds(buy_conds, gubun):
     buy_conds = 'if not (' + \
                 '):\n    매수 = False\nelif not ('.join(buy_conds) + \
-                '):\n    매수 = False\nif 매수:\n    self.Buy(vturn, vkey)'
+                '):\n    매수 = False\nif 매수:\n    self.Buy()'
     try:
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except:
@@ -164,9 +147,9 @@ def GetBuyConds(buy_conds, gubun):
 
 
 def GetSellConds(sell_conds, gubun):
-    sell_conds = 'sell_cond = 0\nif not (' + \
+    sell_conds = 'self.sell_cond = 0\nif not (' + \
                  '):\n    매도 = True\nelif not ('.join(sell_conds) + \
-                 '):\n    매도 = True\nif 매도:\n    self.Sell(vturn, vkey, sell_cond)'
+                 '):\n    매도 = True\nif 매도:\n    self.Sell()'
     sell_conds, dict_cond = SetSellCond(sell_conds.split('\n'))
     try:
         sell_conds = compile(sell_conds, '<string>', 'exec')
@@ -183,7 +166,7 @@ def SetSellCond(selllist):
     for i, text in enumerate(selllist):
         if text and text[0] != '#' and ('매도 = True' in text or '매도= True' in text or '매도 =True' in text or '매도=True' in text):
             dict_cond[count] = selllist[i - 1]
-            sellstg = f"{sellstg}{text.split('매도')[0]}sell_cond = {count}\n"
+            sellstg = f"{sellstg}{text.split('매도')[0]}self.sell_cond = {count}\n"
             count += 1
         if text:
             sellstg = f"{sellstg}{text}\n"
@@ -191,9 +174,7 @@ def SetSellCond(selllist):
 
 
 def GetBuyStgFuture(buystg, gubun):
-    buytxt  = buystg.split('if BUY_LONG or SELL_SHORT:')[0] + \
-              'if BUY_LONG:\n    self.Buy(vturn, vkey, "LONG")\nelif SELL_SHORT:\n    self.Buy(vturn, vkey, "SHORT")'
-    lines   = [line for line in buytxt.split('\n') if line and line[0] != '#']
+    lines   = [line for line in buystg.split('\n') if line and line[0] != '#']
     buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
     if buystg:
@@ -215,8 +196,7 @@ def GetBuyStgFuture(buystg, gubun):
 
 
 def GetSellStgFuture(sellstg, gubun):
-    sellstg = 'sell_cond = 0\n' + sellstg.split("if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):")[
-        0] + "if 포지션 == 'LONG' and SELL_LONG:\n    self.Sell(vturn, vkey, sell_cond, 'LONG')\nelif 포지션 == 'SHORT' and BUY_SHORT:\n    self.Sell(vturn, vkey, sell_cond, 'SHORT')"
+    sellstg = 'self.sell_cond = 0\n' + sellstg
     sellstg, dict_cond = SetSellCondFuture(sellstg.split('\n'))
     try:
         sellstg = compile(sellstg, '<string>', 'exec')
@@ -230,11 +210,11 @@ def GetBuyCondsFuture(is_long, buy_conds, gubun):
     if is_long:
         buy_conds = 'if not (' + \
                     '):\n    BUY_LONG = False\nelif not ('.join(buy_conds) + \
-                    '):\n    BUY_LONG = False\nif BUY_LONG:\n    self.Buy(vturn, vkey, "LONG")'
+                    '):\n    BUY_LONG = False\nif BUY_LONG:\n    self.Buy(BUY_LONG)'
     else:
         buy_conds = 'if not (' + \
                     '):\n    SELL_SHORT = False\nelif not ('.join(buy_conds) + \
-                    '):\n    SELL_SHORT = False\nif SELL_SHORT:\n    self.Buy(vturn, vkey, "SHORT")'
+                    '):\n    SELL_SHORT = False\nif SELL_SHORT:\n    self.Buy(BUY_LONG)'
     try:
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except:
@@ -245,11 +225,11 @@ def GetBuyCondsFuture(is_long, buy_conds, gubun):
 
 def GetSellCondsFuture(is_long, sell_conds, gubun):
     if is_long:
-        sell_conds = 'sell_cond = 0\nif ' + ':\n    SELL_LONG = True\nelif '.join(
-            sell_conds) + ':\n    SELL_LONG = True\nif SELL_LONG:\n    self.Sell(vturn, vkey, sell_cond, "LONG")'
+        sell_conds = 'self.sell_cond = 0\nif ' + ':\n    SELL_LONG = True\nelif '.join(
+            sell_conds) + ':\n    SELL_LONG = True\nif SELL_LONG:\n    self.Sell(SELL_LONG)'
     else:
-        sell_conds = 'sell_cond = 0\nif ' + ':\n    BUY_SHORT = True\nelif '.join(
-            sell_conds) + ':\n    BUY_SHORT = True\nif BUY_SHORT:\n    self.Sell(vturn, vkey, sell_cond, "SHORT")'
+        sell_conds = 'self.sell_cond = 0\nif ' + ':\n    BUY_SHORT = True\nelif '.join(
+            sell_conds) + ':\n    BUY_SHORT = True\nif BUY_SHORT:\n    self.Sell(SELL_LONG)'
     sell_conds, dict_cond = SetSellCondFuture(sell_conds.split('\n'))
     try:
         sell_conds = compile(sell_conds, '<string>', 'exec')
@@ -267,11 +247,11 @@ def SetSellCondFuture(selllist):
         if '#' not in text:
             if 'SELL_LONG = True' in text or 'SELL_LONG= True' in text or 'SELL_LONG =True' in text or 'SELL_LONG=True' in text:
                 dict_cond[count] = selllist[i - 1]
-                sellstg = f"{sellstg}{text.split('SELL_LONG')[0]}sell_cond = {count}\n"
+                sellstg = f"{sellstg}{text.split('SELL_LONG')[0]}self.sell_cond = {count}\n"
                 count += 1
             elif 'BUY_SHORT = True' in text or 'BUY_SHORT= True' in text or 'BUY_SHORT =True' in text or 'BUY_SHORT=True' in text:
                 dict_cond[count] = selllist[i - 1]
-                sellstg = f"{sellstg}{text.split('BUY_SHORT')[0]}sell_cond = {count}\n"
+                sellstg = f"{sellstg}{text.split('BUY_SHORT')[0]}self.sell_cond = {count}\n"
                 count += 1
         if text:
             sellstg = f"{sellstg}{text}\n"

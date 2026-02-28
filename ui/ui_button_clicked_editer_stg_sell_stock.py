@@ -5,8 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
-from ui.set_text import famous_saying, stock_sell_var, stock_sell_signal, stock_sell_var2, future_sell_signal, \
-    future_sell_var2, future_sell_var
+from ui.set_text import famous_saying, sell_signal, future_sell_signal, sell_text
 
 
 def stock_sell_stg_load(ui):
@@ -49,10 +48,7 @@ def stock_sell_stg_save(ui):
 
 def stock_sell_factor(ui):
     ui.ss_textEditttt_02.clear()
-    if '해외선물' in ui.dict_set['증권사']:
-        ui.ss_textEditttt_02.append(future_sell_var if ui.dict_set['주식타임프레임'] else future_sell_var2)
-    else:
-        ui.ss_textEditttt_02.append(stock_sell_var if ui.dict_set['주식타임프레임'] else stock_sell_var2)
+    ui.ss_textEditttt_02.append(sell_text if ui.dict_set['주식타임프레임'] else sell_text)
     ui.svjs_pushButon_04.setStyleSheet(style_bc_st)
 
 
@@ -72,7 +68,7 @@ def stock_sell_stg_start(ui):
 
 
 def stock_sell_signal_insert(ui):
-    signal = stock_sell_signal if '키움증권' in ui.dict_set['증권사'] else future_sell_signal
+    signal = sell_signal if '키움증권' in ui.dict_set['증권사'] else future_sell_signal
     ui.ss_textEditttt_02.append(signal)
 
 

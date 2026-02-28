@@ -12,7 +12,7 @@ from backtester.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from backtester.rolling_walk_forward_test import RollingWalkForwardTest
 from ui.set_text import famous_saying
 from utility.setting import ui_num
-from utility.static import qtest_qwait
+from utility.static import qtest_qwait, now
 
 
 def bebutton_clicked_01(ui):
@@ -538,6 +538,7 @@ def sdbutton_clicked_02(ui):
                     ui.cs_progressBar_01.setValue(0)
                     ui.csicon_alert = True
 
+            ui.back_start_time = now()
             ui.list_progressBarrr[ui.back_scount].setValue(0)
             ui.back_schedul = True
         else:

@@ -5,8 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
-from ui.set_text import famous_saying, stock_buy_var, stock_buy_signal, stock_buy_var2, future_buy_signal, \
-    future_buy_var2, future_buy_var
+from ui.set_text import famous_saying, buy_signal, buy_text_min, future_buy_signal, buy_text_tick
 
 
 def stock_buy_stg_load(ui):
@@ -50,10 +49,7 @@ def stock_buy_stg_save(ui):
 
 def stock_buy_factor(ui):
     ui.ss_textEditttt_01.clear()
-    if '해외선물' in ui.dict_set['증권사']:
-        ui.ss_textEditttt_01.append(future_buy_var if ui.dict_set['주식타임프레임'] else future_buy_var2)
-    else:
-        ui.ss_textEditttt_01.append(stock_buy_var if ui.dict_set['주식타임프레임'] else stock_buy_var2)
+    ui.ss_textEditttt_01.append(buy_text_tick if ui.dict_set['주식타임프레임'] else buy_text_min)
     ui.svjb_pushButon_04.setStyleSheet(style_bc_st)
 
 
@@ -73,7 +69,7 @@ def stock_buy_stg_start(ui):
 
 
 def stock_buy_signal_insert(ui):
-    signal = stock_buy_signal if '키움증권' in ui.dict_set['증권사'] else future_buy_signal
+    signal = buy_signal if '키움증권' in ui.dict_set['증권사'] else future_buy_signal
     ui.ss_textEditttt_01.append(signal)
 
 

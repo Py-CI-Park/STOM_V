@@ -4,7 +4,7 @@ import re
 from PyQt5.QtCore import QTimer
 from ui.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
 from utility.setting import ui_num
-from utility.static import now, qtest_qwait, timedelta_sec, str_hms
+from utility.static import now, qtest_qwait, str_hms
 
 
 class UpdateTextedit:
@@ -164,29 +164,6 @@ class UpdateTextedit:
         elif len(data) == 3:
             self.ui.dict_name = data[1]
             self.ui.dict_code = data[2]
-        elif len(data) == 4:
-            if data[1] <= data[2]:
-                curr_time = now()
-                try:
-                    left_backtime  = curr_time - data[3]
-                    left_total_sec = left_backtime.total_seconds()
-                    remain_backtime = timedelta_sec(left_total_sec / data[1] * (data[2] - data[1])) - curr_time
-                except:
-                    self.ui.ss_progressBar_01.setFormat('%p%')
-                    self.ui.ss_progressBar_01.setValue(0)
-                else:
-                    if self.ui.back_schedul:
-                        self.ui.list_progressBarrr[self.ui.back_scount].setFormat('%p%')
-                        self.ui.list_progressBarrr[self.ui.back_scount].setValue(data[1])
-                        self.ui.list_progressBarrr[self.ui.back_scount].setRange(0, data[2])
-                    if data[0] in (ui_num['S백테바'], ui_num['SF백테바']):
-                        self.ui.ss_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
-                        self.ui.ss_progressBar_01.setValue(data[1])
-                        self.ui.ss_progressBar_01.setRange(0, data[2])
-                    elif data[0] in (ui_num['C백테바'], ui_num['CF백테바']):
-                        self.ui.cs_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
-                        self.ui.cs_progressBar_01.setValue(data[1])
-                        self.ui.cs_progressBar_01.setRange(0, data[2])
 
     def AutoDataBase(self, gubun):
         if gubun == 1:

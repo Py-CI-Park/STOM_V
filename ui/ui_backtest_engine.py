@@ -196,14 +196,14 @@ def backengine_start(ui, gubun):
         ui.BacktestEngineKill()
         return
 
-    day_set = set(df_mt['일자'].to_list())
+    day_list = df_mt['일자'].unique()
 
     code_set = set()
     for mt_text in df_mt['거래대금순위'].values:
         code_set.update(mt_text.split(';'))
 
     day_codes = {}
-    for day in day_set:
+    for day in day_list:
         df_mt_ = df_mt[df_mt['일자'] == day]
         codes = set()
         for mt_text in df_mt_['거래대금순위'].values:
@@ -219,7 +219,7 @@ def backengine_start(ui, gubun):
         ui.BacktestEngineKill()
         return
 
-    if divid_mode == '일자별 분류' and len(day_set) < multi:
+    if divid_mode == '일자별 분류' and len(day_list) < multi:
         ui.windowQ.put((ui_num['백테엔진'], '선택한 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
         ui.BacktestEngineKill()
         return
@@ -248,7 +248,7 @@ def backengine_start(ui, gubun):
     if log_gubun == '한종목': log_gubun = f'{log_gubun} 일자별'
 
     ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 시작'))
-    data_list  = code_set if log_gubun == '종목코드별' else day_set if log_gubun == '일자별' else code_days[one_code]
+    data_list  = code_set if log_gubun == '종목코드별' else day_list if log_gubun == '일자별' else code_days[one_code]
     data_lists = []
     for i in range(multi):
         data_lists.append([data for j, data in enumerate(data_list) if j % multi == i])
@@ -269,6 +269,7 @@ def backengine_start(ui, gubun):
 
     ui.back_engining = False
     ui.backtest_engine = True
+    if not ui.qtimer3.isActive(): ui.qtimer3.start()
     ui.windowQ.put((ui_num['백테엔진'], '백테엔진 준비 완료'))
 
 

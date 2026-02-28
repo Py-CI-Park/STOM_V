@@ -115,6 +115,10 @@ class KiwoomAgentTick:
         self.dict_mtop   = {}
         self.dict_sgbn   = {}
         self.dict_jgdt   = {}
+        self.dict_money  = {}
+        self.dict_bmbyp  = {}
+        self.dict_smbyp  = {}
+        self.dict_index  = {}
 
         self.list_hgdt   = [0, 0, 0, 0]
         self.list_gsjm   = []
@@ -292,31 +296,31 @@ class KiwoomAgentTick:
                 dt = int(self.str_today + dt)
                 if self.dict_bool['호가잔량필드같음']:
                     data = realdata.split('\t')
-                    hoga_tamount = (
+                    hoga_tamount = [
                         int(data[61]), int(data[63])
-                    )
-                    hoga_seprice = (
+                    ]
+                    hoga_seprice = [
                         abs(int(data[55])), abs(int(data[49])), abs(int(data[43])), abs(int(data[37])), abs(int(data[31])),
                         abs(int(data[25])), abs(int(data[19])), abs(int(data[13])), abs(int(data[7])), abs(int(data[1]))
-                    )
-                    hoga_buprice = (
+                    ]
+                    hoga_buprice = [
                         abs(int(data[4])), abs(int(data[10])), abs(int(data[16])), abs(int(data[22])), abs(int(data[28])),
                         abs(int(data[34])), abs(int(data[40])), abs(int(data[46])), abs(int(data[52])), abs(int(data[58]))
-                    )
-                    hoga_samount = (
+                    ]
+                    hoga_samount = [
                         int(data[56]), int(data[50]), int(data[44]), int(data[38]), int(data[32]),
                         int(data[26]), int(data[20]), int(data[14]), int(data[8]), int(data[2])
-                    )
-                    hoga_bamount = (
+                    ]
+                    hoga_bamount = [
                         int(data[5]), int(data[11]), int(data[17]), int(data[23]), int(data[29]),
                         int(data[35]), int(data[41]), int(data[47]), int(data[53]), int(data[59])
-                    )
+                    ]
                 else:
-                    hoga_tamount = (
+                    hoga_tamount = [
                         int(self.GetCommRealData(code, 121)),
                         int(self.GetCommRealData(code, 125))
-                    )
-                    hoga_seprice = (
+                    ]
+                    hoga_seprice = [
                         abs(int(self.GetCommRealData(code, 50))),
                         abs(int(self.GetCommRealData(code, 49))),
                         abs(int(self.GetCommRealData(code, 48))),
@@ -327,8 +331,8 @@ class KiwoomAgentTick:
                         abs(int(self.GetCommRealData(code, 43))),
                         abs(int(self.GetCommRealData(code, 42))),
                         abs(int(self.GetCommRealData(code, 41)))
-                    )
-                    hoga_buprice = (
+                    ]
+                    hoga_buprice = [
                         abs(int(self.GetCommRealData(code, 51))),
                         abs(int(self.GetCommRealData(code, 52))),
                         abs(int(self.GetCommRealData(code, 53))),
@@ -339,8 +343,8 @@ class KiwoomAgentTick:
                         abs(int(self.GetCommRealData(code, 58))),
                         abs(int(self.GetCommRealData(code, 59))),
                         abs(int(self.GetCommRealData(code, 60)))
-                    )
-                    hoga_samount = (
+                    ]
+                    hoga_samount = [
                         int(self.GetCommRealData(code, 70)),
                         int(self.GetCommRealData(code, 69)),
                         int(self.GetCommRealData(code, 68)),
@@ -351,8 +355,8 @@ class KiwoomAgentTick:
                         int(self.GetCommRealData(code, 63)),
                         int(self.GetCommRealData(code, 62)),
                         int(self.GetCommRealData(code, 61))
-                    )
-                    hoga_bamount = (
+                    ]
+                    hoga_bamount = [
                         int(self.GetCommRealData(code, 71)),
                         int(self.GetCommRealData(code, 72)),
                         int(self.GetCommRealData(code, 73)),
@@ -363,12 +367,12 @@ class KiwoomAgentTick:
                         int(self.GetCommRealData(code, 78)),
                         int(self.GetCommRealData(code, 79)),
                         int(self.GetCommRealData(code, 80))
-                    )
+                    ]
             except:
                 pass
             else:
                 lastprice = self.GetMasterLastPrice(code)
-                self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start, lastprice)
+                self.UpdateHogaData(dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount, code, name, start, lastprice)
 
         elif realtype == '주식체결':
             dt = self.GetCommRealData(code, 20)
@@ -517,7 +521,7 @@ class KiwoomAgentTick:
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
         if '매수증거금' in sMsg:
             sn = int(sScrNo)
-            code = self.dict_sncd[sn] if sn in self.dict_sncd else ''
+            code = self.dict_sncd.get(sn, '')
             self.straderQ.put(('증거금부족', code))
             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'{sMsg}')))
 
@@ -575,8 +579,9 @@ class KiwoomAgentTick:
         elif not self.dict_vipr[code][0] and now() > self.dict_vipr[code][1]:
             self.UpdateViPrice(code, c)
 
-        if code in self.dict_data:
-            bids, asks = self.dict_data[code][13:15]
+        data = self.dict_data.get(code)
+        if data:
+            bids, asks = data[7:9]
         else:
             bids, asks = 0, 0
 
@@ -590,7 +595,7 @@ class KiwoomAgentTick:
         _, vi_dt, uvi, _, vi_hgunit = self.dict_vipr[code]
 
         self.dict_hgbs[code] = (csp, cbp)
-        self.dict_data[code] = [c, o, h, low, per, dm, ch, dmp, jvp, vrp, jsvp, sgta, rf, bids, asks,
+        self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, dmp, jvp, vrp, jsvp, sgta, rf,
                                 vi_dt, uvi, vi_hgunit]
 
         if self.hoga_code == code:
@@ -605,70 +610,129 @@ class KiwoomAgentTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    def UpdateHogaData(self, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount,
+    def UpdateHogaData(self, dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount,
                        code, name, receivetime, lastprice):
         send   = False
         dt_min = int(str(dt)[:12])
 
+        code_dtdm = self.dict_dtdm.get(code)
         if code in self.dict_data:
-            if code in self.dict_dtdm:
-                if dt > self.dict_dtdm[code][0] and hoga_bamount[4] != 0:
+            if code_dtdm:
+                if dt > code_dtdm[0] and hoga_bamount[4] != 0:
                     send = True
             else:
                 self.dict_dtdm[code] = [dt, 0]
+                code_dtdm = self.dict_dtdm[code]
                 send = True
 
         if send:
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                index = next((i for i, price in enumerate(hoga_seprice[::-1]) if price >= csp), None)
+                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
+                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
                 if index is not None:
-                    start_idx = (5 - index) if index < 5 else 0
-                    end_idx   = 10 - index
-                    add_cnt   = (index - 5) if index > 5 else 0
-                    hoga_seprice = (0,) * add_cnt + hoga_seprice[start_idx:end_idx]
-                    hoga_samount = (0,) * add_cnt + hoga_samount[start_idx:end_idx]
+                    start_idx = max(index - 5, 0)
+                    end_idx   = index
+                    add_cnt   = max(5 - index, 0)
+                    hoga_seprice = [0] * add_cnt + hoga_seprice[start_idx:end_idx]
+                    hoga_samount = [0] * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
-                    hoga_seprice = (0,) * 5
-                    hoga_samount = (0,) * 5
+                    hoga_seprice = [0] * 5
+                    hoga_samount = [0] * 5
             else:
                 hoga_seprice = hoga_seprice[-5:]
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                index = next((i for i, price in enumerate(hoga_buprice) if price <= cbp), None)
+                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
+                index = valid_indices[0] if len(valid_indices) > 0 else None
                 if index is not None:
                     start_idx = index
-                    end_idx   = index + 5
-                    add_cnt   = (index - 5) if index > 5 else 0
-                    hoga_buprice = hoga_buprice[start_idx:end_idx] + (0,) * add_cnt
-                    hoga_bamount = hoga_bamount[start_idx:end_idx] + (0,) * add_cnt
+                    end_idx   = min(index + 5, 10)
+                    add_cnt   = max(index - 5, 0)
+                    hoga_buprice = hoga_buprice[start_idx:end_idx] + [0] * add_cnt
+                    hoga_bamount = hoga_bamount[start_idx:end_idx] + [0] * add_cnt
                 else:
-                    hoga_buprice = (0,) * 5
-                    hoga_bamount = (0,) * 5
+                    hoga_buprice = [0] * 5
+                    hoga_bamount = [0] * 5
             else:
                 hoga_buprice = hoga_buprice[:5]
                 hoga_bamount = hoga_bamount[:5]
 
-            c, _, h, low, _, dm = self.dict_data[code][:6]
-            tm = dm - self.dict_dtdm[code][1]
+            code_data = self.dict_data[code]
+            c, _, h, low, _, dm, _, bids, asks = code_data[:9]
+            buy_money = c * bids
+            sell_money = c * asks
+
+            if code not in self.dict_money:
+                self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
+                self.dict_index[code] = {c: 0}
+                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code][0] = buy_money
+                self.dict_smbyp[code][0] = sell_money
+                self.dict_index[code]['count'] = 1
+                money_arr = self.dict_money[code]
+            else:
+                money_arr = self.dict_money[code]
+                price_idx = self.dict_index[code]
+                buy_arr   = self.dict_bmbyp[code]
+                sell_arr  = self.dict_smbyp[code]
+
+                money_arr[0] += buy_money
+                if c in price_idx:
+                    idx = price_idx[c]
+                    buy_arr[idx] += buy_money
+                else:
+                    idx = price_idx['count']
+                    if idx >= len(buy_arr):
+                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                    price_idx[c] = idx
+                    buy_arr[idx] = buy_money
+                    price_idx['count'] += 1
+                if buy_arr[idx] >= money_arr[1]:
+                    money_arr[1] = buy_arr[idx]
+                    money_arr[2] = c
+
+                money_arr[3] += sell_money
+                if c in price_idx:
+                    idx = price_idx[c]
+                    sell_arr[idx] += sell_money
+                else:
+                    idx = price_idx['count']
+                    if idx >= len(sell_arr):
+                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                    price_idx[c] = idx
+                    sell_arr[idx] = sell_money
+                    price_idx['count'] += 1
+                if sell_arr[idx] >= money_arr[4]:
+                    money_arr[4] = sell_arr[idx]
+                    money_arr[5] = c
+
+            tm = dm - code_dtdm[1]
             if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
             hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = np.round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0
-            data = (dt,) + tuple(self.dict_data[code]) + (tm, hlp) + \
-                hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
-                (hjt, gsjm, code, name, logt)
+ 
+            data = [dt] + code_data + [tm, hlp, lhp, buy_money, sell_money] + money_arr + \
+                hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + hoga_tamount + \
+                [hjt, gsjm, code, name, logt]
 
             self.sstgQs[self.dict_sgbn[code]].put(data)
 
             if code in self.tuple_jango or code in self.tuple_order:
                 self.straderQ.put(('잔고갱신', (code, c)))
 
-            self.dict_dtdm[code] = [dt, dm]
-            self.dict_data[code][13:15] = [0, 0]
+            code_dtdm[0] = dt
+            code_dtdm[1] = dm
+            code_data[7] = 0
+            code_data[8] = 0
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
@@ -683,12 +747,13 @@ class KiwoomAgentTick:
 
         if self.hoga_code == code and dt > self.list_hgdt[1]:
             self.list_hgdt[1] = dt
-            if code in self.dict_sghg:
-                shg, hhg = self.dict_sghg[code]
+            data = self.dict_sghg.get(code)
+            if data:
+                shg, hhg = data
             else:
                 shg, hhg = GetSangHahanga(code in self.tuple_kosd, lastprice, self.int_hgtime)
                 self.dict_sghg[code] = (shg, hhg)
-            self.mgzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + (shg, hhg)))
+            self.mgzservQ.put(('hoga', [name] + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + [shg, hhg]))
 
     def GetCommRealData(self, code, fid):
         return self.ocx.dynamicCall('GetCommRealData(QString, int)', code, fid)
@@ -740,13 +805,13 @@ class KiwoomAgentTick:
                 df.rename(columns={'종목번호': 'index', '수익률(%)': '수익률'}, inplace=True)
                 df['index'] = df['index'].apply(lambda x: x.strip()[1:])
                 df['수익률'] = df['수익률'].apply(lambda x: np.round(float(x) / 100, 2))
-                columns = ['매입가', '현재가', '평가손익', '매입금액', '평가금액', '보유수량']
+                columns = ['매수가', '현재가', '평가손익', '매입금액', '평가금액', '보유수량']
                 df[columns] = df[columns].astype(int)
                 df['평가손익'] = df['평가금액'] - df['매입금액']
                 df['분할매수횟수'] = 5
                 df['분할매도횟수'] = 0
                 df['매수시간'] = self.str_today + '080000'
-                columns = ['index', '종목명', '매입가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
+                columns = ['index', '종목명', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 df = df[columns]
                 df.set_index('index', inplace=True)
                 dict_jg = df.to_dict('index')

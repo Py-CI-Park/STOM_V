@@ -5,8 +5,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
-from ui.set_text import famous_saying, coin_sell_var, coin_future_sell_var, coin_sell_signal, coin_future_sell_signal, \
-    coin_sell_var2, coin_future_sell_var2
+from ui.set_text import famous_saying, sell_signal, future_sell_signal, sell_text
 
 
 def coin_sell_stg_load(ui):
@@ -47,10 +46,7 @@ def coin_sell_stg_save(ui):
 
 def coin_sell_factor(ui):
     ui.cs_textEditttt_02.clear()
-    if ui.dict_set['거래소'] == '업비트':
-        ui.cs_textEditttt_02.append(coin_sell_var if ui.dict_set['코인타임프레임'] else coin_sell_var2)
-    else:
-        ui.cs_textEditttt_02.append(coin_future_sell_var if ui.dict_set['코인타임프레임'] else coin_future_sell_var2)
+    ui.cs_textEditttt_02.append(sell_text if ui.dict_set['코인타임프레임'] else sell_text)
     ui.cvjs_pushButon_04.setStyleSheet(style_bc_st)
 
 
@@ -71,7 +67,7 @@ def coin_sell_stg_start(ui):
 
 
 def coin_sell_signal_insert(ui):
-    ui.cs_textEditttt_02.append(coin_sell_signal if ui.dict_set['거래소'] == '업비트' else coin_future_sell_signal)
+    ui.cs_textEditttt_02.append(sell_signal if ui.dict_set['거래소'] == '업비트' else future_sell_signal)
 
 
 def coin_sell_stg_stop(ui):

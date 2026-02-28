@@ -70,28 +70,14 @@ class Total:
         self.MainLoop()
 
     def MainLoop(self):
-        tt  = 0
-        rt  = 0
         sc  = 0
         bc  = 0
-        tbc = 0
         st  = {}
-        start = now()
         dict_dummy = {}
         while True:
             data = self.tq.get()
-            if data == '탐색완료':
-                tt += 1
-                self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
-
-            elif data == '백테완료':
+            if data == '백테완료':
                 bc  += 1
-                tbc += 1
-                if self.opti_turn in (0, 2):
-                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], bc, self.total_count, start))
-                elif self.opti_turn == 4:
-                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tbc, self.total_count, start))
-
                 if bc == self.back_count:
                     bc = 0
                     if self.opti_turn == 1:
@@ -100,13 +86,6 @@ class Total:
                     else:
                         for q in self.bstq_list[:5]:
                             q.put(('백테완료', '일괄집계'))
-
-            elif data[0] == '탐색완료':
-                rt += data[1]
-                if rt >= 1000:
-                    rt -= 1000
-                    tt += 1
-                    self.wq.put((ui_num[f'{self.ui_gubun}백테바'], tt, self.tick_count, start))
 
             elif data[0] == '더미결과':
                 sc += 1
@@ -185,10 +164,6 @@ class Total:
                 self.opti_turn = data[2]
                 self.vars      = [var[1] for var in self.vars_list]
                 dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
-                if self.opti_turn != 4:
-                    tt = 0
-                    rt = 0
-                    start = now()
 
             elif data[0] == '경우의수':
                 self.total_count = data[1]
@@ -467,7 +442,7 @@ class Optimize:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
-        day_list = list(set(df_mt['일자'].to_list()))
+        day_list = df_mt['일자'].unique()
         day_list.sort()
 
         startday, endday = day_list[0], day_list[-1]
@@ -733,7 +708,8 @@ class Optimize:
                     same_update1 = std == pre_turn_hstd and cur_turn_type and cur_turn_var > pre_turn_hvar
                     same_update2 = std == pre_turn_hstd and not cur_turn_type and cur_turn_var < pre_turn_hvar
                     if std > pre_turn_hstd or same_update1 or same_update2:
-                        dict_turn_hvar_hstd[vturn] = [cur_turn_var, std]
+                        dict_turn_hvar_hstd[vturn][0] = cur_turn_var
+                        dict_turn_hvar_hstd[vturn][1] = std
                         if std > hstd:
                             hstd = std
                             if not bool_changed_hstd:
@@ -811,7 +787,7 @@ class Optimize:
     def FixAndDeleteVarsRange(self, hstd, dict_turn_var_std, delete_varlist, deleted_varlist):
         text = '\n'
         for vturn, var_std in dict_turn_var_std.items():
-            len_std_set = len(set(list(var_std.values())))
+            len_std_set = len(set(var_std.values()))
             if len_std_set <= 2:
                 cur_turn_hvar = self.vars_[vturn][1]
                 self.vars_[vturn] = [[cur_turn_hvar], cur_turn_hvar]

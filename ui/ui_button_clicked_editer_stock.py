@@ -10,6 +10,7 @@ from backtester.rolling_walk_forward_test import RollingWalkForwardTest
 from backtester.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from ui.set_style import style_bc_by, style_bc_dk, style_bc_bs, style_bc_bd
 from ui.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condtext, cedittxt, example_finder
+from utility.static import now
 
 
 def stock_opti_test_editer(ui):
@@ -684,6 +685,7 @@ def stock_backtest_start(ui):
         )
         ui.proc_backtester_bs.start()
         ui.StockBacktestLog()
+        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -737,6 +739,7 @@ def stock_backfinder_start(ui):
         )
         ui.proc_backtester_bf.start()
         ui.StockBacktestLog()
+        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -898,6 +901,7 @@ def stock_opti_start(ui, back_name):
             )
             ui.proc_backtester_bvct.start()
         ui.StockBacktestLog()
+        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -1008,6 +1012,7 @@ def stock_opti_rwft_start(ui, back_name):
             )
             ui.proc_backtester_brvc.start()
         ui.StockBacktestLog()
+        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -1085,6 +1090,7 @@ def stock_opti_ga_start(ui, back_name):
             )
             ui.proc_backtester_ogvc.start()
         ui.StockBacktestLog()
+        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 
@@ -1165,6 +1171,7 @@ def stock_opti_cond_start(ui, back_name):
             )
             ui.proc_backtester_ocvc.start()
         ui.StockBacktestLog()
+        ui.back_start_time = now()
         ui.ss_progressBar_01.setValue(0)
         ui.ssicon_alert = True
 

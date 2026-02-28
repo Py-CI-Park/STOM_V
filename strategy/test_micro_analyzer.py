@@ -6,6 +6,20 @@ from traceback import print_exc
 from strategy.microstructure_analyzer import MicrostructureAnalyzer
 
 
+list_stock_tick = [
+    'index', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '초당매수수량', '초당매도수량',
+    '거래대금증감', '전일비', '회전율', '전일동시간비', '시가총액', '라운드피겨위5호가이내', 'VI해제시간', 'VI가격', 'VI호가단위',
+    '초당거래대금', '고저평균대비등락율', '저가대비고가등락율', '초당매수금액', '초당매도금액',
+    '당일매수금액', '최고매수금액', '최고매수가격', '당일매도금액', '최고매도금액', '최고매도가격',
+    '매도호가5', '매도호가4', '매도호가3', '매도호가2', '매도호가1', '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5',
+    '매도잔량5', '매도잔량4', '매도잔량3', '매도잔량2', '매도잔량1', '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5',
+    '매도총잔량', '매수총잔량', '매도수5호가잔량합', '관심종목',
+    '이동평균60', '이동평균150', '이동평균300', '이동평균600', '이동평균1200', '최고현재가', '최저현재가',
+    '체결강도평균', '최고체결강도', '최저체결강도', '최고초당매수수량', '최고초당매도수량', '누적초당매수수량',
+    '누적초당매도수량', '초당거래대금평균', '등락율각도', '당일거래대금각도', '전일비각도'
+]
+
+
 # noinspection PyUnresolvedReferences, PyTypeChecker
 def example_realtime_simulation():
     try:
@@ -15,16 +29,12 @@ def example_realtime_simulation():
         while True:
             selected_stock = np.random.choice(stock_codes)
             df = pd.read_sql(f"SELECT * FROM '{selected_stock}'", conn)
-            lastday = int(str(df['index'].iloc[-1])[:8]) * 1000000
-            df = df[df['index'] >= lastday]
             if len(df[df['관심종목'] == 1]) > len(df) * 0.7:
                 break
 
         print(f"선택된 종목: {selected_stock}")
         conn.close()
 
-        df['idx'] = df['index']
-        df.set_index('idx', inplace=True)
         data_array = np.array(df)
 
         print(f"데이터 로딩 완료: {len(data_array)}개 틱")
@@ -43,20 +53,28 @@ def example_realtime_simulation():
         trade_count = 0
         two_way = False
 
+        index1 = list_stock_tick.index('매수호가1')
+        index2 = list_stock_tick.index('매수호가5') + 1
+        index3 = list_stock_tick.index('매도호가5')
+        index4 = list_stock_tick.index('매도호가1') + 1
+        index5 = list_stock_tick.index('매수잔량1')
+        index6 = list_stock_tick.index('매수잔량5') + 1
+        index7 = list_stock_tick.index('매도잔량5')
+        index8 = list_stock_tick.index('매도잔량1') + 1
+        index9 = list_stock_tick.index('초당매수수량')
+        index10 = list_stock_tick.index('초당매도수량') + 1
+
         last = len(data_array) - 1
         for i, row in enumerate(data_array):
             current_price = row[1]
-            orderbook_data = np.array([
-                row[28], row[29], row[30], row[31], row[32],  # 매수호가1-5
-                row[27], row[26], row[25], row[24], row[23],  # 매도호가1-5 (역순)
-                row[38], row[39], row[40], row[41], row[42],  # 매수잔량1-5
-                row[37], row[36], row[35], row[34], row[33]   # 매도잔량1-5 (역순)
+            orderbook_data = np.concatenate([
+                row[index1:index2],             # 매수호가1-5
+                row[index3:index4][::-1],       # 매도호가1-5 (역순)
+                row[index5:index6],             # 매수잔량1-5
+                row[index7:index8][::-1]        # 매도잔량1-5 (역순)
             ])
 
-            volume_data = np.array(([
-                row[14],    # 매수수량
-                row[15]     # 매도수량
-            ]))
+            volume_data = row[index9:index10]
 
             signal, confidence = microstructure_strategy.analyze_microstructure_signal(selected_stock, orderbook_data, volume_data)
 
