@@ -7,6 +7,9 @@ from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, dt_ym
 
 
 class UpbitStrategyMin(UpbitStrategyTick):
+    def UpdateGlobalsFunc(self, dict_add_func):
+        globals().update(dict_add_func)
+
     # noinspection PyUnusedLocal
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
