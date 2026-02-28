@@ -140,8 +140,8 @@ class Chart:
                 db_name1 = f'{DB_PATH}/coin_min_{searchdate}.db'
                 db_name2 = DB_COIN_BACK_MIN
                 query1   = f"SELECT * FROM '{code}' WHERE " \
-                           f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
-                           f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
+                           f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
+                           f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
         else:
             if w_unit == '': w_unit = self.dict_set['주식평균값계산틱수']
             if '키움증권' in self.dict_set['증권사']:
@@ -173,8 +173,8 @@ class Chart:
                            f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
             else:
                 query1   = f"SELECT * FROM '{code}' WHERE " \
-                           f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
-                           f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
+                           f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
+                           f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
 
         df = None
         query2 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%'"

@@ -58,7 +58,7 @@ class UpdateTextedit:
                     self.ui.optuna_current_cnt = int(data[1].split('현재횟수[')[1].split(']')[0])
                     self.ui.optuna_remain_cnt  = int(data[1].split('남은횟수[')[1].split(']')[0])
 
-                if 'self.vars' in data[1] and 'MERGE' not in data[1]:
+                if ('self.vars' in data[1] and 'MERGE' not in data[1]) or '부트스트랩' in data[1]:
                     color = color_bt_yl
                 elif '배팅금액' in data[1] or 'OUT' in data[1] or '결과' in data[1] or '백테스트 시작' in data[1] or \
                         ']단계' in data[1] or '최적값' in data[1]:

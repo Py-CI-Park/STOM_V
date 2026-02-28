@@ -211,7 +211,8 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 }
         else:
             pre_data = self.dict_data[종목코드]
-            데이터길이 = len(pre_data) + 1
+            self.tick_count = 데이터길이 = len(pre_data) + 1
+            self.indexn = 데이터길이 - 1
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:

@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 from optuna_dashboard import run_server
 from matplotlib import font_manager, gridspec
 from utility.setting import ui_num, GRAPH_PATH, DB_OPTUNA
-from utility.static import thread_decorator, str_hms, str_hm, dt_ymdhms, dt_ymdhm, dt_hms, dt_hm, dt_ymd
+from utility.static import thread_decorator, dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
 
 
 @thread_decorator
@@ -77,8 +77,8 @@ def GetBackloadCodeQuery(is_tick, code, days, starttime, endtime):
             sindex = day * 1000000 + starttime
             eindex = day * 1000000 + endtime
         else:
-            sindex = day * 10000 + starttime
-            eindex = day * 10000 + endtime
+            sindex = day * 10000 + int(starttime / 100)
+            eindex = day * 10000 + int(endtime / 100)
         conditions.append(f"(`index` >= {sindex} AND `index` <= {eindex})")
     where_clause = " OR ".join(conditions)
     query = f"SELECT * FROM '{code}' WHERE {where_clause}"
@@ -94,8 +94,8 @@ def GetMoneytopQuery(is_tick, gubun, startday, endday, starttime, endtime):
             sindex = startday * 1000000 + starttime
             eindex = endday * 1000000 + endtime
     else:
-        sindex = startday * 10000 + starttime
-        eindex = endday * 10000 + endtime
+        sindex = startday * 10000 + int(starttime / 100)
+        eindex = endday * 10000 + int(endtime / 100)
     query = f"SELECT * FROM moneytop WHERE " \
             f"`index` >= {sindex} AND `index` <= {eindex}"
     return query
@@ -410,107 +410,43 @@ def GetOptiStdText(optistd, std_list, result, pre_text):
     return text, std
 
 
-def PlotShow(is_tick, gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
-             backname, back_text, label_text, save_file_name, schedul, plotgraph, buy_vars=None, sell_vars=None):
-    df_tsg['수익금합계020'] = df_tsg['수익금합계'].rolling(window=20).mean()
-    df_tsg['수익금합계060'] = df_tsg['수익금합계'].rolling(window=60).mean()
-    df_tsg['수익금합계120'] = df_tsg['수익금합계'].rolling(window=120).mean()
-    df_tsg['수익금합계240'] = df_tsg['수익금합계'].rolling(window=240).mean()
-    df_tsg['수익금합계480'] = df_tsg['수익금합계'].rolling(window=480).mean()
+def get_yf_ticker(code, startday, endday):
+    start_str  = str(startday)
+    end_str    = str(endday)
+    start_date = f'{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}'
+    end_date   = f'{end_str[:4]}-{end_str[4:6]}-{end_str[6:8]}'
+    df = yf.Ticker(code).history(start=start_date, end=end_date, interval="1d")
+    df['종가'] = (df['Close'] / df['Close'].iloc[0] - 1) * 100
+    return df
 
-    df_tsg['이익금액'] = df_tsg['수익금'].apply(lambda x: x if x >= 0 else 0)
-    df_tsg['손실금액'] = df_tsg['수익금'].apply(lambda x: x if x < 0 else 0)
 
-    sig_array = df_tsg['수익금'].values
-    mdd_list = []
-    for i in range(30):
-        random_cumsum = np.cumsum(np.random.permutation(sig_array))
-        df_tsg[f'수익금합계{i}'] = random_cumsum
-        try:
-            lower = np.argmax(np.maximum.accumulate(random_cumsum) - random_cumsum)
-            upper = np.argmax(random_cumsum[:lower])
-            mdd_ = np.round(abs(random_cumsum[upper] - random_cumsum[lower]) / (random_cumsum[upper] + seed) * 100, 2)
-        except:
-            mdd_ = 0.
-        mdd_list.append(mdd_)
+def get_interval(total_sec):
+    if total_sec <= 1680:
+        return '3min'
+    elif total_sec <= 3480:
+        return '5min'
+    elif total_sec <= 7080:
+        return '10min'
+    elif total_sec <= 10680:
+        return '15min'
+    return '30min'
 
-    df_sg = df_tsg[['수익금']].copy()
-    df_sg.index = df_sg.index.map(lambda x: dt_ymdhms(x) if is_tick else dt_ymdhm(x))
 
-    df_ts = df_sg.resample('D').sum()
-    df_ts['수익금합계'] = df_ts['수익금'].cumsum()
-    df_ts['수익금합계'] = ((df_ts['수익금합계'] + seed) / seed - 1) * 100
+def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
+             backname, back_text, label_text, save_file_name, schedul, notplotshow, buy_vars=None, sell_vars=None):
 
     df_kp, df_kd, df_nd, df_bc = None, None, None, None
-    start_str = str(startday)
-    end_str   = str(endday)
-    startday  = f'{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}'
-    endday    = f'{end_str[:4]}-{end_str[4:6]}-{end_str[6:8]}'
     if startday != endday:
-        if dict_cn is not None and '005930' in dict_cn:
-            try:
-                df_kp = yf.Ticker('^KS11').history(start=startday, end=endday, interval="1d")
-                df_kp['종가'] = (df_kp['Close'] / df_kp['Close'].iloc[0] - 1) * 100
-                df_kd = yf.Ticker('^KQ11').history(start=startday, end=endday, interval="1d")
-                df_kd['종가'] = (df_kd['Close'] / df_kd['Close'].iloc[0] - 1) * 100
-            except:
-                pass
-        elif dict_cn is not None and '005930' not in dict_cn:
-            try:
-                df_nd = yf.Ticker('QQQ').history(start=startday, end=endday, interval="1d")
-                df_nd['종가'] = (df_nd['Close'] / df_nd['Close'].iloc[0] - 1) * 100
-            except:
-                pass
-        else:
-            try:
-                df_bc = yf.Ticker('BTC-USD').history(start=startday, end=endday, interval="1d")
-                df_bc['종가'] = (df_bc['Close'] / df_bc['Close'].iloc[0] - 1) * 100
-            except:
-                pass
-
-    df_st = df_tsg[['수익금']].copy()
-    df_st.index = df_st.index.map(lambda x: dt_hms(x[8:]) if is_tick else dt_hm(x[8:]))
-    start_time = dt_hms(str(starttime).zfill(6))
-    end_time = dt_hms(str(endtime).zfill(6))
-    total_sec = (end_time - start_time).total_seconds()
-    interval = f'{total_sec / 600}min' if total_sec >= 1800 else '3min'
-    df_st = df_st.resample(interval).sum()
-    df_st.index = df_st.index.map(lambda x: str_hms(x) if is_tick else str_hm(x))
-    if is_tick:
-        df_st.index = df_st.index.map(lambda x: f'{x[:2]}:{x[2:4]}:{x[4:]}')
-    else:
-        df_st.index = df_st.index.map(lambda x: f'{x[:2]}:{x[2:]}')
-    df_st['이익금액'] = df_st['수익금'].apply(lambda x: x if x >= 0 else 0)
-    df_st['손실금액'] = df_st['수익금'].apply(lambda x: x if x < 0 else 0)
-
-    df_wt = df_tsg[['수익금']].copy()
-    df_wt['요일'] = df_wt.index
-    df_wt['요일'] = df_wt['요일'].apply(lambda x: dt_ymdhms(x).weekday() if is_tick else dt_ymdhm(x).weekday())
-    sum_0 = df_wt[df_wt['요일'] == 0]['수익금'].sum()
-    sum_1 = df_wt[df_wt['요일'] == 1]['수익금'].sum()
-    sum_2 = df_wt[df_wt['요일'] == 2]['수익금'].sum()
-    sum_3 = df_wt[df_wt['요일'] == 3]['수익금'].sum()
-    sum_4 = df_wt[df_wt['요일'] == 4]['수익금'].sum()
-    wt_index = ['월', '화', '수', '목', '금']
-    wt_data = [sum_0, sum_1, sum_2, sum_3, sum_4]
-    if dict_cn is None:
-        sum_5 = df_wt[df_wt['요일'] == 5]['수익금'].sum()
-        sum_6 = df_wt[df_wt['요일'] == 6]['수익금'].sum()
-        wt_index += ['토', '일']
-        wt_data += [sum_5, sum_6]
-    wt_datap, wt_datam = [], []
-    for data in wt_data:
-        if data >= 0:
-            wt_datap.append(data)
-            wt_datam.append(0)
-        else:
-            wt_datap.append(0)
-            wt_datam.append(data)
-
-    if is_tick:
-        df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
-    else:
-        df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:]}')
+        try:
+            if dict_cn is not None and '005930' in dict_cn:
+                df_kp = get_yf_ticker('^KS11', startday, endday)
+                df_kd = get_yf_ticker('^KQ11', startday, endday)
+            elif dict_cn is not None and '005930' not in dict_cn:
+                df_nd = get_yf_ticker('QQQ', startday, endday)
+            else:
+                df_bc = get_yf_ticker('BTC-USD', startday, endday)
+        except:
+            pass
 
     endx_list = None
     if gubun == '최적화':
@@ -527,103 +463,180 @@ def PlotShow(is_tick, gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
                 if len(df_tsg_) > 0:
                     endx_list.append(df_tsg_.index[-1])
 
+    profit_series = df_tsg['수익금합계']
+    windows = [20, 60, 120, 240, 480]
+    for window in windows:
+        df_tsg[f'수익금합계{window:03d}'] = profit_series.rolling(window=window).mean()
+    profit_array = df_tsg['수익금'].values
+    df_tsg['이익금액'] = np.where(profit_array >= 0, profit_array, 0)
+    df_tsg['손실금액'] = np.where(profit_array < 0, profit_array, 0)
+
+    sig_array = df_tsg['수익금'].values
+    mdd_list = []
+    random_data = np.random.permutation(sig_array)
+    for i in range(30):
+        if i > 0:
+            random_data = np.random.permutation(sig_array)
+        random_cumsum = np.cumsum(random_data)
+        df_tsg[f'수익금합계{i}'] = random_cumsum
+        try:
+            lower = np.argmax(np.maximum.accumulate(random_cumsum) - random_cumsum)
+            upper = np.argmax(random_cumsum[:lower])
+            mdd_ = np.round(abs(random_cumsum[upper] - random_cumsum[lower]) / (random_cumsum[upper] + seed) * 100, 2)
+        except:
+            mdd_ = 0.
+        mdd_list.append(mdd_)
+
+    df_ts = df_tsg[['수익금']].copy()
+    df_ts.index = df_ts.index.map(lambda x: dt_ymd(x))
+    df_ts = df_ts.resample('D').sum()
+    df_ts['수익금합계'] = df_ts['수익금'].cumsum()
+    df_ts['수익금합계'] = ((df_ts['수익금합계'] + seed) / seed - 1) * 100
+
+    df_st = df_tsg[['수익금']].copy()
+    df_st.index = df_st.index.map(lambda x: dt_hm(x[8:12]))
+    start_time = dt_hms(str(starttime).zfill(6))
+    end_time = dt_hms(str(endtime).zfill(6))
+    total_sec = (end_time - start_time).total_seconds()
+    interval = get_interval(total_sec)
+    df_st = df_st.resample(interval).sum()
+    profit_array_st = df_st['수익금'].values
+    df_st['이익금액'] = np.where(profit_array_st >= 0, profit_array_st, 0)
+    df_st['손실금액'] = np.where(profit_array_st < 0, profit_array_st, 0)
+    df_st.index = df_st.index.map(lambda x: str_ymdhms_ios(x))
+
+    df_wt = df_tsg[['수익금']].copy()
+    df_wt['요일'] = df_wt.index.map(lambda x: dt_ymdhms(x).weekday() if is_tick else dt_ymdhm(x).weekday())
+    weekday_sums = df_wt.groupby('요일')['수익금'].sum()
+    wt_index = ['월', '화', '수', '목', '금']
+    wt_data = [weekday_sums.get(i, 0) for i in range(5)]
+    if dict_cn is None:
+        wt_index += ['토', '일']
+        wt_data += [weekday_sums.get(5, 0), weekday_sums.get(6, 0)]
+    wt_data_array = np.array(wt_data)
+    wt_datap = np.where(wt_data_array >= 0, wt_data_array, 0)
+    wt_datam = np.where(wt_data_array < 0, wt_data_array, 0)
+
+    if is_tick:
+        df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
+    else:
+        df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:]}')
+
     font_name = 'C:/Windows/Fonts/malgun.ttf'
     font_family = font_manager.FontProperties(fname=font_name).get_name()
+
+    # matplotlib 성능 최적화 설정
+    plt.rcParams['figure.max_open_warning'] = 0
     plt.rcParams['font.family'] = font_family
     plt.rcParams['axes.unicode_minus'] = False
+    plt.rcParams['path.simplify'] = True
+    plt.rcParams['path.snap'] = True
+    plt.rcParams['figure.autolayout'] = True
+    plt.rcParams['figure.constrained_layout.use'] = True
+    if schedul or notplotshow:
+        plt.switch_backend('agg')
 
-    plt.figure(f'{backname} 부가정보', figsize=(12, 10))
+    fig1 = plt.figure(f'{backname} 부가정보', figsize=(12, 10), dpi=100)
     gs = gridspec.GridSpec(nrows=2, ncols=2, height_ratios=[1, 1])
-    # noinspection PyTypeChecker
-    plt.subplot(gs[0])
+    ax1 = fig1.add_subplot(gs[0, 0])
+    ax2 = fig1.add_subplot(gs[0, 1])
+    ax3 = fig1.add_subplot(gs[1, 0])
+    ax4 = fig1.add_subplot(gs[1, 1])
+
     for i in range(30):
-        plt.plot(df_tsg.index, df_tsg[f'수익금합계{i}'], linewidth=0.5, label=f'MDD {mdd_list[i]}%')
-    plt.plot(df_tsg.index, df_tsg['수익금합계'], linewidth=2, label=f'MDD {mdd}%', color='orange')
+        ax1.plot(df_tsg.index, df_tsg[f'수익금합계{i}'], linewidth=0.5, label=f'MDD {mdd_list[i]}%', alpha=0.7)
+    ax1.plot(df_tsg.index, df_tsg['수익금합계'], linewidth=2, label=f'MDD {mdd}%', color='orange')
     max_mdd = max(mdd_list)
     min_mdd = min(mdd_list)
     avg_mdd = np.round(sum(mdd_list) / len(mdd_list), 2)
-    plt.title(f'Max MDD [{max_mdd}%] | Min MDD [{min_mdd}%] | Avg MDD [{avg_mdd}%]')
-    count = int(len(df_tsg) / 15) if int(len(df_tsg) / 15) >= 1 else 1
-    plt.xticks(list(df_tsg.index[::count]), rotation=45)
-    plt.grid()
-    # noinspection PyTypeChecker
-    plt.subplot(gs[1])
-    plt.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익률', color='orange')
+    ax1.set_title(f'Max MDD [{max_mdd}%] | Min MDD [{min_mdd}%] | Avg MDD [{avg_mdd}%]')
+    step = max(1, len(df_tsg) // 15)
+    xticks = df_tsg.index[::step]
+    xticklabels = [str(x)[:10] for x in xticks]
+    ax1.set_xticks(xticks)
+    ax1.set_xticklabels(xticklabels, rotation=45)
+    ax1.grid(True, alpha=0.3)
+
+    ax2.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익률', color='orange')
     if df_kp is not None:
         # noinspection PyTypeChecker
-        plt.plot(df_kp.index, df_kp['종가'], linewidth=0.5, label='코스피', color='r')
-        plt.plot(df_kd.index, df_kd['종가'], linewidth=0.5, label='코스닥', color='b')
+        ax2.plot(df_kp.index, df_kp['종가'], linewidth=0.5, label='코스피', color='r')
+        ax2.plot(df_kd.index, df_kd['종가'], linewidth=0.5, label='코스닥', color='b')
     elif df_nd is not None:
         # noinspection PyTypeChecker
-        plt.plot(df_nd.index, df_nd['종가'], linewidth=0.5, label='NQ', color='r')
+        ax2.plot(df_nd.index, df_nd['종가'], linewidth=0.5, label='NQ', color='r')
     elif df_bc is not None:
         # noinspection PyTypeChecker
-        plt.plot(df_bc.index, df_bc['종가'], linewidth=0.5, label='KRW-BTC', color='r')
-    plt.title('지수비교')
-    count = int(len(df_ts) / 20) if int(len(df_ts) / 20) >= 1 else 1
-    plt.xticks(list(df_ts.index[::count]), rotation=45)
-    plt.legend(loc='best')
-    plt.grid()
-    # noinspection PyTypeChecker
-    plt.subplot(gs[2])
-    plt.bar(df_st.index, df_st['이익금액'], label='이익금액', color='r')
-    plt.bar(df_st.index, df_st['손실금액'], label='손실금액', color='b')
-    plt.title('시간별 수익금')
-    plt.xticks(list(df_st.index), rotation=45)
-    plt.legend(loc='best')
-    plt.grid()
-    # noinspection PyTypeChecker
-    plt.subplot(gs[3])
-    plt.bar(wt_index, wt_datap, label='이익금액', color='r')
-    plt.bar(wt_index, wt_datam, label='손실금액', color='b')
-    plt.title('요일별 수익금')
-    plt.xticks(wt_index)
-    plt.legend(loc='best')
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(f"{GRAPH_PATH}/{save_file_name}_.png")
+        ax2.plot(df_bc.index, df_bc['종가'], linewidth=0.5, label='KRW-BTC', color='r')
+    ax2.set_title('지수비교')
+    step = max(1, len(df_ts) // 15)
+    xticks = df_ts.index[::step]
+    xticklabels = [str_ymd_ios(x) for x in xticks]
+    ax2.set_xticks(xticks)
+    ax2.set_xticklabels(xticklabels, rotation=45)
+    ax2.legend(loc='best')
+    ax2.grid(True, alpha=0.3)
 
-    if buy_vars is None:
-        plt.figure(f'{backname} 결과', figsize=(12, 10))
-    else:
-        plt.figure(f'{backname} 결과', figsize=(12, 12))
+    ax3.bar(df_st.index, df_st['이익금액'], label='이익금액', color='r')
+    ax3.bar(df_st.index, df_st['손실금액'], label='손실금액', color='b')
+    ax3.set_title('시간별 수익금')
+    xticks = df_st.index
+    xticklabels = [x[11:16] for x in xticks]
+    ax3.set_xticks(xticks)
+    ax3.set_xticklabels(xticklabels, rotation=45)
+    ax3.legend(loc='best')
+    ax3.grid(True, alpha=0.3)
+
+    ax4.bar(wt_index, wt_datap, label='이익금액', color='r')
+    ax4.bar(wt_index, wt_datam, label='손실금액', color='b')
+    ax4.set_title('요일별 수익금')
+    ax4.set_xticks(wt_index)
+    ax4.legend(loc='best')
+    ax4.grid(True, alpha=0.3)
+
+    fig2 = plt.figure(f'{backname} 결과', figsize=(12, 12 if buy_vars else 10), dpi=100)
     gs = gridspec.GridSpec(nrows=2, ncols=1, height_ratios=[1, 4])
-    # noinspection PyTypeChecker
-    plt.subplot(gs[0])
-    plt.plot(df_bct.index, df_bct['보유금액'], label='보유금액', color='g')
-    plt.xticks([])
+    ax1 = fig2.add_subplot(gs[0, 0])
+    ax2 = fig2.add_subplot(gs[1, 0])
+
+    ax1.plot(df_bct.index, df_bct['보유금액'], label='보유금액', color='g')
+    ax1.set_xticks([])
     if buy_vars is None:
-        plt.xlabel('\n' + back_text + '\n' + label_text)
+        ax1.set_xlabel('\n' + back_text + '\n' + label_text)
     else:
-        plt.xlabel('\n' + back_text + '\n' + label_text + '\n\n' + buy_vars + '\n\n' + sell_vars)
-    plt.legend(loc='best')
-    plt.grid()
-    # noinspection PyTypeChecker
-    plt.subplot(gs[1])
-    plt.bar(df_tsg.index, df_tsg['이익금액'], label='이익금액', color='r')
-    plt.bar(df_tsg.index, df_tsg['손실금액'], label='손실금액', color='b')
-    plt.plot(df_tsg.index, df_tsg['수익금합계480'], linewidth=0.5, label='수익금합계480', color='k')
-    plt.plot(df_tsg.index, df_tsg['수익금합계240'], linewidth=0.5, label='수익금합계240', color='gray')
-    plt.plot(df_tsg.index, df_tsg['수익금합계120'], linewidth=0.5, label='수익금합계120', color='b')
-    plt.plot(df_tsg.index, df_tsg['수익금합계060'], linewidth=0.5, label='수익금합계60', color='g')
-    plt.plot(df_tsg.index, df_tsg['수익금합계020'], linewidth=0.5, label='수익금합계20', color='r')
-    plt.plot(df_tsg.index, df_tsg['수익금합계'], linewidth=2, label='수익금합계', color='orange')
+        ax1.set_xlabel('\n' + back_text + '\n' + label_text + '\n\n' + buy_vars + '\n\n' + sell_vars)
+    ax1.legend(loc='best')
+    ax1.grid(True, alpha=0.3)
+
+    ax2.bar(df_tsg.index, df_tsg['이익금액'], label='이익금액', color='r')
+    ax2.bar(df_tsg.index, df_tsg['손실금액'], label='손실금액', color='b')
+    ax2.plot(df_tsg.index, df_tsg['수익금합계480'], linewidth=0.5, label='수익금합계480', color='k')
+    ax2.plot(df_tsg.index, df_tsg['수익금합계240'], linewidth=0.5, label='수익금합계240', color='gray')
+    ax2.plot(df_tsg.index, df_tsg['수익금합계120'], linewidth=0.5, label='수익금합계120', color='b')
+    ax2.plot(df_tsg.index, df_tsg['수익금합계060'], linewidth=0.5, label='수익금합계60', color='g')
+    ax2.plot(df_tsg.index, df_tsg['수익금합계020'], linewidth=0.5, label='수익금합계20', color='r')
+    ax2.plot(df_tsg.index, df_tsg['수익금합계'], linewidth=2, label='수익금합계', color='orange')
     if gubun == '최적화':
         for i, endx in enumerate(endx_list):
-            plt.axvline(x=endx, color='red' if i == 0 else 'green', linestyle='--')
-        plt.axvspan(endx_list[0], df_tsg.index[-1], facecolor='gray', alpha=0.1)
-    count = int(len(df_tsg) / 20) if int(len(df_tsg) / 20) >= 1 else 1
-    plt.xticks(list(df_tsg.index[::count]), rotation=45)
-    plt.legend(loc='best')
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig(f"{GRAPH_PATH}/{save_file_name}.png")
+            ax2.axvline(x=endx, color='red' if i == 0 else 'green', linestyle='--')
+        ax2.axvspan(endx_list[0], df_tsg.index[-1], facecolor='gray', alpha=0.1)
+    step = max(1, len(df_tsg) // 20)
+    xticks = df_tsg.index[::step]
+    xticklabels = [str(x)[:10] for x in xticks]
+    ax2.set_xticks(xticks)
+    ax2.set_xticklabels(xticklabels, rotation=45)
+    ax2.legend(loc='best')
+    ax2.grid(True, alpha=0.3)
+
+    fig1.savefig(f"{GRAPH_PATH}/{save_file_name}_.png", dpi=100, bbox_inches='tight')
+    fig2.savefig(f"{GRAPH_PATH}/{save_file_name}.png", dpi=100, bbox_inches='tight')
 
     teleQ.put(f'{backname} {save_file_name.split("_")[1]} 완료.')
     teleQ.put(f"{GRAPH_PATH}/{save_file_name}_.png")
     teleQ.put(f"{GRAPH_PATH}/{save_file_name}.png")
 
-    if not schedul and not plotgraph:
+    if not schedul and not notplotshow:
+        plt.tight_layout()
         plt.show()
 
 
@@ -723,3 +736,15 @@ def GetResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
         np.round(cagr, 2),  # 11 연간 예상 수익률
         np.round(tpi, 2)    # 12 거래 성과 지수
     )
+
+
+@jit(nopython=True)
+def bootstrap_test(returns, n_bootstrap=10000):
+    n = len(returns)
+    bootstrap_returns = np.zeros(n_bootstrap)
+    for i in range(n_bootstrap):
+        bootstrap_sample = np.random.choice(returns, size=n, replace=True)
+        # noinspection PyTypeChecker
+        total_return = np.prod(1 + bootstrap_sample) - 1
+        bootstrap_returns[i] = total_return
+    return bootstrap_returns

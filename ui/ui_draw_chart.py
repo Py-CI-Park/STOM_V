@@ -157,27 +157,6 @@ class DrawChart:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균60')]:], y=self.ui.ctpg_data[fi('이동평균60')], pen=(80, 80, 80))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균120')]:], y=self.ui.ctpg_data[fi('이동평균120')], pen=(60, 60, 60))
                     self.ui.ctpg[i].addItem(CandlestickItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi('분봉고가'), fi('분봉저가')], self.ui.ctpg_xticks))
-                    for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가')]):
-                        if price > 0:
-                            arrow = pg.ArrowItem(angle=-180, tipAngle=60, headLen=10, pen='w', brush='r')
-                            arrow.setPos(self.ui.ctpg_xticks[j], price)
-                            self.ui.ctpg[i].addItem(arrow)
-                    for j, price in enumerate(self.ui.ctpg_arry[:, fi('매도가')]):
-                        if price > 0:
-                            arrow = pg.ArrowItem(angle=0, tipAngle=60, headLen=10, pen='w', brush='b')
-                            arrow.setPos(self.ui.ctpg_xticks[j], price)
-                            self.ui.ctpg[i].addItem(arrow)
-                    if 'USDT' in code or gubun == 'X':
-                        for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가2')]):
-                            if price > 0:
-                                arrow = pg.ArrowItem(angle=-180, tipAngle=60, headLen=10, pen='w', brush='m')
-                                arrow.setPos(self.ui.ctpg_xticks[j], price)
-                                self.ui.ctpg[i].addItem(arrow)
-                        for j, price in enumerate(self.ui.ctpg_arry[:, fi('매도가2')]):
-                            if price > 0:
-                                arrow = pg.ArrowItem(angle=0, tipAngle=60, headLen=10, pen='w', brush='b')
-                                arrow.setPos(self.ui.ctpg_xticks[j], price)
-                                self.ui.ctpg[i].addItem(arrow)
                 else:
                     ymax = self.ui.ctpg_data[fi('현재가')].max()
                     ymin = self.ui.ctpg_data[fi('현재가')].min()
@@ -188,27 +167,34 @@ class DrawChart:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균600')]:], y=self.ui.ctpg_data[fi('이동평균600')], pen=(80, 80, 80))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균1200')]:], y=self.ui.ctpg_data[fi('이동평균1200')], pen=(60, 60, 60))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('현재가')]:], y=self.ui.ctpg_data[fi('현재가')], pen=(200, 100, 100))
-                    for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가')]):
-                        if price > 0:
-                            arrow = pg.ArrowItem(angle=-180, tipAngle=60, headLen=10, pen='w', brush='r')
+
+                buy_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가')]) if price > 0]
+                sell_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, fi('매도가')]) if price > 0]
+                if buy_arrow_list:
+                    for j, price in buy_arrow_list:
+                        arrow = pg.ArrowItem(angle=-180, tipAngle=60, headLen=10, pen='w', brush='r')
+                        arrow.setPos(self.ui.ctpg_xticks[j], price)
+                        self.ui.ctpg[i].addItem(arrow)
+                if sell_arrow_list:
+                    for j, price in sell_arrow_list:
+                        arrow = pg.ArrowItem(angle=0, tipAngle=60, headLen=10, pen='w', brush='b')
+                        arrow.setPos(self.ui.ctpg_xticks[j], price)
+                        self.ui.ctpg[i].addItem(arrow)
+
+                if gubun == 'F':
+                    buy_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가2')]) if price > 0]
+                    sell_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, fi('매도가2')]) if price > 0]
+                    if buy_arrow_list:
+                        for j, price in buy_arrow_list:
+                            arrow = pg.ArrowItem(angle=-180, tipAngle=60, headLen=10, pen='w', brush='m')
                             arrow.setPos(self.ui.ctpg_xticks[j], price)
                             self.ui.ctpg[i].addItem(arrow)
-                    for j, price in enumerate(self.ui.ctpg_arry[:, fi('매도가')]):
-                        if price > 0:
+                    if sell_arrow_list:
+                        for j, price in sell_arrow_list:
                             arrow = pg.ArrowItem(angle=0, tipAngle=60, headLen=10, pen='w', brush='b')
                             arrow.setPos(self.ui.ctpg_xticks[j], price)
                             self.ui.ctpg[i].addItem(arrow)
-                    if 'USDT' in code or gubun == 'X':
-                        for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가2')]):
-                            if price > 0:
-                                arrow = pg.ArrowItem(angle=-180, tipAngle=60, headLen=10, pen='w', brush='m')
-                                arrow.setPos(self.ui.ctpg_xticks[j], price)
-                                self.ui.ctpg[i].addItem(arrow)
-                        for j, price in enumerate(self.ui.ctpg_arry[:, fi('매도가2')]):
-                            if price > 0:
-                                arrow = pg.ArrowItem(angle=0, tipAngle=60, headLen=10, pen='w', brush='b')
-                                arrow.setPos(self.ui.ctpg_xticks[j], price)
-                                self.ui.ctpg[i].addItem(arrow)
+
             elif factor in ('초당거래대금', '분당거래대금'):
                 ymax = self.ui.ctpg_data[fi(factor)].max()
                 ymin = self.ui.ctpg_data[fi(f'{factor}평균')].min()
@@ -218,6 +204,7 @@ class DrawChart:
                 else:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi(factor)]:], y=self.ui.ctpg_data[fi(factor)], pen=(200, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi(f'{factor}평균')]:], y=self.ui.ctpg_data[fi(f'{factor}평균')], pen=(100, 200, 100))
+
             elif factor in ('초당매도수금액', '분당매도수금액'):
                 if is_min:
                     ymax = max(self.ui.ctpg_data[fi('분당매수금액')].max(), self.ui.ctpg_data[fi('분당매도금액')].max())
@@ -232,24 +219,28 @@ class DrawChart:
                 else:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('초당매도금액')]:], y=self.ui.ctpg_data[fi('초당매도금액')], pen=(100, 100, 200))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('초당매수금액')]:], y=self.ui.ctpg_data[fi('초당매수금액')], pen=(200, 100, 100))
+
             elif factor == '당일매도수금액':
                 ymax = max(self.ui.ctpg_data[fi('당일매수금액')].max(), self.ui.ctpg_data[fi('당일매도금액')].max())
                 ymin = min(self.ui.ctpg_data[fi('당일매수금액')].min(), self.ui.ctpg_data[fi('당일매도금액')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('당일매도금액')]:], y=self.ui.ctpg_data[fi('당일매도금액')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('당일매수금액')]:], y=self.ui.ctpg_data[fi('당일매수금액')], pen=(200, 100, 100))
+
             elif factor == '최고매도수금액':
                 ymax = max(self.ui.ctpg_data[fi('최고매수금액')].max(), self.ui.ctpg_data[fi('최고매도금액')].max())
                 ymin = min(self.ui.ctpg_data[fi('최고매수금액')].min(), self.ui.ctpg_data[fi('최고매도금액')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매도금액')]:], y=self.ui.ctpg_data[fi('최고매도금액')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매수금액')]:], y=self.ui.ctpg_data[fi('최고매수금액')], pen=(200, 100, 100))
+
             elif factor == '최고매도수가격':
                 ymax = max(self.ui.ctpg_data[fi('최고매수가격')].max(), self.ui.ctpg_data[fi('최고매도가격')].max())
                 ymin = min(self.ui.ctpg_data[fi('최고매수가격')].min(), self.ui.ctpg_data[fi('최고매도가격')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매도가격')]:], y=self.ui.ctpg_data[fi('최고매도가격')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매수가격')]:], y=self.ui.ctpg_data[fi('최고매수가격')], pen=(200, 100, 100))
+
             elif factor == '체결강도':
                 ymax = max(self.ui.ctpg_data[fi('체결강도')].max(), self.ui.ctpg_data[fi('최고체결강도')].max())
                 ymin = min(self.ui.ctpg_data[fi('체결강도')].min(), self.ui.ctpg_data[fi('최저체결강도')].min())
@@ -258,6 +249,7 @@ class DrawChart:
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도')]:], y=self.ui.ctpg_data[fi('체결강도')], pen=(100, 200, 100))
+
             elif factor in ('초당체결수량', '분당체결수량'):
                 if is_min:
                     ymax = max(self.ui.ctpg_data[fi('분당매수수량')].max(), self.ui.ctpg_data[fi('분당매도수량')].max())
@@ -272,18 +264,21 @@ class DrawChart:
                 else:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('초당매도수량')]:], y=self.ui.ctpg_data[fi('초당매도수량')], pen=(100, 100, 200))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('초당매수수량')]:], y=self.ui.ctpg_data[fi('초당매수수량')], pen=(200, 100, 100))
+
             elif factor == '호가총잔량':
                 ymax = max(self.ui.ctpg_data[fi('매수총잔량')].max(), self.ui.ctpg_data[fi('매도총잔량')].max())
                 ymin = min(self.ui.ctpg_data[fi('매수총잔량')].min(), self.ui.ctpg_data[fi('매도총잔량')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('매수총잔량')]:], y=self.ui.ctpg_data[fi('매수총잔량')], pen=(200, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('매도총잔량')]:], y=self.ui.ctpg_data[fi('매도총잔량')], pen=(100, 100, 200))
+
             elif factor == '매도수호가잔량1':
                 ymax = max(self.ui.ctpg_data[fi('매수잔량1')].max(), self.ui.ctpg_data[fi('매도잔량1')].max())
                 ymin = min(self.ui.ctpg_data[fi('매수잔량1')].min(), self.ui.ctpg_data[fi('매도잔량1')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('매수잔량1')]:], y=self.ui.ctpg_data[fi('매수잔량1')], pen=(200, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('매도잔량1')]:], y=self.ui.ctpg_data[fi('매도잔량1')], pen=(100, 100, 200))
+
             elif factor in ('누적초당매도수수량', '누적분당매도수수량'):
                 if is_min:
                     ymax = max(self.ui.ctpg_data[fi('누적분당매수수량')].max(), self.ui.ctpg_data[fi('누적분당매도수량')].max())
@@ -298,12 +293,14 @@ class DrawChart:
                 else:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('누적초당매도수량')]:], y=self.ui.ctpg_data[fi('누적초당매도수량')], pen=(100, 100, 200))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('누적초당매수수량')]:], y=self.ui.ctpg_data[fi('누적초당매수수량')], pen=(200, 100, 100))
+
             elif factor == 'AROON':
                 ymax = self.ui.ctpg_data[fi('AROONU')].max()
                 ymin = self.ui.ctpg_data[fi('AROOND')].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('AROOND')]:], y=self.ui.ctpg_data[fi('AROOND')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('AROONU')]:], y=self.ui.ctpg_data[fi('AROONU')], pen=(100, 200, 100))
+
             elif factor == 'BBAND':
                 ymax = max(self.ui.ctpg_data[fi('BBU')].max(), self.ui.ctpg_data[fi('현재가')].max())
                 ymin = min(self.ui.ctpg_data[fi('BBL')].min(), self.ui.ctpg_data[fi('현재가')].min())
@@ -312,12 +309,14 @@ class DrawChart:
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('BBL')]:], y=self.ui.ctpg_data[fi('BBL')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('BBU')]:], y=self.ui.ctpg_data[fi('BBU')], pen=(100, 200, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('현재가')]:], y=self.ui.ctpg_data[fi('현재가')], pen=(200, 100, 100))
+
             elif factor == 'DMI':
                 ymax = self.ui.ctpg_data[fi('DIP')].max()
                 ymin = self.ui.ctpg_data[fi('DIM')].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('DIM')]:], y=self.ui.ctpg_data[fi('DIM')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('DIP')]:], y=self.ui.ctpg_data[fi('DIP')], pen=(100, 200, 100))
+
             elif factor == 'MACD':
                 ymax = max(self.ui.ctpg_data[fi('MACD')].max(), self.ui.ctpg_data[fi('MACDS')].max(), self.ui.ctpg_data[fi('MACDH')].max())
                 ymin = min(self.ui.ctpg_data[fi('MACD')].min(), self.ui.ctpg_data[fi('MACDS')].min(), self.ui.ctpg_data[fi('MACDH')].min())
@@ -325,18 +324,21 @@ class DrawChart:
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('MACD')]:], y=self.ui.ctpg_data[fi('MACD')], pen=(100, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('MACDH')]:], y=self.ui.ctpg_data[fi('MACDH')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('MACDS')]:], y=self.ui.ctpg_data[fi('MACDS')], pen=(100, 200, 100))
+
             elif factor == 'STOCHS':
                 ymax = self.ui.ctpg_data[fi('STOCHSD')].max()
                 ymin = self.ui.ctpg_data[fi('STOCHSK')].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('STOCHSD')]:], y=self.ui.ctpg_data[fi('STOCHSD')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('STOCHSK')]:], y=self.ui.ctpg_data[fi('STOCHSK')], pen=(100, 200, 100))
+
             elif factor == 'STOCHF':
                 ymax = self.ui.ctpg_data[fi('STOCHFD')].max()
                 ymin = self.ui.ctpg_data[fi('STOCHFK')].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('STOCHFD')]:], y=self.ui.ctpg_data[fi('STOCHFD')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('STOCHFK')]:], y=self.ui.ctpg_data[fi('STOCHFK')], pen=(100, 200, 100))
+
             else:
                 pen = (100, 200, 100)
                 if is_min:

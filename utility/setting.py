@@ -442,7 +442,7 @@ list_stock_tick = [
     '누적초당매도수량', '초당거래대금평균', '등락율각도', '당일거래대금각도', '전일비각도'
 ]
 
-list_stock_min = [
+list_stock_min_base = [
     'index', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '분당매수수량', '분당매도수량',
     '거래대금증감', '전일비', '회전율', '전일동시간비', '시가총액', '라운드피겨위5호가이내', 'VI해제시간', 'VI가격', 'VI호가단위',
     '분봉시가', '분봉고가', '분봉저가',
@@ -469,7 +469,7 @@ list_coin_tick = [
     '누적초당매도수량', '초당거래대금평균', '등락율각도', '당일거래대금각도'
 ]
 
-list_coin_min = [
+list_coin_min_base = [
     'index', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '분당매수수량', '분당매도수량',
     '분봉시가', '분봉고가', '분봉저가',
     '분당거래대금', '고저평균대비등락율', '저가대비고가등락율', '분당매수금액', '분당매도금액',
@@ -490,14 +490,14 @@ list_indicator       = [
     'MACDH', 'MFI', 'MOM', 'OBV', 'PPO', 'ROC', 'RSI', 'SAR', 'STOCHSK', 'STOCHSD', 'STOCHFK', 'STOCHFD', 'WILLR'
 ]
 
-list_stock_min    = list_stock_min + list_indicator
-list_coin_min     = list_coin_min + list_indicator
+list_stock_min    = list_stock_min_base + list_indicator
+list_coin_min     = list_coin_min_base + list_indicator
 list_stock_tick2  = list_stock_tick + list_chegyeol_colum1
-list_stock_min2   = list_stock_min + list_chegyeol_colum1 + list_indicator
+list_stock_min2   = list_stock_min_base + list_chegyeol_colum1 + list_indicator
 list_coin_tick2   = list_coin_tick + list_chegyeol_colum1
-list_coin_min2    = list_coin_min + list_chegyeol_colum1 + list_indicator
+list_coin_min2    = list_coin_min_base + list_chegyeol_colum1 + list_indicator
 list_future_tick2 = list_coin_tick + list_chegyeol_colum2
-list_future_min2  = list_coin_min + list_chegyeol_colum2 + list_indicator
+list_future_min2  = list_coin_min_base + list_chegyeol_colum2 + list_indicator
 
 dict_order_ratio = {
     1: {

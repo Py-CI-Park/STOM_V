@@ -8,7 +8,8 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
-from backtester.back_static import SendResult, PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd
+from backtester.back_static import SendResult, PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd, \
+    bootstrap_test
 from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
 from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, columns_vc, \
     DICT_SET, DB_SETTING, DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
@@ -235,6 +236,15 @@ class Total:
         SendResult(self.GetSendData(), result)
         tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
 
+        bootstrap_dist = bootstrap_test(self.df_tsg['수익률'].values / 100)
+        bootstrap_avg  = np.round(np.mean(bootstrap_dist), 2)
+        bootstrap_min  = np.round(np.percentile(bootstrap_dist, 2.5), 2)
+        bootstrap_max  = np.round(np.percentile(bootstrap_dist, 97.5), 2)
+        # noinspection PyTypeChecker
+        bootstrap_pv   = np.round(np.mean(bootstrap_dist > 0) * 100, 2)
+        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
+        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익을 낼 것이며, 수익일 확률은 [{bootstrap_pv}%]입니다."
+
         startday, endday = str(self.startday), str(self.endday)
         startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
         endday   = f'{endday[:4]}-{endday[4:6]}-{endday[6:]}'
@@ -264,7 +274,7 @@ class Total:
         label_text = f'변수 {self.vars}\n종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{tsg_unit}, ' \
                      f'거래횟수 {tc}회, 일평균거래횟수 {atc:.1f}회, 적정최대보유종목수 {mhct}개, 평균보유기간 {ah:.2f}{bc_unit}\n' \
                      f'익절 {pc}회, 손절 {mc}회, 승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, ' \
-                     f'수익금합계 {tsg:,}{tsg_unit}, {mdd_text}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
+                     f'수익금합계 {tsg:,}{tsg_unit}, {mdd_text}, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%{bootstrap_text}'
 
         if self.dict_set['스톰라이브']:
             data_list = [
@@ -292,6 +302,8 @@ class Total:
             con.commit()
             con.close()
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적화전략 {self.buystg_name}의 최적값 및 평균틱수 갱신 완료'))
+
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
 
         save_file_name = f'{self.savename}_{self.buystg_name}_{self.optistandard}_{self.file_name}'
         data = [f'{self.vars}', int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg, self.optivars]

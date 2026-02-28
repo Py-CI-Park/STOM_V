@@ -98,12 +98,12 @@ class TelegramBot:
     async def process_messages(self):
         while self.running:
             data = await self.message_queue.get()
-            if isinstance(data, str):
+            if data.__class__ == str:
                 if '.png' in data:
                     await self.send_photo(data)
                 else:
                     await self.send_message(data)
-            elif isinstance(data, pd.DataFrame):
+            elif data.__class__ == pd.DataFrame:
                 text = self.GetTextFromDataframe(data)
                 await self.send_message(text)
             self.message_queue.task_done()

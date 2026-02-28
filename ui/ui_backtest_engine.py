@@ -23,7 +23,7 @@ from backtester.backengine_binance_tick2 import BackEngineBinanceTick2
 from backtester.backengine_binance_min import BackEngineBinanceMin
 from backtester.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
-from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, str_hm, dt_hm, timedelta_sec
+from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec
 from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
     DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 

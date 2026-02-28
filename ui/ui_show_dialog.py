@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from coin.kimp_upbit_binance import Kimp
 from ui.set_text_stg_button import dict_stg_name
-from utility.static import qtest_qwait, str_hms, dt_hms, str_hm, dt_hm
+from utility.static import qtest_qwait, str_hms, dt_hms
 from utility.setting import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
     DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 from ui.set_style import style_bc_bt, style_bc_bb
@@ -391,8 +391,8 @@ def chart_moneytop_list(ui):
                     f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
         else:
             query = f"SELECT * FROM moneytop WHERE " \
-                    f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
-                    f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
+                    f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
+                    f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
             is_min = True
     else:
         if '키움증권' in ui.dict_set['증권사']:
@@ -408,8 +408,8 @@ def chart_moneytop_list(ui):
                     f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
         else:
             query = f"SELECT * FROM moneytop WHERE " \
-                    f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
-                    f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
+                    f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
+                    f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
             is_min = True
 
     df = None
