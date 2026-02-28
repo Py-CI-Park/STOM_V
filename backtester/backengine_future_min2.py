@@ -5,7 +5,7 @@ from backtester.backengine_future_tick2 import BackEngineFutureTick2
 
 class BackEngineFutureMin2(BackEngineFutureTick2):
     def Strategy(self):
-        체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
+        현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
             분봉시가, 분봉고가, 분봉저가, \
             분당거래대금, 고저평균대비등락율, 저가대비고가등락율, 분당매수금액, 분당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
             매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
@@ -21,7 +21,7 @@ class BackEngineFutureMin2(BackEngineFutureTick2):
         self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
-        self.UpdateHighLow(분봉고가, 분봉고가)
+        self.UpdateHighLow(분봉고가, 분봉저가)
 
         start, end = self.indexn+1-self.tick_count, self.indexn+1
         arry_indi = self.arry_code[start:end, :]

@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QLabel
 from ui.set_style import qfont12, qfont13, qfont14, style_pgbar, style_bc_dk
 from ui.set_text import optistandard, optitext, train_period, valid_period, test_period, optimized_count, opti_standard
 from utility.setting import columns_bt
-from utility.static import str_hms, str_hm, dt_hms, dt_hm, timedelta_sec
+from utility.static import str_hms, dt_hms, timedelta_sec
 
 
 class SetCoinBack:

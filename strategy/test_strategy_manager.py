@@ -130,10 +130,10 @@ def example_realtime_simulation(market_type: str = 'stock', data_type: str = 'ti
                     # 수익률 계산 (수수료 0.3% 반영)
                     if current_position['action'] == 'BUY':
                         actual_return = (current_price - current_position['price']) / current_position['price']
-                        actual_return -= 0.003  # 매수/매도 수수료
+                        actual_return -= 0.03  # 매수/매도 수수료
                     else:
                         actual_return = (current_position['price'] - current_price) / current_position['price']
-                        actual_return -= 0.003  # 공매도 수수료
+                        actual_return -= 0.03  # 공매도 수수료
 
                     profit_loss = current_position['amount'] * actual_return
                     total_profit_loss += profit_loss

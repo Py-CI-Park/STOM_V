@@ -111,24 +111,24 @@ class DeepLearningConfigManager:
             'transformer': TransformerConfig()
         }
     
-    def save_config(self, config_name: str, config: Dict, format: str = 'json'):
+    def save_config(self, config_name: str, config: Dict, format_: str = 'json'):
         """
         설정 저장
         
         Args:
             config_name: 설정 이름
             config: 설정 딕셔너리
-            format: 'json' 또는 'yaml'
+            format_: 'json' 또는 'yaml'
         """
         try:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f"{config_name}_{timestamp}.{format}"
+            filename = f"{config_name}_{timestamp}.{format_}"
             filepath = os.path.join(self.config_dir, filename)
             
-            if format == 'json':
+            if format_ == 'json':
                 with open(filepath, 'w', encoding='utf-8') as f:
                     json.dump(config, f, indent=2, ensure_ascii=False, default=str)
-            elif format == 'yaml':
+            elif format_ == 'yaml':
                 with open(filepath, 'w', encoding='utf-8') as f:
                     yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
             
@@ -154,16 +154,16 @@ class DeepLearningConfigManager:
                 logger.error(f"설정 파일이 없습니다: {filepath}")
                 return None
             
-            format = filepath.split('.')[-1]
+            format_ = filepath.split('.')[-1]
             
-            if format == 'json':
+            if format_ == 'json':
                 with open(filepath, 'r', encoding='utf-8') as f:
                     config = json.load(f)
-            elif format == 'yaml':
+            elif format_ == 'yaml':
                 with open(filepath, 'r', encoding='utf-8') as f:
                     config = yaml.safe_load(f)
             else:
-                logger.error(f"지원하지 않는 형식: {format}")
+                logger.error(f"지원하지 않는 형식: {format_}")
                 return None
             
             logger.info(f"설정 로드 완료: {filepath}")
@@ -224,7 +224,7 @@ class DeepLearningConfigManager:
             
         except Exception as e:
             logger.error(f"실험 설정 생성 실패: {e}")
-            return None
+            return ''
     
     def list_configs(self) -> List[str]:
         """

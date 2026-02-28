@@ -117,11 +117,46 @@ def str_ymdhms(std_time=None):
         return strf_time('%Y%m%d%H%M%S')
 
 
+def str_ymdhm(std_time=None):
+    if std_time is not None:
+        return strf_time('%Y%m%d%H%M', std_time)
+    else:
+        return strf_time('%Y%m%d%H%M')
+
+
 def str_ymdhms_ios(std_time=None):
     if std_time is not None:
         return strf_time('%Y-%m-%d %H:%M:%S', std_time)
     else:
         return strf_time('%Y-%m-%d %H:%M:%S')
+
+
+def str_ymdhm_ios(std_time=None):
+    if std_time is not None:
+        return strf_time('%Y-%m-%d %H:%M', std_time)
+    else:
+        return strf_time('%Y-%m-%d %H:%M')
+
+
+def str_ymd_ios(std_time=None):
+    if std_time is not None:
+        return strf_time('%Y-%m-%d', std_time)
+    else:
+        return strf_time('%Y-%m-%d')
+
+
+def str_hms_ios(std_time=None):
+    if std_time is not None:
+        return strf_time('%H:%M:%S', std_time)
+    else:
+        return strf_time('%H:%M:%S')
+
+
+def str_hm_ios(std_time=None):
+    if std_time is not None:
+        return strf_time('%H:%M', std_time)
+    else:
+        return strf_time('%H:%M')
 
 
 def str_ymdhms_utc(time_):

@@ -5,7 +5,7 @@ from utility.static import dt_ymdhms, GetIndicator, GetHogaunit
 
 class BackEngineKiwoomMin(BackEngineKiwoomTick):
     def Strategy(self):
-        체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
+        현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
             거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, 라운드피겨위5호가이내, VI해제시간, VI가격, VI호가단위, \
             분봉시가, 분봉고가, 분봉저가, \
             분당거래대금, 고저평균대비등락율, 저가대비고가등락율, 분당매수금액, 분당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
@@ -23,7 +23,7 @@ class BackEngineKiwoomMin(BackEngineKiwoomTick):
         self.shogainfo = shogainfo[:self.buy_hj_limit]
         self.bhogainfo = bhogainfo[:self.sell_hj_limit]
 
-        self.UpdateHighLow(분봉고가, 분봉고가)
+        self.UpdateHighLow(분봉고가, 분봉저가)
 
         start, end = self.indexn+1-self.tick_count, self.indexn+1
         arry_indi = self.arry_code[start:end, :]

@@ -6,7 +6,7 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
-from backtester.back_static import PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd
+from backtester.back_static import PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd, bootstrap_test
 from utility.static import now, str_ymdhms
 from utility.setting import DB_STRATEGY, DB_BACKTEST, ui_num, stockreadlines, columns_vj, DICT_SET, DB_STOCK_BACK_TICK, \
     DB_COIN_BACK_TICK, coinreadlines, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, futurereadlines, \
@@ -156,6 +156,15 @@ class Total:
         result   = AddMdd(arry_tsg, result)
         tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
 
+        bootstrap_dist = bootstrap_test(self.df_tsg['수익률'].values / 100)
+        bootstrap_avg  = np.round(np.mean(bootstrap_dist), 2)
+        bootstrap_min  = np.round(np.percentile(bootstrap_dist, 2.5), 2)
+        bootstrap_max  = np.round(np.percentile(bootstrap_dist, 97.5), 2)
+        # noinspection PyTypeChecker
+        bootstrap_pv   = np.round(np.mean(bootstrap_dist > 0) * 100, 2)
+        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
+        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익을 낼 것이며, 수익일 확률은 [{bootstrap_pv}%]입니다."
+
         startday, endday = str(self.startday), str(self.endday)
         startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
         endday   = f'{endday[:4]}-{endday[4:6]}-{endday[6:]}'
@@ -179,6 +188,7 @@ class Total:
                      f'최대낙폭금액 {mdd_:,.0f}{tsg_unit}, 최대낙폭률 {mdd:.2f}%, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테스팅 결과\n' + label_text))
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
 
         if self.dict_set['스톰라이브']:
             data_list = [
@@ -226,12 +236,12 @@ class Total:
                     sell_vars = f'{sell_vars}, {text}'
 
             PlotShow('백테스트', is_tick, self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
-                     self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
+                     self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text + bootstrap_text,
                      save_file_name, self.schedul, False, buy_vars=buy_vars, sell_vars=sell_vars)
         else:
             if not self.dict_set['그래프저장하지않기']:
                 PlotShow('백테스트', is_tick, self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
-                         self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text,
+                         self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text + bootstrap_text,
                          save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
 
         self.mq.put(f'{self.backname} 완료')

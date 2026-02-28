@@ -3,7 +3,7 @@ import psutil
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QGroupBox, QLabel
 from ui.set_style import style_ck_bx, style_pgbar, style_bc_dk
-from utility.static import str_hms, dt_hms, str_hm, dt_hm, timedelta_sec
+from utility.static import str_hms, dt_hms, timedelta_sec
 
 
 class SetDialogBack:
