@@ -215,6 +215,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             매수총잔량, 매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
             매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, 매도수5호가잔량합, \
             관심종목 = self.arry_data[self.indexn, 1:36]
+        저가대비고가등락율, 순매수금액 = round((고가 / 저가 - 1) * 100, 2), int((초당매수수량 - 초당매도수량) * 현재가 / 1_000_000)
         종목코드, 데이터길이, 시분초, 호가단위 = self.code, self.tick_count, int(str(self.index)[8:]), 매도호가2 - 매도호가1
         self.bhogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         self.shogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
@@ -251,7 +252,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(now(), vturn, vkey): continue
-                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                        self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30),
                                           매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             exec(self.buystg)
@@ -262,7 +263,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     if '매도' in gubun:
                         if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
                         if self.CancelSellOrder(매수분할횟수, now(), vturn, vkey): continue
-                        self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                        self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30),
                                            매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['코인매도분할횟수'] == 1:
                             exec(self.sellstg)
@@ -300,7 +301,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     if '매수' in gubun:
                         if not 관심종목: continue
                         if self.CancelBuyOrder(now(), vturn, vkey): continue
-                        self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                        self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30),
                                           매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if not 보유중:
                             if self.back_type != '조건최적화':
@@ -317,7 +318,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
                     if '매도' in gubun:
                         if self.CheckSonjeol(수익률, 수익금, vturn, vkey): continue
                         if self.CancelSellOrder(매수분할횟수, now(), vturn, vkey): continue
-                        self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                        self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30),
                                            매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                         if self.dict_set['코인매도분할횟수'] == 1:
                             if self.back_type != '조건최적화':
@@ -354,7 +355,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             if '매수' in gubun:
                 if not 관심종목: return
                 if self.CancelBuyOrder(now(), vturn, vkey): return
-                self.SetBuyCount3(vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                self.SetBuyCount2(vturn, vkey, 보유중, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30),
                                   매수분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if not 보유중:
                     exec(self.buystg)
@@ -365,7 +366,7 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             if '매도' in gubun:
                 if self.CheckSonjeol(수익률, 수익금, vturn, vkey): return
                 if self.CancelSellOrder(매수분할횟수, now(), vturn, vkey): return
-                self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30),
+                self.SetSellCount2(vturn, vkey, 보유수량, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30),
                                    매도분할횟수, 매도호가1, 매수호가1, 호가단위)
                 if self.dict_set['코인매도분할횟수'] == 1:
                     exec(self.sellstg)
@@ -444,16 +445,18 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             cancel = True
         return cancel
 
-    def SetBuyCount3(self, vturn, vkey, 보유중, 매수가, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 매수분할횟수, 매도호가1, 매수호가1, 호가단위):
+    def SetBuyCount2(self, vturn, vkey, 보유중, 매수가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도, 매수분할횟수, 매도호가1, 매수호가1, 호가단위):
         if self.set_weight[0] == 0:
             betting = self.betting
         else:
             if self.set_weight[0] == 1:
-                비중조절기준 = round((고가 / 저가 - 1) * 100, 2)
+                비중조절기준 = 저가대비고가등락율
             elif self.set_weight[0] == 2:
-                비중조절기준 = 등락율각도
+                비중조절기준 = 순매수금액
+            elif self.set_weight[0] == 3:
+                비중조절기준 = 당일거래대금
             else:
-                비중조절기준 = 당일거래대금각도
+                비중조절기준 = 등락율각도
 
             if 비중조절기준 < self.set_weight[1]:
                 betting = self.betting * self.set_weight[5]
@@ -522,16 +525,18 @@ class BackEngineFutureTick2(BackEngineFutureTick):
             cancel = True
         return cancel
 
-    def SetSellCount2(self, vturn, vkey, 보유수량, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 매도분할횟수, 매도호가1, 매수호가1, 호가단위):
+    def SetSellCount2(self, vturn, vkey, 보유수량, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도, 매도분할횟수, 매도호가1, 매수호가1, 호가단위):
         if self.set_weight[0] == 0:
             betting = self.betting
         else:
             if self.set_weight[0] == 1:
-                비중조절기준 = round((고가 / 저가 - 1) * 100, 2)
+                비중조절기준 = 저가대비고가등락율
             elif self.set_weight[0] == 2:
-                비중조절기준 = 등락율각도
+                비중조절기준 = 순매수금액
+            elif self.set_weight[0] == 3:
+                비중조절기준 = 당일거래대금
             else:
-                비중조절기준 = 당일거래대금각도
+                비중조절기준 = 등락율각도
 
             if 비중조절기준 < self.set_weight[1]:
                 betting = self.betting * self.set_weight[5]

@@ -255,11 +255,9 @@ class SetDialogEtc:
         self.ui.bjs_groupBoxxx_02 = QGroupBox('기준값 구간 및 비율 설정', self.ui.dialog_bjjs)
         self.ui.bjs_checkBoxxx_01 = self.wc.setCheckBox('비중조절사용안함', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.bjs_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_03 = self.wc.setCheckBox('등락율각도', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_04 = self.wc.setCheckBox('당일거래대금각도', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_05 = self.wc.setCheckBox('전일비', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_06 = self.wc.setCheckBox('회전율', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_07 = self.wc.setCheckBox('전일동시간비', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
+        self.ui.bjs_checkBoxxx_03 = self.wc.setCheckBox('순매수금액(백만)', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
+        self.ui.bjs_checkBoxxx_04 = self.wc.setCheckBox('당일거래대금(백만)', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
+        self.ui.bjs_checkBoxxx_05 = self.wc.setCheckBox('등락율각도(30)', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.bjs_labellllll_01 = QLabel('if    비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
         self.ui.bjs_labellllll_02 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
         self.ui.bjs_labellllll_03 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
@@ -277,7 +275,7 @@ class SetDialogEtc:
 
         self.ui.bjs_check_button_list = [
             self.ui.bjs_checkBoxxx_01, self.ui.bjs_checkBoxxx_02, self.ui.bjs_checkBoxxx_03, self.ui.bjs_checkBoxxx_04,
-            self.ui.bjs_checkBoxxx_05, self.ui.bjs_checkBoxxx_06, self.ui.bjs_checkBoxxx_07
+            self.ui.bjs_checkBoxxx_05
         ]
 
         self.ui.dialog_bjjc = self.wc.setDialog('COIN BETTING CONTROL', tab=self.ui)
@@ -288,8 +286,9 @@ class SetDialogEtc:
         self.ui.bjc_groupBoxxx_02 = QGroupBox('기준값 구간 및 비율 설정', self.ui.dialog_bjjc)
         self.ui.bjc_checkBoxxx_01 = self.wc.setCheckBox('비중조절사용안함', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.bjc_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
-        self.ui.bjc_checkBoxxx_03 = self.wc.setCheckBox('등락율각도', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
-        self.ui.bjc_checkBoxxx_04 = self.wc.setCheckBox('당일거래대금각도', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
+        self.ui.bjc_checkBoxxx_03 = self.wc.setCheckBox('순매수금액(백만)', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
+        self.ui.bjc_checkBoxxx_04 = self.wc.setCheckBox('당일거래대금', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
+        self.ui.bjc_checkBoxxx_05 = self.wc.setCheckBox('등락율각도(30)', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.bjc_labellllll_01 = QLabel('if    비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
         self.ui.bjc_labellllll_02 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
         self.ui.bjc_labellllll_03 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
@@ -306,7 +305,8 @@ class SetDialogEtc:
         self.ui.bjc_lineEdittt_09 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
 
         self.ui.bjc_check_button_list = [
-            self.ui.bjc_checkBoxxx_01, self.ui.bjc_checkBoxxx_02, self.ui.bjc_checkBoxxx_03, self.ui.bjc_checkBoxxx_04
+            self.ui.bjc_checkBoxxx_01, self.ui.bjc_checkBoxxx_02, self.ui.bjc_checkBoxxx_03, self.ui.bjc_checkBoxxx_04,
+            self.ui.bjc_checkBoxxx_05
         ]
 
         self.ui.dialog_std = self.wc.setDialog('OPTIMIZ STD LIMIT', tab=self.ui)
@@ -640,10 +640,8 @@ class SetDialogEtc:
         self.ui.bjs_checkBoxxx_01.setGeometry(5, 25, 300, 20)
         self.ui.bjs_checkBoxxx_02.setGeometry(5, 50, 140, 20)
         self.ui.bjs_checkBoxxx_03.setGeometry(5, 75, 140, 20)
-        self.ui.bjs_checkBoxxx_04.setGeometry(5, 100, 140, 20)
-        self.ui.bjs_checkBoxxx_05.setGeometry(160, 50, 140, 20)
-        self.ui.bjs_checkBoxxx_06.setGeometry(160, 75, 140, 20)
-        self.ui.bjs_checkBoxxx_07.setGeometry(160, 100, 140, 20)
+        self.ui.bjs_checkBoxxx_04.setGeometry(160, 50, 140, 20)
+        self.ui.bjs_checkBoxxx_05.setGeometry(160, 75, 140, 20)
         self.ui.bjs_labellllll_01.setGeometry(5, 25, 300, 20)
         self.ui.bjs_labellllll_02.setGeometry(5, 50, 300, 20)
         self.ui.bjs_labellllll_03.setGeometry(5, 75, 300, 20)
@@ -667,7 +665,8 @@ class SetDialogEtc:
         self.ui.bjc_checkBoxxx_01.setGeometry(5, 25, 300, 20)
         self.ui.bjc_checkBoxxx_02.setGeometry(5, 50, 140, 20)
         self.ui.bjc_checkBoxxx_03.setGeometry(5, 75, 140, 20)
-        self.ui.bjc_checkBoxxx_04.setGeometry(5, 100, 140, 20)
+        self.ui.bjc_checkBoxxx_04.setGeometry(160, 50, 140, 20)
+        self.ui.bjc_checkBoxxx_05.setGeometry(160, 75, 140, 20)
         self.ui.bjc_labellllll_01.setGeometry(5, 25, 300, 20)
         self.ui.bjc_labellllll_02.setGeometry(5, 50, 300, 20)
         self.ui.bjc_labellllll_03.setGeometry(5, 75, 300, 20)

@@ -19,6 +19,5 @@ if '%errorlevel%' NEQ '0' (
 :gotAdmin
     pushd "%CD%"
     CD /D "%~dp0"
-    python ./utility/database_check.py
     python stom.py
     pause

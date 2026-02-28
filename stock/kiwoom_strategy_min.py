@@ -343,6 +343,8 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
         VI아래5호가 = GetUvilower5(VI가격, VI호가단위, 체결시간)
         VI해제시간_ = int(str_ymdhms(VI해제시간))
         평균값계산틱수 = self.dict_set['주식평균값계산틱수']
+        저가대비고가등락율 = round((고가 / 저가 - 1) * 100, 2)
+        순매수금액 = int((분당매수수량 - 분당매도수량) * 현재가 / 1_000_000)
         이동평균005, 이동평균010, 이동평균020, 이동평균060, 이동평균120, 최고현재가_, 최저현재가_, 최고분봉고가_, 최저분봉저가_ = 0., 0., 0., 0., 0., 0, 0, 0, 0
         체결강도평균_, 최고체결강도_, 최저체결강도_, 최고분당매수수량_, 최고분당매도수량_ = 0., 0., 0., 0, 0
         누적분당매수수량_, 누적분당매도수량_, 분당거래대금평균_, 등락율각도_, 당일거래대금각도_, 전일비각도_ = 0, 0, 0., 0., 0., 0.
@@ -530,7 +532,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                     매수수량 = 0
 
                     if A or (B and C) or C:
-                        매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
+                        매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30))
 
                     if A or (B and C) or D:
                         매수 = True
@@ -570,7 +572,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                     if A or E or F:
                         매도수량 = 보유수량
                     elif (B and C) or C:
-                        매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
+                        매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30))
 
                     if A or (B and C) or D:
                         if self.sellstrategy is not None:
