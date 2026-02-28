@@ -319,6 +319,8 @@ class FutureStrategyMin(FutureStrategyTick):
         시분초, 호가단위 = int(str(체결시간)[8:] + '00'), self.dict_info[종목코드]['호가단위']
         데이터길이 = len(self.dict_arry[종목코드]) + 1 if 종목코드 in self.dict_arry else 1
         평균값계산틱수 = self.dict_set['주식평균값계산틱수']
+        저가대비고가등락율 = round((고가 / 저가 - 1) * 100, 2)
+        순매수금액 = int((분당매수수량 - 분당매도수량) * 현재가 / 1_000_000)
         이동평균005, 이동평균010, 이동평균020, 이동평균060, 이동평균120, 최고현재가_, 최저현재가_, 최고분봉고가_, 최저분봉저가_ = 0., 0., 0., 0., 0., 0, 0, 0, 0
         체결강도평균_, 최고체결강도_, 최저체결강도_, 최고분당매수수량_, 최고분당매도수량_ = 0., 0., 0., 0, 0
         누적분당매수수량_, 누적분당매도수량_, 분당거래대금평균_, 등락율각도_, 당일거래대금각도_, 전일비각도_ = 0, 0, 0., 0., 0., 0.
@@ -508,7 +510,7 @@ class FutureStrategyMin(FutureStrategyTick):
                 if BBT and BLK and (A or B or (C and D) or (C and E) or D or E or F or G):
                     매수수량 = 0
                     if not (F or G):
-                        매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
+                        매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30))
 
                     if A or B or (C and (D or E)) or F or G:
                         BUY_LONG, SELL_SHORT = True, True
@@ -563,7 +565,7 @@ class FutureStrategyMin(FutureStrategyTick):
                     if A or B or H or J or K or L or M or N:
                         매도수량 = 보유수량
                     elif not (F or G):
-                        매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30))
+                        매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30))
 
                     if A or B or (C and (D or E)) or F or G:
                         if self.sellstrategy is not None:

@@ -10,8 +10,6 @@ def setting_stock_weight_cotrol_load(ui):
     ui.bjs_checkBoxxx_03.setChecked(False)
     ui.bjs_checkBoxxx_04.setChecked(False)
     ui.bjs_checkBoxxx_05.setChecked(False)
-    ui.bjs_checkBoxxx_06.setChecked(False)
-    ui.bjs_checkBoxxx_07.setChecked(False)
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stockbuyorder')
     bjjj_list = df['주식비중조절'][0]
     bjjj_list = bjjj_list.split(';')
@@ -20,8 +18,6 @@ def setting_stock_weight_cotrol_load(ui):
     elif bjjj_list[0] == '2': ui.bjs_checkBoxxx_03.setChecked(True)
     elif bjjj_list[0] == '3': ui.bjs_checkBoxxx_04.setChecked(True)
     elif bjjj_list[0] == '4': ui.bjs_checkBoxxx_05.setChecked(True)
-    elif bjjj_list[0] == '5': ui.bjs_checkBoxxx_06.setChecked(True)
-    elif bjjj_list[0] == '6': ui.bjs_checkBoxxx_07.setChecked(True)
     ui.bjs_lineEdittt_01.setText(bjjj_list[1])
     ui.bjs_lineEdittt_02.setText(bjjj_list[2])
     ui.bjs_lineEdittt_03.setText(bjjj_list[3])
@@ -40,8 +36,6 @@ def setting_stock_weight_cotrol_save(ui):
     elif ui.bjs_checkBoxxx_03.isChecked(): bjjj_list.append('2')
     elif ui.bjs_checkBoxxx_04.isChecked(): bjjj_list.append('3')
     elif ui.bjs_checkBoxxx_05.isChecked(): bjjj_list.append('4')
-    elif ui.bjs_checkBoxxx_06.isChecked(): bjjj_list.append('5')
-    elif ui.bjs_checkBoxxx_07.isChecked(): bjjj_list.append('6')
     if not bjjj_list:
         QMessageBox.critical(ui.dialog_bjjs, '오류 알림', '비중조절 기준값을 선택합시오.\n')
         return
@@ -81,6 +75,7 @@ def setting_coin_weight_cotrol_load(ui):
     ui.bjc_checkBoxxx_02.setChecked(False)
     ui.bjc_checkBoxxx_03.setChecked(False)
     ui.bjc_checkBoxxx_04.setChecked(False)
+    ui.bjc_checkBoxxx_05.setChecked(False)
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coinbuyorder')
     bjjj_list = df['코인비중조절'][0]
     bjjj_list = bjjj_list.split(';')
@@ -88,6 +83,7 @@ def setting_coin_weight_cotrol_load(ui):
     elif bjjj_list[0] == '1': ui.bjc_checkBoxxx_02.setChecked(True)
     elif bjjj_list[0] == '2': ui.bjc_checkBoxxx_03.setChecked(True)
     elif bjjj_list[0] == '3': ui.bjc_checkBoxxx_04.setChecked(True)
+    elif bjjj_list[0] == '4': ui.bjc_checkBoxxx_05.setChecked(True)
     ui.bjc_lineEdittt_01.setText(bjjj_list[1])
     ui.bjc_lineEdittt_02.setText(bjjj_list[2])
     ui.bjc_lineEdittt_03.setText(bjjj_list[3])
@@ -105,6 +101,7 @@ def setting_coin_weight_cotrol_save(ui):
     elif ui.bjc_checkBoxxx_02.isChecked(): bjjj_list.append('1')
     elif ui.bjc_checkBoxxx_03.isChecked(): bjjj_list.append('2')
     elif ui.bjc_checkBoxxx_04.isChecked(): bjjj_list.append('3')
+    elif ui.bjc_checkBoxxx_05.isChecked(): bjjj_list.append('4')
     if not bjjj_list:
         QMessageBox.critical(ui.dialog_bjjc, '오류 알림', '비중조절 기준값을 선택합시오.\n')
         return

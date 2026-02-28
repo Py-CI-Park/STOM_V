@@ -407,6 +407,8 @@ class KiwoomStrategyTick:
         VI아래5호가 = GetUvilower5(VI가격, VI호가단위, 체결시간)
         VI해제시간_ = int(str_ymdhms(VI해제시간))
         평균값계산틱수 = self.dict_set['주식평균값계산틱수']
+        저가대비고가등락율 = round((고가 / 저가 - 1) * 100, 2)
+        순매수금액 = int((초당매수수량 - 초당매도수량) * 현재가 / 1_000_000)
         이동평균0060, 이동평균0300, 이동평균0600, 이동평균1200, 최고현재가_, 최저현재가_ = 0., 0., 0., 0., 0, 0
         체결강도평균_, 최고체결강도_, 최저체결강도_, 최고초당매수수량_, 최고초당매도수량_ = 0., 0., 0., 0, 0
         누적초당매수수량_, 누적초당매도수량_, 초당거래대금평균_, 등락율각도_, 당일거래대금각도_, 전일비각도_ = 0, 0, 0., 0., 0., 0.
@@ -517,7 +519,7 @@ class KiwoomStrategyTick:
                 매수수량 = 0
 
                 if A or (B and C) or C:
-                    매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
+                    매수수량 = self.SetBuyCount(분할매수횟수, 매입가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30))
 
                 if A or (B and C) or D:
                     매수 = True
@@ -557,7 +559,7 @@ class KiwoomStrategyTick:
                 if A or E or F:
                     매도수량 = 보유수량
                 elif (B and C) or C:
-                    매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도(30), 당일거래대금각도(30), 전일비, 회전율, 전일동시간비)
+                    매도수량 = self.SetSellCount(분할매도횟수, 보유수량, 매입가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도(30))
 
                 if A or (B and C) or D:
                     if self.sellstrategy is not None:
@@ -599,22 +601,18 @@ class KiwoomStrategyTick:
             gap = (now() - 틱수신시간).total_seconds()
             self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
 
-    def SetBuyCount(self, 분할매수횟수, 매입가, 현재가, 고가, 저가, 등락율각도, 당일거래대금각도, 전일비, 회전율, 전일동시간비):
+    def SetBuyCount(self, 분할매수횟수, 매입가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도):
         if self.dict_set['주식비중조절'][0] == 0:
             betting = self.int_tujagm
         else:
             if self.dict_set['주식비중조절'][0] == 1:
-                비중조절기준 = round((고가 / 저가 - 1) * 100, 2)
+                비중조절기준 = 저가대비고가등락율
             elif self.dict_set['주식비중조절'][0] == 2:
-                비중조절기준 = 등락율각도
+                비중조절기준 = 순매수금액
             elif self.dict_set['주식비중조절'][0] == 3:
-                비중조절기준 = 당일거래대금각도
-            elif self.dict_set['주식비중조절'][0] == 4:
-                비중조절기준 = 전일비
-            elif self.dict_set['주식비중조절'][0] == 5:
-                비중조절기준 = 회전율
+                비중조절기준 = 당일거래대금
             else:
-                비중조절기준 = 전일동시간비
+                비중조절기준 = 등락율각도
 
             if 비중조절기준 < self.dict_set['주식비중조절'][1]:
                 betting = self.int_tujagm * self.dict_set['주식비중조절'][5]
@@ -631,7 +629,7 @@ class KiwoomStrategyTick:
         매수수량 = int(betting / (현재가 if 매입가 == 0 else 매입가) * oc_ratio / 100)
         return 매수수량
 
-    def SetSellCount(self, 분할매도횟수, 보유수량, 매입가, 고가, 저가, 등락율각도, 당일거래대금각도, 전일비, 회전율, 전일동시간비):
+    def SetSellCount(self, 분할매도횟수, 보유수량, 매입가, 저가대비고가등락율, 순매수금액, 당일거래대금, 등락율각도):
         if self.dict_set['주식매도분할횟수'] == 1:
             return 보유수량
         else:
@@ -639,17 +637,13 @@ class KiwoomStrategyTick:
                 betting = self.int_tujagm
             else:
                 if self.dict_set['주식비중조절'][0] == 1:
-                    비중조절기준 = round((고가 / 저가 - 1) * 100, 2)
+                    비중조절기준 = 저가대비고가등락율
                 elif self.dict_set['주식비중조절'][0] == 2:
-                    비중조절기준 = 등락율각도
+                    비중조절기준 = 순매수금액
                 elif self.dict_set['주식비중조절'][0] == 3:
-                    비중조절기준 = 당일거래대금각도
-                elif self.dict_set['주식비중조절'][0] == 4:
-                    비중조절기준 = 전일비
-                elif self.dict_set['주식비중조절'][0] == 5:
-                    비중조절기준 = 회전율
+                    비중조절기준 = 당일거래대금
                 else:
-                    비중조절기준 = 전일동시간비
+                    비중조절기준 = 등락율각도
 
                 if 비중조절기준 < self.dict_set['주식비중조절'][1]:
                     betting = self.int_tujagm * self.dict_set['주식비중조절'][5]

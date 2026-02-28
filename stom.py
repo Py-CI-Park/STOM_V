@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QApplication
 from utility.timesync import timesync
 from ui.ui_mainwindow import MainWindow
+from utility.database_check import database_check
 from ui.set_style import color_bg_bc, color_fg_bc, color_bg_dk, color_fg_bk, color_fg_hl, color_bg_bk
 
 if __name__ == '__main__':
@@ -17,6 +18,7 @@ if __name__ == '__main__':
         elif sys.argv[1] == 'coin':   auto_run = 2
         elif sys.argv[1] == 'future': auto_run = 3
 
+    database_check()
     timesync()
 
     app = QApplication(sys.argv)
