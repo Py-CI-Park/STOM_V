@@ -1457,4 +1457,7 @@ class FutureStrategyTick:
             'STOCHFD_N': self._STOCHFD_N,
             'WILLR_': self._WILLR_N
         }
+        self.UpdateGlobalsFunc(dict_add_func)
+
+    def UpdateGlobalsFunc(self, dict_add_func):
         globals().update(dict_add_func)
