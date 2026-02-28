@@ -66,25 +66,20 @@ class SetDialogChart:
             self.ui.ctpg[3], self.ui.ctpg_cvb[3] = self.wc.setaddPlot(self.ui.ctpg_layout, 3, 0)
             self.ui.ctpg[4], self.ui.ctpg_cvb[4] = self.wc.setaddPlot(self.ui.ctpg_layout, 2, 1)
             self.ui.ctpg[5], self.ui.ctpg_cvb[5] = self.wc.setaddPlot(self.ui.ctpg_layout, 3, 1)
-            qGraphicsGridLayout = self.ui.ctpg_layout.ci.layout
-            qGraphicsGridLayout.setRowStretchFactor(0, 3)
-            qGraphicsGridLayout.setRowStretchFactor(1, 2)
-            qGraphicsGridLayout.setRowStretchFactor(2, 2)
-            qGraphicsGridLayout.setRowStretchFactor(3, 2)
         else:
-            self.ui.ctpg[0], self.ui.ctpg_cvb[0] = self.wc.setaddPlot(self.ui.ctpg_layout, 0, 0)
+            self.ui.ctpg[0], self.ui.ctpg_cvb[0] = self.wc.setaddPlot(self.ui.ctpg_layout, 0, 0, colspan=2)
             self.ui.ctpg[1], self.ui.ctpg_cvb[1] = self.wc.setaddPlot(self.ui.ctpg_layout, 1, 0)
             self.ui.ctpg[2], self.ui.ctpg_cvb[2] = self.wc.setaddPlot(self.ui.ctpg_layout, 2, 0)
             self.ui.ctpg[3], self.ui.ctpg_cvb[3] = self.wc.setaddPlot(self.ui.ctpg_layout, 3, 0)
-            self.ui.ctpg[4], self.ui.ctpg_cvb[4] = self.wc.setaddPlot(self.ui.ctpg_layout, 0, 1)
-            self.ui.ctpg[5], self.ui.ctpg_cvb[5] = self.wc.setaddPlot(self.ui.ctpg_layout, 1, 1)
-            self.ui.ctpg[6], self.ui.ctpg_cvb[6] = self.wc.setaddPlot(self.ui.ctpg_layout, 2, 1)
-            self.ui.ctpg[7], self.ui.ctpg_cvb[7] = self.wc.setaddPlot(self.ui.ctpg_layout, 3, 1)
-            qGraphicsGridLayout = self.ui.ctpg_layout.ci.layout
-            qGraphicsGridLayout.setRowStretchFactor(0, 1)
-            qGraphicsGridLayout.setRowStretchFactor(1, 1)
-            qGraphicsGridLayout.setRowStretchFactor(2, 1)
-            qGraphicsGridLayout.setRowStretchFactor(3, 1)
+            self.ui.ctpg[4], self.ui.ctpg_cvb[4] = self.wc.setaddPlot(self.ui.ctpg_layout, 1, 1)
+            self.ui.ctpg[5], self.ui.ctpg_cvb[5] = self.wc.setaddPlot(self.ui.ctpg_layout, 2, 1)
+            self.ui.ctpg[6], self.ui.ctpg_cvb[6] = self.wc.setaddPlot(self.ui.ctpg_layout, 3, 1)
+
+        qGraphicsGridLayout = self.ui.ctpg_layout.ci.layout
+        qGraphicsGridLayout.setRowStretchFactor(0, 3)
+        qGraphicsGridLayout.setRowStretchFactor(1, 2)
+        qGraphicsGridLayout.setRowStretchFactor(2, 2)
+        qGraphicsGridLayout.setRowStretchFactor(3, 2)
 
         self.ui.ctpg_vboxLayout = QVBoxLayout(self.ui.ct_groupBoxxxxx_02)
         self.ui.ctpg_vboxLayout.setContentsMargins(3, 6, 3, 3)

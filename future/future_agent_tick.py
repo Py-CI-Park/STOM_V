@@ -29,6 +29,7 @@ class Updater(QThread):
                 self.signal2.emit(data)
 
 
+# noinspection PyUnresolvedReferences
 class FutureAgentTick:
     def __init__(self, qlist):
         """

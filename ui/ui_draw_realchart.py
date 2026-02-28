@@ -31,7 +31,7 @@ class DrawRealChart:
         elif '키움증권' in self.ui.dict_set['증권사']: gubun = 'S'
         else:                                       gubun = 'F'
         chart_count = len(self.ui.ctpg)
-        is_min = chart_count in (6, 10) or (chart_count == 8 and self.ui.ct_pushButtonnn_04.text() == 'CHART 12')
+        is_min = chart_count in (6, 8) or (chart_count == 10 and self.ui.ct_pushButtonnn_04.text() == 'CHART 16')
 
         if not self.ui.dialog_chart.isVisible():
             self.ui.ChartClear()
@@ -274,16 +274,10 @@ class DrawRealChart:
                     self.ui.ctpg[i].addItem(legend)
                     self.ui.ctpg_legend[i] = legend
 
-                if is_min:
-                    if i == 1:
-                        self.ui.ctpg[i].setXLink(self.ui.ctpg[0])
-                    elif i > 1:
-                        self.ui.ctpg[i].setXLink(self.ui.ctpg[2])
-                elif i != 0:
-                    self.ui.ctpg[i].setXLink(self.ui.ctpg[0])
-
+                self.ui.ctpg_cvb[i].linkX(self.ui.ctpg_cvb[0])
                 self.ui.ctpg_cvb[i].set_range(xmin, xmax, ymin, ymax)
                 self.ui.ctpg[i].setRange(xRange=(xmin, xmax), yRange=(ymin, ymax))
+
                 if self.ui.ct_checkBoxxxxx_02.isChecked():
                     self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
 
@@ -295,10 +289,20 @@ class DrawRealChart:
                         True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                         self.ui.ctpg[4], self.ui.ctpg[5]
                     )
+                elif chart_count == 7:
+                    self.crosshair.crosshair(
+                        True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                        self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6]
+                    )
                 elif chart_count == 8:
                     self.crosshair.crosshair(
                         True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                         self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7]
+                    )
+                elif chart_count == 9:
+                    self.crosshair.crosshair(
+                        True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                        self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8]
                     )
                 elif chart_count == 10:
                     self.crosshair.crosshair(
@@ -306,28 +310,18 @@ class DrawRealChart:
                         self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
                         self.ui.ctpg[9]
                     )
-                elif chart_count == 12:
+                elif chart_count == 11:
                     self.crosshair.crosshair(
                         True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                         self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
-                        self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11]
-                    )
-                elif chart_count == 16:
-                    self.crosshair.crosshair(
-                        True, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
-                        self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
-                        self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11], self.ui.ctpg[12], self.ui.ctpg[13],
-                        self.ui.ctpg[14], self.ui.ctpg[15]
+                        self.ui.ctpg[9], self.ui.ctpg[10]
                     )
 
             self.ui.ctpg_name, self.ui.ctpg_last_xtick = name, xmax
         else:
             for i, factor in enumerate(self.ui.ctpg_factors):
-                ymax, ymin = 0, 0
                 if factor == '현재가':
                     if is_min:
-                        ymax = self.ui.ctpg_data[fi('분봉고가')].max()
-                        ymin = self.ui.ctpg_data[fi('분봉저가')].min()
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균005')]:], y=self.ui.ctpg_data[fi('이동평균005')], pen=(180, 180, 180))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균010')]:], y=self.ui.ctpg_data[fi('이동평균010')], pen=(140, 140, 140))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균020')]:], y=self.ui.ctpg_data[fi('이동평균020')], pen=(100, 100, 100))
@@ -337,8 +331,6 @@ class DrawRealChart:
                         self.ui.ctpg_last_candlestick = CandlestickItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi('분봉고가'), fi('분봉저가')], self.ui.ctpg_xticks, gubun=2)
                         self.ui.ctpg[i].addItem(self.ui.ctpg_last_candlestick)
                     else:
-                        ymax = self.ui.ctpg_data[fi('현재가')].max()
-                        ymin = self.ui.ctpg_data[fi('현재가')].min()
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균0060')]:], y=self.ui.ctpg_data[fi('이동평균0060')], pen=(180, 180, 180))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균0300')]:], y=self.ui.ctpg_data[fi('이동평균0300')], pen=(140, 140, 140))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균0600')]:], y=self.ui.ctpg_data[fi('이동평균0600')], pen=(100, 100, 100))
@@ -346,8 +338,6 @@ class DrawRealChart:
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('현재가')]:], y=self.ui.ctpg_data[fi('현재가')], pen=(200, 100, 100))
                     self.ui.ctpg_cline.setPos(self.ui.ctpg_data[fi('현재가')][-1])
                 elif factor in ('초당거래대금', '분당거래대금'):
-                    ymax = self.ui.ctpg_data[fi(factor)].max()
-                    ymin = self.ui.ctpg_data[fi(f'{factor}평균')].min()
                     if is_min:
                         self.ui.ctpg[i].removeItem(self.ui.ctpg_last_volumebar)
                         self.ui.ctpg_last_volumebar = VolumeBarsItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi(factor)], self.ui.ctpg_xticks, gubun=2)
@@ -356,91 +346,60 @@ class DrawRealChart:
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi(factor)]:], y=self.ui.ctpg_data[fi(factor)], pen=(200, 100, 100))
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi(f'{factor}평균')]:], y=self.ui.ctpg_data[fi(f'{factor}평균')], pen=(100, 200, 100))
                 elif factor == '체결강도':
-                    ymax = max(self.ui.ctpg_data[fi('체결강도')].max(), self.ui.ctpg_data[fi('최고체결강도')].max())
-                    ymin = min(self.ui.ctpg_data[fi('체결강도')].min(), self.ui.ctpg_data[fi('최저체결강도')].min())
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 100))
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('체결강도')]:], y=self.ui.ctpg_data[fi('체결강도')], pen=(100, 200, 100))
                 elif factor in ('초당체결수량', '분당체결수량'):
                     if is_min:
-                        ymax = max(self.ui.ctpg_data[fi('분당매수수량')].max(), self.ui.ctpg_data[fi('분당매도수량')].max())
-                        ymin = min(self.ui.ctpg_data[fi('분당매수수량')].min(), self.ui.ctpg_data[fi('분당매도수량')].min())
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('분당매도수량')]:], y=self.ui.ctpg_data[fi('분당매도수량')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('분당매수수량')]:], y=self.ui.ctpg_data[fi('분당매수수량')], pen=(200, 100, 100))
                     else:
-                        ymax = max(self.ui.ctpg_data[fi('초당매수수량')].max(), self.ui.ctpg_data[fi('초당매도수량')].max())
-                        ymin = min(self.ui.ctpg_data[fi('초당매수수량')].min(), self.ui.ctpg_data[fi('초당매도수량')].min())
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('초당매도수량')]:], y=self.ui.ctpg_data[fi('초당매도수량')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('초당매수수량')]:], y=self.ui.ctpg_data[fi('초당매수수량')], pen=(200, 100, 100))
                 elif factor == '호가총잔량':
-                    ymax = max(self.ui.ctpg_data[fi('매수총잔량')].max(), self.ui.ctpg_data[fi('매도총잔량')].max())
-                    ymin = min(self.ui.ctpg_data[fi('매수총잔량')].min(), self.ui.ctpg_data[fi('매도총잔량')].min())
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('매수총잔량')]:], y=self.ui.ctpg_data[fi('매수총잔량')], pen=(200, 100, 100))
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('매도총잔량')]:], y=self.ui.ctpg_data[fi('매도총잔량')], pen=(100, 100, 200))
                 elif factor == '매도수호가잔량1':
-                    ymax = max(self.ui.ctpg_data[fi('매수잔량1')].max(), self.ui.ctpg_data[fi('매도잔량1')].max())
-                    ymin = min(self.ui.ctpg_data[fi('매수잔량1')].min(), self.ui.ctpg_data[fi('매도잔량1')].min())
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('매수잔량1')]:], y=self.ui.ctpg_data[fi('매수잔량1')], pen=(200, 100, 100))
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('매도잔량1')]:], y=self.ui.ctpg_data[fi('매도잔량1')], pen=(100, 100, 200))
                 elif factor in ('누적초당매도수수량', '누적분당매도수수량'):
                     if is_min:
-                        ymax = max(self.ui.ctpg_data[fi('누적분당매수수량')].max(), self.ui.ctpg_data[fi('누적분당매도수량')].max())
-                        ymin = min(self.ui.ctpg_data[fi('누적분당매수수량')].min(), self.ui.ctpg_data[fi('누적분당매도수량')].min())
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('누적분당매도수량')]:], y=self.ui.ctpg_data[fi('누적분당매도수량')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('누적분당매수수량')]:], y=self.ui.ctpg_data[fi('누적분당매수수량')], pen=(200, 100, 100))
                     else:
-                        ymax = max(self.ui.ctpg_data[fi('누적초당매수수량')].max(), self.ui.ctpg_data[fi('누적초당매도수량')].max())
-                        ymin = min(self.ui.ctpg_data[fi('누적초당매수수량')].min(), self.ui.ctpg_data[fi('누적초당매도수량')].min())
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('누적초당매도수량')]:], y=self.ui.ctpg_data[fi('누적초당매도수량')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('누적초당매수수량')]:], y=self.ui.ctpg_data[fi('누적초당매수수량')], pen=(200, 100, 100))
                 elif factor == 'AROON':
                     if len(self.ui.ctpg_data[fi('AROONU')]) > 0:
-                        ymax = self.ui.ctpg_data[fi('AROONU')].max()
-                        ymin = self.ui.ctpg_data[fi('AROOND')].min()
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('AROOND')]:], y=self.ui.ctpg_data[fi('AROOND')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('AROONU')]:], y=self.ui.ctpg_data[fi('AROONU')], pen=(100, 200, 100))
                 elif factor == 'BBAND':
                     if len(self.ui.ctpg_data[fi('BBU')]) > 0:
-                        ymax = max(self.ui.ctpg_data[fi('BBU')].max(), self.ui.ctpg_data[fi('현재가')].max())
-                        ymin = min(self.ui.ctpg_data[fi('BBL')].min(), self.ui.ctpg_data[fi('현재가')].min())
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('BBM')]:], y=self.ui.ctpg_data[fi('BBM')], pen=(100, 100, 100))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('BBL')]:], y=self.ui.ctpg_data[fi('BBL')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('BBU')]:], y=self.ui.ctpg_data[fi('BBU')], pen=(100, 200, 100))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('현재가')]:], y=self.ui.ctpg_data[fi('현재가')], pen=(200, 100, 100))
                 elif factor == 'DMI':
                     if len(self.ui.ctpg_data[fi('DIP')]) > 0:
-                        ymax = self.ui.ctpg_data[fi('DIP')].max()
-                        ymin = self.ui.ctpg_data[fi('DIM')].min()
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('DIM')]:], y=self.ui.ctpg_data[fi('DIM')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('DIP')]:], y=self.ui.ctpg_data[fi('DIP')], pen=(100, 200, 100))
                 elif factor == 'MACD':
                     if len(self.ui.ctpg_data[fi('MACD')]) > 0:
-                        ymax = max(self.ui.ctpg_data[fi('MACD')].max(), self.ui.ctpg_data[fi('MACDS')].max(), self.ui.ctpg_data[fi('MACDH')].max())
-                        ymin = min(self.ui.ctpg_data[fi('MACD')].min(), self.ui.ctpg_data[fi('MACDS')].min(), self.ui.ctpg_data[fi('MACDH')].min())
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('MACD')]:], y=self.ui.ctpg_data[fi('MACD')], pen=(100, 100, 100))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('MACDH')]:], y=self.ui.ctpg_data[fi('MACDH')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('MACDS')]:], y=self.ui.ctpg_data[fi('MACDS')], pen=(100, 200, 100))
                 elif factor == 'STOCHS':
                     if len(self.ui.ctpg_data[fi('STOCHSD')]) > 0:
-                        ymax = self.ui.ctpg_data[fi('STOCHSD')].max()
-                        ymin = self.ui.ctpg_data[fi('STOCHSK')].min()
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('STOCHSD')]:], y=self.ui.ctpg_data[fi('STOCHSD')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('STOCHSK')]:], y=self.ui.ctpg_data[fi('STOCHSK')], pen=(100, 200, 100))
                 elif factor == 'STOCHF':
                     if len(self.ui.ctpg_data[fi('STOCHFD')]) > 0:
-                        ymax = self.ui.ctpg_data[fi('STOCHFD')].max()
-                        ymin = self.ui.ctpg_data[fi('STOCHFK')].min()
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('STOCHFD')]:], y=self.ui.ctpg_data[fi('STOCHFD')], pen=(100, 100, 200))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('STOCHFK')]:], y=self.ui.ctpg_data[fi('STOCHFK')], pen=(100, 200, 100))
                 else:
                     if len(self.ui.ctpg_data[fi(factor)]) > 0:
-                        ymax = self.ui.ctpg_data[fi(factor)].max()
-                        ymin = self.ui.ctpg_data[fi(factor)].min()
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi(factor)]:], y=self.ui.ctpg_data[fi(factor)])
-
-                self.ui.ctpg_cvb[i].set_range(xmin, xmax, ymin, ymax)
-                self.ui.ctpg[i].setRange(xRange=(xmin, xmax), yRange=(ymin, ymax))
 
                 if self.ui.ct_checkBoxxxxx_01.isChecked():
                     self.ui.ctpg_labels[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][0])

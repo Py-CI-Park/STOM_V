@@ -118,16 +118,16 @@ class Chart:
             if self.dict_set['코인타임프레임']:
                 db_name1 = f'{DB_PATH}/coin_tick_{searchdate}.db'
                 db_name2 = DB_COIN_BACK_TICK
-                query1   = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
-                           f"`index` % 1000000 >= {starttime} and " \
-                           f"`index` % 1000000 <= {endtime}"
+                query1   = f"SELECT * FROM '{code}' WHERE " \
+                           f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
+                           f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
             else:
                 is_min   = True
                 db_name1 = f'{DB_PATH}/coin_min_{searchdate}.db'
                 db_name2 = DB_COIN_BACK_MIN
-                query1   = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
-                           f"`index` % 10000 >= {starttime} and " \
-                           f"`index` % 10000 <= {endtime}"
+                query1   = f"SELECT * FROM '{code}' WHERE " \
+                           f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
+                           f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
         else:
             if '키움증권' in self.dict_set['증권사']:
                 if self.dict_set['주식타임프레임']:
@@ -147,13 +147,13 @@ class Chart:
                     db_name2 = DB_FUTURE_BACK_MIN
 
             if self.dict_set['주식타임프레임']:
-                query1 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
-                         f"`index` % 1000000 >= {starttime} and " \
-                         f"`index` % 1000000 <= {endtime}"
+                query1   = f"SELECT * FROM '{code}' WHERE " \
+                           f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
+                           f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
             else:
-                query1 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%' and " \
-                         f"`index` % 10000 >= {starttime} and " \
-                         f"`index` % 10000 <= {endtime}"
+                query1   = f"SELECT * FROM '{code}' WHERE " \
+                           f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
+                           f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
 
         df = None
         query2 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%'"

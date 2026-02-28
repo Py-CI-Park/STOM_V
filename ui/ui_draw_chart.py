@@ -43,7 +43,7 @@ class DrawChart:
         date = str_ymd(from_timestamp(xmin))
         if gubun == 'S': self.KiwoomHTSChart(code, date)
         chart_count = len(self.ui.ctpg)
-        is_min = chart_count in (6, 10) or (chart_count == 8 and self.ui.ct_pushButtonnn_04.text() == 'CHART 12')
+        is_min = chart_count in (6, 8) or (chart_count == 10 and self.ui.ct_pushButtonnn_04.text() == 'CHART 16')
         hms = from_timestamp(xmax).strftime('%H:%M' if is_min else '%H:%M:%S')
 
         self.ui.ctpg_factors = []
@@ -316,16 +316,10 @@ class DrawChart:
                 self.ui.ctpg[i].addItem(legend)
                 self.ui.ctpg_legend[i] = legend
 
-            if is_min:
-                if i == 1:
-                    self.ui.ctpg[i].setXLink(self.ui.ctpg[0])
-                elif i > 1:
-                    self.ui.ctpg[i].setXLink(self.ui.ctpg[2])
-            elif i != 0:
-                self.ui.ctpg[i].setXLink(self.ui.ctpg[0])
-
+            self.ui.ctpg_cvb[i].linkX(self.ui.ctpg_cvb[0])
             self.ui.ctpg_cvb[i].set_range(xmin, xmax, ymin, ymax)
             self.ui.ctpg[i].setRange(xRange=(xmin, xmax), yRange=(ymin, ymax))
+
             if self.ui.ct_checkBoxxxxx_02.isChecked():
                 self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][1], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
 
@@ -336,6 +330,11 @@ class DrawChart:
                 self.crosshair.crosshair(
                     False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                     self.ui.ctpg[4], self.ui.ctpg[5]
+                )
+            elif chart_count == 7:
+                self.crosshair.crosshair(
+                    False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
+                    self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6]
                 )
             elif chart_count == 8:
                 self.crosshair.crosshair(
@@ -348,18 +347,11 @@ class DrawChart:
                     self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
                     self.ui.ctpg[9]
                 )
-            elif chart_count == 12:
+            elif chart_count == 13:
                 self.crosshair.crosshair(
                     False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                     self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
-                    self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11]
-                )
-            elif chart_count == 16:
-                self.crosshair.crosshair(
-                    False, gubun, is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
-                    self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
-                    self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11], self.ui.ctpg[12], self.ui.ctpg[13],
-                    self.ui.ctpg[14], self.ui.ctpg[15]
+                    self.ui.ctpg[9], self.ui.ctpg[10], self.ui.ctpg[11], self.ui.ctpg[12]
                 )
 
         self.ui.ctpg_name = self.ui.ct_lineEdittttt_05.text()
