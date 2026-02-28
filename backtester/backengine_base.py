@@ -157,8 +157,7 @@ class BackEngineBase:
                 if self.is_tick:
                     return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k] = self.indexn', '<string>', 'exec')
                 else:
-                    return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn',
-                                   '<string>', 'exec')
+                    return compile(f'if {x}:\n    self.dict_cond_indexn[종목코드][k+str(vturn)+str(vkey)] = self.indexn', '<string>', 'exec')
 
             text_list = self.set_dict_cond.split(';')
             half_cnt = int(len(text_list) / 2)
@@ -583,6 +582,28 @@ class BackEngineBase:
             self.BackStop(1)
             return
         if self.profile: self.pr.print_stats(sort='cumulative')
+
+    def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
+        if 분봉저가 is None:
+            if self.high_low:
+                if 현재가또는분봉고가 >= self.high_low[0]:
+                    self.high_low[0] = 현재가또는분봉고가
+                    self.high_low[1] = self.indexn
+                if 현재가또는분봉고가 <= self.high_low[2]:
+                    self.high_low[2] = 현재가또는분봉고가
+                    self.high_low[3] = self.indexn
+            else:
+                self.high_low = [현재가또는분봉고가, self.indexn, 현재가또는분봉고가, self.indexn]
+        else:
+            if self.high_low:
+                if 현재가또는분봉고가 >= self.high_low[0]:
+                    self.high_low[0] = 현재가또는분봉고가
+                    self.high_low[1] = self.indexn
+                if 분봉저가 <= self.high_low[2]:
+                    self.high_low[2] = 분봉저가
+                    self.high_low[3] = self.indexn
+            else:
+                self.high_low = [현재가또는분봉고가, self.indexn, 분봉저가, self.indexn]
 
     def Buy(self, buy_long=False):
         self.SetBuyCount()

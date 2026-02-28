@@ -17,9 +17,12 @@ class FutureAgentMin(FutureAgentTick):
         code_data = self.dict_data.get(code)
         if code_data:
             dm, _, bids, asks, tbids, tasks = code_data[5:11]
-            mo, mh, ml = code_data[-3:]
-            if mh < c: mh = c
-            if ml > c: ml = c
+            if bids == 0 and asks == 0:
+                mo = mh = ml = c
+            else:
+                mo, mh, ml = code_data[-3:]
+                if mh < c: mh = c
+                if ml > c: ml = c
         else:
             dm, bids, asks, tbids, tasks = 0, 0, 0, 0, 0
             mo = mh = ml = c

@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from datetime import datetime
-import matplotlib.pyplot as plt
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
 from data_preprocessor import DataPreprocessor
@@ -463,50 +462,6 @@ class PCAPredictionModel:
         except Exception as e:
             logger.error(f"모델 로드 실패: {e}")
             return False
-    
-    def plot_training_history(self):
-        """
-        학습 과정 시각화
-        """
-        try:
-            if self.history is None:
-                logger.error("학습 기록이 없습니다")
-                return
-            
-            plt.figure(figsize=(15, 5))
-            
-            # Loss
-            plt.subplot(1, 3, 1)
-            plt.plot(self.history.history['loss'], label='Train Loss')
-            plt.plot(self.history.history['val_loss'], label='Validation Loss')
-            plt.title('Model Loss')
-            plt.xlabel('Epoch')
-            plt.ylabel('Loss')
-            plt.legend()
-            
-            # MAE
-            plt.subplot(1, 3, 2)
-            plt.plot(self.history.history['mae'], label='Train MAE')
-            plt.plot(self.history.history['val_mae'], label='Validation MAE')
-            plt.title('Model MAE')
-            plt.xlabel('Epoch')
-            plt.ylabel('MAE')
-            plt.legend()
-            
-            # MAPE
-            plt.subplot(1, 3, 3)
-            plt.plot(self.history.history['mape'], label='Train MAPE')
-            plt.plot(self.history.history['val_mape'], label='Validation MAPE')
-            plt.title('Model MAPE')
-            plt.xlabel('Epoch')
-            plt.ylabel('MAPE')
-            plt.legend()
-            
-            plt.tight_layout()
-            plt.show()
-            
-        except Exception as e:
-            logger.error(f"시각화 실패: {e}")
 
 
 if __name__ == "__main__":
@@ -518,10 +473,11 @@ if __name__ == "__main__":
     DB_STOCK_BACK_MIN = os.path.join(base_dir, '_database', 'stock_tick_back.db')
     con = sqlite3.connect(DB_STOCK_BACK_MIN)
     df_ = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    con.close()
     table_list = df_['name'].to_list()
     table_list.remove('moneytop')
     table_list.remove('stockinfo')
-    con.close()
+    table_list = table_list[:10]
 
     print(f"PCAPredictionModel 병렬 학습 시작: {len(table_list)} 종목")
     
@@ -533,9 +489,9 @@ if __name__ == "__main__":
         model_type='LSTM',
         sequence_length=60,
         n_components=10,
-        epochs=20,
+        epochs=50,
         batch_size=32,
-        max_workers=8  # 16코어 고정
+        max_workers=10  # 16코어 고정
     )
     
     # 결과 처리

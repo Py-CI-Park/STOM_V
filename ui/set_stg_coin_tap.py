@@ -123,7 +123,7 @@ class SetCoinBack:
             self.ui.cvjb_dateEditt_01 = self.wc.setDateEdit(self.ui.cs_tab, addday=-int(self.ui.dict_set['백테날짜']))
         self.ui.cvjb_dateEditt_02 = self.wc.setDateEdit(self.ui.cs_tab)
 
-        endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간']))))
+        endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간'])))).zfill(6)
 
         self.ui.cvjb_lineEditt_02 = self.wc.setLineedit(self.ui.cs_tab, ltext='000000', style=style_bc_dk)
         self.ui.cvjb_lineEditt_03 = self.wc.setLineedit(self.ui.cs_tab, ltext=endtime, style=style_bc_dk)

@@ -35,9 +35,13 @@ class BinanceReceiverMin(BinanceReceiverTick):
             if c > h: h = c
             if c < low: low = c
             dm = np.round(dm + v * c, 2)
-            mo, mh, ml = code_data[-3:]
-            if mh < c: mh = c
-            if ml > c: ml = c
+
+            if bids == 0 and asks == 0:
+                mo = mh = ml = c
+            else:
+                mo, mh, ml = code_data[-3:]
+                if mh < c: mh = c
+                if ml > c: ml = c
 
         bids_ = v if not m else 0
         asks_ = 0 if not m else v

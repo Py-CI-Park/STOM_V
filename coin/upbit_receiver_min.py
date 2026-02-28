@@ -31,9 +31,12 @@ class UpbitReceiverMin(UpbitReceiverTick):
         code_data = self.dict_data.get(code)
         if code_data:
             bids, asks, pretbids, pretasks = code_data[7:11]
-            mo, mh, ml = code_data[-3:]
-            if mh < c: mh = c
-            if ml > c: ml = c
+            if bids == 0 and asks == 0:
+                mo = mh = ml = c
+            else:
+                mo, mh, ml = code_data[-3:]
+                if mh < c: mh = c
+                if ml > c: ml = c
         else:
             bids, asks, pretbids, pretasks = 0, 0, tbids, tasks
             mo = mh = ml = c

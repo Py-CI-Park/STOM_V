@@ -68,15 +68,15 @@ class MoneyTrackingChart(QMainWindow):
         # 데이터 로드
         self.load_sample_data()
         
-        # 타이머 설정 (100ms 간격)
+        # 타이머 설정 (200ms 간격)
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_data)
-        self.timer.start(250)
+        self.timer.start(200)
     
     def init_ui(self):
         """UI 초기화"""
         self.setWindowTitle('가격별 누적매수매도금액 추적 실시간 그래프 (PyQt5)')
-        self.setGeometry(100, 100, 1600, 1000)
+        self.setGeometry(100, 100, 1500, 1000)
         
         # 메인 위젯 및 레이아웃
         central_widget = QWidget()
@@ -447,17 +447,19 @@ class MoneyTrackingChart(QMainWindow):
             conn = sqlite3.connect('../_database/stock_tick_back.db')
             df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
             stock_codes = df['name'].to_list()
+            stock_codes.remove('moneytop')
+            stock_codes.remove('stockinfo')
+
             while True:
                 self.code = np.random.choice(stock_codes)
                 df = pd.read_sql(f"SELECT * FROM '{self.code}'", conn)
                 lastday = int(str(df['index'].iloc[-1])[:8]) * 1000000
                 df = df[df['index'] >= lastday]
-                if len(df[df['관심종목'] == 1]) > len(df) * 0.7:
+                if len(df[df['관심종목'] == 1]) >= len(df) * 0.7:
                     break
 
-            print(f"선택된 종목: {self.code}")
             conn.close()
-
+            print(f"선택된 종목: {self.code}")
             print(f"데이터 로드 완료: {len(df)}개")
 
             self.all_data = df

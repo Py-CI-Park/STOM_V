@@ -22,9 +22,12 @@ class KiwoomAgentMin(KiwoomAgentTick):
         code_data = self.dict_data.get(code)
         if code_data:
             bids, asks = code_data[7:9]
-            mo, mh, ml = code_data[-3:]
-            if mh < c: mh = c
-            if ml > c: ml = c
+            if bids == 0 and asks == 0:
+                mo = mh = ml = c
+            else:
+                mo, mh, ml = code_data[-3:]
+                if mh < c: mh = c
+                if ml > c: ml = c
         else:
             bids, asks = 0, 0
             mo = mh = ml = c

@@ -24,17 +24,6 @@ class BinanceStrategyMin(BinanceStrategyTick):
         self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
-        high_low = self.high_low.get(종목코드)
-        if high_low:
-            if 고가 >= high_low[0]:
-                high_low[0] = 고가
-                high_low[1] = self.indexn
-            if 저가 <= high_low[2]:
-                high_low[2] = 저가
-                high_low[3] = self.indexn
-        else:
-            self.high_low[종목코드] = [고가, self.indexn, 저가, self.indexn]
-
         if 전략연산:
             new_data_tick = np.zeros(self.data_cnt, dtype=np.float64)
             new_data_tick[:self.base_cnt] = data[:self.base_cnt]
@@ -65,14 +54,14 @@ class BinanceStrategyMin(BinanceStrategyTick):
 
             high_low = self.high_low.get(종목코드)
             if high_low:
-                if 고가 >= high_low[0]:
-                    high_low[0] = 고가
+                if 분봉고가 >= high_low[0]:
+                    high_low[0] = 분봉고가
                     high_low[1] = self.indexn
-                if 저가 <= high_low[2]:
-                    high_low[2] = 저가
+                if 분봉저가 <= high_low[2]:
+                    high_low[2] = 분봉저가
                     high_low[3] = self.indexn
             else:
-                self.high_low[종목코드] = [고가, self.indexn, 저가, self.indexn]
+                self.high_low[종목코드] = [분봉고가, self.indexn, 분봉저가, self.indexn]
 
             if self.dict_condition:
                 if 종목코드 not in self.dict_cond_indexn:
@@ -208,17 +197,17 @@ class BinanceStrategyMin(BinanceStrategyTick):
                             self.Sell(SELL_LONG)
 
             if 관심종목:
-                # ['종목명', 'per', 'hlp', 'sm', 'sma', 'dm', 'ch', 'cha', 'chh']
+                # ['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']
                 self.dict_gj[종목코드] = {
                     '종목명': 종목코드,
                     'per': 등락율,
                     'hlp': 고저평균대비등락율,
-                    'sm': 분당거래대금,
-                    'sma': self._분당거래대금평균(rw),
-                    'dm': 당일거래대금,
+                    'lhp': 저가대비고가등락율,
                     'ch': 체결강도,
-                    'cha': self._체결강도평균(rw),
-                    'chh': self._최고체결강도(rw)
+                    'tm': 분당거래대금,
+                    'dm': 당일거래대금,
+                    'bm': 당일매수금액,
+                    'sm': 당일매도금액
                 }
         else:
             pre_data = self.dict_data[종목코드]
