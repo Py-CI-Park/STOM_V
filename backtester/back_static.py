@@ -440,6 +440,7 @@ def PlotShow(gubun, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday,
 
     df_tsg['이익금액'] = df_tsg['수익금'].apply(lambda x: x if x >= 0 else 0)
     df_tsg['손실금액'] = df_tsg['수익금'].apply(lambda x: x if x < 0 else 0)
+
     sig_array = df_tsg['수익금'].values
     mdd_list = []
     for i in range(30):

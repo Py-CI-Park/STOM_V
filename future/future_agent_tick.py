@@ -3,6 +3,7 @@ import os
 import sys
 import sqlite3
 import datetime
+import numpy as np
 import pandas as pd
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
@@ -30,7 +31,6 @@ class Updater(QThread):
                 self.signal2.emit(data)
 
 
-# noinspection PyUnresolvedReferences
 class FutureAgentTick:
     def __init__(self, qlist):
         """
@@ -189,7 +189,6 @@ class FutureAgentTick:
                 tick_unit = df['호가단위'][code]
                 point_cnt = len(str(tick_unit).split('.')[1]) if '.' in str(tick_unit) else 5 if str(tick_unit) == '5e-05' else 0
                 self.real_codes.append(max_code)
-                # noinspection PyTypeChecker
                 self.dict_info[max_code] = {
                     '종목명': df['종목명'][code],
                     '위탁증거금': int(df['위탁증거금'][code] / 100),
@@ -222,61 +221,7 @@ class FutureAgentTick:
         if self.dict_bool['프로세스종료']:
             return
 
-        if realtype == '해외선물시세':
-            try:
-                if not self.dict_bool['해선체결필드확인']:
-                    data = realdata.split(';')
-                    if data[0]                             == self.GetCommRealData(code, 20) and \
-                            float(data[2])           == float(self.GetCommRealData(code, 140)) and \
-                            float(data[4])           == float(self.GetCommRealData(code, 12)) and \
-                            data[7]                        == self.GetCommRealData(code, 15) and \
-                            abs(float(data[9]))  == abs(float(self.GetCommRealData(code, 16))) and \
-                            abs(float(data[10])) == abs(float(self.GetCommRealData(code, 17))) and \
-                            abs(float(data[11])) == abs(float(self.GetCommRealData(code, 18))) and \
-                            abs(float(data[5]))  == abs(float(self.GetCommRealData(code, 27))) and \
-                            abs(float(data[6]))  == abs(float(self.GetCommRealData(code, 28))):
-                        self.dict_bool['해선체결필드같음'] = True
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
-                    else:
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 해선체결 필드값이 다릅니다. 필드값 갱신요망!!')))
-                    self.dict_bool['해선체결필드확인'] = True
-
-                if self.dict_bool['해선체결필드같음']:
-                    data = realdata.split(';')
-                    dt            = data[0]
-                    c       = float(data[2])
-                    per     = float(data[4])
-                    v             = data[7]
-                    o   = abs(float(data[9]))
-                    h   = abs(float(data[10]))
-                    low = abs(float(data[11]))
-                    csp = abs(float(data[5]))
-                    cbp = abs(float(data[6]))
-                else:
-                    dt            = self.GetCommRealData(code, 20)
-                    c       = float(self.GetCommRealData(code, 140))
-                    per     = float(self.GetCommRealData(code, 12))
-                    v             = self.GetCommRealData(code, 15)
-                    o   = abs(float(self.GetCommRealData(code, 16)))
-                    h   = abs(float(self.GetCommRealData(code, 17)))
-                    low = abs(float(self.GetCommRealData(code, 18)))
-                    csp = abs(float(self.GetCommRealData(code, 27)))
-                    cbp = abs(float(self.GetCommRealData(code, 28)))
-
-                str_cme_hms = str_hms_cme_from_str(dt)
-                if self.dict_set['주식타임프레임']:
-                    if int(str_cme_hms) < 93000:
-                        return
-                else:
-                    if int(str_cme_hms) < 90000:
-                        return
-                dt = int(f'{self.str_today}{str_cme_hms}')
-            except:
-                pass
-            else:
-                self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
-
-        elif realtype == '해외선물호가':
+        if realtype == '해외선물호가':
             try:
                 start = now()
                 if not self.dict_bool['호가잔량필드확인']:
@@ -376,6 +321,60 @@ class FutureAgentTick:
                 pass
             else:
                 self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start)
+
+        elif realtype == '해외선물시세':
+            try:
+                if not self.dict_bool['해선체결필드확인']:
+                    data = realdata.split(';')
+                    if data[0]                             == self.GetCommRealData(code, 20) and \
+                            float(data[2])           == float(self.GetCommRealData(code, 140)) and \
+                            float(data[4])           == float(self.GetCommRealData(code, 12)) and \
+                            data[7]                        == self.GetCommRealData(code, 15) and \
+                            abs(float(data[9]))  == abs(float(self.GetCommRealData(code, 16))) and \
+                            abs(float(data[10])) == abs(float(self.GetCommRealData(code, 17))) and \
+                            abs(float(data[11])) == abs(float(self.GetCommRealData(code, 18))) and \
+                            abs(float(data[5]))  == abs(float(self.GetCommRealData(code, 27))) and \
+                            abs(float(data[6]))  == abs(float(self.GetCommRealData(code, 28))):
+                        self.dict_bool['해선체결필드같음'] = True
+                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
+                    else:
+                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 해선체결 필드값이 다릅니다. 필드값 갱신요망!!')))
+                    self.dict_bool['해선체결필드확인'] = True
+
+                if self.dict_bool['해선체결필드같음']:
+                    data = realdata.split(';')
+                    dt            = data[0]
+                    c       = float(data[2])
+                    per     = float(data[4])
+                    v             = data[7]
+                    o   = abs(float(data[9]))
+                    h   = abs(float(data[10]))
+                    low = abs(float(data[11]))
+                    csp = abs(float(data[5]))
+                    cbp = abs(float(data[6]))
+                else:
+                    dt            = self.GetCommRealData(code, 20)
+                    c       = float(self.GetCommRealData(code, 140))
+                    per     = float(self.GetCommRealData(code, 12))
+                    v             = self.GetCommRealData(code, 15)
+                    o   = abs(float(self.GetCommRealData(code, 16)))
+                    h   = abs(float(self.GetCommRealData(code, 17)))
+                    low = abs(float(self.GetCommRealData(code, 18)))
+                    csp = abs(float(self.GetCommRealData(code, 27)))
+                    cbp = abs(float(self.GetCommRealData(code, 28)))
+
+                str_cme_hms = str_hms_cme_from_str(dt)
+                if self.dict_set['주식타임프레임']:
+                    if int(str_cme_hms) < 93000:
+                        return
+                else:
+                    if int(str_cme_hms) < 90000:
+                        return
+                dt = int(f'{self.str_today}{str_cme_hms}')
+            except:
+                pass
+            else:
+                self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
 
     def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
         if code not in self.dict_data:
@@ -654,7 +653,7 @@ class FutureAgentTick:
         elif gubun == '프로파일링결과':
             self.pr.print_stats(sort='cumulative')
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal, PyUnresolvedReferences
     def OnReceiveTrData(self, screen, rqname, trcode, record, nnext):
         if 'ORD' in trcode:
             return

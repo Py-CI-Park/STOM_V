@@ -123,14 +123,14 @@ class Total:
                                 self.hstd = SendResult(self.GetSendData(vturn, vkey), None)
                     dict_dummy = {}
 
-            elif data == '수신완료':
+            elif data == '수집완료':
                 sc += 1
                 if sc == 5:
                     sc = 0
                     for q in self.bstq_list[:5]:
-                        q.put('결과전송')
+                        q.put('결과이동')
 
-            elif data == '전송완료':
+            elif data == '이동완료':
                 sc += 1
                 if sc == 5:
                     sc = 0

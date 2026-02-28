@@ -46,8 +46,6 @@ class FutureStrategyMin(FutureStrategyTick):
             else:
                 self.dict_data[종목코드] = np.concatenate([self.dict_data[종목코드], np.array([new_data_tick])])
 
-            self.dict_arry = self.dict_data[종목코드]
-
             self.tick_count = 데이터길이 = len(self.dict_data[종목코드]) + 1
             self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
 
@@ -60,6 +58,7 @@ class FutureStrategyMin(FutureStrategyTick):
             ]
             index2 = index1 + len(new_data)
             self.dict_data[종목코드][-1, index1:index2] = new_data
+            self.dict_arry = self.dict_data[종목코드]
 
             high_low = self.high_low.get(종목코드)
             if high_low is None:

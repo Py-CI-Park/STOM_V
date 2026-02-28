@@ -4,7 +4,6 @@ from ui.ui_crosshair import CrossHair
 from ui.ui_get_label_text import get_label_text
 from ui.set_style import qfont12, color_fg_bt, color_bg_bt, color_bg_ld
 from utility.chart_items import CandlestickItem, VolumeBarsItem
-from utility.setting import list_stock_tick, list_coin_tick, list_stock_min, list_coin_min
 from utility.static import error_decorator, from_timestamp, dt_ymdhms
 
 
@@ -18,9 +17,9 @@ class DrawRealChart:
     def draw_realchart(self, data):
         def fi(fname):
             if is_min:
-                return list_stock_min.index(fname) if gubun == 'S' else list_coin_min.index(fname)
+                return self.ui.dict_findex_stock_min[fname] if gubun == 'S' else self.ui.dict_findex_coin_min[fname]
             else:
-                return list_stock_tick.index(fname) if gubun == 'S' else list_coin_tick.index(fname)
+                return self.ui.dict_findex_stock_tick[fname] if gubun == 'S' else self.ui.dict_findex_coin_tick[fname]
 
         def ci():
             self.chart_item_index += 1
@@ -270,7 +269,7 @@ class DrawRealChart:
 
                 if self.ui.ct_checkBoxxxxx_02.isChecked():
                     legend = pg.TextItem(anchor=(0, 0), color=color_fg_bt, border=color_bg_bt, fill=color_bg_ld)
-                    legend.setText(get_label_text(True, gubun, name, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
+                    legend.setText(get_label_text(self.ui, True, gubun, name, is_min, -1, self.ui.ctpg_factors[i], hms))
                     legend.setFont(qfont12)
                     legend.setPos(xmax, ymax)
                     self.ui.ctpg[i].addItem(legend)
@@ -408,7 +407,7 @@ class DrawRealChart:
                     self.ui.ctpg_labels[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][0])
                 if self.ui.ct_checkBoxxxxx_02.isChecked():
                     self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
-                    self.ui.ctpg_legend[i].setText(get_label_text(True, gubun, name, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
+                    self.ui.ctpg_legend[i].setText(get_label_text(self.ui, True, gubun, name, is_min, -1, self.ui.ctpg_factors[i], hms))
 
                 if i == chart_count - 1: break
 

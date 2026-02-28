@@ -227,154 +227,11 @@ class KiwoomAgentTick:
             if self.dict_set['주식매수취소관심이탈']:
                 self.straderQ.put(('관심이탈', code))
 
-    def OperationAlert(self, current):
-        if self.dict_set['주식알림소리']:
-            if current == '084000':
-                self.mgzservQ.put(('sound', '장시작 20분 전입니다.'))
-            elif current == '085000':
-                self.mgzservQ.put(('sound', '장시작 10분 전입니다.'))
-            elif current == '085500':
-                self.mgzservQ.put(('sound', '장시작 5분 전입니다.'))
-            elif current == '085900':
-                self.mgzservQ.put(('sound', '장시작 1분 전입니다.'))
-            elif current == '085930':
-                self.mgzservQ.put(('sound', '장시작 30초 전입니다.'))
-            elif current == '085940':
-                self.mgzservQ.put(('sound', '장시작 20초 전입니다.'))
-            elif current == '085950':
-                self.mgzservQ.put(('sound', '장시작 10초 전입니다.'))
-            elif current == '090000':
-                self.mgzservQ.put(('sound', f"{self.str_today[:4]}년 {self.str_today[4:6]}월 "
-                                            f"{self.str_today[6:]}일 장이 시작되었습니다."))
-            elif current == '152000':
-                self.mgzservQ.put(('sound', '장마감 10분 전입니다.'))
-            elif current == '152500':
-                self.mgzservQ.put(('sound', '장마감 5분 전입니다.'))
-            elif current == '152900':
-                self.mgzservQ.put(('sound', '장마감 1분 전입니다.'))
-            elif current == '152930':
-                self.mgzservQ.put(('sound', '장마감 30초 전입니다.'))
-            elif current == '152940':
-                self.mgzservQ.put(('sound', '장마감 20초 전입니다.'))
-            elif current == '152950':
-                self.mgzservQ.put(('sound', '장마감 10초 전입니다.'))
-            elif current == '153000':
-                self.mgzservQ.put(('sound', f"{self.str_today[:4]}년 {self.str_today[4:6]}월 "
-                                            f"{self.str_today[6:]}일 장이 종료되었습니다."))
-
     def OnReceiveRealData(self, code, realtype, realdata):
         if self.dict_bool['프로세스종료']:
             return
 
-        if realtype == '장시작시간':
-            try:
-                self.operation = int(self.GetCommRealData(code, 215))
-                current            = self.GetCommRealData(code, 20)
-                remain             = self.GetCommRealData(code, 214)
-            except:
-                pass
-            else:
-                self.OperationAlert(current)
-                self.mgzservQ.put(
-                    (
-                        'window',
-                        (
-                            ui_num['S단순텍스트'],
-                            f'장운영 시간 수신 알림 - {self.operation} {current[:2]}:{current[2:4]}:{current[4:]} '
-                            f'남은시간 {remain[:2]}:{remain[2:4]}:{remain[4:]}'
-                        )
-                    )
-                )
-
-        elif realtype == '업종지수':
-            try:
-                dt = int(self.str_today + self.GetCommRealData(code, 20))
-                c  = np.round(abs(float(self.GetCommRealData(code, 10))) / 100, 2)
-            except:
-                pass
-            else:
-                self.mgzservQ.put(('chart', ('코스피' if code == '001' else '코스닥', dt, c)))
-
-        elif realtype == 'VI발동/해제':
-            try:
-                gubun = self.GetCommRealData(code, 9068)
-                code  = self.GetCommRealData(code, 9001).strip('A').strip('Q')
-                name  = self.dict_name[code]
-            except:
-                pass
-            else:
-                self.UpdateVI(gubun, code, name)
-
-        elif realtype == '주식체결':
-            dt = self.GetCommRealData(code, 20)
-            if int(dt) < 90000:
-                return
-
-            try:
-                if not self.dict_bool['주식체결필드확인']:
-                    data = realdata.split('\t')
-                    if data[0]                             == self.GetCommRealData(code, 20) and \
-                            abs(int(data[1]))      == abs(int(self.GetCommRealData(code, 10))) and \
-                            float(data[3])           == float(self.GetCommRealData(code, 12)) and \
-                            data[6]                        == self.GetCommRealData(code, 15) and \
-                            int(data[8])               == int(self.GetCommRealData(code, 14)) and \
-                            abs(int(data[9]))      == abs(int(self.GetCommRealData(code, 16))) and \
-                            abs(int(data[10]))     == abs(int(self.GetCommRealData(code, 17))) and \
-                            abs(int(data[11]))     == abs(int(self.GetCommRealData(code, 18))) and \
-                            float(data[18])          == float(self.GetCommRealData(code, 228)) and \
-                            int(data[14])              == int(self.GetCommRealData(code, 29)) and \
-                            abs(float(data[15])) == abs(float(self.GetCommRealData(code, 30))) and \
-                            float(data[16])          == float(self.GetCommRealData(code, 31)) and \
-                            float(data[25]) / 100    == float(self.GetCommRealData(code, 851)) / 100 and \
-                            int(data[19])              == int(self.GetCommRealData(code, 311)) and \
-                            abs(int(data[4]))      == abs(int(self.GetCommRealData(code, 27))) and \
-                            abs(int(data[5]))      == abs(int(self.GetCommRealData(code, 28))):
-                        self.dict_bool['주식체결필드같음'] = True
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 주식체결 필드값 같음')))
-                    else:
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 주식체결 필드값이 다릅니다. 필드값 갱신요망!!')))
-                    self.dict_bool['주식체결필드확인'] = True
-
-                dt = int(self.str_today + dt)
-                if self.dict_bool['주식체결필드같음']:
-                    data  = realdata.split('\t')
-                    c     = abs(int(data[1]))
-                    per     = float(data[3])
-                    v             = data[6]
-                    dm        = int(data[8])
-                    o     = abs(int(data[9]))
-                    h     = abs(int(data[10]))
-                    low   = abs(int(data[11]))
-                    ch      = float(data[18])
-                    dmp       = int(data[14])
-                    jvp = abs(float(data[15]))
-                    vrp     = float(data[16])
-                    jsvp    = float(data[25]) / 100
-                    sgta      = int(data[19])
-                    csp   = abs(int(data[4]))
-                    cbp   = abs(int(data[5]))
-                else:
-                    c     = abs(int(self.GetCommRealData(code, 10)))
-                    per     = float(self.GetCommRealData(code, 12))
-                    v             = self.GetCommRealData(code, 15)
-                    dm        = int(self.GetCommRealData(code, 14))
-                    o     = abs(int(self.GetCommRealData(code, 16)))
-                    h     = abs(int(self.GetCommRealData(code, 17)))
-                    low   = abs(int(self.GetCommRealData(code, 18)))
-                    ch      = float(self.GetCommRealData(code, 228))
-                    dmp       = int(self.GetCommRealData(code, 29))
-                    jvp = abs(float(self.GetCommRealData(code, 30)))
-                    vrp     = float(self.GetCommRealData(code, 31))
-                    jsvp    = float(self.GetCommRealData(code, 851)) / 100
-                    sgta      = int(self.GetCommRealData(code, 311))
-                    csp   = abs(int(self.GetCommRealData(code, 27)))
-                    cbp   = abs(int(self.GetCommRealData(code, 28)))
-            except:
-                pass
-            else:
-                self.UpdateTickData(code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp)
-
-        elif realtype == '주식호가잔량':
+        if realtype == '주식호가잔량':
             dt = self.GetCommRealData(code, 21)
             if int(dt) < 90000:
                 return
@@ -513,6 +370,149 @@ class KiwoomAgentTick:
                 lastprice = self.GetMasterLastPrice(code)
                 self.UpdateHogaData(dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, code, name, start, lastprice)
 
+        elif realtype == '주식체결':
+            dt = self.GetCommRealData(code, 20)
+            if int(dt) < 90000:
+                return
+
+            try:
+                if not self.dict_bool['주식체결필드확인']:
+                    data = realdata.split('\t')
+                    if data[0]                             == self.GetCommRealData(code, 20) and \
+                            abs(int(data[1]))      == abs(int(self.GetCommRealData(code, 10))) and \
+                            float(data[3])           == float(self.GetCommRealData(code, 12)) and \
+                            data[6]                        == self.GetCommRealData(code, 15) and \
+                            int(data[8])               == int(self.GetCommRealData(code, 14)) and \
+                            abs(int(data[9]))      == abs(int(self.GetCommRealData(code, 16))) and \
+                            abs(int(data[10]))     == abs(int(self.GetCommRealData(code, 17))) and \
+                            abs(int(data[11]))     == abs(int(self.GetCommRealData(code, 18))) and \
+                            float(data[18])          == float(self.GetCommRealData(code, 228)) and \
+                            int(data[14])              == int(self.GetCommRealData(code, 29)) and \
+                            abs(float(data[15])) == abs(float(self.GetCommRealData(code, 30))) and \
+                            float(data[16])          == float(self.GetCommRealData(code, 31)) and \
+                            float(data[25]) / 100    == float(self.GetCommRealData(code, 851)) / 100 and \
+                            int(data[19])              == int(self.GetCommRealData(code, 311)) and \
+                            abs(int(data[4]))      == abs(int(self.GetCommRealData(code, 27))) and \
+                            abs(int(data[5]))      == abs(int(self.GetCommRealData(code, 28))):
+                        self.dict_bool['주식체결필드같음'] = True
+                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 주식체결 필드값 같음')))
+                    else:
+                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 주식체결 필드값이 다릅니다. 필드값 갱신요망!!')))
+                    self.dict_bool['주식체결필드확인'] = True
+
+                dt = int(self.str_today + dt)
+                if self.dict_bool['주식체결필드같음']:
+                    data  = realdata.split('\t')
+                    c     = abs(int(data[1]))
+                    per     = float(data[3])
+                    v             = data[6]
+                    dm        = int(data[8])
+                    o     = abs(int(data[9]))
+                    h     = abs(int(data[10]))
+                    low   = abs(int(data[11]))
+                    ch      = float(data[18])
+                    dmp       = int(data[14])
+                    jvp = abs(float(data[15]))
+                    vrp     = float(data[16])
+                    jsvp    = float(data[25]) / 100
+                    sgta      = int(data[19])
+                    csp   = abs(int(data[4]))
+                    cbp   = abs(int(data[5]))
+                else:
+                    c     = abs(int(self.GetCommRealData(code, 10)))
+                    per     = float(self.GetCommRealData(code, 12))
+                    v             = self.GetCommRealData(code, 15)
+                    dm        = int(self.GetCommRealData(code, 14))
+                    o     = abs(int(self.GetCommRealData(code, 16)))
+                    h     = abs(int(self.GetCommRealData(code, 17)))
+                    low   = abs(int(self.GetCommRealData(code, 18)))
+                    ch      = float(self.GetCommRealData(code, 228))
+                    dmp       = int(self.GetCommRealData(code, 29))
+                    jvp = abs(float(self.GetCommRealData(code, 30)))
+                    vrp     = float(self.GetCommRealData(code, 31))
+                    jsvp    = float(self.GetCommRealData(code, 851)) / 100
+                    sgta      = int(self.GetCommRealData(code, 311))
+                    csp   = abs(int(self.GetCommRealData(code, 27)))
+                    cbp   = abs(int(self.GetCommRealData(code, 28)))
+            except:
+                pass
+            else:
+                self.UpdateTickData(code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp)
+
+        elif realtype == '업종지수':
+            try:
+                dt = int(self.str_today + self.GetCommRealData(code, 20))
+                c  = np.round(abs(float(self.GetCommRealData(code, 10))) / 100, 2)
+            except:
+                pass
+            else:
+                self.mgzservQ.put(('chart', ('코스피' if code == '001' else '코스닥', dt, c)))
+
+        elif realtype == 'VI발동/해제':
+            try:
+                gubun = self.GetCommRealData(code, 9068)
+                code  = self.GetCommRealData(code, 9001).strip('A').strip('Q')
+                name  = self.dict_name[code]
+            except:
+                pass
+            else:
+                self.UpdateVI(gubun, code, name)
+
+        elif realtype == '장시작시간':
+            try:
+                self.operation = int(self.GetCommRealData(code, 215))
+                current            = self.GetCommRealData(code, 20)
+                remain             = self.GetCommRealData(code, 214)
+            except:
+                pass
+            else:
+                self.OperationAlert(current)
+                self.mgzservQ.put(
+                    (
+                        'window',
+                        (
+                            ui_num['S단순텍스트'],
+                            f'장운영 시간 수신 알림 - {self.operation} {current[:2]}:{current[2:4]}:{current[4:]} '
+                            f'남은시간 {remain[:2]}:{remain[2:4]}:{remain[4:]}'
+                        )
+                    )
+                )
+
+    def OperationAlert(self, current):
+        if self.dict_set['주식알림소리']:
+            if current == '084000':
+                self.mgzservQ.put(('sound', '장시작 20분 전입니다.'))
+            elif current == '085000':
+                self.mgzservQ.put(('sound', '장시작 10분 전입니다.'))
+            elif current == '085500':
+                self.mgzservQ.put(('sound', '장시작 5분 전입니다.'))
+            elif current == '085900':
+                self.mgzservQ.put(('sound', '장시작 1분 전입니다.'))
+            elif current == '085930':
+                self.mgzservQ.put(('sound', '장시작 30초 전입니다.'))
+            elif current == '085940':
+                self.mgzservQ.put(('sound', '장시작 20초 전입니다.'))
+            elif current == '085950':
+                self.mgzservQ.put(('sound', '장시작 10초 전입니다.'))
+            elif current == '090000':
+                self.mgzservQ.put(('sound', f"{self.str_today[:4]}년 {self.str_today[4:6]}월 "
+                                            f"{self.str_today[6:]}일 장이 시작되었습니다."))
+            elif current == '152000':
+                self.mgzservQ.put(('sound', '장마감 10분 전입니다.'))
+            elif current == '152500':
+                self.mgzservQ.put(('sound', '장마감 5분 전입니다.'))
+            elif current == '152900':
+                self.mgzservQ.put(('sound', '장마감 1분 전입니다.'))
+            elif current == '152930':
+                self.mgzservQ.put(('sound', '장마감 30초 전입니다.'))
+            elif current == '152940':
+                self.mgzservQ.put(('sound', '장마감 20초 전입니다.'))
+            elif current == '152950':
+                self.mgzservQ.put(('sound', '장마감 10초 전입니다.'))
+            elif current == '153000':
+                self.mgzservQ.put(('sound', f"{self.str_today[:4]}년 {self.str_today[4:6]}월 "
+                                            f"{self.str_today[6:]}일 장이 종료되었습니다."))
+
     # noinspection PyUnusedLocal
     def OnReceiveMsg(self, sScrNo, sRQName, sTrCode, sMsg):
         if '매수증거금' in sMsg:
@@ -553,6 +553,21 @@ class KiwoomAgentTick:
         if gubun == '1' and code in self.dict_name and \
                 (code not in self.dict_vipr or (self.dict_vipr[code][0] and now() > self.dict_vipr[code][1])):
             self.UpdateViPrice(code, name)
+
+    def InsertViPrice(self, code, o):
+        uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, o, self.int_hgtime)
+        self.dict_vipr[code] = [True, timedelta_sec(-3600), uvi, dvi, vi_hgunit]
+
+    def UpdateViPrice(self, code, key):
+        if key.__class__ == str:
+            if code in self.dict_vipr:
+                self.dict_vipr[code][:2] = False, timedelta_sec(5)
+            else:
+                self.dict_vipr[code] = [False, timedelta_sec(5), 0, 0, 0]
+            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'변동성 완화 장치 발동 - [{code}] {key}')))
+        elif key.__class__ == int:
+            uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, key, self.int_hgtime)
+            self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
     def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
         if code not in self.dict_vipr:
@@ -674,21 +689,6 @@ class KiwoomAgentTick:
                 shg, hhg = GetSangHahanga(code in self.tuple_kosd, lastprice, self.int_hgtime)
                 self.dict_sghg[code] = (shg, hhg)
             self.mgzservQ.put(('hoga', (name,) + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + (shg, hhg)))
-
-    def InsertViPrice(self, code, o):
-        uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, o, self.int_hgtime)
-        self.dict_vipr[code] = [True, timedelta_sec(-3600), uvi, dvi, vi_hgunit]
-
-    def UpdateViPrice(self, code, key):
-        if key.__class__ == str:
-            if code in self.dict_vipr:
-                self.dict_vipr[code][:2] = False, timedelta_sec(5)
-            else:
-                self.dict_vipr[code] = [False, timedelta_sec(5), 0, 0, 0]
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'변동성 완화 장치 발동 - [{code}] {key}')))
-        elif key.__class__ == int:
-            uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, key, self.int_hgtime)
-            self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
     def GetCommRealData(self, code, fid):
         return self.ocx.dynamicCall('GetCommRealData(QString, int)', code, fid)

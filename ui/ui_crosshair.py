@@ -169,9 +169,9 @@ class CrossHair:
                     for n, labell in enumerate(self.ui.ctpg_labels):
                         foctor = self.ui.ctpg_factors[n]
                         if index == n:
-                            text = f'Y축 {np.round(mousePoint.y(), 2):,}\n{get_label_text(real, gubun, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)}'
+                            text = f'Y축 {np.round(mousePoint.y(), 2):,}\n{get_label_text(self.ui, real, gubun, code, is_min, xpoint, foctor, hms_)}'
                         else:
-                            text = get_label_text(real, gubun, code, is_min, self.ui.ctpg_arry, xpoint, foctor, hms_)
+                            text = get_label_text(self.ui, real, gubun, code, is_min, xpoint, foctor, hms_)
                         labell.setText(text)
                         lxmin, lxmax = self.ui.ctpg_cvb[n].state['viewRange'][0]
                         lymin, lymax = self.ui.ctpg_cvb[n].state['viewRange'][1]

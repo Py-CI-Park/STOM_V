@@ -90,7 +90,6 @@ class Chart:
         except:
             pass
 
-    # noinspection PyUnresolvedReferences
     @error_decorator
     def UpdateChart(self, data):
         def get_cgtime(cgtime_):

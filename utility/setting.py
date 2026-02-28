@@ -480,12 +480,12 @@ list_indicator       = [
 
 list_stock_min    = list_stock_min + list_indicator
 list_coin_min     = list_coin_min + list_indicator
-list_stock_tick_c = list_stock_tick + list_chegyeol_colum1
-list_stock_min_c  = list_stock_min + list_chegyeol_colum1 + list_indicator
-list_coin_tick_c  = list_coin_tick + list_chegyeol_colum1
-list_coin_min_c   = list_coin_min + list_chegyeol_colum1 + list_indicator
-list_coin_tick_cf = list_coin_tick + list_chegyeol_colum2
-list_coin_min_cf  = list_coin_min + list_chegyeol_colum2 + list_indicator
+list_stock_tick2  = list_stock_tick + list_chegyeol_colum1
+list_stock_min2   = list_stock_min + list_chegyeol_colum1 + list_indicator
+list_coin_tick2   = list_coin_tick + list_chegyeol_colum1
+list_coin_min2    = list_coin_min + list_chegyeol_colum1 + list_indicator
+list_future_tick2 = list_coin_tick + list_chegyeol_colum2
+list_future_min2  = list_coin_min + list_chegyeol_colum2 + list_indicator
 
 dict_order_ratio = {
     1: {

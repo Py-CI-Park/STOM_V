@@ -264,7 +264,6 @@ def opstarter_kill():
 
 def pickle_write(file, data):
     with open(f'{file}.pkl', "wb") as f:
-        # noinspection PyTypeChecker
         _pickle.dump(data, f, protocol=-1)
 
 

@@ -29,11 +29,9 @@ def find_window(caption):
 
 
 def leftClick(x, y, hwnd):
-    # noinspection PyUnresolvedReferences
     lParam = win32api.MAKELONG(x, y)
     win32gui.SendMessage(hwnd, win32con.WM_LBUTTONDOWN, win32con.MK_LBUTTON, lParam)
     win32gui.SendMessage(hwnd, win32con.WM_LBUTTONUP, 0, lParam)
-    # noinspection PyUnresolvedReferences
     win32api.Sleep(300)
 
 

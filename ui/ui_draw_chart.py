@@ -9,8 +9,6 @@ from utility.chart_items import ChuseItem, CandlestickItem, VolumeBarsItem
 from ui.set_style import qfont12, color_fg_bt, color_bg_bt, color_bg_ld
 from stock.login_kiwoom.manuallogin import leftClick, enter_keys, press_keys
 from utility.static import error_decorator, from_timestamp, thread_decorator, str_ymd
-from utility.setting import list_stock_tick_c, list_stock_min_c, list_coin_min_c, list_coin_min_cf, list_coin_tick_c, \
-    list_coin_tick_cf
 
 
 class DrawChart:
@@ -22,13 +20,13 @@ class DrawChart:
     def draw_chart(self, data):
         def fi(fname):
             if is_min:
-                if gubun == 'S':    return list_stock_min_c.index(fname)
-                elif 'KRW' in code: return list_coin_min_c.index(fname)
-                else:               return list_coin_min_cf.index(fname)
+                if gubun == 'S':    return self.ui.dict_findex_stock_min2[fname]
+                elif 'KRW' in code: return self.ui.dict_findex_coin_min2[fname]
+                else:               return self.ui.dict_findex_future_min2[fname]
             else:
-                if gubun == 'S':    return list_stock_tick_c.index(fname)
-                elif 'KRW' in code: return list_coin_tick_c.index(fname)
-                else:               return list_coin_tick_cf.index(fname)
+                if gubun == 'S':    return self.ui.dict_findex_stock_tick2[fname]
+                elif 'KRW' in code: return self.ui.dict_findex_coin_tick2[fname]
+                else:               return self.ui.dict_findex_future_tick2[fname]
 
         self.ui.ChartClear()
         if not self.ui.dialog_chart.isVisible():
@@ -312,7 +310,7 @@ class DrawChart:
 
             if self.ui.ct_checkBoxxxxx_02.isChecked():
                 legend = pg.TextItem(anchor=(1, 0), color=color_fg_bt, border=color_bg_bt, fill=color_bg_ld)
-                legend.setText(get_label_text(False, gubun, code, is_min, self.ui.ctpg_arry, -1, self.ui.ctpg_factors[i], hms))
+                legend.setText(get_label_text(self.ui, False, gubun, code, is_min, -1, self.ui.ctpg_factors[i], hms))
                 legend.setFont(qfont12)
                 legend.setPos(xmax, ymax)
                 self.ui.ctpg[i].addItem(legend)
