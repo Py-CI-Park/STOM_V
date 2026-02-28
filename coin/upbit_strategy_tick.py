@@ -31,7 +31,6 @@ class UpbitStrategyTick:
 
         self.vars             = {}
         self.dict_data        = {}
-        self.dict_arry        = {}
         self.dict_signal_num  = {}
         self.dict_buy_num     = {}
         self.dict_condition   = {}
@@ -226,16 +225,7 @@ class UpbitStrategyTick:
         self.tick_count = 데이터길이 = len(self.dict_data[종목코드]) + 1
         self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
 
-        new_data = [
-            self._이동평균(60, calc=True), self._이동평균(150, calc=True), self._이동평균(300, calc=True),
-            self._이동평균(600, calc=True), self._이동평균(1200, calc=True), self._최고현재가(rw, calc=True),
-            self._최저현재가(rw, calc=True), self._체결강도평균(rw, calc=True), self._최고체결강도(rw, calc=True),
-            self._최저체결강도(rw, calc=True), self._최고초당매수수량(rw, calc=True), self._최고초당매도수량(rw, calc=True),
-            self._누적초당매수수량(rw, calc=True), self._누적초당매도수량(rw, calc=True), self._초당거래대금평균(rw, calc=True),
-            self._등락율각도(rw, calc=True), self._당일거래대금각도(rw, calc=True)
-        ]
-        self.dict_data[종목코드][-1, index1:] = new_data
-        self.dict_arry = self.dict_data[종목코드]
+        self.dict_data[종목코드][-1, index1:] = self.GetParameterArea(rw)
 
         high_low = self.high_low.get(종목코드)
         if high_low is None:
@@ -373,6 +363,28 @@ class UpbitStrategyTick:
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
             self.windowQ.put((ui_num['C단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+
+    def GetParameterArea(self, rw):
+        if self.is_tick:
+            return [
+                self._이동평균(self.sma_list[0], calc=True), self._이동평균(self.sma_list[1], calc=True),
+                self._이동평균(self.sma_list[2], calc=True), self._이동평균(self.sma_list[3], calc=True),
+                self._이동평균(self.sma_list[4], calc=True), self._최고현재가(rw, calc=True), self._최저현재가(rw, calc=True),
+                self._체결강도평균(rw, calc=True), self._최고체결강도(rw, calc=True), self._최저체결강도(rw, calc=True),
+                self._최고초당매수수량(rw, calc=True), self._최고초당매도수량(rw, calc=True), self._누적초당매수수량(rw, calc=True),
+                self._누적초당매도수량(rw, calc=True), self._초당거래대금평균(rw, calc=True), self._등락율각도(rw, calc=True),
+                self._당일거래대금각도(rw, calc=True)
+            ]
+        else:
+            return [
+                self._이동평균(self.sma_list[0], calc=True), self._이동평균(self.sma_list[1], calc=True),
+                self._이동평균(self.sma_list[2], calc=True), self._이동평균(self.sma_list[3], calc=True),
+                self._이동평균(self.sma_list[4], calc=True), self._최고현재가(rw, calc=True), self._최저현재가(rw, calc=True),
+                self._최고분봉고가(rw, calc=True), self._최저분봉저가(rw, calc=True), self._체결강도평균(rw, calc=True),
+                self._최고체결강도(rw, calc=True), self._최저체결강도(rw, calc=True), self._최고분당매수수량(rw, calc=True),
+                self._최고분당매도수량(rw, calc=True), self._누적분당매수수량(rw, calc=True), self._누적분당매도수량(rw, calc=True),
+                self._분당거래대금평균(rw, calc=True), self._등락율각도(rw, calc=True), self._당일거래대금각도(rw, calc=True)
+            ]
 
     def SetBuyCount(self, 분할매수횟수, 매입가, 현재가, 저가대비고가등락율, 순매수금액, 당일거래대금):
         if self.dict_set['코인비중조절'][0] == 0:
@@ -540,7 +552,7 @@ class UpbitStrategyTick:
     def _Parameter_Previous(self, cidx, pre):
         if pre < self.tick_count:
             ridx = self.indexn - pre if pre != -1 else self.indexb
-            return self.dict_arry[ridx, cidx]
+            return self.dict_data[self.code][ridx, cidx]
         return 0
 
     def _현재가N(self, pre):
@@ -704,7 +716,7 @@ class UpbitStrategyTick:
                 return self._Parameter_Previous(self._fi(f'이동평균{tick}'), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
-                return self.dict_arry[sidx:eidx, self._fi('현재가')].mean()
+                return self.dict_data[self.code][sidx:eidx, self._fi('현재가')].mean()
         return 0
 
     def _Parameter_Area(self, cidx, fidx, tick, pre, func, calc=False):
@@ -713,7 +725,7 @@ class UpbitStrategyTick:
                 return self._Parameter_Previous(self._get_column_index(cidx), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
-                return func(self.dict_arry[sidx:eidx, fidx])
+                return func(self.dict_data[self.code][sidx:eidx, fidx])
         return 0
 
     def _Parameter_Dgree(self, cidx, fidx, tick, pre, cf, calc=False):
@@ -722,7 +734,7 @@ class UpbitStrategyTick:
                 return self._Parameter_Previous(self._get_column_index(cidx), pre)
             else:
                 sidx, eidx = self._get_double_pre_index(tick, pre)
-                diff = self.dict_arry[eidx, fidx] - self.dict_arry[sidx, fidx]
+                diff = self.dict_data[self.code][eidx, fidx] - self.dict_data[self.code][sidx, fidx]
                 return np.round(math.atan2(diff * cf, tick) / (2 * math.pi) * 360, 2)
         return 0
 
@@ -771,8 +783,8 @@ class UpbitStrategyTick:
     def _이평근접개수(self, tick1, tick2=30, per=0.33):
         if tick1 + tick2 <= self.tick_count and tick1 in self.sma_list:
             sidx, eidx = self._get_double_index(tick2)
-            arry_close = self.dict_arry[sidx:eidx, self._fi('현재가')]
-            arry_sma = self.dict_arry[sidx:eidx, self._fi(f'이동평균{tick1}')]
+            arry_close = self.dict_data[self.code][sidx:eidx, self._fi('현재가')]
+            arry_sma = self.dict_data[self.code][sidx:eidx, self._fi(f'이동평균{tick1}')]
             deviation = np.abs(arry_close - arry_sma) / arry_sma * 100
             return np.sum(deviation <= per)
         return 0
@@ -780,7 +792,7 @@ class UpbitStrategyTick:
     def _시가근접개수(self, tick, per=0.5):
         if tick <= self.tick_count:
             sidx, eidx = self._get_double_index(tick)
-            arry_close = self.dict_arry[sidx:eidx, self._fi('현재가')]
+            arry_close = self.dict_data[self.code][sidx:eidx, self._fi('현재가')]
             deviation = np.abs(arry_close - self._시가N(0)) / self._시가N(0) * 100
             return np.sum(deviation <= per)
         return 0
@@ -789,12 +801,12 @@ class UpbitStrategyTick:
         if tick + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
             if self.is_tick:
-                arry_close = self.dict_arry[sidx:eidx, self._fi('현재가')]
+                arry_close = self.dict_data[self.code][sidx:eidx, self._fi('현재가')]
                 volatility = np.std(arry_close) / np.mean(arry_close) * 100
             else:
-                arry_high  = self.dict_arry[sidx:eidx, self._fi('분봉고가')]
-                arry_low   = self.dict_arry[sidx:eidx, self._fi('분봉저가')]
-                volatility = np.where(arry_high - arry_low > 0, np.std(arry_high - arry_low) / np.mean(arry_high - arry_low) * 100, 0)
+                arry_high  = self.dict_data[self.code][sidx:eidx, self._fi('분봉고가')]
+                arry_low   = self.dict_data[self.code][sidx:eidx, self._fi('분봉저가')]
+                volatility = np.std(arry_high - arry_low) / np.mean(arry_high - arry_low) * 100
             return volatility
         return 0
 
@@ -834,8 +846,8 @@ class UpbitStrategyTick:
     def _구간호가총잔량비율(self, tick, pre=0):
         if tick + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
-            sum_bids = self.dict_arry[sidx:eidx, self._fi('매수총잔량')].sum()
-            sum_asks = self.dict_arry[sidx:eidx, self._fi('매도총잔량')].sum()
+            sum_bids = self.dict_data[self.code][sidx:eidx, self._fi('매수총잔량')].sum()
+            sum_asks = self.dict_data[self.code][sidx:eidx, self._fi('매도총잔량')].sum()
             total_cnt = sum_bids + sum_asks
             return sum_bids / total_cnt if total_cnt != 0 else 0
         return 0
@@ -843,16 +855,16 @@ class UpbitStrategyTick:
     def _매수수량변동성(self, tick, pre=0):
         if tick * 2 + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
-            cur_avg_buys = self.dict_arry[sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
-            pre_avg_buys = self.dict_arry[sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
+            cur_avg_buys = self.dict_data[self.code][sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
+            pre_avg_buys = self.dict_data[self.code][sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
             return cur_avg_buys / pre_avg_buys if pre_avg_buys != 0 else 0
         return 0
 
     def _매도수량변동성(self, tick, pre=0):
         if tick * 2 + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
-            cur_arry_sells = self.dict_arry[sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
-            pre_arry_sells = self.dict_arry[sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
+            cur_arry_sells = self.dict_data[self.code][sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
+            pre_arry_sells = self.dict_data[self.code][sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
             return cur_arry_sells / pre_arry_sells if pre_arry_sells != 0 else 0
         return 0
 

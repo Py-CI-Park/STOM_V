@@ -1,0 +1,65 @@
+# STOM V2.00 32비트 라이브러리 의존성 파일
+# 자동으로 생성된 파일 - 수정 시 주의하세요
+# 생성일시: 2026-02-11 12:45:00
+
+# Core Data Science
+numpy==1.26.4
+pandas==2.0.3
+
+# GUI Framework
+PyQt5==5.15.11
+PyQt5-Qt5==5.15.2
+PyQt5_sip==12.18.0
+
+# Financial & Trading
+TA-Lib==0.4.27
+exchange_calendars==4.13.1
+
+# Web & HTTP
+requests==2.32.5
+httpx==0.28.1
+urllib3==2.6.3
+h11==0.16.0
+httpcore==1.0.9
+
+# System & Utilities
+psutil==7.2.2
+pywin32==311
+win32_setctime==1.2.0
+
+# Cryptography & Security
+cryptography==46.0.5
+cffi==2.0.0
+pycparser==3.0
+
+# Time & Date
+pytz==2025.2
+tzlocal==5.3.1
+python-dateutil==2.9.0.post0
+korean-lunar-calendar==0.3.1
+pyluach==2.3.0
+
+# Task Scheduling
+APScheduler==3.11.2
+
+# Logging & Debugging
+loguru==0.7.3
+colorama==0.4.6
+
+# Telegram Bot
+python-telegram-bot==22.4
+
+# Network & Protocol
+pyzmq==27.1.0
+anyio==4.12.1
+idna==3.11
+charset-normalizer==3.4.4
+certifi==2026.1.4
+toolz==1.1.0
+typing_extensions==4.15.0
+six==1.17.0
+setuptools==65.5.0
+tzdata==2025.3
+
+# 로컬 TA-Lib 휠 파일 (32비트)
+# ./utility/TA_Lib-0.4.27-cp311-cp311-win32.whl

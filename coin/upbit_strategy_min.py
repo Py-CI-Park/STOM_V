@@ -27,19 +27,18 @@ class UpbitStrategyMin(UpbitStrategyTick):
 
         rw = 평균값계산틱수
         new_data_tick = np.zeros(self.data_cnt, dtype=np.float64)
+        new_data = [
+            체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도,
+            분당매수수량, 분당매도수량,
+            분봉시가, 분봉고가, 분봉저가, 분당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량,
+            매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4,
+            매수호가5, 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5,
+            매도수5호가잔량합, 관심종목
+        ]
+        index1 = len(new_data)
+        new_data_tick[:index1] = new_data
 
         if 전략연산:
-            new_data = [
-                체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도,
-                분당매수수량, 분당매도수량,
-                분봉시가, 분봉고가, 분봉저가, 분당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량,
-                매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4,
-                매수호가5, 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5,
-                매도수5호가잔량합, 관심종목
-            ]
-            index1 = len(new_data)
-            new_data_tick[:index1] = new_data
-
             if 종목코드 not in self.dict_data:
                 self.dict_data[종목코드] = np.array([new_data_tick])
             else:
@@ -48,13 +47,7 @@ class UpbitStrategyMin(UpbitStrategyTick):
             self.tick_count = 데이터길이 = len(self.dict_data[종목코드]) + 1
             self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
 
-            new_data = [
-                self._이동평균(5, calc=True), self._이동평균(10, calc=True), self._이동평균(20, calc=True), self._이동평균(60, calc=True), self._이동평균(120, calc=True),
-                self._최고현재가(rw, calc=True), self._최저현재가(rw, calc=True), self._최고분봉고가(rw, calc=True), self._최저분봉저가(rw, calc=True),
-                self._체결강도평균(rw, calc=True), self._최고체결강도(rw, calc=True), self._최저체결강도(rw, calc=True), self._최고분당매수수량(rw, calc=True),
-                self._최고분당매도수량(rw, calc=True), self._누적분당매수수량(rw, calc=True), self._누적분당매도수량(rw, calc=True), self._분당거래대금평균(rw, calc=True),
-                self._등락율각도(rw, calc=True), self._당일거래대금각도(rw, calc=True)
-            ]
+            new_data = self.GetParameterArea(rw)
             index2 = index1 + len(new_data)
             self.dict_data[종목코드][-1, index1:index2] = new_data
 
@@ -65,7 +58,6 @@ class UpbitStrategyMin(UpbitStrategyTick):
             mv = self.dict_data[종목코드][:, self._fi('분당거래대금')]
             indicator_list = GetIndicator(mc, mh, ml, mv, k)
             self.dict_data[종목코드][-1, index2:] = indicator_list
-            self.dict_arry = self.dict_data[종목코드]
 
             AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, \
                 PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = indicator_list
@@ -208,36 +200,19 @@ class UpbitStrategyMin(UpbitStrategyTick):
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:
-                new_data = [
-                    체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도,
-                    분당매수수량, 분당매도수량,
-                    분봉시가, 분봉고가, 분봉저가, 분당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량,
-                    매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5,
-                    매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5,
-                    매도수5호가잔량합, 관심종목
-                ]
-                index1 = len(new_data)
-                new_data_tick[:index1] = new_data
-                self.dict_arry = np.concatenate([self.dict_data[종목코드], np.array([new_data_tick])])
-
-                new_data = [
-                    self._이동평균(5, calc=True), self._이동평균(10, calc=True), self._이동평균(20, calc=True), self._이동평균(60, calc=True),
-                    self._이동평균(120, calc=True), self._최고현재가(rw, calc=True), self._최저현재가(rw, calc=True), self._최고분봉고가(rw, calc=True),
-                    self._최저분봉저가(rw, calc=True), self._체결강도평균(rw, calc=True), self._최고체결강도(rw, calc=True), self._최저체결강도(rw, calc=True),
-                    self._최고분당매수수량(rw, calc=True), self._최고분당매도수량(rw, calc=True), self._누적분당매수수량(rw, calc=True), self._누적분당매도수량(rw, calc=True),
-                    self._분당거래대금평균(rw, calc=True), self._등락율각도(rw, calc=True), self._당일거래대금각도(rw, calc=True)
-                ]
+                arry_chart = np.concatenate([self.dict_data[종목코드], np.array([new_data_tick])])
+                new_data = self.GetParameterArea(rw)
                 index2 = index1 + len(new_data)
-                self.dict_arry[-1, index1:index2] = new_data
-
+                arry_chart[-1, index1:index2] = new_data
                 k = list(self.indicator.values())
-                mc = self.dict_arry[:, self._fi('현재가')]
-                mh = self.dict_arry[:, self._fi('분봉고가')]
-                ml = self.dict_arry[:, self._fi('분봉저가')]
-                mv = self.dict_arry[:, self._fi('분당거래대금')]
-                self.dict_arry[-1, index2:] = GetIndicator(mc, mh, ml, mv, k)
-
-            self.windowQ.put((ui_num['실시간차트'], 종목코드, self.dict_data[종목코드] if 전략연산 else self.dict_arry))
+                mc = arry_chart[:, self._fi('현재가')]
+                mh = arry_chart[:, self._fi('분봉고가')]
+                ml = arry_chart[:, self._fi('분봉저가')]
+                mv = arry_chart[:, self._fi('분당거래대금')]
+                arry_chart[-1, index2:] = GetIndicator(mc, mh, ml, mv, k)
+                self.windowQ.put((ui_num['실시간차트'], 종목코드, arry_chart))
+            else:
+                self.windowQ.put((ui_num['실시간차트'], 종목코드, self.dict_data[종목코드]))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
