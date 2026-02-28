@@ -13,13 +13,12 @@ from utility.setting import ui_num, DB_STRATEGY, DICT_SET, DB_BACKTEST, DB_STOCK
 
 
 class Total:
-    def __init__(self, wq, tq, mq, bstq_list, ui_gubun, tick_count):
+    def __init__(self, wq, tq, mq, bstq_list, ui_gubun):
         self.wq           = wq
         self.tq           = tq
         self.mq           = mq
         self.bstq_list    = bstq_list
         self.ui_gubun     = ui_gubun
-        self.tick_count   = tick_count
         self.dict_set     = DICT_SET
 
         self.back_count   = None
@@ -109,8 +108,7 @@ class Total:
                 self.BackInfo(data)
 
             elif data[0] == '경우의수':
-                self.total_count = data[1]
-                self.back_count  = data[2]
+                self.back_count  = data[1]
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
@@ -173,7 +171,6 @@ class OptimizeConditions:
         self.Start()
 
     def Start(self):
-        self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
         if self.ui_gubun not in ('CF', 'SF'):
@@ -306,27 +303,15 @@ class OptimizeConditions:
         for q in self.beq_list:
             q.put(data)
 
-        time.sleep(1)
-
-        self.shared_cnt.value = 0
-        for q in self.beq_list:
-            q.put('전체틱수계산')
-
-        tick_count = 0
-        for _ in range(self.multi):
-            data = self.bq.get()
-            tick_count += data
-        tick_count = int(tick_count / 1000)
-
         mq = Queue()
-        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, tick_count)).start()
+        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
+
         self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, std_text, self.optistandard, valid_days, len(day_list)))
+        self.tq.put(('경우의수', back_count))
 
-        time.sleep(1)
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START'))
 
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작'))
-        self.tq.put(('경우의수', rcount * back_count, back_count))
         hstd = -float('inf')
         for i in range(rcount):
             buy_conds, sell_conds = self.GetCondlist()
@@ -456,7 +441,6 @@ class OptimizeConditions:
 
     def SysExit(self, cancel):
         if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} STOP'))
         else:
             self.tq.put('백테완료중지')

@@ -178,10 +178,6 @@ class BinanceReceiverTick:
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
         self.dict_daym[code] = dm
 
-        dt_ = int(str(dt)[:13])
-        if code not in self.dict_dlhp or dt_ != self.dict_dlhp[code][0]:
-            self.dict_dlhp[code] = [dt_, np.round((h / low - 1) * 100, 2)]
-
         if self.hoga_code == code:
             bids, asks = self.list_hgdt[2:4]
             if bids_ > 0: bids += bids_
@@ -345,6 +341,8 @@ class BinanceReceiverTick:
             code_dtdm[1] = dm
             code_data[7] = 0
             code_data[8] = 0
+
+            self.dict_dlhp[code] = lhp
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()

@@ -26,7 +26,7 @@ class UpdateTextedit:
             log_  = f'<font color=#f7455d>{data[1]}</font>' if '오류' in data[1] else data[1]
             text  = f'[{time_}] {log_}' if '</font>' not in log_ else f'<font color=white>[{time_}]</font> {log_}'
 
-            if data[0] in (ui_num['S로그텍스트'], ui_num['S단순텍스트'], ui_num['C로그텍스트'], ui_num['C단순텍스트'], ):
+            if data[0] in (ui_num['S로그텍스트'], ui_num['S단순텍스트'], ui_num['C로그텍스트'], ui_num['C단순텍스트']):
                 try:
                     self.ui.log.info(text)
                 except:
@@ -42,13 +42,22 @@ class UpdateTextedit:
                 self.ui.crc_textEditttt_01.append(text)
             elif data[0] == ui_num['백테엔진']:
                 self.ui.be_textEditxxxx_01.append(text)
-                if data[1] == '백테엔진 준비 완료' and self.ui.auto_mode:
-                    if self.ui.dialog_backengine.isVisible():
-                        self.ui.dialog_backengine.close()
-                    qtest_qwait(2)
-                    self.ui.AutoBackSchedule(2)
+                if data[1] == '백테엔진 준비 완료':
+                    if not self.ui.qtimer3.isActive():
+                        self.ui.qtimer3.start()
+                    if self.ui.auto_mode:
+                        if self.ui.dialog_backengine.isVisible():
+                            self.ui.dialog_backengine.close()
+                        qtest_qwait(2)
+                        self.ui.AutoBackSchedule(2)
 
             elif data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']):
+                if 'START' in data[1] or '그리드 최적화 시작' in data[1]:
+                    self.ui.back_start_time = now()
+                elif 'OPTUNA INFO' in data[1]:
+                    self.ui.optuna_current_cnt = int(data[1].split('현재횟수[')[1].split(']')[0])
+                    self.ui.optuna_remain_cnt  = int(data[1].split('남은횟수[')[1].split(']')[0])
+
                 if 'self.vars' in data[1] and 'MERGE' not in data[1]:
                     color = color_bt_yl
                 elif '배팅금액' in data[1] or 'OUT' in data[1] or '결과' in data[1] or '백테스트 시작' in data[1] or \
@@ -115,6 +124,10 @@ class UpdateTextedit:
                     if self.ui.back_schedul:
                         qtest_qwait(3)
                         self.ui.sdButtonClicked_02()
+
+                    self.ui.back_start_time = None
+                    self.ui.optuna_current_cnt = 0
+                    self.ui.optuna_remain_cnt = 0
 
             elif data[0] == ui_num['기업개요']:
                 self.ui.gg_textEdittttt_01.clear()

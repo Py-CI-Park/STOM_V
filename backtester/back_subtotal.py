@@ -113,10 +113,8 @@ class BackSubTotal:
         if 잔량없음: arry_bct[mask, 1] += 1
 
     def SendData(self):
-        try:
+        if self.ddict_tsg:
             self.bstqs[0].put(('개별결과', self.ddict_tsg[0][0], self.ddict_bct[0][0]))
-        except:
-            pass
         self.tq.put('이동완료')
 
     def ConcatData(self, data):

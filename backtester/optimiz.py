@@ -15,7 +15,7 @@ from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_ST
 
 
 class Total:
-    def __init__(self, wq, sq, tq, teleQ, mq, lq, bstq_list, backname, ui_gubun, gubun, tick_count):
+    def __init__(self, wq, sq, tq, teleQ, mq, lq, bstq_list, backname, ui_gubun, gubun):
         self.wq           = wq
         self.sq           = sq
         self.tq           = tq
@@ -26,7 +26,6 @@ class Total:
         self.backname     = backname
         self.ui_gubun     = ui_gubun
         self.gubun        = gubun
-        self.tick_count   = tick_count
         self.dict_set     = DICT_SET
         gubun_text        = f'{self.gubun}_future' if self.ui_gubun == 'CF' else self.gubun
         self.savename     = f'{gubun_text}_{self.backname.replace("최적화", "").lower()}'
@@ -65,7 +64,6 @@ class Total:
         self.opti_turn    = None
         self.hstd         = -float('inf')
         self.sub_total    = 0
-        self.total_count  = 0
 
         self.MainLoop()
 
@@ -166,11 +164,7 @@ class Total:
                 dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
 
             elif data[0] == '경우의수':
-                self.total_count = data[1]
-                self.back_count  = data[2]
-
-            elif data[0] == '횟수변경':
-                self.total_count = data[1]
+                self.back_count = data[1]
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
@@ -350,7 +344,6 @@ class Optimize:
         self.Start()
 
     def Start(self):
-        self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
         start_time = now()
         data = self.bq.get()
         if self.ui_gubun not in ('CF', 'SF'):
@@ -484,46 +477,24 @@ class Optimize:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - {self.backname} 변수설정 {e}'))
             self.SysExit(True)
 
-        total_count, vars_type = self.GetOptomizeVarsList(
-            random_optivars, only_buy, only_sell, buy_first, sell_num
-        )
-
-        len_vars     = len(self.vars_)
-        avg_list     = self.vars_[0][0]
-        total_count *= ccount if ccount != 0 else 1
-        total_count += 2
-        total_count *= back_count
         text = f'{self.backname} 매도수전략 및 변수 설정 완료' if not random_optivars else f'{self.backname} 매도수전략 및 변수 최적값 랜덤 설정 완료'
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text))
 
+        vars_type, len_vars, avg_list = self.GetOptomizeVarsList(random_optivars, only_buy, only_sell, buy_first, sell_num)
         data = ('백테정보', betting, avg_list, startday, endday, starttime, endtime, buystg, sellstg)
         for q in self.beq_list:
             q.put(data)
 
-        time.sleep(1)
-
-        self.shared_cnt.value = 0
-        for q in self.beq_list:
-            q.put('전체틱수계산')
-
-        tick_count = 0
-        for _ in range(self.multi):
-            data = self.bq.get()
-            tick_count += data
-        tick_count = int(tick_count / 1000)
-
         mq = Queue()
         Process(
             target=Total,
-            args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.lq, self.bstq_list, self.backname, self.ui_gubun,
-                  self.gubun, tick_count)
+            args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.lq, self.bstq_list, self.backname, self.ui_gubun, self.gubun)
         ).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
+
         self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg_name, buystg, sellstg, text_vars,
                      dict_cn, std_text, optistandard, schedul, list_days, len(day_list), weeks_train, weeks_valid,
                      weeks_test))
-
-        time.sleep(1)
 
         if 'B' in self.backname:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA Sampler : {optuna_sampler}</font>'))
@@ -533,7 +504,7 @@ class Optimize:
             add_text = ', 매도전략의 변수만 최적화합니다.'
         else:
             add_text = ''
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 시작{add_text}'))
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START {add_text}'))
 
         if 'B' not in self.backname:
             self.OptimizeGrid(
@@ -542,7 +513,7 @@ class Optimize:
             )
         else:
             self.OptimizeOptuna(
-                mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num, optuna_fixvars,
+                mq, back_count, only_buy, only_sell, buy_first, buy_num, sell_num, optuna_fixvars,
                 optuna_count, optuna_autostep, sampler, buystg_name
             )
 
@@ -610,7 +581,6 @@ class Optimize:
         return list_days
 
     def GetOptomizeVarsList(self, random_optivars, only_buy, only_sell, buy_first, sell_num):
-        total_count = 0
         vars_type   = []
         self.vars_  = []
 
@@ -641,7 +611,6 @@ class Optimize:
             if gap == 0 or fixed:
                 vars_list[0].append(opti)
             else:
-                total_count += 1
                 for k in range(1000):
                     if varint:
                         next_var = low + gap * k
@@ -655,12 +624,12 @@ class Optimize:
                 vars_list[1] = random.choice(vars_list[0])
             self.vars_.append(vars_list)
 
-        return total_count, vars_type
+        return vars_type, len(self.vars_), self.vars_[0][0]
 
     def OptimizeGrid(self, mq, back_count, len_vars, only_buy, only_sell, buy_first, sell_num, vars_type, ccount,
                      random_optivars, text_vars, optivars_name):
 
-        self.tq.put(('경우의수', back_count, back_count))
+        self.tq.put(('경우의수', back_count))
         self.BackStart(('변수정보', self.vars_, 0))
 
         hstd = 0
@@ -840,11 +809,10 @@ class Optimize:
                         text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
         if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
 
-    def OptimizeOptuna(self, mq, back_count, len_vars, only_buy, only_sell, buy_first, buy_num, sell_num,
+    def OptimizeOptuna(self, mq, back_count, only_buy, only_sell, buy_first, buy_num, sell_num,
                        optuna_fixvars, optuna_count, optuna_autostep, sampler, buystg_name):
 
-        total_count = back_count * ((len_vars + 1) if optuna_count == 0 else optuna_count)
-        self.tq.put(('경우의수', total_count, back_count))
+        self.tq.put(('경우의수', back_count))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} OPTUNA 최적화 시작'))
 
         def objective(trial):
@@ -941,7 +909,6 @@ class Optimize:
 
     def SysExit(self, cancel):
         if cancel:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테바'], 0, 100, 0))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} STOP'))
         else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} COMPLETE'))
@@ -963,8 +930,6 @@ class StopWhenNotUpdateBestCallBack:
         curr_num    = trial.number
         last_num    = (best_num + self.len_vars) if self.optuna_count == 0 else (best_num + self.optuna_count)
         rema_num    = last_num - curr_num
-        total_count = self.back_count * (last_num + 1)
-        self.main.tq.put(('횟수변경', total_count))
         self.main.wq.put((ui_num[f'{self.main.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
         if curr_num >= self.adjust_cnt and curr_num == best_num:
             self.main.AdjustVarsRange(best_params=list(study.best_params.values()))

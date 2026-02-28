@@ -234,5 +234,5 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                     if not self.CheckDividSell(포지션, 수익률, 매도분할횟수) and self.dict_set['주식매도분할시그널']:
                         exec(self.sellstg)
 
-    def UpdateGlobalsFunc(self, dict_update_func):
-        globals().update(dict_update_func)
+    def UpdateGlobalsFunc(self, dict_add_func):
+        globals().update(dict_add_func)

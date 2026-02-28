@@ -151,10 +151,10 @@ class SetDialogStrategy:
         self.ui.stg_pushButton_115 = self.wc.setPushbutton('None', box=self.ui.dialog_strategy, color=12, click=self.ui.StrategyButtonClicked, cmd=115)
 
         self.ui.stg_pushButton_116 = self.wc.setPushbutton('매수, 매도 공용 팩터', box=self.ui.dialog_strategy, color=2, click=self.ui.StrategyButtonClicked, cmd=116)
-        self.ui.stg_pushButton_117 = self.wc.setPushbutton('이평근접개수', box=self.ui.dialog_strategy, color=13, click=self.ui.StrategyButtonClicked, cmd=117)
+        self.ui.stg_pushButton_117 = self.wc.setPushbutton('이평지지', box=self.ui.dialog_strategy, color=13, click=self.ui.StrategyButtonClicked, cmd=117)
         self.ui.stg_pushButton_118 = self.wc.setPushbutton('이평돌파', box=self.ui.dialog_strategy, color=13, click=self.ui.StrategyButtonClicked, cmd=118)
         self.ui.stg_pushButton_119 = self.wc.setPushbutton('이평이탈', box=self.ui.dialog_strategy, color=13, click=self.ui.StrategyButtonClicked, cmd=119)
-        self.ui.stg_pushButton_120 = self.wc.setPushbutton('시가근접개수', box=self.ui.dialog_strategy, color=13, click=self.ui.StrategyButtonClicked, cmd=120)
+        self.ui.stg_pushButton_120 = self.wc.setPushbutton('시가지지', box=self.ui.dialog_strategy, color=13, click=self.ui.StrategyButtonClicked, cmd=120)
 
         self.ui.stg_pushButton_121 = self.wc.setPushbutton('시가돌파', box=self.ui.dialog_strategy, color=13, click=self.ui.StrategyButtonClicked, cmd=121)
         self.ui.stg_pushButton_122 = self.wc.setPushbutton('시가이탈', box=self.ui.dialog_strategy, color=13, click=self.ui.StrategyButtonClicked, cmd=122)

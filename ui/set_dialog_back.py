@@ -3,6 +3,7 @@ import psutil
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QGroupBox, QLabel
 from ui.set_style import style_ck_bx, style_pgbar, style_bc_dk
+from utility.static import str_hms, dt_hms, str_hm, dt_hm, timedelta_sec
 
 
 class SetDialogBack:
@@ -180,19 +181,25 @@ class SetDialogBack:
         if self.ui.dict_set['주식에이전트']:
             if '키움증권' in self.ui.dict_set['증권사']:
                 if self.ui.dict_set['주식타임프레임']:
-                    starttime, endtime = '90000', '93000'
+                    starttime = '090000'
                 else:
-                    starttime, endtime = '900', '1519'
+                    starttime = '0900'
             else:
                 if self.ui.dict_set['주식타임프레임']:
-                    starttime, endtime = '93000', '103000'
+                    starttime = '093000'
                 else:
-                    starttime, endtime = '900', '1559'
-        else:
-            if self.ui.dict_set['코인타임프레임']:
-                starttime, endtime = '0', '235959'
+                    starttime = '0900'
+
+            if self.ui.dict_set['주식타임프레임']:
+                endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간']))))
             else:
-                starttime, endtime = '0', '2359'
+                endtime = str_hm(timedelta_sec(-120, dt_hm(str(self.ui.dict_set['주식전략종료시간']))))
+        else:
+            starttime = '0'
+            if self.ui.dict_set['코인타임프레임']:
+                endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간']))))
+            else:
+                endtime = str_hm(timedelta_sec(-120, dt_hm(str(self.ui.dict_set['코인전략종료시간']))))
 
         self.ui.sd_slineEditttt_01 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_02, ltext=starttime, style=style_bc_dk, change=self.ui.TextChanged_01)
         self.ui.sd_slineEditttt_02 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_02, ltext=starttime, style=style_bc_dk, change=self.ui.TextChanged_01)

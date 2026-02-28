@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QLabel
 from ui.set_style import qfont12, qfont13, qfont14, style_pgbar, style_bc_dk
 from ui.set_text import optistandard, optitext, train_period, valid_period, test_period, optimized_count, opti_standard
 from utility.setting import columns_bt
+from utility.static import dt_hms, str_hms, timedelta_sec, dt_hm, str_hm
 
 
 class SetStockBack:
@@ -68,12 +69,12 @@ class SetStockBack:
         self.ui.svjb_pushButon_02 = self.wc.setPushbutton('매수전략 저장(F4)', box=self.ui.ss_tab, click=self.ui.StockBuyStgSave, color=1, tip='작성된 매수전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.svjb_pushButon_03 = self.wc.setPushbutton('매수변수 로딩', box=self.ui.ss_tab, click=self.ui.StockBuyFactor, color=1, tip='매수전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.svjb_pushButon_04 = self.wc.setPushbutton('매수전략 시작', box=self.ui.ss_tab, click=self.ui.StockBuyStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
-        self.ui.svjb_pushButon_05 = self.wc.setPushbutton('VI해제시간비교', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=201)
-        self.ui.svjb_pushButon_06 = self.wc.setPushbutton('VI아래5호가비교', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=202)
-        self.ui.svjb_pushButon_07 = self.wc.setPushbutton('등락율제한', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=203)
-        self.ui.svjb_pushButon_08 = self.wc.setPushbutton('고저평균대비등락율', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=204)
-        self.ui.svjb_pushButon_09 = self.wc.setPushbutton('체결강도하한', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=205)
-        self.ui.svjb_pushButon_10 = self.wc.setPushbutton('체결강도차이', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=206)
+        self.ui.svjb_pushButon_05 = self.wc.setPushbutton('VI해제시간비교', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=206)
+        self.ui.svjb_pushButon_06 = self.wc.setPushbutton('VI아래5호가비교', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=207)
+        self.ui.svjb_pushButon_07 = self.wc.setPushbutton('등락율제한', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=208)
+        self.ui.svjb_pushButon_08 = self.wc.setPushbutton('고저평균대비등락율', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=209)
+        self.ui.svjb_pushButon_09 = self.wc.setPushbutton('체결강도하한', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=210)
+        self.ui.svjb_pushButon_10 = self.wc.setPushbutton('체결강도차이', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=211)
         self.ui.svjb_pushButon_11 = self.wc.setPushbutton('매수시그널', box=self.ui.ss_tab, click=self.ui.StockBuySignalInsert, color=3)
         self.ui.svjb_pushButon_12 = self.wc.setPushbutton('매수전략 중지', box=self.ui.ss_tab, click=self.ui.StockBuyStgStop, color=1, tip='실행중인 매수전략을 중지한다.')
 
@@ -88,14 +89,14 @@ class SetStockBack:
         self.ui.svjs_pushButon_02 = self.wc.setPushbutton('매도전략 저장(F8)', box=self.ui.ss_tab, click=self.ui.StockSellStgSave, color=1, tip='작성된 매도전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.svjs_pushButon_03 = self.wc.setPushbutton('매도변수 로딩', box=self.ui.ss_tab, click=self.ui.StockSellFactor, color=1, tip='매도전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.svjs_pushButon_04 = self.wc.setPushbutton('매도전략 시작', box=self.ui.ss_tab, click=self.ui.StockSellStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
-        self.ui.svjs_pushButon_05 = self.wc.setPushbutton('손절라인청산', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=207)
-        self.ui.svjs_pushButon_06 = self.wc.setPushbutton('익절라인청산', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=208)
-        self.ui.svjs_pushButon_07 = self.wc.setPushbutton('수익률보존청산', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=209)
-        self.ui.svjs_pushButon_08 = self.wc.setPushbutton('보유시간기준청산', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=210)
-        self.ui.svjs_pushButon_09 = self.wc.setPushbutton('VI직전매도', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=211)
-        self.ui.svjs_pushButon_10 = self.wc.setPushbutton('고저평균등락율', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=212)
-        self.ui.svjs_pushButon_11 = self.wc.setPushbutton('최고체결강도비교', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=213)
-        self.ui.svjs_pushButon_12 = self.wc.setPushbutton('호가총잔량비교', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=214)
+        self.ui.svjs_pushButon_05 = self.wc.setPushbutton('손절라인청산', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=212)
+        self.ui.svjs_pushButon_06 = self.wc.setPushbutton('익절라인청산', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=213)
+        self.ui.svjs_pushButon_07 = self.wc.setPushbutton('수익률보존청산', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=214)
+        self.ui.svjs_pushButon_08 = self.wc.setPushbutton('보유시간기준청산', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=215)
+        self.ui.svjs_pushButon_09 = self.wc.setPushbutton('VI직전매도', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=216)
+        self.ui.svjs_pushButon_10 = self.wc.setPushbutton('고저평균등락율', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=217)
+        self.ui.svjs_pushButon_11 = self.wc.setPushbutton('최고체결강도비교', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=218)
+        self.ui.svjs_pushButon_12 = self.wc.setPushbutton('호가총잔량비교', box=self.ui.ss_tab, click=self.ui.StrategyButtonClicked, cmd=219)
         self.ui.svjs_pushButon_13 = self.wc.setPushbutton('매도시그널', box=self.ui.ss_tab, click=self.ui.StockSellSignalInsert, color=3)
         self.ui.svjs_pushButon_14 = self.wc.setPushbutton('매도전략 중지', box=self.ui.ss_tab, click=self.ui.StockSellStgStop, color=1, tip='실행중인 매도전략을 당장 중지한다.')
 
@@ -121,26 +122,23 @@ class SetStockBack:
         else:
             self.ui.svjb_dateEditt_01 = self.wc.setDateEdit(self.ui.ss_tab, addday=-int(self.ui.dict_set['백테날짜']))
         self.ui.svjb_dateEditt_02 = self.wc.setDateEdit(self.ui.ss_tab)
+
         if '키움증권' in self.ui.dict_set['증권사']:
             if self.ui.dict_set['주식타임프레임']:
-                starttime = '90000'
+                starttime = '090000'
             else:
-                starttime = '900'
+                starttime = '0900'
         else:
             if self.ui.dict_set['주식타임프레임']:
-                starttime = '93000'
+                starttime = '093000'
             else:
-                starttime = '900'
-        if '키움증권' in self.ui.dict_set['증권사']:
-            if self.ui.dict_set['주식타임프레임']:
-                endtime = '93000'
-            else:
-                endtime = '1519'
+                starttime = '0900'
+
+        if self.ui.dict_set['주식타임프레임']:
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간']))))
         else:
-            if self.ui.dict_set['주식타임프레임']:
-                endtime = '103000'
-            else:
-                endtime = '1559'
+            endtime = str_hm(timedelta_sec(-120, dt_hm(str(self.ui.dict_set['주식전략종료시간']))))
+
         self.ui.svjb_lineEditt_02 = self.wc.setLineedit(self.ui.ss_tab, ltext=starttime, style=style_bc_dk)
         self.ui.svjb_lineEditt_03 = self.wc.setLineedit(self.ui.ss_tab, ltext=endtime, style=style_bc_dk)
         self.ui.svjb_lineEditt_04 = self.wc.setLineedit(self.ui.ss_tab, ltext=str(self.ui.dict_set['주식투자금']), style=style_bc_dk)

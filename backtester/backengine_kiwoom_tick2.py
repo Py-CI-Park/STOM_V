@@ -192,22 +192,14 @@ class BackEngineKiwoomTick2(BackEngineBaseOms):
     def UpdateMarketGubun(self):
         self.market_gubun = 1
 
-    def UpdateGlobalsFunc(self, dict_update_func):
-        globals().update(dict_update_func)
-
-    def GetAddBuyPrice(self, 매수금액, 주문수량):
-        return int(np.round(매수금액 / 주문수량))
-
-    def GetBuyPrice(self, 직전매수가, 직전보유수량, 매수금액, 보유수량):
-        return int(np.round((직전매수가 * 직전보유수량 + 매수금액) / 보유수량))
+    def UpdateGlobalsFunc(self, dict_add_func):
+        globals().update(dict_add_func)
 
     def GetOrderCount(self, betting, 현재가, 보유중, 매수가, oc_ratio):
         return int(betting / (현재가 if not 보유중 else 매수가) * oc_ratio / 100)
 
-    def GetProfitInfo(self, 현재가, 매수가, 보유수량):
-        시가총액 = int(self.arry_code[self.indexn, self._fi('시가총액')])
-        평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(보유수량 * 매수가, 보유수량 * 현재가)
-        return 시가총액, 평가금액, 수익금, 수익률
+    def GetBuyPrice(self, 매수금액, 주문수량):
+        return int(np.round(매수금액 / 주문수량))
 
     def GetSellPrice(self, 매도금액, 주문수량):
         return int(np.round(매도금액 / 주문수량))
@@ -220,3 +212,8 @@ class BackEngineKiwoomTick2(BackEngineBaseOms):
         else:
             매도가 = int(np.round(매도금액 / (보유수량 - 미체결수량)))
         return 매도가
+
+    def GetProfitInfo(self, 현재가, 매수가, 보유수량):
+        시가총액 = int(self.arry_code[self.indexn, self._fi('시가총액')])
+        평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(보유수량 * 매수가, 보유수량 * 현재가)
+        return 시가총액, 평가금액, 수익금, 수익률

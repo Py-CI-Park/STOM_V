@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QLabel
 from ui.set_style import qfont12, qfont13, qfont14, style_pgbar, style_bc_dk
 from ui.set_text import optistandard, optitext, train_period, valid_period, test_period, optimized_count, opti_standard
 from utility.setting import columns_bt
+from utility.static import str_hms, str_hm, dt_hms, dt_hm, timedelta_sec
 
 
 class SetCoinBack:
@@ -68,12 +69,12 @@ class SetCoinBack:
         self.ui.cvjb_pushButon_02 = self.wc.setPushbutton('매수전략 저장(F4)', box=self.ui.cs_tab, click=self.ui.CoinBuyStgSave, color=1, tip='작성된 매수전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.cvjb_pushButon_03 = self.wc.setPushbutton('매수변수 로딩', box=self.ui.cs_tab, click=self.ui.CoinBuyFactor, color=1, tip='매수전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.cvjb_pushButon_04 = self.wc.setPushbutton('매수전략 시작', box=self.ui.cs_tab, click=self.ui.CoinBuyStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
-        self.ui.cvjb_pushButon_05 = self.wc.setPushbutton('등락율제한', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=215)
-        self.ui.cvjb_pushButon_06 = self.wc.setPushbutton('고저평균등락율', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=216)
-        self.ui.cvjb_pushButon_07 = self.wc.setPushbutton('현재가시가비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=217)
-        self.ui.cvjb_pushButon_08 = self.wc.setPushbutton('체결강도하한', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=218)
-        self.ui.cvjb_pushButon_09 = self.wc.setPushbutton('체결강도평균차이', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=219)
-        self.ui.cvjb_pushButon_10 = self.wc.setPushbutton('최고체결강도', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=220)
+        self.ui.cvjb_pushButon_05 = self.wc.setPushbutton('등락율제한', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=220)
+        self.ui.cvjb_pushButon_06 = self.wc.setPushbutton('고저평균등락율', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=221)
+        self.ui.cvjb_pushButon_07 = self.wc.setPushbutton('현재가시가비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=222)
+        self.ui.cvjb_pushButon_08 = self.wc.setPushbutton('체결강도하한', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=223)
+        self.ui.cvjb_pushButon_09 = self.wc.setPushbutton('체결강도평균차이', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=224)
+        self.ui.cvjb_pushButon_10 = self.wc.setPushbutton('최고체결강도', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=225)
         self.ui.cvjb_pushButon_11 = self.wc.setPushbutton('매수시그널', box=self.ui.cs_tab, click=self.ui.CoinBuySignalInsert, color=3)
         self.ui.cvjb_pushButon_12 = self.wc.setPushbutton('매수전략 중지', box=self.ui.cs_tab, click=self.ui.CoinBuyStgStop, color=1, tip='실행중인 매수전략을 중지한다.')
 
@@ -88,14 +89,14 @@ class SetCoinBack:
         self.ui.cvjs_pushButon_02 = self.wc.setPushbutton('매도전략 저장(F8)', box=self.ui.cs_tab, click=self.ui.CoinSellStgSave, color=1, tip='작성된 매도전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.cvjs_pushButon_03 = self.wc.setPushbutton('매도변수 로딩', box=self.ui.cs_tab, click=self.ui.CoinSellFactor, color=1, tip='매도전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.cvjs_pushButon_04 = self.wc.setPushbutton('매도전략 시작', box=self.ui.cs_tab, click=self.ui.CoinSellStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
-        self.ui.cvjs_pushButon_05 = self.wc.setPushbutton('손절라인청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=221)
-        self.ui.cvjs_pushButon_06 = self.wc.setPushbutton('익절라인청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=222)
-        self.ui.cvjs_pushButon_07 = self.wc.setPushbutton('수익률보존청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=223)
-        self.ui.cvjs_pushButon_08 = self.wc.setPushbutton('보유시간기준청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=224)
-        self.ui.cvjs_pushButon_09 = self.wc.setPushbutton('체결강도평균비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=225)
-        self.ui.cvjs_pushButon_10 = self.wc.setPushbutton('최고체결강도비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=226)
-        self.ui.cvjs_pushButon_11 = self.wc.setPushbutton('고저평균등락율', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=227)
-        self.ui.cvjs_pushButon_12 = self.wc.setPushbutton('호가총잔량비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=228)
+        self.ui.cvjs_pushButon_05 = self.wc.setPushbutton('손절라인청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=226)
+        self.ui.cvjs_pushButon_06 = self.wc.setPushbutton('익절라인청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=227)
+        self.ui.cvjs_pushButon_07 = self.wc.setPushbutton('수익률보존청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=228)
+        self.ui.cvjs_pushButon_08 = self.wc.setPushbutton('보유시간기준청산', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=229)
+        self.ui.cvjs_pushButon_09 = self.wc.setPushbutton('체결강도평균비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=230)
+        self.ui.cvjs_pushButon_10 = self.wc.setPushbutton('최고체결강도비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=231)
+        self.ui.cvjs_pushButon_11 = self.wc.setPushbutton('고저평균등락율', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=232)
+        self.ui.cvjs_pushButon_12 = self.wc.setPushbutton('호가총잔량비교', box=self.ui.cs_tab, click=self.ui.StrategyButtonClicked, cmd=233)
         self.ui.cvjs_pushButon_13 = self.wc.setPushbutton('매도시그널', box=self.ui.cs_tab, click=self.ui.CoinSellSignalInsert, color=3)
         self.ui.cvjs_pushButon_14 = self.wc.setPushbutton('매도전략 중지', box=self.ui.cs_tab, click=self.ui.CoinSellStgStop, color=1, tip='실행중인 매도전략을 당장 중지한다.')
 
@@ -121,8 +122,14 @@ class SetCoinBack:
         else:
             self.ui.cvjb_dateEditt_01 = self.wc.setDateEdit(self.ui.cs_tab, addday=-int(self.ui.dict_set['백테날짜']))
         self.ui.cvjb_dateEditt_02 = self.wc.setDateEdit(self.ui.cs_tab)
-        self.ui.cvjb_lineEditt_02 = self.wc.setLineedit(self.ui.cs_tab, ltext='0', style=style_bc_dk)
-        self.ui.cvjb_lineEditt_03 = self.wc.setLineedit(self.ui.cs_tab, ltext='235959' if self.ui.dict_set['코인타임프레임'] else '2359', style=style_bc_dk)
+
+        if self.ui.dict_set['코인타임프레임']:
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간']))))
+        else:
+            endtime = str_hm(timedelta_sec(-120, dt_hm(str(self.ui.dict_set['코인전략종료시간']))))
+
+        self.ui.cvjb_lineEditt_02 = self.wc.setLineedit(self.ui.cs_tab, ltext='000000', style=style_bc_dk)
+        self.ui.cvjb_lineEditt_03 = self.wc.setLineedit(self.ui.cs_tab, ltext=endtime, style=style_bc_dk)
         self.ui.cvjb_lineEditt_04 = self.wc.setLineedit(self.ui.cs_tab, ltext=str(self.ui.dict_set['코인투자금']), style=style_bc_dk)
         self.ui.cvjb_lineEditt_05 = self.wc.setLineedit(self.ui.cs_tab, ltext='30', style=style_bc_dk)
 

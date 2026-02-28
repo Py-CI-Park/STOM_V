@@ -131,29 +131,18 @@ class BackEngineFutureTick(BackEngineBase):
     def UpdateMarketGubun(self):
         self.market_gubun = 2
 
-    def UpdateGlobalsFunc(self, dict_update_func):
-        globals().update(dict_update_func)
+    def UpdateGlobalsFunc(self, dict_add_func):
+        globals().update(dict_add_func)
 
     # noinspection PyUnusedLocal
     def GetHogaunit(self, 호가빼기데이터):
         return self.dict_info[self.code]['호가단위']
 
-    def GetBuyPrice(self, 직전매수가, 직전보유수량, 매수금액, 주문수량):
-        return np.round(직전매수가 * 직전보유수량 + 매수금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
-
     def GetOrderCount(self, betting, 현재가, 보유중, 매수가, oc_ratio):
         return int(betting)
 
-    def GetProfitInfo(self, 현재가, 매수가, 보유수량):
-        매입금액 = self.dict_info[self.code]['위탁증거금'] * 보유수량
-        평가금액 = 매입금액 + (현재가 - 매수가) * self.dict_info[self.code]['틱가치'] * 보유수량
-        if self.curr_trade_info['보유중'] == 1:
-            포지션 = 'LONG'
-            평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, self.code)
-        else:
-            포지션 = 'SHORT'
-            평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, self.code)
-        return 포지션, 평가금액, 수익금, 수익률
+    def GetBuyPrice(self, 매수금액, 주문수량):
+        return np.round(매수금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
 
     def GetSellPrice(self, 매도금액, 주문수량):
         return np.round(매도금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
@@ -166,3 +155,14 @@ class BackEngineFutureTick(BackEngineBase):
         else:
             매도가 = np.round(매도금액 / (보유수량 - 미체결수량), self.dict_info[self.code]['소숫점자리수'])
         return 매도가
+
+    def GetProfitInfo(self, 현재가, 매수가, 보유수량):
+        매입금액 = self.dict_info[self.code]['위탁증거금'] * 보유수량
+        평가금액 = 매입금액 + (현재가 - 매수가) * self.dict_info[self.code]['틱가치'] * 보유수량
+        if self.curr_trade_info['보유중'] == 1:
+            포지션 = 'LONG'
+            평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, self.code)
+        else:
+            포지션 = 'SHORT'
+            평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, self.code)
+        return 포지션, 평가금액, 수익금, 수익률

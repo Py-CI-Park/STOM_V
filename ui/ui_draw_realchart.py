@@ -300,20 +300,18 @@ class DrawRealChart:
                         ymin = self.ui.ctpg_data[fi(factor)].min()
                         self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi(factor)]:], y=self.ui.ctpg_data[fi(factor)], pen=pen)
 
-                if self.ui.ct_checkBoxxxxx_02.isChecked():
-                    legend = pg.TextItem(anchor=(0, 0), color=color_fg_bt, border=color_bg_bt, fill=color_bg_ld)
-                    legend.setText(get_label_text(self.ui, True, gubun, name, is_min, -1, self.ui.ctpg_factors[i], hms))
-                    legend.setFont(qfont12)
-                    legend.setPos(xmax, ymax)
-                    self.ui.ctpg[i].addItem(legend)
-                    self.ui.ctpg_legend[i] = legend
+                legend = pg.TextItem(anchor=(0, 0), color=color_fg_bt, border=color_bg_bt, fill=color_bg_ld)
+                legend.setText(get_label_text(self.ui, True, gubun, name, is_min, -1, self.ui.ctpg_factors[i], hms))
+                legend.setFont(qfont12)
+                legend.setPos(xmax, ymax)
+                self.ui.ctpg[i].addItem(legend)
+                self.ui.ctpg_legend[i] = legend
 
                 self.ui.ctpg_cvb[i].linkX(self.ui.ctpg_cvb[0])
                 self.ui.ctpg_cvb[i].set_range(xmin, xmax, ymin, ymax)
                 self.ui.ctpg[i].setRange(xRange=(xmin, xmax), yRange=(ymin, ymax))
 
-                if self.ui.ct_checkBoxxxxx_02.isChecked():
-                    self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
+                self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
 
                 if i == chart_count - 1: break
 
@@ -454,9 +452,8 @@ class DrawRealChart:
 
                 if self.ui.ct_checkBoxxxxx_01.isChecked():
                     self.ui.ctpg_labels[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][0])
-                if self.ui.ct_checkBoxxxxx_02.isChecked():
-                    self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
-                    self.ui.ctpg_legend[i].setText(get_label_text(self.ui, True, gubun, name, is_min, -1, self.ui.ctpg_factors[i], hms))
+                self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
+                self.ui.ctpg_legend[i].setText(get_label_text(self.ui, True, gubun, name, is_min, -1, self.ui.ctpg_factors[i], hms))
 
                 if i == chart_count - 1: break
 
