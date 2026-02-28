@@ -129,8 +129,49 @@ STOM_V/                    (STOM_Version_2U 브랜치)
 
 ---
 
+## CRITICAL RULE: pyd 파일 부재 및 구조 동일성 검증
+
+### 규칙
+1. **STOM_Version_2U에는 `.pyd` 파일이 절대 존재하면 안 됩니다**
+2. **`ui_mainwindow.py`는 `STOM_Version_2`의 `ui_mainwindow.pyd`와 동일한 공개 인터페이스를 제공해야 합니다**
+3. **stom.py 진입점은 양 브랜치가 동일해야 합니다**: `from ui.ui_mainwindow import MainWindow`
+
+### 검증 명령어 (업데이트 후 반드시 실행)
+
+```bash
+# Step 1: .pyd 파일 없음 확인 (0이어야 함)
+git ls-tree -r STOM_Version_2U --name-only | grep "\.pyd$" | wc -l
+
+# Step 2: 누락 메서드 확인 (출력 없어야 함)
+cd /c/System_Trading/STOM/STOM_V
+CALLED=$(git grep -h "self\.ui\." STOM_Version_2 -- "ui/*.py" 2>/dev/null | \
+    grep -o "self\.ui\.[A-Z][a-zA-Z0-9_]*" | sed 's/self\.ui\.//' | sort -u)
+DEFINED=$(cat ui/ui_mainwindow.py | grep "^    def [A-Z]" | \
+    grep -o "def [A-Z][a-zA-Z0-9_]*" | sed 's/def //' | sort -u)
+comm -23 <(echo "$CALLED") <(echo "$DEFINED")
+```
+
+### 메서드 누락 발견 시 수정 패턴
+```python
+# ui_mainwindow.py 끝 부분에 추가
+# from ui.ui_show_dialog import * 로 함수 임포트됨
+def MethodName(self):    function_name(self)         # 단일 인자
+def MethodName(self, x): function_name(self, x)      # 다중 인자
+```
+
+### 누락 메서드 찾기
+```bash
+# 어떤 파일에서 self.ui.MethodName을 호출하는지 확인
+git grep -rn "MethodName" STOM_Version_2 -- "ui/*.py"
+# 대응 함수가 어디 있는지 확인
+git grep -rn "def method_name\|def function_name" STOM_Version_2U -- "ui/*.py"
+```
+
+---
+
 ## 주의사항
 
 - `.pyd` 파일은 절대 커밋하지 않음 (`.gitattributes`로 관리)
 - `ui/ui_mainwindow.py`는 `stom_v2u_update.py` 스크립트가 보호함
 - 새 `.py` 파일이 추가된 경우, `ui_mainwindow.py`의 import도 확인
+- **업데이트 후 반드시 위 검증 명령어 실행하여 누락 메서드 없는지 확인**

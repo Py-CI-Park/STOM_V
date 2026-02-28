@@ -1186,21 +1186,8 @@ class MainWindow(QMainWindow):
     def bjcCheckChanged_01(self, state): bjc_check_changed_01(self, state)
     # =================================================================================================================
     # Strategy Dialog Methods (pyd→py inference from V2.39 SetDialogStrategy / ui_button_clicked_strategy.py)
-    def StrategyButtonClicked(self, cmd):   button_clicked_strategy(self, cmd)
-    def StrategyCustomBottunDel(self):      button_clicked_strategy_delete(self)
-    def StrategyCustomBottunSave(self):     button_clicked_strategy_save(self)
-    def StrategyCustomDialogShow(self):
-        if self.stg_btn_number <= 205:   # V2.42: 200→205 (매수금액 팩터 5개 추가)
-            btn = getattr(self, f'stg_pushButton_{self.stg_btn_number:03d}')
-            self.stginput_lineeditt1.setText(btn.text())
-            self.stginput_lineeditt2.setText(btn.text())
-            self.stginput_textEditt1.clear()
-            self.stginput_textEditt1.insertPlainText(self.dict_stg_btn.get(self.stg_btn_number, ''))
-            self.dialog_stg_input1.show()
-        else:
-            btn = getattr(self, f'stg_pushButton_{self.stg_btn_number:03d}')
-            self.stginput_lineeditt3.setText(btn.text())
-            self.stginput_lineeditt4.setText(btn.text())
-            self.stginput_textEditt2.clear()
-            self.stginput_textEditt2.insertPlainText(self.dict_stg_btn.get(self.stg_btn_number, ''))
-            self.dialog_stg_input2.show()
+    def StrategyButtonClicked(self, cmd):    button_clicked_strategy(self, cmd)
+    def StrategyCustomBottunDel(self):       button_clicked_strategy_delete(self)
+    def StrategyCustomBottunSave(self):      button_clicked_strategy_save(self)
+    def StrategyCustomButtonShow(self):      strategy_custom_button_show(self)   # set_stg_*_tap.py '추가버튼' 연결
+    def StrategyCustomDialogShow(self):      strategy_custom_dialog_show(self)   # ui_button_clicked_strategy.py 내부 호출

@@ -101,3 +101,39 @@ STOM V{version}.U1.2 - {설명} (pyd 변경분 반영)
 - ui_mainwindow.pyd 변경사항을 ui_mainwindow.py에 추론 적용
 - {구체적 변경 내용}
 ```
+
+---
+
+### pyd 파일 존재 여부 및 구조 동일성 검증 규칙
+
+**STOM_Version_2U에는 절대 `.pyd` 파일이 존재해서는 안 됩니다.**
+`ui_mainwindow.py`는 `STOM_Version_2`의 `ui_mainwindow.pyd`와 동일한 인터페이스를 제공해야 합니다.
+
+#### 검증 방법
+
+```bash
+# 1. STOM_Version_2U에 .pyd 파일이 없는지 확인 (결과가 0이어야 함)
+git ls-tree -r STOM_Version_2U --name-only | grep "\.pyd$" | wc -l
+
+# 2. STOM_Version_2의 UI 파일들이 호출하는 mainwindow 메서드 목록 추출
+CALLED=$(git grep -h "self\.ui\." STOM_Version_2 -- "ui/*.py" | \
+    grep -o "self\.ui\.[A-Z][a-zA-Z0-9_]*" | sed 's/self\.ui\.//' | sort -u)
+
+# 3. STOM_Version_2U의 MainWindow 정의 메서드 목록 추출
+DEFINED=$(git show STOM_Version_2U:ui/ui_mainwindow.py | \
+    grep "^    def [A-Z]" | grep -o "def [A-Z][a-zA-Z0-9_]*" | sed 's/def //' | sort -u)
+
+# 4. 호출되지만 정의되지 않은 누락 메서드 확인 (결과가 없어야 함)
+comm -23 <(echo "$CALLED") <(echo "$DEFINED")
+```
+
+#### 검증 기준
+- `.pyd` 파일 개수: **반드시 0**
+- 누락 메서드: **반드시 없음**
+- `stom.py` 진입점: `from ui.ui_mainwindow import MainWindow` 동일 ✓
+- `MainWindow(auto_run)` 생성자 호출 가능 ✓
+
+#### 메서드 누락 시 수정 방법
+1. STOM_Version_2의 해당 메서드가 어떤 UI 파일에서 호출되는지 확인
+2. `ui_show_dialog.py`, `ui_button_clicked_*.py` 등에서 대응 함수 찾기
+3. `ui_mainwindow.py`에 `def MethodName(self): function_name(self)` 패턴으로 추가
