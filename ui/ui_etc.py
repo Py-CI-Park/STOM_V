@@ -1,5 +1,7 @@
+
 import psutil
 import random
+import numpy as np
 import pandas as pd
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QSize, Qt
@@ -103,7 +105,7 @@ def calendar_clicked(ui, gubun):
         else:
             df1 = df1[['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금']]
         nbg, nsg = df1['매수금액'].sum(), df1['매도금액'].sum()
-        sp = round((nsg / nbg - 1) * 100, 2)
+        sp = np.round((nsg / nbg - 1) * 100, 2)
         npg, nmg, nsig = df1[df1['수익금'] > 0]['수익금'].sum(), df1[df1['수익금'] < 0]['수익금'].sum(), df1['수익금'].sum()
         df2 = pd.DataFrame(columns=columns_dt)
         df2.loc[0] = [searchday, nbg, nsg, npg, nmg, sp, nsig]

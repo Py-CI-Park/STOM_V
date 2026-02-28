@@ -1,3 +1,4 @@
+
 import sys
 import time
 import random
@@ -63,7 +64,7 @@ class Total:
                 if bc == self.back_count:
                     bc = 0
                     for stq in self.bstq_list:
-                        stq.put(('백테완료', '미분리집계'))
+                        stq.put(('백테완료', '분리집계'))
 
             elif data[0] == '탐색완료':
                 rt += data[1]
@@ -305,8 +306,8 @@ class OptimizeConditions:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '롱숏구분(#LONG 또는 #SHORT)이 없거나 매도수 구분이 다릅니다.\n'))
                 self.SysExit(True)
 
-        self.buyconds  = [x for x in self.buyconds if x and '#' not in x]
-        self.sellconds = [x for x in self.sellconds if x and '#' not in x]
+        self.buyconds  = [x for x in self.buyconds if x and x[0] != '#']
+        self.sellconds = [x for x in self.sellconds if x and x[0] != '#']
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수조건 설정 완료'))
 
         bc = factorial(len(self.buyconds)) / (factorial(self.bcount) * factorial(len(self.buyconds) - self.bcount))
@@ -356,7 +357,7 @@ class OptimizeConditions:
 
                 for _ in range(20):
                     data = mq.get()
-                    if type(data) == str:
+                    if data.__class__ == str:
                         if self.result:
                             self.ShowTopCondlist(5, is_long)
                             self.ShowTopConds()

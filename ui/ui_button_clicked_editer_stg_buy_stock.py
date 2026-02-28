@@ -1,11 +1,12 @@
+
 import random
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
-from ui.set_text import famous_saying, stock_buy_var, stock_buy1, stock_buy2, stock_buy3, stock_buy4, stock_buy5, \
-    stock_buy6, stock_buy_signal, stock_buy_var2, future_buy_signal, future_buy_var2, future_buy_var
+from ui.set_text import famous_saying, stock_buy_var, stock_buy_signal, stock_buy_var2, future_buy_signal, \
+    future_buy_var2, future_buy_var
 
 
 def stock_buy_stg_load(ui):
@@ -69,30 +70,6 @@ def stock_buy_stg_start(ui):
             ui.wdzservQ.put(('strategy', ('매수전략', strategy)))
             ui.svjb_pushButon_04.setStyleSheet(style_bc_dk)
             ui.svjb_pushButon_12.setStyleSheet(style_bc_st)
-
-
-def stock_buy_vitime_comparison(ui):
-    ui.ss_textEditttt_01.append(stock_buy1)
-
-
-def stock_buy_vilowfive_comparison(ui):
-    ui.ss_textEditttt_01.append(stock_buy2)
-
-
-def stock_buy_per_limit(ui):
-    ui.ss_textEditttt_01.append(stock_buy3)
-
-
-def stock_buy_low_high_avg_per(ui):
-    ui.ss_textEditttt_01.append(stock_buy4)
-
-
-def stock_ch_lower_limit(ui):
-    ui.ss_textEditttt_01.append(stock_buy5)
-
-
-def stock_ch_avg_gap(ui):
-    ui.ss_textEditttt_01.append(stock_buy6)
 
 
 def stock_buy_signal_insert(ui):

@@ -1,3 +1,4 @@
+
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QLineEdit, QMessageBox
 from ui.set_style import style_bc_dk

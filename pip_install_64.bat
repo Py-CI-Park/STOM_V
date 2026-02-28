@@ -25,5 +25,5 @@ if '%errorlevel%' NEQ '0' (
     python -m pip install cmaes lxml squarify matplotlib pyqtgraph pyupbit ntplib python-dateutil python-binance
     python -m pip install exchange_calendars pyzmq pyttsx3 yfinance cython loguru fake_useragent
     python -m pip install --upgrade apscheduler pytz tzlocal
-    python -m pip install ./utility/TA_Lib-0.4.25-cp311-cp311-win_amd64.whl
+    python -m pip install ./utility/ta_lib-0.6.3-cp312-cp312-win_amd64.whl
     pause

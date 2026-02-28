@@ -1,3 +1,4 @@
+
 class SetLogTap:
     def __init__(self, ui_class, wc):
         self.ui = ui_class

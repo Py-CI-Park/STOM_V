@@ -1,3 +1,4 @@
+
 import os
 import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
@@ -26,23 +27,9 @@ def mnbutton_c_clicked_01(ui, index):
     if prev_main_btn == index: return
     ui.image_label1.setVisible(False)
     if index == 2:
-        if '키움증권' in ui.dict_set['증권사']:
-            ui.svjb_labelllll_03.setText('백테스트 기본설정   배팅(백만)                        평균틱수   self.vars[0]')
-            if ui.svjb_lineEditt_04.text() == '1':
-                ui.svjb_lineEditt_04.setText('20')
-        else:
-            ui.svjb_labelllll_03.setText('백테스트 기본설정   배팅(계약)                        평균틱수   self.vars[0]')
-            if ui.svjb_lineEditt_04.text() == '20':
-                ui.svjb_lineEditt_04.setText('1')
+        ui.svjb_lineEditt_04.setText(str(ui.dict_set['주식투자금']))
     elif index == 3:
-        if ui.dict_set['거래소'] == '업비트':
-            ui.cvjb_labelllll_03.setText('백테스트 기본설정   배팅(백만)                        평균틱수   self.vars[0]')
-            if ui.cvjb_lineEditt_04.text() == '10000':
-                ui.cvjb_lineEditt_04.setText('20')
-        else:
-            ui.cvjb_labelllll_03.setText('백테스트 기본설정배팅(USDT)                        평균틱수   self.vars[0]')
-            if ui.cvjb_lineEditt_04.text() == '20':
-                ui.cvjb_lineEditt_04.setText('10000')
+        ui.cvjb_lineEditt_04.setText(str(ui.dict_set['코인투자금']))
     elif index == 5 and ui.lgicon_alert:
         ui.lgicon_alert = False
         ui.main_btn_list[index].setIcon(ui.icon_log)

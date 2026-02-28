@@ -1,3 +1,4 @@
+
 import random
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QPushButton
@@ -137,7 +138,7 @@ def setting_coin_weight_cotrol_save(ui):
 
 
 def setting_stock_weight_cotrol_changed(ui, state):
-    if type(ui.dialog_bjjs.focusWidget()) != QPushButton:
+    if ui.dialog_bjjs.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
             for widget in ui.bjs_check_button_list:
                 if widget != ui.dialog_bjjs.focusWidget():
@@ -146,7 +147,7 @@ def setting_stock_weight_cotrol_changed(ui, state):
 
 
 def setting_coin_weight_cotrol_changed(ui, state):
-    if type(ui.dialog_bjjc.focusWidget()) != QPushButton:
+    if ui.dialog_bjjc.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
             for widget in ui.bjc_check_button_list:
                 if widget != ui.dialog_bjjc.focusWidget():

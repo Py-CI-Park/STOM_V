@@ -1,3 +1,4 @@
+
 import os
 import sqlite3
 import pandas as pd
@@ -6,6 +7,7 @@ from multiprocessing import Process
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from coin.kimp_upbit_binance import Kimp
+from ui.set_text_stg_button import dict_stg_name
 from utility.static import qtest_qwait
 from utility.setting import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
     DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
@@ -24,11 +26,11 @@ def show_dialog_graph(ui, df):
     df['이익금액'] = df['수익금'].apply(lambda x: x if x >= 0 else 0)
     df['손실금액'] = df['수익금'].apply(lambda x: x if x < 0 else 0)
     df['수익금합계'] = df['수익금'].cumsum()
-    df['수익금합계020'] = df['수익금합계'].rolling(window=20).mean().round(2)
-    df['수익금합계060'] = df['수익금합계'].rolling(window=60).mean().round(2)
-    df['수익금합계120'] = df['수익금합계'].rolling(window=120).mean().round(2)
-    df['수익금합계240'] = df['수익금합계'].rolling(window=240).mean().round(2)
-    df['수익금합계480'] = df['수익금합계'].rolling(window=480).mean().round(2)
+    df['수익금합계020'] = df['수익금합계'].rolling(window=20).mean()
+    df['수익금합계060'] = df['수익금합계'].rolling(window=60).mean()
+    df['수익금합계120'] = df['수익금합계'].rolling(window=120).mean()
+    df['수익금합계240'] = df['수익금합계'].rolling(window=240).mean()
+    df['수익금합계480'] = df['수익금합계'].rolling(window=480).mean()
 
     ui.canvas2.figure.clear()
     ax = ui.canvas2.figure.add_subplot(111)
@@ -141,11 +143,9 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
 
 
 def dialog_chart_show(ui):
-    # chart_count_change
     ui.ct_pushButtonnn_04.setText('CHART 16')
     ui.ChartCountChange()
 
-    # chart_factortext_change
     is_min = (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
              (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임'])
     if is_min:
@@ -157,7 +157,6 @@ def dialog_chart_show(ui):
         if ui.ft_checkBoxxxxx_04.text() != '초당체결수량': ui.ft_checkBoxxxxx_04.setText('초당체결수량')
         if ui.ft_checkBoxxxxx_11.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_11.setText('누적초당매도수수량')
 
-    # chart_lineedit_change
     if ui.main_btn in (1, 3):
         ui.ct_lineEdittttt_01.setText('0')
         if ui.dict_set['코인타임프레임']:
@@ -227,7 +226,7 @@ def show_giup(ui):
         webengineview_set(ui)
     if not ui.dialog_web.isVisible():
         ui.dialog_web.show()
-        ui.webEngineView.load(QUrl('https://markets.hankyung.com/'))
+        ui.webEngineView.load(QUrl('https://finance.naver.com/sise/'))
     else:
         ui.dialog_web.close()
     ui.dialog_info.show() if not ui.dialog_info.isVisible() else ui.dialog_info.close()
@@ -481,3 +480,37 @@ def chart_size_change(ui):
         ui.dialog_chart.setFixedSize(width, 1370 if not ui.dict_set['저해상도'] else 1010)
         ui.ct_pushButtonnn_06.setText('확장')
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
+
+
+def strategy_custom_button_show(ui):
+    ui.dialog_strategy.show() if not ui.dialog_strategy.isVisible() else ui.dialog_strategy.close()
+
+
+def strategy_custom_dialog_show(ui):
+    if (ui.stg_btn_number <= 200 and not ui.dialog_stg_input1.isVisible()) or \
+            (ui.stg_btn_number > 200 and not ui.dialog_stg_input2.isVisible()):
+        if ui.stg_btn_number <= 200:
+            ui.stginput_lineeditt1.setText('')
+            ui.stginput_textEditt1.clear()
+        else:
+            ui.stginput_lineeditt3.setText('')
+            ui.stginput_textEditt2.clear()
+
+        ori_name = dict_stg_name[ui.stg_btn_number]
+        stg_text = ui.dict_stg_btn[ui.stg_btn_number]
+        if stg_text[-1] != '\n': stg_text = f'{stg_text}\n'
+
+        if ui.stg_btn_number <= 200:
+            stg_name = ui.dialog_strategy.focusWidget().text()
+            ui.stginput_lineeditt1.setText(stg_name)
+            ui.stginput_lineeditt2.setText(ori_name)
+            ui.stginput_textEditt1.insertPlainText(stg_text)
+        else:
+            stg_name = ui.focusWidget().text()
+            ui.stginput_lineeditt3.setText(stg_name)
+            ui.stginput_lineeditt4.setText(ori_name)
+            ui.stginput_textEditt2.insertPlainText(stg_text)
+
+        ui.dialog_stg_input1.show() if ui.stg_btn_number <= 200 else ui.dialog_stg_input2.show()
+    else:
+        ui.dialog_stg_input1.close() if ui.stg_btn_number <= 200 else ui.dialog_stg_input2.close()

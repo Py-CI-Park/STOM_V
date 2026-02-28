@@ -1,3 +1,4 @@
+
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
@@ -7,7 +8,8 @@ from utility.setting import columns_nt, columns_td, columns_jg, columns_cj, colu
     columns_gc, columns_hg, columns_jm1, columns_jm2, columns_nd, columns_stg1, columns_stg2, columns_sb, \
     columns_kp, columns_sd, columns_hc2, columns_bt
 from ui.set_style import qfont12, style_bc_bt, style_bc_st, style_bc_sl, style_bc_bs, style_bc_by, style_fc_dk, \
-    style_bc_bb, style_bc_dk
+    style_bc_bb, style_bc_dk, style_st_cf, style_st_sf, style_st_mf, style_st_sp, style_st_ct, style_st_ks, style_st_ss, \
+    style_st_su
 
 
 class CustomViewBox(pg.ViewBox):
@@ -21,6 +23,11 @@ class CustomViewBox(pg.ViewBox):
         self.ymin = 0
         self.ymax = 0
         self.linked_views = []
+
+        self.right_drag_start_pos = None
+        self.is_right_dragging = False
+        self.original_x_range = None
+        self.original_y_range = None
 
     def set_uiclass(self, ui_class):
         self.ui = ui_class
@@ -45,12 +52,7 @@ class CustomViewBox(pg.ViewBox):
                 view.setXRange(x_min, x_max, padding=0)
 
     def mouseClickEvent(self, ev):
-        if ev.button() == Qt.RightButton:
-            if self.xmax == 0:
-                self.enableAutoRange()
-            else:
-                self.setRange(xRange=(self.xmin, self.xmax), yRange=(self.ymin, self.ymax))
-        elif ev.button() == Qt.LeftButton:
+        if ev.button() == Qt.LeftButton:
             try:
                 if self.ui.database_chart and self.ui.dialog_hoga.isVisible():
                     if self.ui.dialog_hoga.width() != 852:
@@ -75,6 +77,86 @@ class CustomViewBox(pg.ViewBox):
                     self.ui.hogaQ.put(('차트용호가정보요청', code, name, ymd + hms))
             except:
                 pass
+        else:
+            super().mouseClickEvent(ev)
+
+    def mousePressEvent(self, ev):
+        if ev.button() == Qt.RightButton:
+            self.is_right_dragging = True
+            self.right_drag_start_pos = ev.pos()
+            self.original_x_range = self.viewRange()[0]
+            self.original_y_range = self.viewRange()[1]
+        else:
+            super().mousePressEvent(ev)
+
+    def mouseMoveEvent(self, ev):
+        if self.is_right_dragging and self.right_drag_start_pos is not None:
+            current_pos   = ev.pos()
+            delta_x       = current_pos.x() - self.right_drag_start_pos.x()
+            delta_y       = current_pos.y() - self.right_drag_start_pos.y()
+            view_range    = self.viewRange()
+            x_range       = view_range[0]
+            y_range       = view_range[1]
+            current_width = x_range[1] - x_range[0]
+            current_height = y_range[1] - y_range[0]
+
+            move_ratio_x  = -delta_x / self.width()
+            x_move        = current_width * move_ratio_x
+            new_x_min     = self.original_x_range[0] + x_move
+            new_x_max     = self.original_x_range[1] + x_move
+
+            move_ratio_y  = delta_y / self.height()
+            y_move        = current_height * move_ratio_y
+            new_y_min     = self.original_y_range[0] + y_move
+            new_y_max     = self.original_y_range[1] + y_move
+
+            if self.xmax > 0:
+                if new_x_min < self.xmin:
+                    new_x_min = self.xmin
+                    new_x_max = new_x_min + current_width
+                elif new_x_max > self.xmax:
+                    new_x_max = self.xmax
+                    new_x_min = new_x_max - current_width
+
+            if self.ymax > 0:
+                if new_y_min < self.ymin:
+                    new_y_min = self.ymin
+                    new_y_max = new_y_min + current_height
+                elif new_y_max > self.ymax:
+                    new_y_max = self.ymax
+                    new_y_min = new_y_max - current_height
+
+            self.setXRange(new_x_min, new_x_max, padding=0)
+            self.setYRange(new_y_min, new_y_max, padding=0)
+            ev.accept()
+        else:
+            super().mouseMoveEvent(ev)
+
+    def mouseReleaseEvent(self, ev):
+        if ev.button() == Qt.RightButton:
+            was_dragging = False
+            if self.is_right_dragging and self.right_drag_start_pos is not None:
+                current_pos   = ev.pos()
+                move_distance_x = abs(current_pos.x() - self.right_drag_start_pos.x())
+                move_distance_y = abs(current_pos.y() - self.right_drag_start_pos.y())
+                was_dragging  = move_distance_x > 3 or move_distance_y > 3
+
+            self.is_right_dragging    = False
+            self.right_drag_start_pos = None
+            self.original_x_range     = None
+            self.original_y_range     = None
+
+            if not was_dragging:
+                if self.xmax == 0:
+                    self.enableAutoRange()
+                else:
+                    self.setRange(xRange=(self.xmin, self.xmax), yRange=(self.ymin, self.ymax))
+        else:
+            super().mouseReleaseEvent(ev)
+
+    def mouseDragEvent(self, ev, axis=None):
+        if not self.is_right_dragging:
+            super().mouseDragEvent(ev)
 
 
 class WidgetCreater:
@@ -98,6 +180,22 @@ class WidgetCreater:
             pushbutton.setStyleSheet(style_bc_dk)
         elif color == 6:
             pushbutton.setStyleSheet(style_bc_bb)
+        elif color == 7:
+            pushbutton.setStyleSheet(style_st_cf)
+        elif color == 8:
+            pushbutton.setStyleSheet(style_st_sf)
+        elif color == 9:
+            pushbutton.setStyleSheet(style_st_mf)
+        elif color == 10:
+            pushbutton.setStyleSheet(style_st_sp)
+        elif color == 11:
+            pushbutton.setStyleSheet(style_st_ct)
+        elif color == 12:
+            pushbutton.setStyleSheet(style_st_ks)
+        elif color == 13:
+            pushbutton.setStyleSheet(style_st_ss)
+        elif color == 14:
+            pushbutton.setStyleSheet(style_st_su)
         else:
             pushbutton.setStyleSheet(style_bc_bt)
         pushbutton.setFont(qfont12)

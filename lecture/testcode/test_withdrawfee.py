@@ -1,6 +1,8 @@
+
 import re
 import binance
 import pyupbit
+import numpy as np
 import pandas as pd
 from utility.setting import DICT_SET
 
@@ -32,7 +34,7 @@ for x in data:
             c      = dict_close[code]
             if name not in ('BNB', 'BSC') and count != 0 and enable and count < count_:
                 count_ = count
-                df.loc[code] = [count, c, name, round(count * c, 8)]
+                df.loc[code] = [count, c, name, np.round(count * c, 8)]
 
 df.sort_values(by=['송금수수료'], ascending=True, inplace=True)
 print(df)

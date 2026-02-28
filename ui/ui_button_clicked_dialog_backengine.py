@@ -1,3 +1,4 @@
+
 import os
 import random
 import pandas as pd
@@ -52,7 +53,7 @@ def backtest_engine_kill(ui):
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>공유메모리 삭제 중 ...</font>'))
         else:
-            ui.logger.info('공유메모리 삭제 중 ...')
+            ui.logger.info('SharedMemory Deleting ...')
         for shared_info in ui.shared_info:
             try:
                 shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
@@ -60,15 +61,16 @@ def backtest_engine_kill(ui):
                 shm.unlink()
             except:
                 pass
+        ui.shared_info = []
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>공유메모리 삭제 완료</font>'))
         else:
-            ui.logger.info('공유메모리 삭제 완료')
+            ui.logger.info('SharedMemory Delete Completed')
     elif ui.shared_info and 'file_name' in ui.shared_info[0].keys():
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>임시파일 삭제 중 ...</font>'))
         else:
-            ui.logger.info('임시파일 삭제 중 ...')
+            ui.logger.info('TempFile Deleting ...')
         for shared_info in ui.shared_info:
             try:
                 os.remove(shared_info['file_name'])
@@ -77,7 +79,8 @@ def backtest_engine_kill(ui):
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>임시파일 삭제 완료</font>'))
         else:
-            ui.logger.info('임시파일 삭제 완료')
+            ui.logger.info('TempFile Delete Completed')
+
     ui.ClearBacktestQ()
     for p in ui.back_sprocs:
         p.kill()
@@ -87,6 +90,9 @@ def backtest_engine_kill(ui):
         q.close()
     for q in ui.back_eques:
         q.close()
+    qtest_qwait(1)
+    ui.logger.info('Bactest SubTotal Process Terminate Completed')
+
     ui.back_eprocs = []
     ui.back_sprocs = []
     ui.back_eques  = []
@@ -100,7 +106,7 @@ def backtest_engine_kill(ui):
 
 
 def sdbutton_clicked_01(ui):
-    if type(ui.dialog_scheduler.focusWidget()) != QLineEdit:
+    if ui.dialog_scheduler.focusWidget().__class__ != QLineEdit:
         if ui.sd_pushButtonnn_01.text() == '주식':
             ui.sd_pushButtonnn_01.setText('코인')
         elif ui.sd_pushButtonnn_01.text() == '코인':

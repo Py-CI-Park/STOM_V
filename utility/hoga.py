@@ -1,5 +1,7 @@
+
 import os
 import sqlite3
+import numpy as np
 import pandas as pd
 from utility.setting import ui_num, columns_hj, DB_PATH, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_TICK, DICT_SET, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
@@ -75,11 +77,11 @@ class Hoga:
         v, ch = data
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name:
             if v > 0:
-                tbc = round(self.dict_hc['체결수량'][0] + v, 8)
-                tsc = round(self.dict_hc['체결수량'][11], 8)
+                tbc = np.round(self.dict_hc['체결수량'][0] + v, 8)
+                tsc = np.round(self.dict_hc['체결수량'][11], 8)
             else:
-                tbc = round(self.dict_hc['체결수량'][0], 8)
-                tsc = round(self.dict_hc['체결수량'][11] + abs(v), 8)
+                tbc = np.round(self.dict_hc['체결수량'][0], 8)
+                tsc = np.round(self.dict_hc['체결수량'][11] + abs(v), 8)
         else:
             if v > 0:
                 tbc = self.dict_hc['체결수량'][0] + v
@@ -104,7 +106,7 @@ class Hoga:
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name or '해외선물' in self.dict_set['증권사']:
             hg = [self.dict_hj['고가']] + list(data[3:13]) + [self.dict_hj['저가']]
         else:
-            hg = [data[23]] + [round(x) for x in data[3:13]] + [data[24]]
+            hg = [data[23]] + [np.round(x) for x in data[3:13]] + [data[24]]
 
         self.dict_hg['잔량'] = jr
         self.dict_hg['호가'] = hg

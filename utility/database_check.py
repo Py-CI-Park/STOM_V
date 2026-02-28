@@ -1,3 +1,4 @@
+
 import os
 import sqlite3
 import pandas as pd
@@ -303,6 +304,10 @@ def database_check():
     if 'schedule' not in table_list:
         cur.execute('CREATE TABLE "schedule" ( "index" TEXT, "스케쥴" TEXT )')
         cur.execute('CREATE INDEX "ix_schedule_index"ON "schedule" ("index")')
+
+    if 'custombutton' not in table_list:
+        cur.execute('CREATE TABLE "custombutton" ( "index" INTEGER, "버튼명" TEXT, "전략코드" TEXT )')
+        cur.execute('CREATE INDEX "ix_custombutton_index" ON "custombutton"("index")')
 
     con.commit()
     con.close()

@@ -1,9 +1,10 @@
+
 import pyqtgraph as pg
 from ui.ui_crosshair import CrossHair
 from ui.ui_get_label_text import get_label_text
 from ui.set_style import qfont12, color_fg_bt, color_bg_bt, color_bg_ld
 from utility.chart_items import CandlestickItem, VolumeBarsItem
-from utility.setting import list_stock_tick_real, list_coin_tick_real, list_stock_min_real, list_coin_min_real
+from utility.setting import list_stock_tick, list_coin_tick, list_stock_min, list_coin_min
 from utility.static import error_decorator, from_timestamp, dt_ymdhms
 
 
@@ -17,9 +18,9 @@ class DrawRealChart:
     def draw_realchart(self, data):
         def fi(fname):
             if is_min:
-                return list_stock_min_real.index(fname) if gubun == 'S' else list_coin_min_real.index(fname)
+                return list_stock_min.index(fname) if gubun == 'S' else list_coin_min.index(fname)
             else:
-                return list_stock_tick_real.index(fname) if gubun == 'S' else list_coin_tick_real.index(fname)
+                return list_stock_tick.index(fname) if gubun == 'S' else list_coin_tick.index(fname)
 
         def ci():
             self.chart_item_index += 1
@@ -146,20 +147,21 @@ class DrawRealChart:
                     if is_min:
                         ymax = self.ui.ctpg_data[fi('분봉고가')].max()
                         ymin = self.ui.ctpg_data[fi('분봉저가')].min()
-                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균005')]:], y=self.ui.ctpg_data[fi('이동평균005')], pen=(180, 180, 180))
-                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균010')]:], y=self.ui.ctpg_data[fi('이동평균010')], pen=(140, 140, 140))
-                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균020')]:], y=self.ui.ctpg_data[fi('이동평균020')], pen=(100, 100, 100))
-                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균060')]:], y=self.ui.ctpg_data[fi('이동평균060')], pen=(80, 80, 80))
-                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균120')]:], y=self.ui.ctpg_data[fi('이동평균120')], pen=(80, 80, 80))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균5')]:], y=self.ui.ctpg_data[fi('이동평균5')], pen=(180, 180, 180))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균10')]:], y=self.ui.ctpg_data[fi('이동평균10')], pen=(140, 140, 140))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균20')]:], y=self.ui.ctpg_data[fi('이동평균20')], pen=(100, 100, 100))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균60')]:], y=self.ui.ctpg_data[fi('이동평균60')], pen=(80, 80, 80))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균120')]:], y=self.ui.ctpg_data[fi('이동평균120')], pen=(60, 60, 60))
                         self.ui.ctpg[i].addItem(CandlestickItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi('분봉고가'), fi('분봉저가')], self.ui.ctpg_xticks, gubun=1))
                         self.ui.ctpg_last_candlestick = CandlestickItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi('분봉고가'), fi('분봉저가')], self.ui.ctpg_xticks, gubun=2)
                         self.ui.ctpg[i].addItem(self.ui.ctpg_last_candlestick)
                     else:
                         ymax = self.ui.ctpg_data[fi('현재가')].max()
                         ymin = self.ui.ctpg_data[fi('현재가')].min()
-                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균0060')]:], y=self.ui.ctpg_data[fi('이동평균0060')], pen=(180, 180, 180))
-                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균0300')]:], y=self.ui.ctpg_data[fi('이동평균0300')], pen=(140, 140, 140))
-                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균0600')]:], y=self.ui.ctpg_data[fi('이동평균0600')], pen=(100, 100, 100))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균60')]:], y=self.ui.ctpg_data[fi('이동평균60')], pen=(180, 180, 180))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균150')]:], y=self.ui.ctpg_data[fi('이동평균150')], pen=(140, 140, 140))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균300')]:], y=self.ui.ctpg_data[fi('이동평균300')], pen=(100, 100, 100))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균600')]:], y=self.ui.ctpg_data[fi('이동평균600')], pen=(80, 80, 80))
                         self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균1200')]:], y=self.ui.ctpg_data[fi('이동평균1200')], pen=(60, 60, 60))
                         self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('현재가')]:], y=self.ui.ctpg_data[fi('현재가')], pen=(200, 100, 100))
                     self.ui.ctpg_cline = pg.InfiniteLine(angle=0)
@@ -322,18 +324,19 @@ class DrawRealChart:
             for i, factor in enumerate(self.ui.ctpg_factors):
                 if factor == '현재가':
                     if is_min:
-                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균005')]:], y=self.ui.ctpg_data[fi('이동평균005')], pen=(180, 180, 180))
-                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균010')]:], y=self.ui.ctpg_data[fi('이동평균010')], pen=(140, 140, 140))
-                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균020')]:], y=self.ui.ctpg_data[fi('이동평균020')], pen=(100, 100, 100))
-                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균060')]:], y=self.ui.ctpg_data[fi('이동평균060')], pen=(80, 80, 80))
-                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균120')]:], y=self.ui.ctpg_data[fi('이동평균120')], pen=(80, 80, 80))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균5')]:], y=self.ui.ctpg_data[fi('이동평균5')], pen=(180, 180, 180))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균10')]:], y=self.ui.ctpg_data[fi('이동평균10')], pen=(140, 140, 140))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균20')]:], y=self.ui.ctpg_data[fi('이동평균20')], pen=(100, 100, 100))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균60')]:], y=self.ui.ctpg_data[fi('이동평균60')], pen=(80, 80, 80))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균120')]:], y=self.ui.ctpg_data[fi('이동평균120')], pen=(60, 60, 60))
                         self.ui.ctpg[i].removeItem(self.ui.ctpg_last_candlestick)
                         self.ui.ctpg_last_candlestick = CandlestickItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi('분봉고가'), fi('분봉저가')], self.ui.ctpg_xticks, gubun=2)
                         self.ui.ctpg[i].addItem(self.ui.ctpg_last_candlestick)
                     else:
-                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균0060')]:], y=self.ui.ctpg_data[fi('이동평균0060')], pen=(180, 180, 180))
-                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균0300')]:], y=self.ui.ctpg_data[fi('이동평균0300')], pen=(140, 140, 140))
-                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균0600')]:], y=self.ui.ctpg_data[fi('이동평균0600')], pen=(100, 100, 100))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균60')]:], y=self.ui.ctpg_data[fi('이동평균60')], pen=(180, 180, 180))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균150')]:], y=self.ui.ctpg_data[fi('이동평균150')], pen=(140, 140, 140))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균300')]:], y=self.ui.ctpg_data[fi('이동평균300')], pen=(100, 100, 100))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균600')]:], y=self.ui.ctpg_data[fi('이동평균600')], pen=(80, 80, 80))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('이동평균1200')]:], y=self.ui.ctpg_data[fi('이동평균1200')], pen=(60, 60, 60))
                         self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('현재가')]:], y=self.ui.ctpg_data[fi('현재가')], pen=(200, 100, 100))
                     self.ui.ctpg_cline.setPos(self.ui.ctpg_data[fi('현재가')][-1])

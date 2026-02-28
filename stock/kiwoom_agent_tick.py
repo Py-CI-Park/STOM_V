@@ -1,8 +1,10 @@
+
 import os
 import sys
 import zipfile
 import sqlite3
 import datetime
+import numpy as np
 import pandas as pd
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
@@ -43,9 +45,9 @@ class Updater(QThread):
     def run(self):
         while True:
             data = self.sagentQ.get()
-            if type(data) == list:
+            if data.__class__ == list:
                 self.signal1.emit(data)
-            elif type(data) == tuple:
+            elif data.__class__ == tuple:
                 self.signal2.emit(data)
 
 
@@ -287,7 +289,7 @@ class KiwoomAgentTick:
         elif realtype == '업종지수':
             try:
                 dt = int(self.str_today + self.GetCommRealData(code, 20))
-                c  = round(abs(float(self.GetCommRealData(code, 10))) / 100, 2)
+                c  = np.round(abs(float(self.GetCommRealData(code, 10))) / 100, 2)
             except:
                 pass
             else:
@@ -637,7 +639,7 @@ class KiwoomAgentTick:
             c, _, h, low, _, dm = self.dict_data[code][:6]
             tm = dm - self.dict_dtdm[code][1]
             if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
-            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0
@@ -678,13 +680,13 @@ class KiwoomAgentTick:
         self.dict_vipr[code] = [True, timedelta_sec(-3600), uvi, dvi, vi_hgunit]
 
     def UpdateViPrice(self, code, key):
-        if type(key) == str:
+        if key.__class__ == str:
             if code in self.dict_vipr:
                 self.dict_vipr[code][:2] = False, timedelta_sec(5)
             else:
                 self.dict_vipr[code] = [False, timedelta_sec(5), 0, 0, 0]
             self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'변동성 완화 장치 발동 - [{code}] {key}')))
-        elif type(key) == int:
+        elif key.__class__ == int:
             uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, key, self.int_hgtime)
             self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
@@ -737,7 +739,7 @@ class KiwoomAgentTick:
             if df['종목명'][0]:
                 df.rename(columns={'종목번호': 'index', '수익률(%)': '수익률'}, inplace=True)
                 df['index'] = df['index'].apply(lambda x: x.strip()[1:])
-                df['수익률'] = df['수익률'].apply(lambda x: round(float(x) / 100, 2))
+                df['수익률'] = df['수익률'].apply(lambda x: np.round(float(x) / 100, 2))
                 columns = ['매입가', '현재가', '평가손익', '매입금액', '평가금액', '보유수량']
                 df[columns] = df[columns].astype(int)
                 df['평가손익'] = df['평가금액'] - df['매입금액']

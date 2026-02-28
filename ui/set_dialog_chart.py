@@ -1,3 +1,4 @@
+
 import pyqtgraph as pg
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout
 from ui.set_style import style_bc_dk, style_ck_bx, color_bg_bk

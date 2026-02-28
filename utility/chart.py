@@ -1,5 +1,5 @@
+
 import os
-import math
 import talib
 import sqlite3
 import numpy as np
@@ -7,9 +7,9 @@ import pandas as pd
 from traceback import print_exc
 from matplotlib import font_manager
 from matplotlib import pyplot as plt
-from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms, get_logger
+from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms, get_logger, add_rolling_data, dt_ymdhm
 from utility.setting import ui_num, DICT_SET, DB_TRADELIST, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
-    DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_CODE_INFO, DB_FUTURE_BACK_MIN, dgree, DB_FUTURE_BACK_TICK
+    DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_CODE_INFO, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Chart:
@@ -95,54 +95,61 @@ class Chart:
     def UpdateChart(self, data):
         def get_cgtime(cgtime_):
             while cgtime_ not in df.index:
-                onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime_)))
+                onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime_)) if is_tick else dt_ymdhm(str(cgtime_)))
                 cgtime_ = int(str_ymdhms(onesecago))
             return cgtime_
 
         if len(data) == 7:
-            coin, code, tickcount, searchdate, starttime, endtime, k = data
+            coin, code, w_unit, searchdate, starttime, endtime, k = data
             detail, buytimes, cf1, cf2 = None, None, None, None
         elif len(data) == 9:
-            coin, code, tickcount, searchdate, starttime, endtime, k = data[:7]
-            if type(data[7]) == list:
+            coin, code, w_unit, searchdate, starttime, endtime, k = data[:7]
+            if data[7].__class__ == list:
                 detail, buytimes = data[7:]
                 cf1, cf2 = None, None
             else:
                 detail, buytimes = None, None
                 cf1, cf2 = data[7:]
         else:
-            coin, code, tickcount, searchdate, starttime, endtime, k, detail, buytimes, cf1, cf2 = data
+            coin, code, w_unit, searchdate, starttime, endtime, k, detail, buytimes, cf1, cf2 = data
+        if starttime == '': return
 
-        is_min = False
+        is_tick = False
         if coin:
+            if 'KRW' in code: market = 3
+            else:             market = 4
+            if w_unit == '': w_unit = self.dict_set['코인평균값계산틱수']
             if self.dict_set['코인타임프레임']:
+                is_tick  = True
                 db_name1 = f'{DB_PATH}/coin_tick_{searchdate}.db'
                 db_name2 = DB_COIN_BACK_TICK
                 query1   = f"SELECT * FROM '{code}' WHERE " \
                            f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
                            f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
             else:
-                is_min   = True
                 db_name1 = f'{DB_PATH}/coin_min_{searchdate}.db'
                 db_name2 = DB_COIN_BACK_MIN
                 query1   = f"SELECT * FROM '{code}' WHERE " \
                            f"`index` >= {int(searchdate) * 10000 + int(starttime)} and " \
                            f"`index` <= {int(searchdate) * 10000 + int(endtime)}"
         else:
+            if w_unit == '': w_unit = self.dict_set['주식평균값계산틱수']
             if '키움증권' in self.dict_set['증권사']:
+                market = 1
                 if self.dict_set['주식타임프레임']:
+                    is_tick  = True
                     db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db'
                     db_name2 = DB_STOCK_BACK_TICK
                 else:
-                    is_min   = True
                     db_name1 = f'{DB_PATH}/stock_min_{searchdate}.db'
                     db_name2 = DB_STOCK_BACK_MIN
             else:
+                market = 2
                 if self.dict_set['주식타임프레임']:
+                    is_tick  = True
                     db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db'
                     db_name2 = DB_FUTURE_BACK_TICK
                 else:
-                    is_min   = True
                     db_name1 = f'{DB_PATH}/future_min_{searchdate}.db'
                     db_name2 = DB_FUTURE_BACK_MIN
 
@@ -160,11 +167,11 @@ class Chart:
         try:
             if os.path.isfile(db_name1):
                 con = sqlite3.connect(db_name1)
-                df = pd.read_sql(query1 if starttime and endtime else query2, con).set_index('index')
+                df = pd.read_sql(query1 if starttime and endtime else query2, con)
                 con.close()
             elif os.path.isfile(db_name2):
                 con = sqlite3.connect(db_name2)
-                df = pd.read_sql(query1 if starttime and endtime else query2, con).set_index('index')
+                df = pd.read_sql(query1 if starttime and endtime else query2, con)
                 con.close()
         except:
             pass
@@ -172,81 +179,17 @@ class Chart:
         if df is None or len(df) == 0:
             self.windowQ.put((ui_num['차트'], '차트오류', '', '', '', ''))
         else:
-            if coin:
-                round_unit = 8
-                if tickcount == '': tickcount = self.dict_set['코인평균값계산틱수']
-            else:
-                if '키움증권' in self.dict_set['증권사']:
-                    round_unit = 3
-                else:
-                    round_unit = 8
-                if tickcount == '': tickcount = self.dict_set['주식평균값계산틱수']
-
-            df['체결시간'] = df.index
-            if is_min:
-                df['이동평균005'] = df['현재가'].rolling(window=5).mean().round(round_unit)
-                df['이동평균010'] = df['현재가'].rolling(window=10).mean().round(round_unit)
-                df['이동평균020'] = df['현재가'].rolling(window=20).mean().round(round_unit)
-                df['이동평균060'] = df['현재가'].rolling(window=60).mean().round(round_unit)
-                df['이동평균120'] = df['현재가'].rolling(window=120).mean().round(round_unit)
-            else:
-                df['이동평균0060'] = df['현재가'].rolling(window=60).mean().round(round_unit)
-                df['이동평균0300'] = df['현재가'].rolling(window=300).mean().round(round_unit)
-                df['이동평균0600'] = df['현재가'].rolling(window=600).mean().round(round_unit)
-                df['이동평균1200'] = df['현재가'].rolling(window=1200).mean().round(round_unit)
-
-            df[f'최고현재가'] = df['현재가'].rolling(window=tickcount).max()
-            df[f'최저현재가'] = df['현재가'].rolling(window=tickcount).min()
-            if is_min:
-                df[f'최고분봉고가'] = df['분봉고가'].rolling(window=tickcount).max()
-                df[f'최저분봉저가'] = df['분봉저가'].rolling(window=tickcount).min()
-            df[f'체결강도평균'] = df['체결강도'].rolling(window=tickcount).mean().round(3)
-            df[f'최고체결강도'] = df['체결강도'].rolling(window=tickcount).max()
-            df[f'최저체결강도'] = df['체결강도'].rolling(window=tickcount).min()
-            if is_min:
-                df[f'최고분당매수수량'] = df['분당매수수량'].rolling(window=tickcount).max()
-                df[f'최고분당매도수량'] = df['분당매도수량'].rolling(window=tickcount).max()
-                df[f'누적분당매수수량'] = df['분당매수수량'].rolling(window=tickcount).sum()
-                df[f'누적분당매도수량'] = df['분당매도수량'].rolling(window=tickcount).sum()
-                df[f'분당거래대금평균'] = df['분당거래대금'].rolling(window=tickcount).mean().round(0)
-            else:
-                df[f'최고초당매수수량'] = df['초당매수수량'].rolling(window=tickcount).max()
-                df[f'최고초당매도수량'] = df['초당매도수량'].rolling(window=tickcount).max()
-                df[f'누적초당매수수량'] = df['초당매수수량'].rolling(window=tickcount).sum()
-                df[f'누적초당매도수량'] = df['초당매도수량'].rolling(window=tickcount).sum()
-                df[f'초당거래대금평균'] = df['초당거래대금'].rolling(window=tickcount).mean().round(0)
-
-            df[f'등락율N{tickcount}'] = df['등락율'].shift(tickcount - 1)
-            df['등락율차이'] = df['등락율'] - df[f'등락율N{tickcount}']
-            df[f'당일거래대금N{tickcount}'] = df['당일거래대금'].shift(tickcount - 1)
-            df['당일거래대금차이'] = df['당일거래대금'] - df[f'당일거래대금N{tickcount}']
-
             if cf1 is None:
-                gubun = 'tick' if is_min else 'min'
-                if coin:
-                    cf1, cf2 = dgree['coin'][gubun]
-                elif '해외선물' in self.dict_set['증권사']:
-                    cf1, cf2 = dgree['future'][gubun]
-                else:
-                    cf1, cf2 = dgree['stock'][gubun]
-
-            if not coin and '키움증권' in self.dict_set['증권사']:
-                df['등락율각도'] = df['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, tickcount) / (2 * math.pi) * 360, 2))
-                df['당일거래대금각도'] = df['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, tickcount) / (2 * math.pi) * 360, 2))
-                df[f'전일비N{tickcount}'] = df['전일비'].shift(tickcount - 1)
-                df['전일비차이'] = df['전일비'] - df[f'전일비N{tickcount}']
-                df['전일비각도'] = df['전일비차이'].apply(lambda x: round(math.atan2(x, tickcount) / (2 * math.pi) * 360, 2))
+                arry = add_rolling_data(df, market, is_tick, [w_unit])
             else:
-                df['등락율각도'] = df['등락율차이'].apply(lambda x: round(math.atan2(x * cf1, tickcount) / (2 * math.pi) * 360, 2))
-                df['당일거래대금각도'] = df['당일거래대금차이'].apply(lambda x: round(math.atan2(x * cf2, tickcount) / (2 * math.pi) * 360, 2))
+                arry = add_rolling_data(df, market, is_tick, [w_unit], cf1=cf1, cf2=cf2)
 
             buy_index  = []
             sell_index = []
-            df['매수가'] = 0
-            df['매도가'] = 0
+
+            arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
             if coin or '해외선물' in self.dict_set['증권사']:
-                df['매수가2'] = 0
-                df['매도가2'] = 0
+                arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
 
             if detail is None:
                 con = sqlite3.connect(DB_TRADELIST)
@@ -262,182 +205,135 @@ class Chart:
 
                 if len(df2) > 0:
                     for index in df2.index:
-                        cgtime = int(float(str(df2['체결시간'][index])[:12] if is_min else df2['체결시간'][index]))
-                        if 'KRW' in code or ('USDT' not in code and '키움증권' in self.dict_set['증권사']):
+                        cgtime = int(df2['체결시간'][index] if is_tick else str(df2['체결시간'][index])[:12])
+                        if market in (1, 3):
                             if df2['주문구분'][index] == '매수':
                                 buy_index.append(get_cgtime(cgtime))
-                                df.loc[cgtime, '매수가'] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -2] = df2['체결가'][index]
 
                             elif df2['주문구분'][index] == '매도':
                                 sell_index.append(get_cgtime(cgtime))
-                                df.loc[cgtime, '매도가'] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -1] = df2['체결가'][index]
                         else:
                             if df2['주문구분'][index] == 'BUY_LONG':
                                 buy_index.append(get_cgtime(cgtime))
-                                df.loc[cgtime, '매수가'] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -4] = df2['체결가'][index]
 
                             elif df2['주문구분'][index] == 'SELL_LONG':
                                 sell_index.append(get_cgtime(cgtime))
-                                df.loc[cgtime, '매도가'] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -3] = df2['체결가'][index]
 
                             elif df2['주문구분'][index] == 'SELL_SHORT':
                                 buy_index.append(get_cgtime(cgtime))
-                                df.loc[cgtime, '매수가2'] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -2] = df2['체결가'][index]
 
                             elif df2['주문구분'][index] == 'BUY_SHORT':
                                 sell_index.append(get_cgtime(cgtime))
-                                df.loc[cgtime, '매도가2'] = df2['체결가'][index]
+                                arry[arry[:, 0] == cgtime, -1] =  df2['체결가'][index]
             else:
                 매수시간, 매수가, 매도시간, 매도가 = detail
                 buy_index.append(매수시간)
                 sell_index.append(매도시간)
-                df.loc[매수시간, '매수가'] = 매수가
-                df.loc[매도시간, '매도가'] = 매도가
+
+                arry[arry[:, 0] == 매수시간, -2] = 매수가
+                arry[arry[:, 0] == 매도시간, -1] = 매도가
+
                 if buytimes:
                     buytimes = buytimes.split('^')
                     buytimes = [x.split(';') for x in buytimes]
                     for x in buytimes:
                         추가매수시간, 추가매수가 = int(x[0]), int(x[1]) if not coin else float(x[1])
                         buy_index.append(추가매수시간)
-                        df.loc[추가매수시간, '매수가'] = 추가매수가
+                        arry[arry[:, 0] == 추가매수시간, -2] = 추가매수가
 
-            if coin or '해외선물' in self.dict_set['증권사']:
-                if is_min:
-                    columns = [
-                        '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '분당매수수량', '분당매도수량', '분봉시가',
-                        '분봉고가', '분봉저가', '분당거래대금', '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3',
-                        '매도호가2', '매도호가1', '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3',
-                        '매도잔량2', '매도잔량1', '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목',
-                        '이동평균005', '이동평균010', '이동평균020', '이동평균060', '이동평균120', '최고현재가', '최저현재가', '최고분봉고가',
-                        '최저분봉저가', '체결강도평균', '최고체결강도', '최저체결강도', '최고분당매수수량', '최고분당매도수량', '누적분당매수수량',
-                        '누적분당매도수량', '분당거래대금평균', '등락율각도', '당일거래대금각도'
-                    ]
-                else:
-                    columns = [
-                        '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '초당매수수량', '초당매도수량', '초당거래대금',
-                        '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3', '매도호가2', '매도호가1', '매수호가1',
-                        '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3', '매도잔량2', '매도잔량1', '매수잔량1',
-                        '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목', '이동평균0060', '이동평균0300', '이동평균0600',
-                        '이동평균1200', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도', '최고초당매수수량', '최고초당매도수량',
-                        '누적초당매수수량', '누적초당매도수량', '초당거래대금평균', '등락율각도', '당일거래대금각도'
-                    ]
-            else:
-                if is_min:
-                    columns = [
-                        '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '거래대금증감', '전일비', '회전율',
-                        '전일동시간비', '시가총액', '라운드피겨위5호가이내', '분당매수수량', '분당매도수량', 'VI해제시간', 'VI가격', 'VI호가단위', '분봉시가',
-                        '분봉고가', '분봉저가', '분당거래대금', '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3',
-                        '매도호가2', '매도호가1', '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3',
-                        '매도잔량2', '매도잔량1', '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목',
-                        '이동평균005', '이동평균010', '이동평균020', '이동평균060', '이동평균120', '최고현재가', '최저현재가', '최고분봉고가',
-                        '최저분봉저가', '체결강도평균', '최고체결강도', '최저체결강도', '최고분당매수수량', '최고분당매도수량', '누적분당매수수량',
-                        '누적분당매도수량', '분당거래대금평균', '등락율각도', '당일거래대금각도', '전일비각도'
-                    ]
-                else:
-                    columns = [
-                        '체결시간', '현재가', '시가', '고가', '저가', '등락율', '당일거래대금', '체결강도', '거래대금증감', '전일비', '회전율',
-                        '전일동시간비', '시가총액', '라운드피겨위5호가이내', '초당매수수량', '초당매도수량', 'VI해제시간', 'VI가격', 'VI호가단위',
-                        '초당거래대금', '고저평균대비등락율', '매도총잔량', '매수총잔량', '매도호가5', '매도호가4', '매도호가3', '매도호가2', '매도호가1',
-                        '매수호가1', '매수호가2', '매수호가3', '매수호가4', '매수호가5', '매도잔량5', '매도잔량4', '매도잔량3', '매도잔량2', '매도잔량1',
-                        '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5', '매도수5호가잔량합', '관심종목', '이동평균0060', '이동평균0300',
-                        '이동평균0600', '이동평균1200', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도', '최고초당매수수량',
-                        '최고초당매도수량', '누적초당매수수량', '누적초당매도수량', '초당거래대금평균', '등락율각도', '당일거래대금각도', '전일비각도'
-                    ]
-
-            columns += ['매수가', '매도가']
-            if coin or '해외선물' in self.dict_set['증권사']:
-                columns += ['매수가2', '매도가2']
-            df = df[columns]
-            df.fillna(0, inplace=True)
-
-            arry_tick = np.array(df)
-            if is_min:
-                arry_tick = np.r_['1', arry_tick, np.zeros((len(arry_tick), 28))]
+            if not is_tick:
+                arry = np.r_['1', arry, np.zeros((len(arry), 28))]
                 try:
-                    mc = arry_tick[:, 1]
+                    mc = arry[:, 1]
                     if coin or '해외선물' in self.dict_set['증권사']:
-                        mh = arry_tick[:, 11]
-                        ml = arry_tick[:, 12]
-                        mv = arry_tick[:, 13]
+                        mh = arry[:, 11]
+                        ml = arry[:, 12]
+                        mv = arry[:, 13]
                     else:
-                        mh = arry_tick[:, 20]
-                        ml = arry_tick[:, 21]
-                        mv = arry_tick[:, 22]
+                        mh = arry[:, 20]
+                        ml = arry[:, 21]
+                        mv = arry[:, 22]
 
                     AD = talib.AD(mh, ml, mc, mv)
-                    arry_tick[:, -28] = AD
+                    arry[:, -28] = AD
                     if k[0] != 0:
                         ADOSC = talib.ADOSC(mh, ml, mc, mv, fastperiod=k[0], slowperiod=k[1])
-                        arry_tick[:, -27] = ADOSC
+                        arry[:, -27] = ADOSC
                     if k[2] != 0:
                         ADXR = talib.ADXR(mh, ml, mc, timeperiod=k[2])
-                        arry_tick[:, -26] = ADXR
+                        arry[:, -26] = ADXR
                     if k[3] != 0:
                         APO = talib.APO(mc, fastperiod=k[3], slowperiod=k[4], matype=k[5])
-                        arry_tick[:, -25] = APO
+                        arry[:, -25] = APO
                     if k[6] != 0:
                         AROOND, AROONU = talib.AROON(mh, ml, timeperiod=k[6])
-                        arry_tick[:, -24] = AROOND
-                        arry_tick[:, -23] = AROONU
+                        arry[:, -24] = AROOND
+                        arry[:, -23] = AROONU
                     if k[7] != 0:
                         ATR = talib.ATR(mh, ml, mc, timeperiod=k[7])
-                        arry_tick[:, -22] = ATR
+                        arry[:, -22] = ATR
                     if k[8] != 0:
                         BBU, BBM, BBL = talib.BBANDS(mc, timeperiod=k[8], nbdevup=k[9], nbdevdn=k[10], matype=k[11])
-                        arry_tick[:, -21] = BBU
-                        arry_tick[:, -20] = BBM
-                        arry_tick[:, -19] = BBL
+                        arry[:, -21] = BBU
+                        arry[:, -20] = BBM
+                        arry[:, -19] = BBL
                     if k[12] != 0:
                         CCI = talib.CCI(mh, ml, mc, timeperiod=k[12])
-                        arry_tick[:, -18] = CCI
+                        arry[:, -18] = CCI
                     if k[13] != 0:
                         DIM = talib.MINUS_DI(mh, ml, mc, timeperiod=k[13])
                         DIP = talib.PLUS_DI(mh, ml, mc, timeperiod=k[13])
-                        arry_tick[:, -17] = DIM
-                        arry_tick[:, -16] = DIP
+                        arry[:, -17] = DIM
+                        arry[:, -16] = DIP
                     if k[14] != 0:
                         MACD, MACDS, MACDH = talib.MACD(mc, fastperiod=k[14], slowperiod=k[15], signalperiod=k[16])
-                        arry_tick[:, -15] = MACD
-                        arry_tick[:, -14] = MACDS
-                        arry_tick[:, -13] = MACDH
+                        arry[:, -15] = MACD
+                        arry[:, -14] = MACDS
+                        arry[:, -13] = MACDH
                     if k[17] != 0:
                         MFI = talib.MFI(mh, ml, mc, mv, timeperiod=k[17])
-                        arry_tick[:, -12] = MFI
+                        arry[:, -12] = MFI
                     if k[18] != 0:
                         MOM = talib.MOM(mc, timeperiod=k[18])
-                        arry_tick[:, -11] = MOM
+                        arry[:, -11] = MOM
                     OBV = talib.OBV(mc, mv)
-                    arry_tick[:, -10] = OBV
+                    arry[:, -10] = OBV
                     if k[19] != 0:
                         PPO = talib.PPO(mc, fastperiod=k[19], slowperiod=k[20], matype=k[21])
-                        arry_tick[:,  -9] = PPO
+                        arry[:,  -9] = PPO
                     if k[22] != 0:
                         ROC = talib.ROC(mc, timeperiod=k[22])
-                        arry_tick[:,  -8] = ROC
+                        arry[:,  -8] = ROC
                     if k[23] != 0:
                         RSI = talib.RSI(mc, timeperiod=k[23])
-                        arry_tick[:,  -7] = RSI
+                        arry[:,  -7] = RSI
                     if k[24] != 0:
                         SAR = talib.SAR(mh, ml, acceleration=k[24], maximum=k[25])
-                        arry_tick[:,  -6] = SAR
+                        arry[:,  -6] = SAR
                     if k[26] != 0:
                         STOCHSK, STOCHSD = talib.STOCH(mh, ml, mc, fastk_period=k[26], slowk_period=k[27], slowk_matype=k[28], slowd_period=k[29], slowd_matype=k[30])
-                        arry_tick[:,  -5] = STOCHSK
-                        arry_tick[:,  -4] = STOCHSD
+                        arry[:,  -5] = STOCHSK
+                        arry[:,  -4] = STOCHSD
                     if k[31] != 0:
                         STOCHFK, STOCHFD = talib.STOCHF(mh, ml, mc, fastk_period=k[31], fastd_period=k[32], fastd_matype=k[33])
-                        arry_tick[:,  -3] = STOCHFK
-                        arry_tick[:,  -2] = STOCHFD
+                        arry[:,  -3] = STOCHFK
+                        arry[:,  -2] = STOCHFD
                     if k[34] != 0:
                         WILLR = talib.WILLR(mh, ml, mc, timeperiod=k[34])
-                        arry_tick[:,  -1] = WILLR
-                    arry_tick = np.nan_to_num(arry_tick)
+                        arry[:,  -1] = WILLR
+                    arry = np.nan_to_num(arry)
                 except:
-                    arry_tick = None
+                    arry = None
                     self.logger.error(f'보조지표의 설정값이 잘못되었습니다.')
                     print_exc()
 
-            if arry_tick is not None:
-                xticks = [dt_ymdhms(f'{str(int(x))}00' if is_min else str(int(x))).timestamp() for x in df.index]
+            if arry is not None:
+                if is_tick: xticks = [dt_ymdhms(str(int(x))).timestamp() for x in arry[:, 0]]
+                else:       xticks = [dt_ymdhms(f'{int(x)}00').timestamp() for x in arry[:, 0]]
                 gubun = 'C' if coin else 'S' if '키움증권' in self.dict_set['증권사'] else 'F'
-                self.windowQ.put((ui_num['차트'], gubun, xticks, arry_tick, buy_index, sell_index))
+                self.windowQ.put((ui_num['차트'], gubun, xticks, arry, buy_index, sell_index))

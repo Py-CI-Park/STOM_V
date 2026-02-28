@@ -1,3 +1,4 @@
+
 from ui.set_style import style_bc_dk
 from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
 

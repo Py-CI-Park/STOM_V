@@ -1,3 +1,4 @@
+
 from PyQt5.QtCore import QDate, QUrl
 from PyQt5.QtWidgets import QMessageBox
 from utility.setting import columns_jg, columns_jgf, columns_jgcf, ui_num
@@ -182,6 +183,7 @@ def cell_clicked_07(ui, row):
     cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
     if cf1 and cf2: data += (float(cf1), float(cf2))
     ui.chartQ.put(data)
+    if ui.dialog_web.isVisible(): ui.ShowDialogWeb(False, code)
 
 
 def cell_clicked_08(ui, row):
@@ -291,7 +293,7 @@ def cell_clicked_09(ui, row, col):
             ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 스케쥴 "{stg_name}" 삭제 완료'))
 
-    qtest_qwait(1)
+    qtest_qwait(0.5)
     ui.ShowDB()
 
 

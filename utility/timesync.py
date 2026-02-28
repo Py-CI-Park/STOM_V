@@ -1,3 +1,4 @@
+
 import time
 import ntplib
 import win32api

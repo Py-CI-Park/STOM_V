@@ -1,11 +1,10 @@
+
 import sys
 import ctypes
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QApplication
 from utility.timesync import timesync
-from ui.ui_mainwindow import MainWindow
 from utility.database_check import database_check
-from ui.set_style import color_bg_bc, color_fg_bc, color_bg_dk, color_fg_bk, color_fg_hl, color_bg_bk
 
 if __name__ == '__main__':
     kernel32 = ctypes.windll.kernel32
@@ -20,6 +19,9 @@ if __name__ == '__main__':
 
     database_check()
     timesync()
+
+    from ui.ui_mainwindow import MainWindow
+    from ui.set_style import color_bg_bc, color_fg_bc, color_bg_dk, color_fg_bk, color_fg_hl, color_bg_bk
 
     app = QApplication(sys.argv)
     app.setStyle('fusion')

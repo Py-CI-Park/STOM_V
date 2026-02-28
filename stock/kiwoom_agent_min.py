@@ -1,5 +1,7 @@
+
 import os
 import sys
+import numpy as np
 from kiwoom_agent_tick import KiwoomAgentTick
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from utility.setting import ui_num
@@ -103,7 +105,7 @@ class KiwoomAgentMin(KiwoomAgentTick):
             c, _, h, low, _, dm = self.dict_data[code][:6]
             tm = dm - self.dict_dtdm[code][1]
             if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
-            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0

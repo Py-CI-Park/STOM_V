@@ -1,3 +1,4 @@
+
 import numpy as np
 from backtester.back_static import GetResult, AddMdd
 
@@ -40,13 +41,13 @@ class BackSubTotal:
                 self.complete1 = True
                 self.separation = data[1]
 
-            elif data == '결과분리':
-                self.DivideData()
+            elif data == '결과전송':
+                self.SendData()
 
-            elif data[0] == '분리결과':
+            elif data[0] == '개별결과':
                 self.ConcatData(data)
 
-            elif data == '결과전송':
+            elif data == '결과집계':
                 self.complete2 = True
 
             elif data[0] == '백테정보':
@@ -73,8 +74,8 @@ class BackSubTotal:
                     self.in_out_cnt = data[2]
 
             if self.complete1 and self.bstq.empty():
-                if self.separation == '분리집계':
-                    self.tq.put('집계완료')
+                if self.separation == '일괄집계':
+                    self.tq.put('수신완료')
                 else:
                     self.tq.put(('더미결과', self.vkey, self.dummy_tsg))
                     self.SendSubTotal()
@@ -111,12 +112,12 @@ class BackSubTotal:
         arry_bct[mask, 2] += 매수금액
         if 잔량없음: arry_bct[mask, 1] += 1
 
-    def DivideData(self):
+    def SendData(self):
         try:
-            self.bstqs[0].put(('분리결과', self.ddict_tsg[0][0], self.ddict_bct[0][0]))
+            self.bstqs[0].put(('개별결과', self.ddict_tsg[0][0], self.ddict_bct[0][0]))
         except:
             pass
-        self.tq.put('분리완료')
+        self.tq.put('전송완료')
 
     def ConcatData(self, data):
         _, list_tsg, arry_bct = data
@@ -146,7 +147,7 @@ class BackSubTotal:
                 data = (arry_tsg, arry_bct, self.day_count, vturn, vkey)
                 self.SendResult(data)
 
-        if self.separation == '미분리집계':
+        if self.separation == '분리집계':
             if not self.ddict_tsg:
                 return
             for vturn, dict_tsg in self.ddict_tsg.items():

@@ -1,7 +1,9 @@
+
 import sys
 import time
 import sqlite3
 import pyupbit
+import numpy as np
 import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
@@ -21,9 +23,9 @@ class Updater(QThread):
     def run(self):
         while True:
             data = self.creceivQ.get()
-            if type(data) == tuple:
+            if data.__class__ == tuple:
                 self.signal1.emit(data)
-            elif type(data) == str:
+            elif data.__class__ == str:
                 self.signal2.emit()
 
 
@@ -118,7 +120,7 @@ class UpbitReceiverTick:
             o     = data['opening_price']
             h     = data['high_price']
             low   = data['low_price']
-            per   = round(data['signed_change_rate'] * 100, 2)
+            per   = np.round(data['signed_change_rate'] * 100, 2)
             tbids = data['acc_bid_volume']
             tasks = data['acc_ask_volume']
             dm    = data['acc_trade_price']
@@ -130,12 +132,12 @@ class UpbitReceiverTick:
         else:
             bids, asks, pretbids, pretasks = 0, 0, tbids, tasks
 
-        bids_ = round(tbids - pretbids, 8)
-        asks_ = round(tasks - pretasks, 8)
+        bids_ = np.round(tbids - pretbids, 8)
+        asks_ = np.round(tasks - pretasks, 8)
         bids += bids_
         asks += asks_
         try:
-            ch = round(tbids / tasks * 100, 2)
+            ch = np.round(tbids / tasks * 100, 2)
         except:
             ch = 500.
         if ch > 500: ch = 500.
@@ -237,10 +239,11 @@ class UpbitReceiverTick:
 
             tm = dm - self.dict_dtdm[code][1]
             if tm == dm and 500 < int(str(dt)[8:]): tm = 0
-            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0
+            # noinspection PyTypeChecker
             data = (dt,) + tuple(self.dict_data[code][:9]) + (tm, hlp) + \
                 hoga_tamount + hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + \
                 (hjt, gsjm, code, logt)

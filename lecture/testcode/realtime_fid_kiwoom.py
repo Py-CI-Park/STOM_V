@@ -1,3 +1,4 @@
+
 with open('C:/OpenAPI/data/nkrealtime.dat') as f:
     realtimetxt = f.readlines()
 

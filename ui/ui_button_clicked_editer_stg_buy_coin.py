@@ -1,11 +1,12 @@
+
 import random
 import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.static import text_not_in_special_characters
 from ui.set_style import style_bc_st, style_bc_dk
-from ui.set_text import famous_saying, coin_buy_var, coin_future_buy_var, coin_buy1, coin_buy2, coin_buy3, coin_buy4, \
-    coin_buy5, coin_buy6, coin_buy_signal, coin_future_buy_signal, coin_buy_var2, coin_future_buy_var2
+from ui.set_text import famous_saying, coin_buy_var, coin_future_buy_var, coin_buy_signal, coin_future_buy_signal, \
+    coin_buy_var2, coin_future_buy_var2
 
 
 def coin_buy_stg_load(ui):
@@ -68,30 +69,6 @@ def coin_buy_stg_start(ui):
                 ui.cstgQ.put(('매수전략', strategy))
             ui.cvjb_pushButon_04.setStyleSheet(style_bc_dk)
             ui.cvjb_pushButon_12.setStyleSheet(style_bc_st)
-
-
-def coin_buy_per_limit(ui):
-    ui.cs_textEditttt_01.append(coin_buy1)
-
-
-def coin_buy_low_high_avg_per(ui):
-    ui.cs_textEditttt_01.append(coin_buy2)
-
-
-def coin_buy_open_close_comparison(ui):
-    ui.cs_textEditttt_01.append(coin_buy3)
-
-
-def coin_buy_ch_lower_limit(ui):
-    ui.cs_textEditttt_01.append(coin_buy4)
-
-
-def coin_buy_ch_avg_gap(ui):
-    ui.cs_textEditttt_01.append(coin_buy5)
-
-
-def coin_buy_ch_high(ui):
-    ui.cs_textEditttt_01.append(coin_buy6)
 
 
 def coin_buy_signal_insert(ui):

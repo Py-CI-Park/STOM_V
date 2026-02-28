@@ -1,3 +1,4 @@
+
 def sz_button_clicked_01(ui):
     if ui.svj_pushButton_01.isVisible():
         if ui.szoo_pushButon_01.text() == '확대(esc)':

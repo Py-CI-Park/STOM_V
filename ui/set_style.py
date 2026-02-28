@@ -1,3 +1,4 @@
+
 from PyQt5.QtGui import QFont, QColor
 from utility.setting import DICT_SET
 
@@ -36,6 +37,15 @@ style_bc_bd  = 'QPushButton{background-color: rgb(30, 80, 30);border-style: soli
 style_ck_bx  = 'QCheckBox::indicator {width: 15px; height: 15px;}' \
                'QCheckBox::indicator::unchecked {image: url(icon/unchecked.png);}' \
                'QCheckBox::indicator::checked {image: url(icon/checked.png);}'
+
+style_st_ss = 'QPushButton{background-color: rgb(60, 60, 80);border-style: solid;border-width: 1px;border-color: rgb(60, 60, 80);} QPushButton:hover{background-color: rgb(80, 80, 100);}'
+style_st_su = 'QPushButton{background-color: rgb(70, 70, 90);border-style: solid;border-width: 1px;border-color: rgb(70, 70, 90);} QPushButton:hover{background-color: rgb(90, 90, 110);}'
+style_st_cf = 'QPushButton{background-color: rgb(90, 90, 100);border-style: solid;border-width: 1px;border-color: rgb(90, 90, 100);} QPushButton:hover{background-color: rgb(110, 110, 120);}'
+style_st_sf = 'QPushButton{background-color: rgb(70, 70, 80);border-style: solid;border-width: 1px;border-color: rgb(70, 70, 80);} QPushButton:hover{background-color: rgb(90, 90, 100);}'
+style_st_mf = 'QPushButton{background-color: rgb(50, 50, 60);border-style: solid;border-width: 1px;border-color: rgb(50, 50, 60);} QPushButton:hover{background-color: rgb(70, 70, 80);}'
+style_st_sp = 'QPushButton{background-color: rgb(80, 100, 80);border-style: solid;border-width: 1px;border-color: rgb(80, 100, 80);} QPushButton:hover{background-color: rgb(100, 120, 100);}'
+style_st_ct = 'QPushButton{background-color: rgb(80, 80, 100);border-style: solid;border-width: 1px;border-color: rgb(80, 80, 100);} QPushButton:hover{background-color: rgb(100, 100, 120);}'
+style_st_ks = 'QPushButton{background-color: rgb(100, 100, 80);border-style: solid;border-width: 1px;border-color: rgb(100, 100, 80);} QPushButton:hover{background-color: rgb(120, 120, 100);}'
 
 # 테마 변경시 변경되는 색깔
 color_bf_bt = QColor(110, 110, 120)

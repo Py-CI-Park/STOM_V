@@ -1,10 +1,11 @@
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QTabWidget, QWidget
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from ui.set_style import style_ck_bx, style_bc_dk, qfont14, style_fc_dk
 from utility.setting import columns_hj, columns_hc, columns_hg, columns_gc, columns_ns, columns_jm1, columns_jm2, \
-    columns_stg1, columns_stg2, DICT_SET, columns_kp, columns_hc2
+    columns_stg1, columns_stg2, columns_kp, columns_hc2
 
 
 class SetDialogEtc:
@@ -257,7 +258,7 @@ class SetDialogEtc:
         self.ui.bjs_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.bjs_checkBoxxx_03 = self.wc.setCheckBox('순매수금액(백만)', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.bjs_checkBoxxx_04 = self.wc.setCheckBox('당일거래대금(백만)', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_05 = self.wc.setCheckBox('등락율각도(30)', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
+        self.ui.bjs_checkBoxxx_05 = self.wc.setCheckBox('등락율각도', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.bjs_labellllll_01 = QLabel('if    비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
         self.ui.bjs_labellllll_02 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
         self.ui.bjs_labellllll_03 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
@@ -288,7 +289,7 @@ class SetDialogEtc:
         self.ui.bjc_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.bjc_checkBoxxx_03 = self.wc.setCheckBox('순매수금액(백만)', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.bjc_checkBoxxx_04 = self.wc.setCheckBox('당일거래대금', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
-        self.ui.bjc_checkBoxxx_05 = self.wc.setCheckBox('등락율각도(30)', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
+        self.ui.bjc_checkBoxxx_05 = self.wc.setCheckBox('등락율각도', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.bjc_labellllll_01 = QLabel('if    비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
         self.ui.bjc_labellllll_02 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
         self.ui.bjc_labellllll_03 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
@@ -487,14 +488,14 @@ class SetDialogEtc:
         self.ui.jm_tableWidgett_01.setGeometry(704, 243, 320, 320)
         self.ui.jm_tableWidgett_02.setGeometry(1024, 243, 373, 320)
 
-        self.ui.dialog_web.setFixedSize(1403, 1370 if not DICT_SET['저해상도'] else 1010)
+        self.ui.dialog_web.resize(1000, 1000)
         if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_web.move(self.ui.dict_set['창위치'][10], self.ui.dict_set['창위치'][11])
             except:
                 pass
 
-        self.ui.dialog_tree.setFixedSize(1403, 1370 if not DICT_SET['저해상도'] else 1010)
+        self.ui.dialog_tree.resize(1000, 1000)
         if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_tree.move(self.ui.dict_set['창위치'][12], self.ui.dict_set['창위치'][13])
