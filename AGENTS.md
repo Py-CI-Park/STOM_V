@@ -30,6 +30,7 @@
 
 - `STOM_Version_2`의 새 버전이 나오면 → `STOM_Version_2U`도 반드시 동기화
 - `.pyd`는 직접 읽을 수 없으므로 → 주변 `.py` 파일 변화로 추론하여 적용
+- `ui_mainwindow.py` 반영은 **자동 치환 스크립트가 아닌 커밋/코드 분석 기반 추론**으로만 수행
 - 이 브랜치는 `STOM_Version_2`를 **항상 따라가는 살아있는 추적 브랜치**
 
 ---
@@ -149,10 +150,20 @@ STOM_V/                    (STOM_Version_2U 브랜치)
 
 `STOM_Version_2`의 새 버전을 `STOM_Version_2U`에 적용할 때:
 
-1. 스크립트 실행: `/c/System_Trading/stom_v2u_update.py`
+1. 대상 버전/커밋 식별: `STOM_Version_2`의 `prev..curr` 범위와 변경 파일 목록 확인
 2. pyd 크기 변화 확인: 각 버전별 `ui_mainwindow.pyd` 크기 비교
-3. 크기 변화가 있는 버전: 추론으로 `ui_mainwindow.py` 업데이트
-4. 패치 커밋: `STOM V{version}.U1.2` 형식으로 커밋
+3. 크기 변화가 있는 버전: 새/변경된 `ui/*.py`에서 `self.ui.*` 호출·속성 참조를 분석해 `ui_mainwindow.py`를 **추론 기반 수동 수정**
+4. 구조 동일성 검증: `.pyd` 부재, 누락 메서드 없음, `stom.py` 진입점 동일성 확인
+5. 패치 커밋: `STOM V{version}.U1.2` 형식으로 추론 근거와 함께 커밋
+
+### 금지 사항 (필수)
+
+- `/c/System_Trading/stom_v2u_update.py` 같은 자동 동기화 스크립트에 의존하여
+  `ui_mainwindow.py` 변경을 생성/확정하지 않습니다.
+- 이유: `ui_mainwindow.pyd` 변경분은 기계적 파일 복사로 재현할 수 없고,
+  주변 모듈 호출 패턴을 해석한 **추론 반영**이 필요하기 때문입니다.
+- 허용: 파일 목록/변경 범위 확인 같은 보조 도구 사용은 가능하나,
+  최종 `ui_mainwindow.py` 반영은 반드시 추론 기반 수동 패치로 수행합니다.
 
 ---
 
@@ -199,6 +210,6 @@ git grep -rn "def method_name\|def function_name" STOM_Version_2U -- "ui/*.py"
 ## 주의사항
 
 - `.pyd` 파일은 절대 커밋하지 않음 (`.gitattributes`로 관리)
-- `ui/ui_mainwindow.py`는 `stom_v2u_update.py` 스크립트가 보호함
+- `ui/ui_mainwindow.py`는 자동 스크립트로 갱신하지 않고 추론 기반으로 직접 관리
 - 새 `.py` 파일이 추가된 경우, `ui_mainwindow.py`의 import도 확인
 - **업데이트 후 반드시 위 검증 명령어 실행하여 누락 메서드 없는지 확인**

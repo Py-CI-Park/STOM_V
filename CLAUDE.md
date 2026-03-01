@@ -79,6 +79,16 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
 ## STOM_Version_2U 업데이트 규칙 (필수)
 
+### 추론 우선 원칙 (자동 스크립트 금지)
+
+`ui_mainwindow.pyd → ui_mainwindow.py` 동기화는 **항상 추론 기반 수동 업데이트**로 수행합니다.
+
+- 금지: `/c/System_Trading/stom_v2u_update.py` 같은 자동 동기화 스크립트로
+  `ui_mainwindow.py` 변경을 생성/확정하는 방식
+- 이유: `.pyd`는 직접 분석이 불가능하므로, `set_*.py`, `ui_button_clicked_*.py`,
+  `ui_update_*.py` 등의 호출/속성 사용 패턴을 해석해 인터페이스를 맞춰야 함
+- 허용: 스크립트/도구는 보조 참고용 확인(파일 목록, diff 범위 확인)까지만 사용
+
 ### pyd 파일 변경 → py 파일 추론 업데이트 규칙
 
 **STOM_Version_2에서 `.pyd` 파일이 변경(M/A)된 경우, STOM_Version_2U의 대응하는 `.py` 파일도 반드시 업데이트해야 합니다.**
@@ -93,6 +103,7 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
    - 해당 버전에서 새로 추가된 `set_*.py`, `ui_*.py` 파일들의 내용 분석
    - 새 파일에서 `self.ui.XXX()` 형태로 호출하는 메서드 파악
    - 해당 메서드가 `ui_mainwindow.py`에 없으면 추론하여 추가
+   - 필요한 초기화 속성(`__init__`)과 import를 함께 보강
 
 #### 추론 패턴
 ```python
