@@ -1,5 +1,7 @@
 import zmq
+import sys
 import socket
+import shutil
 import subprocess
 from PyQt5.QtWidgets import QCompleter
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
@@ -274,6 +276,41 @@ def port_available(port_num_):
         sock.close()
 
 
+def can_host_khopenapi(pyexe_):
+    probe_code = (
+        "from PyQt5.QtWidgets import QApplication;"
+        "from PyQt5.QAxContainer import QAxWidget;"
+        "app = QApplication([]);"
+        "ocx = QAxWidget('KHOPENAPI.KHOpenAPICtrl.1');"
+        "print('1' if hasattr(ocx, 'OnReceiveMsg') else '0')"
+    )
+    try:
+        result = subprocess.run([pyexe_, '-c', probe_code], capture_output=True, text=True, timeout=15)
+    except Exception as e:
+        return False, f'{type(e).__name__}: {e}'
+    if result.returncode != 0:
+        message = result.stderr.strip() or result.stdout.strip() or f'returncode={result.returncode}'
+        return False, message
+    return result.stdout.strip().endswith('1'), result.stderr.strip()
+
+
+def resolve_stock_python():
+    checked = []
+    candidates = []
+    for candidate in ('python32', sys.executable, 'python'):
+        pyexe = shutil.which(candidate) if candidate in ('python32', 'python') else candidate
+        if pyexe and pyexe not in candidates:
+            candidates.append(pyexe)
+
+    for pyexe in candidates:
+        ok, detail = can_host_khopenapi(pyexe)
+        checked.append((pyexe, ok, detail))
+        if ok:
+            return pyexe, checked
+
+    return None, checked
+
+
 class MainWindow(QMainWindow):
     def __init__(self, auto_run_):
         super().__init__()
@@ -501,7 +538,15 @@ class MainWindow(QMainWindow):
             else:
                 break
 
-        subprocess.Popen(f'python ./stock/kiwoom_manager.py {port_num}')
+        pyexe, checked = resolve_stock_python()
+        if pyexe is None:
+            detail = ' | '.join([f'{x[0]}:{"OK" if x[1] else "FAIL"}' for x in checked]) if checked else 'no-candidate'
+            text = f'키움매니저 실행 실패 - KHOPENAPI 호환 인터프리터를 찾지 못했습니다. [{detail}]'
+            self.logger.error(text)
+            self.windowQ.put((ui_num['S단순텍스트'], text))
+        else:
+            self.logger.info(f'키움매니저 실행 인터프리터 선택 [{pyexe}]')
+            subprocess.Popen([pyexe, './stock/kiwoom_manager.py', str(port_num)])
 
         self.update_textedit    = UpdateTextedit(self)
         self.update_tablewidget = UpdateTablewidget(self)
