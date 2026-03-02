@@ -13,6 +13,7 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
             매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
             매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
 
+        # noinspection PyUnusedLocal
         VI해제시간, 순매수금액 = dt_ymdhms(str(int(VI해제시간))), 분당매수금액 - 분당매수금액
         종목명, 종목코드, 데이터길이, 체결시간, 시분초 = self.name, self.code, self.tick_count, self.index, int(str(self.index)[8:] + '00')
         # noinspection PyUnusedLocal
@@ -43,15 +44,14 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                     if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
-                    self.vturn, self.vkey = vturn, vkey
-                    self.curr_trade_info = self.trade_info[vturn][vkey]
                     self.curr_day_info = self.day_info[vturn][vkey]
+                    self.curr_trade_info = self.trade_info[vturn][vkey]
 
                     보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                         매도분할횟수, 매수주문취소시간, 매도주문취소시간, 주문포지션 = self.curr_trade_info.values()
                     포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = self.GetHoldInfo(보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간)
-                    self.info_for_order = 보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수
+                    self.info_for_order = 보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수, vturn, vkey
                     self.profit, self.hold_time = 수익률, 보유시간
 
                     gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 매수가, 주문수량, 보유수량,
@@ -107,15 +107,14 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                     elif self.tick_count < self.avgtime:
                         return
 
-                    self.vturn, self.vkey = vturn, vkey
-                    self.curr_trade_info = self.trade_info[vturn][vkey]
                     self.curr_day_info = self.day_info[vturn][vkey]
+                    self.curr_trade_info = self.trade_info[vturn][vkey]
 
                     보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                         매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                         매도분할횟수, 매수주문취소시간, 매도주문취소시간, 주문포지션 = self.curr_trade_info.values()
                     포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = self.GetHoldInfo(보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간)
-                    self.info_for_order = 보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수
+                    self.info_for_order = 보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수, vturn, vkey
                     self.profit, self.hold_time = 수익률, 보유시간
 
                     gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 매수가, 주문수량, 보유수량,
@@ -177,15 +176,14 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                 if self.tick_count < self.avgtime:
                     return
 
-            self.vturn, self.vkey = vturn, vkey
-            self.curr_trade_info = self.trade_info[vturn][vkey]
             self.curr_day_info = self.day_info[vturn][vkey]
+            self.curr_trade_info = self.trade_info[vturn][vkey]
 
             보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, \
                 매도호가, 매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, \
                 매도분할횟수, 매수주문취소시간, 매도주문취소시간, 주문포지션 = self.curr_trade_info.values()
             포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = self.GetHoldInfo(보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간)
-            self.info_for_order = 보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수
+            self.info_for_order = 보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수, vturn, vkey
             self.profit, self.hold_time = 수익률, 보유시간
 
             gubun = self.CheckBuyOrSell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 매수가, 주문수량, 보유수량,

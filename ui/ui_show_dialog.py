@@ -399,7 +399,7 @@ def chart_moneytop_list(ui):
             db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db' if ui.dict_set['주식타임프레임'] else f'{DB_PATH}/stock_min_{searchdate}.db'
             db_name2 = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
         else:
-            db_name1 = f'{DB_PATH}/future_min_{searchdate}.db'
+            db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db' if ui.dict_set['주식타임프레임'] else f'{DB_PATH}/future_min_{searchdate}.db'
             db_name2 = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
 
         if ui.dict_set['주식타임프레임']:

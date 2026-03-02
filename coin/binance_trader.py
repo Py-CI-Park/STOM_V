@@ -459,15 +459,15 @@ class BinanceTrader:
                     else:
                         if self.dict_set['코인매도취소시간'] and now() > order_info[0]:
                             cancel_list.append((code, gubun))
+
+                    text = '코인매수' if gubun in ('BUY_LONG', 'SELL_SHORT') else '코인매도'
                     if gubun in ('BUY_LONG', 'BUY_SHORT'):
-                        if order_info[1] < self.dict_set['코인매수정정횟수'] and code in self.dict_curc and \
-                                self.dict_curc[code] >= order_info[2] + self.dict_info[code]['호가단위'] * \
-                                self.dict_set['코인매수정정호가차이' if gubun == 'BUY_LONG' else '코인매도정정호가차이']:
+                        if order_info[1] < self.dict_set[f'{text}정정횟수'] and code in self.dict_curc and \
+                                self.dict_curc[code] >= order_info[2] + self.dict_info[code]['호가단위'] * self.dict_set[f'{text}정정호가차이']:
                             modify_list.append((code, gubun))
                     else:
-                        if order_info[1] < self.dict_set['코인매도정정횟수'] and code in self.dict_curc and \
-                                self.dict_curc[code] <= order_info[2] - self.dict_info[code]['호가단위'] * \
-                                self.dict_set['코인매도정정호가차이' if gubun == 'SELL_LONG' else '코인매수정정호가차이']:
+                        if order_info[1] < self.dict_set[f'{text}정정횟수'] and code in self.dict_curc and \
+                                self.dict_curc[code] <= order_info[2] - self.dict_info[code]['호가단위'] * self.dict_set[f'{text}정정호가차이']:
                             modify_list.append((code, gubun))
 
         if cancel_list:

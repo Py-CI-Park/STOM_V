@@ -135,11 +135,7 @@ class UpdateTablewidget:
 
         if gubun in (ui_num['S거래목록'], ui_num['S잔고목록'], ui_num['S당일상세'], ui_num['C거래목록'], ui_num['C잔고목록'], ui_num['C당일상세']):
             tablewidget_change()
-        elif gubun == ui_num['C상세기록']:
-            tableWidget.setHorizontalHeaderLabels(df.columns)
-        elif gubun == ui_num['재무년도']:
-            tableWidget.setHorizontalHeaderLabels(df.columns)
-        elif gubun == ui_num['재무분기']:
+        elif gubun in (ui_num['C상세기록'], ui_num['재무년도'], ui_num['재무분기']):
             tableWidget.setHorizontalHeaderLabels(df.columns)
         elif gubun in (ui_num['C호가체결'], ui_num['S호가체결']):
             if not self.ui.dialog_hoga.isVisible():

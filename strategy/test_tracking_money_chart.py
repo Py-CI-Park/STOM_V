@@ -19,9 +19,9 @@ import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 from collections import deque
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QLabel
-from PyQt5.QtCore import QTimer
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QLabel
 
 
 class MoneyTrackingChart(QMainWindow):

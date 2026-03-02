@@ -448,21 +448,6 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
         except:
             pass
 
-    endx_list = None
-    if gubun == '최적화':
-        if is_tick:
-            endx_list = [df_tsg[df_tsg['매도시간'] < list_days[2][0] * 1000000 + 240000].index[-1]]
-        else:
-            endx_list = [df_tsg[df_tsg['매도시간'] < list_days[2][0] * 10000 + 2400].index[-1]]
-        if list_days[1] is not None:
-            for vsday, _, _ in list_days[1]:
-                if is_tick:
-                    df_tsg_ = df_tsg[df_tsg['매도시간'] < vsday * 1000000]
-                else:
-                    df_tsg_ = df_tsg[df_tsg['매도시간'] < vsday * 10000]
-                if len(df_tsg_) > 0:
-                    endx_list.append(df_tsg_.index[-1])
-
     profit_series = df_tsg['수익금합계']
     windows = [20, 60, 120, 240, 480]
     for window in windows:
@@ -521,6 +506,16 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
         df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
     else:
         df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:]}')
+
+    endx_list = []
+    if gubun == '최적화':
+        time_unit, plus_time = (1000000, 240000) if is_tick else (10000, 2400)
+        endx_list.append(df_tsg[df_tsg['매도시간'] < list_days[2][0] * time_unit + plus_time].index[-1])
+        if list_days[1] is not None:
+            for vsday, _, _ in list_days[1]:
+                df_tsg_ = df_tsg[df_tsg['매도시간'] < vsday * time_unit]
+                if not df_tsg_.empty:
+                    endx_list.append(df_tsg_.index[-1])
 
     font_name = 'C:/Windows/Fonts/malgun.ttf'
     font_family = font_manager.FontProperties(fname=font_name).get_name()
@@ -616,10 +611,12 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     ax2.plot(df_tsg.index, df_tsg['수익금합계060'], linewidth=0.5, label='수익금합계60', color='g')
     ax2.plot(df_tsg.index, df_tsg['수익금합계020'], linewidth=0.5, label='수익금합계20', color='r')
     ax2.plot(df_tsg.index, df_tsg['수익금합계'], linewidth=2, label='수익금합계', color='orange')
+
     if gubun == '최적화':
         for i, endx in enumerate(endx_list):
             ax2.axvline(x=endx, color='red' if i == 0 else 'green', linestyle='--')
         ax2.axvspan(endx_list[0], df_tsg.index[-1], facecolor='gray', alpha=0.1)
+
     step = max(1, len(df_tsg) // 20)
     xticks = df_tsg.index[::step]
     xticklabels = [str(x)[:10] for x in xticks]

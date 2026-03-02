@@ -106,13 +106,7 @@ class Total:
                 if sc == 5:
                     sc = 0
                     for q in self.bstq_list[:5]:
-                        q.put('결과이동')
-
-            elif data == '이동완료':
-                sc += 1
-                if sc == 5:
-                    sc = 0
-                    self.bstq_list[0].put('결과집계')
+                        q.put('결과집계')
 
             elif data[0] == '결과없음':
                 self.hstd = SendResult(self.GetSendData(), None)
@@ -411,7 +405,7 @@ class Optimize:
             weeks_train = int(weeks_train)
         else:
             allweeks = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
-            weeks_train = allweeks - weeks_valid - weeks_test
+            weeks_train = allweeks - weeks_test
 
         dt_endday = dt_ymd(backengin_eday)
         plus_day  = 3 if 'S' in self.ui_gubun else 1
@@ -580,8 +574,13 @@ class Optimize:
                 except:
                     self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'[{vdays[0]} ~ {vdays[1]}] 구간의 데이터가 존재하지 않습니다.'))
                     self.SysExit(True)
-            avg_vdays_count = int(total_vdays_count / len(valid_days))
-            train_days = [train_days_list[0], train_days_list[-1], len(train_days_list) - avg_vdays_count]
+            if valid_days:
+                avg_vdays_count = int(total_vdays_count / len(valid_days))
+                train_days = [train_days_list[0], train_days_list[-1], len(train_days_list) - avg_vdays_count]
+            else:
+                train_days = []
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
+                self.SysExit(True)
         else:
             valid_days = None
             train_days = [train_days_list[0], train_days_list[-1], len(train_days_list)]

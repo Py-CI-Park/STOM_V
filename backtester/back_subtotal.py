@@ -12,6 +12,7 @@ class BackSubTotal:
         self.buystd     = buystd
 
         self.opti_turn  = 0
+        self.concat_cnt = 0
         self.dummy_tsg  = {}
         self.ddict_tsg  = {}
         self.ddict_bct  = {}
@@ -41,14 +42,11 @@ class BackSubTotal:
                 self.complete1 = True
                 self.separation = data[1]
 
-            elif data == '결과이동':
+            elif data == '결과집계':
                 self.SendData()
 
             elif data[0] == '개별결과':
                 self.ConcatData(data)
-
-            elif data == '결과집계':
-                self.complete2 = True
 
             elif data[0] == '백테정보':
                 self.ui_gubun   = data[1]
@@ -67,7 +65,7 @@ class BackSubTotal:
                 self.arry_bct   = None
                 self.separation = None
                 self.complete1  = False
-                self.complete2  = False
+                self.concat_cnt = 0
                 if len(data) == 2:
                     self.in_out_cnt = None
                 else:
@@ -80,13 +78,6 @@ class BackSubTotal:
                     self.tq.put(('더미결과', self.vkey, self.dummy_tsg))
                     self.SendSubTotal()
                 self.complete1 = False
-
-            if self.complete2 and self.bstq.empty():
-                if self.opti_turn != 2:
-                    self.SendSubTotal()
-                else:
-                    self.tq.put(('백테결과', self.list_tsg, self.arry_bct))
-                self.complete2 = False
 
     def CollectData(self, data):
         _, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, \
@@ -115,15 +106,24 @@ class BackSubTotal:
     def SendData(self):
         if self.ddict_tsg:
             self.bstqs[0].put(('개별결과', self.ddict_tsg[0][0], self.ddict_bct[0][0]))
-        self.tq.put('이동완료')
+        else:
+            self.bstqs[0].put(('개별결과', None, None))
 
     def ConcatData(self, data):
         _, list_tsg, arry_bct = data
-        if self.arry_bct is None:
-            self.arry_bct = arry_bct
-        else:
-            self.arry_bct[:, 1:] += arry_bct[:, 1:]
-        self.list_tsg.extend(list_tsg)
+        if list_tsg is not None:
+            if self.arry_bct is None:
+                self.arry_bct = arry_bct
+            else:
+                self.arry_bct[:, 1:] += arry_bct[:, 1:]
+            self.list_tsg.extend(list_tsg)
+
+        self.concat_cnt += 1
+        if self.concat_cnt == 5:
+            if self.opti_turn != 2:
+                self.SendSubTotal()
+            else:
+                self.tq.put(('백테결과', self.list_tsg, self.arry_bct))
 
     def SendSubTotal(self):
         def send_result():
@@ -131,7 +131,7 @@ class BackSubTotal:
                 train_days, valid_days, test_days = self.list_days if self.in_out_cnt is None else self.list_days[self.in_out_cnt]
                 if valid_days is not None:
                     for i, vdays in enumerate(valid_days):
-                        data = (arry_tsg, arry_bct, vdays[0], vdays[1], test_days[0], train_days[2] - vdays[2], vdays[2], i, vturn, vkey)
+                        data = (arry_tsg, arry_bct, vdays[0], vdays[1], test_days[0], train_days[2], vdays[2], i, vturn, vkey)
                         self.SendResult(data)
                 else:
                     data = (arry_tsg, arry_bct, train_days[2], vturn, vkey)
