@@ -262,6 +262,18 @@ class ZmqRecv(QThread):
         self.zctx.term()
 
 
+def port_available(port_num_):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.bind(('127.0.0.1', port_num_))
+    except OSError:
+        return False
+    else:
+        return True
+    finally:
+        sock.close()
+
+
 class MainWindow(QMainWindow):
     def __init__(self, auto_run_):
         super().__init__()
@@ -475,6 +487,9 @@ class MainWindow(QMainWindow):
 
         port_num = 5100
         while True:
+            if not (port_available(port_num) and port_available(port_num + 1)):
+                port_num += 10
+                continue
             try:
                 self.zmqrecv = ZmqRecv(self.qlist, port_num + 1)
                 self.zmqrecv.start()
