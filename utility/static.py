@@ -357,18 +357,33 @@ def comma2float(t):
 
 def write_key():
     key = str(Fernet.generate_key(), 'utf-8')
-    reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM')
-    reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
-    openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
-    reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
-    reg.CloseKey(openkey)
+    last_exception = None
+    for root in (reg.HKEY_LOCAL_MACHINE, reg.HKEY_CURRENT_USER):
+        try:
+            reg.CreateKey(root, r'SOFTWARE\WOW6432Node\STOM')
+            reg.CreateKey(root, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
+            openkey = reg.OpenKey(root, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_SET_VALUE)
+            reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
+            reg.CloseKey(openkey)
+            return
+        except Exception as e:
+            last_exception = e
+    if last_exception is not None:
+        raise last_exception
 
 
 def read_key():
-    openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
-    key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
-    reg.CloseKey(openkey)
-    return key
+    last_exception = None
+    for root in (reg.HKEY_LOCAL_MACHINE, reg.HKEY_CURRENT_USER):
+        try:
+            openkey = reg.OpenKey(root, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_READ)
+            key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
+            reg.CloseKey(openkey)
+            return key
+        except Exception as e:
+            last_exception = e
+    if last_exception is not None:
+        raise last_exception
 
 
 def en_text(key, text):
