@@ -141,8 +141,8 @@ STOM V{version}.U1.2 - {설명} (pyd 변경분 반영)
 # 1. STOM_Version_2U에 .pyd 파일이 없는지 확인 (결과가 0이어야 함)
 git ls-tree -r STOM_Version_2U --name-only | grep "\.pyd$" | wc -l
 
-# 2. STOM_Version_2의 UI 파일들이 호출하는 mainwindow 메서드 목록 추출
-CALLED=$(git grep -h "self\.ui\." STOM_Version_2 -- "ui/*.py" | \
+# 2. STOM_Version_2의 UI 파일들이 호출하는 mainwindow 메서드 목록 추출 (빠른 1차)
+CALLED=$(git grep -h "self\.ui\." STOM_Version_2 -- "ui/*.py" 2>/dev/null | \
     grep -o "self\.ui\.[A-Z][a-zA-Z0-9_]*" | sed 's/self\.ui\.//' | sort -u)
 
 # 3. STOM_Version_2U의 MainWindow 정의 메서드 목록 추출
@@ -151,11 +151,70 @@ DEFINED=$(git show STOM_Version_2U:ui/ui_mainwindow.py | \
 
 # 4. 호출되지만 정의되지 않은 누락 메서드 확인 (결과가 없어야 함)
 comm -23 <(echo "$CALLED") <(echo "$DEFINED")
+
+# 5. 메서드 누락 + 시그니처(인자 개수) 불일치 확인 (정밀 검사, 결과가 없어야 함)
+python3 - <<'PY'
+import ast, pathlib, re, subprocess, sys
+ROOT = pathlib.Path('/mnt/c/System_Trading/STOM/STOM_V')
+main_text = (ROOT / 'ui' / 'ui_mainwindow.py').read_text(encoding='utf-8')
+main_mod  = ast.parse(main_text)
+methods   = {}
+for node in main_mod.body:
+    if isinstance(node, ast.ClassDef) and node.name == 'MainWindow':
+        for fn in node.body:
+            if isinstance(fn, ast.FunctionDef) and re.match(r'^[A-Z][A-Za-z0-9_]*$', fn.name):
+                args = fn.args.args[1:]   # skip self
+                min_args = len(args) - len(fn.args.defaults)
+                max_args = None if fn.args.vararg else len(args)
+                methods[fn.name] = (min_args, max_args)
+
+files = subprocess.check_output(
+    "git ls-tree -r --name-only STOM_Version_2 ui | grep '\\.py$'",
+    shell=True, text=True, cwd=ROOT
+).splitlines()
+
+missing = set()
+arity_errors = []
+for f in files:
+    text = subprocess.check_output(f"git show STOM_Version_2:{f}", shell=True, text=True, cwd=ROOT)
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        continue
+    for n in ast.walk(tree):
+        if not (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)):
+            continue
+        m = n.func.attr
+        if not re.match(r'^[A-Z][A-Za-z0-9_]*$', m):
+            continue
+        t = n.func.value
+        is_ui = (
+            (isinstance(t, ast.Name) and t.id == 'ui') or
+            (isinstance(t, ast.Attribute) and t.attr == 'ui' and isinstance(t.value, ast.Name) and t.value.id == 'self')
+        )
+        if not is_ui:
+            continue
+        if m not in methods:
+            missing.add(m)
+            continue
+        min_a, max_a = methods[m]
+        pos = len(n.args)
+        if pos < min_a or (max_a is not None and pos > max_a):
+            arity_errors.append(f"{f}:{n.lineno} {m}({pos}) vs def({min_a}..{max_a if max_a is not None else '∞'})")
+
+if missing:
+    print("MISSING:", ", ".join(sorted(missing)))
+if arity_errors:
+    print("\\n".join(arity_errors))
+if missing or arity_errors:
+    sys.exit(1)
+PY
 ```
 
 #### 검증 기준
 - `.pyd` 파일 개수: **반드시 0**
 - 누락 메서드: **반드시 없음**
+- 메서드 인자 개수 불일치: **반드시 없음** (예: `BacktestProcessKill(False, False)` 호출 대비 wrapper 시그니처)
 - `stom.py` 진입점: `from ui.ui_mainwindow import MainWindow` 동일 ✓
 - `MainWindow(auto_run)` 생성자 호출 가능 ✓
 

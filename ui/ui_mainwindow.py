@@ -575,8 +575,8 @@ class MainWindow(QMainWindow):
     def CellClicked_01(self, row, col): cell_clicked_01(self, row, col)
     @pyqtSlot(int)
     def CellClicked_02(self, row):      cell_clicked_02(self, row)
-    @pyqtSlot(int)
-    def CellClicked_03(self, row):      cell_clicked_03(self, row)
+    @pyqtSlot(int, int)
+    def CellClicked_03(self, row, col): cell_clicked_03(self, row, col)
     @pyqtSlot(int)
     def CellClicked_04(self, row):      cell_clicked_04(self, row)
     @pyqtSlot(int)
@@ -654,7 +654,7 @@ class MainWindow(QMainWindow):
     def odButtonClicked_07(self): odbutton_clicked_07(self)
     def odButtonClicked_08(self): odbutton_clicked_08(self)
     # =================================================================================================================
-    def opButtonClicked_01(self):        opbutton_clicked_01()
+    def opButtonClicked_01(self):        opbutton_clicked_01(self)
     def cpButtonClicked_01(self):        cpbutton_clicked_01(self)
     def ttButtonClicked_01(self, cmd):   ttbutton_clicked_01(self, cmd)
     def ChangeBacksDate(self):           change_back_sdate(self)
@@ -742,15 +742,11 @@ class MainWindow(QMainWindow):
     def bActivated_03(self): bactivated_03(self)
     # =================================================================================================================
     def GetFixStrategy(self, strategy, gubun):     return get_fix_strategy(self, strategy, gubun)
-    @staticmethod
-    def GetOptivarsToGavars(opti_vars_text):       return get_optivars_to_gavars(opti_vars_text)
-    @staticmethod
-    def GetGavarsToOptivars(ga_vars_text):         return get_gavars_to_optivars(ga_vars_text)
+    def GetOptivarsToGavars(self, opti_vars_text):       return get_optivars_to_gavars(self, opti_vars_text)
+    def GetGavarsToOptivars(self, ga_vars_text):         return get_gavars_to_optivars(self, ga_vars_text)
     def GetStgtxtToVarstxt(self, buystg, sellstg): return get_stgtxt_to_varstxt(self, buystg, sellstg)
-    @staticmethod
-    def GetStgtxtSort(buystg, sellstg):            return get_stgtxt_sort(buystg, sellstg)
-    @staticmethod
-    def GetStgtxtSort2(optivars, gavars):          return get_stgtxt_sort2(optivars, gavars)
+    def GetStgtxtSort(self, buystg, sellstg):        return get_stgtxt_sort(self, buystg, sellstg)
+    def GetStgtxtSort2(self, optivars, gavars):      return get_stgtxt_sort2(self, optivars, gavars)
     # =================================================================================================================
     # Stock Buy Strategy Editor Methods (ui_button_clicked_editer_stg_buy_stock.py)
     def StockBuyStgLoad(self):              stock_buy_stg_load(self)
@@ -1133,11 +1129,11 @@ class MainWindow(QMainWindow):
     def BackTestengineShow(self, gubun):                 backengine_show(self, gubun)
     def BacktestEngineStart(self, gubun):                start_backengine(self, gubun)
     def StartBacktestEngine(self, gubun):                start_backengine(self, gubun)
-    def BackCodeTest1(self, stg_code):            return back_code_test1(stg_code, self.testQ)
-    def BackCodeTest2(self, vars_code, ga=False): return back_code_test2(vars_code, self.testQ, ga)
-    def BackCodeTest3(self, gubun, conds_code):   return back_code_test3(gubun, conds_code, self.testQ)
+    def BackCodeTest1(self, stg_code):            return back_code_test1(self, stg_code, self.testQ)
+    def BackCodeTest2(self, vars_code, ga=False): return back_code_test2(self, vars_code, self.testQ, ga)
+    def BackCodeTest3(self, gubun, conds_code):   return back_code_test3(self, gubun, conds_code, self.testQ)
     def ClearBacktestQ(self):                            clear_backtestQ(self)
-    def BacktestProcessKill(self, gubun):                backtest_process_kill(self, gubun)
+    def BacktestProcessKill(self, coin, enginekill): backtest_process_kill(self, coin, enginekill)
     # =================================================================================================================
     def ctButtonClicked_01(self): ct_button_clicked_01(self)
     def ctButtonClicked_02(self): ct_button_clicked_02(self)

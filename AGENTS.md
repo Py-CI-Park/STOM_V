@@ -152,7 +152,7 @@ STOM_V/                    (STOM_Version_2U 브랜치)
 
 1. 대상 버전/커밋 식별: `STOM_Version_2`의 `prev..curr` 범위와 변경 파일 목록 확인
 2. pyd 크기 변화 확인: 각 버전별 `ui_mainwindow.pyd` 크기 비교
-3. 크기 변화가 있는 버전: 새/변경된 `ui/*.py`에서 `self.ui.*` 호출·속성 참조를 분석해 `ui_mainwindow.py`를 **추론 기반 수동 수정**
+3. 크기 변화가 있는 버전: 새/변경된 `ui/*.py`에서 `self.ui.*` / `ui.*` 호출·속성 참조를 분석해 `ui_mainwindow.py`를 **추론 기반 수동 수정**
 4. 구조 동일성 검증: `.pyd` 부재, 누락 메서드 없음, `stom.py` 진입점 동일성 확인
 5. 패치 커밋: `STOM V{version}.U1.2` 형식으로 추론 근거와 함께 커밋
 
@@ -180,13 +180,70 @@ STOM_V/                    (STOM_Version_2U 브랜치)
 # Step 1: .pyd 파일 없음 확인 (0이어야 함)
 git ls-tree -r STOM_Version_2U --name-only | grep "\.pyd$" | wc -l
 
-# Step 2: 누락 메서드 확인 (출력 없어야 함)
+# Step 2: 누락 메서드 확인 (빠른 1차, 출력 없어야 함)
 cd /c/System_Trading/STOM/STOM_V
 CALLED=$(git grep -h "self\.ui\." STOM_Version_2 -- "ui/*.py" 2>/dev/null | \
     grep -o "self\.ui\.[A-Z][a-zA-Z0-9_]*" | sed 's/self\.ui\.//' | sort -u)
 DEFINED=$(cat ui/ui_mainwindow.py | grep "^    def [A-Z]" | \
     grep -o "def [A-Z][a-zA-Z0-9_]*" | sed 's/def //' | sort -u)
 comm -23 <(echo "$CALLED") <(echo "$DEFINED")
+
+# Step 3: 메서드 누락 + 인자 개수(시그니처) 불일치 정밀 확인 (출력 없어야 함)
+python3 - <<'PY'
+import ast, pathlib, re, subprocess, sys
+ROOT = pathlib.Path('/c/System_Trading/STOM/STOM_V')
+main_text = (ROOT / 'ui' / 'ui_mainwindow.py').read_text(encoding='utf-8')
+main_mod  = ast.parse(main_text)
+methods   = {}
+for node in main_mod.body:
+    if isinstance(node, ast.ClassDef) and node.name == 'MainWindow':
+        for fn in node.body:
+            if isinstance(fn, ast.FunctionDef) and re.match(r'^[A-Z][A-Za-z0-9_]*$', fn.name):
+                args = fn.args.args[1:]  # skip self
+                min_args = len(args) - len(fn.args.defaults)
+                max_args = None if fn.args.vararg else len(args)
+                methods[fn.name] = (min_args, max_args)
+
+files = subprocess.check_output(
+    "git ls-tree -r --name-only STOM_Version_2 ui | grep '\\.py$'",
+    shell=True, text=True, cwd=ROOT
+).splitlines()
+missing = set()
+errors = []
+for f in files:
+    text = subprocess.check_output(f"git show STOM_Version_2:{f}", shell=True, text=True, cwd=ROOT)
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        continue
+    for n in ast.walk(tree):
+        if not (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)):
+            continue
+        m = n.func.attr
+        if not re.match(r'^[A-Z][A-Za-z0-9_]*$', m):
+            continue
+        t = n.func.value
+        is_ui = (
+            (isinstance(t, ast.Name) and t.id == 'ui') or
+            (isinstance(t, ast.Attribute) and t.attr == 'ui' and isinstance(t.value, ast.Name) and t.value.id == 'self')
+        )
+        if not is_ui:
+            continue
+        if m not in methods:
+            missing.add(m)
+            continue
+        min_a, max_a = methods[m]
+        pos = len(n.args)
+        if pos < min_a or (max_a is not None and pos > max_a):
+            errors.append(f"{f}:{n.lineno} {m}({pos}) vs def({min_a}..{max_a if max_a is not None else '∞'})")
+
+if missing:
+    print("MISSING:", ", ".join(sorted(missing)))
+if errors:
+    print("\\n".join(errors))
+if missing or errors:
+    sys.exit(1)
+PY
 ```
 
 ### 메서드 누락 발견 시 수정 패턴
@@ -212,4 +269,4 @@ git grep -rn "def method_name\|def function_name" STOM_Version_2U -- "ui/*.py"
 - `.pyd` 파일은 절대 커밋하지 않음 (`.gitattributes`로 관리)
 - `ui/ui_mainwindow.py`는 자동 스크립트로 갱신하지 않고 추론 기반으로 직접 관리
 - 새 `.py` 파일이 추가된 경우, `ui_mainwindow.py`의 import도 확인
-- **업데이트 후 반드시 위 검증 명령어 실행하여 누락 메서드 없는지 확인**
+- **업데이트 후 반드시 위 검증 명령어 실행하여 누락 메서드/시그니처 불일치 없는지 확인**
