@@ -265,6 +265,7 @@ class ZmqRecv(QThread):
 class MainWindow(QMainWindow):
     def __init__(self, auto_run_):
         super().__init__()
+        self.logger = get_logger(self.__class__.__name__)
 
         self.windowQ, self.soundQ, self.queryQ, self.teleQ, self.chartQ, self.hogaQ, self.webcQ, self.backQ, \
             self.creceivQ, self.ctraderQ, self.cstgQ, self.liveQ, self.totalQ, self.testQ, self.kimpQ, self.wdzservQ = \
@@ -375,6 +376,9 @@ class MainWindow(QMainWindow):
         self.back_eques       = []
         self.back_sprocs      = []
         self.back_sques       = []
+        self.shared_cnt       = None
+        self.shared_lock      = None
+        self.shared_info      = []
         self.avg_list         = []
         self.back_count       = 0
         self.back_scount      = 0
