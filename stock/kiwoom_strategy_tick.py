@@ -159,7 +159,7 @@ class KiwoomStrategyTick:
                 self.jgrv_count = 0
                 self.PutGsjmAndDeleteHilo()
         elif gubun == '관심목록':
-            self.dict_gj = {k: v for k, v in self.dict_gj.copy().items() if k in data}
+            self.dict_gj = {k: v for k, v in self.dict_gj.items() if k in data}
         elif gubun in ('매수완료', '매수취소'):
             if data in self.dict_signal['매수']:
                 self.dict_signal['매수'].remove(data)
@@ -526,7 +526,7 @@ class KiwoomStrategyTick:
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.mgzservQ.put(('window', (ui_num[f'S관심종목'], self.gubun, df_gj)))
         if self.dict_profit:
-            self.dict_profit = {k: v for k, v in self.dict_profit.copy().items() if k in self.dict_jg}
+            self.dict_profit = {k: v for k, v in self.dict_profit.items() if k in self.dict_jg}
 
     def SaveData(self, codes):
         for code in self.dict_data.copy():
@@ -937,15 +937,15 @@ class KiwoomStrategyTick:
         if tick * 2 + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
             cur_avg_buys = self.arry_code[sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
-            pre_avg_buys = self.arry_code[sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
+            pre_avg_buys = self.arry_code[sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
             return cur_avg_buys / pre_avg_buys if pre_avg_buys != 0 else 0
         return 0
 
     def _매도수량변동성(self, tick, pre=0):
         if tick * 2 + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
-            cur_arry_sells = self.arry_code[sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
-            pre_arry_sells = self.arry_code[sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
+            cur_arry_sells = self.arry_code[sidx:eidx, self._fi('초당매도수량' if self.is_tick else '분당매도수량')].sum()
+            pre_arry_sells = self.arry_code[sidx - tick:eidx - tick, self._fi('초당매도수량' if self.is_tick else '분당매도수량')].sum()
             return cur_arry_sells / pre_arry_sells if pre_arry_sells != 0 else 0
         return 0
 

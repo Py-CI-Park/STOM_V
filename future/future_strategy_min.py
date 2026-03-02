@@ -123,7 +123,7 @@ class FutureStrategyMin(FutureStrategyTick):
                 G    = NISS and self.dict_set['주식매도취소매수시그널'] and not NIBS
     
                 if BBT and BLK and (A or B or (C and D) or (C and E) or D or E or F or G):
-                    self.info_for_signal = D, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                    self.info_for_signal = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
                     if A or B or (C and (D or E)) or F or G:
                         BUY_LONG, SELL_SHORT = True, True

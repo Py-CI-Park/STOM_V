@@ -5,8 +5,10 @@ import pandas as pd
 from talib import stream
 from traceback import print_exc
 from multiprocessing import shared_memory
+from strategy.microstructure_analyzer import MicrostructureAnalyzer
 from backtester.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
     get_trade_info, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture
+from strategy.smart_vwap_bands import SmartVWAPCalculator
 from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_STOCK_BACK_MIN, indicator, \
     DB_FUTURE_BACK_TICK, DB_FUTURE_BACK_MIN, DB_COIN_BACK_TICK, DB_COIN_BACK_MIN, list_stock_tick, \
     list_stock_min, list_coin_tick, list_coin_min
@@ -73,8 +75,6 @@ class BackEngineBase:
         self.curr_trade_info = {}
         self.curr_day_info = {}
         self.info_for_order = None
-        self.vturn = 0
-        self.vkey = 0
 
         self.code = ''
         self.name = ''
@@ -122,6 +122,9 @@ class BackEngineBase:
         self.prev_global_list = []
         self.conds_text = ''
         self.market_text = ''
+
+        self.smat_vwap   = SmartVWAPCalculator('stock')
+        self.ms_analyzer = MicrostructureAnalyzer('stock')
 
         self.UpdateMarketGubun()
         self.UpdateSubVars()
@@ -444,6 +447,8 @@ class BackEngineBase:
         self.high_low = []
         self.tick_count = 0
         self.dict_cond_indexn = {}
+        self.ms_analyzer.clear_data()
+
         if self.is_oms:
             v1 = get_trade_info(3)
             v2 = get_trade_info(2)
@@ -581,6 +586,7 @@ class BackEngineBase:
         if not self.beq.empty() and self.beq.get() == '백테중지':
             self.BackStop(1)
             return
+
         if self.profile: self.pr.print_stats(sort='cumulative')
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
@@ -635,7 +641,7 @@ class BackEngineBase:
                 self.curr_trade_info['매수시간'] = 매수시간
 
     def SetBuyCount(self):
-        현재가, 저가대비고가등락율 = self.info_for_order
+        현재가, 저가대비고가등락율 = self.info_for_order[:-2]
         if self.set_weight[0] == 0:
             betting = self.betting
         else:
@@ -699,6 +705,7 @@ class BackEngineBase:
 
         for vturn in self.trade_info:
             for vkey in self.trade_info[vturn]:
+                self.info_for_order = None, None, vturn, vkey
                 self.curr_trade_info = self.trade_info[vturn][vkey]
                 if self.curr_trade_info['보유중'] > 0:
                     매도금액 = 0
@@ -720,10 +727,9 @@ class BackEngineBase:
 
     def CalculationEyun(self):
         """
-        보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간, 추가매수시간, 매수호가, 매도호가, \
-            매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, 매도분할횟수, \
-            매수주문취소시간, 매도주문취소시간 = self.curr_trade_info.values()
+        보유중, 매수가, 매도가, 주문수량, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
         """
+        vturn, vkey = self.info_for_order[-2:]
         _, 매수가, 매도가, 주문수량, _, _, _, 매수틱번호, 매수시간 = self.curr_trade_info.values()
         if self.is_tick:
             보유시간 = int((dt_ymdhms(str(self.index)) - 매수시간).total_seconds())
@@ -731,13 +737,12 @@ class BackEngineBase:
             보유시간 = int((dt_ymdhm(str(self.index)) - 매수시간).total_seconds() / 60)
         매수시간, 매도시간, 매입금액 = int(self.arry_code[매수틱번호, 0]), self.index, 주문수량 * 매수가
         시가총액또는포지션, 평가금액, 수익금, 수익률 = self.GetProfitInfo(매도가, 매수가, 주문수량)
-        매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[self.vkey][self.sell_cond]
+        매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
         추가매수시간, 잔고없음 = '', True
-        data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음,
-                self.vturn, self.vkey)
-        self.bstq_list[self.vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
+        data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
+        self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
-        self.trade_info[self.vturn][self.vkey] = get_trade_info(1)
+        self.trade_info[vturn][vkey] = get_trade_info(1)
 
     def _fi(self, factor_name):
         return self.dict_findex[factor_name]
@@ -1121,17 +1126,15 @@ class BackEngineBase:
         if tick * 2 + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
             cur_avg_buys = self.arry_code[sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
-            pre_avg_buys = self.arry_code[
-                sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
+            pre_avg_buys = self.arry_code[sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
             return cur_avg_buys / pre_avg_buys if pre_avg_buys != 0 else 0
         return 0
 
     def _매도수량변동성(self, tick, pre=0):
         if tick * 2 + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)
-            cur_arry_sells = self.arry_code[sidx:eidx, self._fi('초당매수수량' if self.is_tick else '분당매수수량')].sum()
-            pre_arry_sells = self.arry_code[
-                sidx - tick:eidx - tick, self._fi('초당매수수량' if self.is_tick else '분당매도수량')].sum()
+            cur_arry_sells = self.arry_code[sidx:eidx, self._fi('초당매도수량' if self.is_tick else '분당매도수량')].sum()
+            pre_arry_sells = self.arry_code[sidx - tick:eidx - tick, self._fi('초당매도수량' if self.is_tick else '분당매도수량')].sum()
             return cur_arry_sells / pre_arry_sells if pre_arry_sells != 0 else 0
         return 0
 

@@ -179,7 +179,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 money_arr[3] += sell_money
 
                 idx = price_idx.get(c)
-                if idx:
+                if idx is not None:
                     buy_arr[idx]  += buy_money
                     sell_arr[idx] += sell_money
                 else:

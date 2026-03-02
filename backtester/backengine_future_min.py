@@ -12,6 +12,7 @@ class BackEngineFutureMin(BackEngineFutureTick):
             매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
             매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
 
+        # noinspection PyUnusedLocal
         순매수금액 = 분당매수금액 - 분당매도금액
         종목명, 종목코드, 데이터길이, 체결시간, 시분초 = self.name, self.code, self.tick_count, self.index, int(str(self.index)[8:] + '00')
         호가빼기데이터 = (매도호가5 - 매도호가4, 매도호가4 - 매도호가3, 매도호가3 - 매도호가2, 매수호가2 - 매수호가3, 매수호가3 - 매수호가4, 매수호가4 - 매수호가5)
@@ -41,8 +42,8 @@ class BackEngineFutureMin(BackEngineFutureTick):
                     if vturn == 0 and self.tick_count < self.vars[0]:
                         continue
 
-                    self.vturn, self.vkey = vturn, vkey
                     self.curr_trade_info = self.trade_info[vturn][vkey]
+                    self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
                     보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
 
                     if self.indistg is not None:
@@ -64,7 +65,6 @@ class BackEngineFutureMin(BackEngineFutureTick):
                     SELL_LONG, BUY_SHORT = False, False
                     if not 보유중:
                         if not 관심종목: continue
-                        self.info_for_order = 현재가, 저가대비고가등락율
                         exec(self.buystg)
                     else:
                         포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = self.GetHoldInfo(보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간)
@@ -88,8 +88,8 @@ class BackEngineFutureMin(BackEngineFutureTick):
                     elif self.tick_count < self.avgtime:
                         return
 
-                    self.vturn, self.vkey = vturn, vkey
                     self.curr_trade_info = self.trade_info[vturn][vkey]
+                    self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
                     보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
 
                     if self.indistg is not None:
@@ -111,7 +111,6 @@ class BackEngineFutureMin(BackEngineFutureTick):
                     SELL_LONG, BUY_SHORT = False, False
                     if not 보유중:
                         if not 관심종목: continue
-                        self.info_for_order = 현재가, 저가대비고가등락율
                         if self.back_type != '조건최적화':
                             exec(self.buystg)
                         else:
@@ -132,8 +131,8 @@ class BackEngineFutureMin(BackEngineFutureTick):
                 if self.tick_count < self.avgtime:
                     return
 
-            self.vturn, self.vkey = vturn, vkey
             self.curr_trade_info = self.trade_info[vturn][vkey]
+            self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
             보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
 
             if self.indistg is not None:
@@ -155,7 +154,6 @@ class BackEngineFutureMin(BackEngineFutureTick):
             SELL_LONG, BUY_SHORT = False, False
             if not 보유중:
                 if not 관심종목: return
-                self.info_for_order = 현재가, 저가대비고가등락율
                 exec(self.buystg)
             else:
                 포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = self.GetHoldInfo(보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간)

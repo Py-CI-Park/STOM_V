@@ -200,8 +200,7 @@ class OptimizeConditions:
         if weeks_train != 'ALL':
             weeks_train = int(weeks_train)
         else:
-            allweeks = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
-            weeks_train = allweeks - weeks_valid
+            weeks_train = int(((dt_ymd(backengin_eday) - dt_ymd(backengin_sday)).days + 1) / 7)
 
         dt_endday   = dt_ymd(backengin_eday)
         plus_day    = 3 if 'S' in self.ui_gubun else 1
@@ -254,10 +253,17 @@ class OptimizeConditions:
         if 'V' in self.backname:
             valid_days = []
             for vsday, veday in valid_days_:
-                valid_days_list = [x for x in day_list if vsday <= x <= veday]
-                vdaycnt = len(valid_days_list)
-                tdaycnt = train_count - vdaycnt
-                valid_days.append([valid_days_list[0], valid_days_list[-1], tdaycnt, vdaycnt])
+                try:
+                    valid_days_list = [x for x in day_list if vsday <= x <= veday]
+                    vdaycnt = len(valid_days_list)
+                    tdaycnt = train_count - vdaycnt
+                    valid_days.append([valid_days_list[0], valid_days_list[-1], tdaycnt, vdaycnt])
+                except:
+                    self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'[{vsday} ~ {veday}] 구간의 데이터가 존재하지 않습니다.'))
+                    self.SysExit(True)
+            if not valid_days:
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
+                self.SysExit(True)
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 학습 기간 {startday} ~ {endday}'))
         if 'V' in self.backname:

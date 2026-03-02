@@ -116,7 +116,7 @@ class BackEngineBaseOms(BackEngineBase):
                     timedelta_sec(self.dict_set[f'{self.market_text}매수취소시간초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
 
     def SetBuyCount(self):
-        보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, _, _ = self.info_for_order
+        보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1 = self.info_for_order[:-4]
         if self.set_weight[0] == 0:
             betting = self.betting
         else:
@@ -274,7 +274,7 @@ class BackEngineBaseOms(BackEngineBase):
                 timedelta_sec(self.dict_set[f'{self.market_text}매도취소시간초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
 
     def SetSellCount(self):
-        보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수 = self.info_for_order
+        보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수 = self.info_for_order[:-2]
         if self.dict_set[f'{self.market_text}매도분할횟수'] == 1:
             self.curr_trade_info['주문수량'] = 보유수량
         else:
@@ -284,11 +284,11 @@ class BackEngineBaseOms(BackEngineBase):
                 if self.set_weight[0] == 1:
                     비중조절기준 = 저가대비고가등락율
                 elif self.set_weight[0] == 2:
-                    비중조절기준 = 순매수금액
+                    비중조절기준 = self._거래대금평균대비비율(30)
                 elif self.set_weight[0] == 3:
-                    비중조절기준 = 당일거래대금
-                else:
                     비중조절기준 = self._등락율각도(30)
+                else:
+                    비중조절기준 = self._당일거래대금각도(30)
 
                 if 비중조절기준 < self.set_weight[1]:
                     betting = self.betting * self.set_weight[5]
@@ -377,6 +377,7 @@ class BackEngineBaseOms(BackEngineBase):
             매수호가_, 매도호가_, 추가매수가, 매수호가단위, 매도호가단위, 매수정정횟수, 매도정정횟수, 매수분할횟수, 매도분할횟수, \
             매수주문취소시간, 매도주문취소시간, 주문포지션 = self.curr_trade_info.values()
         """
+        vturn, vkey = self.info_for_order[-2:]
         _, 매수가, 매도가, 주문수량, 보유수량, _, _, 매수틱번호, 매수시간, 추가매수시간 = list(self.curr_trade_info.values())[:10]
         if self.is_tick:
             보유시간 = int((dt_ymdhms(str(self.index)) - 매수시간).total_seconds())
@@ -384,10 +385,10 @@ class BackEngineBaseOms(BackEngineBase):
             보유시간 = int((dt_ymdhm(str(self.index)) - 매수시간).total_seconds() / 60)
         매수시간, 매도시간, 매입금액 = int(self.arry_code[매수틱번호, 0]), self.index, 주문수량 * 매수가
         시가총액또는포지션, 평가금액, 수익금, 수익률 = self.GetProfitInfo(매도가, 매수가, 주문수량)
-        매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[self.vkey][self.sell_cond]
+        매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
         추가매수시간, 잔고없음 = '^'.join(추가매수시간), 보유수량 - 주문수량 == 0
-        data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, self.vturn, self.vkey)
-        self.bstq_list[self.vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
+        data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
+        self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
 
         self.curr_day_info['거래횟수'] += 1
@@ -401,4 +402,4 @@ class BackEngineBaseOms(BackEngineBase):
             self.curr_trade_info['매도정정횟수'] = 0
             self.curr_trade_info['매도분할횟수'] += 1
         else:
-            self.trade_info[self.vturn][self.vkey] = get_trade_info(2)
+            self.trade_info[vturn][vkey] = get_trade_info(2)

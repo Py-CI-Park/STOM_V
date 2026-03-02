@@ -112,13 +112,7 @@ class Total:
                 if sc == 5:
                     sc = 0
                     for q in self.bstq_list[:5]:
-                        q.put('결과이동')
-
-            elif data == '이동완료':
-                sc += 1
-                if sc == 5:
-                    sc = 0
-                    self.bstq_list[0].put('결과집계')
+                        q.put('결과집계')
 
             elif data[0] == '결과없음':
                 self.hstd = SendResult(self.GetSendData(), None)
