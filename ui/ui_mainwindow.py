@@ -475,6 +475,7 @@ class MainWindow(QMainWindow):
         self.backcheckbox_list     = None
         self.order_combo_name_list = []
 
+        self.dict_fn               = None
         self.ctpg_name             = None
         self.ctpg_cline            = None
         self.ctpg_hline            = None
@@ -522,19 +523,20 @@ class MainWindow(QMainWindow):
         plt.rcParams['font.family'] = font_family
         plt.rcParams['axes.unicode_minus'] = False
 
-        port_num = 5100
+        self.port_num = 5100
+        self.proc_manager = None
         while True:
-            if not (port_available(port_num) and port_available(port_num + 1)):
-                port_num += 10
+            if not (port_available(self.port_num) and port_available(self.port_num + 1)):
+                self.port_num += 10
                 continue
             try:
-                self.zmqrecv = ZmqRecv(self.qlist, port_num + 1)
+                self.zmqrecv = ZmqRecv(self.qlist, self.port_num + 1)
                 self.zmqrecv.start()
-                self.zmqserv = ZmqServ(self.wdzservQ, port_num)
+                self.zmqserv = ZmqServ(self.wdzservQ, self.port_num)
                 self.zmqserv.start()
             except:
                 self.zmqrecv.terminate()
-                port_num += 10
+                self.port_num += 10
             else:
                 break
 
@@ -546,7 +548,7 @@ class MainWindow(QMainWindow):
             self.windowQ.put((ui_num['S단순텍스트'], text))
         else:
             self.logger.info(f'키움매니저 실행 인터프리터 선택 [{pyexe}]')
-            subprocess.Popen([pyexe, './trade/stock_korea/kiwoom_manager.py', str(port_num)])
+            self.proc_manager = subprocess.Popen([pyexe, './trade/stock_korea/kiwoom_manager.py', str(self.port_num)])
 
         self.update_textedit    = UpdateTextedit(self)
         self.update_tablewidget = UpdateTablewidget(self)
