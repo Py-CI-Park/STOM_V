@@ -33,9 +33,10 @@ def stock_gavars_save(ui):
         if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy, ga=True):
             if ui.proc_query.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}vars WHERE `index` = '{strategy_name}'"))
-                df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                ui.queryQ.put(('전략디비', df, f'{gubun}vars', 'append'))
+                delete_query = f"DELETE FROM {gubun}vars WHERE `index` = '{strategy_name}'"
+                insert_query = f"INSERT INTO {gubun}vars (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                ui.queryQ.put(('전략디비', delete_query))
+                ui.queryQ.put(('전략디비', insert_query))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -65,9 +66,10 @@ def stock_condbuy_save(ui):
         if ui.BackCodeTest3('매수', strategy):
             if ui.proc_query.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}buyconds WHERE `index` = '{strategy_name}'"))
-                df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                ui.queryQ.put(('전략디비', df, f'{gubun}buyconds', 'append'))
+                delete_query = f"DELETE FROM {gubun}buyconds WHERE `index` = '{strategy_name}'"
+                insert_query = f"INSERT INTO {gubun}buyconds (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                ui.queryQ.put(('전략디비', delete_query))
+                ui.queryQ.put(('전략디비', insert_query))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -97,7 +99,8 @@ def stock_condsell_save(ui):
         if ui.BackCodeTest3('매도', strategy):
             if ui.proc_query.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}sellconds WHERE `index` = '{strategy_name}'"))
-                df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                ui.queryQ.put(('전략디비', df, f'{gubun}sellconds', 'append'))
+                delete_query = f"DELETE FROM {gubun}sellconds WHERE `index` = '{strategy_name}'"
+                insert_query = f"INSERT INTO {gubun}sellconds (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                ui.queryQ.put(('전략디비', delete_query))
+                ui.queryQ.put(('전략디비', insert_query))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))

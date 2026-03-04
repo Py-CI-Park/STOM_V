@@ -6,7 +6,7 @@ from PyQt5.QtCore import QUrl, Qt
 from multiprocessing import Process
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
-from coin.kimp_upbit_binance import Kimp
+from utility.kimp_upbit_binance import Kimp
 from ui.set_text_stg_button import dict_stg_name
 from utility.static import qtest_qwait, str_hms, dt_hms
 from utility.setting import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
@@ -130,7 +130,7 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
                 if ui.CoinStrategyProcessAlive(): ui.cstgQ.put(('차트종목코드', code))
                 if not ui.dict_set['코인타임프레임'] and ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('차트종목코드', code))
             else:
-                ui.wdzservQ.put(('strategy', ('차트종목코드', code)))
+                ui.wdzservQ.put(('analyzer', ('차트종목코드', code)))
                 if not ui.dict_set['주식타임프레임']: ui.wdzservQ.put(('agent', ('차트종목코드', code)))
         else:
             ui.ChartClear()
@@ -180,6 +180,10 @@ def show_qsize(ui):
     else:
         ui.qs_pushButton.setStyleSheet(style_bc_bb)
         ui.showQsize = False
+
+
+def show_dialog_formula(ui):
+    ui.dialog_formula.show() if not ui.dialog_formula.isVisible() else ui.dialog_formula.close()
 
 
 def show_dialog_factor(ui):

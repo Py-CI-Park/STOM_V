@@ -54,6 +54,7 @@ class SetDialogChart:
                '10. 호가창이 열린 상태에서 마우스 좌클릭 시 해당 시간의 호가정보가 표시됩니다.\n' \
                '11. 키움 HTS에 멀티차트와도 연동됩니다. 단, 좌측 일봉, 우측 분봉 상태여야합니다.'
         self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', box=self.ui.ct_groupBoxxxxx_01, tip=text)
+        self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ShowDialogFormula)
         self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ShowDialogFactor)
         self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART 8', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartCountChange)
         self.ui.ct_pushButtonnn_06 = self.wc.setPushbutton('확장', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartSizeChange)
@@ -302,7 +303,8 @@ class SetDialogChart:
         self.ui.ct_pushButtonnn_01.setGeometry(765, 25, 60, 30)
         self.ui.ct_checkBoxxxxx_01.setGeometry(835, 25, 60, 30)
         self.ui.ct_checkBoxxxxx_02.setGeometry(900, 25, 60, 30)
-        self.ui.ct_pushButtonnn_02.setGeometry(1050, 25, 80, 30)
+        self.ui.ct_pushButtonnn_02.setGeometry(965, 25, 80, 30)
+        self.ui.ct_pushButtonnn_03.setGeometry(1050, 25, 80, 30)
         self.ui.ct_pushButtonnn_04.setGeometry(1135, 25, 80, 30)
         self.ui.ct_pushButtonnn_05.setGeometry(1220, 25, 80, 30)
         self.ui.ct_pushButtonnn_06.setGeometry(1305, 25, 80, 30)

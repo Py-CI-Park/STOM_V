@@ -37,11 +37,11 @@ def cell_clicked_02(ui, row):
     )
     if buttonReply == QMessageBox.Yes:
         if gubun == '주식':
-            ui.wdzservQ.put(('trader', ('매도', ui.dict_code[name], name, c, oc, now(), True)))
+            ui.wdzservQ.put(('trade', ('매도', ui.dict_code[name], name, c, oc, now(), True)))
         else:
             p = ui.sjg_tableWidgettt.item(row, columns.index('포지션')).text()
             p = 'SELL_LONG' if p == 'LONG' else 'BUY_SHORT'
-            ui.wdzservQ.put(('trader', (p, ui.dict_code[name], name, c, oc, now(), True)))
+            ui.wdzservQ.put(('trade', (p, ui.dict_code[name], name, c, oc, now(), True)))
 
 
 # noinspection PyUnusedLocal

@@ -67,4 +67,5 @@ torchvision==0.25.0
 sentence-transformers==2.7.0
 scikit-learn==1.5.2
 lightgbm==4.6.0
+arch==8.0.0
 seaborn==0.13.2

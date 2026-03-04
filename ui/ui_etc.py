@@ -1,13 +1,14 @@
 
 import psutil
 import random
+import sqlite3
 import numpy as np
 import pandas as pd
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from ui.set_text import famous_saying
-from utility.setting import columns_dt, columns_dd, ui_num
+from utility.setting import columns_dt, columns_dd, ui_num, DB_STRATEGY
 from utility.static import thread_decorator, qtest_qwait, str_ymdhmsf, str_ymdhms
 
 
@@ -171,3 +172,140 @@ def manual_save_and_exit(ui):
             ui.creceivQ.put(('수동데이터저장', 'dummy'))
         else:
             ui.wdzservQ.put(('agent', ('수동데이터저장', 'dummy')))
+
+
+def formula_activated(ui):
+    dict_style = {
+        1: '1:실선',
+        2: '2:대시선',
+        3: '3:점선',
+        4: '4:대시점선',
+        5: '5:대시점점선',
+        6: '6:위쪽화살표(↑)',
+        7: '7:아래쪽화살표(↓)',
+        8: '8:우측쪽화살표(→)',
+        9: '9:좌쪽화살표(←)'
+    }
+    fname = ui.fm_comboBoxxxxx_00.currentText()
+    con = sqlite3.connect(DB_STRATEGY)
+    cursor = con.cursor()
+    cursor.execute(f"SELECT * FROM formula WHERE 수식명 = '{fname}'")
+    row = cursor.fetchone()
+    con.close()
+    if row:
+        name, check, fname, vtype, color, width, style, stg = row
+        ui.fm_lineEdittttt_01.setText(name)
+        ui.fm_checkBoxxxxx_01.setChecked(check)
+        ui.fm_comboBoxxxxx_01.setCurrentText(fname)
+        ui.fm_comboBoxxxxx_02.setCurrentText(vtype)
+        ui.fm_comboBoxxxxx_03.setCurrentText(color)
+        ui.fm_comboBoxxxxx_04.setCurrentText(str(width))
+        ui.fm_comboBoxxxxx_05.setCurrentText(dict_style[style])
+        ui.fm_textEdittttt_01.clear()
+        ui.fm_textEdittttt_01.append(stg)
+
+
+def formila_button_clicked(ui):
+    button_text = ui.dialog_formula.focusWidget().text()
+
+    if button_text == '불러오기':
+        con = sqlite3.connect(DB_STRATEGY)
+        cursor = con.cursor()
+        cursor.execute("SELECT * FROM formula")
+        rows = cursor.fetchall()
+        con.close()
+        ui.fm_comboBoxxxxx_00.clear()
+        name_list = [row[0] for row in rows]
+        for name in name_list:
+            ui.fm_comboBoxxxxx_00.addItem(name)
+
+    elif button_text == '저장하기':
+        name  = ui.fm_lineEdittttt_01.text()
+        check = 1 if ui.fm_checkBoxxxxx_01.isChecked() else 0
+        fname = ui.fm_comboBoxxxxx_01.currentText()
+        vtype = ui.fm_comboBoxxxxx_02.currentText()
+        color = ui.fm_comboBoxxxxx_03.currentText()
+        width = float(ui.fm_comboBoxxxxx_04.currentText())
+        style = int(ui.fm_comboBoxxxxx_05.currentText()[:1])
+        stg   = ui.fm_textEdittttt_01.toPlainText()
+
+        if name == '' or stg == '':
+            QMessageBox.critical(ui.dialog_formula, '오류 알림', '수식명 또는 수식코드가 공백상태입니다.\n')
+            return
+        elif vtype in ('선:일반', '선:조건') and width > 5:
+            QMessageBox.critical(ui.dialog_formula, '오류 알림', '실선의 최대크기는 5입니다.\n')
+            return
+        elif vtype in ('선:일반', '선:조건') and style > 5:
+            QMessageBox.critical(ui.dialog_formula, '오류 알림', '선의 종류 선택이 잘못되었습니다.\n')
+            return
+        elif vtype in ('화살표:일반', '화살표:매매') and width < 10:
+            QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표의 최소크기는 10입니다.\n')
+            return
+        elif vtype in ('화살표:일반', '화살표:매매') and style < 6:
+            QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표의 방향 선택이 잘못되었습니다.\n')
+            return
+
+        if ui.FormulaCodeTest(stg) and ui.proc_query.is_alive():
+            delete_query = f"DELETE FROM formula WHERE 수식명 = '{name}'"
+            insert_query = f"INSERT INTO formula (수식명, 체크유무, 팩터명, 표시형태, 색상, 크기, 라인타입, 수식코드) " \
+                           f"VALUES ('{name}', {check}, '{fname}', '{vtype}', '{color}', {width}, {style}, '{stg}')"
+            ui.queryQ.put(('전략디비', delete_query))
+            ui.queryQ.put(('전략디비', insert_query))
+            QMessageBox.information(ui.dialog_formula, '수식 저장 완료', random.choice(famous_saying))
+
+    elif button_text == '삭제하기':
+        name = ui.fm_lineEdittttt_01.text()
+        if name == '':
+            QMessageBox.critical(ui.dialog_formula, '오류 알림', '삭제할 수식명을 선택하십시오.\n')
+            return
+        if ui.proc_query.is_alive():
+            query = f"DELETE FROM formula WHERE 수식명 = '{name}'"
+            ui.queryQ.put(('전략디비', query))
+            QMessageBox.information(ui.dialog_formula, '수식 삭제 완료', random.choice(famous_saying))
+            qtest_qwait(0.5)
+
+            con = sqlite3.connect(DB_STRATEGY)
+            cursor = con.cursor()
+            cursor.execute("SELECT * FROM formula")
+            rows = cursor.fetchall()
+            con.close()
+            ui.fm_comboBoxxxxx_00.clear()
+            name_list = [row[0] for row in rows]
+            for name in name_list:
+                ui.fm_comboBoxxxxx_00.addItem(name)
+
+    else:
+        text = """# 수식관리자는 로딩된 차트 데이터를 기반으로
+# 전략연산과 유사한 방식으로 작동되도록 설계되었으며
+# 전략연산과 다르게 매도관련 팩터를 사용할 수 없으니
+# 유의하시길 바랍니다. (보유수량, 최고수익률, 수익률 등)
+
+# 선:일반, 고가 라인 표시
+self.line = 최고현재가(60)
+
+# 선:조건, 최저현재가 대비 최고현재가 등락율 2%이상
+# 발생한 시점에 선을 긋고 유지되며 다시 발생하면 갱신됨.
+high_price = 최고현재가(30)
+low_price = 최저현재가(30)
+self.check = (high_price / low_price - 1) * 100 >= 2
+self.line = (high_price + low_price) / 2
+
+# 화살표:일반, 호가상승압력
+총잔량 = 매수총잔량 + 매도총잔량
+self.check = 매수총잔량 / 총잔량 > 0.7
+
+# 화살표:매매, 이평돌파 및 이탈 매매
+현재이평 = 이동평균(60)
+직전이평 = 이동평균(60, 1)
+if 데이터길이 < 61: continue
+self.buy = 현재가N(1) <= 직전이평 and 현재이평 < 현재가
+self.sell = 현재가N(1) >= 직전이평 and 현재이평 > 현재가
+
+# 범위, 이동평균위
+이평60 = 이동평균(60)
+self.check = 현재가 > 이평60 and 이평60 > 0
+self.up = 현재가
+self.down = 이평60
+"""
+        ui.fm_textEdittttt_01.clear()
+        ui.fm_textEdittttt_01.append(text)

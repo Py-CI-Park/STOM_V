@@ -1,0 +1,87 @@
+
+from PyQt5.QtWidgets import QLabel, QGroupBox
+from ui.set_style import style_ck_bx, style_bc_dk, qfont14
+
+
+class SetDialogFormula:
+    def __init__(self, ui_class, wc):
+        self.ui = ui_class
+        self.wc = wc
+        self.set()
+
+    def set(self):
+        self.ui.dialog_formula = self.wc.setDialog('STOM FORMULA', tab=self.ui.dialog_chart)
+        self.ui.dialog_formula.geometry().center()
+
+        self.ui.fm_groupBoxxxxx_01 = QGroupBox('', self.ui.dialog_formula)
+        self.ui.fm_groupBoxxxxx_02 = QGroupBox('', self.ui.dialog_formula)
+        self.ui.fm_groupBoxxxxx_03 = QGroupBox('', self.ui.dialog_formula)
+
+        text = '1. 수식관리자는 전략탭의 매수, 매도 전략코드와 같은 방식으로 수식을 작성할 수 있습니다.\n' \
+               '2. 선 형태의 지표, 화살표 형태의 신호, 범위 형태의 지표로 구분되어 있으며 예제를 확인 후 입력하십시오.\n' \
+               '3. 선 형태의 지표는 "self.line, self.check"를 지정하는 형태로 입력합니다.\n' \
+               '4. 화살표 형태의 신호는 "self.check, self.buy, self.sell"을 지정하는 형태로 입력합니다.\n' \
+               '5. 범위 형태의 지표는 "self.check, self.up, self.down"을 지정하는 형태로 입력합니다.'
+        self.ui.fm_labellllllll_01 = QLabel(text, self.ui.fm_groupBoxxxxx_01)
+
+        self.ui.fm_lineEdittttt_01 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, aleft=True, style=style_bc_dk, tip='저장할 수식명을 입력하세요.')
+        self.ui.fm_comboBoxxxxx_00 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, activated=self.ui.fmActivated_01, tip='편집할 수식을 선택하세요.')
+        self.ui.fm_pushButtonnn_01 = self.wc.setPushbutton('불러오기', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_02 = self.wc.setPushbutton('저장하기', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
+
+        self.ui.fm_checkBoxxxxx_01 = self.wc.setCheckBox('차트 표시 유무 선택', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
+        items = [
+            '현재가', '초당거래대금', '분당거래대금', '초당매도수금액', '분당매도수금액', '당일매도수금액', '최고매도수금액', '최고매도수가격',
+            '체결강도', '초당체결수량', '분당체결수량', '등락율', '고저평균대비등락율', '저가대비고가등락율', '호가총잔량', '매도수호가잔량1',
+            '매도수5호가잔량합', '당일거래대금', '누적초당매도수수량', '누적분당매도수수량', '등락율각도', '당일거래대금각도', '거래대금증감',
+            '전일비', '회전율', '전일동시간비', '전일비각도', 'AD', 'ADOSC', 'ADXR', 'APO', 'AROON', 'ATR', 'BBAND', 'CCI',
+            'DMI', 'MACD', 'MFI', 'MOM', 'OBV', 'PPO', 'ROC', 'RSI', 'SAR', 'STOCHS', 'STOCHF', 'WILLR'
+        ]
+        self.ui.fm_comboBoxxxxx_01 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='표시할 차트의 팩터명을 선택하세요.')
+        items = ['선:일반', '선:조건', '화살표:일반', '화살표:매매', '범위']
+        self.ui.fm_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='수식의 표시 형태를 선택하세요.')
+        items = [
+            'white', 'gray', 'red', 'green', 'blue', 'yellow', 'orange', 'purple', 'pink', 'brown',
+            'cyan', 'magenta', 'lime', 'navy', 'skyblue', 'olive', 'teal', 'silver', 'gold',
+            'coral', 'salmon', 'crimson', 'maroon', 'darkred', 'firebrick', 'indianred', 'tomato',
+            'lightgreen', 'darkgreen', 'forestgreen', 'seagreen', 'mediumseagreen', 'springgreen',
+            'lightblue', 'darkblue', 'mediumblue', 'royalblue', 'steelblue', 'dodgerblue',
+            'lightyellow', 'darkorange', 'goldenrod', 'darkgoldenrod', 'khaki', 'beige',
+            'lavender', 'violet', 'darkviolet', 'mediumpurple', 'orchid', 'plum',
+            'tan', 'chocolate', 'sienna', 'peru', 'wheat', 'cornsilk',
+            'mintcream', 'honeydew', 'aliceblue', 'ghostwhite', 'whitesmoke', 'floralwhite'
+        ]
+        self.ui.fm_comboBoxxxxx_03 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선 또는 화살표의 색상을 선택하세요.')
+        items = ['0.5', '1.0', '2.0', '3.0', '4.0', '5.0', '10.0', '20.0', '30.0', '40.0', '50.0']
+        self.ui.fm_comboBoxxxxx_04 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선의 굵기(0.5~5.0) 또는 화살표의 크기(10~50)를 선택하세요.')
+        items = ['1:실선', '2:대시선', '3:점선', '4:대시점선', '5:대시점점선', '6:위쪽화살표(↑)', '7:아래쪽화살표(↓)', '8:우측쪽화살표(→)', '9:좌쪽화살표(←)']
+        self.ui.fm_comboBoxxxxx_05 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선의 종류(1~5) 또는 화살표의 방향(6~9)을 선택하세요.')
+
+        self.ui.fm_pushButtonnn_03 = self.wc.setPushbutton('삭제하기', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('예제확인', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
+
+        self.ui.fm_textEdittttt_01 = self.wc.setTextEdit(self.ui.fm_groupBoxxxxx_03, filter_=True, font=qfont14)
+
+        self.ui.dialog_formula.setFixedSize(560, 525)
+        self.ui.fm_groupBoxxxxx_01.setGeometry(5, 5, 550, 85)
+        self.ui.fm_groupBoxxxxx_02.setGeometry(5, 90, 160, 430)
+        self.ui.fm_groupBoxxxxx_03.setGeometry(170, 90, 385, 430)
+
+        self.ui.fm_labellllllll_01.setGeometry(5, 5, 625, 75)
+
+        self.ui.fm_lineEdittttt_01.setGeometry(5, 10, 150, 30)
+        self.ui.fm_comboBoxxxxx_00.setGeometry(5, 45, 150, 30)
+        self.ui.fm_pushButtonnn_01.setGeometry(5, 80, 150, 30)
+        self.ui.fm_pushButtonnn_02.setGeometry(5, 115, 150, 30)
+
+        self.ui.fm_checkBoxxxxx_01.setGeometry(10, 150, 150, 30)
+        self.ui.fm_comboBoxxxxx_01.setGeometry(5, 185, 150, 30)
+        self.ui.fm_comboBoxxxxx_02.setGeometry(5, 220, 150, 30)
+        self.ui.fm_comboBoxxxxx_03.setGeometry(5, 255, 150, 30)
+        self.ui.fm_comboBoxxxxx_04.setGeometry(5, 290, 150, 30)
+        self.ui.fm_comboBoxxxxx_05.setGeometry(5, 325, 150, 30)
+
+        self.ui.fm_pushButtonnn_03.setGeometry(5, 360, 150, 30)
+        self.ui.fm_pushButtonnn_04.setGeometry(5, 395, 150, 30)
+
+        self.ui.fm_textEdittttt_01.setGeometry(5, 10, 375, 415)

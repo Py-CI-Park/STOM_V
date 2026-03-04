@@ -16,7 +16,7 @@ def odbutton_clicked_01(ui):
             ui.ctraderQ.put(('매수', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '키움증권' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('매수', code, name, comma2int(op), comma2int(oc), now(), False, ordertype)))
+        ui.wdzservQ.put(('trade', ('매수', code, name, comma2int(op), comma2int(oc), now(), False, ordertype)))
 
 
 def odbutton_clicked_02(ui):
@@ -32,7 +32,7 @@ def odbutton_clicked_02(ui):
             ui.ctraderQ.put(('매도', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '키움증권' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('매도', code, name, comma2int(op), comma2int(oc), now(), False, ordertype)))
+        ui.wdzservQ.put(('trade', ('매도', code, name, comma2int(op), comma2int(oc), now(), False, ordertype)))
 
 
 def odbutton_clicked_03(ui):
@@ -47,7 +47,7 @@ def odbutton_clicked_03(ui):
         ui.ctraderQ.put(('BUY_LONG', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('BUY_LONG', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
+        ui.wdzservQ.put(('trade', ('BUY_LONG', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
 
 
 def odbutton_clicked_04(ui):
@@ -62,7 +62,7 @@ def odbutton_clicked_04(ui):
         ui.ctraderQ.put(('SELL_LONG', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('SELL_LONG', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
+        ui.wdzservQ.put(('trade', ('SELL_LONG', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
 
 
 def odbutton_clicked_05(ui):
@@ -77,7 +77,7 @@ def odbutton_clicked_05(ui):
         ui.ctraderQ.put(('SELL_SHORT', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('SELL_SHORT', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
+        ui.wdzservQ.put(('trade', ('SELL_SHORT', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
 
 
 def odbutton_clicked_06(ui):
@@ -92,7 +92,7 @@ def odbutton_clicked_06(ui):
         ui.ctraderQ.put(('BUY_SHORT', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('BUY_SHORT', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
+        ui.wdzservQ.put(('trade', ('BUY_SHORT', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
 
 
 def odbutton_clicked_07(ui):
@@ -109,11 +109,11 @@ def odbutton_clicked_07(ui):
             ui.ctraderQ.put(('SELL_SHORT_CANCEL', name, 0, 0, now(), False))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('BUY_LONG_CANCEL', code, name, 0, 0, now(), False)))
-        ui.wdzservQ.put(('trader', ('SELL_SHORT_CANCEL', code, name, 0, 0, now(), False)))
+        ui.wdzservQ.put(('trade', ('BUY_LONG_CANCEL', code, name, 0, 0, now(), False)))
+        ui.wdzservQ.put(('trade', ('SELL_SHORT_CANCEL', code, name, 0, 0, now(), False)))
     else:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('매수취소', code, name, 0, 0, now(), False)))
+        ui.wdzservQ.put(('trade', ('매수취소', code, name, 0, 0, now(), False)))
 
 
 def odbutton_clicked_08(ui):
@@ -130,8 +130,8 @@ def odbutton_clicked_08(ui):
             ui.ctraderQ.put(('BUY_SHORT_CANCEL', name, 0, 0, now(), False))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('SELL_LONG_CANCEL', code, name, 0, 0, now(), False)))
-        ui.wdzservQ.put(('trader', ('BUY_SHORT_CANCEL', code, name, 0, 0, now(), False)))
+        ui.wdzservQ.put(('trade', ('SELL_LONG_CANCEL', code, name, 0, 0, now(), False)))
+        ui.wdzservQ.put(('trade', ('BUY_SHORT_CANCEL', code, name, 0, 0, now(), False)))
     else:
         code = ui.dict_code[name]
-        ui.wdzservQ.put(('trader', ('매도취소', code, name, 0, 0, now(), False)))
+        ui.wdzservQ.put(('trade', ('매도취소', code, name, 0, 0, now(), False)))

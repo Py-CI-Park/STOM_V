@@ -8,10 +8,10 @@ def process_kill(ui):
         ui.wdzservQ.put(('agent', '프로파일링결과'))
         qtest_qwait(3)
     if ui.dict_set['트레이더프로파일링']:
-        ui.wdzservQ.put(('trader', '프로파일링결과'))
+        ui.wdzservQ.put(('trade', '프로파일링결과'))
         qtest_qwait(3)
     if ui.dict_set['전략연산프로파일링']:
-        ui.wdzservQ.put(('strategy', '프로파일링결과'))
+        ui.wdzservQ.put(('analyzer', '프로파일링결과'))
         qtest_qwait(3)
 
     ui.wdzservQ.put(('manager', '통신종료'))
@@ -26,6 +26,7 @@ def process_kill(ui):
     if ui.CoinStrategyProcessAlive():
         ui.proc_strategy_coin.kill()
         ui.logger.info('Coin Process Terminate Completed')
+        qtest_qwait(3)
 
     if ui.writer.isRunning():  ui.writer.terminate()
     if ui.zmqrecv.isRunning(): ui.zmqrecv.terminate()

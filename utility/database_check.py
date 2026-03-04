@@ -309,6 +309,10 @@ def database_check():
         cur.execute('CREATE TABLE "custombutton" ( "index" INTEGER, "버튼명" TEXT, "전략코드" TEXT )')
         cur.execute('CREATE INDEX "ix_custombutton_index" ON "custombutton"("index")')
 
+    if 'formula' not in table_list:
+        cur.execute('CREATE TABLE "formula" ( "수식명" TEXT, "체크유무" INTEGER, "팩터명" TEXT, "표시형태" TEXT, "색상" TEXT, "크기" REAL, "라인타입" INTEGER, "수식코드" TEXT )')
+        cur.execute('CREATE INDEX "ix_formula_수식명" ON "formula"("수식명")')
+
     con.commit()
     con.close()
 

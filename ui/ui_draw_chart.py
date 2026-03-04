@@ -2,13 +2,14 @@
 import win32api
 import win32gui
 import pyqtgraph as pg
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtGui import QColor
 from ui.ui_crosshair import CrossHair
+from PyQt5.QtWidgets import QMessageBox
 from ui.ui_get_label_text import get_label_text
-from utility.chart_items import ChuseItem, CandlestickItem, VolumeBarsItem
 from ui.set_style import qfont12, color_fg_bt, color_bg_bt, color_bg_ld
-from stock.login_kiwoom.manuallogin import leftClick, enter_keys, press_keys
+from utility.chart_items import ChuseItem, CandlestickItem, VolumeBarsItem
 from utility.static import error_decorator, from_timestamp, thread_decorator, str_ymd
+from trade.stock_korea.login_kiwoom.manuallogin import leftClick, enter_keys, press_keys
 
 
 class DrawChart:
@@ -32,7 +33,14 @@ class DrawChart:
         if not self.ui.dialog_chart.isVisible():
             return
 
-        gubun, self.ui.ctpg_xticks, self.ui.ctpg_arry, self.ui.buy_index, self.ui.sell_index = data[1:]
+        gubun, self.ui.ctpg_xticks, self.ui.ctpg_arry, self.ui.buy_index, self.ui.sell_index, \
+            dict_fm, fm_index, dict_fn, fm_cnt = data[1:]
+
+        if fm_cnt > 0:
+            self.ui.dict_fn = dict_fn
+        else:
+            self.ui.dict_fn = None
+
         if gubun == '차트오류':
             QMessageBox.critical(self.ui.dialog_chart, '오류 알림', '해당 날짜의 데이터가 존재하지 않습니다.\n')
             return
@@ -129,15 +137,17 @@ class DrawChart:
                     fi('매도총잔량'), fi('매수총잔량'), fi('매도잔량1'), fi('매수잔량1')
                 )
 
-        for i in range(len(self.ui.ctpg_arry[0, :])):
+        clen = len(self.ui.ctpg_arry[0, :])
+        fm_idx = clen - fm_cnt
+        for i in range(clen):
             tick_arry = self.ui.ctpg_arry[:, i]
-            if i in not_drop_zero_factors:
+            if i in not_drop_zero_factors or i >= fm_idx:
                 self.ui.ctpg_data[i] = tick_arry
             else:
                 self.ui.ctpg_data[i] = tick_arry[tick_arry != 0]
 
         len_list = []
-        tlen = len(self.ui.ctpg_xticks)
+        tlen = len(self.ui.ctpg_arry)
         for data in self.ui.ctpg_data.values():
             len_list.append(tlen - len(data))
 
@@ -156,7 +166,6 @@ class DrawChart:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균20')]:], y=self.ui.ctpg_data[fi('이동평균20')], pen=(100, 100, 100))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균60')]:], y=self.ui.ctpg_data[fi('이동평균60')], pen=(80, 80, 80))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균120')]:], y=self.ui.ctpg_data[fi('이동평균120')], pen=(60, 60, 60))
-                    self.ui.ctpg[i].addItem(CandlestickItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi('분봉고가'), fi('분봉저가')], self.ui.ctpg_xticks))
                 else:
                     ymax = self.ui.ctpg_data[fi('현재가')].max()
                     ymin = self.ui.ctpg_data[fi('현재가')].min()
@@ -166,13 +175,19 @@ class DrawChart:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균300')]:], y=self.ui.ctpg_data[fi('이동평균300')], pen=(100, 100, 100))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균600')]:], y=self.ui.ctpg_data[fi('이동평균600')], pen=(80, 80, 80))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('이동평균1200')]:], y=self.ui.ctpg_data[fi('이동평균1200')], pen=(60, 60, 60))
+
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
+                if is_min:
+                    self.ui.ctpg[i].addItem(CandlestickItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi('분봉고가'), fi('분봉저가')], self.ui.ctpg_xticks))
+                else:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('현재가')]:], y=self.ui.ctpg_data[fi('현재가')], pen=(200, 100, 100))
 
                 buy_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, fi('매수가')]) if price > 0]
                 sell_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, fi('매도가')]) if price > 0]
                 if buy_arrow_list:
                     for j, price in buy_arrow_list:
-                        arrow = pg.ArrowItem(angle=-180, tipAngle=60, headLen=10, pen='w', brush='r')
+                        arrow = pg.ArrowItem(angle=180, tipAngle=60, headLen=10, pen='w', brush='r')
                         arrow.setPos(self.ui.ctpg_xticks[j], price)
                         self.ui.ctpg[i].addItem(arrow)
                 if sell_arrow_list:
@@ -186,7 +201,7 @@ class DrawChart:
                     sell_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, fi('매도가2')]) if price > 0]
                     if buy_arrow_list:
                         for j, price in buy_arrow_list:
-                            arrow = pg.ArrowItem(angle=-180, tipAngle=60, headLen=10, pen='w', brush='m')
+                            arrow = pg.ArrowItem(angle=180, tipAngle=60, headLen=10, pen='w', brush='m')
                             arrow.setPos(self.ui.ctpg_xticks[j], price)
                             self.ui.ctpg[i].addItem(arrow)
                     if sell_arrow_list:
@@ -199,6 +214,8 @@ class DrawChart:
                 ymax = self.ui.ctpg_data[fi(factor)].max()
                 ymin = self.ui.ctpg_data[fi(f'{factor}평균')].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 if is_min:
                     self.ui.ctpg[i].addItem(VolumeBarsItem(self.ui.ctpg_arry, [fi('현재가'), fi('분봉시가'), fi(factor)], self.ui.ctpg_xticks))
                 else:
@@ -213,6 +230,8 @@ class DrawChart:
                     ymax = max(self.ui.ctpg_data[fi('초당매수금액')].max(), self.ui.ctpg_data[fi('초당매도금액')].max())
                     ymin = min(self.ui.ctpg_data[fi('초당매수금액')].min(), self.ui.ctpg_data[fi('초당매도금액')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 if is_min:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('분당매도금액')]:], y=self.ui.ctpg_data[fi('분당매도금액')], pen=(100, 100, 200))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('분당매수금액')]:], y=self.ui.ctpg_data[fi('분당매수금액')], pen=(200, 100, 100))
@@ -224,6 +243,8 @@ class DrawChart:
                 ymax = max(self.ui.ctpg_data[fi('당일매수금액')].max(), self.ui.ctpg_data[fi('당일매도금액')].max())
                 ymin = min(self.ui.ctpg_data[fi('당일매수금액')].min(), self.ui.ctpg_data[fi('당일매도금액')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('당일매도금액')]:], y=self.ui.ctpg_data[fi('당일매도금액')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('당일매수금액')]:], y=self.ui.ctpg_data[fi('당일매수금액')], pen=(200, 100, 100))
 
@@ -231,6 +252,8 @@ class DrawChart:
                 ymax = max(self.ui.ctpg_data[fi('최고매수금액')].max(), self.ui.ctpg_data[fi('최고매도금액')].max())
                 ymin = min(self.ui.ctpg_data[fi('최고매수금액')].min(), self.ui.ctpg_data[fi('최고매도금액')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매도금액')]:], y=self.ui.ctpg_data[fi('최고매도금액')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매수금액')]:], y=self.ui.ctpg_data[fi('최고매수금액')], pen=(200, 100, 100))
 
@@ -238,6 +261,8 @@ class DrawChart:
                 ymax = max(self.ui.ctpg_data[fi('최고매수가격')].max(), self.ui.ctpg_data[fi('최고매도가격')].max())
                 ymin = min(self.ui.ctpg_data[fi('최고매수가격')].min(), self.ui.ctpg_data[fi('최고매도가격')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매도가격')]:], y=self.ui.ctpg_data[fi('최고매도가격')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매수가격')]:], y=self.ui.ctpg_data[fi('최고매수가격')], pen=(200, 100, 100))
 
@@ -245,6 +270,8 @@ class DrawChart:
                 ymax = max(self.ui.ctpg_data[fi('체결강도')].max(), self.ui.ctpg_data[fi('최고체결강도')].max())
                 ymin = min(self.ui.ctpg_data[fi('체결강도')].min(), self.ui.ctpg_data[fi('최저체결강도')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 100))
@@ -258,6 +285,8 @@ class DrawChart:
                     ymax = max(self.ui.ctpg_data[fi('초당매수수량')].max(), self.ui.ctpg_data[fi('초당매도수량')].max())
                     ymin = min(self.ui.ctpg_data[fi('초당매수수량')].min(), self.ui.ctpg_data[fi('초당매도수량')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 if is_min:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('분당매도수량')]:], y=self.ui.ctpg_data[fi('분당매도수량')], pen=(100, 100, 200))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('분당매수수량')]:], y=self.ui.ctpg_data[fi('분당매수수량')], pen=(200, 100, 100))
@@ -269,6 +298,8 @@ class DrawChart:
                 ymax = max(self.ui.ctpg_data[fi('매수총잔량')].max(), self.ui.ctpg_data[fi('매도총잔량')].max())
                 ymin = min(self.ui.ctpg_data[fi('매수총잔량')].min(), self.ui.ctpg_data[fi('매도총잔량')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('매수총잔량')]:], y=self.ui.ctpg_data[fi('매수총잔량')], pen=(200, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('매도총잔량')]:], y=self.ui.ctpg_data[fi('매도총잔량')], pen=(100, 100, 200))
 
@@ -276,6 +307,8 @@ class DrawChart:
                 ymax = max(self.ui.ctpg_data[fi('매수잔량1')].max(), self.ui.ctpg_data[fi('매도잔량1')].max())
                 ymin = min(self.ui.ctpg_data[fi('매수잔량1')].min(), self.ui.ctpg_data[fi('매도잔량1')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('매수잔량1')]:], y=self.ui.ctpg_data[fi('매수잔량1')], pen=(200, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('매도잔량1')]:], y=self.ui.ctpg_data[fi('매도잔량1')], pen=(100, 100, 200))
 
@@ -287,6 +320,8 @@ class DrawChart:
                     ymax = max(self.ui.ctpg_data[fi('누적초당매수수량')].max(), self.ui.ctpg_data[fi('누적초당매도수량')].max())
                     ymin = min(self.ui.ctpg_data[fi('누적초당매수수량')].min(), self.ui.ctpg_data[fi('누적초당매도수량')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 if is_min:
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('누적분당매도수량')]:], y=self.ui.ctpg_data[fi('누적분당매도수량')], pen=(100, 100, 200))
                     self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('누적분당매수수량')]:], y=self.ui.ctpg_data[fi('누적분당매수수량')], pen=(200, 100, 100))
@@ -298,6 +333,8 @@ class DrawChart:
                 ymax = self.ui.ctpg_data[fi('AROONU')].max()
                 ymin = self.ui.ctpg_data[fi('AROOND')].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('AROOND')]:], y=self.ui.ctpg_data[fi('AROOND')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('AROONU')]:], y=self.ui.ctpg_data[fi('AROONU')], pen=(100, 200, 100))
 
@@ -305,6 +342,8 @@ class DrawChart:
                 ymax = max(self.ui.ctpg_data[fi('BBU')].max(), self.ui.ctpg_data[fi('현재가')].max())
                 ymin = min(self.ui.ctpg_data[fi('BBL')].min(), self.ui.ctpg_data[fi('현재가')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('BBM')]:], y=self.ui.ctpg_data[fi('BBM')], pen=(100, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('BBL')]:], y=self.ui.ctpg_data[fi('BBL')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('BBU')]:], y=self.ui.ctpg_data[fi('BBU')], pen=(100, 200, 100))
@@ -314,6 +353,8 @@ class DrawChart:
                 ymax = self.ui.ctpg_data[fi('DIP')].max()
                 ymin = self.ui.ctpg_data[fi('DIM')].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('DIM')]:], y=self.ui.ctpg_data[fi('DIM')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('DIP')]:], y=self.ui.ctpg_data[fi('DIP')], pen=(100, 200, 100))
 
@@ -321,6 +362,8 @@ class DrawChart:
                 ymax = max(self.ui.ctpg_data[fi('MACD')].max(), self.ui.ctpg_data[fi('MACDS')].max(), self.ui.ctpg_data[fi('MACDH')].max())
                 ymin = min(self.ui.ctpg_data[fi('MACD')].min(), self.ui.ctpg_data[fi('MACDS')].min(), self.ui.ctpg_data[fi('MACDH')].min())
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('MACD')]:], y=self.ui.ctpg_data[fi('MACD')], pen=(100, 100, 100))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('MACDH')]:], y=self.ui.ctpg_data[fi('MACDH')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('MACDS')]:], y=self.ui.ctpg_data[fi('MACDS')], pen=(100, 200, 100))
@@ -329,12 +372,16 @@ class DrawChart:
                 ymax = self.ui.ctpg_data[fi('STOCHSD')].max()
                 ymin = self.ui.ctpg_data[fi('STOCHSK')].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('STOCHSD')]:], y=self.ui.ctpg_data[fi('STOCHSD')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('STOCHSK')]:], y=self.ui.ctpg_data[fi('STOCHSK')], pen=(100, 200, 100))
 
             elif factor == 'STOCHF':
                 ymax = self.ui.ctpg_data[fi('STOCHFD')].max()
                 ymin = self.ui.ctpg_data[fi('STOCHFK')].min()
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('STOCHFD')]:], y=self.ui.ctpg_data[fi('STOCHFD')], pen=(100, 100, 200))
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('STOCHFK')]:], y=self.ui.ctpg_data[fi('STOCHFK')], pen=(100, 200, 100))
@@ -349,6 +396,8 @@ class DrawChart:
                 ymax = self.ui.ctpg_data[fi(factor)].max()
                 ymin = self.ui.ctpg_data[fi(factor)].min()
                 if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi(factor)]:], y=self.ui.ctpg_data[fi(factor)], pen=pen)
 
             if self.ui.ct_checkBoxxxxx_02.isChecked():
@@ -402,6 +451,77 @@ class DrawChart:
 
         if self.ui.dialog_hoga.isVisible() and self.ui.hg_labellllllll_01.text():
             self.ui.hgButtonClicked_02('매수')
+
+    def fm_draw(self, i, factor_fm_values, fm_index):
+        style_angle = {
+            6: 90,
+            7: -90,
+            8: 180,
+            9: 0
+        }
+        for name, _, _, data_type, color, width, style, _ in factor_fm_values:
+            if data_type in ('선:일반', '선:조건'):
+                arry = self.ui.ctpg_data[fm_index[name]]
+                self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks, y=arry, pen=pg.mkPen(color, width=width, style=style))
+
+            elif data_type == '화살표:일반':
+                arry = self.ui.ctpg_data[fm_index[name]]
+                arrow_data = [(j, price) for j, price in enumerate(arry) if price > 0]
+                for j, price in arrow_data:
+                    arrow = pg.ArrowItem(angle=style_angle[style], tipAngle=60, headLen=width, pen='w', brush=color)
+                    arrow.setPos(self.ui.ctpg_xticks[j], price)
+                    self.ui.ctpg[i].addItem(arrow)
+
+            elif data_type == '화살표:매매':
+                buy_arry  = self.ui.ctpg_data[fm_index[name]]
+                sell_arry = self.ui.ctpg_data[fm_index[name] + 1]
+                buy_arrow_data  = [(j, price) for j, price in enumerate(buy_arry) if price > 0]
+                sell_arrow_data = [(j, price) for j, price in enumerate(sell_arry) if price > 0]
+                for j, price in buy_arrow_data:
+                    arrow = pg.ArrowItem(angle=180, tipAngle=60, headLen=10, pen='w', brush='r')
+                    arrow.setPos(self.ui.ctpg_xticks[j], price)
+                    self.ui.ctpg[i].addItem(arrow)
+                for j, price in sell_arrow_data:
+                    arrow = pg.ArrowItem(angle=0, tipAngle=60, headLen=10, pen='w', brush='b')
+                    arrow.setPos(self.ui.ctpg_xticks[j], price)
+                    self.ui.ctpg[i].addItem(arrow)
+
+            else:
+                arry = self.ui.ctpg_data[fm_index[name]]
+                valid_points = []
+                for j, data in enumerate(arry):
+                    if data > 0:
+                        up   = self.ui.ctpg_data[fm_index[name] + 1][j]
+                        down = self.ui.ctpg_data[fm_index[name] + 2][j]
+                        valid_points.append((j, self.ui.ctpg_xticks[j], up, down))
+                if len(valid_points) > 1:
+                    segments = []
+                    current_segment = [valid_points[0]]
+                    for j in range(1, len(valid_points)):
+                        prev_idx = valid_points[j-1][0]
+                        curr_idx = valid_points[j][0]
+                        if curr_idx - prev_idx > 1:
+                            if len(current_segment) > 1:
+                                segments.append(current_segment)
+                            current_segment = [valid_points[j]]
+                        else:
+                            current_segment.append(valid_points[j])
+                    if len(current_segment) > 1:
+                        segments.append(current_segment)
+
+                    for segment in segments:
+                        if len(segment) < 2:
+                            continue
+                        x_data = [point[1] for point in segment]
+                        up_data = [point[2] for point in segment]
+                        down_data = [point[3] for point in segment]
+                        upper_curve = pg.PlotDataItem(x=x_data, y=up_data)
+                        lower_curve = pg.PlotDataItem(x=x_data, y=down_data)
+                        color_with_alpha = QColor(color)
+                        color_with_alpha.setAlpha(100)
+                        fill_item = pg.FillBetweenItem(upper_curve, lower_curve, brush=color_with_alpha)
+                        fill_item.setZValue(1000)
+                        self.ui.ctpg[i].addItem(fill_item)
 
     @thread_decorator
     def KiwoomHTSChart(self, code, date):

@@ -45,7 +45,7 @@ class CandlestickItem(pg.GraphicsObject):
 
     def CandleSticks(self, ar, num, xticks, gubun):
         p = QPainter(self.picture)
-        w = (xticks[1] - xticks[0]) / 3
+        w = min((xticks[1] - xticks[0]) / 3, (xticks[2] - xticks[1]) / 3)
         count = len(ar)
         if gubun == 0:
             for i in range(count):
@@ -129,7 +129,7 @@ class VolumeBarsItem(pg.GraphicsObject):
 
     def MoneyBars(self, ar, num, xticks, gubun):
         p = QPainter(self.picture)
-        w = (xticks[1] - xticks[0]) / 3
+        w = min((xticks[1] - xticks[0]) / 3, (xticks[2] - xticks[1]) / 3)
         count = len(ar)
         if gubun == 0:
             for i in range(count):

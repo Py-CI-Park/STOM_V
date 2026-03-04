@@ -35,8 +35,8 @@ style_bc_sl  = 'QPushButton{background-color: rgb(100, 100, 150);border-style: s
 style_bc_bs  = 'QPushButton{background-color: rgb(80, 130, 80);border-style: solid;border-width: 1px;border-color: rgb(80, 130, 80);} QPushButton:hover{background-color: rgb(100, 150, 100);}'
 style_bc_bd  = 'QPushButton{background-color: rgb(30, 80, 30);border-style: solid;border-width: 1px;border-color: rgb(30, 80, 30);} QPushButton:hover{background-color: rgb(50, 100, 50);}'
 style_ck_bx  = 'QCheckBox::indicator {width: 15px; height: 15px;}' \
-               'QCheckBox::indicator::unchecked {image: url(icon/unchecked.png);}' \
-               'QCheckBox::indicator::checked {image: url(icon/checked.png);}'
+               'QCheckBox::indicator::unchecked {image: url(ui/icon/unchecked.png);}' \
+               'QCheckBox::indicator::checked {image: url(ui/icon/checked.png);}'
 
 style_st_ss = 'QPushButton{background-color: rgb(60, 60, 80);border-style: solid;border-width: 1px;border-color: rgb(60, 60, 80);} QPushButton:hover{background-color: rgb(80, 80, 100);}'
 style_st_su = 'QPushButton{background-color: rgb(70, 70, 90);border-style: solid;border-width: 1px;border-color: rgb(70, 70, 90);} QPushButton:hover{background-color: rgb(90, 90, 110);}'

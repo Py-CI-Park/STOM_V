@@ -2,12 +2,12 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from multiprocessing import Process
-from backtester.optimiz import Optimize
-from backtester.backtest import BackTest
-from backtester.backfinder import BackFinder
-from backtester.optimiz_conditions import OptimizeConditions
-from backtester.rolling_walk_forward_test import RollingWalkForwardTest
-from backtester.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
+from backtest.optimiz import Optimize
+from backtest.backtest import BackTest
+from backtest.backfinder import BackFinder
+from backtest.optimiz_conditions import OptimizeConditions
+from backtest.rolling_walk_forward_test import RollingWalkForwardTest
+from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from ui.set_style import style_bc_by, style_bc_dk, style_bc_bs, style_bc_bd
 from ui.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condtext, cedittxt, example_finder, \
     example_finder_future

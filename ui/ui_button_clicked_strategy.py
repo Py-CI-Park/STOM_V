@@ -81,9 +81,10 @@ def button_clicked_strategy_save(ui):
         return
 
     if ui.proc_query.is_alive():
-        ui.queryQ.put(('전략디비', f"DELETE FROM custombutton WHERE `index` = {ui.stg_btn_number}"))
-        df = pd.DataFrame({'버튼명': [stg_name], '전략코드': [stg_text]}, index=[ui.stg_btn_number])
-        ui.queryQ.put(('전략디비', df, 'custombutton', 'append'))
+        delete_query = f"DELETE FROM custombutton WHERE `index` = {ui.stg_btn_number}"
+        insert_query = f"INSERT INTO custombutton (`index`, 버튼명, 전략코드) VALUES ({ui.stg_btn_number}, '{stg_name}', '{stg_text}')"
+        ui.queryQ.put(('전략디비', delete_query))
+        ui.queryQ.put(('전략디비', insert_query))
         ui.dict_stg_btn[ui.stg_btn_number] = stg_text
         if ui.stg_btn_number <= 205:
             ui.dialog_strategy.focusWidget().setText(stg_name)
