@@ -9,10 +9,10 @@ from utility.static import read_key, de_text, get_logger
 logger_             = get_logger('Setting')
 EN_KEY              = read_key()
 OPENAPI_PATH        = 'C:/OpenAPI'
-ICON_PATH           = './icon'
-LOGIN_PATH          = './stock/login_kiwoom'
-GRAPH_PATH          = './backtester/graph'
-BACK_TEMP           = './backtester/temp'
+ICON_PATH           = './ui/icon'
+LOGIN_PATH          = './trade/stock_korea/login_kiwoom'
+GRAPH_PATH          = './backtest/graph'
+BACK_TEMP           = './backtest/temp'
 DB_PATH             = './_database'
 DB_SETTING          = './_database/setting.db'
 DB_BACKTEST         = './_database/backtest.db'

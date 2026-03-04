@@ -2,6 +2,7 @@
 import os
 import random
 import shutil
+import subprocess
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox, QLineEdit
 from ui.set_style import style_bc_bt
@@ -255,6 +256,7 @@ def setting_save_01(ui):
         ui.queryQ.put(('설정디비', query))
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
+    prev_market = ui.dict_set['증권사']
     ui.dict_set['증권사'] = sg
     ui.dict_set['주식에이전트'] = sr
     ui.dict_set['주식트레이더'] = st
@@ -278,6 +280,15 @@ def setting_save_01(ui):
     else:
         ui.sj_coin_labell_03.setText(
             '종목당투자금                          USDT                                   전략중지 및 잔고청산   |')
+
+    if prev_market[:4] != sg[:4]:
+        if ui.proc_manager.poll() is None:
+            ui.proc_manager.kill()
+        if '키움증권' in sg:
+            ui.proc_manager = subprocess.Popen(f'python32 ./trade/stock_korea/kiwoom_manager.py {ui.port_num}')
+        else:
+            ui.proc_manager = subprocess.Popen(f'python32 ./trade/future_oversea/future_manager.py {ui.port_num}')
+
     ui.UpdateDictSet()
 
 
@@ -1232,6 +1243,7 @@ def setting_order_save_04(ui):
         ui.dict_set['코인매도정정횟수'] = bb5
         ui.dict_set['코인매도정정호가차이'] = bb5c
         ui.dict_set['코인매도정정호가'] = bb5h
+        ui.UpdateDictSet()
 
 
 def setting_all_load(ui):

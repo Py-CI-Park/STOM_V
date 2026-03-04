@@ -3,25 +3,25 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue, Value, Lock
-from backtester.back_subtotal import BackSubTotal
-from backtester.back_code_test import BackCodeTest
-from backtester.back_static import GetMoneytopQuery
-from backtester.backengine_kiwoom_tick import BackEngineKiwoomTick
-from backtester.backengine_kiwoom_tick2 import BackEngineKiwoomTick2
-from backtester.backengine_kiwoom_min import BackEngineKiwoomMin
-from backtester.backengine_kiwoom_min2 import BackEngineKiwoomMin2
-from backtester.backengine_future_tick import BackEngineFutureTick
-from backtester.backengine_future_tick2 import BackEngineFutureTick2
-from backtester.backengine_future_min import BackEngineFutureMin
-from backtester.backengine_future_min2 import BackEngineFutureMin2
-from backtester.backengine_upbit_tick import BackEngineUpbitTick
-from backtester.backengine_upbit_tick2 import BackEngineUpbitTick2
-from backtester.backengine_upbit_min import BackEngineUpbitMin
-from backtester.backengine_upbit_min2 import BackEngineUpbitMin2
-from backtester.backengine_binance_tick import BackEngineBinanceTick
-from backtester.backengine_binance_tick2 import BackEngineBinanceTick2
-from backtester.backengine_binance_min import BackEngineBinanceMin
-from backtester.backengine_binance_min2 import BackEngineBinanceMin2
+from backtest.back_subtotal import BackSubTotal
+from backtest.back_code_test import BackCodeTest
+from backtest.back_static import GetMoneytopQuery
+from backtest.backengine_kiwoom_tick import BackEngineKiwoomTick
+from backtest.backengine_kiwoom_tick2 import BackEngineKiwoomTick2
+from backtest.backengine_kiwoom_min import BackEngineKiwoomMin
+from backtest.backengine_kiwoom_min2 import BackEngineKiwoomMin2
+from backtest.backengine_future_tick import BackEngineFutureTick
+from backtest.backengine_future_tick2 import BackEngineFutureTick2
+from backtest.backengine_future_min import BackEngineFutureMin
+from backtest.backengine_future_min2 import BackEngineFutureMin2
+from backtest.backengine_upbit_tick import BackEngineUpbitTick
+from backtest.backengine_upbit_tick2 import BackEngineUpbitTick2
+from backtest.backengine_upbit_min import BackEngineUpbitMin
+from backtest.backengine_upbit_min2 import BackEngineUpbitMin2
+from backtest.backengine_binance_tick import BackEngineBinanceTick
+from backtest.backengine_binance_tick2 import BackEngineBinanceTick2
+from backtest.backengine_binance_min import BackEngineBinanceMin
+from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
 from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec
 from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
@@ -297,6 +297,15 @@ def back_code_test3(ui, gubun, conds_code, testQ):
     thread.start()
     thread.wait()
     return get_code_test_result(ui, '조건', testQ)
+
+
+def formula_code_test(ui, stg, testQ):
+    while not testQ.empty():
+        testQ.get()
+    thread = BackCodeTest(testQ, stg)
+    thread.start()
+    thread.wait()
+    return get_code_test_result(ui, '수식', testQ)
 
 
 def get_code_test_result(ui, gubun, testQ):

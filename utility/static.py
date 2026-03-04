@@ -191,13 +191,6 @@ def str_hms(std_time=None):
         return strf_time('%H%M%S')
 
 
-def int_hms(std_time=None):
-    if std_time is not None:
-        return int(strf_time('%H%M%S', std_time))
-    else:
-        return int(strf_time('%H%M%S'))
-
-
 def str_hms_cme_from_str(std_hms=None):
     if std_hms is not None:
         std_time = timedelta_sec(time_gap, dt_hms(std_hms))
@@ -357,33 +350,18 @@ def comma2float(t):
 
 def write_key():
     key = str(Fernet.generate_key(), 'utf-8')
-    last_exception = None
-    for root in (reg.HKEY_LOCAL_MACHINE, reg.HKEY_CURRENT_USER):
-        try:
-            reg.CreateKey(root, r'SOFTWARE\WOW6432Node\STOM')
-            reg.CreateKey(root, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
-            openkey = reg.OpenKey(root, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_SET_VALUE)
-            reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
-            reg.CloseKey(openkey)
-            return
-        except Exception as e:
-            last_exception = e
-    if last_exception is not None:
-        raise last_exception
+    reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM')
+    reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
+    openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
+    reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
+    reg.CloseKey(openkey)
 
 
 def read_key():
-    last_exception = None
-    for root in (reg.HKEY_LOCAL_MACHINE, reg.HKEY_CURRENT_USER):
-        try:
-            openkey = reg.OpenKey(root, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_READ)
-            key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
-            reg.CloseKey(openkey)
-            return key
-        except Exception as e:
-            last_exception = e
-    if last_exception is not None:
-        raise last_exception
+    openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
+    key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
+    reg.CloseKey(openkey)
+    return key
 
 
 def en_text(key, text):

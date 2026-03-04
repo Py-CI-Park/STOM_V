@@ -37,9 +37,10 @@ def coin_sell_stg_save(ui):
         if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(
                 strategy):
             if ui.proc_query.is_alive():
-                ui.queryQ.put(('전략디비', f"DELETE FROM coinsell WHERE `index` = '{strategy_name}'"))
-                df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                ui.queryQ.put(('전략디비', df, 'coinsell', 'append'))
+                delete_query = f"DELETE FROM coinsell WHERE `index` = '{strategy_name}'"
+                insert_query = f"INSERT INTO coinsell (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                ui.queryQ.put(('전략디비', delete_query))
+                ui.queryQ.put(('전략디비', insert_query))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
             ui.cvjs_pushButon_04.setStyleSheet(style_bc_st)
 

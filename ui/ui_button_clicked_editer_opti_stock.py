@@ -45,11 +45,11 @@ def stock_opti_buy_save(ui):
                 df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'")
                 if ui.proc_query.is_alive():
                     if len(df) > 0:
-                        query = f'UPDATE {gubun}optibuy SET 전략코드 = "{strategy}" WHERE `index` = "{strategy_name}"'
-                        ui.queryQ.put(('전략디비', query))
+                        update_query = f'UPDATE {gubun}optibuy SET 전략코드 = "{strategy}" WHERE `index` = "{strategy_name}"'
+                        ui.queryQ.put(('전략디비', update_query))
                     else:
-                        df = pd.DataFrame([[strategy, '']], columns=['전략코드', '변수값'], index=[strategy_name])
-                        ui.queryQ.put(('전략디비', df, f'{gubun}optibuy', 'append'))
+                        insert_query = f"INSERT INTO {gubun}optibuy (`index`, 전략코드, 변수값) VALUES ('{strategy_name}', '{strategy}, '')"
+                        ui.queryQ.put(('전략디비', insert_query))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -81,9 +81,10 @@ def stock_opti_vars_save(ui):
             if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy):
                 if ui.proc_query.is_alive():
                     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                    ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}optivars WHERE `index` = '{strategy_name}'"))
-                    df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                    ui.queryQ.put(('전략디비', df, f'{gubun}optivars', 'append'))
+                    delete_query = f"DELETE FROM {gubun}optivars WHERE `index` = '{strategy_name}'"
+                    insert_query = f"INSERT INTO {gubun}optivars (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                    ui.queryQ.put(('전략디비', delete_query))
+                    ui.queryQ.put(('전략디비', insert_query))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -118,9 +119,10 @@ def stock_opti_sell_save(ui):
                     QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
                 if ui.proc_query.is_alive():
                     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                    ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}optisell WHERE `index` = '{strategy_name}'"))
-                    df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                    ui.queryQ.put(('전략디비', df, f'{gubun}optisell', 'append'))
+                    delete_query = f"DELETE FROM {gubun}optisell WHERE `index` = '{strategy_name}'"
+                    insert_query = f"INSERT INTO {gubun}optisell (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                    ui.queryQ.put(('전략디비', delete_query))
+                    ui.queryQ.put(('전략디비', insert_query))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -192,9 +194,10 @@ def stock_opti_to_buy_save(ui):
         return
 
     if ui.proc_query.is_alive():
-        ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}buy WHERE `index` = '{name}'"))
-        df = pd.DataFrame({'전략코드': [stg]}, index=[name])
-        ui.queryQ.put(('전략디비', df, f'{gubun}buy', 'append'))
+        delete_query = f"DELETE FROM {gubun}buy WHERE `index` = '{name}'"
+        insert_query = f"INSERT INTO {gubun}buy (`index`, 전략코드) VALUES ('{name}', '{stg}')"
+        ui.queryQ.put(('전략디비', delete_query))
+        ui.queryQ.put(('전략디비', insert_query))
         QMessageBox.information(ui, '저장 알림', '최적값으로 매수전략을 저장하였습니다.\n')
 
 
@@ -227,9 +230,10 @@ def stock_opti_to_sell_save(ui):
         return
 
     if ui.proc_query.is_alive():
-        ui.queryQ.put(('전략디비', f"DELETE FROM {gubun}sell WHERE `index` = '{name}'"))
-        df = pd.DataFrame({'전략코드': [stg]}, index=[name])
-        ui.queryQ.put(('전략디비', df, f'{gubun}sell', 'append'))
+        delete_query = f"DELETE FROM {gubun}sell WHERE `index` = '{name}'"
+        insert_query = f"INSERT INTO {gubun}sell (`index`, 전략코드) VALUES ('{name}', '{stg}')"
+        ui.queryQ.put(('전략디비', delete_query))
+        ui.queryQ.put(('전략디비', insert_query))
         QMessageBox.information(ui, '저장 알림', '최적값으로 매도전략을 저장하였습니다.\n')
 
 

@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QMessageBox, QPushButton
 from ui.set_text import famous_saying
 from utility.static import qtest_qwait, strf_time
 from utility.setting import columns_nt, ui_num, columns_nd
-from backtester.back_static import RunOptunaServer
+from backtest.back_static import RunOptunaServer
 
 
 # noinspection PyUnusedLocal

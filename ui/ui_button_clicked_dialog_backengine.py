@@ -1,15 +1,14 @@
 
 import os
 import random
-import pandas as pd
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import QLineEdit, QMessageBox, QApplication
 from multiprocessing import Process, shared_memory
-from backtester.optimiz import Optimize
-from backtester.backtest import BackTest
-from backtester.optimiz_conditions import OptimizeConditions
-from backtester.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
-from backtester.rolling_walk_forward_test import RollingWalkForwardTest
+from backtest.optimiz import Optimize
+from backtest.backtest import BackTest
+from backtest.optimiz_conditions import OptimizeConditions
+from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
+from backtest.rolling_walk_forward_test import RollingWalkForwardTest
 from ui.set_text import famous_saying
 from utility.setting import ui_num
 from utility.static import qtest_qwait
@@ -603,7 +602,8 @@ def sdbutton_clicked_05(ui):
         schedule += ui.sd_oclineEdittt_02.text() + ';'
         schedule += ui.sd_oclineEdittt_03.text()
         if ui.proc_query.is_alive():
-            ui.queryQ.put(('전략디비', f"DELETE FROM schedule WHERE `index` = '{schedule_name}'"))
-            df = pd.DataFrame({'스케쥴': [schedule]}, index=[schedule_name])
-            ui.queryQ.put(('전략디비', df, 'schedule', 'append'))
+            delete_query = f"DELETE FROM schedule WHERE `index` = '{schedule_name}'"
+            insert_query = f"INSERT INTO schedule (`index`, 스케쥴) VALUES ('{schedule_name}', '{schedule}')"
+            ui.queryQ.put(('전략디비', delete_query))
+            ui.queryQ.put(('전략디비', insert_query))
         QMessageBox.information(ui.dialog_scheduler, '저장 완료', random.choice(famous_saying))

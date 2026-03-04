@@ -4,16 +4,16 @@ import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
 from multiprocessing import Process
-from coin.binance_trader import BinanceTrader
-from coin.binance_receiver_min import BinanceReceiverMin
-from coin.binance_strategy_min import BinanceStrategyMin
-from coin.binance_receiver_tick import BinanceReceiverTick
-from coin.binance_strategy_tick import BinanceStrategyTick
-from coin.upbit_trader import UpbitTrader
-from coin.upbit_receiver_min import UpbitReceiverMin
-from coin.upbit_strategy_min import UpbitStrategyMin
-from coin.upbit_receiver_tick import UpbitReceiverTick
-from coin.upbit_strategy_tick import UpbitStrategyTick
+from trade.binance.binance_trader import BinanceTrader
+from trade.binance.binance_receiver_min import BinanceReceiverMin
+from trade.binance.binance_strategy_min import BinanceStrategyMin
+from trade.binance.binance_receiver_tick import BinanceReceiverTick
+from trade.binance.binance_strategy_tick import BinanceStrategyTick
+from trade.upbit.upbit_trader import UpbitTrader
+from trade.upbit.upbit_receiver_min import UpbitReceiverMin
+from trade.upbit.upbit_strategy_min import UpbitStrategyMin
+from trade.upbit.upbit_receiver_tick import UpbitReceiverTick
+from trade.upbit.upbit_strategy_tick import UpbitStrategyTick
 from ui.set_style import style_bc_bt, style_bc_bb
 from utility.setting import GRAPH_PATH, ui_num
 from utility.static import qtest_qwait, cme_normal_open

@@ -75,17 +75,17 @@ class TelegramBot:
             cmd = cmd.replace('      ', '')
 
         if cmd in ('주식전략중지', '해선전략중지'):
-            self.wdzservQ.put(('strategy', '매수전략중지'))
+            self.wdzservQ.put(('analyzer', '매수전략중지'))
         elif cmd == '코인전략중지':
             self.cstgQ.put('매수전략중지')
         elif '라이브' in cmd:
             self.windowQ.put(cmd)
         elif '주식' in cmd:
             cmd = cmd.replace('주식', '')
-            self.wdzservQ.put(('trader', cmd))
+            self.wdzservQ.put(('trade', cmd))
         elif '해선' in cmd:
             cmd = cmd.replace('해선', '')
-            self.wdzservQ.put(('trader', cmd))
+            self.wdzservQ.put(('trade', cmd))
         elif '코인' in cmd:
             cmd = cmd.replace('코인', '')
             self.ctraderQ.put(cmd)
@@ -103,7 +103,7 @@ class TelegramBot:
                     await self.send_photo(data)
                 else:
                     await self.send_message(data)
-            elif data.__class__ == pd.DataFrame:
+            elif isinstance(data, pd.DataFrame):
                 text = self.GetTextFromDataframe(data)
                 await self.send_message(text)
             self.message_queue.task_done()
@@ -111,7 +111,7 @@ class TelegramBot:
     def moniter_queue2(self):
         while not self.running:
             data = self.teleQ.get()
-            if data.__class__ in (str, pd.DataFrame):
+            if isinstance(data, (str, pd.DataFrame)):
                 self.logger.error('텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다')
 
     @staticmethod

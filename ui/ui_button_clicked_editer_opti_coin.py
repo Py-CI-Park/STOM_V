@@ -43,11 +43,11 @@ def coin_opti_buy_save(ui):
                 df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'")
                 if ui.proc_query.is_alive():
                     if len(df) > 0:
-                        query = f'UPDATE coinoptibuy SET 전략코드 = "{strategy}" WHERE `index` = "{strategy_name}"'
-                        ui.queryQ.put(('전략디비', query))
+                        update_query = f'UPDATE coinoptibuy SET 전략코드 = "{strategy}" WHERE `index` = "{strategy_name}"'
+                        ui.queryQ.put(('전략디비', update_query))
                     else:
-                        df = pd.DataFrame([[strategy, '']], columns=['전략코드', '변수값'], index=[strategy_name])
-                        ui.queryQ.put(('전략디비', df, 'coinoptibuy', 'append'))
+                        insert_query = f"INSERT INTO coinoptibuy (`index`, 전략코드, 변수값) VALUES ('{strategy_name}', '{strategy}, '')"
+                        ui.queryQ.put(('전략디비', insert_query))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -77,9 +77,10 @@ def coin_opti_vars_save(ui):
         else:
             if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy):
                 if ui.proc_query.is_alive():
-                    ui.queryQ.put(('전략디비', f"DELETE FROM coinoptivars WHERE `index` = '{strategy_name}'"))
-                    df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                    ui.queryQ.put(('전략디비', df, 'coinoptivars', 'append'))
+                    delete_query = f"DELETE FROM coinoptivars WHERE `index` = '{strategy_name}'"
+                    insert_query = f"INSERT INTO coinoptivars (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                    ui.queryQ.put(('전략디비', delete_query))
+                    ui.queryQ.put(('전략디비', insert_query))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -112,9 +113,10 @@ def coin_opti_sell_save(ui):
             if 'self.tickcols' in strategy or (
                     QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
                 if ui.proc_query.is_alive():
-                    ui.queryQ.put(('전략디비', f"DELETE FROM coinoptisell WHERE `index` = '{strategy_name}'"))
-                    df = pd.DataFrame({'전략코드': [strategy]}, index=[strategy_name])
-                    ui.queryQ.put(('전략디비', df, 'coinoptisell', 'append'))
+                    delete_query = f"DELETE FROM coinoptisell WHERE `index` = '{strategy_name}'"
+                    insert_query = f"INSERT INTO coinoptisell (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                    ui.queryQ.put(('전략디비', delete_query))
+                    ui.queryQ.put(('전략디비', insert_query))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -191,9 +193,10 @@ def coin_opti_to_buy_save(ui):
         return
 
     if ui.proc_query.is_alive():
-        ui.queryQ.put(('전략디비', f"DELETE FROM coinbuy WHERE `index` = '{name}'"))
-        df = pd.DataFrame({'전략코드': [stg]}, index=[name])
-        ui.queryQ.put(('전략디비', df, 'coinbuy', 'append'))
+        delete_query = f"DELETE FROM coinbuy WHERE `index` = '{name}'"
+        insert_query = f"INSERT INTO coinbuy (`index`, 전략코드) VALUES ('{name}', '{stg}')"
+        ui.queryQ.put(('전략디비', delete_query))
+        ui.queryQ.put(('전략디비', insert_query))
         QMessageBox.information(ui, '저장 알림', '최적값으로 매수전략을 저장하였습니다.\n')
 
 
@@ -225,9 +228,10 @@ def coin_opti_to_sell_save(ui):
         return
 
     if ui.proc_query.is_alive():
-        ui.queryQ.put(('전략디비', f"DELETE FROM coinsell WHERE `index` = '{name}'"))
-        df = pd.DataFrame({'전략코드': [stg]}, index=[name])
-        ui.queryQ.put(('전략디비', df, 'coinsell', 'append'))
+        delete_query = f"DELETE FROM coinsell WHERE `index` = '{name}'"
+        insert_query = f"INSERT INTO coinsell (`index`, 전략코드) VALUES ('{name}', '{stg}')"
+        ui.queryQ.put(('전략디비', delete_query))
+        ui.queryQ.put(('전략디비', insert_query))
         QMessageBox.information(ui, '저장 알림', '최적값으로 매도전략을 저장하였습니다.\n')
 
 
