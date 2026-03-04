@@ -348,7 +348,7 @@ class MainWindow(QMainWindow):
         self.main_btn = 0
         self.counter  = 0
         self.cpu_per  = 0
-        self.int_time = int_hms()
+        self.int_time = int(str_hms())
         self.wc       = WidgetCreater(self)
 
         SetIcon(self)
