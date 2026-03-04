@@ -18,6 +18,7 @@ from ui.set_main_menu import SetMainMenu
 from ui.set_dialog_etc import SetDialogEtc
 from ui.set_dialog_back import SetDialogBack
 from ui.set_dialog_chart import SetDialogChart
+from ui.set_dialog_formula import SetDialogFormula
 
 from ui.ui_etc import *
 from ui.ui_draw_chart import *
@@ -74,7 +75,7 @@ from utility.query import *
 from utility.static import *
 from utility.setting import *
 from utility.webcrawling import *
-from utility.telegram_msg import *
+from utility.telegram_bot import *
 from utility.database_read_only import DatabaseReadOnly
 from ui.set_dialog_strategy import SetDialogStrategy
 from ui.set_text_stg_button import *
@@ -326,7 +327,6 @@ class MainWindow(QMainWindow):
             self.creceivQ, self.ctraderQ, self.cstgQ, self.liveQ, self.kimpQ, self.wdzservQ, self.totalQ
         ]
 
-        self.proc_tele  = Process(target=TelegramMsg, args=(self.qlist,), daemon=True)
         self.proc_webc  = Process(target=WebCrawling, args=(self.qlist,), daemon=True)
         self.proc_sound = Process(target=Sound, args=(self.qlist,), daemon=True)
         self.proc_query = Process(target=Query, args=(self.qlist,))
@@ -335,7 +335,6 @@ class MainWindow(QMainWindow):
         # STOM Live disabled
         # self.proc_live  = Process(target=LiveClient, args=(self.qlist,), daemon=True)
 
-        self.proc_tele.start()
         self.proc_webc.start()
         self.proc_sound.start()
         self.proc_query.start()
@@ -364,6 +363,7 @@ class MainWindow(QMainWindow):
         SetDialogEtc(self, self.wc)
         SetDialogBack(self, self.wc)
         SetDialogStrategy(self, self.wc)
+        SetDialogFormula(self, self.wc)
 
         con1 = sqlite3.connect(DB_SETTING)
         con2 = sqlite3.connect(DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN)
@@ -546,7 +546,7 @@ class MainWindow(QMainWindow):
             self.windowQ.put((ui_num['S단순텍스트'], text))
         else:
             self.logger.info(f'키움매니저 실행 인터프리터 선택 [{pyexe}]')
-            subprocess.Popen([pyexe, './stock/kiwoom_manager.py', str(port_num)])
+            subprocess.Popen([pyexe, './trade/stock_korea/kiwoom_manager.py', str(port_num)])
 
         self.update_textedit    = UpdateTextedit(self)
         self.update_tablewidget = UpdateTablewidget(self)
@@ -1251,3 +1251,9 @@ class MainWindow(QMainWindow):
     def StrategyCustomBottunSave(self):      button_clicked_strategy_save(self)
     def StrategyCustomButtonShow(self):      strategy_custom_button_show(self)   # set_stg_*_tap.py '추가버튼' 연결
     def StrategyCustomDialogShow(self):      strategy_custom_dialog_show(self)   # ui_button_clicked_strategy.py 내부 호출
+    # =================================================================================================================
+    # Formula Dialog Methods (pyd→py inference from V2.51 set_dialog_formula.py / ui_etc.py)
+    def fmActivated_01(self):                    formula_activated(self)
+    def fmButtonClicked_01(self):                formila_button_clicked(self)
+    def FormulaCodeTest(self, stg):       return formula_code_test(self, stg, self.testQ)
+    def ShowDialogFormula(self):                 show_dialog_formula(self)
