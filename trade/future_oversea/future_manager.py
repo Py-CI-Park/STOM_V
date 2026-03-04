@@ -247,7 +247,7 @@ class FutureManager:
 
     def FutureVersionUp(self):
         while True:
-            proc = subprocess.Popen('python32 ./future/login_future/versionupdater.py')
+            proc = subprocess.Popen('python32 ./trade/future_oversea/login_future/versionupdater.py')
             if self.OpenapiLoginWait(False):
                 break
             else:
