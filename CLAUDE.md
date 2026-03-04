@@ -50,12 +50,18 @@ Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>
 
 ## Project Structure
 
-### Key Directories
-- `ui/` - UI 관련 모듈 (PyQt5)
-- `utility/` - 유틸리티 함수 및 클래스
-- `stock/` - 주식 트레이딩 로직
-- `coin/` - 암호화폐 트레이딩 로직
-- `backtester/` - 백테스팅 엔진
+### Key Directories (V2.51~)
+- `ui/` - UI 관련 모듈 (PyQt5), `ui/icon/` 아이콘 파일
+- `utility/` - 유틸리티 함수 및 클래스, `utility/imagefiles/`, `utility/pycharm/`
+- `trade/stock_korea/` - 주식(키움증권) 트레이딩 로직
+- `trade/binance/` - 바이낸스 암호화폐 트레이딩
+- `trade/upbit/` - 업비트 암호화폐 트레이딩
+- `trade/future_oversea/` - 해외선물 트레이딩
+- `trade/strategy_base.py` - 글로벌 전략 함수 클래스
+- `backtest/` - 백테스팅 엔진
+- `research/deeplearning/` - 딥러닝 모델
+- `research/analyzer/` - 시장 분석기
+- `research/auxiliary_indicator/` - 보조지표
 - `docs/` - 문서
 
 ### Documentation

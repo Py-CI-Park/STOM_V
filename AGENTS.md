@@ -125,7 +125,7 @@ pyd 분석: V{version}에서 ui_mainwindow.pyd {크기변화} →
 
 ---
 
-## 프로젝트 구조
+## 프로젝트 구조 (V2.51~)
 
 ```
 STOM_V/                    (STOM_Version_2U 브랜치)
@@ -134,12 +134,23 @@ STOM_V/                    (STOM_Version_2U 브랜치)
 │   ├── set_dialog_*.py    ← 다이얼로그 초기화 클래스
 │   ├── ui_button_clicked_*.py  ← 버튼 클릭 핸들러
 │   ├── ui_draw_*.py       ← 차트 그리기 클래스
-│   └── ui_update_*.py     ← UI 업데이트 함수
+│   ├── ui_update_*.py     ← UI 업데이트 함수
+│   └── icon/              ← 아이콘 파일
 ├── utility/
-│   └── setting.py         ← 팩터 리스트, 설정값 정의
-├── stock/                 ← 주식 트레이딩 로직
-├── coin/                  ← 암호화폐 트레이딩 로직
-├── backtester/            ← 백테스팅 엔진
+│   ├── setting.py         ← 팩터 리스트, 설정값 정의
+│   ├── imagefiles/        ← 이미지 파일
+│   └── pycharm/           ← PyCharm 설정
+├── trade/
+│   ├── stock_korea/       ← 주식(키움증권) 트레이딩 로직
+│   ├── binance/           ← 바이낸스 암호화폐 트레이딩
+│   ├── upbit/             ← 업비트 암호화폐 트레이딩
+│   ├── future_oversea/    ← 해외선물 트레이딩
+│   └── strategy_base.py   ← 글로벌 전략 함수 클래스
+├── backtest/              ← 백테스팅 엔진
+├── research/
+│   ├── deeplearning/      ← 딥러닝 모델
+│   ├── analyzer/          ← 시장 분석기
+│   └── auxiliary_indicator/ ← 보조지표
 ├── CLAUDE.md              ← Claude 작업 규칙 (pyd→py 규칙 포함)
 └── AGENTS.md              ← AI 에이전트 지침 (이 파일)
 ```
