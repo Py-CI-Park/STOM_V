@@ -20,11 +20,14 @@ import sys
 import sqlite3
 import numpy as np
 import pandas as pd
-import pyqtgraph as pg
-from PyQt5.QtGui import QFont
-from PyQt5.QtCore import QTimer
+try:
+    import pyqtgraph as pg
+    from PyQt5.QtGui import QFont
+    from PyQt5.QtCore import QTimer
+    from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel
+except ImportError:
+    pg = QFont = QTimer = QApplication = QMainWindow = QVBoxLayout = QWidget = QLabel = None
 from collections import defaultdict, deque
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel
 
 # 주식 틱 데이터 칼럼
 list_stock_tick = [

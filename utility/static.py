@@ -10,7 +10,10 @@ import numpy as np
 import winreg as reg
 from talib import stream
 from loguru import logger
-from PyQt5.QtTest import QTest
+try:
+    from PyQt5.QtTest import QTest
+except ImportError:
+    QTest = None
 from traceback import print_exc
 import exchange_calendars as ec
 from threading import Thread, Timer
@@ -308,8 +311,12 @@ def pickle_read(file):
 
 
 def qtest_qwait(sec):
-    # noinspection PyArgumentList
-    QTest.qWait(int(sec * 1000))
+    if QTest is not None:
+        # noinspection PyArgumentList
+        QTest.qWait(int(sec * 1000))
+    else:
+        import time
+        time.sleep(sec)
 
 
 def change_format(text, dotdowndel=False, dotdown4=False, dotdown8=False):

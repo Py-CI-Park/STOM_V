@@ -5,7 +5,10 @@ import yfinance as yf
 from numba import jit
 from traceback import print_exc
 from matplotlib import pyplot as plt
-from optuna_dashboard import run_server
+try:
+    from optuna_dashboard import run_server
+except ImportError:
+    run_server = None
 from matplotlib import font_manager, gridspec
 from utility.setting import ui_num, GRAPH_PATH, DB_OPTUNA
 from utility.static import thread_decorator, dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
@@ -13,6 +16,8 @@ from utility.static import thread_decorator, dt_hms, dt_hm, dt_ymd, dt_ymdhms, d
 
 @thread_decorator
 def RunOptunaServer():
+    if run_server is None:
+        return
     try:
         run_server(DB_OPTUNA)
     except:
