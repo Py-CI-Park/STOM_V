@@ -4,7 +4,6 @@ import sys
 import signal
 import sqlite3
 import atexit
-import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue, Value, Lock
 
@@ -16,7 +15,7 @@ from backtest.backtest import BackTest
 from cli.queue_drain import QueueDrainer
 
 
-# 엔진 import (lazy하지 않고 top-level에서 import — backengine_base.py의 PyQt5 의존성은 Phase 0에서 격리됨)
+# 엔진 import (backengine_base.py의 PyQt5 의존성은 Phase 0에서 격리됨)
 from backtest.backengine_kiwoom_tick import BackEngineKiwoomTick
 from backtest.backengine_kiwoom_tick2 import BackEngineKiwoomTick2
 from backtest.backengine_kiwoom_min import BackEngineKiwoomMin
@@ -41,12 +40,58 @@ def _signal_handler(signum, frame):
     sys.exit(1)
 
 
-signal.signal(signal.SIGINT, _signal_handler)
-signal.signal(signal.SIGTERM, _signal_handler)
+def _register_signals():
+    """시그널 핸들러를 등록한다. 모듈 import 부작용을 방지하기 위해 함수로 분리."""
+    signal.signal(signal.SIGINT, _signal_handler)
+    signal.signal(signal.SIGTERM, _signal_handler)
+    if sys.platform == 'win32':
+        try:
+            signal.signal(signal.SIGBREAK, _signal_handler)
+        except (AttributeError, OSError):
+            pass
+
+
+def _sync_dict_set(config):
+    """CLI config 값을 DICT_SET 전역 설정에 동기화한다.
+
+    BackTest.Start(), BackEngineBase, Total 등 하위 프로세스가
+    DICT_SET를 참조하므로, CLI 인자와 일치시켜야 한다.
+
+    키 이름은 utility/setting.py DICT_SET 정의 및
+    backengine_base.py self.dict_set[] 접근 패턴과 일치해야 한다.
+    """
+    # --- CLI 인자 → DICT_SET 동기화 (정확한 한국어 키 사용) ---
+    DICT_SET['주식타임프레임'] = config.is_tick
+    DICT_SET['증권사'] = '키움증권'
+    DICT_SET['백테주문관리적용'] = config.oms           # backengine_base.py:107
+    DICT_SET['블랙리스트추가'] = config.blacklist       # setting.py:200
+
+    # --- CLI headless 모드 필수 오버라이드 ---
+    DICT_SET['그래프저장하지않기'] = True                # CLI에서 그래프 파일 저장 불필요
+    DICT_SET['그래프띄우지않기'] = True                  # CLI에서 그래프 표시 불가
+    DICT_SET['스톰라이브'] = False                      # CLI에서 라이브 연결 불필요
+
+
+def _drain_queues(queues):
+    """큐 목록의 모든 미소비 메시지를 drain한다.
+
+    Windows에서 프로세스 kill 전 큐를 비우지 않으면
+    파이프 버퍼 데드락이 발생할 수 있다.
+    """
+    for q in queues:
+        while not q.empty():
+            try:
+                q.get_nowait()
+            except Exception:
+                break
 
 
 def run_backtest(config):
     """CLI 백테스트 실행. backengine_start() (ui_backtest_engine.py:77-266) 프로토콜 재구현."""
+
+    _child_procs.clear()
+    _register_signals()
+    _sync_dict_set(config)
 
     result = {
         'status': 'error',
@@ -64,13 +109,16 @@ def run_backtest(config):
     shared_cnt  = Value('i', 0)
     shared_lock = Lock()
 
+    all_queues = [windowQ, backQ, totalQ, soundQ, liveQ, teleQ]
+    back_sques = []
+    back_eques = []
+
     # QueueDrainer 시작 (windowQ → stderr)
     drainer = QueueDrainer(windowQ, verbose=True)
     drainer.start()
 
     try:
         # === Step 2: BackSubTotal 프로세스 생성 (20개) ===
-        back_sques = []
         for i in range(20):
             bctq = Queue()
             back_sques.append(bctq)
@@ -86,7 +134,6 @@ def run_backtest(config):
             windowQ.put((1.4, f'중간집계 프로세스{i + 1} 생성 완료'))
 
         # === Step 3: 엔진 클래스 선택 + 프로세스 생성 ===
-        back_eques = []
         for i in range(config.engine_count):
             beq = Queue()
             back_eques.append(beq)
@@ -111,17 +158,18 @@ def run_backtest(config):
 
         con = sqlite3.connect(db)
         try:
-            df_info = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
-        except Exception:
-            df_info = pd.read_sql('SELECT * FROM codename', con).set_index('index')
-        dict_info = df_info['코스닥'].to_dict()
-        dict_cn   = df_info['종목명'].to_dict()
+            try:
+                df_info = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
+            except Exception:
+                df_info = pd.read_sql('SELECT * FROM codename', con).set_index('index')
+            dict_info = df_info['코스닥'].to_dict()
+            dict_cn   = df_info['종목명'].to_dict()
 
-        # gubun_ = 'S' (주식 전용. 해선/코인 확장 시 'X'로 변경)
-        query = GetMoneytopQuery(config.is_tick, 'S', config.start_date, config.end_date,
-                                 config.start_time, config.end_time)
-        df_mt = pd.read_sql(query, con)
-        con.close()
+            query = GetMoneytopQuery(config.is_tick, 'S', config.start_date, config.end_date,
+                                     config.start_time, config.end_time)
+            df_mt = pd.read_sql(query, con)
+        finally:
+            con.close()
 
         if df_mt is None or df_mt.empty:
             result['message'] = '시작 또는 종료일자가 잘못 선택되었거나 해당 일자에 데이터가 존재하지 않습니다.'
@@ -153,7 +201,7 @@ def run_backtest(config):
         # 데이터 검증 (ui_backtest_engine.py:209-227)
         multi = config.engine_count
         divid_mode = config.divid_mode
-        one_code = ''
+        one_code = config.one_code
 
         if divid_mode == '종목코드별 분류' and len(code_set) < multi:
             result['message'] = '선택한 일자의 종목의 개수가 멀티수보다 작습니다. 일자를 늘리십시오.'
@@ -250,13 +298,17 @@ def run_backtest(config):
         _child_procs.append(proc_backtest)
 
         # === Step 7: 완료 대기 + 결과 수집 ===
-        proc_backtest.join()
+        timeout = getattr(config, 'timeout', 3600) or 3600
+        proc_backtest.join(timeout=timeout)
+
+        if proc_backtest.is_alive():
+            proc_backtest.kill()
+            proc_backtest.join(timeout=5)
+            result['status'] = 'error'
+            result['message'] = f'백테스트 시간 초과 ({timeout}초)'
+            return result
 
         # backtest.db에서 최신 결과 읽기
-        # BackTest.Report()가 columns_vj 컬럼으로 '백테스트' 테이블에 저장
-        # columns_vj = ['배팅금액', '필요자금', '거래횟수', '일평균거래횟수', '최대보유종목수',
-        #               '평균보유기간', '익절', '손절', '승률', '평균수익률', '수익률합계',
-        #               '최대낙폭률', '수익금합계', '매매성능지수', '연간예상수익률', '매수전략', '매도전략']
         metrics = _extract_metrics(config)
         if metrics:
             result['status'] = 'success'
@@ -278,6 +330,7 @@ def run_backtest(config):
         windowQ.put((1.4, f'오류 발생: {e}'))
 
     finally:
+        _drain_queues(all_queues + back_sques + back_eques)
         drainer.stop()
         drainer.join(timeout=2)
         _cleanup_procs()
@@ -286,21 +339,17 @@ def run_backtest(config):
 
 
 def _extract_metrics(config):
-    """backtest.db의 결과 테이블에서 최신 결과 행을 읽어 metrics dict로 변환.
-
-    BackTest.Report()는 savename 테이블에 결과를 저장:
-      ui_gubun='S'  → gubun='stock'  → savename='stock_bt'
-      ui_gubun='SF' → gubun='future' → savename='future_bt'
-      ui_gubun='C'  → gubun='coin'   → savename='coin_bt'
-    CLI V2.51.U2.0은 주식(ui_gubun='S')만 지원하므로 'stock_bt' 사용.
-    """
+    """backtest.db의 결과 테이블에서 최신 결과 행을 읽어 metrics dict로 변환."""
     table_name = 'stock_bt'
+    con = None
     try:
         con = sqlite3.connect(DB_BACKTEST)
         df = pd.read_sql(f"SELECT * FROM '{table_name}' ORDER BY rowid DESC LIMIT 1", con)
-        con.close()
     except Exception:
         return None
+    finally:
+        if con is not None:
+            con.close()
 
     if df.empty:
         return None
