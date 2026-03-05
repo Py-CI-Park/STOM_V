@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 """STOM CLI Backtest Runner"""
 import sys
+import json
 import os
+import matplotlib
+matplotlib.use('agg')  # headless 백엔드 — GUI 없이 그래프 생성
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -9,17 +12,37 @@ from cli.config import parse_args, validate
 from cli.runner import run_backtest
 from cli.output import format_result
 
+# Exit code constants
+EXIT_SUCCESS = 0
+EXIT_ARG_ERROR = 1
+EXIT_EXEC_ERROR = 2
+EXIT_TIMEOUT = 3
+
 
 def main():
     config = parse_args()
     if config is None:
-        return 0
+        return EXIT_SUCCESS
+
+    if config.dry_run:
+        summary = {
+            "status": "dry-run",
+            "buy_strategy": config.buy_strategy,
+            "sell_strategy": config.sell_strategy,
+            "start_date": config.start_date,
+            "end_date": config.end_date,
+            "engine_count": config.engine_count,
+            "is_tick": config.is_tick,
+            "dry_run": True,
+        }
+        print(json.dumps(summary, ensure_ascii=False))
+        return EXIT_SUCCESS
 
     errors = validate(config)
     if errors:
         for e in errors:
             print(f'ERROR: {e}', file=sys.stderr)
-        return 1
+        return EXIT_ARG_ERROR
 
     result = run_backtest(config)
     output = format_result(result, config.output_format)
@@ -30,7 +53,12 @@ def main():
     else:
         print(output)
 
-    return 0 if result.get('status') == 'success' else 1
+    if result.get('status') == 'success':
+        return EXIT_SUCCESS
+    msg = result.get('message', '')
+    if '시간 초과' in msg or 'timeout' in msg.lower():
+        return EXIT_TIMEOUT
+    return EXIT_EXEC_ERROR
 
 
 if __name__ == '__main__':

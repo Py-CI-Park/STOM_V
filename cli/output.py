@@ -1,32 +1,6 @@
 
 import json
 from datetime import datetime
-from dataclasses import dataclass, asdict
-
-
-@dataclass
-class BacktestResult:
-    trade_count: int = 0
-    win_rate: float = 0.0
-    avg_profit_pct: float = 0.0
-    total_profit_pct: float = 0.0
-    total_profit_krw: int = 0
-    cagr: float = 0.0
-    mdd_pct: float = 0.0
-    mdd_amount: float = 0.0
-    tpi: float = 0.0
-    seed_capital: float = 0.0
-    max_hold_count: int = 0
-    avg_hold_time: float = 0.0
-    day_count: int = 0
-    bootstrap_avg: float = 0.0
-    bootstrap_min: float = 0.0
-    bootstrap_max: float = 0.0
-    buy_strategy: str = ''
-    sell_strategy: str = ''
-    start_date: str = ''
-    end_date: str = ''
-    timestamp: str = ''
 
 
 def format_result(result, fmt='json'):
