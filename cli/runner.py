@@ -286,10 +286,18 @@ def run_backtest(config):
 
 
 def _extract_metrics(config):
-    """backtest.db의 '백테스트' 테이블에서 최신 결과 행을 읽어 metrics dict로 변환."""
+    """backtest.db의 결과 테이블에서 최신 결과 행을 읽어 metrics dict로 변환.
+
+    BackTest.Report()는 savename 테이블에 결과를 저장:
+      ui_gubun='S'  → gubun='stock'  → savename='stock_bt'
+      ui_gubun='SF' → gubun='future' → savename='future_bt'
+      ui_gubun='C'  → gubun='coin'   → savename='coin_bt'
+    CLI V2.51.U2.0은 주식(ui_gubun='S')만 지원하므로 'stock_bt' 사용.
+    """
+    table_name = 'stock_bt'
     try:
         con = sqlite3.connect(DB_BACKTEST)
-        df = pd.read_sql("SELECT * FROM '백테스트' ORDER BY rowid DESC LIMIT 1", con)
+        df = pd.read_sql(f"SELECT * FROM '{table_name}' ORDER BY rowid DESC LIMIT 1", con)
         con.close()
     except Exception:
         return None
