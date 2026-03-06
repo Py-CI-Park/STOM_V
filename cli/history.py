@@ -269,15 +269,11 @@ def compare_runs(run_ids: list, db_path: str = None) -> dict:
             val = run.get(metric)
             if val is None:
                 continue
-            # mdd_pct: 낮을수록 좋음 (덜 빠질수록). 나머지는 높을수록 좋음.
-            if metric == 'mdd_pct':
-                if best_val is None or val > best_val:
-                    best_val = val
-                    best_run = run
-            else:
-                if best_val is None or val > best_val:
-                    best_val = val
-                    best_run = run
+            # mdd_pct는 음수값 (예: -7.0). 높을수록(0에 가까울수록) 좋음.
+            # 나머지 지표도 높을수록 좋음. 따라서 모든 지표에 동일한 비교 적용.
+            if best_val is None or val > best_val:
+                best_val = val
+                best_run = run
         if best_run is not None:
             best[metric] = best_run['run_id']
 
