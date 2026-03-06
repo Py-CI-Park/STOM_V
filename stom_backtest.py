@@ -20,6 +20,12 @@ EXIT_TIMEOUT = 3
 
 
 def main():
+    # 서브커맨드 감지 (formula, strategy)
+    if len(sys.argv) > 1 and sys.argv[1] in ('formula', 'strategy'):
+        from cli.subcommands import handle_subcommand
+        return handle_subcommand(sys.argv[1:])
+
+    # 기존 백테스트 로직 (하위 호환 유지)
     config = parse_args()
     if config is None:
         return EXIT_SUCCESS
