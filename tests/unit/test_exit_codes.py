@@ -42,7 +42,7 @@ class TestExitCodes:
         """실행 오류 시 exit code 2."""
         result = subprocess.run(
             [PYTHON, STOM_BACKTEST, '--buy', 'Min_B_Study_251227', '--sell', 'Min_S_Study_251227',
-             '--start', '20250101', '--end', '20250131', '--timeout', '15'],
+             '--start', '20250101', '--end', '20250131', '--timeframe', 'min', '--timeout', '15'],
             capture_output=True, text=True, timeout=60, cwd=PROJECT_ROOT)
         assert result.returncode == 2
 

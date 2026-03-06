@@ -128,6 +128,7 @@ class TestBacktestErrorHandling:
             [PYTHON, STOM_BACKTEST,
              '--buy', 'Min_B_Study_251227', '--sell', 'Min_S_Study_251227',
              '--start', '20250101', '--end', '20250131',
+             '--timeframe', 'min',
              '--timeout', '15'],
             capture_output=True, text=True, timeout=60,
             cwd=PROJECT_ROOT,
