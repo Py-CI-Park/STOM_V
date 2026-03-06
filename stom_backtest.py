@@ -50,6 +50,16 @@ def main():
             print(f'ERROR: {e}', file=sys.stderr)
         return EXIT_ARG_ERROR
 
+    # 전략-타임프레임 자동 검증 (US-501)
+    try:
+        from cli.timeframe_detector import validate_timeframe_match
+        tf_check = validate_timeframe_match(config)
+        if tf_check['status'] != 'ok':
+            print(f"ERROR: {tf_check['message']}", file=sys.stderr)
+            return EXIT_ARG_ERROR
+    except ImportError:
+        pass
+
     result = run_backtest(config)
     output = format_result(result, config.output_format)
 

@@ -1,0 +1,308 @@
+"""백테스트 결과 히스토리 추적 모듈.
+
+SQLite DB에 백테스트 실행 결과를 저장하고 조회한다.
+"""
+
+import json
+import os
+import sqlite3
+from dataclasses import asdict
+from datetime import datetime, timezone
+
+DEFAULT_DB_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    '_database',
+    'backtest_history.db',
+)
+
+_ALLOWED_METRICS = frozenset(
+    {'trade_count', 'win_rate', 'total_profit_pct', 'tpi', 'cagr', 'mdd_pct'}
+)
+
+_CREATE_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS runs (
+    run_id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp       TEXT    NOT NULL,
+    buy_strategy    TEXT,
+    sell_strategy   TEXT,
+    start_date      INTEGER,
+    end_date        INTEGER,
+    config_json     TEXT,
+    result_json     TEXT,
+    status          TEXT,
+    duration_sec    REAL,
+    trade_count     INTEGER,
+    win_rate        REAL,
+    total_profit_pct REAL,
+    tpi             REAL,
+    cagr            REAL,
+    mdd_pct         REAL
+)
+"""
+
+
+def init_history_db(db_path: str = None) -> str:
+    """히스토리 DB를 초기화하고 runs 테이블을 생성한다.
+
+    Args:
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        실제 사용된 db_path 문자열.
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    os.makedirs(os.path.dirname(resolved), exist_ok=True)
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        con.execute(_CREATE_TABLE_SQL)
+        con.commit()
+    finally:
+        if con is not None:
+            con.close()
+
+    return resolved
+
+
+def save_run(config, result: dict, duration: float, db_path: str = None) -> int:
+    """백테스트 실행 결과를 DB에 저장한다.
+
+    Args:
+        config: BacktestConfig dataclass 또는 dict.
+        result: run_backtest()가 반환한 result dict.
+        duration: 실행 소요 시간(초).
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        삽입된 행의 run_id (양의 정수).
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+
+    # config 정규화: dataclass → dict
+    try:
+        config_dict = asdict(config)
+    except TypeError:
+        config_dict = dict(config)
+
+    metrics = result.get('metrics') or {}
+    timestamp = datetime.now(timezone.utc).isoformat()
+
+    row = {
+        'timestamp': timestamp,
+        'buy_strategy': config_dict.get('buy_strategy', ''),
+        'sell_strategy': config_dict.get('sell_strategy', ''),
+        'start_date': config_dict.get('start_date', 0),
+        'end_date': config_dict.get('end_date', 0),
+        'config_json': json.dumps(config_dict, ensure_ascii=False),
+        'result_json': json.dumps(result, ensure_ascii=False),
+        'status': result.get('status', 'error'),
+        'duration_sec': duration,
+        'trade_count': metrics.get('trade_count'),
+        'win_rate': metrics.get('win_rate'),
+        'total_profit_pct': metrics.get('total_profit_pct'),
+        'tpi': metrics.get('tpi'),
+        'cagr': metrics.get('cagr'),
+        'mdd_pct': metrics.get('mdd_pct'),
+    }
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        cur = con.execute(
+            """
+            INSERT INTO runs (
+                timestamp, buy_strategy, sell_strategy,
+                start_date, end_date,
+                config_json, result_json,
+                status, duration_sec,
+                trade_count, win_rate, total_profit_pct,
+                tpi, cagr, mdd_pct
+            ) VALUES (
+                :timestamp, :buy_strategy, :sell_strategy,
+                :start_date, :end_date,
+                :config_json, :result_json,
+                :status, :duration_sec,
+                :trade_count, :win_rate, :total_profit_pct,
+                :tpi, :cagr, :mdd_pct
+            )
+            """,
+            row,
+        )
+        con.commit()
+        return cur.lastrowid
+    finally:
+        if con is not None:
+            con.close()
+
+
+def get_runs(
+    limit: int = 20,
+    strategy: str = None,
+    status: str = None,
+    db_path: str = None,
+) -> list:
+    """백테스트 실행 기록을 조회한다.
+
+    Args:
+        limit: 최대 반환 행 수.
+        strategy: buy_strategy LIKE '%strategy%' 필터.
+        status: 정확히 일치하는 status 필터.
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        각 행을 dict로 담은 list (최근 순).
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+
+    clauses = []
+    params = []
+
+    if strategy is not None:
+        clauses.append('buy_strategy LIKE ?')
+        params.append(f'%{strategy}%')
+
+    if status is not None:
+        clauses.append('status = ?')
+        params.append(status)
+
+    where = ('WHERE ' + ' AND '.join(clauses)) if clauses else ''
+    sql = f'SELECT * FROM runs {where} ORDER BY timestamp DESC LIMIT ?'
+    params.append(limit)
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        con.row_factory = sqlite3.Row
+        cur = con.execute(sql, params)
+        return [dict(row) for row in cur.fetchall()]
+    finally:
+        if con is not None:
+            con.close()
+
+
+def get_best_run(
+    metric: str = 'tpi',
+    order: str = 'desc',
+    limit: int = 1,
+    db_path: str = None,
+) -> list:
+    """지정 metric 기준으로 최고 실행 기록을 반환한다.
+
+    Args:
+        metric: 정렬 기준 컬럼명.
+        order: 'desc' 또는 'asc'.
+        limit: 반환 행 수.
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        각 행을 dict로 담은 list.
+
+    Raises:
+        ValueError: metric이 허용 목록에 없을 때.
+    """
+    if metric not in _ALLOWED_METRICS:
+        raise ValueError(
+            f"허용되지 않은 metric: '{metric}'. "
+            f"허용 목록: {sorted(_ALLOWED_METRICS)}"
+        )
+
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+
+    direction = 'DESC' if order.lower() == 'desc' else 'ASC'
+    sql = (
+        f"SELECT * FROM runs WHERE status = 'success' "
+        f"ORDER BY {metric} {direction} LIMIT ?"
+    )
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        con.row_factory = sqlite3.Row
+        cur = con.execute(sql, [limit])
+        return [dict(row) for row in cur.fetchall()]
+    finally:
+        if con is not None:
+            con.close()
+
+
+def compare_runs(run_ids: list, db_path: str = None) -> dict:
+    """여러 런을 조회하여 metrics를 비교한다.
+
+    Args:
+        run_ids: 비교할 run_id 목록.
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        {
+            'runs': [run_dict, ...],
+            'best': {'metric_name': run_id, ...}
+        }
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+
+    if not run_ids:
+        return {'runs': [], 'best': {}}
+
+    placeholders = ','.join('?' * len(run_ids))
+    sql = f'SELECT * FROM runs WHERE run_id IN ({placeholders})'
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        con.row_factory = sqlite3.Row
+        cur = con.execute(sql, list(run_ids))
+        runs = [dict(row) for row in cur.fetchall()]
+    finally:
+        if con is not None:
+            con.close()
+
+    best = {}
+    for metric in _ALLOWED_METRICS:
+        best_run = None
+        best_val = None
+        for run in runs:
+            val = run.get(metric)
+            if val is None:
+                continue
+            # mdd_pct: 낮을수록 좋음 (덜 빠질수록). 나머지는 높을수록 좋음.
+            if metric == 'mdd_pct':
+                if best_val is None or val > best_val:
+                    best_val = val
+                    best_run = run
+            else:
+                if best_val is None or val > best_val:
+                    best_val = val
+                    best_run = run
+        if best_run is not None:
+            best[metric] = best_run['run_id']
+
+    return {'runs': runs, 'best': best}
+
+
+def delete_run(run_id: int, db_path: str = None) -> bool:
+    """지정 run_id 행을 삭제한다.
+
+    Args:
+        run_id: 삭제할 런 ID.
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        삭제 성공 시 True, 해당 행이 없으면 False.
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        cur = con.execute('DELETE FROM runs WHERE run_id = ?', [run_id])
+        con.commit()
+        return cur.rowcount > 0
+    finally:
+        if con is not None:
+            con.close()
