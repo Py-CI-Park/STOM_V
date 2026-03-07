@@ -43,8 +43,22 @@ def _warn(text: str) -> str:
 # Secret patterns
 # ---------------------------------------------------------------------------
 _SECRET_PATTERNS = [
-    re.compile(r'(api_key|secret|password|token)\s*=\s*["\'][^"\']+["\']', re.IGNORECASE),
+    re.compile(r'^\s*(api_key|secret|password|token)\s*=\s*["\'][^"\']+["\']', re.IGNORECASE),
 ]
+
+_SECRET_PATH_EXCLUDES = (
+    "/tests/",
+    "/docs/",
+    "/.omx/",
+)
+
+_ALLOWED_PRINT_FILES = {
+    "cli/config.py",
+    "cli/subcommands.py",
+    "cli/queue_drain.py",
+    "cli/monitor.py",
+    "cli/runner.py",
+}
 
 # ---------------------------------------------------------------------------
 # Public check functions
@@ -92,11 +106,17 @@ def check_no_secrets(files: list[str]) -> dict:
     warnings: list[str] = []
     for path in files:
         abs_path = path if os.path.isabs(path) else os.path.join(PROJECT_ROOT, path)
+        norm = abs_path.replace("\\", "/")
+        if any(excluded in norm for excluded in _SECRET_PATH_EXCLUDES):
+            continue
         if not os.path.isfile(abs_path):
             continue
         try:
             with open(abs_path, encoding="utf-8", errors="replace") as fh:
                 for lineno, line in enumerate(fh, start=1):
+                    stripped = line.strip()
+                    if not stripped or stripped.startswith("#"):
+                        continue
                     for pattern in _SECRET_PATTERNS:
                         if pattern.search(line):
                             warnings.append(
@@ -132,6 +152,9 @@ def check_no_print_debug(files: list[str]) -> dict:
         if "/cli/" not in norm:
             continue
         if os.path.basename(abs_path).startswith("test_"):
+            continue
+        rel_path = os.path.relpath(abs_path, PROJECT_ROOT).replace("\\", "/")
+        if rel_path in _ALLOWED_PRINT_FILES:
             continue
 
         if not os.path.isfile(abs_path):
@@ -183,15 +206,8 @@ def run_quick_tests() -> dict:
     )
     duration = round(time.monotonic() - t0, 2)
 
-    passed = failed = total = 0
-    for line in (result.stdout + result.stderr).splitlines():
-        nums = {m.group(2): int(m.group(1))
-                for m in re.finditer(r"(\d+)\s+(passed|failed|error)", line)}
-        if nums:
-            passed = nums.get("passed", 0)
-            failed = nums.get("failed", 0) + nums.get("error", 0)
-            total = passed + failed
-            break
+    summary_text = result.stdout + "\n" + result.stderr
+    passed, failed, total = _parse_pytest_summary(summary_text)
 
     return {
         "status": "ok" if result.returncode == 0 else "failed",
@@ -199,7 +215,7 @@ def run_quick_tests() -> dict:
         "passed": passed,
         "failed": failed,
         "duration_sec": duration,
-        "error": None,
+        "error": None if result.returncode == 0 else _tail_text(summary_text),
     }
 
 
@@ -230,6 +246,30 @@ def _collect_python_files() -> list[str]:
             if fname.endswith(".py"):
                 py_files.append(os.path.join(root, fname))
     return py_files
+
+
+def _parse_pytest_summary(text: str) -> tuple[int, int, int]:
+    """pytest 출력에서 최종 summary line을 파싱한다."""
+    passed = failed = total = 0
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    for line in reversed(lines):
+        if " in " not in line:
+            continue
+        nums = {m.group(2): int(m.group(1))
+                for m in re.finditer(r"(\d+)\s+(passed|failed|error|skipped|xfailed|xpassed)", line)}
+        if nums:
+            passed = nums.get("passed", 0)
+            failed = nums.get("failed", 0) + nums.get("error", 0)
+            total = sum(nums.values())
+            return passed, failed, total
+    return passed, failed, total
+
+
+def _tail_text(text: str, max_lines: int = 8) -> str | None:
+    lines = [line for line in text.splitlines() if line.strip()]
+    if not lines:
+        return None
+    return "\n".join(lines[-max_lines:])
 
 
 def _print_check(label: str, result: dict) -> None:

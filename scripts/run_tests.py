@@ -131,17 +131,8 @@ def _run_pytest(target_dir: str, extra_args: list[str] | None = None) -> dict:
     )
     duration = round(time.monotonic() - t0, 2)
 
-    # Parse "X passed, Y failed" from stdout
-    passed = failed = total = 0
-    for line in (result.stdout + result.stderr).splitlines():
-        if "passed" in line or "failed" in line or "error" in line:
-            import re
-            nums = {m.group(2): int(m.group(1))
-                    for m in re.finditer(r"(\d+)\s+(passed|failed|error)", line)}
-            passed = nums.get("passed", 0)
-            failed = nums.get("failed", 0) + nums.get("error", 0)
-            total = passed + failed
-            break
+    output_text = result.stdout + "\n" + result.stderr
+    passed, failed, total = _parse_pytest_summary(output_text)
 
     return {
         "status": "ok" if result.returncode == 0 else "failed",
@@ -149,7 +140,7 @@ def _run_pytest(target_dir: str, extra_args: list[str] | None = None) -> dict:
         "passed": passed,
         "failed": failed,
         "duration_sec": duration,
-        "error": None,
+        "error": None if result.returncode == 0 else _tail_text(output_text),
     }
 
 
@@ -273,6 +264,32 @@ def _print_result(label: str, result: dict) -> None:
     print(f"  [{badge}] {label}: {passed}/{total} passed in {duration}s")
     if result.get("error"):
         print(f"         Error: {result['error']}")
+
+
+def _parse_pytest_summary(text: str) -> tuple[int, int, int]:
+    """pytest 출력에서 최종 summary line을 파싱한다."""
+    import re
+
+    passed = failed = total = 0
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    for line in reversed(lines):
+        if " in " not in line:
+            continue
+        nums = {m.group(2): int(m.group(1))
+                for m in re.finditer(r"(\d+)\s+(passed|failed|error|skipped|xfailed|xpassed)", line)}
+        if nums:
+            passed = nums.get("passed", 0)
+            failed = nums.get("failed", 0) + nums.get("error", 0)
+            total = sum(nums.values())
+            return passed, failed, total
+    return passed, failed, total
+
+
+def _tail_text(text: str, max_lines: int = 8) -> str | None:
+    lines = [line for line in text.splitlines() if line.strip()]
+    if not lines:
+        return None
+    return "\n".join(lines[-max_lines:])
 
 
 def main() -> None:
