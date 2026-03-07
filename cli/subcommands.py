@@ -127,6 +127,7 @@ def _handle_formula(parsed):
         with open(parsed.input_file, 'r', encoding='utf-8') as f:
             formulas = json.load(f)
         count = 0
+        failed = []
         for fm in formulas:
             result = add_formula(
                 DB_STRATEGY, fm['name'], fm['code'],
@@ -138,8 +139,14 @@ def _handle_formula(parsed):
             )
             if result['status'] == 'ok':
                 count += 1
-        print(json.dumps({'status': 'ok', 'imported': count}, ensure_ascii=False))
-        return 0
+            else:
+                failed.append({
+                    'name': fm.get('name', ''),
+                    'message': result.get('message', 'unknown error'),
+                })
+        status = 'ok' if not failed else 'partial'
+        print(json.dumps({'status': status, 'imported': count, 'failed': failed}, ensure_ascii=False))
+        return 0 if not failed else 1
 
     return 1
 

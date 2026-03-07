@@ -22,8 +22,9 @@ from cli.timeframe_detector import (
 
 class _Config:
     """테스트용 최소 config 객체."""
-    def __init__(self, buy_strategy: str, is_tick: bool):
+    def __init__(self, buy_strategy: str, is_tick: bool, sell_strategy: str = ''):
         self.buy_strategy = buy_strategy
+        self.sell_strategy = sell_strategy
         self.is_tick = is_tick
 
 
@@ -158,6 +159,30 @@ class TestValidateTimeframeMatch:
         """이름으로 판별 불가, 코드에 '틱' + is_tick=False → error."""
         config = _Config('SomeStrategy', is_tick=False)
         result = validate_timeframe_match(config, strategy_code='틱 기반')
+        assert result['status'] == 'error'
+        assert '--timeframe tick' in result['message']
+
+    def test_validate_sell_strategy_mismatch(self):
+        """매도 전략이 Tick_ 이고 is_tick=False이면 error."""
+        config = _Config('GenericStrategy', is_tick=False, sell_strategy='Tick_S_Test')
+        result = validate_timeframe_match(config)
+        assert result['status'] == 'error'
+        assert 'Tick_S_Test' in result['message']
+
+    def test_validate_sell_strategy_match_ok(self):
+        """매수/매도 모두 분봉 전략이고 is_tick=False이면 ok."""
+        config = _Config('Min_B_Test', is_tick=False, sell_strategy='Min_S_Test')
+        result = validate_timeframe_match(config)
+        assert result == {'status': 'ok'}
+
+    def test_validate_sell_detected_from_db(self, strategy_db):
+        """매도 전략 이름이 ambiguous여도 DB 코드로 tick/min을 감지한다."""
+        con = sqlite3.connect(strategy_db)
+        con.execute("INSERT INTO stocksell VALUES ('AmbiguousSell', '틱 기반 매도')")
+        con.commit()
+        con.close()
+        config = _Config('Min_B_Test', is_tick=False, sell_strategy='AmbiguousSell')
+        result = validate_timeframe_match(config, db_path=strategy_db)
         assert result['status'] == 'error'
         assert '--timeframe tick' in result['message']
 

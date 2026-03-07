@@ -4,9 +4,9 @@
 BacktestConfig의 is_tick 설정과 일치 여부를 검증한다.
 """
 
-import os
 import sqlite3
-import sys
+
+from cli.paths import DB_STRATEGY
 
 
 def detect_timeframe(name: str, code: str = '') -> str:
@@ -39,24 +39,11 @@ def detect_timeframe(name: str, code: str = '') -> str:
     return 'unknown'
 
 
-def validate_timeframe_match(config, strategy_code: str = '') -> dict:
-    """config.buy_strategy와 config.is_tick의 타임프레임 일치 여부를 검증한다.
-
-    Args:
-        config    : buy_strategy(str)와 is_tick(bool) 속성을 가진 설정 객체
-        strategy_code: 전략 코드 문자열 (생략 시 이름만으로 판단)
-
-    Returns:
-        {'status': 'ok'} 또는
-        {'status': 'error', 'message': str}
-    """
-    name = config.buy_strategy
-    detected = detect_timeframe(name, strategy_code)
-
+def _validate_detected_strategy(name: str, detected: str, is_tick: bool) -> dict:
     if detected == 'unknown':
         return {'status': 'ok'}
 
-    if config.is_tick and detected == 'min':
+    if is_tick and detected == 'min':
         return {
             'status': 'error',
             'message': (
@@ -65,7 +52,7 @@ def validate_timeframe_match(config, strategy_code: str = '') -> dict:
             ),
         }
 
-    if not config.is_tick and detected == 'tick':
+    if not is_tick and detected == 'tick':
         return {
             'status': 'error',
             'message': (
@@ -75,6 +62,42 @@ def validate_timeframe_match(config, strategy_code: str = '') -> dict:
         }
 
     return {'status': 'ok'}
+
+
+def _detect_with_optional_db(name: str, strategy_type: str, inline_code: str, db_path: str) -> str:
+    if not name:
+        return 'unknown'
+
+    detected = detect_timeframe(name, inline_code)
+    if detected == 'unknown' and db_path:
+        detected = detect_from_db(db_path, name, strategy_type)
+    return detected
+
+
+def validate_timeframe_match(config, strategy_code: str = '', sell_strategy_code: str = '', db_path: str = None) -> dict:
+    """config.buy_strategy / config.sell_strategy 와 config.is_tick의 타임프레임 일치 여부를 검증한다.
+
+    Args:
+        config            : buy_strategy, sell_strategy, is_tick 속성을 가진 설정 객체
+        strategy_code     : 매수 전략 코드 문자열 (생략 가능)
+        sell_strategy_code: 매도 전략 코드 문자열 (생략 가능)
+        db_path           : strategy.db 경로 (생략 시 기본 DB 사용)
+
+    Returns:
+        {'status': 'ok'} 또는
+        {'status': 'error', 'message': str}
+    """
+    strategy_db = db_path or DB_STRATEGY
+
+    buy_name = getattr(config, 'buy_strategy', '')
+    buy_detected = _detect_with_optional_db(buy_name, 'buy', strategy_code, strategy_db)
+    buy_result = _validate_detected_strategy(buy_name, buy_detected, config.is_tick)
+    if buy_result['status'] != 'ok':
+        return buy_result
+
+    sell_name = getattr(config, 'sell_strategy', '')
+    sell_detected = _detect_with_optional_db(sell_name, 'sell', sell_strategy_code, strategy_db)
+    return _validate_detected_strategy(sell_name, sell_detected, config.is_tick)
 
 
 def detect_from_db(db_path: str, name: str, strategy_type: str) -> str:

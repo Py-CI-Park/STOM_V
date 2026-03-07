@@ -155,6 +155,27 @@ class TestFormulaSubcommand:
         assert data['status'] == 'ok'
         assert data['imported'] == 1
 
+    def test_formula_import_partial_failure_returns_nonzero(self, tmp_path):
+        db = str(tmp_path / 'strategy.db')
+        _make_formula_db(db)
+        import_data = [
+            {'name': '정상수식', 'code': 'self.x=2'},
+            {'name': '실패수식', 'code': ''},
+        ]
+        in_file = str(tmp_path / 'partial.json')
+        with open(in_file, 'w', encoding='utf-8') as f:
+            json.dump(import_data, f, ensure_ascii=False)
+
+        captured = []
+        with patch('cli.subcommands.DB_STRATEGY', db), \
+             patch('builtins.print', side_effect=lambda s: captured.append(s)):
+            code = handle_subcommand(['formula', 'import', '--input', in_file])
+        assert code == 1
+        data = json.loads(captured[0])
+        assert data['status'] == 'partial'
+        assert data['imported'] == 1
+        assert len(data['failed']) == 1
+
     def test_formula_export_count_in_output(self, tmp_path):
         db = str(tmp_path / 'strategy.db')
         _make_formula_db(db)

@@ -59,6 +59,11 @@ class TestAvgTimeMultiValue:
             # 단일 값인 경우 첫 번째 값만 파싱
             assert config.avg_time == 60
 
+    def test_runner_normalize_avg_list_flatten(self):
+        from cli.runner import _normalize_avg_list
+        assert _normalize_avg_list([60, 120, 180]) == [60, 120, 180]
+        assert _normalize_avg_list(60) == [60]
+
 
 class TestExtractMetricsCompleteness:
     """M-6: _extract_metrics()에서 가능한 모든 필드 읽기."""
@@ -97,3 +102,34 @@ class TestExtractMetricsCompleteness:
         assert metrics['win_rate'] == 55.0
         assert metrics['cagr'] == 20.0
         assert metrics['mdd_pct'] == -5.0
+
+    def test_extract_metrics_ignores_stale_rows_when_min_rowid_given(self, tmp_path):
+        from cli.runner import _extract_metrics
+        from cli.config import BacktestConfig
+        from unittest.mock import patch
+
+        db_path = tmp_path / 'backtest.db'
+        con = sqlite3.connect(db_path)
+        con.execute('''
+            CREATE TABLE stock_bt (
+                "거래횟수" INTEGER,
+                "승률" REAL,
+                "평균수익률" REAL,
+                "수익률합계" REAL,
+                "수익금합계" INTEGER,
+                "연간예상수익률" REAL,
+                "최대낙폭률" REAL,
+                "매매성능지수" REAL,
+                "필요자금" REAL,
+                "최대보유종목수" INTEGER,
+                "평균보유기간" REAL
+            )
+        ''')
+        con.execute("INSERT INTO stock_bt VALUES (10, 50.0, 1.0, 2.0, 1000, 3.0, -1.0, 1.1, 1000000.0, 1, 5.0)")
+        con.commit()
+        con.close()
+
+        config = BacktestConfig(start_date=20250101, end_date=20250131)
+        with patch('cli.runner.DB_BACKTEST', str(db_path)):
+            metrics = _extract_metrics(config, min_rowid=999)
+        assert metrics is None

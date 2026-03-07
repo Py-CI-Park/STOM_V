@@ -25,6 +25,29 @@ from backtest.backengine_kiwoom_min2 import BackEngineKiwoomMin2
 _child_procs = []
 
 
+def _normalize_avg_list(avg_time):
+    """avg_time 값을 엔진이 기대하는 flat list[int] 형태로 정규화한다."""
+    if avg_time is None:
+        return []
+    if isinstance(avg_time, (list, tuple)):
+        return [int(x) for x in avg_time]
+    return [int(avg_time)]
+
+
+def _get_backtest_last_rowid(table_name='stock_bt'):
+    """현재 backtest 결과 테이블의 마지막 rowid를 반환한다."""
+    con = None
+    try:
+        con = sqlite3.connect(DB_BACKTEST)
+        row = con.execute(f"SELECT COALESCE(MAX(rowid), 0) FROM '{table_name}'").fetchone()
+        return int(row[0] or 0)
+    except Exception:
+        return 0
+    finally:
+        if con is not None:
+            con.close()
+
+
 def _cleanup_procs():
     for p in _child_procs:
         if p.is_alive():
@@ -79,11 +102,15 @@ def _drain_queues(queues):
     파이프 버퍼 데드락이 발생할 수 있다.
     """
     for q in queues:
-        while not q.empty():
+        empty_count = 0
+        while True:
             try:
-                q.get_nowait()
+                q.get(timeout=0.05)
+                empty_count = 0
             except Exception:
-                break
+                empty_count += 1
+                if empty_count >= 2:
+                    break
 
 
 def run_backtest(config):
@@ -114,10 +141,12 @@ def run_backtest(config):
     back_eques = []
 
     # QueueDrainer 시작 (windowQ → stderr)
-    drainer = QueueDrainer(windowQ, verbose=True)
+    drainer = QueueDrainer(windowQ, verbose=getattr(config, 'verbose', True))
     drainer.start()
 
     try:
+        backtest_rowid_watermark = _get_backtest_last_rowid()
+
         # === Step 2: BackSubTotal 프로세스 생성 (20개) ===
         for i in range(20):
             bctq = Queue()
@@ -242,10 +271,11 @@ def run_backtest(config):
         windowQ.put((1.4, f'{log_gubun} 데이터 로딩 시작'))
 
         # 메시지 2: 데이터로딩 (11-tuple)
+        avg_list = _normalize_avg_list(config.avg_time)
         for i, datas in enumerate(data_lists):
             back_eques[i].put(('데이터로딩', config.start_date, config.end_date,
                                config.start_time, config.end_time, datas,
-                               [config.avg_time], code_days, day_codes,
+                               avg_list, code_days, day_codes,
                                one_code if divid_mode == '한종목 로딩' else '',
                                divid_mode))
 
@@ -309,7 +339,7 @@ def run_backtest(config):
             return result
 
         # backtest.db에서 최신 결과 읽기
-        metrics = _extract_metrics(config)
+        metrics = _extract_metrics(config, min_rowid=backtest_rowid_watermark)
         if metrics:
             result['status'] = 'success'
             result['message'] = '백테스트 완료'
@@ -338,13 +368,17 @@ def run_backtest(config):
     return result
 
 
-def _extract_metrics(config):
+def _extract_metrics(config, min_rowid=0):
     """backtest.db의 결과 테이블에서 최신 결과 행을 읽어 metrics dict로 변환."""
     table_name = 'stock_bt'
     con = None
     try:
         con = sqlite3.connect(DB_BACKTEST)
-        df = pd.read_sql(f"SELECT * FROM '{table_name}' ORDER BY rowid DESC LIMIT 1", con)
+        if min_rowid and min_rowid > 0:
+            query = f"SELECT rowid, * FROM '{table_name}' WHERE rowid > ? ORDER BY rowid DESC LIMIT 1"
+            df = pd.read_sql(query, con, params=[min_rowid])
+        else:
+            df = pd.read_sql(f"SELECT rowid, * FROM '{table_name}' ORDER BY rowid DESC LIMIT 1", con)
     except Exception:
         return None
     finally:

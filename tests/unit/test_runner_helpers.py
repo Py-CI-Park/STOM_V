@@ -167,6 +167,16 @@ class TestJoinTimeout:
                              '--start', '20250101', '--end', '20250131'])
         assert config.timeout == 3600
 
+    def test_runner_uses_config_verbose_for_queue_drainer(self):
+        """run_backtest()는 QueueDrainer에 config.verbose를 전달해야 한다."""
+        runner_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            'cli', 'runner.py'
+        )
+        with open(runner_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        assert "QueueDrainer(windowQ, verbose=getattr(config, 'verbose', True))" in content
+
 
 # ============================================================
 # US-104: 큐 drain 테스트
