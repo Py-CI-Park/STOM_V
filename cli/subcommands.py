@@ -1,11 +1,8 @@
 """서브커맨드 라우터 — formula, strategy 서브커맨드 처리."""
 import argparse
 import json
-import sys
-import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utility.setting import DB_STRATEGY
+from cli.paths import DB_STRATEGY
 
 
 def create_subcommand_parser():

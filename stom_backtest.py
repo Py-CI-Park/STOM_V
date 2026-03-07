@@ -3,13 +3,10 @@
 import sys
 import json
 import os
-import matplotlib
-matplotlib.use('agg')  # headless 백엔드 — GUI 없이 그래프 생성
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from cli.config import parse_args, validate
-from cli.runner import run_backtest
 from cli.output import format_result
 
 # Exit code constants
@@ -17,6 +14,21 @@ EXIT_SUCCESS = 0
 EXIT_ARG_ERROR = 1
 EXIT_EXEC_ERROR = 2
 EXIT_TIMEOUT = 3
+
+
+def _configure_matplotlib_headless():
+    """가능한 경우 matplotlib를 headless 모드로 전환한다.
+
+    CLI의 가벼운 경로(`--help`, `--list-strategies`, `formula/strategy --help`)에서는
+    matplotlib 자체가 필요 없으므로 ImportError를 무시한다.
+    """
+    try:
+        import matplotlib
+    except ImportError:
+        return False
+
+    matplotlib.use('agg')  # headless 백엔드 — GUI 없이 그래프 생성
+    return True
 
 
 def main():
@@ -60,6 +72,8 @@ def main():
     except ImportError:
         pass
 
+    _configure_matplotlib_headless()
+    from cli.runner import run_backtest
     result = run_backtest(config)
     output = format_result(result, config.output_format)
 

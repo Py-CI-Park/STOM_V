@@ -3,7 +3,10 @@ import os
 import sys
 import math
 import numpy as np
-from talib import stream
+try:
+    from talib import stream
+except ImportError:
+    stream = None
 try:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 except:

@@ -1,15 +1,33 @@
 
 import numpy as np
 import pandas as pd
-import yfinance as yf
-from numba import jit
+try:
+    import yfinance as yf
+except ImportError:
+    yf = None
+try:
+    from numba import jit
+except ImportError:
+    def jit(*args, **kwargs):
+        if args and callable(args[0]) and len(args) == 1 and not kwargs:
+            return args[0]
+
+        def decorator(func):
+            return func
+
+        return decorator
 from traceback import print_exc
-from matplotlib import pyplot as plt
+try:
+    from matplotlib import pyplot as plt
+    from matplotlib import font_manager, gridspec
+except ImportError:
+    plt = None
+    font_manager = None
+    gridspec = None
 try:
     from optuna_dashboard import run_server
 except ImportError:
     run_server = None
-from matplotlib import font_manager, gridspec
 from utility.setting import ui_num, GRAPH_PATH, DB_OPTUNA
 from utility.static import thread_decorator, dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
 
@@ -416,6 +434,8 @@ def GetOptiStdText(optistd, std_list, result, pre_text):
 
 
 def get_yf_ticker(code, startday, endday):
+    if yf is None:
+        raise ImportError('yfinance not installed')
     start_str  = str(startday)
     end_str    = str(endday)
     start_date = f'{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}'
@@ -523,6 +543,8 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
                     endx_list.append(df_tsg_.index[-1])
 
     font_name = 'C:/Windows/Fonts/malgun.ttf'
+    if plt is None or font_manager is None or gridspec is None:
+        raise ImportError('matplotlib not installed')
     font_family = font_manager.FontProperties(fname=font_name).get_name()
 
     # matplotlib 성능 최적화 설정

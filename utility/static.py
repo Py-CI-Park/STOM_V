@@ -2,22 +2,45 @@
 import os
 import re
 import sys
+import logging
 import pytz
-import psutil
+try:
+    import psutil
+except ImportError:
+    psutil = None
 import _pickle
 import datetime
 import numpy as np
-import winreg as reg
-from talib import stream
-from loguru import logger
+try:
+    import winreg as reg
+except ImportError:
+    reg = None
+try:
+    from talib import stream
+except ImportError:
+    stream = None
+try:
+    from loguru import logger as _loguru_logger
+except ImportError:
+    _loguru_logger = None
 try:
     from PyQt5.QtTest import QTest
 except ImportError:
     QTest = None
 from traceback import print_exc
-import exchange_calendars as ec
+try:
+    import exchange_calendars as ec
+except ImportError:
+    ec = None
 from threading import Thread, Timer
 from cryptography.fernet import Fernet
+
+
+KEY_FALLBACK_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    '_database',
+    'en_key.txt',
+)
 
 
 now_utc_ = datetime.datetime.now(pytz.utc)
@@ -81,16 +104,28 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
 
 
 def get_logger(name):
-    logger.remove()
-    logger.add(
-        sys.stderr,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-               "<level>{level: <5}</level> | "
-               f"<cyan>{name}</cyan> : "
-               "<level>{message}</level>",
-        level="DEBUG",
-        colorize=True
-    )
+    if _loguru_logger is not None:
+        _loguru_logger.remove()
+        _loguru_logger.add(
+            sys.stderr,
+            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
+                   "<level>{level: <5}</level> | "
+                   f"<cyan>{name}</cyan> : "
+                   "<level>{message}</level>",
+            level="DEBUG",
+            colorize=True
+        )
+        return _loguru_logger
+
+    logger = logging.getLogger(name)
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(logging.Formatter(
+            '%(asctime)s | %(levelname)-5s | ' + f'{name} : %(message)s'
+        ))
+        logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
     return logger
 
 
@@ -277,6 +312,8 @@ def threading_timer(sec, func, args=None):
 
 def win_proc_alive(name):
     alive = False
+    if psutil is None:
+        return alive
     for proc in psutil.process_iter():
         if name in proc.name():
             alive = True
@@ -357,18 +394,40 @@ def comma2float(t):
 
 def write_key():
     key = str(Fernet.generate_key(), 'utf-8')
-    reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM')
-    reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
-    openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
-    reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
-    reg.CloseKey(openkey)
+    if reg is not None:
+        try:
+            reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM')
+            reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
+            openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
+            reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
+            reg.CloseKey(openkey)
+            return key
+        except OSError:
+            pass
+
+    os.makedirs(os.path.dirname(KEY_FALLBACK_FILE), exist_ok=True)
+    with open(KEY_FALLBACK_FILE, 'w', encoding='utf-8') as f:
+        f.write(key)
+    return key
 
 
 def read_key():
-    openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
-    key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
-    reg.CloseKey(openkey)
-    return key
+    if reg is not None:
+        try:
+            openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
+            key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
+            reg.CloseKey(openkey)
+            return key
+        except OSError:
+            pass
+
+    if os.path.exists(KEY_FALLBACK_FILE):
+        with open(KEY_FALLBACK_FILE, 'r', encoding='utf-8') as f:
+            key = f.read().strip()
+        if key:
+            return key
+
+    return write_key()
 
 
 def en_text(key, text):
@@ -399,6 +458,8 @@ def text_not_in_special_characters(t):
 
 
 def cme_normal_open():
+    if ec is None:
+        return False
     str_day  = str_ymd(now_cme())
     today    = dt_ymdhms_ios(f'{str_day} 17:00:00')
     ec_cme   = ec.get_calendar('CMES')

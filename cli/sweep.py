@@ -8,7 +8,16 @@ from itertools import product
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cli.config import BacktestConfig
-from cli.runner import run_backtest
+
+run_backtest = None
+
+
+def _get_run_backtest():
+    global run_backtest
+    if run_backtest is None:
+        from cli.runner import run_backtest as _run_backtest
+        run_backtest = _run_backtest
+    return run_backtest
 
 
 def _int_to_date(d):
@@ -81,6 +90,7 @@ def run_sweep(base_config, sweep_params: dict, on_progress=None) -> list:
     combos = generate_combinations(sweep_params)
     total = len(combos)
     results = []
+    runner = _get_run_backtest()
 
     base_dict = asdict(base_config)
 
@@ -88,7 +98,7 @@ def run_sweep(base_config, sweep_params: dict, on_progress=None) -> list:
         overrides = {**base_dict, **combo}
         new_config = BacktestConfig(**overrides)
 
-        result = run_backtest(new_config)
+        result = runner(new_config)
         result = {**result, 'params': combo}
         results.append(result)
 
@@ -118,6 +128,7 @@ def run_rolling(base_config, window_days: int, step_days: int,
     )
     total = len(windows)
     results = []
+    runner = _get_run_backtest()
 
     base_dict = asdict(base_config)
 
@@ -125,7 +136,7 @@ def run_rolling(base_config, window_days: int, step_days: int,
         overrides = {**base_dict, 'start_date': win_start, 'end_date': win_end}
         new_config = BacktestConfig(**overrides)
 
-        result = run_backtest(new_config)
+        result = runner(new_config)
         result = {**result, 'window': (win_start, win_end)}
         results.append(result)
 

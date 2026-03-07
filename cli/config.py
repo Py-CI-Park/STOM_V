@@ -6,12 +6,11 @@ import sqlite3
 import argparse
 import logging
 from datetime import datetime
-from dataclasses import dataclass, asdict, fields
+from dataclasses import dataclass, fields
 
 logger = logging.getLogger(__name__)
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utility.setting import DB_STRATEGY
+from cli.paths import DB_STRATEGY
 
 
 @dataclass
@@ -238,11 +237,11 @@ def validate(config):
     return errors
 
 
-def list_strategies():
+def list_strategies(db_path=None):
     result = {'stockbuy': [], 'stocksell': []}
     con = None
     try:
-        con = sqlite3.connect(DB_STRATEGY)
+        con = sqlite3.connect(db_path or DB_STRATEGY)
         for table in ('stockbuy', 'stocksell'):
             cursor = con.cursor()
             cursor.execute(f'SELECT `index` FROM {table}')
