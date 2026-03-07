@@ -2,6 +2,10 @@
 
 AI가 하나의 인터페이스로 전체 백테스트 파이프라인을 제어한다.
 모든 메서드는 dict를 반환하며, 예외를 throw하지 않는다.
+
+주의:
+- 현재는 `stom_backtest.py` 의 공식 서브커맨드가 아니라 Python API 성격의 모듈이다.
+- shipped CLI 범위와 혼동하지 않도록 문서/계획서에서 library-only 로 구분한다.
 """
 
 import os

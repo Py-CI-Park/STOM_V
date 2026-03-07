@@ -2,6 +2,10 @@
 
 generate_buy_strategy / generate_sell_strategy 로 조건 목록을 받아
 exec() 가능한 전략 코드를 생성하고, save_strategy_to_db 로 DB에 저장한다.
+
+주의:
+- 이 모듈은 현재 `stom_backtest.py` 공식 서브커맨드로는 직접 노출하지 않는다.
+- 즉시 shipped CLI 기능이라기보다 Python API / 연구용 보조 모듈 성격이 강하다.
 """
 
 import sqlite3

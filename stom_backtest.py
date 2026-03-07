@@ -1,5 +1,13 @@
 #!/usr/bin/env python
-"""STOM CLI Backtest Runner"""
+"""STOM 공식 CLI 진입점.
+
+현재 공식적으로 shipped 하는 경로는 다음 두 가지다.
+- 기본 백테스트 실행
+- `formula` / `strategy` 서브커맨드
+
+그 외 `cli/` 하위의 history / sweep / optimizer / ai_controller 등은
+현재 시점에서는 라이브러리 성격이 강하며, 별도 서브커맨드로는 노출하지 않는다.
+"""
 import sys
 import json
 import os

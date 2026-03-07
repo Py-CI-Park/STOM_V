@@ -1,4 +1,7 @@
-"""백테스트 진행률 모니터링 — QueueDrainer 확장."""
+"""백테스트 진행률 모니터링 — QueueDrainer 확장.
+
+현재는 공식 `stom_backtest.py` 서브커맨드로 직접 노출하지 않는 library-only 모듈이다.
+"""
 
 import sys
 import time

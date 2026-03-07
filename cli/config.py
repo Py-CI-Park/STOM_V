@@ -61,6 +61,14 @@ Exit codes:
   1  인자 오류 (필수 인자 누락 또는 검증 실패)
   2  실행 오류 (백테스트 실행 중 오류 발생)
   3  타임아웃 (--timeout 초과)
+
+공식 CLI 범위:
+  - 기본 백테스트 실행
+  - formula / strategy 서브커맨드
+
+라이브러리 전용(현재 help 미노출):
+  - history / sweep / optimizer / ai_controller / data_bridge
+  - report / engine_tuner / monitor / strategy_generator
 """
 
 

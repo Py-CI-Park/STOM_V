@@ -2,6 +2,8 @@
 
 STOM_V의 tick DB가 비어있으면 STOM_V1에서 심볼릭 링크를 생성한다.
 기존 STOM 코드를 수정하지 않고, DB 경로만 연결하는 어댑터.
+
+현재는 공식 `stom_backtest.py` 서브커맨드가 아니라 library-only 유틸리티다.
 """
 
 import os

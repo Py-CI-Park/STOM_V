@@ -19,17 +19,20 @@
 
 ---
 
-## 현재 상태 (Phase 1-4 + Stage 1-6 완료)
+## 현재 상태 (모듈 구현 완료 / shipped CLI 노출은 일부)
 
-- CLI 백테스트 실행 가능 (runner.py)
-- JSON 구조화 출력 (output.py)
-- 파라미터 스윕 (sweep.py) — 순차 실행
-- 전략 AST 분석 (strategy_loader.py)
-- 서브커맨드 (subcommands.py)
-- 진행률 모니터 (monitor.py)
-- 엔진 튜닝 (engine_tuner.py)
+- 공식 CLI:
+  - CLI 백테스트 실행 가능 (runner.py)
+  - JSON 구조화 출력 (output.py)
+  - 서브커맨드 (subcommands.py) → `formula`, `strategy`
+- library-only / 내부 모듈:
+  - 파라미터 스윕 (sweep.py) — 순차 실행
+  - 전략 AST 분석 (strategy_loader.py)
+  - 진행률 모니터 (monitor.py)
+  - 엔진 튜닝 (engine_tuner.py)
+  - history / optimizer / ai_controller / data_bridge / strategy_generator
 
-**Gap**: 실 데이터 E2E 미검증, 타임프레임 자동 매칭 없음, 피드백 루프 없음, 전략 생성 불가
+**Gap**: 공식 CLI로 아직 노출되지 않은 모듈이 있으며, 일부 기능은 shipped CLI가 아니라 Python API / 연구용 모듈 성격이다.
 
 ---
 

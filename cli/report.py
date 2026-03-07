@@ -1,4 +1,7 @@
-"""결과 집계 리포트 — DataFrame 변환 + CSV/Excel 출력."""
+"""결과 집계 리포트 — DataFrame 변환 + CSV/Excel 출력.
+
+현재는 공식 `stom_backtest.py` 서브커맨드로 직접 노출하지 않는 library-only 모듈이다.
+"""
 
 import pandas as pd
 

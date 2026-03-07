@@ -1,6 +1,8 @@
 """백테스트 결과 히스토리 추적 모듈.
 
 SQLite DB에 백테스트 실행 결과를 저장하고 조회한다.
+
+현재는 공식 `stom_backtest.py` 서브커맨드로 직접 노출하지 않는 library-only 모듈이다.
 """
 
 import json

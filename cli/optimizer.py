@@ -1,4 +1,7 @@
-"""파라미터 최적화 엔진 — Grid / Random 탐색."""
+"""파라미터 최적화 엔진 — Grid / Random 탐색.
+
+현재는 공식 `stom_backtest.py` 서브커맨드로 직접 노출하지 않는 library-only 모듈이다.
+"""
 
 import os
 import sys
