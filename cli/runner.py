@@ -113,6 +113,24 @@ def _drain_queues(queues):
                     break
 
 
+def _engine_with_dict_set(engine_cls, dict_set_override, *args):
+    """자식 프로세스 시작 시 DICT_SET을 CLI 값으로 패치한 후 엔진을 생성한다.
+
+    Windows spawn 방식은 자식 프로세스에서 모든 모듈을 재import하므로,
+    부모 프로세스의 _sync_dict_set()이 수정한 DICT_SET 값이 자식에게 전달되지 않는다.
+    이 래퍼가 엔진 생성자 호출 전에 올바른 DICT_SET 값을 주입한다.
+
+    각 자식 프로세스는 Windows spawn으로 생성된 독립 메모리 공간이므로
+    DICT_SET.update()는 해당 프로세스에만 영향을 미치며,
+    부모 프로세스나 다른 자식 프로세스에는 전파되지 않는다.
+
+    See: docs/research/2026-03-08_dict_set_propagation_fix.md
+    """
+    from utility.setting import DICT_SET
+    DICT_SET.update(dict_set_override)
+    engine_cls(*args)
+
+
 def run_backtest(config):
     """CLI 백테스트 실행. backengine_start() (ui_backtest_engine.py:77-266) 프로토콜 재구현."""
 
@@ -174,8 +192,9 @@ def run_backtest(config):
 
         for i in range(config.engine_count):
             proc = Process(
-                target=target,
-                args=(i, shared_cnt, shared_lock, windowQ, totalQ, backQ, back_eques, back_sques),
+                target=_engine_with_dict_set,
+                args=(target, dict(DICT_SET),
+                      i, shared_cnt, shared_lock, windowQ, totalQ, backQ, back_eques, back_sques),
                 daemon=True
             )
             proc.start()
