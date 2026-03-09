@@ -581,7 +581,7 @@ class BackEngineBase(Strategy):
             else:
                 self.high_low = [현재가또는분봉고가, self.indexn, 분봉저가, self.indexn]
 
-    def Buy(self, buy_long=False):
+    def Buy(self, *_args, buy_long=False):
         self.SetBuyCount()
         주문수량 = 미체결수량 = self.curr_trade_info['주문수량']
         if 주문수량 > 0:
@@ -646,7 +646,7 @@ class BackEngineBase(Strategy):
         self.indexb = 매수틱번호
         return 포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간
 
-    def Sell(self, sell_long=False):
+    def Sell(self, *_args, sell_long=False):
         주문수량 = 미체결수량 = self.curr_trade_info['주문수량']
         호가정보 = self.bhogainfo if self.market_gubun in (1, 3) or sell_long else self.shogainfo
         호가정보 = 호가정보[:self.sell_hj_limit]
