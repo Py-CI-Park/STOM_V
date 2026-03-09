@@ -448,6 +448,44 @@ CLI에서 동적으로 수정하지 않으므로, 동일한 문제가 발생하�
 
 ---
 
+## 10. 후속 수정: 환경 변수 전파 (방안 C + D 하이브리드)
+
+- 추가일: 2026-03-09
+
+### 10.1 문제
+
+방안 C(래퍼)만으로는 **손자 프로세스**(BackTest가 내부에서 생성하는 Total)에
+DICT_SET을 전파할 수 없었다. Total 프로세스에서 Report()가 실행될 때
+`is_tick=True`(설정DB 원본), `그래프저장하지않기=False` 상태로
+PlotShow가 호출되어 `ValueError: Invalid isoformat string` 발생.
+
+### 10.2 해결
+
+기존 래퍼(방안 C)를 유지하면서, 환경 변수 전파(방안 D)를 추가.
+
+**수정 파일:**
+- `cli/runner.py`: `_sync_dict_set()`에서 `os.environ['_STOM_CLI_DICT_SET']` 설정
+- `utility/setting.py`: DICT_SET 로드 직후 env var 오버라이드 적용 (4줄)
+
+환경 변수는 Windows에서 모든 자손 프로세스에 자동 상속되므로,
+프로세스 계층 깊이에 관계없이 CLI 오버라이드가 전파된다.
+
+### 10.3 코어 수정 추적
+
+`utility/setting.py` 수정이 필요하다. (방안 D 유보 사유였던 코어 수정)
+
+| 항목 | 내용 |
+|------|------|
+| 수정 위치 | DICT_SET `}` 직후, `except fernet.InvalidToken:` 직전 |
+| 수정량 | 4줄 |
+| V2 충돌 확률 | 매우 낮음 |
+| GUI 영향 | 없음 (env var 미설정 시 무동작) |
+| 누락 시 영향 | CLI 손자 프로세스 DICT_SET 미전파 |
+
+상세: `docs/research/2026-03-09_e2e_backtest_verification.md` §5.3 참조.
+
+---
+
 ## 9. 참고: 컬럼 리스트 상세
 
 ### list_stock_tick (utility/setting.py)

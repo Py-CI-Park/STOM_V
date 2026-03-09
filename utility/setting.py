@@ -400,6 +400,12 @@ try:
         '전략연산프로파일링': False,
         '백테엔진프로파일링': False
     }
+    # CLI headless 모드: 환경 변수로 전달된 DICT_SET 오버라이드 적용
+    # Windows spawn 방식에서 손자 프로세스(Total 등)까지 설정을 전파하기 위함
+    _cli_ovr = os.environ.get('_STOM_CLI_DICT_SET')
+    if _cli_ovr:
+        import json as _json
+        DICT_SET.update(_json.loads(_cli_ovr))
 except fernet.InvalidToken:
     logger_.critical('이 컴퓨터의 암호키로 생성된 계정이 아닙니다. setting.db를 삭제 후 재실행 하십시오.')
     sys.exit()

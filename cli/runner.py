@@ -1,6 +1,7 @@
 
 import os
 import sys
+import json
 import signal
 import sqlite3
 import atexit
@@ -93,6 +94,19 @@ def _sync_dict_set(config):
     DICT_SET['그래프저장하지않기'] = True                # CLI에서 그래프 파일 저장 불필요
     DICT_SET['그래프띄우지않기'] = True                  # CLI에서 그래프 표시 불가
     DICT_SET['스톰라이브'] = False                      # CLI에서 라이브 연결 불필요
+
+    # 환경 변수로 오버라이드 전파 — Windows spawn 손자 프로세스(Total 등) 대응
+    # BackTest가 내부에서 Total을 Process로 생성하므로, _engine_with_dict_set 래퍼로는
+    # 도달할 수 없다. 환경 변수는 모든 자손 프로세스에 자동 상속된다.
+    os.environ['_STOM_CLI_DICT_SET'] = json.dumps({
+        '주식타임프레임': config.is_tick,
+        '증권사': '키움증권',
+        '백테주문관리적용': config.oms,
+        '블랙리스트추가': config.blacklist,
+        '그래프저장하지않기': True,
+        '그래프띄우지않기': True,
+        '스톰라이브': False,
+    })
 
 
 def _drain_queues(queues):
@@ -339,8 +353,9 @@ def run_backtest(config):
 
         # BackTest 프로세스 시작 (11개 인자)
         proc_backtest = Process(
-            target=BackTest,
-            args=(shared_cnt, windowQ, backQ, soundQ, totalQ, liveQ, teleQ,
+            target=_engine_with_dict_set,
+            args=(BackTest, dict(DICT_SET),
+                  shared_cnt, windowQ, backQ, soundQ, totalQ, liveQ, teleQ,
                   back_eques, back_sques, '백테스트', 'S')
         )
         proc_backtest.start()
