@@ -1,7 +1,7 @@
 
 import numpy as np
 from backtest.backengine_base import BackEngineBase
-from utility.static import GetKiwoomPgSgSp, dt_ymdhms, GetHogaunit, GetUvilower5
+from utility.static import GetKiwoomPgSgSp, dt_ymdhms, GetHogaunit
 
 
 class BackEngineKiwoomTick(BackEngineBase):
@@ -14,10 +14,7 @@ class BackEngineKiwoomTick(BackEngineBase):
             매수호가5, 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
             매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
 
-        VI해제시간, VI아래5호가 = dt_ymdhms(str(int(VI해제시간))), GetUvilower5(VI가격, VI호가단위, self.index)
-        순매수금액 = 초당매수금액 - 초당매도금액
-        수익률 = 매수금액 = 매수가격 = 매수수량 = 매도수량 = 0
-        강제청산 = False
+        VI해제시간, 순매수금액 = dt_ymdhms(str(int(VI해제시간))), 초당매수금액 - 초당매도금액
         종목명, 종목코드, 데이터길이, 체결시간, 시분초 = self.name, self.code, self.tick_count, self.index, int(str(self.index)[8:])
         self.hoga_unit = 호가단위 = GetHogaunit(self.dict_kosd.get(종목코드, False), 현재가, 체결시간)
 

@@ -678,22 +678,6 @@ try:
 
 
     @jit(nopython=True, cache=True)
-    def GetUvilower5(uvi, hogaunit, index):
-        upper5 = uvi - hogaunit * 5
-        if GetHogaunit(True, upper5, index) != hogaunit:
-            k = 0
-            hogaunit2 = 0
-            for i in (1, 2, 3, 4, 5):
-                hogaunit_ = GetHogaunit(True, uvi - hogaunit * i, index)
-                if hogaunit_ != hogaunit:
-                    hogaunit2 = hogaunit_
-                    break
-                k += 1
-            upper5 = uvi - hogaunit * k - hogaunit2 * (5 - k)
-        return upper5
-
-
-    @jit(nopython=True, cache=True)
     def roundfigure_upper(price, unit, index):
         if index < 20230125000000:
             if 1000 <= price <= 1000 + 5 * unit:
@@ -929,21 +913,6 @@ except:
                 return 500
             else:
                 return 1000
-
-
-    def GetUvilower5(uvi, hogaunit, index):
-        upper5 = uvi - hogaunit * 5
-        if GetHogaunit(True, upper5, index) != hogaunit:
-            k = 0
-            hogaunit2 = 0
-            for i in (1, 2, 3, 4, 5):
-                hogaunit_ = GetHogaunit(True, uvi - hogaunit * i, index)
-                if hogaunit_ != hogaunit:
-                    hogaunit2 = hogaunit_
-                    break
-                k += 1
-            upper5 = uvi - hogaunit * k - hogaunit2 * (5 - k)
-        return upper5
 
 
     def roundfigure_upper(price, unit, index):
