@@ -1193,8 +1193,8 @@ class MainWindow(QMainWindow):
     def cvoButtonClicked_04(self): self.CoinCondsellSave()
     # =================================================================================================================
     def BackTestengineShow(self, gubun):                 backengine_show(self, gubun)
-    def BacktestEngineStart(self, gubun):                start_backengine(self, gubun)
-    def StartBacktestEngine(self, gubun):                start_backengine(self, gubun)
+    def BacktestEngineStart(self, gubun):                backengine_start(self, gubun)
+    def StartBacktestEngine(self, gubun):                backengine_start(self, gubun)
     def BackCodeTest1(self, stg_code):            return back_code_test1(self, stg_code, self.testQ)
     def BackCodeTest2(self, vars_code, ga=False): return back_code_test2(self, vars_code, self.testQ, ga)
     def BackCodeTest3(self, gubun, conds_code):   return back_code_test3(self, gubun, conds_code, self.testQ)
