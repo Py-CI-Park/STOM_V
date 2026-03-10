@@ -65,9 +65,10 @@ Exit codes:
 공식 CLI 범위:
   - 기본 백테스트 실행
   - formula / strategy 서브커맨드
+  - discovery 서브커맨드
 
 라이브러리 전용(현재 help 미노출):
-  - history / sweep / optimizer / ai_controller / analyzer / condition_generator / wfo / ml_factor_model / data_bridge
+  - history / sweep / optimizer / ai_controller / data_bridge
   - report / engine_tuner / monitor / strategy_generator
 """
 

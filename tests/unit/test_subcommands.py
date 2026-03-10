@@ -263,6 +263,73 @@ class TestStrategySubcommand:
         assert code == 1
 
 
+class TestDiscoverySubcommand:
+
+    def test_discovery_analyze_ok(self):
+        mock_result = {'status': 'ok', 'recommended_candidates': []}
+        with patch('cli.ai_controller.AIBacktestController.analyze_results', return_value=mock_result), \
+             patch('builtins.print') as mock_print:
+            code = handle_subcommand(['discovery', 'analyze', '--input', 'result.csv'])
+        assert code == 0
+        mock_print.assert_called_once()
+
+    def test_discovery_ml_analyze_ok(self):
+        mock_result = {'status': 'ok', 'top_features': []}
+        with patch('cli.ai_controller.AIBacktestController.analyze_results_ml', return_value=mock_result), \
+             patch('builtins.print') as mock_print:
+            code = handle_subcommand(['discovery', 'ml-analyze', '--input', 'result.csv'])
+        assert code == 0
+        mock_print.assert_called_once()
+
+    def test_discovery_generate_ok(self):
+        mock_result = {'status': 'ok', 'candidate_count': 2, 'code': 'if B_등락율 <= 2: 매수 = False'}
+        with patch('cli.ai_controller.AIBacktestController.generate_conditions', return_value=mock_result), \
+             patch('builtins.print') as mock_print:
+            code = handle_subcommand(['discovery', 'generate', '--input', 'result.csv', '--top-n', '2'])
+        assert code == 0
+        mock_print.assert_called_once()
+
+    def test_discovery_create_strategy_ok(self):
+        mock_result = {'status': 'ok', 'strategy_result': {'status': 'ok', 'action': 'created'}}
+        with patch('cli.ai_controller.AIBacktestController.create_strategy_from_analysis', return_value=mock_result), \
+             patch('builtins.print') as mock_print:
+            code = handle_subcommand(['discovery', 'create-strategy', 'Auto_B', '--input', 'result.csv'])
+        assert code == 0
+        mock_print.assert_called_once()
+
+    def test_discovery_promote_returns_nonzero_when_not_promoted(self):
+        mock_result = {'status': 'ok', 'promoted': False}
+        with patch('cli.ai_controller.AIBacktestController.discover_and_promote_strategy', return_value=mock_result), \
+             patch('builtins.print') as mock_print:
+            code = handle_subcommand([
+                'discovery', 'promote', 'Auto_B',
+                '--input', 'result.csv',
+                '--sell', 'BaseSell',
+                '--start', '20240101',
+                '--end', '20240630',
+                '--train-window-days', '60',
+                '--test-window-days', '20',
+            ])
+        assert code == 1
+        mock_print.assert_called_once()
+
+    def test_discovery_promote_ok(self):
+        mock_result = {'status': 'ok', 'promoted': True}
+        with patch('cli.ai_controller.AIBacktestController.discover_and_promote_strategy', return_value=mock_result), \
+             patch('builtins.print') as mock_print:
+            code = handle_subcommand([
+                'discovery', 'promote', 'Auto_B',
+                '--input', 'result.csv',
+                '--sell', 'BaseSell',
+                '--start', '20240101',
+                '--end', '20240630',
+                '--train-window-days', '60',
+                '--test-window-days', '20',
+            ])
+        assert code == 0
+        mock_print.assert_called_once()
+
+
 # ============================================================
 # TestSubcommandDetection — stom_backtest.py main() routing
 # ============================================================
@@ -288,6 +355,15 @@ class TestSubcommandDetection:
             import stom_backtest
             result = stom_backtest.main()
         mock_handler.assert_called_once_with(['strategy', 'list'])
+        assert result == 0
+
+    def test_discovery_detected_in_main(self):
+        """sys.argv[1]=='discovery' 이면 handle_subcommand가 호출된다."""
+        with patch('sys.argv', ['stom_backtest.py', 'discovery', 'analyze', '--input', 'result.csv']), \
+             patch('cli.subcommands.handle_subcommand', return_value=0) as mock_handler:
+            import stom_backtest
+            result = stom_backtest.main()
+        mock_handler.assert_called_once_with(['discovery', 'analyze', '--input', 'result.csv'])
         assert result == 0
 
     def test_no_subcommand_falls_through_to_parse_args(self):
@@ -369,3 +445,29 @@ class TestParserStructure:
         assert parsed.strategy_action == 'analyze'
         assert parsed.name == 'MySell'
         assert parsed.type == 'sell'
+
+    def test_discovery_analyze_parsed(self):
+        parser = create_subcommand_parser()
+        parsed = parser.parse_args(['discovery', 'analyze', '--input', 'result.csv', '--quantiles', '4'])
+        assert parsed.command == 'discovery'
+        assert parsed.discovery_action == 'analyze'
+        assert parsed.input_file == 'result.csv'
+        assert parsed.quantiles == 4
+
+    def test_discovery_promote_parsed(self):
+        parser = create_subcommand_parser()
+        parsed = parser.parse_args([
+            'discovery', 'promote', 'Auto_B',
+            '--input', 'result.csv',
+            '--sell', 'BaseSell',
+            '--start', '20240101',
+            '--end', '20240630',
+            '--train-window-days', '60',
+            '--test-window-days', '20',
+            '--param-space-json', '{"avg_time":[60,120]}',
+        ])
+        assert parsed.command == 'discovery'
+        assert parsed.discovery_action == 'promote'
+        assert parsed.name == 'Auto_B'
+        assert parsed.input_file == 'result.csv'
+        assert parsed.param_space_json == '{"avg_time":[60,120]}'

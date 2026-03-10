@@ -4,6 +4,7 @@
 현재 공식적으로 shipped 하는 경로는 다음 두 가지다.
 - 기본 백테스트 실행
 - `formula` / `strategy` 서브커맨드
+- `discovery` 서브커맨드
 
 그 외 `cli/` 하위의 history / sweep / optimizer / ai_controller /
 analyzer / condition_generator / wfo / ml_factor_model 등은
@@ -41,8 +42,8 @@ def _configure_matplotlib_headless():
 
 
 def main():
-    # 서브커맨드 감지 (formula, strategy)
-    if len(sys.argv) > 1 and sys.argv[1] in ('formula', 'strategy'):
+    # 서브커맨드 감지 (formula, strategy, discovery)
+    if len(sys.argv) > 1 and sys.argv[1] in ('formula', 'strategy', 'discovery'):
         from cli.subcommands import handle_subcommand
         return handle_subcommand(sys.argv[1:])
 
