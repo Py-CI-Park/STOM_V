@@ -78,3 +78,17 @@ def test_generate_conditions_from_analysis_selects_top_n(tmp_path):
     )
     assert filtered['candidate_count'] == 1
     assert filtered['expressions'] == ['0 <= B_시가총액 < 300_000_000_000']
+
+    ranked = generate_condition_expressions_from_analysis(
+        {
+            'recommended_candidates': [
+                {'feature': 'B_등락율', 'source': 'quantile', 'operator': '<=', 'threshold': 2.0, 'score': 1.0},
+                {'feature': 'B_시가총액', 'source': 'market_cap', 'operator': 'between', 'lower_bound': 0, 'upper_bound': 300_000_000_000, 'score': 1.0},
+            ]
+        },
+        top_n=1,
+        feature_importance_map={'B_시가총액': 0.9, 'B_등락율': 0.1},
+        ml_weight=1.0,
+    )
+    assert ranked['candidate_count'] == 1
+    assert ranked['selected_candidates'][0]['feature'] == 'B_시가총액'

@@ -287,11 +287,12 @@ class TestDiscoverySubcommand:
              patch('builtins.print') as mock_print:
             code = handle_subcommand([
                 'discovery', 'generate', '--input', 'result.csv', '--top-n', '2',
-                '--ml-feature-limit', '1', '--ml-top-n', '3', '--ml-n-splits', '2'
+                '--ml-feature-limit', '1', '--ml-top-n', '3', '--ml-n-splits', '2', '--ml-weight', '0.5'
             ])
         assert code == 0
         _, kwargs = mock_gen.call_args
         assert kwargs['ml_feature_limit'] == 1
+        assert kwargs['ml_weight'] == 0.5
         mock_print.assert_called_once()
 
     def test_discovery_create_strategy_ok(self):
@@ -300,11 +301,12 @@ class TestDiscoverySubcommand:
              patch('builtins.print') as mock_print:
             code = handle_subcommand([
                 'discovery', 'create-strategy', 'Auto_B', '--input', 'result.csv',
-                '--ml-feature-limit', '1'
+                '--ml-feature-limit', '1', '--ml-weight', '0.5'
             ])
         assert code == 0
         _, kwargs = mock_create.call_args
         assert kwargs['ml_feature_limit'] == 1
+        assert kwargs['ml_weight'] == 0.5
         mock_print.assert_called_once()
 
     def test_discovery_promote_returns_nonzero_when_not_promoted(self):
@@ -336,6 +338,7 @@ class TestDiscoverySubcommand:
                 '--train-window-days', '60',
                 '--test-window-days', '20',
                 '--ml-feature-limit', '1',
+                '--ml-weight', '0.5',
                 '--promotion-preset', 'conservative',
                 '--report-json', 'report.json',
                 '--report-md', 'report.md',
@@ -343,6 +346,7 @@ class TestDiscoverySubcommand:
         assert code == 0
         _, kwargs = mock_promote.call_args
         assert kwargs['ml_feature_limit'] == 1
+        assert kwargs['ml_weight'] == 0.5
         assert kwargs['promotion_preset'] == 'conservative'
         assert kwargs['report_json_path'] == 'report.json'
         assert kwargs['report_md_path'] == 'report.md'
@@ -485,6 +489,7 @@ class TestParserStructure:
             '--test-window-days', '20',
             '--param-space-json', '{"avg_time":[60,120]}',
             '--ml-feature-limit', '1',
+            '--ml-weight', '0.5',
             '--promotion-preset', 'aggressive',
             '--report-json', 'report.json',
             '--report-md', 'report.md',
@@ -495,6 +500,7 @@ class TestParserStructure:
         assert parsed.input_file == 'result.csv'
         assert parsed.param_space_json == '{"avg_time":[60,120]}'
         assert parsed.ml_feature_limit == 1
+        assert parsed.ml_weight == 0.5
         assert parsed.promotion_preset == 'aggressive'
         assert parsed.report_json == 'report.json'
         assert parsed.report_md == 'report.md'

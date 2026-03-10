@@ -77,6 +77,8 @@ def select_candidates(
     top_n: int = 5,
     include_sources: tuple[str, ...] = ('market_cap', 'time_of_day', 'quantile', 'ttest'),
     feature_whitelist: list[str] | None = None,
+    feature_importance_map: dict | None = None,
+    ml_weight: float = 0.0,
 ) -> list[dict]:
     recommended = [
         candidate for candidate in analysis_result.get('recommended_candidates', [])
@@ -85,7 +87,18 @@ def select_candidates(
     if feature_whitelist is not None:
         allowed = set(feature_whitelist)
         recommended = [candidate for candidate in recommended if candidate.get('feature') in allowed]
-    return recommended[:max(top_n, 0)]
+    ranked = []
+    feature_importance_map = feature_importance_map or {}
+    for candidate in recommended:
+        item = dict(candidate)
+        base_score = float(item.get('score', 0.0) or 0.0)
+        ml_importance = float(feature_importance_map.get(item.get('feature'), 0.0) or 0.0)
+        item['base_score'] = base_score
+        item['ml_importance'] = ml_importance
+        item['combined_score'] = base_score + ml_weight * ml_importance
+        ranked.append(item)
+    ranked.sort(key=lambda item: item['combined_score'], reverse=True)
+    return ranked[:max(top_n, 0)]
 
 
 def generate_condition_expressions(candidates: list[dict]) -> list[str]:
@@ -97,12 +110,16 @@ def generate_condition_expressions_from_analysis(
     top_n: int = 5,
     include_sources: tuple[str, ...] = ('market_cap', 'time_of_day', 'quantile', 'ttest'),
     feature_whitelist: list[str] | None = None,
+    feature_importance_map: dict | None = None,
+    ml_weight: float = 0.0,
 ) -> dict:
     selected = select_candidates(
         analysis_result,
         top_n=top_n,
         include_sources=include_sources,
         feature_whitelist=feature_whitelist,
+        feature_importance_map=feature_importance_map,
+        ml_weight=ml_weight,
     )
     expressions = generate_condition_expressions(selected)
     return {
@@ -119,12 +136,16 @@ def generate_conditions_from_analysis(
     buy_var: str = '매수',
     include_sources: tuple[str, ...] = ('market_cap', 'time_of_day', 'quantile', 'ttest'),
     feature_whitelist: list[str] | None = None,
+    feature_importance_map: dict | None = None,
+    ml_weight: float = 0.0,
 ) -> dict:
     selected = select_candidates(
         analysis_result,
         top_n=top_n,
         include_sources=include_sources,
         feature_whitelist=feature_whitelist,
+        feature_importance_map=feature_importance_map,
+        ml_weight=ml_weight,
     )
     code = generate_condition_code(selected, buy_var=buy_var)
     return {

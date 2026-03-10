@@ -526,11 +526,13 @@ class TestResultAnalysis:
             ml_feature_limit=1,
             ml_top_n=3,
             ml_n_splits=2,
+            ml_weight=0.5,
         )
         assert result['status'] == 'ok'
         assert result['feature_whitelist'] is not None
         assert len(result['feature_whitelist']) == 1
         assert result['candidate_count'] <= 5
+        assert 'feature_importance_map' in result
 
     def test_generate_conditions_requires_source(self, controller):
         result = controller.generate_conditions()
@@ -551,6 +553,7 @@ class TestResultAnalysis:
         assert len(result['top_features']) == 3
         assert result['saved']['status'] == 'ok'
         assert output_path.exists()
+        assert 'shap_status' in result
 
 
 # === error handling ===

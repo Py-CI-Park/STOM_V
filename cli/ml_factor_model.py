@@ -91,9 +91,12 @@ def analyze_results_ml(
         {'feature': feature, 'importance': float(importance)}
         for feature, importance in feature_importance.head(top_n).items()
     ]
+    feature_importance_map = {item['feature']: item['importance'] for item in top_features}
 
     shap_summary = []
     shap_available = shap is not None
+    shap_status = 'available' if shap_available else 'unavailable'
+    shap_message = None if shap_available else 'shap 패키지가 설치되어 있지 않아 SHAP 요약을 생략했습니다.'
     if shap_available:
         try:  # pragma: no cover - optional dependency
             sample_X = X.head(min(200, len(X)))
@@ -109,6 +112,8 @@ def analyze_results_ml(
             ]
         except Exception:
             shap_available = False
+            shap_status = 'failed'
+            shap_message = 'SHAP 계산 중 오류가 발생하여 fallback 처리했습니다.'
             shap_summary = []
 
     return {
@@ -123,7 +128,10 @@ def analyze_results_ml(
         'cv_scores': cv_scores,
         'mean_cv_score': float(sum(cv_scores) / len(cv_scores)),
         'top_features': top_features,
+        'feature_importance_map': feature_importance_map,
         'shap_available': shap_available,
+        'shap_status': shap_status,
+        'shap_message': shap_message,
         'top_shap_features': shap_summary,
     }
 

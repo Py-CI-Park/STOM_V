@@ -26,6 +26,8 @@ def test_analyze_results_ml_returns_feature_importance():
     assert result['feature_count'] >= 4
     assert len(result['cv_scores']) == 3
     assert len(result['top_features']) == 3
+    assert 'feature_importance_map' in result
+    assert 'shap_status' in result
     assert result['top_features'][0]['feature'] in {'B_등락율', 'B_체결강도', 'B_시가총액', 'B_시분초'}
 
 

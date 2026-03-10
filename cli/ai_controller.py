@@ -89,7 +89,8 @@ class AIBacktestController:
                                     min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05,
                                     ml_analysis_result: dict = None, ml_feature_limit: int = 0,
                                     ml_model_type: str = 'random_forest', ml_top_n: int = 10,
-                                    ml_n_splits: int = 5, ml_random_state: int = 42) -> dict:
+                                    ml_n_splits: int = 5, ml_random_state: int = 42,
+                                    ml_weight: float = 0.0) -> dict:
         from cli.analyzer import analyze_result_csv
         from cli.condition_generator import (
             generate_condition_expressions_from_analysis,
@@ -112,6 +113,7 @@ class AIBacktestController:
             return analysis_result
 
         feature_whitelist = None
+        feature_importance_map = None
         if ml_feature_limit > 0:
             if ml_analysis_result is None:
                 if not input_path:
@@ -129,23 +131,33 @@ class AIBacktestController:
                 item['feature']
                 for item in (ml_analysis_result.get('top_features') or [])[:ml_feature_limit]
             ]
+        if ml_analysis_result is not None:
+            feature_importance_map = ml_analysis_result.get('feature_importance_map') or {
+                item['feature']: item['importance']
+                for item in (ml_analysis_result.get('top_features') or [])
+            }
 
         expression_result = generate_condition_expressions_from_analysis(
             analysis_result,
             top_n=top_n,
             feature_whitelist=feature_whitelist,
+            feature_importance_map=feature_importance_map,
+            ml_weight=ml_weight,
         )
         code_result = generate_conditions_from_analysis(
             analysis_result,
             top_n=top_n,
             buy_var=buy_var,
             feature_whitelist=feature_whitelist,
+            feature_importance_map=feature_importance_map,
+            ml_weight=ml_weight,
         )
         return {
             'status': 'ok',
             'analysis_result': analysis_result,
             'ml_analysis_result': ml_analysis_result,
             'feature_whitelist': feature_whitelist,
+            'feature_importance_map': feature_importance_map,
             'expression_result': expression_result,
             'code_result': code_result,
         }
@@ -194,7 +206,8 @@ class AIBacktestController:
                             min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05,
                             ml_analysis_result: dict = None, ml_feature_limit: int = 0,
                             ml_model_type: str = 'random_forest', ml_top_n: int = 10,
-                            ml_n_splits: int = 5, ml_random_state: int = 42) -> dict:
+                            ml_n_splits: int = 5, ml_random_state: int = 42,
+                            ml_weight: float = 0.0) -> dict:
         """분석 결과 또는 CSV 입력으로부터 자동 필터 조건 코드를 생성한다."""
         try:
             from cli.condition_generator import save_condition_code
@@ -215,6 +228,7 @@ class AIBacktestController:
                 ml_top_n=ml_top_n,
                 ml_n_splits=ml_n_splits,
                 ml_random_state=ml_random_state,
+                ml_weight=ml_weight,
             )
             if prepared.get('status') != 'ok':
                 return prepared
@@ -224,6 +238,7 @@ class AIBacktestController:
                 'analysis_result': prepared['analysis_result'],
                 'ml_analysis_result': prepared.get('ml_analysis_result'),
                 'feature_whitelist': prepared.get('feature_whitelist'),
+                'feature_importance_map': prepared.get('feature_importance_map'),
                 'selected_candidates': prepared['code_result'].get('selected_candidates', []),
                 'code': prepared['code_result']['code'],
                 'candidate_count': prepared['code_result']['candidate_count'],
@@ -240,7 +255,8 @@ class AIBacktestController:
                                       min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05,
                                       output_code_path: str = None, ml_analysis_result: dict = None,
                                       ml_feature_limit: int = 0, ml_model_type: str = 'random_forest',
-                                      ml_top_n: int = 10, ml_n_splits: int = 5, ml_random_state: int = 42) -> dict:
+                                      ml_top_n: int = 10, ml_n_splits: int = 5, ml_random_state: int = 42,
+                                      ml_weight: float = 0.0) -> dict:
         """분석 결과로부터 전략 코드를 생성하고 strategy.db에 저장한다."""
         try:
             from cli.condition_generator import save_condition_code
@@ -261,6 +277,7 @@ class AIBacktestController:
                 ml_top_n=ml_top_n,
                 ml_n_splits=ml_n_splits,
                 ml_random_state=ml_random_state,
+                ml_weight=ml_weight,
             )
             if prepared.get('status') != 'ok':
                 return prepared
@@ -277,6 +294,7 @@ class AIBacktestController:
                 'analysis_result': analysis_result,
                 'ml_analysis_result': ml_analysis_result,
                 'feature_whitelist': feature_whitelist,
+                'feature_importance_map': prepared.get('feature_importance_map'),
                 'expression_result': expression_result,
                 'generated_code': code_result.get('code'),
                 'strategy_result': strategy_result,
@@ -342,7 +360,8 @@ class AIBacktestController:
                           output_code_path: str = None, walk_forward_settings: dict = None,
                           ml_analysis_result: dict = None, ml_feature_limit: int = 0,
                           ml_model_type: str = 'random_forest', ml_top_n: int = 10,
-                          ml_n_splits: int = 5, ml_random_state: int = 42) -> dict:
+                          ml_n_splits: int = 5, ml_random_state: int = 42,
+                          ml_weight: float = 0.0) -> dict:
         """분석 → 조건 생성 → 전략 저장 → (선택) WFO 검증을 한 번에 수행한다."""
         try:
             strategy_flow = self.create_strategy_from_analysis(
@@ -362,6 +381,7 @@ class AIBacktestController:
                 ml_top_n=ml_top_n,
                 ml_n_splits=ml_n_splits,
                 ml_random_state=ml_random_state,
+                ml_weight=ml_weight,
             )
             if strategy_flow.get('status') != 'ok':
                 return strategy_flow
@@ -399,7 +419,7 @@ class AIBacktestController:
                                       promotion_criteria: dict = None, ml_analysis_result: dict = None,
                                       ml_feature_limit: int = 0, ml_model_type: str = 'random_forest',
                                       ml_top_n: int = 10, ml_n_splits: int = 5, ml_random_state: int = 42,
-                                      promotion_preset: str = 'balanced', report_json_path: str = None,
+                                      ml_weight: float = 0.0, promotion_preset: str = 'balanced', report_json_path: str = None,
                                       report_md_path: str = None) -> dict:
         """후보 전략을 임시 저장 후 WFO 검증을 통과한 경우에만 최종 전략으로 승격한다."""
         try:
@@ -426,6 +446,7 @@ class AIBacktestController:
                 ml_top_n=ml_top_n,
                 ml_n_splits=ml_n_splits,
                 ml_random_state=ml_random_state,
+                ml_weight=ml_weight,
             )
             if prepared.get('status') != 'ok':
                 return prepared
@@ -485,6 +506,7 @@ class AIBacktestController:
                 'analysis_result': analysis_result,
                 'ml_analysis_result': ml_analysis_result,
                 'feature_whitelist': feature_whitelist,
+                'feature_importance_map': prepared.get('feature_importance_map'),
                 'expression_result': expression_result,
                 'generated_code': code_result.get('code'),
                 'saved_code': save_code_result,

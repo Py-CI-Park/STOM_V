@@ -96,6 +96,7 @@ def create_subcommand_parser():
     disc_gen.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
     disc_gen.add_argument('--ml-top-n', type=int, default=10)
     disc_gen.add_argument('--ml-n-splits', type=int, default=5)
+    disc_gen.add_argument('--ml-weight', type=float, default=0.0, help='ML importance를 candidate ranking에 가중치로 반영')
 
     # discovery create-strategy
     disc_create = disc_sub.add_parser('create-strategy', help='분석 결과를 strategy.db 전략으로 저장')
@@ -111,6 +112,7 @@ def create_subcommand_parser():
     disc_create.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
     disc_create.add_argument('--ml-top-n', type=int, default=10)
     disc_create.add_argument('--ml-n-splits', type=int, default=5)
+    disc_create.add_argument('--ml-weight', type=float, default=0.0, help='ML importance를 candidate ranking에 가중치로 반영')
 
     # discovery promote
     disc_promote = disc_sub.add_parser('promote', help='WFO 통과 전략만 최종 채택')
@@ -152,6 +154,7 @@ def create_subcommand_parser():
     disc_promote.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
     disc_promote.add_argument('--ml-top-n', type=int, default=10)
     disc_promote.add_argument('--ml-n-splits', type=int, default=5)
+    disc_promote.add_argument('--ml-weight', type=float, default=0.0, help='ML importance를 candidate ranking에 가중치로 반영')
 
     return parser
 
@@ -323,6 +326,7 @@ def _handle_discovery(parsed):
             ml_model_type=parsed.ml_model_type,
             ml_top_n=parsed.ml_top_n,
             ml_n_splits=parsed.ml_n_splits,
+            ml_weight=parsed.ml_weight,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' else 1
@@ -341,6 +345,7 @@ def _handle_discovery(parsed):
             ml_model_type=parsed.ml_model_type,
             ml_top_n=parsed.ml_top_n,
             ml_n_splits=parsed.ml_n_splits,
+            ml_weight=parsed.ml_weight,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' else 1
@@ -390,6 +395,7 @@ def _handle_discovery(parsed):
             ml_model_type=parsed.ml_model_type,
             ml_top_n=parsed.ml_top_n,
             ml_n_splits=parsed.ml_n_splits,
+            ml_weight=parsed.ml_weight,
             promotion_preset=parsed.promotion_preset,
             report_json_path=parsed.report_json,
             report_md_path=parsed.report_md,
