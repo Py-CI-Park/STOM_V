@@ -320,10 +320,36 @@ class TestStrategyManagement:
             assert len(result['expression_result']['expressions']) == 2
             assert '매수 = False' in result['generated_code']
             assert result['saved_code']['status'] == 'ok'
+            assert 'feature_whitelist' in result
 
     def test_create_strategy_from_analysis_rejects_non_buy(self, controller):
         result = controller.create_strategy_from_analysis('BadSell', analysis_result={'status': 'ok'}, strategy_type='sell')
         assert result['status'] == 'error'
+
+    def test_create_strategy_from_analysis_with_ml_feature_filter(self, controller, tmp_path):
+        csv_path = tmp_path / 'result.csv'
+        pd.DataFrame([
+            {'수익률': -1.0, 'B_등락율': 0.5, 'B_시가총액': 100_000_000_000, 'B_시분초': 91000, 'B_체결강도': 90},
+            {'수익률': -0.8, 'B_등락율': 0.8, 'B_시가총액': 100_000_000_000, 'B_시분초': 91500, 'B_체결강도': 91},
+            {'수익률': 0.5, 'B_등락율': 2.5, 'B_시가총액': 800_000_000_000, 'B_시분초': 100000, 'B_체결강도': 110},
+            {'수익률': 1.1, 'B_등락율': 3.5, 'B_시가총액': 2_000_000_000_000, 'B_시분초': 140000, 'B_체결강도': 130},
+        ] * 10).to_csv(csv_path, index=False, encoding='utf-8-sig')
+
+        with patch('cli.strategy_generator.create_and_save', return_value={'status': 'ok', 'name': 'Auto_B_Test', 'action': 'created'}), \
+             patch('utility.setting.DB_STRATEGY', 'fake.db'):
+            result = controller.create_strategy_from_analysis(
+                'Auto_B_Test',
+                input_path=str(csv_path),
+                top_n=5,
+                min_samples=5,
+                quantiles=4,
+                ml_feature_limit=1,
+                ml_top_n=3,
+                ml_n_splits=2,
+            )
+            assert result['status'] == 'ok'
+            assert result['feature_whitelist'] is not None
+            assert len(result['feature_whitelist']) == 1
 
     def test_discover_strategy_runs_strategy_flow_and_optional_wfo(self, controller):
         strategy_flow = {
@@ -454,6 +480,22 @@ class TestResultAnalysis:
         assert result['saved']['status'] == 'ok'
         assert '매수 = False' in result['code']
         assert output_path.exists()
+
+    def test_generate_conditions_with_ml_feature_filter(self, controller, tmp_path):
+        input_path = self._write_csv(tmp_path)
+        result = controller.generate_conditions(
+            input_path=str(input_path),
+            top_n=5,
+            min_samples=5,
+            quantiles=4,
+            ml_feature_limit=1,
+            ml_top_n=3,
+            ml_n_splits=2,
+        )
+        assert result['status'] == 'ok'
+        assert result['feature_whitelist'] is not None
+        assert len(result['feature_whitelist']) == 1
+        assert result['candidate_count'] <= 5
 
     def test_generate_conditions_requires_source(self, controller):
         result = controller.generate_conditions()

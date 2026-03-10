@@ -92,6 +92,10 @@ def create_subcommand_parser():
     disc_gen.add_argument('--min-samples', type=int, default=30)
     disc_gen.add_argument('--quantiles', type=int, default=10)
     disc_gen.add_argument('--alpha', type=float, default=0.05)
+    disc_gen.add_argument('--ml-feature-limit', type=int, default=0, help='ML 상위 feature만 후보 생성에 사용')
+    disc_gen.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_gen.add_argument('--ml-top-n', type=int, default=10)
+    disc_gen.add_argument('--ml-n-splits', type=int, default=5)
 
     # discovery create-strategy
     disc_create = disc_sub.add_parser('create-strategy', help='분석 결과를 strategy.db 전략으로 저장')
@@ -103,6 +107,10 @@ def create_subcommand_parser():
     disc_create.add_argument('--min-samples', type=int, default=30)
     disc_create.add_argument('--quantiles', type=int, default=10)
     disc_create.add_argument('--alpha', type=float, default=0.05)
+    disc_create.add_argument('--ml-feature-limit', type=int, default=0, help='ML 상위 feature만 후보 생성에 사용')
+    disc_create.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_create.add_argument('--ml-top-n', type=int, default=10)
+    disc_create.add_argument('--ml-n-splits', type=int, default=5)
 
     # discovery promote
     disc_promote = disc_sub.add_parser('promote', help='WFO 통과 전략만 최종 채택')
@@ -137,6 +145,10 @@ def create_subcommand_parser():
     disc_promote.add_argument('--promote-min-success-rate', type=float, default=0.6)
     disc_promote.add_argument('--promote-min-mean-oos', type=float, default=0.0)
     disc_promote.add_argument('--promote-min-avg-trade-count', type=float, default=0.0)
+    disc_promote.add_argument('--ml-feature-limit', type=int, default=0, help='ML 상위 feature만 후보 생성에 사용')
+    disc_promote.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_promote.add_argument('--ml-top-n', type=int, default=10)
+    disc_promote.add_argument('--ml-n-splits', type=int, default=5)
 
     return parser
 
@@ -304,6 +316,10 @@ def _handle_discovery(parsed):
             min_samples=parsed.min_samples,
             quantiles=parsed.quantiles,
             alpha=parsed.alpha,
+            ml_feature_limit=parsed.ml_feature_limit,
+            ml_model_type=parsed.ml_model_type,
+            ml_top_n=parsed.ml_top_n,
+            ml_n_splits=parsed.ml_n_splits,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' else 1
@@ -318,6 +334,10 @@ def _handle_discovery(parsed):
             quantiles=parsed.quantiles,
             alpha=parsed.alpha,
             output_code_path=parsed.output_code,
+            ml_feature_limit=parsed.ml_feature_limit,
+            ml_model_type=parsed.ml_model_type,
+            ml_top_n=parsed.ml_top_n,
+            ml_n_splits=parsed.ml_n_splits,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' else 1
@@ -363,6 +383,10 @@ def _handle_discovery(parsed):
             output_code_path=parsed.output_code,
             walk_forward_settings=walk_forward_settings,
             promotion_criteria=promotion_criteria,
+            ml_feature_limit=parsed.ml_feature_limit,
+            ml_model_type=parsed.ml_model_type,
+            ml_top_n=parsed.ml_top_n,
+            ml_n_splits=parsed.ml_n_splits,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1

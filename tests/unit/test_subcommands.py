@@ -283,18 +283,28 @@ class TestDiscoverySubcommand:
 
     def test_discovery_generate_ok(self):
         mock_result = {'status': 'ok', 'candidate_count': 2, 'code': 'if B_등락율 <= 2: 매수 = False'}
-        with patch('cli.ai_controller.AIBacktestController.generate_conditions', return_value=mock_result), \
+        with patch('cli.ai_controller.AIBacktestController.generate_conditions', return_value=mock_result) as mock_gen, \
              patch('builtins.print') as mock_print:
-            code = handle_subcommand(['discovery', 'generate', '--input', 'result.csv', '--top-n', '2'])
+            code = handle_subcommand([
+                'discovery', 'generate', '--input', 'result.csv', '--top-n', '2',
+                '--ml-feature-limit', '1', '--ml-top-n', '3', '--ml-n-splits', '2'
+            ])
         assert code == 0
+        _, kwargs = mock_gen.call_args
+        assert kwargs['ml_feature_limit'] == 1
         mock_print.assert_called_once()
 
     def test_discovery_create_strategy_ok(self):
         mock_result = {'status': 'ok', 'strategy_result': {'status': 'ok', 'action': 'created'}}
-        with patch('cli.ai_controller.AIBacktestController.create_strategy_from_analysis', return_value=mock_result), \
+        with patch('cli.ai_controller.AIBacktestController.create_strategy_from_analysis', return_value=mock_result) as mock_create, \
              patch('builtins.print') as mock_print:
-            code = handle_subcommand(['discovery', 'create-strategy', 'Auto_B', '--input', 'result.csv'])
+            code = handle_subcommand([
+                'discovery', 'create-strategy', 'Auto_B', '--input', 'result.csv',
+                '--ml-feature-limit', '1'
+            ])
         assert code == 0
+        _, kwargs = mock_create.call_args
+        assert kwargs['ml_feature_limit'] == 1
         mock_print.assert_called_once()
 
     def test_discovery_promote_returns_nonzero_when_not_promoted(self):
@@ -315,7 +325,7 @@ class TestDiscoverySubcommand:
 
     def test_discovery_promote_ok(self):
         mock_result = {'status': 'ok', 'promoted': True}
-        with patch('cli.ai_controller.AIBacktestController.discover_and_promote_strategy', return_value=mock_result), \
+        with patch('cli.ai_controller.AIBacktestController.discover_and_promote_strategy', return_value=mock_result) as mock_promote, \
              patch('builtins.print') as mock_print:
             code = handle_subcommand([
                 'discovery', 'promote', 'Auto_B',
@@ -325,8 +335,11 @@ class TestDiscoverySubcommand:
                 '--end', '20240630',
                 '--train-window-days', '60',
                 '--test-window-days', '20',
+                '--ml-feature-limit', '1',
             ])
         assert code == 0
+        _, kwargs = mock_promote.call_args
+        assert kwargs['ml_feature_limit'] == 1
         mock_print.assert_called_once()
 
 
@@ -465,9 +478,11 @@ class TestParserStructure:
             '--train-window-days', '60',
             '--test-window-days', '20',
             '--param-space-json', '{"avg_time":[60,120]}',
+            '--ml-feature-limit', '1',
         ])
         assert parsed.command == 'discovery'
         assert parsed.discovery_action == 'promote'
         assert parsed.name == 'Auto_B'
         assert parsed.input_file == 'result.csv'
         assert parsed.param_space_json == '{"avg_time":[60,120]}'
+        assert parsed.ml_feature_limit == 1

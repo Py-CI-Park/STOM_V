@@ -70,3 +70,11 @@ def test_generate_conditions_from_analysis_selects_top_n(tmp_path):
     expression_result = generate_condition_expressions_from_analysis(analysis_result, top_n=2)
     assert expression_result['candidate_count'] == 2
     assert expression_result['expressions'][0] == 'B_등락율 <= 2'
+
+    filtered = generate_condition_expressions_from_analysis(
+        analysis_result,
+        top_n=2,
+        feature_whitelist=['B_시가총액'],
+    )
+    assert filtered['candidate_count'] == 1
+    assert filtered['expressions'] == ['0 <= B_시가총액 < 300_000_000_000']
