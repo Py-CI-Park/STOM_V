@@ -100,7 +100,7 @@ avg_list의 각 값(N)마다 생성. 기본 avg_list = [5] 또는 [20, 60] 등 �
 | 최고초당매수수량{N} / 매도수량 | (없음) | avg_list |
 | 등락율각도 / 당일거래대금각도 | avg_list 마지막 값 | avg_list 마지막 값 |
 
-### 1.5 TA-Lib 기술적 지표 (분봉 전용, 29개)
+### 1.5 TA-Lib 기술적 지표 (분봉 전용, 28개)
 
 AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR,
 BBU(볼린저밴드상단), BBM(중단), BBL(하단), CCI, DIM, DIP,
@@ -110,17 +110,38 @@ STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR(윌리엄스%R)
 
 ### 1.6 strategy_base.py 집계 함수 (조건식에서 직접 호출 가능)
 
-| 카테고리 | 함수 수 | 예시 |
-|----------|---------|------|
-| 단순 이전값 조회 | 45개 | _현재가N(pre), _등락율N(pre) |
-| 구간 집계 | 18개 | _이동평균(tick), _최고현재가(tick) |
-| 각도 계산 | 5개 | _등락율각도(tick), _당일거래대금각도(tick) |
-| 조건 판별 | 30개 | _거래대금급증(tick, ratio), _연속상승(tick) |
-| 복합 조건 | 26개 | _횡보후가격급등(t1, p1, t2, p2) |
-| 보유 중 청산 | 8개 | _장기보유종목_동적익절청산(tick, time, minper, multi) |
-| TA-Lib 지표 | 29개 | _RSI_N(pre), _MACD_N(pre), _BBU_N(pre) |
+현재 코드(`trade/strategy_base.py` `SetGlobalsFunc()`) 기준 공개 helper symbol 수는 **181개**다.
+기존 문서의 `약 161개`는 보수적 추정치였으며, 구현 단계에서는 반드시 **코드 자동 산출값**을 기준으로 사용해야 한다.
 
-**총 조건식 사용 가능 함수: 약 161개**
+| 카테고리 | 설명 | 예시 |
+|----------|------|------|
+| 이전값 / 원시값 조회 | 현재가·등락율·호가·잔량·시가총액 등 N시점 조회 | `_현재가N(pre)`, `_시가총액N(pre)` |
+| 롤링 집계 | 최고/최저/누적/평균/이동평균 | `_이동평균(tick)`, `_최고현재가(tick)` |
+| 각도 / 변화율 | 각도, 변동성, 평균대비비율 | `_등락율각도(tick)`, `_거래대금평균대비비율(tick)` |
+| 단일 조건 판별 | 급증/급감/돌파/이탈/연속상승 등 | `_거래대금급증(tick, ratio)`, `_연속상승(tick)` |
+| 복합 조건 | 2개 이상 조건 조합 | `_횡보후가격급등(t1, p1, t2, p2)` |
+| 보유 중 청산 | 동적 익절/손절 / 장기보유 청산 | `_장기보유종목_동적익절청산(tick, time, minper, multi)` |
+| TA-Lib 지표 | 분봉 지표 28종 | `_RSI_N(pre)`, `_MACD_N(pre)`, `_BBU_N(pre)` |
+
+### 1.7 현재 코드 기준 데이터 레이어 정합성 메모
+
+문서의 변수 개수는 **“raw DB 컬럼”** 과 **“rolling / indicator 추가 후 컬럼”** 을 구분해서 보는 것이 중요하다.
+
+- 주식 tick raw 컬럼: **53개** (`index` 제외)
+- 주식 min raw 컬럼: **56개** (`index` 제외)
+- 현재 런타임 리스트 길이:
+  - `list_stock_tick`: 72개
+  - `list_stock_min`: 105개
+  - `list_coin_tick`: 62개
+  - `list_coin_min`: 95개
+
+즉, 자동 조건식 탐색 시스템 설계 시에는 아래 3층을 명시적으로 분리해야 한다.
+
+1. **Raw feature layer**: DB에서 직접 로딩되는 컬럼
+2. **Derived feature layer**: rolling, angle, TA-Lib, 파생변수
+3. **Trade outcome layer**: 수익률, MFE/MAE, 매도조건, 보유시간
+
+이 분리가 명확해야 데이터 누수(leakage) 없이 `B_* feature → R_* label` 구조를 유지할 수 있다.
 
 ---
 
@@ -223,30 +244,70 @@ R_MAE (Maximum Adverse Excursion, 최저수익률)
 ```
 백테스트 결과 확장 파이프라인:
 
-CalculationEyun() [backengine_base.py]
+CalculationEyun()
+  [필수] backengine_base.py
+  [필수] backengine_base_oms.py
   → data tuple에 B_*, S_*, R_* 변수 추가
-  → bstq.put(기존 16개 + 신규 ~80개)
+  → bstq.put(기존 16개 + 신규 컬럼)
+  → OMS 경로의 추가매수시간 / 잔량없음 처리와 동기화
 
 BackSubTotal.CollectData() [back_subtotal.py]
   → 언패킹 변수 수 동기화
+  → opti_turn == 2 경로의 상세 데이터 리스트 확장
 
 GetResultDataframe() [back_static.py]
+  → columns1 / columns2 확장
   → columns2 리스트에 B_*, S_*, R_* 컬럼명 추가
 
-Total.Report() [backtest.py]
+Total.Report()
+  [필수] backtest.py
+  [권장] optimiz.py
+  [권장] rolling_walk_forward_test.py
   → df_tsg.to_csv(save_path) 추가 (CSV 내보내기)
   → backtest.db 저장 시 신규 컬럼 포함
+  → GUI 상세기록 큐(self.wq.put(..., self.df_tsg)) 경로와 동기화
 ```
 
 ### 2.4 CSV 내보내기 설계
 
 ```python
 # backtest.py Total.Report() 추가 코드
-csv_path = f'./backtest/csv/{save_file_name}.csv'
+from pathlib import Path
+
+csv_dir = Path('./backtest/csv')
+csv_dir.mkdir(parents=True, exist_ok=True)
+csv_path = csv_dir / f'{save_file_name}.csv'
 self.df_tsg.to_csv(csv_path, index=False, encoding='utf-8-sig')
 ```
 
 파일명 규칙: `{전략명}_{시작일}_{종료일}_{실행시각}.csv`
+
+### 2.5 현재 STOM 코드베이스 기준 GUI / CLI 정합성
+
+현재 코드 기준으로 구분해야 할 점:
+
+- `stom_backtest.py`의 **공식 shipped CLI**는 기본 백테스트 + `formula` / `strategy` 서브커맨드 중심이다.
+- `cli/ai_controller.py`, `cli/report.py`, `cli/optimizer.py`, `cli/sweep.py` 는 **library-only 성격**이 강하다.
+- 따라서 본 연구는 아래 2단계로 진행하는 것이 현실적이다.
+
+#### 2.5.1 1차 목표 (현 코드 직접 확장)
+- `backtest/backengine_base.py`
+- `backtest/backengine_base_oms.py`
+- `backtest/back_subtotal.py`
+- `backtest/back_static.py`
+- `backtest/backtest.py`
+
+즉, **GUI 상세기록 + DB 저장 + CSV 저장**을 우선 완성한다.
+
+#### 2.5.2 2차 목표 (CLI / AI orchestration 연계)
+- `cli/ai_controller.py`의 `run`, `sweep`, `optimize`, `create_strategy` 활용
+- `cli/report.py`의 `save_csv()` 재사용
+- 필요 시 신규 모듈 추가:
+  - `cli/analyzer.py`
+  - `cli/condition_generator.py`
+  - `cli/wfo.py`
+
+즉, 현재 문서의 `stom_analyze.py`, `--export-csv` 등은 **즉시 존재하는 기능이 아니라 제안 기능**으로 명시해야 한다.
 
 ---
 
@@ -278,15 +339,29 @@ self.df_tsg.to_csv(csv_path, index=False, encoding='utf-8-sig')
 
 ### 3.2 Step 2 상세: 통계 분석 알고리즘
 
+#### 3.2.0 피처 / 라벨 분리 원칙 (중요)
+
+자동 조건식 탐색에서 가장 중요한 원칙은 다음과 같다.
+
+- **B_***: 매수 시점 feature (조건식 생성에 사용 가능)
+- **R_***: 거래 결과 label (학습 / 검증용)
+- **S_***: 사후 진단 / 리포트용 (조건 생성에는 직접 사용 금지)
+
+즉, 자동 생성 필터는 원칙적으로 **B_*만 사용**해야 한다.
+`S_*`나 보유 중 생성된 값을 조건 생성에 넣으면 미래 정보를 사용하게 되어 데이터 누수가 발생한다.
+
 #### 3.2.1 시가총액 구간 분류
 
 ```python
+# 의사코드 예시 (실행 코드가 아니라 설계용)
+import math
+
 # 시가총액 구간 (원 단위)
 구간 = {
-    '소형주': (0, 3_000억),
-    '중형주': (3_000억, 1_조),
-    '대형주': (1_조, 5_조),
-    '초대형주': (5_조, inf)
+    '소형주': (0, 300_000_000_000),                 # 3,000억
+    '중형주': (300_000_000_000, 1_000_000_000_000), # 1조
+    '대형주': (1_000_000_000_000, 5_000_000_000_000),
+    '초대형주': (5_000_000_000_000, math.inf)
 }
 # 구간별로 승률, 평균수익률, MDD 계산
 # 특정 구간의 성과가 현저히 낮으면 해당 구간 제외 조건 생성
@@ -341,6 +416,26 @@ for col in B_variables:
         # 낮은 그룹이 더 나쁘면 → "col > median" 조건 추가 후보
 ```
 
+#### 3.2.4 실전 적용 시 반드시 추가해야 할 안전장치
+
+단순 통계 비교만으로 필터를 생성하면 **우연한 패턴**을 쉽게 잡아낸다. 따라서 아래 안전장치를 기본 탑재해야 한다.
+
+1. **구간 최소 샘플 수**
+   - 분위수 / 시가총액 / 시간대별 그룹 모두 `n < 30` 이면 후보 제외
+   - 최종 채택 필터는 가능하면 누적 거래 수 `100건 이상`
+
+2. **다중 비교 보정**
+   - 변수 수가 많으므로 p-value 남용 위험이 큼
+   - Benjamini-Hochberg(FDR) 또는 Bonferroni 보정 권장
+
+3. **Purged Walk-Forward / Embargo**
+   - 인접 구간 간 정보 누수 방지를 위해 검증 구간 주변 거래를 purge
+   - 동일 종목 / 인접 시점 재진입 전략은 embargo를 두는 것이 더 안전
+
+4. **성과 기준 다중화**
+   - 평균수익률만 보지 않고 `승률 / MDD / 거래수 / TPI / CAGR` 동시 평가
+   - 필터 추가 후 거래 수가 과도하게 감소하면 후보 폐기
+
 ### 3.3 Step 3 상세: 조건식 자동 생성
 
 ```python
@@ -388,6 +483,14 @@ if B_시분초 < 93000: 매수 = False  # 장초반 제외
 4. 단순화 원칙 (Occam's Razor)
    - 필터를 추가할수록 과최적화 위험 증가
    - 추가할 조건은 경제적 근거가 있는 것만 (예: 소형주 제외 = 유동성 리스크)
+
+5. B_* 전용 규칙
+   - 자동 생성 필터는 B_* 변수만 사용
+   - S_*는 리포트용, R_*는 라벨용으로만 사용
+
+6. 다중 비교 보정 + Purged WFO
+   - 후보 필터가 많아질수록 우연한 발견 증가
+   - FDR 보정과 purge/embargo를 기본 검증 절차로 편입
 ```
 
 ---
@@ -580,7 +683,32 @@ for delta in [-20, -10, -5, +5, +10, +20]:
 # "최적 주변에서 완만한 곡선을 그리는 조건만 채택"
 ```
 
-### 4.7 STOM 자동화 파이프라인 최종 설계
+### 4.7 현재 STOM 코드베이스를 활용한 현실적 실행 순서
+
+현재 STOM에는 이미 재사용 가능한 구성요소가 존재한다.
+
+1. **공식 CLI**
+   - `stom_backtest.py`
+   - 출력 형식: `--format json`, `-o output.json`
+
+2. **library-only AI/automation layer**
+   - `cli/ai_controller.py`
+   - `run`, `sweep`, `optimize`, `create_strategy` 사용 가능
+
+3. **리포트 helper**
+   - `cli/report.py`
+   - `save_csv()`, `save_excel()` 존재
+
+따라서 1차 구현에서는 새로운 CLI 명령부터 만들기보다:
+
+- 백테스트 결과 스키마 확장
+- CSV 저장
+- Python 모듈 기반 분석기 구현
+- 이후 필요 시 공식 CLI 서브커맨드 승격
+
+순서가 더 안전하다.
+
+### 4.8 STOM 자동화 파이프라인 최종 설계
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -590,24 +718,28 @@ for delta in [-20, -10, -5, +5, +10, +20]:
 │  [1] 초기 전략 등록                                           │
 │      strategy.db: stockbuy / stocksell 테이블               │
 │                                                             │
-│  [2] 확장 백테스트 실행 (CLI)                                 │
-│      stom_backtest.py --format json --export-csv            │
-│      → CSV: B_*/S_* ~80컬럼, R_* 거래결과                   │
+│  [2] 확장 백테스트 실행                                       │
+│      - GUI/엔진 경로: backtest.py                           │
+│      - 공식 CLI: stom_backtest.py --format json -o out.json │
+│      - CSV 저장: backtest.py 또는 cli.report.save_csv()     │
+│      → CSV: B_* feature, S_* diagnostic, R_* label/result   │
 │                                                             │
 │  [3] 자동 분석 (Python)                                      │
-│      auto_analyzer.py                                       │
+│      analyzer.py (신규 제안)                                │
 │      ├── 시가총액 구간 분석                                    │
 │      ├── 시간대 분석                                          │
 │      ├── RandomForest 피처 중요도                             │
 │      ├── IC/ICIR 팩터 분석                                   │
-│      └── 분위수 필터 후보 생성                                  │
+│      ├── 분위수 필터 후보 생성                                  │
+│      └── FDR / Purged WFO 사전 필터                           │
 │                                                             │
 │  [4] 조건식 후보 생성 (자동)                                   │
-│      condition_generator.py                                 │
+│      condition_generator.py (신규 제안)                      │
 │      → strategy.db에 후보 조건식 저장 (임시)                  │
 │                                                             │
 │  [5] WFO 검증                                               │
 │      → 학습/검증 기간 분할                                    │
+│      → purge / embargo 적용                                  │
 │      → 각 후보 조건식 검증                                    │
 │      → 통계적 유의성 및 Robustness 확인                       │
 │                                                             │
@@ -622,26 +754,39 @@ for delta in [-20, -10, -5, +5, +10, +20]:
 
 ## 5. 구현 로드맵
 
+### Phase 0: 코드베이스 정합성 정리 (우선순위 HIGH)
+- `backengine_base.py` / `backengine_base_oms.py` 동시 반영 범위 확정
+- `back_subtotal.py`, `back_static.py`, `backtest.py`, `optimiz.py`, `rolling_walk_forward_test.py` 영향도 점검
+- `stom_backtest.py` 공식 CLI vs `cli/*.py` library-only 경계 문서화
+- 예상 공수: 0.5~1일
+
 ### Phase 1: 데이터 확장 (우선순위 HIGH)
-- `backengine_base.py` `CalculationEyun()`: B_* 변수 캡처 추가
+- `backengine_base.py` `CalculationEyun()`: B_* / S_* / R_* 캡처 추가
+- `backengine_base_oms.py` `CalculationEyun()`: OMS 경로 동일 반영
+- `back_subtotal.py`: tuple / 상세 데이터 스키마 확장
 - `back_static.py` `GetResultDataframe()`: 컬럼 확장
 - `backtest.py` `Total.Report()`: CSV 내보내기 추가
-- 예상 공수: 2~3일
+- 필요 시 `optimiz.py`, `rolling_walk_forward_test.py` 저장 포맷 동기화
+- 예상 공수: 2~4일
 
 ### Phase 2: 분석 모듈 구현 (우선순위 HIGH)
-- `cli/analyzer.py`: 통계 분석 자동화 (pandas, scipy, sklearn)
-- `cli/condition_generator.py`: 조건식 코드 자동 생성
-- CLI 명령어: `python stom_analyze.py --input result.csv --output conditions.json`
+- `analyzer.py` 또는 `cli/analyzer.py`: 통계 분석 자동화 (pandas, scipy, sklearn)
+- `condition_generator.py`: 조건식 코드 자동 생성
+- B_* feature / R_* label 고정
+- 최소 샘플 수, FDR, 거래 수 감소 페널티 내장
+- 초기에는 Python module/API 형태로 두고, 안정화 후 CLI 승격
 - 예상 공수: 3~5일
 
 ### Phase 3: WFO 파이프라인 (우선순위 MEDIUM)
-- `cli/wfo.py`: Walk-Forward 자동화
+- `wfo.py` 또는 `cli/wfo.py`: Walk-Forward 자동화
 - 백테스트 → 분석 → 재백테스트 루프
-- 예상 공수: 2~3일
+- purge / embargo, out-of-sample 성과 리포트 포함
+- 예상 공수: 2~4일
 
 ### Phase 4: ML 통합 (우선순위 LOW)
 - RandomForest/GradientBoosting 피처 중요도 분석
 - SHAP 값 시각화
+- `cli/ai_controller.py`와의 연동 검토
 - 예상 공수: 3~5일
 
 ---
@@ -654,6 +799,22 @@ for delta in [-20, -10, -5, +5, +10, +20]:
 2. **데이터 기반 의사결정**: 직관 대신 통계적 근거로 조건 채택/기각
 3. **재현 가능성**: 조건식 생성 과정을 문서화하여 다른 전략에 재적용
 4. **숨겨진 패턴 발견**: 사람이 직접 보기 어려운 고차원 상관관계 자동 발견
+5. **나쁜 구간 제거 효과**: 특히 저유동성 / 특정 시간대 / 과열 구간 필터링에서 실질 개선 가능성 높음
+
+### 현실적인 성과 기대치
+
+이 시스템의 가장 큰 성과는 **“완전히 새로운 알파 발견”** 보다 **“명백히 불리한 구간 제거”** 에 있다.
+
+- 기대효과가 큰 영역:
+  - 저시총 / 저유동성 구간 제거
+  - 장초반 과열 구간 제거
+  - 특정 체결강도 / 거래대금 임계값의 불안정 구간 제거
+- 기대효과가 낮은 영역:
+  - 한 번의 분석으로 “최적 조건식”을 찾는 것
+  - RL/GA로 곧바로 실전 우위 확보
+
+따라서 본 시스템은 **조건식 자동 생성기**라기보다
+**조건식 자동 “정리(pruning) + 검증” 시스템**으로 보는 것이 더 정확하다.
 
 ### 현실적 한계
 
@@ -662,14 +823,28 @@ for delta in [-20, -10, -5, +5, +10, +20]:
 3. **거래 횟수 감소**: 필터를 추가할수록 거래 기회 감소 → 전략 무력화 가능
 4. **계산 비용**: GA + WFO 조합 시 수천 번의 백테스트 필요 → 서버급 자원
 5. **설명 불가능성**: ML/RL 기반은 "왜 이 조건인가"를 설명하기 어려움
+6. **데이터 누수 위험**: S_* / R_*를 잘못 feature로 쓰면 결과가 과장됨
+7. **다중 비교 문제**: 변수 수가 많아질수록 우연히 좋아 보이는 조건이 급증
 
 ### 권고사항
 
-**1단계**: Phase 1(데이터 확장 + CSV)만 먼저 구현. 데이터를 직접 보면서 인사이트 도출.
+**1단계**: Phase 0 + Phase 1만 먼저 구현. 데이터를 직접 보면서 인사이트 도출.
 
 **2단계**: 간단한 분위수 분석(방법론 없이 pandas만으로)으로 명확한 패턴이 있는지 확인.
 
-**3단계**: 패턴이 발견되면 WFO로 검증 후 조건식 추가.
+**3단계**: 패턴이 발견되면 WFO + purge/embargo 검증 후 조건식 추가.
+
+**4단계**: 그 후에만 RandomForest / optimizer / AI controller 연동 확대.
+
+### 실전 채택 기준 (권장)
+
+자동 생성된 필터는 아래 기준을 모두 만족할 때만 채택한다.
+
+1. 검증 구간(out-of-sample)에서 성과 유지
+2. 거래 수가 원전략 대비 과도하게 감소하지 않음 (예: 60% 이상 유지)
+3. MDD 또는 TPI가 개선
+4. 파라미터 민감도 분석에서 최적점 주변이 완만
+5. 경제적/미시구조적 해석이 가능
 
 **핵심 원칙**: *"조건을 추가하는 것은 쉽지만, 그 조건이 미래에도 유효한지 증명하는 것이 어렵다."*
 
