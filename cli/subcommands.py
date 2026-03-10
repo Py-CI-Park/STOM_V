@@ -145,6 +145,9 @@ def create_subcommand_parser():
     disc_promote.add_argument('--promote-min-success-rate', type=float, default=0.6)
     disc_promote.add_argument('--promote-min-mean-oos', type=float, default=0.0)
     disc_promote.add_argument('--promote-min-avg-trade-count', type=float, default=0.0)
+    disc_promote.add_argument('--promotion-preset', choices=['conservative', 'balanced', 'aggressive'], default='balanced')
+    disc_promote.add_argument('--report-json', help='채택/탈락 결과 JSON 리포트 저장 경로')
+    disc_promote.add_argument('--report-md', help='채택/탈락 결과 Markdown 리포트 저장 경로')
     disc_promote.add_argument('--ml-feature-limit', type=int, default=0, help='ML 상위 feature만 후보 생성에 사용')
     disc_promote.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
     disc_promote.add_argument('--ml-top-n', type=int, default=10)
@@ -387,6 +390,9 @@ def _handle_discovery(parsed):
             ml_model_type=parsed.ml_model_type,
             ml_top_n=parsed.ml_top_n,
             ml_n_splits=parsed.ml_n_splits,
+            promotion_preset=parsed.promotion_preset,
+            report_json_path=parsed.report_json,
+            report_md_path=parsed.report_md,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1

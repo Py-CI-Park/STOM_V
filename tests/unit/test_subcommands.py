@@ -336,10 +336,16 @@ class TestDiscoverySubcommand:
                 '--train-window-days', '60',
                 '--test-window-days', '20',
                 '--ml-feature-limit', '1',
+                '--promotion-preset', 'conservative',
+                '--report-json', 'report.json',
+                '--report-md', 'report.md',
             ])
         assert code == 0
         _, kwargs = mock_promote.call_args
         assert kwargs['ml_feature_limit'] == 1
+        assert kwargs['promotion_preset'] == 'conservative'
+        assert kwargs['report_json_path'] == 'report.json'
+        assert kwargs['report_md_path'] == 'report.md'
         mock_print.assert_called_once()
 
 
@@ -479,6 +485,9 @@ class TestParserStructure:
             '--test-window-days', '20',
             '--param-space-json', '{"avg_time":[60,120]}',
             '--ml-feature-limit', '1',
+            '--promotion-preset', 'aggressive',
+            '--report-json', 'report.json',
+            '--report-md', 'report.md',
         ])
         assert parsed.command == 'discovery'
         assert parsed.discovery_action == 'promote'
@@ -486,3 +495,6 @@ class TestParserStructure:
         assert parsed.input_file == 'result.csv'
         assert parsed.param_space_json == '{"avg_time":[60,120]}'
         assert parsed.ml_feature_limit == 1
+        assert parsed.promotion_preset == 'aggressive'
+        assert parsed.report_json == 'report.json'
+        assert parsed.report_md == 'report.md'

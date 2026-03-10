@@ -322,6 +322,12 @@ class AIBacktestController:
             'status': 'ok',
             'passed': len(reasons) == 0,
             'reasons': reasons,
+            'criteria': {
+                'min_rounds': min_rounds,
+                'min_success_rate': min_success_rate,
+                'min_mean_oos_metric': min_mean_oos_metric,
+                'min_avg_trade_count': min_avg_trade_count,
+            },
             'summary': {
                 'round_count': round_count,
                 'success_rate': success_rate,
@@ -392,10 +398,14 @@ class AIBacktestController:
                                       output_code_path: str = None, walk_forward_settings: dict = None,
                                       promotion_criteria: dict = None, ml_analysis_result: dict = None,
                                       ml_feature_limit: int = 0, ml_model_type: str = 'random_forest',
-                                      ml_top_n: int = 10, ml_n_splits: int = 5, ml_random_state: int = 42) -> dict:
+                                      ml_top_n: int = 10, ml_n_splits: int = 5, ml_random_state: int = 42,
+                                      promotion_preset: str = 'balanced', report_json_path: str = None,
+                                      report_md_path: str = None) -> dict:
         """후보 전략을 임시 저장 후 WFO 검증을 통과한 경우에만 최종 전략으로 승격한다."""
         try:
             from cli.condition_generator import save_condition_code
+            from cli.discovery_report import build_discovery_report, save_discovery_report_json, save_discovery_report_markdown
+            from cli.promotion import resolve_promotion_criteria
 
             if walk_forward_settings is None:
                 return {'status': 'error', 'message': 'walk_forward_settings가 필요합니다.'}
@@ -452,10 +462,16 @@ class AIBacktestController:
                     param_space or {},
                     **walk_forward_settings,
                 )
+                resolved_criteria = resolve_promotion_criteria(promotion_preset, promotion_criteria)
                 evaluation = self.evaluate_walk_forward_result(
                     wf_result,
-                    **(promotion_criteria or {})
+                    min_rounds=resolved_criteria['min_rounds'],
+                    min_success_rate=resolved_criteria['min_success_rate'],
+                    min_mean_oos_metric=resolved_criteria['min_mean_oos_metric'],
+                    min_avg_trade_count=resolved_criteria['min_avg_trade_count'],
                 )
+                evaluation['preset'] = promotion_preset
+                evaluation['criteria'] = resolved_criteria
                 if evaluation.get('status') == 'ok' and evaluation.get('passed'):
                     final_strategy_result = self.create_strategy(name, expression_result['expressions'], strategy_type)
                     promoted = final_strategy_result.get('status') == 'ok'
@@ -464,7 +480,7 @@ class AIBacktestController:
             finally:
                 self.delete_strategy(temporary_name, strategy_type)
 
-            return {
+            response = {
                 'status': 'ok' if wf_result and wf_result.get('status') == 'ok' else 'error',
                 'analysis_result': analysis_result,
                 'ml_analysis_result': ml_analysis_result,
@@ -478,6 +494,13 @@ class AIBacktestController:
                 'strategy_result': final_strategy_result,
                 'promoted': promoted,
             }
+            report = build_discovery_report(response, strategy_name=name)
+            response['report'] = report
+            if report_json_path:
+                response['saved_report_json'] = save_discovery_report_json(report, report_json_path)
+            if report_md_path:
+                response['saved_report_md'] = save_discovery_report_markdown(report, report_md_path)
+            return response
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 

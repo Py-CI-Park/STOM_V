@@ -398,16 +398,27 @@ class TestStrategyManagement:
                  {'status': 'ok', 'name': '__tmp__', 'action': 'created'},
                  {'status': 'ok', 'name': 'Auto_B_Final', 'action': 'created'},
              ]) as mock_create, \
-             patch.object(controller, 'walk_forward', return_value={'status': 'ok', 'summary': {'round_count': 3, 'success_rate': 1.0, 'mean_oos_metric': 0.5}, 'rounds': []}) as mock_wfo, \
+             patch.object(controller, 'walk_forward', return_value={
+                 'status': 'ok',
+                 'summary': {'round_count': 3, 'success_rate': 1.0, 'mean_oos_metric': 0.5},
+                 'rounds': [
+                     {'test_result': {'metrics': {'trade_count': 120}}},
+                     {'test_result': {'metrics': {'trade_count': 140}}},
+                     {'test_result': {'metrics': {'trade_count': 110}}},
+                 ],
+             }) as mock_wfo, \
              patch.object(controller, 'delete_strategy', return_value={'status': 'ok', 'action': 'deleted'}) as mock_delete:
             result = controller.discover_and_promote_strategy(
                 'Auto_B_Final',
                 config_dict={'buy_strategy': 'BaseBuy', 'sell_strategy': 'BaseSell', 'start_date': 20240101, 'end_date': 20240630},
                 walk_forward_settings={'train_window_days': 60, 'test_window_days': 20},
+                promotion_preset='balanced',
             )
             assert result['status'] == 'ok'
             assert result['promoted'] is True
             assert result['strategy_result']['action'] == 'created'
+            assert result['promotion_evaluation']['preset'] == 'balanced'
+            assert result['report']['promotion_preset'] == 'balanced'
             assert mock_create.call_count == 2
             mock_wfo.assert_called_once()
             mock_delete.assert_called_once()
@@ -433,6 +444,30 @@ class TestStrategyManagement:
             assert result['strategy_result']['action'] == 'rejected'
             assert mock_create.call_count == 1
             mock_delete.assert_called_once()
+
+    def test_discover_and_promote_strategy_saves_reports(self, controller, tmp_path):
+        prepared = {
+            'status': 'ok',
+            'analysis_result': {'status': 'ok'},
+            'expression_result': {'expressions': ['B_등락율 <= 2'], 'candidate_count': 1},
+            'code_result': {'status': 'ok', 'code': 'if B_등락율 <= 2: 매수 = False'},
+        }
+        with patch.object(controller, '_prepare_strategy_candidate', return_value=prepared), \
+             patch.object(controller, 'create_strategy', side_effect=[
+                 {'status': 'ok', 'name': '__tmp__', 'action': 'created'},
+                 {'status': 'ok', 'name': 'Auto_B_Final', 'action': 'created'},
+             ]), \
+             patch.object(controller, 'walk_forward', return_value={'status': 'ok', 'summary': {'round_count': 3, 'success_rate': 1.0, 'mean_oos_metric': 0.5}, 'rounds': []}), \
+             patch.object(controller, 'delete_strategy', return_value={'status': 'ok', 'action': 'deleted'}):
+            result = controller.discover_and_promote_strategy(
+                'Auto_B_Final',
+                config_dict={'buy_strategy': 'BaseBuy', 'sell_strategy': 'BaseSell', 'start_date': 20240101, 'end_date': 20240630},
+                walk_forward_settings={'train_window_days': 60, 'test_window_days': 20},
+                report_json_path=str(tmp_path / 'report.json'),
+                report_md_path=str(tmp_path / 'report.md'),
+            )
+            assert result['saved_report_json']['status'] == 'ok'
+            assert result['saved_report_md']['status'] == 'ok'
 
 
 class TestResultAnalysis:
