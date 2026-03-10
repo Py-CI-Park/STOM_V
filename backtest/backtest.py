@@ -5,6 +5,7 @@ import time
 import sqlite3
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from multiprocessing import Process, Queue
 from backtest.back_static import PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd, bootstrap_test
 from utility.static import now, str_ymdhms
@@ -200,6 +201,11 @@ class Total:
         df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
         self.df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
         con.close()
+
+        csv_dir = Path('./backtest/csv')
+        csv_dir.mkdir(parents=True, exist_ok=True)
+        self.df_tsg.to_csv(csv_dir / f'{save_file_name}.csv', index=False, encoding='utf-8-sig')
+
         self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], self.df_tsg))
 
         if self.blacklist: self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'블랙리스트 추가 {self.insertlist}'))

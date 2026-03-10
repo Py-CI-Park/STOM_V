@@ -7,6 +7,7 @@ import random
 import sqlite3
 import numpy as np
 import pandas as pd
+from pathlib import Path
 from multiprocessing import Process, Queue
 from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, GetResult, AddMdd, \
     bootstrap_test
@@ -299,6 +300,11 @@ class Total:
             con = sqlite3.connect(DB_BACKTEST)
             self.df_ttsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
             con.close()
+
+            csv_dir = Path('./backtest/csv')
+            csv_dir.mkdir(parents=True, exist_ok=True)
+            self.df_ttsg.to_csv(csv_dir / f'{save_file_name}.csv', index=False, encoding='utf-8-sig')
+
             self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], self.df_ttsg))
 
             self.sq.put(f'{self.backname} 백테스트를 완료하였습니다.')
