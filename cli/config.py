@@ -67,7 +67,7 @@ Exit codes:
   - formula / strategy 서브커맨드
 
 라이브러리 전용(현재 help 미노출):
-  - history / sweep / optimizer / ai_controller / data_bridge
+  - history / sweep / optimizer / ai_controller / analyzer / condition_generator / data_bridge
   - report / engine_tuner / monitor / strategy_generator
 """
 

@@ -5,7 +5,8 @@
 - 기본 백테스트 실행
 - `formula` / `strategy` 서브커맨드
 
-그 외 `cli/` 하위의 history / sweep / optimizer / ai_controller 등은
+그 외 `cli/` 하위의 history / sweep / optimizer / ai_controller /
+analyzer / condition_generator 등은
 현재 시점에서는 라이브러리 성격이 강하며, 별도 서브커맨드로는 노출하지 않는다.
 """
 import sys

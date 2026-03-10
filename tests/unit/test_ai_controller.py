@@ -5,6 +5,7 @@ import sys
 import json
 import sqlite3
 import pytest
+import pandas as pd
 from unittest.mock import patch, MagicMock
 from dataclasses import asdict
 
@@ -245,6 +246,57 @@ class TestStrategyManagement:
              patch('utility.setting.DB_STRATEGY', 'fake.db'):
             result = controller.delete_strategy('Test', 'buy')
             assert result['status'] == 'ok'
+
+
+class TestResultAnalysis:
+    def _write_csv(self, tmp_path):
+        df = pd.DataFrame([
+            {'수익률': -1.0, 'B_등락율': 0.5, 'B_시가총액': 100_000_000_000, 'B_시분초': 91000, 'B_체결강도': 90},
+            {'수익률': -0.8, 'B_등락율': 0.8, 'B_시가총액': 100_000_000_000, 'B_시분초': 91500, 'B_체결강도': 91},
+            {'수익률': 0.5, 'B_등락율': 2.5, 'B_시가총액': 800_000_000_000, 'B_시분초': 100000, 'B_체결강도': 110},
+            {'수익률': 1.1, 'B_등락율': 3.5, 'B_시가총액': 2_000_000_000_000, 'B_시분초': 140000, 'B_체결강도': 130},
+        ] * 10)
+        path = tmp_path / 'result.csv'
+        df.to_csv(path, index=False, encoding='utf-8-sig')
+        return path
+
+    def test_analyze_results_ok(self, controller, tmp_path):
+        input_path = self._write_csv(tmp_path)
+        output_path = tmp_path / 'analysis.json'
+
+        result = controller.analyze_results(
+            str(input_path),
+            min_samples=5,
+            quantiles=4,
+            output_path=str(output_path),
+        )
+
+        assert result['status'] == 'ok'
+        assert result['saved']['status'] == 'ok'
+        assert output_path.exists()
+        assert len(result['recommended_candidates']) > 0
+
+    def test_generate_conditions_ok(self, controller, tmp_path):
+        input_path = self._write_csv(tmp_path)
+        output_path = tmp_path / 'generated_conditions.py'
+
+        result = controller.generate_conditions(
+            input_path=str(input_path),
+            top_n=2,
+            output_path=str(output_path),
+            min_samples=5,
+            quantiles=4,
+        )
+
+        assert result['status'] == 'ok'
+        assert result['candidate_count'] == 2
+        assert result['saved']['status'] == 'ok'
+        assert '매수 = False' in result['code']
+        assert output_path.exists()
+
+    def test_generate_conditions_requires_source(self, controller):
+        result = controller.generate_conditions()
+        assert result['status'] == 'error'
 
 
 # === error handling ===

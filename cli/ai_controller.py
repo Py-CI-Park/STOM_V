@@ -84,6 +84,57 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def analyze_results(self, input_path: str, min_samples: int = 30, quantiles: int = 10,
+                        alpha: float = 0.05, output_path: str = None) -> dict:
+        """백테스트 상세 CSV를 분석해 조건 후보를 추출한다."""
+        try:
+            from cli.analyzer import analyze_result_csv, save_analysis
+
+            result = analyze_result_csv(
+                input_path,
+                min_samples=min_samples,
+                quantiles=quantiles,
+                alpha=alpha,
+            )
+            if output_path and result.get('status') == 'ok':
+                save_result = save_analysis(result, output_path)
+                result['saved'] = save_result
+            return result
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
+    def generate_conditions(self, analysis_result: dict = None, input_path: str = None,
+                            top_n: int = 5, buy_var: str = '매수', output_path: str = None,
+                            min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05) -> dict:
+        """분석 결과 또는 CSV 입력으로부터 자동 필터 조건 코드를 생성한다."""
+        try:
+            from cli.analyzer import analyze_result_csv
+            from cli.condition_generator import generate_conditions_from_analysis, save_condition_code
+
+            if analysis_result is None:
+                if not input_path:
+                    return {'status': 'error', 'message': 'analysis_result 또는 input_path가 필요합니다.'}
+                analysis_result = analyze_result_csv(
+                    input_path,
+                    min_samples=min_samples,
+                    quantiles=quantiles,
+                    alpha=alpha,
+                )
+            if analysis_result.get('status') != 'ok':
+                return analysis_result
+
+            result = generate_conditions_from_analysis(
+                analysis_result,
+                top_n=top_n,
+                buy_var=buy_var,
+            )
+            if output_path and result.get('status') == 'ok':
+                save_result = save_condition_code(result['code'], output_path)
+                result['saved'] = save_result
+            return result
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def run(self, config_dict: dict) -> dict:
         """백테스트를 실행하고 결과를 히스토리에 저장한다."""
         try:
