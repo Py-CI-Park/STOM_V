@@ -84,6 +84,43 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def _prepare_strategy_candidate(self, name: str, analysis_result: dict = None, input_path: str = None,
+                                    top_n: int = 5, strategy_type: str = 'buy', buy_var: str = '매수',
+                                    min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05) -> dict:
+        from cli.analyzer import analyze_result_csv
+        from cli.condition_generator import (
+            generate_condition_expressions_from_analysis,
+            generate_conditions_from_analysis,
+        )
+
+        if strategy_type != 'buy':
+            return {'status': 'error', 'message': '현재 자동 조건식 탐색은 buy 전략 생성만 지원합니다.'}
+
+        if analysis_result is None:
+            if not input_path:
+                return {'status': 'error', 'message': 'analysis_result 또는 input_path가 필요합니다.'}
+            analysis_result = analyze_result_csv(
+                input_path,
+                min_samples=min_samples,
+                quantiles=quantiles,
+                alpha=alpha,
+            )
+        if analysis_result.get('status') != 'ok':
+            return analysis_result
+
+        expression_result = generate_condition_expressions_from_analysis(analysis_result, top_n=top_n)
+        code_result = generate_conditions_from_analysis(
+            analysis_result,
+            top_n=top_n,
+            buy_var=buy_var,
+        )
+        return {
+            'status': 'ok',
+            'analysis_result': analysis_result,
+            'expression_result': expression_result,
+            'code_result': code_result,
+        }
+
     def analyze_results(self, input_path: str, min_samples: int = 30, quantiles: int = 10,
                         alpha: float = 0.05, output_path: str = None) -> dict:
         """백테스트 상세 CSV를 분석해 조건 후보를 추출한다."""
@@ -161,34 +198,25 @@ class AIBacktestController:
                                       output_code_path: str = None) -> dict:
         """분석 결과로부터 전략 코드를 생성하고 strategy.db에 저장한다."""
         try:
-            from cli.analyzer import analyze_result_csv
-            from cli.condition_generator import (
-                generate_condition_expressions_from_analysis,
-                generate_conditions_from_analysis,
-                save_condition_code,
-            )
+            from cli.condition_generator import save_condition_code
 
-            if strategy_type != 'buy':
-                return {'status': 'error', 'message': '현재 자동 조건식 탐색은 buy 전략 생성만 지원합니다.'}
-
-            if analysis_result is None:
-                if not input_path:
-                    return {'status': 'error', 'message': 'analysis_result 또는 input_path가 필요합니다.'}
-                analysis_result = analyze_result_csv(
-                    input_path,
-                    min_samples=min_samples,
-                    quantiles=quantiles,
-                    alpha=alpha,
-                )
-            if analysis_result.get('status') != 'ok':
-                return analysis_result
-
-            expression_result = generate_condition_expressions_from_analysis(analysis_result, top_n=top_n)
-            code_result = generate_conditions_from_analysis(
-                analysis_result,
+            prepared = self._prepare_strategy_candidate(
+                name=name,
+                analysis_result=analysis_result,
+                input_path=input_path,
                 top_n=top_n,
+                strategy_type=strategy_type,
                 buy_var=buy_var,
+                min_samples=min_samples,
+                quantiles=quantiles,
+                alpha=alpha,
             )
+            if prepared.get('status') != 'ok':
+                return prepared
+
+            analysis_result = prepared['analysis_result']
+            expression_result = prepared['expression_result']
+            code_result = prepared['code_result']
             strategy_result = self.create_strategy(name, expression_result['expressions'], strategy_type)
 
             response = {
@@ -203,6 +231,49 @@ class AIBacktestController:
             return response
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
+
+    def evaluate_walk_forward_result(self, walk_forward_result: dict, min_rounds: int = 1,
+                                     min_success_rate: float = 0.6, min_mean_oos_metric: float = 0.0,
+                                     min_avg_trade_count: float = 0.0) -> dict:
+        if walk_forward_result.get('status') != 'ok':
+            return {'status': 'error', 'passed': False, 'reasons': ['walk_forward_failed']}
+
+        summary = walk_forward_result.get('summary') or {}
+        rounds = walk_forward_result.get('rounds') or []
+        reasons = []
+
+        round_count = int(summary.get('round_count', len(rounds)))
+        success_rate = float(summary.get('success_rate', 0.0) or 0.0)
+        mean_oos_metric = summary.get('mean_oos_metric')
+
+        if round_count < min_rounds:
+            reasons.append(f'round_count<{min_rounds}')
+        if success_rate < min_success_rate:
+            reasons.append(f'success_rate<{min_success_rate}')
+        if mean_oos_metric is None or float(mean_oos_metric) < min_mean_oos_metric:
+            reasons.append(f'mean_oos_metric<{min_mean_oos_metric}')
+
+        trade_counts = []
+        for round_result in rounds:
+            metrics = (round_result.get('test_result') or {}).get('metrics') or {}
+            trade_count = metrics.get('trade_count')
+            if trade_count is not None:
+                trade_counts.append(float(trade_count))
+        avg_trade_count = (sum(trade_counts) / len(trade_counts)) if trade_counts else None
+        if min_avg_trade_count > 0 and (avg_trade_count is None or avg_trade_count < min_avg_trade_count):
+            reasons.append(f'avg_trade_count<{min_avg_trade_count}')
+
+        return {
+            'status': 'ok',
+            'passed': len(reasons) == 0,
+            'reasons': reasons,
+            'summary': {
+                'round_count': round_count,
+                'success_rate': success_rate,
+                'mean_oos_metric': mean_oos_metric,
+                'avg_trade_count': avg_trade_count,
+            },
+        }
 
     def discover_strategy(self, name: str, config_dict: dict, input_path: str = None, analysis_result: dict = None,
                           param_space: dict = None, top_n: int = 5, strategy_type: str = 'buy',
@@ -247,6 +318,90 @@ class AIBacktestController:
                     response['status'] = 'error'
 
             return response
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
+    def discover_and_promote_strategy(self, name: str, config_dict: dict, input_path: str = None,
+                                      analysis_result: dict = None, param_space: dict = None, top_n: int = 5,
+                                      strategy_type: str = 'buy', buy_var: str = '매수',
+                                      min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05,
+                                      output_code_path: str = None, walk_forward_settings: dict = None,
+                                      promotion_criteria: dict = None) -> dict:
+        """후보 전략을 임시 저장 후 WFO 검증을 통과한 경우에만 최종 전략으로 승격한다."""
+        try:
+            from cli.condition_generator import save_condition_code
+
+            if walk_forward_settings is None:
+                return {'status': 'error', 'message': 'walk_forward_settings가 필요합니다.'}
+
+            prepared = self._prepare_strategy_candidate(
+                name=name,
+                analysis_result=analysis_result,
+                input_path=input_path,
+                top_n=top_n,
+                strategy_type=strategy_type,
+                buy_var=buy_var,
+                min_samples=min_samples,
+                quantiles=quantiles,
+                alpha=alpha,
+            )
+            if prepared.get('status') != 'ok':
+                return prepared
+
+            analysis_result = prepared['analysis_result']
+            expression_result = prepared['expression_result']
+            code_result = prepared['code_result']
+
+            temporary_name = f'__AUTO_TMP__{name}_{int(time.time() * 1000)}'
+            temp_result = self.create_strategy(temporary_name, expression_result['expressions'], strategy_type)
+            if temp_result.get('status') != 'ok':
+                return {'status': 'error', 'message': 'temporary strategy save failed', 'temporary_result': temp_result}
+
+            save_code_result = None
+            if output_code_path and code_result.get('status') == 'ok':
+                save_code_result = save_condition_code(code_result['code'], output_code_path)
+
+            wf_result = None
+            evaluation = None
+            final_strategy_result = None
+            promoted = False
+
+            try:
+                run_config = dict(config_dict)
+                if strategy_type == 'buy':
+                    run_config['buy_strategy'] = temporary_name
+                else:
+                    run_config['sell_strategy'] = temporary_name
+
+                wf_result = self.walk_forward(
+                    run_config,
+                    param_space or {},
+                    **walk_forward_settings,
+                )
+                evaluation = self.evaluate_walk_forward_result(
+                    wf_result,
+                    **(promotion_criteria or {})
+                )
+                if evaluation.get('status') == 'ok' and evaluation.get('passed'):
+                    final_strategy_result = self.create_strategy(name, expression_result['expressions'], strategy_type)
+                    promoted = final_strategy_result.get('status') == 'ok'
+                else:
+                    final_strategy_result = {'status': 'skipped', 'action': 'rejected'}
+            finally:
+                self.delete_strategy(temporary_name, strategy_type)
+
+            return {
+                'status': 'ok' if wf_result and wf_result.get('status') == 'ok' else 'error',
+                'analysis_result': analysis_result,
+                'expression_result': expression_result,
+                'generated_code': code_result.get('code'),
+                'saved_code': save_code_result,
+                'temporary_strategy': temp_result,
+                'walk_forward': wf_result,
+                'promotion_evaluation': evaluation,
+                'strategy_result': final_strategy_result,
+                'promoted': promoted,
+            }
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
