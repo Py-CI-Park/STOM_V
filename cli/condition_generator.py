@@ -72,17 +72,44 @@ def generate_condition_code(
     return '\n'.join(lines)
 
 
+def select_candidates(
+    analysis_result: dict,
+    top_n: int = 5,
+    include_sources: tuple[str, ...] = ('market_cap', 'time_of_day', 'quantile', 'ttest'),
+) -> list[dict]:
+    recommended = [
+        candidate for candidate in analysis_result.get('recommended_candidates', [])
+        if candidate.get('source') in include_sources
+    ]
+    return recommended[:max(top_n, 0)]
+
+
+def generate_condition_expressions(candidates: list[dict]) -> list[str]:
+    return [candidate_to_expression(candidate) for candidate in candidates]
+
+
+def generate_condition_expressions_from_analysis(
+    analysis_result: dict,
+    top_n: int = 5,
+    include_sources: tuple[str, ...] = ('market_cap', 'time_of_day', 'quantile', 'ttest'),
+) -> dict:
+    selected = select_candidates(analysis_result, top_n=top_n, include_sources=include_sources)
+    expressions = generate_condition_expressions(selected)
+    return {
+        'status': 'ok',
+        'selected_candidates': selected,
+        'expressions': expressions,
+        'candidate_count': len(selected),
+    }
+
+
 def generate_conditions_from_analysis(
     analysis_result: dict,
     top_n: int = 5,
     buy_var: str = '매수',
     include_sources: tuple[str, ...] = ('market_cap', 'time_of_day', 'quantile', 'ttest'),
 ) -> dict:
-    recommended = [
-        candidate for candidate in analysis_result.get('recommended_candidates', [])
-        if candidate.get('source') in include_sources
-    ]
-    selected = recommended[:max(top_n, 0)]
+    selected = select_candidates(analysis_result, top_n=top_n, include_sources=include_sources)
     code = generate_condition_code(selected, buy_var=buy_var)
     return {
         'status': 'ok',

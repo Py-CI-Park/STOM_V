@@ -273,6 +273,70 @@ class TestStrategyManagement:
             result = controller.delete_strategy('Test', 'buy')
             assert result['status'] == 'ok'
 
+    def test_create_strategy_from_analysis_ok(self, controller, tmp_path):
+        csv_path = tmp_path / 'result.csv'
+        pd.DataFrame([
+            {'수익률': -1.0, 'B_등락율': 0.5, 'B_시가총액': 100_000_000_000, 'B_시분초': 91000, 'B_체결강도': 90},
+            {'수익률': -0.8, 'B_등락율': 0.8, 'B_시가총액': 100_000_000_000, 'B_시분초': 91500, 'B_체결강도': 91},
+            {'수익률': 0.5, 'B_등락율': 2.5, 'B_시가총액': 800_000_000_000, 'B_시분초': 100000, 'B_체결강도': 110},
+            {'수익률': 1.1, 'B_등락율': 3.5, 'B_시가총액': 2_000_000_000_000, 'B_시분초': 140000, 'B_체결강도': 130},
+        ] * 10).to_csv(csv_path, index=False, encoding='utf-8-sig')
+
+        with patch('cli.strategy_generator.create_and_save', return_value={'status': 'ok', 'name': 'Auto_B_Test', 'action': 'created'}), \
+             patch('utility.setting.DB_STRATEGY', 'fake.db'):
+            result = controller.create_strategy_from_analysis(
+                'Auto_B_Test',
+                input_path=str(csv_path),
+                top_n=2,
+                min_samples=5,
+                quantiles=4,
+                output_code_path=str(tmp_path / 'generated.py'),
+            )
+            assert result['status'] == 'ok'
+            assert result['strategy_result']['action'] == 'created'
+            assert len(result['expression_result']['expressions']) == 2
+            assert '매수 = False' in result['generated_code']
+            assert result['saved_code']['status'] == 'ok'
+
+    def test_create_strategy_from_analysis_rejects_non_buy(self, controller):
+        result = controller.create_strategy_from_analysis('BadSell', analysis_result={'status': 'ok'}, strategy_type='sell')
+        assert result['status'] == 'error'
+
+    def test_discover_strategy_runs_strategy_flow_and_optional_wfo(self, controller):
+        strategy_flow = {
+            'status': 'ok',
+            'strategy_result': {'status': 'ok', 'action': 'created'},
+            'expression_result': {'candidate_count': 2},
+        }
+        walk_forward_result = {
+            'status': 'ok',
+            'summary': {'round_count': 3},
+        }
+
+        with patch.object(controller, 'create_strategy_from_analysis', return_value=strategy_flow) as mock_create, \
+             patch.object(controller, 'walk_forward', return_value=walk_forward_result) as mock_wfo:
+            result = controller.discover_strategy(
+                'Auto_B_Discover',
+                config_dict={
+                    'buy_strategy': 'BaseBuy',
+                    'sell_strategy': 'BaseSell',
+                    'start_date': 20240101,
+                    'end_date': 20240630,
+                },
+                input_path='dummy.csv',
+                param_space={'avg_time': [60, 120]},
+                walk_forward_settings={
+                    'train_window_days': 60,
+                    'test_window_days': 20,
+                },
+            )
+
+            assert result['status'] == 'ok'
+            assert result['strategy_flow']['strategy_result']['action'] == 'created'
+            assert result['walk_forward']['summary']['round_count'] == 3
+            mock_create.assert_called_once()
+            mock_wfo.assert_called_once()
+
 
 class TestResultAnalysis:
     def _write_csv(self, tmp_path):

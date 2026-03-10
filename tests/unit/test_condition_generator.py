@@ -1,6 +1,7 @@
 from cli.condition_generator import (
     candidate_to_expression,
     generate_condition_code,
+    generate_condition_expressions_from_analysis,
     generate_conditions_from_analysis,
     save_condition_code,
 )
@@ -65,3 +66,7 @@ def test_generate_conditions_from_analysis_selects_top_n(tmp_path):
     save_result = save_condition_code(result['code'], str(out_path))
     assert save_result['status'] == 'ok'
     assert out_path.exists()
+
+    expression_result = generate_condition_expressions_from_analysis(analysis_result, top_n=2)
+    assert expression_result['candidate_count'] == 2
+    assert expression_result['expressions'][0] == 'B_등락율 <= 2'

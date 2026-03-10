@@ -135,6 +135,101 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def create_strategy_from_analysis(self, name: str, analysis_result: dict = None, input_path: str = None,
+                                      top_n: int = 5, strategy_type: str = 'buy', buy_var: str = '매수',
+                                      min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05,
+                                      output_code_path: str = None) -> dict:
+        """분석 결과로부터 전략 코드를 생성하고 strategy.db에 저장한다."""
+        try:
+            from cli.analyzer import analyze_result_csv
+            from cli.condition_generator import (
+                generate_condition_expressions_from_analysis,
+                generate_conditions_from_analysis,
+                save_condition_code,
+            )
+
+            if strategy_type != 'buy':
+                return {'status': 'error', 'message': '현재 자동 조건식 탐색은 buy 전략 생성만 지원합니다.'}
+
+            if analysis_result is None:
+                if not input_path:
+                    return {'status': 'error', 'message': 'analysis_result 또는 input_path가 필요합니다.'}
+                analysis_result = analyze_result_csv(
+                    input_path,
+                    min_samples=min_samples,
+                    quantiles=quantiles,
+                    alpha=alpha,
+                )
+            if analysis_result.get('status') != 'ok':
+                return analysis_result
+
+            expression_result = generate_condition_expressions_from_analysis(analysis_result, top_n=top_n)
+            code_result = generate_conditions_from_analysis(
+                analysis_result,
+                top_n=top_n,
+                buy_var=buy_var,
+            )
+            strategy_result = self.create_strategy(name, expression_result['expressions'], strategy_type)
+
+            response = {
+                'status': strategy_result.get('status', 'error'),
+                'analysis_result': analysis_result,
+                'expression_result': expression_result,
+                'generated_code': code_result.get('code'),
+                'strategy_result': strategy_result,
+            }
+            if output_code_path and code_result.get('status') == 'ok':
+                response['saved_code'] = save_condition_code(code_result['code'], output_code_path)
+            return response
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
+    def discover_strategy(self, name: str, config_dict: dict, input_path: str = None, analysis_result: dict = None,
+                          param_space: dict = None, top_n: int = 5, strategy_type: str = 'buy',
+                          buy_var: str = '매수', min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05,
+                          output_code_path: str = None, walk_forward_settings: dict = None) -> dict:
+        """분석 → 조건 생성 → 전략 저장 → (선택) WFO 검증을 한 번에 수행한다."""
+        try:
+            strategy_flow = self.create_strategy_from_analysis(
+                name=name,
+                analysis_result=analysis_result,
+                input_path=input_path,
+                top_n=top_n,
+                strategy_type=strategy_type,
+                buy_var=buy_var,
+                min_samples=min_samples,
+                quantiles=quantiles,
+                alpha=alpha,
+                output_code_path=output_code_path,
+            )
+            if strategy_flow.get('status') != 'ok':
+                return strategy_flow
+
+            response = {
+                'status': 'ok',
+                'strategy_flow': strategy_flow,
+            }
+
+            if walk_forward_settings is not None:
+                config_dict = dict(config_dict)
+                if strategy_type == 'buy':
+                    config_dict['buy_strategy'] = name
+                else:
+                    config_dict['sell_strategy'] = name
+
+                wf_result = self.walk_forward(
+                    config_dict,
+                    param_space or {},
+                    **walk_forward_settings,
+                )
+                response['walk_forward'] = wf_result
+                if wf_result.get('status') != 'ok':
+                    response['status'] = 'error'
+
+            return response
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def run(self, config_dict: dict) -> dict:
         """백테스트를 실행하고 결과를 히스토리에 저장한다."""
         try:
