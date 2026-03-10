@@ -388,6 +388,22 @@ class TestResultAnalysis:
         result = controller.generate_conditions()
         assert result['status'] == 'error'
 
+    def test_analyze_results_ml_ok(self, controller, tmp_path):
+        input_path = self._write_csv(tmp_path)
+        output_path = tmp_path / 'ml_analysis.json'
+
+        result = controller.analyze_results_ml(
+            str(input_path),
+            top_n=3,
+            n_splits=2,
+            output_path=str(output_path),
+        )
+
+        assert result['status'] == 'ok'
+        assert len(result['top_features']) == 3
+        assert result['saved']['status'] == 'ok'
+        assert output_path.exists()
+
 
 # === error handling ===
 

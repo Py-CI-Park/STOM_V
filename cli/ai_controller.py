@@ -103,6 +103,26 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def analyze_results_ml(self, input_path: str, model_type: str = 'random_forest',
+                           top_n: int = 10, n_splits: int = 5, random_state: int = 42,
+                           output_path: str = None) -> dict:
+        """ML 기반으로 B_* feature importance를 분석한다."""
+        try:
+            from cli.ml_factor_model import analyze_results_ml, save_ml_analysis
+
+            result = analyze_results_ml(
+                input_path,
+                model_type=model_type,
+                top_n=top_n,
+                n_splits=n_splits,
+                random_state=random_state,
+            )
+            if output_path and result.get('status') == 'ok':
+                result['saved'] = save_ml_analysis(result, output_path)
+            return result
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def generate_conditions(self, analysis_result: dict = None, input_path: str = None,
                             top_n: int = 5, buy_var: str = '매수', output_path: str = None,
                             min_samples: int = 30, quantiles: int = 10, alpha: float = 0.05) -> dict:

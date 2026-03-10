@@ -6,7 +6,7 @@
 - `formula` / `strategy` 서브커맨드
 
 그 외 `cli/` 하위의 history / sweep / optimizer / ai_controller /
-analyzer / condition_generator / wfo 등은
+analyzer / condition_generator / wfo / ml_factor_model 등은
 현재 시점에서는 라이브러리 성격이 강하며, 별도 서브커맨드로는 노출하지 않는다.
 """
 import sys
