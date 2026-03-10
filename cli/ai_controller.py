@@ -252,6 +252,41 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def walk_forward(self, config_dict: dict, param_space: dict,
+                     train_window_days: int, test_window_days: int,
+                     step_days: int = None, purge_days: int = 0, embargo_days: int = 0,
+                     objective: str = 'tpi', method: str = 'grid',
+                     maximize: bool = True, max_iter: int = 10,
+                     on_progress=None, output_path: str = None) -> dict:
+        """Walk-Forward Optimization을 실행한다."""
+        try:
+            from cli.wfo import run_walk_forward, save_walk_forward_report
+
+            config = BacktestConfig(**{
+                k: v for k, v in config_dict.items()
+                if k in {f.name for f in BacktestConfig.__dataclass_fields__.values()}
+            })
+
+            result = run_walk_forward(
+                config,
+                param_space,
+                train_window_days=train_window_days,
+                test_window_days=test_window_days,
+                step_days=step_days,
+                purge_days=purge_days,
+                embargo_days=embargo_days,
+                objective=objective,
+                method=method,
+                maximize=maximize,
+                max_iter=max_iter,
+                on_progress=on_progress,
+            )
+            if output_path and result.get('status') == 'ok':
+                result['saved'] = save_walk_forward_report(result, output_path)
+            return result
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def create_strategy(self, name: str, conditions: list,
                         strategy_type: str = 'buy') -> dict:
         """전략 코드를 생성하고 DB에 저장한다."""

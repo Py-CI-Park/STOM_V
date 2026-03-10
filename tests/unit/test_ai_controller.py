@@ -158,6 +158,32 @@ class TestOptimize:
         assert opt_result['total'] == 2
 
 
+class TestWalkForward:
+    def test_walk_forward_ok(self, controller, tmp_path):
+        mock_result = {
+            'status': 'ok',
+            'summary': {'round_count': 2, 'success_count': 2},
+            'rounds': [],
+        }
+        with patch('cli.wfo.run_walk_forward', return_value=mock_result):
+            output_path = tmp_path / 'wfo_report.json'
+            result = controller.walk_forward(
+                {
+                    'buy_strategy': 'Min_B_Test',
+                    'sell_strategy': 'Min_S_Test',
+                    'start_date': 20240101,
+                    'end_date': 20240630,
+                },
+                {'avg_time': [60, 120]},
+                train_window_days=60,
+                test_window_days=20,
+                output_path=str(output_path),
+            )
+            assert result['status'] == 'ok'
+            assert result['summary']['round_count'] == 2
+            assert result['saved']['status'] == 'ok'
+
+
 # === get_history / get_best ===
 
 class TestHistory:
