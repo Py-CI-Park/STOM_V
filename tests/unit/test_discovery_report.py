@@ -19,9 +19,9 @@ def _sample_result():
                 {'feature': 'B_체결강도', 'importance': 0.2},
             ]
         },
-        'expression_result': {'candidate_count': 2},
-        'walk_forward': {'summary': {'round_count': 3, 'success_rate': 1.0}},
-        'promotion_evaluation': {'passed': True, 'preset': 'balanced', 'reasons': []},
+        'expression_result': {'candidate_count': 2, 'expressions': ['등락율 <= 2', '체결강도 < 90']},
+        'walk_forward': {'summary': {'round_count': 3, 'success_rate': 1.0, 'zero_trade_rounds': 0, 'mean_trade_count': 120.0}},
+        'promotion_evaluation': {'passed': True, 'preset': 'balanced', 'reasons': [], 'summary': {'zero_trade_rounds': 0, 'avg_trade_count': 120.0}},
         'strategy_result': {'name': 'Auto_B_Test', 'action': 'created'},
         'saved_code': {'status': 'ok', 'path': 'generated.py'},
     }
@@ -33,6 +33,8 @@ def test_build_discovery_report_extracts_summary():
     assert report['promoted'] is True
     assert report['promotion_preset'] == 'balanced'
     assert report['candidate_count'] == 2
+    assert report['expressions'] == ['등락율 <= 2', '체결강도 < 90']
+    assert report['walk_forward_summary']['zero_trade_rounds'] == 0
 
 
 def test_render_discovery_report_markdown_contains_sections():
@@ -41,6 +43,7 @@ def test_render_discovery_report_markdown_contains_sections():
     assert '## Walk-Forward Summary' in markdown
     assert '## Promotion Evaluation' in markdown
     assert '## ML Top Features' in markdown
+    assert '## Candidate Expressions' in markdown
 
 
 def test_save_discovery_report_json_and_markdown(tmp_path):

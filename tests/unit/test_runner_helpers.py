@@ -279,3 +279,36 @@ class TestSignalRegistration:
                     f'runner.py:{i+1}에 모듈 레벨 signal 등록이 있음. '
                     f'함수 내부로 이동해야 함: {stripped}'
                 )
+
+
+class TestCleanupProcs:
+    """중단 시그널 처리 시 foreign process AssertionError를 삼켜야 한다."""
+
+    def test_cleanup_procs_skips_foreign_process_assertion(self):
+        from cli import runner
+
+        class ForeignProc:
+            def is_alive(self):
+                raise AssertionError('can only test a child process')
+
+            def kill(self):
+                raise AssertionError('kill should not be called')
+
+        class AliveProc:
+            def __init__(self):
+                self.killed = False
+
+            def is_alive(self):
+                return True
+
+            def kill(self):
+                self.killed = True
+
+        alive = AliveProc()
+        original = list(runner._child_procs)
+        runner._child_procs[:] = [ForeignProc(), alive]
+        try:
+            runner._cleanup_procs()
+            assert alive.killed is True
+        finally:
+            runner._child_procs[:] = original

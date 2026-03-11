@@ -366,3 +366,129 @@ python stom_backtest.py discovery promote Auto_B_PilotSlice01 \
 1. baseline이 너무 나쁜 전략이면 다른 기준 전략으로 pilot 재수행
 2. SHAP 설치는 지금 당장 우선순위가 아님
 3. 먼저 “거래가 살아있는 promote 성공 경로”를 확보하는 것이 우선
+
+---
+
+## 8. 2차 안정화 작업 및 readiness 점검
+
+Pilot 결과를 바탕으로 바로 다음 안정화 작업을 수행했다.
+
+### 8.1 수행한 안정화 작업
+
+1. **WFO 요약 정보 보강**
+   - `zero_trade_rounds`
+   - `trade_count_rounds`
+   - `mean_trade_count`
+   를 summary에 포함하도록 보강했다.
+
+2. **promotion 평가 보강**
+   - 모든 round에서 거래가 0건이면
+     `all_rounds_no_trades`
+     사유가 평가 결과에 남도록 수정했다.
+
+3. **discovery report 가시성 개선**
+   - 생성된 candidate expression 목록을 report에 포함했다.
+   - Markdown report에 `Candidate Expressions` 섹션을 추가했다.
+
+4. **runner 중단 안정화**
+   - 실제 promote 재시도 중 `Ctrl+C` / timeout 계열 종료 상황에서
+     `cli.runner._cleanup_procs()`가
+     `AssertionError: can only test a child process`
+     로 깨지는 문제를 발견했다.
+   - foreign process/parent mismatch 상황에서는 cleanup이 예외를 삼키고
+     계속 진행하도록 수정했다.
+
+### 8.2 TDD 관점에서 이번 안정화 작업이 어떻게 진행되었는가
+
+이번 안정화 작업은 **테스트를 먼저 추가한 뒤 구현을 수정하는 방식**으로 진행했다.
+
+적용한 테스트:
+
+- `tests/unit/test_wfo.py`
+  - zero-trade round 집계 검증
+- `tests/unit/test_ai_controller.py`
+  - 모든 round 무거래 시 `all_rounds_no_trades` 사유 검증
+- `tests/unit/test_discovery_report.py`
+  - expression/report 섹션 추가 검증
+- `tests/unit/test_runner_helpers.py`
+  - foreign process cleanup 시 `AssertionError`를 삼키는지 검증
+
+실행 흐름:
+
+1. 테스트 추가
+2. 실패 확인
+3. 구현 수정
+4. 관련 단위 테스트 재실행 통과 확인
+
+따라서 **이번 턴의 안정화 작업 자체는 TDD 흐름에 가깝게 수행되었다**고 볼 수 있다.
+
+다만 프로젝트 전체 히스토리 기준으로는,
+기존 기능 개발 커밋들이 항상 엄격한 red → green → refactor 형태였다는
+증거까지 확보되지는 않았다.
+즉, **전체 프로젝트가 엄격한 TDD로 일관되게 개발되었다고 단정하기는 어렵고,
+이번 안정화 작업은 TDD 방식으로 보강되었다**가 더 정확한 표현이다.
+
+### 8.3 2차 promote 재시도 결과
+
+다음과 같은 더 약한 조건으로 promote를 재시도했다.
+
+- 입력 CSV: `temp/pilot_slice_20250407_20250418.csv`
+- `top-n=1`
+- `ml_feature_limit=0`
+- `ml_weight=0.0`
+- `promotion_preset=aggressive`
+- `engine_count=1`
+
+관찰 결과:
+
+- 실제 WFO/runner 경로는 다시 시작되었다.
+- 그러나 실행 시간이 여전히 길었고,
+  중단 시 cleanup 경로에서 parent/child mismatch 예외가 발생하는 운영 문제를 확인했다.
+- 위 문제는 이번 턴에서 수정했다.
+- 그럼에도 `shared_memory` warning은 여전히 관찰되었고,
+  최종 promoted 성공 사례는 확보하지 못했다.
+
+### 8.4 readiness 최종 판단
+
+현재 시스템은 아래 수준까지는 도달했다.
+
+1. 자동 조건식 후보 생성 가능
+2. ML 기반 feature ranking 가능
+3. strategy 저장 가능
+4. WFO 기반 promotion 판정 가능
+5. JSON / Markdown report 생성 가능
+6. no-trade / cleanup 관측성을 이전보다 더 잘 제공
+
+하지만 아직 아래 문제 때문에
+**“실전 채택 성공까지 가능하도록 시스템이 완성되었다”**고 보기는 어렵다.
+
+#### 아직 부족한 점
+
+1. **실제 promoted 성공 사례 부재**
+   - 현재 pilot에서는 end-to-end로 최종 채택된 전략을 확보하지 못했다.
+
+2. **candidate 강도 자동 튜닝 부재**
+   - `top-n`, `ml_feature_limit`, `ml_weight`, `preset`
+     조합을 자동 탐색해
+     “거래가 살아있는 후보”를 찾는 기능이 아직 없다.
+
+3. **runner cleanup 완전 안정화 미완료**
+   - parent/child mismatch 예외는 완화했지만
+     `shared_memory` warning은 남아 있다.
+
+4. **no-trade promotion의 운영 품질 미완성**
+   - 지금은 no-trade 원인을 더 잘 설명할 수 있게 되었지만,
+     실전 채택 판단을 자동으로 재시도/완화하는 orchestration은 없다.
+
+### 8.5 현재 시점의 결론
+
+정리하면:
+
+- **기능적 연결성**: 충분히 확보됨
+- **TDD 기반 안정화 보강**: 이번 턴 기준으로 수행됨
+- **실전 채택 성공 가능성**: 아직 검증 부족
+- **시스템 완성 판정**: 아직 아님
+
+즉 현재 시스템은
+**“자동 조건식 탐색 파일럿 플랫폼”으로는 상당히 진전됐지만,
+실전에서 반복적으로 채택 가능한 전략을 안정적으로 뽑아내는 완성형 시스템”이라고 보기는 아직 이르다.**

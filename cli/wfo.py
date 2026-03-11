@@ -141,13 +141,20 @@ def run_walk_forward(
     metric_name = objective
     valid_scores = []
     success_count = 0
+    trade_counts = []
     for round_result in rounds:
         test_result = round_result['test_result']
         if test_result.get('status') == 'success':
             success_count += 1
-        metric_value = (test_result.get('metrics') or {}).get(metric_name)
+        metrics = test_result.get('metrics') or {}
+        metric_value = metrics.get(metric_name)
         if metric_value is not None:
             valid_scores.append(float(metric_value))
+        trade_count = metrics.get('trade_count')
+        if trade_count is not None:
+            trade_counts.append(float(trade_count))
+
+    zero_trade_rounds = sum(1 for trade_count in trade_counts if trade_count <= 0)
 
     summary = {
         'round_count': len(rounds),
@@ -156,6 +163,9 @@ def run_walk_forward(
         'metric': metric_name,
         'mean_oos_metric': (sum(valid_scores) / len(valid_scores)) if valid_scores else None,
         'best_oos_metric': max(valid_scores) if valid_scores and maximize else (min(valid_scores) if valid_scores else None),
+        'trade_count_rounds': len(trade_counts),
+        'zero_trade_rounds': zero_trade_rounds,
+        'mean_trade_count': (sum(trade_counts) / len(trade_counts)) if trade_counts else None,
     }
 
     return {

@@ -206,6 +206,25 @@ class TestWalkForward:
         assert result['passed'] is False
         assert len(result['reasons']) >= 3
 
+    def test_evaluate_walk_forward_result_marks_all_zero_trade_rounds(self, controller):
+        result = controller.evaluate_walk_forward_result({
+            'status': 'ok',
+            'summary': {
+                'round_count': 2,
+                'success_rate': 1.0,
+                'mean_oos_metric': 0.2,
+                'zero_trade_rounds': 2,
+            },
+            'rounds': [
+                {'test_result': {'metrics': {'trade_count': 0}}},
+                {'test_result': {'metrics': {'trade_count': 0}}},
+            ],
+        }, min_rounds=1, min_success_rate=0.5, min_mean_oos_metric=0.0, min_avg_trade_count=0)
+        assert result['status'] == 'ok'
+        assert result['passed'] is False
+        assert 'all_rounds_no_trades' in result['reasons']
+        assert result['summary']['zero_trade_rounds'] == 2
+
 
 # === get_history / get_best ===
 

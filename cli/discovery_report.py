@@ -30,6 +30,9 @@ def build_discovery_report(result: dict, strategy_name: str | None = None) -> di
         'walk_forward_summary': (result.get('walk_forward') or {}).get('summary'),
         'strategy_result': result.get('strategy_result') or (result.get('strategy_flow') or {}).get('strategy_result'),
         'saved_code': result.get('saved_code'),
+        'expressions': ((result.get('expression_result') or {}).get('expressions')
+                        or ((result.get('strategy_flow') or {}).get('expression_result') or {}).get('expressions')
+                        or []),
     }
     return report
 
@@ -81,6 +84,14 @@ def render_discovery_report_markdown(report: dict) -> str:
     if whitelist:
         for feature in whitelist:
             lines.append(f"- {feature}")
+    else:
+        lines.append('- none')
+
+    lines.extend(['', '## Candidate Expressions'])
+    expressions = report.get('expressions') or []
+    if expressions:
+        for expression in expressions:
+            lines.append(f"- `{expression}`")
     else:
         lines.append('- none')
 
