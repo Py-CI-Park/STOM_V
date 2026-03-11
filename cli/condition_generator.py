@@ -20,8 +20,14 @@ def _format_value(value):
     return repr(value)
 
 
-def candidate_to_expression(candidate: dict) -> str:
-    feature = candidate['feature']
+def _normalize_feature_name(feature: str, runtime_context: bool = False) -> str:
+    if runtime_context and feature.startswith('B_'):
+        return feature[2:]
+    return feature
+
+
+def candidate_to_expression(candidate: dict, runtime_context: bool = False) -> str:
+    feature = _normalize_feature_name(candidate['feature'], runtime_context=runtime_context)
     operator = candidate.get('operator')
     threshold = candidate.get('threshold')
     lower = candidate.get('lower_bound')
@@ -58,6 +64,7 @@ def generate_condition_code(
     buy_var: str = '매수',
     header_title: str = '자동 생성 필터',
     created_at: str | None = None,
+    runtime_context: bool = True,
 ) -> str:
     created_at = created_at or datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     lines = [
@@ -68,7 +75,7 @@ def generate_condition_code(
 
     for index, candidate in enumerate(candidates, start=1):
         lines.append(f'# candidate {index}: {candidate_to_comment(candidate)}')
-        lines.append(f'if {candidate_to_expression(candidate)}: {buy_var} = False')
+        lines.append(f'if {candidate_to_expression(candidate, runtime_context=runtime_context)}: {buy_var} = False')
     return '\n'.join(lines)
 
 
@@ -101,8 +108,8 @@ def select_candidates(
     return ranked[:max(top_n, 0)]
 
 
-def generate_condition_expressions(candidates: list[dict]) -> list[str]:
-    return [candidate_to_expression(candidate) for candidate in candidates]
+def generate_condition_expressions(candidates: list[dict], runtime_context: bool = True) -> list[str]:
+    return [candidate_to_expression(candidate, runtime_context=runtime_context) for candidate in candidates]
 
 
 def generate_condition_expressions_from_analysis(
@@ -112,6 +119,7 @@ def generate_condition_expressions_from_analysis(
     feature_whitelist: list[str] | None = None,
     feature_importance_map: dict | None = None,
     ml_weight: float = 0.0,
+    runtime_context: bool = True,
 ) -> dict:
     selected = select_candidates(
         analysis_result,
@@ -121,7 +129,7 @@ def generate_condition_expressions_from_analysis(
         feature_importance_map=feature_importance_map,
         ml_weight=ml_weight,
     )
-    expressions = generate_condition_expressions(selected)
+    expressions = generate_condition_expressions(selected, runtime_context=runtime_context)
     return {
         'status': 'ok',
         'selected_candidates': selected,
@@ -138,6 +146,7 @@ def generate_conditions_from_analysis(
     feature_whitelist: list[str] | None = None,
     feature_importance_map: dict | None = None,
     ml_weight: float = 0.0,
+    runtime_context: bool = True,
 ) -> dict:
     selected = select_candidates(
         analysis_result,
@@ -147,7 +156,7 @@ def generate_conditions_from_analysis(
         feature_importance_map=feature_importance_map,
         ml_weight=ml_weight,
     )
-    code = generate_condition_code(selected, buy_var=buy_var)
+    code = generate_condition_code(selected, buy_var=buy_var, runtime_context=runtime_context)
     return {
         'status': 'ok',
         'selected_candidates': selected,

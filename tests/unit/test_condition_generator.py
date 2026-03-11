@@ -44,8 +44,8 @@ def test_generate_condition_code_contains_metadata_and_rules():
     code = generate_condition_code(candidates)
 
     assert '# 자동 생성 필터' in code
-    assert 'if B_등락율 <=' in code
-    assert 'if 90_000 <= B_시분초 < 93_000: 매수 = False' in code
+    assert 'if 등락율 <=' in code
+    assert 'if 90_000 <= 시분초 < 93_000: 매수 = False' in code
     assert 'source=time_of_day' in code
 
 
@@ -69,7 +69,7 @@ def test_generate_conditions_from_analysis_selects_top_n(tmp_path):
 
     expression_result = generate_condition_expressions_from_analysis(analysis_result, top_n=2)
     assert expression_result['candidate_count'] == 2
-    assert expression_result['expressions'][0] == 'B_등락율 <= 2'
+    assert expression_result['expressions'][0] == '등락율 <= 2'
 
     filtered = generate_condition_expressions_from_analysis(
         analysis_result,
@@ -77,7 +77,7 @@ def test_generate_conditions_from_analysis_selects_top_n(tmp_path):
         feature_whitelist=['B_시가총액'],
     )
     assert filtered['candidate_count'] == 1
-    assert filtered['expressions'] == ['0 <= B_시가총액 < 300_000_000_000']
+    assert filtered['expressions'] == ['0 <= 시가총액 < 300_000_000_000']
 
     ranked = generate_condition_expressions_from_analysis(
         {
