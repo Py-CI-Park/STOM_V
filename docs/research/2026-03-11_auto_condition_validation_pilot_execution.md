@@ -108,8 +108,22 @@ STOM_ALLOW_MINIMAL_SETTING=1 python stom_backtest.py \
 
 결과:
 
-- 상태: 미실행
+- 상태: 완료
+- 산출물:
+  - `temp/pilot_baseline.json`
+  - `backtest/csv/stock_bt_Min_B_Study_251227_20260311210622.csv`
+- 주요 지표:
+  - 거래횟수: `1542`
+  - 승률: `24.58%`
+  - 평균수익률: `-0.97%`
+  - 수익률합계: `-57.82%`
+  - 수익금합계: `-14,922,548원`
+  - 최대낙폭률(MDD): `57.87%`
+  - TPI: `0.65`
 - 메모:
+  - baseline 자체가 상당히 좋지 않은 전략 상태로 확인됨
+  - 종료 시 `shared_memory` 관련 `resource_tracker` warning 발생
+  - 이 warning은 현재 “안정화 우선” 판단을 강화하는 신호임
 
 ### 4.2 discovery analyze
 
@@ -117,7 +131,7 @@ STOM_ALLOW_MINIMAL_SETTING=1 python stom_backtest.py \
 
 ```bash
 python stom_backtest.py discovery analyze \
-  --input <baseline_csv_path> \
+  --input backtest/csv/stock_bt_Min_B_Study_251227_20260311210622.csv \
   --output temp/pilot_analysis.json \
   --min-samples 30 \
   --quantiles 10 \
@@ -126,8 +140,22 @@ python stom_backtest.py discovery analyze \
 
 결과:
 
-- 상태: 미실행
+- 상태: 완료
+- 산출물:
+  - `temp/pilot_analysis.json`
+- 핵심 결과:
+  - row_count: `1542`
+  - feature_columns: `14개`
+  - 대표 시간대 후보:
+    - `93000 <= B_시분초 < 113000` (오전)
+    - `113000 <= B_시분초 < 130000` (점심)
+  - 대표 quantile 후보:
+    - `15.304 <= B_등락율 < 17.74`
+    - `2182 <= B_시가총액 < 2659`
+    - `92.656 <= B_체결강도 < 95.742`
 - 메모:
+  - 후보는 충분히 생성되었고, 전반적으로 과열/중후반 시간대/특정 시총/체결강도 구간이 나쁜 쪽으로 잡힘
+  - 다만 후보 수가 많아 human review 없이 바로 채택하기에는 부담이 있음
 
 ### 4.3 discovery ml-analyze
 
@@ -135,7 +163,7 @@ python stom_backtest.py discovery analyze \
 
 ```bash
 python stom_backtest.py discovery ml-analyze \
-  --input <baseline_csv_path> \
+  --input backtest/csv/stock_bt_Min_B_Study_251227_20260311210622.csv \
   --output temp/pilot_ml_analysis.json \
   --model-type random_forest \
   --top-n 10 \
@@ -144,8 +172,23 @@ python stom_backtest.py discovery ml-analyze \
 
 결과:
 
-- 상태: 미실행
+- 상태: 완료
+- 산출물:
+  - `temp/pilot_ml_analysis.json`
+- 핵심 결과:
+  - row_count: `1542`
+  - mean_cv_score: `0.7268`
+  - top_features 상위 5개:
+    1. `B_당일거래대금`
+    2. `B_등락율`
+    3. `B_회전율`
+    4. `B_시가총액`
+    5. `B_거래대금증감`
+  - `shap_available: false`
+  - `shap_status: unavailable`
 - 메모:
+  - 통계 분석 결과와 ML top feature가 크게 어긋나지 않음
+  - SHAP은 미설치 상태라 fallback 처리됨
 
 ### 4.4 discovery generate
 
@@ -153,7 +196,7 @@ python stom_backtest.py discovery ml-analyze \
 
 ```bash
 python stom_backtest.py discovery generate \
-  --input <baseline_csv_path> \
+  --input backtest/csv/stock_bt_Min_B_Study_251227_20260311210622.csv \
   --output temp/pilot_generated_conditions.py \
   --top-n 5 \
   --ml-feature-limit 3 \
@@ -164,8 +207,18 @@ python stom_backtest.py discovery generate \
 
 결과:
 
-- 상태: 미실행
+- 상태: 완료
+- 산출물:
+  - `temp/pilot_generated_conditions.py`
 - 메모:
+  - 첫 실행에서는 `B_등락율` 같은 접두사 기반 표현식이 runtime 전략 코드로 그대로 들어가
+    `NameError`를 유발함
+  - 이후 생성기에서 runtime 전략 맥락에서는 `B_` 접두사를 제거하도록 수정함
+  - 수정 후 생성 코드는 다음처럼 runtime 변수명으로 정상 출력됨
+    - `등락율`
+    - `당일거래대금`
+    - `회전율`
+    - `체결강도`
 
 ### 4.5 discovery create-strategy
 
@@ -173,8 +226,8 @@ python stom_backtest.py discovery generate \
 
 ```bash
 python stom_backtest.py discovery create-strategy Auto_B_Pilot01 \
-  --input <baseline_csv_path> \
-  --output-code temp/Auto_B_Pilot01.py \
+  --input temp/pilot_slice_20250407_20250418.csv \
+  --output-code temp/Auto_B_PilotSlice01.py \
   --top-n 5 \
   --ml-feature-limit 3 \
   --ml-weight 0.5 \
@@ -184,49 +237,66 @@ python stom_backtest.py discovery create-strategy Auto_B_Pilot01 \
 
 결과:
 
-- 상태: 미실행
+- 상태: 완료
+- 산출물:
+  - `temp/Auto_B_PilotSlice01.py`
+  - strategy name: `Auto_B_PilotSlice01`
 - 메모:
+  - 일관성 있는 bounded pilot을 위해 이후 단계는 `2025-04-07 ~ 2025-04-18` slice (`500행`) 기준으로 재수행함
+  - slice 기준 ML top feature는
+    - `B_당일거래대금`
+    - `B_체결강도`
+    - `B_회전율`
+    로 확인됨
+  - 생성된 조건식은 runtime 변수명으로 정상 저장됨
 
 ### 4.6 discovery promote
 
 실행 명령:
 
 ```bash
-python stom_backtest.py discovery promote Auto_B_Pilot01 \
-  --input <baseline_csv_path> \
+python stom_backtest.py discovery promote Auto_B_PilotSlice01 \
+  --input temp/pilot_slice_20250407_20250418.csv \
   --sell Min_S_Study_251227 \
   --start 20250407 \
-  --end 20250530 \
+  --end 20250418 \
   --timeframe min \
-  --train-window-days 10 \
-  --test-window-days 5 \
-  --step-days 5 \
+  --train-window-days 5 \
+  --test-window-days 2 \
+  --step-days 2 \
   --purge-days 1 \
   --embargo-days 1 \
   --promotion-preset balanced \
-  --report-json temp/Auto_B_Pilot01_report.json \
-  --report-md temp/Auto_B_Pilot01_report.md \
+  --report-json temp/Auto_B_PilotSlice01_report.json \
+  --report-md temp/Auto_B_PilotSlice01_report.md \
   --ml-feature-limit 3 \
   --ml-weight 0.5
 ```
 
 결과:
 
-- 상태: 미실행
-- 메모:
+- 상태: 실행 완료(실패)
+- 결과:
+  - 각 WFO 라운드에서 `매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.` 발생
+  - 최종 promote 보고서(JSON/Markdown)는 생성되지 않음
+  - 프로세스 종료 시 `shared_memory` 관련 `resource_tracker` warning 반복
+- 해석:
+  - 현재 생성된 필터가 너무 강해 짧은 검증 구간에서 거래가 사라지는 현상으로 보임
+  - 또는 baseline 자체가 충분히 나쁘기 때문에 pruning 후에도 유효 거래가 유지되지 않음
+  - bounded pilot의 목적은 달성됨: **현재 promote 파이프라인은 “실행은 되지만 실제 전략 채택에는 추가 조정이 필요”**
 
 ---
 
 ## 5. 결과 요약
 
-- baseline 성공 여부:
-- analyze 성공 여부:
-- ml-analyze 성공 여부:
-- generate 성공 여부:
-- create-strategy 성공 여부:
-- promote 성공 여부:
-- promoted 여부:
-- report 생성 여부:
+- baseline 성공 여부: **성공**
+- analyze 성공 여부: **성공**
+- ml-analyze 성공 여부: **성공**
+- generate 성공 여부: **성공**
+- create-strategy 성공 여부: **성공**
+- promote 성공 여부: **실행은 성공했으나 전략 채택은 실패**
+- promoted 여부: **False**
+- report 생성 여부: **False** (trade 없음)
 
 ---
 
@@ -234,22 +304,65 @@ python stom_backtest.py discovery promote Auto_B_Pilot01 \
 
 ### 6.1 후보 품질
 
-- 작성 예정
+- 통계 후보와 ML top feature는 대체로 정렬됨
+- 즉, 후보가 완전히 무의미한 것은 아님
+- 다만 `top-n=5`, `ml-feature-limit=3`, `ml-weight=0.5` 조합은
+  pilot slice 기준으로는 다소 공격적으로 작용해 거래가 지나치게 줄어듦
 
 ### 6.2 ML 정렬성
 
-- 작성 예정
+- full range 기준 top feature:
+  - `당일거래대금`
+  - `등락율`
+  - `회전율`
+- slice 기준 top feature:
+  - `당일거래대금`
+  - `체결강도`
+  - `회전율`
+- 공통적으로 거래대금/회전율/체결강도/등락율 계열이 상위에 있어
+  “후보가 아예 엉뚱한 방향으로 가고 있지는 않다”고 볼 수 있음
 
 ### 6.3 preset 적절성
 
-- 작성 예정
+- `balanced` preset조차 trade-less 상태를 만들었으므로,
+  현재 전략/구간 조합에서는 preset보다 **candidate 생성 강도**가 먼저 문제일 가능성이 높음
+- 즉 preset만 aggressive로 바꿔도 해결 안 될 수 있으며,
+  먼저 `top-n`, `ml-feature-limit`, `ml-weight`를 조정할 필요가 큼
 
 ### 6.4 운영 안정성
 
-- 작성 예정
+- baseline과 promote 모두 실제 runner 경로는 동작했음
+- 하지만 promote 단계에서 round 반복 시
+  - trade 없음
+  - `shared_memory` cleanup warning
+  이 관찰됨
+- 따라서 현재 판단은 여전히 유효함:
+  **새 기능 추가보다 안정화/검증이 우선**
 
 ---
 
 ## 7. 다음 단계 제안
 
-- 작성 예정
+### 7.1 가장 우선할 것
+
+1. `promote` 이전에 candidate 강도를 낮추는 validation matrix를 만든다.
+   - `top-n`: 2 / 3 / 5
+   - `ml-feature-limit`: 0 / 1 / 3
+   - `ml-weight`: 0.0 / 0.3 / 0.5
+   - `promotion-preset`: balanced / aggressive
+
+2. 위 조합 중 **거래 수가 0이 아닌 조합**을 먼저 찾는다.
+
+3. 그 다음에야 preset/report 품질을 다시 평가한다.
+
+### 7.2 기술적 안정화 작업
+
+1. `shared_memory` cleanup warning 원인 확인
+2. `trade_count == 0`인 WFO round 처리/report 처리 개선
+3. `discover_and_promote_strategy()`에서 “거래 없음”을 더 설명적으로 리포트하도록 개선
+
+### 7.3 연구적 다음 단계
+
+1. baseline이 너무 나쁜 전략이면 다른 기준 전략으로 pilot 재수행
+2. SHAP 설치는 지금 당장 우선순위가 아님
+3. 먼저 “거래가 살아있는 promote 성공 경로”를 확보하는 것이 우선
