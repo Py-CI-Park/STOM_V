@@ -22,7 +22,7 @@
 ### 1.1 필수 완료 기준
 
 - [ ] `discover_and_promote_strategy()`가 no-trade 상황에서 자동 완화(`auto_relax`)를 수행한다.
-- [ ] `top_n`, `ml_feature_limit`, `ml_weight`, `promotion_preset` 조합 중 최소 1개에서 **실제 promoted 성공 사례**를 확보한다.
+- [x] `top_n`, `ml_feature_limit`, `ml_weight`, `promotion_preset` 조합 중 최소 1개에서 **실제 promoted 성공 사례**를 확보한다.
 - [ ] `optimiz.py`, `rolling_walk_forward_test.py` 경로에 대해 명시적 검증 기록이 남는다.
 - [ ] `analyzer.py`, `ml_factor_model.py`에 핵심 경계 조건 테스트가 추가된다.
 - [ ] 중단/정리 시 치명적 cleanup 예외가 재발하지 않는다.
@@ -230,14 +230,14 @@ fix: sync optimize and rolling walk forward with expanded result columns
 - [ ] 필요 시 full-range 또는 대체 전략으로 pilot 확대
 
 #### 3차
-- [ ] promoted 성공 사례 1건 확보
+- [x] promoted 성공 사례 1건 확보
 - [ ] 해당 설정을 문서에 baseline successful config로 기록
 
 ### 7.5 성공 기준
 
-- [ ] `promoted=True` 결과 1건 이상 확보
-- [ ] report JSON/Markdown 생성 확인
-- [ ] 채택 근거가 report에서 설명 가능
+- [x] `promoted=True` 결과 1건 이상 확보
+- [x] report JSON/Markdown 생성 확인
+- [x] 채택 근거가 report에서 설명 가능
 
 ### 7.6 실패 시 기록해야 할 것
 
