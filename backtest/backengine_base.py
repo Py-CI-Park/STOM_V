@@ -351,6 +351,23 @@ class BackEngineBase(Strategy):
         if self.dict_set['백테일괄로딩'] and all_data:
             name = f'backdata_{self.gubun}'
             total_size = sum(item['len'] * item['data'].dtype.itemsize * item['data'].shape[1] for item in all_data)
+            try:
+                stale_shm = shared_memory.SharedMemory(name=name)
+            except FileNotFoundError:
+                stale_shm = None
+            except Exception:
+                stale_shm = None
+            if stale_shm is not None:
+                try:
+                    stale_shm.close()
+                except Exception:
+                    pass
+                try:
+                    stale_shm.unlink()
+                except FileNotFoundError:
+                    pass
+                except Exception:
+                    pass
             shm = shared_memory.SharedMemory(name=name, create=True, size=total_size)
 
             shared_info = []
@@ -452,6 +469,7 @@ class BackEngineBase(Strategy):
         return tuple(snapshot[column] for column in TRADE_RESULT_EXTRA_COLUMNS)
 
     def BackStop(self, gubun=0):
+        self.CleanupSharedMemory()
         self.back_type = None
         if gubun in (0, 1):
             if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 중지 중 ...'))
@@ -617,6 +635,21 @@ class BackEngineBase(Strategy):
             return
 
         if self.profile: self.pr.print_stats(sort='cumulative')
+        self.CleanupSharedMemory()
+
+    def CleanupSharedMemory(self):
+        while self.shared_list:
+            shm = self.shared_list.pop()
+            try:
+                shm.close()
+            except Exception:
+                pass
+            try:
+                shm.unlink()
+            except FileNotFoundError:
+                pass
+            except Exception:
+                pass
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
         if 분봉저가 is None:

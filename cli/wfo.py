@@ -151,6 +151,10 @@ def run_walk_forward(
         if metric_value is not None:
             valid_scores.append(float(metric_value))
         trade_count = metrics.get('trade_count')
+        if trade_count is None and test_result.get('status') == 'success':
+            message = str(test_result.get('message', '') or '')
+            if not metrics or '결과 테이블이 비어있습니다' in message:
+                trade_count = 0.0
         if trade_count is not None:
             trade_counts.append(float(trade_count))
 

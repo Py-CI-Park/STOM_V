@@ -123,6 +123,47 @@ def test_run_walk_forward_summary_counts_zero_trade_rounds():
     assert result['summary']['mean_trade_count'] == 6.0
 
 
+def test_run_walk_forward_treats_success_without_metrics_as_zero_trade_round():
+    base_config = BacktestConfig(
+        buy_strategy='A',
+        sell_strategy='B',
+        start_date=20240101,
+        end_date=20240331,
+    )
+
+    def mock_optimize(config, param_space, **kwargs):
+        return {
+            'status': 'ok',
+            'best': {'params': {}},
+            'results': [],
+            'total': 1,
+        }
+
+    call_count = {'n': 0}
+
+    def mock_run(config):
+        call_count['n'] += 1
+        if call_count['n'] == 1:
+            return {'status': 'success', 'message': '백테스트 완료 (결과 테이블이 비어있습니다)'}
+        return {'status': 'success', 'metrics': {'tpi': 0.8, 'trade_count': 12}}
+
+    result = run_walk_forward(
+        base_config,
+        {},
+        train_window_days=30,
+        test_window_days=10,
+        step_days=30,
+        optimize_fn=mock_optimize,
+        run_fn=mock_run,
+    )
+
+    assert result['status'] == 'ok'
+    assert result['summary']['round_count'] == 2
+    assert result['summary']['zero_trade_rounds'] == 1
+    assert result['summary']['trade_count_rounds'] == 2
+    assert result['summary']['mean_trade_count'] == 6.0
+
+
 def test_save_walk_forward_report_writes_json(tmp_path):
     result = {
         'status': 'ok',

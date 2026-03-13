@@ -225,6 +225,25 @@ class TestWalkForward:
         assert 'all_rounds_no_trades' in result['reasons']
         assert result['summary']['zero_trade_rounds'] == 2
 
+    def test_evaluate_walk_forward_result_marks_missing_metrics_as_no_trade(self, controller):
+        result = controller.evaluate_walk_forward_result({
+            'status': 'ok',
+            'summary': {
+                'round_count': 1,
+                'success_rate': 1.0,
+                'mean_oos_metric': None,
+                'trade_count_rounds': 0,
+                'zero_trade_rounds': 0,
+            },
+            'rounds': [
+                {'test_result': {'status': 'success', 'message': '백테스트 완료 (결과 테이블이 비어있습니다)'}},
+            ],
+        }, min_rounds=1, min_success_rate=0.5, min_mean_oos_metric=-0.1, min_avg_trade_count=0)
+        assert result['status'] == 'ok'
+        assert result['passed'] is False
+        assert 'all_rounds_no_trades' in result['reasons']
+        assert result['summary']['zero_trade_rounds'] == 1
+
 
 # === get_history / get_best ===
 

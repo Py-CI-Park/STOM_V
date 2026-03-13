@@ -327,15 +327,24 @@ class AIBacktestController:
             reasons.append(f'mean_oos_metric<{min_mean_oos_metric}')
 
         trade_counts = []
+        inferred_zero_trade_rounds = 0
         for round_result in rounds:
-            metrics = (round_result.get('test_result') or {}).get('metrics') or {}
+            test_result = round_result.get('test_result') or {}
+            metrics = test_result.get('metrics') or {}
             trade_count = metrics.get('trade_count')
+            if trade_count is None and test_result.get('status') == 'success':
+                message = str(test_result.get('message', '') or '')
+                if not metrics or '결과 테이블이 비어있습니다' in message:
+                    inferred_zero_trade_rounds += 1
+                    trade_count = 0.0
             if trade_count is not None:
                 trade_counts.append(float(trade_count))
         avg_trade_count = (sum(trade_counts) / len(trade_counts)) if trade_counts else None
         zero_trade_rounds = int(summary.get('zero_trade_rounds', 0) or 0)
-        if not zero_trade_rounds and trade_counts:
-            zero_trade_rounds = sum(1 for trade_count in trade_counts if trade_count <= 0)
+        if inferred_zero_trade_rounds:
+            zero_trade_rounds = max(zero_trade_rounds, inferred_zero_trade_rounds)
+        if trade_counts:
+            zero_trade_rounds = max(zero_trade_rounds, sum(1 for trade_count in trade_counts if trade_count <= 0))
         if min_avg_trade_count > 0 and (avg_trade_count is None or avg_trade_count < min_avg_trade_count):
             reasons.append(f'avg_trade_count<{min_avg_trade_count}')
         if round_count > 0 and zero_trade_rounds >= round_count:
@@ -357,6 +366,7 @@ class AIBacktestController:
                 'mean_oos_metric': mean_oos_metric,
                 'avg_trade_count': avg_trade_count,
                 'zero_trade_rounds': zero_trade_rounds,
+                'trade_count_rounds': len(trade_counts),
             },
         }
 
