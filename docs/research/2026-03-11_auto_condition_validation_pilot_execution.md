@@ -631,3 +631,82 @@ full-range CSV 기반 top-1 전략을 strategy.db에 저장한 뒤
    no-trade로 간주하도록 promotion 평가 보강
 2. `shared_memory` 재사용 충돌(`FileExistsError: /backdata_0`) 원인 분석 및 정리 경로 수정
 3. 그 다음에 다시 promote 성공 조합 탐색 재개
+
+---
+
+## 10. 4차 보강 — no-trade 판정 / shared_memory cleanup 수정 및 재검증
+
+9장의 blocker를 바탕으로, 다음 두 가지를 우선 수정했다.
+
+### 10.1 적용한 수정
+
+1. **no-trade 판정 보강**
+   - `run_walk_forward()`에서
+     `status='success'`이지만 metrics가 비어 있고
+     메시지가 `결과 테이블이 비어있습니다`인 경우를
+     `trade_count=0` 라운드로 간주하도록 보강했다.
+   - `evaluate_walk_forward_result()`에서도
+     동일 패턴을 추론해
+     `all_rounds_no_trades`로 판정할 수 있게 수정했다.
+
+2. **shared_memory cleanup 보강**
+   - `backtest/backengine_base.py`에서
+     stale shared memory 이름(`backdata_{gubun}`)이 남아 있으면
+     새 생성 전에 정리하도록 수정했다.
+   - 엔진 종료/중지 경로에서
+     `close() + unlink()` 기반 정리 루틴을 추가했다.
+
+### 10.2 TDD 기반 보강
+
+이번 수정은 테스트를 먼저 추가한 뒤 구현을 수정하는 방식으로 진행했다.
+
+추가/보강한 테스트:
+
+- `tests/unit/test_wfo.py`
+  - metrics 없는 success 결과를 zero-trade round로 집계하는지 검증
+- `tests/unit/test_ai_controller.py`
+  - `mean_oos_metric is None`, `trade_count_rounds == 0` 케이스를
+    `all_rounds_no_trades`로 판정하는지 검증
+- `tests/unit/test_backengine_shared_memory_cleanup.py`
+  - `backengine_base.py`에 shared memory unlink 경로가 존재하는지 검증
+
+검증 결과:
+
+- 관련 회귀 집합: **17 passed**
+
+### 10.3 수정 후 재실행 관찰
+
+slice 기반 promote를 다시 재실행했을 때,
+이전과 달리 첫 번째 no-trade 이후 실제로 다음 시도가 이어지는 것을 확인했다.
+즉, **auto-relax가 no-trade를 더 잘 감지하고 재시도에 들어가는 방향으로 개선**되었다.
+
+또한 이전에 관찰된
+`FileExistsError: '/backdata_0'`
+는 같은 형태로 즉시 재현되지는 않았다.
+
+다만,
+세 번째 시도 구간에서 프로세스가 예상보다 길게 머무르는 현상이 남아 있어,
+shared memory 충돌은 완화되었지만
+**반복 promote 탐색의 완전 안정화가 끝났다고 보기는 아직 어렵다.**
+
+### 10.4 현재 판단
+
+이번 보강으로 아래는 개선되었다.
+
+1. no-trade 판정 정확도
+2. auto-relax 재시도 진입 가능성
+3. stale shared memory 이름 충돌 가능성
+
+하지만 아직 아래는 남아 있다.
+
+1. `promoted=True` 실제 성공 사례 미확보
+2. 반복 promote 탐색 시 long-running/hang 가능성
+3. 운영 관점의 완전한 종료 안정성 검증 부족
+
+### 10.5 다음 우선순위
+
+현재 시점의 다음 우선순위는 아래 순서가 적절하다.
+
+1. **짧은 구간/단일 round 위주로 promote 성공 조합 재탐색**
+2. 성공 사례 확보 후 report/parameter baseline 고정
+3. 그 다음 `analyzer.py`, `ml_factor_model.py` 테스트 보강 재개
