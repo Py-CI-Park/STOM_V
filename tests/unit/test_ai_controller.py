@@ -488,6 +488,143 @@ class TestStrategyManagement:
             assert result['saved_report_json']['status'] == 'ok'
             assert result['saved_report_md']['status'] == 'ok'
 
+    def test_discover_and_promote_strategy_auto_relax_retries_until_trades_exist(self, controller):
+        prepared_history = []
+
+        def prepared_factory(*args, **kwargs):
+            top_n = kwargs.get('top_n')
+            prepared_history.append(top_n)
+            return {
+                'status': 'ok',
+                'analysis_result': {'status': 'ok'},
+                'expression_result': {
+                    'expressions': [f'등락율 <= {top_n}'],
+                    'candidate_count': top_n,
+                },
+                'code_result': {'status': 'ok', 'code': f'if 등락율 <= {top_n}: 매수 = False'},
+            }
+
+        walk_forward_results = [
+            {
+                'status': 'ok',
+                'summary': {'round_count': 2, 'success_rate': 0.0, 'mean_oos_metric': None, 'zero_trade_rounds': 2},
+                'rounds': [
+                    {'test_result': {'metrics': {'trade_count': 0}}},
+                    {'test_result': {'metrics': {'trade_count': 0}}},
+                ],
+            },
+            {
+                'status': 'ok',
+                'summary': {'round_count': 2, 'success_rate': 1.0, 'mean_oos_metric': 0.3, 'zero_trade_rounds': 0},
+                'rounds': [
+                    {'test_result': {'metrics': {'trade_count': 12}}},
+                    {'test_result': {'metrics': {'trade_count': 18}}},
+                ],
+            },
+        ]
+
+        with patch.object(controller, '_prepare_strategy_candidate', side_effect=prepared_factory), \
+             patch.object(controller, 'create_strategy', side_effect=[
+                 {'status': 'ok', 'name': '__tmp1__', 'action': 'created'},
+                 {'status': 'ok', 'name': '__tmp2__', 'action': 'created'},
+                 {'status': 'ok', 'name': 'Auto_B_Final', 'action': 'created'},
+             ]), \
+             patch.object(controller, 'walk_forward', side_effect=walk_forward_results) as mock_wfo, \
+             patch.object(controller, 'delete_strategy', return_value={'status': 'ok', 'action': 'deleted'}):
+            result = controller.discover_and_promote_strategy(
+                'Auto_B_Final',
+                config_dict={'buy_strategy': 'BaseBuy', 'sell_strategy': 'BaseSell', 'start_date': 20240101, 'end_date': 20240630},
+                walk_forward_settings={'train_window_days': 60, 'test_window_days': 20},
+                top_n=5,
+                auto_relax=True,
+                max_relax_steps=2,
+            )
+
+            assert result['status'] == 'ok'
+            assert result['promoted'] is True
+            assert prepared_history == [5, 4]
+            assert mock_wfo.call_count == 2
+            assert result['auto_relax_history'] == [
+                {'step': 0, 'top_n': 5, 'zero_trade_rounds': 2, 'total_rounds': 2},
+                {'step': 1, 'top_n': 4, 'zero_trade_rounds': 0, 'total_rounds': 2},
+            ]
+
+    def test_discover_and_promote_strategy_auto_relax_fails_gracefully_at_top_n_one(self, controller):
+        def prepared_factory(*args, **kwargs):
+            top_n = kwargs.get('top_n')
+            return {
+                'status': 'ok',
+                'analysis_result': {'status': 'ok'},
+                'expression_result': {
+                    'expressions': [f'등락율 <= {top_n}'],
+                    'candidate_count': top_n,
+                },
+                'code_result': {'status': 'ok', 'code': f'if 등락율 <= {top_n}: 매수 = False'},
+            }
+
+        no_trade_wfo = {
+            'status': 'ok',
+            'summary': {'round_count': 2, 'success_rate': 0.0, 'mean_oos_metric': None, 'zero_trade_rounds': 2},
+            'rounds': [
+                {'test_result': {'metrics': {'trade_count': 0}}},
+                {'test_result': {'metrics': {'trade_count': 0}}},
+            ],
+        }
+
+        with patch.object(controller, '_prepare_strategy_candidate', side_effect=prepared_factory), \
+             patch.object(controller, 'create_strategy', side_effect=[
+                 {'status': 'ok', 'name': '__tmp3__', 'action': 'created'},
+                 {'status': 'ok', 'name': '__tmp4__', 'action': 'created'},
+             ]), \
+             patch.object(controller, 'walk_forward', side_effect=[no_trade_wfo, no_trade_wfo]), \
+             patch.object(controller, 'delete_strategy', return_value={'status': 'ok', 'action': 'deleted'}):
+            result = controller.discover_and_promote_strategy(
+                'Auto_B_Final',
+                config_dict={'buy_strategy': 'BaseBuy', 'sell_strategy': 'BaseSell', 'start_date': 20240101, 'end_date': 20240630},
+                walk_forward_settings={'train_window_days': 60, 'test_window_days': 20},
+                top_n=2,
+                auto_relax=True,
+                max_relax_steps=3,
+            )
+
+            assert result['status'] == 'ok'
+            assert result['promoted'] is False
+            assert result['auto_relax_failed'] is True
+            assert result['auto_relax_history'][-1]['top_n'] == 1
+            assert result['promotion_evaluation']['reasons'][-1] == 'all_rounds_no_trades'
+
+    def test_discover_and_promote_strategy_auto_relax_can_be_disabled(self, controller):
+        prepared = {
+            'status': 'ok',
+            'analysis_result': {'status': 'ok'},
+            'expression_result': {'expressions': ['등락율 <= 5'], 'candidate_count': 5},
+            'code_result': {'status': 'ok', 'code': 'if 등락율 <= 5: 매수 = False'},
+        }
+
+        with patch.object(controller, '_prepare_strategy_candidate', return_value=prepared), \
+             patch.object(controller, 'create_strategy', return_value={'status': 'ok', 'name': '__tmp__', 'action': 'created'}), \
+             patch.object(controller, 'walk_forward', return_value={
+                 'status': 'ok',
+                 'summary': {'round_count': 2, 'success_rate': 0.0, 'mean_oos_metric': None, 'zero_trade_rounds': 2},
+                 'rounds': [
+                     {'test_result': {'metrics': {'trade_count': 0}}},
+                     {'test_result': {'metrics': {'trade_count': 0}}},
+                 ],
+             }) as mock_wfo, \
+             patch.object(controller, 'delete_strategy', return_value={'status': 'ok', 'action': 'deleted'}):
+            result = controller.discover_and_promote_strategy(
+                'Auto_B_Final',
+                config_dict={'buy_strategy': 'BaseBuy', 'sell_strategy': 'BaseSell', 'start_date': 20240101, 'end_date': 20240630},
+                walk_forward_settings={'train_window_days': 60, 'test_window_days': 20},
+                top_n=5,
+                auto_relax=False,
+            )
+
+            assert result['status'] == 'ok'
+            assert result['promoted'] is False
+            assert result.get('auto_relax_history') in (None, [])
+            assert mock_wfo.call_count == 1
+
 
 class TestResultAnalysis:
     def _write_csv(self, tmp_path):

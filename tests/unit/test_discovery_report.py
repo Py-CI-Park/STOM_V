@@ -46,6 +46,17 @@ def test_render_discovery_report_markdown_contains_sections():
     assert '## Candidate Expressions' in markdown
 
 
+def test_render_discovery_report_markdown_contains_auto_relax_history():
+    result = _sample_result()
+    result['auto_relax_history'] = [
+        {'step': 0, 'top_n': 5, 'zero_trade_rounds': 2, 'total_rounds': 2},
+        {'step': 1, 'top_n': 4, 'zero_trade_rounds': 0, 'total_rounds': 2},
+    ]
+    markdown = render_discovery_report_markdown(build_discovery_report(result))
+    assert '## Auto-Relax History' in markdown
+    assert 'top_n: 5' in markdown
+
+
 def test_save_discovery_report_json_and_markdown(tmp_path):
     report = build_discovery_report(_sample_result())
     json_path = tmp_path / 'report.json'
