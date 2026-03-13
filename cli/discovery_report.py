@@ -33,6 +33,9 @@ def build_discovery_report(result: dict, strategy_name: str | None = None) -> di
         'expressions': ((result.get('expression_result') or {}).get('expressions')
                         or ((result.get('strategy_flow') or {}).get('expression_result') or {}).get('expressions')
                         or []),
+        'auto_relax_history': result.get('auto_relax_history')
+            or (result.get('strategy_flow') or {}).get('auto_relax_history')
+            or [],
     }
     return report
 
@@ -92,6 +95,17 @@ def render_discovery_report_markdown(report: dict) -> str:
     if expressions:
         for expression in expressions:
             lines.append(f"- `{expression}`")
+    else:
+        lines.append('- none')
+
+    lines.extend(['', '## Auto-Relax History'])
+    auto_relax_history = report.get('auto_relax_history') or []
+    if auto_relax_history:
+        for item in auto_relax_history:
+            lines.append(f"- step: {item.get('step')}")
+            lines.append(f"  - top_n: {item.get('top_n')}")
+            lines.append(f"  - zero_trade_rounds: {item.get('zero_trade_rounds')}")
+            lines.append(f"  - total_rounds: {item.get('total_rounds')}")
     else:
         lines.append('- none')
 

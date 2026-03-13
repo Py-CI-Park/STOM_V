@@ -336,10 +336,10 @@ class AIBacktestController:
         zero_trade_rounds = int(summary.get('zero_trade_rounds', 0) or 0)
         if not zero_trade_rounds and trade_counts:
             zero_trade_rounds = sum(1 for trade_count in trade_counts if trade_count <= 0)
-        if round_count > 0 and zero_trade_rounds >= round_count:
-            reasons.append('all_rounds_no_trades')
         if min_avg_trade_count > 0 and (avg_trade_count is None or avg_trade_count < min_avg_trade_count):
             reasons.append(f'avg_trade_count<{min_avg_trade_count}')
+        if round_count > 0 and zero_trade_rounds >= round_count:
+            reasons.append('all_rounds_no_trades')
 
         return {
             'status': 'ok',
@@ -426,7 +426,8 @@ class AIBacktestController:
                                       ml_feature_limit: int = 0, ml_model_type: str = 'random_forest',
                                       ml_top_n: int = 10, ml_n_splits: int = 5, ml_random_state: int = 42,
                                       ml_weight: float = 0.0, promotion_preset: str = 'balanced', report_json_path: str = None,
-                                      report_md_path: str = None) -> dict:
+                                      report_md_path: str = None, auto_relax: bool = False,
+                                      max_relax_steps: int = 3) -> dict:
         """후보 전략을 임시 저장 후 WFO 검증을 통과한 경우에만 최종 전략으로 승격한다."""
         try:
             from cli.condition_generator import save_condition_code
@@ -436,85 +437,129 @@ class AIBacktestController:
             if walk_forward_settings is None:
                 return {'status': 'error', 'message': 'walk_forward_settings가 필요합니다.'}
 
-            prepared = self._prepare_strategy_candidate(
-                name=name,
-                analysis_result=analysis_result,
-                input_path=input_path,
-                top_n=top_n,
-                strategy_type=strategy_type,
-                buy_var=buy_var,
-                min_samples=min_samples,
-                quantiles=quantiles,
-                alpha=alpha,
-                ml_analysis_result=ml_analysis_result,
-                ml_feature_limit=ml_feature_limit,
-                ml_model_type=ml_model_type,
-                ml_top_n=ml_top_n,
-                ml_n_splits=ml_n_splits,
-                ml_random_state=ml_random_state,
-                ml_weight=ml_weight,
-            )
-            if prepared.get('status') != 'ok':
-                return prepared
-
-            analysis_result = prepared['analysis_result']
-            ml_analysis_result = prepared.get('ml_analysis_result')
-            feature_whitelist = prepared.get('feature_whitelist')
-            expression_result = prepared['expression_result']
-            code_result = prepared['code_result']
-
-            temporary_name = f'__AUTO_TMP__{name}_{int(time.time() * 1000)}'
-            temp_result = self.create_strategy(temporary_name, expression_result['expressions'], strategy_type)
-            if temp_result.get('status') != 'ok':
-                return {'status': 'error', 'message': 'temporary strategy save failed', 'temporary_result': temp_result}
+            current_top_n = max(int(top_n), 1)
+            max_attempts = max_relax_steps + 1 if auto_relax else 1
+            auto_relax_history = []
+            auto_relax_failed = False
 
             save_code_result = None
-            if output_code_path and code_result.get('status') == 'ok':
-                save_code_result = save_condition_code(code_result['code'], output_code_path)
-
             wf_result = None
             evaluation = None
             final_strategy_result = None
             promoted = False
+            temp_result = None
+            feature_whitelist = None
+            feature_importance_map = None
+            expression_result = None
+            code_result = None
+            resolved_criteria = resolve_promotion_criteria(promotion_preset, promotion_criteria)
+            eval_criteria = dict(resolved_criteria)
+            if auto_relax and promotion_criteria is None:
+                eval_criteria['min_avg_trade_count'] = 0.0
 
-            try:
-                run_config = dict(config_dict)
-                if strategy_type == 'buy':
-                    run_config['buy_strategy'] = temporary_name
-                else:
-                    run_config['sell_strategy'] = temporary_name
+            for step in range(max_attempts):
+                prepared = self._prepare_strategy_candidate(
+                    name=name,
+                    analysis_result=analysis_result,
+                    input_path=input_path,
+                    top_n=current_top_n,
+                    strategy_type=strategy_type,
+                    buy_var=buy_var,
+                    min_samples=min_samples,
+                    quantiles=quantiles,
+                    alpha=alpha,
+                    ml_analysis_result=ml_analysis_result,
+                    ml_feature_limit=ml_feature_limit,
+                    ml_model_type=ml_model_type,
+                    ml_top_n=ml_top_n,
+                    ml_n_splits=ml_n_splits,
+                    ml_random_state=ml_random_state,
+                    ml_weight=ml_weight,
+                )
+                if prepared.get('status') != 'ok':
+                    return prepared
 
-                wf_result = self.walk_forward(
-                    run_config,
-                    param_space or {},
-                    **walk_forward_settings,
-                )
-                resolved_criteria = resolve_promotion_criteria(promotion_preset, promotion_criteria)
-                evaluation = self.evaluate_walk_forward_result(
-                    wf_result,
-                    min_rounds=resolved_criteria['min_rounds'],
-                    min_success_rate=resolved_criteria['min_success_rate'],
-                    min_mean_oos_metric=resolved_criteria['min_mean_oos_metric'],
-                    min_avg_trade_count=resolved_criteria['min_avg_trade_count'],
-                )
-                evaluation['preset'] = promotion_preset
-                evaluation['criteria'] = resolved_criteria
-                if evaluation.get('status') == 'ok' and evaluation.get('passed'):
-                    final_strategy_result = self.create_strategy(name, expression_result['expressions'], strategy_type)
-                    promoted = final_strategy_result.get('status') == 'ok'
-                else:
-                    final_strategy_result = {'status': 'skipped', 'action': 'rejected'}
-            finally:
-                self.delete_strategy(temporary_name, strategy_type)
+                analysis_result = prepared['analysis_result']
+                ml_analysis_result = prepared.get('ml_analysis_result')
+                feature_whitelist = prepared.get('feature_whitelist')
+                feature_importance_map = prepared.get('feature_importance_map')
+                expression_result = prepared['expression_result']
+                code_result = prepared['code_result']
+
+                temporary_name = f'__AUTO_TMP__{name}_{int(time.time() * 1000)}_{step}'
+                temp_result = self.create_strategy(temporary_name, expression_result['expressions'], strategy_type)
+                if temp_result.get('status') != 'ok':
+                    return {'status': 'error', 'message': 'temporary strategy save failed', 'temporary_result': temp_result}
+
+                try:
+                    run_config = dict(config_dict)
+                    if strategy_type == 'buy':
+                        run_config['buy_strategy'] = temporary_name
+                    else:
+                        run_config['sell_strategy'] = temporary_name
+
+                    wf_result = self.walk_forward(
+                        run_config,
+                        param_space or {},
+                        **walk_forward_settings,
+                    )
+                    evaluation = self.evaluate_walk_forward_result(
+                        wf_result,
+                        min_rounds=eval_criteria['min_rounds'],
+                        min_success_rate=eval_criteria['min_success_rate'],
+                        min_mean_oos_metric=eval_criteria['min_mean_oos_metric'],
+                        min_avg_trade_count=eval_criteria['min_avg_trade_count'],
+                    )
+                    evaluation['preset'] = promotion_preset
+                    evaluation['criteria'] = eval_criteria
+
+                    summary = (evaluation.get('summary') or {}).copy()
+                    total_rounds = int(summary.get('round_count', 0) or 0)
+                    zero_trade_rounds = int(summary.get('zero_trade_rounds', 0) or 0)
+                    if auto_relax:
+                        auto_relax_history.append({
+                            'step': step,
+                            'top_n': current_top_n,
+                            'zero_trade_rounds': zero_trade_rounds,
+                            'total_rounds': total_rounds,
+                        })
+
+                    should_relax = (
+                        auto_relax and
+                        evaluation.get('status') == 'ok' and
+                        'all_rounds_no_trades' in (evaluation.get('reasons') or []) and
+                        current_top_n > 1 and
+                        step < max_attempts - 1
+                    )
+
+                    if should_relax:
+                        current_top_n = max(1, current_top_n - 1)
+                        continue
+
+                    if auto_relax and evaluation.get('status') == 'ok' and \
+                            'all_rounds_no_trades' in (evaluation.get('reasons') or []) and current_top_n <= 1:
+                        auto_relax_failed = True
+
+                    if evaluation.get('status') == 'ok' and evaluation.get('passed'):
+                        final_strategy_result = self.create_strategy(name, expression_result['expressions'], strategy_type)
+                        promoted = final_strategy_result.get('status') == 'ok'
+                    else:
+                        final_strategy_result = {'status': 'skipped', 'action': 'rejected'}
+                    break
+                finally:
+                    self.delete_strategy(temporary_name, strategy_type)
+
+            if output_code_path and code_result and code_result.get('status') == 'ok':
+                save_code_result = save_condition_code(code_result['code'], output_code_path)
 
             response = {
                 'status': 'ok' if wf_result and wf_result.get('status') == 'ok' else 'error',
                 'analysis_result': analysis_result,
                 'ml_analysis_result': ml_analysis_result,
                 'feature_whitelist': feature_whitelist,
-                'feature_importance_map': prepared.get('feature_importance_map'),
+                'feature_importance_map': feature_importance_map,
                 'expression_result': expression_result,
-                'generated_code': code_result.get('code'),
+                'generated_code': code_result.get('code') if code_result else None,
                 'saved_code': save_code_result,
                 'temporary_strategy': temp_result,
                 'walk_forward': wf_result,
@@ -522,6 +567,10 @@ class AIBacktestController:
                 'strategy_result': final_strategy_result,
                 'promoted': promoted,
             }
+            if auto_relax:
+                response['auto_relax_history'] = auto_relax_history
+                if auto_relax_failed:
+                    response['auto_relax_failed'] = True
             report = build_discovery_report(response, strategy_name=name)
             response['report'] = report
             if report_json_path:
