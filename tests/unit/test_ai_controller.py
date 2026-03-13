@@ -644,7 +644,6 @@ class TestStrategyManagement:
             assert result.get('auto_relax_history') in (None, [])
             assert mock_wfo.call_count == 1
 
-
 class TestResultAnalysis:
     def _write_csv(self, tmp_path):
         df = pd.DataFrame([

@@ -68,6 +68,46 @@ def _generate_strategy(name: str, conditions: list, strategy_type: str) -> dict:
     }
 
 
+def generate_buy_filter_strategy(name: str, base_code: str, conditions: list) -> dict:
+    """기존 매수 전략에 자동 발견 필터를 삽입한 전략 코드를 생성한다."""
+    if not base_code:
+        return {'status': 'error', 'message': '기준 매수 전략 코드가 비어있습니다.'}
+    if not conditions:
+        return {'status': 'error', 'message': '필터 조건이 비어있습니다.'}
+
+    marker = 'if 매수:'
+    insert_at = base_code.rfind(marker)
+    if insert_at < 0 or 'self.Buy()' not in base_code[insert_at:]:
+        return {'status': 'error', 'message': '기준 매수 전략에서 최종 self.Buy() 진입 지점을 찾을 수 없습니다.'}
+
+    created = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    filter_lines = [
+        f'# {name} - 자동 생성 필터 결합',
+        f'# 생성일: {created}',
+    ]
+    for condition in conditions:
+        filter_lines.extend([
+            'if 매수:',
+            f'    if {condition}:',
+            '        매수 = False',
+        ])
+
+    filter_block = '\n'.join(filter_lines)
+    code = base_code[:insert_at].rstrip() + '\n\n' + filter_block + '\n\n' + base_code[insert_at:].lstrip()
+
+    try:
+        compile(code, '<strategy>', 'exec')
+    except SyntaxError as e:
+        return {'status': 'error', 'message': f'생성된 코드 구문 오류: {e}'}
+
+    return {
+        'status': 'ok',
+        'name': name,
+        'code': code,
+        'type': 'buy',
+    }
+
+
 # ============================================================
 # Public API
 # ============================================================

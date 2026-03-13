@@ -443,6 +443,9 @@ class AIBacktestController:
             from cli.condition_generator import save_condition_code
             from cli.discovery_report import build_discovery_report, save_discovery_report_json, save_discovery_report_markdown
             from cli.promotion import resolve_promotion_criteria
+            from cli.strategy_generator import save_strategy_to_db, generate_buy_filter_strategy
+            from cli.strategy_loader import load_strategy_from_db
+            from utility.setting import DB_STRATEGY
 
             if walk_forward_settings is None:
                 return {'status': 'error', 'message': 'walk_forward_settings가 필요합니다.'}
@@ -466,6 +469,21 @@ class AIBacktestController:
             eval_criteria = dict(resolved_criteria)
             if auto_relax and promotion_criteria is None:
                 eval_criteria['min_avg_trade_count'] = 0.0
+            base_buy_strategy = config_dict.get('base_buy_strategy') if strategy_type == 'buy' else None
+
+            def save_generated_strategy(strategy_name, expressions):
+                if strategy_type == 'buy' and base_buy_strategy:
+                    base_loaded = load_strategy_from_db(DB_STRATEGY, base_buy_strategy, 'buy')
+                    if base_loaded.get('status') != 'ok':
+                        return {'status': 'error', 'message': 'base buy strategy load failed', 'base_result': base_loaded}
+                    composed = generate_buy_filter_strategy(strategy_name, base_loaded['code'], expressions)
+                    if composed.get('status') != 'ok':
+                        return composed
+                    saved = save_strategy_to_db(DB_STRATEGY, strategy_name, composed['code'], strategy_type)
+                    saved['code'] = composed['code']
+                    return saved
+                saved = self.create_strategy(strategy_name, expressions, strategy_type)
+                return saved
 
             for step in range(max_attempts):
                 prepared = self._prepare_strategy_candidate(
@@ -497,7 +515,7 @@ class AIBacktestController:
                 code_result = prepared['code_result']
 
                 temporary_name = f'__AUTO_TMP__{name}_{int(time.time() * 1000)}_{step}'
-                temp_result = self.create_strategy(temporary_name, expression_result['expressions'], strategy_type)
+                temp_result = save_generated_strategy(temporary_name, expression_result['expressions'])
                 if temp_result.get('status') != 'ok':
                     return {'status': 'error', 'message': 'temporary strategy save failed', 'temporary_result': temp_result}
 
@@ -551,7 +569,7 @@ class AIBacktestController:
                         auto_relax_failed = True
 
                     if evaluation.get('status') == 'ok' and evaluation.get('passed'):
-                        final_strategy_result = self.create_strategy(name, expression_result['expressions'], strategy_type)
+                        final_strategy_result = save_generated_strategy(name, expression_result['expressions'])
                         promoted = final_strategy_result.get('status') == 'ok'
                     else:
                         final_strategy_result = {'status': 'skipped', 'action': 'rejected'}
@@ -559,8 +577,16 @@ class AIBacktestController:
                 finally:
                     self.delete_strategy(temporary_name, strategy_type)
 
-            if output_code_path and code_result and code_result.get('status') == 'ok':
-                save_code_result = save_condition_code(code_result['code'], output_code_path)
+            generated_code = None
+            if final_strategy_result and final_strategy_result.get('code'):
+                generated_code = final_strategy_result.get('code')
+            elif temp_result and temp_result.get('code'):
+                generated_code = temp_result.get('code')
+            elif code_result:
+                generated_code = code_result.get('code')
+
+            if output_code_path and generated_code:
+                save_code_result = save_condition_code(generated_code, output_code_path)
 
             response = {
                 'status': 'ok' if wf_result and wf_result.get('status') == 'ok' else 'error',
@@ -569,7 +595,7 @@ class AIBacktestController:
                 'feature_whitelist': feature_whitelist,
                 'feature_importance_map': feature_importance_map,
                 'expression_result': expression_result,
-                'generated_code': code_result.get('code') if code_result else None,
+                'generated_code': generated_code,
                 'saved_code': save_code_result,
                 'temporary_strategy': temp_result,
                 'walk_forward': wf_result,
