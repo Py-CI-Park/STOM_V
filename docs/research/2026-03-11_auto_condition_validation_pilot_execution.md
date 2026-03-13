@@ -492,3 +492,142 @@ Pilot 결과를 바탕으로 바로 다음 안정화 작업을 수행했다.
 즉 현재 시스템은
 **“자동 조건식 탐색 파일럿 플랫폼”으로는 상당히 진전됐지만,
 실전에서 반복적으로 채택 가능한 전략을 안정적으로 뽑아내는 완성형 시스템”이라고 보기는 아직 이르다.**
+
+---
+
+## 9. 3차 promote 재실행 (auto-relax 적용 후) 결과
+
+2차 안정화 작업에서 `auto_relax`가 controller/report 수준에 구현된 뒤,
+실제 promoted 성공 사례를 확보하기 위해 promote를 다시 재실행했다.
+
+### 9.1 재실행 목표
+
+이번 재실행의 목표는 아래 2가지였다.
+
+1. `auto_relax_history`가 실제 promote 실행 결과에 남는지 확인
+2. `promoted=True`가 되는 실제 조합을 최소 1건 확보
+
+### 9.2 1차 재실행 — slice 기반, auto-relax 활성
+
+설정:
+
+- 입력 CSV: `temp/pilot_slice_20250407_20250418.csv`
+- 시작/종료일: `2025-04-07 ~ 2025-04-11`
+- `train_window_days=3`
+- `test_window_days=1`
+- `step_days=3`
+- `top_n=3`
+- `auto_relax=True`
+- `max_relax_steps=2`
+- `promotion_preset=aggressive`
+- `engine_count=1`
+
+요약 결과:
+
+```json
+{
+  "status": "ok",
+  "promoted": false,
+  "auto_relax_history": [
+    {"step": 0, "top_n": 3, "zero_trade_rounds": 0, "total_rounds": 1}
+  ],
+  "promotion_reasons": ["mean_oos_metric<-0.1"],
+  "wf_summary": {
+    "round_count": 1,
+    "success_count": 1,
+    "success_rate": 1.0,
+    "mean_oos_metric": null,
+    "trade_count_rounds": 0,
+    "zero_trade_rounds": 0
+  }
+}
+```
+
+산출물:
+
+- `temp/Auto_B_PilotSuccess_1773386515_report.json`
+- `temp/Auto_B_PilotSuccess_1773386515_report.md`
+
+해석:
+
+- auto-relax 이력은 실제로 결과에 남았다.
+- 하지만 이번 케이스는 `zero_trade_rounds == 0`으로 기록되면서도
+  `mean_oos_metric == null`, `trade_count_rounds == 0`이었다.
+- 즉 현재 no-trade 감지가 **trade_count가 아예 생성되지 않는 test_result** 케이스를
+  완전히 포착하지 못하고 있을 가능성이 드러났다.
+- 결과적으로 `auto_relax`가 재시도까지 가지 못했고,
+  `promoted=True`도 확보하지 못했다.
+
+### 9.3 2차 재실행 — full-range 입력 기반, 짧은 검증 구간
+
+설정:
+
+- 입력 CSV: `backtest/csv/stock_bt_Min_B_Study_251227_20260311210622.csv`
+- 시작/종료일: `2025-04-07 ~ 2025-04-11`
+- `train_window_days=3`
+- `test_window_days=2`
+- `step_days=3`
+- `top_n=1`
+- `auto_relax=True`
+- `max_relax_steps=0`
+- `promotion_preset=aggressive`
+- `engine_count=1`
+
+관찰 결과:
+
+- 백테스트 엔진 재실행 과정에서 아래 예외가 발생했다.
+
+```text
+FileExistsError: [Errno 17] File exists: '/backdata_0'
+```
+
+발생 위치:
+
+- `backtest/backengine_base.py`
+- `shared_memory.SharedMemory(name=name, create=True, size=total_size)`
+
+해석:
+
+- 기존에 관찰되던 `shared_memory` cleanup warning이
+  이번에는 실제 재실행 차단 예외로 드러났다.
+- 즉 현재 단계에서는 **shared_memory 정리 문제가 단순 warning 수준이 아니라,
+  반복 promote 탐색을 방해하는 실질적 blocker**임이 확인되었다.
+
+### 9.4 추가 관찰
+
+별도 확인 차원에서,
+full-range CSV 기반 top-1 전략을 strategy.db에 저장한 뒤
+단일 일자 백테스트를 실행해 보았으나,
+프로세스가 정상 종료되지 않고 다수의 하위 프로세스가 남는 현상을 확인했다.
+
+이 관찰은 아래 가능성을 시사한다.
+
+1. 단일/초단기 구간 실행에서 runner 종료 조건이 취약할 수 있음
+2. shared memory / subprocess 정리 경로가 여전히 불안정함
+3. 실전 promoted 성공 사례 확보 전, cleanup 안정화가 먼저 필요할 수 있음
+
+### 9.5 이번 재실행 단계의 결론
+
+이번 단계에서 확인된 사실은 다음과 같다.
+
+1. `auto_relax` 구현 자체는 결과 이력을 남기는 수준까지 동작한다.
+2. 하지만 no-trade 감지가 아직 완전하지 않다.
+   - `trade_count_rounds == 0`
+   - `mean_oos_metric == null`
+   - `zero_trade_rounds == 0`
+   조합이 실제로 발생했다.
+3. 반복 promote 탐색 중 `FileExistsError('/backdata_0')`가 발생해
+   shared memory cleanup 문제가 실제 blocker로 승격되었다.
+4. 따라서 **현재 최우선 과제는 promoted 성공 사례 탐색 자체보다,
+   no-trade 판정 보강 + shared memory cleanup 안정화**로 재정렬할 필요가 있다.
+
+### 9.6 다음 우선순위 조정
+
+기존 계획에서는 다음 단계가
+“promoted 성공 조합 찾기”였지만,
+이번 재실행 결과를 반영하면 실제 우선순위는 아래처럼 바뀐다.
+
+1. `trade_count_rounds == 0` / `mean_oos_metric is None` 케이스를
+   no-trade로 간주하도록 promotion 평가 보강
+2. `shared_memory` 재사용 충돌(`FileExistsError: /backdata_0`) 원인 분석 및 정리 경로 수정
+3. 그 다음에 다시 promote 성공 조합 탐색 재개
