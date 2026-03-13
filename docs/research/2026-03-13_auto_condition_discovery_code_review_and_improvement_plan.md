@@ -3,7 +3,7 @@
 - 작성일: 2026-03-13
 - 브랜치: `research/auto-condition-validation-pilot`
 - 검토 기준: `docs/research/auto_condition_discovery_research.md` + `docs/research/2026-03-10_auto_condition_discovery_implementation_checklist.md`
-- 검토 방법: Architect 에이전트 (Claude Opus) 심층 분석
+- 검토 방법: 문서/코드/파일럿 실행 기록 교차 검토
 - 종합 등급: **B+**
 
 ---
@@ -34,11 +34,11 @@ end-to-end 파이프라인을 구축한다.
 ```
 [백테스트 실행]
   └─ B_*/S_*/R_* 컬럼 포함 상세 CSV 생성
-       └─ discover analyze       : 시간대/시가총액/분위수/t-test 통계 분석
-            └─ discover ml-analyze   : RandomForest/GradientBoosting 팩터 분석
-                 └─ discover generate    : 조건식 Python 코드 생성
-                      └─ discover create-strategy : 전략 DB 임시 저장
-                           └─ discover promote      : WFO 검증 → 채택/미채택
+       └─ discovery analyze       : 시간대/시가총액/분위수/t-test 통계 분석
+            └─ discovery ml-analyze   : RandomForest/GradientBoosting 팩터 분석
+                 └─ discovery generate    : 조건식 Python 코드 생성
+                      └─ discovery create-strategy : 전략 DB 임시 저장
+                           └─ discovery promote      : WFO 검증 → 채택/미채택
                                 └─ [마크다운 리포트 저장]
 ```
 
@@ -99,7 +99,7 @@ TRADE_RESULT_R_COLUMNS = [
 | 시가총액 구간 분석 | `analyze_market_cap_segments()` | ✅ 완료 |
 | 시간대 분석 | `analyze_time_segments()` | ✅ 완료 |
 | 분위수 분석 | `generate_quantile_candidates()` | ✅ 완료 |
-| FDR(Benjamin-Hochberg) 적용 | `benjamini_hochberg()` | ✅ 완료 |
+| FDR(Benjamini-Hochberg) 적용 | `benjamini_hochberg()` | ✅ 완료 |
 | 최소 샘플 수 필터 | 전 함수에 `min_samples=30` | ✅ 완료 |
 | 조건식 코드 생성 (주석 포함) | `generate_condition_code()` | ✅ 완료 |
 | Purged Walk-Forward | `generate_walk_forward_windows()` | ✅ 완료 |
@@ -135,14 +135,14 @@ TRADE_RESULT_R_COLUMNS = [
 ### 3.3 공식 CLI 서브커맨드 승격
 
 - **위치**: `cli/subcommands.py` (406줄)
-- **내용**: library-only에서 `stom_backtest.py discover` 공식 CLI로 승격
+- **내용**: library-only에서 `stom_backtest.py discovery` 공식 CLI로 승격
 
 ```bash
-python stom_backtest.py discover analyze        --result-csv {path}
-python stom_backtest.py discover ml-analyze     --result-csv {path} --model gradient_boosting
-python stom_backtest.py discover generate       --result-csv {path} --with-ml --top-n 5
-python stom_backtest.py discover create-strategy --strategy {name}
-python stom_backtest.py discover promote        --strategy {name} --wfo-preset balanced
+python stom_backtest.py discovery analyze --input {path}
+python stom_backtest.py discovery ml-analyze --input {path} --model-type gradient_boosting
+python stom_backtest.py discovery generate --input {path} --top-n 5
+python stom_backtest.py discovery create-strategy {name} --input {path}
+python stom_backtest.py discovery promote {name} --input {path} --promotion-preset balanced
 ```
 
 ### 3.4 파이럿 실행에서 즉시 수정된 버그
@@ -151,7 +151,7 @@ python stom_backtest.py discover promote        --strategy {name} --wfo-preset b
 |------|-----------|------|
 | B_ 접두사 NameError | `condition_generator.py:23-26` | `B_시가총액` → `시가총액` 런타임 변환 (`runtime_context` 파라미터) |
 | zero_trade_rounds 누락 | `wfo.py:157`, `ai_controller.py:336-342` | 거래 0회 라운드 감지 및 `all_rounds_no_trades` 평가 항목 추가 |
-| Windows AssertionError | `runner.py:49-63` | 프로세스 정리 시 `is_alive()` 예외 try/except 처리 |
+| cleanup AssertionError | `runner.py:49-63` | 프로세스 정리 시 `is_alive()` parent/child mismatch 예외를 방어 |
 | 리포트에 조건식 미표시 | `discovery_report.py:30-33, 87-94` | `expressions` 섹션 추가 |
 
 ---
@@ -165,7 +165,7 @@ python stom_backtest.py discover promote        --strategy {name} --wfo-preset b
 | CLI는 subcommands.py에만 집중 | ✅ | argparse 정의가 단일 파일에만 존재 |
 | scipy 선택적 의존 | ✅ | `analyzer.py:17-20` `try/except ImportError` |
 | 불변성 (`df.copy()`) | ✅ | 모든 DataFrame 처리 함수에서 일관 적용 |
-| 예외 throw 없는 dict 반환 API | ✅ | 모든 메서드 `{'status': 'error', 'message': str(e)}` 반환 |
+| controller/public facade는 dict 반환 중심 | ✅ | `AIBacktestController` 공개 메서드는 대체로 `{'status': ...}` 형태 반환. 다만 helper 함수 일부는 `ValueError`를 발생시킴 |
 
 ---
 
@@ -181,7 +181,7 @@ python stom_backtest.py discover promote        --strategy {name} --wfo-preset b
 | `discovery_report.py` | 117줄 | 61줄 | 0.52 | 🟡 양호 |
 | `promotion.py` | 38줄 | 17줄 | 0.45 | 🟡 양호 |
 | `subcommands.py` | 406줄 | 506줄 | 1.25 | 🟢 우수 |
-| **합계** | **2,222줄** | **2,037줄** | **0.92** | 🟡 양호 |
+| **합계** | **2,222줄** | **1,529줄** | **0.69** | 🟡 양호 |
 
 **주요 갭:**
 - `analyzer.py`: `analyze_ttest_candidates()` 독립 테스트 없음. FDR alpha 경계값 미검증
@@ -193,29 +193,29 @@ python stom_backtest.py discover promote        --strategy {name} --wfo-preset b
 
 ### 🔴 R1 — promoted 성공 사례 미확보 (높음)
 
-파이럿 실행 결과:
+파이럿 실행 기록 기준:
 
 ```
-balanced 프리셋 기준:
-  성공률 0.50  (기준 0.60 ✗)
-  OOS 지표 -0.02  (기준 0.00 ✗)
-  평균 거래수 43  (기준 50 ✗)
-  → 미채택 (all_rounds_no_trades)
+bounded pilot (`2025-04-07 ~ 2025-04-18`) 기준:
+  각 WFO 라운드에서 "매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다." 발생
+  최종 promote report(JSON/Markdown) 미생성
+  promoted=False
 ```
 
-**근본 원인**: 자동 생성된 조건식이 지나치게 강하게 작동하여 전체 거래를 차단.
-`top_n`, `ml_feature_limit`, `ml_weight` 파라미터를 수동 탐색해야 함.
+**근본 원인**: 자동 생성된 조건식이 지나치게 강하게 작동하여 거래가 사실상 사라지는 방향으로 수렴.
+현재는 `top_n`, `ml_feature_limit`, `ml_weight`, `promotion_preset` 조합을 수동 탐색해야 함.
 **후속 처리 자동화 없음** — candidate 강도 자동 완화 메커니즘이 필요하다.
 
 ### 🔴 R2 — `optimiz.py` / `rolling_walk_forward_test.py` 영향도 미확인 (높음)
 
 체크리스트 3.2절에 명시된 필수 검증 항목:
-B_*/S_*/R_* 컬럼 확장 후 이 파일들의 데이터 경로가 깨지지 않는지 검증 흔적 없음.
+B_*/S_*/R_* 컬럼 확장 후 이 파일들의 데이터 경로가 깨지지 않는지 **명시적 실행 검증 흔적이 없음**.
+단, 현재 코드상 두 파일 모두 `GetResultDataframe()` 경유 경로를 사용하고 있어 즉시 크래시 증거가 확인된 상태는 아니다.
 
 ### 🟡 R3 — `analyzer.py` / `ml_factor_model.py` 테스트 부족 (중간)
 
-각각 단위 테스트 4개, 2개로 구현 복잡도 대비 미흡.
-`benjamini_hochberg()` 경계 조건, TimeSeriesSplit 분할 실패 케이스 미검증.
+테스트 줄 수와 구현 복잡도를 비교하면 여전히 얇은 편이다.
+특히 `benjamini_hochberg()` 경계 조건, TimeSeriesSplit 분할 실패 케이스 미검증 상태다.
 
 ### 🟡 R4 — `fillna(0)` 노이즈 가능성 (낮음)
 
@@ -349,8 +349,8 @@ for node in ast.walk(tree):
 grep -n "CollectData\|GetResultDataframe\|extra_column\|B_\|columns1\|columns2" \
     backtest/rolling_walk_forward_test.py backtest/optimiz.py
 
-# 3. 실제 실행으로 크래시 여부 확인
-python stom_backtest.py run --strategy {전략명} --optimize 2>&1 | tail -20
+# 3. 실제 경로 사용 여부 확인
+grep -n "GetResultDataframe(" backtest/optimiz.py backtest/rolling_walk_forward_test.py
 ```
 
 #### 예상 결과 및 대응
@@ -485,18 +485,19 @@ class TestAnalyzeResultsMl:
 
 #### 현재 문제
 
-`discover_and_promote_strategy()` 파라미터 29개:
+`discover_and_promote_strategy()`는 현재 `self` 제외 **24개 파라미터**를 받는다.
+이미 `config_dict`, `walk_forward_settings`, `promotion_criteria`로 일부가 묶여 있지만,
+여전히 호출부 가독성과 유지보수성이 떨어진다.
 
 ```python
 def discover_and_promote_strategy(
-    self, name, input_path=None, top_n=5, strategy_type='buy',
-    buy_var='매수', min_samples=30, quantiles=10, alpha=0.05,
+    self, name, config_dict, input_path=None, analysis_result=None,
+    param_space=None, top_n=5, strategy_type='buy', buy_var='매수',
+    min_samples=30, quantiles=10, alpha=0.05, output_code_path=None,
+    walk_forward_settings=None, promotion_criteria=None,
     ml_analysis_result=None, ml_feature_limit=0, ml_model_type='random_forest',
     ml_top_n=10, ml_n_splits=5, ml_random_state=42, ml_weight=0.0,
-    wfo_preset='balanced', wfo_train_days=120, wfo_test_days=40,
-    wfo_step_days=None, purge_days=0, embargo_days=0,
-    objective='tpi', method='grid', maximize=True, max_iter=10,
-    output_path=None, on_progress=None, dry_run=False, skip_wfo=False
+    promotion_preset='balanced', report_json_path=None, report_md_path=None
 ):
 ```
 
@@ -565,7 +566,13 @@ config = DiscoveryConfig(
     wfo=DiscoveryWfoConfig(preset='balanced', train_days=120),
     auto_relax=True,
 )
-result = controller.discover_and_promote_strategy('my_strategy', config)
+result = controller.discover_and_promote_strategy(
+    'my_strategy',
+    config_dict=base_config,
+    input_path='result.csv',
+    walk_forward_settings=asdict(config.wfo),
+    promotion_criteria=None,
+)
 ```
 
 ---
@@ -610,8 +617,8 @@ X = df[feature_columns].fillna(-1)
 
 1. **계획 대비 이행률 높음**: Phase 0/1 92%, Phase 2+ 95%
 2. **계획 초과 달성**: ML 팩터 분석, 프리셋 시스템, CLI 서브커맨드 등 계획에 없던 핵심 기능 추가
-3. **설계 원칙 일관 준수**: B_* 전용, library-only, 불변성, 예외 미전파 모두 코드 레벨에서 지켜짐
-4. **테스트 코드 충실**: 구현 2,222줄 대비 테스트 2,037줄 (비율 0.92)
+3. **설계 원칙 대체로 준수**: B_* 전용, library-only, 불변성은 잘 지켜짐. 예외 처리도 public facade 기준으로 일관성이 높음
+4. **테스트 코드 규모 양호**: 구현 2,222줄 대비 관련 테스트 1,529줄 (비율 0.69)
 5. **파이럿 실행 버그 즉시 수정**: B_ 접두사, zero_trade_rounds, 프로세스 정리 모두 당일 수정
 
 ### 개선이 필요한 점
@@ -619,7 +626,7 @@ X = df[feature_columns].fillna(-1)
 1. **🔴 promoted 성공 사례 미확보**: 자동 완화 메커니즘 없어 수동 파라미터 탐색 필요
 2. **🔴 `optimiz.py`/`rolling_walk_forward_test.py` 미검증**: 체크리스트 필수 항목 누락
 3. **🟡 analyzer/ml 테스트 부족**: 핵심 분석 로직의 경계 조건 미검증
-4. **🟡 파라미터 과다**: 29개 파라미터를 config 객체로 정리 필요
+4. **🟡 파라미터 과다**: 현재 24개 파라미터 수준으로 여전히 config 객체화 여지 큼
 
 ### 다음 스프린트 권장 순서
 
@@ -639,5 +646,5 @@ Week 3+ (여유 시):
 
 ---
 
-*이 문서는 Architect 에이전트(Claude Opus)의 코드 심층 분석을 바탕으로 작성되었습니다.*
-*참조 코드 베이스 시점: 2026-03-13, 커밋 `19dc3b7`*
+*이 문서는 2026-03-13 시점 코드/문서/파일럿 실행 기록을 교차 검토해 정리했습니다.*
+*수정 반영 기준: 문서 커밋 `fcbf063` 검토 후 사실관계 보정*
