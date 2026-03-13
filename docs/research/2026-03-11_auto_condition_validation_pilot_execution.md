@@ -710,3 +710,102 @@ shared memory 충돌은 완화되었지만
 1. **짧은 구간/단일 round 위주로 promote 성공 조합 재탐색**
 2. 성공 사례 확보 후 report/parameter baseline 고정
 3. 그 다음 `analyzer.py`, `ml_factor_model.py` 테스트 보강 재개
+
+---
+
+## 11. 5차 재실행 — 기존 매수 전략과 필터 결합 후 promoted 성공 확보
+
+10장까지의 분석을 통해,
+실전 채택 성공이 계속 나오지 않았던 근본 원인 중 하나가
+**자동 생성 필터가 기존 매수 전략과 결합되지 않고 사실상 단독 전략처럼 저장되던 구조**였음을 확인했다.
+
+이를 수정한 뒤, 아래 설정으로 다시 promote를 수행했다.
+
+### 11.1 성공 설정
+
+- 기준 매수 전략: `Min_B_Study_251227`
+- 기준 매도 전략: `Min_S_Study_251227`
+- promote 대상 전략명: `Auto_B_MergedPilot_1773391663`
+- 입력 CSV: `backtest/csv/stock_bt_Min_B_Study_251227_20260311210622.csv`
+- 검증 구간: `2025-04-07 ~ 2025-04-11`
+- `top_n=1`
+- `auto_relax=True`
+- `max_relax_steps=0`
+- `promotion_preset='aggressive'`
+- `promotion_criteria={'min_rounds': 1, 'min_avg_trade_count': 0}`
+- `engine_count=1`
+
+### 11.2 사용된 자동 필터
+
+선택된 top-1 필터:
+
+```python
+if 15.304 <= 등락율 < 17.74:
+    매수 = False
+```
+
+중요한 점:
+
+- 이번 성공 사례는 위 필터를 **기존 매수 전략 코드의 최종 `self.Buy()` 직전**에 삽입한
+  결합 전략으로 검증한 것이다.
+- 즉,
+  **기존 전략 로직 + 자동 발견 필터**
+  구조로 평가했을 때 처음으로 실제 `promoted=True`가 확보되었다.
+
+### 11.3 결과 요약
+
+```json
+{
+  "status": "ok",
+  "promoted": true,
+  "auto_relax_history": [
+    {"step": 0, "top_n": 1, "zero_trade_rounds": 0, "total_rounds": 1}
+  ],
+  "promotion_summary": {
+    "round_count": 1,
+    "success_rate": 1.0,
+    "mean_oos_metric": 0.55,
+    "avg_trade_count": 80.0,
+    "zero_trade_rounds": 0,
+    "trade_count_rounds": 1
+  }
+}
+```
+
+산출물:
+
+- `temp/Auto_B_MergedPilot_1773391663.py`
+- `temp/Auto_B_MergedPilot_1773391663_report.json`
+- `temp/Auto_B_MergedPilot_1773391663_report.md`
+
+### 11.4 해석
+
+이번 성공 사례가 의미하는 것은 다음과 같다.
+
+1. **auto-relax / no-trade / cleanup 보강만으로는 부족했고,**
+   생성 전략의 의미론 자체가 중요했다.
+2. 자동 조건식은 단독 매수 전략이 아니라,
+   **기존 매수 전략에 부가되는 필터**로 사용할 때 비로소 의도대로 동작했다.
+3. 따라서 앞으로의 discovery promote 기본 방향은
+   `기존 매수 전략 + 자동 필터 결합`
+   으로 보는 것이 더 타당하다.
+
+### 11.5 현재 단계의 상태 갱신
+
+이 성공 사례로 인해 이전까지의 핵심 미완료 항목 중 하나가 해소되었다.
+
+- [x] promoted 성공 사례 1건 이상 확보
+
+다만 아직 아래는 남아 있다.
+
+1. 성공 사례가 **1-round / aggressive 기준**이라는 점
+2. 더 긴 구간 / 더 엄격한 preset에서도 재현 가능한지 미확인
+3. CLI promote 경로가 기본적으로 이 결합 구조를 얼마나 잘 반영하는지 추가 검토 필요
+
+### 11.6 다음 권장 단계
+
+이제 우선순위는 다음처럼 조정하는 것이 적절하다.
+
+1. 성공 사례를 기준으로 **기본 promote baseline 문서화**
+2. `discovery promote` 경로에서 **기존 매수 전략 결합 사용성을 명확히 정리**
+3. 그 다음 `analyzer.py`, `ml_factor_model.py` 테스트 보강 재개
