@@ -350,7 +350,34 @@ class TestDiscoverySubcommand:
         assert kwargs['promotion_preset'] == 'conservative'
         assert kwargs['report_json_path'] == 'report.json'
         assert kwargs['report_md_path'] == 'report.md'
+        assert kwargs['auto_relax'] is False
+        assert kwargs['promotion_criteria'] is not None
         mock_print.assert_called_once()
+
+    def test_discovery_promote_with_auto_relax_and_base_buy_strategy(self):
+        mock_result = {'status': 'ok', 'promoted': True}
+        with patch('cli.ai_controller.AIBacktestController.discover_and_promote_strategy', return_value=mock_result) as mock_promote, \
+             patch('builtins.print'):
+            code = handle_subcommand([
+                'discovery', 'promote', 'Auto_B',
+                '--input', 'result.csv',
+                '--sell', 'BaseSell',
+                '--start', '20240101',
+                '--end', '20240630',
+                '--train-window-days', '60',
+                '--test-window-days', '20',
+                '--auto-relax',
+                '--max-relax-steps', '5',
+                '--base-buy-strategy', 'Min_B_Study_251227',
+                '--promotion-preset', 'aggressive',
+            ])
+        assert code == 0
+        _, kwargs = mock_promote.call_args
+        assert kwargs['auto_relax'] is True
+        assert kwargs['max_relax_steps'] == 5
+        assert kwargs['promotion_criteria'] is None
+        assert kwargs['promotion_preset'] == 'aggressive'
+        assert kwargs['config_dict']['base_buy_strategy'] == 'Min_B_Study_251227'
 
 
 # ============================================================
@@ -504,3 +531,24 @@ class TestParserStructure:
         assert parsed.promotion_preset == 'aggressive'
         assert parsed.report_json == 'report.json'
         assert parsed.report_md == 'report.md'
+        assert parsed.auto_relax is False
+        assert parsed.max_relax_steps == 3
+        assert parsed.base_buy_strategy is None
+
+    def test_discovery_promote_auto_relax_parsed(self):
+        parser = create_subcommand_parser()
+        parsed = parser.parse_args([
+            'discovery', 'promote', 'Auto_B',
+            '--input', 'result.csv',
+            '--sell', 'BaseSell',
+            '--start', '20240101',
+            '--end', '20240630',
+            '--train-window-days', '60',
+            '--test-window-days', '20',
+            '--auto-relax',
+            '--max-relax-steps', '5',
+            '--base-buy-strategy', 'Min_B_Study_251227',
+        ])
+        assert parsed.auto_relax is True
+        assert parsed.max_relax_steps == 5
+        assert parsed.base_buy_strategy == 'Min_B_Study_251227'

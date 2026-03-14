@@ -155,6 +155,11 @@ def create_subcommand_parser():
     disc_promote.add_argument('--ml-top-n', type=int, default=10)
     disc_promote.add_argument('--ml-n-splits', type=int, default=5)
     disc_promote.add_argument('--ml-weight', type=float, default=0.0, help='ML importance를 candidate ranking에 가중치로 반영')
+    disc_promote.add_argument('--auto-relax', action='store_true', default=False,
+                              help='무거래 시 top_n을 자동 완화하며 재시도 (preset 기준 사용, --promote-min-* 무시)')
+    disc_promote.add_argument('--max-relax-steps', type=int, default=3, help='auto-relax 최대 완화 단계 수 (기본 3)')
+    disc_promote.add_argument('--base-buy-strategy', default=None,
+                              help='기존 매수 전략명 — 자동 필터를 이 전략에 결합하여 검증')
 
     return parser
 
@@ -362,6 +367,8 @@ def _handle_discovery(parsed):
             'end_time': parsed.end_time,
             'engine_count': parsed.engines,
         }
+        if parsed.base_buy_strategy:
+            config_dict['base_buy_strategy'] = parsed.base_buy_strategy
         walk_forward_settings = {
             'train_window_days': parsed.train_window_days,
             'test_window_days': parsed.test_window_days,
@@ -372,12 +379,15 @@ def _handle_discovery(parsed):
             'method': parsed.method,
             'max_iter': parsed.max_iter,
         }
-        promotion_criteria = {
-            'min_rounds': parsed.promote_min_rounds,
-            'min_success_rate': parsed.promote_min_success_rate,
-            'min_mean_oos_metric': parsed.promote_min_mean_oos,
-            'min_avg_trade_count': parsed.promote_min_avg_trade_count,
-        }
+        if parsed.auto_relax:
+            promotion_criteria = None
+        else:
+            promotion_criteria = {
+                'min_rounds': parsed.promote_min_rounds,
+                'min_success_rate': parsed.promote_min_success_rate,
+                'min_mean_oos_metric': parsed.promote_min_mean_oos,
+                'min_avg_trade_count': parsed.promote_min_avg_trade_count,
+            }
         result = controller.discover_and_promote_strategy(
             parsed.name,
             config_dict=config_dict,
@@ -399,6 +409,8 @@ def _handle_discovery(parsed):
             promotion_preset=parsed.promotion_preset,
             report_json_path=parsed.report_json,
             report_md_path=parsed.report_md,
+            auto_relax=parsed.auto_relax,
+            max_relax_steps=parsed.max_relax_steps,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1
