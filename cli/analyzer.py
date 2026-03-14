@@ -185,31 +185,32 @@ def benjamini_hochberg(p_values: Iterable[float], alpha: float = 0.05) -> list[d
     if total == 0:
         return []
 
-    sorted_pairs = sorted(pairs, key=lambda item: item[1])
+    sorted_positions = sorted(range(total), key=lambda i: pairs[i][1])
     adjusted = [None] * total
     accept = [False] * total
 
     min_adjusted = 1.0
-    for reverse_rank, (original_index, p_value) in enumerate(reversed(sorted_pairs), start=1):
+    for reverse_rank, pos in enumerate(reversed(sorted_positions), start=1):
         rank = total - reverse_rank + 1
+        p_value = pairs[pos][1]
         adj = min(min_adjusted, p_value * total / rank)
         min_adjusted = adj
-        adjusted[original_index] = min(adj, 1.0)
+        adjusted[pos] = min(adj, 1.0)
 
     max_rank = 0
-    for rank, (original_index, p_value) in enumerate(sorted_pairs, start=1):
-        if p_value <= alpha * rank / total:
+    for rank, pos in enumerate(sorted_positions, start=1):
+        if pairs[pos][1] <= alpha * rank / total:
             max_rank = rank
-    for rank, (original_index, _p_value) in enumerate(sorted_pairs, start=1):
-        accept[original_index] = rank <= max_rank
+    for rank, pos in enumerate(sorted_positions, start=1):
+        accept[pos] = rank <= max_rank
 
     results = []
-    for index, p_value in pairs:
+    for pos, (original_index, p_value) in enumerate(pairs):
         results.append({
-            'index': index,
+            'index': original_index,
             'p_value': p_value,
-            'p_value_adj': adjusted[index],
-            'accepted_fdr': accept[index],
+            'p_value_adj': adjusted[pos],
+            'accepted_fdr': accept[pos],
         })
     return results
 
