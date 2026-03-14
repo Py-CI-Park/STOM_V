@@ -69,7 +69,8 @@ def analyze_results_ml(
     if not feature_columns:
         return {'status': 'error', 'message': 'numeric B_* feature columns not found'}
 
-    X = df[feature_columns].fillna(0)
+    X = df[feature_columns].copy()
+    X = X.fillna(X.median())
     y = (df[target_col] > 0).astype(int)
 
     max_splits = min(n_splits, max(2, len(df) // 10), len(df) - 1)

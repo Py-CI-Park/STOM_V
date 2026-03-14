@@ -145,3 +145,18 @@ def test_too_few_rows():
     result = analyze_results_ml(df)
     assert result['status'] == 'error'
     assert '20행' in result['message']
+
+
+def test_fillna_uses_median_not_zero():
+    """결측값이 0이 아닌 피처별 중앙값으로 대체되는지 확인"""
+    rows = []
+    for i in range(60):
+        rows.append({
+            '매수시간': 20240101090000 + i,
+            '수익률': 1.0 if i % 2 == 0 else -1.0,
+            'B_시가총액': 500_000_000_000 if i < 55 else None,
+            'B_등락율': float(i),
+        })
+    df = pd.DataFrame(rows)
+    result = analyze_results_ml(df, n_splits=2)
+    assert result['status'] == 'ok'
