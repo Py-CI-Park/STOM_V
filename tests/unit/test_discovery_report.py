@@ -57,6 +57,32 @@ def test_render_discovery_report_markdown_contains_auto_relax_history():
     assert 'top_n: 5' in markdown
 
 
+def test_build_discovery_report_includes_criteria_mode():
+    result = _sample_result()
+    result['criteria_mode'] = 'strict'
+    report = build_discovery_report(result)
+    assert report['criteria_mode'] == 'strict'
+
+
+def test_build_discovery_report_criteria_mode_from_evaluation():
+    result = _sample_result()
+    result['promotion_evaluation']['criteria_mode'] = 'relaxed'
+    report = build_discovery_report(result)
+    assert report['criteria_mode'] == 'relaxed'
+
+
+def test_build_discovery_report_criteria_mode_defaults_none():
+    report = build_discovery_report(_sample_result())
+    assert report['criteria_mode'] is None
+
+
+def test_render_discovery_report_markdown_shows_criteria_mode():
+    result = _sample_result()
+    result['criteria_mode'] = 'relaxed'
+    markdown = render_discovery_report_markdown(build_discovery_report(result))
+    assert 'criteria_mode: relaxed' in markdown
+
+
 def test_save_discovery_report_json_and_markdown(tmp_path):
     report = build_discovery_report(_sample_result())
     json_path = tmp_path / 'report.json'

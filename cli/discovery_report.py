@@ -36,6 +36,8 @@ def build_discovery_report(result: dict, strategy_name: str | None = None) -> di
         'auto_relax_history': result.get('auto_relax_history')
             or (result.get('strategy_flow') or {}).get('auto_relax_history')
             or [],
+        'criteria_mode': result.get('criteria_mode')
+            or ((result.get('promotion_evaluation') or {}).get('criteria_mode')),
     }
     return report
 
@@ -48,6 +50,7 @@ def render_discovery_report_markdown(report: dict) -> str:
         f"- status: {report.get('status')}",
         f"- promoted: {report.get('promoted')}",
         f"- promotion_preset: {report.get('promotion_preset')}",
+        f"- criteria_mode: {report.get('criteria_mode') or 'unknown'}",
         f"- candidate_count: {report.get('candidate_count')}",
         '',
         '## Walk-Forward Summary',

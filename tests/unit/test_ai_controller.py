@@ -454,9 +454,12 @@ class TestStrategyManagement:
             )
             assert result['status'] == 'ok'
             assert result['promoted'] is True
+            assert result['criteria_mode'] == 'strict'
             assert result['strategy_result']['action'] == 'created'
             assert result['promotion_evaluation']['preset'] == 'balanced'
+            assert result['promotion_evaluation']['criteria_mode'] == 'strict'
             assert result['report']['promotion_preset'] == 'balanced'
+            assert result['report']['criteria_mode'] == 'strict'
             assert mock_create.call_count == 2
             mock_wfo.assert_called_once()
             mock_delete.assert_called_once()
@@ -561,6 +564,7 @@ class TestStrategyManagement:
 
             assert result['status'] == 'ok'
             assert result['promoted'] is True
+            assert result['criteria_mode'] == 'relaxed'
             assert prepared_history == [5, 4]
             assert mock_wfo.call_count == 2
             assert result['auto_relax_history'] == [

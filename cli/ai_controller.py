@@ -467,8 +467,16 @@ class AIBacktestController:
             code_result = None
             resolved_criteria = resolve_promotion_criteria(promotion_preset, promotion_criteria)
             eval_criteria = dict(resolved_criteria)
+            criteria_mode = 'strict'
             if auto_relax and promotion_criteria is None:
                 eval_criteria['min_avg_trade_count'] = 0.0
+                criteria_mode = 'relaxed'
+            elif promotion_criteria is not None:
+                preset_original = resolve_promotion_criteria(promotion_preset)
+                for key in ('min_rounds', 'min_success_rate', 'min_mean_oos_metric', 'min_avg_trade_count'):
+                    if eval_criteria.get(key, preset_original.get(key)) < preset_original.get(key, 0):
+                        criteria_mode = 'relaxed'
+                        break
             base_buy_strategy = config_dict.get('base_buy_strategy') if strategy_type == 'buy' else None
 
             def save_generated_strategy(strategy_name, expressions):
@@ -540,6 +548,7 @@ class AIBacktestController:
                     )
                     evaluation['preset'] = promotion_preset
                     evaluation['criteria'] = eval_criteria
+                    evaluation['criteria_mode'] = criteria_mode
 
                     summary = (evaluation.get('summary') or {}).copy()
                     total_rounds = int(summary.get('round_count', 0) or 0)
@@ -602,6 +611,7 @@ class AIBacktestController:
                 'promotion_evaluation': evaluation,
                 'strategy_result': final_strategy_result,
                 'promoted': promoted,
+                'criteria_mode': criteria_mode,
             }
             if auto_relax:
                 response['auto_relax_history'] = auto_relax_history
