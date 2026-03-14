@@ -345,13 +345,14 @@ class TestDiscoverySubcommand:
             ])
         assert code == 0
         _, kwargs = mock_promote.call_args
-        assert kwargs['ml_feature_limit'] == 1
-        assert kwargs['ml_weight'] == 0.5
-        assert kwargs['promotion_preset'] == 'conservative'
-        assert kwargs['report_json_path'] == 'report.json'
-        assert kwargs['report_md_path'] == 'report.md'
-        assert kwargs['auto_relax'] is False
-        assert kwargs['promotion_criteria'] is not None
+        dc = kwargs['discovery_config']
+        assert dc.ml.feature_limit == 1
+        assert dc.ml.weight == 0.5
+        assert dc.promotion.preset == 'conservative'
+        assert dc.output.report_json_path == 'report.json'
+        assert dc.output.report_md_path == 'report.md'
+        assert dc.promotion.auto_relax is False
+        assert dc.promotion.criteria is not None
         mock_print.assert_called_once()
 
     def test_discovery_promote_with_auto_relax_and_base_buy_strategy(self):
@@ -373,10 +374,11 @@ class TestDiscoverySubcommand:
             ])
         assert code == 0
         _, kwargs = mock_promote.call_args
-        assert kwargs['auto_relax'] is True
-        assert kwargs['max_relax_steps'] == 5
-        assert kwargs['promotion_criteria'] is None
-        assert kwargs['promotion_preset'] == 'aggressive'
+        dc = kwargs['discovery_config']
+        assert dc.promotion.auto_relax is True
+        assert dc.promotion.max_relax_steps == 5
+        assert dc.promotion.criteria is None
+        assert dc.promotion.preset == 'aggressive'
         assert kwargs['config_dict']['base_buy_strategy'] == 'Min_B_Study_251227'
 
 

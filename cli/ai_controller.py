@@ -437,8 +437,36 @@ class AIBacktestController:
                                       ml_top_n: int = 10, ml_n_splits: int = 5, ml_random_state: int = 42,
                                       ml_weight: float = 0.0, promotion_preset: str = 'balanced', report_json_path: str = None,
                                       report_md_path: str = None, auto_relax: bool = False,
-                                      max_relax_steps: int = 3) -> dict:
-        """후보 전략을 임시 저장 후 WFO 검증을 통과한 경우에만 최종 전략으로 승격한다."""
+                                      max_relax_steps: int = 3,
+                                      discovery_config=None) -> dict:
+        """후보 전략을 임시 저장 후 WFO 검증을 통과한 경우에만 최종 전략으로 승격한다.
+
+        discovery_config가 주어지면 개별 파라미터보다 우선 적용된다.
+        """
+        if discovery_config is not None:
+            a = discovery_config.analysis
+            m = discovery_config.ml
+            p = discovery_config.promotion
+            o = discovery_config.output
+            top_n = a.top_n
+            min_samples = a.min_samples
+            quantiles = a.quantiles
+            alpha = a.alpha
+            buy_var = a.buy_var
+            strategy_type = a.strategy_type
+            ml_feature_limit = m.feature_limit
+            ml_model_type = m.model_type
+            ml_top_n = m.top_n
+            ml_n_splits = m.n_splits
+            ml_random_state = m.random_state
+            ml_weight = m.weight
+            promotion_preset = p.preset
+            promotion_criteria = p.criteria
+            auto_relax = p.auto_relax
+            max_relax_steps = p.max_relax_steps
+            output_code_path = o.code_path if output_code_path is None else output_code_path
+            report_json_path = o.report_json_path if report_json_path is None else report_json_path
+            report_md_path = o.report_md_path if report_md_path is None else report_md_path
         try:
             from cli.condition_generator import save_condition_code
             from cli.discovery_report import build_discovery_report, save_discovery_report_json, save_discovery_report_markdown

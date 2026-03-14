@@ -379,6 +379,10 @@ def _handle_discovery(parsed):
             'method': parsed.method,
             'max_iter': parsed.max_iter,
         }
+        from cli.discovery_config import (
+            DiscoveryAnalysisConfig, DiscoveryConfig, DiscoveryMlConfig,
+            DiscoveryOutputConfig, DiscoveryPromotionConfig,
+        )
         if parsed.auto_relax:
             promotion_criteria = None
         else:
@@ -388,29 +392,40 @@ def _handle_discovery(parsed):
                 'min_mean_oos_metric': parsed.promote_min_mean_oos,
                 'min_avg_trade_count': parsed.promote_min_avg_trade_count,
             }
+        discovery_config = DiscoveryConfig(
+            analysis=DiscoveryAnalysisConfig(
+                top_n=parsed.top_n,
+                min_samples=parsed.min_samples,
+                quantiles=parsed.quantiles,
+                alpha=parsed.alpha,
+                buy_var=parsed.buy_var,
+            ),
+            ml=DiscoveryMlConfig(
+                feature_limit=parsed.ml_feature_limit,
+                model_type=parsed.ml_model_type,
+                top_n=parsed.ml_top_n,
+                n_splits=parsed.ml_n_splits,
+                weight=parsed.ml_weight,
+            ),
+            promotion=DiscoveryPromotionConfig(
+                preset=parsed.promotion_preset,
+                criteria=promotion_criteria,
+                auto_relax=parsed.auto_relax,
+                max_relax_steps=parsed.max_relax_steps,
+            ),
+            output=DiscoveryOutputConfig(
+                code_path=parsed.output_code,
+                report_json_path=parsed.report_json,
+                report_md_path=parsed.report_md,
+            ),
+        )
         result = controller.discover_and_promote_strategy(
             parsed.name,
             config_dict=config_dict,
             input_path=parsed.input_file,
             param_space=_load_param_space(parsed),
-            top_n=parsed.top_n,
-            buy_var=parsed.buy_var,
-            min_samples=parsed.min_samples,
-            quantiles=parsed.quantiles,
-            alpha=parsed.alpha,
-            output_code_path=parsed.output_code,
             walk_forward_settings=walk_forward_settings,
-            promotion_criteria=promotion_criteria,
-            ml_feature_limit=parsed.ml_feature_limit,
-            ml_model_type=parsed.ml_model_type,
-            ml_top_n=parsed.ml_top_n,
-            ml_n_splits=parsed.ml_n_splits,
-            ml_weight=parsed.ml_weight,
-            promotion_preset=parsed.promotion_preset,
-            report_json_path=parsed.report_json,
-            report_md_path=parsed.report_md,
-            auto_relax=parsed.auto_relax,
-            max_relax_steps=parsed.max_relax_steps,
+            discovery_config=discovery_config,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1
