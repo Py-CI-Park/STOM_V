@@ -1,10 +1,10 @@
 
 import os
 import sys
-import numpy as np
 from kiwoom_agent_tick import KiwoomAgentTick
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num
+from utility.lazy_imports import get_np
 from utility.static import now, roundfigure_upper5, GetSangHahanga
 
 
@@ -113,8 +113,8 @@ class KiwoomAgentMin(KiwoomAgentTick):
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -135,8 +135,8 @@ class KiwoomAgentMin(KiwoomAgentTick):
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
  
@@ -155,8 +155,8 @@ class KiwoomAgentMin(KiwoomAgentTick):
 
             tm = dm - code_dtdm[1]
             if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
-            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
-            lhp  = np.round((h / low - 1) * 100, 2)
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0

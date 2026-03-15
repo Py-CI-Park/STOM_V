@@ -1,7 +1,7 @@
 
 import logging
-import numpy as np
 from typing import Dict, List, Tuple
+from utility.lazy_imports import get_np
 from collections import defaultdict, deque
 
 # 데이터 칼럼 정의
@@ -136,7 +136,7 @@ class MicrostructureAnalyzer:
         # 칼럼 인덱스 매핑 (빠른 접근용)
         self.col_index = {col: idx for idx, col in enumerate(self.columns)}
 
-    def update_data(self, code: str, data: np.ndarray):
+    def update_data(self, code: str, data: get_np().ndarray):
         """
         데이터 전처리, 시장구조분석, 리스크분석
 
@@ -173,7 +173,7 @@ class MicrostructureAnalyzer:
             return
 
         # 넘파이 배열로 변환 (성능 최적화)
-        recent_data = np.array(data_buffers)
+        recent_data = get_np().array(data_buffers)
         curr_price  = recent_data[-1, self.col_index['현재가']]
 
         # 거래량 관련 계산 (데이터 타입에 따라 다름)
@@ -226,7 +226,7 @@ class MicrostructureAnalyzer:
             imbalance_trend = 0
         else:
             # 최근 히스토리 기준 선형 회귀 분석
-            imbalance_trend = np.polyfit(range(self.history_cnt), [d['imbalance'] for d in data_history], 1)[0]
+            imbalance_trend = get_np().polyfit(range(self.history_cnt), [d['imbalance'] for d in data_history], 1)[0]
 
         # 각종 조작 패턴 감지
         layering = self._detect_layering(code)                              # 레이어링 감지
@@ -459,10 +459,10 @@ class MicrostructureAnalyzer:
         if len(date_history) < self.history_cnt:
             return pump_dump_signals
 
-        prices = np.array([d['curr_price'] for d in date_history])
+        prices = get_np().array([d['curr_price'] for d in date_history])
 
         # 가격 변화율 계산 (%)
-        price_changes = np.diff(prices) / (prices[:-1] + 1e-10) * 100
+        price_changes = get_np().diff(prices) / (prices[:-1] + 1e-10) * 100
 
         # 거래량 급증 감지
         volume_spikes = self._detect_volume_spikes(code)
@@ -497,7 +497,7 @@ class MicrostructureAnalyzer:
         spikes = []
 
         # 평균 거래량 계산
-        avg_volume = np.mean(volumes)
+        avg_volume = get_np().mean(volumes)
         for i, volume in enumerate(volumes):
             # 평균 대비 거래량 비율 계산
             # noinspection PyTypeChecker
@@ -506,7 +506,7 @@ class MicrostructureAnalyzer:
 
         return spikes
 
-    def _is_pump_dump_pattern(self, prices: np.ndarray, index: int) -> bool:
+    def _is_pump_dump_pattern(self, prices: get_np().ndarray, index: int) -> bool:
         """
         펌프 앤 덤프 패턴 확인
 
@@ -528,7 +528,7 @@ class MicrostructureAnalyzer:
             # 이후 평균가가 이전 평균가보다 2% 이상 하락하고,
             # 현재가가 이전 평균가보다 2% 이상 상승한 경우
             # noinspection PyTypeChecker
-            if np.mean(after) < np.mean(before) * 0.98 and prices[index] > np.mean(before) * 1.02:
+            if get_np().mean(after) < get_np().mean(before) * 0.98 and prices[index] > get_np().mean(before) * 1.02:
                 return True
 
         return False
@@ -710,8 +710,8 @@ class MicrostructureAnalyzer:
         depth_ratio       = self.curr_data['depth_ratio']
         bid_concentration = self.curr_data['bid_concentration']
         ask_concentration = self.curr_data['ask_concentration']
-        log_depth_ratio   = np.log(self.params['depth_ratio_threshold'])
-        log_depth_ratio   = np.log(depth_ratio) / log_depth_ratio if depth_ratio > 0 else 0
+        log_depth_ratio   = get_np().log(self.params['depth_ratio_threshold'])
+        log_depth_ratio   = get_np().log(depth_ratio) / log_depth_ratio if depth_ratio > 0 else 0
 
         # 매수 흐름 강도 계산 (연속적인 0.0~1.0 값)
         buy_flow_strength = (
@@ -781,7 +781,7 @@ class MicrostructureAnalyzer:
 
         final_confidence = base_confidence + pressure_confidence + imbalance_confidence + \
             trend_confidence + depth_confidence + risk_confidence
-        final_confidence = np.round(final_confidence, 2)                            # 소수점 2자리 반올림
+        final_confidence = round(final_confidence, 2)                            # 소수점 2자리 반올림
         # noinspection PyTypeChecker
         final_confidence = min(max(final_confidence, 0.1), 1.0)                     # 0.1-1.0 범위로 제한
 

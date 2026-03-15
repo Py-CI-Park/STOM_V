@@ -4,11 +4,10 @@
 """
 
 import warnings
-import numpy as np
-import pandas as pd
 from typing import Dict, List
 from scipy.optimize import minimize
 from sklearn.covariance import LedoitWolf
+from utility.lazy_imports import get_np, get_pd
 warnings.filterwarnings('ignore')
 
 
@@ -38,7 +37,7 @@ class AdvancedPortfolioOptimizer:
         self.asset_returns = {}
         self.asset_volatilities = {}
 
-    def calculate_portfolio_metrics(self, returns: pd.DataFrame, weights: np.ndarray) -> Dict:
+    def calculate_portfolio_metrics(self, returns: get_pd().DataFrame, weights: get_np().ndarray) -> Dict:
         """
         포트폴리오 메트릭 계산
         
@@ -50,12 +49,12 @@ class AdvancedPortfolioOptimizer:
             포트폴리오 메트릭 딕셔너리
         """
         # 포트폴리오 수익률
-        portfolio_return = np.sum(returns.mean() * weights) * 252
+        portfolio_return = get_np().sum(returns.mean() * weights) * 252
 
         # 포트폴리오 변동성
         covariance_matrix = returns.cov() * 252
-        portfolio_variance = np.dot(weights.T, np.dot(covariance_matrix, weights))
-        portfolio_volatility = np.sqrt(portfolio_variance)
+        portfolio_variance = get_np().dot(weights.T, get_np().dot(covariance_matrix, weights))
+        portfolio_volatility = get_np().sqrt(portfolio_variance)
 
         # 샤프 비율
         sharpe_ratio = (portfolio_return - self.risk_free_rate) / portfolio_volatility
@@ -67,8 +66,8 @@ class AdvancedPortfolioOptimizer:
         max_drawdown = drawdown.min().iloc[0] if hasattr(drawdown.min(), 'iloc') else drawdown.min()
 
         # VaR (Value at Risk)
-        portfolio_returns = np.dot(returns, weights)
-        var_95 = np.percentile(portfolio_returns, 5)
+        portfolio_returns = get_np().dot(returns, weights)
+        var_95 = get_np().percentile(portfolio_returns, 5)
 
         return {
             'return': portfolio_return,
@@ -79,7 +78,7 @@ class AdvancedPortfolioOptimizer:
             'weights': weights
         }
 
-    def optimize_portfolio(self, returns: pd.DataFrame, method: str = 'sharpe') -> Dict:
+    def optimize_portfolio(self, returns: get_pd().DataFrame, method: str = 'sharpe') -> Dict:
         """
         포트폴리오 최적화
         
@@ -94,14 +93,14 @@ class AdvancedPortfolioOptimizer:
 
         # 제약 조건
         constraints = [
-            {'type': 'eq', 'fun': lambda x: np.sum(x) - 1},  # 가중치 합 = 1
+            {'type': 'eq', 'fun': lambda x: get_np().sum(x) - 1},  # 가중치 합 = 1
         ]
 
         # 가중치 범위
         bounds = tuple((0, self.max_weight) for _ in range(num_assets))
 
         # 초기 가중치
-        initial_weights = np.array([1/num_assets] * num_assets)
+        initial_weights = get_np().array([1/num_assets] * num_assets)
 
         # 목적 함수
         if method == 'sharpe':
@@ -131,7 +130,7 @@ class AdvancedPortfolioOptimizer:
         else:
             raise ValueError("포트폴리오 최적화 실패")
 
-    def calculate_correlation_matrix(self, returns: pd.DataFrame) -> pd.DataFrame:
+    def calculate_correlation_matrix(self, returns: get_pd().DataFrame) -> get_pd().DataFrame:
         """
         상관관계 행렬 계산
         
@@ -143,7 +142,7 @@ class AdvancedPortfolioOptimizer:
         """
         return returns.corr()
 
-    def select_uncorrelated_assets(self, returns: pd.DataFrame, threshold: float = 0.7) -> List[str]:
+    def select_uncorrelated_assets(self, returns: get_pd().DataFrame, threshold: float = 0.7) -> List[str]:
         """
         상관관계가 낮은 자산 선택
         
@@ -167,7 +166,7 @@ class AdvancedPortfolioOptimizer:
 
         return selected_assets
 
-    def calculate_risk_parity_weights(self, returns: pd.DataFrame) -> np.ndarray:
+    def calculate_risk_parity_weights(self, returns: get_pd().DataFrame) -> get_np().ndarray:
         """
         리스크 패리티 가중치 계산
         
@@ -183,9 +182,9 @@ class AdvancedPortfolioOptimizer:
         cov_matrix = cov_estimator.fit(returns).covariance_
 
         # 리스크 패리티 가중치 계산
-        inv_sqrt_diag = np.diag(1 / np.sqrt(np.diag(cov_matrix)))
-        risk_parity_weights = inv_sqrt_diag @ np.ones(len(returns.columns))
-        risk_parity_weights = risk_parity_weights / np.sum(risk_parity_weights)
+        inv_sqrt_diag = get_np().diag(1 / get_np().sqrt(get_np().diag(cov_matrix)))
+        risk_parity_weights = inv_sqrt_diag @ get_np().ones(len(returns.columns))
+        risk_parity_weights = risk_parity_weights / get_np().sum(risk_parity_weights)
 
         return risk_parity_weights
 
@@ -217,7 +216,7 @@ class AdvancedPortfolioOptimizer:
 
         return rebalanced_weights
 
-    def calculate_portfolio_attribution(self, returns: pd.DataFrame, weights: np.ndarray) -> Dict[str, float]:
+    def calculate_portfolio_attribution(self, returns: get_pd().DataFrame, weights: get_np().ndarray) -> Dict[str, float]:
         """
         포트폴리오 기여도 분석
         
@@ -228,7 +227,7 @@ class AdvancedPortfolioOptimizer:
         Returns:
             자산별 기여도
         """
-        portfolio_return = np.sum(returns.mean() * weights) * 252
+        portfolio_return = get_np().sum(returns.mean() * weights) * 252
         attribution = {}
 
         for i, asset in enumerate(returns.columns):
@@ -304,8 +303,8 @@ def test_portfolio_optimizer():
     포트폴리오 최적화 테스트
     """
     # 샘플 데이터 생성
-    np.random.seed(42)
-    dates = pd.date_range('2023-01-01', periods=252, freq='D')
+    get_np().random.seed(42)
+    dates = get_pd().date_range('2023-01-01', periods=252, freq='D')
 
     # 5개 자산의 수익률 데이터 생성
     assets = ['Stock_A', 'Stock_B', 'Bond_A', 'Commodity_A', 'Crypto_A']
@@ -326,10 +325,10 @@ def test_portfolio_optimizer():
             volatility = 0.4
             mean_return = 0.15
 
-        daily_returns = np.random.normal(mean_return/252, volatility/np.sqrt(252), 252)
+        daily_returns = get_np().random.normal(mean_return/252, volatility/get_np().sqrt(252), 252)
         returns_data[asset] = daily_returns
 
-    returns_df = pd.DataFrame(returns_data, index=dates)
+    returns_df = get_pd().DataFrame(returns_data, index=dates)
 
     # 포트폴리오 최적화
     optimizer = AdvancedPortfolioOptimizer()

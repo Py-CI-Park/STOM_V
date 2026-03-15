@@ -3,12 +3,10 @@ import re
 import sys
 import time
 import sqlite3
-from traceback import format_exc
-
 import binance
-import numpy as np
-import pandas as pd
+from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
+from utility.lazy_imports import get_np, get_pd
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketReceiver
 from utility.setting_base import ui_num, DB_COIN_TICK, DB_COIN_MIN
@@ -119,9 +117,9 @@ class BinanceReceiverTick:
                     o    = float(data['openPrice'])
                     h    = float(data['highPrice'])
                     low  = float(data['lowPrice'])
-                    per  = np.round(float(data['priceChangePercent']), 2)
+                    per  = round(float(data['priceChangePercent']), 2)
                     dm   = float(data['quoteVolume'])
-                    prec = np.round(c - float(data['priceChange']), 8)
+                    prec = round(c - float(data['priceChange']), 8)
                     self.dict_data[code] = [c, o, h, low, per, dm, 0, 0, 0, 0, 0, c, c, c]
                     self.dict_prec[code] = [ymd, prec]
                     dict_daym[code] = dm
@@ -166,11 +164,11 @@ class BinanceReceiverTick:
         asks_ = 0 if not m else v
         bids += bids_
         asks += asks_
-        tbids = np.round(pretbids + bids_, 8)
-        tasks = np.round(pretasks + asks_, 8)
+        tbids = round(pretbids + bids_, 8)
+        tasks = round(pretasks + asks_, 8)
         # noinspection PyTypeChecker
-        ch = min(500, np.round(tbids / tasks * 100, 2)) if tasks > 0 else 500
-        per = np.round((c / self.dict_prec[code][1] - 1) * 100, 2)
+        ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
+        per = round((c / self.dict_prec[code][1] - 1) * 100, 2)
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
         self.dict_daym[code] = dm
@@ -212,7 +210,7 @@ class BinanceReceiverTick:
                 float(data['b'][5][1]), float(data['b'][6][1]), float(data['b'][7][1]), float(data['b'][8][1]), float(data['b'][9][1])
             ]
             hoga_tamount = [
-                np.round(sum(hoga_samount), 8), np.round(sum(hoga_bamount), 8)
+                round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
             ]
             receivetime = now()
         except:
@@ -273,8 +271,8 @@ class BinanceReceiverTick:
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -295,8 +293,8 @@ class BinanceReceiverTick:
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
  
@@ -315,8 +313,8 @@ class BinanceReceiverTick:
 
             tm = dm - code_dtdm[1]
             if tm == dm and 500 < int(str(dt)[8:]): tm = 0
-            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
-            lhp  = np.round((h / low - 1) * 100, 2)
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0
@@ -445,12 +443,12 @@ class BinanceReceiverTick:
             con = sqlite3.connect(DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN)
             last_index = 0
             try:
-                df = pd.read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
+                df = get_pd().read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
                 last_index = df['index'][0]
             except:
                 pass
             dict_mtop = {key: value for key, value in self.dict_mtop.items() if key > last_index}
-            df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
+            df = get_pd().DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
             self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))

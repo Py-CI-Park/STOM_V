@@ -3,18 +3,9 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from ui.set_style import color_fg_bt, color_fg_dk, color_fg_bc, color_bf_bt, color_bf_dk, color_ct_hg
 from ui.ui_draw_label_text import get_label_text
+from utility.lazy_imports import get_pd
 from utility.setting_base import ui_num, columns_hg, columns_hj
 from utility.static import change_format, comma2int, comma2float, dt_ymdhms, error_decorator
-
-_pd = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
 
 
 class NumericItem(QTableWidgetItem):

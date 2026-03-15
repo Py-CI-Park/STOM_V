@@ -1,8 +1,8 @@
 
-import numpy as np
 from traceback import format_exc
 from trade.binance.binance_strategy_tick import BinanceStrategyTick
 from utility.setting_base import ui_num
+from utility.lazy_imports import get_np
 from utility.static import GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, now_utc, dt_ymdhms, now, GetIndicator, \
     error_decorator
 
@@ -30,14 +30,14 @@ class BinanceStrategyMin(BinanceStrategyTick):
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
         if 전략연산:
-            new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
+            new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
             new_data_tick[:self.base_cnt] = data[:self.base_cnt]
 
             pre_data = self.dict_data.get(종목코드)
             if pre_data is not None:
-                self.dict_data[종목코드] = np.concatenate([pre_data, np.array([new_data_tick])])
+                self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
             else:
-                self.dict_data[종목코드] = np.array([new_data_tick])
+                self.dict_data[종목코드] = get_np().array([new_data_tick])
 
             self.arry_code = self.dict_data[종목코드]
             self.tick_count = 데이터길이 = len(self.arry_code)
@@ -167,7 +167,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
                                 self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
                     elif D or E:
                         BUY_LONG, SELL_SHORT = False, False
-                        분할매수기준수익률 = np.round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['코인매수분할고정수익률'] else 수익률
+                        분할매수기준수익률 = round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['코인매수분할고정수익률'] else 수익률
                         if D:
                             if self.dict_set['코인매수분할하방'] and 분할매수기준수익률 < -self.dict_set['코인매수분할하방수익률']:
                                 BUY_LONG   = True
@@ -252,9 +252,9 @@ class BinanceStrategyMin(BinanceStrategyTick):
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:
-                new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
+                new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
                 new_data_tick[:self.base_cnt] = data[:self.base_cnt]
-                self.arry_code = np.concatenate([pre_data, np.array([new_data_tick])])
+                self.arry_code = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
                 self.arry_code[-1, self.area_cnt:self.data_cnt] = GetIndicator(
                     self.arry_code[:, self.dict_findex['현재가']],

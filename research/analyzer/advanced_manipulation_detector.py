@@ -4,9 +4,9 @@
 """
 
 import warnings
-import numpy as np
 from typing import Dict, List
 from datetime import datetime
+from utility.lazy_imports import get_np
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import IsolationForest, RandomForestClassifier
 warnings.filterwarnings('ignore')
@@ -43,7 +43,7 @@ class AdvancedManipulationDetector:
         self.manipulation_score = 0.0
         self.alerts = []
         
-    def extract_orderbook_features(self, orderbook_data: Dict) -> np.ndarray:
+    def extract_orderbook_features(self, orderbook_data: Dict) -> get_np().ndarray:
         """
         호가창 데이터에서 특성 추출
         
@@ -80,9 +80,9 @@ class AdvancedManipulationDetector:
             large_order_ratio, price_change, price_volatility
         ])
         
-        return np.array(features)
+        return get_np().array(features)
     
-    def extract_trade_features(self, trade_data: Dict) -> np.ndarray:
+    def extract_trade_features(self, trade_data: Dict) -> get_np().ndarray:
         """
         체결 데이터에서 특성 추출
         
@@ -117,7 +117,7 @@ class AdvancedManipulationDetector:
             price_change, price_impact, time_pattern, buy_ratio
         ])
         
-        return np.array(features)
+        return get_np().array(features)
     
     def detect_spoofing(self, orderbook_data: Dict) -> Dict:
         """
@@ -139,7 +139,7 @@ class AdvancedManipulationDetector:
         
         # 스푸핑 특징 확인
         # noinspection PyTypeChecker
-        large_spread = features[0] > np.mean([f[0] for f in self.feature_history]) * 2
+        large_spread = features[0] > get_np().mean([f[0] for f in self.feature_history]) * 2
         volume_imbalance = abs(features[2]) > 0.7
         
         spoofing_confidence = 0.0
@@ -175,7 +175,7 @@ class AdvancedManipulationDetector:
         
         # 가격 영향력 분석
         price_impacts = [t.get('price_impact', 0) for t in small_trades]
-        avg_small_impact = np.mean(price_impacts) if price_impacts else 0
+        avg_small_impact = get_np().mean(price_impacts) if price_impacts else 0
         
         # 시간 집중도
         time_intervals = []
@@ -185,7 +185,7 @@ class AdvancedManipulationDetector:
             if t1 and t2:
                 time_intervals.append((t2 - t1).total_seconds())
         
-        time_concentration = np.std(time_intervals) if time_intervals else 0
+        time_concentration = get_np().std(time_intervals) if time_intervals else 0
         
         # 레이어링 점수 계산
         layering_score = 0.0
@@ -201,7 +201,7 @@ class AdvancedManipulationDetector:
             'time_concentration': time_concentration
         }
     
-    def detect_pump_dump(self, price_data: np.ndarray, volume_data: np.ndarray) -> Dict:
+    def detect_pump_dump(self, price_data: get_np().ndarray, volume_data: get_np().ndarray) -> Dict:
         """
         펌프앤덤프 패턴 감지
         
@@ -216,15 +216,15 @@ class AdvancedManipulationDetector:
             return {'pump_dump_detected': False, 'confidence': 0.0}
         
         # 가격 변화율 계산
-        returns = np.diff(np.log(price_data))
+        returns = get_np().diff(get_np().log(price_data))
         
         # 거래량 이상치 감지
-        volume_ma = np.convolve(volume_data, np.ones(10)/10, mode='valid')
+        volume_ma = get_np().convolve(volume_data, get_np().ones(10)/10, mode='valid')
         volume_spike = volume_data > volume_ma * 3
         
         # 급격한 가격 상승 후 하락 패턴
-        price_spike = returns > np.percentile(returns, 95)
-        subsequent_decline = returns < -np.percentile(returns, 80)
+        price_spike = returns > get_np().percentile(returns, 95)
+        subsequent_decline = returns < -get_np().percentile(returns, 80)
         
         # 패턴 매칭
         pump_detected = False
@@ -235,7 +235,7 @@ class AdvancedManipulationDetector:
             if price_spike[i] and volume_spike[i]:
                 pump_detected = True
                 # 이후 하락 확인
-                if i + 5 < len(subsequent_decline) and np.any(subsequent_decline[i:i+5]):
+                if i + 5 < len(subsequent_decline) and get_np().any(subsequent_decline[i:i+5]):
                     dump_detected = True
                     confidence = 0.8
                     break
@@ -247,7 +247,7 @@ class AdvancedManipulationDetector:
             'dump_detected': dump_detected
         }
     
-    def calculate_manipulation_score(self, features: np.ndarray) -> float:
+    def calculate_manipulation_score(self, features: get_np().ndarray) -> float:
         """
         종합 조작 점수 계산
         
@@ -297,7 +297,7 @@ class AdvancedManipulationDetector:
         
         # 데이터 정규화
         X = self.scaler.fit_transform(all_features)
-        y = np.array(labels)
+        y = get_np().array(labels)
         
         # 모델 학습
         self.isolation_forest.fit(X)
@@ -353,7 +353,7 @@ class AdvancedManipulationDetector:
         results['alerts'] = alerts
         
         # 이력 저장
-        self.feature_history.append(features if 'orderbook' in market_data else np.zeros(6))
+        self.feature_history.append(features if 'orderbook' in market_data else get_np().zeros(6))
         if len(self.feature_history) > 1000:
             self.feature_history = self.feature_history[-1000:]
         
@@ -422,7 +422,7 @@ def test_manipulation_detector():
     risk_manager = ManipulationRiskManager()
     
     # 샘플 데이터 생성
-    np.random.seed(42)
+    get_np().random.seed(42)
     
     # 학습 데이터 생성
     training_data = []
@@ -430,13 +430,13 @@ def test_manipulation_detector():
         # 정상 데이터
         normal_data = {
             'orderbook': {
-                'best_bid': np.random.normal(100, 1),
-                'best_ask': np.random.normal(101, 1),
-                'bid_volumes': np.random.exponential(1000, 5).tolist(),
-                'ask_volumes': np.random.exponential(1000, 5).tolist(),
-                'large_orders': np.random.exponential(100),
-                'price_change': np.random.normal(0, 0.5),
-                'price_volatility': np.random.exponential(0.5)
+                'best_bid': get_np().random.normal(100, 1),
+                'best_ask': get_np().random.normal(101, 1),
+                'bid_volumes': get_np().random.exponential(1000, 5).tolist(),
+                'ask_volumes': get_np().random.exponential(1000, 5).tolist(),
+                'large_orders': get_np().random.exponential(100),
+                'price_change': get_np().random.normal(0, 0.5),
+                'price_volatility': get_np().random.exponential(0.5)
             },
             'label': 0
         }
@@ -471,13 +471,13 @@ def test_manipulation_detector():
             # 정상 시장
             test_data = {
                 'orderbook': {
-                    'best_bid': np.random.normal(100, 0.5),
-                    'best_ask': np.random.normal(101, 0.5),
-                    'bid_volumes': np.random.exponential(1000, 5).tolist(),
-                    'ask_volumes': np.random.exponential(1000, 5).tolist(),
-                    'large_orders': np.random.exponential(100),
-                    'price_change': np.random.normal(0, 0.2),
-                    'price_volatility': np.random.exponential(0.3)
+                    'best_bid': get_np().random.normal(100, 0.5),
+                    'best_ask': get_np().random.normal(101, 0.5),
+                    'bid_volumes': get_np().random.exponential(1000, 5).tolist(),
+                    'ask_volumes': get_np().random.exponential(1000, 5).tolist(),
+                    'large_orders': get_np().random.exponential(100),
+                    'price_change': get_np().random.normal(0, 0.2),
+                    'price_volatility': get_np().random.exponential(0.3)
                 }
             }
         else:

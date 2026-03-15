@@ -7,12 +7,11 @@ import os
 import logging
 import sqlite3
 import warnings
-import numpy as np
-import pandas as pd
 from typing import Dict
 from datetime import datetime
 from traceback import print_exc
 from lightgbm import LGBMRegressor
+from utility.lazy_imports import get_np, get_pd
 
 warnings.filterwarnings('ignore')
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -139,10 +138,10 @@ class RealtimeDeeplearning:
         try:
             if training:
                 # 모텔 학습 시 마지막 self.predahead 개의 데이터 제외
-                recent_ticks = np.array(model.tick_buffer[-(self.lookahead+self.predahead):-self.predahead])
+                recent_ticks = get_np().array(model.tick_buffer[-(self.lookahead+self.predahead):-self.predahead])
             else:
                 # 모텔 예측 시 마지막 self.lookahead 개의 데이터
-                recent_ticks = np.array(model.tick_buffer[-self.lookahead:])
+                recent_ticks = get_np().array(model.tick_buffer[-self.lookahead:])
 
             # 가격 데이터 추출
             prices = recent_ticks[:, self.arry_index['현재가']]
@@ -150,17 +149,17 @@ class RealtimeDeeplearning:
 
             # 변동성 돌파
             index = int(self.lookahead / 2)
-            curr_volatility = np.std(prices[-index:])
-            prev_volatility = np.std(prices[:-index])
+            curr_volatility = get_np().std(prices[-index:])
+            prev_volatility = get_np().std(prices[:-index])
             # noinspection PyTypeChecker
             volatility_ratio = min(1.0, curr_volatility / (prev_volatility + 1e-8) / 10)
 
             # 현재가 대비 변동성
-            volatility = np.std(prices)
+            volatility = get_np().std(prices)
             price_volatility_ratio = volatility / (current_price + 1e-8)
 
             # 모멘텀
-            momentum = np.clip((current_price - prices[0]) / prices[0] * 10, -1.0, 1.0)
+            momentum = get_np().clip((current_price - prices[0]) / prices[0] * 10, -1.0, 1.0)
 
             # 초당매수금액 / (초당매수금액 + 초당매도금액)
             buy_amounts = recent_ticks[:, self.arry_index['초당매수금액']]
@@ -170,19 +169,19 @@ class RealtimeDeeplearning:
             buy_sell_ratio = current_buy_amount / (current_buy_amount + current_sell_amount + 1e-8)
 
             # 초당매수금액평균 대비 초당매수금액
-            avg_buy_amount = np.mean(buy_amounts)
+            avg_buy_amount = get_np().mean(buy_amounts)
             # noinspection PyTypeChecker
             buy_amount_ratio = min(1.0, current_buy_amount / (avg_buy_amount + 1e-8) / 10)
 
             # 초당매도금액평균 대비 초당매도금액
-            avg_sell_amount = np.mean(sell_amounts)
+            avg_sell_amount = get_np().mean(sell_amounts)
             # noinspection PyTypeChecker
             sell_amount_ratio = min(1.0, current_sell_amount / (avg_sell_amount + 1e-8) / 10)
 
             # 거래대금평균 대비 거래대금
             volumes = buy_amounts + sell_amounts
             current_volume = volumes[-1]
-            avg_volume = np.mean(volumes)
+            avg_volume = get_np().mean(volumes)
             # noinspection PyTypeChecker
             volume_ratio = min(1.0, current_volume / (avg_volume + 1e-8) / 5)
 
@@ -207,14 +206,14 @@ class RealtimeDeeplearning:
 
             # 최고매수가격 대비 현재가
             max_buy_price = recent_ticks[-1, self.arry_index['최고매수가격']]
-            max_buy_per = np.clip((current_price - max_buy_price) / max_buy_price / 10, -1.0, 1.0)
+            max_buy_per = get_np().clip((current_price - max_buy_price) / max_buy_price / 10, -1.0, 1.0)
 
             # 최고매도가격 대비 현재가
             max_sell_price = recent_ticks[-1, self.arry_index['최고매도가격']]
-            max_sell_per = np.clip((current_price - max_sell_price) / (max_sell_price + 1e-8) / 10, -1.0, 1.0)
+            max_sell_per = get_np().clip((current_price - max_sell_price) / (max_sell_price + 1e-8) / 10, -1.0, 1.0)
 
             # 최고매도가격 대비 최고매수가격
-            max_sell_buy_per = np.clip((max_buy_price - max_sell_price) / (max_sell_price + 1e-8) / 10, -1.0, 1.0)
+            max_sell_buy_per = get_np().clip((max_buy_price - max_sell_price) / (max_sell_price + 1e-8) / 10, -1.0, 1.0)
 
             # 매도수총잔량 비율
             total_bids_qty = recent_ticks[-1, self.arry_index['매수총잔량']]
@@ -222,18 +221,18 @@ class RealtimeDeeplearning:
             total_bids_asks_ratio = total_bids_qty / (total_bids_qty + total_asks_qty + 1e-8)
 
             # RSI
-            deltas = np.diff(prices)
-            gains = np.where(deltas > 0, deltas, 0)
-            losses = np.where(deltas < 0, -deltas, 0)
-            avg_gain = np.mean(gains)
-            avg_loss = np.mean(losses)
+            deltas = get_np().diff(prices)
+            gains = get_np().where(deltas > 0, deltas, 0)
+            losses = get_np().where(deltas < 0, -deltas, 0)
+            avg_gain = get_np().mean(gains)
+            avg_loss = get_np().mean(losses)
             # noinspection PyTypeChecker
             rs = avg_gain / (avg_loss + 1e-8)
             rsi = min(1.0, (100 - (100 / (1 + rs))) / 100)
 
             # 볼린저 밴드
-            bb_middle = np.mean(prices)
-            bb_std = np.std(prices)
+            bb_middle = get_np().mean(prices)
+            bb_std = get_np().std(prices)
             # noinspection PyTypeChecker
             bb_upper = bb_middle + 2 * bb_std
             # noinspection PyTypeChecker
@@ -246,32 +245,32 @@ class RealtimeDeeplearning:
             ema26 = self._calculate_ema(prices, 26)
             macd_line = ema12[-1] - ema26[-1]
             signal_line = self._calculate_ema([macd_line], 9)[-1] if len([macd_line]) >= 9 else macd_line
-            macd_histogram = np.clip((macd_line - signal_line) / (signal_line + 1e-8) * 10, -1.0, 1.0)
+            macd_histogram = get_np().clip((macd_line - signal_line) / (signal_line + 1e-8) * 10, -1.0, 1.0)
 
             # 거래량 모멘텀 (OBV 스타일)
-            volume_momentum = np.sum(np.diff(volumes) * np.sign(np.diff(prices))) if len(volumes) > 1 else 0
+            volume_momentum = get_np().sum(get_np().diff(volumes) * get_np().sign(get_np().diff(prices))) if len(volumes) > 1 else 0
             # noinspection PyTypeChecker
-            volume_momentum_norm = volume_momentum / (np.sum(volumes) + 1e-8)
+            volume_momentum_norm = volume_momentum / (get_np().sum(volumes) + 1e-8)
 
             # 단기 모멘텀 가속도
             price_momentum_10 = (prices[-1] - prices[-10]) / (prices[-10] + 1e-8) * 100
             price_momentum_20 = (prices[-10] - prices[-30]) / (prices[-30] + 1e-8) * 100
-            momentum_acceleration = np.clip((price_momentum_10 - price_momentum_20) / (price_momentum_20 + 1e-8) * 10, -1.0, 1.0)
+            momentum_acceleration = get_np().clip((price_momentum_10 - price_momentum_20) / (price_momentum_20 + 1e-8) * 10, -1.0, 1.0)
 
             # 거래량 가중 가격 (VWAP 스타일)
             # noinspection PyTypeChecker
-            volume_weighted_price = np.sum(prices * volumes) / (np.sum(volumes) + 1e-8)
-            vwap_deviation = np.clip((current_price - volume_weighted_price) / volume_weighted_price * 10, -1.0, 1.0)
+            volume_weighted_price = get_np().sum(prices * volumes) / (get_np().sum(volumes) + 1e-8)
+            vwap_deviation = get_np().clip((current_price - volume_weighted_price) / volume_weighted_price * 10, -1.0, 1.0)
 
             # 단기 변동성 스파이크
-            short_volatility = np.std(prices[-10:])
-            long_volatility = np.std(prices[-30:])
+            short_volatility = get_np().std(prices[-10:])
+            long_volatility = get_np().std(prices[-30:])
             # noinspection PyTypeChecker
             volatility_spike = short_volatility / (short_volatility + long_volatility + 1e-8)
 
             # 매수/매도 금액 추세
-            buy_trend = np.polyfit(np.arange(len(buy_amounts)), buy_amounts, 1)[0]
-            sell_trend = np.polyfit(np.arange(len(sell_amounts)), sell_amounts, 1)[0]
+            buy_trend = get_np().polyfit(get_np().arange(len(buy_amounts)), buy_amounts, 1)[0]
+            sell_trend = get_np().polyfit(get_np().arange(len(sell_amounts)), sell_amounts, 1)[0]
             money_flow_trend = (buy_trend - sell_trend) / (abs(buy_trend) + abs(sell_trend) + 1e-8)
 
             # 윌리엄스 %R
@@ -295,7 +294,7 @@ class RealtimeDeeplearning:
             # 시간 특성
             hour_ratio = int(str(int(recent_ticks[-1, self.arry_index['index']]))[-6:-4]) / 24
 
-            features = np.array([
+            features = get_np().array([
                 volatility_ratio,
                 price_volatility_ratio,
                 momentum,
@@ -341,26 +340,26 @@ class RealtimeDeeplearning:
         """EMA 계산"""
         try:
             if len(data) < period:
-                return np.array([np.mean(data)])
+                return get_np().array([get_np().mean(data)])
             alpha = 2 / (period + 1)
             ema = [data[0]]
             for i in range(1, len(data)):
                 ema.append(alpha * data[i] + (1 - alpha) * ema[-1])
-            return np.array(ema)
+            return get_np().array(ema)
         except:
-            return np.array([np.mean(data)])
+            return get_np().array([get_np().mean(data)])
 
     def _calculate_williams_r(self, prices):
         """윌리엄스 %R 계산"""
         try:
-            highest = np.max(prices)
-            lowest = np.min(prices)
+            highest = get_np().max(prices)
+            lowest = get_np().min(prices)
 
             if highest == lowest:
                 return 0.0
 
             williams_r = (highest - prices[-1]) / (highest - lowest)
-            return np.clip(williams_r * 2 - 1, -1.0, 1.0)  # -1~1로 정규화
+            return get_np().clip(williams_r * 2 - 1, -1.0, 1.0)  # -1~1로 정규화
         except:
             return 0.0
 
@@ -368,14 +367,14 @@ class RealtimeDeeplearning:
         """머니 플로우 인덱스 계산"""
         try:
             money_flow = buy_amounts - sell_amounts
-            positive_flow = np.sum(np.where(money_flow > 0, money_flow, 0))
-            negative_flow = np.sum(np.where(money_flow < 0, -money_flow, 0))
+            positive_flow = get_np().sum(get_np().where(money_flow > 0, money_flow, 0))
+            negative_flow = get_np().sum(get_np().where(money_flow < 0, -money_flow, 0))
 
             if negative_flow == 0:
                 return 1.0
 
             mfi = 1 - (1 / (1 + positive_flow / negative_flow))
-            return np.clip(mfi * 2 - 1, -1.0, 1.0)  # -1~1로 정규화
+            return get_np().clip(mfi * 2 - 1, -1.0, 1.0)  # -1~1로 정규화
         except:
             return 0.0
 
@@ -383,14 +382,14 @@ class RealtimeDeeplearning:
         """추세 강도 계산"""
         try:
             # 선형 회귀 기반 추세 강도
-            x = np.arange(len(prices))
-            slope, intercept = np.polyfit(x, prices, 1)
+            x = get_np().arange(len(prices))
+            slope, intercept = get_np().polyfit(x, prices, 1)
 
             # R-squared 계산
             y_pred = slope * x + intercept
-            ss_res = np.sum((prices - y_pred) ** 2)
+            ss_res = get_np().sum((prices - y_pred) ** 2)
             # noinspection PyTypeChecker
-            ss_tot = np.sum((prices - np.mean(prices)) ** 2)
+            ss_tot = get_np().sum((prices - get_np().mean(prices)) ** 2)
 
             if ss_tot == 0:
                 return 0.0
@@ -398,26 +397,26 @@ class RealtimeDeeplearning:
             r_squared = 1 - (ss_res / ss_tot)
 
             # 추세 방향과 강도 결합
-            trend_direction = np.sign(slope)
+            trend_direction = get_np().sign(slope)
             trend_strength = trend_direction * r_squared
 
-            return np.clip(trend_strength, -1.0, 1.0)
+            return get_np().clip(trend_strength, -1.0, 1.0)
         except:
             return 0.0
 
     def _calculate_cci(self, prices):
         """CCI (Commodity Channel Index) 계산"""
         try:
-            sma = np.mean(prices)
+            sma = get_np().mean(prices)
             # noinspection PyTypeChecker
-            mean_deviation = np.mean(np.abs(prices - sma))
+            mean_deviation = get_np().mean(get_np().abs(prices - sma))
 
             if mean_deviation == 0:
                 return 0.0
 
             # noinspection PyTypeChecker
             cci = (prices[-1] - sma) / (0.015 * mean_deviation)
-            return np.clip(cci / 100, -1.0, 1.0)  # 정규화
+            return get_np().clip(cci / 100, -1.0, 1.0)  # 정규화
         except:
             return 0.0
 
@@ -431,29 +430,29 @@ class RealtimeDeeplearning:
                 return 0.0
 
             roc = (current_price - past_price) / past_price
-            return np.clip(roc * 10, -1.0, 1.0)  # 정규화
+            return get_np().clip(roc * 10, -1.0, 1.0)  # 정규화
         except:
             return 0.0
 
     def _calculate_price_volume_correlation(self, prices, volumes):
         """가격 거래량 상관관계"""
         try:
-            price_changes = np.diff(prices)
-            volume_changes = np.diff(volumes)
+            price_changes = get_np().diff(prices)
+            volume_changes = get_np().diff(volumes)
 
             if len(price_changes) == 0 or len(volume_changes) == 0:
                 return 0.0
 
-            correlation = np.corrcoef(price_changes, volume_changes)[0, 1]
+            correlation = get_np().corrcoef(price_changes, volume_changes)[0, 1]
 
-            if np.isnan(correlation):
+            if get_np().isnan(correlation):
                 return 0.0
             
-            return np.clip(correlation, -1.0, 1.0)
+            return get_np().clip(correlation, -1.0, 1.0)
         except:
             return 0.0
 
-    def update_realtime_tick_data(self, code: str, tick_data: np.ndarray, index: int = 0, last: bool = False) -> Dict:
+    def update_realtime_tick_data(self, code: str, tick_data: get_np().ndarray, index: int = 0, last: bool = False) -> Dict:
         """실시간 틱 처리
         Args:
             code: 종목 코드
@@ -520,7 +519,7 @@ class RealtimeDeeplearning:
             }
             return result
 
-    def _add_tick_buffer(self, model: Model, tick_data: np.ndarray, buffer_size_limit: int):
+    def _add_tick_buffer(self, model: Model, tick_data: get_np().ndarray, buffer_size_limit: int):
         new_data = [
             tick_data[self.factor_index['index']],
             tick_data[self.factor_index['현재가']],
@@ -565,11 +564,11 @@ class RealtimeDeeplearning:
 
             # 버퍼 카운터가 학습구간 보다 같거나 높고 int(self.lookahead / 3) 으로 나누어 떨어질 때 학습한다.
             if model.buffer_count >= self.lookahead and model.buffer_count % int(self.lookahead / 3) == 0:
-                features = np.array(model.train_buffer)
-                targets = np.array(model.target_buffer)
+                features = get_np().array(model.train_buffer)
+                targets = get_np().array(model.target_buffer)
 
                 # 타겟 값의 유니크 개수 확인 - 모두 동일하면 학습 건너뛰기
-                unique_targets = len(np.unique(targets))
+                unique_targets = len(get_np().unique(targets))
                 if unique_targets <= 5: return
 
                 # 모든 모델 학습
@@ -631,7 +630,7 @@ class RealtimeDeeplearning:
 
         else:
             buy_price, betting, buy_pred, buy_index = self.signal[code]
-            sp = np.round((curr_price / buy_price - 1) * 100 - 0.3, 2)
+            sp = round((curr_price / buy_price - 1) * 100 - 0.3, 2)
             if last or sp >= 3 or sp <= -2:
                 # noinspection PyTypeChecker
                 sig = int(betting * sp / 100)
@@ -665,8 +664,8 @@ class RealtimeDeeplearning:
             final_stats['total_buy_preds'] = len(buy_pred_values)
             if len(buy_pred_values) > 0:
                 final_stats['buy_direction_accuracy'] = sum(1 for p, a in zip(buy_pred_values, buy_actual_values) if (p >= 0) == (a >= 0)) / len(buy_pred_values) * 100
-                final_stats['buy_mean_error'] = np.mean([abs(p - a) for p, a in zip(buy_pred_values, buy_actual_values)])
-                final_stats['buy_rmse'] = np.sqrt(np.mean([(p - a) ** 2 for p, a in zip(buy_pred_values, buy_actual_values)]))
+                final_stats['buy_mean_error'] = get_np().mean([abs(p - a) for p, a in zip(buy_pred_values, buy_actual_values)])
+                final_stats['buy_rmse'] = get_np().sqrt(get_np().mean([(p - a) ** 2 for p, a in zip(buy_pred_values, buy_actual_values)]))
 
         return final_stats
 
@@ -685,38 +684,38 @@ def main(count: int = 10, buyper: float = 1.0, confidence: float = 0.6, betting:
     if db_file is None:
         conn = sqlite3.connect('../../_database/stock_tick_back.db')
         dict_cn = {}
-        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
+        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
         codes = df['name'].to_list()
         codes.remove('moneytop')
         if 'stockinfo' in codes:
             codes.remove('stockinfo')
-            dict_cn = pd.read_sql(f"SELECT * FROM stockinfo", conn).set_index('index')
+            dict_cn = get_pd().read_sql(f"SELECT * FROM stockinfo", conn).set_index('index')
             dict_cn = dict_cn['종목명'].to_dict()
         if 'futureinfo' in codes:
             codes.remove('futureinfo')
 
         while True:
-            selected_code = np.random.choice(codes)
+            selected_code = get_np().random.choice(codes)
             codes.remove(selected_code)
-            df = pd.read_sql(f"SELECT * FROM '{selected_code}' WHERE `index` >= 20250501000000", conn)
+            df = get_pd().read_sql(f"SELECT * FROM '{selected_code}' WHERE `index` >= 20250501000000", conn)
             if not df.empty:
                 lastday = int(str(df['index'].iloc[-1])[:8])
                 df = df[df['index'] >= lastday * 1000000]
                 code_list.append(selected_code)
-                data_list.append(np.array(df))
+                data_list.append(get_np().array(df))
                 print(f"선택종목 [{selected_code}] {dict_cn.get(selected_code)}")
                 if len(code_list) == count:
                     break
     else:
         conn = sqlite3.connect(f'../_database/{db_file}.db')
-        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
+        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
         codes = df['name'].to_list()
         codes.remove('moneytop')
         count = len(codes)
         for i, code in enumerate(codes):
-            df = pd.read_sql(f"SELECT * FROM '{code}'", conn)
+            df = get_pd().read_sql(f"SELECT * FROM '{code}'", conn)
             code_list.append(code)
-            data_list.append(np.array(df))
+            data_list.append(get_np().array(df))
             print(f"데이터로딩 [{code}], 길이[{len(df)}], [{i+1}/{count}]")
 
     conn.close()
@@ -764,26 +763,26 @@ def main(count: int = 10, buyper: float = 1.0, confidence: float = 0.6, betting:
         plus_cnt = len([x[0] for x in trader.trade if x[0] >= 0])
         minus_cnt = len([x[0] for x in trader.trade if x[0] < 0])
         t_cnt = plus_cnt + minus_cnt
-        p_ratio = np.round(plus_cnt / (plus_cnt + minus_cnt) * 100, 2) if (plus_cnt + minus_cnt) > 0 else 0.0
-        avg_hold = int(np.mean([x[2] for x in trader.trade]))
+        p_ratio = round(plus_cnt / (plus_cnt + minus_cnt) * 100, 2) if (plus_cnt + minus_cnt) > 0 else 0.0
+        avg_hold = int(get_np().mean([x[2] for x in trader.trade]))
         t_per = sum([x[0] for x in trader.trade])
         t_sig = sum([x[1] for x in trader.trade])
 
         plus_cnt1 = len([x[0] for x in trader.trade if x[0] >= 0 and x[-1] >= 1.0])
         minus_cnt1 = len([x[0] for x in trader.trade if x[0] < 0 and x[-1] >= 1.0])
         t_cnt1 = plus_cnt1 + minus_cnt1
-        p_ratio1 = np.round(plus_cnt1 / (plus_cnt1 + minus_cnt1) * 100, 2) if (plus_cnt1 + minus_cnt1) > 0 else 0.0
+        p_ratio1 = round(plus_cnt1 / (plus_cnt1 + minus_cnt1) * 100, 2) if (plus_cnt1 + minus_cnt1) > 0 else 0.0
         # noinspection PyTypeChecker
-        avg_hold1 = int(max(0, np.mean([x[2] for x in trader.trade if x[-1] >= 1.0])))
+        avg_hold1 = int(max(0, get_np().mean([x[2] for x in trader.trade if x[-1] >= 1.0])))
         t_per1 = sum([x[0] for x in trader.trade if x[-1] >= 1.0])
         t_sig1 = sum([x[1] for x in trader.trade if x[-1] >= 1.0])
 
         plus_cnt2 = len([x[0] for x in trader.trade if x[0] >= 0 and x[-1] >= 2])
         minus_cnt2 = len([x[0] for x in trader.trade if x[0] < 0 and x[-1] >= 2])
         t_cnt2 = plus_cnt2 + minus_cnt2
-        p_ratio2 = np.round(plus_cnt2 / (plus_cnt2 + minus_cnt2) * 100, 2) if (plus_cnt2 + minus_cnt2) > 0 else 0.0
+        p_ratio2 = round(plus_cnt2 / (plus_cnt2 + minus_cnt2) * 100, 2) if (plus_cnt2 + minus_cnt2) > 0 else 0.0
         # noinspection PyTypeChecker
-        avg_hold2 = int(max(0, np.mean([x[2] for x in trader.trade if x[-1] >= 2])))
+        avg_hold2 = int(max(0, get_np().mean([x[2] for x in trader.trade if x[-1] >= 2])))
         t_per2 = sum([x[0] for x in trader.trade if x[-1] >= 2])
         t_sig2 = sum([x[1] for x in trader.trade if x[-1] >= 2])
 

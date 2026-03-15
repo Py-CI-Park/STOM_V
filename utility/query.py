@@ -2,20 +2,11 @@
 import os
 import shutil
 import sqlite3
+from utility.lazy_imports import get_pd
 from utility.static import error_decorator, set_builtin_print
 from utility.setting_base import ui_num, DB_TRADELIST, DB_SETTING, DB_STRATEGY, DB_COIN_TICK, DB_PATH, DB_STOCK_BACK_TICK, \
     DB_COIN_BACK_TICK, DB_STOCK_TICK, DB_BACKTEST, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_STOCK_MIN, \
     DB_COIN_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_MIN, DB_CODE_INFO, DB_FUTURE_BACK_TICK, DB_FUTURE_TICK
-
-_pd = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
 
 
 class Query:

@@ -5,22 +5,12 @@ from PyQt5.QtCore import QUrl, Qt
 from multiprocessing import Process
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+from utility.lazy_imports import get_pd
 from utility.kimp_upbit_binance import Kimp
 from utility.static import qtest_qwait, str_hms, dt_hms, error_decorator
 from utility.setting_base import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
     DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 from ui.set_style import style_bc_bt, style_bc_bb
-
-
-_pd = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
 
 
 class QuietPage(QWebEnginePage):

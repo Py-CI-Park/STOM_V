@@ -6,9 +6,8 @@ PCA/요인분석 모델을 백테스팅 엔진에 통합
 import os
 import sqlite3
 import logging
-import numpy as np
-import pandas as pd
 from typing import Dict
+from utility.lazy_imports import get_np, get_pd
 from pca_prediction_model import PCAPredictionModel
 from factor_analysis_model import FactorAnalysisModel
 
@@ -77,7 +76,7 @@ class DeepLearningBacktestEngine:
             logger.error(f"모델 로드 실패: {e}")
             return False
     
-    def generate_signals(self, code: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def generate_signals(self, code: str, start_date: str, end_date: str) -> get_pd().DataFrame:
         """
         딥러닝 모델로 매매 신호 생성
         
@@ -93,12 +92,12 @@ class DeepLearningBacktestEngine:
             # 데이터 로드
             df = self.pca_model.preprocessor.load_data(code, start_date, end_date)
             if df is None:
-                return pd.DataFrame()
+                return get_pd().DataFrame()
             
             # 기술적 지표 추가
             df = self.pca_model.preprocessor.add_technical_indicators(df)
             
-            signals = pd.DataFrame(index=df.index)
+            signals = get_pd().DataFrame(index=df.index)
             signals['price'] = df['현재가']
             signals['volume'] = df.get('당일거래대금', 0)
             
@@ -107,14 +106,14 @@ class DeepLearningBacktestEngine:
                 pca_signals = self._generate_model_signals(
                     self.pca_model, df, 'PCA'
                 )
-                signals = pd.concat([signals, pca_signals], axis=1)
+                signals = get_pd().concat([signals, pca_signals], axis=1)
             
             # 요인분석 모델 신호
             if self.factor_model.model is not None:
                 factor_signals = self._generate_model_signals(
                     self.factor_model, df, 'Factor'
                 )
-                signals = pd.concat([signals, factor_signals], axis=1)
+                signals = get_pd().concat([signals, factor_signals], axis=1)
             
             # 앙상블 신호
             if 'PCA_signal' in signals.columns and 'Factor_signal' in signals.columns:
@@ -130,9 +129,9 @@ class DeepLearningBacktestEngine:
             
         except Exception as e:
             logger.error(f"매매 신호 생성 실패: {e}")
-            return pd.DataFrame()
+            return get_pd().DataFrame()
     
-    def _generate_model_signals(self, model, df: pd.DataFrame, model_name: str) -> pd.DataFrame:
+    def _generate_model_signals(self, model, df: get_pd().DataFrame, model_name: str) -> get_pd().DataFrame:
         """
         개별 모델로 매매 신호 생성
         
@@ -145,7 +144,7 @@ class DeepLearningBacktestEngine:
             신호 DataFrame
         """
         try:
-            signals = pd.DataFrame(index=df.index)
+            signals = get_pd().DataFrame(index=df.index)
             
             # 시퀀스 길이
             sequence_length = model.model.input_shape[1]
@@ -178,23 +177,23 @@ class DeepLearningBacktestEngine:
                 confidences.append(confidence)
             
             # 신호 생성
-            signals[f'{model_name}_prediction'] = np.nan
+            signals[f'{model_name}_prediction'] = get_np().nan
             signals[f'{model_name}_prediction'].iloc[sequence_length:] = predictions
             
             signals[f'{model_name}_signal'] = 0
-            signals[f'{model_name}_signal'].iloc[sequence_length:] = np.where(
-                np.array(predictions) > 0.01, 1,  # 1% 이상 상승 예상: 매수
-                np.where(np.array(predictions) < -0.01, -1, 0)  # 1% 이상 하락 예상: 매도
+            signals[f'{model_name}_signal'].iloc[sequence_length:] = get_np().where(
+                get_np().array(predictions) > 0.01, 1,  # 1% 이상 상승 예상: 매수
+                get_np().where(get_np().array(predictions) < -0.01, -1, 0)  # 1% 이상 하락 예상: 매도
             )
             
-            signals[f'{model_name}_confidence'] = np.nan
+            signals[f'{model_name}_confidence'] = get_np().nan
             signals[f'{model_name}_confidence'].iloc[sequence_length:] = confidences
             
             return signals
             
         except Exception as e:
             logger.error(f"{model_name} 신호 생성 실패: {e}")
-            return pd.DataFrame()
+            return get_pd().DataFrame()
     
     def run_backtest(self, code: str, start_date: str, end_date: str, 
                      initial_capital: float = 10000000, strategy: str = 'ensemble') -> Dict:
@@ -255,7 +254,7 @@ class DeepLearningBacktestEngine:
             logger.error(f"백테스팅 실행 실패: {e}")
             return {}
     
-    def _execute_backtest(self, signals: pd.DataFrame, signal_col: str, 
+    def _execute_backtest(self, signals: get_pd().DataFrame, signal_col: str, 
                           confidence_col: str, initial_capital: float) -> Dict:
         """
         실제 백테스팅 로직 실행
@@ -279,7 +278,7 @@ class DeepLearningBacktestEngine:
             commission_rate = 0.00015  # 0.015%
             
             for i, (timestamp, row) in enumerate(signals.iterrows()):
-                if pd.isna(row[signal_col]) or pd.isna(row[confidence_col]):
+                if get_pd().isna(row[signal_col]) or get_pd().isna(row[confidence_col]):
                     continue
                 
                 price = row['price']
@@ -333,11 +332,11 @@ class DeepLearningBacktestEngine:
             total_return = (final_value - initial_capital) / initial_capital
             
             # 거래 기록
-            trades_df = pd.DataFrame(entries)
+            trades_df = get_pd().DataFrame(entries)
             
             # 최대 낙폭 계산
             if not trades_df.empty:
-                trades_df['portfolio_value'] = np.where(
+                trades_df['portfolio_value'] = get_np().where(
                     trades_df['action'] == 'BUY',
                     initial_capital - trades_df['capital'] - trades_df['commission'],
                     trades_df['capital']
@@ -421,7 +420,7 @@ class DeepLearningBacktestEngine:
         except Exception as e:
             logger.error(f"백테스팅 결과 저장 실패: {e}")
     
-    def compare_strategies(self, code: str, start_date: str, end_date: str) -> pd.DataFrame:
+    def compare_strategies(self, code: str, start_date: str, end_date: str) -> get_pd().DataFrame:
         """
         전략별 성과 비교
         
@@ -448,14 +447,14 @@ class DeepLearningBacktestEngine:
                         'Final Value': f"{result['final_value']:,.0f}"
                     })
             
-            comparison_df = pd.DataFrame(results)
+            comparison_df = get_pd().DataFrame(results)
             logger.info(f"전략 비교 완료: {code}")
             
             return comparison_df
             
         except Exception as e:
             logger.error(f"전략 비교 실패: {e}")
-            return pd.DataFrame()
+            return get_pd().DataFrame()
     
     def get_backtest_report(self, code: str) -> Dict:
         """
@@ -511,7 +510,7 @@ if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     DB_STOCK_BACK_MIN = os.path.join(base_dir, '_database', 'stock_tick_back.db')
     con = sqlite3.connect(DB_STOCK_BACK_MIN)
-    df_ = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df_ = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
     table_list = df_['name'].to_list()
     table_list.remove('moneytop')
     table_list.remove('stockinfo')

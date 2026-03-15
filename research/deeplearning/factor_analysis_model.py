@@ -7,7 +7,6 @@ import joblib
 import logging
 import warnings
 import matplotlib
-import pandas as pd
 import tensorflow as tf
 from datetime import datetime
 from tensorflow.keras.models import Model
@@ -17,6 +16,7 @@ from tensorflow.keras.layers import (
     LayerNormalization, GlobalAveragePooling1D, LSTM, GRU
 )
 from tensorflow.keras.optimizers import Adam
+from utility.lazy_imports import get_pd
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from multiprocessing_utils import parallel_train_factor_analysis, process_results, print_top_predictions
 
@@ -451,7 +451,7 @@ class FactorAnalysisModel:
             loadings_path = os.path.join(self.model_dir, f'{code}_loadings_{timestamp}.csv')
             if os.path.exists(loadings_path):
                 # noinspection PyArgumentList
-                self.loadings = pd.read_csv(loadings_path, index_col=0)
+                self.loadings = get_pd().read_csv(loadings_path, index_col=0)
             
             return True
             
@@ -469,7 +469,7 @@ if __name__ == "__main__":
     
     try:
         con = sqlite3.connect(DB_STOCK_BACK_MIN)
-        df_ = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df_ = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df_['name'].to_list()
         table_list.remove('moneytop')
         table_list.remove('stockinfo')

@@ -11,20 +11,27 @@ from ui.ui_draw_chart_items import CandlestickItem, VolumeBarItem, AreaItem
 class DrawChartBase:
     def __init__(self, ui):
         self.ui         = ui
+
         self.last       = 0
         self.xmin       = 0
         self.xmax       = 0
+        self.ymin       = 0
+        self.ymax       = 0
         self.chart_cnt  = 0
+
         self.code       = None
         self.gubun      = None
         self.hms        = None
         self.len_list   = None
         self.dict_idxs  = None
         self.gsjm_arry  = None
+
         self.real       = False
         self.is_min     = False
         self.same_time  = False
+
         self.crosshair  = CrossHair(self.ui)
+
         self.rgb_red    = (200, 100, 100)
         self.rgb_blue   = (100, 100, 200)
         self.rgb_green  = (100, 200, 100)
@@ -200,33 +207,33 @@ class DrawChartBase:
             if factor == '현재가':
                 if self.is_min:
                     fidx1, fidx2, fidx3, fidx4 = self.fi('현재가'), self.fi('분봉시가'), self.fi('분봉고가'), self.fi('분봉저가')
-                    ymax = self.ui.ctpg_data[fidx3].max()
-                    ymin = self.ui.ctpg_data[fidx4].min()
-                    self.draw_area(i, ymin, ymax)
+                    self.ymax = self.ui.ctpg_data[fidx3].max()
+                    self.ymin = self.ui.ctpg_data[fidx4].min()
+                    self.draw_area(i)
                     for idx, color in zip(self.dict_idxs[factor], self.sma_colors):
                         self.draw_line(i, idx, color)
                     self.draw_formula(i, factor)
                     self.draw_candlestick(i, fidx1, fidx2, fidx3, fidx4)
-                    self.draw_infinite_line(i, fidx1)
+                    if self.real: self.draw_infinite_line(i, fidx1)
                 else:
                     fidx = self.fi('현재가')
-                    ymax = self.ui.ctpg_data[fidx].max()
-                    ymin = self.ui.ctpg_data[fidx].min()
-                    self.draw_area(i, ymin, ymax)
+                    self.ymax = self.ui.ctpg_data[fidx].max()
+                    self.ymin = self.ui.ctpg_data[fidx].min()
+                    self.draw_area(i)
                     for idx, color in zip(self.dict_idxs[factor], self.sma_colors):
                         self.draw_line(i, idx, color)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx, self.rgb_red)
-                    self.draw_infinite_line(i, fidx)
+                    if self.real: self.draw_infinite_line(i, fidx)
 
                 if not self.real:
                     self.draw_buy_or_sell_point(i)
 
             elif factor in ('초당거래대금', '분당거래대금'):
                 fidx1, fidx2 = self.fi(factor), self.fi(f'{factor}평균')
-                ymax = self.ui.ctpg_data[fidx1].max()
-                ymin = self.ui.ctpg_data[fidx2].min()
-                self.draw_area(i, ymin, ymax)
+                self.ymax = self.ui.ctpg_data[fidx1].max()
+                self.ymin = self.ui.ctpg_data[fidx2].min()
+                self.draw_area(i)
                 self.draw_formula(i, factor)
                 if self.is_min:
                     fidx3, fidx4 = self.fi('현재가'), self.fi('분봉시가')
@@ -238,9 +245,9 @@ class DrawChartBase:
             elif factor in ('초당체결수량', '분당체결수량', '누적초당매도수수량', '누적분당매도수수량', '초당매도수금액', '분당매도수금액',
                             '당일매도수금액', '최고매도수금액', '최고매도수가격', '호가총잔량', '매도수호가잔량1'):
                 fidx1, fidx2 = self.dict_idxs[factor]
-                ymax = max(self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
-                ymin = min(self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
-                self.draw_area(i, ymin, ymax)
+                self.ymax = max(self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
+                self.ymin = min(self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
+                self.draw_area(i)
                 self.draw_formula(i, factor)
                 self.draw_line(i, fidx1, self.rgb_blue)
                 self.draw_line(i, fidx2, self.rgb_red)
@@ -248,40 +255,40 @@ class DrawChartBase:
             elif factor == '체결강도':
                 try:
                     fidx1, fidx2, fidx3, fidx4 = self.fi('체결강도'), self.fi('최고체결강도'), self.fi('최저체결강도'), self.fi('체결강도평균')
-                    ymax = max(self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
-                    ymin = min(self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx3].min())
-                    self.draw_area(i, ymin, ymax)
+                    self.ymax = max(self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
+                    self.ymin = min(self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx3].min())
+                    self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx4, self.rgb_dgray)
                     self.draw_line(i, fidx3, self.rgb_red)
                     self.draw_line(i, fidx2, self.rgb_blue)
                     self.draw_line(i, fidx1, self.rgb_green)
                 except:
-                    ymax, ymin = 0, 0
+                    self.ymax, self.ymin = 0, 0
 
             elif factor in ('AROON', 'DMI'):
                 fidx1, fidx2 = self.dict_idxs[factor]
-                ymax = self.ui.ctpg_data[fidx1].max()
-                ymin = self.ui.ctpg_data[fidx2].min()
-                self.draw_area(i, ymin, ymax)
+                self.ymax = self.ui.ctpg_data[fidx1].max()
+                self.ymin = self.ui.ctpg_data[fidx2].min()
+                self.draw_area(i)
                 self.draw_formula(i, factor)
                 self.draw_line(i, fidx2, self.rgb_blue)
                 self.draw_line(i, fidx1, self.rgb_red)
 
             elif factor in ('STOCHS', 'STOCHF'):
                 fidx1, fidx2 = self.dict_idxs[factor]
-                ymax = self.ui.ctpg_data[fidx2].max()
-                ymin = self.ui.ctpg_data[fidx1].min()
-                self.draw_area(i, ymin, ymax)
+                self.ymax = self.ui.ctpg_data[fidx2].max()
+                self.ymin = self.ui.ctpg_data[fidx1].min()
+                self.draw_area(i)
                 self.draw_formula(i, factor)
                 self.draw_line(i, fidx2, self.rgb_red)
                 self.draw_line(i, fidx1, self.rgb_green)
 
             elif factor == 'BBAND':
                 fidx1, fidx2, fidx3, fidx4 = self.fi('현재가'), self.fi('BBU'), self.fi('BBL'), self.fi('BBM')
-                ymax = max(self.ui.ctpg_data[fidx2].max(), self.ui.ctpg_data[fidx1].max())
-                ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min())
-                self.draw_area(i, ymin, ymax)
+                self.ymax = max(self.ui.ctpg_data[fidx2].max(), self.ui.ctpg_data[fidx1].max())
+                self.ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min())
+                self.draw_area(i)
                 self.draw_formula(i, factor)
                 self.draw_line(i, fidx4, self.rgb_gray)
                 self.draw_line(i, fidx3, self.rgb_blue)
@@ -290,9 +297,9 @@ class DrawChartBase:
 
             elif factor == 'MACD':
                 fidx1, fidx2, fidx3 = self.fi('MACDS'), self.fi('MACDH'), self.fi('MACD')
-                ymax = max(self.ui.ctpg_data[fidx3].max(), self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
-                ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
-                self.draw_area(i, ymin, ymax)
+                self.ymax = max(self.ui.ctpg_data[fidx3].max(), self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
+                self.ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
+                self.draw_area(i)
                 self.draw_formula(i, factor)
                 self.draw_line(i, fidx3, self.rgb_gray)
                 self.draw_line(i, fidx2, self.rgb_red)
@@ -307,15 +314,15 @@ class DrawChartBase:
                             color = self.rgb_cyan
                         elif self.gubun == 'S' and fidx > 67:
                             color = self.rgb_cyan
-                    ymax = self.ui.ctpg_data[fidx].max()
-                    ymin = self.ui.ctpg_data[fidx].min()
-                    self.draw_area(i, ymin, ymax)
+                    self.ymax = self.ui.ctpg_data[fidx].max()
+                    self.ymin = self.ui.ctpg_data[fidx].min()
+                    self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx, color)
                 else:
-                    ymax, ymin = 0, 0
+                    self.ymax, self.ymin = 0, 0
 
-            self.draw_legend(i, ymin, ymax)
+            self.draw_legend(i)
             if i == self.chart_cnt - 1: break
 
         if not self.same_time and self.ui.ct_checkBoxxxxx_01.isChecked():
@@ -368,43 +375,40 @@ class DrawChartBase:
             self.ui.ctpg_cline.setPos(self.ui.ctpg_data[fidx1][-1])
             self.ui.ctpg[i].addItem(self.ui.ctpg_cline)
 
-    def draw_area(self, i, ymin, ymax):
+    def draw_area(self, i):
         if self.same_time:
             last_area = self.ui.ctpg_item[0]
             self.ui.ctpg[i].removeItem(last_area)
-            last_area = AreaItem(self.gsjm_arry, ymin, ymax, self.ui.ctpg_xticks, gubun=2)
-            self.ui.ctpg[i].addItem(last_area)
+            last_area = AreaItem(self.gsjm_arry, self.ymin, self.ymax, self.ui.ctpg_xticks, gubun=2)
         else:
-            self.ui.ctpg[i].addItem(AreaItem(self.gsjm_arry, ymin, ymax, self.ui.ctpg_xticks, gubun=1))
-            last_area = AreaItem(self.gsjm_arry, ymin, ymax, self.ui.ctpg_xticks, gubun=2)
-            self.ui.ctpg_item[0] = last_area
-            self.ui.ctpg[i].addItem(last_area)
+            self.ui.ctpg[i].addItem(AreaItem(self.gsjm_arry, self.ymin, self.ymax, self.ui.ctpg_xticks, gubun=1))
+            last_area = AreaItem(self.gsjm_arry, self.ymin, self.ymax, self.ui.ctpg_xticks, gubun=2)
+        self.ui.ctpg_item[0] = last_area
+        self.ui.ctpg[i].addItem(last_area)
 
     def draw_candlestick(self, i, fidx1, fidx2, fidx3, fidx4):
         if self.same_time:
             last_candlestick = self.ui.ctpg_item[fidx1]
             self.ui.ctpg[i].removeItem(last_candlestick)
             last_candlestick = CandlestickItem(self.ui.ctpg_arry, [fidx1, fidx2, fidx3, fidx4], self.ui.ctpg_xticks, gubun=2)
-            self.ui.ctpg[i].addItem(last_candlestick)
         else:
             self.ui.ctpg[i].addItem(CandlestickItem(self.ui.ctpg_arry, [fidx1, fidx2, fidx3, fidx4], self.ui.ctpg_xticks, gubun=1))
             last_candlestick = CandlestickItem(self.ui.ctpg_arry, [fidx1, fidx2, fidx3, fidx4], self.ui.ctpg_xticks, gubun=2)
-            self.ui.ctpg_item[fidx1] = last_candlestick
-            self.ui.ctpg[i].addItem(last_candlestick)
+        self.ui.ctpg_item[fidx1] = last_candlestick
+        self.ui.ctpg[i].addItem(last_candlestick)
 
     def draw_volumebar(self, i, fidx1, fidx3, fidx4):
         if self.same_time:
             last_volumebar = self.ui.ctpg_item[fidx1]
             self.ui.ctpg[i].removeItem(last_volumebar)
             last_volumebar = VolumeBarItem(self.ui.ctpg_arry, [fidx3, fidx4, fidx1], self.ui.ctpg_xticks, gubun=2)
-            self.ui.ctpg[i].addItem(last_volumebar)
         else:
             self.ui.ctpg[i].addItem(VolumeBarItem(self.ui.ctpg_arry, [fidx3, fidx4, fidx1], self.ui.ctpg_xticks, gubun=1))
             last_volumebar = VolumeBarItem(self.ui.ctpg_arry, [fidx3, fidx4, fidx1], self.ui.ctpg_xticks, gubun=2)
-            self.ui.ctpg_item[fidx1] = last_volumebar
-            self.ui.ctpg[i].addItem(last_volumebar)
+        self.ui.ctpg_item[fidx1] = last_volumebar
+        self.ui.ctpg[i].addItem(last_volumebar)
 
-    def draw_legend(self, i, ymin, ymax):
+    def draw_legend(self, i):
         if self.same_time:
             if self.ui.ct_checkBoxxxxx_01.isChecked():
                 self.ui.ctpg_labels[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][0])
@@ -415,16 +419,16 @@ class DrawChartBase:
                 legend = pg.TextItem(anchor=(0, 0), color=color_fg_bt, border=color_bg_bt, fill=color_bg_ld)
                 legend.setText(get_label_text(self.ui, True, self.gubun, self.code, self.is_min, -1, self.ui.ctpg_factors[i], self.hms))
                 legend.setFont(qfont12)
-                legend.setPos(self.xmax, ymax)
+                legend.setPos(self.xmax, self.ymax)
                 self.ui.ctpg[i].addItem(legend)
                 self.ui.ctpg_legend[i] = legend
 
             self.ui.ctpg_cvb[i].linkX(self.ui.ctpg_cvb[0])
-            self.ui.ctpg_cvb[i].set_range(self.xmin, self.xmax, ymin, ymax)
+            self.ui.ctpg_cvb[i].set_range(self.xmin, self.xmax, self.ymin, self.ymax)
 
             if not self.ui.ctpg_cvb[0].is_zoomin():
                 self.ui.ctpg[i].setXRange(self.xmin, self.xmax, padding=0.01)
-                self.ui.ctpg[i].setYRange(ymin, ymax, padding=0.03)
+                self.ui.ctpg[i].setYRange(self.ymin, self.ymax, padding=0.03)
 
             if self.real or self.ui.ct_checkBoxxxxx_02.isChecked():
                 self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
@@ -463,11 +467,10 @@ class DrawChartBase:
             if price > 0:
                 arrow = pg.ArrowItem(angle=style_angle[style], tipAngle=60, headLen=width, pen='w', brush=color)
                 arrow.setPos(self.ui.ctpg_xticks[-1], price)
-                self.ui.ctpg[i].addItem(arrow)
             else:
                 arrow = pg.TextItem()
-                self.ui.ctpg[i].addItem(arrow)
-
+            self.ui.ctpg_item[col_idx] = arrow
+            self.ui.ctpg[i].addItem(arrow)
         else:
             arrow_data = [(j, price) for j, price in enumerate(arry) if price > 0]
             for j, price in arrow_data:
@@ -475,16 +478,15 @@ class DrawChartBase:
                     arrow = pg.ArrowItem(angle=style_angle[style], tipAngle=60, headLen=width, pen='w', brush=color)
                     arrow.setPos(self.ui.ctpg_xticks[j], price)
                     self.ui.ctpg[i].addItem(arrow)
+
             price = arry[-1]
             if price > 0:
                 arrow = pg.ArrowItem(angle=style_angle[style], tipAngle=60, headLen=width, pen='w', brush=color)
                 arrow.setPos(self.ui.ctpg_xticks[-1], price)
-                self.ui.ctpg_item[col_idx] = arrow
-                self.ui.ctpg[i].addItem(arrow)
             else:
-                dummy = pg.TextItem()
-                self.ui.ctpg_item[col_idx] = dummy
-                self.ui.ctpg[i].addItem(dummy)
+                arrow = pg.TextItem()
+            self.ui.ctpg_item[col_idx] = arrow
+            self.ui.ctpg[i].addItem(arrow)
 
     def draw_fm_area(self, i, col_idx, color):
         arry = self.ui.ctpg_data[col_idx]
@@ -503,10 +505,10 @@ class DrawChartBase:
                 color_with_alpha.setAlpha(100)
                 fill_item = pg.FillBetweenItem(upper_curve, lower_curve, brush=color_with_alpha)
                 fill_item.setZValue(1000)
-                self.ui.ctpg[i].addItem(fill_item)
             else:
                 fill_item = pg.TextItem()
-                self.ui.ctpg[i].addItem(fill_item)
+            self.ui.ctpg_item[col_idx] = fill_item
+            self.ui.ctpg[i].addItem(fill_item)
         else:
             segments = []
             segment = []
@@ -558,12 +560,10 @@ class DrawChartBase:
                 color_with_alpha.setAlpha(100)
                 fill_item = pg.FillBetweenItem(upper_curve, lower_curve, brush=color_with_alpha)
                 fill_item.setZValue(1000)
-                self.ui.ctpg_item[col_idx] = fill_item
-                self.ui.ctpg[i].addItem(fill_item)
             else:
-                dummy = pg.TextItem()
-                self.ui.ctpg_item[col_idx] = dummy
-                self.ui.ctpg[i].addItem(dummy)
+                fill_item = pg.TextItem()
+            self.ui.ctpg_item[col_idx] = fill_item
+            self.ui.ctpg[i].addItem(fill_item)
 
     def insert_crosshair(self):
         if self.chart_cnt == 6:

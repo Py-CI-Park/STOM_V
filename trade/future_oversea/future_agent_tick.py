@@ -3,13 +3,12 @@ import os
 import sys
 import sqlite3
 import datetime
-import numpy as np
-import pandas as pd
 from traceback import format_exc
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from utility.lazy_imports import get_np, get_pd
 from utility.setting_base import ui_num, DB_CODE_INFO, DB_TRADELIST, DB_FUTURE_TICK, DB_FUTURE_MIN
 from utility.static import now, str_hms_cme_from_str, qtest_qwait, opstarter_kill, str_ymd, now_cme, str_hms, \
     timedelta_sec
@@ -152,7 +151,7 @@ class FutureAgentTick:
         self.str_account = self.GetAccountNumber()
 
         con = sqlite3.connect(DB_CODE_INFO)
-        df = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
+        df = get_pd().read_sql('SELECT * FROM futureinfo', con).set_index('index')
         con.close()
         self.dict_info = df.to_dict('index')
 
@@ -168,7 +167,7 @@ class FutureAgentTick:
                     nnext = self.tr_next
                 else:
                     break
-        df = pd.concat(df_list)
+        df = get_pd().concat(df_list)
         df = df[df['거래소'] == 'CME']
         df.set_index('종목코드', inplace=True)
 
@@ -190,7 +189,7 @@ class FutureAgentTick:
                     '종목명': df['종목명'][code],
                     '위탁증거금': int(df['위탁증거금'][code] / 100),
                     '호가단위': tick_unit,
-                    '틱가치': np.round(df['틱가치'][code] / 1000 / tick_unit, 2),
+                    '틱가치': round(df['틱가치'][code] / 1000 / tick_unit, 2),
                     '소숫점자리수': point_cnt
                 }
             qtest_qwait(0.25)
@@ -201,7 +200,7 @@ class FutureAgentTick:
         self.straderQ.put(('종목정보', self.dict_info))
         self.sstgQ.put(('종목정보', self.dict_info))
 
-        df = pd.DataFrame.from_dict(self.dict_info, orient='index')
+        df = get_pd().DataFrame.from_dict(self.dict_info, orient='index')
         self.mgzservQ.put(('query', ('종목디비', df, 'futureinfo', 'replace')))
         self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 종목 정보 검색 완료')))
 
@@ -393,7 +392,7 @@ class FutureAgentTick:
         tasks += asks_
 
         # noinspection PyTypeChecker
-        ch = min(500, np.round(tbids / tasks * 100, 2)) if tasks > 0 else 500
+        ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
 
         self.dict_hgbs[code] = (csp, cbp)
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
@@ -462,8 +461,8 @@ class FutureAgentTick:
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -484,8 +483,8 @@ class FutureAgentTick:
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
  
@@ -504,8 +503,8 @@ class FutureAgentTick:
 
             tm = dm - code_dtdm[1]
             if tm == dm and 93500 < int(str(dt)[8:]): tm = 0
-            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
-            lhp  = np.round((h / low - 1) * 100, 2)
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             logt = now() if self.int_logt < dt_min else 0
 
@@ -595,14 +594,14 @@ class FutureAgentTick:
         dict_jg = None
         if self.dict_set['주식모의투자']:
             con = sqlite3.connect(DB_TRADELIST)
-            df = pd.read_sql('SELECT * FROM f_tradelist', con)
+            df = get_pd().read_sql('SELECT * FROM f_tradelist', con)
             con.close()
             yesugm = 1_000_000_000 + df['수익금'].sum()
             if yesugm < 1_000_000_000: yesugm = 1_000_000_000
         else:
             df = self.GetBalances(self.str_account, self.str_pass)
             df.set_index('통화코드', inplace=True)
-            yesugm = np.round(df['원화대용평가금액']['USD'] / 100, 2) if len(df) > 0 else 0
+            yesugm = round(df['원화대용평가금액']['USD'] / 100, 2) if len(df) > 0 else 0
 
             df = self.GetJango(self.str_account, self.str_pass)
             if len(df) > 0:
@@ -643,12 +642,12 @@ class FutureAgentTick:
             con = sqlite3.connect(DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN)
             last_index = 0
             try:
-                df = pd.read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
+                df = get_pd().read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
                 last_index = df['index'][0]
             except:
                 pass
             dict_mtop = {key: value for key, value in self.dict_mtop.items() if key > last_index}
-            df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
+            df = get_pd().DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
             self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 데이터수집목록 저장 완료')))
@@ -733,8 +732,8 @@ class FutureAgentTick:
                 row_data.append(data.strip())
             data_list.append(row_data)
 
-        self.tr_df = pd.DataFrame(data_list, columns=columns)
-        self.tr_df = self.tr_df.replace('', pd.NA)
+        self.tr_df = get_pd().DataFrame(data_list, columns=columns)
+        self.tr_df = self.tr_df.replace('', get_pd().NA)
         self.tr_df = self.tr_df.dropna()
         if len(self.tr_df) > 0:
             if trcode == 'opw50004':
@@ -756,7 +755,7 @@ class FutureAgentTick:
                 self.tr_df['포지션'] = self.tr_df['포지션'].apply(lambda x: 'LONG' if x == '매수' else 'SHORT')
         self.dict_bool['TR수신'] = True
 
-    def GetBalances(self, acc_num: str, pass_num: str) -> pd.DataFrame:
+    def GetBalances(self, acc_num: str, pass_num: str) -> get_pd().DataFrame:
         self.dict_bool['TR수신'] = False
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '계좌번호', acc_num)
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '비밀번호', pass_num)
@@ -767,7 +766,7 @@ class FutureAgentTick:
             qtest_qwait(0.01)
         return self.tr_df
 
-    def GetJango(self, acc_num: str, pass_num: str) -> pd.DataFrame:
+    def GetJango(self, acc_num: str, pass_num: str) -> get_pd().DataFrame:
         self.dict_bool['TR수신'] = False
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '계좌번호', acc_num)
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '비밀번호', pass_num)
@@ -779,7 +778,7 @@ class FutureAgentTick:
             qtest_qwait(0.01)
         return self.tr_df
 
-    def SearchDeposit(self, gubun: str, nnext: str) -> pd.DataFrame:
+    def SearchDeposit(self, gubun: str, nnext: str) -> get_pd().DataFrame:
         self.dict_bool['TR수신'] = False
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '품목구분', gubun)
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '해외파생구분', 'FU')
@@ -790,7 +789,7 @@ class FutureAgentTick:
             qtest_qwait(0.01)
         return self.tr_df
 
-    def SearchInterest(self, codes: str) -> pd.DataFrame:
+    def SearchInterest(self, codes: str) -> get_pd().DataFrame:
         self.dict_bool['TR수신'] = False
         self.ocx.dynamicCall('SetInputValue(QString, QString)', '종목코드', codes)
         self.ocx.dynamicCall('CommRqData(QString, QString, QString, QString)', '관심종목조회', 'opt10005', '', 1000)

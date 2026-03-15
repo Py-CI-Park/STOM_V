@@ -7,26 +7,7 @@ from ui.set_text import famous_saying
 from utility.static import qtest_qwait, strf_time, error_decorator
 from utility.setting_base import columns_nt, ui_num, columns_nd
 from backtest.back_static import RunOptunaServer
-
-
-_pd = None
-_np = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
-
-
-def get_np():
-    global _np
-    if _np is None:
-        import numpy as np
-        _np = np
-    return _np
+from utility.lazy_imports import get_pd
 
 
 # noinspection PyUnusedLocal
@@ -64,7 +45,7 @@ def ttbutton_clicked_01(ui, cmd):
             nsp = 100
             for sp in df['수익률'].to_list()[::-1]:
                 nsp = nsp + nsp * sp / 100
-            nsp = get_np().round(nsp - 100, 2)
+            nsp = round(nsp - 100, 2)
             nbg, nsg = df['총매수금액'].sum(), df['총매도금액'].sum()
             npg, nmg = df['총수익금액'].sum(), df['총손실금액'].sum()
             nsig = df['수익금합계'].sum()
@@ -87,7 +68,7 @@ def ttbutton_clicked_01(ui, cmd):
                 df3 = df[df['연월'] == month]
                 if len(df3) > 0:
                     tbg, tsg = df3['총매수금액'].sum(), df3['총매도금액'].sum()
-                    sp = get_np().round((tsg / tbg - 1) * 100, 2)
+                    sp = round((tsg / tbg - 1) * 100, 2)
                     tpg, tmg = df3['총수익금액'].sum(), df3['총손실금액'].sum()
                     ttsg = df3['수익금합계'].sum()
                     df2.loc[month] = [month, tbg, tsg, tpg, tmg, sp, ttsg]
@@ -102,7 +83,7 @@ def ttbutton_clicked_01(ui, cmd):
                 df3 = df[df['연도'] == year]
                 if len(df3) > 0:
                     tbg, tsg = df3['총매수금액'].sum(), df3['총매도금액'].sum()
-                    sp = get_np().round((tsg / tbg - 1) * 100, 2)
+                    sp = round((tsg / tbg - 1) * 100, 2)
                     tpg, tmg = df3['총수익금액'].sum(), df3['총손실금액'].sum()
                     ttsg = df3['수익금합계'].sum()
                     df2.loc[year] = [year, tbg, tsg, tpg, tmg, sp, ttsg]

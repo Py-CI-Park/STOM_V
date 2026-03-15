@@ -21,29 +21,10 @@ from backtest.backengine_binance_tick2 import BackEngineBinanceTick2
 from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
+from utility.lazy_imports import get_np, get_pd
 from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec, error_decorator
 from utility.setting_base import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
     DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, DB_STRATEGY
-
-
-_pd = None
-_np = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
-
-
-def get_np():
-    global _np
-    if _np is None:
-        import numpy as np
-        _np = np
-    return _np
 
 
 @error_decorator
@@ -107,59 +88,53 @@ def backengine_start(ui, gubun):
     ui.multi      = multi
     ui.divid_mode = divid_mode
 
+    ui.shared_cnt  = Value('i', 0)
+    ui.shared_lock = Lock()
+
     for i in range(20):
-        bctq = Queue()
-        ui.back_sques.append(bctq)
+        bsq = Queue()
+        ui.back_sques.append(bsq)
+
+    for i in range(multi):
+        beq = Queue()
+        ui.back_eques.append(beq)
+
+    if gubun == '주식':
+        if not ui.dict_set['백테주문관리적용']:
+            target = BackEngineKiwoomTick if ui.dict_set['주식타임프레임'] else BackEngineKiwoomMin
+        else:
+            target = BackEngineKiwoomTick2 if ui.dict_set['주식타임프레임'] else BackEngineKiwoomMin2
+    elif gubun == '해선':
+        if not ui.dict_set['백테주문관리적용']:
+            target = BackEngineFutureTick if ui.dict_set['주식타임프레임'] else BackEngineFutureMin
+        else:
+            target = BackEngineFutureTick2 if ui.dict_set['주식타임프레임'] else BackEngineFutureMin2
+    else:
+        if ui.dict_set['거래소'] == '업비트':
+            if not ui.dict_set['백테주문관리적용']:
+                target = BackEngineUpbitTick if ui.dict_set['코인타임프레임'] else BackEngineUpbitMin
+            else:
+                target = BackEngineUpbitTick2 if ui.dict_set['코인타임프레임'] else BackEngineUpbitMin2
+        else:
+            if not ui.dict_set['백테주문관리적용']:
+                target = BackEngineBinanceTick if ui.dict_set['코인타임프레임'] else BackEngineBinanceMin
+            else:
+                target = BackEngineBinanceTick2 if ui.dict_set['코인타임프레임'] else BackEngineBinanceMin2
+
     for i in range(20):
         proc = Process(target=BackSubTotal, args=(i, ui.totalQ, ui.back_sques, ui.dict_set['백테매수시간기준']), daemon=True)
         proc.start()
         ui.back_sprocs.append(proc)
         ui.windowQ.put((ui_num['백테엔진'], f'중간집계 프로세스{i + 1} 생성 완료'))
 
-    ui.shared_cnt  = Value('i', 0)
-    ui.shared_lock = Lock()
-
     for i in range(multi):
-        beq = Queue()
-        ui.back_eques.append(beq)
-
-    for i in range(multi):
-        if gubun == '주식':
-            if not ui.dict_set['백테주문관리적용']:
-                target = BackEngineKiwoomTick if ui.dict_set['주식타임프레임'] else BackEngineKiwoomMin
-            else:
-                target = BackEngineKiwoomTick2 if ui.dict_set['주식타임프레임'] else BackEngineKiwoomMin2
-        elif gubun == '해선':
-            if not ui.dict_set['백테주문관리적용']:
-                target = BackEngineFutureTick if ui.dict_set['주식타임프레임'] else BackEngineFutureMin
-            else:
-                target = BackEngineFutureTick2 if ui.dict_set['주식타임프레임'] else BackEngineFutureMin2
-        else:
-            if ui.dict_set['거래소'] == '업비트':
-                if not ui.dict_set['백테주문관리적용']:
-                    target = BackEngineUpbitTick if ui.dict_set['코인타임프레임'] else BackEngineUpbitMin
-                else:
-                    target = BackEngineUpbitTick2 if ui.dict_set['코인타임프레임'] else BackEngineUpbitMin2
-            else:
-                if not ui.dict_set['백테주문관리적용']:
-                    target = BackEngineBinanceTick if ui.dict_set['코인타임프레임'] else BackEngineBinanceMin
-                else:
-                    target = BackEngineBinanceTick2 if ui.dict_set['코인타임프레임'] else BackEngineBinanceMin2
-
-        if i == 0 and ui.dict_set['백테엔진프로파일링']:
-            proc = Process(
-                target=target,
-                args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques,
-                      ui.dict_set, True),
-                daemon=True
-            )
-        else:
-            proc = Process(
-                target=target,
-                args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques,
-                      ui.dict_set),
-                daemon=True
-            )
+        profiling = i == 0 and ui.dict_set['백테엔진프로파일링']
+        proc = Process(
+            target=target,
+            args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ,
+                  ui.back_eques, ui.back_sques, ui.dict_set, profiling),
+            daemon=True
+        )
         proc.start()
         ui.back_eprocs.append(proc)
         ui.windowQ.put((ui_num['백테엔진'], f'엔진 프로세스{i + 1} 생성 완료'))

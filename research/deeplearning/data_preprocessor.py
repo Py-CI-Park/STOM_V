@@ -7,8 +7,7 @@ import os
 import sqlite3
 import logging
 import warnings
-import numpy as np
-import pandas as pd
+from utility.lazy_imports import get_np, get_pd
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA, FactorAnalysis
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
@@ -75,7 +74,7 @@ class DataPreprocessor:
             
             query += f' ORDER BY "index" LIMIT {limit}'
             
-            df = pd.read_sql(query, conn)
+            df = get_pd().read_sql(query, conn)
             conn.close()
             
             if df.empty:
@@ -84,9 +83,9 @@ class DataPreprocessor:
 
             # 전처리
             if '초당거래대금' in df.columns:
-                df['index'] = pd.to_datetime(df['index'], format='%Y%m%d%H%M%S')
+                df['index'] = get_pd().to_datetime(df['index'], format='%Y%m%d%H%M%S')
             else:
-                df['index'] = pd.to_datetime(df['index'], format='%Y%m%d%H%M')
+                df['index'] = get_pd().to_datetime(df['index'], format='%Y%m%d%H%M')
             df.set_index('index', inplace=True)
 
             # 필요없는 칼럼 제거
@@ -101,7 +100,7 @@ class DataPreprocessor:
             df.drop(columns=del_columns, inplace=True)
 
             # 결측치 처리
-            df = df.replace([np.inf, -np.inf], np.nan)
+            df = df.replace([get_np().inf, -get_np().inf], get_np().nan)
             df = df.ffill().bfill()
             
             logger.info(f"데이터 로드 완료: {code}, shape: {df.shape}")
@@ -196,7 +195,7 @@ class DataPreprocessor:
             
         try:
             # 수치형 컬럼만 선택
-            numeric_cols = df.select_dtypes(include=[np.number]).columns
+            numeric_cols = df.select_dtypes(include=[get_np().number]).columns
             
             # 표준화
             scaled_data = self.scaler.fit_transform(df[numeric_cols])
@@ -207,11 +206,11 @@ class DataPreprocessor:
             
             # 주성분 DataFrame 생성
             pca_cols = [f'PC_{i+1}' for i in range(n_components)]
-            pca_df = pd.DataFrame(pca_data, columns=pca_cols, index=df.index)
+            pca_df = get_pd().DataFrame(pca_data, columns=pca_cols, index=df.index)
             
             # 설명력 계산
             explained_variance = pca.explained_variance_ratio_
-            cumulative_variance = np.cumsum(explained_variance)
+            cumulative_variance = get_np().cumsum(explained_variance)
             
             logger.info(f"PCA 완료 - 설명력: {cumulative_variance[-1]:.3f}")
             
@@ -237,7 +236,7 @@ class DataPreprocessor:
             
         try:
             # 수치형 컬럼만 선택
-            numeric_cols = df.select_dtypes(include=[np.number]).columns
+            numeric_cols = df.select_dtypes(include=[get_np().number]).columns
             
             # 표준화
             scaled_data = self.scaler.fit_transform(df[numeric_cols])
@@ -251,10 +250,10 @@ class DataPreprocessor:
             
             # 요인점수 DataFrame 생성
             factor_cols = [f'Factor_{i+1}' for i in range(n_factors)]
-            factor_df = pd.DataFrame(factor_scores, columns=factor_cols, index=df.index)
+            factor_df = get_pd().DataFrame(factor_scores, columns=factor_cols, index=df.index)
             
             # 요인부하량
-            loadings = pd.DataFrame(
+            loadings = get_pd().DataFrame(
                 fa.components_.T,
                 index=numeric_cols,
                 columns=factor_cols
@@ -309,8 +308,8 @@ class DataPreprocessor:
                 return_rate = (future_price - current_price) / current_price
                 y.append(return_rate)
             
-            X = np.array(X)
-            y = np.array(y)
+            X = get_np().array(X)
+            y = get_np().array(y)
             
             logger.info(f"시퀀스 데이터 생성 완료 - X: {X.shape}, y: {y.shape}")
             
