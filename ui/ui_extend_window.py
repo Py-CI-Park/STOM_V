@@ -5,7 +5,7 @@ from utility.static import error_decorator
 
 @error_decorator
 def extend_window(ui):
-    if ui.main_btn not in (2, 3):
+    if ui.main_btn not in (3, 4):
         QMessageBox.critical(ui, '오류 알림', '전략탭 확장기능은 전략탭에서만 사용할 수 있습니다.')
         return
 
@@ -20,7 +20,7 @@ def extend_window(ui):
         ui.image_label2.setVisible(False)
         ui.progressBarrr.setGeometry(5, 545, 35, 212)
 
-    if ui.main_btn == 2:
+    if ui.main_btn == 3:
         ui.ss_tab.setGeometry(45, 0, 1353, 1362 if ui.extend_window else 757)
         if ui.ss_pushButtonn_08.isVisible():
             ui.ss_textEditttt_09.setGeometry(7, 10, 1000, 1313 if ui.extend_window else 703)

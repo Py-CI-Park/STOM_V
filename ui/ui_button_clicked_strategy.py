@@ -44,7 +44,7 @@ def strategy_custom_dialog_show(ui):
 
 @error_decorator
 def button_clicked_strategy(ui, cmd):
-    if ui.main_btn not in (2, 3):
+    if ui.main_btn not in (3, 4):
         QMessageBox.critical(ui.dialog_strategy, '오류 알림', '전략버튼은 전략탭에서만 사용할 수 있습니다.')
         return
 

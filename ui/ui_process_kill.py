@@ -33,7 +33,13 @@ def process_kill(ui):
 
     if ui.zmqserv.isRunning(): ui.zmqserv.stop()
     if ui.zmqrecv.isRunning(): ui.zmqrecv.stop()
-    ui.windowQ.put((ui_num['시스템로그'], 'QThread process terminate completed'))
+    ui.windowQ.put((ui_num['시스템로그'], 'QThread stop completed'))
+
+    if ui.qtimer0.isActive(): ui.qtimer0.stop()
+    if ui.qtimer1.isActive(): ui.qtimer1.stop()
+    if ui.qtimer2.isActive(): ui.qtimer2.stop()
+    if ui.qtimer3.isActive(): ui.qtimer3.stop()
+    ui.windowQ.put((ui_num['시스템로그'], 'QTimer stop completed'))
 
     if ui.dialog_db.isVisible():         ui.dialog_db.close()
     if ui.dialog_web.isVisible():        ui.dialog_web.close()
@@ -102,7 +108,6 @@ def process_kill(ui):
         ui.queryQ.put(('설정디비', query))
 
     ui.windowQ.put((ui_num['시스템로그'], 'Etc setting save completed'))
-    opstarter_kill()
 
     ui.queryQ.put('프로세스종료')
     while ui.proc_query.is_alive():
@@ -111,6 +116,7 @@ def process_kill(ui):
     ui.windowQ.put((ui_num['시스템로그'], 'Main process terminate completed'))
     qtest_qwait(0.1)
 
+    opstarter_kill()
     if ui.writer.isRunning():
         ui.writer.terminate()
 
