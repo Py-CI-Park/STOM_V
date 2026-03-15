@@ -3,13 +3,11 @@
 GARCH 모델 기반 변동성 예측 및 트레이딩 신호 생성
 """
 
+import warnings
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Tuple, Optional
-from datetime import datetime, timedelta
 from arch import arch_model
-from sklearn.preprocessing import StandardScaler
-import warnings
+from typing import Dict, List, Tuple
 warnings.filterwarnings('ignore')
 
 
@@ -42,8 +40,7 @@ class RealTimeVolatilityAnalyzer:
         self.current_volatility = 0.0
         self.volatility_regime = 'normal'
         
-    def calculate_historical_volatility(self, prices: np.ndarray, 
-                                 method: str = 'std') -> float:
+    def calculate_historical_volatility(self, prices: np.ndarray, method: str = 'std') -> float:
         """
         역사적 변동성 계산
         
@@ -61,10 +58,12 @@ class RealTimeVolatilityAnalyzer:
         elif method == 'parkinson':
             # Parkinson 변동성 추정기
             log_hl = np.log(prices[1:] / prices[:-1])
+            # noinspection PyTypeChecker
             return np.sqrt(0.361 * np.mean(log_hl**2)) * np.sqrt(252)
         elif method == 'garman_klass':
             # Garman-Klass 변동성 추정기
             log_hl = np.log(prices[1:] / prices[:-1])
+            # noinspection PyTypeChecker
             return np.sqrt(0.5 * np.mean(log_hl**2) - 0.39 * np.mean(log_hl)) * np.sqrt(252)
         else:
             return np.std(returns) * np.sqrt(252)
@@ -80,6 +79,7 @@ class RealTimeVolatilityAnalyzer:
             (omega, alpha, beta) GARCH 파라미터
         """
         try:
+            # noinspection PyTypeChecker
             model = arch_model(returns, vol='Garch', p=self.garch_p, q=self.garch_q)
             result = model.fit(disp='off')
             
@@ -92,8 +92,7 @@ class RealTimeVolatilityAnalyzer:
             # 기본값 반환
             return 0.0001, 0.1, 0.85
     
-    def forecast_volatility(self, returns: np.ndarray, 
-                        horizon: int = 5) -> List[float]:
+    def forecast_volatility(self, returns: np.ndarray, horizon: int = 5) -> List[float]:
         """
         변동성 예측
         
@@ -120,8 +119,7 @@ class RealTimeVolatilityAnalyzer:
         
         return forecasts
     
-    def classify_volatility_regime(self, volatility: float, 
-                              history: List[float]) -> str:
+    def classify_volatility_regime(self, volatility: float, history: List[float]) -> str:
         """
         변동성 레징 분류
         
@@ -147,14 +145,11 @@ class RealTimeVolatilityAnalyzer:
         else:
             return 'extreme'
     
-    def calculate_volatility_target_position(self, current_price: float, 
-                                      target_volatility: float,
-                                      current_volatility: float) -> float:
+    def calculate_volatility_target_position(self, target_volatility: float, current_volatility: float) -> float:
         """
         변동성 타겟 포지션 크기 계산
         
         Args:
-            current_price: 현재 가격
             target_volatility: 목표 변동성
             current_volatility: 현재 변동성
             
@@ -172,9 +167,7 @@ class RealTimeVolatilityAnalyzer:
         
         return position_adjustment
     
-    def detect_volatility_spike(self, current_vol: float, 
-                            historical_vols: List[float],
-                            threshold: float = 2.0) -> bool:
+    def detect_volatility_spike(self, current_vol: float, historical_vols: List[float], threshold: float = 2.0) -> bool:
         """
         변동성 스파이크 감지
         
@@ -191,7 +184,8 @@ class RealTimeVolatilityAnalyzer:
         
         # 최근 20일 평균 변동성
         avg_vol = np.mean(historical_vols[-20:])
-        
+
+        # noinspection PyTypeChecker
         return current_vol > avg_vol * threshold
     
     def update_volatility(self, new_price: float) -> Dict:
@@ -252,7 +246,6 @@ class RealTimeVolatilityAnalyzer:
             트레이딩 신호
         """
         regime = volatility_info.get('regime', 'normal')
-        current_vol = volatility_info.get('current_volatility', 0)
         spike_detected = volatility_info.get('spike_detected', False)
         
         signals = {
@@ -295,8 +288,7 @@ class VolatilityRiskManager:
         self.max_volatility = max_volatility
         self.var_confidence = var_confidence
         
-    def calculate_var(self, returns: np.ndarray, 
-                    portfolio_value: float) -> float:
+    def calculate_var(self, returns: np.ndarray, portfolio_value: float) -> float:
         """
         Value at Risk 계산
         
@@ -308,10 +300,10 @@ class VolatilityRiskManager:
             VaR 값
         """
         var_percentile = (1 - self.var_confidence) * 100
+        # noinspection PyTypeChecker
         return np.percentile(returns, var_percentile) * portfolio_value
     
-    def calculate_position_limits(self, current_volatility: float,
-                            portfolio_value: float) -> Dict:
+    def calculate_position_limits(self, current_volatility: float, portfolio_value: float) -> Dict:
         """
         변동성 기반 포지션 한도 계산
         

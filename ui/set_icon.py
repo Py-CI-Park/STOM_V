@@ -1,6 +1,6 @@
 
 from PyQt5.QtGui import QIcon
-from utility.setting import ICON_PATH
+from utility.setting_base import ICON_PATH
 
 
 class SetIcon:

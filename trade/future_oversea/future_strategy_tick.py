@@ -8,14 +8,14 @@ import pandas as pd
 from traceback import print_exc
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.strategy_base import Strategy
-from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, \
-    DB_FUTURE_TICK, list_coin_tick, list_coin_min
+from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, DB_FUTURE_TICK, \
+    list_coin_tick, list_coin_min
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
     get_logger, get_ema_list, get_angle_cf
 
 
 class FutureStrategyTick(Strategy):
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         super().__init__()
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
@@ -24,7 +24,8 @@ class FutureStrategyTick(Strategy):
         self.mgzservQ         = qlist[0]
         self.straderQ         = qlist[2]
         self.sstgQ            = qlist[3]
-        self.dict_set         = DICT_SET
+        self.dict_set         = dict_set
+        self.indicator        = indicator
         self.logger           = get_logger(self.__class__.__name__)
 
         self.code             = None
@@ -35,7 +36,6 @@ class FutureStrategyTick(Strategy):
         self.arry_code        = None
         self.info_for_signal  = None
 
-        self.vars             = {}
         self.dict_data        = {}
         self.dict_signal_num  = {}
         self.dict_buy_num     = {}
@@ -48,7 +48,6 @@ class FutureStrategyTick(Strategy):
         self.dict_gj          = {}
         self.dict_jg          = {}
         self.dict_info        = {}
-        self.indicator        = indicator
         self.indi_settings    = []
         self.dict_signal      = {
             'BUY_LONG': [],
@@ -58,8 +57,8 @@ class FutureStrategyTick(Strategy):
         }
 
         self.jgrv_count       = 0
-        self.market_gubun     = 2
 
+        self.market_gubun     = 2
         self.ma_round_unit    = 8
         self.is_tick          = self.dict_set['주식타임프레임']
         self.avg_list         = [self.dict_set['주식평균값계산틱수']]

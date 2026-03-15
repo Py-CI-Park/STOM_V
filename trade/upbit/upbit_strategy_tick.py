@@ -5,14 +5,14 @@ import numpy as np
 import pandas as pd
 from traceback import print_exc
 from trade.strategy_base import Strategy
-from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, \
+from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, \
     list_coin_tick, list_coin_min
 from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_buy_indi_stg, get_logger, dt_ymdhms, \
     get_ema_list, get_angle_cf
 
 
 class UpbitStrategyTick(Strategy):
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         super().__init__()
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
@@ -22,7 +22,8 @@ class UpbitStrategyTick(Strategy):
         self.teleQ            = qlist[3]
         self.ctraderQ         = qlist[9]
         self.cstgQ            = qlist[10]
-        self.dict_set         = DICT_SET
+        self.dict_set         = dict_set
+        self.indicator        = indicator
         self.logger           = get_logger(self.__class__.__name__)
 
         self.code             = None
@@ -32,7 +33,6 @@ class UpbitStrategyTick(Strategy):
         self.arry_code        = None
         self.info_for_signal  = None
 
-        self.vars             = {}
         self.dict_data        = {}
         self.dict_signal_num  = {}
         self.dict_buy_num     = {}
@@ -44,7 +44,6 @@ class UpbitStrategyTick(Strategy):
         self.high_low         = {} 
         self.dict_gj          = {}
         self.dict_jg          = {}
-        self.indicator        = indicator
         self.indi_settings    = []
         self.dict_signal      = {
             '매수': [],
@@ -53,8 +52,8 @@ class UpbitStrategyTick(Strategy):
 
         self.jgrv_count       = 0
         self.int_tujagm       = 0
-        self.market_gubun     = 3
 
+        self.market_gubun     = 3
         self.ma_round_unit    = 8
         self.is_tick          = self.dict_set['코인타임프레임']
         self.avg_list         = [self.dict_set['코인평균값계산틱수']]

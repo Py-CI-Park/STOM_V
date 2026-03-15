@@ -2,7 +2,7 @@
 import numpy as np
 from backtest.back_static import get_trade_info
 from backtest.backengine_base import BackEngineBase
-from utility.setting import dict_order_ratio
+from utility.setting_base import dict_order_ratio
 from utility.static import timedelta_sec, roundfigure_upper, roundfigure_lower, dt_ymdhms, dt_ymdhm
 
 

@@ -32,28 +32,34 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
         df[f'이동평균{window}'] = df['현재가'].rolling(window=window).mean().round(3 if market == 1 else 8)
 
     for avg in avg_list:
-        df[f'최고현재가{avg}'] = df['현재가'].rolling(window=avg).max()
-        df[f'최저현재가{avg}'] = df['현재가'].rolling(window=avg).min()
+        rolling_data = df['현재가'].rolling(window=avg)
+        df[f'최고현재가{avg}'] = rolling_data.max()
+        df[f'최저현재가{avg}'] = rolling_data.min()
 
         if not is_tick:
             df[f'최고분봉고가{avg}'] = df['분봉고가'].rolling(window=avg).max()
             df[f'최저분봉저가{avg}'] = df['분봉저가'].rolling(window=avg).min()
 
-        df[f'체결강도평균{avg}'] = df['체결강도'].rolling(window=avg).mean().round(3)
-        df[f'최고체결강도{avg}'] = df['체결강도'].rolling(window=avg).max()
-        df[f'최저체결강도{avg}'] = df['체결강도'].rolling(window=avg).min()
+        rolling_data = df['체결강도'].rolling(window=avg)
+        df[f'체결강도평균{avg}'] = rolling_data.mean().round(3)
+        df[f'최고체결강도{avg}'] = rolling_data.max()
+        df[f'최저체결강도{avg}'] = rolling_data.min()
 
         if is_tick:
-            df[f'최고초당매수수량{avg}'] = df['초당매수수량'].rolling(window=avg).max()
-            df[f'최고초당매도수량{avg}'] = df['초당매도수량'].rolling(window=avg).max()
-            df[f'누적초당매수수량{avg}'] = df['초당매수수량'].rolling(window=avg).sum()
-            df[f'누적초당매도수량{avg}'] = df['초당매도수량'].rolling(window=avg).sum()
+            rolling_data1 = df['초당매수수량'].rolling(window=avg)
+            rolling_data2 = df['초당매도수량'].rolling(window=avg)
+            df[f'최고초당매수수량{avg}'] = rolling_data1.max()
+            df[f'최고초당매도수량{avg}'] = rolling_data2.max()
+            df[f'누적초당매수수량{avg}'] = rolling_data1.sum()
+            df[f'누적초당매도수량{avg}'] = rolling_data2.sum()
             df[f'초당거래대금평균{avg}'] = df['초당거래대금'].rolling(window=avg).mean().round(0)
         else:
-            df[f'최고분당매수수량{avg}'] = df['분당매수수량'].rolling(window=avg).max()
-            df[f'최고분당매도수량{avg}'] = df['분당매도수량'].rolling(window=avg).max()
-            df[f'누적분당매수수량{avg}'] = df['분당매수수량'].rolling(window=avg).sum()
-            df[f'누적분당매도수량{avg}'] = df['분당매도수량'].rolling(window=avg).sum()
+            rolling_data1 = df['분당매수수량'].rolling(window=avg)
+            rolling_data2 = df['분당매도수량'].rolling(window=avg)
+            df[f'최고분당매수수량{avg}'] = rolling_data1.max()
+            df[f'최고분당매도수량{avg}'] = rolling_data2.max()
+            df[f'누적분당매수수량{avg}'] = rolling_data1.sum()
+            df[f'누적분당매도수량{avg}'] = rolling_data2.sum()
             df[f'분당거래대금평균{avg}'] = df['분당거래대금'].rolling(window=avg).mean().round(0)
 
         if cf1 is None:

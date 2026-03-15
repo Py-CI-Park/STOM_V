@@ -10,7 +10,7 @@ from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import OPENAPI_PATH, DICT_SET, ui_num, DB_STOCK_TICK, DB_STOCK_MIN
+from utility.setting_base import OPENAPI_PATH, ui_num, DB_STOCK_TICK, DB_STOCK_MIN
 from utility.static import now, qtest_qwait, str_ymd, str_hms, timedelta_sec, get_logger, str_ymdhms, \
     roundfigure_upper5, GetSangHahanga, GetVIPrice
 
@@ -52,7 +52,7 @@ class Updater(QThread):
 
 
 class KiwoomAgentTick:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
                 0            1             2            3
@@ -63,7 +63,7 @@ class KiwoomAgentTick:
         self.sagentQ  = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQs   = qlist[3]
-        self.dict_set = DICT_SET
+        self.dict_set = dict_set
         self.logger   = get_logger(self.__class__.__name__)
 
         self.ocx = QAxWidget('KHOPENAPI.KHOpenAPICtrl.1')
@@ -572,9 +572,10 @@ class KiwoomAgentTick:
             self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
     def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
-        if code not in self.dict_vipr:
+        vipr = self.dict_vipr.get(code)
+        if vipr is None:
             self.InsertViPrice(code, o)
-        elif not self.dict_vipr[code][0] and now() > self.dict_vipr[code][1]:
+        elif not vipr[0] and now() > vipr[1]:
             self.UpdateViPrice(code, c)
 
         data = self.dict_data.get(code)
@@ -584,9 +585,8 @@ class KiwoomAgentTick:
             bids, asks = 0, 0
 
         rf = roundfigure_upper5(c, dt)
-        bids_, asks_ = 0, 0
-        if '+' in v: bids_ = abs(int(v))
-        if '-' in v: asks_ = abs(int(v))
+        bids_ = abs(int(v)) if '+' in v else 0
+        asks_ = abs(int(v)) if '-' in v else 0
         bids += bids_
         asks += asks_
 
@@ -627,12 +627,11 @@ class KiwoomAgentTick:
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
-                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = max(index - 5, 0)
-                    end_idx   = index
-                    add_cnt   = max(5 - index, 0)
+                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+                end_idx = valid_indices[-1] + 1 if valid_indices else None
+                if end_idx is not None:
+                    start_idx = max(end_idx - 5, 0)
+                    add_cnt   = max(5 - end_idx, 0)
                     hoga_seprice = [0] * add_cnt + hoga_seprice[start_idx:end_idx]
                     hoga_samount = [0] * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
@@ -643,12 +642,11 @@ class KiwoomAgentTick:
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
-                index = valid_indices[0] if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = index
-                    end_idx   = min(index + 5, 10)
-                    add_cnt   = max(index - 5, 0)
+                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+                start_idx = valid_indices[0] if valid_indices else None
+                if start_idx is not None:
+                    end_idx   = min(start_idx + 5, 10)
+                    add_cnt   = max(start_idx - 5, 0)
                     hoga_buprice = hoga_buprice[start_idx:end_idx] + [0] * add_cnt
                     hoga_bamount = hoga_bamount[start_idx:end_idx] + [0] * add_cnt
                 else:

@@ -1,6 +1,6 @@
 
 from PyQt5.QtWidgets import QPushButton
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 
 
 def dactivated_01(ui):

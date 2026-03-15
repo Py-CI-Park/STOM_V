@@ -4,19 +4,20 @@ import sys
 import shutil
 import sqlite3
 import pandas as pd
-from utility.setting import ui_num, DB_TRADELIST, DB_SETTING, DB_STRATEGY, DB_COIN_TICK, DB_PATH, DB_STOCK_BACK_TICK, \
-    DB_COIN_BACK_TICK, DB_STOCK_TICK, DB_BACKTEST, DICT_SET, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_STOCK_MIN, \
+from utility.setting_base import ui_num, DB_TRADELIST, DB_SETTING, DB_STRATEGY, DB_COIN_TICK, DB_PATH, DB_STOCK_BACK_TICK, \
+    DB_COIN_BACK_TICK, DB_STOCK_TICK, DB_BACKTEST, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_STOCK_MIN, \
     DB_COIN_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_MIN, DB_CODE_INFO, DB_FUTURE_BACK_TICK, DB_FUTURE_TICK
 
 
 class Query:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
         self.windowQ  = qlist[0]
         self.queryQ   = qlist[2]
+        self.dict_set = dict_set
         self.con1     = sqlite3.connect(DB_SETTING)
         self.cur1     = self.con1.cursor()
         self.con2     = sqlite3.connect(DB_TRADELIST)
@@ -24,7 +25,6 @@ class Query:
         self.con3     = sqlite3.connect(DB_STRATEGY)
         self.cur3     = self.con3.cursor()
         self.con4     = sqlite3.connect(DB_CODE_INFO)
-        self.dict_set = DICT_SET
         self.MainLoop()
 
     def __del__(self):

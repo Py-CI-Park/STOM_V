@@ -4,7 +4,7 @@ import sys
 import numpy as np
 from future_agent_tick import FutureAgentTick
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 from utility.static import now
 
 
@@ -80,21 +80,22 @@ class FutureAgentMin(FutureAgentTick):
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
-                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
-                if index is not None:
-                    hoga_seprice = [0.] * index + hoga_seprice[:-index]
-                    hoga_samount = [0] * index + hoga_samount[:-index]
+                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+                end_index = valid_indices[-1] + 1 if valid_indices else None
+                if end_index is not None:
+                    add_cnt = 5 - end_index
+                    hoga_seprice = [0.] * add_cnt + hoga_seprice[:end_index]
+                    hoga_samount = [0] * add_cnt + hoga_samount[:end_index]
                 else:
                     hoga_seprice = [0.] * 5
                     hoga_samount = [0] * 5
 
             if hoga_buprice[0] > cbp:
-                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
-                index = valid_indices[0] if len(valid_indices) > 0 else None
-                if index is not None:
-                    hoga_buprice = hoga_buprice[index:] + [0.] * index
-                    hoga_bamount = hoga_bamount[index:] + [0] * index
+                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+                start_index = valid_indices[0] if valid_indices else None
+                if start_index is not None:
+                    hoga_buprice = hoga_buprice[start_index:] + [0.] * start_index
+                    hoga_bamount = hoga_bamount[start_index:] + [0] * start_index
                 else:
                     hoga_buprice = [0.] * 5
                     hoga_bamount = [0] * 5

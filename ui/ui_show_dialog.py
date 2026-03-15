@@ -9,7 +9,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from utility.kimp_upbit_binance import Kimp
 from ui.set_text_stg_button import dict_stg_name
 from utility.static import qtest_qwait, str_hms, dt_hms
-from utility.setting import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
+from utility.setting_base import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
     DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 from ui.set_style import style_bc_bt, style_bc_bb
 

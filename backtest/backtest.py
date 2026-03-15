@@ -8,13 +8,13 @@ import pandas as pd
 from multiprocessing import Process, Queue
 from backtest.back_static import PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd, bootstrap_test
 from utility.static import now, str_ymdhms
-from utility.setting import DB_STRATEGY, DB_BACKTEST, ui_num, stockreadlines, columns_vj, DICT_SET, DB_STOCK_BACK_TICK, \
-    DB_COIN_BACK_TICK, coinreadlines, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, futurereadlines, \
-    DB_FUTURE_BACK_TICK
+from utility.setting_user import stockreadlines, coinreadlines, futurereadlines
+from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, DB_STOCK_BACK_TICK, \
+    DB_COIN_BACK_TICK, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
-    def __init__(self, wq, sq, tq, teleQ, mq, lq, bstq_list, backname, ui_gubun, gubun, market_text):
+    def __init__(self, wq, sq, tq, teleQ, mq, lq, bstq_list, backname, ui_gubun, gubun, market_text, dict_set):
         self.wq           = wq
         self.sq           = sq
         self.tq           = tq
@@ -26,7 +26,7 @@ class Total:
         self.ui_gubun     = ui_gubun
         self.gubun        = gubun
         self.market_text  = market_text
-        self.dict_set     = DICT_SET
+        self.dict_set     = dict_set
         gubun_text        = f'{self.gubun}_future' if self.ui_gubun == 'CF' else self.gubun
         self.savename     = f'{gubun_text}_bt'
 
@@ -245,7 +245,7 @@ class Total:
 
 
 class BackTest:
-    def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, ui_gubun, dict_set):
         self.shared_cnt = sc
         self.wq         = wq
         self.bq         = bq
@@ -257,7 +257,7 @@ class BackTest:
         self.bstq_list  = bstq_list
         self.backname   = backname
         self.ui_gubun   = ui_gubun
-        self.dict_set   = DICT_SET
+        self.dict_set   = dict_set
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':
@@ -342,7 +342,7 @@ class BackTest:
         Process(
             target=Total,
             args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.lq, self.bstq_list, self.backname, self.ui_gubun,
-                  self.gubun, market_text)
+                  self.gubun, market_text, self.dict_set)
         ).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 

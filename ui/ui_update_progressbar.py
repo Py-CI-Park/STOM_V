@@ -3,7 +3,7 @@ from utility.static import now, timedelta_sec
 from ui.set_style import style_bc_bb, style_bc_bt, style_bc_by, style_bc_sl
 
 
-def update_back_profressbar(ui):
+def update_back_progressbar(ui):
     if ui.back_start_time is not None:
         if ui.optuna_current_cnt == 0:
             total_back_count = ui.back_tick_cunsum[-1]
@@ -39,6 +39,8 @@ def update_progressbar(ui):
     ui.progressBarrr.setValue(ui.cpu_per)
     ui.counter = 0 if ui.counter == 599 else ui.counter + 1
 
+    ui.be_pushButtonnn_01.setStyleSheet(style_bc_by if ui.backtest_engine else style_bc_bt)
+
     ui.kp_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_kimp.isVisible() else style_bc_bt)
     ui.dd_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_db.isVisible() else style_bc_bt)
     ui.js_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_jisu.isVisible() else style_bc_bt)
@@ -46,9 +48,16 @@ def update_progressbar(ui):
     ui.gu_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_info.isVisible() else style_bc_bt)
     ui.hg_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_hoga.isVisible() else style_bc_bt)
     ui.ct_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_chart.isVisible() else style_bc_bt)
-    ui.ct_pushButtonnn_04.setStyleSheet(style_bc_bt if not ui.dialog_factor.isVisible() else style_bc_bb)
     ui.bs_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_scheduler.isVisible() else style_bc_bt)
     ui.tt_pushButton.setStyleSheet(style_bc_bb if not ui.s_calendarWidgett.isVisible() and not ui.c_calendarWidgett.isVisible() else style_bc_bt)
+
+    ui.sj_etc_pButton_02.setStyleSheet(style_bc_bt if not ui.dialog_setsj.isVisible() else style_bc_bb)
+    ui.sj_etc_pButton_03.setStyleSheet(style_bc_bt if not ui.dialog_cetsj.isVisible() else style_bc_bb)
+    ui.sj_save_Button_13.setStyleSheet(style_bc_bt if not ui.dialog_bjjs.isVisible() else style_bc_bb)
+    ui.sj_save_Button_14.setStyleSheet(style_bc_bt if not ui.dialog_bjjc.isVisible() else style_bc_bb)
+    ui.sj_lvrg_Button_01.setStyleSheet(style_bc_bt if not ui.dialog_leverage.isVisible() else style_bc_bb)
+    ui.ct_pushButtonnn_03.setStyleSheet(style_bc_bt if not ui.dialog_formula.isVisible() else style_bc_bb)
+    ui.ct_pushButtonnn_04.setStyleSheet(style_bc_bt if not ui.dialog_factor.isVisible() else style_bc_bb)
 
     style_ = style_bc_bt if ui.proc_backtester_bs is not None and ui.proc_backtester_bs.is_alive() and ui.counter % 2 != 0 else style_bc_by
     ui.svj_pushButton_01.setStyleSheet(style_)
@@ -153,8 +162,6 @@ def update_progressbar(ui):
     style_ = style_bc_bt if ui.proc_backtester_brvc is not None and ui.proc_backtester_brvc.is_alive() and ui.counter % 2 != 0 else style_bc_sl
     ui.svc_pushButton_33.setStyleSheet(style_)
     ui.cvc_pushButton_33.setStyleSheet(style_)
-
-    ui.be_pushButtonnn_01.setStyleSheet(style_bc_by if ui.backtest_engine else style_bc_bt)
 
     if ui.ssicon_alert:
         icon = ui.icon_stocks if ui.counter % 2 == 0 else ui.icon_stocks2

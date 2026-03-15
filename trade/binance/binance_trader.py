@@ -8,7 +8,7 @@ import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketTrader
-from utility.setting import columns_cj, columns_tdf, ui_num, DB_TRADELIST, DICT_SET, columns_jgcf
+from utility.setting_base import columns_cj, columns_tdf, ui_num, DB_TRADELIST, columns_jgcf
 from utility.static import now, timedelta_sec, GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, str_ymd, str_hms, \
     error_decorator, now_utc, str_ymdhmsf, str_hmsf, dt_hms, get_logger, qtest_qwait
 
@@ -35,7 +35,7 @@ class Updater(QThread):
 
 
 class BinanceTrader:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
@@ -50,7 +50,7 @@ class BinanceTrader:
         self.ctraderQ   = qlist[9]
         self.cstgQ      = qlist[10]
         self.liveQ      = qlist[11]
-        self.dict_set   = DICT_SET
+        self.dict_set   = dict_set
         self.logger     = get_logger(self.__class__.__name__)
 
         self.order_time = now()

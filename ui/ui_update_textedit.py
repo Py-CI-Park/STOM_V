@@ -3,7 +3,7 @@ import os
 import re
 from PyQt5.QtCore import QTimer
 from ui.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 from utility.static import now, qtest_qwait, str_hms
 
 

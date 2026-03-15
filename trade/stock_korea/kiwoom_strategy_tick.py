@@ -8,7 +8,7 @@ import pandas as pd
 from traceback import print_exc
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.strategy_base import Strategy
-from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, \
+from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, \
     list_stock_tick, list_stock_min
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
@@ -16,7 +16,7 @@ from utility.static import now, timedelta_sec, GetKiwoomPgSgSp, GetHogaunit, get
 
 
 class KiwoomStrategyTick(Strategy):
-    def __init__(self, gubun, qlist):
+    def __init__(self, gubun, qlist, dict_set):
         super().__init__()
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
@@ -27,7 +27,7 @@ class KiwoomStrategyTick(Strategy):
         self.straderQ         = qlist[2]
         self.sstgQs           = qlist[3]
         self.sstgQ            = qlist[3][self.gubun]
-        self.dict_set         = DICT_SET
+        self.dict_set         = dict_set
         self.indicator        = indicator
         self.logger           = get_logger(self.__class__.__name__)
 
@@ -36,7 +36,6 @@ class KiwoomStrategyTick(Strategy):
         self.chart_code       = None
         self.info_for_signal  = None
 
-        self.vars             = {}
         self.dict_data        = {}
         self.dict_signal_num  = {}
         self.dict_buy_num     = {}
@@ -54,8 +53,8 @@ class KiwoomStrategyTick(Strategy):
 
         self.jgrv_count       = 0
         self.int_tujagm       = 0
-        self.market_gubun     = 1
 
+        self.market_gubun     = 1
         self.ma_round_unit    = 3
         self.is_tick          = self.dict_set['주식타임프레임']
         self.avg_list         = [self.dict_set['주식평균값계산틱수']]

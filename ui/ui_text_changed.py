@@ -1,6 +1,6 @@
 
 import numpy as np
-from utility.setting import columns_jg, columns_jgf, columns_jgcf
+from utility.setting_base import columns_jg, columns_jgf, columns_jgcf
 
 
 def text_changed_01(ui):

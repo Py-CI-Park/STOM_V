@@ -9,7 +9,7 @@ from research.analyzer.microstructure_analyzer import MicrostructureAnalyzer
 from research.auxiliary_indicator.smart_vwap_bands import SmartVWAPCalculator
 from backtest.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
     get_trade_info, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture
-from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_STOCK_BACK_MIN, indicator, \
+from utility.setting_base import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DB_STOCK_BACK_MIN, indicator, \
     DB_FUTURE_BACK_TICK, DB_FUTURE_BACK_MIN, DB_COIN_BACK_TICK, DB_COIN_BACK_MIN, list_stock_tick, \
     list_stock_min, list_coin_tick, list_coin_min
 # noinspection PyUnresolvedReferences
@@ -17,7 +17,7 @@ from utility.static import timedelta_sec, pickle_read, pickle_write, dt_ymdhms, 
 
 
 class BackEngineBase(Strategy):
-    def __init__(self, gubun, shared_cnt, lock, wq, tq, bq, beq_list, bstq_list, profile=False):
+    def __init__(self, gubun, shared_cnt, lock, wq, tq, bq, beq_list, bstq_list, dict_set, profile=False):
         super().__init__()
         self.gubun           = gubun
         self.shared_cnt      = shared_cnt
@@ -29,7 +29,8 @@ class BackEngineBase(Strategy):
         self.beq             = beq_list[gubun]
         self.bstq_list       = bstq_list
         self.profile         = profile
-        self.dict_set        = DICT_SET
+        self.dict_set        = dict_set
+        self.indicator       = indicator
         self.backtest        = True
 
         self.back_type       = None
@@ -57,8 +58,9 @@ class BackEngineBase(Strategy):
         self.info_for_order  = None
 
         self.market_gubun    = None
-        self.is_oms          = None
+        self.market_text     = None
         self.ui_num_txt      = None
+        self.is_oms          = None
         self.buy_hj_limit    = None
         self.sell_hj_limit   = None
         self.set_dict_cond   = None
@@ -67,9 +69,7 @@ class BackEngineBase(Strategy):
         self.add_cnt         = None
         self.hoga_sidex      = None
         self.hoga_eidex      = None
-        self.market_text     = None
 
-        self.vars            = []
         self.code_list       = []
         self.vars_list       = []
         self.vars_lists      = []
@@ -93,7 +93,6 @@ class BackEngineBase(Strategy):
         self.opti_turn       = 0
         self.sell_count      = 0
 
-        self.indicator       = indicator
         self.smat_vwap       = SmartVWAPCalculator('stock')
         self.ms_analyzer     = MicrostructureAnalyzer('stock')
 
@@ -520,7 +519,8 @@ class BackEngineBase(Strategy):
             last = len(self.arry_code) - 1
             if last > 0:
                 indexs = self.arry_code[:, 0].astype(np.int64)
-                day_last_indexs = [i for i in range(last) if str(indexs[i])[:8] != str(indexs[i + 1])[:8]]
+                day_last_indexs = indexs // 1000000
+                day_last_indexs = [i for i in range(last) if day_last_indexs[i] != day_last_indexs[i + 1]]
                 day_last_indexs.append(last)
 
                 start_idx = 0

@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QTabWidget, QWidget
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from ui.set_style import style_ck_bx, style_bc_dk, qfont14, style_fc_dk
-from utility.setting import columns_hj, columns_hc, columns_hg, columns_gc, columns_ns, columns_jm1, columns_jm2, \
+from utility.setting_base import columns_hj, columns_hc, columns_hg, columns_gc, columns_ns, columns_jm1, columns_jm2, \
     columns_stg1, columns_stg2, columns_kp, columns_hc2
 
 

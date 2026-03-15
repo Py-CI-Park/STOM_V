@@ -1,6 +1,6 @@
 
 import squarify
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 from utility.static import error_decorator
 
 

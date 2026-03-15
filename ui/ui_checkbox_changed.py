@@ -107,20 +107,20 @@ def checkbox_changed_11(ui, state):
 
 def checkbox_changed_12(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
-        if not ui.sj_back_cheBox_14.isChecked():
-            ui.sj_back_cheBox_14.nextCheckState()
+        if not ui.sj_back_cheBox_11.isChecked():
+            ui.sj_back_cheBox_11.nextCheckState()
 
 
 def checkbox_changed_13(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state != Qt.Checked:
-        if ui.sj_back_cheBox_13.isChecked():
-            ui.sj_back_cheBox_13.nextCheckState()
+        if ui.sj_back_cheBox_10.isChecked():
+            ui.sj_back_cheBox_10.nextCheckState()
 
 
 def checkbox_changed_14(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state != Qt.Checked:
-        if ui.sj_back_cheBox_06.isChecked():
-            ui.sj_back_cheBox_06.nextCheckState()
+        if ui.sj_back_cheBox_09.isChecked():
+            ui.sj_back_cheBox_09.nextCheckState()
 
 
 def checkbox_changed_15(ui, state):
@@ -151,21 +151,21 @@ def checkbox_changed_15(ui, state):
 def checkbox_changed_16(ui, state):
     if ui.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
-            if ui.sj_back_cheBox_18.isChecked():
-                ui.sj_back_cheBox_18.nextCheckState()
+            if ui.sj_back_cheBox_15.isChecked():
+                ui.sj_back_cheBox_15.nextCheckState()
         else:
-            if not ui.sj_back_cheBox_18.isChecked():
-                ui.sj_back_cheBox_18.nextCheckState()
+            if not ui.sj_back_cheBox_15.isChecked():
+                ui.sj_back_cheBox_15.nextCheckState()
 
 
 def checkbox_changed_17(ui, state):
     if ui.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
-            if ui.sj_back_cheBox_17.isChecked():
-                ui.sj_back_cheBox_17.nextCheckState()
+            if ui.sj_back_cheBox_14.isChecked():
+                ui.sj_back_cheBox_14.nextCheckState()
         else:
-            if not ui.sj_back_cheBox_17.isChecked():
-                ui.sj_back_cheBox_17.nextCheckState()
+            if not ui.sj_back_cheBox_14.isChecked():
+                ui.sj_back_cheBox_14.nextCheckState()
 
 
 # noinspection PyUnusedLocal
