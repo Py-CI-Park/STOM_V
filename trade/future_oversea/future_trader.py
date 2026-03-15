@@ -458,19 +458,8 @@ class FutureTrader:
             self.dict_intg['추정예수금'] = self.dict_intg['예수금']
 
     def SysExit(self):
-        self.SaveDayData()
         qtest_qwait(5)
         self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 트레이더 종료')))
-
-    def SaveDayData(self):
-        con = sqlite3.connect(DB_TRADELIST)
-        df = get_pd().read_sql(f"SELECT * FROM f_totaltradelist WHERE `index` = '{self.str_today}'", con)
-        con.close()
-        if len(df) == 0 and self.dict_tt:
-            df = get_pd().DataFrame.from_dict(self.dict_tt, orient='index')
-            self.mgzservQ.put(('query', ('거래디비', df, 'f_totaltradelist', 'append')))
-            if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
-            self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료')))
 
     def GetIndex(self):
         index = str_ymdhmsf(now_cme())
@@ -695,6 +684,9 @@ class FutureTrader:
             '수익금합계': 수익금합계
         }
         df_tt = get_pd().DataFrame.from_dict(self.dict_tt, orient='index')
+        delete_query = f"DELETE FROM f_totaltradelist WHERE `index` = '{self.str_today}'"
+        self.mgzservQ.put(('query', ('거래디비', delete_query)))
+        self.mgzservQ.put(('query', ('거래디비', df_tt, 'f_totaltradelist', 'append')))
         self.mgzservQ.put(('window', (ui_num['S실현손익'], df_tt)))
 
         if not first:

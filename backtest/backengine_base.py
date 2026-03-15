@@ -499,8 +499,8 @@ class BackEngineBase(StrategyBase):
         return code
 
     def UpdateFormulaData(self):
-        total_cnt = self.base_cnt + self.add_cnt * len(self.avg_list)
-        self.fm_list, dict_fm, self.fm_tcnt = get_formula_data(False, total_cnt)
+        total_cnt = self.base_cnt + 5 + self.add_cnt * len(self.avg_list)
+        self.fm_list, _, self.fm_tcnt = get_formula_data(False, total_cnt)
         if self.fm_list:
             for fm in self.fm_list:
                 fm[8] = compile(fm[-2], '<string>', 'exec')

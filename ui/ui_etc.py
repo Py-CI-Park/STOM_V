@@ -179,3 +179,7 @@ def manual_save_and_exit(ui):
             ui.creceivQ.put(('수동데이터저장', 'dummy'))
         else:
             ui.wdzservQ.put(('agent', ('수동데이터저장', 'dummy')))
+
+
+def stom_public_use_limit(ui):
+    QMessageBox.critical(ui, 'STOM PUBLIC', '현재의 권한으로 사용할 수 없는 기능입니다.\n구독문의: https://cafe.naver.com/stom')
