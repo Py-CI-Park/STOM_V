@@ -26,9 +26,9 @@ def timesync(ui_num, windowQ):
                     dt.second,
                     dt.microsecond // 1000
                 )
-                windowQ.put((ui_num['시스템로그'], f'Time synchronizing ... diff [{offset:.6f}]seceods'))
+                windowQ.put((ui_num['시스템로그'], f'Time synchronizing ... diff [{offset:.6f}]seconds'))
             else:
-                windowQ.put((ui_num['시스템로그'], f'Time synchronized ... diff [{offset:.6f}]seceods'))
+                windowQ.put((ui_num['시스템로그'], f'Time synchronized ... diff [{offset:.6f}]seconds'))
                 break
         except:
             pass

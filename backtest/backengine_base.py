@@ -2,7 +2,6 @@
 import sqlite3
 import numpy as np
 import pandas as pd
-from copy import deepcopy
 from traceback import format_exc
 from multiprocessing import shared_memory
 from trade.strategy_base import StrategyBase
@@ -154,6 +153,8 @@ class BackEngineBase(StrategyBase):
             value_text_list = text_list[half_cnt:]
             value_comp_list = [compile_condition(x) for x in value_text_list]
             self.dict_condition = dict(zip(key_list, value_comp_list))
+
+        self.SetGlobalsFunc()
 
     @error_decorator
     def MainLoop(self):
@@ -398,19 +399,7 @@ class BackEngineBase(StrategyBase):
 
         self.avg_list = avg_list
         self.startday_, self.endday_, self.starttime_, self.endtime_ = startday, endday, starttime, endtime
-
-        total_cnt = self.base_cnt + self.add_cnt * len(self.avg_list)
-        self.fm_list, dict_fm, self.fm_tcnt = get_formula_data(False, total_cnt)
-
-        if self.gubun == 0:
-            self.wq.put((ui_num['사용자수식'], deepcopy(self.fm_list), dict_fm, self.fm_tcnt))
-
-        if self.fm_list:
-            for fm in self.fm_list:
-                fm[8] = compile(fm[-2], '<string>', 'exec')
-
         self.bq.put(shared_info)
-        self.SetGlobalsFunc()
 
     def CheckAvglist(self, avg_list):
         not_in_list = [x for x in avg_list if x not in self.avg_list]
@@ -508,7 +497,19 @@ class BackEngineBase(StrategyBase):
                                             (self.arry_code[:, 0] <= self.endday * self.unit + self.hour) &
                                             (self.arry_code[:, 0] % self.unit >= self.starttime) &
                                             (self.arry_code[:, 0] % self.unit <= self.endtime)]
+
+        if self.fm_tcnt > 0:
+            self.arry_code = np.column_stack((self.arry_code, np.zeros((self.arry_code.shape[0], self.fm_tcnt))))
+
         return code
+
+    def UpdateFormulaData(self):
+        total_cnt = self.base_cnt + self.add_cnt * len(self.avg_list)
+        self.fm_list, dict_fm, self.fm_tcnt = get_formula_data(False, total_cnt)
+        if self.fm_list:
+            for fm in self.fm_list:
+                fm[8] = compile(fm[-2], '<string>', 'exec')
+            self.SetGlobalsFunc()
 
     def BackTest(self):
         if self.gubun == 0 and self.profile:
@@ -516,8 +517,9 @@ class BackEngineBase(StrategyBase):
             self.pr = cProfile.Profile()
             self.pr.enable()
 
-        self.sell_count = 0
+        self.UpdateFormulaData()
         self.InitTradeInfo()
+        self.sell_count = 0
 
         j = 0
         while True:

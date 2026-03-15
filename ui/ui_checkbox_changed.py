@@ -236,14 +236,14 @@ def cbcheckbox_changed_01(ui, state):
                 if widget.isChecked():
                     widget.nextCheckState()
     if ui.dict_set['거래소'] == '업비트':
-        if ui.sj_codb_checkBox_19.isChecked() or ui.sj_codb_checkBox_20.isChecked():
-            if ui.sj_codb_checkBox_19.isChecked():
-                ui.sj_codb_checkBox_19.nextCheckState()
+        if ui.sc_buyy_checkBox_03.isChecked() or ui.sc_buyy_checkBox_04.isChecked():
+            if ui.sc_buyy_checkBox_03.isChecked():
+                ui.sc_buyy_checkBox_03.nextCheckState()
             else:
-                ui.sj_codb_checkBox_20.nextCheckState()
+                ui.sc_buyy_checkBox_04.nextCheckState()
             QMessageBox.critical(ui, '오류 알림', '업비트는 해당주문유형을 사용할 수 없습니다.\n')
-            ui.sj_codb_checkBox_01.setFocus()
-            ui.sj_codb_checkBox_01.setChecked(True)
+            ui.sc_buyy_checkBox_01.setFocus()
+            ui.sc_buyy_checkBox_01.setChecked(True)
 
 
 @error_decorator
@@ -263,14 +263,14 @@ def cscheckbox_changed_01(ui, state):
                 if widget.isChecked():
                     widget.nextCheckState()
     if ui.dict_set['거래소'] == '업비트':
-        if ui.sj_cods_checkBox_19.isChecked() or ui.sj_cods_checkBox_20.isChecked():
-            if ui.sj_cods_checkBox_19.isChecked():
-                ui.sj_codb_checkBox_19.nextCheckState()
+        if ui.sc_sell_checkBox_03.isChecked() or ui.sc_sell_checkBox_04.isChecked():
+            if ui.sc_sell_checkBox_03.isChecked():
+                ui.sc_buyy_checkBox_03.nextCheckState()
             else:
-                ui.sj_cods_checkBox_20.nextCheckState()
+                ui.sc_sell_checkBox_04.nextCheckState()
             QMessageBox.critical(ui, '오류 알림', '업비트는 해당주문유형을 사용할 수 없습니다.\n')
-            ui.sj_cods_checkBox_01.setFocus()
-            ui.sj_cods_checkBox_01.setChecked(True)
+            ui.sc_sell_checkBox_01.setFocus()
+            ui.sc_sell_checkBox_01.setChecked(True)
 
 
 @error_decorator
@@ -280,3 +280,23 @@ def cscheckbox_changed_02(ui, state):
             if widget != ui.focusWidget():
                 if widget.isChecked():
                     widget.nextCheckState()
+
+
+@error_decorator
+def setting_stock_weight_cotrol_changed(ui, state):
+    if ui.focusWidget().__class__ != QPushButton:
+        if state == Qt.Checked:
+            for widget in ui.ss_bj_check_button_list:
+                if widget != ui.focusWidget():
+                    if widget.isChecked():
+                        widget.nextCheckState()
+
+
+@error_decorator
+def setting_coin_weight_cotrol_changed(ui, state):
+    if ui.focusWidget().__class__ != QPushButton:
+        if state == Qt.Checked:
+            for widget in ui.sc_bj_check_button_list:
+                if widget != ui.focusWidget():
+                    if widget.isChecked():
+                        widget.nextCheckState()
