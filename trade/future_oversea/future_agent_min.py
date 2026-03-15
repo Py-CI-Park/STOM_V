@@ -173,7 +173,7 @@ class FutureAgentMin(FutureAgentTick):
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+                self.mgzservQ.put(('window', (ui_num['타임로그'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:

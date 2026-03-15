@@ -3,9 +3,10 @@ import random
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying
-from utility.static import text_not_in_special_characters
+from utility.static import text_not_in_special_characters, error_decorator
 
 
+@error_decorator
 def stock_gavars_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}vars').set_index('index')
@@ -19,6 +20,7 @@ def stock_gavars_load(ui):
                 ui.sva_lineEdittt_01.setText(index)
 
 
+@error_decorator
 def stock_gavars_save(ui):
     strategy_name = ui.sva_lineEdittt_01.text()
     strategy = ui.ss_textEditttt_06.toPlainText()
@@ -39,6 +41,7 @@ def stock_gavars_save(ui):
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def stock_condbuy_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buyconds').set_index('index')
@@ -52,6 +55,7 @@ def stock_condbuy_load(ui):
                 ui.svo_lineEdittt_01.setText(index)
 
 
+@error_decorator
 def stock_condbuy_save(ui):
     strategy_name = ui.svo_lineEdittt_01.text()
     strategy = ui.ss_textEditttt_07.toPlainText()
@@ -72,6 +76,7 @@ def stock_condbuy_save(ui):
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def stock_condsell_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}sellconds').set_index('index')
@@ -85,6 +90,7 @@ def stock_condsell_load(ui):
                 ui.svo_lineEdittt_02.setText(index)
 
 
+@error_decorator
 def stock_condsell_save(ui):
     strategy_name = ui.svo_lineEdittt_02.text()
     strategy = ui.ss_textEditttt_08.toPlainText()

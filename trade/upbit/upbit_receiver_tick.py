@@ -5,11 +5,12 @@ import sqlite3
 import pyupbit
 import numpy as np
 import pandas as pd
+from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.upbit.upbit_websocket import WebSocketReceiver
 from utility.setting_base import ui_num, DB_COIN_TICK, DB_COIN_MIN
-from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc, get_logger
+from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc
 
 
 class Updater(QThread):
@@ -46,7 +47,6 @@ class UpbitReceiverTick:
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
         self.dict_set    = dict_set
-        self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_dtdm   = {}
         self.dict_jgdt   = {}
@@ -79,7 +79,7 @@ class UpbitReceiverTick:
 
         self.GetTickers()
 
-        self.ws_thread = WebSocketReceiver(self.codes)
+        self.ws_thread = WebSocketReceiver(self.codes, self.windowQ)
         self.ws_thread.signal1.connect(self.UpdateTickData)
         self.ws_thread.signal2.connect(self.UpdateHogaData)
         self.ws_thread.start()
@@ -110,8 +110,7 @@ class UpbitReceiverTick:
         text = '코인 리시버를 시작하였습니다.'
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
-        self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작'))
-        self.logger.info('리시버 시작 완료')
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 리시버 시작'))
 
     def UpdateTickData(self, data):
         try:
@@ -129,6 +128,7 @@ class UpbitReceiverTick:
             tasks = data['acc_ask_volume']
             dm    = data['acc_trade_price']
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData'))
             return
 
         date = self.dict_data.get(code)
@@ -188,6 +188,7 @@ class UpbitReceiverTick:
             ]
             receivetime = now()
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateHogaData'))
             return
 
         send   = False
@@ -307,7 +308,7 @@ class UpbitReceiverTick:
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.windowQ.put((ui_num['C단순텍스트'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+                self.windowQ.put((ui_num['타임로그'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:
@@ -399,7 +400,7 @@ class UpbitReceiverTick:
             self.cstgQ.put('프로세스종료')
         self.ctraderQ.put('프로세스종료')
         time.sleep(5)
-        self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 리시버 종료'))
 
     def SaveData(self):
         codes = set()
@@ -417,7 +418,6 @@ class UpbitReceiverTick:
             df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
-            self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))
+            self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))
 
-        self.logger.info('거래대금순위 저장 완료')
         self.cstgQ.put(('데이터저장', codes))

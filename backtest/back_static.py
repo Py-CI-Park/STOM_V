@@ -1,12 +1,10 @@
+from traceback import format_exc
 
 import numpy as np
 import pandas as pd
 import yfinance as yf
 from numba import jit
-from traceback import print_exc
-from matplotlib import pyplot as plt
 from optuna_dashboard import run_server
-from matplotlib import font_manager, gridspec
 from utility.setting_base import ui_num, GRAPH_PATH, DB_OPTUNA
 from utility.static import thread_decorator, dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
 
@@ -101,7 +99,7 @@ def GetMoneytopQuery(is_tick, gubun, startday, endday, starttime, endtime):
     return query
 
 
-def GetBuyStg(buytxt, gubun):
+def GetBuyStg(buytxt, gubun, wq):
     lines   = [line for line in buytxt.split('\n') if line and line[0] != '#']
     buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
@@ -110,7 +108,7 @@ def GetBuyStg(buytxt, gubun):
             buystg = compile(buystg, '<string>', 'exec')
         except:
             buystg = None
-            if gubun == 0: print_exc()
+            if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetBuyStg'))
     else:
         buystg = None
     if indistg:
@@ -123,18 +121,18 @@ def GetBuyStg(buytxt, gubun):
     return buystg, indistg
 
 
-def GetSellStg(sellstg, gubun):
+def GetSellStg(sellstg, gubun, wq):
     sellstg = 'self.sell_cond = 0\n' + sellstg
     sellstg, dict_cond = SetSellCond(sellstg.split('\n'))
     try:
         sellstg = compile(sellstg, '<string>', 'exec')
     except:
         sellstg = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetSellStg'))
     return sellstg, dict_cond
 
 
-def GetBuyConds(buy_conds, gubun):
+def GetBuyConds(buy_conds, gubun, wq):
     buy_conds = 'if not (' + \
                 '):\n    매수 = False\nelif not ('.join(buy_conds) + \
                 '):\n    매수 = False\nif 매수:\n    self.Buy()'
@@ -142,11 +140,11 @@ def GetBuyConds(buy_conds, gubun):
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except:
         buy_conds = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetBuyConds'))
     return buy_conds
 
 
-def GetSellConds(sell_conds, gubun):
+def GetSellConds(sell_conds, gubun, wq):
     sell_conds = 'self.sell_cond = 0\nif not (' + \
                  '):\n    매도 = True\nelif not ('.join(sell_conds) + \
                  '):\n    매도 = True\nif 매도:\n    self.Sell()'
@@ -155,7 +153,7 @@ def GetSellConds(sell_conds, gubun):
         sell_conds = compile(sell_conds, '<string>', 'exec')
     except:
         sell_conds = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetSellConds'))
     return sell_conds, dict_cond
 
 
@@ -173,7 +171,7 @@ def SetSellCond(selllist):
     return sellstg, dict_cond
 
 
-def GetBuyStgFuture(buystg, gubun):
+def GetBuyStgFuture(buystg, gubun, wq):
     lines   = [line for line in buystg.split('\n') if line and line[0] != '#']
     buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
@@ -182,7 +180,7 @@ def GetBuyStgFuture(buystg, gubun):
             buystg = compile(buystg, '<string>', 'exec')
         except:
             buystg = None
-            if gubun == 0: print_exc()
+            if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetBuyStgFuture'))
     else:
         buystg = None
     if indistg:
@@ -195,18 +193,18 @@ def GetBuyStgFuture(buystg, gubun):
     return buystg, indistg
 
 
-def GetSellStgFuture(sellstg, gubun):
+def GetSellStgFuture(sellstg, gubun, wq):
     sellstg = 'self.sell_cond = 0\n' + sellstg
     sellstg, dict_cond = SetSellCondFuture(sellstg.split('\n'))
     try:
         sellstg = compile(sellstg, '<string>', 'exec')
     except:
         sellstg = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetSellStgFuture'))
     return sellstg, dict_cond
 
 
-def GetBuyCondsFuture(is_long, buy_conds, gubun):
+def GetBuyCondsFuture(is_long, buy_conds, gubun, wq):
     if is_long:
         buy_conds = 'if not (' + \
                     '):\n    BUY_LONG = False\nelif not ('.join(buy_conds) + \
@@ -219,11 +217,11 @@ def GetBuyCondsFuture(is_long, buy_conds, gubun):
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except:
         buy_conds = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetBuyCondsFuture'))
     return buy_conds
 
 
-def GetSellCondsFuture(is_long, sell_conds, gubun):
+def GetSellCondsFuture(is_long, sell_conds, gubun, wq):
     if is_long:
         sell_conds = 'self.sell_cond = 0\nif ' + ':\n    SELL_LONG = True\nelif '.join(
             sell_conds) + ':\n    SELL_LONG = True\nif SELL_LONG:\n    self.Sell(SELL_LONG)'
@@ -235,7 +233,7 @@ def GetSellCondsFuture(is_long, sell_conds, gubun):
         sell_conds = compile(sell_conds, '<string>', 'exec')
     except:
         sell_conds = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetSellCondsFuture'))
     return sell_conds, dict_cond
 
 
@@ -517,12 +515,9 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
                 if not df_tsg_.empty:
                     endx_list.append(df_tsg_.index[-1])
 
-    font_name = 'C:/Windows/Fonts/malgun.ttf'
-    font_family = font_manager.FontProperties(fname=font_name).get_name()
-
-    # matplotlib 성능 최적화 설정
+    from matplotlib import pyplot as plt, font_manager, gridspec
     plt.rcParams['figure.max_open_warning'] = 0
-    plt.rcParams['font.family'] = font_family
+    plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()
     plt.rcParams['axes.unicode_minus'] = False
     plt.rcParams['path.simplify'] = True
     plt.rcParams['path.snap'] = True

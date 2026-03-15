@@ -21,7 +21,7 @@ from ui.set_dialog_chart import SetDialogChart
 from ui.set_dialog_formula import SetDialogFormula
 
 from ui.ui_etc import *
-from ui.ui_draw_chart import *
+from ui.ui_draw_chart_db import *
 from ui.ui_activated_back import *
 from ui.ui_activated_coin_stg import *
 from ui.ui_activated_stock_stg import *
@@ -36,7 +36,7 @@ from ui.ui_event_filter import *
 from ui.ui_activated_etc import *
 from ui.ui_process_alive import *
 from ui.ui_extend_window import *
-from ui.ui_draw_realchart import *
+from ui.ui_draw_chart_real import *
 from ui.ui_draw_jisuchart import *
 from ui.ui_betting_cotrol import *
 from ui.ui_update_textedit import *
@@ -315,7 +315,7 @@ def resolve_stock_python():
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, auto_run_):
+    def __init__(self, auto_run_, splash=None):
         super().__init__()
         self.logger = get_logger(self.__class__.__name__)
         self.log    = self.logger   # legacy alias used by ui_update_textedit.py
@@ -519,7 +519,7 @@ class MainWindow(QMainWindow):
 
         self.update_textedit    = UpdateTextedit(self)
         self.update_tablewidget = UpdateTablewidget(self)
-        self.draw_chart         = DrawChart(self)
+        self.draw_chart         = DrawDBChart(self)
         self.draw_realchart     = DrawRealChart(self)
         self.draw_realjisuchart = DrawRealJisuChart(self)
         self.draw_treemap       = DrawTremap(self)
@@ -527,8 +527,8 @@ class MainWindow(QMainWindow):
         self.writer = Writer(self.windowQ)
         self.writer.signal1.connect(self.update_textedit.update_texedit)
         self.writer.signal2.connect(self.update_tablewidget.update_tablewidget)
-        self.writer.signal3.connect(self.draw_chart.draw_chart)
-        self.writer.signal4.connect(self.draw_realchart.draw_realchart)
+        self.writer.signal3.connect(self.draw_chart.draw_db_chart)
+        self.writer.signal4.connect(self.draw_realchart.draw_real_chart)
         self.writer.signal5.connect(self.draw_realjisuchart.draw_realjisuchart)
         self.writer.signal6.connect(self.draw_treemap.draw_treemap)
         self.writer.signal7.connect(self.UpdateImage)
@@ -550,6 +550,9 @@ class MainWindow(QMainWindow):
         self.qtimer3.setInterval(1 * 1000)
         self.qtimer3.timeout.connect(self.UpdateCpuper)
         self.qtimer3.start()
+
+        if splash:
+            splash.finish_splash()
 
         if self.dict_set['코인리시버']: self.mnButtonClicked_01(1)
 

@@ -1,7 +1,9 @@
 
 from PyQt5.QtWidgets import QMessageBox
+from utility.static import error_decorator
 
 
+@error_decorator
 def extend_window(ui):
     if ui.main_btn not in (2, 3):
         QMessageBox.critical(ui, '오류 알림', '전략탭 확장기능은 전략탭에서만 사용할 수 있습니다.')

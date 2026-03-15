@@ -2,17 +2,34 @@
 import os
 import talib
 import sqlite3
-import numpy as np
-import pandas as pd
-from traceback import print_exc
-from matplotlib import font_manager
-from matplotlib import pyplot as plt
-from trade.strategy_base import Strategy
-from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms, get_logger, add_rolling_data, dt_ymdhm
+from copy import deepcopy
+from traceback import format_exc
+from trade.formula_manager import FormulaManager, get_formula_data
+from utility.static import timedelta_sec, str_ymdhms, dt_ymdhms, add_rolling_data, dt_ymdhm, error_decorator, \
+    set_builtin_print
 from utility.setting_base import ui_num, DB_TRADELIST, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_CODE_INFO, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
-    list_stock_min, list_coin_min, list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, \
-    list_future_tick2, list_future_min2, DB_STRATEGY
+    list_stock_min, list_coin_min
+
+
+_pd = None
+_np = None
+
+
+def get_pd():
+    global _pd
+    if _pd is None:
+        import pandas as pd
+        _pd = pd
+    return _pd
+
+
+def get_np():
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
 
 
 class Chart:
@@ -24,23 +41,17 @@ class Chart:
         self.windowQ   = qlist[0]
         self.chartQ    = qlist[4]
         self.dict_set  = dict_set
-        self.logger    = get_logger(self.__class__.__name__)
         self.dict_name = {}
 
         self.arry_kosp   = None
         self.arry_kosd   = None
 
         con = sqlite3.connect(DB_CODE_INFO)
-        df = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
+        df = get_pd().read_sql('SELECT * FROM stockinfo', con).set_index('index')
         self.dict_name.update(df['종목명'].to_dict())
-        df = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
+        df = get_pd().read_sql('SELECT * FROM futureinfo', con).set_index('index')
         self.dict_name.update(df['종목명'].to_dict())
         con.close()
-
-        font_name = 'C:/Windows/Fonts/malgun.ttf'
-        font_family = font_manager.FontProperties(fname=font_name).get_name()
-        plt.rcParams['font.family'] = font_family
-        plt.rcParams['axes.unicode_minus'] = False
 
         self.factor_index = {
             '주식분봉종가': list_stock_min.index('현재가'),
@@ -55,8 +66,10 @@ class Chart:
             '그외거래대금': list_coin_min.index('분당거래대금')
         }
 
+        set_builtin_print(True, self.windowQ)
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         while True:
             data = self.chartQ.get()
@@ -71,10 +84,19 @@ class Chart:
 
     @staticmethod
     def GraphComparison(backdetail_list):
+        from matplotlib import pyplot as plt, font_manager
+        plt.rcParams['figure.max_open_warning'] = 0
+        plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()
+        plt.rcParams['axes.unicode_minus'] = False
+        plt.rcParams['path.simplify'] = True
+        plt.rcParams['path.snap'] = True
+        plt.rcParams['figure.autolayout'] = True
+        plt.rcParams['figure.constrained_layout.use'] = True
+
         plt.figure('그래프 비교', figsize=(12, 10))
         con = sqlite3.connect(DB_BACKTEST)
         for table in backdetail_list:
-            df = pd.read_sql(f'SELECT `index`, `수익금` FROM {table}', con)
+            df = get_pd().read_sql(f'SELECT `index`, `수익금` FROM {table}', con)
             df['index'] = df['index'].apply(lambda x: dt_ymdhms(x))
             df.set_index('index', inplace=True)
             df = df.resample('D').sum()
@@ -89,25 +111,21 @@ class Chart:
     def UpdateRealJisu(self, data):
         gubun = data[0]
         jisu_data = data[1:]
-        try:
-            if gubun == '코스피':
-                if self.arry_kosp is None:
-                    self.arry_kosp = np.array([jisu_data])
-                else:
-                    self.arry_kosp = np.r_[self.arry_kosp, np.array([jisu_data])]
-                xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosp[:, 0]]
-                self.windowQ.put((ui_num['코스피'], xticks, self.arry_kosp[:, 1]))
-            elif gubun == '코스닥':
-                if self.arry_kosd is None:
-                    self.arry_kosd = np.array([jisu_data])
-                else:
-                    self.arry_kosd = np.r_[self.arry_kosd, np.array([jisu_data])]
-                xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosd[:, 0]]
-                self.windowQ.put((ui_num['코스닥'], xticks, self.arry_kosd[:, 1]))
-        except:
-            pass
+        if gubun == '코스피':
+            if self.arry_kosp is None:
+                self.arry_kosp = get_np().array([jisu_data])
+            else:
+                self.arry_kosp = get_np().r_[self.arry_kosp, get_np().array([jisu_data])]
+            xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosp[:, 0]]
+            self.windowQ.put((ui_num['코스피'], xticks, self.arry_kosp[:, 1]))
+        elif gubun == '코스닥':
+            if self.arry_kosd is None:
+                self.arry_kosd = get_np().array([jisu_data])
+            else:
+                self.arry_kosd = get_np().r_[self.arry_kosd, get_np().array([jisu_data])]
+            xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosd[:, 0]]
+            self.windowQ.put((ui_num['코스닥'], xticks, self.arry_kosd[:, 1]))
 
-    @error_decorator
     def UpdateChart(self, data):
         def get_cgtime(cgtime_):
             while cgtime_ not in df.index:
@@ -187,11 +205,11 @@ class Chart:
         try:
             if os.path.isfile(db_name1):
                 con = sqlite3.connect(db_name1)
-                df = pd.read_sql(query1 if starttime and endtime else query2, con)
+                df = get_pd().read_sql(query1 if starttime and endtime else query2, con)
                 con.close()
             elif os.path.isfile(db_name2):
                 con = sqlite3.connect(db_name2)
-                df = pd.read_sql(query1 if starttime and endtime else query2, con)
+                df = get_pd().read_sql(query1 if starttime and endtime else query2, con)
                 con.close()
         except:
             pass
@@ -207,20 +225,20 @@ class Chart:
             buy_index  = []
             sell_index = []
 
-            arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
+            arry = get_np().column_stack((arry, get_np().zeros((arry.shape[0], 2))))
             if market in (2, 4):
-                arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
+                arry = get_np().column_stack((arry, get_np().zeros((arry.shape[0], 2))))
 
             if detail is None:
                 con = sqlite3.connect(DB_TRADELIST)
                 if market in (3, 4):
-                    df = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{code}'", con).set_index('index')
+                    df = get_pd().read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{code}'", con).set_index('index')
                 else:
                     name = self.dict_name[code] if code in self.dict_name else code
                     if market == 1:
-                        df = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
+                        df = get_pd().read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
                     else:
-                        df = pd.read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
+                        df = get_pd().read_sql(f"SELECT * FROM f_chegeollist WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
                 con.close()
 
                 if len(df) > 0:
@@ -267,7 +285,7 @@ class Chart:
                         arry[arry[:, 0] == 추가매수시간, -2] = 추가매수가
 
             if not is_tick:
-                arry = np.column_stack((arry, np.zeros((arry.shape[0], 28))))
+                arry = get_np().column_stack((arry, get_np().zeros((arry.shape[0], 28))))
                 try:
                     mc = arry[:, 1]
                     mh = arry[:, self.factor_index['주식분봉고가' if market == 1 else '그외분봉고가']]
@@ -341,216 +359,19 @@ class Chart:
                     if k[34] != 0:
                         WILLR = talib.WILLR(mh, ml, mc, timeperiod=k[34])
                         arry[:,  -1] = WILLR
-                    arry = np.nan_to_num(arry)
+                    arry = get_np().nan_to_num(arry)
                 except:
                     arry = None
-                    print_exc()
-                    self.logger.error(f'보조지표의 설정값이 잘못되었습니다.')
+                    self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 보조지표의 설정값이 잘못되었습니다.'))
 
-            con = sqlite3.connect(DB_STRATEGY)
-            fm_df = pd.read_sql("SELECT * FROM formula", con)
-            con.close()
-
-            dict_fm  = fm_df.to_dict('index')
-            dict_fm  = {k: v for k, v in dict_fm.items() if v['체크유무'] == 1}
-            dict_fn  = {}
-            fm_index = {}
-
-            dict_count = {
-                '선:일반': 1,
-                '선:조건': 1,
-                '화살표:일반': 1,
-                '화살표:매매': 2,
-                '범위': 3
-            }
-
-            fm_cnt = sum(dict_count[v['표시형태']] for v in dict_fm.values())
-            if fm_cnt > 0:
-                col_cnt = arry.shape[1]
-                fm_index = {}
-                for v in dict_fm.values():
-                    fm_index[v['수식명']] = col_cnt
-                    col_cnt += dict_count[v['표시형태']]
-
-                dict_fn = set([v['팩터명'] for v in dict_fm.values()])
-                dict_fn = {fn: {v['수식명']: [fm_index[v['수식명']], v['표시형태']] for v in dict_fm.values() if v['팩터명'] == fn} for fn in dict_fn}
-
-                arry = np.column_stack((arry, np.zeros((arry.shape[0], fm_cnt))))
-                fm = FormulaManager()
-                fm.update_user_data(code, arry, market, is_tick, w_unit, dict_fm, fm_index)
+            fm_list, dict_fm, fm_tcnt = get_formula_data(True, arry.shape[1])
+            if fm_tcnt > 0:
+                arry = get_np().column_stack((arry, get_np().zeros((arry.shape[0], fm_tcnt))))
+                fm = FormulaManager(deepcopy(fm_list))
+                fm.update_all_data(code, arry, market, is_tick, w_unit)
 
             if arry is not None:
                 if is_tick: xticks = [dt_ymdhms(str(int(x))).timestamp() for x in arry[:, 0]]
                 else:       xticks = [dt_ymdhms(f'{int(x)}00').timestamp() for x in arry[:, 0]]
                 gubun = 'C' if coin else 'S' if '키움증권' in self.dict_set['증권사'] else 'F'
-                self.windowQ.put((ui_num['차트'], gubun, xticks, arry, buy_index, sell_index, dict_fm, fm_index, dict_fn, fm_cnt))
-
-
-class FormulaManager(Strategy):
-    def __init__(self):
-        super().__init__()
-        self.base_cnt = None
-        self.check    = None
-        self.buy      = None
-        self.sell     = None
-        self.line     = None
-        self.up       = None
-        self.down     = None
-        self.hold     = False
-
-        self.SetGlobalsFunc()
-
-    def UpdateGlobalsFunc(self, dict_add_func):
-        globals().update(dict_add_func)
-
-    # noinspection PyUnusedLocal
-    def update_user_data(self, code, arry, market, is_tick, w_unit, dict_fm, fm_index):
-        self.code        = code
-        self.arry_code   = arry
-        self.is_tick     = is_tick
-        self.avg_list    = [w_unit]
-        self.high_low    = {}
-        self.tick_count  = 0
-
-        if market == 1:
-            factor_list = list_stock_tick2 if self.is_tick else list_stock_min2
-        elif market == 3:
-            factor_list = list_coin_tick2 if self.is_tick else list_coin_min2
-        else:
-            factor_list = list_future_tick2 if self.is_tick else list_future_min2
-
-        self.dict_findex = {name: i for i, name in enumerate(factor_list)}
-        if self.is_tick:
-            self.dict_findex['초당매도수금액'] = self.dict_findex['초당매수금액']
-            self.dict_findex['누적초당매도수수량'] = self.dict_findex['누적초당매수수량']
-        else:
-            self.dict_findex['분당매도수금액'] = self.dict_findex['분당매수금액']
-            self.dict_findex['누적분당매도수수량'] = self.dict_findex['누적분당매수수량']
-
-        self.dict_findex['당일매도수금액'] = self.dict_findex['당일매수금액']
-        self.dict_findex['최고매도수금액'] = self.dict_findex['최고매수금액']
-        self.dict_findex['최고매도수가격'] = self.dict_findex['최고매수가격']
-        self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
-        self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
-
-        self.base_cnt = self.dict_findex['관심종목'] + 1
-
-        fm_list = []
-        for v in dict_fm.values():
-            fm = list(v.values())
-            fm[-1] = compile(fm[-1], '<string>', 'exec')
-            fm_list.append(fm)
-
-        for i, index in enumerate(self.arry_code[:, 0]):
-            self.index  = int(index)
-            self.indexn = i
-            self.tick_count += 1
-
-            if market == 1:
-                if self.is_tick:
-                    현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
-                        거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, 라운드피겨위5호가이내, VI해제시간, VI가격, VI호가단위, \
-                        초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
-                        매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, \
-                        매수호가5, 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
-                        매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
-                    VI해제시간 = dt_ymdhms(str(int(VI해제시간)))
-                else:
-                    현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
-                        거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, 라운드피겨위5호가이내, VI해제시간, VI가격, VI호가단위, \
-                        분봉시가, 분봉고가, 분봉저가, \
-                        분당거래대금, 고저평균대비등락율, 저가대비고가등락율, 분당매수금액, 분당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
-                        매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
-                        매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
-                        매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
-                    VI해제시간 = dt_ymdhms(str(int(VI해제시간)))
-            else:
-                if self.is_tick:
-                    현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
-                        초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
-                        매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
-                        매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
-                        매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
-                else:
-                    현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
-                        분봉시가, 분봉고가, 분봉저가, \
-                        분당거래대금, 고저평균대비등락율, 저가대비고가등락율, 분당매수금액, 분당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
-                        매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
-                        매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
-                        매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
-
-            시분초 = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
-            # noinspection PyUnboundLocalVariable
-            순매수금액 = 초당매수금액 - 초당매도금액 if self.is_tick else 분당매수금액 - 분당매도금액
-            종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
-
-            high_low = self.high_low.get(self.code)
-            if self.is_tick:
-                if high_low:
-                    if 현재가 >= high_low[0]:
-                        high_low[0] = 현재가
-                        high_low[1] = self.indexn
-                    if 현재가 <= high_low[2]:
-                        high_low[2] = 현재가
-                        high_low[3] = self.indexn
-                else:
-                    self.high_low[self.code] = [현재가, self.indexn, 현재가, self.indexn]
-            else:
-                if high_low:
-                    # noinspection PyUnboundLocalVariable
-                    if 분봉고가 >= high_low[0]:
-                        high_low[0] = 분봉고가
-                        high_low[1] = self.indexn
-                    # noinspection PyUnboundLocalVariable
-                    if 분봉저가 <= high_low[2]:
-                        high_low[2] = 분봉저가
-                        high_low[3] = self.indexn
-                else:
-                    self.high_low[self.code] = [분봉고가, self.indexn, 분봉저가, self.indexn]
-
-            for name, _, fname, data_type, _, _, style, stg in fm_list:
-                col_idx = fm_index[name]
-                self.check, self.line, self.buy, self.sell, self.up, self.down = None, None, None, None, None, None
-                try:
-                    exec(stg)
-                except:
-                    pass
-
-                if data_type == '선:일반':
-                    if self.line is not None:
-                        arry[i, col_idx] = self.line
-
-                elif data_type == '선:조건':
-                    if self.check is not None and self.line is not None:
-                        if self.check:
-                            arry[i, col_idx] = self.line
-                        else:
-                            pre_line = arry[i-1, col_idx]
-                            if pre_line > 0:
-                                arry[i, col_idx] = pre_line
-
-                elif data_type == '화살표:일반':
-                    if self.check is not None and self.check:
-                        if self.is_tick or fname != '현재가':
-                            price = arry[i, self.dict_findex[fname]]
-                        else:
-                            if style == 6:
-                                price = 분봉저가
-                            else:
-                                price = 분봉고가
-                        arry[i, col_idx] = price
-
-                elif data_type == '화살표:매매':
-                    if self.buy is not None and self.sell is not None:
-                        if not self.hold and self.buy:
-                            arry[i, col_idx] = 현재가
-                            self.hold = True
-                        elif self.hold and self.sell:
-                            arry[i, col_idx + 1] = 현재가
-                            self.hold = False
-
-                elif data_type == '범위':
-                    if self.check is not None and self.up is not None and self.down is not None:
-                        arry[i, col_idx] = 1.0 if self.check else 0.0
-                        arry[i, col_idx + 1] = self.up
-                        arry[i, col_idx + 2] = self.down
+                self.windowQ.put((ui_num['차트'], gubun, xticks, arry, buy_index, sell_index, fm_list, dict_fm, fm_tcnt))

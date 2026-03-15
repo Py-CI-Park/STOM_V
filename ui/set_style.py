@@ -1,6 +1,8 @@
 
 from PyQt5.QtGui import QFont, QColor
-from utility.setting_user import DICT_SET
+from utility.setting_user import load_settings
+
+dict_set = load_settings()
 
 qfont12 = QFont()
 qfont12.setFamily('나눔고딕')
@@ -54,6 +56,7 @@ color_bg_bt = QColor(50, 50, 60)
 color_bg_ld = (50, 50, 60, 150)
 color_bg_bc = QColor(40, 40, 50)
 color_bg_dk = QColor(30, 30, 40)
+color_bg_ct = QColor(25, 25, 40)
 color_bg_bk = QColor(20, 20, 30)
 
 color_fg_bt = QColor(230, 230, 240)
@@ -70,13 +73,14 @@ style_bc_bb = 'QPushButton{background-color: rgb(40, 40, 50);border-style: solid
 style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(30, 30, 40);border-style: solid;border-width: 1px;border-color: rgb(30, 30, 40);} QPushButton:hover{background-color: rgb(50, 50, 60);}'
 style_pgbar = 'QProgressBar{background-color: #20202a;} QProgressBar::chunk {background-color: #5a5a64;}'
 
-if DICT_SET['테마'] == '다크브라운':
+if dict_set['테마'] == '다크브라운':
     color_bf_bt = QColor(120, 110, 110)
     color_bf_dk = QColor(80, 70, 70)
     color_bg_bt = QColor(60, 50, 50)
     color_bg_ld = (60, 50, 50, 150)
     color_bg_bc = QColor(50, 40, 40)
     color_bg_dk = QColor(40, 30, 30)
+    color_bg_ct = QColor(40, 25, 25)
     color_bg_bk = QColor(30, 20, 20)
 
     color_fg_bt = QColor(240, 230, 230)
@@ -93,13 +97,14 @@ if DICT_SET['테마'] == '다크브라운':
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(40, 30, 30);border-style: solid;border-width: 1px;border-color: rgb(40, 30, 30);} QPushButton:hover{background-color: rgb(60, 50, 50);}'
     style_pgbar = 'QProgressBar {background-color: #2a2020;} QProgressBar::chunk {background-color: #645a5a;}'
 
-elif DICT_SET['테마'] == '다크그린':
+elif dict_set['테마'] == '다크그린':
     color_bf_bt = QColor(110, 120, 110)
     color_bf_dk = QColor(70, 80, 70)
     color_bg_bt = QColor(50, 60, 50)
     color_bg_ld = (50, 60, 50, 150)
     color_bg_bc = QColor(40, 50, 40)
     color_bg_dk = QColor(30, 40, 30)
+    color_bg_ct = QColor(25, 40, 25)
     color_bg_bk = QColor(20, 30, 20)
 
     color_fg_bt = QColor(230, 240, 230)
@@ -116,13 +121,14 @@ elif DICT_SET['테마'] == '다크그린':
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(30, 40, 30);border-style: solid;border-width: 1px;border-color: rgb(30, 40, 30);} QPushButton:hover{background-color: rgb(50, 60, 50);}'
     style_pgbar = 'QProgressBar {background-color: #202a20;} QProgressBar::chunk {background-color: #5a645a;}'
 
-elif DICT_SET['테마'] == '다크옐로':
+elif dict_set['테마'] == '다크옐로':
     color_bf_bt = QColor(120, 120, 110)
     color_bf_dk = QColor(80, 80, 70)
     color_bg_bt = QColor(60, 60, 50)
     color_bg_ld = (60, 60, 50, 150)
     color_bg_bc = QColor(50, 50, 40)
     color_bg_dk = QColor(40, 40, 30)
+    color_bg_ct = QColor(40, 40, 25)
     color_bg_bk = QColor(30, 30, 20)
 
     color_fg_bt = QColor(240, 240, 230)
@@ -139,13 +145,14 @@ elif DICT_SET['테마'] == '다크옐로':
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(40, 40, 30);border-style: solid;border-width: 1px;border-color: rgb(40, 40, 30);} QPushButton:hover{background-color: rgb(60, 60, 50);}'
     style_pgbar = 'QProgressBar {background-color: #2a2a20;} QProgressBar::chunk {background-color: #64645a;}'
 
-elif DICT_SET['테마'] == '다크라임':
+elif dict_set['테마'] == '다크라임':
     color_bf_bt = QColor(110, 120, 120)
     color_bf_dk = QColor(70, 80, 80)
     color_bg_bt = QColor(50, 60, 60)
     color_bg_ld = (50, 60, 60, 150)
     color_bg_bc = QColor(40, 50, 50)
     color_bg_dk = QColor(30, 40, 40)
+    color_bg_ct = QColor(25, 40, 40)
     color_bg_bk = QColor(20, 30, 30)
 
     color_fg_bt = QColor(230, 240, 240)
@@ -162,13 +169,14 @@ elif DICT_SET['테마'] == '다크라임':
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(30, 40, 40);border-style: solid;border-width: 1px;border-color: rgb(30, 40, 40);} QPushButton:hover{background-color: rgb(50, 60, 60);}'
     style_pgbar = 'QProgressBar {background-color: #202a2a;} QProgressBar::chunk {background-color: #5a6464;}'
 
-elif DICT_SET['테마'] == '다크퍼플':
+elif dict_set['테마'] == '다크퍼플':
     color_bf_bt = QColor(120, 110, 120)
     color_bf_dk = QColor(80, 70, 80)
     color_bg_bt = QColor(60, 50, 60)
     color_bg_ld = (60, 50, 60, 150)
     color_bg_bc = QColor(50, 40, 50)
     color_bg_dk = QColor(40, 30, 40)
+    color_bg_ct = QColor(40, 25, 40)
     color_bg_bk = QColor(30, 20, 30)
 
     color_fg_bt = QColor(240, 230, 240)

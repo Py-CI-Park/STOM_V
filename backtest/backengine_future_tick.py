@@ -29,6 +29,36 @@ class BackEngineFutureTick(BackEngineBase):
             for k, v in self.dict_condition.items():
                 exec(v)
 
+        if self.fm_list:
+            for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
+                self.check, self.line, self.up, self.down = None, None, None, None
+
+                exec(stg)
+
+                if data_type == '선:일반':
+                    if self.line is not None:
+                        self.arry_code[self.indexn, col_idx] = self.line
+
+                elif data_type == '선:조건':
+                    if self.check is not None and self.line is not None:
+                        if self.check:
+                            self.arry_code[self.indexn, col_idx] = self.line
+                        else:
+                            pre_line = self.arry_code[self.indexn - 1, col_idx]
+                            if pre_line > 0:
+                                self.arry_code[self.indexn, col_idx] = pre_line
+
+                elif data_type == '범위':
+                    if self.check is not None and self.up is not None and self.down is not None:
+                        self.arry_code[self.indexn, col_idx] = 1.0 if self.check else 0.0
+                        self.arry_code[self.indexn, col_idx + 1] = self.up
+                        self.arry_code[self.indexn, col_idx + 2] = self.down
+
+                elif data_type == '화살표:일반':
+                    if self.check is not None and self.check:
+                        price = self.arry_code[self.indexn, self.dict_findex[fname]]
+                        self.arry_code[self.indexn, col_idx] = price
+
         if self.opti_turn == 1:
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]

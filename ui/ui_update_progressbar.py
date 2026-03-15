@@ -1,8 +1,9 @@
 
-from utility.static import now, timedelta_sec
+from utility.static import now, timedelta_sec, error_decorator
 from ui.set_style import style_bc_bb, style_bc_bt, style_bc_by, style_bc_sl
 
 
+@error_decorator
 def update_back_progressbar(ui):
     if ui.back_start_time is not None:
         if ui.optuna_current_cnt == 0:
@@ -35,6 +36,7 @@ def update_back_progressbar(ui):
                 ui.cs_progressBar_01.setRange(0, total_back_count)
 
 
+@error_decorator
 def update_progressbar(ui):
     ui.progressBarrr.setValue(ui.cpu_per)
     ui.counter = 0 if ui.counter == 599 else ui.counter + 1
@@ -174,7 +176,7 @@ def update_progressbar(ui):
     if ui.lgicon_alert:
         icon = ui.icon_log if ui.counter % 2 == 0 else ui.icon_log2
         ui.main_btn_list[5].setIcon(icon)
-        if ui.counter % 600 == 0 and (ui.dict_set['주식알림소리'] or ui.dict_set['코인알림소리']):
+        if ui.counter % 60 == 0 and (ui.dict_set['주식알림소리'] or ui.dict_set['코인알림소리']):
             ui.soundQ.put('오류가 발생하였습니다. 로그탭을 확인하십시오.')
 
     if not ui.image_search or (ui.counter % 600 == 0 and (ui.image_label1.isVisible() or ui.image_label2.isVisible())):

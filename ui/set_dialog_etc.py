@@ -1,11 +1,10 @@
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QTabWidget, QWidget
-from matplotlib import pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
 from ui.set_style import style_ck_bx, style_bc_dk, qfont14, style_fc_dk
 from utility.setting_base import columns_hj, columns_hc, columns_hg, columns_gc, columns_ns, columns_jm1, columns_jm2, \
     columns_stg1, columns_stg2, columns_kp, columns_hc2
+from utility.static import error_decorator
 
 
 class SetDialogEtc:
@@ -14,6 +13,7 @@ class SetDialogEtc:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.dialog_hoga = self.wc.setDialog('STOM HOGA')
         self.ui.dialog_hoga.geometry().center()
@@ -43,20 +43,9 @@ class SetDialogEtc:
 
         self.ui.dialog_tree = self.wc.setDialog('STOM TREEMAP')
         self.ui.dialog_tree.geometry().center()
-        fig = plt.figure('업종별 테마별 등락율', figsize=(15, 13.3))
-        fig.set_facecolor('black')
-        self.ui.canvas = FigureCanvas(fig)
-        tree_layout = QVBoxLayout(self.ui.dialog_tree)
-        tree_layout.setContentsMargins(0, 0, 0, 0)
-        tree_layout.addWidget(self.ui.canvas)
 
         self.ui.dialog_graph = self.wc.setDialog('STOM GRAPH')
         self.ui.dialog_graph.geometry().center()
-        fig = plt.figure('누적수익금', figsize=(12, 12))
-        self.ui.canvas2 = FigureCanvas(fig)
-        tree_layout = QVBoxLayout(self.ui.dialog_graph)
-        tree_layout.setContentsMargins(0, 0, 0, 0)
-        tree_layout.addWidget(self.ui.canvas2)
 
         self.ui.dialog_db = self.wc.setDialog('STOM DATABASE')
         self.ui.dialog_db.geometry().center()
@@ -460,7 +449,7 @@ class SetDialogEtc:
         ]
 
         self.ui.dialog_hoga.setFixedSize(572, 355)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_hoga.move(self.ui.dict_set['창위치'][16], self.ui.dict_set['창위치'][17])
             except:
@@ -477,7 +466,7 @@ class SetDialogEtc:
         self.ui.hg_pushButtonnn_04.setGeometry(710, 354, 130, 30)
 
         self.ui.dialog_info.setFixedSize(1403, 570)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_info.move(self.ui.dict_set['창위치'][8], self.ui.dict_set['창위치'][9])
             except:
@@ -489,14 +478,14 @@ class SetDialogEtc:
         self.ui.jm_tableWidgett_02.setGeometry(1024, 243, 373, 320)
 
         self.ui.dialog_web.resize(1000, 1000)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_web.move(self.ui.dict_set['창위치'][10], self.ui.dict_set['창위치'][11])
             except:
                 pass
 
         self.ui.dialog_tree.resize(1000, 1000)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_tree.move(self.ui.dict_set['창위치'][12], self.ui.dict_set['창위치'][13])
             except:
@@ -579,7 +568,7 @@ class SetDialogEtc:
         self.ui.db_textEdittttt_01.setGeometry(5, 565, 515, 100)
 
         self.ui.dialog_order.setFixedSize(232, 303)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_order.move(self.ui.dict_set['창위치'][20], self.ui.dict_set['창위치'][21])
             except:
@@ -626,7 +615,7 @@ class SetDialogEtc:
         self.ui.cp_tableWidget_01.setGeometry(5, 40, 340, 718)
 
         self.ui.dialog_kimp.setFixedSize(535, 763)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_kimp.move(self.ui.dict_set['창위치'][14], self.ui.dict_set['창위치'][15])
             except:

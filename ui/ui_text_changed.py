@@ -1,8 +1,19 @@
 
-import numpy as np
 from utility.setting_base import columns_jg, columns_jgf, columns_jgcf
+from utility.static import error_decorator
+
+_np = None
 
 
+def get_np():
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
+
+
+@error_decorator
 def text_changed_01(ui):
     if ui.dialog_scheduler.focusWidget() not in ui.list_slineEdittttt:
         return
@@ -14,6 +25,7 @@ def text_changed_01(ui):
                 widget.setText(text)
 
 
+@error_decorator
 def text_changed_02(ui):
     if ui.dialog_scheduler.focusWidget() not in ui.list_elineEdittttt:
         return
@@ -25,6 +37,7 @@ def text_changed_02(ui):
                 widget.setText(text)
 
 
+@error_decorator
 def text_changed_03(ui):
     if ui.dialog_scheduler.focusWidget() not in ui.list_blineEdittttt:
         return
@@ -36,6 +49,7 @@ def text_changed_03(ui):
                 widget.setText(text)
 
 
+@error_decorator
 def text_changed_04(ui):
     if ui.dialog_scheduler.focusWidget() not in ui.list_alineEdittttt:
         return
@@ -48,6 +62,7 @@ def text_changed_04(ui):
                 widget.setText(text)
 
 
+@error_decorator
 def text_changed_05(ui):
     name = ui.hj_tableWidgett_01.item(0, 0).text()
     if name:
@@ -69,9 +84,9 @@ def text_changed_05(ui):
                     order_count = int(ui.dict_set['주식투자금'])
             else:
                 if 'KRW' in name:
-                    order_count = np.round(ui.dict_set['코인투자금'] * 1_000_000 / order_price, 8)
+                    order_count = get_np().round(ui.dict_set['코인투자금'] * 1_000_000 / order_price, 8)
                 else:
-                    order_count = np.round(ui.dict_set['코인투자금'] / order_price, 8)
+                    order_count = get_np().round(ui.dict_set['코인투자금'] / order_price, 8)
         else:
             if ui.main_btn == 0:
                 order_count = ui.sjg_tableWidgettt.item(row_num, col_num).text()

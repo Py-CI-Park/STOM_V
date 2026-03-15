@@ -2,8 +2,10 @@
 from PIL import Image
 from PyQt5.QtWidgets import QMessageBox
 from utility.setting_base import ui_num, GRAPH_PATH
+from utility.static import error_decorator
 
 
+@error_decorator
 def ssbutton_clicked_01(ui):
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_01.clear()
@@ -19,6 +21,7 @@ def ssbutton_clicked_01(ui):
         ui.update_tablewidget.update_tablewidget((ui_num['S상세기록'], df))
 
 
+@error_decorator
 def ssbutton_clicked_02(ui):
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_02.clear()
@@ -34,6 +37,7 @@ def ssbutton_clicked_02(ui):
         ui.update_tablewidget.update_tablewidget((ui_num['S상세기록'], df))
 
 
+@error_decorator
 def ssbutton_clicked_03(ui):
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_03.clear()
@@ -49,6 +53,7 @@ def ssbutton_clicked_03(ui):
         ui.update_tablewidget.update_tablewidget((ui_num['S상세기록'], df))
 
 
+@error_decorator
 def ssbutton_clicked_04(ui):
     comboBox = None
     if ui.focusWidget() == ui.ss_pushButtonn_02:
@@ -72,6 +77,7 @@ def ssbutton_clicked_04(ui):
         QMessageBox.critical(ui, '오류 알림', '저장된 그래프 파일이 존재하지 않습니다.\n')
 
 
+@error_decorator
 def ssbutton_clicked_05(ui):
     if not ui.dialog_comp.isVisible():
         ui.dialog_comp.show()
@@ -95,6 +101,7 @@ def ssbutton_clicked_05(ui):
         ui.dialog_comp.close()
 
 
+@error_decorator
 def ssbutton_clicked_06(ui):
     buttonReply = QMessageBox.question(
         ui, '백테스트 중지', '진행중인 백테스트를 중지합니다.\n계속하시겠습니까?\n',
@@ -104,6 +111,7 @@ def ssbutton_clicked_06(ui):
         ui.BacktestProcessKill(False, False)
 
 
+@error_decorator
 def csbutton_clicked_01(ui):
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.cs_comboBoxxxx_01.clear()
@@ -118,6 +126,7 @@ def csbutton_clicked_01(ui):
         ui.update_tablewidget.update_tablewidget((ui_num['C상세기록'], df))
 
 
+@error_decorator
 def csbutton_clicked_02(ui):
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.cs_comboBoxxxx_02.clear()
@@ -132,6 +141,7 @@ def csbutton_clicked_02(ui):
         ui.update_tablewidget.update_tablewidget((ui_num['C상세기록'], df))
 
 
+@error_decorator
 def csbutton_clicked_03(ui):
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.cs_comboBoxxxx_03.clear()
@@ -146,6 +156,7 @@ def csbutton_clicked_03(ui):
         ui.update_tablewidget.update_tablewidget((ui_num['C상세기록'], df))
 
 
+@error_decorator
 def csbutton_clicked_04(ui):
     comboBox = None
     if ui.focusWidget() == ui.cs_pushButtonn_02:
@@ -169,6 +180,7 @@ def csbutton_clicked_04(ui):
         QMessageBox.critical(ui, '오류 알림', '저장된 그래프 파일이 존재하지 않습니다.\n')
 
 
+@error_decorator
 def csbutton_clicked_05(ui):
     if not ui.dialog_comp.isVisible():
         ui.dialog_comp.show()
@@ -192,6 +204,7 @@ def csbutton_clicked_05(ui):
         ui.dialog_comp.close()
 
 
+@error_decorator
 def csbutton_clicked_06(ui):
     buttonReply = QMessageBox.question(
         ui, '백테스트 중지', '진행중인 백테스트를 중지합니다.\n계속하시겠습니까?\n',

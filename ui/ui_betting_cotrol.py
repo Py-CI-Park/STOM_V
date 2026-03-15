@@ -3,8 +3,10 @@ import random
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QPushButton
 from ui.set_text import famous_saying
+from utility.static import error_decorator
 
 
+@error_decorator
 def setting_stock_weight_cotrol_load(ui):
     ui.bjs_checkBoxxx_01.setChecked(False)
     ui.bjs_checkBoxxx_02.setChecked(False)
@@ -30,6 +32,7 @@ def setting_stock_weight_cotrol_load(ui):
     ui.bjs_lineEdittt_09.setText(bjjj_list[9])
 
 
+@error_decorator
 def setting_stock_weight_cotrol_save(ui):
     bjjj_list = []
     if ui.bjs_checkBoxxx_01.isChecked():   bjjj_list.append('0')
@@ -71,6 +74,7 @@ def setting_stock_weight_cotrol_save(ui):
     ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_coin_weight_cotrol_load(ui):
     ui.bjc_checkBoxxx_01.setChecked(False)
     ui.bjc_checkBoxxx_02.setChecked(False)
@@ -96,6 +100,7 @@ def setting_coin_weight_cotrol_load(ui):
     ui.bjc_lineEdittt_09.setText(bjjj_list[9])
 
 
+@error_decorator
 def setting_coin_weight_cotrol_save(ui):
     bjjj_list = []
     if ui.bjc_checkBoxxx_01.isChecked():   bjjj_list.append('0')
@@ -137,6 +142,7 @@ def setting_coin_weight_cotrol_save(ui):
     ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_stock_weight_cotrol_changed(ui, state):
     if ui.dialog_bjjs.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
@@ -146,6 +152,7 @@ def setting_stock_weight_cotrol_changed(ui, state):
                         widget.nextCheckState()
 
 
+@error_decorator
 def setting_coin_weight_cotrol_changed(ui, state):
     if ui.dialog_bjjc.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:

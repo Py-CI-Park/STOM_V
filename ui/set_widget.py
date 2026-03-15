@@ -24,10 +24,11 @@ class CustomViewBox(pg.ViewBox):
         self.ymax = 0
         self.linked_views = []
 
+        self.zoom_in              = False
         self.right_drag_start_pos = None
-        self.is_right_dragging = False
-        self.original_x_range = None
-        self.original_y_range = None
+        self.is_right_dragging    = False
+        self.original_x_range     = None
+        self.original_y_range     = None
 
     def set_uiclass(self, ui_class):
         self.ui = ui_class
@@ -37,6 +38,9 @@ class CustomViewBox(pg.ViewBox):
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
+
+    def is_zoomin(self):
+        return self.zoom_in
 
     def linkX(self, other_view):
         if other_view not in self.linked_views:
@@ -147,16 +151,18 @@ class CustomViewBox(pg.ViewBox):
             self.original_y_range     = None
 
             if not was_dragging:
-                if self.xmax == 0:
-                    self.enableAutoRange()
-                else:
-                    self.setRange(xRange=(self.xmin, self.xmax), yRange=(self.ymin, self.ymax))
+                if self.xmax > 0:
+                    self.setXRange(self.xmin, self.xmax, padding=0.01)
+                    self.setYRange(self.ymin, self.ymax, padding=0.03)
+                    self.zoom_in = False
         else:
             super().mouseReleaseEvent(ev)
 
     def mouseDragEvent(self, ev, axis=None):
         if not self.is_right_dragging:
             super().mouseDragEvent(ev)
+            if ev.isFinish():
+                self.zoom_in = True
 
 
 class WidgetCreater:
@@ -350,6 +356,7 @@ class WidgetCreater:
         subplot.getAxis('right').setStyle(tickTextWidth=45, autoExpandTextSpace=False)
         subplot.getAxis('right').setTickFont(qfont12)
         subplot.getAxis('bottom').setTickFont(qfont12)
+        subplot.enableAutoRange(False, False)
         return subplot, cb
 
     def setDialog(self, name, tab=None):

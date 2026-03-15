@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
 from backtest.back_static import PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd, bootstrap_test
-from utility.static import now, str_ymdhms
+from utility.static import now, str_ymdhms, error_decorator, set_builtin_print
 from utility.setting_user import stockreadlines, coinreadlines, futurereadlines
 from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, DB_STOCK_BACK_TICK, \
     DB_COIN_BACK_TICK, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
@@ -52,8 +52,10 @@ class Total:
 
         self.insertlist   = []
 
+        set_builtin_print(True, self.wq)
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         bc = 0
         sc = 0
@@ -264,8 +266,11 @@ class BackTest:
             self.gubun = 'future'
         else:
             self.gubun = 'coin'
+
+        set_builtin_print(True, self.wq)
         self.Start()
 
+    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()

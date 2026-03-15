@@ -1,22 +1,23 @@
 
-from traceback import print_exc
+from traceback import format_exc
 from PyQt5.QtCore import QThread
-from utility.setting_base import indicator
+from utility.setting_base import indicator, ui_num
 # noinspection PyUnresolvedReferences
-from utility.static import timedelta_sec, qtest_qwait, get_logger
+from utility.static import timedelta_sec, qtest_qwait
 
 
 # noinspection PyUnusedLocal
 class BackCodeTest(QThread):
-    def __init__(self, testQ, stg, var=None, ga=False):
+    def __init__(self, testQ, windowQ, stg, fm_list=None, var=None, ga=False):
         super().__init__()
-        self.testQ = testQ
-        self.stg   = stg
-        self.vars  = None
-        self.var   = var
-        self.ga    = ga
+        self.testQ   = testQ
+        self.windowQ = windowQ
+        self.stg     = stg
+        self.fm_list = fm_list
+        self.vars    = None
+        self.var     = var
+        self.ga      = ga
         self.indicator = indicator
-        self.logger    = get_logger(self.__class__.__name__)
 
     def run(self):
         if self.stg is None:
@@ -26,22 +27,22 @@ class BackCodeTest(QThread):
             try:
                 exec(compile(self.var, '<string>', 'exec'))
             except:
-                print_exc()
+                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - exec(self.vars)'))
                 error = True
 
             for i, var in enumerate(self.vars.values()):
                 if len(var) != 2:
-                    self.logger.error(f'self.vars[{i}]의 범위 설정 방법 오류')
+                    self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 방법 오류'))
                     error = True
                 if not self.ga:
                     if len(var[0]) != 3:
-                        self.logger.error(f'self.vars[{i}]의 범위 설정 방법 오류')
+                        self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 방법 오류'))
                         error = True
                     if var[0][2] != 0 and (var[0][1] - var[0][0]) / var[0][2] + 1 > 20:
-                        self.logger.error(f'self.vars[{i}]의 범위 설정 갯수 20개 초과')
+                        self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 갯수 20개 초과'))
                         error = True
                     if (var[0][0] < var[0][1] and var[0][2] < 0) or (var[0][0] > var[0][1] and var[0][2] > 0):
-                        self.logger.error(f'self.vars[{i}]의 범위 간격 부호 오류')
+                        self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 간격 부호 오류'))
                         error = True
 
             if error:
@@ -59,7 +60,7 @@ class BackCodeTest(QThread):
             try:
                 self.stg = compile(self.stg, '<string>', 'exec')
             except:
-                print_exc()
+                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - exec(strategy)'))
                 error = True
 
             if error:
@@ -81,7 +82,7 @@ class BackCodeTest(QThread):
                 _stg_list = _stg.split(';')
                 for i, txt in enumerate(_stg_list):
                     if factor in txt and _stg_list[i+1][0] != '(':
-                        self.logger.error(f'{factor}(30), {factor}(30, 1) 형태로 사용하십시오.')
+                        self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - {factor}(30), {factor}(30, 1) 형태로 사용하십시오.'))
                         error = True
         if error:
             return False
@@ -626,6 +627,9 @@ class BackCodeTest(QThread):
         def 변동성급증기반_동적청산(tick, multi=2, ratio1=3, ratio2=1.5):
             return False
 
+        if self.fm_list is not None:
+            locals().update(self.fm_list)
+
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, \
             라운드피겨위5호가이내, 초당매수수량, 초당매도수량, VI해제시간, VI가격, VI호가단위, 초당거래대금, 고저평균대비등락율, 매도총잔량, 매수총잔량, \
             매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
@@ -654,7 +658,7 @@ class BackCodeTest(QThread):
         try:
             exec(self.stg)
         except:
-            print_exc()
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - exec(self.stg)'))
             self.ErrorEnd()
         else:
             self.noErrorEnd()

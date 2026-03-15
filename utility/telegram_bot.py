@@ -1,12 +1,30 @@
 
 import pytz
 import asyncio
-import numpy as np
-import pandas as pd
 from threading import Thread
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
-from utility.static import get_logger
+from utility.setting_base import ui_num
+from utility.static import error_decorator, set_builtin_print
+
+_pd = None
+_np = None
+
+
+def get_pd():
+    global _pd
+    if _pd is None:
+        import pandas as pd
+        _pd = pd
+    return _pd
+
+
+def get_np():
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
 
 
 class TelegramBot:
@@ -21,18 +39,20 @@ class TelegramBot:
         self.cstgQ       = qlist[10]
         self.wdzservQ    = qlist[13]
         self.dict_set    = dict_set
-        self.logger      = get_logger(self.__class__.__name__)
 
         gubun            = self.dict_set['증권사'][4:]
         self.token       = self.dict_set[f'텔레그램봇토큰{gubun}']
         self.chat_id     = self.dict_set[f'텔레그램사용자아이디{gubun}']
         self.running     = False
         self.application = None
+
+        set_builtin_print(True, self.windowQ)
         self.message_queue = asyncio.Queue()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.run()
 
+    @error_decorator
     def run(self):
         if self.token and self.chat_id:
             self.running = True
@@ -74,7 +94,7 @@ class TelegramBot:
             cmd = cmd.replace('      ', '')
 
         if cmd in ('주식전략중지', '해선전략중지'):
-            self.wdzservQ.put(('analyzer', '매수전략중지'))
+            self.wdzservQ.put(('strategy', '매수전략중지'))
         elif cmd == '코인전략중지':
             self.cstgQ.put('매수전략중지')
         elif '라이브' in cmd:
@@ -102,7 +122,7 @@ class TelegramBot:
                     await self.send_photo(data)
                 else:
                     await self.send_message(data)
-            elif isinstance(data, pd.DataFrame):
+            elif isinstance(data, get_pd().DataFrame):
                 text = self.GetTextFromDataframe(data)
                 await self.send_message(text)
             self.message_queue.task_done()
@@ -110,8 +130,8 @@ class TelegramBot:
     def moniter_queue2(self):
         while not self.running:
             data = self.teleQ.get()
-            if isinstance(data, (str, pd.DataFrame)):
-                self.logger.error('텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다')
+            if isinstance(data, (str, get_pd().DataFrame)):
+                self.windowQ.put((ui_num['시스템로그'], '텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다'))
 
     @staticmethod
     def GetTextFromDataframe(df):
@@ -137,7 +157,7 @@ class TelegramBot:
             tbg   = df['매입금액'].sum()
             tpg   = df['평가금액'].sum()
             tsg   = df['평가손익'].sum()
-            tpp   = np.round(tsg / tbg * 100, 2)
+            tpp   = get_np().round(tsg / tbg * 100, 2)
             text += f'{tbg:,.0f}{m_unit} {tpg:,.0f}{m_unit} {tpp:.2f}% {tsg:,.0f}{m_unit}\n'
         elif '주문구분' in df.columns:
             for index in df.index:

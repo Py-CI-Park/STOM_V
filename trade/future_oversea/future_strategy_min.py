@@ -2,7 +2,7 @@
 import os
 import sys
 import numpy as np
-from traceback import print_exc
+from traceback import format_exc
 from future_strategy_tick import FutureStrategyTick
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num
@@ -31,7 +31,7 @@ class FutureStrategyMin(FutureStrategyTick):
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
         if 전략연산:
-            new_data_tick = np.zeros(self.data_cnt, dtype=np.float64)
+            new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
             new_data_tick[:self.base_cnt] = data[:self.base_cnt]
 
             pre_data = self.dict_data.get(종목코드)
@@ -44,7 +44,8 @@ class FutureStrategyMin(FutureStrategyTick):
             self.tick_count = 데이터길이 = len(self.arry_code)
             self.code, self.name, self.index, self.indexn = 종목코드, 종목명, 체결시간, 데이터길이 - 1
 
-            if 데이터길이 >= 평균값계산틱수: self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
+            if 데이터길이 >= 평균값계산틱수:
+                self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
 
             indicator_list = GetIndicator(
                 self.arry_code[:, self.dict_findex['현재가']],
@@ -53,7 +54,7 @@ class FutureStrategyMin(FutureStrategyTick):
                 self.arry_code[:, self.dict_findex['분당거래대금']],
                 self.indi_settings
             )
-            self.arry_code[-1, self.area_cnt:] = indicator_list
+            self.arry_code[-1, self.area_cnt:self.data_cnt] = indicator_list
 
             AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, \
                 PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = indicator_list
@@ -76,8 +77,40 @@ class FutureStrategyMin(FutureStrategyTick):
                     try:
                         exec(v)
                     except:
-                        print_exc()
-                        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
+                        self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 경과틱수 연산오류')))
+
+            if 데이터길이 >= 평균값계산틱수 and self.fm_list:
+                for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
+                    self.check, self.line, self.up, self.down = None, None, None, None
+
+                    exec(stg)
+
+                    if data_type == '선:일반':
+                        if self.line is not None:
+                            self.arry_code[self.indexn, col_idx] = self.line
+
+                    elif data_type == '선:조건':
+                        if self.check is not None and self.line is not None:
+                            if self.check:
+                                self.arry_code[self.indexn, col_idx] = self.line
+                            else:
+                                pre_line = self.arry_code[self.indexn - 1, col_idx]
+                                if pre_line > 0:
+                                    self.arry_code[self.indexn, col_idx] = pre_line
+
+                    elif data_type == '범위':
+                        if self.check is not None and self.up is not None and self.down is not None:
+                            self.arry_code[self.indexn, col_idx] = 1.0 if self.check else 0.0
+                            self.arry_code[self.indexn, col_idx + 1] = self.up
+                            self.arry_code[self.indexn, col_idx + 2] = self.down
+
+                    elif data_type == '화살표:일반':
+                        if self.check is not None and self.check:
+                            if fname == '현재가':
+                                price = 분봉저가 if style == 6 else 분봉고가
+                            else:
+                                price = self.arry_code[self.indexn, self.dict_findex[fname]]
+                            self.arry_code[self.indexn, col_idx] = price
 
             if 데이터길이 >= 평균값계산틱수:
                 jg_data = self.dict_jg.get(종목코드)
@@ -131,8 +164,7 @@ class FutureStrategyMin(FutureStrategyTick):
                             try:
                                 exec(self.buystrategy)
                             except:
-                                print_exc()
-                                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                                self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략')))
                     elif D or E:
                         BUY_LONG, SELL_SHORT = False, False
                         분할매수기준수익률 = np.round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
@@ -181,8 +213,7 @@ class FutureStrategyMin(FutureStrategyTick):
                             try:
                                 exec(self.sellstrategy)
                             except:
-                                print_exc()
-                                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
+                                self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매도전략')))
                     elif D or E or 강제청산:
                         if H or K or M:
                             SELL_LONG = True
@@ -222,19 +253,52 @@ class FutureStrategyMin(FutureStrategyTick):
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:
-                new_data_tick = np.zeros(self.data_cnt, dtype=np.float64)
+                new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
                 new_data_tick[:self.base_cnt] = data[:self.base_cnt]
                 self.arry_code = np.concatenate([pre_data, np.array([new_data_tick])])
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
-                self.arry_code[-1, self.area_cnt:] = GetIndicator(
+                self.arry_code[-1, self.area_cnt:self.data_cnt] = GetIndicator(
                     self.arry_code[:, self.dict_findex['현재가']],
                     self.arry_code[:, self.dict_findex['분봉고가']],
                     self.arry_code[:, self.dict_findex['분봉저가']],
                     self.arry_code[:, self.dict_findex['분당거래대금']],
                     self.indi_settings
                 )
-            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.arry_code)))
+                if self.fm_list:
+                    for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
+                        self.check, self.line, self.up, self.down = None, None, None, None
+
+                        exec(stg)
+
+                        if data_type == '선:일반':
+                            if self.line is not None:
+                                self.arry_code[self.indexn, col_idx] = self.line
+
+                        elif data_type == '선:조건':
+                            if self.check is not None and self.line is not None:
+                                if self.check:
+                                    self.arry_code[self.indexn, col_idx] = self.line
+                                else:
+                                    pre_line = self.arry_code[self.indexn - 1, col_idx]
+                                    if pre_line > 0:
+                                        self.arry_code[self.indexn, col_idx] = pre_line
+
+                        elif data_type == '범위':
+                            if self.check is not None and self.up is not None and self.down is not None:
+                                self.arry_code[self.indexn, col_idx] = 1.0 if self.check else 0.0
+                                self.arry_code[self.indexn, col_idx + 1] = self.up
+                                self.arry_code[self.indexn, col_idx + 2] = self.down
+
+                        elif data_type == '화살표:일반':
+                            if self.check is not None and self.check:
+                                if fname == '현재가':
+                                    price = 분봉저가 if style == 6 else 분봉고가
+                                else:
+                                    price = self.arry_code[self.indexn, self.dict_findex[fname]]
+                                self.arry_code[self.indexn, col_idx] = price
+
+            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목코드, self.arry_code)))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+            self.mgzservQ.put(('window', (ui_num['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))

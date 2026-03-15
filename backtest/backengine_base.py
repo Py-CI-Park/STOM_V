@@ -2,9 +2,11 @@
 import sqlite3
 import numpy as np
 import pandas as pd
-from traceback import print_exc
+from copy import deepcopy
+from traceback import format_exc
 from multiprocessing import shared_memory
-from trade.strategy_base import Strategy
+from trade.strategy_base import StrategyBase
+from trade.formula_manager import get_formula_data
 from research.analyzer.microstructure_analyzer import MicrostructureAnalyzer
 from research.auxiliary_indicator.smart_vwap_bands import SmartVWAPCalculator
 from backtest.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
@@ -13,10 +15,11 @@ from utility.setting_base import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DB_STOCK
     DB_FUTURE_BACK_TICK, DB_FUTURE_BACK_MIN, DB_COIN_BACK_TICK, DB_COIN_BACK_MIN, list_stock_tick, \
     list_stock_min, list_coin_tick, list_coin_min
 # noinspection PyUnresolvedReferences
-from utility.static import timedelta_sec, pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, add_rolling_data
+from utility.static import timedelta_sec, pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, \
+    add_rolling_data, error_decorator, set_builtin_print
 
 
-class BackEngineBase(Strategy):
+class BackEngineBase(StrategyBase):
     def __init__(self, gubun, shared_cnt, lock, wq, tq, bq, beq_list, bstq_list, dict_set, profile=False):
         super().__init__()
         self.gubun           = gubun
@@ -96,6 +99,7 @@ class BackEngineBase(Strategy):
         self.smat_vwap       = SmartVWAPCalculator('stock')
         self.ms_analyzer     = MicrostructureAnalyzer('stock')
 
+        set_builtin_print(True, self.wq)
         self.UpdateMarketGubun()
         self.UpdateSubVars()
         self.MainLoop()
@@ -116,6 +120,19 @@ class BackEngineBase(Strategy):
         else:
             factor_list = list_coin_tick if self.is_tick else list_coin_min
         self.dict_findex = {name: i for i, name in enumerate(factor_list)}
+
+        if self.is_tick:
+            self.dict_findex['초당매도수금액'] = self.dict_findex['초당매수금액']
+            self.dict_findex['누적초당매도수수량'] = self.dict_findex['누적초당매수수량']
+        else:
+            self.dict_findex['분당매도수금액'] = self.dict_findex['분당매수금액']
+            self.dict_findex['누적분당매도수수량'] = self.dict_findex['누적분당매수수량']
+
+        self.dict_findex['당일매도수금액'] = self.dict_findex['당일매수금액']
+        self.dict_findex['최고매도수금액'] = self.dict_findex['최고매수금액']
+        self.dict_findex['최고매도수가격'] = self.dict_findex['최고매수가격']
+        self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
+        self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
 
         self.base_cnt     = self.dict_findex['관심종목'] + 1
         self.hoga_sidex   = self.dict_findex['매도호가5']
@@ -138,8 +155,7 @@ class BackEngineBase(Strategy):
             value_comp_list = [compile_condition(x) for x in value_text_list]
             self.dict_condition = dict(zip(key_list, value_comp_list))
 
-        self.SetGlobalsFunc()
-
+    @error_decorator
     def MainLoop(self):
         while True:
             data = self.beq.get()
@@ -153,11 +169,11 @@ class BackEngineBase(Strategy):
                         self.starttime = data[5]
                         self.endtime   = data[6]
                         if self.market_gubun in (1, 3):
-                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
-                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
+                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
                         else:
-                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
-                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
+                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
+                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
@@ -177,11 +193,11 @@ class BackEngineBase(Strategy):
                         self.starttime = data[5]
                         self.endtime   = data[6]
                         if self.market_gubun in (1, 3):
-                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
-                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
+                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
                         else:
-                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
-                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
+                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
+                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
@@ -204,11 +220,11 @@ class BackEngineBase(Strategy):
                         self.starttime = data[5]
                         self.endtime   = data[6]
                         if self.market_gubun in (1, 3):
-                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
-                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
+                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
                         else:
-                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
-                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
+                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
+                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
@@ -234,11 +250,11 @@ class BackEngineBase(Strategy):
                         error = False
                         for i in range(20):
                             if self.market_gubun in (1, 3):
-                                buystg = GetBuyConds(data[2][i], self.gubun)
-                                sellstg, dict_cond = GetSellConds(data[3][i], self.gubun)
+                                buystg = GetBuyConds(data[2][i], self.gubun, self.wq)
+                                sellstg, dict_cond = GetSellConds(data[3][i], self.gubun, self.wq)
                             else:
-                                buystg = GetBuyCondsFuture(data[1], data[2][i], self.gubun)
-                                sellstg, dict_cond = GetSellCondsFuture(data[1], data[3][i], self.gubun)
+                                buystg = GetBuyCondsFuture(data[1], data[2][i], self.gubun, self.wq)
+                                sellstg, dict_cond = GetSellCondsFuture(data[1], data[3][i], self.gubun, self.wq)
                             self.dict_buystg[i]  = buystg
                             self.dict_sellstg[i] = sellstg
                             self.dict_sconds[i]  = dict_cond
@@ -257,11 +273,11 @@ class BackEngineBase(Strategy):
                         self.starttime = data[5]
                         self.endtime   = data[6]
                         if self.market_gubun in (1, 3):
-                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun)
-                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun)
+                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
+                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
                         else:
-                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun)
-                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun)
+                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
+                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
@@ -278,7 +294,7 @@ class BackEngineBase(Strategy):
                         try:
                             self.buystg = compile(data[6], '<string>', 'exec')
                         except:
-                            print_exc()
+                            if self.gubun == 0: self.wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
                             self.BackStop()
                         else:
                             self.opti_turn = data[7]
@@ -382,7 +398,19 @@ class BackEngineBase(Strategy):
 
         self.avg_list = avg_list
         self.startday_, self.endday_, self.starttime_, self.endtime_ = startday, endday, starttime, endtime
+
+        total_cnt = self.base_cnt + self.add_cnt * len(self.avg_list)
+        self.fm_list, dict_fm, self.fm_tcnt = get_formula_data(False, total_cnt)
+
+        if self.gubun == 0:
+            self.wq.put((ui_num['사용자수식'], deepcopy(self.fm_list), dict_fm, self.fm_tcnt))
+
+        if self.fm_list:
+            for fm in self.fm_list:
+                fm[8] = compile(fm[-2], '<string>', 'exec')
+
         self.bq.put(shared_info)
+        self.SetGlobalsFunc()
 
     def CheckAvglist(self, avg_list):
         not_in_list = [x for x in avg_list if x not in self.avg_list]
@@ -483,7 +511,7 @@ class BackEngineBase(Strategy):
         return code
 
     def BackTest(self):
-        if self.profile:
+        if self.gubun == 0 and self.profile:
             import cProfile
             self.pr = cProfile.Profile()
             self.pr.enable()
@@ -533,7 +561,7 @@ class BackEngineBase(Strategy):
                         try:
                             self.Strategy()
                         except:
-                            print_exc()
+                            if self.gubun == 0: self.wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
                             self.BackStop(3)
                             return
 
@@ -557,7 +585,10 @@ class BackEngineBase(Strategy):
             self.BackStop(1)
             return
 
-        if self.profile: self.pr.print_stats(sort='cumulative')
+        if self.gubun == 0 and self.profile:
+            from utility.profile_utils import extract_profile_text
+            profile_text = extract_profile_text(self.pr, limit=50)
+            self.wq.put((ui_num['시스템로그'], profile_text))
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
         if 분봉저가 is None:

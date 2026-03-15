@@ -57,7 +57,7 @@ def press_keys(data):
     win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
 
 
-def manual_login(gubun, dict_set):
+def manual_login(id_num, dict_set):
     hwnd = find_window('Open API login')
     if not win32gui.IsWindowEnabled(win32gui.GetDlgItem(hwnd, 0x3EA)):
         click_button(win32gui.GetDlgItem(hwnd, 0x3ED))
@@ -69,16 +69,16 @@ def manual_login(gubun, dict_set):
     if win32gui.IsWindowEnabled(win32gui.GetDlgItem(hwnd, 0x3EA)):
         click_button(win32gui.GetDlgItem(hwnd, 0x3ED))
     """
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E8), dict_set[f'아이디{gubun}'])
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E9), dict_set[f'비밀번호{gubun}'])
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), dict_set[f'인증서비밀번호{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E8), dict_set[f'아이디{id_num}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E9), dict_set[f'비밀번호{id_num}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), dict_set[f'인증서비밀번호{id_num}'])
     win32api.Sleep(1000)
     doubleClick(15, 15, win32gui.GetDlgItem(hwnd, 0x3E8))
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E8), dict_set[f'아이디{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E8), dict_set[f'아이디{id_num}'])
     doubleClick(15, 15, win32gui.GetDlgItem(hwnd, 0x3E9))
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E9), dict_set[f'비밀번호{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E9), dict_set[f'비밀번호{id_num}'])
     doubleClick(15, 15, win32gui.GetDlgItem(hwnd, 0x3EA))
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), dict_set[f'인증서비밀번호{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), dict_set[f'인증서비밀번호{id_num}'])
     click_button(win32gui.GetDlgItem(hwnd, 0x1))
     try:
         click_button(win32gui.GetDlgItem(hwnd, 0x1))
@@ -86,11 +86,11 @@ def manual_login(gubun, dict_set):
         pass
 
 
-def auto_on(gubun, dict_set):
+def auto_on(id_num, dict_set):
     hwnd = find_window('계좌비밀번호')
     if hwnd != 0:
         edit = win32gui.GetDlgItem(hwnd, 0xCC)
-        enter_keys(edit, dict_set[f'계좌비밀번호{gubun}'])
+        enter_keys(edit, dict_set[f'계좌비밀번호{id_num}'])
         click_button(win32gui.GetDlgItem(hwnd, 0xD4))
         click_button(win32gui.GetDlgItem(hwnd, 0xD3))
         click_button(win32gui.GetDlgItem(hwnd, 0x01))
