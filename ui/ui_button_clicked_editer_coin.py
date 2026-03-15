@@ -25,8 +25,8 @@ def coin_opti_test_editer(ui):
     ui.cvc_pushButton_03.setGeometry(1012, 150, 165, 30)
     ui.cvc_pushButton_04.setGeometry(1182, 150, 165, 30)
 
-    ui.czoo_pushButon_01.setGeometry(599, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+    ui.czoo_pushButon_01.setGeometry(584, 15, 50, 20)
+    ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -89,8 +89,8 @@ def coin_rwf_test_editer(ui):
     ui.cvc_pushButton_03.setGeometry(1012, 150, 165, 30)
     ui.cvc_pushButton_04.setGeometry(1182, 150, 165, 30)
 
-    ui.czoo_pushButon_01.setGeometry(599, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+    ui.czoo_pushButon_01.setGeometry(584, 15, 50, 20)
+    ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -159,8 +159,8 @@ def coin_opti_ga_editer(ui):
     ui.cva_pushButton_04.setGeometry(1012, 150, 165, 30)
     ui.cva_pushButton_05.setGeometry(1182, 150, 165, 30)
 
-    ui.czoo_pushButon_01.setGeometry(599, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+    ui.czoo_pushButon_01.setGeometry(584, 15, 50, 20)
+    ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -306,8 +306,8 @@ def coin_opti_editer(ui):
     ui.cvc_pushButton_03.setGeometry(1012, 150, 165, 30)
     ui.cvc_pushButton_04.setGeometry(1182, 150, 165, 30)
 
-    ui.czoo_pushButon_01.setGeometry(599, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+    ui.czoo_pushButon_01.setGeometry(584, 15, 50, 20)
+    ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -521,8 +521,8 @@ def coin_stg_editer(ui):
     ui.cvjs_comboBoxx_01.setGeometry(1012, 478, 165, 25)
     ui.cvjs_pushButon_01.setGeometry(1012, 508, 165, 30)
 
-    ui.czoo_pushButon_01.setGeometry(952, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(952, 761 if ui.extend_window else 483, 50, 20)
+    ui.czoo_pushButon_01.setGeometry(937, 15, 50, 20)
+    ui.czoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')

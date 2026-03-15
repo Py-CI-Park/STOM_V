@@ -5,7 +5,6 @@ from threading import Thread
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from utility.setting_base import ui_num
-from utility.static import error_decorator, set_builtin_print
 
 _pd = None
 _np = None
@@ -46,13 +45,11 @@ class TelegramBot:
         self.running     = False
         self.application = None
 
-        set_builtin_print(True, self.windowQ)
         self.message_queue = asyncio.Queue()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
         self.run()
 
-    @error_decorator
     def run(self):
         if self.token and self.chat_id:
             self.running = True
