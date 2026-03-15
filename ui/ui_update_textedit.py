@@ -7,10 +7,6 @@ from utility.static import now, qtest_qwait, error_decorator
 
 class UpdateTextedit:
     def __init__(self, ui):
-        """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1      2       3      4       5      6      7       8         9         10     11     12      13       14
-        """
         self.ui        = ui
         self.data_save = False
 
@@ -120,10 +116,10 @@ class UpdateTextedit:
 
                     if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트']):
                         self.ui.ssicon_alert = False
-                        self.ui.main_btn_list[2].setIcon(self.ui.icon_stocks)
+                        self.ui.main_btn_list[3].setIcon(self.ui.icon_stocks)
                     else:
                         self.ui.csicon_alert = False
-                        self.ui.main_btn_list[3].setIcon(self.ui.icon_coins)
+                        self.ui.main_btn_list[4].setIcon(self.ui.icon_coins)
 
                     if self.ui.back_schedul:
                         qtest_qwait(3)

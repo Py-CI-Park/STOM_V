@@ -11,15 +11,15 @@ def key_press_event(ui, event):
             return
         elif QApplication.keyboardModifiers() & Qt.AltModifier:
             if ui.BacktestProcessAlive():
-                if ui.main_btn == 2:
+                if ui.main_btn == 3:
                     ui.ssButtonClicked_06()
-                elif ui.main_btn == 3:
+                elif ui.main_btn == 4:
                     ui.csButtonClicked_06()
             else:
-                if ui.main_btn == 2:
+                if ui.main_btn == 3:
                     if ui.svj_pushButton_01.isVisible():
                         ui.StockBacktestStart()
-                elif ui.main_btn == 3:
+                elif ui.main_btn == 4:
                     if ui.cvj_pushButton_01.isVisible():
                         ui.CoinBacktestStart()
         elif ui.focusWidget() in (ui.std_tableWidgettt, ui.sgj_tableWidgettt, ui.scj_tableWidgettt, ui.ctd_tableWidgettt, ui.cgj_tableWidgettt, ui.ccj_tableWidgettt):
@@ -104,7 +104,7 @@ def key_press_event(ui, event):
                 ui.ShowDialogChart(False, coin, code, 30, searchdate, starttime, endtime, detail, buytimes)
     elif event.key() in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5, Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9, Qt.Key_0):
         if QApplication.keyboardModifiers() & Qt.AltModifier:
-            if ui.main_btn == 2:
+            if ui.main_btn == 3:
                 if event.key() == Qt.Key_1:
                     ui.StockStgEditer()
                 elif event.key() == Qt.Key_2:
@@ -125,7 +125,7 @@ def key_press_event(ui, event):
                     ui.StockBacktestLog()
                 elif event.key() == Qt.Key_0:
                     ui.StockBacktestDetail()
-            elif ui.main_btn == 3:
+            elif ui.main_btn == 4:
                 if event.key() == Qt.Key_1:
                     ui.CoinStgEditer()
                 elif event.key() == Qt.Key_2:
@@ -147,7 +147,7 @@ def key_press_event(ui, event):
                 elif event.key() == Qt.Key_0:
                     ui.CoinBacktestDetail()
     elif event.key() == Qt.Key_F4:
-        if ui.main_btn == 2:
+        if ui.main_btn == 3:
             if ui.svj_pushButton_01.isVisible():
                 ui.ss_textEditttt_01.setFocus()
                 ui.StockBuyStgSave()
@@ -157,7 +157,7 @@ def key_press_event(ui, event):
             elif ui.svo_pushButton_05.isVisible():
                 ui.ss_textEditttt_07.setFocus()
                 ui.StockCondbuySave()
-        elif ui.main_btn == 3:
+        elif ui.main_btn == 4:
             if ui.cvj_pushButton_01.isVisible():
                 ui.cs_textEditttt_01.setFocus()
                 ui.CoinBuyStgSave()
@@ -168,7 +168,7 @@ def key_press_event(ui, event):
                 ui.cs_textEditttt_07.setFocus()
                 ui.CoinCondbuySave()
     elif event.key() == Qt.Key_F8:
-        if ui.main_btn == 2:
+        if ui.main_btn == 3:
             if ui.svj_pushButton_01.isVisible():
                 ui.ss_textEditttt_02.setFocus()
                 ui.StockSellStgSave()
@@ -178,7 +178,7 @@ def key_press_event(ui, event):
             elif ui.svo_pushButton_05.isVisible():
                 ui.ss_textEditttt_08.setFocus()
                 ui.StockCondsellSave()
-        elif ui.main_btn == 3:
+        elif ui.main_btn == 4:
             if ui.cvj_pushButton_01.isVisible():
                 ui.cs_textEditttt_02.setFocus()
                 ui.CoinSellStgSave()
@@ -189,14 +189,14 @@ def key_press_event(ui, event):
                 ui.cs_textEditttt_08.setFocus()
                 ui.CoinCondsellSave()
     elif event.key() == Qt.Key_F12:
-        if ui.main_btn == 2:
+        if ui.main_btn == 3:
             if ui.svc_pushButton_06.isVisible():
                 ui.ss_textEditttt_05.setFocus()
                 ui.StockOptiVarsSave()
             elif ui.sva_pushButton_03.isVisible():
                 ui.ss_textEditttt_06.setFocus()
                 ui.StockGavarsSave()
-        elif ui.main_btn == 3:
+        elif ui.main_btn == 4:
             if ui.cvc_pushButton_06.isVisible():
                 ui.cs_textEditttt_05.setFocus()
                 ui.CoinOptiVarsSave()

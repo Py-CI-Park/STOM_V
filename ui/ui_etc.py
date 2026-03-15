@@ -123,7 +123,7 @@ def calendar_clicked(ui, gubun):
 @error_decorator
 def stom_live_screenshot(ui, cmd):
     prev_main_btn = ui.main_btn
-    ui.mnButtonClicked_01(4)
+    ui.mnButtonClicked_01(5)
     qtest_qwait(1)
     if '주식' in cmd:
         mid = 'S'

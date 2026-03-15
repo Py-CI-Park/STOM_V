@@ -3,6 +3,8 @@ from PyQt5.QtGui import QFont, QColor
 from utility.setting_user import load_settings
 
 dict_set = load_settings()
+if dict_set.__class__ != dict:
+    dict_set = {'테마': '다크퍼플'}
 
 qfont12 = QFont()
 qfont12.setFamily('나눔고딕')
@@ -15,9 +17,6 @@ qfont13.setPixelSize(13)
 qfont14 = QFont()
 qfont14.setFamily('나눔고딕')
 qfont14.setPixelSize(14)
-
-if dict_set.__class__ != dict:
-    dict_set = {'테마': '다크퍼플'}
 
 # 테마용 공통 색상
 color_cs_hr = QColor(255, 255, 255)

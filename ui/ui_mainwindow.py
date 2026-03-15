@@ -19,6 +19,7 @@ from ui.set_dialog_etc import SetDialogEtc
 from ui.set_dialog_back import SetDialogBack
 from ui.set_dialog_chart import SetDialogChart
 from ui.set_dialog_formula import SetDialogFormula
+from ui.set_home_tap import SetHomeTap
 
 from ui.ui_etc import *
 from ui.ui_draw_chart_db import *
@@ -69,6 +70,7 @@ from ui.ui_button_clicked_dialog_formula import *
 from ui.ui_chart_count_change import *
 from ui.ui_button_clicked_zoom import *
 from ui.ui_load_database import *
+from ui.ui_draw_home_chart import *
 
 from utility.hoga import *
 from utility.chart import *
@@ -78,6 +80,7 @@ from utility.static import *
 from utility.setting_base import *
 from utility.setting_user import *
 from utility.webcrawling import *
+from utility.webcrawling_homtab import *
 from utility.telegram_bot import *
 from utility.database_read_only import DatabaseReadOnly
 from ui.set_dialog_strategy import SetDialogStrategy
@@ -148,6 +151,7 @@ class Writer(QThread):
     signal8  = pyqtSignal(tuple)
     signal9  = pyqtSignal(str)
     signal10 = pyqtSignal()
+    signal11 = pyqtSignal(tuple)
 
     def __init__(self, _windowQ):
         super().__init__()
@@ -188,6 +192,8 @@ class Writer(QThread):
                         self.signal7.emit(data)
                     elif data[0] in (ui_num['코스피'], ui_num['코스닥']):
                         self.signal5.emit(data)
+                    elif data[0] == ui_num['홈차트']:
+                        self.signal11.emit(data)
                     elif data[0] >= ui_num['트리맵']:
                         self.signal6.emit(data)
                 else:
@@ -369,6 +375,7 @@ class MainWindow(QMainWindow):
         SetDialogBack(self, self.wc)
         SetDialogStrategy(self, self.wc)
         SetDialogFormula(self, self.wc)
+        SetHomeTap(self, self.wc)
 
         self.dict_name = {}
         self.dict_code = {}
@@ -524,6 +531,7 @@ class MainWindow(QMainWindow):
         self.draw_realchart     = DrawRealChart(self)
         self.draw_realjisuchart = DrawRealJisuChart(self)
         self.draw_treemap       = DrawTremap(self)
+        self.draw_home_chart    = DrawHomeChart(self)
 
         self.writer = Writer(self.windowQ)
         self.writer.signal1.connect(self.update_textedit.update_texedit)
@@ -536,7 +544,11 @@ class MainWindow(QMainWindow):
         self.writer.signal8.connect(self.UpdateSQsize)
         self.writer.signal9.connect(self.StomliveScreenshot)
         self.writer.signal10.connect(self.Qtimer1Start)
+        self.writer.signal11.connect(self.draw_home_chart.draw_home_chart)
         self.writer.start()
+
+        self.proc_webc_home = Process(target=WebCrawingHomTab, args=(self.windowQ,), daemon=True)
+        self.proc_webc_home.start()
 
         self.qtimer1 = QTimer()
         self.qtimer1.setInterval(1 * 1000)

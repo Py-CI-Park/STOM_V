@@ -20,7 +20,7 @@ def bebutton_clicked_01(ui):
         QMessageBox.critical(ui.dialog_backengine, '오류 알림', '백테엔진 구동 중...\n')
         return
 
-    if ui.main_btn == 2 or (ui.dialog_scheduler.isVisible() and ui.sd_pushButtonnn_01.text() == '주식'):
+    if ui.main_btn == 3 or (ui.dialog_scheduler.isVisible() and ui.sd_pushButtonnn_01.text() == '주식'):
         gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
         if not ui.backtest_engine:
             ui.BacktestEngineStart(gubun)
@@ -34,7 +34,7 @@ def bebutton_clicked_01(ui):
                 qtest_qwait(3)
                 ui.BacktestEngineStart(gubun)
 
-    elif ui.main_btn == 3 or (ui.dialog_scheduler.isVisible() and ui.sd_pushButtonnn_01.text() == '코인'):
+    elif ui.main_btn == 4 or (ui.dialog_scheduler.isVisible() and ui.sd_pushButtonnn_01.text() == '코인'):
         if not ui.backtest_engine:
             ui.BacktestEngineStart('코인')
         else:
@@ -130,10 +130,10 @@ def sdbutton_clicked_02(ui):
             ui.BackTestengineShow(bt_gubun)
             return
 
-        if bt_gubun == '주식' and ui.main_btn != 2:
-            ui.mnButtonClicked_01(2)
-        elif bt_gubun == '코인' and ui.main_btn != 3:
+        if bt_gubun == '주식' and ui.main_btn != 3:
             ui.mnButtonClicked_01(3)
+        elif bt_gubun == '코인' and ui.main_btn != 4:
+            ui.mnButtonClicked_01(4)
 
         ui.ClearBacktestQ()
         if ui.back_schedul:
