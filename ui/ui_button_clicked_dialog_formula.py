@@ -93,11 +93,11 @@ def formula_button_clicked(ui):
             return
 
         if ui.FormulaCodeTest(stg) and ui.proc_query.is_alive():
-            delete_query = f"DELETE FROM formula WHERE 수식명 = '{name}'"
-            insert_query = f"INSERT INTO formula (수식명, 차트표시, 전략연산, 팩터명, 표시형태, 색상, 크기, 라인타입, 수식코드) " \
-                           f"VALUES ('{name}', {check1}, {check2}, '{fname}', '{vtype}', '{color}', {width}, {style}, '{stg}')"
+            delete_query  = f"DELETE FROM formula WHERE 수식명 = '{name}'"
+            insert_query  = 'INSERT INTO formula VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            insert_values = (name, check1, check2, fname, vtype, color, width, style, stg)
             ui.queryQ.put(('전략디비', delete_query))
-            ui.queryQ.put(('전략디비', insert_query))
+            ui.queryQ.put(('전략디비', insert_query, insert_values))
             QMessageBox.information(ui.dialog_formula, '수식 저장 완료', random.choice(famous_saying))
 
     elif button_text == '삭제하기':

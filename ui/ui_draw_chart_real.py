@@ -27,7 +27,7 @@ class DrawRealChart(DrawChartBase):
             return
 
         self.chart_cnt = len(self.ui.ctpg)
-        self.is_min = self.chart_cnt in (6, 8) or (self.chart_cnt == 10 and self.ui.ct_pushButtonnn_05.text() == 'CHART 16')
+        self.is_min = self.chart_cnt in (6, 8) or (self.chart_cnt == 10 and self.ui.ct_pushButtonnn_05.text() == 'CHART III')
 
         if self.is_min:
             self.ui.ctpg_xticks = [dt_ymdhms(f'{str(int(x))}00').timestamp() for x in self.ui.ctpg_arry[:, 0]]
@@ -41,5 +41,5 @@ class DrawRealChart(DrawChartBase):
 
         self.update_factor_list()
         self.update_dict_idxs()
-        self.update_ctpg_date(self.ui.fm_tcnt)
+        self.update_ctpg_date()
         self.draw_all_chart()

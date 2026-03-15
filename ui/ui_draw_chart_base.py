@@ -41,7 +41,7 @@ class DrawChartBase:
         self.sma_colors = [
             (180, 180, 180),
             (140, 140, 140),
-            (180, 180, 180),
+            (100, 100, 100),
             (80, 80, 80),
             (60, 60, 60)
         ]
@@ -143,60 +143,38 @@ class DrawChartBase:
                 '누적초당매도수수량': [self.fi('누적초당매도수량'), self.fi('누적초당매수수량')]
             }
 
-    def update_ctpg_date(self, fm_tcnt):
-        not_drop_zero_factors = self.get_not_zero_factors()
+    def update_ctpg_date(self):
+        drop_zero_factors = self.get_drop_zero_factors()
         clen = len(self.ui.ctpg_arry[0, :])
-        fm_idx = clen - fm_tcnt
-
         for i in range(clen):
             tick_arry = self.ui.ctpg_arry[:, i]
-            if i in not_drop_zero_factors or i >= fm_idx:
-                self.ui.ctpg_data[i] = tick_arry
-            else:
+            if i in drop_zero_factors:
                 self.ui.ctpg_data[i] = tick_arry[tick_arry != 0]
+            else:
+                self.ui.ctpg_data[i] = tick_arry
 
         tlen = len(self.ui.ctpg_arry)
         self.last = tlen - 1
         self.len_list = [tlen - len(x) for x in self.ui.ctpg_data.values()]
 
-    def get_not_zero_factors(self):
-        if self.gubun == 'S':
-            if self.is_min:
-                not_drop_zero_factors = (
-                    self.fi('등락율'), self.fi('분당매수수량'), self.fi('분당매도수량'), self.fi('고저평균대비등락율'),
-                    self.fi('분당거래대금'), self.fi('분당거래대금평균'), self.fi('등락율각도'), self.fi('당일거래대금각도'),
-                    self.fi('전일비각도'), self.fi('관심종목'), self.fi('매도총잔량'), self.fi('매수총잔량'), self.fi('매도잔량1'),
-                    self.fi('매수잔량1'), self.fi('AD'), self.fi('ADOSC'), self.fi('APO'), self.fi('AROOND'),
-                    self.fi('AROONU'), self.fi('CCI'), self.fi('MACD'), self.fi('MACDS'), self.fi('MACDH'),
-                    self.fi('MFI'), self.fi('MOM'), self.fi('PPO'), self.fi('ROC'), self.fi('RSI'), self.fi('STOCHSK'),
-                    self.fi('STOCHSD'), self.fi('STOCHFK'), self.fi('STOCHFD'), self.fi('WILLR')
-                )
-            else:
-                not_drop_zero_factors = (
-                    self.fi('등락율'), self.fi('초당매수수량'), self.fi('초당매도수량'), self.fi('고저평균대비등락율'),
-                    self.fi('초당거래대금'), self.fi('초당거래대금평균'), self.fi('등락율각도'), self.fi('당일거래대금각도'),
-                    self.fi('전일비각도'), self.fi('매수잔량1'), self.fi('관심종목'), self.fi('매도총잔량'), self.fi('매수총잔량'),
-                    self.fi('매도잔량1'), self.fi('매수잔량1')
-                )
+    def get_drop_zero_factors(self):
+        if self.is_min:
+            drop_zero_factors = (
+                self.fi('이동평균5'), self.fi('이동평균10'), self.fi('이동평균20'), self.fi('이동평균60'), self.fi('이동평균120'),
+                self.fi('최고현재가'), self.fi('최저현재가'), self.fi('최고분봉고가'), self.fi('최저분봉저가'), self.fi('체결강도평균'),
+                self.fi('최고체결강도'), self.fi('최저체결강도'), self.fi('최고분당매수수량'), self.fi('최고분당매도수량'),
+                self.fi('누적분당매수수량'), self.fi('누적분당매도수량'), self.fi('분당거래대금평균'),
+                self.fi('ADXR'), self.fi('ATR'), self.fi('BBU'), self.fi('BBM'), self.fi('BBL'), self.fi('DIM'),
+                self.fi('DIP'), self.fi('OBV'), self.fi('SAR')
+            )
         else:
-            if self.is_min:
-                not_drop_zero_factors = (
-                    self.fi('등락율'), self.fi('분당매수수량'), self.fi('분당매도수량'), self.fi('고저평균대비등락율'),
-                    self.fi('분당거래대금'), self.fi('분당거래대금평균'), self.fi('등락율각도'), self.fi('당일거래대금각도'),
-                    self.fi('매수잔량1'), self.fi('관심종목'), self.fi('매도총잔량'), self.fi('매수총잔량'), self.fi('매도잔량1'),
-                    self.fi('매수잔량1'), self.fi('AD'), self.fi('ADOSC'), self.fi('APO'), self.fi('AROOND'),
-                    self.fi('AROONU'), self.fi('CCI'), self.fi('MACD'), self.fi('MACDS'), self.fi('MACDH'),
-                    self.fi('MFI'), self.fi('MOM'), self.fi('PPO'), self.fi('ROC'), self.fi('RSI'), self.fi('STOCHSK'),
-                    self.fi('STOCHSD'), self.fi('STOCHFK'), self.fi('STOCHFD'), self.fi('WILLR')
-                )
-            else:
-                not_drop_zero_factors = (
-                    self.fi('등락율'), self.fi('초당매수수량'), self.fi('초당매도수량'), self.fi('고저평균대비등락율'),
-                    self.fi('초당거래대금'), self.fi('초당거래대금평균'), self.fi('등락율각도'), self.fi('당일거래대금각도'),
-                    self.fi('매수잔량1'), self.fi('관심종목'), self.fi('매도총잔량'), self.fi('매수총잔량'), self.fi('매도잔량1'),
-                    self.fi('매수잔량1')
-                )
-        return not_drop_zero_factors
+            drop_zero_factors = (
+                self.fi('이동평균60'), self.fi('이동평균150'), self.fi('이동평균300'), self.fi('이동평균600'),
+                self.fi('이동평균1200'), self.fi('최고현재가'), self.fi('최저현재가'), self.fi('체결강도평균'),
+                self.fi('최고체결강도'), self.fi('최저체결강도'), self.fi('최고초당매수수량'), self.fi('최고초당매도수량'),
+                self.fi('누적초당매수수량'), self.fi('누적초당매도수량'), self.fi('초당거래대금평균')
+            )
+        return drop_zero_factors
 
     @error_decorator
     def draw_all_chart(self):
@@ -230,27 +208,33 @@ class DrawChartBase:
                     self.draw_buy_or_sell_point(i)
 
             elif factor in ('초당거래대금', '분당거래대금'):
-                fidx1, fidx2 = self.fi(factor), self.fi(f'{factor}평균')
-                self.ymax = self.ui.ctpg_data[fidx1].max()
-                self.ymin = self.ui.ctpg_data[fidx2].min()
-                self.draw_area(i)
-                self.draw_formula(i, factor)
-                if self.is_min:
-                    fidx3, fidx4 = self.fi('현재가'), self.fi('분봉시가')
-                    self.draw_volumebar(i, fidx1, fidx3, fidx4)
-                else:
-                    self.draw_line(i, fidx1, self.rgb_red)
-                self.draw_line(i, fidx2, self.rgb_green)
+                try:
+                    fidx1, fidx2 = self.fi(factor), self.fi(f'{factor}평균')
+                    self.ymax = self.ui.ctpg_data[fidx1].max()
+                    self.ymin = self.ui.ctpg_data[fidx2].min()
+                    self.draw_area(i)
+                    self.draw_formula(i, factor)
+                    if self.is_min:
+                        fidx3, fidx4 = self.fi('현재가'), self.fi('분봉시가')
+                        self.draw_volumebar(i, fidx1, fidx3, fidx4)
+                    else:
+                        self.draw_line(i, fidx1, self.rgb_red)
+                    self.draw_line(i, fidx2, self.rgb_green)
+                except:
+                    self.ymax, self.ymin = 0, 0
 
             elif factor in ('초당체결수량', '분당체결수량', '누적초당매도수수량', '누적분당매도수수량', '초당매도수금액', '분당매도수금액',
                             '당일매도수금액', '최고매도수금액', '최고매도수가격', '호가총잔량', '매도수호가잔량1'):
-                fidx1, fidx2 = self.dict_idxs[factor]
-                self.ymax = max(self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
-                self.ymin = min(self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
-                self.draw_area(i)
-                self.draw_formula(i, factor)
-                self.draw_line(i, fidx1, self.rgb_blue)
-                self.draw_line(i, fidx2, self.rgb_red)
+                try:
+                    fidx1, fidx2 = self.dict_idxs[factor]
+                    self.ymax = max(self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
+                    self.ymin = min(self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
+                    self.draw_area(i)
+                    self.draw_formula(i, factor)
+                    self.draw_line(i, fidx1, self.rgb_blue)
+                    self.draw_line(i, fidx2, self.rgb_red)
+                except:
+                    self.ymax, self.ymin = 0, 0
 
             elif factor == '체결강도':
                 try:
@@ -267,43 +251,55 @@ class DrawChartBase:
                     self.ymax, self.ymin = 0, 0
 
             elif factor in ('AROON', 'DMI'):
-                fidx1, fidx2 = self.dict_idxs[factor]
-                self.ymax = self.ui.ctpg_data[fidx1].max()
-                self.ymin = self.ui.ctpg_data[fidx2].min()
-                self.draw_area(i)
-                self.draw_formula(i, factor)
-                self.draw_line(i, fidx2, self.rgb_blue)
-                self.draw_line(i, fidx1, self.rgb_red)
+                try:
+                    fidx1, fidx2 = self.dict_idxs[factor]
+                    self.ymax = self.ui.ctpg_data[fidx1].max()
+                    self.ymin = self.ui.ctpg_data[fidx2].min()
+                    self.draw_area(i)
+                    self.draw_formula(i, factor)
+                    self.draw_line(i, fidx2, self.rgb_blue)
+                    self.draw_line(i, fidx1, self.rgb_red)
+                except:
+                    self.ymax, self.ymin = 0, 0
 
             elif factor in ('STOCHS', 'STOCHF'):
-                fidx1, fidx2 = self.dict_idxs[factor]
-                self.ymax = self.ui.ctpg_data[fidx2].max()
-                self.ymin = self.ui.ctpg_data[fidx1].min()
-                self.draw_area(i)
-                self.draw_formula(i, factor)
-                self.draw_line(i, fidx2, self.rgb_red)
-                self.draw_line(i, fidx1, self.rgb_green)
+                try:
+                    fidx1, fidx2 = self.dict_idxs[factor]
+                    self.ymax = self.ui.ctpg_data[fidx2].max()
+                    self.ymin = self.ui.ctpg_data[fidx1].min()
+                    self.draw_area(i)
+                    self.draw_formula(i, factor)
+                    self.draw_line(i, fidx2, self.rgb_red)
+                    self.draw_line(i, fidx1, self.rgb_green)
+                except:
+                    self.ymax, self.ymin = 0, 0
 
             elif factor == 'BBAND':
-                fidx1, fidx2, fidx3, fidx4 = self.fi('현재가'), self.fi('BBU'), self.fi('BBL'), self.fi('BBM')
-                self.ymax = max(self.ui.ctpg_data[fidx2].max(), self.ui.ctpg_data[fidx1].max())
-                self.ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min())
-                self.draw_area(i)
-                self.draw_formula(i, factor)
-                self.draw_line(i, fidx4, self.rgb_gray)
-                self.draw_line(i, fidx3, self.rgb_blue)
-                self.draw_line(i, fidx2, self.rgb_green)
-                self.draw_line(i, fidx1, self.rgb_red)
+                try:
+                    fidx1, fidx2, fidx3, fidx4 = self.fi('현재가'), self.fi('BBU'), self.fi('BBL'), self.fi('BBM')
+                    self.ymax = max(self.ui.ctpg_data[fidx2].max(), self.ui.ctpg_data[fidx1].max())
+                    self.ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min())
+                    self.draw_area(i)
+                    self.draw_formula(i, factor)
+                    self.draw_line(i, fidx4, self.rgb_gray)
+                    self.draw_line(i, fidx3, self.rgb_blue)
+                    self.draw_line(i, fidx2, self.rgb_green)
+                    self.draw_line(i, fidx1, self.rgb_red)
+                except:
+                    self.ymax, self.ymin = 0, 0
 
             elif factor == 'MACD':
-                fidx1, fidx2, fidx3 = self.fi('MACDS'), self.fi('MACDH'), self.fi('MACD')
-                self.ymax = max(self.ui.ctpg_data[fidx3].max(), self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
-                self.ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
-                self.draw_area(i)
-                self.draw_formula(i, factor)
-                self.draw_line(i, fidx3, self.rgb_gray)
-                self.draw_line(i, fidx2, self.rgb_red)
-                self.draw_line(i, fidx1, self.rgb_green)
+                try:
+                    fidx1, fidx2, fidx3 = self.fi('MACDS'), self.fi('MACDH'), self.fi('MACD')
+                    self.ymax = max(self.ui.ctpg_data[fidx3].max(), self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
+                    self.ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
+                    self.draw_area(i)
+                    self.draw_formula(i, factor)
+                    self.draw_line(i, fidx3, self.rgb_gray)
+                    self.draw_line(i, fidx2, self.rgb_red)
+                    self.draw_line(i, fidx1, self.rgb_green)
+                except:
+                    self.ymax, self.ymin = 0, 0
 
             else:
                 fidx = self.fi(factor)
@@ -581,20 +577,14 @@ class DrawChartBase:
                 self.real, self.gubun, self.is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
                 self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7]
             )
-        elif self.chart_cnt == 9:
-            self.crosshair.crosshair(
-                self.real, self.gubun, self.is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
-                self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8]
-            )
         elif self.chart_cnt == 10:
             self.crosshair.crosshair(
                 self.real, self.gubun, self.is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
-                self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
-                self.ui.ctpg[9]
+                self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8], self.ui.ctpg[9]
             )
-        elif self.chart_cnt == 11:
+        elif self.chart_cnt == 13:
             self.crosshair.crosshair(
                 self.real, self.gubun, self.is_min, self.ui.ctpg[0], self.ui.ctpg[1], self.ui.ctpg[2], self.ui.ctpg[3],
-                self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8],
-                self.ui.ctpg[9], self.ui.ctpg[10]
+                self.ui.ctpg[4], self.ui.ctpg[5], self.ui.ctpg[6], self.ui.ctpg[7], self.ui.ctpg[8], self.ui.ctpg[9],
+                self.ui.ctpg[10], self.ui.ctpg[11], self.ui.ctpg[12]
             )

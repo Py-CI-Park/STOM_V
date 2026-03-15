@@ -347,8 +347,8 @@ class Chart:
             fm_list, dict_fm, fm_tcnt = get_formula_data(True, arry.shape[1])
             if fm_tcnt > 0:
                 arry = get_np().column_stack((arry, get_np().zeros((arry.shape[0], fm_tcnt))))
-                fm = FormulaManager()
-                fm.update_all_data(code, deepcopy(fm_list), arry, market, is_tick, w_unit)
+                fm = FormulaManager(deepcopy(fm_list))
+                fm.update_all_data(code, arry, market, is_tick, w_unit)
 
             if arry is not None:
                 if is_tick: xticks = [dt_ymdhms(str(int(x))).timestamp() for x in arry[:, 0]]

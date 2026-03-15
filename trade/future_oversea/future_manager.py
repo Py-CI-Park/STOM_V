@@ -147,7 +147,7 @@ class FutureManager:
 
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ = Queue(), Queue(), Queue(), Queue()
         self.qlist    = [self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ]
-        self.dict_set = load_settings(ui_num, self.mgzservQ, True)
+        self.dict_set = load_settings()
 
         self.backtest_engine = False
         self.proc_strategy   = None

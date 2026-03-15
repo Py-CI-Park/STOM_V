@@ -1,6 +1,7 @@
 
 import os
 import sqlite3
+from traceback import format_exc
 from utility.lazy_imports import get_pd
 from utility.static import read_key, write_key
 
@@ -447,5 +448,5 @@ def database_check():
         con.close()
         return True, None
 
-    except Exception as e:
-        return False, f'{e}'
+    except:
+        return False, format_exc()

@@ -36,13 +36,13 @@ def coin_buy_stg_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', '매수전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(
-                strategy):
+        if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
             if ui.proc_query.is_alive():
-                delete_query = f"DELETE FROM coinbuy WHERE `index` = '{strategy_name}'"
-                insert_query = f"INSERT INTO coinbuy (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                delete_query  = f"DELETE FROM coinbuy WHERE `index` = '{strategy_name}'"
+                insert_query  = 'INSERT INTO coinbuy VALUES (?, ?)'
+                insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
-                ui.queryQ.put(('전략디비', insert_query))
+                ui.queryQ.put(('전략디비', insert_query, insert_values))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
             ui.cvjb_pushButon_04.setStyleSheet(style_bc_st)
 
