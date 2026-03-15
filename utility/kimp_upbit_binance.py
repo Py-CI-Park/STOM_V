@@ -11,7 +11,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from multiprocessing import Process
 from binance import AsyncClient, BinanceSocketManager
-from utility.setting import ui_num, columns_kp
+from utility.setting_base import ui_num, columns_kp
 from utility.static import comma2float, threading_timer
 
 

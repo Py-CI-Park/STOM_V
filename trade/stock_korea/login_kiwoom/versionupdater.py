@@ -1,3 +1,5 @@
+import os
+import sys
 import time
 import telegram
 import pythoncom
@@ -6,15 +8,16 @@ from PyQt5 import QtWidgets
 from multiprocessing import Process
 from PyQt5.QAxContainer import QAxWidget
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))))
+from utility.setting_user import DICT_SET
+from utility.setting_base import OPENAPI_PATH
 from utility.static import now, timedelta_sec, opstarter_kill, get_logger
-from utility.setting import OPENAPI_PATH, DICT_SET
 
 
-def TelegramMassage(txt):
+def TelegramMassage(dict_set_, txt):
     try:
-        gubun = DICT_SET['증권사'][4:]
-        bot = telegram.Bot(DICT_SET[f'텔레그램봇토큰{gubun}'])
-        bot.sendMessage(chat_id=DICT_SET[f'텔레그램사용자아이디{gubun}'], text=txt)
+        gubun = dict_set_['증권사'][4:]
+        bot = telegram.Bot(dict_set_[f'텔레그램봇토큰{gubun}'])
+        bot.sendMessage(chat_id=dict_set_[f'텔레그램사용자아이디{gubun}'], text=txt)
     except:
         logger.error(txt)
 
@@ -60,8 +63,9 @@ if __name__ == '__main__':
     logger.info('아이디 및 패스워드 입력 대기 중 ...')
     time.sleep(2)
 
-    id_num = int(DICT_SET['증권사'][4:])
-    manual_login(id_num)
+    dict_set = DICT_SET
+    id_num = int(dict_set['증권사'][4:])
+    manual_login(id_num, dict_set)
     logger.info('아이디 및 패스워드 입력 완료')
 
     update = False
@@ -72,7 +76,7 @@ if __name__ == '__main__':
             try:
                 click_button(win32gui.GetDlgItem(hwnd, 0x7F3))
                 click_button(win32gui.GetDlgItem(hwnd, 0x1))
-                TelegramMassage('인증서 만료기간이 얼마남지 않았습니다.\n인증서를 갱신하십시오.')
+                TelegramMassage(dict_set, '인증서 만료기간이 얼마남지 않았습니다.\n인증서를 갱신하십시오.')
             except:
                 pass
 

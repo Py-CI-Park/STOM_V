@@ -9,21 +9,21 @@ from matplotlib import font_manager
 from matplotlib import pyplot as plt
 from trade.strategy_base import Strategy
 from utility.static import timedelta_sec, error_decorator, str_ymdhms, dt_ymdhms, get_logger, add_rolling_data, dt_ymdhm
-from utility.setting import ui_num, DICT_SET, DB_TRADELIST, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
+from utility.setting_base import ui_num, DB_TRADELIST, DB_PATH, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_BACKTEST, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_CODE_INFO, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
     list_stock_min, list_coin_min, list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, \
     list_future_tick2, list_future_min2, DB_STRATEGY
 
 
 class Chart:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
         self.windowQ   = qlist[0]
         self.chartQ    = qlist[4]
-        self.dict_set  = DICT_SET
+        self.dict_set  = dict_set
         self.logger    = get_logger(self.__class__.__name__)
         self.dict_name = {}
 
@@ -344,8 +344,8 @@ class Chart:
                     arry = np.nan_to_num(arry)
                 except:
                     arry = None
-                    self.logger.error(f'보조지표의 설정값이 잘못되었습니다.')
                     print_exc()
+                    self.logger.error(f'보조지표의 설정값이 잘못되었습니다.')
 
             con = sqlite3.connect(DB_STRATEGY)
             fm_df = pd.read_sql("SELECT * FROM formula", con)
@@ -409,7 +409,6 @@ class FormulaManager(Strategy):
         self.arry_code   = arry
         self.is_tick     = is_tick
         self.avg_list    = [w_unit]
-        self.backtest    = True
         self.high_low    = {}
         self.tick_count  = 0
 
@@ -436,7 +435,11 @@ class FormulaManager(Strategy):
 
         self.base_cnt = self.dict_findex['관심종목'] + 1
 
-        list_stg = [compile(v['수식코드'], '<string>', 'exec') for v in dict_fm.values()]
+        fm_list = []
+        for v in dict_fm.values():
+            fm = list(v.values())
+            fm[-1] = compile(fm[-1], '<string>', 'exec')
+            fm_list.append(fm)
 
         for i, index in enumerate(self.arry_code[:, 0]):
             self.index  = int(index)
@@ -505,26 +508,26 @@ class FormulaManager(Strategy):
                 else:
                     self.high_low[self.code] = [분봉고가, self.indexn, 분봉저가, self.indexn]
 
-            for j, v in enumerate(dict_fm.values()):
-                _, _, fname, data_type, color, width, style, _ = v.values()
-                self.check, self.buy, self.sell, self.line, self.up, self.down = None, None, None, None, None, None
+            for name, _, fname, data_type, _, _, style, stg in fm_list:
+                col_idx = fm_index[name]
+                self.check, self.line, self.buy, self.sell, self.up, self.down = None, None, None, None, None, None
                 try:
-                    exec(list_stg[j])
+                    exec(stg)
                 except:
                     pass
 
                 if data_type == '선:일반':
                     if self.line is not None:
-                        arry[i, fm_index[v['수식명']]] = self.line
+                        arry[i, col_idx] = self.line
 
                 elif data_type == '선:조건':
                     if self.check is not None and self.line is not None:
                         if self.check:
-                            arry[i, fm_index[v['수식명']]] = self.line
+                            arry[i, col_idx] = self.line
                         else:
-                            pre_line = arry[i-1, fm_index[v['수식명']]]
+                            pre_line = arry[i-1, col_idx]
                             if pre_line > 0:
-                                arry[i, fm_index[v['수식명']]] = pre_line
+                                arry[i, col_idx] = pre_line
 
                 elif data_type == '화살표:일반':
                     if self.check is not None and self.check:
@@ -535,18 +538,19 @@ class FormulaManager(Strategy):
                                 price = 분봉저가
                             else:
                                 price = 분봉고가
-                        arry[i, fm_index[v['수식명']]] = price
+                        arry[i, col_idx] = price
 
                 elif data_type == '화살표:매매':
                     if self.buy is not None and self.sell is not None:
                         if not self.hold and self.buy:
-                            arry[i, fm_index[v['수식명']]] = 현재가
+                            arry[i, col_idx] = 현재가
                             self.hold = True
                         elif self.hold and self.sell:
-                            arry[i, fm_index[v['수식명']] + 1] = 현재가
+                            arry[i, col_idx + 1] = 현재가
                             self.hold = False
-                else:
+
+                elif data_type == '범위':
                     if self.check is not None and self.up is not None and self.down is not None:
-                        arry[i, fm_index[v['수식명']]] = 1.0 if self.check else 0.0
-                        arry[i, fm_index[v['수식명']] + 1] = self.up
-                        arry[i, fm_index[v['수식명']] + 2] = self.down
+                        arry[i, col_idx] = 1.0 if self.check else 0.0
+                        arry[i, col_idx + 1] = self.up
+                        arry[i, col_idx + 2] = self.down

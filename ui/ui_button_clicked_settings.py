@@ -7,7 +7,7 @@ from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox, QLineEdit
 from ui.set_style import style_bc_bt
 from ui.set_text import famous_saying
-from utility.setting import DB_PATH
+from utility.setting_base import DB_PATH
 from utility.static import de_text, en_text, qtest_qwait
 
 
@@ -185,38 +185,40 @@ def setting_load_07(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
     if len(df) > 0:
         ui.sj_back_cheBox_01.setChecked(True) if df['블랙리스트추가'][0] else ui.sj_back_cheBox_01.setChecked(False)
-        ui.sj_back_cheBox_02.setChecked(True) if df['백테주문관리적용'][0] else ui.sj_back_cheBox_02.setChecked(False)
-        ui.sj_back_cheBox_03.setChecked(True) if df['백테매수시간기준'][0] else ui.sj_back_cheBox_03.setChecked(False)
-        ui.sj_back_cheBox_04.setChecked(True) if df['백테일괄로딩'][0] else ui.sj_back_cheBox_04.setChecked(False)
-        ui.sj_back_cheBox_05.setChecked(True) if not df['백테일괄로딩'][0] else ui.sj_back_cheBox_05.setChecked(False)
-        ui.sj_back_cheBox_13.setChecked(True) if df['그래프저장하지않기'][0] else ui.sj_back_cheBox_13.setChecked(False)
-        ui.sj_back_cheBox_14.setChecked(True) if df['그래프띄우지않기'][0] else ui.sj_back_cheBox_14.setChecked(False)
-        ui.sj_back_cheBox_15.setChecked(True) if df['디비자동관리'][0] else ui.sj_back_cheBox_15.setChecked(False)
-        ui.sj_back_cheBox_16.setChecked(True) if df['교차검증가중치'][0] else ui.sj_back_cheBox_16.setChecked(False)
-        ui.sj_back_cheBox_21.setChecked(True) if df['최적화로그기록안함'][0] else ui.sj_back_cheBox_21.setChecked(False)
-        ui.sj_back_comBox_04.clear()
-        ui.sj_back_cheBox_19.setChecked(True) if df['백테스케쥴실행'][0] else ui.sj_back_cheBox_19.setChecked(False)
+        ui.sj_back_cheBox_02.setChecked(True) if df['백테일괄로딩'][0] else ui.sj_back_cheBox_02.setChecked(False)
+        ui.sj_back_cheBox_03.setChecked(True) if not df['백테일괄로딩'][0] else ui.sj_back_cheBox_03.setChecked(False)
+        ui.sj_back_cheBox_04.setChecked(True) if df['디비자동관리'][0] else ui.sj_back_cheBox_04.setChecked(False)
+        ui.sj_back_cheBox_05.setChecked(True) if df['백테주문관리적용'][0] else ui.sj_back_cheBox_05.setChecked(False)
+        ui.sj_back_cheBox_06.setChecked(True) if df['교차검증가중치'][0] else ui.sj_back_cheBox_06.setChecked(False)
+        ui.sj_back_cheBox_07.setChecked(True) if df['범위자동관리'][0] else ui.sj_back_cheBox_07.setChecked(False)
+        ui.sj_back_cheBox_09.setChecked(True) if df['백테매수시간기준'][0] else ui.sj_back_cheBox_09.setChecked(False)
+        ui.sj_back_liEdit_01.setText(str(df['기준값최소상승률'][0]))
+        ui.sj_back_cheBox_10.setChecked(True) if df['그래프저장하지않기'][0] else ui.sj_back_cheBox_10.setChecked(False)
+        ui.sj_back_cheBox_11.setChecked(True) if df['그래프띄우지않기'][0] else ui.sj_back_cheBox_11.setChecked(False)
+        ui.sj_back_cheBox_12.setChecked(True) if df['최적화로그기록안함'][0] else ui.sj_back_cheBox_12.setChecked(False)
+        ui.sj_back_cheBox_13.setChecked(True) if df['백테스케쥴실행'][0] else ui.sj_back_cheBox_13.setChecked(False)
+        ui.sj_back_cheBox_14.setChecked(True) if not df['백테날짜고정'][0] else ui.sj_back_cheBox_14.setChecked(False)
+        ui.sj_back_cheBox_15.setChecked(True) if df['백테날짜고정'][0] else ui.sj_back_cheBox_15.setChecked(False)
+        ui.sj_back_comBox_03.clear()
         dfs = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
         indexs = list(dfs.index)
         indexs.sort()
         for index in indexs:
-            ui.sj_back_comBox_04.addItem(index)
+            ui.sj_back_comBox_03.addItem(index)
         if df['백테스케쥴요일'][0] == 4:
-            ui.sj_back_comBox_05.setCurrentText('금')
+            ui.sj_back_comBox_01.setCurrentText('금')
         elif df['백테스케쥴요일'][0] == 5:
-            ui.sj_back_comBox_05.setCurrentText('토')
+            ui.sj_back_comBox_01.setCurrentText('토')
         elif df['백테스케쥴요일'][0] == 6:
-            ui.sj_back_comBox_05.setCurrentText('일')
-        ui.sj_back_liEdit_03.setText(str(df['백테스케쥴시간'][0]))
-        ui.sj_back_comBox_03.setCurrentText(df['백테스케쥴구분'][0])
-        ui.sj_back_comBox_04.setCurrentText(df['백테스케쥴명'][0])
-        ui.sj_back_cheBox_17.setChecked(True) if not df['백테날짜고정'][0] else ui.sj_back_cheBox_17.setChecked(False)
-        ui.sj_back_cheBox_18.setChecked(True) if df['백테날짜고정'][0] else ui.sj_back_cheBox_18.setChecked(False)
+            ui.sj_back_comBox_01.setCurrentText('일')
+
+        ui.sj_back_liEdit_02.setText(str(df['백테스케쥴시간'][0]))
+        ui.sj_back_comBox_02.setCurrentText(df['백테스케쥴구분'][0])
+        ui.sj_back_comBox_03.setCurrentText(df['백테스케쥴명'][0])
         if df['백테날짜고정'][0]:
             ui.sj_back_daEdit_01.setDate(QDate.fromString(ui.dict_set['백테날짜'], 'yyyyMMdd'))
         else:
-            ui.sj_back_liEdit_02.setText(df['백테날짜'][0])
-        ui.sj_back_cheBox_20.setChecked(True) if df['범위자동관리'][0] else ui.sj_back_cheBox_20.setChecked(False)
+            ui.sj_back_liEdit_03.setText(df['백테날짜'][0])
     else:
         QMessageBox.critical(ui, '오류 알림', '백테 설정값이\n존재하지 않습니다.\n')
 
@@ -281,7 +283,7 @@ def setting_save_01(ui):
         ui.sj_coin_labell_03.setText(
             '종목당투자금                          USDT                                   전략중지 및 잔고청산   |')
 
-    if prev_market[:4] != sg[:4]:
+    if sr and prev_market[:4] != sg[:4]:
         if ui.proc_manager.poll() is None:
             ui.proc_manager.kill()
         if '키움증권' in sg:
@@ -504,31 +506,31 @@ def setting_save_06(ui):
 
 def setting_save_07(ui):
     bl  = 1 if ui.sj_back_cheBox_01.isChecked() else 0
-    bbg = 1 if ui.sj_back_cheBox_02.isChecked() else 0
-    bsg = 1 if ui.sj_back_cheBox_03.isChecked() else 0
-    bld = 1 if ui.sj_back_cheBox_04.isChecked() else 0
-    gsv = 1 if ui.sj_back_cheBox_13.isChecked() else 0
-    gpl = 1 if ui.sj_back_cheBox_14.isChecked() else 0
-    atd = 1 if ui.sj_back_cheBox_15.isChecked() else 0
-    ext = 1 if ui.sj_back_cheBox_16.isChecked() else 0
-    bdf = 1 if ui.sj_back_cheBox_18.isChecked() else 0
-    olx = 1 if ui.sj_back_cheBox_21.isChecked() else 0
-    bwd = 0
-    bss = 1 if ui.sj_back_cheBox_19.isChecked() else 0
-    if ui.sj_back_comBox_05.currentText() == '금':
+    bld = 1 if ui.sj_back_cheBox_02.isChecked() else 0
+    atd = 1 if ui.sj_back_cheBox_04.isChecked() else 0
+    bbg = 1 if ui.sj_back_cheBox_05.isChecked() else 0
+    ext = 1 if ui.sj_back_cheBox_06.isChecked() else 0
+    aa  = 1 if ui.sj_back_cheBox_07.isChecked() else 0
+    bsg = 1 if ui.sj_back_cheBox_09.isChecked() else 0
+    gop = ui.sj_back_liEdit_01.text()
+    gsv = 1 if ui.sj_back_cheBox_10.isChecked() else 0
+    gpl = 1 if ui.sj_back_cheBox_11.isChecked() else 0
+    olx = 1 if ui.sj_back_cheBox_12.isChecked() else 0
+    bss = 1 if ui.sj_back_cheBox_13.isChecked() else 0
+    bdf = 1 if ui.sj_back_cheBox_15.isChecked() else 0
+    if ui.sj_back_comBox_01.currentText() == '금':
         bwd = 4
-    elif ui.sj_back_comBox_05.currentText() == '토':
+    elif ui.sj_back_comBox_01.currentText() == '토':
         bwd = 5
-    elif ui.sj_back_comBox_05.currentText() == '일':
+    else:
         bwd = 6
-    bst = ui.sj_back_liEdit_03.text()
-    abd = ui.sj_back_comBox_03.currentText()
-    abn = ui.sj_back_comBox_04.currentText()
+    bst = ui.sj_back_liEdit_02.text()
+    abd = ui.sj_back_comBox_02.currentText()
+    abn = ui.sj_back_comBox_03.currentText()
     if bdf:
         bd = ui.sj_back_daEdit_01.date().toString('yyyyMMdd')
     else:
-        bd = ui.sj_back_liEdit_02.text()
-    aa = 1 if ui.sj_back_cheBox_20.isChecked() else 0
+        bd = ui.sj_back_liEdit_03.text()
 
     if '' in (bd, bst):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
@@ -536,8 +538,8 @@ def setting_save_07(ui):
         bst = int(bst)
         if ui.proc_query.is_alive():
             query = f"UPDATE back SET 블랙리스트추가 = {bl}, 백테주문관리적용 = {bbg}, 백테매수시간기준 = {bsg}, 백테일괄로딩 = {bld}, " \
-                    f"그래프저장하지않기 = {gsv}, 그래프띄우지않기 = {gpl}, 디비자동관리 = {atd}, 교차검증가중치 = {ext}, 백테스케쥴실행 = {bss}, " \
-                    f"백테스케쥴요일 = {bwd}, 백테스케쥴시간 = {bst}, 백테스케쥴구분 = '{abd}', 백테스케쥴명 = '{abn}', " \
+                    f"그래프저장하지않기 = {gsv}, 그래프띄우지않기 = {gpl}, 디비자동관리 = {atd}, 교차검증가중치 = {ext}, 기준값최소상승률 = {gop}, " \
+                    f"백테스케쥴실행 = {bss}, 백테스케쥴요일 = {bwd}, 백테스케쥴시간 = {bst}, 백테스케쥴구분 = '{abd}', 백테스케쥴명 = '{abn}', " \
                     f"백테날짜고정 = {bdf}, 백테날짜 = '{bd}', 범위자동관리 = {aa}, 최적화로그기록안함 = {olx}"
             ui.queryQ.put(('설정디비', query))
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
@@ -596,8 +598,7 @@ def setting_save_08(ui):
 def setting_acc_view(ui):
     if ui.sj_etc_pButton_01.text() == '계정 텍스트 보기':
         ui.pa_lineEditttt_01.clear()
-        if not ui.dialog_pass.isVisible():
-            ui.dialog_pass.show()
+        ui.dialog_pass.show() if not ui.dialog_pass.isVisible() else ui.dialog_pass.close()
     else:
         ui.sj_sacc_liEdit_01.setEchoMode(QLineEdit.Password)
         ui.sj_sacc_liEdit_02.setEchoMode(QLineEdit.Password)

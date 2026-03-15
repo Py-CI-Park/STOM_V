@@ -4,14 +4,13 @@ import asyncio
 import numpy as np
 import pandas as pd
 from threading import Thread
-from utility.setting import DICT_SET
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from utility.static import get_logger
 
 
 class TelegramBot:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
@@ -21,7 +20,7 @@ class TelegramBot:
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
         self.wdzservQ    = qlist[13]
-        self.dict_set    = DICT_SET
+        self.dict_set    = dict_set
         self.logger      = get_logger(self.__class__.__name__)
 
         gubun            = self.dict_set['증권사'][4:]

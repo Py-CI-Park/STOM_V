@@ -1,6 +1,5 @@
 
 import random
-import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying

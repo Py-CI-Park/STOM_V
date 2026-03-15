@@ -2,7 +2,7 @@
 import numpy as np
 from traceback import print_exc
 from trade.binance.binance_strategy_tick import BinanceStrategyTick
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 from utility.static import GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, now_utc, dt_ymdhms, now, GetIndicator
 
 

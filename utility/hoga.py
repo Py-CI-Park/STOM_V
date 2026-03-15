@@ -3,25 +3,25 @@ import os
 import sqlite3
 import numpy as np
 import pandas as pd
-from utility.setting import ui_num, columns_hj, DB_PATH, DB_COIN_BACK_TICK, \
-    DB_STOCK_BACK_TICK, DICT_SET, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
+from utility.setting_base import ui_num, columns_hj, DB_PATH, DB_COIN_BACK_TICK, \
+    DB_STOCK_BACK_TICK, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
     list_stock_tick, list_stock_min, list_coin_tick, list_coin_min
 
 
 class Hoga:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
         """
         self.windowQ   = qlist[0]
         self.hogaQ     = qlist[5]
+        self.dict_set  = dict_set
         self.gubun     = None
         self.hoga_name = None
         self.dict_hj   = None
         self.dict_hc   = None
         self.dict_hg   = None
-        self.dict_set  = DICT_SET
         self.InitHoga('S')
 
         self.fi = {

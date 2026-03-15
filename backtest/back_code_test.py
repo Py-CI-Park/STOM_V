@@ -1,7 +1,7 @@
 
 from traceback import print_exc
 from PyQt5.QtCore import QThread
-from utility.setting import indicator
+from utility.setting_base import indicator
 # noinspection PyUnresolvedReferences
 from utility.static import timedelta_sec, qtest_qwait, get_logger
 

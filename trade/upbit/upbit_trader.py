@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
-from utility.setting import columns_cj, columns_td, ui_num, DB_TRADELIST, DICT_SET, columns_jg
+from utility.setting_base import columns_cj, columns_td, ui_num, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, GetUpbitHogaunit, GetUpbitPgSgSp, now_utc, str_ymdhmsf, str_hmsf, \
     error_decorator, str_hms, str_ymd, dt_hms, get_logger, qtest_qwait
 
@@ -33,7 +33,7 @@ class Updater(QThread):
 
 
 class UpbitTrader:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
@@ -48,7 +48,7 @@ class UpbitTrader:
         self.ctraderQ      = qlist[9]
         self.cstgQ         = qlist[10]
         self.liveQ         = qlist[11]
-        self.dict_set      = DICT_SET
+        self.dict_set      = dict_set
         self.logger        = get_logger(self.__class__.__name__)
 
         self.order_time    = now()

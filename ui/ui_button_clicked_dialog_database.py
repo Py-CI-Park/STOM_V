@@ -1,6 +1,6 @@
 
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 
 
 def dbbutton_clicked_01(ui):

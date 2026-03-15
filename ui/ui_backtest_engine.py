@@ -24,7 +24,7 @@ from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
 from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec
-from utility.setting import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
+from utility.setting_base import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
     DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
@@ -129,11 +129,17 @@ def backengine_start(ui, gubun):
 
         if i == 0 and ui.dict_set['백테엔진프로파일링']:
             proc = Process(
-                target=target, args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques, True), daemon=True
+                target=target,
+                args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques,
+                      ui.dict_set, True),
+                daemon=True
             )
         else:
             proc = Process(
-                target=target, args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques), daemon=True
+                target=target,
+                args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques,
+                      ui.dict_set),
+                daemon=True
             )
         proc.start()
         ui.back_eprocs.append(proc)

@@ -15,7 +15,7 @@ from trade.upbit.upbit_strategy_min import UpbitStrategyMin
 from trade.upbit.upbit_receiver_tick import UpbitReceiverTick
 from trade.upbit.upbit_strategy_tick import UpbitStrategyTick
 from ui.set_style import style_bc_bt, style_bc_bb
-from utility.setting import GRAPH_PATH, ui_num
+from utility.setting_base import GRAPH_PATH, ui_num
 from utility.static import qtest_qwait, cme_normal_open
 
 
@@ -232,7 +232,7 @@ def CoinReceiverStart(ui):
             target = UpbitReceiverTick if ui.dict_set['거래소'] == '업비트' else BinanceReceiverTick
         else:
             target = UpbitReceiverMin if ui.dict_set['거래소'] == '업비트' else BinanceReceiverMin
-        ui.proc_receiver_coin = Process(target=target, args=(ui.qlist,))
+        ui.proc_receiver_coin = Process(target=target, args=(ui.qlist, ui.dict_set))
         ui.proc_receiver_coin.start()
 
 
@@ -249,8 +249,8 @@ def CoinTraderStart(ui):
             target = UpbitStrategyTick if ui.dict_set['거래소'] == '업비트' else BinanceStrategyTick
         else:
             target = UpbitStrategyMin if ui.dict_set['거래소'] == '업비트' else BinanceStrategyMin
-        ui.proc_strategy_coin = Process(target=target, args=(ui.qlist,), daemon=True)
+        ui.proc_strategy_coin = Process(target=target, args=(ui.qlist, ui.dict_set), daemon=True)
         ui.proc_strategy_coin.start()
     if not ui.CoinTraderProcessAlive():
-        ui.proc_trader_coin = Process(target=UpbitTrader if ui.dict_set['거래소'] == '업비트' else BinanceTrader, args=(ui.qlist,))
+        ui.proc_trader_coin = Process(target=UpbitTrader if ui.dict_set['거래소'] == '업비트' else BinanceTrader, args=(ui.qlist, ui.dict_set))
         ui.proc_trader_coin.start()

@@ -1,6 +1,6 @@
 
 from PyQt5.QtGui import QFont, QColor
-from utility.setting import DICT_SET
+from utility.setting_user import DICT_SET
 
 qfont12 = QFont()
 qfont12.setFamily('나눔고딕')

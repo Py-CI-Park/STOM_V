@@ -1,7 +1,7 @@
 
 import sqlite3
 import pandas as pd
-from utility.setting import DB_SETTING, DB_STRATEGY, DB_BACKTEST, DB_TRADELIST
+from utility.setting_base import DB_SETTING, DB_STRATEGY, DB_BACKTEST, DB_TRADELIST
 
 
 class DatabaseReadOnly:

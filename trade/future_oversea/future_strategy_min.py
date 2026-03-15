@@ -5,7 +5,7 @@ import numpy as np
 from traceback import print_exc
 from future_strategy_tick import FutureStrategyTick
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 from utility.static import now, now_cme, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, GetIndicator
 
 

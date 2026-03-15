@@ -1,6 +1,7 @@
 
 import win32api
 import win32gui
+import numpy as np
 import pyqtgraph as pg
 from PyQt5.QtGui import QColor
 from ui.ui_crosshair import CrossHair
@@ -146,10 +147,9 @@ class DrawChart:
             else:
                 self.ui.ctpg_data[i] = tick_arry[tick_arry != 0]
 
-        len_list = []
         tlen = len(self.ui.ctpg_arry)
-        for data in self.ui.ctpg_data.values():
-            len_list.append(tlen - len(data))
+        data_lengths = np.array([len(data) for data in self.ui.ctpg_data.values()])
+        len_list = tlen - data_lengths
 
         gsjm_arry   = self.ui.ctpg_arry[:, fi('관심종목')]
         chuse_exist = True if len(gsjm_arry[gsjm_arry > 0]) > 0 else False
@@ -267,15 +267,18 @@ class DrawChart:
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매수가격')]:], y=self.ui.ctpg_data[fi('최고매수가격')], pen=(200, 100, 100))
 
             elif factor == '체결강도':
-                ymax = max(self.ui.ctpg_data[fi('체결강도')].max(), self.ui.ctpg_data[fi('최고체결강도')].max())
-                ymin = min(self.ui.ctpg_data[fi('체결강도')].min(), self.ui.ctpg_data[fi('최저체결강도')].min())
-                if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
-                factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
-                if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
-                self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
-                self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
-                self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 100))
-                self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도')]:], y=self.ui.ctpg_data[fi('체결강도')], pen=(100, 200, 100))
+                try:
+                    ymax = max(self.ui.ctpg_data[fi('체결강도')].max(), self.ui.ctpg_data[fi('최고체결강도')].max())
+                    ymin = min(self.ui.ctpg_data[fi('체결강도')].min(), self.ui.ctpg_data[fi('최저체결강도')].min())
+                    if chuse_exist: self.ui.ctpg[i].addItem(ChuseItem(gsjm_arry, ymin, ymax, self.ui.ctpg_xticks))
+                    factor_fm_values = [v.values() for v in dict_fm.values() if v['팩터명'] == factor]
+                    if len(factor_fm_values) > 0: self.fm_draw(i, factor_fm_values, fm_index)
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 100))
+                    self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도')]:], y=self.ui.ctpg_data[fi('체결강도')], pen=(100, 200, 100))
+                except:
+                    ymax, ymin = 0, 0
 
             elif factor in ('초당체결수량', '분당체결수량'):
                 if is_min:
@@ -453,19 +456,20 @@ class DrawChart:
             self.ui.hgButtonClicked_02('매수')
 
     def fm_draw(self, i, factor_fm_values, fm_index):
-        style_angle = {
-            6: 90,
-            7: -90,
-            8: 180,
-            9: 0
-        }
         for name, _, _, data_type, color, width, style, _ in factor_fm_values:
+            idx = fm_index[name]
             if data_type in ('선:일반', '선:조건'):
-                arry = self.ui.ctpg_data[fm_index[name]]
+                arry = self.ui.ctpg_data[idx]
                 self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks, y=arry, pen=pg.mkPen(color, width=width, style=style))
 
             elif data_type == '화살표:일반':
-                arry = self.ui.ctpg_data[fm_index[name]]
+                style_angle = {
+                    6: 90,
+                    7: -90,
+                    8: 180,
+                    9: 0
+                }
+                arry = self.ui.ctpg_data[idx]
                 arrow_data = [(j, price) for j, price in enumerate(arry) if price > 0]
                 for j, price in arrow_data:
                     arrow = pg.ArrowItem(angle=style_angle[style], tipAngle=60, headLen=width, pen='w', brush=color)
@@ -473,8 +477,8 @@ class DrawChart:
                     self.ui.ctpg[i].addItem(arrow)
 
             elif data_type == '화살표:매매':
-                buy_arry  = self.ui.ctpg_data[fm_index[name]]
-                sell_arry = self.ui.ctpg_data[fm_index[name] + 1]
+                buy_arry  = self.ui.ctpg_data[idx]
+                sell_arry = self.ui.ctpg_data[idx + 1]
                 buy_arrow_data  = [(j, price) for j, price in enumerate(buy_arry) if price > 0]
                 sell_arrow_data = [(j, price) for j, price in enumerate(sell_arry) if price > 0]
                 for j, price in buy_arrow_data:
@@ -487,34 +491,36 @@ class DrawChart:
                     self.ui.ctpg[i].addItem(arrow)
 
             else:
-                arry = self.ui.ctpg_data[fm_index[name]]
-                valid_points = []
+                segments   = []
+                segment    = []
+                last_index = 0
+                arry = self.ui.ctpg_data[idx]
+                last = len(arry) - 1
                 for j, data in enumerate(arry):
                     if data > 0:
-                        up   = self.ui.ctpg_data[fm_index[name] + 1][j]
-                        down = self.ui.ctpg_data[fm_index[name] + 2][j]
-                        valid_points.append((j, self.ui.ctpg_xticks[j], up, down))
-                if len(valid_points) > 1:
-                    segments = []
-                    current_segment = [valid_points[0]]
-                    for j in range(1, len(valid_points)):
-                        prev_idx = valid_points[j-1][0]
-                        curr_idx = valid_points[j][0]
-                        if curr_idx - prev_idx > 1:
-                            if len(current_segment) > 1:
-                                segments.append(current_segment)
-                            current_segment = [valid_points[j]]
+                        up   = self.ui.ctpg_data[idx + 1][j]
+                        down = self.ui.ctpg_data[idx + 2][j]
+                        if segment:
+                            if j - last_index == 1:
+                                segment.append((self.ui.ctpg_xticks[j], up, down))
+                                last_index = j
+                            else:
+                                if len(segment) > 1:
+                                    segments.append(segment)
+                                segment = [(self.ui.ctpg_xticks[j], up, down)]
+                                last_index = j
                         else:
-                            current_segment.append(valid_points[j])
-                    if len(current_segment) > 1:
-                        segments.append(current_segment)
+                            segment.append((self.ui.ctpg_xticks[j], up, down))
+                            last_index = j
 
+                    if j == last and len(segment) > 1:
+                        segments.append(segment)
+
+                if segments:
                     for segment in segments:
-                        if len(segment) < 2:
-                            continue
-                        x_data = [point[1] for point in segment]
-                        up_data = [point[2] for point in segment]
-                        down_data = [point[3] for point in segment]
+                        x_data = [point[0] for point in segment]
+                        up_data = [point[1] for point in segment]
+                        down_data = [point[2] for point in segment]
                         upper_curve = pg.PlotDataItem(x=x_data, y=up_data)
                         lower_curve = pg.PlotDataItem(x=x_data, y=down_data)
                         color_with_alpha = QColor(color)

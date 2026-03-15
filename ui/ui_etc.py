@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMessageBox, QColorDialog
 from ui.set_text import famous_saying
-from utility.setting import columns_dt, columns_dd, ui_num, DB_STRATEGY
+from utility.setting_base import columns_dt, columns_dd, ui_num, DB_STRATEGY
 from utility.static import thread_decorator, qtest_qwait, str_ymdhmsf, str_ymdhms
 
 
@@ -198,9 +198,11 @@ def formula_activated(ui):
         ui.fm_checkBoxxxxx_01.setChecked(check)
         ui.fm_comboBoxxxxx_01.setCurrentText(fname)
         ui.fm_comboBoxxxxx_02.setCurrentText(vtype)
-        ui.fm_comboBoxxxxx_03.setCurrentText(color)
-        ui.fm_comboBoxxxxx_04.setCurrentText(str(width))
-        ui.fm_comboBoxxxxx_05.setCurrentText(dict_style[style])
+        if '#' in color:
+            ui.fm_frameeeeeeee_01.setStyleSheet('QWidget { background-color: %s }' % color)
+            ui.fm_lineEdittttt_02.setText(color)
+        ui.fm_comboBoxxxxx_03.setCurrentText(str(width))
+        ui.fm_comboBoxxxxx_04.setCurrentText(dict_style[style])
         ui.fm_textEdittttt_01.clear()
         ui.fm_textEdittttt_01.append(stg)
 
@@ -224,9 +226,9 @@ def formila_button_clicked(ui):
         check = 1 if ui.fm_checkBoxxxxx_01.isChecked() else 0
         fname = ui.fm_comboBoxxxxx_01.currentText()
         vtype = ui.fm_comboBoxxxxx_02.currentText()
-        color = ui.fm_comboBoxxxxx_03.currentText()
-        width = float(ui.fm_comboBoxxxxx_04.currentText())
-        style = int(ui.fm_comboBoxxxxx_05.currentText()[:1])
+        color = ui.fm_lineEdittttt_02.text()
+        width = float(ui.fm_comboBoxxxxx_03.currentText())
+        style = int(ui.fm_comboBoxxxxx_04.currentText()[:1])
         stg   = ui.fm_textEdittttt_01.toPlainText()
 
         if name == '' or stg == '':
@@ -238,10 +240,10 @@ def formila_button_clicked(ui):
         elif vtype in ('선:일반', '선:조건') and style > 5:
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '선의 종류 선택이 잘못되었습니다.\n')
             return
-        elif vtype in ('화살표:일반', '화살표:매매') and width < 10:
+        elif vtype == '화살표:일반' and width < 10:
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표의 최소크기는 10입니다.\n')
             return
-        elif vtype in ('화살표:일반', '화살표:매매') and style < 6:
+        elif vtype == '화살표:일반' and style < 6:
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표의 방향 선택이 잘못되었습니다.\n')
             return
 
@@ -274,7 +276,26 @@ def formila_button_clicked(ui):
             for name in name_list:
                 ui.fm_comboBoxxxxx_00.addItem(name)
 
-    else:
+    elif button_text == '색상선택':
+        from PyQt5.QtCore import QTimer
+
+        def center_dialog():
+            parent_center_x = ui.dialog_formula.x() + ui.dialog_formula.width() // 2
+            parent_center_y = ui.dialog_formula.y() + ui.dialog_formula.height() // 2
+            dialog_x = parent_center_x - dialog.width() // 2
+            dialog_y = parent_center_y - dialog.height() // 2
+            dialog.move(dialog_x, dialog_y)
+
+        dialog = QColorDialog(ui.dialog_formula)
+        dialog.show()
+        QTimer.singleShot(10, center_dialog)
+
+        if dialog.exec_() == QColorDialog.Accepted:
+            col = dialog.selectedColor()
+            ui.fm_frameeeeeeee_01.setStyleSheet('QWidget { background-color: %s }' % col.name())
+            ui.fm_lineEdittttt_02.setText(col.name())
+
+    elif button_text == '예제확인':
         text = """# 수식관리자는 로딩된 차트 데이터를 기반으로
 # 전략연산과 유사한 방식으로 작동되도록 설계되었으며
 # 전략연산과 다르게 매도관련 팩터를 사용할 수 없으니

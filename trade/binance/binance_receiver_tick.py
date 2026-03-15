@@ -9,7 +9,7 @@ import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketReceiver
-from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
+from utility.setting_base import ui_num, DB_COIN_TICK, DB_COIN_MIN
 from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, now_utc, str_hms, str_ymd, get_logger
 
 
@@ -31,7 +31,7 @@ class Updater(QThread):
 
 
 class BinanceReceiverTick:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
@@ -45,7 +45,7 @@ class BinanceReceiverTick:
         self.creceivQ    = qlist[8]
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
-        self.dict_set    = DICT_SET
+        self.dict_set    = dict_set
         self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_dtdm   = {}
@@ -236,12 +236,11 @@ class BinanceReceiverTick:
             csp = cbp = c
 
             if hoga_seprice[-1] < csp:
-                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
-                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = max(index - 5, 0)
-                    end_idx   = index
-                    add_cnt   = max(5 - index, 0)
+                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+                end_idx = valid_indices[-1] + 1 if valid_indices else None
+                if end_idx is not None:
+                    start_idx = max(end_idx - 5, 0)
+                    add_cnt   = max(5 - end_idx, 0)
                     hoga_seprice = [0.] * add_cnt + hoga_seprice[start_idx:end_idx]
                     hoga_samount = [0.] * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
@@ -252,12 +251,11 @@ class BinanceReceiverTick:
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
-                index = valid_indices[0] if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = index
-                    end_idx   = min(index + 5, 10)
-                    add_cnt   = max(index - 5, 0)
+                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+                start_idx = valid_indices[0] if valid_indices else None
+                if start_idx is not None:
+                    end_idx   = min(start_idx + 5, 10)
+                    add_cnt   = max(start_idx - 5, 0)
                     hoga_buprice = hoga_buprice[start_idx:end_idx] + [0.] * add_cnt
                     hoga_bamount = hoga_bamount[start_idx:end_idx] + [0.] * add_cnt
                 else:
