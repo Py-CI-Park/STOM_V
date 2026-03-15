@@ -28,6 +28,9 @@ def get_formula_data(forchart, col_idx):
     con.close()
 
     fm_list = []
+    dict_fm = {}
+    fm_tcnt = 0
+
     if forchart:
         fm_list_origine = [list(fm) for fm in fm_df.values if fm[1] == 1]
     else:
@@ -44,24 +47,23 @@ def get_formula_data(forchart, col_idx):
     수식명, 차트표시, 전략연산, 팩터명, 표시형태, 색상, 굵기, 종류, 수식코드, 인덱스
       0      1       2      3       4     5    6    7      8      9
     """
-    dict_fm  = {}
-    cnt_list = [dict_fm_count[fm[4]] for fm in fm_list]
-    fm_tcnt  = sum(cnt_list)
-    if fm_tcnt > 0:
-        for i, fm in enumerate(fm_list):
-            fm.append(col_idx)
-            col_idx += cnt_list[i]
+    if fm_list:
+        cnt_list = [dict_fm_count[fm[4]] for fm in fm_list]
+        fm_tcnt  = sum(cnt_list)
+        if fm_tcnt > 0:
+            for i, fm in enumerate(fm_list):
+                fm.append(col_idx)
+                col_idx += cnt_list[i]
 
-        fname_set = set(fm[3] for fm in fm_list)
-        dict_fm   = {fname: [[fm[0], fm[4], fm[9]] for fm in fm_list if fm[3] == fname] for fname in fname_set}
+            fname_set = set(fm[3] for fm in fm_list)
+            dict_fm   = {fname: [[fm[0], fm[4], fm[9]] for fm in fm_list if fm[3] == fname] for fname in fname_set}
 
     return fm_list, dict_fm, fm_tcnt
 
 
 class FormulaManager(StrategyBase):
-    def __init__(self, fm_list):
+    def __init__(self):
         super().__init__()
-        self.fm_list   = fm_list
         self.base_cnt  = None
         self.check     = None
         self.buy       = None
@@ -76,7 +78,7 @@ class FormulaManager(StrategyBase):
         globals().update(dict_add_func)
 
     # noinspection PyUnusedLocal
-    def update_all_data(self, code, arry, market, is_tick, w_unit):
+    def update_all_data(self, code, fm_list, arry, market, is_tick, w_unit):
         self.code        = code
         self.arry_code   = arry
         self.is_tick     = is_tick
@@ -107,7 +109,7 @@ class FormulaManager(StrategyBase):
 
         self.base_cnt = self.dict_findex['관심종목'] + 1
 
-        for fm in self.fm_list:
+        for fm in fm_list:
             fm[8] = compile(fm[-2], '<string>', 'exec')
 
         for i, index in enumerate(self.arry_code[:, 0]):
@@ -177,7 +179,7 @@ class FormulaManager(StrategyBase):
                 else:
                     self.high_low[self.code] = [분봉고가, i, 분봉저가, i]
 
-            for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
+            for name, _, _, fname, data_type, _, _, style, stg, col_idx in fm_list:
                 self.check, self.line, self.buy, self.sell, self.up, self.down = None, None, None, None, None, None
                 try:
                     exec(stg)

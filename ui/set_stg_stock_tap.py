@@ -349,8 +349,8 @@ class SetStockBack:
         self.ui.ss_textEditttt_07.setGeometry(7, 10, 497, 740)
         self.ui.ss_textEditttt_08.setGeometry(509, 10, 497, 740)
 
-        self.ui.szoo_pushButon_01.setGeometry(952, 15, 50, 20)
-        self.ui.szoo_pushButon_02.setGeometry(952, 483, 50, 20)
+        self.ui.szoo_pushButon_01.setGeometry(937, 15, 50, 20)
+        self.ui.szoo_pushButon_02.setGeometry(937, 483, 50, 20)
 
         self.ui.ss_tableWidget_01.setGeometry(7, 40, 1000, 713)
         self.ui.ss_comboBoxxxx_01.setGeometry(7, 10, 150, 25)

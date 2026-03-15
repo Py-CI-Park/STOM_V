@@ -55,8 +55,6 @@ def update_progressbar(ui):
 
     ui.sj_etc_pButton_02.setStyleSheet(style_bc_bt if not ui.dialog_setsj.isVisible() else style_bc_bb)
     ui.sj_etc_pButton_03.setStyleSheet(style_bc_bt if not ui.dialog_cetsj.isVisible() else style_bc_bb)
-    ui.sj_save_Button_13.setStyleSheet(style_bc_bt if not ui.dialog_bjjs.isVisible() else style_bc_bb)
-    ui.sj_save_Button_14.setStyleSheet(style_bc_bt if not ui.dialog_bjjc.isVisible() else style_bc_bb)
     ui.sj_lvrg_Button_01.setStyleSheet(style_bc_bt if not ui.dialog_leverage.isVisible() else style_bc_bb)
     ui.ct_pushButtonnn_03.setStyleSheet(style_bc_bt if not ui.dialog_formula.isVisible() else style_bc_bb)
     ui.ct_pushButtonnn_04.setStyleSheet(style_bc_bt if not ui.dialog_factor.isVisible() else style_bc_bb)

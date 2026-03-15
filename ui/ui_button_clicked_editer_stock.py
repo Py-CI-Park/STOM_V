@@ -24,8 +24,8 @@ def stock_opti_test_editer(ui):
     ui.svc_pushButton_03.setGeometry(1012, 150, 165, 30)
     ui.svc_pushButton_04.setGeometry(1182, 150, 165, 30)
 
-    ui.szoo_pushButon_01.setGeometry(599, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+    ui.szoo_pushButon_01.setGeometry(584, 15, 50, 20)
+    ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -88,8 +88,8 @@ def stock_rwf_test_editer(ui):
     ui.svc_pushButton_03.setGeometry(1012, 150, 165, 30)
     ui.svc_pushButton_04.setGeometry(1182, 150, 165, 30)
 
-    ui.szoo_pushButon_01.setGeometry(599, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+    ui.szoo_pushButon_01.setGeometry(584, 15, 50, 20)
+    ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -158,8 +158,8 @@ def stock_opti_ga_editer(ui):
     ui.sva_pushButton_04.setGeometry(1012, 150, 165, 30)
     ui.sva_pushButton_05.setGeometry(1182, 150, 165, 30)
 
-    ui.szoo_pushButon_01.setGeometry(599, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+    ui.szoo_pushButon_01.setGeometry(584, 15, 50, 20)
+    ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -305,8 +305,8 @@ def stock_opti_editer(ui):
     ui.svc_pushButton_03.setGeometry(1012, 150, 165, 30)
     ui.svc_pushButton_04.setGeometry(1182, 150, 165, 30)
 
-    ui.szoo_pushButon_01.setGeometry(599, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+    ui.szoo_pushButon_01.setGeometry(584, 15, 50, 20)
+    ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -520,8 +520,8 @@ def stock_stg_editer(ui):
     ui.svjs_comboBoxx_01.setGeometry(1012, 478, 165, 25)
     ui.svjs_pushButon_01.setGeometry(1012, 508, 165, 30)
 
-    ui.szoo_pushButon_01.setGeometry(952, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(952, 761 if ui.extend_window else 483, 50, 20)
+    ui.szoo_pushButon_01.setGeometry(937, 15, 50, 20)
+    ui.szoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')

@@ -38,7 +38,7 @@ from ui.ui_process_alive import *
 from ui.ui_extend_window import *
 from ui.ui_draw_chart_real import *
 from ui.ui_draw_jisuchart import *
-from ui.ui_betting_cotrol import *
+# ui_betting_cotrol removed in V2.54 (주문설정 UI 위치/크기 조정으로 통합)
 from ui.ui_update_textedit import *
 from ui.ui_process_starter import *
 from ui.ui_backtest_engine import *

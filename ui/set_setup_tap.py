@@ -16,6 +16,7 @@ class SetSetupTap:
 
         self.ui.ssd_tab = QWidget()
         self.ui.sod_tab = QWidget()
+        self.ui.cod_tab = QWidget()
 
         self.ui.sj_set_labelll_01 = QLabel('설정 관리', self.ui.sj_tab)
         self.ui.sj_set_comBoxx_01 = self.wc.setCombobox(self.ui.sj_tab, activated=self.ui.dActivated_02)
@@ -26,7 +27,8 @@ class SetSetupTap:
         self.ui.sj_set_pButton_04 = self.wc.setPushbutton('저장', box=self.ui.sj_tab, click=self.ui.SettingAllSave)
 
         self.ui.set_tapWidgett_01.addTab(self.ui.ssd_tab, '일반설정')
-        self.ui.set_tapWidgett_01.addTab(self.ui.sod_tab, '주문설정')
+        self.ui.set_tapWidgett_01.addTab(self.ui.sod_tab, '주식해선주문설정')
+        self.ui.set_tapWidgett_01.addTab(self.ui.cod_tab, '코인주문설정')
 
         self.ui.sj_bs_groupBox_01 = QGroupBox(' 증권사, 거래소, 프로세스 : 사용할 증권사 및 거래소를 선택하고 실행될 프로세스를 설정한다.', self.ui.ssd_tab)
         self.ui.sj_bs_groupBox_02 = QGroupBox(' 주식 및 해선 계정 : 계정 아이디, 비밀번호, 인증서비밀번호를 설정한다.', self.ui.ssd_tab)

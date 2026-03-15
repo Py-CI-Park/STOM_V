@@ -42,8 +42,6 @@ def process_kill(ui):
     if ui.dialog_hoga.isVisible():       ui.dialog_hoga.close()
     if ui.dialog_info.isVisible():       ui.dialog_info.close()
     if ui.dialog_tree.isVisible():       ui.dialog_tree.close()
-    if ui.dialog_bjjs.isVisible():       ui.dialog_bjjc.close()
-    if ui.dialog_bjjc.isVisible():       ui.dialog_bjjc.close()
     if ui.dialog_kimp.isVisible():       ui.dialog_kimp.close()
     if ui.dialog_pass.isVisible():       ui.dialog_pass.close()
     if ui.dialog_comp.isVisible():       ui.dialog_comp.close()
