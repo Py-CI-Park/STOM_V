@@ -10,7 +10,7 @@ except:
 from utility.static import dt_ymdhms, dt_ymdhm
 
 
-class Strategy:
+class StrategyBase:
     def __init__(self):
         self.code             = None
         self.name             = None
@@ -24,6 +24,13 @@ class Strategy:
         self.k                = None
         self.is_tick          = False
         self.backtest         = False
+
+        self.fm_list          = None
+        self.fm_tcnt          = None
+        self.check            = None
+        self.line             = None
+        self.up               = None
+        self.down             = None
 
         self.index            = 0
         self.indexn           = 0
@@ -1114,9 +1121,19 @@ class Strategy:
         }
         if self.backtest:
             dict_add_func['now'] = self._now
-            self.UpdateGlobalsFunc(dict_add_func)
-        else:
-            self.UpdateGlobalsFunc(dict_add_func)
+
+        if self.fm_list:
+            def create_func(col_idx):
+                def formula_func(pre=0):
+                    if pre <= self.indexn:
+                        return self.arry_code[self.indexn - pre, col_idx]
+                    return 0
+                return formula_func
+
+            for fm in self.fm_list:
+                dict_add_func[fm[0]] = create_func(fm[-1])
+
+        self.UpdateGlobalsFunc(dict_add_func)
 
     def UpdateGlobalsFunc(self, dict_add_func):
         pass

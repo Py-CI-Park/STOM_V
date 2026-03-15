@@ -2,6 +2,7 @@
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QLabel, QGroupBox, QFrame
 from ui.set_style import style_ck_bx, style_bc_dk, qfont14
+from utility.static import error_decorator
 
 
 class SetDialogFormula:
@@ -10,6 +11,7 @@ class SetDialogFormula:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.dialog_formula = self.wc.setDialog('STOM FORMULA', tab=self.ui.dialog_chart)
         self.ui.dialog_formula.geometry().center()
@@ -31,6 +33,7 @@ class SetDialogFormula:
         self.ui.fm_pushButtonnn_02 = self.wc.setPushbutton('저장하기', box=self.ui.fm_groupBoxxxxx_02, color=4, click=self.ui.fmButtonClicked_01)
 
         self.ui.fm_checkBoxxxxx_01 = self.wc.setCheckBox('차트 표시 유무 선택', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
+        self.ui.fm_checkBoxxxxx_02 = self.wc.setCheckBox('전략연산 및 백테 적용', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
 
         items = [
             '현재가', '초당거래대금', '분당거래대금', '초당매도수금액', '분당매도수금액', '당일매도수금액', '최고매도수금액', '최고매도수가격',
@@ -59,30 +62,44 @@ class SetDialogFormula:
         self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('삭제하기', box=self.ui.fm_groupBoxxxxx_02, color=2, click=self.ui.fmButtonClicked_01)
         self.ui.fm_pushButtonnn_05 = self.wc.setPushbutton('예제확인', box=self.ui.fm_groupBoxxxxx_02, color=3, click=self.ui.fmButtonClicked_01)
 
-        self.ui.fm_textEdittttt_01 = self.wc.setTextEdit(self.ui.fm_groupBoxxxxx_03, filter_=True, font=qfont14)
+        self.ui.fm_textEdittttt_01 = self.wc.setTextEdit(self.ui.fm_groupBoxxxxx_03, vscroll=True, filter_=True, font=qfont14)
 
-        self.ui.dialog_formula.setFixedSize(560, 525)
-        self.ui.fm_groupBoxxxxx_01.setGeometry(5, 5, 550, 85)
-        self.ui.fm_groupBoxxxxx_02.setGeometry(5, 90, 160, 430)
-        self.ui.fm_groupBoxxxxx_03.setGeometry(170, 90, 385, 430)
+        self.ui.dialog_formula.setMinimumSize(700, 560)
+        self.ui.dialog_formula.setMaximumSize(5000, 560)
+        
+        self.ui.fm_groupBoxxxxx_01.setGeometry(5, 5, 690, 85)
+        self.ui.fm_groupBoxxxxx_02.setGeometry(5, 90, 160, 465)
+        self.ui.fm_groupBoxxxxx_03.setGeometry(170, 90, 525, 465)
 
-        self.ui.fm_labellllllll_01.setGeometry(5, 5, 625, 75)
+        self.ui.fm_labellllllll_01.setGeometry(5, 5, 540, 75)
 
         self.ui.fm_lineEdittttt_01.setGeometry(5, 10, 150, 30)
         self.ui.fm_comboBoxxxxx_00.setGeometry(5, 45, 150, 30)
         self.ui.fm_pushButtonnn_01.setGeometry(5, 80, 150, 30)
         self.ui.fm_pushButtonnn_02.setGeometry(5, 115, 150, 30)
 
-        self.ui.fm_checkBoxxxxx_01.setGeometry(10, 150, 150, 30)
-        self.ui.fm_comboBoxxxxx_01.setGeometry(5, 185, 150, 30)
-        self.ui.fm_comboBoxxxxx_02.setGeometry(5, 220, 150, 30)
-        self.ui.fm_frameeeeeeee_01.setGeometry(5, 255, 72, 30)
-        self.ui.fm_pushButtonnn_03.setGeometry(82, 255, 73, 30)
-        self.ui.fm_lineEdittttt_02.setGeometry(170, 255, 100, 30)
-        self.ui.fm_comboBoxxxxx_03.setGeometry(5, 290, 150, 30)
-        self.ui.fm_comboBoxxxxx_04.setGeometry(5, 325, 150, 30)
+        self.ui.fm_checkBoxxxxx_01.setGeometry(10, 153, 150, 30)
+        self.ui.fm_checkBoxxxxx_02.setGeometry(10, 182, 150, 30)
+        self.ui.fm_comboBoxxxxx_01.setGeometry(5, 220, 150, 30)
+        self.ui.fm_comboBoxxxxx_02.setGeometry(5, 255, 150, 30)
+        self.ui.fm_frameeeeeeee_01.setGeometry(5, 290, 72, 30)
+        self.ui.fm_pushButtonnn_03.setGeometry(82, 290, 73, 30)
+        self.ui.fm_lineEdittttt_02.setGeometry(170, 290, 100, 30)
+        self.ui.fm_comboBoxxxxx_03.setGeometry(5, 325, 150, 30)
+        self.ui.fm_comboBoxxxxx_04.setGeometry(5, 360, 150, 30)
 
-        self.ui.fm_pushButtonnn_04.setGeometry(5, 360, 150, 30)
-        self.ui.fm_pushButtonnn_05.setGeometry(5, 395, 150, 30)
+        self.ui.fm_pushButtonnn_04.setGeometry(5, 395, 150, 30)
+        self.ui.fm_pushButtonnn_05.setGeometry(5, 430, 150, 30)
 
-        self.ui.fm_textEdittttt_01.setGeometry(5, 10, 375, 415)
+        self.ui.fm_textEdittttt_01.setGeometry(5, 10, 515, 450)
+
+        self.ui.dialog_formula.resizeEvent = self.on_formula_dialog_resize
+
+    def on_formula_dialog_resize(self, event):
+        dialog_width = self.ui.dialog_formula.width()
+        right_group_width = dialog_width - 175
+        self.ui.fm_groupBoxxxxx_01.setGeometry(5, 5, dialog_width - 10, 85)
+        self.ui.fm_groupBoxxxxx_03.setGeometry(170, 90, right_group_width, 465)
+        self.ui.fm_labellllllll_01.setGeometry(5, 5, dialog_width - 20, 75)
+        self.ui.fm_textEdittttt_01.setGeometry(5, 10, right_group_width - 10, 450)
+        event.accept()

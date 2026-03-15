@@ -3,24 +3,24 @@ import json
 import uuid
 import asyncio
 import websockets
+from traceback import print_exc
 from PyQt5.QtCore import QThread, pyqtSignal
-from utility.static import get_logger
 
 
 class WebSocketReceiver(QThread):
     signal1 = pyqtSignal(dict)
     signal2 = pyqtSignal(dict)
 
-    def __init__(self, codes):
+    def __init__(self, codes, windowQ):
         super().__init__()
         self.codes       = codes
+        self.windowQ     = windowQ
         self.loop        = None
         self.wsk_trade   = None
         self.wsk_order   = None
         self.con_trade   = False
         self.con_order   = False
         self.url         = 'wss://api.upbit.com/websocket/v1'
-        self.logger      = get_logger(self.__class__.__name__)
 
     def run(self):
         self.loop = asyncio.new_event_loop()
@@ -38,8 +38,8 @@ class WebSocketReceiver(QThread):
                 if not self.con_trade:
                     await self.connect_trader()
                 await self.receive_ticker()
-            except Exception as e:
-                self.logger.error(f'run_trader {e}, reconnecting...')
+            except:
+                print_exc()
 
             await self.disconnect_trader()
 
@@ -49,8 +49,8 @@ class WebSocketReceiver(QThread):
                 if not self.con_order:
                     await self.connect_order()
                 await self.receive_order()
-            except Exception as e:
-                self.logger.error(f'run_order {e}, reconnecting...')
+            except:
+                print_exc()
 
             await self.disconnect_order()
 

@@ -9,7 +9,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num, columns_cj, columns_td, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, str_hms, roundfigure_lower, roundfigure_upper, GetKiwoomPgSgSp, \
-    GetHogaunit, error_decorator, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, get_logger, qtest_qwait
+    GetHogaunit, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, qtest_qwait
 
 
 class Updater(QThread):
@@ -46,7 +46,6 @@ class KiwoomTrader:
         self.straderQ   = qlist[2]
         self.sstgQs     = qlist[3]
         self.dict_set   = dict_set
-        self.logger     = get_logger(self.__class__.__name__)
 
         self.dict_cj    = {}  # 체결목록
         self.dict_jg    = {}  # 잔고목록
@@ -140,9 +139,8 @@ class KiwoomTrader:
                 self.dict_jg = df_jg.to_dict('index')
                 self.sagentQ.put(('잔고목록', tuple(self.dict_jg)))
         con.close()
-        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 정보 불러오기 완료')))
-        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작')))
-        self.logger.info('트레이더 시작 완료')
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 정보 불러오기 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 트레이더 시작')))
 
     def Scheduler1(self):
         data = ('잔고목록', self.dict_jg.copy())
@@ -273,7 +271,7 @@ class KiwoomTrader:
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
+        self.mgzservQ.put(('window', (ui_num['타임로그'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
 
     def UpdateTuple(self, data):
         gubun, data = data
@@ -322,7 +320,9 @@ class KiwoomTrader:
         elif data == '잔고청산':
             self.JangoCheongsan('수동')
         elif data == '프로파일링결과':
-            self.pr.print_stats(sort='cumulative')
+            from utility.profile_utils import extract_profile_text
+            profile_text = extract_profile_text(self.pr, limit=50)
+            self.mgzservQ.put(('window', (ui_num['시스템로그'], profile_text)))
         elif data == '프로세스종료':
             self.SysExit()
 
@@ -421,7 +421,7 @@ class KiwoomTrader:
                     self.CheckOrder(('매도', 종목코드, 종목명, 현재가, 보유수량, now(), True))
             if self.dict_set['주식알림소리']:
                 self.mgzservQ.put(('sound', '주식 잔고청산 주문을 전송하였습니다.'))
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 주식 잔고청산 주문 완료')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'시스템 명령 실행 알림 - 주식 잔고청산 주문 완료')))
         elif gubun == '수동':
             self.mgzservQ.put(('tele', '현재는 주식 보유종목이 없습니다.'))
         self.dict_bool['주식잔고청산'] = True
@@ -454,7 +454,7 @@ class KiwoomTrader:
     def SysExit(self):
         self.SaveDayData()
         qtest_qwait(5)
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 트레이더 종료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 트레이더 종료')))
 
     def SaveDayData(self):
         con = sqlite3.connect(DB_TRADELIST)
@@ -464,7 +464,7 @@ class KiwoomTrader:
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
             self.mgzservQ.put(('query', ('거래디비', df, 's_totaltradelist', 'append')))
             if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', '일별실현손익를 저장하였습니다.'))
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료')))
 
     def GetIndex(self):
         index = str_ymdhmsf()
@@ -473,7 +473,6 @@ class KiwoomTrader:
                 index = str(int(index) + 1)
         return index
 
-    @error_decorator
     def UpdateChejanData(self, data):
         종목코드, 종목명, 최우선매도호가, 주문상태, 주문구분, 주문수량, 체결수량, 미체결수량, 주문가격, 체결가격, 주문시간, 주문번호 = data
         index = self.GetIndex()
@@ -486,7 +485,7 @@ class KiwoomTrader:
             else:
                 self.dict_order[주문구분][종목코드] = [cancel_time, 0, 주문가격, GetHogaunit(종목코드 in self.tuple_kosd, 주문가격, self.int_hgtime)]
             self.UpdateChegeollist(index, 종목코드, 종목명, f'{주문구분} {주문상태}', 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}{주문상태}] {종목명} | {주문가격} | {주문수량}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}{주문상태}] {종목명} | {주문가격} | {주문수량}')))
 
         elif 주문상태 == '시드부족':
             self.UpdateChegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
@@ -579,7 +578,7 @@ class KiwoomTrader:
             df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
             self.mgzservQ.put(('query', ('거래디비', df_jg, 's_jangolist', 'replace')))
             if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', f'{종목명} {체결수량}주를 {주문구분}하였습니다'))
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}{주문상태}] {종목명} | {체결가격} | {체결수량}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}{주문상태}] {종목명} | {체결가격} | {체결수량}')))
 
         elif 주문상태 == '확인' and 주문구분 in ('매수정정', '매도정정', '매수취소', '매도취소'):
             주문구분_ = 주문구분.replace('정정', '').replace('취소', '')
@@ -599,7 +598,7 @@ class KiwoomTrader:
             self.UpdateChegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 주문시간, 주문가격, 주문번호)
 
             if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', f'{종목명} {주문수량}주를 {주문구분}하였습니다'))
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
 
         self.sagentQ.put(('잔고목록', tuple(self.dict_jg)))
         self.sagentQ.put(('주문목록', self.GetOrderCodeList()))
@@ -730,7 +729,6 @@ class KiwoomTrader:
         self.mgzservQ.put(('window', (ui_num['S잔고평가'], df_tj)))
 
     def StrategyStop(self):
-        self.logger.info('매수전략중지')
         for q in self.sstgQs:
             q.put('매수전략중지')
         self.JangoCheongsan('수동')

@@ -500,7 +500,6 @@ if __name__ == "__main__":
 
         print_top_predictions(predictions, top_n=10)
         
-    except Exception as ee:
-        print(f"오류 발생: {ee}")
+    except:
         import traceback
         traceback.print_exc()

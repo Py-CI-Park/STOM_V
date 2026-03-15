@@ -1,17 +1,26 @@
 
 import os
 import sqlite3
-import pandas as pd
 from PyQt5.QtCore import QUrl, Qt
 from multiprocessing import Process
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from utility.kimp_upbit_binance import Kimp
-from ui.set_text_stg_button import dict_stg_name
-from utility.static import qtest_qwait, str_hms, dt_hms
+from utility.static import qtest_qwait, str_hms, dt_hms, error_decorator
 from utility.setting_base import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
     DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 from ui.set_style import style_bc_bt, style_bc_bb
+
+
+_pd = None
+
+
+def get_pd():
+    global _pd
+    if _pd is None:
+        import pandas as pd
+        _pd = pd
+    return _pd
 
 
 class QuietPage(QWebEnginePage):
@@ -19,6 +28,7 @@ class QuietPage(QWebEnginePage):
         pass
 
 
+@error_decorator
 def show_dialog_graph(ui, df):
     if not ui.dialog_graph.isVisible():
         ui.dialog_graph.show()
@@ -32,25 +42,28 @@ def show_dialog_graph(ui, df):
     df['수익금합계240'] = df['수익금합계'].rolling(window=240).mean()
     df['수익금합계480'] = df['수익금합계'].rolling(window=480).mean()
 
-    ui.canvas2.figure.clear()
-    ax = ui.canvas2.figure.add_subplot(111)
-    ax.bar(df.index, df['이익금액'], label='이익금액', color='r')
-    ax.bar(df.index, df['손실금액'], label='손실금액', color='b')
-    ax.plot(df.index, df['수익금합계480'], linewidth=0.5, label='수익금합계480', color='k')
-    ax.plot(df.index, df['수익금합계240'], linewidth=0.5, label='수익금합계240', color='gray')
-    ax.plot(df.index, df['수익금합계120'], linewidth=0.5, label='수익금합계120', color='b')
-    ax.plot(df.index, df['수익금합계060'], linewidth=0.5, label='수익금합계60', color='g')
-    ax.plot(df.index, df['수익금합계020'], linewidth=0.5, label='수익금합계20', color='r')
-    ax.plot(df.index, df['수익금합계'], linewidth=2, label='수익금합계', color='orange')
-    count = int(len(df) / 20) if int(len(df) / 20) >= 1 else 1
-    ax.set_xticks(list(df.index[::count]))
-    ax.tick_params(axis='x', labelrotation=45)
-    ax.legend(loc='best')
-    ax.grid()
-    ui.canvas2.figure.tight_layout()
-    ui.canvas2.draw()
+    from matplotlib import pyplot as plt, font_manager
+    font_name = 'C:/Windows/Fonts/malgun.ttf'
+    font_family = font_manager.FontProperties(fname=font_name).get_name()
+    plt.rcParams['font.family'] = font_family
+    plt.rcParams['axes.unicode_minus'] = False
+
+    plt.figure('누적수익금', figsize=(12, 10))
+    plt.bar(df.index, df['이익금액'], label='이익금액', color='r')
+    plt.bar(df.index, df['손실금액'], label='손실금액', color='b')
+    plt.plot(df.index, df['수익금합계480'], linewidth=0.5, label='수익금합계480', color='k')
+    plt.plot(df.index, df['수익금합계240'], linewidth=0.5, label='수익금합계240', color='gray')
+    plt.plot(df.index, df['수익금합계120'], linewidth=0.5, label='수익금합계120', color='b')
+    plt.plot(df.index, df['수익금합계060'], linewidth=0.5, label='수익금합계60', color='g')
+    plt.plot(df.index, df['수익금합계020'], linewidth=0.5, label='수익금합계20', color='r')
+    plt.plot(df.index, df['수익금합계'], linewidth=2, label='수익금합계', color='orange')
+    plt.legend(loc='best')
+    plt.tight_layout()
+    plt.grid()
+    plt.draw()
 
 
+@error_decorator
 def show_dialog(ui, code_or_name, tickcount, searchdate, col):
     coin = False
     if code_or_name in ui.dict_code:
@@ -87,6 +100,7 @@ def show_dialog(ui, code_or_name, tickcount, searchdate, col):
         ui.ShowDialogChart(False, coin, code, tickcount, searchdate, starttime, endtime)
 
 
+@error_decorator
 def show_dialog_web(ui, _show, code):
     if ui.webEngineView is None:
         webengineview_set(ui)
@@ -99,6 +113,7 @@ def show_dialog_web(ui, _show, code):
         ui.webcQ.put(('기업정보', code))
 
 
+@error_decorator
 def webengineview_set(ui):
     ui.webEngineView = QWebEngineView()
     p = QuietPage(ui.webEngineView)
@@ -108,6 +123,7 @@ def webengineview_set(ui):
     web_layout.addWidget(ui.webEngineView)
 
 
+@error_decorator
 def show_dialog_hoga(ui, _show, coin, code):
     if _show and not ui.dialog_hoga.isVisible():
         ui.dialog_hoga.show()
@@ -120,6 +136,7 @@ def show_dialog_hoga(ui, _show, coin, code):
         ui.od_comboBoxxxxx_01.setCurrentText(name)
 
 
+@error_decorator
 def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, endtime, detail, buytimes):
     if not ui.dialog_chart.isVisible():
         dialog_chart_show(ui)
@@ -130,7 +147,7 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
                 if ui.CoinStrategyProcessAlive(): ui.cstgQ.put(('차트종목코드', code))
                 if not ui.dict_set['코인타임프레임'] and ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('차트종목코드', code))
             else:
-                ui.wdzservQ.put(('analyzer', ('차트종목코드', code)))
+                ui.wdzservQ.put(('strategy', ('차트종목코드', code)))
                 if not ui.dict_set['주식타임프레임']: ui.wdzservQ.put(('agent', ('차트종목코드', code)))
         else:
             ui.ChartClear()
@@ -141,6 +158,7 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
             ui.chartQ.put(data)
 
 
+@error_decorator
 def dialog_chart_show(ui):
     ui.ct_pushButtonnn_05.setText('CHART 16')
     ui.ChartCountChange()
@@ -173,6 +191,7 @@ def dialog_chart_show(ui):
     ui.dialog_chart.show()
 
 
+@error_decorator
 def show_qsize(ui):
     if not ui.showQsize:
         ui.qs_pushButton.setStyleSheet(style_bc_bt)
@@ -182,14 +201,17 @@ def show_qsize(ui):
         ui.showQsize = False
 
 
+@error_decorator
 def show_dialog_formula(ui):
     ui.dialog_formula.show() if not ui.dialog_formula.isVisible() else ui.dialog_formula.close()
 
 
+@error_decorator
 def show_dialog_factor(ui):
     ui.dialog_factor.show() if not ui.dialog_factor.isVisible() else ui.dialog_factor.close()
 
 
+@error_decorator
 def show_chart(ui):
     if not ui.dialog_chart.isVisible():
         dialog_chart_show(ui)
@@ -197,6 +219,7 @@ def show_chart(ui):
         ui.dialog_chart.close()
 
 
+@error_decorator
 def show_hoga(ui):
     if not ui.dialog_hoga.isVisible():
         ui.dialog_hoga.setFixedSize(572, 355)
@@ -217,6 +240,7 @@ def show_hoga(ui):
         ui.dialog_hoga.close()
 
 
+@error_decorator
 def show_giup(ui):
     if ui.webEngineView is None:
         webengineview_set(ui)
@@ -228,6 +252,7 @@ def show_giup(ui):
     ui.dialog_info.show() if not ui.dialog_info.isVisible() else ui.dialog_info.close()
 
 
+@error_decorator
 def show_treemap(ui):
     if not ui.dialog_tree.isVisible():
         ui.dialog_tree.show()
@@ -236,10 +261,12 @@ def show_treemap(ui):
         ui.dialog_tree.close()
 
 
+@error_decorator
 def show_jisu(ui):
     ui.dialog_jisu.show() if not ui.dialog_jisu.isVisible() else ui.dialog_jisu.close()
 
 
+@error_decorator
 def show_db(ui):
     if not ui.dialog_db.isVisible():
         ui.dialog_db.show()
@@ -329,10 +356,12 @@ def show_db(ui):
         ui.db_tableWidgett_05.setRowCount(8)
 
 
+@error_decorator
 def show_backscheduler(ui):
     ui.dialog_scheduler.show() if not ui.dialog_scheduler.isVisible() else ui.dialog_scheduler.close()
 
 
+@error_decorator
 def show_kimp(ui):
     if not ui.dialog_kimp.isVisible():
         ui.dialog_kimp.show()
@@ -346,6 +375,7 @@ def show_kimp(ui):
             qtest_qwait(3)
 
 
+@error_decorator
 def show_order(ui):
     if not ui.dialog_order.isVisible():
         ui.dialog_order.show()
@@ -370,6 +400,7 @@ def show_order(ui):
         ui.dialog_order.close()
 
 
+@error_decorator
 def put_hoga_code(ui, coin, code):
     if coin:
         ui.wdzservQ.put(('agent', ('호가종목코드', '000000')))
@@ -379,6 +410,7 @@ def put_hoga_code(ui, coin, code):
         ui.wdzservQ.put(('agent', ('호가종목코드', code)))
 
 
+@error_decorator
 def chart_moneytop_list(ui):
     searchdate = ui.ct_dateEdittttt_02.date().toString('yyyyMMdd')
     starttime  = ui.ct_lineEdittttt_01.text()
@@ -420,11 +452,11 @@ def chart_moneytop_list(ui):
     try:
         if os.path.isfile(db_name1):
             con = sqlite3.connect(db_name1)
-            df = pd.read_sql(query, con)
+            df = get_pd().read_sql(query, con)
             con.close()
         elif os.path.isfile(db_name2):
             con = sqlite3.connect(db_name2)
-            df = pd.read_sql(query, con)
+            df = get_pd().read_sql(query, con)
             con.close()
     except:
         pass
@@ -451,6 +483,7 @@ def chart_moneytop_list(ui):
         ui.ct_tableWidgett_01.setRowCount(100)
 
 
+@error_decorator
 def chart_size_change(ui):
     if ui.ct_pushButtonnn_06.text() == '확장':
         if ui.ct_pushButtonnn_05.text() == 'CHART 8':
@@ -476,37 +509,3 @@ def chart_size_change(ui):
         ui.dialog_chart.setFixedSize(width, 1370 if not ui.dict_set['저해상도'] else 1010)
         ui.ct_pushButtonnn_06.setText('확장')
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
-
-
-def strategy_custom_button_show(ui):
-    ui.dialog_strategy.show() if not ui.dialog_strategy.isVisible() else ui.dialog_strategy.close()
-
-
-def strategy_custom_dialog_show(ui):
-    if (ui.stg_btn_number <= 205 and not ui.dialog_stg_input1.isVisible()) or \
-            (ui.stg_btn_number > 205 and not ui.dialog_stg_input2.isVisible()):
-        if ui.stg_btn_number <= 205:
-            ui.stginput_lineeditt1.setText('')
-            ui.stginput_textEditt1.clear()
-        else:
-            ui.stginput_lineeditt3.setText('')
-            ui.stginput_textEditt2.clear()
-
-        ori_name = dict_stg_name[ui.stg_btn_number]
-        stg_text = ui.dict_stg_btn[ui.stg_btn_number]
-        if stg_text[-1] != '\n': stg_text = f'{stg_text}\n'
-
-        if ui.stg_btn_number <= 205:
-            stg_name = ui.dialog_strategy.focusWidget().text()
-            ui.stginput_lineeditt1.setText(stg_name)
-            ui.stginput_lineeditt2.setText(ori_name)
-            ui.stginput_textEditt1.insertPlainText(stg_text)
-        else:
-            stg_name = ui.focusWidget().text()
-            ui.stginput_lineeditt3.setText(stg_name)
-            ui.stginput_lineeditt4.setText(ori_name)
-            ui.stginput_textEditt2.insertPlainText(stg_text)
-
-        ui.dialog_stg_input1.show() if ui.stg_btn_number <= 205 else ui.dialog_stg_input2.show()
-    else:
-        ui.dialog_stg_input1.close() if ui.stg_btn_number <= 205 else ui.dialog_stg_input2.close()

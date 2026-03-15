@@ -5,13 +5,14 @@ import sqlite3
 import datetime
 import numpy as np
 import pandas as pd
+from traceback import format_exc
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num, DB_CODE_INFO, DB_TRADELIST, DB_FUTURE_TICK, DB_FUTURE_MIN
 from utility.static import now, str_hms_cme_from_str, qtest_qwait, opstarter_kill, str_ymd, now_cme, str_hms, \
-    timedelta_sec, get_logger
+    timedelta_sec
 
 
 class Updater(QThread):
@@ -44,7 +45,6 @@ class FutureAgentTick:
         self.straderQ = qlist[2]
         self.sstgQ    = qlist[3]
         self.dict_set = dict_set
-        self.logger   = get_logger(self.__class__.__name__)
 
         self.ocx = QAxWidget('KFOPENAPI.KFOpenAPICtrl.1')
         self.ocx.OnReceiveMsg.connect(self.OnReceiveMsg)
@@ -138,11 +138,6 @@ class FutureAgentTick:
             }
         }
 
-        if self.dict_set['에이전트프로파일링']:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
-
         app.exec_()
 
     def CommConnect(self):
@@ -152,8 +147,7 @@ class FutureAgentTick:
         self.ShowAccountWindow()
         opstarter_kill()
 
-        self.logger.info('OpenAPI 로그인 완료')
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
 
         self.str_account = self.GetAccountNumber()
 
@@ -209,13 +203,12 @@ class FutureAgentTick:
 
         df = pd.DataFrame.from_dict(self.dict_info, orient='index')
         self.mgzservQ.put(('query', ('종목디비', df, 'futureinfo', 'replace')))
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 종목 정보 검색 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 종목 정보 검색 완료')))
 
         text = '해외선물 시스템을 시작하였습니다.'
         if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', text))
         self.mgzservQ.put(('tele', text))
-        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 에이전트 시작')))
-        self.logger.info('에이전트 시작 완료')
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 에이전트 시작')))
 
     def OnEventConnect(self, err_code):
         if err_code == 0: self.dict_bool['로그인'] = True
@@ -253,9 +246,9 @@ class FutureAgentTick:
                             int(data[32])              == int(self.GetCommRealData(code, 74)) and \
                             int(data[40])              == int(self.GetCommRealData(code, 75)):
                         self.dict_bool['호가잔량필드같음'] = True
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 해선호가잔량 필드값 같음')))
+                        self.mgzservQ.put(('window', (ui_num['기본로그'], f'시스템 명령 실행 알림 - 해선호가잔량 필드값 같음')))
                     else:
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - 해선호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
+                        self.mgzservQ.put(('window', (ui_num['시스템로그'], f'오류 알림 - 해선호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
                     self.dict_bool['호가잔량필드확인'] = True
 
                 if self.dict_bool['호가잔량필드같음']:
@@ -321,7 +314,7 @@ class FutureAgentTick:
                 dt = int(f'{self.str_today}{str_cme_hms}')
                 name = self.dict_info[code]['종목명']
             except:
-                pass
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveRealData')))
             else:
                 self.UpdateHogaData(dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount, code, name, start)
 
@@ -339,9 +332,9 @@ class FutureAgentTick:
                             abs(float(data[5]))  == abs(float(self.GetCommRealData(code, 27))) and \
                             abs(float(data[6]))  == abs(float(self.GetCommRealData(code, 28))):
                         self.dict_bool['해선체결필드같음'] = True
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
+                        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 해선체결 필드값 같음')))
                     else:
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 해선체결 필드값이 다릅니다. 필드값 갱신요망!!')))
+                        self.mgzservQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 해선체결 필드값이 다릅니다. 필드값 갱신요망!!')))
                     self.dict_bool['해선체결필드확인'] = True
 
                 if self.dict_bool['해선체결필드같음']:
@@ -375,7 +368,7 @@ class FutureAgentTick:
                         return
                 dt = int(f'{self.str_today}{str_cme_hms}')
             except:
-                pass
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveRealData')))
             else:
                 self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
 
@@ -531,7 +524,7 @@ class FutureAgentTick:
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+                self.mgzservQ.put(('window', (ui_num['타임로그'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:
@@ -551,7 +544,7 @@ class FutureAgentTick:
             sn = int(sScrNo)
             code = self.dict_sncd.get(sn, '')
             self.straderQ.put(('증거금부족', code))
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'{sMsg}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'{sMsg}')))
 
     # noinspection PyUnusedLocal
     def OnReceiveChejanData(self, gubun, itemcnt, fidlist):
@@ -624,12 +617,12 @@ class FutureAgentTick:
                 dict_jg = df.to_dict('index')
 
         self.straderQ.put(('잔고조회', (yesugm, dict_jg)))
-        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 계좌 조회 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 계좌 조회 완료')))
 
     def OperationRealreg(self):
         self.dict_bool['실시간등록'] = True
         self.SetRealReg(self.real_codes)
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 실시간 등록 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 실시간 등록 완료')))
 
     def ProcessKill(self):
         self.dict_bool['프로세스종료'] = True
@@ -643,7 +636,7 @@ class FutureAgentTick:
         self.sstgQ.put('프로세스종료')
         self.straderQ.put('프로세스종료')
         qtest_qwait(5)
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 에이전트 종료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 에이전트 종료')))
 
     def SaveData(self):
         if self.dict_mtop:
@@ -658,8 +651,7 @@ class FutureAgentTick:
             df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 데이터수집목록 저장 완료')))
-            self.logger.info('데이터수집목록 저장 완료')
+            self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 데이터수집목록 저장 완료')))
 
     def ReceivOrder(self, order):
         # [주문구분, 화면번호, 계좌번호, 주문유형, 종목코드, 주문수량, 주문가격, Stop단가, 거래구분, 원주문번호], 종목명, 시그널시간
@@ -679,21 +671,19 @@ class FutureAgentTick:
         ret = self.SendOrder(order[:-2])
         if ret == 0:
             self.straderQ.put(('주문전송', (종목코드, 주문구분)))
-            self.logger.info(f'[주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문전송] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
             self.order_time = timedelta_sec(0.2)
             self.dict_sncd[self.intg_odsn] = 종목코드
         else:
             self.sstgQ.put((f'{주문구분}_CANCEL', 종목코드))
-            self.logger.error(f'[주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문실패] [{주문구분}] {종목명} | {주문가격} | {주문수량}')))
 
     def SendOrder(self, order: list):
         return self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, QString, QString, QString, QString)', order)
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
+        self.mgzservQ.put(('window', (ui_num['타임로그'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
 
     def UpdateTuple(self, data):
         gubun, data = data
@@ -709,8 +699,6 @@ class FutureAgentTick:
             self.dict_set = data
         elif gubun == '수동데이터저장':
             self.ProcessKill()
-        elif gubun == '프로파일링결과':
-            self.pr.print_stats(sort='cumulative')
 
     # noinspection PyUnusedLocal, PyUnresolvedReferences
     def OnReceiveTrData(self, screen, rqname, trcode, record, nnext):

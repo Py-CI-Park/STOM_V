@@ -1,9 +1,10 @@
 
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QApplication, QMessageBox
-from utility.static import comma2int, comma2float, str_ymd, now_cme, now_utc
+from utility.static import comma2int, comma2float, str_ymd, now_cme, now_utc, error_decorator
 
 
+@error_decorator
 def key_press_event(ui, event):
     if event.key() in (Qt.Key_Return, Qt.Key_Enter):
         if ui.dialog_scheduler.focusWidget() == ui.sd_dpushButtonn_01:

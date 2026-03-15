@@ -2,11 +2,12 @@
 import random
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.static import text_not_in_special_characters
+from utility.static import text_not_in_special_characters, error_decorator
 from ui.set_style import style_bc_st, style_bc_dk
 from ui.set_text import famous_saying, sell_signal, future_sell_signal, sell_text
 
 
+@error_decorator
 def coin_sell_stg_load(ui):
     if ui.cs_textEditttt_02.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinsell').set_index('index')
@@ -21,6 +22,7 @@ def coin_sell_stg_load(ui):
             ui.cvjs_pushButon_04.setStyleSheet(style_bc_st)
 
 
+@error_decorator
 def coin_sell_stg_save(ui):
     strategy_name = ui.cvjs_lineEditt_01.text()
     strategy = ui.cs_textEditttt_02.toPlainText()
@@ -44,12 +46,14 @@ def coin_sell_stg_save(ui):
             ui.cvjs_pushButon_04.setStyleSheet(style_bc_st)
 
 
+@error_decorator
 def coin_sell_factor(ui):
     ui.cs_textEditttt_02.clear()
     ui.cs_textEditttt_02.append(sell_text if ui.dict_set['코인타임프레임'] else sell_text)
     ui.cvjs_pushButon_04.setStyleSheet(style_bc_st)
 
 
+@error_decorator
 def coin_sell_stg_start(ui):
     strategy = ui.cs_textEditttt_02.toPlainText()
     if strategy == '':
@@ -66,10 +70,12 @@ def coin_sell_stg_start(ui):
             ui.cvjs_pushButon_14.setStyleSheet(style_bc_st)
 
 
+@error_decorator
 def coin_sell_signal_insert(ui):
     ui.cs_textEditttt_02.append(sell_signal if ui.dict_set['거래소'] == '업비트' else future_sell_signal)
 
 
+@error_decorator
 def coin_sell_stg_stop(ui):
     if ui.CoinStrategyProcessAlive():
         ui.cstgQ.put('매도전략중지')

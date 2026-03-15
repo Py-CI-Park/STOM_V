@@ -11,9 +11,10 @@ from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from backtest.rolling_walk_forward_test import RollingWalkForwardTest
 from ui.set_text import famous_saying
 from utility.setting_base import ui_num
-from utility.static import qtest_qwait
+from utility.static import qtest_qwait, error_decorator
 
 
+@error_decorator
 def bebutton_clicked_01(ui):
     if ui.back_engining:
         QMessageBox.critical(ui.dialog_backengine, '오류 알림', '백테엔진 구동 중...\n')
@@ -47,12 +48,13 @@ def bebutton_clicked_01(ui):
                 ui.BacktestEngineStart('코인')
 
 
+@error_decorator
 def backtest_engine_kill(ui):
     if ui.shared_info and 'shm_name' in ui.shared_info[0].keys():
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>공유메모리 삭제 중 ...</font>'))
         else:
-            ui.logger.info('SharedMemory Deleting ...')
+            ui.windowQ.put((ui_num['시스템로그'], 'SharedMemory deleting ...'))
         for shared_info in ui.shared_info:
             try:
                 shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
@@ -64,12 +66,12 @@ def backtest_engine_kill(ui):
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>공유메모리 삭제 완료</font>'))
         else:
-            ui.logger.info('SharedMemory Delete Completed')
+            ui.windowQ.put((ui_num['시스템로그'], 'SharedMemory delete completed'))
     elif ui.shared_info and 'file_name' in ui.shared_info[0].keys():
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>임시파일 삭제 중 ...</font>'))
         else:
-            ui.logger.info('TempFile Deleting ...')
+            ui.windowQ.put((ui_num['시스템로그'], 'TempFile deleting ...'))
         for shared_info in ui.shared_info:
             try:
                 os.remove(shared_info['file_name'])
@@ -78,7 +80,7 @@ def backtest_engine_kill(ui):
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>임시파일 삭제 완료</font>'))
         else:
-            ui.logger.info('TempFile Delete Completed')
+            ui.windowQ.put((ui_num['시스템로그'], 'TempFile delete completed'))
 
     ui.ClearBacktestQ()
     for p in ui.back_sprocs:
@@ -90,7 +92,7 @@ def backtest_engine_kill(ui):
     for q in ui.back_eques:
         q.close()
     qtest_qwait(1)
-    ui.logger.info('Bactest SubTotal Process Terminate Completed')
+    ui.windowQ.put((ui_num['시스템로그'], 'Bactest subtotal process terminate completed'))
 
     ui.back_eprocs = []
     ui.back_sprocs = []
@@ -104,6 +106,7 @@ def backtest_engine_kill(ui):
         ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>백테스트 엔진 종료 완료</font>'))
 
 
+@error_decorator
 def sdbutton_clicked_01(ui):
     if ui.dialog_scheduler.focusWidget().__class__ != QLineEdit:
         if ui.sd_pushButtonnn_01.text() == '주식':
@@ -114,6 +117,7 @@ def sdbutton_clicked_01(ui):
             ui.sd_pushButtonnn_01.setText('주식')
 
 
+@error_decorator
 def sdbutton_clicked_02(ui):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui.dialog_scheduler, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -543,6 +547,7 @@ def sdbutton_clicked_02(ui):
             StopScheduler(ui, True)
 
 
+@error_decorator
 def StopScheduler(ui, gubun=False):
     ui.back_scount = 0
     ui.back_schedul = False
@@ -553,6 +558,7 @@ def StopScheduler(ui, gubun=False):
         os.system('shutdown /s /t 300')
 
 
+@error_decorator
 def sdbutton_clicked_03(ui):
     if ui.sd_pushButtonnn_01.text() in ('주식', '해선'):
         ui.ssButtonClicked_06()
@@ -562,6 +568,7 @@ def sdbutton_clicked_03(ui):
         progressBar.setValue(0)
 
 
+@error_decorator
 def sdbutton_clicked_04(ui):
     df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
     if len(df) > 0:
@@ -576,6 +583,7 @@ def sdbutton_clicked_04(ui):
                 ui.sd_dlineEditttt_01.setText(index)
 
 
+@error_decorator
 def sdbutton_clicked_05(ui):
     schedule_name = ui.sd_dlineEditttt_01.text()
     if schedule_name == '':

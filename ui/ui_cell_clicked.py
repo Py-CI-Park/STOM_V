@@ -2,9 +2,10 @@
 from PyQt5.QtCore import QDate, QUrl
 from PyQt5.QtWidgets import QMessageBox
 from utility.setting_base import columns_jg, columns_jgf, columns_jgcf, ui_num
-from utility.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme, qtest_qwait
+from utility.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme, qtest_qwait, error_decorator
 
 
+@error_decorator
 def cell_clicked_01(ui, row, col):
     stock = True
     if ui.focusWidget() in (ui.ctd_tableWidgettt, ui.cgj_tableWidgettt, ui.ccj_tableWidgettt):
@@ -22,6 +23,7 @@ def cell_clicked_01(ui, row, col):
     ui.ShowDialog(name, tickcount, searchdate, col)
 
 
+@error_decorator
 def cell_clicked_02(ui, row):
     item = ui.sjg_tableWidgettt.item(row, 0)
     if item is None:
@@ -45,6 +47,7 @@ def cell_clicked_02(ui, row):
 
 
 # noinspection PyUnusedLocal
+@error_decorator
 def cell_clicked_03(ui, row, col):
     item = ui.cjg_tableWidgettt.item(row, 0)
     if item is None:
@@ -67,6 +70,7 @@ def cell_clicked_03(ui, row, col):
                 ui.ctraderQ.put((p, code, c, oc, now(), True))
 
 
+@error_decorator
 def cell_clicked_04(ui, row):
     searchdate = ''
     if ui.focusWidget() == ui.sds_tableWidgettt:
@@ -86,6 +90,7 @@ def cell_clicked_04(ui, row):
     ui.ShowDialog(name, tickcount, searchdate, 4)
 
 
+@error_decorator
 def cell_clicked_05(ui, row):
     gubun = '주식'
     if ui.focusWidget() == ui.cns_tableWidgettt:
@@ -115,6 +120,7 @@ def cell_clicked_05(ui, row):
     ui.ShowDialogGraph(df)
 
 
+@error_decorator
 def cell_clicked_06(ui, row):
     tableWidget = None
     if ui.focusWidget() == ui.ss_tableWidget_01:
@@ -159,6 +165,7 @@ def cell_clicked_06(ui, row):
     ui.ShowDialogChart(False, coin, code, tickcount, searchdate, starttime, endtime, detail, buytimes)
 
 
+@error_decorator
 def cell_clicked_07(ui, row):
     item = ui.ct_tableWidgett_01.item(row, 0)
     if item is None:
@@ -184,6 +191,7 @@ def cell_clicked_07(ui, row):
     if ui.dialog_web.isVisible(): ui.ShowDialogWeb(False, code)
 
 
+@error_decorator
 def cell_clicked_08(ui, row):
     item = ui.dialog_info.focusWidget().item(row, 3)
     if item is None:
@@ -192,6 +200,7 @@ def cell_clicked_08(ui, row):
         ui.webEngineView.load(QUrl(item.text()))
 
 
+@error_decorator
 def cell_clicked_09(ui, row, col):
     if ui.dialog_db.focusWidget() == ui.db_tableWidgett_01:
         item = ui.db_tableWidgett_01.item(row, col)
@@ -295,6 +304,7 @@ def cell_clicked_09(ui, row, col):
     ui.ShowDB()
 
 
+@error_decorator
 def cell_clicked_10(ui, row, col):
     item = ui.hg_tableWidgett_01.item(row, col)
     if item is not None:
@@ -307,6 +317,7 @@ def cell_clicked_10(ui, row, col):
         ui.TextChanged_05()
 
 
+@error_decorator
 def cell_clicked_11(ui):
     if ui.focusWidget() == ui.snt_tableWidgettt:
         table_name = 's_tradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_tradelist'

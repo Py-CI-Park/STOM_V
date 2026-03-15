@@ -3,6 +3,8 @@ import re
 import sys
 import time
 import sqlite3
+from traceback import format_exc
+
 import binance
 import numpy as np
 import pandas as pd
@@ -10,7 +12,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketReceiver
 from utility.setting_base import ui_num, DB_COIN_TICK, DB_COIN_MIN
-from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, now_utc, str_hms, str_ymd, get_logger
+from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, now_utc, str_hms, str_ymd
 
 
 class Updater(QThread):
@@ -46,7 +48,6 @@ class BinanceReceiverTick:
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
         self.dict_set    = dict_set
-        self.logger      = get_logger(self.__class__.__name__)
 
         self.dict_dtdm   = {}
         self.dict_jgdt   = {}
@@ -85,7 +86,7 @@ class BinanceReceiverTick:
 
         self.GetTickers()
 
-        self.ws_thread = WebSocketReceiver(self.codes)
+        self.ws_thread = WebSocketReceiver(self.codes, self.windowQ)
         self.ws_thread.signal1.connect(self.UpdateTickData)
         self.ws_thread.signal2.connect(self.UpdateHogaData)
         self.ws_thread.start()
@@ -106,8 +107,8 @@ class BinanceReceiverTick:
         dict_daym = {}
         try:
             datas = self.binance.futures_ticker()
-        except Exception as e:
-            self.logger.error(e)
+        except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - self.binance.futures_ticker()'))
         else:
             datas = [data for data in datas if re.search('USDT$', data['symbol']) is not None]
             ymd   = str_ymd(now_utc())
@@ -133,8 +134,7 @@ class BinanceReceiverTick:
         text = '코인 리시버를 시작하였습니다.'
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
-        self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작'))
-        self.logger.info('리시버 시작 완료')
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 리시버 시작'))
 
     def UpdateTickData(self, data):
         try:
@@ -145,6 +145,7 @@ class BinanceReceiverTick:
             v    = float(data['q'])
             m    = data['m']
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData'))
             return
 
         code_data = self.dict_data[code]
@@ -215,6 +216,7 @@ class BinanceReceiverTick:
             ]
             receivetime = now()
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateHogaData'))
             return
 
         send   = False
@@ -336,7 +338,7 @@ class BinanceReceiverTick:
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.windowQ.put((ui_num['C단순텍스트'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+                self.windowQ.put((ui_num['타임로그'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:
@@ -433,7 +435,7 @@ class BinanceReceiverTick:
             self.cstgQ.put('프로세스종료')
         self.ctraderQ.put('프로세스종료')
         time.sleep(5)
-        self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 리시버 종료'))
 
     def SaveData(self):
         codes = set()
@@ -451,7 +453,6 @@ class BinanceReceiverTick:
             df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
-            self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))
+            self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))
 
-        self.logger.info('거래대금순위 저장 완료')
         self.cstgQ.put(('데이터저장', codes))

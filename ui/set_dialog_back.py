@@ -3,7 +3,7 @@ import psutil
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QGroupBox, QLabel
 from ui.set_style import style_ck_bx, style_pgbar, style_bc_dk
-from utility.static import str_hms, dt_hms, timedelta_sec
+from utility.static import str_hms, dt_hms, timedelta_sec, error_decorator
 
 
 class SetDialogBack:
@@ -12,6 +12,7 @@ class SetDialogBack:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.dialog_backengine = self.wc.setDialog('STOM BACKTEST ENGINE')
         self.ui.dialog_backengine.geometry().center()
@@ -21,10 +22,13 @@ class SetDialogBack:
         self.ui.be_comboBoxxxxx_01 = self.wc.setCombobox(self.ui.be_groupBoxxxxx_01, items=['종목코드별 분류', '일자별 분류', '한종목 로딩'])
         self.ui.be_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.be_groupBoxxxxx_01, items=['데이터없음'])
         self.ui.be_labellllllll_01 = QLabel('▣ 백테엔진에 로딩할 데이터의 시작 및 종료 날짜와 시간를 입력하십시오.', self.ui.be_groupBoxxxxx_01)
-        if self.ui.dict_set['백테날짜고정']:
-            self.ui.be_dateEdittttt_01 = self.wc.setDateEdit(self.ui.be_groupBoxxxxx_01, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'))
+        if self.ui.dict_set is not None:
+            if self.ui.dict_set['백테날짜고정']:
+                self.ui.be_dateEdittttt_01 = self.wc.setDateEdit(self.ui.be_groupBoxxxxx_01, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'))
+            else:
+                self.ui.be_dateEdittttt_01 = self.wc.setDateEdit(self.ui.be_groupBoxxxxx_01, addday=-int(self.ui.dict_set['백테날짜']))
         else:
-            self.ui.be_dateEdittttt_01 = self.wc.setDateEdit(self.ui.be_groupBoxxxxx_01, addday=-int(self.ui.dict_set['백테날짜']))
+            self.ui.be_dateEdittttt_01 = self.wc.setDateEdit(self.ui.be_groupBoxxxxx_01)
         self.ui.be_dateEdittttt_02 = self.wc.setDateEdit(self.ui.be_groupBoxxxxx_01)
         self.ui.be_lineEdittttt_01 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, style=style_bc_dk)
         self.ui.be_lineEdittttt_02 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, style=style_bc_dk)
@@ -112,40 +116,58 @@ class SetDialogBack:
             self.ui.sd_gcomboBoxxxx_13, self.ui.sd_gcomboBoxxxx_14, self.ui.sd_gcomboBoxxxx_15, self.ui.sd_gcomboBoxxxx_16
         ]
 
-        if self.ui.dict_set['백테날짜고정']:
-            self.ui.sd_sdateEditttt_01 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_02 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_03 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_04 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_05 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_06 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_07 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_08 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_09 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_10 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_11 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_12 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_13 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_14 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_15 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_16 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+        if self.ui.dict_set is not None:
+            if self.ui.dict_set['백테날짜고정']:
+                self.ui.sd_sdateEditttt_01 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_02 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_03 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_04 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_05 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_06 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_07 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_08 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_09 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_10 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_11 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_12 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_13 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_14 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_15 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_16 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'), changed=self.ui.ChangeBacksDate)
+            else:
+                self.ui.sd_sdateEditttt_01 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_02 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_03 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_04 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_05 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_06 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_07 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_08 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_09 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_10 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_11 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_12 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_13 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_14 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_15 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+                self.ui.sd_sdateEditttt_16 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
         else:
-            self.ui.sd_sdateEditttt_01 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_02 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_03 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_04 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_05 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_06 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_07 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_08 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_09 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_10 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_11 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_12 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_13 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_14 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_15 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
-            self.ui.sd_sdateEditttt_16 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, addday=-int(self.ui.dict_set['백테날짜']), changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_01 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_02 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_03 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_04 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_05 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_06 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_07 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_08 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_09 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_10 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_11 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_12 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_13 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_14 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_15 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
+            self.ui.sd_sdateEditttt_16 = self.wc.setDateEdit(self.ui.sd_groupBoxxxxx_02, changed=self.ui.ChangeBacksDate)
 
         self.ui.list_sdateEdittttt = [
             self.ui.sd_sdateEditttt_01, self.ui.sd_sdateEditttt_02, self.ui.sd_sdateEditttt_03, self.ui.sd_sdateEditttt_04,
@@ -178,15 +200,19 @@ class SetDialogBack:
             self.ui.sd_edateEditttt_13, self.ui.sd_edateEditttt_14, self.ui.sd_edateEditttt_15, self.ui.sd_edateEditttt_16
         ]
 
-        if self.ui.dict_set['주식에이전트']:
-            if '해외선물' in self.ui.dict_set['증권사'] and self.ui.dict_set['주식타임프레임']:
-                starttime = '093000'
+        if self.ui.dict_set is not None:
+            if self.ui.dict_set['주식에이전트']:
+                if '해외선물' in self.ui.dict_set['증권사'] and self.ui.dict_set['주식타임프레임']:
+                    starttime = '093000'
+                else:
+                    starttime = '090000'
+                endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간'])))).zfill(6)
             else:
-                starttime = '090000'
-            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간'])))).zfill(6)
+                starttime = '000000'
+                endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간'])))).zfill(6)
         else:
-            starttime = '000000'
-            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간'])))).zfill(6)
+            starttime = '090000'
+            endtime   = '093000'
 
         self.ui.sd_slineEditttt_01 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_02, ltext=starttime, style=style_bc_dk, change=self.ui.TextChanged_01)
         self.ui.sd_slineEditttt_02 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_02, ltext=starttime, style=style_bc_dk, change=self.ui.TextChanged_01)
@@ -500,7 +526,7 @@ class SetDialogBack:
             self.ui.sd_progressBarr_13, self.ui.sd_progressBarr_14, self.ui.sd_progressBarr_15, self.ui.sd_progressBarr_16
         ]
         self.ui.dialog_backengine.setFixedSize(480, 600)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_backengine.move(self.ui.dict_set['창위치'][18], self.ui.dict_set['창위치'][19])
             except:
@@ -522,7 +548,7 @@ class SetDialogBack:
         self.ui.be_textEditxxxx_01.setGeometry(10, 375, 450, 205)
 
         self.ui.dialog_scheduler.setFixedSize(1403, 575)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_scheduler.move(self.ui.dict_set['창위치'][4], self.ui.dict_set['창위치'][5])
             except:

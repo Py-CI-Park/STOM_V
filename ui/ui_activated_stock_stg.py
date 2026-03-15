@@ -1,7 +1,9 @@
 
 from PyQt5.QtWidgets import QMessageBox
+from utility.static import error_decorator
 
 
+@error_decorator
 def sactivated_01(ui):
     strategy_name = ui.svjb_comboBoxx_01.currentText()
     if strategy_name:
@@ -15,6 +17,7 @@ def sactivated_01(ui):
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
 
+@error_decorator
 def sactivated_02(ui):
     strategy_name = ui.svjs_comboBoxx_01.currentText()
     if strategy_name:
@@ -28,6 +31,7 @@ def sactivated_02(ui):
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
 
+@error_decorator
 def sactivated_03(ui):
     strategy_name = ui.svc_comboBoxxx_01.currentText()
     if strategy_name:
@@ -41,6 +45,7 @@ def sactivated_03(ui):
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
 
+@error_decorator
 def sactivated_04(ui):
     strategy_name = ui.svc_comboBoxxx_02.currentText()
     if strategy_name:
@@ -54,6 +59,7 @@ def sactivated_04(ui):
             QMessageBox.critical(ui, '오류 알림', '범위가 DB에 존재하지 않습니다.\n범위을 다시 로딩하십시오.\n')
 
 
+@error_decorator
 def sactivated_05(ui):
     strategy_name = ui.svc_comboBoxxx_08.currentText()
     if strategy_name:
@@ -67,6 +73,7 @@ def sactivated_05(ui):
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
 
+@error_decorator
 def sactivated_06(ui):
     strategy_name = ui.sva_comboBoxxx_01.currentText()
     if strategy_name:
@@ -80,6 +87,7 @@ def sactivated_06(ui):
             QMessageBox.critical(ui, '오류 알림', '범위가 DB에 존재하지 않습니다.\n범위을 다시 로딩하십시오.\n')
 
 
+@error_decorator
 def sactivated_07(ui):
     strategy_name = ui.svo_comboBoxxx_01.currentText()
     if strategy_name:
@@ -93,6 +101,7 @@ def sactivated_07(ui):
             QMessageBox.critical(ui, '오류 알림', '조건이 DB에 존재하지 않습니다.\n조건을 다시 로딩하십시오.\n')
 
 
+@error_decorator
 def sactivated_08(ui):
     strategy_name = ui.svo_comboBoxxx_02.currentText()
     if strategy_name:
@@ -106,6 +115,7 @@ def sactivated_08(ui):
             QMessageBox.critical(ui, '오류 알림', '조건이 DB에 존재하지 않습니다.\n조건을 다시 로딩하십시오.\n')
 
 
+@error_decorator
 def sactivated_09(ui):
     strategy_name = ui.sj_stock_cbBox_01.currentText()
     if strategy_name:
