@@ -459,6 +459,9 @@ class MainWindow(QMainWindow):
         self.backcheckbox_list     = None
         self.order_combo_name_list = []
 
+        self.fm_list               = []
+        self.dict_fm               = {}
+        self.fm_tcnt               = 0
         self.dict_fn               = None
         self.ctpg_name             = None
         self.ctpg_cline            = None
@@ -566,6 +569,8 @@ class MainWindow(QMainWindow):
 
         if splash:
             splash.finish_splash()
+
+        self.show()
 
         if self.dict_set['코인리시버']: self.mnButtonClicked_01(1)
 
@@ -1009,15 +1014,15 @@ class MainWindow(QMainWindow):
     def SettingOrderSave_02(self): setting_order_save_02(self)
     def SettingOrderSave_03(self): setting_order_save_03(self)
     def SettingOrderSave_04(self): setting_order_save_04(self)
-    # Weight Control methods
-    def SettingStockWeightControl(self): setting_stock_weight_control(self)
-    def SettingCoinWeightControl(self):  setting_coin_weight_control(self)
-    def SettingStockWeightCotrolLoad(self): setting_stock_weight_cotrol_load(self)
-    def SettingStockWeightCotrolSave(self): setting_stock_weight_cotrol_save(self)
-    def SettingStockWeightCotrolChanged(self, state): setting_stock_weight_cotrol_changed(self, state)
-    def SettingCoinWeightCotrolLoad(self): setting_coin_weight_cotrol_load(self)
-    def SettingCoinWeightCotrolSave(self): setting_coin_weight_cotrol_save(self)
-    def SettingCoinWeightCotrolChanged(self, state): setting_coin_weight_cotrol_changed(self, state)
+    # Weight Control methods (V2.54에서 ui_betting_cotrol.py와 함께 제거됨)
+    def SettingStockWeightControl(self): pass
+    def SettingCoinWeightControl(self):  pass
+    def SettingStockWeightCotrolLoad(self): pass
+    def SettingStockWeightCotrolSave(self): pass
+    def SettingStockWeightCotrolChanged(self, state): pass
+    def SettingCoinWeightCotrolLoad(self): pass
+    def SettingCoinWeightCotrolSave(self): pass
+    def SettingCoinWeightCotrolChanged(self, state): pass
     # Elapsed Tick Number methods
     def SettingStockElapsedTickNumber(self): setting_stock_elapsed_tick_number(self)
     def SettingCoinElapsedTickNumber(self):  setting_coin_elapsed_tick_number(self)
