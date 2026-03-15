@@ -24,7 +24,7 @@ def example_realtime_simulation(market_type: str = 'stock', buy_cfd_limit: float
     """
     try:
         # 데이터베이스 연결 및 종목 목록 조회
-        conn = sqlite3.connect(f'../../_database/{market_type}_tick_back.db')
+        conn = sqlite3.connect(f'../_database/{market_type}_tick_back.db')
         df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
 
         stock_codes = df['name'].to_list()
