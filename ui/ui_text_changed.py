@@ -57,7 +57,7 @@ def text_changed_05(ui):
     name = ui.hj_tableWidgett_01.item(0, 0).text()
     if name:
         try:
-            if ui.main_btn == 0:
+            if ui.main_btn == 1:
                 row_num = next((row for row in range(ui.sjg_tableWidgettt.rowCount()) if ui.sjg_tableWidgettt.item(row, 0).text() == name), None)
                 columns = columns_jg if '키움증권' in ui.dict_set['증권사'] else columns_jgf
                 col_num = columns.index('보유수량')
@@ -67,7 +67,7 @@ def text_changed_05(ui):
                 col_num = columns.index('보유수량')
         except:
             order_price = float(ui.od_lineEdittttt_01.text())
-            if ui.main_btn == 0:
+            if ui.main_btn == 1:
                 if '키움증권' in ui.dict_set['증권사']:
                     order_count = int(ui.dict_set['주식투자금'] * 1_000_000 / order_price)
                 else:
@@ -78,7 +78,7 @@ def text_changed_05(ui):
                 else:
                     order_count = round(ui.dict_set['코인투자금'] / order_price, 8)
         else:
-            if ui.main_btn == 0:
+            if ui.main_btn == 1:
                 order_count = ui.sjg_tableWidgettt.item(row_num, col_num).text()
             else:
                 order_count = ui.cjg_tableWidgettt.item(row_num, col_num).text()

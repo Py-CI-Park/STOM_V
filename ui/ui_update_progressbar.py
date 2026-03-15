@@ -165,15 +165,15 @@ def update_progressbar(ui):
 
     if ui.ssicon_alert:
         icon = ui.icon_stocks if ui.counter % 2 == 0 else ui.icon_stocks2
-        ui.main_btn_list[2].setIcon(icon)
+        ui.main_btn_list[3].setIcon(icon)
 
     if ui.csicon_alert:
         icon = ui.icon_coins if ui.counter % 2 == 0 else ui.icon_coins2
-        ui.main_btn_list[3].setIcon(icon)
+        ui.main_btn_list[4].setIcon(icon)
 
     if ui.lgicon_alert:
         icon = ui.icon_log if ui.counter % 2 == 0 else ui.icon_log2
-        ui.main_btn_list[5].setIcon(icon)
+        ui.main_btn_list[6].setIcon(icon)
         if ui.counter % 60 == 0 and (ui.dict_set['주식알림소리'] or ui.dict_set['코인알림소리']):
             ui.soundQ.put('오류가 발생하였습니다. 로그탭을 확인하십시오.')
 

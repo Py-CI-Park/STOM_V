@@ -369,13 +369,13 @@ def backtest_process_kill(ui, coin, enginekill):
     if not coin:
         ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
         ui.ssicon_alert = False
-        ui.main_btn_list[2].setIcon(ui.icon_stocks)
+        ui.main_btn_list[3].setIcon(ui.icon_stocks)
         ui.ss_progressBar_01.setValue(0)
         ui.ss_progressBar_01.setFormat('%p%')
     else:
         ui.cs_pushButtonn_08.setStyleSheet(style_bc_dk)
         ui.csicon_alert = False
-        ui.main_btn_list[3].setIcon(ui.icon_coins)
+        ui.main_btn_list[4].setIcon(ui.icon_coins)
         ui.cs_progressBar_01.setValue(0)
         ui.cs_progressBar_01.setFormat('%p%')
 

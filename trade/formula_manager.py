@@ -6,9 +6,9 @@ try:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 except:
     pass
-from trade.strategy_base import StrategyBase
 from utility.static import dt_ymdhms
 from utility.lazy_imports import get_pd
+from trade.strategy_base import StrategyBase
 from utility.setting_base import list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, list_future_tick2, \
     list_future_min2, DB_STRATEGY
 

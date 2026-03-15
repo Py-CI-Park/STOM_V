@@ -27,14 +27,14 @@ def mnbutton_c_clicked_01(ui, index):
     prev_main_btn = ui.main_btn
     if prev_main_btn == index: return
     ui.image_label1.setVisible(False)
-    if index == 2:
+    if index == 3:
         ui.svjb_lineEditt_04.setText(str(ui.dict_set['주식투자금']))
-    elif index == 3:
+    elif index == 4:
         ui.cvjb_lineEditt_04.setText(str(ui.dict_set['코인투자금']))
-    elif index == 5 and ui.lgicon_alert:
+    elif index == 6 and ui.lgicon_alert:
         ui.lgicon_alert = False
         ui.main_btn_list[index].setIcon(ui.icon_log)
-    elif index == 6:
+    elif index == 7:
         if '키움증권' in ui.dict_set['증권사']:
             ui.sj_stock_label_03.setText(
                 '종목당투자금                          백만원                                  전략중지 및 잔고청산   |')
@@ -64,7 +64,7 @@ def mnbutton_c_clicked_01(ui, index):
 
 @error_decorator
 def mnbutton_c_clicked_02(ui):
-    if ui.main_btn == 0:
+    if ui.main_btn == 1:
         if not ui.s_calendarWidgett.isVisible():
             boolean1 = False
             boolean2 = True
@@ -75,7 +75,7 @@ def mnbutton_c_clicked_02(ui):
             widget.setVisible(boolean1)
         for widget in ui.stock_total_listt:
             widget.setVisible(boolean2)
-    elif ui.main_btn == 1:
+    elif ui.main_btn == 2:
         if not ui.c_calendarWidgett.isVisible():
             boolean1 = False
             boolean2 = True
@@ -119,6 +119,7 @@ def mnbutton_c_clicked_03(ui, login):
 
     if buttonReply == QMessageBox.Yes:
         if login in (1, 3) or (login == 0 and ui.dict_set['주식에이전트']):
+            ui.mnButtonClicked_01(1)
             if login == 3 and not cme_normal_open():
                 ui.windowQ.put((ui_num['기본로그'], '해외선물은 휴무 또는 조기마감일입니다.'))
                 ui.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 해외선물 휴무 종료'))
@@ -136,6 +137,7 @@ def mnbutton_c_clicked_03(ui, login):
                 ui.wdzservQ.put(('manager', '수동시작'))
                 ui.ms_pushButton.setStyleSheet(style_bc_bt)
         elif login == 2 or (login == 0 and ui.dict_set['코인리시버']):
+            ui.mnButtonClicked_01(2)
             if ui.CoinTraderProcessAlive():   ui.proc_trader_coin.kill()
             if ui.CoinStrategyProcessAlive(): ui.proc_strategy_coin.kill()
             if ui.CoinReceiverProcessAlive(): ui.proc_receiver_coin.kill()
