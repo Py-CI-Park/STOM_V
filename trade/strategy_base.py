@@ -1,7 +1,6 @@
 
 import os
 import sys
-import math
 import numpy as np
 from talib import stream
 try:
@@ -38,12 +37,11 @@ class Strategy:
         self.hold_time        = 0
         self.add_cnt          = 0
 
+        self.vars             = {}
         self.dict_condition   = {}
         self.dict_cond_indexn = {}
         self.dict_findex      = {}
         self.high_low         = {}
-
-        self.vars             = []
         self.avg_list         = []
         self.sma_list         = []
 
@@ -102,7 +100,7 @@ class Strategy:
         return self._Parameter_Previous(self.dict_findex['라운드피겨위5호가이내'], pre)
 
     def _VI해제시간N(self, pre):
-        return self._Parameter_Previous(self.dict_findex['VI해제시간'], pre)
+        return dt_ymdhms(str(int(self._Parameter_Previous(self.dict_findex['VI해제시간'], pre))))
 
     def _VI가격N(self, pre):
         return self._Parameter_Previous(self.dict_findex['VI가격'], pre)
@@ -305,7 +303,7 @@ class Strategy:
             else:
                 sidx, eidx = self._get_angle_double_pre_index(tick, pre)
                 diff = self.arry_code[eidx, fidx] - self.arry_code[sidx, fidx]
-                return np.round(math.atan2(diff * cf, tick) / (2 * math.pi) * 360, 2)
+                return np.round(np.arctan2(diff * cf, tick) / (2 * np.pi) * 360, 2)
         return 0
 
     def _최고현재가(self, tick, pre=0, calc=False):
@@ -456,12 +454,12 @@ class Strategy:
     def _고점기준등락율각도(self, cf):
         diff_tick = self.indexn - self.high_low[self.code][1]
         diff_pct  = (self._현재가N(0) / self.high_low[self.code][0] - 1) * 100
-        return np.round(math.atan2(diff_pct * cf, diff_tick) / (2 * math.pi) * 360, 2)
+        return np.round(np.arctan2(diff_pct * cf, diff_tick) / (2 * np.pi) * 360, 2)
 
     def _저점기준등락율각도(self, cf):
         diff_tick = self.indexn - self.high_low[self.code][3]
         diff_pct  = (self._현재가N(0) / self.high_low[self.code][2] - 1) * 100
-        return np.round(math.atan2(diff_pct * cf, diff_tick) / (2 * math.pi) * 360, 2)
+        return np.round(np.arctan2(diff_pct * cf, diff_tick) / (2 * np.pi) * 360, 2)
 
     def _연속상승(self, tick):
         if 1 < tick < self.tick_count:

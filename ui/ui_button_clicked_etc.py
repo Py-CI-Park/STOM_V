@@ -7,7 +7,7 @@ from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtWidgets import QMessageBox, QPushButton
 from ui.set_text import famous_saying
 from utility.static import qtest_qwait, strf_time
-from utility.setting import columns_nt, ui_num, columns_nd
+from utility.setting_base import columns_nt, ui_num, columns_nd
 from backtest.back_static import RunOptunaServer
 
 

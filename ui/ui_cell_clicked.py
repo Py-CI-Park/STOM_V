@@ -1,7 +1,7 @@
 
 from PyQt5.QtCore import QDate, QUrl
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import columns_jg, columns_jgf, columns_jgcf, ui_num
+from utility.setting_base import columns_jg, columns_jgf, columns_jgcf, ui_num
 from utility.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme, qtest_qwait
 
 

@@ -14,7 +14,7 @@ from future_strategy_min import FutureStrategyMin
 from future_strategy_tick import FutureStrategyTick
 from login_future.manuallogin import find_window, manual_login, leftClick, doubleClick, press_keys, click_button
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import DICT_SET
+from utility.setting_user import DICT_SET
 from utility.static import now, timedelta_sec, qtest_qwait, opstarter_kill, str_hms, get_logger
 
 
@@ -150,7 +150,7 @@ class FutureManager:
         self.zmqserv = ZmqSendToUI(self.qlist, port_num + 1)
         self.zmqserv.start()
 
-        QTimer.singleShot(5 * 1000, lambda: self.mgzservQ.put(('window', '매니저구동완료')))
+        QTimer.singleShot(3 * 1000, lambda: self.mgzservQ.put(('window', '매니저구동완료')))
         app.exec_()
 
     def UpdateString(self, data):
@@ -207,7 +207,7 @@ class FutureManager:
                 id_num = int(self.dict_set['증권사'][4:])
                 self.logger.info('아이디 및 패스워드 입력 대기 중 ...')
                 qtest_qwait(2)
-                manual_login(id_num)
+                manual_login(id_num, self.dict_set)
                 self.logger.info('아이디 및 패스워드 입력 완료')
 
             time_out_update = timedelta_sec(30)
@@ -247,7 +247,7 @@ class FutureManager:
 
     def FutureVersionUp(self):
         while True:
-            proc = subprocess.Popen('python32 ./trade/future_oversea/login_future/versionupdater.py')
+            proc = subprocess.Popen('python32 ./future/login_future/versionupdater.py')
             if self.OpenapiLoginWait(False):
                 break
             else:
@@ -257,9 +257,9 @@ class FutureManager:
 
     def FutureTraderStart(self):
         target = FutureStrategyTick if self.dict_set['주식타임프레임'] else FutureStrategyMin
-        self.proc_strategy = Process(target=target, args=(self.qlist,), daemon=True)
+        self.proc_strategy = Process(target=target, args=(self.qlist, self.dict_set), daemon=True)
         self.proc_strategy.start()
-        self.proc_trader = Process(target=FutureTrader, args=(self.qlist,))
+        self.proc_trader = Process(target=FutureTrader, args=(self.qlist, self.dict_set))
         self.proc_trader.start()
 
     def FutureAgentStart(self):
@@ -269,7 +269,7 @@ class FutureManager:
             if not self.FutureAgentProcessAlive():
                 set_pass_proc = Process(target=set_password, args=(password,))
                 set_pass_proc.start()
-                self.proc_agent = Process(target=target, args=(self.qlist,), daemon=True)
+                self.proc_agent = Process(target=target, args=(self.qlist, self.dict_set), daemon=True)
                 self.proc_agent.start()
                 if self.OpenapiLoginWait(True):
                     break

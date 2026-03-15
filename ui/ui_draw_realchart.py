@@ -217,12 +217,15 @@ class DrawRealChart:
                     self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고매수가격')]:], y=self.ui.ctpg_data[fi('최고매수가격')], pen=(200, 100, 100))
 
                 elif factor == '체결강도':
-                    ymax = max(self.ui.ctpg_data[fi('체결강도')].max(), self.ui.ctpg_data[fi('최고체결강도')].max())
-                    ymin = min(self.ui.ctpg_data[fi('체결강도')].min(), self.ui.ctpg_data[fi('최저체결강도')].min())
-                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
-                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
-                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 50))
-                    self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도')]:], y=self.ui.ctpg_data[fi('체결강도')], pen=(100, 200, 100))
+                    try:
+                        ymax = max(self.ui.ctpg_data[fi('체결강도')].max(), self.ui.ctpg_data[fi('최고체결강도')].max())
+                        ymin = min(self.ui.ctpg_data[fi('체결강도')].min(), self.ui.ctpg_data[fi('최저체결강도')].min())
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 50))
+                        self.ui.ctpg_item[ci()] = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[len_list[fi('체결강도')]:], y=self.ui.ctpg_data[fi('체결강도')], pen=(100, 200, 100))
+                    except:
+                        ymax, ymin = 0, 0
 
                 elif factor in ('초당체결수량', '분당체결수량'):
                     if is_min:
@@ -418,10 +421,13 @@ class DrawRealChart:
                     self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최고매수가격')]:], y=self.ui.ctpg_data[fi('최고매수가격')], pen=(200, 100, 100))
 
                 elif factor == '체결강도':
-                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
-                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
-                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 100))
-                    self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('체결강도')]:], y=self.ui.ctpg_data[fi('체결강도')], pen=(100, 200, 100))
+                    try:
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('체결강도평균')]:], y=self.ui.ctpg_data[fi('체결강도평균')], pen=(200, 200, 200))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최저체결강도')]:], y=self.ui.ctpg_data[fi('최저체결강도')], pen=(100, 100, 200))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('최고체결강도')]:], y=self.ui.ctpg_data[fi('최고체결강도')], pen=(200, 100, 100))
+                        self.ui.ctpg_item[ci()].setData(x=self.ui.ctpg_xticks[len_list[fi('체결강도')]:], y=self.ui.ctpg_data[fi('체결강도')], pen=(100, 200, 100))
+                    except:
+                        pass
 
                 elif factor in ('초당체결수량', '분당체결수량'):
                     if is_min:

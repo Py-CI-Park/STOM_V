@@ -5,7 +5,7 @@ import numpy as np
 from traceback import print_exc
 from kiwoom_strategy_tick import KiwoomStrategyTick
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 # noinspection PyUnresolvedReferences
 from utility.static import timedelta_sec, now, GetKiwoomPgSgSp, GetHogaunit, str_ymdhms, dt_ymdhms, GetIndicator
 

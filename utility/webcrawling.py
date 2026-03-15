@@ -7,7 +7,7 @@ from urllib import request
 from threading import Timer
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
-from utility.setting import ui_num
+from utility.setting_base import ui_num
 from utility.static import thread_decorator
 
 

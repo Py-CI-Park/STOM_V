@@ -2,7 +2,7 @@
 import pyqtgraph as pg
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout
 from ui.set_style import style_bc_dk, style_ck_bx, color_bg_bk
-from utility.setting import DICT_SET, indi_base
+from utility.setting_base import indi_base
 from utility.static import str_hms, dt_hms, timedelta_sec
 
 
@@ -118,7 +118,7 @@ class SetDialogChart:
 
         is_min = (self.ui.dict_set['주식에이전트'] and not self.ui.dict_set['주식타임프레임']) or \
                  (self.ui.dict_set['코인리시버'] and not self.ui.dict_set['코인타임프레임'])
-        checkbox_choice = [int(x) for x in DICT_SET['팩터선택'].split(';')]
+        checkbox_choice = [int(x) for x in self.ui.dict_set['팩터선택'].split(';')]
         if len(checkbox_choice) < 43: checkbox_choice = [1] * 43
         self.ui.ft_checkBoxxxxx_01 = self.wc.setCheckBox('현재가', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[0] else False, changed=self.ui.CheckboxChanged_10, style=style_ck_bx)
         self.ui.ft_checkBoxxxxx_02 = self.wc.setCheckBox('분당거래대금' if is_min else '초당거래대금', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[1] else False, changed=self.ui.CheckboxChanged_18, style=style_ck_bx)
@@ -280,14 +280,14 @@ class SetDialogChart:
             self.ui.ft_lineEdittttt_33, self.ui.ft_lineEdittttt_34, self.ui.ft_lineEdittttt_35
         ]
 
-        self.ui.dialog_chart.setFixedSize(1403, 1370 if not DICT_SET['저해상도'] else 1010)
+        self.ui.dialog_chart.setFixedSize(1403, 1370 if not self.ui.dict_set['저해상도'] else 1010)
         if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_chart.move(self.ui.dict_set['창위치'][2], self.ui.dict_set['창위치'][3])
             except:
                 pass
         self.ui.ct_groupBoxxxxx_01.setGeometry(5, -10, 1393, 62)
-        self.ui.ct_groupBoxxxxx_02.setGeometry(5, 40, 1393, 1325 if not DICT_SET['저해상도'] else 965)
+        self.ui.ct_groupBoxxxxx_02.setGeometry(5, 40, 1393, 1325 if not self.ui.dict_set['저해상도'] else 965)
 
         self.ui.ct_dateEdittttt_01.setGeometry(10, 25, 100, 30)
         self.ui.ct_labellllllll_01.setGeometry(120, 25, 50, 30)
@@ -315,7 +315,7 @@ class SetDialogChart:
         self.ui.ct_pushButtonnn_11.setGeometry(0, 0, 0, 0)
 
         self.ui.ct_dateEdittttt_02.setGeometry(1403, 15, 120, 30)
-        self.ui.ct_tableWidgett_01.setGeometry(1403, 55, 120, 1310 if not DICT_SET['저해상도'] else 950)
+        self.ui.ct_tableWidgett_01.setGeometry(1403, 55, 120, 1310 if not self.ui.dict_set['저해상도'] else 950)
 
         self.ui.dialog_jisu.setFixedSize(770, 700)
         if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:

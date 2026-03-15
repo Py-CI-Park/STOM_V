@@ -9,7 +9,7 @@ from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import DICT_SET, ui_num, DB_CODE_INFO, DB_TRADELIST, DB_FUTURE_TICK, DB_FUTURE_MIN
+from utility.setting_base import ui_num, DB_CODE_INFO, DB_TRADELIST, DB_FUTURE_TICK, DB_FUTURE_MIN
 from utility.static import now, str_hms_cme_from_str, qtest_qwait, opstarter_kill, str_ymd, now_cme, str_hms, \
     timedelta_sec, get_logger
 
@@ -32,7 +32,7 @@ class Updater(QThread):
 
 
 class FutureAgentTick:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
                 0            1             2            3
@@ -43,7 +43,7 @@ class FutureAgentTick:
         self.sagentQ  = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQ    = qlist[3]
-        self.dict_set = DICT_SET
+        self.dict_set = dict_set
         self.logger   = get_logger(self.__class__.__name__)
 
         self.ocx = QAxWidget('KFOPENAPI.KFOpenAPICtrl.1')
@@ -440,21 +440,22 @@ class FutureAgentTick:
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
-                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
-                if index is not None:
-                    hoga_seprice = [0.] * (5 - index) + hoga_seprice[:index]
-                    hoga_samount = [0] * (5 - index) + hoga_samount[:index]
+                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+                end_index = valid_indices[-1] + 1 if valid_indices else None
+                if end_index is not None:
+                    add_cnt = 5 - end_index
+                    hoga_seprice = [0.] * add_cnt + hoga_seprice[:end_index]
+                    hoga_samount = [0] * add_cnt + hoga_samount[:end_index]
                 else:
                     hoga_seprice = [0.] * 5
                     hoga_samount = [0] * 5
 
             if hoga_buprice[0] > cbp:
-                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
-                index = valid_indices[0] if len(valid_indices) > 0 else None
-                if index is not None:
-                    hoga_buprice = hoga_buprice[index:] + [0.] * index
-                    hoga_bamount = hoga_bamount[index:] + [0] * index
+                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+                start_index = valid_indices[0] if valid_indices else None
+                if start_index is not None:
+                    hoga_buprice = hoga_buprice[start_index:] + [0.] * start_index
+                    hoga_bamount = hoga_bamount[start_index:] + [0] * start_index
                 else:
                     hoga_buprice = [0.] * 5
                     hoga_bamount = [0] * 5

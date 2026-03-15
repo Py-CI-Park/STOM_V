@@ -1,10 +1,6 @@
-import os
-import sys
 import win32api
 import win32con
 import win32gui
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))))
-from utility.setting import DICT_SET
 
 
 def window_enumeration_handler(hwnd, top_windows):
@@ -61,22 +57,22 @@ def press_keys(data):
     win32api.keybd_event(key, 0, win32con.KEYEVENTF_KEYUP, 0)
 
 
-def manual_login(gubun):
+def manual_login(gubun, dict_set):
     hwnd = find_window('영웅문W login')
     if not win32gui.IsWindowEnabled(win32gui.GetDlgItem(hwnd, 0x3EA)):
         click_button(win32gui.GetDlgItem(hwnd, 0x3ED))
     if not win32gui.IsWindowEnabled(win32gui.GetDlgItem(hwnd, 0x3EA)):
         click_button(win32gui.GetDlgItem(hwnd, 0x3ED))
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E8), DICT_SET[f'아이디{gubun}'])
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E9), DICT_SET[f'비밀번호{gubun}'])
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), DICT_SET[f'인증서비밀번호{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E8), dict_set[f'아이디{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E9), dict_set[f'비밀번호{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), dict_set[f'인증서비밀번호{gubun}'])
     win32api.Sleep(1000)
     doubleClick(15, 15, win32gui.GetDlgItem(hwnd, 0x3E8))
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E8), DICT_SET[f'아이디{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E8), dict_set[f'아이디{gubun}'])
     doubleClick(15, 15, win32gui.GetDlgItem(hwnd, 0x3E9))
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E9), DICT_SET[f'비밀번호{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3E9), dict_set[f'비밀번호{gubun}'])
     doubleClick(15, 15, win32gui.GetDlgItem(hwnd, 0x3EA))
-    enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), DICT_SET[f'인증서비밀번호{gubun}'])
+    enter_keys(win32gui.GetDlgItem(hwnd, 0x3EA), dict_set[f'인증서비밀번호{gubun}'])
     click_button(win32gui.GetDlgItem(hwnd, 0x1))
     try:
         click_button(win32gui.GetDlgItem(hwnd, 0x1))

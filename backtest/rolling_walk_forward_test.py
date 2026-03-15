@@ -11,12 +11,12 @@ from multiprocessing import Process, Queue
 from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, GetResult, AddMdd, \
     bootstrap_test
 from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
-from utility.setting import ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
+from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
-    def __init__(self, wq, sq, tq, teleQ, mq, bstq_list, backname, ui_gubun, gubun, market_text):
+    def __init__(self, wq, sq, tq, teleQ, mq, bstq_list, backname, ui_gubun, gubun, market_text, dict_set):
         self.wq           = wq
         self.sq           = sq
         self.tq           = tq
@@ -27,7 +27,7 @@ class Total:
         self.ui_gubun     = ui_gubun
         self.gubun        = gubun
         self.market_text  = market_text
-        self.dict_set     = DICT_SET
+        self.dict_set     = dict_set
         gubun_text        = f'{self.gubun}_future' if self.ui_gubun == 'CF' else self.gubun
         self.savename     = f'{gubun_text}_{self.backname.replace("전진분석", "").lower()}'
 
@@ -312,7 +312,7 @@ class Total:
 
 
 class RollingWalkForwardTest:
-    def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, multi, backname, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, multi, backname, ui_gubun, dict_set):
         self.shared_cnt = sc
         self.wq         = wq
         self.bq         = bq
@@ -325,7 +325,7 @@ class RollingWalkForwardTest:
         self.multi      = multi
         self.backname   = backname
         self.ui_gubun   = ui_gubun
-        self.dict_set   = DICT_SET
+        self.dict_set   = dict_set
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':
@@ -486,7 +486,7 @@ class RollingWalkForwardTest:
         Process(
             target=Total,
             args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.bstq_list, self.backname, self.ui_gubun,
-                  self.gubun, market_text)
+                  self.gubun, market_text, self.dict_set)
         ).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 
@@ -695,8 +695,8 @@ class RollingWalkForwardTest:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
                 break
 
-            if previous_high_std > 0 and hstd > 0 and high_ratio[0] < 2:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최고기준값 상승률 2% 미달성, 최적화를 종료합니다.'))
+            if previous_high_std > 0 and hstd > 0 and high_ratio[0] < self.dict_set['기준값최소상승률']:
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f"기준값 상승률 {self.dict_set['기준값최소상승률']}% 미달성, 최적화를 종료합니다."))
                 break
 
             hstd = high_ratio[2]

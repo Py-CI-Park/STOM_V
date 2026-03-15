@@ -1,10 +1,10 @@
 
 import numpy as np
-from backtest.backengine_binance_tick2 import BackEngineBinanceTick2
+from backtest.backengine_future_min2 import BackEngineFutureMin2
 from utility.static import GetBinanceLongPgSgSp, GetBinanceShortPgSgSp
 
 
-class BackEngineBinanceMin2(BackEngineBinanceTick2):
+class BackEngineBinanceMin2(BackEngineFutureMin2):
     def UpdateMarketGubun(self):
         self.market_gubun = 4
 

@@ -5,7 +5,7 @@ import sqlite3
 import pandas as pd
 from multiprocessing import Process
 from utility.static import now, str_ymdhms
-from utility.setting import DB_STRATEGY, DB_BACKTEST, ui_num, DICT_SET
+from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num
 
 
 class Total:
@@ -81,7 +81,7 @@ class Total:
 
 
 class BackFinder:
-    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, ui_gubun, dict_set):
         self.shared_cnt = sc
         self.wq         = wq
         self.bq         = bq
@@ -90,7 +90,7 @@ class BackFinder:
         self.lq         = lq
         self.beq_list   = beq_list
         self.ui_gubun   = ui_gubun
-        self.dict_set   = DICT_SET
+        self.dict_set   = dict_set
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':

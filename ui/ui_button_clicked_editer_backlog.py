@@ -1,7 +1,7 @@
 
 from PIL import Image
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import ui_num, GRAPH_PATH
+from utility.setting_base import ui_num, GRAPH_PATH
 
 
 def ssbutton_clicked_01(ui):

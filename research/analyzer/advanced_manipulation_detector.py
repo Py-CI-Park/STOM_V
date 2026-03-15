@@ -3,14 +3,12 @@
 머신러닝 기반 비정상 거래 패턴 식별
 """
 
-import numpy as np
-import pandas as pd
-from typing import Dict, List, Tuple, Optional
-from datetime import datetime, timedelta
-from sklearn.ensemble import IsolationForest, RandomForestClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.cluster import DBSCAN
 import warnings
+import numpy as np
+from typing import Dict, List
+from datetime import datetime
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import IsolationForest, RandomForestClassifier
 warnings.filterwarnings('ignore')
 
 
@@ -140,6 +138,7 @@ class AdvancedManipulationDetector:
         anomaly_score = self.isolation_forest.decision_function([features])[0]
         
         # 스푸핑 특징 확인
+        # noinspection PyTypeChecker
         large_spread = features[0] > np.mean([f[0] for f in self.feature_history]) * 2
         volume_imbalance = abs(features[2]) > 0.7
         
@@ -170,7 +169,6 @@ class AdvancedManipulationDetector:
         
         # 작은 주문 패턴 분석
         small_trades = [t for t in trade_sequence if t.get('volume', 0) < 1000]
-        large_trades = [t for t in trade_sequence if t.get('volume', 0) >= 1000]
         
         # 작은 주문 비율
         small_trade_ratio = len(small_trades) / len(trade_sequence)
@@ -203,8 +201,7 @@ class AdvancedManipulationDetector:
             'time_concentration': time_concentration
         }
     
-    def detect_pump_dump(self, price_data: np.ndarray, 
-                      volume_data: np.ndarray) -> Dict:
+    def detect_pump_dump(self, price_data: np.ndarray, volume_data: np.ndarray) -> Dict:
         """
         펌프앤덤프 패턴 감지
         
@@ -327,26 +324,22 @@ class AdvancedManipulationDetector:
         }
         
         # 특성 추출
-        if 'orderbook' in market_data:
-            features = self.extract_orderbook_features(market_data['orderbook'])
-            spoofing_result = self.detect_spoofing(market_data['orderbook'])
-            results['detailed_analysis']['spoofing'] = spoofing_result
-            
+        features = self.extract_orderbook_features(market_data['orderbook'])
+        results['manipulation_score'] = self.calculate_manipulation_score(features)
+
+        spoofing_result = self.detect_spoofing(market_data['orderbook'])
+        results['detailed_analysis']['spoofing'] = spoofing_result
+
         if 'trade_sequence' in market_data:
             layering_result = self.detect_layering(market_data['trade_sequence'])
             results['detailed_analysis']['layering'] = layering_result
-            
+
         if 'price_volume' in market_data:
             price_data = market_data['price_volume']['price']
             volume_data = market_data['price_volume']['volume']
             pump_dump_result = self.detect_pump_dump(price_data, volume_data)
             results['detailed_analysis']['pump_dump'] = pump_dump_result
-        
-        # 종합 조작 점수 계산
-        if 'orderbook' in market_data:
-            features = self.extract_orderbook_features(market_data['orderbook'])
-            results['manipulation_score'] = self.calculate_manipulation_score(features)
-        
+
         # 경고 생성
         alerts = []
         for analysis_type, analysis_result in results['detailed_analysis'].items():
@@ -385,8 +378,7 @@ class ManipulationRiskManager:
         self.risk_threshold = risk_threshold
         self.position_adjustments = {}
         
-    def calculate_position_adjustment(self, manipulation_score: float,
-                                 current_position: float) -> float:
+    def calculate_position_adjustment(self, manipulation_score: float, current_position: float) -> float:
         """
         조작 점수에 따른 포지션 조정
         
@@ -406,8 +398,7 @@ class ManipulationRiskManager:
         else:
             return current_position * 0.2  # 80% 감소
     
-    def should_halt_trading(self, manipulation_score: float,
-                         consecutive_alerts: int) -> bool:
+    def should_halt_trading(self, manipulation_score: float, consecutive_alerts: int) -> bool:
         """
         거래 중단 여부 결정
         

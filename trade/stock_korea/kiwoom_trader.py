@@ -7,7 +7,7 @@ import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import ui_num, columns_cj, columns_td, DB_TRADELIST, DICT_SET, columns_jg
+from utility.setting_base import ui_num, columns_cj, columns_td, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, str_hms, roundfigure_lower, roundfigure_upper, GetKiwoomPgSgSp, \
     GetHogaunit, error_decorator, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, get_logger, qtest_qwait
 
@@ -34,7 +34,7 @@ class Updater(QThread):
 
 
 class KiwoomTrader:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
                 0            1             2            3
@@ -45,7 +45,7 @@ class KiwoomTrader:
         self.sagentQ    = qlist[1]
         self.straderQ   = qlist[2]
         self.sstgQs     = qlist[3]
-        self.dict_set   = DICT_SET
+        self.dict_set   = dict_set
         self.logger     = get_logger(self.__class__.__name__)
 
         self.dict_cj    = {}  # 체결목록

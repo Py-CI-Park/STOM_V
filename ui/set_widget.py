@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
     QDialog, QTableWidget, QAbstractItemView
 from utility import syntax
-from utility.setting import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
+from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
     columns_gc, columns_hg, columns_jm1, columns_jm2, columns_nd, columns_stg1, columns_stg2, columns_sb, \
     columns_kp, columns_sd, columns_hc2, columns_bt
 from ui.set_style import qfont12, style_bc_bt, style_bc_st, style_bc_sl, style_bc_bs, style_bc_by, style_fc_dk, \

@@ -9,18 +9,18 @@ import pandas as pd
 from multiprocessing import Process, Queue
 from backtest.back_static import SendResult, GetMoneytopQuery
 from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
-from utility.setting import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_COIN_BACK_TICK, \
+from utility.setting_base import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
-    def __init__(self, wq, tq, mq, bstq_list, ui_gubun):
+    def __init__(self, wq, tq, mq, bstq_list, ui_gubun, dict_set):
         self.wq           = wq
         self.tq           = tq
         self.mq           = mq
         self.bstq_list    = bstq_list
         self.ui_gubun     = ui_gubun
-        self.dict_set     = DICT_SET
+        self.dict_set     = dict_set
 
         self.back_count   = None
         self.dict_cn      = None
@@ -153,7 +153,7 @@ class Total:
 
 
 class OptimizeGeneticAlgorithm:
-    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun, dict_set):
         self.shared_cnt  = sc
         self.wq          = wq
         self.bq          = bq
@@ -165,6 +165,7 @@ class OptimizeGeneticAlgorithm:
         self.multi       = multi
         self.backname    = backname
         self.ui_gubun    = ui_gubun
+        self.dict_set    = dict_set
         self.high_list   = []
         self.vars_list   = []
         self.opti_lists  = []
@@ -172,7 +173,6 @@ class OptimizeGeneticAlgorithm:
         self.result      = {}
         self.vars        = {}
         self.total_count = 0
-        self.dict_set    = DICT_SET
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':
@@ -332,7 +332,7 @@ class OptimizeGeneticAlgorithm:
             q.put(data)
 
         mq = Queue()
-        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun)).start()
+        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, self.dict_set)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 
         self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg, sellstg, dict_cn, std_text,

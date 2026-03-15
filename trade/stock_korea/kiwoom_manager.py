@@ -14,7 +14,8 @@ from kiwoom_strategy_min import KiwoomStrategyMin
 from kiwoom_strategy_tick import KiwoomStrategyTick
 from login_kiwoom.manuallogin import find_window
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import DICT_SET, LOGIN_PATH
+from utility.setting_user import DICT_SET
+from utility.setting_base import LOGIN_PATH
 from utility.static import now, timedelta_sec, qtest_qwait, opstarter_kill, str_hms, get_logger
 
 
@@ -135,7 +136,7 @@ class KiwoomManager:
         self.zmqserv = ZmqSendToUI(self.qlist, port_num + 1)
         self.zmqserv.start()
 
-        QTimer.singleShot(5 * 1000, lambda: self.mgzservQ.put(('window', '매니저구동완료')))
+        QTimer.singleShot(3 * 1000, lambda: self.mgzservQ.put(('window', '매니저구동완료')))
         app.exec_()
 
     def UpdateString(self, data):
@@ -243,14 +244,14 @@ class KiwoomManager:
 
     def StockTraderStart(self):
         target = KiwoomStrategyTick if self.dict_set['주식타임프레임'] else KiwoomStrategyMin
-        self.proc_strategy1 = Process(target=target, args=(0, self.qlist), daemon=True)
-        self.proc_strategy2 = Process(target=target, args=(1, self.qlist), daemon=True)
-        self.proc_strategy3 = Process(target=target, args=(2, self.qlist), daemon=True)
-        self.proc_strategy4 = Process(target=target, args=(3, self.qlist), daemon=True)
-        self.proc_strategy5 = Process(target=target, args=(4, self.qlist), daemon=True)
-        self.proc_strategy6 = Process(target=target, args=(5, self.qlist), daemon=True)
-        self.proc_strategy7 = Process(target=target, args=(6, self.qlist), daemon=True)
-        self.proc_strategy8 = Process(target=target, args=(7, self.qlist), daemon=True)
+        self.proc_strategy1 = Process(target=target, args=(0, self.qlist, self.dict_set), daemon=True)
+        self.proc_strategy2 = Process(target=target, args=(1, self.qlist, self.dict_set), daemon=True)
+        self.proc_strategy3 = Process(target=target, args=(2, self.qlist, self.dict_set), daemon=True)
+        self.proc_strategy4 = Process(target=target, args=(3, self.qlist, self.dict_set), daemon=True)
+        self.proc_strategy5 = Process(target=target, args=(4, self.qlist, self.dict_set), daemon=True)
+        self.proc_strategy6 = Process(target=target, args=(5, self.qlist, self.dict_set), daemon=True)
+        self.proc_strategy7 = Process(target=target, args=(6, self.qlist, self.dict_set), daemon=True)
+        self.proc_strategy8 = Process(target=target, args=(7, self.qlist, self.dict_set), daemon=True)
         self.proc_strategy1.start()
         self.proc_strategy2.start()
         self.proc_strategy3.start()
@@ -259,7 +260,7 @@ class KiwoomManager:
         self.proc_strategy6.start()
         self.proc_strategy7.start()
         self.proc_strategy8.start()
-        self.proc_trader = Process(target=KiwoomTrader, args=(self.qlist,), daemon=True)
+        self.proc_trader = Process(target=KiwoomTrader, args=(self.qlist, self.dict_set), daemon=True)
         self.proc_trader.start()
 
     def StockAgentStart(self):
@@ -272,7 +273,7 @@ class KiwoomManager:
         target = KiwoomAgentTick if self.dict_set['주식타임프레임'] else KiwoomAgentMin
         while True:
             if not self.StockAgentProcessAlive():
-                self.proc_agent = Process(target=target, args=(self.qlist,), daemon=True)
+                self.proc_agent = Process(target=target, args=(self.qlist, self.dict_set), daemon=True)
                 self.proc_agent.start()
                 if self.OpenapiLoginWait(True):
                     with open('C:/OpenAPI/system/opcomms.ini') as file:
