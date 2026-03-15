@@ -19,10 +19,12 @@ class UpdateTextedit:
         if data[0] == ui_num['종목명데이터']:
             self.ui.dict_name = data[1]
             self.ui.dict_code = data[2]
+
         elif data[0] == ui_num['사용자수식']:
             self.ui.fm_list = data[1]
             self.ui.dict_fm = data[2]
             self.ui.fm_tcnt = data[3]
+
         else:
             time_ = str(now())[:-7] if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']) else str(now())
             if '오류' in data[1] or '주문실패' in data[1] or 'Traceback' in data[1] or 'Error' in data[1]:
@@ -34,16 +36,20 @@ class UpdateTextedit:
 
             if data[0] in (ui_num['기본로그'], ui_num['타임로그'], ui_num['시스템로그']):
                 self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
+
             elif data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']):
                 if not self.ui.dict_set['백테스트로그기록안함']:
                     self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
 
             if data[0] == ui_num['기본로그']:
                 self.ui.log_trade_basic_textedit.append(text)
+
             elif data[0] == ui_num['타임로그']:
                 self.ui.log_trade_error_textedit.append(text)
+
             elif data[0] == ui_num['시스템로그']:
                 self.ui.log_system_textedit.append(text)
+
             elif data[0] == ui_num['백테엔진']:
                 self.ui.be_textEditxxxx_01.append(text)
                 if data[1] == '백테엔진 준비 완료':
@@ -133,31 +139,38 @@ class UpdateTextedit:
 
             if '전략연산 프로세스 데이터 저장 중' in text:
                 self.data_save = True
-            elif data[0] == ui_num['기본로그'] and '에이전트 종료' in data[1]:
-                self.ui.wdzservQ.put(('manager', '에이전트 종료'))
-            elif data[0] == ui_num['기본로그'] and '트레이더 종료' in data[1]:
-                self.ui.wdzservQ.put(('manager', '트레이더 종료'))
-            elif data[0] == ui_num['기본로그'] and '전략연산 종료' in data[1]:
-                self.ui.wdzservQ.put(('manager', '전략연산 종료'))
-                if self.data_save and self.ui.dict_set['디비자동관리']:
-                    self.AutoDataBase(1)
+
+            elif data[0] == ui_num['기본로그'] and \
+                    ('에이전트 종료' in data[1] or '리시버 종료' in data[1] or '트레이더 종료' in data[1] or '전략연산 종료' in data[1]):
+                if self.ui.dict_set['주식에이전트']:
+                    if '에이전트 종료' in data[1]:
+                        self.ui.wdzservQ.put(('manager', '에이전트 종료'))
+                    elif '트레이더 종료' in data[1]:
+                        self.ui.wdzservQ.put(('manager', '트레이더 종료'))
+                    elif '전략연산 종료' in data[1]:
+                        self.ui.wdzservQ.put(('manager', '전략연산 종료'))
+                        if self.data_save and self.ui.dict_set['디비자동관리']:
+                            self.AutoDataBase(1)
+                        else:
+                            self.StockShutDownCheck()
                 else:
-                    self.StockShutDownCheck()
-            elif data[0] == ui_num['기본로그'] and '리시버 종료' in data[1]:
-                if self.ui.CoinReceiverProcessAlive():
-                    self.ui.proc_receiver_coin.kill()
-            elif data[0] == ui_num['기본로그'] and '트레이더 종료' in data[1]:
-                if self.ui.CoinTraderProcessAlive():
-                    self.ui.proc_trader_coin.kill()
-            elif data[0] == ui_num['기본로그'] and '전략연산 종료' in data[1]:
-                if self.ui.CoinStrategyProcessAlive():
-                    self.ui.proc_strategy_coin.kill()
-                if self.data_save and self.ui.dict_set['디비자동관리']:
-                    self.AutoDataBase(4)
-                else:
-                    self.CoinShutDownCheck()
-            elif data[0] == ui_num['기본로그'] and '해외선물 휴무 종료' in data[1]:
+                    if '리시버 종료' in data[1]:
+                        if self.ui.CoinReceiverProcessAlive():
+                            self.ui.proc_receiver_coin.kill()
+                    elif '트레이더 종료' in data[1]:
+                        if self.ui.CoinTraderProcessAlive():
+                            self.ui.proc_trader_coin.kill()
+                    elif '전략연산 종료' in data[1]:
+                        if self.ui.CoinStrategyProcessAlive():
+                            self.ui.proc_strategy_coin.kill()
+                        if self.data_save and self.ui.dict_set['디비자동관리']:
+                            self.AutoDataBase(4)
+                        else:
+                            self.CoinShutDownCheck()
+
+            elif '해외선물 휴무 종료' in data[1]:
                 self.StockShutDownCheck()
+
             elif data[0] == ui_num['DB관리']:
                 if data[1] == 'DB업데이트완료':
                     self.ui.database_control = False

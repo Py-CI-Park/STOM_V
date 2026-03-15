@@ -8,7 +8,6 @@ import _pickle
 import datetime
 import builtins
 import winreg as reg
-from talib import stream
 from loguru import logger
 from PyQt5.QtTest import QTest
 from traceback import print_exc
@@ -16,18 +15,7 @@ import exchange_calendars as ec
 from threading import Thread, Timer
 from cryptography.fernet import Fernet
 from utility.setting_base import ui_num
-
-
-_np = None
-
-
-def get_np():
-    global _np
-    if _np is None:
-        import numpy as np
-        _np = np
-    return _np
-
+from utility.lazy_imports import get_np, get_talib_stream
 
 now_utc_ = datetime.datetime.now(pytz.utc)
 now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
@@ -106,13 +94,13 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
         df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
         df2[f'당일거래대금N{avg}'] = df2['당일거래대금'].shift(avg - 1)
         df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
-        df['등락율각도'] = get_np().round(get_np().arctan2(df2['등락율차이'] * cf1, avg) / (2 * get_np().pi) * 360, 2)
-        df['당일거래대금각도'] = get_np().round(get_np().arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * get_np().pi) * 360, 2)
+        df['등락율각도'] = round(get_np().arctan2(df2['등락율차이'] * cf1, avg) / (2 * get_np().pi) * 360, 2)
+        df['당일거래대금각도'] = round(get_np().arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * get_np().pi) * 360, 2)
 
         if market == 1:
             df2[f'전일비N{avg}'] = df2['전일비'].shift(avg - 1)
             df2['전일비차이'] = df2['전일비'] - df2[f'전일비N{avg}']
-            df['전일비각도'] = get_np().round(get_np().arctan2(df2['전일비차이'], avg) / (2 * get_np().pi) * 360, 2)
+            df['전일비각도'] = round(get_np().arctan2(df2['전일비차이'], avg) / (2 * get_np().pi) * 360, 2)
 
     arry = get_np().array(df)
     return get_np().nan_to_num(arry)
@@ -650,222 +638,143 @@ def roundfigure_upper5(price, index):
     return False
 
 
-try:
-    from numba import jit
+def GetKiwoomPgSgSp(bg, cg):
+    texs = int(cg * 0.0018)
+    bfee = int(bg * 0.00015 / 10) * 10
+    sfee = int(cg * 0.00015 / 10) * 10
+    pg = int(cg - texs - bfee - sfee)
+    sg = int(round(pg - bg))
+    sp = round(sg / bg * 100, 2)
+    return pg, sg, sp
 
 
-    def GetKiwoomPgSgSp(bg, cg):
-        texs = int(cg * 0.0018)
-        bfee = int(bg * 0.00015 / 10) * 10
-        sfee = int(cg * 0.00015 / 10) * 10
-        pg = int(cg - texs - bfee - sfee)
-        sg = int(round(pg - bg))
-        sp = round(sg / bg * 100, 2)
-        return pg, sg, sp
+def GetUpbitPgSgSp(bg, cg):
+    bfee = bg * 0.0005
+    sfee = cg * 0.0005
+    pg = int(round(cg - bfee - sfee))
+    sg = int(round(pg - bg))
+    sp = round(sg / bg * 100, 2)
+    return pg, sg, sp
 
 
-    def GetUpbitPgSgSp(bg, cg):
-        bfee = bg * 0.0005
-        sfee = cg * 0.0005
-        pg = int(round(cg - bfee - sfee))
-        sg = int(round(pg - bg))
-        sp = round(sg / bg * 100, 2)
-        return pg, sg, sp
+def GetBinanceLongPgSgSp(bg, cg, market1, market2):
+    bfee = bg * (0.0004 if market1 else 0.0002)
+    sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
+    pg = round(cg - bfee - sfee, 4)
+    sg = round(pg - bg, 4)
+    sp = round(sg / bg * 100, 2)
+    return pg, sg, sp
 
 
-    def GetBinanceLongPgSgSp(bg, cg, market1, market2):
-        bfee = bg * (0.0004 if market1 else 0.0002)
-        sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
-        pg = round(cg - bfee - sfee, 4)
-        sg = round(pg - bg, 4)
-        sp = round(sg / bg * 100, 2)
-        return pg, sg, sp
+def GetBinanceShortPgSgSp(bg, cg, market1, market2):
+    bfee = bg * (0.0004 if market1 else 0.0002)
+    sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
+    pg = round(bg + bg - cg - bfee - sfee, 4)
+    sg = round(pg - bg, 4)
+    sp = round(sg / bg * 100, 2)
+    return pg, sg, sp
 
 
-    def GetBinanceShortPgSgSp(bg, cg, market1, market2):
-        bfee = bg * (0.0004 if market1 else 0.0002)
-        sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
-        pg = round(bg + bg - cg - bfee - sfee, 4)
-        sg = round(pg - bg, 4)
-        sp = round(sg / bg * 100, 2)
-        return pg, sg, sp
+def GetFutureLongPgSgSp(mini, bg, cg):
+    fee = 2 if mini else 7.5
+    pg = round(cg - fee * 2, 1)
+    sg = round(pg - bg, 1)
+    sp = round(sg / bg * 100, 2)
+    return pg, sg, sp
 
 
-    def GetFutureLongPgSgSp(bg, cg, code):
-        fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
-        pg = round(cg - fee * 2, 1)
-        sg = round(pg - bg, 1)
-        sp = round(sg / bg * 100, 2)
-        return pg, sg, sp
+def GetFutureShortPgSgSp(mini, bg, cg):
+    fee = 2 if mini else 7.5
+    pg = round(bg + bg - cg - fee * 2, 1)
+    sg = round(pg - bg, 1)
+    sp = round(sg / bg * 100, 2)
+    return pg, sg, sp
 
 
-    def GetFutureShortPgSgSp(bg, cg, code):
-        fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
-        pg = round(bg + bg - cg - fee * 2, 1)
-        sg = round(pg - bg, 1)
-        sp = round(sg / bg * 100, 2)
-        return pg, sg, sp
+def GetVIPrice(kosd, std_price, index):
+    uvi = int(std_price * 1.1)
+    x = GetHogaunit(kosd, uvi, index)
+    if uvi % x != 0:
+        uvi += x - uvi % x
+    dvi = int(std_price * 0.9)
+    y = GetHogaunit(kosd, dvi, index)
+    if dvi % y != 0:
+        dvi -= dvi % y
+    return int(uvi), int(dvi), int(x)
 
 
-    def GetVIPrice(kosd, std_price, index):
-        uvi = int(std_price * 1.1)
-        x = GetHogaunit(kosd, uvi, index)
-        if uvi % x != 0:
-            uvi += x - uvi % x
-        dvi = int(std_price * 0.9)
-        y = GetHogaunit(kosd, dvi, index)
-        if dvi % y != 0:
-            dvi -= dvi % y
-        return int(uvi), int(dvi), int(x)
-
-
-    def GetSangHahanga(kosd, predayclose, index):
-        uplimitprice = int(predayclose * 1.30)
-        x = GetHogaunit(kosd, uplimitprice, index)
-        if uplimitprice % x != 0:
-            uplimitprice -= uplimitprice % x
-        downlimitprice = int(predayclose * 0.70)
-        x = GetHogaunit(kosd, downlimitprice, index)
-        if downlimitprice % x != 0:
-            downlimitprice += x - downlimitprice % x
-        return int(uplimitprice), int(downlimitprice)
-except:
-    def GetKiwoomPgSgSp(bg, cg):
-        texs = int(cg * 0.0018)
-        bfee = int(bg * 0.00015 / 10) * 10
-        sfee = int(cg * 0.00015 / 10) * 10
-        pg = int(cg - texs - bfee - sfee)
-        sg = int(get_np().round(pg - bg))
-        sp = get_np().round(sg / bg * 100, 2)
-        return pg, sg, sp
-
-
-    def GetUpbitPgSgSp(bg, cg):
-        bfee = bg * 0.0005
-        sfee = cg * 0.0005
-        pg = int(get_np().round(cg - bfee - sfee))
-        sg = int(get_np().round(pg - bg))
-        sp = get_np().round(sg / bg * 100, 2)
-        return pg, sg, sp
-
-
-    def GetBinanceLongPgSgSp(bg, cg, market1, market2):
-        bfee = bg * (0.0004 if market1 else 0.0002)
-        sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
-        pg = get_np().round(cg - bfee - sfee, 4)
-        sg = get_np().round(pg - bg, 4)
-        sp = get_np().round(sg / bg * 100, 2)
-        return pg, sg, sp
-
-
-    def GetBinanceShortPgSgSp(bg, cg, market1, market2):
-        bfee = bg * (0.0004 if market1 else 0.0002)
-        sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
-        pg = get_np().round(bg + bg - cg - bfee - sfee, 4)
-        sg = get_np().round(pg - bg, 4)
-        sp = get_np().round(sg / bg * 100, 2)
-        return pg, sg, sp
-
-    def GetFutureLongPgSgSp(bg, cg, code):
-        fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
-        pg = get_np().round(cg - fee * 2, 1)
-        sg = get_np().round(pg - bg, 1)
-        sp = get_np().round(sg / bg * 100, 2)
-        return pg, sg, sp
-
-
-    def GetFutureShortPgSgSp(bg, cg, code):
-        fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
-        pg = get_np().round(bg + bg - cg - fee * 2, 1)
-        sg = get_np().round(pg - bg, 1)
-        sp = get_np().round(sg / bg * 100, 2)
-        return pg, sg, sp
-
-
-    def GetVIPrice(kosd, std_price, index):
-        uvi = int(std_price * 1.1)
-        x = GetHogaunit(kosd, uvi, index)
-        if uvi % x != 0:
-            uvi += x - uvi % x
-        dvi = int(std_price * 0.9)
-        y = GetHogaunit(kosd, dvi, index)
-        if dvi % y != 0:
-            dvi -= dvi % y
-        return int(uvi), int(dvi), int(x)
-
-
-    def GetSangHahanga(kosd, predayclose, index):
-        uplimitprice = int(predayclose * 1.30)
-        x = GetHogaunit(kosd, uplimitprice, index)
-        if uplimitprice % x != 0:
-            uplimitprice -= uplimitprice % x
-        downlimitprice = int(predayclose * 0.70)
-        x = GetHogaunit(kosd, downlimitprice, index)
-        if downlimitprice % x != 0:
-            downlimitprice += x - downlimitprice % x
-        return int(uplimitprice), int(downlimitprice)
+def GetSangHahanga(kosd, predayclose, index):
+    uplimitprice = int(predayclose * 1.30)
+    x = GetHogaunit(kosd, uplimitprice, index)
+    if uplimitprice % x != 0:
+        uplimitprice -= uplimitprice % x
+    downlimitprice = int(predayclose * 0.70)
+    x = GetHogaunit(kosd, downlimitprice, index)
+    if downlimitprice % x != 0:
+        downlimitprice += x - downlimitprice % x
+    return int(uplimitprice), int(downlimitprice)
 
 
 def GetIndicator(mc, mh, ml, mv, k):
     AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, PPO, \
         ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    try:    AD                     = stream.AD(      mh, ml, mc, mv)
+    try:    AD                     = get_talib_stream().AD(      mh, ml, mc, mv)
     except: AD                     = 0
     if k[0] != 0:
-        try:    ADOSC              = stream.ADOSC(   mh, ml, mc, mv, fastperiod=k[0], slowperiod=k[1])
+        try:    ADOSC              = get_talib_stream().ADOSC(   mh, ml, mc, mv, fastperiod=k[0], slowperiod=k[1])
         except: ADOSC              = 0
     if k[2] != 0:
-        try:    ADXR               = stream.ADXR(    mh, ml, mc,     timeperiod=k[2])
+        try:    ADXR               = get_talib_stream().ADXR(    mh, ml, mc,     timeperiod=k[2])
         except: ADXR               = 0
     if k[3] != 0:
-        try:    APO                = stream.APO(     mc,             fastperiod=k[3], slowperiod=k[4], matype=k[5])
+        try:    APO                = get_talib_stream().APO(     mc,             fastperiod=k[3], slowperiod=k[4], matype=k[5])
         except: APO                = 0
     if k[6] != 0:
-        try:    AROOND, AROONU     = stream.AROON(   mh, ml,         timeperiod=k[6])
+        try:    AROOND, AROONU     = get_talib_stream().AROON(   mh, ml,         timeperiod=k[6])
         except: AROOND, AROONU     = 0, 0
     if k[7] != 0:
-        try:    ATR                = stream.ATR(     mh, ml, mc,     timeperiod=k[7])
+        try:    ATR                = get_talib_stream().ATR(     mh, ml, mc,     timeperiod=k[7])
         except: ATR                = 0
     if k[8] != 0:
-        try:    BBU, BBM, BBL      = stream.BBANDS(  mc,             timeperiod=k[8], nbdevup=k[9], nbdevdn=k[10], matype=k[11])
+        try:    BBU, BBM, BBL      = get_talib_stream().BBANDS(  mc,             timeperiod=k[8], nbdevup=k[9], nbdevdn=k[10], matype=k[11])
         except: BBU, BBM, BBL      = 0, 0, 0
     if k[12] != 0:
-        try:    CCI                = stream.CCI(     mh, ml, mc,     timeperiod=k[12])
+        try:    CCI                = get_talib_stream().CCI(     mh, ml, mc,     timeperiod=k[12])
         except: CCI                = 0
     if k[13] != 0:
-        try:    DIM, DIP           = stream.MINUS_DI(mh, ml, mc,     timeperiod=k[13]), stream.PLUS_DI( mh, ml, mc, timeperiod=k[13])
+        try:    DIM, DIP           = get_talib_stream().MINUS_DI(mh, ml, mc,     timeperiod=k[13]), get_talib_stream().PLUS_DI( mh, ml, mc, timeperiod=k[13])
         except: DIM, DIP           = 0, 0
     if k[14] != 0:
-        try:    MACD, MACDS, MACDH = stream.MACD(    mc,             fastperiod=k[14], slowperiod=k[15], signalperiod=k[16])
+        try:    MACD, MACDS, MACDH = get_talib_stream().MACD(    mc,             fastperiod=k[14], slowperiod=k[15], signalperiod=k[16])
         except: MACD, MACDS, MACDH = 0, 0, 0
     if k[17] != 0:
-        try:    MFI                = stream.MFI(     mh, ml, mc, mv, timeperiod=k[17])
+        try:    MFI                = get_talib_stream().MFI(     mh, ml, mc, mv, timeperiod=k[17])
         except: MFI                = 0
     if k[18] != 0:
-        try:    MOM                = stream.MOM(     mc,             timeperiod=k[18])
+        try:    MOM                = get_talib_stream().MOM(     mc,             timeperiod=k[18])
         except: MOM                = 0
-    try:    OBV                    = stream.OBV(     mc, mv)
+    try:    OBV                    = get_talib_stream().OBV(     mc, mv)
     except: OBV                    = 0
     if k[19] != 0:
-        try:    PPO                = stream.PPO(     mc,             fastperiod=k[19], slowperiod=k[20], matype=k[21])
+        try:    PPO                = get_talib_stream().PPO(     mc,             fastperiod=k[19], slowperiod=k[20], matype=k[21])
         except: PPO                = 0
     if k[22] != 0:
-        try:    ROC                = stream.ROC(     mc,             timeperiod=k[22])
+        try:    ROC                = get_talib_stream().ROC(     mc,             timeperiod=k[22])
         except: ROC                = 0
     if k[23] != 0:
-        try:    RSI                = stream.RSI(     mc,             timeperiod=k[23])
+        try:    RSI                = get_talib_stream().RSI(     mc,             timeperiod=k[23])
         except: RSI                = 0
     if k[24] != 0:
-        try:    SAR                = stream.SAR(     mh, ml,         acceleration=k[24], maximum=k[25])
+        try:    SAR                = get_talib_stream().SAR(     mh, ml,         acceleration=k[24], maximum=k[25])
         except: SAR                = 0
     if k[26] != 0:
-        try:    STOCHSK, STOCHSD   = stream.STOCH(   mh, ml, mc,     fastk_period=k[26], slowk_period=k[27], slowk_matype=k[28], slowd_period=k[29], slowd_matype=k[30])
+        try:    STOCHSK, STOCHSD   = get_talib_stream().STOCH(   mh, ml, mc,     fastk_period=k[26], slowk_period=k[27], slowk_matype=k[28], slowd_period=k[29], slowd_matype=k[30])
         except: STOCHSK, STOCHSD   = 0, 0
     if k[31] != 0:
-        try:    STOCHFK, STOCHFD   = stream.STOCHF(  mh, ml, mc,     fastk_period=k[31], fastd_period=k[32], fastd_matype=k[33])
+        try:    STOCHFK, STOCHFD   = get_talib_stream().STOCHF(  mh, ml, mc,     fastk_period=k[31], fastd_period=k[32], fastd_matype=k[33])
         except: STOCHFK, STOCHFD   = 0, 0
     if k[34] != 0:
-        try:    WILLR              = stream.WILLR(   mh, ml, mc,     timeperiod=k[34])
+        try:    WILLR              = get_talib_stream().WILLR(   mh, ml, mc,     timeperiod=k[34])
         except: WILLR              = 0
     return [AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR]

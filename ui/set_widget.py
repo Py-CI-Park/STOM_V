@@ -2,7 +2,7 @@
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
-    QDialog, QTableWidget, QAbstractItemView
+    QDialog, QTableWidget, QAbstractItemView, QGroupBox
 from utility import syntax
 from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
     columns_gc, columns_hg, columns_jm1, columns_jm2, columns_nd, columns_stg1, columns_stg2, columns_sb, \
@@ -168,6 +168,10 @@ class CustomViewBox(pg.ViewBox):
 class WidgetCreater:
     def __init__(self, ui_class):
         self.ui = ui_class
+
+    def setQGroupBox(self, gname, tab):
+        groupbox = QGroupBox(gname, tab)
+        return groupbox
 
     def setPushbutton(self, pname, color=0, box=None, cmd=None, icon=None, tip=None, shortcut=None, visible=True, click=None):
         if box is not None:

@@ -2,9 +2,9 @@
 import sys
 import time
 import sqlite3
-import pandas as pd
 from multiprocessing import Process
-from utility.static import now, str_ymdhms, error_decorator, set_builtin_print
+from utility.lazy_imports import get_pd
+from utility.static import now, str_ymdhms, error_decorator
 from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num
 
 
@@ -28,7 +28,6 @@ class Total:
         self.tickcols     = None
         self.dict_back    = {}
 
-        set_builtin_print(True, self.wq)
         self.MainLoop()
 
     @error_decorator
@@ -68,7 +67,7 @@ class Total:
             if self.dict_back:
                 save_time = str_ymdhms()
                 con = sqlite3.connect(DB_BACKTEST)
-                df = pd.DataFrame.from_dict(self.dict_back, orient='index')
+                df = get_pd().DataFrame.from_dict(self.dict_back, orient='index')
                 df.to_sql(f"{self.gubun}_bf_{self.buystg_name}_{save_time}", con, if_exists='append', chunksize=1000)
                 con.close()
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인터 결과값 저장 완료'))
@@ -100,7 +99,6 @@ class BackFinder:
         else:
             self.gubun = 'coin'
 
-        set_builtin_print(True, self.wq)
         self.Start()
 
     @error_decorator
@@ -116,7 +114,7 @@ class BackFinder:
         back_count    = data[6]
 
         con = sqlite3.connect(DB_STRATEGY)
-        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
+        dfb = get_pd().read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
         con.close()
 
         buystg    = dfb['전략코드'][buystg_name]

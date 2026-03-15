@@ -16,16 +16,7 @@ from trade.upbit.upbit_strategy_tick import UpbitStrategyTick
 from ui.set_style import style_bc_bt, style_bc_bb
 from utility.setting_base import GRAPH_PATH, ui_num
 from utility.static import qtest_qwait, cme_normal_open, error_decorator
-
-_pd = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
+from utility.lazy_imports import get_pd
 
 
 @error_decorator

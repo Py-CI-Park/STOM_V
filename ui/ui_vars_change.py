@@ -4,16 +4,6 @@ from utility.setting_base import ui_num
 from ui.set_text import buy_signal, sell_signal, future_buy_signal, future_sell_signal
 from utility.static import error_decorator
 
-_np = None
-
-
-def get_np():
-    global _np
-    if _np is None:
-        import numpy as np
-        _np = np
-    return _np
-
 
 @error_decorator
 def get_fix_strategy(ui, strategy, gubun):
@@ -61,14 +51,14 @@ def get_optivars_to_gavars(ui, opti_vars_text):
                     ga_vars_text = f'{ga_vars_text}{vars_curr}, '
                     vars_curr += vars_gap
                     if vars_gap < 0:
-                        vars_curr = get_np().round(vars_curr, 2)
+                        vars_curr = round(vars_curr, 2)
                 ga_vars_text = f'{ga_vars_text[:-2]}], {vars_high}]\n'
             else:
                 while vars_curr >= vars_last:
                     ga_vars_text = f'{ga_vars_text}{vars_curr}, '
                     vars_curr += vars_gap
                     if vars_gap < 0:
-                        vars_curr = get_np().round(vars_curr, 2)
+                        vars_curr = round(vars_curr, 2)
                 ga_vars_text = f'{ga_vars_text[:-2]}], {vars_high}]\n'
     except:
         ui.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_optivars_to_gavars'))
@@ -92,7 +82,7 @@ def get_gavars_to_optivars(ui, ga_vars_text):
                 vars_end = vars_high
             else:
                 vars_high, vars_gap = vars_[i][1], vars_[i][0][1] - vars_[i][0][0]
-                if vars_gap.__class__ == float: vars_gap = get_np().round(vars_gap, 2)
+                if vars_gap.__class__ == float: vars_gap = round(vars_gap, 2)
                 vars_start = vars_[i][0][0]
                 vars_end = vars_[i][0][-1]
             opti_vars_text = f'{opti_vars_text}vars_[{i}] = [[{vars_start}, {vars_end}, {vars_gap}], {vars_high}]\n'

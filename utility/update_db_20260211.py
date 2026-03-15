@@ -4,18 +4,7 @@ import psutil
 import sqlite3
 from loguru import logger
 from multiprocessing import Process
-
-
-_pd = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
-
+from utility.lazy_imports import get_pd
 
 DB_PATH = './_database'
 

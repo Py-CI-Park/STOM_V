@@ -1,5 +1,8 @@
-import numpy as np
+
 from numba import jit, prange
+from utility.lazy_imports import get_np
+
+np = get_np()
 
 
 @jit(nopython=True, parallel=True)

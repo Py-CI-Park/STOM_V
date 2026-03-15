@@ -3,12 +3,11 @@ import os
 import sys
 import time
 import sqlite3
-import numpy as np
-import pandas as pd
 from copy import deepcopy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.strategy_base import StrategyBase
 from trade.formula_manager import get_formula_data
+from utility.lazy_imports import get_np, get_pd
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, DB_FUTURE_TICK, \
     list_coin_tick, list_coin_min
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
@@ -97,10 +96,10 @@ class FutureStrategyTick(StrategyBase):
 
     def UpdateStringategy(self):
         con  = sqlite3.connect(DB_STRATEGY)
-        dfb  = pd.read_sql('SELECT * FROM futurebuy', con).set_index('index')
-        dfs  = pd.read_sql('SELECT * FROM futuresell', con).set_index('index')
-        dfob = pd.read_sql('SELECT * FROM futureoptibuy', con).set_index('index')
-        dfos = pd.read_sql('SELECT * FROM futureoptisell', con).set_index('index')
+        dfb  = get_pd().read_sql('SELECT * FROM futurebuy', con).set_index('index')
+        dfs  = get_pd().read_sql('SELECT * FROM futuresell', con).set_index('index')
+        dfob = get_pd().read_sql('SELECT * FROM futureoptibuy', con).set_index('index')
+        dfos = get_pd().read_sql('SELECT * FROM futureoptisell', con).set_index('index')
         con.close()
 
         buytxt = ''
@@ -214,14 +213,14 @@ class FutureStrategyTick(StrategyBase):
         self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
-        new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
+        new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
         new_data_tick[:self.base_cnt] = data[:self.base_cnt]
 
         pre_data = self.dict_data.get(종목코드)
         if pre_data is not None:
-            self.dict_data[종목코드] = np.concatenate([pre_data, np.array([new_data_tick])])
+            self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
         else:
-            self.dict_data[종목코드] = np.array([new_data_tick])
+            self.dict_data[종목코드] = get_np().array([new_data_tick])
 
         self.arry_code = self.dict_data[종목코드]
         self.tick_count = 데이터길이 = len(self.arry_code)
@@ -285,10 +284,11 @@ class FutureStrategyTick(StrategyBase):
                 # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 _, 포지션, 매수가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간 = jg_data.values()
                 평가금액 = 매입금액 + (현재가 - 매수가) * self.dict_info[종목코드]['틱가치'] * 보유수량
+                mini = self.code.startswith('M') or self.code.startswith('SIL')
                 if 포지션 == 'LONG':
-                    _, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                    _, 수익금, 수익률 = GetFutureLongPgSgSp(mini, 매입금액, 평가금액)
                 else:
-                    _, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                    _, 수익금, 수익률 = GetFutureShortPgSgSp(mini, 매입금액, 평가금액)
                 profit_data = self.dict_profit.get(종목코드)
                 if profit_data:
                     if 수익률 > profit_data[0]:
@@ -330,7 +330,7 @@ class FutureStrategyTick(StrategyBase):
 
                 elif D or E:
                     BUY_LONG, SELL_SHORT = False, False
-                    분할매수기준수익률 = np.round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
+                    분할매수기준수익률 = round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
                     if D:
                         if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
                             BUY_LONG   = True
@@ -466,7 +466,7 @@ class FutureStrategyTick(StrategyBase):
                     매수금액 += 호가 * 잔량
                     미체결수량 -= 잔량
             if 미체결수량 <= 0:
-                예상체결가 = np.round(매수금액 / 매수수량, self.dict_info[self.code]['소숫점자리수']) if 매수수량 != 0 else 0
+                예상체결가 = round(매수금액 / 매수수량, self.dict_info[self.code]['소숫점자리수']) if 매수수량 != 0 else 0
                 self.dict_signal[구분].append(self.code)
                 self.dict_signal_num[self.code] = self.indexn
                 self.straderQ.put((구분, self.code, self.name, 예상체결가, 매수수량, now(), False))
@@ -530,7 +530,7 @@ class FutureStrategyTick(StrategyBase):
                     매도금액 += 호가 * 잔량
                     미체결수량 -= 잔량
             if 미체결수량 <= 0:
-                예상체결가 = np.round(매도금액 / 매도수량, self.dict_info[self.code]['소숫점자리수']) if 매도수량 != 0 else 0
+                예상체결가 = round(매도금액 / 매도수량, self.dict_info[self.code]['소숫점자리수']) if 매도수량 != 0 else 0
                 self.dict_signal[구분].append(self.code)
                 self.straderQ.put((구분, self.code, self.name, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
@@ -570,7 +570,7 @@ class FutureStrategyTick(StrategyBase):
     def PutGsjmAndDeleteHilo(self):
         if self.dict_gj:
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
-            df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
+            df_gj = get_pd().DataFrame.from_dict(self.dict_gj, orient='index')
             self.mgzservQ.put(('window', (ui_num[f'S관심종목'], df_gj)))
         if self.dict_profit:
             self.dict_profit = {k: v for k, v in self.dict_profit.items() if k in self.dict_jg}
@@ -589,7 +589,7 @@ class FutureStrategyTick(StrategyBase):
             start = now()
             cllen = len(columns_)
             for i, code in enumerate(self.dict_data):
-                df = pd.DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
+                df = get_pd().DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
                 df['index'] = df['index'].astype('int64')
                 df.to_sql(code, con, index=False, if_exists='append', chunksize=1000)
                 self.mgzservQ.put(('window', (ui_num['기본로그'], f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... {i + 1}/{last}')))

@@ -1,29 +1,11 @@
 
 import os
 import sqlite3
+from utility.lazy_imports import get_pd
 from utility.static import error_decorator, set_builtin_print
 from utility.setting_base import ui_num, columns_hj, DB_PATH, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_TICK, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
     list_stock_tick, list_stock_min, list_coin_tick, list_coin_min
-
-_pd = None
-_np = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
-
-
-def get_np():
-    global _np
-    if _np is None:
-        import numpy as np
-        _np = np
-    return _np
 
 
 class Hoga:
@@ -137,11 +119,11 @@ class Hoga:
         v, ch = data
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name:
             if v > 0:
-                tbc = get_np().round(self.dict_hc['체결수량'][0] + v, 8)
-                tsc = get_np().round(self.dict_hc['체결수량'][11], 8)
+                tbc = round(self.dict_hc['체결수량'][0] + v, 8)
+                tsc = round(self.dict_hc['체결수량'][11], 8)
             else:
-                tbc = get_np().round(self.dict_hc['체결수량'][0], 8)
-                tsc = get_np().round(self.dict_hc['체결수량'][11] + abs(v), 8)
+                tbc = round(self.dict_hc['체결수량'][0], 8)
+                tsc = round(self.dict_hc['체결수량'][11] + abs(v), 8)
         else:
             if v > 0:
                 tbc = self.dict_hc['체결수량'][0] + v
@@ -166,7 +148,7 @@ class Hoga:
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name or '해외선물' in self.dict_set['증권사']:
             hg = [self.dict_hj['고가']] + list(data[3:13]) + [self.dict_hj['저가']]
         else:
-            hg = [data[23]] + [get_np().round(x) for x in data[3:13]] + [data[24]]
+            hg = [data[23]] + [round(x) for x in data[3:13]] + [data[24]]
 
         self.dict_hg['잔량'] = jr
         self.dict_hg['호가'] = hg

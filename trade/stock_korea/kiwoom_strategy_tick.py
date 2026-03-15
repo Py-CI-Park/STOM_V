@@ -3,18 +3,17 @@ import os
 import sys
 import time
 import sqlite3
-import numpy as np
-import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
 from trade.formula_manager import get_formula_data
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.strategy_base import StrategyBase
+from utility.lazy_imports import get_np, get_pd
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, \
     list_stock_tick, list_stock_min
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
-    str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, dt_ymdhm, error_decorator, set_builtin_print
+    str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, error_decorator, set_builtin_print
 
 
 class KiwoomStrategyTick(StrategyBase):
@@ -100,10 +99,10 @@ class KiwoomStrategyTick(StrategyBase):
 
     def UpdateStringategy(self):
         con  = sqlite3.connect(DB_STRATEGY)
-        dfb  = pd.read_sql('SELECT * FROM stockbuy', con).set_index('index')
-        dfs  = pd.read_sql('SELECT * FROM stocksell', con).set_index('index')
-        dfob = pd.read_sql('SELECT * FROM stockoptibuy', con).set_index('index')
-        dfos = pd.read_sql('SELECT * FROM stockoptisell', con).set_index('index')
+        dfb  = get_pd().read_sql('SELECT * FROM stockbuy', con).set_index('index')
+        dfs  = get_pd().read_sql('SELECT * FROM stocksell', con).set_index('index')
+        dfob = get_pd().read_sql('SELECT * FROM stockoptibuy', con).set_index('index')
+        dfos = get_pd().read_sql('SELECT * FROM stockoptisell', con).set_index('index')
         con.close()
 
         buytxt = ''
@@ -237,16 +236,16 @@ class KiwoomStrategyTick(StrategyBase):
         self.shogainfo = shogainfo[:self.dict_set['주식매수시장가잔량범위']]
         self.bhogainfo = bhogainfo[:self.dict_set['주식매도시장가잔량범위']]
 
-        new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
+        new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
         new_data = data[:self.base_cnt]
         new_data[self.vitime_cnt] = int(str_ymdhms(VI해제시간))
         new_data_tick[:self.base_cnt] = new_data
 
         pre_data = self.dict_data.get(종목코드)
         if pre_data is not None:
-            self.dict_data[종목코드] = np.concatenate([pre_data, np.array([new_data_tick])])
+            self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
         else:
-            self.dict_data[종목코드] = np.array([new_data_tick])
+            self.dict_data[종목코드] = get_np().array([new_data_tick])
 
         self.arry_code = self.dict_data[종목코드]
         self.tick_count = 데이터길이 = len(self.arry_code)
@@ -347,7 +346,7 @@ class KiwoomStrategyTick(StrategyBase):
 
                 elif C:
                     매수 = False
-                    분할매수기준수익률 = np.round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
+                    분할매수기준수익률 = round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
                     if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
                         매수 = True
                     elif self.dict_set['주식매수분할상방'] and 분할매수기준수익률 > self.dict_set['주식매수분할상방수익률']:
@@ -459,7 +458,7 @@ class KiwoomStrategyTick(StrategyBase):
                     매수금액 += 매도호가 * 매도잔량
                     미체결수량 -= 매도잔량
             if 미체결수량 <= 0:
-                예상체결가 = int(np.round(매수금액 / 매수수량)) if 매수수량 != 0 else 0
+                예상체결가 = int(round(매수금액 / 매수수량)) if 매수수량 != 0 else 0
                 self.dict_signal['매수'].append(self.code)
                 self.dict_signal_num[self.code] = self.indexn
                 self.straderQ.put(('매수', self.code, self.name, 예상체결가, 매수수량, now(), False))
@@ -519,7 +518,7 @@ class KiwoomStrategyTick(StrategyBase):
                     매도금액 += 매수호가 * 매수잔량
                     미체결수량 -= 매수잔량
             if 미체결수량 <= 0:
-                예상체결가 = int(np.round(매도금액 / 매도수량)) if 매도수량 != 0 else 0
+                예상체결가 = int(round(매도금액 / 매도수량)) if 매도수량 != 0 else 0
                 self.dict_signal['매도'].append(self.code)
                 self.straderQ.put(('매도', self.code, self.name, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
@@ -558,7 +557,7 @@ class KiwoomStrategyTick(StrategyBase):
     def PutGsjmAndDeleteHilo(self):
         if self.dict_gj:
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
-            df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
+            df_gj = get_pd().DataFrame.from_dict(self.dict_gj, orient='index')
             self.mgzservQ.put(('window', (ui_num[f'S관심종목'], self.gubun, df_gj)))
         if self.dict_profit:
             self.dict_profit = {k: v for k, v in self.dict_profit.items() if k in self.dict_jg}
@@ -575,7 +574,7 @@ class KiwoomStrategyTick(StrategyBase):
             start = now()
             cllen = len(columns_)
             for i, code in enumerate(self.dict_data):
-                df = pd.DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
+                df = get_pd().DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
                 df['index'] = df['index'].astype('int64')
                 df.to_sql(code, con, index=False, if_exists='append', chunksize=1000)
                 self.mgzservQ.put(('window', (ui_num['기본로그'], f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... [{self.gubun + 1}]{i + 1}/{last}')))

@@ -65,6 +65,7 @@ from ui.ui_button_clicked_editer_stock import *
 from ui.ui_update_tablewidget import *
 from ui.ui_update_progressbar import *
 from ui.ui_button_clicked_etc import *
+from ui.ui_button_clicked_dialog_formula import *
 from ui.ui_chart_count_change import *
 from ui.ui_button_clicked_zoom import *
 from ui.ui_load_database import *
@@ -1234,6 +1235,6 @@ class MainWindow(QMainWindow):
     # =================================================================================================================
     # Formula Dialog Methods (pyd→py inference from V2.51 set_dialog_formula.py / ui_etc.py)
     def fmActivated_01(self):                    formula_activated(self)
-    def fmButtonClicked_01(self):                formila_button_clicked(self)
+    def fmButtonClicked_01(self):                formula_button_clicked(self)
     def FormulaCodeTest(self, stg):       return formula_code_test(self, stg, self.testQ)
     def ShowDialogFormula(self):                 show_dialog_formula(self)

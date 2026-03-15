@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_base import BackEngineBase
 from utility.static import GetUpbitHogaunit, GetUpbitPgSgSp
 
@@ -145,21 +144,21 @@ class BackEngineUpbitTick(BackEngineBase):
         globals().update(dict_add_func)
 
     def GetOrderCount(self, betting, 현재가, 보유중, 매수가, oc_ratio):
-        return np.round(betting / 현재가, 8)
+        return round(betting / 현재가, 8)
 
     def GetBuyPrice(self, 매수금액, 주문수량):
-        return np.round(매수금액 / 주문수량, 4)
+        return round(매수금액 / 주문수량, 4)
 
     def GetSellPrice(self, 매도금액, 주문수량):
-        return np.round(매도금액 / 주문수량, 4)
+        return round(매도금액 / 주문수량, 4)
 
     def GetLastSellPrice(self, 매도금액, 보유수량, 미체결수량):
         if 미체결수량 <= 0:
-            매도가 = np.round(매도금액 / 보유수량, 4)
+            매도가 = round(매도금액 / 보유수량, 4)
         elif 매도금액 == 0:
             매도가 = self.arry_code[self.indexn, 1]
         else:
-            매도가 = np.round(매도금액 / (보유수량 - 미체결수량), 4)
+            매도가 = round(매도금액 / (보유수량 - 미체결수량), 4)
         return 매도가
 
     def GetProfitInfo(self, 현재가, 매수가, 보유수량):

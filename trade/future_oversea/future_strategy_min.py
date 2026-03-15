@@ -1,11 +1,11 @@
 
 import os
 import sys
-import numpy as np
 from traceback import format_exc
 from future_strategy_tick import FutureStrategyTick
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num
+from utility.lazy_imports import get_np
 from utility.static import now, now_cme, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, GetIndicator
 
 
@@ -31,14 +31,14 @@ class FutureStrategyMin(FutureStrategyTick):
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
         if 전략연산:
-            new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
+            new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
             new_data_tick[:self.base_cnt] = data[:self.base_cnt]
 
             pre_data = self.dict_data.get(종목코드)
             if pre_data is not None:
-                self.dict_data[종목코드] = np.concatenate([pre_data, np.array([new_data_tick])])
+                self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
             else:
-                self.dict_data[종목코드] = np.array([new_data_tick])
+                self.dict_data[종목코드] = get_np().array([new_data_tick])
 
             self.arry_code = self.dict_data[종목코드]
             self.tick_count = 데이터길이 = len(self.arry_code)
@@ -120,10 +120,11 @@ class FutureStrategyMin(FutureStrategyTick):
                     # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                     _, 포지션, 매수가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간 = jg_data.values()
                     평가금액 = 매입금액 + (현재가 - 매수가) * self.dict_info[종목코드]['틱가치'] * 보유수량
+                    mini = self.code.startswith('M') or self.code.startswith('SIL')
                     if 포지션 == 'LONG':
-                        _, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                        _, 수익금, 수익률 = GetFutureLongPgSgSp(mini, 매입금액, 평가금액)
                     else:
-                        _, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                        _, 수익금, 수익률 = GetFutureShortPgSgSp(mini, 매입금액, 평가금액)
                     profit_data = self.dict_profit.get(종목코드)
                     if profit_data:
                         if 수익률 > profit_data[0]:
@@ -167,7 +168,7 @@ class FutureStrategyMin(FutureStrategyTick):
                                 self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략')))
                     elif D or E:
                         BUY_LONG, SELL_SHORT = False, False
-                        분할매수기준수익률 = np.round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
+                        분할매수기준수익률 = round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
                         if D:
                             if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
                                 BUY_LONG   = True
@@ -253,9 +254,9 @@ class FutureStrategyMin(FutureStrategyTick):
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:
-                new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
+                new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
                 new_data_tick[:self.base_cnt] = data[:self.base_cnt]
-                self.arry_code = np.concatenate([pre_data, np.array([new_data_tick])])
+                self.arry_code = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
                 self.arry_code[-1, self.area_cnt:self.data_cnt] = GetIndicator(
                     self.arry_code[:, self.dict_findex['현재가']],

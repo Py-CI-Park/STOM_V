@@ -1,13 +1,10 @@
 
 import sqlite3
-import numpy as np
-import pandas as pd
 from traceback import format_exc
 from multiprocessing import shared_memory
 from trade.strategy_base import StrategyBase
+from utility.lazy_imports import get_np, get_pd
 from trade.formula_manager import get_formula_data
-from research.analyzer.microstructure_analyzer import MicrostructureAnalyzer
-from research.auxiliary_indicator.smart_vwap_bands import SmartVWAPCalculator
 from backtest.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
     get_trade_info, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture
 from utility.setting_base import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DB_STOCK_BACK_MIN, indicator, \
@@ -34,6 +31,7 @@ class BackEngineBase(StrategyBase):
         self.dict_set        = dict_set
         self.indicator       = indicator
         self.backtest        = True
+        self.update_formula  = False
 
         self.back_type       = None
         self.betting         = None
@@ -95,12 +93,8 @@ class BackEngineBase(StrategyBase):
         self.opti_turn       = 0
         self.sell_count      = 0
 
-        self.smat_vwap       = SmartVWAPCalculator('stock')
-        self.ms_analyzer     = MicrostructureAnalyzer('stock')
-
         set_builtin_print(True, self.wq)
         self.UpdateMarketGubun()
-        self.UpdateSubVars()
         self.MainLoop()
 
     def UpdateSubVars(self):
@@ -120,6 +114,13 @@ class BackEngineBase(StrategyBase):
             factor_list = list_coin_tick if self.is_tick else list_coin_min
         self.dict_findex = {name: i for i, name in enumerate(factor_list)}
 
+        self.base_cnt     = self.dict_findex['관심종목'] + 1
+        self.hoga_sidex   = self.dict_findex['매도호가5']
+        self.hoga_eidex   = self.dict_findex['매수잔량5'] + 1
+        self.add_cnt      = len(self.dict_findex) - self.dict_findex['최고현재가']
+        self.angle_pct_cf = get_angle_cf(self.market_gubun, self.is_tick, 0)
+        self.angle_dtm_cf = get_angle_cf(self.market_gubun, self.is_tick, 1)
+
         if self.is_tick:
             self.dict_findex['초당매도수금액'] = self.dict_findex['초당매수금액']
             self.dict_findex['누적초당매도수수량'] = self.dict_findex['누적초당매수수량']
@@ -132,13 +133,6 @@ class BackEngineBase(StrategyBase):
         self.dict_findex['최고매도수가격'] = self.dict_findex['최고매수가격']
         self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
         self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
-
-        self.base_cnt     = self.dict_findex['관심종목'] + 1
-        self.hoga_sidex   = self.dict_findex['매도호가5']
-        self.hoga_eidex   = self.dict_findex['매수잔량5'] + 1
-        self.add_cnt      = len(self.dict_findex) - self.dict_findex['최고현재가']
-        self.angle_pct_cf = get_angle_cf(self.market_gubun, self.is_tick, 0)
-        self.angle_dtm_cf = get_angle_cf(self.market_gubun, self.is_tick, 1)
 
         if self.set_dict_cond:
             def compile_condition(x):
@@ -153,8 +147,6 @@ class BackEngineBase(StrategyBase):
             value_text_list = text_list[half_cnt:]
             value_comp_list = [compile_condition(x) for x in value_text_list]
             self.dict_condition = dict(zip(key_list, value_comp_list))
-
-        self.SetGlobalsFunc()
 
     @error_decorator
     def MainLoop(self):
@@ -304,6 +296,7 @@ class BackEngineBase(StrategyBase):
 
             elif data[0] == '백테유형':
                 self.back_type = data[1]
+                self.update_formula = False
             elif data[0] == '설정변경':
                 self.dict_set = data[1]
                 self.UpdateSubVars()
@@ -324,7 +317,7 @@ class BackEngineBase(StrategyBase):
     def DataLoad(self, data):
         def data_load(days):
             try:
-                df = pd.read_sql(GetBackloadCodeQuery(self.is_tick, code, days, starttime, endtime), con)
+                df = get_pd().read_sql(GetBackloadCodeQuery(self.is_tick, code, days, starttime, endtime), con)
             except:
                 pass
             else:
@@ -335,6 +328,8 @@ class BackEngineBase(StrategyBase):
                         'data': arry,
                         'len': len(arry)
                     })
+
+        self.UpdateSubVars()
 
         if self.market_gubun == 1:
             con = sqlite3.connect(DB_STOCK_BACK_TICK if self.is_tick else DB_STOCK_BACK_MIN)
@@ -371,11 +366,11 @@ class BackEngineBase(StrategyBase):
             offset = 0
             for item in all_data:
                 data_size = item['len'] * item['data'].dtype.itemsize * item['data'].shape[1]
-                shared_array = np.ndarray((item['len'], item['data'].shape[1]),
-                                          dtype=item['data'].dtype,
-                                          buffer=shm.buf[offset:offset + data_size])
+                shared_array = get_np().ndarray((item['len'], item['data'].shape[1]),
+                                                dtype=item['data'].dtype,
+                                                buffer=shm.buf[offset:offset + data_size])
 
-                np.copyto(shared_array, item['data'])
+                get_np().copyto(shared_array, item['data'])
                 shared_info.append({
                     'code': item['code'],
                     'len': item['len'],
@@ -400,6 +395,8 @@ class BackEngineBase(StrategyBase):
         self.avg_list = avg_list
         self.startday_, self.endday_, self.starttime_, self.endtime_ = startday, endday, starttime, endtime
         self.bq.put(shared_info)
+
+        self.SetGlobalsFunc()
 
     def CheckAvglist(self, avg_list):
         not_in_list = [x for x in avg_list if x not in self.avg_list]
@@ -432,8 +429,6 @@ class BackEngineBase(StrategyBase):
         self.high_low = []
         self.tick_count = 0
         self.dict_cond_indexn = {}
-
-        self.ms_analyzer.clear_data()
 
         if self.is_oms:
             v1 = get_trade_info(3)
@@ -475,7 +470,7 @@ class BackEngineBase(StrategyBase):
         if self.dict_set['백테일괄로딩']:
             shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
             data_size = shared_info['len'] * shared_info['dtype'].itemsize * shared_info['shape'][1]
-            self.arry_code = np.ndarray(
+            self.arry_code = get_np().ndarray(
                 shared_info['shape'],
                 dtype=shared_info['dtype'],
                 buffer=shm.buf[shared_info['offset']:shared_info['offset'] + data_size]
@@ -499,7 +494,7 @@ class BackEngineBase(StrategyBase):
                                             (self.arry_code[:, 0] % self.unit <= self.endtime)]
 
         if self.fm_tcnt > 0:
-            self.arry_code = np.column_stack((self.arry_code, np.zeros((self.arry_code.shape[0], self.fm_tcnt))))
+            self.arry_code = get_np().column_stack((self.arry_code, get_np().zeros((self.arry_code.shape[0], self.fm_tcnt))))
 
         return code
 
@@ -517,7 +512,10 @@ class BackEngineBase(StrategyBase):
             self.pr = cProfile.Profile()
             self.pr.enable()
 
-        self.UpdateFormulaData()
+        if not self.update_formula:
+            self.UpdateFormulaData()
+            self.update_formula = True
+
         self.InitTradeInfo()
         self.sell_count = 0
 
@@ -548,7 +546,7 @@ class BackEngineBase(StrategyBase):
 
             last = len(self.arry_code) - 1
             if last > 0:
-                indexs = self.arry_code[:, 0].astype(np.int64)
+                indexs = self.arry_code[:, 0].astype(get_np().int64)
                 day_last_indexs = indexs // 1000000
                 day_last_indexs = [i for i in range(last) if day_last_indexs[i] != day_last_indexs[i + 1]]
                 day_last_indexs.append(last)
