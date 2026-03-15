@@ -32,6 +32,20 @@ from utility.setting import ui_num, GRAPH_PATH, DB_OPTUNA
 from utility.static import thread_decorator, dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
 
 
+TRADE_RESULT_B_COLUMNS = [
+    'B_현재가', 'B_등락율', 'B_당일거래대금', 'B_거래대금증감', 'B_체결강도',
+    'B_시가총액', 'B_회전율', 'B_전일동시간비', 'B_매수총잔량', 'B_매도총잔량',
+    'B_시분초', 'B_분봉시가', 'B_분봉고가', 'B_분봉저가'
+]
+TRADE_RESULT_S_COLUMNS = [
+    'S_현재가', 'S_등락율', 'S_체결강도', 'S_매수총잔량', 'S_매도총잔량'
+]
+TRADE_RESULT_R_COLUMNS = [
+    'R_매수후최고수익률', 'R_매수후최저수익률', 'R_MFE', 'R_MAE'
+]
+TRADE_RESULT_EXTRA_COLUMNS = TRADE_RESULT_B_COLUMNS + TRADE_RESULT_S_COLUMNS + TRADE_RESULT_R_COLUMNS
+
+
 @thread_decorator
 def RunOptunaServer():
     if run_server is None:
@@ -91,6 +105,10 @@ def get_trade_info(gubun):
             '손절매도시간': buy_time
         }
     return v
+
+
+def get_trade_result_snapshot():
+    return {column: 0 for column in TRADE_RESULT_B_COLUMNS}
 
 
 def GetBackloadCodeQuery(is_tick, code, days, starttime, endtime):
@@ -668,11 +686,11 @@ def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
     columns1 = [
         'index', '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
         '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '매도조건', '추가매수시간'
-    ]
+    ] + TRADE_RESULT_EXTRA_COLUMNS
     columns2 = [
         '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
         '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간'
-    ]
+    ] + TRADE_RESULT_EXTRA_COLUMNS
     df_tsg = pd.DataFrame(list_tsg, columns=columns1)
     df_tsg.set_index('index', inplace=True)
     df_tsg.sort_index(inplace=True)

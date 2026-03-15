@@ -316,6 +316,7 @@ class MainWindow(QMainWindow):
     def __init__(self, auto_run_):
         super().__init__()
         self.logger = get_logger(self.__class__.__name__)
+        self.log    = self.logger   # legacy alias used by ui_update_textedit.py
 
         self.windowQ, self.soundQ, self.queryQ, self.teleQ, self.chartQ, self.hogaQ, self.webcQ, self.backQ, \
             self.creceivQ, self.ctraderQ, self.cstgQ, self.liveQ, self.totalQ, self.testQ, self.kimpQ, self.wdzservQ = \
@@ -332,6 +333,7 @@ class MainWindow(QMainWindow):
         self.proc_query = Process(target=Query, args=(self.qlist,))
         self.proc_chart = Process(target=Chart, args=(self.qlist,), daemon=True)
         self.proc_hoga  = Process(target=Hoga, args=(self.qlist,), daemon=True)
+        self.proc_livec = None
         # STOM Live disabled
         # self.proc_live  = Process(target=LiveClient, args=(self.qlist,), daemon=True)
 
@@ -602,7 +604,15 @@ class MainWindow(QMainWindow):
     def ExtendWindow(self):                extend_window(self)
     def CalendarClicked(self, gubun):      calendar_clicked(self, gubun)
     def AutoBackSchedule(self, gubun):     auto_back_schedule(self, gubun)
-    def VideoWidgetClose(self, state):     video_widget_close(self, state)
+    def VideoWidgetClose(self, state):
+        video_widget = getattr(self, 'videoWidget', None)
+        if video_widget is not None:
+            try:
+                from PyQt5.QtMultimedia import QMediaPlayer
+                if state == QMediaPlayer.StoppedState:
+                    video_widget.setVisible(False)
+            except Exception:
+                video_widget.setVisible(False)
     def StomliveScreenshot(self, cmd):     stom_live_screenshot(self, cmd)
     def ChartScreenShot(self):             chart_screenshot(self)
     def ChartScreenShot2(self):            chart_screenshot2(self)
@@ -625,7 +635,7 @@ class MainWindow(QMainWindow):
     def CheckboxChanged_16(self, state):   checkbox_changed_16(self, state)
     def CheckboxChanged_17(self, state):   checkbox_changed_17(self, state)
     def CheckboxChanged_18(self, state):   checkbox_changed_18(self, state)
-    def CheckboxChanged_19(self, state):   checkbox_changed_19(self, state)
+    def CheckboxChanged_19(self, state):   checkbox_changed_18(self, state)   # legacy alias
     # =================================================================================================================
     def sbCheckboxChanged_01(self, state): sbcheckbox_changed_01(self, state)
     def sbCheckboxChanged_02(self, state): sbcheckbox_changed_02(self, state)
@@ -762,24 +772,24 @@ class MainWindow(QMainWindow):
     def csButtonClicked_05(self): csbutton_clicked_05(self)
     def csButtonClicked_06(self): csbutton_clicked_06(self)
     # =================================================================================================================
-    def szooButtonClicked_01(self): szoo_button_clicked_01(self)
-    def szooButtonClicked_02(self): szoo_button_clicked_02(self)
-    def czooButtonClicked_01(self): czoo_button_clicked_01(self)
-    def czooButtonClicked_02(self): czoo_button_clicked_02(self)
+    def szooButtonClicked_01(self): sz_button_clicked_01(self)  # legacy alias
+    def szooButtonClicked_02(self): sz_button_clicked_02(self)  # legacy alias
+    def czooButtonClicked_01(self): cz_button_clicked_01(self)  # legacy alias
+    def czooButtonClicked_02(self): cz_button_clicked_02(self)  # legacy alias
     # =================================================================================================================
     # Stock strategy zoom buttons (set_stg_stock_tap.py references)
-    def szButtonClicked_01(self): szoo_button_clicked_01(self)
-    def szButtonClicked_02(self): szoo_button_clicked_02(self)
+    def szButtonClicked_01(self): sz_button_clicked_01(self)
+    def szButtonClicked_02(self): sz_button_clicked_02(self)
     # Coin strategy zoom buttons (set_stg_coin_tap.py references)
-    def czButtonClicked_01(self): czoo_button_clicked_01(self)
-    def czButtonClicked_02(self): czoo_button_clicked_02(self)
+    def czButtonClicked_01(self): cz_button_clicked_01(self)
+    def czButtonClicked_02(self): cz_button_clicked_02(self)
     # =================================================================================================================
-    def Activated_01(self): activated_01(self)
-    def Activated_02(self): activated_02(self)
-    def Activated_03(self): activated_03(self)
+    def Activated_01(self): dactivated_01(self)  # legacy alias
+    def Activated_02(self): dactivated_02(self)  # legacy alias
+    def Activated_03(self): dactivated_03(self)  # legacy alias
     # =================================================================================================================
     # dActivated for detail combo boxes
-    def dActivated_01(self): pass  # Placeholder for detail combo activation
+    def dActivated_01(self): dactivated_01(self)
     # =================================================================================================================
     def sActivated_01(self): sactivated_01(self)
     def sActivated_02(self): sactivated_02(self)
@@ -819,12 +829,12 @@ class MainWindow(QMainWindow):
     def StockBuyStgSave(self):              stock_buy_stg_save(self)
     def StockBuyFactor(self):               stock_buy_factor(self)
     def StockBuyStgStart(self):             stock_buy_stg_start(self)
-    def StockBuyVitimeComparison(self):     stock_buy_vitime_comparison(self)
-    def StockBuyVilowfiveComparison(self):  stock_buy_vilowfive_comparison(self)
-    def StockBuyPerLimit(self):             stock_buy_per_limit(self)
-    def StockBuyLowHighAvgPer(self):        stock_buy_low_high_avg_per(self)
-    def StockChLowerLimit(self):            stock_ch_lower_limit(self)
-    def StockChAvgGap(self):                stock_ch_avg_gap(self)
+    def StockBuyVitimeComparison(self):     self.StrategyButtonClicked(206)
+    def StockBuyVilowfiveComparison(self):  self.StrategyButtonClicked(207)
+    def StockBuyPerLimit(self):             self.StrategyButtonClicked(208)
+    def StockBuyLowHighAvgPer(self):        self.StrategyButtonClicked(209)
+    def StockChLowerLimit(self):            self.StrategyButtonClicked(210)
+    def StockChAvgGap(self):                self.StrategyButtonClicked(211)
     def StockBuySignalInsert(self):         stock_buy_signal_insert(self)
     def StockBuyStgStop(self):              stock_buy_stg_stop(self)
     # =================================================================================================================
@@ -833,14 +843,14 @@ class MainWindow(QMainWindow):
     def StockSellStgSave(self):             stock_sell_stg_save(self)
     def StockSellFactor(self):              stock_sell_factor(self)
     def StockSellStgStart(self):            stock_sell_stg_start(self)
-    def StockSellDeadLine(self):            stock_sell_dead_line(self)
-    def StockSellProfitLine(self):          stock_sell_profit_line(self)
-    def StockSellProfitSave(self):          stock_sell_profit_save(self)
-    def StockSellHoldTime(self):            stock_sell_hold_time(self)
-    def StockSellBeforeVi(self):            stock_sell_before_vi(self)
-    def StockSellLowHighAvgPer(self):       stock_sell_low_high_avg_per(self)
-    def StockSellChHighComparison(self):    stock_sell_ch_high_comparison(self)
-    def StockSellAskPriceRamainCount(self): stock_sell_ask_price_ramain_count(self)
+    def StockSellDeadLine(self):            self.StrategyButtonClicked(212)
+    def StockSellProfitLine(self):          self.StrategyButtonClicked(213)
+    def StockSellProfitSave(self):          self.StrategyButtonClicked(214)
+    def StockSellHoldTime(self):            self.StrategyButtonClicked(215)
+    def StockSellBeforeVi(self):            self.StrategyButtonClicked(216)
+    def StockSellLowHighAvgPer(self):       self.StrategyButtonClicked(217)
+    def StockSellChHighComparison(self):    self.StrategyButtonClicked(218)
+    def StockSellAskPriceRamainCount(self): self.StrategyButtonClicked(219)
     def StockSellSignalInsert(self):        stock_sell_signal_insert(self)
     def StockSellStgStop(self):             stock_sell_stg_stop(self)
     # =================================================================================================================
@@ -894,12 +904,12 @@ class MainWindow(QMainWindow):
     def CoinBuyStgSave(self):               coin_buy_stg_save(self)
     def CoinBuyFactor(self):                coin_buy_factor(self)
     def CoinBuyStgStart(self):              coin_buy_stg_start(self)
-    def CoinBuyPerLimit(self):              coin_buy_per_limit(self)
-    def CoinBuyLowHighAvgPer(self):         coin_buy_low_high_avg_per(self)
-    def CoinBuyOpenCloseComparison(self):   coin_buy_open_close_comparison(self)
-    def CoinBuyChLowerLimit(self):          coin_buy_ch_lower_limit(self)
-    def CoinBuyChAvgGap(self):              coin_buy_ch_avg_gap(self)
-    def CoinBuyChHigh(self):                coin_buy_ch_high(self)
+    def CoinBuyPerLimit(self):              self.StrategyButtonClicked(220)
+    def CoinBuyLowHighAvgPer(self):         self.StrategyButtonClicked(221)
+    def CoinBuyOpenCloseComparison(self):   self.StrategyButtonClicked(222)
+    def CoinBuyChLowerLimit(self):          self.StrategyButtonClicked(223)
+    def CoinBuyChAvgGap(self):              self.StrategyButtonClicked(224)
+    def CoinBuyChHigh(self):                self.StrategyButtonClicked(225)
     def CoinBuySignalInsert(self):          coin_buy_signal_insert(self)
     def CoinBuyStgStop(self):               coin_buy_stg_stop(self)
     # =================================================================================================================
@@ -908,14 +918,14 @@ class MainWindow(QMainWindow):
     def CoinSellStgSave(self):              coin_sell_stg_save(self)
     def CoinSellFactor(self):               coin_sell_factor(self)
     def CoinSellStgStart(self):             coin_sell_stg_start(self)
-    def CoinSellDeadLine(self):             coin_sell_dead_line(self)
-    def CoinSellProfitLine(self):           coin_sell_profit_line(self)
-    def CoinSellProfitSave(self):           coin_sell_profit_save(self)
-    def CoinSellHoldTime(self):             coin_sell_hold_time(self)
-    def CoinSellChAvgComparison(self):      coin_sell_ch_avg_comparison(self)
-    def CoinSellChHighComparison(self):     coin_sell_ch_high_comparison(self)
-    def CoinSellLowHighAvgPer(self):        coin_sell_low_high_avg_per(self)
-    def CoinSellAskPriceRamainCount(self):  coin_sell_ask_price_ramain_count(self)
+    def CoinSellDeadLine(self):             self.StrategyButtonClicked(226)
+    def CoinSellProfitLine(self):           self.StrategyButtonClicked(227)
+    def CoinSellProfitSave(self):           self.StrategyButtonClicked(228)
+    def CoinSellHoldTime(self):             self.StrategyButtonClicked(229)
+    def CoinSellChAvgComparison(self):      self.StrategyButtonClicked(230)
+    def CoinSellChHighComparison(self):     self.StrategyButtonClicked(231)
+    def CoinSellLowHighAvgPer(self):        self.StrategyButtonClicked(232)
+    def CoinSellAskPriceRamainCount(self):  self.StrategyButtonClicked(233)
     def CoinSellSignalInsert(self):         coin_sell_signal_insert(self)
     def CoinSellStgStop(self):              coin_sell_stg_stop(self)
     # =================================================================================================================
@@ -1038,8 +1048,8 @@ class MainWindow(QMainWindow):
     # Scheduler methods
     def StopScheduler(self, gubun=False): StopScheduler(self, gubun)
     # Activated methods
-    def dActivated_02(self): pass  # Placeholder for settings combo activation
-    def dActivated_03(self): pass  # Placeholder for order dialog combo activation
+    def dActivated_02(self): dactivated_02(self)
+    def dActivated_03(self): dactivated_03(self)
     # =================================================================================================================
     def keyPressEvent(self, event):              key_press_event(self, event)
     def eventFilter(self, widget, event): return event_filter(self, widget, event)
@@ -1067,7 +1077,7 @@ class MainWindow(QMainWindow):
     def svjButtonClicked_01(self): self.StockBacktestStart()
     def svjButtonClicked_02(self): self.StockBackfinderStart()
     def svjButtonClicked_03(self): self.StockBackfinderSample()
-    def svjButtonClicked_04(self): pass
+    def svjButtonClicked_04(self): self.StockOptiVarsEditer()
     def svjButtonClicked_05(self): self.StockRwfTestEditer()
     def svjButtonClicked_06(self): self.StockOptiTestEditer()
     def svjButtonClicked_07(self): self.StockOptiEditer()
@@ -1081,11 +1091,11 @@ class MainWindow(QMainWindow):
     def svjButtonClicked_15(self, back_name): self.StockOptiStart(back_name)
     def svjButtonClicked_16(self, back_name): self.StockOptiStart(back_name)
     def svjButtonClicked_17(self, back_name): self.StockOptiStart(back_name)
-    def svjButtonClicked_18(self): pass
-    def svjButtonClicked_19(self): pass
-    def svjButtonClicked_20(self): pass
-    def svjButtonClicked_21(self): pass
-    def svjButtonClicked_22(self): pass
+    def svjButtonClicked_18(self): self.StockOptivarsToGavars()
+    def svjButtonClicked_19(self): self.StockGavarsToOptivars()
+    def svjButtonClicked_20(self): self.StockStgVarsChange()
+    def svjButtonClicked_21(self): self.StockStgvarsKeySort()
+    def svjButtonClicked_22(self): self.StockOptivarsKeySort()
     # =================================================================================================================
     def svjsButtonClicked_01(self): self.StockSellStgLoad()
     def svjsButtonClicked_02(self): self.StockSellStgSave()
@@ -1107,9 +1117,9 @@ class MainWindow(QMainWindow):
     def svcButtonClicked_03(self): self.StockOptiVarsLoad()
     def svcButtonClicked_04(self): self.StockOptiVarsSave()
     def svcButtonClicked_05(self): self.StockOptiStd()
-    def svcButtonClicked_06(self): pass
-    def svcButtonClicked_07(self): pass
-    def svcButtonClicked_08(self): pass
+    def svcButtonClicked_06(self): self.StockOptiSellSave()    # legacy alias
+    def svcButtonClicked_07(self): self.StockOptiSample()      # legacy alias
+    def svcButtonClicked_08(self): self.StockOptiToBuySave()   # legacy alias
     def svcButtonClicked_09(self): self.StockOptiSellLoad()
     def svcButtonClicked_10(self): self.StockOptiSellSave()
     def svcButtonClicked_11(self): self.StockOptiSample()
@@ -1138,7 +1148,7 @@ class MainWindow(QMainWindow):
     def cvjButtonClicked_01(self): self.CoinBacktestStart()
     def cvjButtonClicked_02(self): self.CoinBackfinderStart()
     def cvjButtonClicked_03(self): self.CoinBackfinderSample()
-    def cvjButtonClicked_04(self): pass
+    def cvjButtonClicked_04(self): self.CoinOptiVarsEditer()
     def cvjButtonClicked_05(self): self.CoinRwfTestEditer()
     def cvjButtonClicked_06(self): self.CoinOptiTestEditer()
     def cvjButtonClicked_07(self): self.CoinOptiEditer()
@@ -1152,11 +1162,11 @@ class MainWindow(QMainWindow):
     def cvjButtonClicked_15(self, back_name): self.CoinOptiStart(back_name)
     def cvjButtonClicked_16(self, back_name): self.CoinOptiStart(back_name)
     def cvjButtonClicked_17(self, back_name): self.CoinOptiStart(back_name)
-    def cvjButtonClicked_18(self): pass
-    def cvjButtonClicked_19(self): pass
-    def cvjButtonClicked_20(self): pass
-    def cvjButtonClicked_21(self): pass
-    def cvjButtonClicked_22(self): pass
+    def cvjButtonClicked_18(self): self.CoinOptivarsToGavars()
+    def cvjButtonClicked_19(self): self.CoinGavarsToOptivars()
+    def cvjButtonClicked_20(self): self.CoinStgVarsChange()
+    def cvjButtonClicked_21(self): self.CoinStgvarsKeySort()
+    def cvjButtonClicked_22(self): self.CoinOptivarsKeySort()
     # =================================================================================================================
     def cvjsButtonClicked_01(self): self.CoinSellStgLoad()
     def cvjsButtonClicked_02(self): self.CoinSellStgSave()
@@ -1178,9 +1188,9 @@ class MainWindow(QMainWindow):
     def cvcButtonClicked_03(self): self.CoinOptiVarsLoad()
     def cvcButtonClicked_04(self): self.CoinOptiVarsSave()
     def cvcButtonClicked_05(self): self.CoinOptiStd()
-    def cvcButtonClicked_06(self): pass
-    def cvcButtonClicked_07(self): pass
-    def cvcButtonClicked_08(self): pass
+    def cvcButtonClicked_06(self): self.CoinOptiSellSave()     # legacy alias
+    def cvcButtonClicked_07(self): self.CoinOptiSample()       # legacy alias
+    def cvcButtonClicked_08(self): self.CoinOptiToBuySave()    # legacy alias
     def cvcButtonClicked_09(self): self.CoinOptiSellLoad()
     def cvcButtonClicked_10(self): self.CoinOptiSellSave()
     def cvcButtonClicked_11(self): self.CoinOptiSample()
@@ -1201,51 +1211,51 @@ class MainWindow(QMainWindow):
     def ClearBacktestQ(self):                            clear_backtestQ(self)
     def BacktestProcessKill(self, coin, enginekill): backtest_process_kill(self, coin, enginekill)
     # =================================================================================================================
-    def ctButtonClicked_01(self): ct_button_clicked_01(self)
-    def ctButtonClicked_02(self): ct_button_clicked_02(self)
-    def ctButtonClicked_03(self): ct_button_clicked_03(self)
-    def GetKlist(self, code): return get_k_list(self, code)
+    def ctButtonClicked_01(self): self.IndicatorSettingBasic()
+    def ctButtonClicked_02(self): self.IndicatorSettingLoad()
+    def ctButtonClicked_03(self): self.IndicatorSettingSave()
+    def GetKlist(self, code): return self.GetIndicatorDetail(code)
     # =================================================================================================================
-    def sjButtonClicked_01(self): sj_button_cicked_01(self)
-    def sjButtonClicked_02(self): sj_button_cicked_02(self)
-    def sjButtonClicked_03(self): sj_button_cicked_03(self)
-    def sjButtonClicked_04(self): sj_button_cicked_04(self)
-    def sjButtonClicked_05(self): sj_button_cicked_05(self)
-    def sjButtonClicked_06(self): sj_button_cicked_06(self)
-    def sjButtonClicked_07(self): sj_button_cicked_07(self)
-    def sjButtonClicked_08(self): sj_button_cicked_08(self)
-    def sjButtonClicked_09(self): sj_button_cicked_09(self)
-    def sjButtonClicked_10(self): sj_button_cicked_10(self)
-    def sjButtonClicked_11(self): sj_button_cicked_11(self)
-    def sjButtonClicked_12(self): sj_button_cicked_12(self)
-    def sjButtonClicked_13(self): sj_button_cicked_13(self)
-    def sjButtonClicked_14(self): sj_button_cicked_14(self)
-    def sjButtonClicked_15(self): sj_button_cicked_15(self)
-    def sjButtonClicked_16(self): sj_button_cicked_16(self)
-    def sjButtonClicked_17(self): sj_button_cicked_17(self)
-    def sjButtonClicked_19(self): sj_button_cicked_19(self)
-    def sjButtonClicked_20(self): sj_button_cicked_20(self)
-    def sjButtonClicked_21(self): sj_button_cicked_21(self)
-    def sjButtonClicked_22(self): sj_button_cicked_22(self)
-    def sjButtonClicked_23(self): sj_button_cicked_23(self)
-    def sjButtonClicked_24(self): sj_button_cicked_24(self)
-    def sjButtonClicked_25(self): sj_button_cicked_25(self)
-    def sjButtonClicked_26(self): sj_button_cicked_26(self)
-    def sjButtonClicked_27(self): sj_button_cicked_27(self)
-    def sjButtonClicked_28(self): sj_button_cicked_28(self)
-    def sjButtonClicked_29(self): sj_button_cicked_29(self)
-    def sjButtonClicked_30(self): sj_button_cicked_30(self)
-    def sjButtonClicked_31(self): sj_button_cicked_31(self)
-    def sjButtonClicked_32(self): sj_button_cicked_32(self)
-    def sjButtonClicked_33(self): sj_button_cicked_33(self)
-    def sjButtonClicked_34(self): sj_button_cicked_34(self)
+    def sjButtonClicked_01(self): self.SettingLoad_01()
+    def sjButtonClicked_02(self): self.SettingLoad_02()
+    def sjButtonClicked_03(self): self.SettingLoad_03()
+    def sjButtonClicked_04(self): self.SettingLoad_04()
+    def sjButtonClicked_05(self): self.SettingLoad_05()
+    def sjButtonClicked_06(self): self.SettingLoad_06()
+    def sjButtonClicked_07(self): self.SettingLoad_07()
+    def sjButtonClicked_08(self): self.SettingLoad_08()
+    def sjButtonClicked_09(self): self.SettingSave_01()
+    def sjButtonClicked_10(self): self.SettingSave_02()
+    def sjButtonClicked_11(self): self.SettingSave_03()
+    def sjButtonClicked_12(self): self.SettingSave_04()
+    def sjButtonClicked_13(self): self.SettingSave_05()
+    def sjButtonClicked_14(self): self.SettingSave_06()
+    def sjButtonClicked_15(self): self.SettingSave_07()
+    def sjButtonClicked_16(self): self.SettingSave_08()
+    def sjButtonClicked_17(self): self.SettingAccView()
+    def sjButtonClicked_19(self): self.SettingOrderLoad_01()
+    def sjButtonClicked_20(self): self.SettingOrderLoad_02()
+    def sjButtonClicked_21(self): self.SettingOrderLoad_03()
+    def sjButtonClicked_22(self): self.SettingOrderLoad_04()
+    def sjButtonClicked_23(self): self.SettingOrderSave_01()
+    def sjButtonClicked_24(self): self.SettingOrderSave_02()
+    def sjButtonClicked_25(self): self.SettingOrderSave_03()
+    def sjButtonClicked_26(self): self.SettingOrderSave_04()
+    def sjButtonClicked_27(self): self.SettingAllLoad()
+    def sjButtonClicked_28(self): self.SettingAllApp()
+    def sjButtonClicked_29(self): self.SettingAllDel()
+    def sjButtonClicked_30(self): self.SettingAllSave()
+    def sjButtonClicked_31(self): self.SettingStockWeightControl()
+    def sjButtonClicked_32(self): self.SettingCoinWeightControl()
+    def sjButtonClicked_33(self): self.SettingStockElapsedTickNumber()
+    def sjButtonClicked_34(self): self.SettingCoinElapsedTickNumber()
     # =================================================================================================================
-    def bjsButtonClicked_01(self):       bjs_button_clicked_01(self)
-    def bjsButtonClicked_02(self):       bjs_button_clicked_02(self)
-    def bjcButtonClicked_01(self):       bjc_button_clicked_01(self)
-    def bjcButtonClicked_02(self):       bjc_button_clicked_02(self)
-    def bjsCheckChanged_01(self, state): bjs_check_changed_01(self, state)
-    def bjcCheckChanged_01(self, state): bjc_check_changed_01(self, state)
+    def bjsButtonClicked_01(self):       self.SettingStockWeightCotrolLoad()
+    def bjsButtonClicked_02(self):       self.SettingStockWeightCotrolSave()
+    def bjcButtonClicked_01(self):       self.SettingCoinWeightCotrolLoad()
+    def bjcButtonClicked_02(self):       self.SettingCoinWeightCotrolSave()
+    def bjsCheckChanged_01(self, state): self.SettingStockWeightCotrolChanged(state)
+    def bjcCheckChanged_01(self, state): self.SettingCoinWeightCotrolChanged(state)
     # =================================================================================================================
     # Strategy Dialog Methods (pyd→py inference from V2.39 SetDialogStrategy / ui_button_clicked_strategy.py)
     def StrategyButtonClicked(self, cmd):    button_clicked_strategy(self, cmd)

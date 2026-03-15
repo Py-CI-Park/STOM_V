@@ -81,7 +81,7 @@ class BackSubTotal:
 
     def CollectData(self, data):
         _, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, \
-            추가매수시간, 잔량없음, vturn, vkey = data
+            추가매수시간, 잔량없음, *extra_columns, vturn, vkey = data
 
         if vturn not in self.ddict_tsg:
             self.dummy_tsg[vturn] = {}
@@ -95,7 +95,10 @@ class BackSubTotal:
         if self.opti_turn != 2:
             data = [index, 보유시간, 매도시간, 수익률, 수익금]
         else:
-            data = [index, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, 추가매수시간]
+            data = [
+                index, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가,
+                매수금액, 매도금액, 수익률, 수익금, 매도조건, 추가매수시간, *extra_columns
+            ]
         self.ddict_tsg[vturn][vkey].append(data)
 
         arry_bct = self.ddict_bct[vturn][vkey]

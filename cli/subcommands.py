@@ -62,6 +62,105 @@ def create_subcommand_parser():
     ana_p.add_argument('name', help='전략명')
     ana_p.add_argument('--type', choices=['buy', 'sell'], required=True)
 
+    # discovery subcommand
+    disc_parser = sub.add_parser('discovery', help='자동 조건식 탐색')
+    disc_sub = disc_parser.add_subparsers(dest='discovery_action')
+
+    # discovery analyze
+    disc_ana = disc_sub.add_parser('analyze', help='결과 CSV 분석')
+    disc_ana.add_argument('--input', '-i', required=True, dest='input_file', help='입력 CSV 파일')
+    disc_ana.add_argument('--output', '-o', help='분석 결과 JSON 저장 경로')
+    disc_ana.add_argument('--min-samples', type=int, default=30)
+    disc_ana.add_argument('--quantiles', type=int, default=10)
+    disc_ana.add_argument('--alpha', type=float, default=0.05)
+
+    # discovery ml-analyze
+    disc_ml = disc_sub.add_parser('ml-analyze', help='ML 기반 팩터 분석')
+    disc_ml.add_argument('--input', '-i', required=True, dest='input_file', help='입력 CSV 파일')
+    disc_ml.add_argument('--output', '-o', help='ML 분석 결과 JSON 저장 경로')
+    disc_ml.add_argument('--model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_ml.add_argument('--top-n', type=int, default=10)
+    disc_ml.add_argument('--n-splits', type=int, default=5)
+    disc_ml.add_argument('--random-state', type=int, default=42)
+
+    # discovery generate
+    disc_gen = disc_sub.add_parser('generate', help='분석 결과로 조건 코드 생성')
+    disc_gen.add_argument('--input', '-i', required=True, dest='input_file', help='입력 CSV 파일')
+    disc_gen.add_argument('--output', '-o', help='생성 코드 저장 경로')
+    disc_gen.add_argument('--top-n', type=int, default=5)
+    disc_gen.add_argument('--buy-var', default='매수')
+    disc_gen.add_argument('--min-samples', type=int, default=30)
+    disc_gen.add_argument('--quantiles', type=int, default=10)
+    disc_gen.add_argument('--alpha', type=float, default=0.05)
+    disc_gen.add_argument('--ml-feature-limit', type=int, default=0, help='ML 상위 feature만 후보 생성에 사용')
+    disc_gen.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_gen.add_argument('--ml-top-n', type=int, default=10)
+    disc_gen.add_argument('--ml-n-splits', type=int, default=5)
+    disc_gen.add_argument('--ml-weight', type=float, default=0.0, help='ML importance를 candidate ranking에 가중치로 반영')
+
+    # discovery create-strategy
+    disc_create = disc_sub.add_parser('create-strategy', help='분석 결과를 strategy.db 전략으로 저장')
+    disc_create.add_argument('name', help='저장할 전략명')
+    disc_create.add_argument('--input', '-i', required=True, dest='input_file', help='입력 CSV 파일')
+    disc_create.add_argument('--output-code', help='생성 코드 저장 경로')
+    disc_create.add_argument('--top-n', type=int, default=5)
+    disc_create.add_argument('--buy-var', default='매수')
+    disc_create.add_argument('--min-samples', type=int, default=30)
+    disc_create.add_argument('--quantiles', type=int, default=10)
+    disc_create.add_argument('--alpha', type=float, default=0.05)
+    disc_create.add_argument('--ml-feature-limit', type=int, default=0, help='ML 상위 feature만 후보 생성에 사용')
+    disc_create.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_create.add_argument('--ml-top-n', type=int, default=10)
+    disc_create.add_argument('--ml-n-splits', type=int, default=5)
+    disc_create.add_argument('--ml-weight', type=float, default=0.0, help='ML importance를 candidate ranking에 가중치로 반영')
+
+    # discovery promote
+    disc_promote = disc_sub.add_parser('promote', help='WFO 통과 전략만 최종 채택')
+    disc_promote.add_argument('name', help='최종 전략명')
+    disc_promote.add_argument('--input', '-i', required=True, dest='input_file', help='입력 CSV 파일')
+    disc_promote.add_argument('--sell', required=True, help='기준 매도 전략명')
+    disc_promote.add_argument('--start', type=int, required=True, help='시작일자 YYYYMMDD')
+    disc_promote.add_argument('--end', type=int, required=True, help='종료일자 YYYYMMDD')
+    disc_promote.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    disc_promote.add_argument('--betting', default='1')
+    disc_promote.add_argument('--avg-time', type=int, default=60)
+    disc_promote.add_argument('--start-time', type=int, default=90000)
+    disc_promote.add_argument('--end-time', type=int, default=152800)
+    disc_promote.add_argument('--engines', type=int, default=4)
+    disc_promote.add_argument('--top-n', type=int, default=5)
+    disc_promote.add_argument('--buy-var', default='매수')
+    disc_promote.add_argument('--min-samples', type=int, default=30)
+    disc_promote.add_argument('--quantiles', type=int, default=10)
+    disc_promote.add_argument('--alpha', type=float, default=0.05)
+    disc_promote.add_argument('--output-code', help='생성 코드 저장 경로')
+    disc_promote.add_argument('--train-window-days', type=int, required=True)
+    disc_promote.add_argument('--test-window-days', type=int, required=True)
+    disc_promote.add_argument('--step-days', type=int)
+    disc_promote.add_argument('--purge-days', type=int, default=0)
+    disc_promote.add_argument('--embargo-days', type=int, default=0)
+    disc_promote.add_argument('--objective', default='tpi')
+    disc_promote.add_argument('--method', choices=['grid', 'random'], default='grid')
+    disc_promote.add_argument('--max-iter', type=int, default=10)
+    disc_promote.add_argument('--param-space-json', help='파라미터 스페이스 JSON 문자열')
+    disc_promote.add_argument('--param-space-file', help='파라미터 스페이스 JSON 파일')
+    disc_promote.add_argument('--promote-min-rounds', type=int, default=1)
+    disc_promote.add_argument('--promote-min-success-rate', type=float, default=0.6)
+    disc_promote.add_argument('--promote-min-mean-oos', type=float, default=0.0)
+    disc_promote.add_argument('--promote-min-avg-trade-count', type=float, default=0.0)
+    disc_promote.add_argument('--promotion-preset', choices=['conservative', 'balanced', 'aggressive'], default='balanced')
+    disc_promote.add_argument('--report-json', help='채택/탈락 결과 JSON 리포트 저장 경로')
+    disc_promote.add_argument('--report-md', help='채택/탈락 결과 Markdown 리포트 저장 경로')
+    disc_promote.add_argument('--ml-feature-limit', type=int, default=0, help='ML 상위 feature만 후보 생성에 사용')
+    disc_promote.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_promote.add_argument('--ml-top-n', type=int, default=10)
+    disc_promote.add_argument('--ml-n-splits', type=int, default=5)
+    disc_promote.add_argument('--ml-weight', type=float, default=0.0, help='ML importance를 candidate ranking에 가중치로 반영')
+    disc_promote.add_argument('--auto-relax', action='store_true', default=False,
+                              help='무거래 시 top_n을 자동 완화하며 재시도 (preset 기준 사용, --promote-min-* 무시)')
+    disc_promote.add_argument('--max-relax-steps', type=int, default=3, help='auto-relax 최대 완화 단계 수 (기본 3)')
+    disc_promote.add_argument('--base-buy-strategy', default=None,
+                              help='기존 매수 전략명 — 자동 필터를 이 전략에 결합하여 검증')
+
     return parser
 
 
@@ -74,6 +173,8 @@ def handle_subcommand(args=None):
         return _handle_formula(parsed)
     elif parsed.command == 'strategy':
         return _handle_strategy(parsed)
+    elif parsed.command == 'discovery':
+        return _handle_discovery(parsed)
     else:
         parser.print_help()
         return 0
@@ -176,5 +277,157 @@ def _handle_strategy(parsed):
         result = load_strategy_from_db(DB_STRATEGY, parsed.name, parsed.type)
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result['status'] == 'ok' else 1
+
+    return 1
+
+
+def _load_param_space(parsed):
+    if getattr(parsed, 'param_space_json', None):
+        return json.loads(parsed.param_space_json)
+    if getattr(parsed, 'param_space_file', None):
+        with open(parsed.param_space_file, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return {}
+
+
+def _handle_discovery(parsed):
+    from cli.ai_controller import AIBacktestController
+
+    controller = AIBacktestController()
+
+    if parsed.discovery_action == 'analyze':
+        result = controller.analyze_results(
+            parsed.input_file,
+            min_samples=parsed.min_samples,
+            quantiles=parsed.quantiles,
+            alpha=parsed.alpha,
+            output_path=parsed.output,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'ml-analyze':
+        result = controller.analyze_results_ml(
+            parsed.input_file,
+            model_type=parsed.model_type,
+            top_n=parsed.top_n,
+            n_splits=parsed.n_splits,
+            random_state=parsed.random_state,
+            output_path=parsed.output,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'generate':
+        result = controller.generate_conditions(
+            input_path=parsed.input_file,
+            top_n=parsed.top_n,
+            buy_var=parsed.buy_var,
+            output_path=parsed.output,
+            min_samples=parsed.min_samples,
+            quantiles=parsed.quantiles,
+            alpha=parsed.alpha,
+            ml_feature_limit=parsed.ml_feature_limit,
+            ml_model_type=parsed.ml_model_type,
+            ml_top_n=parsed.ml_top_n,
+            ml_n_splits=parsed.ml_n_splits,
+            ml_weight=parsed.ml_weight,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'create-strategy':
+        result = controller.create_strategy_from_analysis(
+            parsed.name,
+            input_path=parsed.input_file,
+            top_n=parsed.top_n,
+            buy_var=parsed.buy_var,
+            min_samples=parsed.min_samples,
+            quantiles=parsed.quantiles,
+            alpha=parsed.alpha,
+            output_code_path=parsed.output_code,
+            ml_feature_limit=parsed.ml_feature_limit,
+            ml_model_type=parsed.ml_model_type,
+            ml_top_n=parsed.ml_top_n,
+            ml_n_splits=parsed.ml_n_splits,
+            ml_weight=parsed.ml_weight,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'promote':
+        config_dict = {
+            'sell_strategy': parsed.sell,
+            'start_date': parsed.start,
+            'end_date': parsed.end,
+            'is_tick': parsed.timeframe == 'tick',
+            'betting': parsed.betting,
+            'avg_time': parsed.avg_time,
+            'start_time': parsed.start_time,
+            'end_time': parsed.end_time,
+            'engine_count': parsed.engines,
+        }
+        if parsed.base_buy_strategy:
+            config_dict['base_buy_strategy'] = parsed.base_buy_strategy
+        walk_forward_settings = {
+            'train_window_days': parsed.train_window_days,
+            'test_window_days': parsed.test_window_days,
+            'step_days': parsed.step_days,
+            'purge_days': parsed.purge_days,
+            'embargo_days': parsed.embargo_days,
+            'objective': parsed.objective,
+            'method': parsed.method,
+            'max_iter': parsed.max_iter,
+        }
+        from cli.discovery_config import (
+            DiscoveryAnalysisConfig, DiscoveryConfig, DiscoveryMlConfig,
+            DiscoveryOutputConfig, DiscoveryPromotionConfig,
+        )
+        if parsed.auto_relax:
+            promotion_criteria = None
+        else:
+            promotion_criteria = {
+                'min_rounds': parsed.promote_min_rounds,
+                'min_success_rate': parsed.promote_min_success_rate,
+                'min_mean_oos_metric': parsed.promote_min_mean_oos,
+                'min_avg_trade_count': parsed.promote_min_avg_trade_count,
+            }
+        discovery_config = DiscoveryConfig(
+            analysis=DiscoveryAnalysisConfig(
+                top_n=parsed.top_n,
+                min_samples=parsed.min_samples,
+                quantiles=parsed.quantiles,
+                alpha=parsed.alpha,
+                buy_var=parsed.buy_var,
+            ),
+            ml=DiscoveryMlConfig(
+                feature_limit=parsed.ml_feature_limit,
+                model_type=parsed.ml_model_type,
+                top_n=parsed.ml_top_n,
+                n_splits=parsed.ml_n_splits,
+                weight=parsed.ml_weight,
+            ),
+            promotion=DiscoveryPromotionConfig(
+                preset=parsed.promotion_preset,
+                criteria=promotion_criteria,
+                auto_relax=parsed.auto_relax,
+                max_relax_steps=parsed.max_relax_steps,
+            ),
+            output=DiscoveryOutputConfig(
+                code_path=parsed.output_code,
+                report_json_path=parsed.report_json,
+                report_md_path=parsed.report_md,
+            ),
+        )
+        result = controller.discover_and_promote_strategy(
+            parsed.name,
+            config_dict=config_dict,
+            input_path=parsed.input_file,
+            param_space=_load_param_space(parsed),
+            walk_forward_settings=walk_forward_settings,
+            discovery_config=discovery_config,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1
 
     return 1

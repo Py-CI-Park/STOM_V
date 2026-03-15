@@ -92,6 +92,9 @@ Thumbs.db
 tmp/
 temp/
 
+# Research / backtest generated CSV artifacts
+backtest/csv/*.csv
+
 # OMC agent state files
 .omc/
 

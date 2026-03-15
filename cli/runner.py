@@ -51,8 +51,17 @@ def _get_backtest_last_rowid(table_name='stock_bt'):
 
 def _cleanup_procs():
     for p in _child_procs:
-        if p.is_alive():
-            p.kill()
+        try:
+            is_alive = p.is_alive()
+        except AssertionError:
+            continue
+        except Exception:
+            continue
+        if is_alive:
+            try:
+                p.kill()
+            except Exception:
+                continue
 
 
 atexit.register(_cleanup_procs)

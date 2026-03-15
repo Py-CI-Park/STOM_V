@@ -211,6 +211,8 @@ class BackEngineBaseOms(BackEngineBase):
             self.curr_trade_info['매수시간'] = datetimefromindex
             self.curr_trade_info['추가매수시간'] = []
             self.curr_trade_info['매수분할횟수'] = 0
+            vturn, vkey = self.info_for_order[-2:]
+            self._store_buy_snapshot(vturn, vkey)
         text = f"{self.index};{self.curr_trade_info['추가매수가']}"
         self.curr_trade_info['추가매수시간'].append(text)
         self.curr_trade_info['매수분할횟수'] += 1
@@ -387,7 +389,8 @@ class BackEngineBaseOms(BackEngineBase):
         시가총액또는포지션, 평가금액, 수익금, 수익률 = self.GetProfitInfo(매도가, 매수가, 주문수량)
         매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
         추가매수시간, 잔고없음 = '^'.join(추가매수시간), 보유수량 - 주문수량 == 0
-        data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
+        extra_data = self._get_trade_result_extra_data(vturn, vkey)
+        data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, *extra_data, vturn, vkey)
         self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
 
@@ -403,3 +406,4 @@ class BackEngineBaseOms(BackEngineBase):
             self.curr_trade_info['매도분할횟수'] += 1
         else:
             self.trade_info[vturn][vkey] = get_trade_info(2)
+            self._reset_trade_snapshot(vturn, vkey)

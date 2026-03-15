@@ -13,6 +13,7 @@ from cli.strategy_generator import (
     create_and_save,
     delete_strategy_from_db,
     generate_buy_strategy,
+    generate_buy_filter_strategy,
     generate_sell_strategy,
     save_strategy_to_db,
 )
@@ -78,6 +79,32 @@ class TestGenerateBuyStrategy:
         assert '헤더테스트' in result['code']
         assert '생성일' in result['code']
         assert '자동 생성 분봉 매수 전략' in result['code']
+
+    def test_generate_buy_filter_strategy_inserts_filters_before_final_buy(self):
+        """기존 매수 전략의 최종 매수 실행 직전에 자동 필터가 삽입되어야 한다."""
+        base_code = (
+            '# 기존 전략\n'
+            '매수 = True\n'
+            'if 관심종목 != 1:\n'
+            '    매수 = False\n'
+            'if 매수:\n'
+            '    self.Buy()\n'
+        )
+        result = generate_buy_filter_strategy('필터결합', base_code, ['등락율 <= 2', '시분초 < 100000'])
+
+        assert result['status'] == 'ok'
+        assert result['type'] == 'buy'
+        assert '# 기존 전략' in result['code']
+        assert 'if 매수:\n    if 등락율 <= 2:\n        매수 = False' in result['code']
+        assert 'if 매수:\n    if 시분초 < 100000:\n        매수 = False' in result['code']
+        assert result['code'].rfind('if 매수:\n    self.Buy()') > result['code'].find('등락율 <= 2')
+
+    def test_generate_buy_filter_strategy_errors_when_final_buy_marker_missing(self):
+        """최종 self.Buy() 진입 지점을 찾지 못하면 에러를 반환해야 한다."""
+        base_code = '매수 = True\nif 관심종목 != 1:\n    매수 = False\n'
+        result = generate_buy_filter_strategy('필터결합오류', base_code, ['등락율 <= 2'])
+        assert result['status'] == 'error'
+        assert 'self.Buy' in result['message']
 
 
 # ============================================================

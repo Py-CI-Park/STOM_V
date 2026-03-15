@@ -8,7 +8,8 @@ from trade.strategy_base import Strategy
 from research.analyzer.microstructure_analyzer import MicrostructureAnalyzer
 from research.auxiliary_indicator.smart_vwap_bands import SmartVWAPCalculator
 from backtest.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
-    get_trade_info, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture
+    get_trade_info, get_trade_result_snapshot, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, \
+    GetSellCondsFuture, TRADE_RESULT_B_COLUMNS, TRADE_RESULT_S_COLUMNS, TRADE_RESULT_EXTRA_COLUMNS
 from utility.setting import DB_STOCK_BACK_TICK, BACK_TEMP, ui_num, DICT_SET, DB_STOCK_BACK_MIN, indicator, \
     DB_FUTURE_BACK_TICK, DB_FUTURE_BACK_MIN, DB_COIN_BACK_TICK, DB_COIN_BACK_MIN, list_stock_tick, \
     list_stock_min, list_coin_tick, list_coin_min
@@ -82,6 +83,7 @@ class BackEngineBase(Strategy):
         self.dict_kosd       = {}
         self.day_info        = {}
         self.trade_info      = {}
+        self.trade_snapshots = {}
         self.curr_trade_info = {}
         self.curr_day_info   = {}
 
@@ -349,6 +351,23 @@ class BackEngineBase(Strategy):
         if self.dict_set['백테일괄로딩'] and all_data:
             name = f'backdata_{self.gubun}'
             total_size = sum(item['len'] * item['data'].dtype.itemsize * item['data'].shape[1] for item in all_data)
+            try:
+                stale_shm = shared_memory.SharedMemory(name=name)
+            except FileNotFoundError:
+                stale_shm = None
+            except Exception:
+                stale_shm = None
+            if stale_shm is not None:
+                try:
+                    stale_shm.close()
+                except Exception:
+                    pass
+                try:
+                    stale_shm.unlink()
+                except FileNotFoundError:
+                    pass
+                except Exception:
+                    pass
             shm = shared_memory.SharedMemory(name=name, create=True, size=total_size)
 
             shared_info = []
@@ -403,7 +422,54 @@ class BackEngineBase(Strategy):
             self.unit = 10000
             self.hour = 2400
 
+    def _get_snapshot_value(self, row_index, field_name, default=0):
+        if row_index is None or row_index < 0 or row_index >= len(self.arry_code):
+            return default
+        field_index = self.dict_findex.get(field_name)
+        if field_index is None:
+            return default
+        value = self.arry_code[row_index, field_index]
+        return value.item() if hasattr(value, 'item') else value
+
+    def _get_snapshot_hms(self, row_index):
+        if row_index is None or row_index < 0 or row_index >= len(self.arry_code):
+            return 0
+        index_value = int(self.arry_code[row_index, 0])
+        time_text = str(index_value)[8:]
+        return int(time_text if self.is_tick else f'{time_text}00')
+
+    def _capture_prefixed_snapshot(self, row_index, columns):
+        snapshot = {}
+        for column in columns:
+            source_name = column[2:]
+            if source_name == '시분초':
+                snapshot[column] = self._get_snapshot_hms(row_index)
+            else:
+                snapshot[column] = self._get_snapshot_value(row_index, source_name)
+        return snapshot
+
+    def _store_buy_snapshot(self, vturn, vkey):
+        self.trade_snapshots[vturn][vkey] = self._capture_prefixed_snapshot(self.indexn, TRADE_RESULT_B_COLUMNS)
+
+    def _reset_trade_snapshot(self, vturn, vkey):
+        self.trade_snapshots[vturn][vkey] = get_trade_result_snapshot()
+
+    def _get_trade_result_extra_data(self, vturn, vkey):
+        buy_snapshot = self.trade_snapshots.get(vturn, {}).get(vkey, get_trade_result_snapshot()).copy()
+        sell_snapshot = self._capture_prefixed_snapshot(self.indexn, TRADE_RESULT_S_COLUMNS)
+        최고수익률 = float(self.curr_trade_info.get('최고수익률', 0.))
+        최저수익률 = float(self.curr_trade_info.get('최저수익률', 0.))
+        result_snapshot = {
+            'R_매수후최고수익률': 최고수익률,
+            'R_매수후최저수익률': 최저수익률,
+            'R_MFE': 최고수익률,
+            'R_MAE': 최저수익률
+        }
+        snapshot = {**buy_snapshot, **sell_snapshot, **result_snapshot}
+        return tuple(snapshot[column] for column in TRADE_RESULT_EXTRA_COLUMNS)
+
     def BackStop(self, gubun=0):
+        self.CleanupSharedMemory()
         self.back_type = None
         if gubun in (0, 1):
             if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 중지 중 ...'))
@@ -419,6 +485,9 @@ class BackEngineBase(Strategy):
 
         self.ms_analyzer.clear_data()
 
+        def get_trade_snapshot_map(count):
+            return {k: get_trade_result_snapshot() for k in range(count)}
+
         if self.is_oms:
             v1 = get_trade_info(3)
             v2 = get_trade_info(2)
@@ -428,21 +497,29 @@ class BackEngineBase(Strategy):
                                  len(x[0]) > 1}
                 self.trade_info = {t: {k: v2 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if
                                    len(x[0]) > 1}
+                self.trade_snapshots = {t: get_trade_snapshot_map(len(x[0])) for t, x in enumerate(self.vars_list) if
+                                        len(x[0]) > 1}
             elif self.opti_turn == 3:
                 self.day_info = {t: {k: v1 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
                 self.trade_info = {t: {k: v2 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+                self.trade_snapshots = {t: get_trade_snapshot_map(20) for t in range(50 if self.back_type == 'GA최적화' else 1)}
             else:
                 self.day_info = {0: {0: v1}}
                 self.trade_info = {0: {0: v2}}
+                self.trade_snapshots = {0: {0: get_trade_result_snapshot()}}
         else:
             v = get_trade_info(1)
             if self.opti_turn == 1:
                 self.trade_info = {t: {k: v for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if
                                    len(x[0]) > 1}
+                self.trade_snapshots = {t: get_trade_snapshot_map(len(x[0])) for t, x in enumerate(self.vars_list) if
+                                        len(x[0]) > 1}
             elif self.opti_turn == 3:
                 self.trade_info = {t: {k: v for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+                self.trade_snapshots = {t: get_trade_snapshot_map(20) for t in range(50 if self.back_type == 'GA최적화' else 1)}
             else:
                 self.trade_info = {0: {0: v}}
+                self.trade_snapshots = {0: {0: get_trade_result_snapshot()}}
 
     def GetArrayData(self):
         shared_info = None
@@ -558,6 +635,21 @@ class BackEngineBase(Strategy):
             return
 
         if self.profile: self.pr.print_stats(sort='cumulative')
+        self.CleanupSharedMemory()
+
+    def CleanupSharedMemory(self):
+        while self.shared_list:
+            shm = self.shared_list.pop()
+            try:
+                shm.close()
+            except Exception:
+                pass
+            try:
+                shm.unlink()
+            except FileNotFoundError:
+                pass
+            except Exception:
+                pass
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
         if 분봉저가 is None:
@@ -609,6 +701,8 @@ class BackEngineBase(Strategy):
                 self.curr_trade_info['최저수익률'] = 0.
                 self.curr_trade_info['매수틱번호'] = self.indexn
                 self.curr_trade_info['매수시간'] = 매수시간
+                vturn, vkey = self.info_for_order[-2:]
+                self._store_buy_snapshot(vturn, vkey)
 
     def SetBuyCount(self):
         현재가, 저가대비고가등락율 = self.info_for_order[:-2]
@@ -709,10 +803,12 @@ class BackEngineBase(Strategy):
         시가총액또는포지션, 평가금액, 수익금, 수익률 = self.GetProfitInfo(매도가, 매수가, 주문수량)
         매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
         추가매수시간, 잔고없음 = '', True
-        data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
+        extra_data = self._get_trade_result_extra_data(vturn, vkey)
+        data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, *extra_data, vturn, vkey)
         self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
         self.trade_info[vturn][vkey] = get_trade_info(1)
+        self._reset_trade_snapshot(vturn, vkey)
 
     def Strategy(self):
         pass
