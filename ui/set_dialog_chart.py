@@ -2,8 +2,9 @@
 import pyqtgraph as pg
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout
 from ui.set_style import style_bc_dk, style_ck_bx, color_bg_bk
+from ui.set_widget import error_decorator
 from utility.setting_base import indi_base
-from utility.static import str_hms, dt_hms, timedelta_sec, error_decorator
+from utility.static import str_hms, dt_hms, timedelta_sec
 
 
 class SetDialogChart:
@@ -48,20 +49,22 @@ class SetDialogChart:
         self.ui.ct_checkBoxxxxx_01 = self.wc.setCheckBox('십자선', self.ui.ct_groupBoxxxxx_01, checked=True, style=style_ck_bx)
         self.ui.ct_checkBoxxxxx_02 = self.wc.setCheckBox('정보창', self.ui.ct_groupBoxxxxx_01, checked=False, style=style_ck_bx)
         text = '1. 시작시간과 종료시간을 설정하면 해당시간의 데이터만 표시됩니다.\n' \
-               '2. 평균틱수를 설정하면 평균, 최고, 최저값의 기준이 설정한 값으로 변경됩니다.\n' \
-               '3. 날짜선택 후 종목코드 및 종목명으로 차트를 검색할 수 있습니다.\n' \
-               '4. 팩터설정 버튼 클릭 후 8개의 차트에 표시할 팩터를 선택할 수 있습니다.\n' \
+               '2. 평균틱수를 설정하면 구간연산 팩터의 기본값이 변경됩니다.\n' \
+               '3. 좌측 날짜선택 후 종목코드 및 종목명으로 차트를 검색할 수 있습니다.\n' \
+               '4. 팩터설정 버튼 클릭 후 차트에 표시할 팩터를 선택할 수 있습니다.\n' \
                '5. 확장 버튼 클릭 시 설정한 날짜의 거래대금순위 종목의 리스트가 표시됩니다.\n' \
                '6. 확장 버튼은 최초 클릭 시 주식, 다시 클릭 시 코인으로 변경됩니다.\n' \
                '7. 확장 버튼 클릭 후 표시된 테이블에서 종목명 클릭 시 차트가 표시됩니다.\n' \
-               '8. 차트에서 마우스 드레그로 영역을 선택하면 줌인됩니다.\n' \
-               '9. 줌인된 상태에서 마우스 우클릭시 줌아웃됩니다.\n' \
-               '10. 호가창이 열린 상태에서 마우스 좌클릭 시 해당 시간의 호가정보가 표시됩니다.\n' \
-               '11. 키움 HTS에 멀티차트와도 연동됩니다. 단, 좌측 일봉, 우측 분봉 상태여야합니다.'
+               '8. 수식관리자 버튼을 클릭하여 사용자 수식을 차트에 표현할 수 있습니다.\n' \
+               '9. 차트에서 마우스 드레그로 영역을 선택하면 줌인됩니다.\n' \
+               '10. 줌인된 상태에서 마우스 우클릭시 줌아웃됩니다.\n' \
+               '11. 줌인된 상태에서 마우스 우클릭으로 드레그하면 좌우로 움직입니다.\n' \
+               '12. 호가창이 열린 상태에서 마우스 좌클릭 시 해당 시간의 호가정보가 표시됩니다.\n' \
+               '13. 키움 HTS에 멀티차트와도 연동됩니다. 단, 좌측 일봉, 우측 분봉 상태여야합니다.'
         self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', box=self.ui.ct_groupBoxxxxx_01, tip=text)
         self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ShowDialogFormula)
         self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ShowDialogFactor)
-        self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART 8', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartCountChange)
+        self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART I', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartCountChange)
         self.ui.ct_pushButtonnn_06 = self.wc.setPushbutton('확장', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartSizeChange)
         self.ui.ct_pushButtonnn_07 = self.wc.setPushbutton('', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_01, cmd='이전', shortcut='Alt+left')
         self.ui.ct_pushButtonnn_08 = self.wc.setPushbutton('', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_01, cmd='다음', shortcut='Alt+right')

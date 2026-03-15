@@ -1,7 +1,7 @@
 
 from ui.set_style import style_bc_dk
+from ui.set_widget import error_decorator
 from PyQt5.QtWidgets import QLabel, QTabWidget, QWidget
-from utility.static import error_decorator
 
 
 class SetSetupTap:

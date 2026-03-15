@@ -31,7 +31,7 @@ class DrawDBChart(DrawChartBase):
 
         self.code = self.ui.ct_lineEdittttt_04.text()
         self.chart_cnt = len(self.ui.ctpg)
-        self.is_min = self.chart_cnt in (6, 8) or (self.chart_cnt == 10 and self.ui.ct_pushButtonnn_05.text() == 'CHART 16')
+        self.is_min = self.chart_cnt in (6, 8) or (self.chart_cnt == 10 and self.ui.ct_pushButtonnn_05.text() == 'CHART III')
 
         self.gsjm_arry = self.ui.ctpg_arry[:, self.fi('관심종목')]
         self.xmin, self.xmax = self.ui.ctpg_xticks[0], self.ui.ctpg_xticks[-1]
@@ -40,7 +40,7 @@ class DrawDBChart(DrawChartBase):
 
         self.update_factor_list()
         self.update_dict_idxs()
-        self.update_ctpg_date(fm_tcnt)
+        self.update_ctpg_date()
         self.draw_all_chart()
 
         if self.gubun == 'S':

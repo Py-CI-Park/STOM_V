@@ -610,8 +610,9 @@ def sdbutton_clicked_05(ui):
         schedule += ui.sd_oclineEdittt_02.text() + ';'
         schedule += ui.sd_oclineEdittt_03.text()
         if ui.proc_query.is_alive():
-            delete_query = f"DELETE FROM schedule WHERE `index` = '{schedule_name}'"
-            insert_query = f"INSERT INTO schedule (`index`, 스케쥴) VALUES ('{schedule_name}', '{schedule}')"
+            delete_query  = f"DELETE FROM schedule WHERE `index` = '{schedule_name}'"
+            insert_query  = 'INSERT INTO schedule VALUES (?, ?)'
+            insert_values = (schedule_name, schedule)
             ui.queryQ.put(('전략디비', delete_query))
-            ui.queryQ.put(('전략디비', insert_query))
+            ui.queryQ.put(('전략디비', insert_query, insert_values))
         QMessageBox.information(ui.dialog_scheduler, '저장 완료', random.choice(famous_saying))

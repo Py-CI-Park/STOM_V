@@ -1,6 +1,6 @@
 
 from PyQt5.QtWidgets import QLabel
-from utility.static import error_decorator
+from ui.set_widget import error_decorator
 
 
 class SetOrderTap:
@@ -50,24 +50,24 @@ class SetOrderTap:
         self.ui.ss_buyy_labellll_01 = QLabel('▣ 분할매수횟수 (1:분할매수X)', self.ui.ss_od_groupBoxxx_04)
         self.ui.ss_buyy_lineEdit_01 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_04)
         self.ui.ss_buyy_labellll_02 = QLabel('▣ 분할매수방법 : 복수선택 불가능', self.ui.ss_od_groupBoxxx_04)
-        self.ui.ss_buyy_checkBox_11 = self.wc.setCheckBox('균등분할', self.ui.ss_od_groupBoxxx_04, changed=self.ui.sbCheckboxChanged_02, tip='종목당배팅금액을 분할횟수로 균등분할매수(예 0: 20., 1: 20., 2: 20., 3: 20., 4: 20.)')
-        self.ui.ss_buyy_checkBox_12 = self.wc.setCheckBox('비율감소', self.ui.ss_od_groupBoxxx_04, changed=self.ui.sbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 절반으로 매수(예 0: 51.61, 1: 25.81, 2: 12.90, 3: 6.45, 4: 3.23)')
-        self.ui.ss_buyy_checkBox_13 = self.wc.setCheckBox('비율증가', self.ui.ss_od_groupBoxxx_04, changed=self.ui.sbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 두배로 매수(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
+        self.ui.ss_buyy_checkBox_11 = self.wc.setCheckBox('균등분할', self.ui.ss_od_groupBoxxx_04, changed=self.ui.sbCheckboxChanged_02, tip='종목당배팅금액을 분할횟수로 균등분할매수\n(예 0: 20., 1: 20., 2: 20., 3: 20., 4: 20.)')
+        self.ui.ss_buyy_checkBox_12 = self.wc.setCheckBox('비율감소', self.ui.ss_od_groupBoxxx_04, changed=self.ui.sbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 절반으로 매수\n(예 0: 51.61, 1: 25.81, 2: 12.90, 3: 6.45, 4: 3.23)')
+        self.ui.ss_buyy_checkBox_13 = self.wc.setCheckBox('비율증가', self.ui.ss_od_groupBoxxx_04, changed=self.ui.sbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 두배로 매수\n(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
         self.ui.ss_buyy_labellll_03 = QLabel('▣ 추가매수방법 : 복수선택 가능', self.ui.ss_od_groupBoxxx_04)
         self.ui.ss_buyy_checkBox_14 = self.wc.setCheckBox('매수시그널', self.ui.ss_od_groupBoxxx_04, tip='매수시그널을 통해서 추가매수')
         self.ui.ss_buyy_checkBox_15 = self.wc.setCheckBox('수익률(-)', self.ui.ss_od_groupBoxxx_04, tip='잔고의 - 수익률를 기준으로 추가매수')
         self.ui.ss_buyy_lineEdit_02 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_04)
         self.ui.ss_buyy_checkBox_16 = self.wc.setCheckBox('수익률(+)', self.ui.ss_od_groupBoxxx_04, tip='잔고의 + 수익률를 기준으로 추가매수')
         self.ui.ss_buyy_lineEdit_03 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_04)
-        self.ui.ss_buyy_checkBox_17 = self.wc.setCheckBox('고정수익률', self.ui.ss_od_groupBoxxx_04, tip='마지막 매수시점의 현재가 기준 수익률로 추가매수')
+        self.ui.ss_buyy_checkBox_17 = self.wc.setCheckBox('고정수익률', self.ui.ss_od_groupBoxxx_04, tip='수익률(-), 수익률(+)의 수익률기준을 잔고수익률이 아닌\n마지막 매수시점의 현재가 대비 잔고수익률로 변경한다.')
 
         self.ui.sodb_checkbox_list2 = [self.ui.ss_buyy_checkBox_11, self.ui.ss_buyy_checkBox_12, self.ui.ss_buyy_checkBox_13]
 
         self.ui.ss_buyy_labellll_04 = QLabel('▣ 지정가유형 주문가격 기준가', self.ui.ss_od_groupBoxxx_05)
-        self.ui.ss_buyy_comboBox_01 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['현재가', '매도1호가', '매수1호가'])
-        self.ui.ss_buyy_comboBox_02 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 +- 호가단위로 선택하십시오.')
+        self.ui.ss_buyy_comboBox_01 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['현재가', '매도1호가', '매수1호가'], tip='지정가 주문시 주문가격을 정하기 위한 기준가을 선택하십시오.')
+        self.ui.ss_buyy_comboBox_02 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 ± 호가단위를 선택하십시오.\n선택한 기준가격에서 ± 호가단위 만큼의 가격이 주문가격이 됨')
         self.ui.ss_buyy_labellll_05 = QLabel('▣ 시장가 유형 주문 시 호가범위 선택    매도                   호가', self.ui.ss_od_groupBoxxx_05)
-        self.ui.ss_buyy_comboBox_03 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['1', '2', '3', '4', '5'])
+        self.ui.ss_buyy_comboBox_03 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['1', '2', '3', '4', '5'], tip='지정한 호가범위 내의 잔량이 주문수량을 만족할 경우 주문이 전송됨')
 
         self.ui.ss_buyy_checkBox_18 = self.wc.setCheckBox('관심이탈', self.ui.ss_od_groupBoxxx_06)
         self.ui.ss_buyy_checkBox_19 = self.wc.setCheckBox('매도시그널', self.ui.ss_od_groupBoxxx_06)
@@ -146,23 +146,23 @@ class SetOrderTap:
         self.ui.ss_sell_labellll_01 = QLabel('▣ 분할매도횟수 (1:분할매도X)', self.ui.ss_od_groupBoxxx_11)
         self.ui.ss_sell_lineEdit_01 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_11)
         self.ui.ss_sell_labellll_02 = QLabel('▣ 분할매도방법 : 복수선택 불가능', self.ui.ss_od_groupBoxxx_11)
-        self.ui.ss_sell_checkBox_11 = self.wc.setCheckBox('균등분할', self.ui.ss_od_groupBoxxx_11, changed=self.ui.ssCheckboxChanged_02, tip='종목당배팅금액을 분할횟수로 균등분할매도(예 0: 20., 1: 20., 2: 20., 3: 20., 4: 20.)')
-        self.ui.ss_sell_checkBox_12 = self.wc.setCheckBox('비율감소', self.ui.ss_od_groupBoxxx_11, changed=self.ui.ssCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 절반으로 매도(예 0: 51.61, 1: 25.81, 2: 12.90, 3: 6.45, 4: 3.23)')
-        self.ui.ss_sell_checkBox_13 = self.wc.setCheckBox('비율증가', self.ui.ss_od_groupBoxxx_11, changed=self.ui.ssCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 두배로 매도(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
+        self.ui.ss_sell_checkBox_11 = self.wc.setCheckBox('균등분할', self.ui.ss_od_groupBoxxx_11, changed=self.ui.ssCheckboxChanged_02, tip='종목당배팅금액을 분할횟수로 균등분할매도\n(예 0: 20., 1: 20., 2: 20., 3: 20., 4: 20.)')
+        self.ui.ss_sell_checkBox_12 = self.wc.setCheckBox('비율감소', self.ui.ss_od_groupBoxxx_11, changed=self.ui.ssCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 절반으로 매도\n(예 0: 51.61, 1: 25.81, 2: 12.90, 3: 6.45, 4: 3.23)')
+        self.ui.ss_sell_checkBox_13 = self.wc.setCheckBox('비율증가', self.ui.ss_od_groupBoxxx_11, changed=self.ui.ssCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 두배로 매도\n(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
         self.ui.ss_sell_labellll_03 = QLabel('▣ 추가매도방법 : 복수선택 가능', self.ui.ss_od_groupBoxxx_11)
         self.ui.ss_sell_checkBox_14 = self.wc.setCheckBox('매도시그널', self.ui.ss_od_groupBoxxx_11, tip='매도시그널을 통해서 추가매도')
-        self.ui.ss_sell_checkBox_15 = self.wc.setCheckBox('수익률(-)', self.ui.ss_od_groupBoxxx_11, tip='잔고의 마이너스 수익률를 기준으로 추가매도(0.5설정 시 예 0: -0.5, 1: -1.0, 2: -1.5, 3: -2.0, 4: -2.5)')
+        self.ui.ss_sell_checkBox_15 = self.wc.setCheckBox('수익률(-)', self.ui.ss_od_groupBoxxx_11, tip='잔고의 - 수익률를 기준으로 추가매도(0.5설정 시 예: -0.5, -1.0, -1.5, -2.0, -2.5)')
         self.ui.ss_sell_lineEdit_02 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_11)
-        self.ui.ss_sell_checkBox_16 = self.wc.setCheckBox('수익률(+)', self.ui.ss_od_groupBoxxx_11, tip='잔고의 플러스 수익률를 기준으로 추가매도(0.5설정 시 예 0: +0.5, 1: +1.0, 2: +1.5, 3: +2.0, 4: +2.5)')
+        self.ui.ss_sell_checkBox_16 = self.wc.setCheckBox('수익률(+)', self.ui.ss_od_groupBoxxx_11, tip='잔고의 + 수익률를 기준으로 추가매도(0.5설정 시 예: +0.5, +1.0, +1.5, +2.0, +2.5)')
         self.ui.ss_sell_lineEdit_03 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_11)
 
         self.ui.sods_checkbox_list2 = [self.ui.ss_sell_checkBox_11, self.ui.ss_sell_checkBox_12, self.ui.ss_sell_checkBox_13]
 
         self.ui.ss_sell_labellll_04 = QLabel('▣ 지정가유형 주문가격 기준가', self.ui.ss_od_groupBoxxx_12)
-        self.ui.ss_sell_comboBox_01 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['현재가', '매도1호가', '매수1호가'])
-        self.ui.ss_sell_comboBox_02 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 +- 호가단위로 선택하십시오.')
+        self.ui.ss_sell_comboBox_01 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['현재가', '매도1호가', '매수1호가'], tip='지정가 주문시 주문가격을 정하기 위한 기준가을 선택하십시오.')
+        self.ui.ss_sell_comboBox_02 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 ± 호가단위를 선택하십시오.\n선택한 기준가격에서 ± 호가단위 만큼의 가격이 주문가격이 됨')
         self.ui.ss_sell_labellll_05 = QLabel('▣ 시장가 유형 주문 시 호가범위 선택    매수                   호가', self.ui.ss_od_groupBoxxx_12)
-        self.ui.ss_sell_comboBox_03 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['1', '2', '3', '4', '5'])
+        self.ui.ss_sell_comboBox_03 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['1', '2', '3', '4', '5'], tip='지정한 호가범위 내의 잔량이 주문수량을 만족할 경우 주문이 전송됨')
 
         self.ui.ss_sell_checkBox_17 = self.wc.setCheckBox('관심진입', self.ui.ss_od_groupBoxxx_13)
         self.ui.ss_sell_checkBox_18 = self.wc.setCheckBox('매수시그널', self.ui.ss_od_groupBoxxx_13)
@@ -170,7 +170,7 @@ class SetOrderTap:
         self.ui.ss_sell_lineEdit_04 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_13)
         self.ui.ss_sell_checkBox_20 = self.wc.setCheckBox('손절청산 수익률(-)', self.ui.ss_od_groupBoxxx_13)
         self.ui.ss_sell_lineEdit_05 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_13)
-        self.ui.ss_sell_checkBox_21 = self.wc.setCheckBox('손절청산 수익금(-)', self.ui.ss_od_groupBoxxx_13, tip='만원 단위의 금액을 입력하십시오.')
+        self.ui.ss_sell_checkBox_21 = self.wc.setCheckBox('손절청산 수익금(-)', self.ui.ss_od_groupBoxxx_13, tip='만원, KRW, USDT 단위의 금액을 입력하십시오.')
         self.ui.ss_sell_lineEdit_06 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_13)
 
         self.ui.ss_sell_checkBox_22 = self.wc.setCheckBox('분할매수횟수                                 회 이내', self.ui.ss_od_groupBoxxx_14)
@@ -222,24 +222,24 @@ class SetOrderTap:
         self.ui.sc_buyy_labellll_01 = QLabel('▣ 분할매수횟수 (1:분할매수X)', self.ui.sc_od_groupBoxxx_04)
         self.ui.sc_buyy_lineEdit_01 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_04)
         self.ui.sc_buyy_labellll_02 = QLabel('▣ 분할매수방법 : 복수선택 불가능', self.ui.sc_od_groupBoxxx_04)
-        self.ui.sc_buyy_checkBox_05 = self.wc.setCheckBox('균등분할', self.ui.sc_od_groupBoxxx_04, changed=self.ui.cbCheckboxChanged_02, tip='종목당배팅금액을 분할횟수로 균등분할매수(예 0: 20., 1: 20., 2: 20., 3: 20., 4: 20.)')
-        self.ui.sc_buyy_checkBox_06 = self.wc.setCheckBox('비율감소', self.ui.sc_od_groupBoxxx_04, changed=self.ui.cbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 절반으로 매수(예 0: 51.61, 1: 25.81, 2: 12.90, 3: 6.45, 4: 3.23)')
-        self.ui.sc_buyy_checkBox_07 = self.wc.setCheckBox('비율증가', self.ui.sc_od_groupBoxxx_04, changed=self.ui.cbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 두배로 매수(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
+        self.ui.sc_buyy_checkBox_05 = self.wc.setCheckBox('균등분할', self.ui.sc_od_groupBoxxx_04, changed=self.ui.cbCheckboxChanged_02, tip='종목당배팅금액을 분할횟수로 균등분할매수\n(예 0: 20., 1: 20., 2: 20., 3: 20., 4: 20.)')
+        self.ui.sc_buyy_checkBox_06 = self.wc.setCheckBox('비율감소', self.ui.sc_od_groupBoxxx_04, changed=self.ui.cbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 절반으로 매수\n(예 0: 51.61, 1: 25.81, 2: 12.90, 3: 6.45, 4: 3.23)')
+        self.ui.sc_buyy_checkBox_07 = self.wc.setCheckBox('비율증가', self.ui.sc_od_groupBoxxx_04, changed=self.ui.cbCheckboxChanged_02, tip='다음 추가매수 시 이전 매수비율의 두배로 매수\n(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
         self.ui.sc_buyy_labellll_03 = QLabel('▣ 추가매수방법 : 복수선택 가능', self.ui.sc_od_groupBoxxx_04)
         self.ui.sc_buyy_checkBox_08 = self.wc.setCheckBox('매수시그널', self.ui.sc_od_groupBoxxx_04, tip='매수시그널을 통해서 추가매수')
         self.ui.sc_buyy_checkBox_09 = self.wc.setCheckBox('수익률(-)', self.ui.sc_od_groupBoxxx_04, tip='잔고의 - 수익률를 기준으로 추가매수')
         self.ui.sc_buyy_lineEdit_02 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_04)
         self.ui.sc_buyy_checkBox_10 = self.wc.setCheckBox('수익률(+)', self.ui.sc_od_groupBoxxx_04, tip='잔고의 + 수익률를 기준으로 추가매수')
         self.ui.sc_buyy_lineEdit_03 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_04)
-        self.ui.sc_buyy_checkBox_11 = self.wc.setCheckBox('고정수익률', self.ui.sc_od_groupBoxxx_04, tip='마지막 매수시점의 현재가 기준 수익률로 추가매수')
+        self.ui.sc_buyy_checkBox_11 = self.wc.setCheckBox('고정수익률', self.ui.sc_od_groupBoxxx_04, tip='수익률(-), 수익률(+)의 수익률기준을 잔고수익률이 아닌\n마지막 매수시점의 현재가 대비 잔고수익률로 변경한다.')
 
         self.ui.codb_checkbox_list2 = [self.ui.sc_buyy_checkBox_05, self.ui.sc_buyy_checkBox_06, self.ui.sc_buyy_checkBox_07]
 
         self.ui.sc_buyy_labellll_04 = QLabel('▣ 지정가유형 주문가격 기준가', self.ui.sc_od_groupBoxxx_05)
-        self.ui.sc_buyy_comboBox_01 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['현재가', '매도1호가', '매수1호가'])
-        self.ui.sc_buyy_comboBox_02 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 +- 호가단위로 선택하십시오.')
+        self.ui.sc_buyy_comboBox_01 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['현재가', '매도1호가', '매수1호가'], tip='지정가 주문시 주문가격을 정하기 위한 기준가을 선택하십시오.')
+        self.ui.sc_buyy_comboBox_02 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 ± 호가단위를 선택하십시오.\n선택한 기준가격에서 ± 호가단위 만큼의 가격이 주문가격이 됨')
         self.ui.sc_buyy_labellll_05 = QLabel('▣ 시장가 유형 주문 시 호가범위 선택    매도                   호가', self.ui.sc_od_groupBoxxx_05)
-        self.ui.sc_buyy_comboBox_03 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['1', '2', '3', '4', '5'])
+        self.ui.sc_buyy_comboBox_03 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['1', '2', '3', '4', '5'], tip='지정한 호가범위 내의 잔량이 주문수량을 만족할 경우 주문이 전송됨')
 
         self.ui.sc_buyy_checkBox_12 = self.wc.setCheckBox('관심이탈', self.ui.sc_od_groupBoxxx_06)
         self.ui.sc_buyy_checkBox_13 = self.wc.setCheckBox('매도시그널', self.ui.sc_od_groupBoxxx_06)
@@ -306,23 +306,23 @@ class SetOrderTap:
         self.ui.sc_sell_labellll_01 = QLabel('▣ 분할매도횟수 (1:분할매도X)', self.ui.sc_od_groupBoxxx_11)
         self.ui.sc_sell_lineEdit_01 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_11)
         self.ui.sc_sell_labellll_02 = QLabel('▣ 분할매도방법 : 복수선택 불가능', self.ui.sc_od_groupBoxxx_11)
-        self.ui.sc_sell_checkBox_05 = self.wc.setCheckBox('균등분할', self.ui.sc_od_groupBoxxx_11, changed=self.ui.csCheckboxChanged_02, tip='종목당배팅금액을 분할횟수로 균등분할매도(예 0: 20., 1: 20., 2: 20., 3: 20., 4: 20.)')
-        self.ui.sc_sell_checkBox_06 = self.wc.setCheckBox('비율감소', self.ui.sc_od_groupBoxxx_11, changed=self.ui.csCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 절반으로 매도(예 0: 51.61, 1: 25.81, 2: 12.90, 3: 6.45, 4: 3.23)')
-        self.ui.sc_sell_checkBox_07 = self.wc.setCheckBox('비율증가', self.ui.sc_od_groupBoxxx_11, changed=self.ui.csCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 두배로 매도(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
+        self.ui.sc_sell_checkBox_05 = self.wc.setCheckBox('균등분할', self.ui.sc_od_groupBoxxx_11, changed=self.ui.csCheckboxChanged_02, tip='종목당배팅금액을 분할횟수로 균등분할매도\n(예 0: 20., 1: 20., 2: 20., 3: 20., 4: 20.)')
+        self.ui.sc_sell_checkBox_06 = self.wc.setCheckBox('비율감소', self.ui.sc_od_groupBoxxx_11, changed=self.ui.csCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 절반으로 매도\n(예 0: 51.61, 1: 25.81, 2: 12.90, 3: 6.45, 4: 3.23)')
+        self.ui.sc_sell_checkBox_07 = self.wc.setCheckBox('비율증가', self.ui.sc_od_groupBoxxx_11, changed=self.ui.csCheckboxChanged_02, tip='다음 추가매도 시 이전 매도비율의 두배로 매도\n(예 0: 3.23, 1: 6.45, 2: 12.90, 3: 25.81, 4: 51.61)')
         self.ui.sc_sell_labellll_03 = QLabel('▣ 추가매도방법 : 복수선택 가능', self.ui.sc_od_groupBoxxx_11)
         self.ui.sc_sell_checkBox_08 = self.wc.setCheckBox('매도시그널', self.ui.sc_od_groupBoxxx_11, tip='매도시그널을 통해서 추가매도')
-        self.ui.sc_sell_checkBox_09 = self.wc.setCheckBox('수익률(-)', self.ui.sc_od_groupBoxxx_11, tip='잔고의 마이너스 수익률를 기준으로 추가매도(0.5설정 시 예 0: -0.5, 1: -1.0, 2: -1.5, 3: -2.0, 4: -2.5)')
+        self.ui.sc_sell_checkBox_09 = self.wc.setCheckBox('수익률(-)', self.ui.sc_od_groupBoxxx_11, tip='잔고의 - 수익률를 기준으로 추가매도(0.5설정 시 예: -0.5, -1.0, -1.5, -2.0, -2.5)')
         self.ui.sc_sell_lineEdit_02 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_11)
-        self.ui.sc_sell_checkBox_10 = self.wc.setCheckBox('수익률(+)', self.ui.sc_od_groupBoxxx_11, tip='잔고의 플러스 수익률를 기준으로 추가매도(0.5설정 시 예 0: +0.5, 1: +1.0, 2: +1.5, 3: +2.0, 4: +2.5)')
+        self.ui.sc_sell_checkBox_10 = self.wc.setCheckBox('수익률(+)', self.ui.sc_od_groupBoxxx_11, tip='잔고의 + 수익률를 기준으로 추가매도(0.5설정 시 예: +0.5, +1.0, +1.5, +2.0, +2.5)')
         self.ui.sc_sell_lineEdit_03 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_11)
 
         self.ui.cods_checkbox_list2 = [self.ui.sc_sell_checkBox_05, self.ui.sc_sell_checkBox_06, self.ui.sc_sell_checkBox_07]
 
         self.ui.sc_sell_labellll_04 = QLabel('▣ 지정가유형 주문가격 기준가', self.ui.sc_od_groupBoxxx_12)
-        self.ui.sc_sell_comboBox_01 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['현재가', '매도1호가', '매수1호가'])
-        self.ui.sc_sell_comboBox_02 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 +- 호가단위로 선택하십시오.')
+        self.ui.sc_sell_comboBox_01 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['현재가', '매도1호가', '매수1호가'], tip='지정가 주문시 주문가격을 정하기 위한 기준가을 선택하십시오.')
+        self.ui.sc_sell_comboBox_02 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 ± 호가단위를 선택하십시오.\n선택한 기준가격에서 ± 호가단위 만큼의 가격이 주문가격이 됨')
         self.ui.sc_sell_labellll_05 = QLabel('▣ 시장가 유형 주문 시 호가범위 선택    매수                   호가', self.ui.sc_od_groupBoxxx_12)
-        self.ui.sc_sell_comboBox_03 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['1', '2', '3', '4', '5'])
+        self.ui.sc_sell_comboBox_03 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['1', '2', '3', '4', '5'], tip='지정한 호가범위 내의 잔량이 주문수량을 만족할 경우 주문이 전송됨')
 
         self.ui.sc_sell_checkBox_11 = self.wc.setCheckBox('관심진입', self.ui.sc_od_groupBoxxx_13)
         self.ui.sc_sell_checkBox_12 = self.wc.setCheckBox('매수시그널', self.ui.sc_od_groupBoxxx_13)
@@ -330,7 +330,7 @@ class SetOrderTap:
         self.ui.sc_sell_lineEdit_04 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_13)
         self.ui.sc_sell_checkBox_14 = self.wc.setCheckBox('손절청산 수익률(-)', self.ui.sc_od_groupBoxxx_13)
         self.ui.sc_sell_lineEdit_05 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_13)
-        self.ui.sc_sell_checkBox_15 = self.wc.setCheckBox('손절청산 수익금(-)', self.ui.sc_od_groupBoxxx_13, tip='만원 또는 USDT 단위의 금액을 입력하십시오.')
+        self.ui.sc_sell_checkBox_15 = self.wc.setCheckBox('손절청산 수익금(-)', self.ui.sc_od_groupBoxxx_13, tip='만원, KRW, USDT 단위의 금액을 입력하십시오.')
         self.ui.sc_sell_lineEdit_06 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_13)
 
         self.ui.sc_sell_checkBox_16 = self.wc.setCheckBox('분할매수횟수                                 회 이내', self.ui.sc_od_groupBoxxx_14)

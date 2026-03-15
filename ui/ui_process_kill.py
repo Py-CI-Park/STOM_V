@@ -71,13 +71,18 @@ def process_kill(ui):
     query = f"UPDATE etc SET 팩터선택 = '{factor_choice[:-1]}'"
     ui.queryQ.put(('설정디비', query))
 
-    divid_mode = ui.be_comboBoxxxxx_01.currentText()
-    optuna_sampler = ui.op_comboBoxxxx_01.currentText()
-    optuna_fixvars = ui.op_lineEditttt_01.text()
-    optuna_count = int(ui.op_lineEditttt_02.text())
-    optuna_autostep = 1 if ui.op_checkBoxxxx_01.isChecked() else 0
-    query = f"UPDATE back SET 백테엔진분류방법 = '{divid_mode}', '옵튜나샘플러' = '{optuna_sampler}', '옵튜나고정변수' = '{optuna_fixvars}', '옵튜나실행횟수' = {optuna_count}, '옵튜나자동스탭' = {optuna_autostep}"
-    ui.queryQ.put(('설정디비', query))
+    백테엔진분류방법 = ui.be_comboBoxxxxx_01.currentText()
+    옵튜나샘플러 = ui.op_comboBoxxxx_01.currentText()
+    옵튜나고정변수 = ui.op_lineEditttt_01.text()
+    옵튜나실행횟수 = int(ui.op_lineEditttt_02.text())
+    옵튜나자동스탭 = 1 if ui.op_checkBoxxxx_01.isChecked() else 0
+
+    columns = ['백테엔진분류방법', '옵튜나샘플러', '옵튜나고정변수', '옵튜나실행횟수', '옵튜나자동스탭']
+    set_txt = ', '.join([f'{col} = ?' for col in columns])
+    query   = f'UPDATE back SET {set_txt}'
+    localvs = locals()
+    values  = tuple(localvs[col] for col in columns)
+    ui.queryQ.put(('설정디비', query, values))
 
     if ui.dict_set['창위치기억']:
         geo_len = len(ui.dict_set['창위치']) if ui.dict_set['창위치'] is not None else 0

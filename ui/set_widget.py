@@ -1,8 +1,10 @@
 
+import sys
 import pyqtgraph as pg
+from traceback import format_exc
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
-    QDialog, QTableWidget, QAbstractItemView, QGroupBox
+    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox
 from utility import syntax
 from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
     columns_gc, columns_hg, columns_jm1, columns_jm2, columns_nd, columns_stg1, columns_stg2, columns_sb, \
@@ -10,6 +12,17 @@ from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj,
 from ui.set_style import qfont12, style_bc_bt, style_bc_st, style_bc_sl, style_bc_bs, style_bc_by, style_fc_dk, \
     style_bc_bb, style_bc_dk, style_st_cf, style_st_sf, style_st_mf, style_st_sp, style_st_ct, style_st_ks, style_st_ss, \
     style_st_su
+
+
+def error_decorator(func):
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except:
+            self_obj = args[0]
+            QMessageBox.critical(self_obj.ui.splash, '오류 알림', format_exc())
+            sys.exit()
+    return wrapper
 
 
 class CustomViewBox(pg.ViewBox):

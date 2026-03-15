@@ -3,7 +3,8 @@ import psutil
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QGroupBox, QLabel
 from ui.set_style import style_ck_bx, style_pgbar, style_bc_dk
-from utility.static import str_hms, dt_hms, timedelta_sec, error_decorator
+from ui.set_widget import error_decorator
+from utility.static import str_hms, dt_hms, timedelta_sec
 
 
 class SetDialogBack:
@@ -35,9 +36,9 @@ class SetDialogBack:
         self.ui.be_labellllllll_02 = QLabel('▣ 사용할 평균값틱수를 콤머로 구분입력하고 백테엔진의 멀티수를 입력하십시오.', self.ui.be_groupBoxxxxx_01)
         self.ui.be_lineEdittttt_03 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, ltext='30', style=style_bc_dk)
         self.ui.be_lineEdittttt_04 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, ltext=f'{psutil.cpu_count()}', style=style_bc_dk)
-        text = '▣ 백테엔진을 시작하면 중간집계용 프로세스 20개와 멀티수 만큼의 엔진 프로세스가 실행되고\n\n' \
-               '   설정탭 기타에서 설정한 일괄로딩 또는 분할로딩의 선택에 따라 공유메모리 또는 피클덤프의\n\n' \
-               '   형태로 데이터를 로딩합니다. 백테엔진은 프로그램을 종료하기 전까지 종료되지 않습니다.'
+        text = '▣ 백테엔진을 시작하면 20개의 중간집계용, 멀티수만큼의 백테엔진용 프로세스가 실행되고\n\n' \
+               '설정탭 기타에서 설정한 일괄로딩 또는 분할로딩의 선택에 따라 공유메모리 또는 피클덤프의\n\n' \
+               '형태로 데이터를 로드합니다. 백테엔진은 프로그램을 종료하기 전까지 종료되지 않습니다.'
         self.ui.be_labellllllll_03 = QLabel(text, self.ui.be_groupBoxxxxx_01)
         self.ui.be_pushButtonnn_01 = self.wc.setPushbutton('백테스트 엔진 시작', box=self.ui.be_groupBoxxxxx_01, click=self.ui.beButtonClicked_01)
         self.ui.be_textEditxxxx_01 = self.wc.setTextEdit(self.ui.be_groupBoxxxxx_01, vscroll=True)

@@ -93,8 +93,7 @@ def GetMoneytopQuery(is_tick, gubun, startday, endday, starttime, endtime):
     else:
         sindex = startday * 10000 + int(starttime / 100)
         eindex = endday * 10000 + int(endtime / 100)
-    query = f"SELECT * FROM moneytop WHERE " \
-            f"`index` >= {sindex} AND `index` <= {eindex}"
+    query = f"SELECT * FROM moneytop WHERE `index` >= {sindex} AND `index` <= {eindex}"
     return query
 
 
