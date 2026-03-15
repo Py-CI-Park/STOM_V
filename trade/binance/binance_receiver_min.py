@@ -1,5 +1,6 @@
 
 import numpy as np
+from traceback import format_exc
 from trade.binance.binance_receiver_tick import BinanceReceiverTick
 from utility.setting_base import ui_num
 from utility.static import now, str_ymdhms_utc
@@ -15,6 +16,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
             v    = float(data['q'])
             m    = data['m']
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData'))
             return
 
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
@@ -106,6 +108,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
             ]
             receivetime = now()
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateHogaData'))
             return
 
         send   = False
@@ -225,7 +228,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.windowQ.put((ui_num['C단순텍스트'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+                self.windowQ.put((ui_num['타임로그'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:

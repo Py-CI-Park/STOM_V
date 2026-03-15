@@ -1,8 +1,9 @@
 
 from PyQt5.QtWidgets import QMessageBox
-from utility.static import comma2float, comma2int, now
+from utility.static import comma2float, comma2int, now, error_decorator
 
 
+@error_decorator
 def odbutton_clicked_01(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     ordertype = ui.od_comboBoxxxxx_02.currentText()
@@ -19,6 +20,7 @@ def odbutton_clicked_01(ui):
         ui.wdzservQ.put(('trade', ('매수', code, name, comma2int(op), comma2int(oc), now(), False, ordertype)))
 
 
+@error_decorator
 def odbutton_clicked_02(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     ordertype = ui.od_comboBoxxxxx_02.currentText()
@@ -35,6 +37,7 @@ def odbutton_clicked_02(ui):
         ui.wdzservQ.put(('trade', ('매도', code, name, comma2int(op), comma2int(oc), now(), False, ordertype)))
 
 
+@error_decorator
 def odbutton_clicked_03(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     ordertype = ui.od_comboBoxxxxx_02.currentText()
@@ -50,6 +53,7 @@ def odbutton_clicked_03(ui):
         ui.wdzservQ.put(('trade', ('BUY_LONG', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
 
 
+@error_decorator
 def odbutton_clicked_04(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     ordertype = ui.od_comboBoxxxxx_02.currentText()
@@ -65,6 +69,7 @@ def odbutton_clicked_04(ui):
         ui.wdzservQ.put(('trade', ('SELL_LONG', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
 
 
+@error_decorator
 def odbutton_clicked_05(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     ordertype = ui.od_comboBoxxxxx_02.currentText()
@@ -80,6 +85,7 @@ def odbutton_clicked_05(ui):
         ui.wdzservQ.put(('trade', ('SELL_SHORT', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
 
 
+@error_decorator
 def odbutton_clicked_06(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     ordertype = ui.od_comboBoxxxxx_02.currentText()
@@ -95,6 +101,7 @@ def odbutton_clicked_06(ui):
         ui.wdzservQ.put(('trade', ('BUY_SHORT', code, name, comma2float(op), comma2int(oc), now(), False, ordertype)))
 
 
+@error_decorator
 def odbutton_clicked_07(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     if name == '':
@@ -116,6 +123,7 @@ def odbutton_clicked_07(ui):
         ui.wdzservQ.put(('trade', ('매수취소', code, name, 0, 0, now(), False)))
 
 
+@error_decorator
 def odbutton_clicked_08(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     if name == '':

@@ -10,8 +10,10 @@ from backtest.rolling_walk_forward_test import RollingWalkForwardTest
 from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from ui.set_style import style_bc_by, style_bc_dk, style_bc_bs, style_bc_bd
 from ui.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condtext, cedittxt, example_finder
+from utility.static import error_decorator
 
 
+@error_decorator
 def stock_opti_test_editer(ui):
     ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
     ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
@@ -75,6 +77,7 @@ def stock_opti_test_editer(ui):
     sChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def stock_rwf_test_editer(ui):
     ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
     ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
@@ -139,6 +142,7 @@ def stock_rwf_test_editer(ui):
     sChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def stock_opti_ga_editer(ui):
     ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
     ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
@@ -207,6 +211,7 @@ def stock_opti_ga_editer(ui):
     sChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def stock_opti_vars_editer(ui):
     ui.ss_textEditttt_05.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
     ui.ss_textEditttt_06.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
@@ -289,6 +294,7 @@ def stock_opti_vars_editer(ui):
     sChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def stock_opti_editer(ui):
     ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
     ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
@@ -352,6 +358,7 @@ def stock_opti_editer(ui):
     sChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def stock_vars_editer(ui):
     ui.ss_textEditttt_01.setGeometry(7, 10, 497, 740 if ui.extend_window else 463)
     ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
@@ -425,6 +432,7 @@ def stock_vars_editer(ui):
     sChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def change_pre_button_edit(ui):
     if ui.svj_pushButton_01.isVisible():
         ui.svj_pushButton_09.setStyleSheet(style_bc_bd)
@@ -444,6 +452,7 @@ def change_pre_button_edit(ui):
         ui.svj_pushButton_08.setStyleSheet(style_bc_bd)
 
 
+@error_decorator
 def stock_backtest_log(ui):
     change_pre_button_edit(ui)
     ui.ss_textEditttt_01.setVisible(False)
@@ -472,6 +481,7 @@ def stock_backtest_log(ui):
     ui.svj_pushButton_15.setStyleSheet(style_bc_bs)
 
 
+@error_decorator
 def stock_backtest_detail(ui):
     change_pre_button_edit(ui)
     ui.ss_textEditttt_01.setVisible(False)
@@ -500,6 +510,7 @@ def stock_backtest_detail(ui):
     ui.svj_pushButton_14.setStyleSheet(style_bc_bs)
 
 
+@error_decorator
 def stock_stg_editer(ui):
     ui.ss_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
     ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 478, 1000, 602 if ui.extend_window else 272)
@@ -561,6 +572,7 @@ def stock_stg_editer(ui):
     sChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def stock_cond_editer(ui):
     ui.ss_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
     ui.ss_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
@@ -627,6 +639,7 @@ def stock_cond_editer(ui):
     sChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def stock_backtest_start(ui):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -690,6 +703,7 @@ def stock_backtest_start(ui):
         ui.ssicon_alert = True
 
 
+@error_decorator
 def stock_backfinder_start(ui):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -743,6 +757,7 @@ def stock_backfinder_start(ui):
         ui.ssicon_alert = True
 
 
+@error_decorator
 def stock_backfinder_sample(ui):
     if ui.ss_textEditttt_01.isVisible():
         ui.ss_textEditttt_01.clear()
@@ -750,6 +765,7 @@ def stock_backfinder_sample(ui):
         ui.ss_textEditttt_01.append(example_finder)
 
 
+@error_decorator
 def stock_opti_start(ui, back_name):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -906,6 +922,7 @@ def stock_opti_start(ui, back_name):
         ui.ssicon_alert = True
 
 
+@error_decorator
 def stock_opti_rwft_start(ui, back_name):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -1018,6 +1035,7 @@ def stock_opti_rwft_start(ui, back_name):
         ui.ssicon_alert = True
 
 
+@error_decorator
 def stock_opti_ga_start(ui, back_name):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -1097,6 +1115,7 @@ def stock_opti_ga_start(ui, back_name):
         ui.ssicon_alert = True
 
 
+@error_decorator
 def stock_opti_cond_start(ui, back_name):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -1179,6 +1198,7 @@ def stock_opti_cond_start(ui, back_name):
         ui.ssicon_alert = True
 
 
+@error_decorator
 def stock_optivars_to_gavars(ui):
     opti_vars_text = ui.ss_textEditttt_05.toPlainText()
     if opti_vars_text:
@@ -1189,6 +1209,7 @@ def stock_optivars_to_gavars(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 최적화 범위 코드가 공백 상태입니다.\n최적화 범위 코드를 작성하거나 로딩하십시오.\n')
 
 
+@error_decorator
 def stock_gavars_to_optivars(ui):
     ga_vars_text = ui.ss_textEditttt_06.toPlainText()
     if ga_vars_text:
@@ -1199,6 +1220,7 @@ def stock_gavars_to_optivars(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 GA 범위 코드가 공백 상태입니다.\nGA 범위 코드를 작성하거나 로딩하십시오.\n')
 
 
+@error_decorator
 def stock_stg_vars_change(ui):
     buystg = ui.ss_textEditttt_01.toPlainText()
     sellstg = ui.ss_textEditttt_02.toPlainText()
@@ -1209,6 +1231,7 @@ def stock_stg_vars_change(ui):
     ui.ss_textEditttt_04.append(sellstg_str)
 
 
+@error_decorator
 def stock_stgvars_key_sort(ui):
     optivars = ui.ss_textEditttt_05.toPlainText()
     gavars = ui.ss_textEditttt_06.toPlainText()
@@ -1219,6 +1242,7 @@ def stock_stgvars_key_sort(ui):
     ui.ss_textEditttt_06.append(gavars_str)
 
 
+@error_decorator
 def stock_optivars_key_sort(ui):
     buystg = ui.ss_textEditttt_03.toPlainText()
     sellstg = ui.ss_textEditttt_04.toPlainText()
@@ -1229,6 +1253,7 @@ def stock_optivars_key_sort(ui):
     ui.ss_textEditttt_04.append(sellstg_str)
 
 
+@error_decorator
 def sChangeSvjButtonColor(ui):
     for button in ui.stock_editer_list:
         button.setStyleSheet(style_bc_dk if ui.focusWidget() == button else style_bc_bs)

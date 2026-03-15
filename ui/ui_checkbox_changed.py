@@ -1,8 +1,10 @@
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QPushButton, QMessageBox
+from utility.static import error_decorator
 
 
+@error_decorator
 def checkbox_changed_01(ui, state):
     if ui.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
@@ -17,6 +19,7 @@ def checkbox_changed_01(ui, state):
                 ui.sj_main_cheBox_02.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_02(ui, state):
     if ui.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
@@ -31,6 +34,7 @@ def checkbox_changed_02(ui, state):
                 ui.sj_main_cheBox_01.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_03(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         if not ui.sj_main_cheBox_01.isChecked():
@@ -39,6 +43,7 @@ def checkbox_changed_03(ui, state):
             ui.sj_main_cheBox_02.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_04(ui, state):
     if ui.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
@@ -49,6 +54,7 @@ def checkbox_changed_04(ui, state):
                 ui.sj_main_cheBox_05.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_05(ui, state):
     if ui.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
@@ -59,6 +65,7 @@ def checkbox_changed_05(ui, state):
                 ui.sj_main_cheBox_04.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_06(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         if not ui.sj_main_cheBox_04.isChecked():
@@ -67,6 +74,7 @@ def checkbox_changed_06(ui, state):
             ui.sj_main_cheBox_05.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_07(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state != Qt.Checked:
         buttonReply = QMessageBox.question(
@@ -77,12 +85,14 @@ def checkbox_changed_07(ui, state):
             ui.sj_stock_ckBox_01.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_08(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state != Qt.Checked and ui.CoinTraderProcessAlive():
         ui.sj_coin_cheBox_01.nextCheckState()
         QMessageBox.critical(ui, '오류 알림', '트레이더 실행 중에는 모의모드를 해제할 수 없습니다.\n')
 
 
+@error_decorator
 def checkbox_changed_09(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.com_exit_list:
@@ -91,6 +101,7 @@ def checkbox_changed_09(ui, state):
                     widget.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_10(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state != Qt.Checked:
         if ui.dialog_factor.focusWidget() == ui.ft_checkBoxxxxx_01:
@@ -98,6 +109,7 @@ def checkbox_changed_10(ui, state):
             QMessageBox.critical(ui.dialog_factor, '오류 알림', '현재가는 해제할 수 없습니다.\n')
 
 
+@error_decorator
 def checkbox_changed_11(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.sj_ilbunback_listtt:
@@ -105,24 +117,28 @@ def checkbox_changed_11(ui, state):
                 widget.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_12(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         if not ui.sj_back_cheBox_11.isChecked():
             ui.sj_back_cheBox_11.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_13(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state != Qt.Checked:
         if ui.sj_back_cheBox_10.isChecked():
             ui.sj_back_cheBox_10.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_14(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state != Qt.Checked:
         if ui.sj_back_cheBox_09.isChecked():
             ui.sj_back_cheBox_09.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_15(ui, state):
     gubun = ui.list_checkBoxxxxxx.index(ui.dialog_scheduler.focusWidget())
     if state == Qt.Checked:
@@ -148,6 +164,7 @@ def checkbox_changed_15(ui, state):
         ui.list_tcomboBoxxxxx[gubun].clear()
 
 
+@error_decorator
 def checkbox_changed_16(ui, state):
     if ui.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
@@ -158,6 +175,7 @@ def checkbox_changed_16(ui, state):
                 ui.sj_back_cheBox_15.nextCheckState()
 
 
+@error_decorator
 def checkbox_changed_17(ui, state):
     if ui.focusWidget().__class__ != QPushButton:
         if state == Qt.Checked:
@@ -169,10 +187,12 @@ def checkbox_changed_17(ui, state):
 
 
 # noinspection PyUnusedLocal
+@error_decorator
 def checkbox_changed_18(ui, state):
     ui.ctpg_name = None
 
 
+@error_decorator
 def sbcheckbox_changed_01(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.sodb_checkbox_list1:
@@ -181,6 +201,7 @@ def sbcheckbox_changed_01(ui, state):
                     widget.nextCheckState()
 
 
+@error_decorator
 def sbcheckbox_changed_02(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.sodb_checkbox_list2:
@@ -189,6 +210,7 @@ def sbcheckbox_changed_02(ui, state):
                     widget.nextCheckState()
 
 
+@error_decorator
 def sscheckbox_changed_01(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.sods_checkbox_list1:
@@ -197,6 +219,7 @@ def sscheckbox_changed_01(ui, state):
                     widget.nextCheckState()
 
 
+@error_decorator
 def sscheckbox_changed_02(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.sods_checkbox_list2:
@@ -205,6 +228,7 @@ def sscheckbox_changed_02(ui, state):
                     widget.nextCheckState()
 
 
+@error_decorator
 def cbcheckbox_changed_01(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.codb_checkbox_list1:
@@ -222,6 +246,7 @@ def cbcheckbox_changed_01(ui, state):
             ui.sj_codb_checkBox_01.setChecked(True)
 
 
+@error_decorator
 def cbcheckbox_changed_02(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.codb_checkbox_list2:
@@ -230,6 +255,7 @@ def cbcheckbox_changed_02(ui, state):
                     widget.nextCheckState()
 
 
+@error_decorator
 def cscheckbox_changed_01(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.cods_checkbox_list1:
@@ -247,6 +273,7 @@ def cscheckbox_changed_01(ui, state):
             ui.sj_cods_checkBox_01.setChecked(True)
 
 
+@error_decorator
 def cscheckbox_changed_02(ui, state):
     if ui.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.cods_checkbox_list2:

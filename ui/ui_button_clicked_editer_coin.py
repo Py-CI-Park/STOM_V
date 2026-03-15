@@ -11,8 +11,10 @@ from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
 from ui.set_style import style_bc_by, style_bc_dk, style_bc_bs, style_bc_bd
 from ui.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condtext, cedittxt, example_finder, \
     example_finder_future
+from utility.static import error_decorator
 
 
+@error_decorator
 def coin_opti_test_editer(ui):
     ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
     ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
@@ -76,6 +78,7 @@ def coin_opti_test_editer(ui):
     cChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def coin_rwf_test_editer(ui):
     ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
     ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
@@ -140,6 +143,7 @@ def coin_rwf_test_editer(ui):
     cChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def coin_opti_ga_editer(ui):
     ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
     ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
@@ -208,6 +212,7 @@ def coin_opti_ga_editer(ui):
     cChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def coin_opti_vars_editer(ui):
     ui.cs_textEditttt_05.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
     ui.cs_textEditttt_06.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
@@ -290,6 +295,7 @@ def coin_opti_vars_editer(ui):
     cChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def coin_opti_editer(ui):
     ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
     ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
@@ -353,6 +359,7 @@ def coin_opti_editer(ui):
     cChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def coin_vars_editer(ui):
     ui.cs_textEditttt_01.setGeometry(7, 10, 497, 740 if ui.extend_window else 463)
     ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
@@ -426,6 +433,7 @@ def coin_vars_editer(ui):
     cChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def change_pre_button_edit(ui):
     if ui.cvj_pushButton_01.isVisible():
         ui.cvj_pushButton_09.setStyleSheet(style_bc_bd)
@@ -445,6 +453,7 @@ def change_pre_button_edit(ui):
         ui.cvj_pushButton_08.setStyleSheet(style_bc_bd)
 
 
+@error_decorator
 def coin_backtest_log(ui):
     change_pre_button_edit(ui)
     ui.cs_textEditttt_01.setVisible(False)
@@ -473,6 +482,7 @@ def coin_backtest_log(ui):
     ui.cvj_pushButton_15.setStyleSheet(style_bc_bs)
 
 
+@error_decorator
 def coin_backtest_detail(ui):
     change_pre_button_edit(ui)
     ui.cs_textEditttt_01.setVisible(False)
@@ -501,6 +511,7 @@ def coin_backtest_detail(ui):
     ui.cvj_pushButton_14.setStyleSheet(style_bc_bs)
 
 
+@error_decorator
 def coin_stg_editer(ui):
     ui.cs_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
     ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 478, 1000, 602 if ui.extend_window else 272)
@@ -562,6 +573,7 @@ def coin_stg_editer(ui):
     cChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def coin_cond_editer(ui):
     ui.cs_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
     ui.cs_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
@@ -628,6 +640,7 @@ def coin_cond_editer(ui):
     cChangeSvjButtonColor(ui)
 
 
+@error_decorator
 def coin_backtest_start(ui):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -691,6 +704,7 @@ def coin_backtest_start(ui):
         ui.csicon_alert = True
 
 
+@error_decorator
 def coin_backfinder_start(ui):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -744,6 +758,7 @@ def coin_backfinder_start(ui):
         ui.csicon_alert = True
 
 
+@error_decorator
 def coin_backfinder_sample(ui):
     if ui.cs_textEditttt_01.isVisible():
         ui.cs_textEditttt_01.clear()
@@ -751,6 +766,7 @@ def coin_backfinder_sample(ui):
         ui.cs_textEditttt_01.append(example_finder if ui.dict_set['거래소'] == '업비트' else example_finder_future)
 
 
+@error_decorator
 def coin_opti_start(ui, back_name):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -907,6 +923,7 @@ def coin_opti_start(ui, back_name):
         ui.csicon_alert = True
 
 
+@error_decorator
 def coin_opti_rwft_start(ui, back_name):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -1016,6 +1033,7 @@ def coin_opti_rwft_start(ui, back_name):
         ui.csicon_alert = True
 
 
+@error_decorator
 def coin_opti_ga_start(ui, back_name):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -1095,6 +1113,7 @@ def coin_opti_ga_start(ui, back_name):
         ui.csicon_alert = True
 
 
+@error_decorator
 def coin_opti_cond_start(ui, back_name):
     if ui.BacktestProcessAlive():
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
@@ -1177,6 +1196,7 @@ def coin_opti_cond_start(ui, back_name):
         ui.csicon_alert = True
 
 
+@error_decorator
 def coin_optivars_to_gavars(ui):
     opti_vars_text = ui.cs_textEditttt_05.toPlainText()
     if opti_vars_text:
@@ -1187,6 +1207,7 @@ def coin_optivars_to_gavars(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 최적화 범위 코드가 공백 상태입니다.\n최적화 범위 코드를 작성하거나 로딩하십시오.\n')
 
 
+@error_decorator
 def coin_gavars_to_optivars(ui):
     ga_vars_text = ui.cs_textEditttt_06.toPlainText()
     if ga_vars_text:
@@ -1197,6 +1218,7 @@ def coin_gavars_to_optivars(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 GA 범위 코드가 공백 상태입니다.\nGA 범위 코드를 작성하거나 로딩하십시오.\n')
 
 
+@error_decorator
 def coin_stg_vars_change(ui):
     buystg  = ui.cs_textEditttt_01.toPlainText()
     sellstg = ui.cs_textEditttt_02.toPlainText()
@@ -1207,6 +1229,7 @@ def coin_stg_vars_change(ui):
     ui.cs_textEditttt_04.append(sellstg_str)
 
 
+@error_decorator
 def coin_stgvars_key_sort(ui):
     optivars = ui.cs_textEditttt_05.toPlainText()
     gavars   = ui.cs_textEditttt_06.toPlainText()
@@ -1217,6 +1240,7 @@ def coin_stgvars_key_sort(ui):
     ui.cs_textEditttt_06.append(gavars_str)
 
 
+@error_decorator
 def coin_optivars_key_sort(ui):
     buystg  = ui.cs_textEditttt_03.toPlainText()
     sellstg = ui.cs_textEditttt_04.toPlainText()
@@ -1227,6 +1251,7 @@ def coin_optivars_key_sort(ui):
     ui.cs_textEditttt_04.append(sellstg_str)
 
 
+@error_decorator
 def cChangeSvjButtonColor(ui):
     for button in ui.coin_editer_list:
         button.setStyleSheet(style_bc_dk if ui.focusWidget() == button else style_bc_bs)

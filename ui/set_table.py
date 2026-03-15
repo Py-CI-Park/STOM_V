@@ -3,6 +3,7 @@ from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QCalendarWidget, QTabWidget
 from utility.setting_base import columns_tt, columns_td, columns_tj, columns_jg, columns_gj, columns_cj, columns_dt, \
     columns_dd, columns_nt, columns_nd, columns_sb, columns_sd
+from utility.static import error_decorator
 
 
 class SetTable:
@@ -11,6 +12,7 @@ class SetTable:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.stt_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_tt, 1)
         self.ui.std_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_td, 13, clicked=self.ui.CellClicked_01)

@@ -4,7 +4,7 @@ import time
 import sqlite3
 import pandas as pd
 from multiprocessing import Process
-from utility.static import now, str_ymdhms
+from utility.static import now, str_ymdhms, error_decorator, set_builtin_print
 from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num
 
 
@@ -28,8 +28,10 @@ class Total:
         self.tickcols     = None
         self.dict_back    = {}
 
+        set_builtin_print(True, self.wq)
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         bc = 0
         index = 0
@@ -97,8 +99,11 @@ class BackFinder:
             self.gubun = 'future'
         else:
             self.gubun = 'coin'
+
+        set_builtin_print(True, self.wq)
         self.Start()
 
+    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()

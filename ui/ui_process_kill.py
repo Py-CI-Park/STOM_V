@@ -1,9 +1,16 @@
 
 import sys
-from utility.static import qtest_qwait, opstarter_kill
+from utility.setting_base import ui_num
+from utility.static import qtest_qwait, opstarter_kill, error_decorator
 
 
+@error_decorator
 def process_kill(ui):
+    if ui.proc_manager is not None and ui.proc_manager.poll() is None:
+        ui.wdzservQ.put(('manager', '프로세스종료'))
+        ui.windowQ.put((ui_num['시스템로그'], 'Manager process terminate completed'))
+        qtest_qwait(0.1)
+
     if ui.dict_set['에이전트프로파일링']:
         ui.wdzservQ.put(('agent', '프로파일링결과'))
         qtest_qwait(3)
@@ -11,11 +18,8 @@ def process_kill(ui):
         ui.wdzservQ.put(('trade', '프로파일링결과'))
         qtest_qwait(3)
     if ui.dict_set['전략연산프로파일링']:
-        ui.wdzservQ.put(('analyzer', '프로파일링결과'))
+        ui.wdzservQ.put(('strategy', '프로파일링결과'))
         qtest_qwait(3)
-
-    ui.wdzservQ.put(('manager', '통신종료'))
-    ui.logger.info('Manager Process Terminate Completed')
 
     if ui.CoinKimpProcessAlive():
         ui.proc_coin_kimp.kill()
@@ -25,24 +29,50 @@ def process_kill(ui):
         ui.proc_trader_coin.kill()
     if ui.CoinStrategyProcessAlive():
         ui.proc_strategy_coin.kill()
-        ui.logger.info('Coin Process Terminate Completed')
-        qtest_qwait(3)
+        ui.windowQ.put((ui_num['시스템로그'], 'Coin process terminate completed'))
 
-    if ui.writer.isRunning():  ui.writer.terminate()
-    if ui.zmqrecv.isRunning(): ui.zmqrecv.terminate()
-    if ui.zmqserv.isRunning():
-        ui.zmqserv.terminate()
-        ui.logger.info('QThread Terminate Completed')
+    if ui.zmqserv.isRunning(): ui.zmqserv.stop()
+    if ui.zmqrecv.isRunning(): ui.zmqrecv.stop()
+    ui.windowQ.put((ui_num['시스템로그'], 'QThread process terminate completed'))
+
+    if ui.dialog_db.isVisible():         ui.dialog_db.close()
+    if ui.dialog_web.isVisible():        ui.dialog_web.close()
+    if ui.dialog_std.isVisible():        ui.dialog_std.close()
+    if ui.dialog_jisu.isVisible():       ui.dialog_jisu.close()
+    if ui.dialog_hoga.isVisible():       ui.dialog_hoga.close()
+    if ui.dialog_info.isVisible():       ui.dialog_info.close()
+    if ui.dialog_tree.isVisible():       ui.dialog_tree.close()
+    if ui.dialog_bjjs.isVisible():       ui.dialog_bjjc.close()
+    if ui.dialog_bjjc.isVisible():       ui.dialog_bjjc.close()
+    if ui.dialog_kimp.isVisible():       ui.dialog_kimp.close()
+    if ui.dialog_pass.isVisible():       ui.dialog_pass.close()
+    if ui.dialog_comp.isVisible():       ui.dialog_comp.close()
+    if ui.dialog_chart.isVisible():      ui.dialog_chart.close()
+    if ui.dialog_graph.isVisible():      ui.dialog_graph.close()
+    if ui.dialog_order.isVisible():      ui.dialog_order.close()
+    if ui.dialog_cetsj.isVisible():      ui.dialog_cetsj.close()
+    if ui.dialog_setsj.isVisible():      ui.dialog_setsj.close()
+    if ui.dialog_factor.isVisible():     ui.dialog_factor.close()
+    if ui.dialog_optuna.isVisible():     ui.dialog_optuna.close()
+    if ui.dialog_formula.isVisible():    ui.dialog_formula.close()
+    if ui.dialog_strategy.isVisible():   ui.dialog_strategy.close()
+    if ui.dialog_leverage.isVisible():   ui.dialog_leverage.close()
+    if ui.dialog_scheduler.isVisible():  ui.dialog_scheduler.close()
+    if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
+    if ui.dialog_stg_input1.isVisible(): ui.dialog_stg_input1.close()
+    if ui.dialog_stg_input2.isVisible(): ui.dialog_stg_input2.close()
+    ui.windowQ.put((ui_num['시스템로그'], 'UI dialog window close completed'))
 
     if ui.shared_cnt is not None:
         ui.BacktestProcessKill(True, True)
-        ui.logger.info('Backtest Engine Process Terminate Completed')
+        ui.windowQ.put((ui_num['시스템로그'], 'Backtest engine process terminate completed'))
 
     factor_choice = ''
     for checkbox in ui.factor_checkbox_list:
         factor_choice = f"{factor_choice}{'1' if checkbox.isChecked() else '0'};"
     query = f"UPDATE etc SET 팩터선택 = '{factor_choice[:-1]}'"
     ui.queryQ.put(('설정디비', query))
+
     divid_mode = ui.be_comboBoxxxxx_01.currentText()
     optuna_sampler = ui.op_comboBoxxxx_01.currentText()
     optuna_fixvars = ui.op_lineEditttt_01.text()
@@ -68,10 +98,17 @@ def process_kill(ui):
         query = f"UPDATE etc SET 창위치 = '{geometry}'"
         ui.queryQ.put(('설정디비', query))
 
-    ui.logger.info('Etc Setting Save Completed')
+    ui.windowQ.put((ui_num['시스템로그'], 'Etc setting save completed'))
+    opstarter_kill()
+
     ui.queryQ.put('프로세스종료')
     while ui.proc_query.is_alive():
         qtest_qwait(0.1)
-    opstarter_kill()
-    ui.logger.info('Main Process Terminate Completed')
+
+    ui.windowQ.put((ui_num['시스템로그'], 'Main process terminate completed'))
+    qtest_qwait(0.1)
+
+    if ui.writer.isRunning():
+        ui.writer.terminate()
+
     sys.exit()

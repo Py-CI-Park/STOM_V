@@ -7,12 +7,23 @@ import asyncio
 import pyupbit
 import requests
 import websockets
-import pandas as pd
 from bs4 import BeautifulSoup
 from multiprocessing import Process
 from binance import AsyncClient, BinanceSocketManager
 from utility.setting_base import ui_num, columns_kp
 from utility.static import comma2float, threading_timer
+
+
+_pd = None
+_np = None
+
+
+def get_pd():
+    global _pd
+    if _pd is None:
+        import pandas as pd
+        _pd = pd
+    return _pd
 
 
 class Kimp:
@@ -27,7 +38,7 @@ class Kimp:
         self.proc_webs = None
         self.codes     = None
         self.threadrun = True
-        self.df        = pd.DataFrame(columns=columns_kp)
+        self.df        = get_pd().DataFrame(columns=columns_kp)
         self.Start()
 
     def Start(self):

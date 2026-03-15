@@ -1,7 +1,5 @@
 
 import sqlite3
-import numpy as np
-import pandas as pd
 from multiprocessing import Process, Queue, Value, Lock
 from backtest.back_subtotal import BackSubTotal
 from backtest.back_code_test import BackCodeTest
@@ -23,11 +21,32 @@ from backtest.backengine_binance_tick2 import BackEngineBinanceTick2
 from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
-from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec
+from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec, error_decorator
 from utility.setting_base import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
-    DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+    DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, DB_STRATEGY
 
 
+_pd = None
+_np = None
+
+
+def get_pd():
+    global _pd
+    if _pd is None:
+        import pandas as pd
+        _pd = pd
+    return _pd
+
+
+def get_np():
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
+
+
+@error_decorator
 def backengine_show(ui, gubun):
     table_list = []
     if gubun == '주식':
@@ -39,7 +58,7 @@ def backengine_show(ui, gubun):
         db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
     con = sqlite3.connect(db)
     try:
-        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
         table_list.remove('moneytop')
         table_list.remove('stockinfo')
@@ -160,19 +179,19 @@ def backengine_start(ui, gubun):
         con = sqlite3.connect(db)
         if gubun == '주식':
             try:
-                df_info = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
+                df_info = get_pd().read_sql('SELECT * FROM stockinfo', con).set_index('index')
             except:
-                df_info = pd.read_sql('SELECT * FROM codename', con).set_index('index')
+                df_info = get_pd().read_sql('SELECT * FROM codename', con).set_index('index')
             dict_info  = df_info['코스닥'].to_dict()
             ui.dict_cn = df_info['종목명'].to_dict()
         elif gubun == '해선':
-            df_info = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
+            df_info = get_pd().read_sql('SELECT * FROM futureinfo', con).set_index('index')
             dict_info  = df_info.to_dict('index')
             ui.dict_cn = df_info['종목명'].to_dict()
 
         gubun_ = 'S' if gubun == '주식' else 'X'
         query = GetMoneytopQuery(is_tick, gubun_, ui.startday, ui.endday, ui.starttime, ui.endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt = get_pd().read_sql(query, con)
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
         df_mt.set_index('index', inplace=True)
         con.close()
@@ -260,7 +279,7 @@ def backengine_start(ui, gubun):
         ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
     ui.shared_info = sorted(ui.shared_info, key=lambda x: x['len'], reverse=True)
     ui.back_tick_cunsum = [x['len'] for x in ui.shared_info]
-    ui.back_tick_cunsum = np.cumsum(ui.back_tick_cunsum)
+    ui.back_tick_cunsum = get_np().cumsum(ui.back_tick_cunsum)
     ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 완료'))
 
     ui.back_count = len(ui.shared_info)
@@ -272,24 +291,35 @@ def backengine_start(ui, gubun):
     ui.windowQ.put((ui_num['백테엔진'], '백테엔진 준비 완료'))
 
 
+@error_decorator
 def back_code_test1(ui, stg, testQ):
     while not testQ.empty():
         testQ.get()
-    thread = BackCodeTest(testQ, stg)
+
+    con = sqlite3.connect(DB_STRATEGY)
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM formula")
+    rows = cursor.fetchall()
+    con.close()
+    fm_list = {row[0]: lambda pre=0: 1 for row in rows if row[2]}
+
+    thread = BackCodeTest(testQ, ui.windowQ, stg, fm_list)
     thread.start()
     thread.wait()
     return get_code_test_result(ui, '전략', testQ)
 
 
+@error_decorator
 def back_code_test2(ui, vars_code, testQ, ga):
     while not testQ.empty():
         testQ.get()
-    thread = BackCodeTest(testQ, None, vars_code, ga)
+    thread = BackCodeTest(testQ, ui.windowQ, None, None, vars_code, ga)
     thread.start()
     thread.wait()
     return get_code_test_result(ui, '범위', testQ)
 
 
+@error_decorator
 def back_code_test3(ui, gubun, conds_code, testQ):
     while not testQ.empty():
         testQ.get()
@@ -299,21 +329,31 @@ def back_code_test3(ui, gubun, conds_code, testQ):
         conds_code = 'if not (' + '):\n    매수 = False\nelif not ('.join(conds_code) + '):\n    매수 = False'
     else:
         conds_code = 'if ' + ':\n    매도 = True\nelif '.join(conds_code) + ':\n    매도 = True'
-    thread = BackCodeTest(testQ, conds_code)
+    thread = BackCodeTest(testQ, ui.windowQ, conds_code)
     thread.start()
     thread.wait()
     return get_code_test_result(ui, '조건', testQ)
 
 
+@error_decorator
 def formula_code_test(ui, stg, testQ):
     while not testQ.empty():
         testQ.get()
-    thread = BackCodeTest(testQ, stg)
+
+    con = sqlite3.connect(DB_STRATEGY)
+    cursor = con.cursor()
+    cursor.execute("SELECT * FROM formula")
+    rows = cursor.fetchall()
+    con.close()
+    fm_list = {row[0]: lambda pre=0: 1 for row in rows}
+
+    thread = BackCodeTest(testQ, ui.windowQ, stg, fm_list)
     thread.start()
     thread.wait()
     return get_code_test_result(ui, '수식', testQ)
 
 
+@error_decorator
 def get_code_test_result(ui, gubun, testQ):
     data = testQ.get()
     if data == '전략테스트오류':
@@ -323,6 +363,7 @@ def get_code_test_result(ui, gubun, testQ):
         return True
 
 
+@error_decorator
 def clear_backtestQ(ui):
     if not ui.backQ.empty():
         while not ui.backQ.empty():
@@ -332,6 +373,7 @@ def clear_backtestQ(ui):
             ui.totalQ.get()
 
 
+@error_decorator
 def backtest_process_kill(ui, coin, enginekill):
     ui.back_cancelling = True
     for q in ui.back_eques:

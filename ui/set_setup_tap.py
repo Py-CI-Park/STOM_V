@@ -1,6 +1,7 @@
 
 from ui.set_style import style_bc_dk
 from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
+from utility.static import error_decorator
 
 
 class SetSetupTap:
@@ -9,6 +10,7 @@ class SetSetupTap:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.set_tapWidgett_01 = QTabWidget(self.ui.sj_tab)
 

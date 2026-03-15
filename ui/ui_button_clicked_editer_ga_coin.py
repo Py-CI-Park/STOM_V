@@ -3,9 +3,10 @@ import random
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying
-from utility.static import text_not_in_special_characters
+from utility.static import text_not_in_special_characters, error_decorator
 
 
+@error_decorator
 def coin_gavars_load(ui):
     df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinvars').set_index('index')
     if len(df) > 0:
@@ -18,6 +19,7 @@ def coin_gavars_load(ui):
                 ui.cva_lineEdittt_01.setText(index)
 
 
+@error_decorator
 def coin_gavars_save(ui):
     strategy_name = ui.cva_lineEdittt_01.text()
     strategy = ui.cs_textEditttt_06.toPlainText()
@@ -37,6 +39,7 @@ def coin_gavars_save(ui):
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def coin_condbuy_load(ui):
     df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinbuyconds').set_index('index')
     if len(df) > 0:
@@ -49,6 +52,7 @@ def coin_condbuy_load(ui):
                 ui.cvo_lineEdittt_01.setText(index)
 
 
+@error_decorator
 def coin_condbuy_save(ui):
     strategy_name = ui.cvo_lineEdittt_01.text()
     strategy = ui.cs_textEditttt_07.toPlainText()
@@ -68,6 +72,7 @@ def coin_condbuy_save(ui):
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def coin_condsell_load(ui):
     df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinsellconds').set_index('index')
     if len(df) > 0:
@@ -80,6 +85,7 @@ def coin_condsell_load(ui):
                 ui.cvo_lineEdittt_02.setText(index)
 
 
+@error_decorator
 def coin_condsell_save(ui):
     strategy_name = ui.cvo_lineEdittt_02.text()
     strategy = ui.cs_textEditttt_08.toPlainText()

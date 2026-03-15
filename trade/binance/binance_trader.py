@@ -5,12 +5,13 @@ import sqlite3
 import binance
 import numpy as np
 import pandas as pd
+from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketTrader
 from utility.setting_base import columns_cj, columns_tdf, ui_num, DB_TRADELIST, columns_jgcf
 from utility.static import now, timedelta_sec, GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, str_ymd, str_hms, \
-    error_decorator, now_utc, str_ymdhmsf, str_hmsf, dt_hms, get_logger, qtest_qwait
+    now_utc, str_ymdhmsf, str_hmsf, dt_hms, qtest_qwait
 
 
 class Updater(QThread):
@@ -51,7 +52,6 @@ class BinanceTrader:
         self.cstgQ      = qlist[10]
         self.liveQ      = qlist[11]
         self.dict_set   = dict_set
-        self.logger     = get_logger(self.__class__.__name__)
 
         self.order_time = now()
         self.dict_cj    = {}  # 체결목록
@@ -89,7 +89,7 @@ class BinanceTrader:
 
         self.ws_thread = None
         if not self.dict_set['코인모의투자']:
-            self.ws_thread = WebSocketTrader(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
+            self.ws_thread = WebSocketTrader(self.dict_set['Access_key2'], self.dict_set['Secret_key2'], self.windowQ)
             self.ws_thread.signal1.connect(self.UpdateUserData)
             self.ws_thread.start()
 
@@ -130,7 +130,7 @@ class BinanceTrader:
                 self.dict_jg = df_jg.to_dict('index')
                 self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
         con.close()
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
 
     # noinspection PyTypeChecker
     def GetBalances(self):
@@ -152,7 +152,7 @@ class BinanceTrader:
 
         if self.dict_td: self.UpdateTotaltradelist(first=True)
 
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 예수금 조회 완료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 예수금 조회 완료'))
 
     def SetPosition(self):
         def get_decimal_place(float_):
@@ -179,7 +179,7 @@ class BinanceTrader:
             self.dict_lvrg = {x: 1 for x in self.dict_info}
 
         self.cstgQ.put(('바낸선물단위정보', self.dict_info))
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 호가단위 및 소숫점자리수 조회 완료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 호가단위 및 소숫점자리수 조회 완료'))
 
         if not self.dict_set['코인모의투자']:
             for code in self.dict_info:
@@ -196,13 +196,12 @@ class BinanceTrader:
             except:
                 pass
 
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 마진타입 및 레버리지 설정 완료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 마진타입 및 레버리지 설정 완료'))
 
         text = '코인 전략연산 및 트레이더를 시작하였습니다.'
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작'))
-        self.logger.info('트레이더 시작 완료')
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 트레이더 시작'))
 
     def Scheduler1(self):
         self.cstgQ.put(('잔고목록', self.dict_jg.copy()))
@@ -311,7 +310,7 @@ class BinanceTrader:
                     주문가격 = np.round(주문가격 - gap, self.dict_info[종목코드]['소숫점자리수'])
 
         if 주문수량 * 주문가격 < 5:
-            self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 오류 알림 - 최소주문금액 5 USDT 미만입니다.'))
+            self.windowQ.put((ui_num['시스템로그'], '오류 알림 - 최소주문금액 5 USDT 미만입니다.'))
             self.cstgQ.put((f'{주문구분}_CANCEL', 종목코드))
             return
 
@@ -331,7 +330,7 @@ class BinanceTrader:
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()
-        self.windowQ.put((ui_num['C단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
+        self.windowQ.put((ui_num['타임로그'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
 
     def SendOrder(self, data):
         curr_time = now()
@@ -354,10 +353,9 @@ class BinanceTrader:
                     ret = self.binance.futures_create_order(symbol=종목코드, side=매도수구분, type='LIMIT', price=주문가격, timeInForce='IOC', quantity=주문수량)
                 elif 수동주문유형 == '지정가FOK' or (수동주문유형 is None and self.dict_set['코인매수주문구분'] == '지정가FOK'):
                     ret = self.binance.futures_create_order(symbol=종목코드, side=매도수구분, type='LIMIT', price=주문가격, timeInForce='FOK', quantity=주문수량)
-            except Exception as e:
+            except:
                 self.cstgQ.put((f'{주문구분}_CANCEL', 종목코드))
-                self.logger.error(f'[주문실패] {주문구분} | {종목코드} | {주문가격} | {주문수량}')
-                self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {e}'))
+                self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문실패] [{주문구분}] {주문가격} | {주문수량}'))
             else:
                 orderId = int(ret['orderId'])
                 dt = self.GetIndex()
@@ -368,13 +366,12 @@ class BinanceTrader:
                     self.dict_order[주문구분][종목코드] = [timedelta_sec(self.dict_set['코인매도취소시간초']), 정정횟수, 주문가격]
                 self.dict_pos[종목코드] = 포지션
                 self.UpdateChegeollist(dt, 종목코드, f'{주문구분}_REG', 주문수량, 0, 주문수량, 0, dt[:14], 주문가격, orderId)
-                self.logger.info(f'[주문전송] {주문구분} | {종목코드} | {주문가격} | {주문수량}')
-                self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}_REG] {종목코드} | {주문가격} | {주문수량} | '))
+                self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_REG] {종목코드} | {주문가격} | {주문수량} | '))
         else:
             try:
                 self.binance.futures_cancel_order(symbol=종목코드, orderId=주문번호)
-            except Exception as e:
-                self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {e}'))
+            except:
+                self.windowQ.put((ui_num['기본로그'], f'{format_exc()}\n주문 관리 시스템 알림 - [주문실패] [{주문구분}] {주문가격} | {주문수량}'))
             else:
                 self.dict_pos[종목코드] = 포지션
 
@@ -548,7 +545,7 @@ class BinanceTrader:
                     self.CheckOrder((주문구분, 종목코드, 현재가, 보유수량, now(), True))
             if self.dict_set['코인알림소리']:
                 self.soundQ.put('코인 잔고청산 주문을 전송하였습니다.')
-            self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))
+            self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))
         elif gubun == '수동':
             self.teleQ.put('현재는 코인 보유종목이 없습니다.')
         self.dict_bool['코인잔고청산'] = True
@@ -558,7 +555,7 @@ class BinanceTrader:
             self.WebProcessKill()
         self.SaveDayData()
         qtest_qwait(5)
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 종료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 트레이더 종료'))
 
     def WebProcessKill(self):
         if self.ws_thread:
@@ -573,7 +570,7 @@ class BinanceTrader:
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
             self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
             if self.dict_set['코인알림소리']: self.soundQ.put('일별실현손익를 저장하였습니다.')
-            self.soundQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료'))
+            self.soundQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료'))
 
     def UpdateUserData(self, data):
         if data['e'] == 'ACCOUNT_UPDATE':
@@ -584,8 +581,8 @@ class BinanceTrader:
                         self.dict_intg['추정예탁자산'] = float(bal_dict['wb'])
                         self.dict_intg['예수금'] = float(bal_dict['cw'])
                         break
-            except Exception as e:
-                self.windowQ.put((ui_num['C단순텍스트'], f'시스템 명령 오류 알림 - 웹소켓 user {e}'))
+            except:
+                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 유저 웹소켓'))
         elif data['e'] == 'ORDER_TRADE_UPDATE':
             try:
                 data = data['o']
@@ -600,7 +597,7 @@ class BinanceTrader:
                 op = float(data['p'])
                 on = int(data['i'])
             except:
-                self.logger.error('바이낸스 홈페이지 주문은 기록되지 않습니다.')
+                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 바이낸스 홈페이지 주문은 기록되지 않습니다.'))
             else:
                 if cc > 0 or 'CANCEL' in p:
                     self.UpdateChejanData(p, code, oc, cc, mc, cp, op, on)
@@ -612,7 +609,6 @@ class BinanceTrader:
                 index = str(int(index) + 1)
         return index
 
-    @error_decorator
     def UpdateChejanData(self, 주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 주문번호):
         index = self.GetIndex()
 
@@ -729,7 +725,7 @@ class BinanceTrader:
                 elif 주문구분 == 'SELL_LONG':  text = '롱포지션을 청산'
                 elif 주문구분 == 'BUY_SHORT':  text = '숏포지션을 청산'
                 self.soundQ.put(f"{종목코드} {text}하였습니다.")
-            self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {체결가격} | {체결수량}'))
+            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {체결가격} | {체결수량}'))
 
         elif 주문구분 == '시드부족':
             self.UpdateChegeollist(index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, index[:14], 주문가격, 주문번호)
@@ -751,7 +747,7 @@ class BinanceTrader:
                 elif 주문구분 == 'SELL_LONG_CANCEL':  text = '롱포지션 청산을 취소'
                 elif 주문구분 == 'BUY_SHORT_CANCEL':  text = '숏포지션 청산을 취소'
                 self.soundQ.put(f"{종목코드} {text}하였습니다.")
-            self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {주문가격} | {주문수량}'))
+            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {주문가격} | {주문수량}'))
 
         self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
@@ -874,6 +870,5 @@ class BinanceTrader:
         self.windowQ.put((ui_num['C잔고평가'], df_tj))
 
     def StrategyStop(self):
-        self.logger.info('매수전략중지')
         self.cstgQ.put('매수전략중지')
         self.JangoCheongsan('수동')

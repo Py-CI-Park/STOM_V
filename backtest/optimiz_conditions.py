@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 from multiprocessing import Process, Queue
 from backtest.back_static import SendResult, GetMoneytopQuery
-from utility.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
+from utility.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd, error_decorator, \
+    set_builtin_print
 from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
@@ -41,8 +42,10 @@ class Total:
         self.sub_total    = 0
         self.total_count  = 0
 
+        set_builtin_print(True, self.wq)
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         sc = 0
         bc = 0
@@ -168,8 +171,11 @@ class OptimizeConditions:
         else:
             self.gubun = 'coin'
         self.savename     = f'{self.gubun}_{self.backname.replace("최적화", "").lower()}'
+
+        set_builtin_print(True, self.wq)
         self.Start()
 
+    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()

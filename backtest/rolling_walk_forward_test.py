@@ -7,10 +7,11 @@ import random
 import sqlite3
 import numpy as np
 import pandas as pd
+from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, GetResult, AddMdd, \
     bootstrap_test
-from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
+from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator, set_builtin_print
 from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
@@ -72,8 +73,10 @@ class Total:
         self.hstd         = -float('inf')
         self.sub_total    = 0
 
+        set_builtin_print(True, self.wq)
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         oc  = 0
         sc  = 0
@@ -336,8 +339,11 @@ class RollingWalkForwardTest:
         self.vars_      = []
         self.study      = None
         self.dict_simple_vars = {}
+
+        set_builtin_print(True, self.wq)
         self.Start()
 
+    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()
@@ -469,8 +475,8 @@ class RollingWalkForwardTest:
 
         try:
             exec(compile(optivars, '<string>', 'exec'))
-        except Exception as e:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - 최적화 변수설정 1단계 {e}'))
+        except:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - 최적화 변수설정 1단계'))
             self.SysExit(True)
 
         out_count = len(list_days)
@@ -595,16 +601,16 @@ class RollingWalkForwardTest:
         for i, var in enumerate(list(self.vars.values())):
             error = False
             if len(var) != 2:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - self.vars[{i}]의 범위 설정 오류'))
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
                 error = True
             if len(var[0]) != 3:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - self.vars[{i}]의 범위 설정 오류'))
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
                 error = True
             if var[0][0] < var[0][1] and var[0][2] < 0:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
                 error = True
             if var[0][0] > var[0][1] and var[0][2] > 0:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
                 error = True
             if error:
                 self.SysExit(True)

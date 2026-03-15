@@ -1,6 +1,7 @@
 
 from PyQt5.QtWidgets import QWidget, QLabel, QGroupBox
 from ui.set_style import qfont12, style_pgbar
+from utility.static import error_decorator
 
 
 class SetMainMenu:
@@ -9,6 +10,7 @@ class SetMainMenu:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.setFont(qfont12)
         self.ui.setWindowTitle('STOM')
@@ -82,7 +84,7 @@ class SetMainMenu:
         self.ui.image_label2.setVisible(False)
 
         self.ui.setFixedSize(1403, 763)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.move(self.ui.dict_set['창위치'][0], self.ui.dict_set['창위치'][1])
             except:

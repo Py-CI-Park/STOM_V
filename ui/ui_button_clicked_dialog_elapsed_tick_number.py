@@ -2,8 +2,10 @@
 import random
 from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import famous_saying
+from utility.static import error_decorator
 
 
+@error_decorator
 def setting_stock_elapsed_tick_number_sample(ui):
     ui.set_lineEdittt_01.setText('이평60데드')
     ui.set_lineEdittt_02.setText('이평60골든')
@@ -11,6 +13,7 @@ def setting_stock_elapsed_tick_number_sample(ui):
     ui.set_lineEdittt_12.setText('현재가N(1) <= 이동평균(60, 1) and  이동평균(60) < 현재가')
 
 
+@error_decorator
 def setting_stock_elapsed_tick_number_load(ui):
     for lineedit in ui.scn_lineedit_list:
         lineedit.clear()
@@ -28,6 +31,7 @@ def setting_stock_elapsed_tick_number_load(ui):
             ui.scc_lineedit_list[i].setText(value)
 
 
+@error_decorator
 def setting_stock_elapsed_tick_number_save(ui):
     text = ''
     for i, lineedit in enumerate(ui.scn_lineedit_list):
@@ -46,6 +50,7 @@ def setting_stock_elapsed_tick_number_save(ui):
             QMessageBox.information(ui.dialog_setsj, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def setting_coin_elapsed_tick_number_sample(ui):
     ui.cet_lineEdittt_01.setText('이평60데드')
     ui.cet_lineEdittt_02.setText('이평60골든')
@@ -53,6 +58,7 @@ def setting_coin_elapsed_tick_number_sample(ui):
     ui.cet_lineEdittt_12.setText('현재가N(1) <= 이동평균(60, 1) and  이동평균(60) < 현재가')
 
 
+@error_decorator
 def setting_coin_elapsed_tick_number_load(ui):
     for lineedit in ui.ccn_lineedit_list:
         lineedit.clear()
@@ -70,6 +76,7 @@ def setting_coin_elapsed_tick_number_load(ui):
             ui.ccc_lineedit_list[i].setText(value)
 
 
+@error_decorator
 def setting_coin_elapsed_tick_number_save(ui):
     text = ''
     for i, lineedit in enumerate(ui.ccn_lineedit_list):

@@ -7,10 +7,11 @@ from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox, QLineEdit
 from ui.set_style import style_bc_bt
 from ui.set_text import famous_saying
-from utility.setting_base import DB_PATH
-from utility.static import de_text, en_text, qtest_qwait
+from utility.setting_base import DB_PATH, ui_num
+from utility.static import de_text, en_text, qtest_qwait, error_decorator
 
 
+@error_decorator
 def setting_load_01(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
     if len(df) > 0:
@@ -28,6 +29,7 @@ def setting_load_01(ui):
         QMessageBox.critical(ui, '오류 알림', '기본 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_load_02(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM sacc').set_index('index')
     comob_name = ui.sj_main_comBox_01.currentText()
@@ -42,6 +44,7 @@ def setting_load_02(ui):
         QMessageBox.critical(ui, '오류 알림', '주식 계정 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_load_03(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM cacc').set_index('index')
     combo_name = ui.sj_main_comBox_02.currentText()
@@ -56,6 +59,7 @@ def setting_load_03(ui):
         QMessageBox.critical(ui, '오류 알림', '계정 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_load_04(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM telegram').set_index('index')
     gubun = int(ui.sj_main_comBox_01.currentText()[4:])
@@ -66,6 +70,7 @@ def setting_load_04(ui):
         QMessageBox.critical(ui, '오류 알림', '텔레그램 봇토큰 및 사용자 아이디\n설정값이 존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_load_05(ui):
     df   = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stock').set_index('index')
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
@@ -125,6 +130,7 @@ def setting_load_05(ui):
         QMessageBox.critical(ui, '오류 알림', '주식 전략 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_load_06(ui):
     df   = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coin').set_index('index')
     dfb  = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinbuy').set_index('index')
@@ -181,6 +187,7 @@ def setting_load_06(ui):
         QMessageBox.critical(ui, '오류 알림', '코인 전략 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_load_07(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
     if len(df) > 0:
@@ -195,7 +202,7 @@ def setting_load_07(ui):
         ui.sj_back_liEdit_01.setText(str(df['기준값최소상승률'][0]))
         ui.sj_back_cheBox_10.setChecked(True) if df['그래프저장하지않기'][0] else ui.sj_back_cheBox_10.setChecked(False)
         ui.sj_back_cheBox_11.setChecked(True) if df['그래프띄우지않기'][0] else ui.sj_back_cheBox_11.setChecked(False)
-        ui.sj_back_cheBox_12.setChecked(True) if df['최적화로그기록안함'][0] else ui.sj_back_cheBox_12.setChecked(False)
+        ui.sj_back_cheBox_12.setChecked(True) if df['백테스트로그기록안함'][0] else ui.sj_back_cheBox_12.setChecked(False)
         ui.sj_back_cheBox_13.setChecked(True) if df['백테스케쥴실행'][0] else ui.sj_back_cheBox_13.setChecked(False)
         ui.sj_back_cheBox_14.setChecked(True) if not df['백테날짜고정'][0] else ui.sj_back_cheBox_14.setChecked(False)
         ui.sj_back_cheBox_15.setChecked(True) if df['백테날짜고정'][0] else ui.sj_back_cheBox_15.setChecked(False)
@@ -223,6 +230,7 @@ def setting_load_07(ui):
         QMessageBox.critical(ui, '오류 알림', '백테 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_load_08(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM etc').set_index('index')
     if len(df) > 0:
@@ -239,6 +247,7 @@ def setting_load_08(ui):
         QMessageBox.critical(ui, '오류 알림', '기타 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_save_01(ui):
     sg = ui.sj_main_comBox_01.currentText()
     sr = 1 if ui.sj_main_cheBox_01.isChecked() else 0
@@ -258,7 +267,8 @@ def setting_save_01(ui):
         ui.queryQ.put(('설정디비', query))
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
-    prev_market = ui.dict_set['증권사']
+    prev_sg = ui.dict_set['증권사']
+    prev_sr = ui.dict_set['주식에이전트']
     ui.dict_set['증권사'] = sg
     ui.dict_set['주식에이전트'] = sr
     ui.dict_set['주식트레이더'] = st
@@ -283,17 +293,26 @@ def setting_save_01(ui):
         ui.sj_coin_labell_03.setText(
             '종목당투자금                          USDT                                   전략중지 및 잔고청산   |')
 
-    if sr and prev_market[:4] != sg[:4]:
-        if ui.proc_manager.poll() is None:
-            ui.proc_manager.kill()
+    if (not prev_sr and sr) or (prev_sr and prev_sg[:4] != sg[:4]):
+        if ui.proc_manager is not None and ui.proc_manager.poll() is None:
+            ui.wdzservQ.put(('manager', '프로세스종료'))
+            qtest_qwait(3)
         if '키움증권' in sg:
             ui.proc_manager = subprocess.Popen(f'python32 ./trade/stock_korea/kiwoom_manager.py {ui.port_num}')
         else:
             ui.proc_manager = subprocess.Popen(f'python32 ./trade/future_oversea/future_manager.py {ui.port_num}')
+        ui.windowQ.put((ui_num['시스템로그'], '설정이 변경되어 32비트 매니저 프로세스를 재구동하였습니다.'))
+
+    if prev_sr and not sr:
+        if ui.proc_manager is not None and ui.proc_manager.poll() is None:
+            ui.wdzservQ.put(('manager', '프로세스종료'))
+            qtest_qwait(3)
+            ui.windowQ.put((ui_num['시스템로그'], '설정이 변경되어 32비트 매니저 프로세스를 종료하였습니다.'))
 
     ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_save_02(ui):
     id1 = ui.sj_sacc_liEdit_01.text()
     ps1 = ui.sj_sacc_liEdit_02.text()
@@ -320,6 +339,7 @@ def setting_save_02(ui):
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def setting_save_03(ui):
     access_key = ui.sj_cacc_liEdit_01.text()
     secret_key = ui.sj_cacc_liEdit_02.text()
@@ -345,6 +365,7 @@ def setting_save_03(ui):
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def setting_save_04(ui):
     str_bot = ui.sj_tele_liEdit_01.text()
     int_id = ui.sj_tele_liEdit_02.text()
@@ -364,6 +385,7 @@ def setting_save_04(ui):
         QMessageBox.information(ui, '저장 완료', '텔레그램봇 토큰 및 사용자 아이디 설정은 재구동해야 적용됩니다.')
 
 
+@error_decorator
 def setting_save_05(ui):
     me  = 1 if ui.sj_stock_ckBox_01.isChecked() else 0
     sd  = 1 if ui.sj_stock_ckBox_02.isChecked() else 0
@@ -437,6 +459,7 @@ def setting_save_05(ui):
             ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_save_06(ui):
     me  = 1 if ui.sj_coin_cheBox_01.isChecked() else 0
     sd  = 1 if ui.sj_coin_cheBox_02.isChecked() else 0
@@ -504,6 +527,7 @@ def setting_save_06(ui):
             ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_save_07(ui):
     bl  = 1 if ui.sj_back_cheBox_01.isChecked() else 0
     bld = 1 if ui.sj_back_cheBox_02.isChecked() else 0
@@ -540,7 +564,7 @@ def setting_save_07(ui):
             query = f"UPDATE back SET 블랙리스트추가 = {bl}, 백테주문관리적용 = {bbg}, 백테매수시간기준 = {bsg}, 백테일괄로딩 = {bld}, " \
                     f"그래프저장하지않기 = {gsv}, 그래프띄우지않기 = {gpl}, 디비자동관리 = {atd}, 교차검증가중치 = {ext}, 기준값최소상승률 = {gop}, " \
                     f"백테스케쥴실행 = {bss}, 백테스케쥴요일 = {bwd}, 백테스케쥴시간 = {bst}, 백테스케쥴구분 = '{abd}', 백테스케쥴명 = '{abn}', " \
-                    f"백테날짜고정 = {bdf}, 백테날짜 = '{bd}', 범위자동관리 = {aa}, 최적화로그기록안함 = {olx}"
+                    f"백테날짜고정 = {bdf}, 백테날짜 = '{bd}', 범위자동관리 = {aa}, 백테스트로그기록안함 = {olx}"
             ui.queryQ.put(('설정디비', query))
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -561,12 +585,13 @@ def setting_save_07(ui):
         ui.dict_set['백테날짜고정'] = bdf
         ui.dict_set['백테날짜'] = bd
         ui.dict_set['범위자동관리'] = aa
-        ui.dict_set['최적화로그기록안함'] = olx
+        ui.dict_set['백테스트로그기록안함'] = olx
         ui.UpdateDictSet()
         if pre_bbg != bbg:
             ui.BacktestEngineKill()
 
 
+@error_decorator
 def setting_save_08(ui):
     the = ui.sj_etc_comBoxx_01.currentText()
     ldp = 1 if ui.sj_etc_checBox_02.isChecked() else 0
@@ -595,6 +620,7 @@ def setting_save_08(ui):
     ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_acc_view(ui):
     if ui.sj_etc_pButton_01.text() == '계정 텍스트 보기':
         ui.pa_lineEditttt_01.clear()
@@ -613,6 +639,7 @@ def setting_acc_view(ui):
         ui.sj_etc_pButton_01.setStyleSheet(style_bc_bt)
 
 
+@error_decorator
 def setting_order_load_01(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stockbuyorder').set_index('index')
 
@@ -665,6 +692,7 @@ def setting_order_load_01(ui):
         QMessageBox.critical(ui, '오류 알림', '주문관리 주식매수 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_order_load_02(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM stocksellorder').set_index('index')
 
@@ -715,6 +743,7 @@ def setting_order_load_02(ui):
         QMessageBox.critical(ui, '오류 알림', '주문관리 주식매도 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_order_load_03(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coinbuyorder').set_index('index')
 
@@ -760,6 +789,7 @@ def setting_order_load_03(ui):
         QMessageBox.critical(ui, '오류 알림', '주문관리 코인매수 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_order_load_04(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coinsellorder').set_index('index')
 
@@ -802,6 +832,7 @@ def setting_order_load_04(ui):
         QMessageBox.critical(ui, '오류 알림', '주문관리 코인매도 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def setting_order_save_01(ui):
     od = ''
     if ui.sj_sodb_checkBox_01.isChecked(): od = '시장가'
@@ -919,6 +950,7 @@ def setting_order_save_01(ui):
         ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_order_save_02(ui):
     od = ''
     if ui.sj_sods_checkBox_01.isChecked(): od = '시장가'
@@ -1034,6 +1066,7 @@ def setting_order_save_02(ui):
         ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_order_save_03(ui):
     od = ''
     if ui.sj_codb_checkBox_01.isChecked(): od = '시장가'
@@ -1142,6 +1175,7 @@ def setting_order_save_03(ui):
         ui.UpdateDictSet()
 
 
+@error_decorator
 def setting_order_save_04(ui):
     od = ''
     if ui.sj_cods_checkBox_01.isChecked(): od = '시장가'
@@ -1251,6 +1285,7 @@ def setting_all_load(ui):
     LoadSettings(ui)
 
 
+@error_decorator
 def setting_all_app(ui):
     name = ui.sj_set_comBoxx_01.currentText()
     if name == '':
@@ -1292,6 +1327,7 @@ def setting_all_app(ui):
         QMessageBox.information(ui, '모든 설정 적용 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def setting_all_del(ui):
     name = ui.sj_set_comBoxx_01.currentText()
     if name == '':
@@ -1303,6 +1339,7 @@ def setting_all_del(ui):
     QMessageBox.information(ui, '삭제 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def setting_all_save(ui):
     name = ui.sj_set_liEditt_01.text()
     if name == '':
@@ -1315,22 +1352,27 @@ def setting_all_save(ui):
     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def setting_stock_weight_control(ui):
     ui.dialog_bjjs.show() if not ui.dialog_bjjs.isVisible() else ui.dialog_bjjs.close()
 
 
+@error_decorator
 def setting_coin_weight_control(ui):
     ui.dialog_bjjc.show() if not ui.dialog_bjjc.isVisible() else ui.dialog_bjjc.close()
 
 
+@error_decorator
 def setting_stock_elapsed_tick_number(ui):
     ui.dialog_setsj.show() if not ui.dialog_setsj.isVisible() else ui.dialog_setsj.close()
 
 
+@error_decorator
 def setting_coin_elapsed_tick_number(ui):
     ui.dialog_cetsj.show() if not ui.dialog_cetsj.isVisible() else ui.dialog_cetsj.close()
 
 
+@error_decorator
 def LoadSettings(ui):
     ui.sj_set_comBoxx_01.clear()
     file_list = os.listdir(DB_PATH)

@@ -6,9 +6,11 @@ import random
 import sqlite3
 import numpy as np
 import pandas as pd
+from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.back_static import SendResult, GetMoneytopQuery
-from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
+from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd, error_decorator, \
+    set_builtin_print
 from utility.setting_base import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
@@ -44,8 +46,10 @@ class Total:
         self.stdp         = -float('inf')
         self.sub_total    = 0
 
+        set_builtin_print(True, self.wq)
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         sc = 0
         bc = 0
@@ -181,8 +185,11 @@ class OptimizeGeneticAlgorithm:
             self.gubun = 'coin'
         self.savename    = f'{self.gubun}_{self.backname.replace("최적화", "").lower()}'
         self.orignal_vars_list = []
+
+        set_builtin_print(True, self.wq)
         self.Start()
 
+    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()
@@ -315,8 +322,8 @@ class OptimizeGeneticAlgorithm:
         optivars_ = compile(df['전략코드'][optivars_name], '<string>', 'exec')
         try:
             exec(optivars_)
-        except Exception as e:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - {self.backname} 변수설정 {e}'))
+        except:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - {self.backname} 변수설정'))
             self.SysExit(True)
 
         self.total_count = 1

@@ -1,5 +1,6 @@
 
 from PyQt5.QtWidgets import QGroupBox, QLabel
+from utility.static import error_decorator
 
 
 class SetOrderTap:
@@ -8,6 +9,7 @@ class SetOrderTap:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.sj_od_groupBoxxx_01 = QGroupBox(' 주식 및 해선 매수주문의 방법 및 유형, 금지 사항 등을 설정한다.', self.ui.sod_tab)
         self.ui.sj_od_groupBoxxx_02 = QGroupBox(' 주식 및 해선 매도주문의 방법 및 유형, 금지 사항 등을 설정한다.', self.ui.sod_tab)

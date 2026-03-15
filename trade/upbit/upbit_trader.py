@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from utility.setting_base import columns_cj, columns_td, ui_num, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, GetUpbitHogaunit, GetUpbitPgSgSp, now_utc, str_ymdhmsf, str_hmsf, \
-    error_decorator, str_hms, str_ymd, dt_hms, get_logger, qtest_qwait
+    str_hms, str_ymd, dt_hms, qtest_qwait
 
 
 class Updater(QThread):
@@ -49,7 +49,6 @@ class UpbitTrader:
         self.cstgQ         = qlist[10]
         self.liveQ         = qlist[11]
         self.dict_set      = dict_set
-        self.logger        = get_logger(self.__class__.__name__)
 
         self.order_time    = now()
         self.dict_cj       = {}  # 체결목록
@@ -115,7 +114,7 @@ class UpbitTrader:
                 '손절거래시간': dummy_time
             }
 
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 코인명 수집 완료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 코인명 수집 완료'))
 
     def LoadDatabase(self):
         con = sqlite3.connect(DB_TRADELIST)
@@ -133,7 +132,7 @@ class UpbitTrader:
                 self.dict_jg = df_jg.to_dict('index')
                 self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
         con.close()
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
 
     def GetBalances(self):
         if self.dict_set['코인모의투자']:
@@ -157,17 +156,16 @@ class UpbitTrader:
 
         if self.dict_td: self.UpdateTotaltradelist(first=True)
 
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 예수금 조회 완료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 예수금 조회 완료'))
 
         text = '코인 전략연산 및 트레이더를 시작하였습니다.'
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 시작'))
-        self.logger.info('트레이더 시작 완료')
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 트레이더 시작'))
 
     def CheckError(self, ret):
         if ret.__class__ == dict and list(ret)[0] == 'error':
-            self.windowQ.put((ui_num['C로그텍스트'], f"시스템 명령 오류 알림 - {ret['error']['name']} : {ret['error']['message']}"))
+            self.windowQ.put((ui_num['시스템로그'], f"오류 알림 - {ret['error']['name']} : {ret['error']['message']}"))
             return False
         return True
 
@@ -259,7 +257,7 @@ class UpbitTrader:
                 주문가격 = np.round(주문가격 + GetUpbitHogaunit(주문가격) * self.dict_set['코인매도지정가호가번호'], 8)
 
         if 주문수량 * 주문가격 < 5000:
-            self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - 주문금액이 5천원미만입니다.'))
+            self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - 주문금액이 5천원미만입니다.'))
             self.cstgQ.put((f'{주문구분}취소', 종목코드))
             return
 
@@ -275,7 +273,7 @@ class UpbitTrader:
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()
-        self.windowQ.put((ui_num['C단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
+        self.windowQ.put((ui_num['타임로그'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
 
     def SendOrder(self, data):
         curr_time = now()
@@ -300,10 +298,10 @@ class UpbitTrader:
                         self.dict_intg['추정예수금'] -= 주문수량 * 주문가격
                         self.dict_order[주문구분][종목코드] = [ret['uuid'], timedelta_sec(self.dict_set['코인매수취소시간초']), 정정횟수, 주문가격, GetUpbitHogaunit(주문가격)]
                         self.UpdateChegeollist(dt, 종목코드, f'{주문구분} 접수', 주문수량, 0, 주문수량, 0, dt[:14], 주문가격, ret['uuid'])
-                        self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목코드} | {주문가격} | {주문수량}'))
+                        self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목코드} | {주문가격} | {주문수량}'))
                 else:
                     self.cstgQ.put(('매수취소', 종목코드))
-                    self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문실패] {종목코드} | {주문가격} | {주문수량}'))
+                    self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문실패] {종목코드} | {주문가격} | {주문수량}'))
 
             elif 주문구분 == '매도':
                 ret = None
@@ -317,12 +315,10 @@ class UpbitTrader:
                         dt = self.GetIndex()
                         self.dict_order[주문구분][종목코드] = [ret['uuid'], timedelta_sec(self.dict_set['코인매도취소시간초']), 정정횟수, 주문가격, GetUpbitHogaunit(주문가격)]
                         self.UpdateChegeollist(dt, 종목코드, f'{주문구분} 접수', 주문수량, 0, 주문수량, 0, dt[:14], 주문가격, ret['uuid'])
-                        self.logger.error(f'[주문전송] {종목코드} | {주문가격} | {주문수량} | {주문구분}')
-                        self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목코드} | {주문가격} | {주문수량}'))
+                        self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목코드} | {주문가격} | {주문수량}'))
                 else:
                     self.cstgQ.put(('매도취소', 종목코드))
-                    self.logger.info(f'[주문실패] {종목코드} | {주문가격} | {주문수량} | {주문구분}')
-                    self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문실패] {종목코드} | {주문가격} | {주문수량} | {주문구분}'))
+                    self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문실패] {종목코드} | {주문가격} | {주문수량} | {주문구분}'))
 
             elif 주문구분 in ('매수취소', '매도취소'):
                 ret = self.upbit.cancel_order(주문번호)
@@ -330,7 +326,7 @@ class UpbitTrader:
                     if self.CheckError(ret):
                         self.dict_order[주문구분][종목코드] = ret['uuid']
                 else:
-                    self.windowQ.put((ui_num['C로그텍스트'], f'시스템 명령 오류 알림 - [주문 실패] {종목코드} | {주문가격} | {주문수량} | {주문구분}'))
+                    self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문 실패] {종목코드} | {주문가격} | {주문수량} | {주문구분}'))
 
         self.order_time = timedelta_sec(0.3)
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
@@ -518,7 +514,7 @@ class UpbitTrader:
                     self.CheckOrder(('매도', 종목코드, 현재가, 보유수량, now(), True))
             if self.dict_set['코인알림소리']:
                 self.soundQ.put('코인 잔고청산 주문을 전송하였습니다.')
-            self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))
+            self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 코인 잔고청산 주문 완료'))
         elif gubun == '수동':
             self.teleQ.put('현재는 코인 보유종목이 없습니다.')
         self.dict_bool['코인잔고청산'] = True
@@ -526,7 +522,7 @@ class UpbitTrader:
     def SysExit(self):
         self.SaveDayData()
         qtest_qwait(5)
-        self.windowQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 트레이더 종료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 트레이더 종료'))
 
     def SaveDayData(self):
         con = sqlite3.connect(DB_TRADELIST)
@@ -536,7 +532,7 @@ class UpbitTrader:
             df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
             self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
             if self.dict_set['코인알림소리']: self.soundQ.put('일별실현손익를 저장하였습니다.')
-            self.soundQ.put((ui_num['C로그텍스트'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료'))
+            self.soundQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료'))
 
     def GetIndex(self):
         index = str_ymdhmsf(now_utc())
@@ -545,7 +541,6 @@ class UpbitTrader:
                 index = str(int(index) + 1)
         return index
 
-    @error_decorator
     def UpdateChejanData(self, 주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 주문번호):
         index = self.GetIndex()
 
@@ -635,7 +630,7 @@ class UpbitTrader:
             df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
             self.queryQ.put(('거래디비', df_jg, 'c_jangolist', 'replace'))
             if self.dict_set['코인알림소리']: self.soundQ.put(f"{종목코드} {주문구분}하였습니다.")
-            self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}체결] {종목코드} | {체결가격} | {체결수량}'))
+            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}체결] {종목코드} | {체결가격} | {체결수량}'))
 
         elif 주문구분 == '시드부족':
             self.UpdateChegeollist(index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, index[:14], 주문가격, 주문번호)
@@ -652,7 +647,7 @@ class UpbitTrader:
             self.UpdateChegeollist(index, 종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, index[:14], 주문가격, 주문번호)
 
             if self.dict_set['코인알림소리']: self.soundQ.put(f"{종목코드} {주문구분}하였습니다.")
-            self.windowQ.put((ui_num['C로그텍스트'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {주문가격} | {주문수량}'))
+            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목코드} | {주문가격} | {주문수량}'))
 
         self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
         self.creceivQ.put(('주문목록', self.GetOrderCodeList()))
@@ -776,6 +771,5 @@ class UpbitTrader:
         self.windowQ.put((ui_num['C잔고평가'], df_tj))
 
     def StrategyStop(self):
-        self.logger.info('매수전략중지')
         self.cstgQ.put('매수전략중지')
         self.JangoCheongsan('수동')

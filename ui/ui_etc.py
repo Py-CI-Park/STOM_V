@@ -2,16 +2,34 @@
 import psutil
 import random
 import sqlite3
-import numpy as np
-import pandas as pd
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QApplication, QMessageBox, QColorDialog
 from ui.set_text import famous_saying
 from utility.setting_base import columns_dt, columns_dd, ui_num, DB_STRATEGY
-from utility.static import thread_decorator, qtest_qwait, str_ymdhmsf, str_ymdhms
+from utility.static import thread_decorator, qtest_qwait, str_ymdhmsf, str_ymdhms, error_decorator
+
+_pd = None
+_np = None
 
 
+def get_pd():
+    global _pd
+    if _pd is None:
+        import pandas as pd
+        _pd = pd
+    return _pd
+
+
+def get_np():
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
+
+
+@error_decorator
 def update_image(ui, data):
     ui.image_label1.clear()
     qpix = QPixmap()
@@ -25,6 +43,7 @@ def update_image(ui, data):
     ui.image_label2.setPixmap(qpix)
 
 
+@error_decorator
 def update_sqsize(ui, data):
     ui.saqsize, ui.stqsize, ui.ssqsize = data
 
@@ -34,6 +53,7 @@ def update_cpuper(ui):
     ui.cpu_per = int(psutil.cpu_percent(interval=1))
 
 
+@error_decorator
 def auto_back_schedule(ui, gubun):
     if gubun == 1:
         ui.auto_mode = True
@@ -62,6 +82,7 @@ def auto_back_schedule(ui, gubun):
         ui.auto_mode = False
 
 
+@error_decorator
 def update_dictset(ui):
     ui.wdzservQ.put(('manager', ('설정변경', ui.dict_set)))
     if ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('설정변경', ui.dict_set))
@@ -75,14 +96,13 @@ def update_dictset(ui):
             bpq.put(('설정변경', ui.dict_set))
 
 
+@error_decorator
 def chart_clear(ui):
     ui.ctpg_name             = None
     ui.ctpg_cline            = None
     ui.ctpg_hline            = None
     ui.ctpg_xticks           = None
     ui.ctpg_arry             = None
-    ui.ctpg_last_candlestick = None
-    ui.ctpg_last_volumebar   = None
     ui.ctpg_last_xtick       = None
     ui.ctpg_legend           = {}
     ui.ctpg_item             = {}
@@ -91,6 +111,7 @@ def chart_clear(ui):
     ui.ctpg_labels           = []
 
 
+@error_decorator
 def calendar_clicked(ui, gubun):
     if gubun == 'S':
         table = 's_tradelist' if '키움증권' in ui.dict_set['증권사'] else 'f_tradelist'
@@ -106,17 +127,18 @@ def calendar_clicked(ui, gubun):
         else:
             df1 = df1[['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금']]
         nbg, nsg = df1['매수금액'].sum(), df1['매도금액'].sum()
-        sp = np.round((nsg / nbg - 1) * 100, 2)
+        sp = get_np().round((nsg / nbg - 1) * 100, 2)
         npg, nmg, nsig = df1[df1['수익금'] > 0]['수익금'].sum(), df1[df1['수익금'] < 0]['수익금'].sum(), df1['수익금'].sum()
-        df2 = pd.DataFrame(columns=columns_dt)
+        df2 = get_pd().DataFrame(columns=columns_dt)
         df2.loc[0] = [searchday, nbg, nsg, npg, nmg, sp, nsig]
     else:
-        df1 = pd.DataFrame(columns=columns_dd)
-        df2 = pd.DataFrame(columns=columns_dt)
+        df1 = get_pd().DataFrame(columns=columns_dd)
+        df2 = get_pd().DataFrame(columns=columns_dt)
     ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}당일합계'], df2))
     ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}당일상세'], df1))
 
 
+@error_decorator
 def stom_live_screenshot(ui, cmd):
     prev_main_btn = ui.main_btn
     ui.mnButtonClicked_01(4)
@@ -142,6 +164,7 @@ def stom_live_screenshot(ui, cmd):
     ui.mnButtonClicked_01(prev_main_btn)
 
 
+@error_decorator
 def chart_screenshot(ui):
     if ui.dialog_chart.isVisible():
         file_name = f'./_log/chart_{str_ymdhmsf()}.png'
@@ -152,6 +175,7 @@ def chart_screenshot(ui):
         QMessageBox.information(ui, '차트 스샷 전송 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def chart_screenshot2(ui):
     if ui.dialog_chart.isVisible():
         file_name = f'./_log/chart_{str_ymdhmsf()}.png'
@@ -162,6 +186,7 @@ def chart_screenshot2(ui):
         QMessageBox.information(ui.dialog_chart, '차트 스샷 전송 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def manual_save_and_exit(ui):
     buttonReply = QMessageBox.question(
         ui, '수동종료', '현재까지의 데이터를 저장하고 수동종료합니다.\n계속 하시겠습니까?\n',
@@ -174,6 +199,7 @@ def manual_save_and_exit(ui):
             ui.wdzservQ.put(('agent', ('수동데이터저장', 'dummy')))
 
 
+@error_decorator
 def formula_activated(ui):
     dict_style = {
         1: '1:실선',
@@ -193,9 +219,10 @@ def formula_activated(ui):
     row = cursor.fetchone()
     con.close()
     if row:
-        name, check, fname, vtype, color, width, style, stg = row
+        name, check1, check2, fname, vtype, color, width, style, stg = row
         ui.fm_lineEdittttt_01.setText(name)
-        ui.fm_checkBoxxxxx_01.setChecked(check)
+        ui.fm_checkBoxxxxx_01.setChecked(check1)
+        ui.fm_checkBoxxxxx_02.setChecked(check2)
         ui.fm_comboBoxxxxx_01.setCurrentText(fname)
         ui.fm_comboBoxxxxx_02.setCurrentText(vtype)
         if '#' in color:
@@ -207,6 +234,7 @@ def formula_activated(ui):
         ui.fm_textEdittttt_01.append(stg)
 
 
+@error_decorator
 def formila_button_clicked(ui):
     button_text = ui.dialog_formula.focusWidget().text()
 
@@ -218,18 +246,20 @@ def formila_button_clicked(ui):
         con.close()
         ui.fm_comboBoxxxxx_00.clear()
         name_list = [row[0] for row in rows]
+        name_list.sort()
         for name in name_list:
             ui.fm_comboBoxxxxx_00.addItem(name)
 
     elif button_text == '저장하기':
-        name  = ui.fm_lineEdittttt_01.text()
-        check = 1 if ui.fm_checkBoxxxxx_01.isChecked() else 0
-        fname = ui.fm_comboBoxxxxx_01.currentText()
-        vtype = ui.fm_comboBoxxxxx_02.currentText()
-        color = ui.fm_lineEdittttt_02.text()
-        width = float(ui.fm_comboBoxxxxx_03.currentText())
-        style = int(ui.fm_comboBoxxxxx_04.currentText()[:1])
-        stg   = ui.fm_textEdittttt_01.toPlainText()
+        name   = ui.fm_lineEdittttt_01.text()
+        check1 = 1 if ui.fm_checkBoxxxxx_01.isChecked() else 0
+        check2 = 1 if ui.fm_checkBoxxxxx_02.isChecked() else 0
+        fname  = ui.fm_comboBoxxxxx_01.currentText()
+        vtype  = ui.fm_comboBoxxxxx_02.currentText()
+        color  = ui.fm_lineEdittttt_02.text()
+        width  = float(ui.fm_comboBoxxxxx_03.currentText())
+        style  = int(ui.fm_comboBoxxxxx_04.currentText()[:1])
+        stg    = ui.fm_textEdittttt_01.toPlainText()
 
         if name == '' or stg == '':
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '수식명 또는 수식코드가 공백상태입니다.\n')
@@ -238,7 +268,7 @@ def formila_button_clicked(ui):
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '실선의 최대크기는 5입니다.\n')
             return
         elif vtype in ('선:일반', '선:조건') and style > 5:
-            QMessageBox.critical(ui.dialog_formula, '오류 알림', '선의 종류 선택이 잘못되었습니다.\n')
+            QMessageBox.critical(ui.dialog_formula, '오류 알림', '선 종류 선택이 잘못되었습니다.\n')
             return
         elif vtype == '화살표:일반' and width < 10:
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표의 최소크기는 10입니다.\n')
@@ -246,11 +276,14 @@ def formila_button_clicked(ui):
         elif vtype == '화살표:일반' and style < 6:
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표의 방향 선택이 잘못되었습니다.\n')
             return
+        elif vtype == '화살표:매매' and check2:
+            QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표:매매는 전략연산 및 백테에 적용할 수 없습니다.\n')
+            return
 
         if ui.FormulaCodeTest(stg) and ui.proc_query.is_alive():
             delete_query = f"DELETE FROM formula WHERE 수식명 = '{name}'"
-            insert_query = f"INSERT INTO formula (수식명, 체크유무, 팩터명, 표시형태, 색상, 크기, 라인타입, 수식코드) " \
-                           f"VALUES ('{name}', {check}, '{fname}', '{vtype}', '{color}', {width}, {style}, '{stg}')"
+            insert_query = f"INSERT INTO formula (수식명, 차트표시, 전략연산, 팩터명, 표시형태, 색상, 크기, 라인타입, 수식코드) " \
+                           f"VALUES ('{name}', {check1}, {check2}, '{fname}', '{vtype}', '{color}', {width}, {style}, '{stg}')"
             ui.queryQ.put(('전략디비', delete_query))
             ui.queryQ.put(('전략디비', insert_query))
             QMessageBox.information(ui.dialog_formula, '수식 저장 완료', random.choice(famous_saying))
@@ -298,8 +331,19 @@ def formila_button_clicked(ui):
     elif button_text == '예제확인':
         text = """# 수식관리자는 로딩된 차트 데이터를 기반으로
 # 전략연산과 유사한 방식으로 작동되도록 설계되었으며
-# 전략연산과 다르게 매도관련 팩터를 사용할 수 없으니
-# 유의하시길 바랍니다. (보유수량, 최고수익률, 수익률 등)
+# 전략연산과 다르게 매도관련 팩터를 사용할 수 없습니다.
+# (수익금, 수익률, 매수가, 보유수량, 매수시간, 보유시간 ...)
+# 구간연산값은 항상 틱(봉)수를 만족하지 못할 경우 0이오니
+# 구간연산값은 > 0 조건을 넣어 수식을 작성하시길 바랍니다.
+
+# 수식을 작성할 때, 모든 수식의 이전틱(봉)값을 사용할 수 있습니다.
+# 수식명(1) 형태로 입력하며 괄호안에 1이상을 입력하여 사용합니다.
+# 모든 사용자 수식은 순차적으로 계산되므로 0을 입력할 경우
+# 계산되지 않은 값이 리턴될 수 있으므로 사용하지 마십시오. 
+
+# 차트표시는 DB에서 데이터를 불러와서 표시되는 차트에 표시를 의미하고
+# 전략연산 및 백테 적용은 작성한 수식을 매도수 전략코드에
+# 적용할 수 있는 설정입니다. 또한 실시간차트에 표시를 의미합니다.
 
 # 선:일반, 고가 라인 표시
 self.line = 최고현재가(60)
@@ -311,6 +355,12 @@ low_price = 최저현재가(30)
 self.check = (high_price / low_price - 1) * 100 >= 2
 self.line = (high_price + low_price) / 2
 
+# 범위, 이동평균위
+이평60 = 이동평균(60)
+self.check = 현재가 > 이평60 and 이평60 > 0
+self.up = 현재가
+self.down = 이평60
+
 # 화살표:일반, 호가상승압력
 총잔량 = 매수총잔량 + 매도총잔량
 self.check = 매수총잔량 / 총잔량 > 0.7
@@ -321,12 +371,6 @@ self.check = 매수총잔량 / 총잔량 > 0.7
 if 데이터길이 < 61: continue
 self.buy = 현재가N(1) <= 직전이평 and 현재이평 < 현재가
 self.sell = 현재가N(1) >= 직전이평 and 현재이평 > 현재가
-
-# 범위, 이동평균위
-이평60 = 이동평균(60)
-self.check = 현재가 > 이평60 and 이평60 > 0
-self.up = 현재가
-self.down = 이평60
 """
         ui.fm_textEdittttt_01.clear()
         ui.fm_textEdittttt_01.append(text)

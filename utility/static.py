@@ -6,7 +6,7 @@ import pytz
 import psutil
 import _pickle
 import datetime
-import numpy as np
+import builtins
 import winreg as reg
 from talib import stream
 from loguru import logger
@@ -15,12 +15,47 @@ from traceback import print_exc
 import exchange_calendars as ec
 from threading import Thread, Timer
 from cryptography.fernet import Fernet
+from utility.setting_base import ui_num
+
+
+_np = None
+
+
+def get_np():
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
 
 
 now_utc_ = datetime.datetime.now(pytz.utc)
 now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
 summer_t = int(now_cme_.dst().total_seconds())
 time_gap = int(summer_t - 50400)
+
+
+def set_builtin_print(bit64, q):
+    # noinspection PyUnusedLocal
+    def ui_print(*args, sep=' ', end='\n', file=None):
+        try:
+            processed_args = []
+            for arg in args:
+                if callable(arg):
+                    result = arg()
+                    processed_args.append(str(result))
+                else:
+                    processed_args.append(str(arg))
+            message = sep.join(processed_args)
+            message = message.lstrip()
+            message = message.rstrip()
+            if bit64:
+                q.put((ui_num['시스템로그'], message))
+            else:
+                q.put(('window', (ui_num['시스템로그'], message)))
+        except:
+            pass
+    builtins.print = ui_print
 
 
 def get_ema_list(is_tick):
@@ -71,16 +106,32 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
         df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
         df2[f'당일거래대금N{avg}'] = df2['당일거래대금'].shift(avg - 1)
         df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
-        df['등락율각도'] = np.round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
-        df['당일거래대금각도'] = np.round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
+        df['등락율각도'] = get_np().round(get_np().arctan2(df2['등락율차이'] * cf1, avg) / (2 * get_np().pi) * 360, 2)
+        df['당일거래대금각도'] = get_np().round(get_np().arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * get_np().pi) * 360, 2)
 
         if market == 1:
             df2[f'전일비N{avg}'] = df2['전일비'].shift(avg - 1)
             df2['전일비차이'] = df2['전일비'] - df2[f'전일비N{avg}']
-            df['전일비각도'] = np.round(np.arctan2(df2['전일비차이'], avg) / (2 * np.pi) * 360, 2)
+            df['전일비각도'] = get_np().round(get_np().arctan2(df2['전일비차이'], avg) / (2 * get_np().pi) * 360, 2)
 
-    arry = np.array(df)
-    return np.nan_to_num(arry)
+    arry = get_np().array(df)
+    return get_np().nan_to_num(arry)
+
+
+def error_decorator(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except:
+            print_exc()
+            return None
+    return wrapper
+
+
+def thread_decorator(func):
+    def wrapper(*args):
+        Thread(target=func, args=args, daemon=True).start()
+    return wrapper
 
 
 def get_logger(name):
@@ -254,21 +305,6 @@ def timedelta_sec(second, std_time=None):
 
 def timedelta_day(day, std_time=None):
     return now() + datetime.timedelta(days=float(day)) if std_time is None else std_time + datetime.timedelta(days=float(day))
-
-
-def thread_decorator(func):
-    def wrapper(*args):
-        Thread(target=func, args=args, daemon=True).start()
-    return wrapper
-
-
-def error_decorator(func):
-    def wrapper(*args):
-        try:
-            func(*args)
-        except:
-            print_exc()
-    return wrapper
 
 
 def threading_timer(sec, func, args=None):
@@ -454,11 +490,170 @@ def get_angle_cf(market_gubun, is_tick, index):
     return dgree[market_gubun][is_tick][index]
 
 
+def GetUpbitHogaunit(price):
+    if price < 0.01:
+        return 0.0001
+    elif price < 1:
+        return 0.001
+    elif price < 10:
+        return 0.01
+    elif price < 100:
+        return 0.1
+    elif price < 1000:
+        return 1
+    elif price < 10000:
+        return 5
+    elif price < 100000:
+        return 10
+    elif price < 500000:
+        return 50
+    elif price < 1000000:
+        return 100
+    elif price < 2000000:
+        return 500
+    else:
+        return 1000
+
+
+def GetHogaunit(kosd, price, index):
+    if index < 20230125000000:
+        if kosd:
+            if price < 1000:
+                return 1
+            elif price < 5000:
+                return 5
+            elif price < 10000:
+                return 10
+            elif price < 50000:
+                return 50
+            else:
+                return 100
+        else:
+            if price < 1000:
+                return 1
+            elif price < 5000:
+                return 5
+            elif price < 10000:
+                return 10
+            elif price < 50000:
+                return 50
+            elif price < 100000:
+                return 100
+            elif price < 500000:
+                return 500
+            else:
+                return 1000
+    else:
+        if price < 2000:
+            return 1
+        elif price < 5000:
+            return 5
+        elif price < 20000:
+            return 10
+        elif price < 50000:
+            return 50
+        elif price < 200000:
+            return 100
+        elif price < 500000:
+            return 500
+        else:
+            return 1000
+
+
+def roundfigure_upper(price, unit, index):
+    if index < 20230125000000:
+        if 1000 <= price <= 1000 + 5 * unit:
+            return True
+        if 5000 <= price <= 5000 + 10 * unit:
+            return True
+        if 10000 <= price <= 10000 + 50 * unit:
+            return True
+        if 50000 <= price <= 50000 + 100 * unit:
+            return True
+        if 100000 <= price <= 100000 + 500 * unit:
+            return True
+        if 500000 <= price <= 500000 + 1000 * unit:
+            return True
+    else:
+        if 2000 <= price <= 2000 + 5 * unit:
+            return True
+        if 5000 <= price <= 5000 + 10 * unit:
+            return True
+        if 20000 <= price <= 20000 + 50 * unit:
+            return True
+        if 50000 <= price <= 50000 + 100 * unit:
+            return True
+        if 200000 <= price <= 200000 + 500 * unit:
+            return True
+        if 500000 <= price <= 500000 + 1000 * unit:
+            return True
+    return False
+
+
+def roundfigure_lower(price, unit, index):
+    if index < 20230125000000:
+        if 1000 - 1 * unit <= price <= 1000:
+            return True
+        if 5000 - 5 * unit <= price <= 5000:
+            return True
+        if 10000 - 10 * unit <= price <= 10000:
+            return True
+        if 50000 - 50 * unit <= price <= 50000:
+            return True
+        if 100000 - 100 * unit <= price <= 100000:
+            return True
+        if 500000 - 500 * unit <= price <= 500000:
+            return True
+    else:
+        if 2000 - 1 * unit <= price <= 2000:
+            return True
+        if 5000 - 5 * unit <= price <= 5000:
+            return True
+        if 20000 - 10 * unit <= price <= 20000:
+            return True
+        if 50000 - 50 * unit <= price <= 50000:
+            return True
+        if 200000 - 100 * unit <= price <= 200000:
+            return True
+        if 500000 - 500 * unit <= price <= 500000:
+            return True
+    return False
+
+
+def roundfigure_upper5(price, index):
+    if index < 20230125000000:
+        if 1000 <= price <= 1025:
+            return True
+        if 5000 <= price <= 5050:
+            return True
+        if 10000 <= price <= 10250:
+            return True
+        if 50000 <= price <= 50500:
+            return True
+        if 100000 <= price <= 102500:
+            return True
+        if 500000 <= price <= 505000:
+            return True
+    else:
+        if 2000 <= price <= 2025:
+            return True
+        if 5000 <= price <= 5050:
+            return True
+        if 20000 <= price <= 20250:
+            return True
+        if 50000 <= price <= 50500:
+            return True
+        if 200000 <= price <= 202500:
+            return True
+        if 500000 <= price <= 505000:
+            return True
+    return False
+
+
 try:
     from numba import jit
 
 
-    @jit(nopython=True, cache=True)
     def GetKiwoomPgSgSp(bg, cg):
         texs = int(cg * 0.0018)
         bfee = int(bg * 0.00015 / 10) * 10
@@ -469,7 +664,6 @@ try:
         return pg, sg, sp
 
 
-    @jit(nopython=True, cache=True)
     def GetUpbitPgSgSp(bg, cg):
         bfee = bg * 0.0005
         sfee = cg * 0.0005
@@ -479,7 +673,6 @@ try:
         return pg, sg, sp
 
 
-    @jit(nopython=True, cache=True)
     def GetBinanceLongPgSgSp(bg, cg, market1, market2):
         bfee = bg * (0.0004 if market1 else 0.0002)
         sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
@@ -489,7 +682,6 @@ try:
         return pg, sg, sp
 
 
-    @jit(nopython=True, cache=True)
     def GetBinanceShortPgSgSp(bg, cg, market1, market2):
         bfee = bg * (0.0004 if market1 else 0.0002)
         sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
@@ -499,7 +691,6 @@ try:
         return pg, sg, sp
 
 
-    @jit(nopython=True, cache=True)
     def GetFutureLongPgSgSp(bg, cg, code):
         fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
         pg = round(cg - fee * 2, 1)
@@ -508,7 +699,6 @@ try:
         return pg, sg, sp
 
 
-    @jit(nopython=True, cache=True)
     def GetFutureShortPgSgSp(bg, cg, code):
         fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
         pg = round(bg + bg - cg - fee * 2, 1)
@@ -517,7 +707,6 @@ try:
         return pg, sg, sp
 
 
-    @jit(nopython=True, cache=True)
     def GetVIPrice(kosd, std_price, index):
         uvi = int(std_price * 1.1)
         x = GetHogaunit(kosd, uvi, index)
@@ -530,7 +719,6 @@ try:
         return int(uvi), int(dvi), int(x)
 
 
-    @jit(nopython=True, cache=True)
     def GetSangHahanga(kosd, predayclose, index):
         uplimitprice = int(predayclose * 1.30)
         x = GetHogaunit(kosd, uplimitprice, index)
@@ -541,221 +729,56 @@ try:
         if downlimitprice % x != 0:
             downlimitprice += x - downlimitprice % x
         return int(uplimitprice), int(downlimitprice)
-
-
-    @jit(nopython=True, cache=True)
-    def GetUpbitHogaunit(price):
-        if price < 0.01:
-            return 0.0001
-        elif price < 1:
-            return 0.001
-        elif price < 10:
-            return 0.01
-        elif price < 100:
-            return 0.1
-        elif price < 1000:
-            return 1
-        elif price < 10000:
-            return 5
-        elif price < 100000:
-            return 10
-        elif price < 500000:
-            return 50
-        elif price < 1000000:
-            return 100
-        elif price < 2000000:
-            return 500
-        else:
-            return 1000
-
-
-    @jit(nopython=True, cache=True)
-    def GetHogaunit(kosd, price, index):
-        if index < 20230125000000:
-            if kosd:
-                if price < 1000:
-                    return 1
-                elif price < 5000:
-                    return 5
-                elif price < 10000:
-                    return 10
-                elif price < 50000:
-                    return 50
-                else:
-                    return 100
-            else:
-                if price < 1000:
-                    return 1
-                elif price < 5000:
-                    return 5
-                elif price < 10000:
-                    return 10
-                elif price < 50000:
-                    return 50
-                elif price < 100000:
-                    return 100
-                elif price < 500000:
-                    return 500
-                else:
-                    return 1000
-        else:
-            if price < 2000:
-                return 1
-            elif price < 5000:
-                return 5
-            elif price < 20000:
-                return 10
-            elif price < 50000:
-                return 50
-            elif price < 200000:
-                return 100
-            elif price < 500000:
-                return 500
-            else:
-                return 1000
-
-
-    @jit(nopython=True, cache=True)
-    def roundfigure_upper(price, unit, index):
-        if index < 20230125000000:
-            if 1000 <= price <= 1000 + 5 * unit:
-                return True
-            if 5000 <= price <= 5000 + 10 * unit:
-                return True
-            if 10000 <= price <= 10000 + 50 * unit:
-                return True
-            if 50000 <= price <= 50000 + 100 * unit:
-                return True
-            if 100000 <= price <= 100000 + 500 * unit:
-                return True
-            if 500000 <= price <= 500000 + 1000 * unit:
-                return True
-        else:
-            if 2000 <= price <= 2000 + 5 * unit:
-                return True
-            if 5000 <= price <= 5000 + 10 * unit:
-                return True
-            if 20000 <= price <= 20000 + 50 * unit:
-                return True
-            if 50000 <= price <= 50000 + 100 * unit:
-                return True
-            if 200000 <= price <= 200000 + 500 * unit:
-                return True
-            if 500000 <= price <= 500000 + 1000 * unit:
-                return True
-        return False
-
-
-    @jit(nopython=True, cache=True)
-    def roundfigure_lower(price, unit, index):
-        if index < 20230125000000:
-            if 1000 - 1 * unit <= price <= 1000:
-                return True
-            if 5000 - 5 * unit <= price <= 5000:
-                return True
-            if 10000 - 10 * unit <= price <= 10000:
-                return True
-            if 50000 - 50 * unit <= price <= 50000:
-                return True
-            if 100000 - 100 * unit <= price <= 100000:
-                return True
-            if 500000 - 500 * unit <= price <= 500000:
-                return True
-        else:
-            if 2000 - 1 * unit <= price <= 2000:
-                return True
-            if 5000 - 5 * unit <= price <= 5000:
-                return True
-            if 20000 - 10 * unit <= price <= 20000:
-                return True
-            if 50000 - 50 * unit <= price <= 50000:
-                return True
-            if 200000 - 100 * unit <= price <= 200000:
-                return True
-            if 500000 - 500 * unit <= price <= 500000:
-                return True
-        return False
-
-
-    @jit(nopython=True, cache=True)
-    def roundfigure_upper5(price, index):
-        if index < 20230125000000:
-            if 1000 <= price <= 1025:
-                return True
-            if 5000 <= price <= 5050:
-                return True
-            if 10000 <= price <= 10250:
-                return True
-            if 50000 <= price <= 50500:
-                return True
-            if 100000 <= price <= 102500:
-                return True
-            if 500000 <= price <= 505000:
-                return True
-        else:
-            if 2000 <= price <= 2025:
-                return True
-            if 5000 <= price <= 5050:
-                return True
-            if 20000 <= price <= 20250:
-                return True
-            if 50000 <= price <= 50500:
-                return True
-            if 200000 <= price <= 202500:
-                return True
-            if 500000 <= price <= 505000:
-                return True
-        return False
 except:
     def GetKiwoomPgSgSp(bg, cg):
         texs = int(cg * 0.0018)
         bfee = int(bg * 0.00015 / 10) * 10
         sfee = int(cg * 0.00015 / 10) * 10
         pg = int(cg - texs - bfee - sfee)
-        sg = int(np.round(pg - bg))
-        sp = np.round(sg / bg * 100, 2)
+        sg = int(get_np().round(pg - bg))
+        sp = get_np().round(sg / bg * 100, 2)
         return pg, sg, sp
 
 
     def GetUpbitPgSgSp(bg, cg):
         bfee = bg * 0.0005
         sfee = cg * 0.0005
-        pg = int(np.round(cg - bfee - sfee))
-        sg = int(np.round(pg - bg))
-        sp = np.round(sg / bg * 100, 2)
+        pg = int(get_np().round(cg - bfee - sfee))
+        sg = int(get_np().round(pg - bg))
+        sp = get_np().round(sg / bg * 100, 2)
         return pg, sg, sp
 
 
     def GetBinanceLongPgSgSp(bg, cg, market1, market2):
         bfee = bg * (0.0004 if market1 else 0.0002)
         sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
-        pg = np.round(cg - bfee - sfee, 4)
-        sg = np.round(pg - bg, 4)
-        sp = np.round(sg / bg * 100, 2)
+        pg = get_np().round(cg - bfee - sfee, 4)
+        sg = get_np().round(pg - bg, 4)
+        sp = get_np().round(sg / bg * 100, 2)
         return pg, sg, sp
 
 
     def GetBinanceShortPgSgSp(bg, cg, market1, market2):
         bfee = bg * (0.0004 if market1 else 0.0002)
         sfee = (cg - bfee) * (0.0004 if market2 else 0.0002)
-        pg = np.round(bg + bg - cg - bfee - sfee, 4)
-        sg = np.round(pg - bg, 4)
-        sp = np.round(sg / bg * 100, 2)
+        pg = get_np().round(bg + bg - cg - bfee - sfee, 4)
+        sg = get_np().round(pg - bg, 4)
+        sp = get_np().round(sg / bg * 100, 2)
         return pg, sg, sp
 
     def GetFutureLongPgSgSp(bg, cg, code):
         fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
-        pg = np.round(cg - fee * 2, 1)
-        sg = np.round(pg - bg, 1)
-        sp = np.round(sg / bg * 100, 2)
+        pg = get_np().round(cg - fee * 2, 1)
+        sg = get_np().round(pg - bg, 1)
+        sp = get_np().round(sg / bg * 100, 2)
         return pg, sg, sp
 
 
     def GetFutureShortPgSgSp(bg, cg, code):
         fee = 2 if code.startswith('M') or code.startswith('SIL') else 7.5
-        pg = np.round(bg + bg - cg - fee * 2, 1)
-        sg = np.round(pg - bg, 1)
-        sp = np.round(sg / bg * 100, 2)
+        pg = get_np().round(bg + bg - cg - fee * 2, 1)
+        sg = get_np().round(pg - bg, 1)
+        sp = get_np().round(sg / bg * 100, 2)
         return pg, sg, sp
 
 
@@ -781,166 +804,6 @@ except:
         if downlimitprice % x != 0:
             downlimitprice += x - downlimitprice % x
         return int(uplimitprice), int(downlimitprice)
-
-
-    def GetUpbitHogaunit(price):
-        if price < 0.01:
-            return 0.0001
-        elif price < 1:
-            return 0.001
-        elif price < 10:
-            return 0.01
-        elif price < 100:
-            return 0.1
-        elif price < 1000:
-            return 1
-        elif price < 10000:
-            return 5
-        elif price < 100000:
-            return 10
-        elif price < 500000:
-            return 50
-        elif price < 1000000:
-            return 100
-        elif price < 2000000:
-            return 500
-        else:
-            return 1000
-
-
-    def GetHogaunit(kosd, price, index):
-        if index < 20230125000000:
-            if kosd:
-                if price < 1000:
-                    return 1
-                elif price < 5000:
-                    return 5
-                elif price < 10000:
-                    return 10
-                elif price < 50000:
-                    return 50
-                else:
-                    return 100
-            else:
-                if price < 1000:
-                    return 1
-                elif price < 5000:
-                    return 5
-                elif price < 10000:
-                    return 10
-                elif price < 50000:
-                    return 50
-                elif price < 100000:
-                    return 100
-                elif price < 500000:
-                    return 500
-                else:
-                    return 1000
-        else:
-            if price < 2000:
-                return 1
-            elif price < 5000:
-                return 5
-            elif price < 20000:
-                return 10
-            elif price < 50000:
-                return 50
-            elif price < 200000:
-                return 100
-            elif price < 500000:
-                return 500
-            else:
-                return 1000
-
-
-    def roundfigure_upper(price, unit, index):
-        if index < 20230125000000:
-            if 1000 <= price <= 1000 + 5 * unit:
-                return True
-            if 5000 <= price <= 5000 + 10 * unit:
-                return True
-            if 10000 <= price <= 10000 + 50 * unit:
-                return True
-            if 50000 <= price <= 50000 + 100 * unit:
-                return True
-            if 100000 <= price <= 100000 + 500 * unit:
-                return True
-            if 500000 <= price <= 500000 + 1000 * unit:
-                return True
-        else:
-            if 2000 <= price <= 2000 + 5 * unit:
-                return True
-            if 5000 <= price <= 5000 + 10 * unit:
-                return True
-            if 20000 <= price <= 20000 + 50 * unit:
-                return True
-            if 50000 <= price <= 50000 + 100 * unit:
-                return True
-            if 200000 <= price <= 200000 + 500 * unit:
-                return True
-            if 500000 <= price <= 500000 + 1000 * unit:
-                return True
-        return False
-
-
-    def roundfigure_lower(price, unit, index):
-        if index < 20230125000000:
-            if 1000 - 1 * unit <= price <= 1000:
-                return True
-            if 5000 - 5 * unit <= price <= 5000:
-                return True
-            if 10000 - 10 * unit <= price <= 10000:
-                return True
-            if 50000 - 50 * unit <= price <= 50000:
-                return True
-            if 100000 - 100 * unit <= price <= 100000:
-                return True
-            if 500000 - 500 * unit <= price <= 500000:
-                return True
-        else:
-            if 2000 - 1 * unit <= price <= 2000:
-                return True
-            if 5000 - 5 * unit <= price <= 5000:
-                return True
-            if 20000 - 10 * unit <= price <= 20000:
-                return True
-            if 50000 - 50 * unit <= price <= 50000:
-                return True
-            if 200000 - 100 * unit <= price <= 200000:
-                return True
-            if 500000 - 500 * unit <= price <= 500000:
-                return True
-        return False
-
-
-    def roundfigure_upper5(price, index):
-        if index < 20230125000000:
-            if 1000 <= price <= 1025:
-                return True
-            if 5000 <= price <= 5050:
-                return True
-            if 10000 <= price <= 10250:
-                return True
-            if 50000 <= price <= 50500:
-                return True
-            if 100000 <= price <= 102500:
-                return True
-            if 500000 <= price <= 505000:
-                return True
-        else:
-            if 2000 <= price <= 2025:
-                return True
-            if 5000 <= price <= 5050:
-                return True
-            if 20000 <= price <= 20250:
-                return True
-            if 50000 <= price <= 50500:
-                return True
-            if 200000 <= price <= 202500:
-                return True
-            if 500000 <= price <= 505000:
-                return True
-        return False
 
 
 def GetIndicator(mc, mh, ml, mv, k):

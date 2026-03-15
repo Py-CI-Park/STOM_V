@@ -1,8 +1,10 @@
 
 import pyqtgraph as pg
 from ui.set_style import style_bc_bt, color_bg_bk
+from utility.static import error_decorator
 
 
+@error_decorator
 def chart_count_change(ui):
     ui.ChartClear()
     ui.ctpg = {}

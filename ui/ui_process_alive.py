@@ -1,24 +1,32 @@
+from utility.static import error_decorator
 
+
+@error_decorator
 def stom_live_process_alive(ui):
     return ui.proc_livec is not None and ui.proc_livec.is_alive()
 
 
+@error_decorator
 def coin_receiver_process_alive(ui):
     return ui.proc_receiver_coin is not None and ui.proc_receiver_coin.is_alive()
 
 
+@error_decorator
 def coin_trader_process_alive(ui):
     return ui.proc_trader_coin is not None and ui.proc_trader_coin.is_alive()
 
 
+@error_decorator
 def coin_strategy_process_alive(ui):
     return ui.proc_strategy_coin is not None and ui.proc_strategy_coin.is_alive()
 
 
+@error_decorator
 def coinkimp_process_alive(ui):
     return ui.proc_coin_kimp is not None and ui.proc_coin_kimp.is_alive()
 
 
+@error_decorator
 def backtest_process_alive(ui):
     return (ui.proc_backtester_bs is not None and ui.proc_backtester_bs.is_alive()) or \
         (ui.proc_backtester_bf is not None and ui.proc_backtester_bf.is_alive()) or \

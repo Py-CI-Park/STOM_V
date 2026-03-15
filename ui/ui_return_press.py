@@ -2,8 +2,10 @@
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QLineEdit, QMessageBox
 from ui.set_style import style_bc_dk
+from utility.static import error_decorator
 
 
+@error_decorator
 def return_press_01(ui):
     if ui.dialog_chart.focusWidget() in (ui.ct_lineEdittttt_04, ui.ct_lineEdittttt_05, ui.ct_pushButtonnn_01):
         searchdate = ui.ct_dateEdittttt_01.date().toString('yyyyMMdd')
@@ -46,6 +48,7 @@ def return_press_01(ui):
         ui.chartQ.put(data)
 
 
+@error_decorator
 def return_press_02(ui):
     if ui.pa_lineEditttt_01.text() == ui.dict_set['계좌비밀번호1'] or \
             (ui.pa_lineEditttt_01.text() == '' and ui.dict_set['계좌비밀번호1'] is None):

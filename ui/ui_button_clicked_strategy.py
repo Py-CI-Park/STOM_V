@@ -3,8 +3,46 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying
 from ui.set_text_stg_button import dict_stg_button, dict_stg_name
+from utility.static import error_decorator
 
 
+@error_decorator
+def strategy_custom_button_show(ui):
+    ui.dialog_strategy.show() if not ui.dialog_strategy.isVisible() else ui.dialog_strategy.close()
+
+
+@error_decorator
+def strategy_custom_dialog_show(ui):
+    if (ui.stg_btn_number <= 205 and not ui.dialog_stg_input1.isVisible()) or \
+            (ui.stg_btn_number > 205 and not ui.dialog_stg_input2.isVisible()):
+        if ui.stg_btn_number <= 205:
+            ui.stginput_lineeditt1.setText('')
+            ui.stginput_textEditt1.clear()
+        else:
+            ui.stginput_lineeditt3.setText('')
+            ui.stginput_textEditt2.clear()
+
+        ori_name = dict_stg_name[ui.stg_btn_number]
+        stg_text = ui.dict_stg_btn[ui.stg_btn_number]
+        if stg_text[-1] != '\n': stg_text = f'{stg_text}\n'
+
+        if ui.stg_btn_number <= 205:
+            stg_name = ui.dialog_strategy.focusWidget().text()
+            ui.stginput_lineeditt1.setText(stg_name)
+            ui.stginput_lineeditt2.setText(ori_name)
+            ui.stginput_textEditt1.insertPlainText(stg_text)
+        else:
+            stg_name = ui.focusWidget().text()
+            ui.stginput_lineeditt3.setText(stg_name)
+            ui.stginput_lineeditt4.setText(ori_name)
+            ui.stginput_textEditt2.insertPlainText(stg_text)
+
+        ui.dialog_stg_input1.show() if ui.stg_btn_number <= 205 else ui.dialog_stg_input2.show()
+    else:
+        ui.dialog_stg_input1.close() if ui.stg_btn_number <= 205 else ui.dialog_stg_input2.close()
+
+
+@error_decorator
 def button_clicked_strategy(ui, cmd):
     if ui.main_btn not in (2, 3):
         QMessageBox.critical(ui.dialog_strategy, '오류 알림', '전략버튼은 전략탭에서만 사용할 수 있습니다.')
@@ -48,6 +86,7 @@ def button_clicked_strategy(ui, cmd):
     textEdit.insertPlainText(stg_text)
 
 
+@error_decorator
 def button_clicked_strategy_delete(ui):
     if ui.proc_query.is_alive():
         query = f"DELETE FROM custombutton WHERE `index` = {ui.stg_btn_number}"
@@ -67,6 +106,7 @@ def button_clicked_strategy_delete(ui):
             QMessageBox.information(ui.dialog_stg_input2, '삭제 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def button_clicked_strategy_save(ui):
     if ui.stg_btn_number <= 205:
         stg_name = ui.stginput_lineeditt1.text()

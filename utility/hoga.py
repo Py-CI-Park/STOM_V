@@ -1,11 +1,29 @@
 
 import os
 import sqlite3
-import numpy as np
-import pandas as pd
+from utility.static import error_decorator, set_builtin_print
 from utility.setting_base import ui_num, columns_hj, DB_PATH, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_TICK, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
     list_stock_tick, list_stock_min, list_coin_tick, list_coin_min
+
+_pd = None
+_np = None
+
+
+def get_pd():
+    global _pd
+    if _pd is None:
+        import pandas as pd
+        _pd = pd
+    return _pd
+
+
+def get_np():
+    global _np
+    if _np is None:
+        import numpy as np
+        _np = np
+    return _np
 
 
 class Hoga:
@@ -62,8 +80,10 @@ class Hoga:
             '그외분봉매수총잔': list_coin_min.index('매수총잔량')
         }
 
+        set_builtin_print(True, self.windowQ)
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         while True:
             data = self.hogaQ.get()
@@ -80,11 +100,11 @@ class Hoga:
                     self.UpdateHogajalryang(data)
                     if self.gubun is not None:
                         if self.dict_hj is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가종목'], pd.DataFrame([self.dict_hj])))
+                            self.windowQ.put((ui_num[f'{self.gubun}호가종목'], get_pd().DataFrame([self.dict_hj])))
                         if self.dict_hc is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가체결'], pd.DataFrame(self.dict_hc)))
+                            self.windowQ.put((ui_num[f'{self.gubun}호가체결'], get_pd().DataFrame(self.dict_hc)))
                         if self.dict_hg is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가잔량'], pd.DataFrame(self.dict_hg)))
+                            self.windowQ.put((ui_num[f'{self.gubun}호가잔량'], get_pd().DataFrame(self.dict_hg)))
 
     def InitHoga(self, gubun):
         self.dict_hj = {
@@ -96,9 +116,9 @@ class Hoga:
         self.dict_hg = {
             '잔량': [0.] * 12, '호가': [0.] * 12
         }
-        self.windowQ.put((ui_num[f'{gubun}호가종목'], pd.DataFrame([self.dict_hj])))
-        self.windowQ.put((ui_num[f'{gubun}호가체결'], pd.DataFrame(self.dict_hc)))
-        self.windowQ.put((ui_num[f'{gubun}호가잔량'], pd.DataFrame(self.dict_hg)))
+        self.windowQ.put((ui_num[f'{gubun}호가종목'], get_pd().DataFrame([self.dict_hj])))
+        self.windowQ.put((ui_num[f'{gubun}호가체결'], get_pd().DataFrame(self.dict_hc)))
+        self.windowQ.put((ui_num[f'{gubun}호가잔량'], get_pd().DataFrame(self.dict_hg)))
         self.hoga_name = ''
 
     def UpdateHogaJongmok(self, data):
@@ -117,11 +137,11 @@ class Hoga:
         v, ch = data
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name:
             if v > 0:
-                tbc = np.round(self.dict_hc['체결수량'][0] + v, 8)
-                tsc = np.round(self.dict_hc['체결수량'][11], 8)
+                tbc = get_np().round(self.dict_hc['체결수량'][0] + v, 8)
+                tsc = get_np().round(self.dict_hc['체결수량'][11], 8)
             else:
-                tbc = np.round(self.dict_hc['체결수량'][0], 8)
-                tsc = np.round(self.dict_hc['체결수량'][11] + abs(v), 8)
+                tbc = get_np().round(self.dict_hc['체결수량'][0], 8)
+                tsc = get_np().round(self.dict_hc['체결수량'][11] + abs(v), 8)
         else:
             if v > 0:
                 tbc = self.dict_hc['체결수량'][0] + v
@@ -146,7 +166,7 @@ class Hoga:
         if 'KRW' in self.hoga_name or 'USDT' in self.hoga_name or '해외선물' in self.dict_set['증권사']:
             hg = [self.dict_hj['고가']] + list(data[3:13]) + [self.dict_hj['저가']]
         else:
-            hg = [data[23]] + [np.round(x) for x in data[3:13]] + [data[24]]
+            hg = [data[23]] + [get_np().round(x) for x in data[3:13]] + [data[24]]
 
         self.dict_hg['잔량'] = jr
         self.dict_hg['호가'] = hg
@@ -180,11 +200,11 @@ class Hoga:
         try:
             if os.path.isfile(db_name1):
                 con = sqlite3.connect(db_name1)
-                df = pd.read_sql(query, con)
+                df = get_pd().read_sql(query, con)
                 con.close()
             elif os.path.isfile(db_name2):
                 con = sqlite3.connect(db_name2)
-                df = pd.read_sql(query, con)
+                df = get_pd().read_sql(query, con)
                 con.close()
         except:
             pass
@@ -217,7 +237,7 @@ class Hoga:
                     jr = [data[self.fi['주식분봉매도총잔']]] + data[self.fi['주식분봉잔량시작']:self.fi['주식분봉잔량종료']] + [data[self.fi['주식분봉매수총잔']]]
                     hg = [data[self.fi['고가']]] + data[self.fi['주식분봉호가시작']:self.fi['주식분봉호가종료']] + [data[self.fi['저가']]]
 
-            df_hj = pd.DataFrame([hj], columns=columns_hj)
-            df_hg = pd.DataFrame({'잔량': jr, '호가': hg})
+            df_hj = get_pd().DataFrame([hj], columns=columns_hj)
+            df_hg = get_pd().DataFrame({'잔량': jr, '호가': hg})
             self.windowQ.put((ui_num[f'{gubun}호가종목'], df_hj, str(int(data[0]))))
             self.windowQ.put((ui_num[f'{gubun}호가잔량'], df_hg))

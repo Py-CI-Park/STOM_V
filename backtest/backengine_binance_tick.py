@@ -12,9 +12,6 @@ class BackEngineBinanceTick(BackEngineFutureTick):
     def GetHogaunit(self, 호가빼기데이터):
         return min(x for x in 호가빼기데이터 if x > 0)
 
-    def UpdateGlobalsFunc(self, dict_add_func):
-        globals().update(dict_add_func)
-
     def GetOrderCount(self, betting, 현재가, 보유중, 매수가, oc_ratio):
         return np.round(betting / 현재가, 8)
 

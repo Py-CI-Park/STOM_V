@@ -1,8 +1,10 @@
 
 from PyQt5.QtCore import QEvent, Qt
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
+from utility.static import error_decorator
 
 
+@error_decorator
 def event_filter(ui, widget, event):
     if event.type() != QEvent.KeyPress:
         return QMainWindow.eventFilter(ui, widget, event)

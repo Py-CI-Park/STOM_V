@@ -1,4 +1,8 @@
 
+from utility.static import error_decorator
+
+
+@error_decorator
 def sz_button_clicked_01(ui):
     if ui.svj_pushButton_01.isVisible():
         if ui.szoo_pushButon_01.text() == '확대(esc)':
@@ -36,6 +40,7 @@ def sz_button_clicked_01(ui):
             ui.szoo_pushButon_02.setVisible(True)
 
 
+@error_decorator
 def sz_button_clicked_02(ui):
     if ui.svj_pushButton_01.isVisible():
         if ui.szoo_pushButon_02.text() == '확대(esc)':
@@ -74,6 +79,7 @@ def sz_button_clicked_02(ui):
             ui.szoo_pushButon_01.setVisible(True)
 
 
+@error_decorator
 def cz_button_clicked_01(ui):
     if ui.cvj_pushButton_01.isVisible():
         if ui.czoo_pushButon_01.text() == '확대(esc)':
@@ -111,6 +117,7 @@ def cz_button_clicked_01(ui):
             ui.czoo_pushButon_02.setVisible(True)
 
 
+@error_decorator
 def cz_button_clicked_02(ui):
     if ui.cvj_pushButton_01.isVisible():
         if ui.czoo_pushButon_02.text() == '확대(esc)':

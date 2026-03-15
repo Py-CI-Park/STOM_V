@@ -1,7 +1,17 @@
 
 import sqlite3
-import pandas as pd
 from utility.setting_base import DB_SETTING, DB_STRATEGY, DB_BACKTEST, DB_TRADELIST
+
+
+_pd = None
+
+
+def get_pd():
+    global _pd
+    if _pd is None:
+        import pandas as pd
+        _pd = pd
+    return _pd
 
 
 class DatabaseReadOnly:
@@ -20,11 +30,11 @@ class DatabaseReadOnly:
     def read_sql(self, gubun, query):
         df = None
         if gubun == '설정디비':
-            df = pd.read_sql(query, self.con1)
+            df = get_pd().read_sql(query, self.con1)
         elif gubun == '전략디비':
-            df = pd.read_sql(query, self.con2)
+            df = get_pd().read_sql(query, self.con2)
         elif gubun == '백테디비':
-            df = pd.read_sql(query, self.con3)
+            df = get_pd().read_sql(query, self.con3)
         elif gubun == '거래디비':
-            df = pd.read_sql(query, self.con4)
+            df = get_pd().read_sql(query, self.con4)
         return df

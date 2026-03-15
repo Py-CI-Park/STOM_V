@@ -1,7 +1,8 @@
 
-from utility.static import now, summer_t, now_utc, now_cme, str_ymdhms_ios, str_hms
+from utility.static import now, summer_t, now_utc, now_cme, str_ymdhms_ios, str_hms, error_decorator
 
 
+@error_decorator
 def process_starter(ui):
     inthms = int(str_hms())
 
@@ -28,6 +29,7 @@ def process_starter(ui):
     ui.int_time = inthms
 
 
+@error_decorator
 def UpdateWindowTitle(ui):
     text = 'STOM'
     if ui.dict_set['주식트레이더']:
