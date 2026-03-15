@@ -227,8 +227,9 @@ def lvbutton_clicked_03(ui):
         else:
             if ui.proc_query.is_alive():
                 lvrg_text = f'{lv2};{lv3};{lv4}^{lv5};{lv6};{lv7}^{lv8};{lv9};{lv10}^{lv11};{lv12};{lv13}^{lv14};{lv15};{lv16}'
-                query = f"UPDATE main SET 바이낸스선물고정레버리지 = {lv0}, 바이낸스선물고정레버리지값 = {lv1}, 바이낸스선물변동레버리지값 = '{lvrg_text}'"
-                ui.queryQ.put(('설정디비', query))
+                query     = 'UPDATE main SET 바이낸스선물고정레버리지 = ?, 바이낸스선물고정레버리지값 = ?, 바이낸스선물고정레버리지값 = ?'
+                values    = (lv0, lv1, lvrg_text)
+                ui.queryQ.put(('설정디비', query, values))
             ui.dict_set['바이낸스선물고정레버리지'] = lv0
             ui.dict_set['바이낸스선물고정레버리지값'] = lv1
             ui.dict_set['바이낸스선물변동레버리지값'] = [

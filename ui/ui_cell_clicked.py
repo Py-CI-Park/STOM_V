@@ -296,7 +296,7 @@ def cell_clicked_09(ui, row, col):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if buttonReply == QMessageBox.Yes:
-            query = f'DELETE FROM schedule WHERE "index" = "{stg_name}"'
+            query = f"DELETE FROM schedule WHERE `index` = '{stg_name}'"
             ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 스케쥴 "{stg_name}" 삭제 완료'))
 

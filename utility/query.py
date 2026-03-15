@@ -53,6 +53,9 @@ class Query:
                 if len(data) == 2:
                     self.cur1.execute(data[1])
                     self.con1.commit()
+                elif len(data) == 3:
+                    self.cur1.execute(data[1], data[2])
+                    self.con1.commit()
                 elif len(data) == 4:
                     data[1].to_sql(data[2], self.con1, if_exists=data[3], chunksize=1000)
 
@@ -60,12 +63,18 @@ class Query:
                 if len(data) == 2:
                     self.cur2.execute(data[1])
                     self.con2.commit()
+                elif len(data) == 3:
+                    self.cur2.execute(data[1], data[2])
+                    self.con2.commit()
                 elif len(data) == 4:
                     data[1].to_sql(data[2], self.con2, if_exists=data[3], chunksize=1000)
 
             elif data[0] == '전략디비':
                 if len(data) == 2:
                     self.cur3.execute(data[1])
+                    self.con3.commit()
+                elif len(data) == 3:
+                    self.cur3.execute(data[1], data[2])
                     self.con3.commit()
                 elif len(data) == 4:
                     data[1].to_sql(data[2], self.con3, if_exists=data[3], chunksize=1000)

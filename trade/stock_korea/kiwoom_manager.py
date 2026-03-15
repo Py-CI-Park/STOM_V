@@ -127,7 +127,7 @@ class KiwoomManager:
             Queue(), Queue(), Queue(), Queue(), Queue(), Queue(), Queue(), Queue(), Queue(), Queue(), Queue()
         self.sstgQs   = [sstg1Q, sstg2Q, sstg3Q, sstg4Q, sstg5Q, sstg6Q, sstg7Q, sstg8Q]
         self.qlist    = [self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs]
-        self.dict_set = load_settings(ui_num, self.mgzservQ, True)
+        self.dict_set = load_settings()
 
         self.backtest_engine = False
         self.proc_strategy1  = None

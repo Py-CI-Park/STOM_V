@@ -1,8 +1,8 @@
 
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QLabel, QGroupBox, QFrame
+from ui.set_widget import error_decorator
 from ui.set_style import style_ck_bx, style_bc_dk, qfont14
-from utility.static import error_decorator
 
 
 class SetDialogFormula:

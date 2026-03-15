@@ -17,7 +17,7 @@ for readline in coinreadlines:
     blacklist_coin.append(readline.strip())
 
 
-def load_settings(ui_num=None, windowQ=None, manager=False):
+def load_settings():
     import sqlite3
     from cryptography import fernet
     from traceback import format_exc
@@ -56,13 +56,13 @@ def load_settings(ui_num=None, windowQ=None, manager=False):
         DICT_SET = {
             '키':            EN_KEY,
             '증권사':         df_m['증권사'][0],
-            '주식에이전트':      df_m['주식에이전트'][0],
+            '주식에이전트':    df_m['주식에이전트'][0],
             '주식트레이더':    df_m['주식트레이더'][0],
-            '주식데이터저장':  df_m['주식데이터저장'][0],
+            '주식데이터저장':   df_m['주식데이터저장'][0],
             '거래소':         df_m['거래소'][0],
             '코인리시버':      df_m['코인리시버'][0],
             '코인트레이더':    df_m['코인트레이더'][0],
-            '코인데이터저장':  df_m['코인데이터저장'][0],
+            '코인데이터저장':   df_m['코인데이터저장'][0],
     
             '바이낸스선물고정레버리지':   df_m['바이낸스선물고정레버리지'][0],
             '바이낸스선물고정레버리지값': df_m['바이낸스선물고정레버리지값'][0],
@@ -134,7 +134,7 @@ def load_settings(ui_num=None, windowQ=None, manager=False):
             '주식매수전략':         df_s['주식매수전략'][0],
             '주식매도전략':         df_s['주식매도전략'][0],
             '주식타임프레임':       df_s['주식타임프레임'][0],
-            '주식평균값계산틱수':  df_s['주식평균값계산틱수'][0],
+            '주식평균값계산틱수':    df_s['주식평균값계산틱수'][0],
             '주식최대매수종목수':    df_s['주식최대매수종목수'][0],
             '주식전략종료시간':      df_s['주식전략종료시간'][0],
             '주식잔고청산':         df_s['주식잔고청산'][0],
@@ -153,7 +153,7 @@ def load_settings(ui_num=None, windowQ=None, manager=False):
             '코인매수전략':         df_c['코인매수전략'][0],
             '코인매도전략':         df_c['코인매도전략'][0],
             '코인타임프레임':       df_c['코인타임프레임'][0],
-            '코인평균값계산틱수':   df_c['코인평균값계산틱수'][0],
+            '코인평균값계산틱수':    df_c['코인평균값계산틱수'][0],
             '코인최대매수종목수':    df_c['코인최대매수종목수'][0],
             '코인전략종료시간':      df_c['코인전략종료시간'][0],
             '코인잔고청산':         df_c['코인잔고청산'][0],
@@ -175,7 +175,7 @@ def load_settings(ui_num=None, windowQ=None, manager=False):
             '그래프띄우지않기':      df_b['그래프띄우지않기'][0],
             '디비자동관리':         df_b['디비자동관리'][0],
             '교차검증가중치':       df_b['교차검증가중치'][0],
-            '기준값최소상승률':     df_b['기준값최소상승률'][0],
+            '기준값최소상승률':      df_b['기준값최소상승률'][0],
             '백테스케쥴실행':       df_b['백테스케쥴실행'][0],
             '백테스케쥴요일':       df_b['백테스케쥴요일'][0],
             '백테스케쥴시간':       df_b['백테스케쥴시간'][0],
@@ -199,7 +199,7 @@ def load_settings(ui_num=None, windowQ=None, manager=False):
             '창위치기억':          df_e['창위치기억'][0],
             '창위치':             [int(x) for x in df_e['창위치'][0].split(';')] if df_e['창위치'][0] else None,
             '스톰라이브':          df_e['스톰라이브'][0],
-            '프로그램종료':        df_e['프로그램종료'][0],
+            '프로그램종료':         df_e['프로그램종료'][0],
             '테마':               df_e['테마'][0],
             '팩터선택':            df_e['팩터선택'][0],
             '시리얼키':            de_text(EN_KEY, df_e['시리얼키'][0]) if len(df_e) > 0 and df_e['시리얼키'][0] else None,
@@ -343,18 +343,8 @@ def load_settings(ui_num=None, windowQ=None, manager=False):
             '백테엔진프로파일링': False
         }
     except fernet.InvalidToken:
-        if ui_num is not None:
-            if not manager:
-                windowQ.put((ui_num['시스템로그'], '오류 알림 - 이 컴퓨터의 암호키로 생성된 계정이 아닙니다. setting.db를 삭제 후 재실행 하십시오.'))
-            else:
-                windowQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 이 컴퓨터의 암호키로 생성된 계정이 아닙니다. setting.db를 삭제 후 재실행 하십시오.')))
-        return None
+        return 'fernet.InvalidToken'
     except:
-        if ui_num is not None:
-            if not manager:
-                windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - setting.db가 구버전 상태입니다. 삭제 후 재실행 하십시오.'))
-            else:
-                windowQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - setting.db가 구버전 상태입니다. 삭제 후 재실행 하십시오.')))
-        return None
+        return format_exc()
     else:
         return DICT_SET

@@ -16,6 +16,7 @@ class StrategyBase:
         self.arry_code        = None
         self.avgtime          = None
         self.back_type        = None
+        self.pre_func_keys    = None
         self.mc               = None
         self.mh               = None
         self.ml               = None
@@ -1132,7 +1133,10 @@ class StrategyBase:
             for fm in self.fm_list:
                 dict_add_func[fm[0]] = create_func(fm[-1])
 
-        self.UpdateGlobalsFunc(dict_add_func)
+        func_keys = dict_add_func.keys()
+        if self.pre_func_keys != func_keys:
+            self.pre_func_keys = func_keys
+            self.UpdateGlobalsFunc(dict_add_func)
 
     def UpdateGlobalsFunc(self, dict_add_func):
         pass

@@ -1,6 +1,7 @@
+
 from PyQt5.QtWidgets import QLabel
+from ui.set_widget import error_decorator
 from ui.set_style import qfont14, style_bc_dk
-from utility.static import error_decorator
 
 
 class SetDialogStrategy:

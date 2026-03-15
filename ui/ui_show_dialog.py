@@ -150,7 +150,7 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
 
 @error_decorator
 def dialog_chart_show(ui):
-    ui.ct_pushButtonnn_05.setText('CHART 16')
+    ui.ct_pushButtonnn_05.setText('CHART III')
     ui.ChartCountChange()
 
     is_min = (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
@@ -476,9 +476,9 @@ def chart_moneytop_list(ui):
 @error_decorator
 def chart_size_change(ui):
     if ui.ct_pushButtonnn_06.text() == '확장':
-        if ui.ct_pushButtonnn_05.text() == 'CHART 8':
+        if ui.ct_pushButtonnn_05.text() == 'CHART I':
             width = 1528
-        elif ui.ct_pushButtonnn_05.text() == 'CHART 12':
+        elif ui.ct_pushButtonnn_05.text() == 'CHART II':
             width = 2213
         else:
             width = 2898
@@ -490,9 +490,9 @@ def chart_size_change(ui):
         ui.ct_pushButtonnn_06.setText('코인')
         ui.ChartMoneyTopList()
     elif ui.ct_pushButtonnn_06.text() == '코인':
-        if ui.ct_pushButtonnn_05.text() == 'CHART 8':
+        if ui.ct_pushButtonnn_05.text() == 'CHART I':
             width = 1403
-        elif ui.ct_pushButtonnn_05.text() == 'CHART 12':
+        elif ui.ct_pushButtonnn_05.text() == 'CHART II':
             width = 2088
         else:
             width = 2773

@@ -61,8 +61,9 @@ def get_formula_data(forchart, col_idx):
 
 
 class FormulaManager(StrategyBase):
-    def __init__(self):
+    def __init__(self, fm_list):
         super().__init__()
+        self.fm_list   = fm_list
         self.base_cnt  = None
         self.check     = None
         self.buy       = None
@@ -77,7 +78,7 @@ class FormulaManager(StrategyBase):
         globals().update(dict_add_func)
 
     # noinspection PyUnusedLocal
-    def update_all_data(self, code, fm_list, arry, market, is_tick, w_unit):
+    def update_all_data(self, code, arry, market, is_tick, w_unit):
         self.code        = code
         self.arry_code   = arry
         self.is_tick     = is_tick
@@ -108,7 +109,7 @@ class FormulaManager(StrategyBase):
 
         self.base_cnt = self.dict_findex['관심종목'] + 1
 
-        for fm in fm_list:
+        for fm in self.fm_list:
             fm[8] = compile(fm[-2], '<string>', 'exec')
 
         for i, index in enumerate(self.arry_code[:, 0]):
@@ -178,12 +179,10 @@ class FormulaManager(StrategyBase):
                 else:
                     self.high_low[self.code] = [분봉고가, i, 분봉저가, i]
 
-            for name, _, _, fname, data_type, _, _, style, stg, col_idx in fm_list:
+            for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
                 self.check, self.line, self.buy, self.sell, self.up, self.down = None, None, None, None, None, None
-                try:
-                    exec(stg)
-                except:
-                    pass
+
+                exec(stg)
 
                 if data_type == '선:일반':
                     if self.line is not None:
