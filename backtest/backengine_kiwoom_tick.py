@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_base import BackEngineBase
 from utility.static import GetKiwoomPgSgSp, dt_ymdhms, GetHogaunit
 
@@ -22,9 +21,6 @@ class BackEngineKiwoomTick(BackEngineBase):
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
         self.UpdateHighLow(현재가)
-
-        if self.dict_set['스마트브이왑']: self.smat_vwap.calculate_smart_vwap(종목코드, self.arry_code[self.indexn, :])
-        if self.dict_set['마이크로스트럭처분석']: self.ms_analyzer.update_data(종목코드, self.arry_code[self.indexn, :])
 
         if self.dict_condition:
             if 종목코드 not in self.dict_cond_indexn:
@@ -152,18 +148,18 @@ class BackEngineKiwoomTick(BackEngineBase):
         return int(betting / 현재가)
 
     def GetBuyPrice(self, 매수금액, 주문수량):
-        return int(np.round(매수금액 / 주문수량))
+        return int(round(매수금액 / 주문수량))
 
     def GetSellPrice(self, 매도금액, 주문수량):
-        return int(np.round(매도금액 / 주문수량))
+        return int(round(매도금액 / 주문수량))
 
     def GetLastSellPrice(self, 매도금액, 보유수량, 미체결수량):
         if 미체결수량 <= 0:
-            매도가 = int(np.round(매도금액 / 보유수량))
+            매도가 = int(round(매도금액 / 보유수량))
         elif 매도금액 == 0:
             매도가 = self.arry_code[self.indexn, 1]
         else:
-            매도가 = int(np.round(매도금액 / (보유수량 - 미체결수량)))
+            매도가 = int(round(매도금액 / (보유수량 - 미체결수량)))
         return 매도가
 
     def GetProfitInfo(self, 현재가, 매수가, 보유수량):

@@ -2,16 +2,15 @@
 import os
 import sys
 import sqlite3
-import pandas as pd
 try:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 except:
     pass
 from trade.strategy_base import StrategyBase
 from utility.static import dt_ymdhms
+from utility.lazy_imports import get_pd
 from utility.setting_base import list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, list_future_tick2, \
     list_future_min2, DB_STRATEGY
-
 
 dict_fm_count = {
     '선:일반': 1,
@@ -24,7 +23,7 @@ dict_fm_count = {
 
 def get_formula_data(forchart, col_idx):
     con = sqlite3.connect(DB_STRATEGY)
-    fm_df = pd.read_sql("SELECT * FROM formula", con)
+    fm_df = get_pd().read_sql("SELECT * FROM formula", con)
     con.close()
 
     fm_list = []

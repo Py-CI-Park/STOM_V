@@ -7,17 +7,8 @@ from threading import Timer
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from utility.setting_base import ui_num
+from utility.lazy_imports import get_pd
 from utility.static import thread_decorator, error_decorator, set_builtin_print
-
-_pd = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
 
 
 class WebCrawling:

@@ -1,5 +1,5 @@
 
-from PyQt5.QtWidgets import QGroupBox, QLabel
+from PyQt5.QtWidgets import QLabel
 from utility.static import error_decorator
 
 
@@ -11,10 +11,24 @@ class SetOrderTap:
 
     @error_decorator
     def set(self):
-        self.ui.ss_od_groupBoxxx_01 = QGroupBox(' 주식 및 해선 매수주문 설정', self.ui.sod_tab)
-        self.ui.ss_od_groupBoxxx_02 = QGroupBox(' 주식 및 해선 매도주문 설정', self.ui.sod_tab)
+        self.ui.ss_od_groupBoxxx_01 = self.wc.setQGroupBox(' 주식 및 해선 매수주문 설정', self.ui.sod_tab)
+        self.ui.ss_od_groupBoxxx_02 = self.wc.setQGroupBox(' 주식 및 해선 매도주문 설정', self.ui.sod_tab)
 
-        self.ui.ss_od_groupBoxxx_03 = QGroupBox('주문유형', self.ui.ss_od_groupBoxxx_01)
+        self.ui.ss_od_groupBoxxx_03 = self.wc.setQGroupBox('주문유형', self.ui.ss_od_groupBoxxx_01)
+        self.ui.ss_od_groupBoxxx_04 = self.wc.setQGroupBox('분할매수', self.ui.ss_od_groupBoxxx_01)
+        self.ui.ss_od_groupBoxxx_05 = self.wc.setQGroupBox('지정가 기준가격 및 시장가 호가범위', self.ui.ss_od_groupBoxxx_01)
+        self.ui.ss_od_groupBoxxx_06 = self.wc.setQGroupBox('매수주문취소', self.ui.ss_od_groupBoxxx_01)
+        self.ui.ss_od_groupBoxxx_07 = self.wc.setQGroupBox('매수금지', self.ui.ss_od_groupBoxxx_01)
+        self.ui.ss_od_groupBoxxx_08 = self.wc.setQGroupBox('매수정정', self.ui.ss_od_groupBoxxx_01)
+        self.ui.ss_od_groupBoxxx_09 = self.wc.setQGroupBox('비중조절', self.ui.ss_od_groupBoxxx_01)
+
+        self.ui.ss_od_groupBoxxx_10 = self.wc.setQGroupBox('주문유형', self.ui.ss_od_groupBoxxx_02)
+        self.ui.ss_od_groupBoxxx_11 = self.wc.setQGroupBox('분할매도', self.ui.ss_od_groupBoxxx_02)
+        self.ui.ss_od_groupBoxxx_12 = self.wc.setQGroupBox('지정가 기준가격 및 시장가 호가범위', self.ui.ss_od_groupBoxxx_02)
+        self.ui.ss_od_groupBoxxx_13 = self.wc.setQGroupBox('매도주문취소', self.ui.ss_od_groupBoxxx_02)
+        self.ui.ss_od_groupBoxxx_14 = self.wc.setQGroupBox('매도금지', self.ui.ss_od_groupBoxxx_02)
+        self.ui.ss_od_groupBoxxx_15 = self.wc.setQGroupBox('매도정정', self.ui.ss_od_groupBoxxx_02)
+
         self.ui.ss_buyy_checkBox_01 = self.wc.setCheckBox('시장가', self.ui.ss_od_groupBoxxx_03,      changed=self.ui.sbCheckboxChanged_01, tip='매수는 매도호가에 매도는 매수호가에 원하는 수량만큼 주문하는 방식')
         self.ui.ss_buyy_checkBox_02 = self.wc.setCheckBox('지정가', self.ui.ss_od_groupBoxxx_03,      changed=self.ui.sbCheckboxChanged_01, tip='원하는 가격에 원하는 수량만큼 주문하는 방식')
         self.ui.ss_buyy_checkBox_03 = self.wc.setCheckBox('최유리지정가', self.ui.ss_od_groupBoxxx_03, changed=self.ui.sbCheckboxChanged_01, tip='매수는 매도1호가에 매도는 매수1호가에 원하는 수량만큼 주문하고 부족한 수량은 잔량 대기하는 방식')
@@ -33,7 +47,6 @@ class SetOrderTap:
             self.ui.ss_buyy_checkBox_10
         ]
 
-        self.ui.ss_od_groupBoxxx_04 = QGroupBox('분할매수', self.ui.ss_od_groupBoxxx_01)
         self.ui.ss_buyy_labellll_01 = QLabel('▣ 분할매수횟수 (1:분할매수X)', self.ui.ss_od_groupBoxxx_04)
         self.ui.ss_buyy_lineEdit_01 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_04)
         self.ui.ss_buyy_labellll_02 = QLabel('▣ 분할매수방법 : 복수선택 불가능', self.ui.ss_od_groupBoxxx_04)
@@ -50,20 +63,17 @@ class SetOrderTap:
 
         self.ui.sodb_checkbox_list2 = [self.ui.ss_buyy_checkBox_11, self.ui.ss_buyy_checkBox_12, self.ui.ss_buyy_checkBox_13]
 
-        self.ui.ss_od_groupBoxxx_05 = QGroupBox('지정가 기준가격 및 시장가 호가범위', self.ui.ss_od_groupBoxxx_01)
         self.ui.ss_buyy_labellll_04 = QLabel('▣ 지정가유형 주문가격 기준가', self.ui.ss_od_groupBoxxx_05)
         self.ui.ss_buyy_comboBox_01 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['현재가', '매도1호가', '매수1호가'])
         self.ui.ss_buyy_comboBox_02 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 +- 호가단위로 선택하십시오.')
         self.ui.ss_buyy_labellll_05 = QLabel('▣ 시장가 유형 주문 시 호가범위 선택    매도                   호가', self.ui.ss_od_groupBoxxx_05)
         self.ui.ss_buyy_comboBox_03 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_05, items=['1', '2', '3', '4', '5'])
 
-        self.ui.ss_od_groupBoxxx_06 = QGroupBox('매수주문취소', self.ui.ss_od_groupBoxxx_01)
         self.ui.ss_buyy_checkBox_18 = self.wc.setCheckBox('관심이탈', self.ui.ss_od_groupBoxxx_06)
         self.ui.ss_buyy_checkBox_19 = self.wc.setCheckBox('매도시그널', self.ui.ss_od_groupBoxxx_06)
         self.ui.ss_buyy_checkBox_20 = self.wc.setCheckBox('주문 후                      초 경과', self.ui.ss_od_groupBoxxx_06)
         self.ui.ss_buyy_lineEdit_04 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_06)
 
-        self.ui.ss_od_groupBoxxx_07 = QGroupBox('매수금지', self.ui.ss_od_groupBoxxx_01)
         self.ui.ss_buyy_checkBox_21 = self.wc.setCheckBox('블랙리스트', self.ui.ss_od_groupBoxxx_07)
         self.ui.ss_buyy_checkBox_22 = self.wc.setCheckBox('라운드피겨 ↑                                  호가 이내', self.ui.ss_od_groupBoxxx_07)
         self.ui.ss_buyy_lineEdit_05 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_07)
@@ -79,7 +89,6 @@ class SetOrderTap:
         self.ui.ss_buyy_checkBox_27 = self.wc.setCheckBox('손절청산 후                                     초 이내', self.ui.ss_od_groupBoxxx_07)
         self.ui.ss_buyy_lineEdit_11 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_07)
 
-        self.ui.ss_od_groupBoxxx_08 = QGroupBox('매수정정', self.ui.ss_od_groupBoxxx_01)
         self.ui.ss_buyy_labellll_06 = QLabel('▣ 정정가능 최대횟수 (0:매수정정X)', self.ui.ss_od_groupBoxxx_08)
         self.ui.ss_buyy_lineEdit_12 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_08)
         self.ui.ss_buyy_labellll_07 = QLabel('▣ 정정조건 : 주문가격과 현재가의 차이                    호가이상', self.ui.ss_od_groupBoxxx_08)
@@ -89,7 +98,6 @@ class SetOrderTap:
         self.ui.ss_load_Button_01   = self.wc.setPushbutton('불러오기', box=self.ui.ss_od_groupBoxxx_08, click=self.ui.SettingOrderLoad_01)
         self.ui.ss_save_Button_01   = self.wc.setPushbutton('저장하기', box=self.ui.ss_od_groupBoxxx_08, click=self.ui.SettingOrderSave_01)
 
-        self.ui.ss_od_groupBoxxx_09 = QGroupBox('비중조절', self.ui.ss_od_groupBoxxx_01)
         self.ui.ss_bj_checkBoxxx_01 = self.wc.setCheckBox('비중조절사용안함', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.ss_bj_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.ss_bj_checkBoxxx_03 = self.wc.setCheckBox('거래대금평균대비비율', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
@@ -117,7 +125,6 @@ class SetOrderTap:
 
         # =============================================================================================================
 
-        self.ui.ss_od_groupBoxxx_10 = QGroupBox('주문유형', self.ui.ss_od_groupBoxxx_02)
         self.ui.ss_sell_checkBox_01 = self.wc.setCheckBox('시장가', self.ui.ss_od_groupBoxxx_10,      changed=self.ui.ssCheckboxChanged_01, tip='매수는 매도호가에 매도는 매수호가에 원하는 수량만큼 주문하는 방식')
         self.ui.ss_sell_checkBox_02 = self.wc.setCheckBox('지정가', self.ui.ss_od_groupBoxxx_10,      changed=self.ui.ssCheckboxChanged_01, tip='원하는 가격에 원하는 수량만큼 주문하는 방식')
         self.ui.ss_sell_checkBox_03 = self.wc.setCheckBox('최유리지정가', self.ui.ss_od_groupBoxxx_10, changed=self.ui.ssCheckboxChanged_01, tip='매수는 매도1호가에 매도는 매수1호가에 원하는 수량만큼 주문하고 부족한 수량은 잔량 대기하는 방식')
@@ -136,7 +143,6 @@ class SetOrderTap:
             self.ui.ss_sell_checkBox_10
         ]
 
-        self.ui.ss_od_groupBoxxx_11 = QGroupBox('분할매도', self.ui.ss_od_groupBoxxx_02)
         self.ui.ss_sell_labellll_01 = QLabel('▣ 분할매도횟수 (1:분할매도X)', self.ui.ss_od_groupBoxxx_11)
         self.ui.ss_sell_lineEdit_01 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_11)
         self.ui.ss_sell_labellll_02 = QLabel('▣ 분할매도방법 : 복수선택 불가능', self.ui.ss_od_groupBoxxx_11)
@@ -152,14 +158,12 @@ class SetOrderTap:
 
         self.ui.sods_checkbox_list2 = [self.ui.ss_sell_checkBox_11, self.ui.ss_sell_checkBox_12, self.ui.ss_sell_checkBox_13]
 
-        self.ui.ss_od_groupBoxxx_12 = QGroupBox('지정가 기준가격 및 시장가 호가범위', self.ui.ss_od_groupBoxxx_02)
         self.ui.ss_sell_labellll_04 = QLabel('▣ 지정가유형 주문가격 기준가', self.ui.ss_od_groupBoxxx_12)
         self.ui.ss_sell_comboBox_01 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['현재가', '매도1호가', '매수1호가'])
         self.ui.ss_sell_comboBox_02 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 +- 호가단위로 선택하십시오.')
         self.ui.ss_sell_labellll_05 = QLabel('▣ 시장가 유형 주문 시 호가범위 선택    매수                   호가', self.ui.ss_od_groupBoxxx_12)
         self.ui.ss_sell_comboBox_03 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_12, items=['1', '2', '3', '4', '5'])
 
-        self.ui.ss_od_groupBoxxx_13 = QGroupBox('매도주문취소', self.ui.ss_od_groupBoxxx_02)
         self.ui.ss_sell_checkBox_17 = self.wc.setCheckBox('관심진입', self.ui.ss_od_groupBoxxx_13)
         self.ui.ss_sell_checkBox_18 = self.wc.setCheckBox('매수시그널', self.ui.ss_od_groupBoxxx_13)
         self.ui.ss_sell_checkBox_19 = self.wc.setCheckBox('주문 후                      초 경과', self.ui.ss_od_groupBoxxx_13)
@@ -169,7 +173,6 @@ class SetOrderTap:
         self.ui.ss_sell_checkBox_21 = self.wc.setCheckBox('손절청산 수익금(-)', self.ui.ss_od_groupBoxxx_13, tip='만원 단위의 금액을 입력하십시오.')
         self.ui.ss_sell_lineEdit_06 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_13)
 
-        self.ui.ss_od_groupBoxxx_14 = QGroupBox('매도금지', self.ui.ss_od_groupBoxxx_02)
         self.ui.ss_sell_checkBox_22 = self.wc.setCheckBox('분할매수횟수                                 회 이내', self.ui.ss_od_groupBoxxx_14)
         self.ui.ss_sell_lineEdit_07 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
         self.ui.ss_sell_checkBox_23 = self.wc.setCheckBox('라운드피겨 ↓                                  호가 이내', self.ui.ss_od_groupBoxxx_14)
@@ -180,7 +183,6 @@ class SetOrderTap:
         self.ui.ss_sell_checkBox_25 = self.wc.setCheckBox('이전거래시간                                  초 이내', self.ui.ss_od_groupBoxxx_14)
         self.ui.ss_sell_lineEdit_11 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
 
-        self.ui.ss_od_groupBoxxx_15 = QGroupBox('매도정정', self.ui.ss_od_groupBoxxx_02)
         self.ui.ss_sell_labellll_06 = QLabel('▣ 정정가능 최대횟수 (0:매도정정X)', self.ui.ss_od_groupBoxxx_15)
         self.ui.ss_sell_lineEdit_12 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_15)
         self.ui.ss_sell_labellll_07 = QLabel('▣ 정정조건 : 주문가격과 현재가의 차이                    호가이상', self.ui.ss_od_groupBoxxx_15)
@@ -192,10 +194,24 @@ class SetOrderTap:
 
         # =============================================================================================================
 
-        self.ui.sc_od_groupBoxxx_01 = QGroupBox(' 코인 매수주문 설정', self.ui.cod_tab)
-        self.ui.sc_od_groupBoxxx_02 = QGroupBox(' 코인 매도주문 설정', self.ui.cod_tab)
+        self.ui.sc_od_groupBoxxx_01 = self.wc.setQGroupBox(' 코인 매수주문 설정', self.ui.cod_tab)
+        self.ui.sc_od_groupBoxxx_02 = self.wc.setQGroupBox(' 코인 매도주문 설정', self.ui.cod_tab)
 
-        self.ui.sc_od_groupBoxxx_03 = QGroupBox('주문유형', self.ui.sc_od_groupBoxxx_01)
+        self.ui.sc_od_groupBoxxx_03 = self.wc.setQGroupBox('주문유형', self.ui.sc_od_groupBoxxx_01)
+        self.ui.sc_od_groupBoxxx_04 = self.wc.setQGroupBox('분할매수', self.ui.sc_od_groupBoxxx_01)
+        self.ui.sc_od_groupBoxxx_05 = self.wc.setQGroupBox('지정가 기준가격 및 시장가 호가범위', self.ui.sc_od_groupBoxxx_01)
+        self.ui.sc_od_groupBoxxx_06 = self.wc.setQGroupBox('매수주문취소', self.ui.sc_od_groupBoxxx_01)
+        self.ui.sc_od_groupBoxxx_07 = self.wc.setQGroupBox('매수금지', self.ui.sc_od_groupBoxxx_01)
+        self.ui.sc_od_groupBoxxx_08 = self.wc.setQGroupBox('매수정정', self.ui.sc_od_groupBoxxx_01)
+        self.ui.sc_od_groupBoxxx_09 = self.wc.setQGroupBox('비중조절', self.ui.sc_od_groupBoxxx_01)
+
+        self.ui.sc_od_groupBoxxx_10 = self.wc.setQGroupBox('주문유형', self.ui.sc_od_groupBoxxx_02)
+        self.ui.sc_od_groupBoxxx_11 = self.wc.setQGroupBox('분할매도', self.ui.sc_od_groupBoxxx_02)
+        self.ui.sc_od_groupBoxxx_12 = self.wc.setQGroupBox('지정가 기준가격 및 시장가 호가범위', self.ui.sc_od_groupBoxxx_02)
+        self.ui.sc_od_groupBoxxx_13 = self.wc.setQGroupBox('매도주문취소', self.ui.sc_od_groupBoxxx_02)
+        self.ui.sc_od_groupBoxxx_14 = self.wc.setQGroupBox('매도금지', self.ui.sc_od_groupBoxxx_02)
+        self.ui.sc_od_groupBoxxx_15 = self.wc.setQGroupBox('매도정정', self.ui.sc_od_groupBoxxx_02)
+
         self.ui.sc_buyy_checkBox_01 = self.wc.setCheckBox('시장가', self.ui.sc_od_groupBoxxx_03,    changed=self.ui.cbCheckboxChanged_01, tip='매수는 매도호가에 매도는 매수호가에 원하는 수량만큼 주문하는 방식')
         self.ui.sc_buyy_checkBox_02 = self.wc.setCheckBox('지정가', self.ui.sc_od_groupBoxxx_03,    changed=self.ui.cbCheckboxChanged_01, tip='원하는 가격에 원하는 수량만큼 주문하는 방식')
         self.ui.sc_buyy_checkBox_03 = self.wc.setCheckBox('지정가IOC', self.ui.sc_od_groupBoxxx_03, changed=self.ui.cbCheckboxChanged_01, tip='매수는 매도호가에 매도는 매수호가에 원하는 수량만큼 주문하고 미체결수량은 취소하는 방식')
@@ -203,7 +219,6 @@ class SetOrderTap:
 
         self.ui.codb_checkbox_list1 = [self.ui.sc_buyy_checkBox_01, self.ui.sc_buyy_checkBox_02, self.ui.sc_buyy_checkBox_03, self.ui.sc_buyy_checkBox_04]
 
-        self.ui.sc_od_groupBoxxx_04 = QGroupBox('분할매수', self.ui.sc_od_groupBoxxx_01)
         self.ui.sc_buyy_labellll_01 = QLabel('▣ 분할매수횟수 (1:분할매수X)', self.ui.sc_od_groupBoxxx_04)
         self.ui.sc_buyy_lineEdit_01 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_04)
         self.ui.sc_buyy_labellll_02 = QLabel('▣ 분할매수방법 : 복수선택 불가능', self.ui.sc_od_groupBoxxx_04)
@@ -220,20 +235,17 @@ class SetOrderTap:
 
         self.ui.codb_checkbox_list2 = [self.ui.sc_buyy_checkBox_05, self.ui.sc_buyy_checkBox_06, self.ui.sc_buyy_checkBox_07]
 
-        self.ui.sc_od_groupBoxxx_05 = QGroupBox('지정가 기준가격 및 시장가 호가범위', self.ui.sc_od_groupBoxxx_01)
         self.ui.sc_buyy_labellll_04 = QLabel('▣ 지정가유형 주문가격 기준가', self.ui.sc_od_groupBoxxx_05)
         self.ui.sc_buyy_comboBox_01 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['현재가', '매도1호가', '매수1호가'])
         self.ui.sc_buyy_comboBox_02 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 +- 호가단위로 선택하십시오.')
         self.ui.sc_buyy_labellll_05 = QLabel('▣ 시장가 유형 주문 시 호가범위 선택    매도                   호가', self.ui.sc_od_groupBoxxx_05)
         self.ui.sc_buyy_comboBox_03 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_05, items=['1', '2', '3', '4', '5'])
 
-        self.ui.sc_od_groupBoxxx_06 = QGroupBox('매수주문취소', self.ui.sc_od_groupBoxxx_01)
         self.ui.sc_buyy_checkBox_12 = self.wc.setCheckBox('관심이탈', self.ui.sc_od_groupBoxxx_06)
         self.ui.sc_buyy_checkBox_13 = self.wc.setCheckBox('매도시그널', self.ui.sc_od_groupBoxxx_06)
         self.ui.sc_buyy_checkBox_14 = self.wc.setCheckBox('주문 후                      초 경과', self.ui.sc_od_groupBoxxx_06)
         self.ui.sc_buyy_lineEdit_04 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_06)
 
-        self.ui.sc_od_groupBoxxx_07 = QGroupBox('매수금지', self.ui.sc_od_groupBoxxx_01)
         self.ui.sc_buyy_checkBox_15 = self.wc.setCheckBox('블랙리스트', self.ui.sc_od_groupBoxxx_07)
         self.ui.sc_buyy_checkBox_16 = self.wc.setCheckBox('200이하', self.ui.sc_od_groupBoxxx_07)
         self.ui.sc_buyy_checkBox_17 = self.wc.setCheckBox('손절횟수                                         회 이상', self.ui.sc_od_groupBoxxx_07)
@@ -248,7 +260,6 @@ class SetOrderTap:
         self.ui.sc_buyy_checkBox_21 = self.wc.setCheckBox('손절청산 후                                     초 이내', self.ui.sc_od_groupBoxxx_07)
         self.ui.sc_buyy_lineEdit_10 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_07)
 
-        self.ui.sc_od_groupBoxxx_08 = QGroupBox('매수정정', self.ui.sc_od_groupBoxxx_01)
         self.ui.sc_buyy_labellll_06 = QLabel('▣ 정정가능 최대횟수 (0:매수정정X)', self.ui.sc_od_groupBoxxx_08)
         self.ui.sc_buyy_lineEdit_11 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_08)
         self.ui.sc_buyy_labellll_07 = QLabel('▣ 정정조건 : 주문가격과 현재가의 차이                    호가이상', self.ui.sc_od_groupBoxxx_08)
@@ -258,7 +269,6 @@ class SetOrderTap:
         self.ui.sc_load_Button_01 = self.wc.setPushbutton('불러오기', box=self.ui.sc_od_groupBoxxx_08, click=self.ui.SettingOrderLoad_03)
         self.ui.sc_save_Button_01 = self.wc.setPushbutton('저장하기', box=self.ui.sc_od_groupBoxxx_08, click=self.ui.SettingOrderSave_03)
 
-        self.ui.sc_od_groupBoxxx_09 = QGroupBox('비중조절', self.ui.sc_od_groupBoxxx_01)
         self.ui.sc_bj_checkBoxxx_01 = self.wc.setCheckBox('비중조절사용안함', self.ui.sc_od_groupBoxxx_09, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.sc_bj_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.sc_od_groupBoxxx_09, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.sc_bj_checkBoxxx_03 = self.wc.setCheckBox('거래대금평균대비비율', self.ui.sc_od_groupBoxxx_09, changed=self.ui.SettingCoinWeightCotrolChanged)
@@ -286,7 +296,6 @@ class SetOrderTap:
 
         # =============================================================================================================
 
-        self.ui.sc_od_groupBoxxx_10 = QGroupBox('주문유형', self.ui.sc_od_groupBoxxx_02)
         self.ui.sc_sell_checkBox_01 = self.wc.setCheckBox('시장가', self.ui.sc_od_groupBoxxx_10,    changed=self.ui.csCheckboxChanged_01, tip='매수는 매도호가에 매도는 매수호가에 원하는 수량만큼 주문하는 방식')
         self.ui.sc_sell_checkBox_02 = self.wc.setCheckBox('지정가', self.ui.sc_od_groupBoxxx_10,    changed=self.ui.csCheckboxChanged_01, tip='원하는 가격에 원하는 수량만큼 주문하는 방식')
         self.ui.sc_sell_checkBox_03 = self.wc.setCheckBox('지정가IOC', self.ui.sc_od_groupBoxxx_10, changed=self.ui.csCheckboxChanged_01, tip='매수는 매도호가에 매도는 매수호가에 원하는 수량만큼 주문하고 미체결수량은 취소하는 방식')
@@ -294,7 +303,6 @@ class SetOrderTap:
 
         self.ui.cods_checkbox_list1 = [self.ui.sc_sell_checkBox_01, self.ui.sc_sell_checkBox_02, self.ui.sc_sell_checkBox_03, self.ui.sc_sell_checkBox_04]
 
-        self.ui.sc_od_groupBoxxx_11 = QGroupBox('분할매도', self.ui.sc_od_groupBoxxx_02)
         self.ui.sc_sell_labellll_01 = QLabel('▣ 분할매도횟수 (1:분할매도X)', self.ui.sc_od_groupBoxxx_11)
         self.ui.sc_sell_lineEdit_01 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_11)
         self.ui.sc_sell_labellll_02 = QLabel('▣ 분할매도방법 : 복수선택 불가능', self.ui.sc_od_groupBoxxx_11)
@@ -310,14 +318,12 @@ class SetOrderTap:
 
         self.ui.cods_checkbox_list2 = [self.ui.sc_sell_checkBox_05, self.ui.sc_sell_checkBox_06, self.ui.sc_sell_checkBox_07]
 
-        self.ui.sc_od_groupBoxxx_12 = QGroupBox('지정가 기준가격 및 시장가 호가범위', self.ui.sc_od_groupBoxxx_02)
         self.ui.sc_sell_labellll_04 = QLabel('▣ 지정가유형 주문가격 기준가', self.ui.sc_od_groupBoxxx_12)
         self.ui.sc_sell_comboBox_01 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['현재가', '매도1호가', '매수1호가'])
         self.ui.sc_sell_comboBox_02 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['5', '4', '3', '2', '1', '0', '-1', '-2', '-3', '-4', '-5'], tip='0은 기준가격이며 +- 호가단위로 선택하십시오.')
         self.ui.sc_sell_labellll_05 = QLabel('▣ 시장가 유형 주문 시 호가범위 선택    매수                   호가', self.ui.sc_od_groupBoxxx_12)
         self.ui.sc_sell_comboBox_03 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_12, items=['1', '2', '3', '4', '5'])
 
-        self.ui.sc_od_groupBoxxx_13 = QGroupBox('매도주문취소', self.ui.sc_od_groupBoxxx_02)
         self.ui.sc_sell_checkBox_11 = self.wc.setCheckBox('관심진입', self.ui.sc_od_groupBoxxx_13)
         self.ui.sc_sell_checkBox_12 = self.wc.setCheckBox('매수시그널', self.ui.sc_od_groupBoxxx_13)
         self.ui.sc_sell_checkBox_13 = self.wc.setCheckBox('주문 후                      초 경과', self.ui.sc_od_groupBoxxx_13)
@@ -327,7 +333,6 @@ class SetOrderTap:
         self.ui.sc_sell_checkBox_15 = self.wc.setCheckBox('손절청산 수익금(-)', self.ui.sc_od_groupBoxxx_13, tip='만원 또는 USDT 단위의 금액을 입력하십시오.')
         self.ui.sc_sell_lineEdit_06 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_13)
 
-        self.ui.sc_od_groupBoxxx_14 = QGroupBox('매도금지', self.ui.sc_od_groupBoxxx_02)
         self.ui.sc_sell_checkBox_16 = self.wc.setCheckBox('분할매수횟수                                 회 이내', self.ui.sc_od_groupBoxxx_14)
         self.ui.sc_sell_lineEdit_07 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_14)
         self.ui.sc_sell_checkBox_17 = self.wc.setCheckBox('매도금지시간                                  ~', self.ui.sc_od_groupBoxxx_14)
@@ -336,7 +341,6 @@ class SetOrderTap:
         self.ui.sc_sell_checkBox_18 = self.wc.setCheckBox('이전거래시간                                  초 이내', self.ui.sc_od_groupBoxxx_14)
         self.ui.sc_sell_lineEdit_10 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_14)
 
-        self.ui.sc_od_groupBoxxx_15 = QGroupBox('매도정정', self.ui.sc_od_groupBoxxx_02)
         self.ui.sc_sell_labellll_06 = QLabel('▣ 정정가능 최대횟수 (0:매도정정X)', self.ui.sc_od_groupBoxxx_15)
         self.ui.sc_sell_labellll_07 = QLabel('▣ 정정조건 : 주문가격과 현재가의 차이                    호가이상', self.ui.sc_od_groupBoxxx_15)
         self.ui.sc_sell_labellll_08 = QLabel('▣ 정정주문 시 정정가격 선택 현재가(+)                    호가', self.ui.sc_od_groupBoxxx_15)

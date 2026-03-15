@@ -6,17 +6,6 @@ from ui.ui_draw_label_text import get_label_text
 from ui.set_style import color_cs_hr, color_fg_bt, color_bg_bt, color_bg_ld, qfont12
 
 
-_np = None
-
-
-def get_np():
-    global _np
-    if _np is None:
-        import numpy as np
-        _np = np
-    return _np
-
-
 class CrossHair:
     def __init__(self, ui):
         self.ui = ui
@@ -179,7 +168,7 @@ class CrossHair:
                     for n, labell in enumerate(self.ui.ctpg_labels):
                         foctor = self.ui.ctpg_factors[n]
                         if index == n:
-                            text = f'Y축 {get_np().round(mousePoint.y(), 2):,}\n{get_label_text(self.ui, real, gubun, code, is_min, xpoint, foctor, hms_)}'
+                            text = f'Y축 {round(mousePoint.y(), 2):,}\n{get_label_text(self.ui, real, gubun, code, is_min, xpoint, foctor, hms_)}'
                         else:
                             text = get_label_text(self.ui, real, gubun, code, is_min, xpoint, foctor, hms_)
                         labell.setText(text)

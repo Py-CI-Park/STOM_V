@@ -4,10 +4,9 @@ GARCH 모델 기반 변동성 예측 및 트레이딩 신호 생성
 """
 
 import warnings
-import numpy as np
-import pandas as pd
 from arch import arch_model
 from typing import Dict, List, Tuple
+from utility.lazy_imports import get_np, get_pd
 warnings.filterwarnings('ignore')
 
 
@@ -40,7 +39,7 @@ class RealTimeVolatilityAnalyzer:
         self.current_volatility = 0.0
         self.volatility_regime = 'normal'
         
-    def calculate_historical_volatility(self, prices: np.ndarray, method: str = 'std') -> float:
+    def calculate_historical_volatility(self, prices: get_np().ndarray, method: str = 'std') -> float:
         """
         역사적 변동성 계산
         
@@ -51,24 +50,24 @@ class RealTimeVolatilityAnalyzer:
         Returns:
             변동성 값
         """
-        returns = np.diff(np.log(prices))
+        returns = get_np().diff(get_np().log(prices))
         
         if method == 'std':
-            return np.std(returns) * np.sqrt(252)
+            return get_np().std(returns) * get_np().sqrt(252)
         elif method == 'parkinson':
             # Parkinson 변동성 추정기
-            log_hl = np.log(prices[1:] / prices[:-1])
+            log_hl = get_np().log(prices[1:] / prices[:-1])
             # noinspection PyTypeChecker
-            return np.sqrt(0.361 * np.mean(log_hl**2)) * np.sqrt(252)
+            return get_np().sqrt(0.361 * get_np().mean(log_hl**2)) * get_np().sqrt(252)
         elif method == 'garman_klass':
             # Garman-Klass 변동성 추정기
-            log_hl = np.log(prices[1:] / prices[:-1])
+            log_hl = get_np().log(prices[1:] / prices[:-1])
             # noinspection PyTypeChecker
-            return np.sqrt(0.5 * np.mean(log_hl**2) - 0.39 * np.mean(log_hl)) * np.sqrt(252)
+            return get_np().sqrt(0.5 * get_np().mean(log_hl**2) - 0.39 * get_np().mean(log_hl)) * get_np().sqrt(252)
         else:
-            return np.std(returns) * np.sqrt(252)
+            return get_np().std(returns) * get_np().sqrt(252)
     
-    def fit_garch_model(self, returns: np.ndarray) -> Tuple[float, float, float]:
+    def fit_garch_model(self, returns: get_np().ndarray) -> Tuple[float, float, float]:
         """
         GARCH 모델 적합
         
@@ -92,7 +91,7 @@ class RealTimeVolatilityAnalyzer:
             # 기본값 반환
             return 0.0001, 0.1, 0.85
     
-    def forecast_volatility(self, returns: np.ndarray, horizon: int = 5) -> List[float]:
+    def forecast_volatility(self, returns: get_np().ndarray, horizon: int = 5) -> List[float]:
         """
         변동성 예측
         
@@ -106,7 +105,7 @@ class RealTimeVolatilityAnalyzer:
         omega, alpha, beta = self.fit_garch_model(returns)
         
         # 현재 변동성
-        current_var = np.var(returns[-self.window_size:])
+        current_var = get_np().var(returns[-self.window_size:])
         
         # 미래 변동성 예측
         forecasts = []
@@ -114,7 +113,7 @@ class RealTimeVolatilityAnalyzer:
         
         for _ in range(horizon):
             var_t_plus_1 = omega + alpha * returns[-1]**2 + beta * var_t
-            forecasts.append(np.sqrt(var_t_plus_1) * np.sqrt(252))
+            forecasts.append(get_np().sqrt(var_t_plus_1) * get_np().sqrt(252))
             var_t = var_t_plus_1
         
         return forecasts
@@ -134,7 +133,7 @@ class RealTimeVolatilityAnalyzer:
             return 'normal'
         
         # 변동성 퍼센타일 계산
-        percentiles = np.percentile(history, [25, 75, 90])
+        percentiles = get_np().percentile(history, [25, 75, 90])
         
         if volatility < percentiles[0]:
             return 'low'
@@ -183,7 +182,7 @@ class RealTimeVolatilityAnalyzer:
             return False
         
         # 최근 20일 평균 변동성
-        avg_vol = np.mean(historical_vols[-20:])
+        avg_vol = get_np().mean(historical_vols[-20:])
 
         # noinspection PyTypeChecker
         return current_vol > avg_vol * threshold
@@ -209,7 +208,7 @@ class RealTimeVolatilityAnalyzer:
         
         # 현재 변동성 계산
         current_vol = self.calculate_historical_volatility(
-            np.array(self.price_history), method='std'
+            get_np().array(self.price_history), method='std'
         )
         
         self.current_volatility = current_vol
@@ -222,7 +221,7 @@ class RealTimeVolatilityAnalyzer:
         
         # 변동성 예측
         if len(self.price_history) >= 50:
-            returns = np.diff(np.log(self.price_history))
+            returns = get_np().diff(get_np().log(self.price_history))
             forecasts = self.forecast_volatility(returns, horizon=5)
             self.volatility_forecasts = forecasts
         
@@ -288,7 +287,7 @@ class VolatilityRiskManager:
         self.max_volatility = max_volatility
         self.var_confidence = var_confidence
         
-    def calculate_var(self, returns: np.ndarray, portfolio_value: float) -> float:
+    def calculate_var(self, returns: get_np().ndarray, portfolio_value: float) -> float:
         """
         Value at Risk 계산
         
@@ -301,7 +300,7 @@ class VolatilityRiskManager:
         """
         var_percentile = (1 - self.var_confidence) * 100
         # noinspection PyTypeChecker
-        return np.percentile(returns, var_percentile) * portfolio_value
+        return get_np().percentile(returns, var_percentile) * portfolio_value
     
     def calculate_position_limits(self, current_volatility: float, portfolio_value: float) -> Dict:
         """
@@ -338,8 +337,8 @@ def test_volatility_analyzer():
     변동성 분석기 테스트
     """
     # 샘플 데이터 생성
-    np.random.seed(42)
-    dates = pd.date_range('2023-01-01', periods=200, freq='D')
+    get_np().random.seed(42)
+    dates = get_pd().date_range('2023-01-01', periods=200, freq='D')
     
     # 변동성이 변하는 가격 데이터 생성
     prices = []
@@ -356,11 +355,11 @@ def test_volatility_analyzer():
         else:
             vol = 0.08  # 극단적 변동성
         
-        daily_return = np.random.normal(0, vol)
+        daily_return = get_np().random.normal(0, vol)
         base_price *= (1 + daily_return)
         prices.append(base_price)
     
-    prices = np.array(prices)
+    prices = get_np().array(prices)
     
     # 변동성 분석기 초기화
     analyzer = RealTimeVolatilityAnalyzer(window_size=50)
@@ -399,9 +398,9 @@ def test_volatility_analyzer():
     
     print("\n" + "=" * 50)
     print("최종 변동성 통계:")
-    print(f"평균 변동성: {np.mean(analyzer.volatility_history):.2%}")
-    print(f"최고 변동성: {np.max(analyzer.volatility_history):.2%}")
-    print(f"최저 변동성: {np.min(analyzer.volatility_history):.2%}")
+    print(f"평균 변동성: {get_np().mean(analyzer.volatility_history):.2%}")
+    print(f"최고 변동성: {get_np().max(analyzer.volatility_history):.2%}")
+    print(f"최저 변동성: {get_np().min(analyzer.volatility_history):.2%}")
 
 
 if __name__ == "__main__":

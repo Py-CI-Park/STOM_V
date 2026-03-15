@@ -12,13 +12,12 @@
 
 import sys
 import sqlite3
-import numpy as np
-import pandas as pd
 import pyqtgraph as pg
 from collections import deque
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QLabel
+from utility.lazy_imports import get_np, get_pd
 
 
 class MoneyTrackingChart(QMainWindow):
@@ -203,8 +202,8 @@ class MoneyTrackingChart(QMainWindow):
             # 다음 데이터 추가
             row = self.all_data.iloc[self.current_index]
             price = row.get('현재가', 80000)
-            buy_volume = row.get('초당매수수량', np.random.randint(100, 1000))
-            sell_volume = row.get('초당매도수량', np.random.randint(100, 1000))
+            buy_volume = row.get('초당매수수량', get_np().random.randint(100, 1000))
+            sell_volume = row.get('초당매도수량', get_np().random.randint(100, 1000))
             t = str(row.get('index', ''))[:-2]
             timestamp = f'{t[:4]}-{t[4:6]}-{t[6:8]} {t[8:10]}:{t[10:12]}:{t[12:]}'
             change_rate = row.get('등락율', 0)
@@ -442,14 +441,14 @@ class MoneyTrackingChart(QMainWindow):
         """데이터베이스에서 샘플 데이터 로드"""
         try:
             conn = sqlite3.connect('../../_database/stock_tick_back.db')
-            df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
+            df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
             stock_codes = df['name'].to_list()
             stock_codes.remove('moneytop')
             stock_codes.remove('stockinfo')
 
             while True:
-                self.code = np.random.choice(stock_codes)
-                df = pd.read_sql(f"SELECT * FROM '{self.code}'", conn)
+                self.code = get_np().random.choice(stock_codes)
+                df = get_pd().read_sql(f"SELECT * FROM '{self.code}'", conn)
                 lastday = int(str(df['index'].iloc[-1])[:8]) * 1000000
                 df = df[df['index'] >= lastday]
                 if len(df[df['관심종목'] == 1]) >= len(df) * 0.7:
@@ -465,8 +464,8 @@ class MoneyTrackingChart(QMainWindow):
             for i in range(min(10, len(df))):
                 row = df.iloc[i]
                 price = row.get('현재가', 80000)
-                buy_volume = row.get('초당매수수량', np.random.randint(100, 1000))
-                sell_volume = row.get('초당매도수량', np.random.randint(100, 1000))
+                buy_volume = row.get('초당매수수량', get_np().random.randint(100, 1000))
+                sell_volume = row.get('초당매도수량', get_np().random.randint(100, 1000))
                 t = str(row.get('index', ''))[:-2]
                 timestamp = f'{t[:4]}-{t[4:6]}-{t[6:8]} {t[8:10]}:{t[10:12]}:{t[12:]}'
                 change_rate = row.get('등락율', 0)

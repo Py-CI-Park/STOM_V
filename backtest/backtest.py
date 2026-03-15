@@ -3,11 +3,12 @@ import re
 import sys
 import time
 import sqlite3
-import numpy as np
-import pandas as pd
 from multiprocessing import Process, Queue
-from backtest.back_static import PlotShow, GetMoneytopQuery, GetResult, GetResultDataframe, AddMdd, bootstrap_test
-from utility.static import now, str_ymdhms, error_decorator, set_builtin_print
+
+from backtest.back_static_numba import GetResult, bootstrap_test
+from utility.lazy_imports import get_np, get_pd
+from backtest.back_static import PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
+from utility.static import now, str_ymdhms, error_decorator
 from utility.setting_user import stockreadlines, coinreadlines, futurereadlines
 from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, DB_STOCK_BACK_TICK, \
     DB_COIN_BACK_TICK, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
@@ -52,7 +53,6 @@ class Total:
 
         self.insertlist   = []
 
-        set_builtin_print(True, self.wq)
         self.MainLoop()
 
     @error_decorator
@@ -98,9 +98,9 @@ class Total:
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
+                time.sleep(1)
                 break
 
-        time.sleep(1)
         sys.exit()
 
     def InsertBlacklist(self):
@@ -147,20 +147,20 @@ class Total:
         self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
         if self.blacklist: self.InsertBlacklist()
 
-        arry_tsg = np.array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
-        arry_bct = np.sort(arry_bct, axis=0)[::-1]
+        arry_tsg = get_np().array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
+        arry_bct = get_np().sort(arry_bct, axis=0)[::-1]
         result   = GetResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, self.day_count)
         result   = AddMdd(arry_tsg, result)
         tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
 
         bootstrap_dist = bootstrap_test(self.df_tsg['수익률'].values / 100)
-        bootstrap_avg  = np.round(np.mean(bootstrap_dist), 2)
-        bootstrap_min  = np.round(np.percentile(bootstrap_dist, 2.5), 2)
-        bootstrap_max  = np.round(np.percentile(bootstrap_dist, 97.5), 2)
+        bootstrap_avg  = round(get_np().mean(bootstrap_dist), 2)
+        bootstrap_min  = round(get_np().percentile(bootstrap_dist, 2.5), 2)
+        bootstrap_max  = round(get_np().percentile(bootstrap_dist, 97.5), 2)
         # noinspection PyTypeChecker
-        bootstrap_pv   = np.round(np.mean(bootstrap_dist > 0) * 100, 2)
-        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
-        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익을 낼 것이며, 수익일 확률은 [{bootstrap_pv}%]입니다."
+        bootstrap_pv   = round(get_np().mean(bootstrap_dist > 0) * 100, 2)
+        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상 최소 평균수익률: {bootstrap_min}%, 예상 최대 평균수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
+        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 평균수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
 
         startday, endday = str(self.startday), str(self.endday)
         startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
@@ -196,7 +196,7 @@ class Total:
 
         save_time = str_ymdhms()
         data = [int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg]
-        df = pd.DataFrame([data], columns=columns_vj, index=[save_time])
+        df = get_pd().DataFrame([data], columns=columns_vj, index=[save_time])
         save_file_name = f'{self.savename}_{self.buystg_name}_{save_time}'
         con = sqlite3.connect(DB_BACKTEST)
         df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
@@ -267,7 +267,6 @@ class BackTest:
         else:
             self.gubun = 'coin'
 
-        set_builtin_print(True, self.wq)
         self.Start()
 
     @error_decorator
@@ -316,7 +315,7 @@ class BackTest:
 
         con   = sqlite3.connect(db)
         query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt = get_pd().read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -327,7 +326,7 @@ class BackTest:
         day_count = len(df_mt['일자'].unique())
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 
-        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
+        arry_bct = get_np().zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
         data = ('백테정보', self.ui_gubun, None, None, arry_bct, betting, day_count)
         for q in self.bstq_list:
@@ -335,8 +334,8 @@ class BackTest:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
 
         con = sqlite3.connect(DB_STRATEGY)
-        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
-        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}sell', con).set_index('index')
+        dfb = get_pd().read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
+        dfs = get_pd().read_sql(f'SELECT * FROM {self.gubun}sell', con).set_index('index')
         con.close()
         buystg  = dfb['전략코드'][buystg_name]
         sellstg = dfs['전략코드'][sellstg_name]
@@ -364,8 +363,8 @@ class BackTest:
             q.put(data)
 
         data = mq.get()
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))
         if data == f'{self.backname} 완료':
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))
             if self.dict_set['스톰라이브']: self.lq.put(self.backname)
             _ = mq.get()
             self.SysExit(False)

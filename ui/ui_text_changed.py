@@ -1,16 +1,6 @@
 
-from utility.setting_base import columns_jg, columns_jgf, columns_jgcf
 from utility.static import error_decorator
-
-_np = None
-
-
-def get_np():
-    global _np
-    if _np is None:
-        import numpy as np
-        _np = np
-    return _np
+from utility.setting_base import columns_jg, columns_jgf, columns_jgcf
 
 
 @error_decorator
@@ -84,9 +74,9 @@ def text_changed_05(ui):
                     order_count = int(ui.dict_set['주식투자금'])
             else:
                 if 'KRW' in name:
-                    order_count = get_np().round(ui.dict_set['코인투자금'] * 1_000_000 / order_price, 8)
+                    order_count = round(ui.dict_set['코인투자금'] * 1_000_000 / order_price, 8)
                 else:
-                    order_count = get_np().round(ui.dict_set['코인투자금'] / order_price, 8)
+                    order_count = round(ui.dict_set['코인투자금'] / order_price, 8)
         else:
             if ui.main_btn == 0:
                 order_count = ui.sjg_tableWidgettt.item(row_num, col_num).text()

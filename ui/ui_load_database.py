@@ -1,20 +1,11 @@
 
 import sqlite3
 from PyQt5.QtWidgets import QCompleter
+from utility.lazy_imports import get_pd
 from utility.static import error_decorator
 from utility.setting_base import DB_CODE_INFO, DB_COIN_BACK_TICK, list_stock_tick, list_stock_min, list_coin_tick, \
     list_coin_min, list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, list_future_tick2, \
     list_future_min2
-
-_pd = None
-
-
-def get_pd():
-    global _pd
-    if _pd is None:
-        import pandas as pd
-        _pd = pd
-    return _pd
 
 
 @error_decorator

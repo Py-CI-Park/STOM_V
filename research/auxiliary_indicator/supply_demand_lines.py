@@ -1,12 +1,11 @@
 import sys
 import sqlite3
-import numpy as np
-import pandas as pd
 import pyqtgraph as pg
 from collections import deque
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QLabel
+from utility.lazy_imports import get_np, get_pd
 
 
 class SupplyDemandCalculator:
@@ -71,8 +70,8 @@ class SupplyDemandCalculator:
             if len(level_volumes) == 0:
                 continue
 
-            avg_volume_at_level = np.mean(level_volumes)
-            avg_volume_overall = np.mean(recent_volumes)
+            avg_volume_at_level = get_np().mean(level_volumes)
+            avg_volume_overall = get_np().mean(recent_volumes)
 
             # Supply 존 조건 (저항선) - 조건 완화
             # noinspection PyTypeChecker
@@ -305,14 +304,14 @@ class SupplyDemandChart(QMainWindow):
         """샘플 데이터 로드"""
         try:
             conn = sqlite3.connect('../../_database/stock_tick_back.db')
-            df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
+            df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
             stock_codes = df['name'].to_list()
             stock_codes.remove('moneytop')
             stock_codes.remove('stockinfo')
 
             while True:
-                self.code = np.random.choice(stock_codes)
-                df = pd.read_sql(f"SELECT `index`, 현재가, 초당매수수량, 초당매도수량, 관심종목 FROM '{self.code}'", conn)
+                self.code = get_np().random.choice(stock_codes)
+                df = get_pd().read_sql(f"SELECT `index`, 현재가, 초당매수수량, 초당매도수량, 관심종목 FROM '{self.code}'", conn)
                 lastday = int(str(df['index'].iloc[-1])[:8]) * 1000000
                 df = df[df['index'] >= lastday]
                 if len(df[df['관심종목'] == 1]) >= len(df) * 0.7:

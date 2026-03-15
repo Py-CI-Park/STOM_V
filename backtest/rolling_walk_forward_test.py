@@ -5,13 +5,12 @@ import copy
 import optuna
 import random
 import sqlite3
-import numpy as np
-import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
-from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, GetResult, AddMdd, \
-    bootstrap_test
-from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator, set_builtin_print
+from utility.lazy_imports import get_np, get_pd
+from backtest.back_static_numba import GetResult, bootstrap_test
+from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, AddMdd
+from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator
 from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
@@ -60,8 +59,8 @@ class Total:
         self.df_tsg       = None
         self.df_bct       = None
 
-        self.df_ttsg      = []
-        self.df_tbct      = []
+        self.list_tsg     = []
+        self.list_bct     = []
 
         self.dict_t       = {}
         self.dict_v       = {}
@@ -73,7 +72,6 @@ class Total:
         self.hstd         = -float('inf')
         self.sub_total    = 0
 
-        set_builtin_print(True, self.wq)
         self.MainLoop()
 
     @error_decorator
@@ -181,9 +179,9 @@ class Total:
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
+                time.sleep(1)
                 break
 
-        time.sleep(1)
         sys.exit()
 
     def BackInfo(self, data):
@@ -225,11 +223,11 @@ class Total:
         tc = len(list_tsg)
         if tc > 0:
             self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
-            self.df_ttsg.append(self.df_tsg)
-            self.df_tbct.append(self.df_bct)
-            day_cnt  = len(np.unique(np.array([str(x)[:8] for x in arry_bct[:, 0]])))
-            arry_tsg = np.array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
-            arry_bct = np.sort(arry_bct, axis=0)[::-1]
+            self.list_tsg.append(self.df_tsg)
+            self.list_bct.append(self.df_bct)
+            day_cnt  = len(get_np().unique(get_np().array([str(x)[:8] for x in arry_bct[:, 0]])))
+            arry_tsg = get_np().array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
+            arry_bct = get_np().sort(arry_bct, axis=0)[::-1]
             result   = GetResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, day_cnt)
             result   = AddMdd(arry_tsg, result)
             tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
@@ -244,31 +242,31 @@ class Total:
         self.mq.put('아웃샘플 백테스트 완료')
 
         if oc == self.out_count:
-            self.df_ttsg = pd.concat(self.df_ttsg)
-            self.df_ttsg['수익금합계'] = self.df_ttsg['수익금'].cumsum()
-            self.df_tbct = pd.concat(self.df_tbct)
+            df_all_tsg = get_pd().concat(self.list_tsg)
+            df_all_bct = get_pd().concat(self.list_bct)
 
-            df_tsg   = self.df_ttsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
-            df_tbc   = self.df_tbct.copy()
+            df_all_tsg['수익금합계'] = df_all_tsg['수익금'].cumsum()
+
+            df_tsg   = df_all_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
+            df_tbc   = df_all_bct.copy()
             df_tbc['체결시간'] = df_tbc.index
             df_tbc['체결시간'] = df_tbc['체결시간'].apply(lambda x: float(x))
             df_tbc   = df_tbc[['체결시간', '보유종목수', '보유금액']]
-            arry_tsg = np.array(df_tsg, dtype='float64')
-            arry_bct = np.array(df_tbc, dtype='float64')
-            arry_bct = np.sort(arry_bct, axis=0)[::-1]
-            day_cnt  = len(np.unique(np.array([str(x)[:8] for x in arry_bct[:, 0]])))
+            arry_tsg = get_np().array(df_tsg, dtype='float64')
+            arry_bct = get_np().array(df_tbc, dtype='float64')
+            arry_bct = get_np().sort(arry_bct, axis=0)[::-1]
+            day_cnt  = len(get_np().unique(get_np().array([str(x)[:8] for x in arry_bct[:, 0]])))
             result   = GetResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, day_cnt)
             result   = AddMdd(arry_tsg, result)
             tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
 
-            bootstrap_dist = bootstrap_test(self.df_ttsg['수익률'].values / 100)
-            bootstrap_avg  = np.round(np.mean(bootstrap_dist), 2)
-            bootstrap_min  = np.round(np.percentile(bootstrap_dist, 2.5), 2)
-            bootstrap_max  = np.round(np.percentile(bootstrap_dist, 97.5), 2)
-            # noinspection PyTypeChecker
-            bootstrap_pv   = np.round(np.mean(bootstrap_dist > 0) * 100, 2)
-            bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
-            bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익을 낼 것이며, 수익일 확률은 [{bootstrap_pv}%]입니다."
+            bootstrap_dist = bootstrap_test(df_all_tsg['수익률'].values / 100)
+            bootstrap_avg  = round(get_np().mean(bootstrap_dist), 2)
+            bootstrap_min  = round(get_np().percentile(bootstrap_dist, 2.5), 2)
+            bootstrap_max  = round(get_np().percentile(bootstrap_dist, 97.5), 2)
+            bootstrap_pv   = round(get_np().mean(bootstrap_dist > 0) * 100, 2)
+            bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상 최소 평균수익률: {bootstrap_min}%, 예상 최대 평균수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
+            bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 평균수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
 
             startday, endday = str(self.startday_), str(self.endday_)
@@ -300,13 +298,13 @@ class Total:
 
             save_file_name = f"{self.savename}_{self.buystg_name}_{self.optistandard}_{self.file_name}"
             con = sqlite3.connect(DB_BACKTEST)
-            self.df_ttsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
+            df_all_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
             con.close()
-            self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], self.df_ttsg))
+            self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], df_all_tsg))
 
             self.sq.put(f'{self.backname} 백테스트를 완료하였습니다.')
             self.mq.put('백테스트 완료')
-            PlotShow('전진분석', is_tick, self.teleQ, self.df_ttsg, self.df_tbct, self.dict_cn, seed, mdd, self.startday,
+            PlotShow('전진분석', is_tick, self.teleQ, df_all_tsg, df_all_bct, self.dict_cn, seed, mdd, self.startday,
                      self.endday, self.starttime, self.endtime, self.list_days, self.backname, back_text, label_text,
                      save_file_name, self.schedul, False)
             self.mq.put('백테스트 완료')
@@ -340,7 +338,6 @@ class RollingWalkForwardTest:
         self.study      = None
         self.dict_simple_vars = {}
 
-        set_builtin_print(True, self.wq)
         self.Start()
 
     @error_decorator
@@ -433,7 +430,7 @@ class RollingWalkForwardTest:
 
         con   = sqlite3.connect(db)
         query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt = get_pd().read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -457,7 +454,7 @@ class RollingWalkForwardTest:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 확인기간 {i + 1} : {test_days[0]} ~ {test_days[1]}'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 일자 추출 완료'))
 
-        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
+        arry_bct = get_np().zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
         data = ('백테정보', self.ui_gubun, list_days, None, arry_bct, betting, len(day_list))
         for q in self.bstq_list:
@@ -465,11 +462,11 @@ class RollingWalkForwardTest:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
 
         con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
+        df = get_pd().read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
         buystg = df['전략코드'][buystg_name]
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
+        df = get_pd().read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
         sellstg = df['전략코드'][sellstg_name]
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optivars', con).set_index('index')
+        df = get_pd().read_sql(f'SELECT * FROM {self.gubun}optivars', con).set_index('index')
         optivars = df['전략코드'][optivars_name]
         con.close()
 
@@ -535,8 +532,8 @@ class RollingWalkForwardTest:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 아웃샘플 백테스트 완료'))
 
         _ = mq.get()
-        if self.dict_set['스톰라이브']: self.lq.put(self.backname.replace('O', '').replace('B', ''))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
+        if self.dict_set['스톰라이브']: self.lq.put(self.backname.replace('O', '').replace('B', ''))
         _ = mq.get()
         mq.close()
         self.SysExit(False)
@@ -627,7 +624,7 @@ class RollingWalkForwardTest:
                     if varint:
                         next_var = low + gap * k
                     else:
-                        next_var = np.round(low + gap * k, 2)
+                        next_var = round(low + gap * k, 2)
                     if (lowhigh and next_var <= high) or (not lowhigh and next_var >= high):
                         vars_list[0].append(next_var)
                     else:
@@ -727,9 +724,9 @@ class RollingWalkForwardTest:
             else:
                 check_hstd = data[-1]
                 if hstd > 0:
-                    ratio = np.round((check_hstd / hstd - 1) * 100, 2)
+                    ratio = round((check_hstd / hstd - 1) * 100, 2)
                 else:
-                    ratio = np.round((1 - check_hstd / hstd) * 100, 2)
+                    ratio = round((1 - check_hstd / hstd) * 100, 2)
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
                 if ratio > high_ratio[0]:
                     high_ratio = [ratio, std, check_hstd]
@@ -761,12 +758,12 @@ class RollingWalkForwardTest:
                 else:
                     high = best_params[i]
                 if high == first:
-                    new = (first - gap) if gap.__class__ == int else np.round(first - gap, 2)
+                    new = (first - gap) if gap.__class__ == int else round(first - gap, 2)
                     prev_list = var[0] if len_var < 20 else var[0][:-1]
                     self.vars_[i][0] = [new] + prev_list
                     text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
                 elif high == last:
-                    new = (last + gap) if gap.__class__ == int else np.round(first + gap, 2)
+                    new = (last + gap) if gap.__class__ == int else round(first + gap, 2)
                     prev_list = var[0] if len_var < 20 else var[0][1:]
                     self.vars_[i][0] = prev_list + [new]
                     text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
@@ -796,7 +793,7 @@ class RollingWalkForwardTest:
                 else:
                     trial_ = suggest_func(trial_name, var_[1], var_[1])
 
-                if '.' in str(trial_): trial_ = np.round(trial_, 3)
+                if '.' in str(trial_): trial_ = round(trial_, 3)
 
                 optuna_vars.append(trial_)
                 backte_vars.append([[], trial_])
@@ -859,11 +856,11 @@ class StopWhenNotUpdateBestCallBack:
         self.adjust_cnt   = max(self.len_vars, self.optuna_count)
 
     def __call__(self, study: optuna.study.Study, trial: optuna.trial.FrozenTrial) -> None:
-        best_opt    = study.best_value
-        best_num    = study.best_trial.number
-        curr_num    = trial.number
-        last_num    = (best_num + self.len_vars) if self.optuna_count == 0 else (best_num + self.optuna_count)
-        rema_num    = last_num - curr_num
+        best_opt = study.best_value
+        best_num = study.best_trial.number
+        curr_num = trial.number
+        last_num = (best_num + self.len_vars) if self.optuna_count == 0 else (best_num + self.optuna_count)
+        rema_num = last_num - curr_num
         self.main.wq.put((ui_num[f'{self.main.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
         if curr_num >= self.adjust_cnt and curr_num == best_num:
             self.main.AdjustVarsRange(list(study.best_params.values()))

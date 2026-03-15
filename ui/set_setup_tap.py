@@ -1,6 +1,6 @@
 
 from ui.set_style import style_bc_dk
-from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
+from PyQt5.QtWidgets import QLabel, QTabWidget, QWidget
 from utility.static import error_decorator
 
 
@@ -30,14 +30,14 @@ class SetSetupTap:
         self.ui.set_tapWidgett_01.addTab(self.ui.sod_tab, '주식해선주문설정')
         self.ui.set_tapWidgett_01.addTab(self.ui.cod_tab, '코인주문설정')
 
-        self.ui.sj_bs_groupBox_01 = QGroupBox(' 증권사, 거래소, 프로세스 : 사용할 증권사 및 거래소를 선택하고 실행될 프로세스를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_02 = QGroupBox(' 주식 및 해선 계정 : 계정 아이디, 비밀번호, 인증서비밀번호를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_03 = QGroupBox(' 코인 계정 : Access 키와 Secret 키를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_04 = QGroupBox(' 텔레그램 : 봇토큰 및 사용자 채팅 아이디를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_05 = QGroupBox(' 주식 및 해선 : 모의투자, 알림소리, 전략를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_06 = QGroupBox(' 코인 : 모의투자, 알림소리, 전략를 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_07 = QGroupBox(' 백테 : 백테스트 엔진 및 백테 관련 옵션을 설정한다.', self.ui.ssd_tab)
-        self.ui.sj_bs_groupBox_08 = QGroupBox(' 기타 : 휴장 종료 유무, 해상도, 창위치, 스톰라이브를 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_01 = self.wc.setQGroupBox(' 증권사, 거래소, 프로세스 : 사용할 증권사 및 거래소를 선택하고 실행될 프로세스를 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_02 = self.wc.setQGroupBox(' 주식 및 해선 계정 : 계정 아이디, 비밀번호, 인증서비밀번호를 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_03 = self.wc.setQGroupBox(' 코인 계정 : Access 키와 Secret 키를 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_04 = self.wc.setQGroupBox(' 텔레그램 : 봇토큰 및 사용자 채팅 아이디를 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_05 = self.wc.setQGroupBox(' 주식 및 해선 : 모의투자, 알림소리, 전략를 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_06 = self.wc.setQGroupBox(' 코인 : 모의투자, 알림소리, 전략를 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_07 = self.wc.setQGroupBox(' 백테 : 백테스트 엔진 및 백테 관련 옵션을 설정한다.', self.ui.ssd_tab)
+        self.ui.sj_bs_groupBox_08 = self.wc.setQGroupBox(' 기타 : 휴장 종료 유무, 해상도, 창위치, 스톰라이브를 설정한다.', self.ui.ssd_tab)
 
         self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, tip='사용할 증권사를 선택하십시오.', items=['키움증권1', '키움증권2', '키움증권3', '키움증권4', '해외선물5', '해외선물6', '해외선물7', '해외선물8'])
         self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('에이전트', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_01, tip='실시간조건검색 및 데이터를 수신하고 주문을 전송한다.')

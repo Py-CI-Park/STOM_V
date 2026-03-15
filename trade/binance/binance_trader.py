@@ -3,10 +3,9 @@ import re
 import sys
 import sqlite3
 import binance
-import numpy as np
-import pandas as pd
 from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
+from utility.lazy_imports import get_pd
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketTrader
 from utility.setting_base import columns_cj, columns_tdf, ui_num, DB_TRADELIST, columns_jgcf
@@ -116,8 +115,8 @@ class BinanceTrader:
 
     def LoadDatabase(self):
         con = sqlite3.connect(DB_TRADELIST)
-        df_cj = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
-        df_td = pd.read_sql(f"SELECT * FROM c_tradelist_future WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_cj = get_pd().read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_td = get_pd().read_sql(f"SELECT * FROM c_tradelist_future WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
         if len(df_cj) > 0:
             self.dict_cj = df_cj.to_dict('index')
             self.windowQ.put((ui_num['C체결목록'], df_cj[::-1]))
@@ -125,7 +124,7 @@ class BinanceTrader:
             self.dict_td = df_td.to_dict('index')
             self.windowQ.put((ui_num['C거래목록'], df_td[::-1]))
         if self.dict_set['코인모의투자']:
-            df_jg = pd.read_sql(f'SELECT * FROM c_jangolist_future', con).set_index('index')
+            df_jg = get_pd().read_sql(f'SELECT * FROM c_jangolist_future', con).set_index('index')
             if len(df_jg) > 0:
                 self.dict_jg = df_jg.to_dict('index')
                 self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
@@ -136,7 +135,7 @@ class BinanceTrader:
     def GetBalances(self):
         if self.dict_set['코인모의투자']:
             con = sqlite3.connect(DB_TRADELIST)
-            df = pd.read_sql('SELECT * FROM c_tradelist_future', con)
+            df = get_pd().read_sql('SELECT * FROM c_tradelist_future', con)
             con.close()
             tcg = df['수익금'].sum()
             chujeonjasan = 100_000.0 + tcg
@@ -145,9 +144,9 @@ class BinanceTrader:
             datas = self.binance.futures_account_balance()
             chujeonjasan = [float(data['balance']) for data in datas if data['asset'] == 'USDT'][0]
 
-        총매입금액 = sum([v['매수가'] * np.round(v['보유수량'] / v['레버리지'], 4) for v in self.dict_jg.values()]) if self.dict_jg else 0.
-        self.dict_intg['예수금'] = np.round(chujeonjasan - 총매입금액, 4)
-        self.dict_intg['추정예수금'] = np.round(chujeonjasan - 총매입금액, 4)
+        총매입금액 = sum([v['매수가'] * round(v['보유수량'] / v['레버리지'], 4) for v in self.dict_jg.values()]) if self.dict_jg else 0.
+        self.dict_intg['예수금'] = round(chujeonjasan - 총매입금액, 4)
+        self.dict_intg['추정예수금'] = round(chujeonjasan - 총매입금액, 4)
         self.dict_intg['추정예탁자산'] = chujeonjasan
 
         if self.dict_td: self.UpdateTotaltradelist(first=True)
@@ -298,16 +297,16 @@ class BinanceTrader:
             if 수동주문유형 is None and '지정가' in self.dict_set['코인매수주문구분']:
                 gap = self.dict_info[종목코드]['호가단위'] * self.dict_set['코인매수지정가호가번호']
                 if 주문구분 == 'BUY_LONG':
-                    주문가격 = np.round(주문가격 + gap, self.dict_info[종목코드]['소숫점자리수'])
+                    주문가격 = round(주문가격 + gap, self.dict_info[종목코드]['소숫점자리수'])
                 else:
-                    주문가격 = np.round(주문가격 - gap, self.dict_info[종목코드]['소숫점자리수'])
+                    주문가격 = round(주문가격 - gap, self.dict_info[종목코드]['소숫점자리수'])
         elif 주문구분 in ('SELL_LONG', 'BUY_SHORT') and 정정횟수 == 0:
             if 수동주문유형 is None and '지정가' in self.dict_set['코인매도주문구분']:
                 gap = self.dict_info[종목코드]['호가단위'] * self.dict_set['코인매도지정가호가번호']
                 if 주문구분 == 'SELL_LONG':
-                    주문가격 = np.round(주문가격 + gap, self.dict_info[종목코드]['소숫점자리수'])
+                    주문가격 = round(주문가격 + gap, self.dict_info[종목코드]['소숫점자리수'])
                 else:
-                    주문가격 = np.round(주문가격 - gap, self.dict_info[종목코드]['소숫점자리수'])
+                    주문가격 = round(주문가격 - gap, self.dict_info[종목코드]['소숫점자리수'])
 
         if 주문수량 * 주문가격 < 5:
             self.windowQ.put((ui_num['시스템로그'], '오류 알림 - 최소주문금액 5 USDT 미만입니다.'))
@@ -315,7 +314,7 @@ class BinanceTrader:
             return
 
         if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
-            주문수량 = np.round(주문수량 * self.dict_lvrg[종목코드], self.dict_info[종목코드]['소숫점자리수'])
+            주문수량 = round(주문수량 * self.dict_lvrg[종목코드], self.dict_info[종목코드]['소숫점자리수'])
 
         if self.dict_set['코인모의투자'] or 주문구분 == '시드부족':
             self.OrderTimeLog(시그널시간)
@@ -407,13 +406,13 @@ class BinanceTrader:
 
     def UpdateString(self, data):
         if data == '체결목록':
-            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
+            df_cj = get_pd().DataFrame.from_dict(self.dict_cj, orient='index')
             self.teleQ.put(df_cj) if len(df_cj) > 0 else self.teleQ.put('현재는 바이낸스 체결목록이 없습니다.')
         elif data == '거래목록':
-            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+            df_td = get_pd().DataFrame.from_dict(self.dict_td, orient='index')
             self.teleQ.put(df_td) if len(df_td) > 0 else self.teleQ.put('현재는 바이낸스 거래목록이 없습니다.')
         elif data == '잔고평가':
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
             self.teleQ.put(df_jg) if len(df_jg) > 0 else self.teleQ.put('현재는 바이낸스 잔고목록이 없습니다.')
         elif data == '잔고청산':
             self.JangoCheongsan('수동')
@@ -564,10 +563,10 @@ class BinanceTrader:
 
     def SaveDayData(self):
         con = sqlite3.connect(DB_TRADELIST)
-        df = pd.read_sql(f"SELECT * FROM c_totaltradelist WHERE `index` = '{self.str_today}'", con)
+        df = get_pd().read_sql(f"SELECT * FROM c_totaltradelist WHERE `index` = '{self.str_today}'", con)
         con.close()
         if len(df) == 0 and self.dict_tt:
-            df = pd.DataFrame.from_dict(self.dict_tt, orient='index')
+            df = get_pd().DataFrame.from_dict(self.dict_tt, orient='index')
             self.queryQ.put(('거래디비', df, 'c_totaltradelist', 'append'))
             if self.dict_set['코인알림소리']: self.soundQ.put('일별실현손익를 저장하였습니다.')
             self.soundQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 일별실현손익 저장 완료'))
@@ -592,7 +591,7 @@ class BinanceTrader:
                     p = f'{p}_CANCEL'
                 oc = float(data['q'])
                 cc = float(data['l'])
-                mc = np.round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
+                mc = round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
                 cp = float(data['L'])
                 op = float(data['p'])
                 on = int(data['i'])
@@ -616,10 +615,10 @@ class BinanceTrader:
             if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
                 # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
                 if 종목코드 in self.dict_jg:
-                    보유수량 = np.round(self.dict_jg[종목코드]['보유수량'] + 체결수량, self.dict_info[종목코드]['소숫점자리수'])
-                    매입금액 = np.round(self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격, 4)
-                    매수가 = np.round(매입금액 / 보유수량, 8)
-                    평가금액 = np.round(체결가격 * 보유수량, 4)
+                    보유수량 = round(self.dict_jg[종목코드]['보유수량'] + 체결수량, self.dict_info[종목코드]['소숫점자리수'])
+                    매입금액 = round(self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격, 4)
+                    매수가 = round(매입금액 / 보유수량, 8)
+                    평가금액 = round(체결가격 * 보유수량, 4)
                     if 주문구분 == 'BUY_LONG':
                         평가금액, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                     else:
@@ -635,7 +634,7 @@ class BinanceTrader:
                         '매수시간': index[:14]
                     })
                 else:
-                    매입금액 = np.round(체결가격 * 체결수량, 4)
+                    매입금액 = round(체결가격 * 체결수량, 4)
                     레버리지 = self.dict_set['바이낸스선물고정레버리지값'] if self.dict_set['바이낸스선물고정레버리지'] else self.dict_order[주문구분][종목코드][3]
                     if 주문구분 == 'BUY_LONG':
                         포지션 = 'LONG'
@@ -668,10 +667,10 @@ class BinanceTrader:
                 if 종목코드 not in self.dict_jg: return
                 포지션 = self.dict_jg[종목코드]['포지션']
                 매수가 = self.dict_jg[종목코드]['매수가']
-                보유수량 = np.round(self.dict_jg[종목코드]['보유수량'] - 체결수량, self.dict_info[종목코드]['소숫점자리수'])
+                보유수량 = round(self.dict_jg[종목코드]['보유수량'] - 체결수량, self.dict_info[종목코드]['소숫점자리수'])
                 if 보유수량 != 0:
-                    매입금액 = np.round(매수가 * 보유수량, 4)
-                    평가금액 = np.round(체결가격 * 보유수량, 4)
+                    매입금액 = round(매수가 * 보유수량, 4)
+                    평가금액 = round(체결가격 * 보유수량, 4)
                     if 주문구분 == 'SELL_LONG':
                         평가금액, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                     else:
@@ -694,8 +693,8 @@ class BinanceTrader:
                     if 종목코드 in self.dict_order[주문구분]:
                         del self.dict_order[주문구분][종목코드]
 
-                매입금액 = np.round(매수가 * 체결수량, 4)
-                평가금액 = np.round(체결가격 * 체결수량, 4)
+                매입금액 = round(매수가 * 체결수량, 4)
+                평가금액 = round(체결가격 * 체결수량, 4)
                 if 주문구분 == 'SELL_LONG':
                     평가금액, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                 else:
@@ -716,7 +715,7 @@ class BinanceTrader:
                     self.dict_intg['예수금'] += 매입금액 + 수익금
                     self.dict_intg['추정예수금'] += 매입금액 + 수익금
 
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
             self.queryQ.put(('거래디비', df_jg, 'c_jangolist_future', 'replace'))
             if self.dict_set['코인알림소리']:
                 text = ''
@@ -764,9 +763,9 @@ class BinanceTrader:
             '수익금': 수익금,
             '체결시간': 주문시간
         }
-        df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
+        df_td = get_pd().DataFrame.from_dict(self.dict_td, orient='index')
         self.windowQ.put((ui_num['C거래목록'], df_td[::-1]))
-        df = pd.DataFrame([[종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_tdf, index=[index])
+        df = get_pd().DataFrame([[종목코드, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_tdf, index=[index])
         self.queryQ.put(('거래디비', df, 'c_tradelist_future', 'append'))
         self.UpdateTotaltradelist()
 
@@ -778,7 +777,7 @@ class BinanceTrader:
         총수익금액 = sum([v['수익금'] for v in td_values if v['수익금'] >= 0])
         총손실금액 = sum([v['수익금'] for v in td_values if v['수익금'] < 0])
         수익금합계 = sum([v['수익금'] for v in td_values])
-        수익률 = np.round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
+        수익률 = round(수익금합계 / self.dict_intg['추정예탁자산'] * 100, 2)
 
         # ['거래횟수', '총매수금액', '총매도금액', '총수익금액', '총손실금액', '수익률', '수익금합계']
         self.dict_tt[self.str_today] = {
@@ -790,14 +789,14 @@ class BinanceTrader:
             '수익률': 수익률,
             '수익금합계': 수익금합계
         }
-        df_tt = pd.DataFrame.from_dict(self.dict_tt, orient='index')
+        df_tt = get_pd().DataFrame.from_dict(self.dict_tt, orient='index')
         self.windowQ.put((ui_num['C실현손익'], df_tt))
 
         if not first:
             self.teleQ.put(f'총매수금액 {총매수금액:,.0f}, 총매도금액 {총매도금액:,.0f}, 수익 {총수익금액:,.0f}, 손실 {총손실금액:,.0f}, 수익금합계 {수익금합계:,.0f}')
 
         if self.dict_set['스톰라이브']:
-            수익률 = np.round(수익금합계 / 총매수금액 * 100, 2)
+            수익률 = round(수익금합계 / 총매수금액 * 100, 2)
             data_list = [거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계]
             self.liveQ.put(('코인', data_list))
 
@@ -816,7 +815,7 @@ class BinanceTrader:
             '주문번호': 주문번호
         }
         self.dict_cj = dict(sorted(self.dict_cj.items(), key=lambda x: x[0]))
-        df = pd.DataFrame([[종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
+        df = get_pd().DataFrame([[종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
         self.queryQ.put(('거래디비', df, 'c_chegeollist', 'append'))
 
     def UpdateTotaljango(self):
@@ -826,7 +825,7 @@ class BinanceTrader:
             총평가손익 = sum([v['평가손익'] for v in jg_values])
             총매입금액 = sum([v['매입금액'] for v in jg_values])
             총평가금액 = sum([v['평가금액'] for v in jg_values])
-            총수익률 = np.round(총평가손익 / 총매입금액 * 100, 2)
+            총수익률 = round(총평가손익 / 총매입금액 * 100, 2)
             잔고수량 = len(self.dict_jg)
             추정예탁자산 = self.dict_intg['예수금'] + 총평가금액
         else:
@@ -862,10 +861,10 @@ class BinanceTrader:
             self.cstgQ.put(('종목당투자금', self.dict_intg['종목당투자금']))
 
         if self.dict_jg:
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
         else:
-            df_jg = pd.DataFrame(columns=columns_jgcf)
-        df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
+            df_jg = get_pd().DataFrame(columns=columns_jgcf)
+        df_tj = get_pd().DataFrame.from_dict(self.dict_tj, orient='index')
         self.windowQ.put((ui_num['C잔고목록'], df_jg))
         self.windowQ.put((ui_num['C잔고평가'], df_tj))
 

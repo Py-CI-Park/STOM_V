@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_base import BackEngineBase
 from utility.static import GetFutureLongPgSgSp, GetFutureShortPgSgSp
 
@@ -155,27 +154,28 @@ class BackEngineFutureTick(BackEngineBase):
         return int(betting)
 
     def GetBuyPrice(self, 매수금액, 주문수량):
-        return np.round(매수금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
+        return round(매수금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
 
     def GetSellPrice(self, 매도금액, 주문수량):
-        return np.round(매도금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
+        return round(매도금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
 
     def GetLastSellPrice(self, 매도금액, 보유수량, 미체결수량):
         if 미체결수량 <= 0:
-            매도가 = np.round(매도금액 / 보유수량, self.dict_info[self.code]['소숫점자리수'])
+            매도가 = round(매도금액 / 보유수량, self.dict_info[self.code]['소숫점자리수'])
         elif 매도금액 == 0:
             매도가 = self.arry_code[self.indexn, 1]
         else:
-            매도가 = np.round(매도금액 / (보유수량 - 미체결수량), self.dict_info[self.code]['소숫점자리수'])
+            매도가 = round(매도금액 / (보유수량 - 미체결수량), self.dict_info[self.code]['소숫점자리수'])
         return 매도가
 
     def GetProfitInfo(self, 현재가, 매수가, 보유수량):
         매입금액 = self.dict_info[self.code]['위탁증거금'] * 보유수량
         평가금액 = 매입금액 + (현재가 - 매수가) * self.dict_info[self.code]['틱가치'] * 보유수량
+        mini = self.code.startswith('M') or self.code.startswith('SIL')
         if self.curr_trade_info['보유중'] == 1:
             포지션 = 'LONG'
-            평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, self.code)
+            평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(mini, 매입금액, 평가금액)
         else:
             포지션 = 'SHORT'
-            평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, self.code)
+            평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(mini, 매입금액, 평가금액)
         return 포지션, 평가금액, 수익금, 수익률

@@ -1,9 +1,9 @@
 
-import numpy as np
 from traceback import format_exc
-from utility.setting_base import ui_num
-from utility.static import now, str_ymdhms_utc
 from trade.upbit.upbit_receiver_tick import UpbitReceiverTick
+from utility.setting_base import ui_num
+from utility.lazy_imports import get_np
+from utility.static import now, str_ymdhms_utc
 
 
 class UpbitReceiverMin(UpbitReceiverTick):
@@ -18,7 +18,7 @@ class UpbitReceiverMin(UpbitReceiverTick):
             o     = data['opening_price']
             h     = data['high_price']
             low   = data['low_price']
-            per   = np.round(data['signed_change_rate'] * 100, 2)
+            per   = round(data['signed_change_rate'] * 100, 2)
             tbids = data['acc_bid_volume']
             tasks = data['acc_ask_volume']
             dm    = data['acc_trade_price']
@@ -43,12 +43,12 @@ class UpbitReceiverMin(UpbitReceiverTick):
             bids, asks, pretbids, pretasks = 0, 0, tbids, tasks
             mo = mh = ml = c
 
-        bids_ = np.round(tbids - pretbids, 8)
-        asks_ = np.round(tasks - pretasks, 8)
+        bids_ = round(tbids - pretbids, 8)
+        asks_ = round(tasks - pretasks, 8)
         bids += bids_
         asks += asks_
         # noinspection PyTypeChecker
-        ch = min(500, np.round(tbids / tasks * 100, 2)) if tasks > 0 else 500
+        ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, mo, mh, ml]
         self.dict_daym[code] = dm
@@ -150,8 +150,8 @@ class UpbitReceiverMin(UpbitReceiverTick):
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -172,8 +172,8 @@ class UpbitReceiverMin(UpbitReceiverTick):
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
  
@@ -192,8 +192,8 @@ class UpbitReceiverMin(UpbitReceiverTick):
 
             tm = dm - code_dtdm[1]
             if tm == dm and 500 < int(str(dt)[8:]): tm = 0
-            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
-            lhp  = np.round((h / low - 1) * 100, 2)
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0

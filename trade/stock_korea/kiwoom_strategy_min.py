@@ -1,11 +1,11 @@
 
 import os
 import sys
-import numpy as np
 from traceback import format_exc
 from kiwoom_strategy_tick import KiwoomStrategyTick
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num
+from utility.lazy_imports import get_np
 # noinspection PyUnresolvedReferences
 from utility.static import timedelta_sec, now, GetKiwoomPgSgSp, GetHogaunit, str_ymdhms, dt_ymdhms, GetIndicator, \
     error_decorator
@@ -36,16 +36,16 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
         self.bhogainfo = bhogainfo[:self.dict_set['주식매도시장가잔량범위']]
 
         if 전략연산:
-            new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
+            new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
             new_data = data[:self.base_cnt]
             new_data[self.vitime_cnt] = int(str_ymdhms(VI해제시간))
             new_data_tick[:self.base_cnt] = new_data
 
             pre_data = self.dict_data.get(종목코드)
             if pre_data is not None:
-                self.dict_data[종목코드] = np.concatenate([pre_data, np.array([new_data_tick])])
+                self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
             else:
-                self.dict_data[종목코드] = np.array([new_data_tick])
+                self.dict_data[종목코드] = get_np().array([new_data_tick])
 
             self.arry_code = self.dict_data[종목코드]
             self.tick_count = 데이터길이 = len(self.arry_code)
@@ -165,7 +165,7 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                                 self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략')))
                     elif C:
                         매수 = False
-                        분할매수기준수익률 = np.round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
+                        분할매수기준수익률 = round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
                         if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
                             매수 = True
                         elif self.dict_set['주식매수분할상방'] and 분할매수기준수익률 > self.dict_set['주식매수분할상방수익률']:
@@ -229,11 +229,11 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:
-                new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
+                new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
                 new_data = data[:self.base_cnt]
                 new_data[self.vitime_cnt] = int(str_ymdhms(VI해제시간))
                 new_data_tick[:self.base_cnt] = new_data
-                self.arry_code = np.concatenate([pre_data, np.array([new_data_tick])])
+                self.arry_code = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
                 self.arry_code[-1, self.area_cnt:self.data_cnt] = GetIndicator(
                     self.arry_code[:, self.dict_findex['현재가']],

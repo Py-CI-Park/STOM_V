@@ -5,7 +5,7 @@ FactorAnalysis와 PCA 모델을 동시에 병렬 실행
 import os
 import logging
 import sqlite3
-import pandas as pd
+from utility.lazy_imports import get_pd
 from multiprocessing_utils import parallel_train_factor_analysis, parallel_train_pca, process_results, print_top_predictions
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -20,7 +20,7 @@ def load_stock_codes():
         # FactorAnalysis용 tick 데이터
         DB_STOCK_TICK = os.path.join(base_dir, '_database', 'stock_tick_back.db')
         con_tick = sqlite3.connect(DB_STOCK_TICK)
-        df_tick = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con_tick)
+        df_tick = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con_tick)
         tick_codes = df_tick['name'].to_list()
         tick_codes = [code for code in tick_codes if code not in ['moneytop', 'stockinfo']]
         con_tick.close()
@@ -28,7 +28,7 @@ def load_stock_codes():
         # PCA용 min 데이터
         DB_STOCK_MIN = os.path.join(base_dir, '_database', 'stock_tick_back.db')
         con_min = sqlite3.connect(DB_STOCK_MIN)
-        df_min = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con_min)
+        df_min = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con_min)
         min_codes = df_min['name'].to_list()
         min_codes = [code for code in min_codes if code not in ['moneytop', 'stockinfo']]
         con_min.close()
