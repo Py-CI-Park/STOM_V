@@ -6,13 +6,12 @@ import os
 import joblib
 import logging
 import warnings
-import numpy as np
-import pandas as pd
 import tensorflow as tf
 from datetime import datetime
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
 from data_preprocessor import DataPreprocessor
+from utility.lazy_imports import get_np, get_pd
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 from tensorflow.keras.layers import LSTM, GRU, Dense, Dropout, BatchNormalization
@@ -382,7 +381,7 @@ class PCAPredictionModel:
             r2 = r2_score(y_test, y_pred)
             
             # 방향성 정확도
-            direction_accuracy = np.mean((y_test > 0) == (y_pred.flatten() > 0))
+            direction_accuracy = get_np().mean((y_test > 0) == (y_pred.flatten() > 0))
             
             result = {
                 'mse': mse,
@@ -472,7 +471,7 @@ if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     DB_STOCK_BACK_MIN = os.path.join(base_dir, '_database', 'stock_tick_back.db')
     con = sqlite3.connect(DB_STOCK_BACK_MIN)
-    df_ = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df_ = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
     con.close()
     table_list = df_['name'].to_list()
     table_list.remove('moneytop')

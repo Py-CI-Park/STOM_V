@@ -1,8 +1,7 @@
 
-import numpy as np
 from backtest.back_static import get_trade_info
 from backtest.backengine_base import BackEngineBase
-from utility.setting import dict_order_ratio
+from utility.setting_base import dict_order_ratio
 from utility.static import timedelta_sec, roundfigure_upper, roundfigure_lower, dt_ymdhms, dt_ymdhm
 
 
@@ -150,7 +149,7 @@ class BackEngineBaseOms(BackEngineBase):
             self.curr_trade_info['매수호가_'] = 기준가격 + self.hoga_unit * self.dict_set[f'{self.market_text}매수지정가호가번호']
 
     def CheckDividBuy(self, 포지션, 현재가, 추가매수가, 수익률):
-        분할매수기준수익률 = np.round((현재가 / 추가매수가 - 1) * 100, 2) if self.dict_set[f'{self.market_text}매수분할고정수익률'] else 수익률
+        분할매수기준수익률 = round((현재가 / 추가매수가 - 1) * 100, 2) if self.dict_set[f'{self.market_text}매수분할고정수익률'] else 수익률
         if 포지션.__class__ == int:
             if self.dict_set[f'{self.market_text}매수분할하방'] and 분할매수기준수익률 < -self.dict_set[f'{self.market_text}매수분할하방수익률']:
                 self.Buy()

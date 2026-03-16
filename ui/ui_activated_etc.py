@@ -1,8 +1,10 @@
 
 from PyQt5.QtWidgets import QPushButton
-from utility.setting import ui_num
+from utility.setting_base import ui_num
+from utility.static import error_decorator
 
 
+@error_decorator
 def dactivated_01(ui):
     if ui.focusWidget().__class__ != QPushButton:
         table_name = ui.focusWidget().currentText()
@@ -17,11 +19,13 @@ def dactivated_01(ui):
         ui.update_tablewidget.update_tablewidget((ui_num[ui_num_text], df))
 
 
+@error_decorator
 def dactivated_02(ui):
     name = ui.sj_set_comBoxx_01.currentText()
     ui.sj_set_liEditt_01.setText(name)
 
 
+@error_decorator
 def dactivated_03(ui):
     name = ui.od_comboBoxxxxx_01.currentText()
     ui.od_comboBoxxxxx_02.clear()

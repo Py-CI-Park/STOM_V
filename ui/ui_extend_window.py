@@ -1,9 +1,11 @@
 
 from PyQt5.QtWidgets import QMessageBox
+from utility.static import error_decorator
 
 
+@error_decorator
 def extend_window(ui):
-    if ui.main_btn not in (2, 3):
+    if ui.main_btn not in (3, 4):
         QMessageBox.critical(ui, '오류 알림', '전략탭 확장기능은 전략탭에서만 사용할 수 있습니다.')
         return
 
@@ -18,7 +20,7 @@ def extend_window(ui):
         ui.image_label2.setVisible(False)
         ui.progressBarrr.setGeometry(5, 545, 35, 212)
 
-    if ui.main_btn == 2:
+    if ui.main_btn == 3:
         ui.ss_tab.setGeometry(45, 0, 1353, 1362 if ui.extend_window else 757)
         if ui.ss_pushButtonn_08.isVisible():
             ui.ss_textEditttt_09.setGeometry(7, 10, 1000, 1313 if ui.extend_window else 703)
@@ -32,7 +34,13 @@ def extend_window(ui):
         elif ui.svj_pushButton_01.isVisible():
             ui.ss_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
             ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 1000, 602 if ui.extend_window else 272)
-            ui.szoo_pushButon_02.setGeometry(952, 761 if ui.extend_window else 483, 50, 20)
+            ui.szoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
+            ui.ss_textEditttt_01.setVisible(True)
+            ui.ss_textEditttt_02.setVisible(True)
+            ui.szoo_pushButon_01.setVisible(True)
+            ui.szoo_pushButon_02.setVisible(True)
+            ui.szoo_pushButon_01.setText('확대(esc)')
+            ui.szoo_pushButon_02.setText('확대(esc)')
         elif ui.svc_pushButton_24.isVisible():
             ui.ss_textEditttt_01.setGeometry(7, 10, 497, 740 if ui.extend_window else 463)
             ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 497, 602 if ui.extend_window else 272)
@@ -48,12 +56,26 @@ def extend_window(ui):
             ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
             ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
             ui.ss_textEditttt_06.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-            ui.szoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+            ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+            ui.ss_textEditttt_03.setVisible(True)
+            ui.ss_textEditttt_04.setVisible(True)
+            ui.ss_textEditttt_06.setVisible(True)
+            ui.szoo_pushButon_01.setVisible(True)
+            ui.szoo_pushButon_02.setVisible(True)
+            ui.szoo_pushButon_01.setText('확대(esc)')
+            ui.szoo_pushButon_02.setText('확대(esc)')
         else:
             ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
             ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
             ui.ss_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-            ui.szoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+            ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+            ui.ss_textEditttt_03.setVisible(True)
+            ui.ss_textEditttt_04.setVisible(True)
+            ui.ss_textEditttt_05.setVisible(True)
+            ui.szoo_pushButon_01.setVisible(True)
+            ui.szoo_pushButon_02.setVisible(True)
+            ui.szoo_pushButon_01.setText('확대(esc)')
+            ui.szoo_pushButon_02.setText('확대(esc)')
     else:
         ui.cs_tab.setGeometry(45, 0, 1353, 1362 if ui.extend_window else 757)
         if ui.cs_pushButtonn_08.isVisible():
@@ -67,7 +89,13 @@ def extend_window(ui):
         elif ui.cvj_pushButton_01.isVisible():
             ui.cs_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
             ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 1000, 602 if ui.extend_window else 272)
-            ui.czoo_pushButon_02.setGeometry(952, 761 if ui.extend_window else 483, 50, 20)
+            ui.czoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
+            ui.cs_textEditttt_01.setVisible(True)
+            ui.cs_textEditttt_02.setVisible(True)
+            ui.czoo_pushButon_01.setVisible(True)
+            ui.czoo_pushButon_02.setVisible(True)
+            ui.czoo_pushButon_01.setText('확대(esc)')
+            ui.czoo_pushButon_02.setText('확대(esc)')
         elif ui.cvc_pushButton_24.isVisible():
             ui.cs_textEditttt_01.setGeometry(7, 10, 497, 740 if ui.extend_window else 463)
             ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 497, 602 if ui.extend_window else 272)
@@ -83,9 +111,23 @@ def extend_window(ui):
             ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
             ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
             ui.cs_textEditttt_06.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-            ui.czoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+            ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+            ui.cs_textEditttt_03.setVisible(True)
+            ui.cs_textEditttt_04.setVisible(True)
+            ui.cs_textEditttt_06.setVisible(True)
+            ui.czoo_pushButon_01.setVisible(True)
+            ui.czoo_pushButon_02.setVisible(True)
+            ui.czoo_pushButon_01.setText('확대(esc)')
+            ui.czoo_pushButon_02.setText('확대(esc)')
         else:
             ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
             ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
             ui.cs_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-            ui.czoo_pushButon_02.setGeometry(599, 761 if ui.extend_window else 483, 50, 20)
+            ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+            ui.cs_textEditttt_03.setVisible(True)
+            ui.cs_textEditttt_04.setVisible(True)
+            ui.cs_textEditttt_05.setVisible(True)
+            ui.czoo_pushButon_01.setVisible(True)
+            ui.czoo_pushButon_02.setVisible(True)
+            ui.czoo_pushButon_01.setText('확대(esc)')
+            ui.czoo_pushButon_02.setText('확대(esc)')

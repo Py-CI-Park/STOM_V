@@ -1,12 +1,12 @@
 
 import random
-import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying
-from utility.static import text_not_in_special_characters
+from utility.static import text_not_in_special_characters, error_decorator
 
 
+@error_decorator
 def stock_gavars_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}vars').set_index('index')
@@ -20,6 +20,7 @@ def stock_gavars_load(ui):
                 ui.sva_lineEdittt_01.setText(index)
 
 
+@error_decorator
 def stock_gavars_save(ui):
     strategy_name = ui.sva_lineEdittt_01.text()
     strategy = ui.ss_textEditttt_06.toPlainText()
@@ -33,13 +34,15 @@ def stock_gavars_save(ui):
         if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy, ga=True):
             if ui.proc_query.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                delete_query = f"DELETE FROM {gubun}vars WHERE `index` = '{strategy_name}'"
-                insert_query = f"INSERT INTO {gubun}vars (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                delete_query  = f"DELETE FROM {gubun}vars WHERE `index` = '{strategy_name}'"
+                insert_query  = f"INSERT INTO {gubun}vars VALUES (?, ?)"
+                insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
-                ui.queryQ.put(('전략디비', insert_query))
+                ui.queryQ.put(('전략디비', insert_query, insert_values))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def stock_condbuy_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buyconds').set_index('index')
@@ -53,6 +56,7 @@ def stock_condbuy_load(ui):
                 ui.svo_lineEdittt_01.setText(index)
 
 
+@error_decorator
 def stock_condbuy_save(ui):
     strategy_name = ui.svo_lineEdittt_01.text()
     strategy = ui.ss_textEditttt_07.toPlainText()
@@ -66,13 +70,15 @@ def stock_condbuy_save(ui):
         if ui.BackCodeTest3('매수', strategy):
             if ui.proc_query.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                delete_query = f"DELETE FROM {gubun}buyconds WHERE `index` = '{strategy_name}'"
-                insert_query = f"INSERT INTO {gubun}buyconds (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                delete_query  = f"DELETE FROM {gubun}buyconds WHERE `index` = '{strategy_name}'"
+                insert_query  = f"INSERT INTO {gubun}buyconds VALUES (?, ?)"
+                insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
-                ui.queryQ.put(('전략디비', insert_query))
+                ui.queryQ.put(('전략디비', insert_query, insert_values))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def stock_condsell_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
     df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}sellconds').set_index('index')
@@ -86,6 +92,7 @@ def stock_condsell_load(ui):
                 ui.svo_lineEdittt_02.setText(index)
 
 
+@error_decorator
 def stock_condsell_save(ui):
     strategy_name = ui.svo_lineEdittt_02.text()
     strategy = ui.ss_textEditttt_08.toPlainText()
@@ -99,8 +106,9 @@ def stock_condsell_save(ui):
         if ui.BackCodeTest3('매도', strategy):
             if ui.proc_query.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-                delete_query = f"DELETE FROM {gubun}sellconds WHERE `index` = '{strategy_name}'"
-                insert_query = f"INSERT INTO {gubun}sellconds (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                delete_query  = f"DELETE FROM {gubun}sellconds WHERE `index` = '{strategy_name}'"
+                insert_query  = f"INSERT INTO {gubun}sellconds VALUES (?, ?)"
+                insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
-                ui.queryQ.put(('전략디비', insert_query))
+                ui.queryQ.put(('전략디비', insert_query, insert_values))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))

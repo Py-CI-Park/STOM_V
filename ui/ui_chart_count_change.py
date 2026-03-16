@@ -1,19 +1,21 @@
 
 import pyqtgraph as pg
 from ui.set_style import style_bc_bt, color_bg_bk
+from utility.static import error_decorator
 
 
+@error_decorator
 def chart_count_change(ui):
     ui.ChartClear()
     ui.ctpg = {}
     ui.ctpg_cvb = {}
-    if ui.ct_pushButtonnn_05.text() == 'CHART 8':
+    if ui.ct_pushButtonnn_05.text() == 'CHART I':
         ui.ctpg_vboxLayout.removeWidget(ui.ctpg_layout)
         ui.dialog_chart.setFixedWidth(2088)
         ui.ct_groupBoxxxxx_02.setFixedWidth(2078)
         ui.ct_dateEdittttt_02.setGeometry(2088, 15, 120, 30)
         ui.ct_tableWidgett_01.setGeometry(2088, 55, 120, 1310 if not ui.dict_set['저해상도'] else 950)
-        ui.ct_pushButtonnn_05.setText('CHART 12')
+        ui.ct_pushButtonnn_05.setText('CHART II')
         ui.ct_pushButtonnn_06.setText('확장')
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
         pg.setConfigOption('background', color_bg_bk)
@@ -40,13 +42,13 @@ def chart_count_change(ui):
             ui.ctpg[8], ui.ctpg_cvb[8] = ui.wc.setaddPlot(ui.ctpg_layout, 2, 2)
             ui.ctpg[9], ui.ctpg_cvb[9] = ui.wc.setaddPlot(ui.ctpg_layout, 3, 2)
         ui.ctpg_vboxLayout.addWidget(ui.ctpg_layout)
-    elif ui.ct_pushButtonnn_05.text() == 'CHART 12':
+    elif ui.ct_pushButtonnn_05.text() == 'CHART II':
         ui.ctpg_vboxLayout.removeWidget(ui.ctpg_layout)
         ui.dialog_chart.setFixedWidth(2773)
         ui.ct_groupBoxxxxx_02.setFixedWidth(2763)
         ui.ct_dateEdittttt_02.setGeometry(2773, 15, 120, 30)
         ui.ct_tableWidgett_01.setGeometry(2773, 55, 120, 1310 if not ui.dict_set['저해상도'] else 950)
-        ui.ct_pushButtonnn_05.setText('CHART 16')
+        ui.ct_pushButtonnn_05.setText('CHART III')
         ui.ct_pushButtonnn_06.setText('확장')
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
         pg.setConfigOption('background', color_bg_bk)
@@ -78,13 +80,13 @@ def chart_count_change(ui):
             ui.ctpg[11], ui.ctpg_cvb[11] = ui.wc.setaddPlot(ui.ctpg_layout, 2, 3)
             ui.ctpg[12], ui.ctpg_cvb[12] = ui.wc.setaddPlot(ui.ctpg_layout, 3, 3)
         ui.ctpg_vboxLayout.addWidget(ui.ctpg_layout)
-    elif ui.ct_pushButtonnn_05.text() == 'CHART 16':
+    elif ui.ct_pushButtonnn_05.text() == 'CHART III':
         ui.ctpg_vboxLayout.removeWidget(ui.ctpg_layout)
         ui.dialog_chart.setFixedWidth(1403)
         ui.ct_groupBoxxxxx_02.setFixedWidth(1393)
         ui.ct_dateEdittttt_02.setGeometry(1403, 15, 120, 30)
         ui.ct_tableWidgett_01.setGeometry(1403, 55, 120, 1310 if not ui.dict_set['저해상도'] else 950)
-        ui.ct_pushButtonnn_05.setText('CHART 8')
+        ui.ct_pushButtonnn_05.setText('CHART I')
         ui.ct_pushButtonnn_06.setText('확장')
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
         pg.setConfigOption('background', color_bg_bk)

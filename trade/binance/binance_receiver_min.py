@@ -1,7 +1,8 @@
 
-import numpy as np
+from traceback import format_exc
 from trade.binance.binance_receiver_tick import BinanceReceiverTick
-from utility.setting import ui_num
+from utility.setting_base import ui_num
+from utility.lazy_imports import get_np
 from utility.static import now, str_ymdhms_utc
 
 
@@ -15,6 +16,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
             v    = float(data['q'])
             m    = data['m']
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData'))
             return
 
         if code in self.tuple_jango and (code not in self.dict_jgdt or dt > self.dict_jgdt[code]):
@@ -27,14 +29,14 @@ class BinanceReceiverMin(BinanceReceiverTick):
             self.dict_prec[code] = [ymd, code_data[0]]
             bids, asks, pretbids, pretasks = 0, 0, 0, 0
             o, h, low = c, c, c
-            dm = np.round(v * c, 2)
+            dm = round(v * c, 2)
             mo = mh = ml = c
         else:
             dm, _, bids, asks, pretbids, pretasks = code_data[5:11]
             o, h, low = code_data[1:4]
             if c > h: h = c
             if c < low: low = c
-            dm = np.round(dm + v * c, 2)
+            dm = round(dm + v * c, 2)
 
             if bids == 0 and asks == 0:
                 mo = mh = ml = c
@@ -47,11 +49,11 @@ class BinanceReceiverMin(BinanceReceiverTick):
         asks_ = 0 if not m else v
         bids += bids_
         asks += asks_
-        tbids = np.round(pretbids + bids_, 8)
-        tasks = np.round(pretasks + asks_, 8)
+        tbids = round(pretbids + bids_, 8)
+        tasks = round(pretasks + asks_, 8)
         # noinspection PyTypeChecker
-        ch = min(500, np.round(tbids / tasks * 100, 2)) if tasks > 0 else 500
-        per = np.round((c / self.dict_prec[code][1] - 1) * 100, 2)
+        ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
+        per = round((c / self.dict_prec[code][1] - 1) * 100, 2)
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, mo, mh, ml]
         self.dict_daym[code] = dm
@@ -61,9 +63,9 @@ class BinanceReceiverMin(BinanceReceiverTick):
         if data_dlhp:
             if dt_ != data_dlhp[0]:
                 data_dlhp[0] = dt_
-                data_dlhp[1] = np.round((h / low - 1) * 100, 2)
+                data_dlhp[1] = round((h / low - 1) * 100, 2)
         else:
-            self.dict_dlhp[code] = [dt_, np.round((h / low - 1) * 100, 2)]
+            self.dict_dlhp[code] = [dt_, round((h / low - 1) * 100, 2)]
 
         if self.hoga_code == code:
             bids, asks = self.list_hgdt[2:4]
@@ -102,10 +104,11 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 float(data['b'][5][1]), float(data['b'][6][1]), float(data['b'][7][1]), float(data['b'][8][1]), float(data['b'][9][1])
             ]
             hoga_tamount = [
-                np.round(sum(hoga_samount), 8), np.round(sum(hoga_bamount), 8)
+                round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
             ]
             receivetime = now()
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateHogaData'))
             return
 
         send   = False
@@ -126,12 +129,11 @@ class BinanceReceiverMin(BinanceReceiverTick):
             csp = cbp = c
 
             if hoga_seprice[-1] < csp:
-                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
-                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = max(index - 5, 0)
-                    end_idx   = index
-                    add_cnt   = max(5 - index, 0)
+                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+                end_idx = valid_indices[-1] + 1 if valid_indices else None
+                if end_idx is not None:
+                    start_idx = max(end_idx - 5, 0)
+                    add_cnt   = max(5 - end_idx, 0)
                     hoga_seprice = [0.] * add_cnt + hoga_seprice[start_idx:end_idx]
                     hoga_samount = [0.] * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
@@ -142,12 +144,11 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
-                index = valid_indices[0] if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = index
-                    end_idx   = min(index + 5, 10)
-                    add_cnt   = max(index - 5, 0)
+                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+                start_idx = valid_indices[0] if valid_indices else None
+                if start_idx is not None:
+                    end_idx   = min(start_idx + 5, 10)
+                    add_cnt   = max(start_idx - 5, 0)
                     hoga_buprice = hoga_buprice[start_idx:end_idx] + [0.] * add_cnt
                     hoga_bamount = hoga_bamount[start_idx:end_idx] + [0.] * add_cnt
                 else:
@@ -163,8 +164,8 @@ class BinanceReceiverMin(BinanceReceiverTick):
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -185,8 +186,8 @@ class BinanceReceiverMin(BinanceReceiverTick):
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
                     price_idx[c] = idx
@@ -204,8 +205,8 @@ class BinanceReceiverMin(BinanceReceiverTick):
 
             tm = dm - code_dtdm[1]
             if tm == dm and 500 < int(str(dt)[8:]): tm = 0
-            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
-            lhp  = np.round((h / low - 1) * 100, 2)
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0
@@ -227,7 +228,7 @@ class BinanceReceiverMin(BinanceReceiverTick):
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.windowQ.put((ui_num['C단순텍스트'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+                self.windowQ.put((ui_num['타임로그'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:

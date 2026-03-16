@@ -3,23 +3,22 @@ import sys
 import time
 import random
 import sqlite3
-import numpy as np
-import pandas as pd
 from multiprocessing import Process, Queue
+from utility.lazy_imports import get_np, get_pd
 from backtest.back_static import SendResult, GetMoneytopQuery
-from utility.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
-from utility.setting import ui_num, DB_STRATEGY, DICT_SET, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
+from utility.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd, error_decorator
+from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
-    def __init__(self, wq, tq, mq, bstq_list, ui_gubun):
+    def __init__(self, wq, tq, mq, bstq_list, ui_gubun, dict_set):
         self.wq           = wq
         self.tq           = tq
         self.mq           = mq
         self.bstq_list    = bstq_list
         self.ui_gubun     = ui_gubun
-        self.dict_set     = DICT_SET
+        self.dict_set     = dict_set
 
         self.back_count   = None
         self.std_list     = None
@@ -43,6 +42,7 @@ class Total:
 
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         sc = 0
         bc = 0
@@ -112,12 +112,12 @@ class Total:
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
+                time.sleep(1)
                 break
 
             elif data == '백테완료중지':
                 break
 
-        time.sleep(1)
         sys.exit()
 
     def BackInfo(self, data):
@@ -141,7 +141,7 @@ class Total:
 
 
 class OptimizeConditions:
-    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun, dict_set):
         self.shared_cnt   = sc
         self.wq           = wq
         self.bq           = bq
@@ -153,6 +153,7 @@ class OptimizeConditions:
         self.multi        = multi
         self.backname     = backname
         self.ui_gubun     = ui_gubun
+        self.dict_set     = dict_set
         self.result       = {}
         self.opti_list    = []
         self.bcount       = None
@@ -160,7 +161,6 @@ class OptimizeConditions:
         self.buyconds     = None
         self.sellconds    = None
         self.optistandard = None
-        self.dict_set     = DICT_SET
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':
@@ -168,8 +168,10 @@ class OptimizeConditions:
         else:
             self.gubun = 'coin'
         self.savename     = f'{self.gubun}_{self.backname.replace("최적화", "").lower()}'
+
         self.Start()
 
+    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()
@@ -248,7 +250,7 @@ class OptimizeConditions:
 
         con   = sqlite3.connect(db)
         query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt = get_pd().read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -285,7 +287,7 @@ class OptimizeConditions:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 
-        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
+        arry_bct = get_np().zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
         data = ('백테정보', self.ui_gubun, None, valid_days, arry_bct, betting, len(day_list))
         for q in self.bstq_list:
@@ -293,8 +295,8 @@ class OptimizeConditions:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
 
         con = sqlite3.connect(DB_STRATEGY)
-        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buyconds', con).set_index('index')
-        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}sellconds', con).set_index('index')
+        dfb = get_pd().read_sql(f'SELECT * FROM {self.gubun}buyconds', con).set_index('index')
+        dfs = get_pd().read_sql(f'SELECT * FROM {self.gubun}sellconds', con).set_index('index')
         con.close()
 
         self.buyconds  = dfb['전략코드'][buystg_name].split('\n')
@@ -327,7 +329,7 @@ class OptimizeConditions:
             q.put(data)
 
         mq = Queue()
-        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun)).start()
+        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, self.dict_set)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 
         self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, std_text, self.optistandard, valid_days, len(day_list)))
@@ -420,7 +422,7 @@ class OptimizeConditions:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매수조건\n{buyconds}\n'))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매도조건\n{sellconds}\n'))
             data = [[self.optistandard, key, buyconds, sellconds]]
-            df = pd.DataFrame(data, columns=['기준', '기준값', '매수코드', '매도코드'], index=[str_ymdhms()])
+            df = get_pd().DataFrame(data, columns=['기준', '기준값', '매수코드', '매도코드'], index=[str_ymdhms()])
             con = sqlite3.connect(DB_BACKTEST)
             df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
             con.close()
@@ -457,7 +459,7 @@ class OptimizeConditions:
             text += f'[{value}] {key}\n'
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'[{value}] {key}'))
 
-        df = pd.DataFrame({'조건별출현빈도': [text]}, index=[str_ymdhms()])
+        df = get_pd().DataFrame({'조건별출현빈도': [text]}, index=[str_ymdhms()])
         con = sqlite3.connect(DB_BACKTEST)
         df.to_sql(f'{self.savename}_conds', con, if_exists='append', chunksize=1000)
         con.close()

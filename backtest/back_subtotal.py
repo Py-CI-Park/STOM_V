@@ -1,6 +1,7 @@
 
-import numpy as np
-from backtest.back_static import GetResult, AddMdd
+from utility.lazy_imports import get_np
+from backtest.back_static import AddMdd
+from backtest.back_static_numba import GetResult
 
 
 class BackSubTotal:
@@ -165,9 +166,9 @@ class BackSubTotal:
 
     @staticmethod
     def GetSortedArray(list_tsg, arry_bct):
-        arry_tsg = np.array(list_tsg, dtype='float64')
-        arry_tsg = arry_tsg[np.argsort(arry_tsg[:, 0])][:, 1:]
-        arry_bct = np.sort(arry_bct[arry_bct[:, 1] > 0], axis=0)[::-1]
+        arry_tsg = get_np().array(list_tsg, dtype='float64')
+        arry_tsg = arry_tsg[get_np().argsort(arry_tsg[:, 0])][:, 1:]
+        arry_bct = get_np().sort(arry_bct[arry_bct[:, 1] > 0], axis=0)[::-1]
         return arry_tsg, arry_bct
 
     def SendResult(self, data):
@@ -200,14 +201,14 @@ class BackSubTotal:
                 arry_bct_ = arry_bct[(bct_time_idx < vsday * cf_day) | (veday * cf_day + cf_hms < bct_time_idx)]
                 arry_tsg_ = arry_tsg[(tsg_time_idx < vsday * cf_day) | (veday * cf_day + cf_hms < tsg_time_idx)]
 
-            arry_tsg_ = np.column_stack((arry_tsg_, np.cumsum(arry_tsg_[:, 3])))
+            arry_tsg_ = get_np().column_stack((arry_tsg_, get_np().cumsum(arry_tsg_[:, 3])))
             result    = GetResult(arry_tsg_, arry_bct_, self.betting, self.ui_gubun, tdaycnt)
             result    = AddMdd(arry_tsg_, result)
             self.tq.put(('TRAIN', index, result, vturn, vkey))
 
             arry_bct_ = arry_bct[(vsday * cf_day <= bct_time_idx) & (bct_time_idx <= veday * cf_day + cf_hms)]
             arry_tsg_ = arry_tsg[(vsday * cf_day <= tsg_time_idx) & (tsg_time_idx <= veday * cf_day + cf_hms)]
-            arry_tsg_ = np.column_stack((arry_tsg_, np.cumsum(arry_tsg_[:, 3])))
+            arry_tsg_ = get_np().column_stack((arry_tsg_, get_np().cumsum(arry_tsg_[:, 3])))
             result    = GetResult(arry_tsg_, arry_bct_, self.betting, self.ui_gubun, vdaycnt)
             result    = AddMdd(arry_tsg_, result)
             self.tq.put(('VALID', index, result, vturn, vkey))

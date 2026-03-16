@@ -1,5 +1,6 @@
+import os
+import sys
 import time
-import telegram
 import pythoncom
 from manuallogin import *
 from PyQt5 import QtWidgets
@@ -7,25 +8,18 @@ from PyQt5.QtCore import QTimer
 from multiprocessing import Process
 from PyQt5.QAxContainer import QAxWidget
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))))))
-from utility.static import opstarter_kill, get_logger
-from utility.setting import OPENAPI_PATH, DICT_SET
-
-
-def TelegramMassage(txt):
-    try:
-        gubun = DICT_SET['증권사'][4:]
-        bot = telegram.Bot(DICT_SET[f'텔레그램봇토큰{gubun}'])
-        bot.sendMessage(chat_id=DICT_SET[f'텔레그램사용자아이디{gubun}'], text=txt)
-    except:
-        logger.info(txt)
+from utility.setting_user import load_settings
+from utility.setting_base import OPENAPI_PATH
+from utility.static import opstarter_kill
 
 
 class Window(QtWidgets.QMainWindow):
     app = QtWidgets.QApplication(sys.argv)
 
-    def __init__(self, id_num_):
+    def __init__(self, id_num_, dict_set_):
         super().__init__()
-        self.id_num = id_num_
+        self.id_num   = id_num_
+        self.dict_set = dict_set_
         self.bool_connected = False
         self.ocx = QAxWidget('KHOPENAPI.KHOpenAPICtrl.1')
         self.ocx.OnEventConnect.connect(self.OnEventConnect)
@@ -42,44 +36,25 @@ class Window(QtWidgets.QMainWindow):
         self.AutoLoginOn()
 
     def AutoLoginOn(self):
-        logger_ = get_logger('AutoLogin')
-        logger_.info('자동 로그인 설정 대기 중 ...')
-        QTimer.singleShot(1000, lambda: auto_on(self.id_num))
+        QTimer.singleShot(1000, lambda: auto_on(self.id_num, self.dict_set))
         self.ocx.dynamicCall('KOA_Functions(QString, QString)', 'ShowAccountWindow', '')
-        logger_.info('자동 로그인 설정 완료')
         opstarter_kill()
 
 
 if __name__ == '__main__':
-    logger = get_logger('AutoLogin')
     opstarter_kill()
     autologin_dat = f'{OPENAPI_PATH}/system/Autologin.dat'
     if os.path.isfile(autologin_dat): os.remove(autologin_dat)
-    logger.info('자동 로그인 설정 파일 삭제 완료')
 
-    id_num = int(DICT_SET['증권사'][4:])
-    Process(target=Window, args=(id_num,), daemon=True).start()
-    logger.info('자동 로그인 설정용 프로세스 시작')
+    dict_set = load_settings()
+    id_num   = dict_set['증권사'][4:]
+
+    Process(target=Window, args=(id_num, dict_set), daemon=True).start()
 
     while find_window('Open API login') == 0:
-        logger.info('로그인창 열림 대기 중 ...')
-        time.sleep(1)
-
-    logger.info('아이디 및 패스워드 입력 대기 중 ...')
-    time.sleep(2)
-
-    manual_login(id_num)
-    logger.info('아이디 및 패스워드 입력 완료')
+        time.sleep(0.1)
 
     while find_window('Open API login') != 0:
-        try:
-            hwnd = find_window('인증서 만료공지')
-            if hwnd != 0:
-                click_button(win32gui.GetDlgItem(hwnd, 0x7F3))
-                click_button(win32gui.GetDlgItem(hwnd, 0x1))
-                TelegramMassage('인증서 만료기간이 얼마남지 않았습니다.\n인증서를 갱신하십시오.')
-        except:
-            pass
         time.sleep(0.1)
 
     time.sleep(5)

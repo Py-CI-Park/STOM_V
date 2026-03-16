@@ -1,8 +1,10 @@
 
 from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import opti_standard, train_period, valid_period, test_period, optimized_count
+from utility.static import error_decorator
 
 
+@error_decorator
 def bactivated_01(ui):
     try:
         gubun = ui.list_checkBoxxxxxx.index(ui.dialog_scheduler.focusWidget())
@@ -89,6 +91,7 @@ def bactivated_01(ui):
                 ui.list_p4comboBoxxxx[gubun].addItem(item)
 
 
+@error_decorator
 def bactivated_02(ui):
     if ui.sd_scheckBoxxxx_01.isChecked():
         list_comboBox = None
@@ -124,6 +127,7 @@ def bactivated_02(ui):
             QMessageBox.critical(ui.dialog_scheduler, '오류 알림', '전진분석은 학습기간을 전체로 설정할 수 없습니다.\n')
 
 
+@error_decorator
 def bactivated_03(ui):
     try:
         for checkbox in ui.list_checkBoxxxxxx:

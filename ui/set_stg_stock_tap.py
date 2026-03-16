@@ -3,7 +3,8 @@ from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QLabel
 from ui.set_style import qfont12, qfont13, qfont14, style_pgbar, style_bc_dk
 from ui.set_text import optistandard, optitext, train_period, valid_period, test_period, optimized_count, opti_standard
-from utility.setting import columns_bt
+from ui.set_widget import error_decorator
+from utility.setting_base import columns_bt
 from utility.static import dt_hms, str_hms, timedelta_sec
 
 
@@ -13,15 +14,16 @@ class SetStockBack:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
-        self.ui.ss_textEditttt_01 = self.wc.setTextEdit(self.ui.ss_tab, filter_=True, font=qfont14)
-        self.ui.ss_textEditttt_02 = self.wc.setTextEdit(self.ui.ss_tab, filter_=True, font=qfont14)
-        self.ui.ss_textEditttt_03 = self.wc.setTextEdit(self.ui.ss_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.ss_textEditttt_04 = self.wc.setTextEdit(self.ui.ss_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.ss_textEditttt_05 = self.wc.setTextEdit(self.ui.ss_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.ss_textEditttt_06 = self.wc.setTextEdit(self.ui.ss_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.ss_textEditttt_07 = self.wc.setTextEdit(self.ui.ss_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.ss_textEditttt_08 = self.wc.setTextEdit(self.ui.ss_tab, visible=False, filter_=True, font=qfont14)
+        self.ui.ss_textEditttt_01 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, filter_=True, font=qfont14)
+        self.ui.ss_textEditttt_02 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, filter_=True, font=qfont14)
+        self.ui.ss_textEditttt_03 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.ss_textEditttt_04 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.ss_textEditttt_05 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.ss_textEditttt_06 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.ss_textEditttt_07 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.ss_textEditttt_08 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
 
     # =================================================================================================================
 
@@ -117,21 +119,30 @@ class SetStockBack:
         self.ui.svjb_labelllll_01 = QLabel('백테스트 기간설정                                         ~', self.ui.ss_tab)
         self.ui.svjb_labelllll_02 = QLabel('백테스트 시간설정     시작시간                         종료시간', self.ui.ss_tab)
         self.ui.svjb_labelllll_03 = QLabel('백테스트 기본설정   배팅(백만)                        평균틱수   self.vars[0]', self.ui.ss_tab)
-        if self.ui.dict_set['백테날짜고정']:
-            self.ui.svjb_dateEditt_01 = self.wc.setDateEdit(self.ui.ss_tab, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'))
+        if self.ui.dict_set is not None:
+            if self.ui.dict_set['백테날짜고정']:
+                self.ui.svjb_dateEditt_01 = self.wc.setDateEdit(self.ui.ss_tab, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'))
+            else:
+                self.ui.svjb_dateEditt_01 = self.wc.setDateEdit(self.ui.ss_tab, addday=-int(self.ui.dict_set['백테날짜']))
         else:
-            self.ui.svjb_dateEditt_01 = self.wc.setDateEdit(self.ui.ss_tab, addday=-int(self.ui.dict_set['백테날짜']))
+            self.ui.svjb_dateEditt_01 = self.wc.setDateEdit(self.ui.ss_tab)
         self.ui.svjb_dateEditt_02 = self.wc.setDateEdit(self.ui.ss_tab)
 
-        if '해외선물' in self.ui.dict_set['증권사'] and self.ui.dict_set['주식타임프레임']:
-            starttime = '093000'
+        if self.ui.dict_set is not None:
+            if '해외선물' in self.ui.dict_set['증권사'] and self.ui.dict_set['주식타임프레임']:
+                starttime = '093000'
+            else:
+                starttime = '090000'
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간'])))).zfill(6)
+            tujagm = str(self.ui.dict_set['주식투자금'])
         else:
             starttime = '090000'
-        endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['주식전략종료시간'])))).zfill(6)
+            endtime   = '093000'
+            tujagm = '20.0'
 
         self.ui.svjb_lineEditt_02 = self.wc.setLineedit(self.ui.ss_tab, ltext=starttime, style=style_bc_dk)
         self.ui.svjb_lineEditt_03 = self.wc.setLineedit(self.ui.ss_tab, ltext=endtime, style=style_bc_dk)
-        self.ui.svjb_lineEditt_04 = self.wc.setLineedit(self.ui.ss_tab, ltext=str(self.ui.dict_set['주식투자금']), style=style_bc_dk)
+        self.ui.svjb_lineEditt_04 = self.wc.setLineedit(self.ui.ss_tab, ltext=tujagm, style=style_bc_dk)
         self.ui.svjb_lineEditt_05 = self.wc.setLineedit(self.ui.ss_tab, ltext='30',    style=style_bc_dk)
 
         self.ui.stock_datedt_list = [self.ui.svjb_labelllll_01, self.ui.svjb_dateEditt_01, self.ui.svjb_dateEditt_02, self.ui.svjb_lineEditt_05]
@@ -339,8 +350,8 @@ class SetStockBack:
         self.ui.ss_textEditttt_07.setGeometry(7, 10, 497, 740)
         self.ui.ss_textEditttt_08.setGeometry(509, 10, 497, 740)
 
-        self.ui.szoo_pushButon_01.setGeometry(952, 15, 50, 20)
-        self.ui.szoo_pushButon_02.setGeometry(952, 483, 50, 20)
+        self.ui.szoo_pushButon_01.setGeometry(937, 15, 50, 20)
+        self.ui.szoo_pushButon_02.setGeometry(937, 483, 50, 20)
 
         self.ui.ss_tableWidget_01.setGeometry(7, 40, 1000, 713)
         self.ui.ss_comboBoxxxx_01.setGeometry(7, 10, 150, 25)

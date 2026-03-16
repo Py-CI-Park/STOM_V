@@ -4,12 +4,11 @@ import ntplib
 import win32api
 from dateutil import tz
 from datetime import datetime
-from utility.static import thread_decorator, get_logger
+from utility.static import thread_decorator
 
 
 @thread_decorator
-def timesync():
-    logger_ = get_logger('TimeSync')
+def timesync(ui_num, windowQ):
     while True:
         try:
             ntp_client = ntplib.NTPClient()
@@ -27,9 +26,9 @@ def timesync():
                     dt.second,
                     dt.microsecond // 1000
                 )
-                logger_.info(f'표준시간 동기화 중 ... 현재 표준시간과의 차이는 [{offset:.6f}]초입니다.')
+                windowQ.put((ui_num['시스템로그'], f'Time synchronizing ... diff [{offset:.6f}]seconds'))
             else:
-                logger_.info(f'표준시간 동기화 완 ... 현재 표준시간과의 차이는 [{offset:.6f}]초입니다.')
+                windowQ.put((ui_num['시스템로그'], f'Time synchronized ... diff [{offset:.6f}]seconds'))
                 break
         except:
             pass

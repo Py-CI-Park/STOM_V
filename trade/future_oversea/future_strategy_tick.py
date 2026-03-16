@@ -3,19 +3,19 @@ import os
 import sys
 import time
 import sqlite3
-import numpy as np
-import pandas as pd
-from traceback import print_exc
+from copy import deepcopy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from trade.strategy_base import Strategy
-from utility.setting import DB_STRATEGY, DICT_SET, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, \
-    DB_FUTURE_TICK, list_coin_tick, list_coin_min
+from trade.strategy_base import StrategyBase
+from trade.formula_manager import get_formula_data
+from utility.lazy_imports import get_np, get_pd
+from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, DB_FUTURE_TICK, \
+    list_coin_tick, list_coin_min
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
-    get_logger, get_ema_list, get_angle_cf
+    get_ema_list, get_angle_cf, error_decorator, set_builtin_print
 
 
-class FutureStrategyTick(Strategy):
-    def __init__(self, qlist):
+class FutureStrategyTick(StrategyBase):
+    def __init__(self, qlist, dict_set):
         super().__init__()
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
@@ -24,8 +24,8 @@ class FutureStrategyTick(Strategy):
         self.mgzservQ         = qlist[0]
         self.straderQ         = qlist[2]
         self.sstgQ            = qlist[3]
-        self.dict_set         = DICT_SET
-        self.logger           = get_logger(self.__class__.__name__)
+        self.dict_set         = dict_set
+        self.indicator        = indicator
 
         self.code             = None
         self.name             = None
@@ -35,7 +35,6 @@ class FutureStrategyTick(Strategy):
         self.arry_code        = None
         self.info_for_signal  = None
 
-        self.vars             = {}
         self.dict_data        = {}
         self.dict_signal_num  = {}
         self.dict_buy_num     = {}
@@ -48,7 +47,6 @@ class FutureStrategyTick(Strategy):
         self.dict_gj          = {}
         self.dict_jg          = {}
         self.dict_info        = {}
-        self.indicator        = indicator
         self.indi_settings    = []
         self.dict_signal      = {
             'BUY_LONG': [],
@@ -58,8 +56,8 @@ class FutureStrategyTick(Strategy):
         }
 
         self.jgrv_count       = 0
-        self.market_gubun     = 2
 
+        self.market_gubun     = 2
         self.ma_round_unit    = 8
         self.is_tick          = self.dict_set['주식타임프레임']
         self.avg_list         = [self.dict_set['주식평균값계산틱수']]
@@ -71,20 +69,37 @@ class FutureStrategyTick(Strategy):
         self.angle_pct_cf     = get_angle_cf(self.market_gubun, self.is_tick, 0)
         self.angle_dtm_cf     = get_angle_cf(self.market_gubun, self.is_tick, 1)
 
-        if self.dict_set['전략연산프로파일링']:
-            import cProfile
-            self.pr = cProfile.Profile()
-            self.pr.enable()
+        if self.is_tick:
+            self.dict_findex['초당매도수금액'] = self.dict_findex['초당매수금액']
+            self.dict_findex['누적초당매도수수량'] = self.dict_findex['누적초당매수수량']
+        else:
+            self.dict_findex['분당매도수금액'] = self.dict_findex['분당매수금액']
+            self.dict_findex['누적분당매도수수량'] = self.dict_findex['누적분당매수수량']
 
+        self.dict_findex['당일매도수금액'] = self.dict_findex['당일매수금액']
+        self.dict_findex['최고매도수금액'] = self.dict_findex['최고매수금액']
+        self.dict_findex['최고매도수가격'] = self.dict_findex['최고매수가격']
+        self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
+        self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
+
+        set_builtin_print(False, self.mgzservQ)
+        self.SetFormulaData()
         self.UpdateStringategy()
         self.Mainloop()
 
+    def SetFormulaData(self):
+        self.fm_list, dict_fm, self.fm_tcnt = get_formula_data(False, self.data_cnt)
+        self.mgzservQ.put(('window', (ui_num['사용자수식'], deepcopy(self.fm_list), dict_fm, self.fm_tcnt)))
+        if self.fm_list:
+            for fm in self.fm_list:
+                fm[8] = compile(fm[-2], '<string>', 'exec')
+
     def UpdateStringategy(self):
         con  = sqlite3.connect(DB_STRATEGY)
-        dfb  = pd.read_sql('SELECT * FROM futurebuy', con).set_index('index')
-        dfs  = pd.read_sql('SELECT * FROM futuresell', con).set_index('index')
-        dfob = pd.read_sql('SELECT * FROM futureoptibuy', con).set_index('index')
-        dfos = pd.read_sql('SELECT * FROM futureoptisell', con).set_index('index')
+        dfb  = get_pd().read_sql('SELECT * FROM futurebuy', con).set_index('index')
+        dfs  = get_pd().read_sql('SELECT * FROM futuresell', con).set_index('index')
+        dfob = get_pd().read_sql('SELECT * FROM futureoptibuy', con).set_index('index')
+        dfos = get_pd().read_sql('SELECT * FROM futureoptisell', con).set_index('index')
         con.close()
 
         buytxt = ''
@@ -122,17 +137,13 @@ class FutureStrategyTick(Strategy):
     def SetBuyStg(self, buytxt):
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
         if indistg is not None:
-            try:
-                exec(indistg)
-            except:
-                pass
-            else:
-                self.logger.info(self.indicator)
+            exec(indistg)
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'{self.indicator}')))
         self.indi_settings = list(self.indicator.values())
 
+    @error_decorator
     def Mainloop(self):
-        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 시작')))
-        self.logger.info('전략연산 시작 완료')
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 시작')))
         while True:
             data = self.sstgQ.get()
             if data.__class__ == list:
@@ -175,8 +186,6 @@ class FutureStrategyTick(Strategy):
             self.UpdateStringategy()
         elif gubun == '종목정보':
             self.dict_info = data
-        elif data == '프로파일링결과':
-            self.pr.print_stats(sort='cumulative')
 
     def UpdateString(self, data):
         if data == '매수전략중지':
@@ -204,20 +213,21 @@ class FutureStrategyTick(Strategy):
         self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
         self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
 
-        new_data_tick = np.zeros(self.data_cnt, dtype=np.float64)
+        new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
         new_data_tick[:self.base_cnt] = data[:self.base_cnt]
 
         pre_data = self.dict_data.get(종목코드)
         if pre_data is not None:
-            self.dict_data[종목코드] = np.concatenate([pre_data, np.array([new_data_tick])])
+            self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
         else:
-            self.dict_data[종목코드] = np.array([new_data_tick])
+            self.dict_data[종목코드] = get_np().array([new_data_tick])
 
         self.arry_code = self.dict_data[종목코드]
         self.tick_count = 데이터길이 = len(self.arry_code)
         self.code, self.name, self.index, self.indexn = 종목코드, 종목명, 체결시간, 데이터길이 - 1
 
-        if 데이터길이 >= 평균값계산틱수: self.arry_code[-1, self.base_cnt:] = self.GetParameterArea(rw)
+        if 데이터길이 >= 평균값계산틱수:
+            self.arry_code[-1, self.base_cnt:self.data_cnt] = self.GetParameterArea(rw)
 
         high_low = self.high_low.get(종목코드)
         if high_low:
@@ -234,11 +244,37 @@ class FutureStrategyTick(Strategy):
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
-                try:
-                    exec(v)
-                except:
-                    print_exc()
-                    self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 경과틱수 연산오류')))
+                exec(v)
+
+        if 데이터길이 >= 평균값계산틱수 and self.fm_list:
+            for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
+                self.check, self.line, self.up, self.down = None, None, None, None
+
+                exec(stg)
+
+                if data_type == '선:일반':
+                    if self.line is not None:
+                        self.arry_code[self.indexn, col_idx] = self.line
+
+                elif data_type == '선:조건':
+                    if self.check is not None and self.line is not None:
+                        if self.check:
+                            self.arry_code[self.indexn, col_idx] = self.line
+                        else:
+                            pre_line = self.arry_code[self.indexn - 1, col_idx]
+                            if pre_line > 0:
+                                self.arry_code[self.indexn, col_idx] = pre_line
+
+                elif data_type == '범위':
+                    if self.check is not None and self.up is not None and self.down is not None:
+                        self.arry_code[self.indexn, col_idx] = 1.0 if self.check else 0.0
+                        self.arry_code[self.indexn, col_idx + 1] = self.up
+                        self.arry_code[self.indexn, col_idx + 2] = self.down
+
+                elif data_type == '화살표:일반':
+                    if self.check is not None and self.check:
+                        price = self.arry_code[self.indexn, self.dict_findex[fname]]
+                        self.arry_code[self.indexn, col_idx] = price
 
         if 데이터길이 >= 평균값계산틱수:
             jg_data = self.dict_jg.get(종목코드)
@@ -248,10 +284,11 @@ class FutureStrategyTick(Strategy):
                 # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
                 _, 포지션, 매수가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간 = jg_data.values()
                 평가금액 = 매입금액 + (현재가 - 매수가) * self.dict_info[종목코드]['틱가치'] * 보유수량
+                mini = self.code.startswith('M') or self.code.startswith('SIL')
                 if 포지션 == 'LONG':
-                    _, 수익금, 수익률 = GetFutureLongPgSgSp(매입금액, 평가금액, 종목코드)
+                    _, 수익금, 수익률 = GetFutureLongPgSgSp(mini, 매입금액, 평가금액)
                 else:
-                    _, 수익금, 수익률 = GetFutureShortPgSgSp(매입금액, 평가금액, 종목코드)
+                    _, 수익금, 수익률 = GetFutureShortPgSgSp(mini, 매입금액, 평가금액)
                 profit_data = self.dict_profit.get(종목코드)
                 if profit_data:
                     if 수익률 > profit_data[0]:
@@ -289,14 +326,11 @@ class FutureStrategyTick(Strategy):
                 if A or B or (C and (D or E)) or F or G:
                     BUY_LONG, SELL_SHORT = True, True
                     if self.buystrategy is not None:
-                        try:
-                            exec(self.buystrategy)
-                        except:
-                            print_exc()
-                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - BuyStrategy')))
+                        exec(self.buystrategy)
+
                 elif D or E:
                     BUY_LONG, SELL_SHORT = False, False
-                    분할매수기준수익률 = np.round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
+                    분할매수기준수익률 = round((현재가 / self._현재가N(-1) - 1) * 100, 2) if self.dict_set['주식매수분할고정수익률'] else 수익률
                     if D:
                         if self.dict_set['주식매수분할하방'] and 분할매수기준수익률 < -self.dict_set['주식매수분할하방수익률']:
                             BUY_LONG   = True
@@ -339,11 +373,8 @@ class FutureStrategyTick(Strategy):
                 SELL_LONG, BUY_SHORT = False, False
                 if A or B or (C and (D or E)) or F or G:
                     if self.sellstrategy is not None:
-                        try:
-                            exec(self.sellstrategy)
-                        except:
-                            print_exc()
-                            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - SellStrategy')))
+                        exec(self.sellstrategy)
+
                 elif D or E or 강제청산:
                     if H or K or M:
                         SELL_LONG = True
@@ -378,11 +409,11 @@ class FutureStrategyTick(Strategy):
             }
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
-            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목명, self.arry_code)))
+            self.mgzservQ.put(('window', (ui_num['실시간차트'], 종목코드, self.arry_code)))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+            self.mgzservQ.put(('window', (ui_num['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
 
     def GetParameterArea(self, rw):
         if self.is_tick:
@@ -435,7 +466,7 @@ class FutureStrategyTick(Strategy):
                     매수금액 += 호가 * 잔량
                     미체결수량 -= 잔량
             if 미체결수량 <= 0:
-                예상체결가 = np.round(매수금액 / 매수수량, self.dict_info[self.code]['소숫점자리수']) if 매수수량 != 0 else 0
+                예상체결가 = round(매수금액 / 매수수량, self.dict_info[self.code]['소숫점자리수']) if 매수수량 != 0 else 0
                 self.dict_signal[구분].append(self.code)
                 self.dict_signal_num[self.code] = self.indexn
                 self.straderQ.put((구분, self.code, self.name, 예상체결가, 매수수량, now(), False))
@@ -499,7 +530,7 @@ class FutureStrategyTick(Strategy):
                     매도금액 += 호가 * 잔량
                     미체결수량 -= 잔량
             if 미체결수량 <= 0:
-                예상체결가 = np.round(매도금액 / 매도수량, self.dict_info[self.code]['소숫점자리수']) if 매도수량 != 0 else 0
+                예상체결가 = round(매도금액 / 매도수량, self.dict_info[self.code]['소숫점자리수']) if 매도수량 != 0 else 0
                 self.dict_signal[구분].append(self.code)
                 self.straderQ.put((구분, self.code, self.name, 예상체결가, 매도수량, now(), True if 강제청산 else False))
 
@@ -539,7 +570,7 @@ class FutureStrategyTick(Strategy):
     def PutGsjmAndDeleteHilo(self):
         if self.dict_gj:
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
-            df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
+            df_gj = get_pd().DataFrame.from_dict(self.dict_gj, orient='index')
             self.mgzservQ.put(('window', (ui_num[f'S관심종목'], df_gj)))
         if self.dict_profit:
             self.dict_profit = {k: v for k, v in self.dict_profit.items() if k in self.dict_jg}
@@ -548,7 +579,7 @@ class FutureStrategyTick(Strategy):
         if self.dict_set['주식데이터저장']:
             self.SaveData()
         time.sleep(5)
-        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 전략연산 종료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료')))
 
     def SaveData(self):
         last = len(self.dict_data)
@@ -558,14 +589,10 @@ class FutureStrategyTick(Strategy):
             start = now()
             cllen = len(columns_)
             for i, code in enumerate(self.dict_data):
-                df = pd.DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
+                df = get_pd().DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
                 df['index'] = df['index'].astype('int64')
                 df.to_sql(code, con, index=False, if_exists='append', chunksize=1000)
-                text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... {i + 1}/{last}'
-                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], text)))
+                self.mgzservQ.put(('window', (ui_num['기본로그'], f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... {i + 1}/{last}')))
             save_time = (now() - start).total_seconds()
-            text = f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], text)))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.')))
         con.close()
-
-        self.logger.info('데이터 저장 완료')

@@ -179,7 +179,7 @@ def get_label_text(ui, real, gubun, code, is_min, xpoint, factor, hms):
     else:
         text =     f"{factor} {ui.ctpg_arry[xpoint, fi(factor)]:,.2f}"
 
-    if ui.dict_fn is not None and factor in ui.dict_fn:
+    if not real and ui.dict_fn is not None and factor in ui.dict_fn:
         for name, flist in ui.dict_fn[factor].items():
             findex, ftype = flist
             if ftype in ('선:일반', '선:조건'):

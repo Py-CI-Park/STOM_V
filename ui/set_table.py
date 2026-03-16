@@ -1,7 +1,8 @@
 
 from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QCalendarWidget, QTabWidget
-from utility.setting import columns_tt, columns_td, columns_tj, columns_jg, columns_gj, columns_cj, columns_dt, \
+from ui.set_widget import error_decorator
+from utility.setting_base import columns_tt, columns_td, columns_tj, columns_jg, columns_gj, columns_cj, columns_dt, \
     columns_dd, columns_nt, columns_nd, columns_sb, columns_sd
 
 
@@ -11,6 +12,7 @@ class SetTable:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.stt_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_tt, 1)
         self.ui.std_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_td, 13, clicked=self.ui.CellClicked_01)
@@ -142,7 +144,7 @@ class SetTable:
         self.ui.ccj_tableWidgettt.setGeometry(680, 382, 668, 367)
 
         self.ui.c_calendarWidgett.setGeometry(7, 10, 668, 245)
-        self.ui.cdt_tableWidgettt.setGeometry(7, 230, 668, 42)
+        self.ui.cdt_tableWidgettt.setGeometry(7, 260, 668, 42)
         self.ui.cds_tableWidgettt.setGeometry(7, 307, 668, 442)
 
         self.ui.cnt_pushButton_01.setGeometry(680, 10, 219, 30)

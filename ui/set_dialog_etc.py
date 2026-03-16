@@ -1,10 +1,9 @@
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QTabWidget, QWidget
-from matplotlib import pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
+from ui.set_widget import error_decorator
 from ui.set_style import style_ck_bx, style_bc_dk, qfont14, style_fc_dk
-from utility.setting import columns_hj, columns_hc, columns_hg, columns_gc, columns_ns, columns_jm1, columns_jm2, \
+from utility.setting_base import columns_hj, columns_hc, columns_hg, columns_gc, columns_ns, columns_jm1, columns_jm2, \
     columns_stg1, columns_stg2, columns_kp, columns_hc2
 
 
@@ -14,6 +13,7 @@ class SetDialogEtc:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.dialog_hoga = self.wc.setDialog('STOM HOGA')
         self.ui.dialog_hoga.geometry().center()
@@ -43,20 +43,9 @@ class SetDialogEtc:
 
         self.ui.dialog_tree = self.wc.setDialog('STOM TREEMAP')
         self.ui.dialog_tree.geometry().center()
-        fig = plt.figure('업종별 테마별 등락율', figsize=(15, 13.3))
-        fig.set_facecolor('black')
-        self.ui.canvas = FigureCanvas(fig)
-        tree_layout = QVBoxLayout(self.ui.dialog_tree)
-        tree_layout.setContentsMargins(0, 0, 0, 0)
-        tree_layout.addWidget(self.ui.canvas)
 
         self.ui.dialog_graph = self.wc.setDialog('STOM GRAPH')
         self.ui.dialog_graph.geometry().center()
-        fig = plt.figure('누적수익금', figsize=(12, 12))
-        self.ui.canvas2 = FigureCanvas(fig)
-        tree_layout = QVBoxLayout(self.ui.dialog_graph)
-        tree_layout.setContentsMargins(0, 0, 0, 0)
-        tree_layout.addWidget(self.ui.canvas2)
 
         self.ui.dialog_db = self.wc.setDialog('STOM DATABASE')
         self.ui.dialog_db.geometry().center()
@@ -248,68 +237,6 @@ class SetDialogEtc:
         self.ui.dialog_kimp.geometry().center()
         self.ui.kp_tableWidget_01 = self.wc.setTablewidget(self.ui.dialog_kimp, columns_kp, 50, vscroll=True)
 
-        self.ui.dialog_bjjs = self.wc.setDialog('STOCK BETTING CONTROL', tab=self.ui)
-        self.ui.dialog_bjjs.geometry().center()
-        self.ui.bjs_pushButton_01 = self.wc.setPushbutton('불러오기', box=self.ui.dialog_bjjs, click=self.ui.SettingStockWeightCotrolLoad)
-        self.ui.bjs_pushButton_02 = self.wc.setPushbutton('저장하기', box=self.ui.dialog_bjjs, click=self.ui.SettingStockWeightCotrolSave)
-        self.ui.bjs_groupBoxxx_01 = QGroupBox('비중조절 기준값 선택', self.ui.dialog_bjjs)
-        self.ui.bjs_groupBoxxx_02 = QGroupBox('기준값 구간 및 비율 설정', self.ui.dialog_bjjs)
-        self.ui.bjs_checkBoxxx_01 = self.wc.setCheckBox('비중조절사용안함', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_03 = self.wc.setCheckBox('거래대금평균대비비율', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_04 = self.wc.setCheckBox('등락율각도', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_checkBoxxx_05 = self.wc.setCheckBox('당일거래대금각도', self.ui.bjs_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingStockWeightCotrolChanged)
-        self.ui.bjs_labellllll_01 = QLabel('if    비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
-        self.ui.bjs_labellllll_02 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
-        self.ui.bjs_labellllll_03 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
-        self.ui.bjs_labellllll_04 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
-        self.ui.bjs_labellllll_05 = QLabel('else                                                 :   배팅금액 * ', self.ui.bjs_groupBoxxx_02)
-        self.ui.bjs_lineEdittt_01 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjs_lineEdittt_02 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjs_lineEdittt_03 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjs_lineEdittt_04 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjs_lineEdittt_05 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjs_lineEdittt_06 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjs_lineEdittt_07 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjs_lineEdittt_08 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjs_lineEdittt_09 = self.wc.setLineedit(self.ui.bjs_groupBoxxx_02, style=style_bc_dk)
-
-        self.ui.bjs_check_button_list = [
-            self.ui.bjs_checkBoxxx_01, self.ui.bjs_checkBoxxx_02, self.ui.bjs_checkBoxxx_03, self.ui.bjs_checkBoxxx_04,
-            self.ui.bjs_checkBoxxx_05
-        ]
-
-        self.ui.dialog_bjjc = self.wc.setDialog('COIN BETTING CONTROL', tab=self.ui)
-        self.ui.dialog_bjjc.geometry().center()
-        self.ui.bjc_pushButton_01 = self.wc.setPushbutton('불러오기', box=self.ui.dialog_bjjc, click=self.ui.SettingCoinWeightCotrolLoad)
-        self.ui.bjc_pushButton_02 = self.wc.setPushbutton('저장하기', box=self.ui.dialog_bjjc, click=self.ui.SettingCoinWeightCotrolSave)
-        self.ui.bjc_groupBoxxx_01 = QGroupBox('비중조절 기준값 선택', self.ui.dialog_bjjc)
-        self.ui.bjc_groupBoxxx_02 = QGroupBox('기준값 구간 및 비율 설정', self.ui.dialog_bjjc)
-        self.ui.bjc_checkBoxxx_01 = self.wc.setCheckBox('비중조절사용안함', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
-        self.ui.bjc_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
-        self.ui.bjc_checkBoxxx_03 = self.wc.setCheckBox('거래대금평균대비비율', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
-        self.ui.bjc_checkBoxxx_04 = self.wc.setCheckBox('등락율각도', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
-        self.ui.bjc_checkBoxxx_05 = self.wc.setCheckBox('당일거래대금각도', self.ui.bjc_groupBoxxx_01, style=style_ck_bx, changed=self.ui.SettingCoinWeightCotrolChanged)
-        self.ui.bjc_labellllll_01 = QLabel('if    비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
-        self.ui.bjc_labellllll_02 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
-        self.ui.bjc_labellllll_03 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
-        self.ui.bjc_labellllll_04 = QLabel('elif 비중조절기준값 <                     :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
-        self.ui.bjc_labellllll_05 = QLabel('else                                                 :   배팅금액 * ', self.ui.bjc_groupBoxxx_02)
-        self.ui.bjc_lineEdittt_01 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjc_lineEdittt_02 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjc_lineEdittt_03 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjc_lineEdittt_04 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjc_lineEdittt_05 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjc_lineEdittt_06 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjc_lineEdittt_07 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjc_lineEdittt_08 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-        self.ui.bjc_lineEdittt_09 = self.wc.setLineedit(self.ui.bjc_groupBoxxx_02, style=style_bc_dk)
-
-        self.ui.bjc_check_button_list = [
-            self.ui.bjc_checkBoxxx_01, self.ui.bjc_checkBoxxx_02, self.ui.bjc_checkBoxxx_03, self.ui.bjc_checkBoxxx_04,
-            self.ui.bjc_checkBoxxx_05
-        ]
-
         self.ui.dialog_std = self.wc.setDialog('OPTIMIZ STD LIMIT', tab=self.ui)
         self.ui.dialog_std.geometry().center()
         self.ui.st_pushButtonn_01 = self.wc.setPushbutton('불러오기', box=self.ui.dialog_std, click=self.ui.stButtonClicked_01)
@@ -376,8 +303,8 @@ class SetDialogEtc:
         self.ui.set_pushButton_03 = self.wc.setPushbutton('저장하기', box=self.ui.dialog_setsj, click=self.ui.SettingStockElapsedTickNumberSave)
         self.ui.set_groupBoxxx_01 = QGroupBox('', self.ui.dialog_setsj)
         text = """
-    ▣ 백테 및 전략연산에서 사용할 "경과틱수('조건명')"를 설정한다. 경과틱수는 작성한 조건을 만족한 이후 경과한 틱수이며
-    경과틱수 괄호안에 조건명을 넣어서 사용합니다. 조건은 전략탭에서 사용하는 전략(잔고종목변수제외)과 문법이 동일합니다.
+    ▣ 백테 및 전략연산에서 사용할 경과틱수('조건명')을 설정한다. 경과틱수는 작성한 조건을 만족한 이후 경과한 틱수이며
+    경과틱수 괄호안에 조건명을 넣어서 사용합니다. 조건은 전략탭에서 사용하는 전략(매도팩터제외)과 문법이 동일합니다.
     예제에서 사용한 조건명 이평60데드는 경과틱수('이평60데드') 형태로 사용합니다. 반드시 조건명에 따옴표를 붙여야합니다."""
         self.ui.set_labellllll_01 = QLabel(text, self.ui.set_groupBoxxx_01)
         self.ui.set_labellllll_02 = QLabel('            조건명                        조건', self.ui.set_groupBoxxx_01)
@@ -460,7 +387,7 @@ class SetDialogEtc:
         ]
 
         self.ui.dialog_hoga.setFixedSize(572, 355)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_hoga.move(self.ui.dict_set['창위치'][16], self.ui.dict_set['창위치'][17])
             except:
@@ -477,7 +404,7 @@ class SetDialogEtc:
         self.ui.hg_pushButtonnn_04.setGeometry(710, 354, 130, 30)
 
         self.ui.dialog_info.setFixedSize(1403, 570)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_info.move(self.ui.dict_set['창위치'][8], self.ui.dict_set['창위치'][9])
             except:
@@ -489,14 +416,14 @@ class SetDialogEtc:
         self.ui.jm_tableWidgett_02.setGeometry(1024, 243, 373, 320)
 
         self.ui.dialog_web.resize(1000, 1000)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_web.move(self.ui.dict_set['창위치'][10], self.ui.dict_set['창위치'][11])
             except:
                 pass
 
         self.ui.dialog_tree.resize(1000, 1000)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_tree.move(self.ui.dict_set['창위치'][12], self.ui.dict_set['창위치'][13])
             except:
@@ -579,7 +506,7 @@ class SetDialogEtc:
         self.ui.db_textEdittttt_01.setGeometry(5, 565, 515, 100)
 
         self.ui.dialog_order.setFixedSize(232, 303)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_order.move(self.ui.dict_set['창위치'][20], self.ui.dict_set['창위치'][21])
             except:
@@ -626,62 +553,12 @@ class SetDialogEtc:
         self.ui.cp_tableWidget_01.setGeometry(5, 40, 340, 718)
 
         self.ui.dialog_kimp.setFixedSize(535, 763)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_kimp.move(self.ui.dict_set['창위치'][14], self.ui.dict_set['창위치'][15])
             except:
                 pass
         self.ui.kp_tableWidget_01.setGeometry(5, 5, 525, 753)
-
-        self.ui.dialog_bjjs.setFixedSize(315, 325)
-        self.ui.bjs_pushButton_01.setGeometry(5, 5, 150, 30)
-        self.ui.bjs_pushButton_02.setGeometry(160, 5, 150, 30)
-        self.ui.bjs_groupBoxxx_01.setGeometry(5, 40, 305, 125)
-        self.ui.bjs_groupBoxxx_02.setGeometry(5, 170, 305, 150)
-        self.ui.bjs_checkBoxxx_01.setGeometry(5, 25, 300, 20)
-        self.ui.bjs_checkBoxxx_02.setGeometry(5, 50, 140, 20)
-        self.ui.bjs_checkBoxxx_03.setGeometry(5, 75, 140, 20)
-        self.ui.bjs_checkBoxxx_04.setGeometry(160, 50, 140, 20)
-        self.ui.bjs_checkBoxxx_05.setGeometry(160, 75, 140, 20)
-        self.ui.bjs_labellllll_01.setGeometry(5, 25, 300, 20)
-        self.ui.bjs_labellllll_02.setGeometry(5, 50, 300, 20)
-        self.ui.bjs_labellllll_03.setGeometry(5, 75, 300, 20)
-        self.ui.bjs_labellllll_04.setGeometry(5, 100, 300, 20)
-        self.ui.bjs_labellllll_05.setGeometry(5, 125, 300, 20)
-        self.ui.bjs_lineEdittt_01.setGeometry(120, 25, 50, 20)
-        self.ui.bjs_lineEdittt_02.setGeometry(120, 50, 50, 20)
-        self.ui.bjs_lineEdittt_03.setGeometry(120, 75, 50, 20)
-        self.ui.bjs_lineEdittt_04.setGeometry(120, 100, 50, 20)
-        self.ui.bjs_lineEdittt_05.setGeometry(250, 25, 50, 20)
-        self.ui.bjs_lineEdittt_06.setGeometry(250, 50, 50, 20)
-        self.ui.bjs_lineEdittt_07.setGeometry(250, 75, 50, 20)
-        self.ui.bjs_lineEdittt_08.setGeometry(250, 100, 50, 20)
-        self.ui.bjs_lineEdittt_09.setGeometry(250, 125, 50, 20)
-
-        self.ui.dialog_bjjc.setFixedSize(315, 325)
-        self.ui.bjc_pushButton_01.setGeometry(5, 5, 150, 30)
-        self.ui.bjc_pushButton_02.setGeometry(160, 5, 150, 30)
-        self.ui.bjc_groupBoxxx_01.setGeometry(5, 40, 305, 125)
-        self.ui.bjc_groupBoxxx_02.setGeometry(5, 170, 305, 150)
-        self.ui.bjc_checkBoxxx_01.setGeometry(5, 25, 300, 20)
-        self.ui.bjc_checkBoxxx_02.setGeometry(5, 50, 140, 20)
-        self.ui.bjc_checkBoxxx_03.setGeometry(5, 75, 140, 20)
-        self.ui.bjc_checkBoxxx_04.setGeometry(160, 50, 140, 20)
-        self.ui.bjc_checkBoxxx_05.setGeometry(160, 75, 140, 20)
-        self.ui.bjc_labellllll_01.setGeometry(5, 25, 300, 20)
-        self.ui.bjc_labellllll_02.setGeometry(5, 50, 300, 20)
-        self.ui.bjc_labellllll_03.setGeometry(5, 75, 300, 20)
-        self.ui.bjc_labellllll_04.setGeometry(5, 100, 300, 20)
-        self.ui.bjc_labellllll_05.setGeometry(5, 125, 300, 20)
-        self.ui.bjc_lineEdittt_01.setGeometry(120, 25, 50, 20)
-        self.ui.bjc_lineEdittt_02.setGeometry(120, 50, 50, 20)
-        self.ui.bjc_lineEdittt_03.setGeometry(120, 75, 50, 20)
-        self.ui.bjc_lineEdittt_04.setGeometry(120, 100, 50, 20)
-        self.ui.bjc_lineEdittt_05.setGeometry(250, 25, 50, 20)
-        self.ui.bjc_lineEdittt_06.setGeometry(250, 50, 50, 20)
-        self.ui.bjc_lineEdittt_07.setGeometry(250, 75, 50, 20)
-        self.ui.bjc_lineEdittt_08.setGeometry(250, 100, 50, 20)
-        self.ui.bjc_lineEdittt_09.setGeometry(250, 125, 50, 20)
 
         self.ui.dialog_std.setFixedSize(255, 260)
         self.ui.st_pushButtonn_01.setGeometry(5, 5, 120, 25)

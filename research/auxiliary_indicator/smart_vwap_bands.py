@@ -18,8 +18,6 @@ Smart VWAP 특징:
 
 import sys
 import sqlite3
-import numpy as np
-import pandas as pd
 try:
     import pyqtgraph as pg
     from PyQt5.QtGui import QFont
@@ -28,6 +26,7 @@ try:
 except ImportError:
     pg = QFont = QTimer = QApplication = QMainWindow = QVBoxLayout = QWidget = QLabel = None
 from collections import defaultdict, deque
+from utility.lazy_imports import get_np, get_pd
 
 # 주식 틱 데이터 칼럼
 list_stock_tick = [
@@ -136,9 +135,9 @@ class SmartVWAPCalculator:
         # 최근 period개 Smart VWAP 데이터
         recent_vwaps = list(code_vwap_deque)
         # 중간선 (이동평균)
-        middle = np.mean(recent_vwaps)
+        middle = get_np().mean(recent_vwaps)
         # 표준편차
-        std = np.std(recent_vwaps)
+        std = get_np().std(recent_vwaps)
         # 상단/하단 밴드
         # noinspection PyTypeChecker
         upper = middle + (std * std_multiplier)
@@ -482,15 +481,15 @@ class SmartVWAPChart(QMainWindow):
         """데이터베이스에서 샘플 데이터 로드"""
         try:
             conn = sqlite3.connect('../../_database/stock_tick_back.db')
-            df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
+            df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
             codes = df['name'].to_list()
             codes.remove('moneytop')
             if 'stockinfo' in codes: codes.remove('stockinfo')
             if 'futureinfo' in codes: codes.remove('futureinfo')
 
             while True:
-                self.code = np.random.choice(codes)
-                df = pd.read_sql(f"SELECT * FROM '{self.code}'", conn)
+                self.code = get_np().random.choice(codes)
+                df = get_pd().read_sql(f"SELECT * FROM '{self.code}'", conn)
                 lastday = int(str(df['index'].iloc[-1])[:8]) * 1000000
                 df = df[df['index'] >= lastday]
                 if df['고저평균대비등락율'].max() >= 7:
@@ -500,7 +499,7 @@ class SmartVWAPChart(QMainWindow):
             print(f"선택된 종목: {self.code}")
             print(f"데이터 로드 완료: {len(df)}개")
 
-            self.arry_data = np.array(df)
+            self.arry_data = get_np().array(df)
             self.current_index = 0
 
             # 초기 데이터 10개 추가

@@ -1,10 +1,10 @@
 
 import os
 import sys
-import numpy as np
 from kiwoom_agent_tick import KiwoomAgentTick
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import ui_num
+from utility.setting_base import ui_num
+from utility.lazy_imports import get_np
 from utility.static import now, roundfigure_upper5, GetSangHahanga
 
 
@@ -14,9 +14,10 @@ class KiwoomAgentMin(KiwoomAgentTick):
             self.straderQ.put(('잔고갱신', (code, c)))
             self.dict_jgdt[code] = dt
 
-        if code not in self.dict_vipr:
+        vipr = self.dict_vipr.get(code)
+        if vipr is None:
             self.InsertViPrice(code, o)
-        elif not self.dict_vipr[code][0] and now() > self.dict_vipr[code][1]:
+        elif not vipr[0] and now() > vipr[1]:
             self.UpdateViPrice(code, c)
 
         code_data = self.dict_data.get(code)
@@ -33,9 +34,8 @@ class KiwoomAgentMin(KiwoomAgentTick):
             mo = mh = ml = c
 
         rf = roundfigure_upper5(c, dt)
-        bids_, asks_ = 0, 0
-        if '+' in v: bids_ = abs(int(v))
-        if '-' in v: asks_ = abs(int(v))
+        bids_ = abs(int(v)) if '+' in v else 0
+        asks_ = abs(int(v)) if '-' in v else 0
         bids += bids_
         asks += asks_
 
@@ -76,12 +76,11 @@ class KiwoomAgentMin(KiwoomAgentTick):
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
-                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = max(index - 5, 0)
-                    end_idx   = index
-                    add_cnt   = max(5 - index, 0)
+                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+                end_idx = valid_indices[-1] + 1 if valid_indices else None
+                if end_idx is not None:
+                    start_idx = max(end_idx - 5, 0)
+                    add_cnt   = max(5 - end_idx, 0)
                     hoga_seprice = [0] * add_cnt + hoga_seprice[start_idx:end_idx]
                     hoga_samount = [0] * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
@@ -92,12 +91,11 @@ class KiwoomAgentMin(KiwoomAgentTick):
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
-                index = valid_indices[0] if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = index
-                    end_idx   = min(index + 5, 10)
-                    add_cnt   = max(index - 5, 0)
+                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+                start_idx = valid_indices[0] if valid_indices else None
+                if start_idx is not None:
+                    end_idx   = min(start_idx + 5, 10)
+                    add_cnt   = max(start_idx - 5, 0)
                     hoga_buprice = hoga_buprice[start_idx:end_idx] + [0] * add_cnt
                     hoga_bamount = hoga_bamount[start_idx:end_idx] + [0] * add_cnt
                 else:
@@ -115,8 +113,8 @@ class KiwoomAgentMin(KiwoomAgentTick):
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -137,8 +135,8 @@ class KiwoomAgentMin(KiwoomAgentTick):
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
  
@@ -157,8 +155,8 @@ class KiwoomAgentMin(KiwoomAgentTick):
 
             tm = dm - code_dtdm[1]
             if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
-            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
-            lhp  = np.round((h / low - 1) * 100, 2)
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0
@@ -180,7 +178,7 @@ class KiwoomAgentMin(KiwoomAgentTick):
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+                self.mgzservQ.put(('window', (ui_num['타임로그'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:

@@ -2,10 +2,10 @@
 import sys
 import time
 import sqlite3
-import pandas as pd
 from multiprocessing import Process
-from utility.static import now, str_ymdhms
-from utility.setting import DB_STRATEGY, DB_BACKTEST, ui_num, DICT_SET
+from utility.lazy_imports import get_pd
+from utility.static import now, str_ymdhms, error_decorator
+from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num
 
 
 class Total:
@@ -30,6 +30,7 @@ class Total:
 
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         bc = 0
         index = 0
@@ -66,7 +67,7 @@ class Total:
             if self.dict_back:
                 save_time = str_ymdhms()
                 con = sqlite3.connect(DB_BACKTEST)
-                df = pd.DataFrame.from_dict(self.dict_back, orient='index')
+                df = get_pd().DataFrame.from_dict(self.dict_back, orient='index')
                 df.to_sql(f"{self.gubun}_bf_{self.buystg_name}_{save_time}", con, if_exists='append', chunksize=1000)
                 con.close()
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인터 결과값 저장 완료'))
@@ -81,7 +82,7 @@ class Total:
 
 
 class BackFinder:
-    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, ui_gubun, dict_set):
         self.shared_cnt = sc
         self.wq         = wq
         self.bq         = bq
@@ -90,15 +91,17 @@ class BackFinder:
         self.lq         = lq
         self.beq_list   = beq_list
         self.ui_gubun   = ui_gubun
-        self.dict_set   = DICT_SET
+        self.dict_set   = dict_set
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':
             self.gubun = 'future'
         else:
             self.gubun = 'coin'
+
         self.Start()
 
+    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()
@@ -111,7 +114,7 @@ class BackFinder:
         back_count    = data[6]
 
         con = sqlite3.connect(DB_STRATEGY)
-        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
+        dfb = get_pd().read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
         con.close()
 
         buystg    = dfb['전략코드'][buystg_name]

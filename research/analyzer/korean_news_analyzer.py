@@ -2,12 +2,11 @@
 import re
 import sqlite3
 import requests
-import numpy as np
-import pandas as pd
 from bs4 import BeautifulSoup
 from collections import Counter
 from fake_useragent import UserAgent
 from typing import List, Dict, Tuple
+from utility.lazy_imports import get_np, get_pd
 
 
 class KoreanNewsAnalyzer:
@@ -93,14 +92,14 @@ class KoreanNewsAnalyzer:
 def example():
     analyzer = KoreanNewsAnalyzer()
     conn = sqlite3.connect(f'../../_database/stock_tick_back.db')
-    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
-    df_cn = pd.read_sql(f"SELECT * FROM stockinfo", conn).set_index('index')
+    df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
+    df_cn = get_pd().read_sql(f"SELECT * FROM stockinfo", conn).set_index('index')
     conn.close()
     df_cn = df_cn['종목명'].to_dict()
     codes = df['name'].to_list()
     codes.remove('moneytop')
     codes.remove('stockinfo')
-    codes = np.random.choice(codes, size=10)
+    codes = get_np().random.choice(codes, size=10)
     for code in codes:
         result = analyzer.analyze_market_news(code)
         print(f"종목: [{result['stock']}] {df_cn.get(code)}")

@@ -4,23 +4,23 @@ import time
 import copy
 import random
 import sqlite3
-import numpy as np
-import pandas as pd
+from traceback import format_exc
 from multiprocessing import Process, Queue
+from utility.lazy_imports import get_np, get_pd
 from backtest.back_static import SendResult, GetMoneytopQuery
-from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
-from utility.setting import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, DICT_SET, DB_COIN_BACK_TICK, \
+from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd, error_decorator
+from utility.setting_base import DB_STOCK_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, DB_COIN_BACK_TICK, \
     DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
 
 
 class Total:
-    def __init__(self, wq, tq, mq, bstq_list, ui_gubun):
+    def __init__(self, wq, tq, mq, bstq_list, ui_gubun, dict_set):
         self.wq           = wq
         self.tq           = tq
         self.mq           = mq
         self.bstq_list    = bstq_list
         self.ui_gubun     = ui_gubun
-        self.dict_set     = DICT_SET
+        self.dict_set     = dict_set
 
         self.back_count   = None
         self.dict_cn      = None
@@ -46,6 +46,7 @@ class Total:
 
         self.MainLoop()
 
+    @error_decorator
     def MainLoop(self):
         sc = 0
         bc = 0
@@ -121,12 +122,12 @@ class Total:
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
+                time.sleep(1)
                 break
 
             elif data == '백테완료중지':
                 break
 
-        time.sleep(1)
         sys.exit()
 
     def BackInfo(self, data):
@@ -153,7 +154,7 @@ class Total:
 
 
 class OptimizeGeneticAlgorithm:
-    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun):
+    def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, ui_gubun, dict_set):
         self.shared_cnt  = sc
         self.wq          = wq
         self.bq          = bq
@@ -165,6 +166,7 @@ class OptimizeGeneticAlgorithm:
         self.multi       = multi
         self.backname    = backname
         self.ui_gubun    = ui_gubun
+        self.dict_set    = dict_set
         self.high_list   = []
         self.vars_list   = []
         self.opti_lists  = []
@@ -172,7 +174,6 @@ class OptimizeGeneticAlgorithm:
         self.result      = {}
         self.vars        = {}
         self.total_count = 0
-        self.dict_set    = DICT_SET
         if self.ui_gubun == 'S':
             self.gubun = 'stock'
         elif self.ui_gubun == 'SF':
@@ -181,8 +182,10 @@ class OptimizeGeneticAlgorithm:
             self.gubun = 'coin'
         self.savename    = f'{self.gubun}_{self.backname.replace("최적화", "").lower()}'
         self.orignal_vars_list = []
+
         self.Start()
 
+    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()
@@ -259,7 +262,7 @@ class OptimizeGeneticAlgorithm:
 
         con   = sqlite3.connect(db)
         query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
-        df_mt = pd.read_sql(query, con)
+        df_mt = get_pd().read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -296,7 +299,7 @@ class OptimizeGeneticAlgorithm:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 
-        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
+        arry_bct = get_np().zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
         data = ('백테정보', self.ui_gubun, None, valid_days, arry_bct, betting, len(day_list))
         for q in self.bstq_list:
@@ -304,19 +307,19 @@ class OptimizeGeneticAlgorithm:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
 
         con = sqlite3.connect(DB_STRATEGY)
-        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
-        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
+        dfb = get_pd().read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
+        dfs = get_pd().read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
         buystg  = dfb['전략코드'][buystg_name]
         sellstg = dfs['전략코드'][sellstg_name]
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}vars', con).set_index('index')
+        df = get_pd().read_sql(f'SELECT * FROM {self.gubun}vars', con).set_index('index')
         optivars = df['전략코드'][optivars_name]
         con.close()
 
         optivars_ = compile(df['전략코드'][optivars_name], '<string>', 'exec')
         try:
             exec(optivars_)
-        except Exception as e:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'시스템 명령 오류 알림 - {self.backname} 변수설정 {e}'))
+        except:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - {self.backname} 변수설정'))
             self.SysExit(True)
 
         self.total_count = 1
@@ -332,7 +335,7 @@ class OptimizeGeneticAlgorithm:
             q.put(data)
 
         mq = Queue()
-        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun)).start()
+        Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, self.dict_set)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 
         self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg, sellstg, dict_cn, std_text,
@@ -343,7 +346,7 @@ class OptimizeGeneticAlgorithm:
         k    = 1
         vc   = len(self.vars_list)
         hstd = -float('inf')
-        goal = 2 ** int(np.round(vc / 2))
+        goal = 2 ** int(round(vc / 2))
         self.opti_lists = []
         while self.total_count > goal:
             if k > 1: self.SaveVarslist(100, optistandard, buystg, sellstg)
@@ -458,7 +461,7 @@ class OptimizeGeneticAlgorithm:
         con = sqlite3.connect(DB_BACKTEST)
         for std, vars_list in rs_list[:rank]:
             data = [[optistandard, std, f'{vars_list}', buystg, sellstg]]
-            df = pd.DataFrame(data, columns=['기준', '기준값', '범위설정', '매수코드', '매도코드'], index=[str_ymdhms()])
+            df = get_pd().DataFrame(data, columns=['기준', '기준값', '범위설정', '매수코드', '매도코드'], index=[str_ymdhms()])
             df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
         con.close()
         self.high_vars = rs_list[0][1]

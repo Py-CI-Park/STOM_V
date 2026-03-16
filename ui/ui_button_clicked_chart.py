@@ -2,15 +2,18 @@
 import random
 from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import famous_saying
-from utility.setting import indi_base, indicator
+from utility.setting_base import indi_base, indicator
+from utility.static import error_decorator
 
 
+@error_decorator
 def indicator_setting_basic(ui):
     k = list(indi_base.values())
     for i, linedit in enumerate(ui.factor_linedit_list):
         linedit.setText(str(k[i]))
 
 
+@error_decorator
 def indicator_setting_load(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back')
     k_list = df['보조지표설정'][0]
@@ -19,6 +22,7 @@ def indicator_setting_load(ui):
         linedit.setText(k_list[i])
 
 
+@error_decorator
 def indicator_setting_save(ui):
     k_list = []
     for linedit in ui.factor_linedit_list:
@@ -30,6 +34,7 @@ def indicator_setting_save(ui):
         QMessageBox.information(ui.dialog_factor, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def get_indicator_detail(ui, code):
     k_list = None
     if not ui.dict_set['주식타임프레임'] or not ui.dict_set['코인타임프레임']:

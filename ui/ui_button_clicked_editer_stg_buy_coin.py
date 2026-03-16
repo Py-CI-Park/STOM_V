@@ -1,13 +1,13 @@
 
 import random
-import pandas as pd
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.static import text_not_in_special_characters
+from utility.static import text_not_in_special_characters, error_decorator
 from ui.set_style import style_bc_st, style_bc_dk
 from ui.set_text import famous_saying, buy_text_tick, buy_signal, future_buy_signal, buy_text_min
 
 
+@error_decorator
 def coin_buy_stg_load(ui):
     if ui.cs_textEditttt_01.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinbuy').set_index('index')
@@ -22,6 +22,7 @@ def coin_buy_stg_load(ui):
             ui.cvjb_pushButon_04.setStyleSheet(style_bc_st)
 
 
+@error_decorator
 def coin_buy_stg_save(ui):
     strategy_name = ui.cvjb_lineEditt_01.text()
     strategy = ui.cs_textEditttt_01.toPlainText()
@@ -35,23 +36,25 @@ def coin_buy_stg_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', '매수전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(
-                strategy):
+        if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
             if ui.proc_query.is_alive():
-                delete_query = f"DELETE FROM coinbuy WHERE `index` = '{strategy_name}'"
-                insert_query = f"INSERT INTO coinbuy (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                delete_query  = f"DELETE FROM coinbuy WHERE `index` = '{strategy_name}'"
+                insert_query  = 'INSERT INTO coinbuy VALUES (?, ?)'
+                insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
-                ui.queryQ.put(('전략디비', insert_query))
+                ui.queryQ.put(('전략디비', insert_query, insert_values))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
             ui.cvjb_pushButon_04.setStyleSheet(style_bc_st)
 
 
+@error_decorator
 def coin_buy_factor(ui):
     ui.cs_textEditttt_01.clear()
     ui.cs_textEditttt_01.append(buy_text_tick if ui.dict_set['코인타임프레임'] else buy_text_min)
     ui.cvjb_pushButon_04.setStyleSheet(style_bc_st)
 
 
+@error_decorator
 def coin_buy_stg_start(ui):
     strategy = ui.cs_textEditttt_01.toPlainText()
     if strategy == '':
@@ -68,10 +71,12 @@ def coin_buy_stg_start(ui):
             ui.cvjb_pushButon_12.setStyleSheet(style_bc_st)
 
 
+@error_decorator
 def coin_buy_signal_insert(ui):
     ui.cs_textEditttt_01.append(buy_signal if ui.dict_set['거래소'] == '업비트' else future_buy_signal)
 
 
+@error_decorator
 def coin_buy_stg_stop(ui):
     if ui.CoinStrategyProcessAlive():
         ui.cstgQ.put('매수전략중지')

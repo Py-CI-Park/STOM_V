@@ -1,5 +1,7 @@
 
-from PyQt5.QtWidgets import QLabel, QGroupBox
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QLabel, QGroupBox, QFrame
+from ui.set_widget import error_decorator
 from ui.set_style import style_ck_bx, style_bc_dk, qfont14
 
 
@@ -9,6 +11,7 @@ class SetDialogFormula:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.dialog_formula = self.wc.setDialog('STOM FORMULA', tab=self.ui.dialog_chart)
         self.ui.dialog_formula.geometry().center()
@@ -26,10 +29,12 @@ class SetDialogFormula:
 
         self.ui.fm_lineEdittttt_01 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, aleft=True, style=style_bc_dk, tip='저장할 수식명을 입력하세요.')
         self.ui.fm_comboBoxxxxx_00 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, activated=self.ui.fmActivated_01, tip='편집할 수식을 선택하세요.')
-        self.ui.fm_pushButtonnn_01 = self.wc.setPushbutton('불러오기', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
-        self.ui.fm_pushButtonnn_02 = self.wc.setPushbutton('저장하기', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_01 = self.wc.setPushbutton('불러오기', box=self.ui.fm_groupBoxxxxx_02, color=4, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_02 = self.wc.setPushbutton('저장하기', box=self.ui.fm_groupBoxxxxx_02, color=4, click=self.ui.fmButtonClicked_01)
 
         self.ui.fm_checkBoxxxxx_01 = self.wc.setCheckBox('차트 표시 유무 선택', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
+        self.ui.fm_checkBoxxxxx_02 = self.wc.setCheckBox('전략연산 및 백테 적용', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
+
         items = [
             '현재가', '초당거래대금', '분당거래대금', '초당매도수금액', '분당매도수금액', '당일매도수금액', '최고매도수금액', '최고매도수가격',
             '체결강도', '초당체결수량', '분당체결수량', '등락율', '고저평균대비등락율', '저가대비고가등락율', '호가총잔량', '매도수호가잔량1',
@@ -38,50 +43,63 @@ class SetDialogFormula:
             'DMI', 'MACD', 'MFI', 'MOM', 'OBV', 'PPO', 'ROC', 'RSI', 'SAR', 'STOCHS', 'STOCHF', 'WILLR'
         ]
         self.ui.fm_comboBoxxxxx_01 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='표시할 차트의 팩터명을 선택하세요.')
+
         items = ['선:일반', '선:조건', '화살표:일반', '화살표:매매', '범위']
         self.ui.fm_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='수식의 표시 형태를 선택하세요.')
-        items = [
-            'white', 'gray', 'red', 'green', 'blue', 'yellow', 'orange', 'purple', 'pink', 'brown',
-            'cyan', 'magenta', 'lime', 'navy', 'skyblue', 'olive', 'teal', 'silver', 'gold',
-            'coral', 'salmon', 'crimson', 'maroon', 'darkred', 'firebrick', 'indianred', 'tomato',
-            'lightgreen', 'darkgreen', 'forestgreen', 'seagreen', 'mediumseagreen', 'springgreen',
-            'lightblue', 'darkblue', 'mediumblue', 'royalblue', 'steelblue', 'dodgerblue',
-            'lightyellow', 'darkorange', 'goldenrod', 'darkgoldenrod', 'khaki', 'beige',
-            'lavender', 'violet', 'darkviolet', 'mediumpurple', 'orchid', 'plum',
-            'tan', 'chocolate', 'sienna', 'peru', 'wheat', 'cornsilk',
-            'mintcream', 'honeydew', 'aliceblue', 'ghostwhite', 'whitesmoke', 'floralwhite'
-        ]
-        self.ui.fm_comboBoxxxxx_03 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선 또는 화살표의 색상을 선택하세요.')
+
+        color_name = QColor(150, 150, 160).name()
+        self.ui.fm_frameeeeeeee_01 = QFrame(self.ui.fm_groupBoxxxxx_02)
+        self.ui.fm_frameeeeeeee_01.setStyleSheet('QWidget { background-color: %s }' % color_name)
+        self.ui.fm_pushButtonnn_03 = self.wc.setPushbutton('색상선택', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_lineEdittttt_02 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, style=style_bc_dk, ltext=color_name)
+
         items = ['0.5', '1.0', '2.0', '3.0', '4.0', '5.0', '10.0', '20.0', '30.0', '40.0', '50.0']
-        self.ui.fm_comboBoxxxxx_04 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선의 굵기(0.5~5.0) 또는 화살표의 크기(10~50)를 선택하세요.')
+        self.ui.fm_comboBoxxxxx_03 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선의 굵기(0.5~5.0) 또는 화살표의 크기(10~50)를 선택하세요.')
+
         items = ['1:실선', '2:대시선', '3:점선', '4:대시점선', '5:대시점점선', '6:위쪽화살표(↑)', '7:아래쪽화살표(↓)', '8:우측쪽화살표(→)', '9:좌쪽화살표(←)']
-        self.ui.fm_comboBoxxxxx_05 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선의 종류(1~5) 또는 화살표의 방향(6~9)을 선택하세요.')
+        self.ui.fm_comboBoxxxxx_04 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선의 종류(1~5) 또는 화살표의 방향(6~9)을 선택하세요.')
 
-        self.ui.fm_pushButtonnn_03 = self.wc.setPushbutton('삭제하기', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
-        self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('예제확인', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('삭제하기', box=self.ui.fm_groupBoxxxxx_02, color=2, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_05 = self.wc.setPushbutton('예제확인', box=self.ui.fm_groupBoxxxxx_02, color=3, click=self.ui.fmButtonClicked_01)
 
-        self.ui.fm_textEdittttt_01 = self.wc.setTextEdit(self.ui.fm_groupBoxxxxx_03, filter_=True, font=qfont14)
+        self.ui.fm_textEdittttt_01 = self.wc.setTextEdit(self.ui.fm_groupBoxxxxx_03, vscroll=True, filter_=True, font=qfont14)
 
-        self.ui.dialog_formula.setFixedSize(560, 525)
-        self.ui.fm_groupBoxxxxx_01.setGeometry(5, 5, 550, 85)
-        self.ui.fm_groupBoxxxxx_02.setGeometry(5, 90, 160, 430)
-        self.ui.fm_groupBoxxxxx_03.setGeometry(170, 90, 385, 430)
+        self.ui.dialog_formula.setMinimumSize(700, 560)
+        self.ui.dialog_formula.setMaximumSize(5000, 560)
+        
+        self.ui.fm_groupBoxxxxx_01.setGeometry(5, 5, 690, 85)
+        self.ui.fm_groupBoxxxxx_02.setGeometry(5, 90, 160, 465)
+        self.ui.fm_groupBoxxxxx_03.setGeometry(170, 90, 525, 465)
 
-        self.ui.fm_labellllllll_01.setGeometry(5, 5, 625, 75)
+        self.ui.fm_labellllllll_01.setGeometry(5, 5, 540, 75)
 
         self.ui.fm_lineEdittttt_01.setGeometry(5, 10, 150, 30)
         self.ui.fm_comboBoxxxxx_00.setGeometry(5, 45, 150, 30)
         self.ui.fm_pushButtonnn_01.setGeometry(5, 80, 150, 30)
         self.ui.fm_pushButtonnn_02.setGeometry(5, 115, 150, 30)
 
-        self.ui.fm_checkBoxxxxx_01.setGeometry(10, 150, 150, 30)
-        self.ui.fm_comboBoxxxxx_01.setGeometry(5, 185, 150, 30)
-        self.ui.fm_comboBoxxxxx_02.setGeometry(5, 220, 150, 30)
-        self.ui.fm_comboBoxxxxx_03.setGeometry(5, 255, 150, 30)
-        self.ui.fm_comboBoxxxxx_04.setGeometry(5, 290, 150, 30)
-        self.ui.fm_comboBoxxxxx_05.setGeometry(5, 325, 150, 30)
+        self.ui.fm_checkBoxxxxx_01.setGeometry(10, 153, 150, 30)
+        self.ui.fm_checkBoxxxxx_02.setGeometry(10, 182, 150, 30)
+        self.ui.fm_comboBoxxxxx_01.setGeometry(5, 220, 150, 30)
+        self.ui.fm_comboBoxxxxx_02.setGeometry(5, 255, 150, 30)
+        self.ui.fm_frameeeeeeee_01.setGeometry(5, 290, 72, 30)
+        self.ui.fm_pushButtonnn_03.setGeometry(82, 290, 73, 30)
+        self.ui.fm_lineEdittttt_02.setGeometry(170, 290, 100, 30)
+        self.ui.fm_comboBoxxxxx_03.setGeometry(5, 325, 150, 30)
+        self.ui.fm_comboBoxxxxx_04.setGeometry(5, 360, 150, 30)
 
-        self.ui.fm_pushButtonnn_03.setGeometry(5, 360, 150, 30)
         self.ui.fm_pushButtonnn_04.setGeometry(5, 395, 150, 30)
+        self.ui.fm_pushButtonnn_05.setGeometry(5, 430, 150, 30)
 
-        self.ui.fm_textEdittttt_01.setGeometry(5, 10, 375, 415)
+        self.ui.fm_textEdittttt_01.setGeometry(5, 10, 515, 450)
+
+        self.ui.dialog_formula.resizeEvent = self.on_formula_dialog_resize
+
+    def on_formula_dialog_resize(self, event):
+        dialog_width = self.ui.dialog_formula.width()
+        right_group_width = dialog_width - 175
+        self.ui.fm_groupBoxxxxx_01.setGeometry(5, 5, dialog_width - 10, 85)
+        self.ui.fm_groupBoxxxxx_03.setGeometry(170, 90, right_group_width, 465)
+        self.ui.fm_labellllllll_01.setGeometry(5, 5, dialog_width - 20, 75)
+        self.ui.fm_textEdittttt_01.setGeometry(5, 10, right_group_width - 10, 450)
+        event.accept()

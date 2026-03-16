@@ -1,9 +1,9 @@
 
 import random
-import pandas as pd
+from traceback import format_exc
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.static import text_not_in_special_characters
+from utility.static import text_not_in_special_characters, error_decorator
 from ui.set_text import famous_saying, example_opti_vars, example_vars, example_buyconds, example_sellconds, \
     example_coin_buy, example_coin_future_buy, example_coin_sell, example_coin_future_sell, example_coinopti_buy1, \
     example_coinopti_future_buy1, example_coinopti_buy2, example_coinopti_future_buy2, example_coinopti_sell1, \
@@ -12,6 +12,7 @@ from ui.set_text import famous_saying, example_opti_vars, example_vars, example_
     example_coinopti_future_buy3, example_coinopti_sell3, example_coinopti_future_sell3, example_opti_vars3
 
 
+@error_decorator
 def coin_opti_buy_load(ui):
     if ui.cs_textEditttt_03.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptibuy').set_index('index')
@@ -25,6 +26,7 @@ def coin_opti_buy_load(ui):
                     ui.cvc_lineEdittt_01.setText(index)
 
 
+@error_decorator
 def coin_opti_buy_save(ui):
     if ui.cs_textEditttt_03.isVisible():
         strategy_name = ui.cvc_lineEdittt_01.text()
@@ -38,19 +40,21 @@ def coin_opti_buy_save(ui):
         elif strategy == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 매수전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
         else:
-            if 'self.tickcols' in strategy or (
-                    QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
-                df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'")
+            if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
                 if ui.proc_query.is_alive():
+                    df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM coinoptibuy WHERE `index` = '{strategy_name}'")
                     if len(df) > 0:
-                        update_query = f'UPDATE coinoptibuy SET 전략코드 = "{strategy}" WHERE `index` = "{strategy_name}"'
-                        ui.queryQ.put(('전략디비', update_query))
+                        update_query  = 'UPDATE coinoptibuy SET 전략코드 = ? WHERE `index` = ?'
+                        update_vlaues = (strategy, strategy_name)
+                        ui.queryQ.put(('전략디비', update_query, update_vlaues))
                     else:
-                        insert_query = f"INSERT INTO coinoptibuy (`index`, 전략코드, 변수값) VALUES ('{strategy_name}', '{strategy}, '')"
-                        ui.queryQ.put(('전략디비', insert_query))
+                        insert_query  = 'INSERT INTO coinoptibuy VALUES (?, ?, ?)'
+                        insert_vlaues = (strategy_name, strategy, '')
+                        ui.queryQ.put(('전략디비', insert_query, insert_vlaues))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def coin_opti_vars_load(ui):
     if ui.cs_textEditttt_05.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptivars').set_index('index')
@@ -64,6 +68,7 @@ def coin_opti_vars_load(ui):
                     ui.cvc_lineEdittt_02.setText(index)
 
 
+@error_decorator
 def coin_opti_vars_save(ui):
     if ui.cs_textEditttt_05.isVisible():
         strategy_name = ui.cvc_lineEdittt_02.text()
@@ -77,13 +82,15 @@ def coin_opti_vars_save(ui):
         else:
             if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy):
                 if ui.proc_query.is_alive():
-                    delete_query = f"DELETE FROM coinoptivars WHERE `index` = '{strategy_name}'"
-                    insert_query = f"INSERT INTO coinoptivars (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                    delete_query  = f"DELETE FROM coinoptivars WHERE `index` = '{strategy_name}'"
+                    insert_query  = 'INSERT INTO coinoptivars VALUES (?, ?)'
+                    insert_values = (strategy_name, strategy)
                     ui.queryQ.put(('전략디비', delete_query))
-                    ui.queryQ.put(('전략디비', insert_query))
+                    ui.queryQ.put(('전략디비', insert_query, insert_values))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def coin_opti_sell_load(ui):
     if ui.cs_textEditttt_04.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptisell').set_index('index')
@@ -97,6 +104,7 @@ def coin_opti_sell_load(ui):
                     ui.cvc_lineEdittt_03.setText(index)
 
 
+@error_decorator
 def coin_opti_sell_save(ui):
     if ui.cs_textEditttt_04.isVisible():
         strategy_name = ui.cvc_lineEdittt_03.text()
@@ -110,16 +118,17 @@ def coin_opti_sell_save(ui):
         elif strategy == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 매도전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
         else:
-            if 'self.tickcols' in strategy or (
-                    QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
+            if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
                 if ui.proc_query.is_alive():
-                    delete_query = f"DELETE FROM coinoptisell WHERE `index` = '{strategy_name}'"
-                    insert_query = f"INSERT INTO coinoptisell (`index`, 전략코드) VALUES ('{strategy_name}', '{strategy}')"
+                    delete_query  = f"DELETE FROM coinoptisell WHERE `index` = '{strategy_name}'"
+                    insert_query  = 'INSERT INTO coinoptisell VALUES (?, ?)'
+                    insert_values = (strategy_name, strategy)
                     ui.queryQ.put(('전략디비', delete_query))
-                    ui.queryQ.put(('전략디비', insert_query))
+                    ui.queryQ.put(('전략디비', insert_query, insert_values))
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def coin_opti_sample(ui):
     if ui.cs_textEditttt_01.isVisible():
         ui.cs_textEditttt_01.clear()
@@ -165,6 +174,7 @@ def coin_opti_sample(ui):
         ui.cs_textEditttt_08.append(example_sellconds if ui.dict_set['거래소'] == '업비트' else example_future_sellconds)
 
 
+@error_decorator
 def coin_opti_to_buy_save(ui):
     tabl = 'coinoptivars' if not ui.cva_pushButton_01.isVisible() else 'coinvars'
     stgy = ui.cvc_comboBoxxx_01.currentText()
@@ -188,18 +198,20 @@ def coin_opti_to_buy_save(ui):
         exec(compile(opt, '<string>', 'exec'))
         for i in range(len(vars_)):
             stg = stg.replace(f'self.vars[{i}]', f'{vars_[i][1]}')
-    except Exception as e:
-        QMessageBox.critical(ui, '오류 알림', f'{e}')
+    except:
+        QMessageBox.critical(ui, '오류 알림', format_exc())
         return
 
     if ui.proc_query.is_alive():
-        delete_query = f"DELETE FROM coinbuy WHERE `index` = '{name}'"
-        insert_query = f"INSERT INTO coinbuy (`index`, 전략코드) VALUES ('{name}', '{stg}')"
+        delete_query  = f"DELETE FROM coinbuy WHERE `index` = '{name}'"
+        insert_query  = 'INSERT INTO coinbuy VALUES (?, ?)'
+        insert_values = (name, stg)
         ui.queryQ.put(('전략디비', delete_query))
-        ui.queryQ.put(('전략디비', insert_query))
+        ui.queryQ.put(('전략디비', insert_query, insert_values))
         QMessageBox.information(ui, '저장 알림', '최적값으로 매수전략을 저장하였습니다.\n')
 
 
+@error_decorator
 def coin_opti_to_sell_save(ui):
     tabl = 'coinoptivars' if not ui.cva_pushButton_01.isVisible() else 'coinvars'
     stgy = ui.cvc_comboBoxxx_08.currentText()
@@ -223,22 +235,25 @@ def coin_opti_to_sell_save(ui):
         exec(compile(opt, '<string>', 'exec'))
         for i in range(len(vars_)):
             stg = stg.replace(f'self.vars[{i}]', f'{vars_[i][1]}')
-    except Exception as e:
-        QMessageBox.critical(ui, '오류 알림', f'{e}')
+    except:
+        QMessageBox.critical(ui, '오류 알림', format_exc())
         return
 
     if ui.proc_query.is_alive():
-        delete_query = f"DELETE FROM coinsell WHERE `index` = '{name}'"
-        insert_query = f"INSERT INTO coinsell (`index`, 전략코드) VALUES ('{name}', '{stg}')"
+        delete_query  = f"DELETE FROM coinsell WHERE `index` = '{name}'"
+        insert_query  = 'INSERT INTO coinsell VALUES (?, ?)'
+        insert_values = (name, stg)
         ui.queryQ.put(('전략디비', delete_query))
-        ui.queryQ.put(('전략디비', insert_query))
+        ui.queryQ.put(('전략디비', insert_query, insert_values))
         QMessageBox.information(ui, '저장 알림', '최적값으로 매도전략을 저장하였습니다.\n')
 
 
+@error_decorator
 def coin_opti_std(ui):
     ui.dialog_std.show() if not ui.dialog_std.isVisible() else ui.dialog_std.close()
 
 
+@error_decorator
 def coin_opti_optuna(ui):
     if not ui.dialog_optuna.isVisible():
         if not ui.optuna_window_open:

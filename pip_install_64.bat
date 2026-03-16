@@ -26,11 +26,11 @@ if '%errorlevel%' NEQ '0' (
     echo ========================================
     echo.
 
-    echo [1/5] Upgrading pip...
+    echo [1/3] Upgrading pip...
     python -m pip install --upgrade pip
 
     echo.
-    echo [2/5] Installing from requirements64.txt...
+    echo [2/3] Installing from requirements64.txt...
     if exist requirements64.txt (
         python -m pip install -r requirements64.txt
     ) else (
@@ -40,17 +40,7 @@ if '%errorlevel%' NEQ '0' (
     )
 
     echo.
-    echo [3/5] Installing from requirements64.txt...
-    if exist requirements64-2.txt (
-        python -m pip install -r requirements64-2.txt
-    ) else (
-        echo ERROR: requirements64-2.txt file not found!
-        pause
-        exit /b 1
-    )
-
-    echo.
-    echo [4/5] Installing local TA-Lib wheel...
+    echo [3/3] Installing local TA-Lib wheel...
     if exist "utility\ta_lib-0.6.8-cp311-cp311-win_amd64.whl" (
         python -m pip install "./utility/ta_lib-0.6.8-cp311-cp311-win_amd64.whl"
     ) else (

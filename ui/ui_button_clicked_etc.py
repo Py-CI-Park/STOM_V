@@ -1,14 +1,13 @@
 
 import random
 import webbrowser
-import numpy as np
-import pandas as pd
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtWidgets import QMessageBox, QPushButton
 from ui.set_text import famous_saying
-from utility.static import qtest_qwait, strf_time
-from utility.setting import columns_nt, ui_num, columns_nd
+from utility.static import qtest_qwait, strf_time, error_decorator
+from utility.setting_base import columns_nt, ui_num, columns_nd
 from backtest.back_static import RunOptunaServer
+from utility.lazy_imports import get_pd
 
 
 # noinspection PyUnusedLocal
@@ -18,6 +17,7 @@ def opbutton_clicked_01(ui):
     webbrowser.open_new('http://localhost:8080/')
 
 
+@error_decorator
 def cpbutton_clicked_01(ui):
     backdetail_list = []
     for i, checkbox in enumerate(ui.backcheckbox_list):
@@ -30,6 +30,7 @@ def cpbutton_clicked_01(ui):
         QMessageBox.critical(ui.dialog_comp, '오류 알림', '두개 이상의 상세기록을 선택하십시오.\n')
 
 
+@error_decorator
 def ttbutton_clicked_01(ui, cmd):
     if '집계' in cmd:
         gubun = 'S' if 'S' in cmd else 'C'
@@ -44,11 +45,11 @@ def ttbutton_clicked_01(ui, cmd):
             nsp = 100
             for sp in df['수익률'].to_list()[::-1]:
                 nsp = nsp + nsp * sp / 100
-            nsp = np.round(nsp - 100, 2)
+            nsp = round(nsp - 100, 2)
             nbg, nsg = df['총매수금액'].sum(), df['총매도금액'].sum()
             npg, nmg = df['총수익금액'].sum(), df['총손실금액'].sum()
             nsig = df['수익금합계'].sum()
-            df2 = pd.DataFrame(columns=columns_nt)
+            df2 = get_pd().DataFrame(columns=columns_nt)
             df2.loc[0] = [pr, nbg, nsg, npg, nmg, nsp, nsig]
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적합계'], df2))
         else:
@@ -60,14 +61,14 @@ def ttbutton_clicked_01(ui, cmd):
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df))
         elif cmd == f'{gubun}월별집계':
             df['연월'] = df['index'].apply(lambda x: str(x)[:6])
-            df2 = pd.DataFrame(columns=columns_nd)
+            df2 = get_pd().DataFrame(columns=columns_nd)
             lastmonth = df['연월'].iloc[-1]
             month = strf_time('%Y%m')
             while int(month) >= int(lastmonth):
                 df3 = df[df['연월'] == month]
                 if len(df3) > 0:
                     tbg, tsg = df3['총매수금액'].sum(), df3['총매도금액'].sum()
-                    sp = np.round((tsg / tbg - 1) * 100, 2)
+                    sp = round((tsg / tbg - 1) * 100, 2)
                     tpg, tmg = df3['총수익금액'].sum(), df3['총손실금액'].sum()
                     ttsg = df3['수익금합계'].sum()
                     df2.loc[month] = [month, tbg, tsg, tpg, tmg, sp, ttsg]
@@ -75,14 +76,14 @@ def ttbutton_clicked_01(ui, cmd):
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df2))
         elif cmd == f'{gubun}연도별집계':
             df['연도'] = df['index'].apply(lambda x: str(x)[:4])
-            df2 = pd.DataFrame(columns=columns_nd)
+            df2 = get_pd().DataFrame(columns=columns_nd)
             lastyear = df['연도'].iloc[-1]
             year = strf_time('%Y')
             while int(year) >= int(lastyear):
                 df3 = df[df['연도'] == year]
                 if len(df3) > 0:
                     tbg, tsg = df3['총매수금액'].sum(), df3['총매도금액'].sum()
-                    sp = np.round((tsg / tbg - 1) * 100, 2)
+                    sp = round((tsg / tbg - 1) * 100, 2)
                     tpg, tmg = df3['총수익금액'].sum(), df3['총손실금액'].sum()
                     ttsg = df3['수익금합계'].sum()
                     df2.loc[year] = [year, tbg, tsg, tpg, tmg, sp, ttsg]
@@ -90,6 +91,7 @@ def ttbutton_clicked_01(ui, cmd):
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df2))
 
 
+@error_decorator
 def change_back_sdate(ui):
     if ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_sdateEdittttt.index(ui.dialog_scheduler.focusWidget())
@@ -99,6 +101,7 @@ def change_back_sdate(ui):
                 widget.setDate(QDate.fromString(date, 'yyyyMMdd'))
 
 
+@error_decorator
 def change_back_edate(ui):
     if ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_edateEdittttt.index(ui.dialog_scheduler.focusWidget())
@@ -108,6 +111,7 @@ def change_back_edate(ui):
                 widget.setDate(QDate.fromString(date, 'yyyyMMdd'))
 
 
+@error_decorator
 def stbutton_clicked_01(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
     std_text = df['최적화기준값제한'][0].split(';')
@@ -127,6 +131,7 @@ def stbutton_clicked_01(ui):
     ui.st_lineEditttt_14.setText(std_text[13])
 
 
+@error_decorator
 def stbutton_clicked_02(ui):
     std_text1 = ui.st_lineEditttt_01.text()
     std_text2 = ui.st_lineEditttt_02.text()
@@ -155,10 +160,12 @@ def stbutton_clicked_02(ui):
         QMessageBox.information(ui.dialog_std, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def lvbutton_clicked_01(ui):
     ui.dialog_leverage.show() if not ui.dialog_leverage.isVisible() else ui.dialog_leverage.close()
 
 
+@error_decorator
 def lvbutton_clicked_02(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
     if len(df) > 0:
@@ -188,6 +195,7 @@ def lvbutton_clicked_02(ui):
         QMessageBox.critical(ui.dialog_leverage, '오류 알림', '기본 설정값이\n존재하지 않습니다.\n')
 
 
+@error_decorator
 def lvbutton_clicked_03(ui):
     lv0 = 1 if ui.lv_checkBoxxxx_01.isChecked() else 0
     lv1 = ui.lv_lineEditttt_01.text()
@@ -219,8 +227,9 @@ def lvbutton_clicked_03(ui):
         else:
             if ui.proc_query.is_alive():
                 lvrg_text = f'{lv2};{lv3};{lv4}^{lv5};{lv6};{lv7}^{lv8};{lv9};{lv10}^{lv11};{lv12};{lv13}^{lv14};{lv15};{lv16}'
-                query = f"UPDATE main SET 바이낸스선물고정레버리지 = {lv0}, 바이낸스선물고정레버리지값 = {lv1}, 바이낸스선물변동레버리지값 = '{lvrg_text}'"
-                ui.queryQ.put(('설정디비', query))
+                query     = 'UPDATE main SET 바이낸스선물고정레버리지 = ?, 바이낸스선물고정레버리지값 = ?, 바이낸스선물고정레버리지값 = ?'
+                values    = (lv0, lv1, lvrg_text)
+                ui.queryQ.put(('설정디비', query, values))
             ui.dict_set['바이낸스선물고정레버리지'] = lv0
             ui.dict_set['바이낸스선물고정레버리지값'] = lv1
             ui.dict_set['바이낸스선물변동레버리지값'] = [
@@ -230,6 +239,7 @@ def lvbutton_clicked_03(ui):
             QMessageBox.information(ui.dialog_leverage, '저장 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def lvcheck_changed_01(ui, state):
     if ui.dialog_leverage.focusWidget().__class__ != QPushButton and state == Qt.Checked:
         for widget in ui.lv_checkbox_listt:
@@ -238,6 +248,7 @@ def lvcheck_changed_01(ui, state):
                     widget.nextCheckState()
 
 
+@error_decorator
 def hg_button_clicked_01(ui, gubun):
     if not ui.dialog_hoga.isVisible(): return
     index = ui.hg_labellllllll_01.text()
@@ -248,6 +259,7 @@ def hg_button_clicked_01(ui, gubun):
     ui.hogaQ.put(('이전호가정보요청' if gubun == '이전' else '다음호가정보요청', code, name, index))
 
 
+@error_decorator
 def hg_button_clicked_02(ui, gubun):
     if not ui.dialog_hoga.isVisible(): return
     cindex = ui.hg_labellllllll_01.text()

@@ -4,15 +4,15 @@ import sys
 import zipfile
 import sqlite3
 import datetime
-import numpy as np
-import pandas as pd
+from traceback import format_exc
 from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting import OPENAPI_PATH, DICT_SET, ui_num, DB_STOCK_TICK, DB_STOCK_MIN
-from utility.static import now, qtest_qwait, str_ymd, str_hms, timedelta_sec, get_logger, str_ymdhms, \
-    roundfigure_upper5, GetSangHahanga, GetVIPrice
+from utility.lazy_imports import get_np, get_pd
+from utility.setting_base import OPENAPI_PATH, ui_num, DB_STOCK_TICK, DB_STOCK_MIN
+from utility.static import now, qtest_qwait, str_ymd, str_hms, timedelta_sec, str_ymdhms, roundfigure_upper5, \
+    GetSangHahanga, GetVIPrice
 
 sn_brrq = 1000
 sn_brrd = 1001
@@ -52,7 +52,7 @@ class Updater(QThread):
 
 
 class KiwoomAgentTick:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
                 0            1             2            3
@@ -63,8 +63,7 @@ class KiwoomAgentTick:
         self.sagentQ  = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQs   = qlist[3]
-        self.dict_set = DICT_SET
-        self.logger   = get_logger(self.__class__.__name__)
+        self.dict_set = dict_set
 
         self.ocx = QAxWidget('KHOPENAPI.KHOpenAPICtrl.1')
         self.ocx.OnReceiveMsg.connect(self.OnReceiveMsg)
@@ -156,8 +155,7 @@ class KiwoomAgentTick:
             qtest_qwait(0.01)
 
         qtest_qwait(5)
-        self.logger.info('OpenAPI 로그인 완료')
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - OpenAPI 로그인 완료')))
 
         self.str_account = self.GetAccountNumber()
         tuple_kosd = tuple(self.GetCodeListByMarket('10'))
@@ -171,7 +169,7 @@ class KiwoomAgentTick:
         for q in self.sstgQs:
             q.put(('코스닥목록', tuple_kosd))
 
-        df = pd.DataFrame(self.dict_name.values(), columns=['종목명'], index=list(self.dict_name))
+        df = get_pd().DataFrame(self.dict_name.values(), columns=['종목명'], index=list(self.dict_name))
         df['코스닥'] = [True if x in tuple_kosd else False for x in df.index]
         self.mgzservQ.put(('query', ('종목디비', df, 'stockinfo', 'replace')))
 
@@ -182,18 +180,17 @@ class KiwoomAgentTick:
             self.list_cond = self.GetConditionNamelist()
             try:
                 if self.list_cond[0][0] == 0 and self.list_cond[1][0] == 1:
-                    self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 조건검색식 불러오기 완료')))
+                    self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 조건검색식 불러오기 완료')))
             except:
-                self.logger.error('조건검색식 불러오기 실패, 2초후 재시도합니다.')
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 조건검색식 불러오기 실패, 2초후 재시도합니다.')))
             else:
                 error = False
-                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], self.list_cond)))
+                self.mgzservQ.put(('window', (ui_num['기본로그'], self.list_cond)))
 
         text = '주식 시스템을 시작하였습니다.'
         if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', text))
         self.mgzservQ.put(('tele', text))
-        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 에이전트 시작')))
-        self.logger.info('에이전트 시작 완료')
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 에이전트 시작')))
 
     def OnEventConnect(self, err_code):
         if err_code == 0: self.dict_bool['로그인'] = True
@@ -285,9 +282,9 @@ class KiwoomAgentTick:
                             int(data[53])          == int(self.GetCommRealData(code, 79)) and \
                             int(data[59])          == int(self.GetCommRealData(code, 80)):
                         self.dict_bool['호가잔량필드같음'] = True
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 실행 알림 - 주식호가잔량 필드값 같음')))
+                        self.mgzservQ.put(('window', (ui_num['기본로그'], f'시스템 명령 실행 알림 - 주식호가잔량 필드값 같음')))
                     else:
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - 주식호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
+                        self.mgzservQ.put(('window', (ui_num['시스템로그'], f'오류 알림 - 주식호가잔량 필드값이 다릅니다. 필드값 갱신요망!!')))
                     self.dict_bool['호가잔량필드확인'] = True
 
                 name = self.dict_name[code]
@@ -367,7 +364,7 @@ class KiwoomAgentTick:
                         int(self.GetCommRealData(code, 80))
                     ]
             except:
-                pass
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveRealData')))
             else:
                 lastprice = self.GetMasterLastPrice(code)
                 self.UpdateHogaData(dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount, code, name, start, lastprice)
@@ -397,9 +394,9 @@ class KiwoomAgentTick:
                             abs(int(data[4]))      == abs(int(self.GetCommRealData(code, 27))) and \
                             abs(int(data[5]))      == abs(int(self.GetCommRealData(code, 28))):
                         self.dict_bool['주식체결필드같음'] = True
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 주식체결 필드값 같음')))
+                        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 주식체결 필드값 같음')))
                     else:
-                        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 주식체결 필드값이 다릅니다. 필드값 갱신요망!!')))
+                        self.mgzservQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 주식체결 필드값이 다릅니다. 필드값 갱신요망!!')))
                     self.dict_bool['주식체결필드확인'] = True
 
                 dt = int(self.str_today + dt)
@@ -437,14 +434,14 @@ class KiwoomAgentTick:
                     csp   = abs(int(self.GetCommRealData(code, 27)))
                     cbp   = abs(int(self.GetCommRealData(code, 28)))
             except:
-                pass
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveRealData')))
             else:
                 self.UpdateTickData(code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp)
 
         elif realtype == '업종지수':
             try:
                 dt = int(self.str_today + self.GetCommRealData(code, 20))
-                c  = np.round(abs(float(self.GetCommRealData(code, 10))) / 100, 2)
+                c  = round(abs(float(self.GetCommRealData(code, 10))) / 100, 2)
             except:
                 pass
             else:
@@ -473,7 +470,7 @@ class KiwoomAgentTick:
                     (
                         'window',
                         (
-                            ui_num['S단순텍스트'],
+                            ui_num['기본로그'],
                             f'장운영 시간 수신 알림 - {self.operation} {current[:2]}:{current[2:4]}:{current[4:]} '
                             f'남은시간 {remain[:2]}:{remain[2:4]}:{remain[4:]}'
                         )
@@ -521,7 +518,7 @@ class KiwoomAgentTick:
             sn = int(sScrNo)
             code = self.dict_sncd.get(sn, '')
             self.straderQ.put(('증거금부족', code))
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'{sMsg}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'{sMsg}')))
 
     # noinspection PyUnusedLocal
     def OnReceiveChejanData(self, gubun, itemcnt, fidlist):
@@ -540,8 +537,8 @@ class KiwoomAgentTick:
                 주문번호 = self.GetChejanData(9203)
                 최우선매도호가 = abs(int(self.GetChejanData(27)))
                 주문시간 = self.str_today + self.GetChejanData(908)
-            except Exception as e:
-                self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'시스템 명령 오류 알림 - OnReceiveChejanData 0 {e}')))
+            except:
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveChejanData')))
             else:
                 try:
                     체결가격 = int(self.GetChejanData(914))
@@ -552,8 +549,7 @@ class KiwoomAgentTick:
                 self.straderQ.put(('체잔통보', (종목코드, 종목명, 최우선매도호가, 주문상태, 주문구분, 주문수량, 체결수량, 미체결수량, 주문가격, 체결가격, 주문시간, 주문번호)))
 
     def UpdateVI(self, gubun, code, name):
-        if gubun == '1' and code in self.dict_name and \
-                (code not in self.dict_vipr or (self.dict_vipr[code][0] and now() > self.dict_vipr[code][1])):
+        if gubun == '1' and (code not in self.dict_vipr or (self.dict_vipr[code][0] and now() > self.dict_vipr[code][1])):
             self.UpdateViPrice(code, name)
 
     def InsertViPrice(self, code, o):
@@ -566,15 +562,16 @@ class KiwoomAgentTick:
                 self.dict_vipr[code][:2] = False, timedelta_sec(5)
             else:
                 self.dict_vipr[code] = [False, timedelta_sec(5), 0, 0, 0]
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'변동성 완화 장치 발동 - [{code}] {key}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'변동성 완화 장치 발동 - [{code}] {key}')))
         elif key.__class__ == int:
             uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, key, self.int_hgtime)
             self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
     def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
-        if code not in self.dict_vipr:
+        vipr = self.dict_vipr.get(code)
+        if vipr is None:
             self.InsertViPrice(code, o)
-        elif not self.dict_vipr[code][0] and now() > self.dict_vipr[code][1]:
+        elif not vipr[0] and now() > vipr[1]:
             self.UpdateViPrice(code, c)
 
         data = self.dict_data.get(code)
@@ -584,9 +581,8 @@ class KiwoomAgentTick:
             bids, asks = 0, 0
 
         rf = roundfigure_upper5(c, dt)
-        bids_, asks_ = 0, 0
-        if '+' in v: bids_ = abs(int(v))
-        if '-' in v: asks_ = abs(int(v))
+        bids_ = abs(int(v)) if '+' in v else 0
+        asks_ = abs(int(v)) if '-' in v else 0
         bids += bids_
         asks += asks_
 
@@ -627,12 +623,11 @@ class KiwoomAgentTick:
             csp, cbp = self.dict_hgbs[code]
 
             if hoga_seprice[-1] < csp:
-                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
-                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = max(index - 5, 0)
-                    end_idx   = index
-                    add_cnt   = max(5 - index, 0)
+                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+                end_idx = valid_indices[-1] + 1 if valid_indices else None
+                if end_idx is not None:
+                    start_idx = max(end_idx - 5, 0)
+                    add_cnt   = max(5 - end_idx, 0)
                     hoga_seprice = [0] * add_cnt + hoga_seprice[start_idx:end_idx]
                     hoga_samount = [0] * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
@@ -643,12 +638,11 @@ class KiwoomAgentTick:
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
-                index = valid_indices[0] if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = index
-                    end_idx   = min(index + 5, 10)
-                    add_cnt   = max(index - 5, 0)
+                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+                start_idx = valid_indices[0] if valid_indices else None
+                if start_idx is not None:
+                    end_idx   = min(start_idx + 5, 10)
+                    add_cnt   = max(start_idx - 5, 0)
                     hoga_buprice = hoga_buprice[start_idx:end_idx] + [0] * add_cnt
                     hoga_bamount = hoga_bamount[start_idx:end_idx] + [0] * add_cnt
                 else:
@@ -666,8 +660,8 @@ class KiwoomAgentTick:
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -688,8 +682,8 @@ class KiwoomAgentTick:
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
 
@@ -708,8 +702,8 @@ class KiwoomAgentTick:
 
             tm = dm - code_dtdm[1]
             if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
-            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
-            lhp  = np.round((h / low - 1) * 100, 2)
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0
@@ -730,7 +724,7 @@ class KiwoomAgentTick:
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+                self.mgzservQ.put(('window', (ui_num['타임로그'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:
@@ -789,7 +783,7 @@ class KiwoomAgentTick:
                 yesugm = int(df['D+2추정예수금'][0]) if not self.dict_set['주식모의투자'] else 100_000_000
                 break
             else:
-                self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 오류가 발생하여 계좌평가현황을 재조회합니다.')))
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 오류가 발생하여 계좌평가현황을 재조회합니다.')))
                 qtest_qwait(3.35)
 
         dict_jg = None
@@ -798,7 +792,7 @@ class KiwoomAgentTick:
             if df['종목명'][0]:
                 df.rename(columns={'종목번호': 'index', '수익률(%)': '수익률'}, inplace=True)
                 df['index'] = df['index'].apply(lambda x: x.strip()[1:])
-                df['수익률'] = df['수익률'].apply(lambda x: np.round(float(x) / 100, 2))
+                df['수익률'] = df['수익률'].apply(lambda x: round(float(x) / 100, 2))
                 columns = ['매수가', '현재가', '평가손익', '매입금액', '평가금액', '보유수량']
                 df[columns] = df[columns].astype(int)
                 df['평가손익'] = df['평가금액'] - df['매입금액']
@@ -816,11 +810,11 @@ class KiwoomAgentTick:
                 jasan = int(df['추정예탁자산'][0]) if not self.dict_set['주식모의투자'] else yesugm
                 break
             else:
-                self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 오류 알림 - 오류가 발생하여 계좌평가결과를 재조회합니다.')))
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 오류가 발생하여 계좌평가결과를 재조회합니다.')))
                 qtest_qwait(3.35)
 
         self.straderQ.put(('잔고조회', (yesugm, jasan, dict_jg)))
-        self.mgzservQ.put(('window', (ui_num['S로그텍스트'], '시스템 명령 실행 알림 - 계좌 조회 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 계좌 조회 완료')))
 
     # noinspection PyUnusedLocal
     def OnReceiveTrData(self, screen, rqname, trcode, record, nnext):
@@ -836,40 +830,38 @@ class KiwoomAgentTick:
                 data = self.ocx.dynamicCall('GetCommData(QString, QString, int, QString)', trcode, rqname, row, item)
                 row_data.append(data.strip())
             data_list.append(row_data)
-        self.tr_df = pd.DataFrame(data_list, columns=fields)
+        self.tr_df = get_pd().DataFrame(data_list, columns=fields)
         self.dict_bool['TR수신'] = True
 
     def OperationRealreg(self):
         self.dict_bool['실시간등록'] = True
 
         self.SetRealReg([sn_oper, ' ', '215;20;214', 0])
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 장운영시간 등록 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 장운영시간 등록 완료')))
 
         self.SetRealReg([sn_oper, '001;101', '10;15;20', 1])
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 업종지수 등록 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 업종지수 등록 완료')))
 
         self.Block_Request('opt10054', 시장구분='000', 장전구분='1', 종목코드='', 발동구분='1', 제외종목='000000000',
                            거래량구분='0', 거래대금구분='0', 발동방향='0', output='발동종목', next=0)
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - VI발동해제 등록 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - VI발동해제 등록 완료')))
 
         self.list_code = self.SendCondition([sn_cond, self.list_cond[1][1], self.list_cond[1][0], 0])
         if len(self.list_code) > 2400:
-            self.logger.error('조건검색식 설정이 잘못되었습니다.')
-            self.logger.error('감시종목수가 너무 많으니 조건검색식을 재설정하십시오.')
+            self.mgzservQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 조건검색식 설정이 잘못되었습니다. 감시종목수가 너무 많으니 조건검색식을 재설정하십시오.')))
 
         k = 0
         for i in range(0, len(self.list_code), 100):
             rreg = [sn_gsjm + k, ';'.join(self.list_code[i:i + 100]), '10;12;14;30;228;41;61;71;81', 1]
             self.SetRealReg(rreg)
             text = f"실시간 알림 등록 완료 - [{sn_gsjm + k}] 종목갯수 {len(rreg[1].split(';'))}"
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], text)))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], text)))
             k += 1
 
         if k < 10:
-            self.logger.error('조건검색식 설정이 잘못되었습니다.')
-            self.logger.error('감시종목수가 너무 적으니 조건검색식을 재설정하십시오.')
+            self.mgzservQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 조건검색식 설정이 잘못되었습니다. 감시종목수가 너무 적으니 조건검색식을 재설정하십시오.')))
 
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 실시간 등록 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 실시간 등록 완료')))
 
     def SendCondition(self, cond):
         self.dict_bool['CD수신'] = False
@@ -888,8 +880,8 @@ class KiwoomAgentTick:
         if len(codes) > 0:
             self.list_gsjm = codes
         if len(codes) > 100:
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 오류 알림 - 조건검색식 0번이 잘못되었습니다. HTS에서 확인하십시오.')))
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 실시간조건검색 0번 등록 완료')))
+            self.mgzservQ.put(('window', (ui_num['시스템로그'], '오류 알림 - 조건검색식 0번이 잘못되었습니다. HTS에서 확인하십시오.')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 실시간조건검색 0번 등록 완료')))
 
     def ProcessKill(self):
         self.dict_bool['프로세스종료'] = True
@@ -907,7 +899,7 @@ class KiwoomAgentTick:
                 q.put('프로세스종료')
         self.straderQ.put('프로세스종료')
         qtest_qwait(5)
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 에이전트 종료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 에이전트 종료')))
 
     def SaveData(self):
         codes = set()
@@ -922,22 +914,21 @@ class KiwoomAgentTick:
                 con = sqlite3.connect(DB_STOCK_MIN)
             last_index = 0
             try:
-                df = pd.read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
+                df = get_pd().read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
                 last_index = df['index'][0]
             except:
                 pass
             dict_mtop = {key: value for key, value in self.dict_mtop.items() if key > last_index}
-            df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
+            df = get_pd().DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
-            self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료')))
 
-        self.logger.info('거래대금순위 저장 완료')
         self.sstgQs[0].put(('데이터저장', codes))
 
     def ConditionSearchStop(self):
         self.SendConditionStop([sn_cond, self.list_cond[0][1], self.list_cond[0][0]])
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], '시스템 명령 실행 알림 - 실시간조건검색 0번 중단 완료')))
+        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 실시간조건검색 0번 중단 완료')))
 
     def SendConditionStop(self, cond):
         self.ocx.dynamicCall("SendConditionStop(QString, QString, int)", cond)
@@ -968,20 +959,18 @@ class KiwoomAgentTick:
         ret = self.SendOrder(order[:-2])
         if ret == 0:
             self.dict_sncd[self.intg_odsn] = 종목코드
-            self.logger.info(f'[주문전송] {종목명} | {주문가격} | {주문수량} | {주문구분}')
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문전송] {종목명} | {주문가격} | {주문수량} | {주문구분}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문전송] {종목명} | {주문가격} | {주문수량} | {주문구분}')))
             self.order_time = timedelta_sec(0.2)
         else:
             self.sstgQs[self.dict_sgbn[종목코드]].put((f'{주문구분}취소', 종목코드))
-            self.logger.error(f'[주문실패] {종목명} | {주문가격} | {주문수량} | {주문구분}')
-            self.mgzservQ.put(('window', (ui_num['S로그텍스트'], f'주문 관리 시스템 알림 - [주문실패] {종목명} | {주문가격} | {주문수량} | {주문구분}')))
+            self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문실패] {종목명} | {주문가격} | {주문수량} | {주문구분}')))
 
     def SendOrder(self, order):
         return self.ocx.dynamicCall('SendOrder(QString, QString, QString, int, QString, int, int, QString, QString)', order)
 
     def OrderTimeLog(self, signal_time):
         gap = (now() - signal_time).total_seconds()
-        self.mgzservQ.put(('window', (ui_num['S단순텍스트'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
+        self.mgzservQ.put(('window', (ui_num['타임로그'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.')))
 
     def UpdateTuple(self, data):
         gubun, data = data
@@ -998,7 +987,9 @@ class KiwoomAgentTick:
         elif gubun == '수동데이터저장':
             self.ProcessKill()
         elif gubun == '프로파일링결과':
-            self.pr.print_stats(sort='cumulative')
+            from utility.profile_utils import extract_profile_text
+            profile_text = extract_profile_text(self.pr, limit=50)
+            self.mgzservQ.put(('window', (ui_num['시스템로그'], profile_text)))
 
     def Block_Request(self, *args, **kwargs):
         trcode = args[0].lower()

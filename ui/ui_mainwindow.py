@@ -19,9 +19,10 @@ from ui.set_dialog_etc import SetDialogEtc
 from ui.set_dialog_back import SetDialogBack
 from ui.set_dialog_chart import SetDialogChart
 from ui.set_dialog_formula import SetDialogFormula
+from ui.set_home_tap import SetHomeTap
 
 from ui.ui_etc import *
-from ui.ui_draw_chart import *
+from ui.ui_draw_chart_db import *
 from ui.ui_activated_back import *
 from ui.ui_activated_coin_stg import *
 from ui.ui_activated_stock_stg import *
@@ -36,9 +37,9 @@ from ui.ui_event_filter import *
 from ui.ui_activated_etc import *
 from ui.ui_process_alive import *
 from ui.ui_extend_window import *
-from ui.ui_draw_realchart import *
+from ui.ui_draw_chart_real import *
 from ui.ui_draw_jisuchart import *
-from ui.ui_betting_cotrol import *
+# ui_betting_cotrol removed in V2.54 (주문설정 UI 위치/크기 조정으로 통합)
 from ui.ui_update_textedit import *
 from ui.ui_process_starter import *
 from ui.ui_backtest_engine import *
@@ -65,16 +66,21 @@ from ui.ui_button_clicked_editer_stock import *
 from ui.ui_update_tablewidget import *
 from ui.ui_update_progressbar import *
 from ui.ui_button_clicked_etc import *
+from ui.ui_button_clicked_dialog_formula import *
 from ui.ui_chart_count_change import *
 from ui.ui_button_clicked_zoom import *
+from ui.ui_load_database import *
+from ui.ui_draw_home_chart import *
 
 from utility.hoga import *
 from utility.chart import *
 from utility.sound import *
 from utility.query import *
 from utility.static import *
-from utility.setting import *
+from utility.setting_base import *
+from utility.setting_user import *
 from utility.webcrawling import *
+from utility.webcrawling_homtab import *
 from utility.telegram_bot import *
 from utility.database_read_only import DatabaseReadOnly
 from ui.set_dialog_strategy import SetDialogStrategy
@@ -145,6 +151,7 @@ class Writer(QThread):
     signal8  = pyqtSignal(tuple)
     signal9  = pyqtSignal(str)
     signal10 = pyqtSignal()
+    signal11 = pyqtSignal(tuple)
 
     def __init__(self, _windowQ):
         super().__init__()
@@ -185,6 +192,8 @@ class Writer(QThread):
                         self.signal7.emit(data)
                     elif data[0] in (ui_num['코스피'], ui_num['코스닥']):
                         self.signal5.emit(data)
+                    elif data[0] == ui_num['홈차트']:
+                        self.signal11.emit(data)
                     elif data[0] >= ui_num['트리맵']:
                         self.signal6.emit(data)
                 else:
@@ -313,7 +322,7 @@ def resolve_stock_python():
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, auto_run_):
+    def __init__(self, auto_run_, splash=None):
         super().__init__()
         self.logger = get_logger(self.__class__.__name__)
         self.log    = self.logger   # legacy alias used by ui_update_textedit.py
@@ -366,37 +375,10 @@ class MainWindow(QMainWindow):
         SetDialogBack(self, self.wc)
         SetDialogStrategy(self, self.wc)
         SetDialogFormula(self, self.wc)
+        SetHomeTap(self, self.wc)
 
-        con1 = sqlite3.connect(DB_SETTING)
-        con2 = sqlite3.connect(DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN)
-        df = None
-        try:
-            df = pd.read_sql('SELECT * FROM codename', con1).set_index('index')
-        except:
-            try:
-                df = pd.read_sql('SELECT * FROM codename', con2).set_index('index')
-            except:
-                print('=' * 60)
-                print('[WARNING] codename 테이블이 존재하지 않습니다.')
-                print('주식로그인을 한번 실행하면 codename 테이블이 생성됩니다.')
-                print('=' * 60)
-                df = pd.DataFrame(columns=['종목명'])
-        con1.close()
-        con2.close()
-
-        self.dict_name = {code: df['종목명'][code] for code in df.index} if len(df) > 0 else {}
-        self.dict_code = {name: code for code, name in self.dict_name.items()}
-
-        if 0 < len(df) < 10:
-            print('setting.db 내에 codename 테이블이 갱신되지 않았습니다.')
-            print('주식로그인을 한번 실행하면 codename 테이블이 갱신됩니다.')
-
-        con = sqlite3.connect(DB_COIN_TICK)
-        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
-        con.close()
-
-        self.ct_lineEdittttt_04.setCompleter(QCompleter(list(self.dict_code.values())))
-        self.ct_lineEdittttt_05.setCompleter(QCompleter(list(self.dict_name.values()) + df['name'].to_list()))
+        self.dict_name = {}
+        self.dict_code = {}
 
         self.back_schedul     = False
         self.showQsize        = False
@@ -477,6 +459,9 @@ class MainWindow(QMainWindow):
         self.backcheckbox_list     = None
         self.order_combo_name_list = []
 
+        self.fm_list               = []
+        self.dict_fm               = {}
+        self.fm_tcnt               = 0
         self.dict_fn               = None
         self.ctpg_name             = None
         self.ctpg_cline            = None
@@ -492,17 +477,8 @@ class MainWindow(QMainWindow):
         self.ctpg_factors          = []
         self.ctpg_labels           = []
 
-        # Factor index dictionaries (pyd→py inference from V2.40: 차트 팩터 인덱스를 딕셔너리로 변경)
-        self.dict_findex_stock_tick  = {name: i for i, name in enumerate(list_stock_tick)}
-        self.dict_findex_stock_min   = {name: i for i, name in enumerate(list_stock_min)}
-        self.dict_findex_coin_tick   = {name: i for i, name in enumerate(list_coin_tick)}
-        self.dict_findex_coin_min    = {name: i for i, name in enumerate(list_coin_min)}
-        self.dict_findex_stock_tick2 = {name: i for i, name in enumerate(list_stock_tick2)}
-        self.dict_findex_stock_min2  = {name: i for i, name in enumerate(list_stock_min2)}
-        self.dict_findex_coin_tick2  = {name: i for i, name in enumerate(list_coin_tick2)}
-        self.dict_findex_coin_min2   = {name: i for i, name in enumerate(list_coin_min2)}
-        self.dict_findex_future_tick2 = {name: i for i, name in enumerate(list_future_tick2)}
-        self.dict_findex_future_min2  = {name: i for i, name in enumerate(list_future_min2)}
+        # V2.52: DB 로딩 및 팩터 인덱스 초기화를 load_database로 이관
+        load_database(self)
 
         self.srqsize = 0
         self.stqsize = 0
@@ -554,23 +530,28 @@ class MainWindow(QMainWindow):
 
         self.update_textedit    = UpdateTextedit(self)
         self.update_tablewidget = UpdateTablewidget(self)
-        self.draw_chart         = DrawChart(self)
+        self.draw_chart         = DrawDBChart(self)
         self.draw_realchart     = DrawRealChart(self)
         self.draw_realjisuchart = DrawRealJisuChart(self)
         self.draw_treemap       = DrawTremap(self)
+        self.draw_home_chart    = DrawHomeChart(self)
 
         self.writer = Writer(self.windowQ)
         self.writer.signal1.connect(self.update_textedit.update_texedit)
         self.writer.signal2.connect(self.update_tablewidget.update_tablewidget)
-        self.writer.signal3.connect(self.draw_chart.draw_chart)
-        self.writer.signal4.connect(self.draw_realchart.draw_realchart)
+        self.writer.signal3.connect(self.draw_chart.draw_db_chart)
+        self.writer.signal4.connect(self.draw_realchart.draw_real_chart)
         self.writer.signal5.connect(self.draw_realjisuchart.draw_realjisuchart)
         self.writer.signal6.connect(self.draw_treemap.draw_treemap)
         self.writer.signal7.connect(self.UpdateImage)
         self.writer.signal8.connect(self.UpdateSQsize)
         self.writer.signal9.connect(self.StomliveScreenshot)
         self.writer.signal10.connect(self.Qtimer1Start)
+        self.writer.signal11.connect(self.draw_home_chart.draw_home_chart)
         self.writer.start()
+
+        self.proc_webc_home = Process(target=WebCrawingHomTab, args=(self.windowQ,), daemon=True)
+        self.proc_webc_home.start()
 
         self.qtimer1 = QTimer()
         self.qtimer1.setInterval(1 * 1000)
@@ -585,6 +566,11 @@ class MainWindow(QMainWindow):
         self.qtimer3.setInterval(1 * 1000)
         self.qtimer3.timeout.connect(self.UpdateCpuper)
         self.qtimer3.start()
+
+        if splash:
+            splash.finish_splash()
+
+        self.show()
 
         if self.dict_set['코인리시버']: self.mnButtonClicked_01(1)
 
@@ -1028,15 +1014,15 @@ class MainWindow(QMainWindow):
     def SettingOrderSave_02(self): setting_order_save_02(self)
     def SettingOrderSave_03(self): setting_order_save_03(self)
     def SettingOrderSave_04(self): setting_order_save_04(self)
-    # Weight Control methods
-    def SettingStockWeightControl(self): setting_stock_weight_control(self)
-    def SettingCoinWeightControl(self):  setting_coin_weight_control(self)
-    def SettingStockWeightCotrolLoad(self): setting_stock_weight_cotrol_load(self)
-    def SettingStockWeightCotrolSave(self): setting_stock_weight_cotrol_save(self)
-    def SettingStockWeightCotrolChanged(self, state): setting_stock_weight_cotrol_changed(self, state)
-    def SettingCoinWeightCotrolLoad(self): setting_coin_weight_cotrol_load(self)
-    def SettingCoinWeightCotrolSave(self): setting_coin_weight_cotrol_save(self)
-    def SettingCoinWeightCotrolChanged(self, state): setting_coin_weight_cotrol_changed(self, state)
+    # Weight Control methods (V2.54에서 ui_betting_cotrol.py와 함께 제거됨)
+    def SettingStockWeightControl(self): pass
+    def SettingCoinWeightControl(self):  pass
+    def SettingStockWeightCotrolLoad(self): pass
+    def SettingStockWeightCotrolSave(self): pass
+    def SettingStockWeightCotrolChanged(self, state): pass
+    def SettingCoinWeightCotrolLoad(self): pass
+    def SettingCoinWeightCotrolSave(self): pass
+    def SettingCoinWeightCotrolChanged(self, state): pass
     # Elapsed Tick Number methods
     def SettingStockElapsedTickNumber(self): setting_stock_elapsed_tick_number(self)
     def SettingCoinElapsedTickNumber(self):  setting_coin_elapsed_tick_number(self)
@@ -1266,6 +1252,6 @@ class MainWindow(QMainWindow):
     # =================================================================================================================
     # Formula Dialog Methods (pyd→py inference from V2.51 set_dialog_formula.py / ui_etc.py)
     def fmActivated_01(self):                    formula_activated(self)
-    def fmButtonClicked_01(self):                formila_button_clicked(self)
+    def fmButtonClicked_01(self):                formula_button_clicked(self)
     def FormulaCodeTest(self, stg):       return formula_code_test(self, stg, self.testQ)
     def ShowDialogFormula(self):                 show_dialog_formula(self)

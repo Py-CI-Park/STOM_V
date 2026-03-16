@@ -26,11 +26,11 @@ if '%errorlevel%' NEQ '0' (
     echo ========================================
     echo.
 
-    echo [1/5] Upgrading pip...
+    echo [1/3] Upgrading pip...
     python32 -m pip install --upgrade pip
 
     echo.
-    echo [2/5] Installing from requirements32.txt...
+    echo [2/3] Installing from requirements32.txt...
     if exist requirements32.txt (
         python32 -m pip install -r requirements32.txt
     ) else (
@@ -40,7 +40,7 @@ if '%errorlevel%' NEQ '0' (
     )
 
     echo.
-    echo [3/5] Installing local TA-Lib wheel...
+    echo [3/3] Installing local TA-Lib wheel...
     if exist "utility/ta_lib-0.6.8-cp311-cp311-win32.whl" (
         python32 -m pip install "./utility/ta_lib-0.6.8-cp311-cp311-win32.whl"
     ) else (

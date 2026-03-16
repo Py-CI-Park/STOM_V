@@ -1,6 +1,7 @@
 
 from PyQt5.QtGui import QIcon
-from utility.setting import ICON_PATH
+from ui.set_widget import error_decorator
+from utility.setting_base import ICON_PATH
 
 
 class SetIcon:
@@ -8,8 +9,10 @@ class SetIcon:
         self.ui = ui_class
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.icon_main    = QIcon(f'{ICON_PATH}/python.png')
+        self.ui.icon_home    = QIcon(f'{ICON_PATH}/home.png')
         self.ui.icon_stock   = QIcon(f'{ICON_PATH}/stock.png')
         self.ui.icon_coin    = QIcon(f'{ICON_PATH}/coin.png')
         self.ui.icon_set     = QIcon(f'{ICON_PATH}/set.png')
@@ -32,3 +35,18 @@ class SetIcon:
         self.ui.icon_vi      = QIcon(f'{ICON_PATH}/vi.bmp')
         self.ui.icon_totals  = QIcon(f'{ICON_PATH}/totals.bmp')
         self.ui.icon_totalb  = QIcon(f'{ICON_PATH}/totalb.bmp')
+
+        self.ui.icon_korea   = QIcon(f'{ICON_PATH}/korea.png')
+        self.ui.icon_usdkrw  = QIcon(f'{ICON_PATH}/usdkrw.png')
+        self.ui.icon_oilgsl  = QIcon(f'{ICON_PATH}/oilgsl.png')
+        self.ui.icon_gold    = QIcon(f'{ICON_PATH}/gold.png')
+
+        self.ui.icon_btc     = QIcon(f'{ICON_PATH}/BTC.png')
+        self.ui.icon_eth     = QIcon(f'{ICON_PATH}/ETH.png')
+        self.ui.icon_xrp     = QIcon(f'{ICON_PATH}/XRP.png')
+        self.ui.icon_bnb     = QIcon(f'{ICON_PATH}/BNB.png')
+
+        self.ui.icon_sol     = QIcon(f'{ICON_PATH}/SOL.png')
+        self.ui.icon_doge    = QIcon(f'{ICON_PATH}/DOGE.png')
+        self.ui.icon_ada     = QIcon(f'{ICON_PATH}/ADA.png')
+        self.ui.icon_link    = QIcon(f'{ICON_PATH}/LINK.png')

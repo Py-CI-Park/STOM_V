@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_base import BackEngineBase
 from utility.static import GetKiwoomPgSgSp, dt_ymdhms, GetHogaunit
 
@@ -23,14 +22,41 @@ class BackEngineKiwoomTick(BackEngineBase):
 
         self.UpdateHighLow(현재가)
 
-        if self.dict_set['스마트브이왑']: self.smat_vwap.calculate_smart_vwap(종목코드, self.arry_code[self.indexn, :])
-        if self.dict_set['마이크로스트럭처분석']: self.ms_analyzer.update_data(종목코드, self.arry_code[self.indexn, :])
-
         if self.dict_condition:
             if 종목코드 not in self.dict_cond_indexn:
                 self.dict_cond_indexn[종목코드] = {}
             for k, v in self.dict_condition.items():
                 exec(v)
+
+        if self.fm_list:
+            for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
+                self.check, self.line, self.up, self.down = None, None, None, None
+
+                exec(stg)
+
+                if data_type == '선:일반':
+                    if self.line is not None:
+                        self.arry_code[self.indexn, col_idx] = self.line
+
+                elif data_type == '선:조건':
+                    if self.check is not None and self.line is not None:
+                        if self.check:
+                            self.arry_code[self.indexn, col_idx] = self.line
+                        else:
+                            pre_line = self.arry_code[self.indexn - 1, col_idx]
+                            if pre_line > 0:
+                                self.arry_code[self.indexn, col_idx] = pre_line
+
+                elif data_type == '범위':
+                    if self.check is not None and self.up is not None and self.down is not None:
+                        self.arry_code[self.indexn, col_idx] = 1.0 if self.check else 0.0
+                        self.arry_code[self.indexn, col_idx + 1] = self.up
+                        self.arry_code[self.indexn, col_idx + 2] = self.down
+
+                elif data_type == '화살표:일반':
+                    if self.check is not None and self.check:
+                        price = self.arry_code[self.indexn, self.dict_findex[fname]]
+                        self.arry_code[self.indexn, col_idx] = price
 
         if self.opti_turn == 1:
             for vturn in self.trade_info:
@@ -122,18 +148,18 @@ class BackEngineKiwoomTick(BackEngineBase):
         return int(betting / 현재가)
 
     def GetBuyPrice(self, 매수금액, 주문수량):
-        return int(np.round(매수금액 / 주문수량))
+        return int(round(매수금액 / 주문수량))
 
     def GetSellPrice(self, 매도금액, 주문수량):
-        return int(np.round(매도금액 / 주문수량))
+        return int(round(매도금액 / 주문수량))
 
     def GetLastSellPrice(self, 매도금액, 보유수량, 미체결수량):
         if 미체결수량 <= 0:
-            매도가 = int(np.round(매도금액 / 보유수량))
+            매도가 = int(round(매도금액 / 보유수량))
         elif 매도금액 == 0:
             매도가 = self.arry_code[self.indexn, 1]
         else:
-            매도가 = int(np.round(매도금액 / (보유수량 - 미체결수량)))
+            매도가 = int(round(매도금액 / (보유수량 - 미체결수량)))
         return 매도가
 
     def GetProfitInfo(self, 현재가, 매수가, 보유수량):

@@ -3,13 +3,13 @@ import sys
 import time
 import sqlite3
 import pyupbit
-import numpy as np
-import pandas as pd
+from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
+from utility.lazy_imports import get_np, get_pd
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.upbit.upbit_websocket import WebSocketReceiver
-from utility.setting import ui_num, DICT_SET, DB_COIN_TICK, DB_COIN_MIN
-from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc, get_logger
+from utility.setting_base import ui_num, DB_COIN_TICK, DB_COIN_MIN
+from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, str_hms, now_utc
 
 
 class Updater(QThread):
@@ -30,7 +30,7 @@ class Updater(QThread):
 
 
 class UpbitReceiverTick:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
@@ -45,8 +45,7 @@ class UpbitReceiverTick:
         self.creceivQ    = qlist[8]
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
-        self.dict_set    = DICT_SET
-        self.logger      = get_logger(self.__class__.__name__)
+        self.dict_set    = dict_set
 
         self.dict_dtdm   = {}
         self.dict_jgdt   = {}
@@ -79,7 +78,7 @@ class UpbitReceiverTick:
 
         self.GetTickers()
 
-        self.ws_thread = WebSocketReceiver(self.codes)
+        self.ws_thread = WebSocketReceiver(self.codes, self.windowQ)
         self.ws_thread.signal1.connect(self.UpdateTickData)
         self.ws_thread.signal2.connect(self.UpdateHogaData)
         self.ws_thread.start()
@@ -110,8 +109,7 @@ class UpbitReceiverTick:
         text = '코인 리시버를 시작하였습니다.'
         if self.dict_set['코인알림소리']: self.soundQ.put(text)
         self.teleQ.put(text)
-        self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 시작'))
-        self.logger.info('리시버 시작 완료')
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 리시버 시작'))
 
     def UpdateTickData(self, data):
         try:
@@ -124,11 +122,12 @@ class UpbitReceiverTick:
             o     = data['opening_price']
             h     = data['high_price']
             low   = data['low_price']
-            per   = np.round(data['signed_change_rate'] * 100, 2)
+            per   = round(data['signed_change_rate'] * 100, 2)
             tbids = data['acc_bid_volume']
             tasks = data['acc_ask_volume']
             dm    = data['acc_trade_price']
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData'))
             return
 
         date = self.dict_data.get(code)
@@ -137,12 +136,12 @@ class UpbitReceiverTick:
         else:
             bids, asks, pretbids, pretasks = 0, 0, tbids, tasks
 
-        bids_ = np.round(tbids - pretbids, 8)
-        asks_ = np.round(tasks - pretasks, 8)
+        bids_ = round(tbids - pretbids, 8)
+        asks_ = round(tasks - pretasks, 8)
         bids += bids_
         asks += asks_
         # noinspection PyTypeChecker
-        ch = min(500, np.round(tbids / tasks * 100, 2)) if tasks > 0 else 500
+        ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
 
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
         self.dict_daym[code] = dm
@@ -171,16 +170,12 @@ class UpbitReceiverTick:
             ]
             data = data['orderbook_units']
             hoga_seprice = [
-                data[9]['ask_price'], data[8]['ask_price'], data[7]['ask_price'], data[6]['ask_price'],
-                data[5]['ask_price'],
-                data[4]['ask_price'], data[3]['ask_price'], data[2]['ask_price'], data[1]['ask_price'],
-                data[0]['ask_price']
+                data[9]['ask_price'], data[8]['ask_price'], data[7]['ask_price'], data[6]['ask_price'], data[5]['ask_price'],
+                data[4]['ask_price'], data[3]['ask_price'], data[2]['ask_price'], data[1]['ask_price'], data[0]['ask_price']
             ]
             hoga_buprice = [
-                data[0]['bid_price'], data[1]['bid_price'], data[2]['bid_price'], data[3]['bid_price'],
-                data[4]['bid_price'],
-                data[5]['bid_price'], data[6]['bid_price'], data[7]['bid_price'], data[8]['bid_price'],
-                data[9]['bid_price']
+                data[0]['bid_price'], data[1]['bid_price'], data[2]['bid_price'], data[3]['bid_price'], data[4]['bid_price'],
+                data[5]['bid_price'], data[6]['bid_price'], data[7]['bid_price'], data[8]['bid_price'], data[9]['bid_price']
             ]
             hoga_samount = [
                 data[9]['ask_size'], data[8]['ask_size'], data[7]['ask_size'], data[6]['ask_size'], data[5]['ask_size'],
@@ -192,6 +187,7 @@ class UpbitReceiverTick:
             ]
             receivetime = now()
         except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateHogaData'))
             return
 
         send   = False
@@ -213,12 +209,11 @@ class UpbitReceiverTick:
             csp = cbp = c
 
             if hoga_seprice[-1] < csp:
-                valid_indices = np.where(np.array(hoga_seprice) >= csp)[0]
-                index = valid_indices[-1] + 1 if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = max(index - 5, 0)
-                    end_idx   = index
-                    add_cnt   = max(5 - index, 0)
+                valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+                end_idx = valid_indices[-1] + 1 if valid_indices else None
+                if end_idx is not None:
+                    start_idx = max(end_idx - 5, 0)
+                    add_cnt   = max(5 - end_idx, 0)
                     hoga_seprice = [0.] * add_cnt + hoga_seprice[start_idx:end_idx]
                     hoga_samount = [0.] * add_cnt + hoga_samount[start_idx:end_idx]
                 else:
@@ -229,12 +224,11 @@ class UpbitReceiverTick:
                 hoga_samount = hoga_samount[-5:]
 
             if hoga_buprice[0] > cbp:
-                valid_indices = np.where(np.array(hoga_buprice) >= cbp)[0]
-                index = valid_indices[0] if len(valid_indices) > 0 else None
-                if index is not None:
-                    start_idx = index
-                    end_idx   = min(index + 5, 10)
-                    add_cnt   = max(index - 5, 0)
+                valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+                start_idx = valid_indices[0] if valid_indices else None
+                if start_idx is not None:
+                    end_idx   = min(start_idx + 5, 10)
+                    add_cnt   = max(start_idx - 5, 0)
                     hoga_buprice = hoga_buprice[start_idx:end_idx] + [0.] * add_cnt
                     hoga_bamount = hoga_bamount[start_idx:end_idx] + [0.] * add_cnt
                 else:
@@ -250,8 +244,8 @@ class UpbitReceiverTick:
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -272,8 +266,8 @@ class UpbitReceiverTick:
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
  
@@ -292,8 +286,8 @@ class UpbitReceiverTick:
 
             tm = dm - code_dtdm[1]
             if tm == dm and 500 < int(str(dt)[8:]): tm = 0
-            hlp  = np.round((c / ((h + low) / 2) - 1) * 100, 2)
-            lhp  = np.round((h / low - 1) * 100, 2)
+            hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
+            lhp  = round((h / low - 1) * 100, 2)
             hjt  = sum(hoga_samount + hoga_bamount)
             gsjm = 1 if code in self.list_gsjm else 0
             logt = now() if self.int_logt < dt_min else 0
@@ -313,7 +307,7 @@ class UpbitReceiverTick:
 
             if logt != 0:
                 gap = (now() - receivetime).total_seconds()
-                self.windowQ.put((ui_num['C단순텍스트'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+                self.windowQ.put((ui_num['타임로그'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
                 self.int_logt = dt_min
 
         if self.int_mtdt is None:
@@ -405,7 +399,7 @@ class UpbitReceiverTick:
             self.cstgQ.put('프로세스종료')
         self.ctraderQ.put('프로세스종료')
         time.sleep(5)
-        self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 리시버 종료'))
+        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 리시버 종료'))
 
     def SaveData(self):
         codes = set()
@@ -415,15 +409,14 @@ class UpbitReceiverTick:
             con = sqlite3.connect(DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN)
             last_index = 0
             try:
-                df = pd.read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
+                df = get_pd().read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)
                 last_index = df['index'][0]
             except:
                 pass
             dict_mtop = {key: value for key, value in self.dict_mtop.items() if key > last_index}
-            df = pd.DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
+            df = get_pd().DataFrame(dict_mtop.values(), columns=['거래대금순위'], index=list(dict_mtop))
             df.to_sql('moneytop', con, if_exists='append', chunksize=1000)
             con.close()
-            self.windowQ.put((ui_num['C단순텍스트'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))
+            self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 거래대금순위 저장 완료'))
 
-        self.logger.info('거래대금순위 저장 완료')
         self.cstgQ.put(('데이터저장', codes))

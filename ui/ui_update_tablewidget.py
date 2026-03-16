@@ -1,12 +1,11 @@
 
-import pandas as pd
-import pyqtgraph as pg
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from ui.set_style import color_fg_bt, color_fg_dk, color_fg_bc, color_bf_bt, color_bf_dk, color_ct_hg
-from ui.ui_get_label_text import get_label_text
-from utility.setting import ui_num, columns_hg, columns_hj
-from utility.static import error_decorator, change_format, comma2int, comma2float, dt_ymdhms
+from ui.ui_draw_label_text import get_label_text
+from utility.lazy_imports import get_pd
+from utility.setting_base import ui_num, columns_hg, columns_hj
+from utility.static import change_format, comma2int, comma2float, dt_ymdhms, error_decorator
 
 
 class NumericItem(QTableWidgetItem):
@@ -16,10 +15,6 @@ class NumericItem(QTableWidgetItem):
 
 class UpdateTablewidget:
     def __init__(self, ui):
-        """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1      2       3      4       5      6      7       8         9         10     11     12      13       14
-        """
         self.ui = ui
         self.dict_table = {
             ui_num['S실현손익']: self.ui.stt_tableWidgettt,
@@ -158,6 +153,7 @@ class UpdateTablewidget:
             tableWidget.setSortingEnabled(False)
 
         tableWidget.setRowCount(len_df)
+        tableWidget.blockSignals(True)
         arry = df.values
         for i, index in enumerate(df.index):
             for j, column in enumerate(df.columns):
@@ -328,6 +324,8 @@ class UpdateTablewidget:
 
                 tableWidget.setItem(i, j, item)
 
+        tableWidget.blockSignals(False)
+
         if len_df < 13 and gubun in (ui_num['S거래목록'], ui_num['S잔고목록'], ui_num['C거래목록'], ui_num['C잔고목록']):
             tableWidget.setRowCount(13)
         elif len_df < 15 and gubun in (ui_num['S체결목록'], ui_num['C체결목록'], ui_num['S관심종목'], ui_num['C관심종목']):
@@ -392,6 +390,7 @@ class UpdateTablewidget:
                     return self.ui.dict_findex_future_tick2[fname]
 
         def setInfiniteLine():
+            import pyqtgraph as pg
             vhline = pg.InfiniteLine()
             vhline.setPen(pg.mkPen(color_ct_hg, width=1))
             return vhline
@@ -467,7 +466,7 @@ class UpdateTablewidget:
         data = []
         for col_name in info:
             data.append(self.ui.ctpg_arry[xpoint, fi(col_name)])
-        df1 = pd.DataFrame({'체결수량': info, '체결강도': data})
+        df1 = get_pd().DataFrame({'체결수량': info, '체결강도': data})
 
         if is_min:
             info = [
@@ -483,7 +482,7 @@ class UpdateTablewidget:
         data = []
         for col_name in info:
             data.append(self.ui.ctpg_arry[xpoint, fi(col_name)])
-        df2 = pd.DataFrame({'체결수량': info, '체결강도': data})
+        df2 = get_pd().DataFrame({'체결수량': info, '체결강도': data})
 
         gubun_ = 'C' if gubun == ui_num['C호가종목'] else 'S'
         self.ui.windowQ.put((ui_num[f'{gubun_}호가체결'], df1))

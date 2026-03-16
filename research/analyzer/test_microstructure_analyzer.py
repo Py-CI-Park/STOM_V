@@ -12,10 +12,9 @@
 """
 
 import sqlite3
-import numpy as np
-import pandas as pd
 from traceback import print_exc
 from research.analyzer.microstructure_analyzer import MicrostructureAnalyzer
+from utility.lazy_imports import get_np, get_pd
 
 
 def example_realtime_simulation(market_type: str = 'stock', buy_cfd_limit: float = 0.6, sell_cfd_limit: float = 0.6):
@@ -26,21 +25,21 @@ def example_realtime_simulation(market_type: str = 'stock', buy_cfd_limit: float
     try:
         # 데이터베이스 연결 및 종목 목록 조회
         conn = sqlite3.connect(f'../../_database/{market_type}_tick_back.db')
-        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
+        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", conn)
 
         stock_codes = df['name'].to_list()
         stock_codes.remove('moneytop')
         stock_codes.remove('stockinfo')
 
-        df_cn = pd.read_sql(f"SELECT * FROM stockinfo", conn).set_index('index')
+        df_cn = get_pd().read_sql(f"SELECT * FROM stockinfo", conn).set_index('index')
         df_cn = df_cn['종목명'].to_dict()
 
-        selected_stock = np.random.choice(stock_codes)
-        df = pd.read_sql(f"SELECT * FROM '{selected_stock}'", conn)
+        selected_stock = get_np().random.choice(stock_codes)
+        df = get_pd().read_sql(f"SELECT * FROM '{selected_stock}'", conn)
         conn.close()
 
         # 데이터를 numpy 배열로 변환 (속도 최적화)
-        data_array = np.array(df)
+        data_array = get_np().array(df)
 
         print(f"데이터 로딩 완료: {len(data_array)}개 틱")
 

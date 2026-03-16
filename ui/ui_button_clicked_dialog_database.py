@@ -1,8 +1,10 @@
 
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting import ui_num
+from utility.setting_base import ui_num
+from utility.static import error_decorator
 
 
+@error_decorator
 def dbbutton_clicked_01(ui):
     if not ui.database_control:
         date = ui.db_lineEdittttt_01.text()
@@ -16,6 +18,7 @@ def dbbutton_clicked_01(ui):
             ui.queryQ.put(('주식일자DB지정일자삭제', date))
 
 
+@error_decorator
 def dbbutton_clicked_02(ui):
     if not ui.database_control:
         time = ui.db_lineEdittttt_02.text()
@@ -29,6 +32,7 @@ def dbbutton_clicked_02(ui):
             ui.queryQ.put(('주식일자DB지정시간이후삭제', time))
 
 
+@error_decorator
 def dbbutton_clicked_03(ui):
     if not ui.database_control:
         time = ui.db_lineEdittttt_03.text()
@@ -42,6 +46,7 @@ def dbbutton_clicked_03(ui):
             ui.queryQ.put(('주식당일데이터지정시간이후삭제', time))
 
 
+@error_decorator
 def dbbutton_clicked_04(ui):
     if not ui.database_control:
         date = ui.db_lineEdittttt_04.text()
@@ -55,6 +60,7 @@ def dbbutton_clicked_04(ui):
             ui.queryQ.put(('주식체결시간조정', date))
 
 
+@error_decorator
 def dbbutton_clicked_05(ui):
     if not ui.database_control:
         date1 = ui.db_lineEdittttt_05.text()
@@ -69,6 +75,7 @@ def dbbutton_clicked_05(ui):
             ui.queryQ.put(('주식백테DB생성', date1, date2))
 
 
+@error_decorator
 def dbbutton_clicked_06(ui):
     if not ui.database_control:
         date1 = ui.db_lineEdittttt_07.text()
@@ -83,6 +90,7 @@ def dbbutton_clicked_06(ui):
             ui.queryQ.put(('주식백테디비추가1', date1, date2))
 
 
+@error_decorator
 def dbbutton_clicked_07(ui):
     if not ui.database_control:
         if ui.proc_query.is_alive():
@@ -92,6 +100,7 @@ def dbbutton_clicked_07(ui):
             ui.queryQ.put(('주식백테디비추가2', ''))
 
 
+@error_decorator
 def dbbutton_clicked_08(ui):
     if not ui.database_control:
         if ui.proc_query.is_alive():
@@ -101,6 +110,7 @@ def dbbutton_clicked_08(ui):
             ui.queryQ.put(('주식일자DB분리', ''))
 
 
+@error_decorator
 def dbbutton_clicked_09(ui):
     if '키움증권' in ui.dict_set['증권사']:
         gubun = '주식'
@@ -123,6 +133,7 @@ def dbbutton_clicked_09(ui):
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 거래기록 삭제 완료'))
 
 
+@error_decorator
 def dbbutton_clicked_10(ui):
     if not ui.database_control:
         date = ui.db_lineEdittttt_09.text()
@@ -135,6 +146,7 @@ def dbbutton_clicked_10(ui):
             ui.queryQ.put(('코인일자DB지정일자삭제', date))
 
 
+@error_decorator
 def dbbutton_clicked_11(ui):
     if not ui.database_control:
         time = ui.db_lineEdittttt_10.text()
@@ -147,6 +159,7 @@ def dbbutton_clicked_11(ui):
             ui.queryQ.put(('코인일자DB지정시간이후삭제', time))
 
 
+@error_decorator
 def dbbutton_clicked_12(ui):
     if not ui.database_control:
         time = ui.db_lineEdittttt_11.text()
@@ -159,6 +172,7 @@ def dbbutton_clicked_12(ui):
             ui.queryQ.put(('코인당일데이터지정시간이후삭제', time))
 
 
+@error_decorator
 def dbbutton_clicked_13(ui):
     if not ui.database_control:
         date1 = ui.db_lineEdittttt_12.text()
@@ -172,6 +186,7 @@ def dbbutton_clicked_13(ui):
             ui.queryQ.put(('코인백테DB생성', date1, date2))
 
 
+@error_decorator
 def dbbutton_clicked_14(ui):
     if not ui.database_control:
         date1 = ui.db_lineEdittttt_14.text()
@@ -185,6 +200,7 @@ def dbbutton_clicked_14(ui):
             ui.queryQ.put(('코인백테디비추가1', date1, date2))
 
 
+@error_decorator
 def dbbutton_clicked_15(ui):
     if not ui.database_control:
         if ui.proc_query.is_alive():
@@ -193,6 +209,7 @@ def dbbutton_clicked_15(ui):
             ui.queryQ.put(('코인백테디비추가2', ''))
 
 
+@error_decorator
 def dbbutton_clicked_16(ui):
     if not ui.database_control:
         if ui.proc_query.is_alive():
@@ -201,6 +218,7 @@ def dbbutton_clicked_16(ui):
             ui.queryQ.put(('코인일자DB분리', ''))
 
 
+@error_decorator
 def dbbutton_clicked_17(ui):
     buttonReply = QMessageBox.warning(
         ui.dialog_db, '코인 거래기록 삭제', '체결목록, 잔고목록, 거래목록, 일별목록이 모두 삭제됩니다.\n계속하시겠습니까?\n',
@@ -218,6 +236,7 @@ def dbbutton_clicked_17(ui):
             ui.windowQ.put((ui_num['DB관리'], '코인 거래기록 삭제 완료'))
 
 
+@error_decorator
 def dbbutton_clicked_18(ui):
     if not ui.database_control:
         date = ui.db_lineEdittttt_16.text()
@@ -230,6 +249,7 @@ def dbbutton_clicked_18(ui):
             ui.queryQ.put(('주식백테DB지정일자삭제', date))
 
 
+@error_decorator
 def dbbutton_clicked_19(ui):
     if not ui.database_control:
         date = ui.db_lineEdittttt_17.text()

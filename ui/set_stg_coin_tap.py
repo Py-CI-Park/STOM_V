@@ -3,7 +3,8 @@ from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QLabel
 from ui.set_style import qfont12, qfont13, qfont14, style_pgbar, style_bc_dk
 from ui.set_text import optistandard, optitext, train_period, valid_period, test_period, optimized_count, opti_standard
-from utility.setting import columns_bt
+from ui.set_widget import error_decorator
+from utility.setting_base import columns_bt
 from utility.static import str_hms, dt_hms, timedelta_sec
 
 
@@ -13,15 +14,16 @@ class SetCoinBack:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
-        self.ui.cs_textEditttt_01 = self.wc.setTextEdit(self.ui.cs_tab, filter_=True, font=qfont14)
-        self.ui.cs_textEditttt_02 = self.wc.setTextEdit(self.ui.cs_tab, filter_=True, font=qfont14)
-        self.ui.cs_textEditttt_03 = self.wc.setTextEdit(self.ui.cs_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.cs_textEditttt_04 = self.wc.setTextEdit(self.ui.cs_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.cs_textEditttt_05 = self.wc.setTextEdit(self.ui.cs_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.cs_textEditttt_06 = self.wc.setTextEdit(self.ui.cs_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.cs_textEditttt_07 = self.wc.setTextEdit(self.ui.cs_tab, visible=False, filter_=True, font=qfont14)
-        self.ui.cs_textEditttt_08 = self.wc.setTextEdit(self.ui.cs_tab, visible=False, filter_=True, font=qfont14)
+        self.ui.cs_textEditttt_01 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, filter_=True, font=qfont14)
+        self.ui.cs_textEditttt_02 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, filter_=True, font=qfont14)
+        self.ui.cs_textEditttt_03 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.cs_textEditttt_04 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.cs_textEditttt_05 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.cs_textEditttt_06 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.cs_textEditttt_07 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
+        self.ui.cs_textEditttt_08 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, visible=False, filter_=True, font=qfont14)
 
     # =================================================================================================================
 
@@ -117,17 +119,25 @@ class SetCoinBack:
         self.ui.cvjb_labelllll_01 = QLabel('백테스트 기간설정                                         ~', self.ui.cs_tab)
         self.ui.cvjb_labelllll_02 = QLabel('백테스트 시간설정     시작시간                         종료시간', self.ui.cs_tab)
         self.ui.cvjb_labelllll_03 = QLabel('백테스트 기본설정   배팅(백만)                        평균틱수   self.vars[0]', self.ui.cs_tab)
-        if self.ui.dict_set['백테날짜고정']:
-            self.ui.cvjb_dateEditt_01 = self.wc.setDateEdit(self.ui.cs_tab, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'))
+        if self.ui.dict_set is not None:
+            if self.ui.dict_set['백테날짜고정']:
+                self.ui.cvjb_dateEditt_01 = self.wc.setDateEdit(self.ui.cs_tab, qday=QDate.fromString(self.ui.dict_set['백테날짜'], 'yyyyMMdd'))
+            else:
+                self.ui.cvjb_dateEditt_01 = self.wc.setDateEdit(self.ui.cs_tab, addday=-int(self.ui.dict_set['백테날짜']))
         else:
-            self.ui.cvjb_dateEditt_01 = self.wc.setDateEdit(self.ui.cs_tab, addday=-int(self.ui.dict_set['백테날짜']))
+            self.ui.cvjb_dateEditt_01 = self.wc.setDateEdit(self.ui.ss_tab)
         self.ui.cvjb_dateEditt_02 = self.wc.setDateEdit(self.ui.cs_tab)
 
-        endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간'])))).zfill(6)
+        if self.ui.dict_set is not None:
+            endtime = str_hms(timedelta_sec(-120, dt_hms(str(self.ui.dict_set['코인전략종료시간'])))).zfill(6)
+            tujagm  = str(self.ui.dict_set['코인투자금'])
+        else:
+            endtime = '235000'
+            tujagm  = '20.0'
 
         self.ui.cvjb_lineEditt_02 = self.wc.setLineedit(self.ui.cs_tab, ltext='000000', style=style_bc_dk)
         self.ui.cvjb_lineEditt_03 = self.wc.setLineedit(self.ui.cs_tab, ltext=endtime, style=style_bc_dk)
-        self.ui.cvjb_lineEditt_04 = self.wc.setLineedit(self.ui.cs_tab, ltext=str(self.ui.dict_set['코인투자금']), style=style_bc_dk)
+        self.ui.cvjb_lineEditt_04 = self.wc.setLineedit(self.ui.cs_tab, ltext=tujagm, style=style_bc_dk)
         self.ui.cvjb_lineEditt_05 = self.wc.setLineedit(self.ui.cs_tab, ltext='30', style=style_bc_dk)
 
         self.ui.coin_datedt_list  = [self.ui.cvjb_labelllll_01, self.ui.cvjb_dateEditt_01, self.ui.cvjb_dateEditt_02, self.ui.cvjb_lineEditt_05]
@@ -335,8 +345,8 @@ class SetCoinBack:
         self.ui.cs_textEditttt_07.setGeometry(7, 10, 497, 740)
         self.ui.cs_textEditttt_08.setGeometry(509, 10, 497, 740)
 
-        self.ui.czoo_pushButon_01.setGeometry(952, 15, 50, 20)
-        self.ui.czoo_pushButon_02.setGeometry(952, 483, 50, 20)
+        self.ui.czoo_pushButon_01.setGeometry(937, 15, 50, 20)
+        self.ui.czoo_pushButon_02.setGeometry(937, 483, 50, 20)
 
         self.ui.cs_tableWidget_01.setGeometry(7, 40, 1000, 713)
         self.ui.cs_comboBoxxxx_01.setGeometry(7, 10, 150, 25)

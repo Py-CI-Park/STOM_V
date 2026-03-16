@@ -1,15 +1,28 @@
 
+import sys
 import pyqtgraph as pg
+from traceback import format_exc
 from PyQt5.QtCore import Qt, QDate
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
-    QDialog, QTableWidget, QAbstractItemView
+    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox
 from utility import syntax
-from utility.setting import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
+from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
     columns_gc, columns_hg, columns_jm1, columns_jm2, columns_nd, columns_stg1, columns_stg2, columns_sb, \
     columns_kp, columns_sd, columns_hc2, columns_bt
 from ui.set_style import qfont12, style_bc_bt, style_bc_st, style_bc_sl, style_bc_bs, style_bc_by, style_fc_dk, \
     style_bc_bb, style_bc_dk, style_st_cf, style_st_sf, style_st_mf, style_st_sp, style_st_ct, style_st_ks, style_st_ss, \
     style_st_su
+
+
+def error_decorator(func):
+    def wrapper(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except:
+            self_obj = args[0]
+            QMessageBox.critical(self_obj.ui.splash, '오류 알림', format_exc())
+            sys.exit()
+    return wrapper
 
 
 class CustomViewBox(pg.ViewBox):
@@ -24,10 +37,11 @@ class CustomViewBox(pg.ViewBox):
         self.ymax = 0
         self.linked_views = []
 
+        self.zoom_in              = False
         self.right_drag_start_pos = None
-        self.is_right_dragging = False
-        self.original_x_range = None
-        self.original_y_range = None
+        self.is_right_dragging    = False
+        self.original_x_range     = None
+        self.original_y_range     = None
 
     def set_uiclass(self, ui_class):
         self.ui = ui_class
@@ -37,6 +51,9 @@ class CustomViewBox(pg.ViewBox):
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
+
+    def is_zoomin(self):
+        return self.zoom_in
 
     def linkX(self, other_view):
         if other_view not in self.linked_views:
@@ -147,21 +164,27 @@ class CustomViewBox(pg.ViewBox):
             self.original_y_range     = None
 
             if not was_dragging:
-                if self.xmax == 0:
-                    self.enableAutoRange()
-                else:
-                    self.setRange(xRange=(self.xmin, self.xmax), yRange=(self.ymin, self.ymax))
+                if self.xmax > 0:
+                    self.setXRange(self.xmin, self.xmax, padding=0.01)
+                    self.setYRange(self.ymin, self.ymax, padding=0.03)
+                    self.zoom_in = False
         else:
             super().mouseReleaseEvent(ev)
 
     def mouseDragEvent(self, ev, axis=None):
         if not self.is_right_dragging:
             super().mouseDragEvent(ev)
+            if ev.isFinish():
+                self.zoom_in = True
 
 
 class WidgetCreater:
     def __init__(self, ui_class):
         self.ui = ui_class
+
+    def setQGroupBox(self, gname, tab):
+        groupbox = QGroupBox(gname, tab)
+        return groupbox
 
     def setPushbutton(self, pname, color=0, box=None, cmd=None, icon=None, tip=None, shortcut=None, visible=True, click=None):
         if box is not None:
@@ -350,6 +373,7 @@ class WidgetCreater:
         subplot.getAxis('right').setStyle(tickTextWidth=45, autoExpandTextSpace=False)
         subplot.getAxis('right').setTickFont(qfont12)
         subplot.getAxis('bottom').setTickFont(qfont12)
+        subplot.enableAutoRange(False, False)
         return subplot, cb
 
     def setDialog(self, name, tab=None):

@@ -1,22 +1,8 @@
 
-import numpy as np
-import pandas as pd
 try:
     import yfinance as yf
 except ImportError:
     yf = None
-try:
-    from numba import jit
-except ImportError:
-    def jit(*args, **kwargs):
-        if args and callable(args[0]) and len(args) == 1 and not kwargs:
-            return args[0]
-
-        def decorator(func):
-            return func
-
-        return decorator
-from traceback import print_exc
 try:
     from matplotlib import pyplot as plt
     from matplotlib import font_manager, gridspec
@@ -28,7 +14,10 @@ try:
     from optuna_dashboard import run_server
 except ImportError:
     run_server = None
-from utility.setting import ui_num, GRAPH_PATH, DB_OPTUNA
+from traceback import format_exc
+from utility.lazy_imports import get_np, get_pd
+from backtest.back_static_numba import GetOptiValidStd
+from utility.setting_base import ui_num, GRAPH_PATH, DB_OPTUNA
 from utility.static import thread_decorator, dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
 
 
@@ -137,12 +126,11 @@ def GetMoneytopQuery(is_tick, gubun, startday, endday, starttime, endtime):
     else:
         sindex = startday * 10000 + int(starttime / 100)
         eindex = endday * 10000 + int(endtime / 100)
-    query = f"SELECT * FROM moneytop WHERE " \
-            f"`index` >= {sindex} AND `index` <= {eindex}"
+    query = f"SELECT * FROM moneytop WHERE `index` >= {sindex} AND `index` <= {eindex}"
     return query
 
 
-def GetBuyStg(buytxt, gubun):
+def GetBuyStg(buytxt, gubun, wq):
     lines   = [line for line in buytxt.split('\n') if line and line[0] != '#']
     buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
@@ -151,7 +139,7 @@ def GetBuyStg(buytxt, gubun):
             buystg = compile(buystg, '<string>', 'exec')
         except:
             buystg = None
-            if gubun == 0: print_exc()
+            if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetBuyStg'))
     else:
         buystg = None
     if indistg:
@@ -164,18 +152,18 @@ def GetBuyStg(buytxt, gubun):
     return buystg, indistg
 
 
-def GetSellStg(sellstg, gubun):
+def GetSellStg(sellstg, gubun, wq):
     sellstg = 'self.sell_cond = 0\n' + sellstg
     sellstg, dict_cond = SetSellCond(sellstg.split('\n'))
     try:
         sellstg = compile(sellstg, '<string>', 'exec')
     except:
         sellstg = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetSellStg'))
     return sellstg, dict_cond
 
 
-def GetBuyConds(buy_conds, gubun):
+def GetBuyConds(buy_conds, gubun, wq):
     buy_conds = 'if not (' + \
                 '):\n    매수 = False\nelif not ('.join(buy_conds) + \
                 '):\n    매수 = False\nif 매수:\n    self.Buy()'
@@ -183,11 +171,11 @@ def GetBuyConds(buy_conds, gubun):
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except:
         buy_conds = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetBuyConds'))
     return buy_conds
 
 
-def GetSellConds(sell_conds, gubun):
+def GetSellConds(sell_conds, gubun, wq):
     sell_conds = 'self.sell_cond = 0\nif not (' + \
                  '):\n    매도 = True\nelif not ('.join(sell_conds) + \
                  '):\n    매도 = True\nif 매도:\n    self.Sell()'
@@ -196,7 +184,7 @@ def GetSellConds(sell_conds, gubun):
         sell_conds = compile(sell_conds, '<string>', 'exec')
     except:
         sell_conds = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetSellConds'))
     return sell_conds, dict_cond
 
 
@@ -214,7 +202,7 @@ def SetSellCond(selllist):
     return sellstg, dict_cond
 
 
-def GetBuyStgFuture(buystg, gubun):
+def GetBuyStgFuture(buystg, gubun, wq):
     lines   = [line for line in buystg.split('\n') if line and line[0] != '#']
     buystg  = '\n'.join(line for line in lines if 'self.indicator' not in line)
     indistg = '\n'.join(line for line in lines if 'self.indicator' in line)
@@ -223,7 +211,7 @@ def GetBuyStgFuture(buystg, gubun):
             buystg = compile(buystg, '<string>', 'exec')
         except:
             buystg = None
-            if gubun == 0: print_exc()
+            if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetBuyStgFuture'))
     else:
         buystg = None
     if indistg:
@@ -236,18 +224,18 @@ def GetBuyStgFuture(buystg, gubun):
     return buystg, indistg
 
 
-def GetSellStgFuture(sellstg, gubun):
+def GetSellStgFuture(sellstg, gubun, wq):
     sellstg = 'self.sell_cond = 0\n' + sellstg
     sellstg, dict_cond = SetSellCondFuture(sellstg.split('\n'))
     try:
         sellstg = compile(sellstg, '<string>', 'exec')
     except:
         sellstg = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetSellStgFuture'))
     return sellstg, dict_cond
 
 
-def GetBuyCondsFuture(is_long, buy_conds, gubun):
+def GetBuyCondsFuture(is_long, buy_conds, gubun, wq):
     if is_long:
         buy_conds = 'if not (' + \
                     '):\n    BUY_LONG = False\nelif not ('.join(buy_conds) + \
@@ -260,11 +248,11 @@ def GetBuyCondsFuture(is_long, buy_conds, gubun):
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except:
         buy_conds = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetBuyCondsFuture'))
     return buy_conds
 
 
-def GetSellCondsFuture(is_long, sell_conds, gubun):
+def GetSellCondsFuture(is_long, sell_conds, gubun, wq):
     if is_long:
         sell_conds = 'self.sell_cond = 0\nif ' + ':\n    SELL_LONG = True\nelif '.join(
             sell_conds) + ':\n    SELL_LONG = True\nif SELL_LONG:\n    self.Sell(SELL_LONG)'
@@ -276,7 +264,7 @@ def GetSellCondsFuture(is_long, sell_conds, gubun):
         sell_conds = compile(sell_conds, '<string>', 'exec')
     except:
         sell_conds = None
-        if gubun == 0: print_exc()
+        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - GetSellCondsFuture'))
     return sell_conds, dict_cond
 
 
@@ -328,8 +316,8 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
             valid_text.append(text3)
             valid_stds.append(std)
 
-        train_stds = np.array(train_stds, dtype=np.float64)
-        valid_stds = np.array(valid_stds, dtype=np.float64)
+        train_stds = get_np().array(train_stds, dtype=get_np().float64)
+        valid_stds = get_np().array(valid_stds, dtype=get_np().float64)
         std = GetOptiValidStd(train_stds, valid_stds, exponential)
         text2, hstd, sendtext = GetText2(std, pre_hstd)
 
@@ -386,25 +374,6 @@ def GetText3(gubun, optistd, std_list, result):
     return text, std
 
 
-@jit(nopython=True, cache=True)
-def GetOptiValidStd(train_stds, valid_stds, exponential):
-    """
-    가중치(weight) 예제 : 최고 1.3, 최저 0.7
-    10개 : 1.300, 1.233, 1.166, 1.100, 1.033, 0.966, 0.900, 0.833, 0.766, 0.700
-    """
-    merge = 0.
-    count = len(train_stds)
-    for i in range(count):
-        train_std = train_stds[i] * 0.7
-        valid_std = valid_stds[i] * 0.3
-        if exponential and count > 1:
-            weight = 1.3 + (0.7 - 1.3) * i / (count - 1)
-            valid_std *= weight
-        merge += train_std + valid_std
-    merge = np.round(merge / count, 2)
-    return merge if merge != 0 else -float('inf')
-
-
 def GetOptiStdText(optistd, std_list, result, pre_text):
     mdd_low, mdd_high, mhct_low, mhct_high, wr_low, wr_high, ap_low, ap_high, atc_low, atc_high, cagr_low, cagr_high, tpi_low, tpi_high = std_list
     tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
@@ -416,15 +385,15 @@ def GetOptiStdText(optistd, std_list, result, pre_text):
         sign = 1 if cagr >= 0 else -1
         optistd_handlers = {
             'TP':   lambda: tpp,
-            'PM':   lambda: np.round(tpp / mdd, 2),
-            'P2M':  lambda: sign * abs(np.round(tpp * tpp / mdd, 2)),
-            'PAM':  lambda: sign * abs(np.round(tpp * app / mdd, 2)),
-            'PWM':  lambda: np.round(tpp * wr / mdd / 100, 2),
-            'TG':   lambda: np.round(tsg / 1000, 2),
-            'GM':   lambda: np.round(tsg / mdd_, 2),
-            'G2M':  lambda: sign * abs(np.round(tsg * tsg / mdd_ / 1000, 2)),
-            'GAM':  lambda: sign * abs(np.round(tsg * app / mdd_, 2)),
-            'GWM':  lambda: np.round(tsg * wr / mdd_ / 100, 2),
+            'PM':   lambda: round(tpp / mdd, 2),
+            'P2M':  lambda: sign * abs(round(tpp * tpp / mdd, 2)),
+            'PAM':  lambda: sign * abs(round(tpp * app / mdd, 2)),
+            'PWM':  lambda: round(tpp * wr / mdd / 100, 2),
+            'TG':   lambda: round(tsg / 1000, 2),
+            'GM':   lambda: round(tsg / mdd_, 2),
+            'G2M':  lambda: sign * abs(round(tsg * tsg / mdd_ / 1000, 2)),
+            'GAM':  lambda: sign * abs(round(tsg * app / mdd_, 2)),
+            'GWM':  lambda: round(tsg * wr / mdd_ / 100, 2),
             'CAGR': lambda: cagr
         }
         if 'TRAIN' in pre_text or 'TOTAL' in pre_text:
@@ -496,21 +465,21 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     for window in windows:
         df_tsg[f'수익금합계{window:03d}'] = profit_series.rolling(window=window).mean()
     profit_array = df_tsg['수익금'].values
-    df_tsg['이익금액'] = np.where(profit_array >= 0, profit_array, 0)
-    df_tsg['손실금액'] = np.where(profit_array < 0, profit_array, 0)
+    df_tsg['이익금액'] = get_np().where(profit_array >= 0, profit_array, 0)
+    df_tsg['손실금액'] = get_np().where(profit_array < 0, profit_array, 0)
 
     sig_array = df_tsg['수익금'].values
     mdd_list = []
-    random_data = np.random.permutation(sig_array)
+    random_data = get_np().random.permutation(sig_array)
     for i in range(30):
         if i > 0:
-            random_data = np.random.permutation(sig_array)
-        random_cumsum = np.cumsum(random_data)
+            random_data = get_np().random.permutation(sig_array)
+        random_cumsum = get_np().cumsum(random_data)
         df_tsg[f'수익금합계{i}'] = random_cumsum
         try:
-            lower = np.argmax(np.maximum.accumulate(random_cumsum) - random_cumsum)
-            upper = np.argmax(random_cumsum[:lower])
-            mdd_ = np.round(abs(random_cumsum[upper] - random_cumsum[lower]) / (random_cumsum[upper] + seed) * 100, 2)
+            lower = get_np().argmax(get_np().maximum.accumulate(random_cumsum) - random_cumsum)
+            upper = get_np().argmax(random_cumsum[:lower])
+            mdd_ = round(abs(random_cumsum[upper] - random_cumsum[lower]) / (random_cumsum[upper] + seed) * 100, 2)
         except:
             mdd_ = 0.
         mdd_list.append(mdd_)
@@ -529,8 +498,8 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     interval = get_interval(total_sec)
     df_st = df_st.resample(interval).sum()
     profit_array_st = df_st['수익금'].values
-    df_st['이익금액'] = np.where(profit_array_st >= 0, profit_array_st, 0)
-    df_st['손실금액'] = np.where(profit_array_st < 0, profit_array_st, 0)
+    df_st['이익금액'] = get_np().where(profit_array_st >= 0, profit_array_st, 0)
+    df_st['손실금액'] = get_np().where(profit_array_st < 0, profit_array_st, 0)
     df_st.index = df_st.index.map(lambda x: str_ymdhms_ios(x))
 
     df_wt = df_tsg[['수익금']].copy()
@@ -541,9 +510,9 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     if dict_cn is None:
         wt_index += ['토', '일']
         wt_data += [weekday_sums.get(5, 0), weekday_sums.get(6, 0)]
-    wt_data_array = np.array(wt_data)
-    wt_datap = np.where(wt_data_array >= 0, wt_data_array, 0)
-    wt_datam = np.where(wt_data_array < 0, wt_data_array, 0)
+    wt_data_array = get_np().array(wt_data)
+    wt_datap = get_np().where(wt_data_array >= 0, wt_data_array, 0)
+    wt_datam = get_np().where(wt_data_array < 0, wt_data_array, 0)
 
     if is_tick:
         df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
@@ -560,14 +529,10 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
                 if not df_tsg_.empty:
                     endx_list.append(df_tsg_.index[-1])
 
-    font_name = 'C:/Windows/Fonts/malgun.ttf'
     if plt is None or font_manager is None or gridspec is None:
         raise ImportError('matplotlib not installed')
-    font_family = font_manager.FontProperties(fname=font_name).get_name()
-
-    # matplotlib 성능 최적화 설정
     plt.rcParams['figure.max_open_warning'] = 0
-    plt.rcParams['font.family'] = font_family
+    plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()
     plt.rcParams['axes.unicode_minus'] = False
     plt.rcParams['path.simplify'] = True
     plt.rcParams['path.snap'] = True
@@ -588,7 +553,7 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     ax1.plot(df_tsg.index, df_tsg['수익금합계'], linewidth=2, label=f'MDD {mdd}%', color='orange')
     max_mdd = max(mdd_list)
     min_mdd = min(mdd_list)
-    avg_mdd = np.round(sum(mdd_list) / len(mdd_list), 2)
+    avg_mdd = round(sum(mdd_list) / len(mdd_list), 2)
     ax1.set_title(f'Max MDD [{max_mdd}%] | Min MDD [{min_mdd}%] | Avg MDD [{avg_mdd}%]')
     step = max(1, len(df_tsg) // 15)
     xticks = df_tsg.index[::step]
@@ -691,13 +656,13 @@ def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
         '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
         '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간'
     ] + TRADE_RESULT_EXTRA_COLUMNS
-    df_tsg = pd.DataFrame(list_tsg, columns=columns1)
+    df_tsg = get_pd().DataFrame(list_tsg, columns=columns1)
     df_tsg.set_index('index', inplace=True)
     df_tsg.sort_index(inplace=True)
     df_tsg['수익금합계'] = df_tsg['수익금'].cumsum()
     df_tsg = df_tsg[columns2]
     arry_bct = arry_bct[arry_bct[:, 1] > 0]
-    df_bct = pd.DataFrame(arry_bct[:, 1:], columns=['보유종목수', '보유금액'], index=arry_bct[:, 0])
+    df_bct = get_pd().DataFrame(arry_bct[:, 1:], columns=['보유종목수', '보유금액'], index=arry_bct[:, 0])
     df_bct.index = df_bct.index.astype(str)
     return df_tsg, df_bct
 
@@ -710,83 +675,12 @@ def AddMdd(arry_tsg, result):
     """
     try:
         array = arry_tsg[:, 4]
-        lower = np.argmax(np.maximum.accumulate(array) - array)
-        upper = np.argmax(array[:lower])
-        mdd   = np.round(abs(array[upper] - array[lower]) / (array[upper] + result[10]) * 100, 2)
+        lower = get_np().argmax(get_np().maximum.accumulate(array) - array)
+        upper = get_np().argmax(array[:lower])
+        mdd   = round(abs(array[upper] - array[lower]) / (array[upper] + result[10]) * 100, 2)
         mdd_  = int(abs(array[upper] - array[lower]))
     except:
         mdd   = abs(result[7])
         mdd_  = abs(result[8])
     result = result + (mdd, mdd_)
     return result
-
-
-@jit(nopython=True, cache=True)
-def GetResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
-    """
-    arry_tsg dtype 'float64'
-    보유시간, 매도시간, 수익률, 수익금, 수익금합계
-       0       1       2      3      4
-    arry_bct dtype 'float64'
-    체결시간, 보유중목수, 보유금액
-      0         1        2
-    """
-    tc = len(arry_tsg)
-    if tc == 0:
-        return (0,) * 13
-
-    profits   = arry_tsg[:, 3]
-    is_profit = profits >= 0
-    arry_p    = arry_tsg[is_profit]
-    arry_m    = arry_tsg[~is_profit]
-
-    pc   = len(arry_p)
-    mc   = tc - pc
-    atc  = tc / day_count
-    wr   = (pc / tc) * 100
-
-    ah   = arry_tsg[:, 0].mean()
-    app  = arry_tsg[:, 2].mean()
-    tsg  = profits.sum()
-
-    appp = arry_p[:, 2].mean() if pc > 0 else 0
-    ampp = abs(arry_m[:, 2].mean()) if mc > 0 else 0
-
-    exclud_top1per = int(len(arry_bct) / 100)
-    try:    mhct = int(arry_bct[exclud_top1per:, 1].max())
-    except: mhct = 0
-    try:    seed = int(arry_bct[exclud_top1per:, 2].max())
-    except: seed = betting
-    if seed < betting: seed = betting
-
-    tpp  = tsg / seed * 100
-    cagr = tpp / day_count * (365 if 'C' in ui_gubun else 250)
-    tpi  = wr / 100 * (1 + appp / ampp) if ampp != 0 else 1.0
-
-    return (
-        tc,                 # 0 거래횟수
-        np.round(atc, 1),   # 1 일평균 거래횟수
-        pc,                 # 2 수익 거래횟수
-        mc,                 # 3 손실 거래횟수
-        np.round(wr, 2),    # 4 승률
-        np.round(ah, 2),    # 5 평균보유시간
-        np.round(app, 2),   # 6 평균수익률
-        np.round(tpp, 2),   # 7 총수익률
-        int(tsg),           # 8 총수익금
-        mhct,               # 9 최대 보유종목수
-        seed,               # 10 필요 자금
-        np.round(cagr, 2),  # 11 연간 예상 수익률
-        np.round(tpi, 2)    # 12 거래 성과 지수
-    )
-
-
-@jit(nopython=True)
-def bootstrap_test(returns, n_bootstrap=10000):
-    n = len(returns)
-    bootstrap_returns = np.zeros(n_bootstrap)
-    for i in range(n_bootstrap):
-        bootstrap_sample = np.random.choice(returns, size=n, replace=True)
-        # noinspection PyTypeChecker
-        total_return = np.prod(1 + bootstrap_sample) - 1
-        bootstrap_returns[i] = total_return
-    return bootstrap_returns

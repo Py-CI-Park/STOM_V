@@ -1,17 +1,16 @@
 
 import pytz
 import asyncio
-import numpy as np
-import pandas as pd
 from threading import Thread
-from utility.setting import DICT_SET
+from traceback import format_exc
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
-from utility.static import get_logger
+from utility.setting_base import ui_num
+from utility.lazy_imports import get_pd
 
 
 class TelegramBot:
-    def __init__(self, qlist):
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
            0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
@@ -21,24 +20,29 @@ class TelegramBot:
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
         self.wdzservQ    = qlist[13]
-        self.dict_set    = DICT_SET
-        self.logger      = get_logger(self.__class__.__name__)
+        self.dict_set    = dict_set
 
-        gubun            = self.dict_set['증권사'][4:]
-        self.token       = self.dict_set[f'텔레그램봇토큰{gubun}']
-        self.chat_id     = self.dict_set[f'텔레그램사용자아이디{gubun}']
-        self.running     = False
+        self.token       = None
+        self.chat_id     = None
         self.application = None
+        self.running     = False
+
         self.message_queue = asyncio.Queue()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
+
         self.run()
 
     def run(self):
+        Thread(target=self.moniter_queue, daemon=True).start()
+        self.loop.create_task(self.process_messages())
+
+        gubun = self.dict_set['증권사'][4:]
+        self.token = self.dict_set[f'텔레그램봇토큰{gubun}']
+        self.chat_id = self.dict_set[f'텔레그램사용자아이디{gubun}']
+
         if self.token and self.chat_id:
             self.running = True
-            Thread(target=self.moniter_queue, daemon=True).start()
-            self.loop.create_task(self.process_messages())
             self.application = (
                 ApplicationBuilder()
                 .token(self.token)
@@ -46,25 +50,39 @@ class TelegramBot:
                 .build()
             )
             self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
-            self.application.run_polling()
-        else:
-            self.moniter_queue2()
+            self.loop.create_task(self.start_bot())
+        
+        self.loop.run_forever()
+
+    async def start_bot(self):
+        try:
+            await self.application.initialize()
+            await self.application.start()
+            update_queue = await self.application.updater.start_polling()
+
+            keyboard = [
+                ['주식      체결목록', '주식      거래목록', '주식      잔고평가', '주식      잔고청산', '주식      전략중지'],
+                ['해선      체결목록', '해선      거래목록', '해선      잔고평가', '해선      잔고청산', '해선      전략중지'],
+                ['코인      체결목록', '코인      거래목록', '코인      잔고평가', '코인      잔고청산', '코인      전략중지'],
+                ['주식          라이브', '해선          라이브', '코인          라이브', '백테          라이브']
+            ]
+            reply_markup = ReplyKeyboardMarkup(keyboard)
+            await self.application.bot.send_message(
+                chat_id=self.chat_id,
+                text='안녕하세요. STOM 텔레그램봇입니다.\n아래 버튼을 눌러 원하는 기능을 실행하세요.',
+                reply_markup=reply_markup
+            )
+
+            while True:
+                update = await update_queue.get()
+                await self.application.process_update(update)
+                update_queue.task_done()
+        except:
+            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 텔레그램 봇 시작'))
 
     async def setup_application(self, application):
         korea_timezone = pytz.timezone('Asia/Seoul')
         application.bot_data['timezone'] = korea_timezone
-        keyboard = [
-            ['주식      체결목록', '주식      거래목록', '주식      잔고평가', '주식      잔고청산', '주식      전략중지'],
-            ['해선      체결목록', '해선      거래목록', '해선      잔고평가', '해선      잔고청산', '해선      전략중지'],
-            ['코인      체결목록', '코인      거래목록', '코인      잔고평가', '코인      잔고청산', '코인      전략중지'],
-            ['주식          라이브', '해선          라이브', '코인          라이브', '백테          라이브']
-        ]
-        reply_markup = ReplyKeyboardMarkup(keyboard)
-        await application.bot.send_message(
-            chat_id=self.chat_id,
-            text='안녕하세요. STOM 텔레그램봇입니다.\n아래 버튼을 눌러 원하는 기능을 실행하세요.',
-            reply_markup=reply_markup
-        )
 
     # noinspection PyUnusedLocal
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -75,7 +93,7 @@ class TelegramBot:
             cmd = cmd.replace('      ', '')
 
         if cmd in ('주식전략중지', '해선전략중지'):
-            self.wdzservQ.put(('analyzer', '매수전략중지'))
+            self.wdzservQ.put(('strategy', '매수전략중지'))
         elif cmd == '코인전략중지':
             self.cstgQ.put('매수전략중지')
         elif '라이브' in cmd:
@@ -91,28 +109,62 @@ class TelegramBot:
             self.ctraderQ.put(cmd)
 
     def moniter_queue(self):
-        while self.running:
+        while True:
             data = self.teleQ.get()
-            self.loop.call_soon_threadsafe(self.message_queue.put_nowait, data)
+            if self.running:
+                self.loop.call_soon_threadsafe(self.message_queue.put_nowait, data)
+            elif data.__class__ in (str, get_pd().DataFrame):
+                self.windowQ.put((ui_num['시스템로그'], '텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다'))
+            elif data.__class__ == tuple:
+                self.loop.call_soon_threadsafe(self.message_queue.put_nowait, data)
 
     async def process_messages(self):
-        while self.running:
+        while True:
             data = await self.message_queue.get()
             if data.__class__ == str:
                 if '.png' in data:
                     await self.send_photo(data)
                 else:
                     await self.send_message(data)
-            elif isinstance(data, pd.DataFrame):
+            elif isinstance(data, get_pd().DataFrame):
                 text = self.GetTextFromDataframe(data)
                 await self.send_message(text)
+            elif data.__class__ == tuple:
+                self.dict_set = data[1]
+                await self.restart_bot()
             self.message_queue.task_done()
 
-    def moniter_queue2(self):
-        while not self.running:
-            data = self.teleQ.get()
-            if isinstance(data, (str, pd.DataFrame)):
-                self.logger.error('텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다')
+    async def restart_bot(self):
+        change = False
+        gubun = self.dict_set['증권사'][4:]
+        if self.token != self.dict_set[f'텔레그램봇토큰{gubun}'] or \
+                self.chat_id != self.dict_set[f'텔레그램사용자아이디{gubun}']:
+            change = True
+            self.token = self.dict_set[f'텔레그램봇토큰{gubun}']
+            self.chat_id = self.dict_set[f'텔레그램사용자아이디{gubun}']
+
+        if change:
+            try:
+                self.running = False
+                if self.application and self.application.running:
+                    await self.application.updater.stop()
+                    await self.application.stop()
+                    await self.application.shutdown()
+                    self.application = None
+
+                if self.token and self.chat_id:
+                    self.running = True
+                    self.application = (
+                        ApplicationBuilder()
+                        .token(self.token)
+                        .post_init(self.setup_application)
+                        .build()
+                    )
+                    self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
+                    await self.start_bot()
+            except:
+                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 텔레그램 봇 재시작'))
+                self.running = False
 
     @staticmethod
     def GetTextFromDataframe(df):
@@ -138,7 +190,7 @@ class TelegramBot:
             tbg   = df['매입금액'].sum()
             tpg   = df['평가금액'].sum()
             tsg   = df['평가손익'].sum()
-            tpp   = np.round(tsg / tbg * 100, 2)
+            tpp   = round(tsg / tbg * 100, 2)
             text += f'{tbg:,.0f}{m_unit} {tpg:,.0f}{m_unit} {tpp:.2f}% {tsg:,.0f}{m_unit}\n'
         elif '주문구분' in df.columns:
             for index in df.index:

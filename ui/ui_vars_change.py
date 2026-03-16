@@ -1,9 +1,11 @@
 
-import numpy as np
-from traceback import print_exc
+from traceback import format_exc
+from utility.setting_base import ui_num
 from ui.set_text import buy_signal, sell_signal, future_buy_signal, future_sell_signal
+from utility.static import error_decorator
 
 
+@error_decorator
 def get_fix_strategy(ui, strategy, gubun):
     if gubun == '매수':
         if '키움증권' in ui.dict_set['증권사'] or ui.dict_set['거래소'] == '업비트':
@@ -30,7 +32,7 @@ def get_fix_strategy(ui, strategy, gubun):
     return strategy
 
 
-# noinspection PyUnusedLocal
+@error_decorator
 def get_optivars_to_gavars(ui, opti_vars_text):
     ga_vars_text = ''
     try:
@@ -49,23 +51,23 @@ def get_optivars_to_gavars(ui, opti_vars_text):
                     ga_vars_text = f'{ga_vars_text}{vars_curr}, '
                     vars_curr += vars_gap
                     if vars_gap < 0:
-                        vars_curr = np.round(vars_curr, 2)
+                        vars_curr = round(vars_curr, 2)
                 ga_vars_text = f'{ga_vars_text[:-2]}], {vars_high}]\n'
             else:
                 while vars_curr >= vars_last:
                     ga_vars_text = f'{ga_vars_text}{vars_curr}, '
                     vars_curr += vars_gap
                     if vars_gap < 0:
-                        vars_curr = np.round(vars_curr, 2)
+                        vars_curr = round(vars_curr, 2)
                 ga_vars_text = f'{ga_vars_text[:-2]}], {vars_high}]\n'
     except:
-        print_exc()
+        ui.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_optivars_to_gavars'))
 
     ga_vars_text = ga_vars_text.replace('vars_', 'self.vars')
     return ga_vars_text[:-1]
 
 
-# noinspection PyUnusedLocal
+@error_decorator
 def get_gavars_to_optivars(ui, ga_vars_text):
     opti_vars_text = ''
     try:
@@ -80,17 +82,18 @@ def get_gavars_to_optivars(ui, ga_vars_text):
                 vars_end = vars_high
             else:
                 vars_high, vars_gap = vars_[i][1], vars_[i][0][1] - vars_[i][0][0]
-                if vars_gap.__class__ == float: vars_gap = np.round(vars_gap, 2)
+                if vars_gap.__class__ == float: vars_gap = round(vars_gap, 2)
                 vars_start = vars_[i][0][0]
                 vars_end = vars_[i][0][-1]
             opti_vars_text = f'{opti_vars_text}vars_[{i}] = [[{vars_start}, {vars_end}, {vars_gap}], {vars_high}]\n'
     except:
-        print_exc()
+        ui.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_gavars_to_optivars'))
 
     opti_vars_text = opti_vars_text.replace('vars_', 'self.vars')
     return opti_vars_text[:-1]
 
 
+@error_decorator
 def get_stgtxt_to_varstxt(ui, buystg, sellstg):
     cnt = 1
     sellstg_str, buystg_str = '', ''
@@ -125,6 +128,7 @@ def get_stgtxt_to_varstxt(ui, buystg, sellstg):
 
 
 # noinspection PyUnusedLocal
+@error_decorator
 def get_stgtxt_sort(ui, buystg, sellstg):
     buystg_str, sellstg_str = '', ''
     if buystg and sellstg and 'self.vars' in buystg and 'self.vars' in sellstg:
@@ -216,6 +220,7 @@ def get_stgtxt_sort(ui, buystg, sellstg):
 
 
 # noinspection PyUnusedLocal
+@error_decorator
 def get_stgtxt_sort2(ui, optivars, gavars):
     optivars_str, gavars_str = '', ''
     if optivars and 'self.vars' in optivars:

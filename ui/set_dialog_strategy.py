@@ -1,4 +1,6 @@
+
 from PyQt5.QtWidgets import QLabel
+from ui.set_widget import error_decorator
 from ui.set_style import qfont14, style_bc_dk
 
 
@@ -8,6 +10,7 @@ class SetDialogStrategy:
         self.wc = wc
         self.set()
 
+    @error_decorator
     def set(self):
         self.ui.dialog_strategy = self.wc.setDialog('STOM STRATEGY')
         self.ui.dialog_strategy.geometry().center()
@@ -259,7 +262,7 @@ class SetDialogStrategy:
         self.ui.stg_pushButton_205 = self.wc.setPushbutton('사용자버튼설정', box=self.ui.dialog_strategy, color=14, click=self.ui.StrategyButtonClicked, cmd=205)
 
         self.ui.dialog_strategy.resize(1050, 1365)
-        if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
+        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
                 self.ui.dialog_strategy.move(self.ui.dict_set['창위치'][22], self.ui.dict_set['창위치'][23])
             except:
