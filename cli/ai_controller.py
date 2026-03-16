@@ -427,6 +427,207 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def _save_generated_strategy(self, strategy_name, expressions, strategy_type, base_buy_strategy):
+        """전략 코드를 생성하여 DB에 저장한다. base_buy_strategy가 있으면 합성 전략을 생성한다."""
+        from cli.strategy_generator import save_strategy_to_db, generate_buy_filter_strategy
+        from cli.strategy_loader import load_strategy_from_db
+        from cli.paths import DB_STRATEGY
+
+        if strategy_type == 'buy' and base_buy_strategy:
+            base_loaded = load_strategy_from_db(DB_STRATEGY, base_buy_strategy, 'buy')
+            if base_loaded.get('status') != 'ok':
+                return {'status': 'error', 'message': 'base buy strategy load failed', 'base_result': base_loaded}
+            composed = generate_buy_filter_strategy(strategy_name, base_loaded['code'], expressions)
+            if composed.get('status') != 'ok':
+                return composed
+            saved = save_strategy_to_db(DB_STRATEGY, strategy_name, composed['code'], strategy_type)
+            saved['code'] = composed['code']
+            return saved
+        return self.create_strategy(strategy_name, expressions, strategy_type)
+
+    def _execute_wfo_loop(self, *, name, config_dict, analysis_result, input_path, param_space,
+                          walk_forward_settings, strategy_type, buy_var, base_buy_strategy,
+                          top_n, min_samples, quantiles, alpha,
+                          ml_analysis_result, ml_feature_limit, ml_model_type,
+                          ml_top_n, ml_n_splits, ml_random_state, ml_weight,
+                          eval_criteria, promotion_preset, criteria_mode,
+                          auto_relax, max_relax_steps):
+        """WFO 루프를 실행하고 auto-relax 재시도를 관리한다.
+
+        임시 전략을 DB에 저장 → WFO 실행 → 평가 → 승격/거절 판정.
+        auto_relax가 True이면 zero-trade 시 top_n을 줄여 재시도한다.
+        """
+        current_top_n = max(int(top_n), 1)
+        max_attempts = max_relax_steps + 1 if auto_relax else 1
+        auto_relax_history = []
+        auto_relax_failed = False
+
+        wf_result = None
+        evaluation = None
+        final_strategy_result = None
+        promoted = False
+        temp_result = None
+        feature_whitelist = None
+        feature_importance_map = None
+        expression_result = None
+        code_result = None
+
+        for step in range(max_attempts):
+            prepared = self._prepare_strategy_candidate(
+                name=name,
+                analysis_result=analysis_result,
+                input_path=input_path,
+                top_n=current_top_n,
+                strategy_type=strategy_type,
+                buy_var=buy_var,
+                min_samples=min_samples,
+                quantiles=quantiles,
+                alpha=alpha,
+                ml_analysis_result=ml_analysis_result,
+                ml_feature_limit=ml_feature_limit,
+                ml_model_type=ml_model_type,
+                ml_top_n=ml_top_n,
+                ml_n_splits=ml_n_splits,
+                ml_random_state=ml_random_state,
+                ml_weight=ml_weight,
+            )
+            if prepared.get('status') != 'ok':
+                return prepared
+
+            analysis_result = prepared['analysis_result']
+            ml_analysis_result = prepared.get('ml_analysis_result')
+            feature_whitelist = prepared.get('feature_whitelist')
+            feature_importance_map = prepared.get('feature_importance_map')
+            expression_result = prepared['expression_result']
+            code_result = prepared['code_result']
+
+            temporary_name = f'__AUTO_TMP__{name}_{int(time.time() * 1000)}_{step}'
+            temp_result = self._save_generated_strategy(temporary_name, expression_result['expressions'],
+                                                        strategy_type, base_buy_strategy)
+            if temp_result.get('status') != 'ok':
+                return {'status': 'error', 'message': 'temporary strategy save failed', 'temporary_result': temp_result}
+
+            try:
+                run_config = dict(config_dict)
+                if strategy_type == 'buy':
+                    run_config['buy_strategy'] = temporary_name
+                else:
+                    run_config['sell_strategy'] = temporary_name
+
+                wf_result = self.walk_forward(run_config, param_space or {}, **walk_forward_settings)
+                evaluation = self.evaluate_walk_forward_result(
+                    wf_result,
+                    min_rounds=eval_criteria['min_rounds'],
+                    min_success_rate=eval_criteria['min_success_rate'],
+                    min_mean_oos_metric=eval_criteria['min_mean_oos_metric'],
+                    min_avg_trade_count=eval_criteria['min_avg_trade_count'],
+                )
+                evaluation['preset'] = promotion_preset
+                evaluation['criteria'] = eval_criteria
+                evaluation['criteria_mode'] = criteria_mode
+
+                summary = (evaluation.get('summary') or {}).copy()
+                total_rounds = int(summary.get('round_count', 0) or 0)
+                zero_trade_rounds = int(summary.get('zero_trade_rounds', 0) or 0)
+                if auto_relax:
+                    auto_relax_history.append({
+                        'step': step, 'top_n': current_top_n,
+                        'zero_trade_rounds': zero_trade_rounds, 'total_rounds': total_rounds,
+                    })
+
+                should_relax = (
+                    auto_relax and
+                    evaluation.get('status') == 'ok' and
+                    'all_rounds_no_trades' in (evaluation.get('reasons') or []) and
+                    current_top_n > 1 and
+                    step < max_attempts - 1
+                )
+                if should_relax:
+                    current_top_n = max(1, current_top_n - 1)
+                    continue
+
+                if auto_relax and evaluation.get('status') == 'ok' and \
+                        'all_rounds_no_trades' in (evaluation.get('reasons') or []) and current_top_n <= 1:
+                    auto_relax_failed = True
+
+                if evaluation.get('status') == 'ok' and evaluation.get('passed'):
+                    final_strategy_result = self._save_generated_strategy(name, expression_result['expressions'],
+                                                                          strategy_type, base_buy_strategy)
+                    promoted = final_strategy_result.get('status') == 'ok'
+                else:
+                    final_strategy_result = {'status': 'skipped', 'action': 'rejected'}
+                break
+            finally:
+                self.delete_strategy(temporary_name, strategy_type)
+
+        return {
+            'analysis_result': analysis_result,
+            'ml_analysis_result': ml_analysis_result,
+            'feature_whitelist': feature_whitelist,
+            'feature_importance_map': feature_importance_map,
+            'expression_result': expression_result,
+            'code_result': code_result,
+            'wf_result': wf_result,
+            'evaluation': evaluation,
+            'final_strategy_result': final_strategy_result,
+            'promoted': promoted,
+            'temp_result': temp_result,
+            'auto_relax_history': auto_relax_history,
+            'auto_relax_failed': auto_relax_failed,
+        }
+
+    def _build_discovery_response(self, loop_result, *, name, criteria_mode, auto_relax,
+                                  output_code_path, report_json_path, report_md_path):
+        """WFO 루프 결과를 최종 응답 dict로 조립하고 리포트를 저장한다."""
+        from cli.condition_generator import save_condition_code
+        from cli.discovery_report import build_discovery_report, save_discovery_report_json, save_discovery_report_markdown
+
+        wf_result = loop_result.get('wf_result')
+        final_strategy_result = loop_result.get('final_strategy_result')
+        temp_result = loop_result.get('temp_result')
+        code_result = loop_result.get('code_result')
+
+        generated_code = None
+        if final_strategy_result and final_strategy_result.get('code'):
+            generated_code = final_strategy_result.get('code')
+        elif temp_result and temp_result.get('code'):
+            generated_code = temp_result.get('code')
+        elif code_result:
+            generated_code = code_result.get('code')
+
+        save_code_result = None
+        if output_code_path and generated_code:
+            save_code_result = save_condition_code(generated_code, output_code_path)
+
+        response = {
+            'status': 'ok' if wf_result and wf_result.get('status') == 'ok' else 'error',
+            'analysis_result': loop_result.get('analysis_result'),
+            'ml_analysis_result': loop_result.get('ml_analysis_result'),
+            'feature_whitelist': loop_result.get('feature_whitelist'),
+            'feature_importance_map': loop_result.get('feature_importance_map'),
+            'expression_result': loop_result.get('expression_result'),
+            'generated_code': generated_code,
+            'saved_code': save_code_result,
+            'temporary_strategy': temp_result,
+            'walk_forward': wf_result,
+            'promotion_evaluation': loop_result.get('evaluation'),
+            'strategy_result': final_strategy_result,
+            'promoted': loop_result.get('promoted', False),
+            'criteria_mode': criteria_mode,
+        }
+        if auto_relax:
+            response['auto_relax_history'] = loop_result.get('auto_relax_history', [])
+            if loop_result.get('auto_relax_failed'):
+                response['auto_relax_failed'] = True
+
+        report = build_discovery_report(response, strategy_name=name)
+        response['report'] = report
+        if report_json_path:
+            response['saved_report_json'] = save_discovery_report_json(report, report_json_path)
+        if report_md_path:
+            response['saved_report_md'] = save_discovery_report_markdown(report, report_md_path)
+        return response
+
     def discover_and_promote_strategy(self, name: str, config_dict: dict, input_path: str = None,
                                       analysis_result: dict = None, param_space: dict = None, top_n: int = 5,
                                       strategy_type: str = 'buy', buy_var: str = '매수',
@@ -468,31 +669,11 @@ class AIBacktestController:
             report_json_path = o.report_json_path if report_json_path is None else report_json_path
             report_md_path = o.report_md_path if report_md_path is None else report_md_path
         try:
-            from cli.condition_generator import save_condition_code
-            from cli.discovery_report import build_discovery_report, save_discovery_report_json, save_discovery_report_markdown
             from cli.promotion import resolve_promotion_criteria
-            from cli.strategy_generator import save_strategy_to_db, generate_buy_filter_strategy
-            from cli.strategy_loader import load_strategy_from_db
-            from cli.paths import DB_STRATEGY
 
             if walk_forward_settings is None:
                 return {'status': 'error', 'message': 'walk_forward_settings가 필요합니다.'}
 
-            current_top_n = max(int(top_n), 1)
-            max_attempts = max_relax_steps + 1 if auto_relax else 1
-            auto_relax_history = []
-            auto_relax_failed = False
-
-            save_code_result = None
-            wf_result = None
-            evaluation = None
-            final_strategy_result = None
-            promoted = False
-            temp_result = None
-            feature_whitelist = None
-            feature_importance_map = None
-            expression_result = None
-            code_result = None
             resolved_criteria = resolve_promotion_criteria(promotion_preset, promotion_criteria)
             eval_criteria = dict(resolved_criteria)
             criteria_mode = 'strict'
@@ -507,151 +688,28 @@ class AIBacktestController:
                         break
             base_buy_strategy = config_dict.get('base_buy_strategy') if strategy_type == 'buy' else None
 
-            def save_generated_strategy(strategy_name, expressions):
-                if strategy_type == 'buy' and base_buy_strategy:
-                    base_loaded = load_strategy_from_db(DB_STRATEGY, base_buy_strategy, 'buy')
-                    if base_loaded.get('status') != 'ok':
-                        return {'status': 'error', 'message': 'base buy strategy load failed', 'base_result': base_loaded}
-                    composed = generate_buy_filter_strategy(strategy_name, base_loaded['code'], expressions)
-                    if composed.get('status') != 'ok':
-                        return composed
-                    saved = save_strategy_to_db(DB_STRATEGY, strategy_name, composed['code'], strategy_type)
-                    saved['code'] = composed['code']
-                    return saved
-                saved = self.create_strategy(strategy_name, expressions, strategy_type)
-                return saved
+            loop_result = self._execute_wfo_loop(
+                name=name, config_dict=config_dict,
+                analysis_result=analysis_result, input_path=input_path,
+                param_space=param_space, walk_forward_settings=walk_forward_settings,
+                strategy_type=strategy_type, buy_var=buy_var,
+                base_buy_strategy=base_buy_strategy,
+                top_n=top_n, min_samples=min_samples, quantiles=quantiles, alpha=alpha,
+                ml_analysis_result=ml_analysis_result, ml_feature_limit=ml_feature_limit,
+                ml_model_type=ml_model_type, ml_top_n=ml_top_n,
+                ml_n_splits=ml_n_splits, ml_random_state=ml_random_state, ml_weight=ml_weight,
+                eval_criteria=eval_criteria, promotion_preset=promotion_preset,
+                criteria_mode=criteria_mode,
+                auto_relax=auto_relax, max_relax_steps=max_relax_steps,
+            )
+            if loop_result.get('status') == 'error':
+                return loop_result
 
-            for step in range(max_attempts):
-                prepared = self._prepare_strategy_candidate(
-                    name=name,
-                    analysis_result=analysis_result,
-                    input_path=input_path,
-                    top_n=current_top_n,
-                    strategy_type=strategy_type,
-                    buy_var=buy_var,
-                    min_samples=min_samples,
-                    quantiles=quantiles,
-                    alpha=alpha,
-                    ml_analysis_result=ml_analysis_result,
-                    ml_feature_limit=ml_feature_limit,
-                    ml_model_type=ml_model_type,
-                    ml_top_n=ml_top_n,
-                    ml_n_splits=ml_n_splits,
-                    ml_random_state=ml_random_state,
-                    ml_weight=ml_weight,
-                )
-                if prepared.get('status') != 'ok':
-                    return prepared
-
-                analysis_result = prepared['analysis_result']
-                ml_analysis_result = prepared.get('ml_analysis_result')
-                feature_whitelist = prepared.get('feature_whitelist')
-                feature_importance_map = prepared.get('feature_importance_map')
-                expression_result = prepared['expression_result']
-                code_result = prepared['code_result']
-
-                temporary_name = f'__AUTO_TMP__{name}_{int(time.time() * 1000)}_{step}'
-                temp_result = save_generated_strategy(temporary_name, expression_result['expressions'])
-                if temp_result.get('status') != 'ok':
-                    return {'status': 'error', 'message': 'temporary strategy save failed', 'temporary_result': temp_result}
-
-                try:
-                    run_config = dict(config_dict)
-                    if strategy_type == 'buy':
-                        run_config['buy_strategy'] = temporary_name
-                    else:
-                        run_config['sell_strategy'] = temporary_name
-
-                    wf_result = self.walk_forward(
-                        run_config,
-                        param_space or {},
-                        **walk_forward_settings,
-                    )
-                    evaluation = self.evaluate_walk_forward_result(
-                        wf_result,
-                        min_rounds=eval_criteria['min_rounds'],
-                        min_success_rate=eval_criteria['min_success_rate'],
-                        min_mean_oos_metric=eval_criteria['min_mean_oos_metric'],
-                        min_avg_trade_count=eval_criteria['min_avg_trade_count'],
-                    )
-                    evaluation['preset'] = promotion_preset
-                    evaluation['criteria'] = eval_criteria
-                    evaluation['criteria_mode'] = criteria_mode
-
-                    summary = (evaluation.get('summary') or {}).copy()
-                    total_rounds = int(summary.get('round_count', 0) or 0)
-                    zero_trade_rounds = int(summary.get('zero_trade_rounds', 0) or 0)
-                    if auto_relax:
-                        auto_relax_history.append({
-                            'step': step,
-                            'top_n': current_top_n,
-                            'zero_trade_rounds': zero_trade_rounds,
-                            'total_rounds': total_rounds,
-                        })
-
-                    should_relax = (
-                        auto_relax and
-                        evaluation.get('status') == 'ok' and
-                        'all_rounds_no_trades' in (evaluation.get('reasons') or []) and
-                        current_top_n > 1 and
-                        step < max_attempts - 1
-                    )
-
-                    if should_relax:
-                        current_top_n = max(1, current_top_n - 1)
-                        continue
-
-                    if auto_relax and evaluation.get('status') == 'ok' and \
-                            'all_rounds_no_trades' in (evaluation.get('reasons') or []) and current_top_n <= 1:
-                        auto_relax_failed = True
-
-                    if evaluation.get('status') == 'ok' and evaluation.get('passed'):
-                        final_strategy_result = save_generated_strategy(name, expression_result['expressions'])
-                        promoted = final_strategy_result.get('status') == 'ok'
-                    else:
-                        final_strategy_result = {'status': 'skipped', 'action': 'rejected'}
-                    break
-                finally:
-                    self.delete_strategy(temporary_name, strategy_type)
-
-            generated_code = None
-            if final_strategy_result and final_strategy_result.get('code'):
-                generated_code = final_strategy_result.get('code')
-            elif temp_result and temp_result.get('code'):
-                generated_code = temp_result.get('code')
-            elif code_result:
-                generated_code = code_result.get('code')
-
-            if output_code_path and generated_code:
-                save_code_result = save_condition_code(generated_code, output_code_path)
-
-            response = {
-                'status': 'ok' if wf_result and wf_result.get('status') == 'ok' else 'error',
-                'analysis_result': analysis_result,
-                'ml_analysis_result': ml_analysis_result,
-                'feature_whitelist': feature_whitelist,
-                'feature_importance_map': feature_importance_map,
-                'expression_result': expression_result,
-                'generated_code': generated_code,
-                'saved_code': save_code_result,
-                'temporary_strategy': temp_result,
-                'walk_forward': wf_result,
-                'promotion_evaluation': evaluation,
-                'strategy_result': final_strategy_result,
-                'promoted': promoted,
-                'criteria_mode': criteria_mode,
-            }
-            if auto_relax:
-                response['auto_relax_history'] = auto_relax_history
-                if auto_relax_failed:
-                    response['auto_relax_failed'] = True
-            report = build_discovery_report(response, strategy_name=name)
-            response['report'] = report
-            if report_json_path:
-                response['saved_report_json'] = save_discovery_report_json(report, report_json_path)
-            if report_md_path:
-                response['saved_report_md'] = save_discovery_report_markdown(report, report_md_path)
-            return response
+            return self._build_discovery_response(
+                loop_result, name=name, criteria_mode=criteria_mode, auto_relax=auto_relax,
+                output_code_path=output_code_path,
+                report_json_path=report_json_path, report_md_path=report_md_path,
+            )
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
