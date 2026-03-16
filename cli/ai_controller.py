@@ -63,7 +63,7 @@ class AIBacktestController:
         try:
             from cli.strategy_loader import load_strategy_from_db
             from cli.timeframe_detector import detect_timeframe
-            from utility.setting import DB_STRATEGY
+            from cli.paths import DB_STRATEGY
 
             loader_result = load_strategy_from_db(DB_STRATEGY, name, strategy_type)
             if loader_result['status'] != 'ok':
@@ -473,7 +473,7 @@ class AIBacktestController:
             from cli.promotion import resolve_promotion_criteria
             from cli.strategy_generator import save_strategy_to_db, generate_buy_filter_strategy
             from cli.strategy_loader import load_strategy_from_db
-            from utility.setting import DB_STRATEGY
+            from cli.paths import DB_STRATEGY
 
             if walk_forward_settings is None:
                 return {'status': 'error', 'message': 'walk_forward_settings가 필요합니다.'}
@@ -812,7 +812,7 @@ class AIBacktestController:
         """전략 코드를 생성하고 DB에 저장한다."""
         try:
             from cli.strategy_generator import create_and_save
-            from utility.setting import DB_STRATEGY
+            from cli.paths import DB_STRATEGY
 
             return create_and_save(DB_STRATEGY, name, conditions, strategy_type)
         except Exception as e:
@@ -822,7 +822,7 @@ class AIBacktestController:
         """전략을 DB에서 삭제한다."""
         try:
             from cli.strategy_generator import delete_strategy_from_db
-            from utility.setting import DB_STRATEGY
+            from cli.paths import DB_STRATEGY
 
             return delete_strategy_from_db(DB_STRATEGY, name, strategy_type)
         except Exception as e:

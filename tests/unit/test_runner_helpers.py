@@ -13,9 +13,19 @@ from multiprocessing import Queue, Process
 from unittest.mock import patch
 import time
 
+import types
 import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+
+# utility.setting 모듈이 sys.exit()을 호출하지 않도록 가짜 모듈을 미리 등록
+# _sync_dict_set()이 'from utility.setting import DICT_SET'를 할 때
+# 이 가짜 모듈의 DICT_SET을 사용하게 됨
+_mock_dict_set = {}
+if 'utility.setting' not in sys.modules:
+    _fake_setting = types.ModuleType('utility.setting')
+    _fake_setting.DICT_SET = _mock_dict_set
+    sys.modules['utility.setting'] = _fake_setting
 
 
 # ============================================================
@@ -28,46 +38,41 @@ class TestSyncDictSet:
     def test_sync_timeframe_tick(self, sample_config):
         """is_tick=True → DICT_SET['주식타임프레임'] = True."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         sample_config.is_tick = True
         _sync_dict_set(sample_config)
-        assert DICT_SET['주식타임프레임'] is True
+        assert _mock_dict_set['주식타임프레임'] is True
 
     def test_sync_timeframe_min(self, sample_config):
         """is_tick=False → DICT_SET['주식타임프레임'] = False."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         sample_config.is_tick = False
         _sync_dict_set(sample_config)
-        assert DICT_SET['주식타임프레임'] is False
+        assert _mock_dict_set['주식타임프레임'] is False
 
     def test_sync_broker(self, sample_config):
         """증권사가 '키움증권'으로 설정되어야 함."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         _sync_dict_set(sample_config)
-        assert '키움' in DICT_SET.get('증권사', '')
+        assert '키움' in _mock_dict_set.get('증권사', '')
 
     def test_sync_oms(self, sample_config):
         """config.oms → DICT_SET['백테주문관리적용'] (정확한 한국어 키)."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         sample_config.oms = True
         _sync_dict_set(sample_config)
-        assert DICT_SET.get('백테주문관리적용') is True
+        assert _mock_dict_set.get('백테주문관리적용') is True
 
     def test_sync_blacklist(self, sample_config):
         """config.blacklist → DICT_SET['블랙리스트추가'] (정확한 한국어 키)."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         sample_config.blacklist = True
         _sync_dict_set(sample_config)
-        assert DICT_SET.get('블랙리스트추가') is True
+        assert _mock_dict_set.get('블랙리스트추가') is True
 
 
 # ============================================================
@@ -80,61 +85,49 @@ class TestSyncDictSetComplete:
     def test_graph_save_disabled(self, sample_config):
         """CLI에서 그래프 저장 비활성화: DICT_SET['그래프저장하지않기'] = True."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         _sync_dict_set(sample_config)
-        assert DICT_SET.get('그래프저장하지않기') is True
+        assert _mock_dict_set.get('그래프저장하지않기') is True
 
     def test_graph_display_disabled(self, sample_config):
         """CLI에서 그래프 표시 비활성화: DICT_SET['그래프띄우지않기'] = True."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         _sync_dict_set(sample_config)
-        assert DICT_SET.get('그래프띄우지않기') is True
+        assert _mock_dict_set.get('그래프띄우지않기') is True
 
     def test_stom_live_disabled(self, sample_config):
         """CLI에서 스톰라이브 비활성화: DICT_SET['스톰라이브'] = False."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         _sync_dict_set(sample_config)
-        assert DICT_SET.get('스톰라이브') is False
+        assert _mock_dict_set.get('스톰라이브') is False
 
     def test_no_wrong_english_keys(self, sample_config):
         """잘못된 영어 키(backtest_oms_apply, blacklist_add)가 사용되지 않아야 함."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
-        # 동기화 전 영어 키가 있다면 삭제
-        DICT_SET.pop('backtest_oms_apply', None)
-        DICT_SET.pop('blacklist_add', None)
-
+        _mock_dict_set.clear()
         _sync_dict_set(sample_config)
-
-        # 영어 키가 생성되지 않아야 함
-        assert 'backtest_oms_apply' not in DICT_SET, \
+        assert 'backtest_oms_apply' not in _mock_dict_set, \
             'backtest_oms_apply는 잘못된 키. 백테주문관리적용 사용해야 함'
-        assert 'blacklist_add' not in DICT_SET, \
+        assert 'blacklist_add' not in _mock_dict_set, \
             'blacklist_add는 잘못된 키. 블랙리스트추가 사용해야 함'
 
     def test_oms_false_sync(self, sample_config):
         """config.oms=False → DICT_SET['백테주문관리적용'] = False."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         sample_config.oms = False
         _sync_dict_set(sample_config)
-        assert DICT_SET.get('백테주문관리적용') is False
+        assert _mock_dict_set.get('백테주문관리적용') is False
 
     def test_blacklist_false_sync(self, sample_config):
         """config.blacklist=False → DICT_SET['블랙리스트추가'] = False."""
         from cli.runner import _sync_dict_set
-        from utility.setting import DICT_SET
-
+        _mock_dict_set.clear()
         sample_config.blacklist = False
         _sync_dict_set(sample_config)
-        assert DICT_SET.get('블랙리스트추가') is False
+        assert _mock_dict_set.get('블랙리스트추가') is False
 
 
 # ============================================================

@@ -9,7 +9,7 @@ import pandas as pd
 from multiprocessing import Process, Queue, Value, Lock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utility.setting import DICT_SET, DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
+from cli.paths import DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
 from backtest.back_static import GetMoneytopQuery
 from backtest.back_subtotal import BackSubTotal
 from backtest.backtest import BackTest
@@ -93,6 +93,7 @@ def _sync_dict_set(config):
     키 이름은 utility/setting.py DICT_SET 정의 및
     backengine_base.py self.dict_set[] 접근 패턴과 일치해야 한다.
     """
+    from utility.setting import DICT_SET
     # --- CLI 인자 → DICT_SET 동기화 (정확한 한국어 키 사용) ---
     DICT_SET['주식타임프레임'] = config.is_tick
     DICT_SET['증권사'] = '키움증권'
