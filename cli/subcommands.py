@@ -200,6 +200,10 @@ def create_subcommand_parser():
     disc_auto.add_argument('--report-json', help='결과 JSON 리포트 저장 경로')
     disc_auto.add_argument('--report-md', help='결과 Markdown 리포트 저장 경로')
 
+    # discovery batch
+    disc_batch = disc_sub.add_parser('batch', help='배치 설정 JSON으로 여러 auto-discovery 순차 실행')
+    disc_batch.add_argument('--config', '-c', required=True, dest='batch_config', help='배치 설정 JSON 파일 경로')
+
     return parser
 
 
@@ -392,6 +396,13 @@ def _handle_discovery(parsed):
             ml_weight=parsed.ml_weight,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'batch':
+        from cli.auto_discovery import run_batch
+
+        result = run_batch(batch_path=parsed.batch_config)
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
         return 0 if result.get('status') == 'ok' else 1
 
     elif parsed.discovery_action == 'auto':

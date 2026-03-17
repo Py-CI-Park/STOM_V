@@ -713,6 +713,25 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def auto_discover_batch(self, batch_path: str = None, common: dict = None,
+                             runs: list = None) -> dict:
+        """여러 auto-discovery 파이프라인을 배치로 순차 실행한다.
+
+        Args:
+            batch_path: 배치 설정 JSON 파일 경로.
+            common: 공통 설정 dict.
+            runs: 개별 실행 오버라이드 리스트.
+
+        Returns:
+            배치 결과 dict (status, total, promoted, results).
+        """
+        try:
+            from cli.auto_discovery import run_batch
+            return run_batch(batch_path=batch_path, common=common, runs=runs,
+                             controller=self)
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def auto_discover(self, config=None, **kwargs) -> dict:
         """DB 전략명으로 백테스트 → 분석 → WFO 검증 → 승격 전체 파이프라인을 실행한다.
 

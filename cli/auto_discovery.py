@@ -23,7 +23,8 @@ import os
 import sys
 import time
 import copy
-from dataclasses import dataclass, field
+import json
+from dataclasses import dataclass, field, fields, asdict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -434,3 +435,112 @@ class AutoDiscoveryEngine:
             'phase_c': phase_c,
             'pipeline_duration': round(time.time() - pipeline_start, 2),
         }
+
+
+# ---------------------------------------------------------------------------
+# Batch execution
+# ---------------------------------------------------------------------------
+
+def load_batch_config(path: str) -> dict:
+    """배치 설정 JSON을 읽어 common + runs 리스트로 반환한다.
+
+    JSON 형식::
+
+        {
+          "common": { "sell_strategy": "S", "start_date": 20250401, ... },
+          "runs": [
+            { "buy_strategy": "A", "alpha": 0.05 },
+            { "buy_strategy": "B", "top_n": 3 }
+          ]
+        }
+
+    Returns:
+        {'common': dict, 'runs': list[dict]}
+    """
+    with open(path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    if 'runs' not in data or not isinstance(data['runs'], list):
+        raise ValueError("배치 설정 JSON에 'runs' 배열이 필요합니다.")
+
+    return {
+        'common': data.get('common', {}),
+        'runs': data['runs'],
+    }
+
+
+def _merge_batch_run(common: dict, run_override: dict) -> AutoDiscoveryConfig:
+    """common 설정과 개별 run 오버라이드를 병합하여 AutoDiscoveryConfig를 생성한다."""
+    merged = {**common, **run_override}
+    valid_fields = {f.name for f in fields(AutoDiscoveryConfig)}
+    filtered = {k: v for k, v in merged.items() if k in valid_fields}
+    return AutoDiscoveryConfig(**filtered)
+
+
+def run_batch(batch_path: str = None, common: dict = None, runs: list = None,
+              controller=None) -> dict:
+    """배치 설정으로 여러 auto-discovery 파이프라인을 순차 실행한다.
+
+    Args:
+        batch_path: 배치 설정 JSON 파일 경로 (common/runs와 상호 배타).
+        common: 공통 설정 dict.
+        runs: 개별 실행 오버라이드 리스트.
+        controller: AIBacktestController 인스턴스 (테스트용).
+
+    Returns:
+        배치 실행 결과 dict (status, total, promoted, results).
+    """
+    if batch_path:
+        batch_data = load_batch_config(batch_path)
+        common = batch_data['common']
+        runs = batch_data['runs']
+
+    if not runs:
+        return {'status': 'error', 'message': '실행할 runs가 없습니다.'}
+
+    if controller is None:
+        from cli.ai_controller import AIBacktestController
+        controller = AIBacktestController()
+
+    results = []
+    promoted_count = 0
+    batch_start = time.time()
+
+    for idx, run_override in enumerate(runs):
+        config = _merge_batch_run(common or {}, run_override)
+        run_result = AutoDiscoveryEngine.run(config, controller)
+
+        summary = {
+            'index': idx,
+            'buy_strategy': config.buy_strategy,
+            'input_csv': config.input_csv,
+            'status': run_result.get('status', 'error'),
+            'promoted': run_result.get('promoted', False),
+            'strategy_name': run_result.get('strategy_name'),
+            'pipeline_duration': run_result.get('pipeline_duration'),
+        }
+
+        if not run_result.get('promoted', False):
+            # 실패/거절 사유 추출
+            phase_c = run_result.get('phase_c') or {}
+            discovery = phase_c.get('discovery_result') or {}
+            evaluation = discovery.get('promotion_evaluation') or {}
+            reasons = evaluation.get('reasons', [])
+            if reasons:
+                summary['reject_reasons'] = reasons
+            elif run_result.get('status') == 'error':
+                summary['error_message'] = run_result.get('message', '')
+
+        if run_result.get('promoted', False):
+            promoted_count += 1
+
+        results.append(summary)
+
+    return {
+        'status': 'ok',
+        'total': len(results),
+        'promoted': promoted_count,
+        'rejected': len(results) - promoted_count,
+        'results': results,
+        'batch_duration': round(time.time() - batch_start, 2),
+    }
