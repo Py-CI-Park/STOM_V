@@ -24,6 +24,7 @@ import sys
 import time
 import copy
 import json
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, field, fields, asdict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -492,15 +493,88 @@ def _merge_batch_run(common: dict, run_override: dict) -> AutoDiscoveryConfig:
     return AutoDiscoveryConfig(**filtered)
 
 
+def _run_single_pipeline(common: dict, run_override: dict, idx: int,
+                          engine_count_override: int = None) -> dict:
+    """단일 파이프라인 실행. 병렬 시 controller를 내부 생성 (picklable).
+
+    Args:
+        common: 공통 설정 dict.
+        run_override: 개별 실행 오버라이드 dict.
+        idx: 결과에 포함할 실행 인덱스.
+        engine_count_override: 병렬 시 엔진 수 분배값. None이면 config 기본값.
+
+    Returns:
+        summary dict (index, buy_strategy, status, promoted 등).
+    """
+    config = _merge_batch_run(common or {}, run_override)
+    if engine_count_override is not None:
+        config = AutoDiscoveryConfig(
+            **{**{f.name: getattr(config, f.name) for f in fields(AutoDiscoveryConfig)},
+               'engine_count': engine_count_override})
+
+    from cli.ai_controller import AIBacktestController
+    controller = AIBacktestController()
+
+    run_result = AutoDiscoveryEngine.run(config, controller)
+
+    summary = {
+        'index': idx,
+        'buy_strategy': config.buy_strategy,
+        'input_csv': config.input_csv,
+        'status': run_result.get('status', 'error'),
+        'promoted': run_result.get('promoted', False),
+        'strategy_name': run_result.get('strategy_name'),
+        'pipeline_duration': run_result.get('pipeline_duration'),
+    }
+
+    if not run_result.get('promoted', False):
+        phase_c = run_result.get('phase_c') or {}
+        discovery = phase_c.get('discovery_result') or {}
+        evaluation = discovery.get('promotion_evaluation') or {}
+        reasons = evaluation.get('reasons', [])
+        if reasons:
+            summary['reject_reasons'] = reasons
+        elif run_result.get('status') == 'error':
+            summary['error_message'] = run_result.get('message', '')
+
+    return summary
+
+
+def _extract_summary(config: AutoDiscoveryConfig, run_result: dict, idx: int) -> dict:
+    """파이프라인 결과에서 summary dict를 추출한다."""
+    summary = {
+        'index': idx,
+        'buy_strategy': config.buy_strategy,
+        'input_csv': config.input_csv,
+        'status': run_result.get('status', 'error'),
+        'promoted': run_result.get('promoted', False),
+        'strategy_name': run_result.get('strategy_name'),
+        'pipeline_duration': run_result.get('pipeline_duration'),
+    }
+
+    if not run_result.get('promoted', False):
+        phase_c = run_result.get('phase_c') or {}
+        discovery = phase_c.get('discovery_result') or {}
+        evaluation = discovery.get('promotion_evaluation') or {}
+        reasons = evaluation.get('reasons', [])
+        if reasons:
+            summary['reject_reasons'] = reasons
+        elif run_result.get('status') == 'error':
+            summary['error_message'] = run_result.get('message', '')
+
+    return summary
+
+
 def run_batch(batch_path: str = None, common: dict = None, runs: list = None,
-              controller=None) -> dict:
-    """배치 설정으로 여러 auto-discovery 파이프라인을 순차 실행한다.
+              controller=None, parallel: int = 0) -> dict:
+    """배치 설정으로 여러 auto-discovery 파이프라인을 실행한다.
 
     Args:
         batch_path: 배치 설정 JSON 파일 경로 (common/runs와 상호 배타).
         common: 공통 설정 dict.
         runs: 개별 실행 오버라이드 리스트.
-        controller: AIBacktestController 인스턴스 (테스트용).
+        controller: AIBacktestController 인스턴스 (테스트용, 순차 모드만).
+        parallel: 병렬 실행 수 (0=순차, 1+=병렬).
 
     Returns:
         배치 실행 결과 dict (status, total, promoted, results).
@@ -513,43 +587,54 @@ def run_batch(batch_path: str = None, common: dict = None, runs: list = None,
     if not runs:
         return {'status': 'error', 'message': '실행할 runs가 없습니다.'}
 
-    if controller is None:
-        from cli.ai_controller import AIBacktestController
-        controller = AIBacktestController()
-
-    results = []
-    promoted_count = 0
     batch_start = time.time()
 
-    for idx, run_override in enumerate(runs):
-        config = _merge_batch_run(common or {}, run_override)
-        run_result = AutoDiscoveryEngine.run(config, controller)
+    if parallel > 0:
+        # 병렬 실행: ProcessPoolExecutor
 
-        summary = {
-            'index': idx,
-            'buy_strategy': config.buy_strategy,
-            'input_csv': config.input_csv,
-            'status': run_result.get('status', 'error'),
-            'promoted': run_result.get('promoted', False),
-            'strategy_name': run_result.get('strategy_name'),
-            'pipeline_duration': run_result.get('pipeline_duration'),
-        }
+        base_engine_count = (common or {}).get(
+            'engine_count', AutoDiscoveryConfig.engine_count)
+        engine_per_pipeline = max(1, base_engine_count // parallel)
 
-        if not run_result.get('promoted', False):
-            # 실패/거절 사유 추출
-            phase_c = run_result.get('phase_c') or {}
-            discovery = phase_c.get('discovery_result') or {}
-            evaluation = discovery.get('promotion_evaluation') or {}
-            reasons = evaluation.get('reasons', [])
-            if reasons:
-                summary['reject_reasons'] = reasons
-            elif run_result.get('status') == 'error':
-                summary['error_message'] = run_result.get('message', '')
+        futures = {}
+        with ProcessPoolExecutor(max_workers=parallel) as executor:
+            for idx, run_override in enumerate(runs):
+                future = executor.submit(
+                    _run_single_pipeline, common or {}, run_override, idx,
+                    engine_per_pipeline)
+                futures[future] = idx
 
-        if run_result.get('promoted', False):
-            promoted_count += 1
+            results_map = {}
+            for future in as_completed(futures):
+                idx = futures[future]
+                try:
+                    results_map[idx] = future.result()
+                except Exception as e:
+                    results_map[idx] = {
+                        'index': idx,
+                        'buy_strategy': (runs[idx] or {}).get('buy_strategy', ''),
+                        'input_csv': None,
+                        'status': 'error',
+                        'promoted': False,
+                        'strategy_name': None,
+                        'pipeline_duration': None,
+                        'error_message': str(e),
+                    }
 
-        results.append(summary)
+        results = [results_map[i] for i in range(len(runs))]
+    else:
+        # 순차 실행
+        if controller is None:
+            from cli.ai_controller import AIBacktestController
+            controller = AIBacktestController()
+
+        results = []
+        for idx, run_override in enumerate(runs):
+            config = _merge_batch_run(common or {}, run_override)
+            run_result = AutoDiscoveryEngine.run(config, controller)
+            results.append(_extract_summary(config, run_result, idx))
+
+    promoted_count = sum(1 for r in results if r.get('promoted', False))
 
     return {
         'status': 'ok',

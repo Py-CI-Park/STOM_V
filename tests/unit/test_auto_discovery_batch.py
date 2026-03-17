@@ -14,6 +14,8 @@ from cli.auto_discovery import (
     load_batch_config,
     run_batch,
     _merge_batch_run,
+    _run_single_pipeline,
+    _extract_summary,
 )
 
 
@@ -333,3 +335,159 @@ class TestAIControllerBatch:
 
             assert result['status'] == 'ok'
             mock_batch.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# Parallel execution
+# ---------------------------------------------------------------------------
+
+class TestRunBatchParallel:
+    """run_batch() 병렬 실행 테스트."""
+
+    def test_parallel_zero_sequential_fallback(self, tmp_path):
+        """parallel=0이면 기존 순차 동작."""
+        csv_file = tmp_path / 'r.csv'
+        csv_file.write_text('data', encoding='utf-8')
+
+        controller = MagicMock()
+        controller.run.return_value = {
+            'status': 'success', 'csv_path': str(csv_file), 'metrics': {},
+        }
+        controller.analyze_results.return_value = {'status': 'ok'}
+        controller.generate_conditions.return_value = {
+            'status': 'ok', 'candidate_count': 1,
+            'code': 'pass', 'analysis_result': {'status': 'ok'},
+        }
+        controller.discover_and_promote_strategy.return_value = {
+            'status': 'ok', 'promoted': True,
+        }
+
+        result = run_batch(
+            common={'sell_strategy': 'S', 'start_date': 20250401, 'end_date': 20250430,
+                    'train_window_days': 30, 'test_window_days': 10},
+            runs=[{'buy_strategy': 'A'}],
+            controller=controller,
+            parallel=0,
+        )
+        assert result['status'] == 'ok'
+        assert result['promoted'] == 1
+
+    def test_parallel_engine_count_split(self):
+        """병렬 시 엔진 수가 분배되는지 검증."""
+        with patch('cli.auto_discovery._run_single_pipeline') as mock_single:
+            mock_single.return_value = {
+                'index': 0, 'buy_strategy': 'A', 'input_csv': None,
+                'status': 'ok', 'promoted': True,
+                'strategy_name': 'Auto_A', 'pipeline_duration': 5.0,
+            }
+
+            # ProcessPoolExecutor를 ThreadPoolExecutor로 대체 (테스트 환경)
+            from concurrent.futures import ThreadPoolExecutor
+            with patch('cli.auto_discovery.ProcessPoolExecutor', ThreadPoolExecutor):
+                result = run_batch(
+                    common={'sell_strategy': 'S', 'engine_count': 8,
+                            'train_window_days': 30, 'test_window_days': 10},
+                    runs=[{'buy_strategy': 'A'}],
+                    parallel=2,
+                )
+
+            assert result['status'] == 'ok'
+            # engine_count_override: 8 // 2 = 4
+            call_args = mock_single.call_args
+            assert call_args[0][3] == 4  # engine_count_override
+
+    def test_parallel_results_ordered_by_index(self):
+        """완료 순서 무관하게 인덱스 순서로 정렬."""
+        import time as _time
+
+        def slow_pipeline(common, run_override, idx, engine_override=None):
+            if idx == 0:
+                _time.sleep(0.05)  # 첫번째가 느림
+            return {
+                'index': idx, 'buy_strategy': run_override.get('buy_strategy', ''),
+                'input_csv': None, 'status': 'ok', 'promoted': True,
+                'strategy_name': f'Auto_{idx}', 'pipeline_duration': 1.0,
+            }
+
+        with patch('cli.auto_discovery._run_single_pipeline', side_effect=slow_pipeline):
+            from concurrent.futures import ThreadPoolExecutor
+            with patch('cli.auto_discovery.ProcessPoolExecutor', ThreadPoolExecutor):
+                result = run_batch(
+                    common={'sell_strategy': 'S', 'train_window_days': 30,
+                            'test_window_days': 10},
+                    runs=[{'buy_strategy': 'A'}, {'buy_strategy': 'B'},
+                          {'buy_strategy': 'C'}],
+                    parallel=3,
+                )
+
+        assert [r['index'] for r in result['results']] == [0, 1, 2]
+        assert [r['buy_strategy'] for r in result['results']] == ['A', 'B', 'C']
+
+    def test_parallel_one_failure_others_succeed(self):
+        """하나가 실패해도 나머지는 정상 수집."""
+        call_count = [0]
+
+        def pipeline_with_failure(common, run_override, idx, engine_override=None):
+            call_count[0] += 1
+            if idx == 1:
+                raise RuntimeError('Pipeline 1 crashed')
+            return {
+                'index': idx, 'buy_strategy': run_override.get('buy_strategy', ''),
+                'input_csv': None, 'status': 'ok', 'promoted': True,
+                'strategy_name': f'Auto_{idx}', 'pipeline_duration': 2.0,
+            }
+
+        with patch('cli.auto_discovery._run_single_pipeline', side_effect=pipeline_with_failure):
+            from concurrent.futures import ThreadPoolExecutor
+            with patch('cli.auto_discovery.ProcessPoolExecutor', ThreadPoolExecutor):
+                result = run_batch(
+                    common={'sell_strategy': 'S', 'train_window_days': 30,
+                            'test_window_days': 10},
+                    runs=[{'buy_strategy': 'A'}, {'buy_strategy': 'B'},
+                          {'buy_strategy': 'C'}],
+                    parallel=2,
+                )
+
+        assert result['status'] == 'ok'
+        assert result['total'] == 3
+        assert result['results'][0]['promoted'] is True
+        assert result['results'][1]['status'] == 'error'
+        assert 'Pipeline 1 crashed' in result['results'][1]['error_message']
+        assert result['results'][2]['promoted'] is True
+
+    def test_parallel_cli_parsing(self):
+        """--parallel 옵션 파싱 확인."""
+        from cli.subcommands import create_subcommand_parser
+        parser = create_subcommand_parser()
+        args = parser.parse_args(['discovery', 'batch', '-c', 'b.json', '--parallel', '3'])
+        assert args.parallel == 3
+
+
+class TestExtractSummary:
+    """_extract_summary 헬퍼 테스트."""
+
+    def test_promoted_summary(self):
+        config = AutoDiscoveryConfig(buy_strategy='A', sell_strategy='S')
+        run_result = {
+            'status': 'ok', 'promoted': True, 'strategy_name': 'Auto_A',
+            'pipeline_duration': 5.0,
+        }
+        summary = _extract_summary(config, run_result, 0)
+        assert summary['index'] == 0
+        assert summary['promoted'] is True
+        assert summary['buy_strategy'] == 'A'
+
+    def test_rejected_summary_with_reasons(self):
+        config = AutoDiscoveryConfig(buy_strategy='B', sell_strategy='S')
+        run_result = {
+            'status': 'ok', 'promoted': False,
+            'phase_c': {
+                'discovery_result': {
+                    'promotion_evaluation': {'reasons': ['low_rate']},
+                },
+            },
+            'pipeline_duration': 10.0,
+        }
+        summary = _extract_summary(config, run_result, 1)
+        assert summary['promoted'] is False
+        assert summary['reject_reasons'] == ['low_rate']

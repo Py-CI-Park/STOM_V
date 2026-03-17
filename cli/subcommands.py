@@ -203,6 +203,8 @@ def create_subcommand_parser():
     # discovery batch
     disc_batch = disc_sub.add_parser('batch', help='배치 설정 JSON으로 여러 auto-discovery 순차 실행')
     disc_batch.add_argument('--config', '-c', required=True, dest='batch_config', help='배치 설정 JSON 파일 경로')
+    disc_batch.add_argument('--parallel', '-p', type=int, default=0,
+                             help='병렬 실행 수 (0=순차, 1+=병렬)')
 
     # discovery history
     disc_history = disc_sub.add_parser('history', help='auto-discovery 실행 히스토리 조회')
@@ -469,7 +471,8 @@ def _handle_discovery(parsed):
     elif parsed.discovery_action == 'batch':
         from cli.auto_discovery import run_batch
 
-        result = run_batch(batch_path=parsed.batch_config)
+        result = run_batch(batch_path=parsed.batch_config,
+                           parallel=getattr(parsed, 'parallel', 0))
         print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
         return 0 if result.get('status') == 'ok' else 1
 
