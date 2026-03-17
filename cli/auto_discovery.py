@@ -224,6 +224,7 @@ class AutoDiscoveryEngine:
     def _phase_a_backtest(self) -> dict:
         """백테스트를 실행하고 결과 CSV 경로를 회수한다."""
         cfg = self.config
+        phase_start = time.time()
         run_start = time.time()
 
         config_dict = {
@@ -274,12 +275,14 @@ class AutoDiscoveryEngine:
             'phase': 'A',
             'csv_path': csv_path,
             'backtest_result': bt_result,
+            'phase_duration': round(time.time() - phase_start, 2),
         }
 
     # ------- Phase B: 다단계 분석 + 조건 생성 -------
 
     def _phase_b_analysis(self, csv_path: str) -> dict:
         """CSV를 분석하고 조건 코드를 생성한다."""
+        phase_start = time.time()
         result = run_multi_round_analysis(csv_path, self.config, self.controller)
 
         if result.get('status') != 'ok':
@@ -297,12 +300,14 @@ class AutoDiscoveryEngine:
             'gen_result': result.get('gen_result'),
             'rounds_log': result.get('rounds_log', []),
             'final_round': result.get('final_round', 1),
+            'phase_duration': round(time.time() - phase_start, 2),
         }
 
     # ------- Phase C: WFO 검증 + 승격 -------
 
     def _phase_c_validate_and_promote(self, csv_path: str) -> dict:
         """기존 discover_and_promote_strategy()를 활용해 WFO 검증 → 승격을 수행한다."""
+        phase_start = time.time()
         cfg = self.config
         from cli.discovery_config import (
             DiscoveryAnalysisConfig, DiscoveryConfig, DiscoveryMlConfig,
@@ -377,6 +382,7 @@ class AutoDiscoveryEngine:
             'strategy_name': strategy_name,
             'promoted': result.get('promoted', False),
             'discovery_result': result,
+            'phase_duration': round(time.time() - phase_start, 2),
         }
 
     # ------- 메인 실행 -------
@@ -425,6 +431,14 @@ class AutoDiscoveryEngine:
         # Phase C: WFO 검증 → 승격
         phase_c = engine._phase_c_validate_and_promote(csv_path)
 
+        pipeline_duration = round(time.time() - pipeline_start, 2)
+        pipeline_timing = {
+            'phase_a': phase_a.get('phase_duration', 0.0),
+            'phase_b': phase_b.get('phase_duration', 0.0),
+            'phase_c': phase_c.get('phase_duration', 0.0),
+            'total': pipeline_duration,
+        }
+
         return {
             'status': phase_c.get('status', 'error'),
             'promoted': phase_c.get('promoted', False),
@@ -433,7 +447,8 @@ class AutoDiscoveryEngine:
             'phase_a': phase_a,
             'phase_b': phase_b,
             'phase_c': phase_c,
-            'pipeline_duration': round(time.time() - pipeline_start, 2),
+            'pipeline_timing': pipeline_timing,
+            'pipeline_duration': pipeline_duration,
         }
 
 

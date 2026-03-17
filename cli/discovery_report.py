@@ -38,6 +38,10 @@ def build_discovery_report(result: dict, strategy_name: str | None = None) -> di
             or [],
         'criteria_mode': result.get('criteria_mode')
             or ((result.get('promotion_evaluation') or {}).get('criteria_mode')),
+        'pipeline_timing': result.get('pipeline_timing'),
+        'analysis_rounds_log': ((result.get('phase_b') or {}).get('rounds_log')
+                                or result.get('rounds_log')
+                                or []),
     }
     return report
 
@@ -98,6 +102,32 @@ def render_discovery_report_markdown(report: dict) -> str:
     if expressions:
         for expression in expressions:
             lines.append(f"- `{expression}`")
+    else:
+        lines.append('- none')
+
+    lines.extend(['', '## Pipeline Timing'])
+    timing = report.get('pipeline_timing') or {}
+    if timing:
+        lines.append('| Phase | Duration (s) |')
+        lines.append('|-------|-------------|')
+        lines.append(f"| A: Backtest | {timing.get('phase_a', '-')} |")
+        lines.append(f"| B: Analysis | {timing.get('phase_b', '-')} |")
+        lines.append(f"| C: WFO+Promote | {timing.get('phase_c', '-')} |")
+        lines.append(f"| **Total** | **{timing.get('total', '-')}** |")
+    else:
+        lines.append('- none')
+
+    lines.extend(['', '## Analysis Rounds Log'])
+    rounds_log = report.get('analysis_rounds_log') or []
+    if rounds_log:
+        lines.append('| Round | alpha | min_samples | quantiles | top_n | candidates | status |')
+        lines.append('|-------|-------|-------------|-----------|-------|------------|--------|')
+        for r in rounds_log:
+            lines.append(
+                f"| {r.get('round', '-')} | {r.get('alpha', '-')} | {r.get('min_samples', '-')} "
+                f"| {r.get('quantiles', '-')} | {r.get('top_n', '-')} | {r.get('candidate_count', '-')} "
+                f"| {r.get('status', '-')} |"
+            )
     else:
         lines.append('- none')
 

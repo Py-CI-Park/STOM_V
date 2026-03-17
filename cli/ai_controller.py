@@ -713,6 +713,16 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def get_discovery_history(self, limit: int = 20, promoted_only: bool = False) -> dict:
+        """auto-discovery 실행 히스토리를 조회한다."""
+        try:
+            from cli.history import get_discovery_runs, init_history_db
+            init_history_db(self._history_db)
+            runs = get_discovery_runs(limit, promoted_only, self._history_db)
+            return {'status': 'ok', 'total': len(runs), 'runs': runs}
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def auto_discover_batch(self, batch_path: str = None, common: dict = None,
                              runs: list = None) -> dict:
         """여러 auto-discovery 파이프라인을 배치로 순차 실행한다.
@@ -747,7 +757,18 @@ class AIBacktestController:
 
             if config is None:
                 config = AutoDiscoveryConfig(**kwargs)
-            return AutoDiscoveryEngine.run(config, controller=self)
+            result = AutoDiscoveryEngine.run(config, controller=self)
+
+            # 히스토리 DB에 저장
+            try:
+                from cli.history import save_discovery_run, init_history_db
+                init_history_db(self._history_db)
+                discovery_id = save_discovery_run(config, result, self._history_db)
+                result = {**result, 'discovery_id': discovery_id}
+            except Exception:
+                pass
+
+            return result
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
