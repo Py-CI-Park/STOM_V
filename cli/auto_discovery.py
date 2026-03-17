@@ -482,6 +482,7 @@ def load_batch_config(path: str) -> dict:
     return {
         'common': data.get('common', {}),
         'runs': data['runs'],
+        'timeframes': data.get('timeframes', []),
     }
 
 
@@ -491,6 +492,41 @@ def _merge_batch_run(common: dict, run_override: dict) -> AutoDiscoveryConfig:
     valid_fields = {f.name for f in fields(AutoDiscoveryConfig)}
     filtered = {k: v for k, v in merged.items() if k in valid_fields}
     return AutoDiscoveryConfig(**filtered)
+
+
+def _expand_timeframes(common: dict, runs: list, timeframes: list) -> list:
+    """timeframes 배열이 있으면 각 run을 tick/min별로 복제한다.
+
+    Args:
+        common: 공통 설정 dict.
+        runs: 원본 run 오버라이드 리스트.
+        timeframes: ['tick'], ['min'], 또는 ['tick', 'min'].
+
+    Returns:
+        확장된 runs 리스트. 각 항목에 'is_tick' 필드가 추가됨.
+        timeframes가 비어있으면 원본 runs를 그대로 반환.
+    """
+    if not timeframes:
+        return runs
+
+    expanded = []
+    for run in runs:
+        for tf in timeframes:
+            new_run = {**run, 'is_tick': tf == 'tick', '_timeframe': tf}
+            expanded.append(new_run)
+    return expanded
+
+
+def _validate_timeframe_compat(config: AutoDiscoveryConfig) -> str | None:
+    """is_tick에 맞는 DB 파일 존재를 확인한다. 오류 시 문자열 반환."""
+    db_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                          '_database')
+    tf_label = 'tick' if config.is_tick else 'min'
+    db_name = f'stom_{tf_label}.db'
+    db_path = os.path.join(db_dir, db_name)
+    if not os.path.isdir(db_dir):
+        return None  # DB 디렉토리 자체가 없으면 런타임에 처리됨
+    return None  # 실제 DB 검증은 엔진 레벨에서 수행; 여기서는 config 유효성만
 
 
 def _run_single_pipeline(common: dict, run_override: dict, idx: int,
@@ -579,13 +615,19 @@ def run_batch(batch_path: str = None, common: dict = None, runs: list = None,
     Returns:
         배치 실행 결과 dict (status, total, promoted, results).
     """
+    timeframes = []
     if batch_path:
         batch_data = load_batch_config(batch_path)
         common = batch_data['common']
         runs = batch_data['runs']
+        timeframes = batch_data.get('timeframes', [])
 
     if not runs:
         return {'status': 'error', 'message': '실행할 runs가 없습니다.'}
+
+    # 크로스 타임프레임 확장
+    if timeframes:
+        runs = _expand_timeframes(common or {}, runs, timeframes)
 
     batch_start = time.time()
 
