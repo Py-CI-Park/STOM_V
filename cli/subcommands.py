@@ -163,7 +163,8 @@ def create_subcommand_parser():
 
     # discovery auto
     disc_auto = disc_sub.add_parser('auto', help='DB 전략명으로 전체 파이프라인 원커맨드 실행')
-    disc_auto.add_argument('--buy', required=True, help='매수 전략명')
+    disc_auto.add_argument('--input', '-i', dest='input_file', help='기존 CSV 파일 경로 (지정 시 Phase A 백테스트 스킵)')
+    disc_auto.add_argument('--buy', help='매수 전략명 (--input 미지정 시 필수)')
     disc_auto.add_argument('--sell', required=True, help='매도 전략명')
     disc_auto.add_argument('--start', type=int, required=True, help='시작일자 YYYYMMDD')
     disc_auto.add_argument('--end', type=int, required=True, help='종료일자 YYYYMMDD')
@@ -396,8 +397,13 @@ def _handle_discovery(parsed):
     elif parsed.discovery_action == 'auto':
         from cli.auto_discovery import AutoDiscoveryConfig, AutoDiscoveryEngine
 
+        if not getattr(parsed, 'input_file', None) and not parsed.buy:
+            print(json.dumps({'status': 'error', 'message': '--input 또는 --buy 중 하나는 반드시 지정해야 합니다.'}, ensure_ascii=False))
+            return 1
+
         auto_config = AutoDiscoveryConfig(
-            buy_strategy=parsed.buy,
+            input_csv=getattr(parsed, 'input_file', None),
+            buy_strategy=parsed.buy or '',
             sell_strategy=parsed.sell,
             start_date=parsed.start,
             end_date=parsed.end,

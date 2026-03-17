@@ -440,3 +440,133 @@ class TestCliParsing:
         with pytest.raises(SystemExit) as exc_info:
             parser.parse_args(['discovery', 'auto', '--buy', 'B'])
         assert exc_info.value.code != 0
+
+    def test_discovery_auto_input_option_parsed(self):
+        from cli.subcommands import create_subcommand_parser
+        parser = create_subcommand_parser()
+
+        args = parser.parse_args([
+            'discovery', 'auto',
+            '--input', '/tmp/my_result.csv',
+            '--sell', 'MySell',
+            '--start', '20250401',
+            '--end', '20250430',
+            '--train-window-days', '30',
+            '--test-window-days', '10',
+        ])
+        assert args.input_file == '/tmp/my_result.csv'
+        assert args.buy is None  # --buy는 --input 사용 시 선택
+
+    def test_discovery_auto_input_short_option(self):
+        from cli.subcommands import create_subcommand_parser
+        parser = create_subcommand_parser()
+
+        args = parser.parse_args([
+            'discovery', 'auto',
+            '-i', '/tmp/short.csv',
+            '--sell', 'S',
+            '--start', '20250401',
+            '--end', '20250430',
+            '--train-window-days', '30',
+            '--test-window-days', '10',
+        ])
+        assert args.input_file == '/tmp/short.csv'
+
+
+# ---------------------------------------------------------------------------
+# Phase 2: input_csv 직접 지정 테스트
+# ---------------------------------------------------------------------------
+
+class TestInputCsvSkipPhaseA:
+    """input_csv 지정 시 Phase A 스킵 검증."""
+
+    def test_input_csv_skips_phase_a(self, tmp_path):
+        """input_csv가 유효한 파일이면 Phase A를 스킵하고 Phase B/C로 직행한다."""
+        csv_file = tmp_path / 'existing_result.csv'
+        csv_file.write_text('col1,col2\n1,2', encoding='utf-8')
+
+        controller = MagicMock()
+        # Phase B: 분석 성공
+        controller.analyze_results.return_value = {'status': 'ok'}
+        controller.generate_conditions.return_value = {
+            'status': 'ok',
+            'candidate_count': 3,
+            'code': 'if 매수:\n    pass',
+            'analysis_result': {'status': 'ok'},
+        }
+        # Phase C: 승격 성공
+        controller.discover_and_promote_strategy.return_value = {
+            'status': 'ok',
+            'promoted': True,
+        }
+
+        config = AutoDiscoveryConfig(
+            input_csv=str(csv_file),
+            sell_strategy='Sell',
+            start_date=20250401, end_date=20250430,
+            train_window_days=30, test_window_days=10,
+        )
+        result = AutoDiscoveryEngine.run(config, controller)
+
+        assert result['status'] == 'ok'
+        assert result['promoted'] is True
+        assert result['csv_path'] == str(csv_file)
+        assert result['phase_a']['skipped'] is True
+        # Phase A 백테스트가 호출되지 않았는지 확인
+        controller.run.assert_not_called()
+
+    def test_input_csv_nonexistent_returns_error(self):
+        """존재하지 않는 CSV 경로 → 에러 반환."""
+        controller = MagicMock()
+
+        config = AutoDiscoveryConfig(
+            input_csv='/nonexistent/path/fake.csv',
+            sell_strategy='Sell',
+            start_date=20250401, end_date=20250430,
+            train_window_days=30, test_window_days=10,
+        )
+        result = AutoDiscoveryEngine.run(config, controller)
+
+        assert result['status'] == 'error'
+        assert result['phase'] == 'A'
+        assert 'CSV' in result['message']
+        controller.run.assert_not_called()
+
+    def test_input_csv_none_runs_phase_a(self, tmp_path):
+        """input_csv=None일 때 기존대로 Phase A가 실행된다."""
+        csv_file = tmp_path / 'stock_bt_TestBuy_20260317.csv'
+        csv_file.write_text('data', encoding='utf-8')
+
+        controller = MagicMock()
+        controller.run.return_value = {
+            'status': 'success',
+            'csv_path': str(csv_file),
+            'metrics': {'trade_count': 10},
+        }
+        controller.analyze_results.return_value = {'status': 'ok'}
+        controller.generate_conditions.return_value = {
+            'status': 'ok', 'candidate_count': 2,
+            'code': 'pass', 'analysis_result': {'status': 'ok'},
+        }
+        controller.discover_and_promote_strategy.return_value = {
+            'status': 'ok', 'promoted': False,
+        }
+
+        config = AutoDiscoveryConfig(
+            buy_strategy='TestBuy', sell_strategy='Sell',
+            start_date=20250401, end_date=20250430,
+            train_window_days=30, test_window_days=10,
+        )
+        result = AutoDiscoveryEngine.run(config, controller)
+
+        # Phase A가 실행되었는지 확인
+        controller.run.assert_called_once()
+        assert result['phase_a'].get('skipped') is not True
+
+    def test_input_csv_field_exists_on_config(self):
+        """AutoDiscoveryConfig에 input_csv 필드가 존재하고 기본값은 None."""
+        config = AutoDiscoveryConfig()
+        assert config.input_csv is None
+
+        config2 = AutoDiscoveryConfig(input_csv='/tmp/test.csv')
+        assert config2.input_csv == '/tmp/test.csv'

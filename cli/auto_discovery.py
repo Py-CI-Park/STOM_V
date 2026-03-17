@@ -89,6 +89,9 @@ class AutoDiscoveryConfig:
     max_relax_steps: int = 3
     base_buy_strategy: str | None = None
 
+    # --- 입력 ---
+    input_csv: str | None = None  # 지정 시 Phase A(백테스트)를 건너뛰고 이 CSV로 Phase B 직행
+
     # --- 출력 ---
     output_code: str | None = None
     report_json: str | None = None
@@ -387,13 +390,29 @@ class AutoDiscoveryEngine:
         engine = cls(config, controller)
         pipeline_start = time.time()
 
-        # Phase A: 백테스트 → CSV
-        phase_a = engine._phase_a_backtest()
-        if phase_a.get('status') != 'ok':
-            phase_a['pipeline_duration'] = round(time.time() - pipeline_start, 2)
-            return phase_a
-
-        csv_path = phase_a['csv_path']
+        # Phase A: 백테스트 → CSV (input_csv 지정 시 스킵)
+        if config.input_csv:
+            if not os.path.isfile(config.input_csv):
+                return {
+                    'status': 'error',
+                    'phase': 'A',
+                    'message': f'지정된 CSV 파일이 존재하지 않습니다: {config.input_csv}',
+                    'pipeline_duration': round(time.time() - pipeline_start, 2),
+                }
+            csv_path = config.input_csv
+            phase_a = {
+                'status': 'ok',
+                'phase': 'A',
+                'csv_path': csv_path,
+                'skipped': True,
+                'message': 'input_csv 직접 지정으로 Phase A(백테스트) 스킵',
+            }
+        else:
+            phase_a = engine._phase_a_backtest()
+            if phase_a.get('status') != 'ok':
+                phase_a['pipeline_duration'] = round(time.time() - pipeline_start, 2)
+                return phase_a
+            csv_path = phase_a['csv_path']
 
         # Phase B: 분석 → 조건 생성 (정보용, Phase C에서 재분석)
         phase_b = engine._phase_b_analysis(csv_path)
