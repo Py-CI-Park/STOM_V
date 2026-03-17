@@ -236,7 +236,7 @@ print(result['csv_path'])   # 백테스트 결과 CSV 경로
 
 ---
 
-## 4. Phase 2: CSV 직접 지정 모드 — 미착수
+## 4. Phase 2: CSV 직접 지정 모드 — ✅ 완료
 
 ### 4.1 구현 목적
 
@@ -266,9 +266,12 @@ python stom_backtest.py discovery auto \
     --train-window-days 30 --test-window-days 10
 ```
 
-### 4.3 예상 작업량
+### 4.3 구현 결과
 
-~30줄 수정. 난이도 낮음.
+- 커밋: `4fbd0b4`
+- 변경: 3개 파일, +164줄 / -9줄
+- 테스트: 27/27 passed (기존 21 + 신규 6)
+- 회귀: 624 passed (pre-existing 1 failure 제외)
 
 ---
 
@@ -425,7 +428,7 @@ python stom_backtest.py discovery batch --config batch_config.json
 | Phase | 제목 | 상태 | 난이도 | 예상 작업량 | 의존성 |
 |-------|------|------|--------|-----------|--------|
 | **1** | 자동 조건식 탐색 엔진 (원커맨드) | **✅ 완료** | 중간 | ~680줄 | 없음 |
-| **2** | CSV 직접 지정 모드 | 미착수 | 낮음 | ~30줄 | Phase 1 |
+| **2** | CSV 직접 지정 모드 | **✅ 완료** | 낮음 | +164줄 | Phase 1 |
 | **3** | 배치/스케줄 실행 | 미착수 | 중간 | ~190줄 | Phase 1 |
 | **4** | 리포트 강화 + 히스토리 DB | 미착수 | 낮음~중간 | ~100줄 | Phase 1 |
 | **5** | E2E 통합 테스트 | 미착수 | 중간~높음 | ~200줄 | Phase 1, 실제 DB |
