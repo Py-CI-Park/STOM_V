@@ -2,6 +2,8 @@
 import os
 import sys
 import json
+import glob
+import time
 import signal
 import sqlite3
 import atexit
@@ -9,7 +11,7 @@ import pandas as pd
 from multiprocessing import Process, Queue, Value, Lock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from utility.setting import DICT_SET, DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
+from cli.paths import DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
 from backtest.back_static import GetMoneytopQuery
 from backtest.back_subtotal import BackSubTotal
 from backtest.backtest import BackTest
@@ -93,6 +95,7 @@ def _sync_dict_set(config):
     키 이름은 utility/setting.py DICT_SET 정의 및
     backengine_base.py self.dict_set[] 접근 패턴과 일치해야 한다.
     """
+    from utility.setting import DICT_SET
     # --- CLI 인자 → DICT_SET 동기화 (정확한 한국어 키 사용) ---
     DICT_SET['주식타임프레임'] = config.is_tick
     DICT_SET['증권사'] = '키움증권'
@@ -154,12 +157,27 @@ def _engine_with_dict_set(engine_cls, dict_set_override, *args):
     engine_cls(*args)
 
 
+def _find_latest_csv(strategy_name, after_timestamp, csv_dir='backtest/csv'):
+    """backtest/csv/ 에서 strategy_name을 포함하며 after_timestamp 이후 생성된 최신 CSV를 반환한다."""
+    if not os.path.isdir(csv_dir):
+        return None
+    pattern = os.path.join(csv_dir, f'*{strategy_name}*.csv') if strategy_name else os.path.join(csv_dir, '*.csv')
+    candidates = [
+        f for f in glob.glob(pattern)
+        if os.path.getmtime(f) >= after_timestamp
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=os.path.getmtime)
+
+
 def run_backtest(config):
     """CLI 백테스트 실행. backengine_start() (ui_backtest_engine.py:77-266) 프로토콜 재구현."""
 
     _child_procs.clear()
     _register_signals()
     _sync_dict_set(config)
+    _run_start_time = time.time()
 
     result = {
         'status': 'error',
@@ -383,10 +401,12 @@ def run_backtest(config):
 
         # backtest.db에서 최신 결과 읽기
         metrics = _extract_metrics(config, min_rowid=backtest_rowid_watermark)
+        csv_path = _find_latest_csv(config.buy_strategy, _run_start_time)
         if metrics:
             result['status'] = 'success'
             result['message'] = '백테스트 완료'
             result['metrics'] = metrics
+            result['csv_path'] = csv_path
             result['config'] = {
                 'buy_strategy': config.buy_strategy,
                 'sell_strategy': config.sell_strategy,
@@ -396,6 +416,7 @@ def run_backtest(config):
         else:
             result['status'] = 'success'
             result['message'] = '백테스트 완료 (결과 테이블이 비어있습니다)'
+            result['csv_path'] = csv_path
 
     except Exception as e:
         result['status'] = 'error'

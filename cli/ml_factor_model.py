@@ -23,10 +23,7 @@ except ImportError:  # pragma: no cover - optional dependency
 from cli.analyzer import get_feature_columns
 
 
-def _ensure_dataframe(data) -> pd.DataFrame:
-    if isinstance(data, pd.DataFrame):
-        return data.copy()
-    return pd.read_csv(data)
+from cli._utils import ensure_dataframe as _ensure_dataframe
 
 
 def _sort_result_frame(df: pd.DataFrame) -> pd.DataFrame:

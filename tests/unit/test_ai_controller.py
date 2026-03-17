@@ -56,7 +56,7 @@ class TestAnalyzeStrategy:
         }
         with patch('cli.strategy_loader.load_strategy_from_db', return_value=mock_loader), \
              patch('cli.timeframe_detector.detect_timeframe', return_value='min'), \
-             patch('utility.setting.DB_STRATEGY', 'fake.db'):
+             patch('cli.paths.DB_STRATEGY', 'fake.db'):
             result = controller.analyze_strategy('Min_B_Test', 'buy')
             assert result['status'] == 'ok'
             assert result['timeframe'] == 'min'
@@ -65,7 +65,7 @@ class TestAnalyzeStrategy:
     def test_analyze_not_found(self, controller):
         mock_loader = {'status': 'error', 'message': '전략 없음'}
         with patch('cli.strategy_loader.load_strategy_from_db', return_value=mock_loader), \
-             patch('utility.setting.DB_STRATEGY', 'fake.db'):
+             patch('cli.paths.DB_STRATEGY', 'fake.db'):
             result = controller.analyze_strategy('NonExistent', 'buy')
             assert result['status'] == 'error'
 
@@ -137,15 +137,7 @@ class TestOptimize:
             avg = config.avg_time if isinstance(config.avg_time, int) else 60
             return {'status': 'success', 'metrics': {'tpi': avg * 0.01}}
 
-        result = controller.optimize(
-            {'buy_strategy': 'T', 'sell_strategy': 'T',
-             'start_date': 20250407, 'end_date': 20250409},
-            {'avg_time': [60, 120]},
-            objective='tpi',
-            method='grid',
-        )
-        # optimizer uses run_fn parameter, so we test via the controller's optimize
-        # which passes run_fn=None (uses real runner). With mock:
+        # optimizer uses run_fn parameter to avoid real runner import
         from cli.optimizer import optimize as run_optimize
         opt_result = run_optimize(
             BacktestConfig(buy_strategy='T', sell_strategy='T',
@@ -323,14 +315,14 @@ class TestStrategyManagement:
     def test_create_strategy(self, controller):
         mock_result = {'status': 'ok', 'name': 'Test', 'action': 'created'}
         with patch('cli.strategy_generator.create_and_save', return_value=mock_result), \
-             patch('utility.setting.DB_STRATEGY', 'fake.db'):
+             patch('cli.paths.DB_STRATEGY', 'fake.db'):
             result = controller.create_strategy('Test', ['self.vars[0] > 0'], 'buy')
             assert result['status'] == 'ok'
 
     def test_delete_strategy(self, controller):
         mock_result = {'status': 'ok', 'name': 'Test', 'action': 'deleted'}
         with patch('cli.strategy_generator.delete_strategy_from_db', return_value=mock_result), \
-             patch('utility.setting.DB_STRATEGY', 'fake.db'):
+             patch('cli.paths.DB_STRATEGY', 'fake.db'):
             result = controller.delete_strategy('Test', 'buy')
             assert result['status'] == 'ok'
 
@@ -344,7 +336,7 @@ class TestStrategyManagement:
         ] * 10).to_csv(csv_path, index=False, encoding='utf-8-sig')
 
         with patch('cli.strategy_generator.create_and_save', return_value={'status': 'ok', 'name': 'Auto_B_Test', 'action': 'created'}), \
-             patch('utility.setting.DB_STRATEGY', 'fake.db'):
+             patch('cli.paths.DB_STRATEGY', 'fake.db'):
             result = controller.create_strategy_from_analysis(
                 'Auto_B_Test',
                 input_path=str(csv_path),
@@ -374,7 +366,7 @@ class TestStrategyManagement:
         ] * 10).to_csv(csv_path, index=False, encoding='utf-8-sig')
 
         with patch('cli.strategy_generator.create_and_save', return_value={'status': 'ok', 'name': 'Auto_B_Test', 'action': 'created'}), \
-             patch('utility.setting.DB_STRATEGY', 'fake.db'):
+             patch('cli.paths.DB_STRATEGY', 'fake.db'):
             result = controller.create_strategy_from_analysis(
                 'Auto_B_Test',
                 input_path=str(csv_path),

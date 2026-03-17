@@ -282,6 +282,205 @@ def compare_runs(run_ids: list, db_path: str = None) -> dict:
     return {'runs': runs, 'best': best}
 
 
+_CREATE_DISCOVERY_TABLE_SQL = """
+CREATE TABLE IF NOT EXISTS discovery_runs (
+    discovery_id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    timestamp       TEXT    NOT NULL,
+    buy_strategy    TEXT,
+    sell_strategy   TEXT,
+    start_date      INTEGER,
+    end_date        INTEGER,
+    status          TEXT,
+    promoted        INTEGER DEFAULT 0,
+    strategy_name   TEXT,
+    csv_path        TEXT,
+    pipeline_duration REAL,
+    phase_a_duration  REAL,
+    phase_b_duration  REAL,
+    phase_c_duration  REAL,
+    phase_b_rounds    INTEGER,
+    config_json     TEXT,
+    result_json     TEXT
+)
+"""
+
+
+def _ensure_discovery_table(db_path: str):
+    """discovery_runs 테이블이 존재하지 않으면 생성한다."""
+    con = None
+    try:
+        con = sqlite3.connect(db_path)
+        con.execute(_CREATE_DISCOVERY_TABLE_SQL)
+        con.commit()
+    finally:
+        if con is not None:
+            con.close()
+
+
+def save_discovery_run(config, result: dict, db_path: str = None) -> int:
+    """auto-discovery 파이프라인 실행 결과를 히스토리 DB에 저장한다.
+
+    Args:
+        config: AutoDiscoveryConfig dataclass 또는 dict.
+        result: AutoDiscoveryEngine.run()이 반환한 result dict.
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        삽입된 행의 discovery_id.
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+    _ensure_discovery_table(resolved)
+
+    try:
+        config_dict = asdict(config)
+    except TypeError:
+        config_dict = dict(config)
+
+    timing = result.get('pipeline_timing') or {}
+    phase_b = result.get('phase_b') or {}
+
+    timestamp = datetime.now(timezone.utc).isoformat()
+    row = {
+        'timestamp': timestamp,
+        'buy_strategy': config_dict.get('buy_strategy', ''),
+        'sell_strategy': config_dict.get('sell_strategy', ''),
+        'start_date': config_dict.get('start_date', 0),
+        'end_date': config_dict.get('end_date', 0),
+        'status': result.get('status', 'error'),
+        'promoted': 1 if result.get('promoted') else 0,
+        'strategy_name': result.get('strategy_name', ''),
+        'csv_path': result.get('csv_path', ''),
+        'pipeline_duration': result.get('pipeline_duration'),
+        'phase_a_duration': timing.get('phase_a'),
+        'phase_b_duration': timing.get('phase_b'),
+        'phase_c_duration': timing.get('phase_c'),
+        'phase_b_rounds': phase_b.get('final_round'),
+        'config_json': json.dumps(config_dict, ensure_ascii=False, default=str),
+        'result_json': json.dumps(result, ensure_ascii=False, default=str),
+    }
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        cur = con.execute(
+            """
+            INSERT INTO discovery_runs (
+                timestamp, buy_strategy, sell_strategy,
+                start_date, end_date,
+                status, promoted, strategy_name, csv_path,
+                pipeline_duration, phase_a_duration, phase_b_duration,
+                phase_c_duration, phase_b_rounds,
+                config_json, result_json
+            ) VALUES (
+                :timestamp, :buy_strategy, :sell_strategy,
+                :start_date, :end_date,
+                :status, :promoted, :strategy_name, :csv_path,
+                :pipeline_duration, :phase_a_duration, :phase_b_duration,
+                :phase_c_duration, :phase_b_rounds,
+                :config_json, :result_json
+            )
+            """,
+            row,
+        )
+        con.commit()
+        return cur.lastrowid
+    finally:
+        if con is not None:
+            con.close()
+
+
+def get_discovery_runs(limit: int = 20, promoted_only: bool = False,
+                       db_path: str = None) -> list:
+    """auto-discovery 실행 히스토리를 조회한다.
+
+    Args:
+        limit: 최대 반환 행 수.
+        promoted_only: True이면 승격된 결과만 반환.
+        db_path: DB 파일 경로.
+
+    Returns:
+        각 행을 dict로 담은 list (최근 순).
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+    _ensure_discovery_table(resolved)
+
+    clauses = []
+    params = []
+    if promoted_only:
+        clauses.append('promoted = 1')
+
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ''
+    query = f"SELECT * FROM discovery_runs {where} ORDER BY discovery_id DESC LIMIT ?"
+    params.append(limit)
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        con.row_factory = sqlite3.Row
+        rows = con.execute(query, params).fetchall()
+        return [dict(row) for row in rows]
+    finally:
+        if con is not None:
+            con.close()
+
+
+_ALLOWED_DISCOVERY_METRICS = frozenset(
+    {'pipeline_duration', 'phase_a_duration', 'phase_b_duration',
+     'phase_c_duration', 'phase_b_rounds'}
+)
+
+
+def compare_discovery_runs(discovery_ids: list, db_path: str = None) -> dict:
+    """여러 discovery run을 조회하여 비교한다.
+
+    Args:
+        discovery_ids: 비교할 discovery_id 목록.
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        {'runs': [row_dict, ...], 'best': {'metric_name': discovery_id, ...}}
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+    _ensure_discovery_table(resolved)
+
+    if not discovery_ids:
+        return {'runs': [], 'best': {}}
+
+    placeholders = ','.join('?' * len(discovery_ids))
+    sql = f'SELECT * FROM discovery_runs WHERE discovery_id IN ({placeholders})'
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        con.row_factory = sqlite3.Row
+        cur = con.execute(sql, list(discovery_ids))
+        runs = [dict(row) for row in cur.fetchall()]
+    finally:
+        if con is not None:
+            con.close()
+
+    best = {}
+    for metric in _ALLOWED_DISCOVERY_METRICS:
+        best_run = None
+        best_val = None
+        for run in runs:
+            val = run.get(metric)
+            if val is None:
+                continue
+            # pipeline_duration, phase durations: 낮을수록 좋음
+            # phase_b_rounds: 낮을수록 좋음 (적은 라운드로 성공)
+            if best_val is None or val < best_val:
+                best_val = val
+                best_run = run
+        if best_run is not None:
+            best[metric] = best_run['discovery_id']
+
+    return {'runs': runs, 'best': best}
+
+
 def delete_run(run_id: int, db_path: str = None) -> bool:
     """지정 run_id 행을 삭제한다.
 

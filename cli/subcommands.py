@@ -161,6 +161,77 @@ def create_subcommand_parser():
     disc_promote.add_argument('--base-buy-strategy', default=None,
                               help='기존 매수 전략명 — 자동 필터를 이 전략에 결합하여 검증')
 
+    # discovery auto
+    disc_auto = disc_sub.add_parser('auto', help='DB 전략명으로 전체 파이프라인 원커맨드 실행')
+    disc_auto.add_argument('--input', '-i', dest='input_file', help='기존 CSV 파일 경로 (지정 시 Phase A 백테스트 스킵)')
+    disc_auto.add_argument('--buy', help='매수 전략명 (--input 미지정 시 필수)')
+    disc_auto.add_argument('--sell', required=True, help='매도 전략명')
+    disc_auto.add_argument('--start', type=int, required=True, help='시작일자 YYYYMMDD')
+    disc_auto.add_argument('--end', type=int, required=True, help='종료일자 YYYYMMDD')
+    disc_auto.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    disc_auto.add_argument('--betting', default='1')
+    disc_auto.add_argument('--avg-time', type=int, default=60)
+    disc_auto.add_argument('--start-time', type=int, default=90000)
+    disc_auto.add_argument('--end-time', type=int, default=152800)
+    disc_auto.add_argument('--engines', type=int, default=4)
+    disc_auto.add_argument('--timeout', type=int, default=3600)
+    disc_auto.add_argument('--top-n', type=int, default=5)
+    disc_auto.add_argument('--min-samples', type=int, default=30)
+    disc_auto.add_argument('--quantiles', type=int, default=10)
+    disc_auto.add_argument('--alpha', type=float, default=0.05)
+    disc_auto.add_argument('--buy-var', default='매수')
+    disc_auto.add_argument('--ml-feature-limit', type=int, default=0)
+    disc_auto.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_auto.add_argument('--ml-top-n', type=int, default=10)
+    disc_auto.add_argument('--ml-n-splits', type=int, default=5)
+    disc_auto.add_argument('--ml-weight', type=float, default=0.0)
+    disc_auto.add_argument('--max-rounds', type=int, default=3, help='분석 다단계 재시도 최대 횟수')
+    disc_auto.add_argument('--train-window-days', type=int, required=True)
+    disc_auto.add_argument('--test-window-days', type=int, required=True)
+    disc_auto.add_argument('--step-days', type=int)
+    disc_auto.add_argument('--purge-days', type=int, default=0)
+    disc_auto.add_argument('--embargo-days', type=int, default=0)
+    disc_auto.add_argument('--objective', default='tpi')
+    disc_auto.add_argument('--promotion-preset', choices=['conservative', 'balanced', 'aggressive'], default='balanced')
+    disc_auto.add_argument('--auto-relax', action='store_true', default=False)
+    disc_auto.add_argument('--max-relax-steps', type=int, default=3)
+    disc_auto.add_argument('--base-buy-strategy', default=None)
+    disc_auto.add_argument('--output-code', help='생성 코드 저장 경로')
+    disc_auto.add_argument('--report-json', help='결과 JSON 리포트 저장 경로')
+    disc_auto.add_argument('--report-md', help='결과 Markdown 리포트 저장 경로')
+
+    # discovery batch
+    disc_batch = disc_sub.add_parser('batch', help='배치 설정 JSON으로 여러 auto-discovery 순차 실행')
+    disc_batch.add_argument('--config', '-c', required=True, dest='batch_config', help='배치 설정 JSON 파일 경로')
+    disc_batch.add_argument('--parallel', '-p', type=int, default=0,
+                             help='병렬 실행 수 (0=순차, 1+=병렬)')
+
+    # discovery history
+    disc_history = disc_sub.add_parser('history', help='auto-discovery 실행 히스토리 조회')
+    disc_history.add_argument('--promoted-only', action='store_true', default=False,
+                               help='승격된 결과만 표시')
+    disc_history.add_argument('--limit', type=int, default=20, help='최대 표시 행 수')
+    disc_history.add_argument('--json', action='store_true', default=False, dest='json_output',
+                               help='JSON 형식으로 출력')
+
+    # discovery evolve
+    disc_evolve = disc_sub.add_parser('evolve', help='조건식 진화 루프 — 승격될 때까지 파라미터 자동 변이')
+    disc_evolve.add_argument('--config', '-c', required=True, dest='evolve_config',
+                              help='기본 auto-discovery 설정 JSON 파일 경로')
+    disc_evolve.add_argument('--max-generations', type=int, default=5, help='최대 세대 수')
+    disc_evolve.add_argument('--population-size', type=int, default=4, help='세대당 변이 개체 수')
+    disc_evolve.add_argument('--objective', default='tpi', help='최적화 목표 지표')
+    disc_evolve.add_argument('--stagnation-limit', type=int, default=2, help='개선 없는 세대 허용 수')
+    disc_evolve.add_argument('--mutation-strength', type=float, default=0.3, help='변이 강도 (0.0~1.0)')
+    disc_evolve.add_argument('--parallel', '-p', type=int, default=0, help='병렬 실행 수')
+    disc_evolve.add_argument('--seed', type=int, default=None, help='랜덤 시드')
+
+    # discovery compare
+    disc_compare = disc_sub.add_parser('compare', help='discovery run 비교')
+    disc_compare.add_argument('--ids', required=True, help='비교할 discovery_id (쉼표 구분)')
+    disc_compare.add_argument('--json', action='store_true', default=False, dest='json_output',
+                               help='JSON 형식으로 출력')
+
     return parser
 
 
@@ -355,6 +426,117 @@ def _handle_discovery(parsed):
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' else 1
 
+    elif parsed.discovery_action == 'history':
+        result = controller.get_discovery_history(
+            limit=parsed.limit, promoted_only=parsed.promoted_only,
+        )
+        if parsed.json_output:
+            print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        else:
+            from cli.table_formatter import format_table
+            runs = result.get('runs', [])
+            if not runs:
+                print('(no discovery runs)')
+            else:
+                columns = [
+                    ('discovery_id', 'ID', 4),
+                    ('timestamp', 'Timestamp', 20),
+                    ('buy_strategy', 'Buy Strategy', 12),
+                    ('status', 'Status', 6),
+                    ('promoted', 'Promoted', 8),
+                    ('strategy_name', 'Strategy Name', 12),
+                    ('pipeline_duration', 'Duration(s)', 10),
+                ]
+                print(format_table(runs, columns))
+                print(f"\nTotal: {result.get('total', len(runs))} runs")
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'compare':
+        ids = [int(x.strip()) for x in parsed.ids.split(',') if x.strip()]
+        result = controller.compare_discovery_history(ids)
+        if parsed.json_output:
+            print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        else:
+            from cli.table_formatter import format_table
+            runs = result.get('runs', [])
+            if not runs:
+                print('(no matching discovery runs)')
+            else:
+                columns = [
+                    ('discovery_id', 'ID', 4),
+                    ('buy_strategy', 'Buy Strategy', 12),
+                    ('promoted', 'Promoted', 8),
+                    ('pipeline_duration', 'Duration(s)', 10),
+                    ('phase_a_duration', 'Phase A(s)', 9),
+                    ('phase_b_duration', 'Phase B(s)', 9),
+                    ('phase_c_duration', 'Phase C(s)', 9),
+                    ('phase_b_rounds', 'B Rounds', 8),
+                ]
+                print(format_table(runs, columns))
+                best = result.get('best', {})
+                if best:
+                    print('\nBest:')
+                    for metric, did in best.items():
+                        print(f'  {metric}: discovery_id={did}')
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'batch':
+        from cli.auto_discovery import run_batch
+
+        result = run_batch(batch_path=parsed.batch_config,
+                           parallel=getattr(parsed, 'parallel', 0))
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'auto':
+        from cli.auto_discovery import AutoDiscoveryConfig, AutoDiscoveryEngine
+
+        if not getattr(parsed, 'input_file', None) and not parsed.buy:
+            print(json.dumps({'status': 'error', 'message': '--input 또는 --buy 중 하나는 반드시 지정해야 합니다.'}, ensure_ascii=False))
+            return 1
+
+        auto_config = AutoDiscoveryConfig(
+            input_csv=getattr(parsed, 'input_file', None),
+            buy_strategy=parsed.buy or '',
+            sell_strategy=parsed.sell,
+            start_date=parsed.start,
+            end_date=parsed.end,
+            is_tick=parsed.timeframe == 'tick',
+            betting=parsed.betting,
+            avg_time=parsed.avg_time,
+            start_time=parsed.start_time,
+            end_time=parsed.end_time,
+            engine_count=parsed.engines,
+            timeout=parsed.timeout,
+            top_n=parsed.top_n,
+            min_samples=parsed.min_samples,
+            quantiles=parsed.quantiles,
+            alpha=parsed.alpha,
+            buy_var=parsed.buy_var,
+            ml_feature_limit=parsed.ml_feature_limit,
+            ml_model_type=parsed.ml_model_type,
+            ml_top_n=parsed.ml_top_n,
+            ml_n_splits=parsed.ml_n_splits,
+            ml_weight=parsed.ml_weight,
+            max_rounds=parsed.max_rounds,
+            train_window_days=parsed.train_window_days,
+            test_window_days=parsed.test_window_days,
+            step_days=parsed.step_days,
+            purge_days=parsed.purge_days,
+            embargo_days=parsed.embargo_days,
+            objective=parsed.objective,
+            promotion_preset=parsed.promotion_preset,
+            auto_relax=parsed.auto_relax,
+            max_relax_steps=parsed.max_relax_steps,
+            base_buy_strategy=parsed.base_buy_strategy,
+            output_code=parsed.output_code,
+            report_json=parsed.report_json,
+            report_md=parsed.report_md,
+        )
+        result = AutoDiscoveryEngine.run(auto_config)
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1
+
     elif parsed.discovery_action == 'promote':
         config_dict = {
             'sell_strategy': parsed.sell,
@@ -429,5 +611,19 @@ def _handle_discovery(parsed):
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1
+
+    elif parsed.discovery_action == 'evolve':
+        result = controller.auto_discover_evolve(
+            config_path=parsed.evolve_config,
+            max_generations=parsed.max_generations,
+            population_size=parsed.population_size,
+            objective=parsed.objective,
+            stagnation_limit=parsed.stagnation_limit,
+            mutation_strength=parsed.mutation_strength,
+            parallel=getattr(parsed, 'parallel', 0),
+            seed=getattr(parsed, 'seed', None),
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 0 if result.get('promoted', False) else 1
 
     return 1

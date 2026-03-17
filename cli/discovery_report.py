@@ -38,6 +38,10 @@ def build_discovery_report(result: dict, strategy_name: str | None = None) -> di
             or [],
         'criteria_mode': result.get('criteria_mode')
             or ((result.get('promotion_evaluation') or {}).get('criteria_mode')),
+        'pipeline_timing': result.get('pipeline_timing'),
+        'analysis_rounds_log': ((result.get('phase_b') or {}).get('rounds_log')
+                                or result.get('rounds_log')
+                                or []),
     }
     return report
 
@@ -101,6 +105,32 @@ def render_discovery_report_markdown(report: dict) -> str:
     else:
         lines.append('- none')
 
+    lines.extend(['', '## Pipeline Timing'])
+    timing = report.get('pipeline_timing') or {}
+    if timing:
+        lines.append('| Phase | Duration (s) |')
+        lines.append('|-------|-------------|')
+        lines.append(f"| A: Backtest | {timing.get('phase_a', '-')} |")
+        lines.append(f"| B: Analysis | {timing.get('phase_b', '-')} |")
+        lines.append(f"| C: WFO+Promote | {timing.get('phase_c', '-')} |")
+        lines.append(f"| **Total** | **{timing.get('total', '-')}** |")
+    else:
+        lines.append('- none')
+
+    lines.extend(['', '## Analysis Rounds Log'])
+    rounds_log = report.get('analysis_rounds_log') or []
+    if rounds_log:
+        lines.append('| Round | alpha | min_samples | quantiles | top_n | candidates | status |')
+        lines.append('|-------|-------|-------------|-----------|-------|------------|--------|')
+        for r in rounds_log:
+            lines.append(
+                f"| {r.get('round', '-')} | {r.get('alpha', '-')} | {r.get('min_samples', '-')} "
+                f"| {r.get('quantiles', '-')} | {r.get('top_n', '-')} | {r.get('candidate_count', '-')} "
+                f"| {r.get('status', '-')} |"
+            )
+    else:
+        lines.append('- none')
+
     lines.extend(['', '## Auto-Relax History'])
     auto_relax_history = report.get('auto_relax_history') or []
     if auto_relax_history:
@@ -111,6 +141,95 @@ def render_discovery_report_markdown(report: dict) -> str:
             lines.append(f"  - total_rounds: {item.get('total_rounds')}")
     else:
         lines.append('- none')
+
+    return '\n'.join(lines)
+
+
+def build_cross_timeframe_report(batch_result: dict) -> dict:
+    """동일 전략의 tick/min 결과를 짝지어 비교한다.
+
+    Args:
+        batch_result: run_batch()가 반환한 결과 dict.
+
+    Returns:
+        {'pairs': [{'buy_strategy': str, 'tick': summary|None, 'min': summary|None,
+                     'winner': 'tick'|'min'|'tie'|'none'}, ...],
+         'tick_promoted': int, 'min_promoted': int}
+    """
+    results = batch_result.get('results', [])
+
+    # 전략별 그룹화
+    strategy_map: dict[str, dict] = {}
+    for r in results:
+        key = r.get('buy_strategy', '')
+        tf = r.get('_timeframe') or ('tick' if r.get('is_tick', True) else 'min')
+        if key not in strategy_map:
+            strategy_map[key] = {}
+        strategy_map[key][tf] = r
+
+    pairs = []
+    tick_promoted = 0
+    min_promoted = 0
+
+    for strategy, tf_map in strategy_map.items():
+        tick_r = tf_map.get('tick')
+        min_r = tf_map.get('min')
+
+        tick_ok = tick_r and tick_r.get('promoted', False)
+        min_ok = min_r and min_r.get('promoted', False)
+
+        if tick_ok:
+            tick_promoted += 1
+        if min_ok:
+            min_promoted += 1
+
+        if tick_ok and min_ok:
+            # 둘 다 승격: pipeline_duration으로 비교
+            t_dur = tick_r.get('pipeline_duration') or float('inf')
+            m_dur = min_r.get('pipeline_duration') or float('inf')
+            winner = 'tick' if t_dur <= m_dur else 'min'
+        elif tick_ok:
+            winner = 'tick'
+        elif min_ok:
+            winner = 'min'
+        else:
+            winner = 'none'
+
+        pairs.append({
+            'buy_strategy': strategy,
+            'tick': tick_r,
+            'min': min_r,
+            'winner': winner,
+        })
+
+    return {
+        'pairs': pairs,
+        'tick_promoted': tick_promoted,
+        'min_promoted': min_promoted,
+    }
+
+
+def render_cross_timeframe_markdown(report: dict) -> str:
+    """크로스 타임프레임 비교 Markdown 테이블."""
+    lines = [
+        '# Cross-Timeframe Comparison',
+        '',
+        f"- tick promoted: {report.get('tick_promoted', 0)}",
+        f"- min promoted: {report.get('min_promoted', 0)}",
+        '',
+        '| Strategy | Tick Status | Min Status | Winner |',
+        '|----------|------------|------------|--------|',
+    ]
+
+    for pair in report.get('pairs', []):
+        tick = pair.get('tick') or {}
+        min_r = pair.get('min') or {}
+        tick_status = 'promoted' if tick.get('promoted') else tick.get('status', '-')
+        min_status = 'promoted' if min_r.get('promoted') else min_r.get('status', '-')
+        lines.append(
+            f"| {pair.get('buy_strategy', '-')} "
+            f"| {tick_status} | {min_status} | {pair.get('winner', '-')} |"
+        )
 
     return '\n'.join(lines)
 
