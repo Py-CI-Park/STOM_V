@@ -341,7 +341,7 @@ python stom_backtest.py discovery batch --config batch_config.json
 
 ---
 
-## 6. Phase 4: 리포트 강화 — 미착수
+## 6. Phase 4: 리포트 강화 — ✅ 완료
 
 ### 6.1 구현 목적
 
@@ -380,9 +380,12 @@ python stom_backtest.py discovery batch --config batch_config.json
 | 2 | 0.07 | 25 | 8 | 4 | 3 | 성공 |
 ```
 
-### 6.3 예상 작업량
+### 6.3 구현 결과
 
-~100줄 수정. 난이도 낮음~중간.
+- 커밋: `63ec786`
+- 변경: 5개 파일, +525줄 / -2줄
+- 테스트: 13/13 passed (신규)
+- 회귀: 656 passed (pre-existing 1 failure 제외)
 
 ---
 
@@ -433,7 +436,7 @@ python stom_backtest.py discovery batch --config batch_config.json
 | **1** | 자동 조건식 탐색 엔진 (원커맨드) | **✅ 완료** | 중간 | ~680줄 | 없음 |
 | **2** | CSV 직접 지정 모드 | **✅ 완료** | 낮음 | +164줄 | Phase 1 |
 | **3** | 배치/스케줄 실행 | **✅ 완료** | 중간 | +476줄 | Phase 1 |
-| **4** | 리포트 강화 + 히스토리 DB | 미착수 | 낮음~중간 | ~100줄 | Phase 1 |
+| **4** | 리포트 강화 + 히스토리 DB | **✅ 완료** | 낮음~중간 | +525줄 | Phase 1 |
 | **5** | E2E 통합 테스트 | 미착수 | 중간~높음 | ~200줄 | Phase 1, 실제 DB |
 
 **권장 순서:** Phase 2 → Phase 4 → Phase 3 → Phase 5
