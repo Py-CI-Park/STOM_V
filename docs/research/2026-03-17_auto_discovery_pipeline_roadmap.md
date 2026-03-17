@@ -389,7 +389,7 @@ python stom_backtest.py discovery batch --config batch_config.json
 
 ---
 
-## 7. Phase 5: E2E 통합 테스트 — 미착수
+## 7. Phase 5: E2E 통합 테스트 — ✅ 완료
 
 ### 7.1 구현 목적
 
@@ -423,9 +423,12 @@ python stom_backtest.py discovery batch --config batch_config.json
 - CI 환경에서는 `@pytest.mark.slow`로 제외
 - 테스트 후 생성된 임시 전략은 반드시 정리
 
-### 7.3 예상 작업량
+### 7.3 구현 결과
 
-~200줄 신규. 난이도 중간~높음 (실제 데이터 의존).
+- 커밋: `7115724`
+- 변경: 1개 파일, +403줄
+- 테스트: 8 passed, 1 skipped (setting.db 환경 미지원으로 Phase A 스킵)
+- 회귀: 656 unit passed (pre-existing 1 failure 제외)
 
 ---
 
@@ -437,7 +440,7 @@ python stom_backtest.py discovery batch --config batch_config.json
 | **2** | CSV 직접 지정 모드 | **✅ 완료** | 낮음 | +164줄 | Phase 1 |
 | **3** | 배치/스케줄 실행 | **✅ 완료** | 중간 | +476줄 | Phase 1 |
 | **4** | 리포트 강화 + 히스토리 DB | **✅ 완료** | 낮음~중간 | +525줄 | Phase 1 |
-| **5** | E2E 통합 테스트 | 미착수 | 중간~높음 | ~200줄 | Phase 1, 실제 DB |
+| **5** | E2E 통합 테스트 | **✅ 완료** | 중간~높음 | +403줄 | Phase 1, 실제 DB |
 
 **권장 순서:** Phase 2 → Phase 4 → Phase 3 → Phase 5
 
