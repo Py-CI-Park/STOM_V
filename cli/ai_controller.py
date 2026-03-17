@@ -713,6 +713,65 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def get_discovery_history(self, limit: int = 20, promoted_only: bool = False) -> dict:
+        """auto-discovery 실행 히스토리를 조회한다."""
+        try:
+            from cli.history import get_discovery_runs, init_history_db
+            init_history_db(self._history_db)
+            runs = get_discovery_runs(limit, promoted_only, self._history_db)
+            return {'status': 'ok', 'total': len(runs), 'runs': runs}
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
+    def auto_discover_batch(self, batch_path: str = None, common: dict = None,
+                             runs: list = None) -> dict:
+        """여러 auto-discovery 파이프라인을 배치로 순차 실행한다.
+
+        Args:
+            batch_path: 배치 설정 JSON 파일 경로.
+            common: 공통 설정 dict.
+            runs: 개별 실행 오버라이드 리스트.
+
+        Returns:
+            배치 결과 dict (status, total, promoted, results).
+        """
+        try:
+            from cli.auto_discovery import run_batch
+            return run_batch(batch_path=batch_path, common=common, runs=runs,
+                             controller=self)
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
+    def auto_discover(self, config=None, **kwargs) -> dict:
+        """DB 전략명으로 백테스트 → 분석 → WFO 검증 → 승격 전체 파이프라인을 실행한다.
+
+        Args:
+            config: AutoDiscoveryConfig 인스턴스. None이면 kwargs로 생성.
+            **kwargs: AutoDiscoveryConfig 필드값.
+
+        Returns:
+            파이프라인 결과 dict (status, promoted, strategy_name, csv_path 등).
+        """
+        try:
+            from cli.auto_discovery import AutoDiscoveryConfig, AutoDiscoveryEngine
+
+            if config is None:
+                config = AutoDiscoveryConfig(**kwargs)
+            result = AutoDiscoveryEngine.run(config, controller=self)
+
+            # 히스토리 DB에 저장
+            try:
+                from cli.history import save_discovery_run, init_history_db
+                init_history_db(self._history_db)
+                discovery_id = save_discovery_run(config, result, self._history_db)
+                result = {**result, 'discovery_id': discovery_id}
+            except Exception:
+                pass
+
+            return result
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def run(self, config_dict: dict) -> dict:
         """백테스트를 실행하고 결과를 히스토리에 저장한다."""
         try:
