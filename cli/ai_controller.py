@@ -734,7 +734,7 @@ class AIBacktestController:
             return {'status': 'error', 'message': str(e)}
 
     def auto_discover_evolve(self, evo_config=None, config_path: str = None,
-                              parallel: int = 0, **kwargs) -> dict:
+                              parallel: int = 0, seed: int = None, **kwargs) -> dict:
         """조건식 진화 루프를 실행한다."""
         try:
             from cli.auto_discovery import auto_discover_evolve, AutoEvolutionConfig
@@ -742,7 +742,7 @@ class AIBacktestController:
                 evo_config = AutoEvolutionConfig.from_config_path(
                     config_path, **kwargs)
             return auto_discover_evolve(evo_config, controller=self,
-                                         parallel=parallel)
+                                         parallel=parallel, seed=seed)
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 

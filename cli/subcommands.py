@@ -620,8 +620,8 @@ def _handle_discovery(parsed):
             objective=parsed.objective,
             stagnation_limit=parsed.stagnation_limit,
             mutation_strength=parsed.mutation_strength,
-            parallel=parsed.parallel,
-            seed=parsed.seed,
+            parallel=getattr(parsed, 'parallel', 0),
+            seed=getattr(parsed, 'seed', None),
         )
         print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
         return 0 if result.get('promoted', False) else 1

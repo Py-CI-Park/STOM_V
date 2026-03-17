@@ -819,20 +819,22 @@ def _create_population(base_config: AutoDiscoveryConfig,
 
 
 def auto_discover_evolve(evo_config: AutoEvolutionConfig,
-                          controller=None, parallel: int = 0) -> dict:
+                          controller=None, parallel: int = 0,
+                          seed: int = None) -> dict:
     """조건식 진화 루프 메인 함수.
 
     Args:
         evo_config: 진화 설정.
         controller: AIBacktestController (순차 모드용).
-        parallel: 병렬 실행 수.
+        parallel: 병렬 실행 수 (세대 내 population 병렬 실행).
+        seed: 랜덤 시드 (재현성용).
 
     Returns:
         {status, promoted, best_result, best_config, generations, total_runs, total_duration}
     """
     import random as _random
 
-    rng = _random.Random()
+    rng = _random.Random(seed)
     loop_start = time.time()
 
     best_config = copy.deepcopy(evo_config.base_config)
@@ -849,24 +851,67 @@ def auto_discover_evolve(evo_config: AutoEvolutionConfig,
         population = _create_population(best_config, evo_config, rng)
         gen_results = []
 
-        for cfg in population:
-            result = AutoDiscoveryEngine.run(cfg, controller)
-            result['_config'] = asdict(cfg)
-            gen_results.append(result)
-            total_runs += 1
+        if parallel > 0:
+            # 세대 내 population 병렬 실행
+            futures = {}
+            with ProcessPoolExecutor(max_workers=parallel) as executor:
+                for i, cfg in enumerate(population):
+                    common_dict = {f.name: getattr(cfg, f.name)
+                                   for f in fields(AutoDiscoveryConfig)}
+                    future = executor.submit(
+                        _run_single_pipeline, common_dict, {}, i)
+                    futures[future] = (i, cfg)
 
-            # 승격되면 즉시 반환
-            if result.get('promoted', False):
-                return {
-                    'status': 'ok',
-                    'promoted': True,
-                    'best_result': result,
-                    'best_config': asdict(cfg),
-                    'generations': gen + 1,
-                    'total_runs': total_runs,
-                    'total_duration': round(time.time() - loop_start, 2),
-                    'generations_log': generations_log,
-                }
+                for future in as_completed(futures):
+                    i, cfg = futures[future]
+                    try:
+                        summary = future.result()
+                        result = {
+                            'status': summary.get('status', 'error'),
+                            'promoted': summary.get('promoted', False),
+                            'strategy_name': summary.get('strategy_name'),
+                            'pipeline_duration': summary.get('pipeline_duration'),
+                            '_config': asdict(cfg),
+                        }
+                    except Exception as e:
+                        result = {
+                            'status': 'error', 'promoted': False,
+                            'message': str(e), '_config': asdict(cfg),
+                        }
+                    gen_results.append(result)
+                    total_runs += 1
+
+                    if result.get('promoted', False):
+                        return {
+                            'status': 'ok',
+                            'promoted': True,
+                            'best_result': result,
+                            'best_config': asdict(cfg),
+                            'generations': gen + 1,
+                            'total_runs': total_runs,
+                            'total_duration': round(time.time() - loop_start, 2),
+                            'generations_log': generations_log,
+                        }
+        else:
+            # 순차 실행
+            for cfg in population:
+                result = AutoDiscoveryEngine.run(cfg, controller)
+                result['_config'] = asdict(cfg)
+                gen_results.append(result)
+                total_runs += 1
+
+                # 승격되면 즉시 반환
+                if result.get('promoted', False):
+                    return {
+                        'status': 'ok',
+                        'promoted': True,
+                        'best_result': result,
+                        'best_config': asdict(cfg),
+                        'generations': gen + 1,
+                        'total_runs': total_runs,
+                        'total_duration': round(time.time() - loop_start, 2),
+                        'generations_log': generations_log,
+                    }
 
         # 세대 최고 선택
         gen_best = _select_best(gen_results, evo_config.objective)
