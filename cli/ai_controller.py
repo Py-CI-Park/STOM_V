@@ -713,6 +713,25 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def auto_discover(self, config=None, **kwargs) -> dict:
+        """DB 전략명으로 백테스트 → 분석 → WFO 검증 → 승격 전체 파이프라인을 실행한다.
+
+        Args:
+            config: AutoDiscoveryConfig 인스턴스. None이면 kwargs로 생성.
+            **kwargs: AutoDiscoveryConfig 필드값.
+
+        Returns:
+            파이프라인 결과 dict (status, promoted, strategy_name, csv_path 등).
+        """
+        try:
+            from cli.auto_discovery import AutoDiscoveryConfig, AutoDiscoveryEngine
+
+            if config is None:
+                config = AutoDiscoveryConfig(**kwargs)
+            return AutoDiscoveryEngine.run(config, controller=self)
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def run(self, config_dict: dict) -> dict:
         """백테스트를 실행하고 결과를 히스토리에 저장한다."""
         try:

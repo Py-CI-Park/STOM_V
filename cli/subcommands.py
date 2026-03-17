@@ -161,6 +161,44 @@ def create_subcommand_parser():
     disc_promote.add_argument('--base-buy-strategy', default=None,
                               help='기존 매수 전략명 — 자동 필터를 이 전략에 결합하여 검증')
 
+    # discovery auto
+    disc_auto = disc_sub.add_parser('auto', help='DB 전략명으로 전체 파이프라인 원커맨드 실행')
+    disc_auto.add_argument('--buy', required=True, help='매수 전략명')
+    disc_auto.add_argument('--sell', required=True, help='매도 전략명')
+    disc_auto.add_argument('--start', type=int, required=True, help='시작일자 YYYYMMDD')
+    disc_auto.add_argument('--end', type=int, required=True, help='종료일자 YYYYMMDD')
+    disc_auto.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    disc_auto.add_argument('--betting', default='1')
+    disc_auto.add_argument('--avg-time', type=int, default=60)
+    disc_auto.add_argument('--start-time', type=int, default=90000)
+    disc_auto.add_argument('--end-time', type=int, default=152800)
+    disc_auto.add_argument('--engines', type=int, default=4)
+    disc_auto.add_argument('--timeout', type=int, default=3600)
+    disc_auto.add_argument('--top-n', type=int, default=5)
+    disc_auto.add_argument('--min-samples', type=int, default=30)
+    disc_auto.add_argument('--quantiles', type=int, default=10)
+    disc_auto.add_argument('--alpha', type=float, default=0.05)
+    disc_auto.add_argument('--buy-var', default='매수')
+    disc_auto.add_argument('--ml-feature-limit', type=int, default=0)
+    disc_auto.add_argument('--ml-model-type', choices=['random_forest', 'gradient_boosting'], default='random_forest')
+    disc_auto.add_argument('--ml-top-n', type=int, default=10)
+    disc_auto.add_argument('--ml-n-splits', type=int, default=5)
+    disc_auto.add_argument('--ml-weight', type=float, default=0.0)
+    disc_auto.add_argument('--max-rounds', type=int, default=3, help='분석 다단계 재시도 최대 횟수')
+    disc_auto.add_argument('--train-window-days', type=int, required=True)
+    disc_auto.add_argument('--test-window-days', type=int, required=True)
+    disc_auto.add_argument('--step-days', type=int)
+    disc_auto.add_argument('--purge-days', type=int, default=0)
+    disc_auto.add_argument('--embargo-days', type=int, default=0)
+    disc_auto.add_argument('--objective', default='tpi')
+    disc_auto.add_argument('--promotion-preset', choices=['conservative', 'balanced', 'aggressive'], default='balanced')
+    disc_auto.add_argument('--auto-relax', action='store_true', default=False)
+    disc_auto.add_argument('--max-relax-steps', type=int, default=3)
+    disc_auto.add_argument('--base-buy-strategy', default=None)
+    disc_auto.add_argument('--output-code', help='생성 코드 저장 경로')
+    disc_auto.add_argument('--report-json', help='결과 JSON 리포트 저장 경로')
+    disc_auto.add_argument('--report-md', help='결과 Markdown 리포트 저장 경로')
+
     return parser
 
 
@@ -354,6 +392,50 @@ def _handle_discovery(parsed):
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'auto':
+        from cli.auto_discovery import AutoDiscoveryConfig, AutoDiscoveryEngine
+
+        auto_config = AutoDiscoveryConfig(
+            buy_strategy=parsed.buy,
+            sell_strategy=parsed.sell,
+            start_date=parsed.start,
+            end_date=parsed.end,
+            is_tick=parsed.timeframe == 'tick',
+            betting=parsed.betting,
+            avg_time=parsed.avg_time,
+            start_time=parsed.start_time,
+            end_time=parsed.end_time,
+            engine_count=parsed.engines,
+            timeout=parsed.timeout,
+            top_n=parsed.top_n,
+            min_samples=parsed.min_samples,
+            quantiles=parsed.quantiles,
+            alpha=parsed.alpha,
+            buy_var=parsed.buy_var,
+            ml_feature_limit=parsed.ml_feature_limit,
+            ml_model_type=parsed.ml_model_type,
+            ml_top_n=parsed.ml_top_n,
+            ml_n_splits=parsed.ml_n_splits,
+            ml_weight=parsed.ml_weight,
+            max_rounds=parsed.max_rounds,
+            train_window_days=parsed.train_window_days,
+            test_window_days=parsed.test_window_days,
+            step_days=parsed.step_days,
+            purge_days=parsed.purge_days,
+            embargo_days=parsed.embargo_days,
+            objective=parsed.objective,
+            promotion_preset=parsed.promotion_preset,
+            auto_relax=parsed.auto_relax,
+            max_relax_steps=parsed.max_relax_steps,
+            base_buy_strategy=parsed.base_buy_strategy,
+            output_code=parsed.output_code,
+            report_json=parsed.report_json,
+            report_md=parsed.report_md,
+        )
+        result = AutoDiscoveryEngine.run(auto_config)
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1
 
     elif parsed.discovery_action == 'promote':
         config_dict = {
