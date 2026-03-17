@@ -426,6 +426,61 @@ def get_discovery_runs(limit: int = 20, promoted_only: bool = False,
             con.close()
 
 
+_ALLOWED_DISCOVERY_METRICS = frozenset(
+    {'pipeline_duration', 'phase_a_duration', 'phase_b_duration',
+     'phase_c_duration', 'phase_b_rounds'}
+)
+
+
+def compare_discovery_runs(discovery_ids: list, db_path: str = None) -> dict:
+    """여러 discovery run을 조회하여 비교한다.
+
+    Args:
+        discovery_ids: 비교할 discovery_id 목록.
+        db_path: DB 파일 경로. None이면 DEFAULT_DB_PATH 사용.
+
+    Returns:
+        {'runs': [row_dict, ...], 'best': {'metric_name': discovery_id, ...}}
+    """
+    resolved = db_path or DEFAULT_DB_PATH
+    init_history_db(resolved)
+    _ensure_discovery_table(resolved)
+
+    if not discovery_ids:
+        return {'runs': [], 'best': {}}
+
+    placeholders = ','.join('?' * len(discovery_ids))
+    sql = f'SELECT * FROM discovery_runs WHERE discovery_id IN ({placeholders})'
+
+    con = None
+    try:
+        con = sqlite3.connect(resolved)
+        con.row_factory = sqlite3.Row
+        cur = con.execute(sql, list(discovery_ids))
+        runs = [dict(row) for row in cur.fetchall()]
+    finally:
+        if con is not None:
+            con.close()
+
+    best = {}
+    for metric in _ALLOWED_DISCOVERY_METRICS:
+        best_run = None
+        best_val = None
+        for run in runs:
+            val = run.get(metric)
+            if val is None:
+                continue
+            # pipeline_duration, phase durations: 낮을수록 좋음
+            # phase_b_rounds: 낮을수록 좋음 (적은 라운드로 성공)
+            if best_val is None or val < best_val:
+                best_val = val
+                best_run = run
+        if best_run is not None:
+            best[metric] = best_run['discovery_id']
+
+    return {'runs': runs, 'best': best}
+
+
 def delete_run(run_id: int, db_path: str = None) -> bool:
     """지정 run_id 행을 삭제한다.
 

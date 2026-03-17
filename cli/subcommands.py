@@ -204,6 +204,20 @@ def create_subcommand_parser():
     disc_batch = disc_sub.add_parser('batch', help='배치 설정 JSON으로 여러 auto-discovery 순차 실행')
     disc_batch.add_argument('--config', '-c', required=True, dest='batch_config', help='배치 설정 JSON 파일 경로')
 
+    # discovery history
+    disc_history = disc_sub.add_parser('history', help='auto-discovery 실행 히스토리 조회')
+    disc_history.add_argument('--promoted-only', action='store_true', default=False,
+                               help='승격된 결과만 표시')
+    disc_history.add_argument('--limit', type=int, default=20, help='최대 표시 행 수')
+    disc_history.add_argument('--json', action='store_true', default=False, dest='json_output',
+                               help='JSON 형식으로 출력')
+
+    # discovery compare
+    disc_compare = disc_sub.add_parser('compare', help='discovery run 비교')
+    disc_compare.add_argument('--ids', required=True, help='비교할 discovery_id (쉼표 구분)')
+    disc_compare.add_argument('--json', action='store_true', default=False, dest='json_output',
+                               help='JSON 형식으로 출력')
+
     return parser
 
 
@@ -396,6 +410,60 @@ def _handle_discovery(parsed):
             ml_weight=parsed.ml_weight,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'history':
+        result = controller.get_discovery_history(
+            limit=parsed.limit, promoted_only=parsed.promoted_only,
+        )
+        if parsed.json_output:
+            print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        else:
+            from cli.table_formatter import format_table
+            runs = result.get('runs', [])
+            if not runs:
+                print('(no discovery runs)')
+            else:
+                columns = [
+                    ('discovery_id', 'ID', 4),
+                    ('timestamp', 'Timestamp', 20),
+                    ('buy_strategy', 'Buy Strategy', 12),
+                    ('status', 'Status', 6),
+                    ('promoted', 'Promoted', 8),
+                    ('strategy_name', 'Strategy Name', 12),
+                    ('pipeline_duration', 'Duration(s)', 10),
+                ]
+                print(format_table(runs, columns))
+                print(f"\nTotal: {result.get('total', len(runs))} runs")
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'compare':
+        ids = [int(x.strip()) for x in parsed.ids.split(',') if x.strip()]
+        result = controller.compare_discovery_history(ids)
+        if parsed.json_output:
+            print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        else:
+            from cli.table_formatter import format_table
+            runs = result.get('runs', [])
+            if not runs:
+                print('(no matching discovery runs)')
+            else:
+                columns = [
+                    ('discovery_id', 'ID', 4),
+                    ('buy_strategy', 'Buy Strategy', 12),
+                    ('promoted', 'Promoted', 8),
+                    ('pipeline_duration', 'Duration(s)', 10),
+                    ('phase_a_duration', 'Phase A(s)', 9),
+                    ('phase_b_duration', 'Phase B(s)', 9),
+                    ('phase_c_duration', 'Phase C(s)', 9),
+                    ('phase_b_rounds', 'B Rounds', 8),
+                ]
+                print(format_table(runs, columns))
+                best = result.get('best', {})
+                if best:
+                    print('\nBest:')
+                    for metric, did in best.items():
+                        print(f'  {metric}: discovery_id={did}')
         return 0 if result.get('status') == 'ok' else 1
 
     elif parsed.discovery_action == 'batch':

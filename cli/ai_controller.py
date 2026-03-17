@@ -723,6 +723,16 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def compare_discovery_history(self, discovery_ids: list[int]) -> dict:
+        """여러 discovery run을 비교한다."""
+        try:
+            from cli.history import compare_discovery_runs, init_history_db
+            init_history_db(self._history_db)
+            result = compare_discovery_runs(discovery_ids, self._history_db)
+            return {'status': 'ok', **result}
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def auto_discover_batch(self, batch_path: str = None, common: dict = None,
                              runs: list = None) -> dict:
         """여러 auto-discovery 파이프라인을 배치로 순차 실행한다.
