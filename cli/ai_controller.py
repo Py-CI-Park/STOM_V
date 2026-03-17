@@ -733,6 +733,19 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def auto_discover_evolve(self, evo_config=None, config_path: str = None,
+                              parallel: int = 0, **kwargs) -> dict:
+        """조건식 진화 루프를 실행한다."""
+        try:
+            from cli.auto_discovery import auto_discover_evolve, AutoEvolutionConfig
+            if evo_config is None:
+                evo_config = AutoEvolutionConfig.from_config_path(
+                    config_path, **kwargs)
+            return auto_discover_evolve(evo_config, controller=self,
+                                         parallel=parallel)
+        except Exception as e:
+            return {'status': 'error', 'message': str(e)}
+
     def auto_discover_batch(self, batch_path: str = None, common: dict = None,
                              runs: list = None) -> dict:
         """여러 auto-discovery 파이프라인을 배치로 순차 실행한다.

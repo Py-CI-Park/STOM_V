@@ -686,3 +686,229 @@ def run_batch(batch_path: str = None, common: dict = None, runs: list = None,
         'results': results,
         'batch_duration': round(time.time() - batch_start, 2),
     }
+
+
+# ---------------------------------------------------------------------------
+# Evolution Loop
+# ---------------------------------------------------------------------------
+
+@dataclass
+class AutoEvolutionConfig:
+    """조건식 진화 루프 설정."""
+
+    base_config: AutoDiscoveryConfig = field(default_factory=AutoDiscoveryConfig)
+    max_generations: int = 5
+    population_size: int = 4
+    objective: str = 'tpi'
+    stagnation_limit: int = 2
+    mutation_strength: float = 0.3
+
+    # 파라미터 범위
+    alpha_range: tuple = (0.01, 0.20)
+    top_n_range: tuple = (1, 10)
+    min_samples_range: tuple = (5, 100)
+    quantiles_range: tuple = (3, 20)
+    ml_weight_range: tuple = (0.0, 1.0)
+    ml_feature_limit_range: tuple = (0, 30)
+
+    @classmethod
+    def from_config_path(cls, config_path: str, **kwargs) -> 'AutoEvolutionConfig':
+        """JSON 파일에서 base_config를 읽고, kwargs로 진화 파라미터를 오버라이드한다."""
+        with open(config_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+
+        # base_config 생성
+        valid_fields = {fld.name for fld in fields(AutoDiscoveryConfig)}
+        base_kwargs = {k: v for k, v in data.items() if k in valid_fields}
+        base_config = AutoDiscoveryConfig(**base_kwargs)
+
+        # 진화 파라미터: JSON의 'evolution' 키 또는 kwargs
+        evo_data = data.get('evolution', {})
+        evo_data.update({k: v for k, v in kwargs.items() if v is not None})
+
+        evo_fields = {fld.name for fld in fields(cls)} - {'base_config'}
+        evo_kwargs = {k: v for k, v in evo_data.items() if k in evo_fields}
+
+        return cls(base_config=base_config, **evo_kwargs)
+
+
+def _mutate_config(config: AutoDiscoveryConfig, evo_config: AutoEvolutionConfig,
+                   rng=None) -> AutoDiscoveryConfig:
+    """mutable 파라미터를 가우시안 노이즈로 변이한다. 범위 클리핑.
+
+    Args:
+        config: 원본 config (변이하지 않음).
+        evo_config: 진화 설정 (범위, 강도 등).
+        rng: random.Random 인스턴스 (재현성용).
+
+    Returns:
+        변이된 새 AutoDiscoveryConfig.
+    """
+    import random as _random
+    if rng is None:
+        rng = _random.Random()
+
+    strength = evo_config.mutation_strength
+
+    def _mutate_float(val, lo, hi):
+        span = hi - lo
+        noise = rng.gauss(0, strength * span)
+        return round(max(lo, min(hi, val + noise)), 4)
+
+    def _mutate_int(val, lo, hi):
+        span = hi - lo
+        noise = rng.gauss(0, strength * span)
+        return max(lo, min(hi, round(val + noise)))
+
+    kwargs = {fld.name: getattr(config, fld.name) for fld in fields(AutoDiscoveryConfig)}
+    kwargs['alpha'] = _mutate_float(config.alpha, *evo_config.alpha_range)
+    kwargs['top_n'] = _mutate_int(config.top_n, *evo_config.top_n_range)
+    kwargs['min_samples'] = _mutate_int(config.min_samples, *evo_config.min_samples_range)
+    kwargs['quantiles'] = _mutate_int(config.quantiles, *evo_config.quantiles_range)
+    kwargs['ml_weight'] = _mutate_float(config.ml_weight, *evo_config.ml_weight_range)
+    kwargs['ml_feature_limit'] = _mutate_int(config.ml_feature_limit,
+                                              *evo_config.ml_feature_limit_range)
+
+    return AutoDiscoveryConfig(**kwargs)
+
+
+def _select_best(results: list, objective: str) -> dict | None:
+    """promoted 우선 → objective 기준 최고 선택.
+
+    Args:
+        results: 파이프라인 실행 결과 리스트.
+        objective: 비교 기준 지표명 (예: 'tpi').
+
+    Returns:
+        최고 결과 dict, 또는 빈 리스트면 None.
+    """
+    if not results:
+        return None
+
+    # promoted 결과 우선
+    promoted = [r for r in results if r.get('promoted', False)]
+    if promoted:
+        return promoted[0]
+
+    # objective 값 추출하여 정렬
+    def _get_objective(r):
+        # phase_c > discovery_result > walk_forward > summary 등에서 추출 시도
+        phase_c = r.get('phase_c') or {}
+        discovery = phase_c.get('discovery_result') or {}
+        wf = discovery.get('walk_forward') or {}
+        summary = wf.get('summary') or {}
+        val = summary.get(f'mean_oos_{objective}')
+        if val is not None:
+            return val
+        # pipeline_duration을 fallback으로 (낮을수록 좋음 → 부호 반전)
+        dur = r.get('pipeline_duration')
+        if dur is not None:
+            return -dur
+        return float('-inf')
+
+    sorted_results = sorted(results, key=_get_objective, reverse=True)
+    return sorted_results[0]
+
+
+def _create_population(base_config: AutoDiscoveryConfig,
+                        evo_config: AutoEvolutionConfig,
+                        rng=None) -> list[AutoDiscoveryConfig]:
+    """population_size개 변이 config를 생성한다."""
+    return [_mutate_config(base_config, evo_config, rng)
+            for _ in range(evo_config.population_size)]
+
+
+def auto_discover_evolve(evo_config: AutoEvolutionConfig,
+                          controller=None, parallel: int = 0) -> dict:
+    """조건식 진화 루프 메인 함수.
+
+    Args:
+        evo_config: 진화 설정.
+        controller: AIBacktestController (순차 모드용).
+        parallel: 병렬 실행 수.
+
+    Returns:
+        {status, promoted, best_result, best_config, generations, total_runs, total_duration}
+    """
+    import random as _random
+
+    rng = _random.Random()
+    loop_start = time.time()
+
+    best_config = copy.deepcopy(evo_config.base_config)
+    best_result = None
+    stagnation = 0
+    total_runs = 0
+    generations_log = []
+
+    if controller is None:
+        from cli.ai_controller import AIBacktestController
+        controller = AIBacktestController()
+
+    for gen in range(evo_config.max_generations):
+        population = _create_population(best_config, evo_config, rng)
+        gen_results = []
+
+        for cfg in population:
+            result = AutoDiscoveryEngine.run(cfg, controller)
+            result['_config'] = asdict(cfg)
+            gen_results.append(result)
+            total_runs += 1
+
+            # 승격되면 즉시 반환
+            if result.get('promoted', False):
+                return {
+                    'status': 'ok',
+                    'promoted': True,
+                    'best_result': result,
+                    'best_config': asdict(cfg),
+                    'generations': gen + 1,
+                    'total_runs': total_runs,
+                    'total_duration': round(time.time() - loop_start, 2),
+                    'generations_log': generations_log,
+                }
+
+        # 세대 최고 선택
+        gen_best = _select_best(gen_results, evo_config.objective)
+
+        gen_info = {
+            'generation': gen + 1,
+            'population_size': len(population),
+            'best_status': (gen_best or {}).get('status'),
+            'best_promoted': (gen_best or {}).get('promoted', False),
+        }
+        generations_log.append(gen_info)
+
+        # 개선 여부 확인
+        improved = False
+        if gen_best and (best_result is None or
+                          gen_best.get('promoted', False) or
+                          gen_best.get('pipeline_duration', float('inf')) <
+                          (best_result or {}).get('pipeline_duration', float('inf'))):
+            best_result = gen_best
+            best_config_dict = gen_best.get('_config')
+            if best_config_dict:
+                valid = {fld.name for fld in fields(AutoDiscoveryConfig)}
+                best_config = AutoDiscoveryConfig(
+                    **{k: v for k, v in best_config_dict.items() if k in valid})
+            improved = True
+
+        if improved:
+            stagnation = 0
+        else:
+            stagnation += 1
+
+        if stagnation >= evo_config.stagnation_limit:
+            break
+
+    return {
+        'status': 'ok',
+        'promoted': False,
+        'best_result': best_result,
+        'best_config': asdict(best_config) if best_config else None,
+        'generations': len(generations_log),
+        'total_runs': total_runs,
+        'total_duration': round(time.time() - loop_start, 2),
+        'generations_log': generations_log,
+        'stagnation_stopped': stagnation >= evo_config.stagnation_limit,
+    }

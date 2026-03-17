@@ -214,6 +214,18 @@ def create_subcommand_parser():
     disc_history.add_argument('--json', action='store_true', default=False, dest='json_output',
                                help='JSON 형식으로 출력')
 
+    # discovery evolve
+    disc_evolve = disc_sub.add_parser('evolve', help='조건식 진화 루프 — 승격될 때까지 파라미터 자동 변이')
+    disc_evolve.add_argument('--config', '-c', required=True, dest='evolve_config',
+                              help='기본 auto-discovery 설정 JSON 파일 경로')
+    disc_evolve.add_argument('--max-generations', type=int, default=5, help='최대 세대 수')
+    disc_evolve.add_argument('--population-size', type=int, default=4, help='세대당 변이 개체 수')
+    disc_evolve.add_argument('--objective', default='tpi', help='최적화 목표 지표')
+    disc_evolve.add_argument('--stagnation-limit', type=int, default=2, help='개선 없는 세대 허용 수')
+    disc_evolve.add_argument('--mutation-strength', type=float, default=0.3, help='변이 강도 (0.0~1.0)')
+    disc_evolve.add_argument('--parallel', '-p', type=int, default=0, help='병렬 실행 수')
+    disc_evolve.add_argument('--seed', type=int, default=None, help='랜덤 시드')
+
     # discovery compare
     disc_compare = disc_sub.add_parser('compare', help='discovery run 비교')
     disc_compare.add_argument('--ids', required=True, help='비교할 discovery_id (쉼표 구분)')
@@ -599,5 +611,19 @@ def _handle_discovery(parsed):
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0 if result.get('status') == 'ok' and result.get('promoted', False) else 1
+
+    elif parsed.discovery_action == 'evolve':
+        result = controller.auto_discover_evolve(
+            config_path=parsed.evolve_config,
+            max_generations=parsed.max_generations,
+            population_size=parsed.population_size,
+            objective=parsed.objective,
+            stagnation_limit=parsed.stagnation_limit,
+            mutation_strength=parsed.mutation_strength,
+            parallel=parsed.parallel,
+            seed=parsed.seed,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 0 if result.get('promoted', False) else 1
 
     return 1
