@@ -321,6 +321,8 @@ DB 전략명 ──────────────→ run_backtest() ──
 | 문서 | 경로 |
 |------|------|
 | 로드맵 (Phase별 상세) | `docs/research/2026-03-17_auto_discovery_pipeline_roadmap.md` |
+| Phase 6~9 개발 계획서 | `docs/research/2026-03-17_auto_discovery_phase6_9_development_plan.md` |
+| Phase 6~9 완료 보고서 | `docs/research/2026-03-17_auto_discovery_phase6_9_completion_report.md` |
 | 자동 조건식 탐색 연구 | `docs/research/auto_condition_discovery_research.md` |
 | 구현 체크리스트 (초기) | `docs/research/2026-03-10_auto_condition_discovery_implementation_checklist.md` |
 | CLI AI 자동화 계획서 | `docs/STOM_CLI_AI_AUTOMATION_PLAN.md` |
