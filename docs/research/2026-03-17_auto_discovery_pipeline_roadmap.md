@@ -275,7 +275,7 @@ python stom_backtest.py discovery auto \
 
 ---
 
-## 5. Phase 3: 배치/스케줄 실행 — 미착수
+## 5. Phase 3: 배치/스케줄 실행 — ✅ 완료
 
 ### 5.1 구현 목적
 
@@ -332,9 +332,12 @@ python stom_backtest.py discovery batch --config batch_config.json
 }
 ```
 
-### 5.3 예상 작업량
+### 5.3 구현 결과
 
-~150줄 신규 + ~40줄 수정. 난이도 중간.
+- 커밋: `71dfa63`
+- 변경: 4개 파일, +476줄 / -1줄
+- 테스트: 19/19 passed (신규)
+- 회귀: 643 passed (pre-existing 1 failure 제외)
 
 ---
 
@@ -429,7 +432,7 @@ python stom_backtest.py discovery batch --config batch_config.json
 |-------|------|------|--------|-----------|--------|
 | **1** | 자동 조건식 탐색 엔진 (원커맨드) | **✅ 완료** | 중간 | ~680줄 | 없음 |
 | **2** | CSV 직접 지정 모드 | **✅ 완료** | 낮음 | +164줄 | Phase 1 |
-| **3** | 배치/스케줄 실행 | 미착수 | 중간 | ~190줄 | Phase 1 |
+| **3** | 배치/스케줄 실행 | **✅ 완료** | 중간 | +476줄 | Phase 1 |
 | **4** | 리포트 강화 + 히스토리 DB | 미착수 | 낮음~중간 | ~100줄 | Phase 1 |
 | **5** | E2E 통합 테스트 | 미착수 | 중간~높음 | ~200줄 | Phase 1, 실제 DB |
 
