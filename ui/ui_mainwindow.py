@@ -20,6 +20,7 @@ from ui.set_dialog_back import SetDialogBack
 from ui.set_dialog_chart import SetDialogChart
 from ui.set_dialog_formula import SetDialogFormula
 from ui.set_home_tap import SetHomeTap
+from ui.set_style import dict_set
 
 from ui.ui_etc import *
 from ui.ui_draw_chart_db import *
@@ -324,6 +325,7 @@ def resolve_stock_python():
 class MainWindow(QMainWindow):
     def __init__(self, auto_run_, splash=None):
         super().__init__()
+        self.splash = splash
         self.logger = get_logger(self.__class__.__name__)
         self.log    = self.logger   # legacy alias used by ui_update_textedit.py
 
@@ -339,9 +341,9 @@ class MainWindow(QMainWindow):
 
         self.proc_webc  = Process(target=WebCrawling, args=(self.qlist,), daemon=True)
         self.proc_sound = Process(target=Sound, args=(self.qlist,), daemon=True)
-        self.proc_query = Process(target=Query, args=(self.qlist,))
-        self.proc_chart = Process(target=Chart, args=(self.qlist,), daemon=True)
-        self.proc_hoga  = Process(target=Hoga, args=(self.qlist,), daemon=True)
+        self.proc_query = Process(target=Query, args=(self.qlist, dict_set))
+        self.proc_chart = Process(target=Chart, args=(self.qlist, dict_set), daemon=True)
+        self.proc_hoga  = Process(target=Hoga, args=(self.qlist, dict_set), daemon=True)
         self.proc_livec = None
         # STOM Live disabled
         # self.proc_live  = Process(target=LiveClient, args=(self.qlist,), daemon=True)
@@ -355,7 +357,7 @@ class MainWindow(QMainWindow):
         # self.proc_live.start()
 
         self.auto_run = auto_run_
-        self.dict_set = DICT_SET
+        self.dict_set = dict_set
         self.main_btn = 0
         self.counter  = 0
         self.cpu_per  = 0
@@ -496,6 +498,7 @@ class MainWindow(QMainWindow):
         self.tm_mc1  = 0
         self.tm_mc2  = 0
 
+        from matplotlib import pyplot as plt, font_manager
         font_name = 'C:/Windows/Fonts/malgun.ttf'
         font_family = font_manager.FontProperties(fname=font_name).get_name()
         plt.rcParams['font.family'] = font_family
