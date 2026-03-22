@@ -167,6 +167,8 @@ class SetSetupTap:
         self.ui.sj_etc_labelll_02 = QLabel('▣  시리얼키', self.ui.sj_bs_groupBox_08)
         self.ui.sj_etc_liEditt_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_08, passhide=True)
         self.ui.sj_etc_daEditt_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_08)
+        self.ui.sj_etc_labelll_02.hide()
+        self.ui.sj_etc_daEditt_01.hide()
 
         self.ui.sj_load_Button_01 = self.wc.setPushbutton('불러오기', box=self.ui.sj_bs_groupBox_01, click=self.ui.SettingLoad_01)
         self.ui.sj_load_Button_02 = self.wc.setPushbutton('불러오기', box=self.ui.sj_bs_groupBox_02, click=self.ui.SettingLoad_02)
