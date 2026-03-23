@@ -216,6 +216,10 @@ class ZmqServ(QThread):
         self.sock = self.zctx.socket(zmq.PUB)
         self.sock.bind(f'tcp://*:{port_num}')
 
+    def stop(self):
+        self.quit()
+        self.wait()
+
     def run(self):
         while True:
             msg, data = self.wdzservQ_.get()
@@ -247,6 +251,10 @@ class ZmqRecv(QThread):
         self.sock = self.zctx.socket(zmq.SUB)
         self.sock.connect(f'tcp://localhost:{port_num}')
         self.sock.setsockopt_string(zmq.SUBSCRIBE, '')
+
+    def stop(self):
+        self.quit()
+        self.wait()
 
     def run(self):
         while True:
