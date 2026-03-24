@@ -327,6 +327,38 @@ def create_subcommand_parser():
     wfo_parser.add_argument('--dry-run', action='store_true',
                              help='train/test 윈도우 목록만 출력')
 
+    # --- setting 서브커맨드 ---
+    setting_parser = sub.add_parser('setting', help='STOM 설정 조회 (read-only)')
+    setting_sub = setting_parser.add_subparsers(dest='setting_action')
+
+    setting_list = setting_sub.add_parser('list', help='전체 설정 키-값 목록')
+    setting_list.add_argument('--format', choices=['json', 'text'], default='text',
+                               dest='output_format')
+
+    setting_get = setting_sub.add_parser('get', help='특정 설정 값 조회')
+    setting_get.add_argument('key', help='설정 키 이름')
+    setting_get.add_argument('--format', choices=['json', 'text'], default='text',
+                              dest='output_format')
+
+    setting_search = setting_sub.add_parser('search', help='설정 키 검색 (부분 일치)')
+    setting_search.add_argument('query', help='검색어')
+    setting_search.add_argument('--format', choices=['json', 'text'], default='text',
+                                 dest='output_format')
+
+    # --- report 서브커맨드 ---
+    report_parser = sub.add_parser('report', help='백테스트/Discovery 결과 리포트 생성')
+    report_parser.add_argument('--source', required=True,
+                                choices=['backtest', 'discovery'],
+                                help='데이터 소스')
+    report_parser.add_argument('--limit', type=int, default=0,
+                                help='최근 N건 제한 (0=전체)')
+    report_parser.add_argument('--summary', action='store_true',
+                                help='요약 통계만 출력')
+    report_parser.add_argument('--format', choices=['json', 'csv', 'excel', 'text'],
+                                default='json', dest='output_format')
+    report_parser.add_argument('-o', '--output', dest='output_file',
+                                help='출력 파일 (csv/excel 시 필수)')
+
     # --- tune 서브커맨드 ---
     tune_parser = sub.add_parser('tune', help='시스템 리소스 분석 및 엔진 수 추천')
     tune_parser.add_argument('--engines', type=int, default=None,
@@ -373,6 +405,10 @@ def handle_subcommand(args=None):
         return _handle_sweep(parsed)
     elif parsed.command == 'wfo':
         return _handle_wfo(parsed)
+    elif parsed.command == 'setting':
+        return _handle_setting(parsed)
+    elif parsed.command == 'report':
+        return _handle_report(parsed)
     elif parsed.command == 'tune':
         return _handle_tune(parsed)
     elif parsed.command == 'db':
@@ -972,6 +1008,128 @@ def _handle_wfo(parsed):
     text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
     _write_output(text, output_file if not (output_file and output_file.endswith('.json')) else None)
     return 0 if result.get('status') == 'ok' else 1
+
+
+def _handle_setting(parsed):
+    """setting 서브커맨드 핸들러 (read-only)."""
+    try:
+        from utility.setting import DICT_SET
+    except (Exception, SystemExit) as e:
+        error_msg = str(e)
+        if isinstance(e, SystemExit) or 'InvalidToken' in type(e).__name__ or '암호키' in error_msg:
+            print(json.dumps({
+                'status': 'error',
+                'message': 'setting.db 암호키 불일치. STOM_ALLOW_MINIMAL_SETTING=1 환경변수를 설정하세요.',
+            }, ensure_ascii=False))
+        else:
+            print(json.dumps({
+                'status': 'error',
+                'message': 'DICT_SET 로드 실패: %s' % error_msg,
+            }, ensure_ascii=False))
+        return 1
+
+    if parsed.setting_action == 'list':
+        items = {k: repr(v) for k, v in sorted(DICT_SET.items())}
+        if parsed.output_format == 'json':
+            print(json.dumps({'status': 'ok', 'count': len(items), 'settings': items}, ensure_ascii=False, indent=2))
+        else:
+            print('=== STOM Settings (%d keys) ===' % len(items))
+            for k, v in sorted(items.items()):
+                print('  %-30s = %s' % (k, v))
+        return 0
+
+    elif parsed.setting_action == 'get':
+        key = parsed.key
+        if key not in DICT_SET:
+            print(json.dumps({'status': 'error', 'message': '키를 찾을 수 없습니다: %s' % key}, ensure_ascii=False))
+            return 1
+        value = DICT_SET[key]
+        if parsed.output_format == 'json':
+            print(json.dumps({'status': 'ok', 'key': key, 'value': repr(value)}, ensure_ascii=False))
+        else:
+            print('%s = %s' % (key, repr(value)))
+        return 0
+
+    elif parsed.setting_action == 'search':
+        query = parsed.query.lower()
+        matches = {k: repr(v) for k, v in DICT_SET.items() if query in k.lower()}
+        if parsed.output_format == 'json':
+            print(json.dumps({'status': 'ok', 'query': parsed.query, 'count': len(matches), 'results': matches}, ensure_ascii=False, indent=2))
+        else:
+            if not matches:
+                print('검색 결과 없음: %s' % parsed.query)
+            else:
+                print('=== Search: "%s" (%d matches) ===' % (parsed.query, len(matches)))
+                for k, v in sorted(matches.items()):
+                    print('  %-30s = %s' % (k, v))
+        return 0
+
+    else:
+        print(json.dumps({'status': 'error', 'message': 'setting 하위 명령을 지정하세요: list, get, search'}, ensure_ascii=False))
+        return 1
+
+
+def _handle_report(parsed):
+    """report 서브커맨드 핸들러."""
+    import sqlite3
+    from cli.paths import DB_BACKTEST
+
+    if parsed.source == 'backtest':
+        try:
+            con = sqlite3.connect(DB_BACKTEST)
+            query = "SELECT * FROM stock_bt ORDER BY rowid DESC"
+            if parsed.limit > 0:
+                query += " LIMIT %d" % parsed.limit
+            import pandas as pd
+            df = pd.read_sql_query(query, con)
+            con.close()
+        except Exception as e:
+            print(json.dumps({'status': 'error', 'message': 'DB 조회 실패: %s' % str(e)}, ensure_ascii=False))
+            return 1
+
+        if parsed.summary:
+            from cli.report import summary_stats
+            stats = summary_stats(df)
+            stats['status'] = 'ok'
+            stats['row_count'] = len(df)
+            print(json.dumps(stats, ensure_ascii=False, indent=2, default=str))
+            return 0
+
+        if parsed.output_format == 'csv':
+            if not parsed.output_file:
+                print(json.dumps({'status': 'error', 'message': '--format csv 시 -o 파일 경로 필수'}, ensure_ascii=False))
+                return 1
+            from cli.report import save_csv
+            result = save_csv(df, parsed.output_file)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0 if result['status'] == 'ok' else 1
+
+        elif parsed.output_format == 'excel':
+            if not parsed.output_file:
+                print(json.dumps({'status': 'error', 'message': '--format excel 시 -o 파일 경로 필수'}, ensure_ascii=False))
+                return 1
+            from cli.report import save_excel
+            result = save_excel(df, parsed.output_file)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0 if result['status'] == 'ok' else 1
+
+        else:
+            # json or text
+            records = df.to_dict(orient='records')
+            output = {'status': 'ok', 'row_count': len(records), 'data': records}
+            print(json.dumps(output, ensure_ascii=False, indent=2, default=str))
+            return 0
+
+    elif parsed.source == 'discovery':
+        from cli.ai_controller import AIBacktestController
+        controller = AIBacktestController()
+        result = controller.get_discovery_history(
+            limit=parsed.limit if parsed.limit > 0 else 100,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 0 if result.get('status') == 'ok' else 1
+
+    return 1
 
 
 def _handle_tune(parsed):
