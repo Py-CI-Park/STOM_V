@@ -232,6 +232,101 @@ def create_subcommand_parser():
     disc_compare.add_argument('--json', action='store_true', default=False, dest='json_output',
                                help='JSON 형식으로 출력')
 
+    # --- optimize 서브커맨드 ---
+    opt_parser = sub.add_parser('optimize', help='파라미터 최적화 (Grid/Random)')
+    opt_parser.add_argument('--buy', required=True, help='매수 전략명')
+    opt_parser.add_argument('--sell', required=True, help='매도 전략명')
+    opt_parser.add_argument('--start', type=int, required=True, help='시작일자 YYYYMMDD')
+    opt_parser.add_argument('--end', type=int, required=True, help='종료일자 YYYYMMDD')
+    opt_parser.add_argument('--param-space', required=True, dest='param_space_file',
+                             help='파라미터 탐색 공간 JSON 파일 경로')
+    opt_parser.add_argument('--method', choices=['grid', 'random'], default='grid',
+                             help='최적화 방법 (default: grid)')
+    opt_parser.add_argument('--objective', default='tpi', help='최적화 목표 지표')
+    opt_parser.add_argument('--maximize', action='store_true', default=True)
+    opt_parser.add_argument('--no-maximize', action='store_false', dest='maximize')
+    opt_parser.add_argument('--max-iter', type=int, default=100, help='Random 최대 반복')
+    opt_parser.add_argument('--seed', type=int, default=None, help='랜덤 시드')
+    opt_parser.add_argument('--engines', type=int, default=4)
+    opt_parser.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    opt_parser.add_argument('--betting', default='1')
+    opt_parser.add_argument('--avg-time', type=int, default=60)
+    opt_parser.add_argument('--start-time', type=int, default=90000)
+    opt_parser.add_argument('--end-time', type=int, default=152800)
+    opt_parser.add_argument('--timeout', type=int, default=3600)
+    opt_parser.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
+    opt_parser.add_argument('-o', '--output', dest='output_file')
+
+    # --- sweep 서브커맨드 ---
+    sweep_parser = sub.add_parser('sweep', help='파라미터 스윕 및 날짜 롤링')
+    sweep_sub = sweep_parser.add_subparsers(dest='sweep_action')
+
+    sweep_param = sweep_sub.add_parser('param', help='파라미터 조합 스윕')
+    sweep_param.add_argument('--buy', required=True)
+    sweep_param.add_argument('--sell', required=True)
+    sweep_param.add_argument('--start', type=int, required=True)
+    sweep_param.add_argument('--end', type=int, required=True)
+    sweep_param.add_argument('--params', required=True, dest='sweep_params_file',
+                              help='스윕 파라미터 JSON 파일')
+    sweep_param.add_argument('--engines', type=int, default=4)
+    sweep_param.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    sweep_param.add_argument('--betting', default='1')
+    sweep_param.add_argument('--avg-time', type=int, default=60)
+    sweep_param.add_argument('--start-time', type=int, default=90000)
+    sweep_param.add_argument('--end-time', type=int, default=152800)
+    sweep_param.add_argument('--timeout', type=int, default=3600)
+    sweep_param.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
+    sweep_param.add_argument('-o', '--output', dest='output_file')
+
+    sweep_rolling = sweep_sub.add_parser('rolling', help='날짜 롤링 (고정 윈도우 이동)')
+    sweep_rolling.add_argument('--buy', help='매수 전략명 (--dry-run 시 불필요)')
+    sweep_rolling.add_argument('--sell', help='매도 전략명 (--dry-run 시 불필요)')
+    sweep_rolling.add_argument('--start', type=int, required=True, help='전체 시작일')
+    sweep_rolling.add_argument('--end', type=int, required=True, help='전체 종료일')
+    sweep_rolling.add_argument('--window-days', type=int, required=True, help='윈도우 크기 (일)')
+    sweep_rolling.add_argument('--step-days', type=int, required=True, help='이동 간격 (일)')
+    sweep_rolling.add_argument('--engines', type=int, default=4)
+    sweep_rolling.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    sweep_rolling.add_argument('--betting', default='1')
+    sweep_rolling.add_argument('--avg-time', type=int, default=60)
+    sweep_rolling.add_argument('--start-time', type=int, default=90000)
+    sweep_rolling.add_argument('--end-time', type=int, default=152800)
+    sweep_rolling.add_argument('--timeout', type=int, default=3600)
+    sweep_rolling.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
+    sweep_rolling.add_argument('-o', '--output', dest='output_file')
+    sweep_rolling.add_argument('--dry-run', action='store_true',
+                                help='윈도우 목록만 출력하고 실행하지 않음')
+
+    # --- wfo 서브커맨드 ---
+    wfo_parser = sub.add_parser('wfo', help='Walk-Forward Optimization 검증')
+    wfo_parser.add_argument('--start', type=int, required=True)
+    wfo_parser.add_argument('--end', type=int, required=True)
+    wfo_parser.add_argument('--train-window-days', type=int, required=True, help='훈련 윈도우 크기 (일)')
+    wfo_parser.add_argument('--test-window-days', type=int, required=True, help='테스트 윈도우 크기 (일)')
+    wfo_parser.add_argument('--buy', help='매수 전략명 (--dry-run 시 불필요)')
+    wfo_parser.add_argument('--sell', help='매도 전략명 (--dry-run 시 불필요)')
+    wfo_parser.add_argument('--step-days', type=int, default=None,
+                             help='윈도우 이동 간격 (미지정 시 test-window-days)')
+    wfo_parser.add_argument('--purge-days', type=int, default=0, help='train-test 사이 퍼지 기간')
+    wfo_parser.add_argument('--embargo-days', type=int, default=0, help='test 후 엠바고 기간')
+    wfo_parser.add_argument('--param-space', dest='param_space_file', default=None,
+                             help='최적화 파라미터 공간 JSON (미지정 시 고정 파라미터)')
+    wfo_parser.add_argument('--objective', default='tpi')
+    wfo_parser.add_argument('--method', choices=['grid', 'random'], default='grid')
+    wfo_parser.add_argument('--maximize', action='store_true', default=True)
+    wfo_parser.add_argument('--max-iter', type=int, default=100)
+    wfo_parser.add_argument('--engines', type=int, default=4)
+    wfo_parser.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    wfo_parser.add_argument('--betting', default='1')
+    wfo_parser.add_argument('--avg-time', type=int, default=60)
+    wfo_parser.add_argument('--start-time', type=int, default=90000)
+    wfo_parser.add_argument('--end-time', type=int, default=152800)
+    wfo_parser.add_argument('--timeout', type=int, default=3600)
+    wfo_parser.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
+    wfo_parser.add_argument('-o', '--output', dest='output_file')
+    wfo_parser.add_argument('--dry-run', action='store_true',
+                             help='train/test 윈도우 목록만 출력')
+
     # --- tune 서브커맨드 ---
     tune_parser = sub.add_parser('tune', help='시스템 리소스 분석 및 엔진 수 추천')
     tune_parser.add_argument('--engines', type=int, default=None,
@@ -272,6 +367,12 @@ def handle_subcommand(args=None):
         return _handle_strategy(parsed)
     elif parsed.command == 'discovery':
         return _handle_discovery(parsed)
+    elif parsed.command == 'optimize':
+        return _handle_optimize(parsed)
+    elif parsed.command == 'sweep':
+        return _handle_sweep(parsed)
+    elif parsed.command == 'wfo':
+        return _handle_wfo(parsed)
     elif parsed.command == 'tune':
         return _handle_tune(parsed)
     elif parsed.command == 'db':
@@ -657,6 +758,220 @@ def _handle_discovery(parsed):
         return 0 if result.get('promoted', False) else 1
 
     return 1
+
+
+def _build_base_config_dict(parsed):
+    """공통 백테스트 설정을 parsed args에서 추출한다."""
+    return {
+        'buy_strategy': parsed.buy,
+        'sell_strategy': parsed.sell,
+        'start_date': parsed.start,
+        'end_date': parsed.end,
+        'is_tick': getattr(parsed, 'timeframe', 'tick') == 'tick',
+        'betting': getattr(parsed, 'betting', '1'),
+        'avg_time': getattr(parsed, 'avg_time', 60),
+        'start_time': getattr(parsed, 'start_time', 90000),
+        'end_time': getattr(parsed, 'end_time', 152800),
+        'engine_count': getattr(parsed, 'engines', 4),
+        'timeout': getattr(parsed, 'timeout', 3600),
+    }
+
+
+def _write_output(text, output_file=None):
+    """stdout 또는 파일로 출력."""
+    if output_file:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(text)
+    else:
+        print(text)
+
+
+def _handle_optimize(parsed):
+    """optimize 서브커맨드 핸들러."""
+    try:
+        with open(parsed.param_space_file, 'r', encoding='utf-8') as f:
+            param_space = json.load(f)
+    except FileNotFoundError:
+        print(json.dumps({'status': 'error', 'message': '파일을 찾을 수 없습니다: %s' % parsed.param_space_file}), file=__import__('sys').stderr)
+        return 1
+    except json.JSONDecodeError as e:
+        print(json.dumps({'status': 'error', 'message': 'JSON 파싱 오류: %s' % str(e)}), file=__import__('sys').stderr)
+        return 1
+
+    if not isinstance(param_space, dict) or not param_space:
+        print(json.dumps({'status': 'error', 'message': 'param-space는 비어있지 않은 dict여야 합니다.'}), file=__import__('sys').stderr)
+        return 1
+
+    from cli.optimizer import optimize
+
+    base_config = _build_base_config_dict(parsed)
+    results = []
+
+    def run_fn(config_dict):
+        from cli.runner import run_backtest
+        from cli.config import BacktestConfig
+        cfg = BacktestConfig(**{
+            **base_config,
+            **{k: v for k, v in config_dict.items() if k in BacktestConfig.__dataclass_fields__},
+        })
+        return run_backtest(cfg)
+
+    def save_fn(combo, result):
+        entry = {**combo, 'result': result}
+        results.append(entry)
+
+    best = optimize(
+        base_config=base_config,
+        param_space=param_space,
+        objective=parsed.objective,
+        method=parsed.method,
+        maximize=parsed.maximize,
+        max_iter=parsed.max_iter,
+        seed=parsed.seed,
+        run_fn=run_fn,
+        save_fn=save_fn,
+    )
+
+    output = {
+        'status': 'ok',
+        'method': parsed.method,
+        'objective': parsed.objective,
+        'best': best,
+        'total_combinations': len(results),
+        'results': results,
+    }
+    text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+    _write_output(text, getattr(parsed, 'output_file', None))
+    return 0
+
+
+def _handle_sweep(parsed):
+    """sweep 서브커맨드 핸들러."""
+    if parsed.sweep_action == 'rolling':
+        from cli.sweep import generate_rolling_windows
+
+        windows = generate_rolling_windows(
+            start_date=parsed.start,
+            end_date=parsed.end,
+            window_days=parsed.window_days,
+            step_days=parsed.step_days,
+        )
+
+        if parsed.dry_run:
+            output = {
+                'status': 'dry-run',
+                'window_count': len(windows),
+                'windows': windows,
+            }
+            text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+            _write_output(text, getattr(parsed, 'output_file', None))
+            return 0
+
+        if not parsed.buy or not parsed.sell:
+            print(json.dumps({'status': 'error', 'message': '--buy와 --sell은 실행 시 필수입니다 (--dry-run이 아닌 경우).'}))
+            return 1
+
+        from cli.sweep import run_rolling
+        base_config = _build_base_config_dict(parsed)
+        result = run_rolling(base_config, parsed.window_days, parsed.step_days)
+        text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
+        _write_output(text, getattr(parsed, 'output_file', None))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.sweep_action == 'param':
+        try:
+            with open(parsed.sweep_params_file, 'r', encoding='utf-8') as f:
+                sweep_params = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(json.dumps({'status': 'error', 'message': str(e)}))
+            return 1
+
+        from cli.sweep import generate_combinations, run_sweep
+        combos = generate_combinations(sweep_params)
+        base_config = _build_base_config_dict(parsed)
+        result = run_sweep(base_config, sweep_params)
+        output = {
+            'status': 'ok',
+            'total_combinations': len(combos),
+            'results': result if isinstance(result, list) else [result],
+        }
+        text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+        _write_output(text, getattr(parsed, 'output_file', None))
+        return 0
+
+    else:
+        print(json.dumps({'status': 'error', 'message': 'sweep 하위 명령을 지정하세요: param, rolling'}))
+        return 1
+
+
+def _handle_wfo(parsed):
+    """wfo 서브커맨드 핸들러."""
+    from cli.wfo import generate_walk_forward_windows
+
+    step_days = parsed.step_days if parsed.step_days is not None else parsed.test_window_days
+
+    windows = generate_walk_forward_windows(
+        start_date=parsed.start,
+        end_date=parsed.end,
+        train_window_days=parsed.train_window_days,
+        test_window_days=parsed.test_window_days,
+        step_days=step_days,
+        purge_days=parsed.purge_days,
+        embargo_days=parsed.embargo_days,
+    )
+
+    if parsed.dry_run:
+        output = {
+            'status': 'dry-run',
+            'train_window_days': parsed.train_window_days,
+            'test_window_days': parsed.test_window_days,
+            'step_days': step_days,
+            'purge_days': parsed.purge_days,
+            'embargo_days': parsed.embargo_days,
+            'round_count': len(windows),
+            'windows': windows,
+        }
+        text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+        _write_output(text, getattr(parsed, 'output_file', None))
+        return 0
+
+    if not parsed.buy or not parsed.sell:
+        print(json.dumps({'status': 'error', 'message': '--buy와 --sell은 실행 시 필수입니다 (--dry-run이 아닌 경우).'}))
+        return 1
+
+    from cli.wfo import run_walk_forward, save_walk_forward_report
+
+    param_space = {}
+    if parsed.param_space_file:
+        try:
+            with open(parsed.param_space_file, 'r', encoding='utf-8') as f:
+                param_space = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(json.dumps({'status': 'error', 'message': str(e)}))
+            return 1
+
+    base_config = _build_base_config_dict(parsed)
+    result = run_walk_forward(
+        base_config=base_config,
+        param_space=param_space,
+        train_window_days=parsed.train_window_days,
+        test_window_days=parsed.test_window_days,
+        step_days=step_days,
+        purge_days=parsed.purge_days,
+        embargo_days=parsed.embargo_days,
+        objective=parsed.objective,
+        method=parsed.method,
+        maximize=parsed.maximize,
+        max_iter=parsed.max_iter,
+    )
+
+    output_file = getattr(parsed, 'output_file', None)
+    if output_file and output_file.endswith('.json'):
+        save_walk_forward_report(result, output_file)
+
+    text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
+    _write_output(text, output_file if not (output_file and output_file.endswith('.json')) else None)
+    return 0 if result.get('status') == 'ok' else 1
 
 
 def _handle_tune(parsed):
