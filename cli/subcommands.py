@@ -7,7 +7,10 @@ from cli.paths import DB_STRATEGY
 
 def create_subcommand_parser():
     """서브커맨드 파서 생성."""
+    from cli.version import DISPLAY_VERSION
     parser = argparse.ArgumentParser(prog='stom_backtest')
+    parser.add_argument('--version', action='version',
+                         version='STOM CLI Backtest Runner %s' % DISPLAY_VERSION)
     sub = parser.add_subparsers(dest='command')
 
     # formula subcommand
@@ -159,7 +162,7 @@ def create_subcommand_parser():
                               help='무거래 시 top_n을 자동 완화하며 재시도 (preset 기준 사용, --promote-min-* 무시)')
     disc_promote.add_argument('--max-relax-steps', type=int, default=3, help='auto-relax 최대 완화 단계 수 (기본 3)')
     disc_promote.add_argument('--base-buy-strategy', default=None,
-                              help='기존 매수 전략명 — 자동 필터를 이 전략에 결합하여 검증')
+                              help='기존 매수 전략명 - 자동 필터를 이 전략에 결합하여 검증')
 
     # discovery auto
     disc_auto = disc_sub.add_parser('auto', help='DB 전략명으로 전체 파이프라인 원커맨드 실행')
@@ -215,7 +218,7 @@ def create_subcommand_parser():
                                help='JSON 형식으로 출력')
 
     # discovery evolve
-    disc_evolve = disc_sub.add_parser('evolve', help='조건식 진화 루프 — 승격될 때까지 파라미터 자동 변이')
+    disc_evolve = disc_sub.add_parser('evolve', help='조건식 진화 루프 - 승격될 때까지 파라미터 자동 변이')
     disc_evolve.add_argument('--config', '-c', required=True, dest='evolve_config',
                               help='기본 auto-discovery 설정 JSON 파일 경로')
     disc_evolve.add_argument('--max-generations', type=int, default=5, help='최대 세대 수')
@@ -232,6 +235,161 @@ def create_subcommand_parser():
     disc_compare.add_argument('--json', action='store_true', default=False, dest='json_output',
                                help='JSON 형식으로 출력')
 
+    # --- optimize 서브커맨드 ---
+    opt_parser = sub.add_parser('optimize', help='파라미터 최적화 (Grid/Random)')
+    opt_parser.add_argument('--buy', required=True, help='매수 전략명')
+    opt_parser.add_argument('--sell', required=True, help='매도 전략명')
+    opt_parser.add_argument('--start', type=int, required=True, help='시작일자 YYYYMMDD')
+    opt_parser.add_argument('--end', type=int, required=True, help='종료일자 YYYYMMDD')
+    opt_parser.add_argument('--param-space', required=True, dest='param_space_file',
+                             help='파라미터 탐색 공간 JSON 파일 경로')
+    opt_parser.add_argument('--method', choices=['grid', 'random'], default='grid',
+                             help='최적화 방법 (default: grid)')
+    opt_parser.add_argument('--objective', default='tpi', help='최적화 목표 지표')
+    opt_parser.add_argument('--maximize', action='store_true', default=True)
+    opt_parser.add_argument('--no-maximize', action='store_false', dest='maximize')
+    opt_parser.add_argument('--max-iter', type=int, default=100, help='Random 최대 반복')
+    opt_parser.add_argument('--seed', type=int, default=None, help='랜덤 시드')
+    opt_parser.add_argument('--engines', type=int, default=4)
+    opt_parser.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    opt_parser.add_argument('--betting', default='1')
+    opt_parser.add_argument('--avg-time', type=int, default=60)
+    opt_parser.add_argument('--start-time', type=int, default=90000)
+    opt_parser.add_argument('--end-time', type=int, default=152800)
+    opt_parser.add_argument('--timeout', type=int, default=3600)
+    opt_parser.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
+    opt_parser.add_argument('-o', '--output', dest='output_file')
+
+    # --- sweep 서브커맨드 ---
+    sweep_parser = sub.add_parser('sweep', help='파라미터 스윕 및 날짜 롤링')
+    sweep_sub = sweep_parser.add_subparsers(dest='sweep_action')
+
+    sweep_param = sweep_sub.add_parser('param', help='파라미터 조합 스윕')
+    sweep_param.add_argument('--buy', help='매수 전략명 (--dry-run 시 불필요)')
+    sweep_param.add_argument('--sell', help='매도 전략명 (--dry-run 시 불필요)')
+    sweep_param.add_argument('--start', type=int, required=True)
+    sweep_param.add_argument('--end', type=int, required=True)
+    sweep_param.add_argument('--params', required=True, dest='sweep_params_file',
+                              help='스윕 파라미터 JSON 파일')
+    sweep_param.add_argument('--engines', type=int, default=4)
+    sweep_param.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    sweep_param.add_argument('--betting', default='1')
+    sweep_param.add_argument('--avg-time', type=int, default=60)
+    sweep_param.add_argument('--start-time', type=int, default=90000)
+    sweep_param.add_argument('--end-time', type=int, default=152800)
+    sweep_param.add_argument('--timeout', type=int, default=3600)
+    sweep_param.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
+    sweep_param.add_argument('-o', '--output', dest='output_file')
+    sweep_param.add_argument('--dry-run', action='store_true',
+                              help='파라미터 조합 목록만 출력하고 실행하지 않음')
+
+    sweep_rolling = sweep_sub.add_parser('rolling', help='날짜 롤링 (고정 윈도우 이동)')
+    sweep_rolling.add_argument('--buy', help='매수 전략명 (--dry-run 시 불필요)')
+    sweep_rolling.add_argument('--sell', help='매도 전략명 (--dry-run 시 불필요)')
+    sweep_rolling.add_argument('--start', type=int, required=True, help='전체 시작일')
+    sweep_rolling.add_argument('--end', type=int, required=True, help='전체 종료일')
+    sweep_rolling.add_argument('--window-days', type=int, required=True, help='윈도우 크기 (일)')
+    sweep_rolling.add_argument('--step-days', type=int, required=True, help='이동 간격 (일)')
+    sweep_rolling.add_argument('--engines', type=int, default=4)
+    sweep_rolling.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    sweep_rolling.add_argument('--betting', default='1')
+    sweep_rolling.add_argument('--avg-time', type=int, default=60)
+    sweep_rolling.add_argument('--start-time', type=int, default=90000)
+    sweep_rolling.add_argument('--end-time', type=int, default=152800)
+    sweep_rolling.add_argument('--timeout', type=int, default=3600)
+    sweep_rolling.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
+    sweep_rolling.add_argument('-o', '--output', dest='output_file')
+    sweep_rolling.add_argument('--dry-run', action='store_true',
+                                help='윈도우 목록만 출력하고 실행하지 않음')
+
+    # --- wfo 서브커맨드 ---
+    wfo_parser = sub.add_parser('wfo', help='Walk-Forward Optimization 검증')
+    wfo_parser.add_argument('--start', type=int, required=True)
+    wfo_parser.add_argument('--end', type=int, required=True)
+    wfo_parser.add_argument('--train-window-days', type=int, required=True, help='훈련 윈도우 크기 (일)')
+    wfo_parser.add_argument('--test-window-days', type=int, required=True, help='테스트 윈도우 크기 (일)')
+    wfo_parser.add_argument('--buy', help='매수 전략명 (--dry-run 시 불필요)')
+    wfo_parser.add_argument('--sell', help='매도 전략명 (--dry-run 시 불필요)')
+    wfo_parser.add_argument('--step-days', type=int, default=None,
+                             help='윈도우 이동 간격 (미지정 시 test-window-days)')
+    wfo_parser.add_argument('--purge-days', type=int, default=0, help='train-test 사이 퍼지 기간')
+    wfo_parser.add_argument('--embargo-days', type=int, default=0, help='test 후 엠바고 기간')
+    wfo_parser.add_argument('--param-space', dest='param_space_file', default=None,
+                             help='최적화 파라미터 공간 JSON (미지정 시 고정 파라미터)')
+    wfo_parser.add_argument('--objective', default='tpi')
+    wfo_parser.add_argument('--method', choices=['grid', 'random'], default='grid')
+    wfo_parser.add_argument('--maximize', action='store_true', default=True)
+    wfo_parser.add_argument('--max-iter', type=int, default=100)
+    wfo_parser.add_argument('--engines', type=int, default=4)
+    wfo_parser.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    wfo_parser.add_argument('--betting', default='1')
+    wfo_parser.add_argument('--avg-time', type=int, default=60)
+    wfo_parser.add_argument('--start-time', type=int, default=90000)
+    wfo_parser.add_argument('--end-time', type=int, default=152800)
+    wfo_parser.add_argument('--timeout', type=int, default=3600)
+    wfo_parser.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
+    wfo_parser.add_argument('-o', '--output', dest='output_file')
+    wfo_parser.add_argument('--dry-run', action='store_true',
+                             help='train/test 윈도우 목록만 출력')
+
+    # --- setting 서브커맨드 ---
+    setting_parser = sub.add_parser('setting', help='STOM 설정 조회 (read-only)')
+    setting_sub = setting_parser.add_subparsers(dest='setting_action')
+
+    setting_list = setting_sub.add_parser('list', help='전체 설정 키-값 목록')
+    setting_list.add_argument('--format', choices=['json', 'text'], default='text',
+                               dest='output_format')
+
+    setting_get = setting_sub.add_parser('get', help='특정 설정 값 조회')
+    setting_get.add_argument('key', help='설정 키 이름')
+    setting_get.add_argument('--format', choices=['json', 'text'], default='text',
+                              dest='output_format')
+
+    setting_search = setting_sub.add_parser('search', help='설정 키 검색 (부분 일치)')
+    setting_search.add_argument('query', help='검색어')
+    setting_search.add_argument('--format', choices=['json', 'text'], default='text',
+                                 dest='output_format')
+
+    # --- report 서브커맨드 ---
+    report_parser = sub.add_parser('report', help='백테스트/Discovery 결과 리포트 생성')
+    report_parser.add_argument('--source', required=True,
+                                choices=['backtest', 'discovery'],
+                                help='데이터 소스')
+    report_parser.add_argument('--limit', type=int, default=0,
+                                help='최근 N건 제한 (0=전체)')
+    report_parser.add_argument('--summary', action='store_true',
+                                help='요약 통계만 출력')
+    report_parser.add_argument('--format', choices=['json', 'csv', 'excel', 'text'],
+                                default='json', dest='output_format')
+    report_parser.add_argument('-o', '--output', dest='output_file',
+                                help='출력 파일 (csv/excel 시 필수)')
+
+    # --- tune 서브커맨드 ---
+    tune_parser = sub.add_parser('tune', help='시스템 리소스 분석 및 엔진 수 추천')
+    tune_parser.add_argument('--engines', type=int, default=None,
+                              help='확인할 엔진 수 (미지정 시 자동 추천)')
+    tune_parser.add_argument('--total-codes', type=int, default=0,
+                              help='백테스트 대상 종목 수 (추천 정밀도 향상)')
+    tune_parser.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    tune_parser.add_argument('--format', choices=['json', 'text'], default='text',
+                              dest='output_format')
+
+    # --- db 서브커맨드 ---
+    db_parser = sub.add_parser('db', help='데이터베이스 상태 확인 및 유틸리티')
+    db_sub = db_parser.add_subparsers(dest='db_action')
+
+    db_check = db_sub.add_parser('check', help='DB 파일 상태 확인')
+    db_check.add_argument('--format', choices=['json', 'text'], default='text',
+                           dest='output_format')
+
+    db_ensure = db_sub.add_parser('ensure', help='필수 DB 존재 확인 및 자동 복구')
+    db_ensure.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+
+    db_restore = db_sub.add_parser('restore', help='빈 DB 파일 복원 (심볼릭 링크 제거)')
+    db_restore.add_argument('--target', required=True,
+                             choices=['tick', 'min'],
+                             help='복원할 DB 종류')
+
     return parser
 
 
@@ -246,6 +404,20 @@ def handle_subcommand(args=None):
         return _handle_strategy(parsed)
     elif parsed.command == 'discovery':
         return _handle_discovery(parsed)
+    elif parsed.command == 'optimize':
+        return _handle_optimize(parsed)
+    elif parsed.command == 'sweep':
+        return _handle_sweep(parsed)
+    elif parsed.command == 'wfo':
+        return _handle_wfo(parsed)
+    elif parsed.command == 'setting':
+        return _handle_setting(parsed)
+    elif parsed.command == 'report':
+        return _handle_report(parsed)
+    elif parsed.command == 'tune':
+        return _handle_tune(parsed)
+    elif parsed.command == 'db':
+        return _handle_db(parsed)
     else:
         parser.print_help()
         return 0
@@ -627,3 +799,490 @@ def _handle_discovery(parsed):
         return 0 if result.get('promoted', False) else 1
 
     return 1
+
+
+def _build_base_config_dict(parsed):
+    """공통 백테스트 설정을 parsed args에서 추출한다."""
+    return {
+        'buy_strategy': parsed.buy,
+        'sell_strategy': parsed.sell,
+        'start_date': parsed.start,
+        'end_date': parsed.end,
+        'is_tick': getattr(parsed, 'timeframe', 'tick') == 'tick',
+        'betting': getattr(parsed, 'betting', '1'),
+        'avg_time': getattr(parsed, 'avg_time', 60),
+        'start_time': getattr(parsed, 'start_time', 90000),
+        'end_time': getattr(parsed, 'end_time', 152800),
+        'engine_count': getattr(parsed, 'engines', 4),
+        'timeout': getattr(parsed, 'timeout', 3600),
+    }
+
+
+def _write_output(text, output_file=None):
+    """stdout 또는 파일로 출력."""
+    if output_file:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(text)
+    else:
+        print(text)
+
+
+def _handle_optimize(parsed):
+    """optimize 서브커맨드 핸들러."""
+    try:
+        with open(parsed.param_space_file, 'r', encoding='utf-8') as f:
+            param_space = json.load(f)
+    except FileNotFoundError:
+        print(json.dumps({'status': 'error', 'message': '파일을 찾을 수 없습니다: %s' % parsed.param_space_file}, ensure_ascii=False))
+        return 1
+    except json.JSONDecodeError as e:
+        print(json.dumps({'status': 'error', 'message': 'JSON 파싱 오류: %s' % str(e)}, ensure_ascii=False))
+        return 1
+
+    if not isinstance(param_space, dict) or not param_space:
+        print(json.dumps({'status': 'error', 'message': 'param-space는 비어있지 않은 dict여야 합니다.'}, ensure_ascii=False))
+        return 1
+
+    from cli.optimizer import optimize
+
+    base_config = _build_base_config_dict(parsed)
+    results = []
+
+    def run_fn(config_dict):
+        from cli.runner import run_backtest
+        from cli.config import BacktestConfig
+        merged = {**base_config}
+        merged.update({k: v for k, v in config_dict.items()
+                       if k in BacktestConfig.__dataclass_fields__})
+        cfg = BacktestConfig(**merged)
+        return run_backtest(cfg)
+
+    def save_fn(combo, result):
+        results.append({**combo, 'result': result})
+
+    try:
+        best = optimize(
+            base_config=base_config,
+            param_space=param_space,
+            objective=parsed.objective,
+            method=parsed.method,
+            maximize=parsed.maximize,
+            max_iter=parsed.max_iter,
+            seed=parsed.seed,
+            run_fn=run_fn,
+            save_fn=save_fn,
+        )
+    except Exception as e:
+        print(json.dumps({'status': 'error', 'message': '최적화 실행 오류: %s' % str(e)}, ensure_ascii=False))
+        return 2
+
+    output = {
+        'status': 'ok',
+        'method': parsed.method,
+        'objective': parsed.objective,
+        'best': best,
+        'total_combinations': len(results),
+        'results': results,
+    }
+    text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+    _write_output(text, getattr(parsed, 'output_file', None))
+    return 0
+
+
+def _handle_sweep(parsed):
+    """sweep 서브커맨드 핸들러."""
+    if parsed.sweep_action == 'rolling':
+        from cli.sweep import generate_rolling_windows
+
+        windows = generate_rolling_windows(
+            start_date=parsed.start,
+            end_date=parsed.end,
+            window_days=parsed.window_days,
+            step_days=parsed.step_days,
+        )
+
+        if parsed.dry_run:
+            output = {
+                'status': 'dry-run',
+                'window_count': len(windows),
+                'windows': windows,
+            }
+            text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+            _write_output(text, getattr(parsed, 'output_file', None))
+            return 0
+
+        if not parsed.buy or not parsed.sell:
+            print(json.dumps({'status': 'error', 'message': '--buy와 --sell은 실행 시 필수입니다 (--dry-run이 아닌 경우).'}))
+            return 1
+
+        from cli.sweep import run_rolling
+        base_config = _build_base_config_dict(parsed)
+        try:
+            result = run_rolling(base_config, parsed.window_days, parsed.step_days)
+        except Exception as e:
+            print(json.dumps({'status': 'error', 'message': '롤링 실행 오류: %s' % str(e)}, ensure_ascii=False))
+            return 2
+        text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
+        _write_output(text, getattr(parsed, 'output_file', None))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.sweep_action == 'param':
+        try:
+            with open(parsed.sweep_params_file, 'r', encoding='utf-8') as f:
+                sweep_params = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(json.dumps({'status': 'error', 'message': str(e)}, ensure_ascii=False))
+            return 1
+
+        from cli.sweep import generate_combinations, run_sweep
+        combos = generate_combinations(sweep_params)
+
+        if getattr(parsed, 'dry_run', False):
+            output = {
+                'status': 'dry-run',
+                'total_combinations': len(combos),
+                'combinations': combos,
+            }
+            text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+            _write_output(text, getattr(parsed, 'output_file', None))
+            return 0
+
+        if not parsed.buy or not parsed.sell:
+            print(json.dumps({'status': 'error', 'message': '--buy와 --sell은 실행 시 필수입니다 (--dry-run이 아닌 경우).'}, ensure_ascii=False))
+            return 1
+
+        base_config = _build_base_config_dict(parsed)
+        try:
+            result = run_sweep(base_config, sweep_params)
+        except Exception as e:
+            print(json.dumps({'status': 'error', 'message': '스윕 실행 오류: %s' % str(e)}, ensure_ascii=False))
+            return 2
+        output = {
+            'status': 'ok',
+            'total_combinations': len(combos),
+            'results': result if isinstance(result, list) else [result],
+        }
+        text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+        _write_output(text, getattr(parsed, 'output_file', None))
+        return 0
+
+    else:
+        print(json.dumps({'status': 'error', 'message': 'sweep 하위 명령을 지정하세요: param, rolling'}))
+        return 1
+
+
+def _handle_wfo(parsed):
+    """wfo 서브커맨드 핸들러."""
+    from cli.wfo import generate_walk_forward_windows
+
+    step_days = parsed.step_days if parsed.step_days is not None else parsed.test_window_days
+
+    windows = generate_walk_forward_windows(
+        start_date=parsed.start,
+        end_date=parsed.end,
+        train_window_days=parsed.train_window_days,
+        test_window_days=parsed.test_window_days,
+        step_days=step_days,
+        purge_days=parsed.purge_days,
+        embargo_days=parsed.embargo_days,
+    )
+
+    if parsed.dry_run:
+        output = {
+            'status': 'dry-run',
+            'train_window_days': parsed.train_window_days,
+            'test_window_days': parsed.test_window_days,
+            'step_days': step_days,
+            'purge_days': parsed.purge_days,
+            'embargo_days': parsed.embargo_days,
+            'round_count': len(windows),
+            'windows': windows,
+        }
+        text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+        _write_output(text, getattr(parsed, 'output_file', None))
+        return 0
+
+    if not parsed.buy or not parsed.sell:
+        print(json.dumps({'status': 'error', 'message': '--buy와 --sell은 실행 시 필수입니다 (--dry-run이 아닌 경우).'}))
+        return 1
+
+    from cli.wfo import run_walk_forward, save_walk_forward_report
+
+    param_space = {}
+    if parsed.param_space_file:
+        try:
+            with open(parsed.param_space_file, 'r', encoding='utf-8') as f:
+                param_space = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            print(json.dumps({'status': 'error', 'message': str(e)}))
+            return 1
+
+    base_config = _build_base_config_dict(parsed)
+    try:
+        result = run_walk_forward(
+            base_config=base_config,
+            param_space=param_space,
+            train_window_days=parsed.train_window_days,
+            test_window_days=parsed.test_window_days,
+            step_days=step_days,
+            purge_days=parsed.purge_days,
+            embargo_days=parsed.embargo_days,
+            objective=parsed.objective,
+            method=parsed.method,
+            maximize=parsed.maximize,
+            max_iter=parsed.max_iter,
+        )
+    except Exception as e:
+        print(json.dumps({'status': 'error', 'message': 'WFO 실행 오류: %s' % str(e)}, ensure_ascii=False))
+        return 2
+
+    output_file = getattr(parsed, 'output_file', None)
+    if output_file:
+        if output_file.endswith('.json'):
+            save_walk_forward_report(result, output_file)
+        else:
+            text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
+            _write_output(text, output_file)
+    else:
+        text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
+        print(text)
+    return 0 if result.get('status') == 'ok' else 1
+
+
+def _handle_setting(parsed):
+    """setting 서브커맨드 핸들러 (read-only)."""
+    try:
+        from utility.setting import DICT_SET
+    except (Exception, SystemExit) as e:
+        error_msg = str(e)
+        if isinstance(e, SystemExit) or 'InvalidToken' in type(e).__name__ or '암호키' in error_msg:
+            print(json.dumps({
+                'status': 'error',
+                'message': 'setting.db 암호키 불일치. STOM_ALLOW_MINIMAL_SETTING=1 환경변수를 설정하세요.',
+            }, ensure_ascii=False))
+        else:
+            print(json.dumps({
+                'status': 'error',
+                'message': 'DICT_SET 로드 실패: %s' % error_msg,
+            }, ensure_ascii=False))
+        return 1
+
+    if parsed.setting_action == 'list':
+        items = {k: repr(v) for k, v in sorted(DICT_SET.items())}
+        if parsed.output_format == 'json':
+            print(json.dumps({'status': 'ok', 'count': len(items), 'settings': items}, ensure_ascii=False, indent=2))
+        else:
+            print('=== STOM Settings (%d keys) ===' % len(items))
+            for k, v in sorted(items.items()):
+                print('  %-30s = %s' % (k, v))
+        return 0
+
+    elif parsed.setting_action == 'get':
+        key = parsed.key
+        if key not in DICT_SET:
+            print(json.dumps({'status': 'error', 'message': '키를 찾을 수 없습니다: %s' % key}, ensure_ascii=False))
+            return 1
+        value = DICT_SET[key]
+        if parsed.output_format == 'json':
+            print(json.dumps({'status': 'ok', 'key': key, 'value': repr(value)}, ensure_ascii=False))
+        else:
+            print('%s = %s' % (key, repr(value)))
+        return 0
+
+    elif parsed.setting_action == 'search':
+        query = parsed.query.lower()
+        matches = {k: repr(v) for k, v in DICT_SET.items() if query in k.lower()}
+        if parsed.output_format == 'json':
+            print(json.dumps({'status': 'ok', 'query': parsed.query, 'count': len(matches), 'results': matches}, ensure_ascii=False, indent=2))
+        else:
+            if not matches:
+                print('검색 결과 없음: %s' % parsed.query)
+            else:
+                print('=== Search: "%s" (%d matches) ===' % (parsed.query, len(matches)))
+                for k, v in sorted(matches.items()):
+                    print('  %-30s = %s' % (k, v))
+        return 0
+
+    else:
+        print(json.dumps({'status': 'error', 'message': 'setting 하위 명령을 지정하세요: list, get, search'}, ensure_ascii=False))
+        return 1
+
+
+def _handle_report(parsed):
+    """report 서브커맨드 핸들러."""
+    import sqlite3
+    from cli.paths import DB_BACKTEST
+
+    if parsed.source == 'backtest':
+        table_name = 'stock_bt'
+        try:
+            con = sqlite3.connect(DB_BACKTEST)
+            # 테이블 존재 여부 확인
+            tables = [r[0] for r in con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
+            if table_name not in tables:
+                con.close()
+                print(json.dumps({
+                    'status': 'error',
+                    'message': "테이블 '%s'가 존재하지 않습니다 (DB: %s). 사용 가능: %s" % (
+                        table_name, DB_BACKTEST, ', '.join(tables) or '(없음)'),
+                }, ensure_ascii=False))
+                return 1
+            query = "SELECT * FROM '%s' ORDER BY rowid DESC" % table_name
+            if parsed.limit > 0:
+                query += " LIMIT %d" % parsed.limit
+            import pandas as pd
+            df = pd.read_sql_query(query, con)
+            con.close()
+        except Exception as e:
+            print(json.dumps({'status': 'error', 'message': 'DB 조회 실패 (%s): %s' % (DB_BACKTEST, str(e))}, ensure_ascii=False))
+            return 1
+
+        if parsed.summary:
+            from cli.report import summary_stats
+            stats = summary_stats(df)
+            stats['status'] = 'ok'
+            stats['row_count'] = len(df)
+            print(json.dumps(stats, ensure_ascii=False, indent=2, default=str))
+            return 0
+
+        if parsed.output_format == 'csv':
+            if not parsed.output_file:
+                print(json.dumps({'status': 'error', 'message': '--format csv 시 -o 파일 경로 필수'}, ensure_ascii=False))
+                return 1
+            from cli.report import save_csv
+            result = save_csv(df, parsed.output_file)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0 if result['status'] == 'ok' else 1
+
+        elif parsed.output_format == 'excel':
+            if not parsed.output_file:
+                print(json.dumps({'status': 'error', 'message': '--format excel 시 -o 파일 경로 필수'}, ensure_ascii=False))
+                return 1
+            from cli.report import save_excel
+            result = save_excel(df, parsed.output_file)
+            print(json.dumps(result, ensure_ascii=False))
+            return 0 if result['status'] == 'ok' else 1
+
+        else:
+            # json or text
+            records = df.to_dict(orient='records')
+            output = {'status': 'ok', 'row_count': len(records), 'data': records}
+            print(json.dumps(output, ensure_ascii=False, indent=2, default=str))
+            return 0
+
+    elif parsed.source == 'discovery':
+        from cli.ai_controller import AIBacktestController
+        controller = AIBacktestController()
+        result = controller.get_discovery_history(
+            limit=parsed.limit if parsed.limit > 0 else 100,
+        )
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 0 if result.get('status') == 'ok' else 1
+
+    return 1
+
+
+def _handle_tune(parsed):
+    """tune 서브커맨드 핸들러."""
+    from cli.engine_tuner import (
+        get_system_info, recommend_engine_count,
+        estimate_memory_per_engine, check_resources,
+    )
+
+    info = get_system_info()
+    rec = recommend_engine_count(total_codes=parsed.total_codes)
+    is_tick = parsed.timeframe == 'tick'
+    mem_per_engine = estimate_memory_per_engine(is_tick)
+
+    result = {
+        'system': info,
+        'recommendation': rec,
+        'memory_per_engine_mb': mem_per_engine,
+        'timeframe': parsed.timeframe,
+    }
+
+    if parsed.engines is not None:
+        resource_check = check_resources(parsed.engines, is_tick)
+        result['resource_check'] = resource_check
+
+    if parsed.output_format == 'json':
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    else:
+        print('=== STOM Engine Tuner ===')
+        print('CPU: %d cores' % info['cpu_count'])
+        print('Memory: %.1f GB (available: %.1f GB)' % (
+            info['memory_total_gb'], info['memory_available_gb']))
+        print('Platform: %s' % info['platform'])
+        print('Timeframe: %s (%.0f MB/engine)' % (parsed.timeframe, mem_per_engine))
+        print()
+        print('Recommended engines: %d' % rec['recommended'])
+        print('Reason: %s' % rec['reason'])
+        if parsed.engines is not None:
+            rc = result['resource_check']
+            print()
+            print('Resource check (--engines %d): [%s]' % (parsed.engines, rc['status']))
+            print('  %s' % rc['message'])
+
+    return 0
+
+
+def _handle_db(parsed):
+    """db 서브커맨드 핸들러."""
+    import os
+    from cli.paths import (
+        DB_STRATEGY, DB_BACKTEST,
+        DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_SETTING,
+    )
+    from cli.data_bridge import check_tick_db, ensure_tick_db, restore_empty_db
+
+    if parsed.db_action == 'check':
+        db_files = {
+            'setting': DB_SETTING,
+            'strategy': DB_STRATEGY,
+            'backtest': DB_BACKTEST,
+            'stock_tick_back': DB_STOCK_BACK_TICK,
+            'stock_min_back': DB_STOCK_BACK_MIN,
+        }
+        results = {}
+        for name, path in db_files.items():
+            exists = os.path.exists(path)
+            size = os.path.getsize(path) if exists else 0
+            results[name] = {
+                'path': path,
+                'exists': exists,
+                'size_bytes': size,
+                'size_mb': round(size / (1024 * 1024), 2) if size > 0 else 0,
+            }
+
+        # tick DB 상세 진단
+        tick_diag = check_tick_db(DB_STOCK_BACK_TICK)
+        results['stock_tick_back']['detail'] = tick_diag
+
+        output = {'status': 'ok', 'databases': results}
+
+        if parsed.output_format == 'json':
+            print(json.dumps(output, ensure_ascii=False, indent=2))
+        else:
+            print('=== STOM Database Status ===')
+            for name, info in results.items():
+                status = 'OK' if info['exists'] else 'MISSING'
+                print('  %-20s %s  %8.2f MB  %s' % (
+                    name, status, info['size_mb'], info['path']))
+        return 0
+
+    elif parsed.db_action == 'ensure':
+        db_path = DB_STOCK_BACK_TICK if parsed.timeframe == 'tick' else DB_STOCK_BACK_MIN
+        result = ensure_tick_db(db_path)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result['status'] != 'error' else 1
+
+    elif parsed.db_action == 'restore':
+        db_path = DB_STOCK_BACK_TICK if parsed.target == 'tick' else DB_STOCK_BACK_MIN
+        result = restore_empty_db(db_path)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result['status'] == 'ok' else 1
+
+    else:
+        print(json.dumps({'status': 'error', 'message': 'db 하위 명령을 지정하세요: check, ensure, restore'}))
+        return 1
