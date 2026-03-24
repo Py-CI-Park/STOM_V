@@ -232,6 +232,32 @@ def create_subcommand_parser():
     disc_compare.add_argument('--json', action='store_true', default=False, dest='json_output',
                                help='JSON 형식으로 출력')
 
+    # --- tune 서브커맨드 ---
+    tune_parser = sub.add_parser('tune', help='시스템 리소스 분석 및 엔진 수 추천')
+    tune_parser.add_argument('--engines', type=int, default=None,
+                              help='확인할 엔진 수 (미지정 시 자동 추천)')
+    tune_parser.add_argument('--total-codes', type=int, default=0,
+                              help='백테스트 대상 종목 수 (추천 정밀도 향상)')
+    tune_parser.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    tune_parser.add_argument('--format', choices=['json', 'text'], default='text',
+                              dest='output_format')
+
+    # --- db 서브커맨드 ---
+    db_parser = sub.add_parser('db', help='데이터베이스 상태 확인 및 유틸리티')
+    db_sub = db_parser.add_subparsers(dest='db_action')
+
+    db_check = db_sub.add_parser('check', help='DB 파일 상태 확인')
+    db_check.add_argument('--format', choices=['json', 'text'], default='text',
+                           dest='output_format')
+
+    db_ensure = db_sub.add_parser('ensure', help='필수 DB 존재 확인 및 자동 복구')
+    db_ensure.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+
+    db_restore = db_sub.add_parser('restore', help='빈 DB 파일 복원 (심볼릭 링크 제거)')
+    db_restore.add_argument('--target', required=True,
+                             choices=['tick', 'min'],
+                             help='복원할 DB 종류')
+
     return parser
 
 
@@ -246,6 +272,10 @@ def handle_subcommand(args=None):
         return _handle_strategy(parsed)
     elif parsed.command == 'discovery':
         return _handle_discovery(parsed)
+    elif parsed.command == 'tune':
+        return _handle_tune(parsed)
+    elif parsed.command == 'db':
+        return _handle_db(parsed)
     else:
         parser.print_help()
         return 0
@@ -627,3 +657,108 @@ def _handle_discovery(parsed):
         return 0 if result.get('promoted', False) else 1
 
     return 1
+
+
+def _handle_tune(parsed):
+    """tune 서브커맨드 핸들러."""
+    from cli.engine_tuner import (
+        get_system_info, recommend_engine_count,
+        estimate_memory_per_engine, check_resources,
+    )
+
+    info = get_system_info()
+    rec = recommend_engine_count(total_codes=parsed.total_codes)
+    is_tick = parsed.timeframe == 'tick'
+    mem_per_engine = estimate_memory_per_engine(is_tick)
+
+    result = {
+        'system': info,
+        'recommendation': rec,
+        'memory_per_engine_mb': mem_per_engine,
+        'timeframe': parsed.timeframe,
+    }
+
+    if parsed.engines is not None:
+        resource_check = check_resources(parsed.engines, is_tick)
+        result['resource_check'] = resource_check
+
+    if parsed.output_format == 'json':
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    else:
+        print('=== STOM Engine Tuner ===')
+        print('CPU: %d cores' % info['cpu_count'])
+        print('Memory: %.1f GB (available: %.1f GB)' % (
+            info['memory_total_gb'], info['memory_available_gb']))
+        print('Platform: %s' % info['platform'])
+        print('Timeframe: %s (%.0f MB/engine)' % (parsed.timeframe, mem_per_engine))
+        print()
+        print('Recommended engines: %d' % rec['recommended'])
+        print('Reason: %s' % rec['reason'])
+        if parsed.engines is not None:
+            rc = result['resource_check']
+            print()
+            print('Resource check (--engines %d): [%s]' % (parsed.engines, rc['status']))
+            print('  %s' % rc['message'])
+
+    return 0
+
+
+def _handle_db(parsed):
+    """db 서브커맨드 핸들러."""
+    import os
+    from cli.paths import (
+        DB_STRATEGY, DB_BACKTEST,
+        DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_SETTING,
+    )
+    from cli.data_bridge import check_tick_db, ensure_tick_db, restore_empty_db
+
+    if parsed.db_action == 'check':
+        db_files = {
+            'setting': DB_SETTING,
+            'strategy': DB_STRATEGY,
+            'backtest': DB_BACKTEST,
+            'stock_tick_back': DB_STOCK_BACK_TICK,
+            'stock_min_back': DB_STOCK_BACK_MIN,
+        }
+        results = {}
+        for name, path in db_files.items():
+            exists = os.path.exists(path)
+            size = os.path.getsize(path) if exists else 0
+            results[name] = {
+                'path': path,
+                'exists': exists,
+                'size_bytes': size,
+                'size_mb': round(size / (1024 * 1024), 2) if size > 0 else 0,
+            }
+
+        # tick DB 상세 진단
+        tick_diag = check_tick_db(DB_STOCK_BACK_TICK)
+        results['stock_tick_back']['detail'] = tick_diag
+
+        output = {'status': 'ok', 'databases': results}
+
+        if parsed.output_format == 'json':
+            print(json.dumps(output, ensure_ascii=False, indent=2))
+        else:
+            print('=== STOM Database Status ===')
+            for name, info in results.items():
+                status = 'OK' if info['exists'] else 'MISSING'
+                print('  %-20s %s  %8.2f MB  %s' % (
+                    name, status, info['size_mb'], info['path']))
+        return 0
+
+    elif parsed.db_action == 'ensure':
+        db_path = DB_STOCK_BACK_TICK if parsed.timeframe == 'tick' else DB_STOCK_BACK_MIN
+        result = ensure_tick_db(db_path)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result['status'] != 'error' else 1
+
+    elif parsed.db_action == 'restore':
+        db_path = DB_STOCK_BACK_TICK if parsed.target == 'tick' else DB_STOCK_BACK_MIN
+        result = restore_empty_db(db_path)
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result['status'] == 'ok' else 1
+
+    else:
+        print(json.dumps({'status': 'error', 'message': 'db 하위 명령을 지정하세요: check, ensure, restore'}))
+        return 1
