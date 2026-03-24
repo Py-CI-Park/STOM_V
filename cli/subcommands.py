@@ -159,7 +159,7 @@ def create_subcommand_parser():
                               help='무거래 시 top_n을 자동 완화하며 재시도 (preset 기준 사용, --promote-min-* 무시)')
     disc_promote.add_argument('--max-relax-steps', type=int, default=3, help='auto-relax 최대 완화 단계 수 (기본 3)')
     disc_promote.add_argument('--base-buy-strategy', default=None,
-                              help='기존 매수 전략명 — 자동 필터를 이 전략에 결합하여 검증')
+                              help='기존 매수 전략명 - 자동 필터를 이 전략에 결합하여 검증')
 
     # discovery auto
     disc_auto = disc_sub.add_parser('auto', help='DB 전략명으로 전체 파이프라인 원커맨드 실행')
@@ -215,7 +215,7 @@ def create_subcommand_parser():
                                help='JSON 형식으로 출력')
 
     # discovery evolve
-    disc_evolve = disc_sub.add_parser('evolve', help='조건식 진화 루프 — 승격될 때까지 파라미터 자동 변이')
+    disc_evolve = disc_sub.add_parser('evolve', help='조건식 진화 루프 - 승격될 때까지 파라미터 자동 변이')
     disc_evolve.add_argument('--config', '-c', required=True, dest='evolve_config',
                               help='기본 auto-discovery 설정 JSON 파일 경로')
     disc_evolve.add_argument('--max-generations', type=int, default=5, help='최대 세대 수')
