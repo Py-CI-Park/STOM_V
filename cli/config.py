@@ -81,8 +81,9 @@ def parse_args(args=None):
         epilog=_EPILOG,
     )
 
+    from cli.version import DISPLAY_VERSION
     parser.add_argument('--version', action='version',
-                        version='STOM CLI Backtest Runner V2.51.U2.0')
+                        version='STOM CLI Backtest Runner %s' % DISPLAY_VERSION)
     parser.add_argument('--list-strategies', action='store_true',
                         help='strategy.db에서 주식 매수/매도 전략 목록 출력')
     parser.add_argument('--config', type=str, metavar='FILE',
