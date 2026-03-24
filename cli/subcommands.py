@@ -7,7 +7,10 @@ from cli.paths import DB_STRATEGY
 
 def create_subcommand_parser():
     """서브커맨드 파서 생성."""
+    from cli.version import DISPLAY_VERSION
     parser = argparse.ArgumentParser(prog='stom_backtest')
+    parser.add_argument('--version', action='version',
+                         version='STOM CLI Backtest Runner %s' % DISPLAY_VERSION)
     sub = parser.add_subparsers(dest='command')
 
     # formula subcommand
@@ -277,6 +280,8 @@ def create_subcommand_parser():
     sweep_param.add_argument('--timeout', type=int, default=3600)
     sweep_param.add_argument('--format', choices=['json', 'text'], default='json', dest='output_format')
     sweep_param.add_argument('-o', '--output', dest='output_file')
+    sweep_param.add_argument('--dry-run', action='store_true',
+                              help='파라미터 조합 목록만 출력하고 실행하지 않음')
 
     sweep_rolling = sweep_sub.add_parser('rolling', help='날짜 롤링 (고정 윈도우 이동)')
     sweep_rolling.add_argument('--buy', help='매수 전략명 (--dry-run 시 불필요)')
@@ -828,14 +833,14 @@ def _handle_optimize(parsed):
         with open(parsed.param_space_file, 'r', encoding='utf-8') as f:
             param_space = json.load(f)
     except FileNotFoundError:
-        print(json.dumps({'status': 'error', 'message': '파일을 찾을 수 없습니다: %s' % parsed.param_space_file}), file=__import__('sys').stderr)
+        print(json.dumps({'status': 'error', 'message': '파일을 찾을 수 없습니다: %s' % parsed.param_space_file}, ensure_ascii=False))
         return 1
     except json.JSONDecodeError as e:
-        print(json.dumps({'status': 'error', 'message': 'JSON 파싱 오류: %s' % str(e)}), file=__import__('sys').stderr)
+        print(json.dumps({'status': 'error', 'message': 'JSON 파싱 오류: %s' % str(e)}, ensure_ascii=False))
         return 1
 
     if not isinstance(param_space, dict) or not param_space:
-        print(json.dumps({'status': 'error', 'message': 'param-space는 비어있지 않은 dict여야 합니다.'}), file=__import__('sys').stderr)
+        print(json.dumps({'status': 'error', 'message': 'param-space는 비어있지 않은 dict여야 합니다.'}, ensure_ascii=False))
         return 1
 
     from cli.optimizer import optimize
@@ -919,11 +924,22 @@ def _handle_sweep(parsed):
             with open(parsed.sweep_params_file, 'r', encoding='utf-8') as f:
                 sweep_params = json.load(f)
         except (FileNotFoundError, json.JSONDecodeError) as e:
-            print(json.dumps({'status': 'error', 'message': str(e)}))
+            print(json.dumps({'status': 'error', 'message': str(e)}, ensure_ascii=False))
             return 1
 
         from cli.sweep import generate_combinations, run_sweep
         combos = generate_combinations(sweep_params)
+
+        if getattr(parsed, 'dry_run', False):
+            output = {
+                'status': 'dry-run',
+                'total_combinations': len(combos),
+                'combinations': combos,
+            }
+            text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
+            _write_output(text, getattr(parsed, 'output_file', None))
+            return 0
+
         base_config = _build_base_config_dict(parsed)
         result = run_sweep(base_config, sweep_params)
         output = {
