@@ -851,27 +851,30 @@ def _handle_optimize(parsed):
     def run_fn(config_dict):
         from cli.runner import run_backtest
         from cli.config import BacktestConfig
-        cfg = BacktestConfig(**{
-            **base_config,
-            **{k: v for k, v in config_dict.items() if k in BacktestConfig.__dataclass_fields__},
-        })
+        merged = {**base_config}
+        merged.update({k: v for k, v in config_dict.items()
+                       if k in BacktestConfig.__dataclass_fields__})
+        cfg = BacktestConfig(**merged)
         return run_backtest(cfg)
 
     def save_fn(combo, result):
-        entry = {**combo, 'result': result}
-        results.append(entry)
+        results.append({**combo, 'result': result})
 
-    best = optimize(
-        base_config=base_config,
-        param_space=param_space,
-        objective=parsed.objective,
-        method=parsed.method,
-        maximize=parsed.maximize,
-        max_iter=parsed.max_iter,
-        seed=parsed.seed,
-        run_fn=run_fn,
-        save_fn=save_fn,
-    )
+    try:
+        best = optimize(
+            base_config=base_config,
+            param_space=param_space,
+            objective=parsed.objective,
+            method=parsed.method,
+            maximize=parsed.maximize,
+            max_iter=parsed.max_iter,
+            seed=parsed.seed,
+            run_fn=run_fn,
+            save_fn=save_fn,
+        )
+    except Exception as e:
+        print(json.dumps({'status': 'error', 'message': '최적화 실행 오류: %s' % str(e)}, ensure_ascii=False))
+        return 2
 
     output = {
         'status': 'ok',
@@ -914,7 +917,11 @@ def _handle_sweep(parsed):
 
         from cli.sweep import run_rolling
         base_config = _build_base_config_dict(parsed)
-        result = run_rolling(base_config, parsed.window_days, parsed.step_days)
+        try:
+            result = run_rolling(base_config, parsed.window_days, parsed.step_days)
+        except Exception as e:
+            print(json.dumps({'status': 'error', 'message': '롤링 실행 오류: %s' % str(e)}, ensure_ascii=False))
+            return 2
         text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
         _write_output(text, getattr(parsed, 'output_file', None))
         return 0 if result.get('status') == 'ok' else 1
@@ -945,7 +952,11 @@ def _handle_sweep(parsed):
             return 1
 
         base_config = _build_base_config_dict(parsed)
-        result = run_sweep(base_config, sweep_params)
+        try:
+            result = run_sweep(base_config, sweep_params)
+        except Exception as e:
+            print(json.dumps({'status': 'error', 'message': '스윕 실행 오류: %s' % str(e)}, ensure_ascii=False))
+            return 2
         output = {
             'status': 'ok',
             'total_combinations': len(combos),
@@ -1007,26 +1018,34 @@ def _handle_wfo(parsed):
             return 1
 
     base_config = _build_base_config_dict(parsed)
-    result = run_walk_forward(
-        base_config=base_config,
-        param_space=param_space,
-        train_window_days=parsed.train_window_days,
-        test_window_days=parsed.test_window_days,
-        step_days=step_days,
-        purge_days=parsed.purge_days,
-        embargo_days=parsed.embargo_days,
-        objective=parsed.objective,
-        method=parsed.method,
-        maximize=parsed.maximize,
-        max_iter=parsed.max_iter,
-    )
+    try:
+        result = run_walk_forward(
+            base_config=base_config,
+            param_space=param_space,
+            train_window_days=parsed.train_window_days,
+            test_window_days=parsed.test_window_days,
+            step_days=step_days,
+            purge_days=parsed.purge_days,
+            embargo_days=parsed.embargo_days,
+            objective=parsed.objective,
+            method=parsed.method,
+            maximize=parsed.maximize,
+            max_iter=parsed.max_iter,
+        )
+    except Exception as e:
+        print(json.dumps({'status': 'error', 'message': 'WFO 실행 오류: %s' % str(e)}, ensure_ascii=False))
+        return 2
 
     output_file = getattr(parsed, 'output_file', None)
-    if output_file and output_file.endswith('.json'):
-        save_walk_forward_report(result, output_file)
-
-    text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
-    _write_output(text, output_file if not (output_file and output_file.endswith('.json')) else None)
+    if output_file:
+        if output_file.endswith('.json'):
+            save_walk_forward_report(result, output_file)
+        else:
+            text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
+            _write_output(text, output_file)
+    else:
+        text = json.dumps(result, ensure_ascii=False, indent=2, default=str)
+        print(text)
     return 0 if result.get('status') == 'ok' else 1
 
 
@@ -1095,16 +1114,28 @@ def _handle_report(parsed):
     from cli.paths import DB_BACKTEST
 
     if parsed.source == 'backtest':
+        table_name = 'stock_bt'
         try:
             con = sqlite3.connect(DB_BACKTEST)
-            query = "SELECT * FROM stock_bt ORDER BY rowid DESC"
+            # 테이블 존재 여부 확인
+            tables = [r[0] for r in con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
+            if table_name not in tables:
+                con.close()
+                print(json.dumps({
+                    'status': 'error',
+                    'message': "테이블 '%s'가 존재하지 않습니다 (DB: %s). 사용 가능: %s" % (
+                        table_name, DB_BACKTEST, ', '.join(tables) or '(없음)'),
+                }, ensure_ascii=False))
+                return 1
+            query = "SELECT * FROM '%s' ORDER BY rowid DESC" % table_name
             if parsed.limit > 0:
                 query += " LIMIT %d" % parsed.limit
             import pandas as pd
             df = pd.read_sql_query(query, con)
             con.close()
         except Exception as e:
-            print(json.dumps({'status': 'error', 'message': 'DB 조회 실패: %s' % str(e)}, ensure_ascii=False))
+            print(json.dumps({'status': 'error', 'message': 'DB 조회 실패 (%s): %s' % (DB_BACKTEST, str(e))}, ensure_ascii=False))
             return 1
 
         if parsed.summary:
