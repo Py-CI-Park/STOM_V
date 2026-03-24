@@ -265,8 +265,8 @@ def create_subcommand_parser():
     sweep_sub = sweep_parser.add_subparsers(dest='sweep_action')
 
     sweep_param = sweep_sub.add_parser('param', help='파라미터 조합 스윕')
-    sweep_param.add_argument('--buy', required=True)
-    sweep_param.add_argument('--sell', required=True)
+    sweep_param.add_argument('--buy', help='매수 전략명 (--dry-run 시 불필요)')
+    sweep_param.add_argument('--sell', help='매도 전략명 (--dry-run 시 불필요)')
     sweep_param.add_argument('--start', type=int, required=True)
     sweep_param.add_argument('--end', type=int, required=True)
     sweep_param.add_argument('--params', required=True, dest='sweep_params_file',
@@ -939,6 +939,10 @@ def _handle_sweep(parsed):
             text = json.dumps(output, ensure_ascii=False, indent=2, default=str)
             _write_output(text, getattr(parsed, 'output_file', None))
             return 0
+
+        if not parsed.buy or not parsed.sell:
+            print(json.dumps({'status': 'error', 'message': '--buy와 --sell은 실행 시 필수입니다 (--dry-run이 아닌 경우).'}, ensure_ascii=False))
+            return 1
 
         base_config = _build_base_config_dict(parsed)
         result = run_sweep(base_config, sweep_params)
