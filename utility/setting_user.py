@@ -19,27 +19,27 @@ for readline in coinreadlines:
 
 def load_settings():
     import sqlite3
+    import pandas as pd
     from cryptography import fernet
     from traceback import format_exc
-    from utility.lazy_imports import get_pd
     from utility.setting_base import DB_SETTING
     from utility.static import read_key, de_text
 
     EN_KEY = read_key()
 
     con   = sqlite3.connect(DB_SETTING)
-    df_m  = get_pd().read_sql('SELECT * FROM main', con).set_index('index')
-    df_s  = get_pd().read_sql('SELECT * FROM stock', con).set_index('index')
-    df_c  = get_pd().read_sql('SELECT * FROM coin', con).set_index('index')
-    df_sa = get_pd().read_sql('SELECT * FROM sacc', con).set_index('index')
-    df_ca = get_pd().read_sql('SELECT * FROM cacc', con).set_index('index')
-    df_t  = get_pd().read_sql('SELECT * FROM telegram', con).set_index('index')
-    df_sb = get_pd().read_sql('SELECT * FROM stockbuyorder', con).set_index('index')
-    df_ss = get_pd().read_sql('SELECT * FROM stocksellorder', con).set_index('index')
-    df_cb = get_pd().read_sql('SELECT * FROM coinbuyorder', con).set_index('index')
-    df_cs = get_pd().read_sql('SELECT * FROM coinsellorder', con).set_index('index')
-    df_e  = get_pd().read_sql('SELECT * FROM etc', con).set_index('index')
-    df_b  = get_pd().read_sql('SELECT * FROM back', con).set_index('index')
+    df_m  = pd.read_sql('SELECT * FROM main', con).set_index('index')
+    df_s  = pd.read_sql('SELECT * FROM stock', con).set_index('index')
+    df_c  = pd.read_sql('SELECT * FROM coin', con).set_index('index')
+    df_sa = pd.read_sql('SELECT * FROM sacc', con).set_index('index')
+    df_ca = pd.read_sql('SELECT * FROM cacc', con).set_index('index')
+    df_t  = pd.read_sql('SELECT * FROM telegram', con).set_index('index')
+    df_sb = pd.read_sql('SELECT * FROM stockbuyorder', con).set_index('index')
+    df_ss = pd.read_sql('SELECT * FROM stocksellorder', con).set_index('index')
+    df_cb = pd.read_sql('SELECT * FROM coinbuyorder', con).set_index('index')
+    df_cs = pd.read_sql('SELECT * FROM coinsellorder', con).set_index('index')
+    df_e  = pd.read_sql('SELECT * FROM etc', con).set_index('index')
+    df_b  = pd.read_sql('SELECT * FROM back', con).set_index('index')
     con.close()
 
     binance_leverage_ = []

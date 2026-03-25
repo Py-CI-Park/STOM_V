@@ -3,9 +3,9 @@ import os
 import sys
 import psutil
 import sqlite3
+import pandas as pd
 from loguru import logger
 from multiprocessing import Process
-from lazy_imports import get_pd
 
 DB_PATH = './_database'
 
@@ -116,7 +116,7 @@ def Updater(gubun, file_list):
 
             df_result.append(df2)
 
-        df3 = get_pd().concat(df_result)
+        df3 = pd.concat(df_result)
         if 'VI해제시간' in df3.columns:
             if '초당매수수량' in df3.columns:
                 df3 = df3[list_stock_tick]
@@ -135,11 +135,11 @@ def Updater(gubun, file_list):
     last = len(file_list)
     for k, db_name in enumerate(file_list):
         con   = sqlite3.connect(f'{DB_PATH}/{db_name}')
-        df_tb = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df_tb = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df_tb['name'].to_list()
         table_list.remove('moneytop')
         for code in table_list:
-            df_origin = get_pd().read_sql(f"SELECT * FROM '{code}'", con)
+            df_origin = pd.read_sql(f"SELECT * FROM '{code}'", con)
             df_converted = convert_dataframe(df_origin)
             df_converted.to_sql(code, con, index=False, if_exists='replace', chunksize=2000)
         llogger.info(f'[{gubun}] 데이터베이스 매도수금액 업데이트 중 ... [{k + 1}/{last}]')

@@ -2,9 +2,9 @@
 import os
 import sys
 import sqlite3
+import pandas as pd
 from loguru import logger
 from multiprocessing import Process
-from lazy_imports import get_pd
 
 DB_PATH = '../_database'
 
@@ -30,12 +30,12 @@ def Updater(gubun, file_list_):
     count = 0
     for k, db_name in enumerate(file_list_):
         con = sqlite3.connect(f'{DB_PATH}/{db_name}')
-        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
         for code in table_list:
             if code != 'moneytop':
-                df1 = get_pd().read_sql(f"SELECT DISTINCT * FROM '{code}'", con)
-                df2 = get_pd().read_sql(f"SELECT * FROM '{code}'", con)
+                df1 = pd.read_sql(f"SELECT DISTINCT * FROM '{code}'", con)
+                df2 = pd.read_sql(f"SELECT * FROM '{code}'", con)
                 if len(df1) != len(df2):
                     df1.to_sql(code, con, if_exists='replace', chunksize=1000)
                     count += 1

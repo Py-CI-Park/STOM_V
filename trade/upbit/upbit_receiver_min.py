@@ -1,7 +1,7 @@
 
+import numpy as np
 from traceback import format_exc
 from utility.setting_base import ui_num
-from utility.lazy_imports import get_np
 from utility.static import now, str_ymdhms_utc
 from trade.upbit.upbit_receiver_tick import UpbitReceiverTick
 
@@ -150,8 +150,8 @@ class UpbitReceiverMin(UpbitReceiverTick):
             if code not in self.dict_money:
                 self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
                 self.dict_index[code] = {c: 0}
-                self.dict_bmbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
-                self.dict_smbyp[code] = get_np().zeros(1000, dtype=get_np().int64)
+                self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
+                self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
                 self.dict_bmbyp[code][0] = buy_money
                 self.dict_smbyp[code][0] = sell_money
                 self.dict_index[code]['count'] = 1
@@ -172,8 +172,8 @@ class UpbitReceiverMin(UpbitReceiverTick):
                 else:
                     idx = price_idx['count']
                     if idx >= len(buy_arr):
-                        self.dict_bmbyp[code] = get_np().resize(buy_arr, len(buy_arr) * 2)
-                        self.dict_smbyp[code] = get_np().resize(sell_arr, len(sell_arr) * 2)
+                        self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
+                        self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
                         buy_arr  = self.dict_bmbyp[code]
                         sell_arr = self.dict_smbyp[code]
  

@@ -2,8 +2,8 @@
 import os
 import shutil
 import sqlite3
+import pandas as pd
 from traceback import format_exc
-from utility.lazy_imports import get_pd
 from utility.setting_base import ui_num, DB_TRADELIST, DB_SETTING, DB_STRATEGY, DB_COIN_TICK, DB_PATH, DB_STOCK_TICK_BACK, \
     DB_COIN_TICK_BACK, DB_STOCK_TICK, DB_BACKTEST, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_STOCK_MIN, \
     DB_COIN_MIN, DB_FUTURE_MIN_BACK, DB_FUTURE_MIN, DB_CODE_INFO, DB_FUTURE_TICK_BACK, DB_FUTURE_TICK
@@ -99,7 +99,7 @@ class Query:
                         BACK_FILE = DB_COIN_TICK_BACK if self.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
 
                     con = sqlite3.connect(BACK_FILE)
-                    df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                     table_list = df['name'].to_list()
                     if table_list:
                         cur = con.cursor()
@@ -146,9 +146,9 @@ class Query:
                         for i, db_name in enumerate(file_list):
                             con = sqlite3.connect(f'{DB_PATH}/{db_name}')
                             cur = con.cursor()
-                            df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                            df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                             table_list = df['name'].to_list()
-                            df = get_pd().read_sql('SELECT * FROM moneytop', con)
+                            df = pd.read_sql('SELECT * FROM moneytop', con)
                             df['시간'] = df['index'].apply(lambda x: int(str(x)[8:]))
                             df = df[df['시간'] <= int(data[1])]
                             df.drop(columns=['시간'], inplace=True)
@@ -156,7 +156,7 @@ class Query:
                             mtlist = list(set(';'.join(df['거래대금순위'].to_list()[29:]).split(';')))
                             for code in table_list:
                                 if code in mtlist:
-                                    df = get_pd().read_sql(f'SELECT * FROM "{code}"', con)
+                                    df = pd.read_sql(f'SELECT * FROM "{code}"', con)
                                     df['시간'] = df['index'].apply(lambda x: int(str(x)[8:]))
                                     df = df[df['시간'] <= int(data[1])]
                                     df.drop(columns=['시간'], inplace=True)
@@ -184,7 +184,7 @@ class Query:
 
                     con = sqlite3.connect(DB_FILE)
                     try:
-                        df = get_pd().read_sql('SELECT * FROM moneytop', con)
+                        df = pd.read_sql('SELECT * FROM moneytop', con)
                     except:
                         self.windowQ.put((ui_num['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
                     else:
@@ -195,13 +195,13 @@ class Query:
                         df.to_sql('moneytop', con, index=False, if_exists='replace', chunksize=1000)
                         mtlist = list(set(';'.join(df['거래대금순위'].to_list()[29:]).split(';')))
 
-                        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                         table_list = df['name'].to_list()
                         if table_list:
                             last = len(table_list)
                             for i, code in enumerate(table_list):
                                 if code in mtlist:
-                                    df = get_pd().read_sql(f'SELECT * FROM "{code}"', con)
+                                    df = pd.read_sql(f'SELECT * FROM "{code}"', con)
                                     df['시간'] = df['index'].apply(lambda x: int(str(x)[8:]))
                                     df = df[df['시간'] <= int(data[1])]
                                     df.drop(columns=['시간'], inplace=True)
@@ -225,13 +225,13 @@ class Query:
                         DB_FILE = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
 
                     con = sqlite3.connect(DB_FILE)
-                    df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                     table_list = df['name'].to_list()
                     if table_list:
                         cur = con.cursor()
                         last = len(table_list)
                         for i, code in enumerate(table_list):
-                            df = get_pd().read_sql(f'SELECT * FROM "{code}" WHERE "index" LIKE "{data[1]}%"', con)
+                            df = pd.read_sql(f'SELECT * FROM "{code}" WHERE "index" LIKE "{data[1]}%"', con)
                             cur.execute(f'DELETE FROM "{code}" WHERE "index" LIKE "{data[1]}%"')
                             con.commit()
                             if self.dict_set['주식타임프레임']:
@@ -266,10 +266,10 @@ class Query:
 
                         con = sqlite3.connect(BACK_FILE)
                         if 'stock' in firstname:
-                            df = get_pd().read_sql('SELECT * FROM stockinfo', self.con4)
+                            df = pd.read_sql('SELECT * FROM stockinfo', self.con4)
                             df.to_sql('stockinfo', con, index=False, if_exists='replace', chunksize=1000)
                         elif 'future' in firstname:
-                            df = get_pd().read_sql('SELECT * FROM futureinfo', self.con4)
+                            df = pd.read_sql('SELECT * FROM futureinfo', self.con4)
                             df.to_sql('futureinfo', con, index=False, if_exists='replace', chunksize=1000)
 
                         file_list = [x for x in file_list if int(data[1]) <= int(x.split(firstname)[1].replace('.db', '')) <= int(data[2])]
@@ -277,10 +277,10 @@ class Query:
                             last = len(file_list)
                             for i, db_name in enumerate(file_list):
                                 con2 = sqlite3.connect(f'{DB_PATH}/{db_name}')
-                                df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con2)
+                                df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con2)
                                 table_list = df['name'].to_list()
                                 for code in table_list:
-                                    df = get_pd().read_sql(f'SELECT * FROM "{code}"', con2)
+                                    df = pd.read_sql(f'SELECT * FROM "{code}"', con2)
                                     if len(df) > 0:
                                         df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
                                 con2.close()
@@ -309,10 +309,10 @@ class Query:
                     if file_list:
                         con = sqlite3.connect(BACK_FILE)
                         if 'stock' in firstname:
-                            df = get_pd().read_sql('SELECT * FROM stockinfo', self.con4)
+                            df = pd.read_sql('SELECT * FROM stockinfo', self.con4)
                             df.to_sql('stockinfo', con, index=False, if_exists='replace', chunksize=1000)
                         elif 'future' in firstname:
-                            df = get_pd().read_sql('SELECT * FROM futureinfo', self.con4)
+                            df = pd.read_sql('SELECT * FROM futureinfo', self.con4)
                             df.to_sql('futureinfo', con, index=False, if_exists='replace', chunksize=1000)
 
                         file_list = [x for x in file_list if int(data[1]) <= int(x.split(firstname)[1].replace('.db', '')) <= int(data[2])]
@@ -320,10 +320,10 @@ class Query:
                             last = len(file_list)
                             for i, db_name in enumerate(file_list):
                                 con2 = sqlite3.connect(f'{DB_PATH}/{db_name}')
-                                df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con2)
+                                df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con2)
                                 table_list = df['name'].to_list()
                                 for code in table_list:
-                                    df = get_pd().read_sql(f'SELECT * FROM "{code}"', con2)
+                                    df = pd.read_sql(f'SELECT * FROM "{code}"', con2)
                                     if len(df) > 0:
                                         df.to_sql(code, con, index=False, if_exists='append', chunksize=1000)
                                 con2.close()
@@ -346,7 +346,7 @@ class Query:
 
                     con = sqlite3.connect(DB_FILE)
                     try:
-                        df = get_pd().read_sql('SELECT * FROM moneytop', con)
+                        df = pd.read_sql('SELECT * FROM moneytop', con)
                     except:
                         self.windowQ.put((ui_num['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
                         con.close()
@@ -377,17 +377,17 @@ class Query:
                             con.close()
                         else:
                             if 'stock' in firstname:
-                                df = get_pd().read_sql('SELECT * FROM stockinfo', self.con4)
+                                df = pd.read_sql('SELECT * FROM stockinfo', self.con4)
                                 df.to_sql('stockinfo', con2, index=False, if_exists='replace', chunksize=1000)
                             elif 'future' in firstname:
-                                df = get_pd().read_sql('SELECT * FROM futureinfo', self.con4)
+                                df = pd.read_sql('SELECT * FROM futureinfo', self.con4)
                                 df.to_sql('futureinfo', con2, index=False, if_exists='replace', chunksize=1000)
 
-                            df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                            df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                             table_list = df['name'].to_list()
                             last = len(table_list)
                             for i, code in enumerate(table_list):
-                                df = get_pd().read_sql(f'SELECT * FROM "{code}"', con)
+                                df = pd.read_sql(f'SELECT * FROM "{code}"', con)
                                 if len(df) > 0:
                                     df.to_sql(code, con2, index=False, if_exists='append', chunksize=1000)
                                 self.windowQ.put((ui_num['DB관리'], f'백테DB [{code}] 데이터 추가 중 ... [{i + 1}/{last}]'))
@@ -413,19 +413,19 @@ class Query:
 
                     con = sqlite3.connect(DB_FILE)
                     try:
-                        df = get_pd().read_sql('SELECT * FROM moneytop', con)
+                        df = pd.read_sql('SELECT * FROM moneytop', con)
                     except:
                         self.windowQ.put((ui_num['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
                     else:
                         df['일자'] = df['index'].apply(lambda x: int(str(x)[:8]))
                         day_list = df['일자'].unique()
-                        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                         table_list = df['name'].to_list()
                         if table_list:
                             last = len(table_list)
                             for i, code in enumerate(table_list):
                                 for day in day_list:
-                                    df = get_pd().read_sql(f'SELECT * FROM "{code}" WHERE "index" LIKE "{day}%"', con)
+                                    df = pd.read_sql(f'SELECT * FROM "{code}" WHERE "index" LIKE "{day}%"', con)
                                     if len(df) > 0:
                                         if '주식' in data[0]:
                                             if '키움증권' in self.dict_set['증권사']:

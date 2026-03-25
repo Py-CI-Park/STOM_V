@@ -1,29 +1,11 @@
 
-import os
-import re
-import sys
-import pytz
-import psutil
-import _pickle
 import datetime
-import builtins
-import winreg as reg
-from loguru import logger
-from PyQt5.QtTest import QTest
-from traceback import print_exc
-import exchange_calendars as ec
-from threading import Thread, Timer
-from cryptography.fernet import Fernet
-from utility.setting_base import ui_num
-from utility.lazy_imports import get_np, get_talib_stream
-
-now_utc_ = datetime.datetime.now(pytz.utc)
-now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
-summer_t = int(now_cme_.dst().total_seconds())
-time_gap = int(summer_t - 50400)
 
 
 def set_builtin_print(bit64, q):
+    import builtins
+    from utility.setting_base import ui_num
+
     # noinspection PyUnusedLocal
     def ui_print(*args, sep=' ', end='\n', file=None):
         try:
@@ -51,6 +33,7 @@ def get_ema_list(is_tick):
 
 
 def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
+    import numpy as np
     for window in get_ema_list(is_tick):
         df[f'이동평균{window}'] = df['현재가'].rolling(window=window).mean().round(3 if market == 1 else 8)
 
@@ -94,20 +77,22 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
         df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
         df2[f'당일거래대금N{avg}'] = df2['당일거래대금'].shift(avg - 1)
         df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
-        df['등락율각도'] = round(get_np().arctan2(df2['등락율차이'] * cf1, avg) / (2 * get_np().pi) * 360, 2)
-        df['당일거래대금각도'] = round(get_np().arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * get_np().pi) * 360, 2)
+        df['등락율각도'] = round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
+        df['당일거래대금각도'] = round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
 
         if market == 1:
             df2['전일비'] = df['전일비']
             df2[f'전일비N{avg}'] = df2['전일비'].shift(avg - 1)
             df2['전일비차이'] = df2['전일비'] - df2[f'전일비N{avg}']
-            df['전일비각도'] = round(get_np().arctan2(df2['전일비차이'], avg) / (2 * get_np().pi) * 360, 2)
+            df['전일비각도'] = round(np.arctan2(df2['전일비차이'], avg) / (2 * np.pi) * 360, 2)
 
-    arry = get_np().array(df)
-    return get_np().nan_to_num(arry)
+    arry = np.array(df)
+    return np.nan_to_num(arry)
 
 
 def error_decorator(func):
+    from traceback import print_exc
+
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -118,12 +103,16 @@ def error_decorator(func):
 
 
 def thread_decorator(func):
+    from threading import Thread
+
     def wrapper(*args):
         Thread(target=func, args=args, daemon=True).start()
     return wrapper
 
 
 def get_logger(name):
+    import sys
+    from loguru import logger
     logger.remove()
     logger.add(
         sys.stderr,
@@ -137,6 +126,19 @@ def get_logger(name):
     return logger
 
 
+def summer_time():
+    import pytz
+    now_utc_ = datetime.datetime.now(pytz.utc)
+    now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
+    summer_t = int(now_cme_.dst().total_seconds())
+    return summer_t
+
+
+def get_time_gap():
+    time_gap = int(summer_time() - 50400)
+    return time_gap
+
+
 def now():
     return datetime.datetime.now()
 
@@ -146,7 +148,7 @@ def now_utc():
 
 
 def now_cme():
-    return timedelta_sec(time_gap)
+    return timedelta_sec(get_time_gap())
 
 
 def str_ymdhmsf(std_time=None):
@@ -239,7 +241,7 @@ def str_hms(std_time=None):
 
 def str_hms_cme_from_str(std_hms=None):
     if std_hms is not None:
-        std_time = timedelta_sec(time_gap, dt_hms(std_hms))
+        std_time = timedelta_sec(get_time_gap(), dt_hms(std_hms))
     else:
         std_time = now_cme()
     return str_hms(std_time)
@@ -297,6 +299,7 @@ def timedelta_day(day, std_time=None):
 
 
 def threading_timer(sec, func, args=None):
+    from threading import Timer
     if args is None:
         Timer(float(sec), func).start()
     else:
@@ -304,6 +307,7 @@ def threading_timer(sec, func, args=None):
 
 
 def win_proc_alive(name):
+    import psutil
     alive = False
     for proc in psutil.process_iter():
         if name in proc.name():
@@ -326,11 +330,14 @@ def opstarter_kill():
 
 
 def pickle_write(file, data):
+    import _pickle
     with open(f'{file}.pkl', "wb") as f:
         _pickle.dump(data, f, protocol=-1)
 
 
 def pickle_read(file):
+    import os
+    import _pickle
     data = None
     if os.path.isfile(f'{file}.pkl'):
         with open(f'{file}.pkl', "rb") as f:
@@ -339,6 +346,7 @@ def pickle_read(file):
 
 
 def qtest_qwait(sec):
+    from PyQt5.QtTest import QTest
     # noinspection PyArgumentList
     QTest.qWait(int(sec * 1000))
 
@@ -380,6 +388,8 @@ def comma2float(t):
 
 
 def write_key():
+    import winreg as reg
+    from cryptography.fernet import Fernet
     key = str(Fernet.generate_key(), 'utf-8')
     reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM')
     reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
@@ -389,6 +399,7 @@ def write_key():
 
 
 def read_key():
+    import winreg as reg
     openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
     key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
     reg.CloseKey(openkey)
@@ -396,11 +407,13 @@ def read_key():
 
 
 def en_text(key, text):
+    from cryptography.fernet import Fernet
     fernet = Fernet(bytes(key, 'utf-8'))
     return str(fernet.encrypt(bytes(text, 'utf-8')), 'utf-8')
 
 
 def de_text(key, text):
+    from cryptography.fernet import Fernet
     fernet = Fernet(bytes(key, 'utf-8'))
     return str(fernet.decrypt(bytes(text, 'utf-8')), 'utf-8')
 
@@ -416,6 +429,7 @@ def factorial(x):
 
 
 def text_not_in_special_characters(t):
+    import re
     t = t.replace(' ', '')
     if t == re.findall(r'\w+', t)[0]:
         return True
@@ -423,6 +437,7 @@ def text_not_in_special_characters(t):
 
 
 def cme_normal_open():
+    import exchange_calendars as ec
     str_day  = str_ymd(now_cme())
     today    = dt_ymdhms_ios(f'{str_day} 17:00:00')
     ec_cme   = ec.get_calendar('CMES')
@@ -717,65 +732,66 @@ def GetSangHahanga(kosd, predayclose, index):
 
 
 def GetIndicator(mc, mh, ml, mv, k):
+    from talib import stream
     AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, PPO, \
         ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-    try:    AD                     = get_talib_stream().AD(      mh, ml, mc, mv)
+    try:    AD                     = stream.AD(      mh, ml, mc, mv)
     except: AD                     = 0
     if k[0] != 0:
-        try:    ADOSC              = get_talib_stream().ADOSC(   mh, ml, mc, mv, fastperiod=k[0], slowperiod=k[1])
+        try:    ADOSC              = stream.ADOSC(   mh, ml, mc, mv, fastperiod=k[0], slowperiod=k[1])
         except: ADOSC              = 0
     if k[2] != 0:
-        try:    ADXR               = get_talib_stream().ADXR(    mh, ml, mc,     timeperiod=k[2])
+        try:    ADXR               = stream.ADXR(    mh, ml, mc,     timeperiod=k[2])
         except: ADXR               = 0
     if k[3] != 0:
-        try:    APO                = get_talib_stream().APO(     mc,             fastperiod=k[3], slowperiod=k[4], matype=k[5])
+        try:    APO                = stream.APO(     mc,             fastperiod=k[3], slowperiod=k[4], matype=k[5])
         except: APO                = 0
     if k[6] != 0:
-        try:    AROOND, AROONU     = get_talib_stream().AROON(   mh, ml,         timeperiod=k[6])
+        try:    AROOND, AROONU     = stream.AROON(   mh, ml,         timeperiod=k[6])
         except: AROOND, AROONU     = 0, 0
     if k[7] != 0:
-        try:    ATR                = get_talib_stream().ATR(     mh, ml, mc,     timeperiod=k[7])
+        try:    ATR                = stream.ATR(     mh, ml, mc,     timeperiod=k[7])
         except: ATR                = 0
     if k[8] != 0:
-        try:    BBU, BBM, BBL      = get_talib_stream().BBANDS(  mc,             timeperiod=k[8], nbdevup=k[9], nbdevdn=k[10], matype=k[11])
+        try:    BBU, BBM, BBL      = stream.BBANDS(  mc,             timeperiod=k[8], nbdevup=k[9], nbdevdn=k[10], matype=k[11])
         except: BBU, BBM, BBL      = 0, 0, 0
     if k[12] != 0:
-        try:    CCI                = get_talib_stream().CCI(     mh, ml, mc,     timeperiod=k[12])
+        try:    CCI                = stream.CCI(     mh, ml, mc,     timeperiod=k[12])
         except: CCI                = 0
     if k[13] != 0:
-        try:    DIM, DIP           = get_talib_stream().MINUS_DI(mh, ml, mc,     timeperiod=k[13]), get_talib_stream().PLUS_DI( mh, ml, mc, timeperiod=k[13])
+        try:    DIM, DIP           = stream.MINUS_DI(mh, ml, mc,     timeperiod=k[13]), stream.PLUS_DI( mh, ml, mc, timeperiod=k[13])
         except: DIM, DIP           = 0, 0
     if k[14] != 0:
-        try:    MACD, MACDS, MACDH = get_talib_stream().MACD(    mc,             fastperiod=k[14], slowperiod=k[15], signalperiod=k[16])
+        try:    MACD, MACDS, MACDH = stream.MACD(    mc,             fastperiod=k[14], slowperiod=k[15], signalperiod=k[16])
         except: MACD, MACDS, MACDH = 0, 0, 0
     if k[17] != 0:
-        try:    MFI                = get_talib_stream().MFI(     mh, ml, mc, mv, timeperiod=k[17])
+        try:    MFI                = stream.MFI(     mh, ml, mc, mv, timeperiod=k[17])
         except: MFI                = 0
     if k[18] != 0:
-        try:    MOM                = get_talib_stream().MOM(     mc,             timeperiod=k[18])
+        try:    MOM                = stream.MOM(     mc,             timeperiod=k[18])
         except: MOM                = 0
-    try:    OBV                    = get_talib_stream().OBV(     mc, mv)
+    try:    OBV                    = stream.OBV(     mc, mv)
     except: OBV                    = 0
     if k[19] != 0:
-        try:    PPO                = get_talib_stream().PPO(     mc,             fastperiod=k[19], slowperiod=k[20], matype=k[21])
+        try:    PPO                = stream.PPO(     mc,             fastperiod=k[19], slowperiod=k[20], matype=k[21])
         except: PPO                = 0
     if k[22] != 0:
-        try:    ROC                = get_talib_stream().ROC(     mc,             timeperiod=k[22])
+        try:    ROC                = stream.ROC(     mc,             timeperiod=k[22])
         except: ROC                = 0
     if k[23] != 0:
-        try:    RSI                = get_talib_stream().RSI(     mc,             timeperiod=k[23])
+        try:    RSI                = stream.RSI(     mc,             timeperiod=k[23])
         except: RSI                = 0
     if k[24] != 0:
-        try:    SAR                = get_talib_stream().SAR(     mh, ml,         acceleration=k[24], maximum=k[25])
+        try:    SAR                = stream.SAR(     mh, ml,         acceleration=k[24], maximum=k[25])
         except: SAR                = 0
     if k[26] != 0:
-        try:    STOCHSK, STOCHSD   = get_talib_stream().STOCH(   mh, ml, mc,     fastk_period=k[26], slowk_period=k[27], slowk_matype=k[28], slowd_period=k[29], slowd_matype=k[30])
+        try:    STOCHSK, STOCHSD   = stream.STOCH(   mh, ml, mc,     fastk_period=k[26], slowk_period=k[27], slowk_matype=k[28], slowd_period=k[29], slowd_matype=k[30])
         except: STOCHSK, STOCHSD   = 0, 0
     if k[31] != 0:
-        try:    STOCHFK, STOCHFD   = get_talib_stream().STOCHF(  mh, ml, mc,     fastk_period=k[31], fastd_period=k[32], fastd_matype=k[33])
+        try:    STOCHFK, STOCHFD   = stream.STOCHF(  mh, ml, mc,     fastk_period=k[31], fastd_period=k[32], fastd_matype=k[33])
         except: STOCHFK, STOCHFD   = 0, 0
     if k[34] != 0:
-        try:    WILLR              = get_talib_stream().WILLR(   mh, ml, mc,     timeperiod=k[34])
+        try:    WILLR              = stream.WILLR(   mh, ml, mc,     timeperiod=k[34])
         except: WILLR              = 0
     return [AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR]

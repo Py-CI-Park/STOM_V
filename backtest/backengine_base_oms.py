@@ -82,37 +82,41 @@ class BackEngineBaseOms(BackEngineBase):
 
     def Buy(self, buy_long=False):
         self.SetBuyCount()
-        주문수량 = 미체결수량 = self.curr_trade_info['주문수량']
+        주문수량 = self.curr_trade_info['주문수량']
         if 주문수량 > 0:
             if self.dict_set[f'{self.market_text}매수주문구분'] == '시장가':
-                호가정보 = self.shogainfo if self.market_gubun in (1, 3) or buy_long else self.bhogainfo
-                호가정보 = 호가정보[:self.buy_hj_limit]
-                매수금액 = 0
-                for 호가, 잔량 in 호가정보:
-                    if 미체결수량 - 잔량 <= 0:
-                        매수금액 += 호가 * 미체결수량
-                        미체결수량 -= 잔량
-                        break
-                    else:
-                        매수금액 += 호가 * 잔량
-                        미체결수량 -= 잔량
-                if 미체결수량 <= 0:
+                if self.market_gubun in (1, 3) or buy_long:
+                    호가배열 = self.shogainfo[:self.buy_hj_limit]
+                    잔량배열 = self.shreminfo[:self.buy_hj_limit]
+                else:
+                    호가배열 = self.bhogainfo[:self.buy_hj_limit]
+                    잔량배열 = self.bhreminfo[:self.buy_hj_limit]
+
+                거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                if 체결완료:
                     매수가 = self.curr_trade_info['매수가']
                     보유수량 = self.curr_trade_info['보유수량']
                     총수량 = 보유수량 + 주문수량
-                    추가매수가 = self.GetBuyPrice(매수금액, 주문수량)
-                    평단가 = self.GetBuyPrice(매수가 * 보유수량 + 매수금액, 총수량)
+                    추가매수가 = self.GetBuyPrice(거래금액, 주문수량)
+                    평단가 = self.GetBuyPrice(매수가 * 보유수량 + 거래금액, 총수량)
                     주문포지션 = None if self.market_gubun in (1, 3) else 'LONG' if buy_long else 'SHORT'
-                    self.curr_trade_info['매수가'] = 평단가
-                    self.curr_trade_info['보유수량'] = 총수량
-                    self.curr_trade_info['추가매수가'] = 추가매수가
+                    self.curr_trade_info.update({
+                        '매수가': 평단가,
+                        '보유수량': 총수량,
+                        '추가매수가': 추가매수가
+                    })
                     self.UpdateBuyInfo(주문포지션, True if 매수가 == 0 else False)
 
             elif self.dict_set[f'{self.market_text}매수주문구분'] == '지정가':
-                self.curr_trade_info['매수호가'] = self.curr_trade_info['매수호가_']
-                self.curr_trade_info['매수호가단위'] = self.hoga_unit
-                self.curr_trade_info['매수주문취소시간'] = \
-                    timedelta_sec(self.dict_set[f'{self.market_text}매수취소시간초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
+                매수주문취소시간 = timedelta_sec(
+                    self.dict_set[f'{self.market_text}매수취소시간초'],
+                    dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
+                )
+                self.curr_trade_info.update({
+                    '매수호가': self.curr_trade_info['매수호가_'],
+                    '매수호가단위': self.hoga_unit,
+                    '매수주문취소시간': 매수주문취소시간
+                })
 
     def SetBuyCount(self):
         보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1 = self.info_for_order[:-4]
@@ -181,35 +185,49 @@ class BackEngineBaseOms(BackEngineBase):
         elif (주문포지션 is None or 주문포지션 == 'LONG') and \
                 self.curr_trade_info['매수정정횟수'] < self.dict_set[f'{self.market_text}매수정정횟수'] and \
                 현재가 >= 매수호가 + 매수호가단위 * self.dict_set[f'{self.market_text}매수정정호가차이']:
-            self.curr_trade_info['매수호가'] = 현재가 - 매수호가단위 * self.dict_set[f'{self.market_text}매수정정호가']
-            self.curr_trade_info['매수정정횟수'] += 1
-            self.curr_trade_info['매수호가단위'] = self.hoga_unit
+            매수호가 = 현재가 - 매수호가단위 * self.dict_set[f'{self.market_text}매수정정호가']
+            매수정정횟수 = self.curr_trade_info['매수정정횟수'] + 1
+            self.curr_trade_info.update({
+                '매수호가': 매수호가,
+                '매수정정횟수': 매수정정횟수,
+                '매수호가단위': self.hoga_unit
+            })
         elif 주문포지션 == 'SHORT' and self.curr_trade_info['매수정정횟수'] < self.dict_set[f'{self.market_text}매수정정횟수'] and \
                 현재가 <= 매수호가 - 매수호가단위 * self.dict_set[f'{self.market_text}매수정정호가차이']:
-            self.curr_trade_info['매수호가'] = 현재가 + 매수호가단위 * self.dict_set[f'{self.market_text}매수정정호가']
-            self.curr_trade_info['매수정정횟수'] += 1
-            self.curr_trade_info['매수호가단위'] = self.hoga_unit
+            매수호가 = 현재가 + 매수호가단위 * self.dict_set[f'{self.market_text}매수정정호가']
+            매수정정횟수 = self.curr_trade_info['매수정정횟수'] + 1
+            self.curr_trade_info.update({
+                '매수호가': 매수호가,
+                '매수정정횟수': 매수정정횟수,
+                '매수호가단위': self.hoga_unit
+            })
         elif (주문포지션 is None and ((분봉저가 is None and 현재가 < 매수호가) or (분봉저가 is not None and 분봉저가 < 매수호가))) or \
                 (주문포지션 == 'LONG' and ((분봉저가 is None and 현재가 < 매수호가) or (분봉저가 is not None and 분봉저가 < 매수호가))) or \
                 (주문포지션 == 'SHORT' and ((분봉고가 is None and 현재가 > 매수호가) or (분봉고가 is not None and 분봉고가 > 매수호가))):
             총수량 = 보유수량 + 주문수량
             평단가 = self.GetBuyPrice(매수가 * 보유수량 + 매수호가 * 주문수량, 총수량)
-            self.curr_trade_info['매수가'] = 평단가
-            self.curr_trade_info['보유수량'] = 총수량
-            self.curr_trade_info['추가매수가'] = 매수호가
+            self.curr_trade_info.update({
+                '매수가': 평단가,
+                '보유수량': 총수량,
+                '추가매수가': 매수호가
+            })
             self.UpdateBuyInfo(주문포지션, True if 매수가 == 0 else False)
 
     def UpdateBuyInfo(self, 주문포지션, firstbuy):
         datetimefromindex = dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
-        self.curr_trade_info['보유중'] = 1 if 주문포지션 is None or 주문포지션 == 'LONG' else 2
-        self.curr_trade_info['매수호가'] = 0
-        self.curr_trade_info['매수정정횟수'] = 0
+        self.curr_trade_info.update({
+            '보유중': 1 if 주문포지션 is None or 주문포지션 == 'LONG' else 2,
+            '매수호가': 0,
+            '매수정정횟수': 0
+        })
         self.curr_day_info['직전거래시간'] = timedelta_sec(self.dict_set[f'{self.market_text}매수금지간격초'], datetimefromindex)
         if firstbuy:
-            self.curr_trade_info['매수틱번호'] = self.indexn
-            self.curr_trade_info['매수시간'] = datetimefromindex
-            self.curr_trade_info['추가매수시간'] = []
-            self.curr_trade_info['매수분할횟수'] = 0
+            self.curr_trade_info.update({
+                '매수틱번호': self.indexn,
+                '매수시간': datetimefromindex,
+                '추가매수시간': [],
+                '매수분할횟수': 0
+            })
         text = f"{self.index};{self.curr_trade_info['추가매수가']}"
         self.curr_trade_info['추가매수시간'].append(text)
         self.curr_trade_info['매수분할횟수'] += 1
@@ -253,27 +271,30 @@ class BackEngineBaseOms(BackEngineBase):
     def Sell(self, sell_long=False):
         self.SetSellCount()
         if self.dict_set[f'{self.market_text}매도주문구분'] == '시장가':
-            주문수량 = 미체결수량 = self.curr_trade_info['주문수량']
-            호가정보 = self.bhogainfo if self.market_gubun in (1, 3) or sell_long else self.shogainfo
-            호가정보 = 호가정보[:self.sell_hj_limit]
-            매도금액 = 0
-            for 호가, 잔량 in 호가정보:
-                if 미체결수량 - 잔량 <= 0:
-                    매도금액 += 호가 * 미체결수량
-                    미체결수량 -= 잔량
-                    break
+            주문수량 = self.curr_trade_info['주문수량']
+            if 주문수량 > 0:
+                if self.market_gubun in (1, 3) or sell_long:
+                    호가배열 = self.bhogainfo[:self.sell_hj_limit]
+                    잔량배열 = self.bhreminfo[:self.sell_hj_limit]
                 else:
-                    매도금액 += 호가 * 잔량
-                    미체결수량 -= 잔량
-            if 미체결수량 <= 0:
-                self.curr_trade_info['매도가'] = self.GetSellPrice(매도금액, 주문수량)
-                self.CalculationEyun()
+                    호가배열 = self.shogainfo[:self.sell_hj_limit]
+                    잔량배열 = self.shreminfo[:self.sell_hj_limit]
+
+                거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                if 체결완료:
+                    self.curr_trade_info['매도가'] = self.GetSellPrice(거래금액, 주문수량)
+                    self.CalculationEyun()
 
         elif self.dict_set[f'{self.market_text}매도주문구분'] == '지정가':
-            self.curr_trade_info['매도호가'] = self.curr_trade_info['매도호가_']
-            self.curr_trade_info['매도호가단위'] = self.hoga_unit
-            self.curr_trade_info['매도주문취소시간'] = \
-                timedelta_sec(self.dict_set[f'{self.market_text}매도취소시간초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
+            매도주문취소시간 = timedelta_sec(
+                self.dict_set[f'{self.market_text}매도취소시간초'],
+                dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
+            )
+            self.curr_trade_info.update({
+                '매도호가': self.curr_trade_info['매도호가_'],
+                '매도호가단위': self.hoga_unit,
+                '매도주문취소시간': 매도주문취소시간
+            })
 
     def SetSellCount(self):
         보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수 = self.info_for_order[:-2]
@@ -395,9 +416,13 @@ class BackEngineBaseOms(BackEngineBase):
 
         self.curr_day_info['거래횟수'] += 1
         if 수익률 < 0:
+            손절매도시간 = timedelta_sec(
+                self.dict_set[f'{self.market_text}매수금지손절간격초'],
+                dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
+            )
             self.curr_day_info['손절횟수'] += 1
-            self.curr_day_info['손절매도시간'] = \
-                timedelta_sec(self.dict_set[f'{self.market_text}매수금지손절간격초'], dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index)))
+            self.curr_day_info['손절매도시간'] = 손절매도시간
+
         if 보유수량 - 주문수량 > 0:
             self.curr_trade_info['매도호가'] = 0
             self.curr_trade_info['보유수량'] -= 주문수량
