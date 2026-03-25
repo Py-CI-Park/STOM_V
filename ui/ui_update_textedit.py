@@ -173,13 +173,13 @@ class UpdateTextedit:
                 else:
                     self.ui.db_textEdittttt_01.append(text)
                 if self.ui.auto_mode:
-                    if data[1] in ('주식 일자별 DB 생성 완료', '해선 일자별 DB 생성 완료'):
+                    if data[1] in ('주식 당일DB 데이터, 일자DB로 분리 완료', '해선 당일DB 데이터, 일자DB로 분리 완료'):
                         self.AutoDataBase(2)
-                    elif data[1] in ('주식 당일 데이터 백테디비로 추가 완료', '해선 당일 데이터 백테디비로 추가 완료'):
+                    elif data[1] in ('주식 당일DB 데이터, 백테DB로 추가 완료', '해선 당일DB 데이터, 백테DB로 추가 완료'):
                         self.AutoDataBase(3)
-                    elif data[1] == '코인 일자별 DB 생성 완료':
+                    elif data[1] == '코인 당일DB 데이터, 일자DB로 분리 완료':
                         self.AutoDataBase(5)
-                    elif data[1] == '코인 당일 데이터 백테디비로 추가 완료':
+                    elif data[1] == '코인 당일DB 데이터, 백테DB로 추가 완료':
                         self.AutoDataBase(6)
 
     def AutoDataBase(self, gubun):

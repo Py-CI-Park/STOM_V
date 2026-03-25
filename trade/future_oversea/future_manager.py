@@ -48,13 +48,13 @@ class ZmqRecvFromUI(QThread):
                 msg  = self.sock.recv_string()
                 data = self.sock.recv_pyobj()
                 if msg == 'agent':
-                    if self.main.StockAgentProcessAlive():
+                    if self.main.FutureAgentProcessAlive():
                         self.sagentQ.put(data)
                 elif msg == 'trade':
-                    if self.main.StockTraderProcessAlive():
+                    if self.main.FutureTraderProcessAlive():
                         self.straderQ.put(data)
                 elif msg == 'strategy':
-                    if self.main.StockStrategyProcessAlive():
+                    if self.main.FutureStrategyProcessAlive():
                         self.sstgQ.put(data)
                 elif msg == 'manager':
                     if data.__class__ == str:

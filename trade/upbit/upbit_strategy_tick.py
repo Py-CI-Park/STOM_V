@@ -341,11 +341,13 @@ class UpbitStrategyTick(StrategyBase):
             B = self.dict_set['코인매도분할시그널']
             C = NIB and NIS and SCC and 매수가 != 0 and 분할매도횟수 < self.dict_set['코인매도분할횟수']
             D = NIS and self.dict_set['코인매수취소매도시그널'] and not NIB
-            E = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
-            F = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
+            E = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도익절수익률청산'] and 수익률 > self.dict_set['코인매도익절수익률']
+            F = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도익절수익금청산'] and 수익금 > self.dict_set['코인매도익절수익금']
+            G = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
+            H = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
 
-            if SBT and (A or (B and C) or C or D or E or F):
-                강제청산 = E or F
+            if SBT and (A or (B and C) or C or D or E or F or G or H):
+                강제청산 = E or F or G or H
                 전량매도 = A or 강제청산
                 self.info_for_signal = D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 

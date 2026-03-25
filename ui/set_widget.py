@@ -2,7 +2,7 @@
 import sys
 import pyqtgraph as pg
 from traceback import format_exc
-from PyQt5.QtCore import Qt, QDate
+from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
     QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox
 from utility import syntax
@@ -178,6 +178,58 @@ class CustomViewBox(pg.ViewBox):
                 self.zoom_in = True
 
 
+class AnimatedPushButton(QPushButton):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.hover_animation = None
+        self.original_geometry = None
+        self.is_hovering = False
+        self.animation_timer = None
+        self.setup_animations()
+    
+    def setup_animations(self):
+        self.hover_animation = QPropertyAnimation(self, b"geometry")
+        self.hover_animation.setDuration(150)
+        self.hover_animation.setEasingCurve(QEasingCurve.OutCubic)
+        
+        self.animation_timer = QTimer()
+        self.animation_timer.setSingleShot(True)
+        self.animation_timer.timeout.connect(self._delayed_leave)
+    
+    def enterEvent(self, event):
+        if self.original_geometry is None:
+            self.original_geometry = self.geometry()
+        
+        self.is_hovering = True
+        self.animation_timer.stop()
+        
+        # 약간 확장된 크기로 애니메이션
+        expanded_rect = QRect(
+            self.original_geometry.x() - 2,
+            self.original_geometry.y() - 2,
+            self.original_geometry.width() + 4,
+            self.original_geometry.height() + 4
+        )
+        
+        self.hover_animation.setStartValue(self.geometry())
+        self.hover_animation.setEndValue(expanded_rect)
+        self.hover_animation.start()
+        
+        super().enterEvent(event)
+    
+    def leaveEvent(self, event):
+        self.is_hovering = False
+        # 약간의 딜레이 후 애니메이션 실행 (빠른 이동 시 깜빡임 방지)
+        self.animation_timer.start(50)
+        super().leaveEvent(event)
+    
+    def _delayed_leave(self):
+        if not self.is_hovering and self.original_geometry is not None:
+            self.hover_animation.setStartValue(self.geometry())
+            self.hover_animation.setEndValue(self.original_geometry)
+            self.hover_animation.start()
+
+
 class WidgetCreater:
     def __init__(self, ui_class):
         self.ui = ui_class
@@ -186,11 +238,17 @@ class WidgetCreater:
         groupbox = QGroupBox(gname, tab)
         return groupbox
 
-    def setPushbutton(self, pname, color=0, box=None, cmd=None, icon=None, tip=None, shortcut=None, visible=True, click=None):
-        if box is not None:
-            pushbutton = QPushButton(pname, box)
+    def setPushbutton(self, pname, color=0, box=None, cmd=None, icon=None, tip=None, shortcut=None, visible=True, click=None, animated=False):
+        if animated:
+            if box is not None:
+                pushbutton = AnimatedPushButton(pname, box)
+            else:
+                pushbutton = AnimatedPushButton(pname, self.ui)
         else:
-            pushbutton = QPushButton(pname, self.ui)
+            if box is not None:
+                pushbutton = QPushButton(pname, box)
+            else:
+                pushbutton = QPushButton(pname, self.ui)
         if color == 1:
             pushbutton.setStyleSheet(style_bc_st)
         elif color == 2:
