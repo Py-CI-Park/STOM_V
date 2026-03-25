@@ -42,7 +42,7 @@ def stock_opti_buy_save(ui):
             QMessageBox.critical(ui, '오류 알림', '최적화 매수전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
         else:
             if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
-                if ui.proc_query.is_alive():
+                if ui.proc_chqs.is_alive():
                     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                     df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {gubun}optibuy WHERE `index` = '{strategy_name}'")
                     if len(df) > 0:
@@ -84,7 +84,7 @@ def stock_opti_vars_save(ui):
             QMessageBox.critical(ui, '오류 알림', '변수범위의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
         else:
             if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy):
-                if ui.proc_query.is_alive():
+                if ui.proc_chqs.is_alive():
                     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                     delete_query  = f"DELETE FROM {gubun}optivars WHERE `index` = '{strategy_name}'"
                     insert_query  = f"INSERT INTO {gubun}optivars VALUES (?, ?)"
@@ -124,7 +124,7 @@ def stock_opti_sell_save(ui):
             QMessageBox.critical(ui, '오류 알림', '최적화 매도전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
         else:
             if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
-                if ui.proc_query.is_alive():
+                if ui.proc_chqs.is_alive():
                     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                     delete_query  = f"DELETE FROM {gubun}optisell WHERE `index` = '{strategy_name}'"
                     insert_query  = f"INSERT INTO {gubun}optisell VALUES (?, ?)"
@@ -203,7 +203,7 @@ def stock_opti_to_buy_save(ui):
         QMessageBox.critical(ui, '오류 알림', format_exc())
         return
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         delete_query  = f"DELETE FROM {gubun}buy WHERE `index` = '{name}'"
         insert_query  = f"INSERT INTO {gubun}buy VALUES (?, ?)"
@@ -242,7 +242,7 @@ def stock_opti_to_sell_save(ui):
         QMessageBox.critical(ui, '오류 알림', format_exc())
         return
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
         delete_query  = f"DELETE FROM {gubun}sell WHERE `index` = '{name}'"
         insert_query  = f"INSERT INTO {gubun}sell VALUES (?, ?)"

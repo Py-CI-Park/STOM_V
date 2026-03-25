@@ -92,7 +92,7 @@ def formula_button_clicked(ui):
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표:매매는 전략연산 및 백테에 적용할 수 없습니다.\n')
             return
 
-        if ui.FormulaCodeTest(stg) and ui.proc_query.is_alive():
+        if ui.FormulaCodeTest(stg) and ui.proc_chqs.is_alive():
             delete_query  = f"DELETE FROM formula WHERE 수식명 = '{name}'"
             insert_query  = 'INSERT INTO formula VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
             insert_values = (name, check1, check2, fname, vtype, color, width, style, stg)
@@ -105,7 +105,7 @@ def formula_button_clicked(ui):
         if name == '':
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '삭제할 수식명을 선택하십시오.\n')
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             query = f"DELETE FROM formula WHERE 수식명 = '{name}'"
             ui.queryQ.put(('전략디비', query))
             QMessageBox.information(ui.dialog_formula, '수식 삭제 완료', random.choice(famous_saying))

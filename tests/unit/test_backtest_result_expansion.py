@@ -176,8 +176,8 @@ def test_total_report_writes_extended_detail_csv_and_db(monkeypatch, tmp_path):
     ]]
     arry_bct = np.array([[20260310090100, 1, 1000]], dtype='float64')
 
-    with pytest.raises(SystemExit):
-        total.Report(list_tsg, arry_bct)
+    # V2.62+ thread_decorator가 SystemExit를 catch하므로 직접 호출
+    total.Report(list_tsg, arry_bct)
 
     csv_path = tmp_path / 'backtest' / 'csv' / 'stock_bt_테스트전략_20260310120000.csv'
     assert csv_path.exists()

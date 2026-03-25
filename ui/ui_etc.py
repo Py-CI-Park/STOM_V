@@ -69,9 +69,7 @@ def update_dictset(ui):
     if ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('설정변경', ui.dict_set))
     if ui.CoinTraderProcessAlive():   ui.ctraderQ.put(('설정변경', ui.dict_set))
     if ui.CoinStrategyProcessAlive(): ui.cstgQ.put(('설정변경', ui.dict_set))
-    if ui.proc_chart.is_alive():      ui.chartQ.put(('설정변경', ui.dict_set))
-    if ui.proc_query.is_alive():      ui.queryQ.put(('설정변경', ui.dict_set))
-    if ui.proc_hoga.is_alive():       ui.hogaQ.put(('설정변경', ui.dict_set))
+    if ui.proc_chqs.is_alive():       ui.chartQ.put(('설정변경', ui.dict_set))
     if ui.proc_tele.is_alive():       ui.teleQ.put(('설정변경', ui.dict_set))
     if ui.backtest_engine:
         for bpq in ui.back_eques:
