@@ -67,7 +67,10 @@ def get_logger(name):
 def Updater(gubun, file_list):
     def convert_dataframe(df):
         df_result = []
-        df['일자'] = df['index'].apply(lambda x: int(str(x)[:8]))
+        if '초당매수수량' in df.columns:
+            df['일자'] = (df['index'].values // 1000000).astype(int)
+        else:
+            df['일자'] = (df['index'].values // 10000).astype(int)
         day_list = df['일자'].unique()
 
         for day in day_list:

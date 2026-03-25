@@ -250,7 +250,7 @@ class Total:
             df_tsg   = df_all_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
             df_tbc   = df_all_bct.copy()
             df_tbc['체결시간'] = df_tbc.index
-            df_tbc['체결시간'] = df_tbc['체결시간'].apply(lambda x: float(x))
+            df_tbc['체결시간'] = df_tbc['체결시간'].astype(float)
             df_tbc   = df_tbc[['체결시간', '보유종목수', '보유금액']]
             arry_tsg = np.array(df_tsg, dtype='float64')
             arry_bct = np.array(df_tbc, dtype='float64')
@@ -440,7 +440,10 @@ class RollingWalkForwardTest:
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
-        df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
+        if is_tick:
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
+        else:
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(int)
         day_list = df_mt['일자'].unique()
         day_list.sort()
 
