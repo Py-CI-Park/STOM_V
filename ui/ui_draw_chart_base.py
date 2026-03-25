@@ -325,7 +325,8 @@ class DrawChartBase:
             self.insert_crosshair()
 
         self.ui.ctpg_name, self.ui.ctpg_last_xtick = self.code, self.xmax
-        if self.ui.database_chart: self.ui.database_chart = False
+        if self.real and self.ui.database_chart: self.ui.database_chart = False
+        if not self.real and not self.ui.database_chart: self.ui.database_chart = True
 
     def draw_buy_or_sell_point(self, i):
         buy_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, self.fi('매수가')]) if price > 0]

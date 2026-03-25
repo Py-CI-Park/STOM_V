@@ -2,7 +2,7 @@
 import sys
 import pyqtgraph as pg
 from traceback import format_exc
-from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer
+from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
     QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox
 from utility import syntax
@@ -11,7 +11,7 @@ from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj,
     columns_kp, columns_sd, columns_hc2, columns_bt
 from ui.set_style import qfont12, style_bc_bt, style_bc_st, style_bc_sl, style_bc_bs, style_bc_by, style_fc_dk, \
     style_bc_bb, style_bc_dk, style_st_cf, style_st_sf, style_st_mf, style_st_sp, style_st_ct, style_st_ks, style_st_ss, \
-    style_st_su
+    style_st_su, color_gb_nm, color_gb_hv
 
 
 def error_decorator(func):
@@ -191,7 +191,6 @@ class AnimatedPushButton(QPushButton):
         self.hover_animation = QPropertyAnimation(self, b"geometry")
         self.hover_animation.setDuration(150)
         self.hover_animation.setEasingCurve(QEasingCurve.OutCubic)
-
         self.animation_timer = QTimer()
         self.animation_timer.setSingleShot(True)
         self.animation_timer.timeout.connect(self._delayed_leave)
@@ -199,26 +198,21 @@ class AnimatedPushButton(QPushButton):
     def enterEvent(self, event):
         if self.original_geometry is None:
             self.original_geometry = self.geometry()
-
         self.is_hovering = True
         self.animation_timer.stop()
-
         expanded_rect = QRect(
             self.original_geometry.x() - 2,
             self.original_geometry.y() - 2,
             self.original_geometry.width() + 4,
             self.original_geometry.height() + 4
         )
-
         self.hover_animation.setStartValue(self.geometry())
         self.hover_animation.setEndValue(expanded_rect)
         self.hover_animation.start()
-
         super().enterEvent(event)
 
     def leaveEvent(self, event):
         self.is_hovering = False
-        # 약간의 딜레이 후 애니메이션 실행 (빠른 이동 시 깜빡임 방지)
         self.animation_timer.start(50)
         super().leaveEvent(event)
 
@@ -229,23 +223,157 @@ class AnimatedPushButton(QPushButton):
             self.hover_animation.start()
 
 
+class BounceButton(QPushButton):
+    """클릭 시 버튼이 커졌다가 원래대로 돌아가는 바운스 애니메이션 버튼"""
+    def __init__(self, text, parent=None, scale=1.20, duration=300):
+        super().__init__(text, parent)
+        self.scale_factor = scale
+        self.anim_duration = duration
+        self.original_geometry = None
+        self.click_animation = None
+
+    def mousePressEvent(self, event):
+        """클릭 시 바운스 애니메이션 실행"""
+        if event.button() == Qt.LeftButton:
+            self._play_bounce_animation()
+        super().mousePressEvent(event)
+
+    def _play_bounce_animation(self):
+        """버튼 커졌다가 원래대로 돌아가는 애니메이션"""
+        self.original_geometry = self.geometry()
+        center_x = self.original_geometry.x() + self.original_geometry.width() / 2
+        center_y = self.original_geometry.y() + self.original_geometry.height() / 2
+        new_width = int(self.original_geometry.width() * self.scale_factor)
+        new_height = int(self.original_geometry.height() * self.scale_factor)
+        new_x = int(center_x - new_width / 2)
+        new_y = int(center_y - new_height / 2)
+        expanded_rect = QRect(new_x, new_y, new_width, new_height)
+        self.click_animation = QPropertyAnimation(self, b"geometry")
+        self.click_animation.setDuration(self.anim_duration)
+        self.click_animation.setEasingCurve(QEasingCurve.OutBack)
+        self.click_animation.setKeyValueAt(0.0, self.original_geometry)
+        self.click_animation.setKeyValueAt(0.4, expanded_rect)
+        self.click_animation.setKeyValueAt(1.0, self.original_geometry)
+        self.click_animation.start()
+
+
+class HoverComboBox(QComboBox):
+    """마우스 오버 시 드롭다운을 자동으로 열고 닫는 콤보박스"""
+    def __init__(self, parent=None, delay_ms=100):
+        super().__init__(parent)
+        self._is_open = False
+        self._is_mouse_over = False
+        self._delay_ms = delay_ms
+        self._close_timer = QTimer(self)
+        self._close_timer.setSingleShot(True)
+        self._close_timer.timeout.connect(self._try_close)
+        self.view().viewport().installEventFilter(self)
+
+    def enterEvent(self, event):
+        """마우스가 콤보박스 위로 들어오면 드롭다운 열기"""
+        self._is_mouse_over = True
+        self._close_timer.stop()
+        if not self._is_open:
+            self.showPopup()
+            self._is_open = True
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        """마우스가 콤보박스 영역을 벗어나면 닫기 타이머 시작"""
+        self._is_mouse_over = False
+        self._close_timer.start(self._delay_ms)
+        super().leaveEvent(event)
+
+    def eventFilter(self, obj, event):
+        """드롭다운 리스트의 마우스 이벤트 감지"""
+        if obj == self.view().viewport():
+            if event.type() == QEvent.Enter:
+                self._is_mouse_over = True
+                self._close_timer.stop()
+            elif event.type() == QEvent.Leave:
+                self._is_mouse_over = False
+                self._close_timer.start(self._delay_ms)
+        return super().eventFilter(obj, event)
+
+    def _try_close(self):
+        """마우스가 영역 밖에 있으면 드롭다운 닫기"""
+        if not self._is_mouse_over:
+            self.hidePopup()
+            self._is_open = False
+
+    def hidePopup(self):
+        """드롭다운이 닫히면 상태 초기화"""
+        super().hidePopup()
+        self._is_open = False
+
+
+class HoverGroupBox(QGroupBox):
+    """마우스 오버 시 배경색이 변경되는 그룹박스"""
+    def __init__(self, title, parent=None, duration=100):
+        super().__init__(title, parent)
+        self._normal_color = f'rgb({color_gb_nm.red()}, {color_gb_nm.green()}, {color_gb_nm.blue()})'
+        self._hover_color = f'rgb({color_gb_hv.red()}, {color_gb_hv.green()}, {color_gb_hv.blue()})'
+        self._duration = duration
+        self.setStyleSheet(self._build_style(self._normal_color))
+
+    def _build_style(self, bg_color):
+        return f"""
+            QGroupBox {{
+                background-color: {bg_color};
+                font-family: "나눔고딕", "Malgun Gothic";
+            }}
+            QGroupBox::title {{
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                font-family: "나눔고딕", "Malgun Gothic";
+            }}
+            QLabel, QCheckBox, QPushButton, QDateEdit, HoverComboBox {{
+                font-family: "나눔고딕", "Malgun Gothic";
+            }}
+        """
+
+    def enterEvent(self, event):
+        """마우스가 들어오면 배경색 변경"""
+        self.setStyleSheet(self._build_style(self._hover_color))
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        """마우스가 나가면 원래 배경색 복원"""
+        self.setStyleSheet(self._build_style(self._normal_color))
+        super().leaveEvent(event)
+
+
+class PlainTextEdit(QTextEdit):
+    def insertFromMimeData(self, source):
+        self.insertPlainText(source.text())
+
+
 class WidgetCreater:
     def __init__(self, ui_class):
         self.ui = ui_class
 
-    def setQGroupBox(self, gname, tab):
-        groupbox = QGroupBox(gname, tab)
+    def setQGroupBox(self, gname, parent, hover=False):
+        if hover:
+            groupbox = HoverGroupBox(gname, parent)
+        else:
+            groupbox = QGroupBox(gname, parent)
         return groupbox
 
-    def setPushbutton(self, pname, color=0, box=None, cmd=None, icon=None, tip=None, shortcut=None, visible=True, click=None, animated=False):
+    def setPushbutton(self, pname, color=0, parent=None, cmd=None, icon=None, tip=None, shortcut=None, visible=True,
+                      click=None, animated=False, bounced=False):
         if animated:
-            if box is not None:
-                pushbutton = AnimatedPushButton(pname, box)
+            if parent is not None:
+                pushbutton = AnimatedPushButton(pname, parent)
             else:
                 pushbutton = AnimatedPushButton(pname, self.ui)
+        elif bounced:
+            if parent is not None:
+                pushbutton = BounceButton(pname, parent)
+            else:
+                pushbutton = BounceButton(pname, self.ui)
         else:
-            if box is not None:
-                pushbutton = QPushButton(pname, box)
+            if parent is not None:
+                pushbutton = QPushButton(pname, parent)
             else:
                 pushbutton = QPushButton(pname, self.ui)
         if color == 1:
@@ -295,15 +423,18 @@ class WidgetCreater:
         return pushbutton
 
     @staticmethod
-    def setLine(tab, width):
-        line = QFrame(tab)
+    def setLine(parent, width):
+        line = QFrame(parent)
         line.setLineWidth(width)
         line.setStyleSheet(style_fc_dk)
         line.setFrameShape(QFrame.HLine)
         return line
 
-    def setTextEdit(self, tab, visible=True, font=None, vscroll=False, filter_=False):
-        textedit = QTextEdit(tab)
+    def setTextEdit(self, parent, visible=True, font=None, vscroll=False, filter_=False):
+        if filter_:
+            textedit = PlainTextEdit(parent)
+        else:
+            textedit = QTextEdit(parent)
         textedit.setStyleSheet(style_bc_dk)
         if filter_:
             textedit.installEventFilter(self.ui)
@@ -320,8 +451,8 @@ class WidgetCreater:
         return textedit
 
     @staticmethod
-    def setCombobox(tab, font=None, items=None, tip=None, visible=True, activated=None):
-        combobox = QComboBox(tab)
+    def setCombobox(parent, font=None, items=None, tip=None, visible=True, activated=None):
+        combobox = HoverComboBox(parent)
         combobox.setStyleSheet(style_fc_dk)
         if font is not None:
             combobox.setFont(font)
@@ -337,8 +468,8 @@ class WidgetCreater:
         return combobox
 
     @staticmethod
-    def setCheckBox(cname, groupbox, checked=False, tip=None, style=None, changed=None):
-        checkbox = QCheckBox(cname, groupbox)
+    def setCheckBox(cname, parent, checked=False, tip=None, style=None, changed=None):
+        checkbox = QCheckBox(cname, parent)
         if checked:
             checkbox.setChecked(checked)
         if tip is not None:
@@ -351,8 +482,8 @@ class WidgetCreater:
         return checkbox
 
     @staticmethod
-    def setLineedit(groupbox, enter=None, passhide=False, ltext=None, style=None, tip=None, font=None, aleft=False, acenter=False, visible=True, change=None):
-        lineedit = QLineEdit(groupbox)
+    def setLineedit(parent, enter=None, passhide=False, ltext=None, style=None, tip=None, font=None, aleft=False, acenter=False, visible=True, change=None):
+        lineedit = QLineEdit(parent)
         lineedit.setVisible(visible)
         if aleft:
             lineedit.setAlignment(Qt.AlignLeft)
@@ -379,8 +510,8 @@ class WidgetCreater:
         return lineedit
 
     @staticmethod
-    def setDateEdit(tab, qday=None, addday=None, changed=None):
-        dateEdit = QDateEdit(tab)
+    def setDateEdit(parent, qday=None, addday=None, changed=None):
+        dateEdit = QDateEdit(parent)
         if qday is not None:
             qdate = qday
         elif addday is not None:
@@ -404,8 +535,8 @@ class WidgetCreater:
         return dateEdit
 
     @staticmethod
-    def setProgressBar(tab, vertical=False, style=None, visible=True):
-        progressBar = QProgressBar(tab)
+    def setProgressBar(parent, vertical=False, style=None, visible=True):
+        progressBar = QProgressBar(parent)
         progressBar.setAlignment(Qt.AlignCenter)
         if vertical:
             progressBar.setOrientation(Qt.Vertical)
@@ -433,19 +564,19 @@ class WidgetCreater:
         subplot.enableAutoRange(False, False)
         return subplot, cb
 
-    def setDialog(self, name, tab=None):
-        if tab is None:
+    def setDialog(self, name, parent=None):
+        if parent is None:
             dialog = QDialog()
         else:
-            dialog = QDialog(tab)
+            dialog = QDialog(parent)
         dialog.setWindowTitle(name)
         dialog.setWindowModality(Qt.WindowModality.NonModal)
         dialog.setWindowIcon(self.ui.icon_main)
         dialog.setFont(qfont12)
         return dialog
 
-    def setTablewidget(self, tab, columns, rowcount, vscroll=False, visible=True, clicked=None, valuechanged=None, sortchanged=None):
-        tableWidget = QTableWidget(tab)
+    def setTablewidget(self, parent, columns, rowcount, vscroll=False, visible=True, clicked=None, valuechanged=None, sortchanged=None):
+        tableWidget = QTableWidget(parent)
         tableWidget.verticalHeader().setDefaultSectionSize(23)
         tableWidget.verticalHeader().setVisible(False)
         tableWidget.setAlternatingRowColors(True)
@@ -466,7 +597,7 @@ class WidgetCreater:
         if clicked is not None:
             tableWidget.cellClicked.connect(clicked)
         if columns[-1] == 'chh':
-            if tab == self.ui.st_tab:
+            if parent == self.ui.st_tab:
                 tableWidget.setColumnWidth(0, 122)
                 tableWidget.setColumnWidth(1, 68)
                 tableWidget.setColumnWidth(2, 68)
@@ -499,7 +630,7 @@ class WidgetCreater:
                 tableWidget.setColumnWidth(13, 55)
                 tableWidget.setColumnWidth(14, 55)
         elif columns in (columns_nt, columns_nd):
-            if tab in (self.ui.slv_tab, self.ui.clv_tab, self.ui.flv_tab):
+            if parent in (self.ui.slv_tab, self.ui.clv_tab, self.ui.flv_tab):
                 tableWidget.setColumnWidth(0, 94)
             else:
                 tableWidget.setColumnWidth(0, 100)
@@ -548,7 +679,7 @@ class WidgetCreater:
             tableWidget.setColumnWidth(15, 54)
             tableWidget.setColumnWidth(16, 97)
             tableWidget.setColumnWidth(17, 55)
-        elif columns == columns_td and tab == self.ui.ct_tab:
+        elif columns == columns_td and parent == self.ui.ct_tab:
             tableWidget.setColumnWidth(0, 96)
             tableWidget.setColumnWidth(1, 90)
             tableWidget.setColumnWidth(2, 90)
@@ -557,7 +688,7 @@ class WidgetCreater:
             tableWidget.setColumnWidth(5, 90)
             tableWidget.setColumnWidth(6, 90)
         elif columns == columns_jg:
-            if tab == self.ui.ct_tab:
+            if parent == self.ui.ct_tab:
                 tableWidget.setColumnWidth(0, 96)
                 tableWidget.setColumnWidth(1, 115)
                 tableWidget.setColumnWidth(2, 115)
@@ -588,7 +719,7 @@ class WidgetCreater:
             tableWidget.setColumnWidth(3, 90)
             tableWidget.setColumnWidth(4, 90)
         elif columns == columns_cj:
-            if tab == self.ui.ct_tab:
+            if parent == self.ui.ct_tab:
                 tableWidget.setColumnWidth(0, 96)
                 tableWidget.setColumnWidth(1, 90)
                 tableWidget.setColumnWidth(2, 125)
@@ -670,13 +801,13 @@ class WidgetCreater:
         elif columns == ['백테스트 상세기록']:
             tableWidget.setColumnWidth(0, 333)
         else:
-            if tab in (self.ui.slv_tab, self.ui.clv_tab, self.ui.flv_tab):
+            if parent in (self.ui.slv_tab, self.ui.clv_tab, self.ui.flv_tab):
                 tableWidget.setColumnWidth(0, 121)
-            elif tab == self.ui.ct_tab:
+            elif parent == self.ui.ct_tab:
                 tableWidget.setColumnWidth(0, 96)
             else:
                 tableWidget.setColumnWidth(0, 126)
-            if tab == self.ui.ct_tab:
+            if parent == self.ui.ct_tab:
                 tableWidget.setColumnWidth(1, 105)
                 tableWidget.setColumnWidth(2, 105)
             else:

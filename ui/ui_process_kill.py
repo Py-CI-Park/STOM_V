@@ -1,6 +1,7 @@
 
 import sys
 from utility.setting_base import ui_num
+from PyQt5.QtWidgets import QApplication
 from utility.static import qtest_qwait, opstarter_kill, error_decorator
 
 
@@ -9,7 +10,6 @@ def process_kill(ui):
     if ui.proc_manager is not None and ui.proc_manager.poll() is None:
         ui.wdzservQ.put(('manager', '프로세스종료'))
         ui.windowQ.put((ui_num['시스템로그'], 'Manager process terminate completed'))
-        qtest_qwait(1)
 
     if ui.dict_set['에이전트프로파일링']:
         ui.wdzservQ.put(('agent', '프로파일링결과'))
@@ -35,11 +35,10 @@ def process_kill(ui):
     if ui.qtimer1.isActive(): ui.qtimer1.stop()
     if ui.qtimer2.isActive(): ui.qtimer2.stop()
     if ui.qtimer3.isActive(): ui.qtimer3.stop()
-    if ui.qtimer_serial.isActive(): ui.qtimer_serial.stop()
     ui.windowQ.put((ui_num['시스템로그'], 'QTimer stop completed'))
 
-    if ui.zmqserv.isRunning(): ui.zmqserv.terminate()
-    if ui.zmqrecv.isRunning(): ui.zmqrecv.terminate()
+    if ui.zmqserv.isRunning(): ui.zmqserv.stop()
+    if ui.zmqrecv.isRunning(): ui.zmqrecv.stop()
     ui.windowQ.put((ui_num['시스템로그'], 'QThread terminate completed'))
 
     if ui.dialog_db.isVisible():         ui.dialog_db.close()
@@ -107,17 +106,17 @@ def process_kill(ui):
         geometry += f"{ui.dialog_strategy.x()};{ui.dialog_strategy.y() - 31 if geo_len > 23 and ui.dict_set['창위치'][23] + 31 == ui.dialog_strategy.y() else ui.dialog_strategy.y()}"
         query = f"UPDATE etc SET 창위치 = '{geometry}'"
         ui.queryQ.put(('설정디비', query))
-
     ui.windowQ.put((ui_num['시스템로그'], 'Etc setting save completed'))
 
     ui.queryQ.put('프로세스종료')
     while ui.proc_query.is_alive():
         qtest_qwait(0.1)
 
-    ui.windowQ.put((ui_num['시스템로그'], 'Main process terminate completed'))
-    qtest_qwait(0.1)
-
-    if ui.writer.isRunning(): ui.writer.terminate()
+    if ui.writer.isRunning():
+        ui.writer.terminate()
 
     opstarter_kill()
+    qtest_qwait(1)
+
+    QApplication.instance().quit()
     sys.exit()

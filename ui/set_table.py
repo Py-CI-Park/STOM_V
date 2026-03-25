@@ -33,9 +33,9 @@ class SetTable:
         self.ui.sdt_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_dt, 1)
         self.ui.sds_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_dd, 19, clicked=self.ui.CellClicked_04)
 
-        self.ui.snt_pushButton_01 = self.wc.setPushbutton('일별집계', box=self.ui.st_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='S일별집계')
-        self.ui.snt_pushButton_02 = self.wc.setPushbutton('월별집계', box=self.ui.st_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='S월별집계')
-        self.ui.snt_pushButton_03 = self.wc.setPushbutton('연도별집계', box=self.ui.st_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='S연도별집계')
+        self.ui.snt_pushButton_01 = self.wc.setPushbutton('일별집계', parent=self.ui.st_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='S일별집계')
+        self.ui.snt_pushButton_02 = self.wc.setPushbutton('월별집계', parent=self.ui.st_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='S월별집계')
+        self.ui.snt_pushButton_03 = self.wc.setPushbutton('연도별집계', parent=self.ui.st_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='S연도별집계')
         self.ui.snt_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_nt, 1, clicked=self.ui.CellClicked_11)
         self.ui.sns_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_nd, 28, clicked=self.ui.CellClicked_05)
 
@@ -88,9 +88,9 @@ class SetTable:
         self.ui.cdt_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_dt, 1)
         self.ui.cds_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_dd, 19, clicked=self.ui.CellClicked_04)
 
-        self.ui.cnt_pushButton_01 = self.wc.setPushbutton('일별집계', box=self.ui.ct_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='C일별집계')
-        self.ui.cnt_pushButton_02 = self.wc.setPushbutton('월별집계', box=self.ui.ct_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='C월별집계')
-        self.ui.cnt_pushButton_03 = self.wc.setPushbutton('연도별집계', box=self.ui.ct_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='C연도별집계')
+        self.ui.cnt_pushButton_01 = self.wc.setPushbutton('일별집계', parent=self.ui.ct_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='C일별집계')
+        self.ui.cnt_pushButton_02 = self.wc.setPushbutton('월별집계', parent=self.ui.ct_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='C월별집계')
+        self.ui.cnt_pushButton_03 = self.wc.setPushbutton('연도별집계', parent=self.ui.ct_tab, animated=True, click=self.ui.ttButtonClicked_01, cmd='C연도별집계')
         self.ui.cnt_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_nt, 1, clicked=self.ui.CellClicked_11)
         self.ui.cns_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_nd, 28, clicked=self.ui.CellClicked_05)
 
