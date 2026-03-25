@@ -3,7 +3,7 @@ from traceback import format_exc
 from PyQt5.QtCore import QThread
 from utility.setting_base import indicator, ui_num
 # noinspection PyUnresolvedReferences
-from utility.static import timedelta_sec, qtest_qwait
+from utility.static import timedelta_sec, qtest_qwait, now
 
 
 # noinspection PyUnusedLocal
@@ -118,9 +118,6 @@ class BackCodeTest(QThread):
         pass
 
     def Test(self):
-        def now():
-            return 1
-
         def 현재가N(pre):
             return 1
 

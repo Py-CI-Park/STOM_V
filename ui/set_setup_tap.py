@@ -138,7 +138,7 @@ class SetSetupTap:
         self.ui.sj_back_cheBox_09 = self.wc.setCheckBox('백테스트 그래프 매수시간 기준으로 표시하기', self.ui.sj_bs_groupBox_07, tip='체크해제 시 매도시간 기준으로 표시됩니다.')
         self.ui.sj_back_cheBox_10 = self.wc.setCheckBox('일반 백테스트 시 그래프 저장하지 않기', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_12)
         self.ui.sj_back_cheBox_11 = self.wc.setCheckBox('일반 백테스트 시 그래프 띄우지 않기', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_13)
-        self.ui.sj_back_cheBox_12 = self.wc.setCheckBox('최적화 도중 로그 기록하지 않기', self.ui.sj_bs_groupBox_07)
+        self.ui.sj_back_cheBox_12 = self.wc.setCheckBox('백테스트로그 기록하지 않기', self.ui.sj_bs_groupBox_07)
 
         self.ui.sj_back_cheBox_13 = self.wc.setCheckBox('스케쥴러 자동실행  |  요일                    시간                                                                                        ▣  엔진시작일자', self.ui.sj_bs_groupBox_07, tip='백테 스케쥴러를 자동실행한다.')
         self.ui.sj_back_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_07, items=['금', '토', '일'])

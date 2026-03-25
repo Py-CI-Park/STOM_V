@@ -1,10 +1,11 @@
+
 import os
 import sys
 import psutil
 import sqlite3
 from loguru import logger
 from multiprocessing import Process
-from utility.lazy_imports import get_pd
+from lazy_imports import get_pd
 
 DB_PATH = './_database'
 
@@ -141,7 +142,7 @@ def Updater(gubun, file_list):
             df_origin = get_pd().read_sql(f"SELECT * FROM '{code}'", con)
             df_converted = convert_dataframe(df_origin)
             df_converted.to_sql(code, con, index=False, if_exists='replace', chunksize=2000)
-        llogger.info(f'[{gubun}] 데이터베이스 관심종목 칼럼 업데이트 중 ... [{k + 1}/{last}]')
+        llogger.info(f'[{gubun}] 데이터베이스 매도수금액 업데이트 중 ... [{k + 1}/{last}]')
         con.close()
 
     llogger.info(f'[{gubun}] 데이터베이스 매도수금액 업데이트 완료')

@@ -1,6 +1,8 @@
 
 from backtest.backengine_base import BackEngineBase
 from utility.static import GetKiwoomPgSgSp, dt_ymdhms, GetHogaunit
+# noinspection PyUnresolvedReferences
+from utility.static import timedelta_sec
 
 
 class BackEngineKiwoomTick(BackEngineBase):

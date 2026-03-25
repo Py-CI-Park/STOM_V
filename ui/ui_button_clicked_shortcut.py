@@ -53,7 +53,7 @@ def mnbutton_c_clicked_01(ui, index):
     ui.main_btn_list[ui.main_btn].setStyleSheet(style_bc_bt)
     ui.main_box_list[prev_main_btn].setVisible(False)
     ui.main_box_list[ui.main_btn].setVisible(True)
-    QTimer.singleShot(400, lambda: ui.image_label1.setVisible(True if ui.svc_labellllll_05.isVisible() or ui.cvc_labellllll_05.isVisible() else False))
+    QTimer.singleShot(300, lambda: ui.image_label1.setVisible(True if ui.svc_labellllll_05.isVisible() or ui.cvc_labellllll_05.isVisible() else False))
     ui.animation = QPropertyAnimation(ui.main_box_list[ui.main_btn], b'size')
     ui.animation.setEasingCurve(QEasingCurve.InOutCirc)
     ui.animation.setDuration(300)

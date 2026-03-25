@@ -12,13 +12,13 @@ class WebSocketReceiver(QThread):
 
     def __init__(self, codes, windowQ):
         super().__init__()
-        self.codes       = codes
-        self.windowQ     = windowQ
-        self.loop        = None
-        self.wsk_trade   = None
-        self.wsk_order   = None
-        self.con_trade   = False
-        self.con_order   = False
+        self.codes     = codes
+        self.windowQ   = windowQ
+        self.loop      = None
+        self.wsk_trade = None
+        self.wsk_order = None
+        self.con_trade = False
+        self.con_order = False
 
     def run(self):
         self.loop = asyncio.new_event_loop()

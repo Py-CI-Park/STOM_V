@@ -777,22 +777,26 @@ def setting_order_load_02(ui):
         ui.ss_sell_checkBox_18.setChecked(True) if df['주식매도취소매수시그널'][0] else ui.ss_sell_checkBox_18.setChecked(False)
         ui.ss_sell_checkBox_19.setChecked(True) if df['주식매도취소시간'][0] else ui.ss_sell_checkBox_19.setChecked(False)
         ui.ss_sell_lineEdit_04.setText(str(df['주식매도취소시간초'][0]))
-        ui.ss_sell_checkBox_20.setChecked(True) if df['주식매도손절수익률청산'][0] else ui.ss_sell_checkBox_20.setChecked(False)
-        ui.ss_sell_lineEdit_05.setText(str(df['주식매도손절수익률'][0]))
-        ui.ss_sell_checkBox_21.setChecked(True) if df['주식매도손절수익금청산'][0] else ui.ss_sell_checkBox_21.setChecked(False)
-        ui.ss_sell_lineEdit_06.setText(str(df['주식매도손절수익금'][0]))
-        ui.ss_sell_checkBox_22.setChecked(True) if df['주식매도금지매수횟수'][0] else ui.ss_sell_checkBox_22.setChecked(False)
-        ui.ss_sell_lineEdit_07.setText(str(df['주식매도금지매수횟수값'][0]))
-        ui.ss_sell_checkBox_23.setChecked(True) if df['주식매도금지라운드피겨'][0] else ui.ss_sell_checkBox_23.setChecked(False)
-        ui.ss_sell_lineEdit_08.setText(str(df['주식매도금지라운드호가'][0]))
-        ui.ss_sell_checkBox_24.setChecked(True) if df['주식매도금지시간'][0] else ui.ss_sell_checkBox_24.setChecked(False)
-        ui.ss_sell_lineEdit_09.setText(str(df['주식매도금지시작시간'][0]))
-        ui.ss_sell_lineEdit_10.setText(str(df['주식매도금지종료시간'][0]))
-        ui.ss_sell_checkBox_25.setChecked(True) if df['주식매도금지간격'][0] else ui.ss_sell_checkBox_25.setChecked(False)
-        ui.ss_sell_lineEdit_11.setText(str(df['주식매도금지간격초'][0]))
-        ui.ss_sell_lineEdit_12.setText(str(df['주식매도정정횟수'][0]))
+        ui.ss_sell_checkBox_20.setChecked(True) if df['주식매도금지매수횟수'][0] else ui.ss_sell_checkBox_20.setChecked(False)
+        ui.ss_sell_lineEdit_05.setText(str(df['주식매도금지매수횟수값'][0]))
+        ui.ss_sell_checkBox_21.setChecked(True) if df['주식매도금지라운드피겨'][0] else ui.ss_sell_checkBox_21.setChecked(False)
+        ui.ss_sell_lineEdit_06.setText(str(df['주식매도금지라운드호가'][0]))
+        ui.ss_sell_checkBox_22.setChecked(True) if df['주식매도금지시간'][0] else ui.ss_sell_checkBox_22.setChecked(False)
+        ui.ss_sell_lineEdit_07.setText(str(df['주식매도금지시작시간'][0]))
+        ui.ss_sell_lineEdit_08.setText(str(df['주식매도금지종료시간'][0]))
+        ui.ss_sell_checkBox_23.setChecked(True) if df['주식매도금지간격'][0] else ui.ss_sell_checkBox_23.setChecked(False)
+        ui.ss_sell_lineEdit_09.setText(str(df['주식매도금지간격초'][0]))
+        ui.ss_sell_lineEdit_10.setText(str(df['주식매도정정횟수'][0]))
         ui.ss_sell_comboBox_04.setCurrentText(str(df['주식매도정정호가차이'][0]))
         ui.ss_sell_comboBox_05.setCurrentText(str(df['주식매도정정호가'][0]))
+        ui.ss_sell_checkBox_24.setChecked(True) if df['주식매도익절수익률청산'][0] else ui.ss_sell_checkBox_26.setChecked(False)
+        ui.ss_sell_lineEdit_11.setText(str(df['주식매도익절수익률'][0]))
+        ui.ss_sell_checkBox_25.setChecked(True) if df['주식매도익절수익금청산'][0] else ui.ss_sell_checkBox_27.setChecked(False)
+        ui.ss_sell_lineEdit_12.setText(str(df['주식매도익절수익금'][0]))
+        ui.ss_sell_checkBox_26.setChecked(True) if df['주식매도손절수익률청산'][0] else ui.ss_sell_checkBox_26.setChecked(False)
+        ui.ss_sell_lineEdit_13.setText(str(df['주식매도손절수익률'][0]))
+        ui.ss_sell_checkBox_27.setChecked(True) if df['주식매도손절수익금청산'][0] else ui.ss_sell_checkBox_27.setChecked(False)
+        ui.ss_sell_lineEdit_14.setText(str(df['주식매도손절수익금'][0]))
     else:
         QMessageBox.critical(ui, '오류 알림', '주문관리 주식매도 설정값이\n존재하지 않습니다.\n')
 
@@ -890,20 +894,24 @@ def setting_order_load_04(ui):
         ui.sc_sell_checkBox_12.setChecked(True) if df['코인매도취소매수시그널'][0] else ui.sc_sell_checkBox_12.setChecked(False)
         ui.sc_sell_checkBox_13.setChecked(True) if df['코인매도취소시간'][0] else ui.sc_sell_checkBox_13.setChecked(False)
         ui.sc_sell_lineEdit_04.setText(str(df['코인매도취소시간초'][0]))
-        ui.sc_sell_checkBox_14.setChecked(True) if df['코인매도손절수익률청산'][0] else ui.sc_sell_checkBox_14.setChecked(False)
-        ui.sc_sell_lineEdit_05.setText(str(df['코인매도손절수익률'][0]))
-        ui.sc_sell_checkBox_15.setChecked(True) if df['코인매도손절수익금청산'][0] else ui.sc_sell_checkBox_15.setChecked(False)
-        ui.sc_sell_lineEdit_06.setText(str(df['코인매도손절수익금'][0]))
-        ui.sc_sell_checkBox_16.setChecked(True) if df['코인매도금지매수횟수'][0] else ui.sc_sell_checkBox_16.setChecked(False)
-        ui.sc_sell_lineEdit_07.setText(str(df['코인매도금지매수횟수값'][0]))
-        ui.sc_sell_checkBox_17.setChecked(True) if df['코인매도금지시간'][0] else ui.sc_sell_checkBox_17.setChecked(False)
-        ui.sc_sell_lineEdit_08.setText(str(df['코인매도금지시작시간'][0]))
-        ui.sc_sell_lineEdit_09.setText(str(df['코인매도금지종료시간'][0]))
-        ui.sc_sell_checkBox_18.setChecked(True) if df['코인매도금지간격'][0] else ui.sc_sell_checkBox_18.setChecked(False)
-        ui.sc_sell_lineEdit_10.setText(str(df['코인매도금지간격초'][0]))
-        ui.sc_sell_lineEdit_11.setText(str(df['코인매도정정횟수'][0]))
+        ui.sc_sell_checkBox_14.setChecked(True) if df['코인매도금지매수횟수'][0] else ui.sc_sell_checkBox_14.setChecked(False)
+        ui.sc_sell_lineEdit_05.setText(str(df['코인매도금지매수횟수값'][0]))
+        ui.sc_sell_checkBox_15.setChecked(True) if df['코인매도금지시간'][0] else ui.sc_sell_checkBox_15.setChecked(False)
+        ui.sc_sell_lineEdit_06.setText(str(df['코인매도금지시작시간'][0]))
+        ui.sc_sell_lineEdit_07.setText(str(df['코인매도금지종료시간'][0]))
+        ui.sc_sell_checkBox_16.setChecked(True) if df['코인매도금지간격'][0] else ui.sc_sell_checkBox_16.setChecked(False)
+        ui.sc_sell_lineEdit_08.setText(str(df['코인매도금지간격초'][0]))
+        ui.sc_sell_lineEdit_09.setText(str(df['코인매도정정횟수'][0]))
         ui.sc_sell_comboBox_04.setCurrentText(str(df['코인매도정정호가차이'][0]))
         ui.sc_sell_comboBox_05.setCurrentText(str(df['코인매도정정호가'][0]))
+        ui.sc_sell_checkBox_17.setChecked(True) if df['코인매도익절수익률청산'][0] else ui.sc_sell_checkBox_14.setChecked(False)
+        ui.sc_sell_lineEdit_10.setText(str(df['코인매도익절수익률'][0]))
+        ui.sc_sell_checkBox_18.setChecked(True) if df['코인매도익절수익금청산'][0] else ui.sc_sell_checkBox_15.setChecked(False)
+        ui.sc_sell_lineEdit_11.setText(str(df['코인매도익절수익금'][0]))
+        ui.sc_sell_checkBox_19.setChecked(True) if df['코인매도손절수익률청산'][0] else ui.sc_sell_checkBox_14.setChecked(False)
+        ui.sc_sell_lineEdit_12.setText(str(df['코인매도손절수익률'][0]))
+        ui.sc_sell_checkBox_20.setChecked(True) if df['코인매도손절수익금청산'][0] else ui.sc_sell_checkBox_15.setChecked(False)
+        ui.sc_sell_lineEdit_13.setText(str(df['코인매도손절수익금'][0]))
     else:
         QMessageBox.critical(ui, '오류 알림', '주문관리 코인매도 설정값이\n존재하지 않습니다.\n')
 
@@ -1093,26 +1101,30 @@ def setting_order_save_02(ui):
     주식매도취소매수시그널 = 1 if ui.ss_sell_checkBox_18.isChecked() else 0
     주식매도취소시간 = 1 if ui.ss_sell_checkBox_19.isChecked() else 0
     주식매도취소시간초 = ui.ss_sell_lineEdit_04.text()
-    주식매도손절수익률청산 = 1 if ui.ss_sell_checkBox_20.isChecked() else 0
-    주식매도손절수익률 = ui.ss_sell_lineEdit_05.text()
-    주식매도손절수익금청산  = 1 if ui.ss_sell_checkBox_21.isChecked() else 0
-    주식매도손절수익금 = ui.ss_sell_lineEdit_06.text()
-    주식매도금지매수횟수 = 1 if ui.ss_sell_checkBox_22.isChecked() else 0
-    주식매도금지매수횟수값 = ui.ss_sell_lineEdit_07.text()
-    주식매도금지라운드피겨 = 1 if ui.ss_sell_checkBox_23.isChecked() else 0
-    주식매도금지라운드호가 = ui.ss_sell_lineEdit_08.text()
-    주식매도금지시간 = 1 if ui.ss_sell_checkBox_24.isChecked() else 0
-    주식매도금지시작시간 = ui.ss_sell_lineEdit_09.text()
-    주식매도금지종료시간 = ui.ss_sell_lineEdit_10.text()
-    주식매도금지간격 = 1 if ui.ss_sell_checkBox_25.isChecked() else 0
-    주식매도금지간격초 = ui.ss_sell_lineEdit_11.text()
-    주식매도정정횟수 = ui.ss_sell_lineEdit_12.text()
+    주식매도금지매수횟수 = 1 if ui.ss_sell_checkBox_20.isChecked() else 0
+    주식매도금지매수횟수값 = ui.ss_sell_lineEdit_05.text()
+    주식매도금지라운드피겨 = 1 if ui.ss_sell_checkBox_21.isChecked() else 0
+    주식매도금지라운드호가 = ui.ss_sell_lineEdit_06.text()
+    주식매도금지시간 = 1 if ui.ss_sell_checkBox_22.isChecked() else 0
+    주식매도금지시작시간 = ui.ss_sell_lineEdit_07.text()
+    주식매도금지종료시간 = ui.ss_sell_lineEdit_08.text()
+    주식매도금지간격 = 1 if ui.ss_sell_checkBox_23.isChecked() else 0
+    주식매도금지간격초 = ui.ss_sell_lineEdit_09.text()
+    주식매도정정횟수 = ui.ss_sell_lineEdit_10.text()
     주식매도정정호가차이 = ui.ss_sell_comboBox_04.currentText()
     주식매도정정호가 = ui.ss_sell_comboBox_05.currentText()
+    주식매도익절수익률청산 = 1 if ui.ss_sell_checkBox_24.isChecked() else 0
+    주식매도익절수익률 = ui.ss_sell_lineEdit_11.text()
+    주식매도익절수익금청산  = 1 if ui.ss_sell_checkBox_25.isChecked() else 0
+    주식매도익절수익금 = ui.ss_sell_lineEdit_12.text()
+    주식매도손절수익률청산 = 1 if ui.ss_sell_checkBox_26.isChecked() else 0
+    주식매도손절수익률 = ui.ss_sell_lineEdit_13.text()
+    주식매도손절수익금청산  = 1 if ui.ss_sell_checkBox_27.isChecked() else 0
+    주식매도손절수익금 = ui.ss_sell_lineEdit_14.text()
 
-    if '' in (주식매도주문구분, 주식매도분할횟수, 주식매도분할하방수익률, 주식매도분할상방수익률, 주식매도지정가호가번호, 주식매도시장가잔량범위,
-              주식매도취소시간초, 주식매도손절수익률, 주식매도금지매수횟수값, 주식매도금지라운드호가, 주식매도금지시작시간, 주식매도금지종료시간,
-              주식매도금지간격초, 주식매도정정횟수, 주식매도손절수익금):
+    if '' in (주식매도주문구분, 주식매도분할횟수, 주식매도분할하방수익률, 주식매도분할상방수익률, 주식매도취소시간초, 주식매도금지매수횟수값,
+              주식매도금지라운드호가, 주식매도금지시작시간, 주식매도금지종료시간, 주식매도금지간격초, 주식매도정정횟수, 주식매도익절수익률,
+              주식매도익절수익금, 주식매도손절수익률, 주식매도손절수익금):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
     elif 주식매도분할방법 == 0:
         QMessageBox.critical(ui, '오류 알림', '분할매도방법이 선택되지 않았습니다.\n')
@@ -1120,16 +1132,18 @@ def setting_order_save_02(ui):
         QMessageBox.critical(ui, '오류 알림', '추가매도방법이 선택되지 않았습니다.\n')
     else:
         주식매도분할횟수, 주식매도분할하방수익률, 주식매도분할상방수익률, 주식매도지정가호가번호, 주식매도시장가잔량범위, 주식매도취소시간초, \
-            주식매도손절수익률, 주식매도금지매수횟수값, 주식매도금지라운드호가, 주식매도금지시작시간, 주식매도금지종료시간, 주식매도금지간격초, \
-            주식매도정정횟수, 주식매도정정호가차이, 주식매도정정호가, 주식매도손절수익금 = \
+            주식매도금지매수횟수값, 주식매도금지라운드호가, 주식매도금지시작시간, 주식매도금지종료시간, 주식매도금지간격초, 주식매도정정횟수, \
+            주식매도정정호가차이, 주식매도정정호가, 주식매도익절수익률, 주식매도익절수익금, 주식매도손절수익률, 주식매도손절수익금 = \
             int(주식매도분할횟수), float(주식매도분할하방수익률), float(주식매도분할상방수익률), int(주식매도지정가호가번호), \
-            int(주식매도시장가잔량범위), int(주식매도취소시간초), float(주식매도손절수익률), int(주식매도금지매수횟수값), \
-            int(주식매도금지라운드호가), int(주식매도금지시작시간), int(주식매도금지종료시간), int(주식매도금지간격초), int(주식매도정정횟수), \
-            int(주식매도정정호가차이), int(주식매도정정호가), int(주식매도손절수익금)
+            int(주식매도시장가잔량범위), int(주식매도취소시간초), int(주식매도금지매수횟수값), int(주식매도금지라운드호가), \
+            int(주식매도금지시작시간), int(주식매도금지종료시간), int(주식매도금지간격초), int(주식매도정정횟수), \
+            int(주식매도정정호가차이), int(주식매도정정호가), float(주식매도익절수익률), int(주식매도익절수익금), \
+            float(주식매도손절수익률), int(주식매도손절수익금)
 
-        if 주식매도분할횟수 < 0 or 주식매도분할하방수익률 < 0 or 주식매도분할상방수익률 < 0 or 주식매도취소시간초 < 0 or 주식매도손절수익률 < 0 or \
+        if 주식매도분할횟수 < 0 or 주식매도분할하방수익률 < 0 or 주식매도분할상방수익률 < 0 or 주식매도취소시간초 < 0 or \
                 주식매도금지매수횟수값 < 0 or 주식매도금지라운드호가 < 0 or 주식매도금지시작시간 < 0 or 주식매도금지종료시간 < 0 or \
-                주식매도금지간격초 < 0 or 주식매도정정횟수 < 0 or 주식매도정정호가차이 < 0 or 주식매도정정호가 < 0 or 주식매도손절수익금 < 0:
+                주식매도금지간격초 < 0 or 주식매도정정횟수 < 0 or 주식매도정정호가차이 < 0 or 주식매도정정호가 < 0 or \
+                주식매도익절수익률 < 0 or 주식매도익절수익금 < 0 or 주식매도손절수익률 < 0 or 주식매도손절수익금 < 0:
             QMessageBox.critical(ui, '오류 알림', '모든 값은 양수로 입력하십시오.\n')
             return
         elif 주식매도분할횟수 > 5:
@@ -1143,11 +1157,12 @@ def setting_order_save_02(ui):
             return
         if ui.proc_query.is_alive():
             columns = ['주식매도주문구분', '주식매도분할횟수', '주식매도분할방법', '주식매도분할시그널', '주식매도분할하방', '주식매도분할상방',
-                       '주식매도분할하방수익률', '주식매도분할상방수익률', '주식매도지정가기준가격', '주식매도지정가호가번호', '주식매도시장가잔량범위',
-                       '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초', '주식매도손절수익률청산',
-                       '주식매도손절수익률', '주식매도손절수익금청산', '주식매도손절수익금', '주식매도금지매수횟수', '주식매도금지매수횟수값',
-                       '주식매도금지라운드피겨', '주식매도금지라운드호가', '주식매도금지시간', '주식매도금지시작시간', '주식매도금지종료시간',
-                       '주식매도금지간격', '주식매도금지간격초', '주식매도정정횟수', '주식매도정정호가차이', '주식매도정정호가']
+                       '주식매도분할하방수익률', '주식매도분할상방수익률', '주식매도지정가기준가격', '주식매도지정가호가번호',
+                       '주식매도시장가잔량범위', '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초',
+                       '주식매도금지매수횟수', '주식매도금지매수횟수값', '주식매도금지라운드피겨', '주식매도금지라운드호가', '주식매도금지시간',
+                       '주식매도금지시작시간', '주식매도금지종료시간', '주식매도금지간격', '주식매도금지간격초', '주식매도정정횟수',
+                       '주식매도정정호가차이', '주식매도정정호가', '주식매도익절수익률청산', '주식매도익절수익률', '주식매도익절수익금청산',
+                       '주식매도익절수익금', '주식매도손절수익률청산', '주식매도손절수익률', '주식매도손절수익금청산', '주식매도손절수익금']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query   = f'UPDATE stocksellorder SET {set_txt}'
             localvs = locals()
@@ -1170,10 +1185,6 @@ def setting_order_save_02(ui):
         ui.dict_set['주식매도취소매수시그널'] = 주식매도취소매수시그널
         ui.dict_set['주식매도취소시간'] = 주식매도취소시간
         ui.dict_set['주식매도취소시간초'] = 주식매도취소시간초
-        ui.dict_set['주식매도손절수익률청산'] = 주식매도손절수익률청산
-        ui.dict_set['주식매도손절수익률'] = 주식매도손절수익률
-        ui.dict_set['주식매도손절수익금청산'] = 주식매도손절수익금청산
-        ui.dict_set['주식매도손절수익금'] = 주식매도손절수익금
         ui.dict_set['주식매도금지매수횟수'] = 주식매도금지매수횟수
         ui.dict_set['주식매도금지매수횟수값'] = 주식매도금지매수횟수값
         ui.dict_set['주식매도금지라운드피겨'] = 주식매도금지라운드피겨
@@ -1186,6 +1197,14 @@ def setting_order_save_02(ui):
         ui.dict_set['주식매도정정횟수'] = 주식매도정정횟수
         ui.dict_set['주식매도정정호가차이'] = 주식매도정정호가차이
         ui.dict_set['주식매도정정호가'] = 주식매도정정호가
+        ui.dict_set['주식매도익절수익률청산'] = 주식매도익절수익률청산
+        ui.dict_set['주식매도익절수익률'] = 주식매도익절수익률
+        ui.dict_set['주식매도익절수익금청산'] = 주식매도익절수익금청산
+        ui.dict_set['주식매도익절수익금'] = 주식매도익절수익금
+        ui.dict_set['주식매도손절수익률청산'] = 주식매도손절수익률청산
+        ui.dict_set['주식매도손절수익률'] = 주식매도손절수익률
+        ui.dict_set['주식매도손절수익금청산'] = 주식매도손절수익금청산
+        ui.dict_set['주식매도손절수익금'] = 주식매도손절수익금
         ui.UpdateDictSet()
 
 
@@ -1368,23 +1387,28 @@ def setting_order_save_04(ui):
     코인매도취소매수시그널 = 1 if ui.sc_sell_checkBox_12.isChecked() else 0
     코인매도취소시간 = 1 if ui.sc_sell_checkBox_13.isChecked() else 0
     코인매도취소시간초 = ui.sc_sell_lineEdit_04.text()
-    코인매도손절수익률청산 = 1 if ui.sc_sell_checkBox_14.isChecked() else 0
-    코인매도손절수익률 = ui.sc_sell_lineEdit_05.text()
-    코인매도손절수익금청산 = 1 if ui.sc_sell_checkBox_15.isChecked() else 0
-    코인매도손절수익금 = ui.sc_sell_lineEdit_06.text()
-    코인매도금지매수횟수 = 1 if ui.sc_sell_checkBox_16.isChecked() else 0
-    코인매도금지매수횟수값 = ui.sc_sell_lineEdit_07.text()
-    코인매도금지시간 = 1 if ui.sc_sell_checkBox_17.isChecked() else 0
-    코인매도금지시작시간 = ui.sc_sell_lineEdit_08.text()
-    코인매도금지종료시간 = ui.sc_sell_lineEdit_09.text()
-    코인매도금지간격 = 1 if ui.sc_sell_checkBox_18.isChecked() else 0
-    코인매도금지간격초 = ui.sc_sell_lineEdit_10.text()
-    코인매도정정횟수 = ui.sc_sell_lineEdit_11.text()
+    코인매도금지매수횟수 = 1 if ui.sc_sell_checkBox_14.isChecked() else 0
+    코인매도금지매수횟수값 = ui.sc_sell_lineEdit_05.text()
+    코인매도금지시간 = 1 if ui.sc_sell_checkBox_15.isChecked() else 0
+    코인매도금지시작시간 = ui.sc_sell_lineEdit_06.text()
+    코인매도금지종료시간 = ui.sc_sell_lineEdit_07.text()
+    코인매도금지간격 = 1 if ui.sc_sell_checkBox_16.isChecked() else 0
+    코인매도금지간격초 = ui.sc_sell_lineEdit_08.text()
+    코인매도정정횟수 = ui.sc_sell_lineEdit_09.text()
     코인매도정정호가차이 = ui.sc_sell_comboBox_04.currentText()
     코인매도정정호가 = ui.sc_sell_comboBox_05.currentText()
+    코인매도익절수익률청산 = 1 if ui.sc_sell_checkBox_17.isChecked() else 0
+    코인매도익절수익률 = ui.sc_sell_lineEdit_10.text()
+    코인매도익절수익금청산 = 1 if ui.sc_sell_checkBox_18.isChecked() else 0
+    코인매도익절수익금 = ui.sc_sell_lineEdit_11.text()
+    코인매도손절수익률청산 = 1 if ui.sc_sell_checkBox_19.isChecked() else 0
+    코인매도손절수익률 = ui.sc_sell_lineEdit_12.text()
+    코인매도손절수익금청산 = 1 if ui.sc_sell_checkBox_20.isChecked() else 0
+    코인매도손절수익금 = ui.sc_sell_lineEdit_13.text()
 
-    if '' in (코인매도주문구분, 코인매도분할횟수, 코인매도분할하방수익률, 코인매도분할상방수익률, 코인매도지정가호가번호, 코인매도시장가잔량범위,
-              코인매도취소시간초, 코인매도금지시작시간, 코인매도금지종료시간, 코인매도금지간격초, 코인매도정정횟수):
+    if '' in (코인매도주문구분, 코인매도분할횟수, 코인매도분할하방수익률, 코인매도분할상방수익률, 코인매도취소시간초, 코인매도금지매수횟수값,
+              코인매도금지시작시간, 코인매도금지종료시간, 코인매도금지간격초, 코인매도정정횟수, 코인매도익절수익률, 코인매도익절수익금,
+              코인매도손절수익률, 코인매도손절수익금):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
     elif 코인매도분할방법 == 0:
         QMessageBox.critical(ui, '오류 알림', '분할매도방법이 선택되지 않았습니다.\n')
@@ -1392,16 +1416,17 @@ def setting_order_save_04(ui):
         QMessageBox.critical(ui, '오류 알림', '추가매도방법이 선택되지 않았습니다.\n')
     else:
         코인매도분할횟수, 코인매도분할하방수익률, 코인매도분할상방수익률, 코인매도지정가호가번호, 코인매도시장가잔량범위, 코인매도취소시간초, \
-            코인매도손절수익률, 코인매도금지매수횟수값, 코인매도금지시작시간, 코인매도금지종료시간, 코인매도금지간격초, 코인매도정정횟수, \
-            코인매도정정호가차이, 코인매도정정호가, 코인매도손절수익금 = \
+            코인매도금지매수횟수값, 코인매도금지시작시간, 코인매도금지종료시간, 코인매도금지간격초, 코인매도정정횟수, 코인매도정정호가차이, \
+            코인매도정정호가, 코인매도익절수익률, 코인매도익절수익금, 코인매도손절수익률, 코인매도손절수익금 = \
             int(코인매도분할횟수), float(코인매도분할하방수익률), float(코인매도분할상방수익률), int(코인매도지정가호가번호), \
-            int(코인매도시장가잔량범위), int(코인매도취소시간초), float(코인매도손절수익률), int(코인매도금지매수횟수값), \
-            int(코인매도금지시작시간), int(코인매도금지종료시간), int(코인매도금지간격초), int(코인매도정정횟수), float(코인매도정정호가차이), \
-            int(코인매도정정호가), int(코인매도손절수익금)
+            int(코인매도시장가잔량범위), int(코인매도취소시간초), int(코인매도금지매수횟수값), int(코인매도금지시작시간), \
+            int(코인매도금지종료시간), int(코인매도금지간격초), int(코인매도정정횟수), float(코인매도정정호가차이), \
+            int(코인매도정정호가), float(코인매도익절수익률), int(코인매도익절수익금), float(코인매도손절수익률), int(코인매도손절수익금)
 
         if 코인매도분할횟수 < 0 or 코인매도분할하방수익률 < 0 or 코인매도분할상방수익률 < 0 or 코인매도취소시간초 < 0 or \
-                코인매도손절수익률 < 0 or 코인매도금지매수횟수값 < 0 or 코인매도금지시작시간 < 0 or 코인매도금지종료시간 < 0 or \
-                코인매도금지간격초 < 0 or 코인매도정정횟수 < 0 or 코인매도정정호가차이 < 0 or 코인매도정정호가 < 0 or 코인매도손절수익금 < 0:
+                코인매도금지매수횟수값 < 0 or 코인매도금지시작시간 < 0 or 코인매도금지종료시간 < 0 or 코인매도금지간격초 < 0 or \
+                코인매도정정횟수 < 0 or 코인매도정정호가차이 < 0 or 코인매도정정호가 < 0 or 코인매도익절수익률 < 0 or \
+                코인매도익절수익금 < 0 or 코인매도손절수익률 < 0 or 코인매도손절수익금 < 0:
             QMessageBox.critical(ui, '오류 알림', '모든 값은 양수로 입력하십시오.\n')
             return
         elif 코인매도분할횟수 > 5:
@@ -1416,10 +1441,11 @@ def setting_order_save_04(ui):
         if ui.proc_query.is_alive():
             columns = ['코인매도주문구분', '코인매도분할횟수', '코인매도분할방법', '코인매도분할시그널', '코인매도분할하방', '코인매도분할상방',
                        '코인매도분할하방수익률', '코인매도분할상방수익률', '코인매도지정가기준가격', '코인매도지정가호가번호', '코인매도시장가잔량범위',
-                       '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도손절수익률청산',
-                       '코인매도손절수익률', '코인매도손절수익금청산', '코인매도손절수익금', '코인매도금지매수횟수', '코인매도금지매수횟수값',
-                       '코인매도금지시간', '코인매도금지시작시간', '코인매도금지종료시간', '코인매도금지간격', '코인매도금지간격초',
-                       '코인매도정정횟수', '코인매도정정호가차이', '코인매도정정호가']
+                       '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도금지매수횟수',
+                       '코인매도금지매수횟수값', '코인매도금지시간', '코인매도금지시작시간', '코인매도금지종료시간', '코인매도금지간격',
+                       '코인매도금지간격초', '코인매도정정횟수', '코인매도정정호가차이', '코인매도정정호가', '코인매도익절수익률청산',
+                       '코인매도익절수익률', '코인매도익절수익금청산', '코인매도익절수익금', '코인매도손절수익률청산', '코인매도손절수익률',
+                       '코인매도손절수익금청산', '코인매도손절수익금']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query   = f'UPDATE coinsellorder SET {set_txt}'
             localvs = locals()
@@ -1442,10 +1468,6 @@ def setting_order_save_04(ui):
         ui.dict_set['코인매도취소매수시그널'] = 코인매도취소매수시그널
         ui.dict_set['코인매도취소시간'] = 코인매도취소시간
         ui.dict_set['코인매도취소시간초'] = 코인매도취소시간초
-        ui.dict_set['코인매도손절수익률청산'] = 코인매도손절수익률청산
-        ui.dict_set['코인매도손절수익률'] = 코인매도손절수익률
-        ui.dict_set['코인매도손절수익금청산'] = 코인매도손절수익금청산
-        ui.dict_set['코인매도손절수익금'] = 코인매도손절수익금
         ui.dict_set['코인매도금지매수횟수'] = 코인매도금지매수횟수
         ui.dict_set['코인매도금지매수횟수값'] = 코인매도금지매수횟수값
         ui.dict_set['코인매도금지시간'] = 코인매도금지시간
@@ -1456,6 +1478,14 @@ def setting_order_save_04(ui):
         ui.dict_set['코인매도정정횟수'] = 코인매도정정횟수
         ui.dict_set['코인매도정정호가차이'] = 코인매도정정호가차이
         ui.dict_set['코인매도정정호가'] = 코인매도정정호가
+        ui.dict_set['코인매도익절수익률청산'] = 코인매도익절수익률청산
+        ui.dict_set['코인매도익절수익률'] = 코인매도익절수익률
+        ui.dict_set['코인매도익절수익금청산'] = 코인매도익절수익금청산
+        ui.dict_set['코인매도익절수익금'] = 코인매도익절수익금
+        ui.dict_set['코인매도손절수익률청산'] = 코인매도손절수익률청산
+        ui.dict_set['코인매도손절수익률'] = 코인매도손절수익률
+        ui.dict_set['코인매도손절수익금청산'] = 코인매도손절수익금청산
+        ui.dict_set['코인매도손절수익금'] = 코인매도손절수익금
         ui.UpdateDictSet()
 
 

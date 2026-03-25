@@ -4,8 +4,8 @@ import sys
 import sqlite3
 import binance
 from traceback import format_exc
-from PyQt5.QtWidgets import QApplication
 from utility.lazy_imports import get_pd
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketTrader
 from utility.setting_base import columns_cj, columns_tdf, ui_num, DB_TRADELIST, columns_jgcf

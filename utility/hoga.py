@@ -3,8 +3,8 @@ import os
 import sqlite3
 from utility.lazy_imports import get_pd
 from utility.static import error_decorator, set_builtin_print
-from utility.setting_base import ui_num, columns_hj, DB_PATH, DB_COIN_BACK_TICK, \
-    DB_STOCK_BACK_TICK, DB_COIN_BACK_MIN, DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, \
+from utility.setting_base import ui_num, columns_hj, DB_PATH, DB_COIN_TICK_BACK, \
+    DB_STOCK_TICK_BACK, DB_COIN_MIN_BACK, DB_STOCK_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, \
     list_stock_tick, list_stock_min, list_coin_tick, list_coin_min
 
 
@@ -162,14 +162,14 @@ class Hoga:
 
         if gubun == 'C':
             db_name1 = f'{DB_PATH}/coin_tick_{searchdate}.db' if self.dict_set['코인타임프레임'] else f'{DB_PATH}/coin_min_{searchdate}.db'
-            db_name2 = DB_COIN_BACK_TICK if self.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+            db_name2 = DB_COIN_TICK_BACK if self.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
         else:
             if '키움증권' in self.dict_set['증권사']:
                 db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db' if self.dict_set['주식타임프레임'] else f'{DB_PATH}/stock_min_{searchdate}.db'
-                db_name2 = DB_STOCK_BACK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+                db_name2 = DB_STOCK_TICK_BACK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
             else:
                 db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db' if self.dict_set['주식타임프레임'] else f'{DB_PATH}/future_min_{searchdate}.db'
-                db_name2 = DB_FUTURE_BACK_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+                db_name2 = DB_FUTURE_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
 
         if cmd == '이전호가정보요청':
             query = f"SELECT * FROM '{code}' WHERE `index` < {index} ORDER BY `index` DESC LIMIT 1"

@@ -10,7 +10,7 @@ from utility.lazy_imports import get_np, get_pd
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketReceiver
 from utility.setting_base import ui_num, DB_COIN_TICK, DB_COIN_MIN
-from utility.static import now, timedelta_sec, threading_timer, str_ymdhms_utc, now_utc, str_hms, str_ymd
+from utility.static import now, timedelta_sec, str_ymdhms_utc, now_utc, str_hms, str_ymd
 
 
 class Updater(QThread):
@@ -76,11 +76,7 @@ class BinanceReceiverTick:
             '프로세스종료': False
         }
 
-        curr_time = now()
-        self.dict_time = {
-            '거래대금순위검색': curr_time,
-            '저가대비고가등락율갱신': curr_time
-        }
+        self.lvhp_time = now()
 
         self.GetTickers()
 
@@ -350,24 +346,19 @@ class BinanceReceiverTick:
             self.hogaQ.put([code] + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5])
 
     def Scheduler(self):
-        self.UpdateMoneyTop()
+        self.MoneyTopSearch()
 
         curr_time = now()
-        inthmsutc = int(str_hms(now_utc()))
-        if curr_time > self.dict_time['거래대금순위검색']:
-            self.MoneyTopSearch()
-            self.dict_time['거래대금순위검색'] = timedelta_sec(10)
-
-        if not self.dict_set['바이낸스선물고정레버리지'] and curr_time > self.dict_time['저가대비고가등락율갱신']:
+        if not self.dict_set['바이낸스선물고정레버리지'] and curr_time > self.lvhp_time:
             if self.dict_dlhp:
                 self.ctraderQ.put(('저가대비고가등락율', self.dict_dlhp))
-            self.dict_time['저가대비고가등락율갱신'] = timedelta_sec(300)
+            self.lvhp_time = timedelta_sec(300)
 
+        inthmsutc = int(str_hms(now_utc()))
         if not self.dict_bool['프로세스종료'] and \
                 ((self.dict_set['코인전략종료시간'] < inthmsutc < self.dict_set['코인전략종료시간'] + 10 and self.dict_set['코인프로세스종료']) or 235000 < inthmsutc < 235010):
             self.ReceiverProcKill()
 
-    def UpdateMoneyTop(self):
         current_gsjm = tuple(self.list_gsjm)
         if current_gsjm != self.last_gsjm:
             self.cstgQ.put(('관심목록', current_gsjm))
@@ -402,7 +393,7 @@ class BinanceReceiverTick:
         self.WebProcessKill()
         if self.dict_set['코인알림소리']:
             self.soundQ.put('바이낸스 시스템을 3분 후 종료합니다.')
-        threading_timer(180, self.creceivQ.put, '프로세스종료')
+        QTimer.singleShot(180 * 1000, lambda: self.creceivQ.put('프로세스종료'))
 
     def WebProcessKill(self):
         if self.ws_thread:

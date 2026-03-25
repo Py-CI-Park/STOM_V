@@ -215,8 +215,10 @@ class BackEngineBaseOms(BackEngineBase):
         self.curr_trade_info['매수분할횟수'] += 1
 
     def CheckSonjeol(self, 수익률, 수익금):
-        if (self.dict_set[f'{self.market_text}매도손절수익률청산'] and 수익률 < -self.dict_set[f'{self.market_text}매도손절수익률']) or \
-                (self.dict_set[f'{self.market_text}매도손절수익금청산'] and 수익금 < -self.dict_set[f'{self.market_text}매도손절수익금'] * 10000):
+        if (self.dict_set[f'{self.market_text}매도익절수익률청산'] and 수익률 > self.dict_set[f'{self.market_text}매도익절수익률']) or \
+                (self.dict_set[f'{self.market_text}매도익절수익금청산'] and 수익금 > self.dict_set[f'{self.market_text}매도익절수익금']) or \
+                (self.dict_set[f'{self.market_text}매도손절수익률청산'] and 수익률 < -self.dict_set[f'{self.market_text}매도손절수익률']) or \
+                (self.dict_set[f'{self.market_text}매도손절수익금청산'] and 수익금 < -self.dict_set[f'{self.market_text}매도손절수익금']):
             origin_sell_gubun = self.dict_set[f'{self.market_text}매도주문구분']
             self.dict_set[f'{self.market_text}매도주문구분'] = '시장가'
             self.curr_trade_info['주문수량'] = self.curr_trade_info['보유수량']
