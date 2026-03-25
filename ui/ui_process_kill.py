@@ -9,7 +9,7 @@ def process_kill(ui):
     if ui.proc_manager is not None and ui.proc_manager.poll() is None:
         ui.wdzservQ.put(('manager', '프로세스종료'))
         ui.windowQ.put((ui_num['시스템로그'], 'Manager process terminate completed'))
-        qtest_qwait(0.1)
+        qtest_qwait(1)
 
     if ui.dict_set['에이전트프로파일링']:
         ui.wdzservQ.put(('agent', '프로파일링결과'))
@@ -31,15 +31,16 @@ def process_kill(ui):
         ui.proc_strategy_coin.kill()
         ui.windowQ.put((ui_num['시스템로그'], 'Coin process terminate completed'))
 
-    if ui.zmqserv.isRunning(): ui.zmqserv.stop()
-    if ui.zmqrecv.isRunning(): ui.zmqrecv.stop()
-    ui.windowQ.put((ui_num['시스템로그'], 'QThread stop completed'))
-
     if ui.qtimer0.isActive(): ui.qtimer0.stop()
     if ui.qtimer1.isActive(): ui.qtimer1.stop()
     if ui.qtimer2.isActive(): ui.qtimer2.stop()
     if ui.qtimer3.isActive(): ui.qtimer3.stop()
+    if ui.qtimer_serial.isActive(): ui.qtimer_serial.stop()
     ui.windowQ.put((ui_num['시스템로그'], 'QTimer stop completed'))
+
+    if ui.zmqserv.isRunning(): ui.zmqserv.terminate()
+    if ui.zmqrecv.isRunning(): ui.zmqrecv.terminate()
+    ui.windowQ.put((ui_num['시스템로그'], 'QThread terminate completed'))
 
     if ui.dialog_db.isVisible():         ui.dialog_db.close()
     if ui.dialog_web.isVisible():        ui.dialog_web.close()
@@ -116,8 +117,7 @@ def process_kill(ui):
     ui.windowQ.put((ui_num['시스템로그'], 'Main process terminate completed'))
     qtest_qwait(0.1)
 
-    opstarter_kill()
-    if ui.writer.isRunning():
-        ui.writer.terminate()
+    if ui.writer.isRunning(): ui.writer.terminate()
 
+    opstarter_kill()
     sys.exit()

@@ -156,18 +156,18 @@ class WebCrawling:
         columns2 = txt_list[7:13]
         data1 = [
             txt_list[-16:-3],
-            [num_list[j] for j in range(0, 130, 10)],
-            [num_list[j] for j in range(1, 130, 10)],
-            [num_list[j] for j in range(2, 130, 10)],
-            [num_list[j] for j in range(3, 130, 10)]
+            num_list[::10],
+            num_list[1::10],
+            num_list[2::10],
+            num_list[3::10]
         ]
         data2 = [
-            [num_list[j] for j in range(4, 130, 10)],
-            [num_list[j] for j in range(5, 130, 10)],
-            [num_list[j] for j in range(6, 130, 10)],
-            [num_list[j] for j in range(7, 130, 10)],
-            [num_list[j] for j in range(8, 130, 10)],
-            [num_list[j] for j in range(9, 130, 10)]
+            num_list[4::10],
+            num_list[5::10],
+            num_list[6::10],
+            num_list[7::10],
+            num_list[8::10],
+            num_list[9::10]
         ]
         df1 = get_pd().DataFrame(dict(zip(columns1, data1)))
         df2 = get_pd().DataFrame(dict(zip(columns2, data2)))

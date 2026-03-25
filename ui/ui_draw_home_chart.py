@@ -10,10 +10,10 @@ class DrawHomeChart:
             '코스닥': 1,
             '코스피100': 2,
             '코스피200': 3,
-            '선물': 4,
+            '코스피200선물': 4,
             '환율': 5,
             '휘발유': 6,
-            '금': 7,
+            '국제금': 7,
             'BTC/USDT': 8,
             'ETH/USDT': 9,
             'BNB/USDT': 10,
@@ -33,7 +33,7 @@ class DrawHomeChart:
             pgindex    = self.pg_index[name]
             values     = df.values
             last_price = f'{values[-1, 1]:,}'
-            if name in ('코스피', '코스닥', '코스피100', '코스피200', '선물'):
+            if name in ('코스피', '코스닥', '코스피100', '코스피200', '코스피200선물'):
                 last_pct = values[-1, 3]
                 pct_text = f"{last_pct:+.2f}%"
                 prev_price = values[0, 1] - values[0, 2]
@@ -59,7 +59,7 @@ class DrawHomeChart:
                 self.ui.home_label_004.setText(last_price)
                 self.ui.home_label_020.setText(pct_text)
                 self.ui.home_label_020.setStyleSheet(pct_color)
-            elif name == '선물':
+            elif name == '코스피200선물':
                 self.ui.home_label_005.setText(last_price)
                 self.ui.home_label_021.setText(pct_text)
                 self.ui.home_label_021.setStyleSheet(pct_color)
@@ -71,7 +71,7 @@ class DrawHomeChart:
                 self.ui.home_label_007.setText(last_price)
                 self.ui.home_label_023.setText(pct_text)
                 self.ui.home_label_023.setStyleSheet(pct_color)
-            elif name == '금':
+            elif name == '국제금':
                 self.ui.home_label_008.setText(last_price)
                 self.ui.home_label_024.setText(pct_text)
                 self.ui.home_label_024.setStyleSheet(pct_color)
