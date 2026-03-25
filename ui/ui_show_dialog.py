@@ -171,7 +171,7 @@ def dialog_chart_show(ui):
         if ui.ft_checkBoxxxxx_08.text() != '초당체결수량': ui.ft_checkBoxxxxx_08.setText('초당체결수량')
         if ui.ft_checkBoxxxxx_16.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적초당매도수수량')
 
-    if ui.main_btn in (1, 3):
+    if ui.dict_set['주식에이전트']:
         if '키움증권' in ui.dict_set['증권사']:
             starttime = '090000'
         else:

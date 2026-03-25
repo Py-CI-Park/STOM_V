@@ -1,7 +1,6 @@
 
 import pyqtgraph as pg
 from PyQt5.QtGui import QColor
-from utility.static import error_decorator
 from ui.ui_draw_crosshair import CrossHair
 from ui.ui_draw_label_text import get_label_text
 from ui.set_style import qfont12, color_fg_bt, color_bg_bt, color_bg_ld
@@ -188,7 +187,6 @@ class DrawChartBase:
             )
         return drop_zero_factors
 
-    @error_decorator
     def draw_all_chart(self):
         for i, factor in enumerate(self.ui.ctpg_factors):
             if not self.same_time:

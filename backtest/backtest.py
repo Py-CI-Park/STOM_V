@@ -55,7 +55,6 @@ class Total:
 
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         bc = 0
         sc = 0
@@ -137,6 +136,7 @@ class Total:
                 with open('./utility/blacklist_coin.txt', 'w') as f:
                     f.write(''.join(coinreadlines))
 
+    @error_decorator
     def Report(self, list_tsg, arry_bct):
         if not list_tsg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
