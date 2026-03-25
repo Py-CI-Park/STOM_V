@@ -1,5 +1,7 @@
 
 import sqlite3
+import numpy as np
+import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import Process, Queue, Value, Lock
 from backtest.back_subtotal import BackSubTotal
@@ -23,7 +25,6 @@ from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
 from ui.ui_dialog_animation import DialogAnimator
-from utility.lazy_imports import get_np, get_pd
 from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec, error_decorator
 from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, \
     DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, DB_STRATEGY
@@ -41,7 +42,7 @@ def backengine_show(ui, gubun):
         db = DB_COIN_TICK_BACK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
     con = sqlite3.connect(db)
     try:
-        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
         table_list.remove('moneytop')
         table_list.remove('stockinfo')
@@ -167,19 +168,19 @@ def backengine_start(ui, gubun):
         con = sqlite3.connect(db)
         if gubun == '주식':
             try:
-                df_info = get_pd().read_sql('SELECT * FROM stockinfo', con).set_index('index')
+                df_info = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
             except:
-                df_info = get_pd().read_sql('SELECT * FROM codename', con).set_index('index')
+                df_info = pd.read_sql('SELECT * FROM codename', con).set_index('index')
             dict_info  = df_info['코스닥'].to_dict()
             ui.dict_cn = df_info['종목명'].to_dict()
         elif gubun == '해선':
-            df_info = get_pd().read_sql('SELECT * FROM futureinfo', con).set_index('index')
+            df_info = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
             dict_info  = df_info.to_dict('index')
             ui.dict_cn = df_info['종목명'].to_dict()
 
         gubun_ = 'S' if gubun == '주식' else 'X'
         query = GetMoneytopQuery(is_tick, gubun_, ui.startday, ui.endday, ui.starttime, ui.endtime)
-        df_mt = get_pd().read_sql(query, con)
+        df_mt = pd.read_sql(query, con)
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
         df_mt.set_index('index', inplace=True)
         con.close()
@@ -267,7 +268,7 @@ def backengine_start(ui, gubun):
         ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
     ui.shared_info = sorted(ui.shared_info, key=lambda x: x['shape'][0], reverse=True)
     ui.back_tick_cunsum = [x['shape'][0] for x in ui.shared_info]
-    ui.back_tick_cunsum = get_np().cumsum(ui.back_tick_cunsum)
+    ui.back_tick_cunsum = np.cumsum(ui.back_tick_cunsum)
     ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 완료'))
 
     ui.back_count = len(ui.shared_info)

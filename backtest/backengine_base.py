@@ -1,9 +1,10 @@
 
 import sqlite3
+import numpy as np
+import pandas as pd
 from traceback import format_exc
 from multiprocessing import shared_memory
 from trade.strategy_base import StrategyBase
-from utility.lazy_imports import get_np, get_pd
 from trade.formula_manager import get_formula_data
 from backtest.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
     get_trade_info, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture
@@ -11,7 +12,7 @@ from utility.setting_base import DB_STOCK_TICK_BACK, BACK_TEMP, ui_num, DB_STOCK
     DB_FUTURE_TICK_BACK, DB_FUTURE_MIN_BACK, DB_COIN_TICK_BACK, DB_COIN_MIN_BACK, list_stock_tick, \
     list_stock_min, list_coin_tick, list_coin_min
 from utility.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, \
-    add_rolling_data
+    add_rolling_data, set_builtin_print
 
 
 class BackEngineBase(StrategyBase):
@@ -69,11 +70,14 @@ class BackEngineBase(StrategyBase):
         self.hoga_sidex      = None
         self.hoga_eidex      = None
 
+        self.shogainfo       = None
+        self.shreminfo       = None
+        self.bhogainfo       = None
+        self.bhreminfo       = None
+
         self.code_list       = []
         self.vars_list       = []
         self.vars_lists      = []
-        self.shogainfo       = {}
-        self.bhogainfo       = {}
         self.dict_buystg     = {}
         self.dict_sellstg    = {}
         self.dict_sconds     = {}
@@ -92,6 +96,7 @@ class BackEngineBase(StrategyBase):
         self.opti_kind       = 0
         self.sell_count      = 0
 
+        set_builtin_print(True, self.wq)
         self.UpdateMarketGubun()
         self.MainLoop()
 
@@ -318,7 +323,7 @@ class BackEngineBase(StrategyBase):
     def DataLoad(self, data):
         def data_load(days):
             try:
-                df = get_pd().read_sql(GetBackloadCodeQuery(self.is_tick, code, days, starttime, endtime), con)
+                df = pd.read_sql(GetBackloadCodeQuery(self.is_tick, code, days, starttime, endtime), con)
             except:
                 pass
             else:
@@ -368,13 +373,13 @@ class BackEngineBase(StrategyBase):
             shared_info = []
             offset = 0
             for item in all_data:
-                shared_array = get_np().ndarray(
+                shared_array = np.ndarray(
                     item['shape'],
                     dtype=item['dtype'],
                     buffer=shm.buf[offset:offset + item['size']]
                 )
 
-                get_np().copyto(shared_array, item['data'])
+                np.copyto(shared_array, item['data'])
                 shared_info.append({
                     'shm_name': shm.name,
                     'code': item['code'],
@@ -470,7 +475,7 @@ class BackEngineBase(StrategyBase):
         code = shared_info['code']
         if self.dict_set['백테일괄로딩']:
             shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
-            self.arry_code = get_np().ndarray(
+            self.arry_code = np.ndarray(
                 shared_info['shape'],
                 dtype=shared_info['dtype'],
                 buffer=shm.buf[shared_info['offset']:shared_info['offset'] + shared_info['size']]
@@ -494,7 +499,7 @@ class BackEngineBase(StrategyBase):
                                             (self.arry_code[:, 0] % self.unit <= self.endtime)]
 
         if self.fm_tcnt > 0:
-            self.arry_code = get_np().column_stack((self.arry_code, get_np().zeros((self.arry_code.shape[0], self.fm_tcnt))))
+            self.arry_code = np.column_stack((self.arry_code, np.zeros((self.arry_code.shape[0], self.fm_tcnt))))
 
         return code
 
@@ -546,10 +551,10 @@ class BackEngineBase(StrategyBase):
 
             last = len(self.arry_code) - 1
             if last > 0:
-                indexs = self.arry_code[:, 0].astype(get_np().int64)
-                day_last_indexs = indexs // 1000000
-                day_last_indexs = [i for i in range(last) if day_last_indexs[i] != day_last_indexs[i + 1]]
-                day_last_indexs.append(last)
+                indexs = self.arry_code[:, 0].astype(np.int64)
+                day_vals = indexs // 1000000
+                day_last_indexs = np.where(day_vals[:-1] != day_vals[1:])[0]
+                day_last_indexs = np.concatenate([day_last_indexs, [last]])
 
                 start_idx = 0
                 for end_idx in day_last_indexs:
@@ -614,32 +619,31 @@ class BackEngineBase(StrategyBase):
 
     def Buy(self, buy_long=False):
         self.SetBuyCount()
-        주문수량 = 미체결수량 = self.curr_trade_info['주문수량']
+        주문수량 = self.curr_trade_info['주문수량']
         if 주문수량 > 0:
-            호가정보 = self.shogainfo if self.market_gubun in (1, 3) or buy_long else self.bhogainfo
-            호가정보 = 호가정보[:self.buy_hj_limit]
-            매수금액 = 0
-            for 호가, 잔량 in 호가정보:
-                if 미체결수량 - 잔량 <= 0:
-                    매수금액 += 호가 * 미체결수량
-                    미체결수량 -= 잔량
-                    break
-                else:
-                    매수금액 += 호가 * 잔량
-                    미체결수량 -= 잔량
-            if 미체결수량 <= 0:
+            if self.market_gubun in (1, 3) or buy_long:
+                호가배열 = self.shogainfo[:self.buy_hj_limit]
+                잔량배열 = self.shreminfo[:self.buy_hj_limit]
+            else:
+                호가배열 = self.bhogainfo[:self.buy_hj_limit]
+                잔량배열 = self.bhreminfo[:self.buy_hj_limit]
+
+            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결완료:
                 보유중 = 1 if self.market_gubun in (1, 3) or buy_long else 2
-                매수가 = self.GetBuyPrice(매수금액, 주문수량)
+                매수가 = self.GetBuyPrice(거래금액, 주문수량)
                 매수시간 = dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
-                self.curr_trade_info['보유중'] = 보유중
-                self.curr_trade_info['매수가'] = 매수가
-                self.curr_trade_info['매도가'] = 0
-                self.curr_trade_info['주문수량'] = 0
-                self.curr_trade_info['보유수량'] = 주문수량
-                self.curr_trade_info['최고수익률'] = 0.
-                self.curr_trade_info['최저수익률'] = 0.
-                self.curr_trade_info['매수틱번호'] = self.indexn
-                self.curr_trade_info['매수시간'] = 매수시간
+                self.curr_trade_info.update({
+                    '보유중': 보유중,
+                    '매수가': 매수가,
+                    '매도가': 0,
+                    '주문수량': 0,
+                    '보유수량': 주문수량,
+                    '최고수익률': 0.,
+                    '최저수익률': 0.,
+                    '매수틱번호': self.indexn,
+                    '매수시간': 매수시간
+                })
 
     def SetBuyCount(self):
         현재가, 저가대비고가등락율 = self.info_for_order[:-2]
@@ -678,51 +682,45 @@ class BackEngineBase(StrategyBase):
         return 포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간
 
     def Sell(self, sell_long=False):
-        주문수량 = 미체결수량 = self.curr_trade_info['주문수량']
-        호가정보 = self.bhogainfo if self.market_gubun in (1, 3) or sell_long else self.shogainfo
-        호가정보 = 호가정보[:self.sell_hj_limit]
-        매도금액 = 0
-        for 호가, 잔량 in 호가정보:
-            if 미체결수량 - 잔량 <= 0:
-                매도금액 += 호가 * 미체결수량
-                미체결수량 -= 잔량
-                break
+        주문수량 = self.curr_trade_info['주문수량']
+        if 주문수량 > 0:
+            if self.market_gubun in (1, 3) or sell_long:
+                호가배열 = self.bhogainfo[:self.sell_hj_limit]
+                잔량배열 = self.bhreminfo[:self.sell_hj_limit]
             else:
-                매도금액 += 호가 * 잔량
-                미체결수량 -= 잔량
-        if 미체결수량 <= 0:
-            self.curr_trade_info['매도가'] = self.GetSellPrice(매도금액, 주문수량)
-            self.CalculationEyun()
+                호가배열 = self.shogainfo[:self.sell_hj_limit]
+                잔량배열 = self.shreminfo[:self.sell_hj_limit]
+
+            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결완료:
+                self.curr_trade_info['매도가'] = self.GetSellPrice(거래금액, 주문수량)
+                self.CalculationEyun()
 
     def LastSell(self):
-        매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
-            매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5 = \
-            self.arry_code[self.indexn, self.hoga_sidex:self.hoga_eidex]
-
-        bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-        bhogainfo = bhogainfo[:self.sell_hj_limit]
-        shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        shogainfo = shogainfo[:self.sell_hj_limit]
+        호가데이터 = self.arry_code[self.indexn, self.hoga_sidex:self.hoga_eidex]
+        매도호가배열 = 호가데이터[:5][::-1]
+        매수호가배열 = 호가데이터[5:10]
+        매도잔량배열 = 호가데이터[10:15][::-1]
+        매수잔량배열 = 호가데이터[15:20]
 
         for vturn in self.trade_info:
             for vkey in self.trade_info[vturn]:
                 self.info_for_order = None, None, vturn, vkey
                 self.curr_trade_info = self.trade_info[vturn][vkey]
                 if self.curr_trade_info['보유중'] > 0:
-                    매도금액 = 0
-                    보유수량 = 미체결수량 = self.curr_trade_info['보유수량']
-                    호가정보 = bhogainfo if self.market_gubun in (1, 3) or self.curr_trade_info['보유중'] == 1 else shogainfo
-                    for 호가, 잔량 in 호가정보:
-                        if 미체결수량 - 잔량 <= 0:
-                            매도금액 += 호가 * 미체결수량
-                            미체결수량 -= 잔량
-                            break
-                        else:
-                            매도금액 += 호가 * 잔량
-                            미체결수량 -= 잔량
+                    주문수량 = self.curr_trade_info['보유수량']
+                    if self.market_gubun in (1, 3) or self.curr_trade_info['보유중'] == 1:
+                        호가배열 = 매수호가배열[:self.sell_hj_limit]
+                        잔량배열 = 매수잔량배열[:self.sell_hj_limit]
+                    else:
+                        호가배열 = 매도호가배열[:self.sell_hj_limit]
+                        잔량배열 = 매도잔량배열[:self.sell_hj_limit]
 
-                    self.curr_trade_info['매도가'] = self.GetLastSellPrice(매도금액, 보유수량, 미체결수량)
-                    self.curr_trade_info['주문수량'] = 보유수량
+                    거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+                    if not 체결완료:
+                        거래금액 = 주문수량 * 호가배열[0]
+                    self.curr_trade_info['매도가'] = self.GetLastSellPrice(거래금액, 주문수량, 0)
+                    self.curr_trade_info['주문수량'] = 주문수량
                     self.sell_cond = 0
                     self.CalculationEyun()
 

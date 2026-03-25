@@ -1,5 +1,6 @@
 
 import os
+import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
 from multiprocessing import Process
@@ -16,7 +17,6 @@ from trade.upbit.upbit_strategy_tick import UpbitStrategyTick
 from ui.set_style import style_bc_bt, style_bc_bb
 from utility.setting_base import GRAPH_PATH, ui_num
 from utility.static import qtest_qwait, cme_normal_open, error_decorator
-from utility.lazy_imports import get_pd
 
 
 @error_decorator
@@ -208,12 +208,12 @@ def mnbutton_c_clicked_06(ui):
                 [7, '', '', '', ''],
                 [8, '', '', '', '']
             ]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             ui.queryQ.put((df, 'sacc', 'append'))
 
             columns = ["index", "Access_key", "Secret_key"]
             data = [[1, '', ''], [2, '', '']]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             ui.queryQ.put((df, 'cacc', 'append'))
 
             columns = ["index", "str_bot", "int_id"]
@@ -227,7 +227,7 @@ def mnbutton_c_clicked_06(ui):
                 [7, '', ''],
                 [8, '', '']
             ]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             ui.queryQ.put((df, 'telegram', 'append'))
 
             ui.queryQ.put(('설정디비', 'VACUUM'))

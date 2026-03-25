@@ -1,7 +1,7 @@
 
 import sqlite3
+import pandas as pd
 from PyQt5.QtWidgets import QCompleter
-from utility.lazy_imports import get_pd
 from utility.static import error_decorator
 from utility.setting_base import DB_CODE_INFO, DB_COIN_TICK_BACK, list_stock_tick, list_stock_min, list_coin_tick, \
     list_coin_min, list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, list_future_tick2, \
@@ -11,15 +11,15 @@ from utility.setting_base import DB_CODE_INFO, DB_COIN_TICK_BACK, list_stock_tic
 @error_decorator
 def load_database(ui):
     con = sqlite3.connect(DB_CODE_INFO)
-    df = get_pd().read_sql('SELECT * FROM stockinfo', con).set_index('index')
+    df = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
     ui.dict_name.update(df['종목명'].to_dict())
-    df = get_pd().read_sql('SELECT * FROM futureinfo', con).set_index('index')
+    df = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
     ui.dict_name.update(df['종목명'].to_dict())
     con.close()
     ui.dict_code = {name: code for code, name in ui.dict_name.items()}
 
     con = sqlite3.connect(DB_COIN_TICK_BACK)
-    df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+    df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
     con.close()
     ui.ct_lineEdittttt_04.setCompleter(QCompleter(list(ui.dict_code.values())))
     ui.ct_lineEdittttt_05.setCompleter(QCompleter(list(ui.dict_name.values()) + df['name'].to_list()))

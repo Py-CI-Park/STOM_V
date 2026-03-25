@@ -2,13 +2,13 @@
 import random
 import requests
 import matplotlib
+import pandas as pd
 from urllib import request
 from threading import Timer
 from bs4 import BeautifulSoup
 from traceback import format_exc
 from fake_useragent import UserAgent
 from utility.setting_base import ui_num
-from utility.lazy_imports import get_pd
 from utility.static import thread_decorator
 
 
@@ -117,7 +117,7 @@ class WebCrawling:
                 link_list.append(self.base_url + title['href'])
             date_list += [date.get_text(strip=True) for date in soup.select('td.date')]
             jbjg_list += [info.get_text(strip=True) for info in soup.select('td.info')]
-        df = get_pd().DataFrame({'일자': date_list, '정보제공': jbjg_list, '공시': gygs_list, '링크': link_list})
+        df = pd.DataFrame({'일자': date_list, '정보제공': jbjg_list, '공시': gygs_list, '링크': link_list})
         self.windowQ.put((ui_num['기업공시'], df))
 
     @thread_decorator
@@ -144,7 +144,7 @@ class WebCrawling:
                     '제목': title,
                     '링크': hlink
                 })
-        df = get_pd().DataFrame(data_list)
+        df = pd.DataFrame(data_list)
         self.windowQ.put((ui_num['기업뉴스'], df))
 
     @thread_decorator
@@ -171,8 +171,8 @@ class WebCrawling:
             num_list[8::10],
             num_list[9::10]
         ]
-        df1 = get_pd().DataFrame(dict(zip(columns1, data1)))
-        df2 = get_pd().DataFrame(dict(zip(columns2, data2)))
+        df1 = pd.DataFrame(dict(zip(columns1, data1)))
+        df2 = pd.DataFrame(dict(zip(columns2, data2)))
         self.windowQ.put((ui_num['재무년도'], df1))
         self.windowQ.put((ui_num['재무분기'], df2))
 
@@ -192,7 +192,7 @@ class WebCrawling:
         name_list2 = [item.get_text(strip=True) for item in soup.select('.col_type1 > a')[1:]]
         per_list2  = [float(item.get_text(strip=True).replace('%', '')) for item in soup.select('.col_type2 > span')]
 
-        df1 = get_pd().DataFrame({
+        df1 = pd.DataFrame({
             '업종명': name_list1[:len(per_list1)],
             '등락율': per_list1,
             'url': url_list1[:len(per_list1)]
@@ -202,7 +202,7 @@ class WebCrawling:
         df1['등락율%'] = df1['등락율'].apply(lambda x: str(x) + '%')
         cl1 = [self.cmap(self.norm(value)) for value in df1['등락율']]
 
-        df2 = get_pd().DataFrame({
+        df2 = pd.DataFrame({
             '테마명': name_list2[:len(per_list2)],
             '등락율': per_list2,
             'url': url_list2[:len(per_list2)]
@@ -223,7 +223,7 @@ class WebCrawling:
         name_list = [item.get_text(strip=True) for item in soup.select('.name_area')]
         per_list  = [float(item.get_text(strip=True).replace('%', '')) for i, item in enumerate(soup.select('.number > span')[1:]) if i % 2 != 0]
 
-        df = get_pd().DataFrame({'종목명': name_list[:len(per_list)], '등락율': per_list})
+        df = pd.DataFrame({'종목명': name_list[:len(per_list)], '등락율': per_list})
         df = df[df['등락율'] > 0][:20]
         df['등락율%'] = df['등락율'].apply(lambda x: f'{x}%')
         cl = [self.cmap(self.norm(value)) for value in df['등락율']]

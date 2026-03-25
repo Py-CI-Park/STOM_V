@@ -1,5 +1,5 @@
 
-from utility.static import now, summer_t, now_utc, now_cme, str_ymdhms_ios, str_hms, error_decorator
+from utility.static import now, summer_time, now_utc, now_cme, str_ymdhms_ios, str_hms, error_decorator
 
 
 @error_decorator
@@ -11,7 +11,7 @@ def process_starter(ui):
            ((ui.int_time < 93100 <= inthms) or (ui.int_time < 152000 <= inthms)):
             ui.StomliveScreenshot('주식')
         elif ui.dict_set['주식트레이더'] and '해외선물' in ui.dict_set['증권사'] and \
-                ((ui.int_time < 50000 <= inthms and summer_t != 0) or (ui.int_time < 60000 <= inthms)):
+                ((ui.int_time < 50000 <= inthms and summer_time != 0) or (ui.int_time < 60000 <= inthms)):
             ui.StomliveScreenshot('해선')
         elif ui.dict_set['코인트레이더'] and ui.int_time < 235000 <= inthms:
             ui.StomliveScreenshot('코인')

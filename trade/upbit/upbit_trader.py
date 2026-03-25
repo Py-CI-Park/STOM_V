@@ -2,7 +2,7 @@
 import sys
 import pyupbit
 import sqlite3
-from utility.lazy_imports import get_pd
+import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from utility.setting_base import columns_cj, columns_td, ui_num, DB_TRADELIST, columns_jg
@@ -117,8 +117,8 @@ class UpbitTrader:
 
     def LoadDatabase(self):
         con = sqlite3.connect(DB_TRADELIST)
-        df_cj = get_pd().read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
-        df_td = get_pd().read_sql(f"SELECT * FROM c_tradelist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_cj = pd.read_sql(f"SELECT * FROM c_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_td = pd.read_sql(f"SELECT * FROM c_tradelist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
         if len(df_cj) > 0:
             self.dict_cj = df_cj.to_dict('index')
             self.windowQ.put((ui_num['C체결목록'], df_cj[::-1]))
@@ -126,7 +126,7 @@ class UpbitTrader:
             self.dict_td = df_td.to_dict('index')
             self.windowQ.put((ui_num['C거래목록'], df_td[::-1]))
         if self.dict_set['코인모의투자']:
-            df_jg = get_pd().read_sql(f'SELECT * FROM c_jangolist', con).set_index('index')
+            df_jg = pd.read_sql(f'SELECT * FROM c_jangolist', con).set_index('index')
             if len(df_jg) > 0:
                 self.dict_jg = df_jg.to_dict('index')
                 self.creceivQ.put(('잔고목록', tuple(self.dict_jg)))
@@ -136,7 +136,7 @@ class UpbitTrader:
     def GetBalances(self):
         if self.dict_set['코인모의투자']:
             con = sqlite3.connect(DB_TRADELIST)
-            df = get_pd().read_sql('SELECT * FROM c_tradelist', con)
+            df = pd.read_sql('SELECT * FROM c_tradelist', con)
             con.close()
             tcg = df['수익금'].sum()
             chujeonjasan = 100_000_000 + tcg
@@ -352,13 +352,13 @@ class UpbitTrader:
 
     def UpdateString(self, data):
         if data == '체결목록':
-            df_cj = get_pd().DataFrame.from_dict(self.dict_cj, orient='index')
+            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
             self.teleQ.put(df_cj) if len(df_cj) > 0 else self.teleQ.put('현재는 업비트 체결목록이 없습니다.')
         elif data == '거래목록':
-            df_td = get_pd().DataFrame.from_dict(self.dict_td, orient='index')
+            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
             self.teleQ.put(df_td) if len(df_td) > 0 else self.teleQ.put('현재는 업비트 거래목록이 없습니다.')
         elif data == '잔고평가':
-            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
             self.teleQ.put(df_jg) if len(df_jg) > 0 else self.teleQ.put('현재는 업비트 잔고목록이 없습니다.')
         elif data == '잔고청산':
             self.JangoCheongsan('수동')
@@ -615,7 +615,7 @@ class UpbitTrader:
                 self.dict_intg['예수금'] += 매입금액 + 수익금
                 self.dict_intg['추정예수금'] += 매입금액 + 수익금
 
-            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
             self.queryQ.put(('거래디비', df_jg, 'c_jangolist', 'replace'))
             if self.dict_set['코인알림소리']: self.soundQ.put(f"{종목코드} {주문구분}하였습니다.")
             self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}체결] {종목코드} | {체결가격} | {체결수량}'))
@@ -651,9 +651,9 @@ class UpbitTrader:
             '수익금': 수익금,
             '체결시간': 주문시간
         }
-        df_td = get_pd().DataFrame.from_dict(self.dict_td, orient='index')
+        df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
         self.windowQ.put((ui_num['C거래목록'], df_td[::-1]))
-        df = get_pd().DataFrame([[종목코드, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_td, index=[index])
+        df = pd.DataFrame([[종목코드, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_td, index=[index])
         self.queryQ.put(('거래디비', df, 'c_tradelist', 'append'))
         self.UpdateTotaltradelist()
 
@@ -677,7 +677,7 @@ class UpbitTrader:
             '수익률': 수익률,
             '수익금합계': 수익금합계
         }
-        df_tt = get_pd().DataFrame.from_dict(self.dict_tt, orient='index')
+        df_tt = pd.DataFrame.from_dict(self.dict_tt, orient='index')
         delete_query = f"DELETE FROM c_totaltradelist WHERE `index` = '{self.str_today}'"
         self.queryQ.put(('거래디비', delete_query))
         self.queryQ.put(('거래디비', df_tt, 'c_totaltradelist', 'append'))
@@ -706,9 +706,9 @@ class UpbitTrader:
             '주문번호': 주문번호
         }
         self.dict_cj = dict(sorted(self.dict_cj.items(), key=lambda x: x[0]))
-        df_cj = get_pd().DataFrame.from_dict(self.dict_cj, orient='index')
+        df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
         self.windowQ.put((ui_num['C체결목록'], df_cj[::-1]))
-        df = get_pd().DataFrame([[종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
+        df = pd.DataFrame([[종목코드, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
         self.queryQ.put(('거래디비', df, 'c_chegeollist', 'append'))
 
     def UpdateTotaljango(self):
@@ -754,10 +754,10 @@ class UpbitTrader:
             self.cstgQ.put(('종목당투자금', self.dict_intg['종목당투자금']))
 
         if self.dict_jg:
-            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
         else:
-            df_jg = get_pd().DataFrame(columns=columns_jg)
-        df_tj = get_pd().DataFrame.from_dict(self.dict_tj, orient='index')
+            df_jg = pd.DataFrame(columns=columns_jg)
+        df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
         self.windowQ.put((ui_num['C잔고목록'], df_jg))
         self.windowQ.put((ui_num['C잔고평가'], df_tj))
 

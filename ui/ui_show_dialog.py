@@ -1,12 +1,12 @@
 
 import os
 import sqlite3
+import pandas as pd
 from PyQt5.QtCore import QUrl, Qt
 from multiprocessing import Process
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from ui.ui_dialog_animation import DialogAnimator
-from utility.lazy_imports import get_pd
 from utility.kimp_upbit_binance import Kimp
 from utility.static import qtest_qwait, str_hms, dt_hms, error_decorator
 from utility.setting_base import columns_hc, DB_COIN_TICK_BACK, DB_STOCK_TICK_BACK, DB_PATH, DB_COIN_MIN_BACK, \
@@ -477,11 +477,11 @@ def chart_moneytop_list(ui):
     try:
         if os.path.isfile(db_name1):
             con = sqlite3.connect(db_name1)
-            df = get_pd().read_sql(query, con)
+            df = pd.read_sql(query, con)
             con.close()
         elif os.path.isfile(db_name2):
             con = sqlite3.connect(db_name2)
-            df = get_pd().read_sql(query, con)
+            df = pd.read_sql(query, con)
             con.close()
     except:
         pass
