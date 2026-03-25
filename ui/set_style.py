@@ -74,6 +74,8 @@ if dict_set['테마'] == '다크블루':
     style_bc_bb = 'QPushButton{background-color: rgb(40, 40, 50);border-style: solid;border-width: 1px;border-color: rgb(40, 40, 50);} QPushButton:hover{background-color: rgb(60, 60, 70);}'
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(30, 30, 40);border-style: solid;border-width: 1px;border-color: rgb(30, 30, 40);} QPushButton:hover{background-color: rgb(50, 50, 60);}'
     style_pgbar = 'QProgressBar{background-color: #20202a;} QProgressBar::chunk {background-color: #5a5a64;}'
+    style_ht_gb = 'QGroupBox {background-color: rgb(25, 25, 40); border: 2px solid rgb(25, 25, 40);}'
+    style_ht_pb = 'QPushButton {background-color: rgb(25, 25, 40); border: 2px solid rgb(25, 25, 40);}'
 
 elif dict_set['테마'] == '다크브라운':
     color_bf_bt = QColor(120, 110, 110)
@@ -98,6 +100,8 @@ elif dict_set['테마'] == '다크브라운':
     style_bc_bb = 'QPushButton{background-color: rgb(50, 40, 40);border-style: solid;border-width: 1px;border-color: rgb(50, 40, 40);} QPushButton:hover{background-color: rgb(70, 60, 60);}'
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(40, 30, 30);border-style: solid;border-width: 1px;border-color: rgb(40, 30, 30);} QPushButton:hover{background-color: rgb(60, 50, 50);}'
     style_pgbar = 'QProgressBar {background-color: #2a2020;} QProgressBar::chunk {background-color: #645a5a;}'
+    style_ht_gb = 'QGroupBox {background-color: rgb(40, 25, 25); border: 2px solid rgb(40, 25, 25);}'
+    style_ht_pb = 'QPushButton {background-color: rgb(40, 25, 25); border: 2px solid rgb(40, 25, 25);}'
 
 elif dict_set['테마'] == '다크그린':
     color_bf_bt = QColor(110, 120, 110)
@@ -119,9 +123,11 @@ elif dict_set['테마'] == '다크그린':
     style_fc_dk = 'QFrame{color: rgb(150, 160, 150);}'
     style_bc_st = 'QPushButton{background-color: rgb(90, 100, 90);border-style: solid;border-width: 1px;border-color: rgb(90, 100, 90);} QPushButton:hover{background-color: rgb(110, 120, 110);}'
     style_bc_bt = 'QPushButton{background-color: rgb(70, 80, 70);border-style: solid;border-width: 1px;border-color: rgb(70, 80, 70);} QPushButton:hover{background-color: rgb(90, 100, 90);}'
-    style_bc_bb = 'QPushButton{background-color: rgb(50, 40, 50);border-style: solid;border-width: 1px;border-color: rgb(50, 40, 50);} QPushButton:hover{background-color: rgb(70, 60, 70);}'
+    style_bc_bb = 'QPushButton{background-color: rgb(40, 50, 40);border-style: solid;border-width: 1px;border-color: rgb(50, 40, 50);} QPushButton:hover{background-color: rgb(70, 60, 70);}'
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(30, 40, 30);border-style: solid;border-width: 1px;border-color: rgb(30, 40, 30);} QPushButton:hover{background-color: rgb(50, 60, 50);}'
     style_pgbar = 'QProgressBar {background-color: #202a20;} QProgressBar::chunk {background-color: #5a645a;}'
+    style_ht_gb = 'QGroupBox {background-color: rgb(25, 40, 25); border: 2px solid rgb(25, 40, 25);}'
+    style_ht_pb = 'QPushButton {background-color: rgb(25, 40, 25); border: 2px solid rgb(25, 40, 25);}'
 
 elif dict_set['테마'] == '다크옐로':
     color_bf_bt = QColor(120, 120, 110)
@@ -146,6 +152,8 @@ elif dict_set['테마'] == '다크옐로':
     style_bc_bb = 'QPushButton{background-color: rgb(50, 50, 40);border-style: solid;border-width: 1px;border-color: rgb(50, 50, 40);} QPushButton:hover{background-color: rgb(70, 70, 60);}'
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(40, 40, 30);border-style: solid;border-width: 1px;border-color: rgb(40, 40, 30);} QPushButton:hover{background-color: rgb(60, 60, 50);}'
     style_pgbar = 'QProgressBar {background-color: #2a2a20;} QProgressBar::chunk {background-color: #64645a;}'
+    style_ht_gb = 'QGroupBox {background-color: rgb(40, 40, 25); border: 2px solid rgb(40, 40, 25);}'
+    style_ht_pb = 'QPushButton {background-color: rgb(40, 40, 25); border: 2px solid rgb(40, 40, 25);}'
 
 elif dict_set['테마'] == '다크라임':
     color_bf_bt = QColor(110, 120, 120)
@@ -170,6 +178,8 @@ elif dict_set['테마'] == '다크라임':
     style_bc_bb = 'QPushButton{background-color: rgb(40, 50, 50);border-style: solid;border-width: 1px;border-color: rgb(40, 50, 50);} QPushButton:hover{background-color: rgb(60, 70, 70);}'
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(30, 40, 40);border-style: solid;border-width: 1px;border-color: rgb(30, 40, 40);} QPushButton:hover{background-color: rgb(50, 60, 60);}'
     style_pgbar = 'QProgressBar {background-color: #202a2a;} QProgressBar::chunk {background-color: #5a6464;}'
+    style_ht_gb = 'QGroupBox {background-color: rgb(25, 40, 40); border: 2px solid rgb(25, 40, 40);}'
+    style_ht_pb = 'QPushButton {background-color: rgb(25, 40, 40); border: 2px solid rgb(25, 40, 40);}'
 
 elif dict_set['테마'] == '다크퍼플':
     color_bf_bt = QColor(120, 110, 120)
@@ -194,3 +204,5 @@ elif dict_set['테마'] == '다크퍼플':
     style_bc_bb = 'QPushButton{background-color: rgb(50, 40, 50);border-style: solid;border-width: 1px;border-color: rgb(50, 40, 50);} QPushButton:hover{background-color: rgb(70, 60, 70);}'
     style_bc_dk = 'QPushButton, QTextEdit, QLineEdit, QCheckBox{background-color: rgb(40, 30, 40);border-style: solid;border-width: 1px;border-color: rgb(40, 30, 40);} QPushButton:hover{background-color: rgb(60, 50, 60);}'
     style_pgbar = 'QProgressBar {background-color: #2a202a;} QProgressBar::chunk {background-color: #645a64;}'
+    style_ht_gb = 'QGroupBox {background-color: rgb(40, 25, 40); border: 2px solid rgb(40, 25, 40);}'
+    style_ht_pb = 'QPushButton {background-color: rgb(40, 25, 40); border: 2px solid rgb(40, 25, 40);}'

@@ -60,7 +60,7 @@ def ttbutton_clicked_01(ui, cmd):
             df.drop(columns=['거래횟수'], inplace=True)
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df))
         elif cmd == f'{gubun}월별집계':
-            df['연월'] = df['index'].apply(lambda x: str(x)[:6])
+            df['연월'] = df['index'].str[:6]
             df2 = pd.DataFrame(columns=columns_nd)
             lastmonth = df['연월'].iloc[-1]
             month = strf_time('%Y%m')
@@ -75,7 +75,7 @@ def ttbutton_clicked_01(ui, cmd):
                 month = str(int(month) - 89) if int(month[4:]) == 1 else str(int(month) - 1)
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df2))
         elif cmd == f'{gubun}연도별집계':
-            df['연도'] = df['index'].apply(lambda x: str(x)[:4])
+            df['연도'] = df['index'].str[:4]
             df2 = pd.DataFrame(columns=columns_nd)
             lastyear = df['연도'].iloc[-1]
             year = strf_time('%Y')

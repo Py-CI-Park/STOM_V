@@ -25,8 +25,8 @@ def show_dialog_graph(ui, df):
         DialogAnimator.setup_dialog_animation(ui.dialog_graph, duration=250)
         ui.dialog_graph.show()
 
-    df['이익금액'] = df['수익금'].apply(lambda x: x if x >= 0 else 0)
-    df['손실금액'] = df['수익금'].apply(lambda x: x if x < 0 else 0)
+    df['이익금액'] = df['수익금'].clip(lower=0)
+    df['손실금액'] = df['수익금'].clip(upper=0)
     df['수익금합계'] = df['수익금'].cumsum()
     df['수익금합계020'] = df['수익금합계'].rolling(window=20).mean()
     df['수익금합계060'] = df['수익금합계'].rolling(window=60).mean()
