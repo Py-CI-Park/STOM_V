@@ -1,5 +1,6 @@
 
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import Process, Queue, Value, Lock
 from backtest.back_subtotal import BackSubTotal
 from backtest.back_code_test import BackCodeTest
@@ -123,23 +124,33 @@ def backengine_start(ui, gubun):
             else:
                 target = BackEngineBinanceTick2 if ui.dict_set['코인타임프레임'] else BackEngineBinanceMin2
 
-    for i in range(20):
-        proc = Process(target=BackSubTotal, args=(i, ui.totalQ, ui.back_sques, ui.dict_set['백테매수시간기준']), daemon=True)
+    def create_backsubtotal_process(j):
+        proc = Process(
+            target=BackSubTotal,
+            args=(j, ui.totalQ, ui.back_sques, ui.dict_set['백테매수시간기준']),
+            daemon=True
+        )
         proc.start()
         ui.back_sprocs.append(proc)
-        ui.windowQ.put((ui_num['백테엔진'], f'중간집계 프로세스{i + 1} 생성 완료'))
+        ui.windowQ.put((ui_num['백테엔진'], f'중간집계 프로세스{j + 1} 생성 완료'))
 
-    for i in range(multi):
-        profiling = i == 0 and ui.dict_set['백테엔진프로파일링']
+    def create_backengine_process(j):
+        profiling = j == 0 and ui.dict_set['백테엔진프로파일링']
         proc = Process(
             target=target,
-            args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ,
-                  ui.back_eques, ui.back_sques, ui.dict_set, profiling),
+            args=(j, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques,
+                  ui.dict_set, profiling),
             daemon=True
         )
         proc.start()
         ui.back_eprocs.append(proc)
-        ui.windowQ.put((ui_num['백테엔진'], f'엔진 프로세스{i + 1} 생성 완료'))
+        ui.windowQ.put((ui_num['백테엔진'], f'엔진 프로세스{j + 1} 생성 완료'))
+
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        [executor.submit(create_backsubtotal_process, i) for i in range(20)]
+
+    with ThreadPoolExecutor(max_workers=multi) as executor:
+        [executor.submit(create_backengine_process, i) for i in range(multi)]
 
     dict_info = None
     try:

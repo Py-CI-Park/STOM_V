@@ -215,15 +215,16 @@ class BackEngineBaseOms(BackEngineBase):
         self.curr_trade_info['매수분할횟수'] += 1
 
     def CheckSonjeol(self, 수익률, 수익금):
-        if (self.dict_set[f'{self.market_text}매도익절수익률청산'] and 수익률 > self.dict_set[f'{self.market_text}매도익절수익률']) or \
-                (self.dict_set[f'{self.market_text}매도익절수익금청산'] and 수익금 > self.dict_set[f'{self.market_text}매도익절수익금']) or \
-                (self.dict_set[f'{self.market_text}매도손절수익률청산'] and 수익률 < -self.dict_set[f'{self.market_text}매도손절수익률']) or \
-                (self.dict_set[f'{self.market_text}매도손절수익금청산'] and 수익금 < -self.dict_set[f'{self.market_text}매도손절수익금']):
+        A = self.dict_set[f'{self.market_text}매도익절수익률청산'] and 수익률 > self.dict_set[f'{self.market_text}매도익절수익률']
+        B = self.dict_set[f'{self.market_text}매도익절수익금청산'] and 수익금 > self.dict_set[f'{self.market_text}매도익절수익금']
+        C = self.dict_set[f'{self.market_text}매도손절수익률청산'] and 수익률 < -self.dict_set[f'{self.market_text}매도손절수익률']
+        D = self.dict_set[f'{self.market_text}매도손절수익금청산'] and 수익금 < -self.dict_set[f'{self.market_text}매도손절수익금']
+        if A or B or C or D:
             origin_sell_gubun = self.dict_set[f'{self.market_text}매도주문구분']
             self.dict_set[f'{self.market_text}매도주문구분'] = '시장가'
             self.curr_trade_info['주문수량'] = self.curr_trade_info['보유수량']
             self.Sell()
-            self.sell_cond = 200
+            self.sell_cond = 1001 if A or B else 1002
             self.dict_set[f'{self.market_text}매도주문구분'] = origin_sell_gubun
             return True
         return False
@@ -317,28 +318,28 @@ class BackEngineBaseOms(BackEngineBase):
         if 포지션.__class__ == int:
             if self.dict_set[f'{self.market_text}매도분할하방'] and 수익률 < -self.dict_set[f'{self.market_text}매도분할하방수익률'] * (매도분할횟수 + 1):
                 self.Sell()
-                self.sell_cond = 100
+                self.sell_cond = 1000
                 return True
             elif self.dict_set[f'{self.market_text}매도분할상방'] and 수익률 > self.dict_set[f'{self.market_text}매도분할상방수익률'] * (매도분할횟수 + 1):
                 self.Sell()
-                self.sell_cond = 100
+                self.sell_cond = 1000
                 return True
         else:
             if 포지션 == 'LONG' and self.dict_set[f'{self.market_text}매도분할하방'] and 수익률 < -self.dict_set[f'{self.market_text}매도분할하방수익률'] * (매도분할횟수 + 1):
                 self.Sell(True)
-                self.sell_cond = 100
+                self.sell_cond = 1000
                 return True
             elif 포지션 == 'LONG' and self.dict_set[f'{self.market_text}매도분할상방'] and 수익률 > self.dict_set[f'{self.market_text}매도분할상방수익률'] * (매도분할횟수 + 1):
                 self.Sell(True)
-                self.sell_cond = 100
+                self.sell_cond = 1000
                 return True
             elif 포지션 == 'SHORT' and self.dict_set[f'{self.market_text}매도분할하방'] and 수익률 < -self.dict_set[f'{self.market_text}매도분할하방수익률'] * (매도분할횟수 + 1):
                 self.Sell(False)
-                self.sell_cond = 100
+                self.sell_cond = 1000
                 return True
             elif 포지션 == 'SHORT' and self.dict_set[f'{self.market_text}매도분할상방'] and 수익률 > self.dict_set[f'{self.market_text}매도분할상방수익률'] * (매도분할횟수 + 1):
                 self.Sell(False)
-                self.sell_cond = 100
+                self.sell_cond = 1000
                 return True
         return False
 

@@ -158,7 +158,7 @@ def GetSellConds(sell_conds, gubun, wq):
 def SetSellCond(selllist):
     count = 1
     sellstg = ''
-    dict_cond = {0: '전략종료청산', 100: '분할매도', 200: '손절청산'}
+    dict_cond = {0: '전략종료청산', 1000: '분할매도', 1001: '익절청산', 1002: '손절청산'}
     for i, text in enumerate(selllist):
         if text and text[0] != '#' and ('매도 = True' in text or '매도= True' in text or '매도 =True' in text or '매도=True' in text):
             dict_cond[count] = selllist[i - 1]
@@ -238,7 +238,7 @@ def GetSellCondsFuture(is_long, sell_conds, gubun, wq):
 def SetSellCondFuture(selllist):
     count = 1
     sellstg = ''
-    dict_cond = {0: '전략종료청산', 100: '분할매도', 200: '손절청산'}
+    dict_cond = {0: '전략종료청산', 1000: '분할매도', 1001: '익절청산', 1002: '손절청산'}
     for i, text in enumerate(selllist):
         if '#' not in text:
             if 'SELL_LONG = True' in text or 'SELL_LONG= True' in text or 'SELL_LONG =True' in text or 'SELL_LONG=True' in text:

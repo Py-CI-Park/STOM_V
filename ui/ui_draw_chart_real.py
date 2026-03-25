@@ -1,9 +1,11 @@
 
+from utility.static import error_decorator
 from ui.ui_draw_chart_base import DrawChartBase
 from utility.static import from_timestamp, dt_ymdhms
 
 
 class DrawRealChart(DrawChartBase):
+    @error_decorator
     def draw_real_chart(self, data):
         self.real = True
         self.code, self.ui.ctpg_arry = data[1:]

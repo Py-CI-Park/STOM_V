@@ -42,7 +42,6 @@ class Total:
 
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         sc = 0
         bc = 0
