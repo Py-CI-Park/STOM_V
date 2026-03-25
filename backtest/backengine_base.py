@@ -90,7 +90,7 @@ class BackEngineBase(StrategyBase):
         self.shared_info     = None
 
         self.sell_cond       = 0
-        self.opti_turn       = 0
+        self.opti_kind       = 0
         self.sell_count      = 0
 
         set_builtin_print(True, self.wq)
@@ -174,7 +174,7 @@ class BackEngineBase(StrategyBase):
                             self.CheckDayAndTime()
                     elif data[0] == '변수정보':
                         self.vars_list = data[1]
-                        self.opti_turn = data[2]
+                        self.opti_kind = data[2]
                         self.vars      = [var[1] for var in self.vars_list]
                         self.BackTest()
                 elif self.back_type == '전진분석':
@@ -198,7 +198,7 @@ class BackEngineBase(StrategyBase):
                             self.CheckDayAndTime()
                     elif data[0] == '변수정보':
                         self.vars_list = data[1]
-                        self.opti_turn = data[2]
+                        self.opti_kind = data[2]
                         self.vars      = [var[1] for var in self.vars_list]
                         self.startday  = data[3]
                         self.endday    = data[4]
@@ -225,7 +225,7 @@ class BackEngineBase(StrategyBase):
                             self.CheckDayAndTime()
                     elif data[0] == '변수정보':
                         self.vars_lists = data[1]
-                        self.opti_turn  = data[2]
+                        self.opti_kind  = data[2]
                         self.BackTest()
                 elif self.back_type == '조건최적화':
                     if data[0] == '백테정보':
@@ -255,7 +255,7 @@ class BackEngineBase(StrategyBase):
                         if error:
                             self.BackStop()
                         else:
-                            self.opti_turn = data[4]
+                            self.opti_kind = data[4]
                             self.BackTest()
                 elif self.back_type == '백테스트':
                     if data[0] == '백테정보':
@@ -274,7 +274,7 @@ class BackEngineBase(StrategyBase):
                         if self.buystg is None or self.sellstg is None:
                             self.BackStop()
                         else:
-                            self.opti_turn = data[9]
+                            self.opti_kind = data[9]
                             self.CheckDayAndTime()
                             self.BackTest()
                 elif self.back_type == '백파인더':
@@ -290,7 +290,7 @@ class BackEngineBase(StrategyBase):
                             if self.gubun == 0: self.wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
                             self.BackStop()
                         else:
-                            self.opti_turn = data[7]
+                            self.opti_kind = data[7]
                             self.CheckDayAndTime()
                             self.BackTest()
 
@@ -326,7 +326,9 @@ class BackEngineBase(StrategyBase):
                     all_data.append({
                         'code': code,
                         'data': arry,
-                        'len': len(arry)
+                        'shape': arry.shape,
+                        'dtype': arry.dtype,
+                        'size': arry.shape[0] * arry.shape[1] * arry.dtype.itemsize
                     })
 
         self.UpdateSubVars()
@@ -359,27 +361,28 @@ class BackEngineBase(StrategyBase):
 
         if self.dict_set['백테일괄로딩'] and all_data:
             name = f'backdata_{self.gubun}'
-            total_size = sum(item['len'] * item['data'].dtype.itemsize * item['data'].shape[1] for item in all_data)
+            total_size = sum(item['size'] for item in all_data)
             shm = shared_memory.SharedMemory(name=name, create=True, size=total_size)
 
             shared_info = []
             offset = 0
             for item in all_data:
-                data_size = item['len'] * item['data'].dtype.itemsize * item['data'].shape[1]
-                shared_array = get_np().ndarray((item['len'], item['data'].shape[1]),
-                                                dtype=item['data'].dtype,
-                                                buffer=shm.buf[offset:offset + data_size])
+                shared_array = get_np().ndarray(
+                    item['shape'],
+                    dtype=item['dtype'],
+                    buffer=shm.buf[offset:offset + item['size']]
+                )
 
                 get_np().copyto(shared_array, item['data'])
                 shared_info.append({
-                    'code': item['code'],
-                    'len': item['len'],
                     'shm_name': shm.name,
-                    'offset': offset,
-                    'shape': item['data'].shape,
-                    'dtype': item['data'].dtype
+                    'code': item['code'],
+                    'shape': item['shape'],
+                    'dtype': item['dtype'],
+                    'size': item['size'],
+                    'offset': offset
                 })
-                offset += data_size
+                offset += item['size']
             self.shared_list.append(shm)
         else:
             shared_info = []
@@ -387,9 +390,9 @@ class BackEngineBase(StrategyBase):
                 file_name = f'{BACK_TEMP}/back_{self.gubun}_{i}'
                 pickle_write(file_name, item['data'])
                 shared_info.append({
+                    'file_name': file_name,
                     'code': item['code'],
-                    'len': item['len'],
-                    'file_name': file_name
+                    'shape': item['shape']
                 })
 
         self.avg_list = avg_list
@@ -434,23 +437,20 @@ class BackEngineBase(StrategyBase):
             v1 = get_trade_info(3)
             v2 = get_trade_info(2)
 
-            if self.opti_turn == 1:
-                self.day_info = {t: {k: v1 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if
-                                 len(x[0]) > 1}
-                self.trade_info = {t: {k: v2 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if
-                                   len(x[0]) > 1}
-            elif self.opti_turn == 3:
-                self.day_info = {t: {k: v1 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
+            if self.opti_kind == 1:
+                self.day_info   = {t: {k: v1 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+                self.trade_info = {t: {k: v2 for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+            elif self.opti_kind == 3:
+                self.day_info   = {t: {k: v1 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
                 self.trade_info = {t: {k: v2 for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
             else:
-                self.day_info = {0: {0: v1}}
+                self.day_info   = {0: {0: v1}}
                 self.trade_info = {0: {0: v2}}
         else:
             v = get_trade_info(1)
-            if self.opti_turn == 1:
-                self.trade_info = {t: {k: v for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if
-                                   len(x[0]) > 1}
-            elif self.opti_turn == 3:
+            if self.opti_kind == 1:
+                self.trade_info = {t: {k: v for k in range(len(x[0]))} for t, x in enumerate(self.vars_list) if len(x[0]) > 1}
+            elif self.opti_kind == 3:
                 self.trade_info = {t: {k: v for k in range(20)} for t in range(50 if self.back_type == 'GA최적화' else 1)}
             else:
                 self.trade_info = {0: {0: v}}
@@ -469,11 +469,10 @@ class BackEngineBase(StrategyBase):
         code = shared_info['code']
         if self.dict_set['백테일괄로딩']:
             shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
-            data_size = shared_info['len'] * shared_info['dtype'].itemsize * shared_info['shape'][1]
             self.arry_code = get_np().ndarray(
                 shared_info['shape'],
                 dtype=shared_info['dtype'],
-                buffer=shm.buf[shared_info['offset']:shared_info['offset'] + data_size]
+                buffer=shm.buf[shared_info['offset']:shared_info['offset'] + shared_info['size']]
             ).copy()
             shm.close()
         else:
@@ -741,7 +740,7 @@ class BackEngineBase(StrategyBase):
         매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
         추가매수시간, 잔고없음 = '', True
         data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
-        self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
+        self.bstq_list[vkey if self.opti_kind in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
         self.trade_info[vturn][vkey] = get_trade_info(1)
 

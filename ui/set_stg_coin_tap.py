@@ -107,7 +107,7 @@ class SetCoinBack:
             self.ui.cvjb_pushButon_03, self.ui.cvjb_pushButon_04, self.ui.cvjb_pushButon_05, self.ui.cvjb_pushButon_06,
             self.ui.cvjb_pushButon_07, self.ui.cvjb_pushButon_08, self.ui.cvjb_pushButon_09, self.ui.cvjb_pushButon_10,
             self.ui.cvjb_pushButon_11, self.ui.cvjb_pushButon_12, self.ui.cvj_pushButton_01, self.ui.cvj_pushButton_02,
-            self.ui.cvj_pushButton_03, self.ui.cvjs_comboBoxx_01, self.ui.cvjs_lineEditt_01,
+            self.ui.cvj_pushButton_03, self.ui.cvjs_comboBoxx_01, self.ui.cvjs_lineEditt_01, self.ui.cvj_pushButton_04,
             self.ui.cvjs_pushButon_01, self.ui.cvjs_pushButon_02, self.ui.cvjs_pushButon_03, self.ui.cvjs_pushButon_04,
             self.ui.cvjs_pushButon_05, self.ui.cvjs_pushButon_06, self.ui.cvjs_pushButon_07, self.ui.cvjs_pushButon_08,
             self.ui.cvjs_pushButon_09, self.ui.cvjs_pushButon_10, self.ui.cvjs_pushButon_11, self.ui.cvjs_pushButon_12,
@@ -267,6 +267,11 @@ class SetCoinBack:
         for widget in self.ui.coin_rwftvd_list:
             if widget not in (self.ui.cvjb_labelllll_01, self.ui.cvjb_dateEditt_01, self.ui.cvjb_dateEditt_02):
                 widget.setVisible(False)
+                widget.setVisible(False)
+
+    # =================================================================================================================
+
+        self.ui.cvc_labellllll_05 = QLabel('', self.ui.cs_tab)
 
     # =================================================================================================================
 
@@ -293,13 +298,19 @@ class SetCoinBack:
         self.ui.cvc_pushButton_22 = self.wc.setPushbutton('GA > 최적화 범위 변환', box=self.ui.cs_tab, click=self.ui.CoinGavarsToOptivars, color=2, visible=False, tip='GA용 범위코드를 최적화용으로 변환한다.')
         self.ui.cvc_pushButton_23 = self.wc.setPushbutton('변수 키값 재정렬', box=self.ui.cs_tab, click=self.ui.CoinStgvarsKeySort, color=2, visible=False, tip='범위 변수 self.vars의 키값을 재정렬한다.')
 
+        self.ui.coin_areaedit_list = [
+            self.ui.cvc_pushButton_21, self.ui.cvc_pushButton_22, self.ui.cvc_pushButton_23
+        ]
+
     # =================================================================================================================
 
         self.ui.cvc_pushButton_24 = self.wc.setPushbutton('최적화 변수 변환(매수우선)', box=self.ui.cs_tab, click=self.ui.CoinStgVarsChange, color=2, visible=False, tip='일반 전략의 각종 변수를 매수우선 최적화용 변수로 변환한다.')
         self.ui.cvc_pushButton_25 = self.wc.setPushbutton('최적화 변수 변환(매도우선)', box=self.ui.cs_tab, click=self.ui.CoinStgVarsChange, color=2, visible=False, tip='일반 전략의 각종 변수를 매도우선 최적화용 변수로 변환한다.')
         self.ui.cvc_pushButton_26 = self.wc.setPushbutton('변수 키값 재정렬', box=self.ui.cs_tab, click=self.ui.CoinOptivarsKeySort, color=2, visible=False, tip='변수 self.vars의 키값을 재정렬한다.\n매수, 매도 self.vars의 첫번째 키값을 비교해서\n매수가 빠르면 매수우선, 매도가 빠르면 매도우선으로 재정렬된다.')
-        self.ui.cvc_labellllll_05 = QLabel('', self.ui.cs_tab)
-        self.ui.cvc_labellllll_05.setVisible(False)
+
+        self.ui.coin_varsedit_list = [
+            self.ui.cvc_pushButton_24, self.ui.cvc_pushButton_25, self.ui.cvc_pushButton_26
+        ]
 
     # =================================================================================================================
 

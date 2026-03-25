@@ -255,9 +255,9 @@ def SetSellCondFuture(selllist):
 
 
 def SendResult(result, dict_train, dict_valid=None, exponential=False):
-    gubun, ui_gubun, wq, mq, pre_hstd, optistd, opti_turn, vturn, vkey, vars_list, _, _, std_list, _ = result
+    gubun, ui_gubun, wq, mq, pre_hstd, optistd, opti_kind, vturn, vkey, vars_list, _, _, std_list, _ = result
     if gubun in ('최적화', '최적화테스트'):
-        if opti_turn == 1:
+        if opti_kind == 1:
             text1 = f"<font color=#ffffa0> self.vars[{vturn}] = {vars_list[vturn]} {'-' * 50}</font>\n"
         else:
             text1 = f'<font color=#a0ffa0> V{vars_list}</font>\n'
@@ -288,7 +288,7 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
         std = GetOptiValidStd(train_stds, valid_stds, exponential)
         text2, hstd, sendtext = GetText2(std, pre_hstd)
 
-        if sendtext or opti_turn == 4:
+        if sendtext or opti_kind == 4:
             wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
             for text3 in train_text:
                 wq.put((ui_num[f'{ui_gubun}백테스트'], text3))
@@ -303,7 +303,7 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
             text3, std  = GetText3('TOTAL', optistd, std_list, dict_train)
             text2, hstd, sendtext = GetText2(std, pre_hstd)
 
-        if sendtext or opti_turn in (2, 4):
+        if sendtext or opti_kind in (2, 4):
             wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
             wq.put((ui_num[f'{ui_gubun}백테스트'], text3))
 
@@ -311,7 +311,7 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
         hstd = pre_hstd
         std  = -2_000_000_000
 
-    if opti_turn != 2:
+    if opti_kind != 2:
         mq.put((vturn, vkey, std))
 
     return hstd

@@ -67,7 +67,7 @@ class Total:
 
         self.vars         = None
         self.vars_list    = None
-        self.opti_turn    = None
+        self.opti_kind    = None
         self.hstd_list    = None
         self.hstd         = -float('inf')
         self.sub_total    = 0
@@ -87,7 +87,7 @@ class Total:
                 bc  += 1
                 if bc == self.back_count:
                     bc = 0
-                    if self.opti_turn == 1:
+                    if self.opti_kind == 1:
                         for q in self.bstq_list:
                             q.put(('백테완료', '분리집계'))
                     else:
@@ -163,7 +163,7 @@ class Total:
 
             elif data[0] == '변수정보':
                 self.vars_list = data[1]
-                self.opti_turn = data[2]
+                self.opti_kind = data[2]
                 self.vars      = [var[1] for var in self.vars_list]
                 dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
 
@@ -209,9 +209,9 @@ class Total:
 
     def GetSendData(self, vturn=0, vkey=0):
         vars_copy = self.vars.copy()
-        if self.opti_turn == 1:
+        if self.opti_kind == 1:
             vars_copy[vturn] = self.vars_list[vturn][0][vkey]
-        return ['최적화', self.ui_gubun, self.wq, self.mq, self.hstd, self.optistandard, self.opti_turn, vturn, vkey, vars_copy, self.startday, self.endday, self.std_list, self.betting]
+        return ['최적화', self.ui_gubun, self.wq, self.mq, self.hstd, self.optistandard, self.opti_kind, vturn, vkey, vars_copy, self.startday, self.endday, self.std_list, self.betting]
 
     def Report(self, list_tsg, arry_bct, oc):
         startday = self.hstd_list[oc - 1][0]

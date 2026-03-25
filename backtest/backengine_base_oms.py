@@ -387,7 +387,7 @@ class BackEngineBaseOms(BackEngineBase):
         매도조건 = self.dict_sconds[self.sell_cond] if self.back_type != '조건최적화' else self.dict_sconds[vkey][self.sell_cond]
         추가매수시간, 잔고없음 = '^'.join(추가매수시간), 보유수량 - 주문수량 == 0
         data = ('백테결과', self.name, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매입금액, 평가금액, 수익률, 수익금, 매도조건, 추가매수시간, 잔고없음, vturn, vkey)
-        self.bstq_list[vkey if self.opti_turn in (1, 3) else (self.sell_count % 5)].put(data)
+        self.bstq_list[vkey if self.opti_kind in (1, 3) else (self.sell_count % 5)].put(data)
         self.sell_count += 1
 
         self.curr_day_info['거래횟수'] += 1

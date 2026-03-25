@@ -58,7 +58,7 @@ class BackEngineKiwoomTick2(BackEngineBaseOms):
                         price = self.arry_code[self.indexn, self.dict_findex[fname]]
                         self.arry_code[self.indexn, col_idx] = price
 
-        if self.opti_turn == 1:
+        if self.opti_kind == 1:
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
@@ -102,7 +102,7 @@ class BackEngineKiwoomTick2(BackEngineBaseOms):
                             if not self.CheckDividSell(포지션, 수익률, 매도분할횟수) and self.dict_set[f'{self.market_text}매도분할시그널']:
                                 exec(self.sellstg)
 
-        elif self.opti_turn == 3:
+        elif self.opti_kind == 3:
             for vturn in self.trade_info:
                 for vkey in self.trade_info[vturn]:
                     index_ = vturn * 20 + vkey
