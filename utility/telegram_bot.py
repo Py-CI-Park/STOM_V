@@ -1,12 +1,12 @@
 
 import pytz
 import asyncio
+import pandas as pd
 from threading import Thread
 from traceback import format_exc
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from utility.setting_base import ui_num
-from utility.lazy_imports import get_pd
 
 
 class TelegramBot:
@@ -113,7 +113,7 @@ class TelegramBot:
             data = self.teleQ.get()
             if self.running:
                 self.loop.call_soon_threadsafe(self.message_queue.put_nowait, data)
-            elif data.__class__ in (str, get_pd().DataFrame):
+            elif data.__class__ in (str, pd.DataFrame):
                 self.windowQ.put((ui_num['시스템로그'], '텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다'))
             elif data.__class__ == tuple:
                 self.loop.call_soon_threadsafe(self.message_queue.put_nowait, data)
@@ -126,7 +126,7 @@ class TelegramBot:
                     await self.send_photo(data)
                 else:
                     await self.send_message(data)
-            elif isinstance(data, get_pd().DataFrame):
+            elif data.__class__ == pd.DataFrame:
                 text = self.GetTextFromDataframe(data)
                 await self.send_message(text)
             elif data.__class__ == tuple:
@@ -167,7 +167,7 @@ class TelegramBot:
                 self.running = False
 
     @staticmethod
-    def GetTextFromDataframe(df):
+    def GetTextFromDataframe(df: pd.DataFrame):
         text = ''
         if '매수금액' in df.columns:
             for index in df.index:

@@ -1,11 +1,11 @@
 
 import psutil
 import random
+import pandas as pd
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from ui.set_text import famous_saying
-from utility.lazy_imports import get_pd
 from utility.setting_base import columns_dt, columns_dd, ui_num
 from utility.static import thread_decorator, qtest_qwait, str_ymdhmsf, str_ymdhms, error_decorator
 
@@ -111,11 +111,11 @@ def calendar_clicked(ui, gubun):
         nbg, nsg = df1['매수금액'].sum(), df1['매도금액'].sum()
         sp = round((nsg / nbg - 1) * 100, 2)
         npg, nmg, nsig = df1[df1['수익금'] > 0]['수익금'].sum(), df1[df1['수익금'] < 0]['수익금'].sum(), df1['수익금'].sum()
-        df2 = get_pd().DataFrame(columns=columns_dt)
+        df2 = pd.DataFrame(columns=columns_dt)
         df2.loc[0] = [searchday, nbg, nsg, npg, nmg, sp, nsig]
     else:
-        df1 = get_pd().DataFrame(columns=columns_dd)
-        df2 = get_pd().DataFrame(columns=columns_dt)
+        df1 = pd.DataFrame(columns=columns_dd)
+        df2 = pd.DataFrame(columns=columns_dt)
     ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}당일합계'], df2))
     ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}당일상세'], df1))
 

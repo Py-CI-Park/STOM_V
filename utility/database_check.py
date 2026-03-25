@@ -1,8 +1,8 @@
 
 import os
 import sqlite3
+import pandas as pd
 from traceback import format_exc
-from utility.lazy_imports import get_pd
 from utility.static import read_key, write_key
 
 
@@ -25,7 +25,7 @@ def database_check():
             write_key()
 
         con = sqlite3.connect(DB_SETTING)
-        df  = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
 
         if 'main' not in table_list:
@@ -34,11 +34,11 @@ def database_check():
                 '바이낸스선물고정레버리지', '바이낸스선물고정레버리지값', '바이낸스선물변동레버리지값', '바이낸스선물마진타입', '바이낸스선물포지션'
             ]
             data = [0, '키움증권1', 0, 0, 0, '바이낸스선물', 0, 0, 0, 1, 1, '0;5;1^5;10;2^10;20;3^20;30;4^30;100;5', 'ISOLATED', 'false']
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('main', con)
         else:
             update = False
-            df = get_pd().read_sql("SELECT * FROM main", con).set_index('index')
+            df = pd.read_sql("SELECT * FROM main", con).set_index('index')
             if '주식리시버' in df.columns:
                 df.rename(columns={'주식리시버': '주식에이전트'}, inplace=True)
                 update = True
@@ -62,13 +62,13 @@ def database_check():
                 [7, '', '', '', ''],
                 [8, '', '', '', '']
             ]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             df.to_sql('sacc', con)
 
         if 'cacc' not in table_list:
             columns = ["index", "Access_key", "Secret_key"]
             data = [[1, '', ''], [2, '', '']]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             df.to_sql('cacc', con)
 
         if 'telegram' not in table_list:
@@ -83,7 +83,7 @@ def database_check():
                 [7, '', ''],
                 [8, '', '']
             ]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             df.to_sql('telegram', con)
 
         if 'stock' not in table_list:
@@ -93,7 +93,7 @@ def database_check():
                 "주식손실중지수익률", "주식수익중지", "주식수익중지수익률", "주식경과틱수설정"
             ]
             data = [0, 1, 1, '', '', 1, 30, 10, 93000, 1, 1, 0, 1, 20.0, 0, 2.0, 0, 2.0, '']
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stock', con)
 
         if 'coin' not in table_list:
@@ -103,7 +103,7 @@ def database_check():
                 "코인손실중지수익률", "코인수익중지", "코인수익중지수익률", "코인경과틱수설정"
             ]
             data = [0, 1, 1, '', '', 0, 30, 10, 235000, 1, 0, 0, 1, 1000.0, 0, 2.0, 0, 2.0, '']
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('coin', con)
 
         if 'back' not in table_list:
@@ -117,10 +117,10 @@ def database_check():
                     '0.0;1000.0;0;100.0;0.0;100.0;-10.0;10.0;0.0;1000.0;-10000.0;10000.0;0.0;100.0',
                     '종목코드별 분류', 'TPESampler', '', 0, 0, 0,
                     '3;10;14;12;26;0;14;14;5;2;2;0;14;14;12;26;9;14;10;12;26;0;10;14;0.02;0.2;5;3;0;3;0;5;3;0;14', 1]
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('back', con)
         else:
-            df = get_pd().read_sql("SELECT * FROM back", con).set_index('index')
+            df = pd.read_sql("SELECT * FROM back", con).set_index('index')
             update = False
             if '기준값최소상승률' not in df.columns:
                 df['기준값최소상승률'] = 2
@@ -134,7 +134,7 @@ def database_check():
         if 'etc' not in table_list:
             columns = ["index", "테마", "저해상도", "휴무프로세스종료", "휴무컴퓨터종료", "창위치기억", "창위치", "스톰라이브", "프로그램종료", "팩터선택", "시리얼키"]
             data = [0, '다크블루', 0, 1, 0, 1, '', 1, 0, '1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1', '']
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('etc', con)
 
         if 'stockbuyorder' not in table_list:
@@ -148,7 +148,7 @@ def database_check():
             ]
             data = [0, '시장가', 1, 2, 1, 0, 1, 0.5, 0.5, 1, '매수1호가', 0, 3, 0, 0, 0, 30, 0, 0, 5, 0, 2, 0, 2, 0, 120000,
                     130000, 0, 5, 0, 300, 0, 5, 2, '0;0;0;0;0;1;1;1;1;1']
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stockbuyorder', con)
 
         if 'stocksellorder' not in table_list:
@@ -162,10 +162,10 @@ def database_check():
                 '주식매도손절수익률청산', '주식매도손절수익률', '주식매도손절수익금청산', '주식매도손절수익금'
             ]
             data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 2, 0, 5, 0, 120000, 130000, 0, 300, 0, 5, 2, 0, 5, 0, 1_000_000, 0, 5, 0, 1_000_000]
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stocksellorder', con)
         else:
-            df = get_pd().read_sql("SELECT * FROM stocksellorder", con).set_index('index')
+            df = pd.read_sql("SELECT * FROM stocksellorder", con).set_index('index')
             if '주식매도익절수익률청산' not in df.columns:
                 df['주식매도익절수익률청산'] = 0
                 df['주식매도익절수익률'] = 5
@@ -184,7 +184,7 @@ def database_check():
             ]
             data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 0.5, 1, '매수1호가', 0, 3, 0, 0, 0, 30, 0, 0, 0, 2, 0, 2, 0, 150000, 210000,
                     0, 5, 0, 300, 0, 5, 2, '0;0;0;0;0;1;1;1;1;1']
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('coinbuyorder', con)
 
         if 'coinsellorder' not in table_list:
@@ -198,10 +198,10 @@ def database_check():
                 '코인매도손절수익률청산', '코인매도손절수익률', '코인매도손절수익금청산', '코인매도손절수익금'
             ]
             data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 2, 0, 150000, 210000, 0, 300, 0, 5, 2, 0, 5, 0, 1_000_000, 0, 5, 0, 1_000_000]
-            df = get_pd().DataFrame([data], columns=columns).set_index('index')
+            df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('coinsellorder', con)
         else:
-            df = get_pd().read_sql("SELECT * FROM coinsellorder", con).set_index('index')
+            df = pd.read_sql("SELECT * FROM coinsellorder", con).set_index('index')
             if '코인매도익절수익률청산' not in df.columns:
                 df['코인매도익절수익률청산'] = 0
                 df['코인매도익절수익률'] = 5
@@ -212,18 +212,18 @@ def database_check():
         con.close()
 
         con = sqlite3.connect(DB_CODE_INFO)
-        df  = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
 
         if 'futureinfo' not in table_list:
             columns = ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수']
-            df = get_pd().DataFrame(columns=columns).set_index('index')
+            df = pd.DataFrame(columns=columns).set_index('index')
             df.loc['NQU25'] = ['Mini NASDAQ 100', 34197, 0.25, 20.0, 2]
             df.to_sql('futureinfo', con)
 
         if 'stockinfo' not in table_list:
             columns = ['index', '종목명', '코스닥']
-            df = get_pd().DataFrame(columns=columns).set_index('index')
+            df = pd.DataFrame(columns=columns).set_index('index')
             df.loc['005930'] = ['삼성전자', 0]
             df.to_sql('stockinfo', con)
 
@@ -231,7 +231,7 @@ def database_check():
 
         con = sqlite3.connect(DB_STRATEGY)
         cur = con.cursor()
-        df  = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
 
         if 'coinbuy' not in table_list:
@@ -345,7 +345,7 @@ def database_check():
             cur.execute('CREATE TABLE "formula" ( "수식명" TEXT, "차트표시" INTEGER, "전략연산" INTEGER, "팩터명" TEXT, "표시형태" TEXT, "색상" TEXT, "크기" REAL, "라인타입" INTEGER, "수식코드" TEXT )')
             cur.execute('CREATE INDEX "ix_formula_수식명" ON "formula"("수식명")')
         else:
-            df = get_pd().read_sql('SELECT * FROM formula', con)
+            df = pd.read_sql('SELECT * FROM formula', con)
             if '전략연산' not in df.columns:
                 df.rename(columns={'체크유무': '차트표시'}, inplace=True)
                 df['전략연산'] = 0
@@ -359,7 +359,7 @@ def database_check():
 
         con = sqlite3.connect(DB_TRADELIST)
         cur = con.cursor()
-        df  = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df  = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
 
         if 'c_chegeollist' not in table_list:
@@ -374,7 +374,7 @@ def database_check():
             cur.execute(query)
             cur.execute('CREATE INDEX "ix_c_jangolist_index"ON "c_jangolist" ("index")')
         else:
-            df = get_pd().read_sql('SELECT * FROM c_jangolist', con).set_index('index')
+            df = pd.read_sql('SELECT * FROM c_jangolist', con).set_index('index')
             if '매입가' in df.columns:
                 df.rename(columns={'매입가': '매수가'}, inplace=True)
                 df.to_sql('c_jangolist', con, if_exists='replace')
@@ -385,7 +385,7 @@ def database_check():
             cur.execute(query)
             cur.execute('CREATE INDEX "ix_c_jangolist_future_index"ON "c_jangolist_future" ("index")')
         else:
-            df = get_pd().read_sql('SELECT * FROM c_jangolist_future', con).set_index('index')
+            df = pd.read_sql('SELECT * FROM c_jangolist_future', con).set_index('index')
             if '매입가' in df.columns:
                 df.rename(columns={'매입가': '매수가'}, inplace=True)
                 df.to_sql('c_jangolist_future', con, if_exists='replace')
@@ -420,7 +420,7 @@ def database_check():
             cur.execute(query)
             cur.execute('CREATE INDEX "ix_s_jangolist_index"ON "s_jangolist" ("index")')
         else:
-            df = get_pd().read_sql('SELECT * FROM s_jangolist', con).set_index('index')
+            df = pd.read_sql('SELECT * FROM s_jangolist', con).set_index('index')
             if '매입가' in df.columns:
                 df.rename(columns={'매입가': '매수가'}, inplace=True)
                 df.to_sql('s_jangolist', con, if_exists='replace')
@@ -449,7 +449,7 @@ def database_check():
             cur.execute(query)
             cur.execute('CREATE INDEX "ix_f_jangolist_index"ON "f_jangolist" ("index")')
         else:
-            df = get_pd().read_sql('SELECT * FROM f_jangolist', con).set_index('index')
+            df = pd.read_sql('SELECT * FROM f_jangolist', con).set_index('index')
             if '매입가' in df.columns:
                 df.rename(columns={'매입가': '매수가'}, inplace=True)
                 df.to_sql('f_jangolist', con, if_exists='replace')
@@ -475,11 +475,11 @@ def database_check():
             file_list_ = [x for x in file_list if file_name in x and '.db' in x and 'back' not in x]
             if file_list_:
                 con = sqlite3.connect(f'{DB_PATH}/{file_list_[0]}')
-                df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                 table_list = df['name'].to_list()
                 if 'moneytop' in table_list: table_list.remove('moneytop')
                 if table_list:
-                    df = get_pd().read_sql(f'SELECT * FROM "{table_list[0]}"', con)
+                    df = pd.read_sql(f'SELECT * FROM "{table_list[0]}"', con)
                     if '당일매수금액' not in df.columns:
                         con.close()
                         return False, '일자DB의 칼럼이 일치하지 않습니다.\nupdate_db_20260211.bat 파일을 실행하여 DB를 업데이트하십시오.'
@@ -488,13 +488,13 @@ def database_check():
             file_list_ = [x for x in file_list if file_name in x and '.db' in x and 'back' in x]
             if file_list_:
                 con = sqlite3.connect(f'{DB_PATH}/{file_list_[0]}')
-                df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                 table_list = df['name'].to_list()
                 if 'moneytop' in table_list: table_list.remove('moneytop')
                 if 'stockinfo' in table_list: table_list.remove('stockinfo')
                 if 'futureinfo' in table_list: table_list.remove('futureinfo')
                 if table_list:
-                    df = get_pd().read_sql(f'SELECT * FROM "{table_list[0]}"', con)
+                    df = pd.read_sql(f'SELECT * FROM "{table_list[0]}"', con)
                     if '당일매수금액' not in df.columns:
                         con.close()
                         return False, f'백테DB의 칼럼이 일치하지 않습니다.\n업데이트 된 일자DB로 백테DB를 새로 생성하십시오.'
