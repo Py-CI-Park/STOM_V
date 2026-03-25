@@ -28,7 +28,7 @@ def indicator_setting_save(ui):
     for linedit in ui.factor_linedit_list:
         k_list.append(linedit.text())
     k_list = ';'.join(k_list)
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         query = f"UPDATE back SET 보조지표설정 = '{k_list}'"
         ui.queryQ.put(('설정디비', query))
         QMessageBox.information(ui.dialog_factor, '저장 완료', random.choice(famous_saying))

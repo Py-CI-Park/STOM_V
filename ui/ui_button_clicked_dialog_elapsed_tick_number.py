@@ -44,7 +44,7 @@ def setting_stock_elapsed_tick_number_save(ui):
             text = f'{text}{ltext};'
     if text:
         text = text[:-1]
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             query = f"UPDATE stock SET 주식경과틱수설정 = '{text}'"
             ui.queryQ.put(('설정디비', query))
             QMessageBox.information(ui.dialog_setsj, '저장 완료', random.choice(famous_saying))
@@ -89,7 +89,7 @@ def setting_coin_elapsed_tick_number_save(ui):
             text = f'{text}{ltext};'
     if text:
         text = text[:-1]
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             query = f"UPDATE coin SET 코인경과틱수설정 = '{text}'"
             ui.queryQ.put(('설정디비', query))
             QMessageBox.information(ui.dialog_cetsj, '저장 완료', random.choice(famous_saying))

@@ -11,7 +11,7 @@ def dbbutton_clicked_01(ui):
         if date == '':
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 일자DB의 지정일자 데이터를 삭제합니다.'))
@@ -25,7 +25,7 @@ def dbbutton_clicked_02(ui):
         if time == '':
             ui.windowQ.put((ui_num['DB관리'], '시간를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 일자DB의 지정시간이후 데이터를 삭제합니다.'))
@@ -39,7 +39,7 @@ def dbbutton_clicked_03(ui):
         if time == '':
             ui.windowQ.put((ui_num['DB관리'], '시간를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 당일 데이터의 지정시간이후 데이터를 삭제합니다.'))
@@ -53,7 +53,7 @@ def dbbutton_clicked_04(ui):
         if date == '':
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 당일DB의 체결시간을 조정합니다.'))
@@ -68,7 +68,7 @@ def dbbutton_clicked_05(ui):
         if '' in (date1, date2):
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 일자DB로 백테DB를 생성합니다.'))
@@ -83,7 +83,7 @@ def dbbutton_clicked_06(ui):
         if '' in (date1, date2):
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 일자DB를 백테DB로 추가합니다.'))
@@ -93,7 +93,7 @@ def dbbutton_clicked_06(ui):
 @error_decorator
 def dbbutton_clicked_07(ui):
     if not ui.database_control:
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 당일DB를 백테DB로 추가합니다.'))
@@ -103,7 +103,7 @@ def dbbutton_clicked_07(ui):
 @error_decorator
 def dbbutton_clicked_08(ui):
     if not ui.database_control:
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
             ui.windowQ.put((ui_num['DB관리'], f'{gubun} 당일DB를 일자DB로 분리합니다.'))
@@ -124,7 +124,7 @@ def dbbutton_clicked_09(ui):
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.queryQ.put(('거래디비', f'DELETE FROM {db_gubun}_jangolist'))
             ui.queryQ.put(('거래디비', f'DELETE FROM {db_gubun}_tradelist'))
             ui.queryQ.put(('거래디비', f'DELETE FROM {db_gubun}_chegeollist'))
@@ -140,7 +140,7 @@ def dbbutton_clicked_10(ui):
         if date == '':
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '코인 일자DB의 지정일자 데이터를 삭제합니다.'))
             ui.queryQ.put(('코인일자DB지정일자삭제', date))
@@ -153,7 +153,7 @@ def dbbutton_clicked_11(ui):
         if time == '':
             ui.windowQ.put((ui_num['DB관리'], '시간를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '코인 일자DB의 지정시간이후 데이터를 삭제합니다.'))
             ui.queryQ.put(('코인일자DB지정시간이후삭제', time))
@@ -166,7 +166,7 @@ def dbbutton_clicked_12(ui):
         if time == '':
             ui.windowQ.put((ui_num['DB관리'], '시간를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '코인 당일DB의 지정시간이후 데이터를 삭제합니다.'))
             ui.queryQ.put(('코인당일데이터지정시간이후삭제', time))
@@ -180,7 +180,7 @@ def dbbutton_clicked_13(ui):
         if '' in (date1, date2):
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '코인 일자DB로 백테DB를 생성합니다.'))
             ui.queryQ.put(('코인백테DB생성', date1, date2))
@@ -194,7 +194,7 @@ def dbbutton_clicked_14(ui):
         if '' in (date1, date2):
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '코인 일자DB를 백테DB로 추가합니다.'))
             ui.queryQ.put(('코인백테디비추가1', date1, date2))
@@ -203,7 +203,7 @@ def dbbutton_clicked_14(ui):
 @error_decorator
 def dbbutton_clicked_15(ui):
     if not ui.database_control:
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '코인 당일DB를 백테DB로 추가합니다.'))
             ui.queryQ.put(('코인백테디비추가2', ''))
@@ -212,7 +212,7 @@ def dbbutton_clicked_15(ui):
 @error_decorator
 def dbbutton_clicked_16(ui):
     if not ui.database_control:
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '코인 당일DB를 일자DB로 분리합니다.'))
             ui.queryQ.put(('코인일자DB분리', ''))
@@ -225,7 +225,7 @@ def dbbutton_clicked_17(ui):
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.queryQ.put(('거래디비', 'DELETE FROM c_jangolist'))
             ui.queryQ.put(('거래디비', 'DELETE FROM c_jangolist_future'))
             ui.queryQ.put(('거래디비', 'DELETE FROM c_tradelist'))
@@ -243,7 +243,7 @@ def dbbutton_clicked_18(ui):
         if date == '':
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '주식 백테DB의 지정일자 데이터를 삭제합니다.'))
             ui.queryQ.put(('주식백테DB지정일자삭제', date))
@@ -256,7 +256,7 @@ def dbbutton_clicked_19(ui):
         if date == '':
             ui.windowQ.put((ui_num['DB관리'], '일자를 입력하십시오.'))
             return
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.database_control = True
             ui.windowQ.put((ui_num['DB관리'], '코인 백테DB의 지정일자 데이터를 삭제합니다.'))
             ui.queryQ.put(('코인백테DB지정일자삭제', date))
