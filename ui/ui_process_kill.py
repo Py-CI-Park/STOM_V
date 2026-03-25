@@ -109,7 +109,7 @@ def process_kill(ui):
     ui.windowQ.put((ui_num['시스템로그'], 'Etc setting save completed'))
 
     ui.queryQ.put('프로세스종료')
-    while ui.proc_query.is_alive():
+    while ui.proc_chqs.is_alive():
         qtest_qwait(0.1)
 
     if ui.writer.isRunning():

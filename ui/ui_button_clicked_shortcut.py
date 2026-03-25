@@ -174,7 +174,7 @@ def mnbutton_c_clicked_05(ui):
         file_list = os.listdir(GRAPH_PATH)
         for file_name in file_list:
             os.remove(f'{GRAPH_PATH}/{file_name}')
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
             table_list = df['name'].to_list()
             for table_name in table_list:
@@ -190,7 +190,7 @@ def mnbutton_c_clicked_06(ui):
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             ui.queryQ.put(('설정디비', 'DELETE FROM sacc'))
             ui.queryQ.put(('설정디비', 'DELETE FROM cacc'))
             ui.queryQ.put(('설정디비', 'DELETE FROM telegram'))

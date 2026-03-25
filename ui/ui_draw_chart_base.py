@@ -360,8 +360,9 @@ class DrawChartBase:
         if self.same_time:
             self.ui.ctpg_item[fidx1].setData(x=self.ui.ctpg_xticks[self.len_list[fidx1]:], y=self.ui.ctpg_data[fidx1])
         else:
-            self.ui.ctpg_item[fidx1] = \
-                self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[self.len_list[fidx1]:], y=self.ui.ctpg_data[fidx1], pen=color)
+            line = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[self.len_list[fidx1]:], y=self.ui.ctpg_data[fidx1], pen=color)
+            line.setZValue(10)
+            self.ui.ctpg_item[fidx1] = line
 
     def draw_infinite_line(self, i, fidx1):
         if self.same_time:
@@ -370,6 +371,7 @@ class DrawChartBase:
             self.ui.ctpg_cline = pg.InfiniteLine(angle=0)
             self.ui.ctpg_cline.setPen(pg.mkPen(color_fg_bt))
             self.ui.ctpg_cline.setPos(self.ui.ctpg_data[fidx1][-1])
+            self.ui.ctpg_cline.setZValue(25)
             self.ui.ctpg[i].addItem(self.ui.ctpg_cline)
 
     def draw_area(self, i):
@@ -446,8 +448,9 @@ class DrawChartBase:
         if self.same_time:
             self.ui.ctpg_item[col_idx].setData(x=self.ui.ctpg_xticks, y=self.ui.ctpg_data[col_idx])
         else:
-            self.ui.ctpg_item[col_idx] = \
-                self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks, y=self.ui.ctpg_data[col_idx], pen=pg.mkPen(color, width=width, style=style))
+            line = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks, y=self.ui.ctpg_data[col_idx], pen=pg.mkPen(color, width=width, style=style))
+            line.setZValue(15)
+            self.ui.ctpg_item[col_idx] = line
 
     def draw_fm_arrow(self, i, col_idx, style, width, color):
         style_angle = {
@@ -501,9 +504,9 @@ class DrawChartBase:
                 color_with_alpha = QColor(color)
                 color_with_alpha.setAlpha(100)
                 fill_item = pg.FillBetweenItem(upper_curve, lower_curve, brush=color_with_alpha)
-                fill_item.setZValue(1000)
             else:
                 fill_item = pg.TextItem()
+            fill_item.setZValue(5)
             self.ui.ctpg_item[col_idx] = fill_item
             self.ui.ctpg[i].addItem(fill_item)
         else:
@@ -542,7 +545,7 @@ class DrawChartBase:
                     color_with_alpha = QColor(color)
                     color_with_alpha.setAlpha(100)
                     fill_item = pg.FillBetweenItem(upper_curve, lower_curve, brush=color_with_alpha)
-                    fill_item.setZValue(1000)
+                    fill_item.setZValue(5)
                     self.ui.ctpg[i].addItem(fill_item)
 
             if arry[-1]:
@@ -556,9 +559,9 @@ class DrawChartBase:
                 color_with_alpha = QColor(color)
                 color_with_alpha.setAlpha(100)
                 fill_item = pg.FillBetweenItem(upper_curve, lower_curve, brush=color_with_alpha)
-                fill_item.setZValue(1000)
             else:
                 fill_item = pg.TextItem()
+            fill_item.setZValue(5)
             self.ui.ctpg_item[col_idx] = fill_item
             self.ui.ctpg[i].addItem(fill_item)
 

@@ -2,6 +2,7 @@
 import os
 import sys
 import zmq
+import queue
 import win32gui
 import subprocess
 from PyQt5.QtWidgets import QApplication
@@ -29,20 +30,43 @@ class ZmqRecvFromUI(QThread):
                 0            1             2            3
         """
         super().__init__()
-        self.main     = main
-        self.sagentQ  = qlist[1]
-        self.straderQ = qlist[2]
-        self.sstgQs   = qlist[3]
-        self.port_num = port_num
+        self.main       = main
+        self.sagentQ    = qlist[1]
+        self.straderQ   = qlist[2]
+        self.sstgQs     = qlist[3]
+        self.port_num   = port_num
+        self.is_running = False
+        self.zctx       = None
+        self.sock       = None
+
+    def set_sock(self):
         self.zctx = zmq.Context()
         self.sock = self.zctx.socket(zmq.SUB)
         self.sock.setsockopt(zmq.LINGER, 0)
-        self.sock.setsockopt(zmq.SNDTIMEO, 1000)
+        self.sock.setsockopt(zmq.RCVTIMEO, 1000)
         self.sock.setsockopt_string(zmq.SUBSCRIBE, '')
-        self.sock.connect(f'tcp://localhost:{self.port_num}')
-        self.is_running = True
+        try:
+            self.sock.connect(f'tcp://localhost:{self.port_num}')
+            self.is_running = True
+        except:
+            self.cleanup()
+
+    def cleanup(self):
+        try:
+            if self.sock: self.sock.close()
+            if self.zctx: self.zctx.term()
+        except:
+            pass
+        finally:
+            self.is_running = False
+            self.zctx = None
+            self.sock = None
+
+        qtest_qwait(3)
+        self.set_sock()
 
     def run(self):
+        self.set_sock()
         while self.is_running:
             try:
                 msg  = self.sock.recv_string()
@@ -62,8 +86,10 @@ class ZmqRecvFromUI(QThread):
                         self.signal1.emit(data)
                     elif data.__class__ == tuple:
                         self.signal2.emit(data)
-            except:
+            except zmq.Again:
                 pass
+            except:
+                self.cleanup()
 
         self.sock.close()
         self.zctx.term()
@@ -79,37 +105,61 @@ class ZmqSendToUI(QThread):
                 0            1             2            3
         """
         super().__init__()
-        self.mgzservQ = qlist[0]
-        self.sagentQ  = qlist[1]
-        self.straderQ = qlist[2]
-        self.sstgQs   = qlist[3]
-        self.port_num = port_num
+        self.mgzservQ   = qlist[0]
+        self.sagentQ    = qlist[1]
+        self.straderQ   = qlist[2]
+        self.sstgQs     = qlist[3]
+        self.port_num   = port_num
+        self.is_running = False
+        self.zctx       = None
+        self.sock       = None
+
+    def set_sock(self):
         self.zctx = zmq.Context()
         self.sock = self.zctx.socket(zmq.PUB)
         self.sock.setsockopt(zmq.LINGER, 0)
         self.sock.setsockopt(zmq.SNDTIMEO, 1000)
-        self.sock.bind(f'tcp://*:{self.port_num}')
-        self.is_running = True
+        try:
+            self.sock.bind(f'tcp://*:{self.port_num}')
+            self.is_running = True
+        except:
+            self.cleanup()
+
+    def cleanup(self):
+        try:
+            if self.sock: self.sock.close()
+            if self.zctx: self.zctx.term()
+        except:
+            pass
+        finally:
+            self.is_running = False
+            self.zctx = None
+            self.sock = None
+
+        qtest_qwait(3)
+        self.set_sock()
 
     def run(self):
-        inthms = int(str_hms())
+        self.set_sock()
         while self.is_running:
             try:
-                msg, data = self.mgzservQ.get(timeout=5)
-                try:
-                    self.sock.send_string(msg, zmq.SNDMORE)
-                    self.sock.send_pyobj(data)
-                except:
-                    pass
-
-                if int(str_hms()) > inthms:
-                    inthms = int(str_hms())
-                    sstgQs_size = sum([q.qsize() for q in self.sstgQs])
-                    qsize_data  = ('qsize', (self.sagentQ.qsize(), self.straderQ.qsize(), sstgQs_size))
-                    self.sock.send_string('qsize', zmq.SNDMORE)
-                    self.sock.send_pyobj(qsize_data)
-            except:
+                msg, data = self.mgzservQ.get(timeout=1)
+                self.sock.send_string(msg, zmq.SNDMORE)
+                self.sock.send_pyobj(data)
+            except queue.Empty or zmq.Again:
                 pass
+            except:
+                self.cleanup()
+
+            try:
+                sstgQs_size = sum([q.qsize() for q in self.sstgQs])
+                qsize_data = ('qsize', (self.sagentQ.qsize(), self.straderQ.qsize(), sstgQs_size))
+                self.sock.send_string('qsize', zmq.SNDMORE)
+                self.sock.send_pyobj(qsize_data)
+            except zmq.Again:
+                pass
+            except:
+                self.cleanup()
 
         self.sock.close()
         self.zctx.term()

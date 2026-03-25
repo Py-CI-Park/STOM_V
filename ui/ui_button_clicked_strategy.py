@@ -88,7 +88,7 @@ def button_clicked_strategy(ui, cmd):
 
 @error_decorator
 def button_clicked_strategy_delete(ui):
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         query = f"DELETE FROM custombutton WHERE `index` = {ui.stg_btn_number}"
         ui.queryQ.put(('전략디비', query))
         stg_name = dict_stg_name[ui.stg_btn_number]
@@ -119,7 +119,7 @@ def button_clicked_strategy_save(ui):
         QMessageBox.critical(ui.dialog_stg_input, '오류 알림', '버튼명이나 전략조건이 입력되지 않았습니다.\n')
         return
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         delete_query  = f"DELETE FROM custombutton WHERE `index` = {ui.stg_btn_number}"
         insert_query  = 'INSERT INTO custombutton VALUES (?, ?, ?)'
         insert_values = (ui.stg_btn_number, stg_name, stg_text)
