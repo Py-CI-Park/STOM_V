@@ -11,7 +11,7 @@ from utility.lazy_imports import get_np, get_pd
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, DB_FUTURE_TICK, \
     list_coin_tick, list_coin_min
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
-    get_ema_list, get_angle_cf, error_decorator, set_builtin_print
+    get_ema_list, get_angle_cf, set_builtin_print
 
 
 class FutureStrategyTick(StrategyBase):
@@ -141,7 +141,6 @@ class FutureStrategyTick(StrategyBase):
             self.mgzservQ.put(('window', (ui_num['기본로그'], f'{self.indicator}')))
         self.indi_settings = list(self.indicator.values())
 
-    @error_decorator
     def Mainloop(self):
         self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 시작')))
         while True:

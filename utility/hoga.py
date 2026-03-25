@@ -1,8 +1,8 @@
 
 import os
 import sqlite3
+from traceback import format_exc
 from utility.lazy_imports import get_pd
-from utility.static import error_decorator, set_builtin_print
 from utility.setting_base import ui_num, columns_hj, DB_PATH, DB_COIN_TICK_BACK, \
     DB_STOCK_TICK_BACK, DB_COIN_MIN_BACK, DB_STOCK_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, \
     list_stock_tick, list_stock_min, list_coin_tick, list_coin_min
@@ -62,31 +62,32 @@ class Hoga:
             '그외분봉매수총잔': list_coin_min.index('매수총잔량')
         }
 
-        set_builtin_print(True, self.windowQ)
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         while True:
             data = self.hogaQ.get()
-            if data[0] == '설정변경':
-                self.dict_set = data[1]
-            elif len(data) == 8:
-                self.UpdateHogaJongmok(data)
-            elif len(data) == 2:
-                self.UpdateChegeolcount(data)
-            elif len(data) == 4:
-                self.UpdateHogaForChart(data)
-            else:
-                if self.hoga_name == data[0]:
-                    self.UpdateHogajalryang(data)
-                    if self.gubun is not None:
-                        if self.dict_hj is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가종목'], get_pd().DataFrame([self.dict_hj])))
-                        if self.dict_hc is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가체결'], get_pd().DataFrame(self.dict_hc)))
-                        if self.dict_hg is not None:
-                            self.windowQ.put((ui_num[f'{self.gubun}호가잔량'], get_pd().DataFrame(self.dict_hg)))
+            try:
+                if data[0] == '설정변경':
+                    self.dict_set = data[1]
+                elif len(data) == 8:
+                    self.UpdateHogaJongmok(data)
+                elif len(data) == 2:
+                    self.UpdateChegeolcount(data)
+                elif len(data) == 4:
+                    self.UpdateHogaForChart(data)
+                else:
+                    if self.hoga_name == data[0]:
+                        self.UpdateHogajalryang(data)
+                        if self.gubun is not None:
+                            if self.dict_hj is not None:
+                                self.windowQ.put((ui_num[f'{self.gubun}호가종목'], get_pd().DataFrame([self.dict_hj])))
+                            if self.dict_hc is not None:
+                                self.windowQ.put((ui_num[f'{self.gubun}호가체결'], get_pd().DataFrame(self.dict_hc)))
+                            if self.dict_hg is not None:
+                                self.windowQ.put((ui_num[f'{self.gubun}호가잔량'], get_pd().DataFrame(self.dict_hg)))
+            except:
+                self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def InitHoga(self, gubun):
         self.dict_hj = {
