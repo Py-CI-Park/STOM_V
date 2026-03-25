@@ -33,11 +33,11 @@ class ZmqRecvFromUI(QThread):
         self.sagentQ  = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQ    = qlist[3]
-        self.port_num   = port_num
+        self.port_num = port_num
         self.zctx = zmq.Context()
         self.sock = self.zctx.socket(zmq.SUB)
         self.sock.setsockopt(zmq.LINGER, 0)
-        self.sock.setsockopt(zmq.SNDTIMEO, 5000)
+        self.sock.setsockopt(zmq.SNDTIMEO, 1000)
         self.sock.setsockopt_string(zmq.SUBSCRIBE, '')
         self.sock.connect(f'tcp://localhost:{self.port_num}')
         self.is_running = True
@@ -82,11 +82,11 @@ class ZmqSendToUI(QThread):
         self.sagentQ  = qlist[1]
         self.straderQ = qlist[2]
         self.sstgQ    = qlist[3]
-        self.port_num   = port_num
+        self.port_num = port_num
         self.zctx = zmq.Context()
         self.sock = self.zctx.socket(zmq.PUB)
         self.sock.setsockopt(zmq.LINGER, 0)
-        self.sock.setsockopt(zmq.SNDTIMEO, 5000)
+        self.sock.setsockopt(zmq.SNDTIMEO, 1000)
         self.sock.bind(f'tcp://*:{self.port_num}')
         self.is_running = True
 
@@ -344,7 +344,7 @@ class FutureManager:
         self.FutureStrategyProcessKill()
         self.FutureTraderProcessKill()
         self.FutureAgentProcessKill()
-        qtest_qwait(5)
+        qtest_qwait(1)
         sys.exit()
 
 

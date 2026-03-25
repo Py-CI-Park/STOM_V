@@ -24,8 +24,8 @@ class Chart:
         self.dict_set  = dict_set
         self.dict_name = {}
 
-        self.arry_kosp   = None
-        self.arry_kosd   = None
+        self.arry_kosp = None
+        self.arry_kosd = None
 
         con = sqlite3.connect(DB_CODE_INFO)
         df = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
@@ -97,14 +97,16 @@ class Chart:
             if self.arry_kosp is None:
                 self.arry_kosp = np.array([jisu_data])
             else:
-                self.arry_kosp = np.r_[self.arry_kosp, np.array([jisu_data])]
+                self.arry_kosp = np.concatenate([self.arry_kosp, [jisu_data]])
+            # noinspection PyTypeChecker
             xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosp[:, 0]]
             self.windowQ.put((ui_num['코스피'], xticks, self.arry_kosp[:, 1]))
         elif gubun == '코스닥':
             if self.arry_kosd is None:
                 self.arry_kosd = np.array([jisu_data])
             else:
-                self.arry_kosd = np.r_[self.arry_kosd, np.array([jisu_data])]
+                self.arry_kosd = np.concatenate([self.arry_kosd, [jisu_data]])
+            # noinspection PyTypeChecker
             xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosd[:, 0]]
             self.windowQ.put((ui_num['코스닥'], xticks, self.arry_kosd[:, 1]))
 
