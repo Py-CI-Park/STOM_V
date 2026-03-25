@@ -1,13 +1,13 @@
 
 import random
 import webbrowser
+import pandas as pd
 from PyQt5.QtCore import QDate, Qt
 from PyQt5.QtWidgets import QMessageBox, QPushButton
 from ui.set_text import famous_saying
 from utility.static import qtest_qwait, strf_time, error_decorator
 from utility.setting_base import columns_nt, ui_num, columns_nd
 from backtest.back_static import RunOptunaServer
-from utility.lazy_imports import get_pd
 
 
 # noinspection PyUnusedLocal
@@ -49,7 +49,7 @@ def ttbutton_clicked_01(ui, cmd):
             nbg, nsg = df['총매수금액'].sum(), df['총매도금액'].sum()
             npg, nmg = df['총수익금액'].sum(), df['총손실금액'].sum()
             nsig = df['수익금합계'].sum()
-            df2 = get_pd().DataFrame(columns=columns_nt)
+            df2 = pd.DataFrame(columns=columns_nt)
             df2.loc[0] = [pr, nbg, nsg, npg, nmg, nsp, nsig]
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적합계'], df2))
         else:
@@ -61,7 +61,7 @@ def ttbutton_clicked_01(ui, cmd):
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df))
         elif cmd == f'{gubun}월별집계':
             df['연월'] = df['index'].apply(lambda x: str(x)[:6])
-            df2 = get_pd().DataFrame(columns=columns_nd)
+            df2 = pd.DataFrame(columns=columns_nd)
             lastmonth = df['연월'].iloc[-1]
             month = strf_time('%Y%m')
             while int(month) >= int(lastmonth):
@@ -76,7 +76,7 @@ def ttbutton_clicked_01(ui, cmd):
             ui.update_tablewidget.update_tablewidget((ui_num[f'{gubun}누적상세'], df2))
         elif cmd == f'{gubun}연도별집계':
             df['연도'] = df['index'].apply(lambda x: str(x)[:4])
-            df2 = get_pd().DataFrame(columns=columns_nd)
+            df2 = pd.DataFrame(columns=columns_nd)
             lastyear = df['연도'].iloc[-1]
             year = strf_time('%Y')
             while int(year) >= int(lastyear):

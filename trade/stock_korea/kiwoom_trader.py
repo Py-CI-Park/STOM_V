@@ -2,10 +2,10 @@
 import os
 import sys
 import sqlite3
+import pandas as pd
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.lazy_imports import get_pd
 from utility.setting_base import ui_num, columns_cj, columns_td, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, str_hms, roundfigure_lower, roundfigure_upper, GetKiwoomPgSgSp, \
     GetHogaunit, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, qtest_qwait
@@ -124,8 +124,8 @@ class KiwoomTrader:
 
     def LoadDatabase(self):
         con = sqlite3.connect(DB_TRADELIST)
-        df_cj = get_pd().read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
-        df_td = get_pd().read_sql(f"SELECT * FROM s_tradelist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_cj = pd.read_sql(f"SELECT * FROM s_chegeollist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
+        df_td = pd.read_sql(f"SELECT * FROM s_tradelist WHERE 체결시간 LIKE '{self.str_today}%'", con).set_index('index')
         if len(df_cj) > 0:
             self.dict_cj = df_cj.to_dict('index')
             self.mgzservQ.put(('window', (ui_num['S체결목록'], df_cj[::-1])))
@@ -133,7 +133,7 @@ class KiwoomTrader:
             self.dict_td = df_td.to_dict('index')
             self.mgzservQ.put(('window', (ui_num['S거래목록'], df_td[::-1])))
         if self.dict_set['주식모의투자']:
-            df_jg = get_pd().read_sql('SELECT * FROM s_jangolist', con).set_index('index')
+            df_jg = pd.read_sql('SELECT * FROM s_jangolist', con).set_index('index')
             if len(df_jg) > 0:
                 self.dict_jg = df_jg.to_dict('index')
                 self.sagentQ.put(('잔고목록', tuple(self.dict_jg)))
@@ -308,13 +308,13 @@ class KiwoomTrader:
 
     def UpdateString(self, data):
         if data == '체결목록':
-            df_cj = get_pd().DataFrame.from_dict(self.dict_cj, orient='index')
+            df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
             self.mgzservQ.put(('tele', df_cj)) if len(df_cj) > 0 else self.mgzservQ.put(('tele', '현재는 주식 체결목록이 없습니다.'))
         elif data == '거래목록':
-            df_td = get_pd().DataFrame.from_dict(self.dict_td, orient='index')
+            df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
             self.mgzservQ.put(('tele', df_td)) if len(df_td) > 0 else self.mgzservQ.put(('tele', '현재는 주식 거래목록이 없습니다.'))
         elif data == '잔고평가':
-            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
             self.mgzservQ.put(('tele', df_jg)) if len(df_jg) > 0 else self.mgzservQ.put(('tele', '현재는 주식 잔고목록이 없습니다.'))
         elif data == '잔고청산':
             self.JangoCheongsan('수동')
@@ -436,7 +436,7 @@ class KiwoomTrader:
             if dict_jg: self.dict_jg = dict_jg
         else:
             con = sqlite3.connect(DB_TRADELIST)
-            df = get_pd().read_sql('SELECT * FROM s_tradelist', con)
+            df = pd.read_sql('SELECT * FROM s_tradelist', con)
             con.close()
             총수익금 = df['수익금'].sum()
             총매입금액 = sum([v['매입금액'] for v in self.dict_jg.values()]) if self.dict_jg else 0
@@ -563,7 +563,7 @@ class KiwoomTrader:
                 self.dict_intg['예수금'] += 매입금액 + 수익금
                 self.dict_intg['추정예수금'] += 매입금액 + 수익금
 
-            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
             self.mgzservQ.put(('query', ('거래디비', df_jg, 's_jangolist', 'replace')))
             if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', f'{종목명} {체결수량}주를 {주문구분}하였습니다'))
             self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}{주문상태}] {종목명} | {체결가격} | {체결수량}')))
@@ -605,9 +605,9 @@ class KiwoomTrader:
             '수익금': 수익금,
             '체결시간': 주문시간
         }
-        df_td = get_pd().DataFrame.from_dict(self.dict_td, orient='index')
+        df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
         self.mgzservQ.put(('window', (ui_num['S거래목록'], df_td[::-1])))
-        df = get_pd().DataFrame([[종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_td, index=[index])
+        df = pd.DataFrame([[종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]], columns=columns_td, index=[index])
         self.mgzservQ.put(('query', ('거래디비', df, 's_tradelist', 'append')))
         self.UpdateTotaltradelist()
 
@@ -631,7 +631,7 @@ class KiwoomTrader:
             '수익률': 수익률,
             '수익금합계': 수익금합계
         }
-        df_tt = get_pd().DataFrame.from_dict(self.dict_tt, orient='index')
+        df_tt = pd.DataFrame.from_dict(self.dict_tt, orient='index')
         delete_query = f"DELETE FROM s_totaltradelist WHERE `index` = '{self.str_today}'"
         self.mgzservQ.put(('query', ('거래디비', delete_query)))
         self.mgzservQ.put(('query', ('거래디비', df_tt, 's_totaltradelist', 'append')))
@@ -660,9 +660,9 @@ class KiwoomTrader:
             '주문번호': 주문번호
         }
         self.dict_cj = dict(sorted(self.dict_cj.items(), key=lambda x: x[0]))
-        df_cj = get_pd().DataFrame.from_dict(self.dict_cj, orient='index')
+        df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
         self.mgzservQ.put(('window', (ui_num['S체결목록'], df_cj[::-1])))
-        df = get_pd().DataFrame([[종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
+        df = pd.DataFrame([[종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]], columns=columns_cj, index=[index])
         self.mgzservQ.put(('query', ('거래디비', df, 's_chegeollist', 'append')))
 
     def UpdateTotaljango(self):
@@ -712,10 +712,10 @@ class KiwoomTrader:
                 q.put(('종목당투자금', self.dict_intg['종목당투자금']))
 
         if self.dict_jg:
-            df_jg = get_pd().DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
         else:
-            df_jg = get_pd().DataFrame(columns=columns_jg)
-        df_tj = get_pd().DataFrame.from_dict(self.dict_tj, orient='index')
+            df_jg = pd.DataFrame(columns=columns_jg)
+        df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
         self.mgzservQ.put(('window', (ui_num['S잔고목록'], df_jg)))
         self.mgzservQ.put(('window', (ui_num['S잔고평가'], df_tj)))
 

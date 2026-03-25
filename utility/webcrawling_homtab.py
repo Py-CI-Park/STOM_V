@@ -1,14 +1,14 @@
 
 import time
 import requests
+import pandas as pd
 from threading import Lock
 from bs4 import BeautifulSoup
 from traceback import format_exc
 from fake_useragent import UserAgent
-from utility.lazy_imports import get_pd
 from utility.setting_base import ui_num
-from utility.static import str_ymdhm, set_builtin_print, str_ymd_ios, dt_ymdhms_ios, timedelta_day, dt_ymd, str_hms, \
-    now, str_ymd, thread_decorator
+from utility.static import str_ymdhm, str_ymd_ios, dt_ymdhms_ios, timedelta_day, dt_ymd, str_hms, now, str_ymd, \
+    thread_decorator
 
 
 class WebCrawingHomTab:
@@ -24,7 +24,6 @@ class WebCrawingHomTab:
         self.thread_lock = Lock()
         self.complted_thread = 0
 
-        set_builtin_print(True, self.windowQ)
         self.MainLoop()
 
     def MainLoop(self):
@@ -137,7 +136,7 @@ class WebCrawingHomTab:
             i += 1
 
         if time_list:
-            df = get_pd().DataFrame({
+            df = pd.DataFrame({
                 'time': time_list[::-1],
                 'price': price_list[::-1],
                 'gap': gap_list[::-1],
@@ -148,7 +147,7 @@ class WebCrawingHomTab:
 
         with self.thread_lock:
             if existing_data is not None:
-                self.dict_data[name] = get_pd().concat([existing_data, df])
+                self.dict_data[name] = pd.concat([existing_data, df])
             else:
                 self.dict_data[name] = df
             self.complted_thread += 1
@@ -208,7 +207,7 @@ class WebCrawingHomTab:
                 i += 1
 
             if time_list:
-                df = get_pd().DataFrame({
+                df = pd.DataFrame({
                     'time': time_list[::-1],
                     'price': price_list[::-1],
                     'change': pct_list[::-1]
@@ -218,7 +217,7 @@ class WebCrawingHomTab:
 
             with self.thread_lock:
                 if existing_data is not None:
-                    self.dict_data[name] = get_pd().concat([existing_data, df])
+                    self.dict_data[name] = pd.concat([existing_data, df])
                 else:
                     self.dict_data[name] = df
                 self.complted_thread += 1
@@ -247,7 +246,7 @@ class WebCrawingHomTab:
             change_list = [round((price / float(data[0][4]) - 1)  * 100, 2) for price in price_list]
 
             if time_list:
-                df = get_pd().DataFrame({
+                df = pd.DataFrame({
                     'time': time_list,
                     'price': price_list,
                     'change': change_list

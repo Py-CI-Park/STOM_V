@@ -118,7 +118,7 @@ https://www.youtube.com/@stomlive
 ![백테결과부가정보](./utility/imagefiles/31_백테결과부가정보.png)
 
 ### 텔레그램 사용자 버튼
-![텔레그램 사용자버튼](./utility/imagefiles/32_텔레그램 사용자버튼.png)
+![텔레그램 사용자버튼](./utility/imagefiles/32_텔레그램_사용자버튼.png)
 
 ### 시스템 다이어그램 I
 ![시스템 구조도](./utility/imagefiles/diagram_01.png)

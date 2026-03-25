@@ -1,7 +1,7 @@
 
+import numpy as np
 from traceback import format_exc
 from utility.setting_base import ui_num
-from utility.lazy_imports import get_np
 from trade.binance.binance_strategy_tick import BinanceStrategyTick
 from utility.static import GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, now_utc, dt_ymdhms, now, GetIndicator, \
     error_decorator
@@ -26,18 +26,20 @@ class BinanceStrategyMin(BinanceStrategyTick):
         순매수금액 = 분당매수금액 - 분당매도금액
         self.hoga_unit = 호가단위 = self.dict_info[종목코드]['호가단위']
 
-        self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
+        self.shogainfo = np.array([매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5])
+        self.shreminfo = np.array([매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5])
+        self.bhogainfo = np.array([매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5])
+        self.bhreminfo = np.array([매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5])
 
         if 전략연산:
-            new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
+            new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
             new_data_tick[:self.base_cnt] = data[:self.base_cnt]
 
             pre_data = self.dict_data.get(종목코드)
             if pre_data is not None:
-                self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
+                self.dict_data[종목코드] = np.concatenate([pre_data, [new_data_tick]])
             else:
-                self.dict_data[종목코드] = get_np().array([new_data_tick])
+                self.dict_data[종목코드] = np.array([new_data_tick])
 
             self.arry_code = self.dict_data[종목코드]
             self.tick_count = 데이터길이 = len(self.arry_code)
@@ -257,9 +259,9 @@ class BinanceStrategyMin(BinanceStrategyTick):
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:
-                new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
+                new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
                 new_data_tick[:self.base_cnt] = data[:self.base_cnt]
-                self.arry_code = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
+                self.arry_code = np.concatenate([pre_data, [new_data_tick]])
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
                 self.arry_code[-1, self.area_cnt:self.data_cnt] = GetIndicator(
                     self.arry_code[:, self.dict_findex['현재가']],
