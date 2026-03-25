@@ -1,4 +1,7 @@
-# STOM Project Guidelines
+# STOM Project Guidelines (STOM_Version_2U)
+
+> **워크트리 위치**: `STOM_V.wt-2u/`
+> **관련 문서**: [`docs/WORKTREE_STRATEGY.md`](docs/WORKTREE_STRATEGY.md), [`docs/UPSTREAM_SYNC_STRATEGY.md`](docs/UPSTREAM_SYNC_STRATEGY.md) 6절
 
 ## STOM_Version_2U 브랜치 핵심 목적
 
@@ -12,6 +15,36 @@ UI 핵심 로직을 **항상 수정·업데이트 가능한 소스 파일**(`ui_
 - `.pyd`는 직접 읽을 수 없으므로 → 주변 `.py` 파일 변화를 추론하여 `ui_mainwindow.py`에 반영
 - `ui_mainwindow.py`는 `ui_mainwindow.pyd`와 **항상 동일한 공개 인터페이스** 제공
 - 이 브랜치는 `STOM_Version_2`를 **지속적으로 따라가는 살아있는 추적 브랜치**
+
+### V2 merge 시 필수 절차 (pyd 제거)
+
+```bash
+# 1. V2 변경분 머지
+git merge STOM_Version_2
+
+# 2. ★ pyd 파일 즉시 제거 (이 브랜치 핵심 원칙: pyd 비존재)
+git rm -f $(git ls-files '*.pyd') 2>/dev/null
+
+# 3. pyd 변경 여부 확인
+git diff STOM_Version_2U@{1}..STOM_Version_2 --name-only | grep '\.pyd$'
+# → 출력 있으면 py 추론 작업 필요, 없으면 바로 커밋
+
+# 4. 커밋
+git commit -m "STOM V{버전} 동기화 (pyd 제거 + py 추론 반영)"
+```
+
+> 상세 절차 → [`docs/UPSTREAM_SYNC_STRATEGY.md`](docs/UPSTREAM_SYNC_STRATEGY.md) 6절
+
+---
+
+## 워크트리 전체 구성
+
+| 디렉토리 | 브랜치 | 역할 |
+|----------|--------|------|
+| `STOM_V/` | `STOM_Version_2` | 업스트림 원본 추적 |
+| **`STOM_V.wt-2u/`** (여기) | `STOM_Version_2U` | pyd→py 동기화 |
+| `STOM_V.wt-dev/` | `STOM_Version_2U_C` | 커스텀 개발 (CLI 등) |
+| `STOM_V.wt-lab/` | `research/*` | 실험 |
 
 ---
 
