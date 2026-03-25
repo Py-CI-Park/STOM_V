@@ -73,10 +73,7 @@ from ui.ui_button_clicked_zoom import *
 from ui.ui_load_database import *
 from ui.ui_draw_home_chart import *
 
-from utility.hoga import *
-from utility.chart import *
-from utility.sound import *
-from utility.query import *
+from utility.chart_hoga_query_sound import ChartHogaQuerySound
 from utility.static import *
 from utility.setting_base import *
 from utility.setting_user import *
@@ -348,19 +345,13 @@ class MainWindow(QMainWindow):
         ]
 
         self.proc_webc  = Process(target=WebCrawling, args=(self.qlist,), daemon=True)
-        self.proc_sound = Process(target=Sound, args=(self.qlist,), daemon=True)
-        self.proc_query = Process(target=Query, args=(self.qlist, dict_set))
-        self.proc_chart = Process(target=Chart, args=(self.qlist, dict_set), daemon=True)
-        self.proc_hoga  = Process(target=Hoga, args=(self.qlist, dict_set), daemon=True)
+        self.proc_chqs  = Process(target=ChartHogaQuerySound, args=(self.qlist, dict_set), daemon=True)
         self.proc_livec = None
         # STOM Live disabled
         # self.proc_live  = Process(target=LiveClient, args=(self.qlist,), daemon=True)
 
         self.proc_webc.start()
-        self.proc_sound.start()
-        self.proc_query.start()
-        self.proc_chart.start()
-        self.proc_hoga.start()
+        self.proc_chqs.start()
         # STOM Live disabled
         # self.proc_live.start()
 

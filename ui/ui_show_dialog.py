@@ -135,7 +135,7 @@ def show_dialog_hoga(ui, _show, coin, code):
 def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, endtime, detail, buytimes):
     if not ui.dialog_chart.isVisible():
         dialog_chart_show(ui)
-    if ui.dialog_chart.isVisible() and ui.proc_chart.is_alive():
+    if ui.dialog_chart.isVisible() and ui.proc_chqs.is_alive():
         if real:
             ui.ChartClear()
             if coin:

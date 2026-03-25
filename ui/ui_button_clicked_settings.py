@@ -260,7 +260,7 @@ def setting_save_01(ui):
     바이낸스선물마진타입 = 'ISOLATED' if ui.sj_main_comBox_03.currentText() == '격리' else 'CROSSED'
     바이낸스선물포지션 = 'false' if ui.sj_main_comBox_04.currentText() == '단방향' else 'true'
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         columns = ['증권사', '주식에이전트', '주식트레이더', '주식데이터저장', '거래소', '코인리시버', '코인트레이더', '코인데이터저장',
                    '바이낸스선물마진타입', '바이낸스선물포지션']
         set_txt = ', '.join([f'{col} = ?' for col in columns])
@@ -332,7 +332,7 @@ def setting_save_02(ui):
         en_ap1 = en_text(ui.dict_set['키'], 계좌비밀번호)
         id_num = int(comob_name[4:])
 
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             columns = ['아이디', '비밀번호', '인증서비밀번호', '계좌비밀번호']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query   = f'UPDATE sacc SET {set_txt} WHERE `index` = ?'
@@ -356,7 +356,7 @@ def setting_save_03(ui):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
     else:
         combo_name = ui.sj_main_comBox_02.currentText()
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             en_access_key = en_text(ui.dict_set['키'], access_key)
             en_secret_key = en_text(ui.dict_set['키'], secret_key)
             index  = 1 if combo_name == '업비트' else 2
@@ -384,7 +384,7 @@ def setting_save_04(ui):
     else:
         comob_name = ui.sj_main_comBox_01.currentText()
         gubun = comob_name[4:]
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             en_str_bot = en_text(ui.dict_set['키'], str_bot)
             en_int_id = en_text(ui.dict_set['키'], int_id)
             query  = 'UPDATE telegram SET str_bot = ?, int_id = ? WHERE `index` = ?'
@@ -446,7 +446,7 @@ def setting_save_05(ui):
             if 주식매도전략 == '사용안함':
                 주식매도전략 = ''
 
-            if ui.proc_query.is_alive():
+            if ui.proc_chqs.is_alive():
                 columns = ['주식모의투자', '주식알림소리', '주식매수전략', '주식타임프레임', '주식매도전략', '주식평균값계산틱수',
                            '주식최대매수종목수', '주식전략종료시간', '주식잔고청산', '주식프로세스종료', '주식컴퓨터종료', '주식투자금고정',
                            '주식투자금', '주식손실중지', '주식손실중지수익률', '주식수익중지', '주식수익중지수익률']
@@ -520,7 +520,7 @@ def setting_save_06(ui):
             if 코인매도전략 == '사용안함':
                 코인매도전략 = ''
 
-            if ui.proc_query.is_alive():
+            if ui.proc_chqs.is_alive():
                 columns = ['코인모의투자', '코인알림소리', '코인매수전략', '코인타임프레임', '코인매도전략', '코인평균값계산틱수',
                            '코인최대매수종목수', '코인전략종료시간', '코인잔고청산', '코인프로세스종료', '코인컴퓨터종료', '코인투자금고정',
                            '코인투자금', '코인손실중지', '코인손실중지수익률', '코인수익중지', '코인수익중지수익률']
@@ -588,7 +588,7 @@ def setting_save_07(ui):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
     else:
         백테스케쥴시간 = int(백테스케쥴시간)
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             columns = ['블랙리스트추가', '백테주문관리적용', '백테매수시간기준', '백테일괄로딩', '그래프저장하지않기', '그래프띄우지않기',
                        '디비자동관리', '교차검증가중치', '기준값최소상승률', '백테스케쥴실행', '백테스케쥴요일', '백테스케쥴시간',
                        '백테스케쥴구분', '백테스케쥴명', '백테날짜고정', '백테날짜', '범위자동관리', '백테스트로그기록안함']
@@ -637,7 +637,7 @@ def setting_save_08(ui):
     시리얼키_ = ui.sj_etc_liEditt_01.text()
     시리얼키 = en_text(ui.dict_set['키'], 시리얼키_)
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         columns = ['테마', '저해상도', '창위치기억', '휴무프로세스종료', '휴무컴퓨터종료', '스톰라이브', '프로그램종료', '시리얼키']
         set_txt = ', '.join([f'{col} = ?' for col in columns])
         query   = f'UPDATE etc SET {set_txt}'
@@ -1046,7 +1046,7 @@ def setting_order_save_01(ui):
         QMessageBox.critical(ui, '오류 알림', '해외선물의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
         return
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         columns = ['주식매수주문구분', '주식매수분할횟수', '주식매수분할방법', '주식매수분할시그널', '주식매수분할하방', '주식매수분할상방',
                    '주식매수분할하방수익률', '주식매수분할상방수익률', '주식매수분할고정수익률', '주식매수지정가기준가격', '주식매수지정가호가번호',
                    '주식매수시장가잔량범위', '주식매수취소관심이탈', '주식매수취소매도시그널', '주식매수취소시간', '주식매수취소시간초',
@@ -1192,7 +1192,7 @@ def setting_order_save_02(ui):
         QMessageBox.critical(ui, '오류 알림', '해외선물의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
         return
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         columns = ['주식매도주문구분', '주식매도분할횟수', '주식매도분할방법', '주식매도분할시그널', '주식매도분할하방', '주식매도분할상방',
                    '주식매도분할하방수익률', '주식매도분할상방수익률', '주식매도지정가기준가격', '주식매도지정가호가번호',
                    '주식매도시장가잔량범위', '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초',
@@ -1358,7 +1358,7 @@ def setting_order_save_03(ui):
         QMessageBox.critical(ui, '오류 알림', '업비트의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
         return
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         columns = ['코인매수주문구분', '코인매수분할횟수', '코인매수분할방법', '코인매수분할시그널', '코인매수분할하방', '코인매수분할상방',
                    '코인매수분할하방수익률', '코인매수분할상방수익률', '코인매수분할고정수익률', '코인매수지정가기준가격', '코인매수지정가호가번호',
                    '코인매수시장가잔량범위', '코인매수취소관심이탈', '코인매수취소매도시그널', '코인매수취소시간', '코인매수취소시간초',
@@ -1494,7 +1494,7 @@ def setting_order_save_04(ui):
         QMessageBox.critical(ui, '오류 알림', '업비트의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
         return
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         columns = ['코인매도주문구분', '코인매도분할횟수', '코인매도분할방법', '코인매도분할시그널', '코인매도분할하방', '코인매도분할상방',
                    '코인매도분할하방수익률', '코인매도분할상방수익률', '코인매도지정가기준가격', '코인매도지정가호가번호', '코인매도시장가잔량범위',
                    '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도금지매수횟수',
@@ -1564,7 +1564,7 @@ def setting_all_app(ui):
         QMessageBox.critical(ui, '오류 알림', '설정파일이 존재하지 않았습니다.\n')
         return
 
-    if ui.proc_query.is_alive():
+    if ui.proc_chqs.is_alive():
         ui.queryQ.put(('설정파일변경', origin_file, copy_file))
         qtest_qwait(2)
         ui.SettingLoad_01()
