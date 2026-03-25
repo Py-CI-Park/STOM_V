@@ -13,10 +13,11 @@ def database_check():
         os.makedirs('./backtest/temp', exist_ok=True)
         os.makedirs('./backtest/graph', exist_ok=True)
 
-        DB_SETTING    = './_database/setting.db'
-        DB_TRADELIST  = './_database/tradelist.db'
-        DB_STRATEGY   = './_database/strategy.db'
-        DB_CODE_INFO  = './_database/code_info.db'
+        DB_PATH       = './_database'
+        DB_SETTING    = f'{DB_PATH}/setting.db'
+        DB_TRADELIST  = f'{DB_PATH}/tradelist.db'
+        DB_STRATEGY   = f'{DB_PATH}/strategy.db'
+        DB_CODE_INFO  = f'{DB_PATH}/code_info.db'
 
         try:
             read_key()
@@ -154,14 +155,23 @@ def database_check():
             columns = [
                 'index', '주식매도주문구분', '주식매도분할횟수', '주식매도분할방법', '주식매도분할시그널', '주식매도분할하방', '주식매도분할상방',
                 '주식매도분할하방수익률', '주식매도분할상방수익률', '주식매도지정가기준가격', '주식매도지정가호가번호', '주식매도시장가잔량범위',
-                '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초', '주식매도손절수익률청산', '주식매도손절수익률',
-                '주식매도손절수익금청산', '주식매도손절수익금', '주식매도금지매수횟수', '주식매도금지매수횟수값', '주식매도금지라운드피겨',
-                '주식매도금지라운드호가', '주식매도금지시간', '주식매도금지시작시간', '주식매도금지종료시간', '주식매도금지간격', '주식매도금지간격초',
-                '주식매도정정횟수', '주식매도정정호가차이', '주식매도정정호가'
+                '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초', '주식매도금지매수횟수',
+                '주식매도금지매수횟수값', '주식매도금지라운드피겨', '주식매도금지라운드호가', '주식매도금지시간', '주식매도금지시작시간',
+                '주식매도금지종료시간', '주식매도금지간격', '주식매도금지간격초', '주식매도정정횟수', '주식매도정정호가차이', '주식매도정정호가',
+                '주식매도익절수익률청산', '주식매도익절수익률', '주식매도익절수익금청산', '주식매도익절수익금',
+                '주식매도손절수익률청산', '주식매도손절수익률', '주식매도손절수익금청산', '주식매도손절수익금'
             ]
-            data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 5, 0, 100, 0, 2, 0, 5, 0, 120000, 130000, 0, 300, 0, 5, 2]
+            data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 2, 0, 5, 0, 120000, 130000, 0, 300, 0, 5, 2, 0, 5, 0, 1_000_000, 0, 5, 0, 1_000_000]
             df = get_pd().DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stocksellorder', con)
+        else:
+            df = get_pd().read_sql("SELECT * FROM stocksellorder", con).set_index('index')
+            if '주식매도익절수익률청산' not in df.columns:
+                df['주식매도익절수익률청산'] = 0
+                df['주식매도익절수익률'] = 5
+                df['주식매도익절수익금청산'] = 0
+                df['주식매도익절수익금'] = 1_000_000
+                df.to_sql('stocksellorder', con, if_exists='replace')
 
         if 'coinbuyorder' not in table_list:
             columns = [
@@ -181,13 +191,23 @@ def database_check():
             columns = [
                 'index', '코인매도주문구분', '코인매도분할횟수', '코인매도분할방법', '코인매도분할시그널', '코인매도분할하방', '코인매도분할상방',
                 '코인매도분할하방수익률', '코인매도분할상방수익률', '코인매도지정가기준가격', '코인매도지정가호가번호', '코인매도시장가잔량범위',
-                '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도손절수익률청산', '코인매도손절수익률',
-                '코인매도손절수익금청산', '코인매도손절수익금', '코인매도금지매수횟수', '코인매도금지매수횟수값', '코인매도금지시간', '코인매도금지시작시간',
-                '코인매도금지종료시간', '코인매도금지간격', '코인매도금지간격초', '코인매도정정횟수', '코인매도정정호가차이', '코인매도정정호가'
+                '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도금지매수횟수',
+                '코인매도금지매수횟수값', '코인매도금지시간', '코인매도금지시작시간', '코인매도금지종료시간', '코인매도금지간격',
+                '코인매도금지간격초', '코인매도정정횟수', '코인매도정정호가차이', '코인매도정정호가',
+                '코인매도익절수익률청산', '코인매도익절수익률', '코인매도익절수익금청산', '코인매도익절수익금',
+                '코인매도손절수익률청산', '코인매도손절수익률', '코인매도손절수익금청산', '코인매도손절수익금'
             ]
-            data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 5, 0, 100, 0, 2, 0, 150000, 210000, 0, 300, 0, 5, 2]
+            data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 2, 0, 150000, 210000, 0, 300, 0, 5, 2, 0, 5, 0, 1_000_000, 0, 5, 0, 1_000_000]
             df = get_pd().DataFrame([data], columns=columns).set_index('index')
             df.to_sql('coinsellorder', con)
+        else:
+            df = get_pd().read_sql("SELECT * FROM coinsellorder", con).set_index('index')
+            if '코인매도익절수익률청산' not in df.columns:
+                df['코인매도익절수익률청산'] = 0
+                df['코인매도익절수익률'] = 5
+                df['코인매도익절수익금청산'] = 0
+                df['코인매도익절수익금'] = 1_000_000
+                df.to_sql('coinsellorder', con, if_exists='replace')
 
         con.close()
 
@@ -448,6 +468,38 @@ def database_check():
 
         con.commit()
         con.close()
+
+        file_list  = os.listdir(DB_PATH)
+        file_names = ['stock_tick_', 'future_tick_', 'coin_tick_']
+        for file_name in file_names:
+            file_list_ = [x for x in file_list if file_name in x and '.db' in x and 'back' not in x]
+            if file_list_:
+                con = sqlite3.connect(f'{DB_PATH}/{file_list_[0]}')
+                df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                table_list = df['name'].to_list()
+                if 'moneytop' in table_list: table_list.remove('moneytop')
+                if table_list:
+                    df = get_pd().read_sql(f'SELECT * FROM "{table_list[0]}"', con)
+                    if '당일매수금액' not in df.columns:
+                        con.close()
+                        return False, '일자DB의 칼럼이 일치하지 않습니다.\nupdate_db_20260211.bat 파일을 실행하여 DB를 업데이트하십시오.'
+                con.close()
+
+            file_list_ = [x for x in file_list if file_name in x and '.db' in x and 'back' in x]
+            if file_list_:
+                con = sqlite3.connect(f'{DB_PATH}/{file_list_[0]}')
+                df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+                table_list = df['name'].to_list()
+                if 'moneytop' in table_list: table_list.remove('moneytop')
+                if 'stockinfo' in table_list: table_list.remove('stockinfo')
+                if 'futureinfo' in table_list: table_list.remove('futureinfo')
+                if table_list:
+                    df = get_pd().read_sql(f'SELECT * FROM "{table_list[0]}"', con)
+                    if '당일매수금액' not in df.columns:
+                        con.close()
+                        return False, f'백테DB의 칼럼이 일치하지 않습니다.\n업데이트 된 일자DB로 백테DB를 새로 생성하십시오.'
+                con.close()
+
         return True, None
 
     except:

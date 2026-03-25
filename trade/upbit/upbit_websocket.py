@@ -4,8 +4,8 @@ import uuid
 import asyncio
 import websockets
 from traceback import format_exc
-from PyQt5.QtCore import QThread, pyqtSignal
 from utility.setting_base import ui_num
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class WebSocketReceiver(QThread):
@@ -14,14 +14,14 @@ class WebSocketReceiver(QThread):
 
     def __init__(self, codes, windowQ):
         super().__init__()
-        self.codes       = codes
-        self.windowQ     = windowQ
-        self.loop        = None
-        self.wsk_trade   = None
-        self.wsk_order   = None
-        self.con_trade   = False
-        self.con_order   = False
-        self.url         = 'wss://api.upbit.com/websocket/v1'
+        self.codes     = codes
+        self.windowQ   = windowQ
+        self.loop      = None
+        self.wsk_trade = None
+        self.wsk_order = None
+        self.con_trade = False
+        self.con_order = False
+        self.url       = 'wss://api.upbit.com/websocket/v1'
 
     def run(self):
         self.loop = asyncio.new_event_loop()

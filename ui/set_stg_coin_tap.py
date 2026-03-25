@@ -267,11 +267,11 @@ class SetCoinBack:
         for widget in self.ui.coin_rwftvd_list:
             if widget not in (self.ui.cvjb_labelllll_01, self.ui.cvjb_dateEditt_01, self.ui.cvjb_dateEditt_02):
                 widget.setVisible(False)
-                widget.setVisible(False)
 
     # =================================================================================================================
 
         self.ui.cvc_labellllll_05 = QLabel('', self.ui.cs_tab)
+        self.ui.cvc_labellllll_05.setVisible(False)
 
     # =================================================================================================================
 

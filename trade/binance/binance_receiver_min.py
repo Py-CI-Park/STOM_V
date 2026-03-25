@@ -1,9 +1,9 @@
 
 from traceback import format_exc
-from trade.binance.binance_receiver_tick import BinanceReceiverTick
 from utility.setting_base import ui_num
 from utility.lazy_imports import get_np
 from utility.static import now, str_ymdhms_utc
+from trade.binance.binance_receiver_tick import BinanceReceiverTick
 
 
 class BinanceReceiverMin(BinanceReceiverTick):

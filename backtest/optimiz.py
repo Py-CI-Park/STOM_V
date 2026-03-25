@@ -12,8 +12,8 @@ from backtest.optimiz_3d_visualization import Visualization3D
 from backtest.back_static_numba import GetResult, bootstrap_test
 from backtest.back_static import SendResult, PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
 from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator
-from utility.setting_base import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, columns_vc, \
-    DB_SETTING, DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STRATEGY, DB_BACKTEST, columns_vc, \
+    DB_SETTING, DB_OPTUNA, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 
 
 class Total:
@@ -239,8 +239,8 @@ class Total:
         bootstrap_max  = round(get_np().percentile(bootstrap_dist, 97.5), 2)
         # noinspection PyTypeChecker
         bootstrap_pv   = round(get_np().mean(bootstrap_dist > 0) * 100, 2)
-        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상 최소 평균수익률: {bootstrap_min}%, 예상 최대 평균수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
-        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 평균수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
+        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
+        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
 
         startday, endday = str(self.startday), str(self.endday)
         startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
@@ -429,24 +429,24 @@ class Optimize:
         market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
         if self.ui_gubun == 'S':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_STOCK_BACK_TICK
+                db = DB_STOCK_TICK_BACK
                 is_tick = True
             else:
-                db = DB_STOCK_BACK_MIN
+                db = DB_STOCK_MIN_BACK
                 is_tick = False
         elif self.ui_gubun == 'SF':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_FUTURE_BACK_TICK
+                db = DB_FUTURE_TICK_BACK
                 is_tick = True
             else:
-                db = DB_FUTURE_BACK_MIN
+                db = DB_FUTURE_MIN_BACK
                 is_tick = False
         else:
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_COIN_BACK_TICK
+                db = DB_COIN_TICK_BACK
                 is_tick = True
             else:
-                db = DB_COIN_BACK_MIN
+                db = DB_COIN_MIN_BACK
                 is_tick = False
 
         con   = sqlite3.connect(db)

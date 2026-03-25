@@ -28,6 +28,8 @@ class SetOrderTap:
         self.ui.ss_od_groupBoxxx_13 = self.wc.setQGroupBox('매도주문취소', self.ui.ss_od_groupBoxxx_02)
         self.ui.ss_od_groupBoxxx_14 = self.wc.setQGroupBox('매도금지', self.ui.ss_od_groupBoxxx_02)
         self.ui.ss_od_groupBoxxx_15 = self.wc.setQGroupBox('매도정정', self.ui.ss_od_groupBoxxx_02)
+        self.ui.ss_od_groupBoxxx_16 = self.wc.setQGroupBox('익절청산', self.ui.ss_od_groupBoxxx_02)
+        self.ui.ss_od_groupBoxxx_17 = self.wc.setQGroupBox('손절청산', self.ui.ss_od_groupBoxxx_02)
 
         self.ui.ss_buyy_checkBox_01 = self.wc.setCheckBox('시장가', self.ui.ss_od_groupBoxxx_03,      changed=self.ui.sbCheckboxChanged_01, tip='매수는 매도호가에 매도는 매수호가에 원하는 수량만큼 주문하는 방식')
         self.ui.ss_buyy_checkBox_02 = self.wc.setCheckBox('지정가', self.ui.ss_od_groupBoxxx_03,      changed=self.ui.sbCheckboxChanged_01, tip='원하는 가격에 원하는 수량만큼 주문하는 방식')
@@ -168,29 +170,35 @@ class SetOrderTap:
         self.ui.ss_sell_checkBox_18 = self.wc.setCheckBox('매수시그널', self.ui.ss_od_groupBoxxx_13)
         self.ui.ss_sell_checkBox_19 = self.wc.setCheckBox('주문 후                      초 경과', self.ui.ss_od_groupBoxxx_13)
         self.ui.ss_sell_lineEdit_04 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_13)
-        self.ui.ss_sell_checkBox_20 = self.wc.setCheckBox('손절청산 수익률(-)', self.ui.ss_od_groupBoxxx_13)
-        self.ui.ss_sell_lineEdit_05 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_13)
-        self.ui.ss_sell_checkBox_21 = self.wc.setCheckBox('손절청산 수익금(-)', self.ui.ss_od_groupBoxxx_13, tip='만원, KRW, USDT 단위의 금액을 입력하십시오.')
-        self.ui.ss_sell_lineEdit_06 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_13)
 
-        self.ui.ss_sell_checkBox_22 = self.wc.setCheckBox('분할매수횟수                                 회 이내', self.ui.ss_od_groupBoxxx_14)
+        self.ui.ss_sell_checkBox_20 = self.wc.setCheckBox('분할매수횟수                                 회 이내', self.ui.ss_od_groupBoxxx_14)
+        self.ui.ss_sell_lineEdit_05 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
+        self.ui.ss_sell_checkBox_21 = self.wc.setCheckBox('라운드피겨 ↓                                  호가 이내', self.ui.ss_od_groupBoxxx_14)
+        self.ui.ss_sell_lineEdit_06 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
+        self.ui.ss_sell_checkBox_22 = self.wc.setCheckBox('매도금지시간                                  ~', self.ui.ss_od_groupBoxxx_14)
         self.ui.ss_sell_lineEdit_07 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
-        self.ui.ss_sell_checkBox_23 = self.wc.setCheckBox('라운드피겨 ↓                                  호가 이내', self.ui.ss_od_groupBoxxx_14)
         self.ui.ss_sell_lineEdit_08 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
-        self.ui.ss_sell_checkBox_24 = self.wc.setCheckBox('매도금지시간                                  ~', self.ui.ss_od_groupBoxxx_14)
+        self.ui.ss_sell_checkBox_23 = self.wc.setCheckBox('이전거래시간                                  초 이내', self.ui.ss_od_groupBoxxx_14)
         self.ui.ss_sell_lineEdit_09 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
-        self.ui.ss_sell_lineEdit_10 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
-        self.ui.ss_sell_checkBox_25 = self.wc.setCheckBox('이전거래시간                                  초 이내', self.ui.ss_od_groupBoxxx_14)
-        self.ui.ss_sell_lineEdit_11 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_14)
 
         self.ui.ss_sell_labellll_06 = QLabel('▣ 정정가능 최대횟수 (0:매도정정X)', self.ui.ss_od_groupBoxxx_15)
-        self.ui.ss_sell_lineEdit_12 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_15)
+        self.ui.ss_sell_lineEdit_10 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_15)
         self.ui.ss_sell_labellll_07 = QLabel('▣ 정정조건 : 주문가격과 현재가의 차이                    호가이상', self.ui.ss_od_groupBoxxx_15)
         self.ui.ss_sell_comboBox_04 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_15, items=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
         self.ui.ss_sell_labellll_08 = QLabel('▣ 정정주문 시 정정가격 선택 현재가(+)                    호가', self.ui.ss_od_groupBoxxx_15)
         self.ui.ss_sell_comboBox_05 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_15, items=['0', '1', '2', '3', '4', '5'])
         self.ui.ss_load_Button_02 = self.wc.setPushbutton('불러오기', box=self.ui.ss_od_groupBoxxx_15, click=self.ui.SettingOrderLoad_02)
         self.ui.ss_save_Button_02 = self.wc.setPushbutton('저장하기', box=self.ui.ss_od_groupBoxxx_15, click=self.ui.SettingOrderSave_02)
+
+        self.ui.ss_sell_checkBox_24 = self.wc.setCheckBox('수익률(+)', self.ui.ss_od_groupBoxxx_16)
+        self.ui.ss_sell_lineEdit_11 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_16)
+        self.ui.ss_sell_checkBox_25 = self.wc.setCheckBox('수익금(+)', self.ui.ss_od_groupBoxxx_16, tip='원, KRW, USDT 일단위의 금액을 입력하십시오.')
+        self.ui.ss_sell_lineEdit_12 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_16)
+
+        self.ui.ss_sell_checkBox_26 = self.wc.setCheckBox('수익률(-)', self.ui.ss_od_groupBoxxx_17)
+        self.ui.ss_sell_lineEdit_13 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_17)
+        self.ui.ss_sell_checkBox_27 = self.wc.setCheckBox('수익금(-)', self.ui.ss_od_groupBoxxx_17, tip='원, KRW, USDT 일단위의 금액을 입력하십시오.')
+        self.ui.ss_sell_lineEdit_14 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_17)
 
         # =============================================================================================================
 
@@ -211,6 +219,8 @@ class SetOrderTap:
         self.ui.sc_od_groupBoxxx_13 = self.wc.setQGroupBox('매도주문취소', self.ui.sc_od_groupBoxxx_02)
         self.ui.sc_od_groupBoxxx_14 = self.wc.setQGroupBox('매도금지', self.ui.sc_od_groupBoxxx_02)
         self.ui.sc_od_groupBoxxx_15 = self.wc.setQGroupBox('매도정정', self.ui.sc_od_groupBoxxx_02)
+        self.ui.sc_od_groupBoxxx_16 = self.wc.setQGroupBox('익절청산', self.ui.sc_od_groupBoxxx_02)
+        self.ui.sc_od_groupBoxxx_17 = self.wc.setQGroupBox('손절청산', self.ui.sc_od_groupBoxxx_02)
 
         self.ui.sc_buyy_checkBox_01 = self.wc.setCheckBox('시장가', self.ui.sc_od_groupBoxxx_03,    changed=self.ui.cbCheckboxChanged_01, tip='매수는 매도호가에 매도는 매수호가에 원하는 수량만큼 주문하는 방식')
         self.ui.sc_buyy_checkBox_02 = self.wc.setCheckBox('지정가', self.ui.sc_od_groupBoxxx_03,    changed=self.ui.cbCheckboxChanged_01, tip='원하는 가격에 원하는 수량만큼 주문하는 방식')
@@ -328,27 +338,33 @@ class SetOrderTap:
         self.ui.sc_sell_checkBox_12 = self.wc.setCheckBox('매수시그널', self.ui.sc_od_groupBoxxx_13)
         self.ui.sc_sell_checkBox_13 = self.wc.setCheckBox('주문 후                      초 경과', self.ui.sc_od_groupBoxxx_13)
         self.ui.sc_sell_lineEdit_04 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_13)
-        self.ui.sc_sell_checkBox_14 = self.wc.setCheckBox('손절청산 수익률(-)', self.ui.sc_od_groupBoxxx_13)
-        self.ui.sc_sell_lineEdit_05 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_13)
-        self.ui.sc_sell_checkBox_15 = self.wc.setCheckBox('손절청산 수익금(-)', self.ui.sc_od_groupBoxxx_13, tip='만원, KRW, USDT 단위의 금액을 입력하십시오.')
-        self.ui.sc_sell_lineEdit_06 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_13)
 
-        self.ui.sc_sell_checkBox_16 = self.wc.setCheckBox('분할매수횟수                                 회 이내', self.ui.sc_od_groupBoxxx_14)
+        self.ui.sc_sell_checkBox_14 = self.wc.setCheckBox('분할매수횟수                                 회 이내', self.ui.sc_od_groupBoxxx_14)
+        self.ui.sc_sell_lineEdit_05 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_14)
+        self.ui.sc_sell_checkBox_15 = self.wc.setCheckBox('매도금지시간                                  ~', self.ui.sc_od_groupBoxxx_14)
+        self.ui.sc_sell_lineEdit_06 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_14)
         self.ui.sc_sell_lineEdit_07 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_14)
-        self.ui.sc_sell_checkBox_17 = self.wc.setCheckBox('매도금지시간                                  ~', self.ui.sc_od_groupBoxxx_14)
+        self.ui.sc_sell_checkBox_16 = self.wc.setCheckBox('이전거래시간                                  초 이내', self.ui.sc_od_groupBoxxx_14)
         self.ui.sc_sell_lineEdit_08 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_14)
-        self.ui.sc_sell_lineEdit_09 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_14)
-        self.ui.sc_sell_checkBox_18 = self.wc.setCheckBox('이전거래시간                                  초 이내', self.ui.sc_od_groupBoxxx_14)
-        self.ui.sc_sell_lineEdit_10 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_14)
 
         self.ui.sc_sell_labellll_06 = QLabel('▣ 정정가능 최대횟수 (0:매도정정X)', self.ui.sc_od_groupBoxxx_15)
         self.ui.sc_sell_labellll_07 = QLabel('▣ 정정조건 : 주문가격과 현재가의 차이                    호가이상', self.ui.sc_od_groupBoxxx_15)
         self.ui.sc_sell_labellll_08 = QLabel('▣ 정정주문 시 정정가격 선택 현재가(+)                    호가', self.ui.sc_od_groupBoxxx_15)
-        self.ui.sc_sell_lineEdit_11 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_15)
+        self.ui.sc_sell_lineEdit_09 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_15)
         self.ui.sc_sell_comboBox_04 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_15, items=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
         self.ui.sc_sell_comboBox_05 = self.wc.setCombobox(self.ui.sc_od_groupBoxxx_15, items=['0', '1', '2', '3', '4', '5'])
         self.ui.sc_load_Button_02 = self.wc.setPushbutton('불러오기', box=self.ui.sc_od_groupBoxxx_15, click=self.ui.SettingOrderLoad_04)
         self.ui.sc_save_Button_02 = self.wc.setPushbutton('저장하기', box=self.ui.sc_od_groupBoxxx_15, click=self.ui.SettingOrderSave_04)
+
+        self.ui.sc_sell_checkBox_17 = self.wc.setCheckBox('수익률(+)', self.ui.sc_od_groupBoxxx_16)
+        self.ui.sc_sell_lineEdit_10 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_16)
+        self.ui.sc_sell_checkBox_18 = self.wc.setCheckBox('수익금(+)', self.ui.sc_od_groupBoxxx_16, tip='원, KRW, USDT 일단위의 금액을 입력하십시오.')
+        self.ui.sc_sell_lineEdit_11 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_16)
+
+        self.ui.sc_sell_checkBox_19 = self.wc.setCheckBox('수익률(-)', self.ui.sc_od_groupBoxxx_17)
+        self.ui.sc_sell_lineEdit_12 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_17)
+        self.ui.sc_sell_checkBox_20 = self.wc.setCheckBox('수익금(-)', self.ui.sc_od_groupBoxxx_17, tip='원, KRW, USDT 일단위의 금액을 입력하십시오.')
+        self.ui.sc_sell_lineEdit_13 = self.wc.setLineedit(self.ui.sc_od_groupBoxxx_17)
 
         # =============================================================================================================
         # 주식 주문 설정 위젯
@@ -362,18 +378,20 @@ class SetOrderTap:
         self.ui.ss_od_groupBoxxx_03.setGeometry(7, 20, 645, 75)
         self.ui.ss_od_groupBoxxx_04.setGeometry(7, 100, 645, 100)
         self.ui.ss_od_groupBoxxx_05.setGeometry(7, 205, 645, 50)
-        self.ui.ss_od_groupBoxxx_06.setGeometry(7, 260, 645, 75)
-        self.ui.ss_od_groupBoxxx_07.setGeometry(7, 340, 320, 200)
-        self.ui.ss_od_groupBoxxx_08.setGeometry(332, 340, 320, 200)
-        self.ui.ss_od_groupBoxxx_09.setGeometry(7, 545, 645, 150)
+        self.ui.ss_od_groupBoxxx_06.setGeometry(7, 260, 645, 50)
+        self.ui.ss_od_groupBoxxx_07.setGeometry(7, 315, 320, 200)
+        self.ui.ss_od_groupBoxxx_08.setGeometry(332, 315, 320, 200)
+        self.ui.ss_od_groupBoxxx_09.setGeometry(7, 520, 645, 175)
 
         # 매도 그룹 내부 그룹박스들
         self.ui.ss_od_groupBoxxx_10.setGeometry(7, 20, 645, 75)
         self.ui.ss_od_groupBoxxx_11.setGeometry(7, 100, 645, 100)
         self.ui.ss_od_groupBoxxx_12.setGeometry(7, 205, 645, 50)
-        self.ui.ss_od_groupBoxxx_13.setGeometry(7, 260, 645, 75)
-        self.ui.ss_od_groupBoxxx_14.setGeometry(7, 340, 320, 200)
-        self.ui.ss_od_groupBoxxx_15.setGeometry(332, 340, 320, 200)
+        self.ui.ss_od_groupBoxxx_13.setGeometry(7, 260, 645, 50)
+        self.ui.ss_od_groupBoxxx_14.setGeometry(7, 315, 320, 200)
+        self.ui.ss_od_groupBoxxx_15.setGeometry(332, 315, 320, 200)
+        self.ui.ss_od_groupBoxxx_16.setGeometry(7, 520, 645, 50)
+        self.ui.ss_od_groupBoxxx_17.setGeometry(7, 575, 645, 50)
 
         # 매수 주문유형
         self.ui.ss_buyy_checkBox_01.setGeometry(10, 25, 100, 20)
@@ -502,25 +520,21 @@ class SetOrderTap:
         self.ui.ss_sell_checkBox_18.setGeometry(100, 25, 90, 20)
         self.ui.ss_sell_checkBox_19.setGeometry(200, 25, 170, 20)
         self.ui.ss_sell_lineEdit_04.setGeometry(262, 25, 50, 20)
-        self.ui.ss_sell_checkBox_20.setGeometry(10, 50, 120, 20)
-        self.ui.ss_sell_lineEdit_05.setGeometry(130, 50, 45, 20)
-        self.ui.ss_sell_checkBox_21.setGeometry(200, 50, 120, 20)
-        self.ui.ss_sell_lineEdit_06.setGeometry(320, 50, 45, 20)
 
         # 매도금지
-        self.ui.ss_sell_checkBox_22.setGeometry(10, 25, 310, 20)
-        self.ui.ss_sell_lineEdit_07.setGeometry(110, 25, 80, 20)
-        self.ui.ss_sell_checkBox_23.setGeometry(10, 50, 310, 20)
-        self.ui.ss_sell_lineEdit_08.setGeometry(110, 50, 80, 20)
-        self.ui.ss_sell_checkBox_24.setGeometry(10, 75, 310, 20)
-        self.ui.ss_sell_lineEdit_09.setGeometry(110, 75, 80, 20)
-        self.ui.ss_sell_lineEdit_10.setGeometry(210, 75, 80, 20)
-        self.ui.ss_sell_checkBox_25.setGeometry(10, 100, 310, 20)
-        self.ui.ss_sell_lineEdit_11.setGeometry(110, 100, 80, 20)
+        self.ui.ss_sell_checkBox_20.setGeometry(10, 25, 310, 20)
+        self.ui.ss_sell_lineEdit_05.setGeometry(110, 25, 80, 20)
+        self.ui.ss_sell_checkBox_21.setGeometry(10, 50, 310, 20)
+        self.ui.ss_sell_lineEdit_06.setGeometry(110, 50, 80, 20)
+        self.ui.ss_sell_checkBox_22.setGeometry(10, 75, 310, 20)
+        self.ui.ss_sell_lineEdit_07.setGeometry(110, 75, 80, 20)
+        self.ui.ss_sell_lineEdit_08.setGeometry(210, 75, 80, 20)
+        self.ui.ss_sell_checkBox_23.setGeometry(10, 100, 310, 20)
+        self.ui.ss_sell_lineEdit_09.setGeometry(110, 100, 80, 20)
 
         # 매도정정
         self.ui.ss_sell_labellll_06.setGeometry(10, 25, 310, 20)
-        self.ui.ss_sell_lineEdit_12.setGeometry(210, 25, 50, 20)
+        self.ui.ss_sell_lineEdit_10.setGeometry(210, 25, 50, 20)
         self.ui.ss_sell_labellll_07.setGeometry(10, 50, 310, 20)
         self.ui.ss_sell_comboBox_04.setGeometry(210, 50, 50, 20)
         self.ui.ss_sell_labellll_08.setGeometry(10, 75, 310, 20)
@@ -529,6 +543,18 @@ class SetOrderTap:
         # 불러오기, 저장하기
         self.ui.ss_load_Button_02.setGeometry(8, 162, 150, 30)
         self.ui.ss_save_Button_02.setGeometry(163, 162, 150, 30)
+
+        # 익절청산
+        self.ui.ss_sell_checkBox_24.setGeometry(10, 25, 80, 20)
+        self.ui.ss_sell_lineEdit_11.setGeometry(90, 25, 50, 20)
+        self.ui.ss_sell_checkBox_25.setGeometry(160, 25, 80, 20)
+        self.ui.ss_sell_lineEdit_12.setGeometry(240, 25, 80, 20)
+
+        # 손절청산
+        self.ui.ss_sell_checkBox_26.setGeometry(10, 25, 80, 20)
+        self.ui.ss_sell_lineEdit_13.setGeometry(90, 25, 50, 20)
+        self.ui.ss_sell_checkBox_27.setGeometry(160, 25, 80, 20)
+        self.ui.ss_sell_lineEdit_14.setGeometry(240, 25, 80, 20)
 
         # =============================================================================================================
         # 코인 주문 설정 위젯
@@ -542,18 +568,20 @@ class SetOrderTap:
         self.ui.sc_od_groupBoxxx_03.setGeometry(7, 20, 645, 75)
         self.ui.sc_od_groupBoxxx_04.setGeometry(7, 100, 645, 100)
         self.ui.sc_od_groupBoxxx_05.setGeometry(7, 205, 645, 50)
-        self.ui.sc_od_groupBoxxx_06.setGeometry(7, 260, 645, 75)
-        self.ui.sc_od_groupBoxxx_07.setGeometry(7, 340, 320, 200)
-        self.ui.sc_od_groupBoxxx_08.setGeometry(332, 340, 320, 200)
-        self.ui.sc_od_groupBoxxx_09.setGeometry(7, 545, 645, 150)
+        self.ui.sc_od_groupBoxxx_06.setGeometry(7, 260, 645, 50)
+        self.ui.sc_od_groupBoxxx_07.setGeometry(7, 315, 320, 200)
+        self.ui.sc_od_groupBoxxx_08.setGeometry(332, 315, 320, 200)
+        self.ui.sc_od_groupBoxxx_09.setGeometry(7, 520, 645, 175)
 
         # 매도 그룹 내부 그룹박스들
         self.ui.sc_od_groupBoxxx_10.setGeometry(7, 20, 645, 75)
         self.ui.sc_od_groupBoxxx_11.setGeometry(7, 100, 645, 100)
         self.ui.sc_od_groupBoxxx_12.setGeometry(7, 205, 645, 50)
-        self.ui.sc_od_groupBoxxx_13.setGeometry(7, 260, 645, 75)
-        self.ui.sc_od_groupBoxxx_14.setGeometry(7, 340, 320, 200)
-        self.ui.sc_od_groupBoxxx_15.setGeometry(332, 340, 320, 200)
+        self.ui.sc_od_groupBoxxx_13.setGeometry(7, 260, 645, 50)
+        self.ui.sc_od_groupBoxxx_14.setGeometry(7, 315, 320, 200)
+        self.ui.sc_od_groupBoxxx_15.setGeometry(332, 315, 320, 200)
+        self.ui.sc_od_groupBoxxx_16.setGeometry(7, 520, 645, 50)
+        self.ui.sc_od_groupBoxxx_17.setGeometry(7, 575, 645, 50)
 
         # 매수주문유형
         self.ui.sc_buyy_checkBox_01.setGeometry(10, 25, 100, 20)
@@ -669,23 +697,19 @@ class SetOrderTap:
         self.ui.sc_sell_checkBox_12.setGeometry(100, 25, 90, 20)
         self.ui.sc_sell_checkBox_13.setGeometry(200, 25, 170, 20)
         self.ui.sc_sell_lineEdit_04.setGeometry(262, 25, 50, 20)
-        self.ui.sc_sell_checkBox_14.setGeometry(10, 50, 120, 20)
-        self.ui.sc_sell_lineEdit_05.setGeometry(130, 50, 45, 20)
-        self.ui.sc_sell_checkBox_15.setGeometry(200, 50, 120, 20)
-        self.ui.sc_sell_lineEdit_06.setGeometry(320, 50, 45, 20)
 
         # 매도금지
-        self.ui.sc_sell_checkBox_16.setGeometry(10, 25, 310, 20)
-        self.ui.sc_sell_lineEdit_07.setGeometry(110, 25, 80, 20)
-        self.ui.sc_sell_checkBox_17.setGeometry(10, 50, 310, 20)
-        self.ui.sc_sell_lineEdit_08.setGeometry(110, 50, 80, 20)
-        self.ui.sc_sell_lineEdit_09.setGeometry(210, 50, 80, 20)
-        self.ui.sc_sell_checkBox_18.setGeometry(10, 75, 310, 20)
-        self.ui.sc_sell_lineEdit_10.setGeometry(110, 75, 80, 20)
+        self.ui.sc_sell_checkBox_14.setGeometry(10, 25, 310, 20)
+        self.ui.sc_sell_lineEdit_05.setGeometry(110, 25, 80, 20)
+        self.ui.sc_sell_checkBox_15.setGeometry(10, 50, 310, 20)
+        self.ui.sc_sell_lineEdit_06.setGeometry(110, 50, 80, 20)
+        self.ui.sc_sell_lineEdit_07.setGeometry(210, 50, 80, 20)
+        self.ui.sc_sell_checkBox_16.setGeometry(10, 75, 310, 20)
+        self.ui.sc_sell_lineEdit_08.setGeometry(110, 75, 80, 20)
 
         # 매도정정
         self.ui.sc_sell_labellll_06.setGeometry(10, 25, 310, 20)
-        self.ui.sc_sell_lineEdit_11.setGeometry(210, 25, 50, 20)
+        self.ui.sc_sell_lineEdit_09.setGeometry(210, 25, 50, 20)
         self.ui.sc_sell_labellll_07.setGeometry(10, 50, 310, 20)
         self.ui.sc_sell_comboBox_04.setGeometry(210, 50, 50, 20)
         self.ui.sc_sell_labellll_08.setGeometry(10, 75, 310, 20)
@@ -694,3 +718,15 @@ class SetOrderTap:
         # 불러오기, 저장하기
         self.ui.sc_load_Button_02.setGeometry(8, 162, 150, 30)
         self.ui.sc_save_Button_02.setGeometry(163, 162, 150, 30)
+
+        # 익절청산
+        self.ui.sc_sell_checkBox_17.setGeometry(10, 25, 80, 20)
+        self.ui.sc_sell_lineEdit_10.setGeometry(90, 25, 50, 20)
+        self.ui.sc_sell_checkBox_18.setGeometry(160, 25, 80, 20)
+        self.ui.sc_sell_lineEdit_11.setGeometry(240, 25, 80, 20)
+
+        # 손절청산
+        self.ui.sc_sell_checkBox_19.setGeometry(10, 25, 80, 20)
+        self.ui.sc_sell_lineEdit_12.setGeometry(90, 25, 50, 20)
+        self.ui.sc_sell_checkBox_20.setGeometry(160, 25, 80, 20)
+        self.ui.sc_sell_lineEdit_13.setGeometry(240, 25, 80, 20)

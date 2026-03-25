@@ -21,10 +21,11 @@ from backtest.backengine_binance_tick2 import BackEngineBinanceTick2
 from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
+from ui.ui_dialog_animation import DialogAnimator
 from utility.lazy_imports import get_np, get_pd
 from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec, error_decorator
-from utility.setting_base import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
-    DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, DB_STRATEGY
+from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, \
+    DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, DB_STRATEGY
 
 
 @error_decorator
@@ -32,11 +33,11 @@ def backengine_show(ui, gubun):
     table_list = []
     if gubun == '주식':
         if '키움증권' in ui.dict_set['증권사']:
-            db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            db = DB_STOCK_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
         else:
-            db = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            db = DB_FUTURE_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
     else:
-        db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+        db = DB_COIN_TICK_BACK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
     con = sqlite3.connect(db)
     try:
         df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
@@ -69,6 +70,7 @@ def backengine_show(ui, gubun):
     ui.be_lineEdittttt_02.setText(endtime)
     if not ui.backengin_window_open:
         ui.be_comboBoxxxxx_01.setCurrentText(ui.dict_set['백테엔진분류방법'])
+    DialogAnimator.setup_dialog_animation(ui.dialog_backengine, duration=300)
     ui.dialog_backengine.show()
     ui.backengin_window_open = True
 
@@ -142,13 +144,13 @@ def backengine_start(ui, gubun):
     dict_info = None
     try:
         if gubun == '주식':
-            db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            db = DB_STOCK_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
             is_tick = ui.dict_set['주식타임프레임']
         elif gubun == '해선':
-            db = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            db = DB_FUTURE_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
             is_tick = ui.dict_set['주식타임프레임']
         else:
-            db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+            db = DB_COIN_TICK_BACK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
             is_tick = ui.dict_set['코인타임프레임']
 
         con = sqlite3.connect(db)
@@ -252,7 +254,7 @@ def backengine_start(ui, gubun):
         shared_info_ = ui.backQ.get()
         ui.shared_info += shared_info_
         ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
-    ui.shared_info = sorted(ui.shared_info, key=lambda x: x['size'], reverse=True)
+    ui.shared_info = sorted(ui.shared_info, key=lambda x: x['shape'][0], reverse=True)
     ui.back_tick_cunsum = [x['shape'][0] for x in ui.shared_info]
     ui.back_tick_cunsum = get_np().cumsum(ui.back_tick_cunsum)
     ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 완료'))
