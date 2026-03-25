@@ -94,7 +94,7 @@ class ZmqSendToUI(QThread):
         inthms = int(str_hms())
         while self.is_running:
             try:
-                msg, data = self.mgzservQ.get(timeout=1)
+                msg, data = self.mgzservQ.get(timeout=5)
                 try:
                     self.sock.send_string(msg, zmq.SNDMORE)
                     self.sock.send_pyobj(data)
@@ -344,7 +344,7 @@ class FutureManager:
         self.FutureStrategyProcessKill()
         self.FutureTraderProcessKill()
         self.FutureAgentProcessKill()
-        qtest_qwait(1)
+        qtest_qwait(5)
         sys.exit()
 
 

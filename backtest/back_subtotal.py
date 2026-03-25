@@ -12,7 +12,7 @@ class BackSubTotal:
         self.bstq       = self.bstqs[self.vkey]
         self.buystd     = buystd
 
-        self.opti_turn  = 0
+        self.opti_kind  = 0
         self.concat_cnt = 0
         self.dummy_tsg  = {}
         self.ddict_tsg  = {}
@@ -58,7 +58,7 @@ class BackSubTotal:
                 self.day_count  = data[6]
 
             elif data[0] == '백테시작':
-                self.opti_turn  = data[1]
+                self.opti_kind  = data[1]
                 self.dummy_tsg  = {}
                 self.ddict_tsg  = {}
                 self.ddict_bct  = {}
@@ -93,7 +93,7 @@ class BackSubTotal:
             self.ddict_bct[vturn][vkey] = self.arry_bct_.copy()
 
         index = str(매수시간) if self.buystd else str(매도시간)
-        if self.opti_turn != 2:
+        if self.opti_kind != 2:
             data = [index, 보유시간, 매도시간, 수익률, 수익금]
         else:
             data = [index, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, 추가매수시간]
@@ -121,7 +121,7 @@ class BackSubTotal:
 
         self.concat_cnt += 1
         if self.concat_cnt == 5:
-            if self.opti_turn != 2:
+            if self.opti_kind != 2:
                 self.SendSubTotal()
             else:
                 self.tq.put(('백테결과', self.list_tsg, self.arry_bct))

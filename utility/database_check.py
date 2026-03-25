@@ -8,8 +8,10 @@ from utility.static import read_key, write_key
 
 def database_check():
     try:
-        os.makedirs('./_database', exist_ok=True)
         os.makedirs('./_log', exist_ok=True)
+        os.makedirs('./_database', exist_ok=True)
+        os.makedirs('./backtest/temp', exist_ok=True)
+        os.makedirs('./backtest/graph', exist_ok=True)
 
         DB_SETTING    = './_database/setting.db'
         DB_TRADELIST  = './_database/tradelist.db'

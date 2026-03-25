@@ -1,5 +1,5 @@
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from multiprocessing import Process
 from backtest.optimiz import Optimize
@@ -13,19 +13,687 @@ from ui.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condte
 from utility.static import error_decorator
 
 
+def group_animation_01(ui):
+    """stock_opti_test_editer, stock_rwf_test_editer, stock_opti_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.ss_textEditttt_03.geometry()
+    current_geo_tedt2 = ui.ss_textEditttt_04.geometry()
+    current_geo_tedt3 = ui.ss_textEditttt_05.geometry()
+    current_geo_comb1 = ui.svc_comboBoxxx_02.geometry()
+    current_geo_line1 = ui.svc_lineEdittt_02.geometry()
+    current_geo_btn01 = ui.svc_pushButton_03.geometry()
+    current_geo_btn02 = ui.svc_pushButton_04.geometry()
+    current_geo_zoo01 = ui.szoo_pushButon_01.geometry()
+    current_geo_zoo02 = ui.szoo_pushButon_02.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 647, 740 if ui.extend_window else 463)
+    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
+    target_geo_tedt3 = QRect(659, 10, 347, 1347 if ui.extend_window else 740)
+    target_geo_comb1 = QRect(1012, 115, 165, 30)
+    target_geo_line1 = QRect(1182, 115, 165, 30)
+    target_geo_btn01 = QRect(1012, 150, 165, 30)
+    target_geo_btn02 = QRect(1182, 150, 165, 30)
+    target_geo_zoo01 = QRect(584, 15, 50, 20)
+    target_geo_zoo02 = QRect(584, 761 if ui.extend_window else 483, 50, 20)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.ss_textEditttt_03, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.ss_textEditttt_04, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_tedt3 = QPropertyAnimation(ui.ss_textEditttt_05, b'geometry')
+    anim_tedt3.setDuration(300)
+    anim_tedt3.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt3.setStartValue(current_geo_tedt3)
+    anim_tedt3.setEndValue(target_geo_tedt3)
+
+    anim_comb1 = QPropertyAnimation(ui.svc_comboBoxxx_02, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_line1 = QPropertyAnimation(ui.svc_lineEdittt_02, b'geometry')
+    anim_line1.setDuration(300)
+    anim_line1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line1.setStartValue(current_geo_line1)
+    anim_line1.setEndValue(target_geo_line1)
+
+    anim_btn01 = QPropertyAnimation(ui.svc_pushButton_03, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(ui.svc_pushButton_04, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_zoo01 = QPropertyAnimation(ui.szoo_pushButon_01, b'geometry')
+    anim_zoo01.setDuration(300)
+    anim_zoo01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo01.setStartValue(current_geo_zoo01)
+    anim_zoo01.setEndValue(target_geo_zoo01)
+
+    anim_zoo02 = QPropertyAnimation(ui.szoo_pushButon_02, b'geometry')
+    anim_zoo02.setDuration(300)
+    anim_zoo02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo02.setStartValue(current_geo_zoo02)
+    anim_zoo02.setEndValue(target_geo_zoo02)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_tedt3)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_line1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_zoo01)
+    ui.animation_group.addAnimation(anim_zoo02)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_02(ui):
+    """stock_opti_ga_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.ss_textEditttt_03.geometry()
+    current_geo_tedt2 = ui.ss_textEditttt_04.geometry()
+    current_geo_tedt3 = ui.ss_textEditttt_06.geometry()
+    current_geo_comb1 = ui.svc_comboBoxxx_02.geometry()
+    current_geo_line1 = ui.svc_lineEdittt_02.geometry()
+    current_geo_btn01 = ui.svc_pushButton_03.geometry()
+    current_geo_btn02 = ui.svc_pushButton_04.geometry()
+    current_geo_comb2 = ui.sva_comboBoxxx_01.geometry()
+    current_geo_line2 = ui.sva_lineEdittt_01.geometry()
+    current_geo_btn03 = ui.sva_pushButton_04.geometry()
+    current_geo_btn04 = ui.sva_pushButton_05.geometry()
+    current_geo_zoo01 = ui.szoo_pushButon_01.geometry()
+    current_geo_zoo02 = ui.szoo_pushButon_02.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 647, 740 if ui.extend_window else 463)
+    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
+    target_geo_tedt3 = QRect(659, 10, 347, 1347 if ui.extend_window else 740)
+    target_geo_comb1 = QRect(1012, 115, 165, 30)
+    target_geo_line1 = QRect(1182, 115, 165, 30)
+    target_geo_btn01 = QRect(1012, 150, 165, 30)
+    target_geo_btn02 = QRect(1182, 150, 165, 30)
+    target_geo_comb2 = QRect(1012, 115, 165, 30)
+    target_geo_line2 = QRect(1182, 115, 165, 30)
+    target_geo_btn03 = QRect(1012, 150, 165, 30)
+    target_geo_btn04 = QRect(1182, 150, 165, 30)
+    target_geo_zoo01 = QRect(584, 15, 50, 20)
+    target_geo_zoo02 = QRect(584, 761 if ui.extend_window else 483, 50, 20)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.ss_textEditttt_03, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.ss_textEditttt_04, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_tedt3 = QPropertyAnimation(ui.ss_textEditttt_06, b'geometry')
+    anim_tedt3.setDuration(300)
+    anim_tedt3.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt3.setStartValue(current_geo_tedt3)
+    anim_tedt3.setEndValue(target_geo_tedt3)
+
+    anim_comb1 = QPropertyAnimation(ui.svc_comboBoxxx_02, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_line1 = QPropertyAnimation(ui.svc_lineEdittt_02, b'geometry')
+    anim_line1.setDuration(300)
+    anim_line1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line1.setStartValue(current_geo_line1)
+    anim_line1.setEndValue(target_geo_line1)
+
+    anim_btn01 = QPropertyAnimation(ui.svc_pushButton_03, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(ui.svc_pushButton_04, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_comb2 = QPropertyAnimation(ui.sva_comboBoxxx_01, b'geometry')
+    anim_comb2.setDuration(300)
+    anim_comb2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb2.setStartValue(current_geo_comb2)
+    anim_comb2.setEndValue(target_geo_comb2)
+
+    anim_line2 = QPropertyAnimation(ui.sva_lineEdittt_01, b'geometry')
+    anim_line2.setDuration(300)
+    anim_line2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line2.setStartValue(current_geo_line2)
+    anim_line2.setEndValue(target_geo_line2)
+
+    anim_btn03 = QPropertyAnimation(ui.sva_pushButton_04, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    anim_btn04 = QPropertyAnimation(ui.sva_pushButton_05, b'geometry')
+    anim_btn04.setDuration(300)
+    anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn04.setStartValue(current_geo_btn04)
+    anim_btn04.setEndValue(target_geo_btn04)
+
+    anim_zoo01 = QPropertyAnimation(ui.szoo_pushButon_01, b'geometry')
+    anim_zoo01.setDuration(300)
+    anim_zoo01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo01.setStartValue(current_geo_zoo01)
+    anim_zoo01.setEndValue(target_geo_zoo01)
+
+    anim_zoo02 = QPropertyAnimation(ui.szoo_pushButon_02, b'geometry')
+    anim_zoo02.setDuration(300)
+    anim_zoo02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo02.setStartValue(current_geo_zoo02)
+    anim_zoo02.setEndValue(target_geo_zoo02)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_tedt3)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_line1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_comb2)
+    ui.animation_group.addAnimation(anim_line2)
+    ui.animation_group.addAnimation(anim_btn03)
+    ui.animation_group.addAnimation(anim_btn04)
+    ui.animation_group.addAnimation(anim_zoo01)
+    ui.animation_group.addAnimation(anim_zoo02)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_03(ui):
+    """stock_opti_vars_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.ss_textEditttt_05.geometry()
+    current_geo_tedt2 = ui.ss_textEditttt_06.geometry()
+    current_geo_comb1 = ui.svc_comboBoxxx_02.geometry()
+    current_geo_line1 = ui.svc_lineEdittt_02.geometry()
+    current_geo_btn01 = ui.svc_pushButton_03.geometry()
+    current_geo_btn02 = ui.svc_pushButton_04.geometry()
+    current_geo_comb2 = ui.sva_comboBoxxx_01.geometry()
+    current_geo_line2 = ui.sva_lineEdittt_01.geometry()
+    current_geo_btn03 = ui.sva_pushButton_04.geometry()
+    current_geo_btn04 = ui.sva_pushButton_05.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 497, 1347 if ui.extend_window else 740)
+    target_geo_tedt2 = QRect(509, 10, 497, 1347 if ui.extend_window else 740)
+    target_geo_comb1 = QRect(1012, 10, 165, 30)
+    target_geo_line1 = QRect(1182, 10, 165, 30)
+    target_geo_btn01 = QRect(1012, 45, 165, 30)
+    target_geo_btn02 = QRect(1182, 45, 165, 30)
+    target_geo_comb2 = QRect(1012, 80, 165, 30)
+    target_geo_line2 = QRect(1182, 80, 165, 30)
+    target_geo_btn03 = QRect(1012, 115, 165, 30)
+    target_geo_btn04 = QRect(1182, 115, 165, 30)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.ss_textEditttt_05, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.ss_textEditttt_06, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_comb1 = QPropertyAnimation(ui.svc_comboBoxxx_02, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_line1 = QPropertyAnimation(ui.svc_lineEdittt_02, b'geometry')
+    anim_line1.setDuration(300)
+    anim_line1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line1.setStartValue(current_geo_line1)
+    anim_line1.setEndValue(target_geo_line1)
+
+    anim_btn01 = QPropertyAnimation(ui.svc_pushButton_03, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(ui.svc_pushButton_04, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_comb2 = QPropertyAnimation(ui.sva_comboBoxxx_01, b'geometry')
+    anim_comb2.setDuration(300)
+    anim_comb2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb2.setStartValue(current_geo_comb2)
+    anim_comb2.setEndValue(target_geo_comb2)
+
+    anim_line2 = QPropertyAnimation(ui.sva_lineEdittt_01, b'geometry')
+    anim_line2.setDuration(300)
+    anim_line2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line2.setStartValue(current_geo_line2)
+    anim_line2.setEndValue(target_geo_line2)
+
+    anim_btn03 = QPropertyAnimation(ui.sva_pushButton_04, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    anim_btn04 = QPropertyAnimation(ui.sva_pushButton_05, b'geometry')
+    anim_btn04.setDuration(300)
+    anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn04.setStartValue(current_geo_btn04)
+    anim_btn04.setEndValue(target_geo_btn04)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_line1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_comb2)
+    ui.animation_group.addAnimation(anim_line2)
+    ui.animation_group.addAnimation(anim_btn03)
+    ui.animation_group.addAnimation(anim_btn04)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_04(ui):
+    """stock_vars_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.ss_textEditttt_01.geometry()
+    current_geo_tedt2 = ui.ss_textEditttt_02.geometry()
+    current_geo_tedt3 = ui.ss_textEditttt_03.geometry()
+    current_geo_tedt4 = ui.ss_textEditttt_04.geometry()
+    current_geo_comb1 = ui.svjb_comboBoxx_01.geometry()
+    current_geo_btn01 = ui.svjb_pushButon_01.geometry()
+    current_geo_comb2 = ui.svjs_comboBoxx_01.geometry()
+    current_geo_btn02 = ui.svjs_pushButon_01.geometry()
+    current_geo_comb3 = ui.svc_comboBoxxx_02.geometry()
+    current_geo_line1 = ui.svc_lineEdittt_02.geometry()
+    current_geo_btn03 = ui.svc_pushButton_03.geometry()
+    current_geo_btn04 = ui.svc_pushButton_04.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 497, 740 if ui.extend_window else 463)
+    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
+    target_geo_tedt3 = QRect(509, 10, 497, 740 if ui.extend_window else 463)
+    target_geo_tedt4 = QRect(509, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
+    target_geo_comb1 = QRect(1012, 10, 165, 30)
+    target_geo_btn01 = QRect(1182, 10, 165, 30)
+    target_geo_comb2 = QRect(1012, 478, 165, 30)
+    target_geo_btn02 = QRect(1182, 478, 165, 30)
+    target_geo_comb3 = QRect(1012, 115, 165, 30)
+    target_geo_line1 = QRect(1182, 115, 165, 30)
+    target_geo_btn03 = QRect(1012, 150, 165, 30)
+    target_geo_btn04 = QRect(1182, 150, 165, 30)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.ss_textEditttt_01, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.ss_textEditttt_02, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_tedt3 = QPropertyAnimation(ui.ss_textEditttt_03, b'geometry')
+    anim_tedt3.setDuration(300)
+    anim_tedt3.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt3.setStartValue(current_geo_tedt3)
+    anim_tedt3.setEndValue(target_geo_tedt3)
+
+    anim_tedt4 = QPropertyAnimation(ui.ss_textEditttt_04, b'geometry')
+    anim_tedt4.setDuration(300)
+    anim_tedt4.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt4.setStartValue(current_geo_tedt4)
+    anim_tedt4.setEndValue(target_geo_tedt4)
+
+    anim_comb1 = QPropertyAnimation(ui.svjb_comboBoxx_01, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_btn01 = QPropertyAnimation(ui.svjb_pushButon_01, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_comb2 = QPropertyAnimation(ui.svjs_comboBoxx_01, b'geometry')
+    anim_comb2.setDuration(300)
+    anim_comb2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb2.setStartValue(current_geo_comb2)
+    anim_comb2.setEndValue(target_geo_comb2)
+
+    anim_btn02 = QPropertyAnimation(ui.svjs_pushButon_01, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_comb3 = QPropertyAnimation(ui.svc_comboBoxxx_02, b'geometry')
+    anim_comb3.setDuration(300)
+    anim_comb3.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb3.setStartValue(current_geo_comb3)
+    anim_comb3.setEndValue(target_geo_comb3)
+
+    anim_line1 = QPropertyAnimation(ui.svc_lineEdittt_02, b'geometry')
+    anim_line1.setDuration(300)
+    anim_line1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line1.setStartValue(current_geo_line1)
+    anim_line1.setEndValue(target_geo_line1)
+
+    anim_btn03 = QPropertyAnimation(ui.svc_pushButton_03, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    anim_btn04 = QPropertyAnimation(ui.svc_pushButton_04, b'geometry')
+    anim_btn04.setDuration(300)
+    anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn04.setStartValue(current_geo_btn04)
+    anim_btn04.setEndValue(target_geo_btn04)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_tedt3)
+    ui.animation_group.addAnimation(anim_tedt4)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_comb2)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_comb3)
+    ui.animation_group.addAnimation(anim_line1)
+    ui.animation_group.addAnimation(anim_btn03)
+    ui.animation_group.addAnimation(anim_btn04)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_05(ui):
+    """stock_stg_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.ss_textEditttt_01.geometry()
+    current_geo_tedt2 = ui.ss_textEditttt_02.geometry()
+    current_geo_comb1 = ui.svjb_comboBoxx_01.geometry()
+    current_geo_btn01 = ui.svjb_pushButon_01.geometry()
+    current_geo_comb2 = ui.svjs_comboBoxx_01.geometry()
+    current_geo_btn02 = ui.svjs_pushButon_01.geometry()
+    current_geo_zoo01 = ui.szoo_pushButon_01.geometry()
+    current_geo_zoo02 = ui.szoo_pushButon_02.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 1000, 740 if ui.extend_window else 463)
+    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 1000, 602 if ui.extend_window else 272)
+    target_geo_comb1 = QRect(1012, 10, 165, 25)
+    target_geo_btn01 = QRect(1012, 40, 165, 30)
+    target_geo_comb2 = QRect(1012, 478, 165, 25)
+    target_geo_btn02 = QRect(1012, 508, 165, 30)
+    target_geo_zoo01 = QRect(937, 15, 50, 20)
+    target_geo_zoo02 = QRect(937, 761 if ui.extend_window else 483, 50, 20)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.ss_textEditttt_01, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.ss_textEditttt_02, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_comb1 = QPropertyAnimation(ui.svjb_comboBoxx_01, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_btn01 = QPropertyAnimation(ui.svjb_pushButon_01, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_comb2 = QPropertyAnimation(ui.svjs_comboBoxx_01, b'geometry')
+    anim_comb2.setDuration(300)
+    anim_comb2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb2.setStartValue(current_geo_comb2)
+    anim_comb2.setEndValue(target_geo_comb2)
+
+    anim_btn02 = QPropertyAnimation(ui.svjs_pushButon_01, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_zoo01 = QPropertyAnimation(ui.szoo_pushButon_01, b'geometry')
+    anim_zoo01.setDuration(300)
+    anim_zoo01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo01.setStartValue(current_geo_zoo01)
+    anim_zoo01.setEndValue(target_geo_zoo01)
+
+    anim_zoo02 = QPropertyAnimation(ui.szoo_pushButon_02, b'geometry')
+    anim_zoo02.setDuration(300)
+    anim_zoo02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo02.setStartValue(current_geo_zoo02)
+    anim_zoo02.setEndValue(target_geo_zoo02)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_comb2)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_zoo01)
+    ui.animation_group.addAnimation(anim_zoo02)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_06(ui, pushButton1, pushButton2, pushButton3, pushButton4=None):
+    # 위젯들의 좌측 상단으로 지오메트리 저장
+    current_geo_btn01 = QRect(1350, 0, 0, 0)
+    current_geo_btn02 = QRect(1350, 0, 0, 0)
+    current_geo_btn03 = QRect(1350, 0, 0, 0)
+    current_geo_btn04 = QRect(1350, 0, 0, 0)
+
+    # 목표 지오메트리 설정
+    target_geo_btn01 = QRect(1012, 335, 165, 30)
+    target_geo_btn02 = QRect(1012, 370, 165, 30)
+
+    if pushButton4 is None:
+        target_geo_btn03  = QRect(1012, 405, 165, 30)
+    else:
+        target_geo_btn03  = QRect(1012, 405, 80, 30)
+        target_geo_btn04  = QRect(1097, 405, 80, 30)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group2 = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_btn01 = QPropertyAnimation(pushButton1, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(pushButton2, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_btn03 = QPropertyAnimation(pushButton3, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    if pushButton4 is not None:
+        anim_btn04 = QPropertyAnimation(pushButton4, b'geometry')
+        anim_btn04.setDuration(300)
+        anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+        # noinspection PyUnboundLocalVariable
+        anim_btn04.setStartValue(current_geo_btn04)
+        # noinspection PyUnboundLocalVariable
+        anim_btn04.setEndValue(target_geo_btn04)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group2.addAnimation(anim_btn01)
+    ui.animation_group2.addAnimation(anim_btn02)
+    ui.animation_group2.addAnimation(anim_btn03)
+    if pushButton4 is not None:
+        # noinspection PyUnboundLocalVariable
+        ui.animation_group2.addAnimation(anim_btn04)
+
+    # 애니메이션 시작
+    ui.animation_group2.start()
+
+
+def group_animation_07(ui, pushButton1, pushButton2, pushButton3, pushButton4, pushButton5, pushButton6):
+    # 위젯들의 좌측 상단으로 지오메트리 저장
+    current_geo_btn01 = QRect(1350, 0, 0, 0)
+    current_geo_btn02 = QRect(1350, 0, 0, 0)
+    current_geo_btn03 = QRect(1350, 0, 0, 0)
+    current_geo_btn04 = QRect(1350, 0, 0, 0)
+    current_geo_btn05 = QRect(1350, 0, 0, 0)
+    current_geo_btn06 = QRect(1350, 0, 0, 0)
+
+    # 목표 지오메트리 설정
+    target_geo_btn01 = QRect(1012, 335, 80, 30)
+    target_geo_btn02 = QRect(1012, 370, 80, 30)
+    target_geo_btn03 = QRect(1012, 405, 80, 30)
+    target_geo_btn04 = QRect(1097, 335, 80, 30)
+    target_geo_btn05 = QRect(1097, 370, 80, 30)
+    target_geo_btn06 = QRect(1097, 405, 80, 30)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group2 = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_btn01 = QPropertyAnimation(pushButton1, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(pushButton2, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_btn03 = QPropertyAnimation(pushButton3, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    anim_btn04 = QPropertyAnimation(pushButton4, b'geometry')
+    anim_btn04.setDuration(300)
+    anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn04.setStartValue(current_geo_btn04)
+    anim_btn04.setEndValue(target_geo_btn04)
+
+    anim_btn05 = QPropertyAnimation(pushButton5, b'geometry')
+    anim_btn05.setDuration(300)
+    anim_btn05.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn05.setStartValue(current_geo_btn05)
+    anim_btn05.setEndValue(target_geo_btn05)
+
+    anim_btn06 = QPropertyAnimation(pushButton6, b'geometry')
+    anim_btn06.setDuration(300)
+    anim_btn06.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn06.setStartValue(current_geo_btn06)
+    anim_btn06.setEndValue(target_geo_btn06)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group2.addAnimation(anim_btn01)
+    ui.animation_group2.addAnimation(anim_btn02)
+    ui.animation_group2.addAnimation(anim_btn03)
+    ui.animation_group2.addAnimation(anim_btn04)
+    ui.animation_group2.addAnimation(anim_btn05)
+    ui.animation_group2.addAnimation(anim_btn06)
+
+    # 애니메이션 시작
+    ui.animation_group2.start()
+
+
 @error_decorator
 def stock_opti_test_editer(ui):
-    ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-    ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    ui.ss_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-
-    ui.svc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.svc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.svc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.svc_pushButton_04.setGeometry(1182, 150, 165, 30)
-
-    ui.szoo_pushButon_01.setGeometry(584, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_01(ui)
+    group_animation_07(ui, ui.svc_pushButton_15, ui.svc_pushButton_16, ui.svc_pushButton_17, ui.svc_pushButton_30, ui.svc_pushButton_31, ui.svc_pushButton_32)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -51,6 +719,10 @@ def stock_opti_test_editer(ui):
         item.setVisible(False)
     for item in ui.stock_rwftvd_list:
         item.setVisible(False)
+    for item in ui.stock_varsedit_list:
+        item.setVisible(False)
+    for item in ui.stock_areaedit_list:
+        item.setVisible(False)
     for item in ui.stock_esczom_list:
         item.setVisible(True)
     for item in ui.stock_optimz_list:
@@ -66,12 +738,6 @@ def stock_opti_test_editer(ui):
     ui.image_label1.setVisible(False)
     ui.svc_labellllll_04.setText(testtext)
     ui.svc_labellllll_05.setVisible(False)
-    ui.svc_pushButton_21.setVisible(False)
-    ui.svc_pushButton_22.setVisible(False)
-    ui.svc_pushButton_23.setVisible(False)
-    ui.svc_pushButton_24.setVisible(False)
-    ui.svc_pushButton_25.setVisible(False)
-    ui.svc_pushButton_26.setVisible(False)
 
     ui.svj_pushButton_07.setFocus()
     sChangeSvjButtonColor(ui)
@@ -79,17 +745,8 @@ def stock_opti_test_editer(ui):
 
 @error_decorator
 def stock_rwf_test_editer(ui):
-    ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-    ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    ui.ss_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-
-    ui.svc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.svc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.svc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.svc_pushButton_04.setGeometry(1182, 150, 165, 30)
-
-    ui.szoo_pushButon_01.setGeometry(584, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_01(ui)
+    group_animation_07(ui, ui.svc_pushButton_18, ui.svc_pushButton_19, ui.svc_pushButton_20, ui.svc_pushButton_33, ui.svc_pushButton_34, ui.svc_pushButton_35)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -114,6 +771,10 @@ def stock_rwf_test_editer(ui):
     for item in ui.stock_gaopti_list:
         item.setVisible(False)
     for item in ui.stock_optest_list:
+        item.setVisible(False)
+    for item in ui.stock_varsedit_list:
+        item.setVisible(False)
+    for item in ui.stock_areaedit_list:
         item.setVisible(False)
     for item in ui.stock_esczom_list:
         item.setVisible(True)
@@ -131,12 +792,6 @@ def stock_rwf_test_editer(ui):
     ui.svc_labellllll_01.setVisible(False)
     ui.svc_labellllll_04.setText(rwfttext)
     ui.svc_labellllll_05.setVisible(False)
-    ui.svc_pushButton_21.setVisible(False)
-    ui.svc_pushButton_22.setVisible(False)
-    ui.svc_pushButton_23.setVisible(False)
-    ui.svc_pushButton_24.setVisible(False)
-    ui.svc_pushButton_25.setVisible(False)
-    ui.svc_pushButton_26.setVisible(False)
 
     ui.svj_pushButton_06.setFocus()
     sChangeSvjButtonColor(ui)
@@ -144,22 +799,8 @@ def stock_rwf_test_editer(ui):
 
 @error_decorator
 def stock_opti_ga_editer(ui):
-    ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-    ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    ui.ss_textEditttt_06.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-
-    ui.svc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.svc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.svc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.svc_pushButton_04.setGeometry(1182, 150, 165, 30)
-
-    ui.sva_comboBoxxx_01.setGeometry(1012, 115, 165, 30)
-    ui.sva_lineEdittt_01.setGeometry(1182, 115, 165, 30)
-    ui.sva_pushButton_04.setGeometry(1012, 150, 165, 30)
-    ui.sva_pushButton_05.setGeometry(1182, 150, 165, 30)
-
-    ui.szoo_pushButon_01.setGeometry(584, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_02(ui)
+    group_animation_06(ui, ui.sva_pushButton_01, ui.sva_pushButton_02, ui.sva_pushButton_03)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -185,6 +826,10 @@ def stock_opti_ga_editer(ui):
         item.setVisible(False)
     for item in ui.stock_rwftvd_list:
         item.setVisible(False)
+    for item in ui.stock_varsedit_list:
+        item.setVisible(False)
+    for item in ui.stock_areaedit_list:
+        item.setVisible(False)
     for item in ui.stock_esczom_list:
         item.setVisible(True)
     for item in ui.stock_optimz_list:
@@ -200,12 +845,6 @@ def stock_opti_ga_editer(ui):
     ui.image_label1.setVisible(False)
     ui.svc_labellllll_04.setText(gaoptext)
     ui.svc_labellllll_05.setVisible(False)
-    ui.svc_pushButton_21.setVisible(False)
-    ui.svc_pushButton_22.setVisible(False)
-    ui.svc_pushButton_23.setVisible(False)
-    ui.svc_pushButton_24.setVisible(False)
-    ui.svc_pushButton_25.setVisible(False)
-    ui.svc_pushButton_26.setVisible(False)
 
     ui.svj_pushButton_10.setFocus()
     sChangeSvjButtonColor(ui)
@@ -213,18 +852,8 @@ def stock_opti_ga_editer(ui):
 
 @error_decorator
 def stock_opti_vars_editer(ui):
-    ui.ss_textEditttt_05.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
-    ui.ss_textEditttt_06.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
-
-    ui.svc_comboBoxxx_02.setGeometry(1012, 10, 165, 30)
-    ui.svc_lineEdittt_02.setGeometry(1182, 10, 165, 30)
-    ui.svc_pushButton_03.setGeometry(1012, 45, 165, 30)
-    ui.svc_pushButton_04.setGeometry(1182, 45, 165, 30)
-
-    ui.sva_comboBoxxx_01.setGeometry(1012, 80, 165, 30)
-    ui.sva_lineEdittt_01.setGeometry(1182, 80, 165, 30)
-    ui.sva_pushButton_04.setGeometry(1012, 115, 165, 30)
-    ui.sva_pushButton_05.setGeometry(1182, 115, 165, 30)
+    group_animation_03(ui)
+    group_animation_06(ui, ui.svc_pushButton_21, ui.svc_pushButton_22, ui.svc_pushButton_23)
 
     ui.ss_textEditttt_01.setVisible(False)
     ui.ss_textEditttt_02.setVisible(False)
@@ -251,6 +880,10 @@ def stock_opti_vars_editer(ui):
         item.setVisible(False)
     for item in ui.stock_optimz_list:
         item.setVisible(False)
+    for item in ui.stock_varsedit_list:
+        item.setVisible(False)
+    for item in ui.stock_areaedit_list:
+        item.setVisible(True)
     for item in ui.stock_period_list:
         item.setVisible(True)
     for item in ui.stock_gaopti_list:
@@ -280,15 +913,9 @@ def stock_opti_vars_editer(ui):
     ui.svc_pushButton_11.setVisible(True)
 
     ui.image_label1.setVisible(True)
-    ui.svc_labellllll_05.setVisible(True)
     ui.svc_labellllll_04.setText(gaoptext)
     ui.svc_labellllll_05.setText(vedittxt)
-    ui.svc_pushButton_21.setVisible(True)
-    ui.svc_pushButton_22.setVisible(True)
-    ui.svc_pushButton_23.setVisible(True)
-    ui.svc_pushButton_24.setVisible(False)
-    ui.svc_pushButton_25.setVisible(False)
-    ui.svc_pushButton_26.setVisible(False)
+    ui.svc_labellllll_05.setVisible(True)
 
     ui.svj_pushButton_12.setFocus()
     sChangeSvjButtonColor(ui)
@@ -296,17 +923,8 @@ def stock_opti_vars_editer(ui):
 
 @error_decorator
 def stock_opti_editer(ui):
-    ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-    ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    ui.ss_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-
-    ui.svc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.svc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.svc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.svc_pushButton_04.setGeometry(1182, 150, 165, 30)
-
-    ui.szoo_pushButon_01.setGeometry(584, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_01(ui)
+    group_animation_07(ui, ui.svc_pushButton_06, ui.svc_pushButton_07, ui.svc_pushButton_08, ui.svc_pushButton_27, ui.svc_pushButton_28, ui.svc_pushButton_29)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -334,6 +952,10 @@ def stock_opti_editer(ui):
         item.setVisible(False)
     for item in ui.stock_rwftvd_list:
         item.setVisible(False)
+    for item in ui.stock_varsedit_list:
+        item.setVisible(False)
+    for item in ui.stock_areaedit_list:
+        item.setVisible(False)
     for item in ui.stock_esczom_list:
         item.setVisible(True)
     for item in ui.stock_optimz_list:
@@ -347,12 +969,6 @@ def stock_opti_editer(ui):
     ui.image_label1.setVisible(False)
     ui.svc_labellllll_04.setText(optitext)
     ui.svc_labellllll_05.setVisible(False)
-    ui.svc_pushButton_21.setVisible(False)
-    ui.svc_pushButton_22.setVisible(False)
-    ui.svc_pushButton_23.setVisible(False)
-    ui.svc_pushButton_24.setVisible(False)
-    ui.svc_pushButton_25.setVisible(False)
-    ui.svc_pushButton_26.setVisible(False)
 
     ui.svj_pushButton_08.setFocus()
     sChangeSvjButtonColor(ui)
@@ -360,20 +976,8 @@ def stock_opti_editer(ui):
 
 @error_decorator
 def stock_vars_editer(ui):
-    ui.ss_textEditttt_01.setGeometry(7, 10, 497, 740 if ui.extend_window else 463)
-    ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
-    ui.ss_textEditttt_03.setGeometry(509, 10, 497, 740 if ui.extend_window else 463)
-    ui.ss_textEditttt_04.setGeometry(509, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
-
-    ui.svjb_comboBoxx_01.setGeometry(1012, 10, 165, 30)
-    ui.svjb_pushButon_01.setGeometry(1182, 10, 165, 30)
-    ui.svjs_comboBoxx_01.setGeometry(1012, 478, 165, 30)
-    ui.svjs_pushButon_01.setGeometry(1182, 478, 165, 30)
-
-    ui.svc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.svc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.svc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.svc_pushButton_04.setGeometry(1182, 150, 165, 30)
+    group_animation_04(ui)
+    group_animation_06(ui, ui.svc_pushButton_24, ui.svc_pushButton_25, ui.svc_pushButton_26)
 
     ui.ss_textEditttt_01.setVisible(True)
     ui.ss_textEditttt_02.setVisible(True)
@@ -400,6 +1004,10 @@ def stock_vars_editer(ui):
         item.setVisible(False)
     for item in ui.stock_esczom_list:
         item.setVisible(False)
+    for item in ui.stock_areaedit_list:
+        item.setVisible(False)
+    for item in ui.stock_varsedit_list:
+        item.setVisible(True)
     for item in ui.stock_optimz_list:
         item.setVisible(True)
     for item in ui.stock_period_list:
@@ -421,12 +1029,6 @@ def stock_vars_editer(ui):
     ui.image_label1.setVisible(False)
     ui.svc_labellllll_04.setText(optitext)
     ui.svc_labellllll_05.setVisible(False)
-    ui.svc_pushButton_21.setVisible(False)
-    ui.svc_pushButton_22.setVisible(False)
-    ui.svc_pushButton_23.setVisible(False)
-    ui.svc_pushButton_24.setVisible(True)
-    ui.svc_pushButton_25.setVisible(True)
-    ui.svc_pushButton_26.setVisible(True)
 
     ui.svj_pushButton_13.setFocus()
     sChangeSvjButtonColor(ui)
@@ -455,6 +1057,7 @@ def change_pre_button_edit(ui):
 @error_decorator
 def stock_backtest_log(ui):
     change_pre_button_edit(ui)
+
     ui.ss_textEditttt_01.setVisible(False)
     ui.ss_textEditttt_02.setVisible(False)
     ui.ss_textEditttt_03.setVisible(False)
@@ -484,6 +1087,7 @@ def stock_backtest_log(ui):
 @error_decorator
 def stock_backtest_detail(ui):
     change_pre_button_edit(ui)
+
     ui.ss_textEditttt_01.setVisible(False)
     ui.ss_textEditttt_02.setVisible(False)
     ui.ss_textEditttt_03.setVisible(False)
@@ -512,16 +1116,8 @@ def stock_backtest_detail(ui):
 
 @error_decorator
 def stock_stg_editer(ui):
-    ui.ss_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
-    ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 478, 1000, 602 if ui.extend_window else 272)
-
-    ui.svjb_comboBoxx_01.setGeometry(1012, 10, 165, 25)
-    ui.svjb_pushButon_01.setGeometry(1012, 40, 165, 30)
-    ui.svjs_comboBoxx_01.setGeometry(1012, 478, 165, 25)
-    ui.svjs_pushButon_01.setGeometry(1012, 508, 165, 30)
-
-    ui.szoo_pushButon_01.setGeometry(937, 15, 50, 20)
-    ui.szoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_05(ui)
+    group_animation_06(ui, ui.svj_pushButton_01, ui.svj_pushButton_02, ui.svj_pushButton_03, ui.svj_pushButton_04)
 
     ui.szoo_pushButon_01.setText('확대(esc)')
     ui.szoo_pushButon_02.setText('확대(esc)')
@@ -549,6 +1145,10 @@ def stock_stg_editer(ui):
         item.setVisible(False)
     for item in ui.stock_rwftvd_list:
         item.setVisible(False)
+    for item in ui.stock_varsedit_list:
+        item.setVisible(False)
+    for item in ui.stock_areaedit_list:
+        item.setVisible(False)
     for item in ui.stock_datedt_list:
         item.setVisible(True)
     for item in ui.stock_esczom_list:
@@ -561,12 +1161,6 @@ def stock_stg_editer(ui):
 
     ui.image_label1.setVisible(False)
     ui.svc_labellllll_05.setVisible(False)
-    ui.svc_pushButton_21.setVisible(False)
-    ui.svc_pushButton_22.setVisible(False)
-    ui.svc_pushButton_23.setVisible(False)
-    ui.svc_pushButton_24.setVisible(False)
-    ui.svc_pushButton_25.setVisible(False)
-    ui.svc_pushButton_26.setVisible(False)
 
     ui.svj_pushButton_09.setFocus()
     sChangeSvjButtonColor(ui)
@@ -574,8 +1168,7 @@ def stock_stg_editer(ui):
 
 @error_decorator
 def stock_cond_editer(ui):
-    ui.ss_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
-    ui.ss_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
+    group_animation_06(ui, ui.svo_pushButton_05, ui.svo_pushButton_06, ui.svo_pushButton_07)
 
     ui.ss_textEditttt_01.setVisible(False)
     ui.ss_textEditttt_02.setVisible(False)
@@ -583,6 +1176,9 @@ def stock_cond_editer(ui):
     ui.ss_textEditttt_04.setVisible(False)
     ui.ss_textEditttt_05.setVisible(False)
     ui.ss_textEditttt_06.setVisible(False)
+
+    ui.ss_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
+    ui.ss_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
 
     for item in ui.stock_esczom_list:
         item.setVisible(False)
@@ -599,6 +1195,10 @@ def stock_cond_editer(ui):
     for item in ui.stock_rwftvd_list:
         item.setVisible(False)
     for item in ui.stock_datedt_list:
+        item.setVisible(False)
+    for item in ui.stock_varsedit_list:
+        item.setVisible(False)
+    for item in ui.stock_areaedit_list:
         item.setVisible(False)
     for item in ui.stock_optimz_list:
         item.setVisible(True)
@@ -624,16 +1224,9 @@ def stock_cond_editer(ui):
 
     ui.image_label1.setVisible(True)
     ui.svc_labellllll_01.setVisible(False)
-    ui.svc_labellllll_04.setVisible(True)
-    ui.svc_labellllll_05.setVisible(True)
     ui.svc_labellllll_04.setText(condtext)
     ui.svc_labellllll_05.setText(cedittxt)
-    ui.svc_pushButton_21.setVisible(False)
-    ui.svc_pushButton_22.setVisible(False)
-    ui.svc_pushButton_23.setVisible(False)
-    ui.svc_pushButton_24.setVisible(False)
-    ui.svc_pushButton_25.setVisible(False)
-    ui.svc_pushButton_26.setVisible(False)
+    ui.svc_labellllll_05.setVisible(True)
 
     ui.svj_pushButton_11.setFocus()
     sChangeSvjButtonColor(ui)

@@ -319,10 +319,10 @@ class SetHomeTap:
         self.ui.kosdaq_labelll = self.setLabel('코스닥', qfont16)
         self.ui.kospi100_label = self.setLabel('코스피100', qfont16)
         self.ui.kospi200_label = self.setLabel('코스피200', qfont16)
-        self.ui.future_labelll = self.setLabel('선물', qfont16)
+        self.ui.future_labelll = self.setLabel('코스피200선물', qfont16)
         self.ui.usdkrw_labelll = self.setLabel('환율', qfont16)
         self.ui.oilgsl_labelll = self.setLabel('휘발유', qfont16)
-        self.ui.gold_labelllll = self.setLabel('금', qfont16)
+        self.ui.gold_labelllll = self.setLabel('국제금', qfont16)
 
         self.ui.btcusdt_pbtnnn = self.wc.setPushbutton('', icon=self.ui.icon_btc, color=6)
         self.ui.ethusdt_pbtnnn = self.wc.setPushbutton('', icon=self.ui.icon_eth, color=6)

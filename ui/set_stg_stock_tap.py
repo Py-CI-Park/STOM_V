@@ -107,7 +107,7 @@ class SetStockBack:
             self.ui.svjb_pushButon_03, self.ui.svjb_pushButon_04, self.ui.svjb_pushButon_05, self.ui.svjb_pushButon_06,
             self.ui.svjb_pushButon_07, self.ui.svjb_pushButon_08, self.ui.svjb_pushButon_09, self.ui.svjb_pushButon_10,
             self.ui.svjb_pushButon_11, self.ui.svjb_pushButon_12, self.ui.svj_pushButton_01, self.ui.svj_pushButton_02,
-            self.ui.svj_pushButton_03, self.ui.svjs_comboBoxx_01, self.ui.svjs_lineEditt_01,
+            self.ui.svj_pushButton_03, self.ui.svjs_comboBoxx_01, self.ui.svjs_lineEditt_01, self.ui.svj_pushButton_04,
             self.ui.svjs_pushButon_01, self.ui.svjs_pushButon_02, self.ui.svjs_pushButon_03, self.ui.svjs_pushButon_04,
             self.ui.svjs_pushButon_05, self.ui.svjs_pushButon_06, self.ui.svjs_pushButon_07, self.ui.svjs_pushButon_08,
             self.ui.svjs_pushButon_09, self.ui.svjs_pushButon_10, self.ui.svjs_pushButon_11, self.ui.svjs_pushButon_12,
@@ -275,6 +275,10 @@ class SetStockBack:
 
     # =================================================================================================================
 
+        self.ui.svc_labellllll_05 = QLabel('', self.ui.ss_tab)
+
+    # =================================================================================================================
+
         self.ui.sva_pushButton_01 = self.wc.setPushbutton('교차검증 GA 최적화', box=self.ui.ss_tab, click=self.ui.StockOptiGaStart, cmd='최적화OGVC', color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n교차 검증 GA최적화한다.')
         self.ui.sva_pushButton_02 = self.wc.setPushbutton('검증 GA 최적화', box=self.ui.ss_tab, click=self.ui.StockOptiGaStart, cmd='최적화OGV', color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 GA최적화한다.')
         self.ui.sva_pushButton_03 = self.wc.setPushbutton('GA 최적화', box=self.ui.ss_tab, click=self.ui.StockOptiGaStart, cmd='최적화OG', color=2, tip='학습기간을 선택하여 진행되며\n데이터 전체를 사용하여 GA최적화한다.')
@@ -298,13 +302,19 @@ class SetStockBack:
         self.ui.svc_pushButton_22 = self.wc.setPushbutton('GA > 최적화 범위 변환', box=self.ui.ss_tab, click=self.ui.StockGavarsToOptivars, color=2, visible=False, tip='GA용 범위코드를 최적화용으로 변환한다.')
         self.ui.svc_pushButton_23 = self.wc.setPushbutton('변수 키값 재정렬', box=self.ui.ss_tab, click=self.ui.StockStgvarsKeySort, color=2, visible=False, tip='범위 변수 self.vars의 키값을 재정렬한다.')
 
+        self.ui.stock_areaedit_list = [
+            self.ui.svc_pushButton_21, self.ui.svc_pushButton_22, self.ui.svc_pushButton_23
+        ]
+
     # =================================================================================================================
 
         self.ui.svc_pushButton_24 = self.wc.setPushbutton('최적화 변수 변환(매수우선)', box=self.ui.ss_tab, click=self.ui.StockStgVarsChange, color=2, visible=False, tip='일반 전략의 각종 변수를 매수우선 최적화용 변수로 변환한다.')
         self.ui.svc_pushButton_25 = self.wc.setPushbutton('최적화 변수 변환(매도우선)', box=self.ui.ss_tab, click=self.ui.StockStgVarsChange, color=2, visible=False, tip='일반 전략의 각종 변수를 매도우선 최적화용 변수로 변환한다.')
         self.ui.svc_pushButton_26 = self.wc.setPushbutton('변수 키값 재정렬', box=self.ui.ss_tab, click=self.ui.StockOptivarsKeySort, color=2, visible=False, tip='변수 self.vars의 키값을 재정렬한다.\n매수, 매도 self.vars의 첫번째 키값을 비교해서\n매수가 빠르면 매수우선, 매도가 빠르면 매도우선으로 재정렬된다.')
-        self.ui.svc_labellllll_05 = QLabel('', self.ui.ss_tab)
-        self.ui.svc_labellllll_05.setVisible(False)
+
+        self.ui.stock_varsedit_list = [
+            self.ui.svc_pushButton_24, self.ui.svc_pushButton_25, self.ui.svc_pushButton_26
+        ]
 
     # =================================================================================================================
 
