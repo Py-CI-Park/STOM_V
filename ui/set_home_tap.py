@@ -1,10 +1,10 @@
 
 import pyqtgraph as pg
+from ui.set_widget import error_decorator
 from PyQt5.QtGui import QFont, QPen, QColor
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QHBoxLayout
 from ui.set_style import color_fg_bc, color_bg_ct, style_ht_gb, style_ht_pb
-from ui.set_widget import error_decorator
 
 qfont16 = QFont()
 qfont16.setFamily('나눔고딕')
@@ -16,7 +16,7 @@ qfont12.setFamily('나눔고딕')
 qfont12.setPixelSize(12)
 
 
-class ClickableGroupBox(QGroupBox):
+class HomTapGroupBox(QGroupBox):
     def __init__(self, title, parent, ui):
         super().__init__(title, parent)
         self.ui = ui
@@ -148,23 +148,23 @@ class SetHomeTap:
 
     @error_decorator
     def set(self):
-        self.ui.kospi_boxxxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.kosdaq_boxxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.kospi100_boxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.kospi200_boxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.future_boxxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.usdkrw_boxxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.oilgsl_boxxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.gold_boxxxxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.kospi_boxxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.kosdaq_boxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.kospi100_boxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.kospi200_boxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.future_boxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.usdkrw_boxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.oilgsl_boxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.gold_boxxxxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
 
-        self.ui.btcusdt_boxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.ethusdt_boxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.bnbusdt_boxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.xrpusdt_boxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.solusdt_boxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.dogeusdt_boxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.adausdt_boxxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
-        self.ui.linkusdt_boxxx = ClickableGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.btcusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.ethusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.bnbusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.xrpusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.solusdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.dogeusdt_boxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.adausdt_boxxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
+        self.ui.linkusdt_boxxx = HomTapGroupBox('', self.ui.hm_tab, self.ui)
 
         self.ui.home_gbox_all_list = [
             self.ui.kospi_boxxxxxx, self.ui.kosdaq_boxxxxx, self.ui.kospi100_boxxx, self.ui.kospi200_boxxx,

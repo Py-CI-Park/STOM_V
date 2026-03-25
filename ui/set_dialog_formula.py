@@ -13,7 +13,7 @@ class SetDialogFormula:
 
     @error_decorator
     def set(self):
-        self.ui.dialog_formula = self.wc.setDialog('STOM FORMULA', tab=self.ui.dialog_chart)
+        self.ui.dialog_formula = self.wc.setDialog('STOM FORMULA', parent=self.ui.dialog_chart)
         self.ui.dialog_formula.geometry().center()
 
         self.ui.fm_groupBoxxxxx_01 = QGroupBox('', self.ui.dialog_formula)
@@ -27,10 +27,10 @@ class SetDialogFormula:
                '5. 범위 형태의 지표는 "self.check, self.up, self.down"을 지정하는 형태로 입력합니다.'
         self.ui.fm_labellllllll_01 = QLabel(text, self.ui.fm_groupBoxxxxx_01)
 
-        self.ui.fm_lineEdittttt_01 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, aleft=True, style=style_bc_dk, tip='저장할 수식명을 입력하세요.')
-        self.ui.fm_comboBoxxxxx_00 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, activated=self.ui.fmActivated_01, tip='편집할 수식을 선택하세요.')
-        self.ui.fm_pushButtonnn_01 = self.wc.setPushbutton('불러오기', box=self.ui.fm_groupBoxxxxx_02, color=4, click=self.ui.fmButtonClicked_01)
-        self.ui.fm_pushButtonnn_02 = self.wc.setPushbutton('저장하기', box=self.ui.fm_groupBoxxxxx_02, color=4, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_lineEdittttt_01 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, aleft=True, style=style_bc_dk)
+        self.ui.fm_comboBoxxxxx_00 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, activated=self.ui.fmActivated_01)
+        self.ui.fm_pushButtonnn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.fm_groupBoxxxxx_02, color=4, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.fm_groupBoxxxxx_02, color=4, click=self.ui.fmButtonClicked_01)
 
         self.ui.fm_checkBoxxxxx_01 = self.wc.setCheckBox('차트 표시 유무 선택', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
         self.ui.fm_checkBoxxxxx_02 = self.wc.setCheckBox('전략연산 및 백테 적용', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
@@ -42,25 +42,25 @@ class SetDialogFormula:
             '전일비', '회전율', '전일동시간비', '전일비각도', 'AD', 'ADOSC', 'ADXR', 'APO', 'AROON', 'ATR', 'BBAND', 'CCI',
             'DMI', 'MACD', 'MFI', 'MOM', 'OBV', 'PPO', 'ROC', 'RSI', 'SAR', 'STOCHS', 'STOCHF', 'WILLR'
         ]
-        self.ui.fm_comboBoxxxxx_01 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='표시할 차트의 팩터명을 선택하세요.')
+        self.ui.fm_comboBoxxxxx_01 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items)
 
         items = ['선:일반', '선:조건', '화살표:일반', '화살표:매매', '범위']
-        self.ui.fm_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='수식의 표시 형태를 선택하세요.')
+        self.ui.fm_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items)
 
         color_name = QColor(150, 150, 160).name()
         self.ui.fm_frameeeeeeee_01 = QFrame(self.ui.fm_groupBoxxxxx_02)
         self.ui.fm_frameeeeeeee_01.setStyleSheet('QWidget { background-color: %s }' % color_name)
-        self.ui.fm_pushButtonnn_03 = self.wc.setPushbutton('색상선택', box=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_03 = self.wc.setPushbutton('색상선택', parent=self.ui.fm_groupBoxxxxx_02, click=self.ui.fmButtonClicked_01)
         self.ui.fm_lineEdittttt_02 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, style=style_bc_dk, ltext=color_name)
 
         items = ['0.5', '1.0', '2.0', '3.0', '4.0', '5.0', '10.0', '20.0', '30.0', '40.0', '50.0']
-        self.ui.fm_comboBoxxxxx_03 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선의 굵기(0.5~5.0) 또는 화살표의 크기(10~50)를 선택하세요.')
+        self.ui.fm_comboBoxxxxx_03 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items)
 
         items = ['1:실선', '2:대시선', '3:점선', '4:대시점선', '5:대시점점선', '6:위쪽화살표(↑)', '7:아래쪽화살표(↓)', '8:우측쪽화살표(→)', '9:좌쪽화살표(←)']
-        self.ui.fm_comboBoxxxxx_04 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items, tip='선의 종류(1~5) 또는 화살표의 방향(6~9)을 선택하세요.')
+        self.ui.fm_comboBoxxxxx_04 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, items=items)
 
-        self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('삭제하기', box=self.ui.fm_groupBoxxxxx_02, color=2, click=self.ui.fmButtonClicked_01)
-        self.ui.fm_pushButtonnn_05 = self.wc.setPushbutton('예제확인', box=self.ui.fm_groupBoxxxxx_02, color=3, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('삭제하기', parent=self.ui.fm_groupBoxxxxx_02, color=2, click=self.ui.fmButtonClicked_01)
+        self.ui.fm_pushButtonnn_05 = self.wc.setPushbutton('예제확인', parent=self.ui.fm_groupBoxxxxx_02, color=3, click=self.ui.fmButtonClicked_01)
 
         self.ui.fm_textEdittttt_01 = self.wc.setTextEdit(self.ui.fm_groupBoxxxxx_03, vscroll=True, filter_=True, font=qfont14)
 

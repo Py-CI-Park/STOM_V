@@ -45,7 +45,7 @@ class SetDialogChart:
         self.ui.ct_lineEdittttt_04 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, enter=self.ui.ReturnPress_01, style=style_bc_dk)
         self.ui.ct_labellllllll_05 = QLabel('종목명', self.ui.ct_groupBoxxxxx_01)
         self.ui.ct_lineEdittttt_05 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, enter=self.ui.ReturnPress_01, style=style_bc_dk)
-        self.ui.ct_pushButtonnn_01 = self.wc.setPushbutton('검색하기', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ReturnPress_01)
+        self.ui.ct_pushButtonnn_01 = self.wc.setPushbutton('검색하기', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.ReturnPress_01)
         self.ui.ct_checkBoxxxxx_01 = self.wc.setCheckBox('십자선', self.ui.ct_groupBoxxxxx_01, checked=True, style=style_ck_bx)
         self.ui.ct_checkBoxxxxx_02 = self.wc.setCheckBox('정보창', self.ui.ct_groupBoxxxxx_01, checked=False, style=style_ck_bx)
         text = '1. 시작시간과 종료시간을 설정하면 해당시간의 데이터만 표시됩니다.\n' \
@@ -61,16 +61,16 @@ class SetDialogChart:
                '11. 줌인된 상태에서 마우스 우클릭으로 드레그하면 좌우로 움직입니다.\n' \
                '12. 호가창이 열린 상태에서 마우스 좌클릭 시 해당 시간의 호가정보가 표시됩니다.\n' \
                '13. 키움 HTS에 멀티차트와도 연동됩니다. 단, 좌측 일봉, 우측 분봉 상태여야합니다.'
-        self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', box=self.ui.ct_groupBoxxxxx_01, tip=text)
-        self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ShowDialogFormula)
-        self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ShowDialogFactor)
-        self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART I', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartCountChange)
-        self.ui.ct_pushButtonnn_06 = self.wc.setPushbutton('확장', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartSizeChange)
-        self.ui.ct_pushButtonnn_07 = self.wc.setPushbutton('', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_01, cmd='이전', shortcut='Alt+left')
-        self.ui.ct_pushButtonnn_08 = self.wc.setPushbutton('', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_01, cmd='다음', shortcut='Alt+right')
-        self.ui.ct_pushButtonnn_09 = self.wc.setPushbutton('', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_02, cmd='매수', shortcut='Alt+up')
-        self.ui.ct_pushButtonnn_10 = self.wc.setPushbutton('', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_02, cmd='매도', shortcut='Alt+down')
-        self.ui.ct_pushButtonnn_11 = self.wc.setPushbutton('', box=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartScreenShot2, shortcut='Shift+S')
+        self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', parent=self.ui.ct_groupBoxxxxx_01, tip=text)
+        self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.ShowDialogFormula)
+        self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.ShowDialogFactor)
+        self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART I', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartCountChange)
+        self.ui.ct_pushButtonnn_06 = self.wc.setPushbutton('확장', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartSizeChange)
+        self.ui.ct_pushButtonnn_07 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_01, cmd='이전', shortcut='Alt+left')
+        self.ui.ct_pushButtonnn_08 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_01, cmd='다음', shortcut='Alt+right')
+        self.ui.ct_pushButtonnn_09 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_02, cmd='매수', shortcut='Alt+up')
+        self.ui.ct_pushButtonnn_10 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.hgButtonClicked_02, cmd='매도', shortcut='Alt+down')
+        self.ui.ct_pushButtonnn_11 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=self.ui.ChartScreenShot2, shortcut='Shift+S')
 
         self.ui.ct_dateEdittttt_02 = self.wc.setDateEdit(self.ui.dialog_chart, changed=self.ui.ChartMoneyTopList)
         self.ui.ct_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_chart, ['종목명'], 100, vscroll=True, clicked=self.ui.CellClicked_07)
@@ -120,7 +120,7 @@ class SetDialogChart:
         jspg_vboxLayout.setContentsMargins(3, 6, 3, 3)
         jspg_vboxLayout.addWidget(jspg)
 
-        self.ui.dialog_factor = self.wc.setDialog('STOM FACTOR', tab=self.ui.dialog_chart)
+        self.ui.dialog_factor = self.wc.setDialog('STOM FACTOR', parent=self.ui.dialog_chart)
         self.ui.dialog_factor.geometry().center()
         self.ui.jp_groupBoxxxxx_01 = QGroupBox(' ', self.ui.dialog_factor)
 
@@ -263,9 +263,9 @@ class SetDialogChart:
 
         text = '매수전략으로 설정된\n보조지표값 사용하기\n체크를 해제하면\n좌측 설정값으로 표시됨'
         self.ui.ft_checkBoxxxxx_44 = self.wc.setCheckBox(text, self.ui.jp_groupBoxxxxx_01, checked=False, style=style_ck_bx)
-        self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingBasic)
-        self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingLoad)
-        self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', box=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingSave)
+        self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', parent=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingBasic)
+        self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', parent=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingLoad)
+        self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', parent=self.ui.jp_groupBoxxxxx_01, click=self.ui.IndicatorSettingSave)
 
         self.ui.factor_checkbox_list = [
             self.ui.ft_checkBoxxxxx_01, self.ui.ft_checkBoxxxxx_02, self.ui.ft_checkBoxxxxx_03, self.ui.ft_checkBoxxxxx_04,
