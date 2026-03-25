@@ -1,9 +1,8 @@
 
 from PyQt5.QtCore import Qt, QEvent, QTimer
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QColor
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QTextEdit
+from PyQt5.QtWidgets import QMainWindow, QMessageBox, QTextEdit, QApplication
 from utility.static import error_decorator
-
 
 syntax_highlighters = {}
 
@@ -92,14 +91,15 @@ def event_filter(ui, widget, event):
     if event.type() != QEvent.KeyPress:
         return QMainWindow.eventFilter(ui, widget, event)
 
-    if widget.__class__ == QTextEdit:
+    if widget.__class__ == QTextEdit and not (QApplication.keyboardModifiers() & Qt.AltModifier):
         widget_id = id(widget)
         if widget_id not in syntax_highlighters:
             setup_syntax_highlighter(widget, widget_id)
 
-        if event.key() == Qt.Key_Return:
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
             handle_auto_indent(widget)
             return True
+
         elif event.key() == Qt.Key_Tab:
             if hasattr(widget, 'textCursor') and widget.textCursor().hasSelection():
                 cursor = widget.textCursor()
@@ -137,6 +137,7 @@ def event_filter(ui, widget, event):
                 cursor.endEditBlock()
                 widget.setTextCursor(cursor)
             return True
+
         elif event.key() == Qt.Key_Backtab:
             if hasattr(widget, 'textCursor') and widget.textCursor().hasSelection():
                 cursor = widget.textCursor()
@@ -175,9 +176,8 @@ def event_filter(ui, widget, event):
                     cursor.endEditBlock()
                     widget.setTextCursor(cursor)
             return True
-        else:
-            return QMainWindow.eventFilter(ui, widget, event)
-    elif event.key() == Qt.Key_Escape:
+
+    if event.key() == Qt.Key_Escape:
         if not ui.svc_pushButton_24.isVisible():
             if widget in (ui.ss_textEditttt_01, ui.ss_textEditttt_03):
                 ui.szButtonClicked_01()
@@ -189,172 +189,59 @@ def event_filter(ui, widget, event):
             elif widget in (ui.cs_textEditttt_02, ui.cs_textEditttt_04):
                 ui.czButtonClicked_02()
         return True
-    elif event.key() == Qt.Key_F1:
-        if ui.main_btn == 3:
-            if ui.svj_pushButton_01.isVisible():
-                ui.ss_textEditttt_01.setFocus()
-                ui.StockBuyStgLoad()
-            elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
-                ui.ss_textEditttt_03.setFocus()
-                ui.StockOptiBuyLoad()
-            elif ui.svo_pushButton_05.isVisible():
-                ui.ss_textEditttt_07.setFocus()
-                ui.StockCondbuyLoad()
-        elif ui.main_btn == 4:
-            if ui.cvj_pushButton_01.isVisible():
-                ui.cs_textEditttt_01.setFocus()
-                ui.CoinBuyStgLoad()
-            elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.cs_textEditttt_04.setFocus()
-                ui.CoinOptiBuyLoad()
-            elif ui.cvo_pushButton_05.isVisible():
-                ui.cs_textEditttt_08.setFocus()
-                ui.CoinCondbuyLoad()
+
+    elif event.key() == Qt.Key_E and (QApplication.keyboardModifiers() & Qt.ShiftModifier):
+        ui.ExtendWindow()
         return True
-    elif event.key() == Qt.Key_F2:
+
+    elif (QApplication.keyboardModifiers() & Qt.AltModifier) and \
+            event.key() in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5,
+                            Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9, Qt.Key_0):
         if ui.main_btn == 3:
-            if ui.svj_pushButton_01.isVisible():
-                ui.ss_textEditttt_01.setFocus()
-                ui.svjb_comboBoxx_01.showPopup()
-            elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
-                ui.ss_textEditttt_03.setFocus()
-                ui.svc_comboBoxxx_01.showPopup()
-            elif ui.svo_pushButton_05.isVisible():
-                ui.ss_textEditttt_07.setFocus()
-                ui.svo_comboBoxxx_01.showPopup()
+            if event.key() == Qt.Key_1:
+                ui.StockStgEditer()
+            elif event.key() == Qt.Key_2:
+                ui.StockOptiEditer()
+            elif event.key() == Qt.Key_3:
+                ui.StockOptiTestEditer()
+            elif event.key() == Qt.Key_4:
+                ui.StockRwfTestEditer()
+            elif event.key() == Qt.Key_5:
+                ui.StockOptiGaEditer()
+            elif event.key() == Qt.Key_6:
+                ui.StockCondEditer()
+            elif event.key() == Qt.Key_7:
+                ui.StockOptiVarsEditer()
+            elif event.key() == Qt.Key_8:
+                ui.StockVarsEditer()
+            elif event.key() == Qt.Key_9:
+                ui.StockBacktestLog()
+            elif event.key() == Qt.Key_0:
+                ui.StockBacktestDetail()
         elif ui.main_btn == 4:
-            if ui.cvj_pushButton_01.isVisible():
-                ui.cs_textEditttt_01.setFocus()
-                ui.cvjb_comboBoxx_01.showPopup()
-            elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.cs_textEditttt_04.setFocus()
-                ui.cvc_comboBoxxx_01.showPopup()
-            elif ui.cvo_pushButton_05.isVisible():
-                ui.cs_textEditttt_08.setFocus()
-                ui.cvo_comboBoxxx_01.showPopup()
+            if event.key() == Qt.Key_1:
+                ui.CoinStgEditer()
+            elif event.key() == Qt.Key_2:
+                ui.CoinOptiEditer()
+            elif event.key() == Qt.Key_3:
+                ui.CoinOptiTestEditer()
+            elif event.key() == Qt.Key_4:
+                ui.CoinRwfTestEditer()
+            elif event.key() == Qt.Key_5:
+                ui.CoinOptiGaEditer()
+            elif event.key() == Qt.Key_6:
+                ui.CoinCondEditer()
+            elif event.key() == Qt.Key_7:
+                ui.CoinOptiVarsEditer()
+            elif event.key() == Qt.Key_8:
+                ui.CoinVarsEditer()
+            elif event.key() == Qt.Key_9:
+                ui.CoinBacktestLog()
+            elif event.key() == Qt.Key_0:
+                ui.CoinBacktestDetail()
         return True
-    elif event.key() == Qt.Key_F3:
-        if ui.main_btn == 3:
-            if ui.svj_pushButton_01.isVisible():
-                ui.svjb_lineEditt_01.setFocus()
-            elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
-                ui.svc_lineEdittt_01.setFocus()
-            elif ui.svo_pushButton_05.isVisible():
-                ui.svo_lineEdittt_01.setFocus()
-        elif ui.main_btn == 4:
-            if ui.cvj_pushButton_01.isVisible():
-                ui.cvjb_lineEditt_01.setFocus()
-            elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.cvc_lineEdittt_01.setFocus()
-            elif ui.cvo_pushButton_05.isVisible():
-                ui.cvo_lineEdittt_01.setFocus()
-        return True
-    elif event.key() == Qt.Key_F5:
-        if ui.main_btn == 3:
-            if ui.svj_pushButton_01.isVisible():
-                ui.ss_textEditttt_02.setFocus()
-                ui.StockSellStgLoad()
-            elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
-                ui.ss_textEditttt_04.setFocus()
-                ui.StockOptiSellLoad()
-            elif ui.svo_pushButton_05.isVisible():
-                ui.ss_textEditttt_05.setFocus()
-                ui.StockCondsellLoad()
-        elif ui.main_btn == 4:
-            if ui.cvj_pushButton_01.isVisible():
-                ui.cs_textEditttt_02.setFocus()
-                ui.CoinSellStgLoad()
-            elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.cs_textEditttt_05.setFocus()
-                ui.CoinOptiSample()
-            elif ui.cvo_pushButton_05.isVisible():
-                ui.cs_textEditttt_06.setFocus()
-                ui.CoinCondsellLoad()
-        return True
-    elif event.key() == Qt.Key_F6:
-        if ui.main_btn == 3:
-            if ui.svj_pushButton_01.isVisible():
-                ui.ss_textEditttt_02.setFocus()
-                ui.svjs_comboBoxx_01.showPopup()
-            elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
-                ui.ss_textEditttt_03.setFocus()
-                ui.svc_comboBoxxx_08.showPopup()
-            elif ui.svo_pushButton_05.isVisible():
-                ui.ss_textEditttt_04.setFocus()
-                ui.svo_comboBoxxx_02.showPopup()
-        elif ui.main_btn == 4:
-            if ui.cvj_pushButton_01.isVisible():
-                ui.cs_textEditttt_02.setFocus()
-                ui.cvjs_comboBoxx_01.showPopup()
-            elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.cs_textEditttt_04.setFocus()
-                ui.cvc_comboBoxxx_08.showPopup()
-            elif ui.cvo_pushButton_05.isVisible():
-                ui.cs_textEditttt_05.setFocus()
-                ui.cvo_comboBoxxx_02.showPopup()
-        return True
-    elif event.key() == Qt.Key_F7:
-        if ui.main_btn == 3:
-            if ui.svj_pushButton_01.isVisible():
-                ui.svjs_lineEditt_01.setFocus()
-            elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
-                ui.svc_lineEdittt_03.setFocus()
-            elif ui.svo_pushButton_05.isVisible():
-                ui.svo_lineEdittt_02.setFocus()
-        elif ui.main_btn == 4:
-            if ui.cvj_pushButton_01.isVisible():
-                ui.cvjs_lineEditt_01.setFocus()
-            elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.cvc_lineEdittt_03.setFocus()
-            elif ui.cvo_pushButton_05.isVisible():
-                ui.cvo_lineEdittt_02.setFocus()
-        return True
-    elif event.key() == Qt.Key_F9:
-        if ui.main_btn == 3:
-            if ui.svc_pushButton_06.isVisible():
-                ui.ss_textEditttt_05.setFocus()
-                ui.StockOptiVarsLoad()
-            elif ui.sva_pushButton_03.isVisible():
-                ui.ss_textEditttt_06.setFocus()
-                ui.StockGavarsLoad()
-        elif ui.main_btn == 4:
-            if ui.cvc_pushButton_06.isVisible():
-                ui.cs_textEditttt_06.setFocus()
-                ui.CoinOptiVarsLoad()
-            elif ui.cva_pushButton_01.isVisible():
-                ui.cs_textEditttt_07.setFocus()
-                ui.CoinGavarsSave()
-        return True
-    elif event.key() == Qt.Key_F10:
-        if ui.main_btn == 3:
-            if ui.svc_pushButton_06.isVisible():
-                ui.ss_textEditttt_05.setFocus()
-                ui.svc_comboBoxxx_02.showPopup()
-            elif ui.sva_pushButton_03.isVisible():
-                ui.ss_textEditttt_06.setFocus()
-                ui.sva_comboBoxxx_01.showPopup()
-        elif ui.main_btn == 4:
-            if ui.cvc_pushButton_06.isVisible():
-                ui.cs_textEditttt_06.setFocus()
-                ui.cvc_comboBoxxx_02.showPopup()
-            elif ui.cva_pushButton_01.isVisible():
-                ui.cs_textEditttt_07.setFocus()
-                ui.cva_comboBoxxx_01.showPopup()
-        return True
-    elif event.key() == Qt.Key_F11:
-        if ui.main_btn == 3:
-            if ui.svc_pushButton_06.isVisible():
-                ui.svc_lineEdittt_02.setFocus()
-            elif ui.sva_pushButton_03.isVisible():
-                ui.sva_lineEdittt_01.setFocus()
-        elif ui.main_btn == 4:
-            if ui.cvc_pushButton_06.isVisible():
-                ui.cvc_lineEdittt_02.setFocus()
-            elif ui.cva_pushButton_01.isVisible():
-                ui.cva_lineEdittt_01.setFocus()
-        return True
-    else:
-        return QMainWindow.eventFilter(ui, widget, event)
+
+    return QMainWindow.eventFilter(ui, widget, event)
 
 
 def close_event(ui, a):

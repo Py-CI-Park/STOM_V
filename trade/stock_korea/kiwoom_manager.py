@@ -34,7 +34,6 @@ class ZmqRecvFromUI(QThread):
         self.straderQ = qlist[2]
         self.sstgQs   = qlist[3]
         self.port_num   = port_num
-        self.is_running = False
         self.zctx = zmq.Context()
         self.sock = self.zctx.socket(zmq.SUB)
         self.sock.setsockopt(zmq.LINGER, 0)
@@ -96,7 +95,7 @@ class ZmqSendToUI(QThread):
         inthms = int(str_hms())
         while self.is_running:
             try:
-                msg, data = self.mgzservQ.get(timeout=1)
+                msg, data = self.mgzservQ.get(timeout=5)
                 try:
                     self.sock.send_string(msg, zmq.SNDMORE)
                     self.sock.send_pyobj(data)
@@ -363,7 +362,7 @@ class KiwoomManager:
 
     def StockAgentProcessKill(self):
         if self.StockAgentProcessAlive():
-            self.proc_trader.kill()
+            self.proc_agent.kill()
 
     def ManagerProcessKill(self):
         if self.zmqrecv.isRunning(): self.zmqrecv.stop()
@@ -371,7 +370,7 @@ class KiwoomManager:
         self.StockStrategyProcessKill()
         self.StockTraderProcessKill()
         self.StockAgentProcessKill()
-        qtest_qwait(1)
+        qtest_qwait(5)
         sys.exit()
 
 
