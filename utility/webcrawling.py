@@ -5,10 +5,11 @@ import matplotlib
 from urllib import request
 from threading import Timer
 from bs4 import BeautifulSoup
+from traceback import format_exc
 from fake_useragent import UserAgent
 from utility.setting_base import ui_num
 from utility.lazy_imports import get_pd
-from utility.static import thread_decorator, error_decorator, set_builtin_print
+from utility.static import thread_decorator
 
 
 class WebCrawling:
@@ -33,14 +34,15 @@ class WebCrawling:
         self.imagelist1 = None
         self.imagelist2 = None
 
-        set_builtin_print(True, self.windowQ)
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         while True:
             data = self.webcQ.get()
-            self.Crawling(data)
+            try:
+                self.Crawling(data)
+            except:
+                self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def Crawling(self, data):
         cmd, data = data

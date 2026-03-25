@@ -268,51 +268,51 @@ def setting_save_01(ui):
         localvs = locals()
         values = tuple(localvs[col] for col in columns)
         ui.queryQ.put(('설정디비', query, values))
-    QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
-    prev_sg = ui.dict_set['증권사']
-    prev_sr = ui.dict_set['주식에이전트']
-    ui.dict_set['증권사'] = 증권사
-    ui.dict_set['주식에이전트'] = 주식에이전트
-    ui.dict_set['주식트레이더'] = 주식트레이더
-    ui.dict_set['주식데이터저장'] = 주식데이터저장
-    ui.dict_set['거래소'] = 거래소
-    ui.dict_set['코인리시버'] = 코인리시버
-    ui.dict_set['코인트레이더'] = 코인트레이더
-    ui.dict_set['코인데이터저장'] = 코인데이터저장
-    ui.dict_set['바이낸스선물마진타입'] = 바이낸스선물마진타입
-    ui.dict_set['바이낸스선물포지션'] = 바이낸스선물포지션
+        prev_sg = ui.dict_set['증권사']
+        prev_sr = ui.dict_set['주식에이전트']
+        ui.dict_set['증권사'] = 증권사
+        ui.dict_set['주식에이전트'] = 주식에이전트
+        ui.dict_set['주식트레이더'] = 주식트레이더
+        ui.dict_set['주식데이터저장'] = 주식데이터저장
+        ui.dict_set['거래소'] = 거래소
+        ui.dict_set['코인리시버'] = 코인리시버
+        ui.dict_set['코인트레이더'] = 코인트레이더
+        ui.dict_set['코인데이터저장'] = 코인데이터저장
+        ui.dict_set['바이낸스선물마진타입'] = 바이낸스선물마진타입
+        ui.dict_set['바이낸스선물포지션'] = 바이낸스선물포지션
 
-    if '키움증권' in ui.dict_set['증권사']:
-        ui.sj_stock_label_03.setText(
-            '종목당투자금                          백만원                                  전략중지 및 잔고청산   |')
-    else:
-        ui.sj_stock_label_03.setText(
-            '종목당투자금                          계약수                                  전략중지 및 잔고청산   |')
-    if ui.dict_set['거래소'] == '업비트':
-        ui.sj_coin_labell_03.setText(
-            '종목당투자금                          백만원                                  전략중지 및 잔고청산   |')
-    else:
-        ui.sj_coin_labell_03.setText(
-            '종목당투자금                          USDT                                   전략중지 및 잔고청산   |')
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+        ui.UpdateDictSet()
 
-    if (not prev_sr and 주식에이전트) or (prev_sr and prev_sg[:4] != 증권사[:4]):
-        if ui.proc_manager is not None and ui.proc_manager.poll() is None:
-            ui.wdzservQ.put(('manager', '프로세스종료'))
-            qtest_qwait(3)
-        if '키움증권' in 증권사:
-            ui.proc_manager = subprocess.Popen(f'python32 ./trade/stock_korea/kiwoom_manager.py {ui.port_num}')
+        if '키움증권' in ui.dict_set['증권사']:
+            ui.sj_stock_label_03.setText(
+                '종목당투자금                          백만원                                  전략중지 및 잔고청산   |')
         else:
-            ui.proc_manager = subprocess.Popen(f'python32 ./trade/future_oversea/future_manager.py {ui.port_num}')
-        ui.windowQ.put((ui_num['시스템로그'], '설정이 변경되어 32비트 매니저 프로세스를 재구동하였습니다.'))
+            ui.sj_stock_label_03.setText(
+                '종목당투자금                          계약수                                  전략중지 및 잔고청산   |')
+        if ui.dict_set['거래소'] == '업비트':
+            ui.sj_coin_labell_03.setText(
+                '종목당투자금                          백만원                                  전략중지 및 잔고청산   |')
+        else:
+            ui.sj_coin_labell_03.setText(
+                '종목당투자금                          USDT                                   전략중지 및 잔고청산   |')
 
-    if prev_sr and not 주식에이전트:
-        if ui.proc_manager is not None and ui.proc_manager.poll() is None:
-            ui.wdzservQ.put(('manager', '프로세스종료'))
-            qtest_qwait(3)
-            ui.windowQ.put((ui_num['시스템로그'], '설정이 변경되어 32비트 매니저 프로세스를 종료하였습니다.'))
+        if (not prev_sr and 주식에이전트) or (prev_sr and prev_sg[:4] != 증권사[:4]):
+            if ui.proc_manager is not None and ui.proc_manager.poll() is None:
+                ui.wdzservQ.put(('manager', '프로세스종료'))
+                qtest_qwait(3)
+            if '키움증권' in 증권사:
+                ui.proc_manager = subprocess.Popen(f'python32 ./trade/stock_korea/kiwoom_manager.py {ui.port_num}')
+            else:
+                ui.proc_manager = subprocess.Popen(f'python32 ./trade/future_oversea/future_manager.py {ui.port_num}')
+            ui.windowQ.put((ui_num['시스템로그'], '설정이 변경되어 32비트 매니저 프로세스를 재구동하였습니다.'))
 
-    ui.UpdateDictSet()
+        if prev_sr and not 주식에이전트:
+            if ui.proc_manager is not None and ui.proc_manager.poll() is None:
+                ui.wdzservQ.put(('manager', '프로세스종료'))
+                qtest_qwait(3)
+                ui.windowQ.put((ui_num['시스템로그'], '설정이 변경되어 32비트 매니저 프로세스를 종료하였습니다.'))
 
 
 @error_decorator
@@ -331,17 +331,20 @@ def setting_save_02(ui):
         en_cp1 = en_text(ui.dict_set['키'], 인증서비밀번호)
         en_ap1 = en_text(ui.dict_set['키'], 계좌비밀번호)
         id_num = int(comob_name[4:])
+
         if ui.proc_query.is_alive():
             columns = ['아이디', '비밀번호', '인증서비밀번호', '계좌비밀번호']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query   = f'UPDATE sacc SET {set_txt} WHERE `index` = ?'
             values  = (en_id1, en_ps1, en_cp1, en_ap1, id_num)
             ui.queryQ.put(('설정디비', query, values))
-        ui.dict_set[f'아이디{id_num}'] = 아이디
-        ui.dict_set[f'비밀번호{id_num}'] = 비밀번호
-        ui.dict_set[f'인증서비밀번호{id_num}'] = 인증서비밀번호
-        ui.dict_set[f'계좌비밀번호{id_num}'] = 계좌비밀번호
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+
+            ui.dict_set[f'아이디{id_num}'] = 아이디
+            ui.dict_set[f'비밀번호{id_num}'] = 비밀번호
+            ui.dict_set[f'인증서비밀번호{id_num}'] = 인증서비밀번호
+            ui.dict_set[f'계좌비밀번호{id_num}'] = 계좌비밀번호
+
+            QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
@@ -361,13 +364,14 @@ def setting_save_03(ui):
             values = (en_access_key, en_secret_key, index)
             ui.queryQ.put(('설정디비', query, values))
 
-        if combo_name == '업비트':
-            ui.dict_set['Access_key1'] = access_key
-            ui.dict_set['Secret_key1'] = secret_key
-        else:
-            ui.dict_set['Access_key2'] = access_key
-            ui.dict_set['Secret_key2'] = secret_key
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+            if combo_name == '업비트':
+                ui.dict_set['Access_key1'] = access_key
+                ui.dict_set['Secret_key1'] = secret_key
+            else:
+                ui.dict_set['Access_key2'] = access_key
+                ui.dict_set['Secret_key2'] = secret_key
+
+            QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
@@ -387,9 +391,10 @@ def setting_save_04(ui):
             values = (en_str_bot, en_int_id, gubun)
             ui.queryQ.put(('설정디비', query, values))
 
-        ui.dict_set[f'텔레그램봇토큰{gubun}'] = str_bot
-        ui.dict_set[f'텔레그램사용자아이디{gubun}'] = int(int_id)
-        QMessageBox.information(ui, '저장 완료', '텔레그램봇 토큰 및 사용자 아이디 설정은 재구동해야 적용됩니다.')
+            ui.dict_set[f'텔레그램봇토큰{gubun}'] = str_bot
+            ui.dict_set[f'텔레그램사용자아이디{gubun}'] = int(int_id)
+
+            QMessageBox.information(ui, '저장 완료', '텔레그램봇 토큰 및 사용자 아이디 설정은 재구동해야 적용됩니다.')
 
 
 @error_decorator
@@ -450,26 +455,27 @@ def setting_save_05(ui):
                 localvs = locals()
                 values  = tuple(localvs[col] for col in columns)
                 ui.queryQ.put(('설정디비', query, values))
-                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
-            ui.dict_set['주식모의투자'] = 주식모의투자
-            ui.dict_set['주식알림소리'] = 주식알림소리
-            ui.dict_set['주식매수전략'] = 주식매수전략
-            ui.dict_set['주식매도전략'] = 주식매도전략
-            ui.dict_set['주식타임프레임'] = 주식타임프레임
-            ui.dict_set['주식평균값계산틱수'] = 주식평균값계산틱수
-            ui.dict_set['주식최대매수종목수'] = 주식최대매수종목수
-            ui.dict_set['주식전략종료시간'] = 주식전략종료시간
-            ui.dict_set['주식잔고청산'] = 주식잔고청산
-            ui.dict_set['주식프로세스종료'] = 주식프로세스종료
-            ui.dict_set['주식컴퓨터종료'] = 주식컴퓨터종료
-            ui.dict_set['주식투자금고정'] = 주식투자금고정
-            ui.dict_set['주식투자금'] = 주식투자금
-            ui.dict_set['주식손실중지'] = 주식손실중지
-            ui.dict_set['주식손실중지수익률'] = 주식손실중지수익률
-            ui.dict_set['주식수익중지'] = 주식수익중지
-            ui.dict_set['주식수익중지수익률'] = 주식수익중지수익률
-            ui.UpdateDictSet()
+                ui.dict_set['주식모의투자'] = 주식모의투자
+                ui.dict_set['주식알림소리'] = 주식알림소리
+                ui.dict_set['주식매수전략'] = 주식매수전략
+                ui.dict_set['주식매도전략'] = 주식매도전략
+                ui.dict_set['주식타임프레임'] = 주식타임프레임
+                ui.dict_set['주식평균값계산틱수'] = 주식평균값계산틱수
+                ui.dict_set['주식최대매수종목수'] = 주식최대매수종목수
+                ui.dict_set['주식전략종료시간'] = 주식전략종료시간
+                ui.dict_set['주식잔고청산'] = 주식잔고청산
+                ui.dict_set['주식프로세스종료'] = 주식프로세스종료
+                ui.dict_set['주식컴퓨터종료'] = 주식컴퓨터종료
+                ui.dict_set['주식투자금고정'] = 주식투자금고정
+                ui.dict_set['주식투자금'] = 주식투자금
+                ui.dict_set['주식손실중지'] = 주식손실중지
+                ui.dict_set['주식손실중지수익률'] = 주식손실중지수익률
+                ui.dict_set['주식수익중지'] = 주식수익중지
+                ui.dict_set['주식수익중지수익률'] = 주식수익중지수익률
+
+                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+                ui.UpdateDictSet()
 
 
 @error_decorator
@@ -523,26 +529,27 @@ def setting_save_06(ui):
                 localvs = locals()
                 values  = tuple(localvs[col] for col in columns)
                 ui.queryQ.put(('설정디비', query, values))
-            QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
-            ui.dict_set['코인모의투자'] = 코인모의투자
-            ui.dict_set['코인알림소리'] = 코인알림소리
-            ui.dict_set['코인매수전략'] = 코인매수전략
-            ui.dict_set['코인매도전략'] = 코인매도전략
-            ui.dict_set['코인타임프레임'] = 코인타임프레임
-            ui.dict_set['코인평균값계산틱수'] = 코인평균값계산틱수
-            ui.dict_set['코인최대매수종목수'] = 코인최대매수종목수
-            ui.dict_set['코인전략종료시간'] = 코인전략종료시간
-            ui.dict_set['코인잔고청산'] = 코인잔고청산
-            ui.dict_set['코인프로세스종료'] = 코인프로세스종료
-            ui.dict_set['코인컴퓨터종료'] = 코인컴퓨터종료
-            ui.dict_set['코인투자금고정'] = 코인투자금고정
-            ui.dict_set['코인투자금'] = 코인투자금
-            ui.dict_set['코인손실중지'] = 코인손실중지
-            ui.dict_set['코인손실중지수익률'] = 코인손실중지수익률
-            ui.dict_set['코인수익중지'] = 코인수익중지
-            ui.dict_set['코인수익중지수익률'] = 코인수익중지수익률
-            ui.UpdateDictSet()
+                ui.dict_set['코인모의투자'] = 코인모의투자
+                ui.dict_set['코인알림소리'] = 코인알림소리
+                ui.dict_set['코인매수전략'] = 코인매수전략
+                ui.dict_set['코인매도전략'] = 코인매도전략
+                ui.dict_set['코인타임프레임'] = 코인타임프레임
+                ui.dict_set['코인평균값계산틱수'] = 코인평균값계산틱수
+                ui.dict_set['코인최대매수종목수'] = 코인최대매수종목수
+                ui.dict_set['코인전략종료시간'] = 코인전략종료시간
+                ui.dict_set['코인잔고청산'] = 코인잔고청산
+                ui.dict_set['코인프로세스종료'] = 코인프로세스종료
+                ui.dict_set['코인컴퓨터종료'] = 코인컴퓨터종료
+                ui.dict_set['코인투자금고정'] = 코인투자금고정
+                ui.dict_set['코인투자금'] = 코인투자금
+                ui.dict_set['코인손실중지'] = 코인손실중지
+                ui.dict_set['코인손실중지수익률'] = 코인손실중지수익률
+                ui.dict_set['코인수익중지'] = 코인수익중지
+                ui.dict_set['코인수익중지수익률'] = 코인수익중지수익률
+
+                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+                ui.UpdateDictSet()
 
 
 @error_decorator
@@ -590,30 +597,32 @@ def setting_save_07(ui):
             localvs = locals()
             values  = tuple(localvs[col] for col in columns)
             ui.queryQ.put(('설정디비', query, values))
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
-        pre_bbg = ui.dict_set['백테주문관리적용']
-        ui.dict_set['블랙리스트추가'] = 블랙리스트추가
-        ui.dict_set['백테주문관리적용'] = 백테주문관리적용
-        ui.dict_set['백테매수시간기준'] = 백테매수시간기준
-        ui.dict_set['백테일괄로딩'] = 백테일괄로딩
-        ui.dict_set['그래프저장하지않기'] = 그래프저장하지않기
-        ui.dict_set['그래프띄우지않기'] = 그래프띄우지않기
-        ui.dict_set['디비자동관리'] = 디비자동관리
-        ui.dict_set['교차검증가중치'] = 교차검증가중치
-        ui.dict_set['기준값최소상승률'] = 기준값최소상승률
-        ui.dict_set['백테스케쥴실행'] = 백테스케쥴실행
-        ui.dict_set['백테스케쥴요일'] = 백테스케쥴요일
-        ui.dict_set['백테스케쥴시간'] = 백테스케쥴시간
-        ui.dict_set['백테스케쥴구분'] = 백테스케쥴구분
-        ui.dict_set['백테스케쥴명'] = 백테스케쥴명
-        ui.dict_set['백테날짜고정'] = 백테날짜고정
-        ui.dict_set['백테날짜'] = 백테날짜
-        ui.dict_set['범위자동관리'] = 범위자동관리
-        ui.dict_set['백테스트로그기록안함'] = 백테스트로그기록안함
-        ui.UpdateDictSet()
-        if pre_bbg != 백테주문관리적용:
-            ui.BacktestEngineKill()
+            pre_bbg = ui.dict_set['백테주문관리적용']
+            ui.dict_set['블랙리스트추가'] = 블랙리스트추가
+            ui.dict_set['백테주문관리적용'] = 백테주문관리적용
+            ui.dict_set['백테매수시간기준'] = 백테매수시간기준
+            ui.dict_set['백테일괄로딩'] = 백테일괄로딩
+            ui.dict_set['그래프저장하지않기'] = 그래프저장하지않기
+            ui.dict_set['그래프띄우지않기'] = 그래프띄우지않기
+            ui.dict_set['디비자동관리'] = 디비자동관리
+            ui.dict_set['교차검증가중치'] = 교차검증가중치
+            ui.dict_set['기준값최소상승률'] = 기준값최소상승률
+            ui.dict_set['백테스케쥴실행'] = 백테스케쥴실행
+            ui.dict_set['백테스케쥴요일'] = 백테스케쥴요일
+            ui.dict_set['백테스케쥴시간'] = 백테스케쥴시간
+            ui.dict_set['백테스케쥴구분'] = 백테스케쥴구분
+            ui.dict_set['백테스케쥴명'] = 백테스케쥴명
+            ui.dict_set['백테날짜고정'] = 백테날짜고정
+            ui.dict_set['백테날짜'] = 백테날짜
+            ui.dict_set['범위자동관리'] = 범위자동관리
+            ui.dict_set['백테스트로그기록안함'] = 백테스트로그기록안함
+
+            QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+            ui.UpdateDictSet()
+
+            if pre_bbg != 백테주문관리적용:
+                ui.BacktestEngineKill()
 
 
 @error_decorator
@@ -635,17 +644,18 @@ def setting_save_08(ui):
         localvs = locals()
         values  = tuple(localvs[col] for col in columns)
         ui.queryQ.put(('설정디비', query, values))
-    QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
-    ui.dict_set['테마'] = 테마
-    ui.dict_set['저해상도'] = 저해상도
-    ui.dict_set['창위치기억'] = 창위치기억
-    ui.dict_set['휴무프로세스종료'] = 휴무프로세스종료
-    ui.dict_set['휴무컴퓨터종료'] = 휴무컴퓨터종료
-    ui.dict_set['스톰라이브'] = 스톰라이브
-    ui.dict_set['프로그램종료'] = 프로그램종료
-    ui.dict_set['시리얼키'] = 시리얼키_
-    ui.UpdateDictSet()
+        ui.dict_set['테마'] = 테마
+        ui.dict_set['저해상도'] = 저해상도
+        ui.dict_set['창위치기억'] = 창위치기억
+        ui.dict_set['휴무프로세스종료'] = 휴무프로세스종료
+        ui.dict_set['휴무컴퓨터종료'] = 휴무컴퓨터종료
+        ui.dict_set['스톰라이브'] = 스톰라이브
+        ui.dict_set['프로그램종료'] = 프로그램종료
+        ui.dict_set['시리얼키'] = 시리얼키_
+
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+        ui.UpdateDictSet()
 
 
 @error_decorator
@@ -971,6 +981,7 @@ def setting_order_save_01(ui):
     elif ui.ss_bj_checkBoxxx_03.isChecked(): bjjj_list.append('2')
     elif ui.ss_bj_checkBoxxx_04.isChecked(): bjjj_list.append('3')
     elif ui.ss_bj_checkBoxxx_05.isChecked(): bjjj_list.append('4')
+
     save = True
     if ui.ss_bj_lineEdittt_01.text() == '': save = False
     if ui.ss_bj_lineEdittt_02.text() == '': save = False
@@ -981,6 +992,11 @@ def setting_order_save_01(ui):
     if ui.ss_bj_lineEdittt_07.text() == '': save = False
     if ui.ss_bj_lineEdittt_08.text() == '': save = False
     if ui.ss_bj_lineEdittt_09.text() == '': save = False
+
+    if not save:
+        QMessageBox.critical(ui, '오류 알림', '비중조절 세부설정값이 입력되지 않았습니다.\n')
+        return
+
     bjjj_list.append(ui.ss_bj_lineEdittt_01.text())
     bjjj_list.append(ui.ss_bj_lineEdittt_02.text())
     bjjj_list.append(ui.ss_bj_lineEdittt_03.text())
@@ -993,46 +1009,56 @@ def setting_order_save_01(ui):
     주식비중조절 = ';'.join(bjjj_list)
     주식비중조절_ = [float(x) for x in bjjj_list]
 
-    if '' in (주식매수주문구분, 주식매수분할횟수, 주식매수분할하방수익률, 주식매수분할상방수익률, 주식매수지정가호가번호, 주식매수시장가잔량범위, 주식매수취소시간초, 주식매수금지라운드호가, 주식매수금지손절횟수값, 주식매수금지거래횟수값, 주식매수금지시작시간, 주식매수금지종료시간, 주식매수금지간격초, 주식매수정정횟수):
+    if '' in (주식매수주문구분, 주식매수분할횟수, 주식매수분할하방수익률, 주식매수분할상방수익률, 주식매수지정가호가번호, 주식매수시장가잔량범위,
+              주식매수취소시간초, 주식매수금지라운드호가, 주식매수금지손절횟수값, 주식매수금지거래횟수값, 주식매수금지시작시간, 주식매수금지종료시간,
+              주식매수금지간격초, 주식매수정정횟수):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
-    elif 주식매수분할방법 == 0:
+        return
+
+    if 주식매수분할방법 == 0:
         QMessageBox.critical(ui, '오류 알림', '분할매수방법이 선택되지 않았습니다.\n')
-    elif 1 not in (주식매수분할시그널, 주식매수분할하방, 주식매수분할상방):
+        return
+
+    if 1 not in (주식매수분할시그널, 주식매수분할하방, 주식매수분할상방):
         QMessageBox.critical(ui, '오류 알림', '추가매수방법이 선택되지 않았습니다.\n')
-    else:
-        주식매수분할횟수, 주식매수분할하방수익률, 주식매수분할상방수익률, 주식매수지정가호가번호, 주식매수시장가잔량범위, 주식매수취소시간초, 주식매수금지라운드호가, 주식매수금지손절횟수값, 주식매수금지거래횟수값, 주식매수금지시작시간, 주식매수금지종료시간, 주식매수금지간격초, 주식매수금지손절간격초, 주식매수정정횟수, 주식매수정정호가차이, 주식매수정정호가 = \
-            int(주식매수분할횟수), float(주식매수분할하방수익률), float(주식매수분할상방수익률), int(주식매수지정가호가번호), int(주식매수시장가잔량범위), int(주식매수취소시간초), int(주식매수금지라운드호가), int(주식매수금지손절횟수값), int(주식매수금지거래횟수값), \
-            int(주식매수금지시작시간), int(주식매수금지종료시간), int(주식매수금지간격초), int(주식매수금지손절간격초), int(주식매수정정횟수), int(주식매수정정호가차이), int(주식매수정정호가)
-        if 주식매수분할횟수 < 0 or 주식매수분할하방수익률 < 0 or 주식매수분할상방수익률 < 0 or 주식매수시장가잔량범위 < 0 or 주식매수취소시간초 < 0 or 주식매수금지라운드호가 < 0 or 주식매수금지손절횟수값 < 0 or 주식매수금지거래횟수값 < 0 or \
-                주식매수금지시작시간 < 0 or 주식매수금지종료시간 < 0 or 주식매수금지간격초 < 0 or 주식매수금지손절간격초 < 0 or 주식매수정정횟수 < 0 or 주식매수정정호가차이 < 0 or 주식매수정정호가 < 0:
-            QMessageBox.critical(ui, '오류 알림', '지정가 호가 외 모든 입력값은 양수여야합니다.\n')
-            return
-        elif 주식매수분할횟수 > 5:
-            QMessageBox.critical(ui, '오류 알림', '매수분할횟수는 5을 초과할 수 없습니다.\n')
-            return
-        elif '해외선물' in ui.dict_set['증권사'] and 주식매수주문구분 not in ('시장가', '지정가'):
-            QMessageBox.critical(ui, '오류 알림', '해외선물의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
-            return
-        elif not bjjj_list:
-            QMessageBox.critical(ui, '오류 알림', '비중조절 기준값을 선택합시오.\n')
-            return
-        elif not save:
-            QMessageBox.critical(ui, '오류 알림', '비중조절 구간 또는 비율 값의 일부가 공백 상태입니다.\n')
-            return
-        if ui.proc_query.is_alive():
-            columns = ['주식매수주문구분', '주식매수분할횟수', '주식매수분할방법', '주식매수분할시그널', '주식매수분할하방', '주식매수분할상방',
-                       '주식매수분할하방수익률', '주식매수분할상방수익률', '주식매수분할고정수익률', '주식매수지정가기준가격', '주식매수지정가호가번호',
-                       '주식매수시장가잔량범위', '주식매수취소관심이탈', '주식매수취소매도시그널', '주식매수취소시간', '주식매수취소시간초',
-                       '주식매수금지블랙리스트', '주식매수금지라운드피겨', '주식매수금지라운드호가', '주식매수금지손절횟수', '주식매수금지손절횟수값',
-                       '주식매수금지거래횟수', '주식매수금지거래횟수값', '주식매수금지시간', '주식매수금지시작시간', '주식매수금지종료시간',
-                       '주식매수금지간격', '주식매수금지간격초', '주식매수금지손절간격', '주식매수금지손절간격초', '주식매수정정횟수',
-                       '주식매수정정호가차이', '주식매수정정호가', '주식비중조절']
-            set_txt = ', '.join([f'{col} = ?' for col in columns])
-            query   = f'UPDATE stockbuyorder SET {set_txt}'
-            localvs = locals()
-            values  = tuple(localvs[col] for col in columns)
-            ui.queryQ.put(('설정디비', query, values))
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+        return
+
+    주식매수분할횟수, 주식매수분할하방수익률, 주식매수분할상방수익률, 주식매수지정가호가번호, 주식매수시장가잔량범위, 주식매수취소시간초, \
+        주식매수금지라운드호가, 주식매수금지손절횟수값, 주식매수금지거래횟수값, 주식매수금지시작시간, 주식매수금지종료시간, 주식매수금지간격초, \
+        주식매수금지손절간격초, 주식매수정정횟수, 주식매수정정호가차이, 주식매수정정호가 = \
+        int(주식매수분할횟수), float(주식매수분할하방수익률), float(주식매수분할상방수익률), int(주식매수지정가호가번호), \
+        int(주식매수시장가잔량범위), int(주식매수취소시간초), int(주식매수금지라운드호가), int(주식매수금지손절횟수값), \
+        int(주식매수금지거래횟수값), int(주식매수금지시작시간), int(주식매수금지종료시간), int(주식매수금지간격초), int(주식매수금지손절간격초), \
+        int(주식매수정정횟수), int(주식매수정정호가차이), int(주식매수정정호가)
+
+    if 주식매수분할횟수 < 0 or 주식매수분할하방수익률 < 0 or 주식매수분할상방수익률 < 0 or 주식매수시장가잔량범위 < 0 or 주식매수취소시간초 < 0 or \
+            주식매수금지라운드호가 < 0 or 주식매수금지손절횟수값 < 0 or 주식매수금지거래횟수값 < 0 or 주식매수금지시작시간 < 0 or \
+            주식매수금지종료시간 < 0 or 주식매수금지간격초 < 0 or 주식매수금지손절간격초 < 0 or 주식매수정정횟수 < 0 or \
+            주식매수정정호가차이 < 0 or 주식매수정정호가 < 0:
+        QMessageBox.critical(ui, '오류 알림', '지정가 호가 외 모든 입력값은 양수여야합니다.\n')
+        return
+
+    if 주식매수분할횟수 > 5:
+        QMessageBox.critical(ui, '오류 알림', '매수분할횟수는 5을 초과할 수 없습니다.\n')
+        return
+
+    if '해외선물' in ui.dict_set['증권사'] and 주식매수주문구분 not in ('시장가', '지정가'):
+        QMessageBox.critical(ui, '오류 알림', '해외선물의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
+        return
+
+    if ui.proc_query.is_alive():
+        columns = ['주식매수주문구분', '주식매수분할횟수', '주식매수분할방법', '주식매수분할시그널', '주식매수분할하방', '주식매수분할상방',
+                   '주식매수분할하방수익률', '주식매수분할상방수익률', '주식매수분할고정수익률', '주식매수지정가기준가격', '주식매수지정가호가번호',
+                   '주식매수시장가잔량범위', '주식매수취소관심이탈', '주식매수취소매도시그널', '주식매수취소시간', '주식매수취소시간초',
+                   '주식매수금지블랙리스트', '주식매수금지라운드피겨', '주식매수금지라운드호가', '주식매수금지손절횟수', '주식매수금지손절횟수값',
+                   '주식매수금지거래횟수', '주식매수금지거래횟수값', '주식매수금지시간', '주식매수금지시작시간', '주식매수금지종료시간',
+                   '주식매수금지간격', '주식매수금지간격초', '주식매수금지손절간격', '주식매수금지손절간격초', '주식매수정정횟수',
+                   '주식매수정정호가차이', '주식매수정정호가', '주식비중조절']
+        set_txt = ', '.join([f'{col} = ?' for col in columns])
+        query   = f'UPDATE stockbuyorder SET {set_txt}'
+        localvs = locals()
+        values  = tuple(localvs[col] for col in columns)
+        ui.queryQ.put(('설정디비', query, values))
 
         ui.dict_set['주식매수주문구분'] = 주식매수주문구분
         ui.dict_set['주식매수분할횟수'] = 주식매수분할횟수
@@ -1068,6 +1094,8 @@ def setting_order_save_01(ui):
         ui.dict_set['주식매수정정호가차이'] = 주식매수정정호가차이
         ui.dict_set['주식매수정정호가'] = 주식매수정정호가
         ui.dict_set['주식비중조절'] = 주식비중조절_
+
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
 
 
@@ -1126,49 +1154,57 @@ def setting_order_save_02(ui):
               주식매도금지라운드호가, 주식매도금지시작시간, 주식매도금지종료시간, 주식매도금지간격초, 주식매도정정횟수, 주식매도익절수익률,
               주식매도익절수익금, 주식매도손절수익률, 주식매도손절수익금):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
-    elif 주식매도분할방법 == 0:
-        QMessageBox.critical(ui, '오류 알림', '분할매도방법이 선택되지 않았습니다.\n')
-    elif 1 not in (주식매도분할시그널, 주식매도분할하방, 주식매도분할상방):
-        QMessageBox.critical(ui, '오류 알림', '추가매도방법이 선택되지 않았습니다.\n')
-    else:
-        주식매도분할횟수, 주식매도분할하방수익률, 주식매도분할상방수익률, 주식매도지정가호가번호, 주식매도시장가잔량범위, 주식매도취소시간초, \
-            주식매도금지매수횟수값, 주식매도금지라운드호가, 주식매도금지시작시간, 주식매도금지종료시간, 주식매도금지간격초, 주식매도정정횟수, \
-            주식매도정정호가차이, 주식매도정정호가, 주식매도익절수익률, 주식매도익절수익금, 주식매도손절수익률, 주식매도손절수익금 = \
-            int(주식매도분할횟수), float(주식매도분할하방수익률), float(주식매도분할상방수익률), int(주식매도지정가호가번호), \
-            int(주식매도시장가잔량범위), int(주식매도취소시간초), int(주식매도금지매수횟수값), int(주식매도금지라운드호가), \
-            int(주식매도금지시작시간), int(주식매도금지종료시간), int(주식매도금지간격초), int(주식매도정정횟수), \
-            int(주식매도정정호가차이), int(주식매도정정호가), float(주식매도익절수익률), int(주식매도익절수익금), \
-            float(주식매도손절수익률), int(주식매도손절수익금)
+        return
 
-        if 주식매도분할횟수 < 0 or 주식매도분할하방수익률 < 0 or 주식매도분할상방수익률 < 0 or 주식매도취소시간초 < 0 or \
-                주식매도금지매수횟수값 < 0 or 주식매도금지라운드호가 < 0 or 주식매도금지시작시간 < 0 or 주식매도금지종료시간 < 0 or \
-                주식매도금지간격초 < 0 or 주식매도정정횟수 < 0 or 주식매도정정호가차이 < 0 or 주식매도정정호가 < 0 or \
-                주식매도익절수익률 < 0 or 주식매도익절수익금 < 0 or 주식매도손절수익률 < 0 or 주식매도손절수익금 < 0:
-            QMessageBox.critical(ui, '오류 알림', '모든 값은 양수로 입력하십시오.\n')
-            return
-        elif 주식매도분할횟수 > 5:
-            QMessageBox.critical(ui, '오류 알림', '매도분할횟수는 5을 초과할 수 없습니다.\n')
-            return
-        elif 주식매도금지매수횟수값 > 4:
-            QMessageBox.critical(ui, '오류 알림', '매도금지 매수횟수는 5미만으로 입력하십시오.\n')
-            return
-        elif '해외선물' in ui.dict_set['증권사'] and 주식매도주문구분 not in ('시장가', '지정가'):
-            QMessageBox.critical(ui, '오류 알림', '해외선물의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
-            return
-        if ui.proc_query.is_alive():
-            columns = ['주식매도주문구분', '주식매도분할횟수', '주식매도분할방법', '주식매도분할시그널', '주식매도분할하방', '주식매도분할상방',
-                       '주식매도분할하방수익률', '주식매도분할상방수익률', '주식매도지정가기준가격', '주식매도지정가호가번호',
-                       '주식매도시장가잔량범위', '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초',
-                       '주식매도금지매수횟수', '주식매도금지매수횟수값', '주식매도금지라운드피겨', '주식매도금지라운드호가', '주식매도금지시간',
-                       '주식매도금지시작시간', '주식매도금지종료시간', '주식매도금지간격', '주식매도금지간격초', '주식매도정정횟수',
-                       '주식매도정정호가차이', '주식매도정정호가', '주식매도익절수익률청산', '주식매도익절수익률', '주식매도익절수익금청산',
-                       '주식매도익절수익금', '주식매도손절수익률청산', '주식매도손절수익률', '주식매도손절수익금청산', '주식매도손절수익금']
-            set_txt = ', '.join([f'{col} = ?' for col in columns])
-            query   = f'UPDATE stocksellorder SET {set_txt}'
-            localvs = locals()
-            values  = tuple(localvs[col] for col in columns)
-            ui.queryQ.put(('설정디비', query, values))
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+    if 주식매도분할방법 == 0:
+        QMessageBox.critical(ui, '오류 알림', '분할매도방법이 선택되지 않았습니다.\n')
+        return
+
+    if 1 not in (주식매도분할시그널, 주식매도분할하방, 주식매도분할상방):
+        QMessageBox.critical(ui, '오류 알림', '추가매도방법이 선택되지 않았습니다.\n')
+        return
+
+    주식매도분할횟수, 주식매도분할하방수익률, 주식매도분할상방수익률, 주식매도지정가호가번호, 주식매도시장가잔량범위, 주식매도취소시간초, \
+        주식매도금지매수횟수값, 주식매도금지라운드호가, 주식매도금지시작시간, 주식매도금지종료시간, 주식매도금지간격초, 주식매도정정횟수, \
+        주식매도정정호가차이, 주식매도정정호가, 주식매도익절수익률, 주식매도익절수익금, 주식매도손절수익률, 주식매도손절수익금 = \
+        int(주식매도분할횟수), float(주식매도분할하방수익률), float(주식매도분할상방수익률), int(주식매도지정가호가번호), \
+        int(주식매도시장가잔량범위), int(주식매도취소시간초), int(주식매도금지매수횟수값), int(주식매도금지라운드호가), \
+        int(주식매도금지시작시간), int(주식매도금지종료시간), int(주식매도금지간격초), int(주식매도정정횟수), \
+        int(주식매도정정호가차이), int(주식매도정정호가), float(주식매도익절수익률), int(주식매도익절수익금), \
+        float(주식매도손절수익률), int(주식매도손절수익금)
+
+    if 주식매도분할횟수 < 0 or 주식매도분할하방수익률 < 0 or 주식매도분할상방수익률 < 0 or 주식매도취소시간초 < 0 or \
+            주식매도금지매수횟수값 < 0 or 주식매도금지라운드호가 < 0 or 주식매도금지시작시간 < 0 or 주식매도금지종료시간 < 0 or \
+            주식매도금지간격초 < 0 or 주식매도정정횟수 < 0 or 주식매도정정호가차이 < 0 or 주식매도정정호가 < 0 or \
+            주식매도익절수익률 < 0 or 주식매도익절수익금 < 0 or 주식매도손절수익률 < 0 or 주식매도손절수익금 < 0:
+        QMessageBox.critical(ui, '오류 알림', '모든 값은 양수로 입력하십시오.\n')
+        return
+
+    if 주식매도분할횟수 > 5:
+        QMessageBox.critical(ui, '오류 알림', '매도분할횟수는 5을 초과할 수 없습니다.\n')
+        return
+
+    if 주식매도금지매수횟수값 > 4:
+        QMessageBox.critical(ui, '오류 알림', '매도금지 매수횟수는 5미만으로 입력하십시오.\n')
+        return
+
+    if '해외선물' in ui.dict_set['증권사'] and 주식매도주문구분 not in ('시장가', '지정가'):
+        QMessageBox.critical(ui, '오류 알림', '해외선물의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
+        return
+
+    if ui.proc_query.is_alive():
+        columns = ['주식매도주문구분', '주식매도분할횟수', '주식매도분할방법', '주식매도분할시그널', '주식매도분할하방', '주식매도분할상방',
+                   '주식매도분할하방수익률', '주식매도분할상방수익률', '주식매도지정가기준가격', '주식매도지정가호가번호',
+                   '주식매도시장가잔량범위', '주식매도취소관심진입', '주식매도취소매수시그널', '주식매도취소시간', '주식매도취소시간초',
+                   '주식매도금지매수횟수', '주식매도금지매수횟수값', '주식매도금지라운드피겨', '주식매도금지라운드호가', '주식매도금지시간',
+                   '주식매도금지시작시간', '주식매도금지종료시간', '주식매도금지간격', '주식매도금지간격초', '주식매도정정횟수',
+                   '주식매도정정호가차이', '주식매도정정호가', '주식매도익절수익률청산', '주식매도익절수익률', '주식매도익절수익금청산',
+                   '주식매도익절수익금', '주식매도손절수익률청산', '주식매도손절수익률', '주식매도손절수익금청산', '주식매도손절수익금']
+        set_txt = ', '.join([f'{col} = ?' for col in columns])
+        query   = f'UPDATE stocksellorder SET {set_txt}'
+        localvs = locals()
+        values  = tuple(localvs[col] for col in columns)
+        ui.queryQ.put(('설정디비', query, values))
 
         ui.dict_set['주식매도주문구분'] = 주식매도주문구분
         ui.dict_set['주식매도분할횟수'] = 주식매도분할횟수
@@ -1205,6 +1241,8 @@ def setting_order_save_02(ui):
         ui.dict_set['주식매도손절수익률'] = 주식매도손절수익률
         ui.dict_set['주식매도손절수익금청산'] = 주식매도손절수익금청산
         ui.dict_set['주식매도손절수익금'] = 주식매도손절수익금
+
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
 
 
@@ -1256,6 +1294,7 @@ def setting_order_save_03(ui):
     elif ui.sc_bj_checkBoxxx_03.isChecked(): bjjj_list.append('2')
     elif ui.sc_bj_checkBoxxx_04.isChecked(): bjjj_list.append('3')
     elif ui.sc_bj_checkBoxxx_05.isChecked(): bjjj_list.append('4')
+
     save = True
     if ui.sc_bj_lineEdittt_01.text() == '': save = False
     if ui.sc_bj_lineEdittt_02.text() == '': save = False
@@ -1266,6 +1305,11 @@ def setting_order_save_03(ui):
     if ui.sc_bj_lineEdittt_07.text() == '': save = False
     if ui.sc_bj_lineEdittt_08.text() == '': save = False
     if ui.sc_bj_lineEdittt_09.text() == '': save = False
+
+    if not save:
+        QMessageBox.critical(ui, '오류 알림', '비중조절 세부설정값이 입력되지 않았습니다.\n')
+        return
+
     bjjj_list.append(ui.sc_bj_lineEdittt_01.text())
     bjjj_list.append(ui.sc_bj_lineEdittt_02.text())
     bjjj_list.append(ui.sc_bj_lineEdittt_03.text())
@@ -1282,50 +1326,51 @@ def setting_order_save_03(ui):
               코인매수취소시간초, 코인매수금지손절횟수값, 코인매수금지거래횟수값, 코인매수금지시작시간, 코인매수금지종료시간, 코인매수금지간격초,
               코인매수금지손절간격초, 코인매수정정횟수):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
-    elif 코인매수분할방법 == 0:
-        QMessageBox.critical(ui, '오류 알림', '분할매수방법이 선택되지 않았습니다.\n')
-    elif 1 not in (코인매수분할시그널, 코인매수분할하방, 코인매수분할상방):
-        QMessageBox.critical(ui, '오류 알림', '추가매수방법이 선택되지 않았습니다.\n')
-    else:
-        코인매수분할횟수, 코인매수분할하방수익률, 코인매수분할상방수익률, 코인매수지정가호가번호, 코인매수시장가잔량범위, 코인매수취소시간초, \
-            코인매수금지손절횟수값, 코인매수금지거래횟수값, 코인매수금지시작시간, 코인매수금지종료시간, 코인매수금지간격초, 코인매수금지손절간격초, \
-            코인매수정정횟수, 코인매수정정호가차이, 코인매수정정호가 = \
-            int(코인매수분할횟수), float(코인매수분할하방수익률), float(코인매수분할상방수익률), int(코인매수지정가호가번호), \
-            int(코인매수시장가잔량범위), int(코인매수취소시간초), int(코인매수금지손절횟수값), int(코인매수금지거래횟수값), \
-            int(코인매수금지시작시간), int(코인매수금지종료시간), int(코인매수금지간격초), int(코인매수금지손절간격초), int(코인매수정정횟수), \
-            int(코인매수정정호가차이), int(코인매수정정호가)
+        return
 
-        if 코인매수분할횟수 < 0 or 코인매수분할하방수익률 < 0 or 코인매수분할상방수익률 < 0 or 코인매수시장가잔량범위 < 0 or \
-                코인매수취소시간초 < 0 or 코인매수금지손절횟수값 < 0 or 코인매수금지거래횟수값 < 0 or 코인매수금지시작시간 < 0 or \
-                코인매수금지종료시간 < 0 or 코인매수금지간격초 < 0 or 코인매수금지손절간격초 < 0:
-            QMessageBox.critical(ui, '오류 알림', '지정가 호가 외 모든 입력값은 양수여야합니다.\n')
-            return
-        elif 코인매수분할횟수 > 5:
-            QMessageBox.critical(ui, '오류 알림', '매수분할횟수는 5를 초과할 수 없습니다.\n')
-            return
-        elif ui.dict_set['거래소'] == '업비트' and 코인매수주문구분 not in ('시장가', '지정가'):
-            QMessageBox.critical(ui, '오류 알림', '업비트의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
-            return
-        elif not bjjj_list:
-            QMessageBox.critical(ui, '오류 알림', '비중조절 기준값을 선택합시오.\n')
-            return
-        elif not save:
-            QMessageBox.critical(ui, '오류 알림', '비중조절 구간 또는 비율 값의 일부가 공백 상태입니다.\n')
-            return
-        if ui.proc_query.is_alive():
-            columns = ['코인매수주문구분', '코인매수분할횟수', '코인매수분할방법', '코인매수분할시그널', '코인매수분할하방', '코인매수분할상방',
-                       '코인매수분할하방수익률', '코인매수분할상방수익률', '코인매수분할고정수익률', '코인매수지정가기준가격', '코인매수지정가호가번호',
-                       '코인매수시장가잔량범위', '코인매수취소관심이탈', '코인매수취소매도시그널', '코인매수취소시간', '코인매수취소시간초',
-                       '코인매수금지블랙리스트', '코인매수금지200원이하', '코인매수금지손절횟수', '코인매수금지손절횟수값', '코인매수금지거래횟수',
-                       '코인매수금지거래횟수값', '코인매수금지시간', '코인매수금지시작시간', '코인매수금지종료시간', '코인매수금지간격',
-                       '코인매수금지간격초', '코인매수금지손절간격', '코인매수금지손절간격초', '코인매수정정횟수', '코인매수정정호가차이',
-                       '코인매수정정호가', '코인비중조절']
-            set_txt = ', '.join([f'{col} = ?' for col in columns])
-            query   = f'UPDATE coinbuyorder SET {set_txt}'
-            localvs = locals()
-            values  = tuple(localvs[col] for col in columns)
-            ui.queryQ.put(('설정디비', query, values))
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+    if 코인매수분할방법 == 0:
+        QMessageBox.critical(ui, '오류 알림', '분할매수방법이 선택되지 않았습니다.\n')
+        return
+
+    if 1 not in (코인매수분할시그널, 코인매수분할하방, 코인매수분할상방):
+        QMessageBox.critical(ui, '오류 알림', '추가매수방법이 선택되지 않았습니다.\n')
+        return
+
+    코인매수분할횟수, 코인매수분할하방수익률, 코인매수분할상방수익률, 코인매수지정가호가번호, 코인매수시장가잔량범위, 코인매수취소시간초, \
+        코인매수금지손절횟수값, 코인매수금지거래횟수값, 코인매수금지시작시간, 코인매수금지종료시간, 코인매수금지간격초, 코인매수금지손절간격초, \
+        코인매수정정횟수, 코인매수정정호가차이, 코인매수정정호가 = \
+        int(코인매수분할횟수), float(코인매수분할하방수익률), float(코인매수분할상방수익률), int(코인매수지정가호가번호), \
+        int(코인매수시장가잔량범위), int(코인매수취소시간초), int(코인매수금지손절횟수값), int(코인매수금지거래횟수값), \
+        int(코인매수금지시작시간), int(코인매수금지종료시간), int(코인매수금지간격초), int(코인매수금지손절간격초), int(코인매수정정횟수), \
+        int(코인매수정정호가차이), int(코인매수정정호가)
+
+    if 코인매수분할횟수 < 0 or 코인매수분할하방수익률 < 0 or 코인매수분할상방수익률 < 0 or 코인매수시장가잔량범위 < 0 or \
+            코인매수취소시간초 < 0 or 코인매수금지손절횟수값 < 0 or 코인매수금지거래횟수값 < 0 or 코인매수금지시작시간 < 0 or \
+            코인매수금지종료시간 < 0 or 코인매수금지간격초 < 0 or 코인매수금지손절간격초 < 0:
+        QMessageBox.critical(ui, '오류 알림', '지정가 호가 외 모든 입력값은 양수여야합니다.\n')
+        return
+
+    if 코인매수분할횟수 > 5:
+        QMessageBox.critical(ui, '오류 알림', '매수분할횟수는 5를 초과할 수 없습니다.\n')
+        return
+
+    if ui.dict_set['거래소'] == '업비트' and 코인매수주문구분 not in ('시장가', '지정가'):
+        QMessageBox.critical(ui, '오류 알림', '업비트의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
+        return
+
+    if ui.proc_query.is_alive():
+        columns = ['코인매수주문구분', '코인매수분할횟수', '코인매수분할방법', '코인매수분할시그널', '코인매수분할하방', '코인매수분할상방',
+                   '코인매수분할하방수익률', '코인매수분할상방수익률', '코인매수분할고정수익률', '코인매수지정가기준가격', '코인매수지정가호가번호',
+                   '코인매수시장가잔량범위', '코인매수취소관심이탈', '코인매수취소매도시그널', '코인매수취소시간', '코인매수취소시간초',
+                   '코인매수금지블랙리스트', '코인매수금지200원이하', '코인매수금지손절횟수', '코인매수금지손절횟수값', '코인매수금지거래횟수',
+                   '코인매수금지거래횟수값', '코인매수금지시간', '코인매수금지시작시간', '코인매수금지종료시간', '코인매수금지간격',
+                   '코인매수금지간격초', '코인매수금지손절간격', '코인매수금지손절간격초', '코인매수정정횟수', '코인매수정정호가차이',
+                   '코인매수정정호가', '코인비중조절']
+        set_txt = ', '.join([f'{col} = ?' for col in columns])
+        query   = f'UPDATE coinbuyorder SET {set_txt}'
+        localvs = locals()
+        values  = tuple(localvs[col] for col in columns)
+        ui.queryQ.put(('설정디비', query, values))
 
         ui.dict_set['코인매수주문구분'] = 코인매수주문구분
         ui.dict_set['코인매수분할횟수'] = 코인매수분할횟수
@@ -1360,6 +1405,8 @@ def setting_order_save_03(ui):
         ui.dict_set['코인매수정정호가차이'] = 코인매수정정호가차이
         ui.dict_set['코인매수정정호가'] = 코인매수정정호가
         ui.dict_set['코인비중조절'] = 코인비중조절_
+
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
 
 
@@ -1410,48 +1457,56 @@ def setting_order_save_04(ui):
               코인매도금지시작시간, 코인매도금지종료시간, 코인매도금지간격초, 코인매도정정횟수, 코인매도익절수익률, 코인매도익절수익금,
               코인매도손절수익률, 코인매도손절수익금):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
-    elif 코인매도분할방법 == 0:
-        QMessageBox.critical(ui, '오류 알림', '분할매도방법이 선택되지 않았습니다.\n')
-    elif 1 not in (코인매도분할시그널, 코인매도분할하방, 코인매도분할상방):
-        QMessageBox.critical(ui, '오류 알림', '추가매도방법이 선택되지 않았습니다.\n')
-    else:
-        코인매도분할횟수, 코인매도분할하방수익률, 코인매도분할상방수익률, 코인매도지정가호가번호, 코인매도시장가잔량범위, 코인매도취소시간초, \
-            코인매도금지매수횟수값, 코인매도금지시작시간, 코인매도금지종료시간, 코인매도금지간격초, 코인매도정정횟수, 코인매도정정호가차이, \
-            코인매도정정호가, 코인매도익절수익률, 코인매도익절수익금, 코인매도손절수익률, 코인매도손절수익금 = \
-            int(코인매도분할횟수), float(코인매도분할하방수익률), float(코인매도분할상방수익률), int(코인매도지정가호가번호), \
-            int(코인매도시장가잔량범위), int(코인매도취소시간초), int(코인매도금지매수횟수값), int(코인매도금지시작시간), \
-            int(코인매도금지종료시간), int(코인매도금지간격초), int(코인매도정정횟수), float(코인매도정정호가차이), \
-            int(코인매도정정호가), float(코인매도익절수익률), int(코인매도익절수익금), float(코인매도손절수익률), int(코인매도손절수익금)
+        return
 
-        if 코인매도분할횟수 < 0 or 코인매도분할하방수익률 < 0 or 코인매도분할상방수익률 < 0 or 코인매도취소시간초 < 0 or \
-                코인매도금지매수횟수값 < 0 or 코인매도금지시작시간 < 0 or 코인매도금지종료시간 < 0 or 코인매도금지간격초 < 0 or \
-                코인매도정정횟수 < 0 or 코인매도정정호가차이 < 0 or 코인매도정정호가 < 0 or 코인매도익절수익률 < 0 or \
-                코인매도익절수익금 < 0 or 코인매도손절수익률 < 0 or 코인매도손절수익금 < 0:
-            QMessageBox.critical(ui, '오류 알림', '모든 값은 양수로 입력하십시오.\n')
-            return
-        elif 코인매도분할횟수 > 5:
-            QMessageBox.critical(ui, '오류 알림', '매도분할횟수는 5을 초과할 수 없습니다.\n')
-            return
-        elif 코인매도금지매수횟수값 > 4:
-            QMessageBox.critical(ui, '오류 알림', '매도금지 매수횟수는 5미만으로 입력하십시오.\n')
-            return
-        elif ui.dict_set['거래소'] == '업비트' and 코인매도주문구분 not in ('시장가', '지정가'):
-            QMessageBox.critical(ui, '오류 알림', '업비트의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
-            return
-        if ui.proc_query.is_alive():
-            columns = ['코인매도주문구분', '코인매도분할횟수', '코인매도분할방법', '코인매도분할시그널', '코인매도분할하방', '코인매도분할상방',
-                       '코인매도분할하방수익률', '코인매도분할상방수익률', '코인매도지정가기준가격', '코인매도지정가호가번호', '코인매도시장가잔량범위',
-                       '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도금지매수횟수',
-                       '코인매도금지매수횟수값', '코인매도금지시간', '코인매도금지시작시간', '코인매도금지종료시간', '코인매도금지간격',
-                       '코인매도금지간격초', '코인매도정정횟수', '코인매도정정호가차이', '코인매도정정호가', '코인매도익절수익률청산',
-                       '코인매도익절수익률', '코인매도익절수익금청산', '코인매도익절수익금', '코인매도손절수익률청산', '코인매도손절수익률',
-                       '코인매도손절수익금청산', '코인매도손절수익금']
-            set_txt = ', '.join([f'{col} = ?' for col in columns])
-            query   = f'UPDATE coinsellorder SET {set_txt}'
-            localvs = locals()
-            values  = tuple(localvs[col] for col in columns)
-            ui.queryQ.put(('설정디비', query, values))
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+    if 코인매도분할방법 == 0:
+        QMessageBox.critical(ui, '오류 알림', '분할매도방법이 선택되지 않았습니다.\n')
+        return
+
+    if 1 not in (코인매도분할시그널, 코인매도분할하방, 코인매도분할상방):
+        QMessageBox.critical(ui, '오류 알림', '추가매도방법이 선택되지 않았습니다.\n')
+        return
+
+    코인매도분할횟수, 코인매도분할하방수익률, 코인매도분할상방수익률, 코인매도지정가호가번호, 코인매도시장가잔량범위, 코인매도취소시간초, \
+        코인매도금지매수횟수값, 코인매도금지시작시간, 코인매도금지종료시간, 코인매도금지간격초, 코인매도정정횟수, 코인매도정정호가차이, \
+        코인매도정정호가, 코인매도익절수익률, 코인매도익절수익금, 코인매도손절수익률, 코인매도손절수익금 = \
+        int(코인매도분할횟수), float(코인매도분할하방수익률), float(코인매도분할상방수익률), int(코인매도지정가호가번호), \
+        int(코인매도시장가잔량범위), int(코인매도취소시간초), int(코인매도금지매수횟수값), int(코인매도금지시작시간), \
+        int(코인매도금지종료시간), int(코인매도금지간격초), int(코인매도정정횟수), float(코인매도정정호가차이), \
+        int(코인매도정정호가), float(코인매도익절수익률), int(코인매도익절수익금), float(코인매도손절수익률), int(코인매도손절수익금)
+
+    if 코인매도분할횟수 < 0 or 코인매도분할하방수익률 < 0 or 코인매도분할상방수익률 < 0 or 코인매도취소시간초 < 0 or \
+            코인매도금지매수횟수값 < 0 or 코인매도금지시작시간 < 0 or 코인매도금지종료시간 < 0 or 코인매도금지간격초 < 0 or \
+            코인매도정정횟수 < 0 or 코인매도정정호가차이 < 0 or 코인매도정정호가 < 0 or 코인매도익절수익률 < 0 or \
+            코인매도익절수익금 < 0 or 코인매도손절수익률 < 0 or 코인매도손절수익금 < 0:
+        QMessageBox.critical(ui, '오류 알림', '모든 값은 양수로 입력하십시오.\n')
+        return
+
+    if 코인매도분할횟수 > 5:
+        QMessageBox.critical(ui, '오류 알림', '매도분할횟수는 5을 초과할 수 없습니다.\n')
+        return
+
+    if 코인매도금지매수횟수값 > 4:
+        QMessageBox.critical(ui, '오류 알림', '매도금지 매수횟수는 5미만으로 입력하십시오.\n')
+        return
+
+    if ui.dict_set['거래소'] == '업비트' and 코인매도주문구분 not in ('시장가', '지정가'):
+        QMessageBox.critical(ui, '오류 알림', '업비트의 주문유형은 시장가 또는 지정가만 지원합니다.\n')
+        return
+
+    if ui.proc_query.is_alive():
+        columns = ['코인매도주문구분', '코인매도분할횟수', '코인매도분할방법', '코인매도분할시그널', '코인매도분할하방', '코인매도분할상방',
+                   '코인매도분할하방수익률', '코인매도분할상방수익률', '코인매도지정가기준가격', '코인매도지정가호가번호', '코인매도시장가잔량범위',
+                   '코인매도취소관심진입', '코인매도취소매수시그널', '코인매도취소시간', '코인매도취소시간초', '코인매도금지매수횟수',
+                   '코인매도금지매수횟수값', '코인매도금지시간', '코인매도금지시작시간', '코인매도금지종료시간', '코인매도금지간격',
+                   '코인매도금지간격초', '코인매도정정횟수', '코인매도정정호가차이', '코인매도정정호가', '코인매도익절수익률청산',
+                   '코인매도익절수익률', '코인매도익절수익금청산', '코인매도익절수익금', '코인매도손절수익률청산', '코인매도손절수익률',
+                   '코인매도손절수익금청산', '코인매도손절수익금']
+        set_txt = ', '.join([f'{col} = ?' for col in columns])
+        query   = f'UPDATE coinsellorder SET {set_txt}'
+        localvs = locals()
+        values  = tuple(localvs[col] for col in columns)
+        ui.queryQ.put(('설정디비', query, values))
 
         ui.dict_set['코인매도주문구분'] = 코인매도주문구분
         ui.dict_set['코인매도분할횟수'] = 코인매도분할횟수
@@ -1486,6 +1541,8 @@ def setting_order_save_04(ui):
         ui.dict_set['코인매도손절수익률'] = 코인매도손절수익률
         ui.dict_set['코인매도손절수익금청산'] = 코인매도손절수익금청산
         ui.dict_set['코인매도손절수익금'] = 코인매도손절수익금
+
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
 
 
@@ -1499,12 +1556,14 @@ def setting_all_app(ui):
     if name == '':
         QMessageBox.critical(ui, '오류 알림', '설정이름이 선택되지 않았습니다.\n')
         return
+
     origin_file = f'{DB_PATH}/setting_{name}.db'
     copy_file = f'{DB_PATH}/setting.db'
     file_list = os.listdir(DB_PATH)
     if f'setting_{name}.db' not in file_list:
         QMessageBox.critical(ui, '오류 알림', '설정파일이 존재하지 않았습니다.\n')
         return
+
     if ui.proc_query.is_alive():
         ui.queryQ.put(('설정파일변경', origin_file, copy_file))
         qtest_qwait(2)
@@ -1541,6 +1600,7 @@ def setting_all_del(ui):
     if name == '':
         QMessageBox.critical(ui, '오류 알림', '설정이름이 선택되지 않았습니다.\n')
         return
+
     remove_file = f'{DB_PATH}/setting_{name}.db'
     os.remove(remove_file)
     LoadSettings(ui)
@@ -1553,6 +1613,7 @@ def setting_all_save(ui):
     if name == '':
         QMessageBox.critical(ui, '오류 알림', '설정이름이 입력되지 않았습니다.\n')
         return
+
     origin_file = f'{DB_PATH}/setting.db'
     copy_file = f'{DB_PATH}/setting_{name}.db'
     shutil.copy(origin_file, copy_file)

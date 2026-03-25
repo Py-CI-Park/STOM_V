@@ -11,7 +11,7 @@ from utility.setting_base import DB_STOCK_TICK_BACK, BACK_TEMP, ui_num, DB_STOCK
     DB_FUTURE_TICK_BACK, DB_FUTURE_MIN_BACK, DB_COIN_TICK_BACK, DB_COIN_MIN_BACK, list_stock_tick, \
     list_stock_min, list_coin_tick, list_coin_min
 from utility.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, \
-    add_rolling_data, error_decorator, set_builtin_print
+    add_rolling_data
 
 
 class BackEngineBase(StrategyBase):
@@ -92,7 +92,6 @@ class BackEngineBase(StrategyBase):
         self.opti_kind       = 0
         self.sell_count      = 0
 
-        set_builtin_print(True, self.wq)
         self.UpdateMarketGubun()
         self.MainLoop()
 
@@ -147,171 +146,174 @@ class BackEngineBase(StrategyBase):
             value_comp_list = [compile_condition(x) for x in value_text_list]
             self.dict_condition = dict(zip(key_list, value_comp_list))
 
-    @error_decorator
     def MainLoop(self):
         while True:
             data = self.beq.get()
-            if '정보' in data[0]:
-                if self.back_type == '최적화':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        avg_list       = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        if self.market_gubun in (1, 3):
-                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
-                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
-                        else:
-                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
-                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
-                        if self.buystg is None or self.sellstg is None:
-                            self.BackStop()
-                        else:
-                            self.CheckAvglist(avg_list)
-                            self.CheckDayAndTime()
-                    elif data[0] == '변수정보':
-                        self.vars_list = data[1]
-                        self.opti_kind = data[2]
-                        self.vars      = [var[1] for var in self.vars_list]
-                        self.BackTest()
-                elif self.back_type == '전진분석':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        avg_list       = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        if self.market_gubun in (1, 3):
-                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
-                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
-                        else:
-                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
-                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
-                        if self.buystg is None or self.sellstg is None:
-                            self.BackStop()
-                        else:
-                            self.CheckAvglist(avg_list)
-                            self.CheckDayAndTime()
-                    elif data[0] == '변수정보':
-                        self.vars_list = data[1]
-                        self.opti_kind = data[2]
-                        self.vars      = [var[1] for var in self.vars_list]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.CheckDayAndTime()
-                        self.BackTest()
-                elif self.back_type == 'GA최적화':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        avg_list       = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        if self.market_gubun in (1, 3):
-                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
-                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
-                        else:
-                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
-                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
-                        if self.buystg is None or self.sellstg is None:
-                            self.BackStop()
-                        else:
-                            self.CheckAvglist(avg_list)
-                            self.CheckDayAndTime()
-                    elif data[0] == '변수정보':
-                        self.vars_lists = data[1]
-                        self.opti_kind  = data[2]
-                        self.BackTest()
-                elif self.back_type == '조건최적화':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        self.avgtime   = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        self.CheckDayAndTime()
-                    elif data[0] == '조건정보':
-                        self.dict_buystg  = {}
-                        self.dict_sellstg = {}
-                        self.dict_sconds  = {}
-                        error = False
-                        for i in range(20):
+            try:
+                if '정보' in data[0]:
+                    if self.back_type == '최적화':
+                        if data[0] == '백테정보':
+                            self.betting   = data[1]
+                            avg_list       = data[2]
+                            self.startday  = data[3]
+                            self.endday    = data[4]
+                            self.starttime = data[5]
+                            self.endtime   = data[6]
                             if self.market_gubun in (1, 3):
-                                buystg = GetBuyConds(data[2][i], self.gubun, self.wq)
-                                sellstg, dict_cond = GetSellConds(data[3][i], self.gubun, self.wq)
+                                self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
+                                self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
                             else:
-                                buystg = GetBuyCondsFuture(data[1], data[2][i], self.gubun, self.wq)
-                                sellstg, dict_cond = GetSellCondsFuture(data[1], data[3][i], self.gubun, self.wq)
-                            self.dict_buystg[i]  = buystg
-                            self.dict_sellstg[i] = sellstg
-                            self.dict_sconds[i]  = dict_cond
-                            if buystg is None or sellstg is None: error = True
-                        if error:
-                            self.BackStop()
-                        else:
-                            self.opti_kind = data[4]
+                                self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
+                                self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
+                            if self.buystg is None or self.sellstg is None:
+                                self.BackStop()
+                            else:
+                                self.CheckAvglist(avg_list)
+                                self.CheckDayAndTime()
+                        elif data[0] == '변수정보':
+                            self.vars_list = data[1]
+                            self.opti_kind = data[2]
+                            self.vars      = [var[1] for var in self.vars_list]
                             self.BackTest()
-                elif self.back_type == '백테스트':
-                    if data[0] == '백테정보':
-                        self.betting   = data[1]
-                        self.avgtime   = data[2]
-                        self.startday  = data[3]
-                        self.endday    = data[4]
-                        self.starttime = data[5]
-                        self.endtime   = data[6]
-                        if self.market_gubun in (1, 3):
-                            self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
-                            self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
-                        else:
-                            self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
-                            self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
-                        if self.buystg is None or self.sellstg is None:
-                            self.BackStop()
-                        else:
-                            self.opti_kind = data[9]
+                    elif self.back_type == '전진분석':
+                        if data[0] == '백테정보':
+                            self.betting   = data[1]
+                            avg_list       = data[2]
+                            self.startday  = data[3]
+                            self.endday    = data[4]
+                            self.starttime = data[5]
+                            self.endtime   = data[6]
+                            if self.market_gubun in (1, 3):
+                                self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
+                                self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
+                            else:
+                                self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
+                                self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
+                            if self.buystg is None or self.sellstg is None:
+                                self.BackStop()
+                            else:
+                                self.CheckAvglist(avg_list)
+                                self.CheckDayAndTime()
+                        elif data[0] == '변수정보':
+                            self.vars_list = data[1]
+                            self.opti_kind = data[2]
+                            self.vars      = [var[1] for var in self.vars_list]
+                            self.startday  = data[3]
+                            self.endday    = data[4]
                             self.CheckDayAndTime()
                             self.BackTest()
-                elif self.back_type == '백파인더':
-                    if data[0] == '백테정보':
-                        self.avgtime   = data[1]
-                        self.startday  = data[2]
-                        self.endday    = data[3]
-                        self.starttime = data[4]
-                        self.endtime   = data[5]
-                        try:
-                            self.buystg = compile(data[6], '<string>', 'exec')
-                        except:
-                            if self.gubun == 0: self.wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
-                            self.BackStop()
-                        else:
-                            self.opti_kind = data[7]
-                            self.CheckDayAndTime()
+                    elif self.back_type == 'GA최적화':
+                        if data[0] == '백테정보':
+                            self.betting   = data[1]
+                            avg_list       = data[2]
+                            self.startday  = data[3]
+                            self.endday    = data[4]
+                            self.starttime = data[5]
+                            self.endtime   = data[6]
+                            if self.market_gubun in (1, 3):
+                                self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
+                                self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
+                            else:
+                                self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
+                                self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
+                            if self.buystg is None or self.sellstg is None:
+                                self.BackStop()
+                            else:
+                                self.CheckAvglist(avg_list)
+                                self.CheckDayAndTime()
+                        elif data[0] == '변수정보':
+                            self.vars_lists = data[1]
+                            self.opti_kind  = data[2]
                             self.BackTest()
+                    elif self.back_type == '조건최적화':
+                        if data[0] == '백테정보':
+                            self.betting   = data[1]
+                            self.avgtime   = data[2]
+                            self.startday  = data[3]
+                            self.endday    = data[4]
+                            self.starttime = data[5]
+                            self.endtime   = data[6]
+                            self.CheckDayAndTime()
+                        elif data[0] == '조건정보':
+                            self.dict_buystg  = {}
+                            self.dict_sellstg = {}
+                            self.dict_sconds  = {}
+                            error = False
+                            for i in range(20):
+                                if self.market_gubun in (1, 3):
+                                    buystg = GetBuyConds(data[2][i], self.gubun, self.wq)
+                                    sellstg, dict_cond = GetSellConds(data[3][i], self.gubun, self.wq)
+                                else:
+                                    buystg = GetBuyCondsFuture(data[1], data[2][i], self.gubun, self.wq)
+                                    sellstg, dict_cond = GetSellCondsFuture(data[1], data[3][i], self.gubun, self.wq)
+                                self.dict_buystg[i]  = buystg
+                                self.dict_sellstg[i] = sellstg
+                                self.dict_sconds[i]  = dict_cond
+                                if buystg is None or sellstg is None: error = True
+                            if error:
+                                self.BackStop()
+                            else:
+                                self.opti_kind = data[4]
+                                self.BackTest()
+                    elif self.back_type == '백테스트':
+                        if data[0] == '백테정보':
+                            self.betting   = data[1]
+                            self.avgtime   = data[2]
+                            self.startday  = data[3]
+                            self.endday    = data[4]
+                            self.starttime = data[5]
+                            self.endtime   = data[6]
+                            if self.market_gubun in (1, 3):
+                                self.buystg, self.indistg = GetBuyStg(data[7], self.gubun, self.wq)
+                                self.sellstg, self.dict_sconds = GetSellStg(data[8], self.gubun, self.wq)
+                            else:
+                                self.buystg, self.indistg = GetBuyStgFuture(data[7], self.gubun, self.wq)
+                                self.sellstg, self.dict_sconds = GetSellStgFuture(data[8], self.gubun, self.wq)
+                            if self.buystg is None or self.sellstg is None:
+                                self.BackStop()
+                            else:
+                                self.opti_kind = data[9]
+                                self.CheckDayAndTime()
+                                self.BackTest()
+                    elif self.back_type == '백파인더':
+                        if data[0] == '백테정보':
+                            self.avgtime   = data[1]
+                            self.startday  = data[2]
+                            self.endday    = data[3]
+                            self.starttime = data[4]
+                            self.endtime   = data[5]
+                            try:
+                                self.buystg = compile(data[6], '<string>', 'exec')
+                            except:
+                                if self.gubun == 0: self.wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
+                                self.BackStop()
+                            else:
+                                self.opti_kind = data[7]
+                                self.CheckDayAndTime()
+                                self.BackTest()
 
-            elif data[0] == '백테유형':
-                self.back_type = data[1]
-                self.update_formula = False
-            elif data[0] == '설정변경':
-                self.dict_set = data[1]
-                self.UpdateSubVars()
-            elif data[0] == '종목명':
-                if self.market_gubun == 1:
-                    self.dict_cn   = data[1]
-                    self.dict_kosd = data[2]
-                else:
-                    self.dict_info = data[1]
-            elif data[0] == '데이터로딩':
-                self.DataLoad(data)
-            elif data[0] == '공유데이터':
-                self.shared_count = data[1]
-                self.shared_info  = data[2]
-            elif data == '백테중지':
-                self.BackStop(2)
+                elif data[0] == '백테유형':
+                    self.back_type = data[1]
+                    self.update_formula = False
+                elif data[0] == '설정변경':
+                    self.dict_set = data[1]
+                    self.UpdateSubVars()
+                elif data[0] == '종목명':
+                    if self.market_gubun == 1:
+                        self.dict_cn   = data[1]
+                        self.dict_kosd = data[2]
+                    else:
+                        self.dict_info = data[1]
+                elif data[0] == '데이터로딩':
+                    self.DataLoad(data)
+                elif data[0] == '공유데이터':
+                    self.shared_count = data[1]
+                    self.shared_info  = data[2]
+                elif data == '백테중지':
+                    self.BackStop(2)
+            except:
+                if self.gubun == 0:
+                    self.wq.put((ui_num['시스템로그'], format_exc()))
 
     def DataLoad(self, data):
         def data_load(days):

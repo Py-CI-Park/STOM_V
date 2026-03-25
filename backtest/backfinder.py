@@ -30,7 +30,6 @@ class Total:
 
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         bc = 0
         index = 0

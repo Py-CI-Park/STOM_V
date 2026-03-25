@@ -74,7 +74,6 @@ class Total:
 
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         oc  = 0
         sc  = 0
@@ -213,6 +212,7 @@ class Total:
             vars_copy[vturn] = self.vars_list[vturn][0][vkey]
         return ['최적화', self.ui_gubun, self.wq, self.mq, self.hstd, self.optistandard, self.opti_kind, vturn, vkey, vars_copy, self.startday, self.endday, self.std_list, self.betting]
 
+    @error_decorator
     def Report(self, list_tsg, arry_bct, oc):
         startday = self.hstd_list[oc - 1][0]
         endday   = self.hstd_list[oc - 1][1]

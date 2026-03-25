@@ -136,7 +136,6 @@ class UpbitStrategyTick(StrategyBase):
             self.windowQ.put((ui_num['기본로그'], f'{self.indicator}'))
         self.indi_settings = list(self.indicator.values())
 
-    @error_decorator
     def MainLoop(self):
         self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 전략 연산 시작'))
         while True:
@@ -198,6 +197,7 @@ class UpbitStrategyTick(StrategyBase):
             self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료'))
 
     # noinspection PyUnusedLocal
+    @error_decorator
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
             초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \

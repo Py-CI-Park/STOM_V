@@ -148,7 +148,6 @@ class KiwoomStrategyTick(StrategyBase):
                 self.mgzservQ.put(('window', (ui_num['기본로그'], f'{self.indicator}')))
         self.indi_settings = list(self.indicator.values())
 
-    @error_decorator
     def Mainloop(self):
         if self.gubun == 7:
             self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 시작')))
