@@ -1,9 +1,9 @@
 
 from traceback import format_exc
-from trade.upbit.upbit_receiver_tick import UpbitReceiverTick
 from utility.setting_base import ui_num
 from utility.lazy_imports import get_np
 from utility.static import now, str_ymdhms_utc
+from trade.upbit.upbit_receiver_tick import UpbitReceiverTick
 
 
 class UpbitReceiverMin(UpbitReceiverTick):

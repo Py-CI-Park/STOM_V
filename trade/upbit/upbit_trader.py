@@ -2,8 +2,8 @@
 import sys
 import pyupbit
 import sqlite3
-from PyQt5.QtWidgets import QApplication
 from utility.lazy_imports import get_pd
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from utility.setting_base import columns_cj, columns_td, ui_num, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, GetUpbitHogaunit, GetUpbitPgSgSp, now_utc, str_ymdhmsf, str_hmsf, \

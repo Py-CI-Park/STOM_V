@@ -3,7 +3,7 @@ import sqlite3
 from PyQt5.QtWidgets import QCompleter
 from utility.lazy_imports import get_pd
 from utility.static import error_decorator
-from utility.setting_base import DB_CODE_INFO, DB_COIN_BACK_TICK, list_stock_tick, list_stock_min, list_coin_tick, \
+from utility.setting_base import DB_CODE_INFO, DB_COIN_TICK_BACK, list_stock_tick, list_stock_min, list_coin_tick, \
     list_coin_min, list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, list_future_tick2, \
     list_future_min2
 
@@ -18,7 +18,7 @@ def load_database(ui):
     con.close()
     ui.dict_code = {name: code for code, name in ui.dict_name.items()}
 
-    con = sqlite3.connect(DB_COIN_BACK_TICK)
+    con = sqlite3.connect(DB_COIN_TICK_BACK)
     df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
     con.close()
     ui.ct_lineEdittttt_04.setCompleter(QCompleter(list(ui.dict_code.values())))

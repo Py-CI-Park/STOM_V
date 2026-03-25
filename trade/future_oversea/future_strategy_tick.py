@@ -358,27 +358,31 @@ class FutureStrategyTick(StrategyBase):
             E    = NISS and NIBS and SCC and 포지션 == 'SHORT' and 분할매도횟수 < self.dict_set['주식매도분할횟수']
             F    = NISL and self.dict_set['주식매수취소매도시그널'] and not NIBL
             G    = NIBS and self.dict_set['주식매수취소매도시그널'] and not NISS
-            H    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
-            J    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
-            K    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
-            L    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
-            M    = NIBL and NISL and 포지션 == 'LONG' and GJCS
-            N    = NISS and NIBS and 포지션 == 'SHORT' and GJCS
+            H    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도익절수익률청산'] and 수익률 > self.dict_set['주식매도익절수익률']
+            J    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도익절수익률청산'] and 수익률 > self.dict_set['주식매도익절수익률']
+            K    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도익절수익금청산'] and 수익금 > self.dict_set['주식매도익절수익금']
+            L    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도익절수익금청산'] and 수익금 > self.dict_set['주식매도익절수익금']
+            M    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
+            N    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도손절수익률청산'] and 수익률 < -self.dict_set['주식매도손절수익률']
+            P    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
+            Q    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['주식매도손절수익금청산'] and 수익금 < -self.dict_set['주식매도손절수익금']
+            R    = NIBL and NISL and 포지션 == 'LONG' and GJCS
+            S    = NISS and NIBS and 포지션 == 'SHORT' and GJCS
     
-            if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N):
-                강제청산 = H or J or K or L or M or N
+            if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N or P or Q or R or S):
+                강제청산 = H or J or K or L or M or N or P or Q or R or S
                 전량매도 = A or B or 강제청산
                 self.info_for_signal = F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
                 SELL_LONG, BUY_SHORT = False, False
-                if A or B or (C and (D or E)) or F or G:
+                if A or B or (C and D) or (C and E) or F or G:
                     if self.sellstrategy is not None:
                         exec(self.sellstrategy)
 
                 elif D or E or 강제청산:
-                    if H or K or M:
+                    if H or K or M or P or R:
                         SELL_LONG = True
-                    elif J or L or N:
+                    elif J or L or N or Q or S:
                         BUY_SHORT = True
                     elif D:
                         if self.dict_set['주식매도분할하방'] and 수익률 < -self.dict_set['주식매도분할하방수익률'] * (분할매도횟수 + 1):
@@ -571,7 +575,7 @@ class FutureStrategyTick(StrategyBase):
         if self.dict_gj:
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
             df_gj = get_pd().DataFrame.from_dict(self.dict_gj, orient='index')
-            self.mgzservQ.put(('window', (ui_num[f'S관심종목'], df_gj)))
+            self.mgzservQ.put(('window', (ui_num['S관심종목'], df_gj)))
         if self.dict_profit:
             self.dict_profit = {k: v for k, v in self.dict_profit.items() if k in self.dict_jg}
 
