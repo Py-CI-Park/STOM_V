@@ -18,7 +18,7 @@
 3. [V2.58 연결 검증 결과](#3-v258-연결-검증-결과)
 4. [동기화 전략](#4-동기화-전략)
 5. [버전 단위 동기화 절차](#5-버전-단위-동기화-절차)
-6. [pyd→py 추론 전파](#6-pdypy-추론-전파-2u-2u_c-research)
+6. [pyd→py 추론 전파](#6-pydpy-추론-전파-2u-2u_c-research)
 7. [전파 순서도](#7-전파-순서도)
 8. [정기 동기화 루틴](#8-정기-동기화-루틴)
 9. [V2.58 파일 구조 차이 상세](#9-v258-파일-구조-차이-상세)
@@ -262,23 +262,47 @@ git fetch upstream
 
 ### 5.2 단일 버전 동기화 (예: V2.59)
 
+> **실행 환경**: 아래 명령어는 **Git Bash** 기준입니다.
+> Windows CMD/PowerShell에서는 경로 구분자와 일부 명령이 다릅니다.
+
 ```bash
 # 1. devstom에서 해당 버전 체크포인트 확인
-cd C:\System_Trading\STOM\STOM_devstom
+cd /c/System_Trading/STOM/STOM_devstom
 git log --oneline -- _update.txt
 # → 6752d68 업데이트 파일 갱신 (V2.59)
 
-# 2. 해당 체크포인트의 파일을 임시 디렉토리로 export
+# 2. 임시 디렉토리 생성 후 export
+mkdir -p /tmp/stom_v259_export
 git archive 6752d68 | tar -x -C /tmp/stom_v259_export/
 
 # 3. STOM_V로 이동하여 오버레이 적용
-cd C:\System_Trading\STOM\STOM_V
+cd /c/System_Trading/STOM/STOM_V
 git switch STOM_Version_2
 
-# 4. 보호 대상 제외하고 파일 복사
+# 4. dry-run으로 삭제될 파일 먼저 확인 (안전 점검)
+rsync -avn --delete \
+  --exclude='.git' \
+  --exclude='.gitignore' \
+  --exclude='.omc/' \
+  --exclude='CLAUDE.md' \
+  --exclude='AGENTS.md' \
+  --exclude='cli/' \
+  --exclude='tests/' \
+  --exclude='docs/' \
+  --exclude='scripts/' \
+  --exclude='research/' \
+  --exclude='temp/' \
+  --exclude='requirements64-2.txt' \
+  /tmp/stom_v259_export/ \
+  ./
+# → "deleting ..." 항목을 검토하여 커스텀 파일이 포함되지 않았는지 확인
+# → 문제가 있으면 --exclude 항목을 추가
+
+# 5. 확인 완료 후 실제 오버레이 적용
 rsync -av --delete \
   --exclude='.git' \
   --exclude='.gitignore' \
+  --exclude='.omc/' \
   --exclude='CLAUDE.md' \
   --exclude='AGENTS.md' \
   --exclude='cli/' \
@@ -291,12 +315,13 @@ rsync -av --delete \
   /tmp/stom_v259_export/ \
   ./
 
-# 5. 변경 확인 및 커밋
-git add -A
-git diff --cached --stat
-git commit -m "STOM V2.59
-
-$(cat _update.txt | sed -n '/V2.59/,/^$/p')"
+# 6. 변경 확인 및 커밋 (명시적 파일 스테이징, git add -A 사용 금지)
+git diff --stat                          # 변경 내역 확인
+git add -u                               # 수정/삭제된 추적 파일만 스테이징
+git add backtest/ trade/ ui/ utility/    # 신규 파일은 디렉토리 단위로 명시 추가
+git add stom.py stom.bat _update.txt _license.txt requirements*.txt  # 루트 파일 명시
+git diff --cached --stat                 # 최종 스테이징 내역 검토
+git commit -m "STOM V2.59"              # _update.txt 내용은 본문에 수동 기재
 ```
 
 ### 5.3 일괄 catch-up (V2.59~V2.65 한번에)
@@ -330,8 +355,8 @@ $(cat _update.txt | sed -n '/V2.59/,/^$/p')"
 def sync_version(devstom_path, target_commit, version_label):
     """devstom의 특정 커밋을 STOM_V에 오버레이."""
     # 1. git archive로 export
-    # 2. 보호 파일 제외하고 복사
-    # 3. git add -A && git commit
+    # 2. 보호 파일 제외하고 rsync (dry-run 먼저)
+    # 3. 명시적 파일 스테이징 후 commit
 ```
 
 ---
@@ -343,12 +368,20 @@ def sync_version(devstom_path, target_commit, version_label):
 V2 브랜치에 새 버전을 반영한 후, **pyd 변경이 있는 버전에서만** 추론이 필요합니다.
 
 ```bash
-# V2 동기화 후, pyd 변경 여부 확인
-git diff HEAD~1 --name-only | grep '\.pyd$'
+# V2 동기화 커밋 전후의 pyd 변경 여부 확인
+# (버전 커밋 해시를 명시하여 정확한 비교)
+git diff <이전버전커밋>..<새버전커밋> --name-only | grep '\.pyd$'
+
+# 예: V2.58 → V2.59 구간의 pyd 변경 확인
+git diff STOM_V2.58..STOM_V2.59 --name-only | grep '\.pyd$'
 
 # 출력이 없으면 → 추론 불필요, 그냥 merge
 # 출력이 있으면 → 2U에서 py 추론 작업 필요
 ```
+
+> **참고**: `HEAD~1` 방식은 merge 커밋이나 중간 커밋이 섞이면
+> 의도한 버전 구간을 정확히 잡지 못할 수 있습니다.
+> 가능하면 버전 커밋 해시 또는 태그를 명시하여 비교하세요.
 
 ### 6.2 버전별 추론 필요 여부 (2026-03-24 기준)
 
@@ -364,18 +397,26 @@ git diff HEAD~1 --name-only | grep '\.pyd$'
 
 ### 6.3 추론 작업 흐름
 
-```bash
-# wt-2u 에서 실행
-cd C:\System_Trading\STOM\STOM_V.wt-2u
+> **핵심 제약**: `STOM_Version_2U` 브랜치에는 `.pyd` 파일이 존재하면 안 됩니다.
+> merge 후 반드시 `.pyd` 파일을 삭제하고 커밋해야 합니다.
 
-# 1. V2 변경분 머지 (py 파일은 자동 반영)
+```bash
+# wt-2u 에서 실행 (Git Bash 기준)
+cd /c/System_Trading/STOM/STOM_V.wt-2u
+
+# 1. V2 변경분 머지 (py 파일은 자동 반영, pyd도 함께 들어옴)
 git merge STOM_Version_2
 
-# 2. pyd 변경 확인
-git diff HEAD~1 --name-only | grep '\.pyd$'
-# → ui/ui_mainwindow.pyd
+# 2. ★ pyd 파일 즉시 제거 (2U 브랜치 원칙: pyd 비존재)
+git rm -f $(git ls-files '*.pyd') 2>/dev/null
+# 또는 명시적으로:
+git rm -f ui/ui_mainwindow.pyd 2>/dev/null
 
-# 3. pyd 변경이 있으면 AI Agent로 추론
+# 3. pyd 변경 여부 확인 (V2 커밋 기준)
+git diff STOM_Version_2U@{1}..STOM_Version_2 --name-only | grep '\.pyd$'
+# → 출력이 있으면 py 추론 작업 필요
+
+# 4. pyd 변경이 있으면 AI Agent로 추론
 claude
 # → "V2.65에서 ui_mainwindow.pyd가 변경되었습니다.
 #    _update.txt와 주변 py 파일 변경을 참고하여
@@ -404,8 +445,9 @@ STOM_Version_2          STOM_Version_2U        STOM_Version_2U_C
 V2.60 오버레이 적용     git merge V2           git merge 2U
      │                      │                       │
      ▼                      ▼                       ▼
-  py 변경만 반영        py 변경 자동 반영     머지 + 충돌 해결
-  (pyd 변경 없음)       (추론 불필요)         + CLI 테스트
+  py 변경만 반영        git rm *.pyd           머지 + 충돌 해결
+  (pyd 변경 없음)       py 변경 자동 반영      + CLI 테스트
+                        (추론 불필요)
 ```
 
 ### 7.2 pyd 변경이 있는 버전 (추론 경로)
@@ -417,8 +459,9 @@ STOM_Version_2          STOM_Version_2U        STOM_Version_2U_C
 V2.65 오버레이 적용     git merge V2           git merge 2U
      │                      │                       │
      ▼                      ▼                       ▼
-  py + pyd 모두 반영    py 자동 반영            머지 + 충돌 해결
-                        + pyd→py 추론 작업     + CLI 테스트
+  py + pyd 모두 반영    git rm *.pyd           머지 + 충돌 해결
+                        py 자동 반영            + CLI 테스트
+                        + pyd→py 추론 작업
                         (AI Agent 활용)
 ```
 
@@ -436,6 +479,7 @@ devstom/STOM (upstream)
     │     커밋: "STOM V2.XX" + _update.txt 내용
     │
     │  git merge STOM_Version_2
+    │  + git rm *.pyd (2U 원칙: pyd 비존재)
     │  + pyd 변경 시 py 추론
     ▼
 [wt-2u/] STOM_Version_2U
