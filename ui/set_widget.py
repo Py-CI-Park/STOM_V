@@ -186,43 +186,42 @@ class AnimatedPushButton(QPushButton):
         self.is_hovering = False
         self.animation_timer = None
         self.setup_animations()
-    
+
     def setup_animations(self):
         self.hover_animation = QPropertyAnimation(self, b"geometry")
         self.hover_animation.setDuration(150)
         self.hover_animation.setEasingCurve(QEasingCurve.OutCubic)
-        
+
         self.animation_timer = QTimer()
         self.animation_timer.setSingleShot(True)
         self.animation_timer.timeout.connect(self._delayed_leave)
-    
+
     def enterEvent(self, event):
         if self.original_geometry is None:
             self.original_geometry = self.geometry()
-        
+
         self.is_hovering = True
         self.animation_timer.stop()
-        
-        # 약간 확장된 크기로 애니메이션
+
         expanded_rect = QRect(
             self.original_geometry.x() - 2,
             self.original_geometry.y() - 2,
             self.original_geometry.width() + 4,
             self.original_geometry.height() + 4
         )
-        
+
         self.hover_animation.setStartValue(self.geometry())
         self.hover_animation.setEndValue(expanded_rect)
         self.hover_animation.start()
-        
+
         super().enterEvent(event)
-    
+
     def leaveEvent(self, event):
         self.is_hovering = False
         # 약간의 딜레이 후 애니메이션 실행 (빠른 이동 시 깜빡임 방지)
         self.animation_timer.start(50)
         super().leaveEvent(event)
-    
+
     def _delayed_leave(self):
         if not self.is_hovering and self.original_geometry is not None:
             self.hover_animation.setStartValue(self.geometry())

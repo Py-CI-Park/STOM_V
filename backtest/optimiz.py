@@ -459,7 +459,10 @@ class Optimize:
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
-        df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
+        if is_tick:
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
+        else:
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(int)
         day_list = df_mt['일자'].unique()
         day_list.sort()
 

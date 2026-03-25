@@ -206,11 +206,18 @@ class Chart:
         if market in (2, 4):
             arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
 
+        indices = arry[:, 0]
+
         def get_cgidx_and_cgtime(cgtime_):
-            indices = arry[:, 0]
             while cgtime_ not in indices:
-                onesecago = timedelta_sec(-1, dt_ymdhms(str(cgtime_)) if is_tick else dt_ymdhm(str(cgtime_)))
-                cgtime_ = int(str_ymdhms(onesecago)) if is_tick else int(str_ymdhm(onesecago))
+                if is_tick:
+                    dt_cgtime = dt_ymdhms(str(cgtime_))
+                    onesecago = timedelta_sec(-1, dt_cgtime)
+                    cgtime_   = int(str_ymdhms(onesecago))
+                else:
+                    dt_cgtime = dt_ymdhm(str(cgtime_))
+                    onesecago = timedelta_sec(-1, dt_cgtime)
+                    cgtime_   = int(str_ymdhm(onesecago))
             cgidx_ = np.where(indices == cgtime_)[0][0]
             return cgidx_, cgtime_
 
@@ -229,6 +236,9 @@ class Chart:
             if len(df) > 0:
                 for index in df.index:
                     cgtime = int(df['체결시간'][index] if is_tick else str(df['체결시간'][index])[:12])
+                    if cgtime < indices[0] or indices[-1] < cgtime:
+                        continue
+
                     cgidx, cgtime = get_cgidx_and_cgtime(cgtime)
                     if market in (1, 3):
                         if df['주문구분'][index] == '매수':

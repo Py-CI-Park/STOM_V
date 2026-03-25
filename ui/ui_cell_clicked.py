@@ -107,12 +107,11 @@ def cell_clicked_05(ui, row):
 
     df = ui.dbreader.read_sql('거래디비', f"SELECT * FROM {table_name} WHERE 체결시간 LIKE '{date}%'")
 
-    df['index'] = df['index'].apply(lambda x: str(x))
     if len(date) == 6 and gubun == '코인':
-        df['구분용체결시간'] = df['index'].apply(lambda x: x[:6])
+        df['구분용체결시간'] = df['index'].str[:6]
         df = df[df['구분용체결시간'] == date]
     elif len(date) == 4 and gubun == '코인':
-        df['구분용체결시간'] = df['index'].apply(lambda x: x[:4])
+        df['구분용체결시간'] = df['index'].str[:4]
         df = df[df['구분용체결시간'] == date]
     df['index'] = df['index'].apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
     df.set_index('index', inplace=True)
