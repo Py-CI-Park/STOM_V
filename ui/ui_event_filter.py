@@ -1,8 +1,9 @@
 
+from ui.set_widget import PlainTextEdit
+from utility.static import error_decorator
 from PyQt5.QtCore import Qt, QEvent, QTimer
 from PyQt5.QtGui import QTextCursor, QTextCharFormat, QColor
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QTextEdit, QApplication
-from utility.static import error_decorator
 
 syntax_highlighters = {}
 
@@ -91,7 +92,7 @@ def event_filter(ui, widget, event):
     if event.type() != QEvent.KeyPress:
         return QMainWindow.eventFilter(ui, widget, event)
 
-    if widget.__class__ == QTextEdit and not (QApplication.keyboardModifiers() & Qt.AltModifier):
+    if widget.__class__ == PlainTextEdit and not (QApplication.keyboardModifiers() & Qt.AltModifier):
         widget_id = id(widget)
         if widget_id not in syntax_highlighters:
             setup_syntax_highlighter(widget, widget_id)
