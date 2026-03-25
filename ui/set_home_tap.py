@@ -3,7 +3,7 @@ import pyqtgraph as pg
 from PyQt5.QtGui import QFont, QPen, QColor
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout, QHBoxLayout
-from ui.set_style import color_fg_bc, color_bg_ct
+from ui.set_style import color_fg_bc, color_bg_ct, style_ht_gb, style_ht_pb
 from ui.set_widget import error_decorator
 
 qfont16 = QFont()
@@ -193,30 +193,23 @@ class SetHomeTap:
             self.ui.kospi200_boxxx, self.ui.oilgsl_boxxxxx, self.ui.ethusdt_boxxxx, self.ui.solusdt_boxxxx
         ]
 
-        stylesheet = """
-            QGroupBox {
-                background-color: #191928; 
-                border: 2px solid #191928;
-            }
-        """
+        self.ui.kospi_boxxxxxx.setStyleSheet(style_ht_gb)
+        self.ui.kosdaq_boxxxxx.setStyleSheet(style_ht_gb)
+        self.ui.kospi100_boxxx.setStyleSheet(style_ht_gb)
+        self.ui.kospi200_boxxx.setStyleSheet(style_ht_gb)
+        self.ui.future_boxxxxx.setStyleSheet(style_ht_gb)
+        self.ui.usdkrw_boxxxxx.setStyleSheet(style_ht_gb)
+        self.ui.oilgsl_boxxxxx.setStyleSheet(style_ht_gb)
+        self.ui.gold_boxxxxxxx.setStyleSheet(style_ht_gb)
 
-        self.ui.kospi_boxxxxxx.setStyleSheet(stylesheet)
-        self.ui.kosdaq_boxxxxx.setStyleSheet(stylesheet)
-        self.ui.kospi100_boxxx.setStyleSheet(stylesheet)
-        self.ui.kospi200_boxxx.setStyleSheet(stylesheet)
-        self.ui.future_boxxxxx.setStyleSheet(stylesheet)
-        self.ui.usdkrw_boxxxxx.setStyleSheet(stylesheet)
-        self.ui.oilgsl_boxxxxx.setStyleSheet(stylesheet)
-        self.ui.gold_boxxxxxxx.setStyleSheet(stylesheet)
-
-        self.ui.btcusdt_boxxxx.setStyleSheet(stylesheet)
-        self.ui.ethusdt_boxxxx.setStyleSheet(stylesheet)
-        self.ui.bnbusdt_boxxxx.setStyleSheet(stylesheet)
-        self.ui.xrpusdt_boxxxx.setStyleSheet(stylesheet)
-        self.ui.solusdt_boxxxx.setStyleSheet(stylesheet)
-        self.ui.dogeusdt_boxxx.setStyleSheet(stylesheet)
-        self.ui.adausdt_boxxxx.setStyleSheet(stylesheet)
-        self.ui.linkusdt_boxxx.setStyleSheet(stylesheet)
+        self.ui.btcusdt_boxxxx.setStyleSheet(style_ht_gb)
+        self.ui.ethusdt_boxxxx.setStyleSheet(style_ht_gb)
+        self.ui.bnbusdt_boxxxx.setStyleSheet(style_ht_gb)
+        self.ui.xrpusdt_boxxxx.setStyleSheet(style_ht_gb)
+        self.ui.solusdt_boxxxx.setStyleSheet(style_ht_gb)
+        self.ui.dogeusdt_boxxx.setStyleSheet(style_ht_gb)
+        self.ui.adausdt_boxxxx.setStyleSheet(style_ht_gb)
+        self.ui.linkusdt_boxxx.setStyleSheet(style_ht_gb)
 
         self.ui.kospi_boxxxxxx.setGeometry(7, 10, 331, 181)
         self.ui.kosdaq_boxxxxx.setGeometry(343, 10, 331, 181)
@@ -299,21 +292,14 @@ class SetHomeTap:
         self.ui.oilgsl_pbtnnnn = self.wc.setPushbutton('', icon=self.ui.icon_oilgsl, color=6)
         self.ui.gold_pbtnnnnnn = self.wc.setPushbutton('', icon=self.ui.icon_gold, color=6)
 
-        stylesheet = """
-            QPushButton {
-                background-color: #191928; 
-                border: 2px solid #191928;
-            }
-        """
-
-        self.ui.kospi_pbtnnnnn.setStyleSheet(stylesheet)
-        self.ui.kosdaq_pbtnnnn.setStyleSheet(stylesheet)
-        self.ui.kospi100_pbtnn.setStyleSheet(stylesheet)
-        self.ui.kospi200_pbtnn.setStyleSheet(stylesheet)
-        self.ui.future_pbtnnnn.setStyleSheet(stylesheet)
-        self.ui.usdkrw_pbtnnnn.setStyleSheet(stylesheet)
-        self.ui.oilgsl_pbtnnnn.setStyleSheet(stylesheet)
-        self.ui.gold_pbtnnnnnn.setStyleSheet(stylesheet)
+        self.ui.kospi_pbtnnnnn.setStyleSheet(style_ht_pb)
+        self.ui.kosdaq_pbtnnnn.setStyleSheet(style_ht_pb)
+        self.ui.kospi100_pbtnn.setStyleSheet(style_ht_pb)
+        self.ui.kospi200_pbtnn.setStyleSheet(style_ht_pb)
+        self.ui.future_pbtnnnn.setStyleSheet(style_ht_pb)
+        self.ui.usdkrw_pbtnnnn.setStyleSheet(style_ht_pb)
+        self.ui.oilgsl_pbtnnnn.setStyleSheet(style_ht_pb)
+        self.ui.gold_pbtnnnnnn.setStyleSheet(style_ht_pb)
 
         self.ui.kospi_labellll = self.setLabel('코스피', qfont16)
         self.ui.kosdaq_labelll = self.setLabel('코스닥', qfont16)
@@ -333,14 +319,14 @@ class SetHomeTap:
         self.ui.adausdt_pbtnnn = self.wc.setPushbutton('', icon=self.ui.icon_ada, color=6)
         self.ui.linkusdt_pbtnn = self.wc.setPushbutton('', icon=self.ui.icon_link, color=6)
 
-        self.ui.btcusdt_pbtnnn.setStyleSheet(stylesheet)
-        self.ui.ethusdt_pbtnnn.setStyleSheet(stylesheet)
-        self.ui.bnbusdt_pbtnnn.setStyleSheet(stylesheet)
-        self.ui.xrpusdt_pbtnnn.setStyleSheet(stylesheet)
-        self.ui.solusdt_pbtnnn.setStyleSheet(stylesheet)
-        self.ui.dogeusdt_pbtnn.setStyleSheet(stylesheet)
-        self.ui.adausdt_pbtnnn.setStyleSheet(stylesheet)
-        self.ui.linkusdt_pbtnn.setStyleSheet(stylesheet)
+        self.ui.btcusdt_pbtnnn.setStyleSheet(style_ht_pb)
+        self.ui.ethusdt_pbtnnn.setStyleSheet(style_ht_pb)
+        self.ui.bnbusdt_pbtnnn.setStyleSheet(style_ht_pb)
+        self.ui.xrpusdt_pbtnnn.setStyleSheet(style_ht_pb)
+        self.ui.solusdt_pbtnnn.setStyleSheet(style_ht_pb)
+        self.ui.dogeusdt_pbtnn.setStyleSheet(style_ht_pb)
+        self.ui.adausdt_pbtnnn.setStyleSheet(style_ht_pb)
+        self.ui.linkusdt_pbtnn.setStyleSheet(style_ht_pb)
 
         self.ui.btcusdt_labell = self.setLabel('BTC/USDT', qfont16)
         self.ui.ethusdt_labell = self.setLabel('ETH/USDT', qfont16)
