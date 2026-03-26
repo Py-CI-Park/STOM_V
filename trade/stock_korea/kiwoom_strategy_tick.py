@@ -10,6 +10,7 @@ from traceback import format_exc
 from trade.formula_manager import get_formula_data
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.strategy_base import StrategyBase
+from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, \
     list_stock_tick, list_stock_min
 # noinspection PyUnresolvedReferences
@@ -19,11 +20,11 @@ from utility.static import now, timedelta_sec, GetKiwoomPgSgSp, GetHogaunit, get
 
 class KiwoomStrategyTick(StrategyBase):
     def __init__(self, gubun, qlist, dict_set):
-        super().__init__()
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
                 0            1             2            3
         """
+        super().__init__()
         self.gubun            = gubun
         self.mgzservQ         = qlist[0]
         self.straderQ         = qlist[2]
@@ -90,6 +91,8 @@ class KiwoomStrategyTick(StrategyBase):
             import cProfile
             self.pr = cProfile.Profile()
             self.pr.enable()
+
+        self.ms_analyzer = MicrostructureAnalyzer('stock')
 
         set_builtin_print(False, self.mgzservQ)
         self.SetFormulaData()
@@ -258,6 +261,9 @@ class KiwoomStrategyTick(StrategyBase):
 
         if 데이터길이 >= 평균값계산틱수:
             self.arry_code[-1, self.base_cnt:self.data_cnt] = self.GetParameterArea(rw)
+
+        if self.dict_set['시장미시구조분석']:
+            self.ms_analyzer.update_data(self.code, self.arry_code[-1, :])
 
         high_low = self.high_low.get(종목코드)
         if high_low:

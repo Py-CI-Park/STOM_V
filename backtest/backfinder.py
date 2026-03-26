@@ -3,17 +3,17 @@ import sys
 import time
 import sqlite3
 import pandas as pd
-from multiprocessing import Process
+from multiprocessing import Process, Queue
 from utility.static import now, str_ymdhms
 from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num
 
 
 class Total:
-    def __init__(self, wq, sq, tq, bq, ui_gubun, gubun):
+    def __init__(self, wq, sq, tq, mq, ui_gubun, gubun):
         self.wq           = wq
         self.sq           = sq
         self.tq           = tq
-        self.bq           = bq
+        self.mq           = mq
         self.ui_gubun     = ui_gubun
         self.gubun        = gubun
         if self.ui_gubun == 'CF': self.gubun = 'coin_future'
@@ -33,7 +33,7 @@ class Total:
     def MainLoop(self):
         bc = 0
         index = 0
-        complete = True
+        complete = False
         while True:
             data = self.tq.get()
             if data[0] == '백파결과':
@@ -45,7 +45,7 @@ class Total:
             elif data == '백테완료':
                 bc += 1
                 if bc == self.back_count:
-                    break
+                    complete = True
 
             elif data[0] == '백테정보':
                 self.avgtime     = data[1]
@@ -58,8 +58,10 @@ class Total:
                 self.tickcols    = data[8]
 
             elif data == '백테중지':
-                self.bq.put('백테중지')
-                complete = False
+                self.mq.put('백테중지')
+                break
+
+            if complete and self.tq.empty():
                 break
 
         if complete:
@@ -74,7 +76,7 @@ class Total:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '조건을 만족하는 종목이 없어 결과를 표시할 수 없습니다.'))
 
             self.sq.put('백파인더를 완료하였습니다.')
-            self.bq.put('백파인더 완료')
+            self.mq.put('백파인더 완료')
 
         time.sleep(1)
         sys.exit()
@@ -128,7 +130,8 @@ class BackFinder:
         tickcols = ['종목코드', '체결시간'] + [x.strip() for x in colm_list.split(',')]
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 매수전략 설정 완료'))
 
-        Process(target=Total, args=(self.wq, self.sq, self.tq, self.bq, self.ui_gubun, self.gubun)).start()
+        mq = Queue()
+        Process(target=Total, args=(self.wq, self.sq, self.tq, mq, self.ui_gubun, self.gubun)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 집계용 프로세스 생성 완료'))
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 START'))
@@ -139,7 +142,7 @@ class BackFinder:
         for q in self.beq_list:
             q.put(data)
 
-        data = self.bq.get()
+        data = mq.get()
         if data != '백파인더 완료': self.SysExit(True)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'백파인더 소요시간 {now() - start_time}'))
         if self.dict_set['스톰라이브']: self.lq.put('백파인더')

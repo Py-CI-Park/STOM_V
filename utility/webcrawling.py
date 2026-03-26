@@ -1,6 +1,5 @@
 
 import time
-import queue
 import random
 import requests
 import matplotlib
@@ -19,8 +18,8 @@ from utility.static import str_ymdhm, str_ymd_ios, dt_ymdhms_ios, timedelta_day,
 class WebCrawling:
     def __init__(self, qlist):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
+           0        1       2      3       4      5      6      7       8         9         10     11      12
         """
         self.windowQ     = qlist[0]
         self.webcQ       = qlist[6]
@@ -43,18 +42,23 @@ class WebCrawling:
         self.MainLoop()
 
     def MainLoop(self):
-        hometap_crawling_time = now()
-        self.CrawlingAllData()
+        self.CrawlingHomTapData()
+        hometap_crawling_time = timedelta_sec(30)
         while True:
             try:
-                try:
-                    data = self.webcQ.get(timeout=1)
+                if not self.webcQ.empty():
+                    data = self.webcQ.get()
                     self.Crawling(data)
-                except queue.Empty:
-                    pass
+
                 if now() > hometap_crawling_time:
-                    self.CrawlingAllData()
+                    self.CrawlingHomTapData()
                     hometap_crawling_time = timedelta_sec(30)
+
+                if self.thread_join == 16:
+                    self.thread_join = 0
+                    self.windowQ.put((ui_num['홈차트'], self.dict_data))
+
+                time.sleep(0.01)
             except:
                 self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
@@ -247,7 +251,7 @@ class WebCrawling:
         else:
             self.windowQ.put((ui_num['트리맵2'], '', df, '', cl))
 
-    def CrawlingAllData(self):
+    def CrawlingHomTapData(self):
         """모든 데이터 수집 (한국주식+암호화폐)"""
         search_time = now()
         weekday = search_time.weekday()
@@ -278,7 +282,6 @@ class WebCrawling:
                     del self.dict_data[name]
             self.dt_today = search_today
 
-        self.thread_join = 0
         self.get_korean_stocks(search_today, search_time, '코스피', 'KOSPI')
         self.get_korean_stocks(search_today, search_time, '코스닥', 'KOSDAQ')
         self.get_korean_stocks(search_today, search_time, '코스피100', 'KPI100')
@@ -286,10 +289,6 @@ class WebCrawling:
         self.get_korean_stocks(search_today, search_time, '코스피200선물', 'FUT')
         self.get_market_indicator()
         self.get_crypto_data()
-
-        while self.thread_join < 16:
-            time.sleep(0.1)
-        self.windowQ.put((ui_num['홈차트'], self.dict_data))
 
     @thread_decorator
     def get_korean_stocks(self, search_today, search_time, name, symbol):
