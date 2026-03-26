@@ -12,14 +12,14 @@ from utility.setting_base import ui_num
 class TelegramBot:
     def __init__(self, qlist, dict_set):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
+           0        1       2      3       4      5      6      7       8         9         10     11      12
         """
         self.windowQ     = qlist[0]
         self.teleQ       = qlist[3]
         self.ctraderQ    = qlist[9]
         self.cstgQ       = qlist[10]
-        self.wdzservQ    = qlist[13]
+        self.wdzservQ    = qlist[12]
         self.dict_set    = dict_set
 
         self.token       = None

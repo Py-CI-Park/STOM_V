@@ -9,6 +9,7 @@ from copy import deepcopy
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.strategy_base import StrategyBase
 from trade.formula_manager import get_formula_data
+from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, DB_FUTURE_TICK, \
     list_coin_tick, list_coin_min
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
@@ -17,11 +18,11 @@ from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, 
 
 class FutureStrategyTick(StrategyBase):
     def __init__(self, qlist, dict_set):
-        super().__init__()
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
                 0            1             2            3
         """
+        super().__init__()
         self.mgzservQ         = qlist[0]
         self.straderQ         = qlist[2]
         self.sstgQ            = qlist[3]
@@ -87,6 +88,8 @@ class FutureStrategyTick(StrategyBase):
         self.dict_findex['최고매도수가격'] = self.dict_findex['최고매수가격']
         self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
         self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
+
+        self.ms_analyzer = MicrostructureAnalyzer('future')
 
         set_builtin_print(False, self.mgzservQ)
         self.SetFormulaData()
@@ -235,6 +238,9 @@ class FutureStrategyTick(StrategyBase):
 
         if 데이터길이 >= 평균값계산틱수:
             self.arry_code[-1, self.base_cnt:self.data_cnt] = self.GetParameterArea(rw)
+
+        if self.dict_set['시장미시구조분석']:
+            self.ms_analyzer.update_data(self.code, self.arry_code[-1, :])
 
         high_low = self.high_low.get(종목코드)
         if high_low:

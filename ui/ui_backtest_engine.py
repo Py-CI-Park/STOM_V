@@ -374,13 +374,11 @@ def backtest_process_kill(ui, coin, enginekill):
 
     count = 0
     while True:
-        if not ui.backQ.empty():
-            data = ui.backQ.get()
-            if data == '백테중지완료':
-                count += 1
-                if count == ui.multi:
-                    break
-        qtest_qwait(0.01)
+        data = ui.backQ.get()
+        if data == '백테중지완료':
+            count += 1
+            if count == ui.multi:
+                break
 
     ui.windowQ.put((ui_num['C백테스트' if coin else 'S백테스트'], '백테스트 중지 완료'))
     if not coin:
