@@ -21,8 +21,8 @@ from utility.setting_base import ui_num, DB_TRADELIST, DB_PATH, DB_STOCK_TICK_BA
 class ChartHogaQuerySound:
     def __init__(self, qlist, dict_set):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
+           0        1       2      3       4      5      6      7       8         9         10     11      12
         """
         self.windowQ   = qlist[0]
         self.soundQ    = qlist[1]

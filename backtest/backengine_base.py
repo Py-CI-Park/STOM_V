@@ -6,6 +6,7 @@ from traceback import format_exc
 from multiprocessing import shared_memory
 from trade.strategy_base import StrategyBase
 from trade.formula_manager import get_formula_data
+from trade.microstructure_analyzer import MicrostructureAnalyzer
 from backtest.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
     get_trade_info, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, GetSellCondsFuture
 from utility.setting_base import DB_STOCK_TICK_BACK, BACK_TEMP, ui_num, DB_STOCK_MIN_BACK, indicator, \
@@ -69,6 +70,7 @@ class BackEngineBase(StrategyBase):
         self.add_cnt         = None
         self.hoga_sidex      = None
         self.hoga_eidex      = None
+        self.ms_analyzer     = None
 
         self.shogainfo       = None
         self.shreminfo       = None
@@ -110,6 +112,10 @@ class BackEngineBase(StrategyBase):
         self.set_dict_cond = self.dict_set[f'{self.market_text}경과틱수설정']
         self.set_weight    = self.dict_set[f'{self.market_text}비중조절']
         self.sma_list      = get_ema_list(self.is_tick)
+        if self.market_gubun == 1:   gubun = 'stock'
+        elif self.market_gubun == 2: gubun = 'future'
+        else:                        gubun = 'coin'
+        self.ms_analyzer = MicrostructureAnalyzer(gubun)
 
         if self.market_gubun == 1:
             factor_list = list_stock_tick if self.is_tick else list_stock_min
@@ -300,6 +306,8 @@ class BackEngineBase(StrategyBase):
                 elif data[0] == '백테유형':
                     self.back_type = data[1]
                     self.update_formula = False
+                    if self.dict_set['시장미시구조분석']:
+                        self.ms_analyzer.clear_data()
                 elif data[0] == '설정변경':
                     self.dict_set = data[1]
                     self.UpdateSubVars()
@@ -438,6 +446,8 @@ class BackEngineBase(StrategyBase):
         self.high_low = []
         self.tick_count = 0
         self.dict_cond_indexn = {}
+        if self.dict_set['시장미시구조분석']:
+            self.ms_analyzer.clear_code_data(self.code)
 
         if self.is_oms:
             v1 = get_trade_info(3)

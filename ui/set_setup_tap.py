@@ -145,10 +145,11 @@ class SetSetupTap:
         self.ui.sj_back_liEdit_02 = self.wc.setLineedit(self.ui.sj_bs_groupBox_07)
         self.ui.sj_back_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_07, items=['주식', '코인'])
         self.ui.sj_back_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_07)
-        self.ui.sj_back_cheBox_14 = self.wc.setCheckBox('                   일전', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_16)
+        self.ui.sj_back_cheBox_14 = self.wc.setCheckBox('                  일전', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_16)
         self.ui.sj_back_liEdit_03 = self.wc.setLineedit(self.ui.sj_bs_groupBox_07)
         self.ui.sj_back_cheBox_15 = self.wc.setCheckBox('고정', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_17)
         self.ui.sj_back_daEdit_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_07)
+        self.ui.sj_back_cheBox_16 = self.wc.setCheckBox('1초스냅샷 전략에 시장미시구조분석 적용하기', self.ui.sj_bs_groupBox_07)
 
         self.ui.sj_ilbunback_listtt = [self.ui.sj_back_cheBox_02, self.ui.sj_back_cheBox_03]
 
@@ -166,7 +167,7 @@ class SetSetupTap:
         self.ui.sj_etc_checBox_07 = self.wc.setCheckBox('프로세스 종료 시 프로그램종료', self.ui.sj_bs_groupBox_08)
         self.ui.sj_etc_labelll_02 = QLabel('▣  시리얼키', self.ui.sj_bs_groupBox_08)
         self.ui.sj_etc_liEditt_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_08, passhide=True)
-        self.ui.sj_etc_daEditt_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_08)
+        self.ui.sj_etc_daEditt_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_08, popup=False)
 
         self.ui.sj_load_Button_01 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_01, click=self.ui.SettingLoad_01)
         self.ui.sj_load_Button_02 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_02, click=self.ui.SettingLoad_02)
@@ -294,20 +295,21 @@ class SetSetupTap:
         self.ui.sj_back_labell_01.setGeometry(500, 100, 330, 20)
         self.ui.sj_back_liEdit_01.setGeometry(698, 100, 40, 20)
 
-        self.ui.sj_back_cheBox_09.setGeometry(840, 25, 300, 20)
-        self.ui.sj_back_cheBox_10.setGeometry(840, 50, 300, 20)
-        self.ui.sj_back_cheBox_11.setGeometry(840, 75, 300, 20)
-        self.ui.sj_back_cheBox_12.setGeometry(840, 100, 300, 20)
+        self.ui.sj_back_cheBox_09.setGeometry(880, 25, 300, 20)
+        self.ui.sj_back_cheBox_10.setGeometry(880, 50, 300, 20)
+        self.ui.sj_back_cheBox_11.setGeometry(880, 75, 300, 20)
+        self.ui.sj_back_cheBox_12.setGeometry(880, 100, 300, 20)
 
         self.ui.sj_back_cheBox_13.setGeometry(10, 125, 800, 20)
         self.ui.sj_back_comBox_01.setGeometry(160, 125, 50, 20)
         self.ui.sj_back_liEdit_02.setGeometry(245, 125, 70, 20)
         self.ui.sj_back_comBox_02.setGeometry(325, 125, 50, 20)
         self.ui.sj_back_comBox_03.setGeometry(380, 125, 100, 20)
-        self.ui.sj_back_cheBox_14.setGeometry(605, 125, 110, 20)
-        self.ui.sj_back_liEdit_03.setGeometry(625, 125, 50, 20)
-        self.ui.sj_back_cheBox_15.setGeometry(720, 125, 220, 20)
-        self.ui.sj_back_daEdit_01.setGeometry(770, 125, 110, 20)
+        self.ui.sj_back_cheBox_14.setGeometry(595, 125, 110, 20)
+        self.ui.sj_back_liEdit_03.setGeometry(615, 125, 50, 20)
+        self.ui.sj_back_cheBox_15.setGeometry(700, 125, 220, 20)
+        self.ui.sj_back_daEdit_01.setGeometry(750, 125, 110, 20)
+        self.ui.sj_back_cheBox_16.setGeometry(880, 125, 250, 20)
 
         self.ui.sj_etc_labelll_01.setGeometry(10, 25, 300, 20)
         self.ui.sj_etc_comBoxx_01.setGeometry(100, 25, 85, 20)
@@ -319,7 +321,7 @@ class SetSetupTap:
         self.ui.sj_etc_checBox_07.setGeometry(970, 50, 200, 20)
         self.ui.sj_etc_labelll_02.setGeometry(10, 75, 80, 20)
         self.ui.sj_etc_liEditt_01.setGeometry(80, 75, 940, 20)
-        self.ui.sj_etc_daEditt_01.setGeometry(1030, 75, 110, 20)
+        self.ui.sj_etc_daEditt_01.setGeometry(1030, 75, 115, 20)
 
         self.ui.sj_load_Button_01.setGeometry(1175, 25, 70, 20)
         self.ui.sj_load_Button_02.setGeometry(1175, 25, 70, 20)
