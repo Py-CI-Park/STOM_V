@@ -19,3 +19,12 @@
 - 성공 시: wt-dev에서 `git merge research/xxx`
 - 실패 시: 브랜치 유지 (히스토리 보존)
 - `git add -A` 사용 금지
+
+## 전략 조건식 실험
+
+실험적 전략 조건식 생성 시 반드시 참조:
+
+- **변수/조건식 레퍼런스**: `utility/ai_agent/strategy.txt`
+- **AI 작업 규칙**: `utility/ai_agent/rules.txt`
+- **생성된 전략 저장**: `utility/ai_agent/` 폴더 아래 `.txt` 파일로 기록
+- **시장미시구조 분석 (V2.67+)**: `trade/microstructure_analyzer.py` 활용 가능
