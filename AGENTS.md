@@ -290,3 +290,16 @@ git grep -rn "def method_name\|def function_name" STOM_Version_2U -- "ui/*.py"
 - `ui/ui_mainwindow.py`는 자동 스크립트로 갱신하지 않고 추론 기반으로 직접 관리
 - 새 `.py` 파일이 추가된 경우, `ui_mainwindow.py`의 import도 확인
 - **업데이트 후 반드시 위 검증 명령어 실행하여 누락 메서드/시그니처 불일치 없는지 확인**
+
+---
+
+## 전략 조건식 생성
+
+전략 조건식을 생성하거나 수정할 때 반드시 아래 파일을 참조합니다:
+
+- **변수/조건식 레퍼런스**: `utility/ai_agent/strategy.txt`
+  - 1초스냅샷 / 1분봉 변수 70+개 (타입, 설명 포함)
+  - 복합 조건식 함수 50+개
+  - 매수/매도 전략 예제 코드
+- **AI 작업 규칙**: `utility/ai_agent/rules.txt`
+- **생성된 전략 저장**: `utility/ai_agent/` 폴더 아래 `.txt` 파일로 기록
