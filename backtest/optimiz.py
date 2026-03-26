@@ -707,14 +707,16 @@ class Optimize:
                     self.SysExit(True)
                 else:
                     vturn, vkey, std = data
-                    cur_turn_type = vars_type[vturn]
-                    cur_turn_var  = self.vars_[vturn][0][vkey]
-                    pre_turn_hvar, pre_turn_hstd = dict_turn_hvar_hstd[vturn]
-                    same_update1 = std == pre_turn_hstd and cur_turn_type and cur_turn_var > pre_turn_hvar
-                    same_update2 = std == pre_turn_hstd and not cur_turn_type and cur_turn_var < pre_turn_hvar
-                    if std > pre_turn_hstd or same_update1 or same_update2:
-                        dict_turn_hvar_hstd[vturn][0] = cur_turn_var
-                        dict_turn_hvar_hstd[vturn][1] = std
+                    cur_turn_type  = vars_type[vturn]
+                    cur_turn_var   = self.vars_[vturn][0][vkey]
+                    duct_turn_list = dict_turn_hvar_hstd[vturn]
+                    pre_turn_hvar, pre_turn_hstd = duct_turn_list
+                    A = std > pre_turn_hstd
+                    B = std == pre_turn_hstd and cur_turn_var > pre_turn_hvar and cur_turn_type
+                    C = std == pre_turn_hstd and cur_turn_var < pre_turn_hvar and not cur_turn_type
+                    if A or B or C:
+                        duct_turn_list[0] = cur_turn_var
+                        duct_turn_list[1] = std
                         if std > hstd:
                             hstd = std
                             if not bool_changed_hstd:
@@ -872,7 +874,7 @@ class Optimize:
                 else:
                     trial_ = suggest_func(trial_name, var[1], var[1])
 
-                if '.' in str(trial_): trial_ = round(trial_, 3)
+                if '.' in str(trial_): trial_ = round(trial_, 2)
 
                 optuna_vars.append(trial_)
                 backte_vars.append([[], trial_])
@@ -920,10 +922,10 @@ class Optimize:
                     if pre_hvar != cur_hvar:
                         change += 1
                         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {cur_hvar}]'))
-                    first     = self.vars_[i][0][0]
-                    last      = self.vars_[i][0][-1]
-                    pre_gap   = self.vars[i][0][2]
-                    gap       = pre_gap if first != last else 0
+                    first      = self.vars_[i][0][0]
+                    last       = self.vars_[i][0][-1]
+                    pre_gap    = self.vars[i][0][2]
+                    gap        = pre_gap if first != last else 0
                     text_vars += f'self.vars[{i}] = [[{first}, {last}, {gap}], {cur_hvar}]\n'
                 else:
                     text_vars += f'self.vars[{i}] = {self.vars[i]}\n'

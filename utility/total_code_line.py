@@ -2,20 +2,21 @@
 import os
 import glob
 
-ROOT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 extensions = ['*.py', '*.bat']
 ignore_paths = [
-    './backtest/graph',
-    './backtest/temp',
-    './lecture/imagefiles',
-    './lecture/pycharm',
-    './lecture/testcode/temp',
-    './icon',
-    './_database',
-    './_log',
-    './__pycache__',
-    './.git',
-    './.idea'
+    'temp',
+    'icon',
+    'graph',
+    'pycharm',
+    'research',
+    'stock_usa',
+    'imagefiles',
+    '_database',
+    '_log',
+    '.git',
+    '.idea',
+    '__pycache__'
 ]
 
 total_line_count = 0
@@ -41,6 +42,7 @@ for file_name_with_path in files_grabbed:
     line_count_dict[file_name_with_path] = line_count
     total_line_count += line_count
     total_file_count += 1
+
 sorted_line_count = sorted(line_count_dict.items(), key=lambda x: x[1], reverse=True)
 
 for file, count in sorted_line_count:
