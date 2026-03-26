@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from ui.ui_dialog_animation import DialogAnimator
 from utility.kimp_upbit_binance import Kimp
-from utility.static import qtest_qwait, str_hms, dt_hms, error_decorator
+from utility.static import str_hms, dt_hms, error_decorator
 from utility.setting_base import columns_hc, DB_COIN_TICK_BACK, DB_STOCK_TICK_BACK, DB_PATH, DB_COIN_MIN_BACK, \
     DB_STOCK_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 from ui.set_style import style_bc_bt, style_bc_bb
@@ -396,7 +396,6 @@ def show_kimp(ui):
         ui.dialog_kimp.close()
         if ui.CoinKimpProcessAlive():
             ui.proc_coin_kimp.kill()
-            qtest_qwait(3)
 
 
 @error_decorator

@@ -206,6 +206,7 @@ def setting_load_07(ui):
         ui.sj_back_cheBox_13.setChecked(True) if df['백테스케쥴실행'][0] else ui.sj_back_cheBox_13.setChecked(False)
         ui.sj_back_cheBox_14.setChecked(True) if not df['백테날짜고정'][0] else ui.sj_back_cheBox_14.setChecked(False)
         ui.sj_back_cheBox_15.setChecked(True) if df['백테날짜고정'][0] else ui.sj_back_cheBox_15.setChecked(False)
+        ui.sj_back_cheBox_16.setChecked(True) if df['시장미시구조분석'][0] else ui.sj_back_cheBox_16.setChecked(False)
         ui.sj_back_comBox_03.clear()
         dfs = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
         indexs = list(dfs.index)
@@ -567,6 +568,7 @@ def setting_save_07(ui):
     백테스트로그기록안함 = 1 if ui.sj_back_cheBox_12.isChecked() else 0
     백테스케쥴실행 = 1 if ui.sj_back_cheBox_13.isChecked() else 0
     백테날짜고정 = 1 if ui.sj_back_cheBox_15.isChecked() else 0
+    시장미시구조분석 = 1 if ui.sj_back_cheBox_16.isChecked() else 0
 
     if ui.sj_back_comBox_01.currentText() == '금':
         백테스케쥴요일 = 4
@@ -591,7 +593,7 @@ def setting_save_07(ui):
         if ui.proc_chqs.is_alive():
             columns = ['블랙리스트추가', '백테주문관리적용', '백테매수시간기준', '백테일괄로딩', '그래프저장하지않기', '그래프띄우지않기',
                        '디비자동관리', '교차검증가중치', '기준값최소상승률', '백테스케쥴실행', '백테스케쥴요일', '백테스케쥴시간',
-                       '백테스케쥴구분', '백테스케쥴명', '백테날짜고정', '백테날짜', '범위자동관리', '백테스트로그기록안함']
+                       '백테스케쥴구분', '백테스케쥴명', '백테날짜고정', '백테날짜', '범위자동관리', '백테스트로그기록안함', '시장미시구조분석']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query   = f'UPDATE back SET {set_txt}'
             localvs = locals()
@@ -617,6 +619,7 @@ def setting_save_07(ui):
             ui.dict_set['백테날짜'] = 백테날짜
             ui.dict_set['범위자동관리'] = 범위자동관리
             ui.dict_set['백테스트로그기록안함'] = 백테스트로그기록안함
+            ui.dict_set['시장미시구조분석'] = 시장미시구조분석
 
             QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
             ui.UpdateDictSet()

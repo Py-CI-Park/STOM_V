@@ -513,7 +513,7 @@ class WidgetCreater:
         return lineedit
 
     @staticmethod
-    def setDateEdit(parent, qday=None, addday=None, changed=None):
+    def setDateEdit(parent, qday=None, addday=None, changed=None, popup=True):
         dateEdit = QDateEdit(parent)
         if qday is not None:
             qdate = qday
@@ -532,7 +532,10 @@ class WidgetCreater:
             elif qweek > 5:
                 qdate = qdate.addDays(5 - qweek)
         dateEdit.setDate(qdate)
-        dateEdit.setCalendarPopup(True)
+        if popup:
+            dateEdit.setCalendarPopup(True)
+        else:
+            dateEdit.setReadOnly(True)
         if changed is not None:
             dateEdit.dateChanged.connect(changed)
         return dateEdit

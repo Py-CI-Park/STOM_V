@@ -6,6 +6,7 @@ import pandas as pd
 from copy import deepcopy
 from trade.strategy_base import StrategyBase
 from trade.formula_manager import get_formula_data
+from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, \
     list_coin_tick, list_coin_min
 from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_buy_indi_stg, dt_ymdhms, \
@@ -14,11 +15,11 @@ from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_b
 
 class UpbitStrategyTick(StrategyBase):
     def __init__(self, qlist, dict_set):
+        """
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
+           0        1       2      3       4      5      6      7       8         9         10     11      12
+        """
         super().__init__()
-        """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
-        """
         self.windowQ          = qlist[0]
         self.teleQ            = qlist[3]
         self.ctraderQ         = qlist[9]
@@ -82,6 +83,8 @@ class UpbitStrategyTick(StrategyBase):
         self.dict_findex['최고매도수가격'] = self.dict_findex['최고매수가격']
         self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
         self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
+
+        self.ms_analyzer = MicrostructureAnalyzer('coin')
 
         set_builtin_print(True, self.windowQ)
         self.SetFormulaData()
@@ -236,6 +239,9 @@ class UpbitStrategyTick(StrategyBase):
 
         if 데이터길이 >= 평균값계산틱수:
             self.arry_code[-1, self.base_cnt:self.data_cnt] = self.GetParameterArea(rw)
+
+        if self.dict_set['시장미시구조분석']:
+            self.ms_analyzer.update_data(self.code, self.arry_code[-1, :])
 
         high_low = self.high_low.get(종목코드)
         if high_low:

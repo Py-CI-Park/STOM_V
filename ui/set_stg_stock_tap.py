@@ -83,7 +83,7 @@ class SetStockBack:
         self.ui.svj_pushButton_01 = self.wc.setPushbutton('백테스트', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockBacktestStart, color=2, tip='(Alt+Enter) 기본전략을 백테스팅한다.\nCtrl키와 함께 누르면 백테스트 엔진을 재시작할 수 있습니다.\nCtrl + Alt 키와 함계 누르면 백테 완료 후 변수목록이 포함된 그래프가 저장됩니다.')
         self.ui.svj_pushButton_02 = self.wc.setPushbutton('백파인더', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockBackfinderStart, color=2, tip='구간등락율을 기준으로 변수를 탐색한다.')
         self.ui.svj_pushButton_03 = self.wc.setPushbutton('백파인더 예제', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockBackfinderSample, color=3)
-        self.ui.svj_pushButton_04 = self.wc.setPushbutton('추가버튼', parent=self.ui.ss_tab, bounced=True, click=self.ui.StrategyCustomButtonShow, color=3)
+        self.ui.svj_pushButton_04 = self.wc.setPushbutton('전략모듈', parent=self.ui.ss_tab, bounced=True, click=self.ui.StrategyCustomButtonShow, color=3)
 
         self.ui.svjs_comboBoxx_01 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_02)
         self.ui.svjs_lineEditt_01 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
