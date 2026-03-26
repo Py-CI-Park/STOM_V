@@ -451,8 +451,11 @@ class WidgetCreater:
         return textedit
 
     @staticmethod
-    def setCombobox(parent, font=None, items=None, tip=None, visible=True, activated=None):
-        combobox = HoverComboBox(parent)
+    def setCombobox(parent, font=None, items=None, tip=None, visible=True, activated=None, hover=True):
+        if hover:
+            combobox = HoverComboBox(parent)
+        else:
+            combobox = QComboBox(parent)
         combobox.setStyleSheet(style_fc_dk)
         if font is not None:
             combobox.setFont(font)
