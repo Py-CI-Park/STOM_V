@@ -116,8 +116,8 @@ class BackFinder:
         con.close()
 
         buystg    = dfb['전략코드'][buystg_name]
-        colm_list = buystg.split('self.tickcols = [')[1].split(']')[0]
-        data_list = buystg.split('self.tickdata = [')[1].split(']')[0]
+        colm_list = buystg.split('self.tickcols = [')[1].split(']')[0].split(',')
+        data_list = buystg.split('self.tickdata = [')[1].split(']')[0].split(',')
         if 'self.tickcols' not in buystg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '선택된 전략이 백파인더용 전략이 아닙니다.'))
             self.SysExit(True)
