@@ -64,6 +64,19 @@ pytest tests/unit/ -q
 
 ---
 
+## 전략 조건식 생성 규칙
+
+전략 조건식을 생성하거나 수정할 때 반드시 아래 파일을 참조합니다:
+
+- **변수/조건식 레퍼런스**: `utility/ai_agent/strategy.txt`
+  - 1초스냅샷 / 1분봉 변수 70+개 (타입, 설명 포함)
+  - 복합 조건식 함수 50+개 (이평지지, 변동성급증, 횡보후돌파 등)
+  - 매수/매도 전략 예제 코드
+- **AI 작업 규칙**: `utility/ai_agent/rules.txt`
+- **생성된 전략 저장**: `utility/ai_agent/` 폴더 아래 `.txt` 파일로 기록
+
+---
+
 ## CLI 개발 현황
 
 > 상세 → [`docs/STOM_CLI_DEVELOPMENT_OVERVIEW.md`](docs/STOM_CLI_DEVELOPMENT_OVERVIEW.md)
