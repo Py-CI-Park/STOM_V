@@ -81,7 +81,6 @@ from utility.static import *
 from utility.setting_base import *
 from utility.setting_user import *
 from utility.webcrawling import *
-from utility.webcrawling_homtab import *
 from utility.telegram_bot import *
 from utility.database_read_only import DatabaseReadOnly
 from ui.set_dialog_strategy import SetDialogStrategy
@@ -560,9 +559,6 @@ class MainWindow(QMainWindow):
         self.writer.signal10.connect(self.Qtimer1Start)
         self.writer.signal11.connect(self.draw_home_chart.draw_home_chart)
         self.writer.start()
-
-        self.proc_webc_home = Process(target=WebCrawingHomTab, args=(self.windowQ,), daemon=True)
-        self.proc_webc_home.start()
 
         self.qtimer1 = QTimer()
         self.qtimer1.setInterval(1 * 1000)

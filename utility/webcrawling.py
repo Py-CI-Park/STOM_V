@@ -1,46 +1,66 @@
 
+import time
 import random
 import requests
 import matplotlib
+import pandas as pd
+from threading import Lock
 from urllib import request
 from threading import Timer
 from bs4 import BeautifulSoup
+from traceback import format_exc
 from fake_useragent import UserAgent
 from utility.setting_base import ui_num
-from utility.lazy_imports import get_pd
-from utility.static import thread_decorator, error_decorator, set_builtin_print
+from utility.static import str_ymdhm, str_ymd_ios, dt_ymdhms_ios, timedelta_day, dt_ymd, str_hms, now, str_ymd, \
+    thread_decorator, timedelta_sec
 
 
 class WebCrawling:
     def __init__(self, qlist):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
+           0        1       2      3       4      5      6      7       8         9         10     11      12
         """
-        self.windowQ    = qlist[0]
-        self.webcQ      = qlist[6]
-        self.cmap       = matplotlib.colormaps['rainbow']
-        self.norm       = matplotlib.colors.Normalize(vmin=0, vmax=29)
-
-        self.base_url   = 'https://finance.naver.com/'
-        self.headers    = {
+        self.windowQ     = qlist[0]
+        self.webcQ       = qlist[6]
+        self.cmap        = matplotlib.colormaps['rainbow']
+        self.norm        = matplotlib.colors.Normalize(vmin=0, vmax=29)
+        self.base_url    = 'https://finance.naver.com/'
+        self.headers     = {
             'User-Agent': UserAgent().chrome,
             'Referer': self.base_url
         }
-        self.session    = requests.Session()
+        self.session     = requests.Session()
+        self.treemap     = False
+        self.imagelist1  = None
+        self.imagelist2  = None
+        self.dt_today    = None
+        self.dict_data   = {}
+        self.thread_lock = Lock()
+        self.thread_join = 0
 
-        self.treemap    = False
-        self.imagelist1 = None
-        self.imagelist2 = None
-
-        set_builtin_print(True, self.windowQ)
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
+        self.CrawlingHomTapData()
+        hometap_crawling_time = timedelta_sec(30)
         while True:
-            data = self.webcQ.get()
-            self.Crawling(data)
+            try:
+                if not self.webcQ.empty():
+                    data = self.webcQ.get()
+                    self.Crawling(data)
+
+                if now() > hometap_crawling_time:
+                    self.CrawlingHomTapData()
+                    hometap_crawling_time = timedelta_sec(30)
+
+                if self.thread_join == 16:
+                    self.thread_join = 0
+                    self.windowQ.put((ui_num['홈차트'], self.dict_data))
+
+                time.sleep(0.01)
+            except:
+                self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def Crawling(self, data):
         cmd, data = data
@@ -115,7 +135,7 @@ class WebCrawling:
                 link_list.append(self.base_url + title['href'])
             date_list += [date.get_text(strip=True) for date in soup.select('td.date')]
             jbjg_list += [info.get_text(strip=True) for info in soup.select('td.info')]
-        df = get_pd().DataFrame({'일자': date_list, '정보제공': jbjg_list, '공시': gygs_list, '링크': link_list})
+        df = pd.DataFrame({'일자': date_list, '정보제공': jbjg_list, '공시': gygs_list, '링크': link_list})
         self.windowQ.put((ui_num['기업공시'], df))
 
     @thread_decorator
@@ -142,7 +162,7 @@ class WebCrawling:
                     '제목': title,
                     '링크': hlink
                 })
-        df = get_pd().DataFrame(data_list)
+        df = pd.DataFrame(data_list)
         self.windowQ.put((ui_num['기업뉴스'], df))
 
     @thread_decorator
@@ -156,21 +176,21 @@ class WebCrawling:
         columns2 = txt_list[7:13]
         data1 = [
             txt_list[-16:-3],
-            [num_list[j] for j in range(0, 130, 10)],
-            [num_list[j] for j in range(1, 130, 10)],
-            [num_list[j] for j in range(2, 130, 10)],
-            [num_list[j] for j in range(3, 130, 10)]
+            num_list[::10],
+            num_list[1::10],
+            num_list[2::10],
+            num_list[3::10]
         ]
         data2 = [
-            [num_list[j] for j in range(4, 130, 10)],
-            [num_list[j] for j in range(5, 130, 10)],
-            [num_list[j] for j in range(6, 130, 10)],
-            [num_list[j] for j in range(7, 130, 10)],
-            [num_list[j] for j in range(8, 130, 10)],
-            [num_list[j] for j in range(9, 130, 10)]
+            num_list[4::10],
+            num_list[5::10],
+            num_list[6::10],
+            num_list[7::10],
+            num_list[8::10],
+            num_list[9::10]
         ]
-        df1 = get_pd().DataFrame(dict(zip(columns1, data1)))
-        df2 = get_pd().DataFrame(dict(zip(columns2, data2)))
+        df1 = pd.DataFrame(dict(zip(columns1, data1)))
+        df2 = pd.DataFrame(dict(zip(columns2, data2)))
         self.windowQ.put((ui_num['재무년도'], df1))
         self.windowQ.put((ui_num['재무분기'], df2))
 
@@ -190,7 +210,7 @@ class WebCrawling:
         name_list2 = [item.get_text(strip=True) for item in soup.select('.col_type1 > a')[1:]]
         per_list2  = [float(item.get_text(strip=True).replace('%', '')) for item in soup.select('.col_type2 > span')]
 
-        df1 = get_pd().DataFrame({
+        df1 = pd.DataFrame({
             '업종명': name_list1[:len(per_list1)],
             '등락율': per_list1,
             'url': url_list1[:len(per_list1)]
@@ -200,7 +220,7 @@ class WebCrawling:
         df1['등락율%'] = df1['등락율'].apply(lambda x: str(x) + '%')
         cl1 = [self.cmap(self.norm(value)) for value in df1['등락율']]
 
-        df2 = get_pd().DataFrame({
+        df2 = pd.DataFrame({
             '테마명': name_list2[:len(per_list2)],
             '등락율': per_list2,
             'url': url_list2[:len(per_list2)]
@@ -221,7 +241,7 @@ class WebCrawling:
         name_list = [item.get_text(strip=True) for item in soup.select('.name_area')]
         per_list  = [float(item.get_text(strip=True).replace('%', '')) for i, item in enumerate(soup.select('.number > span')[1:]) if i % 2 != 0]
 
-        df = get_pd().DataFrame({'종목명': name_list[:len(per_list)], '등락율': per_list})
+        df = pd.DataFrame({'종목명': name_list[:len(per_list)], '등락율': per_list})
         df = df[df['등락율'] > 0][:20]
         df['등락율%'] = df['등락율'].apply(lambda x: f'{x}%')
         cl = [self.cmap(self.norm(value)) for value in df['등락율']]
@@ -230,3 +250,237 @@ class WebCrawling:
             self.windowQ.put((ui_num['트리맵1'], df, '', cl, ''))
         else:
             self.windowQ.put((ui_num['트리맵2'], '', df, '', cl))
+
+    def CrawlingHomTapData(self):
+        """모든 데이터 수집 (한국주식+암호화폐)"""
+        search_time = now()
+        weekday = search_time.weekday()
+        before_open = int(str_hms(search_time)) < 90000
+        market_open = True
+        if weekday == 5:
+            search_time = timedelta_day(-1, search_time)
+            market_open = False
+        elif weekday == 6:
+            search_time = timedelta_day(-2, search_time)
+            market_open = False
+        elif weekday == 0 and before_open:
+            search_time = timedelta_day(-3, search_time)
+            market_open = False
+        elif before_open:
+            search_time = timedelta_day(-1, search_time)
+            market_open = False
+
+        search_today = str_ymd_ios(search_time)
+        if market_open:
+            search_time = str_ymdhm(search_time) + '00'
+        else:
+            search_time = str_ymd(search_time) + '185900'
+
+        if self.dt_today != search_today:
+            for name in ('코스피', '코스닥', '코스피100', '코스피200', '코스피200선물'):
+                if name in self.dict_data:
+                    del self.dict_data[name]
+            self.dt_today = search_today
+
+        self.get_korean_stocks(search_today, search_time, '코스피', 'KOSPI')
+        self.get_korean_stocks(search_today, search_time, '코스닥', 'KOSDAQ')
+        self.get_korean_stocks(search_today, search_time, '코스피100', 'KPI100')
+        self.get_korean_stocks(search_today, search_time, '코스피200', 'KPI200')
+        self.get_korean_stocks(search_today, search_time, '코스피200선물', 'FUT')
+        self.get_market_indicator()
+        self.get_crypto_data()
+
+    @thread_decorator
+    def get_korean_stocks(self, search_today, search_time, name, symbol):
+        """한국주식 데이터 수집 (네이버)"""
+        existing_data = self.dict_data.get(name)
+        if existing_data is not None:
+            last_time = existing_data['time'].iloc[-1]
+        else:
+            last_time = None
+
+        i = 1
+        time_list  = []
+        price_list = []
+        gap_list   = []
+        pct_list   = []
+        last_times = None
+
+        while True:
+            url  = f'{self.base_url}/sise/sise_index_time.naver?code={symbol}&thistime={search_time}&page={i}'
+            resp = self.session.get(url, headers=self.headers)
+            soup = BeautifulSoup(resp.text, 'html.parser')
+
+            page_times = [t.get_text(strip=True) for t in soup.select('td.date')]
+            if last_times != page_times:
+                last_times = page_times
+            else:
+                break
+
+            page_prices = [p.get_text(strip=True) for p in soup.select('td.number_1')[::4]]
+            page_gaps   = [p.get_text(strip=True) for p in soup.select('span.tah')]
+            page_buhos  = [t['alt'] for t in soup.select('td > img')]
+            page_buhos  = [-1 if b == '하락' else 1 for b in page_buhos]
+
+            if '0' in page_gaps:
+                k = 0
+                new_buhos = []
+                for g in page_gaps:
+                    if g != '0':
+                        new_buhos.append(page_buhos[k])
+                        k += 1
+                    else:
+                        new_buhos.append(1)
+                page_buhos = new_buhos
+
+            page_times  = [dt_ymdhms_ios(f"{search_today} {t}:00").timestamp() for t in page_times if t != '']
+            page_prices = [float(p.replace(',', '')) for p in page_prices if p != '']
+            page_gaps   = [float(g.replace(',', '')) for g in page_gaps if g != '']
+            page_gaps   = [g * b for g, b in zip(page_gaps, page_buhos)]
+            page_pcts   = [round((p / (p - g) - 1) * 100, 2) for p, g in zip(page_prices, page_gaps)]
+
+            if page_times and page_prices and page_gaps and page_pcts:
+                if existing_data is not None and last_time in page_times:
+                    duplicate_index = page_times.index(last_time)
+                    if duplicate_index > 0:
+                        time_list.extend(page_times[:duplicate_index])
+                        price_list.extend(page_prices[:duplicate_index])
+                        gap_list.extend(page_gaps[:duplicate_index])
+                        pct_list.extend(page_pcts[:duplicate_index])
+                    break
+                else:
+                    time_list.extend(page_times)
+                    price_list.extend(page_prices)
+                    gap_list.extend(page_gaps)
+                    pct_list.extend(page_pcts)
+
+            time.sleep(0.1)
+            i += 1
+
+        if time_list:
+            df = pd.DataFrame({
+                'time': time_list[::-1],
+                'price': price_list[::-1],
+                'gap': gap_list[::-1],
+                'change': pct_list[::-1]
+            })
+        else:
+            df = None
+
+        with self.thread_lock:
+            if existing_data is not None:
+                if df is not None:
+                    self.dict_data[name] = pd.concat([existing_data, df])
+            else:
+                self.dict_data[name] = df
+            self.thread_join += 1
+
+    @thread_decorator
+    def get_market_indicator(self):
+        symbols = {
+            '환율': f'{self.base_url}/marketindex/exchangeDailyQuote.naver?marketindexCd=FX_USDKRW&page=',
+            '휘발유': f'{self.base_url}/marketindex/oilDailyQuote.naver?marketindexCd=OIL_GSL&page=',
+            '국제금': f'{self.base_url}/marketindex/worldDailyQuote.naver?marketindexCd=CMDT_GC&fdtc=2&page='
+        }
+
+        for name, url_base in symbols.items():
+            existing_data = self.dict_data.get(name)
+            if existing_data is not None:
+                last_time = existing_data['time'].iloc[-1]
+            else:
+                last_time = None
+
+            i = 1
+            time_list  = []
+            price_list = []
+            pct_list   = []
+            list_gap   = 3 if name in ('휘발유', '국제금') else 2
+
+            while True:
+                url  = f'{url_base}{i}'
+                resp = self.session.get(url, headers=self.headers)
+                soup = BeautifulSoup(resp.text, 'html.parser')
+
+                page_times  = [t.get_text(strip=True) for t in soup.select('td.date')]
+                page_prices = [t.get_text(strip=True) for t in soup.select('td.num')][::list_gap]
+                page_gaps   = [t.get_text(strip=True) for t in soup.select('td.num')][1::list_gap]
+                page_buhos  = [t['alt'] for t in soup.select('td > img')]
+                page_buhos  = [-1 if b == '하락' else 1 for b in page_buhos]
+                page_times  = [dt_ymd(t.replace('.', '')).timestamp() for t in page_times if t != '']
+                page_prices = [float(p.replace(',', '')) for p in page_prices if p != '']
+                page_gaps   = [float(g.replace(',', '')) for g in page_gaps if g != '']
+                page_gaps   = [g * b for g, b in zip(page_gaps, page_buhos)]
+                page_pcts   = [round((p / (p - g) - 1) * 100, 2) for p, g in zip(page_prices, page_gaps)]
+
+                if existing_data is not None and last_time in page_times:
+                    duplicate_index = page_times.index(last_time)
+                    if duplicate_index > 0:
+                        time_list.extend(page_times[:duplicate_index])
+                        price_list.extend(page_prices[:duplicate_index])
+                        pct_list.extend(page_pcts[:duplicate_index])
+                    break
+                else:
+                    time_list.extend(page_times)
+                    price_list.extend(page_prices)
+                    pct_list.extend(page_pcts)
+
+                if len(time_list) > 100:
+                    break
+
+                time.sleep(0.1)
+                i += 1
+
+            if time_list:
+                df = pd.DataFrame({
+                    'time': time_list[::-1],
+                    'price': price_list[::-1],
+                    'change': pct_list[::-1]
+                })
+            else:
+                df = None
+
+            with self.thread_lock:
+                if existing_data is not None:
+                    if df is not None:
+                        self.dict_data[name] = pd.concat([existing_data, df])
+                else:
+                    self.dict_data[name] = df
+                self.thread_join += 1
+
+    @thread_decorator
+    def get_crypto_data(self):
+        """암호화폐 데이터 수집 (1분봉 전체)"""
+        symbols = {
+            'BTC/USDT': 'BTCUSDT',
+            'ETH/USDT': 'ETHUSDT',
+            'BNB/USDT': 'BNBUSDT',
+            'XRP/USDT': 'XRPUSDT',
+            'SOL/USDT': 'SOLUSDT',
+            'DOGE/USDT': 'DOGEUSDT',
+            'ADA/USDT': 'ADAUSDT',
+            'LINK/USDT': 'LINKUSDT'
+        }
+
+        for name, symbol in symbols.items():
+            url  = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=1000"
+            resp = requests.get(url, headers=self.headers, timeout=10)
+            data = resp.json()
+
+            time_list = [int(kline[0] / 1000) for kline in data]
+            price_list = [float(kline[4]) for kline in data]
+            change_list = [round((price / float(data[0][4]) - 1)  * 100, 2) for price in price_list]
+
+            if time_list:
+                df = pd.DataFrame({
+                    'time': time_list,
+                    'price': price_list,
+                    'change': change_list
+                })
+            else:
+                df = None
+
+            with self.thread_lock:
+                self.dict_data[name] = df
+                self.thread_join += 1
+
+            time.sleep(0.1)
