@@ -12,8 +12,8 @@ from utility.lazy_imports import get_np, get_pd
 from backtest.back_static_numba import GetResult, bootstrap_test
 from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, AddMdd
 from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator
-from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
-    DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, \
+    DB_OPTUNA, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 
 
 class Total:
@@ -68,14 +68,13 @@ class Total:
 
         self.vars         = None
         self.vars_list    = None
-        self.opti_turn    = None
+        self.opti_kind    = None
         self.hstd_list    = None
         self.hstd         = -float('inf')
         self.sub_total    = 0
 
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         oc  = 0
         sc  = 0
@@ -88,7 +87,7 @@ class Total:
                 bc  += 1
                 if bc == self.back_count:
                     bc = 0
-                    if self.opti_turn == 1:
+                    if self.opti_kind == 1:
                         for q in self.bstq_list:
                             q.put(('백테완료', '분리집계'))
                     else:
@@ -164,7 +163,7 @@ class Total:
 
             elif data[0] == '변수정보':
                 self.vars_list = data[1]
-                self.opti_turn = data[2]
+                self.opti_kind = data[2]
                 self.vars      = [var[1] for var in self.vars_list]
                 dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
 
@@ -210,10 +209,11 @@ class Total:
 
     def GetSendData(self, vturn=0, vkey=0):
         vars_copy = self.vars.copy()
-        if self.opti_turn == 1:
+        if self.opti_kind == 1:
             vars_copy[vturn] = self.vars_list[vturn][0][vkey]
-        return ['최적화', self.ui_gubun, self.wq, self.mq, self.hstd, self.optistandard, self.opti_turn, vturn, vkey, vars_copy, self.startday, self.endday, self.std_list, self.betting]
+        return ['최적화', self.ui_gubun, self.wq, self.mq, self.hstd, self.optistandard, self.opti_kind, vturn, vkey, vars_copy, self.startday, self.endday, self.std_list, self.betting]
 
+    @error_decorator
     def Report(self, list_tsg, arry_bct, oc):
         startday = self.hstd_list[oc - 1][0]
         endday   = self.hstd_list[oc - 1][1]
@@ -251,7 +251,7 @@ class Total:
             df_tsg   = df_all_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy()
             df_tbc   = df_all_bct.copy()
             df_tbc['체결시간'] = df_tbc.index
-            df_tbc['체결시간'] = df_tbc['체결시간'].apply(lambda x: float(x))
+            df_tbc['체결시간'] = df_tbc['체결시간'].astype(float)
             df_tbc   = df_tbc[['체결시간', '보유종목수', '보유금액']]
             arry_tsg = get_np().array(df_tsg, dtype='float64')
             arry_bct = get_np().array(df_tbc, dtype='float64')
@@ -266,8 +266,8 @@ class Total:
             bootstrap_min  = round(get_np().percentile(bootstrap_dist, 2.5), 2)
             bootstrap_max  = round(get_np().percentile(bootstrap_dist, 97.5), 2)
             bootstrap_pv   = round(get_np().mean(bootstrap_dist > 0) * 100, 2)
-            bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상 최소 평균수익률: {bootstrap_min}%, 예상 최대 평균수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
-            bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 평균수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
+            bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
+            bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
 
             startday, endday = str(self.startday_), str(self.endday_)
@@ -414,24 +414,24 @@ class RollingWalkForwardTest:
         market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
         if self.ui_gubun == 'S':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_STOCK_BACK_TICK
+                db = DB_STOCK_TICK_BACK
                 is_tick = True
             else:
-                db = DB_STOCK_BACK_MIN
+                db = DB_STOCK_MIN_BACK
                 is_tick = False
         elif self.ui_gubun == 'SF':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_FUTURE_BACK_TICK
+                db = DB_FUTURE_TICK_BACK
                 is_tick = True
             else:
-                db = DB_FUTURE_BACK_MIN
+                db = DB_FUTURE_MIN_BACK
                 is_tick = False
         else:
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_COIN_BACK_TICK
+                db = DB_COIN_TICK_BACK
                 is_tick = True
             else:
-                db = DB_COIN_BACK_MIN
+                db = DB_COIN_MIN_BACK
                 is_tick = False
 
         con   = sqlite3.connect(db)
@@ -445,7 +445,10 @@ class RollingWalkForwardTest:
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
-        df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
+        if is_tick:
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
+        else:
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(int)
         day_list = df_mt['일자'].unique()
         day_list.sort()
 
@@ -678,14 +681,16 @@ class RollingWalkForwardTest:
                     self.SysExit(True)
                 else:
                     vturn, vkey, std = data
-                    cur_turn_type = vars_type[vturn]
-                    cur_turn_var  = self.vars_[vturn][0][vkey]
-                    pre_turn_hvar, pre_turn_hstd = dict_turn_hvar_hstd[vturn]
-                    same_update1 = std == pre_turn_hstd and cur_turn_type and cur_turn_var > pre_turn_hvar
-                    same_update2 = std == pre_turn_hstd and not cur_turn_type and cur_turn_var < pre_turn_hvar
-                    if std > pre_turn_hstd or same_update1 or same_update2:
-                        dict_turn_hvar_hstd[vturn][0] = cur_turn_var
-                        dict_turn_hvar_hstd[vturn][1] = std
+                    cur_turn_type  = vars_type[vturn]
+                    cur_turn_var   = self.vars_[vturn][0][vkey]
+                    duct_turn_list = dict_turn_hvar_hstd[vturn]
+                    pre_turn_hvar, pre_turn_hstd = duct_turn_list
+                    A = std > pre_turn_hstd
+                    B = std == pre_turn_hstd and cur_turn_var > pre_turn_hvar and cur_turn_type
+                    C = std == pre_turn_hstd and cur_turn_var < pre_turn_hvar and not cur_turn_type
+                    if A or B or C:
+                        duct_turn_list[0] = cur_turn_var
+                        duct_turn_list[1] = std
                         if std > hstd:
                             hstd = std
                             if not bool_changed_hstd:
@@ -799,7 +804,7 @@ class RollingWalkForwardTest:
                 else:
                     trial_ = suggest_func(trial_name, var_[1], var_[1])
 
-                if '.' in str(trial_): trial_ = round(trial_, 3)
+                if '.' in str(trial_): trial_ = round(trial_, 2)
 
                 optuna_vars.append(trial_)
                 backte_vars.append([[], trial_])

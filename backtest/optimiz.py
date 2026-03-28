@@ -13,8 +13,8 @@ from backtest.optimiz_3d_visualization import Visualization3D
 from backtest.back_static_numba import GetResult, bootstrap_test
 from backtest.back_static import SendResult, PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
 from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator
-from utility.setting_base import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STRATEGY, DB_BACKTEST, columns_vc, \
-    DB_SETTING, DB_OPTUNA, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STRATEGY, DB_BACKTEST, columns_vc, \
+    DB_SETTING, DB_OPTUNA, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 
 
 class Total:
@@ -65,13 +65,12 @@ class Total:
 
         self.vars         = None
         self.vars_list    = None
-        self.opti_turn    = None
+        self.opti_kind    = None
         self.hstd         = -float('inf')
         self.sub_total    = 0
 
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         sc  = 0
         bc  = 0
@@ -83,7 +82,7 @@ class Total:
                 bc  += 1
                 if bc == self.back_count:
                     bc = 0
-                    if self.opti_turn == 1:
+                    if self.opti_kind == 1:
                         for q in self.bstq_list:
                             q.put(('백테완료', '분리집계'))
                     else:
@@ -158,7 +157,7 @@ class Total:
 
             elif data[0] == '변수정보':
                 self.vars_list = data[1]
-                self.opti_turn = data[2]
+                self.opti_kind = data[2]
                 self.vars      = [var[1] for var in self.vars_list]
                 dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
 
@@ -198,10 +197,11 @@ class Total:
 
     def GetSendData(self, vturn=0, vkey=0):
         vars_copy = self.vars.copy()
-        if self.opti_turn == 1:
+        if self.opti_kind == 1:
             vars_copy[vturn] = self.vars_list[vturn][0][vkey]
-        return ['최적화', self.ui_gubun, self.wq, self.mq, self.hstd, self.optistandard, self.opti_turn, vturn, vkey, vars_copy, self.startday, self.endday, self.std_list, self.betting]
+        return ['최적화', self.ui_gubun, self.wq, self.mq, self.hstd, self.optistandard, self.opti_kind, vturn, vkey, vars_copy, self.startday, self.endday, self.std_list, self.betting]
 
+    @error_decorator
     def Report(self, list_tsg, arry_bct):
         if not list_tsg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
@@ -240,8 +240,8 @@ class Total:
         bootstrap_max  = round(get_np().percentile(bootstrap_dist, 97.5), 2)
         # noinspection PyTypeChecker
         bootstrap_pv   = round(get_np().mean(bootstrap_dist > 0) * 100, 2)
-        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상 최소 평균수익률: {bootstrap_min}%, 예상 최대 평균수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
-        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 평균수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
+        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
+        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
 
         startday, endday = str(self.startday), str(self.endday)
         startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
@@ -434,24 +434,24 @@ class Optimize:
         market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
         if self.ui_gubun == 'S':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_STOCK_BACK_TICK
+                db = DB_STOCK_TICK_BACK
                 is_tick = True
             else:
-                db = DB_STOCK_BACK_MIN
+                db = DB_STOCK_MIN_BACK
                 is_tick = False
         elif self.ui_gubun == 'SF':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_FUTURE_BACK_TICK
+                db = DB_FUTURE_TICK_BACK
                 is_tick = True
             else:
-                db = DB_FUTURE_BACK_MIN
+                db = DB_FUTURE_MIN_BACK
                 is_tick = False
         else:
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_COIN_BACK_TICK
+                db = DB_COIN_TICK_BACK
                 is_tick = True
             else:
-                db = DB_COIN_BACK_MIN
+                db = DB_COIN_MIN_BACK
                 is_tick = False
 
         con   = sqlite3.connect(db)
@@ -465,7 +465,10 @@ class Optimize:
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
-        df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
+        if is_tick:
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
+        else:
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(int)
         day_list = df_mt['일자'].unique()
         day_list.sort()
 
@@ -715,14 +718,16 @@ class Optimize:
                     self.SysExit(True)
                 else:
                     vturn, vkey, std = data
-                    cur_turn_type = vars_type[vturn]
-                    cur_turn_var  = self.vars_[vturn][0][vkey]
-                    pre_turn_hvar, pre_turn_hstd = dict_turn_hvar_hstd[vturn]
-                    same_update1 = std == pre_turn_hstd and cur_turn_type and cur_turn_var > pre_turn_hvar
-                    same_update2 = std == pre_turn_hstd and not cur_turn_type and cur_turn_var < pre_turn_hvar
-                    if std > pre_turn_hstd or same_update1 or same_update2:
-                        dict_turn_hvar_hstd[vturn][0] = cur_turn_var
-                        dict_turn_hvar_hstd[vturn][1] = std
+                    cur_turn_type  = vars_type[vturn]
+                    cur_turn_var   = self.vars_[vturn][0][vkey]
+                    duct_turn_list = dict_turn_hvar_hstd[vturn]
+                    pre_turn_hvar, pre_turn_hstd = duct_turn_list
+                    A = std > pre_turn_hstd
+                    B = std == pre_turn_hstd and cur_turn_var > pre_turn_hvar and cur_turn_type
+                    C = std == pre_turn_hstd and cur_turn_var < pre_turn_hvar and not cur_turn_type
+                    if A or B or C:
+                        duct_turn_list[0] = cur_turn_var
+                        duct_turn_list[1] = std
                         if std > hstd:
                             hstd = std
                             if not bool_changed_hstd:
@@ -880,7 +885,7 @@ class Optimize:
                 else:
                     trial_ = suggest_func(trial_name, var[1], var[1])
 
-                if '.' in str(trial_): trial_ = round(trial_, 3)
+                if '.' in str(trial_): trial_ = round(trial_, 2)
 
                 optuna_vars.append(trial_)
                 backte_vars.append([[], trial_])
@@ -928,10 +933,10 @@ class Optimize:
                     if pre_hvar != cur_hvar:
                         change += 1
                         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {cur_hvar}]'))
-                    first     = self.vars_[i][0][0]
-                    last      = self.vars_[i][0][-1]
-                    pre_gap   = self.vars[i][0][2]
-                    gap       = pre_gap if first != last else 0
+                    first      = self.vars_[i][0][0]
+                    last       = self.vars_[i][0][-1]
+                    pre_gap    = self.vars[i][0][2]
+                    gap        = pre_gap if first != last else 0
                     text_vars += f'self.vars[{i}] = [[{first}, {last}, {gap}], {cur_hvar}]\n'
                 else:
                     text_vars += f'self.vars[{i}] = {self.vars[i]}\n'

@@ -1,6 +1,9 @@
 
+import numpy as np
 from backtest.backengine_kiwoom_tick2 import BackEngineKiwoomTick2
 from utility.static import dt_ymdhms, GetIndicator, GetHogaunit
+# noinspection PyUnresolvedReferences
+from utility.static import timedelta_sec
 
 
 class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
@@ -18,8 +21,10 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
         종목명, 종목코드, 데이터길이, 체결시간, 시분초 = self.name, self.code, self.tick_count, self.index, int(str(self.index)[8:] + '00')
         self.hoga_unit = 호가단위 = GetHogaunit(self.dict_kosd.get(종목코드, False), 현재가, 체결시간)
 
-        self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
+        self.shogainfo = np.array([매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5])
+        self.shreminfo = np.array([매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5])
+        self.bhogainfo = np.array([매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5])
+        self.bhreminfo = np.array([매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5])
 
         self.UpdateHighLow(분봉고가, 분봉저가)
 
@@ -30,7 +35,7 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
         self.ml = arry_indi[:, self.dict_findex['분봉저가']]
         self.mv = arry_indi[:, self.dict_findex['분당거래대금']]
 
-        if self.opti_turn == 1:
+        if self.opti_kind == 1:
             for vturn in self.trade_info:
                 self.vars = [var[1] for var in self.vars_list]
                 if vturn != 0 and self.tick_count < self.vars[0]:
@@ -120,7 +125,7 @@ class BackEngineKiwoomMin2(BackEngineKiwoomTick2):
                             if not self.CheckDividSell(포지션, 수익률, 매도분할횟수) and self.dict_set[f'{self.market_text}매도분할시그널']:
                                 exec(self.sellstg)
 
-        elif self.opti_turn == 3:
+        elif self.opti_kind == 3:
             for vturn in self.trade_info:
                 for vkey in self.trade_info[vturn]:
                     index_ = vturn * 20 + vkey
