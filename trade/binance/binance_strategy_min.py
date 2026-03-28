@@ -1,8 +1,8 @@
 
+import numpy as np
 from traceback import format_exc
-from trade.binance.binance_strategy_tick import BinanceStrategyTick
 from utility.setting_base import ui_num
-from utility.lazy_imports import get_np
+from trade.binance.binance_strategy_tick import BinanceStrategyTick
 from utility.static import GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, now_utc, dt_ymdhms, now, GetIndicator, \
     error_decorator
 
@@ -26,18 +26,20 @@ class BinanceStrategyMin(BinanceStrategyTick):
         순매수금액 = 분당매수금액 - 분당매도금액
         self.hoga_unit = 호가단위 = self.dict_info[종목코드]['호가단위']
 
-        self.shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        self.bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
+        self.shogainfo = np.array([매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5])
+        self.shreminfo = np.array([매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5])
+        self.bhogainfo = np.array([매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5])
+        self.bhreminfo = np.array([매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5])
 
         if 전략연산:
-            new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
+            new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
             new_data_tick[:self.base_cnt] = data[:self.base_cnt]
 
             pre_data = self.dict_data.get(종목코드)
             if pre_data is not None:
-                self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
+                self.dict_data[종목코드] = np.concatenate([pre_data, [new_data_tick]])
             else:
-                self.dict_data[종목코드] = get_np().array([new_data_tick])
+                self.dict_data[종목코드] = np.array([new_data_tick])
 
             self.arry_code = self.dict_data[종목코드]
             self.tick_count = 데이터길이 = len(self.arry_code)
@@ -194,29 +196,34 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 E    = NISS and NIBS and SCC and 포지션 == 'SHORT' and 분할매도횟수 < self.dict_set['코인매도분할횟수']
                 F    = NISL and self.dict_set['코인매수취소매도시그널'] and not NIBL
                 G    = NIBS and self.dict_set['코인매수취소매도시그널'] and not NISS
-                H    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
-                J    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
-                K    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
-                L    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
-                M    = NIBL and NISL and 포지션 == 'LONG' and 수익률 * 레버리지 < -90
-                N    = NISS and NIBS and 포지션 == 'SHORT' and 수익률 * 레버리지 < -90
+                H    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도익절수익률청산'] and 수익률 > self.dict_set['코인매도익절수익률']
+                J    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도익절수익률청산'] and 수익률 > self.dict_set['코인매도익절수익률']
+                K    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도익절수익금청산'] and 수익금 > self.dict_set['코인매도익절수익금']
+                L    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도익절수익금청산'] and 수익금 > self.dict_set['코인매도익절수익금']
+                M    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
+                N    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
+                P    = NIBL and NISL and 포지션 == 'LONG' and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
+                Q    = NISS and NIBS and 포지션 == 'SHORT' and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
+                R    = NIBL and NISL and 포지션 == 'LONG' and 수익률 * 레버리지 < -90
+                S    = NISS and NIBS and 포지션 == 'SHORT' and 수익률 * 레버리지 < -90
     
-                if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N):
-                    강제청산 = H or J or K or L or M or N
+                if SBT and (A or B or (C and D) or (C and E) or D or E or F or G or H or J or K or L or M or N or P or Q or R or S):
+                    강제청산 = H or J or K or L or M or N or P or Q or R or S
                     전량매도 = A or B or 강제청산
                     self.info_for_signal = F or G, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1, 소숫점자리수
 
                     SELL_LONG, BUY_SHORT = False, False
-                    if A or B or (C and (D or E)) or F or G:
+                    if A or B or (C and D) or (C and E) or F or G:
                         if self.sellstrategy is not None:
                             try:
                                 exec(self.sellstrategy)
                             except:
                                 self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매도전략'))
+
                     elif D or E or 강제청산:
-                        if H or K or M:
+                        if H or K or M or P or R:
                             SELL_LONG = True
-                        elif J or L or N:
+                        elif J or L or N or Q or S:
                             BUY_SHORT = True
                         elif D:
                             if self.dict_set['코인매도분할하방'] and 수익률 < -self.dict_set['코인매도분할하방수익률'] * (분할매도횟수 + 1):
@@ -252,9 +259,9 @@ class BinanceStrategyMin(BinanceStrategyTick):
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:
-                new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
+                new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
                 new_data_tick[:self.base_cnt] = data[:self.base_cnt]
-                self.arry_code = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
+                self.arry_code = np.concatenate([pre_data, [new_data_tick]])
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self.GetParameterArea(rw)
                 self.arry_code[-1, self.area_cnt:self.data_cnt] = GetIndicator(
                     self.arry_code[:, self.dict_findex['현재가']],
