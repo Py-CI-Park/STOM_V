@@ -19,27 +19,27 @@ for readline in coinreadlines:
 
 def load_settings():
     import sqlite3
+    import pandas as pd
     from cryptography import fernet
     from traceback import format_exc
-    from utility.lazy_imports import get_pd
     from utility.setting_base import DB_SETTING
     from utility.static import read_key, de_text
 
     EN_KEY = read_key()
 
     con   = sqlite3.connect(DB_SETTING)
-    df_m  = get_pd().read_sql('SELECT * FROM main', con).set_index('index')
-    df_s  = get_pd().read_sql('SELECT * FROM stock', con).set_index('index')
-    df_c  = get_pd().read_sql('SELECT * FROM coin', con).set_index('index')
-    df_sa = get_pd().read_sql('SELECT * FROM sacc', con).set_index('index')
-    df_ca = get_pd().read_sql('SELECT * FROM cacc', con).set_index('index')
-    df_t  = get_pd().read_sql('SELECT * FROM telegram', con).set_index('index')
-    df_sb = get_pd().read_sql('SELECT * FROM stockbuyorder', con).set_index('index')
-    df_ss = get_pd().read_sql('SELECT * FROM stocksellorder', con).set_index('index')
-    df_cb = get_pd().read_sql('SELECT * FROM coinbuyorder', con).set_index('index')
-    df_cs = get_pd().read_sql('SELECT * FROM coinsellorder', con).set_index('index')
-    df_e  = get_pd().read_sql('SELECT * FROM etc', con).set_index('index')
-    df_b  = get_pd().read_sql('SELECT * FROM back', con).set_index('index')
+    df_m  = pd.read_sql('SELECT * FROM main', con).set_index('index')
+    df_s  = pd.read_sql('SELECT * FROM stock', con).set_index('index')
+    df_c  = pd.read_sql('SELECT * FROM coin', con).set_index('index')
+    df_sa = pd.read_sql('SELECT * FROM sacc', con).set_index('index')
+    df_ca = pd.read_sql('SELECT * FROM cacc', con).set_index('index')
+    df_t  = pd.read_sql('SELECT * FROM telegram', con).set_index('index')
+    df_sb = pd.read_sql('SELECT * FROM stockbuyorder', con).set_index('index')
+    df_ss = pd.read_sql('SELECT * FROM stocksellorder', con).set_index('index')
+    df_cb = pd.read_sql('SELECT * FROM coinbuyorder', con).set_index('index')
+    df_cs = pd.read_sql('SELECT * FROM coinsellorder', con).set_index('index')
+    df_e  = pd.read_sql('SELECT * FROM etc', con).set_index('index')
+    df_b  = pd.read_sql('SELECT * FROM back', con).set_index('index')
     con.close()
 
     binance_leverage_ = []
@@ -192,6 +192,7 @@ def load_settings():
             '옵튜나실행횟수':        df_b['옵튜나실행횟수'][0],
             '옵튜나자동스탭':        df_b['옵튜나자동스탭'][0],
             '백테스트로그기록안함':    df_b['백테스트로그기록안함'][0],
+            '시장미시구조분석':       df_b['시장미시구조분석'][0],
     
             '저해상도':            df_e['저해상도'][0],
             '휴무프로세스종료':      df_e['휴무프로세스종료'][0],
@@ -254,10 +255,6 @@ def load_settings():
             '주식매도취소매수시그널': df_ss['주식매도취소매수시그널'][0],
             '주식매도취소시간':      df_ss['주식매도취소시간'][0],
             '주식매도취소시간초':    df_ss['주식매도취소시간초'][0],
-            '주식매도손절수익률청산': df_ss['주식매도손절수익률청산'][0],
-            '주식매도손절수익률':    df_ss['주식매도손절수익률'][0],
-            '주식매도손절수익금청산': df_ss['주식매도손절수익금청산'][0],
-            '주식매도손절수익금':    df_ss['주식매도손절수익금'][0],
             '주식매도금지매수횟수':   df_ss['주식매도금지매수횟수'][0],
             '주식매도금지매수횟수값': df_ss['주식매도금지매수횟수값'][0],
             '주식매도금지라운드피겨': df_ss['주식매도금지라운드피겨'][0],
@@ -270,6 +267,14 @@ def load_settings():
             '주식매도정정횟수':      df_ss['주식매도정정횟수'][0],
             '주식매도정정호가차이':   df_ss['주식매도정정호가차이'][0],
             '주식매도정정호가':      df_ss['주식매도정정호가'][0],
+            '주식매도익절수익률청산': df_ss['주식매도익절수익률청산'][0],
+            '주식매도익절수익률':    df_ss['주식매도익절수익률'][0],
+            '주식매도익절수익금청산': df_ss['주식매도익절수익금청산'][0],
+            '주식매도익절수익금':    df_ss['주식매도익절수익금'][0],
+            '주식매도손절수익률청산': df_ss['주식매도손절수익률청산'][0],
+            '주식매도손절수익률':    df_ss['주식매도손절수익률'][0],
+            '주식매도손절수익금청산': df_ss['주식매도손절수익금청산'][0],
+            '주식매도손절수익금':    df_ss['주식매도손절수익금'][0],
     
             '코인매수주문구분':      df_cb['코인매수주문구분'][0],
             '코인매수분할횟수':      df_cb['코인매수분할횟수'][0],
@@ -320,10 +325,6 @@ def load_settings():
             '코인매도취소매수시그널': df_cs['코인매도취소매수시그널'][0],
             '코인매도취소시간':      df_cs['코인매도취소시간'][0],
             '코인매도취소시간초':    df_cs['코인매도취소시간초'][0],
-            '코인매도손절수익률청산': df_cs['코인매도손절수익률청산'][0],
-            '코인매도손절수익률':    df_cs['코인매도손절수익률'][0],
-            '코인매도손절수익금청산': df_cs['코인매도손절수익금청산'][0],
-            '코인매도손절수익금':    df_cs['코인매도손절수익금'][0],
             '코인매도금지매수횟수':   df_cs['코인매도금지매수횟수'][0],
             '코인매도금지매수횟수값': df_cs['코인매도금지매수횟수값'][0],
             '코인매도금지시간':      df_cs['코인매도금지시간'][0],
@@ -334,9 +335,15 @@ def load_settings():
             '코인매도정정횟수':      df_cs['코인매도정정횟수'][0],
             '코인매도정정호가차이':   df_cs['코인매도정정호가차이'][0],
             '코인매도정정호가':      df_cs['코인매도정정호가'][0],
-    
-            '스마트브이왑': False,
-            '마이크로스트럭처분석': False,
+            '코인매도익절수익률청산': df_cs['코인매도익절수익률청산'][0],
+            '코인매도익절수익률':    df_cs['코인매도익절수익률'][0],
+            '코인매도익절수익금청산': df_cs['코인매도익절수익금청산'][0],
+            '코인매도익절수익금':    df_cs['코인매도익절수익금'][0],
+            '코인매도손절수익률청산': df_cs['코인매도손절수익률청산'][0],
+            '코인매도손절수익률':    df_cs['코인매도손절수익률'][0],
+            '코인매도손절수익금청산': df_cs['코인매도손절수익금청산'][0],
+            '코인매도손절수익금':    df_cs['코인매도손절수익금'][0],
+
             '에이전트프로파일링': False,
             '트레이더프로파일링': False,
             '전략연산프로파일링': False,

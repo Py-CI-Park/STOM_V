@@ -1,10 +1,12 @@
 
 import time
 import sqlite3
+import numpy as np
+import pandas as pd
 from copy import deepcopy
 from trade.strategy_base import StrategyBase
-from utility.lazy_imports import get_np, get_pd
 from trade.formula_manager import get_formula_data
+from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, \
     list_coin_tick, list_coin_min
 from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_buy_indi_stg, dt_ymdhms, \
@@ -13,11 +15,11 @@ from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_b
 
 class UpbitStrategyTick(StrategyBase):
     def __init__(self, qlist, dict_set):
+        """
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
+           0        1       2      3       4      5      6      7       8         9         10     11      12
+        """
         super().__init__()
-        """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, kimpQ, wdzservQ, totalQ
-           0        1       2      3       4      5      6      7       8         9         10     11    12      13       14
-        """
         self.windowQ          = qlist[0]
         self.teleQ            = qlist[3]
         self.ctraderQ         = qlist[9]
@@ -32,13 +34,16 @@ class UpbitStrategyTick(StrategyBase):
         self.arry_code        = None
         self.info_for_signal  = None
 
+        self.shogainfo        = None
+        self.shreminfo        = None
+        self.bhogainfo        = None
+        self.bhreminfo        = None
+
         self.dict_data        = {}
         self.dict_signal_num  = {}
         self.dict_buy_num     = {}
         self.dict_condition   = {}
         self.dict_cond_indexn = {}
-        self.shogainfo        = {}
-        self.bhogainfo        = {}
         self.dict_profit      = {}
         self.high_low         = {} 
         self.dict_gj          = {}
@@ -63,6 +68,8 @@ class UpbitStrategyTick(StrategyBase):
         self.area_cnt         = self.dict_findex['전일비각도' if self.market_gubun == 1 else '당일거래대금각도'] + 1
         self.angle_pct_cf     = get_angle_cf(self.market_gubun, self.is_tick, 0)
         self.angle_dtm_cf     = get_angle_cf(self.market_gubun, self.is_tick, 1)
+        self.buy_hj_limit     = self.dict_set['코인매수시장가잔량범위']
+        self.sell_hj_limit    = self.dict_set['코인매도시장가잔량범위']
 
         if self.is_tick:
             self.dict_findex['초당매도수금액'] = self.dict_findex['초당매수금액']
@@ -76,6 +83,8 @@ class UpbitStrategyTick(StrategyBase):
         self.dict_findex['최고매도수가격'] = self.dict_findex['최고매수가격']
         self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
         self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
+
+        self.ms_analyzer = MicrostructureAnalyzer('coin')
 
         set_builtin_print(True, self.windowQ)
         self.SetFormulaData()
@@ -91,10 +100,10 @@ class UpbitStrategyTick(StrategyBase):
 
     def UpdateStringategy(self):
         con  = sqlite3.connect(DB_STRATEGY)
-        dfb  = get_pd().read_sql('SELECT * FROM coinbuy', con).set_index('index')
-        dfs  = get_pd().read_sql('SELECT * FROM coinsell', con).set_index('index')
-        dfob = get_pd().read_sql('SELECT * FROM coinoptibuy', con).set_index('index')
-        dfos = get_pd().read_sql('SELECT * FROM coinoptisell', con).set_index('index')
+        dfb  = pd.read_sql('SELECT * FROM coinbuy', con).set_index('index')
+        dfs  = pd.read_sql('SELECT * FROM coinsell', con).set_index('index')
+        dfob = pd.read_sql('SELECT * FROM coinoptibuy', con).set_index('index')
+        dfos = pd.read_sql('SELECT * FROM coinoptisell', con).set_index('index')
         con.close()
 
         buytxt = ''
@@ -136,7 +145,6 @@ class UpbitStrategyTick(StrategyBase):
             self.windowQ.put((ui_num['기본로그'], f'{self.indicator}'))
         self.indi_settings = list(self.indicator.values())
 
-    @error_decorator
     def MainLoop(self):
         self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 전략 연산 시작'))
         while True:
@@ -198,6 +206,7 @@ class UpbitStrategyTick(StrategyBase):
             self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료'))
 
     # noinspection PyUnusedLocal
+    @error_decorator
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
             초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
@@ -210,19 +219,19 @@ class UpbitStrategyTick(StrategyBase):
         순매수금액 = 초당매수금액 - 초당매도금액
         self.hoga_unit = 호가단위 = GetUpbitHogaunit(현재가)
 
-        shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-        self.shogainfo = shogainfo[:self.dict_set['코인매수시장가잔량범위']]
-        self.bhogainfo = bhogainfo[:self.dict_set['코인매도시장가잔량범위']]
+        self.shogainfo = np.array([매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5])
+        self.shreminfo = np.array([매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5])
+        self.bhogainfo = np.array([매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5])
+        self.bhreminfo = np.array([매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5])
 
-        new_data_tick = get_np().zeros(self.data_cnt + self.fm_tcnt, dtype=get_np().float64)
+        new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
         new_data_tick[:self.base_cnt] = data[:self.base_cnt]
 
         pre_data = self.dict_data.get(종목코드)
         if pre_data is not None:
-            self.dict_data[종목코드] = get_np().concatenate([pre_data, get_np().array([new_data_tick])])
+            self.dict_data[종목코드] = np.concatenate([pre_data, [new_data_tick]])
         else:
-            self.dict_data[종목코드] = get_np().array([new_data_tick])
+            self.dict_data[종목코드] = np.array([new_data_tick])
 
         self.arry_code = self.dict_data[종목코드]
         self.tick_count = 데이터길이 = len(self.arry_code)
@@ -230,6 +239,9 @@ class UpbitStrategyTick(StrategyBase):
 
         if 데이터길이 >= 평균값계산틱수:
             self.arry_code[-1, self.base_cnt:self.data_cnt] = self.GetParameterArea(rw)
+
+        if self.dict_set['시장미시구조분석']:
+            self.ms_analyzer.update_data(self.code, self.arry_code[-1, :])
 
         high_low = self.high_low.get(종목코드)
         if high_low:
@@ -341,11 +353,13 @@ class UpbitStrategyTick(StrategyBase):
             B = self.dict_set['코인매도분할시그널']
             C = NIB and NIS and SCC and 매수가 != 0 and 분할매도횟수 < self.dict_set['코인매도분할횟수']
             D = NIS and self.dict_set['코인매수취소매도시그널'] and not NIB
-            E = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
-            F = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
+            E = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도익절수익률청산'] and 수익률 > self.dict_set['코인매도익절수익률']
+            F = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도익절수익금청산'] and 수익금 > self.dict_set['코인매도익절수익금']
+            G = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도손절수익률청산'] and 수익률 < -self.dict_set['코인매도손절수익률']
+            H = NIB and NIS and 매수가 != 0 and self.dict_set['코인매도손절수익금청산'] and 수익금 < -self.dict_set['코인매도손절수익금']
 
-            if SBT and (A or (B and C) or C or D or E or F):
-                강제청산 = E or F
+            if SBT and (A or (B and C) or C or D or E or F or G or H):
+                강제청산 = E or F or G or H
                 전량매도 = A or 강제청산
                 self.info_for_signal = D, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
 
@@ -412,9 +426,9 @@ class UpbitStrategyTick(StrategyBase):
     def Buy(self):
         취소시그널, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1 = self.info_for_signal
         if 취소시그널:
-            매수수량 = 0
+            주문수량 = 0
         else:
-            매수수량 = self.GetBuyCount(분할매수횟수, 매수가, 현재가, 저가대비고가등락율)
+            주문수량 = self.GetBuyCount(분할매수횟수, 매수가, 현재가, 저가대비고가등락율)
 
         if '지정가' in self.dict_set['코인매수주문구분']:
             기준가격 = 현재가
@@ -422,23 +436,16 @@ class UpbitStrategyTick(StrategyBase):
             if self.dict_set['코인매수지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1
             self.dict_signal['매수'].append(self.code)
             self.dict_signal_num[self.code] = self.indexn
-            self.ctraderQ.put(('매수', self.code, 기준가격, 매수수량, now(), False))
+            self.ctraderQ.put(('매수', self.code, 기준가격, 주문수량, now(), False))
         else:
-            매수금액 = 0
-            미체결수량 = 매수수량
-            for 매도호가, 매도잔량 in self.shogainfo:
-                if 미체결수량 - 매도잔량 <= 0:
-                    매수금액 += 매도호가 * 미체결수량
-                    미체결수량 -= 매도잔량
-                    break
-                else:
-                    매수금액 += 매도호가 * 매도잔량
-                    미체결수량 -= 매도잔량
-            if 미체결수량 <= 0:
-                예상체결가 = round(매수금액 / 매수수량, 4) if 매수수량 != 0 else 0
+            호가배열 = self.shogainfo[:self.buy_hj_limit]
+            잔량배열 = self.shreminfo[:self.buy_hj_limit]
+            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결완료:
+                예상체결가 = round(거래금액 / 주문수량, 4) if 주문수량 != 0 else 0
                 self.dict_signal['매수'].append(self.code)
                 self.dict_signal_num[self.code] = self.indexn
-                self.ctraderQ.put(('매수', self.code, 예상체결가, 매수수량, now(), False))
+                self.ctraderQ.put(('매수', self.code, 예상체결가, 주문수량, now(), False))
 
     def GetBuyCount(self, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율):
         if self.dict_set['코인비중조절'][0] == 0:
@@ -471,33 +478,26 @@ class UpbitStrategyTick(StrategyBase):
     def Sell(self):
         취소시그널, 전량매도, 강제청산, 보유수량, 분할매도횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1 = self.info_for_signal
         if 취소시그널:
-            매도수량 = 0
+            주문수량 = 0
         elif 전량매도:
-            매도수량 = 보유수량
+            주문수량 = 보유수량
         else:
-            매도수량 = self.GetSellCount(분할매도횟수, 보유수량, 매수가, 저가대비고가등락율)
+            주문수량 = self.GetSellCount(분할매도횟수, 보유수량, 매수가, 저가대비고가등락율)
 
         if '지정가' in self.dict_set['코인매도주문구분'] and not 강제청산:
             기준가격 = 현재가
             if self.dict_set['코인매도지정가기준가격'] == '매도1호가': 기준가격 = 매도호가1
             if self.dict_set['코인매도지정가기준가격'] == '매수1호가': 기준가격 = 매수호가1
             self.dict_signal['매도'].append(self.code)
-            self.ctraderQ.put(('매도', self.code, 기준가격, 매도수량, now(), False))
+            self.ctraderQ.put(('매도', self.code, 기준가격, 주문수량, now(), False))
         else:
-            매도금액 = 0
-            미체결수량 = 매도수량
-            for 매수호가, 매수잔량 in self.bhogainfo:
-                if 미체결수량 - 매수잔량 <= 0:
-                    매도금액 += 매수호가 * 미체결수량
-                    미체결수량 -= 매수잔량
-                    break
-                else:
-                    매도금액 += 매수호가 * 매수잔량
-                    미체결수량 -= 매수잔량
-            if 미체결수량 <= 0:
-                예상체결가 = round(매도금액 / 매도수량, 4) if 매도수량 != 0 else 0
+            호가배열 = self.bhogainfo[:self.sell_hj_limit]
+            잔량배열 = self.bhreminfo[:self.sell_hj_limit]
+            거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
+            if 체결완료:
+                예상체결가 = round(거래금액 / 주문수량, 4) if 주문수량 != 0 else 0
                 self.dict_signal['매도'].append(self.code)
-                self.ctraderQ.put(('매도', self.code, 예상체결가, 매도수량, now(), True if 강제청산 else False))
+                self.ctraderQ.put(('매도', self.code, 예상체결가, 주문수량, now(), True if 강제청산 else False))
 
     def GetSellCount(self, 분할매도횟수, 보유수량, 매수가, 저가대비고가등락율):
         if self.dict_set['코인매도분할횟수'] == 1:
@@ -534,7 +534,7 @@ class UpbitStrategyTick(StrategyBase):
     def PutGsjmAndDeleteHilo(self):
         if self.dict_gj:
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
-            df_gj = get_pd().DataFrame.from_dict(self.dict_gj, orient='index')
+            df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             self.windowQ.put((ui_num['C관심종목'], df_gj))
         if self.dict_profit:
             self.dict_profit = {k: v for k, v in self.dict_profit.items() if k in self.dict_jg}
@@ -551,7 +551,7 @@ class UpbitStrategyTick(StrategyBase):
             start = now()
             cllen = len(columns_)
             for i, code in enumerate(self.dict_data):
-                df = get_pd().DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
+                df = pd.DataFrame(self.dict_data[code][:, :cllen], columns=columns_)
                 df['index'] = df['index'].astype('int64')
                 df.to_sql(code, con, index=False, if_exists='append', chunksize=1000)
                 self.windowQ.put((ui_num['기본로그'], f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... {i + 1}/{last}'))
