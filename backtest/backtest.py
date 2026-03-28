@@ -10,8 +10,8 @@ from utility.lazy_imports import get_np, get_pd
 from backtest.back_static import PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
 from utility.static import now, str_ymdhms, error_decorator
 from utility.setting_user import stockreadlines, coinreadlines, futurereadlines
-from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, DB_STOCK_BACK_TICK, \
-    DB_COIN_BACK_TICK, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, DB_STOCK_TICK_BACK, \
+    DB_COIN_TICK_BACK, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 
 
 class Total:
@@ -55,7 +55,6 @@ class Total:
 
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         bc = 0
         sc = 0
@@ -137,6 +136,7 @@ class Total:
                 with open('./utility/blacklist_coin.txt', 'w') as f:
                     f.write(''.join(coinreadlines))
 
+    @error_decorator
     def Report(self, list_tsg, arry_bct):
         if not list_tsg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
@@ -159,8 +159,8 @@ class Total:
         bootstrap_max  = round(get_np().percentile(bootstrap_dist, 97.5), 2)
         # noinspection PyTypeChecker
         bootstrap_pv   = round(get_np().mean(bootstrap_dist > 0) * 100, 2)
-        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상 최소 평균수익률: {bootstrap_min}%, 예상 최대 평균수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
-        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 평균수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
+        bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
+        bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
 
         startday, endday = str(self.startday), str(self.endday)
         startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
@@ -298,24 +298,24 @@ class BackTest:
         market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
         if self.ui_gubun == 'S':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_STOCK_BACK_TICK
+                db = DB_STOCK_TICK_BACK
                 is_tick = True
             else:
-                db = DB_STOCK_BACK_MIN
+                db = DB_STOCK_MIN_BACK
                 is_tick = False
         elif self.ui_gubun == 'SF':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_FUTURE_BACK_TICK
+                db = DB_FUTURE_TICK_BACK
                 is_tick = True
             else:
-                db = DB_FUTURE_BACK_MIN
+                db = DB_FUTURE_MIN_BACK
                 is_tick = False
         else:
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_COIN_BACK_TICK
+                db = DB_COIN_TICK_BACK
                 is_tick = True
             else:
-                db = DB_COIN_BACK_MIN
+                db = DB_COIN_MIN_BACK
                 is_tick = False
 
         con   = sqlite3.connect(db)
@@ -327,7 +327,10 @@ class BackTest:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self.SysExit(True)
 
-        df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
+        if is_tick:
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
+        else:
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(int)
         day_count = len(df_mt['일자'].unique())
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 

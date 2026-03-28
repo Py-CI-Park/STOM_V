@@ -5,10 +5,10 @@ import json
 import asyncio
 import requests
 import websockets
+import pandas as pd
 from multiprocessing import Process, Queue
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.static import get_logger
-from utility.lazy_imports import get_pd
 
 
 class Kiwooom:
@@ -144,7 +144,7 @@ class Kiwooom:
                 '전일매도수량', '금일매수수량', '금일매도수량', '매입금액', '매입수수료', '평가금액', '평가수수료', '세금', '수수료합',
                 '보유비중', '신용구분', '신용구분명', '대출일'
             ]
-            df = get_pd().DataFrame(row_data, columns=columns)
+            df = pd.DataFrame(row_data, columns=columns)
             df['종목번호'] = df['종목번호'].apply(lambda x: x.strip()[1:])
             columns = ['보유비중', '수익률']
             df[columns] = df[columns].astype(float)

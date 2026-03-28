@@ -45,6 +45,7 @@ now_utc_ = datetime.datetime.now(pytz.utc)
 now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
 summer_t = int(now_cme_.dst().total_seconds())
 time_gap = int(summer_t - 50400)
+summer_time = summer_t
 
 
 def set_builtin_print(bit64, q):
@@ -113,7 +114,7 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
             cf1 = get_angle_cf(market, is_tick, 0)
             cf2 = get_angle_cf(market, is_tick, 1)
 
-        df2 = df[['등락율', '당일거래대금', '전일비']].copy()
+        df2 = df[['등락율', '당일거래대금']].copy()
         df2[f'등락율N{avg}'] = df2['등락율'].shift(avg - 1)
         df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
         df2[f'당일거래대금N{avg}'] = df2['당일거래대금'].shift(avg - 1)
@@ -122,6 +123,7 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
         df['당일거래대금각도'] = round(get_np().arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * get_np().pi) * 360, 2)
 
         if market == 1:
+            df2['전일비'] = df['전일비']
             df2[f'전일비N{avg}'] = df2['전일비'].shift(avg - 1)
             df2['전일비차이'] = df2['전일비'] - df2[f'전일비N{avg}']
             df['전일비각도'] = round(get_np().arctan2(df2['전일비차이'], avg) / (2 * get_np().pi) * 360, 2)

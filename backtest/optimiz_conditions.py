@@ -3,12 +3,13 @@ import sys
 import time
 import random
 import sqlite3
+import numpy as np
+import pandas as pd
 from multiprocessing import Process, Queue
-from utility.lazy_imports import get_np, get_pd
 from backtest.back_static import SendResult, GetMoneytopQuery
-from utility.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd, error_decorator
-from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, \
-    DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
+from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, \
+    DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 
 
 class Total:
@@ -42,7 +43,6 @@ class Total:
 
         self.MainLoop()
 
-    @error_decorator
     def MainLoop(self):
         sc = 0
         bc = 0
@@ -171,7 +171,6 @@ class OptimizeConditions:
 
         self.Start()
 
-    @error_decorator
     def Start(self):
         start_time = now()
         data = self.bq.get()
@@ -228,29 +227,29 @@ class OptimizeConditions:
         market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
         if self.ui_gubun == 'S':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_STOCK_BACK_TICK
+                db = DB_STOCK_TICK_BACK
                 is_tick = True
             else:
-                db = DB_STOCK_BACK_MIN
+                db = DB_STOCK_MIN_BACK
                 is_tick = False
         elif self.ui_gubun == 'SF':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_FUTURE_BACK_TICK
+                db = DB_FUTURE_TICK_BACK
                 is_tick = True
             else:
-                db = DB_FUTURE_BACK_MIN
+                db = DB_FUTURE_MIN_BACK
                 is_tick = False
         else:
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_COIN_BACK_TICK
+                db = DB_COIN_TICK_BACK
                 is_tick = True
             else:
-                db = DB_COIN_BACK_MIN
+                db = DB_COIN_MIN_BACK
                 is_tick = False
 
         con   = sqlite3.connect(db)
         query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
-        df_mt = get_pd().read_sql(query, con)
+        df_mt = pd.read_sql(query, con)
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
@@ -259,7 +258,10 @@ class OptimizeConditions:
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
-        df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
+        if is_tick:
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
+        else:
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(int)
         day_list = df_mt['일자'].unique()
         day_list.sort()
 
@@ -287,7 +289,7 @@ class OptimizeConditions:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 
-        arry_bct = get_np().zeros((len(df_mt), 3), dtype='float64')
+        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
         data = ('백테정보', self.ui_gubun, None, valid_days, arry_bct, betting, len(day_list))
         for q in self.bstq_list:
@@ -295,8 +297,8 @@ class OptimizeConditions:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
 
         con = sqlite3.connect(DB_STRATEGY)
-        dfb = get_pd().read_sql(f'SELECT * FROM {self.gubun}buyconds', con).set_index('index')
-        dfs = get_pd().read_sql(f'SELECT * FROM {self.gubun}sellconds', con).set_index('index')
+        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buyconds', con).set_index('index')
+        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}sellconds', con).set_index('index')
         con.close()
 
         self.buyconds  = dfb['전략코드'][buystg_name].split('\n')
@@ -370,7 +372,6 @@ class OptimizeConditions:
         else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기준값 0을 초과하는 조합이 없습니다.'))
 
-        mq.close()
         if self.dict_set['스톰라이브']: self.lq.put(self.backname)
         self.sq.put('조건 최적화가 완료되었습니다.')
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
@@ -422,7 +423,7 @@ class OptimizeConditions:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매수조건\n{buyconds}\n'))
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 결과 - 매도조건\n{sellconds}\n'))
             data = [[self.optistandard, key, buyconds, sellconds]]
-            df = get_pd().DataFrame(data, columns=['기준', '기준값', '매수코드', '매도코드'], index=[str_ymdhms()])
+            df = pd.DataFrame(data, columns=['기준', '기준값', '매수코드', '매도코드'], index=[str_ymdhms()])
             con = sqlite3.connect(DB_BACKTEST)
             df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
             con.close()
@@ -459,7 +460,7 @@ class OptimizeConditions:
             text += f'[{value}] {key}\n'
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'[{value}] {key}'))
 
-        df = get_pd().DataFrame({'조건별출현빈도': [text]}, index=[str_ymdhms()])
+        df = pd.DataFrame({'조건별출현빈도': [text]}, index=[str_ymdhms()])
         con = sqlite3.connect(DB_BACKTEST)
         df.to_sql(f'{self.savename}_conds', con, if_exists='append', chunksize=1000)
         con.close()

@@ -1,6 +1,6 @@
 
+import numpy as np
 import matplotlib.pyplot as plt
-from utility.lazy_imports import get_np
 from utility.setting_base import GRAPH_PATH
 
 
@@ -133,7 +133,7 @@ class Visualization3D:
 
             if len(scores) > 1:
                 # 스코어의 분산 계산 (변화량 측정)
-                variance = get_np().var(scores)
+                variance = np.var(scores)
                 param_variances[param_idx] = variance
 
         # 분산이 큰 순서대로 정렬하여 상위 n개 반환
@@ -160,14 +160,14 @@ class Visualization3D:
         if len(history_data) < 3:
             return
 
-        history_data = get_np().array(history_data)
+        history_data = np.array(history_data)
 
         # 보간을 위한 그리드 생성
         from scipy.interpolate import griddata
 
-        xi = get_np().linspace(history_data[:, 0].min(), history_data[:, 0].max(), 20)
-        yi = get_np().linspace(history_data[:, 1].min(), history_data[:, 1].max(), 20)
-        X, Y = get_np().meshgrid(xi, yi)
+        xi = np.linspace(history_data[:, 0].min(), history_data[:, 0].max(), 20)
+        yi = np.linspace(history_data[:, 1].min(), history_data[:, 1].max(), 20)
+        X, Y = np.meshgrid(xi, yi)
 
         # Z 값 보간
         # noinspection PyTypeChecker
@@ -206,8 +206,8 @@ class Visualization3D:
             all_scores.append(max(scores_in_step))
 
         # 선택된 3개 파라미터로 3D 산점도
-        param_array = get_np().array(all_params)
-        scores_array = get_np().array(all_scores)
+        param_array = np.array(all_params)
+        scores_array = np.array(all_scores)
 
         # 색상 (점수에 따른 색상)
         scatter = ax.scatter(param_array[:, 0], param_array[:, 1], param_array[:, 2],
@@ -237,7 +237,7 @@ class Visualization3D:
         n_steps = len(self.optimization_3d_history)
         n_params = len(self.optimization_3d_history[0]['params'])
 
-        convergence_matrix = get_np().zeros((n_params, n_steps))
+        convergence_matrix = np.zeros((n_params, n_steps))
 
         for step_idx, history in enumerate(self.optimization_3d_history):
             for param_idx, (optimal_value, score) in history['params'].items():
@@ -285,7 +285,7 @@ class Visualization3D:
                 sensitivities.append(sensitivity)
 
             steps.append(step)
-            sensitivity_scores.append(get_np().mean(sensitivities))
+            sensitivity_scores.append(np.mean(sensitivities))
 
         # 민감도 진화 플롯
         ax.plot(steps, sensitivity_scores, 'b-', linewidth=2, marker='o', markersize=6)

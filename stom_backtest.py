@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 """STOM 공식 CLI 진입점.
 
-현재 공식적으로 shipped 하는 경로는 다음 두 가지다.
+서브커맨드:
 - 기본 백테스트 실행
-- `formula` / `strategy` 서브커맨드
-- `discovery` 서브커맨드
-
-그 외 `cli/` 하위의 history / sweep / optimizer / ai_controller /
-analyzer / condition_generator / wfo / ml_factor_model 등은
-현재 시점에서는 라이브러리 성격이 강하며, 별도 서브커맨드로는 노출하지 않는다.
+- formula / strategy / discovery 서브커맨드
+- optimize / sweep / wfo / tune / db 서브커맨드
+- setting / report 서브커맨드
 """
 import sys
 import json
@@ -16,6 +13,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from cli._safe_io import configure_safe_output
 from cli.config import parse_args, validate
 from cli.output import format_result
 
@@ -41,9 +39,18 @@ def _configure_matplotlib_headless():
     return True
 
 
+SUBCOMMANDS = (
+    'formula', 'strategy', 'discovery',
+    'optimize', 'sweep', 'wfo', 'tune', 'db',
+    'setting', 'report',
+)
+
+
 def main():
-    # 서브커맨드 감지 (formula, strategy, discovery)
-    if len(sys.argv) > 1 and sys.argv[1] in ('formula', 'strategy', 'discovery'):
+    configure_safe_output()
+
+    # 서브커맨드 감지
+    if len(sys.argv) > 1 and sys.argv[1] in SUBCOMMANDS:
         from cli.subcommands import handle_subcommand
         return handle_subcommand(sys.argv[1:])
 

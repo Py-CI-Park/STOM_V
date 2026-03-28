@@ -1,15 +1,16 @@
 
 import os
 import sqlite3
+import pandas as pd
 from PyQt5.QtCore import QUrl, Qt
 from multiprocessing import Process
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
-from utility.lazy_imports import get_pd
+from ui.ui_dialog_animation import DialogAnimator
 from utility.kimp_upbit_binance import Kimp
-from utility.static import qtest_qwait, str_hms, dt_hms, error_decorator
-from utility.setting_base import columns_hc, DB_COIN_BACK_TICK, DB_STOCK_BACK_TICK, DB_PATH, DB_COIN_BACK_MIN, \
-    DB_STOCK_BACK_MIN, DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK
+from utility.static import str_hms, dt_hms, error_decorator
+from utility.setting_base import columns_hc, DB_COIN_TICK_BACK, DB_STOCK_TICK_BACK, DB_PATH, DB_COIN_MIN_BACK, \
+    DB_STOCK_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 from ui.set_style import style_bc_bt, style_bc_bb
 
 
@@ -21,10 +22,11 @@ class QuietPage(QWebEnginePage):
 @error_decorator
 def show_dialog_graph(ui, df):
     if not ui.dialog_graph.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_graph, duration=250)
         ui.dialog_graph.show()
 
-    df['이익금액'] = df['수익금'].apply(lambda x: x if x >= 0 else 0)
-    df['손실금액'] = df['수익금'].apply(lambda x: x if x < 0 else 0)
+    df['이익금액'] = df['수익금'].clip(lower=0)
+    df['손실금액'] = df['수익금'].clip(upper=0)
     df['수익금합계'] = df['수익금'].cumsum()
     df['수익금합계020'] = df['수익금합계'].rolling(window=20).mean()
     df['수익금합계060'] = df['수익금합계'].rolling(window=60).mean()
@@ -95,8 +97,10 @@ def show_dialog_web(ui, _show, code):
     if ui.webEngineView is None:
         webengineview_set(ui)
     if _show and not ui.dialog_web.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=250)
         ui.dialog_web.show()
     if _show and not ui.dialog_info.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=250)
         ui.dialog_info.show()
     if ui.dialog_web.isVisible() and ui.dialog_info.isVisible():
         ui.webEngineView.load(QUrl(f'https://finance.naver.com/item/main.naver?code={code}'))
@@ -116,6 +120,7 @@ def webengineview_set(ui):
 @error_decorator
 def show_dialog_hoga(ui, _show, coin, code):
     if _show and not ui.dialog_hoga.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=250)
         ui.dialog_hoga.show()
     if ui.dialog_hoga.isVisible():
         ui.PutHogaCode(coin, code)
@@ -166,7 +171,7 @@ def dialog_chart_show(ui):
         if ui.ft_checkBoxxxxx_08.text() != '초당체결수량': ui.ft_checkBoxxxxx_08.setText('초당체결수량')
         if ui.ft_checkBoxxxxx_16.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적초당매도수수량')
 
-    if ui.main_btn in (1, 3):
+    if ui.dict_set['주식에이전트']:
         if '키움증권' in ui.dict_set['증권사']:
             starttime = '090000'
         else:
@@ -178,6 +183,7 @@ def dialog_chart_show(ui):
 
     ui.ct_lineEdittttt_01.setText(starttime)
     ui.ct_lineEdittttt_02.setText(endtime)
+    DialogAnimator.setup_dialog_animation(ui.dialog_chart, duration=300)
     ui.dialog_chart.show()
 
 
@@ -193,12 +199,20 @@ def show_qsize(ui):
 
 @error_decorator
 def show_dialog_formula(ui):
-    ui.dialog_formula.show() if not ui.dialog_formula.isVisible() else ui.dialog_formula.close()
+    if not ui.dialog_formula.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_formula, duration=250)
+        ui.dialog_formula.show()
+    else:
+        ui.dialog_formula.close()
 
 
 @error_decorator
 def show_dialog_factor(ui):
-    ui.dialog_factor.show() if not ui.dialog_factor.isVisible() else ui.dialog_factor.close()
+    if not ui.dialog_factor.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_factor, duration=250)
+        ui.dialog_factor.show()
+    else:
+        ui.dialog_factor.close()
 
 
 @error_decorator
@@ -212,6 +226,7 @@ def show_chart(ui):
 @error_decorator
 def show_hoga(ui):
     if not ui.dialog_hoga.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=250)
         ui.dialog_hoga.setFixedSize(572, 355)
         ui.hj_tableWidgett_01.setGeometry(5, 5, 562, 42)
         ui.hj_tableWidgett_01.setColumnWidth(0, 140)
@@ -235,16 +250,22 @@ def show_giup(ui):
     if ui.webEngineView is None:
         webengineview_set(ui)
     if not ui.dialog_web.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=250)
         ui.dialog_web.show()
         ui.webEngineView.load(QUrl('https://finance.naver.com/sise/'))
     else:
         ui.dialog_web.close()
-    ui.dialog_info.show() if not ui.dialog_info.isVisible() else ui.dialog_info.close()
+    if not ui.dialog_info.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=250)
+        ui.dialog_info.show()
+    else:
+        ui.dialog_info.close()
 
 
 @error_decorator
 def show_treemap(ui):
     if not ui.dialog_tree.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_tree, duration=250)
         ui.dialog_tree.show()
         ui.webcQ.put(('트리맵', ''))
     else:
@@ -253,13 +274,21 @@ def show_treemap(ui):
 
 @error_decorator
 def show_jisu(ui):
-    ui.dialog_jisu.show() if not ui.dialog_jisu.isVisible() else ui.dialog_jisu.close()
+    if not ui.dialog_jisu.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_jisu, duration=250)
+        ui.dialog_jisu.show()
+    else:
+        ui.dialog_jisu.close()
 
 
 @error_decorator
 def show_db(ui):
     if not ui.dialog_db.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_db, duration=250)
         ui.dialog_db.show()
+    else:
+        ui.dialog_db.close()
+        return
 
     ui.db_tableWidgett_01.clearContents()
     ui.db_tableWidgett_02.clearContents()
@@ -348,12 +377,17 @@ def show_db(ui):
 
 @error_decorator
 def show_backscheduler(ui):
-    ui.dialog_scheduler.show() if not ui.dialog_scheduler.isVisible() else ui.dialog_scheduler.close()
+    if not ui.dialog_scheduler.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_scheduler, duration=250)
+        ui.dialog_scheduler.show()
+    else:
+        ui.dialog_scheduler.close()
 
 
 @error_decorator
 def show_kimp(ui):
     if not ui.dialog_kimp.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_kimp, duration=250)
         ui.dialog_kimp.show()
         if not ui.CoinKimpProcessAlive():
             ui.proc_coin_kimp = Process(target=Kimp, args=(ui.qlist,))
@@ -362,12 +396,12 @@ def show_kimp(ui):
         ui.dialog_kimp.close()
         if ui.CoinKimpProcessAlive():
             ui.proc_coin_kimp.kill()
-            qtest_qwait(3)
 
 
 @error_decorator
 def show_order(ui):
     if not ui.dialog_order.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_order, duration=250)
         ui.dialog_order.show()
 
         tableWidget = None
@@ -410,7 +444,7 @@ def chart_moneytop_list(ui):
     is_min = False
     if coin:
         db_name1 = f'{DB_PATH}/coin_tick_{searchdate}.db' if ui.dict_set['코인타임프레임'] else f'{DB_PATH}/coin_min_{searchdate}.db'
-        db_name2 = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+        db_name2 = DB_COIN_TICK_BACK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
         if ui.dict_set['코인타임프레임']:
             query = f"SELECT * FROM moneytop WHERE " \
                     f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
@@ -423,10 +457,10 @@ def chart_moneytop_list(ui):
     else:
         if '키움증권' in ui.dict_set['증권사']:
             db_name1 = f'{DB_PATH}/stock_tick_{searchdate}.db' if ui.dict_set['주식타임프레임'] else f'{DB_PATH}/stock_min_{searchdate}.db'
-            db_name2 = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            db_name2 = DB_STOCK_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
         else:
             db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db' if ui.dict_set['주식타임프레임'] else f'{DB_PATH}/future_min_{searchdate}.db'
-            db_name2 = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            db_name2 = DB_FUTURE_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
 
         if ui.dict_set['주식타임프레임']:
             query = f"SELECT * FROM moneytop WHERE " \
@@ -442,11 +476,11 @@ def chart_moneytop_list(ui):
     try:
         if os.path.isfile(db_name1):
             con = sqlite3.connect(db_name1)
-            df = get_pd().read_sql(query, con)
+            df = pd.read_sql(query, con)
             con.close()
         elif os.path.isfile(db_name2):
             con = sqlite3.connect(db_name2)
-            df = get_pd().read_sql(query, con)
+            df = pd.read_sql(query, con)
             con.close()
     except:
         pass

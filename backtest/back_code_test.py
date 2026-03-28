@@ -2,22 +2,24 @@
 from traceback import format_exc
 from PyQt5.QtCore import QThread
 from utility.setting_base import indicator, ui_num
+from trade.microstructure_analyzer import MicrostructureAnalyzer
 # noinspection PyUnresolvedReferences
-from utility.static import timedelta_sec, qtest_qwait
+from utility.static import timedelta_sec, qtest_qwait, now
 
 
 # noinspection PyUnusedLocal
 class BackCodeTest(QThread):
     def __init__(self, testQ, windowQ, stg, fm_list=None, var=None, ga=False):
         super().__init__()
-        self.testQ   = testQ
-        self.windowQ = windowQ
-        self.stg     = stg
-        self.fm_list = fm_list
-        self.vars    = None
-        self.var     = var
-        self.ga      = ga
-        self.indicator = indicator
+        self.testQ       = testQ
+        self.windowQ     = windowQ
+        self.stg         = stg
+        self.fm_list     = fm_list
+        self.vars        = None
+        self.var         = var
+        self.ga          = ga
+        self.ms_analyzer = MicrostructureAnalyzer('stock')
+        self.indicator   = indicator
 
     def run(self):
         if self.stg is None:
@@ -118,9 +120,6 @@ class BackCodeTest(QThread):
         pass
 
     def Test(self):
-        def now():
-            return 1
-
         def 현재가N(pre):
             return 1
 

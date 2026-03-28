@@ -3,7 +3,8 @@ import json
 import uuid
 import asyncio
 import websockets
-from traceback import print_exc
+from traceback import format_exc
+from utility.setting_base import ui_num
 from PyQt5.QtCore import QThread, pyqtSignal
 
 
@@ -13,14 +14,14 @@ class WebSocketReceiver(QThread):
 
     def __init__(self, codes, windowQ):
         super().__init__()
-        self.codes       = codes
-        self.windowQ     = windowQ
-        self.loop        = None
-        self.wsk_trade   = None
-        self.wsk_order   = None
-        self.con_trade   = False
-        self.con_order   = False
-        self.url         = 'wss://api.upbit.com/websocket/v1'
+        self.codes     = codes
+        self.windowQ   = windowQ
+        self.loop      = None
+        self.wsk_trade = None
+        self.wsk_order = None
+        self.con_trade = False
+        self.con_order = False
+        self.url       = 'wss://api.upbit.com/websocket/v1'
 
     def run(self):
         self.loop = asyncio.new_event_loop()
@@ -39,7 +40,9 @@ class WebSocketReceiver(QThread):
                     await self.connect_trader()
                 await self.receive_ticker()
             except:
-                print_exc()
+                self.windowQ.put(
+                    (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 체결 수신 중 오류가 발생하여 재연결합니다.')
+                )
 
             await self.disconnect_trader()
 
@@ -50,7 +53,9 @@ class WebSocketReceiver(QThread):
                     await self.connect_order()
                 await self.receive_order()
             except:
-                print_exc()
+                self.windowQ.put(
+                    (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 호가 수신 중 오류가 발생하여 재연결합니다.')
+                )
 
             await self.disconnect_order()
 

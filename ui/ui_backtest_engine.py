@@ -1,5 +1,8 @@
 
 import sqlite3
+import numpy as np
+import pandas as pd
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import Process, Queue, Value, Lock
 from backtest.back_subtotal import BackSubTotal
 from backtest.back_code_test import BackCodeTest
@@ -21,10 +24,10 @@ from backtest.backengine_binance_tick2 import BackEngineBinanceTick2
 from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
-from utility.lazy_imports import get_np, get_pd
+from ui.ui_dialog_animation import DialogAnimator
 from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec, error_decorator
-from utility.setting_base import DB_STOCK_BACK_TICK, DB_COIN_BACK_TICK, ui_num, DB_STOCK_BACK_MIN, DB_COIN_BACK_MIN, \
-    DB_FUTURE_BACK_MIN, DB_FUTURE_BACK_TICK, DB_STRATEGY
+from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, \
+    DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, DB_STRATEGY
 
 
 @error_decorator
@@ -32,14 +35,14 @@ def backengine_show(ui, gubun):
     table_list = []
     if gubun == '주식':
         if '키움증권' in ui.dict_set['증권사']:
-            db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            db = DB_STOCK_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
         else:
-            db = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            db = DB_FUTURE_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
     else:
-        db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+        db = DB_COIN_TICK_BACK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
     con = sqlite3.connect(db)
     try:
-        df = get_pd().read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
+        df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
         table_list.remove('moneytop')
         table_list.remove('stockinfo')
@@ -69,6 +72,7 @@ def backengine_show(ui, gubun):
     ui.be_lineEdittttt_02.setText(endtime)
     if not ui.backengin_window_open:
         ui.be_comboBoxxxxx_01.setCurrentText(ui.dict_set['백테엔진분류방법'])
+    DialogAnimator.setup_dialog_animation(ui.dialog_backengine, duration=300)
     ui.dialog_backengine.show()
     ui.backengin_window_open = True
 
@@ -121,53 +125,66 @@ def backengine_start(ui, gubun):
             else:
                 target = BackEngineBinanceTick2 if ui.dict_set['코인타임프레임'] else BackEngineBinanceMin2
 
-    for i in range(20):
-        proc = Process(target=BackSubTotal, args=(i, ui.totalQ, ui.back_sques, ui.dict_set['백테매수시간기준']), daemon=True)
+    def create_backsubtotal_process(j):
+        proc = Process(
+            target=BackSubTotal,
+            args=(j, ui.totalQ, ui.back_sques, ui.dict_set['백테매수시간기준']),
+            daemon=True
+        )
         proc.start()
         ui.back_sprocs.append(proc)
-        ui.windowQ.put((ui_num['백테엔진'], f'중간집계 프로세스{i + 1} 생성 완료'))
+        ui.windowQ.put((ui_num['백테엔진'], f'중간집계 프로세스{j + 1} 생성 완료'))
 
-    for i in range(multi):
-        profiling = i == 0 and ui.dict_set['백테엔진프로파일링']
+    def create_backengine_process(j):
+        profiling = j == 0 and ui.dict_set['백테엔진프로파일링']
         proc = Process(
             target=target,
-            args=(i, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ,
-                  ui.back_eques, ui.back_sques, ui.dict_set, profiling),
+            args=(j, ui.shared_cnt, ui.shared_lock, ui.windowQ, ui.totalQ, ui.backQ, ui.back_eques, ui.back_sques,
+                  ui.dict_set, profiling),
             daemon=True
         )
         proc.start()
         ui.back_eprocs.append(proc)
-        ui.windowQ.put((ui_num['백테엔진'], f'엔진 프로세스{i + 1} 생성 완료'))
+        ui.windowQ.put((ui_num['백테엔진'], f'엔진 프로세스{j + 1} 생성 완료'))
+
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        [executor.submit(create_backsubtotal_process, i) for i in range(20)]
+
+    with ThreadPoolExecutor(max_workers=multi) as executor:
+        [executor.submit(create_backengine_process, i) for i in range(multi)]
 
     dict_info = None
     try:
         if gubun == '주식':
-            db = DB_STOCK_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_STOCK_BACK_MIN
+            db = DB_STOCK_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
             is_tick = ui.dict_set['주식타임프레임']
         elif gubun == '해선':
-            db = DB_FUTURE_BACK_TICK if ui.dict_set['주식타임프레임'] else DB_FUTURE_BACK_MIN
+            db = DB_FUTURE_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
             is_tick = ui.dict_set['주식타임프레임']
         else:
-            db = DB_COIN_BACK_TICK if ui.dict_set['코인타임프레임'] else DB_COIN_BACK_MIN
+            db = DB_COIN_TICK_BACK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
             is_tick = ui.dict_set['코인타임프레임']
 
         con = sqlite3.connect(db)
         if gubun == '주식':
             try:
-                df_info = get_pd().read_sql('SELECT * FROM stockinfo', con).set_index('index')
+                df_info = pd.read_sql('SELECT * FROM stockinfo', con).set_index('index')
             except:
-                df_info = get_pd().read_sql('SELECT * FROM codename', con).set_index('index')
+                df_info = pd.read_sql('SELECT * FROM codename', con).set_index('index')
             dict_info  = df_info['코스닥'].to_dict()
             ui.dict_cn = df_info['종목명'].to_dict()
         elif gubun == '해선':
-            df_info = get_pd().read_sql('SELECT * FROM futureinfo', con).set_index('index')
+            df_info = pd.read_sql('SELECT * FROM futureinfo', con).set_index('index')
             dict_info  = df_info.to_dict('index')
             ui.dict_cn = df_info['종목명'].to_dict()
 
         gubun_ = 'S' if gubun == '주식' else 'X'
         query = GetMoneytopQuery(is_tick, gubun_, ui.startday, ui.endday, ui.starttime, ui.endtime)
-        df_mt = get_pd().read_sql(query, con)
-        df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
+        df_mt = pd.read_sql(query, con)
+        if is_tick:
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
+        else:
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(np.int64)
         df_mt.set_index('index', inplace=True)
         con.close()
     except:
@@ -252,9 +269,9 @@ def backengine_start(ui, gubun):
         shared_info_ = ui.backQ.get()
         ui.shared_info += shared_info_
         ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
-    ui.shared_info = sorted(ui.shared_info, key=lambda x: x['len'], reverse=True)
-    ui.back_tick_cunsum = [x['len'] for x in ui.shared_info]
-    ui.back_tick_cunsum = get_np().cumsum(ui.back_tick_cunsum)
+    ui.shared_info = sorted(ui.shared_info, key=lambda x: x['shape'][0], reverse=True)
+    ui.back_tick_cunsum = [x['shape'][0] for x in ui.shared_info]
+    ui.back_tick_cunsum = np.cumsum(ui.back_tick_cunsum)
     ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 완료'))
 
     ui.back_count = len(ui.shared_info)
@@ -357,13 +374,11 @@ def backtest_process_kill(ui, coin, enginekill):
 
     count = 0
     while True:
-        if not ui.backQ.empty():
-            data = ui.backQ.get()
-            if data == '백테중지완료':
-                count += 1
-                if count == ui.multi:
-                    break
-        qtest_qwait(0.01)
+        data = ui.backQ.get()
+        if data == '백테중지완료':
+            count += 1
+            if count == ui.multi:
+                break
 
     ui.windowQ.put((ui_num['C백테스트' if coin else 'S백테스트'], '백테스트 중지 완료'))
     if not coin:

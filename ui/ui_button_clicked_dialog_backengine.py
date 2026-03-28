@@ -615,4 +615,4 @@ def sdbutton_clicked_05(ui):
             insert_values = (schedule_name, schedule)
             ui.queryQ.put(('전략디비', delete_query))
             ui.queryQ.put(('전략디비', insert_query, insert_values))
-        QMessageBox.information(ui.dialog_scheduler, '저장 완료', random.choice(famous_saying))
+            QMessageBox.information(ui.dialog_scheduler, '저장 완료', random.choice(famous_saying))

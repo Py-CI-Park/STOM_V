@@ -1,5 +1,5 @@
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from multiprocessing import Process
 from backtest.optimiz import Optimize
@@ -14,19 +14,687 @@ from ui.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condte
 from utility.static import error_decorator
 
 
+def group_animation_01(ui):
+    """coin_opti_test_editer, coin_rwf_test_editer, coin_opti_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.cs_textEditttt_03.geometry()
+    current_geo_tedt2 = ui.cs_textEditttt_04.geometry()
+    current_geo_tedt3 = ui.cs_textEditttt_05.geometry()
+    current_geo_comb1 = ui.cvc_comboBoxxx_02.geometry()
+    current_geo_line1 = ui.cvc_lineEdittt_02.geometry()
+    current_geo_btn01 = ui.cvc_pushButton_03.geometry()
+    current_geo_btn02 = ui.cvc_pushButton_04.geometry()
+    current_geo_zoo01 = ui.czoo_pushButon_01.geometry()
+    current_geo_zoo02 = ui.czoo_pushButon_02.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 647, 740 if ui.extend_window else 463)
+    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
+    target_geo_tedt3 = QRect(659, 10, 347, 1347 if ui.extend_window else 740)
+    target_geo_comb1 = QRect(1012, 115, 165, 30)
+    target_geo_line1 = QRect(1182, 115, 165, 30)
+    target_geo_btn01 = QRect(1012, 150, 165, 30)
+    target_geo_btn02 = QRect(1182, 150, 165, 30)
+    target_geo_zoo01 = QRect(584, 15, 50, 20)
+    target_geo_zoo02 = QRect(584, 761 if ui.extend_window else 483, 50, 20)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.cs_textEditttt_03, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.cs_textEditttt_04, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_tedt3 = QPropertyAnimation(ui.cs_textEditttt_05, b'geometry')
+    anim_tedt3.setDuration(300)
+    anim_tedt3.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt3.setStartValue(current_geo_tedt3)
+    anim_tedt3.setEndValue(target_geo_tedt3)
+
+    anim_comb1 = QPropertyAnimation(ui.cvc_comboBoxxx_02, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_line1 = QPropertyAnimation(ui.cvc_lineEdittt_02, b'geometry')
+    anim_line1.setDuration(300)
+    anim_line1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line1.setStartValue(current_geo_line1)
+    anim_line1.setEndValue(target_geo_line1)
+
+    anim_btn01 = QPropertyAnimation(ui.cvc_pushButton_03, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(ui.cvc_pushButton_04, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_zoo01 = QPropertyAnimation(ui.czoo_pushButon_01, b'geometry')
+    anim_zoo01.setDuration(300)
+    anim_zoo01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo01.setStartValue(current_geo_zoo01)
+    anim_zoo01.setEndValue(target_geo_zoo01)
+
+    anim_zoo02 = QPropertyAnimation(ui.czoo_pushButon_02, b'geometry')
+    anim_zoo02.setDuration(300)
+    anim_zoo02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo02.setStartValue(current_geo_zoo02)
+    anim_zoo02.setEndValue(target_geo_zoo02)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_tedt3)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_line1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_zoo01)
+    ui.animation_group.addAnimation(anim_zoo02)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_02(ui):
+    """coin_opti_ga_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.cs_textEditttt_03.geometry()
+    current_geo_tedt2 = ui.cs_textEditttt_04.geometry()
+    current_geo_tedt3 = ui.cs_textEditttt_06.geometry()
+    current_geo_comb1 = ui.cvc_comboBoxxx_02.geometry()
+    current_geo_line1 = ui.cvc_lineEdittt_02.geometry()
+    current_geo_btn01 = ui.cvc_pushButton_03.geometry()
+    current_geo_btn02 = ui.cvc_pushButton_04.geometry()
+    current_geo_comb2 = ui.cva_comboBoxxx_01.geometry()
+    current_geo_line2 = ui.cva_lineEdittt_01.geometry()
+    current_geo_btn03 = ui.cva_pushButton_04.geometry()
+    current_geo_btn04 = ui.cva_pushButton_05.geometry()
+    current_geo_zoo01 = ui.czoo_pushButon_01.geometry()
+    current_geo_zoo02 = ui.czoo_pushButon_02.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 647, 740 if ui.extend_window else 463)
+    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
+    target_geo_tedt3 = QRect(659, 10, 347, 1347 if ui.extend_window else 740)
+    target_geo_comb1 = QRect(1012, 115, 165, 30)
+    target_geo_line1 = QRect(1182, 115, 165, 30)
+    target_geo_btn01 = QRect(1012, 150, 165, 30)
+    target_geo_btn02 = QRect(1182, 150, 165, 30)
+    target_geo_comb2 = QRect(1012, 115, 165, 30)
+    target_geo_line2 = QRect(1182, 115, 165, 30)
+    target_geo_btn03 = QRect(1012, 150, 165, 30)
+    target_geo_btn04 = QRect(1182, 150, 165, 30)
+    target_geo_zoo01 = QRect(584, 15, 50, 20)
+    target_geo_zoo02 = QRect(584, 761 if ui.extend_window else 483, 50, 20)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.cs_textEditttt_03, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.cs_textEditttt_04, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_tedt3 = QPropertyAnimation(ui.cs_textEditttt_06, b'geometry')
+    anim_tedt3.setDuration(300)
+    anim_tedt3.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt3.setStartValue(current_geo_tedt3)
+    anim_tedt3.setEndValue(target_geo_tedt3)
+
+    anim_comb1 = QPropertyAnimation(ui.cvc_comboBoxxx_02, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_line1 = QPropertyAnimation(ui.cvc_lineEdittt_02, b'geometry')
+    anim_line1.setDuration(300)
+    anim_line1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line1.setStartValue(current_geo_line1)
+    anim_line1.setEndValue(target_geo_line1)
+
+    anim_btn01 = QPropertyAnimation(ui.cvc_pushButton_03, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(ui.cvc_pushButton_04, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_comb2 = QPropertyAnimation(ui.cva_comboBoxxx_01, b'geometry')
+    anim_comb2.setDuration(300)
+    anim_comb2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb2.setStartValue(current_geo_comb2)
+    anim_comb2.setEndValue(target_geo_comb2)
+
+    anim_line2 = QPropertyAnimation(ui.cva_lineEdittt_01, b'geometry')
+    anim_line2.setDuration(300)
+    anim_line2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line2.setStartValue(current_geo_line2)
+    anim_line2.setEndValue(target_geo_line2)
+
+    anim_btn03 = QPropertyAnimation(ui.cva_pushButton_04, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    anim_btn04 = QPropertyAnimation(ui.cva_pushButton_05, b'geometry')
+    anim_btn04.setDuration(300)
+    anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn04.setStartValue(current_geo_btn04)
+    anim_btn04.setEndValue(target_geo_btn04)
+
+    anim_zoo01 = QPropertyAnimation(ui.czoo_pushButon_01, b'geometry')
+    anim_zoo01.setDuration(300)
+    anim_zoo01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo01.setStartValue(current_geo_zoo01)
+    anim_zoo01.setEndValue(target_geo_zoo01)
+
+    anim_zoo02 = QPropertyAnimation(ui.czoo_pushButon_02, b'geometry')
+    anim_zoo02.setDuration(300)
+    anim_zoo02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo02.setStartValue(current_geo_zoo02)
+    anim_zoo02.setEndValue(target_geo_zoo02)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_tedt3)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_line1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_comb2)
+    ui.animation_group.addAnimation(anim_line2)
+    ui.animation_group.addAnimation(anim_btn03)
+    ui.animation_group.addAnimation(anim_btn04)
+    ui.animation_group.addAnimation(anim_zoo01)
+    ui.animation_group.addAnimation(anim_zoo02)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_03(ui):
+    """coin_opti_vars_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.cs_textEditttt_05.geometry()
+    current_geo_tedt2 = ui.cs_textEditttt_06.geometry()
+    current_geo_comb1 = ui.cvc_comboBoxxx_02.geometry()
+    current_geo_line1 = ui.cvc_lineEdittt_02.geometry()
+    current_geo_btn01 = ui.cvc_pushButton_03.geometry()
+    current_geo_btn02 = ui.cvc_pushButton_04.geometry()
+    current_geo_comb2 = ui.cva_comboBoxxx_01.geometry()
+    current_geo_line2 = ui.cva_lineEdittt_01.geometry()
+    current_geo_btn03 = ui.cva_pushButton_04.geometry()
+    current_geo_btn04 = ui.cva_pushButton_05.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 497, 1347 if ui.extend_window else 740)
+    target_geo_tedt2 = QRect(509, 10, 497, 1347 if ui.extend_window else 740)
+    target_geo_comb1 = QRect(1012, 10, 165, 30)
+    target_geo_line1 = QRect(1182, 10, 165, 30)
+    target_geo_btn01 = QRect(1012, 45, 165, 30)
+    target_geo_btn02 = QRect(1182, 45, 165, 30)
+    target_geo_comb2 = QRect(1012, 80, 165, 30)
+    target_geo_line2 = QRect(1182, 80, 165, 30)
+    target_geo_btn03 = QRect(1012, 115, 165, 30)
+    target_geo_btn04 = QRect(1182, 115, 165, 30)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.cs_textEditttt_05, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.cs_textEditttt_06, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_comb1 = QPropertyAnimation(ui.cvc_comboBoxxx_02, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_line1 = QPropertyAnimation(ui.cvc_lineEdittt_02, b'geometry')
+    anim_line1.setDuration(300)
+    anim_line1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line1.setStartValue(current_geo_line1)
+    anim_line1.setEndValue(target_geo_line1)
+
+    anim_btn01 = QPropertyAnimation(ui.cvc_pushButton_03, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(ui.cvc_pushButton_04, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_comb2 = QPropertyAnimation(ui.cva_comboBoxxx_01, b'geometry')
+    anim_comb2.setDuration(300)
+    anim_comb2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb2.setStartValue(current_geo_comb2)
+    anim_comb2.setEndValue(target_geo_comb2)
+
+    anim_line2 = QPropertyAnimation(ui.cva_lineEdittt_01, b'geometry')
+    anim_line2.setDuration(300)
+    anim_line2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line2.setStartValue(current_geo_line2)
+    anim_line2.setEndValue(target_geo_line2)
+
+    anim_btn03 = QPropertyAnimation(ui.cva_pushButton_04, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    anim_btn04 = QPropertyAnimation(ui.cva_pushButton_05, b'geometry')
+    anim_btn04.setDuration(300)
+    anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn04.setStartValue(current_geo_btn04)
+    anim_btn04.setEndValue(target_geo_btn04)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_line1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_comb2)
+    ui.animation_group.addAnimation(anim_line2)
+    ui.animation_group.addAnimation(anim_btn03)
+    ui.animation_group.addAnimation(anim_btn04)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_04(ui):
+    """coin_vars_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.cs_textEditttt_01.geometry()
+    current_geo_tedt2 = ui.cs_textEditttt_02.geometry()
+    current_geo_tedt3 = ui.cs_textEditttt_03.geometry()
+    current_geo_tedt4 = ui.cs_textEditttt_04.geometry()
+    current_geo_comb1 = ui.cvjb_comboBoxx_01.geometry()
+    current_geo_btn01 = ui.cvjb_pushButon_01.geometry()
+    current_geo_comb2 = ui.cvjs_comboBoxx_01.geometry()
+    current_geo_btn02 = ui.cvjs_pushButon_01.geometry()
+    current_geo_comb3 = ui.cvc_comboBoxxx_02.geometry()
+    current_geo_line1 = ui.cvc_lineEdittt_02.geometry()
+    current_geo_btn03 = ui.cvc_pushButton_03.geometry()
+    current_geo_btn04 = ui.cvc_pushButton_04.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 497, 740 if ui.extend_window else 463)
+    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
+    target_geo_tedt3 = QRect(509, 10, 497, 740 if ui.extend_window else 463)
+    target_geo_tedt4 = QRect(509, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
+    target_geo_comb1 = QRect(1012, 10, 165, 30)
+    target_geo_btn01 = QRect(1182, 10, 165, 30)
+    target_geo_comb2 = QRect(1012, 478, 165, 30)
+    target_geo_btn02 = QRect(1182, 478, 165, 30)
+    target_geo_comb3 = QRect(1012, 115, 165, 30)
+    target_geo_line1 = QRect(1182, 115, 165, 30)
+    target_geo_btn03 = QRect(1012, 150, 165, 30)
+    target_geo_btn04 = QRect(1182, 150, 165, 30)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.cs_textEditttt_01, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.cs_textEditttt_02, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_tedt3 = QPropertyAnimation(ui.cs_textEditttt_03, b'geometry')
+    anim_tedt3.setDuration(300)
+    anim_tedt3.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt3.setStartValue(current_geo_tedt3)
+    anim_tedt3.setEndValue(target_geo_tedt3)
+
+    anim_tedt4 = QPropertyAnimation(ui.cs_textEditttt_04, b'geometry')
+    anim_tedt4.setDuration(300)
+    anim_tedt4.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt4.setStartValue(current_geo_tedt4)
+    anim_tedt4.setEndValue(target_geo_tedt4)
+
+    anim_comb1 = QPropertyAnimation(ui.cvjb_comboBoxx_01, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_btn01 = QPropertyAnimation(ui.cvjb_pushButon_01, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_comb2 = QPropertyAnimation(ui.cvjs_comboBoxx_01, b'geometry')
+    anim_comb2.setDuration(300)
+    anim_comb2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb2.setStartValue(current_geo_comb2)
+    anim_comb2.setEndValue(target_geo_comb2)
+
+    anim_btn02 = QPropertyAnimation(ui.cvjs_pushButon_01, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_comb3 = QPropertyAnimation(ui.cvc_comboBoxxx_02, b'geometry')
+    anim_comb3.setDuration(300)
+    anim_comb3.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb3.setStartValue(current_geo_comb3)
+    anim_comb3.setEndValue(target_geo_comb3)
+
+    anim_line1 = QPropertyAnimation(ui.cvc_lineEdittt_02, b'geometry')
+    anim_line1.setDuration(300)
+    anim_line1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_line1.setStartValue(current_geo_line1)
+    anim_line1.setEndValue(target_geo_line1)
+
+    anim_btn03 = QPropertyAnimation(ui.cvc_pushButton_03, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    anim_btn04 = QPropertyAnimation(ui.cvc_pushButton_04, b'geometry')
+    anim_btn04.setDuration(300)
+    anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn04.setStartValue(current_geo_btn04)
+    anim_btn04.setEndValue(target_geo_btn04)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_tedt3)
+    ui.animation_group.addAnimation(anim_tedt4)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_comb2)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_comb3)
+    ui.animation_group.addAnimation(anim_line1)
+    ui.animation_group.addAnimation(anim_btn03)
+    ui.animation_group.addAnimation(anim_btn04)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_05(ui):
+    """coin_stg_editer용 그룹 애니메이션"""
+    # 위젯들의 현재 지오메트리 저장
+    current_geo_tedt1 = ui.cs_textEditttt_01.geometry()
+    current_geo_tedt2 = ui.cs_textEditttt_02.geometry()
+    current_geo_comb1 = ui.cvjb_comboBoxx_01.geometry()
+    current_geo_btn01 = ui.cvjb_pushButon_01.geometry()
+    current_geo_comb2 = ui.cvjs_comboBoxx_01.geometry()
+    current_geo_btn02 = ui.cvjs_pushButon_01.geometry()
+    current_geo_zoo01 = ui.czoo_pushButon_01.geometry()
+    current_geo_zoo02 = ui.czoo_pushButon_02.geometry()
+
+    # 목표 지오메트리 설정
+    target_geo_tedt1 = QRect(7, 10, 1000, 740 if ui.extend_window else 463)
+    target_geo_tedt2 = QRect(7, 756 if ui.extend_window else 478, 1000, 602 if ui.extend_window else 272)
+    target_geo_comb1 = QRect(1012, 10, 165, 25)
+    target_geo_btn01 = QRect(1012, 40, 165, 30)
+    target_geo_comb2 = QRect(1012, 478, 165, 25)
+    target_geo_btn02 = QRect(1012, 508, 165, 30)
+    target_geo_zoo01 = QRect(937, 15, 50, 20)
+    target_geo_zoo02 = QRect(937, 761 if ui.extend_window else 483, 50, 20)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_tedt1 = QPropertyAnimation(ui.cs_textEditttt_01, b'geometry')
+    anim_tedt1.setDuration(300)
+    anim_tedt1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt1.setStartValue(current_geo_tedt1)
+    anim_tedt1.setEndValue(target_geo_tedt1)
+
+    anim_tedt2 = QPropertyAnimation(ui.cs_textEditttt_02, b'geometry')
+    anim_tedt2.setDuration(300)
+    anim_tedt2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_tedt2.setStartValue(current_geo_tedt2)
+    anim_tedt2.setEndValue(target_geo_tedt2)
+
+    anim_comb1 = QPropertyAnimation(ui.cvjb_comboBoxx_01, b'geometry')
+    anim_comb1.setDuration(300)
+    anim_comb1.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb1.setStartValue(current_geo_comb1)
+    anim_comb1.setEndValue(target_geo_comb1)
+
+    anim_btn01 = QPropertyAnimation(ui.cvjb_pushButon_01, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_comb2 = QPropertyAnimation(ui.cvjs_comboBoxx_01, b'geometry')
+    anim_comb2.setDuration(300)
+    anim_comb2.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_comb2.setStartValue(current_geo_comb2)
+    anim_comb2.setEndValue(target_geo_comb2)
+
+    anim_btn02 = QPropertyAnimation(ui.cvjs_pushButon_01, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_zoo01 = QPropertyAnimation(ui.czoo_pushButon_01, b'geometry')
+    anim_zoo01.setDuration(300)
+    anim_zoo01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo01.setStartValue(current_geo_zoo01)
+    anim_zoo01.setEndValue(target_geo_zoo01)
+
+    anim_zoo02 = QPropertyAnimation(ui.czoo_pushButon_02, b'geometry')
+    anim_zoo02.setDuration(300)
+    anim_zoo02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_zoo02.setStartValue(current_geo_zoo02)
+    anim_zoo02.setEndValue(target_geo_zoo02)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group.addAnimation(anim_tedt1)
+    ui.animation_group.addAnimation(anim_tedt2)
+    ui.animation_group.addAnimation(anim_comb1)
+    ui.animation_group.addAnimation(anim_btn01)
+    ui.animation_group.addAnimation(anim_comb2)
+    ui.animation_group.addAnimation(anim_btn02)
+    ui.animation_group.addAnimation(anim_zoo01)
+    ui.animation_group.addAnimation(anim_zoo02)
+
+    # 애니메이션 시작
+    ui.animation_group.start()
+
+
+def group_animation_06(ui, pushButton1, pushButton2, pushButton3, pushButton4=None):
+    # 위젯들의 좌측 상단으로 지오메트리 저장
+    current_geo_btn01 = QRect(1350, 0, 0, 0)
+    current_geo_btn02 = QRect(1350, 0, 0, 0)
+    current_geo_btn03 = QRect(1350, 0, 0, 0)
+    current_geo_btn04 = QRect(1350, 0, 0, 0)
+
+    # 목표 지오메트리 설정
+    target_geo_btn01 = QRect(1012, 335, 165, 30)
+    target_geo_btn02 = QRect(1012, 370, 165, 30)
+
+    if pushButton4 is None:
+        target_geo_btn03  = QRect(1012, 405, 165, 30)
+    else:
+        target_geo_btn03  = QRect(1012, 405, 80, 30)
+        target_geo_btn04  = QRect(1097, 405, 80, 30)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group2 = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_btn01 = QPropertyAnimation(pushButton1, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(pushButton2, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_btn03 = QPropertyAnimation(pushButton3, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    if pushButton4 is not None:
+        anim_btn04 = QPropertyAnimation(pushButton4, b'geometry')
+        anim_btn04.setDuration(300)
+        anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+        # noinspection PyUnboundLocalVariable
+        anim_btn04.setStartValue(current_geo_btn04)
+        # noinspection PyUnboundLocalVariable
+        anim_btn04.setEndValue(target_geo_btn04)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group2.addAnimation(anim_btn01)
+    ui.animation_group2.addAnimation(anim_btn02)
+    ui.animation_group2.addAnimation(anim_btn03)
+    if pushButton4 is not None:
+        # noinspection PyUnboundLocalVariable
+        ui.animation_group2.addAnimation(anim_btn04)
+
+    # 애니메이션 시작
+    ui.animation_group2.start()
+
+
+def group_animation_07(ui, pushButton1, pushButton2, pushButton3, pushButton4, pushButton5, pushButton6):
+    # 위젯들의 좌측 상단으로 지오메트리 저장
+    current_geo_btn01 = QRect(1350, 0, 0, 0)
+    current_geo_btn02 = QRect(1350, 0, 0, 0)
+    current_geo_btn03 = QRect(1350, 0, 0, 0)
+    current_geo_btn04 = QRect(1350, 0, 0, 0)
+    current_geo_btn05 = QRect(1350, 0, 0, 0)
+    current_geo_btn06 = QRect(1350, 0, 0, 0)
+
+    # 목표 지오메트리 설정
+    target_geo_btn01 = QRect(1012, 335, 80, 30)
+    target_geo_btn02 = QRect(1012, 370, 80, 30)
+    target_geo_btn03 = QRect(1012, 405, 80, 30)
+    target_geo_btn04 = QRect(1097, 335, 80, 30)
+    target_geo_btn05 = QRect(1097, 370, 80, 30)
+    target_geo_btn06 = QRect(1097, 405, 80, 30)
+
+    # 애니메이션 그룹 생성
+    ui.animation_group2 = QParallelAnimationGroup()
+
+    # 각 위젯의 지오메트리 애니메이션 생성
+    anim_btn01 = QPropertyAnimation(pushButton1, b'geometry')
+    anim_btn01.setDuration(300)
+    anim_btn01.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn01.setStartValue(current_geo_btn01)
+    anim_btn01.setEndValue(target_geo_btn01)
+
+    anim_btn02 = QPropertyAnimation(pushButton2, b'geometry')
+    anim_btn02.setDuration(300)
+    anim_btn02.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn02.setStartValue(current_geo_btn02)
+    anim_btn02.setEndValue(target_geo_btn02)
+
+    anim_btn03 = QPropertyAnimation(pushButton3, b'geometry')
+    anim_btn03.setDuration(300)
+    anim_btn03.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn03.setStartValue(current_geo_btn03)
+    anim_btn03.setEndValue(target_geo_btn03)
+
+    anim_btn04 = QPropertyAnimation(pushButton4, b'geometry')
+    anim_btn04.setDuration(300)
+    anim_btn04.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn04.setStartValue(current_geo_btn04)
+    anim_btn04.setEndValue(target_geo_btn04)
+
+    anim_btn05 = QPropertyAnimation(pushButton5, b'geometry')
+    anim_btn05.setDuration(300)
+    anim_btn05.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn05.setStartValue(current_geo_btn05)
+    anim_btn05.setEndValue(target_geo_btn05)
+
+    anim_btn06 = QPropertyAnimation(pushButton6, b'geometry')
+    anim_btn06.setDuration(300)
+    anim_btn06.setEasingCurve(QEasingCurve.InOutCirc)
+    anim_btn06.setStartValue(current_geo_btn06)
+    anim_btn06.setEndValue(target_geo_btn06)
+
+    # 그룹에 모든 애니메이션 추가
+    ui.animation_group2.addAnimation(anim_btn01)
+    ui.animation_group2.addAnimation(anim_btn02)
+    ui.animation_group2.addAnimation(anim_btn03)
+    ui.animation_group2.addAnimation(anim_btn04)
+    ui.animation_group2.addAnimation(anim_btn05)
+    ui.animation_group2.addAnimation(anim_btn06)
+
+    # 애니메이션 시작
+    ui.animation_group2.start()
+
+
 @error_decorator
 def coin_opti_test_editer(ui):
-    ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-    ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    ui.cs_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-
-    ui.cvc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.cvc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.cvc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.cvc_pushButton_04.setGeometry(1182, 150, 165, 30)
-
-    ui.czoo_pushButon_01.setGeometry(584, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_01(ui)
+    group_animation_07(ui, ui.cvc_pushButton_15, ui.cvc_pushButton_16, ui.cvc_pushButton_17, ui.cvc_pushButton_30, ui.cvc_pushButton_31, ui.cvc_pushButton_32)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -52,6 +720,10 @@ def coin_opti_test_editer(ui):
         item.setVisible(False)
     for item in ui.coin_rwftvd_list:
         item.setVisible(False)
+    for item in ui.coin_varsedit_list:
+        item.setVisible(False)
+    for item in ui.coin_areaedit_list:
+        item.setVisible(False)
     for item in ui.coin_esczom_list:
         item.setVisible(True)
     for item in ui.coin_optimz_list:
@@ -67,12 +739,6 @@ def coin_opti_test_editer(ui):
     ui.image_label1.setVisible(False)
     ui.cvc_labellllll_04.setText(testtext)
     ui.cvc_labellllll_05.setVisible(False)
-    ui.cvc_pushButton_21.setVisible(False)
-    ui.cvc_pushButton_22.setVisible(False)
-    ui.cvc_pushButton_23.setVisible(False)
-    ui.cvc_pushButton_24.setVisible(False)
-    ui.cvc_pushButton_25.setVisible(False)
-    ui.cvc_pushButton_26.setVisible(False)
 
     ui.cvj_pushButton_07.setFocus()
     cChangeSvjButtonColor(ui)
@@ -80,17 +746,8 @@ def coin_opti_test_editer(ui):
 
 @error_decorator
 def coin_rwf_test_editer(ui):
-    ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-    ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    ui.cs_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-
-    ui.cvc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.cvc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.cvc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.cvc_pushButton_04.setGeometry(1182, 150, 165, 30)
-
-    ui.czoo_pushButon_01.setGeometry(584, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_01(ui)
+    group_animation_07(ui, ui.cvc_pushButton_18, ui.cvc_pushButton_19, ui.cvc_pushButton_20, ui.cvc_pushButton_33, ui.cvc_pushButton_34, ui.cvc_pushButton_35)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -115,6 +772,10 @@ def coin_rwf_test_editer(ui):
     for item in ui.coin_gaopti_list:
         item.setVisible(False)
     for item in ui.coin_optest_list:
+        item.setVisible(False)
+    for item in ui.coin_varsedit_list:
+        item.setVisible(False)
+    for item in ui.coin_areaedit_list:
         item.setVisible(False)
     for item in ui.coin_esczom_list:
         item.setVisible(True)
@@ -132,12 +793,6 @@ def coin_rwf_test_editer(ui):
     ui.cvc_labellllll_01.setVisible(False)
     ui.cvc_labellllll_04.setText(rwfttext)
     ui.cvc_labellllll_05.setVisible(False)
-    ui.cvc_pushButton_21.setVisible(False)
-    ui.cvc_pushButton_22.setVisible(False)
-    ui.cvc_pushButton_23.setVisible(False)
-    ui.cvc_pushButton_24.setVisible(False)
-    ui.cvc_pushButton_25.setVisible(False)
-    ui.cvc_pushButton_26.setVisible(False)
 
     ui.cvj_pushButton_06.setFocus()
     cChangeSvjButtonColor(ui)
@@ -145,22 +800,8 @@ def coin_rwf_test_editer(ui):
 
 @error_decorator
 def coin_opti_ga_editer(ui):
-    ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-    ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    ui.cs_textEditttt_06.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-
-    ui.cvc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.cvc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.cvc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.cvc_pushButton_04.setGeometry(1182, 150, 165, 30)
-
-    ui.cva_comboBoxxx_01.setGeometry(1012, 115, 165, 30)
-    ui.cva_lineEdittt_01.setGeometry(1182, 115, 165, 30)
-    ui.cva_pushButton_04.setGeometry(1012, 150, 165, 30)
-    ui.cva_pushButton_05.setGeometry(1182, 150, 165, 30)
-
-    ui.czoo_pushButon_01.setGeometry(584, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_02(ui)
+    group_animation_06(ui, ui.cva_pushButton_01, ui.cva_pushButton_02, ui.cva_pushButton_03)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -186,6 +827,10 @@ def coin_opti_ga_editer(ui):
         item.setVisible(False)
     for item in ui.coin_rwftvd_list:
         item.setVisible(False)
+    for item in ui.coin_varsedit_list:
+        item.setVisible(False)
+    for item in ui.coin_areaedit_list:
+        item.setVisible(False)
     for item in ui.coin_esczom_list:
         item.setVisible(True)
     for item in ui.coin_optimz_list:
@@ -201,12 +846,6 @@ def coin_opti_ga_editer(ui):
     ui.image_label1.setVisible(False)
     ui.cvc_labellllll_04.setText(gaoptext)
     ui.cvc_labellllll_05.setVisible(False)
-    ui.cvc_pushButton_21.setVisible(False)
-    ui.cvc_pushButton_22.setVisible(False)
-    ui.cvc_pushButton_23.setVisible(False)
-    ui.cvc_pushButton_24.setVisible(False)
-    ui.cvc_pushButton_25.setVisible(False)
-    ui.cvc_pushButton_26.setVisible(False)
 
     ui.cvj_pushButton_10.setFocus()
     cChangeSvjButtonColor(ui)
@@ -214,18 +853,8 @@ def coin_opti_ga_editer(ui):
 
 @error_decorator
 def coin_opti_vars_editer(ui):
-    ui.cs_textEditttt_05.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
-    ui.cs_textEditttt_06.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
-
-    ui.cvc_comboBoxxx_02.setGeometry(1012, 10, 165, 30)
-    ui.cvc_lineEdittt_02.setGeometry(1182, 10, 165, 30)
-    ui.cvc_pushButton_03.setGeometry(1012, 45, 165, 30)
-    ui.cvc_pushButton_04.setGeometry(1182, 45, 165, 30)
-
-    ui.cva_comboBoxxx_01.setGeometry(1012, 80, 165, 30)
-    ui.cva_lineEdittt_01.setGeometry(1182, 80, 165, 30)
-    ui.cva_pushButton_04.setGeometry(1012, 115, 165, 30)
-    ui.cva_pushButton_05.setGeometry(1182, 115, 165, 30)
+    group_animation_03(ui)
+    group_animation_06(ui, ui.cvc_pushButton_21, ui.cvc_pushButton_22, ui.cvc_pushButton_23)
 
     ui.cs_textEditttt_01.setVisible(False)
     ui.cs_textEditttt_02.setVisible(False)
@@ -252,6 +881,10 @@ def coin_opti_vars_editer(ui):
         item.setVisible(False)
     for item in ui.coin_optimz_list:
         item.setVisible(False)
+    for item in ui.coin_varsedit_list:
+        item.setVisible(False)
+    for item in ui.coin_areaedit_list:
+        item.setVisible(True)
     for item in ui.coin_period_list:
         item.setVisible(True)
     for item in ui.coin_gaopti_list:
@@ -281,15 +914,9 @@ def coin_opti_vars_editer(ui):
     ui.cvc_pushButton_11.setVisible(True)
 
     ui.image_label1.setVisible(True)
-    ui.cvc_labellllll_05.setVisible(True)
     ui.cvc_labellllll_04.setText(gaoptext)
     ui.cvc_labellllll_05.setText(vedittxt)
-    ui.cvc_pushButton_21.setVisible(True)
-    ui.cvc_pushButton_22.setVisible(True)
-    ui.cvc_pushButton_23.setVisible(True)
-    ui.cvc_pushButton_24.setVisible(False)
-    ui.cvc_pushButton_25.setVisible(False)
-    ui.cvc_pushButton_26.setVisible(False)
+    ui.cvc_labellllll_05.setVisible(True)
 
     ui.cvj_pushButton_12.setFocus()
     cChangeSvjButtonColor(ui)
@@ -297,17 +924,8 @@ def coin_opti_vars_editer(ui):
 
 @error_decorator
 def coin_opti_editer(ui):
-    ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-    ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 478, 647, 602 if ui.extend_window else 272)
-    ui.cs_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-
-    ui.cvc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.cvc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.cvc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.cvc_pushButton_04.setGeometry(1182, 150, 165, 30)
-
-    ui.czoo_pushButon_01.setGeometry(584, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_01(ui)
+    group_animation_07(ui, ui.cvc_pushButton_06, ui.cvc_pushButton_07, ui.cvc_pushButton_08, ui.cvc_pushButton_27, ui.cvc_pushButton_28, ui.cvc_pushButton_29)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -335,6 +953,10 @@ def coin_opti_editer(ui):
         item.setVisible(False)
     for item in ui.coin_rwftvd_list:
         item.setVisible(False)
+    for item in ui.coin_varsedit_list:
+        item.setVisible(False)
+    for item in ui.coin_areaedit_list:
+        item.setVisible(False)
     for item in ui.coin_esczom_list:
         item.setVisible(True)
     for item in ui.coin_optimz_list:
@@ -348,12 +970,6 @@ def coin_opti_editer(ui):
     ui.image_label1.setVisible(False)
     ui.cvc_labellllll_04.setText(optitext)
     ui.cvc_labellllll_05.setVisible(False)
-    ui.cvc_pushButton_21.setVisible(False)
-    ui.cvc_pushButton_22.setVisible(False)
-    ui.cvc_pushButton_23.setVisible(False)
-    ui.cvc_pushButton_24.setVisible(False)
-    ui.cvc_pushButton_25.setVisible(False)
-    ui.cvc_pushButton_26.setVisible(False)
 
     ui.cvj_pushButton_08.setFocus()
     cChangeSvjButtonColor(ui)
@@ -361,20 +977,8 @@ def coin_opti_editer(ui):
 
 @error_decorator
 def coin_vars_editer(ui):
-    ui.cs_textEditttt_01.setGeometry(7, 10, 497, 740 if ui.extend_window else 463)
-    ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
-    ui.cs_textEditttt_03.setGeometry(509, 10, 497, 740 if ui.extend_window else 463)
-    ui.cs_textEditttt_04.setGeometry(509, 756 if ui.extend_window else 478, 497, 602 if ui.extend_window else 272)
-
-    ui.cvjb_comboBoxx_01.setGeometry(1012, 10, 165, 30)
-    ui.cvjb_pushButon_01.setGeometry(1182, 10, 165, 30)
-    ui.cvjs_comboBoxx_01.setGeometry(1012, 478, 165, 30)
-    ui.cvjs_pushButon_01.setGeometry(1182, 478, 165, 30)
-
-    ui.cvc_comboBoxxx_02.setGeometry(1012, 115, 165, 30)
-    ui.cvc_lineEdittt_02.setGeometry(1182, 115, 165, 30)
-    ui.cvc_pushButton_03.setGeometry(1012, 150, 165, 30)
-    ui.cvc_pushButton_04.setGeometry(1182, 150, 165, 30)
+    group_animation_04(ui)
+    group_animation_06(ui, ui.cvc_pushButton_24, ui.cvc_pushButton_25, ui.cvc_pushButton_26)
 
     ui.cs_textEditttt_01.setVisible(True)
     ui.cs_textEditttt_02.setVisible(True)
@@ -401,6 +1005,10 @@ def coin_vars_editer(ui):
         item.setVisible(False)
     for item in ui.coin_esczom_list:
         item.setVisible(False)
+    for item in ui.coin_areaedit_list:
+        item.setVisible(False)
+    for item in ui.coin_varsedit_list:
+        item.setVisible(True)
     for item in ui.coin_optimz_list:
         item.setVisible(True)
     for item in ui.coin_period_list:
@@ -422,12 +1030,6 @@ def coin_vars_editer(ui):
     ui.image_label1.setVisible(False)
     ui.cvc_labellllll_04.setText(optitext)
     ui.cvc_labellllll_05.setVisible(False)
-    ui.cvc_pushButton_21.setVisible(False)
-    ui.cvc_pushButton_22.setVisible(False)
-    ui.cvc_pushButton_23.setVisible(False)
-    ui.cvc_pushButton_24.setVisible(True)
-    ui.cvc_pushButton_25.setVisible(True)
-    ui.cvc_pushButton_26.setVisible(True)
 
     ui.cvj_pushButton_13.setFocus()
     cChangeSvjButtonColor(ui)
@@ -456,6 +1058,7 @@ def change_pre_button_edit(ui):
 @error_decorator
 def coin_backtest_log(ui):
     change_pre_button_edit(ui)
+
     ui.cs_textEditttt_01.setVisible(False)
     ui.cs_textEditttt_02.setVisible(False)
     ui.cs_textEditttt_03.setVisible(False)
@@ -485,6 +1088,7 @@ def coin_backtest_log(ui):
 @error_decorator
 def coin_backtest_detail(ui):
     change_pre_button_edit(ui)
+
     ui.cs_textEditttt_01.setVisible(False)
     ui.cs_textEditttt_02.setVisible(False)
     ui.cs_textEditttt_03.setVisible(False)
@@ -513,16 +1117,8 @@ def coin_backtest_detail(ui):
 
 @error_decorator
 def coin_stg_editer(ui):
-    ui.cs_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
-    ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 478, 1000, 602 if ui.extend_window else 272)
-
-    ui.cvjb_comboBoxx_01.setGeometry(1012, 10, 165, 25)
-    ui.cvjb_pushButon_01.setGeometry(1012, 40, 165, 30)
-    ui.cvjs_comboBoxx_01.setGeometry(1012, 478, 165, 25)
-    ui.cvjs_pushButon_01.setGeometry(1012, 508, 165, 30)
-
-    ui.czoo_pushButon_01.setGeometry(937, 15, 50, 20)
-    ui.czoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
+    group_animation_05(ui)
+    group_animation_06(ui, ui.cvj_pushButton_01, ui.cvj_pushButton_02, ui.cvj_pushButton_03, ui.cvj_pushButton_04)
 
     ui.czoo_pushButon_01.setText('확대(esc)')
     ui.czoo_pushButon_02.setText('확대(esc)')
@@ -550,6 +1146,10 @@ def coin_stg_editer(ui):
         item.setVisible(False)
     for item in ui.coin_rwftvd_list:
         item.setVisible(False)
+    for item in ui.coin_varsedit_list:
+        item.setVisible(False)
+    for item in ui.coin_areaedit_list:
+        item.setVisible(False)
     for item in ui.coin_datedt_list:
         item.setVisible(True)
     for item in ui.coin_esczom_list:
@@ -562,12 +1162,6 @@ def coin_stg_editer(ui):
 
     ui.image_label1.setVisible(False)
     ui.cvc_labellllll_05.setVisible(False)
-    ui.cvc_pushButton_21.setVisible(False)
-    ui.cvc_pushButton_22.setVisible(False)
-    ui.cvc_pushButton_23.setVisible(False)
-    ui.cvc_pushButton_24.setVisible(False)
-    ui.cvc_pushButton_25.setVisible(False)
-    ui.cvc_pushButton_26.setVisible(False)
 
     ui.cvj_pushButton_09.setFocus()
     cChangeSvjButtonColor(ui)
@@ -575,8 +1169,7 @@ def coin_stg_editer(ui):
 
 @error_decorator
 def coin_cond_editer(ui):
-    ui.cs_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
-    ui.cs_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
+    group_animation_06(ui, ui.cvo_pushButton_05, ui.cvo_pushButton_06, ui.cvo_pushButton_07)
 
     ui.cs_textEditttt_01.setVisible(False)
     ui.cs_textEditttt_02.setVisible(False)
@@ -584,6 +1177,9 @@ def coin_cond_editer(ui):
     ui.cs_textEditttt_04.setVisible(False)
     ui.cs_textEditttt_05.setVisible(False)
     ui.cs_textEditttt_06.setVisible(False)
+
+    ui.cs_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
+    ui.cs_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
 
     for item in ui.coin_esczom_list:
         item.setVisible(False)
@@ -600,6 +1196,10 @@ def coin_cond_editer(ui):
     for item in ui.coin_rwftvd_list:
         item.setVisible(False)
     for item in ui.coin_datedt_list:
+        item.setVisible(False)
+    for item in ui.coin_varsedit_list:
+        item.setVisible(False)
+    for item in ui.coin_areaedit_list:
         item.setVisible(False)
     for item in ui.coin_optimz_list:
         item.setVisible(True)
@@ -625,16 +1225,9 @@ def coin_cond_editer(ui):
 
     ui.image_label1.setVisible(True)
     ui.cvc_labellllll_01.setVisible(False)
-    ui.cvc_labellllll_04.setVisible(True)
-    ui.cvc_labellllll_05.setVisible(True)
     ui.cvc_labellllll_04.setText(condtext)
     ui.cvc_labellllll_05.setText(cedittxt)
-    ui.cvc_pushButton_21.setVisible(False)
-    ui.cvc_pushButton_22.setVisible(False)
-    ui.cvc_pushButton_23.setVisible(False)
-    ui.cvc_pushButton_24.setVisible(False)
-    ui.cvc_pushButton_25.setVisible(False)
-    ui.cvc_pushButton_26.setVisible(False)
+    ui.cvc_labellllll_05.setVisible(True)
 
     ui.cvj_pushButton_11.setFocus()
     cChangeSvjButtonColor(ui)

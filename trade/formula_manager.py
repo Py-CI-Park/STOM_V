@@ -7,7 +7,6 @@ try:
 except:
     pass
 from utility.static import dt_ymdhms
-from utility.lazy_imports import get_pd
 from trade.strategy_base import StrategyBase
 from utility.setting_base import list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, list_future_tick2, \
     list_future_min2, DB_STRATEGY
@@ -22,8 +21,9 @@ dict_fm_count = {
 
 
 def get_formula_data(forchart, col_idx):
+    import pandas as pd
     con = sqlite3.connect(DB_STRATEGY)
-    fm_df = get_pd().read_sql("SELECT * FROM formula", con)
+    fm_df = pd.read_sql("SELECT * FROM formula", con)
     con.close()
 
     fm_list = []

@@ -45,8 +45,8 @@ def stock_buy_stg_save(ui):
                 insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
-            ui.svjb_pushButon_04.setStyleSheet(style_bc_st)
-            QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+                ui.svjb_pushButon_04.setStyleSheet(style_bc_st)
+                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator

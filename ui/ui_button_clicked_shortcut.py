@@ -1,5 +1,6 @@
 
 import os
+import pandas as pd
 from PyQt5.QtWidgets import QMessageBox
 from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
 from multiprocessing import Process
@@ -16,7 +17,6 @@ from trade.upbit.upbit_strategy_tick import UpbitStrategyTick
 from ui.set_style import style_bc_bt, style_bc_bb
 from utility.setting_base import GRAPH_PATH, ui_num
 from utility.static import qtest_qwait, cme_normal_open, error_decorator
-from utility.lazy_imports import get_pd
 
 
 @error_decorator
@@ -53,9 +53,9 @@ def mnbutton_c_clicked_01(ui, index):
     ui.main_btn_list[ui.main_btn].setStyleSheet(style_bc_bt)
     ui.main_box_list[prev_main_btn].setVisible(False)
     ui.main_box_list[ui.main_btn].setVisible(True)
-    QTimer.singleShot(400, lambda: ui.image_label1.setVisible(True if ui.svc_labellllll_05.isVisible() or ui.cvc_labellllll_05.isVisible() else False))
+    QTimer.singleShot(300, lambda: ui.image_label1.setVisible(True if ui.svc_labellllll_05.isVisible() or ui.cvc_labellllll_05.isVisible() else False))
     ui.animation = QPropertyAnimation(ui.main_box_list[ui.main_btn], b'size')
-    ui.animation.setEasingCurve(QEasingCurve.InCirc)
+    ui.animation.setEasingCurve(QEasingCurve.InOutCirc)
     ui.animation.setDuration(300)
     ui.animation.setStartValue(QSize(0, 757))
     ui.animation.setEndValue(QSize(1353, 757))
@@ -208,12 +208,12 @@ def mnbutton_c_clicked_06(ui):
                 [7, '', '', '', ''],
                 [8, '', '', '', '']
             ]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             ui.queryQ.put((df, 'sacc', 'append'))
 
             columns = ["index", "Access_key", "Secret_key"]
             data = [[1, '', ''], [2, '', '']]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             ui.queryQ.put((df, 'cacc', 'append'))
 
             columns = ["index", "str_bot", "int_id"]
@@ -227,7 +227,7 @@ def mnbutton_c_clicked_06(ui):
                 [7, '', ''],
                 [8, '', '']
             ]
-            df = get_pd().DataFrame(data, columns=columns).set_index('index')
+            df = pd.DataFrame(data, columns=columns).set_index('index')
             ui.queryQ.put((df, 'telegram', 'append'))
 
             ui.queryQ.put(('설정디비', 'VACUUM'))

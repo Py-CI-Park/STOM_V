@@ -44,7 +44,7 @@ def coin_buy_stg_save(ui):
                 ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
-            ui.cvjb_pushButon_04.setStyleSheet(style_bc_st)
+                ui.cvjb_pushButon_04.setStyleSheet(style_bc_st)
 
 
 @error_decorator
