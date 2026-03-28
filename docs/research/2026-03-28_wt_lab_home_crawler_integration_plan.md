@@ -97,7 +97,8 @@
 
 - `wt-lab`의 현재 로컬 변경사항 중 `utility/webcrawling_homtab.py`가 이미 수정되어 있는지
 - 그 수정이 실험 목적의 유효한 변경인지, 임시 변경인지
-- `wt-2u` / `wt-dev`의 최신 `utility/webcrawling.py`가 기준 버전으로 사용 가능한지
+- `wt-dev`(`STOM_Version_2U_C_CLI_v267`)의 최신 `utility/webcrawling.py`를 기준 버전으로 사용할 수 있는지
+- 필요 시 `wt-2u`는 보조 비교본으로만 사용할지
 
 권장 명령:
 
@@ -111,11 +112,14 @@ git --git-dir=/mnt/c/System_Trading/STOM/STOM_V/.git/worktrees/STOM_V.wt-lab \
 
 ### 1단계. 기준 소스 확보
 
-우선 `wt-2u` 또는 `wt-dev`의 통합형 `utility/webcrawling.py`를 기준으로 잡는다.
+우선 `wt-dev`의 `STOM_Version_2U_C_CLI_v267` 라인을 **정식 기준선(canonical base)** 으로 잡는다.
 
-우선순위:
-1. `wt-dev` 최신 안정 버전
-2. `wt-2u` 최신 안정 버전
+보조 비교 우선순위:
+1. `wt-dev` 최신 안정 버전 (`STOM_Version_2U_C_CLI_v267`)
+2. `wt-2u` 최신 안정 버전 (차이 비교용 참고본)
+
+즉, 다음 세션에서는 리서치 워크트리를 “막연히 2U 계열과 비슷하게” 맞추는 것이 아니라,
+**현재 가장 최근 연구/개발 기준선인 `v267` 구조에 맞춘다**는 전제로 시작한다.
 
 이때 아래 항목이 실제로 들어 있는지 확인한다.
 
@@ -237,7 +241,8 @@ cmd.exe /c "cd /d C:\System_Trading\STOM\STOM_V.wt-lab && python stom.py"
 ## 다음 세션에서 바로 할 일 체크리스트
 
 - [ ] `wt-lab`의 현재 `utility/webcrawling_homtab.py` 로컬 수정 내용 확인
-- [ ] `wt-dev` 또는 `wt-2u`의 통합형 `utility/webcrawling.py`를 기준 소스로 선택
+- [ ] `wt-dev`(`STOM_Version_2U_C_CLI_v267`)를 기준 소스로 확정
+- [ ] 필요 시 `wt-2u`는 diff 비교용 참고본으로만 활용
 - [ ] `wt-lab/utility/webcrawling.py`에 홈탭 통합 반영
 - [ ] 이후에만 `ui/ui_mainwindow.py` stale reference 제거
 - [ ] 검증 후 `webcrawling_homtab.py` 삭제 여부 결정
@@ -254,7 +259,9 @@ cmd.exe /c "cd /d C:\System_Trading\STOM\STOM_V.wt-lab && python stom.py"
 1. `wt-lab`은 현재 구조상 즉시 깨진 상태가 아님
 2. 부분 수정은 오히려 런타임을 깨뜨릴 수 있음
 3. 현재 `utility/webcrawling_homtab.py`에 로컬 수정 흔적이 있어 선행 확인이 필요함
-4. 따라서 먼저 계획과 판단 기준을 남기고, 다음 세션에서 안전하게 이어가는 편이 맞다
+4. 사용자 판단에 따라 리서치 워크트리는 향후 `v267` 기준으로 준비하는 방향이므로,
+   다음 세션에서는 `wt-dev`를 기준선으로 삼아 세트 전환을 진행해야 함
+5. 따라서 먼저 계획과 판단 기준을 남기고, 다음 세션에서 안전하게 이어가는 편이 맞다
 
 ---
 
