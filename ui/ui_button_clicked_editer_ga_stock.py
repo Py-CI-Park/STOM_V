@@ -32,7 +32,7 @@ def stock_gavars_save(ui):
         QMessageBox.critical(ui, '오류 알림', 'GA범위의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
         if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy, ga=True):
-            if ui.proc_query.is_alive():
+            if ui.proc_chqs.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                 delete_query  = f"DELETE FROM {gubun}vars WHERE `index` = '{strategy_name}'"
                 insert_query  = f"INSERT INTO {gubun}vars VALUES (?, ?)"
@@ -68,7 +68,7 @@ def stock_condbuy_save(ui):
         QMessageBox.critical(ui, '오류 알림', '매수조건의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
         if ui.BackCodeTest3('매수', strategy):
-            if ui.proc_query.is_alive():
+            if ui.proc_chqs.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                 delete_query  = f"DELETE FROM {gubun}buyconds WHERE `index` = '{strategy_name}'"
                 insert_query  = f"INSERT INTO {gubun}buyconds VALUES (?, ?)"
@@ -104,7 +104,7 @@ def stock_condsell_save(ui):
         QMessageBox.critical(ui, '오류 알림', '매도조건의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
         if ui.BackCodeTest3('매도', strategy):
-            if ui.proc_query.is_alive():
+            if ui.proc_chqs.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                 delete_query  = f"DELETE FROM {gubun}sellconds WHERE `index` = '{strategy_name}'"
                 insert_query  = f"INSERT INTO {gubun}sellconds VALUES (?, ?)"

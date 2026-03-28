@@ -609,7 +609,7 @@ def sdbutton_clicked_05(ui):
         schedule += ui.sd_oclineEdittt_01.text() + ';'
         schedule += ui.sd_oclineEdittt_02.text() + ';'
         schedule += ui.sd_oclineEdittt_03.text()
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             delete_query  = f"DELETE FROM schedule WHERE `index` = '{schedule_name}'"
             insert_query  = 'INSERT INTO schedule VALUES (?, ?)'
             insert_values = (schedule_name, schedule)

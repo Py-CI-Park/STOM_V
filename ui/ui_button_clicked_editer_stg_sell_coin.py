@@ -36,7 +36,7 @@ def coin_sell_stg_save(ui):
         QMessageBox.critical(ui, '오류 알림', '매도전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
         if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
-            if ui.proc_query.is_alive():
+            if ui.proc_chqs.is_alive():
                 delete_query  = f"DELETE FROM coinsell WHERE `index` = '{strategy_name}'"
                 insert_query  = 'INSERT INTO coinsell VALUES (?, ?)'
                 insert_values = (strategy_name, strategy)

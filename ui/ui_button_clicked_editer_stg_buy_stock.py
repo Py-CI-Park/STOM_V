@@ -38,7 +38,7 @@ def stock_buy_stg_save(ui):
         QMessageBox.critical(ui, '오류 알림', '매수전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
         if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
-            if ui.proc_query.is_alive():
+            if ui.proc_chqs.is_alive():
                 gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
                 delete_query  = f"DELETE FROM {gubun}buy WHERE `index` = '{strategy_name}'"
                 insert_query  = f"INSERT INTO {gubun}buy VALUES (?, ?)"

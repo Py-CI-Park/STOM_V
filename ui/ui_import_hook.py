@@ -8,7 +8,7 @@ class ImportProgressHook:
         self.progress        = 5
         self.original_import = None
         self.modules = [
-            'ui.ui_mainwindow', 'ui.set_style', 'utility.hoga', 'utility.query', 'utility.chart', 'utility.sound',
+            'ui.ui_mainwindow', 'ui.set_style', 'utility.chart_hoga_query_sound',
             'utility.timesync', 'utility.setting_base', 'utility.webcrawling', 'utility.telegram_bot',
             'utility.setting_user', 'utility.database_check', 'utility.database_read_only', 'ui.set_icon',
             'ui.set_table', 'ui.set_log_tap', 'ui.set_widget', 'ui.set_setup_tap', 'ui.set_order_tap',

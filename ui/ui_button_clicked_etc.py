@@ -152,7 +152,7 @@ def stbutton_clicked_02(ui):
     if '' in std_list:
         QMessageBox.critical(ui.dialog_std, '오류 알림', '일부 제한값이 공백상태입니다.\n')
     else:
-        if ui.proc_query.is_alive():
+        if ui.proc_chqs.is_alive():
             std_list = ';'.join(std_list)
             query = f"UPDATE back SET 최적화기준값제한 = '{std_list}'"
             ui.queryQ.put(('설정디비', query))
@@ -225,7 +225,7 @@ def lvbutton_clicked_03(ui):
             QMessageBox.critical(ui, '오류 알림', '레버리지 설정을 1부터 125사이로 입력하십시오.\n')
             return
         else:
-            if ui.proc_query.is_alive():
+            if ui.proc_chqs.is_alive():
                 lvrg_text = f'{lv2};{lv3};{lv4}^{lv5};{lv6};{lv7}^{lv8};{lv9};{lv10}^{lv11};{lv12};{lv13}^{lv14};{lv15};{lv16}'
                 query     = 'UPDATE main SET 바이낸스선물고정레버리지 = ?, 바이낸스선물고정레버리지값 = ?, 바이낸스선물고정레버리지값 = ?'
                 values    = (lv0, lv1, lvrg_text)
