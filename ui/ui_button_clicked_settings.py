@@ -7,6 +7,7 @@ from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QMessageBox, QLineEdit
 from ui.set_style import style_bc_bt
 from ui.set_text import famous_saying
+from ui.ui_telegram_settings import apply_telegram_settings_save
 from utility.setting_base import DB_PATH, ui_num
 from utility.static import de_text, en_text, qtest_qwait, error_decorator
 
@@ -386,16 +387,8 @@ def setting_save_04(ui):
         comob_name = ui.sj_main_comBox_01.currentText()
         gubun = comob_name[4:]
         if ui.proc_chqs.is_alive():
-            en_str_bot = en_text(ui.dict_set['키'], str_bot)
-            en_int_id = en_text(ui.dict_set['키'], int_id)
-            query  = 'UPDATE telegram SET str_bot = ?, int_id = ? WHERE `index` = ?'
-            values = (en_str_bot, en_int_id, gubun)
-            ui.queryQ.put(('설정디비', query, values))
-
-            ui.dict_set[f'텔레그램봇토큰{gubun}'] = str_bot
-            ui.dict_set[f'텔레그램사용자아이디{gubun}'] = int(int_id)
-
-            QMessageBox.information(ui, '저장 완료', '텔레그램봇 토큰 및 사용자 아이디 설정은 재구동해야 적용됩니다.')
+            apply_telegram_settings_save(ui, gubun, str_bot, int_id, en_text)
+            QMessageBox.information(ui, '저장 완료', '텔레그램봇 토큰 및 사용자 아이디 설정을 현재 실행 중인 런타임에 다시 적용했습니다.')
 
 
 @error_decorator
