@@ -9,17 +9,17 @@ from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTyp
 from utility.setting_base import ui_num
 
 
+def get_telegram_runtime_queues(qlist):
+    return qlist[0], qlist[3], qlist[9], qlist[10], qlist[13]
+
+
 class TelegramBot:
     def __init__(self, qlist, dict_set):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
-           0        1       2      3       4      5      6      7       8         9         10     11      12
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ, cstgQ, liveQ, kimpQ, wdzservQ, totalQ
+           0        1       2      3       4      5      6      7       8         9        10     11    12      13       14
         """
-        self.windowQ     = qlist[0]
-        self.teleQ       = qlist[3]
-        self.ctraderQ    = qlist[9]
-        self.cstgQ       = qlist[10]
-        self.wdzservQ    = qlist[12]
+        self.windowQ, self.teleQ, self.ctraderQ, self.cstgQ, self.wdzservQ = get_telegram_runtime_queues(qlist)
         self.dict_set    = dict_set
 
         self.token       = None
