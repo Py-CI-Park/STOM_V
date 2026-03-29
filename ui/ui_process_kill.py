@@ -1,8 +1,13 @@
-
 import sys
 from utility.setting_base import ui_num
 from PyQt5.QtWidgets import QApplication
 from utility.static import qtest_qwait, opstarter_kill, error_decorator
+
+
+@error_decorator
+def telegram_process_kill(ui):
+    if ui.TelegramProcessAlive():
+        ui.proc_tele.kill()
 
 
 @error_decorator
@@ -23,6 +28,7 @@ def process_kill(ui):
 
     if ui.CoinKimpProcessAlive():
         ui.proc_coin_kimp.kill()
+    telegram_process_kill(ui)
     if ui.CoinReceiverProcessAlive():
         ui.proc_receiver_coin.kill()
     if ui.CoinTraderProcessAlive():
@@ -31,40 +37,70 @@ def process_kill(ui):
         ui.proc_strategy_coin.kill()
         ui.windowQ.put((ui_num['시스템로그'], 'Coin process terminate completed'))
 
-    if ui.qtimer0.isActive(): ui.qtimer0.stop()
-    if ui.qtimer1.isActive(): ui.qtimer1.stop()
-    if ui.qtimer2.isActive(): ui.qtimer2.stop()
-    if ui.qtimer3.isActive(): ui.qtimer3.stop()
+    if ui.qtimer0.isActive():
+        ui.qtimer0.stop()
+    if ui.qtimer1.isActive():
+        ui.qtimer1.stop()
+    if ui.qtimer2.isActive():
+        ui.qtimer2.stop()
+    if ui.qtimer3.isActive():
+        ui.qtimer3.stop()
     ui.windowQ.put((ui_num['시스템로그'], 'QTimer stop completed'))
 
-    if ui.zmqserv.isRunning(): ui.zmqserv.stop()
-    if ui.zmqrecv.isRunning(): ui.zmqrecv.stop()
+    if ui.zmqserv.isRunning():
+        ui.zmqserv.stop()
+    if ui.zmqrecv.isRunning():
+        ui.zmqrecv.stop()
     ui.windowQ.put((ui_num['시스템로그'], 'QThread terminate completed'))
 
-    if ui.dialog_db.isVisible():         ui.dialog_db.close()
-    if ui.dialog_web.isVisible():        ui.dialog_web.close()
-    if ui.dialog_std.isVisible():        ui.dialog_std.close()
-    if ui.dialog_jisu.isVisible():       ui.dialog_jisu.close()
-    if ui.dialog_hoga.isVisible():       ui.dialog_hoga.close()
-    if ui.dialog_info.isVisible():       ui.dialog_info.close()
-    if ui.dialog_tree.isVisible():       ui.dialog_tree.close()
-    if ui.dialog_kimp.isVisible():       ui.dialog_kimp.close()
-    if ui.dialog_pass.isVisible():       ui.dialog_pass.close()
-    if ui.dialog_comp.isVisible():       ui.dialog_comp.close()
-    if ui.dialog_chart.isVisible():      ui.dialog_chart.close()
-    if ui.dialog_graph.isVisible():      ui.dialog_graph.close()
-    if ui.dialog_order.isVisible():      ui.dialog_order.close()
-    if ui.dialog_cetsj.isVisible():      ui.dialog_cetsj.close()
-    if ui.dialog_setsj.isVisible():      ui.dialog_setsj.close()
-    if ui.dialog_factor.isVisible():     ui.dialog_factor.close()
-    if ui.dialog_optuna.isVisible():     ui.dialog_optuna.close()
-    if ui.dialog_formula.isVisible():    ui.dialog_formula.close()
-    if ui.dialog_strategy.isVisible():   ui.dialog_strategy.close()
-    if ui.dialog_leverage.isVisible():   ui.dialog_leverage.close()
-    if ui.dialog_scheduler.isVisible():  ui.dialog_scheduler.close()
-    if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
-    if ui.dialog_stg_input1.isVisible(): ui.dialog_stg_input1.close()
-    if ui.dialog_stg_input2.isVisible(): ui.dialog_stg_input2.close()
+    if ui.dialog_db.isVisible():
+        ui.dialog_db.close()
+    if ui.dialog_web.isVisible():
+        ui.dialog_web.close()
+    if ui.dialog_std.isVisible():
+        ui.dialog_std.close()
+    if ui.dialog_jisu.isVisible():
+        ui.dialog_jisu.close()
+    if ui.dialog_hoga.isVisible():
+        ui.dialog_hoga.close()
+    if ui.dialog_info.isVisible():
+        ui.dialog_info.close()
+    if ui.dialog_tree.isVisible():
+        ui.dialog_tree.close()
+    if ui.dialog_kimp.isVisible():
+        ui.dialog_kimp.close()
+    if ui.dialog_pass.isVisible():
+        ui.dialog_pass.close()
+    if ui.dialog_comp.isVisible():
+        ui.dialog_comp.close()
+    if ui.dialog_chart.isVisible():
+        ui.dialog_chart.close()
+    if ui.dialog_graph.isVisible():
+        ui.dialog_graph.close()
+    if ui.dialog_order.isVisible():
+        ui.dialog_order.close()
+    if ui.dialog_cetsj.isVisible():
+        ui.dialog_cetsj.close()
+    if ui.dialog_setsj.isVisible():
+        ui.dialog_setsj.close()
+    if ui.dialog_factor.isVisible():
+        ui.dialog_factor.close()
+    if ui.dialog_optuna.isVisible():
+        ui.dialog_optuna.close()
+    if ui.dialog_formula.isVisible():
+        ui.dialog_formula.close()
+    if ui.dialog_strategy.isVisible():
+        ui.dialog_strategy.close()
+    if ui.dialog_leverage.isVisible():
+        ui.dialog_leverage.close()
+    if ui.dialog_scheduler.isVisible():
+        ui.dialog_scheduler.close()
+    if ui.dialog_backengine.isVisible():
+        ui.dialog_backengine.close()
+    if ui.dialog_stg_input1.isVisible():
+        ui.dialog_stg_input1.close()
+    if ui.dialog_stg_input2.isVisible():
+        ui.dialog_stg_input2.close()
     ui.windowQ.put((ui_num['시스템로그'], 'UI dialog window close completed'))
 
     if ui.shared_cnt is not None:
@@ -85,9 +121,9 @@ def process_kill(ui):
 
     columns = ['백테엔진분류방법', '옵튜나샘플러', '옵튜나고정변수', '옵튜나실행횟수', '옵튜나자동스탭']
     set_txt = ', '.join([f'{col} = ?' for col in columns])
-    query   = f'UPDATE back SET {set_txt}'
+    query = f'UPDATE back SET {set_txt}'
     localvs = locals()
-    values  = tuple(localvs[col] for col in columns)
+    values = tuple(localvs[col] for col in columns)
     ui.queryQ.put(('설정디비', query, values))
 
     if ui.dict_set['창위치기억']:
