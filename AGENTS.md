@@ -166,6 +166,10 @@ STOM_V/                    (STOM_Version_2U 브랜치)
 3. 크기 변화가 있는 버전: 새/변경된 `ui/*.py`에서 `self.ui.*` / `ui.*` 호출·속성 참조를 분석해 `ui_mainwindow.py`를 **추론 기반 수동 수정**
 4. 구조 동일성 검증: `.pyd` 부재, 누락 메서드 없음, `stom.py` 진입점 동일성 확인
 5. 패치 커밋: `STOM V{version}.U1.2` 형식으로 추론 근거와 함께 커밋
+6. 비정식 워크트리 가드레일 검증: `python scripts/verify_nonrelease_sync.py`
+   - `.pyd` 파일 부재
+   - 텔레그램 qlist 계약 및 런타임 시작 경로 일치
+   - 비정식 워크트리 시리얼키 UI/로드/저장 정책 유지
 
 ### 금지 사항 (필수)
 
@@ -281,3 +285,4 @@ git grep -rn "def method_name\|def function_name" STOM_Version_2U -- "ui/*.py"
 - `ui/ui_mainwindow.py`는 자동 스크립트로 갱신하지 않고 추론 기반으로 직접 관리
 - 새 `.py` 파일이 추가된 경우, `ui_mainwindow.py`의 import도 확인
 - **업데이트 후 반드시 위 검증 명령어 실행하여 누락 메서드/시그니처 불일치 없는지 확인**
+- **비정식 워크트리에서는 추가로 `python scripts/verify_nonrelease_sync.py`를 실행하여 텔레그램 계약과 시리얼키 정책 재유입 여부를 확인**
