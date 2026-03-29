@@ -6,6 +6,12 @@ from utility.static import qtest_qwait, opstarter_kill, error_decorator
 
 
 @error_decorator
+def telegram_process_kill(ui):
+    if ui.TelegramProcessAlive():
+        ui.proc_tele.kill()
+
+
+@error_decorator
 def process_kill(ui):
     if ui.proc_manager is not None and ui.proc_manager.poll() is None:
         ui.wdzservQ.put(('manager', '프로세스종료'))
@@ -23,6 +29,7 @@ def process_kill(ui):
 
     if ui.CoinKimpProcessAlive():
         ui.proc_coin_kimp.kill()
+    telegram_process_kill(ui)
     if ui.CoinReceiverProcessAlive():
         ui.proc_receiver_coin.kill()
     if ui.CoinTraderProcessAlive():
