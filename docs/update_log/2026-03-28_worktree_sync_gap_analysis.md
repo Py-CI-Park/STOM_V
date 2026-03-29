@@ -374,3 +374,18 @@ cmd.exe /c "cd /d C:\System_Trading\STOM\STOM_V.wt-2u && call stom.bat"
 
 > **먼저 `wt-2u`, `wt-dev`에서 stale import / stale process를 제거해 실행을 복구하고,
 > 그 다음 `wt-2u`의 `lazy_imports` 잔존 의존성을 별도 정리한다. `wt-lab`은 차기 sync 대비 문서 관리 대상으로 둔다.**
+---
+
+## 비정식 워크트리 재동기화 가드레일
+
+워크트리 동기화 후 아래 명령을 추가로 실행합니다.
+
+```bash
+python scripts/verify_nonrelease_sync.py
+```
+
+이 스크립트는 다음 항목을 한 번에 확인합니다.
+
+- 현재 워크트리에 `.pyd` 파일이 남아 있지 않은지
+- `MainWindow`와 `TelegramBot`의 qlist 계약 및 텔레그램 런타임 시작 경로가 일치하는지
+- 비정식 워크트리에서 시리얼키 UI/로드/저장 경로가 다시 활성화되지 않았는지
