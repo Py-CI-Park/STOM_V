@@ -10,6 +10,7 @@ from ui.set_text import famous_saying
 from ui.ui_telegram_settings import apply_telegram_settings_save
 from utility.setting_base import DB_PATH, ui_num
 from utility.static import de_text, en_text, qtest_qwait, error_decorator
+from utility.worktree_policy import get_etc_setting_columns, uses_serial_key
 
 
 @error_decorator
@@ -242,7 +243,7 @@ def setting_load_08(ui):
         ui.sj_etc_checBox_03.setChecked(True) if df['창위치기억'][0] else ui.sj_etc_checBox_03.setChecked(False)
         ui.sj_etc_checBox_06.setChecked(True) if df['스톰라이브'][0] else ui.sj_etc_checBox_06.setChecked(False)
         ui.sj_etc_checBox_07.setChecked(True) if df['프로그램종료'][0] else ui.sj_etc_checBox_07.setChecked(False)
-        if df['시리얼키'][0]:
+        if uses_serial_key() and ui.sj_etc_liEditt_01 is not None and '시리얼키' in df.columns and df['시리얼키'][0]:
             ui.sj_etc_liEditt_01.setText(de_text(ui.dict_set['키'], df['시리얼키'][0]))
         ui.sj_etc_comBoxx_01.setCurrentText(df['테마'][0])
     else:
@@ -630,11 +631,12 @@ def setting_save_08(ui):
     휴무컴퓨터종료 = 1 if ui.sj_etc_checBox_05.isChecked() else 0
     스톰라이브 = 1 if ui.sj_etc_checBox_06.isChecked() else 0
     프로그램종료 = 1 if ui.sj_etc_checBox_07.isChecked() else 0
-    시리얼키_ = ui.sj_etc_liEditt_01.text()
-    시리얼키 = en_text(ui.dict_set['키'], 시리얼키_)
+    if uses_serial_key() and ui.sj_etc_liEditt_01 is not None:
+        시리얼키_ = ui.sj_etc_liEditt_01.text()
+        시리얼키 = en_text(ui.dict_set['키'], 시리얼키_)
 
     if ui.proc_chqs.is_alive():
-        columns = ['테마', '저해상도', '창위치기억', '휴무프로세스종료', '휴무컴퓨터종료', '스톰라이브', '프로그램종료', '시리얼키']
+        columns = get_etc_setting_columns(uses_serial_key())[1:]
         set_txt = ', '.join([f'{col} = ?' for col in columns])
         query   = f'UPDATE etc SET {set_txt}'
         localvs = locals()
@@ -648,7 +650,8 @@ def setting_save_08(ui):
         ui.dict_set['휴무컴퓨터종료'] = 휴무컴퓨터종료
         ui.dict_set['스톰라이브'] = 스톰라이브
         ui.dict_set['프로그램종료'] = 프로그램종료
-        ui.dict_set['시리얼키'] = 시리얼키_
+        if uses_serial_key() and ui.sj_etc_liEditt_01 is not None:
+            ui.dict_set['시리얼키'] = 시리얼키_
 
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
@@ -668,7 +671,8 @@ def setting_acc_view(ui):
         ui.sj_cacc_liEdit_02.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_01.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_02.setEchoMode(QLineEdit.Password)
-        ui.sj_etc_liEditt_01.setEchoMode(QLineEdit.Password)
+        if uses_serial_key() and ui.sj_etc_liEditt_01 is not None:
+            ui.sj_etc_liEditt_01.setEchoMode(QLineEdit.Password)
         ui.sj_etc_pButton_01.setText('계정 텍스트 보기')
         ui.sj_etc_pButton_01.setStyleSheet(style_bc_bt)
 

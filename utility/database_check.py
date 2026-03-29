@@ -4,6 +4,7 @@ import sqlite3
 import pandas as pd
 from traceback import format_exc
 from utility.static import read_key, write_key
+from utility.worktree_policy import get_etc_default_row, get_etc_setting_columns, uses_serial_key
 
 
 def database_check():
@@ -135,8 +136,8 @@ def database_check():
                 df.to_sql('back', con, if_exists='replace')
 
         if 'etc' not in table_list:
-            columns = ["index", "테마", "저해상도", "휴무프로세스종료", "휴무컴퓨터종료", "창위치기억", "창위치", "스톰라이브", "프로그램종료", "팩터선택", "시리얼키"]
-            data = [0, '다크블루', 0, 1, 0, 1, '', 1, 0, '1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1;1', '']
+            columns = get_etc_setting_columns(uses_serial_key())
+            data = get_etc_default_row(uses_serial_key())
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('etc', con)
 
