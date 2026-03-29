@@ -344,12 +344,14 @@ class MainWindow(QMainWindow):
             self.creceivQ, self.ctraderQ, self.cstgQ, self.liveQ, self.kimpQ, self.wdzservQ, self.totalQ
         ]
 
+        self.proc_tele  = Process(target=TelegramBot, args=(self.qlist, dict_set), daemon=True)
         self.proc_webc  = Process(target=WebCrawling, args=(self.qlist,), daemon=True)
         self.proc_chqs  = Process(target=ChartHogaQuerySound, args=(self.qlist, dict_set), daemon=True)
         self.proc_livec = None
         # STOM Live disabled
         # self.proc_live  = Process(target=LiveClient, args=(self.qlist,), daemon=True)
 
+        self.proc_tele.start()
         self.proc_webc.start()
         self.proc_chqs.start()
         # STOM Live disabled
@@ -978,6 +980,7 @@ class MainWindow(QMainWindow):
     def cetButtonClicked_03(self):  self.SettingCoinElapsedTickNumberSave()
     # =================================================================================================================
     def StomLiveProcessAlive(self):     return stom_live_process_alive(self)
+    def TelegramProcessAlive(self):     return telegram_process_alive(self)
     def CoinReceiverProcessAlive(self): return coin_receiver_process_alive(self)
     def CoinTraderProcessAlive(self):   return coin_trader_process_alive(self)
     def CoinStrategyProcessAlive(self): return coin_strategy_process_alive(self)

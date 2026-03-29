@@ -8,6 +8,11 @@ def stom_live_process_alive(ui):
 
 
 @error_decorator
+def telegram_process_alive(ui):
+    return hasattr(ui, 'proc_tele') and ui.proc_tele is not None and ui.proc_tele.is_alive()
+
+
+@error_decorator
 def coin_receiver_process_alive(ui):
     return ui.proc_receiver_coin is not None and ui.proc_receiver_coin.is_alive()
 
