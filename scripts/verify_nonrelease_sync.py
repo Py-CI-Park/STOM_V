@@ -64,6 +64,7 @@ def main():
         set_setup_tap_text = read_text("ui/set_setup_tap.py")
         settings_text = read_text("ui/ui_button_clicked_settings.py")
         setting_user_text = read_text("utility/setting_user.py")
+        legacy_setting_text = read_text("utility/setting.py") if (ROOT / "utility/setting.py").exists() else ""
 
         check(
             "if uses_serial_key():" in set_setup_tap_text and "self.ui.sj_etc_labelll_02 = None" in set_setup_tap_text,
@@ -78,11 +79,18 @@ def main():
             failures,
         )
         check(
-            "if uses_serial_key() and '시리얼키' in df_e.columns:" in setting_user_text,
+            "apply_serial_key_to_dict_set" in setting_user_text and "uses_serial_key()" in setting_user_text,
             "dict_set 적재가 비정식 워크트리 시리얼키 정책을 따릅니다.",
             "utility/setting_user.py가 비정식 워크트리에서도 시리얼키를 무조건 적재합니다.",
             failures,
         )
+        if legacy_setting_text:
+            check(
+                "apply_serial_key_to_dict_set" in legacy_setting_text and "uses_serial_key()" in legacy_setting_text,
+                "legacy utility/setting.py도 비정식 워크트리 시리얼키 정책을 따릅니다.",
+                "utility/setting.py가 비정식 워크트리에서도 시리얼키를 무조건 적재합니다.",
+                failures,
+            )
 
     if failures:
         print(f"\n총 {len(failures)}개 항목이 실패했습니다.")
