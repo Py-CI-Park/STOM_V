@@ -17,9 +17,9 @@ class SetTable:
         self.ui.stt_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_tt, 1)
         self.ui.std_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_td, 13, clicked=self.ui.CellClicked_01)
         self.ui.stj_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_tj, 1)
-        self.ui.sjg_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_jg, 13, clicked=self.ui.CellClicked_02)
+        self.ui.sjg_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_jg, 13, fixed=True, clicked=self.ui.CellClicked_02)
         self.ui.sgj_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_gj, 15, clicked=self.ui.CellClicked_01)
-        self.ui.scj_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_cj, 15, clicked=self.ui.CellClicked_01)
+        self.ui.scj_tableWidgettt = self.wc.setTablewidget(self.ui.st_tab, columns_cj, 15, fixed=True, clicked=self.ui.CellClicked_01)
 
         self.ui.stock_basic_listt = [
             self.ui.stt_tableWidgettt, self.ui.std_tableWidgettt, self.ui.stj_tableWidgettt,
@@ -73,9 +73,9 @@ class SetTable:
         self.ui.ctt_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_tt, 1)
         self.ui.ctd_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_td, 13, clicked=self.ui.CellClicked_01)
         self.ui.ctj_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_tj, 1)
-        self.ui.cjg_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_jg, 13, clicked=self.ui.CellClicked_03)
+        self.ui.cjg_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_jg, 13, fixed=True, clicked=self.ui.CellClicked_03)
         self.ui.cgj_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_gj, 15, clicked=self.ui.CellClicked_01)
-        self.ui.ccj_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_cj, 15, clicked=self.ui.CellClicked_01)
+        self.ui.ccj_tableWidgettt = self.wc.setTablewidget(self.ui.ct_tab, columns_cj, 15, fixed=True, clicked=self.ui.CellClicked_01)
 
         self.ui.coin_basic_listtt = [
             self.ui.ctt_tableWidgettt, self.ui.ctd_tableWidgettt, self.ui.ctj_tableWidgettt,

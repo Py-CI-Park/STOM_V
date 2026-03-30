@@ -30,10 +30,10 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
         순매수금액 = 분당매수금액 - 분당매도금액
         self.hoga_unit = 호가단위 = GetHogaunit(종목코드 in self.tuple_kosd, 현재가, 체결시간)
 
-        self.shogainfo = np.array([매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5])
-        self.shreminfo = np.array([매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5])
-        self.bhogainfo = np.array([매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5])
-        self.bhreminfo = np.array([매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5])
+        self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
+        self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]
+        self.bhogainfo[:] = [매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5]
+        self.bhreminfo[:] = [매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5]
 
         if 전략연산:
             new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
@@ -212,23 +212,26 @@ class KiwoomStrategyMin(KiwoomStrategyTick):
                         if 매도:
                             self.Sell()
 
-            if 관심종목:
-                # ['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']
-                self.dict_gj[종목코드] = {
-                    '종목명': 종목명,
-                    'per': 등락율,
-                    'hlp': 고저평균대비등락율,
-                    'lhp': 저가대비고가등락율,
-                    'ch': 체결강도,
-                    'tm': 분당거래대금,
-                    'dm': 당일거래대금,
-                    'bm': 당일매수금액,
-                    'sm': 당일매도금액
-                }
         else:
-            pre_data = self.dict_data[종목코드]
+            pre_data = self.dict_data.get(종목코드)
+            if pre_data is None:
+                pre_data = np.empty((0, self.data_cnt + self.fm_tcnt), dtype=np.float64)
             self.tick_count = 데이터길이 = len(pre_data) + 1
             self.indexn = 데이터길이 - 1
+
+        if 관심종목:
+            # ['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']
+            self.dict_gj[종목코드] = {
+                '종목명': 종목명,
+                'per': 등락율,
+                'hlp': 고저평균대비등락율,
+                'lhp': 저가대비고가등락율,
+                'ch': 체결강도,
+                'tm': 분당거래대금,
+                'dm': 당일거래대금,
+                'bm': 당일매수금액,
+                'sm': 당일매도금액
+            }
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:

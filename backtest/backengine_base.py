@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from multiprocessing import shared_memory
+from trade.risk_analyzer import RiskAnalyzer
 from trade.strategy_base import StrategyBase
 from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
@@ -13,7 +14,7 @@ from utility.setting_base import DB_STOCK_TICK_BACK, BACK_TEMP, ui_num, DB_STOCK
     DB_FUTURE_TICK_BACK, DB_FUTURE_MIN_BACK, DB_COIN_TICK_BACK, DB_COIN_MIN_BACK, list_stock_tick, \
     list_stock_min, list_coin_tick, list_coin_min
 from utility.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, \
-    add_rolling_data, set_builtin_print
+    add_rolling_data, set_builtin_print, get_profile_text
 
 
 class BackEngineBase(StrategyBase):
@@ -71,11 +72,7 @@ class BackEngineBase(StrategyBase):
         self.hoga_sidex      = None
         self.hoga_eidex      = None
         self.ms_analyzer     = None
-
-        self.shogainfo       = None
-        self.shreminfo       = None
-        self.bhogainfo       = None
-        self.bhreminfo       = None
+        self.rk_analyzer     = None
 
         self.code_list       = []
         self.vars_list       = []
@@ -97,6 +94,7 @@ class BackEngineBase(StrategyBase):
         self.sell_cond       = 0
         self.opti_kind       = 0
         self.sell_count      = 0
+        self.비중조절기준       = 0
 
         set_builtin_print(True, self.wq)
         self.UpdateMarketGubun()
@@ -112,10 +110,12 @@ class BackEngineBase(StrategyBase):
         self.set_dict_cond = self.dict_set[f'{self.market_text}경과틱수설정']
         self.set_weight    = self.dict_set[f'{self.market_text}비중조절']
         self.sma_list      = get_ema_list(self.is_tick)
+
         if self.market_gubun == 1:   gubun = 'stock'
         elif self.market_gubun == 2: gubun = 'future'
         else:                        gubun = 'coin'
         self.ms_analyzer = MicrostructureAnalyzer(gubun)
+        self.rk_analyzer = RiskAnalyzer(gubun)
 
         if self.market_gubun == 1:
             factor_list = list_stock_tick if self.is_tick else list_stock_min
@@ -485,32 +485,36 @@ class BackEngineBase(StrategyBase):
         code = shared_info['code']
         if self.dict_set['백테일괄로딩']:
             shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
-            self.arry_code = np.ndarray(
+            arry_code = np.ndarray(
                 shared_info['shape'],
                 dtype=shared_info['dtype'],
                 buffer=shm.buf[shared_info['offset']:shared_info['offset'] + shared_info['size']]
             ).copy()
             shm.close()
         else:
-            self.arry_code = pickle_read(shared_info['file_name'])
+            arry_code = pickle_read(shared_info['file_name'])
 
         if self.same_days and self.same_time:
             pass
         elif self.same_time:
-            self.arry_code = self.arry_code[(self.arry_code[:, 0] >= self.startday * self.unit) &
-                                            (self.arry_code[:, 0] <= self.endday * self.unit + self.hour)]
+            indices = arry_code[:, 0]
+            arry_code = arry_code[(indices >= self.startday * self.unit) &
+                                  (indices <= self.endday * self.unit + self.hour)]
         elif self.same_days:
-            self.arry_code = self.arry_code[(self.arry_code[:, 0] % self.unit >= self.starttime) &
-                                            (self.arry_code[:, 0] % self.unit <= self.endtime)]
+            indices = arry_code[:, 0]
+            arry_code = arry_code[(indices % self.unit >= self.starttime) &
+                                  (indices % self.unit <= self.endtime)]
         else:
-            self.arry_code = self.arry_code[(self.arry_code[:, 0] >= self.startday * self.unit) &
-                                            (self.arry_code[:, 0] <= self.endday * self.unit + self.hour) &
-                                            (self.arry_code[:, 0] % self.unit >= self.starttime) &
-                                            (self.arry_code[:, 0] % self.unit <= self.endtime)]
+            indices = arry_code[:, 0]
+            arry_code = arry_code[(indices >= self.startday * self.unit) &
+                                  (indices <= self.endday * self.unit + self.hour) &
+                                  (indices % self.unit >= self.starttime) &
+                                  (indices % self.unit <= self.endtime)]
 
         if self.fm_tcnt > 0:
-            self.arry_code = np.column_stack((self.arry_code, np.zeros((self.arry_code.shape[0], self.fm_tcnt))))
+            arry_code = np.column_stack((arry_code, np.zeros((self.arry_code.shape[0], self.fm_tcnt))))
 
+        self.arry_code = arry_code
         return code
 
     def UpdateFormulaData(self):
@@ -562,7 +566,7 @@ class BackEngineBase(StrategyBase):
             last = len(self.arry_code) - 1
             if last > 0:
                 indexs = self.arry_code[:, 0].astype(np.int64)
-                day_vals = indexs // 1000000
+                day_vals = indexs // 1_000_000 if self.is_tick else indexs // 10_000
                 day_last_indexs = np.where(day_vals[:-1] != day_vals[1:])[0]
                 day_last_indexs = np.concatenate([day_last_indexs, [last]])
 
@@ -601,9 +605,7 @@ class BackEngineBase(StrategyBase):
             return
 
         if self.gubun == 0 and self.profile:
-            from utility.profile_utils import extract_profile_text
-            profile_text = extract_profile_text(self.pr, limit=50)
-            self.wq.put((ui_num['시스템로그'], profile_text))
+            self.wq.put((ui_num['시스템로그'], get_profile_text(self.pr)))
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
         if 분봉저가 is None:
@@ -666,8 +668,10 @@ class BackEngineBase(StrategyBase):
                 비중조절기준 = self._거래대금평균대비비율(30)
             elif self.set_weight[0] == 3:
                 비중조절기준 = self._등락율각도(30)
-            else:
+            elif self.set_weight[0] == 4:
                 비중조절기준 = self._당일거래대금각도(30)
+            else:
+                비중조절기준 = self.비중조절기준
 
             if 비중조절기준 < self.set_weight[1]:
                 betting = self.betting * self.set_weight[5]

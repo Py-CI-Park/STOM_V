@@ -11,7 +11,7 @@ from utility.kimp_upbit_binance import Kimp
 from utility.static import str_hms, dt_hms, error_decorator
 from utility.setting_base import columns_hc, DB_COIN_TICK_BACK, DB_STOCK_TICK_BACK, DB_PATH, DB_COIN_MIN_BACK, \
     DB_STOCK_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
-from ui.set_style import style_bc_bt, style_bc_bb
+from ui.set_style import style_bc_bt, style_bc_bb, style_bc_st
 
 
 class QuietPage(QWebEnginePage):
@@ -190,7 +190,7 @@ def dialog_chart_show(ui):
 @error_decorator
 def show_qsize(ui):
     if not ui.showQsize:
-        ui.qs_pushButton.setStyleSheet(style_bc_bt)
+        ui.qs_pushButton.setStyleSheet(style_bc_st)
         ui.showQsize = True
     else:
         ui.qs_pushButton.setStyleSheet(style_bc_bb)
@@ -273,22 +273,10 @@ def show_treemap(ui):
 
 
 @error_decorator
-def show_jisu(ui):
-    if not ui.dialog_jisu.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_jisu, duration=250)
-        ui.dialog_jisu.show()
-    else:
-        ui.dialog_jisu.close()
-
-
-@error_decorator
 def show_db(ui):
     if not ui.dialog_db.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_db, duration=250)
         ui.dialog_db.show()
-    else:
-        ui.dialog_db.close()
-        return
 
     ui.db_tableWidgett_01.clearContents()
     ui.db_tableWidgett_02.clearContents()

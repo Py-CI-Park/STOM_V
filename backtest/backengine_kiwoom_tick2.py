@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_base_oms import BackEngineBaseOms
 from utility.static import dt_ymdhms, GetHogaunit, GetKiwoomPgSgSp
 # noinspection PyUnresolvedReferences
@@ -16,17 +15,21 @@ class BackEngineKiwoomTick2(BackEngineBaseOms):
             매수호가5, 매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
             매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
 
-        if self.dict_set['시장미시구조분석']:
-            self.ms_analyzer.update_data(self.code, self.arry_code[self.indexn, :])
+        리스크점수 = 0
+        if self.tick_count >= 30:
+            if self.dict_set['시장미시구조분석']:
+                self.ms_analyzer.update_data(self.code, self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
+            if self.dict_set['시장리스크분석']:
+                리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
 
         VI해제시간, 순매수금액 = dt_ymdhms(str(int(VI해제시간))), 초당매수금액 - 초당매도금액
         종목명, 종목코드, 데이터길이, 체결시간, 시분초 = self.name, self.code, self.tick_count, self.index, int(str(self.index)[8:])
         self.hoga_unit = 호가단위 = GetHogaunit(self.dict_kosd.get(종목코드, False), 현재가, 체결시간)
 
-        self.shogainfo = np.array([매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5])
-        self.shreminfo = np.array([매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5])
-        self.bhogainfo = np.array([매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5])
-        self.bhreminfo = np.array([매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5])
+        self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
+        self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]
+        self.bhogainfo[:] = [매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5]
+        self.bhreminfo[:] = [매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5]
 
         self.UpdateHighLow(현재가)
 
@@ -222,18 +225,18 @@ class BackEngineKiwoomTick2(BackEngineBaseOms):
         return int(betting / (현재가 if not 보유중 else 매수가) * oc_ratio / 100)
 
     def GetBuyPrice(self, 매수금액, 주문수량):
-        return int(round(매수금액 / 주문수량))
+        return int(매수금액 / 주문수량 + 0.5)
 
     def GetSellPrice(self, 매도금액, 주문수량):
-        return int(round(매도금액 / 주문수량))
+        return int(매도금액 / 주문수량 + 0.5)
 
     def GetLastSellPrice(self, 매도금액, 보유수량, 미체결수량):
         if 미체결수량 <= 0:
-            매도가 = int(round(매도금액 / 보유수량))
+            매도가 = int(매도금액 / 보유수량 + 0.5)
         elif 매도금액 == 0:
             매도가 = self.arry_code[self.indexn, 1]
         else:
-            매도가 = int(round(매도금액 / (보유수량 - 미체결수량)))
+            매도가 = int(매도금액 / (보유수량 - 미체결수량) + 0.5)
         return 매도가
 
     def GetProfitInfo(self, 현재가, 매수가, 보유수량):

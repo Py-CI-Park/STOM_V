@@ -20,6 +20,7 @@ class UpdateTextedit:
             self.ui.fm_list = data[1]
             self.ui.dict_fm = data[2]
             self.ui.fm_tcnt = data[3]
+            self.ui.trading = True
 
         else:
             time_ = str(now())[:-7] if data[0] in (ui_num['S백테스트'], ui_num['SF백테스트'], ui_num['C백테스트'], ui_num['CF백테스트']) else str(now())

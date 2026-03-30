@@ -1,30 +1,50 @@
 
+import bisect
 import datetime
 
 
 def set_builtin_print(bit64, q):
+    import inspect
     import builtins
     from utility.setting_base import ui_num
 
     # noinspection PyUnusedLocal
     def ui_print(*args, sep=' ', end='\n', file=None):
         try:
+            is_direct_print = False
+            frame = inspect.currentframe()
+            caller_frame = frame.f_back.f_back
+            if caller_frame:
+                caller_filename = caller_frame.f_code.co_filename
+                caller_function = caller_frame.f_code.co_name
+                excluded_paths  = ['site-packages', 'numba', 'numpy', 'pandas', 'talib']
+                is_excluded     = any(path in caller_filename for path in excluded_paths)
+                if not is_excluded and caller_function != '<module>':
+                    is_direct_print = True
+                elif '__main__' in caller_filename:
+                    is_direct_print = True
+
+            if not is_direct_print:
+                return
+
             processed_args = []
             for arg in args:
                 if callable(arg):
-                    result = arg()
-                    processed_args.append(str(result))
+                    processed_args.append(str(arg()))
                 else:
                     processed_args.append(str(arg))
+
             message = sep.join(processed_args)
             message = message.lstrip()
             message = message.rstrip()
+
             if bit64:
                 q.put((ui_num['시스템로그'], message))
             else:
                 q.put(('window', (ui_num['시스템로그'], message)))
         except:
             pass
+
     builtins.print = ui_print
 
 
@@ -91,13 +111,13 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
 
 
 def error_decorator(func):
-    from traceback import print_exc
+    from traceback import format_exc
 
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except:
-            print_exc()
+            print(format_exc())
             return None
     return wrapper
 
@@ -108,6 +128,18 @@ def thread_decorator(func):
     def wrapper(*args):
         Thread(target=func, args=args, daemon=True).start()
     return wrapper
+
+
+def get_profile_text(pr):
+    import io
+    import pstats
+    output = io.StringIO()
+    stats = pstats.Stats(pr, stream=output)
+    stats.sort_stats('cumulative')
+    stats.print_stats(30)
+    result = output.getvalue()
+    output.close()
+    return result
 
 
 def get_logger(name):
@@ -494,163 +526,90 @@ def get_angle_cf(market_gubun, is_tick, index):
     return dgree[market_gubun][is_tick][index]
 
 
+_UPBIT_HOGA_KEYS = (0.01, 1, 10, 100, 1000, 10000, 100000, 500000, 1000000, 2000000, float('inf'))
+_UPBIT_HOGA_VALS = (0.0001, 0.001, 0.01, 0.1, 1, 5, 10, 50, 100, 500, 1000)
+
+
 def GetUpbitHogaunit(price):
-    if price < 0.01:
-        return 0.0001
-    elif price < 1:
-        return 0.001
-    elif price < 10:
-        return 0.01
-    elif price < 100:
-        return 0.1
-    elif price < 1000:
-        return 1
-    elif price < 10000:
-        return 5
-    elif price < 100000:
-        return 10
-    elif price < 500000:
-        return 50
-    elif price < 1000000:
-        return 100
-    elif price < 2000000:
-        return 500
-    else:
-        return 1000
+    idx = bisect.bisect_right(_UPBIT_HOGA_KEYS, price)
+    return _UPBIT_HOGA_VALS[idx]
+
+
+_HOGA_OLD_KOSD_KEYS = (1000, 5000, 10000, 50000, float('inf'))
+_HOGA_OLD_KOSD_VALS = (1, 5, 10, 50, 100)
+_HOGA_OLD_KOSPI_KEYS = (1000, 5000, 10000, 50000, 100000, 500000, float('inf'))
+_HOGA_OLD_KOSPI_VALS = (1, 5, 10, 50, 100, 500, 1000)
+_HOGA_NEW_KEYS = (2000, 5000, 20000, 50000, 200000, 500000, float('inf'))
+_HOGA_NEW_VALS = (1, 5, 10, 50, 100, 500, 1000)
 
 
 def GetHogaunit(kosd, price, index):
     if index < 20230125000000:
         if kosd:
-            if price < 1000:
-                return 1
-            elif price < 5000:
-                return 5
-            elif price < 10000:
-                return 10
-            elif price < 50000:
-                return 50
-            else:
-                return 100
+            idx = bisect.bisect_right(_HOGA_OLD_KOSD_KEYS, price)
+            return _HOGA_OLD_KOSD_VALS[idx]
         else:
-            if price < 1000:
-                return 1
-            elif price < 5000:
-                return 5
-            elif price < 10000:
-                return 10
-            elif price < 50000:
-                return 50
-            elif price < 100000:
-                return 100
-            elif price < 500000:
-                return 500
-            else:
-                return 1000
+            idx = bisect.bisect_right(_HOGA_OLD_KOSPI_KEYS, price)
+            return _HOGA_OLD_KOSPI_VALS[idx]
     else:
-        if price < 2000:
-            return 1
-        elif price < 5000:
-            return 5
-        elif price < 20000:
-            return 10
-        elif price < 50000:
-            return 50
-        elif price < 200000:
-            return 100
-        elif price < 500000:
-            return 500
-        else:
-            return 1000
+        idx = bisect.bisect_right(_HOGA_NEW_KEYS, price)
+        return _HOGA_NEW_VALS[idx]
+
+
+_ROUND_UPPER_OLD_BASES = (1000, 5000, 10000, 50000, 100000, 500000)
+_ROUND_UPPER_OLD_RANGES = (5, 10, 50, 100, 500, 1000)
+_ROUND_UPPER_NEW_BASES = (2000, 5000, 20000, 50000, 200000, 500000)
+_ROUND_UPPER_NEW_RANGES = (5, 10, 50, 100, 500, 1000)
 
 
 def roundfigure_upper(price, unit, index):
     if index < 20230125000000:
-        if 1000 <= price <= 1000 + 5 * unit:
-            return True
-        if 5000 <= price <= 5000 + 10 * unit:
-            return True
-        if 10000 <= price <= 10000 + 50 * unit:
-            return True
-        if 50000 <= price <= 50000 + 100 * unit:
-            return True
-        if 100000 <= price <= 100000 + 500 * unit:
-            return True
-        if 500000 <= price <= 500000 + 1000 * unit:
-            return True
+        bases = _ROUND_UPPER_OLD_BASES
+        ranges = _ROUND_UPPER_OLD_RANGES
     else:
-        if 2000 <= price <= 2000 + 5 * unit:
-            return True
-        if 5000 <= price <= 5000 + 10 * unit:
-            return True
-        if 20000 <= price <= 20000 + 50 * unit:
-            return True
-        if 50000 <= price <= 50000 + 100 * unit:
-            return True
-        if 200000 <= price <= 200000 + 500 * unit:
-            return True
-        if 500000 <= price <= 500000 + 1000 * unit:
-            return True
+        bases = _ROUND_UPPER_NEW_BASES
+        ranges = _ROUND_UPPER_NEW_RANGES
+    idx = bisect.bisect_right(bases, price) - 1
+    if idx >= 0:
+        return bases[idx] <= price <= bases[idx] + ranges[idx] * unit
     return False
+
+
+_ROUND_LOWER_OLD_BASES = (1000, 5000, 10000, 50000, 100000, 500000)
+_ROUND_LOWER_OLD_RANGES = (1, 5, 10, 50, 100, 500)
+_ROUND_LOWER_NEW_BASES = (2000, 5000, 20000, 50000, 200000, 500000)
+_ROUND_LOWER_NEW_RANGES = (1, 5, 10, 50, 100, 500)
 
 
 def roundfigure_lower(price, unit, index):
     if index < 20230125000000:
-        if 1000 - 1 * unit <= price <= 1000:
-            return True
-        if 5000 - 5 * unit <= price <= 5000:
-            return True
-        if 10000 - 10 * unit <= price <= 10000:
-            return True
-        if 50000 - 50 * unit <= price <= 50000:
-            return True
-        if 100000 - 100 * unit <= price <= 100000:
-            return True
-        if 500000 - 500 * unit <= price <= 500000:
-            return True
+        bases = _ROUND_LOWER_OLD_BASES
+        ranges = _ROUND_LOWER_OLD_RANGES
     else:
-        if 2000 - 1 * unit <= price <= 2000:
-            return True
-        if 5000 - 5 * unit <= price <= 5000:
-            return True
-        if 20000 - 10 * unit <= price <= 20000:
-            return True
-        if 50000 - 50 * unit <= price <= 50000:
-            return True
-        if 200000 - 100 * unit <= price <= 200000:
-            return True
-        if 500000 - 500 * unit <= price <= 500000:
-            return True
+        bases = _ROUND_LOWER_NEW_BASES
+        ranges = _ROUND_LOWER_NEW_RANGES
+    idx = bisect.bisect_right(bases, price) - 1
+    if idx >= 0:
+        return bases[idx] - ranges[idx] * unit <= price <= bases[idx]
     return False
+
+
+_ROUND_UPPER5_OLD_BASES = (1000, 5000, 10000, 50000, 100000, 500000)
+_ROUND_UPPER5_OLD_MAXS = (1025, 5050, 10250, 50500, 102500, 505000)
+_ROUND_UPPER5_NEW_BASES = (2000, 5000, 20000, 50000, 200000, 500000)
+_ROUND_UPPER5_NEW_MAXS = (2025, 5050, 20250, 50500, 202500, 505000)
 
 
 def roundfigure_upper5(price, index):
     if index < 20230125000000:
-        if 1000 <= price <= 1025:
-            return True
-        if 5000 <= price <= 5050:
-            return True
-        if 10000 <= price <= 10250:
-            return True
-        if 50000 <= price <= 50500:
-            return True
-        if 100000 <= price <= 102500:
-            return True
-        if 500000 <= price <= 505000:
-            return True
+        bases = _ROUND_UPPER5_OLD_BASES
+        maxs = _ROUND_UPPER5_OLD_MAXS
     else:
-        if 2000 <= price <= 2025:
-            return True
-        if 5000 <= price <= 5050:
-            return True
-        if 20000 <= price <= 20250:
-            return True
-        if 50000 <= price <= 50500:
-            return True
-        if 200000 <= price <= 202500:
-            return True
-        if 500000 <= price <= 505000:
-            return True
+        bases = _ROUND_UPPER5_NEW_BASES
+        maxs = _ROUND_UPPER5_NEW_MAXS
+    idx = bisect.bisect_right(bases, price) - 1
+    if idx >= 0:
+        return bases[idx] <= price <= maxs[idx]
     return False
 
 
@@ -659,7 +618,7 @@ def GetKiwoomPgSgSp(bg, cg):
     bfee = int(bg * 0.00015 / 10) * 10
     sfee = int(cg * 0.00015 / 10) * 10
     pg = int(cg - texs - bfee - sfee)
-    sg = int(round(pg - bg))
+    sg = int(pg - bg + 0.5)
     sp = round(sg / bg * 100, 2)
     return pg, sg, sp
 
@@ -667,8 +626,8 @@ def GetKiwoomPgSgSp(bg, cg):
 def GetUpbitPgSgSp(bg, cg):
     bfee = bg * 0.0005
     sfee = cg * 0.0005
-    pg = int(round(cg - bfee - sfee))
-    sg = int(round(pg - bg))
+    pg = round(cg - bfee - sfee, 4)
+    sg = round(pg - bg, 4)
     sp = round(sg / bg * 100, 2)
     return pg, sg, sp
 

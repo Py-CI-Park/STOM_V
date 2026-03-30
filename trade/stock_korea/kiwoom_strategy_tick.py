@@ -7,15 +7,16 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
-from trade.formula_manager import get_formula_data
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from trade.risk_analyzer import RiskAnalyzer
 from trade.strategy_base import StrategyBase
+from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, \
     list_stock_tick, list_stock_min
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
-    str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, error_decorator, set_builtin_print
+    str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, error_decorator, set_builtin_print, get_profile_text
 
 
 class KiwoomStrategyTick(StrategyBase):
@@ -38,11 +39,6 @@ class KiwoomStrategyTick(StrategyBase):
         self.chart_code       = None
         self.info_for_signal  = None
 
-        self.shogainfo        = None
-        self.shreminfo        = None
-        self.bhogainfo        = None
-        self.bhreminfo        = None
-
         self.dict_data        = {}
         self.dict_signal_num  = {}
         self.dict_buy_num     = {}
@@ -58,6 +54,7 @@ class KiwoomStrategyTick(StrategyBase):
 
         self.jgrv_count       = 0
         self.int_tujagm       = 0
+        self.비중조절기준        = 0
 
         self.market_gubun     = 1
         self.ma_round_unit    = 3
@@ -93,6 +90,7 @@ class KiwoomStrategyTick(StrategyBase):
             self.pr.enable()
 
         self.ms_analyzer = MicrostructureAnalyzer('stock')
+        self.rk_analyzer = RiskAnalyzer('stock')
 
         set_builtin_print(False, self.mgzservQ)
         self.SetFormulaData()
@@ -218,9 +216,7 @@ class KiwoomStrategyTick(StrategyBase):
             self.mgzservQ.put(('tele', '주식 매도전략 중지 완료'))
         elif data == '프로파일링결과':
             if self.gubun == 0:
-                from utility.profile_utils import extract_profile_text
-                profile_text = extract_profile_text(self.pr, limit=50)
-                self.mgzservQ.put(('window', (ui_num['시스템로그'], profile_text)))
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], get_profile_text(self.pr))))
         elif data == '프로세스종료':
             time.sleep(5)
             self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료')))
@@ -239,10 +235,10 @@ class KiwoomStrategyTick(StrategyBase):
         순매수금액 = 초당매수금액 - 초당매도금액
         self.hoga_unit = 호가단위 = GetHogaunit(종목코드 in self.tuple_kosd, 현재가, 체결시간)
 
-        self.shogainfo = np.array([매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5])
-        self.shreminfo = np.array([매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5])
-        self.bhogainfo = np.array([매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5])
-        self.bhreminfo = np.array([매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5])
+        self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
+        self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]
+        self.bhogainfo[:] = [매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5]
+        self.bhreminfo[:] = [매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5]
 
         new_data_tick = np.zeros(self.data_cnt + self.fm_tcnt, dtype=np.float64)
         new_data = data[:self.base_cnt]
@@ -259,11 +255,14 @@ class KiwoomStrategyTick(StrategyBase):
         self.tick_count = 데이터길이 = len(self.arry_code)
         self.code, self.name, self.index, self.indexn = 종목코드, 종목명, 체결시간, 데이터길이 - 1
 
+        리스크점수 = 0
         if 데이터길이 >= 평균값계산틱수:
             self.arry_code[-1, self.base_cnt:self.data_cnt] = self.GetParameterArea(rw)
 
-        if self.dict_set['시장미시구조분석']:
-            self.ms_analyzer.update_data(self.code, self.arry_code[-1, :])
+            if self.dict_set['시장미시구조분석']:
+                self.ms_analyzer.update_data(self.code, self.arry_code)
+            if self.dict_set['시장리스크분석']:
+                리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
 
         high_low = self.high_low.get(종목코드)
         if high_low:
@@ -464,7 +463,7 @@ class KiwoomStrategyTick(StrategyBase):
             잔량배열 = self.shreminfo[:self.buy_hj_limit]
             거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
             if 체결완료:
-                예상체결가 = int(round(거래금액 / 주문수량)) if 주문수량 != 0 else 0
+                예상체결가 = int(거래금액 / 주문수량 + 0.5) if 주문수량 != 0 else 0
                 self.dict_signal['매수'].append(self.code)
                 self.dict_signal_num[self.code] = self.indexn
                 self.straderQ.put(('매수', self.code, self.name, 예상체결가, 주문수량, now(), False))
@@ -479,8 +478,10 @@ class KiwoomStrategyTick(StrategyBase):
                 비중조절기준 = self._거래대금평균대비비율(30)
             elif self.dict_set['주식비중조절'][0] == 3:
                 비중조절기준 = self._등락율각도(30)
-            else:
+            elif self.dict_set['주식비중조절'][0] == 4:
                 비중조절기준 = self._당일거래대금각도(30)
+            else:
+                비중조절기준 = self.비중조절기준
 
             if 비중조절기준 < self.dict_set['주식비중조절'][1]:
                 betting = self.int_tujagm * self.dict_set['주식비중조절'][5]
@@ -504,7 +505,7 @@ class KiwoomStrategyTick(StrategyBase):
         elif 전량매도:
             주문수량 = 보유수량
         else:
-            주문수량 = self.GetSellCount(분할매도횟수, 보유수량, 매수가, 저가대비고가등락율)
+            주문수량 = self.GetSellCount(분할매도횟수, 보유수량)
 
         if '지정가' in self.dict_set['주식매도주문구분'] and not 강제청산:
             기준가격 = 현재가
@@ -517,40 +518,25 @@ class KiwoomStrategyTick(StrategyBase):
             잔량배열 = self.bhreminfo[:self.sell_hj_limit]
             거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
             if 체결완료:
-                예상체결가 = int(round(거래금액 / 주문수량)) if 주문수량 != 0 else 0
+                예상체결가 = int(거래금액 / 주문수량 + 0.5) if 주문수량 != 0 else 0
                 self.dict_signal['매도'].append(self.code)
                 self.straderQ.put(('매도', self.code, self.name, 예상체결가, 주문수량, now(), True if 강제청산 else False))
 
-    def GetSellCount(self, 분할매도횟수, 보유수량, 매수가, 저가대비고가등락율):
+    def GetSellCount(self, 분할매도횟수, 보유수량):
         if self.dict_set['주식매도분할횟수'] == 1:
             return 보유수량
         else:
-            if self.dict_set['주식비중조절'][0] == 0:
-                betting = self.int_tujagm
+            dict_ratio = dict_order_ratio[self.dict_set['주식매도분할방법']][self.dict_set['주식매도분할횟수']]
+            oc_ratio = dict_ratio[분할매도횟수]
+            if 분할매도횟수 == 0:
+                매도수량 = int(보유수량 * oc_ratio / 100)
             else:
-                if self.dict_set['주식비중조절'][0] == 1:
-                    비중조절기준 = 저가대비고가등락율
-                elif self.dict_set['주식비중조절'][0] == 2:
-                    비중조절기준 = self._거래대금평균대비비율(30)
-                elif self.dict_set['주식비중조절'][0] == 3:
-                    비중조절기준 = self._등락율각도(30)
-                else:
-                    비중조절기준 = self._당일거래대금각도(30)
+                보유비율 = sum(비율 for 횟수, 비율 in dict_ratio.items() if 횟수 >= 분할매도횟수)
+                매도수량 = int(보유수량 / 보유비율 * oc_ratio)
 
-                if 비중조절기준 < self.dict_set['주식비중조절'][1]:
-                    betting = self.int_tujagm * self.dict_set['주식비중조절'][5]
-                elif 비중조절기준 < self.dict_set['주식비중조절'][2]:
-                    betting = self.int_tujagm * self.dict_set['주식비중조절'][6]
-                elif 비중조절기준 < self.dict_set['주식비중조절'][3]:
-                    betting = self.int_tujagm * self.dict_set['주식비중조절'][7]
-                elif 비중조절기준 < self.dict_set['주식비중조절'][4]:
-                    betting = self.int_tujagm * self.dict_set['주식비중조절'][8]
-                else:
-                    betting = self.int_tujagm * self.dict_set['주식비중조절'][9]
+            if 매도수량 > 보유수량 or 분할매도횟수 + 1 == self.dict_set['주식매도분할횟수']:
+                매도수량 = 보유수량
 
-            oc_ratio = dict_order_ratio[self.dict_set['주식매도분할방법']][self.dict_set['주식매도분할횟수']][분할매도횟수]
-            매도수량 = int(betting / 매수가 * oc_ratio / 100)
-            if 매도수량 > 보유수량 or 분할매도횟수 + 1 == self.dict_set['주식매도분할횟수']: 매도수량 = 보유수량
             return 매도수량
 
     def PutGsjmAndDeleteHilo(self):

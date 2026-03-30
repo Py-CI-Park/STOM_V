@@ -24,12 +24,16 @@ class DrawChartBase:
         self.len_list   = None
         self.dict_idxs  = None
         self.gsjm_arry  = None
+        self.last_index = None
+        self.drop_zero_factors = None
 
         self.real       = False
         self.is_min     = False
+        self.samr_code  = False
         self.same_time  = False
 
         self.crosshair  = CrossHair(self.ui)
+        self.cached_min_max = {}
 
         self.rgb_red    = (200, 100, 100)
         self.rgb_blue   = (100, 100, 200)
@@ -113,6 +117,9 @@ class DrawChartBase:
             if self.ui.ft_checkBoxxxxx_43.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_43.text())
 
     def update_dict_idxs(self):
+        if self.dict_idxs is not None:
+            return
+
         if self.is_min:
             self.dict_idxs = {
                 '체결강도': [self.fi('체결강도'), self.fi('최고체결강도'), self.fi('최저체결강도'), self.fi('체결강도평균')],
@@ -155,18 +162,66 @@ class DrawChartBase:
             }
 
     def update_ctpg_date(self):
-        drop_zero_factors = self.get_drop_zero_factors()
-        clen = len(self.ui.ctpg_arry[0, :])
-        for i in range(clen):
-            tick_arry = self.ui.ctpg_arry[:, i]
-            if i in drop_zero_factors:
-                self.ui.ctpg_data[i] = tick_arry[tick_arry != 0]
-            else:
-                self.ui.ctpg_data[i] = tick_arry
+        if self.same_time:
+            self._incremental_update()
+        else:
+            self._process_all_data()
 
         tlen = len(self.ui.ctpg_arry)
         self.last = tlen - 1
         self.len_list = [tlen - len(x) for x in self.ui.ctpg_data.values()]
+
+    def _incremental_update(self):
+        for i, row in enumerate(self.ui.ctpg_arry[-1]):
+            if len(self.ui.ctpg_data[i]) > 0:
+                self.ui.ctpg_data[i][-1] = row
+
+    def _process_all_data(self):
+        if self.drop_zero_factors is None:
+            self.drop_zero_factors = self.get_drop_zero_factors()
+
+        for i, col in enumerate(self.ui.ctpg_arry.T):
+            if i in self.drop_zero_factors:
+                self.ui.ctpg_data[i] = col[col != 0]
+            else:
+                self.ui.ctpg_data[i] = col
+
+    def get_optimized_min_max(self, fidx_list):
+        fidx_tuple = fidx_list if isinstance(fidx_list, tuple) else (fidx_list,)
+        if self.same_time and fidx_tuple in self.cached_min_max:
+            self._incremental_min_max_update(fidx_tuple)
+        else:
+            self._full_min_max_calculation(fidx_tuple)
+
+    def _incremental_min_max_update(self, fidx_tuple):
+        cached_ymax, cached_ymin = self.cached_min_max[fidx_tuple]
+        new_values = []
+        for fidx in fidx_tuple:
+            if fidx in self.ui.ctpg_data and len(self.ui.ctpg_data[fidx]) > 0:
+                new_values.append(self.ui.ctpg_data[fidx][-1])
+
+        if new_values:
+            new_max = max(new_values)
+            new_min = min(new_values)
+            self.ymax = max(cached_ymax, new_max)
+            self.ymin = min(cached_ymin, new_min)
+            self.cached_min_max[fidx_tuple] = (self.ymax, self.ymin)
+        else:
+            self.ymax, self.ymin = cached_ymax, cached_ymin
+
+    def _full_min_max_calculation(self, fidx_tuple):
+        all_values = []
+        for fidx in fidx_tuple:
+            if fidx in self.ui.ctpg_data and len(self.ui.ctpg_data[fidx]) > 0:
+                all_values.extend(self.ui.ctpg_data[fidx])
+
+        if all_values:
+            self.ymax = max(all_values)
+            self.ymin = min(all_values)
+            self.cached_min_max[fidx_tuple] = (self.ymax, self.ymin)
+        else:
+            self.ymax, self.ymin = 0, 0
+            self.cached_min_max[fidx_tuple] = (0, 0)
 
     def get_drop_zero_factors(self):
         if self.is_min:
@@ -188,6 +243,14 @@ class DrawChartBase:
         return drop_zero_factors
 
     def draw_all_chart(self):
+        if not self.real:
+            self.dict_idxs = None
+            self.drop_zero_factors = None
+
+        self.update_factor_list()
+        self.update_dict_idxs()
+        self.update_ctpg_date()
+
         for i, factor in enumerate(self.ui.ctpg_factors):
             if not self.same_time:
                 self.ui.ctpg[i].clear()
@@ -195,8 +258,7 @@ class DrawChartBase:
             if factor == '현재가':
                 if self.is_min:
                     fidx1, fidx2, fidx3, fidx4 = self.dict_idxs[factor]
-                    self.ymax = self.ui.ctpg_data[fidx3].max()
-                    self.ymin = self.ui.ctpg_data[fidx4].min()
+                    self.get_optimized_min_max((fidx3, fidx4))
                     self.draw_area(i)
                     for idx, color in zip(self.dict_idxs['이동평균'], self.sma_colors):
                         self.draw_line(i, idx, color)
@@ -205,8 +267,7 @@ class DrawChartBase:
                     if self.real: self.draw_infinite_line(i, fidx1)
                 else:
                     fidx1 = self.fi('현재가')
-                    self.ymax = self.ui.ctpg_data[fidx1].max()
-                    self.ymin = self.ui.ctpg_data[fidx1].min()
+                    self.get_optimized_min_max(fidx1)
                     self.draw_area(i)
                     for idx, color in zip(self.dict_idxs['이동평균'], self.sma_colors):
                         self.draw_line(i, idx, color)
@@ -220,8 +281,7 @@ class DrawChartBase:
             elif factor in ('초당거래대금', '분당거래대금'):
                 try:
                     fidx1, fidx2 = self.dict_idxs[factor]
-                    self.ymax = self.ui.ctpg_data[fidx1].max()
-                    self.ymin = self.ui.ctpg_data[fidx2].min()
+                    self.get_optimized_min_max((fidx1, fidx2))
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     if self.is_min:
@@ -237,8 +297,7 @@ class DrawChartBase:
                             '당일매도수금액', '최고매도수금액', '최고매도수가격', '호가총잔량', '매도수호가잔량1'):
                 try:
                     fidx1, fidx2 = self.dict_idxs[factor]
-                    self.ymax = max(self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
-                    self.ymin = min(self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
+                    self.get_optimized_min_max((fidx1, fidx2))
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx1, self.rgb_blue)
@@ -249,8 +308,7 @@ class DrawChartBase:
             elif factor == '체결강도':
                 try:
                     fidx1, fidx2, fidx3, fidx4 = self.dict_idxs[factor]
-                    self.ymax = max(self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
-                    self.ymin = min(self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx3].min())
+                    self.get_optimized_min_max((fidx1, fidx2, fidx3))
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx4, self.rgb_dgray)
@@ -265,8 +323,7 @@ class DrawChartBase:
                     fidx1, fidx2 = self.dict_idxs[factor]
                     color1 = self.rgb_blue if factor in ('AROON', 'DMI') else self.rgb_red
                     color2 = self.rgb_red if factor in ('AROON', 'DMI') else self.rgb_green
-                    self.ymax = self.ui.ctpg_data[fidx1].max()
-                    self.ymin = self.ui.ctpg_data[fidx2].min()
+                    self.get_optimized_min_max((fidx1, fidx2))
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx2, color1)
@@ -277,8 +334,7 @@ class DrawChartBase:
             elif factor == 'BBAND':
                 try:
                     fidx1, fidx2, fidx3, fidx4 = self.dict_idxs[factor]
-                    self.ymax = max(self.ui.ctpg_data[fidx2].max(), self.ui.ctpg_data[fidx1].max())
-                    self.ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min())
+                    self.get_optimized_min_max((fidx1, fidx2, fidx3))
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx4, self.rgb_gray)
@@ -291,8 +347,7 @@ class DrawChartBase:
             elif factor == 'MACD':
                 try:
                     fidx1, fidx2, fidx3 = self.dict_idxs[factor]
-                    self.ymax = max(self.ui.ctpg_data[fidx3].max(), self.ui.ctpg_data[fidx1].max(), self.ui.ctpg_data[fidx2].max())
-                    self.ymin = min(self.ui.ctpg_data[fidx3].min(), self.ui.ctpg_data[fidx1].min(), self.ui.ctpg_data[fidx2].min())
+                    self.get_optimized_min_max((fidx1, fidx2, fidx3))
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx3, self.rgb_gray)
@@ -310,8 +365,7 @@ class DrawChartBase:
                             color = self.rgb_cyan
                         elif self.gubun == 'S' and fidx1 > 67:
                             color = self.rgb_cyan
-                    self.ymax = self.ui.ctpg_data[fidx1].max()
-                    self.ymin = self.ui.ctpg_data[fidx1].min()
+                    self.get_optimized_min_max(fidx1)
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx1, color)
@@ -324,7 +378,7 @@ class DrawChartBase:
         if not self.same_time and self.ui.ct_checkBoxxxxx_01.isChecked():
             self.insert_crosshair()
 
-        self.ui.ctpg_name, self.ui.ctpg_last_xtick = self.code, self.xmax
+        self.ui.ctpg_code = self.code
         if self.real and self.ui.database_chart: self.ui.database_chart = False
         if not self.real and not self.ui.database_chart: self.ui.database_chart = True
 
@@ -419,6 +473,7 @@ class DrawChartBase:
                 legend.setText(get_label_text(self.ui, True, self.gubun, self.code, self.is_min, -1, self.ui.ctpg_factors[i], self.hms))
                 legend.setFont(qfont12)
                 legend.setPos(self.xmax, self.ymax)
+                legend.setZValue(30)
                 self.ui.ctpg[i].addItem(legend)
                 self.ui.ctpg_legend[i] = legend
 

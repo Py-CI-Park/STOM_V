@@ -1,12 +1,727 @@
 
+import os
+import sys
 import numpy as np
+from collections import defaultdict
 from typing import Dict, List, Tuple
-from collections import defaultdict, deque
+try:
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+except:
+    pass
 from utility.setting_base import list_stock_tick, list_coin_tick
 
 
+try:
+    from numba import jit
+
+    @jit(nopython=True, cache=True, fastmath=True)
+    def _calc_analyze_price_levels(quantities: np.ndarray, multiplier: float, min_occurrences: int):
+        """가격 레벨별 분석 (Numba JIT 최적화) - 튜플 대신 배열 반환"""
+        n_rows, n_cols = quantities.shape
+        if n_rows < 3:
+            return np.empty((0, 5), dtype=np.float64)
+
+        # 5개 레벨 각각 계산
+        total_qtys = np.zeros(n_cols, dtype=np.float64)
+        occurrences = np.zeros(n_cols, dtype=np.int32)
+        max_qtys = np.zeros(n_cols, np.float64)
+
+        for col in range(n_cols):
+            max_val = 0.0
+            for row in range(n_rows):
+                val = quantities[row, col]
+                total_qtys[col] += val
+                if val > 0:
+                    occurrences[col] += 1
+                if val > max_val:
+                    max_val = val
+            max_qtys[col] = max_val
+
+        # 의심스러운 패턴 탐지
+        suspicious_count = 0
+        for col in range(n_cols):
+            if occurrences[col] > 0:
+                avg_qty = total_qtys[col] / occurrences[col]
+                if occurrences[col] >= min_occurrences and max_qtys[col] > avg_qty * multiplier:
+                    suspicious_count += 1
+
+        if suspicious_count == 0:
+            return np.empty((0, 5), dtype=np.float64)
+
+        # 결과 배열 생성
+        result = np.empty((suspicious_count, 5), dtype=np.float64)
+        idx = 0
+        for col in range(n_cols):
+            if occurrences[col] > 0:
+                avg_qty = total_qtys[col] / occurrences[col]
+                if occurrences[col] >= min_occurrences and max_qtys[col] > avg_qty * multiplier:
+                    score = min(max_qtys[col] / (avg_qty + 1e-8) / 3.0, 10.0)
+                    result[idx, 0] = float(col)
+                    result[idx, 1] = avg_qty
+                    result[idx, 2] = max_qtys[col]
+                    result[idx, 3] = float(occurrences[col])
+                    result[idx, 4] = score
+                    idx += 1
+
+        return result
+
+
+    @jit(nopython=True, cache=True, fastmath=True)
+    def _calc_detect_large_order_changes(quantities: np.ndarray, prices: np.ndarray, threshold: float):
+        """대량 주문 변화 감지 (Numba JIT 최적화) - 배열 반환"""
+        n_rows, n_cols = quantities.shape
+        if n_rows < 2:
+            return np.empty((0, 6), dtype=np.float64)
+
+        prev_n = n_rows - 1
+        change_count = 0
+        max_change_ratio = 0.0
+
+        for row in range(prev_n):
+            for col in range(n_cols):
+                prev_qty = quantities[row, col]
+                curr_qty = quantities[row + 1, col]
+                max_qty = max(prev_qty, curr_qty)
+
+                if max_qty > 0:
+                    change_ratio = abs(curr_qty - prev_qty) / max_qty
+                    if change_ratio > max_change_ratio:
+                        max_change_ratio = change_ratio
+                    if change_ratio > threshold:
+                        change_count += 1
+
+        # 너무 많으면 샘플링
+        if change_count > 50:
+            result = np.empty((1, 6), dtype=np.float64)
+            result[0, 0] = 0.0  # level
+            result[0, 1] = 0.0  # price
+            result[0, 2] = 0.0  # prev_qty
+            result[0, 3] = 0.0  # curr_qty
+            result[0, 4] = 0.0  # change_amount
+            result[0, 5] = max_change_ratio
+            return result
+
+        if change_count == 0:
+            return np.empty((0, 6), dtype=np.float64)
+
+        # 결과 배열 생성
+        idx = 0
+        result = np.empty((change_count, 6), dtype=np.float64)
+
+        for row in range(prev_n):
+            for col in range(n_cols):
+                prev_qty = quantities[row, col]
+                curr_qty = quantities[row + 1, col]
+                max_qty = max(prev_qty, curr_qty)
+
+                if max_qty > 0:
+                    change_ratio = abs(curr_qty - prev_qty) / max_qty
+                    if change_ratio > threshold:
+                        result[idx, 0] = float(col)
+                        result[idx, 1] = prices[row + 1, col]
+                        result[idx, 2] = prev_qty
+                        result[idx, 3] = curr_qty
+                        result[idx, 4] = abs(curr_qty - prev_qty)
+                        result[idx, 5] = change_ratio
+                        idx += 1
+
+        return result
+
+
+    @jit(nopython=True, cache=True, fastmath=True)
+    def _calc_layering_confidence(levels: np.ndarray):
+        """레이어링 신뢰도 계산 (Numba JIT) - levels: (N, 5) 배열"""
+        n = levels.shape[0]
+        if n == 0:
+            return 0.0
+
+        max_suspicion = 0.0
+        sum_suspicion = 0.0
+        max_occurrences = 0.0
+
+        for i in range(n):
+            suspicion = levels[i, 4]
+            occurrences = levels[i, 3]
+            if suspicion > max_suspicion:
+                max_suspicion = suspicion
+            sum_suspicion += suspicion
+            if occurrences > max_occurrences:
+                max_occurrences = occurrences
+
+        avg_suspicion = sum_suspicion / n
+        occurrence_weight = min(max_occurrences / 10.0, 1.0)
+        confidence = (max_suspicion * 0.7 + avg_suspicion * 0.3) * occurrence_weight
+
+        if confidence > 1.0:
+            return 1.0
+        return confidence
+
+
+    @jit(nopython=True, cache=True, fastmath=True)
+    def _calc_spoofing_confidence(changes: np.ndarray):
+        """스푸핑 신뢰도 계산 (Numba JIT) - changes: (N, 6) 배열"""
+        n = changes.shape[0]
+        if n == 0:
+            return 0.0
+
+        max_change_ratio = 0.0
+        sum_change_ratio = 0.0
+
+        for i in range(n):
+            ratio = changes[i, 5]
+            if ratio > max_change_ratio:
+                max_change_ratio = ratio
+            sum_change_ratio += ratio
+
+        avg_change_ratio = sum_change_ratio / n
+        change_count_weight = min(n / 5.0, 1.0)
+        confidence = (max_change_ratio * 0.7 + avg_change_ratio * 0.3) * change_count_weight
+
+        if confidence > 1.0:
+            return 1.0
+        return confidence
+
+
+    @jit(nopython=True, cache=True, fastmath=True)
+    def _calc_detect_iceberg(qtys: np.ndarray, prices: np.ndarray, depletion_threshold: float,
+                             price_stable_threshold: float, min_pattern_count: int):
+        """아이스버그 주문 탐지 (Numba JIT) - 결과: (N, 6) 배열 (side_idx, level, avg_price, max_count, total_depletion, confidence)"""
+        n_rows, n_cols = qtys.shape
+        if n_rows < 5:
+            return np.empty((0, 6), dtype=np.float64)
+
+        # 최대 20개 결과 저장 가능
+        result_count = 0
+        max_results = 20
+        results = np.empty((max_results, 6), dtype=np.float64)
+
+        for level in range(n_cols):
+            # 소진 패턴 탐지
+            depletion_indices_list = []
+            prev_qty = qtys[0, level]
+
+            for row in range(1, n_rows):
+                curr_qty = qtys[row, level]
+                qty_change = curr_qty - prev_qty
+                price_change = abs(prices[row, level] - prices[row - 1, level])
+
+                # 소진 조건: 수량 감소 > 30% and 가격 안정
+                if qty_change < -prev_qty * depletion_threshold and price_change < price_stable_threshold:
+                    depletion_indices_list.append(row - 1)  # 이전 인덱스 기준
+                prev_qty = curr_qty
+
+            depletion_count = len(depletion_indices_list)
+            if depletion_count < min_pattern_count:
+                continue
+
+            # 연속 그룹 분리 및 최대 길이 계산
+            if depletion_count == 0:
+                continue
+
+            max_pattern_count = 1
+            current_group = 1
+
+            for i in range(1, depletion_count):
+                if depletion_indices_list[i] == depletion_indices_list[i - 1] + 1:
+                    current_group += 1
+                    if current_group > max_pattern_count:
+                        max_pattern_count = current_group
+                else:
+                    current_group = 1
+
+            if max_pattern_count < min_pattern_count:
+                continue
+
+            # 총 소진량 계산
+            total_depletion = 0.0
+            initial_qty = qtys[0, level]
+
+            for idx in depletion_indices_list:
+                if idx + 1 < n_rows:
+                    qty_change = qtys[idx, level] - qtys[idx + 1, level]
+                    if qty_change > 0:
+                        total_depletion += qty_change
+
+            if total_depletion <= initial_qty * 2:
+                continue
+
+            # 결과 저장
+            if result_count < max_results:
+                avg_price = (prices[0, level] + prices[-1, level]) / 2.0
+                # 0으로 나누기 방지
+                depletion_denom = initial_qty * 3.0 if initial_qty > 0 else 1.0
+                confidence = min(max_pattern_count / 5.0, 1.0) * min(total_depletion / depletion_denom, 1.0)
+                results[result_count, 0] = 0.0  # side_idx (ask=0, bid=1, 외부에서 설정)
+                results[result_count, 1] = float(level)
+                results[result_count, 2] = avg_price
+                results[result_count, 3] = float(max_pattern_count)
+                results[result_count, 4] = total_depletion
+                results[result_count, 5] = min(confidence, 1.0)
+                result_count += 1
+
+        return results[:result_count]
+
+
+    @jit(nopython=True, cache=True, fastmath=True)
+    def _calc_detect_stop_hunt(prices: np.ndarray, volumes: np.ndarray, price_threshold: float, vol_threshold: float):
+        """스탑로스 털기 패턴 감지 (Numba JIT) - 결과: (N, 6) 배열 (direction, price, change, vol, confidence, idx)"""
+        n = len(prices)
+        if n < 20:
+            return np.empty((0, 6), dtype=np.float64)
+
+        # 평균 거래량 계산
+        avg_volume = 0.0
+        for i in range(n - 1):
+            avg_volume += volumes[i]
+        avg_volume = avg_volume / (n - 1) + 1e-8
+
+        # 최대 50개 결과 저장
+        result_count = 0
+        max_results = 50
+        results = np.empty((max_results, 6), dtype=np.float64)
+
+        for i in range(3, n - 4):
+            # 가격 변화율
+            price_change = (prices[i + 1] - prices[i]) / (prices[i] + 1e-10) * 100.0
+            volume_spike = volumes[i + 1] / avg_volume
+
+            # 조건 체크
+            if abs(price_change) > price_threshold and volume_spike > vol_threshold:
+                # before_trend 계산 (i-3 ~ i)
+                before_sum = 0.0
+                for j in range(i - 3, i):
+                    before_sum += (prices[j + 1] - prices[j]) / (prices[j] + 1e-10) * 100.0
+                before_trend = before_sum / 3.0
+
+                # after_trend 계산 (i+1 ~ i+4)
+                after_sum = 0.0
+                for j in range(i + 1, min(i + 4, n - 1)):
+                    after_sum += (prices[j + 1] - prices[j]) / (prices[j] + 1e-10) * 100.0
+                after_trend = after_sum / 3.0
+
+                # reversal 조건
+                is_reversal = (before_trend * after_trend < 0) or (abs(after_trend) < abs(before_trend) * 0.3)
+
+                if is_reversal and result_count < max_results:
+                    direction = 1 if price_change > 0 else -1
+                    confidence = min(abs(price_change), 1.0) * min(volume_spike / 5.0, 1.0)
+
+                    results[result_count, 0] = float(direction)
+                    results[result_count, 1] = prices[i + 1]
+                    results[result_count, 2] = price_change
+                    results[result_count, 3] = volume_spike
+                    results[result_count, 4] = confidence
+                    results[result_count, 5] = float(i)
+                    result_count += 1
+
+        return results[:result_count]
+
+
+    @jit(nopython=True, cache=True, fastmath=True)
+    def _calc_detect_pump_dump(prices: np.ndarray, volumes: np.ndarray, price_threshold: float,
+                               vol_threshold: float, window: int):
+        """펌프 앤 덤프 탐지 (Numba JIT) - 결과: (N, 3) 배열 (price_change, volume_spike, confidence)"""
+        n = len(prices)
+        if n < window + 2:
+            return np.empty((0, 3), dtype=np.float64)
+
+        # 이동평균 계산 (window 기반)
+        ma_prices = np.zeros(n - window, dtype=np.float64)
+        for i in range(n - window):
+            sum_price = 0.0
+            for j in range(window):
+                sum_price += prices[i + j]
+            ma_prices[i] = sum_price / window
+
+        # 평균 거래량
+        avg_volume = 0.0
+        for i in range(n - 1):
+            avg_volume += volumes[i]
+        avg_volume = avg_volume / (n - 1) + 1e-8
+
+        # 최대 30개 결과 저장
+        result_count = 0
+        max_results = 30
+        results = np.empty((max_results, 3), dtype=np.float64)
+
+        for i in range(len(ma_prices) - 1):
+            price_change = (ma_prices[i + 1] - ma_prices[i]) / (ma_prices[i] + 1e-10) * 100.0
+            actual_idx = i + window
+            volume_spike = volumes[actual_idx] / avg_volume
+
+            # 조건 체크
+            if abs(price_change) > price_threshold and volume_spike > vol_threshold and result_count < max_results:
+                price_score = min(abs(price_change) / 0.1, 1.0)
+                vol_score = min(volume_spike / 5.0, 1.0)
+                confidence = (price_score + vol_score) / 2.0
+
+                results[result_count, 0] = price_change
+                results[result_count, 1] = volume_spike
+                results[result_count, 2] = confidence
+                result_count += 1
+
+        return results[:result_count]
+
+except:
+    def _calc_analyze_price_levels(quantities: np.ndarray, multiplier: float, min_occurrences: int):
+        """가격 레벨별 분석 (벡터 연산 버전 - 32비트 fallback)"""
+        n_rows, n_cols = quantities.shape
+        if n_rows < 3:
+            return np.empty((0, 5), dtype=np.float64)
+
+        quantities = np.asarray(quantities, dtype=np.float64)
+
+        # 벡터 연산으로 total_qtys, occurrences, max_qtys 계산
+        total_qtys = quantities.sum(axis=0)
+        occurrences = (quantities > 0).sum(axis=0)
+        max_qtys = quantities.max(axis=0)
+
+        # 의심스러운 패턴 탐지 (벡터화)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            avg_qtys = np.where(occurrences > 0, total_qtys / occurrences, 0)
+            is_suspicious = (occurrences >= min_occurrences) & (max_qtys > avg_qtys * multiplier)
+
+        suspicious_indices = np.where(is_suspicious)[0]
+        if len(suspicious_indices) == 0:
+            return np.empty((0, 5), dtype=np.float64)
+
+        # 결과 배열 생성
+        result = np.empty((len(suspicious_indices), 5), dtype=np.float64)
+        result[:, 0] = suspicious_indices.astype(np.float64)
+        result[:, 1] = avg_qtys[suspicious_indices]
+        result[:, 2] = max_qtys[suspicious_indices]
+        result[:, 3] = occurrences[suspicious_indices].astype(np.float64)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            result[:, 4] = np.minimum(max_qtys[suspicious_indices] / (avg_qtys[suspicious_indices] + 1e-8) / 3.0, 10.0)
+
+        return result
+
+
+    def _calc_detect_large_order_changes(quantities: np.ndarray, prices: np.ndarray, threshold: float):
+        """대량 주문 변화 감지 (벡터 연산 버전 - 32비트 fallback)"""
+        n_rows, n_cols = quantities.shape
+        if n_rows < 2:
+            return np.empty((0, 6), dtype=np.float64)
+
+        quantities = np.asarray(quantities, dtype=np.float64)
+        prices = np.asarray(prices, dtype=np.float64)
+
+        # 변경 비율 계산 (벡터화)
+        prev_qtys = quantities[:-1]
+        curr_qtys = quantities[1:]
+        max_qtys = np.maximum(prev_qtys, curr_qtys)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            change_ratios = np.where(max_qtys > 0, np.abs(curr_qtys - prev_qtys) / max_qtys, 0)
+
+        max_change_ratio = change_ratios.max() if change_ratios.size > 0 else 0.0
+        change_count = np.sum(change_ratios > threshold)
+
+        # 너무 많으면 샘플링
+        if change_count > 50:
+            return np.array([[0.0, 0.0, 0.0, 0.0, 0.0, max_change_ratio]], dtype=np.float64)
+
+        if change_count == 0:
+            return np.empty((0, 6), dtype=np.float64)
+
+        # 변경된 인덱스 찾기
+        change_indices = np.argwhere(change_ratios > threshold)
+
+        # 결과 배열 생성
+        result = np.empty((len(change_indices), 6), dtype=np.float64)
+        result[:, 0] = change_indices[:, 1]  # col
+        result[:, 1] = prices[change_indices[:, 0] + 1, change_indices[:, 1]]  # price
+        result[:, 2] = prev_qtys[change_indices[:, 0], change_indices[:, 1]]  # prev_qty
+        result[:, 3] = curr_qtys[change_indices[:, 0], change_indices[:, 1]]  # curr_qty
+        result[:, 4] = np.abs(curr_qtys - prev_qtys)[change_indices[:, 0], change_indices[:, 1]]  # change_amount
+        result[:, 5] = change_ratios[change_indices[:, 0], change_indices[:, 1]]  # change_ratio
+
+        return result
+
+
+    def _calc_layering_confidence(levels: np.ndarray):
+        """레이어링 신뢰도 계산 (벡터 연산 버전 - 32비트 fallback)"""
+        levels = np.asarray(levels, dtype=np.float64)
+        n = levels.shape[0]
+        if n == 0:
+            return 0.0
+
+        suspicions = levels[:, 4]
+        occurrences = levels[:, 3]
+
+        max_suspicion = suspicions.max()
+        avg_suspicion = suspicions.mean()
+        max_occurrences = occurrences.max()
+
+        occurrence_weight = min(max_occurrences / 10.0, 1.0)
+        confidence = (max_suspicion * 0.7 + avg_suspicion * 0.3) * occurrence_weight
+
+        return min(confidence, 1.0)
+
+
+    def _calc_spoofing_confidence(changes: np.ndarray):
+        """스푸핑 신뢰도 계산 (벡터 연산 버전 - 32비트 fallback)"""
+        changes = np.asarray(changes, dtype=np.float64)
+        n = changes.shape[0]
+        if n == 0:
+            return 0.0
+
+        ratios = changes[:, 5]
+        max_change_ratio = ratios.max()
+        avg_change_ratio = ratios.mean()
+
+        change_count_weight = min(n / 5.0, 1.0)
+        confidence = (max_change_ratio * 0.7 + avg_change_ratio * 0.3) * change_count_weight
+
+        return min(confidence, 1.0)
+
+
+    def _calc_detect_iceberg(qtys: np.ndarray, prices: np.ndarray, depletion_threshold: float,
+                             price_stable_threshold: float, min_pattern_count: int):
+        """아이스버그 주문 탐지 (벡터 연산 버전 - 32비트 fallback)"""
+        qtys = np.asarray(qtys, dtype=np.float64)
+        prices = np.asarray(prices, dtype=np.float64)
+        n_rows, n_cols = qtys.shape
+        if n_rows < 5:
+            return np.empty((0, 6), dtype=np.float64)
+
+        max_results = 20
+        results = []
+
+        for level in range(n_cols):
+            # 소진 패턴 탐지 (벡터 연산)
+            qty_changes = np.diff(qtys[:, level])
+            price_changes = np.abs(np.diff(prices[:, level]))
+            prev_qtys = qtys[:-1, level]
+
+            depletion_mask = (qty_changes < -prev_qtys * depletion_threshold) & (price_changes < price_stable_threshold)
+            depletion_indices = np.where(depletion_mask)[0]
+            depletion_count = len(depletion_indices)
+
+            if depletion_count < min_pattern_count:
+                continue
+
+            # 연속 그룹 분리
+            if depletion_count == 0:
+                continue
+
+            diffs = np.diff(depletion_indices)
+            group_starts = np.concatenate([[0], np.where(diffs > 1)[0] + 1])
+            group_lengths = np.diff(np.concatenate([group_starts, [depletion_count]]))
+            max_pattern_count = group_lengths.max()
+
+            if max_pattern_count < min_pattern_count:
+                continue
+
+            # 총 소진량 계산
+            total_depletion = 0.0
+            initial_qty = qtys[0, level]
+
+            for idx in depletion_indices:
+                if idx + 1 < n_rows:
+                    qty_change = qtys[idx, level] - qtys[idx + 1, level]
+                    if qty_change > 0:
+                        total_depletion += qty_change
+
+            if total_depletion <= initial_qty * 2:
+                continue
+
+            # 결과 저장
+            if len(results) < max_results:
+                avg_price = (prices[0, level] + prices[-1, level]) / 2.0
+                depletion_denom = initial_qty * 3.0 if initial_qty > 0 else 1.0
+                confidence = min(max_pattern_count / 5.0, 1.0) * min(total_depletion / depletion_denom, 1.0)
+                results.append([0.0, float(level), avg_price, float(max_pattern_count), total_depletion, min(confidence, 1.0)])
+
+        return np.array(results, dtype=np.float64) if results else np.empty((0, 6), dtype=np.float64)
+
+
+    def _calc_detect_stop_hunt(prices: np.ndarray, volumes: np.ndarray, price_threshold: float, vol_threshold: float):
+        """스탑로스 털기 패턴 감지 (벡터 연산 버전 - 32비트 fallback)"""
+        prices = np.asarray(prices, dtype=np.float64)
+        volumes = np.asarray(volumes, dtype=np.float64)
+        n = len(prices)
+        if n < 20:
+            return np.empty((0, 6), dtype=np.float64)
+
+        # 평균 거래량 계산 (벡터화)
+        avg_volume = volumes[:-1].mean() + 1e-8
+
+        # 가격 변화율, 거래량 스파크 계산 (벡터화)
+        price_changes = (prices[4:] - prices[3:-1]) / (prices[3:-1] + 1e-10) * 100.0
+        volume_spikes = volumes[4:] / avg_volume
+
+        results = []
+        max_results = 50
+
+        for i in range(len(price_changes)):
+            actual_idx = i + 3
+            if actual_idx < 3 or actual_idx >= n - 4:
+                continue
+
+            if abs(price_changes[i]) > price_threshold and volume_spikes[i] > vol_threshold:
+                # before_trend 계산 (i-3 ~ i)
+                before_prices = prices[actual_idx-3:actual_idx+1]
+                before_changes = np.diff(before_prices) / (before_prices[:-1] + 1e-10) * 100.0
+                before_trend = before_changes.mean()
+
+                # after_trend 계산 (i+1 ~ i+4)
+                end_idx = min(actual_idx + 4, n - 1)
+                after_prices = prices[actual_idx+1:end_idx+1]
+                if len(after_prices) >= 2:
+                    after_changes = np.diff(after_prices) / (after_prices[:-1] + 1e-10) * 100.0
+                    after_trend = after_changes.mean()
+                else:
+                    after_trend = 0.0
+
+                # reversal 조건
+                is_reversal = (before_trend * after_trend < 0) or (abs(after_trend) < abs(before_trend) * 0.3)
+
+                if is_reversal and len(results) < max_results:
+                    direction = 1 if price_changes[i] > 0 else -1
+                    confidence = min(abs(price_changes[i]), 1.0) * min(volume_spikes[i] / 5.0, 1.0)
+
+                    results.append([float(direction), prices[actual_idx + 1], price_changes[i], 
+                                   volume_spikes[i], confidence, float(actual_idx)])
+
+        return np.array(results, dtype=np.float64) if results else np.empty((0, 6), dtype=np.float64)
+
+
+    def _calc_detect_pump_dump(prices: np.ndarray, volumes: np.ndarray, price_threshold: float,
+                               vol_threshold: float, window: int):
+        """펌프 앤 덤프 탐지 (벡터 연산 버전 - 32비트 fallback)"""
+        prices = np.asarray(prices, dtype=np.float64)
+        volumes = np.asarray(volumes, dtype=np.float64)
+        n = len(prices)
+        if n < window + 2:
+            return np.empty((0, 3), dtype=np.float64)
+
+        # 이동평균 계산 (벡터화 - convolution 사용)
+        kernel = np.ones(window) / window
+        ma_prices = np.convolve(prices, kernel, mode='valid')
+
+        # 평균 거래량
+        avg_volume = volumes[:-1].mean() + 1e-8
+
+        results = []
+        max_results = 30
+
+        for i in range(len(ma_prices) - 1):
+            with np.errstate(divide='ignore', invalid='ignore'):
+                price_change = (ma_prices[i + 1] - ma_prices[i]) / (ma_prices[i] + 1e-10) * 100.0
+            actual_idx = i + window
+            volume_spike = volumes[actual_idx] / avg_volume
+
+            if abs(price_change) > price_threshold and volume_spike > vol_threshold:
+                price_score = min(abs(price_change) / 0.1, 1.0)
+                vol_score = min(volume_spike / 5.0, 1.0)
+                confidence = (price_score + vol_score) / 2.0
+
+                results.append([price_change, volume_spike, confidence])
+
+                if len(results) >= max_results:
+                    break
+
+        return np.array(results, dtype=np.float64) if results else np.empty((0, 3), dtype=np.float64)
+
+
+class HistoryBuffer:
+    """전처리 데이터 히스토리용 numpy ring buffer
+
+    스칼라값과 5단계 호가 데이터를 효율적으로 저장
+    """
+
+    __slots__ = ['maxlen', 'ptr', 'count', 'curr_price', 'imbalance', 
+                 'ask_prices', 'bid_prices', 'ask_qtys', 'bid_qtys',
+                 'buy_volume', 'sell_volume', 'total_volume', 'weighted_depth_ratio']
+
+    def __init__(self, maxlen: int):
+        self.maxlen = maxlen
+        self.ptr = 0
+        self.count = 0
+
+        # 스칼라 데이터용 배열
+        self.curr_price = np.zeros(maxlen, dtype=np.float64)
+        self.imbalance = np.zeros(maxlen, dtype=np.float64)
+        self.buy_volume = np.zeros(maxlen, dtype=np.float64)
+        self.sell_volume = np.zeros(maxlen, dtype=np.float64)
+        self.total_volume = np.zeros(maxlen, dtype=np.float64)
+        self.weighted_depth_ratio = np.zeros(maxlen, dtype=np.float64)
+
+        # 5단계 호가 데이터용 배열 (maxlen x 5)
+        self.ask_prices = np.zeros((maxlen, 5), dtype=np.float64)
+        self.bid_prices = np.zeros((maxlen, 5), dtype=np.float64)
+        self.ask_qtys = np.zeros((maxlen, 5), dtype=np.float64)
+        self.bid_qtys = np.zeros((maxlen, 5), dtype=np.float64)
+
+    def append(self, curr_price: float, imbalance: float, buy_volume: float, sell_volume: float,
+               total_volume: float, weighted_depth_ratio: float, ask_prices: np.ndarray, bid_prices: np.ndarray,
+               ask_qtys: np.ndarray, bid_qtys: np.ndarray):
+        """데이터 추가 (딕셔너리 오버헤드 제거)"""
+        idx = self.ptr
+
+        self.curr_price[idx] = curr_price
+        self.imbalance[idx] = imbalance
+        self.buy_volume[idx] = buy_volume
+        self.sell_volume[idx] = sell_volume
+        self.total_volume[idx] = total_volume
+        self.weighted_depth_ratio[idx] = weighted_depth_ratio
+
+        self.ask_prices[idx] = ask_prices
+        self.bid_prices[idx] = bid_prices
+        self.ask_qtys[idx] = ask_qtys
+        self.bid_qtys[idx] = bid_qtys
+
+        self.ptr = (self.ptr + 1) % self.maxlen
+        if self.count < self.maxlen:
+            self.count += 1
+
+    def get_prices_array(self) -> np.ndarray:
+        """가격 배열 직접 반환 (뷰 기반 최적화)"""
+        if self.count < self.maxlen:
+            return self.curr_price[:self.count]
+        return np.concatenate([self.curr_price[self.ptr:], self.curr_price[:self.ptr]])
+
+    def get_volumes_array(self) -> np.ndarray:
+        """거래량 배열 직접 반환 (뷰 기반 최적화)"""
+        if self.count < self.maxlen:
+            return self.total_volume[:self.count]
+        return np.concatenate([self.total_volume[self.ptr:], self.total_volume[:self.ptr]])
+
+    def get_qtys_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        ask/bid 잔량 배열 직접 반환 (iceberg detection용)
+        Returns: (ask_qtys, bid_qtys) 각각 (n, 5) shape
+        뷰 기반 최적화로 메모리 복사 최소화
+        """
+        if self.count < self.maxlen:
+            return self.ask_qtys[:self.count], self.bid_qtys[:self.count]
+        ask = np.concatenate([self.ask_qtys[self.ptr:], self.ask_qtys[:self.ptr]], axis=0)
+        bid = np.concatenate([self.bid_qtys[self.ptr:], self.bid_qtys[:self.ptr]], axis=0)
+        return ask, bid
+
+    def get_prices_arrays(self) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        ask/bid 가격 배열 직접 반환
+        Returns: (ask_prices, bid_prices) 각각 (n, 5) shape
+        """
+        if self.count < self.maxlen:
+            return self.ask_prices[:self.count], self.bid_prices[:self.count]
+        ask = np.concatenate([self.ask_prices[self.ptr:], self.ask_prices[:self.ptr]], axis=0)
+        bid = np.concatenate([self.bid_prices[self.ptr:], self.bid_prices[:self.ptr]], axis=0)
+        return ask, bid
+
+    def get_imbalance_array(self) -> np.ndarray:
+        """imbalance 배열 직접 반환"""
+        if self.count < self.maxlen:
+            return self.imbalance[:self.count]
+        return np.concatenate([self.imbalance[self.ptr:], self.imbalance[:self.ptr]])
+
+    def __len__(self) -> int:
+        return self.count
+
+
 class MicrostructureAnalyzer:
-    def __init__(self, market_type: str = 'stock', data_cnt: int = 1800, history_cnt: int = 30, test_mode=False):
+    def __init__(self, market_type: str, data_cnt: int = 1800, history_cnt: int = 30):
         """
         초기화
 
@@ -14,25 +729,27 @@ class MicrostructureAnalyzer:
             market_type: 'stock', 'coin', 'future' (시장 종류)
             data_cnt: 종목별 최대 히스토리 저장 크기 (슬라이딩 윈도우)
             history_cnt: 전처리 데이터 히스토리 크기
-            test_mode: 테스트모드
         """
         # 기본 설정
+        self._price_risk_cache = {}
         self.market_type = market_type
         self.data_cnt = data_cnt
         self.history_cnt = history_cnt
         self.curr_data = None
-        self.test_mode = test_mode
         self.data_results = []
-
-        # 종목코드별 데이터 저장소
-        self.data_buffers = defaultdict(lambda: deque(maxlen=data_cnt))  # 실시간 데이터 버퍼
-        self.data_history = defaultdict(lambda: deque(maxlen=history_cnt))  # 전처리 데이터 히스토리
 
         # 데이터 타입별 파라미터 설정
         self._setup_parameters()
 
         # 칼럼 설정
         self._setup_columns()
+
+        # 분석 히스토리 버퍼
+        self.data_history = defaultdict(lambda: HistoryBuffer(self.history_cnt))
+
+        # 상수 캐싱 (반복 생성 회피)
+        self._depth_weights = np.array([0.35, 0.25, 0.20, 0.12, 0.08])  # 1~5단계 가중치
+        self._log_depth_ratio_threshold = np.log(self.params['depth_ratio_threshold'])
 
     def _setup_parameters(self):
         """
@@ -85,126 +802,120 @@ class MicrostructureAnalyzer:
         """
         # 시장 종류에 따라 칼럼 목록 선택
         if self.market_type == 'stock':
-            self.columns = list_stock_tick  # 주식 틱 데이터
-        else:  # coin or future
-            self.columns = list_coin_tick  # 코인, 해외선물 틱 데이터
+            self.columns = list_stock_tick
+        else:
+            self.columns = list_coin_tick
 
         # 칼럼 인덱스 매핑 (빠른 접근용)
-        self.col_index = {col: idx for idx, col in enumerate(self.columns)}
+        col_index = {col: idx for idx, col in enumerate(self.columns)}
+        self.idx_curr_price = col_index.get('현재가', 0)
+        self.idx_buy_vol    = col_index.get('초당매수수량', 0)
+        self.idx_sell_vol   = col_index.get('초당매도수량', 0)
+        self.idx_ask_price  = [col_index.get(f'매도호가{i}', 0) for i in range(1, 6)]
+        self.idx_ask_qty    = [col_index.get(f'매도잔량{i}', 0) for i in range(1, 6)]
+        self.idx_bid_price  = [col_index.get(f'매수호가{i}', 0) for i in range(1, 6)]
+        self.idx_bid_qty    = [col_index.get(f'매수잔량{i}', 0) for i in range(1, 6)]
 
     def update_data(self, code: str, tick_data: np.ndarray):
         """
-        데이터 전처리, 시장구조분석
+        데이터 전처리 및 시장구조분석
 
         Args:
             code: 종목코드
-            tick_data: 1차원 numpy 배열 (실시간 데이터)
+            tick_data: 2차원 numpy 배열 (shape: [n_ticks, n_features])
         """
-        # 종목코드별 데이터 버퍼에 실시간 데이터 추가
-        self.data_buffers[code].append(tick_data)
-        # 데이터 전처리, 시장구조분석
-        self._calculate_processed_data(code)
+        self._calculate_processed_data(code, tick_data)
 
-    def get_signal(self, code: str, buy_cf: float, sell_cf: float) -> Tuple[str, float, float]:
+    def get_signal(self, buy_cf: float, sell_cf: float) -> Tuple[str, float, float]:
         """
         리스크분석, 신호 생성
 
         Args:
-            code: 종목코드
             buy_cf: 매수 신호 생성용 계수
             sell_cf: 매도 신호 생성용 계수
 
         Returns:
             Tuple[str, float, float]: (신호타입, 신뢰도, 리스크)
         """
-        # 리스크분석
-        total_risk = self._analyze_risk(code)
-        # 시그널 및 신뢰도 계산
+        total_risk = self._analyze_risk()
         signal, confidence = self._analyze_signal(buy_cf, sell_cf)
-        if self.test_mode and self.data_results:
-            self.data_results[-1][3] = total_risk
         return signal, confidence, total_risk
 
-    def _calculate_processed_data(self, code: str):
+    def _calculate_processed_data(self, code: str, tick_data: np.ndarray):
         """
-        데이터 전처리, 시장구조분석
+        데이터 전처리, 시장구조분석 (2차원 배열 바로 처리 버전)
 
         Args:
             code: 종목코드
+            tick_data: 2차원 numpy 배열 (shape: [n_ticks, n_features])
         """
-        data_buffers = list(self.data_buffers[code])
-        if len(data_buffers) < self.history_cnt:
+        if len(tick_data) < self.history_cnt:
             return
 
-        # 넘파이 배열로 변환 (성능 최적화)
-        recent_data = np.array(data_buffers)
-        curr_price = recent_data[-1, self.col_index['현재가']]
-
-        # 거래량 관련 계산 (데이터 타입에 따라 다름)
-        buy_volume   = recent_data[-1, self.col_index['초당매수수량']]
-        sell_volume  = recent_data[-1, self.col_index['초당매도수량']]
+        recent_data  = tick_data[-self.history_cnt:]
+        curr_price   = recent_data[-1, self.idx_curr_price]
+        buy_volume   = recent_data[-1, self.idx_buy_vol]
+        sell_volume  = recent_data[-1, self.idx_sell_vol]
         total_volume = buy_volume + sell_volume
 
-        # 마지막 호가 데이터 추출 (5단계 호가)
-        ask_prices = []
-        bid_prices = []
-        ask_qtys = []
-        bid_qtys = []
-        for i in range(1, 6):
-            ask_prices.append(recent_data[-1, self.col_index[f'매도호가{i}']])
-            ask_qtys.append(recent_data[-1, self.col_index[f'매도잔량{i}']])
-            bid_prices.append(recent_data[-1, self.col_index[f'매수호가{i}']])
-            bid_qtys.append(recent_data[-1, self.col_index[f'매수잔량{i}']])
+        # 벡터화된 호가 데이터 추출 (리스트-배열 변환 제거)
+        ask_prices   = recent_data[-1, self.idx_ask_price]
+        ask_qtys     = recent_data[-1, self.idx_ask_qty]
+        bid_prices   = recent_data[-1, self.idx_bid_price]
+        bid_qtys     = recent_data[-1, self.idx_bid_qty]
 
-        # 깊이 비율, 불균형, VWAP 계산
-        total_ask_qty = sum(ask_qtys)
-        total_bid_qty = sum(bid_qtys)
-        depth_ratio = total_bid_qty / total_ask_qty if total_ask_qty > 0 else 1
-        total_qty = total_bid_qty + total_ask_qty
-        imbalance = (total_bid_qty - total_ask_qty) / total_qty if total_qty > 0 else 0.0
+        # 깊이 비율, 불균형, VWAP 계산 (벡터화 연산)
+        total_ask_qty = np.sum(ask_qtys)
+        total_bid_qty = np.sum(bid_qtys)
+        depth_ratio   = total_bid_qty / total_ask_qty if total_ask_qty > 0 else 1
+        total_qty     = total_bid_qty + total_ask_qty
+        imbalance     = (total_bid_qty - total_ask_qty) / total_qty if total_qty > 0 else 0.0
 
-        # 깊이별 가중치 계산 (가까운 호가일수록 높은 가중치)
-        depth_weights = [0.35, 0.25, 0.20, 0.12, 0.08]  # 1~5단계 가중치
-        weighted_ask_qty = sum(qty * weight for qty, weight in zip(ask_qtys, depth_weights))
-        weighted_bid_qty = sum(qty * weight for qty, weight in zip(bid_qtys, depth_weights))
+        # 깊이별 가중치 계산 (벡터화 연산)
+        weighted_ask_qty = np.dot(ask_qtys, self._depth_weights)
+        weighted_bid_qty = np.dot(bid_qtys, self._depth_weights)
         weighted_depth_ratio = weighted_bid_qty / weighted_ask_qty if weighted_ask_qty > 0 else 1
 
-        # 집중도 점수, 압력 레벨 계산
-        ask_concentration = sum((aq / total_ask_qty) ** 2 if total_ask_qty > 0 else 0 for aq in ask_qtys)
-        bid_concentration = sum((bq / total_bid_qty) ** 2 if total_bid_qty > 0 else 0 for bq in bid_qtys)
-        concentration_score = (bid_concentration + ask_concentration) / 2
-        pressure_level = (imbalance + concentration_score) / 2
+        self.data_history[code].append(
+            curr_price, imbalance, buy_volume, sell_volume, total_volume,
+            weighted_depth_ratio, ask_prices, bid_prices, ask_qtys, bid_qtys
+        )
 
-        # 히스토리 데이터 저장 (슬라이딩 윈도우)
-        self.data_history[code].append({
-            'curr_price': curr_price,
-            'imbalance': imbalance,
-            'ask_prices': ask_prices,
-            'bid_prices': bid_prices,
-            'ask_qtys': ask_qtys,
-            'bid_qtys': bid_qtys,
-            'buy_volume': buy_volume,
-            'sell_volume': sell_volume,
-            'total_volume': total_volume,
-            'weighted_depth_ratio': weighted_depth_ratio
-        })
-
-        # 스프레드 트렌드 및 불균형 트렌드 계산
-        data_history = list(self.data_history[code])
-        if len(data_history) < self.history_cnt:
+        # 스프레드 트렌드 및 불균형 트렌드 계산 (HistoryBuffer 직접 사용)
+        hist_buffer = self.data_history[code]
+        if len(hist_buffer) < self.history_cnt:
             return
 
-        # 최근 히스토리 기준 선형 회귀 분석
-        imbalance_trend = np.polyfit(range(self.history_cnt), [d['imbalance'] for d in data_history], 1)[0]
+        # HistoryBuffer에서 imbalance 배열 직접 가져와 트렌드 계산
+        imbalances = hist_buffer.get_imbalance_array()[-self.history_cnt:]
 
-        # 각종 조작 패턴 감지
-        layering = self._detect_layering(code)                              # 레이어링 감지
-        pump_dump = self._detect_pump_dump(code)                            # 펌프앤덤프 감지
-        overall_risk = self._calculate_overall_risk(layering, pump_dump)    # 리스크 평가
+        # 단순 선형 추정: (후반부 평균 - 전반부 평균) / (구간 길이 / 2)
+        half = self.history_cnt // 2
+        first_half_avg  = np.mean(imbalances[:half])
+        second_half_avg = np.mean(imbalances[half:])
+        # noinspection PyTypeChecker
+        imbalance_trend = (second_half_avg - first_half_avg) / half
 
-        # 실제 체결 데이터 분석
-        volume_pattern = self._analyze_volume_pattern(code)                 # 거래량 패턴 분석
-        trade_ratio = self._calculate_trade_ratio(buy_volume, sell_volume)  # 매수/매도 체결 비율
+        # 집중도 점수, 압력 레벨 계산 (벡터화 연산)
+        if total_ask_qty > 0:
+            ask_concentration = np.sum((ask_qtys / total_ask_qty) ** 2)
+        else:
+            ask_concentration = 0.0
+
+        if total_bid_qty > 0:
+            bid_concentration = np.sum((bid_qtys / total_bid_qty) ** 2)
+        else:
+            bid_concentration = 0.0
+
+        concentration_score = (bid_concentration + ask_concentration) / 2
+        pressure_level      = (imbalance + concentration_score) / 2
+
+        # 각종 조작 패턴 감지 (HistoryBuffer 직접 사용)
+        layering     = self._detect_layering(hist_buffer)                                       # 레이어링 감지
+        pump_dump    = self._detect_pump_dump(hist_buffer)                                      # 펌프앤덤프 감지
+        iceberg      = self._detect_iceberg(hist_buffer)                                        # 아이스버그 감지
+        stop_hunt    = self._detect_stop_hunt(hist_buffer)                                      # 스탑헌트 감지
+        overall_risk = self._calculate_overall_risk(layering, pump_dump, iceberg, stop_hunt)    # 리스크 평가
 
         # 최신 데이터 저장 (전략 클래스들에서 참조)
         self.curr_data = {
@@ -218,417 +929,213 @@ class MicrostructureAnalyzer:
             'imbalance': imbalance,
             'ask_concentration': ask_concentration,
             'bid_concentration': bid_concentration,
-            'pressure_level': pressure_level,
             'imbalance_trend': imbalance_trend,
+            'pressure_level': pressure_level,
             'layering': layering,
             'pump_dump': pump_dump,
-            'overall_risk': overall_risk,
-            'volume_pattern': volume_pattern,
-            'trade_ratio': trade_ratio
+            'iceberg': iceberg,
+            'stop_hunt': stop_hunt,
+            'overall_risk': overall_risk
         }
 
-    def _detect_layering(self, code: str) -> List[Dict]:
+    def _detect_layering(self, hist_buffer: HistoryBuffer) -> List[Tuple]:
         """
-        레이어링 조작 감지
-
-        레이어링: 특정 가격대에 여러 호가를 걸어놓고
-        시장 참여자들에게 위신호를 주는 조작 행위
-
-        Args:
-            code: 종목 코드
-            
-        Returns:
-            List[Dict]: 감지된 레이어링 신호 목록
+        레이어링 조작 감지 (Numba JIT 최적화 버전)
+        Numba 컴파일된 함수 사용으로 C급 성능 달성
         """
+        n = len(hist_buffer)
+        if n < 10:
+            return []
+
+        # 최근 30개만 사용
+        if n > 30:
+            n = 30
+
+        # numpy 배열 직접 가져오기
+        ask_qtys, bid_qtys = hist_buffer.get_qtys_arrays()
+        ask_prices, bid_prices = hist_buffer.get_prices_arrays()
+
+        # 최근 n개만 슬라이싱
+        ask_qtys, bid_qtys = ask_qtys[-n:], bid_qtys[-n:]
+        ask_prices, bid_prices = ask_prices[-n:], bid_prices[-n:]
+
         layering_signals = []
-        data_history = list(self.data_history[code])
 
-        # 매도호가와 매수호가 각각 분석
-        for side in ['ask', 'bid']:  # ask: 매도, bid: 매수
-            suspicious_levels = self._analyze_price_levels(data_history, side)
-            large_order_changes = self._detect_large_order_changes(data_history, side)
+        # Numba 함수용 파라미터 준비 (딕셔너리 접근 최소화)
+        multiplier = self.params['layering_multiplier']
+        min_occurrences = self.params['layering_occurrences']
+        threshold = self.params['order_change_threshold']
 
-            # 의심스러운 패턴이 있는 경우
-            if suspicious_levels or large_order_changes:
-                # 레이어링 신뢰도 계산
-                layering_confidence = self._calculate_layering_confidence(suspicious_levels)
-                # 스푸핑 신뢰도 계산
-                spoofing_confidence = self._calculate_spoofing_confidence_from_changes(large_order_changes)
+        # 양쪽을 한번에 처리
+        for side_idx, qtys, prices in [(0, ask_qtys, ask_prices), (1, bid_qtys, bid_prices)]:
+            if qtys.shape[0] < 3:
+                continue
 
-                # 두 신뢰도 결합 (둘 다 감지되면 가중치 증가)
-                combined_confidence = max(layering_confidence, spoofing_confidence)
-                if suspicious_levels and large_order_changes:
-                    combined_confidence = min((layering_confidence + spoofing_confidence) / 2 * 1.2, 1.0)
+            suspicious_levels_arr = _calc_analyze_price_levels(qtys, multiplier, min_occurrences)
+            large_order_changes_arr = _calc_detect_large_order_changes(qtys, prices, threshold)
 
-                layering_signals.append({
-                    'type': 'layering',
-                    'side': side,
-                    'levels': suspicious_levels,
-                    'large_changes': large_order_changes,
-                    'confidence': combined_confidence
-                })
+            # 빠른 조건 체크 (배열 크기로)
+            has_suspicious = suspicious_levels_arr.shape[0] > 0
+            has_changes = large_order_changes_arr.shape[0] > 0
+
+            if not has_suspicious and not has_changes:
+                continue
+
+            # confidence 계산
+            if has_suspicious and has_changes:
+                layering_conf = _calc_layering_confidence(suspicious_levels_arr)
+                spoofing_conf = _calc_spoofing_confidence(large_order_changes_arr)
+                combined_confidence = min((layering_conf + spoofing_conf) / 2 * 1.2, 1.0)
+            elif has_suspicious:
+                combined_confidence = _calc_layering_confidence(suspicious_levels_arr)
+            else:
+                combined_confidence = _calc_spoofing_confidence(large_order_changes_arr)
+
+            # lightweight 튜플 반환
+            layering_signals.append((
+                side_idx,
+                suspicious_levels_arr.shape[0],
+                large_order_changes_arr.shape[0],
+                round(combined_confidence, 2)
+            ))
 
         return layering_signals
 
-    def _analyze_price_levels(self, data_history: List, side: str) -> List[Dict]:
+    def _detect_pump_dump(self, hist_buffer: HistoryBuffer) -> List[Tuple]:
         """
-        가격 레벨별 분석
-        특정 가격에 반복적으로 대량 주문이 있는지 분석
-
-        Args:
-            data_history: 호가 데이터 목록
-            side: 'ask'(매도) 또는 'bid'(매수)
-        Returns:
-            List[Dict]: 의심스러운 가격 레벨 목록
+        펌프 앤 덤프 탐지 (Numba JIT 최적화 버전)
         """
-        level_analysis = {}
+        prices = hist_buffer.get_prices_array()
+        volumes = hist_buffer.get_volumes_array()
+        n = len(prices)
 
-        # 각 호가 데이터 분석
-        for data in data_history:
-            # 매도/매수별 가격과 수량 추출
-            if side == 'ask':
-                prices = data['ask_prices']
-                quantities = data['ask_qtys']
-            else:
-                prices = data['bid_prices']
-                quantities = data['bid_qtys']
+        if n < 20:
+            return []
 
-            # 가격별 수량 누적 분석
-            for price, qty in zip(prices, quantities):
-                if qty > 0:
-                    if price not in level_analysis:
-                        level_analysis[price] = {
-                            'total_quantity': 0,
-                            'occurrences': 0,
-                            'quantities': []
-                        }
-                    level_analysis[price]['total_quantity'] += qty
-                    level_analysis[price]['occurrences'] += 1
-                    level_analysis[price]['quantities'].append(qty)
+        # Numba 함수용 파라미터
+        price_threshold = self.params['pump_price_threshold']
+        vol_threshold = self.params['volume_spike_threshold']
+        window = 5
 
-        # 의심스러운 패턴 탐지
-        suspicious_levels = []
-        for price, analysis in level_analysis.items():
-            avg_qty = analysis['total_quantity'] / analysis['occurrences']
-            max_qty = max(analysis['quantities'])
+        results = _calc_detect_pump_dump(prices, volumes, price_threshold, vol_threshold, window)
 
-            # 평균보다 지정배수 이상 큰 주문이 지정횟수 이상 반복되면 의심
-            if max_qty > avg_qty * self.params['layering_multiplier'] and \
-                    analysis['occurrences'] >= self.params['layering_occurrences']:
-                suspicious_levels.append({
-                    'price': price,
-                    'avg_quantity': avg_qty,
-                    'max_quantity': max_qty,
-                    'occurrences': analysis['occurrences'],
-                    'suspicion_score': min(max_qty / (avg_qty + 1e-8) / 3, 10.0)
-                })
-
-        return suspicious_levels
-
-    def _detect_large_order_changes(self, data_history: List, side: str) -> List[Dict]:
-        """
-        대량 주문 변화 감지
-        주문량이 갑자기 크게 변하는 경우를 감지 (스푸핑의 특징)
-
-        Args:
-            data_history: 호가 데이터 목록
-            side: 'ask'(매도) 또는 'bid'(매수)
-
-        Returns:
-            List[Dict]: 대량 주문 변화 목록
-        """
-        changes = []
-
-        # 연속된 호가 데이터 비교
-        for i in range(1, len(data_history)):
-            prev_data = data_history[i - 1]
-            curr_data = data_history[i]
-
-            # 매도/매수별 수량 추출
-            if side == 'ask':
-                prev_quantities = prev_data['ask_qtys']  # 이전 매도잔량
-                curr_quantities = curr_data['ask_qtys']  # 현재 매도잔량
-                prices = curr_data['ask_prices']  # 매도호가
-            else:
-                prev_quantities = prev_data['bid_qtys']  # 이전 매수잔량
-                curr_quantities = curr_data['bid_qtys']  # 현재 매수잔량
-                prices = curr_data['bid_prices']  # 매수호가
-
-            # 각 호가 레벨별 변화량 계산
-            for level, (prev_qty, curr_qty, price) in enumerate(zip(prev_quantities, curr_quantities, prices)):
-                qty_change = abs(curr_qty - prev_qty)
-
-                # 주문량이 지정 비율 이상 변화하고, 주문량이 0보다 큰 경우
-                if max(prev_qty, curr_qty) > 0 and \
-                        qty_change / max(prev_qty, curr_qty) > self.params['order_change_threshold']:
-                    changes.append({
-                        'level': level,
-                        'price': price,
-                        'prev_quantity': prev_qty,
-                        'curr_quantity': curr_qty,
-                        'change_amount': qty_change,
-                        'change_ratio': qty_change / max(prev_qty, curr_qty)
-                    })
-
-        return changes
-
-    def _calculate_layering_confidence(self, levels: List[Dict]) -> float:
-        """
-        레이어링 신뢰도 계산
-
-        Args:
-            levels: 의심스러운 가격 레벨 목록
-
-        Returns:
-            float: 레이어링 신뢰도 (0.0 - 1.0)
-        """
-        if not levels: return 0.0
-
-        max_suspicion_score = max(level['suspicion_score'] for level in levels)
-        avg_suspicion_score = sum(level['suspicion_score'] for level in levels) / len(levels)
-        max_occurrences = max(level['occurrences'] for level in levels)
-        occurrence_weight = min(max_occurrences / 10.0, 1.0)
-
-        confidence = (max_suspicion_score * 0.7 + avg_suspicion_score * 0.3) * occurrence_weight
-        return min(confidence, 1.0)
-
-    def _calculate_spoofing_confidence_from_changes(self, changes: List[Dict]) -> float:
-        """
-        변동 기반 스푸핑 신뢰도 계산
-
-        Args:
-            changes: 대량 주문 변화 목록
-
-        Returns:
-            float: 스푸핑 신뢰도 (0.0 - 1.0)
-        """
-        if not changes: return 0.0
-
-        max_change_ratio = max(change['change_ratio'] for change in changes)
-        avg_change_ratio = sum(change['change_ratio'] for change in changes) / len(changes)
-        change_count_weight = min(len(changes) / 5.0, 1.0)
-        confidence = (max_change_ratio * 0.7 + avg_change_ratio * 0.3) * change_count_weight
-        return min(confidence, 1.0)
-
-    def _detect_pump_dump(self, code: str) -> List[Dict]:
-        """
-        펌프 앤 덤프 탐지
-        펌프 앤 덤프: 가격을 인위적으로 끌어올린 후 대량 매도하는 조작
-
-        Args:
-            code: 종목 코드
-
-        Returns:
-            List[Dict]: 감지된 펌프 앤 덤프 신호 목록
-        """
+        # 결과 변환
         pump_dump_signals = []
-        date_history = list(self.data_history[code])
-
-        prices = np.array([d['curr_price'] for d in date_history])
-
-        # 가격 변화율 계산 (%)
-        price_changes = np.diff(prices) / (prices[:-1] + 1e-10) * 100
-
-        # 거래량 급증 감지
-        volume_spikes = self._detect_volume_spikes(code)
-
-        # 각 시점별 펌프 앤 덤프 패턴 확인
-        for i in range(len(price_changes)):
-            # 가격 변동이 임계값을 초과하고 거래량이 급증한 경우
-            if abs(price_changes[i]) > self.params['pump_price_threshold'] and \
-                    i < len(volume_spikes) and volume_spikes[i] > self.params['volume_spike_threshold']:
-                # 펌프 앤 덤프 패턴이 맞는지 확인
-                if self._is_pump_dump_pattern(prices, i):
-                    pump_dump_signals.append({
-                        'type': 'pump_dump',
-                        'price_change': price_changes[i],
-                        'volume_spike': volume_spikes[i],
-                        'confidence': self._calculate_pump_confidence(price_changes[i], volume_spikes[i])
-                    })
+        for i in range(results.shape[0]):
+            pump_dump_signals.append((
+                round(float(results[i, 0]), 2),  # price_change
+                round(float(results[i, 1]), 2),  # volume_spike
+                round(float(results[i, 2]), 2)   # confidence
+            ))
 
         return pump_dump_signals
 
-    def _detect_volume_spikes(self, code: str) -> List[float]:
+    def _detect_iceberg(self, hist_buffer: HistoryBuffer) -> List[Tuple]:
         """
-        거래량 급증 감지
-
-        Args:
-            code: 종목 코드
-
-        Returns:
-            List[float]: 각 시점별 거래량 급증 비율
+        아이스버그 주문 탐지 (Numba JIT 최적화 버전)
         """
-        volumes = [v['total_volume'] for v in self.data_history[code]]
-        spikes = []
+        n = len(hist_buffer)
+        if n < 10:
+            return []
 
-        # 평균 거래량 계산
-        avg_volume = np.mean(volumes)
-        for i, volume in enumerate(volumes):
-            # 평균 대비 거래량 비율 계산
-            # noinspection PyTypeChecker
-            spike_ratio = volume / (avg_volume + 1e-8)
-            spikes.append(spike_ratio)
+        # numpy 배열 직접 가져오기
+        ask_qtys, bid_qtys = hist_buffer.get_qtys_arrays()
+        ask_prices, bid_prices = hist_buffer.get_prices_arrays()
 
-        return spikes
+        # 최근 30개만 사용
+        if n > 30:
+            ask_qtys, bid_qtys = ask_qtys[-30:], bid_qtys[-30:]
+            ask_prices, bid_prices = ask_prices[-30:], bid_prices[-30:]
+            n = 30
 
-    def _is_pump_dump_pattern(self, prices: np.ndarray, index: int) -> bool:
+        if n < 10:
+            return []
+
+        iceberg_signals = []
+        # 매도/매수 각각 Numba 함수 호출
+        for side_idx, (qtys, prices) in enumerate([(ask_qtys, ask_prices), (bid_qtys, bid_prices)]):
+            if qtys.shape[0] < 5:
+                continue
+
+            side = 'ask' if side_idx == 0 else 'bid'
+            results = _calc_detect_iceberg(qtys, prices, 0.3, 0.01, 3)
+
+            # 결과 변환 (side 정보 추가)
+            for i in range(results.shape[0]):
+                iceberg_signals.append((
+                    side,
+                    int(results[i, 1]),  # level
+                    float(results[i, 2]),  # avg_price
+                    int(results[i, 3]),  # max_pattern_count
+                    float(results[i, 4]),  # total_depletion
+                    round(float(results[i, 5]), 2)  # confidence
+                ))
+
+        return iceberg_signals
+
+    def _detect_stop_hunt(self, hist_buffer: HistoryBuffer) -> List[Tuple]:
         """
-        펌프 앤 덤프 패턴 확인
-
-        Args:
-            prices: 가격 배열
-            index: 확인할 인덱스
-
-        Returns:
-            bool: 펌프 앤 덤프 패턴이면 True
+        스탑로스 털기 패턴 감지 (Numba JIT 최적화 버전)
         """
-        # 데이터가 충분하지 않으면 판단 불가
-        if index < 10: return False
+        prices = hist_buffer.get_prices_array()
+        volumes = hist_buffer.get_volumes_array()
+        n = len(prices)
 
-        window = 10
-        if index + window < len(prices):
-            before = prices[index - window:index]  # 이전 10개
-            after = prices[index:index + window]  # 이후 10개
+        if n < 20:
+            return []
 
-            # 이후 평균가가 이전 평균가보다 2% 이상 하락하고,
-            # 현재가가 이전 평균가보다 2% 이상 상승한 경우
-            # noinspection PyTypeChecker
-            if np.mean(after) < np.mean(before) * 0.98 and prices[index] > np.mean(before) * 1.02:
-                return True
+        results = _calc_detect_stop_hunt(prices, volumes, 0.5, 2.5)
 
-        return False
+        # 결과 변환
+        stop_hunt_signals = []
+        for i in range(results.shape[0]):
+            stop_hunt_signals.append((
+                int(results[i, 0]),  # direction
+                float(results[i, 1]),  # price
+                round(float(results[i, 2]), 2),  # change
+                round(float(results[i, 3]), 2),  # vol
+                round(float(results[i, 4]), 2),  # confidence
+                int(results[i, 5])  # idx
+            ))
 
-    def _calculate_pump_confidence(self, price_change: float, volume_spike: float) -> float:
+        return stop_hunt_signals
+
+    def _calculate_overall_risk(self, layering_signals, pump_dump_signals, iceberg_signals, stop_hunt_signals) -> Dict:
         """
-        펌프 앤 덤프 신뢰도 계산
-
-        Args:
-            price_change: 가격 변화율 (%)
-            volume_spike: 거래량 급증 비율
-
-        Returns:
-            float: 펌프 앤 덤프 신뢰도 (0.0 - 1.0)
+        종합 리스크 평가 (for문 최적화 버전)
         """
-        price_score = min(abs(price_change) / 0.1, 1.0)
-        volume_score = min(volume_spike / 5.0, 1.0)
-        return (price_score + volume_score) / 2.0
+        total_signals = len(layering_signals) + len(pump_dump_signals) + len(iceberg_signals) + len(stop_hunt_signals)
 
-    def _calculate_overall_risk(self, layering_signals, pump_dump_signals) -> Dict:
-        """
-        종합 리스크 평가
+        # 모든 신호의 confidence 추출 (모두 튜플 형식)
+        all_confidences = (
+            [s[3] for s in layering_signals] +      # 튜플: (side, levels_count, changes_count, confidence)
+            [s[2] for s in pump_dump_signals] +     # 튜플: (price_change, volume_spike, confidence)
+            [s[5] for s in iceberg_signals] +       # 튜플: (side, level, price, count, volume, confidence)
+            [s[4] for s in stop_hunt_signals]       # 튜플: (direction, price, change, vol, confidence, idx)
+        )
 
-        Args:
-            layering_signals: 레이어링 신호 목록
-            pump_dump_signals: 펌프 앤 덤프 신호 목록
-
-        Returns:
-            Dict: 종합 리스크 정보
-        """
-        all_signals = {
-            'layering': layering_signals,
-            'pump_dump': pump_dump_signals
-        }
-
-        # 총 신호 개수 계산
-        total_signals = sum(len(signals) for signals in all_signals.values() if isinstance(signals, list))
-
-        # 최고 신뢰도 찾기
-        max_confidence = 0
-        for signals in all_signals.values():
-            if isinstance(signals, list):
-                for signal in signals:
-                    if 'confidence' in signal:
-                        max_confidence = max(max_confidence, signal['confidence'])
+        # 빈 리스트 처리
+        max_confidence = max(all_confidences) if all_confidences else 0.0
 
         # 리스크 레벨 결정
         if total_signals == 0:
             risk_level = 'LOW'
-        elif total_signals <= 2 and max_confidence < 0.8:
+        elif total_signals <= 2 and max_confidence < 0.8 and len(stop_hunt_signals) == 0:
             risk_level = 'MEDIUM'
+        elif len(stop_hunt_signals) > 0 and max_confidence > 0.7:
+            risk_level = 'HIGH'
         else:
             risk_level = 'HIGH'
 
         return {
             'risk_level': risk_level,
             'total_signals': total_signals,
-            'max_confidence': max_confidence
+            'max_confidence': max_confidence,
+            'iceberg_count': len(iceberg_signals),
+            'stop_hunt_count': len(stop_hunt_signals)
         }
 
-    def _analyze_volume_pattern(self, code: str) -> Dict:
-        """
-        거래량 패턴 분석
-        시간에 따른 거래량 변화 패턴을 분석하여 이상 징후 감지
-
-        Args:
-            code: 종목 코드
-
-        Returns:
-            Dict: 거래량 패턴 정보
-        """
-        data_history = list(self.data_history[code])
-        if len(data_history) < 10:
-            return {'pattern': 'insufficient_data', 'volatility': 0, 'trend': 0}
-
-        volumes = [d['total_volume'] for d in data_history]
-
-        # 거래량 변동성 계산
-        # noinspection PyTypeChecker
-        volume_volatility = np.std(volumes) / (np.mean(volumes) + 1e-8)
-
-        # 거래량 트렌드 계산 (선형 회귀)
-        time_points = np.array(range(len(volumes)))
-        volume_trend = np.polyfit(time_points, volumes, 1)[0]
-
-        # 패턴 분류
-        # noinspection PyTypeChecker
-        if volume_volatility > 2.0:
-            pattern = 'high_volatility'
-        elif abs(volume_trend) > np.mean(volumes) * 0.1:
-            pattern = 'strong_trend'
-        else:
-            pattern = 'stable'
-
-        return {
-            'pattern': pattern,
-            'volatility': volume_volatility,
-            'trend': volume_trend,
-            'avg_volume': np.mean(volumes),
-            'current_volume': volumes[-1]
-        }
-
-    def _calculate_trade_ratio(self, buy_volume, sell_volume) -> Dict:
-        """
-        매수/매도 체결 비율 분석
-        실제 체결된 거래의 매수/매도 비율을 계산
-
-        Returns:
-            Dict: 체결 비율 정보
-        """
-        # 실제 체결 데이터 사용 (초당 매수/매도 수량)
-        total_volume = buy_volume + sell_volume
-
-        if total_volume == 0:
-            return {'buy_ratio': 0.5, 'sell_ratio': 0.5, 'dominance': 'neutral'}
-
-        buy_ratio = buy_volume / total_volume
-        sell_ratio = sell_volume / total_volume
-
-        # 우세도 판단
-        if buy_ratio > 0.6:
-            dominance = 'buy_dominant'
-        elif sell_ratio > 0.6:
-            dominance = 'sell_dominant'
-        else:
-            dominance = 'balanced'
-
-        return {
-            'buy_ratio': buy_ratio,
-            'sell_ratio': sell_ratio,
-            'dominance': dominance,
-            'total_volume': total_volume
-        }
-
-    def _analyze_risk(self, code: str):
+    def _analyze_risk(self):
         """리스크 분석"""
         if self.curr_data is None:
             return 1.0
@@ -640,8 +1147,7 @@ class MicrostructureAnalyzer:
         market_risk = self._calculate_market_risk()                     # 시장 리스크
         manipulation_risk = self._calculate_manipulation_risk()         # 조작 리스크
         liquidity_risk = self._calculate_liquidity_risk()               # 유동성 리스크
-        price_risk = self._calculate_price_risk(code)                   # 가격 기반 리스크 (VaR 등)
-        total_risk = (market_risk + manipulation_risk + liquidity_risk + price_risk) / 4
+        total_risk = round((market_risk + manipulation_risk + liquidity_risk) / 3, 2)
 
         self.curr_data['total_risk'] = total_risk
 
@@ -715,73 +1221,6 @@ class MicrostructureAnalyzer:
 
         return (depth_risk + concentration_risk) / 2
 
-    def _calculate_price_risk(self, code: str) -> float:
-        """
-        가격 기반 리스크 계산 (VaR, Sharpe Ratio, Max Drawdown)
-
-        Args:
-            code: 종목 코드
-
-        Returns:
-            float: 가격 기반 리스크 (0.0 - 1.0)
-        """
-        data_buffers = list(self.data_buffers[code])
-        array_data = np.array(data_buffers)
-        prices = array_data[:, self.col_index['현재가']]
-
-        # 수익률 계산
-        returns = self._calculate_returns(prices)
-        if len(returns) == 0:
-            return 0.3
-
-        # VaR 계산 (95% 신뢰수준)
-        var_95 = self._calculate_var_historical(returns, 0.95)
-        # Sharpe Ratio 계산
-        sharpe_ratio = self._calculate_sharpe_ratio(returns)
-        # Max Drawdown 계산
-        max_dd, _, _ = self._calculate_max_drawdown(prices)
-        # 각 지표를 0-1 스케일로 정규화하여 리스크 점수 계산
-        # VaR이 클수록 리스크 높음 (정규화: 0-5% VaR을 0-1로 변환)
-        # noinspection PyTypeChecker
-        var_risk = min(var_95 / 0.05, 1.0)
-        # Sharpe Ratio가 낮을수록 리스크 높음 (정규화: -2~2 Sharpe를 1~0으로 변환)
-        sharpe_risk = max(0, min(1, (2 - sharpe_ratio) / 4))
-        # Max Drawdown이 클수록 리스크 높음 (정규화: 0-20% 낙폭을 0-1로 변환)
-        # noinspection PyTypeChecker
-        dd_risk = min(max_dd / 0.2, 1.0)
-        # 세 가지 리스크 지표의 평균
-        price_risk = (var_risk + sharpe_risk + dd_risk) / 3
-
-        return price_risk
-
-    def _calculate_returns(self, prices: np.ndarray) -> np.ndarray:
-        """가격 데이터로부터 수익률 계산"""
-        return np.diff(prices) / prices[:-1]
-
-    def _calculate_var_historical(self, returns: np.ndarray, confidence: float = 0.95):
-        """VaR 계산"""
-        return -np.percentile(returns, (1 - confidence) * 100)
-
-    def _calculate_sharpe_ratio(self, returns: np.ndarray, annualize: bool = True):
-        """Sharpe Ratio 계산"""
-        mean_return = np.mean(returns)
-        std_return = np.std(returns, ddof=1)
-        if std_return == 0:
-            return 0
-        # noinspection PyTypeChecker
-        sharpe = (mean_return - 0.02 / 250) / std_return
-        return sharpe * np.sqrt(250) if annualize else sharpe
-
-    def _calculate_max_drawdown(self, prices: np.ndarray):
-        """최대낙폭 계산"""
-        cumulative = np.maximum.accumulate(prices)
-        drawdown = (prices - cumulative) / cumulative
-        max_dd = np.min(drawdown)
-        end_idx = np.argmin(drawdown)
-        # noinspection PyTypeChecker
-        start_idx = np.argmax(prices[:end_idx + 1])
-        return -max_dd, start_idx, end_idx
-
     def _analyze_order_flow(self, buy_cf, sell_cf) -> str:
         """주문 흐름 분석
 
@@ -794,11 +1233,8 @@ class MicrostructureAnalyzer:
         depth_ratio = self.curr_data['depth_ratio']
         bid_concentration = self.curr_data['bid_concentration']
         ask_concentration = self.curr_data['ask_concentration']
-        log_depth_ratio = np.log(self.params['depth_ratio_threshold'])
-        log_depth_ratio = np.log(depth_ratio) / log_depth_ratio if depth_ratio > 0 else 0
+        log_depth_ratio = np.log(depth_ratio) / self._log_depth_ratio_threshold if depth_ratio > 0 else 0
         weighted_depth_ratio = self.curr_data['weighted_depth_ratio']
-        volume_pattern = self.curr_data['volume_pattern']
-        trade_ratio = self.curr_data['trade_ratio']
 
         # 매수 흐름 강도 계산 (연속적인 0.0~1.0 값)
         buy_flow_strength = (
@@ -808,14 +1244,10 @@ class MicrostructureAnalyzer:
             min(1.0, max(0.0, imbalance_trend / (self.params['imbalance_threshold'] * 0.1))) * 0.20 +
             # 깊이 비율: 매수 깊이가 깊을수록 높은 값 (0.0~0.20)
             min(1.0, max(0.0, log_depth_ratio)) * 0.20 +
-            # 가중 깊이 비율: 중요한 신규 지표 (0.0~0.10)
-            min(1.0, weighted_depth_ratio) * 0.10 +
-            # 집중도: 매수 집중도가 높을수록 높은 값 (0.0~0.10)
-            min(1.0, max(0.0, bid_concentration / self.params['concentration_threshold'])) * 0.10 +
-            # 거래량 패턴: 안정성 지표 (0.0~0.03)
-            (0.03 if volume_pattern['pattern'] == 'stable' else 0.01) +
-            # 체결 비율: 실제 거래 반영 (0.0~0.07)
-            (0.07 if trade_ratio['dominance'] == 'buy_dominant' else 0)
+            # 가중 깊이 비율: 중요한 신규 지표 (0.0~0.15)
+            min(1.0, weighted_depth_ratio) * 0.15 +
+            # 집중도: 매수 집중도가 높을수록 높은 값 (0.0~0.15)
+            min(1.0, max(0.0, bid_concentration / self.params['concentration_threshold'])) * 0.15
         )
 
         # 매도 흐름 강도 계산 (연속적인 0.0~1.0 값)
@@ -826,18 +1258,11 @@ class MicrostructureAnalyzer:
             min(1.0, max(0.0, -imbalance_trend / (self.params['imbalance_threshold'] * 0.1))) * 0.20 +
             # 깊이 비율: 매도 깊이가 깊을수록 높은 값 (0.0~0.20)
             min(1.0, max(0.0, -log_depth_ratio)) * 0.20 +
-            # 가중 깊이 비율: 중요한 신규 지표 (0.0~0.10)
-            min(1.0, max(0.0, 1.0 - weighted_depth_ratio)) * 0.10 +
-            # 집중도: 매도 집중도가 높을수록 높은 값 (0.0~0.10)
-            min(1.0, max(0.0, ask_concentration / self.params['concentration_threshold'])) * 0.10 +
-            # 거래량 패턴: 안정성 지표 (0.0~0.03)
-            (0.03 if volume_pattern['pattern'] == 'stable' else 0.01) +
-            # 체결 비율: 실제 거래 반영 (0.0~0.07)
-            (0.07 if trade_ratio['dominance'] == 'sell_dominant' else 0)
+            # 가중 깊이 비율: 중요한 신규 지표 (0.0~0.15)
+            min(1.0, max(0.0, 1.0 - weighted_depth_ratio)) * 0.15 +
+            # 집중도: 매도 집중도가 높을수록 높은 값 (0.0~0.15)
+            min(1.0, max(0.0, ask_concentration / self.params['concentration_threshold'])) * 0.15
         )
-
-        if self.test_mode:
-            self.data_results.append([buy_flow_strength, sell_flow_strength, None, None])
 
         # 최종 신호 결정
         if buy_flow_strength > sell_flow_strength + buy_cf:
@@ -864,62 +1289,40 @@ class MicrostructureAnalyzer:
         depth_ratio = self.curr_data['depth_ratio']
         pressure_level = self.curr_data['pressure_level']
         weighted_depth_ratio = self.curr_data['weighted_depth_ratio']
-        volume_pattern = self.curr_data['volume_pattern']
-        trade_ratio = self.curr_data['trade_ratio']
 
         signal_adjustments = {'buy': 1.0, 'sell': 1.0, 'hold': 0.1}
-        base_confidence = signal_adjustments[signal] * 0.20
-        imbalance_confidence = min(max(0.01, imbalance), 1.0) * 0.20
+        base_confidence = signal_adjustments[signal] * 0.15
+        imbalance_confidence = min(max(0.01, imbalance), 1.0) * 0.15
 
         if signal == 'buy':
-            trend_confidence = min(max(0.01, imbalance_trend * (1 / (self.params['imbalance_threshold'] * 0.05))), 1.0) * 0.10
-            depth_confidence = min(max(0.01, depth_ratio * (self.params['depth_ratio_threshold'] * 0.1)), 1.0) * 0.10
+            trend_confidence = min(max(0.01, imbalance_trend * (1 / (self.params['imbalance_threshold'] * 0.05))), 1.0) * 0.15
+            depth_confidence = min(max(0.01, depth_ratio * (self.params['depth_ratio_threshold'] * 0.1)), 1.0) * 0.15
         else:
-            trend_confidence = min(max(0.01, -imbalance_trend * (1 / (self.params['imbalance_threshold'] * 0.05))), 1.0) * 0.10
-            depth_confidence = min(max(0.01, 1 - depth_ratio * (self.params['depth_ratio_threshold'] * 0.1)), 1.0) * 0.10
+            trend_confidence = min(max(0.01, -imbalance_trend * (1 / (self.params['imbalance_threshold'] * 0.05))), 1.0) * 0.15
+            depth_confidence = min(max(0.01, 1 - depth_ratio * (self.params['depth_ratio_threshold'] * 0.1)), 1.0) * 0.15
 
-        pressure_confidence = min(max(0.01, pressure_level * (1 / self.params['pressure_threshold'])), 1.0) * 0.10
-        risk_confidence = min(max(0.01, 1 - total_risk), 1.0) * 0.10
+        pressure_confidence = min(max(0.01, pressure_level * (1 / self.params['pressure_threshold'])), 1.0) * 0.15
+        risk_confidence = min(max(0.01, 1 - total_risk), 1.0) * 0.15
 
         if signal == 'buy':
             weighted_depth_confidence = min(max(0.01, weighted_depth_ratio), 1.0) * 0.10
         else:
             weighted_depth_confidence = min(max(0.01, 1.0 - weighted_depth_ratio), 1.0) * 0.10
 
-        if volume_pattern['pattern'] == 'stable':
-            volume_confidence = 0.05
-        elif volume_pattern['pattern'] == 'high_volatility':
-            volume_confidence = 0.01
-        else:
-            volume_confidence = 0.03
-
-        dominance = trade_ratio['dominance']
-        if (dominance == 'buy_dominant' and signal == 'buy') or (dominance == 'sell_dominant' and signal == 'sell'):
-            trade_ratio_confidence = 0.05
-        else:
-            trade_ratio_confidence = 0.01
-
         final_confidence = (base_confidence + pressure_confidence + imbalance_confidence + 
-                            trend_confidence + depth_confidence + weighted_depth_confidence +
-                            volume_confidence + trade_ratio_confidence + risk_confidence)
+                            trend_confidence + depth_confidence + weighted_depth_confidence + risk_confidence)
 
         final_confidence = round(final_confidence, 2)
-
-        if self.test_mode:
-            self.data_results[-1][2] = final_confidence
 
         return final_confidence
 
     def clear_code_data(self, code):
         """종목 데이터 초기화"""
         self.curr_data = None
-        if code in self.data_buffers:
-            del self.data_buffers[code]
         if code in self.data_history:
             del self.data_history[code]
 
     def clear_data(self):
         """전체 데이터 초기화"""
         self.curr_data = None
-        self.data_buffers = defaultdict(lambda: deque(maxlen=self.data_cnt))
-        self.data_history = defaultdict(lambda: deque(maxlen=self.history_cnt))
+        self.data_history = {}
