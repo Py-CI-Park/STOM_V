@@ -66,7 +66,7 @@ class SetDialogFormula:
 
         self.ui.dialog_formula.setMinimumSize(700, 560)
         self.ui.dialog_formula.setMaximumSize(5000, 560)
-        
+
         self.ui.fm_groupBoxxxxx_01.setGeometry(5, 5, 690, 85)
         self.ui.fm_groupBoxxxxx_02.setGeometry(5, 90, 160, 465)
         self.ui.fm_groupBoxxxxx_03.setGeometry(170, 90, 525, 465)

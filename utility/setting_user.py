@@ -47,7 +47,7 @@ def load_settings():
         lvrg_list_ = text_.split(';')
         lvrg_list_ = [float(x) for x in lvrg_list_]
         binance_leverage_.append(lvrg_list_)
-    
+
     df_sa_not_empty = True if len(df_sa) > 0 else False
     df_ca_not_empty = True if len(df_ca) > 0 else False
     df_t_not_empty  = True if len(df_t) > 0 else False
@@ -63,13 +63,13 @@ def load_settings():
             '코인리시버':      df_m['코인리시버'][0],
             '코인트레이더':    df_m['코인트레이더'][0],
             '코인데이터저장':   df_m['코인데이터저장'][0],
-    
+
             '바이낸스선물고정레버리지':   df_m['바이낸스선물고정레버리지'][0],
             '바이낸스선물고정레버리지값': df_m['바이낸스선물고정레버리지값'][0],
             '바이낸스선물변동레버리지값': binance_leverage_,
             '바이낸스선물마진타입':     df_m['바이낸스선물마진타입'][0],
             '바이낸스선물포지션':       df_m['바이낸스선물포지션'][0],
-    
+
             '아이디1':        de_text(EN_KEY, df_sa['아이디'][1])         if df_sa_not_empty and df_sa['아이디'][1] else None,
             '비밀번호1':      de_text(EN_KEY, df_sa['비밀번호'][1])       if df_sa_not_empty and df_sa['비밀번호'][1] else None,
             '인증서비밀번호1': de_text(EN_KEY, df_sa['인증서비밀번호'][1])   if df_sa_not_empty and df_sa['인증서비밀번호'][1] else None,
@@ -102,12 +102,12 @@ def load_settings():
             '비밀번호8':      de_text(EN_KEY, df_sa['비밀번호'][8])        if df_sa_not_empty and df_sa['비밀번호'][8] else None,
             '인증서비밀번호8': de_text(EN_KEY, df_sa['인증서비밀번호'][8])   if df_sa_not_empty and df_sa['인증서비밀번호'][8] else None,
             '계좌비밀번호8':   de_text(EN_KEY, df_sa['계좌비밀번호'][8])    if df_sa_not_empty and df_sa['계좌비밀번호'][8] else None,
-    
+
             'Access_key1':   de_text(EN_KEY, df_ca['Access_key'][1])    if df_ca_not_empty and df_ca['Access_key'][1] else None,
             'Secret_key1':   de_text(EN_KEY, df_ca['Secret_key'][1])    if df_ca_not_empty and df_ca['Secret_key'][1] else None,
             'Access_key2':   de_text(EN_KEY, df_ca['Access_key'][2])    if df_ca_not_empty and df_ca['Access_key'][2] else None,
             'Secret_key2':   de_text(EN_KEY, df_ca['Secret_key'][2])    if df_ca_not_empty and df_ca['Secret_key'][2] else None,
-    
+
             '텔레그램봇토큰1':      de_text(EN_KEY, df_t['str_bot'][1])      if df_t_not_empty and df_t['str_bot'][1] else None,
             '텔레그램사용자아이디1': int(de_text(EN_KEY, df_t['int_id'][1]))  if df_t_not_empty and df_t['int_id'][1]  else None,
             '텔레그램봇토큰2':      de_text(EN_KEY, df_t['str_bot'][2])      if df_t_not_empty and df_t['str_bot'][2] else None,
@@ -124,11 +124,11 @@ def load_settings():
             '텔레그램사용자아이디7': int(de_text(EN_KEY, df_t['int_id'][7]))  if df_t_not_empty and df_t['int_id'][7]  else None,
             '텔레그램봇토큰8':      de_text(EN_KEY, df_t['str_bot'][8])      if df_t_not_empty and df_t['str_bot'][8] else None,
             '텔레그램사용자아이디8': int(de_text(EN_KEY, df_t['int_id'][8]))  if df_t_not_empty and df_t['int_id'][8]  else None,
-    
+
             '주식블랙리스트': blacklist_stock,
             '해선블랙리스트': blacklist_future,
             '코인블랙리스트': blacklist_coin,
-    
+
             '주식모의투자':         df_s['주식모의투자'][0],
             '주식알림소리':         df_s['주식알림소리'][0],
             '주식매수전략':         df_s['주식매수전략'][0],
@@ -147,7 +147,7 @@ def load_settings():
             '주식수익중지':         df_s['주식수익중지'][0],
             '주식수익중지수익률':    df_s['주식수익중지수익률'][0],
             '주식경과틱수설정':      df_s['주식경과틱수설정'][0],
-    
+
             '코인모의투자':         df_c['코인모의투자'][0],
             '코인알림소리':         df_c['코인알림소리'][0],
             '코인매수전략':         df_c['코인매수전략'][0],
@@ -166,7 +166,7 @@ def load_settings():
             '코인수익중지':         df_c['코인수익중지'][0],
             '코인수익중지수익률':    df_c['코인수익중지수익률'][0],
             '코인경과틱수설정':      df_c['코인경과틱수설정'][0],
-    
+
             '블랙리스트추가':        df_b['블랙리스트추가'][0],
             '백테주문관리적용':      df_b['백테주문관리적용'][0],
             '백테매수시간기준':      df_b['백테매수시간기준'][0],
@@ -194,7 +194,7 @@ def load_settings():
             '백테스트로그기록안함':    df_b['백테스트로그기록안함'][0],
             '시장미시구조분석':       df_b['시장미시구조분석'][0],
             '시장리스크분석':        df_b['시장리스크분석'][0],
-    
+
             '저해상도':            df_e['저해상도'][0],
             '휴무프로세스종료':      df_e['휴무프로세스종료'][0],
             '휴무컴퓨터종료':       df_e['휴무컴퓨터종료'][0],
@@ -205,7 +205,7 @@ def load_settings():
             '테마':               df_e['테마'][0],
             '팩터선택':            df_e['팩터선택'][0],
             '시리얼키':            de_text(EN_KEY, df_e['시리얼키'][0]) if len(df_e) > 0 and df_e['시리얼키'][0] else None,
-    
+
             '주식매수주문구분':      df_sb['주식매수주문구분'][0],
             '주식매수분할횟수':      df_sb['주식매수분할횟수'][0],
             '주식매수분할방법':      df_sb['주식매수분할방법'][0],
@@ -240,7 +240,7 @@ def load_settings():
             '주식매수정정호가차이':   df_sb['주식매수정정호가차이'][0],
             '주식매수정정호가':      df_sb['주식매수정정호가'][0],
             '주식비중조절':         [float(x) for x in df_sb['주식비중조절'][0].split(';')],
-    
+
             '주식매도주문구분':      df_ss['주식매도주문구분'][0],
             '주식매도분할횟수':      df_ss['주식매도분할횟수'][0],
             '주식매도분할방법':      df_ss['주식매도분할방법'][0],
@@ -276,7 +276,7 @@ def load_settings():
             '주식매도손절수익률':    df_ss['주식매도손절수익률'][0],
             '주식매도손절수익금청산': df_ss['주식매도손절수익금청산'][0],
             '주식매도손절수익금':    df_ss['주식매도손절수익금'][0],
-    
+
             '코인매수주문구분':      df_cb['코인매수주문구분'][0],
             '코인매수분할횟수':      df_cb['코인매수분할횟수'][0],
             '코인매수분할방법':      df_cb['코인매수분할방법'][0],
@@ -310,7 +310,7 @@ def load_settings():
             '코인매수정정호가차이':   df_cb['코인매수정정호가차이'][0],
             '코인매수정정호가':      df_cb['코인매수정정호가'][0],
             '코인비중조절':         [float(x) for x in df_cb['코인비중조절'][0].split(';')],
-    
+
             '코인매도주문구분':      df_cs['코인매도주문구분'][0],
             '코인매도분할횟수':      df_cs['코인매도분할횟수'][0],
             '코인매도분할방법':      df_cs['코인매도분할방법'][0],

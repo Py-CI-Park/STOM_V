@@ -33,6 +33,11 @@ class StrategyBase:
         self.up               = None
         self.down             = None
 
+        self.shogainfo        = np.zeros(5, dtype=np.float64)
+        self.shreminfo        = np.zeros(5, dtype=np.float64)
+        self.bhogainfo        = np.zeros(5, dtype=np.float64)
+        self.bhreminfo        = np.zeros(5, dtype=np.float64)
+
         self.index            = 0
         self.indexn           = 0
         self.indexb           = 0
