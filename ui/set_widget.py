@@ -2,16 +2,17 @@
 import sys
 import pyqtgraph as pg
 from traceback import format_exc
+from PyQt5.QtGui import QPen
 from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
-    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox
+    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox, QTableWidgetItem
 from utility import syntax
 from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
     columns_gc, columns_hg, columns_jm1, columns_jm2, columns_nd, columns_stg1, columns_stg2, columns_sb, \
     columns_kp, columns_sd, columns_hc2, columns_bt
 from ui.set_style import qfont12, style_bc_bt, style_bc_st, style_bc_sl, style_bc_bs, style_bc_by, style_fc_dk, \
     style_bc_bb, style_bc_dk, style_st_cf, style_st_sf, style_st_mf, style_st_sp, style_st_ct, style_st_ks, style_st_ss, \
-    style_st_su, color_gb_nm, color_gb_hv
+    style_st_su, color_gb_nm, color_gb_hv, color_bf_dk
 
 
 def error_decorator(func):
@@ -348,6 +349,171 @@ class PlainTextEdit(QTextEdit):
         self.insertPlainText(source.text())
 
 
+class FixedColumnTableWidget(QTableWidget):
+    def __init__(self, parent=None, clicked=None):
+        super().__init__(parent)
+        self._first_column_table = None
+        self._first_column_width = 0
+        self._is_fixed = False
+        self._clicked = clicked
+        self._setup_fixed_column()
+
+    def _setup_fixed_column(self):
+        self._first_column_table = QTableWidget(self)
+        self._first_column_table.verticalHeader().setDefaultSectionSize(23)
+        self._first_column_table.verticalHeader().setVisible(False)
+        self._first_column_table.horizontalHeader().setVisible(True)
+        self._first_column_table.setAlternatingRowColors(True)
+        self._first_column_table.setSelectionMode(QAbstractItemView.NoSelection)
+        self._first_column_table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self._first_column_table.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._first_column_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._first_column_table.setColumnCount(1)
+        self._first_column_table.setFrameStyle(QFrame.NoFrame)
+        self._first_column_table.viewport().setAutoFillBackground(True)
+        self._first_column_table.hide()
+        self._first_column_table.verticalScrollBar().valueChanged.connect(self._sync_child_to_parent_scroll)
+        if self._clicked is not None:
+            self._first_column_table.cellClicked.connect(self._clicked)
+        self.verticalScrollBar().valueChanged.connect(self._sync_parent_to_child_scroll)
+        self.horizontalScrollBar().valueChanged.connect(self._update_fixed_column_position)
+        self.horizontalHeader().sectionResized.connect(self._on_column_resized)
+        self.horizontalHeader().sortIndicatorChanged.connect(self._on_sort_changed)
+
+    def _sync_child_to_parent_scroll(self, value):
+        if self._is_fixed:
+            self.verticalScrollBar().setValue(value)
+
+    def _sync_parent_to_child_scroll(self, value):
+        if self._is_fixed and self._first_column_table:
+            self._first_column_table.verticalScrollBar().setValue(value)
+
+    # noinspection PyUnusedLocal
+    def _on_column_resized(self, logical_index, old_size, new_size):
+        if self._is_fixed and logical_index == 0:
+            self._first_column_width = new_size
+            self._first_column_table.setColumnWidth(0, new_size)
+            self._update_fixed_column_position()
+
+    # noinspection PyUnusedLocal
+    def _on_sort_changed(self, logical_index, order):
+        if not self._is_fixed or not self._first_column_table:
+            return
+        QTimer.singleShot(50, self._sync_all_data_to_child)
+
+    def _sync_all_data_to_child(self):
+        """부모 테이블의 모든 데이터를 자식 테이블에 다시 동기화"""
+        if not self._is_fixed or not self._first_column_table:
+            return
+
+        for row in range(self.rowCount()):
+            item = self.item(row, 0)
+            if item:
+                child_item = self._first_column_table.item(row, 0)
+                if child_item is None:
+                    child_item = QTableWidgetItem(item.text())
+                    child_item.setForeground(item.foreground())
+                    child_item.setBackground(item.background())
+                    child_item.setFont(item.font())
+                    child_item.setTextAlignment(item.textAlignment())
+                    self._first_column_table.setItem(row, 0, child_item)
+                else:
+                    child_item.setText(item.text())
+                    child_item.setForeground(item.foreground())
+                    child_item.setBackground(item.background())
+                    child_item.setFont(item.font())
+                    child_item.setTextAlignment(item.textAlignment())
+
+    def setFirstColumnFixed(self, fixed=True):
+        self._is_fixed = fixed
+        if fixed and self.columnCount() > 0:
+            self._first_column_width = self.columnWidth(0)
+            self._first_column_table.setColumnCount(1)
+            self._first_column_table.setRowCount(self.rowCount())
+            self._first_column_table.setColumnWidth(0, self._first_column_width)
+            self._first_column_table.setHorizontalHeaderLabels([self.horizontalHeaderItem(0).text() if self.horizontalHeaderItem(0) else ''])
+
+            for row in range(self.rowCount()):
+                item = self.item(row, 0)
+                if item:
+                    child_item = QTableWidgetItem(item.text())
+                    child_item.setForeground(item.foreground())
+                    child_item.setBackground(item.background())
+                    child_item.setFont(item.font())
+                    child_item.setTextAlignment(item.textAlignment())
+                    self._first_column_table.setItem(row, 0, child_item)
+
+            self._first_column_table.show()
+            self._update_fixed_column_position()
+        else:
+            self._first_column_table.hide()
+
+    def _update_fixed_column_position(self):
+        if not self._is_fixed or not self._first_column_table:
+            return
+
+        header_height = self.horizontalHeader().height()
+        viewport_x = self.viewport().x()
+        viewport_y = self.viewport().y()
+        scroll_x = max(0, -self.horizontalScrollBar().value())
+        actual_x = viewport_x + scroll_x
+
+        self._first_column_table.setGeometry(actual_x, viewport_y - header_height,
+                                             self._first_column_width, self.viewport().height() + header_height)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_fixed_column_position()
+
+    def scrollContentsBy(self, dx, dy):
+        super().scrollContentsBy(dx, dy)
+        self._update_fixed_column_position()
+
+    def setColumnCount(self, count):
+        super().setColumnCount(count)
+        if self._is_fixed and count > 0:
+            self._first_column_table.setColumnCount(1)
+
+    def setRowCount(self, count):
+        super().setRowCount(count)
+        if self._is_fixed:
+            self._first_column_table.setRowCount(count)
+
+    def setHorizontalHeaderLabels(self, labels):
+        super().setHorizontalHeaderLabels(labels)
+        # noinspection PyTypeChecker
+        if self._is_fixed and len(labels) > 0:
+            # noinspection PyUnresolvedReferences
+            self._first_column_table.setHorizontalHeaderLabels([labels[0]])
+
+    def setColumnWidth(self, column, width):
+        super().setColumnWidth(column, width)
+        if column == 0 and self._is_fixed:
+            self._first_column_width = width
+            self._first_column_table.setColumnWidth(0, width)
+            self._update_fixed_column_position()
+        elif column == 0 and not self._is_fixed:
+            self._first_column_width = width
+
+    def setItem(self, row, column, item):
+        super().setItem(row, column, item)
+        if column == 0 and self._is_fixed and item:
+            child_item = QTableWidgetItem(item.text())
+            child_item.setForeground(item.foreground())
+            child_item.setBackground(item.background())
+            child_item.setFont(item.font())
+            child_item.setTextAlignment(item.textAlignment())
+            self._first_column_table.setItem(row, 0, child_item)
+
+    def setCellWidget(self, row, column, widget):
+        super().setCellWidget(row, column, widget)
+        if column == 0 and self._is_fixed and widget:
+            widget_clone = type(widget)()
+            if hasattr(widget, 'text'):
+                widget_clone.setText(widget.text())
+            self._first_column_table.setCellWidget(row, 0, widget_clone)
+
+
 class WidgetCreater:
     def __init__(self, ui_class):
         self.ui = ui_class
@@ -565,6 +731,9 @@ class WidgetCreater:
         subplot.showAxis('left', False)
         subplot.showAxis('right', True)
         subplot.getAxis('right').setStyle(tickTextWidth=45, autoExpandTextSpace=False)
+        transparent_pen = QPen(color_bf_dk)
+        subplot.getAxis('right').setPen(transparent_pen)
+        subplot.getAxis('bottom').setPen(transparent_pen)
         subplot.getAxis('right').setTickFont(qfont12)
         subplot.getAxis('bottom').setTickFont(qfont12)
         subplot.enableAutoRange(False, False)
@@ -581,12 +750,19 @@ class WidgetCreater:
         dialog.setFont(qfont12)
         return dialog
 
-    def setTablewidget(self, parent, columns, rowcount, vscroll=False, visible=True, clicked=None, valuechanged=None, sortchanged=None):
-        tableWidget = QTableWidget(parent)
+    def setTablewidget(self, parent, columns, rowcount, vscroll=False, visible=True, clicked=None, valuechanged=None,
+                       sortchanged=None, fixed=False):
+        if fixed:
+            if clicked is not None:
+                tableWidget = FixedColumnTableWidget(parent, clicked=clicked)
+            else:
+                tableWidget = FixedColumnTableWidget(parent)
+        else:
+            tableWidget = QTableWidget(parent)
         tableWidget.verticalHeader().setDefaultSectionSize(23)
         tableWidget.verticalHeader().setVisible(False)
         tableWidget.setAlternatingRowColors(True)
-        tableWidget.setSelectionMode(QAbstractItemView.NoSelection)
+        tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)
         tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         if not vscroll:
             tableWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -823,4 +999,6 @@ class WidgetCreater:
             tableWidget.setColumnWidth(4, 90)
             tableWidget.setColumnWidth(5, 90)
             tableWidget.setColumnWidth(6, 90)
+        if fixed:
+            tableWidget.setFirstColumnFixed(True)
         return tableWidget

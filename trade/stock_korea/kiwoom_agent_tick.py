@@ -439,15 +439,6 @@ class KiwoomAgentTick:
             else:
                 self.UpdateTickData(code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp)
 
-        elif realtype == '업종지수':
-            try:
-                dt = int(self.str_today + self.GetCommRealData(code, 20))
-                c  = round(abs(float(self.GetCommRealData(code, 10))) / 100, 2)
-            except:
-                pass
-            else:
-                self.mgzservQ.put(('chart', ('코스피' if code == '001' else '코스닥', dt, c)))
-
         elif realtype == 'VI발동/해제':
             try:
                 gubun = self.GetCommRealData(code, 9068)
@@ -605,8 +596,8 @@ class KiwoomAgentTick:
             #     0          1          2          3          4          5          6          7
             self.dict_money[code] = [buy_money, sell_money, buy_money, buy_money, c, sell_money, sell_money, c]
             self.dict_index[code] = {c: 0}
-            self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-            self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+            self.dict_bmbyp[code] = np.zeros(1000, dtype=np.float64)
+            self.dict_smbyp[code] = np.zeros(1000, dtype=np.float64)
             self.dict_bmbyp[code][0] = buy_money
             self.dict_smbyp[code][0] = sell_money
             self.dict_index[code]['count'] = 1
@@ -873,9 +864,6 @@ class KiwoomAgentTick:
 
         self.SetRealReg([sn_oper, ' ', '215;20;214', 0])
         self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 장운영시간 등록 완료')))
-
-        self.SetRealReg([sn_oper, '001;101', '10;15;20', 1])
-        self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 업종지수 등록 완료')))
 
         self.Block_Request('opt10054', 시장구분='000', 장전구분='1', 종목코드='', 발동구분='1', 제외종목='000000000',
                            거래량구분='0', 거래대금구분='0', 발동방향='0', output='발동종목', next=0)

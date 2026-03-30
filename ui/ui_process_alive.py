@@ -3,11 +3,6 @@ from utility.static import error_decorator
 
 
 @error_decorator
-def stom_live_process_alive(ui):
-    return ui.proc_livec is not None and ui.proc_livec.is_alive()
-
-
-@error_decorator
 def coin_receiver_process_alive(ui):
     return ui.proc_receiver_coin is not None and ui.proc_receiver_coin.is_alive()
 

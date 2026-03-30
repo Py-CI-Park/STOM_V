@@ -734,18 +734,15 @@ def setting_order_load_01(ui):
         ui.ss_bj_checkBoxxx_03.setChecked(False)
         ui.ss_bj_checkBoxxx_04.setChecked(False)
         ui.ss_bj_checkBoxxx_05.setChecked(False)
+        ui.ss_bj_checkBoxxx_06.setChecked(False)
         bjjj_list = df['주식비중조절'][0]
         bjjj_list = bjjj_list.split(';')
-        if bjjj_list[0] == '0':
-            ui.ss_bj_checkBoxxx_01.setChecked(True)
-        elif bjjj_list[0] == '1':
-            ui.ss_bj_checkBoxxx_02.setChecked(True)
-        elif bjjj_list[0] == '2':
-            ui.ss_bj_checkBoxxx_03.setChecked(True)
-        elif bjjj_list[0] == '3':
-            ui.ss_bj_checkBoxxx_04.setChecked(True)
-        elif bjjj_list[0] == '4':
-            ui.ss_bj_checkBoxxx_05.setChecked(True)
+        if bjjj_list[0] == '0':   ui.ss_bj_checkBoxxx_01.setChecked(True)
+        elif bjjj_list[0] == '1': ui.ss_bj_checkBoxxx_02.setChecked(True)
+        elif bjjj_list[0] == '2': ui.ss_bj_checkBoxxx_03.setChecked(True)
+        elif bjjj_list[0] == '3': ui.ss_bj_checkBoxxx_04.setChecked(True)
+        elif bjjj_list[0] == '4': ui.ss_bj_checkBoxxx_05.setChecked(True)
+        elif bjjj_list[0] == '5': ui.ss_bj_checkBoxxx_06.setChecked(True)
         ui.ss_bj_lineEdittt_01.setText(bjjj_list[1])
         ui.ss_bj_lineEdittt_02.setText(bjjj_list[2])
         ui.ss_bj_lineEdittt_03.setText(bjjj_list[3])
@@ -856,12 +853,12 @@ def setting_order_load_03(ui):
         ui.sc_buyy_lineEdit_11.setText(str(df['코인매수정정횟수'][0]))
         ui.sc_buyy_comboBox_04.setCurrentText(str(df['코인매수정정호가차이'][0]))
         ui.sc_buyy_comboBox_05.setCurrentText(str(df['코인매수정정호가'][0]))
-
         ui.sc_bj_checkBoxxx_01.setChecked(False)
         ui.sc_bj_checkBoxxx_02.setChecked(False)
         ui.sc_bj_checkBoxxx_03.setChecked(False)
         ui.sc_bj_checkBoxxx_04.setChecked(False)
         ui.sc_bj_checkBoxxx_05.setChecked(False)
+        ui.sc_bj_checkBoxxx_06.setChecked(False)
         bjjj_list = df['코인비중조절'][0]
         bjjj_list = bjjj_list.split(';')
         if bjjj_list[0] == '0':   ui.sc_bj_checkBoxxx_01.setChecked(True)
@@ -869,6 +866,7 @@ def setting_order_load_03(ui):
         elif bjjj_list[0] == '2': ui.sc_bj_checkBoxxx_03.setChecked(True)
         elif bjjj_list[0] == '3': ui.sc_bj_checkBoxxx_04.setChecked(True)
         elif bjjj_list[0] == '4': ui.sc_bj_checkBoxxx_05.setChecked(True)
+        elif bjjj_list[0] == '5': ui.sc_bj_checkBoxxx_06.setChecked(True)
         ui.sc_bj_lineEdittt_01.setText(bjjj_list[1])
         ui.sc_bj_lineEdittt_02.setText(bjjj_list[2])
         ui.sc_bj_lineEdittt_03.setText(bjjj_list[3])
@@ -984,6 +982,7 @@ def setting_order_save_01(ui):
     elif ui.ss_bj_checkBoxxx_03.isChecked(): bjjj_list.append('2')
     elif ui.ss_bj_checkBoxxx_04.isChecked(): bjjj_list.append('3')
     elif ui.ss_bj_checkBoxxx_05.isChecked(): bjjj_list.append('4')
+    elif ui.ss_bj_checkBoxxx_06.isChecked(): bjjj_list.append('5')
 
     save = True
     if ui.ss_bj_lineEdittt_01.text() == '': save = False
@@ -1297,6 +1296,7 @@ def setting_order_save_03(ui):
     elif ui.sc_bj_checkBoxxx_03.isChecked(): bjjj_list.append('2')
     elif ui.sc_bj_checkBoxxx_04.isChecked(): bjjj_list.append('3')
     elif ui.sc_bj_checkBoxxx_05.isChecked(): bjjj_list.append('4')
+    elif ui.sc_bj_checkBoxxx_06.isChecked(): bjjj_list.append('5')
 
     save = True
     if ui.sc_bj_lineEdittt_01.text() == '': save = False

@@ -65,12 +65,13 @@ def auto_back_schedule(ui, gubun):
 
 @error_decorator
 def update_dictset(ui):
-    ui.wdzservQ.put(('manager', ('설정변경', ui.dict_set)))
+    if ui.proc_manager is not None and ui.proc_manager.poll() is None:
+        ui.wdzservQ.put(('manager', ('설정변경', ui.dict_set)))
     if ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('설정변경', ui.dict_set))
     if ui.CoinTraderProcessAlive():   ui.ctraderQ.put(('설정변경', ui.dict_set))
     if ui.CoinStrategyProcessAlive(): ui.cstgQ.put(('설정변경', ui.dict_set))
     if ui.proc_chqs.is_alive():       ui.chartQ.put(('설정변경', ui.dict_set))
-    if ui.proc_tele.is_alive():       ui.teleQ.put(('설정변경', ui.dict_set))
+    if ui.telegram.isRunning():       ui.teleQ.put(('설정변경', ui.dict_set))
     if ui.backtest_engine:
         for bpq in ui.back_eques:
             bpq.put(('설정변경', ui.dict_set))
@@ -78,17 +79,16 @@ def update_dictset(ui):
 
 @error_decorator
 def chart_clear(ui):
-    ui.ctpg_name             = None
-    ui.ctpg_cline            = None
-    ui.ctpg_hline            = None
-    ui.ctpg_xticks           = None
-    ui.ctpg_arry             = None
-    ui.ctpg_last_xtick       = None
-    ui.ctpg_legend           = {}
-    ui.ctpg_item             = {}
-    ui.ctpg_data             = {}
-    ui.ctpg_factors          = []
-    ui.ctpg_labels           = []
+    ui.ctpg_code    = None
+    ui.ctpg_cline   = None
+    ui.ctpg_hline   = None
+    ui.ctpg_xticks  = None
+    ui.ctpg_arry    = None
+    ui.ctpg_legend  = {}
+    ui.ctpg_item    = {}
+    ui.ctpg_data    = {}
+    ui.ctpg_factors = []
+    ui.ctpg_labels  = []
 
 
 @error_decorator

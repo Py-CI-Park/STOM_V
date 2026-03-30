@@ -4,17 +4,19 @@ import asyncio
 import pandas as pd
 from threading import Thread
 from traceback import format_exc
+from PyQt5.QtCore import QThread
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from utility.setting_base import ui_num
 
 
-class TelegramBot:
+class TelegramBot(QThread):
     def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
            0        1       2      3       4      5      6      7       8         9         10     11      12
         """
+        super().__init__()
         self.windowQ     = qlist[0]
         self.teleQ       = qlist[3]
         self.ctraderQ    = qlist[9]
@@ -30,8 +32,6 @@ class TelegramBot:
         self.message_queue = asyncio.Queue()
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-
-        self.run()
 
     def run(self):
         Thread(target=self.moniter_queue, daemon=True).start()
@@ -51,7 +51,7 @@ class TelegramBot:
             )
             self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
             self.loop.create_task(self.start_bot())
-        
+
         self.loop.run_forever()
 
     async def start_bot(self):
@@ -111,12 +111,10 @@ class TelegramBot:
     def moniter_queue(self):
         while True:
             data = self.teleQ.get()
-            if self.running:
+            if self.running or data.__class__ == tuple:
                 self.loop.call_soon_threadsafe(self.message_queue.put_nowait, data)
             elif data.__class__ in (str, pd.DataFrame):
                 self.windowQ.put((ui_num['시스템로그'], '텔레그램봇 토큰 및 아이디가 설정되지 않아 메세지를 보낼 수 없습니다'))
-            elif data.__class__ == tuple:
-                self.loop.call_soon_threadsafe(self.message_queue.put_nowait, data)
 
     async def process_messages(self):
         while True:
