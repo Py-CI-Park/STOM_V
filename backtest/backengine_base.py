@@ -13,7 +13,7 @@ from utility.setting_base import DB_STOCK_TICK_BACK, BACK_TEMP, ui_num, DB_STOCK
     DB_FUTURE_TICK_BACK, DB_FUTURE_MIN_BACK, DB_COIN_TICK_BACK, DB_COIN_MIN_BACK, list_stock_tick, \
     list_stock_min, list_coin_tick, list_coin_min
 from utility.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_angle_cf, get_ema_list, \
-    add_rolling_data, set_builtin_print
+    add_rolling_data, set_builtin_print, get_profile_text
 
 
 class BackEngineBase(StrategyBase):
@@ -602,7 +602,7 @@ class BackEngineBase(StrategyBase):
             return
 
         if self.gubun == 0 and self.profile:
-            self.pr.print_stats(sort='cumulative')
+            self.wq.put((ui_num['시스템로그'], get_profile_text(self.pr)))
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
         if 분봉저가 is None:
