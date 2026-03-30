@@ -5,6 +5,7 @@ import pandas as pd
 from traceback import print_exc
 from cryptography import fernet
 from utility.static import read_key, de_text as _strict_de_text, get_logger
+from utility.worktree_policy import apply_serial_key_to_dict_set, uses_serial_key
 
 logger_             = get_logger('Setting')
 EN_KEY              = read_key()
@@ -260,7 +261,6 @@ try:
         '프로그램종료':        df_e['프로그램종료'][0],
         '테마':               df_e['테마'][0],
         '팩터선택':            df_e['팩터선택'][0],
-        '시리얼키':            safe_de_text(df_e['시리얼키'][0]) if len(df_e) > 0 and df_e['시리얼키'][0] else None,
 
         '주식매수주문구분':      df_sb['주식매수주문구분'][0],
         '주식매수분할횟수':      df_sb['주식매수분할횟수'][0],
@@ -406,6 +406,12 @@ try:
     if _cli_ovr:
         import json as _json
         DICT_SET.update(_json.loads(_cli_ovr))
+    apply_serial_key_to_dict_set(
+        DICT_SET,
+        df_e,
+        safe_de_text,
+        uses_serial_key()
+    )
 except fernet.InvalidToken:
     logger_.critical('이 컴퓨터의 암호키로 생성된 계정이 아닙니다. setting.db를 삭제 후 재실행 하십시오.')
     sys.exit()
