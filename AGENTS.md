@@ -25,6 +25,11 @@
 - 충돌 시 CLI 커스텀 코드를 보존 (`--ours`)
 - cherry-pick 후 반드시 `pytest tests/unit/ -q` 실행
 - 상세: `docs/UPSTREAM_SYNC_STRATEGY.md` 4.2절, 9절 참조
+- 비정식 워크트리 동기화 후에는 `python scripts/verify_nonrelease_sync.py`로
+  - `.pyd` 파일 부재
+  - 텔레그램 qlist 계약 및 런타임 시작 경로 일치
+  - 비정식 워크트리 시리얼키 UI/로드/저장 정책 유지
+  재유입 여부를 반드시 확인합니다.
 
 ## CLI 커스텀 수정 파일 (충돌 주의)
 
