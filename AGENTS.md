@@ -20,6 +20,11 @@
 - `docs/research/2026-03-28_research_init_v259_v267_sync_matrix_and_plan.md`
 - `docs/research/2026-03-28_research_init_official_update_playbook.md`
 - `docs/research/2026-03-28_research_init_v267_preparation_completion_report.md`
+- 반영 후에는 `python scripts/verify_nonrelease_sync.py`를 실행해
+  - `.pyd` 파일 부재
+  - 텔레그램 qlist 계약 및 런타임 시작 경로 일치
+  - 비정식 워크트리 시리얼키 UI/로드/저장 정책 유지
+  를 반드시 확인합니다.
 
 실무 반영 순서는 가능하면 아래 묶음을 따릅니다.
 
