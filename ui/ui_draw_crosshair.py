@@ -81,6 +81,7 @@ class CrossHair:
             label = pg.TextItem(anchor=(0, 1), color=color_fg_bt, border=color_bg_bt, fill=color_bg_ld)
             label.setFont(qfont12)
             label.setPos(kxmin, kymin)
+            label.setZValue(30)
             self.ui.ctpg_labels.append(label)
             if k == len(self.ui.ctpg_factors) - 1:
                 break
