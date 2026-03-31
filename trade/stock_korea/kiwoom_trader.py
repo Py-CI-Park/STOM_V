@@ -484,7 +484,7 @@ class KiwoomTrader:
                 if 종목코드 in self.dict_jg:
                     보유수량 = self.dict_jg[종목코드]['보유수량'] + 체결수량
                     매입금액 = self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격
-                    매수가 = int(round(매입금액 / 보유수량))
+                    매수가 = int(매입금액 / 보유수량 + 0.5)
                     평가금액, 수익금, 수익률 = GetKiwoomPgSgSp(매입금액, 보유수량 * 체결가격)
                     self.dict_jg[종목코드].update({
                         '매수가': 매수가,

@@ -348,7 +348,7 @@ class OptimizeGeneticAlgorithm:
         k    = 1
         vc   = len(self.vars_list)
         hstd = -float('inf')
-        goal = 2 ** int(round(vc / 2))
+        goal = 2 ** int(vc / 2 + 0.5)
         self.opti_lists = []
         while self.total_count > goal:
             if k > 1: self.SaveVarslist(100, optistandard, buystg, sellstg)

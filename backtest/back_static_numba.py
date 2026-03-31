@@ -1,9 +1,9 @@
 
 import numpy as np
-from numba import jit
+from numba import njit
 
 
-@jit(nopython=True, cache=True)
+@njit(cache=True)
 def GetOptiValidStd(train_stds, valid_stds, exponential):
     """
     가중치(weight) 예제 : 최고 1.3, 최저 0.7
@@ -22,7 +22,7 @@ def GetOptiValidStd(train_stds, valid_stds, exponential):
     return merge if merge != 0 else -float('inf')
 
 
-@jit(nopython=True, cache=True)
+@njit(cache=True)
 def GetResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     """
     arry_tsg dtype 'float64'
@@ -81,7 +81,7 @@ def GetResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     )
 
 
-@jit(nopython=True)
+@njit(cache=True)
 def bootstrap_test(returns, n_bootstrap=10000):
     n = len(returns)
     bootstrap_returns = np.zeros(n_bootstrap)

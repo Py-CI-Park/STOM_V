@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
-from trade.formula_manager import get_formula_data
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.strategy_base import StrategyBase
+from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, \
     list_stock_tick, list_stock_min
@@ -464,7 +464,7 @@ class KiwoomStrategyTick(StrategyBase):
             잔량배열 = self.shreminfo[:self.buy_hj_limit]
             거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
             if 체결완료:
-                예상체결가 = int(round(거래금액 / 주문수량)) if 주문수량 != 0 else 0
+                예상체결가 = int(거래금액 / 주문수량 + 0.5) if 주문수량 != 0 else 0
                 self.dict_signal['매수'].append(self.code)
                 self.dict_signal_num[self.code] = self.indexn
                 self.straderQ.put(('매수', self.code, self.name, 예상체결가, 주문수량, now(), False))
@@ -517,7 +517,7 @@ class KiwoomStrategyTick(StrategyBase):
             잔량배열 = self.bhreminfo[:self.sell_hj_limit]
             거래금액, 체결완료 = self._calc_fill_amount(주문수량, 호가배열, 잔량배열)
             if 체결완료:
-                예상체결가 = int(round(거래금액 / 주문수량)) if 주문수량 != 0 else 0
+                예상체결가 = int(거래금액 / 주문수량 + 0.5) if 주문수량 != 0 else 0
                 self.dict_signal['매도'].append(self.code)
                 self.straderQ.put(('매도', self.code, self.name, 예상체결가, 주문수량, now(), True if 강제청산 else False))
 
