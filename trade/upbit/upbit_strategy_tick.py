@@ -4,6 +4,7 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from copy import deepcopy
+from trade.risk_analyzer import RiskAnalyzer
 from trade.strategy_base import StrategyBase
 from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
@@ -86,6 +87,7 @@ class UpbitStrategyTick(StrategyBase):
         self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
 
         self.ms_analyzer = MicrostructureAnalyzer('coin')
+        self.rk_analyzer = RiskAnalyzer('coin')
 
         set_builtin_print(True, self.windowQ)
         self.SetFormulaData()
@@ -238,11 +240,14 @@ class UpbitStrategyTick(StrategyBase):
         self.tick_count = 데이터길이 = len(self.arry_code)
         self.code, self.index, self.indexn = 종목코드, 체결시간, 데이터길이 - 1
 
+        리스크점수 = 0
         if 데이터길이 >= 평균값계산틱수:
             self.arry_code[-1, self.base_cnt:self.data_cnt] = self.GetParameterArea(rw)
 
-        if self.dict_set['시장미시구조분석']:
-            self.ms_analyzer.update_data(self.code, self.arry_code[-1, :])
+            if self.dict_set['시장미시구조분석']:
+                self.ms_analyzer.update_data(self.code, self.arry_code)
+            if self.dict_set['시장리스크분석']:
+                리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
 
         high_low = self.high_low.get(종목코드)
         if high_low:
