@@ -268,7 +268,26 @@ class OptimizeGeneticAlgorithm:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self.SysExit(True)
 
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
+        con = sqlite3.connect(DB_STRATEGY)
+        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
+        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
+        dfv = pd.read_sql(f'SELECT * FROM {self.gubun}vars', con).set_index('index')
+        buystg = dfb['전략코드'][buystg_name]
+        sellstg = dfs['전략코드'][sellstg_name]
+        optivars = dfv['전략코드'][optivars_name]
+        con.close()
+
+        optivars_ = None
+        try:
+            optivars_ = compile(optivars, '<string>', 'exec')
+            exec(optivars_)
+        except:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - {self.backname} 변수설정'))
+            self.SysExit(True)
+
+        if 'self.ms_analyzer' in buystg and not self.dict_set['시장미시구조분석']:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
+            self.SysExit(True)
 
         if is_tick:
             df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
@@ -295,34 +314,13 @@ class OptimizeGeneticAlgorithm:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
                 self.SysExit(True)
 
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
+
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 학습 기간 {startday} ~ {endday}'))
         if 'V' in self.backname:
             for vsday, veday, _, _ in valid_days:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
-
-        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
-        arry_bct[:, 0] = df_mt['index'].values
-        data = ('백테정보', self.ui_gubun, None, valid_days, arry_bct, betting, len(day_list))
-        for q in self.bstq_list:
-            q.put(data)
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
-
-        con = sqlite3.connect(DB_STRATEGY)
-        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
-        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
-        buystg  = dfb['전략코드'][buystg_name]
-        sellstg = dfs['전략코드'][sellstg_name]
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}vars', con).set_index('index')
-        optivars = df['전략코드'][optivars_name]
-        con.close()
-
-        optivars_ = compile(df['전략코드'][optivars_name], '<string>', 'exec')
-        try:
-            exec(optivars_)
-        except:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - {self.backname} 변수설정'))
-            self.SysExit(True)
 
         self.total_count = 1
         for value in list(self.vars.values()):
@@ -332,16 +330,22 @@ class OptimizeGeneticAlgorithm:
         self.orignal_vars_list = copy.deepcopy(self.vars_list)
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수전략 설정 완료'))
 
+        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
+        arry_bct[:, 0] = df_mt['index'].values
+        data = ('백테정보', self.ui_gubun, None, valid_days, arry_bct, betting, len(day_list))
+        for q in self.bstq_list:
+            q.put(data)
+
         data = ('백테정보', betting, self.vars[0][0], startday, endday, starttime, endtime, buystg, sellstg)
         for q in self.beq_list:
             q.put(data)
 
+        self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg, sellstg, dict_cn, std_text,
+                     optistandard, valid_days, len(day_list)))
+
         mq = Queue()
         Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, self.dict_set)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
-
-        self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg, sellstg, dict_cn, std_text,
-                     optistandard, valid_days, len(day_list)))
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START'))
 

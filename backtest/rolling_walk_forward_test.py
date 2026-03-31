@@ -438,6 +438,21 @@ class RollingWalkForwardTest:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self.SysExit(True)
 
+        con = sqlite3.connect(DB_STRATEGY)
+        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
+        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
+        dfv = pd.read_sql(f'SELECT * FROM {self.gubun}optivars', con).set_index('index')
+        buystg = dfb['전략코드'][buystg_name]
+        sellstg = dfs['전략코드'][sellstg_name]
+        optivars = dfv['전략코드'][optivars_name]
+        con.close()
+
+        try:
+            exec(compile(optivars, '<string>', 'exec'))
+        except:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - 최적화 변수설정 1단계'))
+            self.SysExit(True)
+
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
         if is_tick:
@@ -459,36 +474,23 @@ class RollingWalkForwardTest:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 확인기간 {i + 1} : {test_days[0]} ~ {test_days[1]}'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 일자 추출 완료'))
 
-        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
-        arry_bct[:, 0] = df_mt['index'].values
-        data = ('백테정보', self.ui_gubun, list_days, None, arry_bct, betting, len(day_list))
-        for q in self.bstq_list:
-            q.put(data)
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
-
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
-        buystg = df['전략코드'][buystg_name]
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
-        sellstg = df['전략코드'][sellstg_name]
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optivars', con).set_index('index')
-        optivars = df['전략코드'][optivars_name]
-        con.close()
-
-        try:
-            exec(compile(optivars, '<string>', 'exec'))
-        except:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - 최적화 변수설정 1단계'))
-            self.SysExit(True)
-
         out_count = len(list_days)
         vars_type, avg_list = self.GetOptomizeVarsList(random_optivars)
         text = f'{self.backname} 매도수전략 및 변수 설정 완료' if not random_optivars else f'{self.backname} 매도수전략 및 변수 최적값 랜덤 설정 완료'
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text))
 
+        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
+        arry_bct[:, 0] = df_mt['index'].values
+        data = ('백테정보', self.ui_gubun, list_days, None, arry_bct, betting, len(day_list))
+        for q in self.bstq_list:
+            q.put(data)
+
         data = ('백테정보', betting, avg_list, startday, endday, starttime, endtime, buystg, sellstg)
         for q in self.beq_list:
             q.put(data)
+
+        self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg_name, buystg, sellstg, optivars,
+                     dict_cn, list_days, std_text, optistandard, schedul, weeks_train, weeks_valid, weeks_test))
 
         mq = Queue()
         Process(
@@ -497,9 +499,6 @@ class RollingWalkForwardTest:
                   self.gubun, market_text, self.dict_set)
         ).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
-
-        self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg_name, buystg, sellstg, optivars,
-                     dict_cn, list_days, std_text, optistandard, schedul, weeks_train, weeks_valid, weeks_test))
 
         if 'B' in self.backname:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA Sampler : {optuna_sampler}</font>'))

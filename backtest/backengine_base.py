@@ -74,11 +74,6 @@ class BackEngineBase(StrategyBase):
         self.ms_analyzer     = None
         self.rk_analyzer     = None
 
-        self.shogainfo       = None
-        self.shreminfo       = None
-        self.bhogainfo       = None
-        self.bhreminfo       = None
-
         self.code_list       = []
         self.vars_list       = []
         self.vars_lists      = []
