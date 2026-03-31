@@ -4,8 +4,7 @@ import builtins
 
 class ImportProgressHook:
     def __init__(self, splash):
-        self.splash          = splash
-        self.progress        = 5
+        self.splash = splash
         self.original_import = None
         self.modules = [
             'ui.ui_mainwindow', 'ui.set_style', 'utility.chartquerysound', 'utility.timesync', 'utility.setting_base',
@@ -37,7 +36,7 @@ class ImportProgressHook:
     def custom_import(self, name, *args, **kwargs):
         if name in self.modules:
             self.current_index += 1
-            progress = self.progress + (self.current_index / self.total_modules) * 73
+            progress = (self.current_index / self.total_modules) * 59
             self.splash.show_progress(f"{name}...", int(progress))
         return self.original_import(name, *args, **kwargs)
 
