@@ -106,20 +106,6 @@ class SetDialogChart:
         self.ui.ctpg_vboxLayout.setContentsMargins(3, 6, 3, 3)
         self.ui.ctpg_vboxLayout.addWidget(self.ui.ctpg_layout)
 
-        self.ui.dialog_jisu = self.wc.setDialog('STOM JISU')
-        self.ui.dialog_jisu.geometry().center()
-        self.ui.js_groupBox_01 = QGroupBox(' ', self.ui.dialog_jisu)
-
-        self.ui.jspg = {}
-        pg.setConfigOption('background', color_bg_bk)
-        jspg = pg.GraphicsLayoutWidget()
-        self.ui.jspg[1], _ = self.wc.setaddPlot(jspg, 0, 0, title='<span style="font-size:13px;font-family:나눔고딕;">KOSPI</span>')
-        self.ui.jspg[2], _ = self.wc.setaddPlot(jspg, 1, 0, title='<span style="font-size:13px;font-family:나눔고딕;">KOSDAQ</span>')
-
-        jspg_vboxLayout = QVBoxLayout(self.ui.js_groupBox_01)
-        jspg_vboxLayout.setContentsMargins(3, 6, 3, 3)
-        jspg_vboxLayout.addWidget(jspg)
-
         self.ui.dialog_factor = self.wc.setDialog('STOM FACTOR', parent=self.ui.dialog_chart)
         self.ui.dialog_factor.geometry().center()
         self.ui.jp_groupBoxxxxx_01 = QGroupBox(' ', self.ui.dialog_factor)
@@ -336,14 +322,6 @@ class SetDialogChart:
             self.ui.ct_tableWidgett_01.setGeometry(1403, 55, 120, 1310 if not self.ui.dict_set['저해상도'] else 950)
         else:
             self.ui.ct_tableWidgett_01.setGeometry(1403, 55, 120, 1310)
-
-        self.ui.dialog_jisu.setFixedSize(770, 700)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_jisu.move(self.ui.dict_set['창위치'][6], self.ui.dict_set['창위치'][7])
-            except:
-                pass
-        self.ui.js_groupBox_01.setGeometry(5, -10, 760, 700)
 
         self.ui.dialog_factor.setFixedSize(850, 620)
         self.ui.jp_groupBoxxxxx_01.setGeometry(5, -10, 840, 625)
