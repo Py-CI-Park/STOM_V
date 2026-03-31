@@ -222,18 +222,18 @@ class BackEngineKiwoomTick2(BackEngineBaseOms):
         return int(betting / (현재가 if not 보유중 else 매수가) * oc_ratio / 100)
 
     def GetBuyPrice(self, 매수금액, 주문수량):
-        return int(round(매수금액 / 주문수량))
+        return int(매수금액 / 주문수량 + 0.5)
 
     def GetSellPrice(self, 매도금액, 주문수량):
-        return int(round(매도금액 / 주문수량))
+        return int(매도금액 / 주문수량 + 0.5)
 
     def GetLastSellPrice(self, 매도금액, 보유수량, 미체결수량):
         if 미체결수량 <= 0:
-            매도가 = int(round(매도금액 / 보유수량))
+            매도가 = int(매도금액 / 보유수량 + 0.5)
         elif 매도금액 == 0:
             매도가 = self.arry_code[self.indexn, 1]
         else:
-            매도가 = int(round(매도금액 / (보유수량 - 미체결수량)))
+            매도가 = int(매도금액 / (보유수량 - 미체결수량) + 0.5)
         return 매도가
 
     def GetProfitInfo(self, 현재가, 매수가, 보유수량):

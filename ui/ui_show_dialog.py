@@ -286,9 +286,6 @@ def show_db(ui):
     if not ui.dialog_db.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_db, duration=250)
         ui.dialog_db.show()
-    else:
-        ui.dialog_db.close()
-        return
 
     ui.db_tableWidgett_01.clearContents()
     ui.db_tableWidgett_02.clearContents()

@@ -1,4 +1,5 @@
 
+import re
 from traceback import format_exc
 from PyQt5.QtCore import QThread
 from utility.setting_base import indicator, ui_num
@@ -76,7 +77,7 @@ class BackCodeTest(QThread):
             '이동평균', '최고현재가', '최저현재가', '체결강도평균', '최고체결강도', '최저체결강도', '등락율각도', '경과틱수',
             '초당거래대금평균', '누적초당매수수량', '누적초당매도수량', '최고초당매수수량', '최고초당매도수량', '당일거래대금각도', '전일비각도',
             '분당거래대금평균', '누적분당매수수량', '누적분당매도수량', '최고분당매수수량', '최고분당매도수량', '최고분봉고가', '최저분봉저가',
-            'N', '이평지지', '이평돌파', '이평이탈', '시가지지', '시가돌파', '시가이탈', '변동성', '변동성급증', '변동성급감',
+            '이평지지', '이평돌파', '이평이탈', '시가지지', '시가돌파', '시가이탈', '변동성', '변동성급증', '변동성급감',
             '구간저가대비현재가등락율', '구간고가대비현재가등락율', '거래대금평균대비비율', '체결강도평균대비비율', '구간호가총잔량비율',
             '매수수량변동성', '매도수량변동성', '고가미갱신지속틱수', '저가미갱신지속틱수', '횡보감지', '연속상승', '가격급등', '거래대금급증',
             '매수수량급증', '매도수량급증', '연속하락', '가격급락', '거래대금급감', '매수수량급감', '매도수량급감', '이평지지후이평돌파',
@@ -91,15 +92,14 @@ class BackCodeTest(QThread):
         ]
 
         stg = self.stg
-        for factor in gugan_factors:
-            stg = stg.replace(factor, f'{factor};')
+        factors = sorted(gugan_factors, key=len, reverse=True)
 
-        for i, line in enumerate(stg.split('\n')):
-            if not line.lstrip().startswith('#'):
-                split_line = line.split(';')
-                for j, txt in enumerate(split_line[1:]):
-                    if not txt.startswith('('):
-                        factor = split_line[j].split(' ')[-1]
+        for i, raw_line in enumerate(stg.split('\n')):
+            line = raw_line.split('#', 1)[0]
+            for factor in factors:
+                pattern = rf'(?<![0-9A-Za-z_가-힣]){re.escape(factor)}(?![0-9A-Za-z_가-힣])'
+                for m in re.finditer(pattern, line):
+                    if not re.match(r'\s*\(', line[m.end():]):
                         self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - 줄번호[{i+1}] : {factor}(30), {factor}(30, 1) 형태로 사용하십시오.'))
                         error = True
         if error:
