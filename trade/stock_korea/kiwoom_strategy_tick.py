@@ -15,7 +15,7 @@ from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_STOCK
     list_stock_tick, list_stock_min
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
-    str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, error_decorator, set_builtin_print
+    str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, error_decorator, set_builtin_print, get_profile_text
 
 
 class KiwoomStrategyTick(StrategyBase):
@@ -218,9 +218,7 @@ class KiwoomStrategyTick(StrategyBase):
             self.mgzservQ.put(('tele', '주식 매도전략 중지 완료'))
         elif data == '프로파일링결과':
             if self.gubun == 0:
-                from utility.profile_utils import extract_profile_text
-                profile_text = extract_profile_text(self.pr, limit=50)
-                self.mgzservQ.put(('window', (ui_num['시스템로그'], profile_text)))
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], get_profile_text(self.pr))))
         elif data == '프로세스종료':
             time.sleep(5)
             self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료')))

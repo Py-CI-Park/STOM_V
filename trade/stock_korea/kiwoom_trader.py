@@ -8,7 +8,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num, columns_cj, columns_td, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, str_hms, roundfigure_lower, roundfigure_upper, GetKiwoomPgSgSp, \
-    GetHogaunit, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, qtest_qwait
+    GetHogaunit, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, qtest_qwait, get_profile_text
 
 
 class Updater(QThread):
@@ -319,9 +319,7 @@ class KiwoomTrader:
         elif data == '잔고청산':
             self.JangoCheongsan('수동')
         elif data == '프로파일링결과':
-            from utility.profile_utils import extract_profile_text
-            profile_text = extract_profile_text(self.pr, limit=50)
-            self.mgzservQ.put(('window', (ui_num['시스템로그'], profile_text)))
+            self.mgzservQ.put(('window', (ui_num['시스템로그'], get_profile_text(self.pr))))
         elif data == '프로세스종료':
             self.SysExit()
 
