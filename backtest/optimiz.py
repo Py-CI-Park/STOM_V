@@ -457,7 +457,24 @@ class Optimize:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self.SysExit(True)
 
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
+        con = sqlite3.connect(DB_STRATEGY)
+        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
+        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
+        dfv = pd.read_sql(f'SELECT * FROM {self.gubun}optivars', con).set_index('index')
+        buystg = dfb['전략코드'][buystg_name]
+        sellstg = dfs['전략코드'][sellstg_name]
+        text_vars = dfv['전략코드'][optivars_name]
+        con.close()
+
+        try:
+            exec(compile(text_vars, '<string>', 'exec'))
+        except:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - {self.backname} 변수설정'))
+            self.SysExit(True)
+
+        if 'self.ms_analyzer' in buystg and not self.dict_set['시장미시구조분석']:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
+            self.SysExit(True)
 
         if is_tick:
             df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
@@ -469,6 +486,8 @@ class Optimize:
         startday, endday = day_list[0], day_list[-1]
         list_days = self.GetListDays(startday, endday, dt_endday, day_list, weeks_train, weeks_valid, weeks_test)
 
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
+
         train_days, valid_days, test_days = list_days
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 학습 기간 {train_days[0]} ~ {train_days[1]}'))
         if 'V' in self.backname:
@@ -478,39 +497,26 @@ class Optimize:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 확인 기간 {test_days[0]} ~ {test_days[1]}'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 
+        buy_num   = int(buystg.split('self.vars[')[1].split(']')[0])
+        sell_num  = int(sellstg.split('self.vars[')[1].split(']')[0])
+        buy_first = True if buy_num < sell_num else False
+        text = f'{self.backname} 매도수전략 및 변수 설정 완료' if not random_optivars else f'{self.backname} 매도수전략 및 변수 최적값 랜덤 설정 완료'
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text))
+
         arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
         data = ('백테정보', self.ui_gubun, list_days, None, arry_bct, betting, len(day_list))
         for q in self.bstq_list:
             q.put(data)
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
-
-        con = sqlite3.connect(DB_STRATEGY)
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optibuy', con).set_index('index')
-        buystg = df['전략코드'][buystg_name]
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optisell', con).set_index('index')
-        sellstg = df['전략코드'][sellstg_name]
-        df = pd.read_sql(f'SELECT * FROM {self.gubun}optivars', con).set_index('index')
-        text_vars = df['전략코드'][optivars_name]
-        con.close()
-
-        buy_num   = int(buystg.split('self.vars[')[1].split(']')[0])
-        sell_num  = int(sellstg.split('self.vars[')[1].split(']')[0])
-        buy_first = True if buy_num < sell_num else False
-
-        try:
-            exec(compile(text_vars, '<string>', 'exec'))
-        except:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{format_exc()}오류 알림 - {self.backname} 변수설정'))
-            self.SysExit(True)
-
-        text = f'{self.backname} 매도수전략 및 변수 설정 완료' if not random_optivars else f'{self.backname} 매도수전략 및 변수 최적값 랜덤 설정 완료'
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text))
 
         vars_type, len_vars, avg_list = self.GetOptomizeVarsList(random_optivars, only_buy, only_sell, buy_first, sell_num)
         data = ('백테정보', betting, avg_list, startday, endday, starttime, endtime, buystg, sellstg)
         for q in self.beq_list:
             q.put(data)
+
+        self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg_name, buystg, sellstg, text_vars,
+                     dict_cn, std_text, optistandard, schedul, list_days, len(day_list), weeks_train, weeks_valid,
+                     weeks_test))
 
         mq = Queue()
         Process(
@@ -519,10 +525,6 @@ class Optimize:
                   self.gubun, market_text, self.dict_set)
         ).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
-
-        self.tq.put(('백테정보', betting, startday, endday, starttime, endtime, buystg_name, buystg, sellstg, text_vars,
-                     dict_cn, std_text, optistandard, schedul, list_days, len(day_list), weeks_train, weeks_valid,
-                     weeks_test))
 
         if 'B' in self.backname:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA Sampler : {optuna_sampler}</font>'))

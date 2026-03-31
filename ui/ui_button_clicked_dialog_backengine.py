@@ -91,7 +91,6 @@ def backtest_engine_kill(ui):
         q.close()
     for q in ui.back_eques:
         q.close()
-    qtest_qwait(1)
     ui.windowQ.put((ui_num['시스템로그'], 'Bactest subtotal process terminate completed'))
 
     ui.back_eprocs = []
@@ -168,26 +167,26 @@ def sdbutton_clicked_02(ui):
                     q.put(('백테유형', '백테스트'))
 
                 if bt_gubun == '주식':
-                    ui.backQ.put((betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, ui.dict_cn,
-                                  ui.back_count, bl, True, False))
                     gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                     ui.proc_backtester_bs = Process(
                         target=BackTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set)
+                        args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set, betting, avgtime,
+                              startday, endday, starttime, endtime, buystg, sellstg, ui.dict_cn, ui.back_count,
+                              bl, True, False)
                     )
                     ui.proc_backtester_bs.start()
                     ui.StockBacktestLog()
                     ui.ss_progressBar_01.setValue(0)
                     ui.ssicon_alert = True
                 else:
-                    ui.backQ.put((betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, None,
-                                  ui.back_count, bl, True, False))
                     gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'
                     ui.proc_backtester_bs = Process(
                         target=BackTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set)
+                        args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set, betting, avgtime,
+                              startday, endday, starttime, endtime, buystg, sellstg, None, ui.back_count,
+                              bl, True, False)
                     )
                     ui.proc_backtester_bs.start()
                     ui.CoinBacktestLog()

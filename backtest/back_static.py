@@ -401,13 +401,13 @@ def get_yf_ticker(code, startday, endday):
 
 
 def get_interval(total_sec):
-    if total_sec <= 1680:
+    if total_sec <= 1800:
         return '3min'
-    elif total_sec <= 3480:
+    elif total_sec <= 3600:
         return '5min'
-    elif total_sec <= 7080:
+    elif total_sec <= 7200:
         return '10min'
-    elif total_sec <= 10680:
+    elif total_sec <= 10800:
         return '15min'
     return '30min'
 
@@ -435,12 +435,12 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     for window in windows:
         df_tsg[f'수익금합계{window:03d}'] = profit_series.rolling(window=window).mean()
 
-    sig_array = df_tsg['수익금'].values
-    df_tsg['이익금액'] = np.where(sig_array >= 0, sig_array, 0)
-    df_tsg['손실금액'] = np.where(sig_array < 0, sig_array, 0)
+    df_tsg['이익금액'] = df_tsg['수익금'].clip(lower=0)
+    df_tsg['손실금액'] = df_tsg['수익금'].clip(upper=0)
 
     mdd_list = []
     random_cumsums = []
+    sig_array = df_tsg['수익금'].values
     for i in range(100):
         random_sig_array = np.random.permutation(sig_array)
         cumsum_sig_array = np.cumsum(random_sig_array)
@@ -467,9 +467,8 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     total_sec = (end_time - start_time).total_seconds()
     interval = get_interval(total_sec)
     df_st = df_st.resample(interval).sum()
-    profit_array_st = df_st['수익금'].values
-    df_st['이익금액'] = np.where(profit_array_st >= 0, profit_array_st, 0)
-    df_st['손실금액'] = np.where(profit_array_st < 0, profit_array_st, 0)
+    df_st['이익금액'] = df_st['수익금'].clip(lower=0)
+    df_st['손실금액'] = df_st['수익금'].clip(upper=0)
     df_st.index = df_st.index.map(lambda x: str_ymdhms_ios(x))
 
     df_wt = df_tsg[['수익금']].copy()

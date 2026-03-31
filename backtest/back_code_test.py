@@ -287,25 +287,25 @@ class BackCodeTest(QThread):
 
         def 초당매수금액N(pre):
             return 1
-    
+
         def 초당매도금액N(pre):
             return 1
-    
+
         def 당일매수금액N(pre):
             return 1
-    
+
         def 최고매수금액N(pre):
             return 1
-    
+
         def 최고매수가격N(pre):
             return 1
-    
+
         def 당일매도금액N(pre):
             return 1
-    
+
         def 최고매도금액N(pre):
             return 1
-    
+
         def 최고매도가격N(pre):
             return 1
 

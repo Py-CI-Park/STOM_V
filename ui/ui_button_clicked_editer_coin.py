@@ -1280,16 +1280,12 @@ def coin_backtest_start(ui):
         for q in ui.back_eques:
             q.put(('백테유형', '백테스트'))
 
-        ui.backQ.put((
-            betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, None, ui.back_count,
-            bl, False, back_club
-        ))
-
         gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'
         ui.proc_backtester_bs = Process(
             target=BackTest,
-            args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                  ui.back_sques, '백테스트', gubun, ui.dict_set)
+            args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
+                  ui.back_sques, '백테스트', gubun, ui.dict_set, betting, avgtime, startday, endday, starttime,
+                  endtime, buystg, sellstg, None, ui.back_count, bl, False, back_club)
         )
         ui.proc_backtester_bs.start()
         ui.CoinBacktestLog()
@@ -1339,11 +1335,11 @@ def coin_backfinder_start(ui):
         for q in ui.back_eques:
             q.put(('백테유형', '백파인더'))
 
-        ui.backQ.put((avgtime, startday, endday, starttime, endtime, buystg, ui.back_count))
         gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'
         ui.proc_backtester_bf = Process(
             target=BackFinder,
-            args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, gubun, ui.dict_set)
+            args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.back_eques, gubun,
+                  ui.dict_set, avgtime, startday, endday, starttime, endtime, buystg, ui.back_count)
         )
         ui.proc_backtester_bf.start()
         ui.CoinBacktestLog()
