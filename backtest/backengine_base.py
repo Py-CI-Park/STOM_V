@@ -112,6 +112,7 @@ class BackEngineBase(StrategyBase):
         self.set_dict_cond = self.dict_set[f'{self.market_text}경과틱수설정']
         self.set_weight    = self.dict_set[f'{self.market_text}비중조절']
         self.sma_list      = get_ema_list(self.is_tick)
+
         if self.market_gubun == 1:   gubun = 'stock'
         elif self.market_gubun == 2: gubun = 'future'
         else:                        gubun = 'coin'
@@ -601,9 +602,7 @@ class BackEngineBase(StrategyBase):
             return
 
         if self.gubun == 0 and self.profile:
-            from utility.profile_utils import extract_profile_text
-            profile_text = extract_profile_text(self.pr, limit=50)
-            self.wq.put((ui_num['시스템로그'], profile_text))
+            self.pr.print_stats(sort='cumulative')
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
         if 분봉저가 is None:
