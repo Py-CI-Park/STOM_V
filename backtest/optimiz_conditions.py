@@ -256,7 +256,23 @@ class OptimizeConditions:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self.SysExit(True)
 
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
+        con = sqlite3.connect(DB_STRATEGY)
+        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buyconds', con).set_index('index')
+        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}sellconds', con).set_index('index')
+        con.close()
+
+        self.buyconds  = dfb['전략코드'][buystg_name].split('\n')
+        self.sellconds = dfs['전략코드'][sellstg_name].split('\n')
+
+        is_long = None
+        if self.ui_gubun in ('CF', 'SF'):
+            if '#' in self.buyconds[0] and 'LONG' in self.buyconds[0] and '#' in self.sellconds[0] and 'LONG' in self.sellconds[0]:
+                is_long = True
+            elif '#' in self.buyconds[0] and 'SHORT' in self.buyconds[0] and '#' in self.sellconds[0] and 'SHORT' in self.sellconds[0]:
+                is_long = False
+            if is_long is None:
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '롱숏구분(#LONG 또는 #SHORT)이 없거나 매도수 구분이 다릅니다.\n'))
+                self.SysExit(True)
 
         if is_tick:
             df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
@@ -283,40 +299,23 @@ class OptimizeConditions:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
                 self.SysExit(True)
 
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
+
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 학습 기간 {startday} ~ {endday}'))
         if 'V' in self.backname:
             for vsday, veday, _, _ in valid_days:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
 
+        self.buyconds  = [x for x in self.buyconds if x and x[0] != '#']
+        self.sellconds = [x for x in self.sellconds if x and x[0] != '#']
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수조건 설정 완료'))
+
         arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
         data = ('백테정보', self.ui_gubun, None, valid_days, arry_bct, betting, len(day_list))
         for q in self.bstq_list:
             q.put(data)
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
-
-        con = sqlite3.connect(DB_STRATEGY)
-        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buyconds', con).set_index('index')
-        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}sellconds', con).set_index('index')
-        con.close()
-
-        self.buyconds  = dfb['전략코드'][buystg_name].split('\n')
-        self.sellconds = dfs['전략코드'][sellstg_name].split('\n')
-
-        is_long = None
-        if self.ui_gubun in ('CF', 'SF'):
-            if '#' in self.buyconds[0] and 'LONG' in self.buyconds[0] and '#' in self.sellconds[0] and 'LONG' in self.sellconds[0]:
-                is_long = True
-            elif '#' in self.buyconds[0] and 'SHORT' in self.buyconds[0] and '#' in self.sellconds[0] and 'SHORT' in self.sellconds[0]:
-                is_long = False
-            if is_long is None:
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '롱숏구분(#LONG 또는 #SHORT)이 없거나 매도수 구분이 다릅니다.\n'))
-                self.SysExit(True)
-
-        self.buyconds  = [x for x in self.buyconds if x and x[0] != '#']
-        self.sellconds = [x for x in self.sellconds if x and x[0] != '#']
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수조건 설정 완료'))
 
         bc = factorial(len(self.buyconds)) / (factorial(self.bcount) * factorial(len(self.buyconds) - self.bcount))
         sc = factorial(len(self.sellconds)) / (factorial(self.scount) * factorial(len(self.sellconds) - self.scount))
@@ -330,12 +329,12 @@ class OptimizeConditions:
         for q in self.beq_list:
             q.put(data)
 
+        self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, std_text, self.optistandard, valid_days, len(day_list)))
+        self.tq.put(('경우의수', back_count))
+
         mq = Queue()
         Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.ui_gubun, self.dict_set)).start()
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
-
-        self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, std_text, self.optistandard, valid_days, len(day_list)))
-        self.tq.put(('경우의수', back_count))
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START'))
 

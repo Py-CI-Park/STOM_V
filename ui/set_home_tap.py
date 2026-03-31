@@ -72,7 +72,7 @@ class HomTapGroupBox(QGroupBox):
         self.animation.setEndValue(QRect(x, y, width, height))
         if callback: self.animation.finished.connect(callback)
         self.animation.start()
-    
+
     def _setVisibleGroupBoxes(self):
         """GroupBox 표시 상태 설정"""
         for gbox in self.ui.home_gbox_center_list:
