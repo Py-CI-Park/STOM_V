@@ -167,7 +167,7 @@ class CrossHair:
 
                 xpoint = self.ui.ctpg_xticks.index(int_mpx)
                 hms_   = from_timestamp(int_mpx).strftime('%H:%M' if is_min else '%H:%M:%S')
-                code   = self.ui.ctpg_name
+                code   = self.ui.ctpg_code
                 for n, labell in enumerate(self.ui.ctpg_labels):
                     foctor = self.ui.ctpg_factors[n]
                     if index == n:

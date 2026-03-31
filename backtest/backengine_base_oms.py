@@ -129,8 +129,10 @@ class BackEngineBaseOms(BackEngineBase):
                 비중조절기준 = self._거래대금평균대비비율(30)
             elif self.set_weight[0] == 3:
                 비중조절기준 = self._등락율각도(30)
-            else:
+            elif self.set_weight[0] == 4:
                 비중조절기준 = self._당일거래대금각도(30)
+            else:
+                비중조절기준 = self.비중조절기준
 
             if 비중조절기준 < self.set_weight[1]:
                 betting = self.betting * self.set_weight[5]
@@ -297,35 +299,19 @@ class BackEngineBaseOms(BackEngineBase):
             })
 
     def SetSellCount(self):
-        보유중, 매수가, 현재가, 저가대비고가등락율, 매수분할횟수, 매도호가1, 매수호가1, 보유수량, 매도분할횟수 = self.info_for_order[:-2]
+        _, _, 현재가, _, _, 매도호가1, 매수호가1, 보유수량, 매도분할횟수 = self.info_for_order[:-2]
         if self.dict_set[f'{self.market_text}매도분할횟수'] == 1:
             self.curr_trade_info['주문수량'] = 보유수량
         else:
-            if self.set_weight[0] == 0:
-                betting = self.betting
+            dict_ratio = dict_order_ratio[self.dict_set[f'{self.market_text}매도분할방법']][self.dict_set[f'{self.market_text}매도분할횟수']]
+            oc_ratio = dict_ratio[매도분할횟수]
+            if 매도분할횟수 == 0:
+                매도수량 = int(보유수량 * oc_ratio / 100) if self.market_gubun < 3 else round(보유수량 * oc_ratio / 100, 8)
             else:
-                if self.set_weight[0] == 1:
-                    비중조절기준 = 저가대비고가등락율
-                elif self.set_weight[0] == 2:
-                    비중조절기준 = self._거래대금평균대비비율(30)
-                elif self.set_weight[0] == 3:
-                    비중조절기준 = self._등락율각도(30)
-                else:
-                    비중조절기준 = self._당일거래대금각도(30)
+                보유비율 = sum(비율 for 횟수, 비율 in dict_ratio.items() if 횟수 >= 매도분할횟수)
+                매도수량 = int(보유수량 / 보유비율 * oc_ratio) if self.market_gubun < 3 else round(보유수량 / 보유비율 * oc_ratio, 8)
 
-                if 비중조절기준 < self.set_weight[1]:
-                    betting = self.betting * self.set_weight[5]
-                elif 비중조절기준 < self.set_weight[2]:
-                    betting = self.betting * self.set_weight[6]
-                elif 비중조절기준 < self.set_weight[3]:
-                    betting = self.betting * self.set_weight[7]
-                elif 비중조절기준 < self.set_weight[4]:
-                    betting = self.betting * self.set_weight[8]
-                else:
-                    betting = self.betting * self.set_weight[9]
-
-            oc_ratio = dict_order_ratio[self.dict_set[f'{self.market_text}매도분할방법']][self.dict_set[f'{self.market_text}매도분할횟수']][매도분할횟수]
-            self.curr_trade_info['주문수량'] = self.GetOrderCount(betting, 현재가, 보유중, 매수가, oc_ratio)
+            self.curr_trade_info['주문수량'] = 매도수량
             if self.curr_trade_info['주문수량'] > 보유수량 or 매도분할횟수 + 1 == self.dict_set[f'{self.market_text}매도분할횟수']:
                 self.curr_trade_info['주문수량'] = 보유수량
 

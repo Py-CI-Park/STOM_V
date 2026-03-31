@@ -153,7 +153,6 @@ class UpdateTablewidget:
             tableWidget.setSortingEnabled(False)
 
         tableWidget.setRowCount(len_df)
-        tableWidget.blockSignals(True)
         arry = df.values
         for i, index in enumerate(df.index):
             for j, column in enumerate(df.columns):
@@ -324,8 +323,6 @@ class UpdateTablewidget:
 
                 tableWidget.setItem(i, j, item)
 
-        tableWidget.blockSignals(False)
-
         if len_df < 13 and gubun in (ui_num['S거래목록'], ui_num['S잔고목록'], ui_num['C거래목록'], ui_num['C잔고목록']):
             tableWidget.setRowCount(13)
         elif len_df < 15 and gubun in (ui_num['S체결목록'], ui_num['C체결목록'], ui_num['S관심종목'], ui_num['C관심종목']):
@@ -357,34 +354,73 @@ class UpdateTablewidget:
                      ui_num['스톰라이브7'], ui_num['스톰라이브9'], ui_num['스톰라이브10']):
             tableWidget.setSortingEnabled(True)
 
-        if gubun not in (ui_num['S상세기록'], ui_num['C상세기록'], ui_num['S잔고목록'], ui_num['C잔고목록'],
-                         ui_num['S체결목록'], ui_num['C체결목록'], ui_num['S호가종목'], ui_num['C호가종목'],
-                         ui_num['기업공시'], ui_num['기업뉴스'], ui_num['재무년도'], ui_num['재무분기'],
-                         ui_num['C호가잔량'], ui_num['S호가잔량']):
+        if gubun in (ui_num['S상세기록'], ui_num['C상세기록'], ui_num['S잔고목록'], ui_num['C잔고목록'], ui_num['S체결목록'], ui_num['C체결목록']):
+            header = tableWidget.horizontalHeader()
+            hwidth = header.width() if gubun in (ui_num['S상세기록'], ui_num['C상세기록']) else 668
+            if gubun in (ui_num['S상세기록'], ui_num['C상세기록']):
+                header_count = 12
+            elif len(df.columns) in (9, 11):
+                header_count = 7
+            else:
+                header_count = 8
+
+            width = []
+            for i in range(header_count):
+                header.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+                width.append(header.sectionSize(i))
+
+            wfactor = hwidth / sum(width)
+
+            cumsum_width = 0
+            last = header_count - 1
+            for i in range(header_count):
+                header.setSectionResizeMode(i, QHeaderView.Interactive)
+                if i != last:
+                    column_width = int(width[i] * wfactor)
+                    header.resizeSection(i, column_width)
+                    cumsum_width += column_width
+                else:
+                    column_width = hwidth - cumsum_width
+                    header.resizeSection(i, column_width)
+
+        elif gubun not in (ui_num['S호가종목'], ui_num['C호가종목'], ui_num['C호가잔량'], ui_num['S호가잔량'],
+                           ui_num['기업공시'], ui_num['기업뉴스'], ui_num['재무년도'], ui_num['재무분기']):
             header = tableWidget.horizontalHeader()
             hwidth = header.width()
+            header_count = header.count()
+
             width = []
-            for column in range(header.count()):
-                header.setSectionResizeMode(column, QHeaderView.ResizeToContents)
-                width.append(header.sectionSize(column))
+            for i in range(header_count):
+                header.setSectionResizeMode(i, QHeaderView.ResizeToContents)
+                width.append(header.sectionSize(i))
+
             wfactor = hwidth / sum(width)
-            for column in range(header.count()):
-                header.setSectionResizeMode(column, QHeaderView.Interactive)
-                header.resizeSection(column, int(width[column] * wfactor))
+
+            cumsum_width = 0
+            last = header_count - 1
+            for i in range(header_count):
+                header.setSectionResizeMode(i, QHeaderView.Interactive)
+                if i != last:
+                    column_width = int(width[i] * wfactor)
+                    header.resizeSection(i, column_width)
+                    cumsum_width += column_width
+                else:
+                    column_width = hwidth - cumsum_width
+                    header.resizeSection(i, column_width)
 
     def UpdateHogainfoForChart(self, gubun, ymdhms):
         def fi(fname):
             if is_min:
                 if gubun == ui_num['S호가종목'] and '키움증권' in self.ui.dict_set['증권사']:
                     return self.ui.dict_findex_stock_min2[fname]
-                elif 'KRW' in self.ui.ctpg_name:
+                elif 'KRW' in self.ui.ctpg_code:
                     return self.ui.dict_findex_coin_min2[fname]
                 else:
                     return self.ui.dict_findex_future_min2[fname]
             else:
                 if gubun == ui_num['S호가종목'] and '키움증권' in self.ui.dict_set['증권사']:
                     return self.ui.dict_findex_stock_tick2[fname]
-                elif 'KRW' in self.ui.ctpg_name:
+                elif 'KRW' in self.ui.ctpg_code:
                     return self.ui.dict_findex_coin_tick2[fname]
                 else:
                     return self.ui.dict_findex_future_tick2[fname]
@@ -489,5 +525,5 @@ class UpdateTablewidget:
         self.ui.windowQ.put((ui_num[f'{gubun_}호가체결2'], df2))
 
         for i in range(len(self.ui.ctpg_legend)):
-            self.ui.ctpg_legend[i].setText(get_label_text(self.ui, False, gubun_, self.ui.ctpg_name, is_min, xpoint, self.ui.ctpg_factors[i], hms_text))
+            self.ui.ctpg_legend[i].setText(get_label_text(self.ui, False, gubun_, self.ui.ctpg_code, is_min, xpoint, self.ui.ctpg_factors[i], hms_text))
             self.ui.ctpg_labels[i].setText('')

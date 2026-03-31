@@ -9,22 +9,25 @@ from urllib import request
 from threading import Timer
 from bs4 import BeautifulSoup
 from traceback import format_exc
+from PyQt5.QtCore import QThread, pyqtSignal
 from fake_useragent import UserAgent
 from utility.setting_base import ui_num
 from utility.static import str_ymdhm, str_ymd_ios, dt_ymdhms_ios, timedelta_day, dt_ymd, str_hms, now, str_ymd, \
     thread_decorator, timedelta_sec
 
 
-class WebCrawling:
+class WebCrawling(QThread):
+    signal = pyqtSignal(tuple)
+
     def __init__(self, qlist):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
            0        1       2      3       4      5      6      7       8         9         10     11      12
         """
-        self.windowQ     = qlist[0]
+        super().__init__()
         self.webcQ       = qlist[6]
         self.cmap        = matplotlib.colormaps['rainbow']
-        self.norm        = matplotlib.colors.Normalize(vmin=0, vmax=29)
+        self.norm        = matplotlib.colors.Normalize(vmin=-20, vmax=40)
         self.base_url    = 'https://finance.naver.com/'
         self.headers     = {
             'User-Agent': UserAgent().chrome,
@@ -39,9 +42,7 @@ class WebCrawling:
         self.thread_lock = Lock()
         self.thread_join = 0
 
-        self.MainLoop()
-
-    def MainLoop(self):
+    def run(self):
         self.CrawlingHomTapData()
         hometap_crawling_time = timedelta_sec(30)
         while True:
@@ -56,11 +57,11 @@ class WebCrawling:
 
                 if self.thread_join == 16:
                     self.thread_join = 0
-                    self.windowQ.put((ui_num['홈차트'], self.dict_data))
+                    self.signal.emit((ui_num['홈차트'], self.dict_data))
 
                 time.sleep(0.01)
             except:
-                self.windowQ.put((ui_num['시스템로그'], format_exc()))
+                self.signal.emit((ui_num['시스템로그'], format_exc()))
 
     def Crawling(self, data):
         cmd, data = data
@@ -100,7 +101,7 @@ class WebCrawling:
                 self.imagelist2 = [x for x in datas if '\\' not in x]
             webimage1 = request.urlopen(random.choice(self.imagelist1)).read()
             webimage2 = request.urlopen(random.choice(self.imagelist2)).read()
-            self.windowQ.put((ui_num['풍경사진'], webimage1, webimage2))
+            self.signal.emit((ui_num['풍경사진'], webimage1, webimage2))
         except:
             pass
 
@@ -115,7 +116,7 @@ class WebCrawling:
             title = title.get_text(strip=True).replace('.', '. ')
             if title:
                 gugy_result += title
-        self.windowQ.put((ui_num['기업개요'], gugy_result))
+        self.signal.emit((ui_num['기업개요'], gugy_result))
 
     @thread_decorator
     def GugsCrawling(self, code):
@@ -136,7 +137,7 @@ class WebCrawling:
             date_list += [date.get_text(strip=True) for date in soup.select('td.date')]
             jbjg_list += [info.get_text(strip=True) for info in soup.select('td.info')]
         df = pd.DataFrame({'일자': date_list, '정보제공': jbjg_list, '공시': gygs_list, '링크': link_list})
-        self.windowQ.put((ui_num['기업공시'], df))
+        self.signal.emit((ui_num['기업공시'], df))
 
     @thread_decorator
     def JmnsCrawling(self, code):
@@ -163,7 +164,7 @@ class WebCrawling:
                     '링크': hlink
                 })
         df = pd.DataFrame(data_list)
-        self.windowQ.put((ui_num['기업뉴스'], df))
+        self.signal.emit((ui_num['기업뉴스'], df))
 
     @thread_decorator
     def JmjpCrawling(self, code):
@@ -191,8 +192,8 @@ class WebCrawling:
         ]
         df1 = pd.DataFrame(dict(zip(columns1, data1)))
         df2 = pd.DataFrame(dict(zip(columns2, data2)))
-        self.windowQ.put((ui_num['재무년도'], df1))
-        self.windowQ.put((ui_num['재무분기'], df2))
+        self.signal.emit((ui_num['재무년도'], df1))
+        self.signal.emit((ui_num['재무분기'], df2))
 
     @thread_decorator
     def UjTmCrawling(self):
@@ -230,7 +231,7 @@ class WebCrawling:
         df2['등락율%'] = df2['등락율'].apply(lambda x: str(x) + '%')
         cl2 = [self.cmap(self.norm(value)) for value in df2['등락율']]
 
-        self.windowQ.put((ui_num['트리맵'], df1, df2, cl1, cl2))
+        self.signal.emit((ui_num['트리맵'], df1, df2, cl1, cl2))
         if self.treemap:
             Timer(10, self.UjTmCrawling).start()
 
@@ -247,9 +248,9 @@ class WebCrawling:
         cl = [self.cmap(self.norm(value)) for value in df['등락율']]
 
         if gubun == 1:
-            self.windowQ.put((ui_num['트리맵1'], df, '', cl, ''))
+            self.signal.emit((ui_num['트리맵1'], df, '', cl, ''))
         else:
-            self.windowQ.put((ui_num['트리맵2'], '', df, '', cl))
+            self.signal.emit((ui_num['트리맵2'], '', df, '', cl))
 
     def CrawlingHomTapData(self):
         """모든 데이터 수집 (한국주식+암호화폐)"""

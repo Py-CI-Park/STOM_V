@@ -56,6 +56,7 @@ class UpbitStrategyTick(StrategyBase):
 
         self.jgrv_count       = 0
         self.int_tujagm       = 0
+        self.비중조절기준        = 0
 
         self.market_gubun     = 3
         self.ma_round_unit    = 8
@@ -457,8 +458,10 @@ class UpbitStrategyTick(StrategyBase):
                 비중조절기준 = self._거래대금평균대비비율(30)
             elif self.dict_set['코인비중조절'][0] == 3:
                 비중조절기준 = self._등락율각도(30)
-            else:
+            elif self.dict_set['코인비중조절'][0] == 4:
                 비중조절기준 = self._당일거래대금각도(30)
+            else:
+                비중조절기준 = self.비중조절기준
 
             if 비중조절기준 < self.dict_set['코인비중조절'][1]:
                 betting = self.int_tujagm * self.dict_set['코인비중조절'][5]
@@ -482,7 +485,7 @@ class UpbitStrategyTick(StrategyBase):
         elif 전량매도:
             주문수량 = 보유수량
         else:
-            주문수량 = self.GetSellCount(분할매도횟수, 보유수량, 매수가, 저가대비고가등락율)
+            주문수량 = self.GetSellCount(분할매도횟수, 보유수량)
 
         if '지정가' in self.dict_set['코인매도주문구분'] and not 강제청산:
             기준가격 = 현재가
@@ -499,36 +502,21 @@ class UpbitStrategyTick(StrategyBase):
                 self.dict_signal['매도'].append(self.code)
                 self.ctraderQ.put(('매도', self.code, 예상체결가, 주문수량, now(), True if 강제청산 else False))
 
-    def GetSellCount(self, 분할매도횟수, 보유수량, 매수가, 저가대비고가등락율):
+    def GetSellCount(self, 분할매도횟수, 보유수량):
         if self.dict_set['코인매도분할횟수'] == 1:
             return 보유수량
         else:
-            if self.dict_set['코인비중조절'][0] == 0:
-                betting = self.int_tujagm
+            dict_ratio = dict_order_ratio[self.dict_set['코인매도분할방법']][self.dict_set['코인매도분할횟수']]
+            oc_ratio = dict_ratio[분할매도횟수]
+            if 분할매도횟수 == 0:
+                매도수량 = round(보유수량 * oc_ratio / 100, 8)
             else:
-                if self.dict_set['코인비중조절'][0] == 1:
-                    비중조절기준 = 저가대비고가등락율
-                elif self.dict_set['코인비중조절'][0] == 2:
-                    비중조절기준 = self._거래대금평균대비비율(30)
-                elif self.dict_set['코인비중조절'][0] == 3:
-                    비중조절기준 = self._등락율각도(30)
-                else:
-                    비중조절기준 = self._당일거래대금각도(30)
+                보유비율 = sum(비율 for 횟수, 비율 in dict_ratio.items() if 횟수 >= 분할매도횟수)
+                매도수량 = round(보유수량 / 보유비율 * oc_ratio, 8)
 
-                if 비중조절기준 < self.dict_set['코인비중조절'][1]:
-                    betting = self.int_tujagm * self.dict_set['코인비중조절'][5]
-                elif 비중조절기준 < self.dict_set['코인비중조절'][2]:
-                    betting = self.int_tujagm * self.dict_set['코인비중조절'][6]
-                elif 비중조절기준 < self.dict_set['코인비중조절'][3]:
-                    betting = self.int_tujagm * self.dict_set['코인비중조절'][7]
-                elif 비중조절기준 < self.dict_set['코인비중조절'][4]:
-                    betting = self.int_tujagm * self.dict_set['코인비중조절'][8]
-                else:
-                    betting = self.int_tujagm * self.dict_set['코인비중조절'][9]
+            if 매도수량 > 보유수량 or 분할매도횟수 + 1 == self.dict_set['코인매도분할횟수']:
+                매도수량 = 보유수량
 
-            oc_ratio = dict_order_ratio[self.dict_set['코인매도분할방법']][self.dict_set['코인매도분할횟수']][분할매도횟수]
-            매도수량 = round(betting / 매수가 * oc_ratio / 100, 8)
-            if 매도수량 > 보유수량 or 분할매도횟수 + 1 == self.dict_set['코인매도분할횟수']: 매도수량 = 보유수량
             return 매도수량
 
     def PutGsjmAndDeleteHilo(self):

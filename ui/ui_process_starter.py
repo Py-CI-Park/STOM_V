@@ -6,7 +6,7 @@ from utility.static import now, summer_time, now_utc, now_cme, str_ymdhms_ios, s
 def process_starter(ui):
     inthms = int(str_hms())
 
-    if not ui.backtest_engine and ui.dict_set['스톰라이브'] and ui.StomLiveProcessAlive():
+    if not ui.backtest_engine and ui.dict_set['스톰라이브'] and ui.live_recv.isRunning():
         if ui.dict_set['주식트레이더'] and '키움증권' in ui.dict_set['증권사'] and \
            ((ui.int_time < 93100 <= inthms) or (ui.int_time < 152000 <= inthms)):
             ui.StomliveScreenshot('주식')
