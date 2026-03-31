@@ -27,7 +27,8 @@ class WebCrawling(QThread):
         super().__init__()
         self.webcQ       = qlist[6]
         self.cmap        = matplotlib.colormaps['rainbow']
-        self.norm        = matplotlib.colors.Normalize(vmin=-20, vmax=40)
+        self.norm1       = matplotlib.colors.Normalize(vmin=0, vmax=10)
+        self.norm2       = matplotlib.colors.Normalize(vmin=0, vmax=35)
         self.base_url    = 'https://finance.naver.com/'
         self.headers     = {
             'User-Agent': UserAgent().chrome,
@@ -219,7 +220,7 @@ class WebCrawling(QThread):
         df1 = df1[df1['등락율'] > 0]
         if len(df1) > 30: df1 = df1[:30]
         df1['등락율%'] = df1['등락율'].apply(lambda x: str(x) + '%')
-        cl1 = [self.cmap(self.norm(value)) for value in df1['등락율']]
+        cl1 = [self.cmap(self.norm1(value)) for value in df1['등락율']]
 
         df2 = pd.DataFrame({
             '테마명': name_list2[:len(per_list2)],
@@ -229,7 +230,7 @@ class WebCrawling(QThread):
         df2 = df2[df2['등락율'] > 0]
         if len(df2) > 30: df2 = df2[:30]
         df2['등락율%'] = df2['등락율'].apply(lambda x: str(x) + '%')
-        cl2 = [self.cmap(self.norm(value)) for value in df2['등락율']]
+        cl2 = [self.cmap(self.norm1(value)) for value in df2['등락율']]
 
         self.signal.emit((ui_num['트리맵'], df1, df2, cl1, cl2))
         if self.treemap:
@@ -245,7 +246,7 @@ class WebCrawling(QThread):
         df = pd.DataFrame({'종목명': name_list[:len(per_list)], '등락율': per_list})
         df = df[df['등락율'] > 0][:20]
         df['등락율%'] = df['등락율'].apply(lambda x: f'{x}%')
-        cl = [self.cmap(self.norm(value)) for value in df['등락율']]
+        cl = [self.cmap(self.norm2(value)) for value in df['등락율']]
 
         if gubun == 1:
             self.signal.emit((ui_num['트리맵1'], df, '', cl, ''))

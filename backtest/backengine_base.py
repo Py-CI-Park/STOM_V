@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from multiprocessing import shared_memory
+from trade.risk_analyzer import RiskAnalyzer
 from trade.strategy_base import StrategyBase
 from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
@@ -71,6 +72,7 @@ class BackEngineBase(StrategyBase):
         self.hoga_sidex      = None
         self.hoga_eidex      = None
         self.ms_analyzer     = None
+        self.rk_analyzer     = None
 
         self.shogainfo       = None
         self.shreminfo       = None
@@ -118,6 +120,7 @@ class BackEngineBase(StrategyBase):
         elif self.market_gubun == 2: gubun = 'future'
         else:                        gubun = 'coin'
         self.ms_analyzer = MicrostructureAnalyzer(gubun)
+        self.rk_analyzer = RiskAnalyzer(gubun)
 
         if self.market_gubun == 1:
             factor_list = list_stock_tick if self.is_tick else list_stock_min
@@ -487,32 +490,36 @@ class BackEngineBase(StrategyBase):
         code = shared_info['code']
         if self.dict_set['백테일괄로딩']:
             shm = shared_memory.SharedMemory(name=shared_info['shm_name'])
-            self.arry_code = np.ndarray(
+            arry_code = np.ndarray(
                 shared_info['shape'],
                 dtype=shared_info['dtype'],
                 buffer=shm.buf[shared_info['offset']:shared_info['offset'] + shared_info['size']]
             ).copy()
             shm.close()
         else:
-            self.arry_code = pickle_read(shared_info['file_name'])
+            arry_code = pickle_read(shared_info['file_name'])
 
         if self.same_days and self.same_time:
             pass
         elif self.same_time:
-            self.arry_code = self.arry_code[(self.arry_code[:, 0] >= self.startday * self.unit) &
-                                            (self.arry_code[:, 0] <= self.endday * self.unit + self.hour)]
+            indices = arry_code[:, 0]
+            arry_code = arry_code[(indices >= self.startday * self.unit) &
+                                  (indices <= self.endday * self.unit + self.hour)]
         elif self.same_days:
-            self.arry_code = self.arry_code[(self.arry_code[:, 0] % self.unit >= self.starttime) &
-                                            (self.arry_code[:, 0] % self.unit <= self.endtime)]
+            indices = arry_code[:, 0]
+            arry_code = arry_code[(indices % self.unit >= self.starttime) &
+                                  (indices % self.unit <= self.endtime)]
         else:
-            self.arry_code = self.arry_code[(self.arry_code[:, 0] >= self.startday * self.unit) &
-                                            (self.arry_code[:, 0] <= self.endday * self.unit + self.hour) &
-                                            (self.arry_code[:, 0] % self.unit >= self.starttime) &
-                                            (self.arry_code[:, 0] % self.unit <= self.endtime)]
+            indices = arry_code[:, 0]
+            arry_code = arry_code[(indices >= self.startday * self.unit) &
+                                  (indices <= self.endday * self.unit + self.hour) &
+                                  (indices % self.unit >= self.starttime) &
+                                  (indices % self.unit <= self.endtime)]
 
         if self.fm_tcnt > 0:
-            self.arry_code = np.column_stack((self.arry_code, np.zeros((self.arry_code.shape[0], self.fm_tcnt))))
+            arry_code = np.column_stack((arry_code, np.zeros((self.arry_code.shape[0], self.fm_tcnt))))
 
+        self.arry_code = arry_code
         return code
 
     def UpdateFormulaData(self):
@@ -564,7 +571,7 @@ class BackEngineBase(StrategyBase):
             last = len(self.arry_code) - 1
             if last > 0:
                 indexs = self.arry_code[:, 0].astype(np.int64)
-                day_vals = indexs // 1000000
+                day_vals = indexs // 1_000_000 if self.is_tick else indexs // 10_000
                 day_last_indexs = np.where(day_vals[:-1] != day_vals[1:])[0]
                 day_last_indexs = np.concatenate([day_last_indexs, [last]])
 
