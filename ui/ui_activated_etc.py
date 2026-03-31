@@ -1,4 +1,5 @@
 
+from ui.set_widget import BounceButton
 from PyQt5.QtWidgets import QPushButton
 from utility.setting_base import ui_num
 from utility.static import error_decorator
@@ -6,7 +7,7 @@ from utility.static import error_decorator
 
 @error_decorator
 def dactivated_01(ui):
-    if ui.focusWidget().__class__ != QPushButton:
+    if ui.focusWidget().__class__ not in (QPushButton, BounceButton):
         table_name = ui.focusWidget().currentText()
         if ui.focusWidget() in (ui.ss_comboBoxxxx_01, ui.ss_comboBoxxxx_02, ui.ss_comboBoxxxx_03):
             ui_num_text = 'S상세기록'

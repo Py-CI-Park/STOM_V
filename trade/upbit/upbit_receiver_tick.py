@@ -153,8 +153,8 @@ class UpbitReceiverTick:
             #     0          1          2          3          4          5          6          7
             self.dict_money[code] = [buy_money, sell_money, buy_money, buy_money, c, sell_money, sell_money, c]
             self.dict_index[code] = {c: 0}
-            self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-            self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+            self.dict_bmbyp[code] = np.zeros(1000, dtype=np.float64)
+            self.dict_smbyp[code] = np.zeros(1000, dtype=np.float64)
             self.dict_bmbyp[code][0] = buy_money
             self.dict_smbyp[code][0] = sell_money
             self.dict_index[code]['count'] = 1

@@ -34,7 +34,7 @@ class SetCoinBack:
 
     # =================================================================================================================
 
-        self.ui.cs_tableWidget_01 = self.wc.setTablewidget(self.ui.cs_tab, columns_bt, 32, vscroll=True, clicked=self.ui.CellClicked_06)
+        self.ui.cs_tableWidget_01 = self.wc.setTablewidget(self.ui.cs_tab, columns_bt, 32, vscroll=True, fixed=True, clicked=self.ui.CellClicked_06)
         self.ui.cs_comboBoxxxx_01 = self.wc.setCombobox(self.ui.cs_tab, font=qfont12, activated=self.ui.dActivated_01)
         self.ui.cs_pushButtonn_01 = self.wc.setPushbutton('백테스트상세기록', parent=self.ui.cs_tab, bounced=True, click=self.ui.csButtonClicked_01, tip='백테스트 상세기록을 불러온다.')
         self.ui.cs_pushButtonn_02 = self.wc.setPushbutton('그래프', parent=self.ui.cs_tab, bounced=True, click=self.ui.csButtonClicked_04, tip='선택된 상세기록의 그래프를 표시한다.')

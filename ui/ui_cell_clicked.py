@@ -10,6 +10,8 @@ def cell_clicked_01(ui, row, col):
     stock = True
     if ui.focusWidget() in (ui.ctd_tableWidgettt, ui.cgj_tableWidgettt, ui.ccj_tableWidgettt):
         stock = False
+    if ui.focusWidget().parentWidget() in (ui.ctd_tableWidgettt, ui.cgj_tableWidgettt, ui.ccj_tableWidgettt):
+        stock = False
     item = ui.focusWidget().item(row, 0)
     if item is None:
         return
@@ -122,9 +124,9 @@ def cell_clicked_05(ui, row):
 @error_decorator
 def cell_clicked_06(ui, row):
     tableWidget = None
-    if ui.focusWidget() == ui.ss_tableWidget_01:
+    if ui.focusWidget() == ui.ss_tableWidget_01 or ui.focusWidget().parentWidget() == ui.ss_tableWidget_01:
         tableWidget = ui.ss_tableWidget_01
-    elif ui.focusWidget() == ui.cs_tableWidget_01:
+    elif ui.focusWidget() == ui.cs_tableWidget_01 or ui.focusWidget().parentWidget() == ui.cs_tableWidget_01:
         tableWidget = ui.cs_tableWidget_01
     if tableWidget is None:
         return
