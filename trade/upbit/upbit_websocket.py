@@ -26,12 +26,9 @@ class WebSocketReceiver(QThread):
     def run(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.run_until_complete(self._run())
-
-    async def _run(self):
-        trader_task = asyncio.create_task(self.run_trade())
-        order_task = asyncio.create_task(self.run_order())
-        await asyncio.gather(trader_task, order_task)
+        self.loop.create_task(self.run_trade())
+        self.loop.create_task(self.run_order())
+        self.loop.run_forever()
 
     async def run_trade(self):
         while True:

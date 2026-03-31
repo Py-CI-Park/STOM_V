@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_kiwoom_tick import BackEngineKiwoomTick
 from utility.static import dt_ymdhms, GetIndicator, GetHogaunit
 # noinspection PyUnresolvedReferences
