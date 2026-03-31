@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_base import BackEngineBase
 from utility.static import GetKiwoomPgSgSp, dt_ymdhms, GetHogaunit
 # noinspection PyUnresolvedReferences

@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_upbit_tick import BackEngineUpbitTick
 from utility.static import GetIndicator, GetUpbitHogaunit
 
