@@ -259,9 +259,9 @@ class OptimizeConditions:
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '텍스트에디터 클리어'))
 
         if is_tick:
-            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
         else:
-            df_mt['일자'] = (df_mt['index'].values // 10000).astype(int)
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(np.int64)
         day_list = df_mt['일자'].unique()
         day_list.sort()
 
