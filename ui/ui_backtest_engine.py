@@ -25,7 +25,7 @@ from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from ui.set_style import style_bc_dk
 from ui.ui_dialog_animation import DialogAnimator
-from utility.static import thread_decorator, qtest_qwait, str_hms, dt_hms, timedelta_sec, error_decorator
+from utility.static import thread_decorator, str_hms, dt_hms, timedelta_sec, error_decorator
 from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, \
     DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, DB_STRATEGY
 
