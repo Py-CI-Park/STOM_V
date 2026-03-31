@@ -1,5 +1,4 @@
 
-import numpy as np
 from utility.static import GetIndicator
 from backtest.backengine_future_tick import BackEngineFutureTick
 
