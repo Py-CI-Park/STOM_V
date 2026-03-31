@@ -197,11 +197,11 @@ class Kiwooom:
         if self.debug: self.logger.debug('send_order', body)
         return ret, ord_no
 
-    def websoket_start(self, kiwoomQ, receiverQ, traderQ, debug=False):
+    def websocket_start(self, kiwoomQ, receiverQ, traderQ, debug=False):
         self.wproc = Process(target=WebSocketManager, args=(self.token, kiwoomQ, receiverQ, traderQ, debug))
         self.wproc.start()
 
-    def websoket_kill(self):
+    def websocket_kill(self):
         if self.wproc is not None and self.wproc.is_alive(): self.wproc.kill()
 
 
@@ -327,4 +327,4 @@ if __name__ == '__main__':
     kw.get_code_list(0)
 
     kiwoomQ_, receiverQ_, traderQ_ = Queue(), Queue(), Queue()
-    kw.websoket_start(kiwoomQ_, receiverQ_, traderQ_, debug=True)
+    kw.websocket_start(kiwoomQ_, receiverQ_, traderQ_, debug=True)

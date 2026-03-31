@@ -146,21 +146,135 @@ class RiskAnalyzer:
         """시장 종류별 분석 파라미터 설정"""
         if self.market_type == 'stock':
             self.params = {
-                'rsi_overbought': 70,               # 과매수 RSI
-                'rsi_oversold': 30,                 # 과매도 RSI
-                'volatility_threshold': 3.0,        # 변동성 임계값
+                # RSI 파라미터
+                'rsi_overbought': 70,                       # 과매수 RSI
+                'rsi_oversold': 30,                         # 과매도 RSI
+                'volatility_threshold': 3.0,                # 변동성 임계값
+
+                # 추세 분석 기간
+                'trend_short_period': 5,                    # 단기 이동평균 기간
+                'trend_medium_period': 10,                  # 중기 이동평균 기간
+                'trend_long_period': 20,                    # 장기 이동평균 기간
+
+                # 모멘텀 임계값
+                'momentum_strong_bullish_short': 2.0,       # 강세 상승 단기 모멘텀
+                'momentum_strong_bullish_medium': 1.0,      # 강세 상승 중기 모멘텀
+                'momentum_strong_bearish_short': -2.0,      # 강세 하락 단기 모멘텀
+                'momentum_strong_bearish_medium': -1.0,     # 강세 하락 중기 모멘텀
+                'momentum_moderate_bearish_short': -1.0,    # 중간 약세 기준
+                'momentum_moderate_bearish_medium': -0.5,   # 중간 약세 기준
+
+                # 체결강도 배수
+                'strength_spike_multiplier': 2.0,           # 스파이크 기준 배수
+                'strength_weak_multiplier': 0.5,            # 약세 기준 배수
+
+                # 수량 불균형 비율
+                'imbalance_dominant_ratio': 0.7,            # 우세 비율 기준
+
+                # 가격 위치 퍼센트
+                'price_extreme_threshold': 5.0,             # 극단적 위치 기준 (%)
+                'price_far_threshold': 2.0,                 # 먼 위치 기준 (%)
+                'price_moderate_threshold': 1.0,            # 중간 위치 기준 (%)
+
+                # 각도 추세 임계값
+                'angle_strong_uptrend': 45,                 # 강한 상승 각도
+                'angle_uptrend': 15,                        # 상승 각도
+                'angle_strong_downtrend': -45,              # 강한 하락 각도
+                'angle_downtrend': -15,                     # 하락 각도
+
+                # 거래량 변동
+                'volume_increase_threshold': 30,            # 거래량 증가 기준 (%)
+                'volume_decrease_threshold': -30,           # 거래량 감소 기준 (%)
+                'volume_spike_multiplier': 2.0,             # 거래량 스파이크 배수
+                'volume_large_change': 50                   # 큰 변동 기준 (%)
             }
         elif self.market_type == 'coin':
             self.params = {
-                'rsi_overbought': 75,               # 코인은 더 높은 과매수 기준
-                'rsi_oversold': 25,                 # 코인은 더 낮은 과매도 기준
-                'volatility_threshold': 5.0,        # 코인은 더 높은 변동성 허용
+                # 코인은 더 높은 변동성과 빠른 움직임 특성 반영
+                'rsi_overbought': 75,                       # 코인은 더 높은 과매수 기준
+                'rsi_oversold': 25,                         # 코인은 더 낮은 과매도 기준
+                'volatility_threshold': 5.0,                # 코인은 더 높은 변동성 허용
+
+                # 추세 분석 기간 (더 짧게)
+                'trend_short_period': 3,                    # 더 짧은 단기 기간
+                'trend_medium_period': 8,                   # 더 짧은 중기 기간
+                'trend_long_period': 15,                    # 더 짧은 장기 기간
+
+                # 모멘텀 임계값 (더 민감하게)
+                'momentum_strong_bullish_short': 1.5,       # 더 낮은 기준
+                'momentum_strong_bullish_medium': 0.8,      # 더 낮은 기준
+                'momentum_strong_bearish_short': -1.5,      # 더 높은 기준
+                'momentum_strong_bearish_medium': -0.8,     # 더 높은 기준
+                'momentum_moderate_bearish_short': -0.8,    # 중간 약세 기준
+                'momentum_moderate_bearish_medium': -0.4,   # 중간 약세 기준
+
+                # 체결강도 배수 (더 변동성 크게)
+                'strength_spike_multiplier': 2.5,           # 더 큰 스파이크 기준
+                'strength_weak_multiplier': 0.4,            # 더 낮은 약세 기준
+
+                # 수량 불균형 비율 (더 극단적)
+                'imbalance_dominant_ratio': 0.75,           # 더 높은 우세 기준
+
+                # 가격 위치 퍼센트 (더 넓은 범위)
+                'price_extreme_threshold': 8.0,             # 더 넓은 극단 기준
+                'price_far_threshold': 3.0,                 # 더 넓은 먼 기준
+                'price_moderate_threshold': 1.5,            # 더 넓은 중간 기준
+
+                # 각도 추세 임계값 (더 민감하게)
+                'angle_strong_uptrend': 35,                 # 더 낮은 강상승 기준
+                'angle_uptrend': 12,                        # 더 낮은 상승 기준
+                'angle_strong_downtrend': -35,              # 더 높은 강하락 기준
+                'angle_downtrend': -12,                     # 더 높은 하락 기준
+
+                # 거래량 변동 (더 변동성 크게)
+                'volume_increase_threshold': 40,            # 더 높은 증가 기준
+                'volume_decrease_threshold': -40,           # 더 낮은 감소 기준
+                'volume_spike_multiplier': 2.2,             # 더 큰 스파이크 기준
+                'volume_large_change': 60                   # 더 큰 변동 기준
             }
-        else:
+        else:  # future
             self.params = {
-                'rsi_overbought': 72,
-                'rsi_oversold': 28,
-                'volatility_threshold': 4.0,
+                # 선물은 레버리지로 인한 보수적 기준
+                'rsi_overbought': 72,                       # 중간 수준
+                'rsi_oversold': 28,                         # 중간 수준
+                'volatility_threshold': 4.0,                # 중간 변동성
+
+                # 추세 분석 기간 (중간 수준)
+                'trend_short_period': 4,                    # 중간 단기 기간
+                'trend_medium_period': 9,                   # 중간 중기 기간
+                'trend_long_period': 18,                    # 중간 장기 기간
+
+                # 모멘텀 임계값 (보수적)
+                'momentum_strong_bullish_short': 1.8,       # 중간 기준
+                'momentum_strong_bullish_medium': 0.9,      # 중간 기준
+                'momentum_strong_bearish_short': -1.8,      # 중간 기준
+                'momentum_strong_bearish_medium': -0.9,     # 중간 기준
+                'momentum_moderate_bearish_short': -0.9,    # 중간 약세 기준
+                'momentum_moderate_bearish_medium': -0.45,  # 중간 약세 기준
+
+                # 체결강도 배수 (중간 수준)
+                'strength_spike_multiplier': 2.2,           # 중간 스파이크 기준
+                'strength_weak_multiplier': 0.45,           # 중간 약세 기준
+
+                # 수량 불균형 비율 (보수적)
+                'imbalance_dominant_ratio': 0.72,           # 중간 우세 기준
+
+                # 가격 위치 퍼센트 (보수적)
+                'price_extreme_threshold': 6.0,             # 중간 극단 기준
+                'price_far_threshold': 2.5,                 # 중간 먼 기준
+                'price_moderate_threshold': 1.2,            # 중간 중간 기준
+
+                # 각도 추세 임계값 (보수적)
+                'angle_strong_uptrend': 40,                 # 중간 강상승 기준
+                'angle_uptrend': 13,                        # 중간 상승 기준
+                'angle_strong_downtrend': -40,              # 중간 강하락 기준
+                'angle_downtrend': -13,                     # 중간 하락 기준
+
+                # 거래량 변동 (보수적)
+                'volume_increase_threshold': 35,            # 중간 증가 기준
+                'volume_decrease_threshold': -35,           # 중간 감소 기준
+                'volume_spike_multiplier': 2.1,             # 중간 스파이크 기준
+                'volume_large_change': 55                   # 중간 변동 기준
             }
 
     def get_risk_score(self, arry_code: np.ndarray) -> float:
@@ -201,9 +315,13 @@ class RiskAnalyzer:
 
     def _analyze_trend(self, prices: np.ndarray) -> dict:
         """추세 분석"""
-        short_ma = np.mean(prices[-5:])
-        medium_ma = np.mean(prices[-10:])
-        long_ma = np.mean(prices[-20:])
+        short_period = self.params['trend_short_period']
+        medium_period = self.params['trend_medium_period']
+        long_period = self.params['trend_long_period']
+
+        short_ma = np.mean(prices[-short_period:]) if len(prices) >= short_period else prices[-1]
+        medium_ma = np.mean(prices[-medium_period:]) if len(prices) >= medium_period else prices[-1]
+        long_ma = np.mean(prices[-long_period:]) if len(prices) >= long_period else prices[-1]
         current_price = prices[-1]
 
         if current_price > short_ma > medium_ma > long_ma:
@@ -233,12 +351,17 @@ class RiskAnalyzer:
 
     def _calculate_momentum(self, prices: np.ndarray) -> dict:
         """모멘텀 분석"""
+        strong_bullish_short = self.params['momentum_strong_bullish_short']
+        strong_bullish_medium = self.params['momentum_strong_bullish_medium']
+        strong_bearish_short = self.params['momentum_strong_bearish_short']
+        strong_bearish_medium = self.params['momentum_strong_bearish_medium']
+
         short_momentum = (prices[-1] - prices[-5]) / prices[-5] * 100 if len(prices) >= 5 else 0
         medium_momentum = (prices[-1] - prices[-10]) / prices[-10] * 100 if len(prices) >= 10 else 0
 
-        if short_momentum > 2 and medium_momentum > 1:
+        if short_momentum > strong_bullish_short and medium_momentum > strong_bullish_medium:
             momentum_trend = 'bullish'
-        elif short_momentum < -2 and medium_momentum < -1:
+        elif short_momentum < strong_bearish_short and medium_momentum < strong_bearish_medium:
             momentum_trend = 'bearish'
         else:
             momentum_trend = 'neutral'
@@ -259,13 +382,16 @@ class RiskAnalyzer:
         current_strength = chegyeol_strength[-1]
         avg_strength = chegyeol_avg[-1]
 
-        if current_strength > avg_strength * 2:
+        spike_multiplier = self.params['strength_spike_multiplier']
+        weak_multiplier = self.params['strength_weak_multiplier']
+
+        if current_strength > avg_strength * spike_multiplier:
             trend = 'spike'
-        elif current_strength < avg_strength * 0.5:
+        elif current_strength < avg_strength * weak_multiplier:
             trend = 'weak'
         else:
             trend = 'normal'
-        
+
         return {
             'current_strength': current_strength,
             'avg_strength': avg_strength,
@@ -274,7 +400,7 @@ class RiskAnalyzer:
             'trend': trend,
             'deviation': abs(current_strength - avg_strength) / avg_strength if avg_strength > 0 else 0
         }
-    
+
     def _analyze_suyang_imbalance(self, arry_code: np.ndarray) -> dict:
         """수량 불균형 분석"""
         buy_suyang = arry_code[:, self.idx_buy_vol]   # 초당매수수량
@@ -282,6 +408,8 @@ class RiskAnalyzer:
 
         current_buy = buy_suyang[-1]
         current_sell = sell_suyang[-1]
+
+        dominant_ratio = self.params['imbalance_dominant_ratio']
 
         total = current_buy + current_sell
         if total > 0:
@@ -292,13 +420,13 @@ class RiskAnalyzer:
             buy_ratio = sell_ratio = 0.5
             imbalance = 0
 
-        if buy_ratio > 0.7:
+        if buy_ratio > dominant_ratio:
             direction = 'buy_dominant'
-        elif sell_ratio > 0.7:
+        elif sell_ratio > dominant_ratio:
             direction = 'sell_dominant'
         else:
             direction = 'balanced'
-        
+
         return {
             'buy_ratio': buy_ratio,
             'sell_ratio': sell_ratio,
@@ -307,7 +435,7 @@ class RiskAnalyzer:
             'current_buy': current_buy,
             'current_sell': current_sell
         }
-    
+
     def _analyze_price_position(self, arry_code: np.ndarray) -> dict:
         """가격 위치 분석"""
         current_price = arry_code[-1, self.idx_curr_price]
@@ -319,11 +447,15 @@ class RiskAnalyzer:
         current_high_low = high_low_avg_ratio[-1]
         current_low_high = low_high_ratio[-1]
 
-        if abs(current_high_low) > 5:
+        extreme_threshold = self.params['price_extreme_threshold']
+        far_threshold = self.params['price_far_threshold']
+        moderate_threshold = self.params['price_moderate_threshold']
+
+        if abs(current_high_low) > extreme_threshold:
             position = 'extreme'
-        elif abs(current_high_low) > 2:
+        elif abs(current_high_low) > far_threshold:
             position = 'far'
-        elif abs(current_high_low) > 1:
+        elif abs(current_high_low) > moderate_threshold:
             position = 'moderate'
         else:
             position = 'normal'
@@ -352,13 +484,18 @@ class RiskAnalyzer:
         current_change_angle = change_angle[-1]
         current_volume_angle = volume_angle[-1]
 
-        if current_change_angle > 45:
+        strong_uptrend = self.params['angle_strong_uptrend']
+        uptrend = self.params['angle_uptrend']
+        strong_downtrend = self.params['angle_strong_downtrend']
+        downtrend = self.params['angle_downtrend']
+
+        if current_change_angle > strong_uptrend:
             change_trend = 'strong_uptrend'
-        elif current_change_angle > 15:
+        elif current_change_angle > uptrend:
             change_trend = 'uptrend'
-        elif current_change_angle < -45:
+        elif current_change_angle < strong_downtrend:
             change_trend = 'strong_downtrend'
-        elif current_change_angle < -15:
+        elif current_change_angle < downtrend:
             change_trend = 'downtrend'
         else:
             change_trend = 'sideways'
@@ -376,12 +513,17 @@ class RiskAnalyzer:
         previous_avg = np.mean(volumes[-10:-5]) if len(volumes) >= 10 else recent_avg
         # noinspection PyTypeChecker
         volume_change = (recent_avg - previous_avg) / previous_avg * 100 if previous_avg > 0 else 0
-        # noinspection PyTypeChecker
-        spike = recent_avg > previous_avg * 2
 
-        if volume_change > 30:
+        spike_multiplier = self.params['volume_spike_multiplier']
+        # noinspection PyTypeChecker
+        spike = recent_avg > previous_avg * spike_multiplier
+
+        increase_threshold = self.params['volume_increase_threshold']
+        decrease_threshold = self.params['volume_decrease_threshold']
+
+        if volume_change > increase_threshold:
             trend = 'increasing'
-        elif volume_change < -30:
+        elif volume_change < decrease_threshold:
             trend = 'decreasing'
         else:
             trend = 'normal'
@@ -436,12 +578,17 @@ class RiskAnalyzer:
         short_momentum = momentum.get('short_momentum', 0)
         medium_momentum = momentum.get('medium_momentum', 0)
 
+        strong_bearish_short = self.params['momentum_strong_bearish_short']
+        strong_bearish_medium = self.params['momentum_strong_bearish_medium']
+        moderate_bearish_short = self.params['momentum_moderate_bearish_short']
+        moderate_bearish_medium = self.params['momentum_moderate_bearish_medium']
+
         if momentum_trend == 'bearish':
             momentum_risk = 10
         elif momentum_trend == 'neutral':
-            if short_momentum < -3 or medium_momentum < -2:
+            if short_momentum < strong_bearish_short or medium_momentum < strong_bearish_medium:
                 momentum_risk = 7
-            elif short_momentum < -1 or medium_momentum < -0.5:
+            elif short_momentum < moderate_bearish_short or medium_momentum < moderate_bearish_medium:
                 momentum_risk = 4
 
         # 5. 거래량 리스크 (0-8점)
@@ -449,11 +596,14 @@ class RiskAnalyzer:
         volume_change = volume_trend.get('change_percent', 0)
         spike = volume_trend.get('spike', False)
 
+        large_change = self.params['volume_large_change']
+        decrease_threshold = self.params['volume_decrease_threshold']
+
         if spike:
             volume_risk = 8
-        elif abs(volume_change) > 50:
+        elif abs(volume_change) > large_change:
             volume_risk = 6
-        elif volume_change < -30:
+        elif volume_change < decrease_threshold:
             volume_risk = 4
 
         # 6. 체결강도 리스크 (0-12점)
@@ -508,5 +658,5 @@ class RiskAnalyzer:
         # 총 리스크 점수 계산 (0-100점)
         total_risk = (rsi_risk + volatility_risk + trend_risk + momentum_risk + 
                       volume_risk + chegyeol_risk + suyang_risk + price_risk + angle_risk)
-        
+
         return round(min(total_risk, 100.0), 2)
