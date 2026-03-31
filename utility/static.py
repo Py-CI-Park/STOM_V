@@ -3,27 +3,47 @@ import datetime
 
 
 def set_builtin_print(bit64, q):
+    import inspect
     import builtins
     from utility.setting_base import ui_num
 
     # noinspection PyUnusedLocal
     def ui_print(*args, sep=' ', end='\n', file=None):
         try:
+            is_direct_print = False
+            frame = inspect.currentframe()
+            caller_frame = frame.f_back.f_back
+            if caller_frame:
+                caller_filename = caller_frame.f_code.co_filename
+                caller_function = caller_frame.f_code.co_name
+                excluded_paths  = ['site-packages', 'numba', 'numpy', 'pandas', 'talib']
+                is_excluded     = any(path in caller_filename for path in excluded_paths)
+                if not is_excluded and caller_function != '<module>':
+                    is_direct_print = True
+                elif '__main__' in caller_filename:
+                    is_direct_print = True
+
+            if not is_direct_print:
+                return
+
             processed_args = []
             for arg in args:
                 if callable(arg):
                     processed_args.append(str(arg()))
                 else:
                     processed_args.append(str(arg))
+
             message = sep.join(processed_args)
             message = message.lstrip()
             message = message.rstrip()
+
             if bit64:
                 q.put((ui_num['시스템로그'], message))
             else:
                 q.put(('window', (ui_num['시스템로그'], message)))
         except:
             pass
+
     builtins.print = ui_print
 
 
@@ -90,13 +110,13 @@ def add_rolling_data(df, market, is_tick, avg_list, cf1=None, cf2=None):
 
 
 def error_decorator(func):
-    from traceback import print_exc
+    from traceback import format_exc
 
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except:
-            print_exc()
+            print(format_exc())
             return None
     return wrapper
 
@@ -107,6 +127,18 @@ def thread_decorator(func):
     def wrapper(*args):
         Thread(target=func, args=args, daemon=True).start()
     return wrapper
+
+
+def get_profile_text(pr):
+    import io
+    import pstats
+    output = io.StringIO()
+    stats = pstats.Stats(pr, stream=output)
+    stats.sort_stats('cumulative')
+    stats.print_stats(30)
+    result = output.getvalue()
+    output.close()
+    return result
 
 
 def get_logger(name):
