@@ -90,8 +90,18 @@ def main():
         pass
 
     _configure_matplotlib_headless()
-    from cli.runner import run_backtest
-    result = run_backtest(config)
+    try:
+        from cli.runner import run_backtest
+        result = run_backtest(config)
+    except SystemExit as exc:
+        code = exc.code
+        # Runtime imports sometimes abort with bare sys.exit().
+        # For the CLI entrypoint, unexpected aborts are execution errors.
+        if code in (None, 0):
+            return EXIT_EXEC_ERROR
+        if isinstance(code, int):
+            return code
+        return EXIT_EXEC_ERROR
     output = format_result(result, config.output_format)
 
     if config.output_file:
