@@ -669,6 +669,7 @@ class BackCodeTest(QThread):
 
         수익률, 매수가, 보유수량, 매도수량, 분할매수횟수, 분할매도횟수, 보유시간, 최고수익률, 최저수익률 = 1, 1, 1, 1, 1, 0, 0, 1, 0
         매수, 매도, BUY_LONG, SELL_LONG, SELL_SHORT, BUY_SHORT, 강제청산 = False, False, False, False, False, False, False
+        리스크점수 = 0
 
         try:
             exec(self.stg)

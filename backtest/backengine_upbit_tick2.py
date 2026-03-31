@@ -13,8 +13,12 @@ class BackEngineUpbitTick2(BackEngineBaseOms):
             매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
             매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
 
-        if self.dict_set['시장미시구조분석']:
-            self.ms_analyzer.update_data(self.code, self.arry_code[self.indexn, :])
+        리스크점수 = 0
+        if self.tick_count >= 30:
+            if self.dict_set['시장미시구조분석']:
+                self.ms_analyzer.update_data(self.code, self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
+            if self.dict_set['시장리스크분석']:
+                리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
 
         순매수금액 = 초당매수금액 - 초당매도금액
         종목명, 종목코드, 데이터길이, 체결시간, 시분초 = self.name, self.code, self.tick_count, self.index, int(str(self.index)[8:])

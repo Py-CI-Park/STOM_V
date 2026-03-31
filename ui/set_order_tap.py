@@ -109,7 +109,8 @@ class SetOrderTap:
                     "예제3: self.비중조절기준 = 저점기준등락율각도(10)\n"\
                     "예제4: self.비중조절기준 = 변동성(30)\n"\
                     "예제5: self.비중조절기준 = 시가총액 <- 국내주식 전용\n"\
-                    "예제6: self.비중조절기준 = 리스크 <- 시장미시구조분석 전용"
+                    "예제6: self.비중조절기준 = 리스크 <- 시장미시구조분석 전용\n"\
+                    "예제7: self.비중조절기준 = 리스크점수 <- 시장리스크분석 전용"
 
         self.ui.ss_bj_checkBoxxx_01 = self.wc.setCheckBox('비중조절사용안함', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.ss_bj_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
