@@ -27,6 +27,7 @@ def error_decorator(func):
 
 
 class CustomViewBox(pg.ViewBox):
+    """커스텀 뷰박스: 마우스 우클릭 호가창정보표시, 좌드레그 확대, 우클릭 확대복귀, 우드레그 X축 이동"""
     def __init__(self, *args, **kwds):
         pg.ViewBox.__init__(self, *args, **kwds)
         self.setMouseMode(self.RectMode)
@@ -350,6 +351,7 @@ class PlainTextEdit(QTextEdit):
 
 
 class FixedColumnTableWidget(QTableWidget):
+    """첫번째 칼럼과 동일한 별도의 자식테이블을 만들어서 부모테이블과 동기화"""
     def __init__(self, parent=None, clicked=None):
         super().__init__(parent)
         self._first_column_table = None
@@ -402,7 +404,6 @@ class FixedColumnTableWidget(QTableWidget):
         QTimer.singleShot(50, self._sync_all_data_to_child)
 
     def _sync_all_data_to_child(self):
-        """부모 테이블의 모든 데이터를 자식 테이블에 다시 동기화"""
         if not self._is_fixed or not self._first_column_table:
             return
 
@@ -476,8 +477,13 @@ class FixedColumnTableWidget(QTableWidget):
 
     def setRowCount(self, count):
         super().setRowCount(count)
-        if self._is_fixed:
+        if self._is_fixed and self._first_column_table:
             self._first_column_table.setRowCount(count)
+
+    def clearContents(self):
+        super().clearContents()
+        if self._is_fixed and self._first_column_table:
+            self._first_column_table.clearContents()
 
     def setHorizontalHeaderLabels(self, labels):
         super().setHorizontalHeaderLabels(labels)

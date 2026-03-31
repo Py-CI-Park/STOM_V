@@ -1,5 +1,4 @@
 
-import numpy as np
 from backtest.backengine_base_oms import BackEngineBaseOms
 from utility.static import GetFutureLongPgSgSp, GetFutureShortPgSgSp
 
