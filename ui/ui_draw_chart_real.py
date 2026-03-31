@@ -31,17 +31,24 @@ class DrawRealChart(DrawChartBase):
         self.chart_cnt = len(self.ui.ctpg)
         self.is_min = self.chart_cnt in (6, 8) or (self.chart_cnt == 10 and self.ui.ct_pushButtonnn_05.text() == 'CHART III')
 
-        if self.is_min:
-            self.ui.ctpg_xticks = [dt_ymdhms(f'{str(int(x))}00').timestamp() for x in self.ui.ctpg_arry[:, 0]]
-        else:
-            self.ui.ctpg_xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.ui.ctpg_arry[:, 0]]
+        curr_last_index = self.ui.ctpg_arry[-1, 0]
+        self.samr_code = self.ui.ctpg_code == self.code
+        self.same_time = self.last_index == curr_last_index
 
+        if not self.samr_code:
+            if self.is_min:
+                self.ui.ctpg_xticks = [dt_ymdhms(f'{str(int(x))}00').timestamp() for x in self.ui.ctpg_arry[:, 0]]
+            else:
+                self.ui.ctpg_xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.ui.ctpg_arry[:, 0]]
+        elif not self.same_time:
+            if self.is_min:
+                self.ui.ctpg_xticks.append(dt_ymdhms(f'{str(int(curr_last_index))}00').timestamp())
+            else:
+                self.ui.ctpg_xticks.append(dt_ymdhms(str(int(curr_last_index))).timestamp())
+
+        self.last_index = curr_last_index
         self.gsjm_arry = self.ui.ctpg_arry[:, self.fi('관심종목')]
         self.xmin, self.xmax = self.ui.ctpg_xticks[0], self.ui.ctpg_xticks[-1]
         self.hms = from_timestamp(self.xmax).strftime('%H:%M' if self.is_min else '%H:%M:%S')
-        self.same_time = self.ui.ctpg_name == self.code and self.ui.ctpg_last_xtick == self.xmax
 
-        self.update_factor_list()
-        self.update_dict_idxs()
-        self.update_ctpg_date()
         self.draw_all_chart()

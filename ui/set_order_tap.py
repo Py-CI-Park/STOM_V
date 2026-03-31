@@ -102,11 +102,21 @@ class SetOrderTap:
         self.ui.ss_load_Button_01   = self.wc.setPushbutton('불러오기', parent=self.ui.ss_od_groupBoxxx_08, click=self.ui.SettingOrderLoad_01)
         self.ui.ss_save_Button_01   = self.wc.setPushbutton('저장하기', parent=self.ui.ss_od_groupBoxxx_08, click=self.ui.SettingOrderSave_01)
 
+        bjjj_text = "사용자비중조절기준 선택 시 매수전략에서 아래의 예제와 같이 작성합니다.\n"\
+                    "지정한 비중조절기준으로 오른쪽 배팅금액당 배수를 설정하면 적용됩니다.\n"\
+                    "예제1: self.비중조절기준 = 체결강도평균대비비율(30)\n"\
+                    "예제2: self.비중조절기준 = 구간호가총잔량비율(30)\n"\
+                    "예제3: self.비중조절기준 = 저점기준등락율각도(10)\n"\
+                    "예제4: self.비중조절기준 = 변동성(30)\n"\
+                    "예제5: self.비중조절기준 = 시가총액 <- 국내주식 전용\n"\
+                    "예제6: self.비중조절기준 = 리스크 <- 시장미시구조분석 전용"
+
         self.ui.ss_bj_checkBoxxx_01 = self.wc.setCheckBox('비중조절사용안함', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.ss_bj_checkBoxxx_02 = self.wc.setCheckBox('저가대비고가등락율', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.ss_bj_checkBoxxx_03 = self.wc.setCheckBox('거래대금평균대비비율', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.ss_bj_checkBoxxx_04 = self.wc.setCheckBox('등락율각도', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
         self.ui.ss_bj_checkBoxxx_05 = self.wc.setCheckBox('당일거래대금각도', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged)
+        self.ui.ss_bj_checkBoxxx_06 = self.wc.setCheckBox('사용자비중조절기준', self.ui.ss_od_groupBoxxx_09, changed=self.ui.SettingStockWeightCotrolChanged, tip=bjjj_text)
         self.ui.ss_bj_labellllll_01 = QLabel('if    비중조절기준값 <                         :   배팅금액 * ', self.ui.ss_od_groupBoxxx_09)
         self.ui.ss_bj_labellllll_02 = QLabel('elif 비중조절기준값 <                         :   배팅금액 * ', self.ui.ss_od_groupBoxxx_09)
         self.ui.ss_bj_labellllll_03 = QLabel('elif 비중조절기준값 <                         :   배팅금액 * ', self.ui.ss_od_groupBoxxx_09)
@@ -124,7 +134,7 @@ class SetOrderTap:
 
         self.ui.ss_bj_check_button_list = [
             self.ui.ss_bj_checkBoxxx_01, self.ui.ss_bj_checkBoxxx_02, self.ui.ss_bj_checkBoxxx_03, self.ui.ss_bj_checkBoxxx_04,
-            self.ui.ss_bj_checkBoxxx_05
+            self.ui.ss_bj_checkBoxxx_05, self.ui.ss_bj_checkBoxxx_06
         ]
 
         # =============================================================================================================
@@ -290,6 +300,7 @@ class SetOrderTap:
         self.ui.sc_bj_checkBoxxx_03 = self.wc.setCheckBox('거래대금평균대비비율', self.ui.sc_od_groupBoxxx_09, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.sc_bj_checkBoxxx_04 = self.wc.setCheckBox('등락율각도', self.ui.sc_od_groupBoxxx_09, changed=self.ui.SettingCoinWeightCotrolChanged)
         self.ui.sc_bj_checkBoxxx_05 = self.wc.setCheckBox('당일거래대금각도', self.ui.sc_od_groupBoxxx_09, changed=self.ui.SettingCoinWeightCotrolChanged)
+        self.ui.sc_bj_checkBoxxx_06 = self.wc.setCheckBox('사용자비중조절기준', self.ui.sc_od_groupBoxxx_09, changed=self.ui.SettingCoinWeightCotrolChanged, tip=bjjj_text)
         self.ui.sc_bj_labellllll_01 = QLabel('if    비중조절기준값 <                         :   배팅금액 * ', self.ui.sc_od_groupBoxxx_09)
         self.ui.sc_bj_labellllll_02 = QLabel('elif 비중조절기준값 <                         :   배팅금액 * ', self.ui.sc_od_groupBoxxx_09)
         self.ui.sc_bj_labellllll_03 = QLabel('elif 비중조절기준값 <                         :   배팅금액 * ', self.ui.sc_od_groupBoxxx_09)
@@ -307,7 +318,7 @@ class SetOrderTap:
 
         self.ui.sc_bj_check_button_list = [
             self.ui.sc_bj_checkBoxxx_01, self.ui.sc_bj_checkBoxxx_02, self.ui.sc_bj_checkBoxxx_03, self.ui.sc_bj_checkBoxxx_04,
-            self.ui.sc_bj_checkBoxxx_05
+            self.ui.sc_bj_checkBoxxx_05, self.ui.sc_bj_checkBoxxx_06
         ]
 
         # =============================================================================================================
@@ -470,11 +481,13 @@ class SetOrderTap:
         self.ui.ss_save_Button_01.setGeometry(163, 162, 150, 30)
 
         # 비중조절
-        self.ui.ss_bj_checkBoxxx_01.setGeometry(10, 25, 200, 20)
-        self.ui.ss_bj_checkBoxxx_02.setGeometry(10, 50, 200, 20)
-        self.ui.ss_bj_checkBoxxx_03.setGeometry(10, 75, 200, 20)
-        self.ui.ss_bj_checkBoxxx_04.setGeometry(10, 100, 200, 20)
-        self.ui.ss_bj_checkBoxxx_05.setGeometry(10, 125, 200, 20)
+        self.ui.ss_bj_checkBoxxx_01.setGeometry(10, 25, 150, 20)
+        self.ui.ss_bj_checkBoxxx_02.setGeometry(10, 50, 150, 20)
+        self.ui.ss_bj_checkBoxxx_03.setGeometry(10, 75, 150, 20)
+        self.ui.ss_bj_checkBoxxx_04.setGeometry(10, 100, 150, 20)
+        self.ui.ss_bj_checkBoxxx_05.setGeometry(10, 125, 150, 20)
+        self.ui.ss_bj_checkBoxxx_06.setGeometry(10, 150, 150, 20)
+
         self.ui.ss_bj_labellllll_01.setGeometry(325, 25, 300, 20)
         self.ui.ss_bj_labellllll_02.setGeometry(325, 50, 300, 20)
         self.ui.ss_bj_labellllll_03.setGeometry(325, 75, 300, 20)
@@ -653,11 +666,13 @@ class SetOrderTap:
         self.ui.sc_save_Button_01.setGeometry(163, 162, 150, 30)
 
         # 비중조절
-        self.ui.sc_bj_checkBoxxx_01.setGeometry(10, 25, 200, 20)
-        self.ui.sc_bj_checkBoxxx_02.setGeometry(10, 50, 200, 20)
-        self.ui.sc_bj_checkBoxxx_03.setGeometry(10, 75, 200, 20)
-        self.ui.sc_bj_checkBoxxx_04.setGeometry(10, 100, 200, 20)
-        self.ui.sc_bj_checkBoxxx_05.setGeometry(10, 125, 200, 20)
+        self.ui.sc_bj_checkBoxxx_01.setGeometry(10, 25, 150, 20)
+        self.ui.sc_bj_checkBoxxx_02.setGeometry(10, 50, 150, 20)
+        self.ui.sc_bj_checkBoxxx_03.setGeometry(10, 75, 150, 20)
+        self.ui.sc_bj_checkBoxxx_04.setGeometry(10, 100, 150, 20)
+        self.ui.sc_bj_checkBoxxx_05.setGeometry(10, 125, 150, 20)
+        self.ui.sc_bj_checkBoxxx_06.setGeometry(10, 150, 150, 20)
+
         self.ui.sc_bj_labellllll_01.setGeometry(325, 25, 300, 20)
         self.ui.sc_bj_labellllll_02.setGeometry(325, 50, 300, 20)
         self.ui.sc_bj_labellllll_03.setGeometry(325, 75, 300, 20)

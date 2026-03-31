@@ -14,7 +14,7 @@ from trade.upbit.upbit_receiver_min import UpbitReceiverMin
 from trade.upbit.upbit_strategy_min import UpbitStrategyMin
 from trade.upbit.upbit_receiver_tick import UpbitReceiverTick
 from trade.upbit.upbit_strategy_tick import UpbitStrategyTick
-from ui.set_style import style_bc_bt, style_bc_bb
+from ui.set_style import style_bc_bb, style_bc_st
 from utility.setting_base import GRAPH_PATH, ui_num
 from utility.static import qtest_qwait, cme_normal_open, error_decorator
 
@@ -50,7 +50,7 @@ def mnbutton_c_clicked_01(ui, index):
 
     ui.main_btn = index
     ui.main_btn_list[prev_main_btn].setStyleSheet(style_bc_bb)
-    ui.main_btn_list[ui.main_btn].setStyleSheet(style_bc_bt)
+    ui.main_btn_list[ui.main_btn].setStyleSheet(style_bc_st)
     ui.main_box_list[prev_main_btn].setVisible(False)
     ui.main_box_list[ui.main_btn].setVisible(True)
     QTimer.singleShot(300, lambda: ui.image_label1.setVisible(True if ui.svc_labellllll_05.isVisible() or ui.cvc_labellllll_05.isVisible() else False))
@@ -135,7 +135,7 @@ def mnbutton_c_clicked_03(ui, login):
                 if ui.dict_set['주식알림소리']:
                     ui.soundQ.put(f"{ui.dict_set['증권사'][:4]} OPEN API에 로그인을 시작합니다.")
                 ui.wdzservQ.put(('manager', '수동시작'))
-                ui.ms_pushButton.setStyleSheet(style_bc_bt)
+                ui.ms_pushButton.setStyleSheet(style_bc_st)
         elif login == 2 or (login == 0 and ui.dict_set['코인리시버']):
             ui.mnButtonClicked_01(2)
             if ui.CoinTraderProcessAlive():   ui.proc_trader_coin.kill()
@@ -151,14 +151,14 @@ def mnbutton_c_clicked_03(ui, login):
                     CoinTraderStart(ui)
                 if ui.dict_set['코인리시버']:
                     CoinReceiverStart(ui)
-                ui.ms_pushButton.setStyleSheet(style_bc_bt)
+                ui.ms_pushButton.setStyleSheet(style_bc_st)
 
 
 @error_decorator
 def mnbutton_c_clicked_04(ui):
     if ui.geometry().width() > 1000:
         ui.setFixedSize(722, 383)
-        ui.zo_pushButton.setStyleSheet(style_bc_bt)
+        ui.zo_pushButton.setStyleSheet(style_bc_st)
     else:
         ui.setFixedSize(1403, 763)
         ui.zo_pushButton.setStyleSheet(style_bc_bb)

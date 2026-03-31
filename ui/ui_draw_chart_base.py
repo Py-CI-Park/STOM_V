@@ -24,9 +24,12 @@ class DrawChartBase:
         self.len_list   = None
         self.dict_idxs  = None
         self.gsjm_arry  = None
+        self.last_index = None
+        self.drop_zero_factors = None
 
         self.real       = False
         self.is_min     = False
+        self.samr_code  = False
         self.same_time  = False
 
         self.crosshair  = CrossHair(self.ui)
@@ -113,6 +116,9 @@ class DrawChartBase:
             if self.ui.ft_checkBoxxxxx_43.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_43.text())
 
     def update_dict_idxs(self):
+        if self.dict_idxs is not None:
+            return
+
         if self.is_min:
             self.dict_idxs = {
                 '체결강도': [self.fi('체결강도'), self.fi('최고체결강도'), self.fi('최저체결강도'), self.fi('체결강도평균')],
@@ -155,11 +161,13 @@ class DrawChartBase:
             }
 
     def update_ctpg_date(self):
-        drop_zero_factors = self.get_drop_zero_factors()
+        if self.drop_zero_factors is None:
+            self.drop_zero_factors = self.get_drop_zero_factors()
+
         clen = len(self.ui.ctpg_arry[0, :])
         for i in range(clen):
             tick_arry = self.ui.ctpg_arry[:, i]
-            if i in drop_zero_factors:
+            if i in self.drop_zero_factors:
                 self.ui.ctpg_data[i] = tick_arry[tick_arry != 0]
             else:
                 self.ui.ctpg_data[i] = tick_arry
@@ -188,6 +196,14 @@ class DrawChartBase:
         return drop_zero_factors
 
     def draw_all_chart(self):
+        if not self.real:
+            self.dict_idxs = None
+            self.drop_zero_factors = None
+
+        self.update_factor_list()
+        self.update_dict_idxs()
+        self.update_ctpg_date()
+
         for i, factor in enumerate(self.ui.ctpg_factors):
             if not self.same_time:
                 self.ui.ctpg[i].clear()
@@ -324,7 +340,7 @@ class DrawChartBase:
         if not self.same_time and self.ui.ct_checkBoxxxxx_01.isChecked():
             self.insert_crosshair()
 
-        self.ui.ctpg_name, self.ui.ctpg_last_xtick = self.code, self.xmax
+        self.ui.ctpg_code = self.code
         if self.real and self.ui.database_chart: self.ui.database_chart = False
         if not self.real and not self.ui.database_chart: self.ui.database_chart = True
 

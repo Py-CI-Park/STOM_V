@@ -15,7 +15,7 @@ class ImportProgressHook:
             'ui.set_dialog_back', 'ui.set_stg_coin_tap', 'ui.set_dialog_chart', 'ui.set_stg_stock_tap',
             'ui.set_dialog_formula', 'ui.set_dialog_strategy', 'ui.ui_draw_treemap', 'ui.ui_draw_chart_db',
             'ui.ui_load_database', 'ui.ui_extend_window', 'ui.ui_draw_home_chart', 'ui.ui_draw_chart_real',
-            'ui.ui_update_textedit', 'ui.ui_process_starter', 'ui.ui_draw_jisuchart', 'ui.ui_update_tablewidget',
+            'ui.ui_update_textedit', 'ui.ui_process_starter', 'ui.ui_update_tablewidget',
             'ui.ui_chart_count_change', 'ui.ui_etc', 'ui.ui_show_dialog', 'ui.ui_vars_change', 'ui.ui_event_filter',
             'ui.ui_return_press', 'ui.ui_text_changed', 'ui.ui_cell_clicked', 'ui.ui_activated_etc',
             'ui.ui_process_alive', 'ui.ui_activated_back', 'ui.ui_key_press_event', 'ui.ui_backtest_engine',
@@ -37,7 +37,7 @@ class ImportProgressHook:
     def custom_import(self, name, *args, **kwargs):
         if name in self.modules:
             self.current_index += 1
-            progress = self.progress + (self.current_index / self.total_modules) * 74
+            progress = self.progress + (self.current_index / self.total_modules) * 73
             self.splash.show_progress(f"{name}...", int(progress))
         return self.original_import(name, *args, **kwargs)
 

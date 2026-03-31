@@ -186,8 +186,6 @@ class ChartHogaQuerySound:
                         self.dict_set = data[1]
                     elif data[0] == '그래프비교':
                         self.GraphComparison(data[1])
-                    elif len(data) == 3:
-                        self.UpdateRealJisu(data)
                     elif len(data) >= 7:
                         self.UpdateChart(data)
 
@@ -745,26 +743,6 @@ class ChartHogaQuerySound:
         plt.tight_layout()
         plt.grid()
         plt.show()
-
-    def UpdateRealJisu(self, data):
-        gubun = data[0]
-        jisu_data = data[1:]
-        if gubun == '코스피':
-            if self.arry_kosp is None:
-                self.arry_kosp = np.array([jisu_data])
-            else:
-                self.arry_kosp = np.concatenate([self.arry_kosp, [jisu_data]])
-            # noinspection PyTypeChecker
-            xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosp[:, 0]]
-            self.windowQ.put((ui_num['코스피'], xticks, self.arry_kosp[:, 1]))
-        elif gubun == '코스닥':
-            if self.arry_kosd is None:
-                self.arry_kosd = np.array([jisu_data])
-            else:
-                self.arry_kosd = np.concatenate([self.arry_kosd, [jisu_data]])
-            # noinspection PyTypeChecker
-            xticks = [dt_ymdhms(str(int(x))).timestamp() for x in self.arry_kosd[:, 0]]
-            self.windowQ.put((ui_num['코스닥'], xticks, self.arry_kosd[:, 1]))
 
     def UpdateChart(self, data):
         if len(data) == 7:
