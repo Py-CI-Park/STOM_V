@@ -13,7 +13,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import OPENAPI_PATH, ui_num, DB_STOCK_TICK, DB_STOCK_MIN
 from utility.static import now, qtest_qwait, str_ymd, str_hms, timedelta_sec, str_ymdhms, roundfigure_upper5, \
-    GetSangHahanga, GetVIPrice
+    GetSangHahanga, GetVIPrice, get_profile_text
 
 sn_brrq = 1000
 sn_brrd = 1001
@@ -568,12 +568,15 @@ class KiwoomAgentTick:
             uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, key, self.int_hgtime)
             self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
-    def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
+    def CheckVI(self, code, c, o):
         vipr = self.dict_vipr.get(code)
         if vipr is None:
             self.InsertViPrice(code, o)
         elif not vipr[0] and now() > vipr[1]:
             self.UpdateViPrice(code, c)
+
+    def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
+        self.CheckVI(code, c, o)
 
         data = self.dict_data.get(code)
         if data:
@@ -593,6 +596,56 @@ class KiwoomAgentTick:
         self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, dmp, jvp, vrp, jsvp, sgta, rf,
                                 vi_dt, uvi, vi_hgunit]
 
+        self.UpdateMoneyFactor(code, c, c * bids_, c * asks_)
+        self.UpdateHogaWindowTick(code, dt, bids_, asks_, c, per, sgta, uvi, o, h, low, ch)
+
+    def UpdateMoneyFactor(self, code, c, buy_money, sell_money):
+        if code not in self.dict_money:
+            # 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격
+            #     0          1          2          3          4          5          6          7
+            self.dict_money[code] = [buy_money, sell_money, buy_money, buy_money, c, sell_money, sell_money, c]
+            self.dict_index[code] = {c: 0}
+            self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
+            self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
+            self.dict_bmbyp[code][0] = buy_money
+            self.dict_smbyp[code][0] = sell_money
+            self.dict_index[code]['count'] = 1
+        else:
+            money_arr = self.dict_money[code]
+            price_idx = self.dict_index[code]
+            buy_arr = self.dict_bmbyp[code]
+            sell_arr = self.dict_smbyp[code]
+
+            money_arr[0] += buy_money
+            money_arr[1] += sell_money
+            money_arr[2] += buy_money
+            money_arr[5] += sell_money
+
+            idx = price_idx.get(c)
+            if idx is not None:
+                buy_arr[idx] += buy_money
+                sell_arr[idx] += sell_money
+            else:
+                idx = price_idx['count']
+                if idx >= len(buy_arr):
+                    self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
+                    self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
+                    buy_arr = self.dict_bmbyp[code]
+                    sell_arr = self.dict_smbyp[code]
+
+                price_idx[c] = idx
+                buy_arr[idx] = buy_money
+                sell_arr[idx] = sell_money
+                price_idx['count'] += 1
+
+            if buy_arr[idx] >= money_arr[3]:
+                money_arr[3] = buy_arr[idx]
+                money_arr[4] = c
+            if sell_arr[idx] >= money_arr[6]:
+                money_arr[6] = sell_arr[idx]
+                money_arr[7] = c
+
+    def UpdateHogaWindowTick(self, code, dt, bids_, asks_, c, per, sgta, uvi, o, h, low, ch):
         if self.hoga_code == code:
             bids, asks = self.list_hgdt[2:4]
             if bids_ > 0: bids += bids_
@@ -611,7 +664,8 @@ class KiwoomAgentTick:
         dt_min = int(str(dt)[:12])
 
         code_data = self.dict_data.get(code)
-        if code_data:
+        money_arr = self.dict_money.get(code)
+        if code_data and money_arr:
             code_dtdm = self.dict_dtdm.get(code)
             if code_dtdm:
                 if dt > code_dtdm[0] and hoga_bamount[4] != 0:
@@ -623,98 +677,14 @@ class KiwoomAgentTick:
 
             if send:
                 csp, cbp = self.dict_hgbs[code]
+                hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount = \
+                    self.CorrectionHogaData(csp, cbp, hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount)
 
-                if hoga_seprice[-1] < csp:
-                    valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
-                    end_idx = valid_indices[-1] + 1 if valid_indices else None
-                    if end_idx is not None:
-                        start_idx = max(end_idx - 5, 0)
-                        add_cnt   = max(5 - end_idx, 0)
-                        hoga_seprice = [0] * add_cnt + hoga_seprice[start_idx:end_idx]
-                        hoga_samount = [0] * add_cnt + hoga_samount[start_idx:end_idx]
-                    else:
-                        hoga_seprice = [0] * 5
-                        hoga_samount = [0] * 5
-                else:
-                    hoga_seprice = hoga_seprice[-5:]
-                    hoga_samount = hoga_samount[-5:]
-
-                if hoga_buprice[0] > cbp:
-                    valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
-                    start_idx = valid_indices[0] if valid_indices else None
-                    if start_idx is not None:
-                        end_idx   = min(start_idx + 5, 10)
-                        add_cnt   = max(start_idx - 5, 0)
-                        hoga_buprice = hoga_buprice[start_idx:end_idx] + [0] * add_cnt
-                        hoga_bamount = hoga_bamount[start_idx:end_idx] + [0] * add_cnt
-                    else:
-                        hoga_buprice = [0] * 5
-                        hoga_bamount = [0] * 5
-                else:
-                    hoga_buprice = hoga_buprice[:5]
-                    hoga_bamount = hoga_bamount[:5]
-
-                c, _, h, low, _, dm, _, bids, asks = code_data[:9]
-                buy_money = c * bids
-                sell_money = c * asks
-
-                if code not in self.dict_money:
-                    self.dict_money[code] = [buy_money, buy_money, c, sell_money, sell_money, c]
-                    self.dict_index[code] = {c: 0}
-                    self.dict_bmbyp[code] = np.zeros(1000, dtype=np.int64)
-                    self.dict_smbyp[code] = np.zeros(1000, dtype=np.int64)
-                    self.dict_bmbyp[code][0] = buy_money
-                    self.dict_smbyp[code][0] = sell_money
-                    self.dict_index[code]['count'] = 1
-                    money_arr = self.dict_money[code]
-                else:
-                    money_arr = self.dict_money[code]
-                    price_idx = self.dict_index[code]
-                    buy_arr   = self.dict_bmbyp[code]
-                    sell_arr  = self.dict_smbyp[code]
-
-                    money_arr[0] += buy_money
-                    money_arr[3] += sell_money
-
-                    idx = price_idx.get(c)
-                    if idx is not None:
-                        buy_arr[idx]  += buy_money
-                        sell_arr[idx] += sell_money
-                    else:
-                        idx = price_idx['count']
-                        if idx >= len(buy_arr):
-                            self.dict_bmbyp[code] = np.resize(buy_arr, len(buy_arr) * 2)
-                            self.dict_smbyp[code] = np.resize(sell_arr, len(sell_arr) * 2)
-                            buy_arr  = self.dict_bmbyp[code]
-                            sell_arr = self.dict_smbyp[code]
-
-                        price_idx[c] = idx
-                        buy_arr[idx] = buy_money
-                        sell_arr[idx] = sell_money
-                        price_idx['count'] += 1
-
-                    if buy_arr[idx] >= money_arr[1]:
-                        money_arr[1] = buy_arr[idx]
-                        money_arr[2] = c
-
-                    if sell_arr[idx] >= money_arr[4]:
-                        money_arr[4] = sell_arr[idx]
-                        money_arr[5] = c
-
-                tm = dm - code_dtdm[1]
-                if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
-                hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
-                lhp  = round((h / low - 1) * 100, 2)
-                hjt  = sum(hoga_samount + hoga_bamount)
-                gsjm = 1 if code in self.list_gsjm else 0
-                logt = now() if self.int_logt < dt_min else 0
-
-                data = [dt] + code_data + [tm, hlp, lhp, buy_money, sell_money] + money_arr + \
-                    hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + hoga_tamount + \
-                    [hjt, gsjm, code, name, logt]
+                data, c, dm, logt = self.GetSendData(True, code, name, code_data, code_dtdm, money_arr,
+                                                     hoga_samount, hoga_bamount, hoga_seprice, hoga_buprice,
+                                                     hoga_tamount, dt, dt_min)
 
                 self.sstgQs[self.dict_sgbn[code]].put(data)
-
                 if code in self.tuple_jango or code in self.tuple_order:
                     self.straderQ.put(('잔고갱신', (code, c)))
 
@@ -722,18 +692,79 @@ class KiwoomAgentTick:
                 code_dtdm[1] = dm
                 code_data[7] = 0
                 code_data[8] = 0
+                money_arr[0] = 0
+                money_arr[1] = 0
 
-                if logt != 0:
-                    gap = (now() - receivetime).total_seconds()
-                    self.mgzservQ.put(('window', (ui_num['타임로그'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
-                    self.int_logt = dt_min
+                self.SendLog(logt, dt_min, receivetime)
 
+        self.UpdateMoneyTop(dt)
+        self.UpdateHogaWindowRem(code, name, dt, lastprice, hoga_tamount, hoga_seprice, hoga_buprice,
+                                 hoga_samount, hoga_bamount)
+
+    def CorrectionHogaData(self, csp, cbp, hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount):
+        if hoga_seprice[-1] < csp:
+            valid_indices = [i for i, price in enumerate(hoga_seprice) if price >= csp]
+            end_idx = valid_indices[-1] + 1 if valid_indices else None
+            if end_idx is not None:
+                start_idx = max(end_idx - 5, 0)
+                add_cnt = max(5 - end_idx, 0)
+                hoga_seprice = [0] * add_cnt + hoga_seprice[start_idx:end_idx]
+                hoga_samount = [0] * add_cnt + hoga_samount[start_idx:end_idx]
+            else:
+                hoga_seprice = [0] * 5
+                hoga_samount = [0] * 5
+        else:
+            hoga_seprice = hoga_seprice[-5:]
+            hoga_samount = hoga_samount[-5:]
+
+        if hoga_buprice[0] > cbp:
+            valid_indices = [i for i, price in enumerate(hoga_buprice) if price <= cbp]
+            start_idx = valid_indices[0] if valid_indices else None
+            if start_idx is not None:
+                end_idx = min(start_idx + 5, 10)
+                add_cnt = max(start_idx - 5, 0)
+                hoga_buprice = hoga_buprice[start_idx:end_idx] + [0] * add_cnt
+                hoga_bamount = hoga_bamount[start_idx:end_idx] + [0] * add_cnt
+            else:
+                hoga_buprice = [0] * 5
+                hoga_bamount = [0] * 5
+        else:
+            hoga_buprice = hoga_buprice[:5]
+            hoga_bamount = hoga_bamount[:5]
+
+        return hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount
+
+    def GetSendData(self, is_tick, code, name, code_data, code_dtdm, money_arr, hoga_samount, hoga_bamount,
+                    hoga_seprice, hoga_buprice, hoga_tamount, dt, dt_min):
+        c, _, h, low, _, dm, _, bids, asks = code_data[:9]
+        tm = dm - code_dtdm[1]
+        if tm == dm and 90500 < int(str(dt)[8:]): tm = 0
+        hlp = round((c / ((h + low) / 2) - 1) * 100, 2)
+        lhp = round((h / low - 1) * 100, 2)
+        hjt = sum(hoga_samount + hoga_bamount)
+        gsjm = 1 if code in self.list_gsjm else 0
+        logt = now() if self.int_logt < dt_min else 0
+        if not is_tick:
+            dt = code_dtdm[0]
+        data = [dt] + code_data + [tm, hlp, lhp] + money_arr + \
+            hoga_seprice + hoga_buprice + hoga_samount + hoga_bamount + hoga_tamount + [hjt, gsjm, code, name, logt]
+        return data, c, dm, logt
+
+    def SendLog(self, logt, dt_min, receivetime):
+        if logt != 0:
+            gap = (now() - receivetime).total_seconds()
+            self.mgzservQ.put(('window', (ui_num['타임로그'], f'에젼트 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.')))
+            self.int_logt = dt_min
+
+    def UpdateMoneyTop(self, dt):
         if self.int_mtdt is None:
             self.int_mtdt = dt
         elif self.int_mtdt < dt:
-            self.dict_mtop[dt] = ';'.join(self.list_gsjm)
+            self.dict_mtop[self.int_mtdt] = ';'.join(self.list_gsjm)
             self.int_mtdt = dt
 
+    def UpdateHogaWindowRem(self, code, name, dt, lastprice, hoga_tamount, hoga_seprice, hoga_buprice,
+                            hoga_samount, hoga_bamount):
         if self.hoga_code == code and dt > self.list_hgdt[1]:
             self.list_hgdt[1] = dt
             data = self.dict_sghg.get(code)
@@ -742,7 +773,10 @@ class KiwoomAgentTick:
             else:
                 shg, hhg = GetSangHahanga(code in self.tuple_kosd, lastprice, self.int_hgtime)
                 self.dict_sghg[code] = (shg, hhg)
-            self.mgzservQ.put(('hoga', [name] + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + [shg, hhg]))
+            self.mgzservQ.put((
+                'hoga',
+                [name] + hoga_tamount + hoga_seprice[-5:] + hoga_buprice[:5] + hoga_samount[-5:] + hoga_bamount[:5] + [shg, hhg]
+            ))
 
     def GetCommRealData(self, code, fid):
         return self.ocx.dynamicCall('GetCommRealData(QString, int)', code, fid)
@@ -988,9 +1022,7 @@ class KiwoomAgentTick:
         elif gubun == '수동데이터저장':
             self.ProcessKill()
         elif gubun == '프로파일링결과':
-            from utility.profile_utils import extract_profile_text
-            profile_text = extract_profile_text(self.pr, limit=50)
-            self.mgzservQ.put(('window', (ui_num['시스템로그'], profile_text)))
+            self.mgzservQ.put(('window', (ui_num['시스템로그'], get_profile_text(self.pr))))
 
     def Block_Request(self, *args, **kwargs):
         trcode = args[0].lower()

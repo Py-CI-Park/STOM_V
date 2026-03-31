@@ -241,23 +241,26 @@ class FutureStrategyMin(FutureStrategyTick):
                         if (포지션 == 'LONG' and SELL_LONG) or (포지션 == 'SHORT' and BUY_SHORT):
                             self.Sell(SELL_LONG)
 
-            if 관심종목:
-                # ['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']
-                self.dict_gj[종목코드] = {
-                    '종목명': 종목명,
-                    'per': 등락율,
-                    'hlp': 고저평균대비등락율,
-                    'lhp': 저가대비고가등락율,
-                    'ch': 체결강도,
-                    'tm': 분당거래대금,
-                    'dm': 당일거래대금,
-                    'bm': 당일매수금액,
-                    'sm': 당일매도금액
-                }
         else:
-            pre_data = self.dict_data[종목코드]
+            pre_data = self.dict_data.get(종목코드)
+            if pre_data is None:
+                pre_data = np.empty((0, self.data_cnt + self.fm_tcnt), dtype=np.float64)
             self.tick_count = 데이터길이 = len(pre_data) + 1
             self.indexn = 데이터길이 - 1
+
+        if 관심종목:
+            # ['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']
+            self.dict_gj[종목코드] = {
+                '종목명': 종목명,
+                'per': 등락율,
+                'hlp': 고저평균대비등락율,
+                'lhp': 저가대비고가등락율,
+                'ch': 체결강도,
+                'tm': 분당거래대금,
+                'dm': 당일거래대금,
+                'bm': 당일매수금액,
+                'sm': 당일매도금액
+            }
 
         if self.chart_code == 종목코드 and 데이터길이 >= 평균값계산틱수:
             if not 전략연산:
