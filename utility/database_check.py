@@ -22,7 +22,9 @@ def database_check():
 
         try:
             read_key()
-        except:
+        except RuntimeError:
+            raise
+        except Exception:
             write_key()
 
         con = sqlite3.connect(DB_SETTING)

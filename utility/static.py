@@ -1,6 +1,27 @@
 
+import os
 import bisect
 import datetime
+import pytz
+
+try:
+    import winreg as reg
+except ImportError:
+    reg = None
+
+
+KEY_FALLBACK_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    '_database',
+    'en_key.txt',
+)
+
+
+now_utc_ = datetime.datetime.now(pytz.utc)
+now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
+summer_t = int(now_cme_.dst().total_seconds())
+time_gap = int(summer_t - 50400)
+summer_time = summer_t
 
 
 def set_builtin_print(bit64, q):
@@ -158,16 +179,7 @@ def get_logger(name):
     return logger
 
 
-def summer_time():
-    import pytz
-    now_utc_ = datetime.datetime.now(pytz.utc)
-    now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
-    summer_t = int(now_cme_.dst().total_seconds())
-    return summer_t
-
-
 def get_time_gap():
-    time_gap = int(summer_time() - 50400)
     return time_gap
 
 
@@ -420,22 +432,78 @@ def comma2float(t):
 
 
 def write_key():
-    import winreg as reg
     from cryptography.fernet import Fernet
     key = str(Fernet.generate_key(), 'utf-8')
-    reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM')
-    reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
-    openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
-    reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
-    reg.CloseKey(openkey)
+    if reg is not None:
+        try:
+            reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM')
+            reg.CreateKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY')
+            openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
+            reg.SetValueEx(openkey, 'EN_KEY', 0, reg.REG_SZ, key)
+            reg.CloseKey(openkey)
+            return key
+        except OSError:
+            pass
+
+    os.makedirs(os.path.dirname(KEY_FALLBACK_FILE), exist_ok=True)
+    with open(KEY_FALLBACK_FILE, 'w', encoding='utf-8') as f:
+        f.write(key)
+    return key
+
+
+def _setting_db_has_encrypted_payload():
+    try:
+        import sqlite3
+        from utility.setting_base import DB_SETTING
+
+        if not os.path.exists(DB_SETTING):
+            return False
+
+        checks = {
+            'sacc': ('아이디', '비밀번호', '인증서비밀번호', '계좌비밀번호'),
+            'cacc': ('Access_key', 'Secret_key'),
+            'telegram': ('str_bot', 'int_id'),
+        }
+
+        con = sqlite3.connect(DB_SETTING)
+        cur = con.cursor()
+        for table, columns in checks.items():
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table,))
+            if cur.fetchone() is None:
+                continue
+
+            expr = " OR ".join([f"NULLIF(TRIM(CAST([{col}] AS TEXT)), '') IS NOT NULL" for col in columns])
+            cur.execute(f"SELECT 1 FROM [{table}] WHERE {expr} LIMIT 1")
+            if cur.fetchone() is not None:
+                con.close()
+                return True
+
+        con.close()
+        return False
+    except Exception:
+        return True
 
 
 def read_key():
-    import winreg as reg
-    openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
-    key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
-    reg.CloseKey(openkey)
-    return key
+    if reg is not None:
+        try:
+            openkey = reg.OpenKey(reg.HKEY_LOCAL_MACHINE, r'SOFTWARE\WOW6432Node\STOM\EN_KEY', 0, reg.KEY_ALL_ACCESS)
+            key, _ = reg.QueryValueEx(openkey, 'EN_KEY')
+            reg.CloseKey(openkey)
+            return key
+        except OSError:
+            pass
+
+    if os.path.exists(KEY_FALLBACK_FILE):
+        with open(KEY_FALLBACK_FILE, 'r', encoding='utf-8') as f:
+            key = f.read().strip()
+        if key:
+            return key
+
+    if _setting_db_has_encrypted_payload():
+        raise RuntimeError('Encryption key unavailable while encrypted settings payload exists.')
+
+    return write_key()
 
 
 def en_text(key, text):
