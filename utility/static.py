@@ -1,4 +1,4 @@
-
+﻿
 import os
 import bisect
 import datetime
@@ -686,7 +686,7 @@ def GetKiwoomPgSgSp(bg, cg):
     bfee = int(bg * 0.00015 / 10) * 10
     sfee = int(cg * 0.00015 / 10) * 10
     pg = int(cg - texs - bfee - sfee)
-    sg = int(pg - bg + 0.5)
+    sg = int(round(pg - bg))
     sp = round(sg / bg * 100, 2)
     return pg, sg, sp
 
