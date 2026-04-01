@@ -126,6 +126,10 @@
 
 | 워크트리 | 동일 문제 존재 여부 | 근거 | 반영 필요 여부 | 실제 반영 여부 |
 |------|------|------|------|------|
-| `STOM_Version_2U` | 감사 예정 | 감사 후 기록 | 감사 후 판정 | 감사 후 결정 |
-| `STOM_Version_2U_C` | 감사 예정 | 감사 후 기록 | 감사 후 판정 | 감사 후 결정 |
-| `research/init` | 감사 예정 | 감사 후 기록 | 감사 후 판정 | 감사 후 결정 |
+| `STOM_Version_2U` | 존재 | `ui_mainwindow/ui_process_kill/webcrawling` 정적 시그니처 일치, import smoke로 재현 확인 | 필요 | 반영함 (`3578284`, `7f7d069`) |
+| `STOM_Version_2U_C` | 존재 | `2U`와 동일한 정적 시그니처 일치, `database_check()` 이후 import smoke로 재현/검증 확인 | 필요 | 반영함 (`4c16eb2`, `78a0242`) |
+| `research/init` | 존재 | 동일 파일 경로에서 같은 시그니처와 import 실패 재현 확인 | 필요 | 반영함 (`8602782`) |
+
+- `STOM_Version_2U`: `summer_time`는 이미 있었지만 지수차트 잔재, `qtimer0`, `WebCrawling` wiring 불일치가 실제로 남아 있었고, 키 로딩 경로도 안전하지 않아 `wt-dev` 기준 패치를 반영했다. 반영 후 targeted 회귀 테스트 `12 passed`, import smoke `ok`를 확인했다.
+- `STOM_Version_2U_C`: `2U`와 동일한 런타임 결함군이 존재했고, 직접 `ui.ui_mainwindow` import는 DB 초기화 전제 때문에 `database_check()` 이후 기준으로 검증했다. 안전한 키 정책까지 포함해 반영했고, targeted 회귀 테스트 `12 passed`, import smoke `ok`를 확인했다.
+- `research/init`: 연구 브랜치라도 동일 파일 경로에서 같은 결함과 import 실패가 재현되어 미반영 근거가 없었다. 부분 패치로 꼬인 상태를 2U 통과본 기준으로 정리했고, targeted 회귀 테스트 `12 passed`, import smoke `ok`를 확인했다.
