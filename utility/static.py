@@ -45,6 +45,7 @@ now_utc_ = datetime.datetime.now(pytz.utc)
 now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
 summer_t = int(now_cme_.dst().total_seconds())
 time_gap = int(summer_t - 50400)
+summer_time = summer_t
 
 
 def set_builtin_print(bit64, q):
@@ -383,6 +384,12 @@ def qtest_qwait(sec):
     else:
         import time
         time.sleep(sec)
+
+
+def get_profile_text(profile_obj, sort_by='cumulative', limit=None):
+    from utility.profile_utils import extract_profile_text
+
+    return extract_profile_text(profile_obj, sort_by=sort_by, limit=limit)
 
 
 def change_format(text, dotdowndel=False, dotdown4=False, dotdown8=False):

@@ -39,7 +39,6 @@ from ui.ui_activated_etc import *
 from ui.ui_process_alive import *
 from ui.ui_extend_window import *
 from ui.ui_draw_chart_real import *
-from ui.ui_draw_jisuchart import *
 # ui_betting_cotrol removed in V2.54 (주문설정 UI 위치/크기 조정으로 통합)
 from ui.ui_update_textedit import *
 from ui.ui_process_starter import *
@@ -344,15 +343,16 @@ class MainWindow(QMainWindow):
         ]
 
         self.proc_tele  = Process(target=TelegramBot, args=(self.qlist, dict_set), daemon=True)
-        self.proc_webc  = Process(target=WebCrawling, args=(self.qlist,), daemon=True)
         self.proc_chqs  = Process(target=ChartHogaQuerySound, args=(self.qlist, dict_set), daemon=True)
+        self.webc       = WebCrawling(self.qlist)
         self.proc_livec = None
         # STOM Live disabled
         # self.proc_live  = Process(target=LiveClient, args=(self.qlist,), daemon=True)
 
         self.proc_tele.start()
-        self.proc_webc.start()
         self.proc_chqs.start()
+        self.webc.signal.connect(self.windowQ.put)
+        self.webc.start()
         # STOM Live disabled
         # self.proc_live.start()
 
@@ -533,18 +533,16 @@ class MainWindow(QMainWindow):
 
         self.update_textedit    = UpdateTextedit(self)
         self.update_tablewidget = UpdateTablewidget(self)
-        self.draw_chart         = DrawDBChart(self)
-        self.draw_realchart     = DrawRealChart(self)
-        self.draw_realjisuchart = DrawRealJisuChart(self)
-        self.draw_treemap       = DrawTremap(self)
-        self.draw_home_chart    = DrawHomeChart(self)
+        self.draw_chart      = DrawDBChart(self)
+        self.draw_realchart  = DrawRealChart(self)
+        self.draw_treemap    = DrawTremap(self)
+        self.draw_home_chart = DrawHomeChart(self)
 
         self.writer = Writer(self.windowQ)
         self.writer.signal1.connect(self.update_textedit.update_texedit)
         self.writer.signal2.connect(self.update_tablewidget.update_tablewidget)
         self.writer.signal3.connect(self.draw_chart.draw_db_chart)
         self.writer.signal4.connect(self.draw_realchart.draw_real_chart)
-        self.writer.signal5.connect(self.draw_realjisuchart.draw_realjisuchart)
         self.writer.signal6.connect(self.draw_treemap.draw_treemap)
         self.writer.signal7.connect(self.UpdateImage)
         self.writer.signal8.connect(self.UpdateSQsize)
@@ -678,7 +676,6 @@ class MainWindow(QMainWindow):
     def ShowHoga(self):          show_hoga(self)
     def ShowGiup(self):          show_giup(self)
     def ShowTreemap(self):       show_treemap(self)
-    def ShowJisu(self):          show_jisu(self)
     def ShowDB(self):            show_db(self)
     def ShowBackScheduler(self): show_backscheduler(self)
     def ShowKimp(self):          show_kimp(self)
