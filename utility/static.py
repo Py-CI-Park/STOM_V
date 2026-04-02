@@ -136,7 +136,9 @@ def error_decorator(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except:
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except Exception:
             print_exc()
             return None
     return wrapper
