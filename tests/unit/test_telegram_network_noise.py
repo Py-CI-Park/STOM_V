@@ -1,5 +1,8 @@
+import asyncio
 from threading import Lock
 from types import SimpleNamespace
+
+import httpx
 
 from utility.setting_base import ui_num
 from utility.telegram_bot import TelegramBot
@@ -25,9 +28,11 @@ def test_is_transient_network_error_matches_dns_and_timeout():
     assert TelegramBot._is_transient_network_error(
         bot, RuntimeError('httpx.ConnectError: [Errno 11001] getaddrinfo failed')
     )
+    assert TelegramBot._is_transient_network_error(bot, httpx.ConnectTimeout(''))
     assert TelegramBot._is_transient_network_error(bot, TimeoutError('timed out'))
+    assert TelegramBot._is_transient_network_error(bot, RuntimeError('timedout while connecting'))
     assert TelegramBot._is_transient_network_error(
-        bot, OSError('[WinError 10065] 연결할 수 없는 호스트로 소켓 작업을 시도했습니다')
+        bot, OSError('[WinError 10065] 연결된 호스트로의 통신 작업에 실패했습니다')
     )
     assert TelegramBot._is_transient_network_error(bot, RuntimeError('ReadTimeoutError: HTTPSConnectionPool(...)'))
     assert TelegramBot._is_transient_network_error(bot, RuntimeError('NetworkError: httpx.ConnectError'))
@@ -63,3 +68,23 @@ def test_handle_bot_exception_routes_transient_and_non_transient_paths(monkeypat
     assert bot.windowQ[1][0] == ui_num['시스템로그']
     assert '오류 알림 - 텔레그램 봇 시작' in bot.windowQ[1][1]
     assert 'ValueError: local bug' in bot.windowQ[1][1]
+
+
+def test_start_bot_emits_transient_warning_without_traceback(monkeypatch):
+    import utility.telegram_bot as telegram_bot_module
+
+    class _AppStub:
+        async def initialize(self):
+            raise httpx.ConnectTimeout('')
+
+    bot = _build_bot()
+    bot.application = _AppStub()
+    bot.running = True
+    monkeypatch.setattr(telegram_bot_module, 'time', SimpleNamespace(time=lambda: 100.0), raising=False)
+
+    asyncio.run(TelegramBot.start_bot(bot))
+
+    assert len(bot.windowQ) == 1
+    assert bot.windowQ[0] == (ui_num['시스템로그'], 'start_bot 실패: ConnectTimeout')
+    assert 'Traceback' not in bot.windowQ[0][1]
+    assert bot.running is False

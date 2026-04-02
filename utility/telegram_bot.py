@@ -74,8 +74,10 @@ class TelegramBot(QThread):
         markers = (
             'networkerror',
             'connecterror',
+            'connecttimeout',
             'readtimeout',
             'timed out',
+            'timedout',
             'getaddrinfo failed',
             'maxretryerror',
             'remote end closed connection',
