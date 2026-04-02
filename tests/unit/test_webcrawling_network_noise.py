@@ -41,10 +41,6 @@ def _build_crawler():
     return crawler
 
 
-def _run_decorated_method(bound_method, *args):
-    return bound_method.__func__.__closure__[1].cell_contents(bound_method.__self__, *args)
-
-
 def test_emit_network_warning_throttles_duplicate_messages(monkeypatch):
     crawler = _build_crawler()
     monkeypatch.setattr(webcrawling_module.time, 'time', lambda: 100.0)
@@ -89,7 +85,7 @@ def test_get_market_indicator_failure_keeps_existing_data_and_counts_completion(
     crawler.session = _SessionStub()
     monkeypatch.setattr(webcrawling_module.time, 'time', lambda: 100.0)
 
-    _run_decorated_method(crawler.get_market_indicator)
+    crawler._get_market_indicator()
 
     assert crawler.dict_data['환율'].equals(pd.DataFrame({'time': [1], 'price': [1000.0], 'change': [0.0]}))
     assert crawler.thread_join == 3
@@ -109,16 +105,37 @@ def test_get_crypto_data_success_clears_warning_and_failure_warns_again(monkeypa
         raise requests.exceptions.ReadTimeout()
 
     monkeypatch.setattr(webcrawling_module.requests, 'get', fail_request)
-    _run_decorated_method(crawler.get_crypto_data)
+    crawler._get_crypto_data()
 
     sample_klines = [[1710000000000, '0', '0', '0', '100.0', '0']]
     monkeypatch.setattr(webcrawling_module.requests, 'get', lambda *args, **kwargs: _ResponseStub(sample_klines))
-    _run_decorated_method(crawler.get_crypto_data)
+    crawler._get_crypto_data()
 
     monkeypatch.setattr(webcrawling_module.requests, 'get', fail_request)
-    _run_decorated_method(crawler.get_crypto_data)
+    crawler._get_crypto_data()
 
     btc_messages = [payload for payload in crawler.signal.messages if '(BTC/USDT)' in payload[1]]
     assert len(btc_messages) == 2
     assert crawler.dict_data['BTC/USDT'].iloc[0]['price'] == 100.0
     assert crawler.thread_join == 24
+
+
+def test_get_korean_stocks_failure_keeps_existing_data_and_counts_completion(monkeypatch):
+    crawler = _build_crawler()
+    existing = pd.DataFrame({'time': [1], 'price': [100.0], 'gap': [0.0], 'change': [0.0]})
+    crawler.dict_data = {'코스피': existing}
+
+    class _SessionStub:
+        def get(self, *args, **kwargs):
+            raise requests.exceptions.ReadTimeout()
+
+    crawler.session = _SessionStub()
+    monkeypatch.setattr(webcrawling_module.time, 'time', lambda: 100.0)
+
+    crawler._get_korean_stocks('20240101', '20240101120000', '코스피', 'KOSPI')
+
+    assert crawler.dict_data['코스피'] is existing
+    assert crawler.thread_join == 1
+    assert crawler.signal.messages == [
+        (webcrawling_module.ui_num['시스템로그'], '국내지수 갱신 실패(코스피): ReadTimeout')
+    ]
