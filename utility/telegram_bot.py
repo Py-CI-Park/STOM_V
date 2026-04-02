@@ -1,8 +1,9 @@
 
+import time
 import pytz
 import asyncio
 import pandas as pd
-from threading import Thread
+from threading import Thread, Lock
 from traceback import format_exc
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
@@ -26,6 +27,9 @@ class TelegramBot:
         self.chat_id     = None
         self.application = None
         self.running     = False
+        self.warning_lock = Lock()
+        self.warning_state = {}
+        self.warning_cooldown = 60
 
         self.message_queue = asyncio.Queue()
         self.loop = asyncio.new_event_loop()
@@ -54,6 +58,41 @@ class TelegramBot:
         
         self.loop.run_forever()
 
+    def _is_transient_network_error(self, exc):
+        text = f'{type(exc).__name__}: {exc}'.lower()
+        markers = (
+            'networkerror',
+            'connecterror',
+            'connecttimeout',
+            'readtimeout',
+            'timed out',
+            'timedout',
+            'getaddrinfo failed',
+            'maxretryerror',
+            'remote end closed connection',
+            'winerror 10065',
+        )
+        return any(marker in text for marker in markers)
+
+    def _emit_network_warning(self, context, exc):
+        key = (context, type(exc).__name__)
+        now_ts = time.time()
+        with self.warning_lock:
+            last_ts = self.warning_state.get(key)
+            if last_ts is not None and now_ts - last_ts < self.warning_cooldown:
+                return
+            self.warning_state[key] = now_ts
+        self.windowQ.put((ui_num['시스템로그'], f'{context} 실패: {type(exc).__name__}'))
+
+    def _handle_bot_exception(self, context, exc):
+        if self._is_transient_network_error(exc):
+            self._emit_network_warning(context, exc)
+        else:
+            detail = format_exc()
+            if detail.startswith('NoneType: None'):
+                detail = f'{type(exc).__name__}: {exc}\n'
+            self.windowQ.put((ui_num['시스템로그'], f'{detail}오류 알림 - {context}'))
+
     async def start_bot(self):
         try:
             await self.application.initialize()
@@ -77,8 +116,9 @@ class TelegramBot:
                 update = await update_queue.get()
                 await self.application.process_update(update)
                 update_queue.task_done()
-        except:
-            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 텔레그램 봇 시작'))
+        except Exception as exc:
+            self._handle_bot_exception('텔레그램 봇 시작', exc)
+            self.running = False
 
     async def setup_application(self, application):
         korea_timezone = pytz.timezone('Asia/Seoul')
@@ -162,8 +202,8 @@ class TelegramBot:
                     )
                     self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
                     await self.start_bot()
-            except:
-                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 텔레그램 봇 재시작'))
+            except Exception as exc:
+                self._handle_bot_exception('텔레그램 봇 재시작', exc)
                 self.running = False
 
     @staticmethod
