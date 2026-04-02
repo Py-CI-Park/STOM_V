@@ -1,6 +1,8 @@
 from threading import Lock
 
+import pandas as pd
 import requests
+
 import utility.webcrawling as webcrawling_module
 
 
@@ -12,6 +14,18 @@ class _SignalStub:
         self.messages.append(payload)
 
 
+class _ResponseStub:
+    def __init__(self, json_data=None, text=''):
+        self._json_data = json_data or []
+        self.text = text
+
+    def raise_for_status(self):
+        return None
+
+    def json(self):
+        return self._json_data
+
+
 def _build_crawler():
     crawler = webcrawling_module.WebCrawling.__new__(webcrawling_module.WebCrawling)
     crawler.signal = _SignalStub()
@@ -20,8 +34,15 @@ def _build_crawler():
     crawler.warning_state = {}
     crawler.warning_cooldown = 60
     crawler.thread_join = 0
+    crawler.network_timeout = 10
+    crawler.base_url = 'https://finance.naver.com'
+    crawler.headers = {}
     crawler.dict_data = {'BTC/USDT': 'old-data'}
     return crawler
+
+
+def _run_decorated_method(bound_method, *args):
+    return bound_method.__func__.__closure__[1].cell_contents(bound_method.__self__, *args)
 
 
 def test_emit_network_warning_throttles_duplicate_messages(monkeypatch):
@@ -40,7 +61,7 @@ def test_emit_network_warning_throttles_duplicate_messages(monkeypatch):
     ]
 
 
-def test_run_network_job_keeps_existing_data_and_marks_completion(monkeypatch):
+def test_run_network_job_does_not_advance_completion(monkeypatch):
     crawler = _build_crawler()
     monkeypatch.setattr(webcrawling_module.time, 'time', lambda: 100.0)
 
@@ -51,7 +72,53 @@ def test_run_network_job_keeps_existing_data_and_marks_completion(monkeypatch):
 
     assert result is None
     assert crawler.dict_data['BTC/USDT'] == 'old-data'
-    assert crawler.thread_join == 1
+    assert crawler.thread_join == 0
     assert crawler.signal.messages == [
         (webcrawling_module.ui_num['시스템로그'], '바이낸스 데이터 갱신 실패(BTC/USDT): ReadTimeout')
     ]
+
+
+def test_get_market_indicator_failure_keeps_existing_data_and_counts_completion(monkeypatch):
+    crawler = _build_crawler()
+    crawler.dict_data = {'환율': pd.DataFrame({'time': [1], 'price': [1000.0], 'change': [0.0]})}
+
+    class _SessionStub:
+        def get(self, *args, **kwargs):
+            raise requests.exceptions.ConnectTimeout()
+
+    crawler.session = _SessionStub()
+    monkeypatch.setattr(webcrawling_module.time, 'time', lambda: 100.0)
+
+    _run_decorated_method(crawler.get_market_indicator)
+
+    assert crawler.dict_data['환율'].equals(pd.DataFrame({'time': [1], 'price': [1000.0], 'change': [0.0]}))
+    assert crawler.thread_join == 3
+    assert crawler.signal.messages == [
+        (webcrawling_module.ui_num['시스템로그'], '시장지표 갱신 실패(환율): ConnectTimeout'),
+        (webcrawling_module.ui_num['시스템로그'], '시장지표 갱신 실패(휘발유): ConnectTimeout'),
+        (webcrawling_module.ui_num['시스템로그'], '시장지표 갱신 실패(국제금): ConnectTimeout'),
+    ]
+
+
+def test_get_crypto_data_success_clears_warning_and_failure_warns_again(monkeypatch):
+    crawler = _build_crawler()
+    times = iter([100.0] * 8 + [200.0] * 8)
+    monkeypatch.setattr(webcrawling_module.time, 'time', lambda: next(times))
+
+    def fail_request(*args, **kwargs):
+        raise requests.exceptions.ReadTimeout()
+
+    monkeypatch.setattr(webcrawling_module.requests, 'get', fail_request)
+    _run_decorated_method(crawler.get_crypto_data)
+
+    sample_klines = [[1710000000000, '0', '0', '0', '100.0', '0']]
+    monkeypatch.setattr(webcrawling_module.requests, 'get', lambda *args, **kwargs: _ResponseStub(sample_klines))
+    _run_decorated_method(crawler.get_crypto_data)
+
+    monkeypatch.setattr(webcrawling_module.requests, 'get', fail_request)
+    _run_decorated_method(crawler.get_crypto_data)
+
+    btc_messages = [payload for payload in crawler.signal.messages if '(BTC/USDT)' in payload[1]]
+    assert len(btc_messages) == 2
+    assert crawler.dict_data['BTC/USDT'].iloc[0]['price'] == 100.0
+    assert crawler.thread_join == 24

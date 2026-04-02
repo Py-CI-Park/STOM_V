@@ -45,6 +45,7 @@ class WebCrawling(QThread):
         self.warning_lock = Lock()
         self.warning_state = {}
         self.warning_cooldown = 60
+        self.network_timeout = 10
 
     def run(self):
         self.CrawlingHomTapData()
@@ -86,8 +87,7 @@ class WebCrawling(QThread):
                 del self.warning_state[key]
 
     def _complete_network_job(self):
-        with self.thread_lock:
-            self.thread_join += 1
+        self.thread_join += 1
 
     def _run_network_job(self, category, target, job):
         try:
@@ -97,8 +97,6 @@ class WebCrawling(QThread):
         except (requests.exceptions.RequestException, OSError, TimeoutError, ValueError) as exc:
             self._emit_network_warning(category, target, exc)
             return None
-        finally:
-            self._complete_network_job()
 
     def Crawling(self, data):
         cmd, data = data
@@ -347,7 +345,7 @@ class WebCrawling(QThread):
 
             while True:
                 url  = f'{self.base_url}/sise/sise_index_time.naver?code={symbol}&thistime={search_time}&page={i}'
-                resp = self.session.get(url, headers=self.headers)
+                resp = self.session.get(url, headers=self.headers, timeout=self.network_timeout)
                 soup = BeautifulSoup(resp.text, 'html.parser')
 
                 page_times = [t.get_text(strip=True) for t in soup.select('td.date')]
@@ -409,11 +407,13 @@ class WebCrawling(QThread):
 
         with self.thread_lock:
             if df is None:
+                self._complete_network_job()
                 return
             if existing_data is not None:
                 self.dict_data[name] = pd.concat([existing_data, df])
             else:
                 self.dict_data[name] = df
+            self._complete_network_job()
 
     @thread_decorator
     def get_market_indicator(self):
@@ -439,7 +439,7 @@ class WebCrawling(QThread):
 
                 while True:
                     url  = f'{url_base}{i}'
-                    resp = self.session.get(url, headers=self.headers)
+                    resp = self.session.get(url, headers=self.headers, timeout=self.network_timeout)
                     soup = BeautifulSoup(resp.text, 'html.parser')
 
                     page_times  = [t.get_text(strip=True) for t in soup.select('td.date')]
@@ -483,11 +483,13 @@ class WebCrawling(QThread):
 
             with self.thread_lock:
                 if df is None:
+                    self._complete_network_job()
                     continue
                 if existing_data is not None:
                     self.dict_data[name] = pd.concat([existing_data, df])
                 else:
                     self.dict_data[name] = df
+                self._complete_network_job()
 
     @thread_decorator
     def get_crypto_data(self):
@@ -506,7 +508,7 @@ class WebCrawling(QThread):
         for name, symbol in symbols.items():
             def job():
                 url  = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=1000"
-                resp = requests.get(url, headers=self.headers, timeout=10)
+                resp = requests.get(url, headers=self.headers, timeout=self.network_timeout)
                 resp.raise_for_status()
                 data = resp.json()
 
@@ -527,5 +529,6 @@ class WebCrawling(QThread):
             with self.thread_lock:
                 if df is not None:
                     self.dict_data[name] = df
+                self._complete_network_job()
 
             time.sleep(0.1)
