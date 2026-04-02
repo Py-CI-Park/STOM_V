@@ -130,7 +130,7 @@ class TelegramBot(QThread):
                 update_queue.task_done()
 
         except Exception as exc:
-            self._handle_bot_exception('start_bot', exc)
+            self._handle_bot_exception('텔레그램 봇 시작', exc)
             self.running = False
 
     async def setup_application(self, application):
@@ -209,7 +209,7 @@ class TelegramBot(QThread):
                     self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
                     await self.start_bot()
             except Exception as exc:
-                self._handle_bot_exception('restart_bot', exc)
+                self._handle_bot_exception('텔레그램 봇 재시작', exc)
                 self.running = False
 
     async def send_message(self, text):
