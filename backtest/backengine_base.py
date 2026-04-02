@@ -74,8 +74,10 @@ class BackEngineBase(StrategyBase):
         self.code_list       = []
         self.vars_list       = []
         self.vars_lists      = []
-        self.shogainfo       = {}
-        self.bhogainfo       = {}
+        self.shogainfo       = []
+        self.shreminfo       = []
+        self.bhogainfo       = []
+        self.bhreminfo       = []
         self.dict_buystg     = {}
         self.dict_sellstg    = {}
         self.dict_sconds     = {}
@@ -708,13 +710,17 @@ class BackEngineBase(StrategyBase):
         self.SetBuyCount()
         주문수량 = 미체결수량 = self.curr_trade_info['주문수량']
         if 주문수량 > 0:
-            호가정보 = self.shogainfo if self.market_gubun in (1, 3) or buy_long else self.bhogainfo
-            호가정보 = 호가정보[:self.buy_hj_limit]
+            if self.market_gubun in (1, 3) or buy_long:
+                호가배열 = self.shogainfo[:self.buy_hj_limit]
+                잔량배열 = self.shreminfo[:self.buy_hj_limit]
+            else:
+                호가배열 = self.bhogainfo[:self.buy_hj_limit]
+                잔량배열 = self.bhreminfo[:self.buy_hj_limit]
             매수금액 = 0
-            for 호가, 잔량 in 호가정보:
+            for 호가, 잔량 in zip(호가배열, 잔량배열):
                 if 미체결수량 - 잔량 <= 0:
                     매수금액 += 호가 * 미체결수량
-                    미체결수량 -= 잔량
+                    미체결수량 = 0
                     break
                 else:
                     매수금액 += 호가 * 잔량
@@ -773,30 +779,32 @@ class BackEngineBase(StrategyBase):
 
     def Sell(self, sell_long=False):
         주문수량 = 미체결수량 = self.curr_trade_info['주문수량']
-        호가정보 = self.bhogainfo if self.market_gubun in (1, 3) or sell_long else self.shogainfo
-        호가정보 = 호가정보[:self.sell_hj_limit]
-        매도금액 = 0
-        for 호가, 잔량 in 호가정보:
-            if 미체결수량 - 잔량 <= 0:
-                매도금액 += 호가 * 미체결수량
-                미체결수량 -= 잔량
-                break
+        if 주문수량 > 0:
+            if self.market_gubun in (1, 3) or sell_long:
+                호가배열 = self.bhogainfo[:self.sell_hj_limit]
+                잔량배열 = self.bhreminfo[:self.sell_hj_limit]
             else:
-                매도금액 += 호가 * 잔량
-                미체결수량 -= 잔량
-        if 미체결수량 <= 0:
-            self.curr_trade_info['매도가'] = self.GetSellPrice(매도금액, 주문수량)
-            self.CalculationEyun()
+                호가배열 = self.shogainfo[:self.sell_hj_limit]
+                잔량배열 = self.shreminfo[:self.sell_hj_limit]
+            매도금액 = 0
+            for 호가, 잔량 in zip(호가배열, 잔량배열):
+                if 미체결수량 - 잔량 <= 0:
+                    매도금액 += 호가 * 미체결수량
+                    미체결수량 = 0
+                    break
+                else:
+                    매도금액 += 호가 * 잔량
+                    미체결수량 -= 잔량
+            if 미체결수량 <= 0:
+                self.curr_trade_info['매도가'] = self.GetSellPrice(매도금액, 주문수량)
+                self.CalculationEyun()
 
     def LastSell(self):
-        매도호가5, 매도호가4, 매도호가3, 매도호가2, 매도호가1, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
-            매도잔량5, 매도잔량4, 매도잔량3, 매도잔량2, 매도잔량1, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5 = \
-            self.arry_code[self.indexn, self.hoga_sidex:self.hoga_eidex]
-
-        bhogainfo = ((매수호가1, 매수잔량1), (매수호가2, 매수잔량2), (매수호가3, 매수잔량3), (매수호가4, 매수잔량4), (매수호가5, 매수잔량5))
-        bhogainfo = bhogainfo[:self.sell_hj_limit]
-        shogainfo = ((매도호가1, 매도잔량1), (매도호가2, 매도잔량2), (매도호가3, 매도잔량3), (매도호가4, 매도잔량4), (매도호가5, 매도잔량5))
-        shogainfo = shogainfo[:self.sell_hj_limit]
+        호가데이터 = self.arry_code[self.indexn, self.hoga_sidex:self.hoga_eidex]
+        매도호가배열 = 호가데이터[:5][::-1]
+        매수호가배열 = 호가데이터[5:10]
+        매도잔량배열 = 호가데이터[10:15][::-1]
+        매수잔량배열 = 호가데이터[15:20]
 
         for vturn in self.trade_info:
             for vkey in self.trade_info[vturn]:
@@ -805,11 +813,16 @@ class BackEngineBase(StrategyBase):
                 if self.curr_trade_info['보유중'] > 0:
                     매도금액 = 0
                     보유수량 = 미체결수량 = self.curr_trade_info['보유수량']
-                    호가정보 = bhogainfo if self.market_gubun in (1, 3) or self.curr_trade_info['보유중'] == 1 else shogainfo
-                    for 호가, 잔량 in 호가정보:
+                    if self.market_gubun in (1, 3) or self.curr_trade_info['보유중'] == 1:
+                        호가배열 = 매수호가배열[:self.sell_hj_limit]
+                        잔량배열 = 매수잔량배열[:self.sell_hj_limit]
+                    else:
+                        호가배열 = 매도호가배열[:self.sell_hj_limit]
+                        잔량배열 = 매도잔량배열[:self.sell_hj_limit]
+                    for 호가, 잔량 in zip(호가배열, 잔량배열):
                         if 미체결수량 - 잔량 <= 0:
                             매도금액 += 호가 * 미체결수량
-                            미체결수량 -= 잔량
+                            미체결수량 = 0
                             break
                         else:
                             매도금액 += 호가 * 잔량
