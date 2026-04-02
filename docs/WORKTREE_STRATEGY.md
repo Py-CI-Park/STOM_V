@@ -309,3 +309,41 @@ A: 네. 각 워크트리에서 자유롭게 `git checkout -b feature/xxx`로 새
 
 **Q: 메인 레포의 브랜치를 바꿔야 하나요?**
 A: 현재 메인 레포는 `CLI_v258`에 있습니다. 워크트리 전략 적용 시 `STOM_Version_2`로 전환합니다. 이는 워크트리 생성 시점에 진행합니다.
+
+---
+
+## 10. 업스트림 반영 후 필수 검증
+
+공식 업데이트를 `STOM_Version_2U`, `STOM_Version_2U_C`, `CLI` 계열로 반영한 뒤에는 아래 검증을 반드시 수행합니다. 이 단계는 선택이 아니라 동기화 루틴의 일부입니다.
+
+### 10.1 실행 순서
+
+```bash
+# 예시: 비정식 워크트리 루트에서 실행
+python scripts/verify_nonrelease_sync.py
+python -m pytest tests/unit/ -q
+```
+
+### 10.2 verify_nonrelease_sync.py 역할
+
+`python scripts/verify_nonrelease_sync.py`는 이미 확인된 회귀가 다시 섞여 들어오지 않았는지 점검하는 가드 스크립트입니다. 현재 스크립트는 다음 항목을 검사합니다.
+
+- `.pyd` 파일 재유입 여부
+- 텔레그램 qlist 계약과 런타임 시작 경로 일치 여부
+- 비정식 워크트리 시리얼키 UI/로딩/저장 정책 유지 여부
+- 지수차트 삭제 후 잔여 참조 재유입 여부
+- `WebCrawling` QThread wiring 및 stop contract 유지 여부
+- `summer_time`, `get_profile_text` 호환 심볼 유지 여부
+- 키 로딩 안전 가드 유지 여부
+- `GetKiwoomPgSgSp()` 손실 반올림 회귀 여부
+
+### 10.3 실패 시 처리 원칙
+
+- `verify_nonrelease_sync.py`가 실패하면 먼저 그 항목을 수정하고 다시 스크립트를 통과시킵니다.
+- 스크립트가 통과하더라도 `pytest tests/unit/ -q`가 실패하면 테스트 실패 원인을 별도로 해결합니다.
+- 새로 발견된 회귀가 반복 가능성이 높으면 RCA 문서를 남기고, 다음부터는 `verify_nonrelease_sync.py` 규칙으로 승격합니다.
+
+### 10.4 참고 문서
+
+- `docs/update_log/2026-04-01_runtime_regression_rca_and_worktree_audit.md`
+- `scripts/verify_nonrelease_sync.py`
