@@ -68,9 +68,6 @@ class WebCrawling(QThread):
             except:
                 self.signal.emit((ui_num['시스템로그'], format_exc()))
 
-    def stop(self):
-        self.terminate()
-
     def _emit_network_warning(self, category, target, exc):
         key = (category, target, type(exc).__name__)
         now_ts = time.time()
