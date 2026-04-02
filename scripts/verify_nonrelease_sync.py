@@ -34,6 +34,10 @@ def main():
     ui_mainwindow_text = read_text("ui/ui_mainwindow.py")
     ui_etc_text = read_text("ui/ui_etc.py")
     ui_process_alive_text = read_text("ui/ui_process_alive.py")
+    ui_process_kill_text = read_text("ui/ui_process_kill.py")
+    static_text = read_text("utility/static.py")
+    webcrawling_text = read_text("utility/webcrawling.py")
+    database_check_text = read_text("utility/database_check.py") if (ROOT / "utility/database_check.py").exists() else ""
 
     check(
         "return qlist[0], qlist[3], qlist[9], qlist[10], qlist[13]" in telegram_bot_text,
@@ -59,6 +63,59 @@ def main():
         "ui/ui_process_alive.py에 텔레그램 alive helper가 없습니다.",
         failures,
     )
+    check(
+        all(symbol not in ui_mainwindow_text for symbol in ("ui.ui_draw_jisuchart", "DrawRealJisuChart", "show_jisu(")),
+        "Jisu cleanup matches V2.70 removal.",
+        "Stale jisu runtime references remain in ui/ui_mainwindow.py.",
+        failures,
+    )
+    check(
+        "qtimer0" not in ui_process_kill_text and "dialog_jisu" not in ui_process_kill_text,
+        "Shutdown cleanup matches current MainWindow runtime.",
+        "Stale runtime shutdown references remain.",
+        failures,
+    )
+    check(
+        "Process(target=WebCrawling" not in ui_mainwindow_text
+        and "WebCrawling(self.qlist)" in ui_mainwindow_text
+        and "self.webc.signal.connect(self.windowQ.put)" in ui_mainwindow_text
+        and "self.webc.start()" in ui_mainwindow_text
+        and "webc.stop()" in ui_process_kill_text,
+        "WebCrawling runtime wiring matches QThread contract.",
+        "WebCrawling runtime wiring is out of sync.",
+        failures,
+    )
+    check(
+        "summer_time = summer_t" in static_text and "def get_profile_text" in static_text,
+        "static.py compatibility exports match runtime contract.",
+        "static.py runtime compatibility exports are out of sync.",
+        failures,
+    )
+    check(
+        "self.request_timeout = 10" in webcrawling_text
+        and "self.treemap_timer = None" in webcrawling_text
+        and "while self.alive" in webcrawling_text
+        and "self.treemap_timer.cancel()" in webcrawling_text
+        and "self.wait(2000)" in webcrawling_text
+        and "timeout=self.request_timeout" in webcrawling_text,
+        "WebCrawling stop contract includes timeout and cancellation guards.",
+        "WebCrawling stop contract is incomplete.",
+        failures,
+    )
+    check(
+        "_setting_db_has_encrypted_payload" in static_text
+        and "if _setting_db_has_encrypted_payload():" in static_text
+        and "except RuntimeError:" in database_check_text,
+        "Key loading safety guard is present.",
+        "Key loading safety guard is missing.",
+        failures,
+    )
+    check(
+        "sg = int(round(pg - bg))" in static_text and "sg = int(pg - bg + 0.5)" not in static_text,
+        "Kiwoom P/L rounding matches expected loss math.",
+        "Kiwoom P/L rounding regressed.",
+        failures,
+    )
 
     if not uses_serial_key():
         set_setup_tap_text = read_text("ui/set_setup_tap.py")
@@ -79,7 +136,9 @@ def main():
             failures,
         )
         check(
-            "apply_serial_key_to_dict_set" in setting_user_text and "uses_serial_key()" in setting_user_text,
+            "uses_serial_key()" in setting_user_text and (
+                "apply_serial_key_to_dict_set" in setting_user_text or "if uses_serial_key()" in setting_user_text
+            ),
             "dict_set 적재가 비정식 워크트리 시리얼키 정책을 따릅니다.",
             "utility/setting_user.py가 비정식 워크트리에서도 시리얼키를 무조건 적재합니다.",
             failures,

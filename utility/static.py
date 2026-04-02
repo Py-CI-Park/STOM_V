@@ -447,6 +447,39 @@ def write_key():
     return key
 
 
+def _setting_db_has_encrypted_payload():
+    try:
+        import sqlite3
+        from utility.setting_base import DB_SETTING
+
+        if not os.path.exists(DB_SETTING):
+            return False
+
+        checks = {
+            'sacc': ('아이디', '비밀번호', '인증서비밀번호', '계좌비밀번호'),
+            'cacc': ('Access_key', 'Secret_key'),
+            'telegram': ('str_bot', 'int_id'),
+        }
+
+        con = sqlite3.connect(DB_SETTING)
+        cur = con.cursor()
+        for table, columns in checks.items():
+            cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name=?", (table,))
+            if cur.fetchone() is None:
+                continue
+
+            expr = " OR ".join([f"NULLIF(TRIM(CAST([{col}] AS TEXT)), '') IS NOT NULL" for col in columns])
+            cur.execute(f"SELECT 1 FROM [{table}] WHERE {expr} LIMIT 1")
+            if cur.fetchone() is not None:
+                con.close()
+                return True
+
+        con.close()
+        return False
+    except Exception:
+        return True
+
+
 def read_key():
     if reg is not None:
         try:
@@ -462,6 +495,9 @@ def read_key():
             key = f.read().strip()
         if key:
             return key
+
+    if _setting_db_has_encrypted_payload():
+        raise RuntimeError('Encryption key unavailable while encrypted settings payload exists.')
 
     return write_key()
 
