@@ -101,6 +101,14 @@ class BackEngineBase(StrategyBase):
         self.UpdateMarketGubun()
         self.MainLoop()
 
+    @property
+    def opti_turn(self):
+        return self.opti_kind
+
+    @opti_turn.setter
+    def opti_turn(self, value):
+        self.opti_kind = value
+
     def UpdateSubVars(self):
         self.market_text   = '주식' if self.market_gubun < 3 else '코인'
         self.ui_num_txt    = 'S백테스트' if self.market_gubun < 3 else 'C백테스트'
