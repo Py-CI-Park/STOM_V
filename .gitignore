@@ -90,6 +90,9 @@ Thumbs.db
 .temp/
 tmp/
 
+# Backtest result data must survive worktree propagation
+backtest/graph/
+
 # Sensitive files
 *.key
 *.pem
