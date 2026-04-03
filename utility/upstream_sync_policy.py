@@ -37,7 +37,11 @@ def expected_branch_for_worktree(worktree_path: str) -> str:
 
 
 def is_protected_non_git_path(path: str) -> bool:
-    normalized = _normalize_path(path).lstrip("./")
+    normalized = _normalize_path(path)
+    if normalized.startswith("./"):
+        normalized = normalized[2:]
+    if ".." in normalized.split("/"):
+        return False
     for protected in PROTECTED_NON_GIT_PATHS:
         prefix = protected.rstrip("/")
         if normalized == prefix or normalized.startswith(f"{prefix}/"):

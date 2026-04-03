@@ -29,6 +29,7 @@ def test_backtest_graph_is_a_protected_non_git_asset():
     assert is_protected_non_git_path("backtest/graph")
     assert is_protected_non_git_path("backtest/graph/run-2026-04-03")
     assert is_protected_non_git_path("./backtest/graph/output.png")
+    assert not is_protected_non_git_path("../../backtest/graph/output.png")
     assert not is_protected_non_git_path("backtester/graph/output.png")
 
 
