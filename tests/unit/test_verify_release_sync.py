@@ -1,5 +1,10 @@
 from scripts import verify_release_sync
-from scripts.verify_release_sync import ParsedStatus, parse_porcelain, validate_status
+from scripts.verify_release_sync import (
+    ParsedStatus,
+    parse_porcelain,
+    resolve_status_targets,
+    validate_status,
+)
 
 
 def test_parse_porcelain_splits_branch_tracked_and_untracked_entries():
@@ -41,6 +46,48 @@ def test_validate_status_rejects_branch_mismatch_tracked_edits_and_unknown_untra
     assert any("scratch.txt" in failure for failure in failures)
 
 
+def test_main_rejects_tracked_backtest_graph_files(tmp_path, monkeypatch, capsys):
+    root = tmp_path / "isolated-root"
+    root.mkdir()
+    (root / ".gitignore").write_text("backtest/graph/\n", encoding="utf-8")
+
+    monkeypatch.setattr(
+        verify_release_sync,
+        "resolve_status_targets",
+        lambda worktree_root: [("feature/upstream-worktree-propagation", worktree_root)],
+    )
+    monkeypatch.setattr(
+        verify_release_sync,
+        "git_status_lines",
+        lambda worktree_path: ["## feature/upstream-worktree-propagation"],
+    )
+    monkeypatch.setattr(
+        verify_release_sync,
+        "git_tracked_files",
+        lambda worktree_path, pathspec: ["backtest/graph/result.png"],
+    )
+
+    assert verify_release_sync.main(["--root", str(root)]) == 1
+    assert (
+        capsys.readouterr().out.strip()
+        == f"{root}: tracked files present under backtest/graph: backtest/graph/result.png"
+    )
+
+
+def test_resolve_status_targets_treats_canonical_root_case_insensitively(monkeypatch):
+    def fail_if_called(worktree_path: str) -> str:
+        raise AssertionError(f"current_branch_for_worktree should not be called for {worktree_path}")
+
+    monkeypatch.setattr(
+        verify_release_sync, "current_branch_for_worktree", fail_if_called
+    )
+
+    assert (
+        resolve_status_targets("c:/System_Trading/STOM/stom_v")
+        == list(verify_release_sync.PROPAGATION_CHAIN)
+    )
+
+
 def test_main_uses_root_for_gitignore_and_worktree_resolution(tmp_path, monkeypatch, capsys):
     root = tmp_path / "isolated-root"
     root.mkdir()
@@ -72,6 +119,9 @@ def test_main_uses_root_for_gitignore_and_worktree_resolution(tmp_path, monkeypa
         verify_release_sync, "resolve_status_targets", fake_resolve_status_targets
     )
     monkeypatch.setattr(verify_release_sync, "git_status_lines", fake_git_status_lines)
+    monkeypatch.setattr(
+        verify_release_sync, "git_tracked_files", lambda worktree_path, pathspec: []
+    )
     monkeypatch.setattr(verify_release_sync, "parse_porcelain", fake_parse_porcelain)
     monkeypatch.setattr(verify_release_sync, "validate_target", fake_validate_target)
 

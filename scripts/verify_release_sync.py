@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ntpath
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -91,8 +92,19 @@ def current_branch_for_worktree(worktree_path: str) -> str:
     return result.stdout.strip()
 
 
+def git_tracked_files(worktree_path: str, pathspec: str) -> list[str]:
+    result = subprocess.run(
+        ["git", "-C", worktree_path, "ls-files", "--", pathspec],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return [line for line in result.stdout.splitlines() if line]
+
+
 def normalize_root(path: str) -> str:
-    return str(Path(path)).replace("\\", "/").rstrip("/")
+    normalized = ntpath.normpath(str(path)).replace("\\", "/").rstrip("/")
+    return normalized.casefold()
 
 
 def resolve_status_targets(root: str) -> list[tuple[str, str]]:
@@ -115,6 +127,12 @@ def main(argv: list[str] | None = None) -> int:
     for expected_branch, worktree_path in resolve_status_targets(args.root):
         parsed = parse_porcelain(git_status_lines(worktree_path))
         failures.extend(validate_target(expected_branch, worktree_path, parsed))
+        tracked_graph_files = git_tracked_files(worktree_path, "backtest/graph")
+        if tracked_graph_files:
+            failures.append(
+                f"{worktree_path}: tracked files present under backtest/graph: "
+                f"{', '.join(tracked_graph_files)}"
+            )
 
     if failures:
         print("\n".join(failures))
