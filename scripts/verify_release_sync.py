@@ -77,10 +77,10 @@ def git_status_lines(worktree_path: str) -> list[str]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default="C:/System_Trading/STOM/STOM_V")
-    parser.parse_args(argv)
+    args = parser.parse_args(argv)
 
     failures: list[str] = []
-    gitignore_text = (ROOT / ".gitignore").read_text(encoding="utf-8")
+    gitignore_text = (Path(args.root) / ".gitignore").read_text(encoding="utf-8")
     if "backtest/graph/" not in gitignore_text:
         failures.append(".gitignore must ignore backtest/graph/")
 
