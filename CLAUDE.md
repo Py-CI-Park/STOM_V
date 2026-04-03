@@ -5,11 +5,12 @@
 The current worktree mapping is:
 
 ```text
-C:/System_Trading/STOM/STOM_V/          -> STOM_Version_2
-C:/System_Trading/STOM/STOM_V.wt-2u/    -> STOM_Version_2U
-C:/System_Trading/STOM/STOM_V.wt-2uc/   -> STOM_Version_2U_C
-C:/System_Trading/STOM/STOM_V.wt-dev/   -> STOM_Version_2U_C_CLI_v267
-C:/System_Trading/STOM/STOM_V.wt-lab/   -> research/init
+C:/System_Trading/STOM/
+├── STOM_V/            -> STOM_Version_2
+├── STOM_V.wt-2u/      -> STOM_Version_2U
+├── STOM_V.wt-2uc/     -> STOM_Version_2U_C
+├── STOM_V.wt-dev/     -> STOM_Version_2U_C_CLI_v267
+└── STOM_V.wt-lab/     -> research/init
 ```
 
 Use the directories for their assigned branches only. `STOM_V.wt-dev/` is the CLI lane, and `STOM_V.wt-2uc/` is the dedicated `STOM_Version_2U_C` lane.
@@ -36,6 +37,18 @@ That maps to:
 
 Do not bypass V2 ingress and do not skip intermediate lanes.
 
+## Upstream Freshness Check
+
+Use this operator sequence before deciding whether the release lane needs an update:
+
+```bash
+git fetch https://github.com/devstom/STOM.git master:refs/remotes/devstom_tmp/master
+git show refs/remotes/devstom_tmp/master:_update.txt | head -5
+python scripts/verify_release_sync.py
+```
+
+The `git fetch` command refreshes a temporary remote-tracking ref from the authoritative GitHub upstream. Inspect `_update.txt` from that fetched ref to confirm the newest release marker before starting propagation.
+
 ## Release Preflight
 
 Before release propagation, policy verification, or handoff, run:
@@ -50,7 +63,7 @@ If you are validating an isolated checkout root, use:
 python scripts/verify_release_sync.py --root C:/System_Trading/STOM/STOM_V.wt-upsync
 ```
 
-Expect `release sync preflight passed` before claiming the lane is clean.
+Expect `release sync preflight passed` before claiming the lane is clean. The propagation order remains `V2 -> 2U -> 2U_C -> CLI_v267 -> research/init`.
 
 ## Protected Paths
 

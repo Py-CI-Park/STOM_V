@@ -20,6 +20,17 @@ The local mirror is reference-only. It is useful for inspection and fallback acc
 
 ## Worktree Propagation Chain
 
+The current worktree layout is:
+
+```text
+C:/System_Trading/STOM/
+├── STOM_V/            -> STOM_Version_2
+├── STOM_V.wt-2u/      -> STOM_Version_2U
+├── STOM_V.wt-2uc/     -> STOM_Version_2U_C
+├── STOM_V.wt-dev/     -> STOM_Version_2U_C_CLI_v267
+└── STOM_V.wt-lab/     -> research/init
+```
+
 The required propagation order is:
 
 ```text

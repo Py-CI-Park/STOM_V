@@ -49,4 +49,9 @@ Do not skip lanes, and do not treat `STOM_V.wt-dev/` as a substitute for the `2U
 - Official updates enter only through `STOM_Version_2`.
 - `backtest/graph/` is a protected result-data path, not a git-propagated source path.
 - Docs, scripts, tests, CLI-only surfaces, and research-only surfaces stay out of release overlays unless a task explicitly targets them.
-- Before release work or propagation verification, run `python scripts/verify_release_sync.py`.
+
+Before release work or propagation verification, run:
+
+```bash
+python scripts/verify_release_sync.py
+```
