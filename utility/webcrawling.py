@@ -42,6 +42,10 @@ class WebCrawling(QThread):
         self.dict_data   = {}
         self.thread_lock = Lock()
         self.thread_join = 0
+        self.warning_lock = Lock()
+        self.warning_state = {}
+        self.warning_cooldown = 60
+        self.network_timeout = 10
 
     def run(self):
         self.CrawlingHomTapData()
@@ -63,6 +67,33 @@ class WebCrawling(QThread):
                 time.sleep(0.01)
             except:
                 self.signal.emit((ui_num['시스템로그'], format_exc()))
+
+    def _emit_network_warning(self, category, target, exc):
+        key = (category, target, type(exc).__name__)
+        now_ts = time.time()
+        with self.warning_lock:
+            last_ts = self.warning_state.get(key)
+            if last_ts is not None and now_ts - last_ts < self.warning_cooldown:
+                return
+            self.warning_state[key] = now_ts
+        self.signal.emit((ui_num['\uc2dc\uc2a4\ud15c\ub85c\uadf8'], f'{category} \uac31\uc2e0 \uc2e4\ud328({target}): {type(exc).__name__}'))
+
+    def _clear_network_warning(self, category, target):
+        with self.warning_lock:
+            for key in [k for k in self.warning_state if k[0] == category and k[1] == target]:
+                del self.warning_state[key]
+
+    def _complete_network_job(self):
+        self.thread_join += 1
+
+    def _run_network_job(self, category, target, job):
+        try:
+            result = job()
+            self._clear_network_warning(category, target)
+            return result
+        except (requests.exceptions.RequestException, OSError, TimeoutError, ValueError) as exc:
+            self._emit_network_warning(category, target, exc)
+            return None
 
     def Crawling(self, data):
         cmd, data = data
@@ -294,6 +325,9 @@ class WebCrawling(QThread):
 
     @thread_decorator
     def get_korean_stocks(self, search_today, search_time, name, symbol):
+        self._get_korean_stocks(search_today, search_time, name, symbol)
+
+    def _get_korean_stocks(self, search_today, search_time, name, symbol):
         """한국주식 데이터 수집 (네이버)"""
         existing_data = self.dict_data.get(name)
         if existing_data is not None:
@@ -301,84 +335,91 @@ class WebCrawling(QThread):
         else:
             last_time = None
 
-        i = 1
-        time_list  = []
-        price_list = []
-        gap_list   = []
-        pct_list   = []
-        last_times = None
+        def job():
+            i = 1
+            time_list  = []
+            price_list = []
+            gap_list   = []
+            pct_list   = []
+            last_times = None
 
-        while True:
-            url  = f'{self.base_url}/sise/sise_index_time.naver?code={symbol}&thistime={search_time}&page={i}'
-            resp = self.session.get(url, headers=self.headers)
-            soup = BeautifulSoup(resp.text, 'html.parser')
+            while True:
+                url  = f'{self.base_url}/sise/sise_index_time.naver?code={symbol}&thistime={search_time}&page={i}'
+                resp = self.session.get(url, headers=self.headers, timeout=self.network_timeout)
+                soup = BeautifulSoup(resp.text, 'html.parser')
 
-            page_times = [t.get_text(strip=True) for t in soup.select('td.date')]
-            if last_times != page_times:
-                last_times = page_times
-            else:
-                break
-
-            page_prices = [p.get_text(strip=True) for p in soup.select('td.number_1')[::4]]
-            page_gaps   = [p.get_text(strip=True) for p in soup.select('span.tah')]
-            page_buhos  = [t['alt'] for t in soup.select('td > img')]
-            page_buhos  = [-1 if b == '하락' else 1 for b in page_buhos]
-
-            if '0' in page_gaps:
-                k = 0
-                new_buhos = []
-                for g in page_gaps:
-                    if g != '0':
-                        new_buhos.append(page_buhos[k])
-                        k += 1
-                    else:
-                        new_buhos.append(1)
-                page_buhos = new_buhos
-
-            page_times  = [dt_ymdhms_ios(f"{search_today} {t}:00").timestamp() for t in page_times if t != '']
-            page_prices = [float(p.replace(',', '')) for p in page_prices if p != '']
-            page_gaps   = [float(g.replace(',', '')) for g in page_gaps if g != '']
-            page_gaps   = [g * b for g, b in zip(page_gaps, page_buhos)]
-            page_pcts   = [round((p / (p - g) - 1) * 100, 2) for p, g in zip(page_prices, page_gaps)]
-
-            if page_times and page_prices and page_gaps and page_pcts:
-                if existing_data is not None and last_time in page_times:
-                    duplicate_index = page_times.index(last_time)
-                    if duplicate_index > 0:
-                        time_list.extend(page_times[:duplicate_index])
-                        price_list.extend(page_prices[:duplicate_index])
-                        gap_list.extend(page_gaps[:duplicate_index])
-                        pct_list.extend(page_pcts[:duplicate_index])
-                    break
+                page_times = [t.get_text(strip=True) for t in soup.select('td.date')]
+                if last_times != page_times:
+                    last_times = page_times
                 else:
-                    time_list.extend(page_times)
-                    price_list.extend(page_prices)
-                    gap_list.extend(page_gaps)
-                    pct_list.extend(page_pcts)
+                    break
 
-            time.sleep(0.1)
-            i += 1
+                page_prices = [p.get_text(strip=True) for p in soup.select('td.number_1')[::4]]
+                page_gaps   = [p.get_text(strip=True) for p in soup.select('span.tah')]
+                page_buhos  = [t['alt'] for t in soup.select('td > img')]
+                page_buhos  = [-1 if b == '하락' else 1 for b in page_buhos]
 
-        if time_list:
-            df = pd.DataFrame({
-                'time': time_list[::-1],
-                'price': price_list[::-1],
-                'gap': gap_list[::-1],
-                'change': pct_list[::-1]
-            })
-        else:
-            df = None
+                if '0' in page_gaps:
+                    k = 0
+                    new_buhos = []
+                    for g in page_gaps:
+                        if g != '0':
+                            new_buhos.append(page_buhos[k])
+                            k += 1
+                        else:
+                            new_buhos.append(1)
+                    page_buhos = new_buhos
+
+                page_times  = [dt_ymdhms_ios(f"{search_today} {t}:00").timestamp() for t in page_times if t != '']
+                page_prices = [float(p.replace(',', '')) for p in page_prices if p != '']
+                page_gaps   = [float(g.replace(',', '')) for g in page_gaps if g != '']
+                page_gaps   = [g * b for g, b in zip(page_gaps, page_buhos)]
+                page_pcts   = [round((p / (p - g) - 1) * 100, 2) for p, g in zip(page_prices, page_gaps)]
+
+                if page_times and page_prices and page_gaps and page_pcts:
+                    if existing_data is not None and last_time in page_times:
+                        duplicate_index = page_times.index(last_time)
+                        if duplicate_index > 0:
+                            time_list.extend(page_times[:duplicate_index])
+                            price_list.extend(page_prices[:duplicate_index])
+                            gap_list.extend(page_gaps[:duplicate_index])
+                            pct_list.extend(page_pcts[:duplicate_index])
+                        break
+                    else:
+                        time_list.extend(page_times)
+                        price_list.extend(page_prices)
+                        gap_list.extend(page_gaps)
+                        pct_list.extend(page_pcts)
+
+                time.sleep(0.1)
+                i += 1
+
+            if time_list:
+                return pd.DataFrame({
+                    'time': time_list[::-1],
+                    'price': price_list[::-1],
+                    'gap': gap_list[::-1],
+                    'change': pct_list[::-1]
+                })
+            return None
+
+        df = self._run_network_job('\uad6d\ub0b4\uc9c0\uc218', name, job)
 
         with self.thread_lock:
+            if df is None:
+                self._complete_network_job()
+                return
             if existing_data is not None:
-                if df is not None:
-                    self.dict_data[name] = pd.concat([existing_data, df])
+                self.dict_data[name] = pd.concat([existing_data, df])
             else:
                 self.dict_data[name] = df
-            self.thread_join += 1
+            self._complete_network_job()
 
     @thread_decorator
     def get_market_indicator(self):
+        self._get_market_indicator()
+
+    def _get_market_indicator(self):
         symbols = {
             '환율': f'{self.base_url}/marketindex/exchangeDailyQuote.naver?marketindexCd=FX_USDKRW&page=',
             '휘발유': f'{self.base_url}/marketindex/oilDailyQuote.naver?marketindexCd=OIL_GSL&page=',
@@ -392,65 +433,72 @@ class WebCrawling(QThread):
             else:
                 last_time = None
 
-            i = 1
-            time_list  = []
-            price_list = []
-            pct_list   = []
-            list_gap   = 3 if name in ('휘발유', '국제금') else 2
+            def job():
+                i = 1
+                time_list  = []
+                price_list = []
+                pct_list   = []
+                list_gap   = 3 if name in ('휘발유', '국제금') else 2
 
-            while True:
-                url  = f'{url_base}{i}'
-                resp = self.session.get(url, headers=self.headers)
-                soup = BeautifulSoup(resp.text, 'html.parser')
+                while True:
+                    url  = f'{url_base}{i}'
+                    resp = self.session.get(url, headers=self.headers, timeout=self.network_timeout)
+                    soup = BeautifulSoup(resp.text, 'html.parser')
 
-                page_times  = [t.get_text(strip=True) for t in soup.select('td.date')]
-                page_prices = [t.get_text(strip=True) for t in soup.select('td.num')][::list_gap]
-                page_gaps   = [t.get_text(strip=True) for t in soup.select('td.num')][1::list_gap]
-                page_buhos  = [t['alt'] for t in soup.select('td > img')]
-                page_buhos  = [-1 if b == '하락' else 1 for b in page_buhos]
-                page_times  = [dt_ymd(t.replace('.', '')).timestamp() for t in page_times if t != '']
-                page_prices = [float(p.replace(',', '')) for p in page_prices if p != '']
-                page_gaps   = [float(g.replace(',', '')) for g in page_gaps if g != '']
-                page_gaps   = [g * b for g, b in zip(page_gaps, page_buhos)]
-                page_pcts   = [round((p / (p - g) - 1) * 100, 2) for p, g in zip(page_prices, page_gaps)]
+                    page_times  = [t.get_text(strip=True) for t in soup.select('td.date')]
+                    page_prices = [t.get_text(strip=True) for t in soup.select('td.num')][::list_gap]
+                    page_gaps   = [t.get_text(strip=True) for t in soup.select('td.num')][1::list_gap]
+                    page_buhos  = [t['alt'] for t in soup.select('td > img')]
+                    page_buhos  = [-1 if b == '하락' else 1 for b in page_buhos]
+                    page_times  = [dt_ymd(t.replace('.', '')).timestamp() for t in page_times if t != '']
+                    page_prices = [float(p.replace(',', '')) for p in page_prices if p != '']
+                    page_gaps   = [float(g.replace(',', '')) for g in page_gaps if g != '']
+                    page_gaps   = [g * b for g, b in zip(page_gaps, page_buhos)]
+                    page_pcts   = [round((p / (p - g) - 1) * 100, 2) for p, g in zip(page_prices, page_gaps)]
 
-                if existing_data is not None and last_time in page_times:
-                    duplicate_index = page_times.index(last_time)
-                    if duplicate_index > 0:
-                        time_list.extend(page_times[:duplicate_index])
-                        price_list.extend(page_prices[:duplicate_index])
-                        pct_list.extend(page_pcts[:duplicate_index])
-                    break
-                else:
-                    time_list.extend(page_times)
-                    price_list.extend(page_prices)
-                    pct_list.extend(page_pcts)
+                    if existing_data is not None and last_time in page_times:
+                        duplicate_index = page_times.index(last_time)
+                        if duplicate_index > 0:
+                            time_list.extend(page_times[:duplicate_index])
+                            price_list.extend(page_prices[:duplicate_index])
+                            pct_list.extend(page_pcts[:duplicate_index])
+                        break
+                    else:
+                        time_list.extend(page_times)
+                        price_list.extend(page_prices)
+                        pct_list.extend(page_pcts)
 
-                if len(time_list) > 100:
-                    break
+                    if len(time_list) > 100:
+                        break
 
-                time.sleep(0.1)
-                i += 1
+                    time.sleep(0.1)
+                    i += 1
 
-            if time_list:
-                df = pd.DataFrame({
-                    'time': time_list[::-1],
-                    'price': price_list[::-1],
-                    'change': pct_list[::-1]
-                })
-            else:
-                df = None
+                if time_list:
+                    return pd.DataFrame({
+                        'time': time_list[::-1],
+                        'price': price_list[::-1],
+                        'change': pct_list[::-1]
+                    })
+                return None
+
+            df = self._run_network_job('\uc2dc\uc7a5\uc9c0\ud45c', name, job)
 
             with self.thread_lock:
+                if df is None:
+                    self._complete_network_job()
+                    continue
                 if existing_data is not None:
-                    if df is not None:
-                        self.dict_data[name] = pd.concat([existing_data, df])
+                    self.dict_data[name] = pd.concat([existing_data, df])
                 else:
                     self.dict_data[name] = df
-                self.thread_join += 1
+                self._complete_network_job()
 
     @thread_decorator
     def get_crypto_data(self):
+        self._get_crypto_data()
+
+    def _get_crypto_data(self):
         """암호화폐 데이터 수집 (1분봉 전체)"""
         symbols = {
             'BTC/USDT': 'BTCUSDT',
@@ -464,25 +512,29 @@ class WebCrawling(QThread):
         }
 
         for name, symbol in symbols.items():
-            url  = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=1000"
-            resp = requests.get(url, headers=self.headers, timeout=10)
-            data = resp.json()
+            def job():
+                url  = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=1000"
+                resp = requests.get(url, headers=self.headers, timeout=self.network_timeout)
+                resp.raise_for_status()
+                data = resp.json()
 
-            time_list = [int(kline[0] / 1000) for kline in data]
-            price_list = [float(kline[4]) for kline in data]
-            change_list = [round((price / float(data[0][4]) - 1)  * 100, 2) for price in price_list]
+                time_list = [int(kline[0] / 1000) for kline in data]
+                price_list = [float(kline[4]) for kline in data]
+                change_list = [round((price / float(data[0][4]) - 1)  * 100, 2) for price in price_list]
 
-            if time_list:
-                df = pd.DataFrame({
-                    'time': time_list,
-                    'price': price_list,
-                    'change': change_list
-                })
-            else:
-                df = None
+                if time_list:
+                    return pd.DataFrame({
+                        'time': time_list,
+                        'price': price_list,
+                        'change': change_list
+                    })
+                return None
+
+            df = self._run_network_job('\ubc14\uc774\ub0b8\uc2a4 \ub370\uc774\ud130', name, job)
 
             with self.thread_lock:
-                self.dict_data[name] = df
-                self.thread_join += 1
+                if df is not None:
+                    self.dict_data[name] = df
+                self._complete_network_job()
 
             time.sleep(0.1)
