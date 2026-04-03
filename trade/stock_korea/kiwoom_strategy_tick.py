@@ -16,7 +16,7 @@ from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_STOCK
     list_stock_tick, list_stock_min
 # noinspection PyUnresolvedReferences
 from utility.static import now, timedelta_sec, GetKiwoomPgSgSp, GetHogaunit, get_buy_indi_stg, \
-    str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, error_decorator, set_builtin_print, get_profile_text
+    str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, set_builtin_print, get_profile_text
 
 
 class KiwoomStrategyTick(StrategyBase):
@@ -159,13 +159,16 @@ class KiwoomStrategyTick(StrategyBase):
         if self.gubun == 7:
             self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 시작')))
         while True:
-            data = self.sstgQ.get()
-            if data.__class__ == list:
-                self.Strategy(data)
-            elif data.__class__ == tuple:
-                self.UpdateTuple(data)
-            elif data.__class__ == str:
-                self.UpdateString(data)
+            try:
+                data = self.sstgQ.get()
+                if data.__class__ == list:
+                    self.Strategy(data)
+                elif data.__class__ == tuple:
+                    self.UpdateTuple(data)
+                elif data.__class__ == str:
+                    self.UpdateString(data)
+            except:
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], format_exc())))
 
     def UpdateTuple(self, data):
         gubun, data = data

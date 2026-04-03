@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from utility.setting_base import columns_cj, columns_td, ui_num, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, GetUpbitHogaunit, GetUpbitPgSgSp, now_utc, str_ymdhmsf, str_hmsf, \
-    str_hms, str_ymd, dt_hms, qtest_qwait
+    str_hms, str_ymd, dt_hms, qtest_qwait, set_builtin_print, error_decorator
 
 
 class Updater(QThread):
@@ -98,6 +98,7 @@ class UpbitTrader:
         self.updater.signal3.connect(self.UpdateString)
         self.updater.start()
 
+        set_builtin_print(True, self.windowQ)
         app.exec_()
 
     def get_jgcs_time(self):
@@ -180,6 +181,7 @@ class UpbitTrader:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
+    @error_decorator
     def CheckOrder(self, data):
         if len(data) == 6:
             주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 잔고청산 = data
@@ -529,6 +531,7 @@ class UpbitTrader:
                 index = str(int(index) + 1)
         return index
 
+    @error_decorator
     def UpdateChejanData(self, 주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 주문번호):
         index = self.GetIndex()
 

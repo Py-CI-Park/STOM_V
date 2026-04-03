@@ -4,6 +4,7 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from copy import deepcopy
+from traceback import format_exc
 from trade.risk_analyzer import RiskAnalyzer
 from trade.strategy_base import StrategyBase
 from trade.formula_manager import get_formula_data
@@ -11,7 +12,7 @@ from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, \
     list_coin_tick, list_coin_min
 from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_buy_indi_stg, dt_ymdhms, \
-    get_ema_list, get_angle_cf, error_decorator, set_builtin_print
+    get_ema_list, get_angle_cf, set_builtin_print
 
 
 class UpbitStrategyTick(StrategyBase):
@@ -139,20 +140,27 @@ class UpbitStrategyTick(StrategyBase):
     def SetBuyStg(self, buytxt):
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
         if indistg is not None:
-            exec(indistg)
-            self.windowQ.put((ui_num['기본로그'], f'{self.indicator}'))
+            try:
+                exec(indistg)
+            except:
+                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - indistg'))
+            else:
+                self.windowQ.put((ui_num['기본로그'], f'{self.indicator}'))
         self.indi_settings = list(self.indicator.values())
 
     def MainLoop(self):
         self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 전략 연산 시작'))
         while True:
-            data = self.cstgQ.get()
-            if data.__class__ == list:
-                self.Strategy(data)
-            elif data.__class__ == tuple:
-                self.UpdateTuple(data)
-            elif data.__class__ == str:
-                self.UpdateString(data)
+            try:
+                data = self.cstgQ.get()
+                if data.__class__ == list:
+                    self.Strategy(data)
+                elif data.__class__ == tuple:
+                    self.UpdateTuple(data)
+                elif data.__class__ == str:
+                    self.UpdateString(data)
+            except:
+                self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def UpdateTuple(self, data):
         gubun, data = data
@@ -204,7 +212,6 @@ class UpbitStrategyTick(StrategyBase):
             self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료'))
 
     # noinspection PyUnusedLocal
-    @error_decorator
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
             초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
