@@ -1,125 +1,63 @@
-# STOM Project Guidelines (research/*)
+# STOM Project Guidelines (research/init)
 
 > **워크트리 위치**: `STOM_V.wt-lab/`
-> **관련 문서**: [`docs/WORKTREE_STRATEGY.md`](docs/WORKTREE_STRATEGY.md)
+> **브랜치 역할**: formal downstream research baseline인 `research/init`
+> **관련 문서**: `C:/System_Trading/STOM/STOM_V/docs/WORKTREE_STRATEGY.md`, `C:/System_Trading/STOM/STOM_V/docs/UPSTREAM_SYNC_STRATEGY.md`
 
-## 브랜치 목적
+## Read First
 
-`research/*` 브랜치는 **실험적 기능 프로토타입** 전용입니다.
-실패해도 다른 브랜치에 영향을 주지 않으며, 성공 시 `wt-dev`에서 머지합니다.
+- Top-level lifecycle: `C:/System_Trading/STOM/STOM_V/docs/FORMAL_UPDATE_OPERATING_SYSTEM.md`
+- Carry-forward registry: `C:/System_Trading/STOM/STOM_V/docs/CARRY_FORWARD_REGISTRY.md`
+- Current cycle status: `C:/System_Trading/STOM/STOM_V/docs/update_log/2026-04-05_v274_v277_cycle_status.md`
+- Local baseline note: `C:/System_Trading/STOM/STOM_V.wt-lab/docs/update_log/2026-04-04_v274_v277_research_init_baseline_note.md`
 
----
+## Branch Gate
+- `python scripts/verify_nonrelease_sync.py`
+- `python -m pytest tests/unit/ -q`
+- canonical base: `CLI_v267`
 
-## 공식 업데이트 추적 기준
+## 레인 역할
 
-`research/*` 브랜치도 부모 브랜치의 공식 업데이트를 계속 따라가야 합니다.
-다만 그대로 복사하는 것이 아니라, 리서치 브랜치 맥락에 맞게 조정하여 반영합니다.
+이 워크트리는 generic `research/*` 안내문이 아니라
+formal downstream propagation의 마지막 보호 레인인 `research/init` 기준선입니다.
+새 연구 브랜치는 여기서 분기할 수 있지만, 공식 전파 체인의 종착점은 `research/init` 자체입니다.
 
-### 기준 브랜치
+상하류 관계:
 
-- **canonical base**: `wt-dev / STOM_Version_2U_C_CLI_v267`
+- canonical base: `STOM_V.wt-dev/` → `STOM_Version_2U_C_CLI_v267`
+- 현재 레인: `STOM_V.wt-lab/` → `research/init`
+- 실험 브랜치: 필요 시 `research/*`는 여기서 분기
 
-### 적용 원칙
-
-| 원칙 | 의미 |
-|------|------|
-| A | 공식 업데이트는 부모 브랜치 기준으로 계속 흡수 |
-| B | 리서치 브랜치 상태와 실험 구조를 고려해 추론/조정 적용 |
-| C | `AGENTS.md`, `CLAUDE.md`, 연구 계획 문서, 최소 호환 보정은 유지 |
-
-### 공식 업데이트 커밋 규칙
-
-공식 업데이트 반영 작업에서는 리서치 브랜치도 버전 단위 커밋 기록을 사용합니다.
-
-- 커밋 제목: `STOM V2.68`, `STOM V2.69`, ...
-- 적용은 실무 묶음 단위로 나눌 수 있지만, 최종 기록은 버전 단위로 남깁니다.
-- 즉, research 브랜치도 공식 업데이트를 받을 때는 canonical base와 같은 버전 추적 단위를 사용합니다.
-
-### 반드시 먼저 읽을 문서
-
-- `docs/research/2026-03-28_research_init_v259_v267_sync_matrix_and_plan.md`
-- `docs/research/2026-03-28_research_init_official_update_playbook.md`
-- `docs/research/2026-03-28_research_init_v267_preparation_completion_report.md`
-
-### 이상적인 반영 순서
-
-1. 용어/키 체계 (`V2.59` 계열)
-2. UI / 설정 골격 (`V2.60~V2.63`)
-3. 홈탭 crawler 구조 (`V2.64~V2.65`)
-4. 런타임 구조 (`V2.64~V2.65`)
-5. 백테스트 의미 체계
-6. tick + 시장미시구조 분석 (`V2.67`)
-7. safe subset / tail sync
-8. broad `py_compile` + startup smoke + push
-
-### 금지
-
-- 공식 업데이트를 장기간 미반영한 채 연구 코드만 누적
-- stale import / stale process 구조를 방치
-- branch-specific 문서/호환 보정까지 모두 없애고 byte-identical parity를 강제
-
----
-
-## 작업 방법
-
-### 새 실험 시작
-
-```bash
-cd C:\System_Trading\STOM\STOM_V.wt-lab
-git checkout -b research/new-experiment
-# ... 실험 작업 ...
-```
-
-### 실험 성공 → wt-dev에 머지
-
-```bash
-# wt-dev에서 머지
-cd C:\System_Trading\STOM\STOM_V.wt-dev
-git merge research/new-experiment
-```
-
-### 실험 실패 → 브랜치 유지 (히스토리 보존)
-
-```bash
-# 새 실험 브랜치를 생성하고 전환
-cd C:\System_Trading\STOM\STOM_V.wt-lab
-git checkout -b research/another-experiment
-# 이전 실패 브랜치는 히스토리 참조용으로 유지
-```
-
----
-
-## 이 브랜치에서 하는 일
-
-- 새 분석 방법 실험
-- ML 모델 프로토타입
-- 새 데이터 소스 연동 테스트
-- PoC (Proof of Concept) 개발
-- 성능 벤치마크, 비교 실험
-
-## 이 브랜치에서 하지 않는 일
-
-- 프로덕션 기능 개발 (→ wt-dev/)
-- 업스트림 동기화 (→ STOM_V/)
-- pyd→py 추론 (→ wt-2u/)
-
----
-
-## 커밋 규칙
-
-| 항목 | 규칙 |
-|------|------|
-| 브랜치명 | `research/{실험 주제}` |
-| 커밋 형식 | 실험 커밋은 자유, 공식 업데이트 반영 커밋은 `STOM V2.xx` |
-| 스테이징 | 명시적 파일 지정 (`git add -A` 사용 금지) |
-
----
-
-## 워크트리 전체 구성
+## 현재 워크트리 토폴로지
 
 | 디렉토리 | 브랜치 | 역할 |
 |----------|--------|------|
-| `STOM_V/` | `STOM_Version_2` | 업스트림 원본 추적 |
-| `STOM_V.wt-2u/` | `STOM_Version_2U` | pyd→py 동기화 |
-| `STOM_V.wt-dev/` | `STOM_Version_2U_C` | 커스텀 개발 (CLI 등) |
-| **`STOM_V.wt-lab/`** (여기) | `research/*` | 실험 |
+| `STOM_V/` | `STOM_Version_2` | 공식 ingress 레인 |
+| `STOM_V.wt-2u/` | `STOM_Version_2U` | pyd→py 동기화 레인 |
+| `STOM_V.wt-2uc/` | `STOM_Version_2U_C` | 커스텀 통합 레인 |
+| `STOM_V.wt-dev/` | `STOM_Version_2U_C_CLI_v267` | CLI_v267 레인 |
+| **`STOM_V.wt-lab/`** | `research/init` | formal research downstream 레인 |
+
+전파 순서:
+`V2 -> 2U -> 2U_C -> CLI_v267 -> research/init`
+
+## 작업 규칙
+
+- 공식 wave는 반드시 `CLI_v267`를 통과한 뒤에만 이 레인으로 들어온다.
+- branch-local 연구 문서, carry-forward 보정, 연구 전용 safe subset은 여기서 유지한다.
+- `research/init`을 generic scratch branch처럼 취급하지 않는다.
+- 새 실험이 필요하면 `research/init`에서 `research/...` 브랜치를 분기하고, baseline은 별도로 보존한다.
+
+## 여기서 하는 일
+
+- formal propagation의 마지막 downstream 기준선 유지
+- research 문맥에 맞는 branch-local 보정 반영
+- 실험 브랜치의 출발점 제공
+- carry-forward 문서와 연구 호환성 유지
+
+## 여기서 하지 않는 일
+
+- release ingress / 2U / 2U_C / CLI_v267 역할을 대신 수행
+- generic `research/*` 안내문으로 baseline을 흐리기
+- 상위 레인 검증 없이 공식 변경을 직접 흡수
+- 실험 브랜치와 baseline 레인을 혼동
