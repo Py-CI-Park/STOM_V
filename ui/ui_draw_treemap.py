@@ -47,7 +47,6 @@ class DrawTremap:
                                   value=self.df_tm1['등락율%'], color=self.tm_cl1, ax=self.tm_ax1,
                                   bar_kwargs=dict(linewidth=1, edgecolor='#000000'))
                     self.ui.canvas.figure.tight_layout()
-                    # noinspection PyTypeChecker
                     self.ui.canvas.mpl_connect('button_press_event', mouse_press)
                     self.ui.canvas.draw()
             elif event.inaxes == self.tm_ax2 and self.df_tm2 is not None:
@@ -68,7 +67,6 @@ class DrawTremap:
                                   value=self.df_tm2['등락율%'], color=self.tm_cl2, ax=self.tm_ax2,
                                   bar_kwargs=dict(linewidth=1, edgecolor='#000000'))
                     self.ui.canvas.figure.tight_layout()
-                    # noinspection PyTypeChecker
                     self.ui.canvas.mpl_connect('button_press_event', mouse_press)
                     self.ui.canvas.draw()
 
@@ -138,6 +136,5 @@ class DrawTremap:
                           color=cl2, ax=self.tm_ax2, bar_kwargs=dict(linewidth=1, edgecolor='#000000'))
 
         self.ui.canvas.figure.tight_layout()
-        # noinspection PyTypeChecker
         self.ui.canvas.mpl_connect('button_press_event', mouse_press)
         self.ui.canvas.draw()

@@ -478,10 +478,8 @@ def chart_moneytop_list(ui):
         return
 
     if is_min:
-        # noinspection PyUnresolvedReferences
         table_list = list(set(';'.join(df['거래대금순위'].to_list()).split(';')))
     else:
-        # noinspection PyUnresolvedReferences
         table_list = list(set(';'.join(df['거래대금순위'].to_list()[29:]).split(';')))
     name_list = [ui.dict_name[code] if code in ui.dict_name else code for code in table_list] if not coin else table_list
     name_list.sort()

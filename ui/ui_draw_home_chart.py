@@ -130,7 +130,6 @@ class DrawHomeChart:
             below_segments = []
             start = None
             below_mask = ~above_mask
-            # noinspection PyTypeChecker
             for i, is_below in enumerate(below_mask):
                 if is_below and start is None:
                     start = i
@@ -138,7 +137,6 @@ class DrawHomeChart:
                     below_segments.append((start, i-1))
                     start = None
             if start is not None:
-                # noinspection PyTypeChecker
                 below_segments.append((start, len(below_mask)-1))
 
             for start_idx, end_idx in above_segments:
