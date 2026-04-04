@@ -1,12 +1,12 @@
 
 import sys
 import pyqtgraph as pg
-from traceback import format_exc
+from utility import syntax
 from PyQt5.QtGui import QPen
+from traceback import format_exc
 from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
     QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox, QTableWidgetItem, QSizePolicy
-from utility import syntax
 from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
     columns_gc, columns_hg, columns_jm1, columns_jm2, columns_nd, columns_stg1, columns_stg2, columns_sb, \
     columns_kp, columns_sd, columns_hc2, columns_bt
@@ -261,6 +261,8 @@ class BounceButton(QPushButton):
 
 class HoverComboBox(QComboBox):
     """마우스 오버 시 드롭다운을 자동으로 열고 닫는 콤보박스"""
+
+    # noinspection PyUnresolvedReferences
     def __init__(self, parent=None, delay_ms=100):
         super().__init__(parent)
         self._is_open = False
@@ -286,6 +288,7 @@ class HoverComboBox(QComboBox):
         self._close_timer.start(self._delay_ms)
         super().leaveEvent(event)
 
+    # noinspection PyUnresolvedReferences
     def eventFilter(self, obj, event):
         """드롭다운 리스트의 마우스 이벤트 감지"""
         if obj == self.view().viewport():
@@ -346,6 +349,7 @@ class HoverGroupBox(QGroupBox):
 
 
 class PlainTextEdit(QTextEdit):
+    # noinspection PyUnresolvedReferences
     def insertFromMimeData(self, source):
         self.insertPlainText(source.text())
 
@@ -360,6 +364,7 @@ class FixedColumnTableWidget(QTableWidget):
         self._clicked = clicked
         self._setup_fixed_column()
 
+    # noinspection PyUnresolvedReferences
     def _setup_fixed_column(self):
         self._first_column_table = QTableWidget(self)
         self._first_column_table.verticalHeader().setDefaultSectionSize(23)
@@ -382,6 +387,7 @@ class FixedColumnTableWidget(QTableWidget):
         self.horizontalHeader().sectionResized.connect(self._on_column_resized)
         self.horizontalHeader().sortIndicatorChanged.connect(self._on_sort_changed)
 
+    # noinspection PyUnresolvedReferences
     def _sync_child_to_parent_scroll(self, value):
         if self._is_fixed:
             self.verticalScrollBar().setValue(value)
@@ -425,6 +431,7 @@ class FixedColumnTableWidget(QTableWidget):
                     child_item.setFont(item.font())
                     child_item.setTextAlignment(item.textAlignment())
 
+    # noinspection PyUnresolvedReferences
     def setFirstColumnFixed(self, fixed=True):
         self._is_fixed = fixed
         if fixed and self.columnCount() > 0:
@@ -449,6 +456,7 @@ class FixedColumnTableWidget(QTableWidget):
         else:
             self._first_column_table.hide()
 
+    # noinspection PyUnresolvedReferences
     def _update_fixed_column_position(self):
         if not self._is_fixed or not self._first_column_table:
             return
@@ -485,6 +493,7 @@ class FixedColumnTableWidget(QTableWidget):
         if self._is_fixed and self._first_column_table:
             self._first_column_table.clearContents()
 
+    # noinspection PyUnresolvedReferences
     def setHorizontalHeaderLabels(self, labels):
         super().setHorizontalHeaderLabels(labels)
         if self._is_fixed and len(labels) > 0:
@@ -756,6 +765,7 @@ class WidgetCreater:
         dialog.setFont(qfont12)
         return dialog
 
+    # noinspection PyUnresolvedReferences
     def setTablewidget(self, parent, columns, rowcount, vscroll=False, visible=True, clicked=None, valuechanged=None,
                        sortchanged=None, fixed=False):
         if fixed:

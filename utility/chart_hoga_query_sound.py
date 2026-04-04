@@ -906,6 +906,7 @@ class ChartHogaQuerySound:
             arry[sell_cgidx, -1] = 매도가
 
             if buytimes:
+                # noinspection PyUnresolvedReferences
                 buytimes = buytimes.split('^')
                 buytimes = [x.split(';') for x in buytimes]
                 for x in buytimes:

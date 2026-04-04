@@ -47,7 +47,7 @@ class FutureTrader:
         self.dict_set    = dict_set
 
         self.dict_cj     = {}  # 체결목록
-        self.dict_jg     = {}  # 잔고목록
+        self.dict_jg     = {str: {}}  # 잔고목록
         self.dict_tj     = {}  # 잔고평가
         self.dict_td     = {}  # 거래목록
         self.dict_tt     = {}  # 평가손익
@@ -621,11 +621,13 @@ class FutureTrader:
 
         elif 주문상태 == '확인' and 주문구분 in ('정정', '취소'):
             if 주문구분 == '정정':
+                # noinspection PyUnresolvedReferences
                 gubun_ = gubun.replace('_MODIFY', '')
                 정정횟수 = self.dict_order[gubun_][종목코드][1] + 1
                 취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if gubun in ('BUY_LONG', 'SELL_SHORT') else '주식매도취소시간초'])
                 self.dict_order[gubun_][종목코드] = [취소시간, 정정횟수, 주문가격]
             else:
+                # noinspection PyUnresolvedReferences
                 gubun_ = gubun.replace('_CANCEL', '')
                 if gubun in ('BUY_LONG', 'SELL_SHORT'):
                     self.dict_intg['추정예수금'] += 주문수량 * self.dict_info[종목코드]['위탁증거금']

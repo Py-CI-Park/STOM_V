@@ -1,7 +1,7 @@
 
 from PyQt5.QtWidgets import QDialog
-from PyQt5.QtCore import QPropertyAnimation, QEasingCurve
 from utility.static import error_decorator
+from PyQt5.QtCore import QPropertyAnimation, QEasingCurve
 
 
 class AnimatedDialog(QDialog):

@@ -1,10 +1,13 @@
 
 from ui.set_style import color_bf_dk
 from ui.set_widget import PlainTextEdit
-from utility.static import error_decorator
-from PyQt5.QtCore import Qt, QEvent, QTimer
+from PyQt5.QtCore import QEvent, QTimer
+from ui.ui_button_clicked_zoom import *
+from ui.ui_button_clicked_editer_coin import *
+from ui.ui_button_clicked_editer_stock import *
+from ui.ui_extend_window import extend_window
 from PyQt5.QtGui import QTextCursor, QTextCharFormat
-from PyQt5.QtWidgets import QMainWindow, QMessageBox, QTextEdit, QApplication
+from PyQt5.QtWidgets import QMainWindow, QTextEdit
 
 syntax_highlighters = {}
 
@@ -182,18 +185,18 @@ def event_filter(ui, widget, event):
     if event.key() == Qt.Key_Escape:
         if not ui.svc_pushButton_24.isVisible():
             if widget in (ui.ss_textEditttt_01, ui.ss_textEditttt_03):
-                ui.szButtonClicked_01()
+                sz_button_clicked_01(ui)
             elif widget in (ui.ss_textEditttt_02, ui.ss_textEditttt_04):
-                ui.szButtonClicked_02()
+                sz_button_clicked_02(ui)
         if not ui.cvc_pushButton_24.isVisible():
             if widget in (ui.cs_textEditttt_01, ui.cs_textEditttt_03):
-                ui.czButtonClicked_01()
+                cz_button_clicked_01(ui)
             elif widget in (ui.cs_textEditttt_02, ui.cs_textEditttt_04):
-                ui.czButtonClicked_02()
+                cz_button_clicked_02(ui)
         return True
 
     elif event.key() == Qt.Key_E and (QApplication.keyboardModifiers() & Qt.ShiftModifier):
-        ui.ExtendWindow()
+        extend_window(ui)
         return True
 
     elif (QApplication.keyboardModifiers() & Qt.AltModifier) and \
@@ -201,46 +204,46 @@ def event_filter(ui, widget, event):
                             Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9, Qt.Key_0):
         if ui.main_btn == 3:
             if event.key() == Qt.Key_1:
-                ui.StockStgEditer()
+                stock_stg_editer(ui)
             elif event.key() == Qt.Key_2:
-                ui.StockOptiEditer()
+                stock_opti_editer(ui)
             elif event.key() == Qt.Key_3:
-                ui.StockOptiTestEditer()
+                stock_opti_test_editer(ui)
             elif event.key() == Qt.Key_4:
-                ui.StockRwfTestEditer()
+                stock_rwf_test_editer(ui)
             elif event.key() == Qt.Key_5:
-                ui.StockOptiGaEditer()
+                stock_opti_ga_editer(ui)
             elif event.key() == Qt.Key_6:
-                ui.StockCondEditer()
+                stock_cond_editer(ui)
             elif event.key() == Qt.Key_7:
-                ui.StockOptiVarsEditer()
+                stock_opti_vars_editer(ui)
             elif event.key() == Qt.Key_8:
-                ui.StockVarsEditer()
+                stock_vars_editer(ui)
             elif event.key() == Qt.Key_9:
-                ui.StockBacktestLog()
+                stock_backtest_log(ui)
             elif event.key() == Qt.Key_0:
-                ui.StockBacktestDetail()
+                stock_backtest_detail(ui)
         elif ui.main_btn == 4:
             if event.key() == Qt.Key_1:
-                ui.CoinStgEditer()
+                coin_stg_editer(ui)
             elif event.key() == Qt.Key_2:
-                ui.CoinOptiEditer()
+                coin_opti_editer(ui)
             elif event.key() == Qt.Key_3:
-                ui.CoinOptiTestEditer()
+                coin_opti_test_editer(ui)
             elif event.key() == Qt.Key_4:
-                ui.CoinRwfTestEditer()
+                coin_rwf_test_editer(ui)
             elif event.key() == Qt.Key_5:
-                ui.CoinOptiGaEditer()
+                coin_opti_ga_editer(ui)
             elif event.key() == Qt.Key_6:
-                ui.CoinCondEditer()
+                coin_cond_editer(ui)
             elif event.key() == Qt.Key_7:
-                ui.CoinOptiVarsEditer()
+                coin_opti_vars_editer(ui)
             elif event.key() == Qt.Key_8:
-                ui.CoinVarsEditer()
+                coin_vars_editer(ui)
             elif event.key() == Qt.Key_9:
-                ui.CoinBacktestLog()
+                coin_backtest_log(ui)
             elif event.key() == Qt.Key_0:
-                ui.CoinBacktestDetail()
+                coin_backtest_detail(ui)
         return True
 
     return QMainWindow.eventFilter(ui, widget, event)

@@ -1,9 +1,9 @@
 import random
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying
-from ui.set_text_stg_button import dict_stg_button, dict_stg_name
 from utility.static import error_decorator
+from PyQt5.QtWidgets import QMessageBox, QApplication
+from ui.set_text_stg_button import dict_stg_button, dict_stg_name
 
 
 @error_decorator
@@ -52,11 +52,11 @@ def button_clicked_strategy(ui, cmd):
 
     if cmd <= 205:
         if ui.dialog_strategy.focusWidget().text() == '사용자버튼설정' or (QApplication.keyboardModifiers() & Qt.ControlModifier):
-            ui.StrategyCustomDialogShow()
+            strategy_custom_dialog_show(ui)
             return
     else:
         if QApplication.keyboardModifiers() & Qt.ControlModifier:
-            ui.StrategyCustomDialogShow()
+            strategy_custom_dialog_show(ui)
             return
 
     if cmd <= 205:
@@ -83,6 +83,7 @@ def button_clicked_strategy(ui, cmd):
 
     stg_text = ui.dict_stg_btn[cmd]
     if stg_text[-1] != '\n': stg_text = f'{stg_text}\n'
+    # noinspection PyUnresolvedReferences
     textEdit.insertPlainText(stg_text)
 
 

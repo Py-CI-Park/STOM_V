@@ -1,9 +1,9 @@
 
 import random
-from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import famous_saying
-from utility.setting_base import indi_base, indicator
+from PyQt5.QtWidgets import QMessageBox
 from utility.static import error_decorator
+from utility.setting_base import indi_base, indicator
 
 
 @error_decorator
@@ -63,6 +63,7 @@ def get_indicator_detail(ui, code):
             else:
                 indistg = ''
                 if buystg is not None:
+                    # noinspection PyUnresolvedReferences
                     for line in buystg.split('\n'):
                         if 'self.indicator' in line:
                             indistg += f"{line.replace('self.indicator', 'indicator_')}\n"
