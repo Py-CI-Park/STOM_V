@@ -15,6 +15,14 @@
 - `python scripts/verify_nonrelease_sync.py`
 - `python -m pytest tests/unit/test_webcrawling_contract_text.py tests/unit/test_telegram_contract_text.py tests/unit/test_ui_runtime_wiring.py tests/unit/test_verify_nonrelease_sync.py tests/unit/test_webcrawling_network_noise.py tests/test_worktree_policy.py -q`
 
+## 커밋 작성 규칙
+
+- 모든 신규 커밋 제목은 한글로 작성한다.
+- 모든 신규 커밋 본문은 한글 마크다운으로 작성한다.
+- 기본 본문 구조는 `## 배경`, `## 변경 사항`, `## 검증`, 필요 시 `## 주의사항`을 사용한다.
+- 영문 타입 접두사 제목은 더 이상 기본 형식으로 사용하지 않는다.
+- 정식 버전 기록 커밋처럼 제목이 고정된 경우만 예외로 두고, 그 경우에도 본문은 한글 마크다운으로 작성한다.
+
 ## 레인 역할
 
 `STOM_Version_2U_C`는 `STOM_Version_2U`에서 내려온 변경을
