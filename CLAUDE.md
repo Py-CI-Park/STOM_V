@@ -16,6 +16,15 @@ Release preflight:
 python scripts/verify_release_sync.py
 ```
 
+## 커밋 작성 언어 규칙
+
+- 모든 신규 커밋 제목은 한글로 작성합니다.
+- 모든 신규 커밋 본문은 한글 마크다운으로 작성합니다.
+- 기본 본문 구조는 `## 배경`, `## 변경 사항`, `## 검증`, 필요 시 `## 주의사항`을 사용합니다.
+- `docs: ...`, `fix: ...` 같은 영문 타입 접두사 제목은 더 이상 기본 형식으로 사용하지 않습니다.
+- 트레일러를 사용할 때도 한글 값을 우선합니다.
+- 정식 버전 기록 커밋만 제목을 `STOM V{major}.{minor}`로 유지하고, 본문은 한글 마크다운으로 작성합니다.
+
 ## Release And Worktree Mapping
 
 The current worktree mapping is:
