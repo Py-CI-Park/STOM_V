@@ -8,7 +8,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num, columns_cj, DB_TRADELIST, columns_tdf, columns_jgf
 from utility.static import now, timedelta_sec, GetFutureLongPgSgSp, GetFutureShortPgSgSp, str_ymd, now_cme, \
-    str_ymdhms, str_hms, str_ymdhmsf, str_hmsf, dt_hms, qtest_qwait
+    str_ymdhms, str_hms, str_ymdhmsf, str_hmsf, dt_hms, qtest_qwait, set_builtin_print, error_decorator
 
 
 class Updater(QThread):
@@ -110,6 +110,7 @@ class FutureTrader:
         self.updater.signal3.connect(self.UpdateString)
         self.updater.start()
 
+        set_builtin_print(True, self.mgzservQ)
         app.exec_()
 
     def get_jgcs_time(self):
@@ -146,6 +147,7 @@ class FutureTrader:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
+    @error_decorator
     def CheckOrder(self, data):
         if len(data) == 7:
             주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 잔고청산 = data
@@ -480,6 +482,7 @@ class FutureTrader:
     gubun:0, 종목코드:NQU25, 주문상태:접수, 주문구분:신규, 매도수구분:매도, 주문수량:2, 미체결수량:2, 주문가격:23830.25, 주문번호:000000909010259, 주문시간:20250908072509, 체결수량:2, 체결가격:23828.750000
     """
 
+    @error_decorator
     def UpdateChejanData(self, data):
         종목코드, 종목명, 주문상태, 주문구분, 매도수구분, 주문수량, 미체결수량, 주문가격, 주문시간, 주문번호, 체결수량, 체결가격 = data
         index = self.GetIndex()

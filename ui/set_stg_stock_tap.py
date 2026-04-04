@@ -44,7 +44,7 @@ class SetStockBack:
         self.ui.ss_comboBoxxxx_03 = self.wc.setCombobox(self.ui.ss_tab, font=qfont12, activated=self.ui.dActivated_01)
         self.ui.ss_pushButtonn_05 = self.wc.setPushbutton('그외상세기록', parent=self.ui.ss_tab, bounced=True, click=self.ui.ssButtonClicked_03, tip='최적화 테스트 및 전진분석 상세기록을 불러온다.')
         self.ui.ss_pushButtonn_06 = self.wc.setPushbutton('그래프', parent=self.ui.ss_tab, bounced=True, click=self.ui.ssButtonClicked_04, tip='선택된 상세기록의 그래프를 표시한다.')
-        self.ui.ss_pushButtonn_07 = self.wc.setPushbutton('비교', parent=self.ui.ss_tab, bounced=True, click=self.ui.ssButtonClicked_05, tip='두개 이상의 그래프를 선택 비교한다.')
+        self.ui.ss_pushButtonn_07 = self.wc.setPushbutton('비교', parent=self.ui.ss_tab, bounced=True, color=4, click=self.ui.ssButtonClicked_05, tip='두개 이상의 그래프를 선택 비교한다.')
 
         self.ui.stock_detail_list = [
             self.ui.ss_tableWidget_01, self.ui.ss_comboBoxxxx_01, self.ui.ss_pushButtonn_01, self.ui.ss_pushButtonn_02,

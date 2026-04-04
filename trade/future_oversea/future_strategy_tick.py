@@ -6,6 +6,7 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from copy import deepcopy
+from traceback import format_exc
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.risk_analyzer import RiskAnalyzer
 from trade.strategy_base import StrategyBase
@@ -144,20 +145,27 @@ class FutureStrategyTick(StrategyBase):
     def SetBuyStg(self, buytxt):
         self.buystrategy, indistg = get_buy_indi_stg(buytxt)
         if indistg is not None:
-            exec(indistg)
-            self.mgzservQ.put(('window', (ui_num['기본로그'], f'{self.indicator}')))
+            try:
+                exec(indistg)
+            except:
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - {indistg}')))
+            else:
+                self.mgzservQ.put(('window', (ui_num['기본로그'], f'{self.indicator}')))
         self.indi_settings = list(self.indicator.values())
 
     def Mainloop(self):
         self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 시작')))
         while True:
-            data = self.sstgQ.get()
-            if data.__class__ == list:
-                self.Strategy(data)
-            elif data.__class__ == tuple:
-                self.UpdateTuple(data)
-            elif data.__class__ == str:
-                self.UpdateString(data)
+            try:
+                data = self.sstgQ.get()
+                if data.__class__ == list:
+                    self.Strategy(data)
+                elif data.__class__ == tuple:
+                    self.UpdateTuple(data)
+                elif data.__class__ == str:
+                    self.UpdateString(data)
+            except:
+                self.mgzservQ.put(('window', (ui_num['시스템로그'], format_exc())))
 
     def UpdateTuple(self, data):
         gubun, data = data
