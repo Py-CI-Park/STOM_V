@@ -50,7 +50,8 @@ class SetMainMenu:
         self.ui.sj_tab.setVisible(False)
 
         self.ui.main_box_list = [
-            self.ui.hm_tab, self.ui.st_tab, self.ui.ct_tab, self.ui.ss_tab, self.ui.cs_tab, self.ui.lv_tab, self.ui.lg_tab, self.ui.sj_tab
+            self.ui.hm_tab, self.ui.st_tab, self.ui.ct_tab, self.ui.ss_tab, self.ui.cs_tab, self.ui.lv_tab,
+            self.ui.lg_tab, self.ui.sj_tab
         ]
 
         self.ui.slv_tab = QWidget()

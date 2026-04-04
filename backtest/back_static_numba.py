@@ -9,16 +9,16 @@ def GetOptiValidStd(train_stds, valid_stds, exponential):
     가중치(weight) 예제 : 최고 1.3, 최저 0.7
     10개 : 1.300, 1.233, 1.166, 1.100, 1.033, 0.966, 0.900, 0.833, 0.766, 0.700
     """
-    merge = 0.
     count = len(train_stds)
+    merge = np.zeros(count)
     for i in prange(count):
         train_std = train_stds[i] * 0.7
         valid_std = valid_stds[i] * 0.3
         if exponential and count > 1:
             weight = 1.3 + (0.7 - 1.3) * i / (count - 1)
             valid_std *= weight
-        merge += train_std + valid_std
-    merge = round(merge / count, 2)
+        merge[i] = train_std + valid_std
+    merge = round(merge.sum() / count, 2)
     return merge if merge != 0 else -float('inf')
 
 

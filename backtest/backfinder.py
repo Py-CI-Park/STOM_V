@@ -3,6 +3,7 @@ import sys
 import time
 import sqlite3
 import pandas as pd
+from traceback import format_exc
 from utility.static import now, str_ymdhms
 from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num
 
@@ -34,9 +35,15 @@ class BackFinder:
             self.gubun   = 'coin'
 
         self.start_time = now()
-        self.run()
+        try:
+            self.Start()
+        except SystemExit:
+            sys.exit()
+        except:
+            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.SysExit(True)
 
-    def run(self):
+    def Start(self):
         con = sqlite3.connect(DB_STRATEGY)
         dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
         con.close()

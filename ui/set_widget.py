@@ -5,7 +5,7 @@ from traceback import format_exc
 from PyQt5.QtGui import QPen
 from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
-    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox, QTableWidgetItem
+    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox, QTableWidgetItem, QSizePolicy
 from utility import syntax
 from utility.setting_base import columns_nt, columns_td, columns_jg, columns_cj, columns_hj, columns_hc, columns_ns, \
     columns_gc, columns_hg, columns_jm1, columns_jm2, columns_nd, columns_stg1, columns_stg2, columns_sb, \
@@ -577,6 +577,7 @@ class WidgetCreater:
         else:
             pushbutton.setStyleSheet(style_bc_bt)
         pushbutton.setFont(qfont12)
+        pushbutton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         if icon is not None:
             pushbutton.setIcon(icon)
         if tip is not None:
