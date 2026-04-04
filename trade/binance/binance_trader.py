@@ -132,7 +132,6 @@ class BinanceTrader:
         con.close()
         self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 불러오기 완료'))
 
-    # noinspection PyTypeChecker
     def GetBalances(self):
         if self.dict_set['코인모의투자']:
             con = sqlite3.connect(DB_TRADELIST)

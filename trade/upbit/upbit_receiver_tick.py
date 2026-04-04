@@ -135,7 +135,6 @@ class UpbitReceiverTick:
             asks_ = round(tasks - pretasks, 8)
             bids += bids_
             asks += asks_
-            # noinspection PyTypeChecker
             ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
 
             self.dict_daym[code] = dm

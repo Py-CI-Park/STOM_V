@@ -3,8 +3,7 @@ import numpy as np
 from traceback import format_exc
 from utility.setting_base import ui_num
 from trade.binance.binance_strategy_tick import BinanceStrategyTick
-from utility.static import GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, now_utc, dt_ymdhms, now, GetIndicator, \
-    error_decorator
+from utility.static import GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, now_utc, dt_ymdhms, now, GetIndicator
 
 
 class BinanceStrategyMin(BinanceStrategyTick):

@@ -1,23 +1,31 @@
 
 import random
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox, QApplication
 from ui.set_text import famous_saying
+from PyQt5.QtWidgets import QMessageBox, QApplication
+from utility.strategy_version_manager import stg_save_version
 from utility.static import text_not_in_special_characters, error_decorator
 
 
 @error_decorator
 def stock_gavars_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-    df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}vars').set_index('index')
-    if len(df) > 0:
-        ui.sva_comboBoxxx_01.clear()
-        indexs = list(df.index)
-        indexs.sort()
-        for i, index in enumerate(indexs):
-            ui.sva_comboBoxxx_01.addItem(index)
-            if i == 0:
-                ui.sva_lineEdittt_01.setText(index)
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.sva_comboBoxxx_01.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '최적화 GA범위가 선택되지 않았습니다.\n최적화 GA범위를 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'opti', 'gavars', strategy_name)
+    else:
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}vars').set_index('index')
+        if len(df) > 0:
+            ui.sva_comboBoxxx_01.clear()
+            indexs = list(df.index)
+            indexs.sort()
+            for i, index in enumerate(indexs):
+                ui.sva_comboBoxxx_01.addItem(index)
+                if i == 0:
+                    ui.sva_lineEdittt_01.setText(index)
 
 
 @error_decorator
@@ -39,21 +47,29 @@ def stock_gavars_save(ui):
                 insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
+                stg_save_version(gubun, 'opti', 'gavars', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
 def stock_condbuy_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-    df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buyconds').set_index('index')
-    if len(df) > 0:
-        ui.svo_comboBoxxx_01.clear()
-        indexs = list(df.index)
-        indexs.sort()
-        for i, index in enumerate(indexs):
-            ui.svo_comboBoxxx_01.addItem(index)
-            if i == 0:
-                ui.svo_lineEdittt_01.setText(index)
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.svo_comboBoxxx_01.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '조건최적화 매수전략이 선택되지 않았습니다.\n조건최적화 매수전략를 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'cond', 'buy', strategy_name)
+    else:
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buyconds').set_index('index')
+        if len(df) > 0:
+            ui.svo_comboBoxxx_01.clear()
+            indexs = list(df.index)
+            indexs.sort()
+            for i, index in enumerate(indexs):
+                ui.svo_comboBoxxx_01.addItem(index)
+                if i == 0:
+                    ui.svo_lineEdittt_01.setText(index)
 
 
 @error_decorator
@@ -75,21 +91,29 @@ def stock_condbuy_save(ui):
                 insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
+                stg_save_version(gubun, 'cond', 'buy', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
 def stock_condsell_load(ui):
     gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
-    df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}sellconds').set_index('index')
-    if len(df) > 0:
-        ui.svo_comboBoxxx_02.clear()
-        indexs = list(df.index)
-        indexs.sort()
-        for i, index in enumerate(indexs):
-            ui.svo_comboBoxxx_02.addItem(index)
-            if i == 0:
-                ui.svo_lineEdittt_02.setText(index)
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.svo_comboBoxxx_02.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '조건최적화 매도전략이 선택되지 않았습니다.\n조건최적화 매도전략를 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'cond', 'sell', strategy_name)
+    else:
+        df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}sellconds').set_index('index')
+        if len(df) > 0:
+            ui.svo_comboBoxxx_02.clear()
+            indexs = list(df.index)
+            indexs.sort()
+            for i, index in enumerate(indexs):
+                ui.svo_comboBoxxx_02.addItem(index)
+                if i == 0:
+                    ui.svo_lineEdittt_02.setText(index)
 
 
 @error_decorator
@@ -111,4 +135,5 @@ def stock_condsell_save(ui):
                 insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
+                stg_save_version(gubun, 'cond', 'sell', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
