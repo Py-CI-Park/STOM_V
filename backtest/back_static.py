@@ -290,7 +290,7 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
         std = GetOptiValidStd(train_stds, valid_stds, exponential)
         text2, hstd, sendtext = GetText2(std, pre_hstd)
 
-        if sendtext or opti_kind == 4:
+        if sendtext or opti_kind in (0, 4):
             wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
             for text3 in train_text:
                 wq.put((ui_num[f'{ui_gubun}백테스트'], text3))

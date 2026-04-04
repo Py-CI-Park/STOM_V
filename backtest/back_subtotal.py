@@ -1,12 +1,15 @@
 
 import numpy as np
+from traceback import format_exc
+from utility.setting_base import ui_num
 from backtest.back_static import AddMdd
 from backtest.back_static_numba import GetResult
 
 
 class BackSubTotal:
-    def __init__(self, vkey, tq, bstqs, buystd):
+    def __init__(self, vkey, wq, tq, bstqs, buystd):
         self.vkey       = vkey
+        self.wq         = wq
         self.tq         = tq
         self.bstqs      = bstqs
         self.bstq       = self.bstqs[self.vkey]
@@ -35,50 +38,53 @@ class BackSubTotal:
 
     def MainLoop(self):
         while True:
-            data = self.bstq.get()
-            if data[0] == '백테결과':
-                self.CollectData(data)
+            try:
+                data = self.bstq.get()
+                if data[0] == '백테결과':
+                    self.CollectData(data)
 
-            elif data[0] == '백테완료':
-                self.complete1 = True
-                self.separation = data[1]
+                elif data[0] == '백테완료':
+                    self.complete1 = True
+                    self.separation = data[1]
 
-            elif data == '결과집계':
-                self.SendData()
+                elif data == '결과집계':
+                    self.SendData()
 
-            elif data[0] == '개별결과':
-                self.ConcatData(data)
+                elif data[0] == '개별결과':
+                    self.ConcatData(data)
 
-            elif data[0] == '백테정보':
-                self.ui_gubun   = data[1]
-                self.list_days  = data[2]
-                self.valid_days = data[3]
-                self.arry_bct_  = data[4]
-                self.betting    = data[5]
-                self.day_count  = data[6]
+                elif data[0] == '백테정보':
+                    self.ui_gubun   = data[1]
+                    self.list_days  = data[2]
+                    self.valid_days = data[3]
+                    self.arry_bct_  = data[4]
+                    self.betting    = data[5]
+                    self.day_count  = data[6]
 
-            elif data[0] == '백테시작':
-                self.opti_kind  = data[1]
-                self.dummy_tsg  = {}
-                self.ddict_tsg  = {}
-                self.ddict_bct  = {}
-                self.list_tsg   = []
-                self.arry_bct   = None
-                self.separation = None
-                self.complete1  = False
-                self.concat_cnt = 0
-                if len(data) == 2:
-                    self.in_out_cnt = None
-                else:
-                    self.in_out_cnt = data[2]
+                elif data[0] == '백테시작':
+                    self.opti_kind  = data[1]
+                    self.dummy_tsg  = {}
+                    self.ddict_tsg  = {}
+                    self.ddict_bct  = {}
+                    self.list_tsg   = []
+                    self.arry_bct   = None
+                    self.separation = None
+                    self.complete1  = False
+                    self.concat_cnt = 0
+                    if len(data) == 2:
+                        self.in_out_cnt = None
+                    else:
+                        self.in_out_cnt = data[2]
 
-            if self.complete1 and self.bstq.empty():
-                if self.separation == '일괄집계':
-                    self.tq.put('수집완료')
-                else:
-                    self.tq.put(('더미결과', self.vkey, self.dummy_tsg))
-                    self.SendSubTotal()
-                self.complete1 = False
+                if self.complete1 and self.bstq.empty():
+                    if self.separation == '일괄집계':
+                        self.tq.put('수집완료')
+                    else:
+                        self.tq.put(('더미결과', self.vkey, self.dummy_tsg))
+                        self.SendSubTotal()
+                    self.complete1 = False
+            except:
+                self.wq.put((ui_num['시스템로그'], format_exc()))
 
     def CollectData(self, data):
         _, 종목명, 시가총액또는포지션, 매수시간, 매도시간, 보유시간, 매수가, 매도가, 매수금액, 매도금액, 수익률, 수익금, 매도조건, \

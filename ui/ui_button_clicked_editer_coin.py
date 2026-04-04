@@ -1137,7 +1137,6 @@ def coin_backtest_detail(ui):
     ui.cvj_pushButton_15.setStyleSheet(style_bc_dk)
     ui.cvj_pushButton_14.setStyleSheet(style_bc_bs)
     change_version_button_color(ui)
-    change_version_button_color(ui)
 
 
 @error_decorator
@@ -1577,6 +1576,10 @@ def coin_opti_rwft_start(ui, back_name):
         weeks_test  = ui.cvc_comboBoxxx_05.currentText()
         benginesday = ui.be_dateEdittttt_01.date().toString('yyyyMMdd')
         bengineeday = ui.be_dateEdittttt_02.date().toString('yyyyMMdd')
+        optunasampl = ui.op_comboBoxxxx_01.currentText()
+        optunafixv  = ui.op_lineEditttt_01.text()
+        optunacount = ui.op_lineEditttt_02.text()
+        optunaautos = 1 if ui.op_checkBoxxxx_01.isChecked() else 0
 
         if 'VC' in back_name and weeks_train != 'ALL' and int(weeks_train) % int(weeks_valid) != 0:
             QMessageBox.critical(ui, '오류 알림', '교차검증의 학습기간은 검증기간의 배수로 선택하십시오.\n')
@@ -1599,10 +1602,9 @@ def coin_opti_rwft_start(ui, back_name):
             q.put(('백테유형', '전진분석'))
 
         ui.backQ.put((
-            betting, startday, endday, starttime, endtime, buystg, sellstg, optivars, None, ccount,
-            ui.dict_set['최적화기준값제한'],
-            optistd, ui.back_count, False, None, None, weeks_train, weeks_valid, weeks_test, benginesday, bengineeday,
-            randomopti
+            betting, startday, endday, starttime, endtime, buystg, sellstg, optivars, ui.dict_cn, ccount,
+            ui.dict_set['최적화기준값제한'], optistd, ui.back_count, False, weeks_train, weeks_valid, weeks_test,
+            benginesday, bengineeday, optunasampl, optunafixv, optunacount, optunaautos, randomopti
         ))
 
         gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'

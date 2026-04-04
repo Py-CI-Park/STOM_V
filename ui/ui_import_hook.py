@@ -36,7 +36,7 @@ class ImportProgressHook:
     def custom_import(self, name, *args, **kwargs):
         if name in self.modules:
             self.current_index += 1
-            progress = (self.current_index / self.total_modules) * 59
+            progress = (self.current_index / self.total_modules) * 49
             self.splash.show_progress(f"{name}...", int(progress))
         return self.original_import(name, *args, **kwargs)
 

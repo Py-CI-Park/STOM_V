@@ -273,19 +273,12 @@ def setting_save_01(ui):
 
         prev_sg = ui.dict_set['증권사']
         prev_sr = ui.dict_set['주식에이전트']
-        ui.dict_set['증권사'] = 증권사
-        ui.dict_set['주식에이전트'] = 주식에이전트
-        ui.dict_set['주식트레이더'] = 주식트레이더
-        ui.dict_set['주식데이터저장'] = 주식데이터저장
-        ui.dict_set['거래소'] = 거래소
-        ui.dict_set['코인리시버'] = 코인리시버
-        ui.dict_set['코인트레이더'] = 코인트레이더
-        ui.dict_set['코인데이터저장'] = 코인데이터저장
-        ui.dict_set['바이낸스선물마진타입'] = 바이낸스선물마진타입
-        ui.dict_set['바이낸스선물포지션'] = 바이낸스선물포지션
 
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+        for column, value in zip(columns, values):
+            ui.dict_set[column] = value
+
         ui.UpdateDictSet()
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
         if '키움증권' in ui.dict_set['증권사']:
             ui.sj_stock_label_03.setText(
@@ -458,26 +451,11 @@ def setting_save_05(ui):
                 values  = tuple(localvs[col] for col in columns)
                 ui.queryQ.put(('설정디비', query, values))
 
-                ui.dict_set['주식모의투자'] = 주식모의투자
-                ui.dict_set['주식알림소리'] = 주식알림소리
-                ui.dict_set['주식매수전략'] = 주식매수전략
-                ui.dict_set['주식매도전략'] = 주식매도전략
-                ui.dict_set['주식타임프레임'] = 주식타임프레임
-                ui.dict_set['주식평균값계산틱수'] = 주식평균값계산틱수
-                ui.dict_set['주식최대매수종목수'] = 주식최대매수종목수
-                ui.dict_set['주식전략종료시간'] = 주식전략종료시간
-                ui.dict_set['주식잔고청산'] = 주식잔고청산
-                ui.dict_set['주식프로세스종료'] = 주식프로세스종료
-                ui.dict_set['주식컴퓨터종료'] = 주식컴퓨터종료
-                ui.dict_set['주식투자금고정'] = 주식투자금고정
-                ui.dict_set['주식투자금'] = 주식투자금
-                ui.dict_set['주식손실중지'] = 주식손실중지
-                ui.dict_set['주식손실중지수익률'] = 주식손실중지수익률
-                ui.dict_set['주식수익중지'] = 주식수익중지
-                ui.dict_set['주식수익중지수익률'] = 주식수익중지수익률
+                for column, value in zip(columns, values):
+                    ui.dict_set[column] = value
 
-                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
                 ui.UpdateDictSet()
+                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
@@ -532,26 +510,11 @@ def setting_save_06(ui):
                 values  = tuple(localvs[col] for col in columns)
                 ui.queryQ.put(('설정디비', query, values))
 
-                ui.dict_set['코인모의투자'] = 코인모의투자
-                ui.dict_set['코인알림소리'] = 코인알림소리
-                ui.dict_set['코인매수전략'] = 코인매수전략
-                ui.dict_set['코인매도전략'] = 코인매도전략
-                ui.dict_set['코인타임프레임'] = 코인타임프레임
-                ui.dict_set['코인평균값계산틱수'] = 코인평균값계산틱수
-                ui.dict_set['코인최대매수종목수'] = 코인최대매수종목수
-                ui.dict_set['코인전략종료시간'] = 코인전략종료시간
-                ui.dict_set['코인잔고청산'] = 코인잔고청산
-                ui.dict_set['코인프로세스종료'] = 코인프로세스종료
-                ui.dict_set['코인컴퓨터종료'] = 코인컴퓨터종료
-                ui.dict_set['코인투자금고정'] = 코인투자금고정
-                ui.dict_set['코인투자금'] = 코인투자금
-                ui.dict_set['코인손실중지'] = 코인손실중지
-                ui.dict_set['코인손실중지수익률'] = 코인손실중지수익률
-                ui.dict_set['코인수익중지'] = 코인수익중지
-                ui.dict_set['코인수익중지수익률'] = 코인수익중지수익률
+                for column, value in zip(columns, values):
+                    ui.dict_set[column] = value
 
-                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
                 ui.UpdateDictSet()
+                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
@@ -604,29 +567,12 @@ def setting_save_07(ui):
             ui.queryQ.put(('설정디비', query, values))
 
             pre_bbg = ui.dict_set['백테주문관리적용']
-            ui.dict_set['블랙리스트추가'] = 블랙리스트추가
-            ui.dict_set['백테주문관리적용'] = 백테주문관리적용
-            ui.dict_set['백테매수시간기준'] = 백테매수시간기준
-            ui.dict_set['백테일괄로딩'] = 백테일괄로딩
-            ui.dict_set['그래프저장하지않기'] = 그래프저장하지않기
-            ui.dict_set['그래프띄우지않기'] = 그래프띄우지않기
-            ui.dict_set['디비자동관리'] = 디비자동관리
-            ui.dict_set['교차검증가중치'] = 교차검증가중치
-            ui.dict_set['기준값최소상승률'] = 기준값최소상승률
-            ui.dict_set['백테스케쥴실행'] = 백테스케쥴실행
-            ui.dict_set['백테스케쥴요일'] = 백테스케쥴요일
-            ui.dict_set['백테스케쥴시간'] = 백테스케쥴시간
-            ui.dict_set['백테스케쥴구분'] = 백테스케쥴구분
-            ui.dict_set['백테스케쥴명'] = 백테스케쥴명
-            ui.dict_set['백테날짜고정'] = 백테날짜고정
-            ui.dict_set['백테날짜'] = 백테날짜
-            ui.dict_set['범위자동관리'] = 범위자동관리
-            ui.dict_set['백테스트로그기록안함'] = 백테스트로그기록안함
-            ui.dict_set['시장미시구조분석'] = 시장미시구조분석
-            ui.dict_set['시장리스크분석'] = 시장리스크분석
 
-            QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
+            for column, value in zip(columns, values):
+                ui.dict_set[column] = value
+
             ui.UpdateDictSet()
+            QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
             if pre_bbg != 백테주문관리적용:
                 ui.BacktestEngineKill()
@@ -652,17 +598,13 @@ def setting_save_08(ui):
         values  = tuple(localvs[col] for col in columns)
         ui.queryQ.put(('설정디비', query, values))
 
-        ui.dict_set['테마'] = 테마
-        ui.dict_set['저해상도'] = 저해상도
-        ui.dict_set['창위치기억'] = 창위치기억
-        ui.dict_set['휴무프로세스종료'] = 휴무프로세스종료
-        ui.dict_set['휴무컴퓨터종료'] = 휴무컴퓨터종료
-        ui.dict_set['스톰라이브'] = 스톰라이브
-        ui.dict_set['프로그램종료'] = 프로그램종료
+        for column, value in zip(columns, values):
+            ui.dict_set[column] = value
+
         ui.dict_set['시리얼키'] = 시리얼키_
 
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
@@ -1066,43 +1008,13 @@ def setting_order_save_01(ui):
         values  = tuple(localvs[col] for col in columns)
         ui.queryQ.put(('설정디비', query, values))
 
-        ui.dict_set['주식매수주문구분'] = 주식매수주문구분
-        ui.dict_set['주식매수분할횟수'] = 주식매수분할횟수
-        ui.dict_set['주식매수분할방법'] = 주식매수분할방법
-        ui.dict_set['주식매수분할시그널'] = 주식매수분할시그널
-        ui.dict_set['주식매수분할하방'] = 주식매수분할하방
-        ui.dict_set['주식매수분할상방'] = 주식매수분할상방
-        ui.dict_set['주식매수분할하방수익률'] = 주식매수분할하방수익률
-        ui.dict_set['주식매수분할상방수익률'] = 주식매수분할상방수익률
-        ui.dict_set['주식매수분할고정수익률'] = 주식매수분할고정수익률
-        ui.dict_set['주식매수지정가기준가격'] = 주식매수지정가기준가격
-        ui.dict_set['주식매수지정가호가번호'] = 주식매수지정가호가번호
-        ui.dict_set['주식매수시장가잔량범위'] = 주식매수시장가잔량범위
-        ui.dict_set['주식매수취소관심이탈'] = 주식매수취소관심이탈
-        ui.dict_set['주식매수취소매도시그널'] = 주식매수취소매도시그널
-        ui.dict_set['주식매수취소시간'] = 주식매수취소시간
-        ui.dict_set['주식매수취소시간초'] = 주식매수취소시간초
-        ui.dict_set['주식매수금지블랙리스트'] = 주식매수금지블랙리스트
-        ui.dict_set['주식매수금지라운드피겨'] = 주식매수금지라운드피겨
-        ui.dict_set['주식매수금지라운드호가'] = 주식매수금지라운드호가
-        ui.dict_set['주식매수금지손절횟수'] = 주식매수금지손절횟수
-        ui.dict_set['주식매수금지손절횟수값'] = 주식매수금지손절횟수값
-        ui.dict_set['주식매수금지거래횟수'] = 주식매수금지거래횟수
-        ui.dict_set['주식매수금지거래횟수값'] = 주식매수금지거래횟수값
-        ui.dict_set['주식매수금지시간'] = 주식매수금지시간
-        ui.dict_set['주식매수금지시작시간'] = 주식매수금지시작시간
-        ui.dict_set['주식매수금지종료시간'] = 주식매수금지종료시간
-        ui.dict_set['주식매수금지간격'] = 주식매수금지간격
-        ui.dict_set['주식매수금지간격초'] = 주식매수금지간격초
-        ui.dict_set['주식매수금지손절간격'] = 주식매수금지손절간격
-        ui.dict_set['주식매수금지손절간격초'] = 주식매수금지손절간격초
-        ui.dict_set['주식매수정정횟수'] = 주식매수정정횟수
-        ui.dict_set['주식매수정정호가차이'] = 주식매수정정호가차이
-        ui.dict_set['주식매수정정호가'] = 주식매수정정호가
+        for column, value in zip(columns, values):
+            ui.dict_set[column] = value
+
         ui.dict_set['주식비중조절'] = 주식비중조절_
 
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
@@ -1212,44 +1124,11 @@ def setting_order_save_02(ui):
         values  = tuple(localvs[col] for col in columns)
         ui.queryQ.put(('설정디비', query, values))
 
-        ui.dict_set['주식매도주문구분'] = 주식매도주문구분
-        ui.dict_set['주식매도분할횟수'] = 주식매도분할횟수
-        ui.dict_set['주식매도분할방법'] = 주식매도분할방법
-        ui.dict_set['주식매도분할시그널'] = 주식매도분할시그널
-        ui.dict_set['주식매도분할하방'] = 주식매도분할하방
-        ui.dict_set['주식매도분할상방'] = 주식매도분할상방
-        ui.dict_set['주식매도분할하방수익률'] = 주식매도분할하방수익률
-        ui.dict_set['주식매도분할상방수익률'] = 주식매도분할상방수익률
-        ui.dict_set['주식매도지정가기준가격'] = 주식매도지정가기준가격
-        ui.dict_set['주식매도지정가호가번호'] = 주식매도지정가호가번호
-        ui.dict_set['주식매도시장가잔량범위'] = 주식매도시장가잔량범위
-        ui.dict_set['주식매도취소관심진입'] = 주식매도취소관심진입
-        ui.dict_set['주식매도취소매수시그널'] = 주식매도취소매수시그널
-        ui.dict_set['주식매도취소시간'] = 주식매도취소시간
-        ui.dict_set['주식매도취소시간초'] = 주식매도취소시간초
-        ui.dict_set['주식매도금지매수횟수'] = 주식매도금지매수횟수
-        ui.dict_set['주식매도금지매수횟수값'] = 주식매도금지매수횟수값
-        ui.dict_set['주식매도금지라운드피겨'] = 주식매도금지라운드피겨
-        ui.dict_set['주식매도금지라운드호가'] = 주식매도금지라운드호가
-        ui.dict_set['주식매도금지시간'] = 주식매도금지시간
-        ui.dict_set['주식매도금지시작시간'] = 주식매도금지시작시간
-        ui.dict_set['주식매도금지종료시간'] = 주식매도금지종료시간
-        ui.dict_set['주식매도금지간격'] = 주식매도금지간격
-        ui.dict_set['주식매도금지간격초'] = 주식매도금지간격초
-        ui.dict_set['주식매도정정횟수'] = 주식매도정정횟수
-        ui.dict_set['주식매도정정호가차이'] = 주식매도정정호가차이
-        ui.dict_set['주식매도정정호가'] = 주식매도정정호가
-        ui.dict_set['주식매도익절수익률청산'] = 주식매도익절수익률청산
-        ui.dict_set['주식매도익절수익률'] = 주식매도익절수익률
-        ui.dict_set['주식매도익절수익금청산'] = 주식매도익절수익금청산
-        ui.dict_set['주식매도익절수익금'] = 주식매도익절수익금
-        ui.dict_set['주식매도손절수익률청산'] = 주식매도손절수익률청산
-        ui.dict_set['주식매도손절수익률'] = 주식매도손절수익률
-        ui.dict_set['주식매도손절수익금청산'] = 주식매도손절수익금청산
-        ui.dict_set['주식매도손절수익금'] = 주식매도손절수익금
+        for column, value in zip(columns, values):
+            ui.dict_set[column] = value
 
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
@@ -1379,42 +1258,13 @@ def setting_order_save_03(ui):
         values  = tuple(localvs[col] for col in columns)
         ui.queryQ.put(('설정디비', query, values))
 
-        ui.dict_set['코인매수주문구분'] = 코인매수주문구분
-        ui.dict_set['코인매수분할횟수'] = 코인매수분할횟수
-        ui.dict_set['코인매수분할방법'] = 코인매수분할방법
-        ui.dict_set['코인매수분할시그널'] = 코인매수분할시그널
-        ui.dict_set['코인매수분할하방'] = 코인매수분할하방
-        ui.dict_set['코인매수분할상방'] = 코인매수분할상방
-        ui.dict_set['코인매수분할하방수익률'] = 코인매수분할하방수익률
-        ui.dict_set['코인매수분할상방수익률'] = 코인매수분할상방수익률
-        ui.dict_set['코인매수분할고정수익률'] = 코인매수분할고정수익률
-        ui.dict_set['코인매수지정가기준가격'] = 코인매수지정가기준가격
-        ui.dict_set['코인매수지정가호가번호'] = 코인매수지정가호가번호
-        ui.dict_set['코인매수시장가잔량범위'] = 코인매수시장가잔량범위
-        ui.dict_set['코인매수취소관심이탈'] = 코인매수취소관심이탈
-        ui.dict_set['코인매수취소매도시그널'] = 코인매수취소매도시그널
-        ui.dict_set['코인매수취소시간'] = 코인매수취소시간
-        ui.dict_set['코인매수취소시간초'] = 코인매수취소시간초
-        ui.dict_set['코인매수금지블랙리스트'] = 코인매수금지블랙리스트
-        ui.dict_set['코인매수금지200원이하'] = 코인매수금지200원이하
-        ui.dict_set['코인매수금지손절횟수'] = 코인매수금지손절횟수
-        ui.dict_set['코인매수금지손절횟수값'] = 코인매수금지손절횟수값
-        ui.dict_set['코인매수금지거래횟수'] = 코인매수금지거래횟수
-        ui.dict_set['코인매수금지거래횟수값'] = 코인매수금지거래횟수값
-        ui.dict_set['코인매수금지시간'] = 코인매수금지시간
-        ui.dict_set['코인매수금지시작시간'] = 코인매수금지시작시간
-        ui.dict_set['코인매수금지종료시간'] = 코인매수금지종료시간
-        ui.dict_set['코인매수금지간격'] = 코인매수금지간격
-        ui.dict_set['코인매수금지간격초'] = 코인매수금지간격초
-        ui.dict_set['코인매수금지손절간격'] = 코인매수금지손절간격
-        ui.dict_set['코인매수금지손절간격초'] = 코인매수금지손절간격초
-        ui.dict_set['코인매수정정횟수'] = 코인매수정정횟수
-        ui.dict_set['코인매수정정호가차이'] = 코인매수정정호가차이
-        ui.dict_set['코인매수정정호가'] = 코인매수정정호가
+        for column, value in zip(columns, values):
+            ui.dict_set[column] = value
+
         ui.dict_set['코인비중조절'] = 코인비중조절_
 
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
@@ -1515,42 +1365,11 @@ def setting_order_save_04(ui):
         values  = tuple(localvs[col] for col in columns)
         ui.queryQ.put(('설정디비', query, values))
 
-        ui.dict_set['코인매도주문구분'] = 코인매도주문구분
-        ui.dict_set['코인매도분할횟수'] = 코인매도분할횟수
-        ui.dict_set['코인매도분할방법'] = 코인매도분할방법
-        ui.dict_set['코인매도분할시그널'] = 코인매도분할시그널
-        ui.dict_set['코인매도분할하방'] = 코인매도분할하방
-        ui.dict_set['코인매도분할상방'] = 코인매도분할상방
-        ui.dict_set['코인매도분할하방수익률'] = 코인매도분할하방수익률
-        ui.dict_set['코인매도분할상방수익률'] = 코인매도분할상방수익률
-        ui.dict_set['코인매도지정가기준가격'] = 코인매도지정가기준가격
-        ui.dict_set['코인매도지정가호가번호'] = 코인매도지정가호가번호
-        ui.dict_set['코인매도시장가잔량범위'] = 코인매도시장가잔량범위
-        ui.dict_set['코인매도취소관심진입'] = 코인매도취소관심진입
-        ui.dict_set['코인매도취소매수시그널'] = 코인매도취소매수시그널
-        ui.dict_set['코인매도취소시간'] = 코인매도취소시간
-        ui.dict_set['코인매도취소시간초'] = 코인매도취소시간초
-        ui.dict_set['코인매도금지매수횟수'] = 코인매도금지매수횟수
-        ui.dict_set['코인매도금지매수횟수값'] = 코인매도금지매수횟수값
-        ui.dict_set['코인매도금지시간'] = 코인매도금지시간
-        ui.dict_set['코인매도금지시작시간'] = 코인매도금지시작시간
-        ui.dict_set['코인매도금지종료시간'] = 코인매도금지종료시간
-        ui.dict_set['코인매도금지간격'] = 코인매도금지간격
-        ui.dict_set['코인매도금지간격초'] = 코인매도금지간격초
-        ui.dict_set['코인매도정정횟수'] = 코인매도정정횟수
-        ui.dict_set['코인매도정정호가차이'] = 코인매도정정호가차이
-        ui.dict_set['코인매도정정호가'] = 코인매도정정호가
-        ui.dict_set['코인매도익절수익률청산'] = 코인매도익절수익률청산
-        ui.dict_set['코인매도익절수익률'] = 코인매도익절수익률
-        ui.dict_set['코인매도익절수익금청산'] = 코인매도익절수익금청산
-        ui.dict_set['코인매도익절수익금'] = 코인매도익절수익금
-        ui.dict_set['코인매도손절수익률청산'] = 코인매도손절수익률청산
-        ui.dict_set['코인매도손절수익률'] = 코인매도손절수익률
-        ui.dict_set['코인매도손절수익금청산'] = 코인매도손절수익금청산
-        ui.dict_set['코인매도손절수익금'] = 코인매도손절수익금
+        for column, value in zip(columns, values):
+            ui.dict_set[column] = value
 
-        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
         ui.UpdateDictSet()
+        QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 def setting_all_load(ui):

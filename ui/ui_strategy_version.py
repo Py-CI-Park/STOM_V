@@ -1,9 +1,11 @@
 
 import random
 from difflib import SequenceMatcher
+from ui.set_style import color_bf_dk
 from ui.set_text import famous_saying
 from utility.static import qtest_qwait
 from PyQt5.QtWidgets import QMessageBox
+from utility.static import error_decorator
 from utility.strategy_version_manager import StrategyVersionManager
 
 
@@ -73,6 +75,7 @@ def get_widget(ui, sorc, gubun1, gubun2):
     return textEdit1, textEdit2, comboBox1, comboBox2
 
 
+@error_decorator
 def strategy_version(ui, market, gubun1, gubun2, strategy_name):
     if market in ('stock', 'future'):
         not_visible_widjet1 = getattr(ui, 'svc_pushButton_21')
@@ -137,113 +140,78 @@ def sync_scroll(target_edit, value):
     target_edit.verticalScrollBar().setValue(value)
 
 
+@error_decorator
 def ssbutton_clicked_07(ui):
+    """버전 삭제 버튼 호출"""
     global SVM
     comboBox1 = getattr(ui, f'{SVM.sorc}s_comboBoxxxx_41')
     comboBox2 = getattr(ui, f'{SVM.sorc}s_comboBoxxxx_42')
     version = comboBox2.currentText()
-    SVM.delete_version(version)
-    qtest_qwait(0.1)
-    comboBox_reload(comboBox1, comboBox2)
-    QMessageBox.information(ui, '삭제 완료', random.choice(famous_saying))
+    if version:
+        SVM.delete_version(version)
+        qtest_qwait(0.1)
+        comboBox_reload(comboBox1, comboBox2)
+        QMessageBox.information(ui, '삭제 완료', random.choice(famous_saying))
 
 
+@error_decorator
 def dactivated_04(ui):
-    """
-    버전 콤보박스 변경 시 호출
-    - comboBox1: 현재 버전 (textEdit1에 표시)
-    - comboBox2: 비교 버전 (textEdit2에 diff 표시)
-    """
+    """버전 콤보박스 변경 시 호출 diff 표시"""
     global SVM
     textEdit1, textEdit2, comboBox1, comboBox2 = get_widget(ui, SVM.sorc, SVM.gubun1, SVM.gubun2)
+    version1   = comboBox1.currentText()
+    version2   = comboBox2.currentText()
+    stg_text1  = SVM.load_version(version1)
+    stg_text2  = SVM.load_version(version2)
+    back_color = color_bf_dk.name()
 
-    if ui.focusWidget() == comboBox1:
-        version = comboBox1.currentText()
-        stg_text = SVM.load_version(version)
-        textEdit1.clear()
-        textEdit1.append(stg_text)
+    textEdit1.clear()
+    textEdit2.clear()
 
-    elif ui.focusWidget() == comboBox2:
-        version = comboBox2.currentText()
-        stg_text = SVM.load_version(version)
-        textEdit2.clear()
-        textEdit2.append(stg_text)
+    if stg_text1 and stg_text2:
+        lines1 = stg_text1.splitlines()
+        lines2 = stg_text2.splitlines()
 
+        matcher = SequenceMatcher(None, lines1, lines2)
+        left_html = [f'<div style="font-size:14px; white-space:pre;">']
+        right_html = [f'<div style="font-size:14px; white-space:pre;">']
+
+        for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+            if tag == 'equal':
+                for line in lines1[i1:i2]:
+                    escaped = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                    left_html.append(escaped)
+                    right_html.append(escaped)
+            elif tag == 'delete':
+                for line in lines1[i1:i2]:
+                    escaped = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                    left_html.append(f'<span style="background-color:{back_color};">{escaped}</span>')
+                    right_html.append('')
+            elif tag == 'insert':
+                for line in lines2[j1:j2]:
+                    escaped = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                    left_html.append('')
+                    right_html.append(f'<span style="background-color:{back_color};">{escaped}</span>')
+            elif tag == 'replace':
+                max_len = max(i2 - i1, j2 - j1)
+                for k in range(max_len):
+                    if k < (i2 - i1):
+                        line = lines1[i1 + k]
+                        escaped = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                        left_html.append(f'<span style="background-color:{back_color};">{escaped}</span>')
+                    else:
+                        left_html.append('')
+                    if k < (j2 - j1):
+                        line = lines2[j1 + k]
+                        escaped = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+                        right_html.append(f'<span style="background-color:{back_color};">{escaped}</span>')
+                    else:
+                        right_html.append('')
+
+        left_html.append('</div>')
+        right_html.append('</div>')
+        textEdit1.setHtml('\n'.join(left_html))
+        textEdit2.setHtml('\n'.join(right_html))
     else:
-        version1 = comboBox1.currentText()
-        version2 = comboBox2.currentText()
-        stg_text1 = SVM.load_version(version1)
-        stg_text2 = SVM.load_version(version2)
-        textEdit1.clear()
-        textEdit1.append(stg_text1)
-        textEdit2.clear()
-        textEdit2.append(stg_text2)
-
-    show_diff(textEdit1, textEdit2)
-
-
-def show_diff(textEdit1, textEdit2):
-    """textEdit1(현재 에디터 01~08)와 textEdit2(비교 대상 10)의 내용 비교"""
-    global SVM
-    text1 = textEdit1.toPlainText()
-    text2 = textEdit2.toPlainText()
-    if text1 and text2:
-        diff_html = compare_and_format(text1, text2)
-        textEdit2.setHtml(diff_html)
-
-
-def compare_and_format(current_text: str, previous_text: str) -> str:
-    """
-    두 텍스트를 비교하여 HTML 형식의 diff 반환
-    """
-    diff_list = get_line_diff(previous_text, current_text)
-    return format_diff_html(diff_list)
-
-
-def get_line_diff(text1: str, text2: str) -> list[tuple[str, str]]:
-    """
-    두 텍스트를 라인별로 비교하여 차이점 반환
-    Returns: [(action, line), ...]
-    action: 'equal', 'insert', 'delete'
-    """
-    lines1 = text1.splitlines()
-    lines2 = text2.splitlines()
-
-    matcher = SequenceMatcher(None, lines1, lines2)
-    result = []
-
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        if tag == 'equal':
-            for line in lines1[i1:i2]:
-                result.append(('equal', line))
-        elif tag == 'delete':
-            for line in lines1[i1:i2]:
-                result.append(('delete', line))
-        elif tag == 'insert':
-            for line in lines2[j1:j2]:
-                result.append(('insert', line))
-        elif tag == 'replace':
-            for line in lines1[i1:i2]:
-                result.append(('delete', line))
-            for line in lines2[j1:j2]:
-                result.append(('insert', line))
-
-    return result
-
-
-def format_diff_html(diff_list: list[tuple[str, str]]) -> str:
-    """
-    diff 결과를 HTML 문자열로 변환
-    - insert: + 접두사
-    - delete: - 접두사
-    - equal: 공백 접두사
-    """
-
-    html_lines = [f'<div style="font-size:14px; white-space:pre;">']
-    for action, line in diff_list:
-        escaped_line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-        prefix = '+' if action == 'insert' else '-' if action == 'delete' else ''
-        html_lines.append(f'{prefix}{escaped_line}')
-
-    html_lines.append('</div>')
-    return '\n'.join(html_lines)
+        textEdit1.append(stg_text1 if stg_text1 else "")
+        textEdit2.append(stg_text2 if stg_text2 else "")
