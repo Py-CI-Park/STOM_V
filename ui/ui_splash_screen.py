@@ -22,7 +22,6 @@ class StomSplashScreen(QSplashScreen):
         self.status_label   = None
         self.progress_bar   = None
         self.version_label  = None
-        self.fade_in_timer  = None
         self.fade_out_timer = None
         self.loading_dots   = 0
 
@@ -46,6 +45,7 @@ class StomSplashScreen(QSplashScreen):
             self.fade_in_timer.stop()
 
     def center_on_screen(self):
+        # noinspection PyUnresolvedReferences
         screen = QApplication.desktop().screenGeometry()
         self.move(
             (screen.width() - self.width()) // 2,

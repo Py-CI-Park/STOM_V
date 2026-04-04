@@ -73,20 +73,20 @@ class FutureAgentTick:
         self.tr_next     = None
         self.tr_df       = None
 
-        self.dict_dtdm   = {}
-        self.dict_hgbs   = {}
-        self.dict_data   = {}
         self.dict_info   = {}
-        self.dict_mtop   = {}
-        self.dict_jgdt   = {}
+        self.dict_hgbs   = {}
         self.dict_sncd   = {}
+
+        self.dict_dtdm   = {}
+        self.dict_data   = {}
         self.dict_money  = {}
         self.dict_bmbyp  = {}
         self.dict_smbyp  = {}
         self.dict_index  = {}
+        self.dict_mtop   = {}
+        self.dict_jgdt   = {}
 
         self.list_hgdt   = [0, 0, 0, 0]
-        self.real_codes  = []
         self.list_gsjm   = []
         self.tuple_jango = ()
         self.tuple_order = ()
@@ -95,6 +95,8 @@ class FutureAgentTick:
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
+
+        self.real_codes  = []
 
         self.CommConnect()
 
@@ -378,6 +380,7 @@ class FutureAgentTick:
                 except:
                     self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData')))
 
+    # noinspection PyUnresolvedReferences
     def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
         data = self.dict_data.get(code)
         if data:
@@ -469,6 +472,7 @@ class FutureAgentTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
+    # noinspection PyUnresolvedReferences
     def UpdateHogaData(self, dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount,
                        code, name, receivetime):
 
@@ -734,7 +738,7 @@ class FutureAgentTick:
         elif gubun == '수동데이터저장':
             self.ProcessKill()
 
-    # noinspection PyUnusedLocal, PyUnresolvedReferences
+    # noinspection PyUnusedLocal
     def OnReceiveTrData(self, screen, rqname, trcode, record, nnext):
         if 'ORD' in trcode:
             return

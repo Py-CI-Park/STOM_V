@@ -328,6 +328,7 @@ class BackEngineBase(StrategyBase):
                 if self.gubun == 0:
                     self.wq.put((ui_num['시스템로그'], format_exc()))
 
+    # noinspection PyUnresolvedReferences
     def DataLoad(self, data):
         def data_load(days):
             try:
@@ -471,6 +472,7 @@ class BackEngineBase(StrategyBase):
             else:
                 self.trade_info = {0: {0: v}}
 
+    # noinspection PyUnresolvedReferences
     def GetArrayData(self):
         shared_info = None
         with self.shared_lock:
@@ -567,6 +569,7 @@ class BackEngineBase(StrategyBase):
             if last > 0:
                 indexs = self.arry_code[:, 0].astype(np.int64)
                 day_vals = indexs // 1_000_000 if self.is_tick else indexs // 10_000
+                # noinspection PyUnresolvedReferences
                 day_last_indexs = np.where(day_vals[:-1] != day_vals[1:])[0]
                 day_last_indexs = np.concatenate([day_last_indexs, [last]])
 

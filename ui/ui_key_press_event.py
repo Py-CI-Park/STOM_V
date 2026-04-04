@@ -1,7 +1,18 @@
 
-from PyQt5.QtCore import Qt, QDate
-from PyQt5.QtWidgets import QApplication, QMessageBox
-from utility.static import comma2int, comma2float, str_ymd, now_cme, now_utc, error_decorator
+from PyQt5.QtCore import  QDate
+from ui.ui_button_clicked_editer_coin import *
+from ui.ui_button_clicked_editer_stock import *
+from ui.ui_button_clicked_editer_ga_coin import *
+from ui.ui_button_clicked_editer_ga_stock import *
+from ui.ui_button_clicked_editer_opti_coin import *
+from ui.ui_button_clicked_editer_opti_stock import *
+from ui.ui_button_clicked_editer_stg_buy_coin import *
+from ui.ui_button_clicked_editer_stg_buy_stock import *
+from ui.ui_button_clicked_editer_stg_sell_coin import *
+from ui.ui_button_clicked_editer_stg_sell_stock import *
+from ui.ui_button_clicked_editer_backlog import csbutton_clicked_06, ssbutton_clicked_06
+from ui.ui_show_dialog import show_dialog_graph, show_dialog, show_dialog_chart
+from utility.static import comma2int, comma2float, str_ymd, now_cme, now_utc
 
 
 @error_decorator
@@ -11,18 +22,18 @@ def key_press_event(ui, event):
             return
 
         elif QApplication.keyboardModifiers() & Qt.AltModifier:
-            if ui.BacktestProcessAlive():
+            if backtest_process_alive(ui):
                 if ui.main_btn == 3:
-                    ui.ssButtonClicked_06()
+                    ssbutton_clicked_06(ui)
                 elif ui.main_btn == 4:
-                    ui.csButtonClicked_06()
+                    csbutton_clicked_06(ui)
             else:
                 if ui.main_btn == 3:
                     if ui.svj_pushButton_01.isVisible():
-                        ui.StockBacktestStart()
+                        stock_backtest_start(ui)
                 elif ui.main_btn == 4:
                     if ui.cvj_pushButton_01.isVisible():
-                        ui.CoinBacktestStart()
+                        coin_backtest_start(ui)
 
         elif ui.focusWidget() in (ui.std_tableWidgettt, ui.sgj_tableWidgettt, ui.scj_tableWidgettt, ui.ctd_tableWidgettt, ui.cgj_tableWidgettt, ui.ccj_tableWidgettt):
             stock = True
@@ -39,7 +50,7 @@ def key_press_event(ui, event):
                 code       = ui.dict_code[name] if name in ui.dict_code else name
                 ui.ct_lineEdittttt_04.setText(code)
                 ui.ct_lineEdittttt_05.setText(name)
-                ui.ShowDialog(name, tickcount, searchdate, col)
+                show_dialog(ui, name, tickcount, searchdate, col)
 
         elif ui.focusWidget() in (ui.sds_tableWidgettt, ui.cds_tableWidgettt):
             if ui.focusWidget() == ui.sds_tableWidgettt:
@@ -56,7 +67,7 @@ def key_press_event(ui, event):
                 ui.ct_lineEdittttt_04.setText(code)
                 ui.ct_lineEdittttt_05.setText(name)
                 ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-                ui.ShowDialog(name, tickcount, searchdate, 4)
+                show_dialog(ui, name, tickcount, searchdate, 4)
 
         elif ui.focusWidget() in (ui.sns_tableWidgettt, ui.cns_tableWidgettt):
             if ui.focusWidget() == ui.sns_tableWidgettt:
@@ -81,7 +92,7 @@ def key_press_event(ui, event):
                     df = df[df['구분용체결시간'] == date]
                 df['index'] = df['index'].apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
                 df.set_index('index', inplace=True)
-                ui.ShowDialogGraph(df)
+                show_dialog_graph(ui, df)
 
         elif ui.focusWidget() in (ui.ss_tableWidget_01, ui.cs_tableWidget_01):
             tableWidget = ui.ss_tableWidget_01 if ui.focusWidget() == ui.ss_tableWidget_01 else ui.cs_tableWidget_01
@@ -112,69 +123,69 @@ def key_press_event(ui, event):
                 ui.ct_lineEdittttt_04.setText(code)
                 ui.ct_lineEdittttt_05.setText(name)
                 ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-                ui.ShowDialogChart(False, coin, code, 30, searchdate, starttime, endtime, detail, buytimes)
+                show_dialog_chart(ui, False, coin, code, 30, searchdate, starttime, endtime, detail, buytimes)
 
     elif (QApplication.keyboardModifiers() & Qt.AltModifier) and \
             event.key() in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5,
                             Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9, Qt.Key_0):
         if ui.main_btn == 3:
             if event.key() == Qt.Key_1:
-                ui.StockStgEditer()
+                stock_stg_editer(ui)
             elif event.key() == Qt.Key_2:
-                ui.StockOptiEditer()
+                stock_opti_editer(ui)
             elif event.key() == Qt.Key_3:
-                ui.StockOptiTestEditer()
+                stock_opti_test_editer(ui)
             elif event.key() == Qt.Key_4:
-                ui.StockRwfTestEditer()
+                stock_rwf_test_editer(ui)
             elif event.key() == Qt.Key_5:
-                ui.StockOptiGaEditer()
+                stock_opti_ga_editer(ui)
             elif event.key() == Qt.Key_6:
-                ui.StockCondEditer()
+                stock_cond_editer(ui)
             elif event.key() == Qt.Key_7:
-                ui.StockOptiVarsEditer()
+                stock_opti_vars_editer(ui)
             elif event.key() == Qt.Key_8:
-                ui.StockVarsEditer()
+                stock_vars_editer(ui)
             elif event.key() == Qt.Key_9:
-                ui.StockBacktestLog()
+                stock_backtest_log(ui)
             elif event.key() == Qt.Key_0:
-                ui.StockBacktestDetail()
+                stock_backtest_detail(ui)
         elif ui.main_btn == 4:
             if event.key() == Qt.Key_1:
-                ui.CoinStgEditer()
+                coin_stg_editer(ui)
             elif event.key() == Qt.Key_2:
-                ui.CoinOptiEditer()
+                coin_opti_editer(ui)
             elif event.key() == Qt.Key_3:
-                ui.CoinOptiTestEditer()
+                coin_opti_test_editer(ui)
             elif event.key() == Qt.Key_4:
-                ui.CoinRwfTestEditer()
+                coin_rwf_test_editer(ui)
             elif event.key() == Qt.Key_5:
-                ui.CoinOptiGaEditer()
+                coin_opti_ga_editer(ui)
             elif event.key() == Qt.Key_6:
-                ui.CoinCondEditer()
+                coin_cond_editer(ui)
             elif event.key() == Qt.Key_7:
-                ui.CoinOptiVarsEditer()
+                coin_opti_vars_editer(ui)
             elif event.key() == Qt.Key_8:
-                ui.CoinVarsEditer()
+                coin_vars_editer(ui)
             elif event.key() == Qt.Key_9:
-                ui.CoinBacktestLog()
+                coin_backtest_log(ui)
             elif event.key() == Qt.Key_0:
-                ui.CoinBacktestDetail()
+                coin_backtest_detail(ui)
 
     elif event.key() == Qt.Key_F1:
         if ui.main_btn == 3:
             if ui.svj_pushButton_01.isVisible():
-                ui.StockBuyStgLoad()
+                stock_buy_stg_load(ui)
             elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
-                ui.StockOptiBuyLoad()
+                stock_opti_buy_load(ui)
             elif ui.svo_pushButton_05.isVisible():
-                ui.StockCondbuyLoad()
+                stock_condbuy_load(ui)
         elif ui.main_btn == 4:
             if ui.cvj_pushButton_01.isVisible():
-                ui.CoinBuyStgLoad()
+                coin_buy_stg_load(ui)
             elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.CoinOptiBuyLoad()
+                coin_opti_buy_load(ui)
             elif ui.cvo_pushButton_05.isVisible():
-                ui.CoinCondbuyLoad()
+                coin_condbuy_load(ui)
 
     elif event.key() == Qt.Key_F2:
         if ui.main_btn == 3:
@@ -211,34 +222,34 @@ def key_press_event(ui, event):
     elif event.key() == Qt.Key_F4:
         if ui.main_btn == 3:
             if ui.svj_pushButton_01.isVisible():
-                ui.StockBuyStgSave()
+                stock_buy_stg_save(ui)
             elif ui.svc_pushButton_06.isVisible() or ui.svc_pushButton_15.isVisible() or ui.svc_pushButton_18.isVisible() or ui.sva_pushButton_01.isVisible():
-                ui.StockOptiBuySave()
+                stock_opti_buy_save(ui)
             elif ui.svo_pushButton_05.isVisible():
-                ui.StockCondbuySave()
+                stock_condbuy_save(ui)
         elif ui.main_btn == 4:
             if ui.cvj_pushButton_01.isVisible():
-                ui.CoinBuyStgSave()
+                coin_buy_stg_save(ui)
             elif ui.cvc_pushButton_06.isVisible() or ui.cvc_pushButton_15.isVisible() or ui.cvc_pushButton_18.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.CoinOptiBuySave()
+                coin_opti_buy_save(ui)
             elif ui.cvo_pushButton_05.isVisible():
-                ui.CoinCondbuySave()
+                coin_condbuy_save(ui)
 
     elif event.key() == Qt.Key_F5:
         if ui.main_btn == 3:
             if ui.svj_pushButton_01.isVisible():
-                ui.StockSellStgLoad()
+                stock_sell_stg_load(ui)
             elif ui.svc_pushButton_06.isVisible() or ui.sva_pushButton_03.isVisible():
-                ui.StockOptiSellLoad()
+                stock_opti_sell_load(ui)
             elif ui.svo_pushButton_05.isVisible():
-                ui.StockCondsellLoad()
+                stock_condsell_load(ui)
         elif ui.main_btn == 4:
             if ui.cvj_pushButton_01.isVisible():
-                ui.CoinSellStgLoad()
+                coin_sell_stg_load(ui)
             elif ui.cvc_pushButton_06.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.CoinOptiSample()
+                coin_opti_sample(ui)
             elif ui.cvo_pushButton_05.isVisible():
-                ui.CoinCondsellLoad()
+                coin_condsell_load(ui)
 
     elif event.key() == Qt.Key_F6:
         if ui.main_btn == 3:
@@ -275,30 +286,30 @@ def key_press_event(ui, event):
     elif event.key() == Qt.Key_F8:
         if ui.main_btn == 3:
             if ui.svj_pushButton_01.isVisible():
-                ui.StockSellStgSave()
+                stock_sell_stg_save(ui)
             elif ui.svc_pushButton_06.isVisible() or ui.svc_pushButton_15.isVisible() or ui.svc_pushButton_18.isVisible() or ui.sva_pushButton_01.isVisible():
-                ui.StockOptiSellSave()
+                stock_opti_sell_save(ui)
             elif ui.svo_pushButton_05.isVisible():
-                ui.StockCondsellSave()
+                stock_condsell_save(ui)
         elif ui.main_btn == 4:
             if ui.cvj_pushButton_01.isVisible():
-                ui.CoinSellStgSave()
+                coin_sell_stg_save(ui)
             elif ui.cvc_pushButton_06.isVisible() or ui.cvc_pushButton_15.isVisible() or ui.cvc_pushButton_18.isVisible() or ui.cva_pushButton_01.isVisible():
-                ui.CoinOptiSellSave()
+                coin_opti_sell_save(ui)
             elif ui.cvo_pushButton_05.isVisible():
-                ui.CoinCondsellSave()
+                coin_condsell_save(ui)
 
     elif event.key() == Qt.Key_F9:
         if ui.main_btn == 3:
             if ui.svc_pushButton_06.isVisible():
-                ui.StockOptiVarsLoad()
+                stock_opti_vars_load(ui)
             elif ui.sva_pushButton_03.isVisible():
-                ui.StockGavarsLoad()
+                stock_gavars_load(ui)
         elif ui.main_btn == 4:
             if ui.cvc_pushButton_06.isVisible():
-                ui.CoinOptiVarsLoad()
+                coin_opti_vars_load(ui)
             elif ui.cva_pushButton_01.isVisible():
-                ui.CoinGavarsSave()
+                coin_gavars_save(ui)
 
     elif event.key() == Qt.Key_F10:
         if ui.main_btn == 3:
@@ -327,11 +338,11 @@ def key_press_event(ui, event):
     elif event.key() == Qt.Key_F12:
         if ui.main_btn == 3:
             if ui.svc_pushButton_06.isVisible():
-                ui.StockOptiVarsSave()
+                stock_opti_vars_save(ui)
             elif ui.sva_pushButton_03.isVisible():
-                ui.StockGavarsSave()
+                stock_gavars_save(ui)
         elif ui.main_btn == 4:
             if ui.cvc_pushButton_06.isVisible():
-                ui.CoinOptiVarsSave()
+                coin_opti_vars_save(ui)
             elif ui.cva_pushButton_03.isVisible():
-                ui.CoinGavarsSave()
+                coin_gavars_save(ui)

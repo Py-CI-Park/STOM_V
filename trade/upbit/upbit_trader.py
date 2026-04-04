@@ -276,6 +276,7 @@ class UpbitTrader:
         gap = (now() - signal_time).total_seconds()
         self.windowQ.put((ui_num['타임로그'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
 
+    # noinspection PyUnresolvedReferences
     def SendOrder(self, data):
         curr_time = now()
         if curr_time < self.order_time:

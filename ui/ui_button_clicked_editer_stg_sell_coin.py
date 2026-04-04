@@ -1,8 +1,11 @@
 
 import random
 from PyQt5.QtCore import Qt
+from ui.ui_vars_change import get_fix_strategy
 from ui.set_style import style_bc_st, style_bc_dk
+from ui.ui_strategy_version import strategy_version
 from PyQt5.QtWidgets import QMessageBox, QApplication
+from ui.ui_process_alive import coin_strategy_process_alive
 from utility.strategy_version_manager import stg_save_version
 from utility.static import text_not_in_special_characters, error_decorator
 from ui.set_text import famous_saying, sell_signal, future_sell_signal, sell_text
@@ -16,7 +19,7 @@ def coin_sell_stg_load(ui):
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '매도전략이 선택되지 않았습니다.\n매도전략을 선택한 후에 재시도하십시오.\n')
             return
-        ui.StrategyVersion(gubun, 'basic', 'sell', strategy_name)
+        strategy_version(ui, gubun, 'basic', 'sell', strategy_name)
     elif ui.cs_textEditttt_02.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinsell').set_index('index')
         if len(df) > 0:
@@ -34,7 +37,7 @@ def coin_sell_stg_load(ui):
 def coin_sell_stg_save(ui):
     strategy_name = ui.cvjs_lineEditt_01.text()
     strategy = ui.cs_textEditttt_02.toPlainText()
-    strategy = ui.GetFixStrategy(strategy, '매도')
+    strategy = get_fix_strategy(ui, strategy, '매도')
 
     if strategy_name == '':
         QMessageBox.critical(ui, '오류 알림', '매도전략의 이름이 공백 상태입니다.\n이름을 입력하십시오.\n')
@@ -74,7 +77,7 @@ def coin_sell_stg_start(ui):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if buttonReply == QMessageBox.Yes:
-            if ui.CoinStrategyProcessAlive():
+            if coin_strategy_process_alive(ui):
                 ui.cstgQ.put(('매도전략', strategy))
             ui.cvjs_pushButon_04.setStyleSheet(style_bc_dk)
             ui.cvjs_pushButon_14.setStyleSheet(style_bc_st)
@@ -87,7 +90,7 @@ def coin_sell_signal_insert(ui):
 
 @error_decorator
 def coin_sell_stg_stop(ui):
-    if ui.CoinStrategyProcessAlive():
+    if coin_strategy_process_alive(ui):
         ui.cstgQ.put('매도전략중지')
     ui.cvjs_pushButon_14.setStyleSheet(style_bc_dk)
     ui.cvjs_pushButon_04.setStyleSheet(style_bc_st)

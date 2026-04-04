@@ -102,34 +102,37 @@ class KiwoomAgentTick:
         self.tr_df       = None
 
         self.dict_name   = {}
-        self.dict_dtdm   = {}
         self.dict_hgbs   = {}
-        self.dict_data   = {}
-        self.dict_vipr   = {}
         self.dict_sghg   = {}
-        self.dict_mtop   = {}
         self.dict_sgbn   = {}
         self.dict_sncd   = {}
-        self.dict_jgdt   = {}
+        self.dict_vipr   = {}
+
+        self.dict_dtdm   = {}
+        self.dict_data   = {}
         self.dict_money  = {}
         self.dict_bmbyp  = {}
         self.dict_smbyp  = {}
         self.dict_index  = {}
+        self.dict_mtop   = {}
+        self.dict_jgdt   = {}
 
         self.list_hgdt   = [0, 0, 0, 0]
-        self.list_code   = []
-        self.list_cond   = []
         self.list_gsjm   = []
         self.tuple_jango = ()
         self.tuple_order = ()
+
+        self.list_code   = []
+        self.list_cond   = []
         self.tuple_kosd  = ()
-        self.last_gsjm   = ()
 
         self.int_logt    = 0
-        self.int_hgtime  = int(str_ymdhms())
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
+        self.last_gsjm   = None
+
+        self.int_hgtime  = int(str_ymdhms())
 
         self.CommConnect()
 
@@ -565,6 +568,7 @@ class KiwoomAgentTick:
             uvi, dvi, vi_hgunit = GetVIPrice(code in self.tuple_kosd, key, self.int_hgtime)
             self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
 
+    # noinspection PyUnresolvedReferences
     def CheckVI(self, code, c, o):
         vipr = self.dict_vipr.get(code)
         if vipr is None:
@@ -572,6 +576,7 @@ class KiwoomAgentTick:
         elif not vipr[0] and now() > vipr[1]:
             self.UpdateViPrice(code, c)
 
+    # noinspection PyUnresolvedReferences
     def UpdateTickData(self, code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp):
         self.CheckVI(code, c, o)
 
@@ -655,6 +660,7 @@ class KiwoomAgentTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
+    # noinspection PyUnresolvedReferences
     def UpdateHogaData(self, dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount,
                        code, name, receivetime, lastprice):
         send   = False
@@ -883,6 +889,7 @@ class KiwoomAgentTick:
         for i in range(0, len(self.list_code), 100):
             rreg = [sn_gsjm + k, ';'.join(self.list_code[i:i + 100]), '10;12;14;30;228;41;61;71;81', 1]
             self.SetRealReg(rreg)
+            # noinspection PyUnresolvedReferences
             text = f"실시간 알림 등록 완료 - [{sn_gsjm + k}] 종목갯수 {len(rreg[1].split(';'))}"
             self.mgzservQ.put(('window', (ui_num['기본로그'], text)))
             k += 1

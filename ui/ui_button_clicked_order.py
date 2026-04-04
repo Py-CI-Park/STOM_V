@@ -1,5 +1,6 @@
 
 from PyQt5.QtWidgets import QMessageBox
+from ui.ui_process_alive import coin_trader_process_alive
 from utility.static import comma2float, comma2int, now, error_decorator
 
 
@@ -13,7 +14,7 @@ def odbutton_clicked_01(ui):
         QMessageBox.critical(ui.dialog_order, '오류 알림', '종목명, 주문가격, 주문수량을 올바르게 입력하십시오.\n')
         return
     if 'KRW' in name:
-        if ui.CoinTraderProcessAlive():
+        if coin_trader_process_alive(ui):
             ui.ctraderQ.put(('매수', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '키움증권' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
@@ -30,7 +31,7 @@ def odbutton_clicked_02(ui):
         QMessageBox.critical(ui.dialog_order, '오류 알림', '종목명, 주문가격, 주문수량을 올바르게 입력하십시오.\n')
         return
     if 'KRW' in name:
-        if ui.CoinTraderProcessAlive():
+        if coin_trader_process_alive(ui):
             ui.ctraderQ.put(('매도', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '키움증권' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
@@ -46,7 +47,7 @@ def odbutton_clicked_03(ui):
     if '' in (op, oc, name):
         QMessageBox.critical(ui.dialog_order, '오류 알림', '종목명, 주문가격, 주문수량을 올바르게 입력하십시오.\n')
         return
-    if 'USDT' in name and ui.CoinTraderProcessAlive():
+    if 'USDT' in name and coin_trader_process_alive(ui):
         ui.ctraderQ.put(('BUY_LONG', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
@@ -62,7 +63,7 @@ def odbutton_clicked_04(ui):
     if '' in (op, oc, name):
         QMessageBox.critical(ui.dialog_order, '오류 알림', '종목명, 주문가격, 주문수량을 올바르게 입력하십시오.\n')
         return
-    if 'USDT' in name and ui.CoinTraderProcessAlive():
+    if 'USDT' in name and coin_trader_process_alive(ui):
         ui.ctraderQ.put(('SELL_LONG', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
@@ -78,7 +79,7 @@ def odbutton_clicked_05(ui):
     if '' in (op, oc, name):
         QMessageBox.critical(ui.dialog_order, '오류 알림', '종목명, 주문가격, 주문수량을 올바르게 입력하십시오.\n')
         return
-    if 'USDT' in name and ui.CoinTraderProcessAlive():
+    if 'USDT' in name and coin_trader_process_alive(ui):
         ui.ctraderQ.put(('SELL_SHORT', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
@@ -94,7 +95,7 @@ def odbutton_clicked_06(ui):
     if '' in (op, oc, name):
         QMessageBox.critical(ui.dialog_order, '오류 알림', '종목명, 주문가격, 주문수량을 올바르게 입력하십시오.\n')
         return
-    if 'USDT' in name and ui.CoinTraderProcessAlive():
+    if 'USDT' in name and coin_trader_process_alive(ui):
         ui.ctraderQ.put(('BUY_SHORT', name, comma2float(op), comma2float(oc), now(), False, ordertype))
     elif '해외선물' in ui.dict_set['증권사']:
         code = ui.dict_code[name]
@@ -108,10 +109,10 @@ def odbutton_clicked_07(ui):
         QMessageBox.critical(ui.dialog_order, '오류 알림', '종목명을 선택하십시오.\n종목명은 관심종목 테이블의 리스트입니다.\n')
         return
     if 'KRW' in name:
-        if ui.CoinTraderProcessAlive():
+        if coin_trader_process_alive(ui):
             ui.ctraderQ.put(('매수취소', name, 0, 0, now(), False))
     elif 'USDT' in name:
-        if ui.CoinTraderProcessAlive():
+        if coin_trader_process_alive(ui):
             ui.ctraderQ.put(('BUY_LONG_CANCEL', name, 0, 0, now(), False))
             ui.ctraderQ.put(('SELL_SHORT_CANCEL', name, 0, 0, now(), False))
     elif '해외선물' in ui.dict_set['증권사']:
@@ -130,10 +131,10 @@ def odbutton_clicked_08(ui):
         QMessageBox.critical(ui.dialog_order, '오류 알림', '종목명을 선택하십시오.\n종목명은 관심종목 테이블의 리스트입니다.\n')
         return
     if 'KRW' in name:
-        if ui.CoinTraderProcessAlive():
+        if coin_trader_process_alive(ui):
             ui.ctraderQ.put(('매도취소', name, 0, 0, now(), False))
     elif 'USDT' in name:
-        if ui.CoinTraderProcessAlive():
+        if coin_trader_process_alive(ui):
             ui.ctraderQ.put(('SELL_LONG_CANCEL', name, 0, 0, now(), False))
             ui.ctraderQ.put(('BUY_SHORT_CANCEL', name, 0, 0, now(), False))
     elif '해외선물' in ui.dict_set['증권사']:

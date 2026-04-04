@@ -1,7 +1,7 @@
 
 import random
-from PyQt5.QtWidgets import QMessageBox
 from ui.set_text import famous_saying
+from PyQt5.QtWidgets import QMessageBox
 from utility.static import error_decorator
 
 

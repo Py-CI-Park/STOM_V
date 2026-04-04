@@ -2,16 +2,22 @@
 import os
 import random
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtWidgets import QLineEdit, QMessageBox, QApplication
-from multiprocessing import Process, shared_memory
+from ui.set_text import famous_saying
 from backtest.optimiz import Optimize
 from backtest.backtest import BackTest
-from backtest.optimiz_conditions import OptimizeConditions
-from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
-from backtest.rolling_walk_forward_test import RollingWalkForwardTest
-from ui.set_text import famous_saying
 from utility.setting_base import ui_num
+from multiprocessing import Process, shared_memory
+from ui.ui_process_alive import backtest_process_alive
 from utility.static import qtest_qwait, error_decorator
+from backtest.optimiz_conditions import OptimizeConditions
+from ui.ui_button_clicked_editer_coin import coin_backtest_log
+from ui.ui_button_clicked_shortcut import mnbutton_c_clicked_01
+from PyQt5.QtWidgets import QLineEdit, QMessageBox, QApplication
+from ui.ui_button_clicked_editer_stock import stock_backtest_log
+from backtest.rolling_walk_forward_test import RollingWalkForwardTest
+from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
+from ui.ui_backtest_engine import clear_backtestQ, backengine_start, backengine_show
+from ui.ui_button_clicked_editer_backlog import csbutton_clicked_06, ssbutton_clicked_06
 
 
 @error_decorator
@@ -23,29 +29,29 @@ def bebutton_clicked_01(ui):
     if ui.main_btn == 3 or (ui.dialog_scheduler.isVisible() and ui.sd_pushButtonnn_01.text() == '주식'):
         gubun = '주식' if '키움증권' in ui.dict_set['증권사'] else '해선'
         if not ui.backtest_engine:
-            ui.BacktestEngineStart(gubun)
+            backengine_start(ui, gubun)
         else:
             buttonReply = QMessageBox.question(
                 ui.dialog_backengine, '백테엔진', '이미 백테스트 엔진이 구동중입니다.\n엔진을 재시작하시겠습니까?\n',
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No
             )
             if buttonReply == QMessageBox.Yes:
-                ui.BacktestEngineKill()
+                backtest_engine_kill(ui)
                 qtest_qwait(3)
-                ui.BacktestEngineStart(gubun)
+                backengine_start(ui, gubun)
 
     elif ui.main_btn == 4 or (ui.dialog_scheduler.isVisible() and ui.sd_pushButtonnn_01.text() == '코인'):
         if not ui.backtest_engine:
-            ui.BacktestEngineStart('코인')
+            backengine_start(ui, '코인')
         else:
             buttonReply = QMessageBox.question(
                 ui.dialog_backengine, '백테엔진', '이미 백테스트 엔진이 구동중입니다.\n엔진을 재시작하시겠습니까?\n',
                 QMessageBox.Yes | QMessageBox.No, QMessageBox.No
             )
             if buttonReply == QMessageBox.Yes:
-                ui.BacktestEngineKill()
+                backtest_engine_kill(ui)
                 qtest_qwait(3)
-                ui.BacktestEngineStart('코인')
+                backengine_start(ui, '코인')
 
 
 @error_decorator
@@ -82,7 +88,7 @@ def backtest_engine_kill(ui):
         else:
             ui.windowQ.put((ui_num['시스템로그'], 'TempFile delete completed'))
 
-    ui.ClearBacktestQ()
+    clear_backtestQ(ui)
     for p in ui.back_sprocs:
         p.kill()
     for p in ui.back_eprocs:
@@ -118,7 +124,7 @@ def sdbutton_clicked_01(ui):
 
 @error_decorator
 def sdbutton_clicked_02(ui):
-    if ui.BacktestProcessAlive():
+    if backtest_process_alive(ui):
         QMessageBox.critical(ui.dialog_scheduler, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
         if ui.back_engining:
@@ -126,15 +132,15 @@ def sdbutton_clicked_02(ui):
             return
         bt_gubun = ui.sd_pushButtonnn_01.text()
         if not ui.backtest_engine or (QApplication.keyboardModifiers() & Qt.ControlModifier):
-            ui.BackTestengineShow(bt_gubun)
+            backengine_show(ui, bt_gubun)
             return
 
         if bt_gubun == '주식' and ui.main_btn != 3:
-            ui.mnButtonClicked_01(3)
+            mnbutton_c_clicked_01(ui, 3)
         elif bt_gubun == '코인' and ui.main_btn != 4:
-            ui.mnButtonClicked_01(4)
+            mnbutton_c_clicked_01(ui, 4)
 
-        ui.ClearBacktestQ()
+        clear_backtestQ(ui)
         if ui.back_schedul:
             ui.back_scount += 1
         else:
@@ -176,7 +182,7 @@ def sdbutton_clicked_02(ui):
                               bl, True, False)
                     )
                     ui.proc_backtester_bs.start()
-                    ui.StockBacktestLog()
+                    stock_backtest_log(ui)
                     ui.ss_progressBar_01.setValue(0)
                     ui.ssicon_alert = True
                 else:
@@ -189,7 +195,7 @@ def sdbutton_clicked_02(ui):
                               bl, True, False)
                     )
                     ui.proc_backtester_bs.start()
-                    ui.CoinBacktestLog()
+                    coin_backtest_log(ui)
                     ui.cs_progressBar_01.setValue(0)
                     ui.csicon_alert = True
 
@@ -246,11 +252,11 @@ def sdbutton_clicked_02(ui):
                     ui.proc_backtester_ocvc.start()
 
                 if bt_gubun == '주식':
-                    ui.StockBacktestLog()
+                    stock_backtest_log(ui)
                     ui.ss_progressBar_01.setValue(0)
                     ui.ssicon_alert = True
                 else:
-                    ui.CoinBacktestLog()
+                    coin_backtest_log(ui)
                     ui.cs_progressBar_01.setValue(0)
                     ui.csicon_alert = True
 
@@ -307,11 +313,11 @@ def sdbutton_clicked_02(ui):
                     ui.proc_backtester_ogvc.start()
 
                 if bt_gubun == '주식':
-                    ui.StockBacktestLog()
+                    stock_backtest_log(ui)
                     ui.ss_progressBar_01.setValue(0)
                     ui.ssicon_alert = True
                 else:
-                    ui.CoinBacktestLog()
+                    coin_backtest_log(ui)
                     ui.cs_progressBar_01.setValue(0)
                     ui.csicon_alert = True
 
@@ -399,11 +405,11 @@ def sdbutton_clicked_02(ui):
                     ui.proc_backtester_brvc.start()
 
                 if bt_gubun == '주식':
-                    ui.StockBacktestLog()
+                    stock_backtest_log(ui)
                     ui.ss_progressBar_01.setValue(0)
                     ui.ssicon_alert = True
                 else:
-                    ui.CoinBacktestLog()
+                    coin_backtest_log(ui)
                     ui.cs_progressBar_01.setValue(0)
                     ui.csicon_alert = True
 
@@ -532,11 +538,11 @@ def sdbutton_clicked_02(ui):
                     ui.proc_backtester_bvct.start()
 
                 if bt_gubun == '주식':
-                    ui.StockBacktestLog()
+                    stock_backtest_log(ui)
                     ui.ss_progressBar_01.setValue(0)
                     ui.ssicon_alert = True
                 else:
-                    ui.CoinBacktestLog()
+                    coin_backtest_log(ui)
                     ui.cs_progressBar_01.setValue(0)
                     ui.csicon_alert = True
 
@@ -548,10 +554,11 @@ def sdbutton_clicked_02(ui):
 
 @error_decorator
 def StopScheduler(ui, gubun=False):
+    from ui.ui_etc import auto_back_schedule
     ui.back_scount = 0
     ui.back_schedul = False
     if ui.auto_mode:
-        ui.AutoBackSchedule(3)
+        auto_back_schedule(ui, 3)
     if gubun and ui.sd_scheckBoxxxx_02.isChecked():
         QTimer.singleShot(180 * 1000, ui.ProcessKill)
         os.system('shutdown /s /t 300')
@@ -560,9 +567,9 @@ def StopScheduler(ui, gubun=False):
 @error_decorator
 def sdbutton_clicked_03(ui):
     if ui.sd_pushButtonnn_01.text() in ('주식', '해선'):
-        ui.ssButtonClicked_06()
+        ssbutton_clicked_06(ui)
     else:
-        ui.csButtonClicked_06()
+        csbutton_clicked_06(ui)
     for progressBar in ui.list_progressBarrr:
         progressBar.setValue(0)
 

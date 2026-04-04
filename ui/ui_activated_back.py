@@ -1,7 +1,7 @@
 
 from PyQt5.QtWidgets import QMessageBox
-from ui.set_text import opti_standard, train_period, valid_period, test_period, optimized_count
 from utility.static import error_decorator
+from ui.set_text import opti_standard, train_period, valid_period, test_period, optimized_count
 
 
 @error_decorator
@@ -91,6 +91,7 @@ def bactivated_01(ui):
                 ui.list_p4comboBoxxxx[gubun].addItem(item)
 
 
+# noinspection PyUnresolvedReferences
 @error_decorator
 def bactivated_02(ui):
     if ui.sd_scheckBoxxxx_01.isChecked():

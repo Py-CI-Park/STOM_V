@@ -1,11 +1,12 @@
 
 import pandas as pd
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
-from ui.set_style import color_fg_bt, color_fg_dk, color_fg_bc, color_bf_bt, color_bf_dk, color_ct_hg
 from ui.ui_draw_label_text import get_label_text
+from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
+from ui.ui_process_alive import coin_receiver_process_alive
 from utility.setting_base import ui_num, columns_hg, columns_hj
 from utility.static import change_format, comma2int, comma2float, dt_ymdhms, error_decorator
+from ui.set_style import color_fg_bt, color_fg_dk, color_fg_bc, color_bf_bt, color_bf_dk, color_ct_hg
 
 
 class NumericItem(QTableWidgetItem):
@@ -174,6 +175,7 @@ class UpdateTablewidget:
             '최고매도금액', '최고매수가격', '최고매도가격', '누적초당매수수량', '누적초당매도수량', '매도수5호가잔량합'
         ]
 
+    # noinspection PyUnresolvedReferences
     @error_decorator
     def update_tablewidget(self, data):
         if len(data) == 2:
@@ -199,7 +201,7 @@ class UpdateTablewidget:
         if gubun in self.uinums_hogatick:
             if not self.ui.dialog_hoga.isVisible():
                 self.ui.wdzservQ.put(('agent', ('호가종목코드', '000000')))
-                if self.ui.CoinReceiverProcessAlive():  self.ui.creceivQ.put(('호가종목코드', '000000'))
+                if coin_receiver_process_alive(self.ui):  self.ui.creceivQ.put(('호가종목코드', '000000'))
                 return
 
         elif gubun == ui_num['김프']:
