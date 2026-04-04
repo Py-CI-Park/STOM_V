@@ -12,6 +12,9 @@ def cactivated_01(ui):
             ui.cs_textEditttt_01.clear()
             ui.cs_textEditttt_01.append(df['전략코드'][strategy_name])
             ui.cvjb_lineEditt_01.setText(strategy_name)
+            if ui.cs_pushButtonn_41.isVisible():
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                ui.StrategyVersion(gubun, 'basic', 'buy', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
@@ -25,6 +28,9 @@ def cactivated_02(ui):
             ui.cs_textEditttt_02.clear()
             ui.cs_textEditttt_02.append(df['전략코드'][strategy_name])
             ui.cvjs_lineEditt_01.setText(strategy_name)
+            if ui.cs_pushButtonn_41.isVisible():
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                ui.StrategyVersion(gubun, 'basic', 'sell', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
@@ -38,6 +44,9 @@ def cactivated_03(ui):
             ui.cs_textEditttt_03.clear()
             ui.cs_textEditttt_03.append(df['전략코드'][strategy_name])
             ui.cvc_lineEdittt_01.setText(strategy_name)
+            if ui.cs_pushButtonn_41.isVisible():
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                ui.StrategyVersion(gubun, 'opti', 'buy', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
@@ -51,6 +60,9 @@ def cactivated_04(ui):
             ui.cs_textEditttt_05.clear()
             ui.cs_textEditttt_05.append(df['전략코드'][strategy_name])
             ui.cvc_lineEdittt_02.setText(strategy_name)
+            if ui.cs_pushButtonn_41.isVisible():
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                ui.StrategyVersion(gubun, 'opti', 'vars', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '범위가 DB에 존재하지 않습니다.\n범위을 다시 로딩하십시오.\n')
 
@@ -64,6 +76,9 @@ def cactivated_05(ui):
             ui.cs_textEditttt_04.clear()
             ui.cs_textEditttt_04.append(df['전략코드'][strategy_name])
             ui.cvc_lineEdittt_03.setText(strategy_name)
+            if ui.cs_pushButtonn_41.isVisible():
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                ui.StrategyVersion(gubun, 'opti', 'sell', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
@@ -77,6 +92,9 @@ def cactivated_06(ui):
             ui.cs_textEditttt_06.clear()
             ui.cs_textEditttt_06.append(df['전략코드'][strategy_name])
             ui.cva_lineEdittt_01.setText(strategy_name)
+            if ui.cs_pushButtonn_41.isVisible():
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                ui.StrategyVersion(gubun, 'opti', 'gavars', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '범위가 DB에 존재하지 않습니다.\n범위을 다시 로딩하십시오.\n')
 
@@ -90,6 +108,9 @@ def cactivated_07(ui):
             ui.cs_textEditttt_07.clear()
             ui.cs_textEditttt_07.append(df['전략코드'][strategy_name])
             ui.cvo_lineEdittt_01.setText(strategy_name)
+            if ui.cs_pushButtonn_41.isVisible():
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                ui.StrategyVersion(gubun, 'cond', 'buy', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '조건이 DB에 존재하지 않습니다.\n조건을 다시 로딩하십시오.\n')
 
@@ -103,6 +124,9 @@ def cactivated_08(ui):
             ui.cs_textEditttt_08.clear()
             ui.cs_textEditttt_08.append(df['전략코드'][strategy_name])
             ui.cvo_lineEdittt_02.setText(strategy_name)
+            if ui.cs_pushButtonn_41.isVisible():
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                ui.StrategyVersion(gubun, 'cond', 'sell', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '조건이 DB에 존재하지 않습니다.\n조건을 다시 로딩하십시오.\n')
 

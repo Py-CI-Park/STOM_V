@@ -1,8 +1,9 @@
 
 import random
-from traceback import format_exc
 from PyQt5.QtCore import Qt
+from traceback import format_exc
 from PyQt5.QtWidgets import QMessageBox, QApplication
+from utility.strategy_version_manager import stg_save_version
 from utility.static import text_not_in_special_characters, error_decorator
 from ui.set_text import famous_saying, example_opti_vars, example_vars, example_buyconds, example_sellconds, \
     example_coin_buy, example_coin_future_buy, example_coin_sell, example_coin_future_sell, example_coinopti_buy1, \
@@ -14,7 +15,14 @@ from ui.set_text import famous_saying, example_opti_vars, example_vars, example_
 
 @error_decorator
 def coin_opti_buy_load(ui):
-    if ui.cs_textEditttt_03.isVisible():
+    gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.cvc_comboBoxxx_01.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '최적화 매수전략이 선택되지 않았습니다.\n최적화 매수전략을 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'opti', 'buy', strategy_name)
+    elif ui.cs_textEditttt_03.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptibuy').set_index('index')
         if len(df) > 0:
             ui.cvc_comboBoxxx_01.clear()
@@ -51,12 +59,21 @@ def coin_opti_buy_save(ui):
                         insert_query  = 'INSERT INTO coinoptibuy VALUES (?, ?, ?)'
                         insert_vlaues = (strategy_name, strategy, '')
                         ui.queryQ.put(('전략디비', insert_query, insert_vlaues))
+                    gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                    stg_save_version(gubun, 'opti', 'buy', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
 def coin_opti_vars_load(ui):
-    if ui.cs_textEditttt_05.isVisible():
+    gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.cvc_comboBoxxx_02.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '최적화 범위가 선택되지 않았습니다.\n최적화 범위를 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'opti', 'vars', strategy_name)
+    elif ui.cs_textEditttt_05.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptivars').set_index('index')
         if len(df) > 0:
             ui.cvc_comboBoxxx_02.clear()
@@ -87,12 +104,21 @@ def coin_opti_vars_save(ui):
                     insert_values = (strategy_name, strategy)
                     ui.queryQ.put(('전략디비', delete_query))
                     ui.queryQ.put(('전략디비', insert_query, insert_values))
+                    gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                    stg_save_version(gubun, 'opti', 'vars', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
 def coin_opti_sell_load(ui):
-    if ui.cs_textEditttt_04.isVisible():
+    gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.cvc_comboBoxxx_08.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '최적화 매도전략이 선택되지 않았습니다.\n최적화 매도전략을 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'opti', 'sell', strategy_name)
+    elif ui.cs_textEditttt_04.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinoptisell').set_index('index')
         if len(df) > 0:
             ui.cvc_comboBoxxx_08.clear()
@@ -125,6 +151,8 @@ def coin_opti_sell_save(ui):
                     insert_values = (strategy_name, strategy)
                     ui.queryQ.put(('전략디비', delete_query))
                     ui.queryQ.put(('전략디비', insert_query, insert_values))
+                    gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                    stg_save_version(gubun, 'opti', 'sell', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 

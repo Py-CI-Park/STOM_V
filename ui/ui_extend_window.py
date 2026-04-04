@@ -32,15 +32,22 @@ def extend_window(ui):
                     not ui.extend_window and ui.ss_tableWidget_01.rowCount() < 32):
                 ui.ss_tableWidget_01.setRowCount(60 if ui.extend_window else 32)
         elif ui.svj_pushButton_01.isVisible():
-            ui.ss_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
-            ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 1000, 602 if ui.extend_window else 272)
-            ui.szoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
-            ui.ss_textEditttt_01.setVisible(True)
-            ui.ss_textEditttt_02.setVisible(True)
-            ui.szoo_pushButon_01.setVisible(True)
-            ui.szoo_pushButon_02.setVisible(True)
-            ui.szoo_pushButon_01.setText('확대(esc)')
-            ui.szoo_pushButon_02.setText('확대(esc)')
+            if ui.ss_pushButtonn_41.isVisible():
+                if ui.ss_textEditttt_01.isVisible():
+                    ui.ss_textEditttt_01.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                else:
+                    ui.ss_textEditttt_02.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                ui.ss_textEditttt_10.setGeometry(509, 40, 497, 1307 if ui.extend_window else 700)
+            else:
+                ui.ss_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
+                ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 1000, 602 if ui.extend_window else 272)
+                ui.szoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
+                ui.ss_textEditttt_01.setVisible(True)
+                ui.ss_textEditttt_02.setVisible(True)
+                ui.szoo_pushButon_01.setVisible(True)
+                ui.szoo_pushButon_02.setVisible(True)
+                ui.szoo_pushButon_01.setText('확대(esc)')
+                ui.szoo_pushButon_02.setText('확대(esc)')
         elif ui.svc_pushButton_24.isVisible():
             ui.ss_textEditttt_01.setGeometry(7, 10, 497, 740 if ui.extend_window else 463)
             ui.ss_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 497, 602 if ui.extend_window else 272)
@@ -50,32 +57,57 @@ def extend_window(ui):
             ui.ss_textEditttt_05.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
             ui.ss_textEditttt_06.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
         elif ui.svo_pushButton_05.isVisible():
-            ui.ss_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
-            ui.ss_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
+            if ui.ss_pushButtonn_41.isVisible():
+                if ui.ss_textEditttt_07.isVisible():
+                    ui.ss_textEditttt_07.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                else:
+                    ui.ss_textEditttt_08.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                ui.ss_textEditttt_10.setGeometry(509, 40, 497, 1307 if ui.extend_window else 700)
+            else:
+                ui.ss_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
+                ui.ss_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
         elif ui.sva_pushButton_01.isVisible():
-            ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-            ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
-            ui.ss_textEditttt_06.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-            ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
-            ui.ss_textEditttt_03.setVisible(True)
-            ui.ss_textEditttt_04.setVisible(True)
-            ui.ss_textEditttt_06.setVisible(True)
-            ui.szoo_pushButon_01.setVisible(True)
-            ui.szoo_pushButon_02.setVisible(True)
-            ui.szoo_pushButon_01.setText('확대(esc)')
-            ui.szoo_pushButon_02.setText('확대(esc)')
+            if ui.ss_pushButtonn_41.isVisible():
+                if ui.ss_textEditttt_03.isVisible():
+                    ui.ss_textEditttt_03.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                elif ui.ss_textEditttt_04.isVisible():
+                    ui.ss_textEditttt_04.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                else:
+                    ui.ss_textEditttt_06.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                ui.ss_textEditttt_10.setGeometry(509, 40, 497, 1307 if ui.extend_window else 700)
+            else:
+                ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
+                ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
+                ui.ss_textEditttt_06.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
+                ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+                ui.ss_textEditttt_03.setVisible(True)
+                ui.ss_textEditttt_04.setVisible(True)
+                ui.ss_textEditttt_06.setVisible(True)
+                ui.szoo_pushButon_01.setVisible(True)
+                ui.szoo_pushButon_02.setVisible(True)
+                ui.szoo_pushButon_01.setText('확대(esc)')
+                ui.szoo_pushButon_02.setText('확대(esc)')
         else:
-            ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-            ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
-            ui.ss_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-            ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
-            ui.ss_textEditttt_03.setVisible(True)
-            ui.ss_textEditttt_04.setVisible(True)
-            ui.ss_textEditttt_05.setVisible(True)
-            ui.szoo_pushButon_01.setVisible(True)
-            ui.szoo_pushButon_02.setVisible(True)
-            ui.szoo_pushButon_01.setText('확대(esc)')
-            ui.szoo_pushButon_02.setText('확대(esc)')
+            if ui.ss_pushButtonn_41.isVisible():
+                if ui.ss_textEditttt_03.isVisible():
+                    ui.ss_textEditttt_03.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                elif ui.ss_textEditttt_04.isVisible():
+                    ui.ss_textEditttt_04.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                else:
+                    ui.ss_textEditttt_05.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                ui.ss_textEditttt_10.setGeometry(509, 40, 497, 1307 if ui.extend_window else 700)
+            else:
+                ui.ss_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
+                ui.ss_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
+                ui.ss_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
+                ui.szoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+                ui.ss_textEditttt_03.setVisible(True)
+                ui.ss_textEditttt_04.setVisible(True)
+                ui.ss_textEditttt_05.setVisible(True)
+                ui.szoo_pushButon_01.setVisible(True)
+                ui.szoo_pushButon_02.setVisible(True)
+                ui.szoo_pushButon_01.setText('확대(esc)')
+                ui.szoo_pushButon_02.setText('확대(esc)')
     else:
         ui.cs_tab.setGeometry(45, 0, 1353, 1362 if ui.extend_window else 757)
         if ui.cs_pushButtonn_08.isVisible():
@@ -87,15 +119,22 @@ def extend_window(ui):
             if (ui.extend_window and ui.cs_tableWidget_01.rowCount() < 60) or (not ui.extend_window and ui.cs_tableWidget_01.rowCount() < 32):
                 ui.cs_tableWidget_01.setRowCount(60 if ui.extend_window else 32)
         elif ui.cvj_pushButton_01.isVisible():
-            ui.cs_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
-            ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 1000, 602 if ui.extend_window else 272)
-            ui.czoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
-            ui.cs_textEditttt_01.setVisible(True)
-            ui.cs_textEditttt_02.setVisible(True)
-            ui.czoo_pushButon_01.setVisible(True)
-            ui.czoo_pushButon_02.setVisible(True)
-            ui.czoo_pushButon_01.setText('확대(esc)')
-            ui.czoo_pushButon_02.setText('확대(esc)')
+            if ui.cs_pushButtonn_41.isVisible():
+                if ui.cs_textEditttt_01.isVisible():
+                    ui.cs_textEditttt_01.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                else:
+                    ui.cs_textEditttt_02.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                ui.cs_textEditttt_10.setGeometry(509, 40, 497, 1307 if ui.extend_window else 700)
+            else:
+                ui.cs_textEditttt_01.setGeometry(7, 10, 1000, 740 if ui.extend_window else 463)
+                ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 1000, 602 if ui.extend_window else 272)
+                ui.czoo_pushButon_02.setGeometry(937, 761 if ui.extend_window else 483, 50, 20)
+                ui.cs_textEditttt_01.setVisible(True)
+                ui.cs_textEditttt_02.setVisible(True)
+                ui.czoo_pushButon_01.setVisible(True)
+                ui.czoo_pushButon_02.setVisible(True)
+                ui.czoo_pushButon_01.setText('확대(esc)')
+                ui.czoo_pushButon_02.setText('확대(esc)')
         elif ui.cvc_pushButton_24.isVisible():
             ui.cs_textEditttt_01.setGeometry(7, 10, 497, 740 if ui.extend_window else 463)
             ui.cs_textEditttt_02.setGeometry(7, 756 if ui.extend_window else 480, 497, 602 if ui.extend_window else 272)
@@ -105,29 +144,54 @@ def extend_window(ui):
             ui.cs_textEditttt_05.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
             ui.cs_textEditttt_06.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
         elif ui.cvo_pushButton_05.isVisible():
-            ui.cs_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
-            ui.cs_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
+            if ui.cs_pushButtonn_41.isVisible():
+                if ui.cs_textEditttt_07.isVisible():
+                    ui.cs_textEditttt_07.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                else:
+                    ui.cs_textEditttt_08.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                ui.cs_textEditttt_10.setGeometry(509, 40, 497, 1307 if ui.extend_window else 700)
+            else:
+                ui.cs_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
+                ui.cs_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
         elif ui.cva_pushButton_01.isVisible():
-            ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-            ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
-            ui.cs_textEditttt_06.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-            ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
-            ui.cs_textEditttt_03.setVisible(True)
-            ui.cs_textEditttt_04.setVisible(True)
-            ui.cs_textEditttt_06.setVisible(True)
-            ui.czoo_pushButon_01.setVisible(True)
-            ui.czoo_pushButon_02.setVisible(True)
-            ui.czoo_pushButon_01.setText('확대(esc)')
-            ui.czoo_pushButon_02.setText('확대(esc)')
+            if ui.cs_pushButtonn_41.isVisible():
+                if ui.cs_textEditttt_03.isVisible():
+                    ui.cs_textEditttt_03.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                elif ui.cs_textEditttt_04.isVisible():
+                    ui.cs_textEditttt_04.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                else:
+                    ui.cs_textEditttt_06.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                ui.cs_textEditttt_10.setGeometry(509, 40, 497, 1307 if ui.extend_window else 700)
+            else:
+                ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
+                ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
+                ui.cs_textEditttt_06.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
+                ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+                ui.cs_textEditttt_03.setVisible(True)
+                ui.cs_textEditttt_04.setVisible(True)
+                ui.cs_textEditttt_06.setVisible(True)
+                ui.czoo_pushButon_01.setVisible(True)
+                ui.czoo_pushButon_02.setVisible(True)
+                ui.czoo_pushButon_01.setText('확대(esc)')
+                ui.czoo_pushButon_02.setText('확대(esc)')
         else:
-            ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
-            ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
-            ui.cs_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
-            ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
-            ui.cs_textEditttt_03.setVisible(True)
-            ui.cs_textEditttt_04.setVisible(True)
-            ui.cs_textEditttt_05.setVisible(True)
-            ui.czoo_pushButon_01.setVisible(True)
-            ui.czoo_pushButon_02.setVisible(True)
-            ui.czoo_pushButon_01.setText('확대(esc)')
-            ui.czoo_pushButon_02.setText('확대(esc)')
+            if ui.cs_pushButtonn_41.isVisible():
+                if ui.cs_textEditttt_03.isVisible():
+                    ui.cs_textEditttt_03.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                elif ui.cs_textEditttt_04.isVisible():
+                    ui.cs_textEditttt_04.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                else:
+                    ui.cs_textEditttt_05.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
+                ui.cs_textEditttt_10.setGeometry(509, 40, 497, 1307 if ui.extend_window else 700)
+            else:
+                ui.cs_textEditttt_03.setGeometry(7, 10, 647, 740 if ui.extend_window else 463)
+                ui.cs_textEditttt_04.setGeometry(7, 756 if ui.extend_window else 480, 647, 602 if ui.extend_window else 272)
+                ui.cs_textEditttt_05.setGeometry(659, 10, 347, 1347 if ui.extend_window else 740)
+                ui.czoo_pushButon_02.setGeometry(584, 761 if ui.extend_window else 483, 50, 20)
+                ui.cs_textEditttt_03.setVisible(True)
+                ui.cs_textEditttt_04.setVisible(True)
+                ui.cs_textEditttt_05.setVisible(True)
+                ui.czoo_pushButon_01.setVisible(True)
+                ui.czoo_pushButon_02.setVisible(True)
+                ui.czoo_pushButon_01.setText('확대(esc)')
+                ui.czoo_pushButon_02.setText('확대(esc)')

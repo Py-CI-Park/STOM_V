@@ -1,14 +1,14 @@
 
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
-from PyQt5.QtWidgets import QMessageBox, QApplication
 from multiprocessing import Process
 from backtest.optimiz import Optimize
 from backtest.backtest import BackTest
 from backtest.backfinder import BackFinder
+from PyQt5.QtWidgets import QMessageBox, QApplication
 from backtest.optimiz_conditions import OptimizeConditions
 from backtest.rolling_walk_forward_test import RollingWalkForwardTest
 from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
-from ui.set_style import style_bc_by, style_bc_dk, style_bc_bs, style_bc_bd
+from ui.set_style import style_bc_by, style_bc_dk, style_bc_bs, style_bc_bd, style_bc_st
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
 from ui.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condtext, cedittxt, example_finder, \
     example_finder_future
 from utility.static import error_decorator
@@ -706,6 +706,8 @@ def coin_opti_test_editer(ui):
     ui.cs_textEditttt_05.setVisible(True)
     ui.cs_textEditttt_06.setVisible(False)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_detail_list:
         item.setVisible(False)
     for item in ui.coin_baklog_list:
@@ -741,7 +743,8 @@ def coin_opti_test_editer(ui):
     ui.cvc_labellllll_05.setVisible(False)
 
     ui.cvj_pushButton_07.setFocus()
-    cChangeSvjButtonColor(ui)
+    change_svj_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -759,6 +762,8 @@ def coin_rwf_test_editer(ui):
     ui.cs_textEditttt_05.setVisible(True)
     ui.cs_textEditttt_06.setVisible(False)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_detail_list:
         item.setVisible(False)
     for item in ui.coin_baklog_list:
@@ -795,7 +800,8 @@ def coin_rwf_test_editer(ui):
     ui.cvc_labellllll_05.setVisible(False)
 
     ui.cvj_pushButton_06.setFocus()
-    cChangeSvjButtonColor(ui)
+    change_svj_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -813,6 +819,8 @@ def coin_opti_ga_editer(ui):
     ui.cs_textEditttt_05.setVisible(False)
     ui.cs_textEditttt_06.setVisible(True)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_detail_list:
         item.setVisible(False)
     for item in ui.coin_baklog_list:
@@ -848,7 +856,8 @@ def coin_opti_ga_editer(ui):
     ui.cvc_labellllll_05.setVisible(False)
 
     ui.cvj_pushButton_10.setFocus()
-    cChangeSvjButtonColor(ui)
+    change_svj_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -863,6 +872,8 @@ def coin_opti_vars_editer(ui):
     ui.cs_textEditttt_05.setVisible(True)
     ui.cs_textEditttt_06.setVisible(True)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_datedt_list:
         item.setVisible(False)
     for item in ui.coin_backte_list:
@@ -919,7 +930,8 @@ def coin_opti_vars_editer(ui):
     ui.cvc_labellllll_05.setVisible(True)
 
     ui.cvj_pushButton_12.setFocus()
-    cChangeSvjButtonColor(ui)
+    change_svj_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -937,6 +949,8 @@ def coin_opti_editer(ui):
     ui.cs_textEditttt_05.setVisible(True)
     ui.cs_textEditttt_06.setVisible(False)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_datedt_list:
         item.setVisible(False)
     for item in ui.coin_backte_list:
@@ -972,7 +986,8 @@ def coin_opti_editer(ui):
     ui.cvc_labellllll_05.setVisible(False)
 
     ui.cvj_pushButton_08.setFocus()
-    cChangeSvjButtonColor(ui)
+    change_svj_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -987,6 +1002,8 @@ def coin_vars_editer(ui):
     ui.cs_textEditttt_05.setVisible(False)
     ui.cs_textEditttt_06.setVisible(False)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_datedt_list:
         item.setVisible(False)
     for item in ui.coin_backte_list:
@@ -1032,7 +1049,8 @@ def coin_vars_editer(ui):
     ui.cvc_labellllll_05.setVisible(False)
 
     ui.cvj_pushButton_13.setFocus()
-    cChangeSvjButtonColor(ui)
+    change_svj_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -1072,6 +1090,8 @@ def coin_backtest_log(ui):
     ui.cs_progressBar_01.setGeometry(7, 1328 if ui.extend_window else 718, 830, 30)
     ui.cs_pushButtonn_08.setGeometry(842, 1328 if ui.extend_window else 718, 165, 30)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_esczom_list:
         item.setVisible(False)
     for item in ui.coin_detail_list:
@@ -1083,6 +1103,7 @@ def coin_backtest_log(ui):
     ui.cvj_pushButton_14.setFocus()
     ui.cvj_pushButton_14.setStyleSheet(style_bc_dk)
     ui.cvj_pushButton_15.setStyleSheet(style_bc_bs)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -1103,6 +1124,8 @@ def coin_backtest_detail(ui):
             (not ui.extend_window and ui.cs_tableWidget_01.rowCount() < 32):
         ui.cs_tableWidget_01.setRowCount(60 if ui.extend_window else 32)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_esczom_list:
         item.setVisible(False)
     for item in ui.coin_baklog_list:
@@ -1113,6 +1136,8 @@ def coin_backtest_detail(ui):
     ui.cvj_pushButton_15.setFocus()
     ui.cvj_pushButton_15.setStyleSheet(style_bc_dk)
     ui.cvj_pushButton_14.setStyleSheet(style_bc_bs)
+    change_version_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -1130,6 +1155,8 @@ def coin_stg_editer(ui):
     ui.cs_textEditttt_05.setVisible(False)
     ui.cs_textEditttt_06.setVisible(False)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_optimz_list:
         item.setVisible(False)
     for item in ui.coin_period_list:
@@ -1164,7 +1191,8 @@ def coin_stg_editer(ui):
     ui.cvc_labellllll_05.setVisible(False)
 
     ui.cvj_pushButton_09.setFocus()
-    cChangeSvjButtonColor(ui)
+    change_svj_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -1181,6 +1209,8 @@ def coin_cond_editer(ui):
     ui.cs_textEditttt_07.setGeometry(7, 10, 497, 1347 if ui.extend_window else 740)
     ui.cs_textEditttt_08.setGeometry(509, 10, 497, 1347 if ui.extend_window else 740)
 
+    for item in ui.coin_version_list:
+        item.setVisible(False)
     for item in ui.coin_esczom_list:
         item.setVisible(False)
     for item in ui.coin_backte_list:
@@ -1230,7 +1260,8 @@ def coin_cond_editer(ui):
     ui.cvc_labellllll_05.setVisible(True)
 
     ui.cvj_pushButton_11.setFocus()
-    cChangeSvjButtonColor(ui)
+    change_svj_button_color(ui)
+    change_version_button_color(ui)
 
 
 @error_decorator
@@ -1841,6 +1872,12 @@ def coin_optivars_key_sort(ui):
 
 
 @error_decorator
-def cChangeSvjButtonColor(ui):
+def change_svj_button_color(ui):
     for button in ui.coin_editer_list:
         button.setStyleSheet(style_bc_dk if ui.focusWidget() == button else style_bc_bs)
+
+
+@error_decorator
+def change_version_button_color(ui):
+    for button in ui.coin_load_list:
+        button.setStyleSheet(style_bc_dk if ui.focusWidget() == button else style_bc_st)

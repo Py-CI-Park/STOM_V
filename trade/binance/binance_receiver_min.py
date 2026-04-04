@@ -50,7 +50,6 @@ class BinanceReceiverMin(BinanceReceiverTick):
         asks += asks_
         tbids = round(pretbids + bids_, 8)
         tasks = round(pretasks + asks_, 8)
-        # noinspection PyTypeChecker
         ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
         per = round((c / self.dict_prec[code][1] - 1) * 100, 2)
 

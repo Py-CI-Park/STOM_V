@@ -13,6 +13,8 @@ def sactivated_01(ui):
             ui.ss_textEditttt_01.clear()
             ui.ss_textEditttt_01.append(df['전략코드'][strategy_name])
             ui.svjb_lineEditt_01.setText(strategy_name)
+            if ui.ss_pushButtonn_41.isVisible():
+                ui.StrategyVersion(gubun, 'basic', 'buy', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
@@ -27,6 +29,8 @@ def sactivated_02(ui):
             ui.ss_textEditttt_02.clear()
             ui.ss_textEditttt_02.append(df['전략코드'][strategy_name])
             ui.svjs_lineEditt_01.setText(strategy_name)
+            if ui.ss_pushButtonn_41.isVisible():
+                ui.StrategyVersion(gubun, 'basic', 'sell', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
@@ -41,6 +45,8 @@ def sactivated_03(ui):
             ui.ss_textEditttt_03.clear()
             ui.ss_textEditttt_03.append(df['전략코드'][strategy_name])
             ui.svc_lineEdittt_01.setText(strategy_name)
+            if ui.ss_pushButtonn_41.isVisible():
+                ui.StrategyVersion(gubun, 'opti', 'buy', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
@@ -55,6 +61,8 @@ def sactivated_04(ui):
             ui.ss_textEditttt_05.clear()
             ui.ss_textEditttt_05.append(df['전략코드'][strategy_name])
             ui.svc_lineEdittt_02.setText(strategy_name)
+            if ui.ss_pushButtonn_41.isVisible():
+                ui.StrategyVersion(gubun, 'opti', 'vars', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '범위가 DB에 존재하지 않습니다.\n범위을 다시 로딩하십시오.\n')
 
@@ -69,6 +77,8 @@ def sactivated_05(ui):
             ui.ss_textEditttt_04.clear()
             ui.ss_textEditttt_04.append(df['전략코드'][strategy_name])
             ui.svc_lineEdittt_03.setText(strategy_name)
+            if ui.ss_pushButtonn_41.isVisible():
+                ui.StrategyVersion(gubun, 'opti', 'sell', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '전략이 DB에 존재하지 않습니다.\n전략을 다시 로딩하십시오.\n')
 
@@ -83,6 +93,8 @@ def sactivated_06(ui):
             ui.ss_textEditttt_06.clear()
             ui.ss_textEditttt_06.append(df['전략코드'][strategy_name])
             ui.sva_lineEdittt_01.setText(strategy_name)
+            if ui.ss_pushButtonn_41.isVisible():
+                ui.StrategyVersion(gubun, 'opti', 'gavars', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '범위가 DB에 존재하지 않습니다.\n범위을 다시 로딩하십시오.\n')
 
@@ -97,6 +109,8 @@ def sactivated_07(ui):
             ui.ss_textEditttt_07.clear()
             ui.ss_textEditttt_07.append(df['전략코드'][strategy_name])
             ui.svo_lineEdittt_01.setText(strategy_name)
+            if ui.ss_pushButtonn_41.isVisible():
+                ui.StrategyVersion(gubun, 'cond', 'buy', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '조건이 DB에 존재하지 않습니다.\n조건을 다시 로딩하십시오.\n')
 
@@ -111,6 +125,8 @@ def sactivated_08(ui):
             ui.ss_textEditttt_08.clear()
             ui.ss_textEditttt_08.append(df['전략코드'][strategy_name])
             ui.svo_lineEdittt_02.setText(strategy_name)
+            if ui.ss_pushButtonn_41.isVisible():
+                ui.StrategyVersion(gubun, 'cond', 'sell', strategy_name)
         else:
             QMessageBox.critical(ui, '오류 알림', '조건이 DB에 존재하지 않습니다.\n조건을 다시 로딩하십시오.\n')
 

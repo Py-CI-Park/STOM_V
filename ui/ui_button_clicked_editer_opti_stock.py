@@ -1,8 +1,9 @@
 
 import random
-from traceback import format_exc
 from PyQt5.QtCore import Qt
+from traceback import format_exc
 from PyQt5.QtWidgets import QMessageBox, QApplication
+from utility.strategy_version_manager import stg_save_version
 from utility.static import text_not_in_special_characters, error_decorator
 from ui.set_text import famous_saying, example_stock_buy, example_stock_sell, example_stockopti_buy1, \
     example_stockopti_buy2, example_stockopti_sell1, example_stockopti_sell2, example_opti_vars, example_vars, \
@@ -14,8 +15,14 @@ from ui.set_text import famous_saying, example_stock_buy, example_stock_sell, ex
 
 @error_decorator
 def stock_opti_buy_load(ui):
-    if ui.ss_textEditttt_03.isVisible():
-        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.svc_comboBoxxx_01.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '최적화 매수전략이 선택되지 않았습니다.\n최적화 매수전략을 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'opti', 'buy', strategy_name)
+    elif ui.ss_textEditttt_03.isVisible():
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optibuy').set_index('index')
         if len(df) > 0:
             ui.svc_comboBoxxx_01.clear()
@@ -53,13 +60,20 @@ def stock_opti_buy_save(ui):
                         insert_query  = f"INSERT INTO {gubun}optibuy VALUES (?, ?, ?)"
                         insert_vlaues = (strategy_name, strategy, '')
                         ui.queryQ.put(('전략디비', insert_query, insert_vlaues))
+                    stg_save_version(gubun, 'opti', 'buy', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
 def stock_opti_vars_load(ui):
-    if ui.ss_textEditttt_05.isVisible():
-        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.svc_comboBoxxx_02.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '최적화 범위가 선택되지 않았습니다.\n최적화 범위를 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'opti', 'vars', strategy_name)
+    elif ui.ss_textEditttt_05.isVisible():
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optivars').set_index('index')
         if len(df) > 0:
             ui.svc_comboBoxxx_02.clear()
@@ -91,13 +105,20 @@ def stock_opti_vars_save(ui):
                     insert_values = (strategy_name, strategy)
                     ui.queryQ.put(('전략디비', delete_query))
                     ui.queryQ.put(('전략디비', insert_query, insert_values))
+                    stg_save_version(gubun, 'opti', 'vars', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
 def stock_opti_sell_load(ui):
-    if ui.ss_textEditttt_04.isVisible():
-        gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+    gubun = 'stock' if '키움증권' in ui.dict_set['증권사'] else 'future'
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.svc_comboBoxxx_08.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '최적화 매도전략이 선택되지 않았습니다.\n최적화 매도전략을 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'opti', 'sell', strategy_name)
+    elif ui.ss_textEditttt_04.isVisible():
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optisell').set_index('index')
         if len(df) > 0:
             ui.svc_comboBoxxx_08.clear()
@@ -131,6 +152,7 @@ def stock_opti_sell_save(ui):
                     insert_values = (strategy_name, strategy)
                     ui.queryQ.put(('전략디비', delete_query))
                     ui.queryQ.put(('전략디비', insert_query, insert_values))
+                    stg_save_version(gubun, 'opti', 'sell', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 

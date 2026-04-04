@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
+from utility.strategy_version_manager import stg_save_version
 from backtest.back_static import SendResult, GetMoneytopQuery
 from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
 from utility.setting_base import DB_STOCK_TICK_BACK, ui_num, DB_STRATEGY, DB_BACKTEST, DB_COIN_TICK_BACK, \
@@ -410,6 +411,12 @@ class OptimizeGeneticAlgorithm:
         cur.execute(f"UPDATE {self.gubun}vars SET 전략코드 = '{optivars}' WHERE `index` = '{optivars_name}'")
         con.commit()
         con.close()
+
+        if self.ui_gubun == 'S':    gubun = 'stock'
+        elif self.ui_gubun == 'SF': gubun = 'future'
+        elif self.ui_gubun == 'C':  gubun = 'upbit'
+        else:                       gubun = 'binance'
+        stg_save_version(gubun, 'opti', 'gavars', optivars_name, optivars)
 
         if self.dict_set['스톰라이브']: self.lq.put(f'{self.backname}')
         self.sq.put('지에이 최적화가 완료되었습니다.')

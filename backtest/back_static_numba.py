@@ -116,7 +116,6 @@ def bootstrap_test(returns, n_bootstrap=10000):
     bootstrap_returns = np.zeros(n_bootstrap)
     for i in prange(n_bootstrap):
         bootstrap_sample = np.random.choice(returns, size=n, replace=True)
-        # noinspection PyTypeChecker
         total_return = np.prod(1 + bootstrap_sample) - 1
         bootstrap_returns[i] = total_return
     return bootstrap_returns
