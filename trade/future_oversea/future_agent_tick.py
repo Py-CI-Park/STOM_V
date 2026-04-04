@@ -316,7 +316,10 @@ class FutureAgentTick:
             except:
                 self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveRealData')))
             else:
-                self.UpdateHogaData(dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount, code, name, start)
+                try:
+                    self.UpdateHogaData(dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount, code, name, start)
+                except:
+                    self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateHogaData')))
 
         elif realtype == '해외선물시세':
             try:
@@ -370,7 +373,10 @@ class FutureAgentTick:
             except:
                 self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveRealData')))
             else:
-                self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
+                try:
+                    self.UpdateTickData(code, dt, c, o, h, low, per, v, csp, cbp)
+                except:
+                    self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData')))
 
     def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
         data = self.dict_data.get(code)

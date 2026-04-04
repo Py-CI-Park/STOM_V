@@ -8,7 +8,8 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from utility.setting_base import ui_num, columns_cj, columns_td, DB_TRADELIST, columns_jg
 from utility.static import now, timedelta_sec, str_hms, roundfigure_lower, roundfigure_upper, GetKiwoomPgSgSp, \
-    GetHogaunit, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, qtest_qwait, get_profile_text
+    GetHogaunit, str_ymd, str_ymdhms, str_ymdhmsf, dt_hms, qtest_qwait, get_profile_text, set_builtin_print, \
+    error_decorator
 
 
 class Updater(QThread):
@@ -117,6 +118,7 @@ class KiwoomTrader:
             self.pr = cProfile.Profile()
             self.pr.enable()
 
+        set_builtin_print(True, self.mgzservQ)
         app.exec_()
 
     def get_jgcs_time(self):
@@ -154,6 +156,7 @@ class KiwoomTrader:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
+    @error_decorator
     def CheckOrder(self, data):
         if len(data) == 7:
             주문구분, 종목코드, 종목명, 주문가격, 주문수량, 시그널시간, 잔고청산 = data
@@ -459,6 +462,7 @@ class KiwoomTrader:
                 index = str(int(index) + 1)
         return index
 
+    @error_decorator
     def UpdateChejanData(self, data):
         종목코드, 종목명, 최우선매도호가, 주문상태, 주문구분, 주문수량, 체결수량, 미체결수량, 주문가격, 체결가격, 주문시간, 주문번호 = data
         index = self.GetIndex()

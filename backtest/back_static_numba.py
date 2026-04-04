@@ -1,9 +1,9 @@
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 
-@njit(cache=True)
+@njit(cache=True, parallel=True)
 def GetOptiValidStd(train_stds, valid_stds, exponential):
     """
     가중치(weight) 예제 : 최고 1.3, 최저 0.7
@@ -11,7 +11,7 @@ def GetOptiValidStd(train_stds, valid_stds, exponential):
     """
     merge = 0.
     count = len(train_stds)
-    for i in range(count):
+    for i in prange(count):
         train_std = train_stds[i] * 0.7
         valid_std = valid_stds[i] * 0.3
         if exponential and count > 1:
@@ -81,11 +81,40 @@ def GetResult(arry_tsg, arry_bct, betting, ui_gubun, day_count):
     )
 
 
-@njit(cache=True)
+@njit(cache=True, parallel=True)
+def calculate_mdd_bootstrap(sig_array, seed, n_bootstrap=100):
+    mdd_list = np.zeros(n_bootstrap)
+    random_cumsums = np.empty((n_bootstrap, len(sig_array)))
+
+    for i in prange(n_bootstrap):
+        random_sig_array = np.random.permutation(sig_array)
+        cumsum_sig_array = np.cumsum(random_sig_array)
+        random_cumsums[i] = cumsum_sig_array
+        max_so_far = cumsum_sig_array[0]
+        drawdown = np.zeros(len(cumsum_sig_array))
+
+        for j in range(1, len(cumsum_sig_array)):
+            if cumsum_sig_array[j] > max_so_far:
+                max_so_far = cumsum_sig_array[j]
+            drawdown[j] = max_so_far - cumsum_sig_array[j]
+
+        lower = np.argmax(drawdown)
+        if lower > 0:
+            upper = np.argmax(cumsum_sig_array[:lower])
+            mdd_ = abs(cumsum_sig_array[upper] - cumsum_sig_array[lower]) / (cumsum_sig_array[upper] + seed) * 100
+        else:
+            mdd_ = 0.0
+
+        mdd_list[i] = round(mdd_, 2)
+
+    return mdd_list, random_cumsums
+
+
+@njit(cache=True, parallel=True)
 def bootstrap_test(returns, n_bootstrap=10000):
     n = len(returns)
     bootstrap_returns = np.zeros(n_bootstrap)
-    for i in range(n_bootstrap):
+    for i in prange(n_bootstrap):
         bootstrap_sample = np.random.choice(returns, size=n, replace=True)
         # noinspection PyTypeChecker
         total_return = np.prod(1 + bootstrap_sample) - 1

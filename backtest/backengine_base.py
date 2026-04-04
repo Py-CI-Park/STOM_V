@@ -580,7 +580,7 @@ class BackEngineBase(StrategyBase):
                         try:
                             self.Strategy()
                         except:
-                            if self.gubun == 0: self.wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
+                            if self.gubun == 0: self.wq.put((ui_num['시스템로그'], format_exc()))
                             self.BackStop(3)
                             return
 

@@ -216,14 +216,7 @@ class BackTest:
             self.lq.put(('back', data_list))
 
         save_time = str_ymdhms()
-        data = [int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg]
-        df = pd.DataFrame([data], columns=columns_vj, index=[save_time])
         save_file_name = f'{self.savename}_{self.buystg_name}_{save_time}'
-        con = sqlite3.connect(DB_BACKTEST)
-        df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
-        df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
-        con.close()
-        self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], df_tsg))
 
         if self.blacklist:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'블랙리스트 추가 {self.insertblacklist}'))
@@ -255,15 +248,23 @@ class BackTest:
                     sell_vars = f'{sell_vars}, {text}'
 
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '결과 그래프 생성 중 ...'))
-            PlotShow('백테스트', self.is_tick, self.teleQ, df_tsg, df_bct, self.dict_cn, seed, mdd, self.startday,
+            PlotShow('백테스트', self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.dict_cn, seed, mdd, self.startday,
                      self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text + bootstrap_text,
                      save_file_name, self.schedul, False, buy_vars=buy_vars, sell_vars=sell_vars)
         else:
             if not self.dict_set['그래프저장하지않기']:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '결과 그래프 생성 중 ...'))
-                PlotShow('백테스트', self.is_tick, self.teleQ, df_tsg, df_bct, self.dict_cn, seed, mdd, self.startday,
+                PlotShow('백테스트', self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.dict_cn, seed, mdd, self.startday,
                          self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text + bootstrap_text,
                          save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
+
+        data = [int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg]
+        df = pd.DataFrame([data], columns=columns_vj, index=[save_time])
+        con = sqlite3.connect(DB_BACKTEST)
+        df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
+        df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
+        con.close()
+        self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], df_tsg))
 
     def InsertBlacklist(self, df_tsg):
         name_list = df_tsg['종목명'].unique()

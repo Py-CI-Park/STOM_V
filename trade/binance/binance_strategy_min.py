@@ -12,7 +12,6 @@ class BinanceStrategyMin(BinanceStrategyTick):
         globals().update(dict_add_func)
 
     # noinspection PyUnusedLocal
-    @error_decorator
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
             분봉시가, 분봉고가, 분봉저가, \

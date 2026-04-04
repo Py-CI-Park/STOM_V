@@ -768,7 +768,7 @@ class WidgetCreater:
         tableWidget.verticalHeader().setDefaultSectionSize(23)
         tableWidget.verticalHeader().setVisible(False)
         tableWidget.setAlternatingRowColors(True)
-        tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)
+        tableWidget.setSelectionMode(QAbstractItemView.NoSelection)
         tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         if not vscroll:
             tableWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
