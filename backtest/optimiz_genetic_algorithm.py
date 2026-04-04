@@ -54,79 +54,85 @@ class Total:
         st = {}
         dict_dummy = {}
         while True:
-            data = self.tq.get()
-            if data == '백테완료':
-                bc  += 1
-                if bc == self.back_count:
-                    bc = 0
-                    for q in self.bstq_list:
-                        q.put(('백테완료', '분리집계'))
+            try:
+                data = self.tq.get()
+                if data == '백테완료':
+                    bc  += 1
+                    if bc == self.back_count:
+                        bc = 0
+                        for q in self.bstq_list:
+                            q.put(('백테완료', '분리집계'))
 
-            elif data[0] == '더미결과':
-                sc += 1
-                _, vkey, _dict_dummy = data
-                if _dict_dummy:
-                    for vturn in _dict_dummy:
-                        dict_dummy[vturn][vkey] = 0
+                elif data[0] == '더미결과':
+                    sc += 1
+                    _, vkey, _dict_dummy = data
+                    if _dict_dummy:
+                        for vturn in _dict_dummy:
+                            dict_dummy[vturn][vkey] = 0
 
-                if sc == 20:
-                    sc = 0
-                    for vturn in range(50):
-                        for vkey in range(20):
-                            if vkey not in dict_dummy[vturn]:
-                                self.stdp = SendResult(self.GetSendData(vturn, vkey), None)
-                    dict_dummy = {}
+                    if sc == 20:
+                        sc = 0
+                        for vturn in range(50):
+                            for vkey in range(20):
+                                if vkey not in dict_dummy[vturn]:
+                                    self.stdp = SendResult(self.GetSendData(vturn, vkey), None)
+                        dict_dummy = {}
 
-            elif data[0] in ('TRAIN', 'VALID'):
-                gubun, num, data, vturn, vkey = data
-                if gubun == 'TRAIN':
-                    if vturn not in self.dict_t:
-                        self.dict_t[vturn] = {}
-                    if vkey not in self.dict_t[vturn]:
-                        self.dict_t[vturn][vkey] = {}
-                    self.dict_t[vturn][vkey][num] = data
-                else:
-                    if vturn not in self.dict_v:
-                        self.dict_v[vturn] = {}
-                    if vkey not in self.dict_v[vturn]:
-                        self.dict_v[vturn][vkey] = {}
-                    self.dict_v[vturn][vkey][num] = data
+                elif data[0] in ('TRAIN', 'VALID'):
+                    gubun, num, data, vturn, vkey = data
+                    if gubun == 'TRAIN':
+                        if vturn not in self.dict_t:
+                            self.dict_t[vturn] = {}
+                        if vkey not in self.dict_t[vturn]:
+                            self.dict_t[vturn][vkey] = {}
+                        self.dict_t[vturn][vkey][num] = data
+                    else:
+                        if vturn not in self.dict_v:
+                            self.dict_v[vturn] = {}
+                        if vkey not in self.dict_v[vturn]:
+                            self.dict_v[vturn][vkey] = {}
+                        self.dict_v[vturn][vkey][num] = data
 
-                if vturn not in st:
-                    st[vturn] = {}
-                if vkey not in st[vturn]:
-                    st[vturn][vkey] = 0
-                st[vturn][vkey] += 1
+                    if vturn not in st:
+                        st[vturn] = {}
+                    if vkey not in st[vturn]:
+                        st[vturn][vkey] = 0
+                    st[vturn][vkey] += 1
 
-                if st[vturn][vkey] == self.sub_total:
-                    self.stdp = SendResult(
-                        self.GetSendData(vturn, vkey),
-                        self.dict_t[vturn][vkey],
-                        self.dict_v[vturn][vkey],
-                        self.dict_set['교차검증가중치']
-                    )
-                    st[vturn][vkey] = 0
+                    if st[vturn][vkey] == self.sub_total:
+                        self.stdp = SendResult(
+                            self.GetSendData(vturn, vkey),
+                            self.dict_t[vturn][vkey],
+                            self.dict_v[vturn][vkey],
+                            self.dict_set['교차검증가중치']
+                        )
+                        st[vturn][vkey] = 0
 
-            elif data[0] == 'ALL':
-                _, _, data, vturn, vkey = data
-                self.stdp = SendResult(self.GetSendData(vturn, vkey), data)
+                elif data[0] == 'ALL':
+                    _, _, data, vturn, vkey = data
+                    self.stdp = SendResult(self.GetSendData(vturn, vkey), data)
 
-            elif data[0] == '백테정보':
-                self.BackInfo(data)
+                elif data[0] == '백테정보':
+                    self.BackInfo(data)
 
-            elif data[0] == '변수정보':
-                self.vars_lists = data[1]
-                dict_dummy      = {x: {} for x in range(50)}
+                elif data[0] == '변수정보':
+                    self.vars_lists = data[1]
+                    dict_dummy      = {x: {} for x in range(50)}
 
-            elif data[0] == '경우의수':
-                self.back_count = data[1]
+                elif data[0] == '경우의수':
+                    self.back_count = data[1]
 
-            elif data == '백테중지':
+                elif data == '백테완료중지':
+                    break
+
+                elif data == '백테중지':
+                    self.mq.put('백테중지')
+                    time.sleep(1)
+                    break
+            except:
+                self.wq.put((ui_num['시스템로그'], format_exc()))
                 self.mq.put('백테중지')
                 time.sleep(1)
-                break
-
-            elif data == '백테완료중지':
                 break
 
         sys.exit()
@@ -184,7 +190,13 @@ class OptimizeGeneticAlgorithm:
         self.savename    = f'{self.gubun}_{self.backname.replace("최적화", "").lower()}'
         self.orignal_vars_list = []
 
-        self.Start()
+        try:
+            self.Start()
+        except SystemExit:
+            pass
+        except:
+            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.tq.put('백테중지')
 
     def Start(self):
         start_time = now()
