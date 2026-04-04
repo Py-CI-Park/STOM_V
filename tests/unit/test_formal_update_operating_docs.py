@@ -1,7 +1,61 @@
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[2]
+LOCAL_GUIDE_EXPECTATIONS = {
+    "2U": {
+        "display_path": "C:/System_Trading/STOM/STOM_V.wt-2u/CLAUDE.md",
+        "relative_path": "../STOM_V.wt-2u/CLAUDE.md",
+        "title": "# STOM Project Guidelines (STOM_Version_2U)",
+        "worktree_path": "`STOM_V.wt-2u/`",
+        "lane_identity": "`2U`",
+        "marker": (
+            "C:/System_Trading/STOM/STOM_V.wt-2u/docs/update_log/"
+            "2026-04-04_v274_v277_2u_baseline_note.md"
+        ),
+    },
+    "2U_C": {
+        "display_path": "C:/System_Trading/STOM/STOM_V.wt-2uc/CLAUDE.md",
+        "relative_path": "../STOM_V.wt-2uc/CLAUDE.md",
+        "title": "# STOM Project Guidelines (STOM_Version_2U_C)",
+        "worktree_path": "`STOM_V.wt-2uc/`",
+        "lane_identity": "`2U_C`",
+        "marker": (
+            "C:/System_Trading/STOM/STOM_V.wt-2uc/docs/update_log/"
+            "2026-04-04_v274_v277_2uc_baseline_note.md"
+        ),
+    },
+    "CLI_v267": {
+        "display_path": "C:/System_Trading/STOM/STOM_V.wt-dev/CLAUDE.md",
+        "relative_path": "../STOM_V.wt-dev/CLAUDE.md",
+        "title": "# STOM Project Guidelines (STOM_Version_2U_C_CLI_v267)",
+        "worktree_path": "`STOM_V.wt-dev/`",
+        "lane_identity": "`CLI_v267`",
+        "marker": (
+            "C:/System_Trading/STOM/STOM_V.wt-dev/docs/update_log/"
+            "2026-04-04_v274_v277_cli_v267_baseline_note.md"
+        ),
+    },
+    "research/init": {
+        "display_path": "C:/System_Trading/STOM/STOM_V.wt-lab/CLAUDE.md",
+        "relative_path": "../STOM_V.wt-lab/CLAUDE.md",
+        "title": "# STOM Project Guidelines (research/init)",
+        "worktree_path": "`STOM_V.wt-lab/`",
+        "lane_identity": "`research/init`",
+        "marker": (
+            "C:/System_Trading/STOM/STOM_V.wt-lab/docs/update_log/"
+            "2026-04-04_v274_v277_research_init_baseline_note.md"
+        ),
+    },
+}
+LIVE_DOWNSTREAM_HEADS = {
+    "2U": "8c70573",
+    "2U_C": "b0c3a6d",
+    "CLI_v267": "d80fe62",
+    "research/init": "2544521",
+}
 
 
 def read_text(relative_path: str) -> str:
@@ -62,6 +116,30 @@ def test_cycle_status_contains_current_release_and_downstream_heads():
     assert "## Downstream heads" in text
     assert "## Protected result data" in text
     assert "## Next recommended start" in text
+    for lane, live_sha in LIVE_DOWNSTREAM_HEADS.items():
+        assert f"- `{lane}`: `{live_sha}`" in text
+
+
+@pytest.mark.parametrize(
+    ("lane", "expectation"),
+    LOCAL_GUIDE_EXPECTATIONS.items(),
+    ids=LOCAL_GUIDE_EXPECTATIONS.keys(),
+)
+def test_worktree_local_claude_guides_keep_read_first_and_branch_gate_contract(
+    lane: str, expectation: dict[str, str]
+):
+    guide_path = (ROOT / expectation["relative_path"]).resolve()
+    if not guide_path.exists():
+        pytest.skip(f"missing sibling worktree guide: {expectation['display_path']}")
+
+    text = guide_path.read_text(encoding="utf-8")
+
+    assert expectation["title"] in text, lane
+    assert expectation["worktree_path"] in text, lane
+    assert expectation["lane_identity"] in text, lane
+    assert "## Read First" in text, lane
+    assert "## Branch Gate" in text, lane
+    assert expectation["marker"] in text, lane
 
 
 def test_registry_tracks_current_carry_forward_items():
