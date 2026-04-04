@@ -1,10 +1,12 @@
 
 import win32api
 import win32gui
+from ui.ui_etc import chart_clear
 from utility.setting_base import ui_num
 from PyQt5.QtWidgets import QMessageBox
 from utility.static import error_decorator
 from ui.ui_draw_chart_base import DrawChartBase
+from ui.ui_button_clicked_etc import hg_button_clicked_02
 from utility.static import from_timestamp, thread_decorator, str_ymd
 from trade.stock_korea.login_kiwoom.manuallogin import leftClick, enter_keys, press_keys
 
@@ -13,7 +15,7 @@ class DrawDBChart(DrawChartBase):
     @error_decorator
     def draw_db_chart(self, data):
         self.real = False
-        self.ui.ChartClear()
+        chart_clear(self.ui)
         if not self.ui.dialog_chart.isVisible():
             return
 
@@ -50,7 +52,7 @@ class DrawDBChart(DrawChartBase):
             self.KiwoomHTSChart(self.code, str_ymd(from_timestamp(self.xmin)))
 
         if self.ui.dialog_hoga.isVisible() and self.ui.hg_labellllllll_01.text():
-            self.ui.hgButtonClicked_02('매수')
+            hg_button_clicked_02(self.ui, '매수')
 
     @thread_decorator
     def KiwoomHTSChart(self, code, date):

@@ -7,7 +7,6 @@ class BackEngineBinanceMin(BackEngineFutureMin):
     def UpdateMarketGubun(self):
         self.market_gubun = 4
 
-    # noinspection PyUnusedLocal
     def GetHogaunit(self, 호가빼기데이터):
         return min(x for x in 호가빼기데이터 if x > 0)
 

@@ -1,7 +1,9 @@
 
 import random
 from PyQt5.QtCore import Qt
+from ui.ui_vars_change import get_fix_strategy
 from ui.set_style import style_bc_st, style_bc_dk
+from ui.ui_strategy_version import strategy_version
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.strategy_version_manager import stg_save_version
 from utility.static import text_not_in_special_characters, error_decorator
@@ -16,7 +18,7 @@ def stock_sell_stg_load(ui):
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '매도전략이 선택되지 않았습니다.\n매도전략을 선택한 후에 재시도하십시오.\n')
             return
-        ui.StrategyVersion(gubun, 'basic', 'sell', strategy_name)
+        strategy_version(ui, gubun, 'basic', 'sell', strategy_name)
     elif ui.ss_textEditttt_02.isVisible():
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}sell').set_index('index')
         if len(df) > 0:
@@ -34,7 +36,7 @@ def stock_sell_stg_load(ui):
 def stock_sell_stg_save(ui):
     strategy_name = ui.svjs_lineEditt_01.text()
     strategy = ui.ss_textEditttt_02.toPlainText()
-    strategy = ui.GetFixStrategy(strategy, '매도')
+    strategy = get_fix_strategy(ui, strategy, '매도')
 
     if strategy_name == '':
         QMessageBox.critical(ui, '오류 알림', '매도전략의 이름이 공백 상태입니다.\n이름을 입력하십시오.\n')

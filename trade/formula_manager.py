@@ -77,13 +77,13 @@ class FormulaManager(StrategyBase):
     def UpdateGlobalsFunc(self, dict_add_func):
         globals().update(dict_add_func)
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnboundLocalVariable,PyUnusedLocal
     def update_all_data(self, code, arry, market, is_tick, w_unit):
         self.code        = code
         self.arry_code   = arry
         self.is_tick     = is_tick
         self.avg_list    = [w_unit]
-        self.high_low    = {}
+        self.high_low    = {str: []}
         self.tick_count  = 0
 
         if market == 1:
@@ -151,7 +151,6 @@ class FormulaManager(StrategyBase):
                         매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[i, 1:self.base_cnt]
 
             시분초 = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
-            # noinspection PyUnboundLocalVariable
             순매수금액 = 초당매수금액 - 초당매도금액 if self.is_tick else 분당매수금액 - 분당매도금액
             종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
 
@@ -168,11 +167,9 @@ class FormulaManager(StrategyBase):
                     self.high_low[self.code] = [현재가, i, 현재가, i]
             else:
                 if high_low:
-                    # noinspection PyUnboundLocalVariable
                     if 분봉고가 >= high_low[0]:
                         high_low[0] = 분봉고가
                         high_low[1] = i
-                    # noinspection PyUnboundLocalVariable
                     if 분봉저가 <= high_low[2]:
                         high_low[2] = 분봉저가
                         high_low[3] = i

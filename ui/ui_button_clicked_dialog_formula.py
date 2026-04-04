@@ -1,10 +1,10 @@
 
 import random
 import sqlite3
-from PyQt5.QtWidgets import QMessageBox, QColorDialog
 from ui.set_text import famous_saying
-from ui.set_text_stg_button import dict_stg_name
 from utility.setting_base import DB_STRATEGY
+from ui.set_text_stg_button import dict_stg_name
+from PyQt5.QtWidgets import QMessageBox, QColorDialog
 from utility.static import qtest_qwait, error_decorator
 
 

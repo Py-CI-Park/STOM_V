@@ -23,6 +23,7 @@ class HomTapGroupBox(QGroupBox):
         self.move_gbox = None
         self.animation = None
 
+    # noinspection PyUnresolvedReferences
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             if self.geometry().width() != 667:

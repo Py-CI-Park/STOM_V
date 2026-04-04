@@ -2,6 +2,7 @@
 import random
 from PyQt5.QtCore import Qt
 from ui.set_text import famous_saying
+from ui.ui_strategy_version import strategy_version
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.strategy_version_manager import stg_save_version
 from utility.static import text_not_in_special_characters, error_decorator
@@ -15,7 +16,7 @@ def stock_gavars_load(ui):
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 GA범위가 선택되지 않았습니다.\n최적화 GA범위를 선택한 후에 재시도하십시오.\n')
             return
-        ui.StrategyVersion(gubun, 'opti', 'gavars', strategy_name)
+        strategy_version(ui, gubun, 'opti', 'gavars', strategy_name)
     else:
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}vars').set_index('index')
         if len(df) > 0:
@@ -59,7 +60,7 @@ def stock_condbuy_load(ui):
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '조건최적화 매수전략이 선택되지 않았습니다.\n조건최적화 매수전략를 선택한 후에 재시도하십시오.\n')
             return
-        ui.StrategyVersion(gubun, 'cond', 'buy', strategy_name)
+        strategy_version(ui, gubun, 'cond', 'buy', strategy_name)
     else:
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}buyconds').set_index('index')
         if len(df) > 0:
@@ -103,7 +104,7 @@ def stock_condsell_load(ui):
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '조건최적화 매도전략이 선택되지 않았습니다.\n조건최적화 매도전략를 선택한 후에 재시도하십시오.\n')
             return
-        ui.StrategyVersion(gubun, 'cond', 'sell', strategy_name)
+        strategy_version(ui, gubun, 'cond', 'sell', strategy_name)
     else:
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}sellconds').set_index('index')
         if len(df) > 0:

@@ -22,6 +22,7 @@ class BackCodeTest(QThread):
         self.ms_analyzer = MicrostructureAnalyzer('stock')
         self.indicator   = indicator
 
+    # noinspection PyUnresolvedReferences
     def run(self):
         if self.stg is None:
             self.vars = {i: [[1, 2, 1], 1] for i in range(300)}

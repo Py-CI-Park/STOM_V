@@ -1,7 +1,9 @@
 
+from ui.ui_etc import chart_clear
 from utility.static import error_decorator
 from ui.ui_draw_chart_base import DrawChartBase
 from utility.static import from_timestamp, dt_ymdhms
+from ui.ui_process_alive import coin_strategy_process_alive, coin_receiver_process_alive
 
 
 class DrawRealChart(DrawChartBase):
@@ -18,10 +20,10 @@ class DrawRealChart(DrawChartBase):
             self.gubun = 'F'
 
         if not self.ui.dialog_chart.isVisible():
-            self.ui.ChartClear()
+            chart_clear(self.ui)
             if self.gubun == 'C':
-                if self.ui.CoinStrategyProcessAlive(): self.ui.cstgQ.put(('차트종목코드', None))
-                if not self.ui.dict_set['코인타임프레임'] and self.ui.CoinReceiverProcessAlive(): self.ui.creceivQ.put(
+                if coin_strategy_process_alive(self.ui): self.ui.cstgQ.put(('차트종목코드', None))
+                if not self.ui.dict_set['코인타임프레임'] and coin_receiver_process_alive(self.ui): self.ui.creceivQ.put(
                     ('차트종목코드', None))
             else:
                 self.ui.wdzservQ.put(('strategy', ('차트종목코드', None)))

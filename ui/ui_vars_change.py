@@ -1,8 +1,8 @@
 
 from traceback import format_exc
 from utility.setting_base import ui_num
-from ui.set_text import buy_signal, sell_signal, future_buy_signal, future_sell_signal
 from utility.static import error_decorator
+from ui.set_text import buy_signal, sell_signal, future_buy_signal, future_sell_signal
 
 
 @error_decorator

@@ -653,7 +653,7 @@ try:
 except:
     마지막날짜 = ''
 if 현재날짜 == 마지막날짜 and 매수:
-    self.tq.put(('백파결과', 종목코드, self.index) + self.tickdata))'''
+    self.tq.put(('백파결과', 종목코드, self.index) + tuple(self.tickdata))'''
 
 example_finder_future = '''# 탐색틱수에 현재틱 이후의 범위를 입력하십시오.
 # 입력된 범위내 최고현재가의 현재가대비등락율이 설정한만큼 상승했을 경우를 탐색합니다.
@@ -696,14 +696,14 @@ elif not (현재가대비고가등락율 < 탐색등락율):
 elif not (초당거래대금 > 초당거래대금N(1)):
     SELL_SHORT = False
 
-# 이하는 수정하면 안됩니다.(SHORT 포지션 탐색일 경우만 BUY_LONG -> SELL_SHORT으로 변경하십시오.)
+# 이하는 수정하면 안됩니다. (SHORT 포지션 탐색일 경우만 BUY_LONG -> SELL_SHORT으로 변경하십시오.)
 현재날짜 = str(self.index)[:8]
 try:
     마지막날짜 = str(self.arry_code[self.indexn + 탐색틱수, 0])[:8]
 except:
     마지막날짜 = ''
 if 현재날짜 == 마지막날짜 and BUY_LONG:
-    self.tq.put(('백파결과', 종목코드, self.index) + self.tickdata))'''
+    self.tq.put(('백파결과', 종목코드, self.index) + tuple(self.tickdata))'''
 
 
 example_vars = '''# 작성방법은 최적화 범위 코드와 유사합니다.
