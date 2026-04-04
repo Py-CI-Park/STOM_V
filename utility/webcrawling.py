@@ -352,6 +352,7 @@ class WebCrawling(QThread):
             last_time = None
 
         def job():
+            timeout = self._get_timeout()
             i = 1
             time_list  = []
             price_list = []
@@ -361,7 +362,7 @@ class WebCrawling(QThread):
 
             while True:
                 url  = f'{self.base_url}/sise/sise_index_time.naver?code={symbol}&thistime={search_time}&page={i}'
-                resp = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
+                resp = self.session.get(url, headers=self.headers, timeout=timeout)
                 soup = BeautifulSoup(resp.text, 'html.parser')
 
                 page_times = [t.get_text(strip=True) for t in soup.select('td.date')]
@@ -450,6 +451,7 @@ class WebCrawling(QThread):
                 last_time = None
 
             def job():
+                timeout = self._get_timeout()
                 i = 1
                 time_list  = []
                 price_list = []
@@ -458,7 +460,7 @@ class WebCrawling(QThread):
 
                 while True:
                     url  = f'{url_base}{i}'
-                    resp = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
+                    resp = self.session.get(url, headers=self.headers, timeout=timeout)
                     soup = BeautifulSoup(resp.text, 'html.parser')
 
                     page_times  = [t.get_text(strip=True) for t in soup.select('td.date')]
@@ -529,8 +531,9 @@ class WebCrawling(QThread):
 
         for name, symbol in symbols.items():
             def job():
+                timeout = self._get_timeout()
                 url  = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=1000"
-                resp = requests.get(url, headers=self.headers, timeout=self.request_timeout)
+                resp = requests.get(url, headers=self.headers, timeout=timeout)
                 resp.raise_for_status()
                 data = resp.json()
 
