@@ -170,7 +170,6 @@ class Visualization3D:
         X, Y = np.meshgrid(xi, yi)
 
         # Z 값 보간
-        # noinspection PyTypeChecker
         Z = griddata((history_data[:, 0], history_data[:, 1]), history_data[:, 2], (X, Y), method='cubic')
 
         # 3D 서피스 플롯

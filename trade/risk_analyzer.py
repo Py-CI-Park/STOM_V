@@ -79,7 +79,6 @@ except:
         elif avg_gain == 0:
             return 0.0
         else:
-            # noinspection PyTypeChecker
             rs = avg_gain / avg_loss
             rsi = 100 - (100 / (1 + rs))
             return rsi
@@ -336,7 +335,6 @@ class RiskAnalyzer:
             direction = 'neutral'
 
         x = np.arange(len(prices))
-        # noinspection PyTypeChecker
         slope = np.polyfit(x, prices, 1)[0] / np.mean(prices) * 100
         strength = abs(slope)
 
@@ -511,11 +509,9 @@ class RiskAnalyzer:
         """거래량 추세 분석"""
         recent_avg = np.mean(volumes[-5:])
         previous_avg = np.mean(volumes[-10:-5]) if len(volumes) >= 10 else recent_avg
-        # noinspection PyTypeChecker
         volume_change = (recent_avg - previous_avg) / previous_avg * 100 if previous_avg > 0 else 0
 
         spike_multiplier = self.params['volume_spike_multiplier']
-        # noinspection PyTypeChecker
         spike = recent_avg > previous_avg * spike_multiplier
 
         increase_threshold = self.params['volume_increase_threshold']

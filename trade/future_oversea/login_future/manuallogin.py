@@ -44,9 +44,7 @@ def click_button(btn_hwnd):
 
 
 def enter_keys(hwndd, data):
-    # noinspection PyTypeChecker
     win32api.SendMessage(hwndd, win32con.EM_SETSEL, 0, -1)
-    # noinspection PyTypeChecker
     win32api.SendMessage(hwndd, win32con.EM_REPLACESEL, 0, data)
     win32api.Sleep(500)
 

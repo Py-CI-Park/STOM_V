@@ -580,7 +580,7 @@ except:
                     direction = 1 if price_changes[i] > 0 else -1
                     confidence = min(abs(price_changes[i]), 1.0) * min(volume_spikes[i] / 5.0, 1.0)
 
-                    results.append([float(direction), prices[actual_idx + 1], price_changes[i], 
+                    results.append([float(direction), prices[actual_idx + 1], price_changes[i],
                                    volume_spikes[i], confidence, float(actual_idx)])
 
         return np.array(results, dtype=np.float64) if results else np.empty((0, 6), dtype=np.float64)
@@ -893,7 +893,6 @@ class MicrostructureAnalyzer:
         half = self.history_cnt // 2
         first_half_avg  = np.mean(imbalances[:half])
         second_half_avg = np.mean(imbalances[half:])
-        # noinspection PyTypeChecker
         imbalance_trend = (second_half_avg - first_half_avg) / half
 
         # 집중도 점수, 압력 레벨 계산 (벡터화 연산)

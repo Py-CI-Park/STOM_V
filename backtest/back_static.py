@@ -520,15 +520,12 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     ax1.grid(True, alpha=0.3)
 
     ax2.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익률', color='orange')
-    if df_kp is not None:
-        # noinspection PyTypeChecker
+    if df_kp is not None and df_kd is not None:
         ax2.plot(df_kp.index, df_kp['종가'], linewidth=0.5, label='코스피', color='r')
         ax2.plot(df_kd.index, df_kd['종가'], linewidth=0.5, label='코스닥', color='b')
     elif df_nd is not None:
-        # noinspection PyTypeChecker
         ax2.plot(df_nd.index, df_nd['종가'], linewidth=0.5, label='NQ', color='r')
     elif df_bc is not None:
-        # noinspection PyTypeChecker
         ax2.plot(df_bc.index, df_bc['종가'], linewidth=0.5, label='KRW-BTC', color='r')
     ax2.set_title('지수비교')
     step = max(1, len(df_ts) // 15)

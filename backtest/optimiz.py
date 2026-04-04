@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
+from utility.strategy_version_manager import stg_save_version
 from backtest.optimiz_3d_visualization import Visualization3D
 from backtest.back_static_numba import GetResult, bootstrap_test
 from backtest.back_static import SendResult, PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
@@ -237,7 +238,6 @@ class Total:
         bootstrap_avg  = round(np.mean(bootstrap_dist), 2)
         bootstrap_min  = round(np.percentile(bootstrap_dist, 2.5), 2)
         bootstrap_max  = round(np.percentile(bootstrap_dist, 97.5), 2)
-        # noinspection PyTypeChecker
         bootstrap_pv   = round(np.mean(bootstrap_dist > 0) * 100, 2)
         bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
         bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
@@ -939,6 +939,13 @@ class Optimize:
                 cur.execute(f"UPDATE {self.gubun}optivars SET 전략코드 = '{text_vars}' WHERE `index` = '{optivars_name}'")
                 con.commit()
                 con.close()
+
+                if self.ui_gubun == 'S':    gubun = 'stock'
+                elif self.ui_gubun == 'SF': gubun = 'future'
+                elif self.ui_gubun == 'C':  gubun = 'upbit'
+                else:                       gubun = 'binance'
+                stg_save_version(gubun, 'opti', 'vars', optivars_name, text_vars)
+
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} {optivars_name}의 최적값 갱신 완료'))
 
     def BackStart(self, data):

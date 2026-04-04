@@ -264,7 +264,6 @@ class Total:
             bootstrap_avg  = round(np.mean(bootstrap_dist), 2)
             bootstrap_min  = round(np.percentile(bootstrap_dist, 2.5), 2)
             bootstrap_max  = round(np.percentile(bootstrap_dist, 97.5), 2)
-            # noinspection PyTypeChecker
             bootstrap_pv   = round(np.mean(bootstrap_dist > 0) * 100, 2)
             bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
             bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."

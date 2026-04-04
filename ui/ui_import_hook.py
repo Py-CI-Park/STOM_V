@@ -18,7 +18,7 @@ class ImportProgressHook:
             'ui.ui_chart_count_change', 'ui.ui_etc', 'ui.ui_show_dialog', 'ui.ui_vars_change', 'ui.ui_event_filter',
             'ui.ui_return_press', 'ui.ui_text_changed', 'ui.ui_cell_clicked', 'ui.ui_activated_etc',
             'ui.ui_process_alive', 'ui.ui_activated_back', 'ui.ui_key_press_event', 'ui.ui_backtest_engine',
-            'ui.ui_checkbox_changed', 'ui.ui_update_progressbar', 'ui.ui_button_clicked_etc',
+            'ui.ui_checkbox_changed', 'ui.ui_strategy_version', 'ui.ui_update_progressbar', 'ui.ui_button_clicked_etc',
             'ui.ui_activated_coin_stg', 'ui.ui_button_clicked_zoom', 'ui.ui_activated_stock_stg',
             'ui.ui_button_clicked_order', 'ui.ui_button_clicked_chart', 'ui.ui_button_clicked_shortcut',
             'ui.ui_button_clicked_strategy', 'ui.ui_button_clicked_settings', 'ui.ui_button_clicked_editer_coin',

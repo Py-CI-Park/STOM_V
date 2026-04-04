@@ -34,6 +34,20 @@ class SetStockBack:
 
     # =================================================================================================================
 
+        self.ui.ss_textEditttt_10 = self.wc.setTextEdit(self.ui.ss_tab, vscroll=True, visible=False, filter_=True, event_filter=False, font=qfont14)
+        self.ui.ss_comboBoxxxx_41 = self.wc.setCombobox(self.ui.ss_tab, font=qfont12, activated=self.ui.dActivated_04)
+        self.ui.ss_comboBoxxxx_42 = self.wc.setCombobox(self.ui.ss_tab, font=qfont12, activated=self.ui.dActivated_04)
+        self.ui.ss_pushButtonn_41 = self.wc.setPushbutton('버전삭제', parent=self.ui.ss_tab, bounced=True, click=self.ui.ssButtonClicked_07, tip='선택된 버전의 데이터를 삭제합니다.')
+
+        self.ui.stock_version_list = [
+            self.ui.ss_textEditttt_10, self.ui.ss_comboBoxxxx_41, self.ui.ss_comboBoxxxx_42, self.ui.ss_pushButtonn_41
+        ]
+
+        for widget in self.ui.stock_version_list:
+            widget.setVisible(False)
+
+    # =================================================================================================================
+
         self.ui.ss_tableWidget_01 = self.wc.setTablewidget(self.ui.ss_tab, columns_bt, 32, vscroll=True, fixed=True, clicked=self.ui.CellClicked_06)
         self.ui.ss_comboBoxxxx_01 = self.wc.setCombobox(self.ui.ss_tab, font=qfont12, activated=self.ui.dActivated_01)
         self.ui.ss_pushButtonn_01 = self.wc.setPushbutton('백테스트상세기록', parent=self.ui.ss_tab, bounced=True, click=self.ui.ssButtonClicked_01, tip='백테스트 상세기록을 불러온다.')
@@ -67,7 +81,7 @@ class SetStockBack:
 
         self.ui.svjb_comboBoxx_01 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_01)
         self.ui.svjb_lineEditt_01 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F2, F3', style=style_bc_dk)
-        self.ui.svjb_pushButon_01 = self.wc.setPushbutton('매수전략 로딩(F1)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockBuyStgLoad, color=1)
+        self.ui.svjb_pushButon_01 = self.wc.setPushbutton('매수전략 로딩(F1)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockBuyStgLoad, color=1, tip='작성된 매수전략을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.svjb_pushButon_02 = self.wc.setPushbutton('매수전략 저장(F4)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockBuyStgSave, color=1, tip='작성된 매수전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.svjb_pushButon_03 = self.wc.setPushbutton('매수변수 로딩', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockBuyFactor, color=1, tip='매수전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.svjb_pushButon_04 = self.wc.setPushbutton('매수전략 시작', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockBuyStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
@@ -87,7 +101,7 @@ class SetStockBack:
 
         self.ui.svjs_comboBoxx_01 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_02)
         self.ui.svjs_lineEditt_01 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
-        self.ui.svjs_pushButon_01 = self.wc.setPushbutton('매도전략 로딩(F5)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockSellStgLoad, color=1)
+        self.ui.svjs_pushButon_01 = self.wc.setPushbutton('매도전략 로딩(F5)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockSellStgLoad, color=1, tip='작성된 매도전략을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.svjs_pushButon_02 = self.wc.setPushbutton('매도전략 저장(F8)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockSellStgSave, color=1, tip='작성된 매도전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.svjs_pushButon_03 = self.wc.setPushbutton('매도변수 로딩', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockSellFactor, color=1, tip='매도전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.svjs_pushButon_04 = self.wc.setPushbutton('매도전략 시작', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockSellStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
@@ -170,12 +184,12 @@ class SetStockBack:
 
         self.ui.svc_comboBoxxx_01 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_03)
         self.ui.svc_lineEdittt_01 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F2, F3', style=style_bc_dk)
-        self.ui.svc_pushButton_01 = self.wc.setPushbutton('최적화 매수전략 로딩(F1)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiBuyLoad, color=1)
+        self.ui.svc_pushButton_01 = self.wc.setPushbutton('최적화 매수전략 로딩(F1)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiBuyLoad, color=1, tip='작성된 최적화 매수전략을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.svc_pushButton_02 = self.wc.setPushbutton('최적화 매수전략 저장(F4)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiBuySave, color=1, tip='작성된 최적화 매수전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
 
         self.ui.svc_comboBoxxx_02 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_04)
         self.ui.svc_lineEdittt_02 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F10, F11', style=style_bc_dk)
-        self.ui.svc_pushButton_03 = self.wc.setPushbutton('최적화 변수범위 로딩(F9)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiVarsLoad, color=1)
+        self.ui.svc_pushButton_03 = self.wc.setPushbutton('최적화 변수범위 로딩(F9)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiVarsLoad, color=1, tip='작성된 최적화 변수설정을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.svc_pushButton_04 = self.wc.setPushbutton('최적화 변수범위 저장(F12)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiVarsSave, color=1, tip='작성된 최적화 변수설정을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
 
         self.ui.svc_labellllll_01 = QLabel('▣ 일반은 학습기간, 검증은 검증기간, 테스트는 확인기간까지 선택', self.ui.ss_tab)
@@ -213,7 +227,7 @@ class SetStockBack:
 
         self.ui.svc_comboBoxxx_08 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_05)
         self.ui.svc_lineEdittt_03 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
-        self.ui.svc_pushButton_09 = self.wc.setPushbutton('최적화 매도전략 로딩(F5)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiSellLoad, color=1)
+        self.ui.svc_pushButton_09 = self.wc.setPushbutton('최적화 매도전략 로딩(F5)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiSellLoad, color=1, tip='작성된 최적화 매도전략을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.svc_pushButton_10 = self.wc.setPushbutton('최적화 매도전략 저장(F8)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockOptiSellSave, color=1, tip='작성된 최적화 매도전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.svc_labellllll_04 = QLabel(optitext, self.ui.ss_tab)
         self.ui.svc_labellllll_04.setFont(qfont13)
@@ -288,7 +302,7 @@ class SetStockBack:
 
         self.ui.sva_comboBoxxx_01 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_06)
         self.ui.sva_lineEdittt_01 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F10, F11', style=style_bc_dk)
-        self.ui.sva_pushButton_04 = self.wc.setPushbutton('GA 변수범위 로딩(F9)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockGavarsLoad, color=1)
+        self.ui.sva_pushButton_04 = self.wc.setPushbutton('GA 변수범위 로딩(F9)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockGavarsLoad, color=1, tip='작성된 변수범위를 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.sva_pushButton_05 = self.wc.setPushbutton('GA 변수범위 저장(F12)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockGavarsSave, color=1, tip='작성된 변수범위를 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
 
         self.ui.stock_gaopti_list = [
@@ -323,11 +337,11 @@ class SetStockBack:
 
         self.ui.svo_comboBoxxx_01 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_07)
         self.ui.svo_lineEdittt_01 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F2, F3', style=style_bc_dk)
-        self.ui.svo_pushButton_01 = self.wc.setPushbutton('매수조건 로딩(F1)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockCondbuyLoad, color=1)
+        self.ui.svo_pushButton_01 = self.wc.setPushbutton('매수조건 로딩(F1)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockCondbuyLoad, color=1, tip='작성된 매수조건을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.svo_pushButton_02 = self.wc.setPushbutton('매수조건 저장(F4)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockCondbuySave, color=1, tip='작성된 매수조건을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.svo_comboBoxxx_02 = self.wc.setCombobox(self.ui.ss_tab, font=qfont14, activated=self.ui.sActivated_08)
         self.ui.svo_lineEdittt_02 = self.wc.setLineedit(self.ui.ss_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
-        self.ui.svo_pushButton_03 = self.wc.setPushbutton('매도조건 로딩(F5)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockCondsellLoad, color=1)
+        self.ui.svo_pushButton_03 = self.wc.setPushbutton('매도조건 로딩(F5)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockCondsellLoad, color=1, tip='작성된 매도조건을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.svo_pushButton_04 = self.wc.setPushbutton('매도조건 저장(F8)', parent=self.ui.ss_tab, bounced=True, click=self.ui.StockCondsellSave, color=1, tip='작성된 매도조건을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
 
         self.ui.svo_labellllll_04 = QLabel('매수조건수                     매도조건수                    최적화횟수', self.ui.ss_tab)
@@ -352,6 +366,11 @@ class SetStockBack:
         for widget in self.ui.stock_opcond_list:
             widget.setVisible(False)
 
+        self.ui.stock_load_list = [
+            self.ui.svjb_pushButon_01, self.ui.svjs_pushButon_01, self.ui.svc_pushButton_01, self.ui.svc_pushButton_03,
+            self.ui.svc_pushButton_09, self.ui.sva_pushButton_04, self.ui.svo_pushButton_01, self.ui.svo_pushButton_03
+        ]
+
     # =================================================================================================================
 
         self.ui.ss_textEditttt_01.setGeometry(7, 10, 1000, 463)
@@ -362,6 +381,11 @@ class SetStockBack:
         self.ui.ss_textEditttt_06.setGeometry(659, 10, 347, 740)
         self.ui.ss_textEditttt_07.setGeometry(7, 10, 497, 740)
         self.ui.ss_textEditttt_08.setGeometry(509, 10, 497, 740)
+
+        self.ui.ss_textEditttt_10.setGeometry(509, 40, 497, 700)
+        self.ui.ss_comboBoxxxx_41.setGeometry(7, 10, 497, 25)
+        self.ui.ss_comboBoxxxx_42.setGeometry(509, 10, 400, 25)
+        self.ui.ss_pushButtonn_41.setGeometry(914, 10, 92, 25)
 
         self.ui.szoo_pushButon_01.setGeometry(937, 15, 50, 20)
         self.ui.szoo_pushButon_02.setGeometry(937, 483, 50, 20)

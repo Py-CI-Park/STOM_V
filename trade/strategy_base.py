@@ -63,7 +63,6 @@ class StrategyBase:
         fill_idx = np.searchsorted(누적잔량, 주문수량, side='left')
         if fill_idx >= len(호가배열):
             return 0, False
-        # noinspection PyTypeChecker
         이전누적 = 누적잔량[fill_idx - 1] if fill_idx > 0 else 0
         남은수량 = 주문수량 - 이전누적
         거래금액 = np.sum(호가배열[:fill_idx] * 잔량배열[:fill_idx]) + 호가배열[fill_idx] * 남은수량
@@ -432,7 +431,6 @@ class StrategyBase:
             return money_unit / money_avg if money_avg > 0 else 0
         return 0
 
-    # noinspection PyTypeChecker
     def _체결강도평균대비비율(self, tick, pre=0):
         if tick + pre <= self.tick_count:
             avg_ch = self._체결강도평균(tick, pre)

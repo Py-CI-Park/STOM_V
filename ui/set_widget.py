@@ -487,9 +487,7 @@ class FixedColumnTableWidget(QTableWidget):
 
     def setHorizontalHeaderLabels(self, labels):
         super().setHorizontalHeaderLabels(labels)
-        # noinspection PyTypeChecker
         if self._is_fixed and len(labels) > 0:
-            # noinspection PyUnresolvedReferences
             self._first_column_table.setHorizontalHeaderLabels([labels[0]])
 
     def setColumnWidth(self, column, width):
@@ -602,14 +600,15 @@ class WidgetCreater:
         line.setFrameShape(QFrame.HLine)
         return line
 
-    def setTextEdit(self, parent, visible=True, font=None, vscroll=False, filter_=False):
+    def setTextEdit(self, parent, visible=True, font=None, vscroll=False, filter_=False, event_filter=True):
         if filter_:
             textedit = PlainTextEdit(parent)
         else:
             textedit = QTextEdit(parent)
         textedit.setStyleSheet(style_bc_dk)
         if filter_:
-            textedit.installEventFilter(self.ui)
+            if event_filter:
+                textedit.installEventFilter(self.ui)
             syntax.PythonHighlighter(textedit)
         else:
             textedit.setReadOnly(True)
