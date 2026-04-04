@@ -262,6 +262,41 @@ For each version from `V2.74` through `V2.77`:
 
 Only after the whole chain is stable for one version may the next version begin.
 
+### Phase C: blocker audit when a newly touched contract surface turns red
+
+If a downstream wave introduces a **new** red gate on a surface that the current version actually touched, do not automatically classify it as a carry-forward failure.
+
+Instead insert a blocker-audit step before the next version begins.
+
+Current known example for this cycle:
+
+- after the `V2.75` wave, `2U` and `2U_C` surfaced a new `utility/telegram_bot.py` qlist contract mismatch
+- `V2.75` officially touched `utility/telegram_bot.py`, `utility/webcrawling.py`, and related release-side runtime surfaces
+
+Required blocker-audit question:
+
+- is the new red gate a true propagation break that must be fixed before `V2.76`
+- or is it an intentional release-side contract change that should be documented and then carried forward
+
+This audit is narrower than a general branch review. It focuses only on the newly touched failure surface and its immediate call/contract neighborhood.
+
+### Phase D: continue or stop based on blocker-audit result
+
+If the blocker audit concludes the new red gate is a **true propagation break**:
+
+1. stop the downstream wave after the current version
+2. design the minimum branch-local corrective step
+3. repair the affected branch or branches
+4. re-run that version’s verification before continuing
+
+If the blocker audit concludes the new red gate is an **intentional release-side contract change**:
+
+1. record the reasoning in the audit/update log
+2. classify it as a carry-forward downstream risk
+3. continue to the next version wave
+
+This rule applies only to newly touched surfaces. Pre-existing failures on untouched protected surfaces remain carry-forward blockers unless the current version changes them.
+
 ## Verification Design
 
 ### Common gate before each branch step
