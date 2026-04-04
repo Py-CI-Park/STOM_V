@@ -27,6 +27,7 @@ def test_agents_points_to_the_operating_system_and_registry():
     assert "CARRY_FORWARD_REGISTRY.md" in text
     assert "docs/update_log/2026-04-05_v274_v277_cycle_status.md" in text
     assert "V2 -> 2U -> 2U_C -> CLI_v267 -> research/init" in text
+    assert "STOM V2.49" not in text
 
 
 def test_central_claude_mentions_preflight_and_entrypoint_docs():
@@ -36,6 +37,18 @@ def test_central_claude_mentions_preflight_and_entrypoint_docs():
     assert "docs/FORMAL_UPDATE_OPERATING_SYSTEM.md" in text
     assert "docs/CARRY_FORWARD_REGISTRY.md" in text
     assert "docs/update_log/2026-04-05_v274_v277_cycle_status.md" in text
+
+
+def test_strategy_docs_declare_the_formal_update_operating_system_as_parent():
+    upstream_text = read_text("docs/UPSTREAM_SYNC_STRATEGY.md")
+    worktree_text = read_text("docs/WORKTREE_STRATEGY.md")
+    subordinate_note = (
+        "> This document is subordinate to "
+        "`docs/FORMAL_UPDATE_OPERATING_SYSTEM.md`."
+    )
+
+    assert subordinate_note in upstream_text
+    assert subordinate_note in worktree_text
 
 
 def test_cycle_status_contains_current_release_and_downstream_heads():

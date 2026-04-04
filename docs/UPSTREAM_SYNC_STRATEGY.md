@@ -1,5 +1,7 @@
 # Upstream Sync Strategy
 
+> This document is subordinate to `docs/FORMAL_UPDATE_OPERATING_SYSTEM.md`.
+
 - Updated: 2026-04-03
 - Scope: release ingestion and downstream propagation from the official STOM upstream
 

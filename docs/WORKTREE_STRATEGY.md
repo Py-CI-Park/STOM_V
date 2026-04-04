@@ -1,5 +1,7 @@
 # STOM Worktree Strategy
 
+> This document is subordinate to `docs/FORMAL_UPDATE_OPERATING_SYSTEM.md`.
+
 - Updated: 2026-04-03
 - Scope: active STOM release and downstream worktrees
 

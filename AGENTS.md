@@ -2,6 +2,21 @@
 
 > **상세 가이드**: [`docs/stom_v2_update_guide.md`](docs/stom_v2_update_guide.md)
 
+## Formal Update Entry Points
+
+Read in this order before official update work:
+1. `docs/FORMAL_UPDATE_OPERATING_SYSTEM.md`
+2. `docs/UPSTREAM_SYNC_STRATEGY.md`
+3. `docs/WORKTREE_STRATEGY.md`
+4. `docs/CARRY_FORWARD_REGISTRY.md`
+5. latest cycle status under `docs/update_log/`
+
+Current cycle status:
+`docs/update_log/2026-04-05_v274_v277_cycle_status.md`
+
+Canonical propagation order:
+`V2 -> 2U -> 2U_C -> CLI_v267 -> research/init`
+
 ---
 
 ## 핵심 규칙 (필독)
@@ -52,6 +67,5 @@ git push origin STOM_Version_2
 
 ## 현재 상태
 
-- **최신 버전**: STOM V2.49
 - **자동화 스크립트**: `scripts/stom_v2_update.py` / `C:\System_Trading\stom_v2_update.py`
 - **상세 가이드**: `docs/stom_v2_update_guide.md`

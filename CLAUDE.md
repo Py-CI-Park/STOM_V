@@ -1,5 +1,21 @@
 # STOM Project Guidelines
 
+## Formal Update Operating System
+
+Primary operating document:
+- `docs/FORMAL_UPDATE_OPERATING_SYSTEM.md`
+
+Carry-forward registry:
+- `docs/CARRY_FORWARD_REGISTRY.md`
+
+Current cycle status:
+- `docs/update_log/2026-04-05_v274_v277_cycle_status.md`
+
+Release preflight:
+```bash
+python scripts/verify_release_sync.py
+```
+
 ## Release And Worktree Mapping
 
 The current worktree mapping is:
