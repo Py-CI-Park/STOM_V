@@ -1,22 +1,23 @@
 
 import os
 import pandas as pd
-from PyQt5.QtWidgets import QMessageBox
-from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
 from multiprocessing import Process
-from trade.binance.binance_trader import BinanceTrader
-from trade.binance.binance_receiver_min import BinanceReceiverMin
-from trade.binance.binance_strategy_min import BinanceStrategyMin
-from trade.binance.binance_receiver_tick import BinanceReceiverTick
-from trade.binance.binance_strategy_tick import BinanceStrategyTick
+from PyQt5.QtWidgets import QMessageBox
 from trade.upbit.upbit_trader import UpbitTrader
+from ui.set_style import style_bc_bb, style_bc_st
+from utility.setting_base import GRAPH_PATH, ui_num
+from trade.binance.binance_trader import BinanceTrader
 from trade.upbit.upbit_receiver_min import UpbitReceiverMin
 from trade.upbit.upbit_strategy_min import UpbitStrategyMin
 from trade.upbit.upbit_receiver_tick import UpbitReceiverTick
 from trade.upbit.upbit_strategy_tick import UpbitStrategyTick
-from ui.set_style import style_bc_bb, style_bc_st
-from utility.setting_base import GRAPH_PATH, ui_num
+from trade.binance.binance_receiver_min import BinanceReceiverMin
+from trade.binance.binance_strategy_min import BinanceStrategyMin
+from trade.binance.binance_receiver_tick import BinanceReceiverTick
+from trade.binance.binance_strategy_tick import BinanceStrategyTick
+from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
 from utility.static import qtest_qwait, cme_normal_open, error_decorator
+from ui.ui_process_alive import coin_strategy_process_alive, coin_trader_process_alive, coin_receiver_process_alive
 
 
 @error_decorator
@@ -91,7 +92,7 @@ def mnbutton_c_clicked_02(ui):
 
 
 @error_decorator
-def mnbutton_c_clicked_03(ui, login):
+def mnbutton_c_clicked_03(ui, login=0):
     if login in (1, 2, 3):
         buttonReply = QMessageBox.Yes
     else:
@@ -119,7 +120,7 @@ def mnbutton_c_clicked_03(ui, login):
 
     if buttonReply == QMessageBox.Yes:
         if login in (1, 3) or (login == 0 and ui.dict_set['주식에이전트']):
-            ui.mnButtonClicked_01(1)
+            mnbutton_c_clicked_01(ui, 1)
             if login == 3 and not cme_normal_open():
                 ui.windowQ.put((ui_num['기본로그'], '해외선물은 휴무 또는 조기마감일입니다.'))
                 ui.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 해외선물 휴무 종료'))
@@ -137,10 +138,10 @@ def mnbutton_c_clicked_03(ui, login):
                 ui.wdzservQ.put(('manager', '수동시작'))
                 ui.ms_pushButton.setStyleSheet(style_bc_st)
         elif login == 2 or (login == 0 and ui.dict_set['코인리시버']):
-            ui.mnButtonClicked_01(2)
-            if ui.CoinTraderProcessAlive():   ui.proc_trader_coin.kill()
-            if ui.CoinStrategyProcessAlive(): ui.proc_strategy_coin.kill()
-            if ui.CoinReceiverProcessAlive(): ui.proc_receiver_coin.kill()
+            mnbutton_c_clicked_01(ui, 2)
+            if coin_trader_process_alive(ui):   ui.proc_trader_coin.kill()
+            if coin_strategy_process_alive(ui): ui.proc_strategy_coin.kill()
+            if coin_receiver_process_alive(ui): ui.proc_receiver_coin.kill()
             qtest_qwait(3)
             if ui.dict_set['거래소'] == '업비트' and (ui.dict_set['Access_key1'] is None or ui.dict_set['Secret_key1'] is None):
                 QMessageBox.critical(ui, '오류 알림', '업비트 계정이 설정되지 않아\n트레이더를 시작할 수 없습니다.\n계정 설정 후 다시 시작하십시오.\n')
@@ -236,7 +237,7 @@ def mnbutton_c_clicked_06(ui):
 
 @error_decorator
 def CoinReceiverStart(ui):
-    if not ui.CoinReceiverProcessAlive():
+    if not coin_receiver_process_alive(ui):
         if ui.dict_set['코인타임프레임']:
             target = UpbitReceiverTick if ui.dict_set['거래소'] == '업비트' else BinanceReceiverTick
         else:
@@ -254,13 +255,13 @@ def CoinTraderStart(ui):
         ui.windowQ.put((ui_num['시스템로그'], '오류 알림 - 바이낸스선물 계정이 설정되지 않아 트레이더를 시작할 수 없습니다. 계정 설정 후 다시 시작하십시오.'))
         return
 
-    if not ui.CoinStrategyProcessAlive():
+    if not coin_strategy_process_alive(ui):
         if ui.dict_set['코인타임프레임']:
             target = UpbitStrategyTick if ui.dict_set['거래소'] == '업비트' else BinanceStrategyTick
         else:
             target = UpbitStrategyMin if ui.dict_set['거래소'] == '업비트' else BinanceStrategyMin
         ui.proc_strategy_coin = Process(target=target, args=(ui.qlist, ui.dict_set), daemon=True)
         ui.proc_strategy_coin.start()
-    if not ui.CoinTraderProcessAlive():
+    if not coin_trader_process_alive(ui):
         ui.proc_trader_coin = Process(target=UpbitTrader if ui.dict_set['거래소'] == '업비트' else BinanceTrader, args=(ui.qlist, ui.dict_set))
         ui.proc_trader_coin.start()

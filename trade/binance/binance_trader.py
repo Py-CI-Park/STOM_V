@@ -54,7 +54,7 @@ class BinanceTrader:
 
         self.order_time = now()
         self.dict_cj    = {}  # 체결목록
-        self.dict_jg    = {}  # 잔고목록
+        self.dict_jg    = {str: {}}  # 잔고목록
         self.dict_tj    = {}  # 잔고평가
         self.dict_td    = {}  # 거래목록
         self.dict_tt    = {}  # 평가손익
@@ -357,6 +357,7 @@ class BinanceTrader:
                 self.cstgQ.put((f'{주문구분}_CANCEL', 종목코드))
                 self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [주문실패] [{주문구분}] {주문가격} | {주문수량}'))
             else:
+                # noinspection PyUnresolvedReferences
                 orderId = int(ret['orderId'])
                 dt = self.GetIndex()
                 if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):

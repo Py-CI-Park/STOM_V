@@ -68,6 +68,7 @@ class Kimp:
         try:
             html = requests.get('https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_USDKRW').text
             soup = BeautifulSoup(html, 'html.parser')
+            # noinspection PyUnresolvedReferences
             converted_currency = soup.find('p', class_='no_today').get_text().replace('\n', '').replace('원', '')
             self.usdtokrw = comma2float(converted_currency)
         except:

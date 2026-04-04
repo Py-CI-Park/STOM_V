@@ -3,8 +3,9 @@ import random
 import webbrowser
 import pandas as pd
 from PyQt5.QtCore import QDate, Qt
-from PyQt5.QtWidgets import QMessageBox, QPushButton
+from ui.ui_etc import update_dictset
 from ui.set_text import famous_saying
+from PyQt5.QtWidgets import QMessageBox, QPushButton
 from utility.static import qtest_qwait, strf_time, error_decorator
 from utility.setting_base import columns_nt, ui_num, columns_nd
 from backtest.back_static import RunOptunaServer
@@ -235,7 +236,7 @@ def lvbutton_clicked_03(ui):
                 ui.dict_set['바이낸스선물변동레버리지값'] = [
                     [lv2, lv3, lv4], [lv5, lv6, lv7], [lv8, lv9, lv10], [lv11, lv12, lv13], [lv14, lv15, lv16]
                 ]
-                ui.UpdateDictSet()
+                update_dictset(ui)
                 QMessageBox.information(ui.dialog_leverage, '저장 완료', random.choice(famous_saying))
 
 

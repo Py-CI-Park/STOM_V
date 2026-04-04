@@ -2,11 +2,13 @@
 import sqlite3
 import numpy as np
 import pandas as pd
-from concurrent.futures import ThreadPoolExecutor
-from multiprocessing import Process, Queue, Value, Lock
+from ui.set_style import style_bc_dk
 from backtest.back_subtotal import BackSubTotal
 from backtest.back_code_test import BackCodeTest
 from backtest.back_static import GetMoneytopQuery
+from concurrent.futures import ThreadPoolExecutor
+from ui.ui_dialog_animation import DialogAnimator
+from multiprocessing import Process, Queue, Value, Lock
 from backtest.backengine_kiwoom_tick import BackEngineKiwoomTick
 from backtest.backengine_kiwoom_tick2 import BackEngineKiwoomTick2
 from backtest.backengine_kiwoom_min import BackEngineKiwoomMin
@@ -23,8 +25,6 @@ from backtest.backengine_binance_tick import BackEngineBinanceTick
 from backtest.backengine_binance_tick2 import BackEngineBinanceTick2
 from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
-from ui.set_style import style_bc_dk
-from ui.ui_dialog_animation import DialogAnimator
 from utility.static import thread_decorator, str_hms, dt_hms, timedelta_sec, error_decorator
 from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, \
     DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, DB_STRATEGY
@@ -77,8 +77,10 @@ def backengine_show(ui, gubun):
     ui.backengin_window_open = True
 
 
+# noinspection PyUnresolvedReferences
 @thread_decorator
 def backengine_start(ui, gubun):
+    from ui.ui_button_clicked_dialog_backengine import backtest_engine_kill
     ui.back_engining = True
     ui.startday   = int(ui.be_dateEdittttt_01.date().toString('yyyyMMdd'))
     ui.endday     = int(ui.be_dateEdittttt_02.date().toString('yyyyMMdd'))
@@ -197,12 +199,12 @@ def backengine_start(ui, gubun):
                 ui.windowQ.put((ui_num['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
         else:
             ui.windowQ.put((ui_num['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
-        ui.BacktestEngineKill()
+        backtest_engine_kill(ui)
         return
 
     if df_mt is None or df_mt.empty:
         ui.windowQ.put((ui_num['백테엔진'], '시작 또는 종료일자가 잘못 선택되었거나 해당 일자에 데이터가 존재하지 않습니다.'))
-        ui.BacktestEngineKill()
+        backtest_engine_kill(ui)
         return
 
     day_list = df_mt['일자'].unique()
@@ -225,22 +227,22 @@ def backengine_start(ui, gubun):
 
     if divid_mode == '종목코드별 분류' and len(code_set) < multi:
         ui.windowQ.put((ui_num['백테엔진'], '선택한 일자의 종목의 개수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
-        ui.BacktestEngineKill()
+        backtest_engine_kill(ui)
         return
 
     if divid_mode == '일자별 분류' and len(day_list) < multi:
         ui.windowQ.put((ui_num['백테엔진'], '선택한 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
-        ui.BacktestEngineKill()
+        backtest_engine_kill(ui)
         return
 
     if divid_mode == '한종목 로딩' and one_code not in code_days:
         ui.windowQ.put((ui_num['백테엔진'], f'{one_name} 종목은 선택한 일자에 데이터가 존재하지 않습니다.'))
-        ui.BacktestEngineKill()
+        backtest_engine_kill(ui)
         return
 
     if divid_mode == '한종목 로딩' and len(code_days[one_code]) < multi:
         ui.windowQ.put((ui_num['백테엔진'], f'{one_name} 선택한 종목의 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
-        ui.BacktestEngineKill()
+        backtest_engine_kill(ui)
         return
 
     ui.wdzservQ.put(('manager', '백테엔진구동'))
@@ -367,6 +369,7 @@ def clear_backtestQ(ui):
 
 @error_decorator
 def backtest_process_kill(ui, coin, enginekill):
+    from ui.ui_button_clicked_dialog_backengine import backtest_engine_kill
     ui.back_cancelling = True
     for q in ui.back_eques:
         q.put('백테중지')
@@ -397,5 +400,5 @@ def backtest_process_kill(ui, coin, enginekill):
     ui.back_scount = 0
     ui.back_schedul = False
 
-    if enginekill: ui.BacktestEngineKill()
+    if enginekill: backtest_engine_kill(ui)
     ui.back_cancelling = False

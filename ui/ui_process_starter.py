@@ -1,4 +1,6 @@
 
+from ui.ui_etc import auto_back_schedule, stom_live_screenshot
+from ui.ui_button_clicked_shortcut import mnbutton_c_clicked_03
 from utility.static import now, summer_time, now_utc, now_cme, str_ymdhms_ios, str_hms, error_decorator
 
 
@@ -9,21 +11,21 @@ def process_starter(ui):
     if not ui.backtest_engine and ui.dict_set['스톰라이브'] and ui.live_recv.isRunning():
         if ui.dict_set['주식트레이더'] and '키움증권' in ui.dict_set['증권사'] and \
            ((ui.int_time < 93100 <= inthms) or (ui.int_time < 152000 <= inthms)):
-            ui.StomliveScreenshot('주식')
+            stom_live_screenshot(ui, '주식')
         elif ui.dict_set['주식트레이더'] and '해외선물' in ui.dict_set['증권사'] and \
                 ((ui.int_time < 50000 <= inthms and summer_time != 0) or (ui.int_time < 60000 <= inthms)):
-            ui.StomliveScreenshot('해선')
+            stom_live_screenshot(ui, '해선')
         elif ui.dict_set['코인트레이더'] and ui.int_time < 235000 <= inthms:
-            ui.StomliveScreenshot('코인')
+            stom_live_screenshot(ui, '코인')
 
     if ui.dict_set['백테스케쥴실행'] and not ui.backtest_engine and now().weekday() == ui.dict_set['백테스케쥴요일']:
         if ui.int_time < ui.dict_set['백테스케쥴시간'] <= inthms:
-            ui.AutoBackSchedule(1)
+            auto_back_schedule(ui, 1)
 
     if ui.auto_run > 0:
         login_num = ui.auto_run
         ui.auto_run = 0
-        ui.mnButtonClicked_03(login=login_num)
+        mnbutton_c_clicked_03(ui, login_num)
 
     UpdateWindowTitle(ui)
     ui.int_time = inthms

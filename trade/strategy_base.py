@@ -65,6 +65,7 @@ class StrategyBase:
             return 0, False
         이전누적 = 누적잔량[fill_idx - 1] if fill_idx > 0 else 0
         남은수량 = 주문수량 - 이전누적
+        # noinspection PyUnresolvedReferences
         거래금액 = np.sum(호가배열[:fill_idx] * 잔량배열[:fill_idx]) + 호가배열[fill_idx] * 남은수량
         return 거래금액, True
 
@@ -391,6 +392,7 @@ class StrategyBase:
             return np.sum(deviation <= per) >= cnt
         return 0
 
+    # noinspection PyUnresolvedReferences
     def _변동성(self, tick, pre=0):
         if tick + pre <= self.tick_count:
             sidx, eidx = self._get_double_pre_index(tick, pre)

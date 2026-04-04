@@ -2,16 +2,20 @@
 import os
 import sqlite3
 import pandas as pd
+from ui.ui_etc import chart_clear
 from PyQt5.QtCore import QUrl, Qt
 from multiprocessing import Process
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
-from ui.ui_dialog_animation import DialogAnimator
 from utility.kimp_upbit_binance import Kimp
+from ui.ui_dialog_animation import DialogAnimator
+from ui.ui_chart_count_change import chart_count_change
+from ui.ui_button_clicked_chart import get_indicator_detail
 from utility.static import str_hms, dt_hms, error_decorator
+from ui.set_style import style_bc_bt, style_bc_bb, style_bc_st
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
+from ui.ui_process_alive import coinkimp_process_alive, coin_strategy_process_alive, coin_receiver_process_alive
 from utility.setting_base import columns_hc, DB_COIN_TICK_BACK, DB_STOCK_TICK_BACK, DB_PATH, DB_COIN_MIN_BACK, \
     DB_STOCK_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
-from ui.set_style import style_bc_bt, style_bc_bb, style_bc_st
 
 
 class QuietPage(QWebEnginePage):
@@ -68,18 +72,18 @@ def show_dialog(ui, code_or_name, tickcount, searchdate, col):
 
     if col == 0:
         if not coin:
-            ui.ShowDialogWeb(True, code)
+            show_dialog_web(ui, True, code)
         else:
-            ui.ShowDialogHoga(True, coin, code)
+            show_dialog_hoga(ui, True, coin, code)
     elif col == 1:
         if not coin:
-            ui.ShowDialogWeb(False, code)
-        ui.ShowDialogHoga(True, coin, code)
+            show_dialog_web(ui, False, code)
+        show_dialog_hoga(ui, True, coin, code)
     elif col < 4 or ui.focusWidget() in (ui.sgj_tableWidgettt, ui.scj_tableWidgettt, ui.cgj_tableWidgettt, ui.ccj_tableWidgettt):
         if not coin:
-            ui.ShowDialogWeb(False, code)
-        ui.ShowDialogHoga(False, coin, code)
-        ui.ShowDialogChart(True, coin, code)
+            show_dialog_web(ui, False, code)
+        show_dialog_hoga(ui, False, coin, code)
+        show_dialog_chart(ui, True, coin, code)
     else:
         starttime = ui.ct_lineEdittttt_01.text()
         endtime   = ui.ct_lineEdittttt_02.text()
@@ -87,9 +91,9 @@ def show_dialog(ui, code_or_name, tickcount, searchdate, col):
             QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
             return
         if not coin:
-            ui.ShowDialogWeb(False, code)
-        ui.ShowDialogHoga(False, coin, code)
-        ui.ShowDialogChart(False, coin, code, tickcount, searchdate, starttime, endtime)
+            show_dialog_web(ui, False, code)
+        show_dialog_hoga(ui, False, coin, code)
+        show_dialog_chart(ui, False, coin, code, tickcount, searchdate, starttime, endtime)
 
 
 @error_decorator
@@ -103,6 +107,7 @@ def show_dialog_web(ui, _show, code):
         DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=250)
         ui.dialog_info.show()
     if ui.dialog_web.isVisible() and ui.dialog_info.isVisible():
+        # noinspection PyUnresolvedReferences
         ui.webEngineView.load(QUrl(f'https://finance.naver.com/item/main.naver?code={code}'))
         ui.webcQ.put(('기업정보', code))
 
@@ -123,7 +128,7 @@ def show_dialog_hoga(ui, _show, coin, code):
         DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=250)
         ui.dialog_hoga.show()
     if ui.dialog_hoga.isVisible():
-        ui.PutHogaCode(coin, code)
+        put_hoga_code(ui, coin, code)
     if ui.dialog_order.isVisible():
         name = ui.dict_name[code] if code in ui.dict_name else code
         if name not in ui.order_combo_name_list:
@@ -132,22 +137,23 @@ def show_dialog_hoga(ui, _show, coin, code):
 
 
 @error_decorator
-def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, endtime, detail, buytimes):
+def show_dialog_chart(ui, real, coin, code, tickcount=None, searchdate=None, starttime=None, endtime=None,
+                      detail=None, buytimes=None):
     if not ui.dialog_chart.isVisible():
         dialog_chart_show(ui)
     if ui.dialog_chart.isVisible() and ui.proc_chqs.is_alive():
         if real:
-            ui.ChartClear()
+            chart_clear(ui)
             if coin:
-                if ui.CoinStrategyProcessAlive(): ui.cstgQ.put(('차트종목코드', code))
-                if not ui.dict_set['코인타임프레임'] and ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('차트종목코드', code))
+                if coin_strategy_process_alive(ui): ui.cstgQ.put(('차트종목코드', code))
+                if not ui.dict_set['코인타임프레임'] and coin_receiver_process_alive(ui): ui.creceivQ.put(('차트종목코드', code))
             else:
                 ui.wdzservQ.put(('strategy', ('차트종목코드', code)))
                 if not ui.dict_set['주식타임프레임']: ui.wdzservQ.put(('agent', ('차트종목코드', code)))
         else:
-            ui.ChartClear()
+            chart_clear(ui)
             cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
-            data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetIndicatorDetail(code))
+            data = (coin, code, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui, code))
             if detail is not None: data += (detail, buytimes)
             if cf1 and cf2:        data += (float(cf1), float(cf2))
             ui.chartQ.put(data)
@@ -156,7 +162,7 @@ def show_dialog_chart(ui, real, coin, code, tickcount, searchdate, starttime, en
 @error_decorator
 def dialog_chart_show(ui):
     ui.ct_pushButtonnn_05.setText('CHART III')
-    ui.ChartCountChange()
+    chart_count_change(ui)
 
     is_min = (ui.dict_set['주식에이전트'] and not ui.dict_set['주식타임프레임']) or \
              (ui.dict_set['코인리시버'] and not ui.dict_set['코인타임프레임'])
@@ -252,6 +258,7 @@ def show_giup(ui):
     if not ui.dialog_web.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=250)
         ui.dialog_web.show()
+        # noinspection PyUnresolvedReferences
         ui.webEngineView.load(QUrl('https://finance.naver.com/sise/'))
     else:
         ui.dialog_web.close()
@@ -377,12 +384,12 @@ def show_kimp(ui):
     if not ui.dialog_kimp.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_kimp, duration=250)
         ui.dialog_kimp.show()
-        if not ui.CoinKimpProcessAlive():
+        if not coinkimp_process_alive(ui):
             ui.proc_coin_kimp = Process(target=Kimp, args=(ui.qlist,))
             ui.proc_coin_kimp.start()
     else:
         ui.dialog_kimp.close()
-        if ui.CoinKimpProcessAlive():
+        if coinkimp_process_alive(ui):
             ui.proc_coin_kimp.kill()
 
 
@@ -401,6 +408,7 @@ def show_order(ui):
         if tableWidget is not None:
             ui.od_comboBoxxxxx_01.clear()
             for row in range(100):
+                # noinspection PyUnresolvedReferences
                 item = tableWidget.item(row, 0)
                 if item is not None:
                     name = item.text()
@@ -416,9 +424,9 @@ def show_order(ui):
 def put_hoga_code(ui, coin, code):
     if coin:
         ui.wdzservQ.put(('agent', ('호가종목코드', '000000')))
-        if ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('호가종목코드', code))
+        if coin_receiver_process_alive(ui): ui.creceivQ.put(('호가종목코드', code))
     else:
-        if ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('호가종목코드', '000000'))
+        if coin_receiver_process_alive(ui): ui.creceivQ.put(('호가종목코드', '000000'))
         ui.wdzservQ.put(('agent', ('호가종목코드', code)))
 
 
@@ -505,10 +513,10 @@ def chart_size_change(ui):
         ui.dialog_chart.setFixedSize(width, 1370 if not ui.dict_set['저해상도'] else 1010)
         ui.ct_pushButtonnn_06.setText('주식')
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bb)
-        ui.ChartMoneyTopList()
+        chart_moneytop_list(ui)
     elif ui.ct_pushButtonnn_06.text() == '주식':
         ui.ct_pushButtonnn_06.setText('코인')
-        ui.ChartMoneyTopList()
+        chart_moneytop_list(ui)
     elif ui.ct_pushButtonnn_06.text() == '코인':
         if ui.ct_pushButtonnn_05.text() == 'CHART I':
             width = 1403
