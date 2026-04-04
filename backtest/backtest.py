@@ -5,6 +5,7 @@ import time
 import sqlite3
 import numpy as np
 import pandas as pd
+from traceback import format_exc
 from backtest.back_static_numba import GetResult, bootstrap_test
 from backtest.back_static import PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
 from utility.static import now, str_ymdhms
@@ -65,9 +66,15 @@ class BackTest:
         self.insertblacklist = []
 
         self.start_time = now()
-        self.run()
+        try:
+            self.Start()
+        except SystemExit:
+            sys.exit()
+        except:
+            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.SysExit(True)
 
-    def run(self):
+    def Start(self):
         market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
         if self.ui_gubun == 'S':
             if self.dict_set[f'{market_text}타임프레임']:

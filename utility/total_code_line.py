@@ -9,6 +9,7 @@ ignore_paths = [
     'icon',
     'graph',
     'pycharm',
+    'backup',
     'stock_usa',
     'imagefiles',
     '_database',

@@ -9,7 +9,7 @@ class Visualization3D:
         self.top_3_params = None
         self.optimization_3d_history = []
 
-    def update_3d_visualization(self, dict_turn_hvar_hstd, k):
+    def update_3d_visualization(self, k, dict_turn_hvar_hstd):
         """
         dict_turn_hvar_hstd 데이터를 활용한 3D 최적화 진화 시각화
 
@@ -69,10 +69,14 @@ class Visualization3D:
 
         # 파라미터별 진화 궤적 추출
         param_evolution = {}
-        n_params = len(self.optimization_3d_history[0]['params'])
 
-        for i in range(n_params):
-            param_evolution[i] = {
+        # 모든 history에서 나타나는 파라미터 인덱스 수집 및 초기화
+        all_param_indices = set()
+        for history in self.optimization_3d_history:
+            all_param_indices.update(history['params'].keys())
+
+        for idx in all_param_indices:
+            param_evolution[idx] = {
                 'steps': [],
                 'values': [],
                 'scores': []
@@ -86,15 +90,20 @@ class Visualization3D:
                 param_evolution[param_idx]['scores'].append(score)
 
         # 3D 라인 플롯 생성
-        colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7']
-        param_names = ['파라미터1', '파라미터2', '파라미터3', '파라미터4', '파라미터5']
+        colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+                  '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+                  '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2',
+                  '#E74C3C', '#3498DB', '#2ECC71', '#F39C12', '#9B59B6',
+                  '#1ABC9C', '#E91E63', '#3F51B5', '#FF9800', '#795548',
+                  '#607D8B', '#FF5722', '#00BCD4', '#8BC34A', '#FFC107']
 
         for i, evolution in param_evolution.items():
             if len(evolution['steps']) > 1:
                 # X: 단계, Y: 파라미터값, Z: 최적화 점수
+                param_name = f'self.vars[{i}]'
                 ax.plot(evolution['steps'], evolution['values'], evolution['scores'],
                         linewidth=3, marker='o', markersize=6,
-                        label=param_names[i], color=colors[i % len(colors)])
+                        label=param_name, color=colors[i % len(colors)])
 
                 # 최신 지점 강조
                 ax.scatter([evolution['steps'][-1]], [evolution['values'][-1]],
@@ -107,38 +116,6 @@ class Visualization3D:
         ax.set_title('파라미터 진화 궤적 (3D)')
         ax.legend(loc='best')
         ax.grid(True, alpha=0.3)
-
-    def _get_top_score_variance_params(self, n):
-        """
-        스코어 변화량이 가장 큰 파라미터 인덱스들을 반환
-
-        Args:
-            n: 반환할 파라미터 개수
-
-        Returns:
-            list: 스코어 변화량이 큰 파라미터 인덱스 리스트 (내림차순)
-        """
-
-        # 파라미터별 스코어 변화량 계산
-        param_variances = {}
-
-        # 첫 번째 히스토리에서 파라미터 인덱스 추출
-        first_params = self.optimization_3d_history[0]['params']
-
-        for param_idx in first_params.keys():
-            scores = []
-            for history in self.optimization_3d_history:
-                if param_idx in history['params']:
-                    scores.append(history['params'][param_idx][1])  # 스코어 값
-
-            if len(scores) > 1:
-                # 스코어의 분산 계산 (변화량 측정)
-                variance = np.var(scores)
-                param_variances[param_idx] = variance
-
-        # 분산이 큰 순서대로 정렬하여 상위 n개 반환
-        sorted_params = sorted(param_variances.items(), key=lambda x: x[1], reverse=True)
-        return [param_idx for param_idx, _ in sorted_params[:n]]
 
     def _plot_optimal_value_surface(self, ax):
         """최적값 변화 3D 서피스"""
@@ -179,13 +156,45 @@ class Visualization3D:
         ax.scatter(history_data[:, 0], history_data[:, 1], history_data[:, 2], c='red', s=50, marker='o')
 
         # 변화량 다시 계산하지 않고 공통 함수에서 구한 값 사용
-        ax.set_xlabel(f'파라미터{param1_idx} 최적값')
-        ax.set_ylabel(f'파라미터{param2_idx} 최적값')
+        ax.set_xlabel(f'self.vars[{param1_idx}] 최적값')
+        ax.set_ylabel(f'self.vars[{param2_idx}] 최적값')
         ax.set_zlabel('최적화 기준값')
-        ax.set_title(f'최적값 조합 서피스 (스코어 변화가 큰 파라미터: {param1_idx}, {param2_idx})')
+        ax.set_title(f'최적값 조합 서피스 (스코어 변화가 큰 self.vars : {param1_idx}, {param2_idx})')
 
         # 컬러바
         plt.colorbar(surf, ax=ax, shrink=0.5, aspect=5)
+
+    def _get_top_score_variance_params(self, n):
+        """
+        스코어 변화량이 가장 큰 파라미터 인덱스들을 반환
+
+        Args:
+            n: 반환할 파라미터 개수
+
+        Returns:
+            list: 스코어 변화량이 큰 파라미터 인덱스 리스트 (내림차순)
+        """
+
+        # 파라미터별 스코어 변화량 계산
+        param_variances = {}
+
+        # 첫 번째 히스토리에서 파라미터 인덱스 추출
+        first_params = self.optimization_3d_history[0]['params']
+
+        for param_idx in first_params.keys():
+            scores = []
+            for history in self.optimization_3d_history:
+                if param_idx in history['params']:
+                    scores.append(history['params'][param_idx][1])  # 스코어 값
+
+            if len(scores) > 1:
+                # 스코어의 분산 계산 (변화량 측정)
+                variance = np.var(scores)
+                param_variances[param_idx] = variance
+
+        # 분산이 큰 순서대로 정렬하여 상위 n개 반환
+        sorted_params = sorted(param_variances.items(), key=lambda x: x[1], reverse=True)
+        return [param_idx for param_idx, _ in sorted_params[:n]]
 
     def _plot_param_correlation_3d(self, ax):
         """파라미터 상관관계 3D 산점도"""
@@ -221,10 +230,10 @@ class Visualization3D:
                           param_array[i + 1, 2] - param_array[i, 2],
                           color='red', alpha=0.6, arrow_length_ratio=0.1)
 
-        ax.set_xlabel(f'파라미터{self.top_3_params[0]}')
-        ax.set_ylabel(f'파라미터{self.top_3_params[1]}')
-        ax.set_zlabel(f'파라미터{self.top_3_params[2]}')
-        ax.set_title(f'파라미터 상관관계 3D, 스코어 변화가 큰 파라미터 3개: {self.top_3_params}')
+        ax.set_xlabel(f'self.vars[{self.top_3_params[0]}]')
+        ax.set_ylabel(f'self.vars[{self.top_3_params[1]}]')
+        ax.set_zlabel(f'self.vars[{self.top_3_params[2]}]')
+        ax.set_title(f'파라미터 상관관계 3D, 스코어 변화가 큰 self.vars 3개: {self.top_3_params}')
 
         # 컬러바
         plt.colorbar(scatter, ax=ax, shrink=0.5, aspect=5)

@@ -285,8 +285,7 @@ def stock_opti_optuna(ui):
         if not ui.optuna_window_open:
             ui.op_lineEditttt_01.setText(ui.dict_set['옵튜나고정변수'])
             ui.op_lineEditttt_02.setText(str(ui.dict_set['옵튜나실행횟수']))
-            ui.op_checkBoxxxx_01.setChecked(True) if ui.dict_set['옵튜나자동스탭'] else ui.op_checkBoxxxx_01.setChecked(
-                False)
+            ui.op_checkBoxxxx_01.setChecked(True) if ui.dict_set['옵튜나자동스탭'] else ui.op_checkBoxxxx_01.setChecked(False)
             ui.op_comboBoxxxx_01.setCurrentText(ui.dict_set['옵튜나샘플러'])
         ui.dialog_optuna.show()
         ui.optuna_window_open = True

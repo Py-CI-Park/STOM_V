@@ -128,7 +128,7 @@ def backengine_start(ui, gubun):
     def create_backsubtotal_process(j):
         proc = Process(
             target=BackSubTotal,
-            args=(j, ui.totalQ, ui.back_sques, ui.dict_set['백테매수시간기준']),
+            args=(j, ui.windowQ, ui.totalQ, ui.back_sques, ui.dict_set['백테매수시간기준']),
             daemon=True
         )
         proc.start()
