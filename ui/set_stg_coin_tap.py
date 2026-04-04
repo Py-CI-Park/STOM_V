@@ -44,7 +44,7 @@ class SetCoinBack:
         self.ui.cs_comboBoxxxx_03 = self.wc.setCombobox(self.ui.cs_tab, font=qfont12, activated=self.ui.dActivated_01)
         self.ui.cs_pushButtonn_05 = self.wc.setPushbutton('분석상세기록', parent=self.ui.cs_tab, bounced=True, click=self.ui.csButtonClicked_03, tip='최적화 테스트 및 전진분석 상세기록을 불러온다.')
         self.ui.cs_pushButtonn_06 = self.wc.setPushbutton('그래프', parent=self.ui.cs_tab, bounced=True, click=self.ui.csButtonClicked_04, tip='선택된 상세기록의 그래프를 표시한다.')
-        self.ui.cs_pushButtonn_07 = self.wc.setPushbutton('비교', parent=self.ui.cs_tab, bounced=True, click=self.ui.csButtonClicked_05, tip='두개 이상의 그래프를 선택 비교한다.')
+        self.ui.cs_pushButtonn_07 = self.wc.setPushbutton('비교', parent=self.ui.cs_tab, bounced=True, color=4, click=self.ui.csButtonClicked_05, tip='두개 이상의 그래프를 선택 비교한다.')
 
         self.ui.coin_detail_list  = [
             self.ui.cs_tableWidget_01, self.ui.cs_comboBoxxxx_01, self.ui.cs_pushButtonn_01, self.ui.cs_pushButtonn_02,
