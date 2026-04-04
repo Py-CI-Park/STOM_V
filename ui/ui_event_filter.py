@@ -1,8 +1,9 @@
 
+from ui.set_style import color_bf_dk
 from ui.set_widget import PlainTextEdit
 from utility.static import error_decorator
 from PyQt5.QtCore import Qt, QEvent, QTimer
-from PyQt5.QtGui import QTextCursor, QTextCharFormat, QColor
+from PyQt5.QtGui import QTextCursor, QTextCharFormat
 from PyQt5.QtWidgets import QMainWindow, QMessageBox, QTextEdit, QApplication
 
 syntax_highlighters = {}
@@ -50,7 +51,7 @@ class SyntaxHighlighter:
                     cursor.movePosition(QTextCursor.NextBlock)
                 cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
                 error_format = QTextCharFormat()
-                error_format.setBackground(QColor(100, 100, 120))
+                error_format.setBackground(color_bf_dk)
                 selection = QTextEdit.ExtraSelection()
                 selection.cursor = cursor
                 selection.format = error_format

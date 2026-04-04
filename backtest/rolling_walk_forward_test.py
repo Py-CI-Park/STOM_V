@@ -82,102 +82,110 @@ class Total:
         st  = {}
         dict_dummy = {}
         while True:
-            data = self.tq.get()
-            if data == '백테완료':
-                bc  += 1
-                if bc == self.back_count:
-                    bc = 0
-                    if self.opti_kind == 1:
-                        for q in self.bstq_list:
-                            q.put(('백테완료', '분리집계'))
-                    else:
+            try:
+                data = self.tq.get()
+                if data == '백테완료':
+                    bc  += 1
+                    if bc == self.back_count:
+                        bc = 0
+                        if self.opti_kind == 1:
+                            for q in self.bstq_list:
+                                q.put(('백테완료', '분리집계'))
+                        else:
+                            for q in self.bstq_list[:5]:
+                                q.put(('백테완료', '일괄집계'))
+
+                elif data[0] == '더미결과':
+                    sc += 1
+                    _, vkey, _dict_dummy = data
+                    if _dict_dummy:
+                        for vturn in _dict_dummy:
+                            dict_dummy[vturn][vkey] = 0
+
+                    if sc == 20:
+                        sc = 0
+                        for vturn in dict_dummy:
+                            for vkey in range(len(self.vars_list[vturn][0])):
+                                if vkey not in dict_dummy[vturn]:
+                                    self.hstd = SendResult(self.GetSendData(vturn, vkey), None)
+                        dict_dummy = {}
+
+                elif data == '수집완료':
+                    sc += 1
+                    if sc == 5:
+                        sc = 0
                         for q in self.bstq_list[:5]:
-                            q.put(('백테완료', '일괄집계'))
+                            q.put('결과집계')
 
-            elif data[0] == '더미결과':
-                sc += 1
-                _, vkey, _dict_dummy = data
-                if _dict_dummy:
-                    for vturn in _dict_dummy:
-                        dict_dummy[vturn][vkey] = 0
+                elif data[0] == '결과없음':
+                    self.hstd = SendResult(self.GetSendData(), None)
 
-                if sc == 20:
-                    sc = 0
-                    for vturn in dict_dummy:
-                        for vkey in range(len(self.vars_list[vturn][0])):
-                            if vkey not in dict_dummy[vturn]:
-                                self.hstd = SendResult(self.GetSendData(vturn, vkey), None)
-                    dict_dummy = {}
+                elif data[0] in ('TRAIN', 'VALID'):
+                    gubun, num, data, vturn, vkey = data
+                    if gubun == 'TRAIN':
+                        if vturn not in self.dict_t:
+                            self.dict_t[vturn] = {}
+                        if vkey not in self.dict_t[vturn]:
+                            self.dict_t[vturn][vkey] = {}
+                        self.dict_t[vturn][vkey][num] = data
+                    else:
+                        if vturn not in self.dict_v:
+                            self.dict_v[vturn] = {}
+                        if vkey not in self.dict_v[vturn]:
+                            self.dict_v[vturn][vkey] = {}
+                        self.dict_v[vturn][vkey][num] = data
 
-            elif data == '수집완료':
-                sc += 1
-                if sc == 5:
-                    sc = 0
-                    for q in self.bstq_list[:5]:
-                        q.put('결과집계')
+                    if vturn not in st:
+                        st[vturn] = {}
+                    if vkey not in st[vturn]:
+                        st[vturn][vkey] = 0
+                    st[vturn][vkey] += 1
 
-            elif data[0] == '결과없음':
-                self.hstd = SendResult(self.GetSendData(), None)
+                    if st[vturn][vkey] == self.sub_total:
+                        self.hstd = SendResult(
+                            self.GetSendData(vturn, vkey),
+                            self.dict_t[vturn][vkey],
+                            self.dict_v[vturn][vkey],
+                            self.dict_set['교차검증가중치']
+                        )
+                        st[vturn][vkey] = 0
 
-            elif data[0] in ('TRAIN', 'VALID'):
-                gubun, num, data, vturn, vkey = data
-                if gubun == 'TRAIN':
-                    if vturn not in self.dict_t:
-                        self.dict_t[vturn] = {}
-                    if vkey not in self.dict_t[vturn]:
-                        self.dict_t[vturn][vkey] = {}
-                    self.dict_t[vturn][vkey][num] = data
-                else:
-                    if vturn not in self.dict_v:
-                        self.dict_v[vturn] = {}
-                    if vkey not in self.dict_v[vturn]:
-                        self.dict_v[vturn][vkey] = {}
-                    self.dict_v[vturn][vkey][num] = data
+                elif data[0] == 'ALL':
+                    _, _, data, vturn, vkey = data
+                    self.hstd = SendResult(self.GetSendData(vturn, vkey), data)
 
-                if vturn not in st:
-                    st[vturn] = {}
-                if vkey not in st[vturn]:
-                    st[vturn][vkey] = 0
-                st[vturn][vkey] += 1
+                elif data[0] == '백테결과':
+                    oc += 1
+                    _, list_tsg, arry_bct = data
+                    self.Report(list_tsg, arry_bct, oc)
 
-                if st[vturn][vkey] == self.sub_total:
-                    self.hstd = SendResult(
-                        self.GetSendData(vturn, vkey),
-                        self.dict_t[vturn][vkey],
-                        self.dict_v[vturn][vkey],
-                        self.dict_set['교차검증가중치']
-                    )
-                    st[vturn][vkey] = 0
+                elif data[0] == '백테정보':
+                    self.BackInfo(data)
 
-            elif data[0] == 'ALL':
-                _, _, data, vturn, vkey = data
-                self.hstd = SendResult(self.GetSendData(vturn, vkey), data)
+                elif data[0] == '변수정보':
+                    self.vars_list = data[1]
+                    self.opti_kind = data[2]
+                    self.vars      = [var[1] for var in self.vars_list]
+                    dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
 
-            elif data[0] == '백테결과':
-                oc += 1
-                _, list_tsg, arry_bct = data
-                self.Report(list_tsg, arry_bct, oc)
+                elif data[0] == '경우의수':
+                    self.back_count   = data[1]
+                    self.startday     = data[2]
+                    self.endday       = data[3]
+                    self.out_count    = data[4]
+                    self.hstd         = -float('inf')
 
-            elif data[0] == '백테정보':
-                self.BackInfo(data)
+                elif data[0] == '최적화정보':
+                    self.hstd_list = data[1]
 
-            elif data[0] == '변수정보':
-                self.vars_list = data[1]
-                self.opti_kind = data[2]
-                self.vars      = [var[1] for var in self.vars_list]
-                dict_dummy     = {x: {} for x, vars_ in enumerate(self.vars_list) if len(vars_[0]) > 1}
-
-            elif data[0] == '경우의수':
-                self.back_count   = data[1]
-                self.startday     = data[2]
-                self.endday       = data[3]
-                self.out_count    = data[4]
-                self.hstd         = -float('inf')
-
-            elif data[0] == '최적화정보':
-                self.hstd_list = data[1]
-
-            elif data == '백테중지':
+                elif data == '백테중지':
+                    self.mq.put('백테중지')
+                    time.sleep(1)
+                    break
+            except SystemExit:
+                break
+            except:
+                self.wq.put((ui_num['시스템로그'], format_exc()))
                 self.mq.put('백테중지')
                 time.sleep(1)
                 break
@@ -338,7 +346,13 @@ class RollingWalkForwardTest:
         self.study      = None
         self.dict_simple_vars = {}
 
-        self.Start()
+        try:
+            self.Start()
+        except SystemExit:
+            sys.exit()
+        except:
+            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.tq.put('백테중지')
 
     def Start(self):
         start_time = now()
@@ -506,18 +520,18 @@ class RollingWalkForwardTest:
 
         hstd_list = []
         hvar_list = []
-        for j, days in enumerate(list_days):
+        for in_count, days in enumerate(list_days):
             train_days, _, _ = days
             startday, endday = train_days[0], train_days[1]
 
             if 'B' not in self.backname:
                 hstd = self.OptimizeGrid(
-                    mq, back_count, ccount, vars_type, startday, endday, j
+                    mq, back_count, ccount, vars_type, startday, endday, in_count
                 )
             else:
                 hstd = self.OptimizeOptuna(
                     mq, optuna_count, back_count, optuna_fixvars, optuna_autostep, buystg_name, sampler,
-                    startday, endday, j
+                    startday, endday, in_count
                 )
 
             hvar_list.append(copy.deepcopy(self.vars_))
@@ -641,9 +655,9 @@ class RollingWalkForwardTest:
 
         return vars_type, self.vars_[0][0]
 
-    def OptimizeGrid(self, mq, back_count, ccount, vars_type, startday, endday, j):
-        self.tq.put(('경우의수', back_count, startday, endday, j))
-        self.BackStart(('변수정보', self.vars_, 0, startday, endday, j))
+    def OptimizeGrid(self, mq, back_count, ccount, vars_type, startday, endday, in_count):
+        self.tq.put(('경우의수', back_count, startday, endday, in_count))
+        self.BackStart(('변수정보', self.vars_, 0, startday, endday, in_count))
 
         hstd = 0
         data = mq.get()
@@ -657,7 +671,7 @@ class RollingWalkForwardTest:
         for k in range(ccount if ccount != 0 else 100):
             self.wq.put((
                 ui_num[f'{self.ui_gubun}백테스트'],
-                f'{self.backname} 인샘플 [{j + 1}]구간 [{k + 1}]단계 그리드 최적화 시작, 최고 기준값[{hstd:,.2f}], 최적값 변경 개수 [{vars_change_count}]'
+                f'{self.backname} 인샘플 [{in_count + 1}]구간 [{k + 1}]단계 그리드 최적화 시작, 최고 기준값[{hstd:,.2f}], 최적값 변경 개수 [{vars_change_count}]'
             ))
 
             vars_change_count   = 0
@@ -670,7 +684,7 @@ class RollingWalkForwardTest:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '모든 파라미터 고정, 최적화를 종료합니다.'))
                 break
 
-            self.BackStart(('변수정보', self.vars_, 1, startday, endday, j))
+            self.BackStart(('변수정보', self.vars_, 1, startday, endday, in_count))
 
             for _ in range(result_receiv_count):
                 data = mq.get()
@@ -680,23 +694,23 @@ class RollingWalkForwardTest:
                     vturn, vkey, std = data
                     cur_turn_type  = vars_type[vturn]
                     cur_turn_var   = self.vars_[vturn][0][vkey]
-                    duct_turn_list = dict_turn_hvar_hstd[vturn]
-                    pre_turn_hvar, pre_turn_hstd = duct_turn_list
+                    turn_hvar_hstd = dict_turn_hvar_hstd[vturn]
+                    pre_turn_hvar, pre_turn_hstd = turn_hvar_hstd
                     A = std > pre_turn_hstd
                     B = std == pre_turn_hstd and cur_turn_var > pre_turn_hvar and cur_turn_type
                     C = std == pre_turn_hstd and cur_turn_var < pre_turn_hvar and not cur_turn_type
                     if A or B or C:
-                        duct_turn_list[0] = cur_turn_var
-                        duct_turn_list[1] = std
+                        turn_hvar_hstd[0] = cur_turn_var
+                        turn_hvar_hstd[1] = std
                         if std > hstd:
                             hstd = std
                             if not bool_changed_hstd:
                                 bool_changed_hstd = True
 
-            high_ratio = [0, hstd, hstd]
+            high_ratio = []
             if bool_changed_hstd:
                 high_ratio, vars_change_count = self.CheckOptivalueCombination(
-                    mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd, startday, endday, j
+                    mq, previous_high_std, vars_change_count, dict_turn_hvar_hstd, startday, endday, in_count
                 )
 
             if previous_high_std > 0:
@@ -714,10 +728,12 @@ class RollingWalkForwardTest:
 
         return hstd
 
-    def CheckOptivalueCombination(self, mq, hstd, high_ratio, vars_change_count, dict_turn_hvar_hstd, startday, endday, j):
-        std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
+    def CheckOptivalueCombination(self, mq, previous_high_std, vars_change_count, dict_turn_hvar_hstd, startday, endday, in_count):
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 시작'))
-        for std in std_set[1:-1]:
+        high_ratio = [0, previous_high_std, previous_high_std]
+        std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
+        last = len(std_set)
+        for i, std in enumerate(std_set):
             vars_copy = copy.deepcopy(self.vars_)
             for vturn, hvar_hstd in dict_turn_hvar_hstd.items():
                 pre_turn_hvar = vars_copy[vturn][1]
@@ -725,17 +741,17 @@ class RollingWalkForwardTest:
                 if cur_turn_hstd >= std and cur_turn_hvar != pre_turn_hvar:
                     vars_copy[vturn][1] = cur_turn_hvar
 
-            self.BackStart(('변수정보', vars_copy, 0, startday, endday, j))
+            self.BackStart(('변수정보', vars_copy, 0, startday, endday, in_count))
             data = mq.get()
             if data.__class__ == str:
                 self.SysExit(True)
             else:
                 check_hstd = data[-1]
-                if hstd > 0:
-                    ratio = round((check_hstd / hstd - 1) * 100, 2)
+                if previous_high_std > 0:
+                    ratio = round((check_hstd / previous_high_std - 1) * 100, 2)
                 else:
-                    ratio = round((1 - check_hstd / hstd) * 100, 2)
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중 ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                    ratio = round((1 - check_hstd / previous_high_std) * 100, 2)
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'최적값 조합 확인 중[{i+1}/{last}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
                 if ratio > high_ratio[0]:
                     high_ratio = [ratio, std, check_hstd]
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '최적값 조합 확인 완료'))
@@ -778,11 +794,11 @@ class RollingWalkForwardTest:
         if text != '\n': self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], text[:-1]))
 
     def OptimizeOptuna(self, mq, optuna_count, back_count, optuna_fixvars, optuna_autostep, buystg_name,
-                       sampler, startday, endday, j):
+                       sampler, startday, endday, in_count):
 
         self.dict_simple_vars = {}
-        self.tq.put(('경우의수', back_count, startday, endday, j))
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 인샘플 [{j + 1}]구간 OPTUNA 최적화 시작'))
+        self.tq.put(('경우의수', back_count, startday, endday, in_count))
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 인샘플 [{in_count + 1}]구간 OPTUNA 최적화 시작'))
 
         def objective(trial):
             optuna_vars = []
@@ -808,7 +824,7 @@ class RollingWalkForwardTest:
 
             str_simple_vars = str(optuna_vars)
             if str_simple_vars not in self.dict_simple_vars:
-                self.BackStart(('변수정보', backte_vars, 4, startday, endday, j))
+                self.BackStart(('변수정보', backte_vars, 4, startday, endday, in_count))
                 data_ = mq.get()
                 if data_.__class__ == str:
                     ostd = 0
