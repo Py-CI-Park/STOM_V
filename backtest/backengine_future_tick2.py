@@ -221,7 +221,6 @@ class BackEngineFutureTick2(BackEngineBaseOms):
     def UpdateGlobalsFunc(self, dict_add_func):
         globals().update(dict_add_func)
 
-    # noinspection PyUnusedLocal
     def GetHogaunit(self, 호가빼기데이터):
         return self.dict_info[self.code]['호가단위']
 

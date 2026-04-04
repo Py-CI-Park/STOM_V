@@ -48,17 +48,18 @@ class BinanceReceiverTick:
         self.cstgQ       = qlist[10]
         self.dict_set    = dict_set
 
-        self.dict_dtdm   = {}
-        self.dict_jgdt   = {}
-        self.dict_data   = {}
         self.dict_daym   = {}
-        self.dict_mtop   = {}
         self.dict_prec   = {}
         self.dict_dlhp   = {}
+
+        self.dict_dtdm   = {}
+        self.dict_data   = {}
         self.dict_money  = {}
         self.dict_bmbyp  = {}
         self.dict_smbyp  = {}
         self.dict_index  = {}
+        self.dict_mtop   = {}
+        self.dict_jgdt   = {}
 
         self.list_hgdt   = [0, 0, 0, 0]
         self.list_gsjm   = []
@@ -69,8 +70,9 @@ class BinanceReceiverTick:
         self.int_mtdt    = None
         self.hoga_code   = None
         self.chart_code  = None
-        self.codes       = None
         self.last_gsjm   = None
+
+        self.codes       = None
         self.binance     = binance.Client()
 
         self.dict_bool = {
@@ -230,6 +232,7 @@ class BinanceReceiverTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
+    # noinspection PyUnresolvedReferences
     def UpdateHogaData(self, data):
         try:
             data = data['data']

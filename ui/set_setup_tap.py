@@ -1,7 +1,10 @@
 
 from ui.set_style import style_bc_dk
-from ui.set_widget import error_decorator
+from ui.ui_checkbox_changed import *
+from ui.ui_button_clicked_settings import *
+from ui import ui_activated_stg, ui_activated_etc
 from PyQt5.QtWidgets import QLabel, QTabWidget, QWidget
+from ui.ui_button_clicked_etc import lvbutton_clicked_01
 
 
 class SetSetupTap:
@@ -19,12 +22,12 @@ class SetSetupTap:
         self.ui.cod_tab = QWidget()
 
         self.ui.sj_set_labelll_01 = QLabel('설정 관리', self.ui.sj_tab)
-        self.ui.sj_set_comBoxx_01 = self.wc.setCombobox(self.ui.sj_tab, activated=self.ui.dActivated_02)
-        self.ui.sj_set_pButton_01 = self.wc.setPushbutton('로딩', parent=self.ui.sj_tab, click=self.ui.SettingAllLoad)
-        self.ui.sj_set_pButton_02 = self.wc.setPushbutton('설정', parent=self.ui.sj_tab, click=self.ui.SettingAllApp)
-        self.ui.sj_set_pButton_03 = self.wc.setPushbutton('삭제', parent=self.ui.sj_tab, click=self.ui.SettingAllDel)
+        self.ui.sj_set_comBoxx_01 = self.wc.setCombobox(self.ui.sj_tab, activated=lambda: ui_activated_etc.dactivated_02(self.ui))
+        self.ui.sj_set_pButton_01 = self.wc.setPushbutton('로딩', parent=self.ui.sj_tab, click=lambda: setting_all_load(self.ui))
+        self.ui.sj_set_pButton_02 = self.wc.setPushbutton('설정', parent=self.ui.sj_tab, click=lambda: setting_all_app(self.ui))
+        self.ui.sj_set_pButton_03 = self.wc.setPushbutton('삭제', parent=self.ui.sj_tab, click=lambda: setting_all_del(self.ui))
         self.ui.sj_set_liEditt_01 = self.wc.setLineedit(self.ui.sj_tab, style=style_bc_dk)
-        self.ui.sj_set_pButton_04 = self.wc.setPushbutton('저장', parent=self.ui.sj_tab, click=self.ui.SettingAllSave)
+        self.ui.sj_set_pButton_04 = self.wc.setPushbutton('저장', parent=self.ui.sj_tab, click=lambda: setting_all_save(self.ui))
 
         self.ui.set_tapWidgett_01.addTab(self.ui.ssd_tab, '일반설정')
         self.ui.set_tapWidgett_01.addTab(self.ui.sod_tab, '주식해선주문설정')
@@ -40,19 +43,19 @@ class SetSetupTap:
         self.ui.sj_bs_groupBox_08 = self.wc.setQGroupBox(' 기타 : 휴장 종료 유무, 해상도, 창위치, 스톰라이브를 설정한다.', self.ui.ssd_tab, hover=True)
 
         self.ui.sj_main_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, tip='사용할 증권사를 선택하십시오.', items=['키움증권1', '키움증권2', '키움증권3', '키움증권4', '해외선물5', '해외선물6', '해외선물7', '해외선물8'])
-        self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('에이전트', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_01, tip='실시간조건검색 및 데이터를 수신하고 주문을 전송한다.')
-        self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_02, tip='주문 및 잔고 관리하는 프로세스와\n리시버로부터 데이터를 넘겨받아 전략연산하는 프로세스로 분리되어 있다.')
-        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_03, tip='전략연산 프로세스가 모아둔 데이터를 데이터베이스에 저장한다.')
+        self.ui.sj_main_cheBox_01 = self.wc.setCheckBox('에이전트', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_01(self.ui, state), tip='실시간조건검색 및 데이터를 수신하고 주문을 전송한다.')
+        self.ui.sj_main_cheBox_02 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_02(self.ui, state), tip='주문 및 잔고 관리하는 프로세스와\n리시버로부터 데이터를 넘겨받아 전략연산하는 프로세스로 분리되어 있다.')
+        self.ui.sj_main_cheBox_03 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_03(self.ui, state), tip='전략연산 프로세스가 모아둔 데이터를 데이터베이스에 저장한다.')
 
         self.ui.sj_main_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, tip='사용할 거래소를 선택하십시오.', items=['업비트', '바이낸스선물'])
-        self.ui.sj_main_cheBox_04 = self.wc.setCheckBox('리시버', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_04, tip='코인 리시버는 체결정보와 호가정보 프로세스로 분리하여 수신한다.')
-        self.ui.sj_main_cheBox_05 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_05, tip='트레이더는 전략연산과 주문 및 잔고 관리 프로세스로 분리되어 있다.')
-        self.ui.sj_main_cheBox_06 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, changed=self.ui.CheckboxChanged_06, tip='전략연산 프로세스가 모아둔 데이터를 데이터베이스에 저장한다.')
+        self.ui.sj_main_cheBox_04 = self.wc.setCheckBox('리시버', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_04(self.ui, state), tip='코인 리시버는 체결정보와 호가정보 프로세스로 분리하여 수신한다.')
+        self.ui.sj_main_cheBox_05 = self.wc.setCheckBox('트레이더', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_05(self.ui, state), tip='트레이더는 전략연산과 주문 및 잔고 관리 프로세스로 분리되어 있다.')
+        self.ui.sj_main_cheBox_06 = self.wc.setCheckBox('데이터 저장', self.ui.sj_bs_groupBox_01, changed=lambda state: checkbox_changed_06(self.ui, state), tip='전략연산 프로세스가 모아둔 데이터를 데이터베이스에 저장한다.')
 
         self.ui.sj_main_labell_01 = QLabel('바이낸스 선물   |                                                         마진타입                     포지션', self.ui.sj_bs_groupBox_01)
-        self.ui.sj_lvrg_Button_01 = self.wc.setPushbutton('레버리지 유형 및 수치 설정', parent=self.ui.sj_bs_groupBox_01, click=self.ui.lvButtonClicked_01, tip='바이낸스 선물 레버리지를 고정, 변동 형태 중 선택하여 설정한다.')
-        self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=self.ui.cActivated_10)
-        self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=self.ui.cActivated_11)
+        self.ui.sj_lvrg_Button_01 = self.wc.setPushbutton('레버리지 유형 및 수치 설정', parent=self.ui.sj_bs_groupBox_01, click=lambda: lvbutton_clicked_01(self.ui), tip='바이낸스 선물 레버리지를 고정, 변동 형태 중 선택하여 설정한다.')
+        self.ui.sj_main_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['격리', '교차'], activated=ui_activated_stg.activated_10)
+        self.ui.sj_main_comBox_04 = self.wc.setCombobox(self.ui.sj_bs_groupBox_01, items=['단방향', '양방향'], activated=ui_activated_stg.activated_11)
 
         text = '키움증권  아이디                                                             ' \
                '비밀번호                                                           ' \
@@ -76,13 +79,13 @@ class SetSetupTap:
         self.ui.sj_tele_liEdit_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_04, passhide=True)
         self.ui.sj_tele_liEdit_02 = self.wc.setLineedit(self.ui.sj_bs_groupBox_04, passhide=True)
 
-        self.ui.sj_stock_ckBox_01 = self.wc.setCheckBox('모의투자     |', self.ui.sj_bs_groupBox_05, changed=self.ui.CheckboxChanged_07, tip='모의투자 체크 시 주문이 전송되지 않고\n매수, 매도를 기록한다. 체크 해제 시 실제 주문이 전송된다.')
+        self.ui.sj_stock_ckBox_01 = self.wc.setCheckBox('모의투자     |', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_07(self.ui, state), tip='모의투자 체크 시 주문이 전송되지 않고\n매수, 매도를 기록한다. 체크 해제 시 실제 주문이 전송된다.')
         self.ui.sj_stock_ckBox_02 = self.wc.setCheckBox('알림소리     |', self.ui.sj_bs_groupBox_05, tip='각종 알림소리를 끄고 켠다.')
         text = '매수                                       ' \
                '매도                                       ' \
                '데이터                              평균값계산틱수                       최대종목수                       종료시간'
         self.ui.sj_stock_label_01 = QLabel(text, self.ui.sj_bs_groupBox_05)
-        self.ui.sj_stock_cbBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_05, activated=self.ui.sActivated_09)
+        self.ui.sj_stock_cbBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_05, activated=lambda: ui_activated_stg.activated_09(self.ui, 'stock'))
         self.ui.sj_stock_cbBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_cbBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_05, items=['1초스냅샷', '1분봉'])
         self.ui.sj_stock_lEdit_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
@@ -90,7 +93,7 @@ class SetSetupTap:
         self.ui.sj_stock_lEdit_03 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_ckBox_03 = self.wc.setCheckBox('잔고청산', self.ui.sj_bs_groupBox_05, tip='전략 종료 시 보유잔고를 시장가청산한다.')
         self.ui.sj_stock_ckBox_04 = self.wc.setCheckBox('프로세스 종료', self.ui.sj_bs_groupBox_05, tip='전략 마감 후 리시버, 전략연산, 트레이더 프로세스를 종료한다.')
-        self.ui.sj_stock_ckBox_05 = self.wc.setCheckBox('컴퓨터 종료', self.ui.sj_bs_groupBox_05, changed=self.ui.CheckboxChanged_09, tip='프로세스를 종료 후 컴퓨터를 종료한다.')
+        self.ui.sj_stock_ckBox_05 = self.wc.setCheckBox('컴퓨터 종료', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_09(self.ui, state), tip='프로세스를 종료 후 컴퓨터를 종료한다.')
 
         self.ui.sj_stock_ckBox_09 = self.wc.setCheckBox('종목당 투자금 고정   |', self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_label_03 = QLabel('종목당투자금                          백만원                                  전략중지 및 잔고청산   |', self.ui.sj_bs_groupBox_05)
@@ -101,10 +104,10 @@ class SetSetupTap:
         self.ui.sj_stock_ckBox_11 = self.wc.setCheckBox('수익중지 - 총자산 대비 수익률 (+)           %', self.ui.sj_bs_groupBox_05)
         self.ui.sj_stock_lEdit_10 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
 
-        self.ui.sj_coin_cheBox_01 = self.wc.setCheckBox('모의투자    |', self.ui.sj_bs_groupBox_06, changed=self.ui.CheckboxChanged_08, tip='모의투자 체크 시 주문이 전송되지 않고\n매수, 매도를 기록한다. 체크 해제 시 실제 주문이 전송된다.')
+        self.ui.sj_coin_cheBox_01 = self.wc.setCheckBox('모의투자    |', self.ui.sj_bs_groupBox_06, changed=lambda state: checkbox_changed_08(self.ui, state), tip='모의투자 체크 시 주문이 전송되지 않고\n매수, 매도를 기록한다. 체크 해제 시 실제 주문이 전송된다.')
         self.ui.sj_coin_cheBox_02 = self.wc.setCheckBox('알림소리    |', self.ui.sj_bs_groupBox_06, tip='각종 알림소리를 끄고 켠다.')
         self.ui.sj_coin_labell_01 = QLabel(text, self.ui.sj_bs_groupBox_06)
-        self.ui.sj_coin_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_06, activated=self.ui.cActivated_09)
+        self.ui.sj_coin_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_06, activated=lambda: ui_activated_stg.activated_09(self.ui, 'coin'))
         self.ui.sj_coin_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_06, items=['1초스냅샷', '1분봉'])
         self.ui.sj_coin_liEdit_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
@@ -112,7 +115,7 @@ class SetSetupTap:
         self.ui.sj_coin_liEdit_03 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_cheBox_03 = self.wc.setCheckBox('잔고청산', self.ui.sj_bs_groupBox_06, tip='전략 종료 시 보유잔고를 시장가청산한다.')
         self.ui.sj_coin_cheBox_04 = self.wc.setCheckBox('프로세스 종료', self.ui.sj_bs_groupBox_06, tip='전략 마감 후 리시버, 전략연산, 트레이더 프로세스를 종료한다.')
-        self.ui.sj_coin_cheBox_05 = self.wc.setCheckBox('컴퓨터 종료', self.ui.sj_bs_groupBox_06, changed=self.ui.CheckboxChanged_09, tip='프로세스를 종료 후 컴퓨터를 종료한다.')
+        self.ui.sj_coin_cheBox_05 = self.wc.setCheckBox('컴퓨터 종료', self.ui.sj_bs_groupBox_06, changed=lambda state: checkbox_changed_09(self.ui, state), tip='프로세스를 종료 후 컴퓨터를 종료한다.')
 
         self.ui.sj_coin_cheBox_09 = self.wc.setCheckBox('종목당 투자금 고정   |', self.ui.sj_bs_groupBox_06)
         self.ui.sj_coin_labell_03 = QLabel('종목당투자금                          백만원                                  전략중지 및 잔고청산   |', self.ui.sj_bs_groupBox_06)
@@ -124,8 +127,8 @@ class SetSetupTap:
         self.ui.sj_coin_liEdit_10 = self.wc.setLineedit(self.ui.sj_bs_groupBox_06)
 
         self.ui.sj_back_cheBox_01 = self.wc.setCheckBox('백테스트 시 거래횟수 10회 이상이며 수익금이 마이너스일 경우 블랙리스트에 추가하기', self.ui.sj_bs_groupBox_07)
-        self.ui.sj_back_cheBox_02 = self.wc.setCheckBox('일괄 로딩(모든 종목의 데이터를 램에 올려두고 백테스트합니다. 백테속도↑, 램사용량↑)', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_11)
-        self.ui.sj_back_cheBox_03 = self.wc.setCheckBox('분할 로딩(피클덤프한 다음 한종목씩 램에 올려 백테스트합니다. 백테속도↓, 램사용량↓)', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_11)
+        self.ui.sj_back_cheBox_02 = self.wc.setCheckBox('일괄 로딩(모든 종목의 데이터를 램에 올려두고 백테스트합니다. 백테속도↑, 램사용량↑)', self.ui.sj_bs_groupBox_07, changed=lambda state: checkbox_changed_11(self.ui, state))
+        self.ui.sj_back_cheBox_03 = self.wc.setCheckBox('분할 로딩(피클덤프한 다음 한종목씩 램에 올려 백테스트합니다. 백테속도↓, 램사용량↓)', self.ui.sj_bs_groupBox_07, changed=lambda state: checkbox_changed_11(self.ui, state))
         self.ui.sj_back_cheBox_04 = self.wc.setCheckBox('데이터베이스 자동관리(일자DB분리, 백테DB추가)', self.ui.sj_bs_groupBox_07, tip='데이터 저장 후 일자별분리 및 백테디비추가가 자동실행됨')
 
         self.ui.sj_back_cheBox_05 = self.wc.setCheckBox('백테스트에 주문관리 설정 적용하기(최유리 및 IOC 주문 제외)', self.ui.sj_bs_groupBox_07, tip='설정 변경 시 백테엔진을 재로딩해야 합니다. 체크해제 시 시장가 호가범위선택 및 비중조절은 적용됨')
@@ -146,17 +149,17 @@ class SetSetupTap:
         self.ui.sj_back_cheBox_17 = self.wc.setCheckBox('1초스냅샷 전략에 시장리스크분석 적용하기', self.ui.sj_bs_groupBox_07, tip=tip_text)
         self.ui.sj_back_cheBox_09 = self.wc.setCheckBox('백테스트 그래프 매수시간 기준으로 표시하기', self.ui.sj_bs_groupBox_07, tip='체크해제 시 매도시간 기준으로 표시됩니다.')
         self.ui.sj_back_cheBox_12 = self.wc.setCheckBox('백테스트로그 기록하지 않기', self.ui.sj_bs_groupBox_07)
-        self.ui.sj_back_cheBox_10 = self.wc.setCheckBox('일반 백테스트 시 그래프 저장하지 않기', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_12)
-        self.ui.sj_back_cheBox_11 = self.wc.setCheckBox('띄우지 않기', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_13)
+        self.ui.sj_back_cheBox_10 = self.wc.setCheckBox('일반 백테스트 시 그래프 저장하지 않기', self.ui.sj_bs_groupBox_07, changed=lambda state: checkbox_changed_12(self.ui, state))
+        self.ui.sj_back_cheBox_11 = self.wc.setCheckBox('띄우지 않기', self.ui.sj_bs_groupBox_07, changed=lambda state: checkbox_changed_13(self.ui, state))
 
         self.ui.sj_back_cheBox_13 = self.wc.setCheckBox('스케쥴러 자동실행  |  요일                    시간                                                                                        ▣  엔진시작일자', self.ui.sj_bs_groupBox_07, tip='백테 스케쥴러를 자동실행한다.')
         self.ui.sj_back_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_07, items=['금', '토', '일'])
         self.ui.sj_back_liEdit_02 = self.wc.setLineedit(self.ui.sj_bs_groupBox_07)
         self.ui.sj_back_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_07, items=['주식', '코인'])
         self.ui.sj_back_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_07)
-        self.ui.sj_back_cheBox_14 = self.wc.setCheckBox('                  일전', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_16)
+        self.ui.sj_back_cheBox_14 = self.wc.setCheckBox('                  일전', self.ui.sj_bs_groupBox_07, changed=lambda state: checkbox_changed_16(self.ui, state))
         self.ui.sj_back_liEdit_03 = self.wc.setLineedit(self.ui.sj_bs_groupBox_07)
-        self.ui.sj_back_cheBox_15 = self.wc.setCheckBox('고정', self.ui.sj_bs_groupBox_07, changed=self.ui.CheckboxChanged_17)
+        self.ui.sj_back_cheBox_15 = self.wc.setCheckBox('고정', self.ui.sj_bs_groupBox_07, changed=lambda state: checkbox_changed_17(self.ui, state))
         self.ui.sj_back_daEdit_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_07)
 
         self.ui.sj_ilbunback_listtt = [self.ui.sj_back_cheBox_02, self.ui.sj_back_cheBox_03]
@@ -178,27 +181,27 @@ class SetSetupTap:
         self.ui.sj_etc_liEditt_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_08, passhide=True)
         self.ui.sj_etc_daEditt_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_08, popup=False)
 
-        self.ui.sj_load_Button_01 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_01, click=self.ui.SettingLoad_01)
-        self.ui.sj_load_Button_02 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_02, click=self.ui.SettingLoad_02)
-        self.ui.sj_load_Button_03 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_03, click=self.ui.SettingLoad_03)
-        self.ui.sj_load_Button_04 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_04, click=self.ui.SettingLoad_04)
-        self.ui.sj_load_Button_05 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_05, click=self.ui.SettingLoad_05)
-        self.ui.sj_load_Button_06 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_06, click=self.ui.SettingLoad_06)
-        self.ui.sj_load_Button_07 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_07, click=self.ui.SettingLoad_07)
-        self.ui.sj_load_Button_08 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_08, click=self.ui.SettingLoad_08)
+        self.ui.sj_load_Button_01 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_01, click=lambda: setting_load_01(self.ui))
+        self.ui.sj_load_Button_02 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_02, click=lambda: setting_load_02(self.ui))
+        self.ui.sj_load_Button_03 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_03, click=lambda: setting_load_03(self.ui))
+        self.ui.sj_load_Button_04 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_04, click=lambda: setting_load_04(self.ui))
+        self.ui.sj_load_Button_05 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_05, click=lambda: setting_load_05(self.ui))
+        self.ui.sj_load_Button_06 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_06, click=lambda: setting_load_06(self.ui))
+        self.ui.sj_load_Button_07 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_07, click=lambda: setting_load_07(self.ui))
+        self.ui.sj_load_Button_08 = self.wc.setPushbutton('불러오기', parent=self.ui.sj_bs_groupBox_08, click=lambda: setting_load_08(self.ui))
 
-        self.ui.sj_save_Button_01 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_01, click=self.ui.SettingSave_01)
-        self.ui.sj_save_Button_02 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_02, click=self.ui.SettingSave_02)
-        self.ui.sj_save_Button_03 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_03, click=self.ui.SettingSave_03)
-        self.ui.sj_save_Button_04 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_04, click=self.ui.SettingSave_04)
-        self.ui.sj_save_Button_05 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_05, click=self.ui.SettingSave_05)
-        self.ui.sj_save_Button_06 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_06, click=self.ui.SettingSave_06)
-        self.ui.sj_save_Button_07 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_07, click=self.ui.SettingSave_07)
-        self.ui.sj_save_Button_08 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_08, click=self.ui.SettingSave_08)
+        self.ui.sj_save_Button_01 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_01, click=lambda: setting_save_01(self.ui))
+        self.ui.sj_save_Button_02 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_02, click=lambda: setting_save_02(self.ui))
+        self.ui.sj_save_Button_03 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_03, click=lambda: setting_save_03(self.ui))
+        self.ui.sj_save_Button_04 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_04, click=lambda: setting_save_04(self.ui))
+        self.ui.sj_save_Button_05 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_05, click=lambda: setting_save_05(self.ui))
+        self.ui.sj_save_Button_06 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_06, click=lambda: setting_save_06(self.ui))
+        self.ui.sj_save_Button_07 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_07, click=lambda: setting_save_07(self.ui))
+        self.ui.sj_save_Button_08 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_08, click=lambda: setting_save_08(self.ui))
 
-        self.ui.sj_etc_pButton_01 = self.wc.setPushbutton('계정 텍스트 보기', parent=self.ui.ssd_tab, click=self.ui.SettingAccView)
-        self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_05, click=self.ui.SettingStockElapsedTickNumber)
-        self.ui.sj_etc_pButton_03 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_06, click=self.ui.SettingCoinElapsedTickNumber)
+        self.ui.sj_etc_pButton_01 = self.wc.setPushbutton('계정 텍스트 보기', parent=self.ui.ssd_tab, click=lambda: setting_acc_view(self.ui))
+        self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_05, click=lambda: setting_stock_elapsed_tick_number(self.ui))
+        self.ui.sj_etc_pButton_03 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_06, click=lambda: setting_coin_elapsed_tick_number(self.ui))
 
         self.ui.set_tapWidgett_01.setGeometry(7, 10, 1341, 742)
         self.ui.sj_set_labelll_01.setGeometry(847, 10, 50, 20)

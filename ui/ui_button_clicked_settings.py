@@ -4,10 +4,12 @@ import random
 import shutil
 import subprocess
 from PyQt5.QtCore import QDate
-from PyQt5.QtWidgets import QMessageBox, QLineEdit
+from ui.ui_etc import update_dictset
 from ui.set_style import style_bc_bt
 from ui.set_text import famous_saying
 from utility.setting_base import DB_PATH, ui_num
+from PyQt5.QtWidgets import QMessageBox, QLineEdit
+from ui.ui_button_clicked_dialog_backengine import backtest_engine_kill
 from utility.static import de_text, en_text, qtest_qwait, error_decorator
 
 
@@ -277,7 +279,7 @@ def setting_save_01(ui):
         for column, value in zip(columns, values):
             ui.dict_set[column] = value
 
-        ui.UpdateDictSet()
+        update_dictset(ui)
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
         if '키움증권' in ui.dict_set['증권사']:
@@ -454,7 +456,7 @@ def setting_save_05(ui):
                 for column, value in zip(columns, values):
                     ui.dict_set[column] = value
 
-                ui.UpdateDictSet()
+                update_dictset(ui)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -513,7 +515,7 @@ def setting_save_06(ui):
                 for column, value in zip(columns, values):
                     ui.dict_set[column] = value
 
-                ui.UpdateDictSet()
+                update_dictset(ui)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -571,11 +573,11 @@ def setting_save_07(ui):
             for column, value in zip(columns, values):
                 ui.dict_set[column] = value
 
-            ui.UpdateDictSet()
+            update_dictset(ui)
             QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
             if pre_bbg != 백테주문관리적용:
-                ui.BacktestEngineKill()
+                backtest_engine_kill(ui)
 
 
 @error_decorator
@@ -603,7 +605,7 @@ def setting_save_08(ui):
 
         ui.dict_set['시리얼키'] = 시리얼키_
 
-        ui.UpdateDictSet()
+        update_dictset(ui)
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -762,66 +764,66 @@ def setting_order_load_03(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coinbuyorder').set_index('index')
 
     if len(df) > 0:
-        ui.sc_buyy_checkBox_01.setChecked(True) if df['코인매수주문구분'][0] == '시장가' else ui.sc_buyy_checkBox_01.setChecked(False)
-        ui.sc_buyy_checkBox_02.setChecked(True) if df['코인매수주문구분'][0] == '지정가' else ui.sc_buyy_checkBox_02.setChecked(False)
-        ui.sc_buyy_checkBox_03.setChecked(True) if df['코인매수주문구분'][0] == '지정가IOC' else ui.sc_buyy_checkBox_03.setChecked(False)
-        ui.sc_buyy_checkBox_04.setChecked(True) if df['코인매수주문구분'][0] == '지정가FOK' else ui.sc_buyy_checkBox_04.setChecked(False)
-        ui.sc_buyy_lineEdit_01.setText(str(df['코인매수분할횟수'][0]))
-        ui.sc_buyy_checkBox_05.setChecked(True) if df['코인매수분할방법'][0] == 1 else ui.sc_buyy_checkBox_05.setChecked(False)
-        ui.sc_buyy_checkBox_06.setChecked(True) if df['코인매수분할방법'][0] == 2 else ui.sc_buyy_checkBox_06.setChecked(False)
-        ui.sc_buyy_checkBox_07.setChecked(True) if df['코인매수분할방법'][0] == 3 else ui.sc_buyy_checkBox_07.setChecked(False)
-        ui.sc_buyy_checkBox_08.setChecked(True) if df['코인매수분할시그널'][0] else ui.sc_buyy_checkBox_08.setChecked(False)
-        ui.sc_buyy_checkBox_09.setChecked(True) if df['코인매수분할하방'][0] else ui.sc_buyy_checkBox_09.setChecked(False)
-        ui.sc_buyy_checkBox_10.setChecked(True) if df['코인매수분할상방'][0] else ui.sc_buyy_checkBox_10.setChecked(False)
-        ui.sc_buyy_lineEdit_02.setText(str(df['코인매수분할하방수익률'][0]))
-        ui.sc_buyy_lineEdit_03.setText(str(df['코인매수분할상방수익률'][0]))
-        ui.sc_buyy_checkBox_11.setChecked(True) if df['코인매수분할고정수익률'][0] else ui.sc_buyy_checkBox_11.setChecked(False)
-        ui.sc_buyy_comboBox_01.setCurrentText(str(df['코인매수지정가기준가격'][0]))
-        ui.sc_buyy_comboBox_02.setCurrentText(str(df['코인매수지정가호가번호'][0]))
-        ui.sc_buyy_comboBox_03.setCurrentText(str(df['코인매수시장가잔량범위'][0]))
-        ui.sc_buyy_checkBox_12.setChecked(True) if df['코인매수취소관심이탈'][0] else ui.sc_buyy_checkBox_12.setChecked(False)
-        ui.sc_buyy_checkBox_13.setChecked(True) if df['코인매수취소매도시그널'][0] else ui.sc_buyy_checkBox_13.setChecked(False)
-        ui.sc_buyy_checkBox_14.setChecked(True) if df['코인매수취소시간'][0] else ui.sc_buyy_checkBox_14.setChecked(False)
-        ui.sc_buyy_lineEdit_04.setText(str(df['코인매수취소시간초'][0]))
-        ui.sc_buyy_checkBox_15.setChecked(True) if df['코인매수금지블랙리스트'][0] else ui.sc_buyy_checkBox_15.setChecked(False)
-        ui.sc_buyy_checkBox_16.setChecked(True) if df['코인매수금지200원이하'][0] else ui.sc_buyy_checkBox_16.setChecked(False)
-        ui.sc_buyy_checkBox_17.setChecked(True) if df['코인매수금지손절횟수'][0] else ui.sc_buyy_checkBox_17.setChecked(False)
-        ui.sc_buyy_lineEdit_05.setText(str(df['코인매수금지손절횟수값'][0]))
-        ui.sc_buyy_checkBox_18.setChecked(True) if df['코인매수금지거래횟수'][0] else ui.sc_buyy_checkBox_18.setChecked(False)
-        ui.sc_buyy_lineEdit_06.setText(str(df['코인매수금지거래횟수값'][0]))
-        ui.sc_buyy_checkBox_19.setChecked(True) if df['코인매수금지시간'][0] else ui.sc_buyy_checkBox_19.setChecked(False)
-        ui.sc_buyy_lineEdit_07.setText(str(df['코인매수금지시작시간'][0]))
-        ui.sc_buyy_lineEdit_08.setText(str(df['코인매수금지종료시간'][0]))
-        ui.sc_buyy_checkBox_20.setChecked(True) if df['코인매수금지간격'][0] else ui.sc_buyy_checkBox_20.setChecked(False)
-        ui.sc_buyy_lineEdit_09.setText(str(df['코인매수금지간격초'][0]))
-        ui.sc_buyy_checkBox_21.setChecked(True) if df['코인매수금지손절간격'][0] else ui.sc_buyy_checkBox_21.setChecked(False)
-        ui.sc_buyy_lineEdit_10.setText(str(df['코인매수금지손절간격초'][0]))
-        ui.sc_buyy_lineEdit_11.setText(str(df['코인매수정정횟수'][0]))
-        ui.sc_buyy_comboBox_04.setCurrentText(str(df['코인매수정정호가차이'][0]))
-        ui.sc_buyy_comboBox_05.setCurrentText(str(df['코인매수정정호가'][0]))
-        ui.sc_bj_checkBoxxx_01.setChecked(False)
-        ui.sc_bj_checkBoxxx_02.setChecked(False)
-        ui.sc_bj_checkBoxxx_03.setChecked(False)
-        ui.sc_bj_checkBoxxx_04.setChecked(False)
-        ui.sc_bj_checkBoxxx_05.setChecked(False)
-        ui.sc_bj_checkBoxxx_06.setChecked(False)
+        ui.cs_buyy_checkBox_01.setChecked(True) if df['코인매수주문구분'][0] == '시장가' else ui.cs_buyy_checkBox_01.setChecked(False)
+        ui.cs_buyy_checkBox_02.setChecked(True) if df['코인매수주문구분'][0] == '지정가' else ui.cs_buyy_checkBox_02.setChecked(False)
+        ui.cs_buyy_checkBox_03.setChecked(True) if df['코인매수주문구분'][0] == '지정가IOC' else ui.cs_buyy_checkBox_03.setChecked(False)
+        ui.cs_buyy_checkBox_04.setChecked(True) if df['코인매수주문구분'][0] == '지정가FOK' else ui.cs_buyy_checkBox_04.setChecked(False)
+        ui.cs_buyy_lineEdit_01.setText(str(df['코인매수분할횟수'][0]))
+        ui.cs_buyy_checkBox_05.setChecked(True) if df['코인매수분할방법'][0] == 1 else ui.cs_buyy_checkBox_05.setChecked(False)
+        ui.cs_buyy_checkBox_06.setChecked(True) if df['코인매수분할방법'][0] == 2 else ui.cs_buyy_checkBox_06.setChecked(False)
+        ui.cs_buyy_checkBox_07.setChecked(True) if df['코인매수분할방법'][0] == 3 else ui.cs_buyy_checkBox_07.setChecked(False)
+        ui.cs_buyy_checkBox_08.setChecked(True) if df['코인매수분할시그널'][0] else ui.cs_buyy_checkBox_08.setChecked(False)
+        ui.cs_buyy_checkBox_09.setChecked(True) if df['코인매수분할하방'][0] else ui.cs_buyy_checkBox_09.setChecked(False)
+        ui.cs_buyy_checkBox_10.setChecked(True) if df['코인매수분할상방'][0] else ui.cs_buyy_checkBox_10.setChecked(False)
+        ui.cs_buyy_lineEdit_02.setText(str(df['코인매수분할하방수익률'][0]))
+        ui.cs_buyy_lineEdit_03.setText(str(df['코인매수분할상방수익률'][0]))
+        ui.cs_buyy_checkBox_11.setChecked(True) if df['코인매수분할고정수익률'][0] else ui.cs_buyy_checkBox_11.setChecked(False)
+        ui.cs_buyy_comboBox_01.setCurrentText(str(df['코인매수지정가기준가격'][0]))
+        ui.cs_buyy_comboBox_02.setCurrentText(str(df['코인매수지정가호가번호'][0]))
+        ui.cs_buyy_comboBox_03.setCurrentText(str(df['코인매수시장가잔량범위'][0]))
+        ui.cs_buyy_checkBox_12.setChecked(True) if df['코인매수취소관심이탈'][0] else ui.cs_buyy_checkBox_12.setChecked(False)
+        ui.cs_buyy_checkBox_13.setChecked(True) if df['코인매수취소매도시그널'][0] else ui.cs_buyy_checkBox_13.setChecked(False)
+        ui.cs_buyy_checkBox_14.setChecked(True) if df['코인매수취소시간'][0] else ui.cs_buyy_checkBox_14.setChecked(False)
+        ui.cs_buyy_lineEdit_04.setText(str(df['코인매수취소시간초'][0]))
+        ui.cs_buyy_checkBox_15.setChecked(True) if df['코인매수금지블랙리스트'][0] else ui.cs_buyy_checkBox_15.setChecked(False)
+        ui.cs_buyy_checkBox_16.setChecked(True) if df['코인매수금지200원이하'][0] else ui.cs_buyy_checkBox_16.setChecked(False)
+        ui.cs_buyy_checkBox_17.setChecked(True) if df['코인매수금지손절횟수'][0] else ui.cs_buyy_checkBox_17.setChecked(False)
+        ui.cs_buyy_lineEdit_05.setText(str(df['코인매수금지손절횟수값'][0]))
+        ui.cs_buyy_checkBox_18.setChecked(True) if df['코인매수금지거래횟수'][0] else ui.cs_buyy_checkBox_18.setChecked(False)
+        ui.cs_buyy_lineEdit_06.setText(str(df['코인매수금지거래횟수값'][0]))
+        ui.cs_buyy_checkBox_19.setChecked(True) if df['코인매수금지시간'][0] else ui.cs_buyy_checkBox_19.setChecked(False)
+        ui.cs_buyy_lineEdit_07.setText(str(df['코인매수금지시작시간'][0]))
+        ui.cs_buyy_lineEdit_08.setText(str(df['코인매수금지종료시간'][0]))
+        ui.cs_buyy_checkBox_20.setChecked(True) if df['코인매수금지간격'][0] else ui.cs_buyy_checkBox_20.setChecked(False)
+        ui.cs_buyy_lineEdit_09.setText(str(df['코인매수금지간격초'][0]))
+        ui.cs_buyy_checkBox_21.setChecked(True) if df['코인매수금지손절간격'][0] else ui.cs_buyy_checkBox_21.setChecked(False)
+        ui.cs_buyy_lineEdit_10.setText(str(df['코인매수금지손절간격초'][0]))
+        ui.cs_buyy_lineEdit_11.setText(str(df['코인매수정정횟수'][0]))
+        ui.cs_buyy_comboBox_04.setCurrentText(str(df['코인매수정정호가차이'][0]))
+        ui.cs_buyy_comboBox_05.setCurrentText(str(df['코인매수정정호가'][0]))
+        ui.cs_bj_checkBoxxx_01.setChecked(False)
+        ui.cs_bj_checkBoxxx_02.setChecked(False)
+        ui.cs_bj_checkBoxxx_03.setChecked(False)
+        ui.cs_bj_checkBoxxx_04.setChecked(False)
+        ui.cs_bj_checkBoxxx_05.setChecked(False)
+        ui.cs_bj_checkBoxxx_06.setChecked(False)
         bjjj_list = df['코인비중조절'][0]
         bjjj_list = bjjj_list.split(';')
-        if bjjj_list[0] == '0':   ui.sc_bj_checkBoxxx_01.setChecked(True)
-        elif bjjj_list[0] == '1': ui.sc_bj_checkBoxxx_02.setChecked(True)
-        elif bjjj_list[0] == '2': ui.sc_bj_checkBoxxx_03.setChecked(True)
-        elif bjjj_list[0] == '3': ui.sc_bj_checkBoxxx_04.setChecked(True)
-        elif bjjj_list[0] == '4': ui.sc_bj_checkBoxxx_05.setChecked(True)
-        elif bjjj_list[0] == '5': ui.sc_bj_checkBoxxx_06.setChecked(True)
-        ui.sc_bj_lineEdittt_01.setText(bjjj_list[1])
-        ui.sc_bj_lineEdittt_02.setText(bjjj_list[2])
-        ui.sc_bj_lineEdittt_03.setText(bjjj_list[3])
-        ui.sc_bj_lineEdittt_04.setText(bjjj_list[4])
-        ui.sc_bj_lineEdittt_05.setText(bjjj_list[5])
-        ui.sc_bj_lineEdittt_06.setText(bjjj_list[6])
-        ui.sc_bj_lineEdittt_07.setText(bjjj_list[7])
-        ui.sc_bj_lineEdittt_08.setText(bjjj_list[8])
-        ui.sc_bj_lineEdittt_09.setText(bjjj_list[9])
+        if bjjj_list[0] == '0':   ui.cs_bj_checkBoxxx_01.setChecked(True)
+        elif bjjj_list[0] == '1': ui.cs_bj_checkBoxxx_02.setChecked(True)
+        elif bjjj_list[0] == '2': ui.cs_bj_checkBoxxx_03.setChecked(True)
+        elif bjjj_list[0] == '3': ui.cs_bj_checkBoxxx_04.setChecked(True)
+        elif bjjj_list[0] == '4': ui.cs_bj_checkBoxxx_05.setChecked(True)
+        elif bjjj_list[0] == '5': ui.cs_bj_checkBoxxx_06.setChecked(True)
+        ui.cs_bj_lineEdittt_01.setText(bjjj_list[1])
+        ui.cs_bj_lineEdittt_02.setText(bjjj_list[2])
+        ui.cs_bj_lineEdittt_03.setText(bjjj_list[3])
+        ui.cs_bj_lineEdittt_04.setText(bjjj_list[4])
+        ui.cs_bj_lineEdittt_05.setText(bjjj_list[5])
+        ui.cs_bj_lineEdittt_06.setText(bjjj_list[6])
+        ui.cs_bj_lineEdittt_07.setText(bjjj_list[7])
+        ui.cs_bj_lineEdittt_08.setText(bjjj_list[8])
+        ui.cs_bj_lineEdittt_09.setText(bjjj_list[9])
     else:
         QMessageBox.critical(ui, '오류 알림', '주문관리 코인매수 설정값이\n존재하지 않습니다.\n')
 
@@ -831,44 +833,44 @@ def setting_order_load_04(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM coinsellorder').set_index('index')
 
     if len(df) > 0:
-        ui.sc_sell_checkBox_01.setChecked(True) if df['코인매도주문구분'][0] == '시장가' else ui.sc_sell_checkBox_01.setChecked(False)
-        ui.sc_sell_checkBox_02.setChecked(True) if df['코인매도주문구분'][0] == '지정가' else ui.sc_sell_checkBox_02.setChecked(False)
-        ui.sc_sell_checkBox_03.setChecked(True) if df['코인매도주문구분'][0] == '지정가IOC' else ui.sc_sell_checkBox_03.setChecked(False)
-        ui.sc_sell_checkBox_04.setChecked(True) if df['코인매도주문구분'][0] == '지정가FOK' else ui.sc_sell_checkBox_04.setChecked(False)
-        ui.sc_sell_lineEdit_01.setText(str(df['코인매도분할횟수'][0]))
-        ui.sc_sell_checkBox_05.setChecked(True) if df['코인매도분할방법'][0] == 1 else ui.sc_sell_checkBox_04.setChecked(False)
-        ui.sc_sell_checkBox_06.setChecked(True) if df['코인매도분할방법'][0] == 2 else ui.sc_sell_checkBox_06.setChecked(False)
-        ui.sc_sell_checkBox_07.setChecked(True) if df['코인매도분할방법'][0] == 3 else ui.sc_sell_checkBox_07.setChecked(False)
-        ui.sc_sell_checkBox_08.setChecked(True) if df['코인매도분할시그널'][0] else ui.sc_sell_checkBox_08.setChecked(False)
-        ui.sc_sell_checkBox_09.setChecked(True) if df['코인매도분할하방'][0] else ui.sc_sell_checkBox_09.setChecked(False)
-        ui.sc_sell_checkBox_10.setChecked(True) if df['코인매도분할상방'][0] else ui.sc_sell_checkBox_10.setChecked(False)
-        ui.sc_sell_lineEdit_02.setText(str(df['코인매도분할하방수익률'][0]))
-        ui.sc_sell_lineEdit_03.setText(str(df['코인매도분할상방수익률'][0]))
-        ui.sc_sell_comboBox_01.setCurrentText(str(df['코인매도지정가기준가격'][0]))
-        ui.sc_sell_comboBox_02.setCurrentText(str(df['코인매도지정가호가번호'][0]))
-        ui.sc_sell_comboBox_03.setCurrentText(str(df['코인매도시장가잔량범위'][0]))
-        ui.sc_sell_checkBox_11.setChecked(True) if df['코인매도취소관심진입'][0] else ui.sc_sell_checkBox_11.setChecked(False)
-        ui.sc_sell_checkBox_12.setChecked(True) if df['코인매도취소매수시그널'][0] else ui.sc_sell_checkBox_12.setChecked(False)
-        ui.sc_sell_checkBox_13.setChecked(True) if df['코인매도취소시간'][0] else ui.sc_sell_checkBox_13.setChecked(False)
-        ui.sc_sell_lineEdit_04.setText(str(df['코인매도취소시간초'][0]))
-        ui.sc_sell_checkBox_14.setChecked(True) if df['코인매도금지매수횟수'][0] else ui.sc_sell_checkBox_14.setChecked(False)
-        ui.sc_sell_lineEdit_05.setText(str(df['코인매도금지매수횟수값'][0]))
-        ui.sc_sell_checkBox_15.setChecked(True) if df['코인매도금지시간'][0] else ui.sc_sell_checkBox_15.setChecked(False)
-        ui.sc_sell_lineEdit_06.setText(str(df['코인매도금지시작시간'][0]))
-        ui.sc_sell_lineEdit_07.setText(str(df['코인매도금지종료시간'][0]))
-        ui.sc_sell_checkBox_16.setChecked(True) if df['코인매도금지간격'][0] else ui.sc_sell_checkBox_16.setChecked(False)
-        ui.sc_sell_lineEdit_08.setText(str(df['코인매도금지간격초'][0]))
-        ui.sc_sell_lineEdit_09.setText(str(df['코인매도정정횟수'][0]))
-        ui.sc_sell_comboBox_04.setCurrentText(str(df['코인매도정정호가차이'][0]))
-        ui.sc_sell_comboBox_05.setCurrentText(str(df['코인매도정정호가'][0]))
-        ui.sc_sell_checkBox_17.setChecked(True) if df['코인매도익절수익률청산'][0] else ui.sc_sell_checkBox_14.setChecked(False)
-        ui.sc_sell_lineEdit_10.setText(str(df['코인매도익절수익률'][0]))
-        ui.sc_sell_checkBox_18.setChecked(True) if df['코인매도익절수익금청산'][0] else ui.sc_sell_checkBox_15.setChecked(False)
-        ui.sc_sell_lineEdit_11.setText(str(df['코인매도익절수익금'][0]))
-        ui.sc_sell_checkBox_19.setChecked(True) if df['코인매도손절수익률청산'][0] else ui.sc_sell_checkBox_14.setChecked(False)
-        ui.sc_sell_lineEdit_12.setText(str(df['코인매도손절수익률'][0]))
-        ui.sc_sell_checkBox_20.setChecked(True) if df['코인매도손절수익금청산'][0] else ui.sc_sell_checkBox_15.setChecked(False)
-        ui.sc_sell_lineEdit_13.setText(str(df['코인매도손절수익금'][0]))
+        ui.cs_sell_checkBox_01.setChecked(True) if df['코인매도주문구분'][0] == '시장가' else ui.cs_sell_checkBox_01.setChecked(False)
+        ui.cs_sell_checkBox_02.setChecked(True) if df['코인매도주문구분'][0] == '지정가' else ui.cs_sell_checkBox_02.setChecked(False)
+        ui.cs_sell_checkBox_03.setChecked(True) if df['코인매도주문구분'][0] == '지정가IOC' else ui.cs_sell_checkBox_03.setChecked(False)
+        ui.cs_sell_checkBox_04.setChecked(True) if df['코인매도주문구분'][0] == '지정가FOK' else ui.cs_sell_checkBox_04.setChecked(False)
+        ui.cs_sell_lineEdit_01.setText(str(df['코인매도분할횟수'][0]))
+        ui.cs_sell_checkBox_05.setChecked(True) if df['코인매도분할방법'][0] == 1 else ui.cs_sell_checkBox_04.setChecked(False)
+        ui.cs_sell_checkBox_06.setChecked(True) if df['코인매도분할방법'][0] == 2 else ui.cs_sell_checkBox_06.setChecked(False)
+        ui.cs_sell_checkBox_07.setChecked(True) if df['코인매도분할방법'][0] == 3 else ui.cs_sell_checkBox_07.setChecked(False)
+        ui.cs_sell_checkBox_08.setChecked(True) if df['코인매도분할시그널'][0] else ui.cs_sell_checkBox_08.setChecked(False)
+        ui.cs_sell_checkBox_09.setChecked(True) if df['코인매도분할하방'][0] else ui.cs_sell_checkBox_09.setChecked(False)
+        ui.cs_sell_checkBox_10.setChecked(True) if df['코인매도분할상방'][0] else ui.cs_sell_checkBox_10.setChecked(False)
+        ui.cs_sell_lineEdit_02.setText(str(df['코인매도분할하방수익률'][0]))
+        ui.cs_sell_lineEdit_03.setText(str(df['코인매도분할상방수익률'][0]))
+        ui.cs_sell_comboBox_01.setCurrentText(str(df['코인매도지정가기준가격'][0]))
+        ui.cs_sell_comboBox_02.setCurrentText(str(df['코인매도지정가호가번호'][0]))
+        ui.cs_sell_comboBox_03.setCurrentText(str(df['코인매도시장가잔량범위'][0]))
+        ui.cs_sell_checkBox_11.setChecked(True) if df['코인매도취소관심진입'][0] else ui.cs_sell_checkBox_11.setChecked(False)
+        ui.cs_sell_checkBox_12.setChecked(True) if df['코인매도취소매수시그널'][0] else ui.cs_sell_checkBox_12.setChecked(False)
+        ui.cs_sell_checkBox_13.setChecked(True) if df['코인매도취소시간'][0] else ui.cs_sell_checkBox_13.setChecked(False)
+        ui.cs_sell_lineEdit_04.setText(str(df['코인매도취소시간초'][0]))
+        ui.cs_sell_checkBox_14.setChecked(True) if df['코인매도금지매수횟수'][0] else ui.cs_sell_checkBox_14.setChecked(False)
+        ui.cs_sell_lineEdit_05.setText(str(df['코인매도금지매수횟수값'][0]))
+        ui.cs_sell_checkBox_15.setChecked(True) if df['코인매도금지시간'][0] else ui.cs_sell_checkBox_15.setChecked(False)
+        ui.cs_sell_lineEdit_06.setText(str(df['코인매도금지시작시간'][0]))
+        ui.cs_sell_lineEdit_07.setText(str(df['코인매도금지종료시간'][0]))
+        ui.cs_sell_checkBox_16.setChecked(True) if df['코인매도금지간격'][0] else ui.cs_sell_checkBox_16.setChecked(False)
+        ui.cs_sell_lineEdit_08.setText(str(df['코인매도금지간격초'][0]))
+        ui.cs_sell_lineEdit_09.setText(str(df['코인매도정정횟수'][0]))
+        ui.cs_sell_comboBox_04.setCurrentText(str(df['코인매도정정호가차이'][0]))
+        ui.cs_sell_comboBox_05.setCurrentText(str(df['코인매도정정호가'][0]))
+        ui.cs_sell_checkBox_17.setChecked(True) if df['코인매도익절수익률청산'][0] else ui.cs_sell_checkBox_14.setChecked(False)
+        ui.cs_sell_lineEdit_10.setText(str(df['코인매도익절수익률'][0]))
+        ui.cs_sell_checkBox_18.setChecked(True) if df['코인매도익절수익금청산'][0] else ui.cs_sell_checkBox_15.setChecked(False)
+        ui.cs_sell_lineEdit_11.setText(str(df['코인매도익절수익금'][0]))
+        ui.cs_sell_checkBox_19.setChecked(True) if df['코인매도손절수익률청산'][0] else ui.cs_sell_checkBox_14.setChecked(False)
+        ui.cs_sell_lineEdit_12.setText(str(df['코인매도손절수익률'][0]))
+        ui.cs_sell_checkBox_20.setChecked(True) if df['코인매도손절수익금청산'][0] else ui.cs_sell_checkBox_15.setChecked(False)
+        ui.cs_sell_lineEdit_13.setText(str(df['코인매도손절수익금'][0]))
     else:
         QMessageBox.critical(ui, '오류 알림', '주문관리 코인매도 설정값이\n존재하지 않습니다.\n')
 
@@ -1013,7 +1015,7 @@ def setting_order_save_01(ui):
 
         ui.dict_set['주식비중조절'] = 주식비중조절_
 
-        ui.UpdateDictSet()
+        update_dictset(ui)
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -1127,84 +1129,84 @@ def setting_order_save_02(ui):
         for column, value in zip(columns, values):
             ui.dict_set[column] = value
 
-        ui.UpdateDictSet()
+        update_dictset(ui)
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
 def setting_order_save_03(ui):
     코인매수주문구분 = ''
-    if ui.sc_buyy_checkBox_01.isChecked(): 코인매수주문구분 = '시장가'
-    if ui.sc_buyy_checkBox_02.isChecked(): 코인매수주문구분 = '지정가'
-    if ui.sc_buyy_checkBox_03.isChecked(): 코인매수주문구분 = '지정가IOC'
-    if ui.sc_buyy_checkBox_04.isChecked(): 코인매수주문구분 = '지정가FOK'
-    코인매수분할횟수 = ui.sc_buyy_lineEdit_01.text()
+    if ui.cs_buyy_checkBox_01.isChecked(): 코인매수주문구분 = '시장가'
+    if ui.cs_buyy_checkBox_02.isChecked(): 코인매수주문구분 = '지정가'
+    if ui.cs_buyy_checkBox_03.isChecked(): 코인매수주문구분 = '지정가IOC'
+    if ui.cs_buyy_checkBox_04.isChecked(): 코인매수주문구분 = '지정가FOK'
+    코인매수분할횟수 = ui.cs_buyy_lineEdit_01.text()
     코인매수분할방법 = 0
-    if ui.sc_buyy_checkBox_05.isChecked(): 코인매수분할방법 = 1
-    if ui.sc_buyy_checkBox_06.isChecked(): 코인매수분할방법 = 2
-    if ui.sc_buyy_checkBox_07.isChecked(): 코인매수분할방법 = 3
-    코인매수분할시그널 = 1 if ui.sc_buyy_checkBox_08.isChecked() else 0
-    코인매수분할하방 = 1 if ui.sc_buyy_checkBox_09.isChecked() else 0
-    코인매수분할상방 = 1 if ui.sc_buyy_checkBox_10.isChecked() else 0
-    코인매수분할하방수익률 = ui.sc_buyy_lineEdit_02.text()
-    코인매수분할상방수익률 = ui.sc_buyy_lineEdit_03.text()
-    코인매수지정가기준가격 = ui.sc_buyy_comboBox_01.currentText()
-    코인매수지정가호가번호 = ui.sc_buyy_comboBox_02.currentText()
-    코인매수시장가잔량범위 = ui.sc_buyy_comboBox_03.currentText()
-    코인매수분할고정수익률 = 1 if ui.sc_buyy_checkBox_11.isChecked() else 0
-    코인매수취소관심이탈 = 1 if ui.sc_buyy_checkBox_12.isChecked() else 0
-    코인매수취소매도시그널 = 1 if ui.sc_buyy_checkBox_13.isChecked() else 0
-    코인매수취소시간 = 1 if ui.sc_buyy_checkBox_14.isChecked() else 0
-    코인매수취소시간초 = ui.sc_buyy_lineEdit_04.text()
-    코인매수금지블랙리스트 = 1 if ui.sc_buyy_checkBox_15.isChecked() else 0
-    코인매수금지200원이하 = 1 if ui.sc_buyy_checkBox_16.isChecked() else 0
-    코인매수금지손절횟수 = 1 if ui.sc_buyy_checkBox_17.isChecked() else 0
-    코인매수금지손절횟수값 = ui.sc_buyy_lineEdit_05.text()
-    코인매수금지거래횟수 = 1 if ui.sc_buyy_checkBox_18.isChecked() else 0
-    코인매수금지거래횟수값 = ui.sc_buyy_lineEdit_06.text()
-    코인매수금지시간 = 1 if ui.sc_buyy_checkBox_19.isChecked() else 0
-    코인매수금지시작시간 = ui.sc_buyy_lineEdit_07.text()
-    코인매수금지종료시간 = ui.sc_buyy_lineEdit_08.text()
-    코인매수금지간격 = 1 if ui.sc_buyy_checkBox_20.isChecked() else 0
-    코인매수금지간격초 = ui.sc_buyy_lineEdit_09.text()
-    코인매수금지손절간격 = 1 if ui.sc_buyy_checkBox_21.isChecked() else 0
-    코인매수금지손절간격초 = ui.sc_buyy_lineEdit_10.text()
-    코인매수정정횟수 = ui.sc_buyy_lineEdit_11.text()
-    코인매수정정호가차이 = ui.sc_buyy_comboBox_04.currentText()
-    코인매수정정호가 = ui.sc_buyy_comboBox_05.currentText()
+    if ui.cs_buyy_checkBox_05.isChecked(): 코인매수분할방법 = 1
+    if ui.cs_buyy_checkBox_06.isChecked(): 코인매수분할방법 = 2
+    if ui.cs_buyy_checkBox_07.isChecked(): 코인매수분할방법 = 3
+    코인매수분할시그널 = 1 if ui.cs_buyy_checkBox_08.isChecked() else 0
+    코인매수분할하방 = 1 if ui.cs_buyy_checkBox_09.isChecked() else 0
+    코인매수분할상방 = 1 if ui.cs_buyy_checkBox_10.isChecked() else 0
+    코인매수분할하방수익률 = ui.cs_buyy_lineEdit_02.text()
+    코인매수분할상방수익률 = ui.cs_buyy_lineEdit_03.text()
+    코인매수지정가기준가격 = ui.cs_buyy_comboBox_01.currentText()
+    코인매수지정가호가번호 = ui.cs_buyy_comboBox_02.currentText()
+    코인매수시장가잔량범위 = ui.cs_buyy_comboBox_03.currentText()
+    코인매수분할고정수익률 = 1 if ui.cs_buyy_checkBox_11.isChecked() else 0
+    코인매수취소관심이탈 = 1 if ui.cs_buyy_checkBox_12.isChecked() else 0
+    코인매수취소매도시그널 = 1 if ui.cs_buyy_checkBox_13.isChecked() else 0
+    코인매수취소시간 = 1 if ui.cs_buyy_checkBox_14.isChecked() else 0
+    코인매수취소시간초 = ui.cs_buyy_lineEdit_04.text()
+    코인매수금지블랙리스트 = 1 if ui.cs_buyy_checkBox_15.isChecked() else 0
+    코인매수금지200원이하 = 1 if ui.cs_buyy_checkBox_16.isChecked() else 0
+    코인매수금지손절횟수 = 1 if ui.cs_buyy_checkBox_17.isChecked() else 0
+    코인매수금지손절횟수값 = ui.cs_buyy_lineEdit_05.text()
+    코인매수금지거래횟수 = 1 if ui.cs_buyy_checkBox_18.isChecked() else 0
+    코인매수금지거래횟수값 = ui.cs_buyy_lineEdit_06.text()
+    코인매수금지시간 = 1 if ui.cs_buyy_checkBox_19.isChecked() else 0
+    코인매수금지시작시간 = ui.cs_buyy_lineEdit_07.text()
+    코인매수금지종료시간 = ui.cs_buyy_lineEdit_08.text()
+    코인매수금지간격 = 1 if ui.cs_buyy_checkBox_20.isChecked() else 0
+    코인매수금지간격초 = ui.cs_buyy_lineEdit_09.text()
+    코인매수금지손절간격 = 1 if ui.cs_buyy_checkBox_21.isChecked() else 0
+    코인매수금지손절간격초 = ui.cs_buyy_lineEdit_10.text()
+    코인매수정정횟수 = ui.cs_buyy_lineEdit_11.text()
+    코인매수정정호가차이 = ui.cs_buyy_comboBox_04.currentText()
+    코인매수정정호가 = ui.cs_buyy_comboBox_05.currentText()
 
     bjjj_list = []
-    if ui.sc_bj_checkBoxxx_01.isChecked():   bjjj_list.append('0')
-    elif ui.sc_bj_checkBoxxx_02.isChecked(): bjjj_list.append('1')
-    elif ui.sc_bj_checkBoxxx_03.isChecked(): bjjj_list.append('2')
-    elif ui.sc_bj_checkBoxxx_04.isChecked(): bjjj_list.append('3')
-    elif ui.sc_bj_checkBoxxx_05.isChecked(): bjjj_list.append('4')
-    elif ui.sc_bj_checkBoxxx_06.isChecked(): bjjj_list.append('5')
+    if ui.cs_bj_checkBoxxx_01.isChecked():   bjjj_list.append('0')
+    elif ui.cs_bj_checkBoxxx_02.isChecked(): bjjj_list.append('1')
+    elif ui.cs_bj_checkBoxxx_03.isChecked(): bjjj_list.append('2')
+    elif ui.cs_bj_checkBoxxx_04.isChecked(): bjjj_list.append('3')
+    elif ui.cs_bj_checkBoxxx_05.isChecked(): bjjj_list.append('4')
+    elif ui.cs_bj_checkBoxxx_06.isChecked(): bjjj_list.append('5')
 
     save = True
-    if ui.sc_bj_lineEdittt_01.text() == '': save = False
-    if ui.sc_bj_lineEdittt_02.text() == '': save = False
-    if ui.sc_bj_lineEdittt_03.text() == '': save = False
-    if ui.sc_bj_lineEdittt_04.text() == '': save = False
-    if ui.sc_bj_lineEdittt_05.text() == '': save = False
-    if ui.sc_bj_lineEdittt_06.text() == '': save = False
-    if ui.sc_bj_lineEdittt_07.text() == '': save = False
-    if ui.sc_bj_lineEdittt_08.text() == '': save = False
-    if ui.sc_bj_lineEdittt_09.text() == '': save = False
+    if ui.cs_bj_lineEdittt_01.text() == '': save = False
+    if ui.cs_bj_lineEdittt_02.text() == '': save = False
+    if ui.cs_bj_lineEdittt_03.text() == '': save = False
+    if ui.cs_bj_lineEdittt_04.text() == '': save = False
+    if ui.cs_bj_lineEdittt_05.text() == '': save = False
+    if ui.cs_bj_lineEdittt_06.text() == '': save = False
+    if ui.cs_bj_lineEdittt_07.text() == '': save = False
+    if ui.cs_bj_lineEdittt_08.text() == '': save = False
+    if ui.cs_bj_lineEdittt_09.text() == '': save = False
 
     if not save:
         QMessageBox.critical(ui, '오류 알림', '비중조절 세부설정값이 입력되지 않았습니다.\n')
         return
 
-    bjjj_list.append(ui.sc_bj_lineEdittt_01.text())
-    bjjj_list.append(ui.sc_bj_lineEdittt_02.text())
-    bjjj_list.append(ui.sc_bj_lineEdittt_03.text())
-    bjjj_list.append(ui.sc_bj_lineEdittt_04.text())
-    bjjj_list.append(ui.sc_bj_lineEdittt_05.text())
-    bjjj_list.append(ui.sc_bj_lineEdittt_06.text())
-    bjjj_list.append(ui.sc_bj_lineEdittt_07.text())
-    bjjj_list.append(ui.sc_bj_lineEdittt_08.text())
-    bjjj_list.append(ui.sc_bj_lineEdittt_09.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_01.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_02.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_03.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_04.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_05.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_06.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_07.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_08.text())
+    bjjj_list.append(ui.cs_bj_lineEdittt_09.text())
     코인비중조절 = ';'.join(bjjj_list)
     코인비중조절_ = [float(x) for x in bjjj_list]
 
@@ -1263,52 +1265,52 @@ def setting_order_save_03(ui):
 
         ui.dict_set['코인비중조절'] = 코인비중조절_
 
-        ui.UpdateDictSet()
+        update_dictset(ui)
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator
 def setting_order_save_04(ui):
     코인매도주문구분 = ''
-    if ui.sc_sell_checkBox_01.isChecked(): 코인매도주문구분 = '시장가'
-    if ui.sc_sell_checkBox_02.isChecked(): 코인매도주문구분 = '지정가'
-    if ui.sc_sell_checkBox_03.isChecked(): 코인매도주문구분 = '시장가IOC'
-    if ui.sc_sell_checkBox_04.isChecked(): 코인매도주문구분 = '지정가FOK'
-    코인매도분할횟수 = ui.sc_sell_lineEdit_01.text()
+    if ui.cs_sell_checkBox_01.isChecked(): 코인매도주문구분 = '시장가'
+    if ui.cs_sell_checkBox_02.isChecked(): 코인매도주문구분 = '지정가'
+    if ui.cs_sell_checkBox_03.isChecked(): 코인매도주문구분 = '시장가IOC'
+    if ui.cs_sell_checkBox_04.isChecked(): 코인매도주문구분 = '지정가FOK'
+    코인매도분할횟수 = ui.cs_sell_lineEdit_01.text()
     코인매도분할방법 = 0
-    if ui.sc_sell_checkBox_05.isChecked(): 코인매도분할방법 = 1
-    if ui.sc_sell_checkBox_06.isChecked(): 코인매도분할방법 = 2
-    if ui.sc_sell_checkBox_07.isChecked(): 코인매도분할방법 = 3
-    코인매도분할시그널 = 1 if ui.sc_sell_checkBox_08.isChecked() else 0
-    코인매도분할하방 = 1 if ui.sc_sell_checkBox_09.isChecked() else 0
-    코인매도분할상방 = 1 if ui.sc_sell_checkBox_10.isChecked() else 0
-    코인매도분할하방수익률 = ui.sc_sell_lineEdit_02.text()
-    코인매도분할상방수익률 = ui.sc_sell_lineEdit_03.text()
-    코인매도지정가기준가격 = ui.sc_sell_comboBox_01.currentText()
-    코인매도지정가호가번호 = ui.sc_sell_comboBox_02.currentText()
-    코인매도시장가잔량범위 = ui.sc_sell_comboBox_03.currentText()
-    코인매도취소관심진입 = 1 if ui.sc_sell_checkBox_11.isChecked() else 0
-    코인매도취소매수시그널 = 1 if ui.sc_sell_checkBox_12.isChecked() else 0
-    코인매도취소시간 = 1 if ui.sc_sell_checkBox_13.isChecked() else 0
-    코인매도취소시간초 = ui.sc_sell_lineEdit_04.text()
-    코인매도금지매수횟수 = 1 if ui.sc_sell_checkBox_14.isChecked() else 0
-    코인매도금지매수횟수값 = ui.sc_sell_lineEdit_05.text()
-    코인매도금지시간 = 1 if ui.sc_sell_checkBox_15.isChecked() else 0
-    코인매도금지시작시간 = ui.sc_sell_lineEdit_06.text()
-    코인매도금지종료시간 = ui.sc_sell_lineEdit_07.text()
-    코인매도금지간격 = 1 if ui.sc_sell_checkBox_16.isChecked() else 0
-    코인매도금지간격초 = ui.sc_sell_lineEdit_08.text()
-    코인매도정정횟수 = ui.sc_sell_lineEdit_09.text()
-    코인매도정정호가차이 = ui.sc_sell_comboBox_04.currentText()
-    코인매도정정호가 = ui.sc_sell_comboBox_05.currentText()
-    코인매도익절수익률청산 = 1 if ui.sc_sell_checkBox_17.isChecked() else 0
-    코인매도익절수익률 = ui.sc_sell_lineEdit_10.text()
-    코인매도익절수익금청산 = 1 if ui.sc_sell_checkBox_18.isChecked() else 0
-    코인매도익절수익금 = ui.sc_sell_lineEdit_11.text()
-    코인매도손절수익률청산 = 1 if ui.sc_sell_checkBox_19.isChecked() else 0
-    코인매도손절수익률 = ui.sc_sell_lineEdit_12.text()
-    코인매도손절수익금청산 = 1 if ui.sc_sell_checkBox_20.isChecked() else 0
-    코인매도손절수익금 = ui.sc_sell_lineEdit_13.text()
+    if ui.cs_sell_checkBox_05.isChecked(): 코인매도분할방법 = 1
+    if ui.cs_sell_checkBox_06.isChecked(): 코인매도분할방법 = 2
+    if ui.cs_sell_checkBox_07.isChecked(): 코인매도분할방법 = 3
+    코인매도분할시그널 = 1 if ui.cs_sell_checkBox_08.isChecked() else 0
+    코인매도분할하방 = 1 if ui.cs_sell_checkBox_09.isChecked() else 0
+    코인매도분할상방 = 1 if ui.cs_sell_checkBox_10.isChecked() else 0
+    코인매도분할하방수익률 = ui.cs_sell_lineEdit_02.text()
+    코인매도분할상방수익률 = ui.cs_sell_lineEdit_03.text()
+    코인매도지정가기준가격 = ui.cs_sell_comboBox_01.currentText()
+    코인매도지정가호가번호 = ui.cs_sell_comboBox_02.currentText()
+    코인매도시장가잔량범위 = ui.cs_sell_comboBox_03.currentText()
+    코인매도취소관심진입 = 1 if ui.cs_sell_checkBox_11.isChecked() else 0
+    코인매도취소매수시그널 = 1 if ui.cs_sell_checkBox_12.isChecked() else 0
+    코인매도취소시간 = 1 if ui.cs_sell_checkBox_13.isChecked() else 0
+    코인매도취소시간초 = ui.cs_sell_lineEdit_04.text()
+    코인매도금지매수횟수 = 1 if ui.cs_sell_checkBox_14.isChecked() else 0
+    코인매도금지매수횟수값 = ui.cs_sell_lineEdit_05.text()
+    코인매도금지시간 = 1 if ui.cs_sell_checkBox_15.isChecked() else 0
+    코인매도금지시작시간 = ui.cs_sell_lineEdit_06.text()
+    코인매도금지종료시간 = ui.cs_sell_lineEdit_07.text()
+    코인매도금지간격 = 1 if ui.cs_sell_checkBox_16.isChecked() else 0
+    코인매도금지간격초 = ui.cs_sell_lineEdit_08.text()
+    코인매도정정횟수 = ui.cs_sell_lineEdit_09.text()
+    코인매도정정호가차이 = ui.cs_sell_comboBox_04.currentText()
+    코인매도정정호가 = ui.cs_sell_comboBox_05.currentText()
+    코인매도익절수익률청산 = 1 if ui.cs_sell_checkBox_17.isChecked() else 0
+    코인매도익절수익률 = ui.cs_sell_lineEdit_10.text()
+    코인매도익절수익금청산 = 1 if ui.cs_sell_checkBox_18.isChecked() else 0
+    코인매도익절수익금 = ui.cs_sell_lineEdit_11.text()
+    코인매도손절수익률청산 = 1 if ui.cs_sell_checkBox_19.isChecked() else 0
+    코인매도손절수익률 = ui.cs_sell_lineEdit_12.text()
+    코인매도손절수익금청산 = 1 if ui.cs_sell_checkBox_20.isChecked() else 0
+    코인매도손절수익금 = ui.cs_sell_lineEdit_13.text()
 
     if '' in (코인매도주문구분, 코인매도분할횟수, 코인매도분할하방수익률, 코인매도분할상방수익률, 코인매도취소시간초, 코인매도금지매수횟수값,
               코인매도금지시작시간, 코인매도금지종료시간, 코인매도금지간격초, 코인매도정정횟수, 코인매도익절수익률, 코인매도익절수익금,
@@ -1368,7 +1370,7 @@ def setting_order_save_04(ui):
         for column, value in zip(columns, values):
             ui.dict_set[column] = value
 
-        ui.UpdateDictSet()
+        update_dictset(ui)
         QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
@@ -1393,30 +1395,30 @@ def setting_all_app(ui):
     if ui.proc_chqs.is_alive():
         ui.queryQ.put(('설정파일변경', origin_file, copy_file))
         qtest_qwait(2)
-        ui.SettingLoad_01()
-        ui.SettingLoad_02()
-        ui.SettingLoad_03()
-        ui.SettingLoad_04()
-        ui.SettingLoad_05()
-        ui.SettingLoad_06()
-        ui.SettingLoad_07()
-        ui.SettingLoad_08()
-        ui.SettingOrderLoad_01()
-        ui.SettingOrderLoad_02()
-        ui.SettingOrderLoad_03()
-        ui.SettingOrderLoad_04()
-        ui.SettingSave_01()
-        ui.SettingSave_02()
-        ui.SettingSave_03()
-        ui.SettingSave_04()
-        ui.SettingSave_05()
-        ui.SettingSave_06()
-        ui.SettingSave_07()
-        ui.SettingSave_08()
-        ui.SettingOrderSave_01()
-        ui.SettingOrderSave_02()
-        ui.SettingOrderSave_03()
-        ui.SettingOrderSave_04()
+        setting_load_01(ui)
+        setting_load_02(ui)
+        setting_load_03(ui)
+        setting_load_04(ui)
+        setting_load_05(ui)
+        setting_load_06(ui)
+        setting_load_07(ui)
+        setting_load_08(ui)
+        setting_order_load_01(ui)
+        setting_order_load_02(ui)
+        setting_order_load_03(ui)
+        setting_order_load_04(ui)
+        setting_save_01(ui)
+        setting_save_02(ui)
+        setting_save_03(ui)
+        setting_save_04(ui)
+        setting_save_05(ui)
+        setting_save_06(ui)
+        setting_save_07(ui)
+        setting_save_08(ui)
+        setting_order_save_01(ui)
+        setting_order_save_02(ui)
+        setting_order_save_03(ui)
+        setting_order_save_04(ui)
         QMessageBox.information(ui, '모든 설정 적용 완료', random.choice(famous_saying))
 
 

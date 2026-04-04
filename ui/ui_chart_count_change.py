@@ -1,12 +1,13 @@
 
 import pyqtgraph as pg
-from ui.set_style import style_bc_bt, color_bg_bk
+from ui.ui_etc import chart_clear
 from utility.static import error_decorator
+from ui.set_style import style_bc_bt, color_bg_bk
 
 
 @error_decorator
 def chart_count_change(ui):
-    ui.ChartClear()
+    chart_clear(ui)
     ui.ctpg = {}
     ui.ctpg_cvb = {}
     if ui.ct_pushButtonnn_05.text() == 'CHART I':

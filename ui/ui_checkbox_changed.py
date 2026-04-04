@@ -1,8 +1,9 @@
 
 from PyQt5.QtCore import Qt
 from ui.set_widget import BounceButton
-from PyQt5.QtWidgets import QPushButton, QMessageBox
 from utility.static import error_decorator
+from PyQt5.QtWidgets import QPushButton, QMessageBox
+from ui.ui_process_alive import coin_trader_process_alive
 
 
 @error_decorator
@@ -88,7 +89,7 @@ def checkbox_changed_07(ui, state):
 
 @error_decorator
 def checkbox_changed_08(ui, state):
-    if ui.focusWidget().__class__ not in (QPushButton, BounceButton) and state != Qt.Checked and ui.CoinTraderProcessAlive():
+    if ui.focusWidget().__class__ not in (QPushButton, BounceButton) and state != Qt.Checked and coin_trader_process_alive(ui):
         ui.sj_coin_cheBox_01.nextCheckState()
         QMessageBox.critical(ui, '오류 알림', '트레이더 실행 중에는 모의모드를 해제할 수 없습니다.\n')
 
@@ -237,14 +238,14 @@ def cbcheckbox_changed_01(ui, state):
                 if widget.isChecked():
                     widget.nextCheckState()
     if ui.dict_set['거래소'] == '업비트':
-        if ui.sc_buyy_checkBox_03.isChecked() or ui.sc_buyy_checkBox_04.isChecked():
-            if ui.sc_buyy_checkBox_03.isChecked():
-                ui.sc_buyy_checkBox_03.nextCheckState()
+        if ui.cs_buyy_checkBox_03.isChecked() or ui.cs_buyy_checkBox_04.isChecked():
+            if ui.cs_buyy_checkBox_03.isChecked():
+                ui.cs_buyy_checkBox_03.nextCheckState()
             else:
-                ui.sc_buyy_checkBox_04.nextCheckState()
+                ui.cs_buyy_checkBox_04.nextCheckState()
             QMessageBox.critical(ui, '오류 알림', '업비트는 해당주문유형을 사용할 수 없습니다.\n')
-            ui.sc_buyy_checkBox_01.setFocus()
-            ui.sc_buyy_checkBox_01.setChecked(True)
+            ui.cs_buyy_checkBox_01.setFocus()
+            ui.cs_buyy_checkBox_01.setChecked(True)
 
 
 @error_decorator
@@ -264,14 +265,14 @@ def cscheckbox_changed_01(ui, state):
                 if widget.isChecked():
                     widget.nextCheckState()
     if ui.dict_set['거래소'] == '업비트':
-        if ui.sc_sell_checkBox_03.isChecked() or ui.sc_sell_checkBox_04.isChecked():
-            if ui.sc_sell_checkBox_03.isChecked():
-                ui.sc_buyy_checkBox_03.nextCheckState()
+        if ui.cs_sell_checkBox_03.isChecked() or ui.cs_sell_checkBox_04.isChecked():
+            if ui.cs_sell_checkBox_03.isChecked():
+                ui.cs_buyy_checkBox_03.nextCheckState()
             else:
-                ui.sc_sell_checkBox_04.nextCheckState()
+                ui.cs_sell_checkBox_04.nextCheckState()
             QMessageBox.critical(ui, '오류 알림', '업비트는 해당주문유형을 사용할 수 없습니다.\n')
-            ui.sc_sell_checkBox_01.setFocus()
-            ui.sc_sell_checkBox_01.setChecked(True)
+            ui.cs_sell_checkBox_01.setFocus()
+            ui.cs_sell_checkBox_01.setChecked(True)
 
 
 @error_decorator
@@ -297,7 +298,7 @@ def setting_stock_weight_cotrol_changed(ui, state):
 def setting_coin_weight_cotrol_changed(ui, state):
     if ui.focusWidget().__class__ not in (QPushButton, BounceButton):
         if state == Qt.Checked:
-            for widget in ui.sc_bj_check_button_list:
+            for widget in ui.cs_bj_check_button_list:
                 if widget != ui.focusWidget():
                     if widget.isChecked():
                         widget.nextCheckState()

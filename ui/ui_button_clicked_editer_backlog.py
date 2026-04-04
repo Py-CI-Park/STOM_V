@@ -1,8 +1,9 @@
 
 from PIL import Image
 from PyQt5.QtWidgets import QMessageBox
-from utility.setting_base import ui_num, GRAPH_PATH
 from utility.static import error_decorator
+from utility.setting_base import ui_num, GRAPH_PATH
+from ui.ui_backtest_engine import backtest_process_kill
 
 
 @error_decorator
@@ -66,6 +67,7 @@ def ssbutton_clicked_04(ui):
     if comboBox is None:
         return
 
+    # noinspection PyUnresolvedReferences
     file_name = comboBox.currentText()
 
     try:
@@ -108,7 +110,7 @@ def ssbutton_clicked_06(ui):
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        ui.BacktestProcessKill(False, False)
+        backtest_process_kill(ui, False, False)
 
 
 @error_decorator
@@ -169,6 +171,7 @@ def csbutton_clicked_04(ui):
     if comboBox is None:
         return
 
+    # noinspection PyUnresolvedReferences
     file_name = comboBox.currentText()
 
     try:
@@ -211,4 +214,4 @@ def csbutton_clicked_06(ui):
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        ui.BacktestProcessKill(True, False)
+        backtest_process_kill(ui, True, False)

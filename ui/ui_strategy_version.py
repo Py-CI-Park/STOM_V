@@ -26,14 +26,14 @@ def stock_visible_false(ui):
 
 
 def coin_visible_false(ui):
-    ui.sc_textEditttt_01.setVisible(False)
-    ui.sc_textEditttt_02.setVisible(False)
-    ui.sc_textEditttt_03.setVisible(False)
-    ui.sc_textEditttt_04.setVisible(False)
-    ui.sc_textEditttt_05.setVisible(False)
-    ui.sc_textEditttt_06.setVisible(False)
-    ui.sc_textEditttt_07.setVisible(False)
-    ui.sc_textEditttt_08.setVisible(False)
+    ui.cs_textEditttt_01.setVisible(False)
+    ui.cs_textEditttt_02.setVisible(False)
+    ui.cs_textEditttt_03.setVisible(False)
+    ui.cs_textEditttt_04.setVisible(False)
+    ui.cs_textEditttt_05.setVisible(False)
+    ui.cs_textEditttt_06.setVisible(False)
+    ui.cs_textEditttt_07.setVisible(False)
+    ui.cs_textEditttt_08.setVisible(False)
     ui.czoo_pushButon_01.setVisible(False)
     ui.czoo_pushButon_02.setVisible(False)
 
@@ -107,9 +107,11 @@ def strategy_version(ui, market, gubun1, gubun2, strategy_name):
     if market in ('stock', 'future'):
         stock_visible_false(ui)
         version_widget_list = getattr(ui, 'stock_version_list')
+        version_delete_btn  = getattr(ui, 'ss_pushButtonn_41')
     else:
         coin_visible_false(ui)
         version_widget_list = getattr(ui, 'coin_version_list')
+        version_delete_btn  = getattr(ui, 'cs_pushButtonn_41')
 
     textEdit1, textEdit2, comboBox1, comboBox2 = get_widget(ui, SVM.sorc, gubun1, gubun2)
     textEdit1.setGeometry(7, 40, 497, 1307 if ui.extend_window else 700)
@@ -117,8 +119,8 @@ def strategy_version(ui, market, gubun1, gubun2, strategy_name):
     textEdit1.setVisible(True)
     textEdit2.setVisible(True)
 
-    textEdit1.verticalScrollBar().valueChanged.connect(lambda value: sync_scroll(textEdit2, value))
-    textEdit2.verticalScrollBar().valueChanged.connect(lambda value: sync_scroll(textEdit1, value))
+    textEdit1.verticalScrollBar().valueChanged.connect(lambda value: sync_scroll(version_delete_btn, textEdit2, value))
+    textEdit2.verticalScrollBar().valueChanged.connect(lambda value: sync_scroll(version_delete_btn, textEdit1, value))
 
     for widget in version_widget_list:
         widget.setVisible(True)
@@ -135,13 +137,14 @@ def strategy_version(ui, market, gubun1, gubun2, strategy_name):
     comboBox_reload(comboBox1, comboBox2)
 
 
-def sync_scroll(target_edit, value):
+def sync_scroll(version_delete_btn, target_edit, value):
     """target_edit의 스크롤을 value로 동기화"""
-    target_edit.verticalScrollBar().setValue(value)
+    if version_delete_btn.isVisible():
+        target_edit.verticalScrollBar().setValue(value)
 
 
 @error_decorator
-def ssbutton_clicked_07(ui):
+def strategy_version_delete(ui):
     """버전 삭제 버튼 호출"""
     global SVM
     comboBox1 = getattr(ui, f'{SVM.sorc}s_comboBoxxxx_41')

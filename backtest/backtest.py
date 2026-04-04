@@ -74,6 +74,7 @@ class BackTest:
             self.wq.put((ui_num['시스템로그'], format_exc()))
             self.SysExit(True)
 
+    # noinspection PyUnresolvedReferences
     def Start(self):
         market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
         if self.ui_gubun == 'S':

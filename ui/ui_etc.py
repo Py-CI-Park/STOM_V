@@ -4,10 +4,14 @@ import random
 import pandas as pd
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import QApplication, QMessageBox
 from ui.set_text import famous_saying
+from PyQt5.QtWidgets import QApplication, QMessageBox
+from ui.ui_button_clicked_shortcut import mnbutton_c_clicked_01
 from utility.setting_base import columns_dt, columns_dd, ui_num
+from ui.ui_backtest_engine import backengine_start, backengine_show
+from ui.ui_button_clicked_dialog_backengine import backtest_engine_kill, sdbutton_clicked_04
 from utility.static import thread_decorator, qtest_qwait, str_ymdhmsf, str_ymdhms, error_decorator
+from ui.ui_process_alive import coin_strategy_process_alive, coin_trader_process_alive, coin_receiver_process_alive
 
 
 @error_decorator
@@ -41,16 +45,16 @@ def auto_back_schedule(ui, gubun):
         if ui.dict_set['주식알림소리'] or ui.dict_set['코인알림소리']:
             ui.soundQ.put('예약된 백테스트 스케쥴러를 시작합니다.')
         if not ui.dialog_backengine.isVisible():
-            ui.BackTestengineShow(ui.dict_set['백테스케쥴구분'])
+            backengine_show(ui, ui.dict_set['백테스케쥴구분'])
         qtest_qwait(2)
-        ui.BacktestEngineKill()
+        backtest_engine_kill(ui)
         qtest_qwait(3)
-        ui.BacktestEngineStart(ui.dict_set['백테스케쥴구분'])
+        backengine_start(ui, ui.dict_set['백테스케쥴구분'])
     elif gubun == 2:
         if not ui.dialog_scheduler.isVisible():
             ui.dialog_scheduler.show()
         qtest_qwait(2)
-        ui.sdButtonClicked_04()
+        sdbutton_clicked_04(ui)
         qtest_qwait(2)
         ui.sd_pushButtonnn_01.setText(ui.dict_set['백테스케쥴구분'])
         ui.sd_dcomboBoxxxx_01.setCurrentText(ui.dict_set['백테스케쥴명'])
@@ -67,11 +71,11 @@ def auto_back_schedule(ui, gubun):
 def update_dictset(ui):
     if ui.proc_manager is not None and ui.proc_manager.poll() is None:
         ui.wdzservQ.put(('manager', ('설정변경', ui.dict_set)))
-    if ui.CoinReceiverProcessAlive(): ui.creceivQ.put(('설정변경', ui.dict_set))
-    if ui.CoinTraderProcessAlive():   ui.ctraderQ.put(('설정변경', ui.dict_set))
-    if ui.CoinStrategyProcessAlive(): ui.cstgQ.put(('설정변경', ui.dict_set))
-    if ui.proc_chqs.is_alive():       ui.chartQ.put(('설정변경', ui.dict_set))
-    if ui.telegram.isRunning():       ui.teleQ.put(('설정변경', ui.dict_set))
+    if coin_receiver_process_alive(ui): ui.creceivQ.put(('설정변경', ui.dict_set))
+    if coin_trader_process_alive(ui):   ui.ctraderQ.put(('설정변경', ui.dict_set))
+    if coin_strategy_process_alive(ui): ui.cstgQ.put(('설정변경', ui.dict_set))
+    if ui.proc_chqs.is_alive():         ui.chartQ.put(('설정변경', ui.dict_set))
+    if ui.telegram.isRunning():         ui.teleQ.put(('설정변경', ui.dict_set))
     if ui.backtest_engine:
         for bpq in ui.back_eques:
             bpq.put(('설정변경', ui.dict_set))
@@ -121,7 +125,7 @@ def calendar_clicked(ui, gubun):
 @error_decorator
 def stom_live_screenshot(ui, cmd):
     prev_main_btn = ui.main_btn
-    ui.mnButtonClicked_01(5)
+    mnbutton_c_clicked_01(ui, 5)
     qtest_qwait(1)
     if '주식' in cmd:
         mid = 'S'
@@ -138,10 +142,11 @@ def stom_live_screenshot(ui, cmd):
     qtest_qwait(1)
     file_name = f'./_log/StomLive_{mid}_{str_ymdhms()}.png'
     screen = QApplication.primaryScreen()
+    # noinspection PyUnresolvedReferences
     screenshot = screen.grabWindow(ui.winId())
     screenshot.save(file_name, 'png')
     ui.teleQ.put(file_name)
-    ui.mnButtonClicked_01(prev_main_btn)
+    mnbutton_c_clicked_01(ui, prev_main_btn)
 
 
 @error_decorator
@@ -149,6 +154,7 @@ def chart_screenshot(ui):
     if ui.dialog_chart.isVisible():
         file_name = f'./_log/chart_{str_ymdhmsf()}.png'
         screen = QApplication.primaryScreen()
+        # noinspection PyUnresolvedReferences
         screenshot = screen.grabWindow(ui.dialog_chart.winId())
         screenshot.save(file_name, 'png')
         ui.teleQ.put(file_name)
@@ -160,6 +166,7 @@ def chart_screenshot2(ui):
     if ui.dialog_chart.isVisible():
         file_name = f'./_log/chart_{str_ymdhmsf()}.png'
         screen = QApplication.primaryScreen()
+        # noinspection PyUnresolvedReferences
         screenshot = screen.grabWindow(ui.dialog_chart.winId())
         screenshot.save(file_name, 'png')
         ui.teleQ.put(file_name)
@@ -173,7 +180,7 @@ def manual_save_and_exit(ui):
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        if ui.CoinReceiverProcessAlive():
+        if coin_receiver_process_alive(ui):
             ui.creceivQ.put(('수동데이터저장', 'dummy'))
         else:
             ui.wdzservQ.put(('agent', ('수동데이터저장', 'dummy')))

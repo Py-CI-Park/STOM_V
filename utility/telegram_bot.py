@@ -98,7 +98,7 @@ class TelegramBot(QThread):
         korea_timezone = pytz.timezone('Asia/Seoul')
         application.bot_data['timezone'] = korea_timezone
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal,PyUnresolvedReferences
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         cmd = update.message.text
         cmd = cmd.replace('\n', '')

@@ -193,7 +193,6 @@ class BackEngineBaseOms(BackEngineBase):
                 return True
         return False
 
-    # noinspection PyUnusedLocal
     def CheckBuy(self, 주문포지션, 현재가, 관심이탈, 분봉고가, 분봉저가, 매수가, 주문수량, 보유수량, 매수호가, 매수호가단위, 매수주문취소시간):
         if self.dict_set[f'{self.market_text}매수취소관심이탈'] and 관심이탈:
             self.curr_trade_info['매수호가'] = 0
@@ -383,7 +382,6 @@ class BackEngineBaseOms(BackEngineBase):
                 return True
         return False
 
-    # noinspection PyUnusedLocal
     def CheckSell(self, 보유중, 현재가, 관심진입, 분봉고가, 분봉저가, 매도호가, 매도호가단위, 매도정정횟수, 매도주문취소시간):
         if self.dict_set[f'{self.market_text}매도취소관심진입'] and 관심진입:
             self.curr_trade_info['매도호가'] = 0

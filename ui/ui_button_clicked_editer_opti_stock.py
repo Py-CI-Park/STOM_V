@@ -1,16 +1,13 @@
 
 import random
+from ui.set_text import *
 from PyQt5.QtCore import Qt
 from traceback import format_exc
+from ui.ui_vars_change import get_fix_strategy
+from ui.ui_strategy_version import strategy_version
 from PyQt5.QtWidgets import QMessageBox, QApplication
 from utility.strategy_version_manager import stg_save_version
 from utility.static import text_not_in_special_characters, error_decorator
-from ui.set_text import famous_saying, example_stock_buy, example_stock_sell, example_stockopti_buy1, \
-    example_stockopti_buy2, example_stockopti_sell1, example_stockopti_sell2, example_opti_vars, example_vars, \
-    example_buyconds, example_sellconds, example_stockopti_buy3, example_coin_future_buy, example_coin_future_sell, \
-    example_coinopti_future_buy1, example_coinopti_future_buy3, example_coinopti_future_sell1, example_vars3, \
-    example_future_buyconds, example_future_sellconds, example_opti_vars3, example_coinopti_future_sell3, \
-    example_stockopti_sell3, example_coinopti_future_buy2, example_coinopti_future_sell2
 
 
 @error_decorator
@@ -21,7 +18,7 @@ def stock_opti_buy_load(ui):
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 매수전략이 선택되지 않았습니다.\n최적화 매수전략을 선택한 후에 재시도하십시오.\n')
             return
-        ui.StrategyVersion(gubun, 'opti', 'buy', strategy_name)
+        strategy_version(ui, gubun, 'opti', 'buy', strategy_name)
     elif ui.ss_textEditttt_03.isVisible():
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optibuy').set_index('index')
         if len(df) > 0:
@@ -39,7 +36,7 @@ def stock_opti_buy_save(ui):
     if ui.ss_textEditttt_03.isVisible():
         strategy_name = ui.svc_lineEdittt_01.text()
         strategy = ui.ss_textEditttt_03.toPlainText()
-        strategy = ui.GetFixStrategy(strategy, '매수')
+        strategy = get_fix_strategy(ui, strategy, '매수')
 
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 매수전략의 이름이 공백 상태입니다.\n이름을 입력하십시오.\n')
@@ -72,7 +69,7 @@ def stock_opti_vars_load(ui):
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 범위가 선택되지 않았습니다.\n최적화 범위를 선택한 후에 재시도하십시오.\n')
             return
-        ui.StrategyVersion(gubun, 'opti', 'vars', strategy_name)
+        strategy_version(ui, gubun, 'opti', 'vars', strategy_name)
     elif ui.ss_textEditttt_05.isVisible():
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optivars').set_index('index')
         if len(df) > 0:
@@ -117,7 +114,7 @@ def stock_opti_sell_load(ui):
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 매도전략이 선택되지 않았습니다.\n최적화 매도전략을 선택한 후에 재시도하십시오.\n')
             return
-        ui.StrategyVersion(gubun, 'opti', 'sell', strategy_name)
+        strategy_version(ui, gubun, 'opti', 'sell', strategy_name)
     elif ui.ss_textEditttt_04.isVisible():
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {gubun}optisell').set_index('index')
         if len(df) > 0:
@@ -135,7 +132,7 @@ def stock_opti_sell_save(ui):
     if ui.ss_textEditttt_04.isVisible():
         strategy_name = ui.svc_lineEdittt_03.text()
         strategy = ui.ss_textEditttt_04.toPlainText()
-        strategy = ui.GetFixStrategy(strategy, '매도')
+        strategy = get_fix_strategy(ui, strategy, '매도')
 
         if strategy_name == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 매도전략의 이름이 공백 상태입니다.\n이름을 입력하십시오.\n')

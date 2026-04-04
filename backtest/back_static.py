@@ -510,6 +510,7 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     ax1.plot(df_tsg.index, df_tsg['수익금합계'], linewidth=2, label=f'MDD {mdd}%', color='orange')
     max_mdd = max(mdd_list)
     min_mdd = min(mdd_list)
+    # noinspection PyUnresolvedReferences
     avg_mdd = round(sum(mdd_list) / len(mdd_list), 2)
     ax1.set_title(f'Max MDD [{max_mdd}%] | Min MDD [{min_mdd}%] | Avg MDD [{avg_mdd}%]')
     step = max(1, len(df_tsg) // 15)

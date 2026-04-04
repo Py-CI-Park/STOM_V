@@ -1,8 +1,10 @@
 
 from PyQt5.QtCore import QDate
-from PyQt5.QtWidgets import QLineEdit, QMessageBox
 from ui.set_style import style_bc_dk
+from ui.ui_show_dialog import show_dialog
 from utility.static import error_decorator
+from PyQt5.QtWidgets import QLineEdit, QMessageBox
+from ui.ui_button_clicked_chart import get_indicator_detail
 
 
 @error_decorator
@@ -22,7 +24,7 @@ def return_press_01(ui):
             name = ui.dict_name[code] if code in ui.dict_name else code
         ui.ct_lineEdittttt_04.setText(code)
         ui.ct_lineEdittttt_05.setText(name)
-        ui.ShowDialog(name, tickcount, searchdate, 4)
+        show_dialog(ui, name, tickcount, searchdate, 4)
     elif ui.dialog_chart.focusWidget() == ui.ct_tableWidgett_01:
         row = ui.ct_tableWidgett_01.currentIndex().row()
         item = ui.ct_tableWidgett_01.item(row, 0)
@@ -42,7 +44,7 @@ def return_press_01(ui):
         ui.ct_lineEdittttt_04.setText(code)
         ui.ct_lineEdittttt_05.setText(name)
         ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-        data = (coin, code, tickcount, searchdate, starttime, endtime, ui.GetIndicatorDetail(code))
+        data = (coin, code, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui, code))
         cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
         if cf1 and cf2: data += (float(cf1), float(cf2))
         ui.chartQ.put(data)

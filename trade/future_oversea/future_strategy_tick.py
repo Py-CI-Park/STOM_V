@@ -39,23 +39,22 @@ class FutureStrategyTick(StrategyBase):
         self.arry_code        = None
         self.info_for_signal  = None
 
-        self.dict_data        = {}
-        self.dict_signal_num  = {}
-        self.dict_buy_num     = {}
-        self.dict_condition   = {}
-        self.dict_cond_indexn = {}
-        self.dict_profit      = {}
-        self.high_low         = {} 
-        self.dict_gj          = {}
-        self.dict_jg          = {}
         self.dict_info        = {}
-        self.indi_settings    = []
         self.dict_signal      = {
             'BUY_LONG': [],
             'SELL_SHORT': [],
             'SELL_LONG': [],
             'BUY_SHORT': []
         }
+
+        self.dict_data        = {}
+        self.dict_signal_num  = {}
+        self.dict_buy_num     = {}
+        self.dict_profit      = {}
+        self.dict_gj          = {}
+        self.dict_jg          = {}
+
+        self.indi_settings    = []
 
         self.jgrv_count       = 0
         self.비중조절기준        = 0
@@ -211,7 +210,7 @@ class FutureStrategyTick(StrategyBase):
         elif data == '프로세스종료':
             self.SysExit()
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal,PyUnresolvedReferences
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
             초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
@@ -531,7 +530,7 @@ class FutureStrategyTick(StrategyBase):
         elif 전량매도:
             주문수량 = 보유수량
         else:
-            주문수량 = self.GetSellCount(분할매도횟수, 보유수량, 매수가, 저가대비고가등락율)
+            주문수량 = self.GetSellCount(분할매도횟수, 보유수량)
 
         구분 = 'SELL_LONG' if SELL_LONG else 'BUY_SHORT'
         if '지정가' in self.dict_set['주식매도주문구분'] and not 강제청산:
@@ -554,8 +553,7 @@ class FutureStrategyTick(StrategyBase):
                 self.dict_signal[구분].append(self.code)
                 self.straderQ.put((구분, self.code, self.name, 예상체결가, 주문수량, now(), True if 강제청산 else False))
 
-    # noinspection PyUnusedLocal
-    def GetSellCount(self, 분할매도횟수, 보유수량, 매수가, 저가대비고가등락율):
+    def GetSellCount(self, 분할매도횟수, 보유수량):
         if self.dict_set['주식매도분할횟수'] == 1:
             return 보유수량
         else:

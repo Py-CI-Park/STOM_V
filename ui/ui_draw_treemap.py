@@ -1,4 +1,5 @@
 
+import pandas as pd
 from utility.setting_base import ui_num
 from utility.static import error_decorator
 
@@ -8,8 +9,8 @@ class DrawTremap:
         self.ui      = ui
         self.tm_ax1  = None
         self.tm_ax2  = None
-        self.df_tm1  = None
-        self.df_tm2  = None
+        self.df_tm1  = pd.DataFrame
+        self.df_tm2  = pd.DataFrame
         self.tm_cl1  = None
         self.tm_cl2  = None
         self.tm_dt   = False

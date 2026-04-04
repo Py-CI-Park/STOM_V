@@ -365,6 +365,7 @@ class Optimize:
             self.wq.put((ui_num['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
+    # noinspection PyUnresolvedReferences
     def Start(self):
         start_time = now()
         data = self.bq.get()

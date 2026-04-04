@@ -1,6 +1,6 @@
 
-from PyQt5.QtCore import QRect, QParallelAnimationGroup, QPropertyAnimation, QEasingCurve
 from utility.static import error_decorator
+from PyQt5.QtCore import QRect, QParallelAnimationGroup, QPropertyAnimation, QEasingCurve
 
 
 def group_animation(ui, pushButton, textEdit, pushButton_qrect, textEdit_qrect):

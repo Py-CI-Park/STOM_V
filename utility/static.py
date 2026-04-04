@@ -8,7 +8,7 @@ def set_builtin_print(bit64, q):
     import builtins
     from utility.setting_base import ui_num
 
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal,PyUnresolvedReferences
     def ui_print(*args, sep=' ', end='\n', file=None):
         try:
             is_direct_print = False
@@ -162,6 +162,7 @@ def summer_time():
     import pytz
     now_utc_ = datetime.datetime.now(pytz.utc)
     now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
+    # noinspection PyUnresolvedReferences
     summer_t = int(now_cme_.dst().total_seconds())
     return summer_t
 
