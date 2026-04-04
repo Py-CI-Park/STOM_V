@@ -1,13 +1,13 @@
 
 import os
 import sys
-import math
+import numpy as np
+from talib import stream
 try:
     sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 except:
     pass
 from utility.static import dt_ymdhms, dt_ymdhm
-from utility.lazy_imports import get_talib_stream, get_np
 
 
 class StrategyBase:
@@ -33,6 +33,11 @@ class StrategyBase:
         self.up               = None
         self.down             = None
 
+        self.shogainfo        = np.zeros(5, dtype=np.float64)
+        self.shreminfo        = np.zeros(5, dtype=np.float64)
+        self.bhogainfo        = np.zeros(5, dtype=np.float64)
+        self.bhreminfo        = np.zeros(5, dtype=np.float64)
+
         self.index            = 0
         self.indexn           = 0
         self.indexb           = 0
@@ -52,6 +57,16 @@ class StrategyBase:
         self.high_low         = {}
         self.avg_list         = []
         self.sma_list         = []
+
+    def _calc_fill_amount(self, 주문수량, 호가배열, 잔량배열):
+        누적잔량 = np.cumsum(잔량배열)
+        fill_idx = np.searchsorted(누적잔량, 주문수량, side='left')
+        if fill_idx >= len(호가배열):
+            return 0, False
+        이전누적 = 누적잔량[fill_idx - 1] if fill_idx > 0 else 0
+        남은수량 = 주문수량 - 이전누적
+        거래금액 = np.sum(호가배열[:fill_idx] * 잔량배열[:fill_idx]) + 호가배열[fill_idx] * 남은수량
+        return 거래금액, True
 
     def _now(self):
         return dt_ymdhms(str(self.index)) if self.is_tick else dt_ymdhm(str(self.index))
@@ -231,10 +246,10 @@ class StrategyBase:
         return self._Parameter_Previous(self.dict_findex['분봉저가'], pre)
 
     def _최고분봉고가(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최고분봉고가'], self.dict_findex['분봉고가'], tick, pre, get_np().max, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최고분봉고가'], self.dict_findex['분봉고가'], tick, pre, np.max, calc=calc)
 
     def _최저분봉저가(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최저분봉저가'], self.dict_findex['분봉저가'], tick, pre, get_np().min, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최저분봉저가'], self.dict_findex['분봉저가'], tick, pre, np.min, calc=calc)
 
     def _분당매수수량N(self, pre):
         return self._Parameter_Previous(self.dict_findex['분당매수수량'], pre)
@@ -252,19 +267,19 @@ class StrategyBase:
         return self._Parameter_Previous(self.dict_findex['분당매도금액'], pre)
 
     def _최고분당매수수량(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최고분당매수수량'], self.dict_findex['분당매수수량'], tick, pre, get_np().max, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최고분당매수수량'], self.dict_findex['분당매수수량'], tick, pre, np.max, calc=calc)
 
     def _최고분당매도수량(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최고분당매도수량'], self.dict_findex['분당매도수량'], tick, pre, get_np().max, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최고분당매도수량'], self.dict_findex['분당매도수량'], tick, pre, np.max, calc=calc)
 
     def _누적분당매수수량(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['누적분당매수수량'], self.dict_findex['분당매수수량'], tick, pre, get_np().sum, calc=calc)
+        return self._Parameter_Area(self.dict_findex['누적분당매수수량'], self.dict_findex['분당매수수량'], tick, pre, np.sum, calc=calc)
 
     def _누적분당매도수량(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['누적분당매도수량'], self.dict_findex['분당매도수량'], tick, pre, get_np().sum, calc=calc)
+        return self._Parameter_Area(self.dict_findex['누적분당매도수량'], self.dict_findex['분당매도수량'], tick, pre, np.sum, calc=calc)
 
     def _분당거래대금평균(self, tick, pre=0, calc=False):
-        return int(self._Parameter_Area(self.dict_findex['분당거래대금평균'], self.dict_findex['분당거래대금'], tick, pre, get_np().mean, calc=calc))
+        return int(self._Parameter_Area(self.dict_findex['분당거래대금평균'], self.dict_findex['분당거래대금'], tick, pre, np.mean, calc=calc))
 
     def _get_column_index(self, cidx):
         if self.backtest:
@@ -311,38 +326,38 @@ class StrategyBase:
             else:
                 sidx, eidx = self._get_angle_double_pre_index(tick, pre)
                 diff = self.arry_code[eidx, fidx] - self.arry_code[sidx, fidx]
-                return round(get_np().arctan2(diff * cf, tick) / (2 * get_np().pi) * 360, 2)
+                return round(np.arctan2(diff * cf, tick) / (2 * np.pi) * 360, 2)
         return 0
 
     def _최고현재가(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최고현재가'], self.dict_findex['현재가'], tick, pre, get_np().max, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최고현재가'], self.dict_findex['현재가'], tick, pre, np.max, calc=calc)
 
     def _최저현재가(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최저현재가'], self.dict_findex['현재가'], tick, pre, get_np().min, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최저현재가'], self.dict_findex['현재가'], tick, pre, np.min, calc=calc)
 
     def _체결강도평균(self, tick, pre=0, calc=False):
-        return round(self._Parameter_Area(self.dict_findex['체결강도평균'], self.dict_findex['체결강도'], tick, pre, get_np().mean, calc=calc), 3)
+        return round(self._Parameter_Area(self.dict_findex['체결강도평균'], self.dict_findex['체결강도'], tick, pre, np.mean, calc=calc), 3)
 
     def _최고체결강도(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최고체결강도'], self.dict_findex['체결강도'], tick, pre, get_np().max, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최고체결강도'], self.dict_findex['체결강도'], tick, pre, np.max, calc=calc)
 
     def _최저체결강도(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최저체결강도'], self.dict_findex['체결강도'], tick, pre, get_np().min, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최저체결강도'], self.dict_findex['체결강도'], tick, pre, np.min, calc=calc)
 
     def _최고초당매수수량(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최고초당매수수량'], self.dict_findex['초당매수수량'], tick, pre, get_np().max, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최고초당매수수량'], self.dict_findex['초당매수수량'], tick, pre, np.max, calc=calc)
 
     def _최고초당매도수량(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['최고초당매도수량'], self.dict_findex['초당매도수량'], tick, pre, get_np().max, calc=calc)
+        return self._Parameter_Area(self.dict_findex['최고초당매도수량'], self.dict_findex['초당매도수량'], tick, pre, np.max, calc=calc)
 
     def _누적초당매수수량(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['누적초당매수수량'], self.dict_findex['초당매수수량'], tick, pre, get_np().sum, calc=calc)
+        return self._Parameter_Area(self.dict_findex['누적초당매수수량'], self.dict_findex['초당매수수량'], tick, pre, np.sum, calc=calc)
 
     def _누적초당매도수량(self, tick, pre=0, calc=False):
-        return self._Parameter_Area(self.dict_findex['누적초당매도수량'], self.dict_findex['초당매도수량'], tick, pre, get_np().sum, calc=calc)
+        return self._Parameter_Area(self.dict_findex['누적초당매도수량'], self.dict_findex['초당매도수량'], tick, pre, np.sum, calc=calc)
 
     def _초당거래대금평균(self, tick, pre=0, calc=False):
-        return int(self._Parameter_Area(self.dict_findex['초당거래대금평균'], self.dict_findex['초당거래대금'], tick, pre, get_np().mean, calc=calc))
+        return int(self._Parameter_Area(self.dict_findex['초당거래대금평균'], self.dict_findex['초당거래대금'], tick, pre, np.mean, calc=calc))
 
     def _등락율각도(self, tick, pre=0, calc=False):
         return self._Parameter_Angle(self.dict_findex['등락율각도'], self.dict_findex['등락율'], tick, pre, self.angle_pct_cf, calc=calc)
@@ -364,16 +379,16 @@ class StrategyBase:
             sidx, eidx = self._get_double_index(tick2)
             arry_close = self.arry_code[sidx:eidx, self.dict_findex['현재가']]
             arry_sma = self.arry_code[sidx:eidx, self.dict_findex[f'이동평균{tick1}']]
-            deviation = get_np().abs(arry_close - arry_sma) / arry_sma * 100
-            return get_np().sum(deviation <= per) >= cnt
+            deviation = np.abs(arry_close - arry_sma) / arry_sma * 100
+            return np.sum(deviation <= per) >= cnt
         return 0
 
     def _시가지지(self, tick, per=0.5, cnt=10):
         if tick <= self.tick_count:
             sidx, eidx = self._get_double_index(tick)
             arry_close = self.arry_code[sidx:eidx, self.dict_findex['현재가']]
-            deviation = get_np().abs(arry_close - self._시가N(0)) / self._시가N(0) * 100
-            return get_np().sum(deviation <= per) >= cnt
+            deviation = np.abs(arry_close - self._시가N(0)) / self._시가N(0) * 100
+            return np.sum(deviation <= per) >= cnt
         return 0
 
     def _변동성(self, tick, pre=0):
@@ -381,11 +396,11 @@ class StrategyBase:
             sidx, eidx = self._get_double_pre_index(tick, pre)
             if self.is_tick:
                 arry_close = self.arry_code[sidx:eidx, self.dict_findex['현재가']]
-                volatility = get_np().std(arry_close) / get_np().mean(arry_close) * 100
+                volatility = np.std(arry_close) / np.mean(arry_close) * 100
             else:
                 arry_high  = self.arry_code[sidx:eidx, self.dict_findex['분봉고가']]
                 arry_low   = self.arry_code[sidx:eidx, self.dict_findex['분봉저가']]
-                volatility = get_np().std(arry_high - arry_low) / get_np().mean(arry_high - arry_low) * 100
+                volatility = np.std(arry_high - arry_low) / np.mean(arry_high - arry_low) * 100
             return volatility
         return 0
 
@@ -416,7 +431,6 @@ class StrategyBase:
             return money_unit / money_avg if money_avg > 0 else 0
         return 0
 
-    # noinspection PyTypeChecker
     def _체결강도평균대비비율(self, tick, pre=0):
         if tick + pre <= self.tick_count:
             avg_ch = self._체결강도평균(tick, pre)
@@ -462,12 +476,12 @@ class StrategyBase:
     def _고점기준등락율각도(self, cf):
         diff_tick = self.indexn - self.high_low[self.code][1]
         diff_pct  = (self._현재가N(0) / self.high_low[self.code][0] - 1) * 100
-        return round(get_np().arctan2(diff_pct * cf, diff_tick) / (2 * get_np().pi) * 360, 2)
+        return round(np.arctan2(diff_pct * cf, diff_tick) / (2 * np.pi) * 360, 2)
 
     def _저점기준등락율각도(self, cf):
         diff_tick = self.indexn - self.high_low[self.code][3]
         diff_pct  = (self._현재가N(0) / self.high_low[self.code][2] - 1) * 100
-        return round(get_np().arctan2(diff_pct * cf, diff_tick) / (2 * get_np().pi) * 360, 2)
+        return round(np.arctan2(diff_pct * cf, diff_tick) / (2 * np.pi) * 360, 2)
 
     def _연속상승(self, tick):
         if 1 < tick < self.tick_count:
@@ -705,7 +719,7 @@ class StrategyBase:
 
     def _AD_N(self, pre):
         if self.backtest:
-            try:    AD_ = get_talib_stream().AD(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], self.mv[:-pre])
+            try:    AD_ = stream.AD(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], self.mv[:-pre])
             except: AD_ = 0
             return  AD_
         else:
@@ -713,7 +727,7 @@ class StrategyBase:
 
     def _ADOSC_N(self, pre):
         if self.backtest:
-            try:    ADOSC_ = get_talib_stream().ADOSC(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], self.mv[:-pre], fastperiod=self.k[0], slowperiod=self.k[1])
+            try:    ADOSC_ = stream.ADOSC(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], self.mv[:-pre], fastperiod=self.k[0], slowperiod=self.k[1])
             except: ADOSC_ = 0
             return  ADOSC_
         else:
@@ -721,7 +735,7 @@ class StrategyBase:
 
     def _ADXR_N(self, pre):
         if self.backtest:
-            try:    ADXR_ = get_talib_stream().ADXR(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[2])
+            try:    ADXR_ = stream.ADXR(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[2])
             except: ADXR_ = 0
             return  ADXR_
         else:
@@ -729,7 +743,7 @@ class StrategyBase:
 
     def _APO_N(self, pre):
         if self.backtest:
-            try:    APO_ = get_talib_stream().APO(self.mc[:-pre], fastperiod=self.k[3], slowperiod=self.k[4], matype=self.k[5])
+            try:    APO_ = stream.APO(self.mc[:-pre], fastperiod=self.k[3], slowperiod=self.k[4], matype=self.k[5])
             except: APO_ = 0
             return  APO_
         else:
@@ -737,7 +751,7 @@ class StrategyBase:
 
     def _AROOND_N(self, pre):
         if self.backtest:
-            try:    AROOND_, AROONU_ = get_talib_stream().AROON(self.mh[:-pre], self.ml[:-pre], timeperiod=self.k[6])
+            try:    AROOND_, AROONU_ = stream.AROON(self.mh[:-pre], self.ml[:-pre], timeperiod=self.k[6])
             except: AROOND_, AROONU_ = 0, 0
             return  AROOND_
         else:
@@ -745,7 +759,7 @@ class StrategyBase:
 
     def _AROONU_N(self, pre):
         if self.backtest:
-            try:    AROOND_, AROONU_ = get_talib_stream().AROON(self.mh[:-pre], self.ml[:-pre], timeperiod=self.k[3])
+            try:    AROOND_, AROONU_ = stream.AROON(self.mh[:-pre], self.ml[:-pre], timeperiod=self.k[3])
             except: AROOND_, AROONU_ = 0, 0
             return  AROONU_
         else:
@@ -753,7 +767,7 @@ class StrategyBase:
 
     def _ATR_N(self, pre):
         if self.backtest:
-            try:    ATR_ = get_talib_stream().ATR(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[7])
+            try:    ATR_ = stream.ATR(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[7])
             except: ATR_ = 0
             return  ATR_
         else:
@@ -761,7 +775,7 @@ class StrategyBase:
 
     def _BBU_N(self, pre):
         if self.backtest:
-            try:    BBU_, BBM_, BBL_ = get_talib_stream().BBANDS(self.mc[:-pre], timeperiod=self.k[8], nbdevup=self.k[9], nbdevdn=self.k[10], matype=self.k[11])
+            try:    BBU_, BBM_, BBL_ = stream.BBANDS(self.mc[:-pre], timeperiod=self.k[8], nbdevup=self.k[9], nbdevdn=self.k[10], matype=self.k[11])
             except: BBU_, BBM_, BBL_ = 0, 0, 0
             return  BBU_
         else:
@@ -769,7 +783,7 @@ class StrategyBase:
 
     def _BBM_N(self, pre):
         if self.backtest:
-            try:    BBU_, BBM_, BBL_ = get_talib_stream().BBANDS(self.mc[:-pre], timeperiod=self.k[8], nbdevup=self.k[9], nbdevdn=self.k[10], matype=self.k[11])
+            try:    BBU_, BBM_, BBL_ = stream.BBANDS(self.mc[:-pre], timeperiod=self.k[8], nbdevup=self.k[9], nbdevdn=self.k[10], matype=self.k[11])
             except: BBU_, BBM_, BBL_ = 0, 0, 0
             return  BBM_
         else:
@@ -777,7 +791,7 @@ class StrategyBase:
 
     def _BBL_N(self, pre):
         if self.backtest:
-            try:    BBU_, BBM_, BBL_ = get_talib_stream().BBANDS(self.mc[:-pre], timeperiod=self.k[8], nbdevup=self.k[9], nbdevdn=self.k[10], matype=self.k[11])
+            try:    BBU_, BBM_, BBL_ = stream.BBANDS(self.mc[:-pre], timeperiod=self.k[8], nbdevup=self.k[9], nbdevdn=self.k[10], matype=self.k[11])
             except: BBU_, BBM_, BBL_ = 0, 0, 0
             return  BBL_
         else:
@@ -785,7 +799,7 @@ class StrategyBase:
 
     def _CCI_N(self, pre):
         if self.backtest:
-            try:    CCI_ = get_talib_stream().CCI(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[12])
+            try:    CCI_ = stream.CCI(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[12])
             except: CCI_ = 0
             return  CCI_
         else:
@@ -793,7 +807,7 @@ class StrategyBase:
 
     def _DIM_N(self, pre):
         if self.backtest:
-            try:    DIM_ = get_talib_stream().MINUS_DI(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[13])
+            try:    DIM_ = stream.MINUS_DI(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[13])
             except: DIM_ = 0, 0
             return  DIM_
         else:
@@ -801,7 +815,7 @@ class StrategyBase:
 
     def _DIP_N(self, pre):
         if self.backtest:
-            try:    DIP_ = get_talib_stream().PLUS_DI(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[13])
+            try:    DIP_ = stream.PLUS_DI(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[13])
             except: DIP_ = 0
             return  DIP_
         else:
@@ -809,7 +823,7 @@ class StrategyBase:
 
     def _MACD_N(self, pre):
         if self.backtest:
-            try:    MACD_, MACDS_, MACDH_ = get_talib_stream().MACD(self.mc[:-pre], fastperiod=self.k[14], slowperiod=self.k[15], signalperiod=self.k[16])
+            try:    MACD_, MACDS_, MACDH_ = stream.MACD(self.mc[:-pre], fastperiod=self.k[14], slowperiod=self.k[15], signalperiod=self.k[16])
             except: MACD_, MACDS_, MACDH_ = 0, 0, 0
             return  MACD_
         else:
@@ -817,7 +831,7 @@ class StrategyBase:
 
     def _MACDS_N(self, pre):
         if self.backtest:
-            try:    MACD_, MACDS_, MACDH_ = get_talib_stream().MACD(self.mc[:-pre], fastperiod=self.k[14], slowperiod=self.k[15], signalperiod=self.k[16])
+            try:    MACD_, MACDS_, MACDH_ = stream.MACD(self.mc[:-pre], fastperiod=self.k[14], slowperiod=self.k[15], signalperiod=self.k[16])
             except: MACD_, MACDS_, MACDH_ = 0, 0, 0
             return  MACDS_
         else:
@@ -825,7 +839,7 @@ class StrategyBase:
 
     def _MACDH_N(self, pre):
         if self.backtest:
-            try:    MACD_, MACDS_, MACDH_ = get_talib_stream().MACD(self.mc[:-pre], fastperiod=self.k[14], slowperiod=self.k[15], signalperiod=self.k[16])
+            try:    MACD_, MACDS_, MACDH_ = stream.MACD(self.mc[:-pre], fastperiod=self.k[14], slowperiod=self.k[15], signalperiod=self.k[16])
             except: MACD_, MACDS_, MACDH_ = 0, 0, 0
             return  MACDH_
         else:
@@ -833,7 +847,7 @@ class StrategyBase:
 
     def _MFI_N(self, pre):
         if self.backtest:
-            try:    MFI_ = get_talib_stream().MFI(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], self.mv[:-pre], timeperiod=self.k[17])
+            try:    MFI_ = stream.MFI(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], self.mv[:-pre], timeperiod=self.k[17])
             except: MFI_ = 0
             return  MFI_
         else:
@@ -841,7 +855,7 @@ class StrategyBase:
 
     def _MOM_N(self, pre):
         if self.backtest:
-            try:    MOM_ = get_talib_stream().MOM(self.mc[:-pre], timeperiod=self.k[18])
+            try:    MOM_ = stream.MOM(self.mc[:-pre], timeperiod=self.k[18])
             except: MOM_ = 0
             return  MOM_
         else:
@@ -849,7 +863,7 @@ class StrategyBase:
 
     def _OBV_N(self, pre):
         if self.backtest:
-            try:    OBV_ = get_talib_stream().OBV(self.mc[:-pre], self.mv)
+            try:    OBV_ = stream.OBV(self.mc[:-pre], self.mv)
             except: OBV_ = 0
             return  OBV_
         else:
@@ -857,7 +871,7 @@ class StrategyBase:
 
     def _PPO_N(self, pre):
         if self.backtest:
-            try:    PPO_ = get_talib_stream().PPO(self.mc[:-pre], fastperiod=self.k[19], slowperiod=self.k[20], matype=self.k[21])
+            try:    PPO_ = stream.PPO(self.mc[:-pre], fastperiod=self.k[19], slowperiod=self.k[20], matype=self.k[21])
             except: PPO_ = 0
             return  PPO_
         else:
@@ -865,7 +879,7 @@ class StrategyBase:
 
     def _ROC_N(self, pre):
         if self.backtest:
-            try:    ROC_ = get_talib_stream().ROC(self.mc[:-pre], timeperiod=self.k[22])
+            try:    ROC_ = stream.ROC(self.mc[:-pre], timeperiod=self.k[22])
             except: ROC_ = 0
             return  ROC_
         else:
@@ -873,7 +887,7 @@ class StrategyBase:
 
     def _RSI_N(self, pre):
         if self.backtest:
-            try:    RSI_ = get_talib_stream().RSI(self.mc[:-pre], timeperiod=self.k[23])
+            try:    RSI_ = stream.RSI(self.mc[:-pre], timeperiod=self.k[23])
             except: RSI_ = 0
             return  RSI_
         else:
@@ -881,7 +895,7 @@ class StrategyBase:
 
     def _SAR_N(self, pre):
         if self.backtest:
-            try:    SAR_ = get_talib_stream().SAR(self.mh[:-pre], self.ml[:-pre], acceleration=self.k[24], maximum=self.k[25])
+            try:    SAR_ = stream.SAR(self.mh[:-pre], self.ml[:-pre], acceleration=self.k[24], maximum=self.k[25])
             except: SAR_ = 0
             return  SAR_
         else:
@@ -889,7 +903,7 @@ class StrategyBase:
 
     def _STOCHSK_N(self, pre):
         if self.backtest:
-            try:    STOCHSK_, STOCHSD_ = get_talib_stream().STOCH(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], fastk_period=self.k[26], slowk_period=self.k[27], slowk_matype=self.k[28], slowd_period=self.k[29], slowd_matype=self.k[30])
+            try:    STOCHSK_, STOCHSD_ = stream.STOCH(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], fastk_period=self.k[26], slowk_period=self.k[27], slowk_matype=self.k[28], slowd_period=self.k[29], slowd_matype=self.k[30])
             except: STOCHSK_, STOCHSD_ = 0, 0
             return  STOCHSK_
         else:
@@ -897,7 +911,7 @@ class StrategyBase:
 
     def _STOCHSD_N(self, pre):
         if self.backtest:
-            try:    STOCHSK_, STOCHSD_ = get_talib_stream().STOCH(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], fastk_period=self.k[26], slowk_period=self.k[27], slowk_matype=self.k[28], slowd_period=self.k[29], slowd_matype=self.k[30])
+            try:    STOCHSK_, STOCHSD_ = stream.STOCH(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], fastk_period=self.k[26], slowk_period=self.k[27], slowk_matype=self.k[28], slowd_period=self.k[29], slowd_matype=self.k[30])
             except: STOCHSK_, STOCHSD_ = 0, 0
             return  STOCHSD_
         else:
@@ -905,7 +919,7 @@ class StrategyBase:
 
     def _STOCHFK_N(self, pre):
         if self.backtest:
-            try:    STOCHFK_, STOCHFD_ = get_talib_stream().STOCHF(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], fastk_period=self.k[31], fastd_period=self.k[32], fastd_matype=self.k[33])
+            try:    STOCHFK_, STOCHFD_ = stream.STOCHF(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], fastk_period=self.k[31], fastd_period=self.k[32], fastd_matype=self.k[33])
             except: STOCHFK_, STOCHFD_ = 0, 0
             return  STOCHFK_
         else:
@@ -913,7 +927,7 @@ class StrategyBase:
 
     def _STOCHFD_N(self, pre):
         if self.backtest:
-            try:    STOCHFK_, STOCHFD_ = get_talib_stream().STOCHF(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], fastk_period=self.k[31], fastd_period=self.k[32], fastd_matype=self.k[33])
+            try:    STOCHFK_, STOCHFD_ = stream.STOCHF(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], fastk_period=self.k[31], fastd_period=self.k[32], fastd_matype=self.k[33])
             except: STOCHFK_, STOCHFD_ = 0, 0
             return  STOCHFD_
         else:
@@ -921,7 +935,7 @@ class StrategyBase:
 
     def _WILLR_N(self, pre):
         if self.backtest:
-            try:    WILLR_ = get_talib_stream().WILLR(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[34])
+            try:    WILLR_ = stream.WILLR(self.mh[:-pre], self.ml[:-pre], self.mc[:-pre], timeperiod=self.k[34])
             except: WILLR_ = 0
             return  WILLR_
         else:

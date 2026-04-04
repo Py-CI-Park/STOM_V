@@ -399,7 +399,6 @@ class FutureAgentTick:
         tbids += bids_
         tasks += asks_
 
-        # noinspection PyTypeChecker
         ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
 
         if code not in self.list_gsjm:

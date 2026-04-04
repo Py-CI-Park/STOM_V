@@ -1,15 +1,23 @@
 
 import random
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.static import text_not_in_special_characters, error_decorator
 from ui.set_style import style_bc_st, style_bc_dk
+from PyQt5.QtWidgets import QMessageBox, QApplication
+from utility.strategy_version_manager import stg_save_version
+from utility.static import text_not_in_special_characters, error_decorator
 from ui.set_text import famous_saying, buy_text_tick, buy_signal, future_buy_signal, buy_text_min
 
 
 @error_decorator
 def coin_buy_stg_load(ui):
-    if ui.cs_textEditttt_01.isVisible():
+    gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+    if QApplication.keyboardModifiers() & Qt.ControlModifier:
+        strategy_name = ui.cvjb_comboBoxx_01.currentText()
+        if strategy_name == '':
+            QMessageBox.critical(ui, '오류 알림', '매수전략이 선택되지 않았습니다.\n매수전략을 선택한 후에 재시도하십시오.\n')
+            return
+        ui.StrategyVersion(gubun, 'basic', 'buy', strategy_name)
+    elif ui.cs_textEditttt_01.isVisible():
         df = ui.dbreader.read_sql('전략디비', 'SELECT * FROM coinbuy').set_index('index')
         if len(df) > 0:
             ui.cvjb_comboBoxx_01.clear()
@@ -43,8 +51,10 @@ def coin_buy_stg_save(ui):
                 insert_values = (strategy_name, strategy)
                 ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
-                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
                 ui.cvjb_pushButon_04.setStyleSheet(style_bc_st)
+                gubun = 'upbit' if '업비트' in ui.dict_set['거래소'] else 'binance'
+                stg_save_version(gubun, 'basic', 'buy', strategy_name, strategy)
+                QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
 
 @error_decorator

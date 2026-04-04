@@ -34,6 +34,20 @@ class SetCoinBack:
 
     # =================================================================================================================
 
+        self.ui.cs_textEditttt_10 = self.wc.setTextEdit(self.ui.cs_tab, vscroll=True, visible=False, filter_=True, event_filter=False, font=qfont14)
+        self.ui.cs_comboBoxxxx_41 = self.wc.setCombobox(self.ui.cs_tab, font=qfont12, activated=self.ui.dActivated_04)
+        self.ui.cs_comboBoxxxx_42 = self.wc.setCombobox(self.ui.cs_tab, font=qfont12, activated=self.ui.dActivated_04)
+        self.ui.cs_pushButtonn_41 = self.wc.setPushbutton('버전삭제', parent=self.ui.cs_tab, bounced=True, click=self.ui.ssButtonClicked_07, tip='선택된 버전의 데이터를 삭제합니다.')
+
+        self.ui.coin_version_list = [
+            self.ui.cs_textEditttt_10, self.ui.cs_comboBoxxxx_41, self.ui.cs_comboBoxxxx_42, self.ui.cs_pushButtonn_41
+        ]
+
+        for widget in self.ui.coin_version_list:
+            widget.setVisible(False)
+
+    # =================================================================================================================
+
         self.ui.cs_tableWidget_01 = self.wc.setTablewidget(self.ui.cs_tab, columns_bt, 32, vscroll=True, fixed=True, clicked=self.ui.CellClicked_06)
         self.ui.cs_comboBoxxxx_01 = self.wc.setCombobox(self.ui.cs_tab, font=qfont12, activated=self.ui.dActivated_01)
         self.ui.cs_pushButtonn_01 = self.wc.setPushbutton('백테스트상세기록', parent=self.ui.cs_tab, bounced=True, click=self.ui.csButtonClicked_01, tip='백테스트 상세기록을 불러온다.')
@@ -67,7 +81,7 @@ class SetCoinBack:
 
         self.ui.cvjb_comboBoxx_01 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_01)
         self.ui.cvjb_lineEditt_01 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F2, F3', style=style_bc_dk)
-        self.ui.cvjb_pushButon_01 = self.wc.setPushbutton('매수전략 로딩(F1)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinBuyStgLoad, color=1)
+        self.ui.cvjb_pushButon_01 = self.wc.setPushbutton('매수전략 로딩(F1)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinBuyStgLoad, color=1, tip='작성된 매수전략을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.cvjb_pushButon_02 = self.wc.setPushbutton('매수전략 저장(F4)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinBuyStgSave, color=1, tip='작성된 매수전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.cvjb_pushButon_03 = self.wc.setPushbutton('매수변수 로딩', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinBuyFactor, color=1, tip='매수전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.cvjb_pushButon_04 = self.wc.setPushbutton('매수전략 시작', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinBuyStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
@@ -87,7 +101,7 @@ class SetCoinBack:
 
         self.ui.cvjs_comboBoxx_01 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_02)
         self.ui.cvjs_lineEditt_01 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
-        self.ui.cvjs_pushButon_01 = self.wc.setPushbutton('매도전략 로딩(F5)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinSellStgLoad, color=1)
+        self.ui.cvjs_pushButon_01 = self.wc.setPushbutton('매도전략 로딩(F5)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinSellStgLoad, color=1, tip='작성된 매도전략을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.cvjs_pushButon_02 = self.wc.setPushbutton('매도전략 저장(F8)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinSellStgSave, color=1, tip='작성된 매도전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.cvjs_pushButon_03 = self.wc.setPushbutton('매도변수 로딩', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinSellFactor, color=1, tip='매도전략에 사용할 수 있는 변수목록을 불러온다.')
         self.ui.cvjs_pushButon_04 = self.wc.setPushbutton('매도전략 시작', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinSellStgStart, color=1, tip='작성한 전략을 저장 후 콤보박스에서 선택해야 적용된다.')
@@ -155,7 +169,7 @@ class SetCoinBack:
         self.ui.cvj_pushButton_14 = self.wc.setPushbutton('백테스트 로그', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinBacktestLog, color=4, tip='단축키(Alt+9)')
         self.ui.cvj_pushButton_15 = self.wc.setPushbutton('상세기록', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinBacktestDetail, color=4, tip='단축키(Alt+0)')
 
-        self.ui.coin_editer_list  = [
+        self.ui.coin_editer_list = [
             self.ui.cvj_pushButton_06, self.ui.cvj_pushButton_07, self.ui.cvj_pushButton_08, self.ui.cvj_pushButton_09,
             self.ui.cvj_pushButton_10, self.ui.cvj_pushButton_11, self.ui.cvj_pushButton_12, self.ui.cvj_pushButton_13,
             self.ui.cvj_pushButton_14, self.ui.cvj_pushButton_15
@@ -165,12 +179,12 @@ class SetCoinBack:
 
         self.ui.cvc_comboBoxxx_01 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_03)
         self.ui.cvc_lineEdittt_01 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F2, F3', style=style_bc_dk)
-        self.ui.cvc_pushButton_01 = self.wc.setPushbutton('최적화 매수전략 로딩(F1)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiBuyLoad, color=1)
+        self.ui.cvc_pushButton_01 = self.wc.setPushbutton('최적화 매수전략 로딩(F1)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiBuyLoad, color=1, tip='작성된 최적화 매수전략을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.cvc_pushButton_02 = self.wc.setPushbutton('최적화 매수전략 저장(F4)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiBuySave, color=1, tip='작성된 최적화 매수전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
 
         self.ui.cvc_comboBoxxx_02 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_04)
         self.ui.cvc_lineEdittt_02 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F10, F11', style=style_bc_dk)
-        self.ui.cvc_pushButton_03 = self.wc.setPushbutton('최적화 변수범위 로딩(F9)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiVarsLoad, color=1)
+        self.ui.cvc_pushButton_03 = self.wc.setPushbutton('최적화 변수범위 로딩(F9)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiVarsLoad, color=1, tip='작성된 최적화 변수설정을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.cvc_pushButton_04 = self.wc.setPushbutton('최적화 변수범위 저장(F12)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiVarsSave, color=1, tip='작성된 최적화 변수설정을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
 
         self.ui.cvc_labellllll_01 = QLabel('▣ 일반은 학습기간, 검증은 검증기간, 테스트는 확인기간까지 선택', self.ui.cs_tab)
@@ -208,7 +222,7 @@ class SetCoinBack:
 
         self.ui.cvc_comboBoxxx_08 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_05)
         self.ui.cvc_lineEdittt_03 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
-        self.ui.cvc_pushButton_09 = self.wc.setPushbutton('최적화 매도전략 로딩(F5)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiSellLoad, color=1)
+        self.ui.cvc_pushButton_09 = self.wc.setPushbutton('최적화 매도전략 로딩(F5)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiSellLoad, color=1, tip='작성된 최적화 매도전략을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.cvc_pushButton_10 = self.wc.setPushbutton('최적화 매도전략 저장(F8)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinOptiSellSave, color=1, tip='작성된 최적화 매도전략을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.cvc_labellllll_04 = QLabel(optitext, self.ui.cs_tab)
         self.ui.cvc_labellllll_04.setFont(qfont13)
@@ -283,7 +297,7 @@ class SetCoinBack:
 
         self.ui.cva_comboBoxxx_01 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_06)
         self.ui.cva_lineEdittt_01 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F10, F11', style=style_bc_dk)
-        self.ui.cva_pushButton_04 = self.wc.setPushbutton('GA 변수범위 로딩(F9)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinGavarsLoad, color=1)
+        self.ui.cva_pushButton_04 = self.wc.setPushbutton('GA 변수범위 로딩(F9)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinGavarsLoad, color=1, tip='작성된 변수범위를 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.cva_pushButton_05 = self.wc.setPushbutton('GA 변수범위 저장(F12)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinGavarsSave, color=1, tip='작성된 변수범위를 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
 
         self.ui.coin_gaopti_list  = [
@@ -318,11 +332,11 @@ class SetCoinBack:
 
         self.ui.cvo_comboBoxxx_01 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_07)
         self.ui.cvo_lineEdittt_01 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F2, F3', style=style_bc_dk)
-        self.ui.cvo_pushButton_01 = self.wc.setPushbutton('매수조건 로딩(F1)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinCondbuyLoad, color=1)
+        self.ui.cvo_pushButton_01 = self.wc.setPushbutton('매수조건 로딩(F1)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinCondbuyLoad, color=1, tip='작성된 매수조건을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.cvo_pushButton_02 = self.wc.setPushbutton('매수조건 저장(F4)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinCondbuySave, color=1, tip='작성된 매수조건을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
         self.ui.cvo_comboBoxxx_02 = self.wc.setCombobox(self.ui.cs_tab, font=qfont14, activated=self.ui.cActivated_08)
         self.ui.cvo_lineEdittt_02 = self.wc.setLineedit(self.ui.cs_tab, font=qfont14, aleft=True, ltext='F6, F7', style=style_bc_dk)
-        self.ui.cvo_pushButton_03 = self.wc.setPushbutton('매도조건 로딩(F5)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinCondsellLoad, color=1)
+        self.ui.cvo_pushButton_03 = self.wc.setPushbutton('매도조건 로딩(F5)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinCondsellLoad, color=1, tip='작성된 매도조건을 로딩한다.\nCtrl 키와 함께 누르면 버전관리 상태로 전환합니다.')
         self.ui.cvo_pushButton_04 = self.wc.setPushbutton('매도조건 저장(F8)', parent=self.ui.cs_tab, bounced=True, click=self.ui.CoinCondsellSave, color=1, tip='작성된 매도조건을 저장한다.\nCtrl 키와 함께 누르면 코드 테스트 과정을 생략한다.')
 
         self.ui.cvo_labellllll_04 = QLabel('매수조건수                     매도조건수                    최적화횟수', self.ui.cs_tab)
@@ -347,6 +361,11 @@ class SetCoinBack:
         for widget in self.ui.coin_opcond_list:
             widget.setVisible(False)
 
+        self.ui.coin_load_list = [
+            self.ui.cvjb_pushButon_01, self.ui.cvjs_pushButon_01, self.ui.cvc_pushButton_01, self.ui.cvc_pushButton_03,
+            self.ui.cvc_pushButton_09, self.ui.cva_pushButton_04, self.ui.cvo_pushButton_01, self.ui.cvo_pushButton_03
+        ]
+
     # =================================================================================================================
 
         self.ui.cs_textEditttt_01.setGeometry(7, 10, 1000, 463)
@@ -357,6 +376,11 @@ class SetCoinBack:
         self.ui.cs_textEditttt_06.setGeometry(659, 10, 347, 740)
         self.ui.cs_textEditttt_07.setGeometry(7, 10, 497, 740)
         self.ui.cs_textEditttt_08.setGeometry(509, 10, 497, 740)
+
+        self.ui.cs_textEditttt_10.setGeometry(509, 40, 497, 700)
+        self.ui.cs_comboBoxxxx_41.setGeometry(7, 10, 497, 25)
+        self.ui.cs_comboBoxxxx_42.setGeometry(509, 10, 400, 25)
+        self.ui.cs_pushButtonn_41.setGeometry(914, 10, 92, 25)
 
         self.ui.czoo_pushButon_01.setGeometry(937, 15, 50, 20)
         self.ui.czoo_pushButon_02.setGeometry(937, 483, 50, 20)
