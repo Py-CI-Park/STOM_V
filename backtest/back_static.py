@@ -415,7 +415,17 @@ def get_interval(total_sec):
 def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
              backname, back_text, label_text, save_file_name, schedul, notplotshow, buy_vars=None, sell_vars=None):
 
+    from utility.setting_base import GRAPH_PATH
+    from matplotlib import pyplot as plt, font_manager, gridspec
     from utility.static import dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
+
+    plt.rcParams['figure.max_open_warning'] = 0
+    plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()
+    plt.rcParams['axes.unicode_minus'] = False
+    plt.rcParams['path.simplify'] = True
+    plt.rcParams['path.snap'] = True
+    plt.rcParams['figure.autolayout'] = True
+    plt.rcParams['figure.constrained_layout.use'] = True
 
     df_kp, df_kd, df_nd, df_bc = None, None, None, None
     if startday != endday:
@@ -438,21 +448,9 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     df_tsg['이익금액'] = df_tsg['수익금'].clip(lower=0)
     df_tsg['손실금액'] = df_tsg['수익금'].clip(upper=0)
 
-    mdd_list = []
-    random_cumsums = []
+    from backtest.back_static_numba import calculate_mdd_bootstrap
     sig_array = df_tsg['수익금'].values
-    for i in range(100):
-        random_sig_array = np.random.permutation(sig_array)
-        cumsum_sig_array = np.cumsum(random_sig_array)
-        random_cumsums.append(cumsum_sig_array)
-        try:
-            lower = np.argmax(np.maximum.accumulate(cumsum_sig_array) - cumsum_sig_array)
-            upper = np.argmax(cumsum_sig_array[:lower])
-            mdd_ = round(abs(cumsum_sig_array[upper] - cumsum_sig_array[lower]) / (cumsum_sig_array[upper] + seed) * 100, 2)
-        except:
-            mdd_ = 0.
-        mdd_list.append(mdd_)
-    random_cumsums = np.array(random_cumsums)
+    mdd_list, random_cumsums = calculate_mdd_bootstrap(sig_array, seed)
 
     df_ts = df_tsg[['수익금']].copy()
     df_ts.index = df_ts.index.map(lambda x: dt_ymd(x))
@@ -498,14 +496,6 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
                 if not df_tsg_.empty:
                     endx_list.append(df_tsg_.index[-1])
 
-    from matplotlib import pyplot as plt, font_manager, gridspec
-    plt.rcParams['figure.max_open_warning'] = 0
-    plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()
-    plt.rcParams['axes.unicode_minus'] = False
-    plt.rcParams['path.simplify'] = True
-    plt.rcParams['path.snap'] = True
-    plt.rcParams['figure.autolayout'] = True
-    plt.rcParams['figure.constrained_layout.use'] = True
     if schedul or notplotshow:
         plt.switch_backend('agg')
 
@@ -602,17 +592,16 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     ax2.legend(loc='best')
     ax2.grid(True, alpha=0.3)
 
-    from utility.setting_base import GRAPH_PATH
+    if not schedul and not notplotshow:
+        plt.tight_layout()
+        plt.show()
+
     fig1.savefig(f"{GRAPH_PATH}/{save_file_name}_.png", dpi=100, bbox_inches='tight')
     fig2.savefig(f"{GRAPH_PATH}/{save_file_name}.png", dpi=100, bbox_inches='tight')
 
     teleQ.put(f'{backname} {save_file_name.split("_")[1]} 완료.')
     teleQ.put(f"{GRAPH_PATH}/{save_file_name}_.png")
     teleQ.put(f"{GRAPH_PATH}/{save_file_name}.png")
-
-    if not schedul and not notplotshow:
-        plt.tight_layout()
-        plt.show()
 
 
 def GetResultDataframe(ui_gubun, list_tsg, arry_bct):

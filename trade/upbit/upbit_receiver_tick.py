@@ -124,28 +124,27 @@ class UpbitReceiverTick:
             tbids = data['acc_bid_volume']
             tasks = data['acc_ask_volume']
             dm    = data['acc_trade_price']
+
+            date = self.dict_data.get(code)
+            if date:
+                bids, asks, pretbids, pretasks = date[7:11]
+            else:
+                bids, asks, pretbids, pretasks = 0, 0, tbids, tasks
+
+            bids_ = round(tbids - pretbids, 8)
+            asks_ = round(tasks - pretasks, 8)
+            bids += bids_
+            asks += asks_
+            # noinspection PyTypeChecker
+            ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
+
+            self.dict_daym[code] = dm
+            self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
+
+            self.UpdateMoneyFactor(code, c, int(c * bids_), int(c * asks_))
+            self.UpdateHogaWindowTick(code, dt, bids_, asks_, c, per, o, h, low, ch)
         except:
             self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData'))
-            return
-
-        date = self.dict_data.get(code)
-        if date:
-            bids, asks, pretbids, pretasks = date[7:11]
-        else:
-            bids, asks, pretbids, pretasks = 0, 0, tbids, tasks
-
-        bids_ = round(tbids - pretbids, 8)
-        asks_ = round(tasks - pretasks, 8)
-        bids += bids_
-        asks += asks_
-        # noinspection PyTypeChecker
-        ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
-
-        self.dict_daym[code] = dm
-        self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
-
-        self.UpdateMoneyFactor(code, c, int(c * bids_), int(c * asks_))
-        self.UpdateHogaWindowTick(code, dt, bids_, asks_, c, per, o, h, low, ch)
 
     def UpdateMoneyFactor(self, code, c, buy_money, sell_money):
         if code not in self.dict_money:
@@ -212,6 +211,7 @@ class UpbitReceiverTick:
             if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]):
                 return
 
+            receivetime = now()
             code = data['code']
             hoga_tamount = [
                 data['total_ask_size'], data['total_bid_size']
@@ -233,50 +233,48 @@ class UpbitReceiverTick:
                 data[0]['bid_size'], data[1]['bid_size'], data[2]['bid_size'], data[3]['bid_size'], data[4]['bid_size'],
                 data[5]['bid_size'], data[6]['bid_size'], data[7]['bid_size'], data[8]['bid_size'], data[9]['bid_size']
             ]
-            receivetime = now()
+
+            send   = False
+            dt_min = int(str(dt)[:12])
+
+            code_data = self.dict_data.get(code)
+            money_arr = self.dict_money.get(code)
+            if code_data and money_arr:
+                code_dtdm = self.dict_dtdm.get(code)
+                if code_dtdm:
+                    if dt > code_dtdm[0]:
+                        send = True
+                else:
+                    self.dict_dtdm[code] = [dt, 0]
+                    code_dtdm = self.dict_dtdm[code]
+                    send = True
+
+                if send:
+                    csp = cbp = code_data[0]
+                    hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount = \
+                        self.CorrectionHogaData(csp, cbp, hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount)
+
+                    data, c, dm, logt = self.GetSendData(True, code, code_data, code_dtdm, money_arr,
+                                                         hoga_samount, hoga_bamount, hoga_seprice, hoga_buprice,
+                                                         hoga_tamount, dt, dt_min)
+
+                    self.cstgQ.put(data)
+                    if code in self.tuple_order or code in self.tuple_jango:
+                        self.ctraderQ.put(('잔고갱신', (code, c)))
+
+                    code_dtdm[0] = dt
+                    code_dtdm[1] = dm
+                    code_data[7] = 0
+                    code_data[8] = 0
+                    money_arr[0] = 0
+                    money_arr[1] = 0
+
+                    self.SendLog(logt, dt_min, receivetime)
+
+            self.UpdateMoneyTop(dt)
+            self.UpdateHogaWindowRem(code, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount)
         except:
             self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateHogaData'))
-            return
-
-        send   = False
-        dt_min = int(str(dt)[:12])
-
-        code_data = self.dict_data.get(code)
-        money_arr = self.dict_money.get(code)
-        if code_data and money_arr:
-            code_dtdm = self.dict_dtdm.get(code)
-            if code_dtdm:
-                if dt > code_dtdm[0]:
-                    send = True
-            else:
-                self.dict_dtdm[code] = [dt, 0]
-                code_dtdm = self.dict_dtdm[code]
-                send = True
-
-            if send:
-                csp = cbp = code_data[0]
-                hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount = \
-                    self.CorrectionHogaData(csp, cbp, hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount)
-
-                data, c, dm, logt = self.GetSendData(True, code, code_data, code_dtdm, money_arr,
-                                                     hoga_samount, hoga_bamount, hoga_seprice, hoga_buprice,
-                                                     hoga_tamount, dt, dt_min)
-
-                self.cstgQ.put(data)
-                if code in self.tuple_order or code in self.tuple_jango:
-                    self.ctraderQ.put(('잔고갱신', (code, c)))
-
-                code_dtdm[0] = dt
-                code_dtdm[1] = dm
-                code_data[7] = 0
-                code_data[8] = 0
-                money_arr[0] = 0
-                money_arr[1] = 0
-
-                self.SendLog(logt, dt_min, receivetime)
-
-        self.UpdateMoneyTop(dt)
-        self.UpdateHogaWindowRem(code, dt, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount)
 
     def CorrectionHogaData(self, csp, cbp, hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount):
         if hoga_seprice[-1] < csp:

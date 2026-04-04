@@ -10,7 +10,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from trade.binance.binance_websocket import WebSocketTrader
 from utility.setting_base import columns_cj, columns_tdf, ui_num, DB_TRADELIST, columns_jgcf
 from utility.static import now, timedelta_sec, GetBinanceShortPgSgSp, GetBinanceLongPgSgSp, str_ymd, str_hms, \
-    now_utc, str_ymdhmsf, str_hmsf, dt_hms, qtest_qwait
+    now_utc, str_ymdhmsf, str_hmsf, dt_hms, qtest_qwait, set_builtin_print, error_decorator
 
 
 class Updater(QThread):
@@ -108,6 +108,7 @@ class BinanceTrader:
         self.updater.signal3.connect(self.UpdateString)
         self.updater.start()
 
+        set_builtin_print(True, self.windowQ)
         app.exec_()
 
     def get_jgcs_time(self):
@@ -213,6 +214,7 @@ class BinanceTrader:
             self.JangoCheongsan('자동')
         self.UpdateTotaljango()
 
+    @error_decorator
     def CheckOrder(self, data):
         if len(data) == 6:
             주문구분, 종목코드, 주문가격, 주문수량, 시그널시간, 잔고청산 = data
@@ -597,6 +599,7 @@ class BinanceTrader:
                 index = str(int(index) + 1)
         return index
 
+    @error_decorator
     def UpdateChejanData(self, 주문구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 주문번호):
         index = self.GetIndex()
 

@@ -368,7 +368,10 @@ class KiwoomAgentTick:
                 self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveRealData')))
             else:
                 lastprice = self.GetMasterLastPrice(code)
-                self.UpdateHogaData(dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount, code, name, start, lastprice)
+                try:
+                    self.UpdateHogaData(dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount, code, name, start, lastprice)
+                except:
+                    self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateHogaData')))
 
         elif realtype == '주식체결':
             dt = self.GetCommRealData(code, 20)
@@ -437,7 +440,10 @@ class KiwoomAgentTick:
             except:
                 self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - OnReceiveRealData')))
             else:
-                self.UpdateTickData(code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp)
+                try:
+                    self.UpdateTickData(code, dt, c, o, h, low, per, dm, v, ch, dmp, jvp, vrp, jsvp, sgta, csp, cbp)
+                except:
+                    self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData')))
 
         elif realtype == 'VI발동/해제':
             try:
