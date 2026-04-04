@@ -133,20 +133,20 @@ class WebCrawling(QThread):
         try:
             if self.imagelist1 is None:
                 url   = 'https://search.naver.com/search.naver?sm=tab_hty.top&where=image&ssc=tab.image.all&query=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&oquery=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&tqi=iAM7jwqVN8VsslwnmiossssstI4-416434'
-                resp  = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+                resp  = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
                 datas = resp.text.split('"viewerThumb":"')[1:]
                 datas = [x.split('lensThumb')[0] for x in datas]
                 datas = [x.split('.jpg')[0] + '.jpg' for x in datas]
                 self.imagelist1 = [x for x in datas if '\\' not in x]
             if self.imagelist2 is None:
                 url  = 'https://search.naver.com/search.naver?sm=tab_hty.top&where=image&ssc=tab.image.all&query=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EC%84%B8%EB%A1%9C%EC%82%AC%EC%A7%84&oquery=%EA%B3%A0%ED%99%94%EC%A7%88%ED%92%8D%EA%B2%BD%EA%B0%80%EB%A1%9C%EC%82%AC%EC%A7%84&tqi=iAM7OdqVOsVssAwVjfossssstwd-182384'
-                resp  = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+                resp  = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
                 datas = resp.text.split('"viewerThumb":"')[1:]
                 datas = [x.split('lensThumb')[0] for x in datas]
                 datas = [x.split('.jpg')[0] + '.jpg' for x in datas]
                 self.imagelist2 = [x for x in datas if '\\' not in x]
-            webimage1 = request.urlopen(random.choice(self.imagelist1), timeout=self._get_timeout()).read()
-            webimage2 = request.urlopen(random.choice(self.imagelist2), timeout=self._get_timeout()).read()
+            webimage1 = request.urlopen(random.choice(self.imagelist1), timeout=self.request_timeout).read()
+            webimage2 = request.urlopen(random.choice(self.imagelist2), timeout=self.request_timeout).read()
             self.signal.emit((ui_num['풍경사진'], webimage1, webimage2))
         except:
             pass
@@ -154,7 +154,7 @@ class WebCrawling(QThread):
     @thread_decorator
     def GugyCrawling(self, code):
         url  = f'{self.base_url}/item/coinfo.naver?code={code}'
-        resp = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+        resp = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
         soup = BeautifulSoup(resp.text, 'html.parser')
         gugy_result = ''
         titles = soup.select('.summary_info > p')
@@ -169,7 +169,7 @@ class WebCrawling(QThread):
         date_list, jbjg_list, gygs_list, link_list = [], [], [], []
         for i in (1, 2):
             url  = f'{self.base_url}/item//news_notice.naver?code={code}&page={i}'
-            resp = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+            resp = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
             soup = BeautifulSoup(resp.text, 'html.parser')
             tits = soup.select('a.tit')
             if not tits:
@@ -190,7 +190,7 @@ class WebCrawling(QThread):
         data_list = []
         for i in (1, 2):
             url   = f'{self.base_url}/item/news_news.naver?code={code}&page={i}&clusterId='
-            resp  = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+            resp  = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
             soup  = BeautifulSoup(resp.text, 'html.parser')
             news_list = soup.select('table.type5 > tbody > tr')
             if not news_list:
@@ -215,7 +215,7 @@ class WebCrawling(QThread):
     @thread_decorator
     def JmjpCrawling(self, code):
         url      = f'{self.base_url}/item/main.naver?code={code}'
-        resp     = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+        resp     = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
         soup     = BeautifulSoup(resp.text, 'html.parser').select('div.section.cop_analysis > div.sub_section')[0]
         txt_list = [item.get_text(strip=True) for item in soup.select('th')]
         num_list = [item.get_text(strip=True) for item in soup.select('td')][:130]
@@ -244,14 +244,14 @@ class WebCrawling(QThread):
     @thread_decorator
     def UjTmCrawling(self):
         url        = f'{self.base_url}/sise/sise_group.naver?type=upjong'
-        resp       = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+        resp       = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
         soup       = BeautifulSoup(resp.text, 'html.parser')
         url_list1  = [self.base_url + item['href'] for item in soup.select('td > a')]
         name_list1 = [item.get_text(strip=True) for item in soup.select('td > a')]
         per_list1  = [float(item.get_text(strip=True).replace('%', '')) for item in soup.select('.number > span')]
 
         url        = f'{self.base_url}/sise/theme.naver?&page=1'
-        resp       = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+        resp       = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
         soup       = BeautifulSoup(resp.text, 'html.parser')
         url_list2  = [self.base_url + item['href'] for item in soup.select('.col_type1 > a')[1:]]
         name_list2 = [item.get_text(strip=True) for item in soup.select('.col_type1 > a')[1:]]
@@ -285,7 +285,7 @@ class WebCrawling(QThread):
 
     @thread_decorator
     def UjTmCrawlingDetail(self, url, gubun):
-        resp      = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+        resp      = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
         soup      = BeautifulSoup(resp.text, 'html.parser')
         name_list = [item.get_text(strip=True) for item in soup.select('.name_area')]
         per_list  = [float(item.get_text(strip=True).replace('%', '')) for i, item in enumerate(soup.select('.number > span')[1:]) if i % 2 != 0]
@@ -361,7 +361,7 @@ class WebCrawling(QThread):
 
             while True:
                 url  = f'{self.base_url}/sise/sise_index_time.naver?code={symbol}&thistime={search_time}&page={i}'
-                resp = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+                resp = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
                 soup = BeautifulSoup(resp.text, 'html.parser')
 
                 page_times = [t.get_text(strip=True) for t in soup.select('td.date')]
@@ -458,7 +458,7 @@ class WebCrawling(QThread):
 
                 while True:
                     url  = f'{url_base}{i}'
-                    resp = self.session.get(url, headers=self.headers, timeout=self._get_timeout())
+                    resp = self.session.get(url, headers=self.headers, timeout=self.request_timeout)
                     soup = BeautifulSoup(resp.text, 'html.parser')
 
                     page_times  = [t.get_text(strip=True) for t in soup.select('td.date')]
@@ -530,7 +530,7 @@ class WebCrawling(QThread):
         for name, symbol in symbols.items():
             def job():
                 url  = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=1000"
-                resp = requests.get(url, headers=self.headers, timeout=self._get_timeout())
+                resp = requests.get(url, headers=self.headers, timeout=self.request_timeout)
                 resp.raise_for_status()
                 data = resp.json()
 
