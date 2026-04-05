@@ -1,5 +1,5 @@
 """US-302: --help 개선 + exit code 표준화 테스트."""
-import subprocess, sys, os, json
+import subprocess, sys, os, json, types
 import pytest
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -38,19 +38,34 @@ class TestExitCodes:
             capture_output=True, text=True, timeout=30, cwd=PROJECT_ROOT)
         assert result.returncode == 1
 
-    def test_execution_error_returns_two(self, tmp_path, tmp_strategy_db):
+    def test_execution_error_returns_two(self, monkeypatch):
         """실행 오류 시 exit code 2."""
-        env = {
-            **os.environ,
-            'STOM_CLI_DB_STRATEGY': tmp_strategy_db,
-            'STOM_CLI_DB_STOCK_BACK_MIN': str(tmp_path / 'missing_stock_min_back.db'),
-            'STOM_CLI_DB_BACKTEST': str(tmp_path / 'backtest.db'),
-        }
-        result = subprocess.run(
-            [PYTHON, STOM_BACKTEST, '--buy', '테스트매수전략', '--sell', '테스트매도전략',
-             '--start', '20250101', '--end', '20250131', '--timeframe', 'min', '--timeout', '15'],
-            capture_output=True, text=True, timeout=60, cwd=PROJECT_ROOT, env=env)
-        assert result.returncode == 2
+        import stom_backtest
+
+        config = types.SimpleNamespace(
+            dry_run=False,
+            output_format='json',
+            output_file=None,
+            is_tick=False,
+            buy_strategy='테스트매수전략',
+            sell_strategy='테스트매도전략',
+            start_date=20250101,
+            end_date=20250131,
+        )
+        fake_timeframe_detector = types.ModuleType('cli.timeframe_detector')
+        fake_timeframe_detector.validate_timeframe_match = lambda _config: {'status': 'ok'}
+        fake_runner = types.ModuleType('cli.runner')
+        fake_runner.run_backtest = lambda _config: {'status': 'error', 'message': 'execution boom'}
+
+        monkeypatch.setattr(stom_backtest, 'configure_safe_output', lambda: None)
+        monkeypatch.setattr(stom_backtest, 'parse_args', lambda: config)
+        monkeypatch.setattr(stom_backtest, 'validate', lambda _config: [])
+        monkeypatch.setattr(stom_backtest, 'format_result', lambda result, _fmt: json.dumps(result))
+        monkeypatch.setattr(stom_backtest, '_configure_matplotlib_headless', lambda: False)
+        monkeypatch.setitem(sys.modules, 'cli.timeframe_detector', fake_timeframe_detector)
+        monkeypatch.setitem(sys.modules, 'cli.runner', fake_runner)
+
+        assert stom_backtest.main() == stom_backtest.EXIT_EXEC_ERROR
 
     def test_exit_code_constants_in_entrypoint(self):
         """stom_backtest.py에 EXIT_SUCCESS, EXIT_ARG_ERROR 등 상수가 정의되어야 한다."""

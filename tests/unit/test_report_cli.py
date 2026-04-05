@@ -79,8 +79,9 @@ class TestReportCsv:
             if os.path.exists(tmp_path):
                 os.unlink(tmp_path)
 
-    def test_csv_without_output_file_fails(self):
+    def test_csv_without_output_file_fails(self, tmp_backtest_db):
         result = subprocess.run(
             [PYTHON, STOM_BACKTEST, 'report', '--source', 'backtest', '--format', 'csv'],
-            capture_output=True, text=True, timeout=30, cwd=PROJECT_ROOT)
+            capture_output=True, text=True, timeout=30, cwd=PROJECT_ROOT,
+            env=_report_env(tmp_backtest_db))
         assert result.returncode == 1
