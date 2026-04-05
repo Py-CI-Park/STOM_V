@@ -9,6 +9,7 @@ CURRENT_TRANSITION_FLOW = (
     "STOM_Version_2U_C_CLI_v267 -> research/init"
 )
 TARGET_POST_PROMOTION_FLOW = "V2 -> 2U -> 2U_C -> research/init"
+RETIRED_CLI_CHILD_LANE_FLOW = "V2 -> 2U -> 2U_C -> CLI_v267 -> research/init"
 LOCAL_GUIDE_EXPECTATIONS = {
     "2U": {
         "display_path": "C:/System_Trading/STOM/STOM_V.wt-2u/CLAUDE.md",
@@ -38,6 +39,9 @@ LOCAL_GUIDE_EXPECTATIONS = {
         "title": "# STOM Project Guidelines (STOM_Version_2U_C_CLI_v267)",
         "worktree_path": "`STOM_V.wt-dev/`",
         "identity_marker": "`CLI_v267`",
+        "current_transition_flow": CURRENT_TRANSITION_FLOW,
+        "target_post_promotion_flow": TARGET_POST_PROMOTION_FLOW,
+        "forbidden_live_flow": RETIRED_CLI_CHILD_LANE_FLOW,
         "marker": (
             "C:/System_Trading/STOM/STOM_V.wt-dev/docs/update_log/"
             "2026-04-04_v274_v277_cli_v267_baseline_note.md"
@@ -156,6 +160,13 @@ def test_worktree_local_claude_guides_keep_read_first_and_branch_gate_contract(
     assert "## Read First" in text, lane
     assert "## Branch Gate" in text, lane
     assert expectation["marker"] in text, lane
+
+    if "current_transition_flow" in expectation:
+        assert expectation["current_transition_flow"] in text, lane
+    if "target_post_promotion_flow" in expectation:
+        assert expectation["target_post_promotion_flow"] in text, lane
+    if "forbidden_live_flow" in expectation:
+        assert expectation["forbidden_live_flow"] not in text, lane
 
 
 def test_registry_tracks_current_carry_forward_items():
