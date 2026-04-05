@@ -9,7 +9,7 @@
 - `C:/System_Trading/STOM/STOM_V/docs/FORMAL_UPDATE_OPERATING_SYSTEM.md`
 - `C:/System_Trading/STOM/STOM_V/docs/CARRY_FORWARD_REGISTRY.md`
 - `C:/System_Trading/STOM/STOM_V/docs/update_log/2026-04-05_v274_v277_cycle_status.md`
-- `C:/System_Trading/STOM/STOM_V.wt-dev/docs/update_log/2026-04-04_v274_v277_cli_v267_baseline_note.md`
+- `C:/System_Trading/STOM/STOM_V.wt-2uc/docs/update_log/2026-04-05_2uc_single_baseline_consolidation_execution_log.md`
 
 ## Branch Gate
 
