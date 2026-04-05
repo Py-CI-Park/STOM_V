@@ -31,7 +31,7 @@
 
 ## 현재 워크트리 상태
 
-`V2 -> 2U -> STOM_Version_2U_C -> research/init`
+`V2 -> 2U -> 2U_C -> research/init`
 
 | 디렉토리 | 브랜치 | 역할 |
 |----------|--------|------|

@@ -57,4 +57,4 @@
 
 - Active guidance docs were rewritten for the single-baseline `STOM_Version_2U_C` model.
 - The live propagation chain is now `V2 -> 2U -> 2U_C -> research/init`.
-- `STOM_V.wt-dev/` and `STOM_V.wt-2uc/` now share the same baseline branch in the active docs.
+- `STOM_V.wt-dev/` is the active `STOM_Version_2U_C` checkout, while `STOM_V.wt-2uc/` remains on `integration/adopt-cli-v267-into-2uc` as the archive/transition checkout.
