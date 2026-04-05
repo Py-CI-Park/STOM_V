@@ -17,7 +17,7 @@ Target post-promotion state:
 Target propagation chain:
 
 ```text
-V2 -> 2U(pyd->py) -> 2U_C(custom+CLI) -> research/init
+V2 -> 2U -> 2U_C -> research/init
 ```
 
 ## Worktree Layout
@@ -60,8 +60,15 @@ Do not add serial-key code in this branch family.
 - Sync upstream changes by cherry-pick, not by overlay merge.
 - Preserve CLI-specific customizations that belong in the single baseline branch.
 - Keep the propagation order strictly one lane at a time.
+- Do not describe the target post-promotion order as the current live order while this checkout is still in transition.
 
-Required sync order:
+Current transition sync flow:
+
+```text
+V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init
+```
+
+Target / post-promotion sync order:
 
 ```text
 V2 -> 2U -> 2U_C -> research/init
