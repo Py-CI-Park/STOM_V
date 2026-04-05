@@ -59,6 +59,43 @@ LOCAL_GUIDE_EXPECTATIONS = {
         ),
     },
 }
+SIBLING_AGENT_GUIDE_EXPECTATIONS = {
+    "2U_C": {
+        "display_path": "C:/System_Trading/STOM/STOM_V.wt-2uc/AGENTS.md",
+        "relative_path": "../STOM_V.wt-2uc/AGENTS.md",
+        "required_strings": (
+            "# STOM_Version_2U_C - AI Agent Instructions",
+            "Current execution state:",
+            "`STOM_V.wt-2uc/` -> `integration/adopt-cli-v267-into-2uc`",
+            "`STOM_V.wt-dev/` -> `STOM_Version_2U_C_CLI_v267`",
+            "Target post-promotion state:",
+            "`STOM_V.wt-2uc/` -> `STOM_Version_2U_C`",
+            "`STOM_V.wt-dev/` -> `STOM_Version_2U_C`",
+            "Current transition sync flow:",
+            CURRENT_TRANSITION_FLOW,
+            "Target / post-promotion sync order:",
+            TARGET_POST_PROMOTION_FLOW,
+        ),
+        "forbidden_strings": (),
+    },
+    "CLI_v267": {
+        "display_path": "C:/System_Trading/STOM/STOM_V.wt-dev/AGENTS.md",
+        "relative_path": "../STOM_V.wt-dev/AGENTS.md",
+        "required_strings": (
+            "# STOM_Version_2U_C_CLI_v267 Transition Guide - AI Agent Instructions",
+            "## Current transition state",
+            CURRENT_TRANSITION_FLOW,
+            "## Target post-promotion state",
+            TARGET_POST_PROMOTION_FLOW,
+            "`STOM_V.wt-dev/`",
+            "`STOM_Version_2U_C_CLI_v267`",
+        ),
+        "forbidden_strings": (
+            "CLI_v258",
+            RETIRED_CLI_CHILD_LANE_FLOW,
+        ),
+    },
+}
 LIVE_DOWNSTREAM_HEADS = {
     "2U": "8c70573",
     "2U_C": "b0c3a6d",
@@ -167,6 +204,27 @@ def test_worktree_local_claude_guides_keep_read_first_and_branch_gate_contract(
         assert expectation["target_post_promotion_flow"] in text, lane
     if "forbidden_live_flow" in expectation:
         assert expectation["forbidden_live_flow"] not in text, lane
+
+
+@pytest.mark.parametrize(
+    ("lane", "expectation"),
+    SIBLING_AGENT_GUIDE_EXPECTATIONS.items(),
+    ids=SIBLING_AGENT_GUIDE_EXPECTATIONS.keys(),
+)
+def test_worktree_sibling_agents_guides_keep_transition_and_target_contracts(
+    lane: str, expectation: dict[str, tuple[str, ...]]
+):
+    guide_path = (ROOT / expectation["relative_path"]).resolve()
+
+    assert guide_path.exists(), expectation["display_path"]
+
+    text = guide_path.read_text(encoding="utf-8")
+
+    for required in expectation["required_strings"]:
+        assert required in text, f"{lane}: missing {required!r}"
+
+    for forbidden in expectation["forbidden_strings"]:
+        assert forbidden not in text, f"{lane}: unexpected {forbidden!r}"
 
 
 def test_registry_tracks_current_carry_forward_items():
