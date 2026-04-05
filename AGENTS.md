@@ -2,14 +2,38 @@
 
 ## Branch Role
 
-`STOM_Version_2U_C` is the single baseline branch for both custom development and CLI automation.
-The propagation chain is:
+This checkout is in transition mode. It is the integration lane that prepares the cutover from the absorbed CLI branch to the single-baseline branch.
+
+Current execution state:
+
+- `STOM_V.wt-2uc/` -> `integration/adopt-cli-v267-into-2uc`
+- `STOM_V.wt-dev/` -> `STOM_Version_2U_C_CLI_v267`
+
+Target post-promotion state:
+
+- `STOM_V.wt-2uc/` -> `STOM_Version_2U_C`
+- `STOM_V.wt-dev/` -> `STOM_Version_2U_C`
+
+Target propagation chain:
 
 ```text
-V2 -> 2U(pyd→py) -> 2U_C(custom+CLI) -> research/init
+V2 -> 2U(pyd->py) -> 2U_C(custom+CLI) -> research/init
 ```
 
 ## Worktree Layout
+
+Current transition layout:
+
+```text
+C:/System_Trading/STOM/
+├── STOM_V/       -> STOM_Version_2
+├── STOM_V.wt-2u/ -> STOM_Version_2U
+├── STOM_V.wt-2uc/-> integration/adopt-cli-v267-into-2uc
+├── STOM_V.wt-dev/-> STOM_Version_2U_C_CLI_v267
+└── STOM_V.wt-lab/-> research/init
+```
+
+Target cutover layout:
 
 ```text
 C:/System_Trading/STOM/
@@ -20,9 +44,8 @@ C:/System_Trading/STOM/
 └── STOM_V.wt-lab/-> research/init
 ```
 
-- `STOM_V.wt-dev/` is the primary active checkout for the baseline lane.
-- `STOM_V.wt-2uc/` is a companion checkout for the same baseline lane.
-- `STOM_V.wt-lab/` is reserved for `research/init`.
+- Do not describe the target layout as current until promotion lands.
+- Use `C:/System_Trading/STOM/STOM_V.wt-2uc/docs/WORKTREE_STRATEGY.md` as the local topology reference for this lane.
 
 ## Serial Key Policy
 
