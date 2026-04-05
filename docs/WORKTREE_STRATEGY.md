@@ -1,349 +1,76 @@
-# STOM 워크트리 병렬 개발 전략
+# STOM Worktree Strategy
 
-- 작성일: 2026-03-18
-- 적용 대상: 모든 STOM 활성 브랜치
+> This document describes the worktree lanes used by the STOM project.
 
----
+## 1. Purpose
 
-## 1. 개요
+The project uses separate worktrees so the release upstream, the 2U py lane, the 2U_C single-baseline lane, and the research lane can move independently without mixing responsibilities.
 
-STOM 프로젝트는 업스트림 추적, py 소스 동기화, 커스텀 개발, 연구 실험 등
-여러 개발 방향이 동시에 진행된다. Git worktree를 활용하여 각 방향을
-독립 디렉토리에서 병렬로 작업하고, AI Agent(Claude Code 등)를 동시 실행한다.
+## 2. Current Layout
 
-### 왜 워크트리인가?
-
-| 기존 방식 | 워크트리 방식 |
-|-----------|-------------|
-| 하나의 디렉토리에서 브랜치 전환 | 4개 디렉토리에서 동시 작업 |
-| 전환 시 unstaged 변경 충돌 위험 | 각 디렉토리가 독립 — 충돌 없음 |
-| AI Agent 1개만 실행 | AI Agent 최대 4개 병렬 실행 |
-| 컨텍스트 전환 비용 | 각 디렉토리가 항상 해당 브랜치 상태 유지 |
-
----
-
-## 2. 최종 구성
-
-```
-C:\System_Trading\STOM\
-│
-├── STOM_V/              → STOM_Version_2         (메인 레포)
-│                           업스트림 원본 기준점
-│                           V2.59+ 나오면 여기서 pull
-│
-├── STOM_V.wt-2u/        → STOM_Version_2U        (워크트리)
-│                           pyd→py 추론 동기화
-│                           V2 변경분을 py 소스로 반영
-│
-├── STOM_V.wt-dev/       → STOM_Version_2U_C      (워크트리, 주력 개발)
-│                           커스텀 개발 홈 브랜치
-│                           CLI, UI 등 feature 브랜치 분기점
-│
-└── STOM_V.wt-lab/       → research/*             (워크트리)
-                            실험적 기능 프로토타입
-                            새 research 브랜치 생성하여 사용
+```text
+C:/System_Trading/STOM/
+├── STOM_V/       -> STOM_Version_2
+├── STOM_V.wt-2u/ -> STOM_Version_2U
+├── STOM_V.wt-2uc/-> STOM_Version_2U_C
+├── STOM_V.wt-dev/-> STOM_Version_2U_C
+└── STOM_V.wt-lab/-> research/init
 ```
 
-### 네이밍 규칙
+`STOM_V.wt-2uc/` and `STOM_V.wt-dev/` both point at the same single-baseline branch. `STOM_V.wt-dev/` is the active development checkout.
 
-- 워크트리 폴더: `STOM_V.wt-{용도}` — `.wt-` 접두사로 워크트리임을 표시
-- `STOM_V` (메인)에는 접미사 없음
+## 3. Propagation Chain
 
----
+Required propagation order:
 
-## 3. 브랜치 계층 구조
-
-```
-STOM_Version_2 (V2.58)               ← 메인 레포 (STOM_V/)
-    │                                    업스트림 공식 버전 (pyd 포함)
-    │
-    └── STOM_Version_2U (V2.58.U1.2) ← wt-2u
-         │                               pyd 제거, py 소스 운영
-         │
-         └── STOM_Version_2U_C       ← wt-dev (홈 브랜치)
-              │                          커스텀 교정 + 개발 기지
-              │
-              ├── CLI_v251            (히스토리 참조용)
-              │    └── CLI_v258       (활성 CLI 개발)
-              │         └── feature/* (새 기능 브랜치)
-              │
-              └── feature/ui-*       (UI 보강 등)
-
-research/*                            ← wt-lab (독립 실험)
+```text
+V2 -> 2U -> 2U_C -> research/init
 ```
 
----
+Mapped lanes:
 
-## 4. 각 워크트리 역할과 작업 방법
+1. `STOM_Version_2` in `STOM_V/`
+2. `STOM_Version_2U` in `STOM_V.wt-2u/`
+3. `STOM_Version_2U_C` in `STOM_V.wt-2uc/`
+4. `STOM_Version_2U_C` in `STOM_V.wt-dev/`
+5. `research/init` in `STOM_V.wt-lab/`
 
-### 4.1 STOM_V/ (메인 레포) — 업스트림 추적
+## 4. Lane Rules
 
-**브랜치**: `STOM_Version_2`
-**역할**: STOM 공식 버전의 기준점. 새 버전(V2.59 등) 추적.
+### 4.1 STOM_V/ — Release ingress
 
-```bash
-cd C:\System_Trading\STOM\STOM_V
-# 새 업스트림 버전 확인/반영
-git pull origin STOM_Version_2
-```
+- Only release-originated changes enter through `STOM_Version_2`.
+- Keep the release lane separate from baseline development work.
+- Do not use this lane for direct feature coding.
 
-**이 디렉토리에서 하는 일:**
-- 업스트림 V2 신규 버전 pull
-- pyd 파일 변경 확인 (크기 비교 등)
-- 변경 내용 파악 후 wt-2u로 전파 판단
+### 4.2 STOM_V.wt-2u/ — pyd to py translation
 
-**이 디렉토리에서 하지 않는 일:**
-- 직접 코드 수정 (업스트림 원본 유지)
-- CLI/커스텀 기능 개발
-
-### 4.2 STOM_V.wt-2u/ — pyd→py 동기화
-
-**브랜치**: `STOM_Version_2U`
-**역할**: V2의 pyd 바이너리 변경을 py 소스에 추론 반영.
-
-```bash
-cd C:\System_Trading\STOM\STOM_V.wt-2u
-# V2 변경분 확인 후 py 소스에 추론 반영
-# 새 메서드 추가, 시그니처 보강 등
-```
-
-**이 디렉토리에서 하는 일:**
-- V2에서 pyd 변경 시 대응하는 py 파일 업데이트
-- `ui/ui_mainwindow.py` 추론 업데이트
-- 새 UI 파일(`set_*.py`, `ui_*.py`) 분석 → 인터페이스 맞춤
-
-**이 디렉토리에서 하지 않는 일:**
-- CLI 기능 개발
-- 커스텀 기능 추가
+- Use this lane to mirror upstream pyd changes into editable py sources.
+- Keep the lane focused on translation and verification of upstream changes.
+- Do not push single-baseline feature work into this worktree.
 
 ### 4.3 STOM_V.wt-dev/ — 주력 개발
 
 **홈 브랜치**: `STOM_Version_2U_C`
-**역할**: 커스텀 개발의 기지. CLI, UI 보강 등 모든 feature 브랜치의 분기점.
+**역할**: custom + CLI 단일 기준선 작업 레인
 
-```bash
-cd C:\System_Trading\STOM\STOM_V.wt-dev
+- This is the primary checkout for the current baseline.
+- Use it for active coding, integration work, and baseline-safe CLI automation.
+- Do not route live work through a downstream CLI child branch.
 
-# CLI 개발 시
-git switch STOM_Version_2U_C_CLI_v258
-git checkout -b feature/cli-new-feature
-# ... 작업 ...
-git switch STOM_Version_2U_C   # 홈으로 복귀
+### 4.4 STOM_V.wt-2uc/ — companion baseline checkout
 
-# UI 보강 시
-git checkout -b feature/ui-fix-something
-# ... 작업 ...
-git switch STOM_Version_2U_C   # 홈으로 복귀
-```
+- Shares the same `STOM_Version_2U_C` branch as `STOM_V.wt-dev/`.
+- Use it when a second checkout is helpful for inspection, comparison, or isolated edits.
+- Keep the branch model identical to the main baseline lane.
 
-**이 디렉토리에서 하는 일:**
-- CLI 자동화 기능 개발 (discovery, formula, strategy 등)
-- UI/py 소스 커스텀 교정
-- 2U에서 머지받은 업스트림 변경 통합
-- feature 브랜치 생성/작업/머지
+### 4.5 STOM_V.wt-lab/ — research lane
 
-**브랜치 전환 규칙:**
-- 홈 = `STOM_Version_2U_C` (작업 없을 때 여기)
-- 작업 = `feature/*` 또는 `CLI_v258` (실제 코딩)
+- Use `research/init` only for formal research, experiments, and proof-of-concept work.
+- Research results should not be treated as release input until they are explicitly promoted.
 
-### 4.4 STOM_V.wt-lab/ — 연구 실험
+## 5. Operating Notes
 
-**브랜치**: `research/*` (새로 생성)
-**역할**: 실험적 기능 프로토타입. 실패해도 다른 브랜치에 영향 없음.
-
-```bash
-cd C:\System_Trading\STOM\STOM_V.wt-lab
-# 새 실험 시작
-git checkout -b research/new-ml-model
-# ... 실험 ...
-# 성공 시: wt-dev에서 머지
-# 실패 시: 브랜치 유지 (히스토리 보존)
-```
-
-**이 디렉토리에서 하는 일:**
-- 새 분석 방법 실험
-- ML 모델 프로토타입
-- 새 데이터 소스 연동 테스트
-- PoC (Proof of Concept) 개발
-
----
-
-## 5. 업스트림 동기화 순서
-
-V2에 새 버전(예: V2.59)이 나왔을 때:
-
-```
-[1] STOM_V/ (V2)
-    V2.59 pull → 변경 내용 파악
-        │
-        ▼
-[2] STOM_V.wt-2u/ (2U)
-    pyd 변경분 → py 소스에 추론 반영
-    테스트 확인
-        │
-        ▼
-[3] STOM_V.wt-dev/ (2U_C)
-    2U 변경분 머지 → 충돌 해결
-    CLI 테스트 확인
-        │
-        ▼
-    완료: CLI_v258 또는 새 feature 브랜치에도 머지
-```
-
-**이 순서를 지키면 충돌을 최소화**할 수 있습니다.
-상위 브랜치에서 하위 브랜치로 한 단계씩 전파합니다.
-
----
-
-## 6. AI Agent (Claude Code) 실행 방법
-
-### 6.1 기본 실행
-
-각 워크트리 디렉토리에서 독립적으로 `claude` 명령을 실행합니다.
-
-```bash
-# 터미널 1: 업스트림 확인
-cd C:\System_Trading\STOM\STOM_V
-claude
-
-# 터미널 2: pyd→py 동기화
-cd C:\System_Trading\STOM\STOM_V.wt-2u
-claude
-
-# 터미널 3: CLI 개발 (주력)
-cd C:\System_Trading\STOM\STOM_V.wt-dev
-claude
-
-# 터미널 4: 연구 실험
-cd C:\System_Trading\STOM\STOM_V.wt-lab
-claude
-```
-
-### 6.2 독립성 보장
-
-| 항목 | 공유 여부 | 설명 |
-|------|----------|------|
-| git 히스토리/브랜치 | 공유 | 모든 워크트리가 동일 .git 참조 |
-| 작업 디렉토리 파일 | **독립** | 각 디렉토리가 해당 브랜치의 파일 보유 |
-| `_database/*.db` | **독립** (수동 복사) | .gitignore이므로 자동 복사 안 됨 |
-| `CLAUDE.md` | 공유 (git 추적) | 각 브랜치에 존재하면 자동 체크아웃 |
-| `~/.claude/` 설정 | 공유 | 사용자 전역 설정 (모든 세션 공유) |
-| AI Agent 컨텍스트 | **독립** | 각 세션이 별도 대화/컨텍스트 |
-
-### 6.3 주의사항
-
-- **동시 실행 수**: 2~3개가 적절 (API 비용 × 세션 수)
-- **같은 브랜치 금지**: 두 워크트리에서 동일 브랜치를 동시 체크아웃 불가
-- **DB 파일**: 필요한 워크트리에 수동 복사 후 사용
-- **커밋 동기**: 한 워크트리에서 커밋하면 다른 워크트리에서 즉시 `git log`로 확인 가능 (같은 .git)
-
----
-
-## 7. 워크트리 관리 명령어
-
-### 생성
-
-```bash
-cd C:\System_Trading\STOM\STOM_V   # 메인 레포에서 실행
-git worktree add ../STOM_V.wt-2u   STOM_Version_2U
-git worktree add ../STOM_V.wt-dev  STOM_Version_2U_C
-git worktree add ../STOM_V.wt-lab  -b research/init  # 새 브랜치 생성
-```
-
-### 확인
-
-```bash
-git worktree list
-```
-
-### 제거 (브랜치/히스토리 보존)
-
-```bash
-git worktree remove ../STOM_V.wt-2u
-git worktree remove ../STOM_V.wt-dev
-git worktree remove ../STOM_V.wt-lab
-```
-
-### 완전 복귀 (워크트리 없는 단일 레포)
-
-```bash
-git worktree remove ../STOM_V.wt-2u
-git worktree remove ../STOM_V.wt-dev
-git worktree remove ../STOM_V.wt-lab
-cd C:\System_Trading\STOM\STOM_V
-git switch STOM_Version_2U_C_CLI_v258  # 원하는 브랜치로 전환
-# → 기존과 완전히 동일한 상태
-```
-
----
-
-## 8. DB 파일 초기 세팅
-
-워크트리 생성 후 필요한 DB 파일을 복사합니다.
-
-```bash
-# wt-dev에 DB 복사 (CLI 개발에 필요)
-cp -r C:\System_Trading\STOM\STOM_V\_database C:\System_Trading\STOM\STOM_V.wt-dev\_database
-
-# wt-lab에 DB 복사 (연구 실험에 필요)
-cp -r C:\System_Trading\STOM\STOM_V\_database C:\System_Trading\STOM\STOM_V.wt-lab\_database
-
-# wt-2u는 보통 DB 불필요 (pyd→py 추론 작업만)
-```
-
----
-
-## 9. FAQ
-
-**Q: 워크트리를 나중에 없앨 수 있나요?**
-A: 네. `git worktree remove`로 디렉토리만 삭제됩니다. 브랜치, 커밋, 히스토리는 전부 보존됩니다. 언제든 다시 만들 수 있습니다.
-
-**Q: 워크트리 간에 커밋이 공유되나요?**
-A: 네. 모든 워크트리가 동일한 `.git` 저장소를 공유합니다. wt-dev에서 커밋하면 wt-2u에서도 `git log`로 즉시 볼 수 있습니다.
-
-**Q: 두 워크트리에서 같은 파일을 동시에 수정하면?**
-A: 서로 다른 브랜치이므로 작업 디렉토리 충돌은 없습니다. 나중에 머지할 때 git이 충돌을 알려줍니다.
-
-**Q: 워크트리에서 새 브랜치를 만들 수 있나요?**
-A: 네. 각 워크트리에서 자유롭게 `git checkout -b feature/xxx`로 새 브랜치를 생성할 수 있습니다.
-
-**Q: 메인 레포의 브랜치를 바꿔야 하나요?**
-A: 현재 메인 레포는 `CLI_v258`에 있습니다. 워크트리 전략 적용 시 `STOM_Version_2`로 전환합니다. 이는 워크트리 생성 시점에 진행합니다.
-
----
-
-## 10. 업스트림 반영 후 필수 검증
-
-공식 업데이트를 `STOM_Version_2U`, `STOM_Version_2U_C`, `CLI` 계열로 반영한 뒤에는 아래 검증을 반드시 수행합니다. 이 단계는 선택이 아니라 동기화 루틴의 일부입니다.
-
-### 10.1 실행 순서
-
-```bash
-# 예시: 비정식 워크트리 루트에서 실행
-python scripts/verify_nonrelease_sync.py
-python -m pytest tests/unit/ -q
-```
-
-### 10.2 verify_nonrelease_sync.py 역할
-
-`python scripts/verify_nonrelease_sync.py`는 이미 확인된 회귀가 다시 섞여 들어오지 않았는지 점검하는 가드 스크립트입니다. 현재 스크립트는 다음 항목을 검사합니다.
-
-- `.pyd` 파일 재유입 여부
-- 텔레그램 qlist 계약과 런타임 시작 경로 일치 여부
-- 비정식 워크트리 시리얼키 UI/로딩/저장 정책 유지 여부
-- 지수차트 삭제 후 잔여 참조 재유입 여부
-- `WebCrawling` QThread wiring 및 stop contract 유지 여부
-- `summer_time`, `get_profile_text` 호환 심볼 유지 여부
-- 키 로딩 안전 가드 유지 여부
-- `GetKiwoomPgSgSp()` 손실 반올림 회귀 여부
-
-### 10.3 실패 시 처리 원칙
-
-- `verify_nonrelease_sync.py`가 실패하면 먼저 그 항목을 수정하고 다시 스크립트를 통과시킵니다.
-- 스크립트가 통과하더라도 `pytest tests/unit/ -q`가 실패하면 테스트 실패 원인을 별도로 해결합니다.
-- 새로 발견된 회귀가 반복 가능성이 높으면 RCA 문서를 남기고, 다음부터는 `verify_nonrelease_sync.py` 규칙으로 승격합니다.
-
-### 10.4 참고 문서
-
-- `docs/update_log/2026-04-01_runtime_regression_rca_and_worktree_audit.md`
-- `scripts/verify_nonrelease_sync.py`
+- Keep `STOM_V.wt-dev/` and `STOM_V.wt-2uc/` aligned on the same baseline branch.
+- Treat `research/init` as downstream of the baseline chain, not as a live development lane.
+- Historical CLI child-lane names are retired and should not be used in active guidance.

@@ -1,302 +1,66 @@
-# STOM_Version_2U - AI Agent Instructions
+# STOM_Version_2U_C - AI Agent Instructions
 
-## 최우선 커밋 작성 규칙
+## Branch Role
 
-이 문서 아래에 남아 있는 기존 커밋 예시보다 아래 규칙을 우선합니다.
+`STOM_Version_2U_C` is the single baseline branch for both custom development and CLI automation.
+The propagation chain is:
 
-- 모든 신규 커밋 제목은 한글로 작성합니다.
-- 모든 신규 커밋 본문은 한글 마크다운으로 작성합니다.
-- 기본 본문 구조는 `## 배경`, `## 변경 사항`, `## 검증`, 필요 시 `## 주의사항`을 사용합니다.
-- 영문 타입 접두사만 있는 제목은 더 이상 기본 형식으로 사용하지 않습니다.
-- 트레일러를 사용할 때도 한글 값을 우선합니다.
-- 정식 버전 기록처럼 제목이 운영 규칙으로 고정된 커밋만 예외로 두고, 그 경우에도 본문은 한글 마크다운으로 작성합니다.
-
-## 브랜치 핵심 목적 (반드시 숙지)
-
-> **이 브랜치의 목적은 단순한 일회성 변환(pyd → py)이 아닙니다.**
-
-`STOM_Version_2U`는 `STOM_Version_2`에서 컴파일된 바이너리로만 제공되는
-`ui_mainwindow.pyd`를 **항상 수정·업데이트 가능한 소스 파일** `ui_mainwindow.py`로
-운영하는 **지속적 동기화 개발 브랜치**입니다.
-
-### 이 브랜치가 존재하는 이유
-
-`STOM_Version_2`의 핵심 UI 로직(`MainWindow`)은 `.pyd` 바이너리로만 배포되어
-소스 수정이 불가능합니다. `STOM_Version_2U`는 이 `.pyd`를 소스 형태로 유지하여:
-
-1. **수정 가능성**: UI 로직을 언제든지 수정·개선할 수 있는 구조 유지
-2. **지속적 동기화**: `STOM_Version_2`가 업데이트(pyd 변경)될 때마다 `ui_mainwindow.py` 동기화
-3. **동일 동작 보장**: `ui_mainwindow.py`가 `ui_mainwindow.pyd`와 동일한 인터페이스 및 동작 제공
-
-### 두 브랜치의 관계
-
-| 항목 | STOM_Version_2 | STOM_Version_2U |
-|------|----------------|-----------------|
-| `ui_mainwindow` | `.pyd` (컴파일 바이너리, 수정 불가) | `.py` (소스코드, 수정 가능) |
-| 업데이트 방법 | 재컴파일 후 pyd 교체 | 추론으로 py 파일 업데이트 |
-| 브랜치 성격 | 프로덕션 릴리스 브랜치 | 소스 추적·수정 개발 브랜치 |
-| `stom.py` 진입점 | `from ui.ui_mainwindow import MainWindow` | 동일 |
-
-### 브랜치 운영 원칙
-
-- `STOM_Version_2`의 새 버전이 나오면 → `STOM_Version_2U`도 반드시 동기화
-- `.pyd`는 직접 읽을 수 없으므로 → 주변 `.py` 파일 변화로 추론하여 적용
-- `ui_mainwindow.py` 반영은 **자동 치환 스크립트가 아닌 커밋/코드 분석 기반 추론**으로만 수행
-- 이 브랜치는 `STOM_Version_2`를 **항상 따라가는 살아있는 추적 브랜치**
-
----
-
-## CRITICAL RULE: pyd 변경 시 py 파일 추론 업데이트 (필수)
-
-### 규칙 설명
-
-`STOM_Version_2`에서 `.pyd` 파일이 변경된 경우, 해당 `.pyd`를 직접 열 수 없으므로
-**추론(inference)을 통해** 대응하는 `.py` 파일을 업데이트해야 합니다.
-
-이 규칙은 **항상, 예외 없이** 적용됩니다.
-
-### 어떤 pyd가 관리되는가
-
-현재 관리 대상:
-- `ui/ui_mainwindow.pyd` → `ui/ui_mainwindow.py`
-
-### pyd 변경 여부 판별
-
-```bash
-# 버전 간 pyd 파일 크기 비교
-git show {commit} --stat | grep pyd
-# 결과 예시:
-#   ui/ui_mainwindow.pyd  | Bin 788480 -> 817664 bytes  ← 실제 코드 변경
-#   ui/ui_mainwindow.pyd  | Bin 817664 -> 817664 bytes  ← 재컴파일만 (무시)
+```text
+V2 -> 2U(pyd→py) -> 2U_C(custom+CLI) -> research/init
 ```
 
-- **크기 변화 있음**: 실제 코드 변경 → py 파일 추론 업데이트 필요
-- **크기 변화 없음**: 재컴파일만 → 무시 가능
+## Worktree Layout
 
-### 추론 방법
-
-`.pyd` 파일은 직접 읽을 수 없으므로, 다음 방법으로 변경사항을 추론합니다:
-
-1. **새 .py 파일 분석**: 해당 버전에서 추가된 `set_*.py`, `ui_button_clicked_*.py` 등 확인
-   ```bash
-   git show {commit} --stat | grep "^+ *ui/"
-   ```
-
-2. **기존 .py 파일 diff 분석**: 변경된 UI 모듈들이 `self.ui.*` 메서드/속성을 새로 참조하는지 확인
-   ```bash
-   git show {commit} -- ui/{changed_file}.py | grep "self\.ui\."
-   ```
-
-3. **커밋 메시지 분석**: 어떤 기능이 추가/변경되었는지 파악
-
-4. **패턴 매칭**: 기존 코드 패턴과 유사한 구조로 누락된 메서드/속성 추론
-
-### 추론 적용 예시
-
-#### V2.39 사례 (pyd -29KB)
-- **단서**: `set_dialog_strategy.py` 신규 추가, `StrategyButtonClicked` 호출 발견
-- **적용**: `ui_mainwindow.py`에 4개 메서드 + 2개 속성 추가
-  ```python
-  # __init__에 추가
-  SetDialogStrategy(self, self.wc)
-  self.stg_btn_number = 1
-  self.dict_stg_btn   = dict(dict_stg_button)
-  # 메서드 추가
-  def StrategyButtonClicked(self, cmd):  button_clicked_strategy(self, cmd)
-  def StrategyCustomBottunDel(self):     button_clicked_strategy_delete(self)
-  def StrategyCustomBottunSave(self):    button_clicked_strategy_save(self)
-  def StrategyCustomDialogShow(self):    ...
-  ```
-
-#### V2.40 사례 (pyd +9.7KB)
-- **단서**: `ui_get_label_text.py` 등에서 `ui.dict_findex_*` 참조로 변경
-- **적용**: `ui_mainwindow.py` `__init__`에 10개 팩터 인덱스 딕셔너리 초기화
-  ```python
-  self.dict_findex_stock_tick   = {name: i for i, name in enumerate(list_stock_tick)}
-  self.dict_findex_stock_min    = {name: i for i, name in enumerate(list_stock_min)}
-  # ... (총 10개)
-  ```
-
-#### V2.42 사례 (pyd +2KB)
-- **단서**: `ui_button_clicked_strategy.py`에서 임계값 200→205 변경
-- **적용**: `StrategyCustomDialogShow`의 임계값 동기화
-
-### 커밋 형식
-
-아래 예시는 과거 형식입니다. 앞으로는 한글 제목과 한글 마크다운 본문을 기본으로 사용합니다.
-정식 버전 제목이 고정된 경우에만 `STOM V{version}.U1.2` 같은 식별자를 예외적으로 유지합니다.
-
-```
-STOM V{version}.U1.2 - {설명} (pyd 변경분 반영)
-
-수정 내용:
-- ui/ui_mainwindow.py: {추가된 내용}
-- 추론 근거: {어떤 파일/변경에서 추론했는지}
-
-pyd 분석: V{version}에서 ui_mainwindow.pyd {크기변화} →
-  {새로 발견된 set_*.py 등}이 요구하는 mainwindow 변경사항 반영
+```text
+C:/System_Trading/STOM/
+├── STOM_V/       -> STOM_Version_2
+├── STOM_V.wt-2u/ -> STOM_Version_2U
+├── STOM_V.wt-2uc/-> STOM_Version_2U_C
+├── STOM_V.wt-dev/-> STOM_Version_2U_C
+└── STOM_V.wt-lab/-> research/init
 ```
 
----
+- `STOM_V.wt-dev/` is the primary active checkout for the baseline lane.
+- `STOM_V.wt-2uc/` is a companion checkout for the same baseline lane.
+- `STOM_V.wt-lab/` is reserved for `research/init`.
 
-## 프로젝트 구조 (V2.51~)
+## Serial Key Policy
 
-```
-STOM_V/                    (STOM_Version_2U 브랜치)
-├── ui/
-│   ├── ui_mainwindow.py   ← pyd 대체 소스 (핵심 파일)
-│   ├── set_dialog_*.py    ← 다이얼로그 초기화 클래스
-│   ├── ui_button_clicked_*.py  ← 버튼 클릭 핸들러
-│   ├── ui_draw_*.py       ← 차트 그리기 클래스
-│   ├── ui_update_*.py     ← UI 업데이트 함수
-│   └── icon/              ← 아이콘 파일
-├── utility/
-│   ├── setting.py         ← 팩터 리스트, 설정값 정의
-│   ├── imagefiles/        ← 이미지 파일
-│   └── pycharm/           ← PyCharm 설정
-├── trade/
-│   ├── stock_korea/       ← 주식(키움증권) 트레이딩 로직
-│   ├── binance/           ← 바이낸스 암호화폐 트레이딩
-│   ├── upbit/             ← 업비트 암호화폐 트레이딩
-│   ├── future_oversea/    ← 해외선물 트레이딩
-│   └── strategy_base.py   ← 글로벌 전략 함수 클래스
-├── backtest/              ← 백테스팅 엔진
-├── research/
-│   ├── deeplearning/      ← 딥러닝 모델
-│   ├── analyzer/          ← 시장 분석기
-│   └── auxiliary_indicator/ ← 보조지표
-├── CLAUDE.md              ← Claude 작업 규칙 (pyd→py 규칙 포함)
-└── AGENTS.md              ← AI 에이전트 지침 (이 파일)
+Do not add serial-key code in this branch family.
+
+- The V2 upstream may contain serial-key authentication in pyd files.
+- The 2U family intentionally removes serial-key behavior.
+- Never infer serial-key logic back into `2U_C`.
+
+## Upstream Sync Policy
+
+- Sync upstream changes by cherry-pick, not by overlay merge.
+- Preserve CLI-specific customizations that belong in the single baseline branch.
+- Keep the propagation order strictly one lane at a time.
+
+Required sync order:
+
+```text
+V2 -> 2U -> 2U_C -> research/init
 ```
 
----
+## Verification Rules
 
-## 업데이트 절차
+- After upstream sync or branch propagation, run `pytest tests/unit/ -q`.
+- If the sync touches non-release paths, also run `python scripts/verify_nonrelease_sync.py`.
+- Treat `backtest/graph/` as protected result data.
 
-`STOM_Version_2`의 새 버전을 `STOM_Version_2U`에 적용할 때:
+## Commit Rules
 
-1. 대상 버전/커밋 식별: `STOM_Version_2`의 `prev..curr` 범위와 변경 파일 목록 확인
-2. pyd 크기 변화 확인: 각 버전별 `ui_mainwindow.pyd` 크기 비교
-3. 크기 변화가 있는 버전: 새/변경된 `ui/*.py`에서 `self.ui.*` / `ui.*` 호출·속성 참조를 분석해 `ui_mainwindow.py`를 **추론 기반 수동 수정**
-4. 구조 동일성 검증: `.pyd` 부재, 누락 메서드 없음, `stom.py` 진입점 동일성 확인
-5. 패치 커밋: `STOM V{version}.U1.2` 형식으로 추론 근거와 함께 커밋
-6. 비정식 워크트리 가드레일 검증: `python scripts/verify_nonrelease_sync.py`
-   - `.pyd` 파일 부재
-   - 텔레그램 qlist 계약 및 런타임 시작 경로 일치
-   - 비정식 워크트리 시리얼키 UI/로드/저장 정책 유지
+- Use explicit file staging; do not use `git add -A`.
+- Keep changes small and reviewable.
+- Commit messages must use Korean titles and Korean markdown bodies.
 
-### 금지 사항 (필수)
+## Strategy Generation Notes
 
-- `/c/System_Trading/stom_v2u_update.py` 같은 자동 동기화 스크립트에 의존하여
-  `ui_mainwindow.py` 변경을 생성/확정하지 않습니다.
-- 이유: `ui_mainwindow.pyd` 변경분은 기계적 파일 복사로 재현할 수 없고,
-  주변 모듈 호출 패턴을 해석한 **추론 반영**이 필요하기 때문입니다.
-- 허용: 파일 목록/변경 범위 확인 같은 보조 도구 사용은 가능하나,
-  최종 `ui_mainwindow.py` 반영은 반드시 추론 기반 수동 패치로 수행합니다.
+If a task concerns trading-condition generation:
 
----
-
-## CRITICAL RULE: pyd 파일 부재 및 구조 동일성 검증
-
-### 규칙
-1. **STOM_Version_2U에는 `.pyd` 파일이 절대 존재하면 안 됩니다**
-2. **`ui_mainwindow.py`는 `STOM_Version_2`의 `ui_mainwindow.pyd`와 동일한 공개 인터페이스를 제공해야 합니다**
-3. **stom.py 진입점은 양 브랜치가 동일해야 합니다**: `from ui.ui_mainwindow import MainWindow`
-
-### 검증 명령어 (업데이트 후 반드시 실행)
-
-```bash
-# Step 1: .pyd 파일 없음 확인 (0이어야 함)
-git ls-tree -r STOM_Version_2U --name-only | grep "\.pyd$" | wc -l
-
-# Step 2: 누락 메서드 확인 (빠른 1차, 출력 없어야 함)
-cd /c/System_Trading/STOM/STOM_V
-CALLED=$(git grep -h "self\.ui\." STOM_Version_2 -- "ui/*.py" 2>/dev/null | \
-    grep -o "self\.ui\.[A-Z][a-zA-Z0-9_]*" | sed 's/self\.ui\.//' | sort -u)
-DEFINED=$(cat ui/ui_mainwindow.py | grep "^    def [A-Z]" | \
-    grep -o "def [A-Z][a-zA-Z0-9_]*" | sed 's/def //' | sort -u)
-comm -23 <(echo "$CALLED") <(echo "$DEFINED")
-
-# Step 3: 메서드 누락 + 인자 개수(시그니처) 불일치 정밀 확인 (출력 없어야 함)
-python3 - <<'PY'
-import ast, pathlib, re, subprocess, sys
-ROOT = pathlib.Path('/c/System_Trading/STOM/STOM_V')
-main_text = (ROOT / 'ui' / 'ui_mainwindow.py').read_text(encoding='utf-8')
-main_mod  = ast.parse(main_text)
-methods   = {}
-for node in main_mod.body:
-    if isinstance(node, ast.ClassDef) and node.name == 'MainWindow':
-        for fn in node.body:
-            if isinstance(fn, ast.FunctionDef) and re.match(r'^[A-Z][A-Za-z0-9_]*$', fn.name):
-                args = fn.args.args[1:]  # skip self
-                min_args = len(args) - len(fn.args.defaults)
-                max_args = None if fn.args.vararg else len(args)
-                methods[fn.name] = (min_args, max_args)
-
-files = subprocess.check_output(
-    "git ls-tree -r --name-only STOM_Version_2 ui | grep '\\.py$'",
-    shell=True, text=True, cwd=ROOT
-).splitlines()
-missing = set()
-errors = []
-for f in files:
-    text = subprocess.check_output(f"git show STOM_Version_2:{f}", shell=True, text=True, cwd=ROOT)
-    try:
-        tree = ast.parse(text)
-    except SyntaxError:
-        continue
-    for n in ast.walk(tree):
-        if not (isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)):
-            continue
-        m = n.func.attr
-        if not re.match(r'^[A-Z][A-Za-z0-9_]*$', m):
-            continue
-        t = n.func.value
-        is_ui = (
-            (isinstance(t, ast.Name) and t.id == 'ui') or
-            (isinstance(t, ast.Attribute) and t.attr == 'ui' and isinstance(t.value, ast.Name) and t.value.id == 'self')
-        )
-        if not is_ui:
-            continue
-        if m not in methods:
-            missing.add(m)
-            continue
-        min_a, max_a = methods[m]
-        pos = len(n.args)
-        if pos < min_a or (max_a is not None and pos > max_a):
-            errors.append(f"{f}:{n.lineno} {m}({pos}) vs def({min_a}..{max_a if max_a is not None else '∞'})")
-
-if missing:
-    print("MISSING:", ", ".join(sorted(missing)))
-if errors:
-    print("\\n".join(errors))
-if missing or errors:
-    sys.exit(1)
-PY
-```
-
-### 메서드 누락 발견 시 수정 패턴
-```python
-# ui_mainwindow.py 끝 부분에 추가
-# from ui.ui_show_dialog import * 로 함수 임포트됨
-def MethodName(self):    function_name(self)         # 단일 인자
-def MethodName(self, x): function_name(self, x)      # 다중 인자
-```
-
-### 누락 메서드 찾기
-```bash
-# 어떤 파일에서 self.ui.MethodName을 호출하는지 확인
-git grep -rn "MethodName" STOM_Version_2 -- "ui/*.py"
-# 대응 함수가 어디 있는지 확인
-git grep -rn "def method_name\|def function_name" STOM_Version_2U -- "ui/*.py"
-```
-
----
-
-## 주의사항
-
-- `.pyd` 파일은 절대 커밋하지 않음 (`.gitattributes`로 관리)
-- `ui/ui_mainwindow.py`는 자동 스크립트로 갱신하지 않고 추론 기반으로 직접 관리
-- 새 `.py` 파일이 추가된 경우, `ui_mainwindow.py`의 import도 확인
-- **업데이트 후 반드시 위 검증 명령어 실행하여 누락 메서드/시그니처 불일치 없는지 확인**
-- **비정식 워크트리에서는 추가로 `python scripts/verify_nonrelease_sync.py`를 실행하여 텔레그램 계약과 시리얼키 정책 재유입 여부를 확인**
+1. Read `utility/ai_agent/strategy.txt`.
+2. Read `utility/ai_agent/rules.txt`.
+3. Generate STOM syntax in the branch-local text format.
+4. Save the generated strategy under `utility/ai_agent/`.
