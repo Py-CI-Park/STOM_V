@@ -4,12 +4,14 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
-CURRENT_TRANSITION_FLOW = (
+CURRENT_PROMOTED_FLOW = "V2 -> 2U -> 2U_C -> research/init"
+ARCHIVE_REFERENCE_FLOW = "integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C"
+RETIRED_TRANSITION_FLOW = (
     "V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> "
     "STOM_Version_2U_C_CLI_v267 -> research/init"
 )
-TARGET_POST_PROMOTION_FLOW = "V2 -> 2U -> 2U_C -> research/init"
 RETIRED_CLI_CHILD_LANE_FLOW = "V2 -> 2U -> 2U_C -> CLI_v267 -> research/init"
+
 LOCAL_GUIDE_EXPECTATIONS = {
     "2U": {
         "display_path": "C:/System_Trading/STOM/STOM_V.wt-2u/CLAUDE.md",
@@ -21,30 +23,46 @@ LOCAL_GUIDE_EXPECTATIONS = {
             "C:/System_Trading/STOM/STOM_V.wt-2u/docs/update_log/"
             "2026-04-04_v274_v277_2u_baseline_note.md"
         ),
+        "required_strings": (),
+        "forbidden_strings": (),
     },
-    "2U_C": {
+    "2U_C_archive": {
         "display_path": "C:/System_Trading/STOM/STOM_V.wt-2uc/CLAUDE.md",
         "relative_path": "../STOM_V.wt-2uc/CLAUDE.md",
-        "title": "# STOM Project Guidelines (STOM_Version_2U_C transition lane)",
+        "title": "# STOM Project Guidelines (STOM_Version_2U_C archive transition lane)",
         "worktree_path": "`STOM_V.wt-2uc/`",
         "identity_marker": "`integration/adopt-cli-v267-into-2uc`",
         "marker": (
             "C:/System_Trading/STOM/STOM_V.wt-2uc/docs/update_log/"
             "2026-04-05_2uc_single_baseline_consolidation_execution_log.md"
         ),
+        "required_strings": (
+            "archive/transition checkout",
+            CURRENT_PROMOTED_FLOW,
+        ),
+        "forbidden_strings": (
+            RETIRED_TRANSITION_FLOW,
+            RETIRED_CLI_CHILD_LANE_FLOW,
+        ),
     },
-    "CLI_v267": {
+    "2U_C_active": {
         "display_path": "C:/System_Trading/STOM/STOM_V.wt-dev/CLAUDE.md",
         "relative_path": "../STOM_V.wt-dev/CLAUDE.md",
-        "title": "# STOM Project Guidelines (STOM_Version_2U_C_CLI_v267)",
+        "title": "# STOM Project Guidelines (STOM_Version_2U_C)",
         "worktree_path": "`STOM_V.wt-dev/`",
-        "identity_marker": "`CLI_v267`",
-        "current_transition_flow": CURRENT_TRANSITION_FLOW,
-        "target_post_promotion_flow": TARGET_POST_PROMOTION_FLOW,
-        "forbidden_live_flow": RETIRED_CLI_CHILD_LANE_FLOW,
+        "identity_marker": "`STOM_Version_2U_C`",
         "marker": (
-            "C:/System_Trading/STOM/STOM_V.wt-dev/docs/update_log/"
-            "2026-04-04_v274_v277_cli_v267_baseline_note.md"
+            "C:/System_Trading/STOM/STOM_V.wt-2uc/docs/update_log/"
+            "2026-04-05_2uc_single_baseline_consolidation_execution_log.md"
+        ),
+        "required_strings": (
+            CURRENT_PROMOTED_FLOW,
+            "`integration/adopt-cli-v267-into-2uc`",
+        ),
+        "forbidden_strings": (
+            RETIRED_TRANSITION_FLOW,
+            RETIRED_CLI_CHILD_LANE_FLOW,
+            "`STOM_Version_2U_C_CLI_v267`",
         ),
     },
     "research/init": {
@@ -57,45 +75,50 @@ LOCAL_GUIDE_EXPECTATIONS = {
             "C:/System_Trading/STOM/STOM_V.wt-lab/docs/update_log/"
             "2026-04-04_v274_v277_research_init_baseline_note.md"
         ),
+        "required_strings": (),
+        "forbidden_strings": (),
     },
 }
+
 SIBLING_AGENT_GUIDE_EXPECTATIONS = {
-    "2U_C": {
+    "2U_C_archive": {
         "display_path": "C:/System_Trading/STOM/STOM_V.wt-2uc/AGENTS.md",
         "relative_path": "../STOM_V.wt-2uc/AGENTS.md",
         "required_strings": (
             "# STOM_Version_2U_C - AI Agent Instructions",
-            "Current execution state:",
+            "This checkout is the post-promotion archive/transition lane.",
             "`STOM_V.wt-2uc/` -> `integration/adopt-cli-v267-into-2uc`",
-            "`STOM_V.wt-dev/` -> `STOM_Version_2U_C_CLI_v267`",
-            "Target post-promotion state:",
-            "`STOM_V.wt-2uc/` -> `STOM_Version_2U_C`",
             "`STOM_V.wt-dev/` -> `STOM_Version_2U_C`",
-            "Current transition sync flow:",
-            CURRENT_TRANSITION_FLOW,
-            "Target / post-promotion sync order:",
-            TARGET_POST_PROMOTION_FLOW,
+            "Active propagation chain:",
+            CURRENT_PROMOTED_FLOW,
+            "Archive reference flow:",
+            ARCHIVE_REFERENCE_FLOW,
         ),
-        "forbidden_strings": (),
+        "forbidden_strings": (
+            RETIRED_TRANSITION_FLOW,
+            "`STOM_V.wt-dev/` -> `STOM_Version_2U_C_CLI_v267`",
+        ),
     },
-    "CLI_v267": {
+    "2U_C_active": {
         "display_path": "C:/System_Trading/STOM/STOM_V.wt-dev/AGENTS.md",
         "relative_path": "../STOM_V.wt-dev/AGENTS.md",
         "required_strings": (
-            "# STOM_Version_2U_C_CLI_v267 Transition Guide - AI Agent Instructions",
-            "## Current transition state",
-            CURRENT_TRANSITION_FLOW,
-            "## Target post-promotion state",
-            TARGET_POST_PROMOTION_FLOW,
-            "`STOM_V.wt-dev/`",
-            "`STOM_Version_2U_C_CLI_v267`",
+            "# STOM_Version_2U_C - AI Agent Instructions",
+            "This checkout is the active single-baseline lane after the CLI_v267 promotion.",
+            "`STOM_V.wt-dev/` -> `STOM_Version_2U_C`",
+            "`STOM_V.wt-2uc/` -> `integration/adopt-cli-v267-into-2uc`",
+            "Active propagation chain:",
+            CURRENT_PROMOTED_FLOW,
         ),
         "forbidden_strings": (
             "CLI_v258",
+            RETIRED_TRANSITION_FLOW,
             RETIRED_CLI_CHILD_LANE_FLOW,
+            "`STOM_Version_2U_C_CLI_v267`",
         ),
     },
 }
+
 LIVE_DOWNSTREAM_HEADS = {
     "2U": "8c70573",
     "2U_C": "b0c3a6d",
@@ -118,10 +141,10 @@ def test_formal_update_operating_system_doc_exists_and_names_the_lifecycle():
     assert "branch-local corrective fix" in text
     assert "carry-forward recording" in text
     assert "cycle closeout" in text
-    assert "## Current transition state" in text
-    assert CURRENT_TRANSITION_FLOW in text
-    assert "## Target post-promotion state" in text
-    assert TARGET_POST_PROMOTION_FLOW in text
+    assert "## Current promoted state" in text
+    assert CURRENT_PROMOTED_FLOW in text
+    assert "archive/history/transition checkout" in text
+    assert RETIRED_TRANSITION_FLOW not in text
 
 
 def test_agents_points_to_the_operating_system_and_registry():
@@ -130,24 +153,25 @@ def test_agents_points_to_the_operating_system_and_registry():
     assert "FORMAL_UPDATE_OPERATING_SYSTEM.md" in text
     assert "CARRY_FORWARD_REGISTRY.md" in text
     assert "docs/update_log/2026-04-05_v274_v277_cycle_status.md" in text
-    assert "Current transition state:" in text
-    assert CURRENT_TRANSITION_FLOW in text
-    assert "Target post-promotion state:" in text
-    assert TARGET_POST_PROMOTION_FLOW in text
+    assert "Current promoted state:" in text
+    assert CURRENT_PROMOTED_FLOW in text
+    assert "archive/transition lane" in text
+    assert RETIRED_TRANSITION_FLOW not in text
     assert "STOM V2.49" not in text
 
 
-def test_central_claude_mentions_preflight_entrypoint_docs_and_transition_split():
+def test_central_claude_mentions_preflight_entrypoint_docs_and_promoted_topology():
     text = read_text("CLAUDE.md")
 
     assert "python scripts/verify_release_sync.py" in text
     assert "docs/FORMAL_UPDATE_OPERATING_SYSTEM.md" in text
     assert "docs/CARRY_FORWARD_REGISTRY.md" in text
     assert "docs/update_log/2026-04-05_v274_v277_cycle_status.md" in text
-    assert "## Current Transition State" in text
-    assert CURRENT_TRANSITION_FLOW in text
-    assert "## Target Post-Promotion State" in text
-    assert TARGET_POST_PROMOTION_FLOW in text
+    assert "## Current Promoted State" in text
+    assert CURRENT_PROMOTED_FLOW in text
+    assert "archive/transition checkout" in text
+    assert ARCHIVE_REFERENCE_FLOW in text
+    assert RETIRED_TRANSITION_FLOW not in text
 
 
 def test_strategy_docs_declare_the_formal_update_operating_system_as_parent():
@@ -183,7 +207,7 @@ def test_cycle_status_contains_current_release_and_downstream_heads():
     ids=LOCAL_GUIDE_EXPECTATIONS.keys(),
 )
 def test_worktree_local_claude_guides_keep_read_first_and_branch_gate_contract(
-    lane: str, expectation: dict[str, str]
+    lane: str, expectation: dict[str, object]
 ):
     guide_path = (ROOT / expectation["relative_path"]).resolve()
     if not guide_path.exists():
@@ -198,12 +222,10 @@ def test_worktree_local_claude_guides_keep_read_first_and_branch_gate_contract(
     assert "## Branch Gate" in text, lane
     assert expectation["marker"] in text, lane
 
-    if "current_transition_flow" in expectation:
-        assert expectation["current_transition_flow"] in text, lane
-    if "target_post_promotion_flow" in expectation:
-        assert expectation["target_post_promotion_flow"] in text, lane
-    if "forbidden_live_flow" in expectation:
-        assert expectation["forbidden_live_flow"] not in text, lane
+    for required in expectation["required_strings"]:
+        assert required in text, lane
+    for forbidden in expectation["forbidden_strings"]:
+        assert forbidden not in text, lane
 
 
 @pytest.mark.parametrize(
@@ -211,7 +233,7 @@ def test_worktree_local_claude_guides_keep_read_first_and_branch_gate_contract(
     SIBLING_AGENT_GUIDE_EXPECTATIONS.items(),
     ids=SIBLING_AGENT_GUIDE_EXPECTATIONS.keys(),
 )
-def test_worktree_sibling_agents_guides_keep_transition_and_target_contracts(
+def test_worktree_sibling_agents_guides_keep_promoted_and_archive_contracts(
     lane: str, expectation: dict[str, tuple[str, ...]]
 ):
     guide_path = (ROOT / expectation["relative_path"]).resolve()

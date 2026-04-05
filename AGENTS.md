@@ -14,13 +14,10 @@ Read in this order before official update work:
 Current cycle status:
 `docs/update_log/2026-04-05_v274_v277_cycle_status.md`
 
-Current transition state:
-`V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init`
-
-Target post-promotion state:
+Current promoted state:
 `V2 -> 2U -> 2U_C -> research/init`
 
-`STOM_Version_2` remains the release-ingress branch. Do not describe the single-baseline promotion as already complete.
+`STOM_Version_2` remains the release-ingress branch. `STOM_V.wt-dev/` is the active `STOM_Version_2U_C` checkout, and `STOM_V.wt-2uc/` remains on `integration/adopt-cli-v267-into-2uc` as an archive/transition lane. Do not restore the retired live CLI child-lane model.
 
 ---
 

@@ -16,42 +16,26 @@ Release preflight:
 python scripts/verify_release_sync.py
 ```
 
-## 커밋 작성 언어 규칙
+## Commit Language Rules
 
-- 모든 신규 커밋 제목은 한글로 작성합니다.
-- 모든 신규 커밋 본문은 한글 마크다운으로 작성합니다.
-- 기본 본문 구조는 `## 배경`, `## 변경 사항`, `## 검증`, 필요 시 `## 주의사항`을 사용합니다.
-- `docs: ...`, `fix: ...` 같은 영문 타입 접두사 제목은 더 이상 기본 형식으로 사용하지 않습니다.
-- 트레일러를 사용할 때도 한글 값을 우선합니다.
-- 정식 버전 기록 커밋만 제목을 `STOM V{major}.{minor}`로 유지하고, 본문은 한글 마크다운으로 작성합니다.
+- All git commit titles must be written in Korean.
+- All git commit bodies must be written in Korean markdown.
+- Prefer descriptive intent titles over prefix-only titles such as `docs:` or `fix:`.
 
 ## Release And Worktree Mapping
 
-## Current Transition State
+## Current Promoted State
 
 ```text
 C:/System_Trading/STOM/
 ├── STOM_V/            -> STOM_Version_2
 ├── STOM_V.wt-2u/      -> STOM_Version_2U
 ├── STOM_V.wt-2uc/     -> integration/adopt-cli-v267-into-2uc
-├── STOM_V.wt-dev/     -> STOM_Version_2U_C_CLI_v267
-└── STOM_V.wt-lab/     -> research/init
-```
-
-`STOM_V.wt-2uc/` is the active integration lane. `STOM_V.wt-dev/` still carries the absorbed CLI baseline. Do not describe the single-baseline cutover as already complete.
-
-## Target Post-Promotion State
-
-```text
-C:/System_Trading/STOM/
-├── STOM_V/            -> STOM_Version_2
-├── STOM_V.wt-2u/      -> STOM_Version_2U
-├── STOM_V.wt-2uc/     -> STOM_Version_2U_C
 ├── STOM_V.wt-dev/     -> STOM_Version_2U_C
 └── STOM_V.wt-lab/     -> research/init
 ```
 
-After promotion, both `STOM_V.wt-2uc/` and `STOM_V.wt-dev/` should point at `STOM_Version_2U_C`.
+`STOM_V.wt-dev/` is the sole active checkout for `STOM_Version_2U_C`. `STOM_V.wt-2uc/` remains on `integration/adopt-cli-v267-into-2uc` as an archive/transition checkout that preserves promotion history and execution logs.
 
 ## Upstream Ingress Policy
 
@@ -59,19 +43,19 @@ After promotion, both `STOM_V.wt-2uc/` and `STOM_V.wt-dev/` should point at `STO
 - Judge upstream freshness against `https://github.com/devstom/STOM.git`.
 - Treat `C:/System_Trading/STOM/STOM_devstom` as a reference-only mirror, not the sole freshness authority.
 
-Current transition flow:
-
-```text
-V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init
-```
-
-Target post-promotion flow:
+Current live flow:
 
 ```text
 V2 -> 2U -> 2U_C -> research/init
 ```
 
-`STOM_Version_2` remains the release-ingress branch. The target cutover is not yet the current live topology, so do not bypass V2 ingress or skip intermediate lanes.
+Archive reference:
+
+```text
+integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C
+```
+
+`STOM_Version_2` remains the release-ingress branch. The canonical active propagation chain is `V2 -> 2U -> 2U_C -> research/init`. Do not bypass V2 ingress, and do not restore the retired live CLI child-lane model.
 
 ## Upstream Freshness Check
 
@@ -99,7 +83,7 @@ If you are validating an isolated checkout root, use:
 python scripts/verify_release_sync.py --root C:/System_Trading/STOM/STOM_V.wt-upsync
 ```
 
-Expect `release sync preflight passed` before claiming the lane is clean. During the current transition the live flow remains `V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init`, and only after promotion does the target flow become `V2 -> 2U -> 2U_C -> research/init`.
+Expect `release sync preflight passed` before claiming the lane is clean. The live flow is `V2 -> 2U -> 2U_C -> research/init`, while `STOM_V.wt-2uc/` remains an archive/transition checkout rather than an active canonical lane.
 
 ## Protected Paths
 
