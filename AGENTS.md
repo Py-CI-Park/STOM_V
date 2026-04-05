@@ -14,8 +14,13 @@ Read in this order before official update work:
 Current cycle status:
 `docs/update_log/2026-04-05_v274_v277_cycle_status.md`
 
-Canonical propagation order:
-`V2 -> 2U -> 2U_C -> CLI_v267 -> research/init`
+Current transition state:
+`V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init`
+
+Target post-promotion state:
+`V2 -> 2U -> 2U_C -> research/init`
+
+`STOM_Version_2` remains the release-ingress branch. Do not describe the single-baseline promotion as already complete.
 
 ---
 

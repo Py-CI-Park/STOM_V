@@ -27,18 +27,31 @@ python scripts/verify_release_sync.py
 
 ## Release And Worktree Mapping
 
-The current worktree mapping is:
+## Current Transition State
+
+```text
+C:/System_Trading/STOM/
+├── STOM_V/            -> STOM_Version_2
+├── STOM_V.wt-2u/      -> STOM_Version_2U
+├── STOM_V.wt-2uc/     -> integration/adopt-cli-v267-into-2uc
+├── STOM_V.wt-dev/     -> STOM_Version_2U_C_CLI_v267
+└── STOM_V.wt-lab/     -> research/init
+```
+
+`STOM_V.wt-2uc/` is the active integration lane. `STOM_V.wt-dev/` still carries the absorbed CLI baseline. Do not describe the single-baseline cutover as already complete.
+
+## Target Post-Promotion State
 
 ```text
 C:/System_Trading/STOM/
 ├── STOM_V/            -> STOM_Version_2
 ├── STOM_V.wt-2u/      -> STOM_Version_2U
 ├── STOM_V.wt-2uc/     -> STOM_Version_2U_C
-├── STOM_V.wt-dev/     -> STOM_Version_2U_C_CLI_v267
+├── STOM_V.wt-dev/     -> STOM_Version_2U_C
 └── STOM_V.wt-lab/     -> research/init
 ```
 
-Use the directories for their assigned branches only. `STOM_V.wt-dev/` is the CLI lane, and `STOM_V.wt-2uc/` is the dedicated `STOM_Version_2U_C` lane.
+After promotion, both `STOM_V.wt-2uc/` and `STOM_V.wt-dev/` should point at `STOM_Version_2U_C`.
 
 ## Upstream Ingress Policy
 
@@ -46,21 +59,19 @@ Use the directories for their assigned branches only. `STOM_V.wt-dev/` is the CL
 - Judge upstream freshness against `https://github.com/devstom/STOM.git`.
 - Treat `C:/System_Trading/STOM/STOM_devstom` as a reference-only mirror, not the sole freshness authority.
 
-The required propagation chain is:
+Current transition flow:
 
 ```text
-V2 -> 2U -> 2U_C -> CLI_v267 -> research/init
+V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init
 ```
 
-That maps to:
+Target post-promotion flow:
 
-1. `STOM_Version_2`
-2. `STOM_Version_2U`
-3. `STOM_Version_2U_C`
-4. `STOM_Version_2U_C_CLI_v267`
-5. `research/init`
+```text
+V2 -> 2U -> 2U_C -> research/init
+```
 
-Do not bypass V2 ingress and do not skip intermediate lanes.
+`STOM_Version_2` remains the release-ingress branch. The target cutover is not yet the current live topology, so do not bypass V2 ingress or skip intermediate lanes.
 
 ## Upstream Freshness Check
 
@@ -88,7 +99,7 @@ If you are validating an isolated checkout root, use:
 python scripts/verify_release_sync.py --root C:/System_Trading/STOM/STOM_V.wt-upsync
 ```
 
-Expect `release sync preflight passed` before claiming the lane is clean. The propagation order remains `V2 -> 2U -> 2U_C -> CLI_v267 -> research/init`.
+Expect `release sync preflight passed` before claiming the lane is clean. During the current transition the live flow remains `V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init`, and only after promotion does the target flow become `V2 -> 2U -> 2U_C -> research/init`.
 
 ## Protected Paths
 

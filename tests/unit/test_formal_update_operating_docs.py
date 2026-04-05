@@ -4,13 +4,18 @@ import pytest
 
 
 ROOT = Path(__file__).resolve().parents[2]
+CURRENT_TRANSITION_FLOW = (
+    "V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> "
+    "STOM_Version_2U_C_CLI_v267 -> research/init"
+)
+TARGET_POST_PROMOTION_FLOW = "V2 -> 2U -> 2U_C -> research/init"
 LOCAL_GUIDE_EXPECTATIONS = {
     "2U": {
         "display_path": "C:/System_Trading/STOM/STOM_V.wt-2u/CLAUDE.md",
         "relative_path": "../STOM_V.wt-2u/CLAUDE.md",
         "title": "# STOM Project Guidelines (STOM_Version_2U)",
         "worktree_path": "`STOM_V.wt-2u/`",
-        "lane_identity": "`2U`",
+        "identity_marker": "`2U`",
         "marker": (
             "C:/System_Trading/STOM/STOM_V.wt-2u/docs/update_log/"
             "2026-04-04_v274_v277_2u_baseline_note.md"
@@ -19,12 +24,12 @@ LOCAL_GUIDE_EXPECTATIONS = {
     "2U_C": {
         "display_path": "C:/System_Trading/STOM/STOM_V.wt-2uc/CLAUDE.md",
         "relative_path": "../STOM_V.wt-2uc/CLAUDE.md",
-        "title": "# STOM Project Guidelines (STOM_Version_2U_C)",
+        "title": "# STOM Project Guidelines (STOM_Version_2U_C transition lane)",
         "worktree_path": "`STOM_V.wt-2uc/`",
-        "lane_identity": "`2U_C`",
+        "identity_marker": "`integration/adopt-cli-v267-into-2uc`",
         "marker": (
             "C:/System_Trading/STOM/STOM_V.wt-2uc/docs/update_log/"
-            "2026-04-04_v274_v277_2uc_baseline_note.md"
+            "2026-04-05_2uc_single_baseline_consolidation_execution_log.md"
         ),
     },
     "CLI_v267": {
@@ -32,7 +37,7 @@ LOCAL_GUIDE_EXPECTATIONS = {
         "relative_path": "../STOM_V.wt-dev/CLAUDE.md",
         "title": "# STOM Project Guidelines (STOM_Version_2U_C_CLI_v267)",
         "worktree_path": "`STOM_V.wt-dev/`",
-        "lane_identity": "`CLI_v267`",
+        "identity_marker": "`CLI_v267`",
         "marker": (
             "C:/System_Trading/STOM/STOM_V.wt-dev/docs/update_log/"
             "2026-04-04_v274_v277_cli_v267_baseline_note.md"
@@ -43,7 +48,7 @@ LOCAL_GUIDE_EXPECTATIONS = {
         "relative_path": "../STOM_V.wt-lab/CLAUDE.md",
         "title": "# STOM Project Guidelines (research/init)",
         "worktree_path": "`STOM_V.wt-lab/`",
-        "lane_identity": "`research/init`",
+        "identity_marker": "`research/init`",
         "marker": (
             "C:/System_Trading/STOM/STOM_V.wt-lab/docs/update_log/"
             "2026-04-04_v274_v277_research_init_baseline_note.md"
@@ -72,6 +77,10 @@ def test_formal_update_operating_system_doc_exists_and_names_the_lifecycle():
     assert "branch-local corrective fix" in text
     assert "carry-forward recording" in text
     assert "cycle closeout" in text
+    assert "## Current transition state" in text
+    assert CURRENT_TRANSITION_FLOW in text
+    assert "## Target post-promotion state" in text
+    assert TARGET_POST_PROMOTION_FLOW in text
 
 
 def test_agents_points_to_the_operating_system_and_registry():
@@ -80,17 +89,24 @@ def test_agents_points_to_the_operating_system_and_registry():
     assert "FORMAL_UPDATE_OPERATING_SYSTEM.md" in text
     assert "CARRY_FORWARD_REGISTRY.md" in text
     assert "docs/update_log/2026-04-05_v274_v277_cycle_status.md" in text
-    assert "V2 -> 2U -> 2U_C -> CLI_v267 -> research/init" in text
+    assert "Current transition state:" in text
+    assert CURRENT_TRANSITION_FLOW in text
+    assert "Target post-promotion state:" in text
+    assert TARGET_POST_PROMOTION_FLOW in text
     assert "STOM V2.49" not in text
 
 
-def test_central_claude_mentions_preflight_and_entrypoint_docs():
+def test_central_claude_mentions_preflight_entrypoint_docs_and_transition_split():
     text = read_text("CLAUDE.md")
 
     assert "python scripts/verify_release_sync.py" in text
     assert "docs/FORMAL_UPDATE_OPERATING_SYSTEM.md" in text
     assert "docs/CARRY_FORWARD_REGISTRY.md" in text
     assert "docs/update_log/2026-04-05_v274_v277_cycle_status.md" in text
+    assert "## Current Transition State" in text
+    assert CURRENT_TRANSITION_FLOW in text
+    assert "## Target Post-Promotion State" in text
+    assert TARGET_POST_PROMOTION_FLOW in text
 
 
 def test_strategy_docs_declare_the_formal_update_operating_system_as_parent():
@@ -136,7 +152,7 @@ def test_worktree_local_claude_guides_keep_read_first_and_branch_gate_contract(
 
     assert expectation["title"] in text, lane
     assert expectation["worktree_path"] in text, lane
-    assert expectation["lane_identity"] in text, lane
+    assert expectation["identity_marker"] in text, lane
     assert "## Read First" in text, lane
     assert "## Branch Gate" in text, lane
     assert expectation["marker"] in text, lane

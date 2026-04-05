@@ -15,8 +15,15 @@ This document is the top-level operating model for official STOM version intake 
 ## Canonical flow
 `STOM_Version_2` is the only official ingress.
 
+## Current transition state
 Propagation order:
-`V2 -> 2U -> 2U_C -> CLI_v267 -> research/init`
+`V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init`
+
+## Target post-promotion state
+Propagation order:
+`V2 -> 2U -> 2U_C -> research/init`
+
+Do not describe the target cutover as already complete. Release-originated changes still enter through `STOM_Version_2` and move one lane at a time until promotion lands.
 
 ## Documentation map
 - Stable strategy: `docs/UPSTREAM_SYNC_STRATEGY.md`
@@ -29,6 +36,7 @@ Propagation order:
 - `AGENTS.md` = top-level rule summary and routing hub
 - central `CLAUDE.md` = official intake guide
 - worktree-local `CLAUDE.md` = branch-local execution guide
+- entry-point docs must distinguish the current transition state from the target post-promotion state
 
 ## Carry-forward rule
 - untouched red gates may be carried forward only when documented
