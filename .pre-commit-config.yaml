@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: stom-cli-checks
+        name: STOM CLI Pre-commit Checks
+        entry: python scripts/pre_commit_check.py
+        language: python
+        types: [python]
+        pass_filenames: false
