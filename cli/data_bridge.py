@@ -27,11 +27,12 @@ def check_tick_db(db_path):
 
     Returns:
         dict: {
-            'status': 'ok'|'empty'|'missing',
+            'status': 'ok'|'empty'|'missing'|'error',
             'path': str,
             'size_bytes': int,
             'table_count': int,
             'is_symlink': bool,
+            'message': str,  # only for error
         }
     """
     if not os.path.exists(db_path):
@@ -48,14 +49,20 @@ def check_tick_db(db_path):
     table_count = 0
 
     try:
-        con = sqlite3.connect(db_path)
-        tables = con.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()
-        table_count = len(tables)
-        con.close()
-    except Exception:
-        pass
+        with sqlite3.connect(db_path) as con:
+            tables = con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+            table_count = len(tables)
+    except Exception as e:
+        return {
+            'status': 'error',
+            'path': db_path,
+            'size_bytes': size,
+            'table_count': 0,
+            'is_symlink': is_link,
+            'message': f'SQLite inspection failed: {e}',
+        }
 
     status = 'ok' if size >= _MIN_DB_SIZE and table_count > 0 else 'empty'
 
@@ -94,6 +101,13 @@ def ensure_tick_db(db_path):
             'status': 'ok',
             'message': f"tick DB 정상 (테이블 {diag['table_count']}개, "
                        f"{diag['size_bytes'] / (1024**3):.1f}GB)",
+            'path': db_path,
+        }
+
+    if diag['status'] == 'error':
+        return {
+            'status': 'error',
+            'message': diag['message'],
             'path': db_path,
         }
 

@@ -47,6 +47,15 @@ class TestCheckTickDb:
         assert 'table_count' in result
         assert 'is_symlink' in result
 
+    def test_returns_error_when_sqlite_inspection_fails(self, tmp_path):
+        db = str(tmp_path / 'broken.db')
+        with open(db, 'wb') as f:
+            f.write(b'not-a-sqlite-db')
+        result = check_tick_db(db)
+        assert result['status'] == 'error'
+        assert 'message' in result
+        assert result['table_count'] == 0
+
 
 class TestEnsureTickDb:
     """ensure_tick_db() — 자동 연결."""
@@ -77,6 +86,24 @@ class TestEnsureTickDb:
         assert 'status' in result
         assert 'message' in result
         assert 'path' in result
+
+    def test_propagates_diagnostic_error_without_treating_as_empty(self, tmp_path, monkeypatch):
+        db = str(tmp_path / 'broken.db')
+        with open(db, 'wb') as f:
+            f.write(b'not-a-sqlite-db')
+
+        find_calls = []
+
+        def _fake_find_v1():
+            find_calls.append(True)
+            return str(tmp_path / 'unused_v1.db')
+
+        monkeypatch.setattr('cli.data_bridge.find_v1_tick_db', _fake_find_v1)
+
+        result = ensure_tick_db(db)
+        assert result['status'] == 'error'
+        assert 'message' in result
+        assert find_calls == []
 
 
 class TestRestoreEmptyDb:

@@ -142,7 +142,10 @@ def parse_args(args=None):
     parsed = parser.parse_args(args)
 
     if parsed.list_strategies:
-        stgs = list_strategies()
+        try:
+            stgs = list_strategies()
+        except Exception as e:
+            parser.error(str(e))
         if parsed.format == 'json':
             print(json.dumps(stgs, ensure_ascii=False, indent=2))
         else:
@@ -249,17 +252,10 @@ def validate(config):
 
 def list_strategies(db_path=None):
     result = {'stockbuy': [], 'stocksell': []}
-    con = None
-    try:
-        con = sqlite3.connect(db_path or DB_STRATEGY)
+    with sqlite3.connect(db_path or DB_STRATEGY) as con:
         for table in ('stockbuy', 'stocksell'):
             cursor = con.cursor()
             cursor.execute(f'SELECT `index` FROM {table}')
             rows = cursor.fetchall()
             result[table] = [row[0] for row in rows]
-    except Exception:
-        pass
-    finally:
-        if con is not None:
-            con.close()
     return result

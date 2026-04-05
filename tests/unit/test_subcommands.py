@@ -208,6 +208,15 @@ class TestStrategySubcommand:
         assert 'stockbuy' in data
         assert 'stocksell' in data
 
+    def test_strategy_list_returns_json_error_when_lookup_fails(self):
+        captured = []
+        with patch('cli.config.list_strategies', side_effect=RuntimeError('strategy lookup failed')), \
+             patch('builtins.print', side_effect=lambda s: captured.append(s)):
+            code = handle_subcommand(['strategy', 'list'])
+        assert code == 1
+        data = json.loads(captured[0])
+        assert data == {'status': 'error', 'message': 'strategy lookup failed'}
+
     def test_strategy_validate_ok(self, tmp_path):
         db = str(tmp_path / 'strategy.db')
         _make_strategy_db(db)

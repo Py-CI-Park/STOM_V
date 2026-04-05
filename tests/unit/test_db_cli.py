@@ -66,7 +66,7 @@ class TestDbCheckJson:
         data = json.loads(result.stdout)
         tick = data['databases']['stock_tick_back']
         assert 'detail' in tick
-        assert tick['detail']['status'] in ('ok', 'empty', 'missing')
+        assert tick['detail']['status'] in ('ok', 'empty', 'missing', 'error')
 
 
 class TestDbCheckText:

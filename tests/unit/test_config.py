@@ -4,6 +4,7 @@
 """
 import json
 import os
+import sqlite3
 import sys
 
 import pytest
@@ -144,6 +145,21 @@ class TestParseArgs:
                             lambda: {'stockbuy': ['전략A'], 'stocksell': ['전략B']})
         result = parse_args(['--list-strategies'])
         assert result is None
+
+    def test_list_strategies_parse_error_when_strategy_lookup_fails(self, monkeypatch, capsys):
+        """--list-strategies 경로에서 전략 조회 실패는 parser.error(SystemExit)로 처리해야 한다."""
+        import cli.config as config_mod
+
+        def _raise():
+            raise RuntimeError('strategy lookup failed')
+
+        monkeypatch.setattr(config_mod, 'list_strategies', _raise)
+
+        with pytest.raises(SystemExit):
+            parse_args(['--list-strategies'])
+
+        captured = capsys.readouterr()
+        assert 'strategy lookup failed' in captured.err
 
     def test_normal_args_returns_backtest_config(self):
         """유효한 --buy, --sell, --start, --end 인수는 BacktestConfig를 반환해야 한다."""
@@ -432,14 +448,15 @@ class TestListStrategies:
         assert isinstance(result['stockbuy'], list)
         assert isinstance(result['stocksell'], list)
 
-    def test_returns_empty_lists_when_db_is_missing(self, monkeypatch, tmp_path):
-        """존재하지 않는 DB 경로가 주어지면 빈 리스트를 반환해야 한다."""
+    def test_raises_when_strategy_db_read_fails(self, monkeypatch, tmp_path):
+        """strategy DB 조회나 스키마 확인이 실패하면 예외를 전파해야 한다."""
         import cli.config as config_mod
-        missing_path = str(tmp_path / 'nonexistent.db')
-        monkeypatch.setattr(config_mod, 'DB_STRATEGY', missing_path)
+        broken_path = str(tmp_path / 'broken_strategy.db')
+        sqlite3.connect(broken_path).close()
+        monkeypatch.setattr(config_mod, 'DB_STRATEGY', broken_path)
 
-        result = list_strategies()
-        assert result == {'stockbuy': [], 'stocksell': []}
+        with pytest.raises(sqlite3.Error):
+            list_strategies()
 
     def test_returns_exactly_one_buy_strategy_in_test_db(
             self, monkeypatch, tmp_strategy_db):

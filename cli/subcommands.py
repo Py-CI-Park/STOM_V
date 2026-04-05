@@ -501,7 +501,11 @@ def _handle_strategy(parsed):
     from cli.config import list_strategies
 
     if parsed.strategy_action == 'list':
-        stgs = list_strategies()
+        try:
+            stgs = list_strategies()
+        except Exception as e:
+            print(json.dumps({'status': 'error', 'message': str(e)}, ensure_ascii=False))
+            return 1
         print(json.dumps(stgs, ensure_ascii=False, indent=2))
         return 0
 
