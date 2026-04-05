@@ -2,19 +2,14 @@
 
 ## Branch Role
 
-This checkout is in transition mode. It is the integration lane that prepares the cutover from the absorbed CLI branch to the single-baseline branch.
+This checkout is the active single-baseline lane after the CLI_v267 promotion.
 
 Current execution state:
 
-- `STOM_V.wt-2uc/` -> `integration/adopt-cli-v267-into-2uc`
-- `STOM_V.wt-dev/` -> `STOM_Version_2U_C_CLI_v267`
-
-Target post-promotion state:
-
-- `STOM_V.wt-2uc/` -> `STOM_Version_2U_C`
 - `STOM_V.wt-dev/` -> `STOM_Version_2U_C`
+- `STOM_V.wt-2uc/` -> `integration/adopt-cli-v267-into-2uc` (archive/transition checkout kept off `STOM_Version_2U_C` to respect git worktree branch occupancy)
 
-Target propagation chain:
+Active propagation chain:
 
 ```text
 V2 -> 2U -> 2U_C -> research/init
@@ -22,30 +17,19 @@ V2 -> 2U -> 2U_C -> research/init
 
 ## Worktree Layout
 
-Current transition layout:
+Current active layout:
 
 ```text
 C:/System_Trading/STOM/
 ├── STOM_V/       -> STOM_Version_2
 ├── STOM_V.wt-2u/ -> STOM_Version_2U
 ├── STOM_V.wt-2uc/-> integration/adopt-cli-v267-into-2uc
-├── STOM_V.wt-dev/-> STOM_Version_2U_C_CLI_v267
-└── STOM_V.wt-lab/-> research/init
-```
-
-Target cutover layout:
-
-```text
-C:/System_Trading/STOM/
-├── STOM_V/       -> STOM_Version_2
-├── STOM_V.wt-2u/ -> STOM_Version_2U
-├── STOM_V.wt-2uc/-> STOM_Version_2U_C
 ├── STOM_V.wt-dev/-> STOM_Version_2U_C
 └── STOM_V.wt-lab/-> research/init
 ```
 
-- Do not describe the target layout as current until promotion lands.
-- Use `C:/System_Trading/STOM/STOM_V.wt-2uc/docs/WORKTREE_STRATEGY.md` as the local topology reference for this lane.
+- `STOM_Version_2U_C` must be checked out only in `STOM_V.wt-dev/` while this layout is active.
+- `STOM_V.wt-2uc/` keeps promotion history and execution logs on the integration/archive branch.
 
 ## Serial Key Policy
 
@@ -58,20 +42,14 @@ Do not add serial-key code in this branch family.
 ## Upstream Sync Policy
 
 - Sync upstream changes by cherry-pick, not by overlay merge.
-- Preserve CLI-specific customizations that belong in the single baseline branch.
-- Keep the propagation order strictly one lane at a time.
-- Do not describe the target post-promotion order as the current live order while this checkout is still in transition.
+- Preserve CLI-specific customizations that have already been absorbed into the single baseline branch.
+- Do not recreate a downstream CLI child lane as the live propagation path.
+- Do not check out `STOM_Version_2U_C` in `wt-2uc` while `wt-dev` is the active baseline holder.
 
-Current transition sync flow:
-
-```text
-V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init
-```
-
-Target / post-promotion sync order:
+Current live sync flow:
 
 ```text
-V2 -> 2U -> 2U_C -> research/init
+V2 -> 2U -> STOM_Version_2U_C -> research/init
 ```
 
 ## Verification Rules
