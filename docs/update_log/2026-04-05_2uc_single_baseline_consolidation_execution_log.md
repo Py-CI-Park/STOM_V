@@ -11,7 +11,7 @@
 
 ## Pre-merge fixes
 - `ui/ui_mainwindow.py`에서 삭제된 `ui_activated_coin_stg`/`ui_activated_stock_stg` import 제거
-- `from ui import ui_activated_stg`로 현재 모듈 구조에 정렬
+- 삭제된 전략 활성화 모듈 import 의존성만 제거하고 추가 import 없이 `ui/ui_mainwindow.py` import 회귀를 복구
 
 ## Conflict inventory
 - 초기 생성 시 비워 두고, Task 3에서 실제 충돌 파일 목록으로 덮어쓴다.
