@@ -29,14 +29,14 @@ C:/System_Trading/STOM/
 ├── STOM_V/            -> STOM_Version_2
 ├── STOM_V.wt-2u/      -> STOM_Version_2U
 ├── STOM_V.wt-2uc/     -> STOM_Version_2U_C
-├── STOM_V.wt-dev/     -> STOM_Version_2U_C_CLI_v267
+├── STOM_V.wt-dev/     -> STOM_Version_2U_C
 └── STOM_V.wt-lab/     -> research/init
 ```
 
 The required propagation order is:
 
 ```text
-V2 -> 2U -> 2U_C -> CLI_v267 -> research/init
+V2 -> 2U -> 2U_C -> research/init
 ```
 
 Mapped to current worktrees:
@@ -44,7 +44,7 @@ Mapped to current worktrees:
 1. `STOM_Version_2` in `C:/System_Trading/STOM/STOM_V`
 2. `STOM_Version_2U` in `C:/System_Trading/STOM/STOM_V.wt-2u`
 3. `STOM_Version_2U_C` in `C:/System_Trading/STOM/STOM_V.wt-2uc`
-4. `STOM_Version_2U_C_CLI_v267` in `C:/System_Trading/STOM/STOM_V.wt-dev`
+4. `STOM_Version_2U_C` in `C:/System_Trading/STOM/STOM_V.wt-dev`
 5. `research/init` in `C:/System_Trading/STOM/STOM_V.wt-lab`
 
 Do not import upstream changes directly into `STOM_V.wt-2uc/`, `STOM_V.wt-dev/`, or research lanes. Every release-originated change must enter through V2 and move one lane at a time.
@@ -78,4 +78,4 @@ The preflight must pass before claiming the release sync is clean.
 
 - Use `STOM_devstom` for convenient local inspection when network access is unavailable or when comparing file history locally.
 - Reconfirm against `https://github.com/devstom/STOM.git` before declaring the release lane current.
-- Keep `CLAUDE.md` and the worktree strategy doc aligned with the live mapping: `STOM_V.wt-2uc/`, `STOM_V.wt-dev/`, `STOM_Version_2U_C_CLI_v267`, and `research/init`.
+- Keep `CLAUDE.md` and the worktree strategy doc aligned with the live mapping: `STOM_V.wt-2uc/`, `STOM_V.wt-dev/`, `STOM_Version_2U_C`, and `research/init`.
