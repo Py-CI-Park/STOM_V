@@ -1263,17 +1263,23 @@ def _handle_db(parsed):
         tick_diag = check_tick_db(DB_STOCK_BACK_TICK)
         results['stock_tick_back']['detail'] = tick_diag
 
-        output = {'status': 'ok', 'databases': results}
+        overall_status = 'error' if tick_diag.get('status') == 'error' else 'ok'
+        output = {'status': overall_status, 'databases': results}
 
         if parsed.output_format == 'json':
             print(json.dumps(output, ensure_ascii=False, indent=2))
         else:
             print('=== STOM Database Status ===')
             for name, info in results.items():
-                status = 'OK' if info['exists'] else 'MISSING'
+                if name == 'stock_tick_back' and info.get('detail', {}).get('status') == 'error':
+                    status = 'ERROR'
+                else:
+                    status = 'OK' if info['exists'] else 'MISSING'
                 print('  %-20s %s  %8.2f MB  %s' % (
                     name, status, info['size_mb'], info['path']))
-        return 0
+                if name == 'stock_tick_back' and info.get('detail', {}).get('status') == 'error':
+                    print('  %-20s %s' % ('', info['detail']['message']))
+        return 0 if overall_status == 'ok' else 1
 
     elif parsed.db_action == 'ensure':
         db_path = DB_STOCK_BACK_TICK if parsed.timeframe == 'tick' else DB_STOCK_BACK_MIN

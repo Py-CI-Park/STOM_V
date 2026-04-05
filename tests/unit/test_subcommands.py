@@ -391,6 +391,50 @@ class TestDiscoverySubcommand:
         assert kwargs['config_dict']['base_buy_strategy'] == 'Min_B_Study_251227'
 
 
+class TestDbSubcommand:
+
+    def test_db_check_json_returns_error_when_tick_diagnostic_errors(self):
+        fake_diag = {
+            'status': 'error',
+            'path': 'tick.db',
+            'size_bytes': 123,
+            'table_count': 0,
+            'is_symlink': False,
+            'message': 'SQLite inspection failed: malformed database',
+        }
+        captured = []
+        with patch('cli.data_bridge.check_tick_db', return_value=fake_diag), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.path.getsize', return_value=123), \
+             patch('builtins.print', side_effect=lambda s: captured.append(s)):
+            code = handle_subcommand(['db', 'check', '--format', 'json'])
+        assert code == 1
+        data = json.loads(captured[0])
+        assert data['status'] == 'error'
+        assert data['databases']['stock_tick_back']['detail'] == fake_diag
+
+    def test_db_check_text_marks_tick_db_as_error_and_prints_message(self):
+        fake_diag = {
+            'status': 'error',
+            'path': 'tick.db',
+            'size_bytes': 123,
+            'table_count': 0,
+            'is_symlink': False,
+            'message': 'SQLite inspection failed: malformed database',
+        }
+        captured = []
+        with patch('cli.data_bridge.check_tick_db', return_value=fake_diag), \
+             patch('os.path.exists', return_value=True), \
+             patch('os.path.getsize', return_value=123), \
+             patch('builtins.print', side_effect=lambda s: captured.append(s)):
+            code = handle_subcommand(['db', 'check', '--format', 'text'])
+        assert code == 1
+        stock_tick_lines = [line for line in captured if 'stock_tick_back' in line]
+        assert stock_tick_lines
+        assert 'ERROR' in stock_tick_lines[0]
+        assert any('malformed database' in line for line in captured)
+
+
 # ============================================================
 # TestSubcommandDetection — stom_backtest.py main() routing
 # ============================================================
