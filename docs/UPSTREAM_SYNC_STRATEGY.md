@@ -22,7 +22,24 @@ The local mirror is reference-only. It is useful for inspection and fallback acc
 
 ## Worktree Propagation Chain
 
-The current worktree layout is:
+### Current transition state
+
+```text
+C:/System_Trading/STOM/
+├── STOM_V/            -> STOM_Version_2
+├── STOM_V.wt-2u/      -> STOM_Version_2U
+├── STOM_V.wt-2uc/     -> integration/adopt-cli-v267-into-2uc
+├── STOM_V.wt-dev/     -> STOM_Version_2U_C_CLI_v267
+└── STOM_V.wt-lab/     -> research/init
+```
+
+Current propagation flow:
+
+```text
+V2 -> 2U -> integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C_CLI_v267 -> research/init
+```
+
+### Target post-promotion state
 
 ```text
 C:/System_Trading/STOM/
@@ -33,21 +50,13 @@ C:/System_Trading/STOM/
 └── STOM_V.wt-lab/     -> research/init
 ```
 
-The required propagation order is:
+Target propagation order:
 
 ```text
 V2 -> 2U -> 2U_C -> research/init
 ```
 
-Mapped to current worktrees:
-
-1. `STOM_Version_2` in `C:/System_Trading/STOM/STOM_V`
-2. `STOM_Version_2U` in `C:/System_Trading/STOM/STOM_V.wt-2u`
-3. `STOM_Version_2U_C` in `C:/System_Trading/STOM/STOM_V.wt-2uc`
-4. `STOM_Version_2U_C` in `C:/System_Trading/STOM/STOM_V.wt-dev`
-5. `research/init` in `C:/System_Trading/STOM/STOM_V.wt-lab`
-
-Do not import upstream changes directly into `STOM_V.wt-2uc/`, `STOM_V.wt-dev/`, or research lanes. Every release-originated change must enter through V2 and move one lane at a time.
+The target cutover is not yet the current live topology. Do not import upstream changes directly into `STOM_V.wt-2uc/`, `STOM_V.wt-dev/`, or research lanes. Every release-originated change must enter through V2 and move one lane at a time.
 
 ## Release Overlay Boundaries
 
@@ -78,4 +87,4 @@ The preflight must pass before claiming the release sync is clean.
 
 - Use `STOM_devstom` for convenient local inspection when network access is unavailable or when comparing file history locally.
 - Reconfirm against `https://github.com/devstom/STOM.git` before declaring the release lane current.
-- Keep `CLAUDE.md` and the worktree strategy doc aligned with the live mapping: `STOM_V.wt-2uc/`, `STOM_V.wt-dev/`, `STOM_Version_2U_C`, and `research/init`.
+- Keep `CLAUDE.md` and the local `STOM_V.wt-2uc/docs/WORKTREE_STRATEGY.md` aligned with the current transition state and the target post-promotion state.
