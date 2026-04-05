@@ -21,12 +21,11 @@ from ui.set_dialog_chart import SetDialogChart
 from ui.set_dialog_formula import SetDialogFormula
 from ui.set_home_tap import SetHomeTap
 from ui.set_style import dict_set
+from ui import ui_activated_stg
 
 from ui.ui_etc import *
 from ui.ui_draw_chart_db import *
 from ui.ui_activated_back import *
-from ui.ui_activated_coin_stg import *
-from ui.ui_activated_stock_stg import *
 from ui.ui_show_dialog import *
 from ui.ui_vars_change import *
 from ui.ui_draw_treemap import *

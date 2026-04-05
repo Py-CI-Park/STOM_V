@@ -9,6 +9,10 @@
 - `tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_deleted_jisu_module`
 - `tests/unit/test_backtest_result_expansion.py::test_total_report_writes_extended_detail_csv_and_db`
 
+## Pre-merge fixes
+- `ui/ui_mainwindow.py`에서 삭제된 `ui_activated_coin_stg`/`ui_activated_stock_stg` import 제거
+- `from ui import ui_activated_stg`로 현재 모듈 구조에 정렬
+
 ## Conflict inventory
 - 초기 생성 시 비워 두고, Task 3에서 실제 충돌 파일 목록으로 덮어쓴다.
 
