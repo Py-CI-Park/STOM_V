@@ -1,9 +1,9 @@
 from threading import Lock
-from types import FunctionType
 
 import pandas as pd
 import requests
 
+import utility.static as static_module
 import utility.webcrawling as webcrawling_module
 
 
@@ -42,13 +42,14 @@ def _build_crawler():
     return crawler
 
 
-def _make_cell(value):
-    return (lambda: value).__closure__[0]
-
-
-def _run_threaded_entrypoint_synchronously(monkeypatch, method_name):
+def _run_threaded_entrypoint_synchronously(monkeypatch, crawler, method_name):
     wrapper = getattr(webcrawling_module.WebCrawling, method_name)
-    _, target = [cell.cell_contents for cell in wrapper.__closure__]
+    closure_values = [cell.cell_contents for cell in (wrapper.__closure__ or ())]
+    callable_values = [value for value in closure_values if callable(value)]
+
+    if callable_values:
+        callable_values[-1](crawler)
+        return
 
     class _ImmediateThread:
         def __init__(self, target=None, args=(), daemon=None):
@@ -58,14 +59,12 @@ def _run_threaded_entrypoint_synchronously(monkeypatch, method_name):
         def start(self):
             self._target(*self._args)
 
-    sync_wrapper = FunctionType(
-        wrapper.__code__,
-        wrapper.__globals__,
-        name=wrapper.__name__,
-        argdefs=wrapper.__defaults__,
-        closure=(_make_cell(_ImmediateThread), _make_cell(target))
-    )
-    monkeypatch.setattr(webcrawling_module.WebCrawling, method_name, sync_wrapper)
+    if hasattr(static_module, 'Thread'):
+        monkeypatch.setattr(static_module, 'Thread', _ImmediateThread, raising=False)
+        getattr(crawler, method_name)()
+        return
+
+    raise AssertionError(f'Unable to run threaded entrypoint synchronously: {method_name}')
 
 
 def test_emit_network_warning_throttles_duplicate_messages(monkeypatch):
@@ -134,9 +133,7 @@ def test_public_get_market_indicator_failure_preserves_data_and_completion(monke
 
     crawler.session = _SessionStub()
     monkeypatch.setattr(webcrawling_module.time, 'time', lambda: 100.0)
-    _run_threaded_entrypoint_synchronously(monkeypatch, 'get_market_indicator')
-
-    crawler.get_market_indicator()
+    _run_threaded_entrypoint_synchronously(monkeypatch, crawler, 'get_market_indicator')
 
     assert crawler.dict_data['환율'] is existing
     assert crawler.thread_join == 3

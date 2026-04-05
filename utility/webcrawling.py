@@ -47,6 +47,7 @@ class WebCrawling(QThread):
         self.warning_cooldown = 60
         self.alive       = True
         self.request_timeout = 10
+        self.network_timeout = self.request_timeout
         self.treemap_timer   = None
 
     def run(self):
@@ -78,10 +79,6 @@ class WebCrawling(QThread):
             self.treemap_timer = None
         self.wait(2000)
 
-    def _get_timeout(self):
-        data = getattr(self, '__dict__', {})
-        return data.get('request_timeout', data.get('network_timeout', 10))
-
     def _emit_network_warning(self, category, target, exc):
         key = (category, target, type(exc).__name__)
         now_ts = time.time()
@@ -90,7 +87,7 @@ class WebCrawling(QThread):
             if last_ts is not None and now_ts - last_ts < self.warning_cooldown:
                 return
             self.warning_state[key] = now_ts
-        self.signal.emit((ui_num['\uc2dc\uc2a4\ud15c\ub85c\uadf8'], f'{category} \uac31\uc2e0 \uc2e4\ud328({target}): {type(exc).__name__}'))
+        self.signal.emit((ui_num['시스템로그'], f'{category} 갱신 실패({target}): {type(exc).__name__}'))
 
     def _clear_network_warning(self, category, target):
         with self.warning_lock:
@@ -108,6 +105,10 @@ class WebCrawling(QThread):
         except (requests.exceptions.RequestException, OSError, TimeoutError, ValueError) as exc:
             self._emit_network_warning(category, target, exc)
             return None
+
+    def _request_timeout_value(self):
+        state = object.__getattribute__(self, '__dict__')
+        return state.get('request_timeout', state.get('network_timeout', 10))
 
     def Crawling(self, data):
         cmd, data = data
@@ -353,8 +354,9 @@ class WebCrawling(QThread):
         else:
             last_time = None
 
+        timeout = self._request_timeout_value()
+
         def job():
-            timeout = self._get_timeout()
             i = 1
             time_list  = []
             price_list = []
@@ -422,7 +424,7 @@ class WebCrawling(QThread):
                 })
             return None
 
-        df = self._run_network_job('\uad6d\ub0b4\uc9c0\uc218', name, job)
+        df = self._run_network_job('국내지수', name, job)
 
         with self.thread_lock:
             if df is None:
@@ -445,6 +447,8 @@ class WebCrawling(QThread):
             '국제금': f'{self.base_url}/marketindex/worldDailyQuote.naver?marketindexCd=CMDT_GC&fdtc=2&page='
         }
 
+        timeout = self._request_timeout_value()
+
         for name, url_base in symbols.items():
             existing_data = self.dict_data.get(name)
             if existing_data is not None:
@@ -454,7 +458,6 @@ class WebCrawling(QThread):
                 last_time = None
 
             def job():
-                timeout = self._get_timeout()
                 i = 1
                 time_list  = []
                 price_list = []
@@ -503,7 +506,7 @@ class WebCrawling(QThread):
                     })
                 return None
 
-            df = self._run_network_job('\uc2dc\uc7a5\uc9c0\ud45c', name, job)
+            df = self._run_network_job('시장지표', name, job)
 
             with self.thread_lock:
                 if df is None:
@@ -532,9 +535,12 @@ class WebCrawling(QThread):
             'LINK/USDT': 'LINKUSDT'
         }
 
+        timeout = self._request_timeout_value()
+
         for name, symbol in symbols.items():
+            existing_data = self.dict_data.get(name)
+
             def job():
-                timeout = self._get_timeout()
                 url  = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval=1m&limit=1000"
                 resp = requests.get(url, headers=self.headers, timeout=timeout)
                 resp.raise_for_status()
@@ -552,10 +558,12 @@ class WebCrawling(QThread):
                     })
                 return None
 
-            df = self._run_network_job('\ubc14\uc774\ub0b8\uc2a4 \ub370\uc774\ud130', name, job)
+            df = self._run_network_job('바이낸스 데이터', name, job)
 
             with self.thread_lock:
                 if df is not None:
+                    self.dict_data[name] = df
+                elif existing_data is None:
                     self.dict_data[name] = df
                 self._complete_network_job()
 

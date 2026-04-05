@@ -5,7 +5,7 @@ with open('./utility/blacklist_future.txt') as f:
     futurereadlines = f.readlines()
 with open('./utility/blacklist_coin.txt') as f:
     coinreadlines = f.readlines()
-from utility.worktree_policy import uses_serial_key
+from utility.worktree_policy import apply_serial_key_to_dict_set, uses_serial_key
 
 blacklist_stock = []
 blacklist_future = []
@@ -355,6 +355,10 @@ def load_settings():
     except:
         return format_exc()
     else:
-        if uses_serial_key() and '시리얼키' in df_e.columns:
-            DICT_SET['시리얼키'] = de_text(EN_KEY, df_e['시리얼키'][0]) if len(df_e) > 0 and df_e['시리얼키'][0] else None
+        apply_serial_key_to_dict_set(
+            DICT_SET,
+            df_e,
+            lambda value: de_text(EN_KEY, value),
+            uses_serial_key()
+        )
         return DICT_SET

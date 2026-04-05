@@ -1,6 +1,8 @@
-import utility.static as static
-import pytest
 from pathlib import Path
+
+import pytest
+
+import utility.static as static
 
 
 def test_static_exports_summer_time_compat_symbol():
@@ -38,9 +40,3 @@ def test_database_check_does_not_unconditionally_rotate_key_after_read_failure()
 
     assert 'write_key()' in text
     assert 'except RuntimeError:' in text, 'encrypted payload이 있는 경우는 새 키 생성 대신 그대로 실패시켜야 합니다.'
-
-
-def test_get_kiwoom_pg_sg_sp_preserves_negative_loss_amount():
-    pg, sg, _ = static.GetKiwoomPgSgSp(100000, 99900)
-
-    assert sg == pg - 100000

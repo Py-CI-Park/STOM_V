@@ -1,7 +1,7 @@
-# STOM Project Guidelines (STOM_Version_2U_C)
+# STOM Project Guidelines (STOM_Version_2U_C_CLI_v267)
 
-> **워크트리 위치**: `STOM_V.wt-2uc/`
-> **브랜치 역할**: `2U` 결과를 커스텀 통합 규칙으로 정리하는 `2U_C` home lane
+> **워크트리 위치**: `STOM_V.wt-dev/`
+> **브랜치 역할**: `2U_C`를 부모로 받아 CLI 계약과 운영 호환성을 유지하는 `CLI_v267` 레인
 > **관련 문서**: `C:/System_Trading/STOM/STOM_V/docs/WORKTREE_STRATEGY.md`, `C:/System_Trading/STOM/STOM_V/docs/UPSTREAM_SYNC_STRATEGY.md`
 
 ## Read First
@@ -9,11 +9,12 @@
 - Top-level lifecycle: `C:/System_Trading/STOM/STOM_V/docs/FORMAL_UPDATE_OPERATING_SYSTEM.md`
 - Carry-forward registry: `C:/System_Trading/STOM/STOM_V/docs/CARRY_FORWARD_REGISTRY.md`
 - Current cycle status: `C:/System_Trading/STOM/STOM_V/docs/update_log/2026-04-05_v274_v277_cycle_status.md`
-- Local baseline note: `C:/System_Trading/STOM/STOM_V.wt-2uc/docs/update_log/2026-04-04_v274_v277_2uc_baseline_note.md`
+- Local baseline note: `C:/System_Trading/STOM/STOM_V.wt-dev/docs/update_log/2026-04-04_v274_v277_cli_v267_baseline_note.md`
 
 ## Branch Gate
 - `python scripts/verify_nonrelease_sync.py`
-- `python -m pytest tests/unit/test_webcrawling_contract_text.py tests/unit/test_telegram_contract_text.py tests/unit/test_ui_runtime_wiring.py tests/unit/test_verify_nonrelease_sync.py tests/unit/test_webcrawling_network_noise.py tests/test_worktree_policy.py -q`
+- `python -m pytest tests/unit/ -q`
+- `backtest/graph/` is protected result data
 
 ## 커밋 작성 규칙
 
@@ -25,15 +26,15 @@
 
 ## 레인 역할
 
-`STOM_Version_2U_C`는 `STOM_Version_2U`에서 내려온 변경을
-커스텀 보정 규칙과 non-release 계약에 맞게 통합하는 레인입니다.
-이 레인은 `wt-dev`의 CLI_v267 레인보다 상위이며, `wt-dev`를 홈 브랜치처럼 다루면 안 됩니다.
+`STOM_Version_2U_C_CLI_v267`는 `STOM_Version_2U_C`를 부모로 받는 downstream CLI 레인입니다.
+이 레인의 기준 부모는 `2U_C`이며, 공식 전파 체인에서는 `research/init` 바로 앞 단계입니다.
+이 문서는 retired `CLI_v258`이 아니라 현재 살아 있는 `CLI_v267` 기준으로 읽어야 합니다.
 
 상하류 관계:
 
-- 상위 입력: `STOM_V.wt-2u/` → `STOM_Version_2U`
-- 현재 레인: `STOM_V.wt-2uc/` → `STOM_Version_2U_C`
-- 하위 전파: `STOM_V.wt-dev/` → `STOM_Version_2U_C_CLI_v267`
+- 상위 입력 / canonical parent: `STOM_V.wt-2uc/` → `STOM_Version_2U_C`
+- 현재 레인: `STOM_V.wt-dev/` → `STOM_Version_2U_C_CLI_v267`
+- 하위 전파: `STOM_V.wt-lab/` → `research/init`
 
 ## 현재 워크트리 토폴로지
 
@@ -41,8 +42,8 @@
 |----------|--------|------|
 | `STOM_V/` | `STOM_Version_2` | 공식 ingress 레인 |
 | `STOM_V.wt-2u/` | `STOM_Version_2U` | pyd→py 동기화 레인 |
-| **`STOM_V.wt-2uc/`** | `STOM_Version_2U_C` | 커스텀 통합 레인 |
-| `STOM_V.wt-dev/` | `STOM_Version_2U_C_CLI_v267` | CLI_v267 레인 |
+| `STOM_V.wt-2uc/` | `STOM_Version_2U_C` | 커스텀 통합 레인 |
+| **`STOM_V.wt-dev/`** | `STOM_Version_2U_C_CLI_v267` | CLI_v267 레인 |
 | `STOM_V.wt-lab/` | `research/init` | formal research downstream 레인 |
 
 전파 순서:
@@ -50,21 +51,21 @@
 
 ## 작업 규칙
 
-- 공식 wave는 반드시 `2U`에서 받아서 이 레인으로 통합한다.
-- 커스텀 보정은 여기서 결정하고, 그 결과를 CLI_v267로 넘긴다.
-- `wt-dev`는 downstream CLI 레인이다. `STOM_Version_2U_C`의 홈 워크트리가 아니다.
-- retired `CLI_v258` 기준 설명이나 경로를 다시 사용하지 않는다.
+- 공식 wave는 반드시 `2U_C`에서 한 단계씩 받아온다.
+- CLI 계약, unit test, runtime wiring, result-data 경계는 이 레인에서 보존한다.
+- `backtest/graph/`는 보호된 결과 데이터다. git 전파 소스처럼 다루지 않는다.
+- `CLI_v258` 명칭, 브랜치, 작업 흐름은 더 이상 이 레인의 기준이 아니다.
 
 ## 여기서 하는 일
 
-- `2U` 결과를 커스텀 정책에 맞게 흡수
-- non-release verifier가 요구하는 branch-local 계약 유지
-- CLI 전파 전에 충돌/보정/carry-forward 여부를 정리
-- UI/utility 쪽 custom correction 유지
+- `2U_C` 기반 CLI 호환성 유지
+- CLI 관련 테스트와 branch-local verifier 유지
+- downstream `research/init`으로 넘길 formal non-release 기준선 유지
+- feature 작업이 필요하면 `CLI_v267` 기준으로 분기
 
 ## 여기서 하지 않는 일
 
-- release ingress 수행
-- `.pyd` 추론 자체를 주 레인처럼 처리
-- `CLI_v267` 전용 운영 규칙을 이 레인과 혼동
-- `research/init` 실험 운영을 대신 수행
+- `2U_C` 홈 레인처럼 동작
+- `.pyd` 추론 / release ingress 수행
+- `backtest/graph/`를 소스 자산으로 취급
+- research lane 문서/실험 규칙을 대신 소유

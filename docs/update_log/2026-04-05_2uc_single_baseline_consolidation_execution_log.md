@@ -14,7 +14,25 @@
 - 삭제된 전략 활성화 모듈 import 의존성만 제거하고 추가 import 없이 `ui/ui_mainwindow.py` import 회귀를 복구
 
 ## Conflict inventory
-- 초기 생성 시 비워 두고, Task 3에서 실제 충돌 파일 목록으로 덮어쓴다.
+- AGENTS.md
+- CLAUDE.md
+- backtest/back_static.py
+- backtest/back_subtotal.py
+- backtest/backengine_base.py
+- backtest/backengine_base_oms.py
+- backtest/backtest.py
+- research/auxiliary_indicator/smart_vwap_bands.py
+- stom.bat
+- stom_coin.bat
+- stom_future.bat
+- stom_stock.bat
+- ui/ui_button_clicked_dialog_backengine.py
+- ui/ui_button_clicked_editer_coin.py
+- ui/ui_button_clicked_editer_stock.py
+- ui/ui_mainwindow.py
+- utility/static.py
+- utility/telegram_bot.py
+- utility/webcrawling.py
 
 ## Reapplied 2U_C-only fixes
 - 초기 생성 시 비워 두고, Task 4에서 실제 재적용 커밋 목록으로 덮어쓴다.

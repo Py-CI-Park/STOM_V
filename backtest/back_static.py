@@ -1,15 +1,44 @@
 
-import numpy as np
-import pandas as pd
+try:
+    import yfinance as yf
+except ImportError:
+    yf = None
+try:
+    from matplotlib import pyplot as plt
+    from matplotlib import font_manager, gridspec
+except ImportError:
+    plt = None
+    font_manager = None
+    gridspec = None
+try:
+    from optuna_dashboard import run_server
+except ImportError:
+    run_server = None
 from traceback import format_exc
-from utility.setting_base import ui_num
-from utility.static import thread_decorator
+from utility.lazy_imports import get_np, get_pd
+from backtest.back_static_numba import GetOptiValidStd
+from utility.setting_base import ui_num, GRAPH_PATH, DB_OPTUNA
+from utility.static import thread_decorator, dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
+
+
+TRADE_RESULT_B_COLUMNS = [
+    'B_현재가', 'B_등락율', 'B_당일거래대금', 'B_거래대금증감', 'B_체결강도',
+    'B_시가총액', 'B_회전율', 'B_전일동시간비', 'B_매수총잔량', 'B_매도총잔량',
+    'B_시분초', 'B_분봉시가', 'B_분봉고가', 'B_분봉저가'
+]
+TRADE_RESULT_S_COLUMNS = [
+    'S_현재가', 'S_등락율', 'S_체결강도', 'S_매수총잔량', 'S_매도총잔량'
+]
+TRADE_RESULT_R_COLUMNS = [
+    'R_매수후최고수익률', 'R_매수후최저수익률', 'R_MFE', 'R_MAE'
+]
+TRADE_RESULT_EXTRA_COLUMNS = TRADE_RESULT_B_COLUMNS + TRADE_RESULT_S_COLUMNS + TRADE_RESULT_R_COLUMNS
 
 
 @thread_decorator
 def RunOptunaServer():
-    from optuna_dashboard import run_server
-    from utility.setting_base import DB_OPTUNA
+    if run_server is None:
+        return
     try:
         run_server(DB_OPTUNA)
     except:
@@ -17,7 +46,6 @@ def RunOptunaServer():
 
 
 def get_trade_info(gubun):
-    from utility.static import dt_ymd
     buy_time = dt_ymd('20000101')
     if gubun == 1:
         v = {
@@ -66,6 +94,10 @@ def get_trade_info(gubun):
             '손절매도시간': buy_time
         }
     return v
+
+
+def get_trade_result_snapshot():
+    return {column: 0 for column in TRADE_RESULT_B_COLUMNS}
 
 
 def GetBackloadCodeQuery(is_tick, code, days, starttime, endtime):
@@ -284,13 +316,12 @@ def SendResult(result, dict_train, dict_valid=None, exponential=False):
             valid_text.append(text3)
             valid_stds.append(std)
 
-        from backtest.back_static_numba import GetOptiValidStd
-        train_stds = np.array(train_stds, dtype=np.float64)
-        valid_stds = np.array(valid_stds, dtype=np.float64)
+        train_stds = get_np().array(train_stds, dtype=get_np().float64)
+        valid_stds = get_np().array(valid_stds, dtype=get_np().float64)
         std = GetOptiValidStd(train_stds, valid_stds, exponential)
         text2, hstd, sendtext = GetText2(std, pre_hstd)
 
-        if sendtext or opti_kind in (0, 4):
+        if sendtext or opti_kind == 4:
             wq.put((ui_num[f'{ui_gubun}백테스트'], f'{text1}{text2}'))
             for text3 in train_text:
                 wq.put((ui_num[f'{ui_gubun}백테스트'], text3))
@@ -390,7 +421,8 @@ def GetOptiStdText(optistd, std_list, result, pre_text):
 
 
 def get_yf_ticker(code, startday, endday):
-    import yfinance as yf
+    if yf is None:
+        raise ImportError('yfinance not installed')
     start_str  = str(startday)
     end_str    = str(endday)
     start_date = f'{start_str[:4]}-{start_str[4:6]}-{start_str[6:8]}'
@@ -401,31 +433,19 @@ def get_yf_ticker(code, startday, endday):
 
 
 def get_interval(total_sec):
-    if total_sec <= 1800:
+    if total_sec <= 1680:
         return '3min'
-    elif total_sec <= 3600:
+    elif total_sec <= 3480:
         return '5min'
-    elif total_sec <= 7200:
+    elif total_sec <= 7080:
         return '10min'
-    elif total_sec <= 10800:
+    elif total_sec <= 10680:
         return '15min'
     return '30min'
 
 
 def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday, endday, starttime, endtime, list_days,
              backname, back_text, label_text, save_file_name, schedul, notplotshow, buy_vars=None, sell_vars=None):
-
-    from utility.setting_base import GRAPH_PATH
-    from matplotlib import pyplot as plt, font_manager, gridspec
-    from utility.static import dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
-
-    plt.rcParams['figure.max_open_warning'] = 0
-    plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()
-    plt.rcParams['axes.unicode_minus'] = False
-    plt.rcParams['path.simplify'] = True
-    plt.rcParams['path.snap'] = True
-    plt.rcParams['figure.autolayout'] = True
-    plt.rcParams['figure.constrained_layout.use'] = True
 
     df_kp, df_kd, df_nd, df_bc = None, None, None, None
     if startday != endday:
@@ -444,13 +464,25 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     windows = [20, 60, 120, 240, 480]
     for window in windows:
         df_tsg[f'수익금합계{window:03d}'] = profit_series.rolling(window=window).mean()
+    profit_array = df_tsg['수익금'].values
+    df_tsg['이익금액'] = get_np().where(profit_array >= 0, profit_array, 0)
+    df_tsg['손실금액'] = get_np().where(profit_array < 0, profit_array, 0)
 
-    df_tsg['이익금액'] = df_tsg['수익금'].clip(lower=0)
-    df_tsg['손실금액'] = df_tsg['수익금'].clip(upper=0)
-
-    from backtest.back_static_numba import calculate_mdd_bootstrap
     sig_array = df_tsg['수익금'].values
-    mdd_list, random_cumsums = calculate_mdd_bootstrap(sig_array, seed)
+    mdd_list = []
+    random_data = get_np().random.permutation(sig_array)
+    for i in range(30):
+        if i > 0:
+            random_data = get_np().random.permutation(sig_array)
+        random_cumsum = get_np().cumsum(random_data)
+        df_tsg[f'수익금합계{i}'] = random_cumsum
+        try:
+            lower = get_np().argmax(get_np().maximum.accumulate(random_cumsum) - random_cumsum)
+            upper = get_np().argmax(random_cumsum[:lower])
+            mdd_ = round(abs(random_cumsum[upper] - random_cumsum[lower]) / (random_cumsum[upper] + seed) * 100, 2)
+        except:
+            mdd_ = 0.
+        mdd_list.append(mdd_)
 
     df_ts = df_tsg[['수익금']].copy()
     df_ts.index = df_ts.index.map(lambda x: dt_ymd(x))
@@ -465,8 +497,9 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     total_sec = (end_time - start_time).total_seconds()
     interval = get_interval(total_sec)
     df_st = df_st.resample(interval).sum()
-    df_st['이익금액'] = df_st['수익금'].clip(lower=0)
-    df_st['손실금액'] = df_st['수익금'].clip(upper=0)
+    profit_array_st = df_st['수익금'].values
+    df_st['이익금액'] = get_np().where(profit_array_st >= 0, profit_array_st, 0)
+    df_st['손실금액'] = get_np().where(profit_array_st < 0, profit_array_st, 0)
     df_st.index = df_st.index.map(lambda x: str_ymdhms_ios(x))
 
     df_wt = df_tsg[['수익금']].copy()
@@ -477,9 +510,9 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     if dict_cn is None:
         wt_index += ['토', '일']
         wt_data += [weekday_sums.get(5, 0), weekday_sums.get(6, 0)]
-    wt_data_array = np.array(wt_data)
-    wt_datap = np.where(wt_data_array >= 0, wt_data_array, 0)
-    wt_datam = np.where(wt_data_array < 0, wt_data_array, 0)
+    wt_data_array = get_np().array(wt_data)
+    wt_datap = get_np().where(wt_data_array >= 0, wt_data_array, 0)
+    wt_datam = get_np().where(wt_data_array < 0, wt_data_array, 0)
 
     if is_tick:
         df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
@@ -496,6 +529,15 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
                 if not df_tsg_.empty:
                     endx_list.append(df_tsg_.index[-1])
 
+    if plt is None or font_manager is None or gridspec is None:
+        raise ImportError('matplotlib not installed')
+    plt.rcParams['figure.max_open_warning'] = 0
+    plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()
+    plt.rcParams['axes.unicode_minus'] = False
+    plt.rcParams['path.simplify'] = True
+    plt.rcParams['path.snap'] = True
+    plt.rcParams['figure.autolayout'] = True
+    plt.rcParams['figure.constrained_layout.use'] = True
     if schedul or notplotshow:
         plt.switch_backend('agg')
 
@@ -506,11 +548,11 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     ax3 = fig1.add_subplot(gs[1, 0])
     ax4 = fig1.add_subplot(gs[1, 1])
 
-    ax1.plot(df_tsg.index, random_cumsums.T, linewidth=0.5, alpha=0.7)
+    for i in range(30):
+        ax1.plot(df_tsg.index, df_tsg[f'수익금합계{i}'], linewidth=0.5, label=f'MDD {mdd_list[i]}%', alpha=0.7)
     ax1.plot(df_tsg.index, df_tsg['수익금합계'], linewidth=2, label=f'MDD {mdd}%', color='orange')
     max_mdd = max(mdd_list)
     min_mdd = min(mdd_list)
-    # noinspection PyUnresolvedReferences
     avg_mdd = round(sum(mdd_list) / len(mdd_list), 2)
     ax1.set_title(f'Max MDD [{max_mdd}%] | Min MDD [{min_mdd}%] | Avg MDD [{avg_mdd}%]')
     step = max(1, len(df_tsg) // 15)
@@ -521,12 +563,15 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     ax1.grid(True, alpha=0.3)
 
     ax2.plot(df_ts.index, df_ts['수익금합계'], linewidth=2, label='수익률', color='orange')
-    if df_kp is not None and df_kd is not None:
+    if df_kp is not None:
+        # noinspection PyTypeChecker
         ax2.plot(df_kp.index, df_kp['종가'], linewidth=0.5, label='코스피', color='r')
         ax2.plot(df_kd.index, df_kd['종가'], linewidth=0.5, label='코스닥', color='b')
     elif df_nd is not None:
+        # noinspection PyTypeChecker
         ax2.plot(df_nd.index, df_nd['종가'], linewidth=0.5, label='NQ', color='r')
     elif df_bc is not None:
+        # noinspection PyTypeChecker
         ax2.plot(df_bc.index, df_bc['종가'], linewidth=0.5, label='KRW-BTC', color='r')
     ax2.set_title('지수비교')
     step = max(1, len(df_ts) // 15)
@@ -590,10 +635,6 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     ax2.legend(loc='best')
     ax2.grid(True, alpha=0.3)
 
-    if not schedul and not notplotshow:
-        plt.tight_layout()
-        plt.show()
-
     fig1.savefig(f"{GRAPH_PATH}/{save_file_name}_.png", dpi=100, bbox_inches='tight')
     fig2.savefig(f"{GRAPH_PATH}/{save_file_name}.png", dpi=100, bbox_inches='tight')
 
@@ -601,23 +642,27 @@ def PlotShow(gubun, is_tick, teleQ, df_tsg, df_bct, dict_cn, seed, mdd, startday
     teleQ.put(f"{GRAPH_PATH}/{save_file_name}_.png")
     teleQ.put(f"{GRAPH_PATH}/{save_file_name}.png")
 
+    if not schedul and not notplotshow:
+        plt.tight_layout()
+        plt.show()
+
 
 def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
     columns1 = [
         'index', '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
         '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '매도조건', '추가매수시간'
-    ]
+    ] + TRADE_RESULT_EXTRA_COLUMNS
     columns2 = [
         '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
         '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간'
-    ]
-    df_tsg = pd.DataFrame(list_tsg, columns=columns1)
+    ] + TRADE_RESULT_EXTRA_COLUMNS
+    df_tsg = get_pd().DataFrame(list_tsg, columns=columns1)
     df_tsg.set_index('index', inplace=True)
     df_tsg.sort_index(inplace=True)
     df_tsg['수익금합계'] = df_tsg['수익금'].cumsum()
     df_tsg = df_tsg[columns2]
     arry_bct = arry_bct[arry_bct[:, 1] > 0]
-    df_bct = pd.DataFrame(arry_bct[:, 1:], columns=['보유종목수', '보유금액'], index=arry_bct[:, 0])
+    df_bct = get_pd().DataFrame(arry_bct[:, 1:], columns=['보유종목수', '보유금액'], index=arry_bct[:, 0])
     df_bct.index = df_bct.index.astype(str)
     return df_tsg, df_bct
 
@@ -630,8 +675,8 @@ def AddMdd(arry_tsg, result):
     """
     try:
         array = arry_tsg[:, 4]
-        lower = np.argmax(np.maximum.accumulate(array) - array)
-        upper = np.argmax(array[:lower])
+        lower = get_np().argmax(get_np().maximum.accumulate(array) - array)
+        upper = get_np().argmax(array[:lower])
         mdd   = round(abs(array[upper] - array[lower]) / (array[upper] + result[10]) * 100, 2)
         mdd_  = int(abs(array[upper] - array[lower]))
     except:

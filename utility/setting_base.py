@@ -29,6 +29,14 @@ DB_STOCK_USA_MIN    = './_database/stock_usa_min.db'
 DB_STOCK_USA_TICK_BACK = './_database/stock_usa_tick_back.db'
 DB_STOCK_USA_MIN_BACK  = './_database/stock_usa_min_back.db'
 
+# CLI 호환 별칭 (업스트림: DB_{거래소}_{타임프레임}_BACK → CLI: DB_{거래소}_BACK_{타임프레임})
+DB_STOCK_BACK_TICK   = DB_STOCK_TICK_BACK
+DB_STOCK_BACK_MIN    = DB_STOCK_MIN_BACK
+DB_FUTURE_BACK_TICK  = DB_FUTURE_TICK_BACK
+DB_FUTURE_BACK_MIN   = DB_FUTURE_MIN_BACK
+DB_COIN_BACK_TICK    = DB_COIN_TICK_BACK
+DB_COIN_BACK_MIN     = DB_COIN_MIN_BACK
+
 ui_num = {'설정로그': 1, '종목명데이터': 2, '백테엔진': 3, '기본로그': 4, '타임로그': 5, '시스템로그': 6, 'S백테스트': 7, 'SF백테스트': 8,
           'C백테스트': 9, 'CF백테스트': 10, '사용자수식': 10.5, 'DB관리': 11, 'S실현손익': 12, 'S거래목록': 13, 'S잔고평가': 14, 'S잔고목록': 15,
           'S체결목록': 16, 'S당일합계': 17, 'S당일상세': 18, 'S누적합계': 19, 'S누적상세': 20, 'S관심종목': 21, 'C실현손익': 22,

@@ -88,3 +88,11 @@ YYYY-MM-DD_작업명.md
 ## 연락처
 
 문서 관련 문의사항은 프로젝트 관리자에게 문의하세요.
+
+### 2026-04-02 - 동기화 후 필수 검증
+
+업스트림 반영 후에는 아래 문서와 스크립트를 기준으로 반드시 검증합니다.
+
+- [runtime_regression_rca_and_worktree_audit.md](update_log/2026-04-01_runtime_regression_rca_and_worktree_audit.md)
+- `python scripts/verify_nonrelease_sync.py`
+- `python -m pytest tests/unit/ -q`

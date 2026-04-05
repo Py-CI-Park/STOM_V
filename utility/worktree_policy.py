@@ -30,3 +30,13 @@ def get_etc_default_row(include_serial_key):
     if include_serial_key:
         row.append("")
     return row
+
+
+def apply_serial_key_to_dict_set(dict_set, df_e, decode_value, include_serial_key):
+    if not include_serial_key:
+        return
+    if "시리얼키" not in df_e:
+        return
+    if len(df_e) == 0 or not df_e["시리얼키"][0]:
+        return
+    dict_set["시리얼키"] = decode_value(df_e["시리얼키"][0])
