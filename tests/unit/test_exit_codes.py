@@ -38,12 +38,18 @@ class TestExitCodes:
             capture_output=True, text=True, timeout=30, cwd=PROJECT_ROOT)
         assert result.returncode == 1
 
-    def test_execution_error_returns_two(self):
+    def test_execution_error_returns_two(self, tmp_path, tmp_strategy_db):
         """실행 오류 시 exit code 2."""
+        env = {
+            **os.environ,
+            'STOM_CLI_DB_STRATEGY': tmp_strategy_db,
+            'STOM_CLI_DB_STOCK_BACK_MIN': str(tmp_path / 'missing_stock_min_back.db'),
+            'STOM_CLI_DB_BACKTEST': str(tmp_path / 'backtest.db'),
+        }
         result = subprocess.run(
-            [PYTHON, STOM_BACKTEST, '--buy', 'Min_B_Study_251227', '--sell', 'Min_S_Study_251227',
+            [PYTHON, STOM_BACKTEST, '--buy', '테스트매수전략', '--sell', '테스트매도전략',
              '--start', '20250101', '--end', '20250131', '--timeframe', 'min', '--timeout', '15'],
-            capture_output=True, text=True, timeout=60, cwd=PROJECT_ROOT)
+            capture_output=True, text=True, timeout=60, cwd=PROJECT_ROOT, env=env)
         assert result.returncode == 2
 
     def test_exit_code_constants_in_entrypoint(self):
