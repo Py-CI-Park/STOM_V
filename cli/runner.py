@@ -233,10 +233,12 @@ def run_backtest(config):
             target = BackEngineKiwoomTick2 if config.is_tick else BackEngineKiwoomMin2
 
         for i in range(config.engine_count):
+            profiling = i == 0 and dict_set['백테엔진프로파일링']
             proc = Process(
                 target=_engine_with_dict_set,
                 args=(target, dict(dict_set),
-                      i, shared_cnt, shared_lock, windowQ, totalQ, backQ, back_eques, back_sques),
+                      i, shared_cnt, shared_lock, windowQ, totalQ, backQ, back_eques, back_sques,
+                      dict(dict_set), profiling),
                 daemon=True
             )
             proc.start()
@@ -384,7 +386,7 @@ def run_backtest(config):
             target=_engine_with_dict_set,
             args=(BackTest, dict(dict_set),
                   shared_cnt, windowQ, backQ, soundQ, totalQ, liveQ, teleQ,
-                  back_eques, back_sques, '백테스트', 'S')
+                  back_eques, back_sques, '백테스트', 'S', dict(dict_set))
         )
         proc_backtest.start()
         _child_procs.append(proc_backtest)

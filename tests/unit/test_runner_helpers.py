@@ -184,6 +184,41 @@ class TestJoinTimeout:
         assert "QueueDrainer(windowQ, verbose=getattr(config, 'verbose', True))" in content
 
 
+class TestCliDictSetProcessArgs:
+    """CLI process construction passes explicit DICT_SET snapshots to constructors."""
+
+    def _runner_source_without_space(self):
+        runner_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            'cli', 'runner.py'
+        )
+        with open(runner_path, 'r', encoding='utf-8') as f:
+            return ''.join(f.read().split())
+
+    def test_engine_process_passes_dict_set_and_profiling_to_constructor(self):
+        content = self._runner_source_without_space()
+
+        assert (
+            'args=(target,dict(dict_set),'
+            'i,shared_cnt,shared_lock,windowQ,totalQ,backQ,back_eques,back_sques,'
+            'dict(dict_set),profiling)'
+        ) in content
+
+    def test_engine_process_defines_cli_profiling_flag(self):
+        content = self._runner_source_without_space()
+
+        assert "profiling=i==0anddict_set['백테엔진프로파일링']" in content
+
+    def test_backtest_process_passes_dict_set_to_constructor(self):
+        content = self._runner_source_without_space()
+
+        assert (
+            "args=(BackTest,dict(dict_set),"
+            "shared_cnt,windowQ,backQ,soundQ,totalQ,liveQ,teleQ,"
+            "back_eques,back_sques,'백테스트','S',dict(dict_set))"
+        ) in content
+
+
 # ============================================================
 # US-104: 큐 drain 테스트
 # ============================================================
