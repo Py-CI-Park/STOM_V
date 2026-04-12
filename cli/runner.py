@@ -119,6 +119,7 @@ def _sync_dict_set(config):
         '그래프띄우지않기': True,
         '스톰라이브': False,
     })
+    return DICT_SET
 
 
 def _drain_queues(queues):
@@ -176,7 +177,7 @@ def run_backtest(config):
 
     _child_procs.clear()
     _register_signals()
-    _sync_dict_set(config)
+    dict_set = _sync_dict_set(config)
     _run_start_time = time.time()
 
     result = {
@@ -214,7 +215,7 @@ def run_backtest(config):
         for i in range(20):
             proc = Process(
                 target=BackSubTotal,
-                args=(i, windowQ, totalQ, back_sques, DICT_SET['백테매수시간기준']),
+                args=(i, windowQ, totalQ, back_sques, dict_set['백테매수시간기준']),
                 daemon=True
             )
             proc.start()
@@ -234,7 +235,7 @@ def run_backtest(config):
         for i in range(config.engine_count):
             proc = Process(
                 target=_engine_with_dict_set,
-                args=(target, dict(DICT_SET),
+                args=(target, dict(dict_set),
                       i, shared_cnt, shared_lock, windowQ, totalQ, backQ, back_eques, back_sques),
                 daemon=True
             )
@@ -381,7 +382,7 @@ def run_backtest(config):
         # BackTest 프로세스 시작 (11개 인자)
         proc_backtest = Process(
             target=_engine_with_dict_set,
-            args=(BackTest, dict(DICT_SET),
+            args=(BackTest, dict(dict_set),
                   shared_cnt, windowQ, backQ, soundQ, totalQ, liveQ, teleQ,
                   back_eques, back_sques, '백테스트', 'S')
         )
