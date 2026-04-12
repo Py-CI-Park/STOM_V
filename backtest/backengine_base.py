@@ -445,6 +445,10 @@ class BackEngineBase(StrategyBase):
             self.unit = 10000
             self.hour = 2400
 
+    @staticmethod
+    def GetDayValues(indexs, is_tick):
+        return indexs // 1_000_000 if is_tick else indexs // 10_000
+
     def _get_snapshot_value(self, row_index, field_name, default=0):
         if row_index is None or row_index < 0 or row_index >= len(self.arry_code):
             return default
@@ -634,9 +638,9 @@ class BackEngineBase(StrategyBase):
             last = len(self.arry_code) - 1
             if last > 0:
                 indexs = self.arry_code[:, 0].astype(get_np().int64)
-                day_last_indexs = indexs // 1000000
-                day_last_indexs = [i for i in range(last) if day_last_indexs[i] != day_last_indexs[i + 1]]
-                day_last_indexs.append(last)
+                day_vals = self.GetDayValues(indexs, self.is_tick)
+                day_last_indexs = get_np().where(day_vals[:-1] != day_vals[1:])[0]
+                day_last_indexs = get_np().concatenate([day_last_indexs, [last]])
 
                 start_idx = 0
                 for end_idx in day_last_indexs:
