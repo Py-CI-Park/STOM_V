@@ -214,7 +214,7 @@ def run_backtest(config):
         for i in range(20):
             proc = Process(
                 target=BackSubTotal,
-                args=(i, totalQ, back_sques, DICT_SET['백테매수시간기준']),
+                args=(i, windowQ, totalQ, back_sques, DICT_SET['백테매수시간기준']),
                 daemon=True
             )
             proc.start()
