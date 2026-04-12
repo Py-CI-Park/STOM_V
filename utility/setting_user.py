@@ -6,6 +6,7 @@ with open('./utility/blacklist_future.txt') as f:
 with open('./utility/blacklist_coin.txt') as f:
     coinreadlines = f.readlines()
 from utility.worktree_policy import apply_serial_key_to_dict_set, uses_serial_key
+from utility.setting_schema import read_backtest_log_skip
 
 blacklist_stock = []
 blacklist_future = []
@@ -192,7 +193,7 @@ def load_settings():
             '옵튜나고정변수':        df_b['옵튜나고정변수'][0],
             '옵튜나실행횟수':        df_b['옵튜나실행횟수'][0],
             '옵튜나자동스탭':        df_b['옵튜나자동스탭'][0],
-            '백테스트로그기록안함':    df_b['백테스트로그기록안함'][0],
+            '백테스트로그기록안함':    read_backtest_log_skip(df_b),
             '시장미시구조분석':       df_b['시장미시구조분석'][0],
             '시장리스크분석':        df_b['시장리스크분석'][0],
     
