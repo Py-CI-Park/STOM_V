@@ -5,8 +5,9 @@ from backtest.back_static_numba import GetResult
 
 
 class BackSubTotal:
-    def __init__(self, vkey, tq, bstqs, buystd):
+    def __init__(self, vkey, wq, tq, bstqs, buystd):
         self.vkey       = vkey
+        self.wq         = wq
         self.tq         = tq
         self.bstqs      = bstqs
         self.bstq       = self.bstqs[self.vkey]
