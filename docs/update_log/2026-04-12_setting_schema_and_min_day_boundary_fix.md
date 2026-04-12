@@ -27,13 +27,13 @@
 | `STOM_Version_2` | 코드 변경 없음 | 공식 동작이 이미 올바름 |
 | `STOM_Version_2U` | 코드 변경 없음 | 공식 동작이 이미 올바름 |
 | `STOM_Version_2U_C` | 수정 완료 | 설정 스키마, 분봉 일자 경계, CLI runner 검증 blocker 수정 |
-| `research/init` | 전파 완료 | `371e479`까지 전파 완료 |
+| `research/init` | 전파 완료 | `09983b4`까지 전파 완료 |
 | `integration/adopt-cli-v267-into-2uc` | 제외 | archive branch이므로 반영 대상에서 제외 |
 
 ## 검증 결과
 
-- `python -m pytest tests/unit/test_setting_schema_contract.py tests/unit/test_backengine_day_boundary.py tests/unit/test_runner_helpers.py -q` -> `34 passed`.
-- `python -m pytest tests/unit/ -q` -> `834 passed, 1 skipped, 10 warnings`.
+- `python -m pytest tests/unit/test_setting_schema_contract.py tests/unit/test_backengine_day_boundary.py tests/unit/test_runner_helpers.py -q` -> `35 passed`.
+- `python -m pytest tests/unit/ -q` -> `835 passed, 1 skipped, 10 warnings`.
 - `python scripts/verify_nonrelease_sync.py` -> passed all guardrails.
 - `python -c "from utility.setting import DICT_SET; print('setting import ok'); print(DICT_SET['백테스트로그기록안함']); print(DICT_SET['백테엔진프로파일링'])"` -> `setting import ok`, `0`, `False`.
 - CLI dry-run target -> success JSON with `is_tick=false`, `engine_count=20`.
@@ -44,7 +44,7 @@
 
 ## research/init 전파 검증 메모
 
-- `research/init` 전파는 `371e479`까지 완료되었다.
+- `research/init` 전파는 `09983b4`까지 완료되었다.
 - research worktree에서 targeted tests와 `python scripts/verify_nonrelease_sync.py`는 통과했다.
 - research worktree의 전체 unit suite는 기존에 알려진 실패 2건이 남아 있어 full green으로 보지 않는다.
 - research worktree의 local setting import 검증은 해당 worktree의 `setting.db` 암호화 키 불일치 때문에 실패했으며, 코드 경로 검증 실패로 분류하지 않는다.
