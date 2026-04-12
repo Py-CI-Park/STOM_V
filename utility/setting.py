@@ -5,6 +5,7 @@ import pandas as pd
 from traceback import print_exc
 from cryptography import fernet
 from utility.static import read_key, de_text as _strict_de_text, get_logger
+from utility.setting_schema import read_backtest_log_skip
 from utility.worktree_policy import apply_serial_key_to_dict_set, uses_serial_key
 
 logger_             = get_logger('Setting')
@@ -250,7 +251,7 @@ try:
         '옵튜나고정변수':        df_b['옵튜나고정변수'][0],
         '옵튜나실행횟수':        df_b['옵튜나실행횟수'][0],
         '옵튜나자동스탭':        df_b['옵튜나자동스탭'][0],
-        '최적화로그기록안함':    df_b['최적화로그기록안함'][0],
+        '백테스트로그기록안함':    read_backtest_log_skip(df_b),
 
         '저해상도':            df_e['저해상도'][0],
         '휴무프로세스종료':      df_e['휴무프로세스종료'][0],
