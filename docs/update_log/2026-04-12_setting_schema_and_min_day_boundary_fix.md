@@ -27,7 +27,7 @@
 | `STOM_Version_2` | 코드 변경 없음 | 공식 동작이 이미 올바름 |
 | `STOM_Version_2U` | 코드 변경 없음 | 공식 동작이 이미 올바름 |
 | `STOM_Version_2U_C` | 수정 완료 | 설정 스키마, 분봉 일자 경계, CLI runner 검증 blocker 수정 |
-| `research/init` | 전파 대기 | `2U_C` 수정 사항 전파 필요 |
+| `research/init` | 전파 완료 | `371e479`까지 전파 완료 |
 | `integration/adopt-cli-v267-into-2uc` | 제외 | archive branch이므로 반영 대상에서 제외 |
 
 ## 검증 결과
@@ -41,6 +41,13 @@
   - 공식 per-day reset 기준에서는 avg-time 30이 최소 30개 분봉 row를 필요로 하며, `09:00~09:28` 구간은 29개 row라서 이 결과가 기대 동작이다.
 - CLI one-day long window `20250408 090000~151800, engines=4` -> success, `trade_count=67`.
 - CLI full target long window `20250401~20251231 090000~151800, engines=20` -> success, `trade_count=6323`, not collapsed to no-buy message.
+
+## research/init 전파 검증 메모
+
+- `research/init` 전파는 `371e479`까지 완료되었다.
+- research worktree에서 targeted tests와 `python scripts/verify_nonrelease_sync.py`는 통과했다.
+- research worktree의 전체 unit suite는 기존에 알려진 실패 2건이 남아 있어 full green으로 보지 않는다.
+- research worktree의 local setting import 검증은 해당 worktree의 `setting.db` 암호화 키 불일치 때문에 실패했으며, 코드 경로 검증 실패로 분류하지 않는다.
 
 ## 주의 사항
 
