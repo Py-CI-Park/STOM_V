@@ -51,6 +51,19 @@ class TestSyncDictSet:
         _sync_dict_set(sample_config)
         assert _mock_dict_set['주식타임프레임'] is False
 
+    def test_sync_dict_set_returns_synchronized_dict(self, sample_config):
+        """_sync_dict_set() returns the synchronized DICT_SET object."""
+        from cli.runner import _sync_dict_set
+        _mock_dict_set.clear()
+        _mock_dict_set['백테매수시간기준'] = '체결시간'
+        sample_config.is_tick = False
+
+        synced = _sync_dict_set(sample_config)
+
+        assert synced is _mock_dict_set
+        assert synced['주식타임프레임'] is False
+        assert synced['백테매수시간기준'] == _mock_dict_set['백테매수시간기준']
+
     def test_sync_broker(self, sample_config):
         """증권사가 '키움증권'으로 설정되어야 함."""
         from cli.runner import _sync_dict_set
