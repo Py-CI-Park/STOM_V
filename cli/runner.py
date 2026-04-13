@@ -8,7 +8,7 @@ import signal
 import sqlite3
 import atexit
 import pandas as pd
-from multiprocessing import Process, Queue, Value, Lock
+from multiprocessing import Process, Queue, Value, Lock, shared_memory
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cli.paths import DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
@@ -140,6 +140,21 @@ def _drain_queues(queues):
                     break
 
 
+def _cleanup_shared_memory(shared_info):
+    seen = set()
+    for info in shared_info or []:
+        name = info.get('shm_name')
+        if not name or name in seen:
+            continue
+        seen.add(name)
+        try:
+            shm = shared_memory.SharedMemory(name=name)
+            shm.close()
+            shm.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def _engine_with_dict_set(engine_cls, dict_set_override, *args):
     """자식 프로세스 시작 시 DICT_SET을 CLI 값으로 패치한 후 엔진을 생성한다.
 
@@ -203,6 +218,7 @@ def run_backtest(config):
     # QueueDrainer 시작 (windowQ → stderr)
     drainer = QueueDrainer(windowQ, verbose=getattr(config, 'verbose', True))
     drainer.start()
+    shared_info = []
 
     try:
         backtest_rowid_watermark = _get_backtest_last_rowid()
@@ -343,12 +359,12 @@ def run_backtest(config):
                                divid_mode))
 
         # 응답 대기: shared_info 수집
-        shared_info = []
+        shared_info.clear()
         for i in range(multi):
             shared_info_ = backQ.get()
             shared_info += shared_info_
             windowQ.put((1.4, f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
-        shared_info = sorted(shared_info, key=lambda x: x['len'], reverse=True)
+        shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)
         windowQ.put((1.4, f'{log_gubun} 데이터 로딩 완료'))
 
         # 메시지 3: 공유데이터
@@ -427,6 +443,7 @@ def run_backtest(config):
         windowQ.put((1.4, f'오류 발생: {e}'))
 
     finally:
+        _cleanup_shared_memory(shared_info)
         _drain_queues(all_queues + back_sques + back_eques)
         drainer.stop()
         drainer.join(timeout=2)
