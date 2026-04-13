@@ -402,3 +402,16 @@ class TestCliSharedMemoryCleanup:
         monkeypatch.setattr(runner.shared_memory, "SharedMemory", MissingSharedMemory)
 
         runner._cleanup_shared_memory([{"shm_name": "missing"}])
+
+    def test_run_backtest_keeps_parent_visible_shared_info_for_finally_cleanup(self):
+        runner_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            'cli', 'runner.py'
+        )
+        with open(runner_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        assert 'shared_info = []' in content
+        assert 'shared_info.clear()' in content
+        assert "shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)" in content
+        assert '_cleanup_shared_memory(shared_info)' in content
