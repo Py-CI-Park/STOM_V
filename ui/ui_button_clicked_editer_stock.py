@@ -1309,6 +1309,13 @@ def stock_backtest_start(ui):
         clear_backtestQ(ui)
         for q in ui.back_eques:
             q.put(('백테유형', '백테스트'))
+        ui.windowQ.put((
+            ui_num['S백테스트'],
+            f'백테스트 실행조건 startday={startday} endday={endday} starttime={starttime} '
+            f'endtime={endtime} avgtime={avgtime} buy={buystg} sell={sellstg} '
+            f'back_count={ui.back_count} engine_start={ui.starttime} engine_end={ui.endtime} '
+            f'engine_avg={ui.avg_list} engine_multi={ui.multi}'
+        ))
         ui.backQ.put((
             betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
             ui.dict_cn, ui.back_count, bl, False, back_club
