@@ -353,3 +353,52 @@ class TestCleanupProcs:
             assert alive.killed is True
         finally:
             runner._child_procs[:] = original
+
+
+class TestCliSharedMemoryCleanup:
+    """CLI parent process cleans up shared memory segments after a one-shot run."""
+
+    def test_cleanup_shared_memory_unlinks_unique_shm_names(self, monkeypatch):
+        from cli import runner
+
+        calls = []
+
+        class FakeSharedMemory:
+            def __init__(self, name):
+                calls.append(("open", name))
+                self.name = name
+
+            def close(self):
+                calls.append(("close", self.name))
+
+            def unlink(self):
+                calls.append(("unlink", self.name))
+
+        monkeypatch.setattr(runner.shared_memory, "SharedMemory", FakeSharedMemory)
+
+        runner._cleanup_shared_memory([
+            {"shm_name": "backdata_1"},
+            {"shm_name": "backdata_1"},
+            {"shm_name": "backdata_2"},
+            {"file_name": "back_0"},
+        ])
+
+        assert calls == [
+            ("open", "backdata_1"),
+            ("close", "backdata_1"),
+            ("unlink", "backdata_1"),
+            ("open", "backdata_2"),
+            ("close", "backdata_2"),
+            ("unlink", "backdata_2"),
+        ]
+
+    def test_cleanup_shared_memory_ignores_missing_segments(self, monkeypatch):
+        from cli import runner
+
+        class MissingSharedMemory:
+            def __init__(self, name):
+                raise FileNotFoundError(name)
+
+        monkeypatch.setattr(runner.shared_memory, "SharedMemory", MissingSharedMemory)
+
+        runner._cleanup_shared_memory([{"shm_name": "missing"}])
