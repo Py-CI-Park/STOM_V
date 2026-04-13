@@ -680,7 +680,6 @@ class BackEngineBase(StrategyBase):
             from utility.profile_utils import extract_profile_text
             profile_text = extract_profile_text(self.pr, limit=50)
             self.wq.put((ui_num['시스템로그'], profile_text))
-        self.CleanupSharedMemory()
 
     def CleanupSharedMemory(self):
         while self.shared_list:
