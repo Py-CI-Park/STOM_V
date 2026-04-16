@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 from cli._utils import ensure_dataframe as _ensure_dataframe
@@ -22,21 +23,26 @@ def normalize_trade_frame(data) -> pd.DataFrame:
         if column in df.columns:
             df[column] = pd.to_numeric(df[column], errors='coerce')
     if '매수시간' in df.columns:
-        df['_trade_date'] = df['매수시간'].fillna(0).astype('int64').astype(str).str[:8].astype('int64')
+        buy_times = df['매수시간'].where(np.isfinite(df['매수시간']), 0).fillna(0)
+        df['_trade_date'] = buy_times.astype('int64').astype(str).str[:8].astype('int64')
     else:
         df['_trade_date'] = 0
     return df
 
 
 def calculate_profit_factor(df: pd.DataFrame, profit_col: str = '수익금') -> float:
-    """Return gross profit divided by absolute gross loss."""
+    """Return gross profit divided by absolute gross loss.
+
+    Returns ``float('inf')`` when profitable rows exist without any losses, and
+    ``0.0`` when there is no gross profit to compare against losses.
+    """
     if profit_col not in df.columns or df.empty:
         return 0.0
     profits = pd.to_numeric(df[profit_col], errors='coerce').fillna(0.0)
     gross_profit = float(profits[profits > 0].sum())
     gross_loss = abs(float(profits[profits < 0].sum()))
     if gross_loss == 0:
-        return gross_profit if gross_profit > 0 else 0.0
+        return float('inf') if gross_profit > 0 else 0.0
     return gross_profit / gross_loss
 
 

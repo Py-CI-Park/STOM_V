@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 
 from cli.research_metrics import (
@@ -28,6 +30,30 @@ def test_calculate_profit_factor_uses_profit_amounts():
     assert calculate_profit_factor(df) == 2.0
 
 
+def test_calculate_profit_factor_all_winners_is_infinite():
+    df = normalize_trade_frame(pd.DataFrame([
+        {'수익금': 1000},
+        {'수익금': 500},
+    ]))
+    assert math.isinf(calculate_profit_factor(df))
+
+
+def test_calculate_profit_factor_all_losers_is_zero():
+    df = normalize_trade_frame(pd.DataFrame([
+        {'수익금': -1000},
+        {'수익금': -500},
+    ]))
+    assert calculate_profit_factor(df) == 0.0
+
+
+def test_calculate_profit_factor_all_zero_rows_is_zero():
+    df = normalize_trade_frame(pd.DataFrame([
+        {'수익금': 0},
+        {'수익금': 0},
+    ]))
+    assert calculate_profit_factor(df) == 0.0
+
+
 def test_calculate_concentration_returns_largest_share():
     df = normalize_trade_frame(_sample_frame())
     assert calculate_concentration(df, '종목명') == 2 / 3
@@ -52,3 +78,13 @@ def test_summarize_trade_frame_empty_frame_is_safe():
     assert summary['trade_count'] == 0
     assert summary['win_rate'] == 0.0
     assert summary['profit_factor'] == 0.0
+
+
+def test_normalize_trade_frame_sanitizes_malformed_trade_times():
+    df = normalize_trade_frame(pd.DataFrame([
+        {'매수시간': 'bad'},
+        {'매수시간': ''},
+        {'매수시간': float('inf')},
+        {'매수시간': 202501030900},
+    ]))
+    assert df['_trade_date'].tolist() == [0, 0, 0, 20250103]
