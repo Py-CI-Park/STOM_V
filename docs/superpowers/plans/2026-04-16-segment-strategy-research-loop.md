@@ -721,7 +721,7 @@ def _candidate():
 
 def test_make_trade_key_uses_available_stable_columns():
     row = _baseline().iloc[0]
-    assert make_trade_key(row) == 'A|202501010900|1000|202501010910'
+    assert make_trade_key(row) == 'A|202501010900|1000'
 
 
 def test_compare_trade_sets_splits_common_excluded_new():
@@ -765,7 +765,7 @@ import pandas as pd
 from cli.research_metrics import normalize_trade_frame, summarize_trade_frame
 
 
-TRADE_KEY_COLUMNS = ('종목코드', '종목명', '매수시간', '매수가', '매도시간')
+TRADE_KEY_COLUMNS = ('종목코드', '종목명', '매수시간', '매수가')
 
 
 def make_trade_key(row) -> str:
