@@ -9,7 +9,7 @@ from cli.research_metrics import normalize_trade_frame, summarize_trade_frame
 
 INSTRUMENT_COLUMNS = ('종목코드', '종목명')
 REQUIRED_KEY_COLUMNS = ('매수시간',)
-OPTIONAL_KEY_COLUMNS = ('매수가', '매도시간')
+OPTIONAL_KEY_COLUMNS = ('매수가',)
 TRADE_KEY_COLUMNS = INSTRUMENT_COLUMNS + REQUIRED_KEY_COLUMNS + OPTIONAL_KEY_COLUMNS
 
 

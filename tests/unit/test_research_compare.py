@@ -20,7 +20,7 @@ def _candidate():
 
 def test_make_trade_key_uses_available_stable_columns():
     row = _baseline().iloc[0]
-    assert make_trade_key(row) == 'A|202501010900|1000|202501010910'
+    assert make_trade_key(row) == 'A|202501010900|1000'
 
 
 def test_compare_trade_sets_splits_common_excluded_new():
@@ -73,7 +73,20 @@ def test_compare_trade_sets_prefers_code_when_display_name_changes():
     candidate = pd.DataFrame([
         {'종목코드': '000001', '종목명': 'New', '매수시간': 202501010900, '매도시간': 202501010910, '매수가': 1000},
     ])
-    assert make_trade_key(baseline.iloc[0]) == '000001|202501010900|1000|202501010910'
+    assert make_trade_key(baseline.iloc[0]) == '000001|202501010900|1000'
+    result = compare_trade_sets(baseline, candidate)
+    assert result['common_summary']['trade_count'] == 1
+    assert result['excluded_summary']['trade_count'] == 0
+    assert result['new_summary']['trade_count'] == 0
+
+
+def test_compare_trade_sets_matches_same_buy_with_different_sell_time():
+    baseline = pd.DataFrame([
+        {'종목명': 'A', '매수시간': 202501010900, '매도시간': 202501010910, '매수가': 1000},
+    ])
+    candidate = pd.DataFrame([
+        {'종목명': 'A', '매수시간': 202501010900, '매도시간': 202501010930, '매수가': 1000},
+    ])
     result = compare_trade_sets(baseline, candidate)
     assert result['common_summary']['trade_count'] == 1
     assert result['excluded_summary']['trade_count'] == 0
