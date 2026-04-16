@@ -56,11 +56,18 @@ def _delta(candidate: dict, baseline: dict, key: str, reason: str, reasons: list
     return candidate_value - baseline_value
 
 
+def _validate_concentration(value: float, max_value: float, invalid_reason: str, max_reason: str, reasons: list[str]) -> None:
+    if value < 0:
+        _add_reason(reasons, invalid_reason)
+    if value > max_value:
+        _add_reason(reasons, max_reason)
+
+
 def evaluate_research_candidate(comparison: dict, gates: dict | None = None, weights: dict | None = None) -> dict:
     """Evaluate mandatory gates and weighted score for a candidate comparison."""
     gates = {**BALANCED_GATES, **(gates or {})}
     weights = {**BALANCED_WEIGHTS, **(weights or {})}
-    reasons = []
+    reasons: list[str] = []
     baseline = _summary(comparison, 'baseline_summary', 'missing_baseline_summary', reasons)
     candidate = _summary(comparison, 'candidate_summary', 'missing_candidate_summary', reasons)
     excluded = comparison.get('excluded_summary')
@@ -87,16 +94,26 @@ def evaluate_research_candidate(comparison: dict, gates: dict | None = None, wei
         'invalid_date_concentration',
         reasons,
     )
-    if date_concentration > gates['max_date_concentration']:
-        _add_reason(reasons, f"date_concentration>{gates['max_date_concentration']}")
+    _validate_concentration(
+        date_concentration,
+        gates['max_date_concentration'],
+        'invalid_date_concentration',
+        f"date_concentration>{gates['max_date_concentration']}",
+        reasons,
+    )
 
     symbol_concentration = _coerce_finite(
         candidate.get('symbol_concentration'),
         'invalid_symbol_concentration',
         reasons,
     )
-    if symbol_concentration > gates['max_symbol_concentration']:
-        _add_reason(reasons, f"symbol_concentration>{gates['max_symbol_concentration']}")
+    _validate_concentration(
+        symbol_concentration,
+        gates['max_symbol_concentration'],
+        'invalid_symbol_concentration',
+        f"symbol_concentration>{gates['max_symbol_concentration']}",
+        reasons,
+    )
 
     avg_return_delta = _delta(candidate, baseline, 'avg_return', 'invalid_avg_return_delta', reasons)
     win_rate_delta = _delta(candidate, baseline, 'win_rate', 'invalid_win_rate_delta', reasons)

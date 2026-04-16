@@ -69,6 +69,22 @@ def test_evaluate_research_candidate_rejects_symbol_concentration():
     assert 'symbol_concentration>0.5' in result['reasons']
 
 
+def test_evaluate_research_candidate_rejects_negative_date_concentration():
+    comparison = _comparison()
+    comparison['candidate_summary']['date_concentration'] = -0.01
+    result = evaluate_research_candidate(comparison)
+    assert result['passed'] is False
+    assert 'invalid_date_concentration' in result['reasons']
+
+
+def test_evaluate_research_candidate_rejects_negative_symbol_concentration():
+    comparison = _comparison()
+    comparison['candidate_summary']['symbol_concentration'] = -0.01
+    result = evaluate_research_candidate(comparison)
+    assert result['passed'] is False
+    assert 'invalid_symbol_concentration' in result['reasons']
+
+
 def test_evaluate_research_candidate_rejects_missing_baseline_summary():
     comparison = _comparison()
     del comparison['baseline_summary']
