@@ -61,6 +61,29 @@ def test_evaluate_research_candidate_rejects_high_trade_retention():
     assert 'trade_count_retention>2.0' in result['reasons']
 
 
+def test_evaluate_research_candidate_rejects_high_trade_count_expansion_with_positive_score():
+    comparison = _comparison()
+    comparison['trade_count_expansion'] = 0.75
+    result = evaluate_research_candidate(comparison)
+    assert result['score'] > 0
+    assert result['passed'] is False
+    assert result['reasons'] == ['trade_count_expansion>0.5']
+
+
+def test_evaluate_research_candidate_rejects_invalid_trade_count_expansion():
+    comparison = _comparison()
+    comparison['trade_count_expansion'] = -0.01
+    result = evaluate_research_candidate(comparison)
+    assert result['passed'] is False
+    assert 'invalid_trade_count_expansion' in result['reasons']
+
+    comparison = _comparison()
+    comparison['trade_count_expansion'] = float('nan')
+    result = evaluate_research_candidate(comparison)
+    assert result['passed'] is False
+    assert 'invalid_trade_count_expansion' in result['reasons']
+
+
 def test_evaluate_research_candidate_rejects_symbol_concentration():
     comparison = _comparison()
     comparison['candidate_summary']['symbol_concentration'] = 0.75

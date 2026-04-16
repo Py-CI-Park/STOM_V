@@ -111,6 +111,49 @@ def _first_expression(expression_result: dict) -> str | None:
     return expressions[0] if expressions else None
 
 
+def _is_strategy_not_found(result: dict) -> bool:
+    message = str(result.get('message') or '').lower()
+    not_found_markers = (
+        'not found',
+        'strategy not found',
+        '전략 없음',
+        '전략이 없습니다',
+        '전략이 db에 없습니다',
+        '전략을 찾을 수 없습니다',
+        '테이블에 없습니다',
+    )
+    return any(marker in message for marker in not_found_markers)
+
+
+def _format_candidate_reason(candidate: object) -> str:
+    if isinstance(candidate, dict):
+        parts = []
+        for key in ('source', 'label', 'feature', 'count'):
+            value = candidate.get(key)
+            if value not in (None, ''):
+                parts.append(f'{key}={value}')
+        if parts:
+            return ' | '.join(parts)
+    if candidate not in (None, ''):
+        return str(candidate)
+    return ''
+
+
+def _candidate_reason(expression_result: dict) -> str:
+    selected_candidates = expression_result.get('selected_candidates') or []
+    if selected_candidates:
+        reason = _format_candidate_reason(selected_candidates[0])
+        if reason:
+            return reason
+    reason = _format_candidate_reason(expression_result.get('analysis_candidate'))
+    if reason:
+        return reason
+    expression = _first_expression(expression_result)
+    if expression:
+        return f'analysis_candidate={expression}'
+    return 'analysis_candidate=unavailable'
+
+
 def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[str]) -> dict:
     if not config.base_buy_strategy:
         return _error(
@@ -129,6 +172,20 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
             'base_strategy_load',
             base_result.get('message', 'failed to load base_buy_strategy'),
             base_strategy_result=base_result,
+        )
+
+    candidate_name_result = load_strategy_from_db(DB_STRATEGY, config.name, 'buy')
+    if candidate_name_result.get('status') == 'ok':
+        return _error(
+            'candidate_name_conflict',
+            f"candidate buy strategy '{config.name}' already exists",
+            candidate_strategy_result=candidate_name_result,
+        )
+    if not _is_strategy_not_found(candidate_name_result):
+        return _error(
+            'candidate_name_lookup',
+            candidate_name_result.get('message', 'failed to check candidate buy strategy name'),
+            candidate_strategy_result=candidate_name_result,
         )
 
     strategy_result = generate_buy_filter_strategy(
@@ -215,6 +272,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     candidate = {
         'expression': _first_expression(expression_result),
         'expressions': expressions,
+        'reason': _candidate_reason(expression_result),
         'candidate_count': expression_result.get('candidate_count', len(expressions)),
         'selected_candidates': expression_result.get('selected_candidates', []),
     }

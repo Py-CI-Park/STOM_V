@@ -9,6 +9,7 @@ BALANCED_GATES = {
     'min_trade_count': 20,
     'min_trade_count_retention': 0.40,
     'max_trade_count_retention': 2.00,
+    'max_trade_count_expansion': 0.50,
     'max_date_concentration': 0.50,
     'max_symbol_concentration': 0.50,
 }
@@ -88,6 +89,16 @@ def evaluate_research_candidate(comparison: dict, gates: dict | None = None, wei
         _add_reason(reasons, f"trade_count_retention<{gates['min_trade_count_retention']}")
     if retention > gates['max_trade_count_retention']:
         _add_reason(reasons, f"trade_count_retention>{gates['max_trade_count_retention']}")
+
+    expansion = _coerce_finite(
+        comparison.get('trade_count_expansion'),
+        'invalid_trade_count_expansion',
+        reasons,
+    )
+    if expansion < 0:
+        _add_reason(reasons, 'invalid_trade_count_expansion')
+    if expansion > gates['max_trade_count_expansion']:
+        _add_reason(reasons, f"trade_count_expansion>{gates['max_trade_count_expansion']}")
 
     date_concentration = _coerce_finite(
         candidate.get('date_concentration'),
