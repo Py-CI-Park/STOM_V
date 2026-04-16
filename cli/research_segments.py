@@ -41,22 +41,30 @@ def add_time_segment(data, column: str = 'B_시분초') -> pd.DataFrame:
     return df
 
 
+def _finite_positive_mask(values: pd.Series) -> pd.Series:
+    return values.notna() & (values > 0) & (values < float('inf'))
+
+
 def infer_market_cap_unit(series: pd.Series) -> str:
     """Infer market-cap unit for result CSV values."""
-    values = pd.to_numeric(series, errors='coerce').dropna()
-    if values.empty:
+    values = pd.to_numeric(series, errors='coerce')
+    finite_positive = values[_finite_positive_mask(values)]
+    if finite_positive.empty:
         return 'unknown'
-    median = float(values.median())
+    median = float(finite_positive.median())
     if median < 1_000_000:
         return '억원'
     return 'raw'
 
 
 def _normalize_market_cap_values(series: pd.Series) -> pd.Series:
-    values = pd.to_numeric(series, errors='coerce').fillna(0.0)
-    if infer_market_cap_unit(values) == '억원':
-        return values
-    return values / 100_000_000
+    values = pd.to_numeric(series, errors='coerce')
+    valid_mask = _finite_positive_mask(values)
+    normalized = values.copy()
+    normalized.loc[~valid_mask] = float('nan')
+    if infer_market_cap_unit(values) == 'raw':
+        normalized.loc[valid_mask] = normalized.loc[valid_mask] / 100_000_000
+    return normalized
 
 
 def add_market_cap_segment(data, column: str = 'B_시가총액') -> pd.DataFrame:

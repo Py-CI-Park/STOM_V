@@ -35,10 +35,39 @@ def test_infer_market_cap_unit_detects_current_csv_like_values():
     assert infer_market_cap_unit(pd.Series([1500, 12000, 50000])) == '억원'
 
 
+def test_infer_market_cap_unit_ignores_non_finite_values():
+    assert infer_market_cap_unit(pd.Series([1500, float('inf')])) == '억원'
+
+
+def test_infer_market_cap_unit_all_invalid_returns_unknown():
+    assert infer_market_cap_unit(pd.Series([None, 'bad', float('inf'), float('-inf'), 0, -10])) == 'unknown'
+
+
 def test_add_market_cap_segment_uses_normalized_labels():
     result = add_market_cap_segment(_segment_frame())
     assert result['_market_cap_segment'].iloc[0] == '소형'
     assert result['_market_cap_segment'].iloc[-1] == '대형'
+
+
+def test_add_market_cap_segment_marks_invalid_values_unclassified():
+    result = add_market_cap_segment(pd.DataFrame({
+        'B_시가총액': [None, 'bad', float('inf'), float('-inf'), 0, -10, 1500, 12000],
+    }))
+    assert result['_market_cap_segment'].tolist() == [
+        '미분류',
+        '미분류',
+        '미분류',
+        '미분류',
+        '미분류',
+        '미분류',
+        '소형',
+        '대형',
+    ]
+
+
+def test_add_market_cap_segment_missing_column_is_unclassified():
+    result = add_market_cap_segment(pd.DataFrame({'B_시분초': [91000, 100000]}))
+    assert result['_market_cap_segment'].tolist() == ['미분류', '미분류']
 
 
 def test_analyze_single_axis_segments_reports_weak_segment():
