@@ -36,6 +36,25 @@ def test_discovery_research_parser_accepts_existing_strategy_inputs():
     assert args.run_candidate is True
 
 
+def test_discovery_research_parser_accepts_missing_input():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'AutoResearch01',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+    ])
+    assert args.discovery_action == 'research'
+    assert args.name == 'AutoResearch01'
+    assert args.input_file is None
+    assert args.base_buy_strategy == 'BaseBuy'
+    assert args.sell == 'BaseSell'
+    assert args.top_n == 1
+    assert args.run_candidate is False
+
+
 def test_discovery_research_handler_calls_controller(capsys):
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearch01'}}
@@ -55,7 +74,53 @@ def test_discovery_research_handler_calls_controller(capsys):
     kwargs = mock.call_args.args[0]
     assert kwargs['name'] == 'AutoResearch01'
     assert kwargs['baseline_csv'] == 'baseline.csv'
+    assert kwargs['base_buy_strategy'] == 'BaseBuy'
+    assert kwargs['sell_strategy'] == 'BaseSell'
+    assert kwargs['start_date'] == 20250101
+    assert kwargs['end_date'] == 20250131
     assert kwargs['is_tick'] is False
+    assert kwargs['engine_count'] == 4
+    assert kwargs['top_n'] == 1
+    assert kwargs['run_candidate'] is False
+
+
+def test_discovery_research_handler_accepts_missing_input():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearch01'}}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'AutoResearch01',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidate',
+        ])
+    assert exit_code == 0
+    kwargs = mock.call_args.args[0]
+    assert kwargs['baseline_csv'] is None
+    assert kwargs['base_buy_strategy'] == 'BaseBuy'
+    assert kwargs['sell_strategy'] == 'BaseSell'
+    assert kwargs['start_date'] == 20250101
+    assert kwargs['end_date'] == 20250131
+    assert kwargs['is_tick'] is True
+    assert kwargs['engine_count'] == 4
+    assert kwargs['top_n'] == 1
+    assert kwargs['run_candidate'] is True
+
+
+def test_discovery_research_handler_returns_nonzero_on_error_status():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'error'}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'AutoResearch01',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+        ])
+    assert exit_code == 1
 
 
 # ============================================================
