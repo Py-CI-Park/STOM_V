@@ -1228,6 +1228,17 @@ Tested: python -m pytest tests/unit/test_research_report.py -q"
 - Modify: `cli/ai_controller.py`
 - Test: `tests/unit/test_research_loop.py`
 
+**Important correction from implementation review:** This task must improve an existing buy strategy, not create a standalone buy strategy from generated conditions. Do not use `AIBacktestController.create_strategy_from_analysis()` as the candidate creation path. Instead:
+
+1. Analyze the baseline CSV.
+2. Generate filter expressions.
+3. Load `base_buy_strategy`.
+4. Use `generate_buy_filter_strategy()` to insert those filters before the base strategy's final `self.Buy()`.
+5. Save the combined strategy as `config.name`.
+6. Run the candidate backtest with `buy_strategy=config.name`.
+
+This keeps the research loop aligned with the user's goal: improve the selected existing condition formula.
+
 - [ ] **Step 1: Write the failing test**
 
 Create `tests/unit/test_research_loop.py`:
