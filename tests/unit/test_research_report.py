@@ -1,4 +1,11 @@
-from cli.research_report import build_research_report, render_research_report_markdown
+import json
+
+from cli.research_report import (
+    build_research_report,
+    render_research_report_markdown,
+    save_research_report_json,
+    save_research_report_markdown,
+)
 
 
 def _result():
@@ -9,12 +16,40 @@ def _result():
         'candidate': {'expression': '체결강도 < 90', 'reason': 'weak_segment'},
         'comparison': {
             'counts': {'baseline': 100, 'candidate': 85, 'common': 80, 'excluded': 20, 'new': 5},
+            'trade_count_retention': 0.85,
+            'trade_count_expansion': 0.05,
             'baseline_summary': {'avg_return': -0.2, 'win_rate': 0.4},
-            'candidate_summary': {'avg_return': 0.1, 'win_rate': 0.48},
-            'excluded_summary': {'avg_return': -1.2, 'win_rate': 0.1},
-            'new_summary': {'avg_return': 0.2, 'win_rate': 0.6},
+            'candidate_summary': {
+                'avg_return': 0.1,
+                'win_rate': 0.48,
+                'total_profit': 1500,
+                'avg_mae': -0.4,
+                'profit_factor': 1.8,
+                'date_concentration': 0.2,
+                'symbol_concentration': 0.3,
+            },
+            'excluded_summary': {
+                'avg_return': -1.2,
+                'win_rate': 0.1,
+                'total_profit': -2400,
+                'avg_mae': -2.0,
+                'profit_factor': 0.2,
+            },
+            'new_summary': {
+                'avg_return': 0.2,
+                'win_rate': 0.6,
+                'total_profit': 500,
+                'avg_mae': -0.3,
+                'profit_factor': 2.0,
+            },
         },
-        'promotion': {'passed': True, 'score': 0.42, 'reasons': []},
+        'promotion': {
+            'passed': True,
+            'score': 0.42,
+            'reasons': [],
+            'deltas': {'avg_return': 0.3, 'win_rate': 0.08},
+            'gates': {'min_trade_count': True},
+        },
     }
 
 
@@ -32,3 +67,67 @@ def test_render_research_report_markdown_contains_trade_set_sections():
     assert '## Candidate' in markdown
     assert '## Trade Set Comparison' in markdown
     assert '## Promotion' in markdown
+
+
+def test_render_research_report_markdown_contains_korean_decision_labels():
+    markdown = render_research_report_markdown(build_research_report(_result(), strategy_name='AutoResearch'))
+    assert '거래 수' in markdown
+    assert '제외 거래' in markdown
+    assert '신규 거래' in markdown
+    assert '승격 평가' in markdown
+
+
+def test_render_research_report_markdown_allows_missing_promotion_reasons():
+    result = _result()
+    result['promotion']['reasons'] = None
+    markdown = render_research_report_markdown(build_research_report(result, strategy_name='AutoResearch'))
+    assert '## Promotion' in markdown
+    assert 'reason: None' not in markdown
+
+
+def test_save_research_report_json_normalizes_non_finite_numbers(tmp_path):
+    result = _result()
+    result['comparison']['candidate_summary']['profit_factor'] = float('inf')
+    result['comparison']['excluded_summary']['profit_factor'] = float('-inf')
+    result['comparison']['new_summary']['profit_factor'] = float('nan')
+    report = build_research_report(result, strategy_name='AutoResearch')
+    path = tmp_path / 'research.json'
+
+    saved = save_research_report_json(report, str(path))
+
+    assert saved == {'status': 'ok', 'path': str(path)}
+    text = path.read_text(encoding='utf-8')
+    assert 'Infinity' not in text
+    assert 'NaN' not in text
+    parsed = json.loads(text)
+    assert parsed['candidate_summary']['profit_factor'] is None
+    assert parsed['excluded_summary']['profit_factor'] is None
+    assert parsed['new_summary']['profit_factor'] is None
+
+
+def test_save_research_report_json_and_markdown(tmp_path):
+    report = build_research_report(_result(), strategy_name='AutoResearch')
+    json_path = tmp_path / 'research.json'
+    markdown_path = tmp_path / 'research.md'
+
+    json_result = save_research_report_json(report, str(json_path))
+    markdown_result = save_research_report_markdown(report, str(markdown_path))
+
+    assert json_result == {'status': 'ok', 'path': str(json_path)}
+    assert markdown_result == {'status': 'ok', 'path': str(markdown_path)}
+    assert json.loads(json_path.read_text(encoding='utf-8'))['strategy_name'] == 'AutoResearch'
+    assert markdown_path.read_text(encoding='utf-8').startswith('# 조건식 연구 리포트: AutoResearch')
+
+
+def test_save_research_report_markdown_returns_error_on_write_failure(monkeypatch, tmp_path):
+    def raise_write_error(self, *args, **kwargs):
+        raise OSError('write blocked')
+
+    monkeypatch.setattr('cli.research_report.Path.write_text', raise_write_error)
+    path = tmp_path / 'research.md'
+
+    result = save_research_report_markdown(build_research_report(_result()), str(path))
+
+    assert result['status'] == 'error'
+    assert result['path'] == str(path)
+    assert 'write blocked' in result['error']
