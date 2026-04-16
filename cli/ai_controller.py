@@ -795,6 +795,23 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def research_strategy_once(self, config_dict: dict) -> dict:
+        """Run one research iteration that filters an existing buy strategy."""
+        try:
+            from dataclasses import fields
+
+            from cli.research_loop import ResearchLoopConfig, run_research_once
+
+            config_dict = config_dict or {}
+            allowed_fields = {field.name for field in fields(ResearchLoopConfig)}
+            config = ResearchLoopConfig(**{
+                key: value for key, value in config_dict.items()
+                if key in allowed_fields
+            })
+            return run_research_once(config, self)
+        except Exception as e:
+            return {'status': 'error', 'phase': 'research_loop', 'message': str(e)}
+
     def run(self, config_dict: dict) -> dict:
         """백테스트를 실행하고 결과를 히스토리에 저장한다."""
         try:
