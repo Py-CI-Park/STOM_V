@@ -4,6 +4,7 @@ from __future__ import annotations
 
 
 LEAKY_PREFIXES = ('S_', 'R_')
+BINARY_OPERATORS = ('<', '<=', '>', '>=')
 
 
 def _runtime_feature(feature: str) -> str:
@@ -31,6 +32,8 @@ def condition_to_expression(condition: dict) -> str:
     operator = condition['operator']
     if operator == 'between':
         return f"{_format_value(condition['lower_bound'])} <= {feature} < {_format_value(condition['upper_bound'])}"
+    if operator not in BINARY_OPERATORS:
+        raise ValueError(f'unsupported operator: {operator}')
     return f"{feature} {operator} {_format_value(condition['threshold'])}"
 
 

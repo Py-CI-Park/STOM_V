@@ -1,3 +1,5 @@
+import pytest
+
 from cli.research_candidates import candidate_to_expression, generate_segment_filter_candidates, reject_leaky_expression
 
 
@@ -21,6 +23,18 @@ def test_reject_leaky_expression_blocks_sell_and_result_features():
     assert reject_leaky_expression('S_체결강도 < 90') is True
     assert reject_leaky_expression('R_MAE < -2') is True
     assert reject_leaky_expression('체결강도 < 90') is False
+
+
+def test_candidate_to_expression_rejects_unsupported_operator():
+    candidate = {'conditions': [{'feature': 'B_체결강도', 'operator': '==', 'threshold': 90}]}
+    with pytest.raises(ValueError, match='unsupported operator: =='):
+        candidate_to_expression(candidate)
+
+
+def test_candidate_to_expression_rejects_leaky_feature_dict():
+    candidate = {'conditions': [{'feature': 'S_체결강도', 'operator': '<', 'threshold': 90}]}
+    with pytest.raises(ValueError, match='leaky expression is not allowed: S_체결강도 < 90'):
+        candidate_to_expression(candidate)
 
 
 def test_generate_segment_filter_candidates_scores_weak_segments():
