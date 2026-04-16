@@ -5,13 +5,53 @@ from cli.research_loop import ResearchLoopConfig, run_research_once
 
 
 class DummyController:
-    def __init__(self, candidate_csv):
+    def __init__(self, candidate_csv, status='success'):
         self.candidate_csv = candidate_csv
+        self.status = status
         self.runs = []
 
     def run(self, config_dict):
         self.runs.append(config_dict)
-        return {'status': 'success', 'csv_path': self.candidate_csv, 'metrics': {'trade_count': 1}}
+        result = {'status': self.status, 'metrics': {'trade_count': 1}}
+        if self.candidate_csv is not None:
+            result['csv_path'] = self.candidate_csv
+        if self.status == 'error':
+            result['message'] = 'candidate failed'
+        return result
+
+
+def _write_trade_csv(path, name='A', buy_time=202501010900):
+    pd.DataFrame([
+        {'종목명': name, '매수시간': buy_time, '매도시간': buy_time + 10, '매수가': 1000, '수익률': -1.0, '수익금': -1000, 'R_MFE': 0.2, 'R_MAE': -2.0},
+    ]).to_csv(path, index=False, encoding='utf-8-sig')
+
+
+def _patch_analysis_success(monkeypatch, expressions=None):
+    expressions = ['체결강도 < 90'] if expressions is None else expressions
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'ok', 'recommended_candidates': []})
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda *args, **kwargs: {'status': 'ok', 'expressions': expressions, 'candidate_count': len(expressions), 'selected_candidates': []},
+    )
+
+
+def _patch_strategy_success(monkeypatch):
+    monkeypatch.setattr(
+        research_loop,
+        'load_strategy_from_db',
+        lambda db_path, name, strategy_type: {'status': 'ok', 'code': '매수 = True\nif 매수:\n    self.Buy()', 'name': name},
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'generate_buy_filter_strategy',
+        lambda name, base_code, expressions: {'status': 'ok', 'code': base_code + '\n# filter:' + ','.join(expressions), 'name': name},
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'save_strategy_to_db',
+        lambda db_path, name, code, strategy_type: {'status': 'ok', 'name': name, 'action': 'created'},
+    )
 
 
 def test_run_research_once_combines_filters_with_base_strategy(monkeypatch, tmp_path):
@@ -88,3 +128,177 @@ def test_research_loop_requires_base_buy_strategy_for_candidate_save(tmp_path):
     assert result['status'] == 'error'
     assert result['phase'] == 'candidate_strategy'
     assert 'base_buy_strategy' in result['message']
+
+
+def test_run_candidate_false_returns_expression_without_saving_or_comparison(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+
+    def fail_save(*args, **kwargs):
+        raise AssertionError('save should not be attempted')
+
+    monkeypatch.setattr(research_loop, 'save_strategy_to_db', fail_save)
+
+    result = run_research_once(
+        ResearchLoopConfig(name='PreviewOnly', baseline_csv=str(baseline), run_candidate=False),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['candidate']['expression'] == '체결강도 < 90'
+    assert result['candidate_csv'] is None
+    assert result['comparison'] is None
+    assert result['promotion'] is None
+
+
+def test_research_loop_returns_analysis_phase_on_analysis_failure(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'error', 'message': 'bad analysis'})
+
+    result = run_research_once(
+        ResearchLoopConfig(name='AnalysisFail', baseline_csv=str(baseline), run_candidate=False),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'analysis'
+    assert 'bad analysis' in result['message']
+
+
+def test_research_loop_returns_no_expressions_phase(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch, expressions=[])
+
+    result = run_research_once(
+        ResearchLoopConfig(name='NoExpressions', baseline_csv=str(baseline), run_candidate=False),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'no_expressions'
+
+
+def test_research_loop_returns_base_strategy_load_phase(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    monkeypatch.setattr(research_loop, 'load_strategy_from_db', lambda *args, **kwargs: {'status': 'error', 'message': 'missing base'})
+
+    result = run_research_once(
+        ResearchLoopConfig(name='LoadFail', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(baseline)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'base_strategy_load'
+    assert 'missing base' in result['message']
+
+
+def test_research_loop_returns_filter_generation_phase(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    monkeypatch.setattr(research_loop, 'load_strategy_from_db', lambda *args, **kwargs: {'status': 'ok', 'code': '매수 = True'})
+    monkeypatch.setattr(research_loop, 'generate_buy_filter_strategy', lambda *args, **kwargs: {'status': 'error', 'message': 'filter failed'})
+
+    result = run_research_once(
+        ResearchLoopConfig(name='FilterFail', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(baseline)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'filter_generation'
+    assert 'filter failed' in result['message']
+
+
+def test_research_loop_returns_save_phase(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    monkeypatch.setattr(research_loop, 'save_strategy_to_db', lambda *args, **kwargs: {'status': 'error', 'message': 'save failed'})
+
+    result = run_research_once(
+        ResearchLoopConfig(name='SaveFail', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(baseline)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_strategy_save'
+    assert 'save failed' in result['message']
+
+
+def test_research_loop_returns_candidate_backtest_phase(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+
+    result = run_research_once(
+        ResearchLoopConfig(name='RunFail', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(baseline), status='error'),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_backtest'
+    assert 'candidate failed' in result['message']
+
+
+def test_research_loop_returns_candidate_csv_missing_when_run_omits_path(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+
+    result = run_research_once(
+        ResearchLoopConfig(name='NoCsv', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_csv_missing'
+
+
+def test_research_loop_returns_candidate_csv_missing_when_path_does_not_exist(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    missing_candidate = tmp_path / 'missing.csv'
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+
+    result = run_research_once(
+        ResearchLoopConfig(name='MissingCsv', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(missing_candidate)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_csv_missing'
+    assert str(missing_candidate) in result['message']
+
+
+def test_research_loop_rejects_candidate_name_matching_base_strategy(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    calls = {'save': 0}
+
+    def fail_save(*args, **kwargs):
+        calls['save'] += 1
+        raise AssertionError('save should not be attempted')
+
+    monkeypatch.setattr(research_loop, 'load_strategy_from_db', lambda *args, **kwargs: {'status': 'ok', 'code': '매수 = True'})
+    monkeypatch.setattr(research_loop, 'save_strategy_to_db', fail_save)
+
+    result = run_research_once(
+        ResearchLoopConfig(name='BaseBuy', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(baseline)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_name_conflict'
+    assert 'name' in result['message']
+    assert 'base_buy_strategy' in result['message']
+    assert calls['save'] == 0

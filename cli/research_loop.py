@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from pathlib import Path
 
 from cli.analyzer import analyze_result_csv
 from cli.condition_generator import generate_condition_expressions_from_analysis
@@ -116,11 +117,16 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
             'candidate_strategy',
             'base_buy_strategy is required when run_candidate is True',
         )
+    if config.name == config.base_buy_strategy:
+        return _error(
+            'candidate_name_conflict',
+            'name must differ from base_buy_strategy to preserve the base strategy',
+        )
 
     base_result = load_strategy_from_db(DB_STRATEGY, config.base_buy_strategy, 'buy')
     if base_result.get('status') != 'ok':
         return _error(
-            'candidate_strategy',
+            'base_strategy_load',
             base_result.get('message', 'failed to load base_buy_strategy'),
             base_strategy_result=base_result,
         )
@@ -132,7 +138,7 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
     )
     if strategy_result.get('status') != 'ok':
         return _error(
-            'candidate_strategy',
+            'filter_generation',
             strategy_result.get('message', 'failed to generate filtered buy strategy'),
             strategy_result=strategy_result,
         )
@@ -145,7 +151,7 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
     )
     if save_result.get('status') != 'ok':
         return _error(
-            'candidate_strategy',
+            'candidate_strategy_save',
             save_result.get('message', 'failed to save candidate buy strategy'),
             strategy_result=save_result,
         )
@@ -199,7 +205,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     expressions = expression_result.get('expressions') or []
     if expression_result.get('status') != 'ok' or not expressions:
         return _error(
-            'candidate_strategy',
+            'no_expressions',
             expression_result.get('message', 'no candidate expressions generated'),
             baseline_csv=baseline_csv,
             analysis_result=analysis_result,
@@ -237,7 +243,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     candidate_result = controller.run(_candidate_config_dict(config))
     if candidate_result.get('status') not in ('ok', 'success'):
         return _error(
-            'candidate_run',
+            'candidate_backtest',
             candidate_result.get('message', 'candidate run failed'),
             baseline_csv=baseline_csv,
             candidate=candidate,
@@ -246,18 +252,36 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     candidate_csv = _csv_path_from_run(candidate_result)
     if not candidate_csv:
         return _error(
-            'candidate_run',
+            'candidate_csv_missing',
             'candidate run did not return csv_path',
             baseline_csv=baseline_csv,
             candidate=candidate,
             run_result=candidate_result,
         )
+    if not Path(candidate_csv).exists():
+        return _error(
+            'candidate_csv_missing',
+            f'candidate csv_path does not exist: {candidate_csv}',
+            baseline_csv=baseline_csv,
+            candidate_csv=candidate_csv,
+            candidate=candidate,
+            run_result=candidate_result,
+        )
 
-    comparison = compare_trade_sets(
-        _trade_frame_for_compare(baseline_csv),
-        _trade_frame_for_compare(candidate_csv),
-    )
-    promotion = evaluate_research_candidate(comparison)
+    try:
+        comparison = compare_trade_sets(
+            _trade_frame_for_compare(baseline_csv),
+            _trade_frame_for_compare(candidate_csv),
+        )
+        promotion = evaluate_research_candidate(comparison)
+    except Exception as e:
+        return _error(
+            'comparison',
+            str(e),
+            baseline_csv=baseline_csv,
+            candidate_csv=candidate_csv,
+            candidate=candidate,
+        )
 
     return _build_result(config, {
         'status': 'ok',

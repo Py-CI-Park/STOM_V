@@ -11,7 +11,6 @@ AI가 하나의 인터페이스로 전체 백테스트 파이프라인을 제어
 import os
 import sys
 import time
-import json
 from dataclasses import asdict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -913,7 +912,9 @@ class AIBacktestController:
             try:
                 from cli.history import save_run, init_history_db
                 init_history_db(self._history_db)
-                save_fn = lambda cfg, res, dur: save_run(cfg, res, dur, self._history_db)
+
+                def save_fn(cfg, res, dur):
+                    return save_run(cfg, res, dur, self._history_db)
             except Exception:
                 pass
 
