@@ -117,6 +117,26 @@ def create_subcommand_parser():
     disc_create.add_argument('--ml-n-splits', type=int, default=5)
     disc_create.add_argument('--ml-weight', type=float, default=0.0, help='ML importance를 candidate ranking에 가중치로 반영')
 
+    # discovery research
+    disc_research = disc_sub.add_parser('research', help='run one discovery research iteration')
+    disc_research.add_argument('name', help='strategy name to create')
+    disc_research.add_argument('--input', '-i', required=True, dest='input_file', help='baseline CSV file')
+    disc_research.add_argument('--base-buy-strategy', required=True, help='existing buy strategy name')
+    disc_research.add_argument('--sell', required=True, help='existing sell strategy name')
+    disc_research.add_argument('--start', type=int, required=True, help='start date YYYYMMDD')
+    disc_research.add_argument('--end', type=int, required=True, help='end date YYYYMMDD')
+    disc_research.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    disc_research.add_argument('--betting', default='1')
+    disc_research.add_argument('--avg-time', type=int, default=60)
+    disc_research.add_argument('--start-time', type=int, default=90000)
+    disc_research.add_argument('--end-time', type=int, default=152800)
+    disc_research.add_argument('--engines', type=int, default=4)
+    disc_research.add_argument('--top-n', type=int, default=1)
+    disc_research.add_argument('--min-samples', type=int, default=30)
+    disc_research.add_argument('--quantiles', type=int, default=10)
+    disc_research.add_argument('--alpha', type=float, default=0.05)
+    disc_research.add_argument('--run-candidate', action='store_true', default=False)
+
     # discovery promote
     disc_promote = disc_sub.add_parser('promote', help='WFO 통과 전략만 최종 채택')
     disc_promote.add_argument('name', help='최종 전략명')
@@ -600,6 +620,29 @@ def _handle_discovery(parsed):
             ml_weight=parsed.ml_weight,
         )
         print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0 if result.get('status') == 'ok' else 1
+
+    elif parsed.discovery_action == 'research':
+        result = controller.research_strategy_once({
+            'name': parsed.name,
+            'baseline_csv': parsed.input_file,
+            'base_buy_strategy': parsed.base_buy_strategy,
+            'sell_strategy': parsed.sell,
+            'start_date': parsed.start,
+            'end_date': parsed.end,
+            'is_tick': parsed.timeframe == 'tick',
+            'betting': parsed.betting,
+            'avg_time': parsed.avg_time,
+            'start_time': parsed.start_time,
+            'end_time': parsed.end_time,
+            'engine_count': parsed.engines,
+            'top_n': parsed.top_n,
+            'min_samples': parsed.min_samples,
+            'quantiles': parsed.quantiles,
+            'alpha': parsed.alpha,
+            'run_candidate': parsed.run_candidate,
+        })
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
         return 0 if result.get('status') == 'ok' else 1
 
     elif parsed.discovery_action == 'history':

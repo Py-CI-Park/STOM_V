@@ -14,6 +14,50 @@ sys.path.insert(0, PROJECT_ROOT)
 from cli.subcommands import create_subcommand_parser, handle_subcommand
 
 
+def test_discovery_research_parser_accepts_existing_strategy_inputs():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'AutoResearch01',
+        '--input', 'baseline.csv',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+        '--timeframe', 'min',
+        '--run-candidate',
+    ])
+    assert args.discovery_action == 'research'
+    assert args.name == 'AutoResearch01'
+    assert args.input_file == 'baseline.csv'
+    assert args.base_buy_strategy == 'BaseBuy'
+    assert args.sell == 'BaseSell'
+    assert args.timeframe == 'min'
+    assert args.run_candidate is True
+
+
+def test_discovery_research_handler_calls_controller(capsys):
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearch01'}}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'AutoResearch01',
+            '--input', 'baseline.csv',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--timeframe', 'min',
+        ])
+    assert exit_code == 0
+    out = capsys.readouterr().out
+    assert 'AutoResearch01' in out
+    kwargs = mock.call_args.args[0]
+    assert kwargs['name'] == 'AutoResearch01'
+    assert kwargs['baseline_csv'] == 'baseline.csv'
+    assert kwargs['is_tick'] is False
+
+
 # ============================================================
 # Helpers
 # ============================================================
