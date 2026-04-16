@@ -76,6 +76,48 @@ A recent detail CSV was analyzed through `AIBacktestController`. It returned `an
 - Do not add serial-key behavior to this branch family.
 - Do not replace the current STOM backtest engine or optimizer; extend the existing CLI-compatible flow.
 
+## Implementation Constraints
+
+The implementation plan must preserve the branch's ability to absorb regular upstream updates.
+
+Rules:
+
+- Prefer new, isolated modules over editing core backtest engine paths.
+- Reuse existing CLI, analyzer, generator, WFO, report, and history modules before adding new abstractions.
+- Keep changes small, reviewable, and reversible.
+- Avoid broad rewrites of `backtest/`, `trade/`, and GUI code unless a phase explicitly requires result-data capture or opportunity logging.
+- Do not change existing strategy execution semantics for normal backtests.
+- Add optional research-loop behavior through explicit CLI/API entry points, not by changing the default backtest path.
+- Do not add new dependencies unless explicitly requested.
+- Keep regular upstream sync practical by making cherry-pick conflicts unlikely.
+- Follow `utility/ai_agent/rules.txt`: plan first, explain in Korean, include concrete implementation examples in plans, and start code changes only after the plan is approved.
+- Prefer deletion, reuse, and narrow adapters over new large frameworks.
+- Treat `backtest/graph/` as protected result data and leave unrelated generated outputs alone.
+
+The preferred implementation shape is:
+
+```text
+existing core backtest / optimizer / WFO
+        ^
+        |
+thin research-loop adapters
+        ^
+        |
+new CLI/API commands and reports
+```
+
+This means Phase 1 should mostly compose existing functions:
+
+- run or locate baseline CSV
+- analyze detail CSV
+- generate candidate filters
+- save temporary strategy
+- run candidate backtest/WFO
+- compare baseline and candidate CSVs
+- write a report
+
+Core engine edits are deferred unless the current data is insufficient. The first likely deferred engine edit is adding `종목코드` to result detail output for safer trade matching. Opportunity-universe logging is a later phase because it requires deeper engine instrumentation.
+
 ## Core Principle
 
 The system is a hypothesis generator and validator.
