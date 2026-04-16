@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 
 LEAKY_PREFIXES = ('S_', 'R_')
 BINARY_OPERATORS = ('<', '<=', '>', '>=')
@@ -57,7 +59,7 @@ def generate_segment_filter_candidates(
     max_candidates: int = 10,
 ) -> list[dict]:
     """Generate filter candidates from weak segment rows."""
-    candidates = []
+    candidates: list[dict[str, Any]] = []
     for row in segment_rows:
         count = int(row.get('count', 0) or 0)
         if count < min_samples:
@@ -82,5 +84,5 @@ def generate_segment_filter_candidates(
         }
         candidate['expression'] = candidate_to_expression(candidate)
         candidates.append(candidate)
-    candidates.sort(key=lambda item: item['score'], reverse=True)
+    candidates.sort(key=lambda item: float(item['score']), reverse=True)
     return candidates[:max_candidates]
