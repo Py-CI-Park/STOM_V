@@ -635,6 +635,13 @@ def _handle_discovery(parsed):
         return 0 if result.get('status') == 'ok' else 1
 
     elif parsed.discovery_action == 'research':
+        try:
+            param_space = _load_param_space(parsed)
+        except (json.JSONDecodeError, FileNotFoundError, OSError) as exc:
+            result = {'status': 'error', 'message': 'param_space load failed: %s' % exc}
+            print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+            return 1
+
         result = controller.research_strategy_once({
             'name': parsed.name,
             'baseline_csv': getattr(parsed, 'input_file', None),
@@ -663,7 +670,7 @@ def _handle_discovery(parsed):
             'wfo_method': parsed.wfo_method,
             'wfo_max_iter': parsed.wfo_max_iter,
             'promotion_preset': parsed.promotion_preset,
-            'param_space': _load_param_space(parsed),
+            'param_space': param_space,
         })
         print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
         return 0 if result.get('status') == 'ok' else 1

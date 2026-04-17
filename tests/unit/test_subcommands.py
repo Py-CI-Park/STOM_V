@@ -156,7 +156,7 @@ def test_discovery_research_parser_accepts_wfo_options():
     assert args.param_space_json == '{"avg_time":[60]}'
 
 
-def test_discovery_research_handler_passes_wfo_config(capsys):
+def test_discovery_research_handler_passes_wfo_config():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearchWfo'}}
         exit_code = handle_subcommand([
@@ -180,6 +180,52 @@ def test_discovery_research_handler_passes_wfo_config(capsys):
     assert payload['train_window_days'] == 20
     assert payload['test_window_days'] == 5
     assert payload['param_space'] == {'avg_time': [60]}
+
+
+def test_discovery_research_handler_rejects_invalid_param_space_json(capsys):
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'AutoResearchWfo',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidate',
+            '--run-wfo',
+            '--train-window-days', '20',
+            '--test-window-days', '5',
+            '--param-space-json', '{"avg_time":',
+        ])
+
+    assert exit_code == 1
+    mock.assert_not_called()
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['status'] == 'error'
+    assert 'param_space load failed' in payload['message']
+
+
+def test_discovery_research_handler_rejects_missing_param_space_file(capsys):
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'AutoResearchWfo',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidate',
+            '--run-wfo',
+            '--train-window-days', '20',
+            '--test-window-days', '5',
+            '--param-space-file', 'missing-param-space.json',
+        ])
+
+    assert exit_code == 1
+    mock.assert_not_called()
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['status'] == 'error'
+    assert 'param_space load failed' in payload['message']
 
 
 # ============================================================
