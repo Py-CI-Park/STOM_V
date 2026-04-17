@@ -372,3 +372,47 @@ def test_research_loop_rejects_candidate_name_matching_base_strategy(monkeypatch
     assert 'name' in result['message']
     assert 'base_buy_strategy' in result['message']
     assert calls['save'] == 0
+
+
+def test_research_loop_rejects_wfo_without_candidate(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='WfoNeedsCandidate',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_wfo=True,
+            train_window_days=20,
+            test_window_days=5,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'wfo_config'
+    assert 'run_candidate' in result['message']
+
+
+def test_research_loop_rejects_wfo_without_train_or_test_windows(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='WfoNeedsWindows',
+            baseline_csv=str(baseline),
+            run_candidate=True,
+            base_buy_strategy='BaseBuy',
+            run_wfo=True,
+        ),
+        DummyController(str(baseline)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'wfo_config'
+    assert 'train_window_days' in result['message']
+    assert 'test_window_days' in result['message']

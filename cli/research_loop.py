@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from cli.analyzer import analyze_result_csv
@@ -52,6 +52,18 @@ class ResearchLoopConfig:
     quantiles: int = 10
     alpha: float = 0.05
     run_candidate: bool = True
+    run_wfo: bool = False
+    train_window_days: int | None = None
+    test_window_days: int | None = None
+    step_days: int | None = None
+    purge_days: int = 0
+    embargo_days: int = 0
+    objective: str = 'tpi'
+    wfo_method: str = 'grid'
+    wfo_max_iter: int = 10
+    promotion_preset: str = 'balanced'
+    promotion_criteria: dict | None = None
+    param_space: dict = field(default_factory=dict)
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -78,6 +90,17 @@ def _candidate_config_dict(config: ResearchLoopConfig) -> dict:
 
 def _error(phase: str, message: str, **extra) -> dict:
     return {'status': 'error', 'phase': phase, 'message': message, **extra}
+
+
+def _validate_wfo_config(config: ResearchLoopConfig) -> dict | None:
+    """Return a structured error when WFO settings are incomplete."""
+    if not config.run_wfo:
+        return None
+    if not config.run_candidate:
+        return _error('wfo_config', 'run_wfo requires run_candidate=True')
+    if config.train_window_days is None or config.test_window_days is None:
+        return _error('wfo_config', 'run_wfo requires train_window_days and test_window_days')
+    return None
 
 
 def _csv_path_from_run(result: dict) -> str | None:
@@ -232,6 +255,10 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         baseline_csv = _csv_path_from_run(baseline_result)
         if not baseline_csv:
             return _error('baseline_run', 'baseline run did not return csv_path', run_result=baseline_result)
+
+    wfo_config_error = _validate_wfo_config(config)
+    if wfo_config_error is not None:
+        return {**wfo_config_error, 'baseline_csv': baseline_csv, 'baseline_result': baseline_result}
 
     if config.run_candidate and not config.base_buy_strategy:
         return _error(
