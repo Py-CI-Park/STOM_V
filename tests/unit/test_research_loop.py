@@ -416,3 +416,98 @@ def test_research_loop_rejects_wfo_without_train_or_test_windows(monkeypatch, tm
     assert result['phase'] == 'wfo_config'
     assert 'train_window_days' in result['message']
     assert 'test_window_days' in result['message']
+
+
+class WfoController(DummyController):
+    def __init__(self, candidate_csv, wfo_result=None, wfo_eval=None):
+        super().__init__(candidate_csv)
+        self.walk_forward_calls = []
+        self.wfo_result = wfo_result or {'status': 'ok', 'summary': {'round_count': 2, 'success_rate': 1.0, 'mean_oos_metric': 0.5, 'mean_trade_count': 30, 'zero_trade_rounds': 0}, 'rounds': []}
+        self.wfo_eval = wfo_eval or {'status': 'ok', 'passed': True, 'reasons': [], 'summary': {'round_count': 2, 'success_rate': 1.0, 'mean_oos_metric': 0.5, 'avg_trade_count': 30, 'zero_trade_rounds': 0}}
+
+    def walk_forward(self, config_dict, param_space, **settings):
+        self.walk_forward_calls.append({'config': config_dict, 'param_space': param_space, 'settings': settings})
+        return self.wfo_result
+
+    def evaluate_walk_forward_result(self, walk_forward_result, **criteria):
+        return self.wfo_eval
+
+
+def test_research_loop_runs_wfo_and_combines_success(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate, name='B')
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    monkeypatch.setattr(
+        research_loop,
+        'evaluate_research_candidate',
+        lambda comparison: {'status': 'ok', 'passed': True, 'reasons': []},
+    )
+
+    controller = WfoController(str(candidate))
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='WfoCandidate',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            sell_strategy='BaseSell',
+            start_date=20250101,
+            end_date=20250131,
+            run_candidate=True,
+            run_wfo=True,
+            train_window_days=20,
+            test_window_days=5,
+            param_space={'avg_time': [60]},
+        ),
+        controller,
+    )
+
+    assert result['status'] == 'ok'
+    assert result['wfo_result']['status'] == 'ok'
+    assert result['wfo_evaluation']['passed'] is True
+    assert result['combined_evaluation']['mode'] == 'research_plus_wfo'
+    assert result['combined_evaluation']['passed'] is True
+    assert controller.walk_forward_calls[0]['config']['buy_strategy'] == 'WfoCandidate'
+    assert controller.walk_forward_calls[0]['config']['sell_strategy'] == 'BaseSell'
+    assert controller.walk_forward_calls[0]['param_space'] == {'avg_time': [60]}
+    assert controller.walk_forward_calls[0]['settings']['train_window_days'] == 20
+    assert controller.walk_forward_calls[0]['settings']['test_window_days'] == 5
+
+
+def test_research_loop_combined_evaluation_fails_when_wfo_fails(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate, name='B')
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    monkeypatch.setattr(
+        research_loop,
+        'evaluate_research_candidate',
+        lambda comparison: {'status': 'ok', 'passed': True, 'reasons': []},
+    )
+
+    controller = WfoController(
+        str(candidate),
+        wfo_eval={'status': 'ok', 'passed': False, 'reasons': ['mean_oos_metric<0.0'], 'summary': {'zero_trade_rounds': 0}},
+    )
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='WfoReject',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            sell_strategy='BaseSell',
+            run_candidate=True,
+            run_wfo=True,
+            train_window_days=20,
+            test_window_days=5,
+        ),
+        controller,
+    )
+
+    assert result['status'] == 'ok'
+    assert result['wfo_evaluation']['passed'] is False
+    assert result['combined_evaluation']['passed'] is False
+    assert 'wfo:mean_oos_metric<0.0' in result['combined_evaluation']['reasons']

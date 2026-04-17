@@ -8,6 +8,7 @@ from pathlib import Path
 from cli.analyzer import analyze_result_csv
 from cli.condition_generator import generate_condition_expressions_from_analysis
 from cli.paths import DB_STRATEGY
+from cli.promotion import resolve_promotion_criteria
 from cli.research_compare import (
     INSTRUMENT_COLUMNS,
     OPTIONAL_KEY_COLUMNS,
@@ -101,6 +102,56 @@ def _validate_wfo_config(config: ResearchLoopConfig) -> dict | None:
     if config.train_window_days is None or config.test_window_days is None:
         return _error('wfo_config', 'run_wfo requires train_window_days and test_window_days')
     return None
+
+
+def _wfo_settings_dict(config: ResearchLoopConfig) -> dict:
+    """Build keyword arguments for controller.walk_forward()."""
+    return {
+        'train_window_days': config.train_window_days,
+        'test_window_days': config.test_window_days,
+        'step_days': config.step_days,
+        'purge_days': config.purge_days,
+        'embargo_days': config.embargo_days,
+        'objective': config.objective,
+        'method': config.wfo_method,
+        'max_iter': config.wfo_max_iter,
+    }
+
+
+def _wfo_eval_criteria(config: ResearchLoopConfig) -> dict:
+    """Resolve WFO promotion criteria from existing presets."""
+    criteria = resolve_promotion_criteria(config.promotion_preset, config.promotion_criteria)
+    return {
+        'min_rounds': criteria['min_rounds'],
+        'min_success_rate': criteria['min_success_rate'],
+        'min_mean_oos_metric': criteria['min_mean_oos_metric'],
+        'min_avg_trade_count': criteria['min_avg_trade_count'],
+    }
+
+
+def _combined_evaluation(research_promotion: dict | None, wfo_evaluation: dict | None, run_wfo: bool) -> dict:
+    """Combine CSV-comparison and WFO pass/fail evidence."""
+    research_passed = bool((research_promotion or {}).get('passed'))
+    wfo_passed = bool((wfo_evaluation or {}).get('passed')) if run_wfo else None
+    reasons = []
+    for reason in (research_promotion or {}).get('reasons') or []:
+        reasons.append(f'research:{reason}')
+    if run_wfo:
+        for reason in (wfo_evaluation or {}).get('reasons') or []:
+            reasons.append(f'wfo:{reason}')
+    passed = research_passed and (wfo_passed if run_wfo else True)
+    if not passed and not reasons:
+        if not research_passed:
+            reasons.append('research:not_passed')
+        if run_wfo and not wfo_passed:
+            reasons.append('wfo:not_passed')
+    return {
+        'mode': 'research_plus_wfo' if run_wfo else 'research_only',
+        'passed': passed,
+        'research_passed': research_passed,
+        'wfo_passed': wfo_passed,
+        'reasons': reasons,
+    }
 
 
 def _csv_path_from_run(result: dict) -> str | None:
@@ -368,6 +419,33 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
             candidate=candidate,
         )
 
+    wfo_result = None
+    wfo_evaluation = None
+    if config.run_wfo:
+        wfo_config = _candidate_config_dict(config)
+        wfo_result = controller.walk_forward(wfo_config, config.param_space, **_wfo_settings_dict(config))
+        if wfo_result.get('status') != 'ok':
+            return _error(
+                'wfo_execution',
+                wfo_result.get('message', 'WFO execution failed'),
+                baseline_csv=baseline_csv,
+                candidate_csv=candidate_csv,
+                candidate=candidate,
+                wfo_result=wfo_result,
+            )
+        wfo_evaluation = controller.evaluate_walk_forward_result(wfo_result, **_wfo_eval_criteria(config))
+        if wfo_evaluation.get('status') != 'ok':
+            return _error(
+                'wfo_evaluation',
+                wfo_evaluation.get('message', 'WFO evaluation failed'),
+                baseline_csv=baseline_csv,
+                candidate_csv=candidate_csv,
+                candidate=candidate,
+                wfo_result=wfo_result,
+                wfo_evaluation=wfo_evaluation,
+            )
+    combined = _combined_evaluation(promotion, wfo_evaluation, config.run_wfo)
+
     return _build_result(config, {
         'status': 'ok',
         'strategy_name': config.name,
@@ -381,4 +459,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         'candidate': candidate,
         'comparison': comparison,
         'promotion': promotion,
+        'wfo_result': wfo_result,
+        'wfo_evaluation': wfo_evaluation,
+        'combined_evaluation': combined,
     })
