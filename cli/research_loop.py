@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
+import math
 from pathlib import Path
 
 from cli.analyzer import analyze_result_csv
@@ -32,6 +33,13 @@ _TRADE_COLUMN_ALIASES = {
     '수익률': NUMERIC_COLUMNS[5],
     '수익금': NUMERIC_COLUMNS[6],
 }
+
+_WFO_CRITERIA_KEYS = (
+    'min_rounds',
+    'min_success_rate',
+    'min_mean_oos_metric',
+    'min_avg_trade_count',
+)
 
 
 @dataclass
@@ -93,15 +101,33 @@ def _error(phase: str, message: str, **extra) -> dict:
     return {'status': 'error', 'phase': phase, 'message': message, **extra}
 
 
+def _resolve_wfo_eval_criteria(config: ResearchLoopConfig) -> tuple[dict | None, dict | None]:
+    """Resolve WFO criteria once, returning ``(criteria, error)``."""
+    if not config.run_wfo:
+        return None, None
+    if not config.run_candidate:
+        return None, _error('wfo_config', 'run_wfo requires run_candidate=True')
+    if config.train_window_days is None or config.test_window_days is None:
+        return None, _error('wfo_config', 'run_wfo requires train_window_days and test_window_days')
+    if config.promotion_criteria is not None and not isinstance(config.promotion_criteria, dict):
+        return None, _error('wfo_config', 'promotion_criteria must be a dict when provided')
+
+    try:
+        criteria = resolve_promotion_criteria(config.promotion_preset, config.promotion_criteria)
+    except (TypeError, ValueError) as e:
+        return None, _error('wfo_config', f'promotion_preset invalid: {e}')
+
+    resolved = {key: criteria.get(key) for key in _WFO_CRITERIA_KEYS}
+    for key, value in resolved.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+            return None, _error('wfo_config', f'{key} must be a finite number')
+    return resolved, None
+
+
 def _validate_wfo_config(config: ResearchLoopConfig) -> dict | None:
     """Return a structured error when WFO settings are incomplete."""
-    if not config.run_wfo:
-        return None
-    if not config.run_candidate:
-        return _error('wfo_config', 'run_wfo requires run_candidate=True')
-    if config.train_window_days is None or config.test_window_days is None:
-        return _error('wfo_config', 'run_wfo requires train_window_days and test_window_days')
-    return None
+    _, error = _resolve_wfo_eval_criteria(config)
+    return error
 
 
 def _wfo_settings_dict(config: ResearchLoopConfig) -> dict:
@@ -120,13 +146,10 @@ def _wfo_settings_dict(config: ResearchLoopConfig) -> dict:
 
 def _wfo_eval_criteria(config: ResearchLoopConfig) -> dict:
     """Resolve WFO promotion criteria from existing presets."""
-    criteria = resolve_promotion_criteria(config.promotion_preset, config.promotion_criteria)
-    return {
-        'min_rounds': criteria['min_rounds'],
-        'min_success_rate': criteria['min_success_rate'],
-        'min_mean_oos_metric': criteria['min_mean_oos_metric'],
-        'min_avg_trade_count': criteria['min_avg_trade_count'],
-    }
+    criteria, error = _resolve_wfo_eval_criteria(config)
+    if error is not None:
+        raise ValueError(error['message'])
+    return criteria or {}
 
 
 def _combined_evaluation(research_promotion: dict | None, wfo_evaluation: dict | None, run_wfo: bool) -> dict:
@@ -307,7 +330,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         if not baseline_csv:
             return _error('baseline_run', 'baseline run did not return csv_path', run_result=baseline_result)
 
-    wfo_config_error = _validate_wfo_config(config)
+    wfo_eval_criteria, wfo_config_error = _resolve_wfo_eval_criteria(config)
     if wfo_config_error is not None:
         return {**wfo_config_error, 'baseline_csv': baseline_csv, 'baseline_result': baseline_result}
 
@@ -433,7 +456,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
                 candidate=candidate,
                 wfo_result=wfo_result,
             )
-        wfo_evaluation = controller.evaluate_walk_forward_result(wfo_result, **_wfo_eval_criteria(config))
+        wfo_evaluation = controller.evaluate_walk_forward_result(wfo_result, **(wfo_eval_criteria or {}))
         if wfo_evaluation.get('status') != 'ok':
             return _error(
                 'wfo_evaluation',
