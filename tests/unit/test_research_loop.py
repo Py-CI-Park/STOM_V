@@ -608,6 +608,60 @@ def test_research_loop_combined_evaluation_fails_when_wfo_fails(monkeypatch, tmp
     assert 'wfo:mean_oos_metric<0.0' in result['combined_evaluation']['reasons']
 
 
+def test_research_loop_returns_wfo_execution_phase(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate, name='B')
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+
+    controller = WfoController(str(candidate), wfo_result={'status': 'error', 'message': 'wfo failed'})
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='WfoExecutionFail',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            run_candidate=True,
+            run_wfo=True,
+            train_window_days=20,
+            test_window_days=5,
+        ),
+        controller,
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'wfo_execution'
+    assert 'wfo failed' in result['message']
+
+
+def test_research_loop_returns_wfo_evaluation_phase(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate, name='B')
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+
+    controller = WfoController(str(candidate), wfo_eval={'status': 'error', 'message': 'evaluation failed'})
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='WfoEvalFail',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            run_candidate=True,
+            run_wfo=True,
+            train_window_days=20,
+            test_window_days=5,
+        ),
+        controller,
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'wfo_evaluation'
+    assert 'evaluation failed' in result['message']
+
+
 def test_research_loop_passes_override_wfo_criteria_to_evaluator(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     candidate = tmp_path / 'candidate.csv'
