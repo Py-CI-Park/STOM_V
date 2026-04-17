@@ -149,5 +149,3 @@ def test_save_research_report_markdown_returns_error_on_write_failure(monkeypatc
     assert result['status'] == 'error'
     assert result['path'] == str(path)
     assert 'write blocked' in result['error']
-
-
