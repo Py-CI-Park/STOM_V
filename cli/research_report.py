@@ -140,7 +140,7 @@ def render_research_report_markdown(report: dict) -> str:
     wfo_summary = wfo_result.get('summary') or {}
     wfo_evaluation = report.get('wfo_evaluation') or {}
     if wfo_result:
-        lines.append(f"- 실행 여부: 실행됨")
+        lines.append("- 실행 여부: 실행됨")
         lines.append(f"- 라운드 수: {wfo_summary.get('round_count')}")
         lines.append(f"- 성공률: {wfo_summary.get('success_rate')}")
         lines.append(f"- 평균 OOS 지표: {wfo_summary.get('mean_oos_metric')}")
