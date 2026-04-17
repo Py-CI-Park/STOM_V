@@ -39,9 +39,6 @@ def build_research_report(result: dict, strategy_name: str | None = None) -> dic
         'excluded_summary': comparison.get('excluded_summary', {}),
         'new_summary': comparison.get('new_summary', {}),
         'promotion': result.get('promotion'),
-        'wfo_result': result.get('wfo_result'),
-        'wfo_evaluation': result.get('wfo_evaluation'),
-        'combined_evaluation': result.get('combined_evaluation'),
     }
 
 
@@ -135,34 +132,6 @@ def render_research_report_markdown(report: dict) -> str:
         for key, value in gates.items():
             lines.append(f"  - {key}: {value}")
 
-    lines.extend(['', '## WFO 검증'])
-    wfo_result = report.get('wfo_result') or {}
-    wfo_summary = wfo_result.get('summary') or {}
-    wfo_evaluation = report.get('wfo_evaluation') or {}
-    if wfo_result:
-        lines.append("- 실행 여부: 실행됨")
-        lines.append(f"- 라운드 수: {wfo_summary.get('round_count')}")
-        lines.append(f"- 성공률: {wfo_summary.get('success_rate')}")
-        lines.append(f"- 평균 OOS 지표: {wfo_summary.get('mean_oos_metric')}")
-        lines.append(f"- 평균 거래 수: {wfo_summary.get('mean_trade_count')}")
-        lines.append(f"- 무거래 라운드 수: {wfo_summary.get('zero_trade_rounds')}")
-        lines.append(f"- WFO 통과 여부: {wfo_evaluation.get('passed')}")
-        for reason in wfo_evaluation.get('reasons') or []:
-            lines.append(f"- WFO 탈락 사유: {reason}")
-    else:
-        lines.append("- 실행 여부: 실행 안 함")
-
-    lines.extend(['', '## 최종 판단'])
-    combined = report.get('combined_evaluation') or {}
-    if combined:
-        lines.append(f"- 판단 모드: {combined.get('mode')}")
-        lines.append(f"- CSV 비교 통과 여부: {combined.get('research_passed')}")
-        lines.append(f"- WFO 통과 여부: {combined.get('wfo_passed')}")
-        lines.append(f"- 최종 통과 여부: {combined.get('passed')}")
-        for reason in combined.get('reasons') or []:
-            lines.append(f"- 최종 탈락 사유: {reason}")
-    else:
-        lines.append("- none")
     return '\n'.join(lines)
 
 

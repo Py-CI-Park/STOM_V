@@ -69,6 +69,24 @@ def test_render_research_report_markdown_contains_trade_set_sections():
     assert '## Promotion' in markdown
 
 
+def test_research_report_has_no_wfo_sections():
+    markdown = render_research_report_markdown(build_research_report(_result(), strategy_name='AutoResearch'))
+    assert '## WFO 검증' not in markdown
+    assert '## 최종 판단' not in markdown
+
+
+def test_build_research_report_does_not_include_wfo_fields():
+    result = _result()
+    result['wfo_result'] = {'status': 'ok'}
+    result['wfo_evaluation'] = {'passed': True}
+    result['combined_evaluation'] = {'passed': True}
+    report = build_research_report(result, strategy_name='AutoResearch')
+
+    assert 'wfo_result' not in report
+    assert 'wfo_evaluation' not in report
+    assert 'combined_evaluation' not in report
+
+
 def test_render_research_report_markdown_contains_korean_decision_labels():
     markdown = render_research_report_markdown(build_research_report(_result(), strategy_name='AutoResearch'))
     assert '거래 수' in markdown
@@ -133,32 +151,3 @@ def test_save_research_report_markdown_returns_error_on_write_failure(monkeypatc
     assert 'write blocked' in result['error']
 
 
-def test_render_research_report_markdown_contains_wfo_and_final_decision():
-    result = _result()
-    result['wfo_result'] = {
-        'status': 'ok',
-        'summary': {
-            'round_count': 2,
-            'success_rate': 1.0,
-            'mean_oos_metric': 0.5,
-            'mean_trade_count': 30,
-            'zero_trade_rounds': 0,
-        },
-    }
-    result['wfo_evaluation'] = {'status': 'ok', 'passed': True, 'reasons': [], 'summary': {'avg_trade_count': 30}}
-    result['combined_evaluation'] = {
-        'mode': 'research_plus_wfo',
-        'passed': True,
-        'research_passed': True,
-        'wfo_passed': True,
-        'reasons': [],
-    }
-
-    report = build_research_report(result, strategy_name='AutoResearch')
-    markdown = render_research_report_markdown(report)
-
-    assert '## WFO 검증' in markdown
-    assert '## 최종 판단' in markdown
-    assert 'research_plus_wfo' in markdown
-    assert report['wfo_result']['summary']['round_count'] == 2
-    assert report['combined_evaluation']['passed'] is True
