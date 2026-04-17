@@ -11,7 +11,6 @@ AI가 하나의 인터페이스로 전체 백테스트 파이프라인을 제어
 import os
 import sys
 import time
-import json
 from dataclasses import asdict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -795,6 +794,23 @@ class AIBacktestController:
         except Exception as e:
             return {'status': 'error', 'message': str(e)}
 
+    def research_strategy_once(self, config_dict: dict) -> dict:
+        """Run one research iteration that filters an existing buy strategy."""
+        try:
+            from dataclasses import fields
+
+            from cli.research_loop import ResearchLoopConfig, run_research_once
+
+            config_dict = config_dict or {}
+            allowed_fields = {field.name for field in fields(ResearchLoopConfig)}
+            config = ResearchLoopConfig(**{
+                key: value for key, value in config_dict.items()
+                if key in allowed_fields
+            })
+            return run_research_once(config, self)
+        except Exception as e:
+            return {'status': 'error', 'phase': 'research_loop', 'message': str(e)}
+
     def run(self, config_dict: dict) -> dict:
         """백테스트를 실행하고 결과를 히스토리에 저장한다."""
         try:
@@ -896,7 +912,9 @@ class AIBacktestController:
             try:
                 from cli.history import save_run, init_history_db
                 init_history_db(self._history_db)
-                save_fn = lambda cfg, res, dur: save_run(cfg, res, dur, self._history_db)
+
+                def save_fn(cfg, res, dur):
+                    return save_run(cfg, res, dur, self._history_db)
             except Exception:
                 pass
 
