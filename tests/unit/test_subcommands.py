@@ -123,6 +123,65 @@ def test_discovery_research_handler_returns_nonzero_on_error_status():
     assert exit_code == 1
 
 
+def test_discovery_research_parser_accepts_wfo_options():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'AutoResearchWfo',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+        '--run-candidate',
+        '--run-wfo',
+        '--train-window-days', '20',
+        '--test-window-days', '5',
+        '--step-days', '5',
+        '--purge-days', '1',
+        '--embargo-days', '1',
+        '--objective', 'tpi',
+        '--wfo-method', 'random',
+        '--wfo-max-iter', '3',
+        '--promotion-preset', 'conservative',
+        '--param-space-json', '{"avg_time":[60]}',
+    ])
+
+    assert args.discovery_action == 'research'
+    assert args.run_wfo is True
+    assert args.train_window_days == 20
+    assert args.test_window_days == 5
+    assert args.wfo_method == 'random'
+    assert args.wfo_max_iter == 3
+    assert args.promotion_preset == 'conservative'
+    assert args.param_space_json == '{"avg_time":[60]}'
+
+
+def test_discovery_research_handler_passes_wfo_config(capsys):
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearchWfo'}}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'AutoResearchWfo',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidate',
+            '--run-wfo',
+            '--train-window-days', '20',
+            '--test-window-days', '5',
+            '--param-space-json', '{"avg_time":[60]}',
+        ])
+
+    assert exit_code == 0
+    payload = mock.call_args.args[0]
+    assert payload['run_candidate'] is True
+    assert payload['run_wfo'] is True
+    assert payload['train_window_days'] == 20
+    assert payload['test_window_days'] == 5
+    assert payload['param_space'] == {'avg_time': [60]}
+
+
 # ============================================================
 # Helpers
 # ============================================================

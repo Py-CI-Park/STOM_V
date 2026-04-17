@@ -136,6 +136,18 @@ def create_subcommand_parser():
     disc_research.add_argument('--quantiles', type=int, default=10)
     disc_research.add_argument('--alpha', type=float, default=0.05)
     disc_research.add_argument('--run-candidate', action='store_true', default=False)
+    disc_research.add_argument('--run-wfo', action='store_true', default=False)
+    disc_research.add_argument('--train-window-days', type=int)
+    disc_research.add_argument('--test-window-days', type=int)
+    disc_research.add_argument('--step-days', type=int)
+    disc_research.add_argument('--purge-days', type=int, default=0)
+    disc_research.add_argument('--embargo-days', type=int, default=0)
+    disc_research.add_argument('--objective', default='tpi')
+    disc_research.add_argument('--wfo-method', choices=['grid', 'random'], default='grid')
+    disc_research.add_argument('--wfo-max-iter', type=int, default=10)
+    disc_research.add_argument('--promotion-preset', choices=['conservative', 'balanced', 'aggressive'], default='balanced')
+    disc_research.add_argument('--param-space-json')
+    disc_research.add_argument('--param-space-file')
 
     # discovery promote
     disc_promote = disc_sub.add_parser('promote', help='WFO 통과 전략만 최종 채택')
@@ -641,6 +653,17 @@ def _handle_discovery(parsed):
             'quantiles': parsed.quantiles,
             'alpha': parsed.alpha,
             'run_candidate': parsed.run_candidate,
+            'run_wfo': parsed.run_wfo,
+            'train_window_days': parsed.train_window_days,
+            'test_window_days': parsed.test_window_days,
+            'step_days': parsed.step_days,
+            'purge_days': parsed.purge_days,
+            'embargo_days': parsed.embargo_days,
+            'objective': parsed.objective,
+            'wfo_method': parsed.wfo_method,
+            'wfo_max_iter': parsed.wfo_max_iter,
+            'promotion_preset': parsed.promotion_preset,
+            'param_space': _load_param_space(parsed),
         })
         print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
         return 0 if result.get('status') == 'ok' else 1
