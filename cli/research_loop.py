@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
+import math
 from pathlib import Path
 
 from cli.analyzer import analyze_result_csv
 from cli.condition_generator import generate_condition_expressions_from_analysis
 from cli.paths import DB_STRATEGY
+from cli.promotion import resolve_promotion_criteria
 from cli.research_compare import (
     INSTRUMENT_COLUMNS,
     OPTIONAL_KEY_COLUMNS,
@@ -32,6 +34,13 @@ _TRADE_COLUMN_ALIASES = {
     '수익금': NUMERIC_COLUMNS[6],
 }
 
+_WFO_CRITERIA_KEYS = (
+    'min_rounds',
+    'min_success_rate',
+    'min_mean_oos_metric',
+    'min_avg_trade_count',
+)
+
 
 @dataclass
 class ResearchLoopConfig:
@@ -52,6 +61,18 @@ class ResearchLoopConfig:
     quantiles: int = 10
     alpha: float = 0.05
     run_candidate: bool = True
+    run_wfo: bool = False
+    train_window_days: int | None = None
+    test_window_days: int | None = None
+    step_days: int | None = None
+    purge_days: int = 0
+    embargo_days: int = 0
+    objective: str = 'tpi'
+    wfo_method: str = 'grid'
+    wfo_max_iter: int = 10
+    promotion_preset: str = 'balanced'
+    promotion_criteria: dict | None = None
+    param_space: dict = field(default_factory=dict)
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -78,6 +99,82 @@ def _candidate_config_dict(config: ResearchLoopConfig) -> dict:
 
 def _error(phase: str, message: str, **extra) -> dict:
     return {'status': 'error', 'phase': phase, 'message': message, **extra}
+
+
+def _resolve_wfo_eval_criteria(config: ResearchLoopConfig) -> tuple[dict | None, dict | None]:
+    """Resolve WFO criteria once, returning ``(criteria, error)``."""
+    if not config.run_wfo:
+        return None, None
+    if not config.run_candidate:
+        return None, _error('wfo_config', 'run_wfo requires run_candidate=True')
+    if config.train_window_days is None or config.test_window_days is None:
+        return None, _error('wfo_config', 'run_wfo requires train_window_days and test_window_days')
+    if config.promotion_criteria is not None and not isinstance(config.promotion_criteria, dict):
+        return None, _error('wfo_config', 'promotion_criteria must be a dict when provided')
+
+    try:
+        criteria = resolve_promotion_criteria(config.promotion_preset, config.promotion_criteria)
+    except (TypeError, ValueError) as e:
+        return None, _error('wfo_config', f'promotion_preset invalid: {e}')
+
+    resolved = {key: criteria.get(key) for key in _WFO_CRITERIA_KEYS}
+    for key, value in resolved.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(float(value)):
+            return None, _error('wfo_config', f'{key} must be a finite number')
+    return resolved, None
+
+
+def _validate_wfo_config(config: ResearchLoopConfig) -> dict | None:
+    """Return a structured error when WFO settings are incomplete."""
+    _, error = _resolve_wfo_eval_criteria(config)
+    return error
+
+
+def _wfo_settings_dict(config: ResearchLoopConfig) -> dict:
+    """Build keyword arguments for controller.walk_forward()."""
+    return {
+        'train_window_days': config.train_window_days,
+        'test_window_days': config.test_window_days,
+        'step_days': config.step_days,
+        'purge_days': config.purge_days,
+        'embargo_days': config.embargo_days,
+        'objective': config.objective,
+        'method': config.wfo_method,
+        'max_iter': config.wfo_max_iter,
+    }
+
+
+def _wfo_eval_criteria(config: ResearchLoopConfig) -> dict:
+    """Resolve WFO promotion criteria from existing presets."""
+    criteria, error = _resolve_wfo_eval_criteria(config)
+    if error is not None:
+        raise ValueError(error['message'])
+    return criteria or {}
+
+
+def _combined_evaluation(research_promotion: dict | None, wfo_evaluation: dict | None, run_wfo: bool) -> dict:
+    """Combine CSV-comparison and WFO pass/fail evidence."""
+    research_passed = bool((research_promotion or {}).get('passed'))
+    wfo_passed = bool((wfo_evaluation or {}).get('passed')) if run_wfo else None
+    reasons = []
+    for reason in (research_promotion or {}).get('reasons') or []:
+        reasons.append(f'research:{reason}')
+    if run_wfo:
+        for reason in (wfo_evaluation or {}).get('reasons') or []:
+            reasons.append(f'wfo:{reason}')
+    passed = research_passed and (wfo_passed if run_wfo else True)
+    if not passed and not reasons:
+        if not research_passed:
+            reasons.append('research:not_passed')
+        if run_wfo and not wfo_passed:
+            reasons.append('wfo:not_passed')
+    return {
+        'mode': 'research_plus_wfo' if run_wfo else 'research_only',
+        'passed': passed,
+        'research_passed': research_passed,
+        'wfo_passed': wfo_passed,
+        'reasons': reasons,
+    }
 
 
 def _csv_path_from_run(result: dict) -> str | None:
@@ -233,6 +330,10 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         if not baseline_csv:
             return _error('baseline_run', 'baseline run did not return csv_path', run_result=baseline_result)
 
+    wfo_eval_criteria, wfo_config_error = _resolve_wfo_eval_criteria(config)
+    if wfo_config_error is not None:
+        return {**wfo_config_error, 'baseline_csv': baseline_csv, 'baseline_result': baseline_result}
+
     if config.run_candidate and not config.base_buy_strategy:
         return _error(
             'candidate_strategy',
@@ -341,6 +442,33 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
             candidate=candidate,
         )
 
+    wfo_result = None
+    wfo_evaluation = None
+    if config.run_wfo:
+        wfo_config = _candidate_config_dict(config)
+        wfo_result = controller.walk_forward(wfo_config, config.param_space, **_wfo_settings_dict(config))
+        if wfo_result.get('status') != 'ok':
+            return _error(
+                'wfo_execution',
+                wfo_result.get('message', 'WFO execution failed'),
+                baseline_csv=baseline_csv,
+                candidate_csv=candidate_csv,
+                candidate=candidate,
+                wfo_result=wfo_result,
+            )
+        wfo_evaluation = controller.evaluate_walk_forward_result(wfo_result, **(wfo_eval_criteria or {}))
+        if wfo_evaluation.get('status') != 'ok':
+            return _error(
+                'wfo_evaluation',
+                wfo_evaluation.get('message', 'WFO evaluation failed'),
+                baseline_csv=baseline_csv,
+                candidate_csv=candidate_csv,
+                candidate=candidate,
+                wfo_result=wfo_result,
+                wfo_evaluation=wfo_evaluation,
+            )
+    combined = _combined_evaluation(promotion, wfo_evaluation, config.run_wfo)
+
     return _build_result(config, {
         'status': 'ok',
         'strategy_name': config.name,
@@ -354,4 +482,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         'candidate': candidate,
         'comparison': comparison,
         'promotion': promotion,
+        'wfo_result': wfo_result,
+        'wfo_evaluation': wfo_evaluation,
+        'combined_evaluation': combined,
     })
