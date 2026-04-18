@@ -123,6 +123,39 @@ def test_research_loop_rejects_iteration_mode_conflicts(tmp_path):
     assert invalid_count['phase'] == 'invalid_candidate_count'
 
 
+def test_run_research_once_allows_inactive_invalid_candidate_count(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='PreviewInactiveCount',
+            baseline_csv=str(baseline),
+            run_candidates=False,
+            candidate_count=0,
+            run_candidate=False,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert result.get('phase') != 'invalid_candidate_count'
+    assert result['candidate']['expression']
+
+
+def test_run_research_iteration_normalizes_single_candidate_default():
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(run_candidates=True),
+        DummyController(None),
+    )
+
+    assert result['phase'] == 'candidate_iteration'
+    assert result['phase'] != 'run_candidate_and_run_candidates_conflict'
+    assert result['config']['run_candidate'] is False
+    assert result['config']['run_candidates'] is True
+
+
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     _write_trade_csv(baseline)

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 
 from cli.analyzer import analyze_result_csv
@@ -160,7 +160,7 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
             'candidate_plan_only_iteration_conflict',
             'candidate_plan_only cannot be used with run_candidates',
         )
-    if config.candidate_count < 1:
+    if config.run_candidates and config.candidate_count < 1:
         return _error(
             'invalid_candidate_count',
             'candidate_count must be greater than or equal to 1',
@@ -500,6 +500,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
 
 def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     """Placeholder for the multi-candidate research iteration path."""
+    config = replace(config, run_candidate=False, run_candidates=True)
     validation = validate_research_iteration_config(config)
     if validation.get('status') != 'ok':
         return validation
