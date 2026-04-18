@@ -392,20 +392,24 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         )
     candidate_csv = _csv_path_from_run(candidate_result)
     if not candidate_csv:
+        cleanup = _cleanup_candidate_strategy(config, 'candidate_csv_missing')
         return _error(
             'candidate_csv_missing',
             'candidate run did not return csv_path',
             baseline_csv=baseline_csv,
             candidate=candidate,
+            cleanup=cleanup,
             run_result=candidate_result,
         )
     if not Path(candidate_csv).exists():
+        cleanup = _cleanup_candidate_strategy(config, 'candidate_csv_missing')
         return _error(
             'candidate_csv_missing',
             f'candidate csv_path does not exist: {candidate_csv}',
             baseline_csv=baseline_csv,
             candidate_csv=candidate_csv,
             candidate=candidate,
+            cleanup=cleanup,
             run_result=candidate_result,
         )
 
@@ -416,12 +420,14 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         )
         promotion = evaluate_research_candidate(comparison)
     except Exception as e:
+        cleanup = _cleanup_candidate_strategy(config, 'comparison')
         return _error(
             'comparison',
             str(e),
             baseline_csv=baseline_csv,
             candidate_csv=candidate_csv,
             candidate=candidate,
+            cleanup=cleanup,
         )
 
     return _build_result(config, {

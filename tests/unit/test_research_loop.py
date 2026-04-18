@@ -603,6 +603,59 @@ def test_research_loop_returns_candidate_csv_missing_when_path_does_not_exist(mo
     assert str(missing_candidate) in result['message']
 
 
+def test_candidate_csv_missing_cleans_candidate(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'action': 'deleted'},
+    )
+
+    result = run_research_once(
+        ResearchLoopConfig(name='MissingCsvCleanup', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_csv_missing'
+    assert result['cleanup']['attempted'] is True
+    assert cleanup_calls == ['MissingCsvCleanup']
+
+
+def test_comparison_failure_cleans_candidate(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate, name='B')
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'compare_trade_sets',
+        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError('compare failed')),
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'action': 'deleted'},
+    )
+
+    result = run_research_once(
+        ResearchLoopConfig(name='CompareCleanup', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(candidate)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'comparison'
+    assert result['cleanup']['attempted'] is True
+    assert cleanup_calls == ['CompareCleanup']
+
+
 def test_research_loop_rejects_candidate_name_matching_base_strategy(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     _write_trade_csv(baseline)
