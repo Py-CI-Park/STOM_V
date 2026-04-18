@@ -109,6 +109,56 @@ def test_discovery_research_handler_accepts_missing_input():
     assert kwargs['run_candidate'] is True
 
 
+def test_discovery_research_parser_accepts_candidate_runtime_options():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'AutoResearchRuntime',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+        '--run-candidate',
+        '--candidate-start', '20250102',
+        '--candidate-end', '20250103',
+        '--candidate-timeout', '300',
+        '--candidate-plan-only',
+        '--keep-failed-candidate',
+    ])
+
+    assert args.candidate_start == 20250102
+    assert args.candidate_end == 20250103
+    assert args.candidate_timeout == 300
+    assert args.candidate_plan_only is True
+    assert args.keep_failed_candidate is True
+
+
+def test_discovery_research_handler_passes_candidate_runtime_options():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearchRuntime'}}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'AutoResearchRuntime',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--candidate-start', '20250102',
+            '--candidate-end', '20250103',
+            '--candidate-timeout', '300',
+            '--candidate-plan-only',
+            '--keep-failed-candidate',
+        ])
+
+    assert exit_code == 0
+    payload = mock.call_args.args[0]
+    assert payload['candidate_start_date'] == 20250102
+    assert payload['candidate_end_date'] == 20250103
+    assert payload['candidate_timeout'] == 300
+    assert payload['candidate_plan_only'] is True
+    assert payload['keep_failed_candidate'] is True
+
+
 def test_discovery_research_handler_returns_nonzero_on_error_status():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'error'}
