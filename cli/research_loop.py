@@ -51,6 +51,11 @@ class ResearchLoopConfig:
     quantiles: int = 10
     alpha: float = 0.05
     run_candidate: bool = True
+    candidate_start_date: int | None = None
+    candidate_end_date: int | None = None
+    candidate_timeout: int | None = None
+    candidate_plan_only: bool = False
+    keep_failed_candidate: bool = False
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -73,6 +78,32 @@ def _candidate_config_dict(config: ResearchLoopConfig) -> dict:
     candidate = _base_config_dict(config)
     candidate['buy_strategy'] = config.name
     return candidate
+
+
+def _candidate_start_date(config: ResearchLoopConfig) -> int:
+    return config.candidate_start_date or config.start_date
+
+
+def _candidate_end_date(config: ResearchLoopConfig) -> int:
+    return config.candidate_end_date or config.end_date
+
+
+def _build_candidate_plan(config: ResearchLoopConfig, candidate: dict) -> dict:
+    """Build a stable plan describing candidate execution before side effects."""
+    will_save = bool(config.run_candidate and not config.candidate_plan_only)
+    return {
+        'strategy_name': config.name,
+        'base_buy_strategy': config.base_buy_strategy,
+        'sell_strategy': config.sell_strategy,
+        'expression': candidate.get('expression'),
+        'expressions': candidate.get('expressions', []),
+        'candidate_start_date': _candidate_start_date(config),
+        'candidate_end_date': _candidate_end_date(config),
+        'candidate_timeout': config.candidate_timeout,
+        'will_save_strategy': will_save,
+        'will_run_backtest': will_save,
+        'keep_failed_candidate': config.keep_failed_candidate,
+    }
 
 
 def _error(phase: str, message: str, **extra) -> dict:
@@ -275,6 +306,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         'candidate_count': expression_result.get('candidate_count', len(expressions)),
         'selected_candidates': expression_result.get('selected_candidates', []),
     }
+    candidate_plan = _build_candidate_plan(config, candidate)
 
     if not config.run_candidate:
         return _build_result(config, {
@@ -287,6 +319,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
             'analysis_result': analysis_result,
             'expression_result': expression_result,
             'candidate': candidate,
+            'candidate_plan': candidate_plan,
             'comparison': None,
             'promotion': None,
         })

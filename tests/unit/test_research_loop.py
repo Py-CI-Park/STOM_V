@@ -72,6 +72,49 @@ def test_research_loop_config_has_no_wfo_fields():
     assert 'param_space' not in names
 
 
+def test_research_loop_config_has_candidate_runtime_fields():
+    names = {field.name for field in fields(ResearchLoopConfig)}
+    assert 'candidate_start_date' in names
+    assert 'candidate_end_date' in names
+    assert 'candidate_timeout' in names
+    assert 'candidate_plan_only' in names
+    assert 'keep_failed_candidate' in names
+
+
+def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='PlanPreview',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            sell_strategy='BaseSell',
+            start_date=20250101,
+            end_date=20250131,
+            candidate_start_date=20250102,
+            candidate_end_date=20250103,
+            candidate_timeout=300,
+            run_candidate=False,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    plan = result['candidate_plan']
+    assert plan['strategy_name'] == 'PlanPreview'
+    assert plan['base_buy_strategy'] == 'BaseBuy'
+    assert plan['sell_strategy'] == 'BaseSell'
+    assert plan['expression'] == '체결강도 < 90'
+    assert plan['candidate_start_date'] == 20250102
+    assert plan['candidate_end_date'] == 20250103
+    assert plan['candidate_timeout'] == 300
+    assert plan['will_save_strategy'] is False
+    assert plan['will_run_backtest'] is False
+
+
 def test_research_result_has_no_wfo_payload(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     candidate = tmp_path / 'candidate.csv'
