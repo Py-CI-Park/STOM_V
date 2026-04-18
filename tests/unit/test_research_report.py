@@ -61,6 +61,17 @@ def test_build_research_report_extracts_core_sections():
     assert report['promotion']['passed'] is True
 
 
+def test_build_research_report_includes_candidate_plan_and_cleanup():
+    result = _result()
+    result['candidate_plan'] = {'strategy_name': 'AutoResearch', 'candidate_timeout': 300}
+    result['cleanup'] = {'attempted': True, 'status': 'ok', 'action': 'deleted'}
+
+    report = build_research_report(result, strategy_name='AutoResearch')
+
+    assert report['candidate_plan']['candidate_timeout'] == 300
+    assert report['cleanup']['action'] == 'deleted'
+
+
 def test_render_research_report_markdown_contains_trade_set_sections():
     markdown = render_research_report_markdown(build_research_report(_result(), strategy_name='AutoResearch'))
     assert '# 조건식 연구 리포트: AutoResearch' in markdown
@@ -93,6 +104,26 @@ def test_render_research_report_markdown_contains_korean_decision_labels():
     assert '제외 거래' in markdown
     assert '신규 거래' in markdown
     assert '승격 평가' in markdown
+
+
+def test_render_research_report_markdown_contains_candidate_runtime():
+    result = _result()
+    result['candidate_plan'] = {
+        'strategy_name': 'AutoResearch',
+        'candidate_start_date': 20250101,
+        'candidate_end_date': 20250102,
+        'candidate_timeout': 300,
+        'will_save_strategy': True,
+        'will_run_backtest': True,
+    }
+    result['cleanup'] = {'attempted': True, 'status': 'ok', 'action': 'deleted'}
+
+    markdown = render_research_report_markdown(build_research_report(result, strategy_name='AutoResearch'))
+
+    assert '## Candidate Runtime' in markdown
+    assert '후보 백테스트 시작일' in markdown
+    assert 'candidate_timeout' in markdown
+    assert 'cleanup' in markdown
 
 
 def test_render_research_report_markdown_allows_missing_promotion_reasons():
