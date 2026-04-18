@@ -126,6 +126,32 @@ def test_render_research_report_markdown_contains_candidate_runtime():
     assert 'cleanup' in markdown
 
 
+def test_render_research_report_markdown_explains_skipped_cleanup():
+    result = _result()
+    result['candidate_plan'] = {
+        'strategy_name': 'AutoResearch',
+        'candidate_start_date': 20250101,
+        'candidate_end_date': 20250102,
+        'candidate_timeout': 300,
+        'will_save_strategy': True,
+        'will_run_backtest': True,
+        'keep_failed_candidate': True,
+    }
+    result['cleanup'] = {
+        'attempted': False,
+        'reason': 'keep_failed_candidate',
+        'strategy_name': 'AutoResearch',
+    }
+
+    markdown = render_research_report_markdown(build_research_report(result, strategy_name='AutoResearch'))
+
+    assert 'keep_failed_candidate' in markdown
+    assert 'AutoResearch' in markdown
+    assert 'cleanup reason' in markdown or 'cleanup reason:' in markdown
+    assert 'cleanup status' not in markdown
+    assert 'cleanup action' not in markdown
+
+
 def test_render_research_report_markdown_allows_missing_promotion_reasons():
     result = _result()
     result['promotion']['reasons'] = None

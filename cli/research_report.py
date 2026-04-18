@@ -85,12 +85,20 @@ def render_research_report_markdown(report: dict) -> str:
         lines.append(f"- 후보 백테스트 종료일: {candidate_plan.get('candidate_end_date')}")
         lines.append(f"- candidate_timeout: {candidate_plan.get('candidate_timeout')}")
         lines.append(f"- 후보 전략 저장 여부: {candidate_plan.get('will_save_strategy')}")
+        if 'keep_failed_candidate' in candidate_plan:
+            lines.append(f"- keep_failed_candidate: {candidate_plan.get('keep_failed_candidate')}")
     else:
         lines.append("- none")
     if cleanup:
         lines.append(f"- cleanup attempted: {cleanup.get('attempted')}")
-        lines.append(f"- cleanup status: {cleanup.get('status')}")
-        lines.append(f"- cleanup action: {cleanup.get('action')}")
+        if cleanup.get('strategy_name'):
+            lines.append(f"- cleanup strategy_name: {cleanup.get('strategy_name')}")
+        if cleanup.get('reason'):
+            lines.append(f"- cleanup reason: {cleanup.get('reason')}")
+        if cleanup.get('status') is not None:
+            lines.append(f"- cleanup status: {cleanup.get('status')}")
+        if cleanup.get('action') is not None:
+            lines.append(f"- cleanup action: {cleanup.get('action')}")
         if cleanup.get('message'):
             lines.append(f"- cleanup message: {cleanup.get('message')}")
 
