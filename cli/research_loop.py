@@ -125,7 +125,16 @@ def _cleanup_candidate_strategy(config: ResearchLoopConfig, reason: str) -> dict
             'reason': 'keep_failed_candidate',
             'strategy_name': config.name,
         }
-    result = delete_strategy_from_db(DB_STRATEGY, config.name, 'buy')
+    try:
+        result = delete_strategy_from_db(DB_STRATEGY, config.name, 'buy')
+    except Exception as e:
+        return {
+            'attempted': True,
+            'reason': reason,
+            'strategy_name': config.name,
+            'status': 'error',
+            'message': str(e),
+        }
     return {
         'attempted': True,
         'reason': reason,

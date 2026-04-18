@@ -576,6 +576,12 @@ def test_research_loop_returns_candidate_csv_missing_when_run_omits_path(monkeyp
     _write_trade_csv(baseline)
     _patch_analysis_success(monkeypatch)
     _patch_strategy_success(monkeypatch)
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'action': 'deleted'},
+    )
 
     result = run_research_once(
         ResearchLoopConfig(name='NoCsv', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
@@ -584,6 +590,9 @@ def test_research_loop_returns_candidate_csv_missing_when_run_omits_path(monkeyp
 
     assert result['status'] == 'error'
     assert result['phase'] == 'candidate_csv_missing'
+    assert result['cleanup']['attempted'] is True
+    assert result['cleanup']['status'] == 'ok'
+    assert cleanup_calls == ['NoCsv']
 
 
 def test_research_loop_returns_candidate_csv_missing_when_path_does_not_exist(monkeypatch, tmp_path):
@@ -662,6 +671,62 @@ def test_comparison_failure_cleans_candidate(monkeypatch, tmp_path):
     assert result['phase'] == 'comparison'
     assert result['cleanup']['attempted'] is True
     assert cleanup_calls == ['CompareCleanup']
+
+
+def test_candidate_csv_missing_preserves_original_error_when_cleanup_fails(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    missing_candidate = tmp_path / 'missing.csv'
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError('cleanup boom')),
+    )
+
+    result = run_research_once(
+        ResearchLoopConfig(name='MissingCsvCleanupError', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(missing_candidate)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_csv_missing'
+    assert 'candidate csv_path does not exist' in result['message']
+    assert result['cleanup']['attempted'] is True
+    assert result['cleanup']['status'] == 'error'
+    assert result['cleanup']['message'] == 'cleanup boom'
+
+
+def test_comparison_failure_preserves_original_error_when_cleanup_fails(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate, name='B')
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    monkeypatch.setattr(
+        research_loop,
+        'compare_trade_sets',
+        lambda *args, **kwargs: (_ for _ in ()).throw(ValueError('compare failed')),
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError('cleanup boom')),
+    )
+
+    result = run_research_once(
+        ResearchLoopConfig(name='CompareCleanupError', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(candidate)),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'comparison'
+    assert 'compare failed' in result['message']
+    assert result['cleanup']['attempted'] is True
+    assert result['cleanup']['status'] == 'error'
+    assert result['cleanup']['message'] == 'cleanup boom'
 
 
 def test_research_loop_rejects_candidate_name_matching_base_strategy(monkeypatch, tmp_path):
