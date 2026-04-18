@@ -888,10 +888,10 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
 
 def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     """Run one baseline analysis and evaluate multiple candidate expressions."""
-    config = replace(config, run_candidate=False, run_candidates=True)
     validation = validate_research_iteration_config(config)
     if validation.get('status') != 'ok':
         return validation
+    config = replace(config, run_candidate=False, run_candidates=True)
 
     baseline_result = None
     baseline_csv = config.baseline_csv
@@ -949,6 +949,20 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             analysis_result=analysis_result,
             expression_result=expression_result,
             iteration_plan=iteration_plan,
+        ))
+    if len(expressions) < config.candidate_count:
+        return _build_result(config, _error(
+            'insufficient_expressions',
+            f"candidate_count={config.candidate_count} requested but only {len(expressions)} expressions generated",
+            strategy_name=config.name,
+            config=asdict(config),
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+            analysis_result=analysis_result,
+            expression_result=expression_result,
+            iteration_plan=iteration_plan,
+            requested_candidate_count=config.candidate_count,
+            expression_count=len(expressions),
         ))
 
     specs = _build_candidate_specs(config, expression_result)

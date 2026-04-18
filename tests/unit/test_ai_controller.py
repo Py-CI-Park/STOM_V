@@ -55,6 +55,18 @@ def test_research_strategy_once_routes_iteration(monkeypatch):
     assert calls['controller'] is controller
 
 
+def test_research_strategy_once_rejects_explicit_iteration_mode_conflict():
+    controller = AIBacktestController()
+    result = controller.research_strategy_once({
+        'name': 'IterationConflict',
+        'run_candidate': True,
+        'run_candidates': True,
+    })
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'run_candidate_and_run_candidates_conflict'
+
+
 # === list_strategies ===
 
 class TestListStrategies:

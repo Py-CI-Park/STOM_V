@@ -144,16 +144,14 @@ def test_run_research_once_allows_inactive_invalid_candidate_count(monkeypatch, 
     assert result['candidate']['expression']
 
 
-def test_run_research_iteration_normalizes_single_candidate_default():
+def test_run_research_iteration_rejects_mode_conflict():
     result = research_loop.run_research_iteration(
         ResearchLoopConfig(run_candidates=True),
         DummyController(None),
     )
 
-    assert result['phase'] == 'baseline_run'
-    assert result['phase'] != 'run_candidate_and_run_candidates_conflict'
-    assert result['config']['run_candidate'] is False
-    assert result['config']['run_candidates'] is True
+    assert result['status'] == 'error'
+    assert result['phase'] == 'run_candidate_and_run_candidates_conflict'
 
 
 def test_iteration_plan_uses_effective_top_n_and_candidate_prefix(tmp_path):
@@ -383,6 +381,7 @@ def test_run_research_iteration_analyzes_once_and_runs_each_candidate(monkeypatc
             name='Batch',
             baseline_csv=str(baseline),
             base_buy_strategy='BaseBuy',
+            run_candidate=False,
             run_candidates=True,
             candidate_count=2,
             top_n=1,
@@ -694,7 +693,7 @@ def test_run_research_iteration_returns_error_when_all_candidates_fail(monkeypat
     )
 
     result = research_loop.run_research_iteration(
-        ResearchLoopConfig(name='Batch', baseline_csv=str(baseline), run_candidates=True, candidate_count=2),
+        ResearchLoopConfig(name='Batch', baseline_csv=str(baseline), run_candidate=False, run_candidates=True, candidate_count=2),
         DummyController(None),
     )
 
@@ -704,6 +703,23 @@ def test_run_research_iteration_returns_error_when_all_candidates_fail(monkeypat
     assert len(result['candidates']) == 2
     assert set(result['cleanup_summary']) == {'attempted_count', 'deleted_count', 'kept_count', 'failed_count', 'items'}
     assert len(result['cleanup_summary']['items']) == 2
+
+
+def test_run_research_iteration_rejects_insufficient_expressions(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch, expressions=['체결강도 < 90'])
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(name='Batch', baseline_csv=str(baseline), run_candidate=False, run_candidates=True, candidate_count=3),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'insufficient_expressions'
+    assert result['requested_candidate_count'] == 3
+    assert result['expression_count'] == 1
+    assert result['iteration_plan']['candidate_count'] == 3
 
 
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
