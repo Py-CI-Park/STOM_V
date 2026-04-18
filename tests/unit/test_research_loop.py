@@ -148,6 +148,28 @@ def test_candidate_plan_only_does_not_save_or_run(monkeypatch, tmp_path):
     assert controller.runs == []
 
 
+def test_candidate_plan_only_does_not_require_base_buy_strategy(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='PlanOnlyNoBase',
+            baseline_csv=str(baseline),
+            run_candidate=True,
+            candidate_plan_only=True,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['phase'] == 'candidate_plan'
+    assert result['candidate_plan']['base_buy_strategy'] == ''
+    assert result['candidate_plan']['will_save_strategy'] is False
+    assert result['candidate_plan']['will_run_backtest'] is False
+
+
 def test_research_result_has_no_wfo_payload(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     candidate = tmp_path / 'candidate.csv'
@@ -235,9 +257,10 @@ def test_run_research_once_combines_filters_with_base_strategy(monkeypatch, tmp_
     assert controller.runs[0]['buy_strategy'] == 'AutoResearchTest'
 
 
-def test_research_loop_requires_base_buy_strategy_for_candidate_save(tmp_path):
+def test_research_loop_requires_base_buy_strategy_for_candidate_save(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     pd.DataFrame([{'종목명': 'A', '매수시간': 202501010900, '매수가': 1000, '수익률': -1.0, '수익금': -1000}]).to_csv(baseline, index=False, encoding='utf-8-sig')
+    _patch_analysis_success(monkeypatch)
 
     result = run_research_once(
         ResearchLoopConfig(name='NoBase', baseline_csv=str(baseline), run_candidate=True),

@@ -263,14 +263,6 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         if not baseline_csv:
             return _error('baseline_run', 'baseline run did not return csv_path', run_result=baseline_result)
 
-    if config.run_candidate and not config.base_buy_strategy:
-        return _error(
-            'candidate_strategy',
-            'base_buy_strategy is required when run_candidate is True',
-            baseline_csv=baseline_csv,
-            baseline_result=baseline_result,
-        )
-
     analysis_result = analyze_result_csv(
         baseline_csv,
         min_samples=config.min_samples,
@@ -324,6 +316,14 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
             'comparison': None,
             'promotion': None,
         })
+
+    if config.run_candidate and not config.base_buy_strategy:
+        return _error(
+            'candidate_strategy',
+            'base_buy_strategy is required when run_candidate is True',
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+        )
 
     if not config.run_candidate:
         return _build_result(config, {
