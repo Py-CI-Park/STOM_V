@@ -202,6 +202,8 @@ def test_candidate_runtime_overrides_candidate_backtest_config(monkeypatch, tmp_
     assert candidate_config['start_date'] == 20250102
     assert candidate_config['end_date'] == 20250103
     assert candidate_config['timeout'] == 300
+    assert result['candidate_plan']['strategy_name'] == 'RuntimeOverride'
+    assert result['report']['candidate_plan']['strategy_name'] == 'RuntimeOverride'
 
 
 def test_candidate_runtime_zero_dates_are_not_silently_replaced(monkeypatch, tmp_path):
@@ -539,6 +541,8 @@ def test_candidate_backtest_timeout_cleans_candidate_by_default(monkeypatch, tmp
     assert result['phase'] == 'candidate_backtest_timeout'
     assert result['cleanup']['attempted'] is True
     assert result['cleanup']['status'] == 'ok'
+    assert result['report']['cleanup']['status'] == 'ok'
+    assert result['report']['candidate_plan']['strategy_name'] == 'TimeoutCandidate'
     assert cleanup_calls[0][1] == 'TimeoutCandidate'
 
 
@@ -592,6 +596,8 @@ def test_research_loop_returns_candidate_csv_missing_when_run_omits_path(monkeyp
     assert result['phase'] == 'candidate_csv_missing'
     assert result['cleanup']['attempted'] is True
     assert result['cleanup']['status'] == 'ok'
+    assert result['report']['cleanup']['status'] == 'ok'
+    assert result['report']['candidate_plan']['strategy_name'] == 'NoCsv'
     assert cleanup_calls == ['NoCsv']
 
 
@@ -617,6 +623,8 @@ def test_research_loop_returns_candidate_csv_missing_when_path_does_not_exist(mo
     assert result['phase'] == 'candidate_csv_missing'
     assert str(missing_candidate) in result['message']
     assert result['cleanup']['attempted'] is True
+    assert result['report']['cleanup']['attempted'] is True
+    assert result['report']['candidate_plan']['strategy_name'] == 'MissingCsv'
     assert cleanup_calls == ['MissingCsv']
 
 
@@ -670,6 +678,8 @@ def test_comparison_failure_cleans_candidate(monkeypatch, tmp_path):
     assert result['status'] == 'error'
     assert result['phase'] == 'comparison'
     assert result['cleanup']['attempted'] is True
+    assert result['report']['cleanup']['attempted'] is True
+    assert result['report']['candidate_plan']['strategy_name'] == 'CompareCleanup'
     assert cleanup_calls == ['CompareCleanup']
 
 

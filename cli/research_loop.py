@@ -357,12 +357,14 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         })
 
     if config.run_candidate and not config.base_buy_strategy:
-        return _error(
+        return _build_result(config, _error(
             'candidate_strategy',
             'base_buy_strategy is required when run_candidate is True',
             baseline_csv=baseline_csv,
             baseline_result=baseline_result,
-        )
+            candidate=candidate,
+            candidate_plan=candidate_plan,
+        ))
 
     if not config.run_candidate:
         return _build_result(config, {
@@ -382,7 +384,15 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
 
     strategy_flow = _prepare_candidate_strategy(config, expressions)
     if strategy_flow.get('status') != 'ok':
-        return {**strategy_flow, 'baseline_csv': baseline_csv}
+        return _build_result(config, {
+            **strategy_flow,
+            'baseline_csv': baseline_csv,
+            'baseline_result': baseline_result,
+            'analysis_result': analysis_result,
+            'expression_result': expression_result,
+            'candidate': candidate,
+            'candidate_plan': candidate_plan,
+        })
     candidate['strategy_result'] = strategy_flow['strategy_result']
     candidate['generated_strategy'] = strategy_flow['generated_strategy']
 
@@ -390,7 +400,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     if candidate_result.get('status') not in ('ok', 'success'):
         phase = _candidate_failure_phase(candidate_result)
         cleanup = _cleanup_candidate_strategy(config, phase)
-        return _error(
+        return _build_result(config, _error(
             phase,
             candidate_result.get('message', 'candidate run failed'),
             baseline_csv=baseline_csv,
@@ -398,29 +408,31 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
             candidate_plan=candidate_plan,
             cleanup=cleanup,
             run_result=candidate_result,
-        )
+        ))
     candidate_csv = _csv_path_from_run(candidate_result)
     if not candidate_csv:
         cleanup = _cleanup_candidate_strategy(config, 'candidate_csv_missing')
-        return _error(
+        return _build_result(config, _error(
             'candidate_csv_missing',
             'candidate run did not return csv_path',
             baseline_csv=baseline_csv,
             candidate=candidate,
+            candidate_plan=candidate_plan,
             cleanup=cleanup,
             run_result=candidate_result,
-        )
+        ))
     if not Path(candidate_csv).exists():
         cleanup = _cleanup_candidate_strategy(config, 'candidate_csv_missing')
-        return _error(
+        return _build_result(config, _error(
             'candidate_csv_missing',
             f'candidate csv_path does not exist: {candidate_csv}',
             baseline_csv=baseline_csv,
             candidate_csv=candidate_csv,
             candidate=candidate,
+            candidate_plan=candidate_plan,
             cleanup=cleanup,
             run_result=candidate_result,
-        )
+        ))
 
     try:
         comparison = compare_trade_sets(
@@ -430,14 +442,16 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         promotion = evaluate_research_candidate(comparison)
     except Exception as e:
         cleanup = _cleanup_candidate_strategy(config, 'comparison')
-        return _error(
+        return _build_result(config, _error(
             'comparison',
             str(e),
             baseline_csv=baseline_csv,
             candidate_csv=candidate_csv,
             candidate=candidate,
+            candidate_plan=candidate_plan,
             cleanup=cleanup,
-        )
+            run_result=candidate_result,
+        ))
 
     return _build_result(config, {
         'status': 'ok',
@@ -450,6 +464,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         'analysis_result': analysis_result,
         'expression_result': expression_result,
         'candidate': candidate,
+        'candidate_plan': candidate_plan,
         'comparison': comparison,
         'promotion': promotion,
     })
