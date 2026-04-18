@@ -501,6 +501,82 @@ def test_rank_candidate_results_prefers_promotion_pass_then_score():
     assert ranked[0]['rank_score']['trade_count'] == 100.0
 
 
+def test_rank_candidate_results_normalizes_non_finite_scores():
+    candidates = [
+        {
+            'index': 1,
+            'status': 'ok',
+            'strategy_name': 'Batch__cand001',
+            'expression': 'nan-score',
+            'promotion': {'passed': True, 'score': float('nan')},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': float('inf'),
+                    'date_concentration': float('nan'),
+                    'symbol_concentration': float('inf'),
+                },
+                'trade_count_retention': float('nan'),
+            },
+        },
+        {
+            'index': 2,
+            'status': 'ok',
+            'strategy_name': 'Batch__cand002',
+            'expression': 'finite-score',
+            'promotion': {'passed': True, 'score': 1.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 1,
+                    'date_concentration': 0.2,
+                    'symbol_concentration': 0.2,
+                },
+                'trade_count_retention': 0.1,
+            },
+        },
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates)
+
+    assert best['strategy_name'] == 'Batch__cand002'
+    assert ranked[0]['rank_score']['promotion_score'] == 0.0
+    assert ranked[0]['rank_score']['trade_count'] == 0.0
+    assert ranked[0]['rank_score']['trade_count_retention'] == 0.0
+    assert ranked[0]['rank_score']['date_concentration'] == float('inf')
+    assert ranked[0]['rank_score']['symbol_concentration'] == float('inf')
+
+
+def test_iteration_cleanup_skips_candidate_not_created(monkeypatch):
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'action': 'deleted'},
+    )
+    candidates = [
+        {
+            'strategy_name': 'ExistingStrategy',
+            'status': 'error',
+            'phase': 'candidate_name_conflict',
+            'message': 'candidate buy strategy already exists',
+            'selected_as_best': False,
+            'cleanup': None,
+        },
+    ]
+
+    updated, summary = research_loop._apply_iteration_cleanup(
+        ResearchLoopConfig(name='Batch', run_candidates=True),
+        candidates,
+    )
+
+    assert cleanup_calls == []
+    assert updated[0]['cleanup']['attempted'] is False
+    assert updated[0]['cleanup']['reason'] == 'candidate_not_created'
+    assert summary['attempted_count'] == 0
+    assert summary['deleted_count'] == 0
+    assert summary['kept_count'] == 1
+    assert summary['failed_count'] == 0
+
+
 def test_iteration_cleanup_deletes_losers_and_keeps_best(monkeypatch):
     cleanup_calls = []
     monkeypatch.setattr(

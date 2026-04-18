@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, replace
+import math
 from pathlib import Path
 
 from cli.analyzer import analyze_result_csv
@@ -30,6 +31,13 @@ _TRADE_COLUMN_ALIASES = {
     '매도가': NUMERIC_COLUMNS[3],
     '수익률': NUMERIC_COLUMNS[5],
     '수익금': NUMERIC_COLUMNS[6],
+}
+
+_CLEANUP_SAFE_FAILURE_PHASES = {
+    'candidate_backtest',
+    'candidate_backtest_timeout',
+    'candidate_csv_missing',
+    'comparison',
 }
 
 @dataclass
@@ -425,7 +433,7 @@ def _execute_candidate_spec(
             strategy_flow.get('message', 'failed to prepare candidate strategy'),
             candidate=candidate,
             candidate_plan=candidate_plan,
-            cleanup=None,
+            cleanup=_candidate_not_created_cleanup(strategy_name),
             strategy_flow=strategy_flow,
         )
     candidate['strategy_result'] = strategy_flow['strategy_result']
@@ -520,7 +528,10 @@ def _numeric_value(value, default: float = 0.0) -> float:
     try:
         if value is None:
             return default
-        return float(value)
+        normalized = float(value)
+        if not math.isfinite(normalized):
+            return default
+        return normalized
     except (TypeError, ValueError):
         return default
 
@@ -608,6 +619,14 @@ def _cleanup_candidate_by_name(strategy_name: str, reason: str) -> dict:
     }
 
 
+def _candidate_not_created_cleanup(strategy_name: str, reason: str = 'candidate_not_created') -> dict:
+    return {
+        'attempted': False,
+        'reason': reason,
+        'strategy_name': strategy_name,
+    }
+
+
 def _cleanup_summary(candidates: list[dict]) -> dict:
     summary = {
         'attempted_count': 0,
@@ -657,11 +676,16 @@ def _apply_iteration_cleanup(config: ResearchLoopConfig, candidates: list[dict])
                 strategy_name,
                 'best_candidate_deleted',
             )
-        elif is_failed:
+        elif is_failed and (
+            updated.get('phase') in _CLEANUP_SAFE_FAILURE_PHASES
+            or updated.get('cleanup_safe') is True
+        ):
             updated['cleanup'] = _cleanup_candidate_by_name(
                 strategy_name,
                 'failed_candidate_deleted',
             )
+        elif is_failed:
+            updated['cleanup'] = _candidate_not_created_cleanup(strategy_name)
         elif config.keep_loser_candidates:
             updated['cleanup'] = {
                 'attempted': False,
