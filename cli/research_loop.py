@@ -85,11 +85,11 @@ def _candidate_config_dict(config: ResearchLoopConfig) -> dict:
 
 
 def _candidate_start_date(config: ResearchLoopConfig) -> int:
-    return config.candidate_start_date or config.start_date
+    return config.start_date if config.candidate_start_date is None else config.candidate_start_date
 
 
 def _candidate_end_date(config: ResearchLoopConfig) -> int:
-    return config.candidate_end_date or config.end_date
+    return config.end_date if config.candidate_end_date is None else config.candidate_end_date
 
 
 def _build_candidate_plan(config: ResearchLoopConfig, candidate: dict) -> dict:

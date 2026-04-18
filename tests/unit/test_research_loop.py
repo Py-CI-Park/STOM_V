@@ -203,6 +203,35 @@ def test_candidate_runtime_overrides_candidate_backtest_config(monkeypatch, tmp_
     assert candidate_config['timeout'] == 300
 
 
+def test_candidate_runtime_zero_dates_are_not_silently_replaced(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate, name='B')
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+
+    controller = DummyController(str(candidate))
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='ZeroDateOverride',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            start_date=20250101,
+            end_date=20250131,
+            candidate_start_date=0,
+            candidate_end_date=0,
+            run_candidate=True,
+        ),
+        controller,
+    )
+
+    assert result['status'] == 'ok'
+    candidate_config = controller.runs[0]
+    assert candidate_config['start_date'] == 0
+    assert candidate_config['end_date'] == 0
+
+
 def test_research_result_has_no_wfo_payload(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     candidate = tmp_path / 'candidate.csv'
