@@ -125,6 +125,8 @@ def test_candidate_plan_only_does_not_save_or_run(monkeypatch, tmp_path):
 
     monkeypatch.setattr(research_loop, 'save_strategy_to_db', fail_save)
 
+    controller = DummyController(None)
+
     result = run_research_once(
         ResearchLoopConfig(
             name='PlanOnly',
@@ -133,7 +135,7 @@ def test_candidate_plan_only_does_not_save_or_run(monkeypatch, tmp_path):
             run_candidate=True,
             candidate_plan_only=True,
         ),
-        DummyController(None),
+        controller,
     )
 
     assert result['status'] == 'ok'
@@ -143,6 +145,7 @@ def test_candidate_plan_only_does_not_save_or_run(monkeypatch, tmp_path):
     assert result['candidate_csv'] is None
     assert result['comparison'] is None
     assert result['promotion'] is None
+    assert controller.runs == []
 
 
 def test_research_result_has_no_wfo_payload(monkeypatch, tmp_path):
