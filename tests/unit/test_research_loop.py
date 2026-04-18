@@ -170,6 +170,39 @@ def test_candidate_plan_only_does_not_require_base_buy_strategy(monkeypatch, tmp
     assert result['candidate_plan']['will_run_backtest'] is False
 
 
+def test_candidate_runtime_overrides_candidate_backtest_config(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate, name='B')
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+
+    controller = DummyController(str(candidate))
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='RuntimeOverride',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            sell_strategy='BaseSell',
+            start_date=20250101,
+            end_date=20250131,
+            candidate_start_date=20250102,
+            candidate_end_date=20250103,
+            candidate_timeout=300,
+            run_candidate=True,
+        ),
+        controller,
+    )
+
+    assert result['status'] == 'ok'
+    candidate_config = controller.runs[0]
+    assert candidate_config['buy_strategy'] == 'RuntimeOverride'
+    assert candidate_config['start_date'] == 20250102
+    assert candidate_config['end_date'] == 20250103
+    assert candidate_config['timeout'] == 300
+
+
 def test_research_result_has_no_wfo_payload(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     candidate = tmp_path / 'candidate.csv'

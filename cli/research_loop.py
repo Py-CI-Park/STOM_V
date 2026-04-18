@@ -77,6 +77,10 @@ def _base_config_dict(config: ResearchLoopConfig) -> dict:
 def _candidate_config_dict(config: ResearchLoopConfig) -> dict:
     candidate = _base_config_dict(config)
     candidate['buy_strategy'] = config.name
+    candidate['start_date'] = _candidate_start_date(config)
+    candidate['end_date'] = _candidate_end_date(config)
+    if config.candidate_timeout is not None:
+        candidate['timeout'] = config.candidate_timeout
     return candidate
 
 
