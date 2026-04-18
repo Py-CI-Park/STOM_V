@@ -150,7 +150,7 @@ def test_run_research_iteration_normalizes_single_candidate_default():
         DummyController(None),
     )
 
-    assert result['phase'] == 'candidate_iteration'
+    assert result['phase'] == 'baseline_run'
     assert result['phase'] != 'run_candidate_and_run_candidates_conflict'
     assert result['config']['run_candidate'] is False
     assert result['config']['run_candidates'] is True
@@ -318,6 +318,280 @@ def test_execute_candidate_spec_timeout_returns_candidate_item_and_cleanup(monke
     assert result['cleanup']['attempted'] is True
     assert result['cleanup']['strategy_name'] == 'Batch__cand002'
     assert cleanup_calls == ['Batch__cand002']
+
+
+def test_run_research_iteration_analyzes_once_and_runs_each_candidate(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate_1 = tmp_path / 'candidate_1.csv'
+    candidate_2 = tmp_path / 'candidate_2.csv'
+    _write_trade_csv(baseline, name='BASE')
+    _write_trade_csv(candidate_1, name='C1')
+    _write_trade_csv(candidate_2, name='C2')
+
+    analyze_calls = []
+    expression_calls = []
+    executed_specs = []
+
+    monkeypatch.setattr(
+        research_loop,
+        'analyze_result_csv',
+        lambda csv_path, **kwargs: analyze_calls.append((csv_path, kwargs)) or {'status': 'ok', 'rows': 1},
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: expression_calls.append((analysis, top_n)) or {
+            'status': 'ok',
+            'expressions': ['expr one', 'expr two'],
+            'selected_candidates': [{'feature': 'one'}, {'feature': 'two'}],
+        },
+    )
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        executed_specs.append((spec.copy(), baseline_csv))
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'ok',
+            'phase': 'candidate_evaluated',
+            'candidate_csv': str(candidate_1 if spec['index'] == 1 else candidate_2),
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 10 + spec['index'],
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.5,
+            },
+            'promotion': {'status': 'ok', 'passed': spec['index'] == 2, 'score': float(spec['index'])},
+            'cleanup': None,
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda *args, **kwargs: {'status': 'ok', 'action': 'deleted'},
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='Batch',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            run_candidates=True,
+            candidate_count=2,
+            top_n=1,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['phase'] == 'candidates_evaluated'
+    assert analyze_calls == [(str(baseline), {'min_samples': 30, 'quantiles': 10, 'alpha': 0.05})]
+    assert expression_calls[0][1] == 2
+    assert [call[0]['strategy_name'] for call in executed_specs] == ['Batch__cand001', 'Batch__cand002']
+    assert [call[0]['expressions'] for call in executed_specs] == [['expr one'], ['expr two']]
+    assert [call[1] for call in executed_specs] == [str(baseline), str(baseline)]
+    assert result['iteration_plan']['effective_top_n'] == 2
+    assert len(result['candidates']) == 2
+    assert result['best_candidate']['strategy_name'] == 'Batch__cand002'
+    assert result['cleanup_summary']['deleted_count'] == 1
+
+
+def test_rank_candidate_results_prefers_promotion_pass_then_score():
+    candidates = [
+        {
+            'index': 1,
+            'status': 'ok',
+            'strategy_name': 'Batch__cand001',
+            'expression': 'A',
+            'promotion': {'passed': False, 'score': 100.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 100, 'date_concentration': 0.1, 'symbol_concentration': 0.1},
+                'trade_count_retention': 0.8,
+            },
+        },
+        {
+            'index': 2,
+            'status': 'ok',
+            'strategy_name': 'Batch__cand002',
+            'expression': 'B',
+            'promotion': {'passed': True, 'score': 10.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 20, 'date_concentration': 0.3, 'symbol_concentration': 0.2},
+                'trade_count_retention': 0.4,
+            },
+        },
+        {
+            'index': 3,
+            'status': 'ok',
+            'strategy_name': 'Batch__cand003',
+            'expression': 'C',
+            'promotion': {'passed': True, 'score': 10.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 30, 'date_concentration': 0.3, 'symbol_concentration': 0.2},
+                'trade_count_retention': 0.4,
+            },
+        },
+        {
+            'index': 4,
+            'status': 'ok',
+            'strategy_name': 'Batch__cand004',
+            'expression': 'D',
+            'promotion': {'passed': True, 'score': 10.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 30, 'date_concentration': 0.2, 'symbol_concentration': 0.2},
+                'trade_count_retention': 0.4,
+            },
+        },
+        {
+            'index': 5,
+            'status': 'ok',
+            'strategy_name': 'Batch__cand005',
+            'expression': 'E',
+            'promotion': {'passed': True, 'score': 10.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 30, 'date_concentration': 0.2, 'symbol_concentration': 0.1},
+                'trade_count_retention': 0.4,
+            },
+        },
+        {
+            'index': 6,
+            'status': 'ok',
+            'strategy_name': 'Batch__cand006',
+            'expression': 'F',
+            'promotion': {'passed': True, 'score': 10.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 30, 'date_concentration': 0.2, 'symbol_concentration': 0.1},
+                'trade_count_retention': 0.5,
+            },
+        },
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates)
+
+    assert best['strategy_name'] == 'Batch__cand006'
+    ranks = {candidate['strategy_name']: candidate['rank'] for candidate in ranked}
+    assert ranks == {
+        'Batch__cand001': 6,
+        'Batch__cand002': 5,
+        'Batch__cand003': 4,
+        'Batch__cand004': 3,
+        'Batch__cand005': 2,
+        'Batch__cand006': 1,
+    }
+    assert ranked[5]['rank'] == 1
+    assert ranked[5]['selected_as_best'] is True
+    assert ranked[0]['selected_as_best'] is False
+
+
+def test_iteration_cleanup_deletes_losers_and_keeps_best(monkeypatch):
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'action': 'deleted'},
+    )
+    config = ResearchLoopConfig(name='Batch', run_candidates=True)
+    candidates = [
+        {'strategy_name': 'Batch__cand001', 'status': 'ok', 'selected_as_best': True, 'cleanup': None},
+        {'strategy_name': 'Batch__cand002', 'status': 'ok', 'selected_as_best': False, 'cleanup': None},
+    ]
+
+    updated, summary = research_loop._apply_iteration_cleanup(config, candidates)
+
+    assert cleanup_calls == ['Batch__cand002']
+    assert updated[0]['cleanup']['reason'] == 'best_candidate_kept'
+    assert updated[0]['cleanup']['attempted'] is False
+    assert updated[1]['cleanup']['reason'] == 'loser_candidate_deleted'
+    assert summary['deleted_count'] == 1
+    assert summary['kept_count'] == 1
+
+
+def test_iteration_cleanup_can_delete_best(monkeypatch):
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'action': 'deleted'},
+    )
+    candidates = [
+        {'strategy_name': 'Batch__cand001', 'status': 'ok', 'selected_as_best': True, 'cleanup': None},
+        {'strategy_name': 'Batch__cand002', 'status': 'ok', 'selected_as_best': False, 'cleanup': None},
+    ]
+
+    updated, summary = research_loop._apply_iteration_cleanup(
+        ResearchLoopConfig(name='Batch', run_candidates=True, cleanup_best_candidate=True),
+        candidates,
+    )
+
+    assert cleanup_calls == ['Batch__cand001', 'Batch__cand002']
+    assert updated[0]['cleanup']['reason'] == 'best_candidate_deleted'
+    assert updated[1]['cleanup']['reason'] == 'loser_candidate_deleted'
+    assert summary['deleted_count'] == 2
+    assert summary['kept_count'] == 0
+
+
+def test_iteration_cleanup_can_keep_losers(monkeypatch):
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'action': 'deleted'},
+    )
+    candidates = [
+        {'strategy_name': 'Batch__cand001', 'status': 'ok', 'selected_as_best': True, 'cleanup': None},
+        {'strategy_name': 'Batch__cand002', 'status': 'ok', 'selected_as_best': False, 'cleanup': None},
+    ]
+
+    updated, summary = research_loop._apply_iteration_cleanup(
+        ResearchLoopConfig(name='Batch', run_candidates=True, keep_loser_candidates=True),
+        candidates,
+    )
+
+    assert cleanup_calls == []
+    assert updated[0]['cleanup']['reason'] == 'best_candidate_kept'
+    assert updated[1]['cleanup']['reason'] == 'loser_candidate_kept'
+    assert summary['deleted_count'] == 0
+    assert summary['kept_count'] == 2
+
+
+def test_run_research_iteration_returns_error_when_all_candidates_fail(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch, expressions=['expr one', 'expr two'])
+    monkeypatch.setattr(
+        research_loop,
+        '_execute_candidate_spec',
+        lambda config, spec, controller, baseline_csv: {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'error',
+            'phase': 'candidate_backtest',
+            'message': 'failed',
+            'cleanup': {'attempted': True, 'reason': 'candidate_backtest', 'strategy_name': spec['strategy_name']},
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(name='Batch', baseline_csv=str(baseline), run_candidates=True, candidate_count=2),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_iteration'
+    assert result['best_candidate'] is None
+    assert len(result['candidates']) == 2
+    assert result['cleanup_summary']['existing_count'] == 2
 
 
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):

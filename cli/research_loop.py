@@ -516,6 +516,157 @@ def _execute_candidate_spec(
     }
 
 
+def _numeric_value(value, default: float = 0.0) -> float:
+    try:
+        if value is None:
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _rank_score(candidate: dict) -> float:
+    promotion = candidate.get('promotion') or {}
+    return _numeric_value(promotion.get('score'))
+
+
+def _rank_key(candidate: dict) -> tuple:
+    promotion = candidate.get('promotion') or {}
+    comparison = candidate.get('comparison') or {}
+    candidate_summary = comparison.get('candidate_summary') or {}
+    passed_rank = 0 if promotion.get('passed') is True else 1
+    return (
+        passed_rank,
+        -_rank_score(candidate),
+        -_numeric_value(candidate_summary.get('trade_count')),
+        -_numeric_value(comparison.get('trade_count_retention')),
+        _numeric_value(candidate_summary.get('date_concentration'), default=float('inf')),
+        _numeric_value(candidate_summary.get('symbol_concentration'), default=float('inf')),
+        int(candidate.get('index') or 0),
+    )
+
+
+def _rank_candidate_results(candidates: list[dict]) -> tuple[list[dict], dict | None]:
+    ranked_candidates = [dict(candidate) for candidate in candidates]
+    eligible_indexes = [
+        index
+        for index, candidate in enumerate(ranked_candidates)
+        if candidate.get('status') == 'ok'
+    ]
+    ordered_indexes = sorted(
+        eligible_indexes,
+        key=lambda index: _rank_key(ranked_candidates[index]),
+    )
+
+    best_candidate = None
+    for candidate in ranked_candidates:
+        candidate['rank'] = None
+        candidate['rank_score'] = _rank_score(candidate)
+        candidate['selected_as_best'] = False
+
+    for rank, candidate_index in enumerate(ordered_indexes, start=1):
+        candidate = ranked_candidates[candidate_index]
+        candidate['rank'] = rank
+        candidate['selected_as_best'] = rank == 1
+        if rank == 1:
+            best_candidate = candidate
+
+    return ranked_candidates, best_candidate
+
+
+def _cleanup_candidate_by_name(strategy_name: str, reason: str) -> dict:
+    try:
+        result = delete_strategy_from_db(DB_STRATEGY, strategy_name, 'buy')
+    except Exception as e:
+        return {
+            'attempted': True,
+            'reason': reason,
+            'strategy_name': strategy_name,
+            'status': 'error',
+            'message': str(e),
+        }
+    return {
+        'attempted': True,
+        'reason': reason,
+        'strategy_name': strategy_name,
+        'status': result.get('status'),
+        'message': result.get('message'),
+        'action': result.get('action'),
+    }
+
+
+def _cleanup_summary(candidates: list[dict]) -> dict:
+    summary = {
+        'total_count': len(candidates),
+        'attempted_count': 0,
+        'deleted_count': 0,
+        'kept_count': 0,
+        'existing_count': 0,
+        'error_count': 0,
+    }
+    for candidate in candidates:
+        cleanup = candidate.get('cleanup') or {}
+        if cleanup.get('existing') is True:
+            summary['existing_count'] += 1
+        if cleanup.get('attempted') is True:
+            summary['attempted_count'] += 1
+            if cleanup.get('status') == 'error':
+                summary['error_count'] += 1
+            elif cleanup.get('action') == 'deleted' or str(cleanup.get('reason', '')).endswith('_deleted'):
+                summary['deleted_count'] += 1
+        elif cleanup:
+            summary['kept_count'] += 1
+    return summary
+
+
+def _apply_iteration_cleanup(config: ResearchLoopConfig, candidates: list[dict]) -> tuple[list[dict], dict]:
+    updated_candidates = []
+    for candidate in candidates:
+        updated = dict(candidate)
+        existing_cleanup = updated.get('cleanup')
+        if existing_cleanup is not None:
+            preserved = dict(existing_cleanup)
+            preserved['existing'] = True
+            updated['cleanup'] = preserved
+            updated_candidates.append(updated)
+            continue
+
+        strategy_name = updated.get('strategy_name')
+        is_best = updated.get('selected_as_best') is True
+        is_failed = updated.get('status') != 'ok'
+
+        if is_best and not config.cleanup_best_candidate:
+            updated['cleanup'] = {
+                'attempted': False,
+                'reason': 'best_candidate_kept',
+                'strategy_name': strategy_name,
+            }
+        elif is_best:
+            updated['cleanup'] = _cleanup_candidate_by_name(
+                strategy_name,
+                'best_candidate_deleted',
+            )
+        elif is_failed:
+            updated['cleanup'] = _cleanup_candidate_by_name(
+                strategy_name,
+                'failed_candidate_deleted',
+            )
+        elif config.keep_loser_candidates:
+            updated['cleanup'] = {
+                'attempted': False,
+                'reason': 'loser_candidate_kept',
+                'strategy_name': strategy_name,
+            }
+        else:
+            updated['cleanup'] = _cleanup_candidate_by_name(
+                strategy_name,
+                'loser_candidate_deleted',
+            )
+        updated_candidates.append(updated)
+
+    return updated_candidates, _cleanup_summary(updated_candidates)
+
+
 def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     """Run one analyze-generate-compare research iteration."""
     validation = validate_research_iteration_config(config)
@@ -701,16 +852,100 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
 
 
 def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
-    """Placeholder for the multi-candidate research iteration path."""
+    """Run one baseline analysis and evaluate multiple candidate expressions."""
     config = replace(config, run_candidate=False, run_candidates=True)
     validation = validate_research_iteration_config(config)
     if validation.get('status') != 'ok':
         return validation
 
-    return {
-        'status': 'error',
-        'phase': 'candidate_iteration',
-        'message': 'run_candidates iteration is not implemented in this task',
+    baseline_result = None
+    baseline_csv = config.baseline_csv
+    if not baseline_csv:
+        baseline_result = controller.run(_base_config_dict(config))
+        if baseline_result.get('status') not in ('ok', 'success'):
+            return _build_result(config, _error(
+                'baseline_run',
+                baseline_result.get('message', 'baseline run failed'),
+                strategy_name=config.name,
+                config=asdict(config),
+                run_result=baseline_result,
+            ))
+        baseline_csv = _csv_path_from_run(baseline_result)
+        if not baseline_csv:
+            return _build_result(config, _error(
+                'baseline_run',
+                'baseline run did not return csv_path',
+                strategy_name=config.name,
+                config=asdict(config),
+                run_result=baseline_result,
+            ))
+
+    analysis_result = analyze_result_csv(
+        baseline_csv,
+        min_samples=config.min_samples,
+        quantiles=config.quantiles,
+        alpha=config.alpha,
+    )
+    if analysis_result.get('status') != 'ok':
+        return _build_result(config, _error(
+            'analysis',
+            analysis_result.get('message', 'analysis failed'),
+            strategy_name=config.name,
+            config=asdict(config),
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+            analysis_result=analysis_result,
+        ))
+
+    iteration_plan = _build_iteration_plan(config)
+    expression_result = generate_condition_expressions_from_analysis(
+        analysis_result,
+        top_n=iteration_plan['effective_top_n'],
+    )
+    expressions = expression_result.get('expressions') or []
+    if expression_result.get('status') != 'ok' or not expressions:
+        return _build_result(config, _error(
+            'no_expressions',
+            expression_result.get('message', 'no candidate expressions generated'),
+            strategy_name=config.name,
+            config=asdict(config),
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+            analysis_result=analysis_result,
+            expression_result=expression_result,
+            iteration_plan=iteration_plan,
+        ))
+
+    specs = _build_candidate_specs(config, expression_result)
+    candidates = [
+        _execute_candidate_spec(config, spec, controller, baseline_csv)
+        for spec in specs
+    ]
+    ranked_candidates, best_candidate = _rank_candidate_results(candidates)
+    ranked_candidates, cleanup_summary = _apply_iteration_cleanup(config, ranked_candidates)
+    best_candidate = next(
+        (
+            candidate
+            for candidate in ranked_candidates
+            if candidate.get('selected_as_best') is True
+        ),
+        None,
+    )
+
+    has_best_candidate = best_candidate is not None
+    return _build_result(config, {
+        'status': 'ok' if has_best_candidate else 'error',
+        'phase': 'candidates_evaluated' if has_best_candidate else 'candidate_iteration',
+        'message': None if has_best_candidate else 'no candidate evaluated successfully',
         'strategy_name': config.name,
         'config': asdict(config),
-    }
+        'baseline_csv': baseline_csv,
+        'baseline_result': baseline_result,
+        'analysis_result': analysis_result,
+        'expression_result': expression_result,
+        'iteration_plan': iteration_plan,
+        'candidate_specs': specs,
+        'candidates': ranked_candidates,
+        'best_candidate': best_candidate,
+        'cleanup_summary': cleanup_summary,
+    })
