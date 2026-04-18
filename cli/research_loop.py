@@ -17,7 +17,7 @@ from cli.research_compare import (
 from cli.research_metrics import NUMERIC_COLUMNS, normalize_trade_frame
 from cli.research_promotion import evaluate_research_candidate
 from cli.research_report import build_research_report
-from cli.strategy_generator import generate_buy_filter_strategy, save_strategy_to_db
+from cli.strategy_generator import delete_strategy_from_db, generate_buy_filter_strategy, save_strategy_to_db
 from cli.strategy_loader import load_strategy_from_db
 
 
@@ -51,6 +51,11 @@ class ResearchLoopConfig:
     quantiles: int = 10
     alpha: float = 0.05
     run_candidate: bool = True
+    candidate_start_date: int | None = None
+    candidate_end_date: int | None = None
+    candidate_timeout: int | None = None
+    candidate_plan_only: bool = False
+    keep_failed_candidate: bool = False
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -72,7 +77,72 @@ def _base_config_dict(config: ResearchLoopConfig) -> dict:
 def _candidate_config_dict(config: ResearchLoopConfig) -> dict:
     candidate = _base_config_dict(config)
     candidate['buy_strategy'] = config.name
+    candidate['start_date'] = _candidate_start_date(config)
+    candidate['end_date'] = _candidate_end_date(config)
+    if config.candidate_timeout is not None:
+        candidate['timeout'] = config.candidate_timeout
     return candidate
+
+
+def _candidate_start_date(config: ResearchLoopConfig) -> int:
+    return config.start_date if config.candidate_start_date is None else config.candidate_start_date
+
+
+def _candidate_end_date(config: ResearchLoopConfig) -> int:
+    return config.end_date if config.candidate_end_date is None else config.candidate_end_date
+
+
+def _build_candidate_plan(config: ResearchLoopConfig, candidate: dict) -> dict:
+    """Build a stable plan describing candidate execution before side effects."""
+    will_save = bool(config.run_candidate and not config.candidate_plan_only)
+    return {
+        'strategy_name': config.name,
+        'base_buy_strategy': config.base_buy_strategy,
+        'sell_strategy': config.sell_strategy,
+        'expression': candidate.get('expression'),
+        'expressions': candidate.get('expressions', []),
+        'candidate_start_date': _candidate_start_date(config),
+        'candidate_end_date': _candidate_end_date(config),
+        'candidate_timeout': config.candidate_timeout,
+        'will_save_strategy': will_save,
+        'will_run_backtest': will_save,
+        'keep_failed_candidate': config.keep_failed_candidate,
+    }
+
+
+def _candidate_failure_phase(candidate_result: dict) -> str:
+    message = str(candidate_result.get('message') or '')
+    if '시간 초과' in message or 'timeout' in message.lower():
+        return 'candidate_backtest_timeout'
+    return 'candidate_backtest'
+
+
+def _cleanup_candidate_strategy(config: ResearchLoopConfig, reason: str) -> dict:
+    """Delete failed candidate strategy unless the user requested preservation."""
+    if config.keep_failed_candidate:
+        return {
+            'attempted': False,
+            'reason': 'keep_failed_candidate',
+            'strategy_name': config.name,
+        }
+    try:
+        result = delete_strategy_from_db(DB_STRATEGY, config.name, 'buy')
+    except Exception as e:
+        return {
+            'attempted': True,
+            'reason': reason,
+            'strategy_name': config.name,
+            'status': 'error',
+            'message': str(e),
+        }
+    return {
+        'attempted': True,
+        'reason': reason,
+        'strategy_name': config.name,
+        'status': result.get('status'),
+        'message': result.get('message'),
+        'action': result.get('action'),
+    }
 
 
 def _error(phase: str, message: str, **extra) -> dict:
@@ -232,14 +302,6 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         if not baseline_csv:
             return _error('baseline_run', 'baseline run did not return csv_path', run_result=baseline_result)
 
-    if config.run_candidate and not config.base_buy_strategy:
-        return _error(
-            'candidate_strategy',
-            'base_buy_strategy is required when run_candidate is True',
-            baseline_csv=baseline_csv,
-            baseline_result=baseline_result,
-        )
-
     analysis_result = analyze_result_csv(
         baseline_csv,
         min_samples=config.min_samples,
@@ -275,6 +337,34 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         'candidate_count': expression_result.get('candidate_count', len(expressions)),
         'selected_candidates': expression_result.get('selected_candidates', []),
     }
+    candidate_plan = _build_candidate_plan(config, candidate)
+
+    if config.candidate_plan_only:
+        return _build_result(config, {
+            'status': 'ok',
+            'phase': 'candidate_plan',
+            'strategy_name': config.name,
+            'config': asdict(config),
+            'baseline_csv': baseline_csv,
+            'candidate_csv': None,
+            'baseline_result': baseline_result,
+            'analysis_result': analysis_result,
+            'expression_result': expression_result,
+            'candidate': candidate,
+            'candidate_plan': candidate_plan,
+            'comparison': None,
+            'promotion': None,
+        })
+
+    if config.run_candidate and not config.base_buy_strategy:
+        return _build_result(config, _error(
+            'candidate_strategy',
+            'base_buy_strategy is required when run_candidate is True',
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+            candidate=candidate,
+            candidate_plan=candidate_plan,
+        ))
 
     if not config.run_candidate:
         return _build_result(config, {
@@ -287,43 +377,62 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
             'analysis_result': analysis_result,
             'expression_result': expression_result,
             'candidate': candidate,
+            'candidate_plan': candidate_plan,
             'comparison': None,
             'promotion': None,
         })
 
     strategy_flow = _prepare_candidate_strategy(config, expressions)
     if strategy_flow.get('status') != 'ok':
-        return {**strategy_flow, 'baseline_csv': baseline_csv}
+        return _build_result(config, {
+            **strategy_flow,
+            'baseline_csv': baseline_csv,
+            'baseline_result': baseline_result,
+            'analysis_result': analysis_result,
+            'expression_result': expression_result,
+            'candidate': candidate,
+            'candidate_plan': candidate_plan,
+        })
     candidate['strategy_result'] = strategy_flow['strategy_result']
     candidate['generated_strategy'] = strategy_flow['generated_strategy']
 
     candidate_result = controller.run(_candidate_config_dict(config))
     if candidate_result.get('status') not in ('ok', 'success'):
-        return _error(
-            'candidate_backtest',
+        phase = _candidate_failure_phase(candidate_result)
+        cleanup = _cleanup_candidate_strategy(config, phase)
+        return _build_result(config, _error(
+            phase,
             candidate_result.get('message', 'candidate run failed'),
             baseline_csv=baseline_csv,
             candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
             run_result=candidate_result,
-        )
+        ))
     candidate_csv = _csv_path_from_run(candidate_result)
     if not candidate_csv:
-        return _error(
+        cleanup = _cleanup_candidate_strategy(config, 'candidate_csv_missing')
+        return _build_result(config, _error(
             'candidate_csv_missing',
             'candidate run did not return csv_path',
             baseline_csv=baseline_csv,
             candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
             run_result=candidate_result,
-        )
+        ))
     if not Path(candidate_csv).exists():
-        return _error(
+        cleanup = _cleanup_candidate_strategy(config, 'candidate_csv_missing')
+        return _build_result(config, _error(
             'candidate_csv_missing',
             f'candidate csv_path does not exist: {candidate_csv}',
             baseline_csv=baseline_csv,
             candidate_csv=candidate_csv,
             candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
             run_result=candidate_result,
-        )
+        ))
 
     try:
         comparison = compare_trade_sets(
@@ -332,13 +441,17 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         )
         promotion = evaluate_research_candidate(comparison)
     except Exception as e:
-        return _error(
+        cleanup = _cleanup_candidate_strategy(config, 'comparison')
+        return _build_result(config, _error(
             'comparison',
             str(e),
             baseline_csv=baseline_csv,
             candidate_csv=candidate_csv,
             candidate=candidate,
-        )
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
+            run_result=candidate_result,
+        ))
 
     return _build_result(config, {
         'status': 'ok',
@@ -351,6 +464,7 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         'analysis_result': analysis_result,
         'expression_result': expression_result,
         'candidate': candidate,
+        'candidate_plan': candidate_plan,
         'comparison': comparison,
         'promotion': promotion,
     })

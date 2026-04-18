@@ -136,6 +136,11 @@ def create_subcommand_parser():
     disc_research.add_argument('--quantiles', type=int, default=10)
     disc_research.add_argument('--alpha', type=float, default=0.05)
     disc_research.add_argument('--run-candidate', action='store_true', default=False)
+    disc_research.add_argument('--candidate-start', type=int)
+    disc_research.add_argument('--candidate-end', type=int)
+    disc_research.add_argument('--candidate-timeout', type=int)
+    disc_research.add_argument('--candidate-plan-only', action='store_true', default=False)
+    disc_research.add_argument('--keep-failed-candidate', action='store_true', default=False)
 
     # discovery promote
     disc_promote = disc_sub.add_parser('promote', help='WFO 통과 전략만 최종 채택')
@@ -641,6 +646,11 @@ def _handle_discovery(parsed):
             'quantiles': parsed.quantiles,
             'alpha': parsed.alpha,
             'run_candidate': parsed.run_candidate,
+            'candidate_start_date': parsed.candidate_start,
+            'candidate_end_date': parsed.candidate_end,
+            'candidate_timeout': parsed.candidate_timeout,
+            'candidate_plan_only': parsed.candidate_plan_only,
+            'keep_failed_candidate': parsed.keep_failed_candidate,
         })
         print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
         return 0 if result.get('status') == 'ok' else 1
