@@ -115,6 +115,36 @@ def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
     assert plan['will_run_backtest'] is False
 
 
+def test_candidate_plan_only_does_not_save_or_run(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+
+    def fail_save(*args, **kwargs):
+        raise AssertionError('save should not be attempted')
+
+    monkeypatch.setattr(research_loop, 'save_strategy_to_db', fail_save)
+
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='PlanOnly',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            run_candidate=True,
+            candidate_plan_only=True,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['phase'] == 'candidate_plan'
+    assert result['candidate_plan']['will_save_strategy'] is False
+    assert result['candidate_plan']['will_run_backtest'] is False
+    assert result['candidate_csv'] is None
+    assert result['comparison'] is None
+    assert result['promotion'] is None
+
+
 def test_research_result_has_no_wfo_payload(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     candidate = tmp_path / 'candidate.csv'

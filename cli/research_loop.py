@@ -308,6 +308,23 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     }
     candidate_plan = _build_candidate_plan(config, candidate)
 
+    if config.candidate_plan_only:
+        return _build_result(config, {
+            'status': 'ok',
+            'phase': 'candidate_plan',
+            'strategy_name': config.name,
+            'config': asdict(config),
+            'baseline_csv': baseline_csv,
+            'candidate_csv': None,
+            'baseline_result': baseline_result,
+            'analysis_result': analysis_result,
+            'expression_result': expression_result,
+            'candidate': candidate,
+            'candidate_plan': candidate_plan,
+            'comparison': None,
+            'promotion': None,
+        })
+
     if not config.run_candidate:
         return _build_result(config, {
             'status': 'ok',
