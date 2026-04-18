@@ -72,6 +72,123 @@ def test_build_research_report_includes_candidate_plan_and_cleanup():
     assert report['cleanup']['action'] == 'deleted'
 
 
+def _iteration_result():
+    result = _result()
+    result.update({
+        'phase': 'candidates_evaluated',
+        'iteration_plan': {
+            'candidate_count': 2,
+            'candidate_name_prefix': 'Batch',
+            'candidate_start_date': 20250101,
+            'candidate_end_date': 20250102,
+            'candidate_timeout': 300,
+            'cleanup_best_candidate': False,
+            'keep_loser_candidates': False,
+        },
+        'candidates': [
+            {
+                'index': 1,
+                'rank': 1,
+                'strategy_name': 'Batch__cand001',
+                'expression': 'strength < 90',
+                'status': 'ok',
+                'comparison': {
+                    'counts': {'candidate': 42},
+                    'trade_count_retention': 0.84,
+                },
+                'promotion': {'passed': True, 'score': 0.73},
+                'cleanup': {
+                    'attempted': False,
+                    'reason': 'best_candidate_kept',
+                    'strategy_name': 'Batch__cand001',
+                },
+                'selected_as_best': True,
+            },
+            {
+                'index': 2,
+                'rank': 2,
+                'strategy_name': 'Batch__cand002',
+                'expression': 'volume > 1000',
+                'status': 'ok',
+                'comparison': {
+                    'counts': {'candidate': 21},
+                    'trade_count_retention': 0.42,
+                },
+                'promotion': {'passed': False, 'score': None},
+                'cleanup': {
+                    'attempted': True,
+                    'reason': 'loser_candidate_deleted',
+                    'strategy_name': 'Batch__cand002',
+                    'status': 'ok',
+                    'action': 'deleted',
+                },
+            },
+        ],
+        'best_candidate': {
+            'rank': 1,
+            'strategy_name': 'Batch__cand001',
+            'expression': 'strength < 90',
+            'status': 'ok',
+            'promotion': {'passed': True, 'score': 0.73},
+        },
+        'cleanup_summary': {
+            'attempted_count': 1,
+            'deleted_count': 1,
+            'kept_count': 1,
+            'failed_count': 0,
+            'items': [
+                {
+                    'attempted': False,
+                    'reason': 'best_candidate_kept',
+                    'strategy_name': 'Batch__cand001',
+                },
+                {
+                    'attempted': True,
+                    'reason': 'loser_candidate_deleted',
+                    'strategy_name': 'Batch__cand002',
+                    'status': 'ok',
+                    'action': 'deleted',
+                },
+            ],
+        },
+    })
+    return result
+
+
+def test_build_research_report_includes_iteration_fields():
+    report = build_research_report(_iteration_result(), strategy_name='Batch')
+
+    assert report['phase'] == 'candidates_evaluated'
+    assert report['iteration_plan']['candidate_count'] == 2
+    assert report['candidates'][0]['strategy_name'] == 'Batch__cand001'
+    assert report['best_candidate']['strategy_name'] == 'Batch__cand001'
+    assert report['cleanup_summary']['deleted_count'] == 1
+
+
+def test_render_research_report_markdown_contains_iteration_sections():
+    markdown = render_research_report_markdown(build_research_report(_iteration_result(), strategy_name='Batch'))
+
+    assert '## Candidate Iteration' in markdown
+    assert '## Candidate Ranking' in markdown
+    assert '## Cleanup Summary' in markdown
+    assert '| rank | strategy | expression | status | passed | score | trade_count | retention | cleanup |' in markdown
+    assert 'Batch__cand001' in markdown
+    assert 'strength < 90' in markdown
+    assert 'loser_candidate_deleted' in markdown
+
+    all_failed = _iteration_result()
+    all_failed['phase'] = 'candidate_iteration'
+    all_failed['best_candidate'] = None
+    all_failed['candidates'][0]['rank'] = None
+    all_failed['candidates'][0]['promotion'] = None
+    all_failed['candidates'][0]['comparison'] = None
+    all_failed['cleanup_summary']['items'].append(None)
+
+    failed_markdown = render_research_report_markdown(build_research_report(all_failed, strategy_name='Batch'))
+
+    assert '## Candidate Ranking' in failed_markdown
+
+
 def test_render_research_report_markdown_contains_trade_set_sections():
     markdown = render_research_report_markdown(build_research_report(_result(), strategy_name='AutoResearch'))
     assert '# 조건식 연구 리포트: AutoResearch' in markdown

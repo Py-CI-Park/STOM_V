@@ -29,6 +29,7 @@ def build_research_report(result: dict, strategy_name: str | None = None) -> dic
         'status': result.get('status'),
         'baseline_csv': result.get('baseline_csv'),
         'candidate_csv': result.get('candidate_csv'),
+        'phase': result.get('phase'),
         'candidate_expression': candidate.get('expression'),
         'candidate_reason': candidate.get('reason'),
         'trade_counts': comparison.get('counts', {}),
@@ -41,6 +42,10 @@ def build_research_report(result: dict, strategy_name: str | None = None) -> dic
         'promotion': result.get('promotion'),
         'candidate_plan': result.get('candidate_plan'),
         'cleanup': result.get('cleanup'),
+        'iteration_plan': result.get('iteration_plan'),
+        'candidates': result.get('candidates'),
+        'best_candidate': result.get('best_candidate'),
+        'cleanup_summary': result.get('cleanup_summary'),
     }
 
 
@@ -58,6 +63,108 @@ def _normalize_json_value(value):
     if isinstance(value, (list, tuple)):
         return [_normalize_json_value(item) for item in value]
     return value
+
+
+def _format_markdown_value(value) -> str:
+    if value is None:
+        return ''
+    return str(value).replace('|', '\\|').replace('\n', ' ')
+
+
+def _candidate_trade_count(candidate: dict):
+    comparison = candidate.get('comparison') or {}
+    counts = comparison.get('counts') or {}
+    rank_score = candidate.get('rank_score') or {}
+    return counts.get('candidate', rank_score.get('trade_count'))
+
+
+def _candidate_retention(candidate: dict):
+    comparison = candidate.get('comparison') or {}
+    rank_score = candidate.get('rank_score') or {}
+    return comparison.get('trade_count_retention', rank_score.get('trade_count_retention'))
+
+
+def _candidate_cleanup_label(candidate: dict) -> str:
+    cleanup = candidate.get('cleanup') or {}
+    parts = [
+        cleanup.get('reason'),
+        cleanup.get('action'),
+        cleanup.get('status'),
+    ]
+    return ', '.join(str(part) for part in parts if part is not None)
+
+
+def _append_candidate_iteration_sections(lines: list[str], report: dict) -> None:
+    iteration_plan = report.get('iteration_plan') or {}
+    candidates = report.get('candidates') or []
+    best_candidate = report.get('best_candidate') or {}
+    cleanup_summary = report.get('cleanup_summary') or {}
+
+    if not (iteration_plan or candidates):
+        return
+
+    lines.extend(['', '## Candidate Iteration'])
+    lines.append(f"- phase: {report.get('phase')}")
+    if iteration_plan:
+        for key in (
+            'candidate_count',
+            'effective_top_n',
+            'candidate_name_prefix',
+            'candidate_start_date',
+            'candidate_end_date',
+            'candidate_timeout',
+            'cleanup_best_candidate',
+            'keep_loser_candidates',
+            'keep_failed_candidate',
+        ):
+            if key in iteration_plan:
+                lines.append(f"- {key}: {iteration_plan.get(key)}")
+    else:
+        lines.append("- iteration_plan: none")
+    if best_candidate:
+        lines.append(f"- best_candidate: {best_candidate.get('strategy_name')}")
+        lines.append(f"- best_expression: `{best_candidate.get('expression')}`")
+
+    lines.extend([
+        '',
+        '## Candidate Ranking',
+        '| rank | strategy | expression | status | passed | score | trade_count | retention | cleanup |',
+        '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    ])
+    if candidates:
+        for candidate in candidates:
+            promotion = candidate.get('promotion') or {}
+            row = [
+                candidate.get('rank'),
+                candidate.get('strategy_name'),
+                candidate.get('expression'),
+                candidate.get('status'),
+                promotion.get('passed'),
+                promotion.get('score'),
+                _candidate_trade_count(candidate),
+                _candidate_retention(candidate),
+                _candidate_cleanup_label(candidate),
+            ]
+            lines.append('| ' + ' | '.join(_format_markdown_value(value) for value in row) + ' |')
+    else:
+        lines.append('|  |  |  |  |  |  |  |  |  |')
+
+    lines.extend(['', '## Cleanup Summary'])
+    if cleanup_summary:
+        for key in ('attempted_count', 'deleted_count', 'kept_count', 'failed_count'):
+            if key in cleanup_summary:
+                lines.append(f"- {key}: {cleanup_summary.get(key)}")
+        for item in cleanup_summary.get('items') or []:
+            item = item or {}
+            strategy_name = item.get('strategy_name')
+            reason = item.get('reason')
+            status = item.get('status')
+            action = item.get('action')
+            lines.append(
+                f"- {strategy_name}: reason={reason}, status={status}, action={action}"
+            )
+    else:
+        lines.append("- none")
 
 
 def render_research_report_markdown(report: dict) -> str:
@@ -101,6 +208,8 @@ def render_research_report_markdown(report: dict) -> str:
             lines.append(f"- cleanup action: {cleanup.get('action')}")
         if cleanup.get('message'):
             lines.append(f"- cleanup message: {cleanup.get('message')}")
+
+    _append_candidate_iteration_sections(lines, report)
 
     lines.extend([
         '',

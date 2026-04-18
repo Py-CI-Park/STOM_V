@@ -799,14 +799,18 @@ class AIBacktestController:
         try:
             from dataclasses import fields
 
-            from cli.research_loop import ResearchLoopConfig, run_research_once
+            from cli.research_loop import ResearchLoopConfig, run_research_iteration, run_research_once
 
             config_dict = config_dict or {}
+            if config_dict.get('run_candidates') is True and 'run_candidate' not in config_dict:
+                config_dict = {**config_dict, 'run_candidate': False}
             allowed_fields = {field.name for field in fields(ResearchLoopConfig)}
             config = ResearchLoopConfig(**{
                 key: value for key, value in config_dict.items()
                 if key in allowed_fields
             })
+            if config.run_candidates:
+                return run_research_iteration(config, self)
             return run_research_once(config, self)
         except Exception as e:
             return {'status': 'error', 'phase': 'research_loop', 'message': str(e)}
