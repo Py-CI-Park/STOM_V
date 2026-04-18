@@ -488,6 +488,17 @@ def test_rank_candidate_results_prefers_promotion_pass_then_score():
     assert ranked[5]['rank'] == 1
     assert ranked[5]['selected_as_best'] is True
     assert ranked[0]['selected_as_best'] is False
+    assert isinstance(best['rank_score'], dict)
+    assert best['rank_score'] == {
+        'promotion_passed': True,
+        'promotion_score': 10.0,
+        'trade_count': 30.0,
+        'trade_count_retention': 0.5,
+        'date_concentration': 0.2,
+        'symbol_concentration': 0.1,
+    }
+    assert ranked[0]['rank_score']['promotion_score'] == 100.0
+    assert ranked[0]['rank_score']['trade_count'] == 100.0
 
 
 def test_iteration_cleanup_deletes_losers_and_keeps_best(monkeypatch):
@@ -501,6 +512,17 @@ def test_iteration_cleanup_deletes_losers_and_keeps_best(monkeypatch):
     candidates = [
         {'strategy_name': 'Batch__cand001', 'status': 'ok', 'selected_as_best': True, 'cleanup': None},
         {'strategy_name': 'Batch__cand002', 'status': 'ok', 'selected_as_best': False, 'cleanup': None},
+        {
+            'strategy_name': 'Batch__cand003',
+            'status': 'error',
+            'selected_as_best': False,
+            'cleanup': {
+                'attempted': True,
+                'reason': 'candidate_backtest',
+                'strategy_name': 'Batch__cand003',
+                'status': 'error',
+            },
+        },
     ]
 
     updated, summary = research_loop._apply_iteration_cleanup(config, candidates)
@@ -509,8 +531,13 @@ def test_iteration_cleanup_deletes_losers_and_keeps_best(monkeypatch):
     assert updated[0]['cleanup']['reason'] == 'best_candidate_kept'
     assert updated[0]['cleanup']['attempted'] is False
     assert updated[1]['cleanup']['reason'] == 'loser_candidate_deleted'
+    assert updated[2]['cleanup']['reason'] == 'candidate_backtest'
+    assert set(summary) == {'attempted_count', 'deleted_count', 'kept_count', 'failed_count', 'items'}
+    assert summary['attempted_count'] == 2
     assert summary['deleted_count'] == 1
     assert summary['kept_count'] == 1
+    assert summary['failed_count'] == 1
+    assert summary['items'] == [candidate['cleanup'] for candidate in updated]
 
 
 def test_iteration_cleanup_can_delete_best(monkeypatch):
@@ -533,8 +560,12 @@ def test_iteration_cleanup_can_delete_best(monkeypatch):
     assert cleanup_calls == ['Batch__cand001', 'Batch__cand002']
     assert updated[0]['cleanup']['reason'] == 'best_candidate_deleted'
     assert updated[1]['cleanup']['reason'] == 'loser_candidate_deleted'
+    assert set(summary) == {'attempted_count', 'deleted_count', 'kept_count', 'failed_count', 'items'}
+    assert summary['attempted_count'] == 2
     assert summary['deleted_count'] == 2
     assert summary['kept_count'] == 0
+    assert summary['failed_count'] == 0
+    assert summary['items'] == [candidate['cleanup'] for candidate in updated]
 
 
 def test_iteration_cleanup_can_keep_losers(monkeypatch):
@@ -557,8 +588,12 @@ def test_iteration_cleanup_can_keep_losers(monkeypatch):
     assert cleanup_calls == []
     assert updated[0]['cleanup']['reason'] == 'best_candidate_kept'
     assert updated[1]['cleanup']['reason'] == 'loser_candidate_kept'
+    assert set(summary) == {'attempted_count', 'deleted_count', 'kept_count', 'failed_count', 'items'}
+    assert summary['attempted_count'] == 0
     assert summary['deleted_count'] == 0
     assert summary['kept_count'] == 2
+    assert summary['failed_count'] == 0
+    assert summary['items'] == [candidate['cleanup'] for candidate in updated]
 
 
 def test_run_research_iteration_returns_error_when_all_candidates_fail(monkeypatch, tmp_path):
@@ -591,7 +626,8 @@ def test_run_research_iteration_returns_error_when_all_candidates_fail(monkeypat
     assert result['phase'] == 'candidate_iteration'
     assert result['best_candidate'] is None
     assert len(result['candidates']) == 2
-    assert result['cleanup_summary']['existing_count'] == 2
+    assert set(result['cleanup_summary']) == {'attempted_count', 'deleted_count', 'kept_count', 'failed_count', 'items'}
+    assert len(result['cleanup_summary']['items']) == 2
 
 
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):

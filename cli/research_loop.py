@@ -525,23 +525,36 @@ def _numeric_value(value, default: float = 0.0) -> float:
         return default
 
 
-def _rank_score(candidate: dict) -> float:
-    promotion = candidate.get('promotion') or {}
-    return _numeric_value(promotion.get('score'))
-
-
-def _rank_key(candidate: dict) -> tuple:
+def _rank_score(candidate: dict) -> dict:
     promotion = candidate.get('promotion') or {}
     comparison = candidate.get('comparison') or {}
     candidate_summary = comparison.get('candidate_summary') or {}
-    passed_rank = 0 if promotion.get('passed') is True else 1
+    return {
+        'promotion_passed': promotion.get('passed') is True,
+        'promotion_score': _numeric_value(promotion.get('score')),
+        'trade_count': _numeric_value(candidate_summary.get('trade_count')),
+        'trade_count_retention': _numeric_value(comparison.get('trade_count_retention')),
+        'date_concentration': _numeric_value(
+            candidate_summary.get('date_concentration'),
+            default=float('inf'),
+        ),
+        'symbol_concentration': _numeric_value(
+            candidate_summary.get('symbol_concentration'),
+            default=float('inf'),
+        ),
+    }
+
+
+def _rank_key(candidate: dict) -> tuple:
+    rank_score = _rank_score(candidate)
+    passed_rank = 0 if rank_score['promotion_passed'] else 1
     return (
         passed_rank,
-        -_rank_score(candidate),
-        -_numeric_value(candidate_summary.get('trade_count')),
-        -_numeric_value(comparison.get('trade_count_retention')),
-        _numeric_value(candidate_summary.get('date_concentration'), default=float('inf')),
-        _numeric_value(candidate_summary.get('symbol_concentration'), default=float('inf')),
+        -rank_score['promotion_score'],
+        -rank_score['trade_count'],
+        -rank_score['trade_count_retention'],
+        rank_score['date_concentration'],
+        rank_score['symbol_concentration'],
         int(candidate.get('index') or 0),
     )
 
@@ -597,21 +610,19 @@ def _cleanup_candidate_by_name(strategy_name: str, reason: str) -> dict:
 
 def _cleanup_summary(candidates: list[dict]) -> dict:
     summary = {
-        'total_count': len(candidates),
         'attempted_count': 0,
         'deleted_count': 0,
         'kept_count': 0,
-        'existing_count': 0,
-        'error_count': 0,
+        'failed_count': 0,
+        'items': [],
     }
     for candidate in candidates:
         cleanup = candidate.get('cleanup') or {}
-        if cleanup.get('existing') is True:
-            summary['existing_count'] += 1
+        summary['items'].append(cleanup)
         if cleanup.get('attempted') is True:
             summary['attempted_count'] += 1
             if cleanup.get('status') == 'error':
-                summary['error_count'] += 1
+                summary['failed_count'] += 1
             elif cleanup.get('action') == 'deleted' or str(cleanup.get('reason', '')).endswith('_deleted'):
                 summary['deleted_count'] += 1
         elif cleanup:
