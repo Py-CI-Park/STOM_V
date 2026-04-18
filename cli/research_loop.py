@@ -79,9 +79,9 @@ def _base_config_dict(config: ResearchLoopConfig) -> dict:
     }
 
 
-def _candidate_config_dict(config: ResearchLoopConfig) -> dict:
+def _candidate_config_dict(config: ResearchLoopConfig, strategy_name: str | None = None) -> dict:
     candidate = _base_config_dict(config)
-    candidate['buy_strategy'] = config.name
+    candidate['buy_strategy'] = strategy_name or config.name
     candidate['start_date'] = _candidate_start_date(config)
     candidate['end_date'] = _candidate_end_date(config)
     if config.candidate_timeout is not None:
@@ -134,11 +134,20 @@ def _build_candidate_specs(config: ResearchLoopConfig, expression_result: dict) 
     return specs
 
 
-def _build_candidate_plan(config: ResearchLoopConfig, candidate: dict) -> dict:
+def _build_candidate_plan(
+    config: ResearchLoopConfig,
+    candidate: dict,
+    strategy_name: str | None = None,
+    will_save_override: bool | None = None,
+) -> dict:
     """Build a stable plan describing candidate execution before side effects."""
-    will_save = bool(config.run_candidate and not config.candidate_plan_only)
+    will_save = (
+        will_save_override
+        if will_save_override is not None
+        else bool(config.run_candidate and not config.candidate_plan_only)
+    )
     return {
-        'strategy_name': config.name,
+        'strategy_name': strategy_name or config.name,
         'base_buy_strategy': config.base_buy_strategy,
         'sell_strategy': config.sell_strategy,
         'expression': candidate.get('expression'),
@@ -159,28 +168,33 @@ def _candidate_failure_phase(candidate_result: dict) -> str:
     return 'candidate_backtest'
 
 
-def _cleanup_candidate_strategy(config: ResearchLoopConfig, reason: str) -> dict:
+def _cleanup_candidate_strategy(
+    config: ResearchLoopConfig,
+    reason: str,
+    strategy_name: str | None = None,
+) -> dict:
     """Delete failed candidate strategy unless the user requested preservation."""
+    candidate_name = strategy_name or config.name
     if config.keep_failed_candidate:
         return {
             'attempted': False,
             'reason': 'keep_failed_candidate',
-            'strategy_name': config.name,
+            'strategy_name': candidate_name,
         }
     try:
-        result = delete_strategy_from_db(DB_STRATEGY, config.name, 'buy')
+        result = delete_strategy_from_db(DB_STRATEGY, candidate_name, 'buy')
     except Exception as e:
         return {
             'attempted': True,
             'reason': reason,
-            'strategy_name': config.name,
+            'strategy_name': candidate_name,
             'status': 'error',
             'message': str(e),
         }
     return {
         'attempted': True,
         'reason': reason,
-        'strategy_name': config.name,
+        'strategy_name': candidate_name,
         'status': result.get('status'),
         'message': result.get('message'),
         'action': result.get('action'),
@@ -284,13 +298,46 @@ def _candidate_reason(expression_result: dict) -> str:
     return 'analysis_candidate=unavailable'
 
 
-def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[str]) -> dict:
+def _candidate_from_spec(spec: dict) -> dict:
+    source_candidate = spec.get('source_candidate')
+    return {
+        'expression': spec.get('expression'),
+        'expressions': spec.get('expressions') or [],
+        'reason': _format_candidate_reason(source_candidate)
+        or f"analysis_candidate={spec.get('expression')}",
+        'candidate_count': 1,
+        'selected_candidates': [source_candidate] if source_candidate else [],
+    }
+
+
+def _candidate_item_error(spec: dict, phase: str, message: str, **extra) -> dict:
+    item = {
+        'index': spec.get('index'),
+        'strategy_name': spec.get('strategy_name'),
+        'expression': spec.get('expression'),
+        'status': 'error',
+        'phase': phase,
+        'message': message,
+        'rank': None,
+        'rank_score': None,
+        'selected_as_best': False,
+    }
+    item.update(extra)
+    return item
+
+
+def _prepare_candidate_strategy(
+    config: ResearchLoopConfig,
+    expressions: list[str],
+    strategy_name: str | None = None,
+) -> dict:
+    candidate_name = strategy_name or config.name
     if not config.base_buy_strategy:
         return _error(
             'candidate_strategy',
             'base_buy_strategy is required when run_candidate is True',
         )
-    if config.name == config.base_buy_strategy:
+    if candidate_name == config.base_buy_strategy:
         return _error(
             'candidate_name_conflict',
             'name must differ from base_buy_strategy to preserve the base strategy',
@@ -304,11 +351,11 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
             base_strategy_result=base_result,
         )
 
-    candidate_name_result = load_strategy_from_db(DB_STRATEGY, config.name, 'buy')
+    candidate_name_result = load_strategy_from_db(DB_STRATEGY, candidate_name, 'buy')
     if candidate_name_result.get('status') == 'ok':
         return _error(
             'candidate_name_conflict',
-            f"candidate buy strategy '{config.name}' already exists",
+            f"candidate buy strategy '{candidate_name}' already exists",
             candidate_strategy_result=candidate_name_result,
         )
     if not _is_strategy_not_found(candidate_name_result):
@@ -319,7 +366,7 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
         )
 
     strategy_result = generate_buy_filter_strategy(
-        config.name,
+        candidate_name,
         base_result.get('code', ''),
         expressions,
     )
@@ -332,7 +379,7 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
 
     save_result = save_strategy_to_db(
         DB_STRATEGY,
-        config.name,
+        candidate_name,
         strategy_result.get('code', ''),
         'buy',
     )
@@ -348,6 +395,124 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
         'base_strategy_result': base_result,
         'generated_strategy': strategy_result,
         'strategy_result': save_result,
+    }
+
+
+def _execute_candidate_spec(
+    config: ResearchLoopConfig,
+    spec: dict,
+    controller,
+    baseline_csv: str,
+) -> dict:
+    strategy_name = spec['strategy_name']
+    candidate = _candidate_from_spec(spec)
+    candidate_plan = _build_candidate_plan(
+        config,
+        candidate,
+        strategy_name=strategy_name,
+        will_save_override=True,
+    )
+
+    strategy_flow = _prepare_candidate_strategy(
+        config,
+        spec['expressions'],
+        strategy_name=strategy_name,
+    )
+    if strategy_flow.get('status') != 'ok':
+        return _candidate_item_error(
+            spec,
+            strategy_flow.get('phase', 'candidate_strategy'),
+            strategy_flow.get('message', 'failed to prepare candidate strategy'),
+            candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=None,
+            strategy_flow=strategy_flow,
+        )
+    candidate['strategy_result'] = strategy_flow['strategy_result']
+    candidate['generated_strategy'] = strategy_flow['generated_strategy']
+
+    candidate_result = controller.run(_candidate_config_dict(config, strategy_name=strategy_name))
+    if candidate_result.get('status') not in ('ok', 'success'):
+        phase = _candidate_failure_phase(candidate_result)
+        cleanup = _cleanup_candidate_strategy(config, phase, strategy_name=strategy_name)
+        return _candidate_item_error(
+            spec,
+            phase,
+            candidate_result.get('message', 'candidate run failed'),
+            candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
+            candidate_result=candidate_result,
+        )
+
+    candidate_csv = _csv_path_from_run(candidate_result)
+    if not candidate_csv:
+        cleanup = _cleanup_candidate_strategy(
+            config,
+            'candidate_csv_missing',
+            strategy_name=strategy_name,
+        )
+        return _candidate_item_error(
+            spec,
+            'candidate_csv_missing',
+            'candidate run did not return csv_path',
+            candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
+            candidate_result=candidate_result,
+        )
+    if not Path(candidate_csv).exists():
+        cleanup = _cleanup_candidate_strategy(
+            config,
+            'candidate_csv_missing',
+            strategy_name=strategy_name,
+        )
+        return _candidate_item_error(
+            spec,
+            'candidate_csv_missing',
+            f'candidate csv_path does not exist: {candidate_csv}',
+            candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
+            candidate_csv=candidate_csv,
+            candidate_result=candidate_result,
+        )
+
+    try:
+        comparison = compare_trade_sets(
+            _trade_frame_for_compare(baseline_csv),
+            _trade_frame_for_compare(candidate_csv),
+        )
+        promotion = evaluate_research_candidate(comparison)
+    except Exception as e:
+        cleanup = _cleanup_candidate_strategy(config, 'comparison', strategy_name=strategy_name)
+        return _candidate_item_error(
+            spec,
+            'comparison',
+            str(e),
+            candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
+            candidate_csv=candidate_csv,
+            candidate_result=candidate_result,
+        )
+
+    return {
+        'index': spec.get('index'),
+        'strategy_name': strategy_name,
+        'expression': spec.get('expression'),
+        'status': 'ok',
+        'phase': 'candidate_evaluated',
+        'candidate': candidate,
+        'candidate_plan': candidate_plan,
+        'candidate_csv': candidate_csv,
+        'candidate_result': candidate_result,
+        'comparison': comparison,
+        'promotion': promotion,
+        'rank': None,
+        'rank_score': None,
+        'selected_as_best': False,
+        'cleanup': None,
     }
 
 

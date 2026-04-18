@@ -219,6 +219,107 @@ def test_build_candidate_specs_uses_one_expression_per_candidate():
     assert custom_specs[0]['strategy_name'] == 'CustomPrefix__cand001'
 
 
+def test_execute_candidate_spec_uses_spec_strategy_name_and_single_expression(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate_csv = tmp_path / 'candidate.csv'
+    _write_trade_csv(baseline, name='A')
+    _write_trade_csv(candidate_csv, name='B')
+    generated = []
+    saved = []
+
+    def fake_load(db_path, name, strategy_type):
+        if name == 'BaseBuy':
+            return {'status': 'ok', 'code': 'buy = True\nif buy:\n    self.Buy()', 'name': name}
+        return {'status': 'error', 'message': 'strategy not found', 'name': name}
+
+    def fake_generate(name, base_code, expressions):
+        generated.append((name, expressions))
+        return {'status': 'ok', 'code': base_code + '\n# filter', 'name': name}
+
+    monkeypatch.setattr(research_loop, 'load_strategy_from_db', fake_load)
+    monkeypatch.setattr(research_loop, 'generate_buy_filter_strategy', fake_generate)
+    monkeypatch.setattr(
+        research_loop,
+        'save_strategy_to_db',
+        lambda db_path, name, code, strategy_type: saved.append(name) or {'status': 'ok', 'name': name, 'action': 'created'},
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'compare_trade_sets',
+        lambda *args, **kwargs: {'candidate_summary': {'trade_count': 1}, 'trade_count_retention': 1.0},
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'evaluate_research_candidate',
+        lambda comparison: {'status': 'ok', 'passed': True, 'score': 10.0},
+    )
+
+    spec = {
+        'index': 1,
+        'strategy_name': 'Batch__cand001',
+        'expression': 'strength < 90',
+        'expressions': ['strength < 90'],
+        'source_candidate': {'source': 'ttest', 'feature': 'B_strength', 'count': 50},
+    }
+    controller = DummyController(str(candidate_csv))
+
+    result = research_loop._execute_candidate_spec(
+        ResearchLoopConfig(name='Batch', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        spec,
+        controller,
+        str(baseline),
+    )
+
+    assert generated == [('Batch__cand001', ['strength < 90'])]
+    assert saved == ['Batch__cand001']
+    assert controller.runs[0]['buy_strategy'] == 'Batch__cand001'
+    assert result['status'] == 'ok'
+    assert result['phase'] == 'candidate_evaluated'
+    assert result['strategy_name'] == 'Batch__cand001'
+    assert result['candidate_plan']['strategy_name'] == 'Batch__cand001'
+    assert result['promotion']['status'] == 'ok'
+    assert result['rank'] is None
+    assert result['rank_score'] is None
+    assert result['selected_as_best'] is False
+    assert result['cleanup'] is None
+
+
+def test_execute_candidate_spec_timeout_returns_candidate_item_and_cleanup(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_strategy_success(monkeypatch)
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'name': name, 'action': 'deleted'},
+    )
+
+    spec = {
+        'index': 2,
+        'strategy_name': 'Batch__cand002',
+        'expression': 'amount <= 3000',
+        'expressions': ['amount <= 3000'],
+        'source_candidate': None,
+    }
+    controller = DummyController(str(baseline), status='error', message='candidate timeout after 120s')
+
+    result = research_loop._execute_candidate_spec(
+        ResearchLoopConfig(name='Batch', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        spec,
+        controller,
+        str(baseline),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_backtest_timeout'
+    assert result['strategy_name'] == 'Batch__cand002'
+    assert result['candidate_plan']['strategy_name'] == 'Batch__cand002'
+    assert result['cleanup']['attempted'] is True
+    assert result['cleanup']['strategy_name'] == 'Batch__cand002'
+    assert cleanup_calls == ['Batch__cand002']
+
+
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     _write_trade_csv(baseline)
