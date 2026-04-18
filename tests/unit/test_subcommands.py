@@ -133,6 +133,44 @@ def test_discovery_research_parser_accepts_candidate_runtime_options():
     assert args.keep_failed_candidate is True
 
 
+def test_discovery_research_parser_accepts_iteration_options():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'AutoResearchIteration',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+        '--run-candidates',
+        '--candidate-count', '5',
+        '--candidate-name-prefix', 'ResearchBatch',
+        '--cleanup-best-candidate',
+        '--keep-loser-candidates',
+    ])
+
+    assert args.run_candidates is True
+    assert args.candidate_count == 5
+    assert args.candidate_name_prefix == 'ResearchBatch'
+    assert args.cleanup_best_candidate is True
+    assert args.keep_loser_candidates is True
+
+
+def test_discovery_research_parser_rejects_conflicting_candidate_modes():
+    parser = create_subcommand_parser()
+    with pytest.raises(SystemExit):
+        parser.parse_args([
+            'discovery', 'research',
+            'AutoResearchConflict',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidate',
+            '--run-candidates',
+        ])
+
+
 def test_discovery_research_handler_passes_candidate_runtime_options():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearchRuntime'}}
@@ -157,6 +195,32 @@ def test_discovery_research_handler_passes_candidate_runtime_options():
     assert payload['candidate_timeout'] == 300
     assert payload['candidate_plan_only'] is True
     assert payload['keep_failed_candidate'] is True
+
+
+def test_discovery_research_handler_passes_iteration_options():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok', 'phase': 'candidates_evaluated'}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'AutoResearchIteration',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidates',
+            '--candidate-count', '5',
+            '--candidate-name-prefix', 'ResearchBatch',
+            '--cleanup-best-candidate',
+            '--keep-loser-candidates',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert exit_code == 0
+    assert payload['run_candidates'] is True
+    assert payload['candidate_count'] == 5
+    assert payload['candidate_name_prefix'] == 'ResearchBatch'
+    assert payload['cleanup_best_candidate'] is True
+    assert payload['keep_loser_candidates'] is True
 
 
 def test_discovery_research_handler_returns_nonzero_on_error_status():

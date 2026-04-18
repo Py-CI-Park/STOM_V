@@ -24,6 +24,37 @@ def controller(tmp_history_db):
     return AIBacktestController(history_db_path=tmp_history_db)
 
 
+def test_research_strategy_once_routes_iteration(monkeypatch):
+    from cli.research_loop import ResearchLoopConfig
+
+    calls = {}
+
+    def fake_iteration(config, controller):
+        calls['config'] = config
+        calls['controller'] = controller
+        return {'status': 'ok', 'phase': 'candidates_evaluated'}
+
+    monkeypatch.setattr('cli.research_loop.run_research_iteration', fake_iteration)
+    monkeypatch.setattr(
+        'cli.research_loop.run_research_once',
+        lambda config, controller: {'status': 'error', 'phase': 'wrong_route'},
+    )
+
+    controller = AIBacktestController()
+    result = controller.research_strategy_once({
+        'name': 'IterationRoute',
+        'run_candidates': True,
+        'candidate_count': 3,
+    })
+
+    assert result['phase'] == 'candidates_evaluated'
+    assert isinstance(calls['config'], ResearchLoopConfig)
+    assert calls['config'].run_candidates is True
+    assert calls['config'].run_candidate is False
+    assert calls['config'].candidate_count == 3
+    assert calls['controller'] is controller
+
+
 # === list_strategies ===
 
 class TestListStrategies:

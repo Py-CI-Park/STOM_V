@@ -51,6 +51,11 @@ class ResearchLoopConfig:
     quantiles: int = 10
     alpha: float = 0.05
     run_candidate: bool = True
+    run_candidates: bool = False
+    candidate_count: int = 5
+    candidate_name_prefix: str | None = None
+    cleanup_best_candidate: bool = False
+    keep_loser_candidates: bool = False
     candidate_start_date: int | None = None
     candidate_end_date: int | None = None
     candidate_timeout: int | None = None
@@ -147,6 +152,25 @@ def _cleanup_candidate_strategy(config: ResearchLoopConfig, reason: str) -> dict
 
 def _error(phase: str, message: str, **extra) -> dict:
     return {'status': 'error', 'phase': phase, 'message': message, **extra}
+
+
+def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
+    if config.candidate_plan_only and config.run_candidates:
+        return _error(
+            'candidate_plan_only_iteration_conflict',
+            'candidate_plan_only cannot be used with run_candidates',
+        )
+    if config.candidate_count < 1:
+        return _error(
+            'invalid_candidate_count',
+            'candidate_count must be greater than or equal to 1',
+        )
+    if config.run_candidate and config.run_candidates:
+        return _error(
+            'run_candidate_and_run_candidates_conflict',
+            'run_candidate and run_candidates cannot both be true',
+        )
+    return {'status': 'ok'}
 
 
 def _csv_path_from_run(result: dict) -> str | None:
@@ -292,6 +316,10 @@ def _prepare_candidate_strategy(config: ResearchLoopConfig, expressions: list[st
 
 def run_research_once(config: ResearchLoopConfig, controller) -> dict:
     """Run one analyze-generate-compare research iteration."""
+    validation = validate_research_iteration_config(config)
+    if validation.get('status') != 'ok':
+        return validation
+
     baseline_result = None
     baseline_csv = config.baseline_csv
     if not baseline_csv:
@@ -468,3 +496,18 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
         'comparison': comparison,
         'promotion': promotion,
     })
+
+
+def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
+    """Placeholder for the multi-candidate research iteration path."""
+    validation = validate_research_iteration_config(config)
+    if validation.get('status') != 'ok':
+        return validation
+
+    return {
+        'status': 'error',
+        'phase': 'candidate_iteration',
+        'message': 'run_candidates iteration is not implemented in this task',
+        'strategy_name': config.name,
+        'config': asdict(config),
+    }

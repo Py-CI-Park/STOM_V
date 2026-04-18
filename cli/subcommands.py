@@ -135,7 +135,13 @@ def create_subcommand_parser():
     disc_research.add_argument('--min-samples', type=int, default=30)
     disc_research.add_argument('--quantiles', type=int, default=10)
     disc_research.add_argument('--alpha', type=float, default=0.05)
-    disc_research.add_argument('--run-candidate', action='store_true', default=False)
+    candidate_mode = disc_research.add_mutually_exclusive_group()
+    candidate_mode.add_argument('--run-candidate', action='store_true', default=False)
+    candidate_mode.add_argument('--run-candidates', action='store_true', default=False)
+    disc_research.add_argument('--candidate-count', type=int, default=5)
+    disc_research.add_argument('--candidate-name-prefix')
+    disc_research.add_argument('--cleanup-best-candidate', action='store_true', default=False)
+    disc_research.add_argument('--keep-loser-candidates', action='store_true', default=False)
     disc_research.add_argument('--candidate-start', type=int)
     disc_research.add_argument('--candidate-end', type=int)
     disc_research.add_argument('--candidate-timeout', type=int)
@@ -646,6 +652,11 @@ def _handle_discovery(parsed):
             'quantiles': parsed.quantiles,
             'alpha': parsed.alpha,
             'run_candidate': parsed.run_candidate,
+            'run_candidates': parsed.run_candidates,
+            'candidate_count': parsed.candidate_count,
+            'candidate_name_prefix': parsed.candidate_name_prefix,
+            'cleanup_best_candidate': parsed.cleanup_best_candidate,
+            'keep_loser_candidates': parsed.keep_loser_candidates,
             'candidate_start_date': parsed.candidate_start,
             'candidate_end_date': parsed.candidate_end,
             'candidate_timeout': parsed.candidate_timeout,

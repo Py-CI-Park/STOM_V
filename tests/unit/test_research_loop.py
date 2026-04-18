@@ -82,6 +82,47 @@ def test_research_loop_config_has_candidate_runtime_fields():
     assert 'keep_failed_candidate' in names
 
 
+def test_research_loop_config_has_iteration_fields():
+    names = {field.name for field in fields(ResearchLoopConfig)}
+    assert 'run_candidates' in names
+    assert 'candidate_count' in names
+    assert 'candidate_name_prefix' in names
+    assert 'cleanup_best_candidate' in names
+    assert 'keep_loser_candidates' in names
+
+
+def test_research_loop_rejects_iteration_mode_conflicts(tmp_path):
+    conflict = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='Conflict',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            run_candidate=True,
+            run_candidates=True,
+        )
+    )
+    assert conflict['phase'] == 'run_candidate_and_run_candidates_conflict'
+
+    plan_conflict = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='PlanConflict',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            run_candidates=True,
+            candidate_plan_only=True,
+        )
+    )
+    assert plan_conflict['phase'] == 'candidate_plan_only_iteration_conflict'
+
+    invalid_count = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='InvalidCount',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            run_candidates=True,
+            candidate_count=0,
+        )
+    )
+    assert invalid_count['phase'] == 'invalid_candidate_count'
+
+
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     _write_trade_csv(baseline)
