@@ -300,6 +300,59 @@ AutoResearchIterationPilot_20260418_T6R4__cand002 0
 AutoResearchIterationPilot_20260418_T6R4__cand003 0
 ```
 
+### 최종 보강 후 재검증
+
+최종 리뷰에서 발견된 public controller conflict 처리와 expression 부족 처리 보강 후 동일 조건으로 다시 파일럿을 실행했다.
+
+명령:
+
+```powershell
+$env:STOM_ALLOW_MINIMAL_SETTING='1'
+python stom_backtest.py discovery research AutoResearchIterationPilot_20260418_T6R5 `
+  --input C:\System_Trading\STOM\STOM_V.wt-dev\backtest\csv\stock_bt_Min_B_Study_251227_20260415220536.csv `
+  --base-buy-strategy Min_B_Study_251227 `
+  --sell Min_S_Study_251227 `
+  --start 20250407 `
+  --end 20250418 `
+  --timeframe min `
+  --run-candidates `
+  --candidate-count 3 `
+  --candidate-start 20250407 `
+  --candidate-end 20250418 `
+  --candidate-timeout 180 `
+  --cleanup-best-candidate
+```
+
+결과:
+
+```text
+return_code: 0
+status: ok
+phase: candidates_evaluated
+candidates_count: 3
+best_candidate: AutoResearchIterationPilot_20260418_T6R5__cand001
+best_expression: 시가총액 <= 2793.5
+best_promotion_passed: False
+best_score: 16123.392637215471
+cleanup_summary: attempted_count=3, deleted_count=3, kept_count=0, failed_count=0
+```
+
+후보별 결과:
+
+```text
+rank 1: cand001, trade_count=109, promotion_passed=False, cleanup=best_candidate_deleted/deleted
+rank 2: cand002, trade_count=413, promotion_passed=False, cleanup=loser_candidate_deleted/deleted
+rank 3: cand003, trade_count=469, promotion_passed=False, cleanup=loser_candidate_deleted/deleted
+```
+
+전략 잔여 확인:
+
+```text
+AutoResearchIterationPilot_20260418_T6R5__cand001 0
+AutoResearchIterationPilot_20260418_T6R5__cand002 0
+AutoResearchIterationPilot_20260418_T6R5__cand003 0
+```
+
 ## 남은 리스크
 
 - feature worktree는 기본 checkout 상태에서 ignored 런타임 CSV/DB가 비어 있을 수 있으므로 실제 파일럿 전 `_database`와 기준 CSV 준비가 필요하다.
