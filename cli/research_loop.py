@@ -17,7 +17,7 @@ from cli.research_compare import (
 from cli.research_metrics import NUMERIC_COLUMNS, normalize_trade_frame
 from cli.research_promotion import evaluate_research_candidate
 from cli.research_report import build_research_report
-from cli.strategy_generator import generate_buy_filter_strategy, save_strategy_to_db
+from cli.strategy_generator import delete_strategy_from_db, generate_buy_filter_strategy, save_strategy_to_db
 from cli.strategy_loader import load_strategy_from_db
 
 
@@ -107,6 +107,32 @@ def _build_candidate_plan(config: ResearchLoopConfig, candidate: dict) -> dict:
         'will_save_strategy': will_save,
         'will_run_backtest': will_save,
         'keep_failed_candidate': config.keep_failed_candidate,
+    }
+
+
+def _candidate_failure_phase(candidate_result: dict) -> str:
+    message = str(candidate_result.get('message') or '')
+    if '시간 초과' in message or 'timeout' in message.lower():
+        return 'candidate_backtest_timeout'
+    return 'candidate_backtest'
+
+
+def _cleanup_candidate_strategy(config: ResearchLoopConfig, reason: str) -> dict:
+    """Delete failed candidate strategy unless the user requested preservation."""
+    if config.keep_failed_candidate:
+        return {
+            'attempted': False,
+            'reason': 'keep_failed_candidate',
+            'strategy_name': config.name,
+        }
+    result = delete_strategy_from_db(DB_STRATEGY, config.name, 'buy')
+    return {
+        'attempted': True,
+        'reason': reason,
+        'strategy_name': config.name,
+        'status': result.get('status'),
+        'message': result.get('message'),
+        'action': result.get('action'),
     }
 
 
@@ -353,11 +379,15 @@ def run_research_once(config: ResearchLoopConfig, controller) -> dict:
 
     candidate_result = controller.run(_candidate_config_dict(config))
     if candidate_result.get('status') not in ('ok', 'success'):
+        phase = _candidate_failure_phase(candidate_result)
+        cleanup = _cleanup_candidate_strategy(config, phase)
         return _error(
-            'candidate_backtest',
+            phase,
             candidate_result.get('message', 'candidate run failed'),
             baseline_csv=baseline_csv,
             candidate=candidate,
+            candidate_plan=candidate_plan,
+            cleanup=cleanup,
             run_result=candidate_result,
         )
     candidate_csv = _csv_path_from_run(candidate_result)

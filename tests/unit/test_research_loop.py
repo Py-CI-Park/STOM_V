@@ -7,9 +7,10 @@ from cli.research_loop import ResearchLoopConfig, run_research_once
 
 
 class DummyController:
-    def __init__(self, candidate_csv, status='success'):
+    def __init__(self, candidate_csv, status='success', message='candidate failed'):
         self.candidate_csv = candidate_csv
         self.status = status
+        self.message = message
         self.runs = []
 
     def run(self, config_dict):
@@ -18,7 +19,7 @@ class DummyController:
         if self.candidate_csv is not None:
             result['csv_path'] = self.candidate_csv
         if self.status == 'error':
-            result['message'] = 'candidate failed'
+            result['message'] = self.message
         return result
 
 
@@ -501,6 +502,11 @@ def test_research_loop_returns_candidate_backtest_phase(monkeypatch, tmp_path):
     _write_trade_csv(baseline)
     _patch_analysis_success(monkeypatch)
     _patch_strategy_success(monkeypatch)
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda *args, **kwargs: {'status': 'ok', 'action': 'deleted'},
+    )
 
     result = run_research_once(
         ResearchLoopConfig(name='RunFail', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
@@ -510,6 +516,59 @@ def test_research_loop_returns_candidate_backtest_phase(monkeypatch, tmp_path):
     assert result['status'] == 'error'
     assert result['phase'] == 'candidate_backtest'
     assert 'candidate failed' in result['message']
+
+
+def test_candidate_backtest_timeout_cleans_candidate_by_default(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append((db_path, name, strategy_type)) or {'status': 'ok', 'name': name, 'action': 'deleted'},
+    )
+
+    result = run_research_once(
+        ResearchLoopConfig(name='TimeoutCandidate', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
+        DummyController(str(baseline), status='error', message='백테스트 시간 초과 (300초)'),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_backtest_timeout'
+    assert result['cleanup']['attempted'] is True
+    assert result['cleanup']['status'] == 'ok'
+    assert cleanup_calls[0][1] == 'TimeoutCandidate'
+
+
+def test_keep_failed_candidate_skips_cleanup(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+    _patch_analysis_success(monkeypatch)
+    _patch_strategy_success(monkeypatch)
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda *args, **kwargs: cleanup_calls.append(args) or {'status': 'ok'},
+    )
+
+    result = run_research_once(
+        ResearchLoopConfig(
+            name='KeepFailed',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            keep_failed_candidate=True,
+        ),
+        DummyController(str(baseline), status='error'),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_backtest'
+    assert result['cleanup']['attempted'] is False
+    assert result['cleanup']['reason'] == 'keep_failed_candidate'
+    assert cleanup_calls == []
 
 
 def test_research_loop_returns_candidate_csv_missing_when_run_omits_path(monkeypatch, tmp_path):
