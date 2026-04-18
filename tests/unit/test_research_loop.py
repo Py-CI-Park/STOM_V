@@ -156,6 +156,69 @@ def test_run_research_iteration_normalizes_single_candidate_default():
     assert result['config']['run_candidates'] is True
 
 
+def test_iteration_plan_uses_effective_top_n_and_candidate_prefix(tmp_path):
+    plan = research_loop._build_iteration_plan(
+        ResearchLoopConfig(
+            name='BatchName',
+            baseline_csv=str(tmp_path / 'baseline.csv'),
+            candidate_count=3,
+            candidate_name_prefix='PrefixName',
+            top_n=1,
+            candidate_start_date=20250102,
+            candidate_end_date=20250103,
+            candidate_timeout=120,
+            cleanup_best_candidate=True,
+            keep_loser_candidates=True,
+            keep_failed_candidate=True,
+            run_candidates=True,
+        )
+    )
+
+    assert plan['candidate_count'] == 3
+    assert plan['candidate_name_prefix'] == 'PrefixName'
+    assert plan['effective_top_n'] == 3
+    assert plan['candidate_start_date'] == 20250102
+    assert plan['candidate_end_date'] == 20250103
+    assert plan['candidate_timeout'] == 120
+    assert plan['cleanup_best_candidate'] is True
+    assert plan['keep_loser_candidates'] is True
+    assert plan['keep_failed_candidate'] is True
+
+
+def test_build_candidate_specs_uses_one_expression_per_candidate():
+    result = {
+        'expressions': ['泥닿껐媛뺣룄 < 90', '?쒓?珥앹븸 <= 3000', 'ignored > 1'],
+        'selected_candidates': [
+            {'source': 'ttest', 'feature': 'B_泥닿껐媛뺣룄', 'count': 50},
+            {'source': 'quantile', 'feature': 'B_?쒓?珥앹븸', 'count': 70},
+            {'source': 'ignored', 'feature': 'B_ignored', 'count': 1},
+        ],
+    }
+
+    specs = research_loop._build_candidate_specs(
+        ResearchLoopConfig(name='BatchName', run_candidates=True, candidate_count=2),
+        result,
+    )
+    custom_specs = research_loop._build_candidate_specs(
+        ResearchLoopConfig(
+            name='BatchName',
+            candidate_name_prefix='CustomPrefix',
+            run_candidates=True,
+            candidate_count=1,
+        ),
+        result,
+    )
+
+    assert [spec['index'] for spec in specs] == [1, 2]
+    assert [spec['strategy_name'] for spec in specs] == ['BatchName__cand001', 'BatchName__cand002']
+    assert specs[0]['expression'] == '泥닿껐媛뺣룄 < 90'
+    assert specs[0]['expressions'] == ['泥닿껐媛뺣룄 < 90']
+    assert specs[1]['expressions'] == ['?쒓?珥앹븸 <= 3000']
+    assert specs[0]['source_candidate']['feature'] == 'B_泥닿껐媛뺣룄'
+    assert specs[1]['source_candidate']['feature'] == 'B_?쒓?珥앹븸'
+    assert custom_specs[0]['strategy_name'] == 'CustomPrefix__cand001'
+
+
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     _write_trade_csv(baseline)

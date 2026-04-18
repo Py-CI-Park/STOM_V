@@ -97,6 +97,43 @@ def _candidate_end_date(config: ResearchLoopConfig) -> int:
     return config.end_date if config.candidate_end_date is None else config.candidate_end_date
 
 
+def _candidate_name_prefix(config: ResearchLoopConfig) -> str:
+    return config.candidate_name_prefix or config.name
+
+
+def _effective_top_n(config: ResearchLoopConfig) -> int:
+    return max(config.top_n, config.candidate_count) if config.run_candidates else config.top_n
+
+
+def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
+    return {
+        'candidate_count': config.candidate_count,
+        'candidate_name_prefix': _candidate_name_prefix(config),
+        'effective_top_n': _effective_top_n(config),
+        'candidate_start_date': _candidate_start_date(config),
+        'candidate_end_date': _candidate_end_date(config),
+        'candidate_timeout': config.candidate_timeout,
+        'cleanup_best_candidate': config.cleanup_best_candidate,
+        'keep_loser_candidates': config.keep_loser_candidates,
+        'keep_failed_candidate': config.keep_failed_candidate,
+    }
+
+
+def _build_candidate_specs(config: ResearchLoopConfig, expression_result: dict) -> list[dict]:
+    specs = []
+    expressions = expression_result.get('expressions') or []
+    selected = expression_result.get('selected_candidates') or []
+    for index, expression in enumerate(expressions[:config.candidate_count], start=1):
+        specs.append({
+            'index': index,
+            'strategy_name': f'{_candidate_name_prefix(config)}__cand{index:03d}',
+            'expression': expression,
+            'expressions': [expression],
+            'source_candidate': selected[index - 1] if index - 1 < len(selected) else None,
+        })
+    return specs
+
+
 def _build_candidate_plan(config: ResearchLoopConfig, candidate: dict) -> dict:
     """Build a stable plan describing candidate execution before side effects."""
     will_save = bool(config.run_candidate and not config.candidate_plan_only)
