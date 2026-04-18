@@ -116,7 +116,7 @@ python scripts/verify_nonrelease_sync.py
 
 ## 파일럿
 
-### 명령
+### 1차 명령
 
 ```powershell
 $env:STOM_ALLOW_MINIMAL_SETTING='1'
@@ -135,7 +135,7 @@ python stom_backtest.py discovery research AutoResearchIterationPilot_20260418_T
   --cleanup-best-candidate
 ```
 
-### 실제 핵심 결과
+### 1차 핵심 결과
 
 결과:
 
@@ -162,6 +162,98 @@ cleanup_summary: 없음 (후보 생성 전 실패)
 - 지정된 입력 CSV `backtest/csv/stock_bt_Min_B_Study_251227_20260415220536.csv`가 이 checkout에 존재하지 않는다.
 - 로컬 ignored `strategy.db`도 `database_check()` 직후의 빈 스키마 상태라 `Min_B_Study_251227`, `Min_S_Study_251227` 전략이 들어 있지 않다.
 - 따라서 파일럿은 후보 생성 및 후보 백테스트 단계에 도달하지 못했다.
+
+### 2차 환경 보정
+
+실제 런타임 파일럿을 위해 feature worktree의 ignored `_database`를 `wt-dev`의 실제 검증 데이터와 맞췄다.
+
+적용 내용:
+
+```text
+strategy.db: wt-dev 실제 전략 DB 복사
+setting.db: wt-dev 실제 설정 DB 복사
+backtest.db: wt-dev 실제 백테스트 결과 DB 복사
+stock_min_back.db: wt-dev 실제 분봉 백테스트 DB hardlink
+```
+
+이 작업은 ignored 런타임 데이터에만 적용했으며 Git 추적 파일은 변경하지 않았다.
+
+### 2차 성공 파일럿 명령
+
+```powershell
+$env:STOM_ALLOW_MINIMAL_SETTING='1'
+python stom_backtest.py discovery research AutoResearchIterationPilot_20260418_T6R4 `
+  --input C:\System_Trading\STOM\STOM_V.wt-dev\backtest\csv\stock_bt_Min_B_Study_251227_20260415220536.csv `
+  --base-buy-strategy Min_B_Study_251227 `
+  --sell Min_S_Study_251227 `
+  --start 20250407 `
+  --end 20250418 `
+  --timeframe min `
+  --run-candidates `
+  --candidate-count 3 `
+  --candidate-start 20250407 `
+  --candidate-end 20250418 `
+  --candidate-timeout 180 `
+  --cleanup-best-candidate
+```
+
+### 2차 성공 파일럿 핵심 결과
+
+```text
+return_code: 0
+status: ok
+phase: candidates_evaluated
+candidates_count: 3
+best_candidate: AutoResearchIterationPilot_20260418_T6R4__cand001
+best_expression: 시가총액 <= 2793.5
+best_promotion_passed: False
+best_score: 16123.392637215471
+```
+
+후보별 결과:
+
+```text
+rank 1:
+  strategy: AutoResearchIterationPilot_20260418_T6R4__cand001
+  expression: 시가총액 <= 2793.5
+  status: ok
+  phase: candidate_evaluated
+  trade_count: 109
+  promotion_passed: False
+  score: 16123.392637215471
+  cleanup: best_candidate_deleted / deleted
+
+rank 2:
+  strategy: AutoResearchIterationPilot_20260418_T6R4__cand002
+  expression: 206.999 <= 시가총액 < 941.3
+  status: ok
+  phase: candidate_evaluated
+  trade_count: 413
+  promotion_passed: False
+  score: 16066.3554835309
+  cleanup: loser_candidate_deleted / deleted
+
+rank 3:
+  strategy: AutoResearchIterationPilot_20260418_T6R4__cand003
+  expression: 3498.763 <= 전일동시간비 < 187994.02
+  status: ok
+  phase: candidate_evaluated
+  trade_count: 469
+  promotion_passed: False
+  score: 16059.697697683121
+  cleanup: loser_candidate_deleted / deleted
+```
+
+cleanup summary:
+
+```json
+{
+  "attempted_count": 3,
+  "deleted_count": 3,
+  "kept_count": 0,
+  "failed_count": 0
+}
+```
 
 ## candidate strategy cleanup 확인
 
@@ -198,12 +290,21 @@ AutoResearchIterationPilot_20260418_T6__cand002 0
 AutoResearchIterationPilot_20260418_T6__cand003 0
 ```
 
-`--cleanup-best-candidate`를 사용한 파일럿은 후보 생성 전 실패했지만, 확인 대상 후보 전략명 `AutoResearchIterationPilot_20260418_T6__cand001`부터 `__cand003`까지는 `strategy.db`에 남아 있지 않다.
+1차 실패 파일럿의 확인 대상 후보 전략명 `AutoResearchIterationPilot_20260418_T6__cand001`부터 `__cand003`까지는 `strategy.db`에 남아 있지 않다.
+
+2차 성공 파일럿의 후보 전략도 `--cleanup-best-candidate` 정책에 따라 모두 삭제됐다.
+
+```text
+AutoResearchIterationPilot_20260418_T6R4__cand001 0
+AutoResearchIterationPilot_20260418_T6R4__cand002 0
+AutoResearchIterationPilot_20260418_T6R4__cand003 0
+```
 
 ## 남은 리스크
 
-- 이 checkout에는 요청된 파일럿 입력 CSV와 기준 전략 DB 데이터가 없어 실제 후보 3개 백테스트, ranking, `best_candidate`, `cleanup_summary`의 런타임 성공 사례는 확인하지 못했다.
+- feature worktree는 기본 checkout 상태에서 ignored 런타임 CSV/DB가 비어 있을 수 있으므로 실제 파일럿 전 `_database`와 기준 CSV 준비가 필요하다.
+- 실제 데이터 보정 후 후보 3개 백테스트, ranking, `best_candidate`, `cleanup_summary`, cleanup 삭제는 확인했다.
 - 단위 테스트는 다중 후보 루프의 정상/실패/cleanup/report 경로를 통과했지만, 실제 장기간 데이터 품질 검증을 대체하지 않는다.
 - `best_candidate`는 promotion 통과 후보가 아닐 수 있으며, 최종 채택 전 `discovery promote` 또는 별도 WFO 검증이 필요하다.
-- 1일 후보 구간은 런타임 smoke 검증에는 적합하지만 전략 품질 판단에는 표본이 작다.
+- 이번 성공 파일럿의 best 후보도 `promotion_passed=False`였으므로 실전 채택 후보가 아니라 다음 연구 방향 후보로만 해석해야 한다.
 - 결과 CSV와 `_database`는 로컬 ignored 런타임 산출물이라 작업 커밋에는 포함하지 않았다.
