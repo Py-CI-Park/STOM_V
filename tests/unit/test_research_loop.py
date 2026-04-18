@@ -592,6 +592,12 @@ def test_research_loop_returns_candidate_csv_missing_when_path_does_not_exist(mo
     missing_candidate = tmp_path / 'missing.csv'
     _patch_analysis_success(monkeypatch)
     _patch_strategy_success(monkeypatch)
+    cleanup_calls = []
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda db_path, name, strategy_type: cleanup_calls.append(name) or {'status': 'ok', 'action': 'deleted'},
+    )
 
     result = run_research_once(
         ResearchLoopConfig(name='MissingCsv', baseline_csv=str(baseline), base_buy_strategy='BaseBuy'),
@@ -601,6 +607,8 @@ def test_research_loop_returns_candidate_csv_missing_when_path_does_not_exist(mo
     assert result['status'] == 'error'
     assert result['phase'] == 'candidate_csv_missing'
     assert str(missing_candidate) in result['message']
+    assert result['cleanup']['attempted'] is True
+    assert cleanup_calls == ['MissingCsv']
 
 
 def test_candidate_csv_missing_cleans_candidate(monkeypatch, tmp_path):
