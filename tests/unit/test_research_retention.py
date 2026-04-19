@@ -62,6 +62,18 @@ def test_estimate_candidate_retention_marks_eval_errors_as_low_retention():
     assert result['evaluation_error']
 
 
+def test_estimate_candidate_retention_rejects_numeric_series_masks():
+    frame = pd.DataFrame([{'x': 0}, {'x': 0}, {'x': 0}])
+
+    result = estimate_candidate_retention(frame, 'x')
+
+    assert result['baseline_trade_count'] == 3
+    assert result['estimated_removed_count'] == 3
+    assert result['estimated_kept_count'] == 0
+    assert result['estimated_retention'] == 0.0
+    assert result['evaluation_error'] == 'expression did not return a boolean row mask'
+
+
 def test_estimate_candidate_retention_handles_empty_frame():
     result = estimate_candidate_retention(
         pd.DataFrame(columns=[TURNOVER]),
@@ -90,6 +102,20 @@ def test_annotate_candidate_retention_marks_pass_fail():
     assert annotated[1]['retention_filter_passed'] is False
     assert annotated[2]['retention_estimate']['evaluation_error']
     assert annotated[2]['retention_filter_passed'] is False
+
+
+def test_annotate_candidate_retention_fails_numeric_series_masks():
+    frame = pd.DataFrame([{'x': 0}, {'x': 0}, {'x': 0}])
+
+    annotated = annotate_candidate_retention(
+        [{'expression': 'x'}],
+        frame,
+        min_retention=0.4,
+    )
+
+    assert annotated[0]['retention_estimate']['estimated_retention'] == 0.0
+    assert annotated[0]['retention_estimate']['evaluation_error']
+    assert annotated[0]['retention_filter_passed'] is False
 
 
 def test_retention_penalty_scales_below_threshold():

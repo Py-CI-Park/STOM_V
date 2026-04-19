@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 import pandas as pd
+from pandas.api.types import is_bool_dtype
 
 
 def _finite_float(value, default: float = 0.0) -> float:
@@ -27,15 +28,15 @@ def _prepare_retention_frame(frame: pd.DataFrame) -> pd.DataFrame:
 
 def _safe_eval_mask(frame: pd.DataFrame, expression: str) -> tuple[pd.Series, str | None]:
     prepared = _prepare_retention_frame(frame)
+    full_remove_mask = pd.Series([True] * len(prepared), index=prepared.index)
     try:
         mask = prepared.eval(expression, engine='python')
     except Exception as exc:
-        return pd.Series([True] * len(prepared), index=prepared.index), str(exc)
+        return full_remove_mask, str(exc)
     if not isinstance(mask, pd.Series):
-        return (
-            pd.Series([True] * len(prepared), index=prepared.index),
-            'expression did not return a row mask',
-        )
+        return full_remove_mask, 'expression did not return a row mask'
+    if not is_bool_dtype(mask.dtype):
+        return full_remove_mask, 'expression did not return a boolean row mask'
     return mask.fillna(False).astype(bool), None
 
 
