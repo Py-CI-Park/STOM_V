@@ -545,6 +545,55 @@ def test_run_research_iteration_returns_insufficient_retention_when_fallback_dis
     assert result['retention_selection']['selected_count'] == 0
 
 
+def test_run_research_iteration_rejects_retention_selection_shortfall(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    pd.DataFrame([
+        {'keep_metric': 1000, '?ル굝?됵쭗?': 'A', '筌띲끉???볦퍢': 1, '筌띲끉?붷첎?': 1000},
+        {'keep_metric': 5000, '?ル굝?됵쭗?': 'B', '筌띲끉???볦퍢': 2, '筌띲끉?붷첎?': 1000},
+    ]).to_csv(baseline, index=False, encoding='utf-8-sig')
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['missing_metric <= 2000', 'other_missing > 0'],
+        selected_candidates=[
+            {'source': 'segment_scan', 'feature': 'missing_metric'},
+            {'source': 'quantile', 'feature': 'other_missing'},
+        ],
+    )
+
+    def fail_execute(*args, **kwargs):
+        raise AssertionError('candidate execution should not run when selection returns too few candidates')
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fail_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RetentionShortfall',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            allow_retention_fallback=True,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'insufficient_retention_candidates'
+    assert result['requested_candidate_count'] == 2
+    assert result['selected_candidate_count'] == 0
+    assert result['retention_selection']['status'] == 'ok'
+    assert result['retention_selection']['selected_count'] == 0
+    assert result['retention_candidates']
+    assert result['expression_result']['retention_candidates'] == result['retention_candidates']
+    assert result['retention_selection']['retention_candidates'] == result['retention_candidates']
+    assert result['retention_candidates'][0]['expression'] == 'missing_metric <= 2000'
+    assert result['retention_candidates'][0]['source'] == 'segment_scan'
+    assert result['retention_candidates'][0]['feature'] == 'missing_metric'
+    assert result['retention_candidates'][0]['retention_filter_passed'] is False
+    assert result['retention_candidates'][0]['retention_fallback_used'] is False
+    assert result['retention_candidates'][0]['retention_estimate']['evaluation_error']
+
+
 def test_rank_candidate_results_prefers_promotion_pass_then_score():
     candidates = [
         {

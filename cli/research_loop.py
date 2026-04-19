@@ -167,6 +167,23 @@ def _build_candidate_specs(config: ResearchLoopConfig, expression_result: dict) 
     return specs
 
 
+def _retention_candidate_diagnostics(candidates: list[dict]) -> list[dict]:
+    diagnostics = []
+    for candidate in candidates:
+        item = {'expression': candidate.get('expression')}
+        for key in (
+            'retention_estimate',
+            'retention_filter_passed',
+            'retention_fallback_used',
+            'source',
+            'feature',
+        ):
+            if key in candidate:
+                item[key] = candidate[key]
+        diagnostics.append(item)
+    return diagnostics
+
+
 def _build_candidate_plan(
     config: ResearchLoopConfig,
     candidate: dict,
@@ -1030,10 +1047,16 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         allow_fallback=config.allow_retention_fallback,
         min_retention=config.min_estimated_retention,
     )
+    retention_candidates = _retention_candidate_diagnostics(annotated_candidates)
+    retention_selection = {
+        **retention_selection,
+        'retention_candidates': retention_candidates,
+    }
     expression_result = {
         **expression_result,
         'selected_candidates': selected_candidates,
         'retention_selection': retention_selection,
+        'retention_candidates': retention_candidates,
     }
     if retention_selection.get('status') != 'ok':
         return _build_result(config, _error(
@@ -1047,6 +1070,26 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             expression_result=expression_result,
             iteration_plan=iteration_plan,
             retention_selection=retention_selection,
+            retention_candidates=retention_candidates,
+        ))
+    if len(selected_candidates) < config.candidate_count:
+        return _build_result(config, _error(
+            'insufficient_retention_candidates',
+            (
+                f"candidate_count={config.candidate_count} requested but only "
+                f"{len(selected_candidates)} candidates selected after retention filtering"
+            ),
+            strategy_name=config.name,
+            config=asdict(config),
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+            analysis_result=analysis_result,
+            expression_result=expression_result,
+            iteration_plan=iteration_plan,
+            retention_selection=retention_selection,
+            retention_candidates=retention_candidates,
+            requested_candidate_count=config.candidate_count,
+            selected_candidate_count=len(selected_candidates),
         ))
     expression_result = {
         **expression_result,
@@ -1083,6 +1126,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'expression_result': expression_result,
         'iteration_plan': iteration_plan,
         'retention_selection': retention_selection,
+        'retention_candidates': retention_candidates,
         'candidate_specs': specs,
         'candidates': ranked_candidates,
         'best_candidate': best_candidate,
