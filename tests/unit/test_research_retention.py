@@ -255,8 +255,13 @@ def test_select_retention_aware_candidates_blocks_when_fallback_disabled():
     assert summary['passed_count'] == 1
     assert summary['fallback_count'] == 0
     assert summary['selected_count'] == 0
+    assert summary['requested_count'] == 2
     assert summary['min_estimated_retention'] == 0.4
     assert summary['allow_retention_fallback'] is False
+    assert summary['message'] == (
+        'candidate_count=2 requested but only 1 candidates passed '
+        'min_estimated_retention=0.4'
+    )
 
 
 def test_select_retention_aware_candidates_does_not_fallback_eval_errors():
@@ -351,3 +356,42 @@ def test_select_retention_aware_candidates_sorts_score_after_retention():
 
     assert [item['expression'] for item in selected] == ['B', 'A', 'D', 'C']
     assert summary['fallback_count'] == 2
+
+
+def test_select_retention_aware_candidates_preserves_input_order_for_exact_ties():
+    candidates = [
+        {
+            'expression': 'A',
+            'combined_score': 10,
+            'retention_estimate': {'estimated_retention': 0.7},
+            'retention_filter_passed': True,
+        },
+        {
+            'expression': 'B',
+            'combined_score': 10,
+            'retention_estimate': {'estimated_retention': 0.7},
+            'retention_filter_passed': True,
+        },
+        {
+            'expression': 'C',
+            'combined_score': 5,
+            'retention_estimate': {'estimated_retention': 0.2},
+            'retention_filter_passed': False,
+        },
+        {
+            'expression': 'D',
+            'combined_score': 5,
+            'retention_estimate': {'estimated_retention': 0.2},
+            'retention_filter_passed': False,
+        },
+    ]
+
+    selected, summary = select_retention_aware_candidates(
+        candidates,
+        candidate_count=4,
+        allow_fallback=True,
+        min_retention=0.4,
+    )
+
+    assert [item['expression'] for item in selected] == ['A', 'B', 'C', 'D']
+    assert summary['requested_count'] == 4

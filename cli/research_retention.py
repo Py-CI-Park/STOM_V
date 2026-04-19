@@ -133,19 +133,25 @@ def _retention_selection_summary(
     passed_count: int,
     fallback_count: int,
     selected_count: int,
+    requested_count: int,
     min_retention,
     allow_fallback: bool,
+    message: str | None = None,
 ) -> dict:
-    return {
+    summary = {
         'status': status,
         'phase': phase,
         'pool_count': pool_count,
         'passed_count': passed_count,
         'fallback_count': fallback_count,
         'selected_count': selected_count,
+        'requested_count': requested_count,
         'min_estimated_retention': min_retention,
         'allow_retention_fallback': allow_fallback,
     }
+    if message is not None:
+        summary['message'] = message
+    return summary
 
 
 def select_retention_aware_candidates(
@@ -169,6 +175,10 @@ def select_retention_aware_candidates(
     failed.sort(key=sort_key)
 
     if len(passed) < requested_count and not allow_fallback:
+        message = (
+            f'candidate_count={requested_count} requested but only {len(passed)} '
+            f'candidates passed min_estimated_retention={min_retention}'
+        )
         return [], _retention_selection_summary(
             status='error',
             phase='insufficient_retention_candidates',
@@ -176,8 +186,10 @@ def select_retention_aware_candidates(
             passed_count=len(passed),
             fallback_count=0,
             selected_count=0,
+            requested_count=requested_count,
             min_retention=min_retention,
             allow_fallback=allow_fallback,
+            message=message,
         )
 
     selected = []
@@ -198,6 +210,7 @@ def select_retention_aware_candidates(
         passed_count=len(passed),
         fallback_count=fallback_count,
         selected_count=len(selected),
+        requested_count=requested_count,
         min_retention=min_retention,
         allow_fallback=allow_fallback,
     )
