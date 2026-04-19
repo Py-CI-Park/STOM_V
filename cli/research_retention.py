@@ -170,7 +170,10 @@ def select_retention_aware_candidates(
         candidate for candidate in pool
         if not candidate.get('retention_filter_passed') and not _has_evaluation_error(candidate)
     ]
-    sort_key = lambda item: (-_retention_value(item), -_candidate_score(item))
+
+    def sort_key(item):
+        return (-_retention_value(item), -_candidate_score(item))
+
     passed.sort(key=sort_key)
     failed.sort(key=sort_key)
 
