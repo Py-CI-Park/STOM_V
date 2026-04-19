@@ -138,6 +138,16 @@ def test_apply_retention_penalty_adds_adjusted_score():
     assert result['adjusted_score'] == 50.0
 
 
+def test_apply_retention_penalty_does_not_improve_negative_scores():
+    result = apply_retention_penalty(
+        {'promotion_score': -10.0, 'trade_count_retention': 0.2},
+        min_retention=0.4,
+    )
+
+    assert result['retention_penalty'] == 0.5
+    assert result['adjusted_score'] <= -10.0
+
+
 def test_apply_retention_penalty_handles_non_finite_scores():
     result = apply_retention_penalty(
         {'promotion_score': math.inf, 'trade_count_retention': 'bad'},

@@ -104,7 +104,10 @@ def apply_retention_penalty(rank_score: dict, min_retention) -> dict:
     result['promotion_score'] = promotion_score
     result['trade_count_retention'] = trade_count_retention
     result['retention_penalty'] = penalty
-    result['adjusted_score'] = promotion_score * penalty
+    if promotion_score > 0:
+        result['adjusted_score'] = promotion_score * penalty
+    else:
+        result['adjusted_score'] = promotion_score / max(penalty, 1e-12)
     return result
 
 

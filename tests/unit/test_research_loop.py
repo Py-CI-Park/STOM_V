@@ -807,6 +807,53 @@ def test_rank_candidate_results_uses_adjusted_score_when_retention_penalty_enabl
     assert ranked[1]['rank_score']['adjusted_score'] == 40.0
 
 
+def test_rank_candidate_results_penalty_does_not_reward_negative_scores():
+    config = ResearchLoopConfig(
+        run_candidate=False,
+        run_candidates=True,
+        min_estimated_retention=0.4,
+        use_retention_penalty=True,
+    )
+    candidates = [
+        {
+            'index': 1,
+            'status': 'ok',
+            'strategy_name': 'LowRetentionMoreNegative',
+            'expression': 'A',
+            'promotion': {'passed': False, 'score': -10.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 100,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.2,
+            },
+        },
+        {
+            'index': 2,
+            'status': 'ok',
+            'strategy_name': 'ThresholdLessNegative',
+            'expression': 'B',
+            'promotion': {'passed': False, 'score': -5.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 10,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.4,
+            },
+        },
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates, config)
+
+    assert best['strategy_name'] == 'ThresholdLessNegative'
+    assert ranked[0]['rank_score']['adjusted_score'] <= -10.0
+    assert ranked[1]['rank_score']['adjusted_score'] == -5.0
+
+
 def test_rank_candidate_results_normalizes_non_finite_scores():
     candidates = [
         {
