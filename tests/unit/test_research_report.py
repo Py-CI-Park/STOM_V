@@ -165,6 +165,16 @@ def test_build_research_report_includes_iteration_fields():
     assert report['cleanup_summary']['deleted_count'] == 1
 
 
+def test_build_research_report_includes_retention_selection():
+    result = _result()
+    result['retention_selection'] = {'selected_count': 5, 'fallback_count': 2}
+
+    report = build_research_report(result, strategy_name='RetentionResearch')
+
+    assert report['retention_selection']['selected_count'] == 5
+    assert report['retention_selection']['fallback_count'] == 2
+
+
 def test_render_research_report_markdown_contains_iteration_sections():
     markdown = render_research_report_markdown(build_research_report(_iteration_result(), strategy_name='Batch'))
 
@@ -187,6 +197,57 @@ def test_render_research_report_markdown_contains_iteration_sections():
     failed_markdown = render_research_report_markdown(build_research_report(all_failed, strategy_name='Batch'))
 
     assert '## Candidate Ranking' in failed_markdown
+
+
+def test_render_research_report_markdown_contains_retention_sections():
+    report = build_research_report({
+        'status': 'ok',
+        'phase': 'candidates_evaluated',
+        'strategy_name': 'RetentionResearch',
+        'baseline_csv': 'baseline.csv',
+        'iteration_plan': {'candidate_count': 1},
+        'retention_selection': {
+            'pool_count': 3,
+            'selected_count': 1,
+            'passed_count': 1,
+            'fallback_count': 0,
+            'min_estimated_retention': 0.4,
+        },
+        'candidates': [{
+            'rank': 1,
+            'strategy_name': 'RetentionResearch__cand001',
+            'expression': 'capital <= 2000',
+            'status': 'ok',
+            'retention_estimate': {'estimated_retention': 0.6},
+            'retention_filter_passed': True,
+            'retention_fallback_used': False,
+            'promotion': {'passed': False, 'score': 100.0},
+            'comparison': {
+                'candidate_summary': {'trade_count': 10},
+                'trade_count_retention': 0.3,
+            },
+            'rank_score': {
+                'promotion_score': 100.0,
+                'trade_count_retention': 0.3,
+                'retention_penalty': 0.75,
+                'adjusted_score': 75.0,
+            },
+            'cleanup': {'reason': 'best_candidate_deleted'},
+        }],
+        'best_candidate': {
+            'strategy_name': 'RetentionResearch__cand001',
+            'expression': 'capital <= 2000',
+            'promotion': {'passed': False},
+        },
+        'cleanup_summary': {'deleted_count': 1, 'kept_count': 0, 'failed_count': 0},
+    }, strategy_name='RetentionResearch')
+
+    markdown = render_research_report_markdown(report)
+
+    assert '## Retention-Aware Candidate Selection' in markdown
+    assert '## Retention-Penalized Ranking' in markdown
+    assert 'estimated_retention' in markdown
+    assert 'adjusted_score' in markdown
 
 
 def test_render_research_report_markdown_contains_trade_set_sections():
