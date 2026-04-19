@@ -43,6 +43,7 @@ def build_research_report(result: dict, strategy_name: str | None = None) -> dic
         'candidate_plan': result.get('candidate_plan'),
         'cleanup': result.get('cleanup'),
         'iteration_plan': result.get('iteration_plan'),
+        'retention_selection': result.get('retention_selection'),
         'candidates': result.get('candidates'),
         'best_candidate': result.get('best_candidate'),
         'cleanup_summary': result.get('cleanup_summary'),
@@ -84,6 +85,15 @@ def _candidate_retention(candidate: dict):
     return comparison.get('trade_count_retention', rank_score.get('trade_count_retention'))
 
 
+def _candidate_label(candidate: dict):
+    return candidate.get('strategy_name') or candidate.get('candidate') or candidate.get('index')
+
+
+def _candidate_estimated_retention(candidate: dict):
+    estimate = candidate.get('retention_estimate') or {}
+    return estimate.get('estimated_retention')
+
+
 def _candidate_cleanup_label(candidate: dict) -> str:
     cleanup = candidate.get('cleanup') or {}
     parts = [
@@ -94,13 +104,77 @@ def _candidate_cleanup_label(candidate: dict) -> str:
     return ', '.join(str(part) for part in parts if part is not None)
 
 
+def _append_retention_sections(lines: list[str], report: dict) -> None:
+    retention_selection = report.get('retention_selection') or {}
+    candidates = report.get('candidates') or []
+
+    if not (retention_selection or candidates):
+        return
+
+    lines.extend(['', '## Retention-Aware Candidate Selection'])
+    if retention_selection:
+        lines.append("- retention_selection summary:")
+        for key in (
+            'pool_count',
+            'selected_count',
+            'passed_count',
+            'fallback_count',
+            'min_estimated_retention',
+        ):
+            if key in retention_selection:
+                lines.append(f"- {key}: {retention_selection.get(key)}")
+    else:
+        lines.append("- retention_selection: none")
+
+    lines.extend([
+        '',
+        '| candidate | expression | estimated_retention | passed | fallback |',
+        '| --- | --- | --- | --- | --- |',
+    ])
+    if candidates:
+        for candidate in candidates:
+            row = [
+                _candidate_label(candidate),
+                candidate.get('expression'),
+                _candidate_estimated_retention(candidate),
+                candidate.get('retention_filter_passed'),
+                candidate.get('retention_fallback_used'),
+            ]
+            lines.append('| ' + ' | '.join(_format_markdown_value(value) for value in row) + ' |')
+    else:
+        lines.append('|  |  |  |  |  |')
+
+    lines.extend([
+        '',
+        '## Retention-Penalized Ranking',
+        '| rank | strategy | score | retention | penalty | adjusted_score |',
+        '| --- | --- | --- | --- | --- | --- |',
+    ])
+    if candidates:
+        for candidate in candidates:
+            rank_score = candidate.get('rank_score') or {}
+            promotion = candidate.get('promotion') or {}
+            row = [
+                candidate.get('rank'),
+                candidate.get('strategy_name'),
+                rank_score.get('promotion_score', promotion.get('score')),
+                rank_score.get('trade_count_retention', _candidate_retention(candidate)),
+                rank_score.get('retention_penalty'),
+                rank_score.get('adjusted_score'),
+            ]
+            lines.append('| ' + ' | '.join(_format_markdown_value(value) for value in row) + ' |')
+    else:
+        lines.append('|  |  |  |  |  |  |')
+
+
 def _append_candidate_iteration_sections(lines: list[str], report: dict) -> None:
     iteration_plan = report.get('iteration_plan') or {}
+    retention_selection = report.get('retention_selection') or {}
     candidates = report.get('candidates') or []
     best_candidate = report.get('best_candidate') or {}
     cleanup_summary = report.get('cleanup_summary') or {}
 
-    if not (iteration_plan or candidates):
+    if not (iteration_plan or retention_selection or candidates):
         return
 
     lines.extend(['', '## Candidate Iteration'])
@@ -148,6 +222,8 @@ def _append_candidate_iteration_sections(lines: list[str], report: dict) -> None
             lines.append('| ' + ' | '.join(_format_markdown_value(value) for value in row) + ' |')
     else:
         lines.append('|  |  |  |  |  |  |  |  |  |')
+
+    _append_retention_sections(lines, report)
 
     lines.extend(['', '## Cleanup Summary'])
     if cleanup_summary:

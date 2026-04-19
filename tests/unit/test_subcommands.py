@@ -3,15 +3,14 @@ import json
 import os
 import sys
 import sqlite3
-import tempfile
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, PROJECT_ROOT)
 
-from cli.subcommands import create_subcommand_parser, handle_subcommand
+from cli.subcommands import create_subcommand_parser, handle_subcommand  # noqa: E402
 
 
 def test_discovery_research_parser_accepts_existing_strategy_inputs():
@@ -156,6 +155,28 @@ def test_discovery_research_parser_accepts_iteration_options():
     assert args.keep_loser_candidates is True
 
 
+def test_discovery_research_parser_accepts_retention_options():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'RetentionResearch',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+        '--run-candidates',
+        '--min-estimated-retention', '0.5',
+        '--no-retention-fallback',
+        '--no-retention-penalty',
+        '--candidate-pool-multiplier', '4',
+    ])
+
+    assert args.min_estimated_retention == 0.5
+    assert args.allow_retention_fallback is False
+    assert args.use_retention_penalty is False
+    assert args.candidate_pool_multiplier == 4
+
+
 def test_discovery_research_parser_rejects_conflicting_candidate_modes():
     parser = create_subcommand_parser()
     with pytest.raises(SystemExit):
@@ -221,6 +242,31 @@ def test_discovery_research_handler_passes_iteration_options():
     assert payload['candidate_name_prefix'] == 'ResearchBatch'
     assert payload['cleanup_best_candidate'] is True
     assert payload['keep_loser_candidates'] is True
+
+
+def test_discovery_research_handler_passes_retention_options():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok'}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'RetentionResearch',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidates',
+            '--min-estimated-retention', '0.5',
+            '--no-retention-fallback',
+            '--no-retention-penalty',
+            '--candidate-pool-multiplier', '4',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert exit_code == 0
+    assert payload['min_estimated_retention'] == 0.5
+    assert payload['allow_retention_fallback'] is False
+    assert payload['use_retention_penalty'] is False
+    assert payload['candidate_pool_multiplier'] == 4
 
 
 def test_discovery_research_handler_returns_nonzero_on_error_status():
@@ -334,7 +380,7 @@ class TestFormulaSubcommand:
         _make_formula_db(db)
         err_result = {'status': 'error', 'message': '수식코드가 비어있습니다.'}
         with patch('cli.subcommands.DB_STRATEGY', db), \
-             patch('cli.formula.add_formula', return_value=err_result) as mock_add:
+             patch('cli.formula.add_formula', return_value=err_result):
             with patch('builtins.print'):
                 code = handle_subcommand(['formula', 'add', '이름', '--code', ''])
         assert code == 1
@@ -713,7 +759,6 @@ class TestSubcommandDetection:
         """sys.argv[1]=='strategy' 이면 handle_subcommand가 호출된다."""
         with patch('sys.argv', ['stom_backtest.py', 'strategy', 'list']), \
              patch('cli.subcommands.handle_subcommand', return_value=0) as mock_handler:
-            import importlib
             import stom_backtest
             result = stom_backtest.main()
         mock_handler.assert_called_once_with(['strategy', 'list'])

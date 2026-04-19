@@ -123,6 +123,30 @@ def test_research_loop_rejects_iteration_mode_conflicts(tmp_path):
     assert invalid_count['phase'] == 'invalid_candidate_count'
 
 
+def test_validate_research_iteration_rejects_invalid_min_estimated_retention(tmp_path):
+    invalid_retention = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='InvalidRetention',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            run_candidates=True,
+            min_estimated_retention=1.1,
+        )
+    )
+    assert invalid_retention['phase'] == 'invalid_min_estimated_retention'
+
+
+def test_validate_research_iteration_rejects_invalid_candidate_pool_multiplier(tmp_path):
+    invalid_pool_multiplier = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='InvalidPoolMultiplier',
+            baseline_csv=str(tmp_path / 'b.csv'),
+            run_candidates=True,
+            candidate_pool_multiplier=0,
+        )
+    )
+    assert invalid_pool_multiplier['phase'] == 'invalid_candidate_pool_multiplier'
+
+
 def test_run_research_once_allows_inactive_invalid_candidate_count(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     _write_trade_csv(baseline)
@@ -174,13 +198,35 @@ def test_iteration_plan_uses_effective_top_n_and_candidate_prefix(tmp_path):
 
     assert plan['candidate_count'] == 3
     assert plan['candidate_name_prefix'] == 'PrefixName'
-    assert plan['effective_top_n'] == 3
+    assert plan['effective_top_n'] == 9
     assert plan['candidate_start_date'] == 20250102
     assert plan['candidate_end_date'] == 20250103
     assert plan['candidate_timeout'] == 120
     assert plan['cleanup_best_candidate'] is True
     assert plan['keep_loser_candidates'] is True
     assert plan['keep_failed_candidate'] is True
+
+
+def test_iteration_plan_includes_retention_policy():
+    plan = research_loop._build_iteration_plan(
+        ResearchLoopConfig(
+            name='RetentionPlan',
+            run_candidates=True,
+            candidate_count=5,
+            top_n=5,
+            min_estimated_retention=0.4,
+            candidate_pool_multiplier=3,
+            allow_retention_fallback=True,
+            use_retention_penalty=True,
+        )
+    )
+
+    assert plan['candidate_pool_multiplier'] == 3
+    assert plan['candidate_pool_size'] == 15
+    assert plan['effective_top_n'] == 15
+    assert plan['min_estimated_retention'] == 0.4
+    assert plan['allow_retention_fallback'] is True
+    assert plan['use_retention_penalty'] is True
 
 
 def test_build_candidate_specs_uses_one_expression_per_candidate():
@@ -340,7 +386,7 @@ def test_run_research_iteration_analyzes_once_and_runs_each_candidate(monkeypatc
         'generate_condition_expressions_from_analysis',
         lambda analysis, top_n: expression_calls.append((analysis, top_n)) or {
             'status': 'ok',
-            'expressions': ['expr one', 'expr two'],
+            'expressions': ['R_MFE < 0', 'R_MFE > 1'],
             'selected_candidates': [{'feature': 'one'}, {'feature': 'two'}],
         },
     )
@@ -392,14 +438,227 @@ def test_run_research_iteration_analyzes_once_and_runs_each_candidate(monkeypatc
     assert result['status'] == 'ok'
     assert result['phase'] == 'candidates_evaluated'
     assert analyze_calls == [(str(baseline), {'min_samples': 30, 'quantiles': 10, 'alpha': 0.05})]
-    assert expression_calls[0][1] == 2
+    assert expression_calls[0][1] == 6
     assert [call[0]['strategy_name'] for call in executed_specs] == ['Batch__cand001', 'Batch__cand002']
-    assert [call[0]['expressions'] for call in executed_specs] == [['expr one'], ['expr two']]
+    assert [call[0]['expressions'] for call in executed_specs] == [['R_MFE < 0'], ['R_MFE > 1']]
     assert [call[1] for call in executed_specs] == [str(baseline), str(baseline)]
-    assert result['iteration_plan']['effective_top_n'] == 2
+    assert result['iteration_plan']['effective_top_n'] == 6
     assert len(result['candidates']) == 2
     assert result['best_candidate']['strategy_name'] == 'Batch__cand002'
     assert result['cleanup_summary']['deleted_count'] == 1
+
+
+def test_run_research_iteration_adds_retention_metadata(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    pd.DataFrame([
+        {'keep_metric': 1000, '醫낅ぉ紐?': 'A', '留ㅼ닔?쒓컙': 1, '留ㅼ닔媛': 1000},
+        {'keep_metric': 5000, '醫낅ぉ紐?': 'B', '留ㅼ닔?쒓컙': 2, '留ㅼ닔媛': 1000},
+    ]).to_csv(baseline, index=False, encoding='utf-8-sig')
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['keep_metric <= 2000', 'keep_metric > 2000'],
+    )
+    executed_specs = []
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        executed_specs.append(spec.copy())
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'retention_estimate': spec['retention_estimate'],
+            'retention_filter_passed': spec['retention_filter_passed'],
+            'retention_fallback_used': spec['retention_fallback_used'],
+            'status': 'error',
+            'phase': 'candidate_backtest',
+            'message': 'stopped before running candidate',
+            'cleanup': {
+                'attempted': True,
+                'reason': 'candidate_backtest',
+                'strategy_name': spec['strategy_name'],
+            },
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RetentionBatch',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            min_estimated_retention=0.4,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_iteration'
+    assert result['retention_selection']['status'] == 'ok'
+    assert result['retention_selection']['selected_count'] == 2
+    assert result['expression_result']['retention_selection'] == result['retention_selection']
+    assert [spec['retention_filter_passed'] for spec in executed_specs] == [True, True]
+    assert executed_specs[0]['retention_fallback_used'] is False
+    assert executed_specs[0]['retention_estimate']['estimated_retention'] == 0.5
+    assert result['candidates'][0]['retention_estimate']['estimated_retention'] == 0.5
+    assert result['candidates'][0]['retention_filter_passed'] is True
+    assert result['candidates'][0]['retention_fallback_used'] is False
+
+
+def test_run_research_iteration_returns_insufficient_retention_when_fallback_disabled(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    pd.DataFrame([
+        {'keep_metric': 1000, '醫낅ぉ紐?': 'A', '留ㅼ닔?쒓컙': 1, '留ㅼ닔媛': 1000},
+        {'keep_metric': 5000, '醫낅ぉ紐?': 'B', '留ㅼ닔?쒓컙': 2, '留ㅼ닔媛': 1000},
+    ]).to_csv(baseline, index=False, encoding='utf-8-sig')
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['keep_metric <= 2000', 'keep_metric > 2000'],
+    )
+
+    def fail_execute(*args, **kwargs):
+        raise AssertionError('candidate execution should not run when retention selection fails')
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fail_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RetentionBatch',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            min_estimated_retention=0.75,
+            allow_retention_fallback=False,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'insufficient_retention_candidates'
+    assert result['retention_selection']['status'] == 'error'
+    assert result['retention_selection']['passed_count'] == 0
+    assert result['retention_selection']['selected_count'] == 0
+
+
+def test_run_research_iteration_rejects_retention_selection_shortfall(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    pd.DataFrame([
+        {'keep_metric': 1000, '?ル굝?됵쭗?': 'A', '筌띲끉???볦퍢': 1, '筌띲끉?붷첎?': 1000},
+        {'keep_metric': 5000, '?ル굝?됵쭗?': 'B', '筌띲끉???볦퍢': 2, '筌띲끉?붷첎?': 1000},
+    ]).to_csv(baseline, index=False, encoding='utf-8-sig')
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['missing_metric <= 2000', 'other_missing > 0'],
+        selected_candidates=[
+            {'source': 'segment_scan', 'feature': 'missing_metric'},
+            {'source': 'quantile', 'feature': 'other_missing'},
+        ],
+    )
+
+    def fail_execute(*args, **kwargs):
+        raise AssertionError('candidate execution should not run when selection returns too few candidates')
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fail_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RetentionShortfall',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            allow_retention_fallback=True,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'insufficient_retention_candidates'
+    assert result['requested_candidate_count'] == 2
+    assert result['selected_candidate_count'] == 0
+    assert result['retention_selection']['status'] == 'ok'
+    assert result['retention_selection']['selected_count'] == 0
+    assert result['retention_candidates']
+    assert result['expression_result']['retention_candidates'] == result['retention_candidates']
+    assert result['retention_selection']['retention_candidates'] == result['retention_candidates']
+    assert result['retention_candidates'][0]['expression'] == 'missing_metric <= 2000'
+    assert result['retention_candidates'][0]['source'] == 'segment_scan'
+    assert result['retention_candidates'][0]['feature'] == 'missing_metric'
+    assert result['retention_candidates'][0]['retention_filter_passed'] is False
+    assert result['retention_candidates'][0]['retention_fallback_used'] is False
+    assert result['retention_candidates'][0]['retention_estimate']['evaluation_error']
+
+
+def test_run_research_iteration_reports_fallback_in_retention_diagnostics(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    pd.DataFrame([
+        {'keep_metric': 1000, '?ル굝?됵쭗?': 'A', '筌띲끉???볦퍢': 1, '筌띲끉?붷첎?': 1000},
+        {'keep_metric': 5000, '?ル굝?됵쭗?': 'B', '筌띲끉???볦퍢': 2, '筌띲끉?붷첎?': 1000},
+    ]).to_csv(baseline, index=False, encoding='utf-8-sig')
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['keep_metric < 0', 'keep_metric > 4000'],
+        selected_candidates=[
+            {'source': 'segment_scan', 'feature': 'safe_keep'},
+            {'source': 'quantile', 'feature': 'fallback_keep'},
+        ],
+    )
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'retention_estimate': spec['retention_estimate'],
+            'retention_filter_passed': spec['retention_filter_passed'],
+            'retention_fallback_used': spec['retention_fallback_used'],
+            'status': 'error',
+            'phase': 'candidate_backtest',
+            'message': 'stopped before running candidate',
+            'cleanup': {
+                'attempted': True,
+                'reason': 'candidate_backtest',
+                'strategy_name': spec['strategy_name'],
+            },
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RetentionFallback',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            min_estimated_retention=0.75,
+            allow_retention_fallback=True,
+        ),
+        DummyController(None),
+    )
+
+    fallback_diagnostic = next(
+        item for item in result['retention_candidates']
+        if item['expression'] == 'keep_metric > 4000'
+    )
+    fallback_candidate = next(
+        item for item in result['candidates']
+        if item['expression'] == 'keep_metric > 4000'
+    )
+
+    assert result['retention_selection']['fallback_count'] == 1
+    assert fallback_diagnostic['retention_fallback_used'] is True
+    assert fallback_diagnostic['retention_filter_passed'] is False
+    assert fallback_diagnostic['feature'] == 'fallback_keep'
+    assert fallback_candidate['retention_fallback_used'] is True
 
 
 def test_rank_candidate_results_prefers_promotion_pass_then_score():
@@ -498,6 +757,101 @@ def test_rank_candidate_results_prefers_promotion_pass_then_score():
     }
     assert ranked[0]['rank_score']['promotion_score'] == 100.0
     assert ranked[0]['rank_score']['trade_count'] == 100.0
+
+
+def test_rank_candidate_results_uses_adjusted_score_when_retention_penalty_enabled():
+    config = ResearchLoopConfig(
+        run_candidate=False,
+        run_candidates=True,
+        min_estimated_retention=0.4,
+        use_retention_penalty=True,
+    )
+    candidates = [
+        {
+            'index': 1,
+            'status': 'ok',
+            'strategy_name': 'LowRetentionHighScore',
+            'expression': 'A',
+            'promotion': {'passed': False, 'score': 100.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 10,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.1,
+            },
+        },
+        {
+            'index': 2,
+            'status': 'ok',
+            'strategy_name': 'HighRetentionLowerScore',
+            'expression': 'B',
+            'promotion': {'passed': False, 'score': 40.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 100,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.4,
+            },
+        },
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates, config)
+
+    assert best['strategy_name'] == 'HighRetentionLowerScore'
+    assert ranked[0]['rank_score']['retention_penalty'] == 0.25
+    assert ranked[0]['rank_score']['adjusted_score'] == 25.0
+    assert ranked[1]['rank_score']['adjusted_score'] == 40.0
+
+
+def test_rank_candidate_results_penalty_does_not_reward_negative_scores():
+    config = ResearchLoopConfig(
+        run_candidate=False,
+        run_candidates=True,
+        min_estimated_retention=0.4,
+        use_retention_penalty=True,
+    )
+    candidates = [
+        {
+            'index': 1,
+            'status': 'ok',
+            'strategy_name': 'LowRetentionMoreNegative',
+            'expression': 'A',
+            'promotion': {'passed': False, 'score': -10.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 100,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.2,
+            },
+        },
+        {
+            'index': 2,
+            'status': 'ok',
+            'strategy_name': 'ThresholdLessNegative',
+            'expression': 'B',
+            'promotion': {'passed': False, 'score': -5.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 10,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.4,
+            },
+        },
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates, config)
+
+    assert best['strategy_name'] == 'ThresholdLessNegative'
+    assert ranked[0]['rank_score']['adjusted_score'] <= -10.0
+    assert ranked[1]['rank_score']['adjusted_score'] == -5.0
 
 
 def test_rank_candidate_results_normalizes_non_finite_scores():
@@ -674,7 +1028,7 @@ def test_iteration_cleanup_can_keep_losers(monkeypatch):
 def test_run_research_iteration_returns_error_when_all_candidates_fail(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     _write_trade_csv(baseline)
-    _patch_analysis_success(monkeypatch, expressions=['expr one', 'expr two'])
+    _patch_analysis_success(monkeypatch, expressions=['R_MFE < 0', 'R_MFE > 1'])
     monkeypatch.setattr(
         research_loop,
         '_execute_candidate_spec',
