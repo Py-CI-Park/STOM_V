@@ -65,6 +65,21 @@ evaluate_buy {'status': 'ok', 'message': "전략 'ResearchTest_Tick_B_090000_092
 evaluate_sell {'status': 'ok', 'message': "전략 'ResearchTest_Tick_S_090000_092800_Wide_20260419' (sell) 평가 완료", 'strategy_name': 'ResearchTest_Tick_S_090000_092800_Wide_20260419', 'strategy_type': 'sell'}
 ```
 
+## Task 4 Pre-Run Runtime DB Warning
+
+이번 collision check/save 결과는 이 worktree에서 초기화한 local `strategy.db` 기준이다. 따라서 위의 collision count `0`과 `action: created`는 Task 4 백테스트에서 사용할 실제 runtime DB에서도 같은 상태라는 의미가 아니다.
+
+Task 4 백테스트 전에는 실제 tick DB, setting DB, backtest DB와 함께 쓰는 실제 runtime DB의 `strategy.db`를 대상으로 같은 전략명의 충돌 여부를 다시 확인해야 한다.
+
+실제 runtime DB에 아래 전략이 없으면 generated_conditions 문서의 동일 코드로 다시 저장해야 한다.
+
+- buy: `ResearchTest_Tick_B_090000_092800_Wide_20260419`
+- sell: `ResearchTest_Tick_S_090000_092800_Wide_20260419`
+
+기존 최적화 전략인 `Tick_B_902_905_Update_2`와 `Tick_S_902_905_Update_2`는 절대 덮어쓰지 않는다.
+
+`strategy.db`는 로컬 런타임 DB이므로 Git에 커밋하지 않는다.
+
 ## Git Note
 
 `strategy.db`는 로컬 런타임 DB이므로 Git에 커밋하지 않는다. Task 3의 Git 커밋 대상은 이 pilot log 문서뿐이다.
