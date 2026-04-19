@@ -248,6 +248,11 @@ def test_render_research_report_markdown_contains_retention_sections():
     assert '## Retention-Penalized Ranking' in markdown
     assert 'estimated_retention' in markdown
     assert 'adjusted_score' in markdown
+    assert 'selected_count: 1' in markdown
+    assert 'passed_count: 1' in markdown
+    assert 'fallback_count: 0' in markdown
+    assert '| RetentionResearch__cand001 | capital <= 2000 | 0.6 | True | False |' in markdown
+    assert '| 1 | RetentionResearch__cand001 | 100.0 | 0.3 | 0.75 | 75.0 |' in markdown
 
 
 def test_render_research_report_markdown_contains_trade_set_sections():
