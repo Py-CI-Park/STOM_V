@@ -17,6 +17,7 @@ from cli.research_compare import (
 )
 from cli.research_metrics import NUMERIC_COLUMNS, normalize_trade_frame
 from cli.research_promotion import evaluate_research_candidate
+from cli.research_retention import annotate_candidate_retention, select_retention_aware_candidates
 from cli.research_report import build_research_report
 from cli.strategy_generator import delete_strategy_from_db, generate_buy_filter_strategy, save_strategy_to_db
 from cli.strategy_loader import load_strategy_from_db
@@ -39,6 +40,11 @@ _CLEANUP_SAFE_FAILURE_PHASES = {
     'candidate_csv_missing',
     'comparison',
 }
+_RETENTION_METADATA_KEYS = (
+    'retention_estimate',
+    'retention_filter_passed',
+    'retention_fallback_used',
+)
 
 @dataclass
 class ResearchLoopConfig:
@@ -69,6 +75,10 @@ class ResearchLoopConfig:
     candidate_timeout: int | None = None
     candidate_plan_only: bool = False
     keep_failed_candidate: bool = False
+    min_estimated_retention: float = 0.40
+    allow_retention_fallback: bool = True
+    use_retention_penalty: bool = True
+    candidate_pool_multiplier: int = 3
 
 
 def _base_config_dict(config: ResearchLoopConfig) -> dict:
@@ -109,8 +119,12 @@ def _candidate_name_prefix(config: ResearchLoopConfig) -> str:
     return config.candidate_name_prefix or config.name
 
 
+def _candidate_pool_size(config: ResearchLoopConfig) -> int:
+    return max(config.top_n, config.candidate_count * config.candidate_pool_multiplier)
+
+
 def _effective_top_n(config: ResearchLoopConfig) -> int:
-    return max(config.top_n, config.candidate_count) if config.run_candidates else config.top_n
+    return _candidate_pool_size(config) if config.run_candidates else config.top_n
 
 
 def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
@@ -118,6 +132,11 @@ def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
         'candidate_count': config.candidate_count,
         'candidate_name_prefix': _candidate_name_prefix(config),
         'effective_top_n': _effective_top_n(config),
+        'candidate_pool_multiplier': config.candidate_pool_multiplier,
+        'candidate_pool_size': _candidate_pool_size(config),
+        'min_estimated_retention': config.min_estimated_retention,
+        'allow_retention_fallback': config.allow_retention_fallback,
+        'use_retention_penalty': config.use_retention_penalty,
         'candidate_start_date': _candidate_start_date(config),
         'candidate_end_date': _candidate_end_date(config),
         'candidate_timeout': config.candidate_timeout,
@@ -132,13 +151,19 @@ def _build_candidate_specs(config: ResearchLoopConfig, expression_result: dict) 
     expressions = expression_result.get('expressions') or []
     selected = expression_result.get('selected_candidates') or []
     for index, expression in enumerate(expressions[:config.candidate_count], start=1):
-        specs.append({
+        source_candidate = selected[index - 1] if index - 1 < len(selected) else None
+        spec = {
             'index': index,
             'strategy_name': f'{_candidate_name_prefix(config)}__cand{index:03d}',
             'expression': expression,
             'expressions': [expression],
-            'source_candidate': selected[index - 1] if index - 1 < len(selected) else None,
-        })
+            'source_candidate': source_candidate,
+        }
+        if source_candidate:
+            for key in _RETENTION_METADATA_KEYS:
+                if key in source_candidate:
+                    spec[key] = source_candidate[key]
+        specs.append(spec)
     return specs
 
 
@@ -223,6 +248,16 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
         return _error(
             'invalid_candidate_count',
             'candidate_count must be greater than or equal to 1',
+        )
+    if config.run_candidates and not 0 <= config.min_estimated_retention <= 1:
+        return _error(
+            'invalid_min_estimated_retention',
+            'min_estimated_retention must be between 0 and 1',
+        )
+    if config.run_candidates and config.candidate_pool_multiplier < 1:
+        return _error(
+            'invalid_candidate_pool_multiplier',
+            'candidate_pool_multiplier must be greater than or equal to 1',
         )
     if config.run_candidate and config.run_candidates:
         return _error(
@@ -330,6 +365,9 @@ def _candidate_item_error(spec: dict, phase: str, message: str, **extra) -> dict
         'rank_score': None,
         'selected_as_best': False,
     }
+    for key in _RETENTION_METADATA_KEYS:
+        if key in spec:
+            item[key] = spec[key]
     item.update(extra)
     return item
 
@@ -509,6 +547,11 @@ def _execute_candidate_spec(
         'index': spec.get('index'),
         'strategy_name': strategy_name,
         'expression': spec.get('expression'),
+        **{
+            key: spec[key]
+            for key in _RETENTION_METADATA_KEYS
+            if key in spec
+        },
         'status': 'ok',
         'phase': 'candidate_evaluated',
         'candidate': candidate,
@@ -965,6 +1008,52 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             expression_count=len(expressions),
         ))
 
+    source_candidates = expression_result.get('selected_candidates') or []
+    expression_candidates = []
+    for index, expression in enumerate(expressions):
+        source_candidate = (
+            dict(source_candidates[index])
+            if index < len(source_candidates) and isinstance(source_candidates[index], dict)
+            else {}
+        )
+        source_candidate['expression'] = expression
+        expression_candidates.append(source_candidate)
+    baseline_frame = _trade_frame_for_compare(baseline_csv)
+    annotated_candidates = annotate_candidate_retention(
+        expression_candidates,
+        baseline_frame,
+        min_retention=config.min_estimated_retention,
+    )
+    selected_candidates, retention_selection = select_retention_aware_candidates(
+        annotated_candidates,
+        candidate_count=config.candidate_count,
+        allow_fallback=config.allow_retention_fallback,
+        min_retention=config.min_estimated_retention,
+    )
+    expression_result = {
+        **expression_result,
+        'selected_candidates': selected_candidates,
+        'retention_selection': retention_selection,
+    }
+    if retention_selection.get('status') != 'ok':
+        return _build_result(config, _error(
+            retention_selection.get('phase', 'insufficient_retention_candidates'),
+            retention_selection.get('message', 'insufficient retention-aware candidates'),
+            strategy_name=config.name,
+            config=asdict(config),
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+            analysis_result=analysis_result,
+            expression_result=expression_result,
+            iteration_plan=iteration_plan,
+            retention_selection=retention_selection,
+        ))
+    expression_result = {
+        **expression_result,
+        'expressions': [candidate['expression'] for candidate in selected_candidates],
+        'selected_candidates': selected_candidates,
+    }
+
     specs = _build_candidate_specs(config, expression_result)
     candidates = [
         _execute_candidate_spec(config, spec, controller, baseline_csv)
@@ -993,6 +1082,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'analysis_result': analysis_result,
         'expression_result': expression_result,
         'iteration_plan': iteration_plan,
+        'retention_selection': retention_selection,
         'candidate_specs': specs,
         'candidates': ranked_candidates,
         'best_candidate': best_candidate,
