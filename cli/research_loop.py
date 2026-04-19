@@ -167,11 +167,29 @@ def _build_candidate_specs(config: ResearchLoopConfig, expression_result: dict) 
     return specs
 
 
-def _retention_candidate_diagnostics(candidates: list[dict]) -> list[dict]:
+def _retention_candidate_diagnostics(
+    candidates: list[dict],
+    selected_candidates: list[dict] | None = None,
+) -> list[dict]:
+    selected_candidates = selected_candidates or []
+    selected_by_index = {
+        candidate.get('original_index'): candidate
+        for candidate in selected_candidates
+        if candidate.get('original_index') is not None
+    }
+    selected_by_expression = {
+        candidate.get('expression'): candidate
+        for candidate in selected_candidates
+        if candidate.get('expression') is not None
+    }
     diagnostics = []
     for candidate in candidates:
+        selected = selected_by_index.get(candidate.get('original_index'))
+        if selected is None:
+            selected = selected_by_expression.get(candidate.get('expression'))
         item = {'expression': candidate.get('expression')}
         for key in (
+            'original_index',
             'retention_estimate',
             'retention_filter_passed',
             'retention_fallback_used',
@@ -180,6 +198,8 @@ def _retention_candidate_diagnostics(candidates: list[dict]) -> list[dict]:
         ):
             if key in candidate:
                 item[key] = candidate[key]
+        if selected is not None and 'retention_fallback_used' in selected:
+            item['retention_fallback_used'] = selected['retention_fallback_used']
         diagnostics.append(item)
     return diagnostics
 
@@ -1034,6 +1054,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             else {}
         )
         source_candidate['expression'] = expression
+        source_candidate['original_index'] = index
         expression_candidates.append(source_candidate)
     baseline_frame = _trade_frame_for_compare(baseline_csv)
     annotated_candidates = annotate_candidate_retention(
@@ -1047,7 +1068,10 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         allow_fallback=config.allow_retention_fallback,
         min_retention=config.min_estimated_retention,
     )
-    retention_candidates = _retention_candidate_diagnostics(annotated_candidates)
+    retention_candidates = _retention_candidate_diagnostics(
+        annotated_candidates,
+        selected_candidates,
+    )
     retention_selection = {
         **retention_selection,
         'retention_candidates': retention_candidates,

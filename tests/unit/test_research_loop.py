@@ -594,6 +594,73 @@ def test_run_research_iteration_rejects_retention_selection_shortfall(monkeypatc
     assert result['retention_candidates'][0]['retention_estimate']['evaluation_error']
 
 
+def test_run_research_iteration_reports_fallback_in_retention_diagnostics(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    pd.DataFrame([
+        {'keep_metric': 1000, '?ル굝?됵쭗?': 'A', '筌띲끉???볦퍢': 1, '筌띲끉?붷첎?': 1000},
+        {'keep_metric': 5000, '?ル굝?됵쭗?': 'B', '筌띲끉???볦퍢': 2, '筌띲끉?붷첎?': 1000},
+    ]).to_csv(baseline, index=False, encoding='utf-8-sig')
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['keep_metric < 0', 'keep_metric > 4000'],
+        selected_candidates=[
+            {'source': 'segment_scan', 'feature': 'safe_keep'},
+            {'source': 'quantile', 'feature': 'fallback_keep'},
+        ],
+    )
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'retention_estimate': spec['retention_estimate'],
+            'retention_filter_passed': spec['retention_filter_passed'],
+            'retention_fallback_used': spec['retention_fallback_used'],
+            'status': 'error',
+            'phase': 'candidate_backtest',
+            'message': 'stopped before running candidate',
+            'cleanup': {
+                'attempted': True,
+                'reason': 'candidate_backtest',
+                'strategy_name': spec['strategy_name'],
+            },
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RetentionFallback',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            min_estimated_retention=0.75,
+            allow_retention_fallback=True,
+        ),
+        DummyController(None),
+    )
+
+    fallback_diagnostic = next(
+        item for item in result['retention_candidates']
+        if item['expression'] == 'keep_metric > 4000'
+    )
+    fallback_candidate = next(
+        item for item in result['candidates']
+        if item['expression'] == 'keep_metric > 4000'
+    )
+
+    assert result['retention_selection']['fallback_count'] == 1
+    assert fallback_diagnostic['retention_fallback_used'] is True
+    assert fallback_diagnostic['retention_filter_passed'] is False
+    assert fallback_diagnostic['feature'] == 'fallback_keep'
+    assert fallback_candidate['retention_fallback_used'] is True
+
+
 def test_rank_candidate_results_prefers_promotion_pass_then_score():
     candidates = [
         {
