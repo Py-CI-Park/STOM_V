@@ -142,6 +142,10 @@ def create_subcommand_parser():
     disc_research.add_argument('--candidate-name-prefix')
     disc_research.add_argument('--cleanup-best-candidate', action='store_true', default=False)
     disc_research.add_argument('--keep-loser-candidates', action='store_true', default=False)
+    disc_research.add_argument('--min-estimated-retention', type=float, default=0.4)
+    disc_research.add_argument('--no-retention-fallback', dest='allow_retention_fallback', action='store_false', default=True)
+    disc_research.add_argument('--no-retention-penalty', dest='use_retention_penalty', action='store_false', default=True)
+    disc_research.add_argument('--candidate-pool-multiplier', type=int, default=3)
     disc_research.add_argument('--candidate-start', type=int)
     disc_research.add_argument('--candidate-end', type=int)
     disc_research.add_argument('--candidate-timeout', type=int)
@@ -657,6 +661,10 @@ def _handle_discovery(parsed):
             'candidate_name_prefix': parsed.candidate_name_prefix,
             'cleanup_best_candidate': parsed.cleanup_best_candidate,
             'keep_loser_candidates': parsed.keep_loser_candidates,
+            'min_estimated_retention': parsed.min_estimated_retention,
+            'allow_retention_fallback': parsed.allow_retention_fallback,
+            'use_retention_penalty': parsed.use_retention_penalty,
+            'candidate_pool_multiplier': parsed.candidate_pool_multiplier,
             'candidate_start_date': parsed.candidate_start,
             'candidate_end_date': parsed.candidate_end,
             'candidate_timeout': parsed.candidate_timeout,
