@@ -7,6 +7,7 @@ from cli.research_retention import (
     apply_retention_penalty,
     estimate_candidate_retention,
     retention_penalty,
+    select_retention_aware_candidates,
 )
 
 
@@ -147,3 +148,206 @@ def test_apply_retention_penalty_handles_non_finite_scores():
     assert result['trade_count_retention'] == 0.0
     assert result['retention_penalty'] == 0.0
     assert result['adjusted_score'] == 0.0
+
+
+def test_select_retention_aware_candidates_prefers_passed_candidates():
+    candidates = [
+        {
+            'expression': 'A',
+            'combined_score': 100,
+            'retention_estimate': {'estimated_retention': 0.2},
+            'retention_filter_passed': False,
+        },
+        {
+            'expression': 'B',
+            'combined_score': 10,
+            'retention_estimate': {'estimated_retention': 0.7},
+            'retention_filter_passed': True,
+        },
+        {
+            'expression': 'C',
+            'combined_score': 20,
+            'retention_estimate': {'estimated_retention': 0.6},
+            'retention_filter_passed': True,
+        },
+    ]
+
+    selected, summary = select_retention_aware_candidates(
+        candidates,
+        candidate_count=2,
+        allow_fallback=True,
+        min_retention=0.4,
+    )
+
+    assert [item['expression'] for item in selected] == ['B', 'C']
+    assert summary['status'] == 'ok'
+    assert summary['phase'] == 'retention_candidates_selected'
+    assert summary['pool_count'] == 3
+    assert summary['passed_count'] == 2
+    assert summary['fallback_count'] == 0
+    assert summary['selected_count'] == 2
+    assert summary['min_estimated_retention'] == 0.4
+    assert summary['allow_retention_fallback'] is True
+
+
+def test_select_retention_aware_candidates_uses_fallback_when_needed():
+    candidates = [
+        {
+            'expression': 'A',
+            'combined_score': 100,
+            'retention_estimate': {'estimated_retention': 0.2},
+            'retention_filter_passed': False,
+        },
+        {
+            'expression': 'B',
+            'combined_score': 10,
+            'retention_estimate': {'estimated_retention': 0.7},
+            'retention_filter_passed': True,
+        },
+        {
+            'expression': 'C',
+            'combined_score': 20,
+            'retention_estimate': {'estimated_retention': 0.3},
+            'retention_filter_passed': False,
+        },
+    ]
+
+    selected, summary = select_retention_aware_candidates(
+        candidates,
+        candidate_count=3,
+        allow_fallback=True,
+        min_retention=0.4,
+    )
+
+    assert [item['expression'] for item in selected] == ['B', 'C', 'A']
+    assert selected[0]['retention_fallback_used'] is False
+    assert selected[1]['retention_fallback_used'] is True
+    assert selected[2]['retention_fallback_used'] is True
+    assert summary['fallback_count'] == 2
+    assert summary['selected_count'] == 3
+
+
+def test_select_retention_aware_candidates_blocks_when_fallback_disabled():
+    candidates = [
+        {
+            'expression': 'A',
+            'retention_estimate': {'estimated_retention': 0.2},
+            'retention_filter_passed': False,
+        },
+        {
+            'expression': 'B',
+            'retention_estimate': {'estimated_retention': 0.7},
+            'retention_filter_passed': True,
+        },
+    ]
+
+    selected, summary = select_retention_aware_candidates(
+        candidates,
+        candidate_count=2,
+        allow_fallback=False,
+        min_retention=0.4,
+    )
+
+    assert selected == []
+    assert summary['status'] == 'error'
+    assert summary['phase'] == 'insufficient_retention_candidates'
+    assert summary['pool_count'] == 2
+    assert summary['passed_count'] == 1
+    assert summary['fallback_count'] == 0
+    assert summary['selected_count'] == 0
+    assert summary['min_estimated_retention'] == 0.4
+    assert summary['allow_retention_fallback'] is False
+
+
+def test_select_retention_aware_candidates_does_not_fallback_eval_errors():
+    candidates = [
+        {
+            'expression': 'A',
+            'retention_estimate': {'estimated_retention': 0.7, 'evaluation_error': None},
+            'retention_filter_passed': True,
+        },
+        {
+            'expression': 'B',
+            'retention_estimate': {'estimated_retention': 0.0, 'evaluation_error': 'missing column'},
+            'retention_filter_passed': False,
+        },
+        {
+            'expression': 'C',
+            'retention_estimate': {'estimated_retention': 0.3, 'evaluation_error': None},
+            'retention_filter_passed': False,
+        },
+    ]
+
+    selected, summary = select_retention_aware_candidates(
+        candidates,
+        candidate_count=2,
+        allow_fallback=True,
+        min_retention=0.4,
+    )
+
+    assert [item['expression'] for item in selected] == ['A', 'C']
+    assert summary['fallback_count'] == 1
+
+
+def test_select_retention_aware_candidates_never_selects_eval_errors():
+    candidates = [
+        {
+            'expression': 'A',
+            'retention_estimate': {'estimated_retention': 0.7, 'evaluation_error': 'bad mask'},
+            'retention_filter_passed': True,
+        },
+        {
+            'expression': 'B',
+            'retention_estimate': {'estimated_retention': 0.6, 'evaluation_error': None},
+            'retention_filter_passed': True,
+        },
+    ]
+
+    selected, summary = select_retention_aware_candidates(
+        candidates,
+        candidate_count=1,
+        allow_fallback=True,
+        min_retention=0.4,
+    )
+
+    assert [item['expression'] for item in selected] == ['B']
+    assert summary['passed_count'] == 1
+
+
+def test_select_retention_aware_candidates_sorts_score_after_retention():
+    candidates = [
+        {
+            'expression': 'A',
+            'combined_score': 10,
+            'retention_estimate': {'estimated_retention': 0.8},
+            'retention_filter_passed': True,
+        },
+        {
+            'expression': 'B',
+            'combined_score': 20,
+            'retention_estimate': {'estimated_retention': 0.8},
+            'retention_filter_passed': True,
+        },
+        {
+            'expression': 'C',
+            'score': 30,
+            'retention_estimate': {'estimated_retention': 0.2},
+            'retention_filter_passed': False,
+        },
+        {
+            'expression': 'D',
+            'base_score': 40,
+            'retention_estimate': {'estimated_retention': 0.2},
+            'retention_filter_passed': False,
+        },
+    ]
+
+    selected, summary = select_retention_aware_candidates(
+        candidates,
+        candidate_count=4,
+        allow_fallback=True,
+        min_retention=0.4,
+    )
+
+    assert [item['expression'] for item in selected] == ['B', 'A', 'D', 'C']
+    assert summary['fallback_count'] == 2

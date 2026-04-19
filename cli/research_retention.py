@@ -106,3 +106,98 @@ def apply_retention_penalty(rank_score: dict, min_retention) -> dict:
     result['retention_penalty'] = penalty
     result['adjusted_score'] = promotion_score * penalty
     return result
+
+
+def _candidate_score(candidate: dict) -> float:
+    for key in ('combined_score', 'score', 'base_score'):
+        if key in candidate:
+            return _finite_float(candidate.get(key))
+    return 0.0
+
+
+def _retention_value(candidate: dict) -> float:
+    estimate = candidate.get('retention_estimate') or {}
+    return _finite_float(estimate.get('estimated_retention'))
+
+
+def _has_evaluation_error(candidate: dict) -> bool:
+    estimate = candidate.get('retention_estimate') or {}
+    return bool(estimate.get('evaluation_error'))
+
+
+def _retention_selection_summary(
+    *,
+    status: str,
+    phase: str,
+    pool_count: int,
+    passed_count: int,
+    fallback_count: int,
+    selected_count: int,
+    min_retention,
+    allow_fallback: bool,
+) -> dict:
+    return {
+        'status': status,
+        'phase': phase,
+        'pool_count': pool_count,
+        'passed_count': passed_count,
+        'fallback_count': fallback_count,
+        'selected_count': selected_count,
+        'min_estimated_retention': min_retention,
+        'allow_retention_fallback': allow_fallback,
+    }
+
+
+def select_retention_aware_candidates(
+    candidates: list[dict],
+    candidate_count: int,
+    allow_fallback: bool,
+    min_retention,
+) -> tuple[list[dict], dict]:
+    pool = [dict(candidate) for candidate in candidates]
+    requested_count = max(int(candidate_count), 0)
+    passed = [
+        candidate for candidate in pool
+        if candidate.get('retention_filter_passed') and not _has_evaluation_error(candidate)
+    ]
+    failed = [
+        candidate for candidate in pool
+        if not candidate.get('retention_filter_passed') and not _has_evaluation_error(candidate)
+    ]
+    sort_key = lambda item: (-_retention_value(item), -_candidate_score(item))
+    passed.sort(key=sort_key)
+    failed.sort(key=sort_key)
+
+    if len(passed) < requested_count and not allow_fallback:
+        return [], _retention_selection_summary(
+            status='error',
+            phase='insufficient_retention_candidates',
+            pool_count=len(pool),
+            passed_count=len(passed),
+            fallback_count=0,
+            selected_count=0,
+            min_retention=min_retention,
+            allow_fallback=allow_fallback,
+        )
+
+    selected = []
+    for item in passed[:requested_count]:
+        item['retention_fallback_used'] = False
+        selected.append(item)
+
+    fallback_needed = max(requested_count - len(selected), 0)
+    for item in failed[:fallback_needed]:
+        item['retention_fallback_used'] = True
+        selected.append(item)
+
+    fallback_count = sum(1 for item in selected if item.get('retention_fallback_used'))
+    return selected, _retention_selection_summary(
+        status='ok',
+        phase='retention_candidates_selected',
+        pool_count=len(pool),
+        passed_count=len(passed),
+        fallback_count=fallback_count,
+        selected_count=len(selected),
+        min_retention=min_retention,
+        allow_fallback=allow_fallback,
+    )
