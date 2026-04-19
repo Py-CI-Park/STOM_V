@@ -759,6 +759,54 @@ def test_rank_candidate_results_prefers_promotion_pass_then_score():
     assert ranked[0]['rank_score']['trade_count'] == 100.0
 
 
+def test_rank_candidate_results_uses_adjusted_score_when_retention_penalty_enabled():
+    config = ResearchLoopConfig(
+        run_candidate=False,
+        run_candidates=True,
+        min_estimated_retention=0.4,
+        use_retention_penalty=True,
+    )
+    candidates = [
+        {
+            'index': 1,
+            'status': 'ok',
+            'strategy_name': 'LowRetentionHighScore',
+            'expression': 'A',
+            'promotion': {'passed': False, 'score': 100.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 10,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.1,
+            },
+        },
+        {
+            'index': 2,
+            'status': 'ok',
+            'strategy_name': 'HighRetentionLowerScore',
+            'expression': 'B',
+            'promotion': {'passed': False, 'score': 40.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 100,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.4,
+            },
+        },
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates, config)
+
+    assert best['strategy_name'] == 'HighRetentionLowerScore'
+    assert ranked[0]['rank_score']['retention_penalty'] == 0.25
+    assert ranked[0]['rank_score']['adjusted_score'] == 25.0
+    assert ranked[1]['rank_score']['adjusted_score'] == 40.0
+
+
 def test_rank_candidate_results_normalizes_non_finite_scores():
     candidates = [
         {

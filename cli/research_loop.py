@@ -17,7 +17,11 @@ from cli.research_compare import (
 )
 from cli.research_metrics import NUMERIC_COLUMNS, normalize_trade_frame
 from cli.research_promotion import evaluate_research_candidate
-from cli.research_retention import annotate_candidate_retention, select_retention_aware_candidates
+from cli.research_retention import (
+    annotate_candidate_retention,
+    apply_retention_penalty,
+    select_retention_aware_candidates,
+)
 from cli.research_report import build_research_report
 from cli.strategy_generator import delete_strategy_from_db, generate_buy_filter_strategy, save_strategy_to_db
 from cli.strategy_loader import load_strategy_from_db
@@ -637,21 +641,36 @@ def _rank_score(candidate: dict) -> dict:
 
 
 def _rank_key(candidate: dict) -> tuple:
-    rank_score = _rank_score(candidate)
-    passed_rank = 0 if rank_score['promotion_passed'] else 1
+    score = candidate.get('rank_score') or _rank_score(candidate)
+    passed_rank = 0 if score['promotion_passed'] else 1
+    score_value = score.get('adjusted_score', score['promotion_score'])
     return (
         passed_rank,
-        -rank_score['promotion_score'],
-        -rank_score['trade_count'],
-        -rank_score['trade_count_retention'],
-        rank_score['date_concentration'],
-        rank_score['symbol_concentration'],
+        -score_value,
+        -score['trade_count'],
+        -score['trade_count_retention'],
+        score['date_concentration'],
+        score['symbol_concentration'],
         int(candidate.get('index') or 0),
     )
 
 
-def _rank_candidate_results(candidates: list[dict]) -> tuple[list[dict], dict | None]:
+def _rank_candidate_results(
+    candidates: list[dict],
+    config: ResearchLoopConfig | None = None,
+) -> tuple[list[dict], dict | None]:
     ranked_candidates = [dict(candidate) for candidate in candidates]
+    for candidate in ranked_candidates:
+        rank_score = _rank_score(candidate)
+        if config is not None and config.use_retention_penalty:
+            rank_score = apply_retention_penalty(
+                rank_score,
+                config.min_estimated_retention,
+            )
+        candidate['rank'] = None
+        candidate['rank_score'] = rank_score
+        candidate['selected_as_best'] = False
+
     eligible_indexes = [
         index
         for index, candidate in enumerate(ranked_candidates)
@@ -663,11 +682,6 @@ def _rank_candidate_results(candidates: list[dict]) -> tuple[list[dict], dict | 
     )
 
     best_candidate = None
-    for candidate in ranked_candidates:
-        candidate['rank'] = None
-        candidate['rank_score'] = _rank_score(candidate)
-        candidate['selected_as_best'] = False
-
     for rank, candidate_index in enumerate(ordered_indexes, start=1):
         candidate = ranked_candidates[candidate_index]
         candidate['rank'] = rank
@@ -1126,7 +1140,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         _execute_candidate_spec(config, spec, controller, baseline_csv)
         for spec in specs
     ]
-    ranked_candidates, best_candidate = _rank_candidate_results(candidates)
+    ranked_candidates, best_candidate = _rank_candidate_results(candidates, config)
     ranked_candidates, cleanup_summary = _apply_iteration_cleanup(config, ranked_candidates)
     best_candidate = next(
         (
