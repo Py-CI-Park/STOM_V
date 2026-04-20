@@ -194,7 +194,7 @@ def _runtime_profile(paths: dict[str, str], stock_back_key: str) -> dict[str, An
     csv_dir = paths["csv_dir"]
     setting_status = _sqlite_usability(setting_db)
     backtest_status = _sqlite_usability(backtest_db)
-    stock_back_status = _sqlite_usability(stock_back_db, require_tables=True)
+    stock_back_status = _sqlite_table_probe(stock_back_db)
 
     return {
         "project_root": str(paths.get("project_root", PROJECT_ROOT)),
@@ -293,6 +293,49 @@ def _sqlite_usability(db_path: str, require_tables: bool = False) -> dict[str, A
         return {
             "usable": False,
             "integrity_check": "error",
+            "message": str(exc),
+            "table_count": 0,
+        }
+    finally:
+        if con is not None:
+            con.close()
+
+
+def _sqlite_table_probe(db_path: str) -> dict[str, Any]:
+    if not Path(db_path).is_file():
+        return {
+            "usable": False,
+            "integrity_check": "missing",
+            "message": "database file is missing",
+            "table_count": 0,
+        }
+
+    con = None
+    try:
+        uri = Path(db_path).resolve().as_uri() + "?mode=ro"
+        con = sqlite3.connect(uri, uri=True)
+        table_count = int(con.execute(
+            "SELECT COUNT(*) FROM sqlite_master "
+            "WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+        ).fetchone()[0])
+        if table_count < 1:
+            return {
+                "usable": False,
+                "integrity_check": "table_probe_only",
+                "message": "database has no user tables",
+                "table_count": table_count,
+            }
+
+        return {
+            "usable": True,
+            "integrity_check": "table_probe_only",
+            "message": "",
+            "table_count": table_count,
+        }
+    except sqlite3.Error as exc:
+        return {
+            "usable": False,
+            "integrity_check": "table_probe_only",
             "message": str(exc),
             "table_count": 0,
         }

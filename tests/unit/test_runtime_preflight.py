@@ -88,6 +88,7 @@ def test_runtime_preflight_passes_with_valid_paths_and_strategies(tmp_path):
     assert result['status'] == 'ok'
     assert result['runtime_profile']['strategy_db_path'] == paths['strategy_db']
     assert result['runtime_profile']['stock_back_db_path'] == paths['stock_tick_back_db']
+    assert result['runtime_profile']['stock_back_db_integrity'] == 'table_probe_only'
     assert result['runtime_profile']['csv_output_dir'] == paths['csv_dir']
     assert result['strategies']['buy']['status'] == 'ok'
     assert result['strategies']['sell']['status'] == 'ok'
