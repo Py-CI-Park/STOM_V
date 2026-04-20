@@ -1034,6 +1034,23 @@ def test_runtime_preflight_handler_normalizes_multiple_avg_times(capsys):
     assert config.avg_time == [60, 120]
 
 
+def test_runtime_preflight_handler_returns_json_for_invalid_avg_time(capsys):
+    exit_code = handle_subcommand([
+        'runtime-preflight',
+        '--buy', 'BuyWide',
+        '--sell', 'SellWide',
+        '--start', '20250101',
+        '--end', '20251231',
+        '--avg-time', 'abc',
+    ])
+
+    assert exit_code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['status'] == 'error'
+    assert 'config' in payload['failed_checks']
+    assert any('avg_time' in error for error in payload['validation_errors'])
+
+
 def test_runtime_preflight_parser_constrains_divid_mode():
     parser = create_subcommand_parser()
     valid = parser.parse_args([

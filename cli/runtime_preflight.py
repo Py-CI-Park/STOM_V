@@ -348,6 +348,7 @@ def _validate_config(config: BacktestConfig) -> list[str]:
     errors = []
     start_valid = _is_yyyymmdd(config.start_date)
     end_valid = _is_yyyymmdd(config.end_date)
+    engine_count = _safe_int(getattr(config, "engine_count", None))
 
     if not start_valid:
         errors.append(f"start_date must be a valid YYYYMMDD date: {config.start_date}")
@@ -358,13 +359,36 @@ def _validate_config(config: BacktestConfig) -> list[str]:
             f"start_date must be less than or equal to end_date: "
             f"{config.start_date} > {config.end_date}"
         )
-    if int(getattr(config, "engine_count", 0) or 0) < 1:
+    if engine_count is None or engine_count < 1:
         errors.append("engine_count must be at least 1")
+    errors.extend(_avg_time_validation_errors(getattr(config, "avg_time", None)))
     if not str(getattr(config, "buy_strategy", "") or "").strip():
         errors.append("buy strategy name must be non-empty")
     if not str(getattr(config, "sell_strategy", "") or "").strip():
         errors.append("sell strategy name must be non-empty")
 
+    return errors
+
+
+def _safe_int(value: object) -> int | None:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _avg_time_validation_errors(avg_time: object) -> list[str]:
+    values = avg_time if isinstance(avg_time, (list, tuple)) else [avg_time]
+    if not values:
+        return ["avg_time must include at least one positive integer"]
+
+    errors = []
+    for value in values:
+        int_value = _safe_int(value)
+        if int_value is None:
+            errors.append(f"avg_time must be a positive integer: {value!r}")
+        elif int_value < 1:
+            errors.append(f"avg_time must be positive: {int_value}")
     return errors
 
 

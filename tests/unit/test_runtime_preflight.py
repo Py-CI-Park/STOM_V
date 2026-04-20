@@ -272,6 +272,24 @@ def test_runtime_preflight_fails_when_engine_count_is_zero(tmp_path):
     assert result['validation_errors']
 
 
+def test_runtime_preflight_fails_when_avg_time_is_malformed(tmp_path):
+    from cli.runtime_preflight import run_runtime_preflight
+
+    paths = _make_runtime_files(
+        tmp_path,
+        buy_code='buy_flag = True\nif buy_flag:\n    self.Buy()',
+        sell_code='sell_flag = True\nif sell_flag:\n    self.Sell()',
+    )
+    config = _wide_config()
+    config.avg_time = 'abc'
+
+    result = run_runtime_preflight(config, paths=paths)
+
+    assert result['status'] == 'error'
+    assert 'config' in result['failed_checks']
+    assert any('avg_time' in error for error in result['validation_errors'])
+
+
 def test_runtime_preflight_fails_when_stock_back_db_is_corrupt(tmp_path):
     from cli.runtime_preflight import run_runtime_preflight
 

@@ -496,13 +496,19 @@ def _handle_runtime_preflight(parsed):
     from cli.config import BacktestConfig
     from cli import runtime_preflight
 
+    avg_time, avg_time_errors = _normalize_avg_time(parsed.avg_time)
+    if avg_time_errors:
+        result = _runtime_preflight_config_error(parsed, avg_time_errors)
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 1
+
     config = BacktestConfig(
         buy_strategy=parsed.buy,
         sell_strategy=parsed.sell,
         start_date=parsed.start,
         end_date=parsed.end,
         betting=parsed.betting,
-        avg_time=_normalize_avg_time(parsed.avg_time),
+        avg_time=avg_time,
         start_time=parsed.start_time,
         end_time=parsed.end_time,
         engine_count=parsed.engines,
@@ -520,8 +526,52 @@ def _handle_runtime_preflight(parsed):
 
 
 def _normalize_avg_time(avg_time):
-    avg_time_parts = [int(x.strip()) for x in str(avg_time).split(',') if x.strip()]
-    return avg_time_parts[0] if len(avg_time_parts) == 1 else avg_time_parts
+    raw_parts = [x.strip() for x in str(avg_time).split(',') if x.strip()]
+    if not raw_parts:
+        return None, ["avg_time must include at least one positive integer"]
+
+    avg_time_parts = []
+    errors = []
+    for raw_part in raw_parts:
+        try:
+            value = int(raw_part)
+        except (TypeError, ValueError):
+            errors.append(f"avg_time must be a positive integer: {raw_part!r}")
+            continue
+        if value < 1:
+            errors.append(f"avg_time must be positive: {value}")
+            continue
+        avg_time_parts.append(value)
+
+    if errors:
+        return None, errors
+    return (avg_time_parts[0] if len(avg_time_parts) == 1 else avg_time_parts), []
+
+
+def _runtime_preflight_config_error(parsed, validation_errors):
+    return {
+        "status": "error",
+        "failed_checks": ["config"],
+        "validation_errors": validation_errors,
+        "timeframe_match": {
+            "status": "skipped",
+            "message": "config validation failed",
+        },
+        "runtime_profile": {},
+        "strategies": {},
+        "config": {
+            "buy_strategy": parsed.buy,
+            "sell_strategy": parsed.sell,
+            "start": parsed.start,
+            "end": parsed.end,
+            "timeframe": parsed.timeframe,
+            "avg_time": parsed.avg_time,
+            "start_time": parsed.start_time,
+            "end_time": parsed.end_time,
+            "engines": parsed.engines,
+            "timeout": parsed.timeout,
+        },
+    }
 
 
 def _handle_formula(parsed):
