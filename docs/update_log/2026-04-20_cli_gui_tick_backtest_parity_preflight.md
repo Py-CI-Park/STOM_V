@@ -47,7 +47,7 @@ python -m pytest tests/unit/test_runtime_preflight.py tests/unit/test_backtest_c
 결과:
 
 ```text
-108 passed in 7.91s
+113 passed in 8.94s
 ```
 
 ### full unit tests: PASS
@@ -59,7 +59,7 @@ python -m pytest tests/unit/ -q
 결과:
 
 ```text
-1014 passed, 1 skipped, 10 warnings in 69.85s (0:01:09)
+1019 passed, 1 skipped, 10 warnings in 71.64s (0:01:11)
 ```
 
 ### verify_nonrelease_sync.py: PASS
@@ -118,6 +118,8 @@ setting_db_path=C:\System_Trading\STOM\STOM_V.wt-dev\_database\setting.db
 backtest_db_path=C:\System_Trading\STOM\STOM_V.wt-dev\_database\backtest.db
 stock_back_db_path=C:\System_Trading\STOM\STOM_V.wt-dev\_database\stock_tick_back.db
 stock_back_db_kind=tick
+stock_back_db_integrity=table_probe_only
+stock_back_db_table_count=2427
 buy_status=ok
 buy_code_length=270
 sell_status=ok
