@@ -84,6 +84,7 @@ def check_strategy_code(
             code if isinstance(code, str) else None,
         )
 
+    assert isinstance(code, str)
     return {
         "status": "ok",
         "strategy_name": strategy_name,
