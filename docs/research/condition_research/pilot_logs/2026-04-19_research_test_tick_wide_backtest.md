@@ -138,36 +138,106 @@ backdata_0 ~ backdata_31 shared memory unlink
 
 ## 판단
 
-이번 wide 조건식은 연구 데이터 확보라는 의도에는 맞지만, 실제 tick 백테스트 엔진에는 너무 넓다.
+feature worktree CLI에서는 정상 완료하지 못했지만, 사용자가 같은 조건식을 `STOM_V.wt-dev`의 실제 실행 환경에서 다시 로딩해 직접 실행한 결과 정상 완료됐다.
 
-특히 1일 smoke도 완료하지 못했으므로, 현재 조건식은 다음 단계로 그대로 사용할 수 없다.
+따라서 앞선 worktree 실패는 조건식 자체 문제라기보다 worktree 런타임 DB, shared memory, CLI 실행 컨텍스트 차이로 판단한다.
 
-현재 조건식의 문제 추정:
+## wt-dev 실제 실행 성공 결과
 
 ```text
-관심종목 + 가격 + 등락율 + 당일거래대금만으로는 진입 후보가 너무 많음
-체결강도/거래량/호가/VI 계열을 전혀 제한하지 않아 백테스트 부하가 과도함
-매수 조건이 자동 연구용 baseline으로도 지나치게 broad함
+[2026-04-20 13:20:30] 백테스트 실행조건
+startday=20250101
+endday=20251231
+starttime=090000
+endtime=092800
+avgtime=30
+buy=ResearchTest_Tick_B_090000_092800_Wide_20260419
+sell=ResearchTest_Tick_S_090000_092800_Wide_20260419
+back_count=1638
+engine_start=90000
+engine_end=92800
+engine_avg=[30]
+engine_multi=32
+```
+
+결과:
+
+```text
+거래횟수: 40,937회
+일평균거래횟수: 169.9회
+적정최대보유종목수: 40개
+평균보유기간: 228.19초
+익절: 12,289회
+손절: 28,648회
+승률: 30.02%
+평균수익률: -0.68%
+수익률합계: -695.09%
+수익금합계: -5,564,960,005원
+최대낙폭금액: 5,566,752,407원
+최대낙폭률: 693.76%
+매매성능지수: 0.60
+연간예상수익률: -721.05%
+백테스트 소요시간: 0:01:00.675279
+```
+
+부트스트랩:
+
+```text
+부트스트랩 평균수익률: -1.0%
+예상최소수익률: -1.0%
+예상최대수익률: -1.0%
+전략유의확률(pv): 0.0%
+```
+
+생성 CSV:
+
+```text
+C:\System_Trading\STOM\STOM_V.wt-dev\backtest\csv\stock_bt_ResearchTest_Tick_B_090000_092800_Wide_20260419_20260420132132.csv
 ```
 
 ## 결론
 
-Task 4의 직접 백테스트는 성공 기준을 충족하지 못했다.
+Task 4의 실질 목적은 `wt-dev` 실제 실행 환경에서 달성됐다.
 
 ```text
-CSV 생성: 실패
-거래 수 확인: 실패
-runtime 확인: 실패
-Retention-Aware 기준 CSV 확보: 실패
+CSV 생성: 성공
+거래 수 확인: 성공
+runtime 확인: 성공
+Retention-Aware 기준 CSV 확보: 성공
 ```
 
-다음 작업은 기존 wide 조건식 저장/백테스트를 완료로 볼 수 없으며, 조건식을 조정해야 한다.
+Wide v1은 실전 전략으로는 부적합하다.
+
+```text
+수익률: 매우 나쁨
+최대낙폭률: 매우 큼
+TPI: 낮음
+```
+
+그러나 연구 baseline으로는 가치가 있다.
+
+```text
+기존 최적화 tick 전략 거래 수: 약 100회
+ResearchTest wide 거래 수: 40,937회
+```
+
+이는 자동 조건식 개선 루프가 분석할 표본을 충분히 제공한다.
 
 ## 다음 조정 방향
 
-기존 설계의 “넓은 조건식” 목표는 유지하되, 최소한의 거래량/체결강도 조건을 추가해 엔진 부하를 줄여야 한다.
+Wide2 조건식은 즉시 필수는 아니다. 먼저 wt-dev에서 생성된 Wide v1 CSV를 Retention-Aware 후보 개선 루프의 입력으로 사용한다.
 
-후보 조정안:
+다음 실행 순서:
+
+```text
+1. Wide v1 결과 CSV를 discovery research --run-candidates 입력으로 사용
+2. Retention-Aware 후보 선별 결과 확인
+3. 후보 N개 백테스트/랭킹
+4. best_candidate와 promotion failure reason 분석
+5. 필요할 때 Wide2 조건식 설계
+```
+
+Wide2 후보 조건은 보류한다.
 
 ```text
 데이터길이 >= 30
@@ -178,14 +248,17 @@ Retention-Aware 기준 CSV 확보: 실패
 전일동시간비 > 0
 ```
 
-이 조건들은 여전히 최적화 조건이 아니라, 비정상/극저활성 tick을 제거하기 위한 최소 실행 가능성 조건으로 봐야 한다.
+이 조건들은 나중에 Wide v1이 너무 무겁거나 결과 품질이 분석 불가능할 때 적용한다.
 
-다음 파일럿은 아래 순서가 적절하다.
+## 다음 Retention-Aware 입력
 
 ```text
-1. Wide v2 조건식 문서화
-2. strategy.db에 ResearchTest_Tick_B_090000_092800_Wide2_20260419 저장
-3. 1일 smoke
-4. 1개월 smoke
-5. 2025년 전체 백테스트
+input_csv:
+C:\System_Trading\STOM\STOM_V.wt-dev\backtest\csv\stock_bt_ResearchTest_Tick_B_090000_092800_Wide_20260419_20260420132132.csv
+
+base_buy_strategy:
+ResearchTest_Tick_B_090000_092800_Wide_20260419
+
+sell_strategy:
+ResearchTest_Tick_S_090000_092800_Wide_20260419
 ```
