@@ -47,7 +47,7 @@ python -m pytest tests/unit/test_runtime_preflight.py tests/unit/test_backtest_c
 결과:
 
 ```text
-115 passed in 8.85s
+115 passed in 8.82s
 ```
 
 ### full unit tests: PASS
@@ -59,7 +59,7 @@ python -m pytest tests/unit/ -q
 결과:
 
 ```text
-1021 passed, 1 skipped, 10 warnings in 72.42s (0:01:12)
+1021 passed, 1 skipped, 10 warnings in 72.11s (0:01:12)
 ```
 
 ### verify_nonrelease_sync.py: PASS
