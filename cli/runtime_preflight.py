@@ -370,7 +370,7 @@ def _validate_config(config: BacktestConfig) -> list[str]:
     return errors
 
 
-def _safe_int(value: object) -> int | None:
+def _safe_int(value: Any) -> int | None:
     try:
         return int(value)
     except (TypeError, ValueError):
