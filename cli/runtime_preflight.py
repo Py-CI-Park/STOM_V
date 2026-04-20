@@ -41,7 +41,8 @@ def check_strategy_code(
 
     if isinstance(code, str):
         stripped = code.strip()
-        if stripped and set(stripped) == {"?"}:
+        compact = "".join(code.split())
+        if compact and set(compact) == {"?"}:
             return _strategy_error(
                 strategy_name,
                 strategy_type,

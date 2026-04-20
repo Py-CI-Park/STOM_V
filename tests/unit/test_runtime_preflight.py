@@ -91,6 +91,23 @@ def test_runtime_preflight_fails_when_strategy_code_is_question_marks(tmp_path):
     assert 'buy_strategy' in result['failed_checks']
 
 
+def test_runtime_preflight_fails_when_question_marks_include_whitespace(tmp_path):
+    from cli.runtime_preflight import run_runtime_preflight
+
+    paths = _make_runtime_files(
+        tmp_path,
+        buy_code='??\n??',
+        sell_code='留ㅻ룄 = True\nif 留ㅻ룄:\n    self.Sell()',
+    )
+
+    result = run_runtime_preflight(_wide_config(), paths=paths)
+
+    assert result['status'] == 'error'
+    assert result['strategies']['buy']['status'] == 'error'
+    assert result['strategies']['buy']['reason'] == 'suspicious_question_marks'
+    assert 'buy_strategy' in result['failed_checks']
+
+
 def test_runtime_preflight_fails_when_strategy_code_is_too_short(tmp_path):
     from cli.runtime_preflight import run_runtime_preflight
 
