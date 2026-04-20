@@ -445,6 +445,12 @@ def run_backtest(config):
             result.update(checkpoint.to_result_fields(status='timeout', cleanup_status='process_killed'))
             return result
         checkpoint.mark('backtest_process_finished', detail={'exitcode': proc_backtest.exitcode})
+        if proc_backtest.exitcode not in (0, None):
+            checkpoint.mark('backtest_process_exitcode', detail={'exitcode': proc_backtest.exitcode})
+            result['status'] = 'error'
+            result['message'] = f'Backtest child process exited with code {proc_backtest.exitcode}'
+            result.update(checkpoint.to_result_fields(status='error'))
+            return result
 
         # backtest.db에서 최신 결과 읽기
         metrics = _extract_metrics(config, min_rowid=backtest_rowid_watermark)
