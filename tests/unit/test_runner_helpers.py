@@ -415,3 +415,29 @@ class TestCliSharedMemoryCleanup:
         assert 'shared_info.clear()' in content
         assert "shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)" in content
         assert '_cleanup_shared_memory(shared_info)' in content
+
+
+def test_runner_imports_checkpoint_recorder():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert 'from cli.backtest_checkpoints import BacktestCheckpointRecorder' in content
+
+
+def test_runner_records_timeout_checkpoint_fields():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert "checkpoint.mark('preflight_started'" in content
+    assert "checkpoint.mark('shared_data_loaded'" in content
+    assert "checkpoint.mark('backtest_process_started'" in content
+    assert "checkpoint.to_result_fields(status='timeout'" in content
+    assert "result.update(checkpoint.to_result_fields(status='success'" in content
