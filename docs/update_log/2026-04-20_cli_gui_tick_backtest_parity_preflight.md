@@ -29,13 +29,14 @@ CLI 자동 연구 루프를 재개하기 전에 GUI/STOM Wide v1 tick 백테스�
 
 - `cli/runtime_preflight.py` 추가
 - `runtime-preflight` CLI 명령 추가
+- `stom_backtest.py` 공개 진입점에 `runtime-preflight` 라우팅 추가
 - `cli/backtest_checkpoints.py` 추가
 - `cli.runner.run_backtest()` timeout checkpoint 필드 연결
 - runtime preflight, subcommand, checkpoint 테스트 추가
 
 ## 검증 결과
 
-검증 범위: 이 작업에서는 unit tests와 nonrelease sync 검증만 통과했다. `runtime-preflight` 실제 실행, CLI baseline 1회 백테스트, GUI 결과 비교, `candidate_count=5` 후보 실행은 아직 검증하지 않았다.
+검증 범위: 이 작업에서는 unit tests, nonrelease sync, `runtime-preflight` 공개 CLI 실제 실행을 검증했다. CLI baseline 1회 백테스트, GUI 결과 비교, `candidate_count=5` 후보 실행은 아직 검증하지 않았다.
 
 ### focused tests: PASS
 
@@ -46,7 +47,7 @@ python -m pytest tests/unit/test_runtime_preflight.py tests/unit/test_backtest_c
 결과:
 
 ```text
-107 passed in 7.86s
+108 passed in 7.91s
 ```
 
 ### full unit tests: PASS
@@ -58,7 +59,7 @@ python -m pytest tests/unit/ -q
 결과:
 
 ```text
-1013 passed, 1 skipped, 10 warnings in 74.45s (0:01:14)
+1014 passed, 1 skipped, 10 warnings in 69.85s (0:01:09)
 ```
 
 ### verify_nonrelease_sync.py: PASS
