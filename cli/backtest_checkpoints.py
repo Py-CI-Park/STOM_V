@@ -18,7 +18,7 @@ class BacktestCheckpointRecorder:
             {
                 'name': name,
                 'elapsed_seconds': self._elapsed_seconds(),
-                'detail': detail or {},
+                'detail': _detail_to_json_friendly(detail),
             }
         )
 
@@ -45,3 +45,30 @@ class BacktestCheckpointRecorder:
 
     def _elapsed_seconds(self) -> float:
         return round(time.monotonic() - self.started_at, 3)
+
+
+def _detail_to_json_friendly(detail: dict[str, Any] | None) -> dict[str, Any]:
+    if detail is None:
+        return {}
+    return _to_json_friendly(detail)
+
+
+def _to_json_friendly(value: Any) -> Any:
+    if value is None:
+        return None
+    if isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, list):
+        return [_to_json_friendly(item) for item in value]
+    if isinstance(value, dict):
+        return {
+            _to_json_friendly_key(key): _to_json_friendly(item)
+            for key, item in value.items()
+        }
+    return repr(value)
+
+
+def _to_json_friendly_key(key: Any) -> str | int | float | bool | None:
+    if key is None or isinstance(key, (str, int, float, bool)):
+        return key
+    return repr(key)

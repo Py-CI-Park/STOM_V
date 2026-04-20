@@ -1,3 +1,5 @@
+import json
+
 from cli.backtest_checkpoints import BacktestCheckpointRecorder
 
 
@@ -28,3 +30,15 @@ def test_checkpoint_recorder_builds_timeout_payload():
     assert payload['checkpoint_status'] == 'timeout'
     assert payload['cleanup_status'] == 'ok'
     assert payload['elapsed_seconds'] >= 0
+
+
+def test_checkpoint_recorder_converts_non_json_detail_values():
+    recorder = BacktestCheckpointRecorder()
+    bad_value = object()
+    recorder.mark('shared_data_loaded', detail={'bad': bad_value, 'ok': 1})
+
+    payload = recorder.to_result_fields(status='timeout')
+
+    json.dumps(payload)
+    assert payload['checkpoints'][0]['detail']['ok'] == 1
+    assert payload['checkpoints'][0]['detail']['bad'] == repr(bad_value)
