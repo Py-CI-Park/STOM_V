@@ -16,6 +16,9 @@ from cli.paths import (
 from cli.strategy import evaluate_strategy
 
 
+MIN_STRATEGY_CODE_LENGTH = 12
+
+
 def default_runtime_paths() -> dict[str, str]:
     """Return the default runtime paths used by CLI backtests."""
     return {
@@ -33,10 +36,14 @@ def check_strategy_code(
     strategy_db: str,
     strategy_name: str,
     strategy_type: str,
-    min_code_length: int = 12,
+    min_code_length: int = MIN_STRATEGY_CODE_LENGTH,
 ) -> dict[str, Any]:
     """Evaluate a strategy and classify preflight-specific code failures."""
-    result = evaluate_strategy(strategy_db, strategy_name, strategy_type)
+    try:
+        result = evaluate_strategy(strategy_db, strategy_name, strategy_type)
+    except Exception as exc:
+        result = {"status": "error", "message": str(exc)}
+
     code = result.get("code")
 
     if isinstance(code, str):
@@ -86,18 +93,36 @@ def run_runtime_preflight(config: Any, paths: dict[str, str] | None = None) -> d
     runtime_profile = _runtime_profile(runtime_paths, stock_back_key)
     failed_checks = _failed_runtime_checks(runtime_profile)
 
-    strategies = {
-        "buy": check_strategy_code(
-            runtime_paths["strategy_db"],
-            config.buy_strategy,
-            "buy",
-        ),
-        "sell": check_strategy_code(
-            runtime_paths["strategy_db"],
-            config.sell_strategy,
-            "sell",
-        ),
-    }
+    if runtime_profile["strategy_db_exists"]:
+        strategies = {
+            "buy": check_strategy_code(
+                runtime_paths["strategy_db"],
+                config.buy_strategy,
+                "buy",
+            ),
+            "sell": check_strategy_code(
+                runtime_paths["strategy_db"],
+                config.sell_strategy,
+                "sell",
+            ),
+        }
+    else:
+        strategies = {
+            "buy": _strategy_error(
+                config.buy_strategy,
+                "buy",
+                "strategy_db_missing",
+                {"message": "strategy DB is missing"},
+                None,
+            ),
+            "sell": _strategy_error(
+                config.sell_strategy,
+                "sell",
+                "strategy_db_missing",
+                {"message": "strategy DB is missing"},
+                None,
+            ),
+        }
 
     if strategies["buy"]["status"] != "ok":
         failed_checks.append("buy_strategy")

@@ -4,7 +4,7 @@ from pathlib import Path
 from cli.config import BacktestConfig
 
 
-def _make_strategy_db(path: Path, buy_code: str, sell_code: str) -> None:
+def _make_strategy_db(path: Path, buy_code: object, sell_code: object) -> None:
     con = sqlite3.connect(path)
     try:
         con.execute('CREATE TABLE stockbuy (`index` TEXT PRIMARY KEY, "전략코드" TEXT)')
@@ -16,7 +16,7 @@ def _make_strategy_db(path: Path, buy_code: str, sell_code: str) -> None:
         con.close()
 
 
-def _make_runtime_files(tmp_path: Path, buy_code: str, sell_code: str) -> dict:
+def _make_runtime_files(tmp_path: Path, buy_code: object, sell_code: object) -> dict:
     strategy_db = tmp_path / 'strategy.db'
     setting_db = tmp_path / 'setting.db'
     backtest_db = tmp_path / 'backtest.db'
@@ -72,6 +72,45 @@ def test_runtime_preflight_passes_with_valid_paths_and_strategies(tmp_path):
     assert result['config']['start'] == 20250101
     assert result['config']['end_time'] == 92800
     assert result['config']['engines'] == 32
+
+
+def test_runtime_preflight_does_not_create_missing_strategy_db(tmp_path):
+    from cli.runtime_preflight import run_runtime_preflight
+
+    paths = _make_runtime_files(
+        tmp_path,
+        buy_code='buy_flag = True\nif buy_flag:\n    self.Buy()',
+        sell_code='sell_flag = True\nif sell_flag:\n    self.Sell()',
+    )
+    strategy_db = Path(paths['strategy_db'])
+    strategy_db.unlink()
+
+    result = run_runtime_preflight(_wide_config(), paths=paths)
+
+    assert result['status'] == 'error'
+    assert 'strategy_db' in result['failed_checks']
+    assert result['strategies']['buy']['status'] == 'error'
+    assert result['strategies']['buy']['reason'] == 'strategy_db_missing'
+    assert result['strategies']['sell']['status'] == 'error'
+    assert result['strategies']['sell']['reason'] == 'strategy_db_missing'
+    assert strategy_db.exists() is False
+
+
+def test_runtime_preflight_returns_error_when_strategy_code_is_null(tmp_path):
+    from cli.runtime_preflight import run_runtime_preflight
+
+    paths = _make_runtime_files(
+        tmp_path,
+        buy_code=None,
+        sell_code='sell_flag = True\nif sell_flag:\n    self.Sell()',
+    )
+
+    result = run_runtime_preflight(_wide_config(), paths=paths)
+
+    assert result['status'] == 'error'
+    assert result['strategies']['buy']['status'] == 'error'
+    assert result['strategies']['buy']['reason'] == 'evaluate_failed'
+    assert 'buy_strategy' in result['failed_checks']
 
 
 def test_runtime_preflight_fails_when_strategy_code_is_question_marks(tmp_path):
