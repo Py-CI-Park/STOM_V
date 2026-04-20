@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from cli.config import BacktestConfig
 from cli.paths import (
     DB_BACKTEST,
     DB_SETTING,
@@ -65,6 +66,15 @@ def check_strategy_code(
                 code,
             )
 
+    if result.get("status") == "ok" and not isinstance(code, str):
+        return _strategy_error(
+            strategy_name,
+            strategy_type,
+            "evaluate_failed",
+            result,
+            None,
+        )
+
     if result.get("status") != "ok":
         return _strategy_error(
             strategy_name,
@@ -78,12 +88,15 @@ def check_strategy_code(
         "status": "ok",
         "strategy_name": strategy_name,
         "strategy_type": strategy_type,
-        "code_length": len(code) if isinstance(code, str) else 0,
+        "code_length": len(code),
         "message": result.get("message", ""),
     }
 
 
-def run_runtime_preflight(config: Any, paths: dict[str, str] | None = None) -> dict[str, Any]:
+def run_runtime_preflight(
+    config: BacktestConfig,
+    paths: dict[str, str] | None = None,
+) -> dict[str, Any]:
     """Run runtime path and strategy checks before heavy backtest execution."""
     runtime_paths = default_runtime_paths()
     if paths:
@@ -193,7 +206,7 @@ def _failed_runtime_checks(runtime_profile: dict[str, Any]) -> list[str]:
     ]
 
 
-def _config_summary(config: Any) -> dict[str, Any]:
+def _config_summary(config: BacktestConfig) -> dict[str, Any]:
     return {
         "buy_strategy": config.buy_strategy,
         "sell_strategy": config.sell_strategy,

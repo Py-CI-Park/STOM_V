@@ -16,7 +16,7 @@ def _make_strategy_db(path: Path, buy_code: object, sell_code: object) -> None:
         con.close()
 
 
-def _make_runtime_files(tmp_path: Path, buy_code: object, sell_code: object) -> dict:
+def _make_runtime_files(tmp_path: Path, buy_code: object, sell_code: object) -> dict[str, str]:
     strategy_db = tmp_path / 'strategy.db'
     setting_db = tmp_path / 'setting.db'
     backtest_db = tmp_path / 'backtest.db'
@@ -111,6 +111,22 @@ def test_runtime_preflight_returns_error_when_strategy_code_is_null(tmp_path):
     assert result['strategies']['buy']['status'] == 'error'
     assert result['strategies']['buy']['reason'] == 'evaluate_failed'
     assert 'buy_strategy' in result['failed_checks']
+
+
+def test_check_strategy_code_rejects_successful_non_string_code(monkeypatch):
+    from cli import runtime_preflight
+
+    monkeypatch.setattr(
+        runtime_preflight,
+        'evaluate_strategy',
+        lambda *args: {'status': 'ok', 'message': 'ok', 'code': b'not text'},
+    )
+
+    result = runtime_preflight.check_strategy_code('strategy.db', 'BuyWide', 'buy')
+
+    assert result['status'] == 'error'
+    assert result['reason'] == 'evaluate_failed'
+    assert result['code_length'] == 0
 
 
 def test_runtime_preflight_fails_when_strategy_code_is_question_marks(tmp_path):
