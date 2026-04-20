@@ -773,6 +773,18 @@ class TestSubcommandDetection:
         mock_handler.assert_called_once_with(['discovery', 'analyze', '--input', 'result.csv'])
         assert result == 0
 
+    def test_runtime_preflight_detected_in_main(self):
+        with patch('sys.argv', ['stom_backtest.py', 'runtime-preflight',
+                                '--buy', 'BuyWide', '--sell', 'SellWide',
+                                '--start', '20250101', '--end', '20251231']), \
+             patch('cli.subcommands.handle_subcommand', return_value=0) as mock_handler:
+            import stom_backtest
+            result = stom_backtest.main()
+        mock_handler.assert_called_once_with(['runtime-preflight',
+                                              '--buy', 'BuyWide', '--sell', 'SellWide',
+                                              '--start', '20250101', '--end', '20251231'])
+        assert result == 0
+
     def test_no_subcommand_falls_through_to_parse_args(self):
         """서브커맨드 없이 --dry-run 호출 시 기존 parse_args 경로를 통과한다."""
         with patch('sys.argv', ['stom_backtest.py', '--dry-run',

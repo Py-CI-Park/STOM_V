@@ -5,7 +5,7 @@
 - 기본 백테스트 실행
 - formula / strategy / discovery 서브커맨드
 - optimize / sweep / wfo / tune / db 서브커맨드
-- setting / report 서브커맨드
+- setting / report / runtime-preflight 서브커맨드
 """
 import sys
 import json
@@ -42,7 +42,7 @@ def _configure_matplotlib_headless():
 SUBCOMMANDS = (
     'formula', 'strategy', 'discovery',
     'optimize', 'sweep', 'wfo', 'tune', 'db',
-    'setting', 'report',
+    'setting', 'report', 'runtime-preflight',
 )
 
 
