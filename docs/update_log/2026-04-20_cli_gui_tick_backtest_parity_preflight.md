@@ -87,3 +87,54 @@ python scripts/verify_nonrelease_sync.py
 3. CLI baseline 1회 백테스트 실행
 4. GUI 기준 결과와 비교
 5. 통과 시 Wide v1 Retention-Aware 후보 5개 실행 재개
+## wt-dev runtime-preflight 파일럿 결과
+
+구현 브랜치 코드(`STOM_V.wt-cli-parity`)에서 공개 진입점 `python stom_backtest.py runtime-preflight`를 사용했고, runtime DB는 `STOM_CLI_DATABASE_DIR=C:\System_Trading\STOM\STOM_V.wt-dev\_database`로 지정했다.
+
+```powershell
+$env:STOM_CLI_DATABASE_DIR='C:\System_Trading\STOM\STOM_V.wt-dev\_database'
+python stom_backtest.py runtime-preflight `
+  --buy ResearchTest_Tick_B_090000_092800_Wide_20260419 `
+  --sell ResearchTest_Tick_S_090000_092800_Wide_20260419 `
+  --start 20250101 `
+  --end 20251231 `
+  --timeframe tick `
+  --avg-time 30 `
+  --start-time 90000 `
+  --end-time 92800 `
+  --engines 32 `
+  --timeout 900
+```
+
+결과:
+
+```text
+COMMAND_EXIT_CODE=0
+status=ok
+failed_checks=[]
+strategy_db_path=C:\System_Trading\STOM\STOM_V.wt-dev\_database\strategy.db
+setting_db_path=C:\System_Trading\STOM\STOM_V.wt-dev\_database\setting.db
+backtest_db_path=C:\System_Trading\STOM\STOM_V.wt-dev\_database\backtest.db
+stock_back_db_path=C:\System_Trading\STOM\STOM_V.wt-dev\_database\stock_tick_back.db
+stock_back_db_kind=tick
+buy_status=ok
+buy_code_length=270
+sell_status=ok
+sell_code_length=137
+start=20250101
+end=20251231
+timeframe=tick
+avg_time=30
+start_time=90000
+end_time=92800
+engines=32
+timeout=900
+```
+
+해석:
+
+- 공개 CLI 진입점의 `runtime-preflight` 라우팅은 정상 동작한다.
+- `wt-dev` runtime DB 기준으로 ResearchTest wide 매수/매도 조건식은 정상 문자열로 읽히고 compile/evaluate 단계도 통과한다.
+- 이번 파일럿은 preflight 검증이며, CLI baseline 1회 백테스트와 GUI 결과 비교는 아직 수행하지 않았다.
+- 따라서 다음 단계는 candidate_count=5가 아니라 CLI baseline 1회 백테스트다.
+- 위 파일럿으로 `runtime-preflight` 공개 CLI 실제 실행은 검증 완료로 전환한다. 아직 남은 미검증 항목은 CLI baseline 1회 백테스트, GUI 결과 비교, `candidate_count=5` 실행이다.
