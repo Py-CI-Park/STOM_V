@@ -13,22 +13,16 @@ CLI 자동 연구 루프를 재개하기 전에 GUI/STOM Wide v1 tick 백테스�
 [CLI/GUI Tick Backtest Parity Preflight]
         |
         v
-[CLI baseline 1회 검증]
+[후속: CLI baseline 1회 검증]
         |
         v
-[Wide v1 Retention-Aware 후보 5개 실행]
+[후속: Wide v1 Retention-Aware 후보 5개 실행]
         |
         v
-[반복 개선 루프 v2]
+[후속: 반복 개선 루프 v2]
         |
         v
-[최종 promote/WFO 검증]
-```
-
-단일 라인 흐름:
-
-```text
-[Wide v1 GUI/STOM 백테스트 성공] -> [CLI/GUI Tick Backtest Parity Preflight] -> [CLI baseline 1회 검증] -> [Wide v1 Retention-Aware 후보 5개 실행] -> [반복 개선 루프 v2] -> [최종 promote/WFO 검증]
+[후속: 최종 promote/WFO 검증]
 ```
 
 ## 변경 사항
@@ -40,6 +34,8 @@ CLI 자동 연구 루프를 재개하기 전에 GUI/STOM Wide v1 tick 백테스�
 - runtime preflight, subcommand, checkpoint 테스트 추가
 
 ## 검증 결과
+
+검증 범위: 이 작업에서는 unit tests와 nonrelease sync 검증만 통과했다. `runtime-preflight` 실제 실행, CLI baseline 1회 백테스트, GUI 결과 비교, `candidate_count=5` 후보 실행은 아직 검증하지 않았다.
 
 ### focused tests: PASS
 
