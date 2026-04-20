@@ -40,7 +40,6 @@ def check_strategy_code(
     code = result.get("code")
 
     if isinstance(code, str):
-        stripped = code.strip()
         compact = "".join(code.split())
         if compact and set(compact) == {"?"}:
             return _strategy_error(
@@ -50,7 +49,7 @@ def check_strategy_code(
                 result,
                 code,
             )
-        if stripped and len(stripped) < min_code_length:
+        if len(code) < min_code_length:
             return _strategy_error(
                 strategy_name,
                 strategy_type,
