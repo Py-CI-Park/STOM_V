@@ -5,6 +5,10 @@ import json
 from cli.paths import DB_STRATEGY
 
 
+# Keep aligned with cli.config.parse_args --divid-mode choices.
+DIVID_MODE_CHOICES = ('종목코드별 분류', '일자별 분류', '한종목 로딩')
+
+
 def create_subcommand_parser():
     """서브커맨드 파서 생성."""
     from cli.version import DISPLAY_VERSION
@@ -26,7 +30,7 @@ def create_subcommand_parser():
     runtime_preflight.add_argument('--end', type=int, required=True)
     runtime_preflight.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
     runtime_preflight.add_argument('--betting', default='1')
-    runtime_preflight.add_argument('--avg-time', type=int, default=60)
+    runtime_preflight.add_argument('--avg-time', type=str, default='60')
     runtime_preflight.add_argument('--start-time', type=int, default=90000)
     runtime_preflight.add_argument('--end-time', type=int, default=152800)
     runtime_preflight.add_argument('--engines', type=int, default=4)
@@ -34,7 +38,11 @@ def create_subcommand_parser():
     runtime_preflight.add_argument('--oms', action='store_true', default=False)
     runtime_preflight.add_argument('--blacklist', action='store_true', default=False)
     runtime_preflight.add_argument('--back-club', action='store_true', default=False)
-    runtime_preflight.add_argument('--divid-mode', default=config_defaults.divid_mode)
+    runtime_preflight.add_argument(
+        '--divid-mode',
+        default=config_defaults.divid_mode,
+        choices=DIVID_MODE_CHOICES,
+    )
     runtime_preflight.add_argument('--one-code', default='')
 
     # formula subcommand
@@ -494,7 +502,7 @@ def _handle_runtime_preflight(parsed):
         start_date=parsed.start,
         end_date=parsed.end,
         betting=parsed.betting,
-        avg_time=parsed.avg_time,
+        avg_time=_normalize_avg_time(parsed.avg_time),
         start_time=parsed.start_time,
         end_time=parsed.end_time,
         engine_count=parsed.engines,
@@ -509,6 +517,11 @@ def _handle_runtime_preflight(parsed):
     result = runtime_preflight.run_runtime_preflight(config)
     print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
     return 0 if result.get('status') == 'ok' else 1
+
+
+def _normalize_avg_time(avg_time):
+    avg_time_parts = [int(x.strip()) for x in str(avg_time).split(',') if x.strip()]
+    return avg_time_parts[0] if len(avg_time_parts) == 1 else avg_time_parts
 
 
 def _handle_formula(parsed):
