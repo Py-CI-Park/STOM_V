@@ -459,6 +459,24 @@ def test_runner_handles_nonzero_backtest_exitcode_before_metrics_extraction():
     assert content.index(exitcode_check) < content.index(metrics_call)
 
 
+def test_runner_treats_missing_metrics_after_backtest_as_error():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    metrics_check = 'if metrics:'
+    missing_metrics_message = 'backtest completed without metrics'
+    assert metrics_check in content
+    assert missing_metrics_message in content
+    assert "result['status'] = 'error'" in content
+    assert "result['message'] = 'backtest completed without metrics'" in content
+    assert "result.update(checkpoint.to_result_fields(status='error'" in content
+    assert content.index(metrics_check) < content.index(missing_metrics_message)
+
+
 def test_runner_data_loading_wait_uses_timeout_and_empty_exception():
     runner_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),

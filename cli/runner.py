@@ -575,10 +575,10 @@ def run_backtest(config):
             }
             result.update(checkpoint.to_result_fields(status='success'))
         else:
-            result['status'] = 'success'
-            result['message'] = '백테스트 완료 (결과 테이블이 비어있습니다)'
+            result['status'] = 'error'
+            result['message'] = 'backtest completed without metrics'
             result['csv_path'] = csv_path
-            result.update(checkpoint.to_result_fields(status='success'))
+            result.update(checkpoint.to_result_fields(status='error'))
 
     except Exception as e:
         result['status'] = 'error'

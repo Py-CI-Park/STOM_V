@@ -13,6 +13,15 @@ ERROR_DIAGNOSTIC_FIELDS = (
     'csv_path',
 )
 
+SUCCESS_DIAGNOSTIC_FIELDS = (
+    'csv_path',
+    'checkpoint_status',
+    'last_checkpoint',
+    'elapsed_seconds',
+    'checkpoints',
+    'cleanup_status',
+)
+
 
 def format_result(result, fmt='json'):
     if fmt == 'json':
@@ -64,6 +73,9 @@ def format_json(result):
             },
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         }
+        for key in SUCCESS_DIAGNOSTIC_FIELDS:
+            if key in result:
+                output[key] = _json_safe(result[key])
     return json.dumps(output, ensure_ascii=False, indent=2)
 
 

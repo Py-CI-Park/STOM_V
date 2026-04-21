@@ -88,6 +88,32 @@ def test_format_json_error_omits_absent_diagnostic_fields(sample_result_error):
     assert 'checkpoints' not in parsed
 
 
+def test_format_json_success_preserves_csv_and_checkpoint_diagnostics(sample_result_success):
+    sample_result_success.update({
+        'csv_path': 'backtest/csv/result.csv',
+        'checkpoint_status': 'success',
+        'last_checkpoint': 'csv_detected',
+        'elapsed_seconds': 12.345,
+        'checkpoints': [
+            {
+                'name': 'csv_detected',
+                'elapsed_seconds': 12.345,
+                'detail': {'csv_path': 'backtest/csv/result.csv'},
+            },
+        ],
+        'cleanup_status': 'not_needed',
+    })
+
+    parsed = json.loads(format_json(sample_result_success))
+
+    assert parsed['csv_path'] == 'backtest/csv/result.csv'
+    assert parsed['checkpoint_status'] == 'success'
+    assert parsed['last_checkpoint'] == 'csv_detected'
+    assert parsed['elapsed_seconds'] == pytest.approx(12.345)
+    assert parsed['checkpoints'] == sample_result_success['checkpoints']
+    assert parsed['cleanup_status'] == 'not_needed'
+
+
 # ============================================================
 # format_json() — 성공 결과
 # ============================================================
