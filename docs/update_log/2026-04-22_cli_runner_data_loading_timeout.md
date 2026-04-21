@@ -42,7 +42,7 @@ for i in range(multi):
 test_runner_helpers.py=39 passed
 test_backtest_checkpoints.py + test_runner_helpers.py=42 passed
 test_output.py + test_runner_helpers.py=84 passed
-focused_tests=166 passed
+focused_tests=174 passed
 verify_nonrelease_sync=PASS
 smoke_32=error_json_returned
 smoke_4=error_json_returned
