@@ -157,6 +157,89 @@ def _cleanup_shared_memory(shared_info):
             pass
 
 
+def _record_engine_data_loading_timeout(
+    checkpoint,
+    result,
+    multi,
+    received_count,
+    timeout,
+    received_lengths,
+):
+    checkpoint.mark('engine_data_response_timeout', detail={
+        'expected_count': multi,
+        'received_count': received_count,
+        'missing_count': multi - received_count,
+        'timeout_seconds': timeout,
+        'received_lengths': received_lengths,
+    })
+    result['status'] = 'error'
+    result['message'] = 'engine data loading timed out'
+    result['engine_data_loading'] = {
+        'expected_count': multi,
+        'received_count': received_count,
+        'missing_count': multi - received_count,
+        'timeout_seconds': timeout,
+        'received_lengths': received_lengths,
+    }
+    result.update(checkpoint.to_result_fields(status='error'))
+
+
+def _collect_engine_shared_info(
+    backQ,
+    multi,
+    timeout,
+    checkpoint,
+    result,
+    windowQ,
+    log_gubun,
+    shared_info=None,
+    load_stats=None,
+):
+    data_load_deadline = time.time() + timeout
+    received_count = 0
+    received_lengths = []
+    if load_stats is not None:
+        load_stats['received_count'] = received_count
+        load_stats['received_lengths'] = received_lengths
+    checkpoint.mark('engine_data_response_wait_started', detail={
+        'expected_count': multi,
+        'timeout_seconds': timeout,
+    })
+
+    collected = shared_info if shared_info is not None else []
+    collected.clear()
+    for i in range(multi):
+        remaining = data_load_deadline - time.time()
+        if remaining <= 0:
+            _record_engine_data_loading_timeout(
+                checkpoint, result, multi, received_count, timeout, received_lengths
+            )
+            return None
+
+        try:
+            shared_info_ = backQ.get(timeout=remaining)
+        except Empty:
+            _record_engine_data_loading_timeout(
+                checkpoint, result, multi, received_count, timeout, received_lengths
+            )
+            return None
+
+        received_count += 1
+        received_lengths.append(len(shared_info_))
+        if load_stats is not None:
+            load_stats['received_count'] = received_count
+        checkpoint.mark('engine_data_response_received', detail={
+            'expected_count': multi,
+            'received_count': received_count,
+            'response_index': i,
+            'chunk_count': len(shared_info_),
+        })
+        collected += shared_info_
+        windowQ.put((1.4, f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
+
+    return collected
+
+
 def _engine_with_dict_set(engine_cls, dict_set_override, *args):
     """자식 프로세스 시작 시 DICT_SET을 CLI 값으로 패치한 후 엔진을 생성한다.
 
@@ -393,69 +476,17 @@ def run_backtest(config):
 
         # 응답 대기: shared_info 수집
         timeout = getattr(config, 'timeout', 3600) or 3600
-        data_load_deadline = time.time() + timeout
-        received_count = 0
-        received_lengths = []
-        checkpoint.mark('engine_data_response_wait_started', detail={
-            'expected_count': multi,
-            'timeout_seconds': timeout,
-        })
-
+        data_load_stats = {}
         shared_info.clear()
-        for i in range(multi):
-            remaining = data_load_deadline - time.time()
-            if remaining <= 0:
-                checkpoint.mark('engine_data_response_timeout', detail={
-                    'expected_count': multi,
-                    'received_count': received_count,
-                    'missing_count': multi - received_count,
-                    'timeout_seconds': timeout,
-                    'received_lengths': received_lengths,
-                })
-                result['status'] = 'error'
-                result['message'] = 'engine data loading timed out'
-                result['engine_data_loading'] = {
-                    'expected_count': multi,
-                    'received_count': received_count,
-                    'missing_count': multi - received_count,
-                    'timeout_seconds': timeout,
-                    'received_lengths': received_lengths,
-                }
-                result.update(checkpoint.to_result_fields(status='error'))
-                return result
+        collected_shared_info = _collect_engine_shared_info(
+            backQ, multi, timeout, checkpoint, result, windowQ, log_gubun,
+            shared_info, data_load_stats
+        )
+        if collected_shared_info is None:
+            return result
 
-            try:
-                shared_info_ = backQ.get(timeout=remaining)
-            except Empty:
-                checkpoint.mark('engine_data_response_timeout', detail={
-                    'expected_count': multi,
-                    'received_count': received_count,
-                    'missing_count': multi - received_count,
-                    'timeout_seconds': timeout,
-                    'received_lengths': received_lengths,
-                })
-                result['status'] = 'error'
-                result['message'] = 'engine data loading timed out'
-                result['engine_data_loading'] = {
-                    'expected_count': multi,
-                    'received_count': received_count,
-                    'missing_count': multi - received_count,
-                    'timeout_seconds': timeout,
-                    'received_lengths': received_lengths,
-                }
-                result.update(checkpoint.to_result_fields(status='error'))
-                return result
-
-            received_count += 1
-            received_lengths.append(len(shared_info_))
-            checkpoint.mark('engine_data_response_received', detail={
-                'expected_count': multi,
-                'received_count': received_count,
-                'response_index': i,
-                'chunk_count': len(shared_info_),
-            })
-            shared_info += shared_info_
-            windowQ.put((1.4, f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
+        received_count = data_load_stats['received_count']
+        received_lengths = data_load_stats['received_lengths']
         shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)
         checkpoint.mark('shared_data_loaded', detail={'back_count': len(shared_info)})
         checkpoint.mark('engine_data_load_completed', detail={

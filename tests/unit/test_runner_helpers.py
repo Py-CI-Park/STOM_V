@@ -503,3 +503,107 @@ def test_runner_returns_structured_engine_data_loading_timeout_result():
     assert "'timeout_seconds'" in content
     assert "result['status'] = 'error'" in content
     assert "engine data loading timed out" in content
+
+
+class FakeEngineDataCheckpoint:
+    def __init__(self):
+        self.events = []
+
+    def mark(self, name, detail=None):
+        self.events.append({'name': name, 'detail': detail or {}})
+
+    def to_result_fields(self, status, cleanup_status=None):
+        fields = {
+            'checkpoint_status': status,
+            'last_checkpoint': self.events[-1]['name'] if self.events else None,
+            'elapsed_seconds': 0.0,
+            'checkpoints': self.events,
+        }
+        if cleanup_status is not None:
+            fields['cleanup_status'] = cleanup_status
+        return fields
+
+
+class FakeEngineDataWindowQueue:
+    def __init__(self):
+        self.items = []
+
+    def put(self, item):
+        self.items.append(item)
+
+
+class FakeEngineDataBackQueue:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.timeouts = []
+
+    def get(self, timeout=None):
+        self.timeouts.append(timeout)
+        response = self.responses.pop(0)
+        if isinstance(response, BaseException):
+            raise response
+        return response
+
+
+def test_collect_engine_shared_info_combines_successful_responses():
+    from cli.runner import _collect_engine_shared_info
+
+    backQ = FakeEngineDataBackQueue([
+        [{'len': 3, 'shm_name': 'backdata_0'}],
+        [{'len': 2, 'shm_name': 'backdata_1'}],
+    ])
+    checkpoint = FakeEngineDataCheckpoint()
+    result = {}
+    windowQ = FakeEngineDataWindowQueue()
+
+    shared_info = _collect_engine_shared_info(
+        backQ, 2, 60, checkpoint, result, windowQ, 'test'
+    )
+
+    assert shared_info == [
+        {'len': 3, 'shm_name': 'backdata_0'},
+        {'len': 2, 'shm_name': 'backdata_1'},
+    ]
+    assert 'engine_data_loading' not in result
+    assert all(timeout > 0 for timeout in backQ.timeouts)
+    assert [event['name'] for event in checkpoint.events] == [
+        'engine_data_response_wait_started',
+        'engine_data_response_received',
+        'engine_data_response_received',
+    ]
+    assert len(windowQ.items) == 2
+
+
+def test_collect_engine_shared_info_records_structured_timeout():
+    from queue import Empty
+
+    from cli.runner import _collect_engine_shared_info
+
+    backQ = FakeEngineDataBackQueue([
+        [{'len': 3, 'shm_name': 'backdata_0'}],
+        Empty(),
+    ])
+    checkpoint = FakeEngineDataCheckpoint()
+    result = {}
+    windowQ = FakeEngineDataWindowQueue()
+
+    shared_info = _collect_engine_shared_info(
+        backQ, 2, 60, checkpoint, result, windowQ, 'test'
+    )
+
+    assert shared_info is None
+    assert result['status'] == 'error'
+    assert result['message'] == 'engine data loading timed out'
+    assert result['engine_data_loading'] == {
+        'expected_count': 2,
+        'received_count': 1,
+        'missing_count': 1,
+        'timeout_seconds': 60,
+        'received_lengths': [1],
+    }
+    assert result['checkpoint_status'] == 'error'
+    assert result['last_checkpoint'] == 'engine_data_response_timeout'
+    assert any(
+        event['name'] == 'engine_data_response_timeout'
+        for event in checkpoint.events
+    )

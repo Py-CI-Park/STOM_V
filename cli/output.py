@@ -3,6 +3,17 @@ import json
 from datetime import datetime
 
 
+ERROR_DIAGNOSTIC_FIELDS = (
+    'checkpoint_status',
+    'last_checkpoint',
+    'elapsed_seconds',
+    'checkpoints',
+    'cleanup_status',
+    'engine_data_loading',
+    'csv_path',
+)
+
+
 def format_result(result, fmt='json'):
     if fmt == 'json':
         return format_json(result)
@@ -17,6 +28,9 @@ def format_json(result):
             'message': result.get('message', 'Unknown error'),
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         }
+        for key in ERROR_DIAGNOSTIC_FIELDS:
+            if key in result:
+                output[key] = _json_safe(result[key])
     else:
         metrics = result.get('metrics') or {}
         config = result.get('config') or {}
@@ -51,6 +65,20 @@ def format_json(result):
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         }
     return json.dumps(output, ensure_ascii=False, indent=2)
+
+
+def _json_safe(value):
+    try:
+        json.dumps(value, ensure_ascii=False)
+        return value
+    except TypeError:
+        pass
+
+    if isinstance(value, dict):
+        return {str(key): _json_safe(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_safe(item) for item in value]
+    return repr(value)
 
 
 def format_text(result):

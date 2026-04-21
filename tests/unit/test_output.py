@@ -44,6 +44,50 @@ class TestFormatResult:
         assert 'STOM Backtest Result' in output
 
 
+def test_format_json_error_preserves_engine_data_loading_diagnostics():
+    result = {
+        'status': 'error',
+        'message': 'engine data loading timed out',
+        'engine_data_loading': {
+            'expected_count': 2,
+            'received_count': 1,
+            'missing_count': 1,
+            'timeout_seconds': 60,
+            'received_lengths': [3],
+        },
+        'checkpoint_status': 'error',
+        'last_checkpoint': 'engine_data_response_timeout',
+        'elapsed_seconds': 60.123,
+        'checkpoints': [
+            {
+                'name': 'engine_data_response_timeout',
+                'elapsed_seconds': 60.123,
+                'detail': {'missing_count': 1},
+            },
+        ],
+        'cleanup_status': 'process_killed',
+        'csv_path': None,
+    }
+
+    parsed = json.loads(format_json(result))
+
+    assert parsed['engine_data_loading'] == result['engine_data_loading']
+    assert parsed['checkpoint_status'] == 'error'
+    assert parsed['last_checkpoint'] == 'engine_data_response_timeout'
+    assert parsed['elapsed_seconds'] == pytest.approx(60.123)
+    assert parsed['checkpoints'] == result['checkpoints']
+    assert parsed['cleanup_status'] == 'process_killed'
+    assert parsed['csv_path'] is None
+
+
+def test_format_json_error_omits_absent_diagnostic_fields(sample_result_error):
+    parsed = json.loads(format_json(sample_result_error))
+
+    assert 'engine_data_loading' not in parsed
+    assert 'checkpoint_status' not in parsed
+    assert 'checkpoints' not in parsed
+
+
 # ============================================================
 # format_json() — 성공 결과
 # ============================================================
