@@ -457,3 +457,49 @@ def test_runner_handles_nonzero_backtest_exitcode_before_metrics_extraction():
     assert 'backtest_process_exitcode' in content
     assert "checkpoint.to_result_fields(status='error'" in content
     assert content.index(exitcode_check) < content.index(metrics_call)
+
+
+def test_runner_data_loading_wait_uses_timeout_and_empty_exception():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert 'from queue import Empty' in content
+    assert 'backQ.get(timeout=' in content
+    assert 'except Empty:' in content
+
+
+def test_runner_records_engine_data_loading_checkpoints():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert "checkpoint.mark('engine_processes_started'" in content
+    assert "checkpoint.mark('engine_data_load_requested'" in content
+    assert "checkpoint.mark('engine_data_response_wait_started'" in content
+    assert "checkpoint.mark('engine_data_response_received'" in content
+    assert "checkpoint.mark('engine_data_response_timeout'" in content
+    assert "checkpoint.mark('engine_data_load_completed'" in content
+
+
+def test_runner_returns_structured_engine_data_loading_timeout_result():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert "'engine_data_loading'" in content
+    assert "'expected_count'" in content
+    assert "'received_count'" in content
+    assert "'missing_count'" in content
+    assert "'timeout_seconds'" in content
+    assert "result['status'] = 'error'" in content
+    assert "engine data loading timed out" in content
