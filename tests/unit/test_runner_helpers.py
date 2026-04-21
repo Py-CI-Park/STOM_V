@@ -415,3 +415,45 @@ class TestCliSharedMemoryCleanup:
         assert 'shared_info.clear()' in content
         assert "shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)" in content
         assert '_cleanup_shared_memory(shared_info)' in content
+
+
+def test_runner_imports_checkpoint_recorder():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert 'from cli.backtest_checkpoints import BacktestCheckpointRecorder' in content
+
+
+def test_runner_records_timeout_checkpoint_fields():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert "checkpoint.mark('preflight_started'" in content
+    assert "checkpoint.mark('shared_data_loaded'" in content
+    assert "checkpoint.mark('backtest_process_started'" in content
+    assert "checkpoint.to_result_fields(status='timeout'" in content
+    assert "result.update(checkpoint.to_result_fields(status='success'" in content
+
+
+def test_runner_handles_nonzero_backtest_exitcode_before_metrics_extraction():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    exitcode_check = 'proc_backtest.exitcode not in (0, None)'
+    metrics_call = 'metrics = _extract_metrics(config, min_rowid=backtest_rowid_watermark)'
+    assert exitcode_check in content
+    assert 'backtest_process_exitcode' in content
+    assert "checkpoint.to_result_fields(status='error'" in content
+    assert content.index(exitcode_check) < content.index(metrics_call)

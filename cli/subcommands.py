@@ -5,6 +5,10 @@ import json
 from cli.paths import DB_STRATEGY
 
 
+# Keep aligned with cli.config.parse_args --divid-mode choices.
+DIVID_MODE_CHOICES = ('종목코드별 분류', '일자별 분류', '한종목 로딩')
+
+
 def create_subcommand_parser():
     """서브커맨드 파서 생성."""
     from cli.version import DISPLAY_VERSION
@@ -12,6 +16,34 @@ def create_subcommand_parser():
     parser.add_argument('--version', action='version',
                          version='STOM CLI Backtest Runner %s' % DISPLAY_VERSION)
     sub = parser.add_subparsers(dest='command')
+
+    from cli.config import BacktestConfig
+    config_defaults = BacktestConfig()
+
+    runtime_preflight = sub.add_parser(
+        'runtime-preflight',
+        help='CLI 백테스트 실행 전 runtime DB, 전략코드, 실행 조건을 검증',
+    )
+    runtime_preflight.add_argument('--buy', required=True)
+    runtime_preflight.add_argument('--sell', required=True)
+    runtime_preflight.add_argument('--start', type=int, required=True)
+    runtime_preflight.add_argument('--end', type=int, required=True)
+    runtime_preflight.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    runtime_preflight.add_argument('--betting', default='1')
+    runtime_preflight.add_argument('--avg-time', type=str, default='60')
+    runtime_preflight.add_argument('--start-time', type=int, default=90000)
+    runtime_preflight.add_argument('--end-time', type=int, default=152800)
+    runtime_preflight.add_argument('--engines', type=int, default=4)
+    runtime_preflight.add_argument('--timeout', type=int, default=3600)
+    runtime_preflight.add_argument('--oms', action='store_true', default=False)
+    runtime_preflight.add_argument('--blacklist', action='store_true', default=False)
+    runtime_preflight.add_argument('--back-club', action='store_true', default=False)
+    runtime_preflight.add_argument(
+        '--divid-mode',
+        default=config_defaults.divid_mode,
+        choices=DIVID_MODE_CHOICES,
+    )
+    runtime_preflight.add_argument('--one-code', default='')
 
     # formula subcommand
     formula_parser = sub.add_parser('formula', help='수식 관리')
@@ -453,9 +485,93 @@ def handle_subcommand(args=None):
         return _handle_tune(parsed)
     elif parsed.command == 'db':
         return _handle_db(parsed)
+    elif parsed.command == 'runtime-preflight':
+        return _handle_runtime_preflight(parsed)
     else:
         parser.print_help()
         return 0
+
+
+def _handle_runtime_preflight(parsed):
+    from cli.config import BacktestConfig
+    from cli import runtime_preflight
+
+    avg_time, avg_time_errors = _normalize_avg_time(parsed.avg_time)
+    if avg_time_errors:
+        result = _runtime_preflight_config_error(parsed, avg_time_errors)
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+        return 1
+
+    config = BacktestConfig(
+        buy_strategy=parsed.buy,
+        sell_strategy=parsed.sell,
+        start_date=parsed.start,
+        end_date=parsed.end,
+        betting=parsed.betting,
+        avg_time=avg_time,
+        start_time=parsed.start_time,
+        end_time=parsed.end_time,
+        engine_count=parsed.engines,
+        is_tick=parsed.timeframe == 'tick',
+        oms=parsed.oms,
+        blacklist=parsed.blacklist,
+        back_club=parsed.back_club,
+        divid_mode=parsed.divid_mode,
+        one_code=parsed.one_code,
+        timeout=parsed.timeout,
+    )
+    result = runtime_preflight.run_runtime_preflight(config)
+    print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+    return 0 if result.get('status') == 'ok' else 1
+
+
+def _normalize_avg_time(avg_time):
+    raw_parts = [x.strip() for x in str(avg_time).split(',') if x.strip()]
+    if not raw_parts:
+        return None, ["avg_time must include at least one positive integer"]
+
+    avg_time_parts = []
+    errors = []
+    for raw_part in raw_parts:
+        try:
+            value = int(raw_part)
+        except (TypeError, ValueError):
+            errors.append(f"avg_time must be a positive integer: {raw_part!r}")
+            continue
+        if value < 1:
+            errors.append(f"avg_time must be positive: {value}")
+            continue
+        avg_time_parts.append(value)
+
+    if errors:
+        return None, errors
+    return (avg_time_parts[0] if len(avg_time_parts) == 1 else avg_time_parts), []
+
+
+def _runtime_preflight_config_error(parsed, validation_errors):
+    return {
+        "status": "error",
+        "failed_checks": ["config"],
+        "validation_errors": validation_errors,
+        "timeframe_match": {
+            "status": "skipped",
+            "message": "config validation failed",
+        },
+        "runtime_profile": {},
+        "strategies": {},
+        "config": {
+            "buy_strategy": parsed.buy,
+            "sell_strategy": parsed.sell,
+            "start": parsed.start,
+            "end": parsed.end,
+            "timeframe": parsed.timeframe,
+            "avg_time": parsed.avg_time,
+            "start_time": parsed.start_time,
+            "end_time": parsed.end_time,
+            "engines": parsed.engines,
+            "timeout": parsed.timeout,
+        },
+    }
 
 
 def _handle_formula(parsed):

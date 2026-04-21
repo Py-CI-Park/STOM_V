@@ -12,6 +12,7 @@ from multiprocessing import Process, Queue, Value, Lock, shared_memory
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cli.paths import DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
+from cli.backtest_checkpoints import BacktestCheckpointRecorder
 from backtest.back_static import GetMoneytopQuery
 from backtest.back_subtotal import BackSubTotal
 from backtest.backtest import BackTest
@@ -194,6 +195,16 @@ def run_backtest(config):
     _register_signals()
     dict_set = _sync_dict_set(config)
     _run_start_time = time.time()
+    checkpoint = BacktestCheckpointRecorder()
+    checkpoint.mark('preflight_started', detail={
+        'buy_strategy': config.buy_strategy,
+        'sell_strategy': config.sell_strategy,
+        'start_date': config.start_date,
+        'end_date': config.end_date,
+        'is_tick': config.is_tick,
+        'engine_count': config.engine_count,
+    })
+    checkpoint.mark('dict_set_synced')
 
     result = {
         'status': 'error',
@@ -222,6 +233,9 @@ def run_backtest(config):
 
     try:
         backtest_rowid_watermark = _get_backtest_last_rowid()
+        checkpoint.mark('backtest_watermark_ready', detail={
+            'backtest_rowid_watermark': backtest_rowid_watermark,
+        })
 
         # === Step 2: BackSubTotal 프로세스 생성 (20개) ===
         for i in range(20):
@@ -263,6 +277,7 @@ def run_backtest(config):
 
         # === Step 4: 데이터 로딩 (DB 연결 + moneytop 파싱) ===
         db = DB_STOCK_BACK_TICK if config.is_tick else DB_STOCK_BACK_MIN
+        checkpoint.mark('stock_back_db_selected', detail={'db_path': db})
 
         con = sqlite3.connect(db)
         try:
@@ -278,10 +293,14 @@ def run_backtest(config):
             df_mt = pd.read_sql(query, con)
         finally:
             con.close()
+        checkpoint.mark('moneytop_loaded', detail={
+            'rows': 0 if df_mt is None else len(df_mt),
+        })
 
         if df_mt is None or df_mt.empty:
             result['message'] = '시작 또는 종료일자가 잘못 선택되었거나 해당 일자에 데이터가 존재하지 않습니다.'
             windowQ.put((1.4, result['message']))
+            result.update(checkpoint.to_result_fields(status='error'))
             return result
 
         df_mt['일자'] = df_mt['index'].apply(lambda x: int(str(x)[:8]))
@@ -314,21 +333,25 @@ def run_backtest(config):
         if divid_mode == '종목코드별 분류' and len(code_set) < multi:
             result['message'] = '선택한 일자의 종목의 개수가 멀티수보다 작습니다. 일자를 늘리십시오.'
             windowQ.put((1.4, result['message']))
+            result.update(checkpoint.to_result_fields(status='error'))
             return result
 
         if divid_mode == '일자별 분류' and len(day_list) < multi:
             result['message'] = '선택한 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'
             windowQ.put((1.4, result['message']))
+            result.update(checkpoint.to_result_fields(status='error'))
             return result
 
         if divid_mode == '한종목 로딩' and one_code not in code_days:
             result['message'] = f'{one_code} 종목은 선택한 일자에 데이터가 존재하지 않습니다.'
             windowQ.put((1.4, result['message']))
+            result.update(checkpoint.to_result_fields(status='error'))
             return result
 
         if divid_mode == '한종목 로딩' and len(code_days.get(one_code, set())) < multi:
             result['message'] = f'{one_code} 종목의 일자 수가 엔진 수보다 적습니다.'
             windowQ.put((1.4, result['message']))
+            result.update(checkpoint.to_result_fields(status='error'))
             return result
 
         # === Step 5: 엔진 큐 메시지 시퀀스 ===
@@ -365,10 +388,12 @@ def run_backtest(config):
             shared_info += shared_info_
             windowQ.put((1.4, f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
         shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)
+        checkpoint.mark('shared_data_loaded', detail={'back_count': len(shared_info)})
         windowQ.put((1.4, f'{log_gubun} 데이터 로딩 완료'))
 
         # 메시지 3: 공유데이터
         back_count = len(shared_info)
+        checkpoint.mark('back_count_ready', detail={'back_count': back_count})
         for q in back_eques:
             q.put(('공유데이터', back_count, shared_info))
 
@@ -405,6 +430,7 @@ def run_backtest(config):
                   back_eques, back_sques, '백테스트', 'S', dict(dict_set))
         )
         proc_backtest.start()
+        checkpoint.mark('backtest_process_started', detail={'pid': proc_backtest.pid})
         _child_procs.append(proc_backtest)
 
         # === Step 7: 완료 대기 + 결과 수집 ===
@@ -416,11 +442,20 @@ def run_backtest(config):
             proc_backtest.join(timeout=5)
             result['status'] = 'error'
             result['message'] = f'백테스트 시간 초과 ({timeout}초)'
+            result.update(checkpoint.to_result_fields(status='timeout', cleanup_status='process_killed'))
+            return result
+        checkpoint.mark('backtest_process_finished', detail={'exitcode': proc_backtest.exitcode})
+        if proc_backtest.exitcode not in (0, None):
+            checkpoint.mark('backtest_process_exitcode', detail={'exitcode': proc_backtest.exitcode})
+            result['status'] = 'error'
+            result['message'] = f'Backtest child process exited with code {proc_backtest.exitcode}'
+            result.update(checkpoint.to_result_fields(status='error'))
             return result
 
         # backtest.db에서 최신 결과 읽기
         metrics = _extract_metrics(config, min_rowid=backtest_rowid_watermark)
         csv_path = _find_latest_csv(config.buy_strategy, _run_start_time)
+        checkpoint.mark('csv_detected', detail={'csv_path': csv_path})
         if metrics:
             result['status'] = 'success'
             result['message'] = '백테스트 완료'
@@ -432,14 +467,17 @@ def run_backtest(config):
                 'start_date': str(config.start_date),
                 'end_date': str(config.end_date),
             }
+            result.update(checkpoint.to_result_fields(status='success'))
         else:
             result['status'] = 'success'
             result['message'] = '백테스트 완료 (결과 테이블이 비어있습니다)'
             result['csv_path'] = csv_path
+            result.update(checkpoint.to_result_fields(status='success'))
 
     except Exception as e:
         result['status'] = 'error'
         result['message'] = str(e)
+        result.update(checkpoint.to_result_fields(status='error'))
         windowQ.put((1.4, f'오류 발생: {e}'))
 
     finally:

@@ -773,6 +773,18 @@ class TestSubcommandDetection:
         mock_handler.assert_called_once_with(['discovery', 'analyze', '--input', 'result.csv'])
         assert result == 0
 
+    def test_runtime_preflight_detected_in_main(self):
+        with patch('sys.argv', ['stom_backtest.py', 'runtime-preflight',
+                                '--buy', 'BuyWide', '--sell', 'SellWide',
+                                '--start', '20250101', '--end', '20251231']), \
+             patch('cli.subcommands.handle_subcommand', return_value=0) as mock_handler:
+            import stom_backtest
+            result = stom_backtest.main()
+        mock_handler.assert_called_once_with(['runtime-preflight',
+                                              '--buy', 'BuyWide', '--sell', 'SellWide',
+                                              '--start', '20250101', '--end', '20251231'])
+        assert result == 0
+
     def test_no_subcommand_falls_through_to_parse_args(self):
         """서브커맨드 없이 --dry-run 호출 시 기존 parse_args 경로를 통과한다."""
         with patch('sys.argv', ['stom_backtest.py', '--dry-run',
@@ -909,3 +921,189 @@ class TestParserStructure:
         assert parsed.auto_relax is True
         assert parsed.max_relax_steps == 5
         assert parsed.base_buy_strategy == 'Min_B_Study_251227'
+
+
+def test_runtime_preflight_parser_accepts_tick_inputs():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'runtime-preflight',
+        '--buy', 'BuyWide',
+        '--sell', 'SellWide',
+        '--start', '20250101',
+        '--end', '20251231',
+        '--timeframe', 'tick',
+        '--avg-time', '30',
+        '--start-time', '90000',
+        '--end-time', '92800',
+        '--engines', '32',
+        '--timeout', '900',
+    ])
+
+    assert args.command == 'runtime-preflight'
+    assert args.buy == 'BuyWide'
+    assert args.sell == 'SellWide'
+    assert args.timeframe == 'tick'
+    assert args.avg_time == '30'
+    assert args.engines == 32
+    assert args.timeout == 900
+
+
+def test_runtime_preflight_handler_outputs_json(capsys):
+    with patch('cli.runtime_preflight.run_runtime_preflight') as mock:
+        mock.return_value = {
+            'status': 'ok',
+            'message': 'runtime preflight passed',
+            'failed_checks': [],
+            'runtime_profile': {'strategy_db_path': 'strategy.db'},
+            'strategies': {},
+            'config': {},
+        }
+        exit_code = handle_subcommand([
+            'runtime-preflight',
+            '--buy', 'BuyWide',
+            '--sell', 'SellWide',
+            '--start', '20250101',
+            '--end', '20251231',
+            '--timeframe', 'tick',
+            '--avg-time', '30',
+            '--start-time', '90000',
+            '--end-time', '92800',
+            '--engines', '32',
+            '--timeout', '900',
+        ])
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['status'] == 'ok'
+    config = mock.call_args.args[0]
+    assert config.buy_strategy == 'BuyWide'
+    assert config.sell_strategy == 'SellWide'
+    assert config.start_date == 20250101
+    assert config.end_date == 20251231
+    assert config.is_tick is True
+    assert config.avg_time == 30
+    assert config.engine_count == 32
+    assert config.timeout == 900
+
+
+def test_runtime_preflight_handler_returns_error_code_on_failed_preflight(capsys):
+    with patch('cli.runtime_preflight.run_runtime_preflight') as mock:
+        mock.return_value = {
+            'status': 'error',
+            'message': 'runtime preflight failed',
+            'failed_checks': ['buy_strategy'],
+            'runtime_profile': {},
+            'strategies': {},
+            'config': {},
+        }
+        exit_code = handle_subcommand([
+            'runtime-preflight',
+            '--buy', 'BrokenBuy',
+            '--sell', 'SellWide',
+            '--start', '20250101',
+            '--end', '20251231',
+        ])
+
+    assert exit_code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['failed_checks'] == ['buy_strategy']
+
+
+def test_runtime_preflight_handler_normalizes_multiple_avg_times(capsys):
+    with patch('cli.runtime_preflight.run_runtime_preflight') as mock:
+        mock.return_value = {
+            'status': 'ok',
+            'message': 'runtime preflight passed',
+            'failed_checks': [],
+            'runtime_profile': {},
+            'strategies': {},
+            'config': {},
+        }
+        exit_code = handle_subcommand([
+            'runtime-preflight',
+            '--buy', 'BuyWide',
+            '--sell', 'SellWide',
+            '--start', '20250101',
+            '--end', '20251231',
+            '--avg-time', '60,120',
+        ])
+
+    assert exit_code == 0
+    json.loads(capsys.readouterr().out)
+    config = mock.call_args.args[0]
+    assert config.avg_time == [60, 120]
+
+
+def test_runtime_preflight_handler_returns_json_for_invalid_avg_time(capsys):
+    exit_code = handle_subcommand([
+        'runtime-preflight',
+        '--buy', 'BuyWide',
+        '--sell', 'SellWide',
+        '--start', '20250101',
+        '--end', '20251231',
+        '--avg-time', 'abc',
+    ])
+
+    assert exit_code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload['status'] == 'error'
+    assert 'config' in payload['failed_checks']
+    assert any('avg_time' in error for error in payload['validation_errors'])
+
+
+def test_runtime_preflight_parser_constrains_divid_mode():
+    parser = create_subcommand_parser()
+    valid = parser.parse_args([
+        'runtime-preflight',
+        '--buy', 'BuyWide',
+        '--sell', 'SellWide',
+        '--start', '20250101',
+        '--end', '20251231',
+        '--divid-mode', '일자별 분류',
+    ])
+    assert valid.divid_mode == '일자별 분류'
+
+    with pytest.raises(SystemExit):
+        parser.parse_args([
+            'runtime-preflight',
+            '--buy', 'BuyWide',
+            '--sell', 'SellWide',
+            '--start', '20250101',
+            '--end', '20251231',
+            '--divid-mode', 'invalid',
+        ])
+
+
+def test_runtime_preflight_handler_passes_optional_runtime_args(capsys):
+    with patch('cli.runtime_preflight.run_runtime_preflight') as mock:
+        mock.return_value = {
+            'status': 'ok',
+            'message': 'runtime preflight passed',
+            'failed_checks': [],
+            'runtime_profile': {},
+            'strategies': {},
+            'config': {},
+        }
+        exit_code = handle_subcommand([
+            'runtime-preflight',
+            '--buy', 'BuyWide',
+            '--sell', 'SellWide',
+            '--start', '20250101',
+            '--end', '20251231',
+            '--timeframe', 'min',
+            '--oms',
+            '--blacklist',
+            '--back-club',
+            '--divid-mode', '한종목 로딩',
+            '--one-code', 'A005930',
+        ])
+
+    assert exit_code == 0
+    json.loads(capsys.readouterr().out)
+    config = mock.call_args.args[0]
+    assert config.is_tick is False
+    assert config.oms is True
+    assert config.blacklist is True
+    assert config.back_club is True
+    assert config.divid_mode == '한종목 로딩'
+    assert config.one_code == 'A005930'
