@@ -488,6 +488,8 @@ def test_runner_data_loading_wait_uses_timeout_and_empty_exception():
     assert 'from queue import Empty' in content
     assert 'backQ.get(timeout=' in content
     assert 'except Empty:' in content
+    assert 'data_load_deadline = time.monotonic() + timeout' in content
+    assert 'remaining = data_load_deadline - time.monotonic()' in content
 
 
 def test_runner_records_engine_data_loading_checkpoints():

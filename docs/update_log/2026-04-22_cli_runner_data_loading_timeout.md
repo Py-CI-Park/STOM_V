@@ -39,8 +39,8 @@ for i in range(multi):
 ## 검증
 
 ```text
-test_runner_helpers.py=38 passed
-test_backtest_checkpoints.py + test_runner_helpers.py=41 passed
+test_runner_helpers.py=39 passed
+test_backtest_checkpoints.py + test_runner_helpers.py=42 passed
 test_output.py + test_runner_helpers.py=84 passed
 focused_tests=166 passed
 verify_nonrelease_sync=PASS

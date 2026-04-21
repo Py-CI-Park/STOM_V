@@ -195,7 +195,7 @@ def _collect_engine_shared_info(
     shared_info=None,
     load_stats=None,
 ):
-    data_load_deadline = time.time() + timeout
+    data_load_deadline = time.monotonic() + timeout
     received_count = 0
     received_lengths = []
     if load_stats is not None:
@@ -209,7 +209,7 @@ def _collect_engine_shared_info(
     collected = shared_info if shared_info is not None else []
     collected.clear()
     for i in range(multi):
-        remaining = data_load_deadline - time.time()
+        remaining = data_load_deadline - time.monotonic()
         if remaining <= 0:
             _record_engine_data_loading_timeout(
                 checkpoint, result, multi, received_count, timeout, received_lengths
