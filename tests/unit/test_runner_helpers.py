@@ -117,8 +117,8 @@ class TestSyncDictSetComplete:
         _sync_dict_set(sample_config)
         assert _mock_dict_set.get('스톰라이브') is False
 
-    def test_market_microstructure_analysis_disabled(self, sample_config, monkeypatch):
-        """CLI에서 시장미시구조분석 키를 기본 False로 보장한다."""
+    def test_market_analysis_keys_disabled(self, sample_config, monkeypatch):
+        """CLI에서 tick engine 시장 분석 키를 기본 False로 보장한다."""
         from cli.runner import _sync_dict_set
         import json
 
@@ -128,7 +128,9 @@ class TestSyncDictSetComplete:
         payload = json.loads(os.environ['_STOM_CLI_DICT_SET'])
 
         assert _mock_dict_set.get('시장미시구조분석') is False
+        assert _mock_dict_set.get('시장리스크분석') is False
         assert payload['시장미시구조분석'] is False
+        assert payload['시장리스크분석'] is False
 
     def test_no_wrong_english_keys(self, sample_config):
         """잘못된 영어 키(backtest_oms_apply, blacklist_add)가 사용되지 않아야 함."""
