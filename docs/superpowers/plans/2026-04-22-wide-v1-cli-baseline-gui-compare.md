@@ -201,7 +201,7 @@ import json
 from pathlib import Path
 
 path = Path('backtest/temp/wide_v1_cli_preflight_gui_compare_20260422.json')
-payload = json.loads(path.read_text(encoding='utf-8'))
+payload = json.loads(path.read_text(encoding='utf-8-sig'))
 
 checks = {
     'status': payload.get('status'),
@@ -467,7 +467,7 @@ import json
 from pathlib import Path
 
 path = Path('backtest/temp/wide_v1_cli_baseline_gui_compare_20260422.json')
-payload = json.loads(path.read_text(encoding='utf-8'))
+payload = json.loads(path.read_text(encoding='utf-8-sig'))
 metrics = payload.get('metrics') or {}
 checkpoints = payload.get('checkpoints') or []
 
@@ -515,7 +515,7 @@ GUI = {
 }
 
 path = Path('backtest/temp/wide_v1_cli_baseline_gui_compare_20260422.json')
-payload = json.loads(path.read_text(encoding='utf-8'))
+payload = json.loads(path.read_text(encoding='utf-8-sig'))
 metrics = payload.get('metrics') or {}
 checkpoints = payload.get('checkpoints') or []
 
@@ -578,7 +578,7 @@ GUI_TRADE_COUNT = 40937
 TRADE_HOLD_RATIO = 0.001
 
 path = Path('backtest/temp/wide_v1_cli_baseline_gui_compare_20260422.json')
-payload = json.loads(path.read_text(encoding='utf-8'))
+payload = json.loads(path.read_text(encoding='utf-8-sig'))
 metrics = payload.get('metrics') or {}
 checkpoints = payload.get('checkpoints') or []
 checkpoint_names = {item.get('name') for item in checkpoints}
@@ -697,8 +697,8 @@ baseline_path = Path('backtest/temp/wide_v1_cli_baseline_gui_compare_20260422.js
 out_path = Path('docs/research/condition_research/pilot_logs/2026-04-22_wide_v1_cli_baseline_gui_compare.md')
 out_path.parent.mkdir(parents=True, exist_ok=True)
 
-preflight = json.loads(preflight_path.read_text(encoding='utf-8'))
-baseline = json.loads(baseline_path.read_text(encoding='utf-8'))
+preflight = json.loads(preflight_path.read_text(encoding='utf-8-sig'))
+baseline = json.loads(baseline_path.read_text(encoding='utf-8-sig'))
 metrics = baseline.get('metrics') or {}
 checkpoints = baseline.get('checkpoints') or []
 checkpoint_names = [item.get('name') for item in checkpoints]
@@ -932,8 +932,8 @@ preflight_path = Path('backtest/temp/wide_v1_cli_preflight_gui_compare_20260422.
 baseline_path = Path('backtest/temp/wide_v1_cli_baseline_gui_compare_20260422.json')
 out_path = Path('docs/update_log/2026-04-22_wide_v1_cli_baseline_gui_compare.md')
 text = pilot_path.read_text(encoding='utf-8')
-preflight = json.loads(preflight_path.read_text(encoding='utf-8'))
-baseline = json.loads(baseline_path.read_text(encoding='utf-8'))
+preflight = json.loads(preflight_path.read_text(encoding='utf-8-sig'))
+baseline = json.loads(baseline_path.read_text(encoding='utf-8-sig'))
 metrics = baseline.get('metrics') or {}
 
 def extract(name):
