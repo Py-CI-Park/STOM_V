@@ -1,5 +1,7 @@
 import importlib
 
+import pytest
+
 
 CLI_DB_ENV_NAMES = (
     'STOM_CLI_DATABASE_DIR',
@@ -37,6 +39,15 @@ def reload_setting_base(monkeypatch, env=None):
     import utility.setting_base as setting_base
 
     return importlib.reload(setting_base)
+
+
+@pytest.fixture(autouse=True)
+def restore_setting_base_defaults(monkeypatch):
+    yield
+    for name in CLI_DB_ENV_NAMES:
+        monkeypatch.delenv(name, raising=False)
+    import utility.setting_base as setting_base
+    importlib.reload(setting_base)
 
 
 def test_setting_base_keeps_gui_database_defaults_without_cli_env(monkeypatch):
