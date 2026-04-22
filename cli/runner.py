@@ -120,6 +120,7 @@ def _sync_dict_set(config):
     DICT_SET['그래프저장하지않기'] = True                # CLI에서 그래프 파일 저장 불필요
     DICT_SET['그래프띄우지않기'] = True                  # CLI에서 그래프 표시 불가
     DICT_SET['스톰라이브'] = False                      # CLI에서 라이브 연결 불필요
+    DICT_SET['시장미시구조분석'] = False                 # tick engine Strategy() 기본 키 보장
 
     # 환경 변수로 오버라이드 전파 — Windows spawn 손자 프로세스(Total 등) 대응
     # BackTest가 내부에서 Total을 Process로 생성하므로, _engine_with_dict_set 래퍼로는
@@ -132,6 +133,7 @@ def _sync_dict_set(config):
         '그래프저장하지않기': True,
         '그래프띄우지않기': True,
         '스톰라이브': False,
+        '시장미시구조분석': False,
     })
     return DICT_SET
 

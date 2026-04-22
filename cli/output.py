@@ -11,6 +11,7 @@ ERROR_DIAGNOSTIC_FIELDS = (
     'cleanup_status',
     'engine_data_loading',
     'backtest_child_diagnostics',
+    'backtest_process_diagnostics',
     'csv_path',
 )
 
