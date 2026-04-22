@@ -1,33 +1,41 @@
 
+import os
+
 OPENAPI_PATH        = 'C:/OpenAPI'
 ICON_PATH           = './ui/icon'
 STOCK_LOGIN_PATH    = './trade/stock_korea/login_kiwoom'
 FUTURE_LOGIN_PATH   = './trade/future_oversea/login_future'
 GRAPH_PATH          = './backtest/graph'
 BACK_TEMP           = './backtest/temp'
-DB_PATH             = './_database'
-DB_SETTING          = './_database/setting.db'
-DB_BACKTEST         = './_database/backtest.db'
-DB_TRADELIST        = './_database/tradelist.db'
-DB_STRATEGY         = './_database/strategy.db'
-DB_OPTUNA           = 'sqlite:///./_database/optuna.db'
-DB_CODE_INFO        = './_database/code_info.db'
-DB_STOCK_TICK       = './_database/stock_tick.db'
-DB_STOCK_MIN        = './_database/stock_min.db'
-DB_STOCK_TICK_BACK  = './_database/stock_tick_back.db'
-DB_STOCK_MIN_BACK   = './_database/stock_min_back.db'
-DB_COIN_TICK        = './_database/coin_tick.db'
-DB_COIN_MIN         = './_database/coin_min.db'
-DB_COIN_TICK_BACK   = './_database/coin_tick_back.db'
-DB_COIN_MIN_BACK    = './_database/coin_min_back.db'
-DB_FUTURE_TICK      = './_database/future_tick.db'
-DB_FUTURE_MIN       = './_database/future_min.db'
-DB_FUTURE_TICK_BACK = './_database/future_tick_back.db'
-DB_FUTURE_MIN_BACK  = './_database/future_min_back.db'
-DB_STOCK_USA_TICK   = './_database/stock_usa_tick.db'
-DB_STOCK_USA_MIN    = './_database/stock_usa_min.db'
-DB_STOCK_USA_TICK_BACK = './_database/stock_usa_tick_back.db'
-DB_STOCK_USA_MIN_BACK  = './_database/stock_usa_min_back.db'
+DB_PATH             = os.environ.get('STOM_CLI_DATABASE_DIR', './_database')
+
+
+def _resolve_db(filename, env_name):
+    return os.environ.get(env_name, f'{DB_PATH}/{filename}')
+
+
+DB_SETTING          = _resolve_db('setting.db', 'STOM_CLI_DB_SETTING')
+DB_BACKTEST         = _resolve_db('backtest.db', 'STOM_CLI_DB_BACKTEST')
+DB_TRADELIST        = _resolve_db('tradelist.db', 'STOM_CLI_DB_TRADELIST')
+DB_STRATEGY         = _resolve_db('strategy.db', 'STOM_CLI_DB_STRATEGY')
+DB_OPTUNA           = f"sqlite:///{_resolve_db('optuna.db', 'STOM_CLI_DB_OPTUNA')}"
+DB_CODE_INFO        = _resolve_db('code_info.db', 'STOM_CLI_DB_CODE_INFO')
+DB_STOCK_TICK       = _resolve_db('stock_tick.db', 'STOM_CLI_DB_STOCK_TICK')
+DB_STOCK_MIN        = _resolve_db('stock_min.db', 'STOM_CLI_DB_STOCK_MIN')
+DB_STOCK_TICK_BACK  = _resolve_db('stock_tick_back.db', 'STOM_CLI_DB_STOCK_BACK_TICK')
+DB_STOCK_MIN_BACK   = _resolve_db('stock_min_back.db', 'STOM_CLI_DB_STOCK_BACK_MIN')
+DB_COIN_TICK        = _resolve_db('coin_tick.db', 'STOM_CLI_DB_COIN_TICK')
+DB_COIN_MIN         = _resolve_db('coin_min.db', 'STOM_CLI_DB_COIN_MIN')
+DB_COIN_TICK_BACK   = _resolve_db('coin_tick_back.db', 'STOM_CLI_DB_COIN_BACK_TICK')
+DB_COIN_MIN_BACK    = _resolve_db('coin_min_back.db', 'STOM_CLI_DB_COIN_BACK_MIN')
+DB_FUTURE_TICK      = _resolve_db('future_tick.db', 'STOM_CLI_DB_FUTURE_TICK')
+DB_FUTURE_MIN       = _resolve_db('future_min.db', 'STOM_CLI_DB_FUTURE_MIN')
+DB_FUTURE_TICK_BACK = _resolve_db('future_tick_back.db', 'STOM_CLI_DB_FUTURE_BACK_TICK')
+DB_FUTURE_MIN_BACK  = _resolve_db('future_min_back.db', 'STOM_CLI_DB_FUTURE_BACK_MIN')
+DB_STOCK_USA_TICK   = _resolve_db('stock_usa_tick.db', 'STOM_CLI_DB_STOCK_USA_TICK')
+DB_STOCK_USA_MIN    = _resolve_db('stock_usa_min.db', 'STOM_CLI_DB_STOCK_USA_MIN')
+DB_STOCK_USA_TICK_BACK = _resolve_db('stock_usa_tick_back.db', 'STOM_CLI_DB_STOCK_USA_BACK_TICK')
+DB_STOCK_USA_MIN_BACK  = _resolve_db('stock_usa_min_back.db', 'STOM_CLI_DB_STOCK_USA_BACK_MIN')
 
 # CLI 호환 별칭 (업스트림: DB_{거래소}_{타임프레임}_BACK → CLI: DB_{거래소}_BACK_{타임프레임})
 DB_STOCK_BACK_TICK   = DB_STOCK_TICK_BACK
