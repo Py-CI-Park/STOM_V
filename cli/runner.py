@@ -9,6 +9,7 @@ import sqlite3
 import atexit
 import pandas as pd
 from multiprocessing import Process, Queue, Value, Lock, shared_memory
+from queue import Empty
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from cli.paths import DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
@@ -156,6 +157,89 @@ def _cleanup_shared_memory(shared_info):
             pass
 
 
+def _record_engine_data_loading_timeout(
+    checkpoint,
+    result,
+    multi,
+    received_count,
+    timeout,
+    received_lengths,
+):
+    checkpoint.mark('engine_data_response_timeout', detail={
+        'expected_count': multi,
+        'received_count': received_count,
+        'missing_count': multi - received_count,
+        'timeout_seconds': timeout,
+        'received_lengths': received_lengths,
+    })
+    result['status'] = 'error'
+    result['message'] = 'engine data loading timed out'
+    result['engine_data_loading'] = {
+        'expected_count': multi,
+        'received_count': received_count,
+        'missing_count': multi - received_count,
+        'timeout_seconds': timeout,
+        'received_lengths': received_lengths,
+    }
+    result.update(checkpoint.to_result_fields(status='error'))
+
+
+def _collect_engine_shared_info(
+    backQ,
+    multi,
+    timeout,
+    checkpoint,
+    result,
+    windowQ,
+    log_gubun,
+    shared_info=None,
+    load_stats=None,
+):
+    data_load_deadline = time.monotonic() + timeout
+    received_count = 0
+    received_lengths = []
+    if load_stats is not None:
+        load_stats['received_count'] = received_count
+        load_stats['received_lengths'] = received_lengths
+    checkpoint.mark('engine_data_response_wait_started', detail={
+        'expected_count': multi,
+        'timeout_seconds': timeout,
+    })
+
+    collected = shared_info if shared_info is not None else []
+    collected.clear()
+    for i in range(multi):
+        remaining = data_load_deadline - time.monotonic()
+        if remaining <= 0:
+            _record_engine_data_loading_timeout(
+                checkpoint, result, multi, received_count, timeout, received_lengths
+            )
+            return None
+
+        try:
+            shared_info_ = backQ.get(timeout=remaining)
+        except Empty:
+            _record_engine_data_loading_timeout(
+                checkpoint, result, multi, received_count, timeout, received_lengths
+            )
+            return None
+
+        received_count += 1
+        received_lengths.append(len(shared_info_))
+        if load_stats is not None:
+            load_stats['received_count'] = received_count
+        checkpoint.mark('engine_data_response_received', detail={
+            'expected_count': multi,
+            'received_count': received_count,
+            'response_index': i,
+            'chunk_count': len(shared_info_),
+        })
+        collected += shared_info_
+        windowQ.put((1.4, f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
+
+    return collected
+
+
 def _collect_backtest_child_diagnostics(back_queue):
     diagnostic = None
     empty_count = 0
@@ -294,6 +378,10 @@ def run_backtest(config):
             windowQ.put((1.4, f'엔진 프로세스{i + 1} 생성 완료'))
 
         # === Step 4: 데이터 로딩 (DB 연결 + moneytop 파싱) ===
+        checkpoint.mark('engine_processes_started', detail={
+            'engine_count': config.engine_count,
+        })
+
         db = DB_STOCK_BACK_TICK if config.is_tick else DB_STOCK_BACK_MIN
         checkpoint.mark('stock_back_db_selected', detail={'db_path': db})
 
@@ -392,6 +480,11 @@ def run_backtest(config):
 
         # 메시지 2: 데이터로딩 (11-tuple)
         avg_list = _normalize_avg_list(config.avg_time)
+        checkpoint.mark('engine_data_load_requested', detail={
+            'expected_count': multi,
+            'data_list_count': len(data_list),
+            'avg_list': avg_list,
+        })
         for i, datas in enumerate(data_lists):
             back_eques[i].put(('데이터로딩', config.start_date, config.end_date,
                                config.start_time, config.end_time, datas,
@@ -400,13 +493,26 @@ def run_backtest(config):
                                divid_mode))
 
         # 응답 대기: shared_info 수집
+        timeout = getattr(config, 'timeout', 3600) or 3600
+        data_load_stats = {}
         shared_info.clear()
-        for i in range(multi):
-            shared_info_ = backQ.get()
-            shared_info += shared_info_
-            windowQ.put((1.4, f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
+        collected_shared_info = _collect_engine_shared_info(
+            backQ, multi, timeout, checkpoint, result, windowQ, log_gubun,
+            shared_info, data_load_stats
+        )
+        if collected_shared_info is None:
+            return result
+
+        received_count = data_load_stats['received_count']
+        received_lengths = data_load_stats['received_lengths']
         shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)
         checkpoint.mark('shared_data_loaded', detail={'back_count': len(shared_info)})
+        checkpoint.mark('engine_data_load_completed', detail={
+            'back_count': len(shared_info),
+            'expected_count': multi,
+            'received_count': received_count,
+            'received_lengths': received_lengths,
+        })
         windowQ.put((1.4, f'{log_gubun} 데이터 로딩 완료'))
 
         # 메시지 3: 공유데이터
@@ -500,10 +606,10 @@ def run_backtest(config):
             }
             result.update(checkpoint.to_result_fields(status='success'))
         else:
-            result['status'] = 'success'
-            result['message'] = '백테스트 완료 (결과 테이블이 비어있습니다)'
+            result['status'] = 'error'
+            result['message'] = 'backtest completed without metrics'
             result['csv_path'] = csv_path
-            result.update(checkpoint.to_result_fields(status='success'))
+            result.update(checkpoint.to_result_fields(status='error'))
 
     except Exception as e:
         result['status'] = 'error'
@@ -512,7 +618,11 @@ def run_backtest(config):
         windowQ.put((1.4, f'오류 발생: {e}'))
 
     finally:
+        checkpoint.mark('shared_memory_cleanup_started', detail={
+            'shared_info_count': len(shared_info or []),
+        })
         _cleanup_shared_memory(shared_info)
+        checkpoint.mark('shared_memory_cleanup_completed')
         _drain_queues(all_queues + back_sques + back_eques)
         drainer.stop()
         drainer.join(timeout=2)

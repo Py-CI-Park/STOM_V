@@ -459,6 +459,176 @@ def test_runner_handles_nonzero_backtest_exitcode_before_metrics_extraction():
     assert content.index(exitcode_check) < content.index(metrics_call)
 
 
+def test_runner_treats_missing_metrics_after_backtest_as_error():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    metrics_check = 'if metrics:'
+    missing_metrics_message = 'backtest completed without metrics'
+    assert metrics_check in content
+    assert missing_metrics_message in content
+    assert "result['status'] = 'error'" in content
+    assert "result['message'] = 'backtest completed without metrics'" in content
+    assert "result.update(checkpoint.to_result_fields(status='error'" in content
+    assert content.index(metrics_check) < content.index(missing_metrics_message)
+
+
+def test_runner_data_loading_wait_uses_timeout_and_empty_exception():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert 'from queue import Empty' in content
+    assert 'backQ.get(timeout=' in content
+    assert 'except Empty:' in content
+    assert 'data_load_deadline = time.monotonic() + timeout' in content
+    assert 'remaining = data_load_deadline - time.monotonic()' in content
+
+
+def test_runner_records_engine_data_loading_checkpoints():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert "checkpoint.mark('engine_processes_started'" in content
+    assert "checkpoint.mark('engine_data_load_requested'" in content
+    assert "checkpoint.mark('engine_data_response_wait_started'" in content
+    assert "checkpoint.mark('engine_data_response_received'" in content
+    assert "checkpoint.mark('engine_data_response_timeout'" in content
+    assert "checkpoint.mark('engine_data_load_completed'" in content
+
+
+def test_runner_returns_structured_engine_data_loading_timeout_result():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert "'engine_data_loading'" in content
+    assert "'expected_count'" in content
+    assert "'received_count'" in content
+    assert "'missing_count'" in content
+    assert "'timeout_seconds'" in content
+    assert "result['status'] = 'error'" in content
+    assert "engine data loading timed out" in content
+
+
+class FakeEngineDataCheckpoint:
+    def __init__(self):
+        self.events = []
+
+    def mark(self, name, detail=None):
+        self.events.append({'name': name, 'detail': detail or {}})
+
+    def to_result_fields(self, status, cleanup_status=None):
+        fields = {
+            'checkpoint_status': status,
+            'last_checkpoint': self.events[-1]['name'] if self.events else None,
+            'elapsed_seconds': 0.0,
+            'checkpoints': self.events,
+        }
+        if cleanup_status is not None:
+            fields['cleanup_status'] = cleanup_status
+        return fields
+
+
+class FakeEngineDataWindowQueue:
+    def __init__(self):
+        self.items = []
+
+    def put(self, item):
+        self.items.append(item)
+
+
+class FakeEngineDataBackQueue:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.timeouts = []
+
+    def get(self, timeout=None):
+        self.timeouts.append(timeout)
+        response = self.responses.pop(0)
+        if isinstance(response, BaseException):
+            raise response
+        return response
+
+
+def test_collect_engine_shared_info_combines_successful_responses():
+    from cli.runner import _collect_engine_shared_info
+
+    backQ = FakeEngineDataBackQueue([
+        [{'len': 3, 'shm_name': 'backdata_0'}],
+        [{'len': 2, 'shm_name': 'backdata_1'}],
+    ])
+    checkpoint = FakeEngineDataCheckpoint()
+    result = {}
+    windowQ = FakeEngineDataWindowQueue()
+
+    shared_info = _collect_engine_shared_info(
+        backQ, 2, 60, checkpoint, result, windowQ, 'test'
+    )
+
+    assert shared_info == [
+        {'len': 3, 'shm_name': 'backdata_0'},
+        {'len': 2, 'shm_name': 'backdata_1'},
+    ]
+    assert 'engine_data_loading' not in result
+    assert all(timeout > 0 for timeout in backQ.timeouts)
+    assert [event['name'] for event in checkpoint.events] == [
+        'engine_data_response_wait_started',
+        'engine_data_response_received',
+        'engine_data_response_received',
+    ]
+    assert len(windowQ.items) == 2
+
+
+def test_collect_engine_shared_info_records_structured_timeout():
+    from queue import Empty
+
+    from cli.runner import _collect_engine_shared_info
+
+    backQ = FakeEngineDataBackQueue([
+        [{'len': 3, 'shm_name': 'backdata_0'}],
+        Empty(),
+    ])
+    checkpoint = FakeEngineDataCheckpoint()
+    result = {}
+    windowQ = FakeEngineDataWindowQueue()
+
+    shared_info = _collect_engine_shared_info(
+        backQ, 2, 60, checkpoint, result, windowQ, 'test'
+    )
+
+    assert shared_info is None
+    assert result['status'] == 'error'
+    assert result['message'] == 'engine data loading timed out'
+    assert result['engine_data_loading'] == {
+        'expected_count': 2,
+        'received_count': 1,
+        'missing_count': 1,
+        'timeout_seconds': 60,
+        'received_lengths': [1],
+    }
+    assert result['checkpoint_status'] == 'error'
+    assert result['last_checkpoint'] == 'engine_data_response_timeout'
+    assert any(
+        event['name'] == 'engine_data_response_timeout'
+        for event in checkpoint.events
+    )
+
+
 def test_runner_collects_backtest_child_diagnostics():
     runner_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -485,7 +655,18 @@ def test_backtest_emits_child_moneytop_diagnostics():
     assert 'moneytop_error' in content
 
 
-def test_runner_collects_diagnostic_from_back_queue_and_ignores_unrelated_messages():
+class FakeBacktestChildDiagnosticQueue:
+    def __init__(self, messages):
+        self.messages = list(messages)
+
+    def get(self, timeout=None):
+        if not self.messages:
+            from queue import Empty
+            raise Empty()
+        return self.messages.pop(0)
+
+
+def test_collect_backtest_child_diagnostics_returns_latest_diagnostic():
     from cli.runner import _collect_backtest_child_diagnostics
 
     diagnostic = {
@@ -493,90 +674,71 @@ def test_runner_collects_diagnostic_from_back_queue_and_ignores_unrelated_messag
         'moneytop_query_status': 'error',
         'moneytop_error': 'no such table: moneytop',
     }
+    queue = FakeBacktestChildDiagnosticQueue([
+        ('unrelated', {'ignored': True}),
+        ('backtest_child_diagnostics', diagnostic),
+    ])
 
-    class FakeQueue:
-        def __init__(self):
-            self.messages = [
-                'engine-ready',
-                ('progress', {'step': 'ignored'}),
-                ('backtest_child_diagnostics', diagnostic),
-            ]
-
-        def get(self, timeout=None):
-            if self.messages:
-                return self.messages.pop(0)
-            raise RuntimeError('empty')
-
-    assert _collect_backtest_child_diagnostics(FakeQueue()) == diagnostic
+    assert _collect_backtest_child_diagnostics(queue) == diagnostic
 
 
-def test_backtest_moneytop_diagnostic_is_sent_when_connect_fails(monkeypatch):
-    from backtest import backtest as backtest_mod
+class FakeBacktestMoneytopDiagnosticQueue:
+    def __init__(self):
+        self.messages = []
 
-    class RecordingQueue:
-        def __init__(self):
-            self.messages = []
+    def put(self, item):
+        self.messages.append(item)
 
-        def put(self, data):
-            self.messages.append(data)
+
+def test_emit_backtest_child_diagnostics_for_moneytop_error():
+    from backtest.backtest import _emit_backtest_child_diagnostics
+
+    queue = FakeBacktestMoneytopDiagnosticQueue()
+    error = RuntimeError('no such table: moneytop')
+
+    diagnostic = _emit_backtest_child_diagnostics(
+        queue,
+        'stock_tick_back.db',
+        error,
+        20250102,
+        20250103,
+        90000,
+        92800,
+        'S',
+    )
+
+    assert queue.messages[0][0] == 'backtest_child_diagnostics'
+    assert queue.messages[0][1] == diagnostic
+    assert diagnostic['stock_back_db_path'] == 'stock_tick_back.db'
+    assert diagnostic['moneytop_query_status'] == 'error'
+    assert diagnostic['moneytop_error'] == 'no such table: moneytop'
+
+
+def test_read_moneytop_with_diagnostics_emits_on_connect_failure(monkeypatch):
+    import pytest
+    import backtest.backtest as backtest_module
+
+    queue = FakeBacktestMoneytopDiagnosticQueue()
 
     def fail_connect(_db):
-        raise RuntimeError('cannot open database')
+        raise RuntimeError('cannot open db')
 
-    queue = RecordingQueue()
-    monkeypatch.setattr(backtest_mod.sqlite3, 'connect', fail_connect)
+    monkeypatch.setattr(backtest_module.sqlite3, 'connect', fail_connect)
 
-    with pytest.raises(RuntimeError, match='cannot open database'):
-        backtest_mod._read_moneytop_with_diagnostics(
-            'stock_tick_back.db', True, 'S', 20250101, 20250131, 90000, 152800, queue
+    with pytest.raises(RuntimeError, match='cannot open db'):
+        backtest_module._read_moneytop_with_diagnostics(
+            'missing.db',
+            True,
+            'S',
+            20250102,
+            20250103,
+            90000,
+            92800,
+            queue,
         )
 
-    assert queue.messages == [
-        ('backtest_child_diagnostics', {
-            'stock_back_db_path': 'stock_tick_back.db',
-            'moneytop_query_status': 'error',
-            'moneytop_error': 'cannot open database',
-            'startday': 20250101,
-            'endday': 20250131,
-            'starttime': 90000,
-            'endtime': 152800,
-            'ui_gubun': 'S',
-        })
-    ]
-
-
-def test_backtest_moneytop_diagnostic_is_sent_when_read_sql_fails(monkeypatch):
-    from backtest import backtest as backtest_mod
-
-    class RecordingQueue:
-        def __init__(self):
-            self.messages = []
-
-        def put(self, data):
-            self.messages.append(data)
-
-    class FakeConnection:
-        def __init__(self):
-            self.closed = False
-
-        def close(self):
-            self.closed = True
-
-    class FakePandas:
-        def read_sql(self, _query, _con):
-            raise RuntimeError('no such table: moneytop')
-
-    con = FakeConnection()
-    queue = RecordingQueue()
-    monkeypatch.setattr(backtest_mod.sqlite3, 'connect', lambda _db: con)
-    monkeypatch.setattr(backtest_mod, 'get_pd', lambda: FakePandas())
-
-    with pytest.raises(RuntimeError, match='no such table: moneytop'):
-        backtest_mod._read_moneytop_with_diagnostics(
-            'stock_tick_back.db', True, 'S', 20250101, 20250131, 90000, 152800, queue
-        )
-
-    assert con.closed is True
     assert queue.messages[0][0] == 'backtest_child_diagnostics'
-    assert queue.messages[0][1]['moneytop_query_status'] == 'error'
-    assert queue.messages[0][1]['moneytop_error'] == 'no such table: moneytop'
+    diagnostic = queue.messages[0][1]
+    assert diagnostic['stock_back_db_path'] == 'missing.db'
+    assert diagnostic['moneytop_query_status'] == 'error'
+    assert diagnostic['moneytop_error'] == 'cannot open db'

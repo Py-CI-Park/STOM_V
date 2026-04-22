@@ -44,6 +44,42 @@ class TestFormatResult:
         assert 'STOM Backtest Result' in output
 
 
+def test_format_json_error_preserves_engine_data_loading_diagnostics():
+    result = {
+        'status': 'error',
+        'message': 'engine data loading timed out',
+        'engine_data_loading': {
+            'expected_count': 2,
+            'received_count': 1,
+            'missing_count': 1,
+            'timeout_seconds': 60,
+            'received_lengths': [3],
+        },
+        'checkpoint_status': 'error',
+        'last_checkpoint': 'engine_data_response_timeout',
+        'elapsed_seconds': 60.123,
+        'checkpoints': [
+            {
+                'name': 'engine_data_response_timeout',
+                'elapsed_seconds': 60.123,
+                'detail': {'missing_count': 1},
+            },
+        ],
+        'cleanup_status': 'process_killed',
+        'csv_path': None,
+    }
+
+    parsed = json.loads(format_json(result))
+
+    assert parsed['engine_data_loading'] == result['engine_data_loading']
+    assert parsed['checkpoint_status'] == 'error'
+    assert parsed['last_checkpoint'] == 'engine_data_response_timeout'
+    assert parsed['elapsed_seconds'] == pytest.approx(60.123)
+    assert parsed['checkpoints'] == result['checkpoints']
+    assert parsed['cleanup_status'] == 'process_killed'
+    assert parsed['csv_path'] is None
+
+
 def test_error_json_preserves_backtest_child_diagnostics():
     result = {
         'status': 'error',
@@ -60,6 +96,40 @@ def test_error_json_preserves_backtest_child_diagnostics():
     assert parsed['status'] == 'error'
     assert parsed['backtest_child_diagnostics']['moneytop_query_status'] == 'error'
     assert 'moneytop' in parsed['backtest_child_diagnostics']['moneytop_error']
+
+
+def test_format_json_error_omits_absent_diagnostic_fields(sample_result_error):
+    parsed = json.loads(format_json(sample_result_error))
+
+    assert 'engine_data_loading' not in parsed
+    assert 'checkpoint_status' not in parsed
+    assert 'checkpoints' not in parsed
+
+
+def test_format_json_success_preserves_csv_and_checkpoint_diagnostics(sample_result_success):
+    sample_result_success.update({
+        'csv_path': 'backtest/csv/result.csv',
+        'checkpoint_status': 'success',
+        'last_checkpoint': 'csv_detected',
+        'elapsed_seconds': 12.345,
+        'checkpoints': [
+            {
+                'name': 'csv_detected',
+                'elapsed_seconds': 12.345,
+                'detail': {'csv_path': 'backtest/csv/result.csv'},
+            },
+        ],
+        'cleanup_status': 'not_needed',
+    })
+
+    parsed = json.loads(format_json(sample_result_success))
+
+    assert parsed['csv_path'] == 'backtest/csv/result.csv'
+    assert parsed['checkpoint_status'] == 'success'
+    assert parsed['last_checkpoint'] == 'csv_detected'
+    assert parsed['elapsed_seconds'] == pytest.approx(12.345)
+    assert parsed['checkpoints'] == sample_result_success['checkpoints']
+    assert parsed['cleanup_status'] == 'not_needed'
 
 
 # ============================================================
