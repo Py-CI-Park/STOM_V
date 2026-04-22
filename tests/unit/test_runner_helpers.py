@@ -439,34 +439,45 @@ def test_runner_exports_cli_db_paths_for_legacy_children(monkeypatch, tmp_path):
         'STOM_CLI_DB_STOCK_BACK_TICK': tmp_path / 'stock_tick_back.db',
         'STOM_CLI_DB_STOCK_BACK_MIN': tmp_path / 'stock_min_back.db',
     }
-    for key in db_paths:
-        monkeypatch.delenv(key, raising=False)
+    original_env = {key: os.environ.get(key) for key in db_paths}
+    try:
+        with monkeypatch.context() as clean_env:
+            for key in db_paths:
+                os.environ.pop(key, None)
 
-    monkeypatch.setattr(runner, 'DB_SETTING', db_paths['STOM_CLI_DB_SETTING'], raising=False)
-    monkeypatch.setattr(runner, 'DB_STRATEGY', db_paths['STOM_CLI_DB_STRATEGY'], raising=False)
-    monkeypatch.setattr(runner, 'DB_BACKTEST', db_paths['STOM_CLI_DB_BACKTEST'], raising=False)
-    monkeypatch.setattr(runner, 'DB_STOCK_BACK_TICK', db_paths['STOM_CLI_DB_STOCK_BACK_TICK'], raising=False)
-    monkeypatch.setattr(runner, 'DB_STOCK_BACK_MIN', db_paths['STOM_CLI_DB_STOCK_BACK_MIN'], raising=False)
+            clean_env.setattr(runner, 'DB_SETTING', db_paths['STOM_CLI_DB_SETTING'], raising=False)
+            clean_env.setattr(runner, 'DB_STRATEGY', db_paths['STOM_CLI_DB_STRATEGY'], raising=False)
+            clean_env.setattr(runner, 'DB_BACKTEST', db_paths['STOM_CLI_DB_BACKTEST'], raising=False)
+            clean_env.setattr(runner, 'DB_STOCK_BACK_TICK', db_paths['STOM_CLI_DB_STOCK_BACK_TICK'], raising=False)
+            clean_env.setattr(runner, 'DB_STOCK_BACK_MIN', db_paths['STOM_CLI_DB_STOCK_BACK_MIN'], raising=False)
 
-    runner._ensure_cli_db_env()
+            runner._ensure_cli_db_env()
 
-    assert os.environ['STOM_CLI_DB_SETTING'] == str(db_paths['STOM_CLI_DB_SETTING'])
-    assert os.environ['STOM_CLI_DB_STRATEGY'] == str(db_paths['STOM_CLI_DB_STRATEGY'])
-    assert os.environ['STOM_CLI_DB_BACKTEST'] == str(db_paths['STOM_CLI_DB_BACKTEST'])
-    assert os.environ['STOM_CLI_DB_STOCK_BACK_TICK'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_TICK'])
-    assert os.environ['STOM_CLI_DB_STOCK_BACK_MIN'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_MIN'])
+            assert os.environ['STOM_CLI_DB_SETTING'] == str(db_paths['STOM_CLI_DB_SETTING'])
+            assert os.environ['STOM_CLI_DB_STRATEGY'] == str(db_paths['STOM_CLI_DB_STRATEGY'])
+            assert os.environ['STOM_CLI_DB_BACKTEST'] == str(db_paths['STOM_CLI_DB_BACKTEST'])
+            assert os.environ['STOM_CLI_DB_STOCK_BACK_TICK'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_TICK'])
+            assert os.environ['STOM_CLI_DB_STOCK_BACK_MIN'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_MIN'])
 
-    user_paths = {
-        key: f'user-provided-{key.lower()}.db'
-        for key in db_paths
-    }
-    for key, value in user_paths.items():
-        monkeypatch.setenv(key, value)
+            for key in db_paths:
+                os.environ.pop(key, None)
+            user_paths = {
+                key: f'user-provided-{key.lower()}.db'
+                for key in db_paths
+            }
+            for key, value in user_paths.items():
+                clean_env.setenv(key, value)
 
-    runner._ensure_cli_db_env()
+            runner._ensure_cli_db_env()
 
-    for key, value in user_paths.items():
-        assert os.environ[key] == value
+            for key, value in user_paths.items():
+                assert os.environ[key] == value
+    finally:
+        for key, value in original_env.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
 
     run_backtest_body = '\n'.join(inspect.getsource(runner.run_backtest).splitlines()[1:])
     assert '_ensure_cli_db_env()' in run_backtest_body
