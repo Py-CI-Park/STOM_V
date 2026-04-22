@@ -12,7 +12,7 @@ from multiprocessing import Process, Queue, Value, Lock, shared_memory
 from queue import Empty
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from cli.paths import DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
+from cli.paths import DB_SETTING, DB_STRATEGY, DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
 from cli.backtest_checkpoints import BacktestCheckpointRecorder
 from backtest.back_static import GetMoneytopQuery
 from backtest.back_subtotal import BackSubTotal
@@ -37,6 +37,18 @@ def _normalize_avg_list(avg_time):
     if isinstance(avg_time, (list, tuple)):
         return [int(x) for x in avg_time]
     return [int(avg_time)]
+
+
+def _ensure_cli_db_env():
+    defaults = {
+        'STOM_CLI_DB_SETTING': DB_SETTING,
+        'STOM_CLI_DB_STRATEGY': DB_STRATEGY,
+        'STOM_CLI_DB_BACKTEST': DB_BACKTEST,
+        'STOM_CLI_DB_STOCK_BACK_TICK': DB_STOCK_BACK_TICK,
+        'STOM_CLI_DB_STOCK_BACK_MIN': DB_STOCK_BACK_MIN,
+    }
+    for key, value in defaults.items():
+        os.environ.setdefault(key, str(value))
 
 
 def _get_backtest_last_rowid(table_name='stock_bt'):
@@ -108,6 +120,8 @@ def _sync_dict_set(config):
     DICT_SET['그래프저장하지않기'] = True                # CLI에서 그래프 파일 저장 불필요
     DICT_SET['그래프띄우지않기'] = True                  # CLI에서 그래프 표시 불가
     DICT_SET['스톰라이브'] = False                      # CLI에서 라이브 연결 불필요
+    DICT_SET['시장미시구조분석'] = False                 # tick engine Strategy() 기본 키 보장
+    DICT_SET['시장리스크분석'] = False                   # tick engine Strategy() 기본 키 보장
 
     # 환경 변수로 오버라이드 전파 — Windows spawn 손자 프로세스(Total 등) 대응
     # BackTest가 내부에서 Total을 Process로 생성하므로, _engine_with_dict_set 래퍼로는
@@ -120,6 +134,8 @@ def _sync_dict_set(config):
         '그래프저장하지않기': True,
         '그래프띄우지않기': True,
         '스톰라이브': False,
+        '시장미시구조분석': False,
+        '시장리스크분석': False,
     })
     return DICT_SET
 
@@ -258,6 +274,22 @@ def _collect_backtest_child_diagnostics(back_queue):
     return diagnostic
 
 
+def _summarize_protocol_diagnostics(events):
+    events = list(events or [])
+    last_by_source = {}
+    for event in events:
+        source = event.get('source')
+        checkpoint = event.get('checkpoint')
+        if source and checkpoint:
+            last_by_source[source] = checkpoint
+    return {
+        'event_count': len(events),
+        'last_checkpoint': events[-1].get('checkpoint') if events else None,
+        'last_by_source': last_by_source,
+        'events': events,
+    }
+
+
 def _engine_with_dict_set(engine_cls, dict_set_override, *args):
     """자식 프로세스 시작 시 DICT_SET을 CLI 값으로 패치한 후 엔진을 생성한다.
 
@@ -295,8 +327,11 @@ def run_backtest(config):
 
     _child_procs.clear()
     _register_signals()
+    _ensure_cli_db_env()
     dict_set = _sync_dict_set(config)
     _run_start_time = time.time()
+    previous_protocol_diag = os.environ.get('STOM_CLI_BACKTEST_PROTOCOL_DIAG')
+    os.environ['STOM_CLI_BACKTEST_PROTOCOL_DIAG'] = '1'
     checkpoint = BacktestCheckpointRecorder()
     checkpoint.mark('preflight_started', detail={
         'buy_strategy': config.buy_strategy,
@@ -626,7 +661,13 @@ def run_backtest(config):
         _drain_queues(all_queues + back_sques + back_eques)
         drainer.stop()
         drainer.join(timeout=2)
+        if result.get('status') != 'success' or drainer.protocol_diagnostics:
+            result['backtest_process_diagnostics'] = _summarize_protocol_diagnostics(drainer.protocol_diagnostics)
         _cleanup_procs()
+        if previous_protocol_diag is None:
+            os.environ.pop('STOM_CLI_BACKTEST_PROTOCOL_DIAG', None)
+        else:
+            os.environ['STOM_CLI_BACKTEST_PROTOCOL_DIAG'] = previous_protocol_diag
 
     return result
 

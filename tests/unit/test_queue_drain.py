@@ -334,3 +334,38 @@ class TestInitialState:
         q = Queue()
         drainer = QueueDrainer(q)
         assert drainer.verbose is True
+
+
+class TestProtocolDiagnostics:
+    """CLI protocol diagnostics are captured without changing normal log behavior."""
+
+    def test_cli_diag_message_is_recorded(self):
+        q = Queue()
+        drainer = _start_drainer(q, verbose=False)
+
+        q.put((
+            'ui_001',
+            '[CLI_DIAG] {"source":"BackTest","checkpoint":"backtest_child_started","detail":{"pid":123}}',
+        ))
+        time.sleep(0.3)
+        _stop_and_join(drainer)
+
+        assert drainer.last_message.startswith('[CLI_DIAG]')
+        assert drainer.protocol_diagnostics == [
+            {
+                'source': 'BackTest',
+                'checkpoint': 'backtest_child_started',
+                'detail': {'pid': 123},
+            }
+        ]
+
+    def test_malformed_cli_diag_message_is_ignored(self):
+        q = Queue()
+        drainer = _start_drainer(q, verbose=False)
+
+        q.put(('ui_001', '[CLI_DIAG] not-json'))
+        time.sleep(0.3)
+        _stop_and_join(drainer)
+
+        assert drainer.last_message == '[CLI_DIAG] not-json'
+        assert drainer.protocol_diagnostics == []

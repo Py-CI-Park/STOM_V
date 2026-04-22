@@ -98,6 +98,34 @@ def test_error_json_preserves_backtest_child_diagnostics():
     assert 'moneytop' in parsed['backtest_child_diagnostics']['moneytop_error']
 
 
+def test_error_json_preserves_backtest_process_diagnostics():
+    result = {
+        'status': 'error',
+        'message': '백테스트 시간 초과 (300초)',
+        'backtest_process_diagnostics': {
+            'event_count': 2,
+            'last_checkpoint': 'backtest_child_waiting_mq_first',
+            'last_by_source': {
+                'BackTest': 'backtest_child_waiting_mq_first',
+                'Total': 'total_info_received',
+            },
+            'events': [
+                {'source': 'BackTest', 'checkpoint': 'backtest_child_started', 'detail': {}},
+                {'source': 'BackTest', 'checkpoint': 'backtest_child_waiting_mq_first', 'detail': {}},
+            ],
+        },
+    }
+
+    parsed = json.loads(format_json(result))
+
+    assert parsed['status'] == 'error'
+    assert parsed['backtest_process_diagnostics']['event_count'] == 2
+    assert (
+        parsed['backtest_process_diagnostics']['last_by_source']['BackTest']
+        == 'backtest_child_waiting_mq_first'
+    )
+
+
 def test_format_json_error_omits_absent_diagnostic_fields(sample_result_error):
     parsed = json.loads(format_json(sample_result_error))
 

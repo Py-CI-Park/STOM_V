@@ -8,6 +8,7 @@ TDD RED 단계: 아직 구현되지 않은 기능의 테스트를 먼저 작성.
 """
 import sys
 import os
+import inspect
 import signal
 from multiprocessing import Queue, Process
 from unittest.mock import patch
@@ -115,6 +116,21 @@ class TestSyncDictSetComplete:
         _mock_dict_set.clear()
         _sync_dict_set(sample_config)
         assert _mock_dict_set.get('스톰라이브') is False
+
+    def test_market_analysis_keys_disabled(self, sample_config, monkeypatch):
+        """CLI에서 tick engine 시장 분석 키를 기본 False로 보장한다."""
+        from cli.runner import _sync_dict_set
+        import json
+
+        monkeypatch.delenv('_STOM_CLI_DICT_SET', raising=False)
+        _mock_dict_set.clear()
+        _sync_dict_set(sample_config)
+        payload = json.loads(os.environ['_STOM_CLI_DICT_SET'])
+
+        assert _mock_dict_set.get('시장미시구조분석') is False
+        assert _mock_dict_set.get('시장리스크분석') is False
+        assert payload['시장미시구조분석'] is False
+        assert payload['시장리스크분석'] is False
 
     def test_no_wrong_english_keys(self, sample_config):
         """잘못된 영어 키(backtest_oms_apply, blacklist_add)가 사용되지 않아야 함."""
@@ -428,6 +444,65 @@ def test_runner_imports_checkpoint_recorder():
     assert 'from cli.backtest_checkpoints import BacktestCheckpointRecorder' in content
 
 
+def test_runner_exports_cli_db_paths_for_legacy_children(monkeypatch, tmp_path):
+    from cli import runner
+
+    db_paths = {
+        'STOM_CLI_DB_SETTING': tmp_path / 'setting.db',
+        'STOM_CLI_DB_STRATEGY': tmp_path / 'strategy.db',
+        'STOM_CLI_DB_BACKTEST': tmp_path / 'backtest.db',
+        'STOM_CLI_DB_STOCK_BACK_TICK': tmp_path / 'stock_tick_back.db',
+        'STOM_CLI_DB_STOCK_BACK_MIN': tmp_path / 'stock_min_back.db',
+    }
+    original_env = {key: os.environ.get(key) for key in db_paths}
+    try:
+        with monkeypatch.context() as clean_env:
+            for key in db_paths:
+                os.environ.pop(key, None)
+
+            clean_env.setattr(runner, 'DB_SETTING', db_paths['STOM_CLI_DB_SETTING'], raising=False)
+            clean_env.setattr(runner, 'DB_STRATEGY', db_paths['STOM_CLI_DB_STRATEGY'], raising=False)
+            clean_env.setattr(runner, 'DB_BACKTEST', db_paths['STOM_CLI_DB_BACKTEST'], raising=False)
+            clean_env.setattr(runner, 'DB_STOCK_BACK_TICK', db_paths['STOM_CLI_DB_STOCK_BACK_TICK'], raising=False)
+            clean_env.setattr(runner, 'DB_STOCK_BACK_MIN', db_paths['STOM_CLI_DB_STOCK_BACK_MIN'], raising=False)
+
+            runner._ensure_cli_db_env()
+
+            assert os.environ['STOM_CLI_DB_SETTING'] == str(db_paths['STOM_CLI_DB_SETTING'])
+            assert os.environ['STOM_CLI_DB_STRATEGY'] == str(db_paths['STOM_CLI_DB_STRATEGY'])
+            assert os.environ['STOM_CLI_DB_BACKTEST'] == str(db_paths['STOM_CLI_DB_BACKTEST'])
+            assert os.environ['STOM_CLI_DB_STOCK_BACK_TICK'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_TICK'])
+            assert os.environ['STOM_CLI_DB_STOCK_BACK_MIN'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_MIN'])
+
+            for key in db_paths:
+                os.environ.pop(key, None)
+            user_paths = {
+                key: f'user-provided-{key.lower()}.db'
+                for key in db_paths
+            }
+            for key, value in user_paths.items():
+                clean_env.setenv(key, value)
+
+            runner._ensure_cli_db_env()
+
+            for key, value in user_paths.items():
+                assert os.environ[key] == value
+    finally:
+        for key, value in original_env.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+    run_backtest_body = '\n'.join(inspect.getsource(runner.run_backtest).splitlines()[1:])
+    assert '_ensure_cli_db_env()' in run_backtest_body
+    assert '_sync_dict_set(config)' in run_backtest_body
+    assert (
+        run_backtest_body.index('_ensure_cli_db_env()')
+        < run_backtest_body.index('_sync_dict_set(config)')
+    )
+
+
 def test_runner_records_timeout_checkpoint_fields():
     runner_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
@@ -475,6 +550,37 @@ def test_runner_treats_missing_metrics_after_backtest_as_error():
     assert "result['message'] = 'backtest completed without metrics'" in content
     assert "result.update(checkpoint.to_result_fields(status='error'" in content
     assert content.index(metrics_check) < content.index(missing_metrics_message)
+
+
+def test_runner_summarizes_protocol_diagnostics_by_source():
+    from cli.runner import _summarize_protocol_diagnostics
+
+    events = [
+        {'source': 'BackTest', 'checkpoint': 'backtest_child_started', 'detail': {}},
+        {'source': 'Total', 'checkpoint': 'total_info_received', 'detail': {'back_count': 4}},
+        {'source': 'BackTest', 'checkpoint': 'backtest_child_waiting_mq_first', 'detail': {}},
+    ]
+
+    summary = _summarize_protocol_diagnostics(events)
+
+    assert summary['event_count'] == 3
+    assert summary['last_checkpoint'] == 'backtest_child_waiting_mq_first'
+    assert summary['last_by_source']['BackTest'] == 'backtest_child_waiting_mq_first'
+    assert summary['last_by_source']['Total'] == 'total_info_received'
+    assert summary['events'] == events
+
+
+def test_runner_attaches_protocol_diagnostics_on_timeout():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert "os.environ['STOM_CLI_BACKTEST_PROTOCOL_DIAG'] = '1'" in content
+    assert "'backtest_process_diagnostics'" in content
+    assert '_summarize_protocol_diagnostics(drainer.protocol_diagnostics)' in content
 
 
 def test_runner_data_loading_wait_uses_timeout_and_empty_exception():
