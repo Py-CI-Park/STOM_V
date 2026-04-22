@@ -435,20 +435,25 @@ candidates = (
 
 print('candidate_count_observed', len(candidates))
 for index, item in enumerate(candidates, start=1):
-    score = item.get('score') or item.get('comparison') or item
+    rank_score = item.get('rank_score') or item.get('score') or {}
+    promotion = item.get('promotion') or {}
+    metrics = (item.get('candidate_result') or {}).get('metrics') or {}
     retention_estimate = item.get('retention_estimate') or {}
     print('--- candidate', index)
     print('strategy_name', item.get('strategy_name'))
+    print('rank', item.get('rank'))
     print('expression', item.get('expression'))
     print('status', item.get('status'))
+    print('candidate_status', (item.get('candidate_result') or {}).get('status'))
     print('estimated_retention', retention_estimate.get('estimated_retention'))
     print('retention_filter_passed', item.get('retention_filter_passed'))
     print('retention_fallback_used', item.get('retention_fallback_used'))
-    print('trade_count', score.get('trade_count'))
-    print('trade_count_retention', score.get('trade_count_retention'))
-    print('promotion_score', score.get('promotion_score'))
-    print('retention_penalty', score.get('retention_penalty'))
-    print('adjusted_score', score.get('adjusted_score'))
+    print('trade_count', metrics.get('trade_count'))
+    print('trade_count_retention', rank_score.get('trade_count_retention'))
+    print('promotion_passed', promotion.get('passed'))
+    print('promotion_score', rank_score.get('promotion_score'))
+    print('retention_penalty', rank_score.get('retention_penalty'))
+    print('adjusted_score', rank_score.get('adjusted_score'))
     print('csv_path', item.get('csv_path'))
     print('cleanup_status', item.get('cleanup_status') or item.get('cleanup'))
 '@ | python -
@@ -494,8 +499,8 @@ all_promotion_failed = False
 if candidate_count_observed:
     pass_values = []
     for item in candidates:
-        score = item.get('score') or item.get('comparison') or item
-        passed = score.get('passed')
+        promotion = item.get('promotion') or {}
+        passed = promotion.get('passed')
         if passed is not None:
             pass_values.append(bool(passed))
     all_promotion_failed = bool(pass_values) and not any(pass_values)
@@ -567,20 +572,25 @@ candidates = (
 
 candidate_lines = []
 for index, item in enumerate(candidates, start=1):
-    score = item.get('score') or item.get('comparison') or item
+    rank_score = item.get('rank_score') or item.get('score') or {}
+    promotion = item.get('promotion') or {}
+    metrics = (item.get('candidate_result') or {}).get('metrics') or {}
     retention_estimate = item.get('retention_estimate') or {}
     candidate_lines.extend([
         f'candidate_{index}.strategy_name={item.get("strategy_name")}',
+        f'candidate_{index}.rank={item.get("rank")}',
         f'candidate_{index}.status={item.get("status")}',
+        f'candidate_{index}.candidate_status={(item.get("candidate_result") or {}).get("status")}',
         f'candidate_{index}.estimated_retention={retention_estimate.get("estimated_retention")}',
         f'candidate_{index}.retention_filter_passed={item.get("retention_filter_passed")}',
         f'candidate_{index}.retention_fallback_used={item.get("retention_fallback_used")}',
-        f'candidate_{index}.trade_count={score.get("trade_count")}',
-        f'candidate_{index}.trade_count_retention={score.get("trade_count_retention")}',
-        f'candidate_{index}.promotion_score={score.get("promotion_score")}',
-        f'candidate_{index}.retention_penalty={score.get("retention_penalty")}',
-        f'candidate_{index}.adjusted_score={score.get("adjusted_score")}',
-        f'candidate_{index}.csv_path={item.get("csv_path")}',
+        f'candidate_{index}.trade_count={metrics.get("trade_count")}',
+        f'candidate_{index}.trade_count_retention={rank_score.get("trade_count_retention")}',
+        f'candidate_{index}.promotion_passed={promotion.get("passed")}',
+        f'candidate_{index}.promotion_score={rank_score.get("promotion_score")}',
+        f'candidate_{index}.retention_penalty={rank_score.get("retention_penalty")}',
+        f'candidate_{index}.adjusted_score={rank_score.get("adjusted_score")}',
+        f'candidate_{index}.csv_path={item.get("candidate_csv")}',
         f'candidate_{index}.cleanup_status={item.get("cleanup_status") or item.get("cleanup")}',
     ])
 
@@ -588,8 +598,8 @@ candidate_count_observed = len(candidates)
 has_ranking = bool(payload.get('ranking') or payload.get('ranked_candidates') or candidates)
 pass_values = []
 for item in candidates:
-    score = item.get('score') or item.get('comparison') or item
-    passed = score.get('passed')
+    promotion = item.get('promotion') or {}
+    passed = promotion.get('passed')
     if passed is not None:
         pass_values.append(bool(passed))
 all_promotion_failed = bool(pass_values) and not any(pass_values)
