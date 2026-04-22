@@ -270,6 +270,22 @@ def _collect_backtest_child_diagnostics(back_queue):
     return diagnostic
 
 
+def _summarize_protocol_diagnostics(events):
+    events = list(events or [])
+    last_by_source = {}
+    for event in events:
+        source = event.get('source')
+        checkpoint = event.get('checkpoint')
+        if source and checkpoint:
+            last_by_source[source] = checkpoint
+    return {
+        'event_count': len(events),
+        'last_checkpoint': events[-1].get('checkpoint') if events else None,
+        'last_by_source': last_by_source,
+        'events': events,
+    }
+
+
 def _engine_with_dict_set(engine_cls, dict_set_override, *args):
     """자식 프로세스 시작 시 DICT_SET을 CLI 값으로 패치한 후 엔진을 생성한다.
 
@@ -310,6 +326,8 @@ def run_backtest(config):
     _ensure_cli_db_env()
     dict_set = _sync_dict_set(config)
     _run_start_time = time.time()
+    previous_protocol_diag = os.environ.get('STOM_CLI_BACKTEST_PROTOCOL_DIAG')
+    os.environ['STOM_CLI_BACKTEST_PROTOCOL_DIAG'] = '1'
     checkpoint = BacktestCheckpointRecorder()
     checkpoint.mark('preflight_started', detail={
         'buy_strategy': config.buy_strategy,
@@ -639,7 +657,13 @@ def run_backtest(config):
         _drain_queues(all_queues + back_sques + back_eques)
         drainer.stop()
         drainer.join(timeout=2)
+        if result.get('status') != 'success' or drainer.protocol_diagnostics:
+            result['backtest_process_diagnostics'] = _summarize_protocol_diagnostics(drainer.protocol_diagnostics)
         _cleanup_procs()
+        if previous_protocol_diag is None:
+            os.environ.pop('STOM_CLI_BACKTEST_PROTOCOL_DIAG', None)
+        else:
+            os.environ['STOM_CLI_BACKTEST_PROTOCOL_DIAG'] = previous_protocol_diag
 
     return result
 

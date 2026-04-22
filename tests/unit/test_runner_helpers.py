@@ -537,6 +537,37 @@ def test_runner_treats_missing_metrics_after_backtest_as_error():
     assert content.index(metrics_check) < content.index(missing_metrics_message)
 
 
+def test_runner_summarizes_protocol_diagnostics_by_source():
+    from cli.runner import _summarize_protocol_diagnostics
+
+    events = [
+        {'source': 'BackTest', 'checkpoint': 'backtest_child_started', 'detail': {}},
+        {'source': 'Total', 'checkpoint': 'total_info_received', 'detail': {'back_count': 4}},
+        {'source': 'BackTest', 'checkpoint': 'backtest_child_waiting_mq_first', 'detail': {}},
+    ]
+
+    summary = _summarize_protocol_diagnostics(events)
+
+    assert summary['event_count'] == 3
+    assert summary['last_checkpoint'] == 'backtest_child_waiting_mq_first'
+    assert summary['last_by_source']['BackTest'] == 'backtest_child_waiting_mq_first'
+    assert summary['last_by_source']['Total'] == 'total_info_received'
+    assert summary['events'] == events
+
+
+def test_runner_attaches_protocol_diagnostics_on_timeout():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert "os.environ['STOM_CLI_BACKTEST_PROTOCOL_DIAG'] = '1'" in content
+    assert "'backtest_process_diagnostics'" in content
+    assert '_summarize_protocol_diagnostics(drainer.protocol_diagnostics)' in content
+
+
 def test_runner_data_loading_wait_uses_timeout_and_empty_exception():
     runner_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
