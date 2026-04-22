@@ -8,6 +8,7 @@ TDD RED 단계: 아직 구현되지 않은 기능의 테스트를 먼저 작성.
 """
 import sys
 import os
+import inspect
 import signal
 from multiprocessing import Queue, Process
 from unittest.mock import patch
@@ -446,29 +447,34 @@ def test_runner_exports_cli_db_paths_for_legacy_children(monkeypatch, tmp_path):
     monkeypatch.setattr(runner, 'DB_BACKTEST', db_paths['STOM_CLI_DB_BACKTEST'], raising=False)
     monkeypatch.setattr(runner, 'DB_STOCK_BACK_TICK', db_paths['STOM_CLI_DB_STOCK_BACK_TICK'], raising=False)
     monkeypatch.setattr(runner, 'DB_STOCK_BACK_MIN', db_paths['STOM_CLI_DB_STOCK_BACK_MIN'], raising=False)
-    monkeypatch.setenv('STOM_CLI_DB_BACKTEST', 'user-provided-backtest.db')
 
     runner._ensure_cli_db_env()
 
     assert os.environ['STOM_CLI_DB_SETTING'] == str(db_paths['STOM_CLI_DB_SETTING'])
     assert os.environ['STOM_CLI_DB_STRATEGY'] == str(db_paths['STOM_CLI_DB_STRATEGY'])
-    assert os.environ['STOM_CLI_DB_BACKTEST'] == 'user-provided-backtest.db'
+    assert os.environ['STOM_CLI_DB_BACKTEST'] == str(db_paths['STOM_CLI_DB_BACKTEST'])
     assert os.environ['STOM_CLI_DB_STOCK_BACK_TICK'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_TICK'])
     assert os.environ['STOM_CLI_DB_STOCK_BACK_MIN'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_MIN'])
 
-    runner_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-        'cli', 'runner.py',
-    )
-    with open(runner_path, 'r', encoding='utf-8') as f:
-        content = f.read()
+    user_paths = {
+        key: f'user-provided-{key.lower()}.db'
+        for key in db_paths
+    }
+    for key, value in user_paths.items():
+        monkeypatch.setenv(key, value)
 
-    assert '_ensure_cli_db_env' in content
-    assert 'STOM_CLI_DB_SETTING' in content
-    assert 'STOM_CLI_DB_STRATEGY' in content
-    assert 'STOM_CLI_DB_BACKTEST' in content
-    assert 'STOM_CLI_DB_STOCK_BACK_TICK' in content
-    assert content.index('_ensure_cli_db_env()') < content.index('_sync_dict_set(config)')
+    runner._ensure_cli_db_env()
+
+    for key, value in user_paths.items():
+        assert os.environ[key] == value
+
+    run_backtest_body = '\n'.join(inspect.getsource(runner.run_backtest).splitlines()[1:])
+    assert '_ensure_cli_db_env()' in run_backtest_body
+    assert '_sync_dict_set(config)' in run_backtest_body
+    assert (
+        run_backtest_body.index('_ensure_cli_db_env()')
+        < run_backtest_body.index('_sync_dict_set(config)')
+    )
 
 
 def test_runner_records_timeout_checkpoint_fields():
