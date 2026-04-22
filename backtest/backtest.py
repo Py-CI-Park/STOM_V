@@ -1,4 +1,6 @@
 
+import json
+import os
 import re
 import sys
 import time
@@ -47,6 +49,21 @@ def _read_moneytop_with_diagnostics(
             con.close()
 
 
+def _emit_cli_protocol_checkpoint(queue, source, checkpoint, detail=None):
+    if os.environ.get('STOM_CLI_BACKTEST_PROTOCOL_DIAG') != '1':
+        return
+    payload = {
+        'source': source,
+        'checkpoint': checkpoint,
+        'detail': detail or {},
+        'time': str_ymdhms(),
+    }
+    queue.put((
+        ui_num.get('시스템로그', 1),
+        '[CLI_DIAG] ' + json.dumps(payload, ensure_ascii=False, default=str),
+    ))
+
+
 class Total:
     def __init__(self, wq, sq, tq, teleQ, mq, lq, bstq_list, backname, ui_gubun, gubun, market_text, dict_set):
         self.wq           = wq
@@ -86,6 +103,10 @@ class Total:
 
         self.insertlist   = []
 
+        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_process_started', {
+            'backname': self.backname,
+            'ui_gubun': self.ui_gubun,
+        })
         self.MainLoop()
 
     def MainLoop(self):
@@ -95,6 +116,10 @@ class Total:
             data = self.tq.get()
             if data == '백테완료':
                 bc += 1
+                _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_engine_done_count', {
+                    'count': bc,
+                    'back_count': self.back_count,
+                })
                 if bc == self.back_count:
                     bc = 0
                     for q in self.bstq_list[:5]:
@@ -102,6 +127,9 @@ class Total:
 
             elif data == '수집완료':
                 sc += 1
+                _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_subtotal_collection_done_count', {
+                    'count': sc,
+                })
                 if sc == 5:
                     sc = 0
                     for q in self.bstq_list[:5]:
@@ -109,6 +137,9 @@ class Total:
 
             elif data[0] == '백테결과':
                 _, list_tsg, arry_bct = data
+                _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_result_received', {
+                    'trade_count': 0 if list_tsg is None else len(list_tsg),
+                })
                 self.Report(list_tsg, arry_bct)
 
             elif data[0] == '백테정보':
@@ -127,6 +158,10 @@ class Total:
                 self.blacklist   = data[13]
                 self.schedul     = data[14]
                 self.back_club   = data[15]
+                _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_info_received', {
+                    'back_count': self.back_count,
+                    'day_count': self.day_count,
+                })
 
             elif data == '백테중지':
                 self.mq.put('백테중지')
@@ -171,8 +206,12 @@ class Total:
 
     @error_decorator
     def Report(self, list_tsg, arry_bct):
+        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_started', {
+            'trade_count': 0 if list_tsg is None else len(list_tsg),
+        })
         if not list_tsg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
+            _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_no_trades')
             self.mq.put('백테스트 중지')
             time.sleep(1)
             sys.exit()
@@ -235,16 +274,26 @@ class Total:
         df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
         self.df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
         con.close()
+        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_db_written', {
+            'table': self.savename,
+            'save_file_name': save_file_name,
+        })
 
         csv_dir = Path('./backtest/csv')
         csv_dir.mkdir(parents=True, exist_ok=True)
         self.df_tsg.to_csv(csv_dir / f'{save_file_name}.csv', index=False, encoding='utf-8-sig')
+        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_csv_written', {
+            'save_file_name': save_file_name,
+        })
 
         self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], self.df_tsg))
 
         if self.blacklist: self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'블랙리스트 추가 {self.insertlist}'))
         self.sq.put(f'{self.backname}를 완료하였습니다.')
         self.mq.put(f'{self.backname} 완료')
+        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_mq_sent', {
+            'message': f'{self.backname} 완료',
+        })
 
         if self.back_club:
             buystg_text  = ('\n'.join([x for x in self.buystg.split('if 매수:')[0].split('\n') if x and x[0] != '#'])).split(' ')
@@ -280,6 +329,9 @@ class Total:
                          save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
 
         self.mq.put(f'{self.backname} 완료')
+        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_mq_sent', {
+            'message': f'{self.backname} 완료',
+        })
         time.sleep(1)
         sys.exit()
 
@@ -310,7 +362,12 @@ class BackTest:
     @error_decorator
     def Start(self):
         start_time = now()
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_started')
         data = self.bq.get()
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_config_received', {
+            'backname': self.backname,
+            'ui_gubun': self.ui_gubun,
+        })
         if self.ui_gubun not in ('CF', 'SF'):
             betting = float(data[0]) * 1000000
         else:
@@ -359,6 +416,11 @@ class BackTest:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self.SysExit(True)
 
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_moneytop_loaded', {
+            'rows': len(df_mt),
+            'back_count': back_count,
+        })
+
         if is_tick:
             df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
         else:
@@ -379,19 +441,31 @@ class BackTest:
         con.close()
         buystg  = dfb['전략코드'][buystg_name]
         sellstg = dfs['전략코드'][sellstg_name]
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_strategy_loaded', {
+            'buy_strategy': buystg_name,
+            'sell_strategy': sellstg_name,
+        })
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수전략 설정 완료'))
 
         mq = Queue()
-        Process(
+        total_proc = Process(
             target=Total,
             args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.lq, self.bstq_list, self.backname, self.ui_gubun,
                   self.gubun, market_text, self.dict_set)
-        ).start()
+        )
+        total_proc.start()
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_total_process_started', {
+            'pid': total_proc.pid,
+        })
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 
         self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg_name, buystg, sellstg,
                      dict_cn, back_count, day_count, bl, schedul, back_club))
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_total_info_sent', {
+            'day_count': day_count,
+            'back_count': back_count,
+        })
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START'))
 
@@ -399,14 +473,24 @@ class BackTest:
         data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, 2)
         for q in self.bstq_list:
             q.put(('백테시작', 2))
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_engine_start_sent', {
+            'engine_count': len(self.bstq_list),
+        })
         for q in self.beq_list:
             q.put(data)
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_engine_data_sent', {
+            'engine_count': len(self.beq_list),
+        })
 
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_waiting_mq_first')
         data = mq.get()
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_mq_first_received', {'data': data})
         if data == f'{self.backname} 완료':
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))
             if self.dict_set['스톰라이브']: self.lq.put(self.backname)
+            _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_waiting_mq_second')
             _ = mq.get()
+            _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_completed')
             self.SysExit(False)
         else:
             self.SysExit(True)
