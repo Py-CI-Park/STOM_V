@@ -44,6 +44,24 @@ class TestFormatResult:
         assert 'STOM Backtest Result' in output
 
 
+def test_error_json_preserves_backtest_child_diagnostics():
+    result = {
+        'status': 'error',
+        'message': 'backtest completed without metrics',
+        'backtest_child_diagnostics': {
+            'stock_back_db_path': 'stock_tick_back.db',
+            'moneytop_query_status': 'error',
+            'moneytop_error': 'no such table: moneytop',
+        },
+    }
+
+    parsed = json.loads(format_json(result))
+
+    assert parsed['status'] == 'error'
+    assert parsed['backtest_child_diagnostics']['moneytop_query_status'] == 'error'
+    assert 'moneytop' in parsed['backtest_child_diagnostics']['moneytop_error']
+
+
 # ============================================================
 # format_json() — 성공 결과
 # ============================================================

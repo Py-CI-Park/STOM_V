@@ -156,6 +156,24 @@ def _cleanup_shared_memory(shared_info):
             pass
 
 
+def _collect_backtest_child_diagnostics(back_queue):
+    diagnostic = None
+    empty_count = 0
+    while True:
+        try:
+            data = back_queue.get(timeout=0.05)
+            empty_count = 0
+        except Exception:
+            empty_count += 1
+            if empty_count >= 2:
+                break
+            continue
+
+        if isinstance(data, tuple) and len(data) == 2 and data[0] == 'backtest_child_diagnostics':
+            diagnostic = data[1]
+    return diagnostic
+
+
 def _engine_with_dict_set(engine_cls, dict_set_override, *args):
     """자식 프로세스 시작 시 DICT_SET을 CLI 값으로 패치한 후 엔진을 생성한다.
 
@@ -445,6 +463,10 @@ def run_backtest(config):
             result.update(checkpoint.to_result_fields(status='timeout', cleanup_status='process_killed'))
             return result
         checkpoint.mark('backtest_process_finished', detail={'exitcode': proc_backtest.exitcode})
+        child_diagnostic = _collect_backtest_child_diagnostics(backQ)
+        if child_diagnostic is not None:
+            result['backtest_child_diagnostics'] = child_diagnostic
+            checkpoint.mark('backtest_child_diagnostics', detail=child_diagnostic)
         if proc_backtest.exitcode not in (0, None):
             checkpoint.mark('backtest_process_exitcode', detail={'exitcode': proc_backtest.exitcode})
             result['status'] = 'error'
@@ -453,6 +475,15 @@ def run_backtest(config):
             return result
 
         # backtest.db에서 최신 결과 읽기
+        child_moneytop_error = result.get('backtest_child_diagnostics', {}).get('moneytop_error')
+        if result.get('backtest_child_diagnostics', {}).get('moneytop_query_status') == 'error':
+            result['status'] = 'error'
+            result['message'] = 'Backtest child moneytop query failed'
+            if child_moneytop_error:
+                result['message'] = f"{result['message']}: {child_moneytop_error}"
+            result.update(checkpoint.to_result_fields(status='error'))
+            return result
+
         metrics = _extract_metrics(config, min_rowid=backtest_rowid_watermark)
         csv_path = _find_latest_csv(config.buy_strategy, _run_start_time)
         checkpoint.mark('csv_detected', detail={'csv_path': csv_path})

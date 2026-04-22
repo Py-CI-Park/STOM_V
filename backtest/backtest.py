@@ -318,10 +318,25 @@ class BackTest:
                 db = DB_COIN_MIN_BACK
                 is_tick = False
 
-        con   = sqlite3.connect(db)
-        query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
-        df_mt = get_pd().read_sql(query, con)
-        con.close()
+        con = sqlite3.connect(db)
+        try:
+            query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
+            df_mt = get_pd().read_sql(query, con)
+        except Exception as e:
+            diagnostic = {
+                'stock_back_db_path': db,
+                'moneytop_query_status': 'error',
+                'moneytop_error': str(e),
+                'startday': startday,
+                'endday': endday,
+                'starttime': starttime,
+                'endtime': endtime,
+                'ui_gubun': self.ui_gubun,
+            }
+            self.bq.put(('backtest_child_diagnostics', diagnostic))
+            raise
+        finally:
+            con.close()
 
         if len(df_mt) == 0 or back_count == 0:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))

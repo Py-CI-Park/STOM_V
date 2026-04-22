@@ -457,3 +457,29 @@ def test_runner_handles_nonzero_backtest_exitcode_before_metrics_extraction():
     assert 'backtest_process_exitcode' in content
     assert "checkpoint.to_result_fields(status='error'" in content
     assert content.index(exitcode_check) < content.index(metrics_call)
+
+
+def test_runner_collects_backtest_child_diagnostics():
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert 'backtest_child_diagnostics' in content
+    assert 'child_moneytop_error' in content or 'moneytop_error' in content
+    assert 'moneytop_query_status' in content
+
+
+def test_backtest_emits_child_moneytop_diagnostics():
+    backtest_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'backtest', 'backtest.py',
+    )
+    with open(backtest_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert 'backtest_child_diagnostics' in content
+    assert 'moneytop_query_status' in content
+    assert 'moneytop_error' in content

@@ -17,6 +17,8 @@ def format_json(result):
             'message': result.get('message', 'Unknown error'),
             'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         }
+        if result.get('backtest_child_diagnostics') is not None:
+            output['backtest_child_diagnostics'] = result['backtest_child_diagnostics']
     else:
         metrics = result.get('metrics') or {}
         config = result.get('config') or {}
