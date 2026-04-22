@@ -483,3 +483,100 @@ def test_backtest_emits_child_moneytop_diagnostics():
     assert 'backtest_child_diagnostics' in content
     assert 'moneytop_query_status' in content
     assert 'moneytop_error' in content
+
+
+def test_runner_collects_diagnostic_from_back_queue_and_ignores_unrelated_messages():
+    from cli.runner import _collect_backtest_child_diagnostics
+
+    diagnostic = {
+        'stock_back_db_path': 'stock_tick_back.db',
+        'moneytop_query_status': 'error',
+        'moneytop_error': 'no such table: moneytop',
+    }
+
+    class FakeQueue:
+        def __init__(self):
+            self.messages = [
+                'engine-ready',
+                ('progress', {'step': 'ignored'}),
+                ('backtest_child_diagnostics', diagnostic),
+            ]
+
+        def get(self, timeout=None):
+            if self.messages:
+                return self.messages.pop(0)
+            raise RuntimeError('empty')
+
+    assert _collect_backtest_child_diagnostics(FakeQueue()) == diagnostic
+
+
+def test_backtest_moneytop_diagnostic_is_sent_when_connect_fails(monkeypatch):
+    from backtest import backtest as backtest_mod
+
+    class RecordingQueue:
+        def __init__(self):
+            self.messages = []
+
+        def put(self, data):
+            self.messages.append(data)
+
+    def fail_connect(_db):
+        raise RuntimeError('cannot open database')
+
+    queue = RecordingQueue()
+    monkeypatch.setattr(backtest_mod.sqlite3, 'connect', fail_connect)
+
+    with pytest.raises(RuntimeError, match='cannot open database'):
+        backtest_mod._read_moneytop_with_diagnostics(
+            'stock_tick_back.db', True, 'S', 20250101, 20250131, 90000, 152800, queue
+        )
+
+    assert queue.messages == [
+        ('backtest_child_diagnostics', {
+            'stock_back_db_path': 'stock_tick_back.db',
+            'moneytop_query_status': 'error',
+            'moneytop_error': 'cannot open database',
+            'startday': 20250101,
+            'endday': 20250131,
+            'starttime': 90000,
+            'endtime': 152800,
+            'ui_gubun': 'S',
+        })
+    ]
+
+
+def test_backtest_moneytop_diagnostic_is_sent_when_read_sql_fails(monkeypatch):
+    from backtest import backtest as backtest_mod
+
+    class RecordingQueue:
+        def __init__(self):
+            self.messages = []
+
+        def put(self, data):
+            self.messages.append(data)
+
+    class FakeConnection:
+        def __init__(self):
+            self.closed = False
+
+        def close(self):
+            self.closed = True
+
+    class FakePandas:
+        def read_sql(self, _query, _con):
+            raise RuntimeError('no such table: moneytop')
+
+    con = FakeConnection()
+    queue = RecordingQueue()
+    monkeypatch.setattr(backtest_mod.sqlite3, 'connect', lambda _db: con)
+    monkeypatch.setattr(backtest_mod, 'get_pd', lambda: FakePandas())
+
+    with pytest.raises(RuntimeError, match='no such table: moneytop'):
+        backtest_mod._read_moneytop_with_diagnostics(
+            'stock_tick_back.db', True, 'S', 20250101, 20250131, 90000, 152800, queue
+        )
+
+    assert con.closed is True
+    assert queue.messages[0][0] == 'backtest_child_diagnostics'
+    assert queue.messages[0][1]['moneytop_query_status'] == 'error'
+    assert queue.messages[0][1]['moneytop_error'] == 'no such table: moneytop'
