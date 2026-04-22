@@ -1,4 +1,5 @@
 import importlib
+from pathlib import Path
 
 import pytest
 
@@ -107,3 +108,14 @@ def test_setting_base_empty_individual_cli_db_env_falls_back_to_database_dir(mon
     assert setting_base.DB_BACKTEST == r'C:\runtime\_database/backtest.db'
     assert setting_base.DB_STOCK_TICK_BACK == r'C:\runtime\_database/stock_tick_back.db'
     assert setting_base.DB_STOCK_BACK_TICK == r'C:\runtime\_database/stock_tick_back.db'
+
+
+def test_legacy_setting_uses_cli_database_override_resolver():
+    content = Path('utility/setting.py').read_text(encoding='utf-8')
+
+    assert "os.environ.get('STOM_CLI_DATABASE_DIR', './_database')" in content
+    assert "def _resolve_db(filename, env_name):" in content
+    assert "DB_SETTING          = _resolve_db('setting.db', 'STOM_CLI_DB_SETTING')" in content
+    assert "DB_STRATEGY         = _resolve_db('strategy.db', 'STOM_CLI_DB_STRATEGY')" in content
+    assert "DB_BACKTEST         = _resolve_db('backtest.db', 'STOM_CLI_DB_BACKTEST')" in content
+    assert "DB_STOCK_BACK_TICK  = _resolve_db('stock_tick_back.db', 'STOM_CLI_DB_STOCK_BACK_TICK')" in content
