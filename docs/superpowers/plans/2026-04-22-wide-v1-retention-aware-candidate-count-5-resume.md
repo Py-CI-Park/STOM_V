@@ -279,9 +279,17 @@ Run:
 ```powershell
 $env:STOM_CLI_DATABASE_DIR='C:\System_Trading\STOM\STOM_V.wt-dev\_database'
 python stom_backtest.py discovery research WideV1RetentionCand5_20260422 `
-  --baseline-csv backtest\csv\stock_bt_ResearchTest_Tick_B_090000_092800_Wide_20260419_20260422203947.csv `
+  --input backtest\csv\stock_bt_ResearchTest_Tick_B_090000_092800_Wide_20260419_20260422203947.csv `
   --base-buy-strategy ResearchTest_Tick_B_090000_092800_Wide_20260419 `
-  --base-sell-strategy ResearchTest_Tick_S_090000_092800_Wide_20260419 `
+  --sell ResearchTest_Tick_S_090000_092800_Wide_20260419 `
+  --start 20250101 `
+  --end 20251231 `
+  --timeframe tick `
+  --avg-time 30 `
+  --betting 20 `
+  --start-time 90000 `
+  --end-time 92800 `
+  --engines 32 `
   --run-candidates `
   --candidate-count 5 `
   --candidate-timeout 900 `
