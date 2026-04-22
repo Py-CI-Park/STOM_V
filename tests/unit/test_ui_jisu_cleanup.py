@@ -1,4 +1,5 @@
 import importlib
+import sys
 from pathlib import Path
 
 
@@ -21,6 +22,15 @@ def test_ui_mainwindow_import_succeeds_without_deleted_jisu_module(monkeypatch):
     runtime_db = PROJECT_ROOT.parent / 'STOM_V.wt-dev' / '_database'
     if runtime_db.exists():
         monkeypatch.setenv('STOM_CLI_DATABASE_DIR', str(runtime_db))
+    for module_name in (
+        'utility.setting_base',
+        'utility.setting_user',
+        'ui.set_style',
+        'ui.set_widget',
+        'ui.set_icon',
+        'ui.ui_mainwindow',
+    ):
+        sys.modules.pop(module_name, None)
 
     module = importlib.import_module('ui.ui_mainwindow')
     assert hasattr(module, 'MainWindow')
