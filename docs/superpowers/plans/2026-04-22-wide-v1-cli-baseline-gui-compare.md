@@ -15,6 +15,7 @@
 In scope:
 
 - Confirm the branch is based on merge commit `ed344387` or newer.
+- If feature worktree CLI execution still reads local `./_database`, patch legacy `utility.setting.py` to honor the same CLI DB override contract as `utility.setting_base.py`.
 - Run Wide v1 `runtime-preflight` with the same DB/strategy/timeframe settings as GUI.
 - Run one full-year CLI baseline backtest for `20250101~20251231`, `090000~092800`, tick, avg 30, engines 32.
 - Compare CLI result with the GUI baseline constants.
@@ -26,7 +27,7 @@ Out of scope:
 - Do not run `candidate_count=5`.
 - Do not regenerate or optimize conditions.
 - Do not run WFO/promote.
-- Do not change CLI/backtest code in this plan.
+- Do not change CLI/backtest behavior beyond the legacy `utility.setting.py` DB override compatibility fix if it blocks feature worktree execution.
 - Do not commit `_database`, `backtest/temp`, `backtest/csv`, or `backtest/graph` artifacts.
 
 ## File Structure
@@ -55,6 +56,11 @@ Runtime-only files:
 
 - `backtest/csv/stock_bt_ResearchTest_Tick_B_090000_092800_Wide_20260419_*.csv`
   - Generated CSV. Do not stage.
+
+Code file that may be modified if the gate is blocked by worktree-local DB loading:
+
+- `utility/setting.py`
+  - Must use `STOM_CLI_DATABASE_DIR` and individual `STOM_CLI_DB_*` overrides for DB path constants while keeping `./_database` defaults when env vars are absent.
 
 ## Gate Constants
 
@@ -241,6 +247,110 @@ stock_back_db_integrity table_probe_only
 ```
 
 If this command exits non-zero, skip Task 2 and continue to Task 4 with `decision=FAIL`.
+
+---
+
+### Task 1A: Legacy Setting DB Override Fix If Needed
+
+**Files:**
+- Modify: `utility/setting.py`
+- Modify: `tests/unit/test_setting_base_cli_overrides.py`
+
+Run this task only if `python stom_backtest.py ...` fails before backtest execution with `utility.setting` opening a worktree-local empty `./_database/setting.db`.
+
+- [ ] **Step 1: Add source contract test**
+
+Append this test to `tests/unit/test_setting_base_cli_overrides.py`:
+
+```python
+def test_legacy_setting_uses_cli_database_override_resolver():
+    content = Path('utility/setting.py').read_text(encoding='utf-8')
+
+    assert "os.environ.get('STOM_CLI_DATABASE_DIR', './_database')" in content
+    assert "def _resolve_db(filename, env_name):" in content
+    assert "DB_SETTING          = _resolve_db('setting.db', 'STOM_CLI_DB_SETTING')" in content
+    assert "DB_STRATEGY         = _resolve_db('strategy.db', 'STOM_CLI_DB_STRATEGY')" in content
+    assert "DB_BACKTEST         = _resolve_db('backtest.db', 'STOM_CLI_DB_BACKTEST')" in content
+    assert "DB_STOCK_BACK_TICK  = _resolve_db('stock_tick_back.db', 'STOM_CLI_DB_STOCK_BACK_TICK')" in content
+```
+
+- [ ] **Step 2: Run test and verify failure**
+
+Run:
+
+```powershell
+python -m pytest tests/unit/test_setting_base_cli_overrides.py::test_legacy_setting_uses_cli_database_override_resolver -q
+```
+
+Expected:
+
+```text
+FAIL because utility.setting.py still hardcodes ./_database paths.
+```
+
+- [ ] **Step 3: Patch utility.setting DB constants**
+
+In `utility/setting.py`, replace the hardcoded DB path section with the same resolver pattern used by `utility.setting_base`:
+
+```python
+DB_PATH             = os.environ.get('STOM_CLI_DATABASE_DIR', './_database')
+
+
+def _resolve_db(filename, env_name):
+    override = os.environ.get(env_name)
+    if override:
+        return override
+    return f'{DB_PATH}/{filename}'
+
+
+DB_SETTING          = _resolve_db('setting.db', 'STOM_CLI_DB_SETTING')
+DB_BACKTEST         = _resolve_db('backtest.db', 'STOM_CLI_DB_BACKTEST')
+DB_TRADELIST        = _resolve_db('tradelist.db', 'STOM_CLI_DB_TRADELIST')
+DB_STRATEGY         = _resolve_db('strategy.db', 'STOM_CLI_DB_STRATEGY')
+DB_OPTUNA           = f"sqlite:///{_resolve_db('optuna.db', 'STOM_CLI_DB_OPTUNA')}"
+DB_STOCK_TICK       = _resolve_db('stock_tick.db', 'STOM_CLI_DB_STOCK_TICK')
+DB_STOCK_MIN        = _resolve_db('stock_min.db', 'STOM_CLI_DB_STOCK_MIN')
+DB_STOCK_BACK_TICK  = _resolve_db('stock_tick_back.db', 'STOM_CLI_DB_STOCK_BACK_TICK')
+DB_STOCK_BACK_MIN   = _resolve_db('stock_min_back.db', 'STOM_CLI_DB_STOCK_BACK_MIN')
+DB_COIN_TICK        = _resolve_db('coin_tick.db', 'STOM_CLI_DB_COIN_TICK')
+DB_COIN_MIN         = _resolve_db('coin_min.db', 'STOM_CLI_DB_COIN_MIN')
+DB_COIN_BACK_TICK   = _resolve_db('coin_tick_back.db', 'STOM_CLI_DB_COIN_BACK_TICK')
+DB_COIN_BACK_MIN    = _resolve_db('coin_min_back.db', 'STOM_CLI_DB_COIN_BACK_MIN')
+DB_FUTURE_TICK      = _resolve_db('future_tick.db', 'STOM_CLI_DB_FUTURE_TICK')
+DB_FUTURE_MIN       = _resolve_db('future_min.db', 'STOM_CLI_DB_FUTURE_MIN')
+DB_FUTURE_BACK_TICK = _resolve_db('future_tick_back.db', 'STOM_CLI_DB_FUTURE_BACK_TICK')
+DB_FUTURE_BACK_MIN  = _resolve_db('future_min_back.db', 'STOM_CLI_DB_FUTURE_BACK_MIN')
+DB_CODE_INFO        = _resolve_db('code_info.db', 'STOM_CLI_DB_CODE_INFO')
+```
+
+- [ ] **Step 4: Run related tests**
+
+Run:
+
+```powershell
+python -m pytest tests/unit/test_setting_base_cli_overrides.py tests/unit/test_runner_helpers.py tests/unit/test_output.py -q
+```
+
+Expected:
+
+```text
+All selected tests pass.
+```
+
+- [ ] **Step 5: Commit fix**
+
+Run:
+
+```powershell
+git add utility/setting.py tests/unit/test_setting_base_cli_overrides.py
+git commit -m "legacy setting도 CLI DB override를 따르게 한다" -m "feature worktree에서 CLI baseline 실행 시 utility.setting이 ./_database/setting.db를 직접 열어 빈 DB를 보는 문제를 막기 위해 legacy setting DB 상수도 STOM_CLI_DATABASE_DIR와 개별 STOM_CLI_DB_* override를 따르게 했다.
+
+Constraint: GUI 환경에서는 환경변수가 없으면 기존 ./_database 경로를 유지해야 함
+Confidence: high
+Scope-risk: moderate
+Tested: tests/unit/test_setting_base_cli_overrides.py, tests/unit/test_runner_helpers.py, tests/unit/test_output.py
+Not-tested: full-year CLI baseline after this fix"
+```
 
 ---
 

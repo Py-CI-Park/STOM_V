@@ -38,6 +38,13 @@ PR #17에서 CLI 백테스트의 주요 blocker를 해결했다.
 4. 20250102~20250103 smoke 4/32 모두 metrics/CSV 생성 성공
 ```
 
+이번 gate 실행 중 추가로 확인한 보정 포인트:
+
+```text
+legacy utility.setting.py도 STOM_CLI_DATABASE_DIR 및 STOM_CLI_DB_* override를 따라야 한다.
+GUI 기준 배팅금액은 종목당 20,000,000원이므로 CLI 명령에는 --betting 20을 포함해야 한다.
+```
+
 짧은 smoke 결과:
 
 ```text
@@ -168,6 +175,7 @@ candidate_count=5 실행하지 않음
 WFO/promote 실행하지 않음
 GUI 결과를 새로 만들거나 수정하지 않음
 runtime DB/CSV/graph/temp JSON을 Git에 커밋하지 않음
+utility.setting DB override 보강 외의 CLI/backtest 기능 변경은 하지 않음
 ```
 
 ## 접근안
