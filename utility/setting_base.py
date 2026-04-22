@@ -11,13 +11,17 @@ DB_PATH             = os.environ.get('STOM_CLI_DATABASE_DIR', './_database')
 
 
 def _resolve_db(filename, env_name):
-    return os.environ.get(env_name, f'{DB_PATH}/{filename}')
+    override = os.environ.get(env_name)
+    if override:
+        return override
+    return f'{DB_PATH}/{filename}'
 
 
 DB_SETTING          = _resolve_db('setting.db', 'STOM_CLI_DB_SETTING')
 DB_BACKTEST         = _resolve_db('backtest.db', 'STOM_CLI_DB_BACKTEST')
 DB_TRADELIST        = _resolve_db('tradelist.db', 'STOM_CLI_DB_TRADELIST')
 DB_STRATEGY         = _resolve_db('strategy.db', 'STOM_CLI_DB_STRATEGY')
+# STOM_CLI_DB_OPTUNA expects a file path; the sqlite URL wrapper is applied here.
 DB_OPTUNA           = f"sqlite:///{_resolve_db('optuna.db', 'STOM_CLI_DB_OPTUNA')}"
 DB_CODE_INFO        = _resolve_db('code_info.db', 'STOM_CLI_DB_CODE_INFO')
 DB_STOCK_TICK       = _resolve_db('stock_tick.db', 'STOM_CLI_DB_STOCK_TICK')

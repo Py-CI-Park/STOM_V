@@ -81,3 +81,18 @@ def test_setting_base_individual_cli_db_env_overrides_database_dir(monkeypatch):
     assert setting_base.DB_STRATEGY == r'C:\runtime\_database/strategy.db'
     assert setting_base.DB_STOCK_TICK_BACK == r'D:\tick\stock_tick_back.db'
     assert setting_base.DB_STOCK_BACK_TICK == r'D:\tick\stock_tick_back.db'
+
+
+def test_setting_base_empty_individual_cli_db_env_falls_back_to_database_dir(monkeypatch):
+    setting_base = reload_setting_base(
+        monkeypatch,
+        {
+            'STOM_CLI_DATABASE_DIR': r'C:\runtime\_database',
+            'STOM_CLI_DB_BACKTEST': '',
+            'STOM_CLI_DB_STOCK_BACK_TICK': '',
+        },
+    )
+
+    assert setting_base.DB_BACKTEST == r'C:\runtime\_database/backtest.db'
+    assert setting_base.DB_STOCK_TICK_BACK == r'C:\runtime\_database/stock_tick_back.db'
+    assert setting_base.DB_STOCK_BACK_TICK == r'C:\runtime\_database/stock_tick_back.db'
