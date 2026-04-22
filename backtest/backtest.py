@@ -14,6 +14,39 @@ from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, D
     DB_COIN_TICK_BACK, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 
 
+def _emit_backtest_child_diagnostics(
+        back_queue, db, error, startday, endday, starttime, endtime, ui_gubun):
+    diagnostic = {
+        'stock_back_db_path': db,
+        'moneytop_query_status': 'error',
+        'moneytop_error': str(error),
+        'startday': startday,
+        'endday': endday,
+        'starttime': starttime,
+        'endtime': endtime,
+        'ui_gubun': ui_gubun,
+    }
+    back_queue.put(('backtest_child_diagnostics', diagnostic))
+    return diagnostic
+
+
+def _read_moneytop_with_diagnostics(
+        db, is_tick, ui_gubun, startday, endday, starttime, endtime, back_queue):
+    con = None
+    try:
+        con = sqlite3.connect(db)
+        query = GetMoneytopQuery(is_tick, ui_gubun, startday, endday, starttime, endtime)
+        return get_pd().read_sql(query, con)
+    except Exception as e:
+        _emit_backtest_child_diagnostics(
+            back_queue, db, e, startday, endday, starttime, endtime, ui_gubun
+        )
+        raise
+    finally:
+        if con is not None:
+            con.close()
+
+
 class Total:
     def __init__(self, wq, sq, tq, teleQ, mq, lq, bstq_list, backname, ui_gubun, gubun, market_text, dict_set):
         self.wq           = wq
@@ -318,10 +351,9 @@ class BackTest:
                 db = DB_COIN_MIN_BACK
                 is_tick = False
 
-        con   = sqlite3.connect(db)
-        query = GetMoneytopQuery(is_tick, self.ui_gubun, startday, endday, starttime, endtime)
-        df_mt = get_pd().read_sql(query, con)
-        con.close()
+        df_mt = _read_moneytop_with_diagnostics(
+            db, is_tick, self.ui_gubun, startday, endday, starttime, endtime, self.bq
+        )
 
         if len(df_mt) == 0 or back_count == 0:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))

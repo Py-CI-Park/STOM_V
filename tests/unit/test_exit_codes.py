@@ -67,6 +67,39 @@ class TestExitCodes:
 
         assert stom_backtest.main() == stom_backtest.EXIT_EXEC_ERROR
 
+    def test_engine_data_loading_timeout_returns_timeout_exit_code(self, monkeypatch):
+        import stom_backtest
+
+        config = types.SimpleNamespace(
+            dry_run=False,
+            output_format='json',
+            output_file=None,
+            is_tick=False,
+            buy_strategy='buy',
+            sell_strategy='sell',
+            start_date=20250101,
+            end_date=20250131,
+        )
+        fake_timeframe_detector = types.ModuleType('cli.timeframe_detector')
+        fake_timeframe_detector.validate_timeframe_match = lambda _config: {'status': 'ok'}
+        fake_runner = types.ModuleType('cli.runner')
+        fake_runner.run_backtest = lambda _config: {
+            'status': 'error',
+            'message': 'engine data loading timed out',
+            'engine_data_loading': {'expected_count': 32},
+            'last_checkpoint': 'engine_data_response_timeout',
+        }
+
+        monkeypatch.setattr(stom_backtest, 'configure_safe_output', lambda: None)
+        monkeypatch.setattr(stom_backtest, 'parse_args', lambda: config)
+        monkeypatch.setattr(stom_backtest, 'validate', lambda _config: [])
+        monkeypatch.setattr(stom_backtest, 'format_result', lambda result, _fmt: json.dumps(result))
+        monkeypatch.setattr(stom_backtest, '_configure_matplotlib_headless', lambda: False)
+        monkeypatch.setitem(sys.modules, 'cli.timeframe_detector', fake_timeframe_detector)
+        monkeypatch.setitem(sys.modules, 'cli.runner', fake_runner)
+
+        assert stom_backtest.main() == stom_backtest.EXIT_TIMEOUT
+
     def test_exit_code_constants_in_entrypoint(self):
         """stom_backtest.py에 EXIT_SUCCESS, EXIT_ARG_ERROR 등 상수가 정의되어야 한다."""
         filepath = os.path.join(PROJECT_ROOT, 'stom_backtest.py')

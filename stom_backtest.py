@@ -113,6 +113,12 @@ def main():
     if result.get('status') == 'success':
         return EXIT_SUCCESS
     msg = result.get('message', '')
+    if (
+        result.get('engine_data_loading') is not None
+        or result.get('last_checkpoint') == 'engine_data_response_timeout'
+        or result.get('checkpoint_status') == 'timeout'
+    ):
+        return EXIT_TIMEOUT
     if '시간 초과' in msg or 'timeout' in msg.lower():
         return EXIT_TIMEOUT
     return EXIT_EXEC_ERROR
