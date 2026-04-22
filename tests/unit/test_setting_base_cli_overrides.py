@@ -1,4 +1,6 @@
 import importlib
+import os
+from pathlib import Path
 
 import pytest
 
@@ -107,3 +109,32 @@ def test_setting_base_empty_individual_cli_db_env_falls_back_to_database_dir(mon
     assert setting_base.DB_BACKTEST == r'C:\runtime\_database/backtest.db'
     assert setting_base.DB_STOCK_TICK_BACK == r'C:\runtime\_database/stock_tick_back.db'
     assert setting_base.DB_STOCK_BACK_TICK == r'C:\runtime\_database/stock_tick_back.db'
+
+
+def test_legacy_setting_uses_cli_database_override_resolver():
+    content = Path('utility/setting.py').read_text(encoding='utf-8')
+    start = content.index('DB_PATH')
+    end = content.index('_decrypt_warning_emitted')
+    db_path_block = content[start:end]
+
+    assert "os.environ.get('STOM_CLI_DATABASE_DIR', './_database')" in content
+
+    namespace = {'os': os}
+    original_environ = os.environ.copy()
+    try:
+        for name in CLI_DB_ENV_NAMES:
+            os.environ.pop(name, None)
+        os.environ['STOM_CLI_DATABASE_DIR'] = r'C:\runtime\_database'
+        os.environ['STOM_CLI_DB_SETTING'] = r'D:\runtime\setting.db'
+        os.environ['STOM_CLI_DB_STOCK_BACK_TICK'] = r'D:\runtime\stock_tick_back.db'
+
+        exec(db_path_block, namespace)
+    finally:
+        os.environ.clear()
+        os.environ.update(original_environ)
+
+    assert namespace['DB_PATH'] == r'C:\runtime\_database'
+    assert namespace['DB_SETTING'] == r'D:\runtime\setting.db'
+    assert namespace['DB_STRATEGY'] == r'C:\runtime\_database/strategy.db'
+    assert namespace['DB_BACKTEST'] == r'C:\runtime\_database/backtest.db'
+    assert namespace['DB_STOCK_BACK_TICK'] == r'D:\runtime\stock_tick_back.db'

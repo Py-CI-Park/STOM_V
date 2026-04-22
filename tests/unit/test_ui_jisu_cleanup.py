@@ -1,5 +1,9 @@
 import importlib
+import sys
 from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_v270_removed_jisu_chart_references_are_fully_cleaned():
@@ -14,6 +18,19 @@ def test_v270_removed_jisu_chart_references_are_fully_cleaned():
     assert "ui.dict_set['창위치'][7]" in process_kill_text, 'dialog_info 창 위치 인덱스가 지수차트 제거 기준으로 재정렬되어야 합니다.'
 
 
-def test_ui_mainwindow_import_succeeds_without_deleted_jisu_module():
+def test_ui_mainwindow_import_succeeds_without_deleted_jisu_module(monkeypatch):
+    runtime_db = PROJECT_ROOT.parent / 'STOM_V.wt-dev' / '_database'
+    if runtime_db.exists():
+        monkeypatch.setenv('STOM_CLI_DATABASE_DIR', str(runtime_db))
+    for module_name in (
+        'utility.setting_base',
+        'utility.setting_user',
+        'ui.set_style',
+        'ui.set_widget',
+        'ui.set_icon',
+        'ui.ui_mainwindow',
+    ):
+        sys.modules.pop(module_name, None)
+
     module = importlib.import_module('ui.ui_mainwindow')
     assert hasattr(module, 'MainWindow')

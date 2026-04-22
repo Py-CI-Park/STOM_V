@@ -26,9 +26,19 @@ class TestHelpOutput:
         assert '--sell' in result.stdout
 
 class TestExitCodes:
-    def test_success_returns_zero(self):
+    def test_success_returns_zero(self, tmp_strategy_db):
         """--list-strategies 성공 시 exit code 0."""
-        result = subprocess.run([PYTHON, STOM_BACKTEST, '--list-strategies'], capture_output=True, text=True, timeout=30, cwd=PROJECT_ROOT)
+        env = os.environ.copy()
+        env['STOM_CLI_DB_STRATEGY'] = tmp_strategy_db
+
+        result = subprocess.run(
+            [PYTHON, STOM_BACKTEST, '--list-strategies'],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            cwd=PROJECT_ROOT,
+            env=env,
+        )
         assert result.returncode == 0
 
     def test_arg_error_returns_one(self):
