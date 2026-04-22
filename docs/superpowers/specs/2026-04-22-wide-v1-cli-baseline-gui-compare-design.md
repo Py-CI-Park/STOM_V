@@ -114,6 +114,7 @@ endday=20251231
 starttime=090000
 endtime=092800
 avgtime=30
+betting=20
 buy=ResearchTest_Tick_B_090000_092800_Wide_20260419
 sell=ResearchTest_Tick_S_090000_092800_Wide_20260419
 back_count=1638
@@ -121,6 +122,7 @@ engine_start=90000
 engine_end=92800
 engine_avg=[30]
 engine_multi=32
+betting_amount=20,000,000원
 ```
 
 결과:
@@ -282,6 +284,7 @@ python stom_backtest.py runtime-preflight `
   --end 20251231 `
   --timeframe tick `
   --avg-time 30 `
+  --betting 20 `
   --start-time 90000 `
   --end-time 92800 `
   --engines 32 `
@@ -311,6 +314,7 @@ python stom_backtest.py `
   --end 20251231 `
   --timeframe tick `
   --avg-time 30 `
+  --betting 20 `
   --start-time 90000 `
   --end-time 92800 `
   --engines 32 `

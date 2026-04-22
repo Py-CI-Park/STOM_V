@@ -67,6 +67,7 @@ start=20250101
 end=20251231
 timeframe=tick
 avg_time=30
+betting=20
 start_time=90000
 end_time=92800
 engines=32
@@ -81,6 +82,7 @@ tpi=0.60
 max_hold_count=40
 avg_hold_time=228.19
 runtime=0:01:00.675279
+betting_amount=20,000,000원
 gui_csv=C:\System_Trading\STOM\STOM_V.wt-dev\backtest\csv\stock_bt_ResearchTest_Tick_B_090000_092800_Wide_20260419_20260420132132.csv
 ```
 
@@ -169,6 +171,7 @@ python stom_backtest.py runtime-preflight `
   --end 20251231 `
   --timeframe tick `
   --avg-time 30 `
+  --betting 20 `
   --start-time 90000 `
   --end-time 92800 `
   --engines 32 `
@@ -279,6 +282,7 @@ python stom_backtest.py `
   --end 20251231 `
   --timeframe tick `
   --avg-time 30 `
+  --betting 20 `
   --start-time 90000 `
   --end-time 92800 `
   --engines 32 `
@@ -702,6 +706,7 @@ lines = [
     'end=20251231',
     'timeframe=tick',
     'avg_time=30',
+    'betting=20',
     'start_time=90000',
     'end_time=92800',
     'engines=32',
