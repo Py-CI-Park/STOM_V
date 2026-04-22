@@ -19,34 +19,36 @@ setting_base_tests=4 passed
 runner_helper_and_setting_base_tests=49 passed
 focused_tests=185 passed
 verify_nonrelease_sync=PASS
-smoke_4=status=error,last_checkpoint=engine_data_response_timeout
-smoke_32=not_executed
+smoke_4=status=error,last_checkpoint=backtest_process_started
+smoke_32=status=error,last_checkpoint=backtest_process_started
 ```
 
 ## smoke 판정
 
 ```text
-decision=HOLD
-reason=child runtime DB override 구현은 완료됐지만, stale shared memory backdata_0..31 때문에 smoke가 data loading timeout에서 멈춰 child moneytop 단계까지 도달하지 못했다.
+decision=PASS_FOR_CHILD_DB_OVERRIDE
+reason=shared memory 정리 후 smoke 4/32 모두 child moneytop 오류 없이 BackTest process 시작 단계까지 도달했다. child runtime DB mismatch blocker는 해소된 것으로 판단하며, 다음 병목은 BackTest process timeout이다.
 ```
 
 ## 남은 리스크
 
-- child_stock_back_db_path가 실제로 wt-dev runtime DB로 바뀌었는지는 live smoke에서 아직 확인하지 못했다.
-- shared memory 잔여가 다음 CLI 실행을 계속 방해할 수 있다.
+- CLI baseline은 아직 metrics/CSV를 생성하지 못한다.
+- BackTest process가 300초 timeout 안에 완료되지 않는다.
+- GUI와 CLI 결과 비교는 아직 불가능하다.
 - candidate_count=5는 아직 실행하면 안 된다.
 
 ## 다음 단계
 
 ```text
-$brainstorming CLI shared memory cleanup 및 child runtime DB override smoke 재검증 설계
+$brainstorming CLI BackTest process timeout 및 결과 생성 protocol 분석 설계
 ```
 
 다음 설계에서 결정할 것:
 
 ```text
-1. stale backdata shared memory 정리 방법
-2. 정리 후 smoke 4/32 재실행 순서
-3. child runtime DB override 검증 기준
-4. smoke가 moneytop을 통과하면 CLI baseline GUI 비교로 넘어갈 조건
+1. BackTest process가 300초 안에 완료되지 않는 이유
+2. Total process / mq.get() / 결과 DB write protocol 확인
+3. GUI 실행에서는 같은 짧은 기간이 얼마나 걸리는지 비교
+4. timeout을 늘릴 문제인지, 프로토콜 불일치 문제인지 구분
+5. CLI baseline이 metrics/CSV를 생성하도록 다음 보강 범위 결정
 ```
