@@ -357,9 +357,11 @@ Expected:
 
 ```text
 remaining_candidate_rows []
+or
+remaining_candidate_rows ['WideV1RetentionCand5_20260422__candNNN'] when cleanup_best_candidate=False and the retained row is the documented best candidate.
 ```
 
-If rows remain, document them as cleanup risk and do not delete manually unless the cleanup policy says they are failed/lost candidates for this exact prefix.
+If rows remain for any reason other than `best_candidate_kept`, document them as cleanup risk and do not delete manually unless the cleanup policy says they are failed/lost candidates for this exact prefix.
 
 ---
 
