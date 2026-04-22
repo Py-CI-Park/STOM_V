@@ -12,7 +12,7 @@ from multiprocessing import Process, Queue, Value, Lock, shared_memory
 from queue import Empty
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from cli.paths import DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
+from cli.paths import DB_SETTING, DB_STRATEGY, DB_STOCK_BACK_TICK, DB_STOCK_BACK_MIN, DB_BACKTEST
 from cli.backtest_checkpoints import BacktestCheckpointRecorder
 from backtest.back_static import GetMoneytopQuery
 from backtest.back_subtotal import BackSubTotal
@@ -37,6 +37,18 @@ def _normalize_avg_list(avg_time):
     if isinstance(avg_time, (list, tuple)):
         return [int(x) for x in avg_time]
     return [int(avg_time)]
+
+
+def _ensure_cli_db_env():
+    defaults = {
+        'STOM_CLI_DB_SETTING': DB_SETTING,
+        'STOM_CLI_DB_STRATEGY': DB_STRATEGY,
+        'STOM_CLI_DB_BACKTEST': DB_BACKTEST,
+        'STOM_CLI_DB_STOCK_BACK_TICK': DB_STOCK_BACK_TICK,
+        'STOM_CLI_DB_STOCK_BACK_MIN': DB_STOCK_BACK_MIN,
+    }
+    for key, value in defaults.items():
+        os.environ.setdefault(key, str(value))
 
 
 def _get_backtest_last_rowid(table_name='stock_bt'):
@@ -295,6 +307,7 @@ def run_backtest(config):
 
     _child_procs.clear()
     _register_signals()
+    _ensure_cli_db_env()
     dict_set = _sync_dict_set(config)
     _run_start_time = time.time()
     checkpoint = BacktestCheckpointRecorder()

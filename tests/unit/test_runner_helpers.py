@@ -428,6 +428,49 @@ def test_runner_imports_checkpoint_recorder():
     assert 'from cli.backtest_checkpoints import BacktestCheckpointRecorder' in content
 
 
+def test_runner_exports_cli_db_paths_for_legacy_children(monkeypatch, tmp_path):
+    from cli import runner
+
+    db_paths = {
+        'STOM_CLI_DB_SETTING': tmp_path / 'setting.db',
+        'STOM_CLI_DB_STRATEGY': tmp_path / 'strategy.db',
+        'STOM_CLI_DB_BACKTEST': tmp_path / 'backtest.db',
+        'STOM_CLI_DB_STOCK_BACK_TICK': tmp_path / 'stock_tick_back.db',
+        'STOM_CLI_DB_STOCK_BACK_MIN': tmp_path / 'stock_min_back.db',
+    }
+    for key in db_paths:
+        monkeypatch.delenv(key, raising=False)
+
+    monkeypatch.setattr(runner, 'DB_SETTING', db_paths['STOM_CLI_DB_SETTING'], raising=False)
+    monkeypatch.setattr(runner, 'DB_STRATEGY', db_paths['STOM_CLI_DB_STRATEGY'], raising=False)
+    monkeypatch.setattr(runner, 'DB_BACKTEST', db_paths['STOM_CLI_DB_BACKTEST'], raising=False)
+    monkeypatch.setattr(runner, 'DB_STOCK_BACK_TICK', db_paths['STOM_CLI_DB_STOCK_BACK_TICK'], raising=False)
+    monkeypatch.setattr(runner, 'DB_STOCK_BACK_MIN', db_paths['STOM_CLI_DB_STOCK_BACK_MIN'], raising=False)
+    monkeypatch.setenv('STOM_CLI_DB_BACKTEST', 'user-provided-backtest.db')
+
+    runner._ensure_cli_db_env()
+
+    assert os.environ['STOM_CLI_DB_SETTING'] == str(db_paths['STOM_CLI_DB_SETTING'])
+    assert os.environ['STOM_CLI_DB_STRATEGY'] == str(db_paths['STOM_CLI_DB_STRATEGY'])
+    assert os.environ['STOM_CLI_DB_BACKTEST'] == 'user-provided-backtest.db'
+    assert os.environ['STOM_CLI_DB_STOCK_BACK_TICK'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_TICK'])
+    assert os.environ['STOM_CLI_DB_STOCK_BACK_MIN'] == str(db_paths['STOM_CLI_DB_STOCK_BACK_MIN'])
+
+    runner_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        'cli', 'runner.py',
+    )
+    with open(runner_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+
+    assert '_ensure_cli_db_env' in content
+    assert 'STOM_CLI_DB_SETTING' in content
+    assert 'STOM_CLI_DB_STRATEGY' in content
+    assert 'STOM_CLI_DB_BACKTEST' in content
+    assert 'STOM_CLI_DB_STOCK_BACK_TICK' in content
+    assert content.index('_ensure_cli_db_env()') < content.index('_sync_dict_set(config)')
+
+
 def test_runner_records_timeout_checkpoint_fields():
     runner_path = os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
