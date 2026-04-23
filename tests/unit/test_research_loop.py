@@ -1196,6 +1196,54 @@ def test_run_research_iteration_applies_v2_candidate_pool(monkeypatch, tmp_path)
     assert any(' and ' in spec['expression'] for spec in executed_specs)
 
 
+def test_run_research_iteration_omits_iteration_v2_when_mode_disabled(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    baseline.write_text(
+        'B_시가총액,수익률,종목명,매수시간,매도시간,매수가,매도가,수익금\n'
+        '100,-1,A,20250101090000,20250101090100,100,99,-1\n'
+        '200,1,B,20250101090200,20250101090300,100,101,1\n',
+        encoding='utf-8',
+    )
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['시가총액 <= 2000'],
+        selected_candidates=[{'source': 'segment_scan', 'feature': 'B_시가총액'}],
+    )
+    monkeypatch.setattr(
+        research_loop,
+        '_execute_candidate_spec',
+        lambda config, spec, controller, baseline_csv: {
+            'status': 'ok',
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'comparison': {'trade_count_retention': 0.9},
+            'promotion': {'status': 'ok', 'passed': True, 'score': 1.0},
+            'rank_score': {
+                'promotion_passed': True,
+                'promotion_score': 1.0,
+                'trade_count': 10.0,
+                'trade_count_retention': 0.9,
+                'date_concentration': 0.0,
+                'symbol_concentration': 0.0,
+            },
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='DefaultBatch',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'ok'
+    assert 'iteration_v2' not in result
+
+
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     _write_trade_csv(baseline)

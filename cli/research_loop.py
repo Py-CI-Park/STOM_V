@@ -1099,7 +1099,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         source_candidate['expression'] = expression
         source_candidate['original_index'] = index
         expression_candidates.append(source_candidate)
-    iteration_v2 = {'status': 'disabled', 'mode': config.iteration_v2_mode}
+    iteration_v2 = None
     if config.iteration_v2_mode == 'best_feature_mix':
         iteration_v2 = build_v2_candidate_pool(
             expression_candidates,
@@ -1156,7 +1156,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             analysis_result=analysis_result,
             expression_result=expression_result,
             iteration_plan=iteration_plan,
-            iteration_v2=iteration_v2,
+            **({'iteration_v2': iteration_v2} if iteration_v2 else {}),
             retention_selection=retention_selection,
             retention_candidates=retention_candidates,
         ))
@@ -1174,7 +1174,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             analysis_result=analysis_result,
             expression_result=expression_result,
             iteration_plan=iteration_plan,
-            iteration_v2=iteration_v2,
+            **({'iteration_v2': iteration_v2} if iteration_v2 else {}),
             retention_selection=retention_selection,
             retention_candidates=retention_candidates,
             requested_candidate_count=config.candidate_count,
@@ -1214,7 +1214,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'analysis_result': analysis_result,
         'expression_result': expression_result,
         'iteration_plan': iteration_plan,
-        'iteration_v2': iteration_v2,
+        **({'iteration_v2': iteration_v2} if iteration_v2 else {}),
         'retention_selection': retention_selection,
         'retention_candidates': retention_candidates,
         'candidate_specs': specs,

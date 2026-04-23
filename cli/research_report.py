@@ -170,7 +170,7 @@ def _append_retention_sections(lines: list[str], report: dict) -> None:
 
 def _append_iteration_v2_section(lines: list[str], report: dict) -> None:
     iteration_v2 = report.get('iteration_v2') or {}
-    if not iteration_v2:
+    if not iteration_v2 or iteration_v2.get('status') == 'disabled':
         return
 
     lines.extend(['', '## Iteration Loop v2 Candidate Generation'])

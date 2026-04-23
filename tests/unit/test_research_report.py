@@ -281,6 +281,18 @@ def test_render_research_report_markdown_contains_iteration_v2_section():
     assert 'primary_secondary_combo' in markdown
 
 
+def test_render_research_report_markdown_omits_disabled_iteration_v2_section():
+    report = build_research_report({
+        'status': 'ok',
+        'strategy_name': 'DefaultRun',
+        'iteration_v2': {'status': 'disabled', 'mode': ''},
+    }, strategy_name='DefaultRun')
+
+    markdown = render_research_report_markdown(report)
+
+    assert '## Iteration Loop v2 Candidate Generation' not in markdown
+
+
 def test_render_research_report_markdown_contains_trade_set_sections():
     markdown = render_research_report_markdown(build_research_report(_result(), strategy_name='AutoResearch'))
     assert '# 조건식 연구 리포트: AutoResearch' in markdown
