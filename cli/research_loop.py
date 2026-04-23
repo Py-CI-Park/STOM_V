@@ -55,6 +55,7 @@ _RETENTION_METADATA_KEYS = (
 class ResearchLoopConfig:
     name: str = 'AutoResearch'
     baseline_csv: str | None = None
+    score_reference_csv: str | None = None
     base_buy_strategy: str = ''
     sell_strategy: str = ''
     start_date: int = 0
@@ -148,6 +149,7 @@ def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
     return {
         'candidate_count': config.candidate_count,
         'candidate_name_prefix': _candidate_name_prefix(config),
+        'score_reference_csv': config.score_reference_csv,
         'effective_top_n': _effective_top_n(config),
         'candidate_pool_multiplier': config.candidate_pool_multiplier,
         'candidate_pool_size': _candidate_pool_size(config),

@@ -177,6 +177,23 @@ def test_discovery_research_parser_accepts_retention_options():
     assert args.candidate_pool_multiplier == 4
 
 
+def test_discovery_research_parser_accepts_score_reference_csv():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'ScoreReferenceResearch',
+        '--input', 'cand003.csv',
+        '--score-reference-csv', 'wide.csv',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+        '--run-candidates',
+    ])
+
+    assert args.score_reference_csv == 'wide.csv'
+
+
 def test_discovery_research_parser_rejects_conflicting_candidate_modes():
     parser = create_subcommand_parser()
     with pytest.raises(SystemExit):
@@ -267,6 +284,26 @@ def test_discovery_research_handler_passes_retention_options():
     assert payload['allow_retention_fallback'] is False
     assert payload['use_retention_penalty'] is False
     assert payload['candidate_pool_multiplier'] == 4
+
+
+def test_discovery_research_handler_passes_score_reference_csv():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok'}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'ScoreReferenceResearch',
+            '--input', 'cand003.csv',
+            '--score-reference-csv', 'wide.csv',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidates',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert exit_code == 0
+    assert payload['score_reference_csv'] == 'wide.csv'
 
 
 def test_discovery_research_parser_accepts_iteration_v2_options():
