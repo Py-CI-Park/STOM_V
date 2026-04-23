@@ -7,6 +7,7 @@ from cli.research_rowdiff import (
     feature_bucket_summary,
     split_trade_sets,
     top_trade_rows,
+    trade_key_diagnostics,
 )
 
 
@@ -98,6 +99,29 @@ def test_feature_bucket_summary_keeps_constant_numeric_feature_as_single_bucket(
     assert result['buckets'][0]['trade_count'] == 3
 
 
+def test_trade_key_diagnostics_reports_duplicate_and_drift_counts():
+    left = _frame([
+        _row('A', 1, 2, 100, 101, 1.0, 1000),
+        _row('A', 1, 3, 100, 102, 2.0, 2000),
+        _row('B', 4, 5, 100, 99, -1.0, -1000),
+    ])
+    right = _frame([
+        _row('A', 1, 2, 100, 101, 1.0, 1000),
+        _row('B', 4, 5, 100, 99, -1.0, -1000),
+    ])
+
+    result = trade_key_diagnostics(left, right)
+
+    current = result['variants']['current_buy_identity']
+    strong = result['variants']['with_sell_identity']
+    assert current['left_duplicate_rows'] == 2
+    assert strong['left_duplicate_rows'] == 0
+    assert current['common_unique'] == 2
+    assert strong['common_unique'] == 2
+    assert strong['left_only_unique'] == 1
+    assert result['key_drift_observed'] is True
+
+
 def test_top_trade_rows_returns_loss_and_profit_rows():
     frame = _frame([
         _row('A', 1, 2, 100, 101, 1.0, 1000),
@@ -124,6 +148,7 @@ def test_analyze_row_diff_builds_summary_payload():
     result = analyze_row_diff(left, right, feature_columns=['B_시가총액'])
 
     assert result['status'] == 'ok'
+    assert result['key_diagnostics']['status'] == 'ok'
     assert result['counts']['left_only'] == 1
     assert result['summaries']['left_only']['total_profit'] == -1000.0
     assert result['summaries']['right_only']['total_profit'] == -2000.0
