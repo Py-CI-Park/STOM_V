@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
+import re
 
 from cli.condition_generator import candidate_to_expression
 from cli.research_iteration_v2 import (
@@ -20,7 +21,7 @@ def parse_best_expression_conditions(
     primary_feature: str,
     trade_amount_feature: str,
 ) -> list[dict]:
-    parts = [part.strip() for part in expression.split(' and ')]
+    parts = [part.strip() for part in re.split(r'\s+and\s+', expression.strip())]
     if len(parts) != 2 or any(not part for part in parts):
         raise ValueError('best expression must contain exactly two conditions joined by "and"')
 
@@ -143,7 +144,7 @@ def build_v3_candidate_pool(
     primary_feature: str = 'B_시가총액',
     trade_amount_feature: str = 'B_당일거래대금',
     secondary_features: list[str] | None = None,
-    min_estimated_retention: float | None = 0.0,
+    min_estimated_retention: float | None = 0.4,
     retention_tolerance: float = 0.02,
 ) -> dict:
     if not best_context:
@@ -180,6 +181,7 @@ def build_v3_candidate_pool(
     trade_amount_candidates = [
         candidate for candidate in eligible_candidates
         if candidate.get('feature') == trade_amount_feature
+        and candidate_signature(candidate) != candidate_signature(best_trade_amount)
     ]
 
     candidates = []

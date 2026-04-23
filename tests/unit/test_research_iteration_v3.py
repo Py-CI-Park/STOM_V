@@ -42,6 +42,18 @@ def test_parse_best_expression_conditions_parses_primary_and_trade_amount():
     assert conditions[1]['upper_bound'] == 3654.4
 
 
+def test_parse_best_expression_conditions_tolerates_newline_around_and():
+    conditions = parse_best_expression_conditions(
+        '66.999 <= 시가총액 < 2_580\nand 1805.7 <= 당일거래대금 < 3654.4',
+        primary_feature='B_시가총액',
+        trade_amount_feature='B_당일거래대금',
+    )
+
+    assert [item['feature'] for item in conditions] == ['B_시가총액', 'B_당일거래대금']
+    assert conditions[0]['upper_bound'] == 2580.0
+    assert conditions[1]['lower_bound'] == 1805.7
+
+
 def test_build_v3_candidate_pool_returns_control_metadata_without_running_control():
     result = build_v3_candidate_pool(
         [],
@@ -116,6 +128,45 @@ def test_build_v3_candidate_pool_filters_low_retention_when_retention_is_known()
     expressions = [item['expression'] for item in result['candidates']]
     assert all('체결강도' not in expression for expression in expressions)
     assert any('등락율' in expression for expression in expressions)
+
+
+def test_build_v3_candidate_pool_filters_low_retention_by_default():
+    analysis_candidates = [
+        _candidate('B_체결강도', 0.039, 54.89, retention=0.2),
+        _candidate('B_등락율', 15.894, 25.0, retention=0.8),
+    ]
+
+    result = build_v3_candidate_pool(
+        analysis_candidates,
+        best_context=BEST_CONTEXT,
+        primary_feature='B_시가총액',
+        trade_amount_feature='B_당일거래대금',
+        secondary_features=['B_체결강도', 'B_등락율'],
+    )
+
+    expressions = [item['expression'] for item in result['candidates']]
+    assert all('체결강도' not in expression for expression in expressions)
+    assert any('등락율' in expression for expression in expressions)
+
+
+def test_build_v3_candidate_pool_skips_identical_trade_amount_repair():
+    analysis_candidates = [
+        _candidate('B_당일거래대금', 1805.7, 3654.4, score=6.0),
+    ]
+
+    result = build_v3_candidate_pool(
+        analysis_candidates,
+        best_context=BEST_CONTEXT,
+        primary_feature='B_시가총액',
+        trade_amount_feature='B_당일거래대금',
+        secondary_features=['B_당일거래대금'],
+    )
+
+    repair_candidates = [
+        item for item in result['candidates']
+        if item['v3_candidate_type'] == 'v3_repair_trade_amount'
+    ]
+    assert repair_candidates == []
 
 
 def test_build_v3_candidate_pool_removes_duplicate_expressions():
