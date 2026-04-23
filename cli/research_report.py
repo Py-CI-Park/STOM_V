@@ -43,6 +43,7 @@ def build_research_report(result: dict, strategy_name: str | None = None) -> dic
         'candidate_plan': result.get('candidate_plan'),
         'cleanup': result.get('cleanup'),
         'iteration_plan': result.get('iteration_plan'),
+        'iteration_v2': result.get('iteration_v2'),
         'retention_selection': result.get('retention_selection'),
         'candidates': result.get('candidates'),
         'best_candidate': result.get('best_candidate'),
@@ -167,6 +168,27 @@ def _append_retention_sections(lines: list[str], report: dict) -> None:
         lines.append('|  |  |  |  |  |  |')
 
 
+def _append_iteration_v2_section(lines: list[str], report: dict) -> None:
+    iteration_v2 = report.get('iteration_v2') or {}
+    if not iteration_v2 or iteration_v2.get('status') == 'disabled':
+        return
+
+    lines.extend(['', '## Iteration Loop v2 Candidate Generation'])
+    for key in (
+        'status',
+        'mode',
+        'primary_feature',
+        'secondary_features',
+        'candidate_count',
+    ):
+        lines.append(f"- {key}: {iteration_v2.get(key)}")
+    type_counts = iteration_v2.get('type_counts') or {}
+    if type_counts:
+        lines.append('- type_counts:')
+        for key, value in type_counts.items():
+            lines.append(f"  - {key}: {value}")
+
+
 def _append_candidate_iteration_sections(lines: list[str], report: dict) -> None:
     iteration_plan = report.get('iteration_plan') or {}
     retention_selection = report.get('retention_selection') or {}
@@ -286,6 +308,7 @@ def render_research_report_markdown(report: dict) -> str:
             lines.append(f"- cleanup message: {cleanup.get('message')}")
 
     _append_candidate_iteration_sections(lines, report)
+    _append_iteration_v2_section(lines, report)
 
     lines.extend([
         '',

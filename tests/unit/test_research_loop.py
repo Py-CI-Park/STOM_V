@@ -229,6 +229,38 @@ def test_iteration_plan_includes_retention_policy():
     assert plan['use_retention_penalty'] is True
 
 
+def test_research_loop_config_has_iteration_v2_fields():
+    names = set(ResearchLoopConfig.__dataclass_fields__)
+
+    assert 'iteration_v2_mode' in names
+    assert 'iteration_v2_best_candidate' in names
+    assert 'iteration_v2_best_expression' in names
+    assert 'iteration_v2_primary_feature' in names
+    assert 'iteration_v2_secondary_features' in names
+    assert 'iteration_v2_include_secondary_only' in names
+    assert 'iteration_v2_max_secondary_only' in names
+    assert 'iteration_v2_duplicate_retention_tolerance' in names
+
+
+def test_iteration_plan_includes_v2_settings():
+    plan = research_loop._build_iteration_plan(
+        ResearchLoopConfig(
+            run_candidates=True,
+            iteration_v2_mode='best_feature_mix',
+            iteration_v2_best_candidate='cand003',
+            iteration_v2_best_expression='66.999 <= 시가총액 < 2_580',
+            iteration_v2_primary_feature='B_시가총액',
+            iteration_v2_secondary_features='B_체결강도,B_등락율',
+        )
+    )
+
+    assert plan['iteration_v2_mode'] == 'best_feature_mix'
+    assert plan['iteration_v2_best_candidate'] == 'cand003'
+    assert plan['iteration_v2_best_expression'] == '66.999 <= 시가총액 < 2_580'
+    assert plan['iteration_v2_primary_feature'] == 'B_시가총액'
+    assert plan['iteration_v2_secondary_features'] == ['B_체결강도', 'B_등락율']
+
+
 def test_build_candidate_specs_uses_one_expression_per_candidate():
     result = {
         'expressions': ['泥닿껐媛뺣룄 < 90', '?쒓?珥앹븸 <= 3000', 'ignored > 1'],
@@ -1074,6 +1106,146 @@ def test_run_research_iteration_rejects_insufficient_expressions(monkeypatch, tm
     assert result['requested_candidate_count'] == 3
     assert result['expression_count'] == 1
     assert result['iteration_plan']['candidate_count'] == 3
+
+
+def test_run_research_iteration_applies_v2_candidate_pool(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    baseline.write_text(
+        'B_시가총액,B_체결강도,B_등락율,수익률,종목명,매수시간,매도시간,매수가,매도가,수익금\n'
+        '100,10,1,-1,A,20250101090000,20250101090100,100,99,-1\n'
+        '200,20,2,1,B,20250101090200,20250101090300,100,101,1\n',
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'ok'})
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': [
+                '50 <= 시가총액 < 2580',
+                '0 <= 체결강도 < 55',
+                '0 <= 등락율 < 25',
+            ],
+            'selected_candidates': [
+                {
+                    'feature': 'B_시가총액',
+                    'operator': 'between',
+                    'lower_bound': 50.0,
+                    'upper_bound': 2580.0,
+                    'score': 10.0,
+                    'combined_score': 10.0,
+                    'retention_estimate': {'estimated_retention': 0.9},
+                    'retention_filter_passed': True,
+                    'retention_fallback_used': False,
+                },
+                {
+                    'feature': 'B_체결강도',
+                    'operator': 'between',
+                    'lower_bound': 0.0,
+                    'upper_bound': 55.0,
+                    'score': 9.0,
+                    'combined_score': 9.0,
+                    'retention_estimate': {'estimated_retention': 0.9},
+                    'retention_filter_passed': True,
+                    'retention_fallback_used': False,
+                },
+                {
+                    'feature': 'B_등락율',
+                    'operator': 'between',
+                    'lower_bound': 0.0,
+                    'upper_bound': 25.0,
+                    'score': 8.0,
+                    'combined_score': 8.0,
+                    'retention_estimate': {'estimated_retention': 0.9},
+                    'retention_filter_passed': True,
+                    'retention_fallback_used': False,
+                },
+            ],
+        },
+    )
+
+    executed_specs = []
+    monkeypatch.setattr(
+        research_loop,
+        '_execute_candidate_spec',
+        lambda config, spec, controller, baseline_csv: executed_specs.append(spec) or {
+            'status': 'ok',
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'comparison': {'trade_count_retention': 0.9},
+            'promotion': {'status': 'ok', 'passed': True, 'score': 1.0},
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V2Run',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix',
+            iteration_v2_best_candidate='cand003',
+            iteration_v2_best_expression='66.999 <= 시가총액 < 2_580',
+            iteration_v2_primary_feature='B_시가총액',
+            iteration_v2_secondary_features='B_체결강도,B_등락율',
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['iteration_v2']['status'] == 'ok'
+    assert executed_specs
+    assert any(' and ' in spec['expression'] for spec in executed_specs)
+
+
+def test_run_research_iteration_omits_iteration_v2_when_mode_disabled(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    baseline.write_text(
+        'B_시가총액,수익률,종목명,매수시간,매도시간,매수가,매도가,수익금\n'
+        '100,-1,A,20250101090000,20250101090100,100,99,-1\n'
+        '200,1,B,20250101090200,20250101090300,100,101,1\n',
+        encoding='utf-8',
+    )
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['시가총액 <= 2000'],
+        selected_candidates=[{'source': 'segment_scan', 'feature': 'B_시가총액'}],
+    )
+    monkeypatch.setattr(
+        research_loop,
+        '_execute_candidate_spec',
+        lambda config, spec, controller, baseline_csv: {
+            'status': 'ok',
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'comparison': {'trade_count_retention': 0.9},
+            'promotion': {'status': 'ok', 'passed': True, 'score': 1.0},
+            'rank_score': {
+                'promotion_passed': True,
+                'promotion_score': 1.0,
+                'trade_count': 10.0,
+                'trade_count_retention': 0.9,
+                'date_concentration': 0.0,
+                'symbol_concentration': 0.0,
+            },
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='DefaultBatch',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'ok'
+    assert 'iteration_v2' not in result
 
 
 def test_research_preview_includes_candidate_plan(monkeypatch, tmp_path):
