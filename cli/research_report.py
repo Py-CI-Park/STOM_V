@@ -50,6 +50,7 @@ def build_research_report(result: dict, strategy_name: str | None = None) -> dic
         'cleanup': result.get('cleanup'),
         'iteration_plan': result.get('iteration_plan'),
         'iteration_v2': result.get('iteration_v2'),
+        'iteration_v3': result.get('iteration_v3'),
         'retention_selection': result.get('retention_selection'),
         'candidates': result.get('candidates'),
         'best_candidate': result.get('best_candidate'),
@@ -193,6 +194,36 @@ def _append_iteration_v2_section(lines: list[str], report: dict) -> None:
         lines.append('- type_counts:')
         for key, value in type_counts.items():
             lines.append(f"  - {key}: {value}")
+
+
+def _append_iteration_v3_section(lines: list[str], report: dict) -> None:
+    iteration_v3 = report.get('iteration_v3') or {}
+    if not iteration_v3 or iteration_v3.get('status') == 'disabled':
+        return
+
+    lines.extend(['', '## Iteration Loop v3 Candidate Generation'])
+    for key in (
+        'status',
+        'mode',
+        'primary_feature',
+        'trade_amount_feature',
+        'secondary_features',
+        'candidate_count',
+    ):
+        lines.append(f"- {key}: {iteration_v3.get(key)}")
+    type_counts = iteration_v3.get('type_counts') or {}
+    if type_counts:
+        lines.append('- type_counts:')
+        for key, value in type_counts.items():
+            lines.append(f"  - {key}: {value}")
+    control = iteration_v3.get('control_candidate') or {}
+    if control:
+        lines.append(f"- control_strategy_name: {control.get('strategy_name')}")
+        lines.append(f"- control_expression: {control.get('expression')}")
+        lines.append(
+            f"- control_reference_adjusted_score: {control.get('reference_adjusted_score')}"
+        )
+        lines.append(f"- control_skip_backtest: {control.get('skip_backtest')}")
 
 
 def _append_score_baseline_section(lines: list[str], report: dict) -> None:
@@ -382,6 +413,7 @@ def render_research_report_markdown(report: dict) -> str:
 
     _append_candidate_iteration_sections(lines, report)
     _append_iteration_v2_section(lines, report)
+    _append_iteration_v3_section(lines, report)
 
     lines.extend([
         '',
