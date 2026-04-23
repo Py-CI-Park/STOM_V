@@ -52,6 +52,7 @@ candidate_count=5
 candidate_timeout=900
 iteration_v2_mode=best_feature_mix
 iteration_v2_best_candidate=WideV1RetentionCand5_20260422__cand003
+iteration_v2_best_expression=66.999 <= 시가총액 < 2_580
 iteration_v2_primary_feature=B_시가총액
 iteration_v2_secondary_features=B_체결강도,B_등락율,B_당일거래대금,B_시분초
 ```
@@ -63,10 +64,10 @@ status=ok
 phase=candidates_evaluated
 candidate_count_observed=5
 best_candidate=WideV1IterationV2_20260423__cand005
-best_adjusted_score=1115.0276473855229
+best_adjusted_score=2554.7109523820864
 baseline_adjusted_score=10943.034141541459
-best_trade_count=36642
-best_trade_count_retention=0.9925239720461564
+best_trade_count=36096
+best_trade_count_retention=0.9777344384852917
 promotion_passed=True
 cleanup_failed_count=0
 decision=HOLD
@@ -77,48 +78,48 @@ decision=HOLD
 ```text
 rank=1
 strategy_name=WideV1IterationV2_20260423__cand005
-expression=시가총액 중심 조건 + 시분초 보조 조건
+expression=66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4
 candidate_status=success
-trade_count=36642
-trade_count_retention=0.9925239720461564
+trade_count=36096
+trade_count_retention=0.9777344384852917
 promotion_passed=True
-adjusted_score=1115.0276473855229
+adjusted_score=2554.7109523820864
 
 rank=2
 strategy_name=WideV1IterationV2_20260423__cand004
-expression=시가총액 중심 조건 + 당일거래대금 보조 조건
+expression=66.999 <= 시가총액 < 2_580 and 178.999 <= 당일거래대금 < 1805.7
 candidate_status=success
-trade_count=36754
-trade_count_retention=0.9955577225201798
+trade_count=36311
+trade_count_retention=0.9835581559131047
 promotion_passed=True
-adjusted_score=683.3603687036441
+adjusted_score=2086.5774701825367
 
 rank=3
-strategy_name=WideV1IterationV2_20260423__cand003
-expression=시가총액 중심 조건 + 시분초 보조 조건
+strategy_name=WideV1IterationV2_20260423__cand001
+expression=66.999 <= 시가총액 < 2_580 and 0.039 <= 체결강도 < 54.89
 candidate_status=success
-trade_count=36751
-trade_count_retention=0.9954764613467685
+trade_count=36364
+trade_count_retention=0.9849937699767052
 promotion_passed=True
-adjusted_score=604.1326092090056
+adjusted_score=1987.2564590451425
 
 rank=4
-strategy_name=WideV1IterationV2_20260423__cand001
-expression=시가총액 중심 조건 + 체결강도 보조 조건
+strategy_name=WideV1IterationV2_20260423__cand003
+expression=66.999 <= 시가총액 < 2_580 and 92446 <= 시분초 < 92759
 candidate_status=success
-trade_count=36799
-trade_count_retention=0.99677664012135
+trade_count=36301
+trade_count_retention=0.9832872853350669
 promotion_passed=True
-adjusted_score=483.7262560108513
+adjusted_score=1319.2392091510637
 
 rank=5
 strategy_name=WideV1IterationV2_20260423__cand002
-expression=시가총액 중심 조건 + 시분초 보조 조건
+expression=66.999 <= 시가총액 < 2_580 and 90029.999 <= 시분초 < 90054
 candidate_status=success
-trade_count=36889
-trade_count_retention=0.9992144753236903
+trade_count=36761
+trade_count_retention=0.9957473319248064
 promotion_passed=True
-adjusted_score=177.53012717023753
+adjusted_score=473.19980761514546
 ```
 
 ## cleanup 결과
@@ -130,6 +131,7 @@ kept_count=1
 failed_count=0
 kept_strategy=WideV1IterationV2_20260423__cand005
 kept_reason=best_candidate_kept
+remaining_candidate_rows=['WideV1IterationV2_20260423__cand005']
 ```
 
 ## 판정
@@ -144,10 +146,11 @@ next_command=$brainstorming Wide v1 row-level 후보 차이 분석 설계
 
 - v2 후보 5개 모두 full-year tick 백테스트와 promotion gate를 통과했다.
 - cleanup 실패는 없었다.
-- 하지만 v2 best adjusted_score는 `1115.0276473855229`로 기존 cand003 기준 `10943.034141541459`보다 낮다.
-- 따라서 v2 규칙은 실행 가능하지만, 기존 best를 개선하지 못했다.
+- best v2 후보는 `cand005`다.
+- 하지만 `cand005.adjusted_score=2554.7109523820864`로 기존 cand003 기준 `10943.034141541459`보다 낮다.
+- 따라서 v2 조합 후보는 실행 가능하지만 기존 cand003보다 개선되지 않았다.
 - 바로 candidate_count=10으로 확장하지 않는다.
-- 다음 단계는 row-level 후보 차이 분석으로, cand003이 강했던 손실 제거 구간과 v2 후보들이 놓친 구간을 비교해야 한다.
+- 다음 단계는 row-level 후보 차이 분석이다. cand003이 강했던 손실 제거 구간과 v2 후보들이 놓친 구간을 거래 단위로 비교해야 한다.
 
 ## 남은 리스크
 
