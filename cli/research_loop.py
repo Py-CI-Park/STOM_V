@@ -437,6 +437,13 @@ def _reference_promotion_score(reference_evaluation: dict | None) -> float | Non
     return normalized
 
 
+def _safe_reference_promotion_score(config: ResearchLoopConfig, candidate_csv: str) -> float | None:
+    try:
+        return _reference_promotion_score(_build_reference_evaluation(config, candidate_csv))
+    except Exception:
+        return None
+
+
 def _build_result(config: ResearchLoopConfig, result: dict) -> dict:
     result['report'] = build_research_report(result, strategy_name=config.name)
     return result
@@ -1225,9 +1232,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             'expression': config.iteration_v2_best_expression,
         }
         if _score_reference_csv(config):
-            best_context['reference_adjusted_score'] = _reference_promotion_score(
-                _build_reference_evaluation(config, baseline_csv)
-            )
+            best_context['reference_adjusted_score'] = _safe_reference_promotion_score(config, baseline_csv)
         iteration_v3 = build_v3_candidate_pool(
             expression_candidates,
             best_context=best_context,
