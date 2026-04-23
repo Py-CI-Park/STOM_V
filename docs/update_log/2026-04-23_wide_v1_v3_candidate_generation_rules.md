@@ -120,9 +120,10 @@ best_trade_count_retention=0.8817451205510907
 control_candidate=WideV1IterationV2_20260423__cand005
 control_reference_adjusted_score=null
 cleanup_deleted_count=9
-decision=PASS_TO_V3_EXECUTION_RESULT_ANALYSIS
+derived_decision=PASS_TO_V3_EXECUTION_RESULT_ANALYSIS
 ```
 
 - `python -m cli.main`은 이 worktree에서 `No module named cli.main`으로 실패해 `python .\stom_backtest.py`로 동일 인자를 실행했다.
 - observed JSON은 UTF-16 LE BOM으로 저장됐고, 한국어 feature/expression metadata는 mojibake로 기록됐다.
-- top 10 후보가 모두 동일한 reference score로 tie였고 `cand001`만 best candidate로 유지됐다.
+- 여기서 `derived_decision`은 runtime JSON field가 아니라 Task 6 계획 규칙을 observed JSON에 적용한 파생 판단이며, PASS는 control score 부재로 HOLD gate가 발동하지 않았다는 뜻이다.
+- top 10 후보가 모두 동일한 reference score로 tie였고, artifact는 명시적 tie-break key를 노출하지 않는다. observed result에서는 `cand001`이 first-ranked/generated tied entry로 유지됐다.

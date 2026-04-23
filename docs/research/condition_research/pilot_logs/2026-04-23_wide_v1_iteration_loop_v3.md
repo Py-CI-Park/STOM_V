@@ -42,7 +42,7 @@ best_trade_count_retention=0.8817451205510907
 best_score_basis=reference
 control_candidate=WideV1IterationV2_20260423__cand005
 control_reference_adjusted_score=null
-decision=PASS_TO_V3_EXECUTION_RESULT_ANALYSIS
+derived_decision=PASS_TO_V3_EXECUTION_RESULT_ANALYSIS
 ```
 
 ## v3 후보 family 분포
@@ -80,10 +80,12 @@ kept_strategy=WideV1IterationV3_20260423__cand001
 deleted_strategies=WideV1IterationV3_20260423__cand002,WideV1IterationV3_20260423__cand003,WideV1IterationV3_20260423__cand004,WideV1IterationV3_20260423__cand005,WideV1IterationV3_20260423__cand006,WideV1IterationV3_20260423__cand007,WideV1IterationV3_20260423__cand008,WideV1IterationV3_20260423__cand009,WideV1IterationV3_20260423__cand010
 ```
 
+`derived_decision`은 runtime JSON field가 아니라 Task 6 계획 규칙을 observed JSON에 적용한 파생 판단이다. 여기서 PASS는 control score가 비어 있어 HOLD gate가 발동하지 않았다는 뜻이지, candidate가 control을 이겼다는 뜻은 아니다.
+
 ## 판정
 
 ```text
-decision=PASS_TO_V3_EXECUTION_RESULT_ANALYSIS
+derived_decision=PASS_TO_V3_EXECUTION_RESULT_ANALYSIS
 reason=status=ok and control_reference_adjusted_score is absent in the observed JSON, so the HOLD gate did not trigger.
 ```
 
@@ -92,7 +94,7 @@ reason=status=ok and control_reference_adjusted_score is absent in the observed 
 - 계획서의 `python -m cli.main ...` 명령은 이 worktree에서 `No module named cli.main`으로 실패해, 동일 인자를 `python .\stom_backtest.py ...`로 재실행했다.
 - `backtest/temp/wide_v1_iteration_v3_20260423.json`은 `Tee-Object` 영향으로 UTF-16 LE BOM 인코딩으로 기록됐다.
 - observed JSON의 한국어 feature/expression metadata는 mojibake로 저장되어 본 문서의 상위 후보 표에는 expression 원문 대신 rank, type, retention, score만 기록했다.
-- top 10 후보가 모두 동일한 `reference_adjusted_score=13497.662902097409`로 tie였고, rank 1은 `cand001`으로 선택됐다.
+- top 10 후보가 모두 동일한 `reference_adjusted_score=13497.662902097409`로 tie였고, artifact는 명시적 tie-break key를 노출하지 않는다. observed result에서는 `cand001`이 first-ranked/generated tied entry로 유지됐다.
 
 ## 남은 리스크
 
