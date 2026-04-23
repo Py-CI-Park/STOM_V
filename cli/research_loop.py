@@ -10,7 +10,7 @@ from cli.analyzer import analyze_result_csv
 from cli.condition_generator import generate_condition_expressions_from_analysis
 from cli.paths import DB_STRATEGY
 from cli.research_iteration_v2 import build_v2_candidate_pool, candidate_from_expression
-from cli.research_iteration_v3 import build_v3_candidate_pool
+from cli.research_iteration_v3 import build_v3_candidate_pool, parse_best_expression_conditions
 from cli.research_compare import (
     INSTRUMENT_COLUMNS,
     OPTIONAL_KEY_COLUMNS,
@@ -349,6 +349,22 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
             'missing_iteration_v2_best_expression',
             'iteration_v2_best_expression is required when iteration_v2_mode is set',
         )
+    if config.run_candidates and config.iteration_v2_mode == 'best_feature_mix_v3':
+        trade_amount_feature = (
+            (build_v3_candidate_pool.__kwdefaults__ or {}).get('trade_amount_feature')
+            or 'B_당일거래대금'
+        )
+        try:
+            parse_best_expression_conditions(
+                config.iteration_v2_best_expression,
+                primary_feature=config.iteration_v2_primary_feature,
+                trade_amount_feature=trade_amount_feature,
+            )
+        except ValueError:
+            return _error(
+                'invalid_iteration_v2_best_expression',
+                'best_feature_mix_v3 iteration_v2_best_expression must contain exactly two parseable conditions',
+            )
     if config.run_candidate and config.run_candidates:
         return _error(
             'run_candidate_and_run_candidates_conflict',

@@ -282,6 +282,28 @@ def test_validate_research_iteration_accepts_best_feature_mix_v3(tmp_path):
     assert result['status'] == 'ok'
 
 
+def test_validate_research_iteration_rejects_malformed_best_feature_mix_v3_expression(tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+
+    result = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='V3Invalid',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            iteration_v2_mode='best_feature_mix_v3',
+            iteration_v2_best_expression='66.999 <= ?쒓?珥앹븸 < 2_580',
+        )
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'invalid_iteration_v2_best_expression'
+    assert result['message'] == (
+        'best_feature_mix_v3 iteration_v2_best_expression must contain exactly two parseable conditions'
+    )
+
+
 def test_build_iteration_plan_includes_best_feature_mix_v3():
     plan = research_loop._build_iteration_plan(
         ResearchLoopConfig(
