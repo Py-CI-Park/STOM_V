@@ -367,6 +367,35 @@ def _trade_frame_for_compare(csv_path: str):
     return frame
 
 
+def _score_reference_csv(config: ResearchLoopConfig) -> str | None:
+    return config.score_reference_csv or None
+
+
+def _build_reference_evaluation(config: ResearchLoopConfig, candidate_csv: str) -> dict:
+    reference_csv = _score_reference_csv(config)
+    if not reference_csv:
+        return {}
+    if not Path(reference_csv).exists():
+        return {
+            'score_reference_csv': reference_csv,
+            'reference_error': {
+                'phase': 'score_reference_csv_missing',
+                'message': f'score_reference_csv does not exist: {reference_csv}',
+                'score_reference_csv': reference_csv,
+            },
+        }
+    reference_comparison = compare_trade_sets(
+        _trade_frame_for_compare(reference_csv),
+        _trade_frame_for_compare(candidate_csv),
+    )
+    reference_promotion = evaluate_research_candidate(reference_comparison)
+    return {
+        'score_reference_csv': reference_csv,
+        'reference_comparison': reference_comparison,
+        'reference_promotion': reference_promotion,
+    }
+
+
 def _build_result(config: ResearchLoopConfig, result: dict) -> dict:
     result['report'] = build_research_report(result, strategy_name=config.name)
     return result
@@ -609,6 +638,7 @@ def _execute_candidate_spec(
             _trade_frame_for_compare(candidate_csv),
         )
         promotion = evaluate_research_candidate(comparison)
+        reference_evaluation = _build_reference_evaluation(config, candidate_csv)
     except Exception as e:
         cleanup = _cleanup_candidate_strategy(config, 'comparison', strategy_name=strategy_name)
         return _candidate_item_error(
@@ -639,6 +669,7 @@ def _execute_candidate_spec(
         'candidate_result': candidate_result,
         'comparison': comparison,
         'promotion': promotion,
+        **reference_evaluation,
         'rank': None,
         'rank_score': None,
         'selected_as_best': False,
@@ -659,10 +690,15 @@ def _numeric_value(value, default: float = 0.0) -> float:
 
 
 def _rank_score(candidate: dict) -> dict:
-    promotion = candidate.get('promotion') or {}
-    comparison = candidate.get('comparison') or {}
+    incremental_promotion = candidate.get('promotion') or {}
+    incremental_comparison = candidate.get('comparison') or {}
+    reference_promotion = candidate.get('reference_promotion') or {}
+    reference_comparison = candidate.get('reference_comparison') or {}
+    use_reference = bool(reference_promotion and reference_comparison)
+    promotion = reference_promotion if use_reference else incremental_promotion
+    comparison = reference_comparison if use_reference else incremental_comparison
     candidate_summary = comparison.get('candidate_summary') or {}
-    return {
+    score = {
         'promotion_passed': promotion.get('passed') is True,
         'promotion_score': _numeric_value(promotion.get('score')),
         'trade_count': _numeric_value(candidate_summary.get('trade_count')),
@@ -676,6 +712,11 @@ def _rank_score(candidate: dict) -> dict:
             default=float('inf'),
         ),
     }
+    if use_reference:
+        score['score_basis'] = 'reference'
+        score['incremental_promotion_score'] = _numeric_value(incremental_promotion.get('score'))
+        score['reference_promotion_score'] = _numeric_value(reference_promotion.get('score'))
+    return score
 
 
 def _rank_key(candidate: dict) -> tuple:

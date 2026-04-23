@@ -839,6 +839,75 @@ def test_rank_candidate_results_uses_adjusted_score_when_retention_penalty_enabl
     assert ranked[1]['rank_score']['adjusted_score'] == 40.0
 
 
+def test_rank_candidate_results_prefers_reference_adjusted_score_when_present():
+    config = ResearchLoopConfig(
+        run_candidate=False,
+        run_candidates=True,
+        min_estimated_retention=0.4,
+        use_retention_penalty=True,
+        score_reference_csv='wide.csv',
+    )
+    candidates = [
+        {
+            'index': 1,
+            'status': 'ok',
+            'strategy_name': 'IncrementalHighReferenceLow',
+            'expression': 'A',
+            'promotion': {'passed': True, 'score': 5000.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 100,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.9,
+            },
+            'reference_promotion': {'passed': True, 'score': 11000.0},
+            'reference_comparison': {
+                'candidate_summary': {
+                    'trade_count': 100,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.9,
+            },
+        },
+        {
+            'index': 2,
+            'status': 'ok',
+            'strategy_name': 'IncrementalLowReferenceHigh',
+            'expression': 'B',
+            'promotion': {'passed': True, 'score': 2500.0},
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 90,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.9,
+            },
+            'reference_promotion': {'passed': True, 'score': 13500.0},
+            'reference_comparison': {
+                'candidate_summary': {
+                    'trade_count': 90,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.88,
+            },
+        },
+    ]
+
+    ranked, best = research_loop._rank_candidate_results(candidates, config)
+
+    assert best['strategy_name'] == 'IncrementalLowReferenceHigh'
+    assert best['rank_score']['score_basis'] == 'reference'
+    assert best['rank_score']['promotion_score'] == 13500.0
+    assert best['rank_score']['incremental_promotion_score'] == 2500.0
+    assert best['rank_score']['reference_promotion_score'] == 13500.0
+    assert ranked[0]['rank_score']['score_basis'] == 'reference'
+
+
 def test_rank_candidate_results_penalty_does_not_reward_negative_scores():
     config = ResearchLoopConfig(
         run_candidate=False,
@@ -928,6 +997,84 @@ def test_rank_candidate_results_normalizes_non_finite_scores():
     assert ranked[0]['rank_score']['trade_count_retention'] == 0.0
     assert ranked[0]['rank_score']['date_concentration'] == float('inf')
     assert ranked[0]['rank_score']['symbol_concentration'] == float('inf')
+
+
+def test_execute_candidate_spec_adds_reference_comparison(monkeypatch, tmp_path):
+    reference_csv = tmp_path / 'wide.csv'
+    baseline_csv = tmp_path / 'cand003.csv'
+    candidate_csv = tmp_path / 'cand005.csv'
+    reference_csv.write_text('x', encoding='utf-8')
+    baseline_csv.write_text('x', encoding='utf-8')
+    candidate_csv.write_text('x', encoding='utf-8')
+    config = ResearchLoopConfig(
+        name='WideV1IterationV2',
+        base_buy_strategy='Base',
+        sell_strategy='Sell',
+        run_candidates=True,
+        score_reference_csv=str(reference_csv),
+    )
+
+    class Controller:
+        def run(self, payload):
+            return {'status': 'ok', 'csv_path': str(candidate_csv)}
+
+    monkeypatch.setattr(
+        research_loop,
+        '_prepare_candidate_strategy',
+        lambda config, expressions, strategy_name=None: {
+            'status': 'ok',
+            'strategy_result': {},
+            'generated_strategy': {},
+        },
+    )
+    monkeypatch.setattr(
+        research_loop,
+        '_trade_frame_for_compare',
+        lambda path: f'frame:{path}',
+    )
+    comparisons = []
+
+    def fake_compare(left, right):
+        comparisons.append((left, right))
+        return {
+            'candidate_summary': {
+                'trade_count': 1,
+                'date_concentration': 0.1,
+                'symbol_concentration': 0.1,
+            },
+            'baseline_summary': {'trade_count': 1},
+            'excluded_summary': {'avg_return': -1.0},
+            'counts': {'candidate': 1},
+            'trade_count_retention': 1.0,
+            'trade_count_expansion': 0.0,
+        }
+
+    monkeypatch.setattr(research_loop, 'compare_trade_sets', fake_compare)
+    monkeypatch.setattr(
+        research_loop,
+        'evaluate_research_candidate',
+        lambda comparison: {'status': 'ok', 'passed': True, 'score': 10.0, 'reasons': []},
+    )
+
+    result = research_loop._execute_candidate_spec(
+        config,
+        {
+            'index': 1,
+            'strategy_name': 'WideV1__cand001',
+            'expression': 'A',
+            'expressions': ['A'],
+        },
+        Controller(),
+        str(baseline_csv),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['reference_comparison']['trade_count_retention'] == 1.0
+    assert result['reference_promotion']['score'] == 10.0
+    assert comparisons == [
+        (f'frame:{baseline_csv}', f'frame:{candidate_csv}'),
+        (f'frame:{reference_csv}', f'frame:{candidate_csv}'),
+    ]
 
 
 def test_iteration_cleanup_skips_candidate_not_created(monkeypatch):
