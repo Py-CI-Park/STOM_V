@@ -185,6 +185,7 @@ def create_subcommand_parser():
     disc_research.add_argument('--keep-failed-candidate', action='store_true', default=False)
     disc_research.add_argument('--iteration-v2-mode', choices=['best_feature_mix'], default='')
     disc_research.add_argument('--iteration-v2-best-candidate', default='')
+    disc_research.add_argument('--iteration-v2-best-expression', default='')
     disc_research.add_argument('--iteration-v2-primary-feature', default='B_시가총액')
     disc_research.add_argument('--iteration-v2-secondary-features', default='')
     disc_research.add_argument(
@@ -800,6 +801,7 @@ def _handle_discovery(parsed):
             'keep_failed_candidate': parsed.keep_failed_candidate,
             'iteration_v2_mode': parsed.iteration_v2_mode,
             'iteration_v2_best_candidate': parsed.iteration_v2_best_candidate,
+            'iteration_v2_best_expression': parsed.iteration_v2_best_expression,
             'iteration_v2_primary_feature': parsed.iteration_v2_primary_feature,
             'iteration_v2_secondary_features': parsed.iteration_v2_secondary_features,
             'iteration_v2_include_secondary_only': parsed.iteration_v2_include_secondary_only,

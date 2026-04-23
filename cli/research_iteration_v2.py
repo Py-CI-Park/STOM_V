@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections import Counter
 from copy import deepcopy
+import re
 
 from cli.condition_generator import candidate_to_expression
 
@@ -28,6 +29,55 @@ def candidate_signature(candidate: dict) -> tuple:
         candidate.get('upper_bound'),
         candidate.get('threshold'),
     )
+
+
+def _parse_number(value: str) -> float:
+    return float(value.replace('_', '').replace(',', ''))
+
+
+def _runtime_feature(feature: str) -> str:
+    return feature[2:] if feature.startswith('B_') else feature
+
+
+def candidate_from_expression(expression: str, feature: str) -> dict:
+    runtime_feature = re.escape(_runtime_feature(feature))
+    number = r'[-+]?(?:\d[\d_,]*)(?:\.\d+)?'
+
+    between_match = re.fullmatch(
+        rf'\s*({number})\s*<=\s*{runtime_feature}\s*<\s*({number})\s*',
+        expression,
+    )
+    if between_match:
+        return {
+            'feature': feature,
+            'operator': 'between',
+            'lower_bound': _parse_number(between_match.group(1)),
+            'upper_bound': _parse_number(between_match.group(2)),
+            'threshold': None,
+            'score': 0.0,
+            'combined_score': 0.0,
+            'source': 'best_context',
+            'expression': expression,
+        }
+
+    threshold_match = re.fullmatch(
+        rf'\s*{runtime_feature}\s*(<=|<|>=|>)\s*({number})\s*',
+        expression,
+    )
+    if threshold_match:
+        return {
+            'feature': feature,
+            'operator': threshold_match.group(1),
+            'threshold': _parse_number(threshold_match.group(2)),
+            'lower_bound': None,
+            'upper_bound': None,
+            'score': 0.0,
+            'combined_score': 0.0,
+            'source': 'best_context',
+            'expression': expression,
+        }
+
+    raise ValueError(f'unsupported best expression: {expression}')
 
 
 def filter_duplicate_v2_candidates(candidates: list[dict], retention_tolerance: float = 0.02) -> list[dict]:
@@ -123,7 +173,7 @@ def build_v2_candidate_pool(
     for candidate in primary_candidates:
         candidates.append(_copy_with_type(candidate, 'primary_variant'))
 
-    primary_seed = primary_candidates[0] if primary_candidates else (best_context.get('source_candidate') or {})
+    primary_seed = best_context.get('source_candidate') or (primary_candidates[0] if primary_candidates else {})
     for secondary in secondary_candidates:
         if primary_seed:
             candidates.append(_combo_candidate(primary_seed, secondary))

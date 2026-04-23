@@ -234,6 +234,7 @@ def test_research_loop_config_has_iteration_v2_fields():
 
     assert 'iteration_v2_mode' in names
     assert 'iteration_v2_best_candidate' in names
+    assert 'iteration_v2_best_expression' in names
     assert 'iteration_v2_primary_feature' in names
     assert 'iteration_v2_secondary_features' in names
     assert 'iteration_v2_include_secondary_only' in names
@@ -247,6 +248,7 @@ def test_iteration_plan_includes_v2_settings():
             run_candidates=True,
             iteration_v2_mode='best_feature_mix',
             iteration_v2_best_candidate='cand003',
+            iteration_v2_best_expression='66.999 <= 시가총액 < 2_580',
             iteration_v2_primary_feature='B_시가총액',
             iteration_v2_secondary_features='B_체결강도,B_등락율',
         )
@@ -254,6 +256,7 @@ def test_iteration_plan_includes_v2_settings():
 
     assert plan['iteration_v2_mode'] == 'best_feature_mix'
     assert plan['iteration_v2_best_candidate'] == 'cand003'
+    assert plan['iteration_v2_best_expression'] == '66.999 <= 시가총액 < 2_580'
     assert plan['iteration_v2_primary_feature'] == 'B_시가총액'
     assert plan['iteration_v2_secondary_features'] == ['B_체결강도', 'B_등락율']
 
@@ -1184,6 +1187,7 @@ def test_run_research_iteration_applies_v2_candidate_pool(monkeypatch, tmp_path)
             candidate_count=2,
             iteration_v2_mode='best_feature_mix',
             iteration_v2_best_candidate='cand003',
+            iteration_v2_best_expression='66.999 <= 시가총액 < 2_580',
             iteration_v2_primary_feature='B_시가총액',
             iteration_v2_secondary_features='B_체결강도,B_등락율',
         ),

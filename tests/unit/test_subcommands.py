@@ -282,6 +282,7 @@ def test_discovery_research_parser_accepts_iteration_v2_options():
         '--run-candidates',
         '--iteration-v2-mode', 'best_feature_mix',
         '--iteration-v2-best-candidate', 'WideV1RetentionCand5_20260422__cand003',
+        '--iteration-v2-best-expression', '66.999 <= 시가총액 < 2_580',
         '--iteration-v2-primary-feature', 'B_시가총액',
         '--iteration-v2-secondary-features', 'B_체결강도,B_등락율',
         '--no-iteration-v2-secondary-only',
@@ -291,6 +292,7 @@ def test_discovery_research_parser_accepts_iteration_v2_options():
 
     assert args.iteration_v2_mode == 'best_feature_mix'
     assert args.iteration_v2_best_candidate == 'WideV1RetentionCand5_20260422__cand003'
+    assert args.iteration_v2_best_expression == '66.999 <= 시가총액 < 2_580'
     assert args.iteration_v2_primary_feature == 'B_시가총액'
     assert args.iteration_v2_secondary_features == 'B_체결강도,B_등락율'
     assert args.iteration_v2_include_secondary_only is False
@@ -311,6 +313,7 @@ def test_discovery_research_handler_passes_iteration_v2_options():
             '--run-candidates',
             '--iteration-v2-mode', 'best_feature_mix',
             '--iteration-v2-best-candidate', 'cand003',
+            '--iteration-v2-best-expression', '66.999 <= 시가총액 < 2_580',
             '--iteration-v2-primary-feature', 'B_시가총액',
             '--iteration-v2-secondary-features', 'B_체결강도,B_등락율',
         ])
@@ -319,6 +322,7 @@ def test_discovery_research_handler_passes_iteration_v2_options():
     assert result == 0
     assert payload['iteration_v2_mode'] == 'best_feature_mix'
     assert payload['iteration_v2_best_candidate'] == 'cand003'
+    assert payload['iteration_v2_best_expression'] == '66.999 <= 시가총액 < 2_580'
     assert payload['iteration_v2_primary_feature'] == 'B_시가총액'
     assert payload['iteration_v2_secondary_features'] == 'B_체결강도,B_등락율'
 

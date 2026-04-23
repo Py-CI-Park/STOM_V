@@ -9,7 +9,7 @@ from pathlib import Path
 from cli.analyzer import analyze_result_csv
 from cli.condition_generator import generate_condition_expressions_from_analysis
 from cli.paths import DB_STRATEGY
-from cli.research_iteration_v2 import build_v2_candidate_pool
+from cli.research_iteration_v2 import build_v2_candidate_pool, candidate_from_expression
 from cli.research_compare import (
     INSTRUMENT_COLUMNS,
     OPTIONAL_KEY_COLUMNS,
@@ -86,6 +86,7 @@ class ResearchLoopConfig:
     candidate_pool_multiplier: int = 3
     iteration_v2_mode: str = ''
     iteration_v2_best_candidate: str = ''
+    iteration_v2_best_expression: str = ''
     iteration_v2_primary_feature: str = 'B_시가총액'
     iteration_v2_secondary_features: str = ''
     iteration_v2_include_secondary_only: bool = True
@@ -161,6 +162,7 @@ def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
         'keep_failed_candidate': config.keep_failed_candidate,
         'iteration_v2_mode': config.iteration_v2_mode,
         'iteration_v2_best_candidate': config.iteration_v2_best_candidate,
+        'iteration_v2_best_expression': config.iteration_v2_best_expression,
         'iteration_v2_primary_feature': config.iteration_v2_primary_feature,
         'iteration_v2_secondary_features': _split_csv_values(config.iteration_v2_secondary_features),
         'iteration_v2_include_secondary_only': config.iteration_v2_include_secondary_only,
@@ -328,6 +330,11 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
         return _error(
             'invalid_iteration_v2_max_secondary_only',
             'iteration_v2_max_secondary_only must be greater than or equal to 0',
+        )
+    if config.run_candidates and config.iteration_v2_mode and not config.iteration_v2_best_expression:
+        return _error(
+            'missing_iteration_v2_best_expression',
+            'iteration_v2_best_expression is required when iteration_v2_mode is set',
         )
     if config.run_candidate and config.run_candidates:
         return _error(
@@ -1101,9 +1108,17 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         expression_candidates.append(source_candidate)
     iteration_v2 = None
     if config.iteration_v2_mode == 'best_feature_mix':
+        best_context = {
+            'strategy_name': config.iteration_v2_best_candidate,
+            'expression': config.iteration_v2_best_expression,
+            'source_candidate': candidate_from_expression(
+                config.iteration_v2_best_expression,
+                feature=config.iteration_v2_primary_feature,
+            ),
+        }
         iteration_v2 = build_v2_candidate_pool(
             expression_candidates,
-            best_context={'strategy_name': config.iteration_v2_best_candidate},
+            best_context=best_context,
             primary_feature=config.iteration_v2_primary_feature,
             secondary_features=_split_csv_values(config.iteration_v2_secondary_features),
             include_secondary_only=config.iteration_v2_include_secondary_only,

@@ -1,5 +1,6 @@
 from cli.research_iteration_v2 import (
     build_v2_candidate_pool,
+    candidate_from_expression,
     candidate_signature,
     filter_duplicate_v2_candidates,
 )
@@ -105,6 +106,48 @@ def test_build_v2_candidate_pool_prefers_primary_variants_and_combinations():
     assert result['type_counts']['primary_variant'] >= 1
     assert result['type_counts']['primary_secondary_combo'] >= 1
     assert result['type_counts']['secondary_only'] == 1
+
+
+def test_candidate_from_expression_parses_best_between_expression():
+    candidate = candidate_from_expression(
+        '66.999 <= 시가총액 < 2_580',
+        feature='B_시가총액',
+    )
+
+    assert candidate['feature'] == 'B_시가총액'
+    assert candidate['operator'] == 'between'
+    assert candidate['lower_bound'] == 66.999
+    assert candidate['upper_bound'] == 2580.0
+    assert candidate['source'] == 'best_context'
+
+
+def test_build_v2_candidate_pool_uses_best_context_source_as_combo_seed():
+    best_context = {
+        **BEST_CONTEXT,
+        'source_candidate': candidate_from_expression(
+            '66.999 <= 시가총액 < 2_580',
+            feature='B_시가총액',
+        ),
+    }
+    analysis_candidates = [
+        _candidate('B_시가총액', 50.0, 2580.0, score=10.0, retention=0.88),
+        _candidate('B_체결강도', 0.009, 55.94, score=8.0, retention=0.90),
+    ]
+
+    result = build_v2_candidate_pool(
+        analysis_candidates,
+        best_context=best_context,
+        primary_feature='B_시가총액',
+        secondary_features=['B_체결강도'],
+        include_secondary_only=False,
+    )
+
+    combo = [
+        item for item in result['candidates']
+        if item['v2_candidate_type'] == 'primary_secondary_combo'
+    ][0]
+    assert combo['primary_feature'] == 'B_시가총액'
+    assert combo['expression'].startswith('66.999 <= 시가총액 < 2_580 and ')
 
 
 def test_build_v2_candidate_pool_copies_secondary_features():

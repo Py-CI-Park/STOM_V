@@ -803,6 +803,7 @@ In `cli/subcommands.py`, add to `disc_research` parser:
 ```python
     disc_research.add_argument('--iteration-v2-mode', choices=['best_feature_mix'], default='')
     disc_research.add_argument('--iteration-v2-best-candidate', default='')
+    disc_research.add_argument('--iteration-v2-best-expression', default='')
     disc_research.add_argument('--iteration-v2-primary-feature', default='B_시가총액')
     disc_research.add_argument('--iteration-v2-secondary-features', default='')
     disc_research.add_argument('--no-iteration-v2-secondary-only', dest='iteration_v2_include_secondary_only', action='store_false', default=True)
@@ -815,6 +816,7 @@ In the `research_strategy_once` payload, add:
 ```python
             'iteration_v2_mode': parsed.iteration_v2_mode,
             'iteration_v2_best_candidate': parsed.iteration_v2_best_candidate,
+            'iteration_v2_best_expression': parsed.iteration_v2_best_expression,
             'iteration_v2_primary_feature': parsed.iteration_v2_primary_feature,
             'iteration_v2_secondary_features': parsed.iteration_v2_secondary_features,
             'iteration_v2_include_secondary_only': parsed.iteration_v2_include_secondary_only,
@@ -949,6 +951,7 @@ python stom_backtest.py discovery research WideV1IterationV2_20260423 `
   --candidate-pool-multiplier 3 `
   --iteration-v2-mode best_feature_mix `
   --iteration-v2-best-candidate WideV1RetentionCand5_20260422__cand003 `
+  --iteration-v2-best-expression "66.999 <= 시가총액 < 2_580" `
   --iteration-v2-primary-feature B_시가총액 `
   --iteration-v2-secondary-features B_체결강도,B_등락율,B_당일거래대금,B_시분초 `
   | Set-Content -LiteralPath backtest\temp\wide_v1_iteration_loop_v2_result_20260423.json -Encoding UTF8
