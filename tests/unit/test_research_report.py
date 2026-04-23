@@ -255,6 +255,46 @@ def test_render_research_report_markdown_contains_retention_sections():
     assert '| 1 | RetentionResearch__cand001 | 100.0 | 0.3 | 0.75 | 75.0 |' in markdown
 
 
+def test_report_renders_score_baseline_comparability_section():
+    result = {
+        'status': 'ok',
+        'strategy_name': 'WideV1IterationV2',
+        'baseline_csv': 'cand003.csv',
+        'iteration_plan': {'score_reference_csv': 'wide.csv'},
+        'candidates': [{
+            'rank': 1,
+            'strategy_name': 'Cand005',
+            'expression': 'A and B',
+            'status': 'ok',
+            'promotion': {'passed': True, 'score': 2554.7},
+            'reference_promotion': {'passed': True, 'score': 13497.6},
+            'rank_score': {
+                'score_basis': 'reference',
+                'promotion_score': 13497.6,
+                'incremental_promotion_score': 2554.7,
+                'reference_promotion_score': 13497.6,
+                'trade_count': 36096,
+                'trade_count_retention': 0.8817,
+                'retention_penalty': 1.0,
+                'adjusted_score': 13497.6,
+            },
+            'comparison': {'trade_count_retention': 0.9777, 'counts': {'candidate': 36096}},
+            'reference_comparison': {'trade_count_retention': 0.8817, 'counts': {'candidate': 36096}},
+        }],
+        'best_candidate': {'strategy_name': 'Cand005', 'expression': 'A and B'},
+    }
+
+    report = build_research_report(result, strategy_name='WideV1IterationV2')
+    markdown = render_research_report_markdown(report)
+
+    assert '## Score Baseline Comparability' in markdown
+    assert 'score_reference_csv: wide.csv' in markdown
+    assert 'score_basis: reference' in markdown
+    assert 'incremental_promotion_score' in markdown
+    assert 'reference_promotion_score' in markdown
+    assert 'adjusted_score values are directly comparable only when score_reference_csv is identical' in markdown
+
+
 def test_render_research_report_markdown_contains_iteration_v2_section():
     report = build_research_report({
         'status': 'ok',
