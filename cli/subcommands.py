@@ -183,6 +183,18 @@ def create_subcommand_parser():
     disc_research.add_argument('--candidate-timeout', type=int)
     disc_research.add_argument('--candidate-plan-only', action='store_true', default=False)
     disc_research.add_argument('--keep-failed-candidate', action='store_true', default=False)
+    disc_research.add_argument('--iteration-v2-mode', choices=['best_feature_mix'], default='')
+    disc_research.add_argument('--iteration-v2-best-candidate', default='')
+    disc_research.add_argument('--iteration-v2-primary-feature', default='B_시가총액')
+    disc_research.add_argument('--iteration-v2-secondary-features', default='')
+    disc_research.add_argument(
+        '--no-iteration-v2-secondary-only',
+        dest='iteration_v2_include_secondary_only',
+        action='store_false',
+        default=True,
+    )
+    disc_research.add_argument('--iteration-v2-max-secondary-only', type=int, default=1)
+    disc_research.add_argument('--iteration-v2-duplicate-retention-tolerance', type=float, default=0.02)
 
     # discovery promote
     disc_promote = disc_sub.add_parser('promote', help='WFO 통과 전략만 최종 채택')
@@ -786,6 +798,13 @@ def _handle_discovery(parsed):
             'candidate_timeout': parsed.candidate_timeout,
             'candidate_plan_only': parsed.candidate_plan_only,
             'keep_failed_candidate': parsed.keep_failed_candidate,
+            'iteration_v2_mode': parsed.iteration_v2_mode,
+            'iteration_v2_best_candidate': parsed.iteration_v2_best_candidate,
+            'iteration_v2_primary_feature': parsed.iteration_v2_primary_feature,
+            'iteration_v2_secondary_features': parsed.iteration_v2_secondary_features,
+            'iteration_v2_include_secondary_only': parsed.iteration_v2_include_secondary_only,
+            'iteration_v2_max_secondary_only': parsed.iteration_v2_max_secondary_only,
+            'iteration_v2_duplicate_retention_tolerance': parsed.iteration_v2_duplicate_retention_tolerance,
         })
         print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
         return 0 if result.get('status') == 'ok' else 1

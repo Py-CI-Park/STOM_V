@@ -255,6 +255,32 @@ def test_render_research_report_markdown_contains_retention_sections():
     assert '| 1 | RetentionResearch__cand001 | 100.0 | 0.3 | 0.75 | 75.0 |' in markdown
 
 
+def test_render_research_report_markdown_contains_iteration_v2_section():
+    report = build_research_report({
+        'status': 'ok',
+        'strategy_name': 'V2Run',
+        'iteration_v2': {
+            'status': 'ok',
+            'mode': 'best_feature_mix',
+            'primary_feature': 'B_시가총액',
+            'secondary_features': ['B_체결강도', 'B_등락율'],
+            'candidate_count': 3,
+            'type_counts': {
+                'primary_variant': 1,
+                'primary_secondary_combo': 1,
+                'secondary_only': 1,
+            },
+        },
+    }, strategy_name='V2Run')
+
+    markdown = render_research_report_markdown(report)
+
+    assert '## Iteration Loop v2 Candidate Generation' in markdown
+    assert 'best_feature_mix' in markdown
+    assert 'B_시가총액' in markdown
+    assert 'primary_secondary_combo' in markdown
+
+
 def test_render_research_report_markdown_contains_trade_set_sections():
     markdown = render_research_report_markdown(build_research_report(_result(), strategy_name='AutoResearch'))
     assert '# 조건식 연구 리포트: AutoResearch' in markdown

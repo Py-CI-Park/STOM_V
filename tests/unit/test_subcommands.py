@@ -269,6 +269,60 @@ def test_discovery_research_handler_passes_retention_options():
     assert payload['candidate_pool_multiplier'] == 4
 
 
+def test_discovery_research_parser_accepts_iteration_v2_options():
+    parser = create_subcommand_parser()
+
+    args = parser.parse_args([
+        'discovery', 'research', 'V2Run',
+        '--input', 'baseline.csv',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20251231',
+        '--run-candidates',
+        '--iteration-v2-mode', 'best_feature_mix',
+        '--iteration-v2-best-candidate', 'WideV1RetentionCand5_20260422__cand003',
+        '--iteration-v2-primary-feature', 'B_시가총액',
+        '--iteration-v2-secondary-features', 'B_체결강도,B_등락율',
+        '--no-iteration-v2-secondary-only',
+        '--iteration-v2-max-secondary-only', '0',
+        '--iteration-v2-duplicate-retention-tolerance', '0.03',
+    ])
+
+    assert args.iteration_v2_mode == 'best_feature_mix'
+    assert args.iteration_v2_best_candidate == 'WideV1RetentionCand5_20260422__cand003'
+    assert args.iteration_v2_primary_feature == 'B_시가총액'
+    assert args.iteration_v2_secondary_features == 'B_체결강도,B_등락율'
+    assert args.iteration_v2_include_secondary_only is False
+    assert args.iteration_v2_max_secondary_only == 0
+    assert args.iteration_v2_duplicate_retention_tolerance == 0.03
+
+
+def test_discovery_research_handler_passes_iteration_v2_options():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok'}
+        result = handle_subcommand([
+            'discovery', 'research', 'V2Run',
+            '--input', 'baseline.csv',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20251231',
+            '--run-candidates',
+            '--iteration-v2-mode', 'best_feature_mix',
+            '--iteration-v2-best-candidate', 'cand003',
+            '--iteration-v2-primary-feature', 'B_시가총액',
+            '--iteration-v2-secondary-features', 'B_체결강도,B_등락율',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert result == 0
+    assert payload['iteration_v2_mode'] == 'best_feature_mix'
+    assert payload['iteration_v2_best_candidate'] == 'cand003'
+    assert payload['iteration_v2_primary_feature'] == 'B_시가총액'
+    assert payload['iteration_v2_secondary_features'] == 'B_체결강도,B_등락율'
+
+
 def test_discovery_research_handler_returns_nonzero_on_error_status():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'error'}
