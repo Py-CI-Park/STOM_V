@@ -40,6 +40,12 @@ def build_research_report(result: dict, strategy_name: str | None = None) -> dic
         'excluded_summary': comparison.get('excluded_summary', {}),
         'new_summary': comparison.get('new_summary', {}),
         'promotion': result.get('promotion'),
+        'score_reference_csv': (
+            (result.get('iteration_plan') or {}).get('score_reference_csv')
+            or result.get('score_reference_csv')
+        ),
+        'reference_comparison': result.get('reference_comparison'),
+        'reference_promotion': result.get('reference_promotion'),
         'candidate_plan': result.get('candidate_plan'),
         'cleanup': result.get('cleanup'),
         'iteration_plan': result.get('iteration_plan'),
@@ -189,6 +195,71 @@ def _append_iteration_v2_section(lines: list[str], report: dict) -> None:
             lines.append(f"  - {key}: {value}")
 
 
+def _append_score_baseline_section(lines: list[str], report: dict) -> None:
+    score_reference_csv = report.get('score_reference_csv')
+    candidates = report.get('candidates') or []
+    has_reference = bool(score_reference_csv) or any(
+        candidate.get('reference_promotion')
+        or (candidate.get('rank_score') or {}).get('score_basis') == 'reference'
+        for candidate in candidates
+    )
+    if not has_reference:
+        return
+
+    lines.extend(['', '## Score Baseline Comparability'])
+    lines.append(f"- current_baseline_csv: {report.get('baseline_csv')}")
+    lines.append(f"- score_reference_csv: {score_reference_csv}")
+    best_candidate = report.get('best_candidate') or {}
+    best_rank_score = best_candidate.get('rank_score') or {}
+    if not best_rank_score and candidates:
+        top_candidate = next(
+            (candidate for candidate in candidates if candidate.get('rank') == 1),
+            candidates[0],
+        )
+        best_rank_score = (top_candidate.get('rank_score') or {})
+    if best_rank_score:
+        lines.append(f"- score_basis: {best_rank_score.get('score_basis', 'incremental')}")
+        if 'incremental_promotion_score' in best_rank_score:
+            lines.append(
+                f"- incremental_promotion_score: {best_rank_score.get('incremental_promotion_score')}"
+            )
+        if 'reference_promotion_score' in best_rank_score:
+            lines.append(
+                f"- reference_promotion_score: {best_rank_score.get('reference_promotion_score')}"
+            )
+    lines.append(
+        "- warning: adjusted_score values are directly comparable only when "
+        "score_reference_csv is identical"
+    )
+    lines.extend([
+        '',
+        '| rank | strategy | score_basis | incremental_promotion_score | reference_promotion_score | adjusted_score | reference_retention |',
+        '| --- | --- | --- | --- | --- | --- | --- |',
+    ])
+    if candidates:
+        for candidate in candidates:
+            rank_score = candidate.get('rank_score') or {}
+            reference_comparison = candidate.get('reference_comparison') or {}
+            row = [
+                candidate.get('rank'),
+                candidate.get('strategy_name'),
+                rank_score.get('score_basis', 'incremental'),
+                rank_score.get(
+                    'incremental_promotion_score',
+                    (candidate.get('promotion') or {}).get('score'),
+                ),
+                rank_score.get(
+                    'reference_promotion_score',
+                    (candidate.get('reference_promotion') or {}).get('score'),
+                ),
+                rank_score.get('adjusted_score', rank_score.get('promotion_score')),
+                reference_comparison.get('trade_count_retention'),
+            ]
+            lines.append('| ' + ' | '.join(_format_markdown_value(value) for value in row) + ' |')
+    else:
+        lines.append('|  |  |  |  |  |  |  |')
+
+
 def _append_candidate_iteration_sections(lines: list[str], report: dict) -> None:
     iteration_plan = report.get('iteration_plan') or {}
     retention_selection = report.get('retention_selection') or {}
@@ -220,6 +291,8 @@ def _append_candidate_iteration_sections(lines: list[str], report: dict) -> None
     if best_candidate:
         lines.append(f"- best_candidate: {best_candidate.get('strategy_name')}")
         lines.append(f"- best_expression: `{best_candidate.get('expression')}`")
+
+    _append_score_baseline_section(lines, report)
 
     lines.extend([
         '',

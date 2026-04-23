@@ -153,6 +153,7 @@ def create_subcommand_parser():
     disc_research = disc_sub.add_parser('research', help='run one discovery research iteration')
     disc_research.add_argument('name', help='strategy name to create')
     disc_research.add_argument('--input', '-i', dest='input_file', help='baseline CSV file')
+    disc_research.add_argument('--score-reference-csv', help='root baseline CSV for cumulative score comparison')
     disc_research.add_argument('--base-buy-strategy', required=True, help='existing buy strategy name')
     disc_research.add_argument('--sell', required=True, help='existing sell strategy name')
     disc_research.add_argument('--start', type=int, required=True, help='start date YYYYMMDD')
@@ -770,6 +771,7 @@ def _handle_discovery(parsed):
         result = controller.research_strategy_once({
             'name': parsed.name,
             'baseline_csv': getattr(parsed, 'input_file', None),
+            'score_reference_csv': parsed.score_reference_csv,
             'base_buy_strategy': parsed.base_buy_strategy,
             'sell_strategy': parsed.sell,
             'start_date': parsed.start,
