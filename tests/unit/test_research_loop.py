@@ -261,6 +261,49 @@ def test_iteration_plan_includes_v2_settings():
     assert plan['iteration_v2_secondary_features'] == ['B_체결강도', 'B_등락율']
 
 
+def test_validate_research_iteration_accepts_best_feature_mix_v3(tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    _write_trade_csv(baseline)
+
+    result = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='V3Run',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            iteration_v2_mode='best_feature_mix_v3',
+            iteration_v2_best_expression=(
+                '66.999 <= 시가총액 < 2_580 and '
+                '1805.7 <= 당일거래대금 < 3654.4'
+            ),
+        )
+    )
+
+    assert result['status'] == 'ok'
+
+
+def test_build_iteration_plan_includes_best_feature_mix_v3():
+    plan = research_loop._build_iteration_plan(
+        ResearchLoopConfig(
+            name='V3Run',
+            run_candidate=False,
+            run_candidates=True,
+            iteration_v2_mode='best_feature_mix_v3',
+            iteration_v2_best_candidate='WideV1IterationV2_20260423__cand005',
+            iteration_v2_best_expression=(
+                '66.999 <= 시가총액 < 2_580 and '
+                '1805.7 <= 당일거래대금 < 3654.4'
+            ),
+            iteration_v2_primary_feature='B_시가총액',
+            iteration_v2_secondary_features='B_체결강도,B_등락율,B_당일거래대금',
+        )
+    )
+
+    assert plan['iteration_v2_mode'] == 'best_feature_mix_v3'
+    assert plan['iteration_v2_best_candidate'] == 'WideV1IterationV2_20260423__cand005'
+    assert plan['iteration_v2_secondary_features'] == ['B_체결강도', 'B_등락율', 'B_당일거래대금']
+
+
 def test_build_candidate_specs_uses_one_expression_per_candidate():
     result = {
         'expressions': ['泥닿껐媛뺣룄 < 90', '?쒓?珥앹븸 <= 3000', 'ignored > 1'],
@@ -1253,6 +1296,98 @@ def test_run_research_iteration_rejects_insufficient_expressions(monkeypatch, tm
     assert result['requested_candidate_count'] == 3
     assert result['expression_count'] == 1
     assert result['iteration_plan']['candidate_count'] == 3
+
+
+def test_run_research_iteration_applies_v3_candidate_pool(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    baseline.write_text(
+        'B_시가총액,B_체결강도,B_당일거래대금,수익률,종목명,매수시간,매도시간,매수가,매도가,수익금\n'
+        '100,10,2000,-1,A,20250101090000,20250101090100,100,99,-1\n'
+        '200,20,3000,1,B,20250101090200,20250101090300,100,101,1\n',
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'ok'})
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': [
+                '0.039 <= 체결강도 < 54.89',
+                '1500 <= 당일거래대금 < 3654.4',
+            ],
+            'selected_candidates': [
+                {
+                    'feature': 'B_체결강도',
+                    'operator': 'between',
+                    'lower_bound': 0.039,
+                    'upper_bound': 54.89,
+                    'score': 8.0,
+                    'combined_score': 8.0,
+                    'retention_estimate': {'estimated_retention': 0.9},
+                    'retention_filter_passed': True,
+                    'retention_fallback_used': False,
+                },
+                {
+                    'feature': 'B_당일거래대금',
+                    'operator': 'between',
+                    'lower_bound': 1500.0,
+                    'upper_bound': 3654.4,
+                    'score': 6.0,
+                    'combined_score': 6.0,
+                    'retention_estimate': {'estimated_retention': 0.9},
+                    'retention_filter_passed': True,
+                    'retention_fallback_used': False,
+                },
+            ],
+        },
+    )
+    executed_specs = []
+    monkeypatch.setattr(
+        research_loop,
+        '_execute_candidate_spec',
+        lambda config, spec, controller, baseline_csv: executed_specs.append(spec) or {
+            'status': 'ok',
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'comparison': {'trade_count_retention': 0.9},
+            'promotion': {'status': 'ok', 'passed': True, 'score': 1.0},
+            'rank_score': {
+                'promotion_passed': True,
+                'promotion_score': 1.0,
+                'trade_count': 2.0,
+                'trade_count_retention': 0.9,
+                'date_concentration': 0.0,
+                'symbol_concentration': 0.0,
+            },
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V3Run',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix_v3',
+            iteration_v2_best_candidate='WideV1IterationV2_20260423__cand005',
+            iteration_v2_best_expression=(
+                '66.999 <= 시가총액 < 2_580 and '
+                '1805.7 <= 당일거래대금 < 3654.4'
+            ),
+            iteration_v2_primary_feature='B_시가총액',
+            iteration_v2_secondary_features='B_체결강도,B_당일거래대금',
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['iteration_v3']['status'] == 'ok'
+    assert result['iteration_v3']['type_counts']['v3_control_keep_best'] == 1
+    assert executed_specs
+    assert any('1805.7 <= 당일거래대금 < 3654.4 and' in spec['expression'] for spec in executed_specs)
+    assert all(spec['expression'] != result['iteration_v3']['control_candidate']['expression'] for spec in executed_specs)
 
 
 def test_run_research_iteration_applies_v2_candidate_pool(monkeypatch, tmp_path):
