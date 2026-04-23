@@ -110,7 +110,7 @@ def test_build_v3_candidate_pool_generates_tighten_repair_and_replace_families()
     )
 
 
-def test_build_v3_candidate_pool_filters_low_retention_when_retention_is_known():
+def test_build_v3_candidate_pool_keeps_low_retention_candidates_for_post_build_retention():
     analysis_candidates = [
         _candidate('B_체결강도', 0.039, 54.89, retention=0.2),
         _candidate('B_등락율', 15.894, 25.0, retention=0.8),
@@ -126,11 +126,11 @@ def test_build_v3_candidate_pool_filters_low_retention_when_retention_is_known()
     )
 
     expressions = [item['expression'] for item in result['candidates']]
-    assert all('체결강도' not in expression for expression in expressions)
+    assert any('체결강도' in expression for expression in expressions)
     assert any('등락율' in expression for expression in expressions)
 
 
-def test_build_v3_candidate_pool_filters_low_retention_by_default():
+def test_build_v3_candidate_pool_keeps_low_retention_candidates_by_default():
     analysis_candidates = [
         _candidate('B_체결강도', 0.039, 54.89, retention=0.2),
         _candidate('B_등락율', 15.894, 25.0, retention=0.8),
@@ -145,7 +145,7 @@ def test_build_v3_candidate_pool_filters_low_retention_by_default():
     )
 
     expressions = [item['expression'] for item in result['candidates']]
-    assert all('체결강도' not in expression for expression in expressions)
+    assert any('체결강도' in expression for expression in expressions)
     assert any('등락율' in expression for expression in expressions)
 
 

@@ -1412,6 +1412,93 @@ def test_run_research_iteration_applies_v3_candidate_pool(monkeypatch, tmp_path)
     assert all(spec['expression'] != result['iteration_v3']['control_candidate']['expression'] for spec in executed_specs)
 
 
+def test_run_research_iteration_populates_v3_control_reference_score(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    reference_csv = tmp_path / 'reference.csv'
+    baseline.write_text(
+        'B_시가총액,B_체결강도,B_당일거래대금,수익률,종목명,매수시간,매도시간,매수가,매도가,수익금\n'
+        '100,10,2000,-1,A,20250101090000,20250101090100,100,99,-1\n'
+        '200,20,3000,1,B,20250101090200,20250101090300,100,101,1\n',
+        encoding='utf-8',
+    )
+    reference_csv.write_text('reference\n', encoding='utf-8')
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'ok'})
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': ['0.039 <= 체결강도 < 54.89'],
+            'selected_candidates': [
+                {
+                    'feature': 'B_체결강도',
+                    'operator': 'between',
+                    'lower_bound': 0.039,
+                    'upper_bound': 54.89,
+                    'score': 8.0,
+                    'combined_score': 8.0,
+                    'retention_estimate': {'estimated_retention': 0.2},
+                    'retention_filter_passed': False,
+                    'retention_fallback_used': False,
+                },
+            ],
+        },
+    )
+    called_with = []
+    monkeypatch.setattr(
+        research_loop,
+        '_build_reference_evaluation',
+        lambda config, candidate_csv: called_with.append(candidate_csv) or {
+            'score_reference_csv': str(reference_csv),
+            'reference_comparison': {'trade_count_retention': 1.0},
+            'reference_promotion': {'status': 'ok', 'passed': True, 'score': 123.4},
+        },
+    )
+    monkeypatch.setattr(
+        research_loop,
+        '_execute_candidate_spec',
+        lambda config, spec, controller, baseline_csv: {
+            'status': 'ok',
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'comparison': {'trade_count_retention': 0.9},
+            'promotion': {'status': 'ok', 'passed': True, 'score': 1.0},
+            'rank_score': {
+                'promotion_passed': True,
+                'promotion_score': 1.0,
+                'trade_count': 2.0,
+                'trade_count_retention': 0.9,
+                'date_concentration': 0.0,
+                'symbol_concentration': 0.0,
+            },
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V3ControlScore',
+            baseline_csv=str(baseline),
+            score_reference_csv=str(reference_csv),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+            iteration_v2_mode='best_feature_mix_v3',
+            iteration_v2_best_candidate='WideV1IterationV2_20260423__cand005',
+            iteration_v2_best_expression=(
+                '66.999 <= 시가총액 < 2_580 and '
+                '1805.7 <= 당일거래대금 < 3654.4'
+            ),
+            iteration_v2_primary_feature='B_시가총액',
+            iteration_v2_secondary_features='B_체결강도',
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'ok'
+    assert called_with == [str(baseline)]
+    assert result['iteration_v3']['control_candidate']['reference_adjusted_score'] == 123.4
+
+
 def test_run_research_iteration_applies_v2_candidate_pool(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     baseline.write_text(

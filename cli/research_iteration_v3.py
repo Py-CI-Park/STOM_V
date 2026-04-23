@@ -8,7 +8,6 @@ import re
 
 from cli.condition_generator import candidate_to_expression
 from cli.research_iteration_v2 import (
-    _retention_value,
     candidate_from_expression,
     candidate_signature,
     filter_duplicate_v2_candidates,
@@ -55,13 +54,6 @@ def _candidate_expression(candidate: dict) -> str:
     if candidate.get('source') != 'best_context' and candidate.get('expression'):
         return candidate['expression']
     return candidate_to_expression(candidate, runtime_context=True)
-
-
-def _passes_min_retention(candidate: dict, min_estimated_retention: float | None) -> bool:
-    if min_estimated_retention is None:
-        return True
-    retention = _retention_value(candidate)
-    return retention is None or retention >= min_estimated_retention
 
 
 def _combo_candidate(
@@ -170,10 +162,7 @@ def build_v3_candidate_pool(
     secondary_features = list(secondary_features or [])
     secondary_feature_set = set(secondary_features) - {primary_feature, trade_amount_feature}
 
-    eligible_candidates = [
-        deepcopy(candidate) for candidate in analysis_candidates
-        if _passes_min_retention(candidate, min_estimated_retention)
-    ]
+    eligible_candidates = [deepcopy(candidate) for candidate in analysis_candidates]
     secondary_candidates = [
         candidate for candidate in eligible_candidates
         if candidate.get('feature') in secondary_feature_set
