@@ -2,7 +2,7 @@
 
 ## 목적
 
-기존 best 후보 cand003과 v2 best 후보 cand005의 거래 단위 차이를 분석해 v2 score 하락 원인을 설명했다.
+cand003과 v2 cand005의 거래 단위 차이를 분석해 v2 score 하락 원인을 설명하려 했다.
 
 ## 결과 요약
 
@@ -10,29 +10,31 @@
 common=32575
 left_only=4343
 right_only=3521
+common_avg_return_delta=0.0
+common_total_profit_delta=0.0
 left_only.total_profit=-635094682.0
 right_only.total_profit=-464785861.0
-decision=PASS
+decision=HOLD
 ```
 
 ## 판정
 
 ```text
-decision=PASS
-reason=v2 introduced or retained loss-heavy right-only trades, explaining score decline
-next_command=$brainstorming Wide v1 v3 후보 생성 규칙 설계
+decision=HOLD
+reason=row-level sets were built but score decline cause is not conclusive
+next_command=$brainstorming Wide v1 row-level key 정합성 보강 설계
 ```
 
 ## 해석
 
 ```text
-v2 cand005는 cand003 대비 일부 손실 거래를 제거했지만,
-v2에만 남은 right_only 거래도 손실 구간이다.
-따라서 v2의 score 하락은 실행 실패가 아니라 거래 집합 변화의 품질 문제로 해석한다.
+row-level set 분리는 성공했다.
+하지만 common 거래 성능 차이는 0이고, right_only 손실이 left_only보다 더 나쁘다는 증거도 부족하다.
+따라서 현재 row-level 요약만으로는 v2 score 하락 원인을 충분히 설명하지 못한다.
 ```
 
 ## 다음 단계
 
 ```text
-$brainstorming Wide v1 v3 후보 생성 규칙 설계
+$brainstorming Wide v1 row-level key 정합성 보강 설계
 ```

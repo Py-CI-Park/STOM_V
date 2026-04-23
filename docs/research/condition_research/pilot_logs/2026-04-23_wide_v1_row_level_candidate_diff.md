@@ -22,7 +22,7 @@
 [손익 요약 및 score 하락 원인 해석]
         |
         v
-[PASS]
+[HOLD]
 ```
 
 ## 입력
@@ -56,6 +56,8 @@ right.total_profit=-4665122733.0
 common.trade_count=32575
 common.avg_return=-0.6435475057559479
 common.total_profit=-4200336872.0
+common_avg_return_delta=0.0
+common_total_profit_delta=0.0
 left_only.trade_count=4343
 left_only.avg_return=-0.7292148284595902
 left_only.total_profit=-635094682.0
@@ -68,20 +70,22 @@ right_only.total_profit=-464785861.0
 
 - cand003에만 있던 거래인 `left_only`는 4,343건이고 총손익은 `-635,094,682원`이다.
 - v2 cand005에만 있던 거래인 `right_only`는 3,521건이고 총손익은 `-464,785,861원`이다.
-- v2 cand005는 cand003 대비 일부 손실 거래를 제거했지만, v2에만 남은 right_only 거래도 손실 구간이다.
-- 즉 v2 조합 조건은 실행 가능하지만, cand003 대비 손실 제거 효율이 충분하지 않았고 adjusted_score 하락을 설명할 수 있다.
-- cand003에서 제거된 거래가 전부 나쁜 거래는 아니며, v2가 추가로 남긴 거래도 손실 구간이므로 candidate_count=10으로 바로 확장하지 않는다.
+- 양쪽 공통 거래의 평균수익률과 총손익 delta는 `0.0`으로, 공통 거래 자체의 성능 악화는 확인되지 않았다.
+- right_only도 손실 구간이지만 left_only보다 더 나쁜 손실 구간이라고 보기 어렵다.
+- 따라서 row-level set 분리는 성공했지만, 이 요약만으로 v2 score 하락 원인을 충분히 설명하지 못한다.
+- 다음 단계는 key 정합성 보강 또는 더 세밀한 row-level drill-down이 필요하다.
 
 ## decision
 
 ```text
-decision=PASS
-reason=v2 introduced or retained loss-heavy right-only trades, explaining score decline
-next_command=$brainstorming Wide v1 v3 후보 생성 규칙 설계
+decision=HOLD
+reason=row-level sets were built but score decline cause is not conclusive
+next_command=$brainstorming Wide v1 row-level key 정합성 보강 설계
 ```
 
 ## 남은 리스크
 
-- trade key는 `종목명`, `매수시간`, `매수가` 중심으로 만들어졌으므로 완전한 체결 단위 동일성은 추가 검증 여지가 있다.
-- row-level 분석은 v2 score 하락의 큰 방향을 설명하지만, v3 후보 생성 규칙은 별도 설계가 필요하다.
+- 현재 trade key는 `종목명`, `매수시간`, `매수가` 중심이다. 매도시간과 매도가를 포함한 더 강한 key 정합성 검토가 필요하다.
+- cand003_only/right_only 요약만으로 adjusted_score 하락을 충분히 설명하지 못했다.
+- feature bucket별 세부 분석과 top loss/profit drill-down을 더 정교하게 문서화해야 한다.
 - 최종 채택 전에는 promote/WFO 검증이 필요하다.

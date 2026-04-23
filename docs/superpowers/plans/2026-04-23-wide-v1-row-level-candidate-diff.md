@@ -472,6 +472,8 @@ left_only_profit = inputs.get('left_only_total_profit') or 0
 left_only_avg = inputs.get('left_only_avg_return') or 0
 right_only_profit = inputs.get('right_only_total_profit') or 0
 right_only_avg = inputs.get('right_only_avg_return') or 0
+common_avg_delta = inputs.get('common_avg_return_delta') or 0
+common_profit_delta = inputs.get('common_total_profit_delta') or 0
 
 if counts.get('common', 0) == 0:
     decision = 'HOLD'
@@ -479,9 +481,12 @@ if counts.get('common', 0) == 0:
 elif left_only_profit > 0 or left_only_avg > 0:
     decision = 'PASS'
     reason = 'v2 likely removed profitable or relatively good cand003 trades, explaining score decline'
-elif right_only_profit < 0 or right_only_avg < 0:
+elif right_only_profit < 0 and (right_only_profit < left_only_profit or right_only_avg < left_only_avg):
     decision = 'PASS'
-    reason = 'v2 introduced or retained loss-heavy right-only trades, explaining score decline'
+    reason = 'v2 right-only trades are worse than cand003-only trades, explaining score decline'
+elif common_avg_delta < 0 or common_profit_delta < 0:
+    decision = 'PASS'
+    reason = 'common trades performed worse in v2, explaining score decline'
 else:
     decision = 'HOLD'
     reason = 'row-level sets were built but score decline cause is not conclusive'
@@ -493,6 +498,8 @@ print('left_only_total_profit', left_only_profit)
 print('left_only_avg_return', left_only_avg)
 print('right_only_total_profit', right_only_profit)
 print('right_only_avg_return', right_only_avg)
+print('common_avg_return_delta', common_avg_delta)
+print('common_total_profit_delta', common_profit_delta)
 print('decision', decision)
 print('reason', reason)
 '@ | python -
@@ -530,6 +537,8 @@ left_only_profit = inputs.get('left_only_total_profit') or 0
 left_only_avg = inputs.get('left_only_avg_return') or 0
 right_only_profit = inputs.get('right_only_total_profit') or 0
 right_only_avg = inputs.get('right_only_avg_return') or 0
+common_avg_delta = inputs.get('common_avg_return_delta') or 0
+common_profit_delta = inputs.get('common_total_profit_delta') or 0
 
 if counts.get('common', 0) == 0:
     decision = 'HOLD'
@@ -539,9 +548,13 @@ elif left_only_profit > 0 or left_only_avg > 0:
     decision = 'PASS'
     reason = 'v2 likely removed profitable or relatively good cand003 trades, explaining score decline'
     next_command = '$brainstorming Wide v1 v3 후보 생성 규칙 설계'
-elif right_only_profit < 0 or right_only_avg < 0:
+elif right_only_profit < 0 and (right_only_profit < left_only_profit or right_only_avg < left_only_avg):
     decision = 'PASS'
-    reason = 'v2 introduced or retained loss-heavy right-only trades, explaining score decline'
+    reason = 'v2 right-only trades are worse than cand003-only trades, explaining score decline'
+    next_command = '$brainstorming Wide v1 v3 후보 생성 규칙 설계'
+elif common_avg_delta < 0 or common_profit_delta < 0:
+    decision = 'PASS'
+    reason = 'common trades performed worse in v2, explaining score decline'
     next_command = '$brainstorming Wide v1 v3 후보 생성 규칙 설계'
 else:
     decision = 'HOLD'

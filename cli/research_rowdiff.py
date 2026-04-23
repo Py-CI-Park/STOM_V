@@ -17,12 +17,15 @@ def split_trade_sets(left_data, right_data) -> dict:
     left_only_ids = left_ids - right_ids
     right_only_ids = right_ids - left_ids
     common = _subset_by_trade_ids(left, common_ids)
+    common_right = _subset_by_trade_ids(right, common_ids)
     left_only = _subset_by_trade_ids(left, left_only_ids)
     right_only = _subset_by_trade_ids(right, right_only_ids)
     return {
         'left': left,
         'right': right,
         'common': common,
+        'common_left': common,
+        'common_right': common_right,
         'left_only': left_only,
         'right_only': right_only,
         'counts': {
@@ -58,6 +61,7 @@ def feature_bucket_summary(frame, feature: str, bins: int = 5) -> dict:
     usable = data[series.notna()].copy()
     if usable.empty:
         return {'feature': feature, 'bucket_count': 0, 'buckets': []}
+    usable[feature] = series[series.notna()]
     bucket_count = min(max(int(bins), 1), len(usable))
     try:
         usable['_bucket'] = pd.qcut(usable[feature], q=bucket_count, duplicates='drop')
@@ -110,9 +114,19 @@ def analyze_row_diff(left_data, right_data, feature_columns: list[str] | None = 
         'left': _json_safe_summary(summarize_trade_frame(sets['left'])),
         'right': _json_safe_summary(summarize_trade_frame(sets['right'])),
         'common': _json_safe_summary(summarize_trade_frame(sets['common'])),
+        'common_left': _json_safe_summary(summarize_trade_frame(sets['common_left'])),
+        'common_right': _json_safe_summary(summarize_trade_frame(sets['common_right'])),
         'left_only': _json_safe_summary(summarize_trade_frame(sets['left_only'])),
         'right_only': _json_safe_summary(summarize_trade_frame(sets['right_only'])),
     }
+    common_avg_return_delta = (
+        (summaries['common_right'].get('avg_return') or 0.0)
+        - (summaries['common_left'].get('avg_return') or 0.0)
+    )
+    common_total_profit_delta = (
+        (summaries['common_right'].get('total_profit') or 0.0)
+        - (summaries['common_left'].get('total_profit') or 0.0)
+    )
     feature_columns = feature_columns or []
     feature_buckets = {
         name: [
@@ -139,5 +153,7 @@ def analyze_row_diff(left_data, right_data, feature_columns: list[str] | None = 
             'right_only_total_profit': summaries['right_only'].get('total_profit'),
             'right_only_avg_return': summaries['right_only'].get('avg_return'),
             'right_only_win_rate': summaries['right_only'].get('win_rate'),
+            'common_avg_return_delta': common_avg_return_delta,
+            'common_total_profit_delta': common_total_profit_delta,
         },
     }

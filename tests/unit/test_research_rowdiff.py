@@ -68,6 +68,19 @@ def test_feature_bucket_summary_summarizes_existing_numeric_feature():
     assert all('avg_return' in item for item in result['buckets'])
 
 
+def test_feature_bucket_summary_handles_numeric_strings():
+    frame = _frame([
+        _row('A', 1, 2, 100, 101, 1.0, 1000, cap='100'),
+        _row('B', 3, 4, 100, 99, -1.0, -1000, cap='200'),
+        _row('C', 5, 6, 100, 98, -2.0, -2000, cap='300'),
+    ])
+
+    result = feature_bucket_summary(frame, 'B_시가총액', bins=2)
+
+    assert result['bucket_count'] == 2
+    assert sum(item['trade_count'] for item in result['buckets']) == 3
+
+
 def test_top_trade_rows_returns_loss_and_profit_rows():
     frame = _frame([
         _row('A', 1, 2, 100, 101, 1.0, 1000),
@@ -99,3 +112,23 @@ def test_analyze_row_diff_builds_summary_payload():
     assert result['summaries']['right_only']['total_profit'] == -2000.0
     assert result['feature_buckets']['left_only'][0]['feature'] == 'B_시가총액'
     assert result['decision_inputs']['left_only_total_profit'] == -1000.0
+    assert result['summaries']['common_left']['total_profit'] == 1000.0
+    assert result['summaries']['common_right']['total_profit'] == 1000.0
+    assert result['decision_inputs']['common_avg_return_delta'] == 0.0
+
+
+def test_analyze_row_diff_reports_common_left_right_deltas():
+    left = _frame([
+        _row('A', 20250101090000, 20250101090100, 100, 101, 1.0, 1000),
+    ])
+    right = _frame([
+        _row('A', 20250101090000, 20250101090100, 100, 102, 2.0, 2000),
+    ])
+
+    result = analyze_row_diff(left, right)
+
+    assert result['counts']['common'] == 1
+    assert result['summaries']['common_left']['avg_return'] == 1.0
+    assert result['summaries']['common_right']['avg_return'] == 2.0
+    assert result['decision_inputs']['common_avg_return_delta'] == 1.0
+    assert result['decision_inputs']['common_total_profit_delta'] == 1000.0
