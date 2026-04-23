@@ -38,3 +38,9 @@ row-level set 분리는 성공했다.
 ```text
 $brainstorming Wide v1 row-level key 정합성 보강 설계
 ```
+
+## 추가 보강
+
+- rowdiff 결과 JSON을 strict JSON 기준(`allow_nan=False`)으로 재생성할 수 있게 했다.
+- `profit_factor=Infinity` 같은 비표준 JSON 숫자는 `None`으로 정규화한다.
+- 상수 numeric feature도 단일 bucket으로 보존해 후보 차이 분석에서 입력 특성이 조용히 사라지지 않게 했다.

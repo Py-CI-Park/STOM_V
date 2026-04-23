@@ -1,3 +1,5 @@
+import json
+
 import pandas as pd
 
 from cli.research_rowdiff import (
@@ -81,6 +83,21 @@ def test_feature_bucket_summary_handles_numeric_strings():
     assert sum(item['trade_count'] for item in result['buckets']) == 3
 
 
+def test_feature_bucket_summary_keeps_constant_numeric_feature_as_single_bucket():
+    frame = _frame([
+        _row('A', 1, 2, 100, 101, 1.0, 1000, cap='100'),
+        _row('B', 3, 4, 100, 99, -1.0, -1000, cap='100'),
+        _row('C', 5, 6, 100, 98, -2.0, -2000, cap='100'),
+    ])
+    feature = next(column for column in frame.columns if column.startswith('B_'))
+
+    result = feature_bucket_summary(frame, feature, bins=5)
+
+    assert result['bucket_count'] == 1
+    assert result['buckets'][0]['bucket'] == 'constant:100'
+    assert result['buckets'][0]['trade_count'] == 3
+
+
 def test_top_trade_rows_returns_loss_and_profit_rows():
     frame = _frame([
         _row('A', 1, 2, 100, 101, 1.0, 1000),
@@ -132,3 +149,20 @@ def test_analyze_row_diff_reports_common_left_right_deltas():
     assert result['summaries']['common_right']['avg_return'] == 2.0
     assert result['decision_inputs']['common_avg_return_delta'] == 1.0
     assert result['decision_inputs']['common_total_profit_delta'] == 1000.0
+
+
+def test_analyze_row_diff_returns_strict_json_safe_non_finite_metrics():
+    left = _frame([
+        _row('A', 20250101090000, 20250101090100, 100, 101, 1.0, 1000),
+        _row('B', 20250101090200, 20250101090300, 100, 102, 2.0, 2000),
+    ])
+    right = _frame([
+        _row('A', 20250101090000, 20250101090100, 100, 101, 1.0, 1000),
+        _row('B', 20250101090200, 20250101090300, 100, 102, 2.0, 2000),
+    ])
+
+    result = analyze_row_diff(left, right)
+
+    json.dumps(result, allow_nan=False)
+    assert result['summaries']['left']['profit_factor'] is None
+    assert result['summaries']['right']['profit_factor'] is None

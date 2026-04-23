@@ -89,3 +89,9 @@ next_command=$brainstorming Wide v1 row-level key 정합성 보강 설계
 - cand003_only/right_only 요약만으로 adjusted_score 하락을 충분히 설명하지 못했다.
 - feature bucket별 세부 분석과 top loss/profit drill-down을 더 정교하게 문서화해야 한다.
 - 최종 채택 전에는 promote/WFO 검증이 필요하다.
+
+## 추가 검증 보강
+
+- rowdiff runtime JSON은 `json.dumps(..., allow_nan=False)` 기준으로 다시 생성했다.
+- all-winning 구간처럼 `profit_factor=Infinity`가 발생하는 요약값은 JSON 저장 전 `None`으로 정규화한다.
+- 상수 numeric feature는 qcut 결과에서 사라지지 않도록 단일 `constant:<value>` bucket으로 보존한다.

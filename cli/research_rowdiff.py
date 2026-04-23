@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+from numbers import Real
 from pathlib import Path
 
 import pandas as pd
@@ -46,11 +48,26 @@ def split_trade_sets(left_data, right_data) -> dict:
 def _json_safe_summary(summary: dict) -> dict:
     safe = {}
     for key, value in summary.items():
-        if isinstance(value, float) and value != value:
+        if isinstance(value, Real) and not math.isfinite(float(value)):
             safe[key] = None
         else:
             safe[key] = value
     return safe
+
+
+def _single_feature_bucket(feature: str, usable: pd.DataFrame) -> dict:
+    summary = _json_safe_summary(summarize_trade_frame(usable))
+    return {
+        'feature': feature,
+        'bucket_count': 1,
+        'buckets': [{
+            'bucket': f'constant:{usable[feature].iloc[0]}',
+            'trade_count': summary.get('trade_count', 0),
+            'avg_return': summary.get('avg_return', 0.0),
+            'win_rate': summary.get('win_rate', 0.0),
+            'total_profit': summary.get('total_profit', 0.0),
+        }],
+    }
 
 
 def feature_bucket_summary(frame, feature: str, bins: int = 5) -> dict:
@@ -62,6 +79,8 @@ def feature_bucket_summary(frame, feature: str, bins: int = 5) -> dict:
     if usable.empty:
         return {'feature': feature, 'bucket_count': 0, 'buckets': []}
     usable[feature] = series[series.notna()]
+    if usable[feature].nunique(dropna=True) == 1:
+        return _single_feature_bucket(feature, usable)
     bucket_count = min(max(int(bins), 1), len(usable))
     try:
         usable['_bucket'] = pd.qcut(usable[feature], q=bucket_count, duplicates='drop')
