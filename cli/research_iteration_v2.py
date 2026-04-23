@@ -26,6 +26,7 @@ def candidate_signature(candidate: dict) -> tuple:
         candidate.get('operator'),
         candidate.get('lower_bound'),
         candidate.get('upper_bound'),
+        candidate.get('threshold'),
     )
 
 
@@ -107,7 +108,7 @@ def build_v2_candidate_pool(
             'reason': 'best_context is required',
         }
 
-    secondary_features = secondary_features or []
+    secondary_features = list(secondary_features or [])
     secondary_feature_set = set(secondary_features)
     primary_candidates = [
         item for item in analysis_candidates

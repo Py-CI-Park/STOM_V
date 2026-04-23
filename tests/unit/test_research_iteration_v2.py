@@ -42,7 +42,24 @@ def _candidate(feature, lower, upper, score=1.0, retention=0.9, source='quantile
 def test_candidate_signature_uses_feature_operator_and_bounds():
     candidate = _candidate('B_시가총액', 66.999, 2580.0)
 
-    assert candidate_signature(candidate) == ('B_시가총액', 'between', 66.999, 2580.0)
+    assert candidate_signature(candidate) == ('B_시가총액', 'between', 66.999, 2580.0, None)
+
+
+def test_candidate_signature_distinguishes_threshold_candidates():
+    first = {
+        'feature': 'B_threshold',
+        'operator': '<=',
+        'threshold': 1,
+    }
+    second = {
+        'feature': 'B_threshold',
+        'operator': '<=',
+        'threshold': 2,
+    }
+
+    assert candidate_signature(first) == ('B_threshold', '<=', None, None, 1)
+    assert candidate_signature(second) == ('B_threshold', '<=', None, None, 2)
+    assert candidate_signature(first) != candidate_signature(second)
 
 
 def test_filter_duplicate_v2_candidates_drops_near_duplicate_retention():
@@ -88,6 +105,21 @@ def test_build_v2_candidate_pool_prefers_primary_variants_and_combinations():
     assert result['type_counts']['primary_variant'] >= 1
     assert result['type_counts']['primary_secondary_combo'] >= 1
     assert result['type_counts']['secondary_only'] == 1
+
+
+def test_build_v2_candidate_pool_copies_secondary_features():
+    secondary_features = ['B_secondary']
+
+    result = build_v2_candidate_pool(
+        [],
+        best_context=BEST_CONTEXT,
+        primary_feature='B_primary',
+        secondary_features=secondary_features,
+    )
+    secondary_features.append('B_late_mutation')
+
+    assert result['secondary_features'] == ['B_secondary']
+    assert result['secondary_features'] is not secondary_features
 
 
 def test_build_v2_candidate_pool_returns_disabled_when_no_context():
