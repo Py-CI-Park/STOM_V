@@ -6,15 +6,15 @@ PR #21 이후 WideV1IterationV2_20260423__cand005가 같은 wide baseline 기준
 
 ## 변경 사항
 
-- est_feature_mix_v3 후보 생성 helper를 추가했다.
-- v3 후보군을 3_tighten_secondary, 3_repair_trade_amount, 3_replace_secondary로 나눴다.
-- 3_control_keep_best는 cand005 기존 결과를 report metadata로 보존하고 재실행 후보에서는 제외했다.
-- 기존 iteration_v2_* CLI/config 옵션 표면에서 est_feature_mix_v3 mode를 허용했다.
+- `best_feature_mix_v3` 후보 생성 helper를 추가했다.
+- v3 후보군을 `v3_tighten_secondary`, `v3_repair_trade_amount`, `v3_replace_secondary`로 나눴다.
+- `v3_control_keep_best`는 cand005 기존 결과를 report metadata로 보존하고 재실행 후보에서는 제외했다.
+- 기존 `iteration_v2_*` CLI/config 옵션 표면에서 `best_feature_mix_v3` mode를 허용했다.
 - research report에 v3 후보 family 분포와 control metadata를 표시했다.
 
 ## 검증
 
-`	ext
+```text
 focused tests:
   python -m pytest tests/unit/test_research_iteration_v3.py tests/unit/test_research_loop.py tests/unit/test_subcommands.py tests/unit/test_research_report.py -q
   output:
@@ -96,7 +96,7 @@ tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_d
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 1097 passed, 1 skipped, 10 warnings in 82.17s (0:01:22)
-`
+```
 
 ## 남은 리스크
 
