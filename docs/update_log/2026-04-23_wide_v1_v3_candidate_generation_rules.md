@@ -103,3 +103,26 @@ tests/unit/test_ui_jisu_cleanup.py::test_ui_mainwindow_import_succeeds_without_d
 - v3 candidate_count=10 full-year runtime은 별도 실행 결과 문서에서 기록한다.
 - cand005 control은 재실행하지 않으므로 동일 조건 재현성 검증은 이번 구현 단계에서 생략한다.
 - v3 best도 최종 채택이 아니며 promote/WFO 검증이 필요하다.
+
+## Runtime v3 실행
+
+```text
+status=ok
+phase=candidates_evaluated
+runtime_entrypoint=python .\stom_backtest.py discovery research WideV1IterationV3_20260423 ...
+runtime_artifact=backtest/temp/wide_v1_iteration_v3_20260423.json
+runtime_artifact_encoding=UTF-16 LE
+candidate_count_observed=10
+best_candidate=WideV1IterationV3_20260423__cand001
+best_reference_adjusted_score=13497.662902097409
+best_trade_count=36096.0
+best_trade_count_retention=0.8817451205510907
+control_candidate=WideV1IterationV2_20260423__cand005
+control_reference_adjusted_score=null
+cleanup_deleted_count=9
+decision=PASS_TO_V3_EXECUTION_RESULT_ANALYSIS
+```
+
+- `python -m cli.main`은 이 worktree에서 `No module named cli.main`으로 실패해 `python .\stom_backtest.py`로 동일 인자를 실행했다.
+- observed JSON은 UTF-16 LE BOM으로 저장됐고, 한국어 feature/expression metadata는 mojibake로 기록됐다.
+- top 10 후보가 모두 동일한 reference score로 tie였고 `cand001`만 best candidate로 유지됐다.
