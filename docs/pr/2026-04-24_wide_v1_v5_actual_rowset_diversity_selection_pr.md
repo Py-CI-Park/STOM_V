@@ -133,7 +133,7 @@ passed
 - serial-key, WFO, strategy promotion 경로 비변경
 ```
 
-이 워크트리는 이미 `STOM_Version_2U_C` 활성 baseline 브랜치에서 작업 중이므로, 별도 feature branch를 base branch로 병합하는 단계는 없다. PR 보고서와 커밋을 현재 baseline에 고정하는 방식으로 처리한다.
+히스토리 정리 후 이 작업은 `feature/wide-v1-v4-v5-actual-rowset-selection` 브랜치에 고정했고, `STOM_Version_2U_C`에는 `3b77a70e` merge commit으로 통합했다. 직접 커밋으로 쌓였던 구간은 `backup/2uc-direct-v4-v5-before-merge-rewrite`에도 보존했다.
 
 ## 10. 다음 단계 추천
 
