@@ -136,6 +136,28 @@ def _family_distribution(runtime: JsonDict) -> JsonDict:
     return cast(JsonDict, research_v3_decision.family_distribution(runtime))
 
 
+def _classify_top_tie(candidates: JsonList, *, top_n: int) -> JsonDict:
+    return cast(JsonDict, research_v3_decision.classify_top_tie(candidates, top_n=top_n))
+
+
+def _tie_candidate_names(value: object) -> set[str]:
+    if not isinstance(value, list):
+        return set()
+    return {str(item) for item in value if item is not None}
+
+
+def _tied_candidates(candidates: JsonList, *, top_n: int) -> JsonList:
+    ranking_window = _sorted_candidates(candidates)[: max(top_n, 0)]
+    if len(ranking_window) < 2:
+        return ranking_window
+
+    tie_gate = _classify_top_tie(ranking_window, top_n=len(ranking_window))
+    tie_names = _tie_candidate_names(tie_gate.get('tie_candidates'))
+    if not tie_names:
+        return []
+    return [candidate for candidate in ranking_window if str(candidate.get('strategy_name')) in tie_names]
+
+
 def resolve_candidate_csv_path(runtime_root: str | Path, candidate: JsonDict) -> Path:
     csv_value = candidate.get('candidate_csv')
     path = Path(str(csv_value or ''))
@@ -204,7 +226,7 @@ def _expression_to_type(runtime: JsonDict) -> dict[str, str]:
 
 def analyze_tie_row_sets(runtime: JsonDict, *, runtime_root: str | Path, top_n: int = 10) -> JsonDict:
     expression_to_type = _expression_to_type(runtime)
-    candidates = _sorted_candidates(_as_dict_list(runtime.get('candidates')))[:top_n]
+    candidates = _tied_candidates(_as_dict_list(runtime.get('candidates')), top_n=top_n)
     groups_by_signature: dict[RowSetSignature, JsonList] = {}
     row_counts: dict[RowSetSignature, int] = {}
     errors: JsonList = []

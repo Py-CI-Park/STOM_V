@@ -325,6 +325,36 @@ def test_build_v3_tie_break_analysis_routes_distinct_rows_to_v4(tmp_path: Path):
     assert analysis['next_command'] == V4_PLAN_COMMAND
 
 
+def test_build_v3_tie_break_analysis_ignores_lower_ranked_non_tied_row_duplicates(tmp_path: Path):
+    csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
+    csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100), _row('C', 3, 300)])
+    csv_c = _trade_csv(tmp_path / 'cand003.csv', [_row('A', 1, 100), _row('B', 2, 200)])
+    runtime = _runtime([
+        _candidate('cand001', str(csv_a), 'base and tighten and extra', rank=1, adjusted_score=100.0),
+        _candidate('cand002', str(csv_b), 'base and repair', rank=2, adjusted_score=100.0),
+        _candidate('cand003', str(csv_c), 'base and replace', rank=3, adjusted_score=90.0),
+    ])
+    runtime['expression_result']['selected_candidates'] = [
+        {'expression': 'base and tighten and extra'},
+        {'expression': 'base and repair'},
+    ]
+    runtime_path = tmp_path / 'runtime.json'
+    runtime_path.write_text(json.dumps(runtime, ensure_ascii=False), encoding='utf-8')
+
+    analysis = build_v3_tie_break_analysis(
+        runtime_path=runtime_path,
+        runtime_root=tmp_path,
+        top_n=3,
+    )
+
+    row_set_gate = analysis['row_set_gate']
+    assert analysis['decision'] == PROCEED_TO_V4_PLAN
+    assert row_set_gate['status'] == 'all_distinct'
+    assert row_set_gate['candidate_count'] == 2
+    assert row_set_gate['group_count'] == 2
+    assert [group['members'] for group in row_set_gate['groups']] == [['cand001'], ['cand002']]
+
+
 def test_render_v3_tie_break_markdown_contains_decision_and_group_count():
     markdown = render_v3_tie_break_markdown({
         'decision': HOLD_ROW_SET_EQUIVALENCE,

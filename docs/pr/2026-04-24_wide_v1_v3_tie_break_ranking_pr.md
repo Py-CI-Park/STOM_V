@@ -70,10 +70,11 @@ selected_family=v3_tighten_secondary only
 ```text
 1. row-set equivalence helper 추가
 2. 단일 후보를 tie-break로 오판하지 않도록 회귀 테스트 추가
-3. 실제 PR #22 artifact를 읽는 분석 script 추가
-4. row-set tie-break markdown pilot log 생성
-5. --top-n 0 / 음수 입력을 CLI에서 조기 차단
-6. spec review, code quality review, focused verification 통과
+3. 동률 cohort 밖의 하위 후보가 row-set 판정에 섞이지 않도록 회귀 테스트 추가
+4. 실제 PR #22 artifact를 읽는 분석 script 추가
+5. row-set tie-break markdown pilot log 생성
+6. --top-n 0 / 음수 입력을 CLI에서 조기 차단
+7. spec review, code quality review, focused verification 통과
 ```
 
 현재 판단:
@@ -117,7 +118,7 @@ docs/pr/2026-04-24_wide_v1_v3_tie_break_ranking_pr.md
 1. Row-set equivalence helper
    - candidate_csv 경로를 runtime root 기준으로 해석
    - 기존 공개 trade-key 경로를 사용해 실행 row-set signature 생성
-   - 후보들을 row-set equivalence group으로 묶음
+   - top_n ranking window 안의 실제 tied cohort만 row-set equivalence group으로 묶음
    - missing CSV는 error status로 보고
 
 2. Representative rule
@@ -219,7 +220,7 @@ Focused verification:
 
 ```text
 python -m pytest tests/unit/test_research_v3_tiebreak.py tests/unit/test_research_v3_decision.py tests/unit/test_research_compare.py -q
-result=51 passed
+result=52 passed
 ```
 
 Lint:
@@ -274,6 +275,7 @@ Task 1 spec review=APPROVED
 Task 1 code quality review=APPROVED
 Task 2 spec review=APPROVED
 Task 2 code quality review=APPROVED after top-n validation fix
+Final review=APPROVED after tied-cohort selection fix
 ```
 
 ## 7. 남은 리스크
