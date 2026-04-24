@@ -39,9 +39,10 @@ message=None
 ## 5. Tie Gate
 
 ```text
-status=metric_tie
+status=rank_metric_tie
 score_tie=True
 metric_tie=True
+row_set_identity_status=not_evaluated
 top_count=10
 tie_candidate_count=10
 ```
@@ -56,13 +57,37 @@ tie_candidate_count=10
     "v3_tighten_secondary": 15,
     "v3_control_keep_best": 1
   },
+  "retention_observed_type_counts": {
+    "v3_repair_trade_amount": 3,
+    "v3_replace_secondary": 15,
+    "v3_tighten_secondary": 15
+  },
+  "retention_pass_type_counts": {
+    "v3_repair_trade_amount": 3,
+    "v3_replace_secondary": 15,
+    "v3_tighten_secondary": 15
+  },
+  "retention_fallback_type_counts": {},
   "selected_type_counts": {
     "v3_tighten_secondary": 10
   },
   "executed_type_counts": {
     "v3_tighten_secondary": 10
   },
-  "unknown_executed_strategies": []
+  "unknown_executed_strategies": [],
+  "family_selection_summary": {
+    "v3_repair_trade_amount": "retention-pass only",
+    "v3_replace_secondary": "retention-pass only",
+    "v3_tighten_secondary": "selected/executed"
+  }
+}
+```
+
+```json
+{
+  "v3_repair_trade_amount": "retention-pass only",
+  "v3_replace_secondary": "retention-pass only",
+  "v3_tighten_secondary": "selected/executed"
 }
 ```
 

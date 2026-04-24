@@ -64,20 +64,33 @@ def _rows():
     ]
 
 
-def _candidate(strategy_name: str, expression: str, score: float, retention: float = 1.0):
-    return {
+def _candidate(
+    strategy_name: str,
+    expression: str,
+    score: float,
+    retention: float = 1.0,
+    *,
+    rank: int | None = None,
+    trade_count: float = 2.0,
+    date_concentration: float = 0.5,
+    symbol_concentration: float = 0.5,
+):
+    candidate = {
         'strategy_name': strategy_name,
         'expression': expression,
         'candidate_csv': f'backtest/csv/{strategy_name}.csv',
         'rank_score': {
             'adjusted_score': score,
             'reference_promotion_score': score,
-            'trade_count': 2.0,
+            'trade_count': trade_count,
             'trade_count_retention': retention,
-            'date_concentration': 0.5,
-            'symbol_concentration': 0.5,
+            'date_concentration': date_concentration,
+            'symbol_concentration': symbol_concentration,
         },
     }
+    if rank is not None:
+        candidate['rank'] = rank
+    return candidate
 
 
 def _runtime(candidates: list[dict], *, control_score=None, selected_candidates=None):
@@ -181,11 +194,12 @@ def test_classify_top_tie_detects_score_and_metric_tie():
 
     result = classify_top_tie(candidates, top_n=10)
 
-    assert result['status'] == 'metric_tie'
+    assert result['status'] == 'rank_metric_tie'
     assert result['score_tie'] is True
     assert result['metric_tie'] is True
     assert result['top_count'] == 2
     assert result['tie_candidate_count'] == 2
+    assert result['row_set_identity_status'] == 'not_evaluated'
 
 
 def test_classify_top_tie_detects_ranking_tie_when_secondary_metrics_differ():
@@ -200,6 +214,7 @@ def test_classify_top_tie_detects_ranking_tie_when_secondary_metrics_differ():
     assert result['score_tie'] is True
     assert result['metric_tie'] is False
     assert result['tie_candidate_count'] == 2
+    assert result['row_set_identity_status'] == 'not_evaluated'
 
 
 def test_classify_top_tie_detects_best_score_cohort_tie_with_lower_ranked_candidates_present():
@@ -211,12 +226,13 @@ def test_classify_top_tie_detects_best_score_cohort_tie_with_lower_ranked_candid
 
     result = classify_top_tie(candidates, top_n=10)
 
-    assert result['status'] == 'metric_tie'
+    assert result['status'] == 'rank_metric_tie'
     assert result['top_count'] == 3
     assert result['score_tie'] is True
     assert result['metric_tie'] is True
     assert result['tie_candidate_count'] == 2
     assert result['tie_candidates'] == ['cand001', 'cand002']
+    assert result['row_set_identity_status'] == 'not_evaluated'
 
 
 def test_classify_top_tie_returns_not_enough_candidates_for_single_candidate():
@@ -228,6 +244,7 @@ def test_classify_top_tie_returns_not_enough_candidates_for_single_candidate():
     assert result['top_count'] == 1
     assert result['score_tie'] is False
     assert result['metric_tie'] is False
+    assert result['row_set_identity_status'] == 'not_evaluated'
 
 
 def test_classify_top_tie_returns_not_tied_when_scores_differ():
@@ -240,6 +257,21 @@ def test_classify_top_tie_returns_not_tied_when_scores_differ():
     assert result['top_count'] == 2
     assert result['score_tie'] is False
     assert result['metric_tie'] is False
+    assert result['row_set_identity_status'] == 'not_evaluated'
+
+
+def test_classify_top_tie_sorts_by_rank_before_detecting_best_score_tie():
+    result = classify_top_tie([
+        _candidate('cand003', 'base and replace', 9.0, rank=3),
+        _candidate('cand001', 'base and tighten', 10.0, rank=1),
+        _candidate('cand002', 'base and repair', 10.0, rank=2),
+    ])
+
+    assert result['status'] == 'rank_metric_tie'
+    assert result['top_candidates'][:3] == ['cand001', 'cand002', 'cand003']
+    assert result['score_tie'] is True
+    assert result['tie_candidate_count'] == 2
+    assert result['tie_candidates'] == ['cand001', 'cand002']
 
 
 def test_family_distribution_maps_executed_candidates_by_expression():
@@ -253,6 +285,10 @@ def test_family_distribution_maps_executed_candidates_by_expression():
     assert result['pool_type_counts']['v3_tighten_secondary'] == 2
     assert result['executed_type_counts']['v3_tighten_secondary'] == 1
     assert result['executed_type_counts']['v3_repair_trade_amount'] == 1
+    assert result['retention_pass_type_counts'] == {
+        'v3_tighten_secondary': 1,
+        'v3_repair_trade_amount': 1,
+    }
 
 
 def test_family_distribution_tracks_selected_counts_and_unknown_executed():
@@ -291,6 +327,54 @@ def test_family_distribution_prefers_expression_result_selected_candidates():
 
     assert result['selected_type_counts'] == {
         'v3_tighten_secondary': 1,
+    }
+
+
+def test_family_distribution_reports_retention_pass_fallback_and_summary():
+    runtime = _runtime(
+        [
+            _candidate('cand001', 'base and tighten', 13497.6),
+        ],
+        selected_candidates=[
+            _candidate('cand001', 'base and tighten', 13497.6),
+        ],
+    )
+    runtime['retention_selection']['retention_candidates'] = [
+        {
+            'expression': 'base and tighten',
+            'retention_filter_passed': True,
+            'retention_fallback_used': False,
+        },
+        {
+            'expression': 'base and repair',
+            'retention_filter_passed': True,
+            'retention_fallback_used': False,
+        },
+        {
+            'expression': 'base and replace',
+            'retention_filter_passed': False,
+            'retention_fallback_used': True,
+        },
+    ]
+    runtime['iteration_v3']['candidates'].append({
+        'expression': 'base and replace',
+        'v3_candidate_type': 'v3_replace_secondary',
+    })
+    runtime['iteration_v3']['type_counts']['v3_replace_secondary'] = 1
+
+    result = family_distribution(runtime)
+
+    assert result['retention_pass_type_counts'] == {
+        'v3_tighten_secondary': 1,
+        'v3_repair_trade_amount': 1,
+    }
+    assert result['retention_fallback_type_counts'] == {
+        'v3_replace_secondary': 1,
+    }
+    assert result['family_selection_summary'] == {
+        'v3_repair_trade_amount': 'retention-pass only',
+        'v3_replace_secondary': 'retention-fallback only',
+        'v3_tighten_secondary': 'selected/executed',
     }
 
 
@@ -376,6 +460,30 @@ def test_build_v3_decision_analysis_holds_when_best_score_cohort_ties_and_lower_
     assert analysis['tie_gate']['tie_candidate_count'] == 2
 
 
+def test_build_v3_decision_analysis_sorts_unsorted_runtime_candidates_before_holding(tmp_path):
+    reference_csv = _trade_csv(tmp_path / 'reference.csv', _rows())
+    control_csv = _trade_csv(tmp_path / 'control.csv', _rows()[:1])
+    runtime = _runtime([
+        _candidate('cand003', 'base and replace', 9.0, rank=3),
+        _candidate('cand001', 'base and tighten', 10.0, rank=1),
+        _candidate('cand002', 'base and repair', 10.0, rank=2),
+    ])
+    runtime['best_candidate'] = runtime['candidates'][1]
+    runtime_path = tmp_path / 'runtime.json'
+    runtime_path.write_text(json.dumps(runtime, ensure_ascii=False), encoding='utf-8')
+
+    analysis = build_v3_decision_analysis(
+        runtime_path=runtime_path,
+        wide_reference_csv=reference_csv,
+        control_csv=control_csv,
+    )
+
+    assert analysis['decision'] == DECISION_HOLD_V3_TIE_REVIEW
+    assert analysis['tie_gate']['score_tie'] is True
+    assert analysis['tie_gate']['tie_candidate_count'] == 2
+    assert analysis['tie_gate']['top_candidates'][:3] == ['cand001', 'cand002', 'cand003']
+
+
 def test_build_v3_decision_analysis_rechecks_when_stored_control_score_mismatches_recomputed(tmp_path):
     reference_csv = _trade_csv(tmp_path / 'reference.csv', _rows())
     control_csv = _trade_csv(tmp_path / 'control.csv', _rows()[:1])
@@ -447,7 +555,7 @@ def test_render_v3_decision_markdown_contains_decision_and_next_command():
         'decision': DECISION_RECHECK_CONTROL,
         'runtime': {'status': 'ok', 'phase': 'candidates_evaluated'},
         'control_score_gate': {'status': 'error', 'reference_adjusted_score': None, 'message': 'missing csv'},
-        'tie_gate': {'status': 'not_evaluated'},
+        'tie_gate': {'status': 'rank_metric_tie', 'row_set_identity_status': 'not_evaluated'},
         'family_gate': {'pool_type_counts': {}, 'executed_type_counts': {}},
         'quant_validity_gate': {'blocked': True, 'reasons': ['control_score_missing']},
         'next_command': '$brainstorming Wide v1 v3 control score 재검증 설계',
@@ -457,6 +565,8 @@ def test_render_v3_decision_markdown_contains_decision_and_next_command():
 
     assert '# Wide v1 v3 결과 분석 및 v4 여부 판단' in markdown
     assert 'decision=RECHECK_CONTROL' in markdown
+    assert 'status=rank_metric_tie' in markdown
+    assert 'row_set_identity_status=not_evaluated' in markdown
     assert '$brainstorming Wide v1 v3 control score 재검증 설계' in markdown
 
 

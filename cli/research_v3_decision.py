@@ -103,6 +103,38 @@ def _rank_metrics(candidate: dict) -> dict:
     return {key: _finite_float(rank_score.get(key)) for key in RANK_METRIC_KEYS}
 
 
+def _candidate_sort_key(candidate: dict, index: int) -> tuple:
+    rank = candidate.get('rank')
+    if rank is not None:
+        return (0, int(rank), index)
+
+    metrics = _rank_metrics(candidate)
+    adjusted_score = metrics.get('adjusted_score')
+    trade_count = metrics.get('trade_count')
+    trade_count_retention = metrics.get('trade_count_retention')
+    date_concentration = metrics.get('date_concentration')
+    symbol_concentration = metrics.get('symbol_concentration')
+    return (
+        1,
+        float('inf') if adjusted_score is None else -adjusted_score,
+        float('inf') if trade_count is None else -trade_count,
+        float('inf') if trade_count_retention is None else -trade_count_retention,
+        float('inf') if date_concentration is None else date_concentration,
+        float('inf') if symbol_concentration is None else symbol_concentration,
+        index,
+    )
+
+
+def _sorted_candidates(candidates: list[dict]) -> list[dict]:
+    return [
+        candidate
+        for _, candidate in sorted(
+            enumerate(candidates or []),
+            key=lambda item: _candidate_sort_key(item[1], item[0]),
+        )
+    ]
+
+
 def _same_number(left: float | None, right: float | None, tolerance: float) -> bool:
     if left is None or right is None:
         return left is right
@@ -110,7 +142,7 @@ def _same_number(left: float | None, right: float | None, tolerance: float) -> b
 
 
 def classify_top_tie(candidates: list[dict], *, top_n: int = 10, tolerance: float = 1e-9) -> dict:
-    top = list(candidates or [])[:top_n]
+    top = _sorted_candidates(list(candidates or []))[:top_n]
     metrics = [_rank_metrics(candidate) for candidate in top]
     if len(top) < 2:
         return {
@@ -120,6 +152,7 @@ def classify_top_tie(candidates: list[dict], *, top_n: int = 10, tolerance: floa
             'metric_tie': False,
             'tie_candidate_count': 0,
             'tie_candidates': [],
+            'row_set_identity_status': 'not_evaluated',
             'metrics': metrics,
             'top_candidates': [item.get('strategy_name') for item in top],
         }
@@ -138,7 +171,7 @@ def classify_top_tie(candidates: list[dict], *, top_n: int = 10, tolerance: floa
         for item in tie_metrics[1:]
     )
     if metric_tie:
-        status = 'metric_tie'
+        status = 'rank_metric_tie'
     elif score_tie:
         status = 'ranking_tie'
     else:
@@ -150,6 +183,7 @@ def classify_top_tie(candidates: list[dict], *, top_n: int = 10, tolerance: floa
         'metric_tie': metric_tie,
         'tie_candidate_count': len(tie_indexes) if score_tie else 0,
         'tie_candidates': tie_candidates if score_tie else [],
+        'row_set_identity_status': 'not_evaluated',
         'metrics': metrics,
         'top_candidates': [item.get('strategy_name') for item in top],
     }
@@ -157,6 +191,56 @@ def classify_top_tie(candidates: list[dict], *, top_n: int = 10, tolerance: floa
 
 def _expression_key(value) -> str:
     return ' '.join(str(value or '').split())
+
+
+def _count_by_family(
+    candidates: list[dict],
+    expression_to_type: dict[str, str],
+    predicate=None,
+) -> dict[str, int]:
+    counter: Counter[str] = Counter()
+    for candidate in candidates or []:
+        if predicate is not None and not predicate(candidate):
+            continue
+        candidate_type = expression_to_type.get(_expression_key(candidate.get('expression')))
+        if candidate_type:
+            counter[candidate_type] += 1
+    return dict(counter)
+
+
+def _family_selection_summary(family_gate: dict) -> dict[str, str]:
+    families = set()
+    for key in (
+        'pool_type_counts',
+        'retention_observed_type_counts',
+        'retention_pass_type_counts',
+        'retention_fallback_type_counts',
+        'selected_type_counts',
+        'executed_type_counts',
+    ):
+        families.update((family_gate.get(key) or {}).keys())
+
+    summary = {}
+    for family in sorted(families):
+        selected = (family_gate.get('selected_type_counts') or {}).get(family, 0)
+        executed = (family_gate.get('executed_type_counts') or {}).get(family, 0)
+        passed = (family_gate.get('retention_pass_type_counts') or {}).get(family, 0)
+        fallback = (family_gate.get('retention_fallback_type_counts') or {}).get(family, 0)
+        if not any((selected, executed, passed, fallback)):
+            continue
+        if executed:
+            summary[family] = 'selected/executed'
+        elif selected:
+            summary[family] = 'selected only'
+        elif passed and fallback:
+            summary[family] = 'retention-pass/fallback only'
+        elif passed:
+            summary[family] = 'retention-pass only'
+        elif fallback:
+            summary[family] = 'retention-fallback only'
+        else:
+            summary[family] = 'generated only'
+    return summary
 
 
 def family_distribution(runtime: dict) -> dict:
@@ -168,14 +252,22 @@ def family_distribution(runtime: dict) -> dict:
         if candidate.get('expression') and candidate.get('v3_candidate_type')
     }
 
-    selected_counter: Counter[str] = Counter()
     selected_candidates = (runtime.get('expression_result') or {}).get('selected_candidates')
     if selected_candidates is None:
         selected_candidates = (runtime.get('retention_selection') or {}).get('retention_candidates') or []
-    for candidate in selected_candidates:
-        candidate_type = expression_to_type.get(_expression_key(candidate.get('expression')))
-        if candidate_type:
-            selected_counter[candidate_type] += 1
+    retention_candidates = (runtime.get('retention_selection') or {}).get('retention_candidates') or []
+    selected_type_counts = _count_by_family(selected_candidates, expression_to_type)
+    retention_observed_type_counts = _count_by_family(retention_candidates, expression_to_type)
+    retention_pass_type_counts = _count_by_family(
+        retention_candidates,
+        expression_to_type,
+        predicate=lambda candidate: candidate.get('retention_filter_passed') is True,
+    )
+    retention_fallback_type_counts = _count_by_family(
+        retention_candidates,
+        expression_to_type,
+        predicate=lambda candidate: candidate.get('retention_fallback_used') is True,
+    )
 
     executed_counter: Counter[str] = Counter()
     unknown_executed = []
@@ -186,12 +278,17 @@ def family_distribution(runtime: dict) -> dict:
         else:
             unknown_executed.append(candidate.get('strategy_name'))
 
-    return {
+    result = {
         'pool_type_counts': pool_type_counts,
-        'selected_type_counts': dict(selected_counter),
+        'retention_observed_type_counts': retention_observed_type_counts,
+        'retention_pass_type_counts': retention_pass_type_counts,
+        'retention_fallback_type_counts': retention_fallback_type_counts,
+        'selected_type_counts': selected_type_counts,
         'executed_type_counts': dict(executed_counter),
         'unknown_executed_strategies': unknown_executed,
     }
+    result['family_selection_summary'] = _family_selection_summary(result)
+    return result
 
 
 def _quant_validity(control_gate: dict, tie_gate: dict) -> dict:
@@ -211,7 +308,7 @@ def _quant_validity(control_gate: dict, tie_gate: dict) -> dict:
 def _decision(control_gate: dict, tie_gate: dict, quant_gate: dict) -> str:
     if control_gate.get('status') != 'ok' or control_gate.get('reference_adjusted_score') is None:
         return DECISION_RECHECK_CONTROL
-    if tie_gate.get('score_tie') or tie_gate.get('status') in {'metric_tie', 'ranking_tie'}:
+    if tie_gate.get('score_tie') or tie_gate.get('status') in {'rank_metric_tie', 'ranking_tie'}:
         return DECISION_HOLD_V3_TIE_REVIEW
     if quant_gate.get('blocked'):
         return DECISION_HOLD_V3_TIE_REVIEW
@@ -283,6 +380,7 @@ def build_v3_decision_analysis(
         'control_score_gate': control_gate,
         'tie_gate': tie_gate,
         'family_gate': family_gate,
+        'family_selection_summary': family_gate.get('family_selection_summary'),
         'quant_validity_gate': quant_gate,
     }
 
@@ -297,6 +395,7 @@ def render_v3_decision_markdown(analysis: dict) -> str:
     control_gate = analysis.get('control_score_gate') or {}
     tie_gate = analysis.get('tie_gate') or {}
     family_gate = analysis.get('family_gate') or {}
+    family_selection_summary = analysis.get('family_selection_summary') or family_gate.get('family_selection_summary')
     quant_gate = analysis.get('quant_validity_gate') or {}
     next_command = analysis.get('next_command')
     return f"""# Wide v1 v3 결과 분석 및 v4 여부 판단
@@ -343,6 +442,7 @@ message={control_gate.get('message')}
 status={tie_gate.get('status')}
 score_tie={tie_gate.get('score_tie')}
 metric_tie={tie_gate.get('metric_tie')}
+row_set_identity_status={tie_gate.get('row_set_identity_status')}
 top_count={tie_gate.get('top_count')}
 tie_candidate_count={tie_gate.get('tie_candidate_count')}
 ```
@@ -351,6 +451,10 @@ tie_candidate_count={tie_gate.get('tie_candidate_count')}
 
 ```json
 {_format_dict(family_gate)}
+```
+
+```json
+{_format_dict(family_selection_summary)}
 ```
 
 ## 7. Quant Validity Gate
