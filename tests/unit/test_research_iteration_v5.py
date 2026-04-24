@@ -130,6 +130,7 @@ def test_apply_actual_rowset_selection_moves_best_to_first_selected_representati
 
     updated, best = apply_actual_rowset_selection(ranked, selection)
 
+    assert best is not None
     assert best['strategy_name'] == 'cand002'
     assert [item['selected_as_best'] for item in updated] == [False, True]
     assert [item['actual_rowset_selected'] for item in updated] == [False, True]

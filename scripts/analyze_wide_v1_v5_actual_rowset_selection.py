@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+# pyright: reportAny=none, reportExplicitAny=none, reportUnknownVariableType=none, reportUnusedCallResult=none
+
 import argparse
 from pathlib import Path
 import sys

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# pyright: reportAny=none, reportExplicitAny=none, reportUnusedCallResult=none
+
 import json
 from pathlib import Path
 import runpy
