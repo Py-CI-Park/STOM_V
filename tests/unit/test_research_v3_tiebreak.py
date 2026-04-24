@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+# pyright: reportAny=none, reportExplicitAny=none, reportMissingTypeStubs=none, reportUnknownArgumentType=none, reportUnknownMemberType=none, reportUnknownVariableType=none, reportUnusedCallResult=none
+
 import json
 from pathlib import Path
+from typing import Any, TypeAlias
 
 import pandas as pd
 
@@ -19,6 +22,13 @@ from cli.research_v3_tiebreak import (
     write_v3_tie_break_report,
 )
 
+JsonDict: TypeAlias = dict[str, Any]
+
+ROW_SET_DIVERSITY_COMMAND = '$brainstorming Wide v1 v4 row-set diversity 후보 생성 설계'
+SELECTION_DIVERSITY_COMMAND = '$brainstorming Wide v1 v3 selection diversity 보강 설계'
+V4_PLAN_COMMAND = '$writing-plans Wide v1 v4 후보 생성 또는 selection 조정 구현 계획 작성'
+NO_TIE_MESSAGE = 'No tie-break analysis was needed because fewer than 2 candidates were available.'
+
 SYMBOL_COLUMN = INSTRUMENT_COLUMNS[1]
 BUY_TIME_COLUMN = REQUIRED_KEY_COLUMNS[0]
 BUY_PRICE_COLUMN = OPTIONAL_KEY_COLUMNS[0]
@@ -28,12 +38,12 @@ RETURN_COLUMN = NUMERIC_COLUMNS[5]
 PROFIT_COLUMN = NUMERIC_COLUMNS[6]
 
 
-def _trade_csv(path: Path, rows: list[dict]) -> Path:
+def _trade_csv(path: Path, rows: list[JsonDict]) -> Path:
     pd.DataFrame(rows).to_csv(path, index=False, encoding='utf-8')
     return path
 
 
-def _row(symbol: str, buy_time: int, buy_price: int, profit: int = 100) -> dict:
+def _row(symbol: str, buy_time: int, buy_price: int, profit: int = 100) -> JsonDict:
     return {
         SYMBOL_COLUMN: symbol,
         BUY_TIME_COLUMN: buy_time,
@@ -54,7 +64,7 @@ def _candidate(
     *,
     rank: int,
     adjusted_score: float = 100.0,
-) -> dict:
+) -> JsonDict:
     return {
         'strategy_name': name,
         'candidate_csv': csv_path,
@@ -71,7 +81,7 @@ def _candidate(
     }
 
 
-def _runtime(candidates: list[dict]) -> dict:
+def _runtime(candidates: list[JsonDict]) -> JsonDict:
     return {
         'status': 'ok',
         'phase': 'candidates_evaluated',
@@ -132,13 +142,13 @@ def _runtime(candidates: list[dict]) -> dict:
     }
 
 
-def test_resolve_candidate_csv_path_uses_runtime_root_for_relative_paths(tmp_path):
+def test_resolve_candidate_csv_path_uses_runtime_root_for_relative_paths(tmp_path: Path):
     path = resolve_candidate_csv_path(tmp_path, {'candidate_csv': 'backtest/csv/cand001.csv'})
 
     assert path == tmp_path / 'backtest' / 'csv' / 'cand001.csv'
 
 
-def test_analyze_tie_row_sets_groups_identical_candidate_csvs(tmp_path):
+def test_analyze_tie_row_sets_groups_identical_candidate_csvs(tmp_path: Path):
     csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     runtime = _runtime([
@@ -155,7 +165,7 @@ def test_analyze_tie_row_sets_groups_identical_candidate_csvs(tmp_path):
     assert result['groups'][0]['representative'] == 'cand002'
 
 
-def test_analyze_tie_row_sets_groups_partially_distinct_candidate_csvs(tmp_path):
+def test_analyze_tie_row_sets_groups_partially_distinct_candidate_csvs(tmp_path: Path):
     csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     csv_c = _trade_csv(tmp_path / 'cand003.csv', [_row('A', 1, 100), _row('C', 3, 300)])
@@ -174,7 +184,7 @@ def test_analyze_tie_row_sets_groups_partially_distinct_candidate_csvs(tmp_path)
     assert result['groups'][1]['representative'] == 'cand003'
 
 
-def test_analyze_tie_row_sets_reports_missing_csv(tmp_path):
+def test_analyze_tie_row_sets_reports_missing_csv(tmp_path: Path):
     runtime = _runtime([
         _candidate('cand001', str(tmp_path / 'missing.csv'), 'base and tighten and extra', rank=1),
     ])
@@ -186,8 +196,39 @@ def test_analyze_tie_row_sets_reports_missing_csv(tmp_path):
     assert 'missing.csv' in result['errors'][0]['message']
 
 
+def test_analyze_tie_row_sets_marks_single_candidate_as_not_evaluated(tmp_path: Path):
+    csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
+    runtime = _runtime([
+        _candidate('cand001', str(csv_a), 'base and tighten and extra', rank=1),
+    ])
+
+    result = analyze_tie_row_sets(runtime, runtime_root=tmp_path, top_n=10)
+
+    assert result['status'] == 'not_evaluated'
+    assert result['group_count'] == 1
+
+
+def test_build_v3_tie_break_analysis_treats_single_candidate_as_no_tie(tmp_path: Path):
+    csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
+    runtime_path = tmp_path / 'runtime.json'
+    runtime_path.write_text(json.dumps(_runtime([
+        _candidate('cand001', str(csv_a), 'base and tighten and extra', rank=1),
+    ]), ensure_ascii=False), encoding='utf-8')
+
+    analysis = build_v3_tie_break_analysis(
+        runtime_path=runtime_path,
+        runtime_root=tmp_path,
+        top_n=10,
+    )
+
+    assert analysis['row_set_gate']['status'] == 'not_evaluated'
+    assert analysis['decision'] == HOLD_SELECTION_DIVERSITY_REVIEW
+    assert 'all_distinct' not in analysis['quant_interpretation']
+    assert NO_TIE_MESSAGE in analysis['quant_interpretation']
+
+
 def test_choose_representative_prefers_fewer_conditions_then_family_priority():
-    members = [
+    members: list[JsonDict] = [
         {
             'strategy_name': 'tighten',
             'expression': 'base and tighten and extra',
@@ -216,7 +257,7 @@ def test_choose_representative_prefers_fewer_conditions_then_family_priority():
     assert representative['strategy_name'] == 'repair'
 
 
-def test_build_v3_tie_break_analysis_routes_identical_rows_to_hold(tmp_path):
+def test_build_v3_tie_break_analysis_routes_identical_rows_to_hold(tmp_path: Path):
     csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     runtime_path = tmp_path / 'runtime.json'
@@ -233,10 +274,10 @@ def test_build_v3_tie_break_analysis_routes_identical_rows_to_hold(tmp_path):
 
     assert analysis['decision'] == HOLD_ROW_SET_EQUIVALENCE
     assert analysis['row_set_gate']['status'] == 'all_identical'
-    assert analysis['next_command'] == '$brainstorming Wide v1 v4 row-set diversity 후보 생성 설계'
+    assert analysis['next_command'] == ROW_SET_DIVERSITY_COMMAND
 
 
-def test_build_v3_tie_break_analysis_holds_distinct_rows_when_selection_stays_one_family(tmp_path):
+def test_build_v3_tie_break_analysis_holds_distinct_rows_when_selection_stays_one_family(tmp_path: Path):
     csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100), _row('C', 3, 300)])
     runtime_path = tmp_path / 'runtime.json'
@@ -253,10 +294,10 @@ def test_build_v3_tie_break_analysis_holds_distinct_rows_when_selection_stays_on
 
     assert analysis['decision'] == HOLD_SELECTION_DIVERSITY_REVIEW
     assert analysis['row_set_gate']['status'] == 'all_distinct'
-    assert analysis['next_command'] == '$brainstorming Wide v1 v3 selection diversity 보강 설계'
+    assert analysis['next_command'] == SELECTION_DIVERSITY_COMMAND
 
 
-def test_build_v3_tie_break_analysis_routes_distinct_rows_to_v4(tmp_path):
+def test_build_v3_tie_break_analysis_routes_distinct_rows_to_v4(tmp_path: Path):
     csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100), _row('C', 3, 300)])
     runtime = _runtime([
@@ -278,13 +319,13 @@ def test_build_v3_tie_break_analysis_routes_distinct_rows_to_v4(tmp_path):
 
     assert analysis['decision'] == PROCEED_TO_V4_PLAN
     assert analysis['row_set_gate']['status'] == 'all_distinct'
-    assert analysis['next_command'] == '$writing-plans Wide v1 v4 후보 생성 또는 selection 조정 구현 계획 작성'
+    assert analysis['next_command'] == V4_PLAN_COMMAND
 
 
 def test_render_v3_tie_break_markdown_contains_decision_and_group_count():
     markdown = render_v3_tie_break_markdown({
         'decision': HOLD_ROW_SET_EQUIVALENCE,
-        'next_command': '$brainstorming Wide v1 v4 row-set diversity 후보 생성 설계',
+        'next_command': ROW_SET_DIVERSITY_COMMAND,
         'runtime_path': 'runtime.json',
         'runtime_root': '.',
         'top_n': 10,
@@ -313,8 +354,35 @@ def test_render_v3_tie_break_markdown_contains_decision_and_group_count():
     assert '# Wide v1 v3 tie-break and ranking reinforcement' in markdown
     assert 'decision=HOLD_ROW_SET_EQUIVALENCE' in markdown
     assert 'group_count=1' in markdown
-    assert '$brainstorming Wide v1 v4 row-set diversity 후보 생성 설계' in markdown
-def test_write_v3_tie_break_report_writes_markdown_and_returns_analysis(tmp_path):
+    assert ROW_SET_DIVERSITY_COMMAND in markdown
+
+
+def test_render_v3_tie_break_markdown_uses_no_tie_sentence_for_single_candidate():
+    markdown = render_v3_tie_break_markdown({
+        'decision': HOLD_SELECTION_DIVERSITY_REVIEW,
+        'next_command': SELECTION_DIVERSITY_COMMAND,
+        'runtime_path': 'runtime.json',
+        'runtime_root': '.',
+        'top_n': 10,
+        'row_set_gate': {
+            'status': 'not_evaluated',
+            'group_count': 1,
+            'candidate_count': 1,
+            'groups': [],
+        },
+        'family_gate': {
+            'selected_type_counts': {'v3_tighten_secondary': 1},
+            'executed_type_counts': {'v3_tighten_secondary': 1},
+        },
+        'quant_interpretation': [NO_TIE_MESSAGE],
+    })
+
+    assert 'row_set_identity_status=not_evaluated' in markdown
+    assert NO_TIE_MESSAGE in markdown
+    assert 'all_distinct' not in markdown
+
+
+def test_write_v3_tie_break_report_writes_markdown_and_returns_analysis(tmp_path: Path):
     csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100), _row('B', 2, 200)])
     runtime_path = tmp_path / 'runtime.json'
