@@ -364,6 +364,80 @@ def test_discovery_research_handler_passes_iteration_v2_options():
     assert payload['iteration_v2_secondary_features'] == 'B_체결강도,B_등락율'
 
 
+def test_discovery_research_parser_accepts_iteration_v2_mode_v3():
+    parser = create_subcommand_parser()
+
+    args = parser.parse_args([
+        'discovery',
+        'research',
+        'WideV1IterationV3_20260423',
+        '--input',
+        'cand005.csv',
+        '--score-reference-csv',
+        'wide.csv',
+        '--base-buy-strategy',
+        'WideV1IterationV2_20260423__cand005',
+        '--sell',
+        'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+        '--start',
+        '20250101',
+        '--end',
+        '20251231',
+        '--run-candidates',
+        '--candidate-count',
+        '10',
+        '--iteration-v2-mode',
+        'best_feature_mix_v3',
+        '--iteration-v2-best-candidate',
+        'WideV1IterationV2_20260423__cand005',
+        '--iteration-v2-best-expression',
+        '66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4',
+    ])
+
+    assert args.iteration_v2_mode == 'best_feature_mix_v3'
+    assert args.candidate_count == 10
+    assert args.score_reference_csv == 'wide.csv'
+
+
+def test_discovery_research_handler_passes_iteration_v2_mode_v3():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok'}
+        code = handle_subcommand([
+            'discovery',
+            'research',
+            'WideV1IterationV3_20260423',
+            '--input',
+            'cand005.csv',
+            '--score-reference-csv',
+            'wide.csv',
+            '--base-buy-strategy',
+            'WideV1IterationV2_20260423__cand005',
+            '--sell',
+            'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+            '--start',
+            '20250101',
+            '--end',
+            '20251231',
+            '--run-candidates',
+            '--candidate-count',
+            '10',
+            '--iteration-v2-mode',
+            'best_feature_mix_v3',
+            '--iteration-v2-best-candidate',
+            'WideV1IterationV2_20260423__cand005',
+            '--iteration-v2-best-expression',
+            '66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4',
+            '--iteration-v2-secondary-features',
+            'B_체결강도,B_등락율,B_당일거래대금',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert code == 0
+    assert payload['iteration_v2_mode'] == 'best_feature_mix_v3'
+    assert payload['candidate_count'] == 10
+    assert payload['score_reference_csv'] == 'wide.csv'
+
+
 def test_discovery_research_handler_returns_nonzero_on_error_status():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'error'}

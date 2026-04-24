@@ -321,6 +321,46 @@ def test_render_research_report_markdown_contains_iteration_v2_section():
     assert 'primary_secondary_combo' in markdown
 
 
+def test_render_research_report_markdown_contains_iteration_v3_section():
+    markdown = render_research_report_markdown({
+        'status': 'ok',
+        'name': 'WideV1IterationV3_20260423',
+        'baseline_csv': 'cand005.csv',
+        'score_reference_csv': 'wide.csv',
+        'trade_counts': {'baseline': 36096, 'candidate': 35000, 'common': 34000},
+        'iteration_v3': {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v3',
+            'primary_feature': 'B_시가총액',
+            'trade_amount_feature': 'B_당일거래대금',
+            'secondary_features': ['B_체결강도', 'B_등락율', 'B_당일거래대금'],
+            'candidate_count': 10,
+            'type_counts': {
+                'v3_tighten_secondary': 4,
+                'v3_repair_trade_amount': 3,
+                'v3_replace_secondary': 3,
+                'v3_control_keep_best': 1,
+            },
+            'control_candidate': {
+                'strategy_name': 'WideV1IterationV2_20260423__cand005',
+                'expression': (
+                    '66.999 <= 시가총액 < 2_580 and '
+                    '1805.7 <= 당일거래대금 < 3654.4'
+                ),
+                'reference_adjusted_score': 13497.662902097409,
+                'skip_backtest': True,
+            },
+        },
+    })
+
+    assert '## Iteration Loop v3 Candidate Generation' in markdown
+    assert '- mode: best_feature_mix_v3' in markdown
+    assert 'v3_tighten_secondary: 4' in markdown
+    assert 'v3_control_keep_best: 1' in markdown
+    assert 'control_strategy_name: WideV1IterationV2_20260423__cand005' in markdown
+    assert 'control_skip_backtest: True' in markdown
+
+
 def test_render_research_report_markdown_omits_disabled_iteration_v2_section():
     report = build_research_report({
         'status': 'ok',
