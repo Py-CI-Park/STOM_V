@@ -39,14 +39,14 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    from cli.research_v3_tiebreak import write_v3_tie_break_report
+    from cli.research_v4_rowset import write_v4_rowset_diversity_report
 
     args = build_parser().parse_args(argv)
     runtime_path = cast(Path, args.runtime_path)
     runtime_root = cast(Path, args.runtime_root)
     output_path = cast(Path, args.output)
     top_n = cast(int, args.top_n)
-    analysis = cast(dict[str, object], write_v3_tie_break_report(
+    analysis = cast(dict[str, object], write_v4_rowset_diversity_report(
         runtime_path=runtime_path,
         runtime_root=runtime_root,
         output_path=output_path,

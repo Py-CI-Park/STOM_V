@@ -497,16 +497,16 @@ def test_analyze_wide_v1_v4_rowset_diversity_requires_runtime_and_prints_summary
     runtime_root.mkdir()
     captured: dict[str, Any] = {}
 
-    def fake_write_v3_tie_break_report(**kwargs: Any) -> JsonDict:
+    def fake_write_v4_rowset_diversity_report(**kwargs: Any) -> JsonDict:
         captured.update(kwargs)
         Path(kwargs['output_path']).write_text('# generated\n', encoding='utf-8')
         return {
-            'decision': HOLD_ROW_SET_EQUIVALENCE,
+            'decision': 'PROCEED_TO_PROMOTE_WFO_PLAN',
             'next_command': '$brainstorming next',
-            'row_set_gate': {'status': 'all_identical', 'group_count': 1},
+            'row_set_gate': {'status': 'all_distinct', 'group_count': 5},
         }
 
-    monkeypatch.setattr('cli.research_v3_tiebreak.write_v3_tie_break_report', fake_write_v3_tie_break_report)
+    monkeypatch.setattr('cli.research_v4_rowset.write_v4_rowset_diversity_report', fake_write_v4_rowset_diversity_report)
     monkeypatch.setattr(
         sys,
         'argv',
@@ -534,9 +534,9 @@ def test_analyze_wide_v1_v4_rowset_diversity_requires_runtime_and_prints_summary
         'output_path': output_path,
         'top_n': 5,
     }
-    assert 'decision=HOLD_ROW_SET_EQUIVALENCE' in stdout
-    assert 'row_set_identity_status=all_identical' in stdout
-    assert 'group_count=1' in stdout
+    assert 'decision=PROCEED_TO_PROMOTE_WFO_PLAN' in stdout
+    assert 'row_set_identity_status=all_distinct' in stdout
+    assert 'group_count=5' in stdout
     assert f'wrote={output_path}' in stdout
 
 
