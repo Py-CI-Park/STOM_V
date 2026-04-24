@@ -380,7 +380,6 @@ def build_v3_decision_analysis(
         'control_score_gate': control_gate,
         'tie_gate': tie_gate,
         'family_gate': family_gate,
-        'family_selection_summary': family_gate.get('family_selection_summary'),
         'quant_validity_gate': quant_gate,
     }
 
@@ -395,7 +394,6 @@ def render_v3_decision_markdown(analysis: dict) -> str:
     control_gate = analysis.get('control_score_gate') or {}
     tie_gate = analysis.get('tie_gate') or {}
     family_gate = analysis.get('family_gate') or {}
-    family_selection_summary = analysis.get('family_selection_summary') or family_gate.get('family_selection_summary')
     quant_gate = analysis.get('quant_validity_gate') or {}
     next_command = analysis.get('next_command')
     return f"""# Wide v1 v3 결과 분석 및 v4 여부 판단
@@ -451,10 +449,6 @@ tie_candidate_count={tie_gate.get('tie_candidate_count')}
 
 ```json
 {_format_dict(family_gate)}
-```
-
-```json
-{_format_dict(family_selection_summary)}
 ```
 
 ## 7. Quant Validity Gate

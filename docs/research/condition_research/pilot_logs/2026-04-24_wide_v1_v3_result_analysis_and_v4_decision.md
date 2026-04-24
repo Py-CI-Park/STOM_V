@@ -83,14 +83,6 @@ tie_candidate_count=10
 }
 ```
 
-```json
-{
-  "v3_repair_trade_amount": "retention-pass only",
-  "v3_replace_secondary": "retention-pass only",
-  "v3_tighten_secondary": "selected/executed"
-}
-```
-
 ## 7. Quant Validity Gate
 
 ```json
