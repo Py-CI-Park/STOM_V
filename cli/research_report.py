@@ -52,6 +52,8 @@ def build_research_report(result: dict, strategy_name: str | None = None) -> dic
         'iteration_v2': result.get('iteration_v2'),
         'iteration_v3': result.get('iteration_v3'),
         'iteration_v4': result.get('iteration_v4'),
+        'iteration_v5': result.get('iteration_v5'),
+        'actual_rowset_selection': result.get('actual_rowset_selection'),
         'retention_selection': result.get('retention_selection'),
         'candidates': result.get('candidates'),
         'best_candidate': result.get('best_candidate'),
@@ -278,6 +280,45 @@ def _append_iteration_v4_section(lines: list[str], report: dict) -> None:
             )
 
 
+def _append_iteration_v5_section(lines: list[str], report: dict) -> None:
+    iteration_v5 = report.get('iteration_v5') or {}
+    actual_selection = report.get('actual_rowset_selection') or {}
+    if not iteration_v5 and not actual_selection:
+        return
+
+    lines.extend(['', '## Iteration Loop v5 Actual Row-Set Selection'])
+    for key in (
+        'status',
+        'mode',
+        'requested_count',
+        'eligible_count',
+        'planned_execution_count',
+        'execution_count',
+        'actual_selected_count',
+        'row_set_identity_status',
+    ):
+        if key in iteration_v5:
+            lines.append(f"- {key}: {iteration_v5.get(key)}")
+
+    if actual_selection:
+        lines.append("- actual_rowset_selection:")
+        for key in (
+            'status',
+            'row_set_identity_status',
+            'requested_count',
+            'executed_count',
+            'actual_group_count',
+            'selected_count',
+            'duplicate_actual_rowset_count',
+            'skipped_duplicate_actual_count',
+        ):
+            if key in actual_selection:
+                lines.append(f"- {key}: {actual_selection.get(key)}")
+        selected_names = actual_selection.get('selected_strategy_names') or []
+        if selected_names:
+            lines.append(f"- selected_strategy_names: {', '.join(str(name) for name in selected_names)}")
+
+
 def _append_score_baseline_section(lines: list[str], report: dict) -> None:
     score_reference_csv = report.get('score_reference_csv')
     candidates = report.get('candidates') or []
@@ -467,6 +508,7 @@ def render_research_report_markdown(report: dict) -> str:
     _append_iteration_v2_section(lines, report)
     _append_iteration_v3_section(lines, report)
     _append_iteration_v4_section(lines, report)
+    _append_iteration_v5_section(lines, report)
 
     lines.extend([
         '',

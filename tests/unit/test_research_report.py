@@ -414,6 +414,47 @@ def test_render_research_report_markdown_contains_iteration_v4_section():
     assert 'control_strategy_name: WideV1IterationV2_20260423__cand005' in markdown
 
 
+def test_render_research_report_markdown_contains_iteration_v5_actual_rowset_section():
+    result = {
+        'status': 'ok',
+        'strategy_name': 'WideV1IterationV5_20260424',
+        'baseline_csv': 'cand005.csv',
+        'iteration_v5': {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v5',
+            'requested_count': 10,
+            'eligible_count': 18,
+            'planned_execution_count': 18,
+            'execution_count': 18,
+            'actual_selected_count': 10,
+            'row_set_identity_status': 'all_distinct',
+        },
+        'actual_rowset_selection': {
+            'status': 'ok',
+            'row_set_identity_status': 'all_distinct',
+            'requested_count': 10,
+            'executed_count': 18,
+            'actual_group_count': 12,
+            'selected_count': 10,
+            'duplicate_actual_rowset_count': 6,
+            'skipped_duplicate_actual_count': 8,
+            'selected_strategy_names': ['cand001', 'cand003'],
+        },
+    }
+
+    report = build_research_report(result, strategy_name='WideV1IterationV5_20260424')
+    markdown = render_research_report_markdown(report)
+
+    assert report['iteration_v5']['mode'] == 'best_feature_mix_v5'
+    assert report['actual_rowset_selection']['status'] == 'ok'
+    assert '## Iteration Loop v5 Actual Row-Set Selection' in markdown
+    assert '- mode: best_feature_mix_v5' in markdown
+    assert '- planned_execution_count: 18' in markdown
+    assert '- row_set_identity_status: all_distinct' in markdown
+    assert '- duplicate_actual_rowset_count: 6' in markdown
+    assert '- selected_strategy_names: cand001, cand003' in markdown
+
+
 def test_render_research_report_markdown_omits_disabled_iteration_v2_section():
     report = build_research_report({
         'status': 'ok',

@@ -504,6 +504,72 @@ def test_discovery_research_handler_passes_iteration_v2_mode_v4():
     assert payload['candidate_count'] == 10
 
 
+def test_discovery_research_parser_accepts_iteration_v2_mode_v5():
+    parser = create_subcommand_parser()
+
+    args = parser.parse_args([
+        'discovery',
+        'research',
+        'WideV1IterationV5_20260424',
+        '--input',
+        'cand005.csv',
+        '--base-buy-strategy',
+        'WideV1IterationV4_20260424__cand001',
+        '--sell',
+        'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+        '--start',
+        '20250101',
+        '--end',
+        '20251231',
+        '--run-candidates',
+        '--candidate-count',
+        '10',
+        '--iteration-v2-mode',
+        'best_feature_mix_v5',
+        '--iteration-v2-best-candidate',
+        'WideV1IterationV4_20260424__cand001',
+        '--iteration-v2-best-expression',
+        '66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4',
+    ])
+
+    assert args.iteration_v2_mode == 'best_feature_mix_v5'
+    assert args.candidate_count == 10
+
+
+def test_discovery_research_handler_passes_iteration_v2_mode_v5():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok'}
+        code = handle_subcommand([
+            'discovery',
+            'research',
+            'WideV1IterationV5_20260424',
+            '--input',
+            'cand005.csv',
+            '--base-buy-strategy',
+            'WideV1IterationV4_20260424__cand001',
+            '--sell',
+            'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+            '--start',
+            '20250101',
+            '--end',
+            '20251231',
+            '--run-candidates',
+            '--candidate-count',
+            '10',
+            '--iteration-v2-mode',
+            'best_feature_mix_v5',
+            '--iteration-v2-best-candidate',
+            'WideV1IterationV4_20260424__cand001',
+            '--iteration-v2-best-expression',
+            '66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert code == 0
+    assert payload['iteration_v2_mode'] == 'best_feature_mix_v5'
+    assert payload['candidate_count'] == 10
+
+
 def test_discovery_research_handler_returns_nonzero_on_error_status():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'error'}

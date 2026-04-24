@@ -186,7 +186,7 @@ def create_subcommand_parser():
     disc_research.add_argument('--keep-failed-candidate', action='store_true', default=False)
     disc_research.add_argument(
         '--iteration-v2-mode',
-        choices=['best_feature_mix', 'best_feature_mix_v3', 'best_feature_mix_v4'],
+        choices=['best_feature_mix', 'best_feature_mix_v3', 'best_feature_mix_v4', 'best_feature_mix_v5'],
         default='',
     )
     disc_research.add_argument('--iteration-v2-best-candidate', default='')
