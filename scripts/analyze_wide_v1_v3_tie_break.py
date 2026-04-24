@@ -19,6 +19,13 @@ DEFAULT_OUTPUT = PROJECT_ROOT / 'docs' / 'research' / 'condition_research' / 'pi
 )
 
 
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 1:
+        raise argparse.ArgumentTypeError('--top-n must be a positive integer')
+    return parsed
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description='Analyze wide v1/v3 tie-break ranking diagnostics and write the markdown report.',
@@ -26,7 +33,7 @@ def build_parser() -> argparse.ArgumentParser:
     _ = parser.add_argument('--runtime-path', type=Path, default=DEFAULT_RUNTIME_PATH)
     _ = parser.add_argument('--runtime-root', type=Path, default=DEFAULT_RUNTIME_ROOT)
     _ = parser.add_argument('--output', type=Path, default=DEFAULT_OUTPUT)
-    _ = parser.add_argument('--top-n', type=int, default=10)
+    _ = parser.add_argument('--top-n', type=positive_int, default=10)
     return parser
 
 

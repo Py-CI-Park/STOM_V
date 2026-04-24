@@ -452,3 +452,44 @@ def test_analyze_wide_v1_v3_tie_break_script_uses_defaults_and_prints_summary(
     assert 'decision=HOLD_ROW_SET_EQUIVALENCE' in stdout
     assert 'next_command=$brainstorming Wide v1 v4 row-set diversity 후보 생성 설계' in stdout
     assert f'wrote={output_path}' in stdout
+
+
+@pytest.mark.parametrize('invalid_top_n', ['0', '-1'])
+def test_analyze_wide_v1_v3_tie_break_script_rejects_non_positive_top_n(
+    invalid_top_n: str,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+):
+    project_root = Path(__file__).resolve().parents[2]
+    script_path = project_root / 'scripts' / 'analyze_wide_v1_v3_tie_break.py'
+    output_path = tmp_path / 'generated.md'
+    writer_called = False
+
+    def fake_write_v3_tie_break_report(**_: Any) -> JsonDict:
+        nonlocal writer_called
+        writer_called = True
+        raise AssertionError('writer should not be called for invalid --top-n')
+
+    monkeypatch.setattr('cli.research_v3_tiebreak.write_v3_tie_break_report', fake_write_v3_tie_break_report)
+    monkeypatch.setattr(
+        sys,
+        'argv',
+        [
+            str(script_path),
+            '--output',
+            str(output_path),
+            '--top-n',
+            invalid_top_n,
+        ],
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(script_path), run_name='__main__')
+    captured = capsys.readouterr()
+
+    assert excinfo.value.code != 0
+    assert not writer_called
+    assert not output_path.exists()
+    assert 'usage:' in captured.err
+    assert '--top-n' in captured.err
