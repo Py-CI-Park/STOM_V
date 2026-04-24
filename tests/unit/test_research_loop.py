@@ -3,7 +3,9 @@ from dataclasses import fields
 import pandas as pd
 
 from cli import research_loop
+from cli.research_compare import INSTRUMENT_COLUMNS, OPTIONAL_KEY_COLUMNS, REQUIRED_KEY_COLUMNS
 from cli.research_loop import ResearchLoopConfig, run_research_once
+from cli.research_metrics import NUMERIC_COLUMNS
 
 
 class DummyController:
@@ -27,6 +29,20 @@ def _write_trade_csv(path, name='A', buy_time=202501010900):
     pd.DataFrame([
         {'종목명': name, '매수시간': buy_time, '매도시간': buy_time + 10, '매수가': 1000, '수익률': -1.0, '수익금': -1000, 'R_MFE': 0.2, 'R_MAE': -2.0},
     ]).to_csv(path, index=False, encoding='utf-8-sig')
+
+
+def _write_identity_trade_csv(path, *, symbol='A', buy_time=202501010900, buy_price=1000):
+    pd.DataFrame([{
+        INSTRUMENT_COLUMNS[1]: symbol,
+        REQUIRED_KEY_COLUMNS[0]: buy_time,
+        OPTIONAL_KEY_COLUMNS[0]: buy_price,
+        NUMERIC_COLUMNS[1]: buy_time + 10,
+        NUMERIC_COLUMNS[3]: buy_price + 1,
+        NUMERIC_COLUMNS[5]: 1.0,
+        NUMERIC_COLUMNS[6]: 1000,
+        'R_MFE': 1.2,
+        'R_MAE': -0.2,
+    }]).to_csv(path, index=False, encoding='utf-8')
 
 
 def _patch_analysis_success(monkeypatch, expressions=None, selected_candidates=None):
@@ -1521,6 +1537,129 @@ def test_run_research_iteration_applies_v4_proxy_diverse_selection(monkeypatch, 
     assert result['retention_selection']['phase'] == 'rowset_diverse_candidates_selected'
     assert result['retention_selection']['proxy_group_count'] >= 2
     assert executed_specs
+
+
+def test_run_research_iteration_v5_executes_oversampled_pool_and_selects_actual_rowsets(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    trade_amount_feature = (research_loop.build_v4_candidate_pool.__kwdefaults__ or {})['trade_amount_feature']
+    trade_amount_runtime_feature = trade_amount_feature[2:]
+    pd.DataFrame([
+        {'B_PRIMARY': 50, trade_amount_feature: 2000, 'B_STRENGTH': 10, INSTRUMENT_COLUMNS[1]: 'A', REQUIRED_KEY_COLUMNS[0]: 1, OPTIONAL_KEY_COLUMNS[0]: 100},
+        {'B_PRIMARY': 60, trade_amount_feature: 3000, 'B_STRENGTH': 20, INSTRUMENT_COLUMNS[1]: 'B', REQUIRED_KEY_COLUMNS[0]: 2, OPTIONAL_KEY_COLUMNS[0]: 200},
+    ]).to_csv(baseline, index=False, encoding='utf-8')
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'ok'})
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': ['STRENGTH < 15', 'STRENGTH < 25'],
+            'selected_candidates': [
+                {'feature': 'B_STRENGTH', 'operator': '<', 'threshold': 15.0, 'expression': 'STRENGTH < 15'},
+                {'feature': 'B_STRENGTH', 'operator': '<', 'threshold': 25.0, 'expression': 'STRENGTH < 25'},
+            ],
+        },
+    )
+    v4_candidates = [
+        {'expression': 'STRENGTH < 15', 'v4_candidate_type': 'v4_replace_secondary', 'combined_score': 10.0},
+        {'expression': 'STRENGTH < 20', 'v4_candidate_type': 'v4_tighten_secondary', 'combined_score': 9.0},
+        {'expression': 'AMOUNT < 3500', 'v4_candidate_type': 'v4_relax_trade_amount', 'combined_score': 8.0},
+        {'expression': 'PRIMARY < 70', 'v4_candidate_type': 'v4_repair_trade_amount', 'combined_score': 7.0},
+    ]
+    def fake_build_v4_candidate_pool(*args, trade_amount_feature=trade_amount_feature, **kwargs):
+        return {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v4',
+            'candidates': list(v4_candidates),
+            'candidate_count': len(v4_candidates),
+            'type_counts': {
+                'v4_replace_secondary': 1,
+                'v4_tighten_secondary': 1,
+                'v4_relax_trade_amount': 1,
+                'v4_repair_trade_amount': 1,
+            },
+        }
+
+    monkeypatch.setattr(research_loop, 'build_v4_candidate_pool', fake_build_v4_candidate_pool)
+    monkeypatch.setattr(
+        research_loop,
+        'annotate_candidate_rowset_proxy',
+        lambda candidates, baseline_frame, min_retention: [dict(candidate, retention_filter_passed=True) for candidate in candidates],
+    )
+
+    def fake_select_rowset_diverse_candidates(candidates, *, candidate_count, min_retention):
+        selected = [dict(candidate) for candidate in candidates[:candidate_count]]
+        return selected, {
+            'status': 'ok',
+            'phase': 'rowset_diverse_candidates_selected',
+            'requested_count': candidate_count,
+            'selected_count': len(selected),
+            'eligible_count': len(candidates),
+        }
+
+    monkeypatch.setattr(research_loop, 'select_rowset_diverse_candidates', fake_select_rowset_diverse_candidates)
+
+    executed_specs = []
+    row_identity = {
+        1: ('A', 1, 100),
+        2: ('A', 1, 100),
+        3: ('B', 2, 200),
+        4: ('C', 3, 300),
+    }
+
+    def fake_execute_candidate_spec(config, spec, controller, baseline_csv):
+        executed_specs.append(spec)
+        symbol, buy_time, buy_price = row_identity[spec['index']]
+        candidate_csv = tmp_path / f"{spec['strategy_name']}.csv"
+        _write_identity_trade_csv(candidate_csv, symbol=symbol, buy_time=buy_time, buy_price=buy_price)
+        return {
+            'status': 'ok',
+            'strategy_name': spec['strategy_name'],
+            'candidate_csv': str(candidate_csv),
+            'expression': spec['expression'],
+            'comparison': {
+                'trade_count_retention': 0.9,
+                'candidate_summary': {
+                    'trade_count': 1.0,
+                    'date_concentration': 1.0,
+                    'symbol_concentration': 1.0,
+                },
+            },
+            'promotion': {'status': 'ok', 'passed': True, 'score': 100.0 - spec['index']},
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute_candidate_spec)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V5Run',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_best_candidate='WideV1IterationV4__cand001',
+            iteration_v2_best_expression=f'10 <= PRIMARY < 90 and 1000 <= {trade_amount_runtime_feature} < 5000',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_secondary_features=f'B_STRENGTH,{trade_amount_feature}',
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'ok'
+    assert len(executed_specs) == 4
+    assert result['iteration_v5']['requested_count'] == 2
+    assert result['iteration_v5']['execution_count'] == 4
+    assert result['actual_rowset_selection']['selected_strategy_names'] == ['V5Run__cand001', 'V5Run__cand003']
+    assert result['actual_rowset_selection']['status'] == 'ok'
+    assert result['actual_rowset_selection']['duplicate_actual_rowset_count'] == 1
+    assert result['best_candidate']['strategy_name'] == 'V5Run__cand001'
+    selected = [
+        candidate['strategy_name']
+        for candidate in result['candidates']
+        if candidate.get('actual_rowset_selected') is True
+    ]
+    assert selected == ['V5Run__cand001', 'V5Run__cand003']
 
 
 def test_run_research_iteration_keeps_v3_retention_selection_path(monkeypatch, tmp_path):
