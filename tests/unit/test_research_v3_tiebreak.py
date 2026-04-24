@@ -3,10 +3,13 @@ from __future__ import annotations
 # pyright: reportAny=none, reportExplicitAny=none, reportMissingTypeStubs=none, reportUnknownArgumentType=none, reportUnknownMemberType=none, reportUnknownVariableType=none, reportUnusedCallResult=none
 
 import json
+import runpy
 from pathlib import Path
+import sys
 from typing import Any, TypeAlias
 
 import pandas as pd
+import pytest
 
 from cli.research_compare import INSTRUMENT_COLUMNS, OPTIONAL_KEY_COLUMNS, REQUIRED_KEY_COLUMNS
 from cli.research_metrics import NUMERIC_COLUMNS
@@ -402,3 +405,50 @@ def test_write_v3_tie_break_report_writes_markdown_and_returns_analysis(tmp_path
     assert analysis['decision'] == HOLD_ROW_SET_EQUIVALENCE
     assert output_path.exists()
     assert output_path.read_text(encoding='utf-8').startswith('# Wide v1 v3 tie-break and ranking reinforcement')
+
+
+def test_analyze_wide_v1_v3_tie_break_script_uses_defaults_and_prints_summary(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+):
+    project_root = Path(__file__).resolve().parents[2]
+    script_path = project_root / 'scripts' / 'analyze_wide_v1_v3_tie_break.py'
+    output_path = tmp_path / 'generated.md'
+    captured: dict[str, Any] = {}
+
+    def fake_write_v3_tie_break_report(**kwargs: Any) -> JsonDict:
+        captured.update(kwargs)
+        Path(kwargs['output_path']).write_text('# generated\n', encoding='utf-8')
+        return {
+            'decision': HOLD_ROW_SET_EQUIVALENCE,
+            'next_command': '$brainstorming Wide v1 v4 row-set diversity 후보 생성 설계',
+        }
+
+    monkeypatch.setattr('cli.research_v3_tiebreak.write_v3_tie_break_report', fake_write_v3_tie_break_report)
+    monkeypatch.setattr(
+        sys,
+        'argv',
+        [
+            str(script_path),
+            '--output',
+            str(output_path),
+            '--top-n',
+            '7',
+        ],
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(script_path), run_name='__main__')
+    stdout = capsys.readouterr().out
+
+    assert excinfo.value.code == 0
+    assert captured == {
+        'runtime_path': Path(r'C:\System_Trading\STOM\STOM_V.wt-wide-v3\backtest\temp\wide_v1_iteration_v3_20260423.json'),
+        'runtime_root': Path(r'C:\System_Trading\STOM\STOM_V.wt-wide-v3'),
+        'output_path': output_path,
+        'top_n': 7,
+    }
+    assert 'decision=HOLD_ROW_SET_EQUIVALENCE' in stdout
+    assert 'next_command=$brainstorming Wide v1 v4 row-set diversity 후보 생성 설계' in stdout
+    assert f'wrote={output_path}' in stdout
