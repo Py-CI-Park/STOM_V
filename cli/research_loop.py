@@ -11,6 +11,11 @@ from cli.condition_generator import generate_condition_expressions_from_analysis
 from cli.paths import DB_STRATEGY
 from cli.research_iteration_v2 import build_v2_candidate_pool, candidate_from_expression
 from cli.research_iteration_v3 import build_v3_candidate_pool, parse_best_expression_conditions
+from cli.research_iteration_v4 import (
+    annotate_candidate_rowset_proxy,
+    build_v4_candidate_pool,
+    select_rowset_diverse_candidates,
+)
 from cli.research_compare import (
     INSTRUMENT_COLUMNS,
     OPTIONAL_KEY_COLUMNS,
@@ -174,12 +179,18 @@ def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
     }
 
 
-def _iteration_generation_metadata(iteration_v2: dict | None, iteration_v3: dict | None) -> dict:
-    metadata = {}
+def _iteration_generation_metadata(
+    iteration_v2: dict[str, object] | None,
+    iteration_v3: dict[str, object] | None,
+    iteration_v4: dict[str, object] | None = None,
+) -> dict[str, object]:
+    metadata: dict[str, object] = {}
     if iteration_v2:
         metadata['iteration_v2'] = iteration_v2
     if iteration_v3:
         metadata['iteration_v3'] = iteration_v3
+    if iteration_v4:
+        metadata['iteration_v4'] = iteration_v4
     return metadata
 
 
@@ -333,11 +344,11 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
             'invalid_candidate_pool_multiplier',
             'candidate_pool_multiplier must be greater than or equal to 1',
         )
-    allowed_iteration_modes = {'best_feature_mix', 'best_feature_mix_v3'}
+    allowed_iteration_modes = {'best_feature_mix', 'best_feature_mix_v3', 'best_feature_mix_v4'}
     if config.run_candidates and config.iteration_v2_mode and config.iteration_v2_mode not in allowed_iteration_modes:
         return _error(
             'invalid_iteration_v2_mode',
-            'iteration_v2_mode must be empty, best_feature_mix, or best_feature_mix_v3',
+            'iteration_v2_mode must be empty, best_feature_mix, best_feature_mix_v3, or best_feature_mix_v4',
         )
     if config.run_candidates and config.iteration_v2_max_secondary_only < 0:
         return _error(
@@ -349,9 +360,14 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
             'missing_iteration_v2_best_expression',
             'iteration_v2_best_expression is required when iteration_v2_mode is set',
         )
-    if config.run_candidates and config.iteration_v2_mode == 'best_feature_mix_v3':
+    if config.run_candidates and config.iteration_v2_mode in {'best_feature_mix_v3', 'best_feature_mix_v4'}:
+        candidate_pool_builder = (
+            build_v4_candidate_pool
+            if config.iteration_v2_mode == 'best_feature_mix_v4'
+            else build_v3_candidate_pool
+        )
         trade_amount_feature = (
-            (build_v3_candidate_pool.__kwdefaults__ or {}).get('trade_amount_feature')
+            (candidate_pool_builder.__kwdefaults__ or {}).get('trade_amount_feature')
             or 'B_당일거래대금'
         )
         try:
@@ -363,7 +379,7 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
         except ValueError:
             return _error(
                 'invalid_iteration_v2_best_expression',
-                'best_feature_mix_v3 iteration_v2_best_expression must contain exactly two parseable conditions',
+                f'{config.iteration_v2_mode} iteration_v2_best_expression must contain exactly two parseable conditions',
             )
     if config.run_candidate and config.run_candidates:
         return _error(
@@ -1199,6 +1215,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         expression_candidates.append(source_candidate)
     iteration_v2 = None
     iteration_v3 = None
+    iteration_v4 = None
     if config.iteration_v2_mode == 'best_feature_mix':
         best_context = {
             'strategy_name': config.iteration_v2_best_candidate,
@@ -1250,18 +1267,54 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             'iteration_v3': iteration_v3,
         }
         expressions = expression_result['expressions']
+    elif config.iteration_v2_mode == 'best_feature_mix_v4':
+        best_context = {
+            'strategy_name': config.iteration_v2_best_candidate,
+            'expression': config.iteration_v2_best_expression,
+        }
+        if _score_reference_csv(config):
+            best_context['reference_adjusted_score'] = _safe_reference_promotion_score(config, baseline_csv)
+        iteration_v4 = build_v4_candidate_pool(
+            expression_candidates,
+            best_context=best_context,
+            primary_feature=config.iteration_v2_primary_feature,
+            secondary_features=_split_csv_values(config.iteration_v2_secondary_features),
+            min_estimated_retention=config.min_estimated_retention,
+            retention_tolerance=config.iteration_v2_duplicate_retention_tolerance,
+        )
+        expression_candidates = iteration_v4.get('candidates') or []
+        expression_result = {
+            **expression_result,
+            'selected_candidates': expression_candidates,
+            'expressions': [candidate['expression'] for candidate in expression_candidates],
+            'candidate_count': len(expression_candidates),
+            'iteration_v4': iteration_v4,
+        }
+        expressions = expression_result['expressions']
     baseline_frame = _trade_frame_for_compare(baseline_csv)
-    annotated_candidates = annotate_candidate_retention(
-        expression_candidates,
-        baseline_frame,
-        min_retention=config.min_estimated_retention,
-    )
-    selected_candidates, retention_selection = select_retention_aware_candidates(
-        annotated_candidates,
-        candidate_count=config.candidate_count,
-        allow_fallback=config.allow_retention_fallback,
-        min_retention=config.min_estimated_retention,
-    )
+    if config.iteration_v2_mode == 'best_feature_mix_v4':
+        annotated_candidates = annotate_candidate_rowset_proxy(
+            expression_candidates,
+            baseline_frame,
+            min_retention=config.min_estimated_retention,
+        )
+        selected_candidates, retention_selection = select_rowset_diverse_candidates(
+            annotated_candidates,
+            candidate_count=config.candidate_count,
+            min_retention=config.min_estimated_retention,
+        )
+    else:
+        annotated_candidates = annotate_candidate_retention(
+            expression_candidates,
+            baseline_frame,
+            min_retention=config.min_estimated_retention,
+        )
+        selected_candidates, retention_selection = select_retention_aware_candidates(
+            annotated_candidates,
+            candidate_count=config.candidate_count,
+            allow_fallback=config.allow_retention_fallback,
+            min_retention=config.min_estimated_retention,
+        )
     retention_candidates = _retention_candidate_diagnostics(
         annotated_candidates,
         selected_candidates,
@@ -1287,7 +1340,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             analysis_result=analysis_result,
             expression_result=expression_result,
             iteration_plan=iteration_plan,
-            **_iteration_generation_metadata(iteration_v2, iteration_v3),
+            **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4),
             retention_selection=retention_selection,
             retention_candidates=retention_candidates,
         ))
@@ -1305,7 +1358,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             analysis_result=analysis_result,
             expression_result=expression_result,
             iteration_plan=iteration_plan,
-            **_iteration_generation_metadata(iteration_v2, iteration_v3),
+            **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4),
             retention_selection=retention_selection,
             retention_candidates=retention_candidates,
             requested_candidate_count=config.candidate_count,
@@ -1345,7 +1398,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'analysis_result': analysis_result,
         'expression_result': expression_result,
         'iteration_plan': iteration_plan,
-        **_iteration_generation_metadata(iteration_v2, iteration_v3),
+        **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4),
         'retention_selection': retention_selection,
         'retention_candidates': retention_candidates,
         'candidate_specs': specs,
