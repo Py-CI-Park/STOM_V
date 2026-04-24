@@ -46,6 +46,30 @@ def _candidate(
     }
 
 
+def _threshold_candidate(
+    feature: str,
+    operator: str,
+    threshold: float,
+    *,
+    score: float = 1.0,
+    retention: float = 0.9,
+) -> JsonDict:
+    return {
+        'feature': feature,
+        'operator': operator,
+        'lower_bound': None,
+        'upper_bound': None,
+        'threshold': threshold,
+        'score': score,
+        'combined_score': score,
+        'source': 'ttest',
+        'retention_estimate': {'estimated_retention': retention},
+        'retention_filter_passed': True,
+        'retention_fallback_used': False,
+        'expression': f'{feature[2:]} {operator} {threshold}',
+    }
+
+
 def _baseline_frame() -> pd.DataFrame:
     return pd.DataFrame({
         '시가총액': [100.0, 200.0, 300.0, 400.0],
@@ -76,6 +100,30 @@ def test_build_v4_candidate_pool_generates_v4_families():
     assert result['type_counts']['v4_replace_secondary'] >= 1
     assert result['type_counts']['v4_repair_trade_amount'] >= 1
     assert result['type_counts']['v4_relax_trade_amount'] >= 1
+
+
+def test_build_v4_candidate_pool_classifies_threshold_trade_amount_relax():
+    result = build_v4_candidate_pool(
+        [
+            _threshold_candidate('B_당일거래대금', '>=', 500.0, score=6.0),
+            _threshold_candidate('B_당일거래대금', '>=', 1500.0, score=5.0),
+        ],
+        best_context={
+            **BEST_CONTEXT,
+            'expression': '시가총액 >= 100 and 당일거래대금 >= 1000',
+        },
+        primary_feature='B_시가총액',
+        trade_amount_feature='B_당일거래대금',
+        secondary_features=['B_당일거래대금'],
+    )
+
+    trade_candidates = {
+        item['conditions'][1]['threshold']: item['v4_candidate_type']
+        for item in result['candidates']
+    }
+
+    assert trade_candidates[500.0] == 'v4_relax_trade_amount'
+    assert trade_candidates[1500.0] == 'v4_repair_trade_amount'
 
 
 def test_estimate_candidate_rowset_proxy_groups_identical_masks():
@@ -180,3 +228,42 @@ def test_select_rowset_diverse_candidates_skips_duplicate_proxy_groups_and_honor
     assert summary['proxy_group_count'] == 3
     assert summary['skipped_duplicate_proxy_count'] == 1
     assert summary['quota_summary']['v4_relax_trade_amount']['shortfall'] == 1
+
+
+def test_select_rowset_diverse_candidates_rechecks_min_retention_argument():
+    candidates = [
+        {
+            'expression': 'low-retention',
+            'v4_candidate_type': 'v4_tighten_secondary',
+            'combined_score': 100.0,
+            'rowset_proxy': {
+                'proxy_signature': frozenset({1}),
+                'proxy_signature_hash': 'a',
+                'proxy_retention': 0.10,
+                'proxy_filter_passed': True,
+                'evaluation_error': None,
+            },
+        },
+        {
+            'expression': 'high-retention',
+            'v4_candidate_type': 'v4_tighten_secondary',
+            'combined_score': 10.0,
+            'rowset_proxy': {
+                'proxy_signature': frozenset({1, 2, 3}),
+                'proxy_signature_hash': 'b',
+                'proxy_retention': 0.95,
+                'proxy_filter_passed': True,
+                'evaluation_error': None,
+            },
+        },
+    ]
+
+    selected, summary = select_rowset_diverse_candidates(
+        candidates,
+        candidate_count=1,
+        min_retention=0.9,
+        family_targets={'v4_tighten_secondary': 1},
+    )
+
+    assert [item['expression'] for item in selected] == ['high-retention']
+    assert summary['eligible_count'] == 1

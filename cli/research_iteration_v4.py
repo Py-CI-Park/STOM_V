@@ -8,6 +8,7 @@ from collections import Counter
 from copy import deepcopy
 import hashlib
 import json
+import math
 from typing import Any, TypeAlias, cast
 
 import pandas as pd
@@ -19,6 +20,7 @@ from cli.research_iteration_v3 import parse_best_expression_conditions
 
 JsonDict: TypeAlias = dict[str, Any]
 ProxySignature: TypeAlias = frozenset[int]
+ConditionInterval: TypeAlias = tuple[float | None, bool, float | None, bool]
 
 DEFAULT_FAMILY_TARGETS = {
     'v4_repair_trade_amount': 2,
@@ -82,17 +84,93 @@ def _control_candidate(best_context: JsonDict) -> JsonDict:
     }
 
 
-def _is_trade_amount_relax(candidate: JsonDict, best_trade_amount: JsonDict) -> bool:
-    lower = candidate.get('lower_bound')
-    upper = candidate.get('upper_bound')
-    best_lower = best_trade_amount.get('lower_bound')
-    best_upper = best_trade_amount.get('upper_bound')
-    if lower is None or upper is None or best_lower is None or best_upper is None:
-        return False
+def _numeric_bound(value: object) -> float | None:
+    if value is None:
+        return None
+    if not isinstance(value, str | int | float):
+        return None
     try:
-        return float(lower) <= float(best_lower) and float(upper) >= float(best_upper)
+        number = float(value)
     except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _condition_interval(candidate: JsonDict) -> ConditionInterval | None:
+    operator = candidate.get('operator')
+    if operator == 'between':
+        lower = _numeric_bound(candidate.get('lower_bound'))
+        upper = _numeric_bound(candidate.get('upper_bound'))
+        if lower is None or upper is None:
+            return None
+        return lower, True, upper, False
+
+    threshold = _numeric_bound(candidate.get('threshold'))
+    if threshold is None:
+        return None
+    if operator == '>=':
+        return threshold, True, None, True
+    if operator == '>':
+        return threshold, False, None, True
+    if operator == '<=':
+        return None, True, threshold, True
+    if operator == '<':
+        return None, True, threshold, False
+    return None
+
+
+def _lower_bound_covers(
+    candidate_lower: float | None,
+    candidate_inclusive: bool,
+    best_lower: float | None,
+    best_inclusive: bool,
+) -> bool:
+    if best_lower is None:
+        return candidate_lower is None
+    if candidate_lower is None:
+        return True
+    if candidate_lower < best_lower:
+        return True
+    if candidate_lower > best_lower:
         return False
+    return candidate_inclusive or not best_inclusive
+
+
+def _upper_bound_covers(
+    candidate_upper: float | None,
+    candidate_inclusive: bool,
+    best_upper: float | None,
+    best_inclusive: bool,
+) -> bool:
+    if best_upper is None:
+        return candidate_upper is None
+    if candidate_upper is None:
+        return True
+    if candidate_upper > best_upper:
+        return True
+    if candidate_upper < best_upper:
+        return False
+    return candidate_inclusive or not best_inclusive
+
+
+def _is_trade_amount_relax(candidate: JsonDict, best_trade_amount: JsonDict) -> bool:
+    candidate_interval = _condition_interval(candidate)
+    best_interval = _condition_interval(best_trade_amount)
+    if candidate_interval is None or best_interval is None:
+        return False
+    candidate_lower, candidate_lower_inclusive, candidate_upper, candidate_upper_inclusive = candidate_interval
+    best_lower, best_lower_inclusive, best_upper, best_upper_inclusive = best_interval
+    return _lower_bound_covers(
+        candidate_lower,
+        candidate_lower_inclusive,
+        best_lower,
+        best_lower_inclusive,
+    ) and _upper_bound_covers(
+        candidate_upper,
+        candidate_upper_inclusive,
+        best_upper,
+        best_upper_inclusive,
+    )
 
 
 def _dedupe_candidates(candidates: list[JsonDict]) -> list[JsonDict]:
@@ -327,6 +405,24 @@ def _proxy_sort_key(candidate: JsonDict) -> tuple[float, float, int]:
     return (-_score_value(candidate, 'combined_score'), target_distance, original_index)
 
 
+def _proxy_retention(candidate: JsonDict) -> float:
+    proxy = candidate.get('rowset_proxy') or {}
+    try:
+        value = float(proxy.get('proxy_retention') or 0.0)
+    except (TypeError, ValueError):
+        return 0.0
+    return value if math.isfinite(value) else 0.0
+
+
+def _is_proxy_eligible(candidate: JsonDict, min_retention: float) -> bool:
+    proxy = candidate.get('rowset_proxy') or {}
+    return (
+        proxy.get('proxy_filter_passed') is True
+        and not proxy.get('evaluation_error')
+        and _proxy_retention(candidate) >= min_retention
+    )
+
+
 def _coerce_proxy_signature(value: object) -> ProxySignature | None:
     if not isinstance(value, frozenset):
         return None
@@ -342,13 +438,11 @@ def select_rowset_diverse_candidates(
     min_retention: float,
     family_targets: dict[str, int] | None = None,
 ) -> tuple[list[JsonDict], JsonDict]:
-    _ = min_retention
     requested_count = max(int(candidate_count), 0)
     targets = dict(DEFAULT_FAMILY_TARGETS if family_targets is None else family_targets)
     eligible = [
         dict(candidate) for candidate in candidates
-        if (candidate.get('rowset_proxy') or {}).get('proxy_filter_passed') is True
-        and not (candidate.get('rowset_proxy') or {}).get('evaluation_error')
+        if _is_proxy_eligible(candidate, min_retention)
     ]
     eligible.sort(key=_proxy_sort_key)
 
