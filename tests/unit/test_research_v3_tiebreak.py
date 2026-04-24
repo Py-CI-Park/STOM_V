@@ -484,6 +484,62 @@ def test_analyze_wide_v1_v3_tie_break_script_uses_defaults_and_prints_summary(
     assert f'wrote={output_path}' in stdout
 
 
+def test_analyze_wide_v1_v4_rowset_diversity_requires_runtime_and_prints_summary(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+):
+    project_root = Path(__file__).resolve().parents[2]
+    script_path = project_root / 'scripts' / 'analyze_wide_v1_v4_rowset_diversity.py'
+    runtime_path = tmp_path / 'runtime.json'
+    runtime_root = tmp_path / 'runtime_root'
+    output_path = tmp_path / 'v4_report.md'
+    runtime_root.mkdir()
+    captured: dict[str, Any] = {}
+
+    def fake_write_v4_rowset_diversity_report(**kwargs: Any) -> JsonDict:
+        captured.update(kwargs)
+        Path(kwargs['output_path']).write_text('# generated\n', encoding='utf-8')
+        return {
+            'decision': 'PROCEED_TO_PROMOTE_WFO_PLAN',
+            'next_command': '$brainstorming next',
+            'row_set_gate': {'status': 'all_distinct', 'group_count': 5},
+        }
+
+    monkeypatch.setattr('cli.research_v4_rowset.write_v4_rowset_diversity_report', fake_write_v4_rowset_diversity_report)
+    monkeypatch.setattr(
+        sys,
+        'argv',
+        [
+            str(script_path),
+            '--runtime-path',
+            str(runtime_path),
+            '--runtime-root',
+            str(runtime_root),
+            '--output',
+            str(output_path),
+            '--top-n',
+            '5',
+        ],
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(script_path), run_name='__main__')
+    stdout = capsys.readouterr().out
+
+    assert excinfo.value.code == 0
+    assert captured == {
+        'runtime_path': runtime_path,
+        'runtime_root': runtime_root,
+        'output_path': output_path,
+        'top_n': 5,
+    }
+    assert 'decision=PROCEED_TO_PROMOTE_WFO_PLAN' in stdout
+    assert 'row_set_identity_status=all_distinct' in stdout
+    assert 'group_count=5' in stdout
+    assert f'wrote={output_path}' in stdout
+
+
 @pytest.mark.parametrize('invalid_top_n', ['0', '-1'])
 def test_analyze_wide_v1_v3_tie_break_script_rejects_non_positive_top_n(
     invalid_top_n: str,
