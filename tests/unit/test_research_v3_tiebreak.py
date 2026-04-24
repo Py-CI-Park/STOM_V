@@ -16,6 +16,7 @@ from cli.research_v3_tiebreak import (
     choose_representative,
     render_v3_tie_break_markdown,
     resolve_candidate_csv_path,
+    write_v3_tie_break_report,
 )
 
 SYMBOL_COLUMN = INSTRUMENT_COLUMNS[1]
@@ -313,3 +314,23 @@ def test_render_v3_tie_break_markdown_contains_decision_and_group_count():
     assert 'decision=HOLD_ROW_SET_EQUIVALENCE' in markdown
     assert 'group_count=1' in markdown
     assert '$brainstorming Wide v1 v4 row-set diversity 후보 생성 설계' in markdown
+def test_write_v3_tie_break_report_writes_markdown_and_returns_analysis(tmp_path):
+    csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100), _row('B', 2, 200)])
+    csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100), _row('B', 2, 200)])
+    runtime_path = tmp_path / 'runtime.json'
+    output_path = tmp_path / 'reports' / 'tie_break.md'
+    runtime_path.write_text(json.dumps(_runtime([
+        _candidate('cand001', str(csv_a), 'base and tighten and extra', rank=1),
+        _candidate('cand002', str(csv_b), 'base and repair', rank=2),
+    ]), ensure_ascii=False), encoding='utf-8')
+
+    analysis = write_v3_tie_break_report(
+        runtime_path=runtime_path,
+        runtime_root=tmp_path,
+        output_path=output_path,
+        top_n=10,
+    )
+
+    assert analysis['decision'] == HOLD_ROW_SET_EQUIVALENCE
+    assert output_path.exists()
+    assert output_path.read_text(encoding='utf-8').startswith('# Wide v1 v3 tie-break and ranking reinforcement')

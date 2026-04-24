@@ -273,3 +273,21 @@ rule=fewer conditions, family priority, shorter expression, lower rank, lower in
 {analysis.get('next_command')}
 ```
 """
+
+
+def write_v3_tie_break_report(
+    *,
+    runtime_path: str | Path,
+    runtime_root: str | Path,
+    output_path: str | Path,
+    top_n: int = 10,
+) -> dict:
+    analysis = build_v3_tie_break_analysis(
+        runtime_path=runtime_path,
+        runtime_root=runtime_root,
+        top_n=top_n,
+    )
+    destination = Path(output_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(render_v3_tie_break_markdown(analysis), encoding='utf-8')
+    return analysis
