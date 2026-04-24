@@ -361,6 +361,59 @@ def test_render_research_report_markdown_contains_iteration_v3_section():
     assert 'control_skip_backtest: True' in markdown
 
 
+def test_render_research_report_markdown_contains_iteration_v4_section():
+    result = {
+        'status': 'ok',
+        'strategy_name': 'WideV1IterationV4_20260424',
+        'baseline_csv': 'cand005.csv',
+        'iteration_v4': {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v4',
+            'primary_feature': 'B_시가총액',
+            'trade_amount_feature': 'B_당일거래대금',
+            'secondary_features': ['B_체결강도', 'B_등락율'],
+            'candidate_count': 10,
+            'type_counts': {
+                'v4_tighten_secondary': 3,
+                'v4_repair_trade_amount': 2,
+                'v4_replace_secondary': 3,
+                'v4_relax_trade_amount': 2,
+                'v4_control_keep_best': 1,
+            },
+            'control_candidate': {
+                'strategy_name': 'WideV1IterationV2_20260423__cand005',
+                'expression': (
+                    '66.999 <= 시가총액 < 2_580 and '
+                    '1805.7 <= 당일거래대금 < 3654.4'
+                ),
+                'reference_adjusted_score': 13497.662902097409,
+                'skip_backtest': True,
+            },
+        },
+        'retention_selection': {
+            'phase': 'rowset_diverse_candidates_selected',
+            'proxy_group_count': 4,
+            'skipped_duplicate_proxy_count': 6,
+            'quota_summary': {
+                'v4_repair_trade_amount': {'target': 2, 'selected': 2, 'shortfall': 0},
+                'v4_replace_secondary': {'target': 2, 'selected': 2, 'shortfall': 0},
+            },
+        },
+    }
+
+    report = build_research_report(result, strategy_name='WideV1IterationV4_20260424')
+    markdown = render_research_report_markdown(report)
+
+    assert report['iteration_v4']['mode'] == 'best_feature_mix_v4'
+    assert '## Iteration Loop v4 Row-Set Diversity' in markdown
+    assert '- mode: best_feature_mix_v4' in markdown
+    assert 'v4_repair_trade_amount: 2' in markdown
+    assert '- proxy_group_count: 4' in markdown
+    assert '- skipped_duplicate_proxy_count: 6' in markdown
+    assert 'quota v4_repair_trade_amount: target=2, selected=2, shortfall=0' in markdown
+    assert 'control_strategy_name: WideV1IterationV2_20260423__cand005' in markdown
+
+
 def test_render_research_report_markdown_omits_disabled_iteration_v2_section():
     report = build_research_report({
         'status': 'ok',
