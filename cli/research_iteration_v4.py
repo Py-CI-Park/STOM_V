@@ -402,7 +402,7 @@ def _proxy_sort_key(candidate: JsonDict) -> tuple[float, float, int]:
     proxy_retention = float(proxy.get('proxy_retention') or 0.0)
     target_distance = min(abs(proxy_retention - 0.80), abs(proxy_retention - 0.95))
     original_index = int(candidate.get('original_index') or 0)
-    return (-_score_value(candidate, 'combined_score'), target_distance, original_index)
+    return (target_distance, -_score_value(candidate, 'combined_score'), original_index)
 
 
 def _proxy_retention(candidate: JsonDict) -> float:
@@ -490,11 +490,18 @@ def select_rowset_diverse_candidates(
         'status': 'ok',
         'phase': 'rowset_diverse_candidates_selected',
         'pool_count': len(candidates),
+        'passed_count': len(eligible),
+        'fallback_count': 0,
         'eligible_count': len(eligible),
         'selected_count': len(selected),
         'requested_count': requested_count,
         'min_estimated_retention': min_retention,
+        'allow_retention_fallback': False,
         'proxy_group_count': len(used_signatures),
+        'selected_proxy_groups': [
+            str((item.get('rowset_proxy') or {}).get('proxy_signature_hash') or '')
+            for item in selected
+        ],
         'skipped_duplicate_proxy_count': skipped_duplicate_proxy_count,
         'quota_summary': _quota_summary(selected, targets),
     }

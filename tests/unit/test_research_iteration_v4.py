@@ -178,7 +178,7 @@ def test_select_rowset_diverse_candidates_skips_duplicate_proxy_groups_and_honor
             'rowset_proxy': {
                 'proxy_signature': frozenset({1, 2}),
                 'proxy_signature_hash': 'a',
-                'proxy_retention': 0.91,
+                'proxy_retention': 0.90,
                 'proxy_filter_passed': True,
                 'evaluation_error': None,
             },
@@ -227,7 +227,49 @@ def test_select_rowset_diverse_candidates_skips_duplicate_proxy_groups_and_honor
     assert summary['phase'] == 'rowset_diverse_candidates_selected'
     assert summary['proxy_group_count'] == 3
     assert summary['skipped_duplicate_proxy_count'] == 1
+    assert summary['selected_proxy_groups'] == ['b', 'c', 'a']
+    assert summary['passed_count'] == 4
+    assert summary['fallback_count'] == 0
+    assert summary['allow_retention_fallback'] is False
     assert summary['quota_summary']['v4_relax_trade_amount']['shortfall'] == 1
+
+
+def test_select_rowset_diverse_candidates_prefers_proxy_target_distance_before_score():
+    candidates = [
+        {
+            'expression': 'high-score-far-retention',
+            'v4_candidate_type': 'v4_tighten_secondary',
+            'combined_score': 100.0,
+            'rowset_proxy': {
+                'proxy_signature': frozenset({1, 2}),
+                'proxy_signature_hash': 'far',
+                'proxy_retention': 0.87,
+                'proxy_filter_passed': True,
+                'evaluation_error': None,
+            },
+        },
+        {
+            'expression': 'lower-score-target-retention',
+            'v4_candidate_type': 'v4_tighten_secondary',
+            'combined_score': 10.0,
+            'rowset_proxy': {
+                'proxy_signature': frozenset({1, 2, 3}),
+                'proxy_signature_hash': 'target',
+                'proxy_retention': 0.95,
+                'proxy_filter_passed': True,
+                'evaluation_error': None,
+            },
+        },
+    ]
+
+    selected, _summary = select_rowset_diverse_candidates(
+        candidates,
+        candidate_count=1,
+        min_retention=0.4,
+        family_targets={'v4_tighten_secondary': 1},
+    )
+
+    assert [item['expression'] for item in selected] == ['lower-score-target-retention']
 
 
 def test_select_rowset_diverse_candidates_rechecks_min_retention_argument():
