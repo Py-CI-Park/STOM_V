@@ -30,8 +30,9 @@ def _candidate(
     *,
     score: float = 1.0,
     retention: float = 0.9,
+    original_index: int | None = None,
 ) -> JsonDict:
-    return {
+    candidate: JsonDict = {
         'feature': feature,
         'operator': 'between',
         'lower_bound': lower,
@@ -44,6 +45,9 @@ def _candidate(
         'retention_fallback_used': False,
         'expression': f'{lower} <= {feature[2:]} < {upper}',
     }
+    if original_index is not None:
+        candidate['original_index'] = original_index
+    return candidate
 
 
 def _threshold_candidate(
@@ -124,6 +128,50 @@ def test_build_v4_candidate_pool_classifies_threshold_trade_amount_relax():
 
     assert trade_candidates[500.0] == 'v4_relax_trade_amount'
     assert trade_candidates[1500.0] == 'v4_repair_trade_amount'
+
+
+def test_build_v4_candidate_pool_preserves_original_index_for_selection_tie_breaks():
+    result = build_v4_candidate_pool(
+        [
+            _candidate('B_aaa', 0.0, 10.0, score=5.0, original_index=2),
+            _candidate('B_zzz', 0.0, 10.0, score=5.0, original_index=1),
+        ],
+        best_context=BEST_CONTEXT,
+        primary_feature='B_시가총액',
+        trade_amount_feature='B_당일거래대금',
+        secondary_features=['B_aaa', 'B_zzz'],
+    )
+    replace_candidates = [
+        dict(item)
+        for item in result['candidates']
+        if item['v4_candidate_type'] == 'v4_replace_secondary'
+    ]
+    for item in replace_candidates:
+        if item['secondary_feature'] == 'B_aaa':
+            item['rowset_proxy'] = {
+                'proxy_signature': frozenset({1, 2}),
+                'proxy_signature_hash': 'aaa',
+                'proxy_retention': 0.95,
+                'proxy_filter_passed': True,
+                'evaluation_error': None,
+            }
+        else:
+            item['rowset_proxy'] = {
+                'proxy_signature': frozenset({1, 2, 3}),
+                'proxy_signature_hash': 'zzz',
+                'proxy_retention': 0.95,
+                'proxy_filter_passed': True,
+                'evaluation_error': None,
+            }
+
+    selected, _summary = select_rowset_diverse_candidates(
+        replace_candidates,
+        candidate_count=1,
+        min_retention=0.4,
+        family_targets={'v4_replace_secondary': 1},
+    )
+
+    assert [item['secondary_feature'] for item in selected] == ['B_zzz']
 
 
 def test_estimate_candidate_rowset_proxy_groups_identical_masks():

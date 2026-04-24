@@ -70,6 +70,8 @@ def _combo_candidate(
         'v4_candidate_type': candidate_type,
         'conditions': [deepcopy(condition) for condition in conditions],
     }
+    if 'original_index' in source_candidate:
+        item['original_index'] = source_candidate.get('original_index')
     item['expression'] = ' and '.join(_candidate_expression(condition) for condition in item['conditions'])
     return item
 
