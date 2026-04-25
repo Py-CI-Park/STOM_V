@@ -2,6 +2,7 @@ from dataclasses import fields
 import json
 
 import pandas as pd
+import pytest
 
 from cli import research_loop
 from cli.research_compare import INSTRUMENT_COLUMNS, OPTIONAL_KEY_COLUMNS, REQUIRED_KEY_COLUMNS
@@ -664,6 +665,39 @@ def test_run_research_iteration_writes_runtime_output_on_success(monkeypatch, tm
         'candidate_succeeded',
         'iteration_completed',
     ]
+    assert data['runtime_timing']['candidate_durations'] == [
+        {
+            'index': 1,
+            'strategy_name': 'RuntimeSuccess__cand001',
+            'expression': 'R_MFE < 0',
+            'source': None,
+            'feature': None,
+            'status': 'ok',
+            'phase': 'candidate_evaluated',
+            'candidate_csv': str(candidate_1),
+            'trade_count': 11,
+            'trade_count_retention': 0.5,
+            'started_at_elapsed_seconds': pytest.approx(data['runtime_timing']['candidate_durations'][0]['started_at_elapsed_seconds']),
+            'completed_at_elapsed_seconds': pytest.approx(data['runtime_timing']['candidate_durations'][0]['completed_at_elapsed_seconds']),
+            'duration_seconds': pytest.approx(data['runtime_timing']['candidate_durations'][0]['duration_seconds']),
+        },
+        {
+            'index': 2,
+            'strategy_name': 'RuntimeSuccess__cand002',
+            'expression': 'R_MFE > 1',
+            'source': None,
+            'feature': None,
+            'status': 'ok',
+            'phase': 'candidate_evaluated',
+            'candidate_csv': str(candidate_2),
+            'trade_count': 12,
+            'trade_count_retention': 0.5,
+            'started_at_elapsed_seconds': pytest.approx(data['runtime_timing']['candidate_durations'][1]['started_at_elapsed_seconds']),
+            'completed_at_elapsed_seconds': pytest.approx(data['runtime_timing']['candidate_durations'][1]['completed_at_elapsed_seconds']),
+            'duration_seconds': pytest.approx(data['runtime_timing']['candidate_durations'][1]['duration_seconds']),
+        },
+    ]
+    assert data['runtime_timing']['checkpoint_durations'][0]['from'] == 'iteration_started'
 
 
 def test_run_research_iteration_flushes_runtime_output_before_candidate_execution(monkeypatch, tmp_path):
@@ -685,6 +719,7 @@ def test_run_research_iteration_flushes_runtime_output_before_candidate_executio
             'last_checkpoint': (snapshot.get('checkpoint_summary') or {}).get('last_checkpoint'),
             'candidate_count': len(snapshot.get('candidates') or []),
             'has_analysis_result': 'analysis_result' in snapshot,
+            'timing_candidate': (snapshot.get('runtime_timing') or {}).get('candidate_durations', [{}])[0],
         })
         return {
             'index': spec['index'],
@@ -733,6 +768,23 @@ def test_run_research_iteration_flushes_runtime_output_before_candidate_executio
             'last_checkpoint': 'candidate_started',
             'candidate_count': 0,
             'has_analysis_result': False,
+            'timing_candidate': {
+                'index': 1,
+                'strategy_name': 'RuntimeCheckpoint__cand001',
+                'expression': 'R_MFE < 0',
+                'source': None,
+                'feature': None,
+                'status': 'running',
+                'phase': 'candidate_execution',
+                'candidate_csv': None,
+                'trade_count': None,
+                'trade_count_retention': None,
+                'started_at_elapsed_seconds': pytest.approx(
+                    snapshots[0]['timing_candidate']['started_at_elapsed_seconds']
+                ),
+                'completed_at_elapsed_seconds': None,
+                'duration_seconds': None,
+            },
         },
     ]
 
