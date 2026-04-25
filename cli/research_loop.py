@@ -1506,6 +1506,60 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
                     message='consecutive candidate failures are approaching the abort threshold',
                     consecutive_failure_count=failure_policy['consecutive_candidate_failures'],
                 )
+            if (
+                config.max_consecutive_candidate_failures > 0
+                and failure_policy['consecutive_candidate_failures'] >= config.max_consecutive_candidate_failures
+            ):
+                failure_policy['aborted'] = True
+                failure_policy['abort_reason'] = 'max_consecutive_candidate_failures'
+                recorder.mark(
+                    'iteration_aborted',
+                    phase='candidate_iteration_runtime_failure',
+                    message='maximum consecutive candidate failures reached',
+                    consecutive_failure_count=failure_policy['consecutive_candidate_failures'],
+                )
+                break
+    if failure_policy['aborted']:
+        cleanup_candidates, cleanup_summary = _apply_iteration_cleanup(config, candidates)
+        result_payload = {
+            'status': 'error',
+            'phase': 'candidate_iteration_runtime_failure',
+            'message': 'maximum consecutive candidate failures reached',
+            'strategy_name': config.name,
+            'config': asdict(config),
+            'baseline_csv': baseline_csv,
+            'baseline_result': baseline_result,
+            'analysis_result': analysis_result,
+            'expression_result': expression_result,
+            'iteration_plan': iteration_plan,
+            **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+            'retention_selection': retention_selection,
+            'retention_candidates': retention_candidates,
+            'candidate_specs': specs,
+            'candidates': cleanup_candidates,
+            'best_candidate': None,
+            'actual_rowset_selection': {
+                'status': 'not_run',
+                'reason': 'candidate_iteration_runtime_failure',
+                'requested_count': config.candidate_count,
+                'successful_candidate_count': 0,
+            },
+            'cleanup_summary': cleanup_summary,
+            'failure_policy': failure_policy,
+        }
+        result_payload = recorder.decorate(result_payload)
+        try:
+            recorder.write(result_payload)
+        except ResearchRuntimeWriteError as exc:
+            return _build_result(config, _runtime_write_failure(
+                config.runtime_output_path,
+                exc,
+                strategy_name=config.name,
+                config=asdict(config),
+                failure_policy=failure_policy,
+                candidates=cleanup_candidates,
+            ))
+        return _build_result(config, result_payload)
     ranked_candidates, best_candidate = _rank_candidate_results(candidates, config)
     if config.iteration_v2_mode == 'best_feature_mix_v5':
         _, actual_rowset_selection = select_actual_rowset_representatives(
