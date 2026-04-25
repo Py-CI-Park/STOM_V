@@ -1,4 +1,5 @@
 from dataclasses import fields
+import json
 
 import pandas as pd
 
@@ -96,6 +97,16 @@ def test_research_loop_config_has_candidate_runtime_fields():
     assert 'candidate_timeout' in names
     assert 'candidate_plan_only' in names
     assert 'keep_failed_candidate' in names
+
+
+def test_research_loop_config_has_runtime_recovery_fields():
+    names = {field.name for field in fields(ResearchLoopConfig)}
+    assert 'runtime_output_path' in names
+    assert 'max_consecutive_candidate_failures' in names
+
+    config = ResearchLoopConfig()
+    assert config.runtime_output_path is None
+    assert config.max_consecutive_candidate_failures == 3
 
 
 def test_research_loop_config_has_iteration_fields():
@@ -583,6 +594,78 @@ def test_run_research_iteration_analyzes_once_and_runs_each_candidate(monkeypatc
     assert result['cleanup_summary']['deleted_count'] == 1
 
 
+def test_run_research_iteration_writes_runtime_output_on_success(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate_1 = tmp_path / 'candidate_1.csv'
+    candidate_2 = tmp_path / 'candidate_2.csv'
+    runtime_output = tmp_path / 'runtime' / 'research.json'
+    _write_trade_csv(baseline, name='BASE')
+    _write_trade_csv(candidate_1, name='C1')
+    _write_trade_csv(candidate_2, name='C2')
+    _patch_analysis_success(monkeypatch, expressions=['R_MFE < 0', 'R_MFE > 1'])
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'ok',
+            'phase': 'candidate_evaluated',
+            'candidate_csv': str(candidate_1 if spec['index'] == 1 else candidate_2),
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 10 + spec['index'],
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.5,
+            },
+            'promotion': {'status': 'ok', 'passed': True, 'score': float(spec['index'])},
+            'cleanup': None,
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda *args, **kwargs: {'status': 'ok', 'action': 'deleted'},
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RuntimeSuccess',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            runtime_output_path=str(runtime_output),
+        ),
+        DummyController(None),
+    )
+
+    data = json.loads(runtime_output.read_text(encoding='utf-8'))
+    assert result['status'] == 'ok'
+    assert data['status'] == 'ok'
+    assert data['phase'] == 'candidates_evaluated'
+    assert data['failure_policy']['max_consecutive_candidate_failures'] == 3
+    assert data['failure_policy']['total_candidate_failures'] == 0
+    assert data['checkpoint_summary']['last_checkpoint'] == 'iteration_completed'
+    assert [event['name'] for event in data['checkpoints']] == [
+        'iteration_started',
+        'analysis_completed',
+        'candidate_pool_selected',
+        'candidate_started',
+        'candidate_succeeded',
+        'candidate_started',
+        'candidate_succeeded',
+        'iteration_completed',
+    ]
+
+
 def test_run_research_iteration_adds_retention_metadata(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     pd.DataFrame([
@@ -642,6 +725,129 @@ def test_run_research_iteration_adds_retention_metadata(monkeypatch, tmp_path):
     assert result['candidates'][0]['retention_estimate']['estimated_retention'] == 0.5
     assert result['candidates'][0]['retention_filter_passed'] is True
     assert result['candidates'][0]['retention_fallback_used'] is False
+
+
+def test_run_research_iteration_continues_after_single_candidate_failure(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate_2 = tmp_path / 'candidate_2.csv'
+    runtime_output = tmp_path / 'runtime.json'
+    _write_trade_csv(baseline, name='BASE')
+    _write_trade_csv(candidate_2, name='C2')
+    _patch_analysis_success(monkeypatch, expressions=['R_MFE < 0', 'R_MFE > 1'])
+    executed = []
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        executed.append(spec['strategy_name'])
+        if spec['index'] == 1:
+            return {
+                'index': spec['index'],
+                'strategy_name': spec['strategy_name'],
+                'expression': spec['expression'],
+                'status': 'error',
+                'phase': 'candidate_backtest_timeout',
+                'message': 'timeout',
+                'cleanup': {'attempted': True, 'reason': 'candidate_backtest_timeout', 'strategy_name': spec['strategy_name']},
+                'rank': None,
+                'rank_score': None,
+                'selected_as_best': False,
+            }
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'ok',
+            'phase': 'candidate_evaluated',
+            'candidate_csv': str(candidate_2),
+            'comparison': {
+                'candidate_summary': {'trade_count': 11, 'date_concentration': 0.1, 'symbol_concentration': 0.1},
+                'trade_count_retention': 0.5,
+            },
+            'promotion': {'status': 'ok', 'passed': True, 'score': 2.0},
+            'cleanup': None,
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda *args, **kwargs: {'status': 'ok', 'action': 'deleted'},
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='FailureContinue',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            runtime_output_path=str(runtime_output),
+        ),
+        DummyController(None),
+    )
+
+    assert executed == ['FailureContinue__cand001', 'FailureContinue__cand002']
+    assert result['status'] == 'ok'
+    assert result['failure_policy']['total_candidate_failures'] == 1
+    assert result['failure_policy']['consecutive_candidate_failures'] == 0
+    assert result['candidates'][0]['consecutive_failure_count'] == 1
+    data = json.loads(runtime_output.read_text(encoding='utf-8'))
+    assert data['candidates'][0]['status'] == 'error'
+    assert data['candidates'][1]['status'] == 'ok'
+
+
+def test_run_research_iteration_aborts_after_three_consecutive_candidate_failures(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    runtime_output = tmp_path / 'runtime.json'
+    _write_trade_csv(baseline, name='BASE')
+    _patch_analysis_success(
+        monkeypatch,
+        expressions=['R_MFE < 0', 'R_MFE > 1', 'R_MAE < -1', 'R_MAE > -2'],
+    )
+    executed = []
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        executed.append(spec['strategy_name'])
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'error',
+            'phase': 'candidate_backtest_timeout',
+            'message': 'timeout',
+            'cleanup': {'attempted': True, 'reason': 'candidate_backtest_timeout', 'strategy_name': spec['strategy_name']},
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='FailureAbort',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=4,
+            runtime_output_path=str(runtime_output),
+            max_consecutive_candidate_failures=3,
+        ),
+        DummyController(None),
+    )
+
+    assert executed == ['FailureAbort__cand001', 'FailureAbort__cand002', 'FailureAbort__cand003']
+    assert result['status'] == 'error'
+    assert result['phase'] == 'candidate_iteration_runtime_failure'
+    assert result['failure_policy']['aborted'] is True
+    assert result['failure_policy']['abort_reason'] == 'max_consecutive_candidate_failures'
+    assert result['failure_policy']['consecutive_candidate_failures'] == 3
+    data = json.loads(runtime_output.read_text(encoding='utf-8'))
+    assert data['phase'] == 'candidate_iteration_runtime_failure'
+    assert data['checkpoint_summary']['last_checkpoint'] == 'iteration_aborted'
+    assert [candidate['strategy_name'] for candidate in data['candidates']] == executed
 
 
 def test_run_research_iteration_returns_insufficient_retention_when_fallback_disabled(monkeypatch, tmp_path):
@@ -1660,6 +1866,232 @@ def test_run_research_iteration_v5_executes_oversampled_pool_and_selects_actual_
         if candidate.get('actual_rowset_selected') is True
     ]
     assert selected == ['V5Run__cand001', 'V5Run__cand003']
+
+
+def test_run_research_iteration_v5_skips_actual_rowset_when_success_count_is_short(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate_csv = tmp_path / 'candidate_1.csv'
+    trade_amount_feature = 'B_AMOUNT'
+    trade_amount_runtime_feature = trade_amount_feature[2:]
+    pd.DataFrame([
+        {'B_PRIMARY': 50, trade_amount_feature: 2000, 'B_STRENGTH': 10, INSTRUMENT_COLUMNS[1]: 'A', REQUIRED_KEY_COLUMNS[0]: 1, OPTIONAL_KEY_COLUMNS[0]: 100},
+        {'B_PRIMARY': 60, trade_amount_feature: 3000, 'B_STRENGTH': 20, INSTRUMENT_COLUMNS[1]: 'B', REQUIRED_KEY_COLUMNS[0]: 2, OPTIONAL_KEY_COLUMNS[0]: 200},
+    ]).to_csv(baseline, index=False, encoding='utf-8')
+    _write_identity_trade_csv(candidate_csv, symbol='C1')
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'ok'})
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': ['STRENGTH < 15', 'STRENGTH < 25'],
+            'selected_candidates': [
+                {'feature': 'B_STRENGTH', 'operator': '<', 'threshold': 15.0, 'expression': 'STRENGTH < 15'},
+                {'feature': 'B_STRENGTH', 'operator': '<', 'threshold': 25.0, 'expression': 'STRENGTH < 25'},
+            ],
+        },
+    )
+    v4_candidates = [
+        {'expression': 'STRENGTH < 15', 'v4_candidate_type': 'v4_replace_secondary', 'combined_score': 10.0},
+        {'expression': 'STRENGTH < 20', 'v4_candidate_type': 'v4_tighten_secondary', 'combined_score': 9.0},
+    ]
+
+    def fake_build_v4_candidate_pool(*args, trade_amount_feature=trade_amount_feature, **kwargs):
+        return {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v4',
+            'candidates': list(v4_candidates),
+            'candidate_count': len(v4_candidates),
+            'type_counts': {
+                'v4_replace_secondary': 1,
+                'v4_tighten_secondary': 1,
+            },
+        }
+
+    monkeypatch.setattr(research_loop, 'build_v4_candidate_pool', fake_build_v4_candidate_pool)
+    monkeypatch.setattr(
+        research_loop,
+        'annotate_candidate_rowset_proxy',
+        lambda candidates, baseline_frame, min_retention: [dict(candidate, retention_filter_passed=True) for candidate in candidates],
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'select_rowset_diverse_candidates',
+        lambda candidates, *, candidate_count, min_retention: (
+            [dict(candidate) for candidate in candidates[:candidate_count]],
+            {
+                'status': 'ok',
+                'phase': 'rowset_diverse_candidates_selected',
+                'requested_count': candidate_count,
+                'selected_count': min(candidate_count, len(candidates)),
+                'eligible_count': len(candidates),
+            },
+        ),
+    )
+
+    def fail_if_actual_rowset_runs(*args, **kwargs):
+        raise AssertionError('actual row-set selection should not run when success count is short')
+
+    monkeypatch.setattr(research_loop, 'select_actual_rowset_representatives', fail_if_actual_rowset_runs)
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        if spec['index'] == 1:
+            return {
+                'index': spec['index'],
+                'strategy_name': spec['strategy_name'],
+                'expression': spec['expression'],
+                'status': 'ok',
+                'phase': 'candidate_evaluated',
+                'candidate_csv': str(candidate_csv),
+                'comparison': {
+                    'candidate_summary': {'trade_count': 10, 'date_concentration': 0.1, 'symbol_concentration': 0.1},
+                    'trade_count_retention': 0.5,
+                },
+                'promotion': {'status': 'ok', 'passed': True, 'score': 2.0},
+                'cleanup': None,
+                'rank': None,
+                'rank_score': None,
+                'selected_as_best': False,
+            }
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'error',
+            'phase': 'candidate_backtest_timeout',
+            'message': 'timeout',
+            'cleanup': {'attempted': True, 'reason': 'candidate_backtest_timeout', 'strategy_name': spec['strategy_name']},
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V5Short',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_best_candidate='WideV1IterationV2_20260423__cand005',
+            iteration_v2_best_expression=f'10 <= PRIMARY < 90 and 1000 <= {trade_amount_runtime_feature} < 5000',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_secondary_features=f'B_STRENGTH,{trade_amount_feature}',
+            max_consecutive_candidate_failures=3,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['actual_rowset_selection']['status'] == 'not_run'
+    assert result['actual_rowset_selection']['reason'] == 'insufficient_successful_candidates'
+    assert result['actual_rowset_selection']['requested_count'] == 2
+    assert result['actual_rowset_selection']['successful_candidate_count'] == 1
+    assert result['iteration_v5']['status'] == 'not_run'
+    assert result['iteration_v5']['actual_selected_count'] == 0
+
+
+def test_run_research_iteration_returns_runtime_output_write_failure(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    blocked_output = tmp_path / 'blocked.json'
+    blocked_output.mkdir()
+    _write_trade_csv(baseline, name='BASE')
+    _patch_analysis_success(monkeypatch, expressions=['R_MFE < 0'])
+
+    monkeypatch.setattr(
+        research_loop,
+        '_execute_candidate_spec',
+        lambda config, spec, controller, baseline_csv: {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'error',
+            'phase': 'candidate_backtest_timeout',
+            'message': 'timeout',
+            'cleanup': {'attempted': True, 'reason': 'candidate_backtest_timeout', 'strategy_name': spec['strategy_name']},
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='WriteFail',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+            runtime_output_path=str(blocked_output),
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'runtime_output_write_failure'
+    assert result['runtime_output_path'] == str(blocked_output)
+    assert 'runtime output write failed' in result['message']
+
+
+def test_run_research_iteration_writes_runtime_output_on_analysis_failure(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    runtime_output = tmp_path / 'runtime.json'
+    _write_trade_csv(baseline, name='BASE')
+    monkeypatch.setattr(
+        research_loop,
+        'analyze_result_csv',
+        lambda *args, **kwargs: {'status': 'error', 'message': 'analysis failed'},
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='AnalysisRuntimeFail',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+            runtime_output_path=str(runtime_output),
+        ),
+        DummyController(None),
+    )
+
+    data = json.loads(runtime_output.read_text(encoding='utf-8'))
+    assert result['status'] == 'error'
+    assert result['phase'] == 'analysis'
+    assert data['status'] == 'error'
+    assert data['phase'] == 'analysis'
+    assert data['analysis_result']['message'] == 'analysis failed'
+    assert data['checkpoint_summary']['last_checkpoint'] == 'iteration_aborted'
+    assert data['failure_policy']['total_candidate_failures'] == 0
+
+
+def test_run_research_iteration_writes_runtime_output_on_baseline_failure(tmp_path):
+    runtime_output = tmp_path / 'runtime.json'
+    controller = DummyController(None, status='error', message='baseline failed')
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='BaselineRuntimeFail',
+            baseline_csv=None,
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+            runtime_output_path=str(runtime_output),
+        ),
+        controller,
+    )
+
+    data = json.loads(runtime_output.read_text(encoding='utf-8'))
+    assert result['status'] == 'error'
+    assert result['phase'] == 'baseline_run'
+    assert data['status'] == 'error'
+    assert data['phase'] == 'baseline_run'
+    assert data['run_result']['message'] == 'baseline failed'
+    assert data['checkpoint_summary']['last_checkpoint'] == 'iteration_aborted'
+    assert data['failure_policy']['total_candidate_failures'] == 0
 
 
 def test_run_research_iteration_keeps_v3_retention_selection_path(monkeypatch, tmp_path):
