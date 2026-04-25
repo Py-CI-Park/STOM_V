@@ -108,6 +108,56 @@ def test_analyze_wide_v1_v5_actual_rowset_selection_holds_on_shortfall(
     assert 'next_command=$brainstorming Wide v1 v6 actual row-set generation expansion 설계' in stdout
 
 
+def test_analyze_wide_v1_v5_actual_rowset_selection_holds_when_actual_selection_not_run(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    project_root = Path(__file__).resolve().parents[2]
+    script_path = project_root / 'scripts' / 'analyze_wide_v1_v5_actual_rowset_selection.py'
+    runtime_path = tmp_path / 'runtime.json'
+    output_path = tmp_path / 'v5_report.md'
+    runtime_path.write_text(
+        json.dumps(
+            {
+                'status': 'ok',
+                'phase': 'candidates_evaluated',
+                'actual_rowset_selection': {
+                    'status': 'not_run',
+                    'reason': 'insufficient_successful_candidates',
+                    'requested_count': 10,
+                    'selected_count': 0,
+                    'executed_count': 6,
+                },
+            },
+            ensure_ascii=False,
+        ),
+        encoding='utf-8',
+    )
+    monkeypatch.setattr(
+        sys,
+        'argv',
+        [
+            str(script_path),
+            '--runtime-path',
+            str(runtime_path),
+            '--output',
+            str(output_path),
+        ],
+    )
+
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(script_path), run_name='__main__')
+    stdout = capsys.readouterr().out
+    markdown = output_path.read_text(encoding='utf-8')
+
+    assert excinfo.value.code == 0
+    assert 'decision=HOLD_V5_ACTUAL_ROW_SET_SHORTFALL' in stdout
+    assert 'next_command=$brainstorming Wide v1 v6 actual row-set generation expansion 설계' in stdout
+    assert 'actual_selection_status=not_run' in markdown
+    assert 'actual_selection_reason=insufficient_successful_candidates' in markdown
+
+
 def test_analyze_wide_v1_v5_actual_rowset_selection_holds_on_runtime_failure(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],

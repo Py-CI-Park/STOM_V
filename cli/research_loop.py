@@ -394,6 +394,51 @@ def _finalize_research_runtime_result(
     return _build_result(config, result_payload)
 
 
+def _flush_research_runtime_checkpoint(
+    config: ResearchLoopConfig,
+    recorder: ResearchRuntimeRecorder,
+    *,
+    phase: str,
+    failure_policy: dict,
+    message: str = 'research iteration in progress',
+    **extra,
+) -> dict | None:
+    if not config.runtime_output_path:
+        return None
+    lightweight_extra = {
+        key: value
+        for key, value in extra.items()
+        if key not in {
+            'analysis_result',
+            'baseline_result',
+            'expression_result',
+            'retention_candidates',
+            'retention_selection',
+        }
+    }
+    result_payload = {
+        'status': 'running',
+        'phase': phase,
+        'message': message,
+        'strategy_name': config.name,
+        'config': asdict(config),
+        'failure_policy': failure_policy,
+        **lightweight_extra,
+    }
+    try:
+        recorder.write(result_payload)
+    except ResearchRuntimeWriteError as exc:
+        return _build_result(config, _runtime_write_failure(
+            config.runtime_output_path,
+            exc,
+            strategy_name=config.name,
+            config=asdict(config),
+            failure_policy=failure_policy,
+            candidates=extra.get('candidates', []),
+        ))
+    return None
+
+
 def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
     if config.candidate_plan_only and config.run_candidates:
         return _error(
@@ -1215,6 +1260,17 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     recorder = ResearchRuntimeRecorder(config.runtime_output_path)
     failure_policy = _initial_failure_policy(config)
     recorder.mark('iteration_started', phase='candidate_iteration')
+    checkpoint_result = _flush_research_runtime_checkpoint(
+        config,
+        recorder,
+        phase='candidate_iteration',
+        failure_policy=failure_policy,
+        candidate_specs=[],
+        candidates=[],
+        actual_rowset_selection=None,
+    )
+    if checkpoint_result is not None:
+        return checkpoint_result
 
     baseline_result = None
     baseline_csv = config.baseline_csv
@@ -1300,6 +1356,20 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             failure_policy,
         )
     recorder.mark('analysis_completed', phase='analysis')
+    checkpoint_result = _flush_research_runtime_checkpoint(
+        config,
+        recorder,
+        phase='analysis',
+        failure_policy=failure_policy,
+        baseline_csv=baseline_csv,
+        baseline_result=baseline_result,
+        analysis_result=analysis_result,
+        candidate_specs=[],
+        candidates=[],
+        actual_rowset_selection=None,
+    )
+    if checkpoint_result is not None:
+        return checkpoint_result
 
     iteration_plan = _build_iteration_plan(config)
     expression_result = generate_condition_expressions_from_analysis(
@@ -1610,6 +1680,25 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             'execution_count': candidate_execution_count,
         },
     )
+    checkpoint_result = _flush_research_runtime_checkpoint(
+        config,
+        recorder,
+        phase='candidate_pool',
+        failure_policy=failure_policy,
+        baseline_csv=baseline_csv,
+        baseline_result=baseline_result,
+        analysis_result=analysis_result,
+        expression_result=expression_result,
+        iteration_plan=iteration_plan,
+        **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+        retention_selection=retention_selection,
+        retention_candidates=retention_candidates,
+        candidate_specs=specs,
+        candidates=[],
+        actual_rowset_selection=None,
+    )
+    if checkpoint_result is not None:
+        return checkpoint_result
     candidates = []
     for spec in specs:
         recorder.mark(
@@ -1618,6 +1707,26 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             candidate_index=spec.get('index'),
             strategy_name=spec.get('strategy_name'),
         )
+        checkpoint_result = _flush_research_runtime_checkpoint(
+            config,
+            recorder,
+            phase='candidate_execution',
+            failure_policy=failure_policy,
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+            analysis_result=analysis_result,
+            expression_result=expression_result,
+            iteration_plan=iteration_plan,
+            **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+            retention_selection=retention_selection,
+            retention_candidates=retention_candidates,
+            candidate_specs=specs,
+            candidates=candidates,
+            active_candidate=spec,
+            actual_rowset_selection=None,
+        )
+        if checkpoint_result is not None:
+            return checkpoint_result
         candidate = _execute_candidate_spec(config, spec, controller, baseline_csv)
         candidates.append(candidate)
         if candidate.get('status') == 'ok':
@@ -1628,6 +1737,25 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
                 candidate_index=candidate.get('index'),
                 strategy_name=candidate.get('strategy_name'),
             )
+            checkpoint_result = _flush_research_runtime_checkpoint(
+                config,
+                recorder,
+                phase=candidate.get('phase') or 'candidate_execution',
+                failure_policy=failure_policy,
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                expression_result=expression_result,
+                iteration_plan=iteration_plan,
+                **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+                retention_selection=retention_selection,
+                retention_candidates=retention_candidates,
+                candidate_specs=specs,
+                candidates=candidates,
+                actual_rowset_selection=None,
+            )
+            if checkpoint_result is not None:
+                return checkpoint_result
         else:
             failure_policy['consecutive_candidate_failures'] += 1
             failure_policy['total_candidate_failures'] += 1
@@ -1640,6 +1768,25 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
                 strategy_name=candidate.get('strategy_name'),
                 consecutive_failure_count=failure_policy['consecutive_candidate_failures'],
             )
+            checkpoint_result = _flush_research_runtime_checkpoint(
+                config,
+                recorder,
+                phase=candidate.get('phase') or 'candidate_execution',
+                failure_policy=failure_policy,
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                expression_result=expression_result,
+                iteration_plan=iteration_plan,
+                **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+                retention_selection=retention_selection,
+                retention_candidates=retention_candidates,
+                candidate_specs=specs,
+                candidates=candidates,
+                actual_rowset_selection=None,
+            )
+            if checkpoint_result is not None:
+                return checkpoint_result
             if failure_policy['consecutive_candidate_failures'] == max(
                 config.max_consecutive_candidate_failures - 1,
                 1,

@@ -666,6 +666,77 @@ def test_run_research_iteration_writes_runtime_output_on_success(monkeypatch, tm
     ]
 
 
+def test_run_research_iteration_flushes_runtime_output_before_candidate_execution(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate_1 = tmp_path / 'candidate_1.csv'
+    runtime_output = tmp_path / 'runtime.json'
+    _write_trade_csv(baseline, name='BASE')
+    _write_trade_csv(candidate_1, name='C1')
+    _patch_analysis_success(monkeypatch, expressions=['R_MFE < 0'])
+    snapshots = []
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        snapshot_exists = runtime_output.exists()
+        snapshot = json.loads(runtime_output.read_text(encoding='utf-8')) if snapshot_exists else {}
+        snapshots.append({
+            'exists': snapshot_exists,
+            'status': snapshot.get('status'),
+            'phase': snapshot.get('phase'),
+            'last_checkpoint': (snapshot.get('checkpoint_summary') or {}).get('last_checkpoint'),
+            'candidate_count': len(snapshot.get('candidates') or []),
+            'has_analysis_result': 'analysis_result' in snapshot,
+        })
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'ok',
+            'phase': 'candidate_evaluated',
+            'candidate_csv': str(candidate_1),
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 11,
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.5,
+            },
+            'promotion': {'status': 'ok', 'passed': True, 'score': 1.0},
+            'cleanup': None,
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RuntimeCheckpoint',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+            runtime_output_path=str(runtime_output),
+            cleanup_best_candidate=False,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert snapshots == [
+        {
+            'exists': True,
+            'status': 'running',
+            'phase': 'candidate_execution',
+            'last_checkpoint': 'candidate_started',
+            'candidate_count': 0,
+            'has_analysis_result': False,
+        },
+    ]
+
+
 def test_run_research_iteration_adds_retention_metadata(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     pd.DataFrame([

@@ -102,6 +102,8 @@ def render_v5_actual_rowset_markdown(analysis: JsonDict, *, runtime_path: Path) 
         f"- runtime_path={runtime_path}",
         f"- runtime_status={analysis.get('runtime_status')}",
         f"- runtime_phase={analysis.get('runtime_phase')}",
+        f"- actual_selection_status={_as_dict(analysis.get('actual_rowset_selection')).get('status')}",
+        f"- actual_selection_reason={_as_dict(analysis.get('actual_rowset_selection')).get('reason')}",
         f"- row_set_identity_status={analysis.get('row_set_identity_status')}",
         f"- requested_count={analysis.get('requested_count')}",
         f"- selected_count={analysis.get('selected_count')}",
