@@ -82,6 +82,43 @@ def test_run_walk_forward_uses_best_params_for_test():
     assert all(betting == '3' for _, _, _, betting in seen)
 
 
+def test_run_walk_forward_accepts_base_config_dict_from_cli():
+    base_config = {
+        'buy_strategy': 'A',
+        'sell_strategy': 'B',
+        'start_date': 20240101,
+        'end_date': 20240331,
+    }
+
+    def mock_optimize(config, param_space, **kwargs):
+        return {
+            'status': 'ok',
+            'best': {'params': {}},
+            'results': [],
+            'total': 1,
+        }
+
+    seen = []
+
+    def mock_run(config):
+        seen.append((config.start_date, config.end_date, config.buy_strategy, config.sell_strategy))
+        return {'status': 'success', 'metrics': {'tpi': 1.0, 'trade_count': 5}}
+
+    result = run_walk_forward(
+        base_config,
+        {},
+        train_window_days=30,
+        test_window_days=10,
+        step_days=30,
+        optimize_fn=mock_optimize,
+        run_fn=mock_run,
+    )
+
+    assert result['status'] == 'ok'
+    assert result['summary']['round_count'] == 2
+    assert seen[0] == (20240131, 20240209, 'A', 'B')
+
+
 def test_run_walk_forward_summary_counts_zero_trade_rounds():
     base_config = BacktestConfig(
         buy_strategy='A',

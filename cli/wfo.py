@@ -95,9 +95,10 @@ def run_walk_forward(
     if run_fn is None:
         from cli.runner import run_backtest as run_fn
 
+    base_dict = asdict(base_config) if hasattr(base_config, '__dataclass_fields__') else dict(base_config)
     windows = generate_walk_forward_windows(
-        base_config.start_date,
-        base_config.end_date,
+        base_dict['start_date'],
+        base_dict['end_date'],
         train_window_days=train_window_days,
         test_window_days=test_window_days,
         step_days=step_days,
