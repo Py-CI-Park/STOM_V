@@ -1,4 +1,5 @@
 from dataclasses import fields
+import json
 
 import pandas as pd
 
@@ -591,6 +592,78 @@ def test_run_research_iteration_analyzes_once_and_runs_each_candidate(monkeypatc
     assert len(result['candidates']) == 2
     assert result['best_candidate']['strategy_name'] == 'Batch__cand002'
     assert result['cleanup_summary']['deleted_count'] == 1
+
+
+def test_run_research_iteration_writes_runtime_output_on_success(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate_1 = tmp_path / 'candidate_1.csv'
+    candidate_2 = tmp_path / 'candidate_2.csv'
+    runtime_output = tmp_path / 'runtime' / 'research.json'
+    _write_trade_csv(baseline, name='BASE')
+    _write_trade_csv(candidate_1, name='C1')
+    _write_trade_csv(candidate_2, name='C2')
+    _patch_analysis_success(monkeypatch, expressions=['R_MFE < 0', 'R_MFE > 1'])
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'ok',
+            'phase': 'candidate_evaluated',
+            'candidate_csv': str(candidate_1 if spec['index'] == 1 else candidate_2),
+            'comparison': {
+                'candidate_summary': {
+                    'trade_count': 10 + spec['index'],
+                    'date_concentration': 0.1,
+                    'symbol_concentration': 0.1,
+                },
+                'trade_count_retention': 0.5,
+            },
+            'promotion': {'status': 'ok', 'passed': True, 'score': float(spec['index'])},
+            'cleanup': None,
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+    monkeypatch.setattr(
+        research_loop,
+        'delete_strategy_from_db',
+        lambda *args, **kwargs: {'status': 'ok', 'action': 'deleted'},
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='RuntimeSuccess',
+            baseline_csv=str(baseline),
+            base_buy_strategy='BaseBuy',
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            runtime_output_path=str(runtime_output),
+        ),
+        DummyController(None),
+    )
+
+    data = json.loads(runtime_output.read_text(encoding='utf-8'))
+    assert result['status'] == 'ok'
+    assert data['status'] == 'ok'
+    assert data['phase'] == 'candidates_evaluated'
+    assert data['failure_policy']['max_consecutive_candidate_failures'] == 3
+    assert data['failure_policy']['total_candidate_failures'] == 0
+    assert data['checkpoint_summary']['last_checkpoint'] == 'iteration_completed'
+    assert [event['name'] for event in data['checkpoints']] == [
+        'iteration_started',
+        'analysis_completed',
+        'candidate_pool_selected',
+        'candidate_started',
+        'candidate_succeeded',
+        'candidate_started',
+        'candidate_succeeded',
+        'iteration_completed',
+    ]
 
 
 def test_run_research_iteration_adds_retention_metadata(monkeypatch, tmp_path):

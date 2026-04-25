@@ -35,6 +35,7 @@ from cli.research_retention import (
     select_retention_aware_candidates,
 )
 from cli.research_report import build_research_report
+from cli.research_runtime_output import ResearchRuntimeRecorder, ResearchRuntimeWriteError
 from cli.strategy_generator import delete_strategy_from_db, generate_buy_filter_strategy, save_strategy_to_db
 from cli.strategy_loader import load_strategy_from_db
 
@@ -337,6 +338,25 @@ def _cleanup_candidate_strategy(
 
 def _error(phase: str, message: str, **extra) -> dict:
     return {'status': 'error', 'phase': phase, 'message': message, **extra}
+
+
+def _initial_failure_policy(config: ResearchLoopConfig) -> dict:
+    return {
+        'max_consecutive_candidate_failures': config.max_consecutive_candidate_failures,
+        'consecutive_candidate_failures': 0,
+        'total_candidate_failures': 0,
+        'aborted': False,
+        'abort_reason': None,
+    }
+
+
+def _runtime_write_failure(path: str | None, exc: Exception, **extra) -> dict:
+    return _error(
+        'runtime_output_write_failure',
+        str(exc),
+        runtime_output_path=path,
+        **extra,
+    )
 
 
 def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
@@ -1157,6 +1177,9 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     if validation.get('status') != 'ok':
         return validation
     config = replace(config, run_candidate=False, run_candidates=True)
+    recorder = ResearchRuntimeRecorder(config.runtime_output_path)
+    failure_policy = _initial_failure_policy(config)
+    recorder.mark('iteration_started', phase='candidate_iteration')
 
     baseline_result = None
     baseline_csv = config.baseline_csv
@@ -1196,6 +1219,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             baseline_result=baseline_result,
             analysis_result=analysis_result,
         ))
+    recorder.mark('analysis_completed', phase='analysis')
 
     iteration_plan = _build_iteration_plan(config)
     expression_result = generate_condition_expressions_from_analysis(
@@ -1433,10 +1457,55 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         expression_result,
         candidate_count=candidate_execution_count,
     )
-    candidates = [
-        _execute_candidate_spec(config, spec, controller, baseline_csv)
-        for spec in specs
-    ]
+    recorder.mark(
+        'candidate_pool_selected',
+        phase='candidate_pool',
+        detail={
+            'candidate_spec_count': len(specs),
+            'requested_count': config.candidate_count,
+            'execution_count': candidate_execution_count,
+        },
+    )
+    candidates = []
+    for spec in specs:
+        recorder.mark(
+            'candidate_started',
+            phase='candidate_execution',
+            candidate_index=spec.get('index'),
+            strategy_name=spec.get('strategy_name'),
+        )
+        candidate = _execute_candidate_spec(config, spec, controller, baseline_csv)
+        candidates.append(candidate)
+        if candidate.get('status') == 'ok':
+            failure_policy['consecutive_candidate_failures'] = 0
+            recorder.mark(
+                'candidate_succeeded',
+                phase=candidate.get('phase'),
+                candidate_index=candidate.get('index'),
+                strategy_name=candidate.get('strategy_name'),
+            )
+        else:
+            failure_policy['consecutive_candidate_failures'] += 1
+            failure_policy['total_candidate_failures'] += 1
+            candidate['consecutive_failure_count'] = failure_policy['consecutive_candidate_failures']
+            recorder.mark(
+                'candidate_failed',
+                phase=candidate.get('phase'),
+                message=candidate.get('message'),
+                candidate_index=candidate.get('index'),
+                strategy_name=candidate.get('strategy_name'),
+                consecutive_failure_count=failure_policy['consecutive_candidate_failures'],
+            )
+            if failure_policy['consecutive_candidate_failures'] == max(
+                config.max_consecutive_candidate_failures - 1,
+                1,
+            ):
+                recorder.mark(
+                    'candidate_failure_warning',
+                    phase='candidate_iteration',
+                    message='consecutive candidate failures are approaching the abort threshold',
+                    consecutive_failure_count=failure_policy['consecutive_candidate_failures'],
+                )
     ranked_candidates, best_candidate = _rank_candidate_results(candidates, config)
     if config.iteration_v2_mode == 'best_feature_mix_v5':
         _, actual_rowset_selection = select_actual_rowset_representatives(
@@ -1467,7 +1536,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     )
 
     has_best_candidate = best_candidate is not None
-    return _build_result(config, {
+    result_payload = {
         'status': 'ok' if has_best_candidate else 'error',
         'phase': 'candidates_evaluated' if has_best_candidate else 'candidate_iteration',
         'message': None if has_best_candidate else 'no candidate evaluated successfully',
@@ -1486,4 +1555,23 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'best_candidate': best_candidate,
         'actual_rowset_selection': actual_rowset_selection,
         'cleanup_summary': cleanup_summary,
-    })
+        'failure_policy': failure_policy,
+    }
+    recorder.mark(
+        'iteration_completed' if has_best_candidate else 'iteration_aborted',
+        phase=result_payload['phase'],
+        message=result_payload['message'],
+    )
+    result_payload = recorder.decorate(result_payload)
+    try:
+        recorder.write(result_payload)
+    except ResearchRuntimeWriteError as exc:
+        return _build_result(config, _runtime_write_failure(
+            config.runtime_output_path,
+            exc,
+            strategy_name=config.name,
+            config=asdict(config),
+            failure_policy=failure_policy,
+            candidates=ranked_candidates,
+        ))
+    return _build_result(config, result_payload)
