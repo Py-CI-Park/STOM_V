@@ -1562,23 +1562,57 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         return _build_result(config, result_payload)
     ranked_candidates, best_candidate = _rank_candidate_results(candidates, config)
     if config.iteration_v2_mode == 'best_feature_mix_v5':
-        _, actual_rowset_selection = select_actual_rowset_representatives(
-            ranked_candidates,
-            runtime_root=Path.cwd(),
-            requested_count=config.candidate_count,
-        )
-        ranked_candidates, best_candidate = apply_actual_rowset_selection(
-            ranked_candidates,
-            actual_rowset_selection,
-        )
-        iteration_v5 = {
-            **(iteration_v5 or {}),
-            'status': actual_rowset_selection.get('status'),
-            'requested_count': config.candidate_count,
-            'execution_count': len(specs),
-            'actual_selected_count': actual_rowset_selection.get('selected_count'),
-            'row_set_identity_status': actual_rowset_selection.get('row_set_identity_status'),
-        }
+        successful_candidates = [
+            candidate
+            for candidate in ranked_candidates
+            if candidate.get('status') == 'ok'
+        ]
+        if len(successful_candidates) < config.candidate_count:
+            actual_rowset_selection = {
+                'status': 'not_run',
+                'reason': 'insufficient_successful_candidates',
+                'requested_count': config.candidate_count,
+                'successful_candidate_count': len(successful_candidates),
+            }
+            iteration_v5 = {
+                **(iteration_v5 or {}),
+                'status': 'not_run',
+                'requested_count': config.candidate_count,
+                'execution_count': len(specs),
+                'actual_selected_count': 0,
+                'row_set_identity_status': 'not_evaluated',
+            }
+        else:
+            recorder.mark(
+                'actual_rowset_selection_started',
+                phase='actual_rowset_selection',
+            )
+            _, actual_rowset_selection = select_actual_rowset_representatives(
+                ranked_candidates,
+                runtime_root=Path.cwd(),
+                requested_count=config.candidate_count,
+            )
+            ranked_candidates, best_candidate = apply_actual_rowset_selection(
+                ranked_candidates,
+                actual_rowset_selection,
+            )
+            iteration_v5 = {
+                **(iteration_v5 or {}),
+                'status': actual_rowset_selection.get('status'),
+                'requested_count': config.candidate_count,
+                'execution_count': len(specs),
+                'actual_selected_count': actual_rowset_selection.get('selected_count'),
+                'row_set_identity_status': actual_rowset_selection.get('row_set_identity_status'),
+            }
+            recorder.mark(
+                'actual_rowset_selection_completed',
+                phase='actual_rowset_selection',
+                detail={
+                    'status': actual_rowset_selection.get('status'),
+                    'selected_count': actual_rowset_selection.get('selected_count'),
+                    'row_set_identity_status': actual_rowset_selection.get('row_set_identity_status'),
+                },
+            )
     ranked_candidates, cleanup_summary = _apply_iteration_cleanup(config, ranked_candidates)
     best_candidate = next(
         (

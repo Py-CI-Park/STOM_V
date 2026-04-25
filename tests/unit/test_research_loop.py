@@ -1868,6 +1868,132 @@ def test_run_research_iteration_v5_executes_oversampled_pool_and_selects_actual_
     assert selected == ['V5Run__cand001', 'V5Run__cand003']
 
 
+def test_run_research_iteration_v5_skips_actual_rowset_when_success_count_is_short(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    candidate_csv = tmp_path / 'candidate_1.csv'
+    trade_amount_feature = 'B_AMOUNT'
+    trade_amount_runtime_feature = trade_amount_feature[2:]
+    pd.DataFrame([
+        {'B_PRIMARY': 50, trade_amount_feature: 2000, 'B_STRENGTH': 10, INSTRUMENT_COLUMNS[1]: 'A', REQUIRED_KEY_COLUMNS[0]: 1, OPTIONAL_KEY_COLUMNS[0]: 100},
+        {'B_PRIMARY': 60, trade_amount_feature: 3000, 'B_STRENGTH': 20, INSTRUMENT_COLUMNS[1]: 'B', REQUIRED_KEY_COLUMNS[0]: 2, OPTIONAL_KEY_COLUMNS[0]: 200},
+    ]).to_csv(baseline, index=False, encoding='utf-8')
+    _write_identity_trade_csv(candidate_csv, symbol='C1')
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {'status': 'ok'})
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': ['STRENGTH < 15', 'STRENGTH < 25'],
+            'selected_candidates': [
+                {'feature': 'B_STRENGTH', 'operator': '<', 'threshold': 15.0, 'expression': 'STRENGTH < 15'},
+                {'feature': 'B_STRENGTH', 'operator': '<', 'threshold': 25.0, 'expression': 'STRENGTH < 25'},
+            ],
+        },
+    )
+    v4_candidates = [
+        {'expression': 'STRENGTH < 15', 'v4_candidate_type': 'v4_replace_secondary', 'combined_score': 10.0},
+        {'expression': 'STRENGTH < 20', 'v4_candidate_type': 'v4_tighten_secondary', 'combined_score': 9.0},
+    ]
+
+    def fake_build_v4_candidate_pool(*args, trade_amount_feature=trade_amount_feature, **kwargs):
+        return {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v4',
+            'candidates': list(v4_candidates),
+            'candidate_count': len(v4_candidates),
+            'type_counts': {
+                'v4_replace_secondary': 1,
+                'v4_tighten_secondary': 1,
+            },
+        }
+
+    monkeypatch.setattr(research_loop, 'build_v4_candidate_pool', fake_build_v4_candidate_pool)
+    monkeypatch.setattr(
+        research_loop,
+        'annotate_candidate_rowset_proxy',
+        lambda candidates, baseline_frame, min_retention: [dict(candidate, retention_filter_passed=True) for candidate in candidates],
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'select_rowset_diverse_candidates',
+        lambda candidates, *, candidate_count, min_retention: (
+            [dict(candidate) for candidate in candidates[:candidate_count]],
+            {
+                'status': 'ok',
+                'phase': 'rowset_diverse_candidates_selected',
+                'requested_count': candidate_count,
+                'selected_count': min(candidate_count, len(candidates)),
+                'eligible_count': len(candidates),
+            },
+        ),
+    )
+
+    def fail_if_actual_rowset_runs(*args, **kwargs):
+        raise AssertionError('actual row-set selection should not run when success count is short')
+
+    monkeypatch.setattr(research_loop, 'select_actual_rowset_representatives', fail_if_actual_rowset_runs)
+
+    def fake_execute(config, spec, controller, baseline_csv):
+        if spec['index'] == 1:
+            return {
+                'index': spec['index'],
+                'strategy_name': spec['strategy_name'],
+                'expression': spec['expression'],
+                'status': 'ok',
+                'phase': 'candidate_evaluated',
+                'candidate_csv': str(candidate_csv),
+                'comparison': {
+                    'candidate_summary': {'trade_count': 10, 'date_concentration': 0.1, 'symbol_concentration': 0.1},
+                    'trade_count_retention': 0.5,
+                },
+                'promotion': {'status': 'ok', 'passed': True, 'score': 2.0},
+                'cleanup': None,
+                'rank': None,
+                'rank_score': None,
+                'selected_as_best': False,
+            }
+        return {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'error',
+            'phase': 'candidate_backtest_timeout',
+            'message': 'timeout',
+            'cleanup': {'attempted': True, 'reason': 'candidate_backtest_timeout', 'strategy_name': spec['strategy_name']},
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute)
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V5Short',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_best_candidate='WideV1IterationV2_20260423__cand005',
+            iteration_v2_best_expression=f'10 <= PRIMARY < 90 and 1000 <= {trade_amount_runtime_feature} < 5000',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_secondary_features=f'B_STRENGTH,{trade_amount_feature}',
+            max_consecutive_candidate_failures=3,
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'ok'
+    assert result['actual_rowset_selection']['status'] == 'not_run'
+    assert result['actual_rowset_selection']['reason'] == 'insufficient_successful_candidates'
+    assert result['actual_rowset_selection']['requested_count'] == 2
+    assert result['actual_rowset_selection']['successful_candidate_count'] == 1
+    assert result['iteration_v5']['status'] == 'not_run'
+    assert result['iteration_v5']['actual_selected_count'] == 0
+
+
 def test_run_research_iteration_keeps_v3_retention_selection_path(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     baseline.write_text(
