@@ -2036,6 +2036,64 @@ def test_run_research_iteration_returns_runtime_output_write_failure(monkeypatch
     assert 'runtime output write failed' in result['message']
 
 
+def test_run_research_iteration_writes_runtime_output_on_analysis_failure(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    runtime_output = tmp_path / 'runtime.json'
+    _write_trade_csv(baseline, name='BASE')
+    monkeypatch.setattr(
+        research_loop,
+        'analyze_result_csv',
+        lambda *args, **kwargs: {'status': 'error', 'message': 'analysis failed'},
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='AnalysisRuntimeFail',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+            runtime_output_path=str(runtime_output),
+        ),
+        DummyController(None),
+    )
+
+    data = json.loads(runtime_output.read_text(encoding='utf-8'))
+    assert result['status'] == 'error'
+    assert result['phase'] == 'analysis'
+    assert data['status'] == 'error'
+    assert data['phase'] == 'analysis'
+    assert data['analysis_result']['message'] == 'analysis failed'
+    assert data['checkpoint_summary']['last_checkpoint'] == 'iteration_aborted'
+    assert data['failure_policy']['total_candidate_failures'] == 0
+
+
+def test_run_research_iteration_writes_runtime_output_on_baseline_failure(tmp_path):
+    runtime_output = tmp_path / 'runtime.json'
+    controller = DummyController(None, status='error', message='baseline failed')
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='BaselineRuntimeFail',
+            baseline_csv=None,
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+            runtime_output_path=str(runtime_output),
+        ),
+        controller,
+    )
+
+    data = json.loads(runtime_output.read_text(encoding='utf-8'))
+    assert result['status'] == 'error'
+    assert result['phase'] == 'baseline_run'
+    assert data['status'] == 'error'
+    assert data['phase'] == 'baseline_run'
+    assert data['run_result']['message'] == 'baseline failed'
+    assert data['checkpoint_summary']['last_checkpoint'] == 'iteration_aborted'
+    assert data['failure_policy']['total_candidate_failures'] == 0
+
+
 def test_run_research_iteration_keeps_v3_retention_selection_path(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     baseline.write_text(
