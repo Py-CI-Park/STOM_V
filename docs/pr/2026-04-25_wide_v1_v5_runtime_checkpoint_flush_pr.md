@@ -20,6 +20,10 @@
   - 포함: config, failure_policy, candidate_specs, candidates, active_candidate, checkpoint_summary
   - 제외: analysis_result, expression_result, retention_selection, retention_candidates, baseline_result
 - 최종 종료 시점의 full runtime JSON 기록은 기존 구조를 유지한다.
+- `runtime_timing` 요약을 추가한다.
+  - `checkpoint_durations`: checkpoint 사이의 경과 시간
+  - `candidate_durations`: 후보별 조건식, 생성 source/feature, 후보 CSV, 거래 수, retention, 시작/완료/소요 시간
+  - 실행 중 후보는 `status=running`, `active_candidate`와 같은 조건식을 노출한다.
 
 ## 검증
 
@@ -62,6 +66,24 @@ print(f"actual_rowset_selection={data.get('actual_rowset_selection')}")
 
 4. `candidate_count=10` full v5의 예상 시간은 45~65분으로 잡는다.
 5. MVP 종료 판단은 실행 시간보다 `actual_rowset_selection` 결과를 기준으로 한다.
+
+후보별 조건식과 소요 시간은 아래 경로에서 확인한다.
+
+```text
+runtime_timing.candidate_durations
+```
+
+예시 필드:
+
+```text
+strategy_name=WideV1IterationV5Recovery_20260425__cand001
+expression=<candidate condition expression>
+source=<generation source>
+feature=<generation feature>
+trade_count=<candidate backtest trade count>
+trade_count_retention=<candidate/base trade-count ratio>
+duration_seconds=<candidate elapsed seconds>
+```
 
 ## 다음 단계
 
