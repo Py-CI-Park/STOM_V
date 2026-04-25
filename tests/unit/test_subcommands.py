@@ -83,6 +83,46 @@ def test_discovery_research_handler_calls_controller(capsys):
     assert kwargs['run_candidate'] is False
 
 
+def test_discovery_research_parser_accepts_runtime_recovery_options():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'RuntimeRecovery',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+        '--run-candidates',
+        '--runtime-output', 'backtest/temp/runtime_recovery.json',
+        '--max-consecutive-candidate-failures', '3',
+    ])
+
+    assert args.runtime_output_path == 'backtest/temp/runtime_recovery.json'
+    assert args.max_consecutive_candidate_failures == 3
+
+
+def test_discovery_research_handler_passes_runtime_recovery_options(capsys):
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok', 'phase': 'candidates_evaluated'}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'RuntimeRecovery',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidates',
+            '--runtime-output', 'backtest/temp/runtime_recovery.json',
+            '--max-consecutive-candidate-failures', '3',
+        ])
+
+    assert exit_code == 0
+    _ = capsys.readouterr()
+    kwargs = mock.call_args.args[0]
+    assert kwargs['runtime_output_path'] == 'backtest/temp/runtime_recovery.json'
+    assert kwargs['max_consecutive_candidate_failures'] == 3
+
+
 def test_discovery_research_handler_accepts_missing_input():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearch01'}}

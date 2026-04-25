@@ -98,6 +98,16 @@ def test_research_loop_config_has_candidate_runtime_fields():
     assert 'keep_failed_candidate' in names
 
 
+def test_research_loop_config_has_runtime_recovery_fields():
+    names = {field.name for field in fields(ResearchLoopConfig)}
+    assert 'runtime_output_path' in names
+    assert 'max_consecutive_candidate_failures' in names
+
+    config = ResearchLoopConfig()
+    assert config.runtime_output_path is None
+    assert config.max_consecutive_candidate_failures == 3
+
+
 def test_research_loop_config_has_iteration_fields():
     names = {field.name for field in fields(ResearchLoopConfig)}
     assert 'run_candidates' in names

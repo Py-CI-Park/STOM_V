@@ -92,6 +92,8 @@ class ResearchLoopConfig:
     candidate_timeout: int | None = None
     candidate_plan_only: bool = False
     keep_failed_candidate: bool = False
+    runtime_output_path: str | None = None
+    max_consecutive_candidate_failures: int = 3
     min_estimated_retention: float = 0.40
     allow_retention_fallback: bool = True
     use_retention_penalty: bool = True
