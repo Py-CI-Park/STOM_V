@@ -1994,6 +1994,48 @@ def test_run_research_iteration_v5_skips_actual_rowset_when_success_count_is_sho
     assert result['iteration_v5']['actual_selected_count'] == 0
 
 
+def test_run_research_iteration_returns_runtime_output_write_failure(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    blocked_output = tmp_path / 'blocked.json'
+    blocked_output.mkdir()
+    _write_trade_csv(baseline, name='BASE')
+    _patch_analysis_success(monkeypatch, expressions=['R_MFE < 0'])
+
+    monkeypatch.setattr(
+        research_loop,
+        '_execute_candidate_spec',
+        lambda config, spec, controller, baseline_csv: {
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'status': 'error',
+            'phase': 'candidate_backtest_timeout',
+            'message': 'timeout',
+            'cleanup': {'attempted': True, 'reason': 'candidate_backtest_timeout', 'strategy_name': spec['strategy_name']},
+            'rank': None,
+            'rank_score': None,
+            'selected_as_best': False,
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='WriteFail',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=1,
+            runtime_output_path=str(blocked_output),
+        ),
+        DummyController(None),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'runtime_output_write_failure'
+    assert result['runtime_output_path'] == str(blocked_output)
+    assert 'runtime output write failed' in result['message']
+
+
 def test_run_research_iteration_keeps_v3_retention_selection_path(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     baseline.write_text(
