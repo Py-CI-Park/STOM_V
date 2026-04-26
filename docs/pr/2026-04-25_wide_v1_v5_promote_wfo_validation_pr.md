@@ -52,7 +52,10 @@
 - `runtime-preflight` 실행: `status=ok`, `failed_checks=[]`
 - `stom_backtest.py wfo --dry-run` 실행: `round_count=8`
 - `stom_backtest.py wfo` 실행: `status=ok`, `round_count=8`, `success_rate=1.0`, `mean_oos_metric=0.5762499999999999`, `mean_trade_count=2131.75`, `zero_trade_rounds=0`
-- `python -m pytest tests/unit/test_wfo.py tests/unit/test_wfo_cli.py -q`: 14 passed`n- `python -m pytest tests/unit/test_wfo.py tests/unit/test_wfo_cli.py tests/unit/test_ai_controller.py tests/unit/test_strategy_generator.py tests/unit/test_strategy_loader.py -q`: 113 passed`n- `python -m pytest tests/unit/test_research_runtime_output.py tests/unit/test_research_loop.py tests/unit/test_subcommands.py tests/unit/test_research_iteration_v5.py tests/unit/test_wide_v1_v5_analysis.py -q`: 167 passed`n- `cmd /c "git diff --check --ignore-cr-at-eol 2>&1"`: whitespace 오류 없음, Windows line-ending 경고만 출력
+- `python -m pytest tests/unit/test_wfo.py tests/unit/test_wfo_cli.py -q`: 14 passed
+- `python -m pytest tests/unit/test_wfo.py tests/unit/test_wfo_cli.py tests/unit/test_ai_controller.py tests/unit/test_strategy_generator.py tests/unit/test_strategy_loader.py -q`: 113 passed
+- `python -m pytest tests/unit/test_research_runtime_output.py tests/unit/test_research_loop.py tests/unit/test_subcommands.py tests/unit/test_research_iteration_v5.py tests/unit/test_wide_v1_v5_analysis.py -q`: 167 passed
+- `cmd /c "git diff --check --ignore-cr-at-eol 2>&1"`: whitespace 오류 없음, Windows line-ending 경고만 출력
 
 ## 남은 위험
 
