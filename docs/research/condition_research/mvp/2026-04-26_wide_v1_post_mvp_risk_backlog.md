@@ -56,9 +56,9 @@ WFO 통과는 다음을 보장하지 않는다.
 | --- | --- | --- | --- |
 | Slippage | 백테스트 체결가와 실제 체결가 차이 | 백테스트 예측 체결가와 paper/live 체결가 비교 표준화 | Open |
 | Fill quality | 호가 잔량, 주문 우선순위, 부분 체결 미반영 | 주문 체결 로그와 미체결 로그 수집 | Open |
-| Broker/API runtime | Kiwoom/API 장애, 지연, disconnect | 장애 감지와 중지 조건 확인 | Open |
+| Broker/API runtime | Kiwoom/API 장애, 지연, disconnect | 장애 대응 절차서, 중지/재개 기준, 장애 재현 rehearsal 로그 1건 이상 | Open |
 | Network | 장중 네트워크 장애 | 재접속/중지 절차 문서화 | Open |
-| Cash guard | 예수금 부족 또는 주문 크기 오류 | 주문 전 예수금, 종목당 금액, 일일 총액 guard 확인 | Open |
+| Cash guard | 예수금 부족 또는 주문 크기 오류 | 주문 전 validation checklist, 예수금/종목당 금액/일일 총액 사전검증 로그, 초과 시 거절 기준 문서화 | Open |
 | Symbol concentration | 특정 종목 집중 | 종목별/일자별 집중도 live report 작성 | Open |
 | Daily stop | 하루 손실 확대 | 일일 손실/연속 실패 중지 조건 정의 | Open |
 | Rollback | 문제 발생 시 전략 중지 지연 | 전략 disable/rollback 절차 작성 | Open |
@@ -107,7 +107,11 @@ WideV1Final_B_20260425 또는 별도 기준 조건식
 - `STOM_Version_2U_C`에 직접 커밋하지 않는다.
 - 신규 조건식 자동 개선은 Wide v2 브랜치에서 진행한다.
 
-## Next command
+## Research handoff
+
+다음 연구 단계는 Wide v2에서 백테스트 반복 기반 자동 조건식 개선 루프를 설계하고, 후보 생성과 WFO를 분리한 상태로 진행하는 것이다.
+
+Session handoff note:
 
 ```text
 $brainstorming Wide v2 백테스트 반복 기반 조건식 자동 개선 루프 설계
