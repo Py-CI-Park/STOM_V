@@ -83,6 +83,46 @@ def test_discovery_research_handler_calls_controller(capsys):
     assert kwargs['run_candidate'] is False
 
 
+def test_discovery_research_parser_accepts_runtime_recovery_options():
+    parser = create_subcommand_parser()
+    args = parser.parse_args([
+        'discovery', 'research',
+        'RuntimeRecovery',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20250131',
+        '--run-candidates',
+        '--runtime-output', 'backtest/temp/runtime_recovery.json',
+        '--max-consecutive-candidate-failures', '3',
+    ])
+
+    assert args.runtime_output_path == 'backtest/temp/runtime_recovery.json'
+    assert args.max_consecutive_candidate_failures == 3
+
+
+def test_discovery_research_handler_passes_runtime_recovery_options(capsys):
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok', 'phase': 'candidates_evaluated'}
+        exit_code = handle_subcommand([
+            'discovery', 'research',
+            'RuntimeRecovery',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20250131',
+            '--run-candidates',
+            '--runtime-output', 'backtest/temp/runtime_recovery.json',
+            '--max-consecutive-candidate-failures', '3',
+        ])
+
+    assert exit_code == 0
+    _ = capsys.readouterr()
+    kwargs = mock.call_args.args[0]
+    assert kwargs['runtime_output_path'] == 'backtest/temp/runtime_recovery.json'
+    assert kwargs['max_consecutive_candidate_failures'] == 3
+
+
 def test_discovery_research_handler_accepts_missing_input():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'ok', 'report': {'strategy_name': 'AutoResearch01'}}
@@ -436,6 +476,138 @@ def test_discovery_research_handler_passes_iteration_v2_mode_v3():
     assert payload['iteration_v2_mode'] == 'best_feature_mix_v3'
     assert payload['candidate_count'] == 10
     assert payload['score_reference_csv'] == 'wide.csv'
+
+
+def test_discovery_research_parser_accepts_iteration_v2_mode_v4():
+    parser = create_subcommand_parser()
+
+    args = parser.parse_args([
+        'discovery',
+        'research',
+        'WideV1IterationV4_20260424',
+        '--input',
+        'cand005.csv',
+        '--base-buy-strategy',
+        'WideV1IterationV2_20260423__cand005',
+        '--sell',
+        'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+        '--start',
+        '20250101',
+        '--end',
+        '20251231',
+        '--run-candidates',
+        '--candidate-count',
+        '10',
+        '--iteration-v2-mode',
+        'best_feature_mix_v4',
+        '--iteration-v2-best-candidate',
+        'WideV1IterationV2_20260423__cand005',
+        '--iteration-v2-best-expression',
+        '66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4',
+    ])
+
+    assert args.iteration_v2_mode == 'best_feature_mix_v4'
+    assert args.candidate_count == 10
+
+
+def test_discovery_research_handler_passes_iteration_v2_mode_v4():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok'}
+        code = handle_subcommand([
+            'discovery',
+            'research',
+            'WideV1IterationV4_20260424',
+            '--input',
+            'cand005.csv',
+            '--base-buy-strategy',
+            'WideV1IterationV2_20260423__cand005',
+            '--sell',
+            'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+            '--start',
+            '20250101',
+            '--end',
+            '20251231',
+            '--run-candidates',
+            '--candidate-count',
+            '10',
+            '--iteration-v2-mode',
+            'best_feature_mix_v4',
+            '--iteration-v2-best-candidate',
+            'WideV1IterationV2_20260423__cand005',
+            '--iteration-v2-best-expression',
+            '66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert code == 0
+    assert payload['iteration_v2_mode'] == 'best_feature_mix_v4'
+    assert payload['candidate_count'] == 10
+
+
+def test_discovery_research_parser_accepts_iteration_v2_mode_v5():
+    parser = create_subcommand_parser()
+
+    args = parser.parse_args([
+        'discovery',
+        'research',
+        'WideV1IterationV5_20260424',
+        '--input',
+        'cand005.csv',
+        '--base-buy-strategy',
+        'WideV1IterationV4_20260424__cand001',
+        '--sell',
+        'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+        '--start',
+        '20250101',
+        '--end',
+        '20251231',
+        '--run-candidates',
+        '--candidate-count',
+        '10',
+        '--iteration-v2-mode',
+        'best_feature_mix_v5',
+        '--iteration-v2-best-candidate',
+        'WideV1IterationV4_20260424__cand001',
+        '--iteration-v2-best-expression',
+        '66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4',
+    ])
+
+    assert args.iteration_v2_mode == 'best_feature_mix_v5'
+    assert args.candidate_count == 10
+
+
+def test_discovery_research_handler_passes_iteration_v2_mode_v5():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok'}
+        code = handle_subcommand([
+            'discovery',
+            'research',
+            'WideV1IterationV5_20260424',
+            '--input',
+            'cand005.csv',
+            '--base-buy-strategy',
+            'WideV1IterationV4_20260424__cand001',
+            '--sell',
+            'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+            '--start',
+            '20250101',
+            '--end',
+            '20251231',
+            '--run-candidates',
+            '--candidate-count',
+            '10',
+            '--iteration-v2-mode',
+            'best_feature_mix_v5',
+            '--iteration-v2-best-candidate',
+            'WideV1IterationV4_20260424__cand001',
+            '--iteration-v2-best-expression',
+            '66.999 <= 시가총액 < 2_580 and 1805.7 <= 당일거래대금 < 3654.4',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert code == 0
+    assert payload['iteration_v2_mode'] == 'best_feature_mix_v5'
+    assert payload['candidate_count'] == 10
 
 
 def test_discovery_research_handler_returns_nonzero_on_error_status():

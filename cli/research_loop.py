@@ -11,6 +11,16 @@ from cli.condition_generator import generate_condition_expressions_from_analysis
 from cli.paths import DB_STRATEGY
 from cli.research_iteration_v2 import build_v2_candidate_pool, candidate_from_expression
 from cli.research_iteration_v3 import build_v3_candidate_pool, parse_best_expression_conditions
+from cli.research_iteration_v4 import (
+    annotate_candidate_rowset_proxy,
+    build_v4_candidate_pool,
+    select_rowset_diverse_candidates,
+)
+from cli.research_iteration_v5 import (
+    apply_actual_rowset_selection,
+    planned_v5_execution_count,
+    select_actual_rowset_representatives,
+)
 from cli.research_compare import (
     INSTRUMENT_COLUMNS,
     OPTIONAL_KEY_COLUMNS,
@@ -25,6 +35,7 @@ from cli.research_retention import (
     select_retention_aware_candidates,
 )
 from cli.research_report import build_research_report
+from cli.research_runtime_output import ResearchRuntimeRecorder, ResearchRuntimeWriteError
 from cli.strategy_generator import delete_strategy_from_db, generate_buy_filter_strategy, save_strategy_to_db
 from cli.strategy_loader import load_strategy_from_db
 
@@ -82,6 +93,8 @@ class ResearchLoopConfig:
     candidate_timeout: int | None = None
     candidate_plan_only: bool = False
     keep_failed_candidate: bool = False
+    runtime_output_path: str | None = None
+    max_consecutive_candidate_failures: int = 3
     min_estimated_retention: float = 0.40
     allow_retention_fallback: bool = True
     use_retention_penalty: bool = True
@@ -174,20 +187,35 @@ def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
     }
 
 
-def _iteration_generation_metadata(iteration_v2: dict | None, iteration_v3: dict | None) -> dict:
-    metadata = {}
+def _iteration_generation_metadata(
+    iteration_v2: dict[str, object] | None,
+    iteration_v3: dict[str, object] | None,
+    iteration_v4: dict[str, object] | None = None,
+    iteration_v5: dict[str, object] | None = None,
+) -> dict[str, object]:
+    metadata: dict[str, object] = {}
     if iteration_v2:
         metadata['iteration_v2'] = iteration_v2
     if iteration_v3:
         metadata['iteration_v3'] = iteration_v3
+    if iteration_v4:
+        metadata['iteration_v4'] = iteration_v4
+    if iteration_v5:
+        metadata['iteration_v5'] = iteration_v5
     return metadata
 
 
-def _build_candidate_specs(config: ResearchLoopConfig, expression_result: dict) -> list[dict]:
+def _build_candidate_specs(
+    config: ResearchLoopConfig,
+    expression_result: dict,
+    *,
+    candidate_count: int | None = None,
+) -> list[dict]:
     specs = []
     expressions = expression_result.get('expressions') or []
     selected = expression_result.get('selected_candidates') or []
-    for index, expression in enumerate(expressions[:config.candidate_count], start=1):
+    candidate_limit = config.candidate_count if candidate_count is None else max(int(candidate_count), 0)
+    for index, expression in enumerate(expressions[:candidate_limit], start=1):
         source_candidate = selected[index - 1] if index - 1 < len(selected) else None
         spec = {
             'index': index,
@@ -312,6 +340,225 @@ def _error(phase: str, message: str, **extra) -> dict:
     return {'status': 'error', 'phase': phase, 'message': message, **extra}
 
 
+def _initial_failure_policy(config: ResearchLoopConfig) -> dict:
+    return {
+        'max_consecutive_candidate_failures': config.max_consecutive_candidate_failures,
+        'consecutive_candidate_failures': 0,
+        'total_candidate_failures': 0,
+        'aborted': False,
+        'abort_reason': None,
+    }
+
+
+def _runtime_write_failure(path: str | None, exc: Exception, **extra) -> dict:
+    return _error(
+        'runtime_output_write_failure',
+        str(exc),
+        runtime_output_path=path,
+        **extra,
+    )
+
+
+def _empty_cleanup_summary() -> dict:
+    return {
+        'attempted_count': 0,
+        'deleted_count': 0,
+        'kept_count': 0,
+        'failed_count': 0,
+        'items': [],
+    }
+
+
+def _elapsed_value(event: dict) -> float | None:
+    value = event.get('elapsed_seconds')
+    if isinstance(value, (int, float)):
+        return float(value)
+    return None
+
+
+def _candidate_field(spec: dict, key: str):
+    if key in spec:
+        return spec.get(key)
+    source_candidate = spec.get('source_candidate')
+    if isinstance(source_candidate, dict):
+        return source_candidate.get(key)
+    return None
+
+
+def _candidate_expression(spec: dict) -> str | None:
+    expression = spec.get('expression')
+    if expression is not None:
+        return str(expression)
+    expressions = spec.get('expressions') or []
+    if expressions:
+        return str(expressions[0])
+    return None
+
+
+def _runtime_timing_summary(
+    recorder: ResearchRuntimeRecorder,
+    *,
+    candidate_specs: list[dict] | None = None,
+    candidates: list[dict] | None = None,
+) -> dict:
+    events = list(recorder.events)
+    checkpoint_durations = []
+    for previous, current in zip(events, events[1:]):
+        previous_elapsed = _elapsed_value(previous)
+        current_elapsed = _elapsed_value(current)
+        duration = (
+            round(current_elapsed - previous_elapsed, 3)
+            if previous_elapsed is not None and current_elapsed is not None
+            else None
+        )
+        checkpoint_durations.append({
+            'from': previous.get('name'),
+            'to': current.get('name'),
+            'phase': current.get('phase'),
+            'duration_seconds': duration,
+        })
+
+    specs_by_index = {
+        int(spec.get('index')): spec
+        for spec in (candidate_specs or [])
+        if spec.get('index') is not None
+    }
+    candidates_by_index = {
+        int(candidate.get('index')): candidate
+        for candidate in (candidates or [])
+        if candidate.get('index') is not None
+    }
+    starts = {
+        int(event.get('candidate_index')): event
+        for event in events
+        if event.get('name') == 'candidate_started' and event.get('candidate_index') is not None
+    }
+    completions = {
+        int(event.get('candidate_index')): event
+        for event in events
+        if event.get('name') in {'candidate_succeeded', 'candidate_failed'} and event.get('candidate_index') is not None
+    }
+    candidate_indexes = sorted(set(specs_by_index) | set(starts) | set(completions) | set(candidates_by_index))
+    candidate_durations = []
+    for index in candidate_indexes:
+        spec = specs_by_index.get(index, {})
+        start = starts.get(index)
+        completion = completions.get(index)
+        candidate_result = candidates_by_index.get(index, {})
+        comparison = candidate_result.get('comparison') if isinstance(candidate_result, dict) else {}
+        comparison = comparison if isinstance(comparison, dict) else {}
+        candidate_summary = comparison.get('candidate_summary') if isinstance(comparison, dict) else {}
+        candidate_summary = candidate_summary if isinstance(candidate_summary, dict) else {}
+        started_at = _elapsed_value(start) if start else None
+        completed_at = _elapsed_value(completion) if completion else None
+        duration = (
+            round(completed_at - started_at, 3)
+            if started_at is not None and completed_at is not None
+            else None
+        )
+        candidate_durations.append({
+            'index': index,
+            'strategy_name': spec.get('strategy_name') or candidate_result.get('strategy_name'),
+            'expression': _candidate_expression(spec) or candidate_result.get('expression'),
+            'source': _candidate_field(spec, 'source'),
+            'feature': _candidate_field(spec, 'feature'),
+            'status': candidate_result.get('status') or ('running' if start and not completion else None),
+            'phase': candidate_result.get('phase') or (start.get('phase') if start else None),
+            'candidate_csv': candidate_result.get('candidate_csv'),
+            'trade_count': candidate_summary.get('trade_count'),
+            'trade_count_retention': comparison.get('trade_count_retention'),
+            'started_at_elapsed_seconds': started_at,
+            'completed_at_elapsed_seconds': completed_at,
+            'duration_seconds': duration,
+        })
+
+    return {
+        'elapsed_seconds': recorder.summary().get('elapsed_seconds'),
+        'checkpoint_durations': checkpoint_durations,
+        'candidate_durations': candidate_durations,
+    }
+
+
+def _finalize_research_runtime_result(
+    config: ResearchLoopConfig,
+    recorder: ResearchRuntimeRecorder,
+    result_payload: dict,
+    failure_policy: dict,
+) -> dict:
+    result_payload = {
+        **result_payload,
+        'failure_policy': failure_policy,
+        'runtime_timing': _runtime_timing_summary(
+            recorder,
+            candidate_specs=result_payload.get('candidate_specs') or [],
+            candidates=result_payload.get('candidates') or [],
+        ),
+    }
+    result_payload = recorder.decorate(result_payload)
+    try:
+        recorder.write(result_payload)
+    except ResearchRuntimeWriteError as exc:
+        return _build_result(config, _runtime_write_failure(
+            config.runtime_output_path,
+            exc,
+            strategy_name=result_payload.get('strategy_name', config.name),
+            config=result_payload.get('config', asdict(config)),
+            failure_policy=failure_policy,
+            candidates=result_payload.get('candidates', []),
+        ))
+    return _build_result(config, result_payload)
+
+
+def _flush_research_runtime_checkpoint(
+    config: ResearchLoopConfig,
+    recorder: ResearchRuntimeRecorder,
+    *,
+    phase: str,
+    failure_policy: dict,
+    message: str = 'research iteration in progress',
+    **extra,
+) -> dict | None:
+    if not config.runtime_output_path:
+        return None
+    lightweight_extra = {
+        key: value
+        for key, value in extra.items()
+        if key not in {
+            'analysis_result',
+            'baseline_result',
+            'expression_result',
+            'retention_candidates',
+            'retention_selection',
+        }
+    }
+    result_payload = {
+        'status': 'running',
+        'phase': phase,
+        'message': message,
+        'strategy_name': config.name,
+        'config': asdict(config),
+        'failure_policy': failure_policy,
+        'runtime_timing': _runtime_timing_summary(
+            recorder,
+            candidate_specs=lightweight_extra.get('candidate_specs') or [],
+            candidates=lightweight_extra.get('candidates') or [],
+        ),
+        **lightweight_extra,
+    }
+    try:
+        recorder.write(result_payload)
+    except ResearchRuntimeWriteError as exc:
+        return _build_result(config, _runtime_write_failure(
+            config.runtime_output_path,
+            exc,
+            strategy_name=config.name,
+            config=asdict(config),
+            failure_policy=failure_policy,
+            candidates=extra.get('candidates', []),
+        ))
+    return None
+
+
 def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
     if config.candidate_plan_only and config.run_candidates:
         return _error(
@@ -333,11 +580,19 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
             'invalid_candidate_pool_multiplier',
             'candidate_pool_multiplier must be greater than or equal to 1',
         )
-    allowed_iteration_modes = {'best_feature_mix', 'best_feature_mix_v3'}
+    allowed_iteration_modes = {
+        'best_feature_mix',
+        'best_feature_mix_v3',
+        'best_feature_mix_v4',
+        'best_feature_mix_v5',
+    }
     if config.run_candidates and config.iteration_v2_mode and config.iteration_v2_mode not in allowed_iteration_modes:
         return _error(
             'invalid_iteration_v2_mode',
-            'iteration_v2_mode must be empty, best_feature_mix, or best_feature_mix_v3',
+            (
+                'iteration_v2_mode must be empty, best_feature_mix, best_feature_mix_v3, '
+                'best_feature_mix_v4, or best_feature_mix_v5'
+            ),
         )
     if config.run_candidates and config.iteration_v2_max_secondary_only < 0:
         return _error(
@@ -349,9 +604,18 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
             'missing_iteration_v2_best_expression',
             'iteration_v2_best_expression is required when iteration_v2_mode is set',
         )
-    if config.run_candidates and config.iteration_v2_mode == 'best_feature_mix_v3':
+    if config.run_candidates and config.iteration_v2_mode in {
+        'best_feature_mix_v3',
+        'best_feature_mix_v4',
+        'best_feature_mix_v5',
+    }:
+        candidate_pool_builder = (
+            build_v4_candidate_pool
+            if config.iteration_v2_mode in {'best_feature_mix_v4', 'best_feature_mix_v5'}
+            else build_v3_candidate_pool
+        )
         trade_amount_feature = (
-            (build_v3_candidate_pool.__kwdefaults__ or {}).get('trade_amount_feature')
+            (candidate_pool_builder.__kwdefaults__ or {}).get('trade_amount_feature')
             or 'B_당일거래대금'
         )
         try:
@@ -363,7 +627,7 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
         except ValueError:
             return _error(
                 'invalid_iteration_v2_best_expression',
-                'best_feature_mix_v3 iteration_v2_best_expression must contain exactly two parseable conditions',
+                f'{config.iteration_v2_mode} iteration_v2_best_expression must contain exactly two parseable conditions',
             )
     if config.run_candidate and config.run_candidates:
         return _error(
@@ -1113,28 +1377,72 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     if validation.get('status') != 'ok':
         return validation
     config = replace(config, run_candidate=False, run_candidates=True)
+    recorder = ResearchRuntimeRecorder(config.runtime_output_path)
+    failure_policy = _initial_failure_policy(config)
+    recorder.mark('iteration_started', phase='candidate_iteration')
+    checkpoint_result = _flush_research_runtime_checkpoint(
+        config,
+        recorder,
+        phase='candidate_iteration',
+        failure_policy=failure_policy,
+        candidate_specs=[],
+        candidates=[],
+        actual_rowset_selection=None,
+    )
+    if checkpoint_result is not None:
+        return checkpoint_result
 
     baseline_result = None
     baseline_csv = config.baseline_csv
     if not baseline_csv:
         baseline_result = controller.run(_base_config_dict(config))
         if baseline_result.get('status') not in ('ok', 'success'):
-            return _build_result(config, _error(
-                'baseline_run',
-                baseline_result.get('message', 'baseline run failed'),
-                strategy_name=config.name,
-                config=asdict(config),
-                run_result=baseline_result,
-            ))
+            recorder.mark(
+                'iteration_aborted',
+                phase='baseline_run',
+                message=baseline_result.get('message', 'baseline run failed'),
+            )
+            return _finalize_research_runtime_result(
+                config,
+                recorder,
+                _error(
+                    'baseline_run',
+                    baseline_result.get('message', 'baseline run failed'),
+                    strategy_name=config.name,
+                    config=asdict(config),
+                    run_result=baseline_result,
+                    candidate_specs=[],
+                    candidates=[],
+                    best_candidate=None,
+                    actual_rowset_selection=None,
+                    cleanup_summary=_empty_cleanup_summary(),
+                ),
+                failure_policy,
+            )
         baseline_csv = _csv_path_from_run(baseline_result)
         if not baseline_csv:
-            return _build_result(config, _error(
-                'baseline_run',
-                'baseline run did not return csv_path',
-                strategy_name=config.name,
-                config=asdict(config),
-                run_result=baseline_result,
-            ))
+            recorder.mark(
+                'iteration_aborted',
+                phase='baseline_run',
+                message='baseline run did not return csv_path',
+            )
+            return _finalize_research_runtime_result(
+                config,
+                recorder,
+                _error(
+                    'baseline_run',
+                    'baseline run did not return csv_path',
+                    strategy_name=config.name,
+                    config=asdict(config),
+                    run_result=baseline_result,
+                    candidate_specs=[],
+                    candidates=[],
+                    best_candidate=None,
+                    actual_rowset_selection=None,
+                    cleanup_summary=_empty_cleanup_summary(),
+                ),
+                failure_policy,
+            )
 
     analysis_result = analyze_result_csv(
         baseline_csv,
@@ -1143,15 +1451,45 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         alpha=config.alpha,
     )
     if analysis_result.get('status') != 'ok':
-        return _build_result(config, _error(
-            'analysis',
-            analysis_result.get('message', 'analysis failed'),
-            strategy_name=config.name,
-            config=asdict(config),
-            baseline_csv=baseline_csv,
-            baseline_result=baseline_result,
-            analysis_result=analysis_result,
-        ))
+        recorder.mark(
+            'iteration_aborted',
+            phase='analysis',
+            message=analysis_result.get('message', 'analysis failed'),
+        )
+        return _finalize_research_runtime_result(
+            config,
+            recorder,
+            _error(
+                'analysis',
+                analysis_result.get('message', 'analysis failed'),
+                strategy_name=config.name,
+                config=asdict(config),
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                candidate_specs=[],
+                candidates=[],
+                best_candidate=None,
+                actual_rowset_selection=None,
+                cleanup_summary=_empty_cleanup_summary(),
+            ),
+            failure_policy,
+        )
+    recorder.mark('analysis_completed', phase='analysis')
+    checkpoint_result = _flush_research_runtime_checkpoint(
+        config,
+        recorder,
+        phase='analysis',
+        failure_policy=failure_policy,
+        baseline_csv=baseline_csv,
+        baseline_result=baseline_result,
+        analysis_result=analysis_result,
+        candidate_specs=[],
+        candidates=[],
+        actual_rowset_selection=None,
+    )
+    if checkpoint_result is not None:
+        return checkpoint_result
 
     iteration_plan = _build_iteration_plan(config)
     expression_result = generate_condition_expressions_from_analysis(
@@ -1160,31 +1498,62 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     )
     expressions = expression_result.get('expressions') or []
     if expression_result.get('status') != 'ok' or not expressions:
-        return _build_result(config, _error(
-            'no_expressions',
-            expression_result.get('message', 'no candidate expressions generated'),
-            strategy_name=config.name,
-            config=asdict(config),
-            baseline_csv=baseline_csv,
-            baseline_result=baseline_result,
-            analysis_result=analysis_result,
-            expression_result=expression_result,
-            iteration_plan=iteration_plan,
-        ))
+        recorder.mark(
+            'iteration_aborted',
+            phase='no_expressions',
+            message=expression_result.get('message', 'no candidate expressions generated'),
+        )
+        return _finalize_research_runtime_result(
+            config,
+            recorder,
+            _error(
+                'no_expressions',
+                expression_result.get('message', 'no candidate expressions generated'),
+                strategy_name=config.name,
+                config=asdict(config),
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                expression_result=expression_result,
+                iteration_plan=iteration_plan,
+                candidate_specs=[],
+                candidates=[],
+                best_candidate=None,
+                actual_rowset_selection=None,
+                cleanup_summary=_empty_cleanup_summary(),
+            ),
+            failure_policy,
+        )
     if len(expressions) < config.candidate_count:
-        return _build_result(config, _error(
-            'insufficient_expressions',
-            f"candidate_count={config.candidate_count} requested but only {len(expressions)} expressions generated",
-            strategy_name=config.name,
-            config=asdict(config),
-            baseline_csv=baseline_csv,
-            baseline_result=baseline_result,
-            analysis_result=analysis_result,
-            expression_result=expression_result,
-            iteration_plan=iteration_plan,
-            requested_candidate_count=config.candidate_count,
-            expression_count=len(expressions),
-        ))
+        message = f"candidate_count={config.candidate_count} requested but only {len(expressions)} expressions generated"
+        recorder.mark(
+            'iteration_aborted',
+            phase='insufficient_expressions',
+            message=message,
+        )
+        return _finalize_research_runtime_result(
+            config,
+            recorder,
+            _error(
+                'insufficient_expressions',
+                message,
+                strategy_name=config.name,
+                config=asdict(config),
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                expression_result=expression_result,
+                iteration_plan=iteration_plan,
+                requested_candidate_count=config.candidate_count,
+                expression_count=len(expressions),
+                candidate_specs=[],
+                candidates=[],
+                best_candidate=None,
+                actual_rowset_selection=None,
+                cleanup_summary=_empty_cleanup_summary(),
+            ),
+            failure_policy,
+        )
 
     source_candidates = expression_result.get('selected_candidates') or []
     expression_candidates = []
@@ -1199,6 +1568,10 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         expression_candidates.append(source_candidate)
     iteration_v2 = None
     iteration_v3 = None
+    iteration_v4 = None
+    iteration_v5 = None
+    actual_rowset_selection = None
+    candidate_execution_count = config.candidate_count
     if config.iteration_v2_mode == 'best_feature_mix':
         best_context = {
             'strategy_name': config.iteration_v2_best_candidate,
@@ -1250,18 +1623,81 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             'iteration_v3': iteration_v3,
         }
         expressions = expression_result['expressions']
+    elif config.iteration_v2_mode in {'best_feature_mix_v4', 'best_feature_mix_v5'}:
+        best_context = {
+            'strategy_name': config.iteration_v2_best_candidate,
+            'expression': config.iteration_v2_best_expression,
+        }
+        if _score_reference_csv(config):
+            best_context['reference_adjusted_score'] = _safe_reference_promotion_score(config, baseline_csv)
+        iteration_v4 = build_v4_candidate_pool(
+            expression_candidates,
+            best_context=best_context,
+            primary_feature=config.iteration_v2_primary_feature,
+            secondary_features=_split_csv_values(config.iteration_v2_secondary_features),
+            min_estimated_retention=config.min_estimated_retention,
+            retention_tolerance=config.iteration_v2_duplicate_retention_tolerance,
+        )
+        expression_candidates = iteration_v4.get('candidates') or []
+        expression_result = {
+            **expression_result,
+            'selected_candidates': expression_candidates,
+            'expressions': [candidate['expression'] for candidate in expression_candidates],
+            'candidate_count': len(expression_candidates),
+            'iteration_v4': iteration_v4,
+        }
+        if config.iteration_v2_mode == 'best_feature_mix_v5':
+            iteration_v5 = {
+                'status': 'pool_built',
+                'mode': 'best_feature_mix_v5',
+                'requested_count': config.candidate_count,
+                'v4_candidate_count': len(expression_candidates),
+            }
+        expressions = expression_result['expressions']
     baseline_frame = _trade_frame_for_compare(baseline_csv)
-    annotated_candidates = annotate_candidate_retention(
-        expression_candidates,
-        baseline_frame,
-        min_retention=config.min_estimated_retention,
-    )
-    selected_candidates, retention_selection = select_retention_aware_candidates(
-        annotated_candidates,
-        candidate_count=config.candidate_count,
-        allow_fallback=config.allow_retention_fallback,
-        min_retention=config.min_estimated_retention,
-    )
+    if config.iteration_v2_mode in {'best_feature_mix_v4', 'best_feature_mix_v5'}:
+        annotated_candidates = annotate_candidate_rowset_proxy(
+            expression_candidates,
+            baseline_frame,
+            min_retention=config.min_estimated_retention,
+        )
+        rowset_selection_count = config.candidate_count
+        if config.iteration_v2_mode == 'best_feature_mix_v5':
+            eligible_count = sum(
+                1 for candidate in annotated_candidates
+                if candidate.get('retention_filter_passed') is True
+            )
+            rowset_selection_count = planned_v5_execution_count(
+                requested_count=config.candidate_count,
+                eligible_count=eligible_count,
+            )
+            candidate_execution_count = rowset_selection_count
+        selected_candidates, retention_selection = select_rowset_diverse_candidates(
+            annotated_candidates,
+            candidate_count=rowset_selection_count,
+            min_retention=config.min_estimated_retention,
+        )
+        if config.iteration_v2_mode == 'best_feature_mix_v5':
+            iteration_v5 = {
+                **(iteration_v5 or {}),
+                'status': 'execution_pool_selected',
+                'requested_count': config.candidate_count,
+                'eligible_count': eligible_count,
+                'execution_count': len(selected_candidates),
+                'planned_execution_count': rowset_selection_count,
+            }
+    else:
+        annotated_candidates = annotate_candidate_retention(
+            expression_candidates,
+            baseline_frame,
+            min_retention=config.min_estimated_retention,
+        )
+        selected_candidates, retention_selection = select_retention_aware_candidates(
+            annotated_candidates,
+            candidate_count=config.candidate_count,
+            allow_fallback=config.allow_retention_fallback,
+            min_retention=config.min_estimated_retention,
+        )
     retention_candidates = _retention_candidate_diagnostics(
         annotated_candidates,
         selected_candidates,
@@ -1277,52 +1713,310 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'retention_candidates': retention_candidates,
     }
     if retention_selection.get('status') != 'ok':
-        return _build_result(config, _error(
-            retention_selection.get('phase', 'insufficient_retention_candidates'),
-            retention_selection.get('message', 'insufficient retention-aware candidates'),
-            strategy_name=config.name,
-            config=asdict(config),
-            baseline_csv=baseline_csv,
-            baseline_result=baseline_result,
-            analysis_result=analysis_result,
-            expression_result=expression_result,
-            iteration_plan=iteration_plan,
-            **_iteration_generation_metadata(iteration_v2, iteration_v3),
-            retention_selection=retention_selection,
-            retention_candidates=retention_candidates,
-        ))
-    if len(selected_candidates) < config.candidate_count:
-        return _build_result(config, _error(
-            'insufficient_retention_candidates',
-            (
-                f"candidate_count={config.candidate_count} requested but only "
-                f"{len(selected_candidates)} candidates selected after retention filtering"
+        phase = retention_selection.get('phase', 'insufficient_retention_candidates')
+        message = retention_selection.get('message', 'insufficient retention-aware candidates')
+        recorder.mark(
+            'iteration_aborted',
+            phase=phase,
+            message=message,
+        )
+        return _finalize_research_runtime_result(
+            config,
+            recorder,
+            _error(
+                phase,
+                message,
+                strategy_name=config.name,
+                config=asdict(config),
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                expression_result=expression_result,
+                iteration_plan=iteration_plan,
+                **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+                retention_selection=retention_selection,
+                retention_candidates=retention_candidates,
+                candidate_specs=[],
+                candidates=[],
+                best_candidate=None,
+                actual_rowset_selection=None,
+                cleanup_summary=_empty_cleanup_summary(),
             ),
-            strategy_name=config.name,
-            config=asdict(config),
-            baseline_csv=baseline_csv,
-            baseline_result=baseline_result,
-            analysis_result=analysis_result,
-            expression_result=expression_result,
-            iteration_plan=iteration_plan,
-            **_iteration_generation_metadata(iteration_v2, iteration_v3),
-            retention_selection=retention_selection,
-            retention_candidates=retention_candidates,
-            requested_candidate_count=config.candidate_count,
-            selected_candidate_count=len(selected_candidates),
-        ))
+            failure_policy,
+        )
+    if len(selected_candidates) < config.candidate_count:
+        message = (
+            f"candidate_count={config.candidate_count} requested but only "
+            f"{len(selected_candidates)} candidates selected after retention filtering"
+        )
+        recorder.mark(
+            'iteration_aborted',
+            phase='insufficient_retention_candidates',
+            message=message,
+        )
+        return _finalize_research_runtime_result(
+            config,
+            recorder,
+            _error(
+                'insufficient_retention_candidates',
+                message,
+                strategy_name=config.name,
+                config=asdict(config),
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                expression_result=expression_result,
+                iteration_plan=iteration_plan,
+                **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+                retention_selection=retention_selection,
+                retention_candidates=retention_candidates,
+                requested_candidate_count=config.candidate_count,
+                selected_candidate_count=len(selected_candidates),
+                candidate_specs=[],
+                candidates=[],
+                best_candidate=None,
+                actual_rowset_selection=None,
+                cleanup_summary=_empty_cleanup_summary(),
+            ),
+            failure_policy,
+        )
     expression_result = {
         **expression_result,
         'expressions': [candidate['expression'] for candidate in selected_candidates],
         'selected_candidates': selected_candidates,
     }
 
-    specs = _build_candidate_specs(config, expression_result)
-    candidates = [
-        _execute_candidate_spec(config, spec, controller, baseline_csv)
-        for spec in specs
-    ]
+    specs = _build_candidate_specs(
+        config,
+        expression_result,
+        candidate_count=candidate_execution_count,
+    )
+    recorder.mark(
+        'candidate_pool_selected',
+        phase='candidate_pool',
+        detail={
+            'candidate_spec_count': len(specs),
+            'requested_count': config.candidate_count,
+            'execution_count': candidate_execution_count,
+        },
+    )
+    checkpoint_result = _flush_research_runtime_checkpoint(
+        config,
+        recorder,
+        phase='candidate_pool',
+        failure_policy=failure_policy,
+        baseline_csv=baseline_csv,
+        baseline_result=baseline_result,
+        analysis_result=analysis_result,
+        expression_result=expression_result,
+        iteration_plan=iteration_plan,
+        **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+        retention_selection=retention_selection,
+        retention_candidates=retention_candidates,
+        candidate_specs=specs,
+        candidates=[],
+        actual_rowset_selection=None,
+    )
+    if checkpoint_result is not None:
+        return checkpoint_result
+    candidates = []
+    for spec in specs:
+        recorder.mark(
+            'candidate_started',
+            phase='candidate_execution',
+            candidate_index=spec.get('index'),
+            strategy_name=spec.get('strategy_name'),
+        )
+        checkpoint_result = _flush_research_runtime_checkpoint(
+            config,
+            recorder,
+            phase='candidate_execution',
+            failure_policy=failure_policy,
+            baseline_csv=baseline_csv,
+            baseline_result=baseline_result,
+            analysis_result=analysis_result,
+            expression_result=expression_result,
+            iteration_plan=iteration_plan,
+            **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+            retention_selection=retention_selection,
+            retention_candidates=retention_candidates,
+            candidate_specs=specs,
+            candidates=candidates,
+            active_candidate=spec,
+            actual_rowset_selection=None,
+        )
+        if checkpoint_result is not None:
+            return checkpoint_result
+        candidate = _execute_candidate_spec(config, spec, controller, baseline_csv)
+        candidates.append(candidate)
+        if candidate.get('status') == 'ok':
+            failure_policy['consecutive_candidate_failures'] = 0
+            recorder.mark(
+                'candidate_succeeded',
+                phase=candidate.get('phase'),
+                candidate_index=candidate.get('index'),
+                strategy_name=candidate.get('strategy_name'),
+            )
+            checkpoint_result = _flush_research_runtime_checkpoint(
+                config,
+                recorder,
+                phase=candidate.get('phase') or 'candidate_execution',
+                failure_policy=failure_policy,
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                expression_result=expression_result,
+                iteration_plan=iteration_plan,
+                **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+                retention_selection=retention_selection,
+                retention_candidates=retention_candidates,
+                candidate_specs=specs,
+                candidates=candidates,
+                actual_rowset_selection=None,
+            )
+            if checkpoint_result is not None:
+                return checkpoint_result
+        else:
+            failure_policy['consecutive_candidate_failures'] += 1
+            failure_policy['total_candidate_failures'] += 1
+            candidate['consecutive_failure_count'] = failure_policy['consecutive_candidate_failures']
+            recorder.mark(
+                'candidate_failed',
+                phase=candidate.get('phase'),
+                message=candidate.get('message'),
+                candidate_index=candidate.get('index'),
+                strategy_name=candidate.get('strategy_name'),
+                consecutive_failure_count=failure_policy['consecutive_candidate_failures'],
+            )
+            checkpoint_result = _flush_research_runtime_checkpoint(
+                config,
+                recorder,
+                phase=candidate.get('phase') or 'candidate_execution',
+                failure_policy=failure_policy,
+                baseline_csv=baseline_csv,
+                baseline_result=baseline_result,
+                analysis_result=analysis_result,
+                expression_result=expression_result,
+                iteration_plan=iteration_plan,
+                **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+                retention_selection=retention_selection,
+                retention_candidates=retention_candidates,
+                candidate_specs=specs,
+                candidates=candidates,
+                actual_rowset_selection=None,
+            )
+            if checkpoint_result is not None:
+                return checkpoint_result
+            if failure_policy['consecutive_candidate_failures'] == max(
+                config.max_consecutive_candidate_failures - 1,
+                1,
+            ):
+                recorder.mark(
+                    'candidate_failure_warning',
+                    phase='candidate_iteration',
+                    message='consecutive candidate failures are approaching the abort threshold',
+                    consecutive_failure_count=failure_policy['consecutive_candidate_failures'],
+                )
+            if (
+                config.max_consecutive_candidate_failures > 0
+                and failure_policy['consecutive_candidate_failures'] >= config.max_consecutive_candidate_failures
+            ):
+                failure_policy['aborted'] = True
+                failure_policy['abort_reason'] = 'max_consecutive_candidate_failures'
+                recorder.mark(
+                    'iteration_aborted',
+                    phase='candidate_iteration_runtime_failure',
+                    message='maximum consecutive candidate failures reached',
+                    consecutive_failure_count=failure_policy['consecutive_candidate_failures'],
+                )
+                break
+    if failure_policy['aborted']:
+        cleanup_candidates, cleanup_summary = _apply_iteration_cleanup(config, candidates)
+        result_payload = {
+            'status': 'error',
+            'phase': 'candidate_iteration_runtime_failure',
+            'message': 'maximum consecutive candidate failures reached',
+            'strategy_name': config.name,
+            'config': asdict(config),
+            'baseline_csv': baseline_csv,
+            'baseline_result': baseline_result,
+            'analysis_result': analysis_result,
+            'expression_result': expression_result,
+            'iteration_plan': iteration_plan,
+            **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
+            'retention_selection': retention_selection,
+            'retention_candidates': retention_candidates,
+            'candidate_specs': specs,
+            'candidates': cleanup_candidates,
+            'best_candidate': None,
+            'actual_rowset_selection': {
+                'status': 'not_run',
+                'reason': 'candidate_iteration_runtime_failure',
+                'requested_count': config.candidate_count,
+                'successful_candidate_count': 0,
+            },
+            'cleanup_summary': cleanup_summary,
+            'failure_policy': failure_policy,
+        }
+        return _finalize_research_runtime_result(
+            config,
+            recorder,
+            result_payload,
+            failure_policy,
+        )
     ranked_candidates, best_candidate = _rank_candidate_results(candidates, config)
+    if config.iteration_v2_mode == 'best_feature_mix_v5':
+        successful_candidates = [
+            candidate
+            for candidate in ranked_candidates
+            if candidate.get('status') == 'ok'
+        ]
+        if len(successful_candidates) < config.candidate_count:
+            actual_rowset_selection = {
+                'status': 'not_run',
+                'reason': 'insufficient_successful_candidates',
+                'requested_count': config.candidate_count,
+                'successful_candidate_count': len(successful_candidates),
+            }
+            iteration_v5 = {
+                **(iteration_v5 or {}),
+                'status': 'not_run',
+                'requested_count': config.candidate_count,
+                'execution_count': len(specs),
+                'actual_selected_count': 0,
+                'row_set_identity_status': 'not_evaluated',
+            }
+        else:
+            recorder.mark(
+                'actual_rowset_selection_started',
+                phase='actual_rowset_selection',
+            )
+            _, actual_rowset_selection = select_actual_rowset_representatives(
+                ranked_candidates,
+                runtime_root=Path.cwd(),
+                requested_count=config.candidate_count,
+            )
+            ranked_candidates, best_candidate = apply_actual_rowset_selection(
+                ranked_candidates,
+                actual_rowset_selection,
+            )
+            iteration_v5 = {
+                **(iteration_v5 or {}),
+                'status': actual_rowset_selection.get('status'),
+                'requested_count': config.candidate_count,
+                'execution_count': len(specs),
+                'actual_selected_count': actual_rowset_selection.get('selected_count'),
+                'row_set_identity_status': actual_rowset_selection.get('row_set_identity_status'),
+            }
+            recorder.mark(
+                'actual_rowset_selection_completed',
+                phase='actual_rowset_selection',
+                detail={
+                    'status': actual_rowset_selection.get('status'),
+                    'selected_count': actual_rowset_selection.get('selected_count'),
+                    'row_set_identity_status': actual_rowset_selection.get('row_set_identity_status'),
+                },
+            )
     ranked_candidates, cleanup_summary = _apply_iteration_cleanup(config, ranked_candidates)
     best_candidate = next(
         (
@@ -1334,7 +2028,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
     )
 
     has_best_candidate = best_candidate is not None
-    return _build_result(config, {
+    result_payload = {
         'status': 'ok' if has_best_candidate else 'error',
         'phase': 'candidates_evaluated' if has_best_candidate else 'candidate_iteration',
         'message': None if has_best_candidate else 'no candidate evaluated successfully',
@@ -1345,11 +2039,24 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'analysis_result': analysis_result,
         'expression_result': expression_result,
         'iteration_plan': iteration_plan,
-        **_iteration_generation_metadata(iteration_v2, iteration_v3),
+        **_iteration_generation_metadata(iteration_v2, iteration_v3, iteration_v4, iteration_v5),
         'retention_selection': retention_selection,
         'retention_candidates': retention_candidates,
         'candidate_specs': specs,
         'candidates': ranked_candidates,
         'best_candidate': best_candidate,
+        'actual_rowset_selection': actual_rowset_selection,
         'cleanup_summary': cleanup_summary,
-    })
+        'failure_policy': failure_policy,
+    }
+    recorder.mark(
+        'iteration_completed' if has_best_candidate else 'iteration_aborted',
+        phase=result_payload['phase'],
+        message=result_payload['message'],
+    )
+    return _finalize_research_runtime_result(
+        config,
+        recorder,
+        result_payload,
+        failure_policy,
+    )

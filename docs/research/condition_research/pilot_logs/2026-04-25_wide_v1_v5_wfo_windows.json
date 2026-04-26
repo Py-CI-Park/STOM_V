@@ -1,0 +1,91 @@
+{
+  "status": "dry-run",
+  "train_window_days": 120,
+  "test_window_days": 30,
+  "step_days": 30,
+  "purge_days": 1,
+  "embargo_days": 1,
+  "round_count": 8,
+  "windows": [
+    {
+      "round": 1,
+      "train_start": 20250101,
+      "train_end": 20250430,
+      "test_start": 20250502,
+      "test_end": 20250531,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250601
+    },
+    {
+      "round": 2,
+      "train_start": 20250131,
+      "train_end": 20250530,
+      "test_start": 20250601,
+      "test_end": 20250630,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250701
+    },
+    {
+      "round": 3,
+      "train_start": 20250302,
+      "train_end": 20250629,
+      "test_start": 20250701,
+      "test_end": 20250730,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250731
+    },
+    {
+      "round": 4,
+      "train_start": 20250401,
+      "train_end": 20250729,
+      "test_start": 20250731,
+      "test_end": 20250829,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250830
+    },
+    {
+      "round": 5,
+      "train_start": 20250501,
+      "train_end": 20250828,
+      "test_start": 20250830,
+      "test_end": 20250928,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250929
+    },
+    {
+      "round": 6,
+      "train_start": 20250531,
+      "train_end": 20250927,
+      "test_start": 20250929,
+      "test_end": 20251028,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20251029
+    },
+    {
+      "round": 7,
+      "train_start": 20250630,
+      "train_end": 20251027,
+      "test_start": 20251029,
+      "test_end": 20251127,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20251128
+    },
+    {
+      "round": 8,
+      "train_start": 20250730,
+      "train_end": 20251126,
+      "test_start": 20251128,
+      "test_end": 20251227,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20251228
+    }
+  ]
+}

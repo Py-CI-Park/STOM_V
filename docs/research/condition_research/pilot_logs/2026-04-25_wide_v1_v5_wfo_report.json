@@ -1,0 +1,413 @@
+{
+  "status": "ok",
+  "objective": "tpi",
+  "method": "grid",
+  "summary": {
+    "round_count": 8,
+    "success_count": 8,
+    "success_rate": 1.0,
+    "metric": "tpi",
+    "mean_oos_metric": 0.5762499999999999,
+    "best_oos_metric": 0.68,
+    "trade_count_rounds": 8,
+    "zero_trade_rounds": 0,
+    "mean_trade_count": 2131.75
+  },
+  "windows": [
+    {
+      "round": 1,
+      "train_start": 20250101,
+      "train_end": 20250430,
+      "test_start": 20250502,
+      "test_end": 20250531,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250601
+    },
+    {
+      "round": 2,
+      "train_start": 20250131,
+      "train_end": 20250530,
+      "test_start": 20250601,
+      "test_end": 20250630,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250701
+    },
+    {
+      "round": 3,
+      "train_start": 20250302,
+      "train_end": 20250629,
+      "test_start": 20250701,
+      "test_end": 20250730,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250731
+    },
+    {
+      "round": 4,
+      "train_start": 20250401,
+      "train_end": 20250729,
+      "test_start": 20250731,
+      "test_end": 20250829,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250830
+    },
+    {
+      "round": 5,
+      "train_start": 20250501,
+      "train_end": 20250828,
+      "test_start": 20250830,
+      "test_end": 20250928,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20250929
+    },
+    {
+      "round": 6,
+      "train_start": 20250531,
+      "train_end": 20250927,
+      "test_start": 20250929,
+      "test_end": 20251028,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20251029
+    },
+    {
+      "round": 7,
+      "train_start": 20250630,
+      "train_end": 20251027,
+      "test_start": 20251029,
+      "test_end": 20251127,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20251128
+    },
+    {
+      "round": 8,
+      "train_start": 20250730,
+      "train_end": 20251126,
+      "test_start": 20251128,
+      "test_end": 20251227,
+      "purge_days": 1,
+      "embargo_days": 1,
+      "embargo_end": 20251228
+    }
+  ],
+  "rounds": [
+    {
+      "window": {
+        "round": 1,
+        "train_start": 20250101,
+        "train_end": 20250430,
+        "test_start": 20250502,
+        "test_end": 20250531,
+        "purge_days": 1,
+        "embargo_days": 1,
+        "embargo_end": 20250601
+      },
+      "best_params": {},
+      "train_optimization_status": "ok",
+      "train_optimization_best": {
+        "params": {},
+        "score": 0.55,
+        "duration": 79.66
+      },
+      "test_status": "success",
+      "test_message": "백테스트 완료",
+      "test_metrics": {
+        "trade_count": 2330,
+        "win_rate": 26.87,
+        "avg_profit_pct": -0.67,
+        "total_profit_pct": -55.83,
+        "total_profit_krw": -313315525,
+        "cagr": -734.59,
+        "mdd_pct": 55.77,
+        "mdd_amount": 0.0,
+        "tpi": 0.53,
+        "seed_capital": 561208217.0,
+        "max_hold_count": 28,
+        "avg_hold_time": 243.48,
+        "day_count": 0,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      }
+    },
+    {
+      "window": {
+        "round": 2,
+        "train_start": 20250131,
+        "train_end": 20250530,
+        "test_start": 20250601,
+        "test_end": 20250630,
+        "purge_days": 1,
+        "embargo_days": 1,
+        "embargo_end": 20250701
+      },
+      "best_params": {},
+      "train_optimization_status": "ok",
+      "train_optimization_best": {
+        "params": {},
+        "score": 0.55,
+        "duration": 75.85
+      },
+      "test_status": "success",
+      "test_message": "백테스트 완료",
+      "test_metrics": {
+        "trade_count": 2111,
+        "win_rate": 26.24,
+        "avg_profit_pct": -0.76,
+        "total_profit_pct": -63.82,
+        "total_profit_krw": -319512012,
+        "cagr": -839.68,
+        "mdd_pct": 63.89,
+        "mdd_amount": 0.0,
+        "tpi": 0.52,
+        "seed_capital": 500677230.0,
+        "max_hold_count": 25,
+        "avg_hold_time": 236.97,
+        "day_count": 0,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      }
+    },
+    {
+      "window": {
+        "round": 3,
+        "train_start": 20250302,
+        "train_end": 20250629,
+        "test_start": 20250701,
+        "test_end": 20250730,
+        "purge_days": 1,
+        "embargo_days": 1,
+        "embargo_end": 20250731
+      },
+      "best_params": {},
+      "train_optimization_status": "ok",
+      "train_optimization_best": {
+        "params": {},
+        "score": 0.54,
+        "duration": 77.09
+      },
+      "test_status": "success",
+      "test_message": "백테스트 완료",
+      "test_metrics": {
+        "trade_count": 2103,
+        "win_rate": 28.06,
+        "avg_profit_pct": -0.65,
+        "total_profit_pct": -62.62,
+        "total_profit_krw": -275869373,
+        "cagr": -711.64,
+        "mdd_pct": 62.57,
+        "mdd_amount": 0.0,
+        "tpi": 0.55,
+        "seed_capital": 440513122.0,
+        "max_hold_count": 22,
+        "avg_hold_time": 245.27,
+        "day_count": 0,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      }
+    },
+    {
+      "window": {
+        "round": 4,
+        "train_start": 20250401,
+        "train_end": 20250729,
+        "test_start": 20250731,
+        "test_end": 20250829,
+        "purge_days": 1,
+        "embargo_days": 1,
+        "embargo_end": 20250830
+      },
+      "best_params": {},
+      "train_optimization_status": "ok",
+      "train_optimization_best": {
+        "params": {},
+        "score": 0.54,
+        "duration": 79.06
+      },
+      "test_status": "success",
+      "test_message": "백테스트 완료",
+      "test_metrics": {
+        "trade_count": 1720,
+        "win_rate": 26.4,
+        "avg_profit_pct": -0.65,
+        "total_profit_pct": -52.93,
+        "total_profit_krw": -222665390,
+        "cagr": -630.06,
+        "mdd_pct": 53.05,
+        "mdd_amount": 0.0,
+        "tpi": 0.53,
+        "seed_capital": 420717829.0,
+        "max_hold_count": 21,
+        "avg_hold_time": 251.0,
+        "day_count": 0,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      }
+    },
+    {
+      "window": {
+        "round": 5,
+        "train_start": 20250501,
+        "train_end": 20250828,
+        "test_start": 20250830,
+        "test_end": 20250928,
+        "purge_days": 1,
+        "embargo_days": 1,
+        "embargo_end": 20250929
+      },
+      "best_params": {},
+      "train_optimization_status": "ok",
+      "train_optimization_best": {
+        "params": {},
+        "score": 0.53,
+        "duration": 89.21
+      },
+      "test_status": "success",
+      "test_message": "백테스트 완료",
+      "test_metrics": {
+        "trade_count": 2708,
+        "win_rate": 31.02,
+        "avg_profit_pct": -0.5,
+        "total_profit_pct": -48.57,
+        "total_profit_krw": -272521105,
+        "cagr": -607.07,
+        "mdd_pct": 48.72,
+        "mdd_amount": 0.0,
+        "tpi": 0.63,
+        "seed_capital": 561138040.0,
+        "max_hold_count": 28,
+        "avg_hold_time": 247.73,
+        "day_count": 0,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      }
+    },
+    {
+      "window": {
+        "round": 6,
+        "train_start": 20250531,
+        "train_end": 20250927,
+        "test_start": 20250929,
+        "test_end": 20251028,
+        "purge_days": 1,
+        "embargo_days": 1,
+        "embargo_end": 20251029
+      },
+      "best_params": {},
+      "train_optimization_status": "ok",
+      "train_optimization_best": {
+        "params": {},
+        "score": 0.56,
+        "duration": 88.34
+      },
+      "test_status": "success",
+      "test_message": "백테스트 완료",
+      "test_metrics": {
+        "trade_count": 1836,
+        "win_rate": 30.01,
+        "avg_profit_pct": -0.61,
+        "total_profit_pct": -43.2,
+        "total_profit_krw": -225150402,
+        "cagr": -635.25,
+        "mdd_pct": 43.13,
+        "mdd_amount": 0.0,
+        "tpi": 0.58,
+        "seed_capital": 521215928.0,
+        "max_hold_count": 26,
+        "avg_hold_time": 243.89,
+        "day_count": 0,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      }
+    },
+    {
+      "window": {
+        "round": 7,
+        "train_start": 20250630,
+        "train_end": 20251027,
+        "test_start": 20251029,
+        "test_end": 20251127,
+        "purge_days": 1,
+        "embargo_days": 1,
+        "embargo_end": 20251128
+      },
+      "best_params": {},
+      "train_optimization_status": "ok",
+      "train_optimization_best": {
+        "params": {},
+        "score": 0.57,
+        "duration": 91.13
+      },
+      "test_status": "success",
+      "test_message": "백테스트 완료",
+      "test_metrics": {
+        "trade_count": 1900,
+        "win_rate": 29.68,
+        "avg_profit_pct": -0.64,
+        "total_profit_pct": -52.74,
+        "total_profit_krw": -242880268,
+        "cagr": -627.91,
+        "mdd_pct": 52.74,
+        "mdd_amount": 0.0,
+        "tpi": 0.59,
+        "seed_capital": 460483290.0,
+        "max_hold_count": 23,
+        "avg_hold_time": 241.56,
+        "day_count": 0,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      }
+    },
+    {
+      "window": {
+        "round": 8,
+        "train_start": 20250730,
+        "train_end": 20251126,
+        "test_start": 20251128,
+        "test_end": 20251227,
+        "purge_days": 1,
+        "embargo_days": 1,
+        "embargo_end": 20251228
+      },
+      "best_params": {},
+      "train_optimization_status": "ok",
+      "train_optimization_best": {
+        "params": {},
+        "score": 0.58,
+        "duration": 91.76
+      },
+      "test_status": "success",
+      "test_message": "백테스트 완료",
+      "test_metrics": {
+        "trade_count": 2346,
+        "win_rate": 33.97,
+        "avg_profit_pct": -0.51,
+        "total_profit_pct": -45.89,
+        "total_profit_krw": -239070690,
+        "cagr": -573.66,
+        "mdd_pct": 45.94,
+        "mdd_amount": 0.0,
+        "tpi": 0.68,
+        "seed_capital": 520934911.0,
+        "max_hold_count": 26,
+        "avg_hold_time": 237.5,
+        "day_count": 0,
+        "bootstrap_avg": 0.0,
+        "bootstrap_min": 0.0,
+        "bootstrap_max": 0.0
+      }
+    }
+  ],
+  "raw_report_runtime_copy": "backtest\\temp\\wide_v1_v5_wfo_report_full_20260425.json"
+}

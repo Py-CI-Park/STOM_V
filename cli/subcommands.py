@@ -184,7 +184,13 @@ def create_subcommand_parser():
     disc_research.add_argument('--candidate-timeout', type=int)
     disc_research.add_argument('--candidate-plan-only', action='store_true', default=False)
     disc_research.add_argument('--keep-failed-candidate', action='store_true', default=False)
-    disc_research.add_argument('--iteration-v2-mode', choices=['best_feature_mix', 'best_feature_mix_v3'], default='')
+    disc_research.add_argument('--runtime-output', dest='runtime_output_path')
+    disc_research.add_argument('--max-consecutive-candidate-failures', type=int, default=3)
+    disc_research.add_argument(
+        '--iteration-v2-mode',
+        choices=['best_feature_mix', 'best_feature_mix_v3', 'best_feature_mix_v4', 'best_feature_mix_v5'],
+        default='',
+    )
     disc_research.add_argument('--iteration-v2-best-candidate', default='')
     disc_research.add_argument('--iteration-v2-best-expression', default='')
     disc_research.add_argument('--iteration-v2-primary-feature', default='B_시가총액')
@@ -801,6 +807,8 @@ def _handle_discovery(parsed):
             'candidate_timeout': parsed.candidate_timeout,
             'candidate_plan_only': parsed.candidate_plan_only,
             'keep_failed_candidate': parsed.keep_failed_candidate,
+            'runtime_output_path': parsed.runtime_output_path,
+            'max_consecutive_candidate_failures': parsed.max_consecutive_candidate_failures,
             'iteration_v2_mode': parsed.iteration_v2_mode,
             'iteration_v2_best_candidate': parsed.iteration_v2_best_candidate,
             'iteration_v2_best_expression': parsed.iteration_v2_best_expression,
