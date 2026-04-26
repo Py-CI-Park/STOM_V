@@ -65,6 +65,8 @@ v6는 v5 actual row-set 검증이 부족할 때 필요한 보강 분기였다. �
 
 ## 변경 파일
 
+- `docs/superpowers/specs/2026-04-26-wide-v1-post-mvp-roadmap-and-risk-backlog-design.md`
+- `docs/superpowers/plans/2026-04-26-wide-v1-post-mvp-risk-backlog-and-roadmap.md`
 - `docs/research/condition_research/mvp/2026-04-26_wide_v1_post_mvp_roadmap.md`
 - `docs/research/condition_research/mvp/2026-04-26_wide_v1_post_mvp_risk_backlog.md`
 - `docs/pr/2026-04-26_wide_v1_post_mvp_risk_backlog_pr.md`
