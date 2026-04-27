@@ -654,6 +654,74 @@ def test_discovery_research_handler_passes_iteration_v2_trade_amount_feature():
     assert payload['iteration_v2_trade_amount_feature'] == 'B_등락율'
 
 
+def test_discovery_optimize_wide_v2_parser_accepts_optimizer_options():
+    parser = create_subcommand_parser()
+
+    args = parser.parse_args([
+        'discovery', 'optimize-wide-v2',
+        '--name', 'WideV2AutoLoop_20260427',
+        '--base-buy-strategy', 'WideV1Final_B_20260425',
+        '--sell', 'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+        '--seed-expression', '66.999 <= 시가총액 < 2_580 and 등락율 > 4.83',
+        '--start', '20250101',
+        '--end', '20251231',
+        '--candidate-count', '10',
+        '--max-rounds', '3',
+        '--min-improvement', '0.01',
+        '--stop-after-no-improvement', '2',
+        '--iteration-v2-trade-amount-feature', 'B_등락율',
+        '--runtime-output', 'backtest/temp/wide_v2_auto_loop.json',
+        '--leaderboard-output', 'backtest/temp/wide_v2_auto_loop_leaderboard.json',
+        '--report-path', 'docs/research/condition_research/pilot_logs/2026-04-27_wide_v2_auto_loop_summary.md',
+    ])
+
+    assert args.command == 'discovery'
+    assert args.discovery_action == 'optimize-wide-v2'
+    assert args.name == 'WideV2AutoLoop_20260427'
+    assert args.seed_expression == '66.999 <= 시가총액 < 2_580 and 등락율 > 4.83'
+    assert args.iteration_v2_trade_amount_feature == 'B_등락율'
+    assert args.candidate_count == 10
+    assert args.max_rounds == 3
+    assert args.min_improvement == 0.01
+    assert args.stop_after_no_improvement == 2
+    assert args.runtime_output_path == 'backtest/temp/wide_v2_auto_loop.json'
+    assert args.leaderboard_output_path == 'backtest/temp/wide_v2_auto_loop_leaderboard.json'
+    assert args.report_path.endswith('wide_v2_auto_loop_summary.md')
+
+
+def test_discovery_optimize_wide_v2_handler_calls_optimizer(capsys):
+    with patch('cli.research_optimizer.run_wide_v2_optimizer') as mock:
+        mock.return_value = {
+            'status': 'ok',
+            'run_id': 'WideV2AutoLoop_20260427',
+            'stop_reason': 'max_rounds_reached',
+        }
+        exit_code = handle_subcommand([
+            'discovery', 'optimize-wide-v2',
+            '--name', 'WideV2AutoLoop_20260427',
+            '--base-buy-strategy', 'WideV1Final_B_20260425',
+            '--sell', 'ResearchTest_Tick_S_090000_092800_Wide_20260419',
+            '--seed-expression', '66.999 <= 시가총액 < 2_580 and 등락율 > 4.83',
+            '--start', '20250101',
+            '--end', '20251231',
+            '--iteration-v2-trade-amount-feature', 'B_등락율',
+            '--candidate-count', '2',
+            '--max-rounds', '2',
+        ])
+
+    assert exit_code == 0
+    out = capsys.readouterr().out
+    assert 'WideV2AutoLoop_20260427' in out
+    config = mock.call_args.args[0]
+    assert config.name == 'WideV2AutoLoop_20260427'
+    assert config.base_buy_strategy == 'WideV1Final_B_20260425'
+    assert config.sell_strategy == 'ResearchTest_Tick_S_090000_092800_Wide_20260419'
+    assert config.seed_expression == '66.999 <= 시가총액 < 2_580 and 등락율 > 4.83'
+    assert config.iteration_v2_trade_amount_feature == 'B_등락율'
+    assert config.candidate_count == 2
+    assert config.max_rounds == 2
+
+
 def test_discovery_research_handler_returns_nonzero_on_error_status():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'error'}
