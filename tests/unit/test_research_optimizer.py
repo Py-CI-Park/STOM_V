@@ -335,6 +335,61 @@ def test_optimizer_maps_insufficient_retention_candidates_to_insufficient_candid
     assert result['failure_message'] == 'retention filter removed too many candidates'
 
 
+def test_optimizer_preserves_v5_recovery_metadata_on_insufficient_candidates():
+    def fake_runner(config, controller):
+        return {
+            'status': 'error',
+            'phase': 'insufficient_retention_candidates',
+            'message': 'candidate_count=2 requested but only 0 candidates selected after retention filtering',
+            'requested_candidate_count': 2,
+            'selected_candidate_count': 0,
+            'initial_v4_candidate_count': 0,
+            'recovery_attempted': True,
+            'recovery_reason': 'v4_candidate_pool_empty',
+            'recovery_family_counts': {'recovered_trade_feature': 1},
+            'final_candidate_pool_count': 1,
+            'eligible_count': 0,
+            'execution_count': 0,
+            'planned_execution_count': 0,
+            'iteration_v5': {
+                'recovery': {
+                    'recovery_attempted': True,
+                    'recovery_reason': 'v4_candidate_pool_empty',
+                    'recovery_family_counts': {'recovered_trade_feature': 1},
+                    'final_candidate_pool_count': 1,
+                },
+            },
+        }
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2RecoveryMetadata',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='66.999 <= PRIMARY < 2_580 and TRADE > 4.83',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature='B_TRADE',
+            start_date=20250101,
+            end_date=20251231,
+            candidate_count=2,
+            max_rounds=3,
+        ),
+        DummyController(),
+        research_runner=fake_runner,
+    )
+
+    assert result['status'] == 'error'
+    assert result['stop_reason'] == 'insufficient_candidates'
+    assert result['requested_candidate_count'] == 2
+    assert result['selected_candidate_count'] == 0
+    assert result['initial_v4_candidate_count'] == 0
+    assert result['recovery_attempted'] is True
+    assert result['recovery_reason'] == 'v4_candidate_pool_empty'
+    assert result['recovery_family_counts'] == {'recovered_trade_feature': 1}
+    assert result['final_candidate_pool_count'] == 1
+    assert result['eligible_count'] == 0
+
+
 def test_optimizer_stops_when_actual_rowset_selection_is_duplicate_only():
     calls = []
 

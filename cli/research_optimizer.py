@@ -42,6 +42,19 @@ _RUNTIME_FAILURE_PHASES = {
     'runtime_output_write_failure',
 }
 
+_ROUND_FAILURE_METADATA_KEYS = (
+    'requested_candidate_count',
+    'selected_candidate_count',
+    'initial_v4_candidate_count',
+    'recovery_attempted',
+    'recovery_reason',
+    'recovery_family_counts',
+    'final_candidate_pool_count',
+    'eligible_count',
+    'execution_count',
+    'planned_execution_count',
+)
+
 
 def _output_write_failure(path: Path, phase: str, error: OSError) -> dict[str, Any]:
     return json_safe_value(
@@ -171,17 +184,31 @@ def _failure_metadata(
     failure_phase: Any = None,
     failure_message: Any = None,
     actual_rowset_selection: dict[str, Any] | None = None,
+    round_result: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     actual_selection = actual_rowset_selection or {}
-    return json_safe_value(
-        {
-            'failed_round': failed_round,
-            'failure_phase': failure_phase,
-            'failure_message': failure_message,
-            'requested_candidate_count': actual_selection.get('requested_count'),
-            'selected_candidate_count': _selected_candidate_count(actual_selection),
-        }
-    )
+    round_payload = round_result or {}
+    metadata = {
+        'failed_round': failed_round,
+        'failure_phase': failure_phase,
+        'failure_message': failure_message,
+        'requested_candidate_count': (
+            actual_selection.get('requested_count')
+            if actual_selection.get('requested_count') is not None
+            else round_payload.get('requested_candidate_count')
+        ),
+        'selected_candidate_count': (
+            _selected_candidate_count(actual_selection)
+            if actual_selection
+            else round_payload.get('selected_candidate_count')
+        ),
+    }
+    for key in _ROUND_FAILURE_METADATA_KEYS:
+        if key in {'requested_candidate_count', 'selected_candidate_count'}:
+            continue
+        if key in round_payload:
+            metadata[key] = round_payload.get(key)
+    return json_safe_value(metadata)
 
 
 def _actual_rowset_failure_message(stop_reason: str, actual_rowset_selection: dict[str, Any]) -> str:
@@ -337,6 +364,7 @@ def run_wide_v2_optimizer(
                     failure_phase=round_result.get('phase'),
                     failure_message=round_result.get('message'),
                     actual_rowset_selection=round_result.get('actual_rowset_selection'),
+                    round_result=round_result,
                 )
                 break
 
@@ -355,6 +383,7 @@ def run_wide_v2_optimizer(
                     failure_phase='actual_rowset_selection',
                     failure_message=round_state['failure_message'],
                     actual_rowset_selection=actual_rowset_selection,
+                    round_result=round_result,
                 )
                 break
 
