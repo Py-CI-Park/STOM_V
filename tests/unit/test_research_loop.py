@@ -270,6 +270,14 @@ def test_research_loop_config_has_iteration_v2_fields():
     assert 'iteration_v2_duplicate_retention_tolerance' in names
 
 
+def test_research_loop_config_has_iteration_v2_trade_amount_feature():
+    names = {field.name for field in fields(ResearchLoopConfig)}
+    assert 'iteration_v2_trade_amount_feature' in names
+
+    config = ResearchLoopConfig()
+    assert config.iteration_v2_trade_amount_feature == 'B_당일거래대금'
+
+
 def test_iteration_plan_includes_v2_settings():
     plan = research_loop._build_iteration_plan(
         ResearchLoopConfig(
@@ -278,6 +286,7 @@ def test_iteration_plan_includes_v2_settings():
             iteration_v2_best_candidate='cand003',
             iteration_v2_best_expression='66.999 <= 시가총액 < 2_580',
             iteration_v2_primary_feature='B_시가총액',
+            iteration_v2_trade_amount_feature='B_등락율',
             iteration_v2_secondary_features='B_체결강도,B_등락율',
         )
     )
@@ -286,6 +295,7 @@ def test_iteration_plan_includes_v2_settings():
     assert plan['iteration_v2_best_candidate'] == 'cand003'
     assert plan['iteration_v2_best_expression'] == '66.999 <= 시가총액 < 2_580'
     assert plan['iteration_v2_primary_feature'] == 'B_시가총액'
+    assert plan['iteration_v2_trade_amount_feature'] == 'B_등락율'
     assert plan['iteration_v2_secondary_features'] == ['B_체결강도', 'B_등락율']
 
 
@@ -330,6 +340,45 @@ def test_validate_research_iteration_accepts_best_feature_mix_v4(tmp_path):
     )
 
     assert result['status'] == 'ok'
+
+
+def test_validate_research_iteration_accepts_custom_second_seed_feature(tmp_path):
+    result = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='CustomSecondFeature',
+            baseline_csv=str(tmp_path / 'baseline.csv'),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_best_candidate='WideV1Final_B_20260425',
+            iteration_v2_best_expression='66.999 <= 시가총액 < 2_580 and 등락율 > 4.83',
+            iteration_v2_primary_feature='B_시가총액',
+            iteration_v2_trade_amount_feature='B_등락율',
+        )
+    )
+
+    assert result['status'] == 'ok'
+
+
+def test_validate_research_iteration_rejects_custom_second_feature_mismatch(tmp_path):
+    result = research_loop.validate_research_iteration_config(
+        ResearchLoopConfig(
+            name='CustomSecondFeatureMismatch',
+            baseline_csv=str(tmp_path / 'baseline.csv'),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_best_candidate='WideV1Final_B_20260425',
+            iteration_v2_best_expression='66.999 <= 시가총액 < 2_580 and 등락율 > 4.83',
+            iteration_v2_primary_feature='B_시가총액',
+            iteration_v2_trade_amount_feature='B_당일거래대금',
+        )
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'invalid_iteration_v2_best_expression'
 
 
 def test_validate_research_iteration_rejects_malformed_best_feature_mix_v3_expression(tmp_path):
@@ -1970,6 +2019,7 @@ def test_run_research_iteration_v5_executes_oversampled_pool_and_selects_actual_
             iteration_v2_best_candidate='WideV1IterationV4__cand001',
             iteration_v2_best_expression=f'10 <= PRIMARY < 90 and 1000 <= {trade_amount_runtime_feature} < 5000',
             iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature=trade_amount_feature,
             iteration_v2_secondary_features=f'B_STRENGTH,{trade_amount_feature}',
         ),
         controller=object(),
@@ -2102,6 +2152,7 @@ def test_run_research_iteration_v5_skips_actual_rowset_when_success_count_is_sho
             iteration_v2_best_candidate='WideV1IterationV2_20260423__cand005',
             iteration_v2_best_expression=f'10 <= PRIMARY < 90 and 1000 <= {trade_amount_runtime_feature} < 5000',
             iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature=trade_amount_feature,
             iteration_v2_secondary_features=f'B_STRENGTH,{trade_amount_feature}',
             max_consecutive_candidate_failures=3,
         ),

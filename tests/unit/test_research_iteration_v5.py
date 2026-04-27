@@ -99,6 +99,29 @@ def test_select_actual_rowset_representatives_keeps_one_ranked_member_per_group(
 def test_select_actual_rowset_representatives_reports_shortfall(tmp_path: Path) -> None:
     csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100)])
     csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100)])
+    csv_c = _trade_csv(tmp_path / 'cand003.csv', [_row('B', 2, 200)])
+    ranked = [
+        _candidate('cand001', csv_a, rank=1),
+        _candidate('cand002', csv_b, rank=2),
+        _candidate('cand003', csv_c, rank=3),
+    ]
+
+    selected, summary = select_actual_rowset_representatives(
+        ranked,
+        runtime_root=tmp_path,
+        requested_count=3,
+    )
+
+    assert [item['strategy_name'] for item in selected] == ['cand001', 'cand003']
+    assert summary['status'] == 'shortfall'
+    assert summary['row_set_identity_status'] == 'partially_distinct'
+    assert summary['selected_count'] == 2
+    assert summary['requested_count'] == 3
+
+
+def test_select_actual_rowset_representatives_reports_duplicate_only(tmp_path: Path) -> None:
+    csv_a = _trade_csv(tmp_path / 'cand001.csv', [_row('A', 1, 100)])
+    csv_b = _trade_csv(tmp_path / 'cand002.csv', [_row('A', 1, 100)])
     ranked = [
         _candidate('cand001', csv_a, rank=1),
         _candidate('cand002', csv_b, rank=2),
@@ -112,9 +135,10 @@ def test_select_actual_rowset_representatives_reports_shortfall(tmp_path: Path) 
 
     assert [item['strategy_name'] for item in selected] == ['cand001']
     assert summary['status'] == 'shortfall'
-    assert summary['row_set_identity_status'] == 'partially_distinct'
+    assert summary['row_set_identity_status'] == 'duplicate_only'
     assert summary['selected_count'] == 1
     assert summary['requested_count'] == 2
+    assert summary['duplicate_actual_rowset_count'] == 1
 
 
 def test_apply_actual_rowset_selection_moves_best_to_first_selected_representative(tmp_path: Path) -> None:

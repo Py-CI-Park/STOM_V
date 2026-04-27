@@ -58,13 +58,21 @@ def _candidate_by_name(candidates: JsonList) -> dict[str, JsonDict]:
     }
 
 
-def _selected_status(*, requested_count: int, selected_count: int, actual_group_count: int) -> tuple[str, str]:
+def _selected_status(
+    *,
+    requested_count: int,
+    selected_count: int,
+    actual_group_count: int,
+    executed_count: int,
+) -> tuple[str, str]:
     if requested_count <= 0:
         return 'disabled', 'not_evaluated'
     if actual_group_count <= 0 or selected_count <= 0:
         return 'shortfall', 'not_evaluated'
     if selected_count >= requested_count:
         return 'ok', 'all_distinct'
+    if actual_group_count == 1 and executed_count > 1:
+        return 'shortfall', 'duplicate_only'
     return 'shortfall', 'partially_distinct'
 
 
@@ -119,6 +127,7 @@ def select_actual_rowset_representatives(
         requested_count=requested,
         selected_count=selected_count,
         actual_group_count=actual_group_count,
+        executed_count=executed_count,
     )
     duplicate_groups = [
         group
