@@ -194,6 +194,7 @@ def create_subcommand_parser():
     disc_research.add_argument('--iteration-v2-best-candidate', default='')
     disc_research.add_argument('--iteration-v2-best-expression', default='')
     disc_research.add_argument('--iteration-v2-primary-feature', default='B_시가총액')
+    disc_research.add_argument('--iteration-v2-trade-amount-feature', default='B_당일거래대금')
     disc_research.add_argument('--iteration-v2-secondary-features', default='')
     disc_research.add_argument(
         '--no-iteration-v2-secondary-only',
@@ -813,6 +814,7 @@ def _handle_discovery(parsed):
             'iteration_v2_best_candidate': parsed.iteration_v2_best_candidate,
             'iteration_v2_best_expression': parsed.iteration_v2_best_expression,
             'iteration_v2_primary_feature': parsed.iteration_v2_primary_feature,
+            'iteration_v2_trade_amount_feature': parsed.iteration_v2_trade_amount_feature,
             'iteration_v2_secondary_features': parsed.iteration_v2_secondary_features,
             'iteration_v2_include_secondary_only': parsed.iteration_v2_include_secondary_only,
             'iteration_v2_max_secondary_only': parsed.iteration_v2_max_secondary_only,

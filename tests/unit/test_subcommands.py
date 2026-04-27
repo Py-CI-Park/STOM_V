@@ -610,6 +610,50 @@ def test_discovery_research_handler_passes_iteration_v2_mode_v5():
     assert payload['candidate_count'] == 10
 
 
+def test_discovery_research_parser_accepts_iteration_v2_trade_amount_feature():
+    parser = create_subcommand_parser()
+
+    args = parser.parse_args([
+        'discovery', 'research', 'V5Run',
+        '--input', 'baseline.csv',
+        '--base-buy-strategy', 'BaseBuy',
+        '--sell', 'BaseSell',
+        '--start', '20250101',
+        '--end', '20251231',
+        '--run-candidates',
+        '--iteration-v2-mode', 'best_feature_mix_v5',
+        '--iteration-v2-best-candidate', 'WideV1Final_B_20260425',
+        '--iteration-v2-best-expression', '66.999 <= 시가총액 < 2_580 and 등락율 > 4.83',
+        '--iteration-v2-primary-feature', 'B_시가총액',
+        '--iteration-v2-trade-amount-feature', 'B_등락율',
+    ])
+
+    assert args.iteration_v2_trade_amount_feature == 'B_등락율'
+
+
+def test_discovery_research_handler_passes_iteration_v2_trade_amount_feature():
+    with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
+        mock.return_value = {'status': 'ok'}
+        result = handle_subcommand([
+            'discovery', 'research', 'V5Run',
+            '--input', 'baseline.csv',
+            '--base-buy-strategy', 'BaseBuy',
+            '--sell', 'BaseSell',
+            '--start', '20250101',
+            '--end', '20251231',
+            '--run-candidates',
+            '--iteration-v2-mode', 'best_feature_mix_v5',
+            '--iteration-v2-best-candidate', 'WideV1Final_B_20260425',
+            '--iteration-v2-best-expression', '66.999 <= 시가총액 < 2_580 and 등락율 > 4.83',
+            '--iteration-v2-primary-feature', 'B_시가총액',
+            '--iteration-v2-trade-amount-feature', 'B_등락율',
+        ])
+
+    payload = mock.call_args.args[0]
+    assert result == 0
+    assert payload['iteration_v2_trade_amount_feature'] == 'B_등락율'
+
+
 def test_discovery_research_handler_returns_nonzero_on_error_status():
     with patch('cli.ai_controller.AIBacktestController.research_strategy_once') as mock:
         mock.return_value = {'status': 'error'}

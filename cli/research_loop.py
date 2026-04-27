@@ -103,6 +103,7 @@ class ResearchLoopConfig:
     iteration_v2_best_candidate: str = ''
     iteration_v2_best_expression: str = ''
     iteration_v2_primary_feature: str = 'B_시가총액'
+    iteration_v2_trade_amount_feature: str = 'B_당일거래대금'
     iteration_v2_secondary_features: str = ''
     iteration_v2_include_secondary_only: bool = True
     iteration_v2_max_secondary_only: int = 1
@@ -180,6 +181,7 @@ def _build_iteration_plan(config: ResearchLoopConfig) -> dict:
         'iteration_v2_best_candidate': config.iteration_v2_best_candidate,
         'iteration_v2_best_expression': config.iteration_v2_best_expression,
         'iteration_v2_primary_feature': config.iteration_v2_primary_feature,
+        'iteration_v2_trade_amount_feature': config.iteration_v2_trade_amount_feature,
         'iteration_v2_secondary_features': _split_csv_values(config.iteration_v2_secondary_features),
         'iteration_v2_include_secondary_only': config.iteration_v2_include_secondary_only,
         'iteration_v2_max_secondary_only': config.iteration_v2_max_secondary_only,
@@ -609,15 +611,7 @@ def validate_research_iteration_config(config: ResearchLoopConfig) -> dict:
         'best_feature_mix_v4',
         'best_feature_mix_v5',
     }:
-        candidate_pool_builder = (
-            build_v4_candidate_pool
-            if config.iteration_v2_mode in {'best_feature_mix_v4', 'best_feature_mix_v5'}
-            else build_v3_candidate_pool
-        )
-        trade_amount_feature = (
-            (candidate_pool_builder.__kwdefaults__ or {}).get('trade_amount_feature')
-            or 'B_당일거래대금'
-        )
+        trade_amount_feature = config.iteration_v2_trade_amount_feature
         try:
             parse_best_expression_conditions(
                 config.iteration_v2_best_expression,
@@ -1610,6 +1604,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             expression_candidates,
             best_context=best_context,
             primary_feature=config.iteration_v2_primary_feature,
+            trade_amount_feature=config.iteration_v2_trade_amount_feature,
             secondary_features=_split_csv_values(config.iteration_v2_secondary_features),
             min_estimated_retention=config.min_estimated_retention,
             retention_tolerance=config.iteration_v2_duplicate_retention_tolerance,
@@ -1634,6 +1629,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             expression_candidates,
             best_context=best_context,
             primary_feature=config.iteration_v2_primary_feature,
+            trade_amount_feature=config.iteration_v2_trade_amount_feature,
             secondary_features=_split_csv_values(config.iteration_v2_secondary_features),
             min_estimated_retention=config.min_estimated_retention,
             retention_tolerance=config.iteration_v2_duplicate_retention_tolerance,
