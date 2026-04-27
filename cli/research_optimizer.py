@@ -9,6 +9,7 @@ from typing import Any, Callable
 
 from cli.research_iteration_v3 import parse_best_expression_conditions
 from cli.research_loop import ResearchLoopConfig, run_research_iteration
+from cli.research_optimizer_report import write_optimizer_report
 from cli.research_optimizer_state import (
     WideV2OptimizerConfig,
     build_leaderboard_entries,
@@ -170,6 +171,21 @@ def _wfo_candidate(
     )
 
 
+def _initial_seed_metadata(config: WideV2OptimizerConfig) -> dict[str, Any]:
+    effective_seed_candidate = config.seed_candidate or config.base_buy_strategy
+    return json_safe_value(
+        {
+            'base_buy_strategy': config.base_buy_strategy,
+            'source_baseline': config.base_buy_strategy,
+            'seed_candidate': effective_seed_candidate,
+            'seed_expression': config.seed_expression,
+            'iteration_v2_mode': config.iteration_v2_mode,
+            'iteration_v2_primary_feature': config.iteration_v2_primary_feature,
+            'iteration_v2_trade_amount_feature': config.iteration_v2_trade_amount_feature,
+        }
+    )
+
+
 def run_wide_v2_optimizer(
     config: WideV2OptimizerConfig,
     controller,
@@ -268,6 +284,7 @@ def run_wide_v2_optimizer(
         'run_id': config.run_id,
         'stop_reason': stop_reason,
         'completed_round_count': completed_round_count,
+        'initial_seed': _initial_seed_metadata(config),
         'rounds': rounds,
         'leaderboard': leaderboard,
         'final_best_candidate': final_best_candidate,
@@ -280,9 +297,11 @@ def run_wide_v2_optimizer(
     }
     result = json_safe_value(result)
 
-    if summary_output_path:
-        _write_json(summary_output_path, result)
     if leaderboard_output_path:
         _write_json(leaderboard_output_path, leaderboard)
+    report_path = write_optimizer_report(result, config.report_path)
+    result['report_path'] = report_path
+    if summary_output_path:
+        _write_json(summary_output_path, result)
 
     return result

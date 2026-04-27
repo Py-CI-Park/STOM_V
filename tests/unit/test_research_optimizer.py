@@ -398,3 +398,148 @@ def test_optimizer_writes_summary_and_leaderboard_json(tmp_path):
     assert result['leaderboard_output_path'] == str(leaderboard_path)
     assert json.loads(summary_path.read_text(encoding='utf-8'))['stop_reason'] == 'max_rounds_reached'
     assert json.loads(leaderboard_path.read_text(encoding='utf-8'))[0]['strategy_name'] == 'R1__cand001'
+
+
+def test_optimizer_writes_report_and_rewrites_summary_json_with_report_path(tmp_path):
+    runtime_output = tmp_path / 'wide_v2.json'
+    report_path = tmp_path / 'reports' / 'wide_v2_summary.md'
+
+    def fake_runner(config, controller):
+        return _round_result('R1__cand001', 'legacy-round-best-expression', 1.0)
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2ReportOutput',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='legacy-seed-expression',
+            iteration_v2_mode='best_feature_mix',
+            start_date=20250101,
+            end_date=20251231,
+            max_rounds=1,
+            runtime_output_path=str(runtime_output),
+            report_path=str(report_path),
+        ),
+        DummyController(),
+        research_runner=fake_runner,
+    )
+
+    summary_path = tmp_path / 'wide_v2_summary.json'
+    summary_payload = json.loads(summary_path.read_text(encoding='utf-8'))
+
+    assert result['report_path'] == str(report_path)
+    assert report_path.read_text(encoding='utf-8').startswith('# Wide v2 optimizer summary')
+    assert summary_payload['report_path'] == str(report_path)
+
+
+def test_optimizer_persists_initial_seed_metadata_in_summary_json(tmp_path):
+    runtime_output = tmp_path / 'wide_v2.json'
+    report_path = tmp_path / 'reports' / 'wide_v2_summary.md'
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2InitialSeed',
+            base_buy_strategy='BaseStrategy',
+            seed_candidate='SeedCandidate',
+            sell_strategy='Sell',
+            seed_expression='legacy-seed-expression',
+            iteration_v2_mode='best_feature_mix',
+            iteration_v2_primary_feature='PrimaryFeature',
+            iteration_v2_trade_amount_feature='TradeFeature',
+            start_date=20250101,
+            end_date=20251231,
+            max_rounds=1,
+            runtime_output_path=str(runtime_output),
+            report_path=str(report_path),
+        ),
+        DummyController(),
+        research_runner=lambda config, controller: _round_result(
+            'R1__cand001',
+            'legacy-round-best-expression',
+            1.0,
+        ),
+    )
+
+    summary_payload = json.loads((tmp_path / 'wide_v2_summary.json').read_text(encoding='utf-8'))
+
+    assert result['initial_seed'] == {
+        'base_buy_strategy': 'BaseStrategy',
+        'source_baseline': 'BaseStrategy',
+        'seed_candidate': 'SeedCandidate',
+        'seed_expression': 'legacy-seed-expression',
+        'iteration_v2_mode': 'best_feature_mix',
+        'iteration_v2_primary_feature': 'PrimaryFeature',
+        'iteration_v2_trade_amount_feature': 'TradeFeature',
+    }
+    assert summary_payload['report_path'] == str(report_path)
+    assert summary_payload['initial_seed'] == result['initial_seed']
+
+
+def test_optimizer_uses_effective_seed_candidate_in_initial_metadata_when_omitted(tmp_path):
+    runtime_output = tmp_path / 'wide_v2.json'
+    report_path = tmp_path / 'reports' / 'wide_v2_summary.md'
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2EffectiveSeedCandidate',
+            base_buy_strategy='BaseStrategy',
+            sell_strategy='Sell',
+            seed_expression='legacy-seed-expression',
+            iteration_v2_mode='best_feature_mix',
+            start_date=20250101,
+            end_date=20251231,
+            max_rounds=1,
+            runtime_output_path=str(runtime_output),
+            report_path=str(report_path),
+        ),
+        DummyController(),
+        research_runner=lambda config, controller: _round_result(
+            'R1__cand001',
+            'legacy-round-best-expression',
+            1.0,
+        ),
+    )
+
+    summary_payload = json.loads((tmp_path / 'wide_v2_summary.json').read_text(encoding='utf-8'))
+    markdown = report_path.read_text(encoding='utf-8')
+
+    assert result['initial_seed']['seed_candidate'] == 'BaseStrategy'
+    assert summary_payload['initial_seed'] == result['initial_seed']
+    assert '- seed_candidate=BaseStrategy' in markdown
+
+
+def test_optimizer_writes_report_for_invalid_seed_with_initial_metadata(tmp_path):
+    runtime_output = tmp_path / 'wide_v2.json'
+    report_path = tmp_path / 'reports' / 'wide_v2_invalid_summary.md'
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2InvalidSeedReport',
+            base_buy_strategy='Base|Strategy',
+            seed_candidate='Seed|Candidate',
+            sell_strategy='Sell',
+            seed_expression='not parseable',
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_primary_feature='Primary|Feature',
+            iteration_v2_trade_amount_feature='Trade|Feature',
+            start_date=20250101,
+            end_date=20251231,
+            max_rounds=2,
+            runtime_output_path=str(runtime_output),
+            report_path=str(report_path),
+        ),
+        DummyController(),
+    )
+
+    summary_payload = json.loads((tmp_path / 'wide_v2_summary.json').read_text(encoding='utf-8'))
+    markdown = report_path.read_text(encoding='utf-8')
+
+    assert result['status'] == 'error'
+    assert result['stop_reason'] == 'invalid_seed_expression'
+    assert result['completed_round_count'] == 0
+    assert result['rounds'] == []
+    assert result['initial_seed']['base_buy_strategy'] == 'Base|Strategy'
+    assert summary_payload['initial_seed'] == result['initial_seed']
+    assert 'Base\\|Strategy' in markdown
+    assert 'Seed\\|Candidate' in markdown
+    assert '- stop_reason=invalid_seed_expression' in markdown
