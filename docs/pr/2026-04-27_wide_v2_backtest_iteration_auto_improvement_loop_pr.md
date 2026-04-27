@@ -54,6 +54,9 @@
 - 초기 seed, 후보 생성, 후보 비교, global best 선택, 라운드별 누적 요약
 - JSON-safe normalization, path helper, improvement 계산, leaderboard helper
 - 완료된 라운드 보존과 stop reason 기록
+- actual row-set이 전부 중복으로 수렴한 경우 `duplicate_rowset_only`로 즉시 중단
+- 실패 라운드, 실패 phase/message, 후보 shortfall 수량을 summary/report에 기록
+- summary/leaderboard/report 출력 경로 오류를 예외 종료가 아닌 구조화된 error payload로 반환
 - 최종 best candidate와 WFO handoff candidate 분리
 - Markdown PR report writer
 - 관련 unit test 추가 및 갱신

@@ -9,6 +9,11 @@ def _result():
         'status': 'ok',
         'run_id': 'WideV2Run',
         'stop_reason': 'max_rounds_reached',
+        'failed_round': None,
+        'failure_phase': None,
+        'failure_message': None,
+        'requested_candidate_count': None,
+        'selected_candidate_count': None,
         'completed_round_count': 2,
         'initial_seed': {
             'base_buy_strategy': 'WideV1Final_B_20260425',
@@ -124,6 +129,9 @@ def test_render_optimizer_summary_markdown_includes_explicit_design_spec_labels(
     assert '## Global leaderboard top candidates' in markdown
     assert '## Stop reason' in markdown
     assert '- stop_reason=max_rounds_reached' in markdown
+    assert '- failed_round=' in markdown
+    assert '- failure_phase=' in markdown
+    assert '- failure_message=' in markdown
     assert '## WFO handoff' in markdown
     assert f"- next_command={result['wfo_candidate']['next_command']}" in markdown
 

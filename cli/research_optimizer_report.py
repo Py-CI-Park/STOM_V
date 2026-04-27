@@ -71,6 +71,15 @@ def _leaderboard_rows(result: dict[str, Any]) -> list[str]:
     return rows
 
 
+def _report_write_failure(path: Path, error: OSError) -> dict[str, Any]:
+    return {
+        'failure_phase': 'optimizer_report_output_write_failure',
+        'failure_message': f'optimizer report write failed: {error}',
+        'output_path': str(path),
+        'exception_type': type(error).__name__,
+    }
+
+
 def render_optimizer_summary_markdown(result: dict[str, Any]) -> str:
     final_best = result.get('final_best_candidate') or {}
     initial_seed = result.get('initial_seed') or {}
@@ -117,6 +126,11 @@ def render_optimizer_summary_markdown(result: dict[str, Any]) -> str:
         '## Stop reason',
         '',
         _bullet('stop_reason', result.get('stop_reason')),
+        _bullet('failed_round', result.get('failed_round')),
+        _bullet('failure_phase', result.get('failure_phase')),
+        _bullet('failure_message', result.get('failure_message')),
+        _bullet('requested_candidate_count', result.get('requested_candidate_count')),
+        _bullet('selected_candidate_count', result.get('selected_candidate_count')),
         '',
         '## Final best candidate',
         '',
@@ -144,10 +158,21 @@ def render_optimizer_summary_markdown(result: dict[str, Any]) -> str:
     return '\n'.join(lines)
 
 
-def write_optimizer_report(result: dict[str, Any], report_path: str | None) -> str | None:
+def write_optimizer_report(
+    result: dict[str, Any],
+    report_path: str | None,
+    *,
+    errors: list[dict[str, Any]] | None = None,
+) -> str | None:
     if not report_path:
         return None
     path = Path(report_path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(render_optimizer_summary_markdown(result), encoding='utf-8')
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(render_optimizer_summary_markdown(result), encoding='utf-8')
+    except OSError as error:
+        if errors is not None:
+            errors.append(_report_write_failure(path, error))
+            return None
+        raise
     return str(path)

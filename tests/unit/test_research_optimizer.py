@@ -253,6 +253,9 @@ def test_optimizer_maps_research_runtime_error_and_preserves_completed_rounds():
     assert result['status'] == 'error'
     assert result['stop_reason'] == 'runtime_failure'
     assert result['completed_round_count'] == 1
+    assert result['failed_round'] == 2
+    assert result['failure_phase'] == 'candidate_iteration_runtime_failure'
+    assert result['failure_message'] == 'maximum consecutive candidate failures reached'
     assert result['rounds'][1]['failure_message'] == 'maximum consecutive candidate failures reached'
 
 
@@ -289,6 +292,9 @@ def test_optimizer_maps_candidate_iteration_failure_to_runtime_failure():
     assert result['status'] == 'error'
     assert result['stop_reason'] == 'runtime_failure'
     assert result['completed_round_count'] == 0
+    assert result['failed_round'] == 1
+    assert result['failure_phase'] == 'candidate_iteration'
+    assert result['failure_message'] == 'no candidate evaluated successfully'
     assert result['rounds'][0]['failure_message'] == 'no candidate evaluated successfully'
 
 
@@ -324,6 +330,52 @@ def test_optimizer_maps_insufficient_retention_candidates_to_insufficient_candid
     assert len(calls) == 1
     assert result['status'] == 'error'
     assert result['stop_reason'] == 'insufficient_candidates'
+    assert result['failed_round'] == 1
+    assert result['failure_phase'] == 'insufficient_retention_candidates'
+    assert result['failure_message'] == 'retention filter removed too many candidates'
+
+
+def test_optimizer_stops_when_actual_rowset_selection_is_duplicate_only():
+    calls = []
+
+    def fake_runner(config, controller):
+        calls.append(config)
+        return {
+            **_round_result('R1__cand001', 'legacy-round-best-expression', 1.0),
+            'actual_rowset_selection': {
+                'status': 'shortfall',
+                'row_set_identity_status': 'duplicate_only',
+                'requested_count': 2,
+                'selected_count': 1,
+                'duplicate_actual_rowset_count': 1,
+            },
+        }
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2DuplicateOnly',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='legacy-seed-expression',
+            iteration_v2_mode='best_feature_mix',
+            start_date=20250101,
+            end_date=20251231,
+            candidate_count=2,
+            max_rounds=2,
+        ),
+        DummyController(),
+        research_runner=fake_runner,
+    )
+
+    assert len(calls) == 1
+    assert result['status'] == 'error'
+    assert result['stop_reason'] == 'duplicate_rowset_only'
+    assert result['completed_round_count'] == 0
+    assert result['failed_round'] == 1
+    assert result['failure_phase'] == 'actual_rowset_selection'
+    assert result['requested_candidate_count'] == 2
+    assert result['selected_candidate_count'] == 1
+    assert result['final_best_candidate'] is None
 
 
 def test_optimizer_exposes_explicit_final_and_wfo_contract():
@@ -398,6 +450,108 @@ def test_optimizer_writes_summary_and_leaderboard_json(tmp_path):
     assert result['leaderboard_output_path'] == str(leaderboard_path)
     assert json.loads(summary_path.read_text(encoding='utf-8'))['stop_reason'] == 'max_rounds_reached'
     assert json.loads(leaderboard_path.read_text(encoding='utf-8'))[0]['strategy_name'] == 'R1__cand001'
+
+
+def test_optimizer_returns_error_when_leaderboard_output_write_fails(tmp_path):
+    blocked_leaderboard_path = tmp_path / 'blocked_leaderboard.json'
+    blocked_leaderboard_path.mkdir()
+    summary_path = tmp_path / 'summary.json'
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2LeaderboardWriteFailure',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='legacy-seed-expression',
+            iteration_v2_mode='best_feature_mix',
+            start_date=20250101,
+            end_date=20251231,
+            max_rounds=1,
+            leaderboard_output_path=str(blocked_leaderboard_path),
+            summary_output_path=str(summary_path),
+        ),
+        DummyController(),
+        research_runner=lambda config, controller: _round_result(
+            'R1__cand001',
+            'legacy-round-best-expression',
+            1.0,
+        ),
+    )
+
+    summary_payload = json.loads(summary_path.read_text(encoding='utf-8'))
+
+    assert result['status'] == 'error'
+    assert result['stop_reason'] == 'runtime_failure'
+    assert result['failure_phase'] == 'optimizer_leaderboard_output_write_failure'
+    assert result['failure_message']
+    assert result['output_write_failures'][0]['output_path'] == str(blocked_leaderboard_path)
+    assert summary_payload['failure_phase'] == 'optimizer_leaderboard_output_write_failure'
+
+
+def test_optimizer_returns_error_when_report_output_write_fails(tmp_path):
+    blocked_report_path = tmp_path / 'blocked_report.md'
+    blocked_report_path.mkdir()
+    summary_path = tmp_path / 'summary.json'
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2ReportWriteFailure',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='legacy-seed-expression',
+            iteration_v2_mode='best_feature_mix',
+            start_date=20250101,
+            end_date=20251231,
+            max_rounds=1,
+            summary_output_path=str(summary_path),
+            report_path=str(blocked_report_path),
+        ),
+        DummyController(),
+        research_runner=lambda config, controller: _round_result(
+            'R1__cand001',
+            'legacy-round-best-expression',
+            1.0,
+        ),
+    )
+
+    summary_payload = json.loads(summary_path.read_text(encoding='utf-8'))
+
+    assert result['status'] == 'error'
+    assert result['stop_reason'] == 'runtime_failure'
+    assert result['failure_phase'] == 'optimizer_report_output_write_failure'
+    assert result['report_path'] is None
+    assert result['output_write_failures'][0]['output_path'] == str(blocked_report_path)
+    assert summary_payload['failure_phase'] == 'optimizer_report_output_write_failure'
+
+
+def test_optimizer_returns_error_when_summary_output_write_fails(tmp_path):
+    blocked_summary_path = tmp_path / 'blocked_summary.json'
+    blocked_summary_path.mkdir()
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2SummaryWriteFailure',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='legacy-seed-expression',
+            iteration_v2_mode='best_feature_mix',
+            start_date=20250101,
+            end_date=20251231,
+            max_rounds=1,
+            summary_output_path=str(blocked_summary_path),
+        ),
+        DummyController(),
+        research_runner=lambda config, controller: _round_result(
+            'R1__cand001',
+            'legacy-round-best-expression',
+            1.0,
+        ),
+    )
+
+    assert result['status'] == 'error'
+    assert result['stop_reason'] == 'runtime_failure'
+    assert result['failure_phase'] == 'optimizer_summary_output_write_failure'
+    assert result['output_write_failures'][0]['output_path'] == str(blocked_summary_path)
 
 
 def test_optimizer_writes_report_and_rewrites_summary_json_with_report_path(tmp_path):
@@ -536,6 +690,9 @@ def test_optimizer_writes_report_for_invalid_seed_with_initial_metadata(tmp_path
 
     assert result['status'] == 'error'
     assert result['stop_reason'] == 'invalid_seed_expression'
+    assert result['failed_round'] == 1
+    assert result['failure_phase'] == 'invalid_seed_expression'
+    assert result['failure_message']
     assert result['completed_round_count'] == 0
     assert result['rounds'] == []
     assert result['initial_seed']['base_buy_strategy'] == 'Base|Strategy'
@@ -543,3 +700,5 @@ def test_optimizer_writes_report_for_invalid_seed_with_initial_metadata(tmp_path
     assert 'Base\\|Strategy' in markdown
     assert 'Seed\\|Candidate' in markdown
     assert '- stop_reason=invalid_seed_expression' in markdown
+    assert '- failed_round=1' in markdown
+    assert '- failure_phase=invalid_seed_expression' in markdown

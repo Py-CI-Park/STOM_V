@@ -43,13 +43,28 @@ _RUNTIME_FAILURE_PHASES = {
 }
 
 
-def _write_json(path: str, payload: Any) -> None:
-    output = Path(path)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(json_safe_value(payload), ensure_ascii=False, indent=2),
-        encoding='utf-8',
+def _output_write_failure(path: Path, phase: str, error: OSError) -> dict[str, Any]:
+    return json_safe_value(
+        {
+            'failure_phase': phase,
+            'failure_message': f'optimizer output write failed: {error}',
+            'output_path': str(path),
+            'exception_type': type(error).__name__,
+        }
     )
+
+
+def _write_json(path: str, payload: Any, *, failure_phase: str) -> dict[str, Any] | None:
+    output = Path(path)
+    try:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(
+            json.dumps(json_safe_value(payload), ensure_ascii=False, indent=2),
+            encoding='utf-8',
+        )
+    except OSError as error:
+        return _output_write_failure(output, failure_phase, error)
+    return None
 
 
 def _seed_from_previous(round_result: dict[str, Any], fallback_candidate: str) -> tuple[str, str] | None:
@@ -110,6 +125,13 @@ def _failure_stop_reason(result: dict[str, Any]) -> str:
     actual_rowset_selection = result.get('actual_rowset_selection') or {}
     if actual_rowset_selection.get('row_set_identity_status') == 'duplicate_only':
         return 'duplicate_rowset_only'
+    if actual_rowset_selection.get('status') == 'shortfall':
+        return 'insufficient_candidates'
+    if (
+        actual_rowset_selection.get('status') == 'not_run'
+        and actual_rowset_selection.get('reason') == 'insufficient_successful_candidates'
+    ):
+        return 'insufficient_candidates'
 
     phase = result.get('phase')
     if phase == 'invalid_iteration_v2_best_expression':
@@ -119,6 +141,77 @@ def _failure_stop_reason(result: dict[str, Any]) -> str:
     if phase in _RUNTIME_FAILURE_PHASES:
         return 'runtime_failure'
     return 'research_error'
+
+
+def _actual_rowset_stop_reason(result: dict[str, Any]) -> str | None:
+    actual_rowset_selection = result.get('actual_rowset_selection') or {}
+    if not isinstance(actual_rowset_selection, dict):
+        return None
+    if actual_rowset_selection.get('row_set_identity_status') == 'duplicate_only':
+        return 'duplicate_rowset_only'
+    if actual_rowset_selection.get('status') == 'shortfall':
+        return 'insufficient_candidates'
+    if (
+        actual_rowset_selection.get('status') == 'not_run'
+        and actual_rowset_selection.get('reason') == 'insufficient_successful_candidates'
+    ):
+        return 'insufficient_candidates'
+    return None
+
+
+def _selected_candidate_count(actual_rowset_selection: dict[str, Any]) -> Any:
+    if actual_rowset_selection.get('selected_count') is not None:
+        return actual_rowset_selection.get('selected_count')
+    return actual_rowset_selection.get('successful_candidate_count')
+
+
+def _failure_metadata(
+    *,
+    failed_round: int | None = None,
+    failure_phase: Any = None,
+    failure_message: Any = None,
+    actual_rowset_selection: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    actual_selection = actual_rowset_selection or {}
+    return json_safe_value(
+        {
+            'failed_round': failed_round,
+            'failure_phase': failure_phase,
+            'failure_message': failure_message,
+            'requested_candidate_count': actual_selection.get('requested_count'),
+            'selected_candidate_count': _selected_candidate_count(actual_selection),
+        }
+    )
+
+
+def _actual_rowset_failure_message(stop_reason: str, actual_rowset_selection: dict[str, Any]) -> str:
+    if stop_reason == 'duplicate_rowset_only':
+        return 'actual row-set selection produced duplicate-only candidates'
+    reason = actual_rowset_selection.get('reason')
+    if reason:
+        return f'actual row-set selection did not produce enough candidates: {reason}'
+    return 'actual row-set selection did not produce enough candidates'
+
+
+def _apply_output_write_failures(
+    result: dict[str, Any],
+    output_write_failures: list[dict[str, Any]],
+) -> None:
+    result['output_write_failures'] = json_safe_value(output_write_failures)
+    if not output_write_failures:
+        return
+
+    first_failure = output_write_failures[0]
+    if result.get('status') == 'ok':
+        result['status'] = 'error'
+        result['stop_reason'] = 'runtime_failure'
+        result['failure_phase'] = first_failure.get('failure_phase')
+        result['failure_message'] = first_failure.get('failure_message')
+    else:
+        if not result.get('failure_phase'):
+            result['failure_phase'] = first_failure.get('failure_phase')
+        if not result.get('failure_message'):
+            result['failure_message'] = first_failure.get('failure_message')
 
 
 def _final_best_round_candidate(
@@ -204,10 +297,16 @@ def run_wide_v2_optimizer(
     no_improvement_streak = 0
     stop_reason = 'max_rounds_reached'
     status = 'ok'
+    failure_metadata = _failure_metadata()
 
     if not _validate_seed_expression(config, current_expression):
         status = 'error'
         stop_reason = 'invalid_seed_expression'
+        failure_metadata = _failure_metadata(
+            failed_round=1,
+            failure_phase='invalid_seed_expression',
+            failure_message='initial seed expression is invalid',
+        )
     else:
         for round_index in range(1, max(int(config.max_rounds), 0) + 1):
             round_config = build_round_research_config(
@@ -233,6 +332,30 @@ def run_wide_v2_optimizer(
                 rounds.append(json_safe_value(round_state))
                 status = 'error'
                 stop_reason = _failure_stop_reason(round_result)
+                failure_metadata = _failure_metadata(
+                    failed_round=round_index,
+                    failure_phase=round_result.get('phase'),
+                    failure_message=round_result.get('message'),
+                    actual_rowset_selection=round_result.get('actual_rowset_selection'),
+                )
+                break
+
+            rowset_stop_reason = _actual_rowset_stop_reason(round_result)
+            if rowset_stop_reason is not None:
+                actual_rowset_selection = round_result.get('actual_rowset_selection') or {}
+                round_state['failure_message'] = _actual_rowset_failure_message(
+                    rowset_stop_reason,
+                    actual_rowset_selection,
+                )
+                rounds.append(json_safe_value(round_state))
+                status = 'error'
+                stop_reason = rowset_stop_reason
+                failure_metadata = _failure_metadata(
+                    failed_round=round_index,
+                    failure_phase='actual_rowset_selection',
+                    failure_message=round_state['failure_message'],
+                    actual_rowset_selection=actual_rowset_selection,
+                )
                 break
 
             round_results[round_index] = round_result
@@ -272,6 +395,11 @@ def run_wide_v2_optimizer(
             if next_seed is None or not _validate_seed_expression(config, next_seed[1]):
                 status = 'error'
                 stop_reason = 'invalid_seed_expression'
+                failure_metadata = _failure_metadata(
+                    failed_round=round_index + 1,
+                    failure_phase='invalid_seed_expression',
+                    failure_message='next seed expression is invalid',
+                )
                 break
 
             current_candidate, current_expression = next_seed
@@ -283,6 +411,7 @@ def run_wide_v2_optimizer(
         'status': status,
         'run_id': config.run_id,
         'stop_reason': stop_reason,
+        **failure_metadata,
         'completed_round_count': completed_round_count,
         'initial_seed': _initial_seed_metadata(config),
         'rounds': rounds,
@@ -294,14 +423,36 @@ def run_wide_v2_optimizer(
         'summary_output_path': summary_output_path,
         'leaderboard_output_path': leaderboard_output_path,
         'report_path': config.report_path,
+        'output_write_failures': [],
     }
     result = json_safe_value(result)
 
+    output_write_failures: list[dict[str, Any]] = []
     if leaderboard_output_path:
-        _write_json(leaderboard_output_path, leaderboard)
-    report_path = write_optimizer_report(result, config.report_path)
+        leaderboard_error = _write_json(
+            leaderboard_output_path,
+            leaderboard,
+            failure_phase='optimizer_leaderboard_output_write_failure',
+        )
+        if leaderboard_error is not None:
+            output_write_failures.append(leaderboard_error)
+            _apply_output_write_failures(result, output_write_failures)
+
+    report_errors: list[dict[str, Any]] = []
+    report_path = write_optimizer_report(result, config.report_path, errors=report_errors)
     result['report_path'] = report_path
+    if report_errors:
+        output_write_failures.extend(report_errors)
+        _apply_output_write_failures(result, output_write_failures)
+
     if summary_output_path:
-        _write_json(summary_output_path, result)
+        summary_error = _write_json(
+            summary_output_path,
+            result,
+            failure_phase='optimizer_summary_output_write_failure',
+        )
+        if summary_error is not None:
+            output_write_failures.append(summary_error)
+            _apply_output_write_failures(result, output_write_failures)
 
     return result
