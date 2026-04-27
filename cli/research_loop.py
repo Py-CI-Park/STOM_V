@@ -21,6 +21,7 @@ from cli.research_iteration_v5 import (
     planned_v5_execution_count,
     select_actual_rowset_representatives,
 )
+from cli.research_iteration_v5_recovery import build_v5_recovery_candidate_pool
 from cli.research_compare import (
     INSTRUMENT_COLUMNS,
     OPTIONAL_KEY_COLUMNS,
@@ -205,6 +206,30 @@ def _iteration_generation_metadata(
     if iteration_v5:
         metadata['iteration_v5'] = iteration_v5
     return metadata
+
+
+def _v5_candidate_pool_metadata(
+    iteration_v5: dict[str, object] | None,
+    retention_selection: dict | None = None,
+) -> dict[str, object]:
+    if not iteration_v5:
+        return {}
+    recovery = iteration_v5.get('recovery')
+    if not isinstance(recovery, dict):
+        recovery = {}
+    eligible_count = iteration_v5.get('eligible_count')
+    if isinstance(retention_selection, dict):
+        eligible_count = retention_selection.get('eligible_count', eligible_count)
+    return {
+        'initial_v4_candidate_count': iteration_v5.get('initial_v4_candidate_count'),
+        'recovery_attempted': recovery.get('recovery_attempted', False),
+        'recovery_reason': recovery.get('recovery_reason'),
+        'recovery_family_counts': recovery.get('recovery_family_counts') or {},
+        'final_candidate_pool_count': recovery.get('final_candidate_pool_count'),
+        'eligible_count': eligible_count,
+        'execution_count': iteration_v5.get('execution_count'),
+        'planned_execution_count': iteration_v5.get('planned_execution_count'),
+    }
 
 
 def _build_candidate_specs(
@@ -1635,6 +1660,30 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             retention_tolerance=config.iteration_v2_duplicate_retention_tolerance,
         )
         expression_candidates = iteration_v4.get('candidates') or []
+        if config.iteration_v2_mode == 'best_feature_mix_v5':
+            recovery_result = build_v5_recovery_candidate_pool(
+                full_recommended_candidates=analysis_result.get('recommended_candidates') or [],
+                existing_v4_result=iteration_v4,
+                best_context=best_context,
+                primary_feature=config.iteration_v2_primary_feature,
+                trade_amount_feature=config.iteration_v2_trade_amount_feature,
+                secondary_features=_split_csv_values(config.iteration_v2_secondary_features),
+                candidate_count=config.candidate_count,
+            )
+            expression_candidates = recovery_result.get('candidates') or []
+            iteration_v5 = {
+                'status': 'pool_built',
+                'mode': 'best_feature_mix_v5',
+                'requested_count': config.candidate_count,
+                'v4_candidate_count': len(iteration_v4.get('candidates') or []),
+                'initial_v4_candidate_count': recovery_result.get('initial_v4_candidate_count'),
+                'recovery': {
+                    'recovery_attempted': recovery_result.get('recovery_attempted'),
+                    'recovery_reason': recovery_result.get('recovery_reason'),
+                    'recovery_family_counts': recovery_result.get('recovery_family_counts') or {},
+                    'final_candidate_pool_count': recovery_result.get('final_candidate_pool_count'),
+                },
+            }
         expression_result = {
             **expression_result,
             'selected_candidates': expression_candidates,
@@ -1643,12 +1692,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
             'iteration_v4': iteration_v4,
         }
         if config.iteration_v2_mode == 'best_feature_mix_v5':
-            iteration_v5 = {
-                'status': 'pool_built',
-                'mode': 'best_feature_mix_v5',
-                'requested_count': config.candidate_count,
-                'v4_candidate_count': len(expression_candidates),
-            }
+            expression_result['iteration_v5_recovery'] = (iteration_v5 or {}).get('recovery')
         expressions = expression_result['expressions']
     baseline_frame = _trade_frame_for_compare(baseline_csv)
     if config.iteration_v2_mode in {'best_feature_mix_v4', 'best_feature_mix_v5'}:
@@ -1768,6 +1812,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
                 retention_candidates=retention_candidates,
                 requested_candidate_count=config.candidate_count,
                 selected_candidate_count=len(selected_candidates),
+                **_v5_candidate_pool_metadata(iteration_v5, retention_selection),
                 candidate_specs=[],
                 candidates=[],
                 best_candidate=None,
@@ -2042,6 +2087,7 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
         'candidates': ranked_candidates,
         'best_candidate': best_candidate,
         'actual_rowset_selection': actual_rowset_selection,
+        **_v5_candidate_pool_metadata(iteration_v5, retention_selection),
         'cleanup_summary': cleanup_summary,
         'failure_policy': failure_policy,
     }

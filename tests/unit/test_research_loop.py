@@ -2168,6 +2168,221 @@ def test_run_research_iteration_v5_skips_actual_rowset_when_success_count_is_sho
     assert result['iteration_v5']['actual_selected_count'] == 0
 
 
+def test_run_research_iteration_uses_v5_recovery_when_v4_pool_is_empty(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    pd.DataFrame([
+        {'B_PRIMARY': 50, 'B_TRADE': 4.0, 'B_STRENGTH': 10, INSTRUMENT_COLUMNS[1]: 'A', REQUIRED_KEY_COLUMNS[0]: 1, OPTIONAL_KEY_COLUMNS[0]: 100},
+        {'B_PRIMARY': 60, 'B_TRADE': 5.5, 'B_STRENGTH': 20, INSTRUMENT_COLUMNS[1]: 'B', REQUIRED_KEY_COLUMNS[0]: 2, OPTIONAL_KEY_COLUMNS[0]: 200},
+        {'B_PRIMARY': 70, 'B_TRADE': 6.5, 'B_STRENGTH': 30, INSTRUMENT_COLUMNS[1]: 'C', REQUIRED_KEY_COLUMNS[0]: 3, OPTIONAL_KEY_COLUMNS[0]: 300},
+    ]).to_csv(baseline, index=False, encoding='utf-8')
+
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {
+        'status': 'ok',
+        'recommended_candidates': [
+            {
+                'feature': 'B_TRADE',
+                'operator': '>',
+                'threshold': 5.2,
+                'score': 4.0,
+                'combined_score': 4.0,
+                'source': 'quantile',
+            },
+            {
+                'feature': 'B_STRENGTH',
+                'operator': 'between',
+                'lower_bound': 15.0,
+                'upper_bound': 35.0,
+                'score': 3.0,
+                'combined_score': 3.0,
+                'source': 'quantile',
+            },
+        ],
+    })
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': ['STRENGTH > 10', 'STRENGTH > 20'],
+            'candidate_count': 2,
+            'selected_candidates': [
+                {'feature': 'B_STRENGTH', 'operator': '>', 'threshold': 10.0, 'score': 1.0, 'combined_score': 1.0},
+                {'feature': 'B_STRENGTH', 'operator': '>', 'threshold': 20.0, 'score': 1.0, 'combined_score': 1.0},
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'build_v4_candidate_pool',
+        lambda *args, **kwargs: {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v4',
+            'candidates': [],
+            'candidate_count': 0,
+            'type_counts': {'v4_control_keep_best': 1},
+        },
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'annotate_candidate_rowset_proxy',
+        lambda candidates, baseline_frame, min_retention: [
+            dict(
+                candidate,
+                retention_filter_passed=True,
+                rowset_proxy={
+                    'proxy_signature': frozenset({index}),
+                    'proxy_signature_hash': f'hash-{index}',
+                    'proxy_retention': 0.8,
+                    'proxy_filter_passed': True,
+                    'evaluation_error': None,
+                },
+            )
+            for index, candidate in enumerate(candidates, start=1)
+        ],
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'select_rowset_diverse_candidates',
+        lambda candidates, *, candidate_count, min_retention: (
+            [dict(candidate) for candidate in candidates[:2]],
+            {
+                'status': 'ok',
+                'phase': 'rowset_diverse_candidates_selected',
+                'requested_count': candidate_count,
+                'selected_count': 2,
+                'eligible_count': len(candidates),
+                'pool_count': len(candidates),
+            },
+        ),
+    )
+    executed_specs = []
+
+    def fake_execute_candidate_spec(config, spec, controller, baseline_csv):
+        executed_specs.append(spec)
+        return {
+            'status': 'ok',
+            'index': spec['index'],
+            'strategy_name': spec['strategy_name'],
+            'expression': spec['expression'],
+            'comparison': {
+                'trade_count_retention': 0.8,
+                'candidate_summary': {
+                    'trade_count': 10,
+                    'date_concentration': 0.0,
+                    'symbol_concentration': 0.0,
+                },
+            },
+            'promotion': {'status': 'ok', 'passed': True, 'score': float(10 - spec['index'])},
+        }
+
+    monkeypatch.setattr(research_loop, '_execute_candidate_spec', fake_execute_candidate_spec)
+    monkeypatch.setattr(
+        research_loop,
+        'select_actual_rowset_representatives',
+        lambda ranked, runtime_root, requested_count: (
+            ranked[:requested_count],
+            {
+                'status': 'ok',
+                'row_set_identity_status': 'all_distinct',
+                'requested_count': requested_count,
+                'executed_count': len(ranked),
+                'actual_group_count': len(ranked),
+                'selected_count': requested_count,
+                'selected_strategy_names': [candidate['strategy_name'] for candidate in ranked[:requested_count]],
+            },
+        ),
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V5Recovery',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_best_candidate='WideV1Final_B_20260425',
+            iteration_v2_best_expression='66.999 <= PRIMARY < 2_580 and TRADE > 4.83',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature='B_TRADE',
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'ok'
+    assert len(executed_specs) == 2
+    assert result['iteration_v5']['recovery']['recovery_attempted'] is True
+    assert result['iteration_v5']['recovery']['recovery_reason'] == 'v4_candidate_pool_empty'
+    assert result['initial_v4_candidate_count'] == 0
+    assert result['recovery_attempted'] is True
+    assert result['final_candidate_pool_count'] >= 2
+    assert result['retention_selection']['pool_count'] >= 2
+    assert any(
+        candidate['source_candidate']['v5_candidate_source'] in {'recovered_trade_feature', 'auto_secondary_feature'}
+        for candidate in result['candidate_specs']
+    )
+
+
+def test_run_research_iteration_reports_v5_recovery_metadata_on_shortfall(monkeypatch, tmp_path):
+    baseline = tmp_path / 'baseline.csv'
+    pd.DataFrame([
+        {'B_PRIMARY': 50, 'B_TRADE': 4.0, INSTRUMENT_COLUMNS[1]: 'A', REQUIRED_KEY_COLUMNS[0]: 1, OPTIONAL_KEY_COLUMNS[0]: 100},
+    ]).to_csv(baseline, index=False, encoding='utf-8')
+    monkeypatch.setattr(research_loop, 'analyze_result_csv', lambda *args, **kwargs: {
+        'status': 'ok',
+        'recommended_candidates': [],
+    })
+    monkeypatch.setattr(
+        research_loop,
+        'generate_condition_expressions_from_analysis',
+        lambda analysis, top_n: {
+            'status': 'ok',
+            'expressions': ['STRENGTH < 0', 'STRENGTH > 100'],
+            'candidate_count': 2,
+            'selected_candidates': [
+                {'feature': 'B_STRENGTH', 'operator': '<', 'threshold': 0.0, 'score': 1.0, 'combined_score': 1.0},
+                {'feature': 'B_STRENGTH', 'operator': '>', 'threshold': 100.0, 'score': 1.0, 'combined_score': 1.0},
+            ],
+        },
+    )
+    monkeypatch.setattr(
+        research_loop,
+        'build_v4_candidate_pool',
+        lambda *args, **kwargs: {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v4',
+            'candidates': [],
+            'candidate_count': 0,
+            'type_counts': {'v4_control_keep_best': 1},
+        },
+    )
+
+    result = research_loop.run_research_iteration(
+        ResearchLoopConfig(
+            name='V5RecoveryShortfall',
+            baseline_csv=str(baseline),
+            run_candidate=False,
+            run_candidates=True,
+            candidate_count=2,
+            iteration_v2_mode='best_feature_mix_v5',
+            iteration_v2_best_candidate='WideV1Final_B_20260425',
+            iteration_v2_best_expression='66.999 <= PRIMARY < 2_580 and TRADE > 4.83',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature='B_TRADE',
+        ),
+        controller=object(),
+    )
+
+    assert result['status'] == 'error'
+    assert result['phase'] == 'insufficient_retention_candidates'
+    assert result['requested_candidate_count'] == 2
+    assert result['selected_candidate_count'] == 0
+    assert result['initial_v4_candidate_count'] == 0
+    assert result['recovery_attempted'] is True
+    assert result['final_candidate_pool_count'] == 0
+    assert result['eligible_count'] == 0
+
+
 def test_run_research_iteration_returns_runtime_output_write_failure(monkeypatch, tmp_path):
     baseline = tmp_path / 'baseline.csv'
     blocked_output = tmp_path / 'blocked.json'
