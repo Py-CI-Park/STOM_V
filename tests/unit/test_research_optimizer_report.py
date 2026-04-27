@@ -165,6 +165,35 @@ def test_render_optimizer_summary_markdown_escapes_pipes_and_flattens_newlines()
     assert '## Round best candidates' in markdown
 
 
+def test_render_optimizer_summary_markdown_includes_v5_recovery_metadata():
+    result = _result()
+    result.update({
+        'initial_v4_candidate_count': 0,
+        'recovery_attempted': True,
+        'recovery_reason': 'v4_candidate_pool_empty',
+        'recovery_family_counts': {
+            'recovered_trade_feature': 1,
+            'auto_secondary_feature': 2,
+        },
+        'final_candidate_pool_count': 3,
+        'eligible_count': 2,
+        'execution_count': 2,
+        'planned_execution_count': 4,
+    })
+
+    markdown = render_optimizer_summary_markdown(result)
+
+    assert '## V5 recovery' in markdown
+    assert '- initial_v4_candidate_count=0' in markdown
+    assert '- recovery_attempted=True' in markdown
+    assert '- recovery_reason=v4_candidate_pool_empty' in markdown
+    assert 'recovered_trade_feature' in markdown
+    assert '- final_candidate_pool_count=3' in markdown
+    assert '- eligible_count=2' in markdown
+    assert '- execution_count=2' in markdown
+    assert '- planned_execution_count=4' in markdown
+
+
 def test_write_optimizer_report_creates_parent_directories(tmp_path):
     report_path = tmp_path / 'nested' / 'wide_v2_summary.md'
 
