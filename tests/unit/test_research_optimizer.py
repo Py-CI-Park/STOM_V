@@ -195,6 +195,179 @@ def test_optimizer_prefers_no_improvement_stop_before_invalid_next_seed():
     assert result['completed_round_count'] == 2
 
 
+def _ranked_candidate(name, expression, score, *, rank, selected=False):
+    return {
+        'index': rank,
+        'strategy_name': name,
+        'expression': expression,
+        'status': 'ok',
+        'selected_as_best': selected,
+        'actual_rowset_selected': True,
+        'rank': rank,
+        'rank_score': {
+            'promotion_passed': True,
+            'promotion_score': score,
+            'adjusted_score': score,
+            'score_basis': 'reference',
+            'trade_count': 100,
+            'trade_count_retention': 0.8,
+            'date_concentration': 0.1,
+            'symbol_concentration': 0.1,
+        },
+    }
+
+
+def test_optimizer_records_round_best_next_seed_when_seed_compatible():
+    calls = []
+    results = [
+        _round_result('R1__cand001', '66.999 <= PRIMARY < 2_580 and TRADE > 4.90', 1.0),
+        _round_result('R2__cand001', '66.999 <= PRIMARY < 2_580 and TRADE > 5.10', 2.0),
+    ]
+
+    def fake_runner(config, controller):
+        calls.append(config)
+        return results[len(calls) - 1]
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2SeedRoundBest',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='66.999 <= PRIMARY < 2_580 and TRADE > 4.83',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature='B_TRADE',
+            start_date=20250101,
+            end_date=20251231,
+            candidate_count=2,
+            max_rounds=2,
+        ),
+        DummyController(),
+        research_runner=fake_runner,
+    )
+
+    assert len(calls) == 2
+    assert calls[1].iteration_v2_best_candidate == 'R1__cand001'
+    assert calls[1].iteration_v2_best_expression == '66.999 <= PRIMARY < 2_580 and TRADE > 4.90'
+    assert result['rounds'][0]['next_seed_selection_status'] == 'round_best'
+    assert result['rounds'][0]['next_seed_strategy_name'] == 'R1__cand001'
+    assert result['next_seed_selection_status'] == 'round_best'
+    assert result['next_seed_strategy_name'] == 'R1__cand001'
+
+
+def test_optimizer_falls_back_to_seed_compatible_candidate_without_changing_global_best():
+    calls = []
+    incompatible_best = _ranked_candidate(
+        'R1__cand003',
+        '66.999 <= PRIMARY < 2_580 and OTHER > 1.50',
+        10.0,
+        rank=1,
+        selected=True,
+    )
+    compatible_seed = _ranked_candidate(
+        'R1__cand001',
+        '66.999 <= PRIMARY < 2_580 and TRADE > 4.90',
+        8.0,
+        rank=2,
+    )
+    results = [
+        {
+            'status': 'ok',
+            'phase': 'candidates_evaluated',
+            'best_candidate': incompatible_best,
+            'candidates': [incompatible_best, compatible_seed],
+        },
+        _round_result('R2__cand001', '66.999 <= PRIMARY < 2_580 and TRADE > 5.10', 2.0),
+    ]
+
+    def fake_runner(config, controller):
+        calls.append(config)
+        return results[len(calls) - 1]
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2SeedFallback',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='66.999 <= PRIMARY < 2_580 and TRADE > 4.83',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature='B_TRADE',
+            start_date=20250101,
+            end_date=20251231,
+            candidate_count=2,
+            max_rounds=2,
+        ),
+        DummyController(),
+        research_runner=fake_runner,
+    )
+
+    assert len(calls) == 2
+    assert calls[1].iteration_v2_best_candidate == 'R1__cand001'
+    assert calls[1].iteration_v2_best_expression == '66.999 <= PRIMARY < 2_580 and TRADE > 4.90'
+    assert result['rounds'][0]['next_seed_selection_status'] == 'compatible_fallback'
+    assert result['rounds'][0]['next_seed_strategy_name'] == 'R1__cand001'
+    assert result['rounds'][0]['rejected_round_best_seed_strategy_name'] == 'R1__cand003'
+    assert result['rounds'][0]['rejected_round_best_seed_reason'] == 'invalid_seed_expression'
+    assert result['final_best_candidate']['strategy_name'] == 'R1__cand003'
+    assert result['wfo_candidate']['strategy_name'] == 'R1__cand003'
+    assert result['next_seed_selection_status'] == 'compatible_fallback'
+    assert result['next_seed_strategy_name'] == 'R1__cand001'
+
+
+def test_optimizer_reports_not_found_when_no_seed_compatible_candidate_exists():
+    calls = []
+    incompatible_best = _ranked_candidate(
+        'R1__cand003',
+        '66.999 <= PRIMARY < 2_580 and OTHER > 1.50',
+        10.0,
+        rank=1,
+        selected=True,
+    )
+    incompatible_second = _ranked_candidate(
+        'R1__cand004',
+        '66.999 <= PRIMARY < 2_580 and STRENGTH > 20',
+        8.0,
+        rank=2,
+    )
+
+    def fake_runner(config, controller):
+        calls.append(config)
+        return {
+            'status': 'ok',
+            'phase': 'candidates_evaluated',
+            'best_candidate': incompatible_best,
+            'candidates': [incompatible_best, incompatible_second],
+        }
+
+    result = run_wide_v2_optimizer(
+        WideV2OptimizerConfig(
+            name='WideV2SeedNotFound',
+            base_buy_strategy='Base',
+            sell_strategy='Sell',
+            seed_expression='66.999 <= PRIMARY < 2_580 and TRADE > 4.83',
+            iteration_v2_primary_feature='B_PRIMARY',
+            iteration_v2_trade_amount_feature='B_TRADE',
+            start_date=20250101,
+            end_date=20251231,
+            candidate_count=2,
+            max_rounds=2,
+        ),
+        DummyController(),
+        research_runner=fake_runner,
+    )
+
+    assert len(calls) == 1
+    assert result['status'] == 'error'
+    assert result['stop_reason'] == 'invalid_seed_expression'
+    assert result['completed_round_count'] == 1
+    assert result['failed_round'] == 2
+    assert result['failure_phase'] == 'invalid_seed_expression'
+    assert result['failure_message'] == 'next seed expression is invalid'
+    assert result['next_seed_selection_status'] == 'not_found'
+    assert result['rejected_round_best_seed_strategy_name'] == 'R1__cand003'
+    assert result['rejected_round_best_seed_expression'] == '66.999 <= PRIMARY < 2_580 and OTHER > 1.50'
+    assert result['rounds'][0]['next_seed_selection_status'] == 'not_found'
+
+
 def test_optimizer_stops_before_next_round_when_seed_expression_is_invalid():
     calls = []
 
