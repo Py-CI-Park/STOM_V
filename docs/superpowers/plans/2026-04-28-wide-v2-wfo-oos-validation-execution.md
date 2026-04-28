@@ -601,8 +601,10 @@ from pathlib import Path
 path = Path(r"backtest\temp\wide_v2_wfo_oos_preflight_20260428.json")
 data = json.loads(path.read_text(encoding="utf-8"))
 print(data.get("status"))
-print(bool(data.get("phase") or data.get("checks")))
-print(bool(data.get("message") or data.get("summary") or data.get("checks")))
+print(data.get("failed_checks") == [])
+print(data.get("validation_errors") == [])
+print(data.get("strategies", {}).get("buy", {}).get("status") == "ok")
+print(data.get("strategies", {}).get("sell", {}).get("status") == "ok")
 '@ | python -
 ```
 
@@ -610,6 +612,8 @@ Expected:
 
 ```text
 ok
+True
+True
 True
 True
 ```
