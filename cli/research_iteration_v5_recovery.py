@@ -83,19 +83,30 @@ def _ranked_candidates(candidates: list[JsonDict]) -> list[JsonDict]:
     return ranked
 
 
+def _source_priority(candidate: JsonDict) -> int:
+    source = str(candidate.get('v5_candidate_source') or '')
+    priorities = {
+        'direct_v4': 0,
+        'recovered_trade_feature': 1,
+        'auto_secondary_feature': 2,
+        'safe_recommended_fallback': 3,
+    }
+    return priorities.get(source, 9)
+
+
 def _dedupe_candidates(candidates: list[JsonDict]) -> list[JsonDict]:
     deduped: list[JsonDict] = []
-    seen: set[tuple[object, object, object]] = set()
+    seen: set[tuple[object, object]] = set()
     for candidate in sorted(
         candidates,
         key=lambda item: (
-            str(item.get('v5_candidate_source') or ''),
+            _source_priority(item),
             -_score_value(item, 'combined_score'),
+            -_score_value(item, 'score'),
             str(item.get('expression') or ''),
         ),
     ):
         key = (
-            candidate.get('v5_candidate_source'),
             candidate.get('expression'),
             candidate_signature(candidate),
         )
@@ -155,34 +166,15 @@ def _family_counts(candidates: list[JsonDict]) -> dict[str, int]:
     return dict(Counter(str(candidate.get('v5_candidate_source') or '') for candidate in candidates))
 
 
-def build_v5_recovery_candidate_pool(
+def _build_recovery_candidates(
     *,
     full_recommended_candidates: list[JsonDict],
-    existing_v4_result: JsonDict | None,
     best_context: JsonDict,
     primary_feature: str,
     trade_amount_feature: str,
     secondary_features: list[str] | None,
     candidate_count: int,
-) -> JsonDict:
-    existing_v4_result = existing_v4_result or {}
-    existing_candidates = [dict(candidate) for candidate in existing_v4_result.get('candidates') or []]
-    initial_v4_candidate_count = int(existing_v4_result.get('candidate_count') or len(existing_candidates))
-    if existing_candidates:
-        for candidate in existing_candidates:
-            candidate.setdefault('v5_candidate_source', 'direct_v4')
-        return {
-            'status': 'ok',
-            'mode': 'best_feature_mix_v5_recovery',
-            'recovery_attempted': False,
-            'recovery_reason': 'direct_v4_available',
-            'initial_v4_candidate_count': initial_v4_candidate_count,
-            'candidates': existing_candidates,
-            'candidate_count': len(existing_candidates),
-            'recovery_family_counts': {'direct_v4': len(existing_candidates)},
-            'final_candidate_pool_count': len(existing_candidates),
-        }
-
+) -> list[JsonDict]:
     best_primary, best_trade_amount = parse_best_expression_conditions(
         str(best_context.get('expression') or ''),
         primary_feature=primary_feature,
@@ -250,13 +242,77 @@ def build_v5_recovery_candidate_pool(
             if len(candidates) >= max(int(candidate_count), 1):
                 break
 
-    candidates = _dedupe_candidates(candidates)
+    return _dedupe_candidates(candidates)
+
+
+def build_v5_recovery_candidate_pool(
+    *,
+    full_recommended_candidates: list[JsonDict],
+    existing_v4_result: JsonDict | None,
+    best_context: JsonDict,
+    primary_feature: str,
+    trade_amount_feature: str,
+    secondary_features: list[str] | None,
+    candidate_count: int,
+) -> JsonDict:
+    existing_v4_result = existing_v4_result or {}
+    existing_candidates = [dict(candidate) for candidate in existing_v4_result.get('candidates') or []]
+    for candidate in existing_candidates:
+        candidate.setdefault('v5_candidate_source', 'direct_v4')
+
+    requested_count = max(int(candidate_count), 0)
+    existing_count = len(existing_candidates)
+    initial_v4_candidate_count = int(existing_v4_result.get('candidate_count') or existing_count)
+
+    if existing_count and (requested_count <= 0 or existing_count >= requested_count):
+        return {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v5_recovery',
+            'recovery_attempted': False,
+            'recovery_reason': 'direct_v4_available',
+            'initial_v4_candidate_count': initial_v4_candidate_count,
+            'requested_candidate_count': requested_count,
+            'recovery_needed_count': 0,
+            'candidates': existing_candidates,
+            'candidate_count': existing_count,
+            'recovery_family_counts': {'direct_v4': existing_count},
+            'final_candidate_pool_count': existing_count,
+        }
+
+    recovery_candidates = _build_recovery_candidates(
+        full_recommended_candidates=full_recommended_candidates,
+        best_context=best_context,
+        primary_feature=primary_feature,
+        trade_amount_feature=trade_amount_feature,
+        secondary_features=secondary_features,
+        candidate_count=max(requested_count, 1),
+    )
+
+    if existing_count:
+        candidates = _dedupe_candidates(existing_candidates + recovery_candidates)
+        return {
+            'status': 'ok',
+            'mode': 'best_feature_mix_v5_recovery',
+            'recovery_attempted': True,
+            'recovery_reason': 'direct_v4_shortfall',
+            'initial_v4_candidate_count': initial_v4_candidate_count,
+            'requested_candidate_count': requested_count,
+            'recovery_needed_count': max(requested_count - existing_count, 0),
+            'candidates': candidates,
+            'candidate_count': len(candidates),
+            'recovery_family_counts': _family_counts(candidates),
+            'final_candidate_pool_count': len(candidates),
+        }
+
+    candidates = recovery_candidates
     return {
         'status': 'ok',
         'mode': 'best_feature_mix_v5_recovery',
         'recovery_attempted': True,
         'recovery_reason': 'v4_candidate_pool_empty',
         'initial_v4_candidate_count': initial_v4_candidate_count,
+        'requested_candidate_count': requested_count,
+        'recovery_needed_count': requested_count,
         'candidates': candidates,
         'candidate_count': len(candidates),
         'recovery_family_counts': _family_counts(candidates),

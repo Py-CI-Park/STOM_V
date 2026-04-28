@@ -44,14 +44,135 @@ def test_v5_recovery_keeps_existing_v4_candidates_without_recovery():
         primary_feature='B_PRIMARY',
         trade_amount_feature='B_TRADE',
         secondary_features=[],
-        candidate_count=2,
+        candidate_count=1,
     )
 
     assert result['recovery_attempted'] is False
     assert result['recovery_reason'] == 'direct_v4_available'
     assert result['initial_v4_candidate_count'] == 1
+    assert result['requested_candidate_count'] == 1
+    assert result['recovery_needed_count'] == 0
     assert result['candidates'] == existing
     assert result['recovery_family_counts'] == {'direct_v4': 1}
+
+
+def test_v5_recovery_supplements_direct_v4_shortfall():
+    existing = [{
+        'expression': '66.999 <= PRIMARY < 2_580 and TRADE > 5',
+        'v4_candidate_type': 'v4_repair_trade_amount',
+        'v5_candidate_source': 'direct_v4',
+        'score': 20.0,
+        'combined_score': 20.0,
+        'conditions': [
+            {
+                'feature': 'B_PRIMARY',
+                'operator': 'between',
+                'lower_bound': 66.999,
+                'upper_bound': 2580.0,
+                'threshold': None,
+            },
+            {
+                'feature': 'B_TRADE',
+                'operator': '>',
+                'lower_bound': None,
+                'upper_bound': None,
+                'threshold': 5.0,
+            },
+        ],
+    }]
+
+    result = build_v5_recovery_candidate_pool(
+        full_recommended_candidates=[
+            _candidate(
+                'B_TRADE',
+                operator='>',
+                lower=None,
+                upper=None,
+                threshold=5.2,
+                score=4.0,
+                original_index=1,
+            ),
+            _candidate('B_STRENGTH', lower=70.0, upper=90.0, score=3.0, original_index=2),
+            _candidate('B_PRICE', lower=8000.0, upper=12000.0, score=2.0, original_index=3),
+        ],
+        existing_v4_result={'candidates': existing, 'candidate_count': 1},
+        best_context=BEST_CONTEXT,
+        primary_feature='B_PRIMARY',
+        trade_amount_feature='B_TRADE',
+        secondary_features=[],
+        candidate_count=3,
+    )
+
+    sources = [candidate['v5_candidate_source'] for candidate in result['candidates']]
+
+    assert result['recovery_attempted'] is True
+    assert result['recovery_reason'] == 'direct_v4_shortfall'
+    assert result['initial_v4_candidate_count'] == 1
+    assert result['requested_candidate_count'] == 3
+    assert result['recovery_needed_count'] == 2
+    assert result['recovery_family_counts']['direct_v4'] == 1
+    assert result['final_candidate_pool_count'] >= 3
+    assert result['candidate_count'] == len(result['candidates'])
+    assert sources[0] == 'direct_v4'
+    assert 'recovered_trade_feature' in sources
+    assert 'auto_secondary_feature' in sources
+
+
+def test_v5_recovery_dedupe_prefers_direct_v4_when_recovery_duplicates_it():
+    direct = {
+        'expression': '66.999 <= PRIMARY < 2_580 and TRADE > 5.2',
+        'v4_candidate_type': 'v4_repair_trade_amount',
+        'v5_candidate_source': 'direct_v4',
+        'score': 1.0,
+        'combined_score': 1.0,
+        'conditions': [
+            {
+                'feature': 'B_PRIMARY',
+                'operator': 'between',
+                'lower_bound': 66.999,
+                'upper_bound': 2580.0,
+                'threshold': None,
+            },
+            {
+                'feature': 'B_TRADE',
+                'operator': '>',
+                'lower_bound': None,
+                'upper_bound': None,
+                'threshold': 5.2,
+            },
+        ],
+    }
+
+    result = build_v5_recovery_candidate_pool(
+        full_recommended_candidates=[
+            _candidate(
+                'B_TRADE',
+                operator='>',
+                lower=None,
+                upper=None,
+                threshold=5.2,
+                score=10.0,
+                original_index=1,
+            ),
+        ],
+        existing_v4_result={'candidates': [direct], 'candidate_count': 1},
+        best_context=BEST_CONTEXT,
+        primary_feature='B_PRIMARY',
+        trade_amount_feature='B_TRADE',
+        secondary_features=[],
+        candidate_count=2,
+    )
+
+    matching = [
+        candidate for candidate in result['candidates']
+        if candidate['expression'] == '66.999 <= PRIMARY < 2_580 and TRADE > 5.2'
+    ]
+
+    assert result['recovery_attempted'] is True
+    assert result['recovery_reason'] == 'direct_v4_shortfall'
+    assert len(matching) == 1
+    assert matching[0]['v5_candidate_source'] == 'direct_v4'
+    assert result['recovery_family_counts']['direct_v4'] == 1
 
 
 def test_v5_recovery_builds_trade_feature_candidates_from_full_recommended_candidates():
