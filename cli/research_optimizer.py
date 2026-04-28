@@ -42,6 +42,19 @@ _RUNTIME_FAILURE_PHASES = {
     'runtime_output_write_failure',
 }
 
+_ROUND_FAILURE_METADATA_KEYS = (
+    'requested_candidate_count',
+    'selected_candidate_count',
+    'initial_v4_candidate_count',
+    'recovery_attempted',
+    'recovery_reason',
+    'recovery_family_counts',
+    'final_candidate_pool_count',
+    'eligible_count',
+    'execution_count',
+    'planned_execution_count',
+)
+
 
 def _output_write_failure(path: Path, phase: str, error: OSError) -> dict[str, Any]:
     return json_safe_value(
@@ -67,16 +80,32 @@ def _write_json(path: str, payload: Any, *, failure_phase: str) -> dict[str, Any
     return None
 
 
-def _seed_from_previous(round_result: dict[str, Any], fallback_candidate: str) -> tuple[str, str] | None:
-    best_candidate = round_result.get('best_candidate')
-    if not isinstance(best_candidate, dict):
+def _candidate_seed_tuple(candidate: Any, fallback_candidate: str) -> tuple[str, str] | None:
+    if not isinstance(candidate, dict):
         return None
 
-    strategy_name = str(best_candidate.get('strategy_name') or fallback_candidate or '').strip()
-    expression = str(best_candidate.get('expression') or '').strip()
+    strategy_name = str(candidate.get('strategy_name') or fallback_candidate or '').strip()
+    expression = str(candidate.get('expression') or '').strip()
     if not strategy_name or not expression:
         return None
     return strategy_name, expression
+
+
+def _seed_candidate_rank_key(candidate: dict[str, Any]) -> tuple[int, int, int]:
+    rank = candidate.get('rank')
+    try:
+        rank_value = int(rank)
+    except (TypeError, ValueError):
+        rank_value = 999999
+
+    index = candidate.get('index')
+    try:
+        index_value = int(index)
+    except (TypeError, ValueError):
+        index_value = 999999
+
+    selected_penalty = 0 if candidate.get('selected_as_best') is True else 1
+    return rank_value, selected_penalty, index_value
 
 
 def _validate_seed_expression(config: WideV2OptimizerConfig, expression: str) -> bool:
@@ -95,6 +124,101 @@ def _validate_seed_expression(config: WideV2OptimizerConfig, expression: str) ->
     except ValueError:
         return False
     return True
+
+
+def _seed_from_ranked_candidates(
+    config: WideV2OptimizerConfig,
+    round_result: dict[str, Any],
+    fallback_candidate: str,
+) -> dict[str, Any]:
+    best_candidate = round_result.get('best_candidate')
+    rejected_strategy_name = None
+    rejected_expression = None
+    rejected_reason = None
+    best_seed = _candidate_seed_tuple(best_candidate, fallback_candidate)
+    if best_seed is not None:
+        if _validate_seed_expression(config, best_seed[1]):
+            return json_safe_value(
+                {
+                    'strategy_name': best_seed[0],
+                    'expression': best_seed[1],
+                    'selection_status': 'round_best',
+                    'rejected_round_best_seed_strategy_name': None,
+                    'rejected_round_best_seed_expression': None,
+                    'rejected_round_best_seed_reason': None,
+                }
+            )
+        rejected_strategy_name = best_seed[0]
+        rejected_expression = best_seed[1]
+        rejected_reason = 'invalid_seed_expression'
+
+    candidates = [
+        candidate
+        for candidate in round_result.get('candidates') or []
+        if isinstance(candidate, dict)
+    ]
+    candidates.sort(key=_seed_candidate_rank_key)
+    seen: set[tuple[str, str]] = set()
+    if best_seed is not None:
+        seen.add(best_seed)
+
+    for candidate in candidates:
+        seed = _candidate_seed_tuple(candidate, fallback_candidate)
+        if seed is None or seed in seen:
+            continue
+        seen.add(seed)
+        if _validate_seed_expression(config, seed[1]):
+            return json_safe_value(
+                {
+                    'strategy_name': seed[0],
+                    'expression': seed[1],
+                    'selection_status': 'compatible_fallback',
+                    'rejected_round_best_seed_strategy_name': rejected_strategy_name,
+                    'rejected_round_best_seed_expression': rejected_expression,
+                    'rejected_round_best_seed_reason': rejected_reason,
+                }
+            )
+
+    return json_safe_value(
+        {
+            'strategy_name': None,
+            'expression': None,
+            'selection_status': 'not_found',
+            'rejected_round_best_seed_strategy_name': rejected_strategy_name,
+            'rejected_round_best_seed_expression': rejected_expression,
+            'rejected_round_best_seed_reason': rejected_reason,
+        }
+    )
+
+
+def _next_seed_round_metadata(seed_selection: dict[str, Any]) -> dict[str, Any]:
+    return {
+        'next_seed_selection_status': seed_selection.get('selection_status'),
+        'next_seed_strategy_name': seed_selection.get('strategy_name'),
+        'next_seed_expression': seed_selection.get('expression'),
+        'rejected_round_best_seed_strategy_name': seed_selection.get(
+            'rejected_round_best_seed_strategy_name'
+        ),
+        'rejected_round_best_seed_expression': seed_selection.get(
+            'rejected_round_best_seed_expression'
+        ),
+        'rejected_round_best_seed_reason': seed_selection.get(
+            'rejected_round_best_seed_reason'
+        ),
+    }
+
+
+def _next_seed_result_metadata(seed_selection: dict[str, Any] | None) -> dict[str, Any]:
+    if not seed_selection:
+        return {
+            'next_seed_selection_status': None,
+            'next_seed_strategy_name': None,
+            'next_seed_expression': None,
+            'rejected_round_best_seed_strategy_name': None,
+            'rejected_round_best_seed_expression': None,
+            'rejected_round_best_seed_reason': None,
+        }
+    return _next_seed_round_metadata(seed_selection)
 
 
 def build_round_research_config(
@@ -171,17 +295,31 @@ def _failure_metadata(
     failure_phase: Any = None,
     failure_message: Any = None,
     actual_rowset_selection: dict[str, Any] | None = None,
+    round_result: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     actual_selection = actual_rowset_selection or {}
-    return json_safe_value(
-        {
-            'failed_round': failed_round,
-            'failure_phase': failure_phase,
-            'failure_message': failure_message,
-            'requested_candidate_count': actual_selection.get('requested_count'),
-            'selected_candidate_count': _selected_candidate_count(actual_selection),
-        }
-    )
+    round_payload = round_result or {}
+    metadata = {
+        'failed_round': failed_round,
+        'failure_phase': failure_phase,
+        'failure_message': failure_message,
+        'requested_candidate_count': (
+            actual_selection.get('requested_count')
+            if actual_selection.get('requested_count') is not None
+            else round_payload.get('requested_candidate_count')
+        ),
+        'selected_candidate_count': (
+            _selected_candidate_count(actual_selection)
+            if actual_selection
+            else round_payload.get('selected_candidate_count')
+        ),
+    }
+    for key in _ROUND_FAILURE_METADATA_KEYS:
+        if key in {'requested_candidate_count', 'selected_candidate_count'}:
+            continue
+        if key in round_payload:
+            metadata[key] = round_payload.get(key)
+    return json_safe_value(metadata)
 
 
 def _actual_rowset_failure_message(stop_reason: str, actual_rowset_selection: dict[str, Any]) -> str:
@@ -298,6 +436,7 @@ def run_wide_v2_optimizer(
     stop_reason = 'max_rounds_reached'
     status = 'ok'
     failure_metadata = _failure_metadata()
+    last_next_seed_selection: dict[str, Any] | None = None
 
     if not _validate_seed_expression(config, current_expression):
         status = 'error'
@@ -337,6 +476,7 @@ def run_wide_v2_optimizer(
                     failure_phase=round_result.get('phase'),
                     failure_message=round_result.get('message'),
                     actual_rowset_selection=round_result.get('actual_rowset_selection'),
+                    round_result=round_result,
                 )
                 break
 
@@ -355,6 +495,7 @@ def run_wide_v2_optimizer(
                     failure_phase='actual_rowset_selection',
                     failure_message=round_state['failure_message'],
                     actual_rowset_selection=actual_rowset_selection,
+                    round_result=round_result,
                 )
                 break
 
@@ -391,18 +532,30 @@ def run_wide_v2_optimizer(
                 stop_reason = 'no_improvement_streak_reached'
                 break
 
-            next_seed = _seed_from_previous(round_result, current_candidate)
-            if next_seed is None or not _validate_seed_expression(config, next_seed[1]):
+            seed_selection = _seed_from_ranked_candidates(
+                config,
+                round_result,
+                current_candidate,
+            )
+            round_state.update(_next_seed_round_metadata(seed_selection))
+            if rounds:
+                rounds[-1] = json_safe_value(round_state)
+            last_next_seed_selection = seed_selection
+            if seed_selection.get('selection_status') == 'not_found':
                 status = 'error'
                 stop_reason = 'invalid_seed_expression'
-                failure_metadata = _failure_metadata(
-                    failed_round=round_index + 1,
-                    failure_phase='invalid_seed_expression',
-                    failure_message='next seed expression is invalid',
-                )
+                failure_metadata = {
+                    **_failure_metadata(
+                        failed_round=round_index + 1,
+                        failure_phase='invalid_seed_expression',
+                        failure_message='next seed expression is invalid',
+                    ),
+                    **_next_seed_round_metadata(seed_selection),
+                }
                 break
 
-            current_candidate, current_expression = next_seed
+            current_candidate = str(seed_selection.get('strategy_name') or '')
+            current_expression = str(seed_selection.get('expression') or '')
 
     final_best_candidate = select_global_best_candidate(leaderboard)
     leaderboard = mark_global_best(leaderboard, final_best_candidate)
@@ -412,6 +565,7 @@ def run_wide_v2_optimizer(
         'run_id': config.run_id,
         'stop_reason': stop_reason,
         **failure_metadata,
+        **_next_seed_result_metadata(last_next_seed_selection),
         'completed_round_count': completed_round_count,
         'initial_seed': _initial_seed_metadata(config),
         'rounds': rounds,

@@ -71,6 +71,46 @@ def _leaderboard_rows(result: dict[str, Any]) -> list[str]:
     return rows
 
 
+def _recovery_lines(result: dict[str, Any]) -> list[str]:
+    recovery_family_counts = result.get('recovery_family_counts') or {}
+    return [
+        '## V5 recovery',
+        '',
+        _bullet('initial_v4_candidate_count', result.get('initial_v4_candidate_count')),
+        _bullet('recovery_attempted', result.get('recovery_attempted')),
+        _bullet('recovery_reason', result.get('recovery_reason')),
+        _bullet('recovery_family_counts', recovery_family_counts),
+        _bullet('final_candidate_pool_count', result.get('final_candidate_pool_count')),
+        _bullet('eligible_count', result.get('eligible_count')),
+        _bullet('execution_count', result.get('execution_count')),
+        _bullet('planned_execution_count', result.get('planned_execution_count')),
+        '',
+    ]
+
+
+def _next_seed_lines(result: dict[str, Any]) -> list[str]:
+    return [
+        '## Next seed selection',
+        '',
+        _bullet('next_seed_selection_status', result.get('next_seed_selection_status')),
+        _bullet('next_seed_strategy_name', result.get('next_seed_strategy_name')),
+        _bullet('next_seed_expression', result.get('next_seed_expression')),
+        _bullet(
+            'rejected_round_best_seed_strategy_name',
+            result.get('rejected_round_best_seed_strategy_name'),
+        ),
+        _bullet(
+            'rejected_round_best_seed_expression',
+            result.get('rejected_round_best_seed_expression'),
+        ),
+        _bullet(
+            'rejected_round_best_seed_reason',
+            result.get('rejected_round_best_seed_reason'),
+        ),
+        '',
+    ]
+
+
 def _report_write_failure(path: Path, error: OSError) -> dict[str, Any]:
     return {
         'failure_phase': 'optimizer_report_output_write_failure',
@@ -123,6 +163,8 @@ def render_optimizer_summary_markdown(result: dict[str, Any]) -> str:
         '',
         *_leaderboard_rows(result),
         '',
+        *_recovery_lines(result),
+        *_next_seed_lines(result),
         '## Stop reason',
         '',
         _bullet('stop_reason', result.get('stop_reason')),

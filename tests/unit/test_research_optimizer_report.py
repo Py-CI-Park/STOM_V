@@ -147,6 +147,9 @@ def test_render_optimizer_summary_markdown_escapes_pipes_and_flattens_newlines()
     result['leaderboard'][0]['strategy_name'] = 'Lead|Entry\nTwo'
     result['final_best_candidate']['expression'] = 'Final|Expr\nTwo'
     result['wfo_candidate']['next_command'] = 'plan|cmd\nnext'
+    result['next_seed_strategy_name'] = 'Seed|Next\nTwo'
+    result['next_seed_expression'] = 'Next|Expr\nTwo'
+    result['rejected_round_best_seed_expression'] = 'Rejected|Expr\nTwo'
 
     markdown = render_optimizer_summary_markdown(result)
 
@@ -159,10 +162,63 @@ def test_render_optimizer_summary_markdown_escapes_pipes_and_flattens_newlines()
     assert 'Lead\\|Entry Two' in markdown
     assert 'Final\\|Expr Two' in markdown
     assert 'plan\\|cmd next' in markdown
+    assert 'Seed\\|Next Two' in markdown
+    assert 'Next\\|Expr Two' in markdown
+    assert 'Rejected\\|Expr Two' in markdown
     assert 'Base|Line\nTwo' not in markdown
     assert 'Final|Expr\nTwo' not in markdown
     assert '## Global leaderboard top candidates' in markdown
     assert '## Round best candidates' in markdown
+
+
+def test_render_optimizer_summary_markdown_includes_v5_recovery_metadata():
+    result = _result()
+    result.update({
+        'initial_v4_candidate_count': 0,
+        'recovery_attempted': True,
+        'recovery_reason': 'v4_candidate_pool_empty',
+        'recovery_family_counts': {
+            'recovered_trade_feature': 1,
+            'auto_secondary_feature': 2,
+        },
+        'final_candidate_pool_count': 3,
+        'eligible_count': 2,
+        'execution_count': 2,
+        'planned_execution_count': 4,
+    })
+
+    markdown = render_optimizer_summary_markdown(result)
+
+    assert '## V5 recovery' in markdown
+    assert '- initial_v4_candidate_count=0' in markdown
+    assert '- recovery_attempted=True' in markdown
+    assert '- recovery_reason=v4_candidate_pool_empty' in markdown
+    assert 'recovered_trade_feature' in markdown
+    assert '- final_candidate_pool_count=3' in markdown
+    assert '- eligible_count=2' in markdown
+    assert '- execution_count=2' in markdown
+    assert '- planned_execution_count=4' in markdown
+
+
+def test_render_optimizer_summary_markdown_includes_next_seed_selection_metadata():
+    result = _result()
+    result.update({
+        'next_seed_selection_status': 'compatible_fallback',
+        'next_seed_strategy_name': 'R1__cand001',
+        'next_seed_expression': '66.999 <= PRIMARY < 2_580 and TRADE > 4.90',
+        'rejected_round_best_seed_strategy_name': 'R1__cand003',
+        'rejected_round_best_seed_expression': '66.999 <= PRIMARY < 2_580 and OTHER > 1.50',
+        'rejected_round_best_seed_reason': 'invalid_seed_expression',
+    })
+
+    markdown = render_optimizer_summary_markdown(result)
+
+    assert '## Next seed selection' in markdown
+    assert '- next_seed_selection_status=compatible_fallback' in markdown
+    assert '- next_seed_strategy_name=R1__cand001' in markdown
+    assert '- next_seed_expression=66.999 <= PRIMARY < 2_580 and TRADE > 4.90' in markdown
+    assert '- rejected_round_best_seed_strategy_name=R1__cand003' in markdown
+    assert '- rejected_round_best_seed_reason=invalid_seed_expression' in markdown
 
 
 def test_write_optimizer_report_creates_parent_directories(tmp_path):
