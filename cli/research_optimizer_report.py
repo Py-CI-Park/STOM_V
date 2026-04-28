@@ -88,6 +88,29 @@ def _recovery_lines(result: dict[str, Any]) -> list[str]:
     ]
 
 
+def _next_seed_lines(result: dict[str, Any]) -> list[str]:
+    return [
+        '## Next seed selection',
+        '',
+        _bullet('next_seed_selection_status', result.get('next_seed_selection_status')),
+        _bullet('next_seed_strategy_name', result.get('next_seed_strategy_name')),
+        _bullet('next_seed_expression', result.get('next_seed_expression')),
+        _bullet(
+            'rejected_round_best_seed_strategy_name',
+            result.get('rejected_round_best_seed_strategy_name'),
+        ),
+        _bullet(
+            'rejected_round_best_seed_expression',
+            result.get('rejected_round_best_seed_expression'),
+        ),
+        _bullet(
+            'rejected_round_best_seed_reason',
+            result.get('rejected_round_best_seed_reason'),
+        ),
+        '',
+    ]
+
+
 def _report_write_failure(path: Path, error: OSError) -> dict[str, Any]:
     return {
         'failure_phase': 'optimizer_report_output_write_failure',
@@ -141,6 +164,7 @@ def render_optimizer_summary_markdown(result: dict[str, Any]) -> str:
         *_leaderboard_rows(result),
         '',
         *_recovery_lines(result),
+        *_next_seed_lines(result),
         '## Stop reason',
         '',
         _bullet('stop_reason', result.get('stop_reason')),
