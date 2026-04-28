@@ -226,6 +226,7 @@ def _v5_candidate_pool_metadata(
         'recovery_reason': recovery.get('recovery_reason'),
         'recovery_family_counts': recovery.get('recovery_family_counts') or {},
         'final_candidate_pool_count': recovery.get('final_candidate_pool_count'),
+        'recovery_needed_count': recovery.get('recovery_needed_count'),
         'eligible_count': eligible_count,
         'execution_count': iteration_v5.get('execution_count'),
         'planned_execution_count': iteration_v5.get('planned_execution_count'),
@@ -1682,6 +1683,8 @@ def run_research_iteration(config: ResearchLoopConfig, controller) -> dict:
                     'recovery_reason': recovery_result.get('recovery_reason'),
                     'recovery_family_counts': recovery_result.get('recovery_family_counts') or {},
                     'final_candidate_pool_count': recovery_result.get('final_candidate_pool_count'),
+                    'requested_candidate_count': recovery_result.get('requested_candidate_count'),
+                    'recovery_needed_count': recovery_result.get('recovery_needed_count'),
                 },
             }
         expression_result = {
