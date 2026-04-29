@@ -30,12 +30,30 @@ from cli.research_compare import (
 )
 from cli.research_metrics import NUMERIC_COLUMNS, normalize_trade_frame
 from cli.research_promotion import evaluate_research_candidate
+from cli.research_cleanup import (
+    _CLEANUP_SAFE_FAILURE_PHASES,
+    _apply_iteration_cleanup as _apply_iteration_cleanup_impl,
+    _candidate_not_created_cleanup,
+    _cleanup_candidate_by_name as _cleanup_candidate_by_name_impl,
+    _cleanup_summary,
+)
+from cli.research_ranking import (
+    _numeric_value,
+    _rank_candidate_results,
+    _rank_key,
+    _rank_score,
+)
 from cli.research_retention import (
     annotate_candidate_retention,
-    apply_retention_penalty,
     select_retention_aware_candidates,
 )
 from cli.research_report import build_research_report
+from cli.research_runtime_metadata import (
+    _candidate_expression,
+    _candidate_field,
+    _elapsed_value,
+    _runtime_timing_summary,
+)
 from cli.research_runtime_output import ResearchRuntimeRecorder, ResearchRuntimeWriteError
 from cli.strategy_generator import delete_strategy_from_db, generate_buy_filter_strategy, save_strategy_to_db
 from cli.strategy_loader import load_strategy_from_db
@@ -52,12 +70,6 @@ _TRADE_COLUMN_ALIASES = {
     '수익금': NUMERIC_COLUMNS[6],
 }
 
-_CLEANUP_SAFE_FAILURE_PHASES = {
-    'candidate_backtest',
-    'candidate_backtest_timeout',
-    'candidate_csv_missing',
-    'comparison',
-}
 _RETENTION_METADATA_KEYS = (
     'retention_estimate',
     'retention_filter_passed',
@@ -364,6 +376,22 @@ def _cleanup_candidate_strategy(
     }
 
 
+def _cleanup_candidate_by_name(strategy_name: str, reason: str) -> dict:
+    return _cleanup_candidate_by_name_impl(
+        strategy_name,
+        reason,
+        delete_strategy_func=delete_strategy_from_db,
+    )
+
+
+def _apply_iteration_cleanup(config: ResearchLoopConfig, candidates: list[dict]) -> tuple[list[dict], dict]:
+    return _apply_iteration_cleanup_impl(
+        config,
+        candidates,
+        delete_strategy_func=delete_strategy_from_db,
+    )
+
+
 def _error(phase: str, message: str, **extra) -> dict:
     return {'status': 'error', 'phase': phase, 'message': message, **extra}
 
@@ -394,116 +422,6 @@ def _empty_cleanup_summary() -> dict:
         'kept_count': 0,
         'failed_count': 0,
         'items': [],
-    }
-
-
-def _elapsed_value(event: dict) -> float | None:
-    value = event.get('elapsed_seconds')
-    if isinstance(value, (int, float)):
-        return float(value)
-    return None
-
-
-def _candidate_field(spec: dict, key: str):
-    if key in spec:
-        return spec.get(key)
-    source_candidate = spec.get('source_candidate')
-    if isinstance(source_candidate, dict):
-        return source_candidate.get(key)
-    return None
-
-
-def _candidate_expression(spec: dict) -> str | None:
-    expression = spec.get('expression')
-    if expression is not None:
-        return str(expression)
-    expressions = spec.get('expressions') or []
-    if expressions:
-        return str(expressions[0])
-    return None
-
-
-def _runtime_timing_summary(
-    recorder: ResearchRuntimeRecorder,
-    *,
-    candidate_specs: list[dict] | None = None,
-    candidates: list[dict] | None = None,
-) -> dict:
-    events = list(recorder.events)
-    checkpoint_durations = []
-    for previous, current in zip(events, events[1:]):
-        previous_elapsed = _elapsed_value(previous)
-        current_elapsed = _elapsed_value(current)
-        duration = (
-            round(current_elapsed - previous_elapsed, 3)
-            if previous_elapsed is not None and current_elapsed is not None
-            else None
-        )
-        checkpoint_durations.append({
-            'from': previous.get('name'),
-            'to': current.get('name'),
-            'phase': current.get('phase'),
-            'duration_seconds': duration,
-        })
-
-    specs_by_index = {
-        int(spec.get('index')): spec
-        for spec in (candidate_specs or [])
-        if spec.get('index') is not None
-    }
-    candidates_by_index = {
-        int(candidate.get('index')): candidate
-        for candidate in (candidates or [])
-        if candidate.get('index') is not None
-    }
-    starts = {
-        int(event.get('candidate_index')): event
-        for event in events
-        if event.get('name') == 'candidate_started' and event.get('candidate_index') is not None
-    }
-    completions = {
-        int(event.get('candidate_index')): event
-        for event in events
-        if event.get('name') in {'candidate_succeeded', 'candidate_failed'} and event.get('candidate_index') is not None
-    }
-    candidate_indexes = sorted(set(specs_by_index) | set(starts) | set(completions) | set(candidates_by_index))
-    candidate_durations = []
-    for index in candidate_indexes:
-        spec = specs_by_index.get(index, {})
-        start = starts.get(index)
-        completion = completions.get(index)
-        candidate_result = candidates_by_index.get(index, {})
-        comparison = candidate_result.get('comparison') if isinstance(candidate_result, dict) else {}
-        comparison = comparison if isinstance(comparison, dict) else {}
-        candidate_summary = comparison.get('candidate_summary') if isinstance(comparison, dict) else {}
-        candidate_summary = candidate_summary if isinstance(candidate_summary, dict) else {}
-        started_at = _elapsed_value(start) if start else None
-        completed_at = _elapsed_value(completion) if completion else None
-        duration = (
-            round(completed_at - started_at, 3)
-            if started_at is not None and completed_at is not None
-            else None
-        )
-        candidate_durations.append({
-            'index': index,
-            'strategy_name': spec.get('strategy_name') or candidate_result.get('strategy_name'),
-            'expression': _candidate_expression(spec) or candidate_result.get('expression'),
-            'source': _candidate_field(spec, 'source'),
-            'feature': _candidate_field(spec, 'feature'),
-            'status': candidate_result.get('status') or ('running' if start and not completion else None),
-            'phase': candidate_result.get('phase') or (start.get('phase') if start else None),
-            'candidate_csv': candidate_result.get('candidate_csv'),
-            'trade_count': candidate_summary.get('trade_count'),
-            'trade_count_retention': comparison.get('trade_count_retention'),
-            'started_at_elapsed_seconds': started_at,
-            'completed_at_elapsed_seconds': completed_at,
-            'duration_seconds': duration,
-        })
-
-    return {
-        'elapsed_seconds': recorder.summary().get('elapsed_seconds'),
-        'checkpoint_durations': checkpoint_durations,
-        'candidate_durations': candidate_durations,
     }
 
 
@@ -1007,204 +925,6 @@ def _execute_candidate_spec(
         'selected_as_best': False,
         'cleanup': None,
     }
-
-
-def _numeric_value(value, default: float = 0.0) -> float:
-    try:
-        if value is None:
-            return default
-        normalized = float(value)
-        if not math.isfinite(normalized):
-            return default
-        return normalized
-    except (TypeError, ValueError):
-        return default
-
-
-def _rank_score(candidate: dict) -> dict:
-    incremental_promotion = candidate.get('promotion') or {}
-    incremental_comparison = candidate.get('comparison') or {}
-    reference_promotion = candidate.get('reference_promotion') or {}
-    reference_comparison = candidate.get('reference_comparison') or {}
-    use_reference = bool(reference_promotion and reference_comparison)
-    promotion = reference_promotion if use_reference else incremental_promotion
-    comparison = reference_comparison if use_reference else incremental_comparison
-    candidate_summary = comparison.get('candidate_summary') or {}
-    score = {
-        'promotion_passed': promotion.get('passed') is True,
-        'promotion_score': _numeric_value(promotion.get('score')),
-        'trade_count': _numeric_value(candidate_summary.get('trade_count')),
-        'trade_count_retention': _numeric_value(comparison.get('trade_count_retention')),
-        'date_concentration': _numeric_value(
-            candidate_summary.get('date_concentration'),
-            default=float('inf'),
-        ),
-        'symbol_concentration': _numeric_value(
-            candidate_summary.get('symbol_concentration'),
-            default=float('inf'),
-        ),
-    }
-    if use_reference:
-        score['score_basis'] = 'reference'
-        score['incremental_promotion_score'] = _numeric_value(incremental_promotion.get('score'))
-        score['reference_promotion_score'] = _numeric_value(reference_promotion.get('score'))
-    return score
-
-
-def _rank_key(candidate: dict) -> tuple:
-    score = candidate.get('rank_score') or _rank_score(candidate)
-    passed_rank = 0 if score['promotion_passed'] else 1
-    score_value = score.get('adjusted_score', score['promotion_score'])
-    return (
-        passed_rank,
-        -score_value,
-        -score['trade_count'],
-        -score['trade_count_retention'],
-        score['date_concentration'],
-        score['symbol_concentration'],
-        int(candidate.get('index') or 0),
-    )
-
-
-def _rank_candidate_results(
-    candidates: list[dict],
-    config: ResearchLoopConfig | None = None,
-) -> tuple[list[dict], dict | None]:
-    ranked_candidates = [dict(candidate) for candidate in candidates]
-    for candidate in ranked_candidates:
-        rank_score = _rank_score(candidate)
-        if config is not None and config.use_retention_penalty:
-            rank_score = apply_retention_penalty(
-                rank_score,
-                config.min_estimated_retention,
-            )
-        candidate['rank'] = None
-        candidate['rank_score'] = rank_score
-        candidate['selected_as_best'] = False
-
-    eligible_indexes = [
-        index
-        for index, candidate in enumerate(ranked_candidates)
-        if candidate.get('status') == 'ok'
-    ]
-    ordered_indexes = sorted(
-        eligible_indexes,
-        key=lambda index: _rank_key(ranked_candidates[index]),
-    )
-
-    best_candidate = None
-    for rank, candidate_index in enumerate(ordered_indexes, start=1):
-        candidate = ranked_candidates[candidate_index]
-        candidate['rank'] = rank
-        candidate['selected_as_best'] = rank == 1
-        if rank == 1:
-            best_candidate = candidate
-
-    return ranked_candidates, best_candidate
-
-
-def _cleanup_candidate_by_name(strategy_name: str, reason: str) -> dict:
-    try:
-        result = delete_strategy_from_db(DB_STRATEGY, strategy_name, 'buy')
-    except Exception as e:
-        return {
-            'attempted': True,
-            'reason': reason,
-            'strategy_name': strategy_name,
-            'status': 'error',
-            'message': str(e),
-        }
-    return {
-        'attempted': True,
-        'reason': reason,
-        'strategy_name': strategy_name,
-        'status': result.get('status'),
-        'message': result.get('message'),
-        'action': result.get('action'),
-    }
-
-
-def _candidate_not_created_cleanup(strategy_name: str, reason: str = 'candidate_not_created') -> dict:
-    return {
-        'attempted': False,
-        'reason': reason,
-        'strategy_name': strategy_name,
-    }
-
-
-def _cleanup_summary(candidates: list[dict]) -> dict:
-    summary = {
-        'attempted_count': 0,
-        'deleted_count': 0,
-        'kept_count': 0,
-        'failed_count': 0,
-        'items': [],
-    }
-    for candidate in candidates:
-        cleanup = candidate.get('cleanup') or {}
-        summary['items'].append(cleanup)
-        if cleanup.get('attempted') is True:
-            summary['attempted_count'] += 1
-            if cleanup.get('status') == 'error':
-                summary['failed_count'] += 1
-            elif cleanup.get('action') == 'deleted' or str(cleanup.get('reason', '')).endswith('_deleted'):
-                summary['deleted_count'] += 1
-        elif cleanup:
-            summary['kept_count'] += 1
-    return summary
-
-
-def _apply_iteration_cleanup(config: ResearchLoopConfig, candidates: list[dict]) -> tuple[list[dict], dict]:
-    updated_candidates = []
-    for candidate in candidates:
-        updated = dict(candidate)
-        existing_cleanup = updated.get('cleanup')
-        if existing_cleanup is not None:
-            preserved = dict(existing_cleanup)
-            preserved['existing'] = True
-            updated['cleanup'] = preserved
-            updated_candidates.append(updated)
-            continue
-
-        strategy_name = updated.get('strategy_name')
-        is_best = updated.get('selected_as_best') is True
-        is_failed = updated.get('status') != 'ok'
-
-        if is_best and not config.cleanup_best_candidate:
-            updated['cleanup'] = {
-                'attempted': False,
-                'reason': 'best_candidate_kept',
-                'strategy_name': strategy_name,
-            }
-        elif is_best:
-            updated['cleanup'] = _cleanup_candidate_by_name(
-                strategy_name,
-                'best_candidate_deleted',
-            )
-        elif is_failed and (
-            updated.get('phase') in _CLEANUP_SAFE_FAILURE_PHASES
-            or updated.get('cleanup_safe') is True
-        ):
-            updated['cleanup'] = _cleanup_candidate_by_name(
-                strategy_name,
-                'failed_candidate_deleted',
-            )
-        elif is_failed:
-            updated['cleanup'] = _candidate_not_created_cleanup(strategy_name)
-        elif config.keep_loser_candidates:
-            updated['cleanup'] = {
-                'attempted': False,
-                'reason': 'loser_candidate_kept',
-                'strategy_name': strategy_name,
-            }
-        else:
-            updated['cleanup'] = _cleanup_candidate_by_name(
-                strategy_name,
-                'loser_candidate_deleted',
-            )
-        updated_candidates.append(updated)
-
-    return updated_candidates, _cleanup_summary(updated_candidates)
 
 
 def run_research_once(config: ResearchLoopConfig, controller) -> dict:
