@@ -10,21 +10,21 @@ from scripts.verify_release_sync import (
 def test_parse_porcelain_splits_branch_tracked_and_untracked_entries():
     parsed = parse_porcelain(
         [
-            "## STOM_Version_2U_C_CLI_v267...origin/STOM_Version_2U_C_CLI_v267 [ahead 18]",
+            "## STOM_Version_2U_C...origin/STOM_Version_2U_C",
             " M docs/WORKTREE_STRATEGY.md",
             "?? backtest/graph",
             "?? scratch.txt",
         ]
     )
 
-    assert parsed.branch == "STOM_Version_2U_C_CLI_v267"
+    assert parsed.branch == "STOM_Version_2U_C"
     assert parsed.tracked == ["docs/WORKTREE_STRATEGY.md"]
     assert parsed.untracked == ["backtest/graph", "scratch.txt"]
 
 
 def test_validate_status_allows_only_protected_untracked_paths():
     parsed = ParsedStatus(
-        branch="STOM_Version_2U_C_CLI_v267",
+        branch="STOM_Version_2U_C",
         tracked=[],
         untracked=["backtest/graph"],
     )

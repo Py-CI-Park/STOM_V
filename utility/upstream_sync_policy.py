@@ -4,9 +4,7 @@ LOCAL_UPSTREAM_MIRROR = "C:/System_Trading/STOM/STOM_devstom"
 PROPAGATION_CHAIN = (
     ("STOM_Version_2", "C:/System_Trading/STOM/STOM_V"),
     ("STOM_Version_2U", "C:/System_Trading/STOM/STOM_V.wt-2u"),
-    ("STOM_Version_2U_C", "C:/System_Trading/STOM/STOM_V.wt-2uc"),
-    ("STOM_Version_2U_C_CLI_v267", "C:/System_Trading/STOM/STOM_V.wt-dev"),
-    ("research/init", "C:/System_Trading/STOM/STOM_V.wt-lab"),
+    ("STOM_Version_2U_C", "C:/System_Trading/STOM/STOM_V.wt-dev"),
 )
 
 RELEASE_OVERLAY_EXCLUDES = (

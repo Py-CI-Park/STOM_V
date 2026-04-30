@@ -13,9 +13,7 @@ def test_propagation_chain_matches_the_real_worktree_layout():
     assert PROPAGATION_CHAIN == (
         ("STOM_Version_2", "C:/System_Trading/STOM/STOM_V"),
         ("STOM_Version_2U", "C:/System_Trading/STOM/STOM_V.wt-2u"),
-        ("STOM_Version_2U_C", "C:/System_Trading/STOM/STOM_V.wt-2uc"),
-        ("STOM_Version_2U_C_CLI_v267", "C:/System_Trading/STOM/STOM_V.wt-dev"),
-        ("research/init", "C:/System_Trading/STOM/STOM_V.wt-lab"),
+        ("STOM_Version_2U_C", "C:/System_Trading/STOM/STOM_V.wt-dev"),
     )
 
 
@@ -35,7 +33,7 @@ def test_backtest_graph_is_a_protected_non_git_asset():
 
 def test_expected_branch_lookup_uses_exact_worktree_roots():
     assert expected_branch_for_worktree("C:/System_Trading/STOM/STOM_V") == "STOM_Version_2"
-    assert expected_branch_for_worktree("C:/System_Trading/STOM/STOM_V.wt-dev") == "STOM_Version_2U_C_CLI_v267"
+    assert expected_branch_for_worktree("C:/System_Trading/STOM/STOM_V.wt-dev") == "STOM_Version_2U_C"
 
 
 def test_release_overlay_excludes_cover_docs_scripts_and_branch_only_surfaces():

@@ -3,6 +3,10 @@
 ## Purpose
 Tracks known issues that were intentionally not fixed in the current official update cycle.
 
+## Current V2.79 scope note
+The active V2.79 official propagation chain is `V2 -> 2U -> 2U_C`.
+Entries below that name `CLI_v267` or `research/init` are historical carry-forward records from the closed V2.74~V2.77 cycle. They are not active V2.79 propagation targets unless a separate migration or corrective-fix cycle explicitly reopens them.
+
 ## Decision schema
 - Deferred because: the current wave did not touch the surface directly, or the known issue did not block official intake propagation in this cycle.
 - Reclassify when: a future wave changes the surface directly, the failure reproduces during blocker audit, or the affected branch becomes the active corrective-fix target.

@@ -8,7 +8,10 @@ Primary operating document:
 Carry-forward registry:
 - `docs/CARRY_FORWARD_REGISTRY.md`
 
-Current cycle status:
+Current resume context:
+- `docs/update_log/2026-04-30_v279_update_resume_context.md`
+
+Previous closed cycle status:
 - `docs/update_log/2026-04-05_v274_v277_cycle_status.md`
 
 Release preflight:
@@ -28,25 +31,26 @@ python scripts/verify_release_sync.py
 
 ```text
 C:/System_Trading/STOM/
-├── STOM_V/            -> STOM_Version_2
-├── STOM_V.wt-2u/      -> STOM_Version_2U
-├── STOM_V.wt-2uc/     -> integration/adopt-cli-v267-into-2uc
-├── STOM_V.wt-dev/     -> STOM_Version_2U_C
-└── STOM_V.wt-lab/     -> research/init
++-- STOM_V/            -> STOM_Version_2
++-- STOM_V.wt-2u/      -> STOM_Version_2U
++-- STOM_V.wt-2uc/     -> integration/adopt-cli-v267-into-2uc
++-- STOM_V.wt-dev/     -> STOM_Version_2U_C
 ```
 
-`STOM_V.wt-dev/` is the sole active checkout for `STOM_Version_2U_C`. `STOM_V.wt-2uc/` remains on `integration/adopt-cli-v267-into-2uc` as an archive/transition checkout that preserves promotion history and execution logs.
+`STOM_V.wt-dev/` is the active checkout location for `STOM_Version_2U_C`. `STOM_V.wt-2uc/` remains on `integration/adopt-cli-v267-into-2uc` as an archive/transition checkout that preserves promotion history and execution logs.
 
 ## Upstream Ingress Policy
 
 - Official updates enter only through `STOM_Version_2`.
 - Judge upstream freshness against `https://github.com/devstom/STOM.git`.
 - Treat `C:/System_Trading/STOM/STOM_devstom` as a reference-only mirror, not the sole freshness authority.
+- Use GitHub `refs/tags/V2.0` as the source for the current V2.79 wave.
+- Exclude `refs/heads/V3.00`, `refs/tags/V3.0`, and all V3 update sections from this V2 wave.
 
 Current live flow:
 
 ```text
-V2 -> 2U -> 2U_C -> research/init
+V2 -> 2U -> 2U_C
 ```
 
 Archive reference:
@@ -55,19 +59,19 @@ Archive reference:
 integration/adopt-cli-v267-into-2uc -> STOM_Version_2U_C
 ```
 
-`STOM_Version_2` remains the release-ingress branch. The canonical active propagation chain is `V2 -> 2U -> 2U_C -> research/init`. Do not bypass V2 ingress, and do not restore the retired live CLI child-lane model.
+`STOM_Version_2` remains the release-ingress branch. The canonical active propagation chain is `V2 -> 2U -> 2U_C`. The current official propagation chain stops at `2U_C`; `research/init` is not part of the V2.79 wave. Do not bypass V2 ingress, and do not restore the retired live CLI child-lane model.
 
 ## Upstream Freshness Check
 
-Use this operator sequence before deciding whether the release lane needs an update:
+Use this operator sequence before deciding whether the V2 release lane needs an update:
 
 ```bash
-git fetch https://github.com/devstom/STOM.git master:refs/remotes/devstom_tmp/master
-git show refs/remotes/devstom_tmp/master:_update.txt | head -5
+git fetch https://github.com/devstom/STOM.git refs/tags/V2.0:refs/remotes/devstom_tmp/tags/V2.0
+git show refs/remotes/devstom_tmp/tags/V2.0:_update.txt | head -5
 python scripts/verify_release_sync.py
 ```
 
-The `git fetch` command refreshes a temporary remote-tracking ref from the authoritative GitHub upstream. Inspect `_update.txt` from that fetched ref to confirm the newest release marker before starting propagation.
+The `git fetch` command refreshes a temporary ref from the authoritative GitHub upstream. Inspect `_update.txt` from the fetched V2 terminal tag to confirm the `2026-04-08 V2.79` marker before starting propagation.
 
 ## Release Preflight
 
@@ -83,7 +87,7 @@ If you are validating an isolated checkout root, use:
 python scripts/verify_release_sync.py --root C:/System_Trading/STOM/STOM_V.wt-upsync
 ```
 
-Expect `release sync preflight passed` before claiming the lane is clean. The live flow is `V2 -> 2U -> 2U_C -> research/init`, while `STOM_V.wt-2uc/` remains an archive/transition checkout rather than an active canonical lane.
+Expect `release sync preflight passed` before claiming the lane is clean. If `STOM_V.wt-dev/` is still on a preparation feature branch, prepare a clean `STOM_Version_2U_C` work location before actual V2.78/V2.79 propagation.
 
 ## Protected Paths
 

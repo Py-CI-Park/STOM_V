@@ -1,6 +1,6 @@
-# STOM_Version_2 AI 에이전트 가이드
+# STOM_Version_2 AI Agent Guide
 
-> **상세 가이드**: [`docs/stom_v2_update_guide.md`](docs/stom_v2_update_guide.md)
+> Detailed guide: `docs/stom_v2_update_guide.md`
 
 ## Formal Update Entry Points
 
@@ -11,82 +11,80 @@ Read in this order before official update work:
 4. `docs/CARRY_FORWARD_REGISTRY.md`
 5. latest cycle status under `docs/update_log/`
 
-Current cycle status:
+Current resume context:
+`docs/update_log/2026-04-30_v279_update_resume_context.md`
+
+Previous closed cycle status:
 `docs/update_log/2026-04-05_v274_v277_cycle_status.md`
 
 Current promoted state:
-`V2 -> 2U -> 2U_C -> research/init`
+`V2 -> 2U -> 2U_C`
 
-`STOM_Version_2` remains the release-ingress branch. `STOM_V.wt-dev/` is the active `STOM_Version_2U_C` checkout, and `STOM_V.wt-2uc/` remains on `integration/adopt-cli-v267-into-2uc` as an archive/transition lane. Do not restore the retired live CLI child-lane model.
+`STOM_Version_2` remains the release-ingress branch. `STOM_V.wt-dev/` is the active `STOM_Version_2U_C` checkout location, and `STOM_V.wt-2uc/` remains on `integration/adopt-cli-v267-into-2uc` as an archive/transition lane. `research/init` is excluded from the current official V2.79 propagation chain. Do not restore the retired live CLI child-lane model.
 
----
+## Commit Language Rules
 
-## 커밋 작성 언어 규칙
+New commits in this repository use these defaults:
 
-앞으로 이 저장소에서 만드는 신규 커밋은 아래 규칙을 기본으로 사용합니다.
-
-- 커밋 제목 첫 줄은 한글로 작성합니다.
-- 커밋 본문은 한글로 작성합니다.
-- 커밋 본문은 마크다운 구조를 사용합니다.
-- 권장 본문 구조:
+- Commit title first line is written in Korean.
+- Commit body is written in Korean markdown.
+- Recommended body sections:
   - `## 배경`
   - `## 변경 사항`
   - `## 검증`
-  - 필요 시 `## 주의사항`
-- 트레일러를 사용할 때도 한글 값을 우선합니다.
-  - 예: `제약: ...`, `기각한안: ...`, `신뢰도: 높음`, `범위위험: 좁음`, `검증: ...`
-- 영문 타입 접두사만 있는 제목(`docs: ...`, `fix: ...`)은 더 이상 기본 형식으로 사용하지 않습니다.
-- 정식 버전 기록처럼 제목이 운영 규칙으로 고정된 커밋만 예외로 두고, 그 경우에도 본문은 한글 마크다운으로 작성합니다.
+  - `## 주의사항` when needed
+- Prefer Korean trailer values when trailers are useful.
+- Do not use English type-prefix-only titles such as `docs: ...` or `fix: ...` as the default format.
+- Formal release commits are the exception: title `STOM V{major}.{minor}`, body is the full matching `_update.txt` section.
 
----
+## Core Rules
 
-## 핵심 규칙 (필독)
+1. Official source for the V2.79 wave is GitHub `refs/tags/V2.0`.
+2. Remaining official V2 intake targets are exactly `STOM V2.78` and `STOM V2.79`.
+3. One official version equals one commit.
+4. Formal release commit title exception: `STOM V{major}.{minor}`.
+5. Formal release commit body: the full matching `_update.txt` section from `refs/tags/V2.0`.
+6. Version order must remain ascending with no skips.
+7. V3 refs, V3 update sections, and `research/init` are out of scope for this wave.
 
-1. **커밋 단위**: 배포 버전 1개 = 커밋 1개
-2. **정식 버전 커밋 제목 예외**: `STOM V{major}.{minor}` (예: `STOM V2.50`)
-3. **정식 버전 커밋 본문**: `_update.txt`의 해당 버전 섹션 전체
-4. **스테이징**: zip 포함 파일만 (`CLAUDE.md`, `AGENTS.md`, `docs/`, `scripts/` 제외)
-5. **버전 순서**: 오름차순 유지, 건너뛰기 금지
+## V2.79 Update Workflow
 
----
+Do not use the legacy zip workflow for the V2.79 wave. The legacy `scripts/stom_v2_update.py` and `C:/System_Trading/stom_v2_update.py` paths are retained only for historical zip-based updates.
 
-## 새 버전 업데이트 워크플로우
+Recommended start:
 
 ```bash
-# 전체 자동 처리
-python C:/System_Trading/stom_v2_update.py
-
-# 미리보기 후 실행
-python C:/System_Trading/stom_v2_update.py --dry-run
-python C:/System_Trading/stom_v2_update.py
-
-# Push
-git push origin STOM_Version_2
+git fetch https://github.com/devstom/STOM.git refs/tags/V2.0:refs/remotes/devstom_tmp/tags/V2.0
+git show refs/remotes/devstom_tmp/tags/V2.0:_update.txt
+python scripts/verify_release_sync.py
 ```
 
-전제: `C:\Users\parkc\Downloads\STOM_temp\STOM_V{버전}.zip` 존재
+Then apply `STOM V2.78` and `STOM V2.79` one version at a time through:
 
----
+```text
+V2 -> 2U -> 2U_C
+```
 
-## 에이전트 체크리스트
+## Agent Checklist
 
-- [ ] `STOM_Version_2` 브랜치에서 작업
-- [ ] `--dry-run`으로 미리보기 확인
-- [ ] `git log STOM_Version_2 --oneline -5`로 커밋 검증
-- [ ] `git push origin STOM_Version_2` 완료
+- [ ] Work from `STOM_Version_2` for official release ingress.
+- [ ] Confirm `refs/tags/V2.0` contains the V2.78/V2.79 source sections.
+- [ ] Run release preflight before claiming the release lane is clean.
+- [ ] Confirm no V3 section enters the V2 wave.
+- [ ] Confirm a clean `2U_C` work location before downstream propagation.
+- [ ] Verify final commits with `git log STOM_Version_2 --oneline -5`.
 
----
+## Absolute Prohibitions
 
-## 절대 금지
+- Do not use `git add -A`.
+- Do not combine multiple formal versions into one commit.
+- Do not use `git rebase` or `git reset --hard`.
+- Do not commit development-code changes directly to `STOM_Version_2` as part of a formal release commit.
+- Do not treat `backtest/graph/` as release input.
 
-- `git add -A` 사용
-- 여러 버전을 하나의 커밋으로 합치기
-- `git rebase` / `git reset --hard`
-- 개발 코드를 STOM_Version_2에 직접 커밋
+## Current State
 
----
-
-## 현재 상태
-
-- **자동화 스크립트**: `scripts/stom_v2_update.py` / `C:\System_Trading\stom_v2_update.py`
-- **상세 가이드**: `docs/stom_v2_update_guide.md`
+- Active official release branch: `STOM_Version_2`
+- Active downstream chain: `V2 -> 2U -> 2U_C`
+- Legacy zip updater: `scripts/stom_v2_update.py` / `C:/System_Trading/stom_v2_update.py`
+- Detailed guide: `docs/stom_v2_update_guide.md`

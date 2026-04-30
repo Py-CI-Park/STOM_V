@@ -5,15 +5,14 @@ ROOT = Path(__file__).resolve().parents[2]
 
 CURRENT_PROMOTED_WORKTREE_LAYOUT_BLOCK = """```text
 C:/System_Trading/STOM/
-├── STOM_V/            -> STOM_Version_2
-├── STOM_V.wt-2u/      -> STOM_Version_2U
-├── STOM_V.wt-2uc/     -> integration/adopt-cli-v267-into-2uc
-├── STOM_V.wt-dev/     -> STOM_Version_2U_C
-└── STOM_V.wt-lab/     -> research/init
++-- STOM_V/            -> STOM_Version_2
++-- STOM_V.wt-2u/      -> STOM_Version_2U
++-- STOM_V.wt-2uc/     -> integration/adopt-cli-v267-into-2uc
++-- STOM_V.wt-dev/     -> STOM_Version_2U_C
 ```"""
 
 CURRENT_PROMOTED_CHAIN_BLOCK = """```text
-V2 -> 2U -> 2U_C -> research/init
+V2 -> 2U -> 2U_C
 ```"""
 
 STALE_TRANSITION_CHAIN_BLOCK = """```text
@@ -35,8 +34,8 @@ python scripts/verify_release_sync.py --root C:/System_Trading/STOM/STOM_V.wt-up
 ```"""
 
 CLAUDE_FRESHNESS_BLOCK = """```bash
-git fetch https://github.com/devstom/STOM.git master:refs/remotes/devstom_tmp/master
-git show refs/remotes/devstom_tmp/master:_update.txt | head -5
+git fetch https://github.com/devstom/STOM.git refs/tags/V2.0:refs/remotes/devstom_tmp/tags/V2.0
+git show refs/remotes/devstom_tmp/tags/V2.0:_update.txt | head -5
 python scripts/verify_release_sync.py
 ```"""
 
@@ -51,6 +50,7 @@ def test_worktree_strategy_locks_promoted_topology_and_archive_lane_contract():
     assert CURRENT_PROMOTED_WORKTREE_LAYOUT_BLOCK in text
     assert CURRENT_PROMOTED_CHAIN_BLOCK in text
     assert "archive/history/transition checkout" in text
+    assert "`research/init` is excluded from the current official propagation chain" in text
     assert STALE_TRANSITION_CHAIN_BLOCK not in text
     assert PREFLIGHT_COMMAND_BLOCK in text
 
@@ -65,7 +65,9 @@ def test_upstream_sync_strategy_locks_authority_promoted_state_and_preflight_blo
     assert PREFLIGHT_ROOT_COMMAND_BLOCK in text
     assert "- Official freshness authority: `https://github.com/devstom/STOM.git`" in text
     assert "- Local reference mirror: `C:/System_Trading/STOM/STOM_devstom`" in text
+    assert "- Current V2 wave source: `refs/tags/V2.0`" in text
     assert "archive/history/transition checkout" in text
+    assert "Do not use `refs/heads/V3.00` or `refs/tags/V3.0` for the V2.79 wave." in text
     assert STALE_TRANSITION_CHAIN_BLOCK not in text
 
 
@@ -78,4 +80,12 @@ def test_claude_guide_locks_promoted_mapping_and_freshness_steps():
     assert CLAUDE_FRESHNESS_BLOCK in text
     assert PREFLIGHT_ROOT_COMMAND_BLOCK in text
     assert "archive/transition checkout" in text
+    assert "The current official propagation chain stops at `2U_C`; `research/init` is not part of the V2.79 wave." in text
     assert STALE_TRANSITION_CHAIN_BLOCK not in text
+
+
+def test_carry_forward_registry_marks_research_entries_as_historical_for_v279():
+    text = read_text("docs/CARRY_FORWARD_REGISTRY.md")
+
+    assert "The active V2.79 official propagation chain is `V2 -> 2U -> 2U_C`." in text
+    assert "They are not active V2.79 propagation targets" in text
