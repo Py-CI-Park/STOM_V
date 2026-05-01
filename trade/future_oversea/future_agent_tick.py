@@ -10,7 +10,7 @@ from PyQt5.QAxContainer import QAxWidget
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-from utility.setting_base import ui_num, DB_CODE_INFO, DB_TRADELIST, DB_FUTURE_TICK, DB_FUTURE_MIN
+from utility.setting_base import ui_num, DB_CODE_INFO, DB_TRADELIST, DB_FUTURE_OS_TICK, DB_FUTURE_OS_MIN
 from utility.static import now, str_hms_cme_from_str, qtest_qwait, opstarter_kill, str_ymd, now_cme, str_hms, \
     timedelta_sec
 
@@ -73,16 +73,17 @@ class FutureAgentTick:
         self.tr_next     = None
         self.tr_df       = None
 
+        self.dict_dtdm: dict[str, list]        = {}
+        self.dict_data: dict[str, list]        = {}
+        self.dict_money: dict[str, list]       = {}
+        self.dict_bmbyp: dict[str, np.ndarray] = {}
+        self.dict_smbyp: dict[str, np.ndarray] = {}
+        self.dict_index: dict[str, dict]       = {}
+        self.dict_dlhp: dict[str, list]        = {}
+
         self.dict_info   = {}
         self.dict_hgbs   = {}
         self.dict_sncd   = {}
-
-        self.dict_dtdm   = {}
-        self.dict_data   = {}
-        self.dict_money  = {}
-        self.dict_bmbyp  = {}
-        self.dict_smbyp  = {}
-        self.dict_index  = {}
         self.dict_mtop   = {}
         self.dict_jgdt   = {}
 
@@ -380,7 +381,6 @@ class FutureAgentTick:
                 except:
                     self.mgzservQ.put(('window', (ui_num['시스템로그'], f'{format_exc()}오류 알림 - UpdateTickData')))
 
-    # noinspection PyUnresolvedReferences
     def UpdateTickData(self, code, dt, c, o, h, low, per, v, csp, cbp):
         data = self.dict_data.get(code)
         if data:
@@ -472,7 +472,6 @@ class FutureAgentTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    # noinspection PyUnresolvedReferences
     def UpdateHogaData(self, dt, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount,
                        code, name, receivetime):
 
@@ -678,7 +677,7 @@ class FutureAgentTick:
 
     def SaveData(self):
         if self.dict_mtop:
-            con = sqlite3.connect(DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN)
+            con = sqlite3.connect(DB_FUTURE_OS_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN)
             last_index = 0
             try:
                 df = pd.read_sql(f'SELECT * FROM moneytop ORDER BY "index" DESC LIMIT 1', con)

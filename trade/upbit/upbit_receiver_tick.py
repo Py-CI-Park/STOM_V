@@ -2,15 +2,14 @@
 import sys
 import time
 import sqlite3
-import pyupbit
 import numpy as np
 import pandas as pd
 from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
-from trade.upbit.upbit_websocket import WebSocketReceiver
-from utility.setting_base import ui_num, DB_COIN_TICK, DB_COIN_MIN
 from utility.static import now, str_ymdhms_utc, str_hms, now_utc
+from utility.setting_base import ui_num, DB_COIN_TICK, DB_COIN_MIN
+from trade.upbit.upbit_restapi import WebSocketReceiver, get_symbols_info
 
 
 class Updater(QThread):
@@ -48,14 +47,14 @@ class UpbitReceiverTick:
         self.cstgQ       = qlist[10]
         self.dict_set    = dict_set
 
-        self.dict_daym   = {}
+        self.dict_dtdm: dict[str, list]        = {}
+        self.dict_data: dict[str, list]        = {}
+        self.dict_money: dict[str, list]       = {}
+        self.dict_bmbyp: dict[str, np.ndarray] = {}
+        self.dict_smbyp: dict[str, np.ndarray] = {}
+        self.dict_index: dict[str, dict]       = {}
 
-        self.dict_dtdm   = {}
-        self.dict_data   = {}
-        self.dict_money  = {}
-        self.dict_bmbyp  = {}
-        self.dict_smbyp  = {}
-        self.dict_index  = {}
+        self.dict_daym   = {}
         self.dict_mtop   = {}
         self.dict_jgdt   = {}
 
@@ -96,12 +95,7 @@ class UpbitReceiverTick:
         app.exec_()
 
     def GetTickers(self):
-        self.codes = pyupbit.get_tickers(fiat="KRW")
-        url = "https://api.upbit.com/v1/ticker/all?quote_currencies=KRW"
-        headers = {"accept": "application/json"}
-        import requests
-        data = requests.get(url, headers=headers).json()
-        self.dict_daym = {d['market']: int(d['acc_trade_price']) for d in data}
+        self.dict_daym, self.codes = get_symbols_info()
         self.list_gsjm = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:10]]
         data = tuple(self.list_gsjm)
         self.cstgQ.put(('관심목록', data))
@@ -111,7 +105,6 @@ class UpbitReceiverTick:
         self.teleQ.put(text)
         self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 리시버 시작'))
 
-    # noinspection PyUnresolvedReferences
     def UpdateTickData(self, data):
         try:
             dt = int(str_ymdhms_utc(data['timestamp']))
@@ -207,7 +200,6 @@ class UpbitReceiverTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    # noinspection PyUnresolvedReferences
     def UpdateHogaData(self, data):
         try:
             dt = int(str_ymdhms_utc(data['timestamp']))

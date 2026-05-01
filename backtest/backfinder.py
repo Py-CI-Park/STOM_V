@@ -1,4 +1,5 @@
 
+import re
 import sys
 import time
 import sqlite3
@@ -49,18 +50,20 @@ class BackFinder:
         con.close()
 
         buystg = dfb['전략코드'][self.buystg_name]
-        if 'self.tickcols' not in buystg or 'self.tickdata' not in buystg:
+        cols_match = re.search(r"self\.tickcols\s*=\s*\[(.*?)]", buystg, re.DOTALL)
+        data_match = re.search(r"self\.tickdata\s*=\s*\[(.*?)]", buystg, re.DOTALL)
+        if cols_match and data_match:
+            cols_text  = cols_match.group(1)
+            data_text  = data_match.group(1)
+            data_text  = re.findall(r'([^(,\s]+(?:\([^)]*\))?)', data_text)
+            cols_count = len(re.findall(r"'[^']*'", cols_text)) + len(re.findall(r'"[^"]*"', cols_text))
+            data_count = len([x for x in data_text if x.strip()])
+            if cols_count != data_count:
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], 'self.tickcols의 개수와 self.tickdata의 개수가 일치하지 않습니다.'))
+                self.SysExit(True)
+        else:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '선택된 전략이 백파인더용 전략이 아닙니다.'))
             self.SysExit(True)
-
-        colm_list = buystg.split('self.tickcols = [', 1)[1].split(']', 1)[0].split(',')
-        data_list = buystg.split('self.tickdata = [', 1)[1].split(']', 1)[0].split(',')
-        if len(colm_list) != len(data_list):
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '칼럼명 리스트와 데이터 리스트의 길이가 다릅니다.'))
-            self.SysExit(True)
-
-        tickcols = ['종목코드', '체결시간'] + [x.strip() for x in colm_list]
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 매수전략 설정 완료'))
 
         self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '백파인더 START'))
         self.shared_cnt.value = 0
@@ -75,9 +78,9 @@ class BackFinder:
         while True:
             data = self.tq.get()
             if data[0] == '백파결과':
-                data = data[1:]
-                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], data))
-                dict_back[index] = dict(zip(tickcols, data))
+                _, data1, data2 = data
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], data2))
+                dict_back[index] = dict(zip(data1, data2))
                 index += 1
 
             elif data == '백테완료':

@@ -1,125 +1,155 @@
 
-import json
-import os
 import re
 import sys
 import time
 import sqlite3
-from pathlib import Path
-from multiprocessing import Process, Queue
+import numpy as np
+import pandas as pd
+from traceback import format_exc
+from utility.static import now, str_ymdhms
 from backtest.back_static_numba import GetResult, bootstrap_test
-from utility.lazy_imports import get_np, get_pd
-from backtest.back_static import PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
-from utility.static import now, str_ymdhms, error_decorator
 from utility.setting_user import stockreadlines, coinreadlines, futurereadlines
+from backtest.back_static import PlotShow, GetMoneytopQuery, GetResultDataframe, AddMdd
 from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, DB_STOCK_TICK_BACK, \
-    DB_COIN_TICK_BACK, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
+    DB_COIN_TICK_BACK, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK
 
 
-def _emit_backtest_child_diagnostics(
-        back_queue, db, error, startday, endday, starttime, endtime, ui_gubun):
-    diagnostic = {
-        'stock_back_db_path': db,
-        'moneytop_query_status': 'error',
-        'moneytop_error': str(error),
-        'startday': startday,
-        'endday': endday,
-        'starttime': starttime,
-        'endtime': endtime,
-        'ui_gubun': ui_gubun,
-    }
-    back_queue.put(('backtest_child_diagnostics', diagnostic))
-    return diagnostic
-
-
-def _read_moneytop_with_diagnostics(
-        db, is_tick, ui_gubun, startday, endday, starttime, endtime, back_queue):
-    con = None
-    try:
-        con = sqlite3.connect(db)
-        query = GetMoneytopQuery(is_tick, ui_gubun, startday, endday, starttime, endtime)
-        return get_pd().read_sql(query, con)
-    except Exception as e:
-        _emit_backtest_child_diagnostics(
-            back_queue, db, e, startday, endday, starttime, endtime, ui_gubun
-        )
-        raise
-    finally:
-        if con is not None:
-            con.close()
-
-
-def _emit_cli_protocol_checkpoint(queue, source, checkpoint, detail=None):
-    if os.environ.get('STOM_CLI_BACKTEST_PROTOCOL_DIAG') != '1':
-        return
-    payload = {
-        'source': source,
-        'checkpoint': checkpoint,
-        'detail': detail or {},
-        'time': str_ymdhms(),
-    }
-    queue.put((
-        ui_num.get('시스템로그', 1),
-        '[CLI_DIAG] ' + json.dumps(payload, ensure_ascii=False, default=str),
-    ))
-
-
-class Total:
-    def __init__(self, wq, sq, tq, teleQ, mq, lq, bstq_list, backname, ui_gubun, gubun, market_text, dict_set):
+class BackTest:
+    def __init__(self, sc, wq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, ui_gubun, dict_set, betting,
+                 avgtime, startday, endday, starttime, endtime, buystg_name, sellstg_name, dict_cn, back_count,
+                 blacklist, schedul, back_club):
+        self.shared_cnt   = sc
         self.wq           = wq
         self.sq           = sq
         self.tq           = tq
-        self.mq           = mq
         self.lq           = lq
         self.teleQ        = teleQ
+        self.beq_list     = beq_list
         self.bstq_list    = bstq_list
         self.backname     = backname
         self.ui_gubun     = ui_gubun
-        self.gubun        = gubun
-        self.market_text  = market_text
         self.dict_set     = dict_set
-        gubun_text        = f'{self.gubun}_future' if self.ui_gubun == 'CF' else self.gubun
-        self.savename     = f'{gubun_text}_bt'
+        if self.ui_gubun not in ('CF', 'SF'):
+            self.betting  = float(betting) * 1000000
+        else:
+            self.betting  = float(betting)
+        self.avgtime      = int(avgtime)
+        self.startday     = int(startday)
+        self.endday       = int(endday)
+        self.starttime    = int(starttime)
+        self.endtime      = int(endtime)
+        self.buystg_name  = buystg_name
+        self.sellstg_name = sellstg_name
+        self.dict_cn      = dict_cn
+        self.back_count   = back_count
+        self.blacklist    = blacklist
+        self.schedul      = schedul
+        self.back_club    = back_club
 
-        self.back_count   = None
-        self.buystg_name  = None
         self.buystg       = None
         self.sellstg      = None
-        self.dict_cn      = None
-        self.blacklist    = None
         self.day_count    = None
+        self.is_tick      = None
 
-        self.betting      = None
-        self.startday     = None
-        self.endday       = None
-        self.starttime    = None
-        self.endtime      = None
-        self.avgtime      = None
-        self.schedul      = None
+        if self.ui_gubun == 'S':
+            self.gubun = 'stock'
+            self.market_text = '주식'
+        elif self.ui_gubun == 'SF':
+            self.gubun = 'future'
+            self.market_text = '주식'
+        else:
+            self.gubun = 'coin'
+            self.market_text = '코인'
 
-        self.df_tsg       = None
-        self.df_bct       = None
-        self.back_club    = None
+        gubun_text = f'{self.gubun}_future' if self.ui_gubun == 'CF' else self.gubun
+        self.savename = f'{gubun_text}_bt'
+        self.insertblacklist = []
 
-        self.insertlist   = []
+        self.start_time = now()
+        try:
+            self.Start()
+        except SystemExit:
+            sys.exit()
+        except:
+            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.SysExit(True)
 
-        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_process_started', {
-            'backname': self.backname,
-            'ui_gubun': self.ui_gubun,
-        })
-        self.MainLoop()
+    # noinspection PyUnresolvedReferences
+    def Start(self):
+        market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
+        if self.ui_gubun == 'S':
+            if self.dict_set[f'{market_text}타임프레임']:
+                db = DB_STOCK_TICK_BACK
+                self.is_tick = True
+            else:
+                db = DB_STOCK_MIN_BACK
+                self.is_tick = False
+        elif self.ui_gubun == 'SF':
+            if self.dict_set[f'{market_text}타임프레임']:
+                db = DB_FUTURE_OS_TICK_BACK
+                self.is_tick = True
+            else:
+                db = DB_FUTURE_OS_MIN_BACK
+                self.is_tick = False
+        else:
+            if self.dict_set[f'{market_text}타임프레임']:
+                db = DB_COIN_TICK_BACK
+                self.is_tick = True
+            else:
+                db = DB_COIN_MIN_BACK
+                self.is_tick = False
 
-    def MainLoop(self):
+        con   = sqlite3.connect(db)
+        query = GetMoneytopQuery(self.is_tick, self.ui_gubun, self.startday, self.endday, self.starttime, self.endtime)
+        df_mt = pd.read_sql(query, con)
+        con.close()
+
+        if len(df_mt) == 0 or self.back_count == 0:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
+            self.SysExit(True)
+
+        con = sqlite3.connect(DB_STRATEGY)
+        dfb = pd.read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
+        dfs = pd.read_sql(f'SELECT * FROM {self.gubun}sell', con).set_index('index')
+        con.close()
+
+        buystg = dfb['전략코드'][self.buystg_name]
+        if 'self.ms_analyzer' in buystg and not self.dict_set['시장미시구조분석']:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
+            self.SysExit(True)
+
+        if self.is_tick:
+            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
+        else:
+            df_mt['일자'] = (df_mt['index'].values // 10000).astype(np.int64)
+        self.day_count = len(df_mt['일자'].unique())
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
+
+        self.buystg  = buystg
+        self.sellstg = dfs['전략코드'][self.sellstg_name]
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수전략 설정 완료'))
+
+        arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
+        arry_bct[:, 0] = df_mt['index'].values
+        data = ('백테정보', self.ui_gubun, None, None, arry_bct, self.betting, self.day_count)
+        for q in self.bstq_list:
+            q.put(data)
+
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START'))
+        self.shared_cnt.value = 0
+        data = ('백테정보', self.betting, self.avgtime, self.startday, self.endday, self.starttime, self.endtime,
+                self.buystg, self.sellstg, 2)
+        for q in self.bstq_list:
+            q.put(('백테시작', 2))
+        for q in self.beq_list:
+            q.put(data)
+
         bc = 0
         sc = 0
         while True:
             data = self.tq.get()
             if data == '백테완료':
                 bc += 1
-                _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_engine_done_count', {
-                    'count': bc,
-                    'back_count': self.back_count,
-                })
                 if bc == self.back_count:
                     bc = 0
                     for q in self.bstq_list[:5]:
@@ -127,9 +157,6 @@ class Total:
 
             elif data == '수집완료':
                 sc += 1
-                _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_subtotal_collection_done_count', {
-                    'count': sc,
-                })
                 if sc == 5:
                     sc = 0
                     for q in self.bstq_list[:5]:
@@ -137,100 +164,34 @@ class Total:
 
             elif data[0] == '백테결과':
                 _, list_tsg, arry_bct = data
-                _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_result_received', {
-                    'trade_count': 0 if list_tsg is None else len(list_tsg),
-                })
                 self.Report(list_tsg, arry_bct)
-
-            elif data[0] == '백테정보':
-                self.betting     = data[1]
-                self.avgtime     = data[2]
-                self.startday    = data[3]
-                self.endday      = data[4]
-                self.starttime   = data[5]
-                self.endtime     = data[6]
-                self.buystg_name = data[7]
-                self.buystg      = data[8]
-                self.sellstg     = data[9]
-                self.dict_cn     = data[10]
-                self.back_count  = data[11]
-                self.day_count   = data[12]
-                self.blacklist   = data[13]
-                self.schedul     = data[14]
-                self.back_club   = data[15]
-                _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_info_received', {
-                    'back_count': self.back_count,
-                    'day_count': self.day_count,
-                })
-
-            elif data == '백테중지':
-                self.mq.put('백테중지')
-                time.sleep(1)
                 break
 
-        sys.exit()
+            elif data == '백테중지':
+                self.SysExit(True)
 
-    def InsertBlacklist(self):
-        name_list = self.df_tsg['종목명'].unique()
-        dict_code = {name: code for code, name in self.dict_cn.items()}
-        for name in name_list:
-            if name not in dict_code:
-                continue
-            code = dict_code[name]
-            df_tsg = self.df_tsg[self.df_tsg['종목명'] == name]
-            trade_count = len(df_tsg)
-            total_eyun = df_tsg['수익금'].sum()
-            if trade_count >= 10 and total_eyun < 0:
-                if self.ui_gubun == 'S':
-                    if code + '\n' not in stockreadlines:
-                        stockreadlines.append(code + '\n')
-                        self.insertlist.append(code)
-                elif self.ui_gubun == 'SF':
-                    if code + '\n' not in futurereadlines:
-                        futurereadlines.append(code + '\n')
-                        self.insertlist.append(code)
-                else:
-                    if code + '\n' not in coinreadlines:
-                        coinreadlines.append(code + '\n')
-                        self.insertlist.append(code)
-        if self.insertlist:
-            if self.ui_gubun == 'S':
-                with open('./utility/blacklist_stock.txt', 'w') as f:
-                    f.write(''.join(stockreadlines))
-            elif self.ui_gubun == 'SF':
-                with open('./utility/blacklist_future.txt', 'w') as f:
-                    f.write(''.join(futurereadlines))
-            else:
-                with open('./utility/blacklist_coin.txt', 'w') as f:
-                    f.write(''.join(coinreadlines))
+        if self.dict_set['스톰라이브']: self.lq.put(self.backname)
+        self.SysExit(False)
 
-    @error_decorator
     def Report(self, list_tsg, arry_bct):
-        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_started', {
-            'trade_count': 0 if list_tsg is None else len(list_tsg),
-        })
         if not list_tsg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
-            _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_no_trades')
-            self.mq.put('백테스트 중지')
-            time.sleep(1)
-            sys.exit()
+            self.SysExit(True)
 
-        self.df_tsg, self.df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
-        if self.blacklist: self.InsertBlacklist()
+        df_tsg, df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
+        if self.blacklist: self.InsertBlacklist(df_tsg)
 
-        arry_tsg = get_np().array(self.df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
-        arry_bct = get_np().sort(arry_bct, axis=0)[::-1]
+        arry_tsg = np.array(df_tsg[['보유시간', '매도시간', '수익률', '수익금', '수익금합계']].copy(), dtype='float64')
+        arry_bct = np.sort(arry_bct, axis=0)[::-1]
         result   = GetResult(arry_tsg, arry_bct, self.betting, self.ui_gubun, self.day_count)
         result   = AddMdd(arry_tsg, result)
         tc, atc, pc, mc, wr, ah, app, tpp, tsg, mhct, seed, cagr, tpi, mdd, mdd_ = result
 
-        bootstrap_dist = bootstrap_test(self.df_tsg['수익률'].values / 100)
-        bootstrap_avg  = round(get_np().mean(bootstrap_dist), 2)
-        bootstrap_min  = round(get_np().percentile(bootstrap_dist, 2.5), 2)
-        bootstrap_max  = round(get_np().percentile(bootstrap_dist, 97.5), 2)
-        # noinspection PyTypeChecker
-        bootstrap_pv   = round(get_np().mean(bootstrap_dist > 0) * 100, 2)
+        bootstrap_dist = bootstrap_test(df_tsg['수익률'].values / 100)
+        bootstrap_avg  = round(np.mean(bootstrap_dist), 2)
+        bootstrap_min  = round(np.percentile(bootstrap_dist, 2.5), 2)
+        bootstrap_max  = round(np.percentile(bootstrap_dist, 97.5), 2)
+        bootstrap_pv   = round(np.mean(bootstrap_dist > 0) * 100, 2)
         bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
         bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
 
@@ -243,12 +204,7 @@ class Total:
 
         bet_unit = '원' if self.ui_gubun in ('S', 'C') else '계약' if self.ui_gubun == 'SF' else 'USDT'
         tsg_unit = '원' if self.ui_gubun in ('S', 'C') else 'USD' if self.ui_gubun == 'SF' else 'USDT'
-        if self.dict_set[f'{self.market_text}타임프레임']:
-            bc_unit = '초'
-            is_tick = True
-        else:
-            bc_unit = '분'
-            is_tick = False
+        bc_unit  = '초' if self.is_tick else '분'
 
         back_text  = f'백테기간 : {startday}~{endday}, 백테시간 : {starttime}~{endtime}, 거래일수 : {self.day_count}, 평균값계산틱수 : {self.avgtime}'
         label_text = f'종목당 배팅금액 {int(self.betting):,}{bet_unit}, 필요자금 {seed:,.0f}{tsg_unit}, 거래횟수 {tc}회, '\
@@ -267,33 +223,12 @@ class Total:
             self.lq.put(('back', data_list))
 
         save_time = str_ymdhms()
-        data = [int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg]
-        df = get_pd().DataFrame([data], columns=columns_vj, index=[save_time])
         save_file_name = f'{self.savename}_{self.buystg_name}_{save_time}'
-        con = sqlite3.connect(DB_BACKTEST)
-        df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
-        self.df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
-        con.close()
-        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_db_written', {
-            'table': self.savename,
-            'save_file_name': save_file_name,
-        })
 
-        csv_dir = Path('./backtest/csv')
-        csv_dir.mkdir(parents=True, exist_ok=True)
-        self.df_tsg.to_csv(csv_dir / f'{save_file_name}.csv', index=False, encoding='utf-8-sig')
-        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_csv_written', {
-            'save_file_name': save_file_name,
-        })
-
-        self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], self.df_tsg))
-
-        if self.blacklist: self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'블랙리스트 추가 {self.insertlist}'))
+        if self.blacklist:
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'블랙리스트 추가 {self.insertblacklist}'))
         self.sq.put(f'{self.backname}를 완료하였습니다.')
-        self.mq.put(f'{self.backname} 완료')
-        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_mq_sent', {
-            'message': f'{self.backname} 완료',
-        })
+        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - self.start_time}'))
 
         if self.back_club:
             buystg_text  = ('\n'.join([x for x in self.buystg.split('if 매수:')[0].split('\n') if x and x[0] != '#'])).split(' ')
@@ -319,181 +254,60 @@ class Total:
                 else:
                     sell_vars = f'{sell_vars}, {text}'
 
-            PlotShow('백테스트', is_tick, self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
+            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '결과 그래프 생성 중 ...'))
+            PlotShow('백테스트', self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.dict_cn, seed, mdd, self.startday,
                      self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text + bootstrap_text,
                      save_file_name, self.schedul, False, buy_vars=buy_vars, sell_vars=sell_vars)
         else:
             if not self.dict_set['그래프저장하지않기']:
-                PlotShow('백테스트', is_tick, self.teleQ, self.df_tsg, self.df_bct, self.dict_cn, seed, mdd, self.startday,
+                self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '결과 그래프 생성 중 ...'))
+                PlotShow('백테스트', self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.dict_cn, seed, mdd, self.startday,
                          self.endday, self.starttime, self.endtime, None, self.backname, back_text, label_text + bootstrap_text,
                          save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
 
-        self.mq.put(f'{self.backname} 완료')
-        _emit_cli_protocol_checkpoint(self.wq, 'Total', 'total_report_mq_sent', {
-            'message': f'{self.backname} 완료',
-        })
-        time.sleep(1)
-        sys.exit()
-
-
-class BackTest:
-    def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, ui_gubun, dict_set):
-        self.shared_cnt = sc
-        self.wq         = wq
-        self.bq         = bq
-        self.sq         = sq
-        self.tq         = tq
-        self.lq         = lq
-        self.teleQ      = teleQ
-        self.beq_list   = beq_list
-        self.bstq_list  = bstq_list
-        self.backname   = backname
-        self.ui_gubun   = ui_gubun
-        self.dict_set   = dict_set
-        if self.ui_gubun == 'S':
-            self.gubun = 'stock'
-        elif self.ui_gubun == 'SF':
-            self.gubun = 'future'
-        else:
-            self.gubun = 'coin'
-
-        self.Start()
-
-    @error_decorator
-    def Start(self):
-        start_time = now()
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_started')
-        data = self.bq.get()
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_config_received', {
-            'backname': self.backname,
-            'ui_gubun': self.ui_gubun,
-        })
-        if self.ui_gubun not in ('CF', 'SF'):
-            betting = float(data[0]) * 1000000
-        else:
-            betting = float(data[0])
-        avgtime   = int(data[1])
-        startday  = int(data[2])
-        endday    = int(data[3])
-        starttime = int(data[4])
-        endtime   = int(data[5])
-        buystg_name   = data[6]
-        sellstg_name  = data[7]
-        dict_cn       = data[8]
-        back_count    = data[9]
-        bl            = data[10]
-        schedul       = data[11]
-        back_club     = data[12]
-
-        market_text = '주식' if self.ui_gubun in ('S', 'SF') else '코인'
-        if self.ui_gubun == 'S':
-            if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_STOCK_TICK_BACK
-                is_tick = True
-            else:
-                db = DB_STOCK_MIN_BACK
-                is_tick = False
-        elif self.ui_gubun == 'SF':
-            if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_FUTURE_TICK_BACK
-                is_tick = True
-            else:
-                db = DB_FUTURE_MIN_BACK
-                is_tick = False
-        else:
-            if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_COIN_TICK_BACK
-                is_tick = True
-            else:
-                db = DB_COIN_MIN_BACK
-                is_tick = False
-
-        df_mt = _read_moneytop_with_diagnostics(
-            db, is_tick, self.ui_gubun, startday, endday, starttime, endtime, self.bq
-        )
-
-        if len(df_mt) == 0 or back_count == 0:
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
-            self.SysExit(True)
-
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_moneytop_loaded', {
-            'rows': len(df_mt),
-            'back_count': back_count,
-        })
-
-        if is_tick:
-            df_mt['일자'] = (df_mt['index'].values // 1000000).astype(int)
-        else:
-            df_mt['일자'] = (df_mt['index'].values // 10000).astype(int)
-        day_count = len(df_mt['일자'].unique())
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 기간 추출 완료'))
-
-        arry_bct = get_np().zeros((len(df_mt), 3), dtype='float64')
-        arry_bct[:, 0] = df_mt['index'].values
-        data = ('백테정보', self.ui_gubun, None, None, arry_bct, betting, day_count)
-        for q in self.bstq_list:
-            q.put(data)
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 보유종목수 어레이 생성 완료'))
-
-        con = sqlite3.connect(DB_STRATEGY)
-        dfb = get_pd().read_sql(f'SELECT * FROM {self.gubun}buy', con).set_index('index')
-        dfs = get_pd().read_sql(f'SELECT * FROM {self.gubun}sell', con).set_index('index')
+        data = [int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg]
+        df = pd.DataFrame([data], columns=columns_vj, index=[save_time])
+        con = sqlite3.connect(DB_BACKTEST)
+        df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
+        df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
         con.close()
-        buystg  = dfb['전략코드'][buystg_name]
-        sellstg = dfs['전략코드'][sellstg_name]
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_strategy_loaded', {
-            'buy_strategy': buystg_name,
-            'sell_strategy': sellstg_name,
-        })
+        self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], df_tsg))
 
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 매도수전략 설정 완료'))
+    def InsertBlacklist(self, df_tsg):
+        name_list = df_tsg['종목명'].unique()
+        dict_code = {name: code for code, name in self.dict_cn.items()}
 
-        mq = Queue()
-        total_proc = Process(
-            target=Total,
-            args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.lq, self.bstq_list, self.backname, self.ui_gubun,
-                  self.gubun, market_text, self.dict_set)
-        )
-        total_proc.start()
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_total_process_started', {
-            'pid': total_proc.pid,
-        })
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
+        for name in name_list:
+            if name not in dict_code:
+                continue
+            code = dict_code[name]
+            df_tsg_code = df_tsg[df_tsg['종목명'] == name]
+            trade_count = len(df_tsg_code)
+            total_eyun = df_tsg_code['수익금'].sum()
+            if trade_count >= 10 and total_eyun < 0:
+                if self.ui_gubun == 'S':
+                    if code + '\n' not in stockreadlines:
+                        stockreadlines.append(code + '\n')
+                        self.insertblacklist.append(code)
+                elif self.ui_gubun == 'SF':
+                    if code + '\n' not in futurereadlines:
+                        futurereadlines.append(code + '\n')
+                        self.insertblacklist.append(code)
+                else:
+                    if code + '\n' not in coinreadlines:
+                        coinreadlines.append(code + '\n')
+                        self.insertblacklist.append(code)
 
-        self.tq.put(('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg_name, buystg, sellstg,
-                     dict_cn, back_count, day_count, bl, schedul, back_club))
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_total_info_sent', {
-            'day_count': day_count,
-            'back_count': back_count,
-        })
-
-        self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} START'))
-
-        self.shared_cnt.value = 0
-        data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg, 2)
-        for q in self.bstq_list:
-            q.put(('백테시작', 2))
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_engine_start_sent', {
-            'engine_count': len(self.bstq_list),
-        })
-        for q in self.beq_list:
-            q.put(data)
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_engine_data_sent', {
-            'engine_count': len(self.beq_list),
-        })
-
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_waiting_mq_first')
-        data = mq.get()
-        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_mq_first_received', {'data': data})
-        if data == f'{self.backname} 완료':
-            self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], f'{self.backname} 소요시간 {now() - start_time}'))
-            if self.dict_set['스톰라이브']: self.lq.put(self.backname)
-            _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_waiting_mq_second')
-            _ = mq.get()
-            _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'backtest_child_completed')
-            self.SysExit(False)
-        else:
-            self.SysExit(True)
+        if self.insertblacklist:
+            if self.ui_gubun == 'S':
+                with open('./utility/blacklist_stock.txt', 'w') as f:
+                    f.write(''.join(stockreadlines))
+            elif self.ui_gubun == 'SF':
+                with open('./utility/blacklist_future.txt', 'w') as f:
+                    f.write(''.join(futurereadlines))
+            else:
+                with open('./utility/blacklist_coin.txt', 'w') as f:
+                    f.write(''.join(coinreadlines))
 
     def SysExit(self, cancel):
         if cancel:

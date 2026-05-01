@@ -13,7 +13,7 @@ from backtest.back_static_numba import GetResult, bootstrap_test
 from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
 from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, AddMdd
 from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, \
-    DB_OPTUNA, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
+    DB_OPTUNA, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK
 
 
 class Total:
@@ -430,10 +430,10 @@ class RollingWalkForwardTest:
                 is_tick = False
         elif self.ui_gubun == 'SF':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_FUTURE_TICK_BACK
+                db = DB_FUTURE_OS_TICK_BACK
                 is_tick = True
             else:
-                db = DB_FUTURE_MIN_BACK
+                db = DB_FUTURE_OS_MIN_BACK
                 is_tick = False
         else:
             if self.dict_set[f'{market_text}타임프레임']:

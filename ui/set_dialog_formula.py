@@ -55,10 +55,10 @@ class SetDialogFormula:
         self.ui.fm_lineEdittttt_02 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, style=style_bc_dk, ltext=color_name)
 
         items = ['0.5', '1.0', '2.0', '3.0', '4.0', '5.0', '10.0', '20.0', '30.0', '40.0', '50.0']
-        self.ui.fm_comboBoxxxxx_03 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, hover=False, items=items)
+        self.ui.fm_comboBoxxxxx_03 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, hover=False, items=items, tip='선의 굵기(0.5~5.0) 또는 화살표의 크기(10~50)를 선택하십시오.')
 
         items = ['1:실선', '2:대시선', '3:점선', '4:대시점선', '5:대시점점선', '6:위쪽화살표(↑)', '7:아래쪽화살표(↓)', '8:우측쪽화살표(→)', '9:좌쪽화살표(←)']
-        self.ui.fm_comboBoxxxxx_04 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, hover=False, items=items)
+        self.ui.fm_comboBoxxxxx_04 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, hover=False, items=items, tip='선의 종류(1~5) 또는 화살표의 종류(6~9)를 선택하십시오.')
 
         self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('삭제하기', parent=self.ui.fm_groupBoxxxxx_02, color=2, click=lambda: formula_button_clicked(self.ui))
         self.ui.fm_pushButtonnn_05 = self.wc.setPushbutton('예제확인', parent=self.ui.fm_groupBoxxxxx_02, color=3, click=lambda: formula_button_clicked(self.ui))

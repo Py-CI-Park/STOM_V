@@ -27,7 +27,7 @@ from backtest.backengine_binance_min import BackEngineBinanceMin
 from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from utility.static import thread_decorator, str_hms, dt_hms, timedelta_sec, error_decorator
 from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, \
-    DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, DB_STRATEGY
+    DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK, DB_STRATEGY
 
 
 @error_decorator
@@ -37,7 +37,7 @@ def backengine_show(ui, gubun):
         if '키움증권' in ui.dict_set['증권사']:
             db = DB_STOCK_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
         else:
-            db = DB_FUTURE_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
+            db = DB_FUTURE_OS_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN_BACK
     else:
         db = DB_COIN_TICK_BACK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
     con = sqlite3.connect(db)
@@ -161,7 +161,7 @@ def backengine_start(ui, gubun):
             db = DB_STOCK_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
             is_tick = ui.dict_set['주식타임프레임']
         elif gubun == '해선':
-            db = DB_FUTURE_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
+            db = DB_FUTURE_OS_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN_BACK
             is_tick = ui.dict_set['주식타임프레임']
         else:
             db = DB_COIN_TICK_BACK if ui.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK

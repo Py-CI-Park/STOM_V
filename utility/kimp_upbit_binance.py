@@ -4,7 +4,6 @@ import sys
 import json
 import uuid
 import asyncio
-import pyupbit
 import requests
 import websockets
 import pandas as pd
@@ -13,6 +12,7 @@ from PyQt5.QtWidgets import QApplication
 from utility.setting_base import ui_num, columns_kp
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from binance import AsyncClient, BinanceSocketManager
+from trade.upbit.upbit_restapi import get_symbols_info
 from utility.static import comma2float, thread_decorator
 
 
@@ -27,7 +27,7 @@ class Kimp:
         self.windowQ   = qlist[0]
         self.usdtokrw  = None
         self.thread_ws = None
-        self.codes     = pyupbit.get_tickers(fiat="KRW")
+        _, self.codes  = get_symbols_info()
         self.df        = pd.DataFrame(columns=columns_kp)
 
         self.ConvertedCurrency()

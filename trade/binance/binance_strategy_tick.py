@@ -6,7 +6,7 @@ import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
 from trade.risk_analyzer import RiskAnalyzer
-from trade.strategy_base import StrategyBase
+from trade.base_strategy import BaseStrategy
 from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, \
@@ -15,7 +15,7 @@ from utility.static import now, now_utc, GetBinanceShortPgSgSp, dt_ymdhms, get_b
     get_ema_list, get_angle_cf, set_builtin_print
 
 
-class BinanceStrategyTick(StrategyBase):
+class BinanceStrategyTick(BaseStrategy):
     def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
@@ -35,21 +35,20 @@ class BinanceStrategyTick(StrategyBase):
         self.arry_code        = None
         self.info_for_signal  = None
 
+        self.dict_data: dict[str, list] = {}
+        self.dict_gj: dict[str, dict[str, int | float]] = {}
+        self.dict_jg: dict[str, dict[str, int | float]] = {}
+        self.dict_profit: dict[str, list] = {}
+
         self.dict_info        = {}
+        self.dict_buy_num     = {}
+        self.dict_signal_num  = {}
         self.dict_signal      = {
             'BUY_LONG': [],
             'SELL_SHORT': [],
             'SELL_LONG': [],
             'BUY_SHORT': []
         }
-
-        self.dict_data        = {}
-        self.dict_signal_num  = {}
-        self.dict_buy_num     = {}
-        self.dict_profit      = {}
-        self.dict_gj          = {}
-        self.dict_jg          = {}
-
         self.indi_settings    = []
 
         self.int_tujagm       = 0
@@ -195,9 +194,6 @@ class BinanceStrategyTick(StrategyBase):
             self.int_tujagm = data
         elif gubun == '차트종목코드':
             self.chart_code = data
-            cached_chart = self.dict_data.get(data)
-            if cached_chart is not None and len(cached_chart) >= self.dict_set['코인평균값계산틱수']:
-                self.windowQ.put((ui_num['실시간차트'], data, cached_chart))
         elif gubun == '설정변경':
             self.dict_set = data
             self.UpdateStringategy()
@@ -217,7 +213,7 @@ class BinanceStrategyTick(StrategyBase):
             time.sleep(5)
             self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료'))
 
-    # noinspection PyUnusedLocal,PyUnresolvedReferences
+    # noinspection PyUnusedLocal
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
             초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
@@ -309,8 +305,8 @@ class BinanceStrategyTick(StrategyBase):
             if jg_data:
                 if 종목코드 not in self.dict_buy_num:
                     self.dict_buy_num[종목코드] = self.indexn
-                # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
-                _, 포지션, 매수가, _, _, _, 매입금액, _, 보유수량, 레버리지, 분할매수횟수, 분할매도횟수, 매수시간 = jg_data.values()
+                # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간', '레버리지']
+                _, 포지션, 매수가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 레버리지 = jg_data.values()
                 if 포지션 == 'LONG':
                     _, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                 else:

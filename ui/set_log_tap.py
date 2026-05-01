@@ -10,9 +10,9 @@ class SetLogTap:
 
     @error_decorator
     def set(self):
-        self.ui.log_trade_basic_textedit  = self.wc.setTextEdit(self.ui.lg_tab, vscroll=True)
-        self.ui.log_trade_error_textedit  = self.wc.setTextEdit(self.ui.lg_tab, vscroll=True)
-        self.ui.log_system_textedit       = self.wc.setTextEdit(self.ui.lg_tab, vscroll=True)
+        self.ui.log_trade_basic_textedit = self.wc.setTextEdit(self.ui.lg_tab, vscroll=True)
+        self.ui.log_trade_error_textedit = self.wc.setTextEdit(self.ui.lg_tab, vscroll=True)
+        self.ui.log_system_textedit      = self.wc.setTextEdit(self.ui.lg_tab, vscroll=True)
 
         self.ui.log_trade_basic_textedit.setGeometry(7, 10, 668, 367)
         self.ui.log_trade_error_textedit.setGeometry(680, 10, 668, 367)
