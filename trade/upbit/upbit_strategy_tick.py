@@ -6,7 +6,7 @@ import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
 from trade.risk_analyzer import RiskAnalyzer
-from trade.strategy_base import StrategyBase
+from trade.base_strategy import BaseStrategy
 from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_COIN_TICK, DB_COIN_MIN, indicator, \
@@ -15,58 +15,58 @@ from utility.static import now, now_utc, GetUpbitHogaunit, GetUpbitPgSgSp, get_b
     get_ema_list, get_angle_cf, set_builtin_print
 
 
-class UpbitStrategyTick(StrategyBase):
+class UpbitStrategyTick(BaseStrategy):
     def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, creceivQ, ctraderQ,  cstgQ, liveQ, wdzservQ
            0        1       2      3       4      5      6      7       8         9         10     11      12
         """
         super().__init__()
-        self.windowQ          = qlist[0]
-        self.teleQ            = qlist[3]
-        self.ctraderQ         = qlist[9]
-        self.cstgQ            = qlist[10]
-        self.dict_set         = dict_set
-        self.indicator        = indicator
+        self.windowQ         = qlist[0]
+        self.teleQ           = qlist[3]
+        self.ctraderQ        = qlist[9]
+        self.cstgQ           = qlist[10]
+        self.dict_set        = dict_set
+        self.indicator       = indicator
 
-        self.code             = None
-        self.buystrategy      = None
-        self.sellstrategy     = None
-        self.chart_code       = None
-        self.arry_code        = None
-        self.info_for_signal  = None
+        self.code            = None
+        self.buystrategy     = None
+        self.sellstrategy    = None
+        self.chart_code      = None
+        self.arry_code       = None
+        self.info_for_signal = None
 
+        self.dict_data: dict[str, list] = {}
+        self.dict_gj: dict[str, dict[str, int | float]] = {}
+        self.dict_jg: dict[str, dict[str, int | float]] = {}
+        self.dict_profit: dict[str, list] = {}
+
+        self.dict_info        = {}
+        self.dict_buy_num     = {}
+        self.dict_signal_num  = {}
         self.dict_signal      = {
             '매수': [],
             '매도': []
         }
+        self.indi_settings   = []
 
-        self.dict_data        = {}
-        self.dict_signal_num  = {}
-        self.dict_buy_num     = {}
-        self.dict_profit      = {}
-        self.dict_gj          = {}
-        self.dict_jg          = {}
+        self.int_tujagm      = 0
+        self.jgrv_count      = 0
+        self.비중조절기준       = 0
 
-        self.indi_settings    = []
-
-        self.int_tujagm       = 0
-        self.jgrv_count       = 0
-        self.비중조절기준        = 0
-
-        self.market_gubun     = 3
-        self.ma_round_unit    = 8
-        self.is_tick          = self.dict_set['코인타임프레임']
-        self.avg_list         = [self.dict_set['코인평균값계산틱수']]
-        self.sma_list         = get_ema_list(self.is_tick)
-        self.data_cnt         = len(list_coin_tick) if self.is_tick else len(list_coin_min)
-        self.dict_findex      = {name: i for i, name in enumerate(list_coin_tick if self.is_tick else list_coin_min)}
-        self.base_cnt         = self.dict_findex['관심종목'] + 1
-        self.area_cnt         = self.dict_findex['전일비각도' if self.market_gubun == 1 else '당일거래대금각도'] + 1
-        self.angle_pct_cf     = get_angle_cf(self.market_gubun, self.is_tick, 0)
-        self.angle_dtm_cf     = get_angle_cf(self.market_gubun, self.is_tick, 1)
-        self.buy_hj_limit     = self.dict_set['코인매수시장가잔량범위']
-        self.sell_hj_limit    = self.dict_set['코인매도시장가잔량범위']
+        self.market_gubun    = 3
+        self.ma_round_unit   = 8
+        self.is_tick         = self.dict_set['코인타임프레임']
+        self.avg_list        = [self.dict_set['코인평균값계산틱수']]
+        self.sma_list        = get_ema_list(self.is_tick)
+        self.data_cnt        = len(list_coin_tick) if self.is_tick else len(list_coin_min)
+        self.dict_findex     = {name: i for i, name in enumerate(list_coin_tick if self.is_tick else list_coin_min)}
+        self.base_cnt        = self.dict_findex['관심종목'] + 1
+        self.area_cnt        = self.dict_findex['전일비각도' if self.market_gubun == 1 else '당일거래대금각도'] + 1
+        self.angle_pct_cf    = get_angle_cf(self.market_gubun, self.is_tick, 0)
+        self.angle_dtm_cf    = get_angle_cf(self.market_gubun, self.is_tick, 1)
+        self.buy_hj_limit    = self.dict_set['코인매수시장가잔량범위']
+        self.sell_hj_limit   = self.dict_set['코인매도시장가잔량범위']
 
         if self.is_tick:
             self.dict_findex['초당매도수금액'] = self.dict_findex['초당매수금액']
@@ -193,9 +193,6 @@ class UpbitStrategyTick(StrategyBase):
             self.int_tujagm = data
         elif gubun == '차트종목코드':
             self.chart_code = data
-            cached_chart = self.dict_data.get(data)
-            if cached_chart is not None and len(cached_chart) >= self.dict_set['코인평균값계산틱수']:
-                self.windowQ.put((ui_num['실시간차트'], data, cached_chart))
         elif gubun == '설정변경':
             self.dict_set = data
             self.UpdateStringategy()
@@ -213,7 +210,7 @@ class UpbitStrategyTick(StrategyBase):
             time.sleep(5)
             self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료'))
 
-    # noinspection PyUnusedLocal,PyUnresolvedReferences
+    # noinspection PyUnusedLocal
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
             초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \

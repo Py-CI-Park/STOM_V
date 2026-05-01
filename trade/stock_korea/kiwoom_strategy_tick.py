@@ -9,7 +9,7 @@ from copy import deepcopy
 from traceback import format_exc
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.risk_analyzer import RiskAnalyzer
-from trade.strategy_base import StrategyBase
+from trade.base_strategy import BaseStrategy
 from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
 from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, DB_STOCK_TICK, DB_STOCK_MIN, indicator, \
@@ -19,7 +19,7 @@ from utility.static import now, timedelta_sec, GetKiwoomPgSgSp, GetHogaunit, get
     str_ymdhms, dt_ymdhms, get_angle_cf, get_ema_list, set_builtin_print, get_profile_text
 
 
-class KiwoomStrategyTick(StrategyBase):
+class KiwoomStrategyTick(BaseStrategy):
     def __init__(self, gubun, qlist, dict_set):
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQs
@@ -39,18 +39,18 @@ class KiwoomStrategyTick(StrategyBase):
         self.chart_code       = None
         self.info_for_signal  = None
 
+        self.dict_data: dict[str, list] = {}
+        self.dict_gj: dict[str, dict[str, int | float]] = {}
+        self.dict_jg: dict[str, dict[str, int | float]] = {}
+        self.dict_profit: dict[str, list] = {}
+
+        self.dict_info        = {}
+        self.dict_buy_num     = {}
+        self.dict_signal_num  = {}
         self.dict_signal      = {
             '매수': [],
             '매도': []
         }
-
-        self.dict_data        = {}
-        self.dict_signal_num  = {}
-        self.dict_buy_num     = {}
-        self.dict_profit      = {}
-        self.dict_gj          = {}
-        self.dict_jg          = {}
-
         self.indi_settings    = []
         self.tuple_kosd       = ()
 
@@ -204,9 +204,6 @@ class KiwoomStrategyTick(StrategyBase):
             self.int_tujagm = data
         elif gubun == '차트종목코드':
             self.chart_code = data
-            cached_chart = self.dict_data.get(data)
-            if cached_chart is not None and len(cached_chart) >= self.dict_set['주식평균값계산틱수']:
-                self.mgzservQ.put(('window', (ui_num['실시간차트'], data, cached_chart)))
         elif gubun == '설정변경':
             self.dict_set = data
             self.UpdateStringategy()
@@ -229,7 +226,7 @@ class KiwoomStrategyTick(StrategyBase):
             time.sleep(5)
             self.mgzservQ.put(('window', (ui_num['기본로그'], '시스템 명령 실행 알림 - 전략연산 종료')))
 
-    # noinspection PyUnusedLocal,PyUnresolvedReferences
+    # noinspection PyUnusedLocal
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
             거래대금증감, 전일비, 회전율, 전일동시간비, 시가총액, 라운드피겨위5호가이내, VI해제시간, VI가격, VI호가단위, \

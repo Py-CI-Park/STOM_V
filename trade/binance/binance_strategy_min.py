@@ -116,8 +116,8 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 if jg_data:
                     if 종목코드 not in self.dict_buy_num:
                         self.dict_buy_num[종목코드] = self.indexn
-                    # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
-                    _, 포지션, 매수가, _, _, _, 매입금액, _, 보유수량, 레버리지, 분할매수횟수, 분할매도횟수, 매수시간 = jg_data.values()
+                    # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간', '레버리지']
+                    _, 포지션, 매수가, _, _, _, 매입금액, _, 보유수량, 분할매수횟수, 분할매도횟수, 매수시간, 레버리지 = jg_data.values()
                     if 포지션 == 'LONG':
                         _, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 보유수량 * 현재가, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                     else:
@@ -156,7 +156,7 @@ class BinanceStrategyMin(BinanceStrategyTick):
                 G    = NISS and self.dict_set['코인매도취소매수시그널'] and not NIBS
 
                 if BBT and BLK and C20 and (A or B or (C and D) or (C and E) or D or E or F or G):
-                    self.info_for_signal = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1
+                    self.info_for_signal = F or G, 분할매수횟수, 매수가, 현재가, 저가대비고가등락율, 매도호가1, 매수호가1, 소숫점자리수
 
                     if A or B or (C and (D or E)) or F or G:
                         BUY_LONG, SELL_SHORT = True, True

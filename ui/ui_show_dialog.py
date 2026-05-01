@@ -15,7 +15,7 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
 from ui.ui_process_alive import coinkimp_process_alive, coin_strategy_process_alive, coin_receiver_process_alive
 from utility.setting_base import columns_hc, DB_COIN_TICK_BACK, DB_STOCK_TICK_BACK, DB_PATH, DB_COIN_MIN_BACK, \
-    DB_STOCK_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
+    DB_STOCK_MIN_BACK, DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK
 
 
 class QuietPage(QWebEnginePage):
@@ -456,7 +456,7 @@ def chart_moneytop_list(ui):
             db_name2 = DB_STOCK_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
         else:
             db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db' if ui.dict_set['주식타임프레임'] else f'{DB_PATH}/future_min_{searchdate}.db'
-            db_name2 = DB_FUTURE_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
+            db_name2 = DB_FUTURE_OS_TICK_BACK if ui.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN_BACK
 
         if ui.dict_set['주식타임프레임']:
             query = f"SELECT * FROM moneytop WHERE " \

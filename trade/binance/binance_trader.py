@@ -52,11 +52,11 @@ class BinanceTrader:
         self.liveQ      = qlist[11]
         self.dict_set   = dict_set
 
-        self.order_time = now()
-        self.dict_cj    = {}  # 체결목록
-        self.dict_jg    = {}  # 잔고목록
+        self.dict_cj: dict[str, dict[str, int | float]] = {}  # 체결목록
+        self.dict_jg: dict[str, dict[str, int | float]] = {}  # 잔고목록
+        self.dict_td: dict[str, dict[str, int | float]] = {}  # 거래목록
+
         self.dict_tj    = {}  # 잔고평가
-        self.dict_td    = {}  # 거래목록
         self.dict_tt    = {}  # 평가손익
         self.dict_info  = {}
         self.dict_curc  = {}
@@ -78,9 +78,10 @@ class BinanceTrader:
             '코인잔고청산': False
         }
 
-        self.binance   = binance.Client(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
-        self.jgcs_time = self.get_jgcs_time()
-        self.str_today = str_ymd(now_utc())
+        self.binance    = binance.Client(self.dict_set['Access_key2'], self.dict_set['Secret_key2'])
+        self.jgcs_time  = self.get_jgcs_time()
+        self.str_today  = str_ymd(now_utc())
+        self.order_time = now()
 
         self.LoadDatabase()
         self.GetBalances()
@@ -227,7 +228,6 @@ class BinanceTrader:
         롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG']
         숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT']
         jg_data = self.dict_jg.get(종목코드)
-        # noinspection PyUnresolvedReferences
         포지션 = jg_data['포지션'] if jg_data else None
 
         주문번호 = ''
@@ -606,7 +606,7 @@ class BinanceTrader:
 
         if 주문구분 in ('BUY_LONG', 'SELL_SHORT', 'SELL_LONG', 'BUY_SHORT'):
             if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
-                # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+                # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간', '레버리지']
                 if 종목코드 in self.dict_jg:
                     보유수량 = round(self.dict_jg[종목코드]['보유수량'] + 체결수량, self.dict_info[종목코드]['소숫점자리수'])
                     매입금액 = round(self.dict_jg[종목코드]['매입금액'] + 체결수량 * 체결가격, 4)
@@ -645,10 +645,10 @@ class BinanceTrader:
                         '매입금액': 매입금액,
                         '평가금액': 평가금액,
                         '보유수량': 체결수량,
-                        '레버리지': 레버리지,
                         '분할매수횟수': 0,
                         '분할매도횟수': 0,
-                        '매수시간': index[:14]
+                        '매수시간': index[:14],
+                        '레버리지': 레버리지
                     }
 
                 if 미체결수량 == 0:
@@ -668,7 +668,7 @@ class BinanceTrader:
                         평가금액, 수익금, 수익률 = GetBinanceLongPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
                     else:
                         평가금액, 수익금, 수익률 = GetBinanceShortPgSgSp(매입금액, 평가금액, '시장가' in self.dict_set['코인매수주문구분'], '시장가' in self.dict_set['코인매도주문구분'])
-                    # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+                    # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간', '레버리지']
                     self.dict_jg[종목코드].update({
                         '현재가': 체결가격,
                         '수익률': 수익률,
@@ -708,7 +708,7 @@ class BinanceTrader:
                     self.dict_intg['예수금'] += 매입금액 + 수익금
                     self.dict_intg['추정예수금'] += 매입금액 + 수익금
 
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index') if self.dict_jg else pd.DataFrame(columns=columns_jgcf)
             self.queryQ.put(('거래디비', df_jg, 'c_jangolist_future', 'replace'))
             if self.dict_set['코인알림소리']:
                 text = ''

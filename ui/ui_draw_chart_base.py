@@ -29,7 +29,7 @@ class DrawChartBase:
 
         self.real       = False
         self.is_min     = False
-        self.samr_code  = False
+        self.same_code  = False
         self.same_time  = False
 
         self.crosshair  = CrossHair(self.ui)
@@ -64,7 +64,7 @@ class DrawChartBase:
                 return self.ui.dict_findex_future_min2[fname] if self.is_min else self.ui.dict_findex_future_tick2[fname]
 
     def update_factor_list(self):
-        if not self.same_time:
+        if not (self.same_code and self.same_time):
             self.ui.ctpg_item   = {}
             self.ui.ctpg_data   = {}
             self.ui.ctpg_legend = {}
@@ -162,7 +162,7 @@ class DrawChartBase:
             }
 
     def update_ctpg_date(self):
-        if self.same_time:
+        if self.same_code and self.same_time:
             self._incremental_update()
         else:
             self._process_all_data()
@@ -188,7 +188,7 @@ class DrawChartBase:
 
     def get_optimized_min_max(self, fidx_list):
         fidx_tuple = fidx_list if isinstance(fidx_list, tuple) else (fidx_list,)
-        if self.same_time and fidx_tuple in self.cached_min_max:
+        if self.same_code and self.same_time and fidx_tuple in self.cached_min_max:
             self._incremental_min_max_update(fidx_tuple)
         else:
             self._full_min_max_calculation(fidx_tuple)
@@ -252,7 +252,7 @@ class DrawChartBase:
         self.update_ctpg_date()
 
         for i, factor in enumerate(self.ui.ctpg_factors):
-            if not self.same_time:
+            if not (self.same_code and self.same_time):
                 self.ui.ctpg[i].clear()
 
             if factor == '현재가':
@@ -375,7 +375,7 @@ class DrawChartBase:
             self.draw_legend(i)
             if i == self.chart_cnt - 1: break
 
-        if not self.same_time and self.ui.ct_checkBoxxxxx_01.isChecked():
+        if not (self.same_code and self.same_time) and self.ui.ct_checkBoxxxxx_01.isChecked():
             self.insert_crosshair()
 
         self.ui.ctpg_code = self.code
@@ -411,7 +411,7 @@ class DrawChartBase:
                     self.ui.ctpg[i].addItem(arrow)
 
     def draw_line(self, i, fidx1, color):
-        if self.same_time:
+        if self.same_code and self.same_time:
             self.ui.ctpg_item[fidx1].setData(x=self.ui.ctpg_xticks[self.len_list[fidx1]:], y=self.ui.ctpg_data[fidx1])
         else:
             line = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[self.len_list[fidx1]:], y=self.ui.ctpg_data[fidx1], pen=color)
@@ -419,7 +419,7 @@ class DrawChartBase:
             self.ui.ctpg_item[fidx1] = line
 
     def draw_infinite_line(self, i, fidx1):
-        if self.same_time:
+        if self.same_code and self.same_time:
             self.ui.ctpg_cline.setPos(self.ui.ctpg_data[fidx1][-1])
         else:
             self.ui.ctpg_cline = pg.InfiniteLine(angle=0)
@@ -429,7 +429,7 @@ class DrawChartBase:
             self.ui.ctpg[i].addItem(self.ui.ctpg_cline)
 
     def draw_area(self, i):
-        if self.same_time:
+        if self.same_code and self.same_time:
             last_area = self.ui.ctpg_item[0]
             self.ui.ctpg[i].removeItem(last_area)
             last_area = AreaItem(self.gsjm_arry, self.ymin, self.ymax, self.ui.ctpg_xticks, gubun=2)
@@ -440,7 +440,7 @@ class DrawChartBase:
         self.ui.ctpg[i].addItem(last_area)
 
     def draw_candlestick(self, i, fidx1, fidx2, fidx3, fidx4):
-        if self.same_time:
+        if self.same_code and self.same_time:
             last_candlestick = self.ui.ctpg_item[fidx1]
             self.ui.ctpg[i].removeItem(last_candlestick)
             last_candlestick = CandlestickItem(self.ui.ctpg_arry, [fidx1, fidx2, fidx3, fidx4], self.ui.ctpg_xticks, gubun=2)
@@ -451,7 +451,7 @@ class DrawChartBase:
         self.ui.ctpg[i].addItem(last_candlestick)
 
     def draw_volumebar(self, i, fidx1, fidx3, fidx4):
-        if self.same_time:
+        if self.same_code and self.same_time:
             last_volumebar = self.ui.ctpg_item[fidx1]
             self.ui.ctpg[i].removeItem(last_volumebar)
             last_volumebar = VolumeBarItem(self.ui.ctpg_arry, [fidx3, fidx4, fidx1], self.ui.ctpg_xticks, gubun=2)
@@ -462,7 +462,7 @@ class DrawChartBase:
         self.ui.ctpg[i].addItem(last_volumebar)
 
     def draw_legend(self, i):
-        if self.same_time:
+        if self.same_code and self.same_time:
             if self.ui.ct_checkBoxxxxx_01.isChecked():
                 self.ui.ctpg_labels[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][0])
             self.ui.ctpg_legend[i].setPos(self.ui.ctpg_cvb[i].state['viewRange'][0][0], self.ui.ctpg_cvb[i].state['viewRange'][1][1])
@@ -500,7 +500,7 @@ class DrawChartBase:
                         self.draw_fm_area(i, col_idx, color)
 
     def draw_fm_line(self, i, col_idx, color, width, style):
-        if self.same_time:
+        if self.same_code and self.same_time:
             self.ui.ctpg_item[col_idx].setData(x=self.ui.ctpg_xticks, y=self.ui.ctpg_data[col_idx])
         else:
             line = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks, y=self.ui.ctpg_data[col_idx], pen=pg.mkPen(color, width=width, style=style))
@@ -515,7 +515,7 @@ class DrawChartBase:
             9: 0
         }
         arry = self.ui.ctpg_data[col_idx]
-        if self.same_time:
+        if self.same_code and self.same_time:
             price = arry[-1]
             arrow = self.ui.ctpg_item[col_idx]
             self.ui.ctpg[i].removeItem(arrow)
@@ -545,7 +545,7 @@ class DrawChartBase:
 
     def draw_fm_area(self, i, col_idx, color):
         arry = self.ui.ctpg_data[col_idx]
-        if self.same_time:
+        if self.same_code and self.same_time:
             fill_item = self.ui.ctpg_item[col_idx]
             self.ui.ctpg[i].removeItem(fill_item)
             if arry[-1]:

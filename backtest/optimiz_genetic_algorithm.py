@@ -12,7 +12,7 @@ from utility.strategy_version_manager import stg_save_version
 from backtest.back_static import SendResult, GetMoneytopQuery
 from utility.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
 from utility.setting_base import DB_STOCK_TICK_BACK, ui_num, DB_STRATEGY, DB_BACKTEST, DB_COIN_TICK_BACK, \
-    DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
+    DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK
 
 
 class Total:
@@ -260,10 +260,10 @@ class OptimizeGeneticAlgorithm:
                 is_tick = False
         elif self.ui_gubun == 'SF':
             if self.dict_set[f'{market_text}타임프레임']:
-                db = DB_FUTURE_TICK_BACK
+                db = DB_FUTURE_OS_TICK_BACK
                 is_tick = True
             else:
-                db = DB_FUTURE_MIN_BACK
+                db = DB_FUTURE_OS_MIN_BACK
                 is_tick = False
         else:
             if self.dict_set[f'{market_text}타임프레임']:

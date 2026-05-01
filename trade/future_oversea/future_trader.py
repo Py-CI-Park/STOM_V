@@ -46,12 +46,13 @@ class FutureTrader:
         self.sstgQ       = qlist[3]
         self.dict_set    = dict_set
 
-        self.dict_cj     = {}  # 체결목록
-        self.dict_jg     = {}  # 잔고목록
-        self.dict_tj     = {}  # 잔고평가
-        self.dict_td     = {}  # 거래목록
-        self.dict_tt     = {}  # 평가손익
-        self.dict_signal = {}
+        self.dict_cj: dict[str, dict[str, int | float]] = {}  # 체결목록
+        self.dict_jg: dict[str, dict[str, int | float]] = {}  # 잔고목록
+        self.dict_td: dict[str, dict[str, int | float]] = {}  # 거래목록
+        self.dict_signal: dict[str, str] = {}
+
+        self.dict_tj    = {}  # 잔고평가
+        self.dict_tt    = {}  # 평가손익
         self.dict_curc   = {}
         self.dict_info   = {}
         self.dict_order  = {
@@ -161,7 +162,6 @@ class FutureTrader:
         롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG']
         숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT']
         jg_data = self.dict_jg.get(종목코드)
-        # noinspection PyUnresolvedReferences
         포지션 = jg_data['포지션'] if jg_data else None
 
         원주문번호 = ''
@@ -572,7 +572,7 @@ class FutureTrader:
                         평가금액, 수익금, 수익률 = GetFutureLongPgSgSp(mini, 매입금액, 평가금액)
                     else:
                         평가금액, 수익금, 수익률 = GetFutureShortPgSgSp(mini, 매입금액, 평가금액)
-                    # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+                    # ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간', '레버리지']
                     self.dict_jg[종목코드].update({
                         '현재가': 체결가격,
                         '수익률': 수익률,
@@ -615,20 +615,18 @@ class FutureTrader:
                 self.dict_intg['예수금'] += 총위탁증거금 + 수익금
                 self.dict_intg['추정예수금'] += 총위탁증거금 + 수익금
 
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index') if self.dict_jg else pd.DataFrame(columns=columns_jgf)
             self.mgzservQ.put(('query', ('거래디비', df_jg, 'f_jangolist', 'replace')))
             if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', f'{종목명} {체결수량}주를 {주문구분}하였습니다'))
             self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [{gubun}] {종목명} | {체결가격} | {체결수량}')))
 
         elif 주문상태 == '확인' and 주문구분 in ('정정', '취소'):
             if 주문구분 == '정정':
-                # noinspection PyUnresolvedReferences
                 gubun_ = gubun.replace('_MODIFY', '')
                 정정횟수 = self.dict_order[gubun_][종목코드][1] + 1
                 취소시간 = timedelta_sec(self.dict_set['주식매수취소시간초' if gubun in ('BUY_LONG', 'SELL_SHORT') else '주식매도취소시간초'])
                 self.dict_order[gubun_][종목코드] = [취소시간, 정정횟수, 주문가격]
             else:
-                # noinspection PyUnresolvedReferences
                 gubun_ = gubun.replace('_CANCEL', '')
                 if gubun in ('BUY_LONG', 'SELL_SHORT'):
                     self.dict_intg['추정예수금'] += 주문수량 * self.dict_info[종목코드]['위탁증거금']

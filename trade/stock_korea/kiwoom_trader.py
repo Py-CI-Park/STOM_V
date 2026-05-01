@@ -47,10 +47,11 @@ class KiwoomTrader:
         self.sstgQs     = qlist[3]
         self.dict_set   = dict_set
 
-        self.dict_cj    = {}  # 체결목록
-        self.dict_jg    = {}  # 잔고목록
+        self.dict_cj: dict[str, dict[str, int | float]] = {}  # 체결목록
+        self.dict_jg: dict[str, dict[str, int | float]] = {}  # 잔고목록
+        self.dict_td: dict[str, dict[str, int | float]] = {}  # 거래목록
+
         self.dict_tj    = {}  # 잔고평가
-        self.dict_td    = {}  # 거래목록
         self.dict_tt    = {}  # 평가손익
         self.dict_info  = {}
         self.dict_curc  = {}
@@ -330,7 +331,6 @@ class KiwoomTrader:
         종목코드, 현재가 = data
         self.dict_curc[종목코드] = 현재가
         try:
-            # ['종목명', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
             if 현재가 != self.dict_jg[종목코드]['현재가']:
                 매입금액 = self.dict_jg[종목코드]['매입금액']
                 보유수량 = self.dict_jg[종목코드]['보유수량']
@@ -565,7 +565,7 @@ class KiwoomTrader:
                 self.dict_intg['예수금'] += 매입금액 + 수익금
                 self.dict_intg['추정예수금'] += 매입금액 + 수익금
 
-            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
+            df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index') if self.dict_jg else pd.DataFrame(columns=columns_jg)
             self.mgzservQ.put(('query', ('거래디비', df_jg, 's_jangolist', 'replace')))
             if self.dict_set['주식알림소리']: self.mgzservQ.put(('sound', f'{종목명} {체결수량}주를 {주문구분}하였습니다'))
             self.mgzservQ.put(('window', (ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}{주문상태}] {종목명} | {체결가격} | {체결수량}')))

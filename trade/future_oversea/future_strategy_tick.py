@@ -9,16 +9,16 @@ from copy import deepcopy
 from traceback import format_exc
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from trade.risk_analyzer import RiskAnalyzer
-from trade.strategy_base import StrategyBase
+from trade.base_strategy import BaseStrategy
 from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
-from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, indicator, DB_FUTURE_MIN, DB_FUTURE_TICK, \
+from utility.setting_base import DB_STRATEGY, ui_num, dict_order_ratio, indicator, DB_FUTURE_OS_MIN, DB_FUTURE_OS_TICK, \
     list_coin_tick, list_coin_min
 from utility.static import now, now_cme, get_buy_indi_stg, GetFutureLongPgSgSp, GetFutureShortPgSgSp, dt_ymdhms, \
     get_ema_list, get_angle_cf, set_builtin_print
 
 
-class FutureStrategyTick(StrategyBase):
+class FutureStrategyTick(BaseStrategy):
     def __init__(self, qlist, dict_set):
         """
         self.mgzservQ, self.sagentQ, self.straderQ, self.sstgQ
@@ -39,21 +39,20 @@ class FutureStrategyTick(StrategyBase):
         self.arry_code        = None
         self.info_for_signal  = None
 
+        self.dict_data: dict[str, list] = {}
+        self.dict_gj: dict[str, dict[str, int | float]] = {}
+        self.dict_jg: dict[str, dict[str, int | float]] = {}
+        self.dict_profit: dict[str, list] = {}
+
         self.dict_info        = {}
+        self.dict_buy_num     = {}
+        self.dict_signal_num  = {}
         self.dict_signal      = {
             'BUY_LONG': [],
             'SELL_SHORT': [],
             'SELL_LONG': [],
             'BUY_SHORT': []
         }
-
-        self.dict_data        = {}
-        self.dict_signal_num  = {}
-        self.dict_buy_num     = {}
-        self.dict_profit      = {}
-        self.dict_gj          = {}
-        self.dict_jg          = {}
-
         self.indi_settings    = []
 
         self.jgrv_count       = 0
@@ -194,9 +193,6 @@ class FutureStrategyTick(StrategyBase):
             self.sellstrategy = compile(data, '<string>', 'exec')
         elif gubun == '차트종목코드':
             self.chart_code = data
-            cached_chart = self.dict_data.get(data)
-            if cached_chart is not None and len(cached_chart) >= self.dict_set['주식평균값계산틱수']:
-                self.mgzservQ.put(('window', (ui_num['실시간차트'], data, cached_chart)))
         elif gubun == '설정변경':
             self.dict_set = data
             self.UpdateStringategy()
@@ -213,7 +209,7 @@ class FutureStrategyTick(StrategyBase):
         elif data == '프로세스종료':
             self.SysExit()
 
-    # noinspection PyUnusedLocal,PyUnresolvedReferences
+    # noinspection PyUnusedLocal
     def Strategy(self, data):
         체결시간, 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
             초당거래대금, 고저평균대비등락율, 저가대비고가등락율, 초당매수금액, 초당매도금액, 당일매수금액, 최고매수금액, 최고매수가격, 당일매도금액, 최고매도금액, 최고매도가격, \
@@ -590,7 +586,7 @@ class FutureStrategyTick(StrategyBase):
     def SaveData(self):
         last = len(self.dict_data)
         columns_ = list_coin_tick[:self.base_cnt] if self.dict_set['주식타임프레임'] else list_coin_min[:self.base_cnt]
-        con = sqlite3.connect(DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN)
+        con = sqlite3.connect(DB_FUTURE_OS_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN)
         if last > 0:
             start = now()
             cllen = len(columns_)

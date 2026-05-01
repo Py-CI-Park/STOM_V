@@ -11,7 +11,6 @@ pyqtgraph==0.14.0
 matplotlib==3.10.8
 
 python-binance==1.0.34
-pyupbit==0.2.34
 yfinance==1.1.0
 
 python-telegram-bot==22.4

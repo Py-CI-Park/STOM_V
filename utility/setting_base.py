@@ -1,33 +1,77 @@
 
-OPENAPI_PATH        = 'C:/OpenAPI'
-ICON_PATH           = './ui/icon'
-STOCK_LOGIN_PATH    = './trade/stock_korea/login_kiwoom'
-FUTURE_LOGIN_PATH   = './trade/future_oversea/login_future'
-GRAPH_PATH          = './backtest/graph'
-BACK_TEMP           = './backtest/temp'
-DB_PATH             = './_database'
-DB_SETTING          = './_database/setting.db'
-DB_BACKTEST         = './_database/backtest.db'
-DB_TRADELIST        = './_database/tradelist.db'
-DB_STRATEGY         = './_database/strategy.db'
-DB_OPTUNA           = 'sqlite:///./_database/optuna.db'
-DB_CODE_INFO        = './_database/code_info.db'
-DB_STOCK_TICK       = './_database/stock_tick.db'
-DB_STOCK_MIN        = './_database/stock_min.db'
-DB_STOCK_TICK_BACK  = './_database/stock_tick_back.db'
-DB_STOCK_MIN_BACK   = './_database/stock_min_back.db'
-DB_COIN_TICK        = './_database/coin_tick.db'
-DB_COIN_MIN         = './_database/coin_min.db'
-DB_COIN_TICK_BACK   = './_database/coin_tick_back.db'
-DB_COIN_MIN_BACK    = './_database/coin_min_back.db'
-DB_FUTURE_TICK      = './_database/future_tick.db'
-DB_FUTURE_MIN       = './_database/future_min.db'
-DB_FUTURE_TICK_BACK = './_database/future_tick_back.db'
-DB_FUTURE_MIN_BACK  = './_database/future_min_back.db'
-DB_STOCK_USA_TICK   = './_database/stock_usa_tick.db'
-DB_STOCK_USA_MIN    = './_database/stock_usa_min.db'
-DB_STOCK_USA_TICK_BACK = './_database/stock_usa_tick_back.db'
-DB_STOCK_USA_MIN_BACK  = './_database/stock_usa_min_back.db'
+OPENAPI_PATH             = 'C:/OpenAPI'
+ICON_PATH                = './ui/icon'
+STOCK_LOGIN_PATH         = './trade/stock_korea/login_kiwoom'
+FUTURE_LOGIN_PATH        = './trade/future_oversea/login_future'
+GRAPH_PATH               = './backtest/graph'
+BACK_TEMP                = './backtest/temp'
+DB_PATH                  = './_database'
+DB_SETTING               = './_database/setting.db'
+DB_BACKTEST              = './_database/backtest.db'
+DB_TRADELIST             = './_database/tradelist.db'
+DB_STRATEGY              = './_database/strategy.db'
+DB_OPTUNA                = 'sqlite:///./_database/optuna.db'
+DB_CODE_INFO             = './_database/code_info.db'
+DB_STOCK_TICK            = './_database/stock_tick.db'
+DB_STOCK_MIN             = './_database/stock_min.db'
+DB_STOCK_TICK_BACK       = './_database/stock_tick_back.db'
+DB_STOCK_MIN_BACK        = './_database/stock_min_back.db'
+DB_STOCK_ETF_TICK        = './_database/stock_etf_tick.db'
+DB_STOCK_ETF_MIN         = './_database/stock_etf_min.db'
+DB_STOCK_ETF_TICK_BACK   = './_database/stock_etf_tick_back.db'
+DB_STOCK_ETF_MIN_BACK    = './_database/stock_etf_min_back.db'
+DB_STOCK_ETN_TICK        = './_database/stock_etn_tick.db'
+DB_STOCK_ETN_MIN         = './_database/stock_etn_min.db'
+DB_STOCK_ETN_TICK_BACK   = './_database/stock_etn_tick_back.db'
+DB_STOCK_ETN_MIN_BACK    = './_database/stock_etn_min_back.db'
+DB_STOCK_USA_TICK        = './_database/stock_usa_tick.db'
+DB_STOCK_USA_MIN         = './_database/stock_usa_min.db'
+DB_STOCK_USA_TICK_BACK   = './_database/stock_usa_tick_back.db'
+DB_STOCK_USA_MIN_BACK    = './_database/stock_usa_min_back.db'
+DB_COIN_TICK             = './_database/coin_tick.db'
+DB_COIN_MIN              = './_database/coin_min.db'
+DB_COIN_TICK_BACK        = './_database/coin_tick_back.db'
+DB_COIN_MIN_BACK         = './_database/coin_min_back.db'
+DB_FUTURE_TICK           = './_database/future_tick.db'
+DB_FUTURE_MIN            = './_database/future_min.db'
+DB_FUTURE_TICK_BACK      = './_database/future_tick_back.db'
+DB_FUTURE_MIN_BACK       = './_database/future_min_back.db'
+DB_FUTURE_NT_TICK        = './_database/future_nt_tick.db'
+DB_FUTURE_NT_MIN         = './_database/future_nt_min.db'
+DB_FUTURE_NT_TICK_BACK   = './_database/future_nt_tick_back.db'
+DB_FUTURE_NT_MIN_BACK    = './_database/future_nt_min_back.db'
+DB_FUTURE_OS_TICK        = './_database/future_os_tick.db'
+DB_FUTURE_OS_MIN         = './_database/future_os_min.db'
+DB_FUTURE_OS_TICK_BACK   = './_database/future_os_tick_back.db'
+DB_FUTURE_OS_MIN_BACK    = './_database/future_os_min_back.db'
+DB_COIN_FUTURE_TICK      = './_database/coin_future_tick.db'
+DB_COIN_FUTURE_MIN       = './_database/coin_future_min.db'
+DB_COIN_FUTURE_TICK_BACK = './_database/coin_future_tick_back.db'
+DB_COIN_FUTURE_MIN_BACK  = './_database/coin_future_min_back.db'
+
+DICT_MARKET_DB = {
+    1: {0: DB_STOCK_MIN, 1: DB_STOCK_TICK},
+    2: {0: DB_STOCK_ETF_MIN, 1: DB_STOCK_ETF_TICK},
+    3: {0: DB_STOCK_ETN_MIN, 1: DB_STOCK_ETN_TICK},
+    4: {0: DB_STOCK_USA_MIN, 1: DB_STOCK_USA_TICK},
+    5: {0: DB_COIN_MIN, 1: DB_COIN_TICK},
+    6: {0: DB_FUTURE_MIN, 1: DB_FUTURE_TICK},
+    7: {0: DB_FUTURE_NT_MIN, 1: DB_FUTURE_NT_TICK},
+    8: {0: DB_FUTURE_OS_MIN, 1: DB_FUTURE_OS_TICK},
+    9: {0: DB_COIN_FUTURE_MIN, 1: DB_COIN_FUTURE_TICK}
+}
+
+DICT_MARKET_BACKDB = {
+    1: {0: DB_STOCK_MIN_BACK, 1: DB_STOCK_TICK_BACK},
+    2: {0: DB_STOCK_ETF_MIN_BACK, 1: DB_STOCK_ETF_TICK_BACK},
+    3: {0: DB_STOCK_ETN_MIN_BACK, 1: DB_STOCK_ETN_TICK_BACK},
+    4: {0: DB_STOCK_USA_MIN_BACK, 1: DB_STOCK_USA_TICK_BACK},
+    5: {0: DB_COIN_MIN_BACK, 1: DB_COIN_TICK_BACK},
+    6: {0: DB_FUTURE_MIN_BACK, 1: DB_FUTURE_TICK_BACK},
+    7: {0: DB_FUTURE_NT_MIN_BACK, 1: DB_FUTURE_NT_TICK_BACK},
+    8: {0: DB_FUTURE_OS_MIN_BACK, 1: DB_FUTURE_OS_TICK_BACK},
+    9: {0: DB_COIN_FUTURE_MIN_BACK, 1: DB_COIN_FUTURE_TICK_BACK}
+}
 
 ui_num = {'설정로그': 1, '종목명데이터': 2, '백테엔진': 3, '기본로그': 4, '타임로그': 5, '시스템로그': 6, 'S백테스트': 7, 'SF백테스트': 8,
           'C백테스트': 9, 'CF백테스트': 10, '사용자수식': 10.5, 'DB관리': 11, 'S실현손익': 12, 'S거래목록': 13, 'S잔고평가': 14, 'S잔고목록': 15,
@@ -48,10 +92,10 @@ columns_jg   = ['종목명', '매수가', '현재가', '수익률', '평가손�
 columns_cj   = ['종목명', '주문구분', '주문수량', '체결수량', '미체결수량', '체결가', '체결시간', '주문가격', '주문번호']
 columns_gj   = ['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']
 columns_jgf  = ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간']
-columns_jgcf = ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '레버리지', '분할매수횟수', '분할매도횟수', '매수시간']
+columns_jgcf = columns_jgf + ['레버리지']
 
-columns_btf  = ['종목명', '포지션', '매수시간', '매도시간', '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간']
 columns_bt   = ['종목명', '시가총액', '매수시간', '매도시간', '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간']
+columns_btf  = ['종목명', '포지션', '매수시간', '매도시간', '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간']
 columns_dt   = ['거래일자', '누적매수금액', '누적매도금액', '누적수익금액', '누적손실금액', '수익률', '누적수익금']
 columns_dd   = ['체결시간', '종목명', '매수금액', '매도금액', '주문수량', '수익률', '수익금']
 columns_nt   = ['기간', '누적매수금액', '누적매도금액', '누적수익금액', '누적손실금액', '누적수익률', '누적수익금']
