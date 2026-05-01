@@ -1,3 +1,4 @@
+
 import random
 from PyQt5.QtCore import Qt
 from ui.set_text import famous_saying

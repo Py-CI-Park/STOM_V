@@ -96,22 +96,15 @@ class SetMainMenu:
                 self.ui.move(self.ui.dict_set['창위치'][0], self.ui.dict_set['창위치'][1])
             except:
                 pass
-        self.ui.pushButton_00.setGeometry(5, 5, 35, 40)
-        self.ui.pushButton_01.setGeometry(5, 45, 35, 40)
-        self.ui.pushButton_02.setGeometry(5, 85, 35, 40)
-        self.ui.pushButton_03.setGeometry(5, 125, 35, 40)
-        self.ui.pushButton_04.setGeometry(5, 165, 35, 40)
-        self.ui.pushButton_05.setGeometry(5, 205, 35, 40)
-        self.ui.pushButton_06.setGeometry(5, 245, 35, 40)
-        self.ui.pushButton_07.setGeometry(5, 285, 35, 40)
-        self.ui.hm_tab.setGeometry(45, 0, 1353, 757)
-        self.ui.st_tab.setGeometry(45, 0, 1353, 757)
-        self.ui.ct_tab.setGeometry(45, 0, 1353, 757)
-        self.ui.ss_tab.setGeometry(45, 0, 1353, 757)
-        self.ui.cs_tab.setGeometry(45, 0, 1353, 757)
-        self.ui.lg_tab.setGeometry(45, 0, 1353, 757)
-        self.ui.sj_tab.setGeometry(45, 0, 1353, 757)
-        self.ui.lv_tab.setGeometry(45, 0, 1353, 757)
+
+        for i in range(8):
+            y = 5 + i * 40
+            getattr(self.ui, f'pushButton_{i:02d}').setGeometry(5, y, 35, 40)
+
+        for tab in (self.ui.hm_tab, self.ui.st_tab, self.ui.ct_tab, self.ui.ss_tab,
+                    self.ui.cs_tab, self.ui.lg_tab, self.ui.sj_tab, self.ui.lv_tab):
+            tab.setGeometry(45, 0, 1353, 757)
+
         self.ui.at_pushButton.setGeometry(5, 330, 35, 15)
         self.ui.tt_pushButton.setGeometry(8, 350, 16, 15)
         self.ui.ms_pushButton.setGeometry(23, 350, 16, 15)

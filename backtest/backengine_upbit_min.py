@@ -92,7 +92,7 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                                     self.arry_code[self.indexn, col_idx] = price
 
                     매수, 매도 = True, False
-                    if not self.curr_trade_info['보유중']:
+                    if not 보유중:
                         if not 관심종목: continue
                         exec(self.buystg)
                     else:
@@ -165,7 +165,7 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                                     self.arry_code[self.indexn, col_idx] = price
 
                     매수, 매도 = True, False
-                    if not self.curr_trade_info['보유중']:
+                    if not 보유중:
                         if not 관심종목: continue
                         if self.back_type != '조건최적화':
                             exec(self.buystg)
@@ -238,7 +238,7 @@ class BackEngineUpbitMin(BackEngineUpbitTick):
                             self.arry_code[self.indexn, col_idx] = price
 
             매수, 매도 = True, False
-            if not self.curr_trade_info['보유중']:
+            if not 보유중:
                 if not 관심종목: return
                 exec(self.buystg)
             else:

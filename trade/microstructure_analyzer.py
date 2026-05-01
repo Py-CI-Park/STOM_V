@@ -876,13 +876,12 @@ class MicrostructureAnalyzer:
         weighted_bid_qty = np.dot(bid_qtys, self._depth_weights)
         weighted_depth_ratio = weighted_bid_qty / weighted_ask_qty if weighted_ask_qty > 0 else 1
 
-        self.data_history[code].append(
+        # 스프레드 트렌드 및 불균형 트렌드 계산 (HistoryBuffer 직접 사용)
+        hist_buffer = self.data_history[code]
+        hist_buffer.append(
             curr_price, imbalance, buy_volume, sell_volume, total_volume,
             weighted_depth_ratio, ask_prices, bid_prices, ask_qtys, bid_qtys
         )
-
-        # 스프레드 트렌드 및 불균형 트렌드 계산 (HistoryBuffer 직접 사용)
-        hist_buffer = self.data_history[code]
         if len(hist_buffer) < self.history_cnt:
             return
 
@@ -1325,4 +1324,4 @@ class MicrostructureAnalyzer:
     def clear_data(self):
         """전체 데이터 초기화"""
         self.curr_data = None
-        self.data_history = {}
+        self.data_history = defaultdict(lambda: HistoryBuffer(self.history_cnt))
