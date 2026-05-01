@@ -7,14 +7,14 @@ import sqlite3
 import pyttsx3
 import numpy as np
 import pandas as pd
-from threading import Lock
 from copy import deepcopy
+from threading import Lock
 from traceback import format_exc
 from trade.formula_manager import FormulaManager, get_formula_data
 from utility.static import timedelta_sec, str_ymdhms, dt_ymdhms, add_rolling_data, dt_ymdhm, str_ymdhm, thread_decorator
 from utility.setting_base import ui_num, DB_TRADELIST, DB_PATH, DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, \
-    DB_BACKTEST, DB_COIN_MIN_BACK, DB_STOCK_MIN_BACK, DB_CODE_INFO, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK, \
-    list_stock_min, list_coin_min, DB_SETTING, DB_STRATEGY, DB_STOCK_TICK, DB_STOCK_MIN, DB_FUTURE_TICK, DB_FUTURE_MIN, \
+    DB_BACKTEST, DB_COIN_MIN_BACK, DB_STOCK_MIN_BACK, DB_CODE_INFO, DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK, \
+    list_stock_min, list_coin_min, DB_SETTING, DB_STRATEGY, DB_STOCK_TICK, DB_STOCK_MIN, DB_FUTURE_OS_TICK, DB_FUTURE_OS_MIN, \
     DB_COIN_TICK, DB_COIN_MIN, list_stock_tick, list_coin_tick, columns_hj
 
 
@@ -278,7 +278,7 @@ class ChartHogaQuerySound:
                 db_name2 = DB_STOCK_TICK_BACK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
             else:
                 db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db' if self.dict_set['주식타임프레임'] else f'{DB_PATH}/future_min_{searchdate}.db'
-                db_name2 = DB_FUTURE_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
+                db_name2 = DB_FUTURE_OS_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN_BACK
 
         if cmd == '이전호가정보요청':
             query = f"SELECT * FROM '{code}' WHERE `index` < {index} ORDER BY `index` DESC LIMIT 1"
@@ -311,7 +311,7 @@ class ChartHogaQuerySound:
                 if (gubun == 'C' and self.dict_set['코인타임프레임']) or \
                         ('해외선물' in self.dict_set['증권사'] and self.dict_set['주식타임프레임']):
                     jr = [data[self.fi['그외틱봉매도총잔']]] + data[self.fi['그외틱봉잔량시작']:self.fi['그외틱봉잔량종료']] + [data[self.fi['그외틱봉매수총잔']]]
-                    hg = [data[self.fi['고가']]]  + data[self.fi['그외틱봉호가시작']:self.fi['그외틱봉호가종료']] + [self.fi['저가']]
+                    hg = [data[self.fi['고가']]]  + data[self.fi['그외틱봉호가시작']:self.fi['그외틱봉호가종료']] + [data[self.fi['저가']]]
                 else:
                     jr = [data[self.fi['그외분봉매도총잔']]] + data[self.fi['그외분봉잔량시작']:self.fi['그외분봉잔량종료']] + [data[self.fi['그외분봉매수총잔']]]
                     hg = [data[self.fi['고가']]]  + data[self.fi['그외분봉호가시작']:self.fi['그외분봉호가종료']] + [data[self.fi['저가']]]
@@ -366,7 +366,7 @@ class ChartHogaQuerySound:
             if '키움증권' in self.dict_set['증권사']:
                 BACK_FILE = DB_STOCK_TICK_BACK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
             else:
-                BACK_FILE = DB_FUTURE_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
+                BACK_FILE = DB_FUTURE_OS_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN_BACK
         else:
             BACK_FILE = DB_COIN_TICK_BACK if self.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
 
@@ -450,7 +450,7 @@ class ChartHogaQuerySound:
             if '키움증권' in self.dict_set['증권사']:
                 DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
             else:
-                DB_FILE = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
+                DB_FILE = DB_FUTURE_OS_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN
         else:
             DB_FILE = DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN
 
@@ -494,7 +494,7 @@ class ChartHogaQuerySound:
         if '키움증권' in self.dict_set['증권사']:
             DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
         else:
-            DB_FILE = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
+            DB_FILE = DB_FUTURE_OS_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN
 
         con = sqlite3.connect(DB_FILE)
         df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
@@ -524,7 +524,7 @@ class ChartHogaQuerySound:
                 BACK_FILE = DB_STOCK_TICK_BACK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
                 firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
             else:
-                BACK_FILE = DB_FUTURE_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
+                BACK_FILE = DB_FUTURE_OS_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN_BACK
                 firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
         else:
             BACK_FILE = DB_COIN_TICK_BACK if self.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
@@ -572,7 +572,7 @@ class ChartHogaQuerySound:
                 BACK_FILE = DB_STOCK_TICK_BACK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN_BACK
                 firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
             else:
-                BACK_FILE = DB_FUTURE_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
+                BACK_FILE = DB_FUTURE_OS_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN_BACK
                 firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
         else:
             BACK_FILE = DB_COIN_TICK_BACK if self.dict_set['코인타임프레임'] else DB_COIN_MIN_BACK
@@ -614,7 +614,7 @@ class ChartHogaQuerySound:
             if '키움증권' in self.dict_set['증권사']:
                 DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
             else:
-                DB_FILE = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
+                DB_FILE = DB_FUTURE_OS_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN
         else:
             DB_FILE = DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN
 
@@ -632,7 +632,7 @@ class ChartHogaQuerySound:
                     firstname = 'stock_tick_' if self.dict_set['주식타임프레임'] else 'stock_min_'
                 else:
                     gubun = '해선'
-                    BACK_FILE = DB_FUTURE_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN_BACK
+                    BACK_FILE = DB_FUTURE_OS_TICK_BACK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN_BACK
                     firstname = 'future_tick_' if self.dict_set['주식타임프레임'] else 'future_min_'
             else:
                 gubun = '코인'
@@ -681,7 +681,7 @@ class ChartHogaQuerySound:
                 DB_FILE = DB_STOCK_TICK if self.dict_set['주식타임프레임'] else DB_STOCK_MIN
             else:
                 gubun = '해선'
-                DB_FILE = DB_FUTURE_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_MIN
+                DB_FILE = DB_FUTURE_OS_TICK if self.dict_set['주식타임프레임'] else DB_FUTURE_OS_MIN
         else:
             gubun = '코인'
             DB_FILE = DB_COIN_TICK if self.dict_set['코인타임프레임'] else DB_COIN_MIN
@@ -797,11 +797,11 @@ class ChartHogaQuerySound:
                     is_tick  = True
                     if starttime == '': starttime, endtime = '093000', '103000'
                     db_name1 = f'{DB_PATH}/future_tick_{searchdate}.db'
-                    db_name2 = DB_FUTURE_TICK_BACK
+                    db_name2 = DB_FUTURE_OS_TICK_BACK
                 else:
                     if starttime == '': starttime, endtime = '090000', '160000'
                     db_name1 = f'{DB_PATH}/future_min_{searchdate}.db'
-                    db_name2 = DB_FUTURE_MIN_BACK
+                    db_name2 = DB_FUTURE_OS_MIN_BACK
 
             if is_tick:
                 query1 = f"SELECT * FROM '{code}' WHERE " \

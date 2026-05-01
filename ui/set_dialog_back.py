@@ -69,8 +69,9 @@ class SetDialogBack:
         self.ui.be_lineEdittttt_01 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, style=style_bc_dk)
         self.ui.be_lineEdittttt_02 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, style=style_bc_dk)
         self.ui.be_labellllllll_02 = QLabel('▣ 사용할 평균값틱수를 콤머로 구분입력하고 백테엔진의 멀티수를 입력하십시오.', self.ui.be_groupBoxxxxx_01)
-        self.ui.be_lineEdittttt_03 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, ltext='30', style=style_bc_dk)
-        self.ui.be_lineEdittttt_04 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, ltext=f'{psutil.cpu_count()}', style=style_bc_dk)
+        self.ui.be_lineEdittttt_03 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, ltext='30', style=style_bc_dk, tip='예제: 30, 60, 90, 120')
+        tip = '논리프로세스 개수의 1.5배 정도가 최고성능\n안정적인 개수는 논리프로세스 개수만큼 설정(기본)\n여유있는 개수는 논리프로세스 개수 나누기 2만큼 설정'
+        self.ui.be_lineEdittttt_04 = self.wc.setLineedit(self.ui.be_groupBoxxxxx_01, ltext=f'{psutil.cpu_count()}', style=style_bc_dk, tip=tip)
         text = '▣ 백테엔진을 시작하면 20개의 중간집계용, 멀티수만큼의 백테엔진용 프로세스가 실행되고\n\n' \
                '설정탭 기타에서 설정한 일괄로딩 또는 분할로딩의 선택에 따라 공유메모리 또는 피클덤프의\n\n' \
                '형태로 데이터를 로드합니다. 백테엔진은 프로그램을 종료하기 전까지 종료되지 않습니다.'
@@ -87,7 +88,8 @@ class SetDialogBack:
         self.ui.sd_oclineEdittt_01 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_01, ltext='10', style=style_bc_dk)
         self.ui.sd_oclineEdittt_02 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_01, ltext='5', style=style_bc_dk)
         self.ui.sd_oclineEdittt_03 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_01, ltext='1000', style=style_bc_dk)
-        self.ui.sd_scheckBoxxxx_01 = self.wc.setCheckBox('일괄변경', self.ui.sd_groupBoxxxxx_01, checked=True, style=style_ck_bx)
+        tip = '일괄변경 체크 시 같은 열의 모든 값이 동시에 변경됩니다.'
+        self.ui.sd_scheckBoxxxx_01 = self.wc.setCheckBox('일괄변경', self.ui.sd_groupBoxxxxx_01, checked=True, style=style_ck_bx, tip=tip)
         self.ui.sd_scheckBoxxxx_02 = self.wc.setCheckBox('완료 후 컴퓨터 종료', self.ui.sd_groupBoxxxxx_01, style=style_ck_bx)
 
         self.ui.sd_dcomboBoxxxx_01 = self.wc.setCombobox(self.ui.sd_groupBoxxxxx_01, activated=lambda: bactivated_03(self.ui))
@@ -95,7 +97,8 @@ class SetDialogBack:
         self.ui.sd_dlineEditttt_01 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_01, style=style_bc_dk)
         self.ui.sd_dpushButtonn_02 = self.wc.setPushbutton('스케쥴 저장', parent=self.ui.sd_groupBoxxxxx_01, click=lambda: sdbutton_clicked_05(self.ui))
 
-        self.ui.sd_pushButtonnn_01 = self.wc.setPushbutton('주식', parent=self.ui.sd_groupBoxxxxx_01, click=lambda: sdbutton_clicked_01(self.ui))
+        tip = '버튼을 누을때마다 주식, 코인, 해선 순으로 변경됩니다.'
+        self.ui.sd_pushButtonnn_01 = self.wc.setPushbutton('주식', parent=self.ui.sd_groupBoxxxxx_01, click=lambda: sdbutton_clicked_01(self.ui), tip=tip)
         self.ui.sd_pushButtonnn_02 = self.wc.setPushbutton('시작', parent=self.ui.sd_groupBoxxxxx_01, color=2, click=self.ui.sdButtonClicked_02)
         self.ui.sd_pushButtonnn_03 = self.wc.setPushbutton('중지', parent=self.ui.sd_groupBoxxxxx_01, color=2, click=lambda: sdbutton_clicked_03(self.ui))
 

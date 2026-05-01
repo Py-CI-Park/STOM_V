@@ -255,20 +255,9 @@ class SetDialogEtc:
         self.ui.st_labelllllll_05 = QLabel('<= 일평균거래횟수 <=', self.ui.st_groupBoxxxx_01)
         self.ui.st_labelllllll_06 = QLabel('<= 연간예상수익률 <=', self.ui.st_groupBoxxxx_01)
         self.ui.st_labelllllll_07 = QLabel('<=   매매성능지수   <=', self.ui.st_groupBoxxxx_01)
-        self.ui.st_lineEditttt_01 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_02 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_03 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_04 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_05 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_06 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_07 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_08 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_09 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_10 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_11 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_12 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_13 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
-        self.ui.st_lineEditttt_14 = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
+        for i in range(14):
+            lineEdit = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
+            setattr(self.ui, f'st_lineEditttt_{i+1:02d}', lineEdit)
 
         self.ui.dialog_leverage = self.wc.setDialog('BINACE FUTURE LEVERAGE', parent=self.ui)
         self.ui.dialog_leverage.geometry().center()
@@ -284,21 +273,9 @@ class SetDialogEtc:
         self.ui.lv_labelllllll_03 = QLabel('<= 저가대비고가등락율  <', self.ui.lv_groupBoxxxx_02)
         self.ui.lv_labelllllll_04 = QLabel('<= 저가대비고가등락율  <', self.ui.lv_groupBoxxxx_02)
         self.ui.lv_labelllllll_05 = QLabel('<= 저가대비고가등락율  <', self.ui.lv_groupBoxxxx_02)
-        self.ui.lv_lineEditttt_02 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_03 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_04 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_05 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_06 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_07 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_08 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_09 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_10 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_11 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_12 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_13 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_14 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_15 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
-        self.ui.lv_lineEditttt_16 = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
+        for i in range(15):
+            lineEdit = self.wc.setLineedit(self.ui.lv_groupBoxxxx_02, style=style_bc_dk)
+            setattr(self.ui, f'lv_lineEditttt_{i+2:02d}', lineEdit)
 
         self.ui.lv_checkbox_listt = [self.ui.lv_checkBoxxxx_01, self.ui.lv_checkBoxxxx_02]
 
@@ -308,32 +285,15 @@ class SetDialogEtc:
         self.ui.set_pushButton_02 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_setsj, click=lambda: setting_stock_elapsed_tick_number_load(self.ui))
         self.ui.set_pushButton_03 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_setsj, click=lambda: setting_stock_elapsed_tick_number_save(self.ui))
         self.ui.set_groupBoxxx_01 = QGroupBox('', self.ui.dialog_setsj)
-        text = """
-    ▣ 백테 및 전략연산에서 사용할 경과틱수('조건명')을 설정한다. 경과틱수는 작성한 조건을 만족한 이후 경과한 틱수이며
-    경과틱수 괄호안에 조건명을 넣어서 사용합니다. 조건은 전략탭에서 사용하는 전략(매도팩터제외)과 문법이 동일합니다.
-    예제에서 사용한 조건명 이평60데드는 경과틱수('이평60데드') 형태로 사용합니다. 반드시 조건명에 따옴표를 붙여야합니다."""
+        text = '''
+        ▣ 백테 및 전략연산에서 사용할 경과틱수('조건명')을 설정한다. 경과틱수는 작성한 조건을 만족한 이후 경과한 틱수이며
+        경과틱수 괄호안에 조건명을 넣어서 사용합니다. 조건은 전략탭에서 사용하는 전략(매도팩터제외)과 문법이 동일합니다.
+        예제에서 사용한 조건명 이평60데드는 경과틱수('이평60데드') 형태로 사용합니다. 반드시 조건명에 따옴표를 붙여야합니다.'''
         self.ui.set_labellllll_01 = QLabel(text, self.ui.set_groupBoxxx_01)
         self.ui.set_labellllll_02 = QLabel('            조건명                        조건', self.ui.set_groupBoxxx_01)
-        self.ui.set_lineEdittt_01 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_02 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_03 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_04 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_05 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_06 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_07 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_08 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_09 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_10 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_11 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_12 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_13 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_14 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_15 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_16 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_17 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_18 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_19 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.set_lineEdittt_20 = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
+        for i in range(20):
+            lineEdit = self.wc.setLineedit(self.ui.set_groupBoxxx_01, aleft=True, style=style_bc_dk)
+            setattr(self.ui, f'set_lineEdittt_{i+1:02d}', lineEdit)
 
         self.ui.scn_lineedit_list = [
             self.ui.set_lineEdittt_01, self.ui.set_lineEdittt_02, self.ui.set_lineEdittt_03, self.ui.set_lineEdittt_04,
@@ -353,32 +313,15 @@ class SetDialogEtc:
         self.ui.cet_pushButton_02 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_cetsj, click=lambda: setting_coin_elapsed_tick_number_load(self.ui))
         self.ui.cet_pushButton_03 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_cetsj, click=lambda: setting_coin_elapsed_tick_number_save(self.ui))
         self.ui.cet_groupBoxxx_01 = QGroupBox('', self.ui.dialog_cetsj)
-        text = """
-    ▣ 백테 및 전략연산에서 사용할 "경과틱수('조건명')"를 설정한다. 경과틱수는 작성한 조건을 만족한 이후 경과한 틱수이며
-    경과틱수 괄호안에 조건명을 넣어서 사용합니다. 조건은 전략탭에서 사용하는 전략(잔고종목변수제외)과 문법이 동일합니다.
-    예제에서 사용한 조건명 이평60데드는 경과틱수('이평60데드') 형태로 사용합니다. 반드시 조건명에 따옴표를 붙여야합니다."""
+        text = '''
+        ▣ 백테 및 전략연산에서 사용할 "경과틱수('조건명')"를 설정한다. 경과틱수는 작성한 조건을 만족한 이후 경과한 틱수이며
+        경과틱수 괄호안에 조건명을 넣어서 사용합니다. 조건은 전략탭에서 사용하는 전략(잔고종목변수제외)과 문법이 동일합니다.
+        예제에서 사용한 조건명 이평60데드는 경과틱수('이평60데드') 형태로 사용합니다. 반드시 조건명에 따옴표를 붙여야합니다.'''
         self.ui.cet_labellllll_01 = QLabel(text, self.ui.cet_groupBoxxx_01)
         self.ui.cet_labellllll_02 = QLabel('              조건명                                 조건', self.ui.cet_groupBoxxx_01)
-        self.ui.cet_lineEdittt_01 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_02 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_03 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_04 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_05 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_06 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_07 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_08 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_09 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_10 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_11 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_12 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_13 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_14 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_15 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_16 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_17 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_18 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_19 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
-        self.ui.cet_lineEdittt_20 = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
+        for i in range(20):
+            lineEdit = self.wc.setLineedit(self.ui.cet_groupBoxxx_01, aleft=True, style=style_bc_dk)
+            setattr(self.ui, f'cet_lineEdittt_{i+1:02d}', lineEdit)
 
         self.ui.ccn_lineedit_list = [
             self.ui.cet_lineEdittt_01, self.ui.cet_lineEdittt_02, self.ui.cet_lineEdittt_03, self.ui.cet_lineEdittt_04,

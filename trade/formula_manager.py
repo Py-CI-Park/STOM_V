@@ -7,7 +7,7 @@ try:
 except:
     pass
 from utility.static import dt_ymdhms
-from trade.strategy_base import StrategyBase
+from trade.base_strategy import BaseStrategy
 from utility.setting_base import list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, list_future_tick2, \
     list_future_min2, DB_STRATEGY
 
@@ -60,7 +60,7 @@ def get_formula_data(forchart, col_idx):
     return fm_list, dict_fm, fm_tcnt
 
 
-class FormulaManager(StrategyBase):
+class FormulaManager(BaseStrategy):
     def __init__(self, fm_list):
         super().__init__()
         self.fm_list   = fm_list

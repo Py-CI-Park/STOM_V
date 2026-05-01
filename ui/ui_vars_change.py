@@ -8,7 +8,8 @@ from ui.set_text import buy_signal, sell_signal, future_buy_signal, future_sell_
 @error_decorator
 def get_fix_strategy(ui, strategy, gubun):
     if gubun == '매수':
-        if '키움증권' in ui.dict_set['증권사'] or ui.dict_set['거래소'] == '업비트':
+        if (ui.main_btn == 3 and '키움증권' in ui.dict_set['증권사']) or \
+                (ui.main_btn == 4 and ui.dict_set['거래소'] == '업비트'):
             if '\nif 매수:' in strategy:
                 strategy = strategy.split('\nif 매수:')[0] + buy_signal
             elif 'self.tickdata' not in strategy and buy_signal not in strategy:
@@ -19,7 +20,8 @@ def get_fix_strategy(ui, strategy, gubun):
             elif 'self.tickdata' not in strategy and future_buy_signal not in strategy:
                 strategy += '\n' + future_buy_signal
     else:
-        if '키움증권' in ui.dict_set['증권사'] or ui.dict_set['거래소'] == '업비트':
+        if (ui.main_btn == 3 and '키움증권' in ui.dict_set['증권사']) or \
+                (ui.main_btn == 4 and ui.dict_set['거래소'] == '업비트'):
             if '\nif 매도:' in strategy:
                 strategy = strategy.split('\nif 매도:')[0] + sell_signal
             elif 'self.tickdata' not in strategy and sell_signal not in strategy:
@@ -93,179 +95,75 @@ def get_gavars_to_optivars(ui, ga_vars_text):
     return opti_vars_text[:-1]
 
 
+def convert_varstext(cnt, stg_text):
+    convert_text = ''
+    for text in stg_text:
+        convert_text += text
+        if convert_text[-2:] == '변수':
+            convert_text = f'{convert_text[:-2]}self.vars[{cnt}]'
+            cnt += 1
+    return cnt, convert_text
+
+
 @error_decorator
 def get_stgtxt_to_varstxt(ui, buystg, sellstg):
     cnt = 1
-    sellstg_str, buystg_str = '', ''
     if ui.focusWidget() == ui.svc_pushButton_24:
         if buystg and '변수' in buystg:
-            for text in buystg:
-                buystg_str += text
-                if buystg_str[-2:] == '변수':
-                    buystg_str = f'{buystg_str[:-2]}self.vars[{cnt}]'
-                    cnt += 1
+            cnt, buystg = convert_varstext(cnt, buystg)
         if sellstg and '변수' in sellstg:
-            for text in sellstg:
-                sellstg_str += text
-                if sellstg_str[-2:] == '변수':
-                    sellstg_str = f'{sellstg_str[:-2]}self.vars[{cnt}]'
-                    cnt += 1
+            _, sellstg = convert_varstext(cnt, sellstg)
     else:
         if sellstg and '변수' in sellstg:
-            for text in sellstg:
-                sellstg_str += text
-                if sellstg_str[-2:] == '변수':
-                    sellstg_str = f'{sellstg_str[:-2]}self.vars[{cnt}]'
-                    cnt += 1
+            cnt, sellstg = convert_varstext(cnt, sellstg)
         if buystg and '변수' in buystg:
-            for text in buystg:
-                buystg_str += text
-                if buystg_str[-2:] == '변수':
-                    buystg_str = f'{buystg_str[:-2]}self.vars[{cnt}]'
+            _, buystg = convert_varstext(cnt, buystg)
+    return buystg, sellstg
+
+
+def sort_varstext(cnt, stg_text):
+    sort_text = ''
+    for line in stg_text.split('\n'):
+        if 'self.vars' in line and line[0] != '#':
+            str_pass = False
+            for text in line:
+                if str_pass:
+                    if text == ']':
+                        str_pass = False
+                    else:
+                        continue
+                else:
+                    sort_text += text
+
+                if sort_text[-5:] == 'vars[':
+                    sort_text += f'{cnt}]'
+                    str_pass = True
                     cnt += 1
+            sort_text += '\n'
+        else:
+            sort_text += line + '\n'
+    return cnt, sort_text[:-1]
 
-    return buystg_str, sellstg_str
 
-
-# noinspection PyUnusedLocal
 @error_decorator
-def get_stgtxt_sort(ui, buystg, sellstg):
-    buystg_str, sellstg_str = '', ''
+def get_stgtxt_sort(buystg, sellstg):
     if buystg and sellstg and 'self.vars' in buystg and 'self.vars' in sellstg:
         buy_num = int(buystg.split('self.vars[')[1].split(']')[0])
         sell_num = int(sellstg.split('self.vars[')[1].split(']')[0])
         cnt = 1
-        buystg = buystg.split('\n')
-        sellstg = sellstg.split('\n')
         if buy_num < sell_num:
-            for line in buystg:
-                if 'self.vars' in line and line[0] != '#':
-                    str_pass = False
-                    for text in line:
-                        if str_pass:
-                            if text == ']':
-                                str_pass = False
-                            else:
-                                continue
-                        else:
-                            buystg_str += text
-
-                        if buystg_str[-5:] == 'vars[':
-                            buystg_str += f'{cnt}]'
-                            str_pass = True
-                            cnt += 1
-                    buystg_str += '\n'
-                else:
-                    buystg_str += line + '\n'
-            for line in sellstg:
-                if 'self.vars' in line and line[0] != '#':
-                    str_pass = False
-                    for text in line:
-                        if str_pass:
-                            if text == ']':
-                                str_pass = False
-                            else:
-                                continue
-                        else:
-                            sellstg_str += text
-
-                        if sellstg_str[-5:] == 'vars[':
-                            sellstg_str += f'{cnt}]'
-                            str_pass = True
-                            cnt += 1
-                    sellstg_str += '\n'
-                else:
-                    sellstg_str += line + '\n'
+            cnt, buystg = sort_varstext(cnt, buystg)
+            _, sellstg = sort_varstext(cnt, sellstg)
         else:
-            for line in sellstg:
-                if 'self.vars' in line and line[0] != '#':
-                    str_pass = False
-                    for text in line:
-                        if str_pass:
-                            if text == ']':
-                                str_pass = False
-                            else:
-                                continue
-                        else:
-                            sellstg_str += text
-
-                        if sellstg_str[-5:] == 'vars[':
-                            sellstg_str += f'{cnt}]'
-                            str_pass = True
-                            cnt += 1
-                    sellstg_str += '\n'
-                else:
-                    sellstg_str += line + '\n'
-            for line in buystg:
-                if 'self.vars' in line and line[0] != '#':
-                    str_pass = False
-                    for text in line:
-                        if str_pass:
-                            if text == ']':
-                                str_pass = False
-                            else:
-                                continue
-                        else:
-                            buystg_str += text
-
-                        if buystg_str[-5:] == 'vars[':
-                            buystg_str += f'{cnt}]'
-                            str_pass = True
-                            cnt += 1
-                    buystg_str += '\n'
-                else:
-                    buystg_str += line + '\n'
-
-    return buystg_str[:-1], sellstg_str[:-1]
+            cnt, sellstg = sort_varstext(cnt, sellstg)
+            _, buystg = sort_varstext(cnt, buystg)
+    return buystg, sellstg
 
 
-# noinspection PyUnusedLocal
 @error_decorator
-def get_stgtxt_sort2(ui, optivars, gavars):
-    optivars_str, gavars_str = '', ''
+def get_stgtxt_sort2(optivars, gavars):
     if optivars and 'self.vars' in optivars:
-        cnt = 0
-        optivars = optivars.split('\n')
-        for line in optivars:
-            if 'self.vars' in line and line[0] != '#':
-                str_pass = False
-                for text in line:
-                    if str_pass:
-                        if text == ']':
-                            str_pass = False
-                        else:
-                            continue
-                    else:
-                        optivars_str += text
-
-                    if optivars_str[-5:] == 'vars[':
-                        optivars_str += f'{cnt}]'
-                        str_pass = True
-                        cnt += 1
-                optivars_str += '\n'
-            else:
-                optivars_str += line + '\n'
+        _, optivars = sort_varstext(0, optivars)
     if gavars and 'self.vars' in gavars:
-        cnt = 0
-        gavars = gavars.split('\n')
-        for line in gavars:
-            if 'self.vars' in line and line[0] != '#':
-                str_pass = False
-                for text in line:
-                    if str_pass:
-                        if text == ']':
-                            str_pass = False
-                        else:
-                            continue
-                    else:
-                        gavars_str += text
-
-                    if gavars_str[-5:] == 'vars[':
-                        gavars_str += f'{cnt}]'
-                        str_pass = True
-                        cnt += 1
-                gavars_str += '\n'
-            else:
-                gavars_str += line + '\n'
-
-    return optivars_str[:-1], gavars_str[:-1]
+        _, gavars = sort_varstext(0, gavars)
+    return optivars, gavars

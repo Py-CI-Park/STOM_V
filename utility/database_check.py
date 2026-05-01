@@ -114,7 +114,7 @@ def database_check():
                 "index", "블랙리스트추가", "백테주문관리적용", "백테매수시간기준", "백테일괄로딩", "그래프저장하지않기", "그래프띄우지않기",
                 "디비자동관리", "교차검증가중치", "기준값최소상승률", "백테스케쥴실행", "백테스케쥴요일", "백테스케쥴시간", "백테스케쥴구분",
                 "백테스케쥴명", "백테날짜고정", "백테날짜", "최적화기준값제한", "백테엔진분류방법", "옵튜나샘플러", "옵튜나고정변수",
-                "옵튜나실행횟수", "옵튜나자동스탭", "범위자동관리", "보조지표설정", "백테스트로그기록안함", "시장미시구조분석", "시장리스크분석"
+                "옵튜나실행횟수", "옵튜나자동스탭", "범위자동관리", "보조지표설정", "백테스트로그기록안함", "시장미시구조분석", '시장리스크분석'
             ]
             data = [0, 0, 0, 0, 1, 0, 0, 1, 1, 2, 0, 4, 160000, '', '', 1, '20220323',
                     '0.0;1000.0;0;100.0;0.0;100.0;-10.0;10.0;0.0;1000.0;-10000.0;10000.0;0.0;100.0',
@@ -390,13 +390,20 @@ def database_check():
 
         if 'c_jangolist_future' not in table_list:
             query = 'CREATE TABLE "c_jangolist_future" ( "index" TEXT, "종목명" TEXT, "포지션" TEXT, "매수가" REAL, "현재가" REAL, "수익률" REAL, ' \
-                    '"평가손익" INTEGER, "매입금액" INTEGER, "평가금액" INTEGER, "보유수량" REAL, "레버리지" INTEGER, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT )'
+                    '"평가손익" INTEGER, "매입금액" INTEGER, "평가금액" INTEGER, "보유수량" REAL, "분할매수횟수" INTEGER, "분할매도횟수" INTEGER, "매수시간" TEXT, "레버리지" INTEGER )'
             cur.execute(query)
             cur.execute('CREATE INDEX "ix_c_jangolist_future_index"ON "c_jangolist_future" ("index")')
         else:
             df = pd.read_sql('SELECT * FROM c_jangolist_future', con).set_index('index')
+            update = False
             if '매입가' in df.columns:
                 df.rename(columns={'매입가': '매수가'}, inplace=True)
+                update = True
+            if list(df.columns).index('레버리지') != 12:
+                columns = ['종목명', '포지션', '매수가', '현재가', '수익률', '평가손익', '매입금액', '평가금액', '보유수량', '분할매수횟수', '분할매도횟수', '매수시간', '레버리지']
+                df = df[columns]
+                update = True
+            if update:
                 df.to_sql('c_jangolist_future', con, if_exists='replace')
 
         if 'c_totaltradelist' not in table_list:

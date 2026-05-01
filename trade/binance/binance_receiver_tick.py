@@ -48,16 +48,16 @@ class BinanceReceiverTick:
         self.cstgQ       = qlist[10]
         self.dict_set    = dict_set
 
+        self.dict_dtdm: dict[str, list]        = {}
+        self.dict_data: dict[str, list]        = {}
+        self.dict_money: dict[str, list]       = {}
+        self.dict_bmbyp: dict[str, np.ndarray] = {}
+        self.dict_smbyp: dict[str, np.ndarray] = {}
+        self.dict_index: dict[str, dict]       = {}
+        self.dict_dlhp: dict[str, list]        = {}
+
         self.dict_daym   = {}
         self.dict_prec   = {}
-        self.dict_dlhp   = {}
-
-        self.dict_dtdm   = {}
-        self.dict_data   = {}
-        self.dict_money  = {}
-        self.dict_bmbyp  = {}
-        self.dict_smbyp  = {}
-        self.dict_index  = {}
         self.dict_mtop   = {}
         self.dict_jgdt   = {}
 
@@ -232,7 +232,6 @@ class BinanceReceiverTick:
                 self.list_hgdt[0] = dt
                 self.list_hgdt[2:4] = [0, 0]
 
-    # noinspection PyUnresolvedReferences
     def UpdateHogaData(self, data):
         try:
             data = data['data']

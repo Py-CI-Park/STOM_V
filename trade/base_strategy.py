@@ -10,7 +10,7 @@ except:
 from utility.static import dt_ymdhms, dt_ymdhm
 
 
-class StrategyBase:
+class BaseStrategy:
     def __init__(self):
         self.code             = None
         self.name             = None

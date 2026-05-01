@@ -38,7 +38,7 @@
 
 ```
 STOM/
-├── stom.py                             # 메인 실행 파일
+├── stom.bat                            # 메인 실행 파일
 ├── stom_stock.bat                      # 국내주식 모드 실행
 ├── stom_coin.bat                       # 코인 모드 실행
 ├── stom_future.bat                     # 해외선물 모드 실행
@@ -54,7 +54,7 @@ STOM/
 │   └── graph/                          # 백테스트 결과 그래프 저장
 │
 ├── trade/                              # 실시간 트레이딩 모듈
-│   ├── strategy_base.py                # 전략 기반 클래스 (230개+ 템플릿)
+│   ├── base_strategy.py                # 전략 기반 클래스 (230개+ 템플릿)
 │   ├── formula_manager.py              # 사용자 팩터, 수식관리자
 │   ├── risk_analyzer.py                # 리스크 분석
 │   ├── microstructure_analyzer.py      # 시장미시구조 분석
@@ -86,7 +86,7 @@ STOM/
 |:----------:|:---------------------------------------|
 | **데이터 처리** | numpy, pandas, numba, talib            |
 | **UI/시각화** | PyQt5, pyqtgraph, matplotlib, squarify |
-| **거래소 연동** | python-binance, pyupbit, websockets    |
+| **거래소 연동** | python-binance, websockets             |
 |  **최적화**   | optuna, cmaes                          |
 | **통신/알림**  | zmq, pyttsx3, python-telegram-bot      |
 |   **기타**   | cryptography, pillow,                  |
