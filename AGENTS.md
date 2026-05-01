@@ -2,7 +2,7 @@
 
 ## Branch Role
 
-This checkout is the active single-baseline lane after the CLI_v267 promotion.
+This checkout is the active `STOM_Version_2U_C` lane for the current official V2 update wave.
 
 Current execution state:
 
@@ -12,7 +12,7 @@ Current execution state:
 Active propagation chain:
 
 ```text
-V2 -> 2U -> 2U_C -> research/init
+V2 -> 2U -> 2U_C
 ```
 
 ## Worktree Layout
@@ -25,7 +25,6 @@ C:/System_Trading/STOM/
 ├── STOM_V.wt-2u/ -> STOM_Version_2U
 ├── STOM_V.wt-2uc/-> integration/adopt-cli-v267-into-2uc
 ├── STOM_V.wt-dev/-> STOM_Version_2U_C
-└── STOM_V.wt-lab/-> research/init
 ```
 
 - `STOM_Version_2U_C` must be checked out only in `STOM_V.wt-dev/` while this layout is active.
@@ -49,8 +48,10 @@ Do not add serial-key code in this branch family.
 Current live sync flow:
 
 ```text
-V2 -> 2U -> STOM_Version_2U_C -> research/init
+V2 -> 2U -> STOM_Version_2U_C
 ```
+
+`research/init` and V3 work are excluded from the current V2.78/V2.79 wave.
 
 ## Verification Rules
 
