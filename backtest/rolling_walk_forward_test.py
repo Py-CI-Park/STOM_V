@@ -10,8 +10,8 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.back_static_numba import GetResult, bootstrap_test
-from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, AddMdd
 from utility.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
+from backtest.back_static import SendResult, GetMoneytopQuery, PlotShow, GetResultDataframe, AddMdd
 from utility.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, \
     DB_OPTUNA, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_MIN_BACK, DB_FUTURE_TICK_BACK
 
@@ -398,7 +398,7 @@ class RollingWalkForwardTest:
         optuna_fixvars = []
         if data[20]:
             try:
-                optuna_fixvars  = [int(x.strip()) for x in data[22].split(',')]
+                optuna_fixvars = [int(x.strip()) for x in data[20].split(',')]
             except:
                 self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '고정할 범위의 번호를 잘못입력하였습니다.'))
                 self.SysExit(True)

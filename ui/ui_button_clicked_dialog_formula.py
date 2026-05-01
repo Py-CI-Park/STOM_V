@@ -170,21 +170,24 @@ self.line = 최고현재가(60)
 # self.line 에는 표시할 선의 값을 입력
 high_price = 최고현재가(30)
 low_price = 최저현재가(30)
-self.check = (high_price / low_price - 1) * 100 >= 2
-self.line = (high_price + low_price) / 2
+if low_price > 0:
+    self.check = (high_price / low_price - 1) * 100 >= 2
+    self.line = (high_price + low_price) / 2
 
 # 범위, 이동평균위
 # self.up 에는 표시할 범위의 상한선
 # self.down 에는 표시할 범위의 하한선
 이평60 = 이동평균(60)
-self.check = 현재가 > 이평60 and 이평60 > 0
-self.up = 현재가
-self.down = 이평60
+if 이평60 > 0:
+    self.check = 현재가 > 이평60
+    self.up = 현재가
+    self.down = 이평60
 
 # 화살표:일반, 호가상승압력
 # self.check 에 표시할 화살표의 발생 조건 입력
 총잔량 = 매수총잔량 + 매도총잔량
-self.check = 매수총잔량 / 총잔량 > 0.7
+if 총잔량 > 0:
+    self.check = 매수총잔량 / 총잔량 > 0.7
 
 # 화살표:매매, 이평돌파 및 이탈 매매
 # self.buy 에는 매수조건 입력

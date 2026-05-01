@@ -194,6 +194,9 @@ class FutureStrategyTick(StrategyBase):
             self.sellstrategy = compile(data, '<string>', 'exec')
         elif gubun == '차트종목코드':
             self.chart_code = data
+            cached_chart = self.dict_data.get(data)
+            if cached_chart is not None and len(cached_chart) >= self.dict_set['주식평균값계산틱수']:
+                self.mgzservQ.put(('window', (ui_num['실시간차트'], data, cached_chart)))
         elif gubun == '설정변경':
             self.dict_set = data
             self.UpdateStringategy()

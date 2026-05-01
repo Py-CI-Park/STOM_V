@@ -9,8 +9,7 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
 from ui.set_icon import SetIcon
 from ui.set_table import SetTable
 from ui.set_log_tap import SetLogTap
-from ui.set_stg_coin_tap import SetCoinBack
-from ui.set_stg_stock_tap import SetStockBack
+from ui.set_stg_unified_tap import SetStrategyTab
 from ui.set_widget import WidgetCreater
 from ui.set_setup_tap import SetSetupTap
 from ui.set_order_tap import SetOrderTap
@@ -25,8 +24,7 @@ from ui.set_style import dict_set
 from ui.ui_etc import *
 from ui.ui_draw_chart_db import *
 from ui.ui_activated_back import *
-from ui.ui_activated_coin_stg import *
-from ui.ui_activated_stock_stg import *
+from ui.ui_activated_stg import *
 from ui.ui_show_dialog import *
 from ui.ui_vars_change import *
 from ui.ui_draw_treemap import *
@@ -367,8 +365,8 @@ class MainWindow(QMainWindow):
         SetIcon(self)
         SetMainMenu(self, self.wc)
         SetTable(self, self.wc)
-        SetStockBack(self, self.wc)
-        SetCoinBack(self, self.wc)
+        SetStrategyTab(self, self.wc, 'stock')
+        SetStrategyTab(self, self.wc, 'coin')
         SetLogTap(self, self.wc)
         SetSetupTap(self, self.wc)
         SetOrderTap(self, self.wc)
@@ -526,7 +524,7 @@ class MainWindow(QMainWindow):
             detail = ' | '.join([f'{x[0]}:{"OK" if x[1] else "FAIL"}' for x in checked]) if checked else 'no-candidate'
             text = f'키움매니저 실행 실패 - KHOPENAPI 호환 인터프리터를 찾지 못했습니다. [{detail}]'
             self.logger.error(text)
-            self.windowQ.put((ui_num['S단순텍스트'], text))
+            self.windowQ.put((ui_num['시스템로그'], text))
         else:
             self.logger.info(f'키움매니저 실행 인터프리터 선택 [{pyexe}]')
             self.proc_manager = subprocess.Popen([pyexe, './trade/stock_korea/kiwoom_manager.py', str(self.port_num)])

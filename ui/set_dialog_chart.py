@@ -1,6 +1,5 @@
 
 import pyqtgraph as pg
-
 from ui.ui_etc import chart_screenshot2
 from ui.set_widget import error_decorator
 from utility.setting_base import indi_base
@@ -128,53 +127,72 @@ class SetDialogChart:
             checkbox_choice = []
 
         if len(checkbox_choice) < 43: checkbox_choice = [1] * 43
-        self.ui.ft_checkBoxxxxx_01 = self.wc.setCheckBox('현재가', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[0] else False, changed=lambda state: checkbox_changed_10(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_02 = self.wc.setCheckBox('분당거래대금' if is_min else '초당거래대금', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[1] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_03 = self.wc.setCheckBox('분당매도수금액' if is_min else '초당매도수금액', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[2] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_04 = self.wc.setCheckBox('당일매도수금액', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[3] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_05 = self.wc.setCheckBox('최고매도수금액', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[4] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_06 = self.wc.setCheckBox('최고매도수가격', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[5] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
 
-        self.ui.ft_checkBoxxxxx_07 = self.wc.setCheckBox('체결강도', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[6] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_08 = self.wc.setCheckBox('분당체결수량' if is_min else '초당체결수량', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[7] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_09 = self.wc.setCheckBox('등락율', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[8] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_10 = self.wc.setCheckBox('고저평균대비등락율', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[9] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_11 = self.wc.setCheckBox('저가대비고가등락율', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[10] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_12 = self.wc.setCheckBox('호가총잔량', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[11] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
+        # 체크박스 데이터 정의 (텍스트, 변경 핸들러 인덱스)
+        checkbox_data = [
+            ('현재가', 10),
+            ('분당거래대금' if is_min else '초당거래대금', 18),
+            ('분당매도수금액' if is_min else '초당매도수금액', 18),
+            ('당일매도수금액', 18),
+            ('최고매도수금액', 18),
+            ('최고매도수가격', 18),
+            ('체결강도', 18),
+            ('분당체결수량' if is_min else '초당체결수량', 18),
+            ('등락율', 18),
+            ('고저평균대비등락율', 18),
+            ('저가대비고가등락율', 18),
+            ('호가총잔량', 18),
+            ('매도수호가잔량1', 18),
+            ('매도수5호가잔량합', 18),
+            ('당일거래대금', 18),
+            ('누적분당매도수수량' if is_min else '누적초당매도수수량', 18),
+            ('등락율각도', 18),
+            ('당일거래대금각도', 18),
+            ('거래대금증감', 18),
+            ('전일비', 18),
+            ('회전율', 18),
+            ('전일동시간비', 18),
+            ('전일비각도', 18),
+            ('AD', 18),
+            ('ADOSC', 18),
+            ('ADXR', 18),
+            ('APO', 18),
+            ('AROON', 18),
+            ('ATR', 18),
+            ('BBAND', 18),
+            ('CCI', 18),
+            ('DMI', 18),
+            ('MACD', 18),
+            ('MFI', 18),
+            ('MOM', 18),
+            ('OBV', 18),
+            ('PPO', 18),
+            ('ROC', 18),
+            ('RSI', 18),
+            ('SAR', 18),
+            ('STOCHS', 18),
+            ('STOCHF', 18),
+            ('WILLR', 18),
+        ]
 
-        self.ui.ft_checkBoxxxxx_13 = self.wc.setCheckBox('매도수호가잔량1', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[12] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_14 = self.wc.setCheckBox('매도수5호가잔량합', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[13] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_15 = self.wc.setCheckBox('당일거래대금', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[14] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_16 = self.wc.setCheckBox('누적분당매도수수량' if is_min else '누적초당매도수수량', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[15] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_17 = self.wc.setCheckBox('등락율각도', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[16] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_18 = self.wc.setCheckBox('당일거래대금각도', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[17] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-
-        self.ui.ft_checkBoxxxxx_19 = self.wc.setCheckBox('거래대금증감', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[18] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_20 = self.wc.setCheckBox('전일비', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[19] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_21 = self.wc.setCheckBox('회전율', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[20] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_22 = self.wc.setCheckBox('전일동시간비', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[21] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_23 = self.wc.setCheckBox('전일비각도', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[22] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-
-        self.ui.ft_checkBoxxxxx_24 = self.wc.setCheckBox('AD',     self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[23] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_25 = self.wc.setCheckBox('ADOSC',  self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[24] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_26 = self.wc.setCheckBox('ADXR',   self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[25] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_27 = self.wc.setCheckBox('APO',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[26] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_28 = self.wc.setCheckBox('AROON',  self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[27] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_29 = self.wc.setCheckBox('ATR',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[28] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_30 = self.wc.setCheckBox('BBAND',  self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[29] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_31 = self.wc.setCheckBox('CCI',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[30] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_32 = self.wc.setCheckBox('DMI',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[31] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_33 = self.wc.setCheckBox('MACD',   self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[32] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_34 = self.wc.setCheckBox('MFI',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[33] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_35 = self.wc.setCheckBox('MOM',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[34] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_36 = self.wc.setCheckBox('OBV',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[35] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_37 = self.wc.setCheckBox('PPO',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[36] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_38 = self.wc.setCheckBox('ROC',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[37] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_39 = self.wc.setCheckBox('RSI',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[38] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_40 = self.wc.setCheckBox('SAR',    self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[39] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_41 = self.wc.setCheckBox('STOCHS', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[40] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_42 = self.wc.setCheckBox('STOCHF', self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[41] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
-        self.ui.ft_checkBoxxxxx_43 = self.wc.setCheckBox('WILLR',  self.ui.jp_groupBoxxxxx_01, checked=True if checkbox_choice[42] else False, changed=lambda state: checkbox_changed_18(self.ui, state), style=style_ck_bx)
+        self.ui.factor_checkbox_list = []
+        for i, (text, handler_idx) in enumerate(checkbox_data, 1):
+            if i == 1:
+                checkbox = self.wc.setCheckBox(
+                    text, self.ui.jp_groupBoxxxxx_01,
+                    checked=True if checkbox_choice[i-1] else False,
+                    changed=lambda state: checkbox_changed_10(self.ui, state),
+                    style=style_ck_bx
+                )
+            else:
+                checkbox = self.wc.setCheckBox(
+                    text, self.ui.jp_groupBoxxxxx_01,
+                    checked=True if checkbox_choice[i-1] else False,
+                    changed=lambda state: checkbox_changed_18(self.ui, state),
+                    style=style_ck_bx
+                )
+            setattr(self.ui, f'ft_checkBoxxxxx_{i:02d}', checkbox)
+            self.ui.factor_checkbox_list.append(checkbox)
 
         self.ui.ft_labellllllll_01 = QLabel('fastperiod',   self.ui.jp_groupBoxxxxx_01)
         self.ui.ft_labellllllll_02 = QLabel('timeperiod',   self.ui.jp_groupBoxxxxx_01)
@@ -217,42 +235,19 @@ class SetDialogChart:
         self.ui.ft_labellllllll_96 = QLabel('slowd_matype', self.ui.jp_groupBoxxxxx_01)
 
         k = [str(x) for x in list(indi_base.values())]
-        self.ui.ft_lineEdittttt_01 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[0], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_02 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[1], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_03 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[2], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_04 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[3], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_05 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[4], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_06 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[5], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_07 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[6], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_08 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[7], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_09 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[8], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_10 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[9], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_11 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[10], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_12 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[11], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_13 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[12], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_14 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[13], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_15 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[14], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_16 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[15], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_17 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[16], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_18 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[17], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_19 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[18], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_20 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[19], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_21 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[20], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_22 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[21], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_23 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[22], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_24 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[23], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_25 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[24], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_26 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[25], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_27 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[26], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_28 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[27], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_29 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[28], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_30 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[29], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_31 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[30], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_32 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[31], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_33 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[32], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_34 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[33], style=style_bc_dk)
-        self.ui.ft_lineEdittttt_35 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext=k[34], style=style_bc_dk)
 
+        # 35개 라인에딧 동적 생성
+        self.ui.factor_linedit_list = []
+        for i in range(1, 36):
+            lineedit = self.wc.setLineedit(
+                self.ui.jp_groupBoxxxxx_01,
+                ltext=k[i-1] if i <= len(k) else '',
+                style=style_bc_dk
+            )
+            setattr(self.ui, f'ft_lineEdittttt_{i:02d}', lineedit)
+            self.ui.factor_linedit_list.append(lineedit)
+
+        # 36, 37번 라인에딧 (빈 값)
         self.ui.ft_lineEdittttt_36 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, style=style_bc_dk)
         self.ui.ft_lineEdittttt_37 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, style=style_bc_dk)
 
@@ -261,32 +256,6 @@ class SetDialogChart:
         self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_basic(self.ui))
         self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_load(self.ui))
         self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_save(self.ui))
-
-        self.ui.factor_checkbox_list = [
-            self.ui.ft_checkBoxxxxx_01, self.ui.ft_checkBoxxxxx_02, self.ui.ft_checkBoxxxxx_03, self.ui.ft_checkBoxxxxx_04,
-            self.ui.ft_checkBoxxxxx_05, self.ui.ft_checkBoxxxxx_06, self.ui.ft_checkBoxxxxx_07, self.ui.ft_checkBoxxxxx_08,
-            self.ui.ft_checkBoxxxxx_09, self.ui.ft_checkBoxxxxx_10, self.ui.ft_checkBoxxxxx_11, self.ui.ft_checkBoxxxxx_12,
-            self.ui.ft_checkBoxxxxx_13, self.ui.ft_checkBoxxxxx_14, self.ui.ft_checkBoxxxxx_15, self.ui.ft_checkBoxxxxx_16,
-            self.ui.ft_checkBoxxxxx_17, self.ui.ft_checkBoxxxxx_18, self.ui.ft_checkBoxxxxx_19, self.ui.ft_checkBoxxxxx_20,
-            self.ui.ft_checkBoxxxxx_21, self.ui.ft_checkBoxxxxx_22, self.ui.ft_checkBoxxxxx_23, self.ui.ft_checkBoxxxxx_24,
-            self.ui.ft_checkBoxxxxx_25, self.ui.ft_checkBoxxxxx_26, self.ui.ft_checkBoxxxxx_27, self.ui.ft_checkBoxxxxx_28,
-            self.ui.ft_checkBoxxxxx_29, self.ui.ft_checkBoxxxxx_30, self.ui.ft_checkBoxxxxx_31, self.ui.ft_checkBoxxxxx_32,
-            self.ui.ft_checkBoxxxxx_33, self.ui.ft_checkBoxxxxx_34, self.ui.ft_checkBoxxxxx_35, self.ui.ft_checkBoxxxxx_36,
-            self.ui.ft_checkBoxxxxx_37, self.ui.ft_checkBoxxxxx_38, self.ui.ft_checkBoxxxxx_39, self.ui.ft_checkBoxxxxx_40,
-            self.ui.ft_checkBoxxxxx_41, self.ui.ft_checkBoxxxxx_42, self.ui.ft_checkBoxxxxx_43
-        ]
-
-        self.ui.factor_linedit_list = [
-            self.ui.ft_lineEdittttt_01, self.ui.ft_lineEdittttt_02, self.ui.ft_lineEdittttt_03, self.ui.ft_lineEdittttt_04,
-            self.ui.ft_lineEdittttt_05, self.ui.ft_lineEdittttt_06, self.ui.ft_lineEdittttt_07, self.ui.ft_lineEdittttt_08,
-            self.ui.ft_lineEdittttt_09, self.ui.ft_lineEdittttt_10, self.ui.ft_lineEdittttt_11, self.ui.ft_lineEdittttt_12,
-            self.ui.ft_lineEdittttt_13, self.ui.ft_lineEdittttt_14, self.ui.ft_lineEdittttt_15, self.ui.ft_lineEdittttt_16,
-            self.ui.ft_lineEdittttt_17, self.ui.ft_lineEdittttt_18, self.ui.ft_lineEdittttt_19, self.ui.ft_lineEdittttt_20,
-            self.ui.ft_lineEdittttt_21, self.ui.ft_lineEdittttt_22, self.ui.ft_lineEdittttt_23, self.ui.ft_lineEdittttt_24,
-            self.ui.ft_lineEdittttt_25, self.ui.ft_lineEdittttt_26, self.ui.ft_lineEdittttt_27, self.ui.ft_lineEdittttt_28,
-            self.ui.ft_lineEdittttt_29, self.ui.ft_lineEdittttt_30, self.ui.ft_lineEdittttt_31, self.ui.ft_lineEdittttt_32,
-            self.ui.ft_lineEdittttt_33, self.ui.ft_lineEdittttt_34, self.ui.ft_lineEdittttt_35
-        ]
 
         if self.ui.dict_set is not None:
             self.ui.dialog_chart.setFixedSize(1403, 1370 if not self.ui.dict_set['저해상도'] else 1010)
@@ -359,45 +328,13 @@ class SetDialogChart:
         self.ui.ft_checkBoxxxxx_22.setGeometry(430, 100, 120, 20)
         self.ui.ft_checkBoxxxxx_23.setGeometry(570, 100, 120, 20)
 
-        self.ui.ft_checkBoxxxxx_24.setGeometry(10, 125, 380, 20)
-        self.ui.ft_checkBoxxxxx_25.setGeometry(10, 150, 380, 20)
-        self.ui.ft_checkBoxxxxx_26.setGeometry(10, 175, 380, 20)
-        self.ui.ft_checkBoxxxxx_27.setGeometry(10, 200, 380, 20)
-        self.ui.ft_checkBoxxxxx_28.setGeometry(10, 225, 380, 20)
-        self.ui.ft_checkBoxxxxx_29.setGeometry(10, 250, 380, 20)
-        self.ui.ft_checkBoxxxxx_30.setGeometry(10, 275, 380, 20)
-        self.ui.ft_checkBoxxxxx_31.setGeometry(10, 300, 380, 20)
-        self.ui.ft_checkBoxxxxx_32.setGeometry(10, 325, 380, 20)
-        self.ui.ft_checkBoxxxxx_33.setGeometry(10, 350, 380, 20)
-        self.ui.ft_checkBoxxxxx_34.setGeometry(10, 375, 380, 20)
-        self.ui.ft_checkBoxxxxx_35.setGeometry(10, 400, 380, 20)
-        self.ui.ft_checkBoxxxxx_36.setGeometry(10, 425, 380, 20)
-        self.ui.ft_checkBoxxxxx_37.setGeometry(10, 450, 380, 20)
-        self.ui.ft_checkBoxxxxx_38.setGeometry(10, 475, 380, 20)
-        self.ui.ft_checkBoxxxxx_39.setGeometry(10, 500, 380, 20)
-        self.ui.ft_checkBoxxxxx_40.setGeometry(10, 525, 380, 20)
-        self.ui.ft_checkBoxxxxx_41.setGeometry(10, 550, 380, 20)
-        self.ui.ft_checkBoxxxxx_42.setGeometry(10, 575, 380, 20)
-        self.ui.ft_checkBoxxxxx_43.setGeometry(10, 600, 380, 20)
+        for i in range(20):
+            y = 125 + i * 25
+            getattr(self.ui, f'ft_checkBoxxxxx_{i+24}').setGeometry(10, y, 380, 20)
 
-        self.ui.ft_labellllllll_01.setGeometry(100, 150, 300, 20)
-        self.ui.ft_labellllllll_02.setGeometry(100, 175, 300, 20)
-        self.ui.ft_labellllllll_03.setGeometry(100, 200, 300, 20)
-        self.ui.ft_labellllllll_04.setGeometry(100, 225, 300, 20)
-        self.ui.ft_labellllllll_05.setGeometry(100, 250, 300, 20)
-        self.ui.ft_labellllllll_06.setGeometry(100, 275, 300, 20)
-        self.ui.ft_labellllllll_07.setGeometry(100, 300, 300, 20)
-        self.ui.ft_labellllllll_08.setGeometry(100, 325, 300, 20)
-        self.ui.ft_labellllllll_09.setGeometry(100, 350, 300, 20)
-        self.ui.ft_labellllllll_10.setGeometry(100, 375, 300, 20)
-        self.ui.ft_labellllllll_11.setGeometry(100, 425, 300, 20)
-        self.ui.ft_labellllllll_12.setGeometry(100, 450, 300, 20)
-        self.ui.ft_labellllllll_13.setGeometry(100, 475, 300, 20)
-        self.ui.ft_labellllllll_14.setGeometry(100, 500, 300, 20)
-        self.ui.ft_labellllllll_15.setGeometry(100, 525, 300, 20)
-        self.ui.ft_labellllllll_16.setGeometry(100, 550, 300, 20)
-        self.ui.ft_labellllllll_17.setGeometry(100, 575, 300, 20)
-        self.ui.ft_labellllllll_18.setGeometry(100, 600, 300, 20)
+        for i in range(18):
+            y = 150 + i * 25 if i < 10 else 175 + i * 25
+            getattr(self.ui, f'ft_labellllllll_{i+1:02d}').setGeometry(100, y, 300, 20)
 
         self.ui.ft_lineEdittttt_01.setGeometry(180, 150, 40, 20)
         self.ui.ft_lineEdittttt_03.setGeometry(180, 175, 40, 20)
