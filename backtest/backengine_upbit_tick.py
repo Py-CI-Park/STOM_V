@@ -82,7 +82,7 @@ class BackEngineUpbitTick(BackEngineBase):
                     보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
 
                     매수, 매도 = True, False
-                    if not self.curr_trade_info['보유중']:
+                    if not 보유중:
                         if not 관심종목: continue
                         exec(self.buystg)
                     else:
@@ -110,7 +110,7 @@ class BackEngineUpbitTick(BackEngineBase):
                     보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
 
                     매수, 매도 = True, False
-                    if not self.curr_trade_info['보유중']:
+                    if not 보유중:
                         if not 관심종목: continue
                         if self.back_type != '조건최적화':
                             exec(self.buystg)
@@ -138,7 +138,7 @@ class BackEngineUpbitTick(BackEngineBase):
             보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
 
             매수, 매도 = True, False
-            if not self.curr_trade_info['보유중']:
+            if not 보유중:
                 if not 관심종목: return
                 exec(self.buystg)
             else:

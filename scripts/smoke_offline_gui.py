@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import platform
 import sys
 import traceback
 from dataclasses import dataclass
@@ -14,6 +15,8 @@ from gui_contract_manifest import ContractItem, build_contract, contract_summary
 
 
 ROOT = Path.cwd()
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 
 class OfflineViolation(RuntimeError):
@@ -101,10 +104,79 @@ class DummyDatabaseReadOnly:
         return _method
 
 
+class SafeDict(dict):
+    def __missing__(self, key):
+        text = str(key)
+        if "테마" in text:
+            value = "다크레드"
+        elif "증권사" in text:
+            value = "키움증권"
+        elif "거래소" in text:
+            value = "업비트"
+        elif "종료시간" in text:
+            value = 153000 if "주식" in text else 235959
+        elif "시작시간" in text:
+            value = 90000 if "주식" in text else 0
+        elif "날짜" in text:
+            value = 1
+        elif "팩터선택" in text:
+            value = "0;1;2;3;4;5;6"
+        elif "창위치" in text:
+            value = None if text == "창위치" else False
+        elif "투자금" in text or "자금" in text:
+            value = 20.0
+        elif "타임프레임" in text:
+            value = True
+        else:
+            value = False
+        self[key] = value
+        return value
+
+
+def smoke_settings() -> SafeDict:
+    return SafeDict(
+        {
+            "테마": "다크레드",
+            "증권사": "키움증권",
+            "거래소": "업비트",
+            "주식에이전트": False,
+            "코인리시버": False,
+            "주식타임프레임": True,
+            "코인타임프레임": True,
+            "주식전략종료시간": 153000,
+            "코인전략종료시간": 235959,
+            "주식투자금": 20.0,
+            "코인투자금": 20.0,
+            "백테날짜고정": False,
+            "백테날짜": 1,
+            "창위치기억": False,
+            "창위치": None,
+            "저해상도": False,
+            "팩터선택": "0;1;2;3;4;5;6",
+        }
+    )
+
+
+class DummyDrawObject:
+    def __init__(self, *args, **kwargs) -> None:
+        pass
+
+    def __getattr__(self, name):
+        def _method(*args, **kwargs):
+            return None
+
+        return _method
+
+
 def configure_environment() -> None:
     os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
     os.environ.setdefault("QTWEBENGINE_DISABLE_SANDBOX", "1")
     os.environ.setdefault("QTWEBENGINE_CHROMIUM_FLAGS", "--no-sandbox --disable-gpu")
+    platform.uname()
+    platform.system()
+    from PyQt5.QtCore import QCoreApplication, Qt
+
+    QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts, True)
 
 
 def install_preimport_guards(guard: OfflineGuard) -> None:
@@ -116,11 +188,13 @@ def install_preimport_guards(guard: OfflineGuard) -> None:
     import zmq
     from PyQt5.QtCore import QThread
 
-    def blocked_socket(*args, **kwargs):
-        guard.violation("socket", "socket.socket")
+    class BlockedSocket(socket.socket):
+        def __new__(cls, *args, **kwargs):
+            guard.violation("socket", "socket.socket")
 
-    def blocked_popen(*args, **kwargs):
-        guard.violation("process", "subprocess.Popen")
+    class BlockedPopen(subprocess.Popen):
+        def __init__(self, *args, **kwargs):
+            guard.violation("process", "subprocess.Popen")
 
     def blocked_urlopen(*args, **kwargs):
         guard.violation("network", "urllib.request.urlopen")
@@ -152,8 +226,8 @@ def install_preimport_guards(guard: OfflineGuard) -> None:
         guard.record("mocked_qthread_start", self.__class__.__name__)
         return None
 
-    socket.socket = blocked_socket
-    subprocess.Popen = blocked_popen
+    socket.socket = BlockedSocket
+    subprocess.Popen = BlockedPopen
     urllib.request.urlopen = blocked_urlopen
     requests.sessions.Session.request = blocked_request
     zmq.Context = BlockedZmqContext
@@ -164,7 +238,7 @@ def install_preimport_guards(guard: OfflineGuard) -> None:
     import utility.static as static
 
     database_check.database_check = lambda: (True, "")
-    setting_user.load_settings = lambda: {"테마": "다크레드"}
+    setting_user.load_settings = smoke_settings
     static.read_key = lambda: guard.violation("credential", "utility.static.read_key")
 
     guard.record("guards_installed", "pre-import offline guards")
@@ -190,16 +264,21 @@ def patch_mainwindow_module(mw, guard: OfflineGuard) -> None:
     mw.resolve_stock_python = lambda: (None, [])
     mw.load_database = lambda ui: guard.record("mocked_database_load", "load_database")
     mw.DatabaseReadOnly = DummyDatabaseReadOnly
+    mw.DrawDBChart = DummyDrawObject
+    mw.DrawRealChart = DummyDrawObject
+    mw.DrawTremap = DummyDrawObject
+    mw.DrawHomeChart = DummyDrawObject
+    mw.MainWindow.closeEvent = lambda self, event: event.accept()
 
-    class SafeDict(dict):
-        def __missing__(self, key):
-            return False
+    class SmokeDialogChart:
+        def __init__(self, ui_class, wc):
+            self.ui = ui_class
+            self.wc = wc
+            self.ui.dialog_chart = self.wc.setDialog("STOM CHART")
 
-    mw.dict_set = SafeDict(getattr(mw, "dict_set", {}) or {})
-    mw.dict_set.setdefault("테마", "다크레드")
-    mw.dict_set.setdefault("창위치기억", False)
-    mw.dict_set.setdefault("창위치", None)
-    mw.dict_set.setdefault("코인리시버", False)
+    mw.SetDialogChart = SmokeDialogChart
+
+    mw.dict_set = smoke_settings()
     guard.record("mainwindow_patched", "runtime side-effect paths mocked")
 
 
@@ -295,7 +374,7 @@ def run_smoke(branch: str, version: str) -> dict[str, object]:
         app.processEvents()
     except Exception as exc:
         status = "failed"
-        error = "".join(traceback.format_exception_only(type(exc), exc)).strip()
+        error = "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)).strip()
         actions.append(ActionResult("main_launch", "launch", "MainWindow", "failed", error))
 
     failures = [action for action in actions if action.result in {"failed", "not_checked"}]
@@ -350,5 +429,7 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
-
+    exit_code = main()
+    sys.stdout.flush()
+    sys.stderr.flush()
+    os._exit(exit_code)

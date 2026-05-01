@@ -148,9 +148,9 @@ class SetDialogEtc:
 
         self.ui.od_groupBoxxxxx_01 = QGroupBox('', self.ui.dialog_order)
         self.ui.od_labellllllll_01 = QLabel('주문종목명', self.ui.od_groupBoxxxxx_01)
-        self.ui.od_comboBoxxxxx_01 = self.wc.setCombobox(self.ui.od_groupBoxxxxx_01, activated=lambda: ui_activated_etc.dactivated_03(self.ui))
+        self.ui.od_comboBoxxxxx_01 = self.wc.setCombobox(self.ui.od_groupBoxxxxx_01, hover=False, activated=lambda: ui_activated_etc.dactivated_03(self.ui))
         self.ui.od_labellllllll_02 = QLabel('주문유형', self.ui.od_groupBoxxxxx_01)
-        self.ui.od_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.od_groupBoxxxxx_01, items=['시장가', '지정가', '최유리지정가', '최우선지정가', '지정가IOC', '시장가IOC', '최유리IOC', '지정가FOK', '시장가FOK', '최유리FOK'])
+        self.ui.od_comboBoxxxxx_02 = self.wc.setCombobox(self.ui.od_groupBoxxxxx_01, hover=False, items=['시장가', '지정가', '최유리지정가', '최우선지정가', '지정가IOC', '시장가IOC', '최유리IOC', '지정가FOK', '시장가FOK', '최유리FOK'])
         self.ui.od_labellllllll_03 = QLabel('주문가격', self.ui.od_groupBoxxxxx_01)
         self.ui.od_lineEdittttt_01 = self.wc.setLineedit(self.ui.od_groupBoxxxxx_01, style=style_bc_dk, enter=lambda: text_changed_05(self.ui))
         self.ui.od_labellllllll_04 = QLabel('주문수량', self.ui.od_groupBoxxxxx_01)
@@ -526,14 +526,11 @@ class SetDialogEtc:
         self.ui.od_lineEdittttt_01.setGeometry(115, 80, 100, 30)
         self.ui.od_labellllllll_04.setGeometry(10, 115, 100, 30)
         self.ui.od_lineEdittttt_02.setGeometry(115, 115, 100, 30)
-        self.ui.od_pushButtonnn_01.setGeometry(10, 150, 100, 30)
-        self.ui.od_pushButtonnn_02.setGeometry(115, 150, 100, 30)
-        self.ui.od_pushButtonnn_03.setGeometry(10, 185, 100, 30)
-        self.ui.od_pushButtonnn_04.setGeometry(115, 185, 100, 30)
-        self.ui.od_pushButtonnn_05.setGeometry(10, 220, 100, 30)
-        self.ui.od_pushButtonnn_06.setGeometry(115, 220, 100, 30)
-        self.ui.od_pushButtonnn_07.setGeometry(10, 255, 100, 30)
-        self.ui.od_pushButtonnn_08.setGeometry(115, 255, 100, 30)
+
+        for i in range(8):
+            x = 10 if i % 2 == 0 else 115
+            y = 150 + i // 2 * 35
+            getattr(self.ui, f'od_pushButtonnn_{i+1:02d}').setGeometry(x, y, 100, 30)
 
         self.ui.dialog_optuna.setFixedSize(220, 670)
         self.ui.op_groupBoxxxx_01.setGeometry(5, -10, 210, 675)
@@ -570,27 +567,15 @@ class SetDialogEtc:
         self.ui.st_pushButtonn_01.setGeometry(5, 5, 120, 25)
         self.ui.st_pushButtonn_02.setGeometry(130, 5, 120, 25)
         self.ui.st_groupBoxxxx_01.setGeometry(5, 20, 245, 235)
-        self.ui.st_labelllllll_01.setGeometry(68, 25, 120, 25)
-        self.ui.st_labelllllll_02.setGeometry(68, 55, 120, 25)
-        self.ui.st_labelllllll_03.setGeometry(68, 85, 120, 25)
-        self.ui.st_labelllllll_04.setGeometry(68, 115, 120, 25)
-        self.ui.st_labelllllll_05.setGeometry(68, 145, 120, 25)
-        self.ui.st_labelllllll_06.setGeometry(68, 175, 120, 25)
-        self.ui.st_labelllllll_07.setGeometry(68, 205, 120, 25)
-        self.ui.st_lineEditttt_01.setGeometry(10, 25, 50, 25)
-        self.ui.st_lineEditttt_02.setGeometry(187, 25, 50, 25)
-        self.ui.st_lineEditttt_03.setGeometry(10, 55, 50, 25)
-        self.ui.st_lineEditttt_04.setGeometry(187, 55, 50, 25)
-        self.ui.st_lineEditttt_05.setGeometry(10, 85, 50, 25)
-        self.ui.st_lineEditttt_06.setGeometry(187, 85, 50, 25)
-        self.ui.st_lineEditttt_07.setGeometry(10, 115, 50, 25)
-        self.ui.st_lineEditttt_08.setGeometry(187, 115, 50, 25)
-        self.ui.st_lineEditttt_09.setGeometry(10, 145, 50, 25)
-        self.ui.st_lineEditttt_10.setGeometry(187, 145, 50, 25)
-        self.ui.st_lineEditttt_11.setGeometry(10, 175, 50, 25)
-        self.ui.st_lineEditttt_12.setGeometry(187, 175, 50, 25)
-        self.ui.st_lineEditttt_13.setGeometry(10, 205, 50, 25)
-        self.ui.st_lineEditttt_14.setGeometry(187, 205, 50, 25)
+
+        for i in range(7):
+            y = 25 + i * 30
+            getattr(self.ui, f'st_labelllllll_{i+1:02d}').setGeometry(68, y, 120, 25)
+
+        for i in range(14):
+            x = 10 if i % 2 == 0 else 187
+            y = 25 + i // 2 * 30
+            getattr(self.ui, f'st_lineEditttt_{i+1:02d}').setGeometry(x, y, 50, 25)
 
         self.ui.dialog_leverage.setFixedSize(330, 280)
         self.ui.lv_pushButtonn_01.setGeometry(5, 5, 157, 30)
@@ -600,26 +585,15 @@ class SetDialogEtc:
         self.ui.lv_lineEditttt_01.setGeometry(263, 25, 50, 25)
         self.ui.lv_groupBoxxxx_02.setGeometry(5, 70, 320, 205)
         self.ui.lv_checkBoxxxx_02.setGeometry(10, 25, 300, 25)
-        self.ui.lv_labelllllll_01.setGeometry(65, 55, 140, 25)
-        self.ui.lv_labelllllll_02.setGeometry(65, 85, 140, 25)
-        self.ui.lv_labelllllll_03.setGeometry(65, 115, 140, 25)
-        self.ui.lv_labelllllll_04.setGeometry(65, 145, 140, 25)
-        self.ui.lv_labelllllll_05.setGeometry(65, 175, 140, 25)
-        self.ui.lv_lineEditttt_02.setGeometry(10, 55, 50, 25)
-        self.ui.lv_lineEditttt_03.setGeometry(205, 55, 50, 25)
-        self.ui.lv_lineEditttt_04.setGeometry(263, 55, 50, 25)
-        self.ui.lv_lineEditttt_05.setGeometry(10, 85, 50, 25)
-        self.ui.lv_lineEditttt_06.setGeometry(205, 85, 50, 25)
-        self.ui.lv_lineEditttt_07.setGeometry(263, 85, 50, 25)
-        self.ui.lv_lineEditttt_08.setGeometry(10, 115, 50, 25)
-        self.ui.lv_lineEditttt_09.setGeometry(205, 115, 50, 25)
-        self.ui.lv_lineEditttt_10.setGeometry(263, 115, 50, 25)
-        self.ui.lv_lineEditttt_11.setGeometry(10, 145, 50, 25)
-        self.ui.lv_lineEditttt_12.setGeometry(205, 145, 50, 25)
-        self.ui.lv_lineEditttt_13.setGeometry(263, 145, 50, 25)
-        self.ui.lv_lineEditttt_14.setGeometry(10, 175, 50, 25)
-        self.ui.lv_lineEditttt_15.setGeometry(205, 175, 50, 25)
-        self.ui.lv_lineEditttt_16.setGeometry(263, 175, 50, 25)
+
+        for i in range(5):
+            y = 55 + i * 30
+            getattr(self.ui, f'lv_labelllllll_{i+1:02d}').setGeometry(65, y, 140, 25)
+
+        for i in range(15):
+            x = 10 if i % 3 == 0 else 205 if i % 3 == 1 else 263
+            y = 55 + i // 3 * 30
+            getattr(self.ui, f'lv_lineEditttt_{i+2:02d}').setGeometry(x, y, 50, 25)
 
         self.ui.dialog_setsj.setFixedSize(800, 435)
         self.ui.set_pushButton_01.setGeometry(5, 5, 100, 25)
@@ -628,26 +602,12 @@ class SetDialogEtc:
         self.ui.set_groupBoxxx_01.setGeometry(5, 30, 790, 400)
         self.ui.set_labellllll_01.setGeometry(0, 5, 790, 60)
         self.ui.set_labellllll_02.setGeometry(0, 70, 790, 25)
-        self.ui.set_lineEdittt_01.setGeometry(5, 100, 100, 25)
-        self.ui.set_lineEdittt_02.setGeometry(5, 130, 100, 25)
-        self.ui.set_lineEdittt_03.setGeometry(5, 160, 100, 25)
-        self.ui.set_lineEdittt_04.setGeometry(5, 190, 100, 25)
-        self.ui.set_lineEdittt_05.setGeometry(5, 220, 100, 25)
-        self.ui.set_lineEdittt_06.setGeometry(5, 250, 100, 25)
-        self.ui.set_lineEdittt_07.setGeometry(5, 280, 100, 25)
-        self.ui.set_lineEdittt_08.setGeometry(5, 310, 100, 25)
-        self.ui.set_lineEdittt_09.setGeometry(5, 340, 100, 25)
-        self.ui.set_lineEdittt_10.setGeometry(5, 370, 100, 25)
-        self.ui.set_lineEdittt_11.setGeometry(110, 100, 675, 25)
-        self.ui.set_lineEdittt_12.setGeometry(110, 130, 675, 25)
-        self.ui.set_lineEdittt_13.setGeometry(110, 160, 675, 25)
-        self.ui.set_lineEdittt_14.setGeometry(110, 190, 675, 25)
-        self.ui.set_lineEdittt_15.setGeometry(110, 220, 675, 25)
-        self.ui.set_lineEdittt_16.setGeometry(110, 250, 675, 25)
-        self.ui.set_lineEdittt_17.setGeometry(110, 280, 675, 25)
-        self.ui.set_lineEdittt_18.setGeometry(110, 310, 675, 25)
-        self.ui.set_lineEdittt_19.setGeometry(110, 340, 675, 25)
-        self.ui.set_lineEdittt_20.setGeometry(110, 370, 675, 25)
+
+        for i in range(20):
+            x = 5 if i < 10 else 110
+            y = 100 + i % 10 * 30
+            xw = 100 if i < 10 else 675
+            getattr(self.ui, f'set_lineEdittt_{i+1:02d}').setGeometry(x, y, xw, 25)
 
         self.ui.dialog_cetsj.setFixedSize(800, 435)
         self.ui.cet_pushButton_01.setGeometry(5, 5, 100, 25)
@@ -656,23 +616,9 @@ class SetDialogEtc:
         self.ui.cet_groupBoxxx_01.setGeometry(5, 30, 790, 400)
         self.ui.cet_labellllll_01.setGeometry(0, 5, 790, 60)
         self.ui.cet_labellllll_02.setGeometry(0, 70, 790, 25)
-        self.ui.cet_lineEdittt_01.setGeometry(5, 100, 100, 25)
-        self.ui.cet_lineEdittt_02.setGeometry(5, 130, 100, 25)
-        self.ui.cet_lineEdittt_03.setGeometry(5, 160, 100, 25)
-        self.ui.cet_lineEdittt_04.setGeometry(5, 190, 100, 25)
-        self.ui.cet_lineEdittt_05.setGeometry(5, 220, 100, 25)
-        self.ui.cet_lineEdittt_06.setGeometry(5, 250, 100, 25)
-        self.ui.cet_lineEdittt_07.setGeometry(5, 280, 100, 25)
-        self.ui.cet_lineEdittt_08.setGeometry(5, 310, 100, 25)
-        self.ui.cet_lineEdittt_09.setGeometry(5, 340, 100, 25)
-        self.ui.cet_lineEdittt_10.setGeometry(5, 370, 100, 25)
-        self.ui.cet_lineEdittt_11.setGeometry(110, 100, 675, 25)
-        self.ui.cet_lineEdittt_12.setGeometry(110, 130, 675, 25)
-        self.ui.cet_lineEdittt_13.setGeometry(110, 160, 675, 25)
-        self.ui.cet_lineEdittt_14.setGeometry(110, 190, 675, 25)
-        self.ui.cet_lineEdittt_15.setGeometry(110, 220, 675, 25)
-        self.ui.cet_lineEdittt_16.setGeometry(110, 250, 675, 25)
-        self.ui.cet_lineEdittt_17.setGeometry(110, 280, 675, 25)
-        self.ui.cet_lineEdittt_18.setGeometry(110, 310, 675, 25)
-        self.ui.cet_lineEdittt_19.setGeometry(110, 340, 675, 25)
-        self.ui.cet_lineEdittt_20.setGeometry(110, 370, 675, 25)
+
+        for i in range(20):
+            x = 5 if i < 10 else 110
+            y = 100 + i % 10 * 30
+            xw = 100 if i < 10 else 675
+            getattr(self.ui, f'cet_lineEdittt_{i+1:02d}').setGeometry(x, y, xw, 25)

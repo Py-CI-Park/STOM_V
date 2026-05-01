@@ -9,8 +9,7 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
 from ui.set_icon import SetIcon
 from ui.set_table import SetTable
 from ui.set_log_tap import SetLogTap
-from ui.set_stg_coin_tap import SetCoinBack
-from ui.set_stg_stock_tap import SetStockBack
+from ui.set_stg_unified_tap import SetStrategyTab
 from ui.set_widget import WidgetCreater
 from ui.set_setup_tap import SetSetupTap
 from ui.set_order_tap import SetOrderTap
@@ -21,11 +20,11 @@ from ui.set_dialog_chart import SetDialogChart
 from ui.set_dialog_formula import SetDialogFormula
 from ui.set_home_tap import SetHomeTap
 from ui.set_style import dict_set
-from ui import ui_activated_stg
 
 from ui.ui_etc import *
 from ui.ui_draw_chart_db import *
 from ui.ui_activated_back import *
+from ui.ui_activated_stg import *
 from ui.ui_show_dialog import *
 from ui.ui_vars_change import *
 from ui.ui_draw_treemap import *
@@ -366,8 +365,8 @@ class MainWindow(QMainWindow):
         SetIcon(self)
         SetMainMenu(self, self.wc)
         SetTable(self, self.wc)
-        SetStockBack(self, self.wc)
-        SetCoinBack(self, self.wc)
+        SetStrategyTab(self, self.wc, 'stock')
+        SetStrategyTab(self, self.wc, 'coin')
         SetLogTap(self, self.wc)
         SetSetupTap(self, self.wc)
         SetOrderTap(self, self.wc)
@@ -525,7 +524,7 @@ class MainWindow(QMainWindow):
             detail = ' | '.join([f'{x[0]}:{"OK" if x[1] else "FAIL"}' for x in checked]) if checked else 'no-candidate'
             text = f'키움매니저 실행 실패 - KHOPENAPI 호환 인터프리터를 찾지 못했습니다. [{detail}]'
             self.logger.error(text)
-            self.windowQ.put((ui_num['S단순텍스트'], text))
+            self.windowQ.put((ui_num['시스템로그'], text))
         else:
             self.logger.info(f'키움매니저 실행 인터프리터 선택 [{pyexe}]')
             self.proc_manager = subprocess.Popen([pyexe, './trade/stock_korea/kiwoom_manager.py', str(self.port_num)])
@@ -773,27 +772,27 @@ class MainWindow(QMainWindow):
     # dActivated for detail combo boxes
     def dActivated_01(self): dactivated_01(self)
     # =================================================================================================================
-    def sActivated_01(self): ui_activated_stg.activated_01(self, 'stock')
-    def sActivated_02(self): ui_activated_stg.activated_02(self, 'stock')
-    def sActivated_03(self): ui_activated_stg.activated_03(self, 'stock')
-    def sActivated_04(self): ui_activated_stg.activated_04(self, 'stock')
-    def sActivated_05(self): ui_activated_stg.activated_05(self, 'stock')
-    def sActivated_06(self): ui_activated_stg.activated_06(self, 'stock')
-    def sActivated_07(self): ui_activated_stg.activated_07(self, 'stock')
-    def sActivated_08(self): ui_activated_stg.activated_08(self, 'stock')
-    def sActivated_09(self): ui_activated_stg.activated_09(self, 'stock')
+    def sActivated_01(self): sactivated_01(self)
+    def sActivated_02(self): sactivated_02(self)
+    def sActivated_03(self): sactivated_03(self)
+    def sActivated_04(self): sactivated_04(self)
+    def sActivated_05(self): sactivated_05(self)
+    def sActivated_06(self): sactivated_06(self)
+    def sActivated_07(self): sactivated_07(self)
+    def sActivated_08(self): sactivated_08(self)
+    def sActivated_09(self): sactivated_09(self)
     # =================================================================================================================
-    def cActivated_01(self): ui_activated_stg.activated_01(self, 'coin')
-    def cActivated_02(self): ui_activated_stg.activated_02(self, 'coin')
-    def cActivated_03(self): ui_activated_stg.activated_03(self, 'coin')
-    def cActivated_04(self): ui_activated_stg.activated_04(self, 'coin')
-    def cActivated_05(self): ui_activated_stg.activated_05(self, 'coin')
-    def cActivated_06(self): ui_activated_stg.activated_06(self, 'coin')
-    def cActivated_07(self): ui_activated_stg.activated_07(self, 'coin')
-    def cActivated_08(self): ui_activated_stg.activated_08(self, 'coin')
-    def cActivated_09(self): ui_activated_stg.activated_09(self, 'coin')
-    def cActivated_10(self): ui_activated_stg.activated_10(self)
-    def cActivated_11(self): ui_activated_stg.activated_11(self)
+    def cActivated_01(self): cactivated_01(self)
+    def cActivated_02(self): cactivated_02(self)
+    def cActivated_03(self): cactivated_03(self)
+    def cActivated_04(self): cactivated_04(self)
+    def cActivated_05(self): cactivated_05(self)
+    def cActivated_06(self): cactivated_06(self)
+    def cActivated_07(self): cactivated_07(self)
+    def cActivated_08(self): cactivated_08(self)
+    def cActivated_09(self): cactivated_09(self)
+    def cActivated_10(self): cactivated_10(self)
+    def cActivated_11(self): cactivated_11(self)
     # =================================================================================================================
     def bActivated_01(self): bactivated_01(self)
     def bActivated_02(self): bactivated_02(self)

@@ -54,7 +54,7 @@ class BinanceTrader:
 
         self.order_time = now()
         self.dict_cj    = {}  # 체결목록
-        self.dict_jg    = {str: {}}  # 잔고목록
+        self.dict_jg    = {}  # 잔고목록
         self.dict_tj    = {}  # 잔고평가
         self.dict_td    = {}  # 거래목록
         self.dict_tt    = {}  # 평가손익
@@ -227,6 +227,7 @@ class BinanceTrader:
         롱매도주문중 = 종목코드 in self.dict_order['SELL_LONG']
         숏매도주문중 = 종목코드 in self.dict_order['BUY_SHORT']
         jg_data = self.dict_jg.get(종목코드)
+        # noinspection PyUnresolvedReferences
         포지션 = jg_data['포지션'] if jg_data else None
 
         주문번호 = ''
