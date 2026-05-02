@@ -55,3 +55,19 @@ def test_evaluate_passes_with_smoke_log_and_upstream_evidence(monkeypatch, tmp_p
     assert failures == []
     assert payload["result"] == "passed"
 
+
+
+def test_unresolved_activated_alias_calls_are_reported(monkeypatch, tmp_path):
+    write(
+        tmp_path / "ui" / "ui_mainwindow.py",
+        "class MainWindow:\n"
+        "    def sActivated_09(self): sactivated_09(self)\n"
+        "    def cActivated_09(self): cactivated_09(self)\n",
+    )
+
+    monkeypatch.setattr(contract, "ROOT", tmp_path)
+
+    assert contract.unresolved_activated_alias_calls() == [
+        "cActivated_09->cactivated_09",
+        "sActivated_09->sactivated_09",
+    ]
