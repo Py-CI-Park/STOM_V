@@ -76,6 +76,20 @@ def main():
         failures,
     )
     check(
+        "def _remember_window_positions" in ui_process_kill_text
+        and "_remember_window_positions(ui)" in ui_process_kill_text
+        and ui_process_kill_text.index("_remember_window_positions(ui)") < ui_process_kill_text.index("dialog_backengine.close()"),
+        "Shutdown persists dialog geometry before closing dialogs.",
+        "Window geometry persistence must run before dialog close calls.",
+        failures,
+    )
+    check(
+        "sys.exit()" not in ui_process_kill_text,
+        "Shutdown does not raise SystemExit inside Qt closeEvent.",
+        "process_kill must not call sys.exit() from the Qt closeEvent path.",
+        failures,
+    )
+    check(
         "Process(target=WebCrawling" not in ui_mainwindow_text
         and "WebCrawling(self.qlist)" in ui_mainwindow_text
         and "self.webc.signal.connect(self.windowQ.put)" in ui_mainwindow_text

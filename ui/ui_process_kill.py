@@ -1,8 +1,52 @@
 
-import sys
 from utility.setting_base import ui_num
 from PyQt5.QtWidgets import QApplication
 from utility.static import qtest_qwait, opstarter_kill, error_decorator
+
+
+def _remember_window_positions(ui):
+    """Persist live window positions before shutdown closes dialogs.
+
+    The backtest engine dialog position is part of the window-position list
+    at indexes 16 and 17. Persisting before dialog close prevents the Qt
+    close/fade path from resetting coordinates before they are written.
+    """
+    try:
+        if not ui.dict_set['창위치기억']:
+            return
+
+        saved = ui.dict_set['창위치'] if ui.dict_set['창위치'] is not None else []
+        saved_len = len(saved)
+
+        def normalized_y(widget, y_index):
+            y = widget.y()
+            if saved_len > y_index and saved[y_index] + 31 == y:
+                return y - 31
+            return y
+
+        widgets = (
+            (ui, 1),
+            (ui.dialog_chart, 3),
+            (ui.dialog_scheduler, 5),
+            (ui.dialog_info, 7),
+            (ui.dialog_web, 9),
+            (ui.dialog_tree, 11),
+            (ui.dialog_kimp, 13),
+            (ui.dialog_hoga, 15),
+            (ui.dialog_backengine, 17),
+            (ui.dialog_order, 19),
+            (ui.dialog_strategy, 21),
+        )
+
+        positions = []
+        for widget, y_index in widgets:
+            positions.extend([widget.x(), normalized_y(widget, y_index)])
+
+        geometry = ';'.join(str(value) for value in positions)
+        ui.dict_set['창위치'] = positions
+        ui.queryQ.put(('설정디비', f"UPDATE etc SET 창위치 = '{geometry}'"))
+    except Exception:
+        pass
 
 
 @error_decorator
@@ -48,6 +92,8 @@ def process_kill(ui):
     if ui.zmqserv.isRunning(): ui.zmqserv.stop()
     if ui.zmqrecv.isRunning(): ui.zmqrecv.stop()
     ui.windowQ.put((ui_num['시스템로그'], 'QThread terminate completed'))
+
+    _remember_window_positions(ui)
 
     if ui.dialog_db.isVisible():         ui.dialog_db.close()
     if ui.dialog_web.isVisible():        ui.dialog_web.close()
@@ -97,21 +143,7 @@ def process_kill(ui):
     values  = tuple(localvs[col] for col in columns)
     ui.queryQ.put(('설정디비', query, values))
 
-    if ui.dict_set['창위치기억']:
-        geo_len = len(ui.dict_set['창위치']) if ui.dict_set['창위치'] is not None else 0
-        geometry = f"{ui.x()};{ui.y()};"
-        geometry += f"{ui.dialog_chart.x()};{ui.dialog_chart.y() - 31 if geo_len > 3 and ui.dict_set['창위치'][3] + 31 == ui.dialog_chart.y() else ui.dialog_chart.y()};"
-        geometry += f"{ui.dialog_scheduler.x()};{ui.dialog_scheduler.y() - 31 if geo_len > 5 and ui.dict_set['창위치'][5] + 31 == ui.dialog_scheduler.y() else ui.dialog_scheduler.y()};"
-        geometry += f"{ui.dialog_info.x()};{ui.dialog_info.y() - 31 if geo_len > 7 and ui.dict_set['창위치'][7] + 31 == ui.dialog_info.y() else ui.dialog_info.y()};"
-        geometry += f"{ui.dialog_web.x()};{ui.dialog_web.y() - 31 if geo_len > 9 and ui.dict_set['창위치'][9] + 31 == ui.dialog_web.y() else ui.dialog_web.y()};"
-        geometry += f"{ui.dialog_tree.x()};{ui.dialog_tree.y() - 31 if geo_len > 11 and ui.dict_set['창위치'][11] + 31 == ui.dialog_tree.y() else ui.dialog_tree.y()};"
-        geometry += f"{ui.dialog_kimp.x()};{ui.dialog_kimp.y() - 31 if geo_len > 13 and ui.dict_set['창위치'][13] + 31 == ui.dialog_kimp.y() else ui.dialog_kimp.y()};"
-        geometry += f"{ui.dialog_hoga.x()};{ui.dialog_hoga.y() - 31 if geo_len > 15 and ui.dict_set['창위치'][15] + 31 == ui.dialog_hoga.y() else ui.dialog_hoga.y()};"
-        geometry += f"{ui.dialog_backengine.x()};{ui.dialog_backengine.y() - 31 if geo_len > 17 and ui.dict_set['창위치'][17] + 31 == ui.dialog_backengine.y() else ui.dialog_backengine.y()};"
-        geometry += f"{ui.dialog_order.x()};{ui.dialog_order.y() - 31 if geo_len > 19 and ui.dict_set['창위치'][19] + 31 == ui.dialog_order.y() else ui.dialog_order.y()};"
-        geometry += f"{ui.dialog_strategy.x()};{ui.dialog_strategy.y() - 31 if geo_len > 21 and ui.dict_set['창위치'][21] + 31 == ui.dialog_strategy.y() else ui.dialog_strategy.y()}"
-        query = f"UPDATE etc SET 창위치 = '{geometry}'"
-        ui.queryQ.put(('설정디비', query))
+    # Window positions are persisted before dialogs are closed.
     ui.windowQ.put((ui_num['시스템로그'], 'Etc setting save completed'))
 
     ui.queryQ.put('프로세스종료')
@@ -125,4 +157,3 @@ def process_kill(ui):
     qtest_qwait(1)
 
     QApplication.instance().quit()
-    sys.exit()

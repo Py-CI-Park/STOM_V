@@ -74,9 +74,13 @@ def _base_files() -> dict[str, str]:
             apply_serial_key_to_dict_set(dict_set, uses_serial_key())
         """,
         "ui/ui_process_kill.py": """
+            def _remember_window_positions(ui):
+                pass
+
             if hasattr(ui, 'webc') and ui.webc.isRunning():
                 ui.webc.stop()
-            geometry += f"{ui.dialog_info.x()};{ui.dict_set['창위치'][7]}"
+            _remember_window_positions(ui)
+            if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
         """,
         "utility/static.py": """
             summer_t = 3600
@@ -193,3 +197,41 @@ def test_verify_nonrelease_sync_fails_when_kiwoom_loss_rounding_regresses(tmp_pa
 
     assert result == 1
     assert "Kiwoom P/L rounding regressed." in output
+
+
+def test_verify_nonrelease_sync_fails_when_shutdown_geometry_is_after_dialog_close(tmp_path, monkeypatch):
+    files = _base_files()
+    files["ui/ui_process_kill.py"] = """
+        if hasattr(ui, 'webc') and ui.webc.isRunning():
+            ui.webc.stop()
+        if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
+        def _remember_window_positions(ui):
+            pass
+        _remember_window_positions(ui)
+    """
+    _write_files(tmp_path, files)
+
+    result, output = _run_main(tmp_path, monkeypatch)
+
+    assert result == 1
+    assert "Window geometry persistence must run before dialog close calls." in output
+
+
+def test_verify_nonrelease_sync_fails_when_process_kill_calls_sys_exit(tmp_path, monkeypatch):
+    files = _base_files()
+    files["ui/ui_process_kill.py"] = """
+        def _remember_window_positions(ui):
+            pass
+
+        if hasattr(ui, 'webc') and ui.webc.isRunning():
+            ui.webc.stop()
+        _remember_window_positions(ui)
+        if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
+        sys.exit()
+    """
+    _write_files(tmp_path, files)
+
+    result, output = _run_main(tmp_path, monkeypatch)
+
+    assert result == 1
+    assert "process_kill must not call sys.exit()" in output
