@@ -349,6 +349,42 @@ def exercise_tab_widgets(window) -> list[ActionResult]:
     return results
 
 
+def exercise_strategy_activation_wrappers(window) -> list[ActionResult]:
+    results: list[ActionResult] = []
+    combo_attrs = [
+        "svjb_comboBoxx_01", "svjs_comboBoxx_01", "svc_comboBoxxx_01", "svc_comboBoxxx_02",
+        "svc_comboBoxxx_08", "sva_comboBoxxx_01", "svo_comboBoxxx_01", "svo_comboBoxxx_02",
+        "cvjb_comboBoxx_01", "cvjs_comboBoxx_01", "cvc_comboBoxxx_01", "cvc_comboBoxxx_02",
+        "cvc_comboBoxxx_08", "cva_comboBoxxx_01", "cvo_comboBoxxx_01", "cvo_comboBoxxx_02",
+        "sj_stock_cbBox_01", "sj_coin_comBox_01",
+    ]
+    for attr in combo_attrs:
+        combo = getattr(window, attr, None)
+        if combo is None:
+            continue
+        try:
+            combo.clear()
+            combo.setCurrentIndex(-1)
+        except Exception:
+            pass
+
+    wrapper_names = [
+        *(f"sActivated_{index:02d}" for index in range(1, 10)),
+        *(f"cActivated_{index:02d}" for index in range(1, 12)),
+    ]
+    for name in wrapper_names:
+        method = getattr(window, name, None)
+        if method is None:
+            results.append(ActionResult(name, "strategy_activation_wrapper", name, "failed", "missing method"))
+            continue
+        try:
+            method()
+            results.append(ActionResult(name, "strategy_activation_wrapper", name, "passed"))
+        except Exception as exc:
+            results.append(ActionResult(name, "strategy_activation_wrapper", name, "failed", repr(exc)))
+    return results
+
+
 def _object_attr_name(window, obj) -> str | None:
     for name, value in vars(window).items():
         if value is obj:
@@ -368,6 +404,7 @@ def run_smoke(branch: str, version: str) -> dict[str, object]:
         actions.append(ActionResult("main_launch", "launch", "MainWindow", "passed"))
         actions.extend(exercise_main_menu(window))
         actions.extend(exercise_tab_widgets(window))
+        actions.extend(exercise_strategy_activation_wrappers(window))
         actions.extend(check_attr(item, window) for item in contract)
         app.processEvents()
         window.close()

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import subprocess
@@ -61,6 +62,35 @@ def read_smoke(log_dir: Path, branch: str, version: str) -> tuple[dict[str, obje
         return None, f"invalid smoke log {path}: {exc}"
 
 
+def unresolved_activated_alias_calls() -> list[str]:
+    path = ROOT / "ui" / "ui_mainwindow.py"
+    if not path.exists():
+        return ["ui/ui_mainwindow.py is missing"]
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+    except SyntaxError as exc:
+        return [f"ui/ui_mainwindow.py syntax error: {exc}"]
+
+    main_window = next(
+        (node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "MainWindow"),
+        None,
+    )
+    if main_window is None:
+        return ["MainWindow class is missing"]
+
+    unresolved: list[str] = []
+    for method in main_window.body:
+        if not isinstance(method, ast.FunctionDef):
+            continue
+        for node in ast.walk(method):
+            if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+                continue
+            name = node.func.id
+            if name.startswith(("sactivated_", "cactivated_")):
+                unresolved.append(f"{method.name}->{name}")
+    return sorted(set(unresolved))
+
+
 def missing_import_modules() -> list[str]:
     text = (ROOT / "ui" / "ui_mainwindow.py").read_text(encoding="utf-8", errors="replace")
     missing: list[str] = []
@@ -89,6 +119,13 @@ def evaluate(branch: str, version: str, upstream_ref: str, log_dir: Path) -> tup
     if imports_missing:
         failures.append(f"ui_mainwindow.py imports missing modules: {', '.join(imports_missing)}")
 
+    unresolved_alias_calls = unresolved_activated_alias_calls()
+    if unresolved_alias_calls:
+        failures.append(
+            "ui_mainwindow.py has unresolved strategy activated aliases: "
+            + ", ".join(unresolved_alias_calls)
+        )
+
     contract = build_contract(ROOT)
     if not contract:
         failures.append("GUI contract manifest is empty")
@@ -107,6 +144,7 @@ def evaluate(branch: str, version: str, upstream_ref: str, log_dir: Path) -> tup
         "tracked_pyd_count": len(pyd_files),
         "tracked_pyd_files": pyd_files,
         "missing_import_modules": imports_missing,
+        "unresolved_activated_alias_calls": unresolved_alias_calls,
         "contract_summary": contract_summary(contract),
         "contract_items": [item.to_dict() for item in contract],
         "smoke_log": str(smoke_log_path(log_dir, branch, version)),
