@@ -43,6 +43,13 @@ def test_evaluate_passes_with_smoke_log_and_upstream_evidence(monkeypatch, tmp_p
     write(
         tmp_path / "ui" / "ui_mainwindow.py",
         "class MainWindow:\n"
+        "    self.back_start_time  = None\n"
+        "    def UpdateProgressBar(self):\n"
+        "        update_back_progressbar(self)\n"
+        "    def BindPydDialogPositionPersistence(self):\n"
+        "        self.BindPydDialogPosition(self.dialog_backengine, 16, 17)\n"
+        "    def RestorePydDialogPosition(self, dialog, x_index, y_index): pass\n"
+        "    def SavePydDialogPosition(self, dialog, x_index, y_index): pass\n"
         "    def BindLegacyStrategyBacktestButtons(self):\n"
         "        self.svj_pushButton_01, self.StockBacktestStart\n"
         "        self.cvj_pushButton_01, self.CoinBacktestStart\n"
@@ -94,6 +101,8 @@ def test_pyd_mainwindow_backtest_parity_failures_are_reported(monkeypatch, tmp_p
     failures = contract.pyd_mainwindow_backtest_parity_failures()
 
     assert "pyd mainwindow backtest parity lacks stock button connect" in failures
+    assert "pyd mainwindow backtest parity lacks back progress updater" in failures
+    assert "pyd mainwindow backtest parity lacks dialog position binder" in failures
     assert "pyd mainwindow backtest parity lacks shortcut handler" in failures
 
 
@@ -101,6 +110,13 @@ def test_pyd_mainwindow_backtest_parity_passes_with_legacy_bindings(monkeypatch,
     write(
         tmp_path / "ui" / "ui_mainwindow.py",
         "class MainWindow:\n"
+        "    self.back_start_time  = None\n"
+        "    def UpdateProgressBar(self):\n"
+        "        update_back_progressbar(self)\n"
+        "    def BindPydDialogPositionPersistence(self):\n"
+        "        self.BindPydDialogPosition(self.dialog_backengine, 16, 17)\n"
+        "    def RestorePydDialogPosition(self, dialog, x_index, y_index): pass\n"
+        "    def SavePydDialogPosition(self, dialog, x_index, y_index): pass\n"
         "    def BindLegacyStrategyBacktestButtons(self):\n"
         "        self.svj_pushButton_01, self.StockBacktestStart\n"
         "        self.cvj_pushButton_01, self.CoinBacktestStart\n"
