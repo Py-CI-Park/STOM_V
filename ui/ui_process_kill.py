@@ -1,11 +1,71 @@
 
 from utility.setting_base import ui_num
+from queue import Empty
 from time import monotonic
 from PyQt5.QtWidgets import QApplication
 from utility.static import qtest_qwait, opstarter_kill, error_decorator
 
 
 SHUTDOWN_CHILD_WAIT_SEC = 5.0
+BACKTEST_SHUTDOWN_WAIT_SEC = 5.0
+BACKTEST_PROCESS_NAMES = (
+    'proc_backtester_bs', 'proc_backtester_bf', 'proc_backtester_o', 'proc_backtester_ov',
+    'proc_backtester_ovc', 'proc_backtester_ot', 'proc_backtester_ovt', 'proc_backtester_ovct',
+    'proc_backtester_oc', 'proc_backtester_ocv', 'proc_backtester_ocvc', 'proc_backtester_og',
+    'proc_backtester_ogv', 'proc_backtester_ogvc', 'proc_backtester_or', 'proc_backtester_orv',
+    'proc_backtester_orvc', 'proc_backtester_b', 'proc_backtester_bv', 'proc_backtester_bvc',
+    'proc_backtester_bt', 'proc_backtester_bvt', 'proc_backtester_bvct', 'proc_backtester_br',
+    'proc_backtester_brv', 'proc_backtester_brvc',
+)
+
+
+def _alive_backtest_processes(ui):
+    procs = []
+    for name in BACKTEST_PROCESS_NAMES:
+        proc = getattr(ui, name, None)
+        if proc is not None and proc.is_alive():
+            procs.append(proc)
+    return procs
+
+
+def _terminate_processes(procs):
+    for proc in procs:
+        if not proc.is_alive():
+            continue
+        proc.terminate()
+        proc.join(timeout=1)
+
+
+def _shutdown_backtest_processes(ui, coin=True, enginekill=True):
+    alive_procs = _alive_backtest_processes(ui)
+    if not alive_procs:
+        if enginekill:
+            ui.BacktestEngineKill()
+        return
+
+    ui.back_cancelling = True
+    for q in ui.back_eques:
+        q.put('백테중지')
+    ui.totalQ.put('백테중지')
+
+    count = 0
+    deadline = monotonic() + BACKTEST_SHUTDOWN_WAIT_SEC
+    while count < ui.multi and monotonic() < deadline:
+        try:
+            data = ui.backQ.get(timeout=0.1)
+        except Empty:
+            continue
+        if data == '백테중지완료':
+            count += 1
+
+    if count < ui.multi:
+        _terminate_processes(alive_procs)
+        ui.windowQ.put((ui_num['시스템로그'], 'Backtest stop acknowledgement timeout; alive backtest processes terminated'))
+
+    ui.windowQ.put((ui_num['C백테스트' if coin else 'S백테스트'], '백테스트 중지 완료'))
+    if enginekill:
+        ui.BacktestEngineKill()
+    ui.back_cancelling = False
 
 
 def _remember_window_positions(ui):
@@ -125,7 +185,7 @@ def process_kill(ui):
     ui.windowQ.put((ui_num['시스템로그'], 'UI dialog window close completed'))
 
     if ui.shared_cnt is not None:
-        ui.BacktestProcessKill(True, True)
+        _shutdown_backtest_processes(ui, True, True)
         ui.windowQ.put((ui_num['시스템로그'], 'Backtest engine process terminate completed'))
 
     factor_choice = ''

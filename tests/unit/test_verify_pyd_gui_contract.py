@@ -40,16 +40,15 @@ def test_evaluate_fails_closed_on_missing_smoke_and_missing_import(monkeypatch, 
 
 
 def test_evaluate_passes_with_smoke_log_and_upstream_evidence(monkeypatch, tmp_path):
-    write(tmp_path / "ui" / "ui_mainwindow.py", "class MainWindow: pass\n")
     write(
-        tmp_path / "ui" / "ui_button_clicked_editer_unified.py",
-        "def backtest_start(ui, ui_type):\n"
-        "    if ui_type == 'stock':\n"
-        "        from ui.ui_button_clicked_editer_stock import stock_backtest_start\n"
-        "        stock_backtest_start(ui)\n"
-        "    elif ui_type == 'coin':\n"
-        "        from ui.ui_button_clicked_editer_coin import coin_backtest_start\n"
-        "        coin_backtest_start(ui)\n",
+        tmp_path / "ui" / "ui_mainwindow.py",
+        "class MainWindow:\n"
+        "    def BindLegacyStrategyBacktestButtons(self):\n"
+        "        self.svj_pushButton_01, self.StockBacktestStart\n"
+        "        self.cvj_pushButton_01, self.CoinBacktestStart\n"
+        "    def LegacyBacktestShortcut(self, event):\n"
+        "        self.StockBacktestStart()\n"
+        "        self.CoinBacktestStart()\n",
     )
     write(tmp_path / "ui" / "set_dialog_etc.py", "self.ui.dialog_db = self.wc.setDialog('STOM DATABASE')\n")
     log_dir = tmp_path / ".omx" / "logs"
@@ -83,33 +82,33 @@ def test_unresolved_activated_alias_calls_are_reported(monkeypatch, tmp_path):
     ]
 
 
-def test_unified_backtest_legacy_parity_failures_are_reported(monkeypatch, tmp_path):
+def test_pyd_mainwindow_backtest_parity_failures_are_reported(monkeypatch, tmp_path):
     write(
-        tmp_path / "ui" / "ui_button_clicked_editer_unified.py",
-        "def backtest_start(ui, ui_type):\n"
+        tmp_path / "ui" / "ui_mainwindow.py",
+        "class MainWindow:\n"
         "    pass\n",
     )
 
     monkeypatch.setattr(contract, "ROOT", tmp_path)
 
-    failures = contract.unified_backtest_legacy_parity_failures()
+    failures = contract.pyd_mainwindow_backtest_parity_failures()
 
-    assert "unified backtest_start lacks stock legacy call" in failures
-    assert "unified backtest_start lacks coin legacy call" in failures
+    assert "pyd mainwindow backtest parity lacks stock button connect" in failures
+    assert "pyd mainwindow backtest parity lacks shortcut handler" in failures
 
 
-def test_unified_backtest_legacy_parity_passes_with_stock_coin_dispatch(monkeypatch, tmp_path):
+def test_pyd_mainwindow_backtest_parity_passes_with_legacy_bindings(monkeypatch, tmp_path):
     write(
-        tmp_path / "ui" / "ui_button_clicked_editer_unified.py",
-        "def backtest_start(ui, ui_type):\n"
-        "    if ui_type == 'stock':\n"
-        "        from ui.ui_button_clicked_editer_stock import stock_backtest_start\n"
-        "        stock_backtest_start(ui)\n"
-        "    elif ui_type == 'coin':\n"
-        "        from ui.ui_button_clicked_editer_coin import coin_backtest_start\n"
-        "        coin_backtest_start(ui)\n",
+        tmp_path / "ui" / "ui_mainwindow.py",
+        "class MainWindow:\n"
+        "    def BindLegacyStrategyBacktestButtons(self):\n"
+        "        self.svj_pushButton_01, self.StockBacktestStart\n"
+        "        self.cvj_pushButton_01, self.CoinBacktestStart\n"
+        "    def LegacyBacktestShortcut(self, event):\n"
+        "        self.StockBacktestStart()\n"
+        "        self.CoinBacktestStart()\n",
     )
 
     monkeypatch.setattr(contract, "ROOT", tmp_path)
 
-    assert contract.unified_backtest_legacy_parity_failures() == []
+    assert contract.pyd_mainwindow_backtest_parity_failures() == []

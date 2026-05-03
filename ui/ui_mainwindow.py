@@ -3,8 +3,8 @@ import sys
 import socket
 import shutil
 import subprocess
-from PyQt5.QtWidgets import QCompleter
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
+from PyQt5.QtWidgets import QCompleter, QApplication
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread, Qt
 
 from ui.set_icon import SetIcon
 from ui.set_table import SetTable
@@ -367,6 +367,7 @@ class MainWindow(QMainWindow):
         SetTable(self, self.wc)
         SetStrategyTab(self, self.wc, 'stock')
         SetStrategyTab(self, self.wc, 'coin')
+        self.BindLegacyStrategyBacktestButtons()
         SetLogTap(self, self.wc)
         SetSetupTap(self, self.wc)
         SetOrderTap(self, self.wc)
@@ -1033,7 +1034,36 @@ class MainWindow(QMainWindow):
     def dActivated_02(self): dactivated_02(self)
     def dActivated_03(self): dactivated_03(self)
     # =================================================================================================================
-    def keyPressEvent(self, event):              key_press_event(self, event)
+    def BindLegacyStrategyBacktestButtons(self):
+        for button, handler in (
+            (self.svj_pushButton_01, self.StockBacktestStart),
+            (self.cvj_pushButton_01, self.CoinBacktestStart),
+        ):
+            try:
+                button.clicked.disconnect()
+            except TypeError:
+                pass
+            button.clicked.connect(handler)
+
+    def LegacyBacktestShortcut(self, event):
+        if event.key() not in (Qt.Key_Return, Qt.Key_Enter):
+            return False
+        if not (QApplication.keyboardModifiers() & Qt.AltModifier):
+            return False
+        if backtest_process_alive(self):
+            return False
+        if self.main_btn == 3 and self.svj_pushButton_01.isVisible():
+            self.StockBacktestStart()
+            return True
+        if self.main_btn == 4 and self.cvj_pushButton_01.isVisible():
+            self.CoinBacktestStart()
+            return True
+        return False
+
+    def keyPressEvent(self, event):
+        if self.LegacyBacktestShortcut(event):
+            return
+        key_press_event(self, event)
     def eventFilter(self, widget, event): return event_filter(self, widget, event)
     def closeEvent(self, a):                     close_event(self, a)
     # =================================================================================================================

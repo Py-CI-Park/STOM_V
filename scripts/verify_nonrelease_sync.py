@@ -35,7 +35,6 @@ def main():
     ui_etc_text = read_text("ui/ui_etc.py")
     ui_process_alive_text = read_text("ui/ui_process_alive.py")
     ui_process_kill_text = read_text("ui/ui_process_kill.py")
-    ui_backtest_engine_text = read_text("ui/ui_backtest_engine.py")
     static_text = read_text("utility/static.py")
     webcrawling_text = read_text("utility/webcrawling.py")
     database_check_text = read_text("utility/database_check.py") if (ROOT / "utility/database_check.py").exists() else ""
@@ -100,11 +99,11 @@ def main():
         failures,
     )
     check(
-        "BACKTEST_STOP_WAIT_SEC" in ui_backtest_engine_text
-        and "ui.backQ.get(timeout=0.1)" in ui_backtest_engine_text
-        and "_terminate_processes(alive_procs)" in ui_backtest_engine_text,
-        "Backtest stop acknowledgement wait is bounded with terminate fallback.",
-        "backtest_process_kill must not wait indefinitely for backtest stop acknowledgements.",
+        "BACKTEST_SHUTDOWN_WAIT_SEC" in ui_process_kill_text
+        and "ui.backQ.get(timeout=0.1)" in ui_process_kill_text
+        and "_terminate_processes(alive_procs)" in ui_process_kill_text,
+        "Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.",
+        "process_kill must not wait indefinitely for backtest stop acknowledgements.",
         failures,
     )
     check(
