@@ -374,6 +374,7 @@ class MainWindow(QMainWindow):
         SetDialogChart(self, self.wc)
         SetDialogEtc(self, self.wc)
         SetDialogBack(self, self.wc)
+        self.BindPydDialogPositionPersistence()
         SetDialogStrategy(self, self.wc)
         SetDialogFormula(self, self.wc)
         SetHomeTap(self, self.wc)
@@ -418,6 +419,9 @@ class MainWindow(QMainWindow):
         self.back_scount      = 0
         self.multi            = 0
         self.divide_mode      = str
+        self.back_start_time  = None
+        self.optuna_current_cnt = 0
+        self.optuna_remain_cnt  = 0
 
         self.backengin_window_open = False
         self.optuna_window_open    = False
@@ -578,7 +582,9 @@ class MainWindow(QMainWindow):
     # =================================================================================================================
     def ChartCountChange(self):            chart_count_change(self)
     # =================================================================================================================
-    def UpdateProgressBar(self):           update_progressbar(self)
+    def UpdateProgressBar(self):
+        update_back_progressbar(self)
+        update_progressbar(self)
     def UpdateImage(self, data):           update_image(self, data)
     def UpdateSQsize(self, data):          update_sqsize(self, data)
     def UpdateCpuper(self):                update_cpuper(self)
@@ -1044,6 +1050,61 @@ class MainWindow(QMainWindow):
             except TypeError:
                 pass
             button.clicked.connect(handler)
+
+    def BindPydDialogPositionPersistence(self):
+        self.BindPydDialogPosition(self.dialog_backengine, 16, 17)
+
+    def BindPydDialogPosition(self, dialog, x_index, y_index):
+        if getattr(dialog, '_pyd_position_persistence_bound', False):
+            return
+
+        original_show = dialog.show
+        original_close = dialog.close
+        original_hide = dialog.hide
+
+        def show_with_position_restore(*args, **kwargs):
+            self.RestorePydDialogPosition(dialog, x_index, y_index)
+            return original_show(*args, **kwargs)
+
+        def close_with_position_save(*args, **kwargs):
+            self.SavePydDialogPosition(dialog, x_index, y_index)
+            return original_close(*args, **kwargs)
+
+        def hide_with_position_save(*args, **kwargs):
+            self.SavePydDialogPosition(dialog, x_index, y_index)
+            return original_hide(*args, **kwargs)
+
+        dialog.show = show_with_position_restore
+        dialog.close = close_with_position_save
+        dialog.hide = hide_with_position_save
+        dialog._pyd_position_persistence_bound = True
+
+    def RestorePydDialogPosition(self, dialog, x_index, y_index):
+        try:
+            if not self.dict_set.get('창위치기억'):
+                return
+            positions = self.dict_set.get('창위치')
+            if positions is None or len(positions) <= y_index:
+                return
+            dialog.move(int(positions[x_index]), int(positions[y_index]))
+        except Exception:
+            pass
+
+    def SavePydDialogPosition(self, dialog, x_index, y_index):
+        try:
+            if not self.dict_set.get('창위치기억'):
+                return
+            positions = self.dict_set.get('창위치')
+            if positions is None or len(positions) <= y_index:
+                return
+            positions = list(positions)
+            positions[x_index] = dialog.x()
+            positions[y_index] = dialog.y()
+            self.dict_set['창위치'] = positions
+            geometry = ';'.join(str(value) for value in positions)
+            self.queryQ.put(('설정디비', f"UPDATE etc SET 창위치 = '{geometry}'"))
+        except Exception:
+            pass
 
     def LegacyBacktestShortcut(self, event):
         if event.key() not in (Qt.Key_Return, Qt.Key_Enter):
