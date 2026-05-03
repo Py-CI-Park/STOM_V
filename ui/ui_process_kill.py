@@ -1,7 +1,11 @@
 
 from utility.setting_base import ui_num
+from time import monotonic
 from PyQt5.QtWidgets import QApplication
 from utility.static import qtest_qwait, opstarter_kill, error_decorator
+
+
+SHUTDOWN_CHILD_WAIT_SEC = 5.0
 
 
 def _remember_window_positions(ui):
@@ -147,8 +151,12 @@ def process_kill(ui):
     ui.windowQ.put((ui_num['시스템로그'], 'Etc setting save completed'))
 
     ui.queryQ.put('프로세스종료')
-    while ui.proc_chqs.is_alive():
+    deadline = monotonic() + SHUTDOWN_CHILD_WAIT_SEC
+    while ui.proc_chqs.is_alive() and monotonic() < deadline:
         qtest_qwait(0.1)
+    if ui.proc_chqs.is_alive():
+        ui.proc_chqs.terminate()
+        ui.proc_chqs.join(timeout=1)
 
     if ui.writer.isRunning():
         ui.writer.terminate()

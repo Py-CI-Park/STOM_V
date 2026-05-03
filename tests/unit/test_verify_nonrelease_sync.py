@@ -74,6 +74,10 @@ def _base_files() -> dict[str, str]:
             apply_serial_key_to_dict_set(dict_set, uses_serial_key())
         """,
         "ui/ui_process_kill.py": """
+            from time import monotonic
+
+            SHUTDOWN_CHILD_WAIT_SEC = 5.0
+
             def _remember_window_positions(ui):
                 pass
 
@@ -81,6 +85,22 @@ def _base_files() -> dict[str, str]:
                 ui.webc.stop()
             _remember_window_positions(ui)
             if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
+            deadline = monotonic() + SHUTDOWN_CHILD_WAIT_SEC
+            while ui.proc_chqs.is_alive() and monotonic() < deadline:
+                pass
+            if ui.proc_chqs.is_alive():
+                ui.proc_chqs.terminate()
+                ui.proc_chqs.join(timeout=1)
+        """,
+        "ui/ui_backtest_engine.py": """
+            BACKTEST_STOP_WAIT_SEC = 5.0
+
+            def backtest_process_kill(ui, coin, enginekill):
+                alive_procs = []
+                deadline = monotonic() + BACKTEST_STOP_WAIT_SEC
+                while count < wait_target and monotonic() < deadline:
+                    data = ui.backQ.get(timeout=0.1)
+                _terminate_processes(alive_procs)
         """,
         "utility/static.py": """
             summer_t = 3600
@@ -235,3 +255,39 @@ def test_verify_nonrelease_sync_fails_when_process_kill_calls_sys_exit(tmp_path,
 
     assert result == 1
     assert "process_kill must not call sys.exit()" in output
+
+
+def test_verify_nonrelease_sync_fails_when_proc_chqs_wait_is_unbounded(tmp_path, monkeypatch):
+    files = _base_files()
+    files["ui/ui_process_kill.py"] = """
+        def _remember_window_positions(ui):
+            pass
+
+        if hasattr(ui, 'webc') and ui.webc.isRunning():
+            ui.webc.stop()
+        _remember_window_positions(ui)
+        if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
+        while ui.proc_chqs.is_alive():
+            pass
+    """
+    _write_files(tmp_path, files)
+
+    result, output = _run_main(tmp_path, monkeypatch)
+
+    assert result == 1
+    assert "process_kill must not wait indefinitely for proc_chqs shutdown." in output
+
+
+def test_verify_nonrelease_sync_fails_when_backtest_stop_wait_is_unbounded(tmp_path, monkeypatch):
+    files = _base_files()
+    files["ui/ui_backtest_engine.py"] = """
+        def backtest_process_kill(ui, coin, enginekill):
+            while True:
+                data = ui.backQ.get()
+    """
+    _write_files(tmp_path, files)
+
+    result, output = _run_main(tmp_path, monkeypatch)
+
+    assert result == 1
+    assert "backtest_process_kill must not wait indefinitely for backtest stop acknowledgements." in output
