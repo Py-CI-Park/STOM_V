@@ -77,30 +77,28 @@ def _base_files() -> dict[str, str]:
             from time import monotonic
 
             SHUTDOWN_CHILD_WAIT_SEC = 5.0
+            BACKTEST_SHUTDOWN_WAIT_SEC = 5.0
 
             def _remember_window_positions(ui):
+                pass
+
+            def _terminate_processes(alive_procs):
                 pass
 
             if hasattr(ui, 'webc') and ui.webc.isRunning():
                 ui.webc.stop()
             _remember_window_positions(ui)
             if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
+            deadline = monotonic() + BACKTEST_SHUTDOWN_WAIT_SEC
+            while count < ui.multi and monotonic() < deadline:
+                data = ui.backQ.get(timeout=0.1)
+            _terminate_processes(alive_procs)
             deadline = monotonic() + SHUTDOWN_CHILD_WAIT_SEC
             while ui.proc_chqs.is_alive() and monotonic() < deadline:
                 pass
             if ui.proc_chqs.is_alive():
                 ui.proc_chqs.terminate()
                 ui.proc_chqs.join(timeout=1)
-        """,
-        "ui/ui_backtest_engine.py": """
-            BACKTEST_STOP_WAIT_SEC = 5.0
-
-            def backtest_process_kill(ui, coin, enginekill):
-                alive_procs = []
-                deadline = monotonic() + BACKTEST_STOP_WAIT_SEC
-                while count < wait_target and monotonic() < deadline:
-                    data = ui.backQ.get(timeout=0.1)
-                _terminate_processes(alive_procs)
         """,
         "utility/static.py": """
             summer_t = 3600
@@ -280,14 +278,30 @@ def test_verify_nonrelease_sync_fails_when_proc_chqs_wait_is_unbounded(tmp_path,
 
 def test_verify_nonrelease_sync_fails_when_backtest_stop_wait_is_unbounded(tmp_path, monkeypatch):
     files = _base_files()
-    files["ui/ui_backtest_engine.py"] = """
-        def backtest_process_kill(ui, coin, enginekill):
-            while True:
-                data = ui.backQ.get()
+    files["ui/ui_process_kill.py"] = """
+        from time import monotonic
+
+        SHUTDOWN_CHILD_WAIT_SEC = 5.0
+
+        def _remember_window_positions(ui):
+            pass
+
+        if hasattr(ui, 'webc') and ui.webc.isRunning():
+            ui.webc.stop()
+        _remember_window_positions(ui)
+        if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
+        while count < ui.multi:
+            data = ui.backQ.get()
+        deadline = monotonic() + SHUTDOWN_CHILD_WAIT_SEC
+        while ui.proc_chqs.is_alive() and monotonic() < deadline:
+            pass
+        if ui.proc_chqs.is_alive():
+            ui.proc_chqs.terminate()
+            ui.proc_chqs.join(timeout=1)
     """
     _write_files(tmp_path, files)
 
     result, output = _run_main(tmp_path, monkeypatch)
 
     assert result == 1
-    assert "backtest_process_kill must not wait indefinitely for backtest stop acknowledgements." in output
+    assert "process_kill must not wait indefinitely for backtest stop acknowledgements." in output

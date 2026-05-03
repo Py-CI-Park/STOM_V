@@ -2,8 +2,6 @@
 import sqlite3
 import numpy as np
 import pandas as pd
-from queue import Empty
-from time import monotonic
 from ui.set_style import style_bc_dk
 from backtest.back_subtotal import BackSubTotal
 from backtest.back_code_test import BackCodeTest
@@ -30,35 +28,6 @@ from backtest.backengine_binance_min2 import BackEngineBinanceMin2
 from utility.static import thread_decorator, str_hms, dt_hms, timedelta_sec, error_decorator
 from utility.setting_base import DB_STOCK_TICK_BACK, DB_COIN_TICK_BACK, ui_num, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, \
     DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK, DB_STRATEGY
-
-
-BACKTEST_STOP_WAIT_SEC = 5.0
-BACKTEST_PROCESS_NAMES = (
-    'proc_backtester_bs', 'proc_backtester_bf', 'proc_backtester_o', 'proc_backtester_ov',
-    'proc_backtester_ovc', 'proc_backtester_ot', 'proc_backtester_ovt', 'proc_backtester_ovct',
-    'proc_backtester_oc', 'proc_backtester_ocv', 'proc_backtester_ocvc', 'proc_backtester_og',
-    'proc_backtester_ogv', 'proc_backtester_ogvc', 'proc_backtester_or', 'proc_backtester_orv',
-    'proc_backtester_orvc', 'proc_backtester_b', 'proc_backtester_bv', 'proc_backtester_bvc',
-    'proc_backtester_bt', 'proc_backtester_bvt', 'proc_backtester_bvct', 'proc_backtester_br',
-    'proc_backtester_brv', 'proc_backtester_brvc',
-)
-
-
-def _alive_backtest_processes(ui):
-    procs = []
-    for name in BACKTEST_PROCESS_NAMES:
-        proc = getattr(ui, name, None)
-        if proc is not None and proc.is_alive():
-            procs.append(proc)
-    return procs
-
-
-def _terminate_processes(procs):
-    for proc in procs:
-        if not proc.is_alive():
-            continue
-        proc.terminate()
-        proc.join(timeout=1)
 
 
 @error_decorator
@@ -402,25 +371,17 @@ def clear_backtestQ(ui):
 def backtest_process_kill(ui, coin, enginekill):
     from ui.ui_button_clicked_dialog_backengine import backtest_engine_kill
     ui.back_cancelling = True
-    alive_procs = _alive_backtest_processes(ui)
     for q in ui.back_eques:
         q.put('백테중지')
     ui.totalQ.put('백테중지')
 
     count = 0
-    deadline = monotonic() + BACKTEST_STOP_WAIT_SEC
-    wait_target = ui.multi if alive_procs else 0
-    while count < wait_target and monotonic() < deadline:
-        try:
-            data = ui.backQ.get(timeout=0.1)
-        except Empty:
-            continue
+    while True:
+        data = ui.backQ.get()
         if data == '백테중지완료':
             count += 1
-
-    if count < wait_target:
-        _terminate_processes(alive_procs)
-        ui.windowQ.put((ui_num['시스템로그'], 'Backtest stop acknowledgement timeout; alive backtest processes terminated'))
+            if count == ui.multi:
+                break
 
     ui.windowQ.put((ui_num['C백테스트' if coin else 'S백테스트'], '백테스트 중지 완료'))
     if not coin:
