@@ -3,8 +3,8 @@ import sys
 import socket
 import shutil
 import subprocess
-from PyQt5.QtWidgets import QCompleter, QApplication
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread, Qt
+from PyQt5.QtWidgets import QCompleter, QApplication, QMessageBox
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread, Qt, QEvent, QTimer
 
 from ui.set_icon import SetIcon
 from ui.set_table import SetTable
@@ -361,6 +361,7 @@ class MainWindow(QMainWindow):
         self.cpu_per  = 0
         self.int_time = int(str_hms())
         self.wc       = WidgetCreater(self)
+        self._pyd_dialog_position_indexes = {}
 
         SetIcon(self)
         SetMainMenu(self, self.wc)
@@ -374,7 +375,7 @@ class MainWindow(QMainWindow):
         SetDialogChart(self, self.wc)
         SetDialogEtc(self, self.wc)
         SetDialogBack(self, self.wc)
-        self.BindPydDialogPositionPersistence()
+        self.BindPydBacktestEngineRuntimeGuards()
         SetDialogStrategy(self, self.wc)
         SetDialogFormula(self, self.wc)
         SetHomeTap(self, self.wc)
@@ -1051,8 +1052,79 @@ class MainWindow(QMainWindow):
                 pass
             button.clicked.connect(handler)
 
-    def BindPydDialogPositionPersistence(self):
+    def BindPydBacktestEngineRuntimeGuards(self):
+        self.BindPydBacktestEngineButton()
         self.BindPydDialogPosition(self.dialog_backengine, 16, 17)
+
+    def BindPydDialogPositionPersistence(self):
+        self.BindPydBacktestEngineRuntimeGuards()
+
+    def BindPydBacktestEngineButton(self):
+        try:
+            self.be_pushButtonnn_01.clicked.disconnect()
+        except TypeError:
+            pass
+        self.be_pushButtonnn_01.clicked.connect(self.PydBacktestEngineStart)
+
+    def PydBacktestEngineStart(self):
+        from ui.ui_backtest_engine import backengine_start
+        from ui.ui_button_clicked_dialog_backengine import backtest_engine_kill
+
+        if self.back_engining:
+            QMessageBox.critical(self.dialog_backengine, '오류 알림', '백테엔진 구동 중...\n')
+            return
+
+        if self.main_btn == 3 or (self.dialog_scheduler.isVisible() and self.sd_pushButtonnn_01.text() == '주식'):
+            gubun = '주식' if '키움증권' in self.dict_set['증권사'] else '해선'
+        elif self.main_btn == 4 or (self.dialog_scheduler.isVisible() and self.sd_pushButtonnn_01.text() == '코인'):
+            gubun = '코인'
+        else:
+            bebutton_clicked_01(self)
+            return
+
+        if not self.backtest_engine:
+            self.CleanupPydStaleBacktestSharedMemory()
+            backengine_start(self, gubun)
+            return
+
+        button_reply = QMessageBox.question(
+            self.dialog_backengine,
+            '백테엔진',
+            '이미 백테스트 엔진이 구동중입니다.\n엔진을 재시작하시겠습니까?\n',
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+        if button_reply == QMessageBox.Yes:
+            backtest_engine_kill(self)
+            qtest_qwait(3)
+            self.CleanupPydStaleBacktestSharedMemory()
+            backengine_start(self, gubun)
+
+    def CleanupPydStaleBacktestSharedMemory(self):
+        if any(proc.is_alive() for proc in self.back_eprocs):
+            return
+
+        from multiprocessing import shared_memory
+
+        try:
+            configured_multi = int(self.be_lineEdittttt_04.text())
+        except Exception:
+            configured_multi = 0
+        name_count = max(configured_multi, self.multi, len(self.back_eprocs), 20)
+        cleaned = []
+        for index in range(name_count):
+            name = f'backdata_{index}'
+            try:
+                shm = shared_memory.SharedMemory(name=name)
+                shm.close()
+                shm.unlink()
+                cleaned.append(name)
+            except FileNotFoundError:
+                pass
+            except Exception:
+                pass
+        if cleaned:
+            self.windowQ.put((ui_num['시스템로그'], f'Stale backtest shared memory cleaned: {", ".join(cleaned)}'))
 
     def BindPydDialogPosition(self, dialog, x_index, y_index):
         if getattr(dialog, '_pyd_position_persistence_bound', False):
@@ -1061,10 +1133,13 @@ class MainWindow(QMainWindow):
         original_show = dialog.show
         original_close = dialog.close
         original_hide = dialog.hide
+        self._pyd_dialog_position_indexes[id(dialog)] = (dialog, x_index, y_index)
 
         def show_with_position_restore(*args, **kwargs):
             self.RestorePydDialogPosition(dialog, x_index, y_index)
-            return original_show(*args, **kwargs)
+            result = original_show(*args, **kwargs)
+            QTimer.singleShot(0, lambda: self.RestorePydDialogPosition(dialog, x_index, y_index))
+            return result
 
         def close_with_position_save(*args, **kwargs):
             self.SavePydDialogPosition(dialog, x_index, y_index)
@@ -1077,6 +1152,7 @@ class MainWindow(QMainWindow):
         dialog.show = show_with_position_restore
         dialog.close = close_with_position_save
         dialog.hide = hide_with_position_save
+        dialog.installEventFilter(self)
         dialog._pyd_position_persistence_bound = True
 
     def RestorePydDialogPosition(self, dialog, x_index, y_index):
@@ -1090,7 +1166,7 @@ class MainWindow(QMainWindow):
         except Exception:
             pass
 
-    def SavePydDialogPosition(self, dialog, x_index, y_index):
+    def SavePydDialogPosition(self, dialog, x_index, y_index, persist=True):
         try:
             if not self.dict_set.get('창위치기억'):
                 return
@@ -1101,10 +1177,21 @@ class MainWindow(QMainWindow):
             positions[x_index] = dialog.x()
             positions[y_index] = dialog.y()
             self.dict_set['창위치'] = positions
-            geometry = ';'.join(str(value) for value in positions)
-            self.queryQ.put(('설정디비', f"UPDATE etc SET 창위치 = '{geometry}'"))
+            if persist:
+                geometry = ';'.join(str(value) for value in positions)
+                self.queryQ.put(('설정디비', f"UPDATE etc SET 창위치 = '{geometry}'"))
         except Exception:
             pass
+
+    def HandlePydDialogPositionEvent(self, widget, event):
+        position = self._pyd_dialog_position_indexes.get(id(widget))
+        if position is None:
+            return
+        dialog, x_index, y_index = position
+        if event.type() == QEvent.Move:
+            self.SavePydDialogPosition(dialog, x_index, y_index, persist=False)
+        elif event.type() in (QEvent.Hide, QEvent.Close):
+            self.SavePydDialogPosition(dialog, x_index, y_index)
 
     def LegacyBacktestShortcut(self, event):
         if event.key() not in (Qt.Key_Return, Qt.Key_Enter):
@@ -1125,7 +1212,9 @@ class MainWindow(QMainWindow):
         if self.LegacyBacktestShortcut(event):
             return
         key_press_event(self, event)
-    def eventFilter(self, widget, event): return event_filter(self, widget, event)
+    def eventFilter(self, widget, event):
+        self.HandlePydDialogPositionEvent(widget, event)
+        return event_filter(self, widget, event)
     def closeEvent(self, a):                     close_event(self, a)
     # =================================================================================================================
     def ProcessKill(self):                       process_kill(self)
