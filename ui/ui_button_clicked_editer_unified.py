@@ -1057,69 +1057,15 @@ def change_version_button_color(ui, ui_type):
 # =============================================================================
 @error_decorator
 def backtest_start(ui, ui_type):
-    """백테스트 시작 (코인/주식 공통)"""
-    from ui.ui_backtest_engine import clear_backtestQ, backengine_show
-    config = UI_EDITER_CONFIG[ui_type]
-
-    if backtest_process_alive(ui):
-        QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
+    """백테스트 시작 (legacy stock/coin 경로 동등성 우선)."""
+    if ui_type == 'stock':
+        from ui.ui_button_clicked_editer_stock import stock_backtest_start
+        stock_backtest_start(ui)
+    elif ui_type == 'coin':
+        from ui.ui_button_clicked_editer_coin import coin_backtest_start
+        coin_backtest_start(ui)
     else:
-        if ui.back_engining:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
-            return
-        if ui.dialog_backengine.isVisible() and not ui.backtest_engine:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
-            return
-        back_club = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
-                QApplication.keyboardModifiers() & Qt.AltModifier) else False
-        if back_club and not ui.backtest_engine:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진을 먼저 구동하십시오.\n')
-            return
-        if not back_club and (not ui.backtest_engine or (QApplication.keyboardModifiers() & Qt.ControlModifier)):
-            backengine_show(ui, config['market_type'])
-            return
-        if ui.back_cancelling:
-            QMessageBox.critical(ui, '오류 알림', '이전 백테스트를 중지하고 있습니다.\n잠시 후 다시 시도하십시오.\n')
-            return
-
-        startday = _get_widget(ui, ui_type, 'date_start').date().toString('yyyyMMdd')
-        endday = _get_widget(ui, ui_type, 'date_end').date().toString('yyyyMMdd')
-        starttime = _get_widget(ui, ui_type, 'line_start').text()
-        endtime = _get_widget(ui, ui_type, 'line_end').text()
-        betting = _get_widget(ui, ui_type, 'line_betting').text()
-        avgtime = _get_widget(ui, ui_type, 'line_avg').text()
-        buystg = _get_widget(ui, ui_type, 'combo_buy').currentText()
-        sellstg = _get_widget(ui, ui_type, 'combo_sell').currentText()
-        bl = True if ui.dict_set['블랙리스트추가'] else False
-
-        if int(avgtime) not in ui.avg_list:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진 시작 시 포함되지 않은 평균값틱수를 사용하였습니다.\n현재의 틱수로 백테스팅하려면 백테엔진을 다시 시작하십시오.\n')
-            return
-        if '' in (startday, endday, starttime, endtime, betting, avgtime):
-            QMessageBox.critical(ui, '오류 알림', '일부 설정값이 공백 상태입니다.\n')
-            return
-        if '' in (buystg, sellstg):
-            QMessageBox.critical(ui, '오류 알림', '전략을 저장하고 콤보박스에서 선택하십시오.\n')
-            return
-
-        clear_backtestQ(ui)
-        for q in ui.back_eques:
-            q.put(('백테유형', '백테스트'))
-
-        gubun = config['gubun_fn'](ui)
-        dict_cn = getattr(ui, config['dict_cn']) if config['dict_cn'] else None
-
-        proc_name = f'proc_backtester_bs'
-        setattr(ui, proc_name, Process(
-            target=BackTest,
-            args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ, ui.back_eques,
-                  ui.back_sques, '백테스트', gubun, ui.dict_set, betting, avgtime, startday, endday, starttime,
-                  endtime, buystg, sellstg, dict_cn, ui.back_count, bl, False, back_club)
-        ))
-        getattr(ui, proc_name).start()
-        backtest_log(ui, ui_type)
-        _get_widget(ui, ui_type, 'progress').setValue(0)
-        setattr(ui, config['icon_alert'], True)
+        raise ValueError(f'unknown strategy ui_type: {ui_type}')
 
 
 @error_decorator

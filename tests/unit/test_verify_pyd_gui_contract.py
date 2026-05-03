@@ -41,6 +41,16 @@ def test_evaluate_fails_closed_on_missing_smoke_and_missing_import(monkeypatch, 
 
 def test_evaluate_passes_with_smoke_log_and_upstream_evidence(monkeypatch, tmp_path):
     write(tmp_path / "ui" / "ui_mainwindow.py", "class MainWindow: pass\n")
+    write(
+        tmp_path / "ui" / "ui_button_clicked_editer_unified.py",
+        "def backtest_start(ui, ui_type):\n"
+        "    if ui_type == 'stock':\n"
+        "        from ui.ui_button_clicked_editer_stock import stock_backtest_start\n"
+        "        stock_backtest_start(ui)\n"
+        "    elif ui_type == 'coin':\n"
+        "        from ui.ui_button_clicked_editer_coin import coin_backtest_start\n"
+        "        coin_backtest_start(ui)\n",
+    )
     write(tmp_path / "ui" / "set_dialog_etc.py", "self.ui.dialog_db = self.wc.setDialog('STOM DATABASE')\n")
     log_dir = tmp_path / ".omx" / "logs"
     log_dir.mkdir(parents=True)
@@ -71,3 +81,35 @@ def test_unresolved_activated_alias_calls_are_reported(monkeypatch, tmp_path):
         "cActivated_09->cactivated_09",
         "sActivated_09->sactivated_09",
     ]
+
+
+def test_unified_backtest_legacy_parity_failures_are_reported(monkeypatch, tmp_path):
+    write(
+        tmp_path / "ui" / "ui_button_clicked_editer_unified.py",
+        "def backtest_start(ui, ui_type):\n"
+        "    pass\n",
+    )
+
+    monkeypatch.setattr(contract, "ROOT", tmp_path)
+
+    failures = contract.unified_backtest_legacy_parity_failures()
+
+    assert "unified backtest_start lacks stock legacy call" in failures
+    assert "unified backtest_start lacks coin legacy call" in failures
+
+
+def test_unified_backtest_legacy_parity_passes_with_stock_coin_dispatch(monkeypatch, tmp_path):
+    write(
+        tmp_path / "ui" / "ui_button_clicked_editer_unified.py",
+        "def backtest_start(ui, ui_type):\n"
+        "    if ui_type == 'stock':\n"
+        "        from ui.ui_button_clicked_editer_stock import stock_backtest_start\n"
+        "        stock_backtest_start(ui)\n"
+        "    elif ui_type == 'coin':\n"
+        "        from ui.ui_button_clicked_editer_coin import coin_backtest_start\n"
+        "        coin_backtest_start(ui)\n",
+    )
+
+    monkeypatch.setattr(contract, "ROOT", tmp_path)
+
+    assert contract.unified_backtest_legacy_parity_failures() == []

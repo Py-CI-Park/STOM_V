@@ -105,6 +105,22 @@ def missing_import_modules() -> list[str]:
     return sorted(set(missing))
 
 
+def unified_backtest_legacy_parity_failures() -> list[str]:
+    path = ROOT / "ui" / "ui_button_clicked_editer_unified.py"
+    if not path.exists():
+        return ["ui/ui_button_clicked_editer_unified.py is missing"]
+
+    text = path.read_text(encoding="utf-8", errors="replace")
+    required_snippets = {
+        "stock legacy import": "from ui.ui_button_clicked_editer_stock import stock_backtest_start",
+        "coin legacy import": "from ui.ui_button_clicked_editer_coin import coin_backtest_start",
+        "stock legacy call": "stock_backtest_start(ui)",
+        "coin legacy call": "coin_backtest_start(ui)",
+    }
+    missing = [label for label, snippet in required_snippets.items() if snippet not in text]
+    return [f"unified backtest_start lacks {label}" for label in missing]
+
+
 def evaluate(branch: str, version: str, upstream_ref: str, log_dir: Path) -> tuple[dict[str, object], list[str]]:
     failures: list[str] = []
     pyd_evidence, pyd_error = upstream_pyd_evidence(upstream_ref)
@@ -126,6 +142,13 @@ def evaluate(branch: str, version: str, upstream_ref: str, log_dir: Path) -> tup
             + ", ".join(unresolved_alias_calls)
         )
 
+    legacy_parity_failures = unified_backtest_legacy_parity_failures()
+    if legacy_parity_failures:
+        failures.append(
+            "unified backtest_start must preserve legacy stock/coin parity: "
+            + ", ".join(legacy_parity_failures)
+        )
+
     contract = build_contract(ROOT)
     if not contract:
         failures.append("GUI contract manifest is empty")
@@ -145,6 +168,7 @@ def evaluate(branch: str, version: str, upstream_ref: str, log_dir: Path) -> tup
         "tracked_pyd_files": pyd_files,
         "missing_import_modules": imports_missing,
         "unresolved_activated_alias_calls": unresolved_alias_calls,
+        "unified_backtest_legacy_parity_failures": legacy_parity_failures,
         "contract_summary": contract_summary(contract),
         "contract_items": [item.to_dict() for item in contract],
         "smoke_log": str(smoke_log_path(log_dir, branch, version)),
