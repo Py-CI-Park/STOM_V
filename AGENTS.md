@@ -37,6 +37,14 @@ Current promoted state:
 
 `STOM_Version_2` remains the release-ingress branch. `STOM_V.wt-dev/` is the active `STOM_Version_2U_C` checkout location, and `STOM_V.wt-2uc/` remains on `integration/adopt-cli-v267-into-2uc` as an archive/transition lane. `research/init` is excluded from the current official V2.79 propagation chain. Do not restore the retired live CLI child-lane model.
 
+## Branch Parity Invariants
+
+- `STOM_Version_2` / `*_2`: official upstream update reflection lane. Keep upstream update files as official source, including upstream `.pyd` files.
+- `STOM_Version_2U`: pyd-to-py inference lane derived from V2. Non-pyd official runtime files must stay identical to `STOM_Version_2`; inference defects are fixed in inferred `.py` files, MainWindow wrappers, process wrappers, or verification contracts.
+- `STOM_Version_2U_C`: custom update lane derived from 2U. Custom changes may proceed here, but they must be documented as 2U_C custom carry-forward/allowlist items and do not imply changes to V2 or 2U unless explicitly promoted.
+- Default audit direction: `2U` vs `V2` allows only pyd-to-py inference differences; `2U_C` vs `2U` allows only documented custom differences.
+- When a GUI/runtime problem appears in 2U, inspect pyd-inferred `.py` and wrapper boundaries before editing official `.py` files. Official-file exceptions require an explicit decision record.
+
 ## Commit Language Rules
 
 New commits in this repository use these defaults:

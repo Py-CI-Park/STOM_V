@@ -26,6 +26,12 @@ Worktree roles:
 - `C:/System_Trading/STOM/STOM_V.wt-dev` -> `STOM_Version_2U_C` -> active downstream runtime compatibility lane
 - `C:/System_Trading/STOM/STOM_V.wt-2uc` -> `integration/adopt-cli-v267-into-2uc` -> archive/transition only
 
+Branch parity rule:
+
+- `STOM_Version_2` / `*_2` reflects official upstream updates and keeps upstream `.pyd` files.
+- `STOM_Version_2U` is the pyd-to-py inference result. Non-pyd official runtime files should remain identical to `STOM_Version_2`; fix inference defects in inferred `.py` or wrapper boundaries first.
+- `STOM_Version_2U_C` is the custom update lane derived from 2U. Custom updates may be made here, but intentional differences from 2U must be documented in `docs/CARRY_FORWARD_REGISTRY.md` or the active update-log status.
+
 `research/init` is excluded from the current official propagation chain.
 
 ## Preflight

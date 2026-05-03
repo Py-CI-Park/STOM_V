@@ -31,6 +31,15 @@ V2 -> 2U -> 2U_C
 - `STOM_V.wt-2uc/`: archive/history/transition lane that preserves promotion evidence and execution logs.
 - `STOM_V.wt-dev/`: active single-baseline lane for `STOM_Version_2U_C`.
 
+## Branch Parity Invariants
+
+- `STOM_Version_2` / `*_2` is the official upstream update reflection lane. It keeps official files, including upstream `.pyd` files.
+- `STOM_Version_2U` is the pyd-to-py inference lane. All non-pyd official runtime files should match `STOM_Version_2`; pyd inference defects should be fixed in inferred `.py`, MainWindow wrapper, process wrapper, or verification-contract boundaries.
+- `STOM_Version_2U_C` is the custom update lane derived from 2U. Custom edits may be made in this lane, but each runtime difference from 2U must be documented in the carry-forward/update log allowlist before it is treated as intentional.
+- Verification order:
+  1. `2U` vs `V2`: only pyd-to-py inference differences are expected.
+  2. `2U_C` vs `2U`: only documented custom differences are expected.
+
 ## Protection Rules
 
 - Official updates enter only through `STOM_Version_2`.

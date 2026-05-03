@@ -7,6 +7,12 @@ Tracks known issues that were intentionally not fixed in the current official up
 The active V2.79 official propagation chain is `V2 -> 2U -> 2U_C`.
 Entries below that name `CLI_v267` or `research/init` are historical carry-forward records from the closed V2.74~V2.77 cycle. They are not active V2.79 propagation targets unless a separate migration or corrective-fix cycle explicitly reopens them.
 
+## 2U_C custom allowlist rule
+`STOM_Version_2U_C` is the custom update lane derived from `STOM_Version_2U`.
+Custom edits are allowed in 2U_C, but any runtime difference from 2U must be recorded as an intentional 2U_C custom item in this registry or the active `docs/update_log/` status document.
+
+This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py inference lane and should differ from `STOM_Version_2` only by pyd-to-py inference outputs and related verification scaffolding.
+
 ## Decision schema
 - Deferred because: the current wave did not touch the surface directly, or the known issue did not block official intake propagation in this cycle.
 - Reclassify when: a future wave changes the surface directly, the failure reproduces during blocker audit, or the affected branch becomes the active corrective-fix target.
