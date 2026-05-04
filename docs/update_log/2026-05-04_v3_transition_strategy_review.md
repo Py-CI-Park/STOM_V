@@ -584,15 +584,33 @@ V3 `_update.txt`에는 DB primary key 추가, 거래소별 설정 분리, 전략
 - 물음표 두 개 형태의 깨진 문자열이 남지 않음
 - 향후 작업자가 이 문서만 보고 branch 역할을 구분할 수 있음
 
+### Phase 0.5: V3 kick-off guidance 전파
+
+전략 문서만 존재하면 새 worktree를 만든 뒤 작업자가 이 내용을 놓칠 수 있다. 따라서 V3 실행 전에 root `AGENTS.md`와 별도 운영 문서가 전략 문서를 참조하게 해야 한다.
+
+이 단계의 목표:
+
+- root `AGENTS.md`에 V3 kick-off 진입점을 추가한다.
+- `docs/V3_UPDATE_OPERATING_SYSTEM.md`를 작성한다.
+- 새로 생성될 `STOM_Version_3`, `STOM_Version_3U` worktree가 같은 문서를 자동으로 포함하도록, 이 문서들이 포함된 기준선 이후에서 branch를 만든다.
+- 기존 `2U_C` worktree에서 V3 backport를 수행할 때는 이 문서를 직접 읽거나 문서 커밋을 의도적으로 전파한다.
+
+이 단계가 완료되면 V3 진입은 다음 상태로 정의한다.
+
+```text
+V3 실행은 아직 시작하지 않았지만,
+V3를 시작하기 위한 운영 기준과 guidance propagation gate는 열린 상태다.
+```
+
 ### Phase 1: V3 운영 문서 초안 작성
 
-권장 신규 문서:
+운영 문서:
 
 ```text
 docs/V3_UPDATE_OPERATING_SYSTEM.md
 ```
 
-또는 기존 공식 운영 문서에 V3 부록을 추가할 수 있다. 다만 V3는 독립 프로젝트 성격이 강하므로 별도 문서를 권장한다.
+V3는 독립 프로젝트 성격이 강하므로 별도 문서를 둔다.
 
 포함할 내용:
 
