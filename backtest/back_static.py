@@ -32,6 +32,7 @@ TRADE_RESULT_S_COLUMNS = [
 TRADE_RESULT_R_COLUMNS = [
     'R_매수후최고수익률', 'R_매수후최저수익률', 'R_MFE', 'R_MAE'
 ]
+TRADE_RESULT_BASE_COLUMN_COUNT = 14
 TRADE_RESULT_EXTRA_COLUMNS = TRADE_RESULT_B_COLUMNS + TRADE_RESULT_S_COLUMNS + TRADE_RESULT_R_COLUMNS
 
 
@@ -98,6 +99,16 @@ def get_trade_info(gubun):
 
 def get_trade_result_snapshot():
     return {column: 0 for column in TRADE_RESULT_B_COLUMNS}
+
+
+def normalize_trade_result_rows(list_tsg, expected_len):
+    rows = []
+    for row in list_tsg:
+        row = list(row)
+        if TRADE_RESULT_BASE_COLUMN_COUNT <= len(row) < expected_len:
+            row.extend([0] * (expected_len - len(row)))
+        rows.append(row)
+    return rows
 
 
 def GetBackloadCodeQuery(is_tick, code, days, starttime, endtime):
@@ -656,6 +667,7 @@ def GetResultDataframe(ui_gubun, list_tsg, arry_bct):
         '종목명', '포지션' if ui_gubun in ('SF', 'CF') else '시가총액', '매수시간', '매도시간',
         '보유시간', '매수가', '매도가', '매수금액', '매도금액', '수익률', '수익금', '수익금합계', '매도조건', '추가매수시간'
     ] + TRADE_RESULT_EXTRA_COLUMNS
+    list_tsg = normalize_trade_result_rows(list_tsg, len(columns1))
     df_tsg = get_pd().DataFrame(list_tsg, columns=columns1)
     df_tsg.set_index('index', inplace=True)
     df_tsg.sort_index(inplace=True)
