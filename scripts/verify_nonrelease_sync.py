@@ -1,3 +1,4 @@
+import ast
 from pathlib import Path
 import sys
 
@@ -17,6 +18,86 @@ def check(condition, success, failure, failures):
     else:
         print(f"[FAIL] {failure}")
         failures.append(failure)
+
+
+BACKTEST_PROCESS_FILES = (
+    "ui/ui_button_clicked_dialog_backengine.py",
+    "ui/ui_button_clicked_editer_coin.py",
+    "ui/ui_button_clicked_editer_stock.py",
+    "ui/ui_button_clicked_editer_unified.py",
+)
+BACKTEST_PROCESS_ARG_COUNT = 24
+
+
+def ast_name(node):
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
+    return ""
+
+
+def keyword_value(call, name):
+    for keyword in call.keywords:
+        if keyword.arg == name:
+            return keyword.value
+    return None
+
+
+def backtest_process_contract_failures():
+    failures = []
+    for relative_path in BACKTEST_PROCESS_FILES:
+        text = read_text(relative_path)
+        tree = ast.parse(text)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or ast_name(node.func) != "Process":
+                continue
+            target = keyword_value(node, "target")
+            if ast_name(target) != "BackTest":
+                continue
+            args = keyword_value(node, "args")
+            if not isinstance(args, (ast.Tuple, ast.List)):
+                failures.append(f"{relative_path}:{node.lineno} BackTest Process args must be a tuple/list")
+                continue
+            if len(args.elts) != BACKTEST_PROCESS_ARG_COUNT:
+                failures.append(
+                    f"{relative_path}:{node.lineno} BackTest Process args count {len(args.elts)} "
+                    f"!= {BACKTEST_PROCESS_ARG_COUNT}"
+                )
+            if any(ast.get_source_segment(text, arg) == "ui.backQ" for arg in args.elts):
+                failures.append(f"{relative_path}:{node.lineno} BackTest Process args must not include ui.backQ")
+
+    return failures
+
+
+def backtest_queue_handoff_failures():
+    failures = []
+    for relative_path in (
+        "ui/ui_button_clicked_dialog_backengine.py",
+        "ui/ui_button_clicked_editer_coin.py",
+        "ui/ui_button_clicked_editer_stock.py",
+    ):
+        text = read_text(relative_path)
+        tree = ast.parse(text)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            if not (
+                isinstance(func, ast.Attribute)
+                and func.attr == "put"
+                and isinstance(func.value, ast.Attribute)
+                and func.value.attr == "backQ"
+                and isinstance(func.value.value, ast.Name)
+                and func.value.value.id == "ui"
+            ):
+                continue
+            if not node.args or not isinstance(node.args[0], (ast.Tuple, ast.List)):
+                continue
+            handoff_args = node.args[0].elts
+            if [ast_name(arg) for arg in handoff_args[:3]] == ["betting", "avgtime", "startday"]:
+                failures.append(f"{relative_path}:{node.lineno}")
+    return failures
 
 
 def main():
@@ -121,6 +202,20 @@ def main():
         and "_terminate_processes(alive_procs)" in ui_process_kill_text,
         "Shutdown backtest stop acknowledgement wait is bounded with terminate fallback.",
         "process_kill must not wait indefinitely for backtest stop acknowledgements.",
+        failures,
+    )
+    backtest_arg_failures = backtest_process_contract_failures()
+    check(
+        not backtest_arg_failures,
+        "BackTest 프로세스 생성자가 직접 인자 전달 계약을 유지합니다.",
+        "BackTest Process args contract mismatch: " + "; ".join(backtest_arg_failures),
+        failures,
+    )
+    backtest_handoff_failures = backtest_queue_handoff_failures()
+    check(
+        not backtest_handoff_failures,
+        "BackTest 실행 인자가 backQ 우회 전달로 오염되지 않습니다.",
+        "BackTest launch args must not be handed off through backQ: " + ", ".join(backtest_handoff_failures),
         failures,
     )
     check(
