@@ -172,17 +172,14 @@ def sdbutton_clicked_02(ui):
                 for q in ui.back_eques:
                     q.put(('백테유형', '백테스트'))
 
-                ui.backQ.put((
-                    betting, avgtime, startday, endday, starttime, endtime, buystg, sellstg,
-                    ui.dict_cn if bt_gubun == '주식' else None, ui.back_count, bl, True, False
-                ))
-
                 if bt_gubun == '주식':
                     gubun = 'S' if '키움증권' in ui.dict_set['증권사'] else 'SF'
                     ui.proc_backtester_bs = Process(
                         target=BackTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set)
+                        args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set, betting, avgtime,
+                              startday, endday, starttime, endtime, buystg, sellstg, ui.dict_cn, ui.back_count,
+                              bl, True, False)
                     )
                     ui.proc_backtester_bs.start()
                     stock_backtest_log(ui)
@@ -192,8 +189,10 @@ def sdbutton_clicked_02(ui):
                     gubun = 'C' if ui.dict_set['거래소'] == '업비트' else 'CF'
                     ui.proc_backtester_bs = Process(
                         target=BackTest,
-                        args=(ui.shared_cnt, ui.windowQ, ui.backQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
-                              ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set)
+                        args=(ui.shared_cnt, ui.windowQ, ui.soundQ, ui.totalQ, ui.liveQ, ui.teleQ,
+                              ui.back_eques, ui.back_sques, back_name, gubun, ui.dict_set, betting, avgtime,
+                              startday, endday, starttime, endtime, buystg, sellstg, None, ui.back_count,
+                              bl, True, False)
                     )
                     ui.proc_backtester_bs.start()
                     coin_backtest_log(ui)
