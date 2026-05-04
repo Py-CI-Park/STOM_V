@@ -827,3 +827,76 @@ STOM_Version_3U_C
 ```
 
 이 문서를 V3 전환의 기준 문서로 삼고, 다음 단계는 `docs/V3_UPDATE_OPERATING_SYSTEM.md` 또는 동등한 공식 운영 문서를 작성한 뒤 실제 branch와 worktree 생성을 진행하는 것이다.
+## 추가 반영: worktree runtime DB bootstrap 및 2U 추론 산출물 활용
+
+### 판단
+
+사용자가 제안한 “worktree 생성 시 `_database`가 필요하다”는 판단은 옳다. 현재 저장소에서 `_database`, `_log`, `*.db`는 `.gitignore` 대상이므로 새 worktree를 만들어도 자동으로 생기지 않는다. 따라서 V3와 V3U worktree 생성 절차에는 runtime DB bootstrap 단계를 명시해야 한다.
+
+또한 3U는 branch base를 `STOM_Version_3`로 유지해야 하지만, pyd 제거 구현은 기존 `STOM_Version_2U`의 pyd-to-py 추론 산출물을 최대한 참고하고 이식하는 것이 좋다. 이는 “3U는 3에서 분기한다”는 원칙과 충돌하지 않는다.
+
+```text
+branch base: STOM_Version_3
+runtime DB seed: V3는 STOM_V/_database에서 시작 가능, V3U는 STOM_V.wt-3/_database 기준
+pyd-free implementation reference: STOM_Version_2U
+```
+
+### V3 `_database` bootstrap
+
+권장 절차:
+
+```text
+1. STOM_V/_database를 외부 위치에 백업
+2. STOM_V.wt-3 worktree 생성
+3. STOM_V.wt-3/_database 디렉터리 생성
+4. STOM_V.wt-3/_log 디렉터리 생성
+5. 필요한 DB 파일을 STOM_V/_database에서 STOM_V.wt-3/_database로 복사
+6. V3 실행 또는 검증 중 DB 비호환이 확인되면 V3 기준 migration/재생성으로 전환
+```
+
+주의:
+
+- `_database`와 `*.db`는 커밋하지 않는다.
+- `en_key.txt` 같은 민감 가능 파일은 복사 전 용도를 확인한다.
+- V3에는 DB primary key와 거래소별 설정 분리 같은 비호환 가능 변경이 있으므로 V2 DB는 최종 V3 DB가 아니라 초기 seed로 취급한다.
+
+### V3U `_database` bootstrap
+
+3U는 3과 같은 runtime seed 조건에서 pyd 제거 차이를 검증해야 한다. 따라서 `STOM_V.wt-3u`는 가능하면 `STOM_V.wt-3/_database`를 seed로 사용한다.
+
+권장 절차:
+
+```text
+1. STOM_Version_3 공식 반영 완료
+2. STOM_V.wt-3/_database seed 준비
+3. STOM_Version_3에서 STOM_Version_3U 분기
+4. STOM_V.wt-3u worktree 생성
+5. STOM_V.wt-3/_database를 STOM_V.wt-3u/_database로 복사
+6. 같은 DB seed 조건에서 3과 3U의 runtime 차이를 pyd 제거 차이 중심으로 검증
+```
+
+### 3U에서 2U pyd 추론 산출물 활용
+
+3U 생성 시 기존 2U의 산출물은 다음 방식으로 활용한다.
+
+허용:
+
+- `ui/ui_mainwindow.py`에 축적된 pyd-derived MainWindow 구현 경험 참고
+- dialog show/close, position persistence, process wrapper 보정 패턴 참고
+- activated/clicked alias 보정 방식 참고
+- `smoke_offline_gui.py`, `verify_pyd_gui_contract.py`, `gui_contract_manifest.py` 검증 개념 이식
+- import/py_compile, tracked `.pyd` 없음 검증 방식 재사용
+
+금지:
+
+- 2U 파일을 V3 파일 위에 무검토 overwrite
+- V2 경로인 `ui/ui_mainwindow.py` 전제를 V3에 그대로 강제
+- 2U_C custom 코드를 3U pyd-free 변환으로 위장
+- Kiwoom 유지 custom logic을 3U에 섞음
+
+최종 원칙:
+
+```text
+2U 산출물은 복사 대상이 아니라 이식/대조/검증 기준이다.
+3U와 3의 차이는 pyd 제거 관련 차이로 제한한다.
+```

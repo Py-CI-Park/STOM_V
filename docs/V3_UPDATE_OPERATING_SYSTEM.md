@@ -287,3 +287,84 @@ V3 branch/worktree 생성 전에 다음 gate를 통과해야 한다.
 8. V3U pyd-free 검증 체계 설계
 
 다만 실제 V3 official update와 V3U pyd 제거는 변화량이 크므로 version별, gate별로 나누어 진행해야 한다.
+## runtime DB bootstrap 원칙
+
+Git worktree는 tracked file만 checkout한다. 현재 저장소의 `.gitignore`에는 `_database`, `_log`, `*.db`가 포함되어 있으므로, 새 worktree를 만들더라도 runtime DB 폴더와 DB 파일은 자동으로 생성되거나 복제되지 않는다.
+
+따라서 `STOM_V.wt-3`와 `STOM_V.wt-3u`를 만들 때는 별도의 runtime bootstrap 단계를 둔다.
+
+### `_database` 기본 원칙
+
+- `_database`는 runtime seed/data이지 공식 release source가 아니다.
+- `_database`와 `*.db` 파일은 커밋하지 않는다.
+- V3 official code 반영과 DB 복사는 별도 단계로 분리한다.
+- DB 복사 전에는 반드시 원본 `_database`를 백업하거나 snapshot한다.
+- V3에는 DB primary key, 거래소별 설정 분리, strategy/trade table 분리 등 비호환 가능성이 있으므로 V2 DB는 “초기 seed”로만 취급한다.
+
+### V3 worktree bootstrap
+
+`STOM_V.wt-3` 생성 후에는 다음 순서로 runtime directory를 준비한다.
+
+```text
+1. STOM_V.wt-3 worktree 생성
+2. STOM_V.wt-3/_database 디렉터리 생성
+3. STOM_V.wt-3/_log 디렉터리 생성
+4. 필요 시 V2 기준 STOM_V/_database 내용을 STOM_V.wt-3/_database로 복사
+5. 복사한 DB는 V3 runtime 검증용 seed로만 사용
+6. V3 DB 비호환 또는 재생성 요구가 있으면 V3 기준으로 별도 migration/초기화
+```
+
+중요한 점은 `STOM_Version_3` branch 자체는 V3 official source를 반영하는 branch이며, `_database` 복사는 worktree runtime 준비 단계라는 점이다.
+
+### V3U worktree bootstrap
+
+`STOM_V.wt-3u`는 `STOM_Version_3U` branch를 checkout하는 worktree다. 3U는 3을 기준으로 pyd-free 변환을 수행하므로 runtime DB도 가능하면 준비된 V3 worktree의 DB 상태를 기준으로 맞춘다.
+
+권장 순서:
+
+```text
+1. STOM_Version_3 공식 반영과 V3 runtime seed 준비
+2. STOM_Version_3에서 STOM_Version_3U 분기
+3. STOM_V.wt-3u worktree 생성
+4. STOM_V.wt-3u/_database 디렉터리 생성
+5. STOM_V.wt-3/_database를 STOM_V.wt-3u/_database의 seed로 복사
+6. 3U pyd-free 검증은 3과 같은 DB seed 조건에서 수행
+```
+
+이렇게 하면 `3U vs 3` 비교가 pyd 제거 차이에 집중될 수 있다.
+
+### 2U_C DB와의 분리
+
+`STOM_Version_2U_C`는 Kiwoom 유지 custom lane이다. V3 DB seed와 2U_C DB를 자동 동기화하지 않는다. V3 기능을 2U_C에 backport할 때 DB 변경이 필요하면 별도 migration spec, backup, dry-run, rollback 절차를 먼저 작성한다.
+
+## 3U에서 2U pyd 추론 산출물을 활용하는 원칙
+
+`STOM_Version_3U`의 branch base는 반드시 `STOM_Version_3`이다. 그러나 pyd 제거 구현을 새로 처음부터 작성할 필요는 없다. 기존 `STOM_Version_2U`에는 V2 pyd를 Python으로 추론하며 축적한 산출물과 검증 경험이 있으므로, 3U 작업에서는 이를 적극적으로 참고하고 필요한 부분을 이식한다.
+
+### 허용되는 활용
+
+- `STOM_Version_2U`의 pyd-derived MainWindow Python 구현을 V3 `ui/main_window.pyd` 분석의 참고 자료로 사용
+- dialog show/close, position persistence, process wrapper, activated/clicked alias 보정 패턴 참고
+- `scripts/smoke_offline_gui.py`, `scripts/verify_pyd_gui_contract.py`, `scripts/gui_contract_manifest.py`의 검증 개념 이식
+- import/py_compile, tracked `.pyd` 없음 검증, GUI contract manifest 방식 재사용
+- 2U에서 이미 해결한 pyd 추론 결함을 V3 구조에 맞게 재적용
+
+### 금지되는 활용
+
+- `STOM_Version_2U` 파일을 V3 파일 위에 무검토 overwrite
+- V2 경로인 `ui/ui_mainwindow.py` 전제를 V3에 그대로 강제
+- 2U_C custom 코드를 3U pyd-free 변환으로 위장
+- Kiwoom 유지 custom logic을 3U에 섞음
+- 3U와 3의 차이를 pyd 제거 범위 밖으로 확장
+
+### 적용 방식
+
+3U 구현 시 기준은 다음과 같다.
+
+```text
+branch ancestry: STOM_Version_3 -> STOM_Version_3U
+implementation reference: STOM_Version_2U의 pyd 추론 산출물과 검증 도구
+allowed diff: V3 pyd 제거와 대체 wrapper/inference/verification
+```
+
+즉, 3U는 “3에서 분기하되 2U의 pyd-free 경험을 이식하는 branch”로 운영한다.

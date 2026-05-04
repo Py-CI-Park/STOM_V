@@ -49,6 +49,9 @@ STOM_V.wt-2uc/   -> integration archive  # active lane 아님
 ```
 
 V3 공식 lane에는 upstream 파일과 `.pyd`를 보존한다. V3 pyd 제거는 `STOM_Version_3U`에서만 수행한다. `STOM_Version_2U_C`는 V3 branch가 아니라 Kiwoom 유지 custom lane이며, V3 기능은 선별 backport로만 반영한다. `STOM_Version_3U_C`는 아직 만들지 않는다.
+
+새 V3/V3U worktree를 만든 뒤에는 ignored runtime directory인 `_database`와 `_log`를 별도로 생성한다. V3의 초기 DB seed는 필요 시 `STOM_V/_database`를 백업 후 복사하고, V3U는 준비된 `STOM_V.wt-3/_database`를 seed로 맞춘다. DB 파일은 커밋하지 않는다. 3U는 `STOM_Version_3`에서 분기하되, pyd 제거 구현은 `STOM_Version_2U`의 pyd-to-py 추론 산출물과 검증 도구를 참고해 이식한다.
+
 Current resume context:
 `docs/update_log/2026-04-30_v279_update_resume_context.md`
 
