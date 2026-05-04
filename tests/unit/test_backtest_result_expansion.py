@@ -247,40 +247,41 @@ def test_total_report_writes_extended_detail_csv_and_db(monkeypatch, tmp_path):
     monkeypatch.setattr(backtest_module, 'PlotShow', lambda *args, **kwargs: None)
     monkeypatch.setattr(backtest_module.time, 'sleep', lambda *_args, **_kwargs: None)
 
-    total = backtest_module.Total.__new__(backtest_module.Total)
-    total.wq = _DummyQueue()
-    total.sq = _DummyQueue()
-    total.tq = _DummyQueue()
-    total.mq = _DummyQueue()
-    total.lq = _DummyQueue()
-    total.teleQ = _DummyQueue()
-    total.bstq_list = []
-    total.backname = '테스트백테스트'
-    total.ui_gubun = 'S'
-    total.gubun = 'stock'
-    total.market_text = '주식'
-    total.dict_set = {
+    backtest = backtest_module.BackTest.__new__(backtest_module.BackTest)
+    backtest.wq = _DummyQueue()
+    backtest.sq = _DummyQueue()
+    backtest.tq = _DummyQueue()
+    backtest.lq = _DummyQueue()
+    backtest.teleQ = _DummyQueue()
+    backtest.bstq_list = []
+    backtest.backname = '테스트백테스트'
+    backtest.ui_gubun = 'S'
+    backtest.gubun = 'stock'
+    backtest.market_text = '주식'
+    backtest.dict_set = {
         '스톰라이브': False,
         '주식타임프레임': True,
         '그래프저장하지않기': True,
         '그래프띄우지않기': True,
     }
-    total.savename = 'stock_bt'
-    total.betting = 100000
-    total.avgtime = 60
-    total.startday = 20260310
-    total.endday = 20260310
-    total.starttime = 90000
-    total.endtime = 90100
-    total.buystg_name = '테스트전략'
-    total.buystg = 'if 매수:\n    pass'
-    total.sellstg = 'if 매도:\n    pass'
-    total.dict_cn = {}
-    total.blacklist = False
-    total.day_count = 1
-    total.schedul = False
-    total.back_club = False
-    total.insertlist = []
+    backtest.savename = 'stock_bt'
+    backtest.betting = 100000
+    backtest.avgtime = 60
+    backtest.startday = 20260310
+    backtest.endday = 20260310
+    backtest.starttime = 90000
+    backtest.endtime = 90100
+    backtest.buystg_name = '테스트전략'
+    backtest.buystg = 'if 매수:\n    pass'
+    backtest.sellstg = 'if 매도:\n    pass'
+    backtest.dict_cn = {}
+    backtest.blacklist = False
+    backtest.day_count = 1
+    backtest.schedul = False
+    backtest.back_club = False
+    backtest.insertblacklist = []
+    backtest.start_time = backtest_module.now()
+    backtest.is_tick = True
 
     extra_values = list(range(1, len(TRADE_RESULT_EXTRA_COLUMNS) + 1))
     list_tsg = [[
@@ -302,9 +303,7 @@ def test_total_report_writes_extended_detail_csv_and_db(monkeypatch, tmp_path):
     ]]
     arry_bct = np.array([[20260310090100, 1, 1000]], dtype='float64')
 
-    # V2.62+ thread_decorator가 SystemExit를 catch하므로 직접 호출
-    with pytest.raises(SystemExit):
-        total.Report(list_tsg, arry_bct)
+    backtest.Report(list_tsg, arry_bct)
 
     csv_path = tmp_path / 'backtest' / 'csv' / 'stock_bt_테스트전략_20260310120000.csv'
     assert csv_path.exists()

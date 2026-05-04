@@ -1,8 +1,11 @@
 
+import json
+import os
 import re
 import sys
 import time
 import sqlite3
+from pathlib import Path
 import numpy as np
 import pandas as pd
 from traceback import format_exc
@@ -14,10 +17,59 @@ from utility.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj, D
     DB_COIN_TICK_BACK, DB_STOCK_MIN_BACK, DB_COIN_MIN_BACK, DB_FUTURE_OS_MIN_BACK, DB_FUTURE_OS_TICK_BACK
 
 
+def _emit_backtest_child_diagnostics(
+        back_queue, db, error, startday, endday, starttime, endtime, ui_gubun):
+    diagnostic = {
+        'stock_back_db_path': db,
+        'moneytop_query_status': 'error',
+        'moneytop_error': str(error),
+        'startday': startday,
+        'endday': endday,
+        'starttime': starttime,
+        'endtime': endtime,
+        'ui_gubun': ui_gubun,
+    }
+    if back_queue is not None:
+        back_queue.put(('backtest_child_diagnostics', diagnostic))
+    return diagnostic
+
+
+def _read_moneytop_with_diagnostics(
+        db, is_tick, ui_gubun, startday, endday, starttime, endtime, back_queue):
+    con = None
+    try:
+        con = sqlite3.connect(db)
+        query = GetMoneytopQuery(is_tick, ui_gubun, startday, endday, starttime, endtime)
+        return pd.read_sql(query, con)
+    except Exception as e:
+        _emit_backtest_child_diagnostics(
+            back_queue, db, e, startday, endday, starttime, endtime, ui_gubun
+        )
+        raise
+    finally:
+        if con is not None:
+            con.close()
+
+
+def _emit_cli_protocol_checkpoint(queue, source, checkpoint, detail=None):
+    if os.environ.get('STOM_CLI_BACKTEST_PROTOCOL_DIAG') != '1' or queue is None:
+        return
+    payload = {
+        'source': source,
+        'checkpoint': checkpoint,
+        'detail': detail or {},
+        'time': str_ymdhms(),
+    }
+    queue.put((
+        ui_num.get('시스템로그', 1),
+        '[CLI_DIAG] ' + json.dumps(payload, ensure_ascii=False, default=str),
+    ))
+
+
 class BackTest:
     def __init__(self, sc, wq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, ui_gubun, dict_set, betting,
                  avgtime, startday, endday, starttime, endtime, buystg_name, sellstg_name, dict_cn, back_count,
-                 blacklist, schedul, back_club):
+                 blacklist, schedul, back_club, diagnostic_queue=None):
         self.shared_cnt   = sc
         self.wq           = wq
         self.sq           = sq
@@ -45,6 +97,7 @@ class BackTest:
         self.blacklist    = blacklist
         self.schedul      = schedul
         self.back_club    = back_club
+        self.diagnostic_queue = diagnostic_queue
 
         self.buystg       = None
         self.sellstg      = None
@@ -99,10 +152,10 @@ class BackTest:
                 db = DB_COIN_MIN_BACK
                 self.is_tick = False
 
-        con   = sqlite3.connect(db)
-        query = GetMoneytopQuery(self.is_tick, self.ui_gubun, self.startday, self.endday, self.starttime, self.endtime)
-        df_mt = pd.read_sql(query, con)
-        con.close()
+        df_mt = _read_moneytop_with_diagnostics(
+            db, self.is_tick, self.ui_gubun, self.startday, self.endday, self.starttime, self.endtime,
+            self.diagnostic_queue
+        )
 
         if len(df_mt) == 0 or self.back_count == 0:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
@@ -177,6 +230,10 @@ class BackTest:
         if not list_tsg:
             self.wq.put((ui_num[f'{self.ui_gubun}백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
             self.SysExit(True)
+
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'report_started', {
+            'trade_count': 0 if list_tsg is None else len(list_tsg),
+        })
 
         df_tsg, df_bct = GetResultDataframe(self.ui_gubun, list_tsg, arry_bct)
         if self.blacklist: self.InsertBlacklist(df_tsg)
@@ -271,6 +328,17 @@ class BackTest:
         df.to_sql(self.savename, con, if_exists='append', chunksize=1000)
         df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=1000)
         con.close()
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'report_db_written', {
+            'table': self.savename,
+            'save_file_name': save_file_name,
+        })
+
+        csv_dir = Path('./backtest/csv')
+        csv_dir.mkdir(parents=True, exist_ok=True)
+        df_tsg.to_csv(csv_dir / f'{save_file_name}.csv', index=False, encoding='utf-8-sig')
+        _emit_cli_protocol_checkpoint(self.wq, 'BackTest', 'report_csv_written', {
+            'save_file_name': save_file_name,
+        })
         self.wq.put((ui_num[f'{self.ui_gubun.replace("F", "")}상세기록'], df_tsg))
 
     def InsertBlacklist(self, df_tsg):

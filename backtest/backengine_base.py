@@ -78,6 +78,10 @@ class BackEngineBase(BaseStrategy):
         self.code_list       = []
         self.vars_list       = []
         self.vars_lists      = []
+        self.shogainfo       = []
+        self.shreminfo       = []
+        self.bhogainfo       = []
+        self.bhreminfo       = []
         self.dict_buystg     = {}
         self.dict_sellstg    = {}
         self.dict_sconds     = {}
@@ -101,6 +105,14 @@ class BackEngineBase(BaseStrategy):
         set_builtin_print(True, self.wq)
         self.UpdateMarketGubun()
         self.MainLoop()
+
+    @property
+    def opti_turn(self):
+        return self.opti_kind
+
+    @opti_turn.setter
+    def opti_turn(self, value):
+        self.opti_kind = value
 
     def UpdateSubVars(self):
         self.market_text   = '주식' if self.market_gubun < 3 else '코인'
@@ -436,6 +448,30 @@ class BackEngineBase(BaseStrategy):
             self.unit = 10000
             self.hour = 2400
 
+    @staticmethod
+    def GetDayValues(indexs, is_tick):
+        return indexs // 1_000_000 if is_tick else indexs // 10_000
+
+    def SetHogaInfo(self):
+        호가데이터 = self.arry_code[self.indexn, self.hoga_sidex:self.hoga_eidex]
+        self.shogainfo = 호가데이터[:5][::-1]
+        self.bhogainfo = 호가데이터[5:10]
+        self.shreminfo = 호가데이터[10:15][::-1]
+        self.bhreminfo = 호가데이터[15:20]
+
+    @staticmethod
+    def _calc_fill_amount(주문수량, 호가배열, 잔량배열):
+        미체결수량 = 주문수량
+        거래금액 = 0
+        for 호가, 잔량 in zip(호가배열, 잔량배열):
+            if 미체결수량 - 잔량 <= 0:
+                거래금액 += 호가 * 미체결수량
+                미체결수량 = 0
+                break
+            거래금액 += 호가 * 잔량
+            미체결수량 -= 잔량
+        return 거래금액, 미체결수량 <= 0
+
     def _get_snapshot_value(self, row_index, field_name, default=0):
         if row_index is None or row_index < 0 or row_index >= len(self.arry_code):
             return default
@@ -483,6 +519,7 @@ class BackEngineBase(BaseStrategy):
         return tuple(snapshot[column] for column in TRADE_RESULT_EXTRA_COLUMNS)
 
     def BackStop(self, gubun=0):
+        self.CleanupSharedMemory()
         self.back_type = None
         if gubun in (0, 1):
             if self.gubun == 0: self.wq.put((ui_num[self.ui_num_txt], '백테스트 엔진 중지 중 ...'))
@@ -625,7 +662,7 @@ class BackEngineBase(BaseStrategy):
             last = len(self.arry_code) - 1
             if last > 0:
                 indexs = self.arry_code[:, 0].astype(np.int64)
-                day_vals = indexs // 1_000_000 if self.is_tick else indexs // 10_000
+                day_vals = self.GetDayValues(indexs, self.is_tick)
                 # noinspection PyUnresolvedReferences
                 day_last_indexs = np.where(day_vals[:-1] != day_vals[1:])[0]
                 day_last_indexs = np.concatenate([day_last_indexs, [last]])
@@ -636,6 +673,7 @@ class BackEngineBase(BaseStrategy):
                         self.index = indexs[i]
                         self.indexn = i
                         self.tick_count += 1
+                        self.SetHogaInfo()
 
                         try:
                             self.Strategy()
@@ -666,6 +704,20 @@ class BackEngineBase(BaseStrategy):
 
         if self.gubun == 0 and self.profile:
             self.wq.put((ui_num['시스템로그'], get_profile_text(self.pr)))
+
+    def CleanupSharedMemory(self):
+        while self.shared_list:
+            shm = self.shared_list.pop()
+            try:
+                shm.close()
+            except Exception:
+                pass
+            try:
+                shm.unlink()
+            except FileNotFoundError:
+                pass
+            except Exception:
+                pass
 
     def UpdateHighLow(self, 현재가또는분봉고가=None, 분봉저가=None):
         if 분봉저가 is None:
