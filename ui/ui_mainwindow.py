@@ -393,6 +393,7 @@ class MainWindow(QMainWindow):
         self.lgicon_alert     = False
         self.database_chart   = False
         self.data_save        = False
+        self.trading          = False
         self.back_engining    = False
         self.backtest_engine  = False
         self.extend_window    = False
@@ -469,6 +470,7 @@ class MainWindow(QMainWindow):
         self.dict_fm               = {}
         self.fm_tcnt               = 0
         self.dict_fn               = None
+        self.ctpg_code             = None
         self.ctpg_name             = None
         self.ctpg_cline            = None
         self.ctpg_hline            = None
@@ -486,12 +488,14 @@ class MainWindow(QMainWindow):
         # V2.52: DB 로딩 및 팩터 인덱스 초기화를 load_database로 이관
         load_database(self)
 
+        self.saqsize = 0
         self.srqsize = 0
         self.stqsize = 0
         self.ssqsize = 0
 
         self.df_kp   = None
         self.df_kd   = None
+        self.canvas  = None
         self.tm_ax1  = None
         self.tm_ax2  = None
         self.df_tm1  = None
