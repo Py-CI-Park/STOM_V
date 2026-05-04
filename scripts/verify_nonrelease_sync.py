@@ -75,12 +75,29 @@ def main():
         "Stale runtime shutdown references remain.",
         failures,
     )
+    process_kill_offset = ui_process_kill_text.find("def process_kill")
+    process_kill_text = ui_process_kill_text[process_kill_offset:] if process_kill_offset != -1 else ""
     check(
         "def _remember_window_positions" in ui_process_kill_text
+        and "def _prepare_shutdown_ui" in ui_process_kill_text
         and "_remember_window_positions(ui)" in ui_process_kill_text
-        and ui_process_kill_text.index("_remember_window_positions(ui)") < ui_process_kill_text.index("dialog_backengine.close()"),
+        and "_prepare_shutdown_ui(ui)" in process_kill_text
+        and "_close_shutdown_dialogs(ui)" in process_kill_text
+        and process_kill_text.index("_prepare_shutdown_ui(ui)") < process_kill_text.index("_close_shutdown_dialogs(ui)"),
         "Shutdown persists dialog geometry before closing dialogs.",
         "Window geometry persistence must run before dialog close calls.",
+        failures,
+    )
+    check(
+        "def _prepare_shutdown_ui" in ui_process_kill_text
+        and "widget.hide()" in ui_process_kill_text
+        and "def _process_qt_events" in ui_process_kill_text
+        and "app.processEvents()" in ui_process_kill_text
+        and "_prepare_shutdown_ui(ui)" in process_kill_text
+        and "if ui.proc_manager" in process_kill_text
+        and process_kill_text.index("_prepare_shutdown_ui(ui)") < process_kill_text.index("if ui.proc_manager"),
+        "Shutdown hides Qt windows before bounded child cleanup.",
+        "process_kill must hide/pump Qt before blocking child cleanup.",
         failures,
     )
     check(
