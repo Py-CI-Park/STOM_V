@@ -8,6 +8,12 @@ from utility.static import qtest_qwait, opstarter_kill, error_decorator
 
 SHUTDOWN_CHILD_WAIT_SEC = 5.0
 BACKTEST_SHUTDOWN_WAIT_SEC = 5.0
+SHUTDOWN_DIALOG_NAMES = (
+    'dialog_db', 'dialog_web', 'dialog_std', 'dialog_hoga', 'dialog_info', 'dialog_tree', 'dialog_kimp',
+    'dialog_pass', 'dialog_comp', 'dialog_chart', 'dialog_graph', 'dialog_order', 'dialog_cetsj',
+    'dialog_setsj', 'dialog_factor', 'dialog_optuna', 'dialog_formula', 'dialog_strategy',
+    'dialog_leverage', 'dialog_scheduler', 'dialog_backengine', 'dialog_stg_input1', 'dialog_stg_input2',
+)
 BACKTEST_PROCESS_NAMES = (
     'proc_backtester_bs', 'proc_backtester_bf', 'proc_backtester_o', 'proc_backtester_ov',
     'proc_backtester_ovc', 'proc_backtester_ot', 'proc_backtester_ovt', 'proc_backtester_ovct',
@@ -17,6 +23,21 @@ BACKTEST_PROCESS_NAMES = (
     'proc_backtester_bt', 'proc_backtester_bvt', 'proc_backtester_bvct', 'proc_backtester_br',
     'proc_backtester_brv', 'proc_backtester_brvc',
 )
+
+
+def _process_qt_events():
+    app = QApplication.instance()
+    if app is not None:
+        app.processEvents()
+
+
+def _shutdown_widgets(ui):
+    widgets = [ui]
+    for name in SHUTDOWN_DIALOG_NAMES:
+        widget = getattr(ui, name, None)
+        if widget is not None:
+            widgets.append(widget)
+    return widgets
 
 
 def _alive_backtest_processes(ui):
@@ -54,9 +75,11 @@ def _shutdown_backtest_processes(ui, coin=True, enginekill=True):
         try:
             data = ui.backQ.get(timeout=0.1)
         except Empty:
+            _process_qt_events()
             continue
         if data == '백테중지완료':
             count += 1
+        _process_qt_events()
 
     if count < ui.multi:
         _terminate_processes(alive_procs)
@@ -113,6 +136,32 @@ def _remember_window_positions(ui):
         pass
 
 
+def _prepare_shutdown_ui(ui):
+    """Hide Qt windows immediately so bounded cleanup does not look frozen."""
+    _remember_window_positions(ui)
+    for widget in _shutdown_widgets(ui):
+        try:
+            if widget.isVisible():
+                widget.setEnabled(False)
+                widget.hide()
+        except Exception:
+            pass
+    _process_qt_events()
+
+
+def _close_shutdown_dialogs(ui):
+    for name in SHUTDOWN_DIALOG_NAMES:
+        dialog = getattr(ui, name, None)
+        if dialog is None:
+            continue
+        try:
+            if dialog.isVisible() or getattr(ui, '_pyd_shutdown_started', False):
+                dialog.close()
+        except Exception:
+            pass
+        _process_qt_events()
+
+
 @error_decorator
 def telegram_process_kill(ui):
     if ui.TelegramProcessAlive():
@@ -121,6 +170,9 @@ def telegram_process_kill(ui):
 
 @error_decorator
 def process_kill(ui):
+    ui._pyd_shutdown_started = True
+    _prepare_shutdown_ui(ui)
+
     if ui.proc_manager is not None and ui.proc_manager.poll() is None:
         ui.wdzservQ.put(('manager', '프로세스종료'))
         ui.windowQ.put((ui_num['시스템로그'], 'Manager process terminate completed'))
@@ -157,31 +209,7 @@ def process_kill(ui):
     if ui.zmqrecv.isRunning(): ui.zmqrecv.stop()
     ui.windowQ.put((ui_num['시스템로그'], 'QThread terminate completed'))
 
-    _remember_window_positions(ui)
-
-    if ui.dialog_db.isVisible():         ui.dialog_db.close()
-    if ui.dialog_web.isVisible():        ui.dialog_web.close()
-    if ui.dialog_std.isVisible():        ui.dialog_std.close()
-    if ui.dialog_hoga.isVisible():       ui.dialog_hoga.close()
-    if ui.dialog_info.isVisible():       ui.dialog_info.close()
-    if ui.dialog_tree.isVisible():       ui.dialog_tree.close()
-    if ui.dialog_kimp.isVisible():       ui.dialog_kimp.close()
-    if ui.dialog_pass.isVisible():       ui.dialog_pass.close()
-    if ui.dialog_comp.isVisible():       ui.dialog_comp.close()
-    if ui.dialog_chart.isVisible():      ui.dialog_chart.close()
-    if ui.dialog_graph.isVisible():      ui.dialog_graph.close()
-    if ui.dialog_order.isVisible():      ui.dialog_order.close()
-    if ui.dialog_cetsj.isVisible():      ui.dialog_cetsj.close()
-    if ui.dialog_setsj.isVisible():      ui.dialog_setsj.close()
-    if ui.dialog_factor.isVisible():     ui.dialog_factor.close()
-    if ui.dialog_optuna.isVisible():     ui.dialog_optuna.close()
-    if ui.dialog_formula.isVisible():    ui.dialog_formula.close()
-    if ui.dialog_strategy.isVisible():   ui.dialog_strategy.close()
-    if ui.dialog_leverage.isVisible():   ui.dialog_leverage.close()
-    if ui.dialog_scheduler.isVisible():  ui.dialog_scheduler.close()
-    if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
-    if ui.dialog_stg_input1.isVisible(): ui.dialog_stg_input1.close()
-    if ui.dialog_stg_input2.isVisible(): ui.dialog_stg_input2.close()
+    _close_shutdown_dialogs(ui)
     ui.windowQ.put((ui_num['시스템로그'], 'UI dialog window close completed'))
 
     if ui.shared_cnt is not None:
@@ -214,6 +242,7 @@ def process_kill(ui):
     deadline = monotonic() + SHUTDOWN_CHILD_WAIT_SEC
     while ui.proc_chqs.is_alive() and monotonic() < deadline:
         qtest_qwait(0.1)
+        _process_qt_events()
     if ui.proc_chqs.is_alive():
         ui.proc_chqs.terminate()
         ui.proc_chqs.join(timeout=1)
@@ -223,5 +252,8 @@ def process_kill(ui):
 
     opstarter_kill()
     qtest_qwait(1)
+    _process_qt_events()
 
-    QApplication.instance().quit()
+    app = QApplication.instance()
+    if app is not None:
+        app.quit()

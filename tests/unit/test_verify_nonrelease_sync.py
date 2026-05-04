@@ -74,31 +74,48 @@ def _base_files() -> dict[str, str]:
             apply_serial_key_to_dict_set(dict_set, uses_serial_key())
         """,
         "ui/ui_process_kill.py": """
+            from PyQt5.QtWidgets import QApplication
             from time import monotonic
 
             SHUTDOWN_CHILD_WAIT_SEC = 5.0
             BACKTEST_SHUTDOWN_WAIT_SEC = 5.0
 
+            def _process_qt_events():
+                app = QApplication.instance()
+                app.processEvents()
+
             def _remember_window_positions(ui):
                 pass
+
+            def _prepare_shutdown_ui(ui):
+                _remember_window_positions(ui)
+                widget.hide()
+                _process_qt_events()
+
+            def _close_shutdown_dialogs(ui):
+                ui.dialog_backengine.close()
 
             def _terminate_processes(alive_procs):
                 pass
 
-            if hasattr(ui, 'webc') and ui.webc.isRunning():
-                ui.webc.stop()
-            _remember_window_positions(ui)
-            if ui.dialog_backengine.isVisible(): ui.dialog_backengine.close()
             deadline = monotonic() + BACKTEST_SHUTDOWN_WAIT_SEC
             while count < ui.multi and monotonic() < deadline:
                 data = ui.backQ.get(timeout=0.1)
             _terminate_processes(alive_procs)
-            deadline = monotonic() + SHUTDOWN_CHILD_WAIT_SEC
-            while ui.proc_chqs.is_alive() and monotonic() < deadline:
-                pass
-            if ui.proc_chqs.is_alive():
-                ui.proc_chqs.terminate()
-                ui.proc_chqs.join(timeout=1)
+
+            def process_kill(ui):
+                _prepare_shutdown_ui(ui)
+                if ui.proc_manager:
+                    pass
+                if hasattr(ui, 'webc') and ui.webc.isRunning():
+                    ui.webc.stop()
+                _close_shutdown_dialogs(ui)
+                deadline = monotonic() + SHUTDOWN_CHILD_WAIT_SEC
+                while ui.proc_chqs.is_alive() and monotonic() < deadline:
+                    pass
+                if ui.proc_chqs.is_alive():
+                    ui.proc_chqs.terminate()
+                    ui.proc_chqs.join(timeout=1)
         """,
         "utility/static.py": """
             summer_t = 3600
@@ -233,6 +250,20 @@ def test_verify_nonrelease_sync_fails_when_shutdown_geometry_is_after_dialog_clo
 
     assert result == 1
     assert "Window geometry persistence must run before dialog close calls." in output
+
+
+def test_verify_nonrelease_sync_fails_when_shutdown_does_not_hide_before_cleanup(tmp_path, monkeypatch):
+    files = _base_files()
+    files["ui/ui_process_kill.py"] = files["ui/ui_process_kill.py"].replace(
+        "                widget.hide()\n",
+        "",
+    )
+    _write_files(tmp_path, files)
+
+    result, output = _run_main(tmp_path, monkeypatch)
+
+    assert result == 1
+    assert "process_kill must hide/pump Qt before blocking child cleanup." in output
 
 
 def test_verify_nonrelease_sync_fails_when_process_kill_calls_sys_exit(tmp_path, monkeypatch):
