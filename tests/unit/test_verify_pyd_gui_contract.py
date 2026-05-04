@@ -49,7 +49,9 @@ def test_evaluate_passes_with_smoke_log_and_upstream_evidence(monkeypatch, tmp_p
         "    def BindPydDialogPositionPersistence(self):\n"
         "        self.BindPydDialogPosition(self.dialog_backengine, 16, 17)\n"
         "    def BindPydBacktestEngineButton(self): pass\n"
-        "    def PydBacktestEngineStart(self): pass\n"
+        "    def PydBacktestEngineStart(self):\n"
+        "        self.back_engining = True\n"
+        "        backengine_start(self, gubun)\n"
         "    def CleanupPydStaleBacktestSharedMemory(self): pass\n"
         "    def RestorePydDialogPosition(self, dialog, x_index, y_index): pass\n"
         "    def SavePydDialogPosition(self, dialog, x_index, y_index):\n"
@@ -110,6 +112,7 @@ def test_pyd_mainwindow_backtest_parity_failures_are_reported(monkeypatch, tmp_p
     assert "pyd mainwindow backtest parity lacks stock button connect" in failures
     assert "pyd mainwindow backtest parity lacks back progress updater" in failures
     assert "pyd mainwindow backtest parity lacks dialog position binder" in failures
+    assert "pyd mainwindow backtest parity lacks backengine start latch" in failures
     assert "pyd mainwindow backtest parity lacks stale shared memory cleanup" in failures
     assert "pyd mainwindow backtest parity lacks shortcut handler" in failures
 
@@ -124,7 +127,9 @@ def test_pyd_mainwindow_backtest_parity_passes_with_legacy_bindings(monkeypatch,
         "    def BindPydDialogPositionPersistence(self):\n"
         "        self.BindPydDialogPosition(self.dialog_backengine, 16, 17)\n"
         "    def BindPydBacktestEngineButton(self): pass\n"
-        "    def PydBacktestEngineStart(self): pass\n"
+        "    def PydBacktestEngineStart(self):\n"
+        "        self.back_engining = True\n"
+        "        backengine_start(self, gubun)\n"
         "    def CleanupPydStaleBacktestSharedMemory(self): pass\n"
         "    def RestorePydDialogPosition(self, dialog, x_index, y_index): pass\n"
         "    def SavePydDialogPosition(self, dialog, x_index, y_index):\n"
