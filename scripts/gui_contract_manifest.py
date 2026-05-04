@@ -70,6 +70,15 @@ TAB_SOURCES = [
     "ui/set_dialog_etc.py",
 ]
 
+RUNTIME_STATE_ATTRS = [
+    ("runtime_state", "trading", "trading flag", "trading"),
+    ("runtime_state", "ctpg_code", "current chart code", "ctpg_code"),
+    ("runtime_state", "canvas", "treemap canvas", "canvas"),
+    ("runtime_state", "saqsize", "stock agent queue size", "saqsize"),
+    ("runtime_state", "stqsize", "stock trader queue size", "stqsize"),
+    ("runtime_state", "ssqsize", "stock strategy queue size", "ssqsize"),
+]
+
 
 def read_text(path: Path) -> str:
     try:
@@ -142,6 +151,10 @@ def build_contract(root: Path) -> list[ContractItem]:
         ContractItem(category, item_id, label, attr, "ui/set_main_menu.py")
         for category, item_id, label, attr in MAIN_MENU_ITEMS
     ]
+    items.extend(
+        ContractItem(category, item_id, label, attr, "ui/ui_mainwindow.py")
+        for category, item_id, label, attr in RUNTIME_STATE_ATTRS
+    )
     items.extend(parse_dialogs(root))
     items.extend(parse_tabs(root))
     items.extend(parse_pushbuttons(root, STRATEGY_BUTTON_SOURCES, "strategy_button"))

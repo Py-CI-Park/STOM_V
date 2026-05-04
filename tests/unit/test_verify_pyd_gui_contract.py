@@ -43,6 +43,10 @@ def test_evaluate_passes_with_smoke_log_and_upstream_evidence(monkeypatch, tmp_p
     write(
         tmp_path / "ui" / "ui_mainwindow.py",
         "class MainWindow:\n"
+        "    self.ctpg_code             = None\n"
+        "    self.trading          = False\n"
+        "    self.canvas  = None\n"
+        "    self.saqsize = 0\n"
         "    self.back_start_time  = None\n"
         "    def UpdateProgressBar(self):\n"
         "        update_back_progressbar(self)\n"
@@ -110,6 +114,10 @@ def test_pyd_mainwindow_backtest_parity_failures_are_reported(monkeypatch, tmp_p
     failures = contract.pyd_mainwindow_backtest_parity_failures()
 
     assert "pyd mainwindow backtest parity lacks stock button connect" in failures
+    assert "pyd mainwindow backtest parity lacks chart current code state" in failures
+    assert "pyd mainwindow backtest parity lacks chart trading state" in failures
+    assert "pyd mainwindow backtest parity lacks treemap canvas state" in failures
+    assert "pyd mainwindow backtest parity lacks queue sagent qsize state" in failures
     assert "pyd mainwindow backtest parity lacks back progress updater" in failures
     assert "pyd mainwindow backtest parity lacks dialog position binder" in failures
     assert "pyd mainwindow backtest parity lacks backengine start latch" in failures
@@ -121,6 +129,10 @@ def test_pyd_mainwindow_backtest_parity_passes_with_legacy_bindings(monkeypatch,
     write(
         tmp_path / "ui" / "ui_mainwindow.py",
         "class MainWindow:\n"
+        "    self.ctpg_code             = None\n"
+        "    self.trading          = False\n"
+        "    self.canvas  = None\n"
+        "    self.saqsize = 0\n"
         "    self.back_start_time  = None\n"
         "    def UpdateProgressBar(self):\n"
         "        update_back_progressbar(self)\n"

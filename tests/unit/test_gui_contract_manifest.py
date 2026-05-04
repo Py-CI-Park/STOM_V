@@ -48,7 +48,12 @@ self.ui.be_pushButtonnn_01 = self.wc.setPushbutton('백테스트 엔진 시작',
     assert "백테스트" in labels
     assert "백테스트 엔진 시작" in labels
     assert "pushButton_00" in attrs
+    assert "trading" in attrs
+    assert "ctpg_code" in attrs
+    assert "canvas" in attrs
+    assert "saqsize" in attrs
     assert summary["main_menu"] == 8
+    assert summary["runtime_state"] == 6
     assert summary["strategy_button"] == 1
     assert summary["backtest_button"] == 1
 
