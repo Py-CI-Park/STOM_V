@@ -121,6 +121,7 @@ def pyd_mainwindow_backtest_parity_failures() -> list[str]:
         "backengine position binding": "self.BindPydDialogPosition(self.dialog_backengine, 16, 17)",
         "backengine button binder": "def BindPydBacktestEngineButton(self):",
         "backengine start wrapper": "def PydBacktestEngineStart(self):",
+        "backengine start latch": "self.back_engining = True",
         "stale shared memory cleanup": "def CleanupPydStaleBacktestSharedMemory(self):",
         "dialog position restore": "def RestorePydDialogPosition(self, dialog, x_index, y_index):",
         "dialog position save": "def SavePydDialogPosition(self, dialog, x_index, y_index",

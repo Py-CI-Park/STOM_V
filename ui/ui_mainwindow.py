@@ -1084,6 +1084,7 @@ class MainWindow(QMainWindow):
 
         if not self.backtest_engine:
             self.CleanupPydStaleBacktestSharedMemory()
+            self.back_engining = True
             backengine_start(self, gubun)
             return
 
@@ -1098,6 +1099,7 @@ class MainWindow(QMainWindow):
             backtest_engine_kill(self)
             qtest_qwait(3)
             self.CleanupPydStaleBacktestSharedMemory()
+            self.back_engining = True
             backengine_start(self, gubun)
 
     def CleanupPydStaleBacktestSharedMemory(self):
