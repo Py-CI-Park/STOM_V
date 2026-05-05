@@ -50,8 +50,10 @@ class BinanceReceiver(BaseReceiver):
         """종목 정보를 조회합니다."""
         def get_decimal_place(float_):
             float_ = str(float(float_))
-            float_ = float_.split('.')[1]
-            return 0 if float_ == '0' else len(float_)
+            if '.' in float_:
+                float_ = float_.split('.')[1]
+                return len(float_)
+            return 0
 
         datas = self.binance.futures_exchange_info()
         datas = [x for x in datas['symbols'] if re.search('USDT$', x['symbol']) is not None]

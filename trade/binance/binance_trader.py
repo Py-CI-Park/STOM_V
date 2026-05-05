@@ -193,34 +193,27 @@ class BinanceTrader(BaseTrader):
             data: 데이터
         """
         if data['e'] == 'ACCOUNT_UPDATE':
-            try:
-                bal_list = data['a']['B']
-                for bal_dict in bal_list:
-                    if bal_dict['a'] == 'USDT':
-                        self.dict_intg['추정예탁자산'] = float(bal_dict['wb'])
-                        self.dict_intg['예수금'] = float(bal_dict['cw'])
-                        break
-            except Exception:
-                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 유저 웹소켓'))
+            bal_list = data['a']['B']
+            for bal_dict in bal_list:
+                if bal_dict['a'] == 'USDT':
+                    self.dict_intg['추정예탁자산'] = float(bal_dict['wb'])
+                    self.dict_intg['예수금'] = float(bal_dict['cw'])
+                    break
         elif data['e'] == 'ORDER_TRADE_UPDATE':
-            try:
-                data = data['o']
-                code = data['s']
-                p = f"{data['S']}_{self.dict_pos[code]}"
-                if data['X'] == 'CANCELED':
-                    p = f'{p}_CANCEL'
-                oc = float(data['q'])
-                cc = float(data['l'])
-                mc = round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
-                cp = float(data['L'])
-                op = float(data['p'])
-                on = int(data['i'])
-            except Exception:
-                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 바이낸스 홈페이지 주문은 기록되지 않습니다.'))
-            else:
-                if cc > 0 or 'CANCEL' in p:
-                    ct = get_str_ymdhms(self.market_gubun)
-                    self._update_chejan_data_coin_future(p, code, oc, cc, mc, cp, op, ct, on)
+            data = data['o']
+            code = data['s']
+            p = f"{data['S']}_{self.dict_pos[code]}"
+            if data['X'] == 'CANCELED':
+                p = f'{p}_CANCEL'
+            oc = float(data['q'])
+            cc = float(data['l'])
+            mc = round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
+            cp = float(data['L'])
+            op = float(data['p'])
+            on = int(data['i'])
+            if cc > 0 or 'CANCEL' in p:
+                ct = get_str_ymdhms(self.market_gubun)
+                self._update_chejan_data_coin_future(p, code, oc, cc, mc, cp, op, ct, on)
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
         """매수 주문 가격을 반환합니다.

@@ -48,7 +48,8 @@ class FutureOsReceiver(BaseReceiver):
     def _get_code_info(self):
         """종목 정보를 조회합니다."""
         self.dict_info, self.codes = self.ls.get_code_info_future_oversea()
-        self.traderQ.put(('종목정보', self.dict_info))
+        if self.dict_info:
+            self.traderQ.put(('종목정보', self.dict_info))
 
     def _convert_real_data(self, data):
         """실시간 데이터를 변환합니다.

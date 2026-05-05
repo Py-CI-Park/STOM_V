@@ -161,7 +161,7 @@ class SetSetupTap:
         self.ui.sj_save_Button_03 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_03, click=lambda: setting_save_03(self.ui))
         self.ui.sj_save_Button_04 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_04, click=lambda: setting_save_04(self.ui))
         self.ui.sj_save_Button_05 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_05, click=lambda: setting_save_05(self.ui))
-        self.ui.sj_save_Button_06 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_06, click=self.ui.SettingSave_06)
+        self.ui.sj_save_Button_06 = self.wc.setPushbutton('저장하기', parent=self.ui.sj_bs_groupBox_06, click=self.ui.setting_serial_save)
 
         self.ui.sj_etc_pButton_01 = self.wc.setPushbutton('계정 텍스트 보기', parent=self.ui.ssd_tab, click=lambda: setting_acc_view(self.ui))
         self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_04, click=lambda: setting_passticks(self.ui))

@@ -611,8 +611,11 @@ class AnalyzerMicrostructure:
         # 깊이 비율, 불균형, VWAP 계산 (벡터화 연산)
         total_ask_qty = np.sum(ask_qtys)
         total_bid_qty = np.sum(bid_qtys)
+        # noinspection PyUnresolvedReferences
         depth_ratio   = total_bid_qty / total_ask_qty if total_ask_qty > 0 else 1
+        # noinspection PyUnresolvedReferences
         total_qty     = total_bid_qty + total_ask_qty
+        # noinspection PyUnresolvedReferences
         imbalance     = (total_bid_qty - total_ask_qty) / total_qty if total_qty > 0 else 0.0
 
         # 깊이별 가중치 계산 (벡터화 연산)

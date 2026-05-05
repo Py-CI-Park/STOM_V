@@ -104,7 +104,7 @@ class SetDialogBack:
         self.ui.sd_dlineEditttt_01 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_01, style=style_bc_dk)
         self.ui.sd_dpushButtonn_02 = self.wc.setPushbutton('스케쥴 저장', parent=self.ui.sd_groupBoxxxxx_01, click=lambda: sdbutton_clicked_05(self.ui))
 
-        self.ui.sd_pushButtonnn_01 = self.wc.setPushbutton('시작', parent=self.ui.sd_groupBoxxxxx_01, color=2, click=self.ui.sdButtonClicked_02)
+        self.ui.sd_pushButtonnn_01 = self.wc.setPushbutton('시작', parent=self.ui.sd_groupBoxxxxx_01, color=2, click=lambda: sdbutton_clicked_02(self.ui))
         self.ui.sd_pushButtonnn_02 = self.wc.setPushbutton('중지', parent=self.ui.sd_groupBoxxxxx_01, color=2, click=lambda: sdbutton_clicked_03(self.ui))
 
         text = '                           백테유형                           시작일자                   ' \

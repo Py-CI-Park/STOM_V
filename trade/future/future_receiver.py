@@ -51,7 +51,8 @@ class FutureReceiver(BaseReceiver):
             self.dict_info, self.codes, self.dict_expc = self.ls.get_code_info_future()
         else:
             self.dict_info, self.codes, self.dict_expc = self.ls.get_code_info_future_night()
-        self.traderQ.put(('종목정보', (self.dict_info, self.dict_expc)))
+        if self.dict_info:
+            self.traderQ.put(('종목정보', (self.dict_info, self.dict_expc)))
 
     def _convert_real_data(self, data):
         """실시간 데이터를 변환합니다.

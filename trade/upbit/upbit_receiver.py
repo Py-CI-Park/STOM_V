@@ -46,11 +46,12 @@ class UpbitReceiver(BaseReceiver):
     def _get_code_info(self):
         """종목 정보를 조회합니다."""
         self.dict_info, self.codes = get_symbols_info()
-        self.traderQ.put(('종목정보', self.dict_info))
-        self.dict_daym = {code: value['거래대금'] for code, value in self.dict_info.items() if '거래대금' in value.keys()}
-        self.list_gsjm = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:self.mtop_rank]]
-        data = tuple(self.list_gsjm)
-        self.stgQ.put(('관심목록', data))
+        if self.dict_info:
+            self.traderQ.put(('종목정보', self.dict_info))
+            self.dict_daym = {code: value['거래대금'] for code, value in self.dict_info.items() if '거래대금' in value.keys()}
+            self.list_gsjm = [x for x, y in sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:self.mtop_rank]]
+            data = tuple(self.list_gsjm)
+            self.stgQ.put(('관심목록', data))
 
     def _convert_real_data(self, data):
         """실시간 데이터를 변환합니다.

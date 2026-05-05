@@ -108,12 +108,10 @@ class UpbitTrader(BaseTrader):
                     else:
                         add_time = self.dict_set['매도취소시간초']
 
-                    # noinspection PyUnresolvedReferences
                     self.dict_order[주문구분][종목코드] = [
                         timedelta_sec(add_time), 정정횟수, 주문가격, get_hogaunit_coin(주문가격)
                     ]
 
-                    # noinspection PyUnresolvedReferences
                     self._update_chegeollist(
                         index, 종목코드, 종목명, f'{주문구분}접수', 주문수량, 0, 주문수량, 0, index[:14], 주문가격, ret['uuid']
                     )

@@ -45,7 +45,7 @@ def gavars_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', 'GA범위의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest2(strategy, ga=True):
+        if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test2(strategy, ga=True):
             if ui.proc_chqs.is_alive():
                 delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_optigavars WHERE `index` = '{strategy_name}'"
                 insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_optigavars VALUES (?, ?)"
@@ -93,7 +93,7 @@ def condbuy_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', '매수조건의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if ui.BackCodeTest3('매수', strategy):
+        if ui.ui_back_code_test3('매수', strategy):
             if ui.proc_chqs.is_alive():
                 delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_buyconds WHERE `index` = '{strategy_name}'"
                 insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_buyconds VALUES (?, ?)"
@@ -141,7 +141,7 @@ def condsell_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', '매도조건의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if ui.BackCodeTest3('매도', strategy):
+        if ui.ui_back_code_test3('매도', strategy):
             if ui.proc_chqs.is_alive():
                 delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_sellconds WHERE `index` = '{strategy_name}'"
                 insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_sellconds VALUES (?, ?)"

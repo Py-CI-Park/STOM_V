@@ -51,7 +51,7 @@ def buy_stg_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', '매수전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.BackCodeTest1(strategy):
+        if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test1(strategy):
             if ui.proc_chqs.is_alive():
                 delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_buy WHERE `index` = '{strategy_name}'"
                 insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_buy VALUES (?, ?)"

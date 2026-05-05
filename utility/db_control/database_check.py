@@ -41,7 +41,7 @@ def database_check():
                 'index', '거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '프로그램비밀번호', '바이낸스선물고정레버리지',
                 '바이낸스선물고정레버리지값', '바이낸스선물변동레버리지값', '바이낸스선물마진타입', '바이낸스선물포지션'
             ]
-            data = [0, '국내주식01', 0, 1, 1, 1, 1, 1, '', '0;5;1^5;10;2^10;20;3^20;30;4^30;100;5', 'ISOLATED', 'false']
+            data = [0, '국내주식01', 0, 1, 1, 1, '', 1, 1, '0;5;1^5;10;2^10;20;3^20;30;4^30;100;5', 'ISOLATED', 'false']
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('main', con)
 
@@ -85,7 +85,8 @@ def database_check():
             data = [0, 0, 0, 0, 1, 0, 0, 1, 1, 2, 0, 4, 160000, '', 1, '20220323',
                     '0.0;1000.0;0;100.0;0.0;100.0;-10.0;10.0;0.0;1000.0;-10000.0;10000.0;0.0;100.0',
                     '종목코드별 분류', 'TPESampler', '', 0, 0, 0,
-                    '3;10;14;12;26;0;14;14;5;2;2;0;14;14;12;26;9;14;10;12;26;0;10;14;0.02;0.2;5;3;0;3;0;5;3;0;14', 0, 0, 0]
+                    '3;10;14;12;26;0;14;14;5;2;2;0;14;14;12;26;9;14;10;12;26;0;10;14;0.02;0.2;5;3;0;3;0;5;3;0;14',
+                    0, 0, 0]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('back', con)
 
@@ -121,7 +122,8 @@ def database_check():
                 '매도익절수익률청산', '매도익절수익률', '매도익절수익금청산', '매도익절수익금',
                 '매도손절수익률청산', '매도손절수익률', '매도손절수익금청산', '매도손절수익금'
             ]
-            data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 2, 0, 120000, 130000, 0, 300, 0, 5, 2, 0, 5, 0, 1_000_000, 0, 5, 0, 1_000_000]
+            data = [0, '시장가', 1, 1, 1, 0, 1, 0.5, 2.0, '매도1호가', 0, 5, 0, 0, 0, 30, 0, 2, 0, 120000, 130000, 0,
+                    300, 0, 5, 2, 0, 5, 0, 1_000_000, 0, 5, 0, 1_000_000]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('sellorder', con)
 
@@ -556,7 +558,8 @@ def database_check():
             cur.execute('CREATE INDEX "ix_custombutton_index" ON "custombutton"("index")')
 
         if 'formula' not in table_list:
-            cur.execute('CREATE TABLE "formula" ( "수식명" TEXT, "차트표시" INTEGER, "전략연산" INTEGER, "팩터명" TEXT, "표시형태" TEXT, "색상" TEXT, "크기" REAL, "라인타입" INTEGER, "수식코드" TEXT )')
+            cur.execute('CREATE TABLE "formula" ( "수식명" TEXT, "차트표시" INTEGER, "전략연산" INTEGER, "팩터명" TEXT,'
+                        '"표시형태" TEXT, "색상" TEXT, "크기" REAL, "라인타입" INTEGER, "수식코드" TEXT )')
             cur.execute('CREATE INDEX "ix_formula_수식명" ON "formula"("수식명")')
         else:
             df = pd.read_sql('SELECT * FROM formula', con)

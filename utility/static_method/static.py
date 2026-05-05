@@ -617,21 +617,6 @@ def win_proc_alive(name):
     return alive
 
 
-def opstarter_kill():
-    """opstarter, nfstarter 프로세스를 종료합니다."""
-    import subprocess
-    if win_proc_alive('opstarter'):
-        subprocess.run('C:/Windows/System32/taskkill /f /im opstarter.exe',
-                       stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL,
-                       shell=True)
-    if win_proc_alive('nfstarter'):
-        subprocess.run('C:/Windows/System32/taskkill /f /im nfstarter.exe',
-                       stdout=subprocess.DEVNULL,
-                       stderr=subprocess.DEVNULL,
-                       shell=True)
-
-
 def pickle_write(file, data):
     """데이터를 피클 파일로 저장합니다.
     Args:

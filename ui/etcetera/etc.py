@@ -1,18 +1,17 @@
 
-import psutil
 import random
 import pandas as pd
 from io import BytesIO
 from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QBuffer, QIODevice
 from ui.create_widget.set_text import famous_saying
+from utility.static_method.static import qtest_qwait
 from PyQt5.QtWidgets import QApplication, QMessageBox
-from PyQt5.QtCore import QSize, Qt, QBuffer, QIODevice
 from utility.settings.setting_base import columns_dt, columns_dd, ui_num
-from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
-from utility.static_method.static import thread_decorator, qtest_qwait, str_ymdhmsf
 from ui.event_click.button_clicked_backtest_engine import backengine_start, backengine_show
-from ui.event_click.button_clicked_backtest_start import backtest_engine_kill, sdbutton_clicked_04
 from ui.etcetera.process_alive import strategy_process_alive, trader_process_alive, receiver_process_alive
+from ui.event_click.button_clicked_backtest_start import backtest_engine_kill, sdbutton_clicked_04, sdbutton_clicked_02
 
 
 def update_image(ui, data):
@@ -31,15 +30,6 @@ def update_image(ui, data):
     qpix.loadFromData(data[2])
     qpix = qpix.scaled(QSize(335, 602), Qt.IgnoreAspectRatio)
     ui.image_label2.setPixmap(qpix)
-
-
-@thread_decorator
-def update_cpuper(ui):
-    """CPU 사용률을 업데이트합니다.
-    Args:
-        ui: UI 객체
-    """
-    ui.cpu_per = int(psutil.cpu_percent(interval=1))
 
 
 def auto_back_schedule(ui, gubun):
@@ -66,7 +56,7 @@ def auto_back_schedule(ui, gubun):
         qtest_qwait(2)
         ui.sd_dcomboBoxxxx_01.setCurrentText(ui.dict_set['백테스케쥴명'])
         qtest_qwait(2)
-        ui.sdButtonClicked_02()
+        sdbutton_clicked_02(ui)
     elif gubun == 3:
         if ui.dialog_scheduler.isVisible():
             ui.dialog_scheduler.close()
@@ -158,52 +148,13 @@ def calendar_clicked(ui):
     ui.update_tablewidget.update_tablewidget((ui_num['당일상세'], df1))
 
 
-def stom_live_screenshot(ui):
-    """STOM 라이브 스크린샷을 찍습니다.
-    Args:
-        ui: UI 객체
-    """
-    prev_main_btn = ui.main_btn
-    mnbutton_c_clicked_01(ui, 3)
-    qtest_qwait(1)
-    if ui.market_gubun in (1, 2, 3):
-        ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index1)
-    elif ui.market_gubun in (5, 9):
-        ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index2)
-    else:
-        ui.slv_tapWidgett_01.setCurrentIndex(ui.slv_index3)
-    qtest_qwait(1)
-    screen = QApplication.primaryScreen()
-    # noinspection PyUnresolvedReferences
-    pixmap = screen.grabWindow(ui.winId())
-
-    # QBuffer를 사용하여 QPixmap을 바이트 배열로 변환
-    qbuffer = QBuffer()
-    # noinspection PyUnresolvedReferences
-    qbuffer.open(QIODevice.WriteOnly)
-    pixmap.save(qbuffer, 'PNG')
-    byte_array = qbuffer.data().data()  # QByteArray -> bytes
-    qbuffer.close()
-
-    # BytesIO로 감싸서 전송
-    buffer = BytesIO(byte_array)
-    buffer.seek(0)
-    ui.teleQ.put(buffer)
-    mnbutton_c_clicked_01(ui, prev_main_btn)
-
-
 def chart_screenshot(ui):
     """차트 스크린샷을 찍습니다.
     Args:
         ui: UI 객체
     """
     if ui.dialog_chart.isVisible():
-        file_name = f'./_log/chart_{str_ymdhmsf()}.png'
-        screen = QApplication.primaryScreen()
-        # noinspection PyUnresolvedReferences
-        screenshot = screen.grabWindow(ui.dialog_chart.winId())
-        screenshot.save(file_name, 'png')
-        ui.teleQ.put(file_name)
+        send_chart_screenshot(ui)
         QMessageBox.information(ui, '차트 스샷 전송 완료', random.choice(famous_saying))
 
 
@@ -213,13 +164,23 @@ def chart_screenshot2(ui):
         ui: UI 객체
     """
     if ui.dialog_chart.isVisible():
-        file_name = f'./_log/chart_{str_ymdhmsf()}.png'
-        screen = QApplication.primaryScreen()
-        # noinspection PyUnresolvedReferences
-        screenshot = screen.grabWindow(ui.dialog_chart.winId())
-        screenshot.save(file_name, 'png')
-        ui.teleQ.put(file_name)
+        send_chart_screenshot(ui)
         QMessageBox.information(ui.dialog_chart, '차트 스샷 전송 완료', random.choice(famous_saying))
+
+
+def send_chart_screenshot(ui):
+    widget = QApplication.primaryScreen()
+    # noinspection PyUnresolvedReferences
+    pixmap = widget.grabWindow(ui.dialog_chart.winId())
+    qbuffer = QBuffer()
+    # noinspection PyUnresolvedReferences
+    qbuffer.open(QIODevice.WriteOnly)
+    pixmap.save(qbuffer, 'PNG')
+    byte_array = qbuffer.data().data()
+    qbuffer.close()
+    buffer = BytesIO(byte_array)
+    buffer.seek(0)
+    ui.teleQ.put(buffer)
 
 
 def manual_save_and_exit(ui):
@@ -234,14 +195,6 @@ def manual_save_and_exit(ui):
     if buttonReply == QMessageBox.Yes:
         if receiver_process_alive(ui):
             ui.receivQ.put(('수동데이터저장', 'dummy'))
-
-
-def stom_public_use_limit(ui):
-    """STOM 퍼블릭 사용 제한을 표시합니다.
-    Args:
-        ui: UI 객체
-    """
-    QMessageBox.critical(ui, 'STOM PUBLIC', '현재의 권한으로 사용할 수 없는 기능입니다.\n구독문의: https://cafe.naver.com/stom')
 
 
 def strategy_setting_label_change(ui):

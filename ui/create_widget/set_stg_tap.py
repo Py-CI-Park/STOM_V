@@ -232,12 +232,12 @@ class SetStrategyTab:
 
     # =================================================================================================================
 
-        self.ui.svc_pushButton_06 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화OVC', color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 최적화는 1회만 검증을 하지만, 교차검증은\n검증기간을 학습기간 / 검증기간 만큼 교차분류하여 그리드 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작한다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
-        self.ui.svc_pushButton_07 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화OV', color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n데이터의 시계열 순서대로 학습, 검증기간을 분류하여 그리드 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
-        self.ui.svc_pushButton_08 = self.wc.setPushbutton('그리드', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화O', color=2, tip='학습기간만 선택하여 진행되며\n데이터 전체를 기반으로 그리드 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
-        self.ui.svc_pushButton_27 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화BVC', color=3, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 최적화는 1회만 검증을 하지만, 교차검증은\n검증기간을 학습기간 / 검증기간 만큼 교차분류하여 베이지안 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
-        self.ui.svc_pushButton_28 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화BV', color=3, tip='학습기간과 검증기간을 선택하여 진행되며\n데이터의 시계열 순서대로 학습, 검증기간을 분류하여 베이지안 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
-        self.ui.svc_pushButton_29 = self.wc.setPushbutton('베이지안', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화B', color=3, tip='학습기간만 선택하여 진행되며\n데이터 전체를 기반으로 베이지안 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
+        self.ui.svc_pushButton_06 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화OVC'), color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 최적화는 1회만 검증을 하지만, 교차검증은\n검증기간을 학습기간 / 검증기간 만큼 교차분류하여 그리드 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작한다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
+        self.ui.svc_pushButton_07 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화OV'), color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n데이터의 시계열 순서대로 학습, 검증기간을 분류하여 그리드 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
+        self.ui.svc_pushButton_08 = self.wc.setPushbutton('그리드', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화O'), color=2, tip='학습기간만 선택하여 진행되며\n데이터 전체를 기반으로 그리드 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
+        self.ui.svc_pushButton_27 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화BVC'), color=3, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 최적화는 1회만 검증을 하지만, 교차검증은\n검증기간을 학습기간 / 검증기간 만큼 교차분류하여 베이지안 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
+        self.ui.svc_pushButton_28 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화BV'), color=3, tip='학습기간과 검증기간을 선택하여 진행되며\n데이터의 시계열 순서대로 학습, 검증기간을 분류하여 베이지안 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
+        self.ui.svc_pushButton_29 = self.wc.setPushbutton('베이지안', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화B'), color=3, tip='학습기간만 선택하여 진행되며\n데이터 전체를 기반으로 베이지안 최적화한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.\nCtrl+Shift와 함께 누르면 매수변수만 최적화한다.\nCtrl+Alt와 함께 누르면 매도변수만 최적화한다.')
 
     # =================================================================================================================
 
@@ -269,12 +269,12 @@ class SetStrategyTab:
 
     # =================================================================================================================
 
-        self.ui.svc_pushButton_15 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화OVCT', color=2, tip='학습기간, 검증기간, 확인기간을 선택하여 진행되며\n그리드 교차검증 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
-        self.ui.svc_pushButton_16 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화OVT', color=2, tip='학습기간, 검증기간, 확인기간을 선택하여 진행되며\n그리드 검증 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
-        self.ui.svc_pushButton_17 = self.wc.setPushbutton('그리드', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화OT', color=2, tip='학습기간, 확인기간을 선택하여 진행되며\n그리드 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
-        self.ui.svc_pushButton_30 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화BVCT', color=3, tip='학습기간, 검증기간, 확인기간을 선택하여 진행되며\n베이지안 교차검증 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.')
-        self.ui.svc_pushButton_31 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화BVT', color=3, tip='학습기간, 검증기간, 확인기간을 선택하여 진행되며\n베이지안 검증 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.')
-        self.ui.svc_pushButton_32 = self.wc.setPushbutton('베이지안', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiStart, cmd='최적화BT', color=3, tip='학습기간, 확인기간을 선택하여 진행되며\n베이지안 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.')
+        self.ui.svc_pushButton_15 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화OVCT'), color=2, tip='학습기간, 검증기간, 확인기간을 선택하여 진행되며\n그리드 교차검증 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
+        self.ui.svc_pushButton_16 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화OVT'), color=2, tip='학습기간, 검증기간, 확인기간을 선택하여 진행되며\n그리드 검증 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
+        self.ui.svc_pushButton_17 = self.wc.setPushbutton('그리드', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화OT'), color=2, tip='학습기간, 확인기간을 선택하여 진행되며\n그리드 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
+        self.ui.svc_pushButton_30 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화BVCT'), color=3, tip='학습기간, 검증기간, 확인기간을 선택하여 진행되며\n베이지안 교차검증 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.')
+        self.ui.svc_pushButton_31 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화BVT'), color=3, tip='학습기간, 검증기간, 확인기간을 선택하여 진행되며\n베이지안 검증 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.')
+        self.ui.svc_pushButton_32 = self.wc.setPushbutton('베이지안', parent=self.ui.st_tab, bounced=True, click=lambda: opti_start(self.ui, '최적화BT'), color=3, tip='학습기간, 확인기간을 선택하여 진행되며\n베이지안 최적화로 구한 최적값을 확인기간에 대하여 테스트한다.')
 
         self.ui.optest_list = [
             self.ui.svc_pushButton_15, self.ui.svc_pushButton_16, self.ui.svc_pushButton_17, self.ui.svc_comboBoxxx_02,
@@ -287,12 +287,12 @@ class SetStrategyTab:
 
     # =================================================================================================================
 
-        self.ui.svc_pushButton_18 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiRwftStart, cmd='전진분석ORVC', color=2, tip='학습기간, 확인기간, 전체기간을 선택하여 진행되며\n그리드 교차검증 최적화 테스트를 전진분석한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
-        self.ui.svc_pushButton_19 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiRwftStart, cmd='전진분석ORV', color=2, tip='학습기간, 검증기간, 확인기간, 전체기간을 선택하여 진행되며\n그리드 검증 최적화 테스트를 전진분석한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
-        self.ui.svc_pushButton_20 = self.wc.setPushbutton('그리드', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiRwftStart, cmd='전진분석OR', color=2, tip='학습기간, 검증기간, 확인기간, 전체기간을 선택하여 진행되며\n그리드 최적화 테스트를 전진분석한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
-        self.ui.svc_pushButton_33 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiRwftStart, cmd='전진분석BRVC', color=3, tip='학습기간, 확인기간, 전체기간을 선택하여 진행되며\n베이지안 교차검증 최적화 테스트를 전진분석한다.')
-        self.ui.svc_pushButton_34 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiRwftStart, cmd='전진분석BRV', color=3, tip='학습기간, 검증기간, 확인기간, 전체기간을 선택하여 진행되며\n베이지안 검증 최적화 테스트를 전진분석한다.')
-        self.ui.svc_pushButton_35 = self.wc.setPushbutton('베이지안', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiRwftStart, cmd='전진분석BR', color=3, tip='학습기간, 검증기간, 확인기간, 전체기간을 선택하여 진행되며\n베이지안 최적화 테스트를 전진분석한다.')
+        self.ui.svc_pushButton_18 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_rwft_start(self.ui, '전진분석ORVC'), color=2, tip='학습기간, 확인기간, 전체기간을 선택하여 진행되며\n그리드 교차검증 최적화 테스트를 전진분석한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
+        self.ui.svc_pushButton_19 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_rwft_start(self.ui, '전진분석ORV'), color=2, tip='학습기간, 검증기간, 확인기간, 전체기간을 선택하여 진행되며\n그리드 검증 최적화 테스트를 전진분석한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
+        self.ui.svc_pushButton_20 = self.wc.setPushbutton('그리드', parent=self.ui.st_tab, bounced=True, click=lambda: opti_rwft_start(self.ui, '전진분석OR'), color=2, tip='학습기간, 검증기간, 확인기간, 전체기간을 선택하여 진행되며\n그리드 최적화 테스트를 전진분석한다.\nAlt키와 함께 누르면 모든 변수의 최적값을 랜덤 변경하여 시작힌다.')
+        self.ui.svc_pushButton_33 = self.wc.setPushbutton('교차검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_rwft_start(self.ui, '전진분석BRVC'), color=3, tip='학습기간, 확인기간, 전체기간을 선택하여 진행되며\n베이지안 교차검증 최적화 테스트를 전진분석한다.')
+        self.ui.svc_pushButton_34 = self.wc.setPushbutton('검증', parent=self.ui.st_tab, bounced=True, click=lambda: opti_rwft_start(self.ui, '전진분석BRV'), color=3, tip='학습기간, 검증기간, 확인기간, 전체기간을 선택하여 진행되며\n베이지안 검증 최적화 테스트를 전진분석한다.')
+        self.ui.svc_pushButton_35 = self.wc.setPushbutton('베이지안', parent=self.ui.st_tab, bounced=True, click=lambda: opti_rwft_start(self.ui, '전진분석BR'), color=3, tip='학습기간, 검증기간, 확인기간, 전체기간을 선택하여 진행되며\n베이지안 최적화 테스트를 전진분석한다.')
 
         self.ui.rwftvd_list = [
             self.ui.svc_pushButton_18, self.ui.svc_pushButton_19, self.ui.svc_pushButton_20, self.ui.svc_comboBoxxx_02,
@@ -312,9 +312,9 @@ class SetStrategyTab:
 
     # =================================================================================================================
 
-        self.ui.sva_pushButton_01 = self.wc.setPushbutton('교차검증 GA 최적화', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiGaStart, cmd='최적화OGVC', color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n교차 검증 GA최적화한다.')
-        self.ui.sva_pushButton_02 = self.wc.setPushbutton('검증 GA 최적화', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiGaStart, cmd='최적화OGV', color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 GA최적화한다.')
-        self.ui.sva_pushButton_03 = self.wc.setPushbutton('GA 최적화', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiGaStart, cmd='최적화OG', color=2, tip='학습기간을 선택하여 진행되며\n데이터 전체를 사용하여 GA최적화한다.')
+        self.ui.sva_pushButton_01 = self.wc.setPushbutton('교차검증 GA 최적화', parent=self.ui.st_tab, bounced=True, click=lambda: opti_ga_start(self.ui, '최적화OGVC'), color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n교차 검증 GA최적화한다.')
+        self.ui.sva_pushButton_02 = self.wc.setPushbutton('검증 GA 최적화', parent=self.ui.st_tab, bounced=True, click=lambda: opti_ga_start(self.ui, '최적화OGV'), color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 GA최적화한다.')
+        self.ui.sva_pushButton_03 = self.wc.setPushbutton('GA 최적화', parent=self.ui.st_tab, bounced=True, click=lambda: opti_ga_start(self.ui, '최적화OG'), color=2, tip='학습기간을 선택하여 진행되며\n데이터 전체를 사용하여 GA최적화한다.')
 
         self.ui.sva_comboBoxxx_01 = self.wc.setCombobox(self.ui.st_tab, font=qfont14, activated=lambda: activated_stg.activated_06(self.ui))
         self.ui.sva_lineEdittt_01 = self.wc.setLineedit(self.ui.st_tab, font=qfont14, aleft=True, ltext='F10, F11', style=style_bc_dk)
@@ -365,9 +365,9 @@ class SetStrategyTab:
         self.ui.svo_lineEdittt_04 = self.wc.setLineedit(self.ui.st_tab, ltext='5', style=style_bc_dk)
         self.ui.svo_lineEdittt_05 = self.wc.setLineedit(self.ui.st_tab, ltext='1000', style=style_bc_dk)
 
-        self.ui.svo_pushButton_05 = self.wc.setPushbutton('교차검증 조건 최적화', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiCondStart, cmd='최적화OCVC', color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n교차 검증 조건최적화한다.')
-        self.ui.svo_pushButton_06 = self.wc.setPushbutton('검증 조건 최적화', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiCondStart, cmd='최적화OCV', color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 조건최적화한다.')
-        self.ui.svo_pushButton_07 = self.wc.setPushbutton('조건 최적화', parent=self.ui.st_tab, bounced=True, click=self.ui.OptiCondStart, cmd='최적화OC', color=2, tip='학습기간을 선택하여 진행되며\n데이터 전체를 사용하여 조건최적화한다.')
+        self.ui.svo_pushButton_05 = self.wc.setPushbutton('교차검증 조건 최적화', parent=self.ui.st_tab, bounced=True, click=lambda: opti_cond_start(self.ui, '최적화OCVC'), color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n교차 검증 조건최적화한다.')
+        self.ui.svo_pushButton_06 = self.wc.setPushbutton('검증 조건 최적화', parent=self.ui.st_tab, bounced=True, click=lambda: opti_cond_start(self.ui, '최적화OCV'), color=2, tip='학습기간과 검증기간을 선택하여 진행되며\n검증 조건최적화한다.')
+        self.ui.svo_pushButton_07 = self.wc.setPushbutton('조건 최적화', parent=self.ui.st_tab, bounced=True, click=lambda: opti_cond_start(self.ui, '최적화OC'), color=2, tip='학습기간을 선택하여 진행되며\n데이터 전체를 사용하여 조건최적화한다.')
 
         self.ui.svo_pushButton_08 = self.wc.setPushbutton('예제', parent=self.ui.st_tab, bounced=True, click=lambda: opti_sample(self.ui), color=3)
 

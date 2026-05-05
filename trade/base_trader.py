@@ -115,7 +115,7 @@ class BaseTrader:
         self.ws_thread  = None
 
         self.is_tick    = self.dict_set['타임프레임']
-        acc_no          = self.market_info['계정번호']
+        acc_no          = self.dict_set['거래소'][-2:]
         self.access_key = self.dict_set[f"access_key{acc_no}"]
         self.secret_key = self.dict_set[f"secret_key{acc_no}"]
 

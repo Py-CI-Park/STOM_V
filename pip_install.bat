@@ -41,10 +41,10 @@ if '%errorlevel%' NEQ '0' (
 
     echo.
     echo [3/3] Installing local TA-Lib wheel...
-    if exist "utility\ta_lib-0.6.8-cp311-cp311-win_amd64.whl" (
-        python -m pip install "./utility/ta_lib-0.6.8-cp311-cp311-win_amd64.whl"
+    if exist "utility\ta_lib-0.6.8-cp313-cp313-win_amd64.whl" (
+        python -m pip install "./utility/ta_lib-0.6.8-cp313-cp313-win_amd64.whl"
     ) else (
-        echo WARNING: TA-Lib wheel file not found. (utility/ta_lib-0.6.8-cp311-cp311-win_amd64.whl)
+        echo WARNING: TA-Lib wheel file not found. (utility/ta_lib-0.6.8-cp313-cp313-win_amd64.whl)
     )
 
     echo.

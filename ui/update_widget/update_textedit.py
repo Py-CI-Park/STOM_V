@@ -5,6 +5,7 @@ from ui.etcetera.etc import auto_back_schedule
 from ui.event_click.button_clicked_database import *
 from utility.static_method.static import now, qtest_qwait, now_cme
 from ui.event_click.button_clicked_stg_editer import backtest_detail
+from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_02
 from ui.event_click.button_clicked_backtest_engine import backtest_process_kill
 from ui.create_widget.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
 
@@ -118,7 +119,7 @@ class UpdateTextedit:
 
                     if self.ui.back_schedul:
                         qtest_qwait(3)
-                        self.ui.sdButtonClicked_02()
+                        sdbutton_clicked_02(self.ui)
 
                     self.ui.back_start_time = None
                     self.ui.optuna_current_cnt = 0
@@ -191,7 +192,7 @@ class UpdateTextedit:
         else:
             if self.ui.dict_set['프로그램종료']:
                 from PyQt5.QtCore import QTimer
-                QTimer.singleShot(180 * 1000, self.ui.ProcessKill)
+                QTimer.singleShot(180 * 1000, self.ui.process_kill)
             if self.ui.dict_set['컴퓨터종료'] or (
                 self.ui.dict_set['휴무컴퓨터종료'] and
                 (

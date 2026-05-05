@@ -104,17 +104,17 @@ def handle_auto_indent(widget):
         widget.textCursor().insertText(' ' * total_indent)
 
 
-def event_filter(_ui, widget, event):
+def event_filter(ui, widget, event):
     """이벤트 필터를 처리합니다.
     Args:
-        _ui: UI 클래스 인스턴스
+        ui: UI 클래스 인스턴스
         widget: 위젯
         event: 이벤트
     Returns:
         이벤트 처리 결과
     """
     if event.type() != QEvent.KeyPress:
-        return QMainWindow.eventFilter(_ui, widget, event)
+        return QMainWindow.eventFilter(ui, widget, event)
 
     if widget.__class__ == PlainTextEdit and not (QApplication.keyboardModifiers() & Qt.AltModifier):
         widget_id = id(widget)
@@ -202,59 +202,59 @@ def event_filter(_ui, widget, event):
                     widget.setTextCursor(cursor)
             return True
 
-    if _ui.main_btn == 2:
+    if ui.main_btn == 2:
         if event.key() == Qt.Key_Escape:
-            if not _ui.svc_pushButton_24.isVisible():
-                if widget in (_ui.ss_textEditttt_01, _ui.ss_textEditttt_03):
-                    sz_button_clicked_01(_ui)
-                elif widget in (_ui.ss_textEditttt_02, _ui.ss_textEditttt_04):
-                    sz_button_clicked_02(_ui)
+            if not ui.svc_pushButton_24.isVisible():
+                if widget in (ui.ss_textEditttt_01, ui.ss_textEditttt_03):
+                    sz_button_clicked_01(ui)
+                elif widget in (ui.ss_textEditttt_02, ui.ss_textEditttt_04):
+                    sz_button_clicked_02(ui)
             return True
 
         elif event.key() == Qt.Key_E and (QApplication.keyboardModifiers() & Qt.ShiftModifier):
-            extend_window(_ui)
+            extend_window(ui)
             return True
 
         elif (QApplication.keyboardModifiers() & Qt.AltModifier) and \
                 event.key() in (Qt.Key_1, Qt.Key_2, Qt.Key_3, Qt.Key_4, Qt.Key_5,
                                 Qt.Key_6, Qt.Key_7, Qt.Key_8, Qt.Key_9, Qt.Key_0):
             if event.key() == Qt.Key_1:
-                stg_editer(_ui)
+                stg_editer(ui)
             elif event.key() == Qt.Key_2:
-                opti_editer(_ui)
+                opti_editer(ui)
             elif event.key() == Qt.Key_3:
-                opti_test_editer(_ui)
+                opti_test_editer(ui)
             elif event.key() == Qt.Key_4:
-                rwf_test_editer(_ui)
+                rwf_test_editer(ui)
             elif event.key() == Qt.Key_5:
-                opti_ga_editer(_ui)
+                opti_ga_editer(ui)
             elif event.key() == Qt.Key_6:
-                opti_cond_editer(_ui)
+                opti_cond_editer(ui)
             elif event.key() == Qt.Key_7:
-                opti_vars_editer(_ui)
+                opti_vars_editer(ui)
             elif event.key() == Qt.Key_8:
-                opti_gavars_editer(_ui)
+                opti_gavars_editer(ui)
             elif event.key() == Qt.Key_9:
-                backtest_log(_ui)
+                backtest_log(ui)
             elif event.key() == Qt.Key_0:
-                backtest_detail(_ui)
+                backtest_detail(ui)
             return True
 
-    return QMainWindow.eventFilter(_ui, widget, event)
+    return QMainWindow.eventFilter(ui, widget, event)
 
 
-def close_event(_ui, a):
+def close_event(ui, a):
     """창 닫기 이벤트를 처리합니다.
     Args:
-        _ui: UI 클래스 인스턴스
+        ui: UI 클래스 인스턴스
         a: 이벤트
     """
     buttonReply = QMessageBox.question(
-        _ui, "프로그램 종료", "프로그램을 종료합니다.",
+        ui, "프로그램 종료", "프로그램을 종료합니다.",
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        _ui.ProcessKill()
+        ui.process_kill()
         a.accept()
     else:
         a.ignore()

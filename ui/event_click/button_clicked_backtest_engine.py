@@ -238,7 +238,7 @@ def back_code_test1(ui, stg, testQ):
     return get_code_test_result(ui, '전략', testQ)
 
 
-def back_code_test2(ui, vars_code, testQ, ga):
+def back_code_test2(ui, vars_code, ga, testQ):
     """범위 코드를 테스트합니다.
     Args:
         ui: UI 클래스 인스턴스

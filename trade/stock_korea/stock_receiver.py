@@ -49,11 +49,12 @@ class StockReceiver(BaseReceiver):
     def _get_code_info(self):
         """종목 정보를 조회합니다."""
         self.dict_info, self.codes = self.ls.get_code_info_stock(self.market_gubun-1)
-        if self.market_gubun < 3:
-            self.dict_sgbn = {code: i % 8 for i, code in enumerate(self.dict_info)}
-            self.traderQ.put(('종목정보', (self.dict_info, self.dict_sgbn)))
-        else:
-            self.traderQ.put(('종목정보', self.dict_info))
+        if self.dict_info:
+            if self.market_gubun < 3:
+                self.dict_sgbn = {code: i % 8 for i, code in enumerate(self.dict_info)}
+                self.traderQ.put(('종목정보', (self.dict_info, self.dict_sgbn)))
+            else:
+                self.traderQ.put(('종목정보', self.dict_info))
 
     def _convert_real_data(self, data):
         """실시간 데이터를 변환합니다.
@@ -123,7 +124,8 @@ class StockReceiver(BaseReceiver):
 
         elif tr_cd == self.tr_cd_vi:
             if body['krx_vi_gubun'] in ('1', '3'):
-                self._update_vi(body['shcode'])
+                code = body['ex_shcode'][-6:]
+                self._update_vi(code)
 
         elif tr_cd == self.tr_cd_oper:
             if body['jangubun'] == self.oper_gubun:

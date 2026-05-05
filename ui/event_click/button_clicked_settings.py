@@ -52,7 +52,7 @@ def setting_load_03(ui):
         ui: UI 클래스 인스턴스
     """
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM telegram').set_index('index')
-    no = int(ui.sj_main_comBox_01.currentText()[4:])
+    no = int(ui.sj_main_comBox_01.currentText()[-2:])
     bot_token = df['bot_token'][no]
     chatingid = df['chatingid'][no]
     if bot_token and chatingid:

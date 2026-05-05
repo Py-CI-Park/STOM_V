@@ -505,7 +505,7 @@ def stop_scheduler(ui, gubun=False):
     if ui.auto_mode:
         auto_back_schedule(ui, 3)
     if gubun and ui.sd_scheckBoxxxx_02.isChecked():
-        QTimer.singleShot(180 * 1000, ui.ProcessKill)
+        QTimer.singleShot(180 * 1000, ui.process_kill)
         os.system('shutdown /s /t 300')
 
 

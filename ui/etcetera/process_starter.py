@@ -1,7 +1,8 @@
 
+import psutil
 from ui.etcetera.etc import auto_back_schedule
 from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_03
-from utility.static_method.static import now, now_utc, now_cme, str_ymdhms_ios, str_hms
+from utility.static_method.static import now, now_utc, now_cme, str_ymdhms_ios, str_hms, thread_decorator
 
 
 def process_starter(ui):
@@ -20,7 +21,9 @@ def process_starter(ui):
         ui.auto_run = 0
         mnbutton_c_clicked_03(ui, True)
 
+    _update_cpuper(ui)
     _update_window_title(ui)
+
     ui.int_time = inthms
 
 
@@ -52,3 +55,12 @@ def _update_window_title(ui):
             text = f"{text} | {str_ymdhms_ios()}"
 
     ui.setWindowTitle(text)
+
+
+@thread_decorator
+def _update_cpuper(ui):
+    """CPU 사용률을 업데이트합니다.
+    Args:
+        ui: UI 객체
+    """
+    ui.cpu_per = int(psutil.cpu_percent(interval=1))
