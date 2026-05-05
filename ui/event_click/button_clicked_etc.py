@@ -1,22 +1,15 @@
 
-import random
-import webbrowser
-import pandas as pd
-from PyQt5.QtCore import QDate, Qt
-from ui.etcetera.etc import update_dictset
-from backtest.back_static import RunOptunaServer
-from ui.create_widget.set_text import famous_saying
-from PyQt5.QtWidgets import QMessageBox, QPushButton
-from utility.static_method.static import qtest_qwait, strf_time
-from utility.settings.setting_base import columns_nt, ui_num, columns_nd
-
-
 # noinspection PyUnusedLocal
 def opbutton_clicked_01(ui):
     """Optuna 서버를 시작합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+
+    import webbrowser
+    from backtest.back_static import RunOptunaServer
+    from utility.static_method.static import qtest_qwait
+
     RunOptunaServer()
     qtest_qwait(3)
     webbrowser.open_new('http://localhost:8080/')
@@ -27,6 +20,8 @@ def cpbutton_clicked_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+
     backdetail_list = []
     for i, checkbox in enumerate(ui.backcheckbox_list):
         if checkbox.isChecked():
@@ -44,6 +39,12 @@ def ttbutton_clicked_01(ui, cmd):
         ui: UI 클래스 인스턴스
         cmd: 명령어
     """
+
+    import pandas as pd
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.static_method.static import strf_time
+    from utility.settings.setting_base import columns_nt, ui_num, columns_nd
+
     if '집계' in cmd:
         table = ui.market_info['손익디비']
         df = ui.dbreader.read_sql('거래디비', f'SELECT * FROM {table}')
@@ -108,6 +109,8 @@ def change_back_sdate(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import QDate
+
     if ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_sdateEdittttt.index(ui.dialog_scheduler.focusWidget())
         date = ui.list_sdateEdittttt[gubun].date().toString('yyyyMMdd')
@@ -121,6 +124,8 @@ def change_back_edate(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import QDate
+
     if ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_edateEdittttt.index(ui.dialog_scheduler.focusWidget())
         date = ui.list_edateEdittttt[gubun].date().toString('yyyyMMdd')
@@ -157,6 +162,11 @@ def stbutton_clicked_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.create_widget.set_text import famous_saying
+
     std_text1 = ui.st_lineEditttt_01.text()
     std_text2 = ui.st_lineEditttt_02.text()
     std_text3 = ui.st_lineEditttt_03.text()
@@ -230,6 +240,11 @@ def lvbutton_clicked_03(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.etc import update_dictset
+    from ui.create_widget.set_text import famous_saying
+
     lv0 = 1 if ui.lv_checkBoxxxx_01.isChecked() else 0
     lv1 = ui.lv_lineEditttt_01.text()
     lv2 = ui.lv_lineEditttt_02.text()
@@ -285,7 +300,9 @@ def lvcheck_changed_01(ui, state):
         ui: UI 클래스 인스턴스
         state: 체크 상태
     """
-    if ui.dialog_leverage.focusWidget().__class__ != QPushButton and state == Qt.Checked:
+    from PyQt5.QtCore import Qt
+
+    if ui.dialog_leverage.focusWidget() in ui.lv_checkbox_listt and state == Qt.Checked:
         for widget in ui.lv_checkbox_listt:
             if widget != ui.dialog_leverage.focusWidget() and widget.isChecked():
                 widget.nextCheckState()

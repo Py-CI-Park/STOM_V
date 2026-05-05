@@ -1,8 +1,5 @@
 
-import psutil
-from ui.etcetera.etc import auto_back_schedule
-from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_03
-from utility.static_method.static import now, now_utc, now_cme, str_ymdhms_ios, str_hms, thread_decorator
+from utility.static_method.static import thread_decorator
 
 
 def process_starter(ui):
@@ -11,11 +8,15 @@ def process_starter(ui):
     Args:
         ui: UI 객체
     """
+    from ui.etcetera.etc import auto_back_schedule
+    from utility.static_method.static import now, str_hms
+    from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_03
+
     inthms = int(str_hms())
 
     if ui.dict_set['백테스케쥴실행'] and not ui.backengine_running and now().weekday() == ui.dict_set['백테스케쥴요일']:
         if ui.int_time < ui.dict_set['백테스케쥴시간'] <= inthms:
-            if not ui.dict_set['타임프레임'] and ui.dict_set['패턴인식학습']:
+            if not ui.dict_set['타임프레임'] and ui.dict_set['자동학습']:
                 auto_back_schedule(ui, 0)
             else:
                 auto_back_schedule(ui, 1)
@@ -35,6 +36,7 @@ def _update_window_title(ui):
     Args:
         ui: UI 객체
     """
+    from utility.static_method.static import now_utc, now_cme, str_ymdhms_ios
     market_text = ui.dict_set['거래소']
     data_type = '1초스냅샷' if ui.dict_set['타임프레임'] else '1분봉'
     trade_type = '모의' if ui.dict_set['모의투자'] else '실전'
@@ -66,4 +68,5 @@ def _update_cpuper(ui):
     Args:
         ui: UI 객체
     """
+    import psutil
     ui.cpu_per = int(psutil.cpu_percent(interval=1))

@@ -1,14 +1,13 @@
 
-import pyqtgraph as pg
-from ui.etcetera.etc import chart_clear
-from ui.create_widget.set_style import style_bc_bt, color_bg_bk
-
-
 def chart_count_change(ui):
     """차트 개수를 변경합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+    import pyqtgraph as pg
+    from ui.etcetera.etc import chart_clear
+    from ui.create_widget.set_style import style_bc_bt, color_bg_bk
+
     chart_clear(ui)
     ui.ctpg = {}
     ui.ctpg_cvb = {}

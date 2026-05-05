@@ -1,22 +1,8 @@
 
-from multiprocessing import Process
-from backtest.optimiz import Optimize
-from backtest.backtest import BackTest
-from backtest.backfinder import BackFinder
-from PyQt5.QtWidgets import QMessageBox, QApplication
-from backtest.optimiz_conditions import OptimizeConditions
-from ui.event_click.button_clicked_varstext_change import *
-from ui.etcetera.process_alive import backtest_process_alive
-from backtest.rolling_walk_forward_test import RollingWalkForwardTest
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
-from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
-from ui.create_widget.set_style import style_bc_by, style_bc_dk, style_bc_bs, style_bc_bd, style_bc_st
-from ui.create_widget.set_text import testtext, rwfttext, gaoptext, vedittxt, optitext, condtext, cedittxt, \
-    example_backfinder
-
-
 def group_animation_01(ui):
     """stock_opti_test_editer, stock_rwf_test_editer, stock_opti_editer용 그룹 애니메이션"""
+    from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
+
     # 위젯들의 현재 지오메트리 저장
     current_geo_tedt1 = ui.ss_textEditttt_03.geometry()
     current_geo_tedt2 = ui.ss_textEditttt_04.geometry()
@@ -114,6 +100,8 @@ def group_animation_01(ui):
 
 def group_animation_02(ui):
     """stock_opti_ga_editer용 그룹 애니메이션"""
+    from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
+
     # 위젯들의 현재 지오메트리 저장
     current_geo_tedt1 = ui.ss_textEditttt_03.geometry()
     current_geo_tedt2 = ui.ss_textEditttt_04.geometry()
@@ -247,6 +235,8 @@ def group_animation_02(ui):
 
 def group_animation_03(ui):
     """stock_opti_vars_editer용 그룹 애니메이션"""
+    from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
+
     # 위젯들의 현재 지오메트리 저장
     current_geo_tedt1 = ui.ss_textEditttt_05.geometry()
     current_geo_tedt2 = ui.ss_textEditttt_06.geometry()
@@ -353,6 +343,8 @@ def group_animation_03(ui):
 
 def group_animation_04(ui):
     """stock_vars_editer용 그룹 애니메이션"""
+    from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
+
     # 위젯들의 현재 지오메트리 저장
     current_geo_tedt1 = ui.ss_textEditttt_01.geometry()
     current_geo_tedt2 = ui.ss_textEditttt_02.geometry()
@@ -477,6 +469,8 @@ def group_animation_04(ui):
 
 def group_animation_05(ui):
     """stock_stg_editer용 그룹 애니메이션"""
+    from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
+
     # 위젯들의 현재 지오메트리 저장
     current_geo_tedt1 = ui.ss_textEditttt_01.geometry()
     current_geo_tedt2 = ui.ss_textEditttt_02.geometry()
@@ -573,6 +567,8 @@ def group_animation_06(ui, pushButton1, pushButton2, pushButton3, pushButton4=No
         pushButton3: 세 번째 푸시 버튼
         pushButton4: 네 번째 푸시 버튼 (선택)
     """
+    from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
+
     # 위젯들의 좌측 상단으로 지오메트리 저장
     current_geo_btn01 = QRect(1350, 0, 0, 0)
     current_geo_btn02 = QRect(1350, 0, 0, 0)
@@ -640,6 +636,8 @@ def group_animation_07(ui, pushButton1, pushButton2, pushButton3, pushButton4, p
         pushButton5: 다섯 번째 푸시 버튼
         pushButton6: 여섯 번째 푸시 버튼
     """
+    from PyQt5.QtCore import QPropertyAnimation, QEasingCurve, QParallelAnimationGroup, QRect
+
     # 위젯들의 좌측 상단으로 지오메트리 저장
     current_geo_btn01 = QRect(1350, 0, 0, 0)
     current_geo_btn02 = QRect(1350, 0, 0, 0)
@@ -713,6 +711,8 @@ def opti_test_editer(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import testtext
+
     group_animation_01(ui)
     group_animation_07(ui, ui.svc_pushButton_15, ui.svc_pushButton_16, ui.svc_pushButton_17, ui.svc_pushButton_30, ui.svc_pushButton_31, ui.svc_pushButton_32)
 
@@ -772,6 +772,8 @@ def rwf_test_editer(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import rwfttext
+
     group_animation_01(ui)
     group_animation_07(ui, ui.svc_pushButton_18, ui.svc_pushButton_19, ui.svc_pushButton_20, ui.svc_pushButton_33, ui.svc_pushButton_34, ui.svc_pushButton_35)
 
@@ -832,6 +834,8 @@ def opti_ga_editer(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import gaoptext
+
     group_animation_02(ui)
     group_animation_06(ui, ui.sva_pushButton_01, ui.sva_pushButton_02, ui.sva_pushButton_03)
 
@@ -891,6 +895,8 @@ def opti_vars_editer(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import gaoptext, vedittxt
+
     group_animation_03(ui)
     group_animation_06(ui, ui.svc_pushButton_21, ui.svc_pushButton_22, ui.svc_pushButton_23)
 
@@ -968,6 +974,8 @@ def opti_editer(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import optitext
+
     group_animation_01(ui)
     group_animation_07(ui, ui.svc_pushButton_06, ui.svc_pushButton_07, ui.svc_pushButton_08, ui.svc_pushButton_27, ui.svc_pushButton_28, ui.svc_pushButton_29)
 
@@ -1027,6 +1035,8 @@ def opti_gavars_editer(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import optitext
+
     group_animation_04(ui)
     group_animation_06(ui, ui.svc_pushButton_24, ui.svc_pushButton_25, ui.svc_pushButton_26)
 
@@ -1093,6 +1103,7 @@ def change_pre_button_edit(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_bd
     if ui.svj_pushButton_01.isVisible():
         ui.svj_pushButton_09.setStyleSheet(style_bc_bd)
     elif ui.svc_pushButton_32.isVisible():
@@ -1116,6 +1127,8 @@ def backtest_log(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_by, style_bc_dk, style_bc_bs
+
     change_pre_button_edit(ui)
 
     ui.ss_textEditttt_01.setVisible(False)
@@ -1152,6 +1165,8 @@ def backtest_detail(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_dk, style_bc_bs
+
     change_pre_button_edit(ui)
 
     ui.ss_textEditttt_01.setVisible(False)
@@ -1246,6 +1261,8 @@ def opti_cond_editer(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import condtext, cedittxt
+
     group_animation_06(ui, ui.svo_pushButton_05, ui.svo_pushButton_06, ui.svo_pushButton_07)
 
     ui.ss_textEditttt_01.setVisible(False)
@@ -1314,6 +1331,9 @@ def opti_cond_editer(ui):
 
 
 def _check_backengine(ui):
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtWidgets import QApplication
     from ui.event_click.button_clicked_backtest_engine import backengine_show
 
     if ui.backengine_starting:
@@ -1344,7 +1364,14 @@ def backtest_start(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from multiprocessing import Process
+    from backtest.backtest import BackTest
+    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtWidgets import QApplication
+    from ui.etcetera.process_alive import backtest_process_alive
     from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
+
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
@@ -1400,7 +1427,12 @@ def backfinder_start(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from multiprocessing import Process
+    from PyQt5.QtWidgets import QMessageBox
+    from backtest.backfinder import BackFinder
+    from ui.etcetera.process_alive import backtest_process_alive
     from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
+
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
@@ -1450,6 +1482,7 @@ def backfinder_sample(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import example_backfinder
     if ui.ss_textEditttt_01.isVisible():
         ui.ss_textEditttt_01.clear()
         ui.ss_textEditttt_02.clear()
@@ -1462,7 +1495,14 @@ def opti_start(ui, back_name):
         ui: UI 클래스 인스턴스
         back_name: 백테스트 이름
     """
+    from PyQt5.QtCore import Qt
+    from multiprocessing import Process
+    from backtest.optimiz import Optimize
+    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtWidgets import QApplication
+    from ui.etcetera.process_alive import backtest_process_alive
     from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
+
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
@@ -1614,7 +1654,14 @@ def opti_rwft_start(ui, back_name):
         ui: UI 클래스 인스턴스
         back_name: 백테스트 이름
     """
+    from PyQt5.QtCore import Qt
+    from multiprocessing import Process
+    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtWidgets import QApplication
+    from ui.etcetera.process_alive import backtest_process_alive
+    from backtest.rolling_walk_forward_test import RollingWalkForwardTest
     from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
+
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
@@ -1725,7 +1772,12 @@ def opti_ga_start(ui, back_name):
         ui: UI 클래스 인스턴스
         back_name: 백테스트 이름
     """
+    from multiprocessing import Process
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.process_alive import backtest_process_alive
+    from backtest.optimiz_genetic_algorithm import OptimizeGeneticAlgorithm
     from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
+
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
@@ -1802,7 +1854,12 @@ def opti_cond_start(ui, back_name):
         ui: UI 클래스 인스턴스
         back_name: 백테스트 이름
     """
+    from multiprocessing import Process
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.process_alive import backtest_process_alive
+    from backtest.optimiz_conditions import OptimizeConditions
     from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
+
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
@@ -1881,6 +1938,9 @@ def optivars_to_gavars(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.event_click.button_clicked_varstext_change import get_optivars_to_gavars
+
     opti_vars_text = ui.ss_textEditttt_05.toPlainText()
     if opti_vars_text:
         ga_vars_text = get_optivars_to_gavars(ui, opti_vars_text)
@@ -1895,6 +1955,9 @@ def gavars_to_optivars(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.event_click.button_clicked_varstext_change import get_gavars_to_optivars
+
     ga_vars_text = ui.ss_textEditttt_06.toPlainText()
     if ga_vars_text:
         opti_vars_text = get_gavars_to_optivars(ui, ga_vars_text)
@@ -1909,6 +1972,8 @@ def stg_vars_change(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.event_click.button_clicked_varstext_change import get_stgtxt_to_varstxt
+
     buystg = ui.ss_textEditttt_01.toPlainText()
     sellstg = ui.ss_textEditttt_02.toPlainText()
     buystg_str, sellstg_str = get_stgtxt_to_varstxt(ui, buystg, sellstg)
@@ -1923,6 +1988,8 @@ def stgvars_key_sort(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.event_click.button_clicked_varstext_change import get_stgtxt_sort2
+
     optivars = ui.ss_textEditttt_05.toPlainText()
     gavars = ui.ss_textEditttt_06.toPlainText()
     optivars_str, gavars_str = get_stgtxt_sort2(optivars, gavars)
@@ -1937,6 +2004,8 @@ def optivars_key_sort(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.event_click.button_clicked_varstext_change import get_stgtxt_sort
+
     buystg = ui.ss_textEditttt_03.toPlainText()
     sellstg = ui.ss_textEditttt_04.toPlainText()
     buystg_str, sellstg_str = get_stgtxt_sort(buystg, sellstg)
@@ -1951,6 +2020,8 @@ def change_svj_button_color(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_dk, style_bc_bs
+
     for button in ui.editer_list:
         button.setStyleSheet(style_bc_dk if ui.focusWidget() == button else style_bc_bs)
 
@@ -1960,5 +2031,7 @@ def change_version_button_color(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_dk, style_bc_st
+
     for button in ui.load_list:
         button.setStyleSheet(style_bc_dk if ui.focusWidget() == button else style_bc_st)

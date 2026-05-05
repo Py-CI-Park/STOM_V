@@ -1,9 +1,4 @@
 
-import random
-from PyQt5.QtWidgets import QMessageBox
-from ui.create_widget.set_text import famous_saying
-
-
 def setting_passticks_sample(ui):
     """패스틱스 설정 샘플을 로드합니다.
     Args:
@@ -40,6 +35,10 @@ def setting_passticks_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.create_widget.set_text import famous_saying
+
     data_list = []
     for lineedit1, lineedit2 in zip(ui.scn_lineedit_list, ui.scc_lineedit_list):
         ltext1, ltext2 = lineedit1.text(), lineedit2.text()

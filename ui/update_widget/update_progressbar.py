@@ -1,8 +1,4 @@
 
-from utility.static_method.static import now, timedelta_sec
-from ui.create_widget.set_style import style_bc_bb, style_bc_bt, style_bc_by, style_bc_sl, style_bc_st
-
-
 def update_back_progressbar(ui):
     """백테스트 프로그레스바를 업데이트합니다.
     백테스트 진행 상황, 경과 시간, 남은 시간을 표시합니다.
@@ -10,6 +6,8 @@ def update_back_progressbar(ui):
         ui: UI 클래스 인스턴스
     """
     if ui.back_start_time is not None:
+        from utility.static_method.static import now, timedelta_sec
+
         if ui.optuna_current_cnt == 0:
             total_back_count = ui.back_tick_cunsum[-1]
             curr_shared_cnt  = ui.shared_cnt.value
@@ -43,6 +41,8 @@ def update_progressbar(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_bb, style_bc_bt, style_bc_by, style_bc_sl, style_bc_st
+
     ui.progressBarrr.setValue(ui.cpu_per)
     ui.counter = 0 if ui.counter == 599 else ui.counter + 1
 

@@ -1,13 +1,11 @@
 
-from PyQt5.QtWidgets import QMessageBox
-from utility.settings.setting_base import ui_num
-
-
 def dbbutton_clicked_01(ui):
     """백테DB 지정일자 데이터를 삭제합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         date = ui.db_lineEdittttt_16.text()
         if date == '':
@@ -24,6 +22,8 @@ def dbbutton_clicked_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         date = ui.db_lineEdittttt_01.text()
         if date == '':
@@ -40,6 +40,8 @@ def dbbutton_clicked_03(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         time = ui.db_lineEdittttt_02.text()
         if time == '':
@@ -56,6 +58,8 @@ def dbbutton_clicked_04(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         time = ui.db_lineEdittttt_03.text()
         if time == '':
@@ -72,6 +76,8 @@ def dbbutton_clicked_05(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         date = ui.db_lineEdittttt_04.text()
         if date == '':
@@ -88,6 +94,8 @@ def dbbutton_clicked_06(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         date1 = ui.db_lineEdittttt_05.text()
         date2 = ui.db_lineEdittttt_06.text()
@@ -105,6 +113,8 @@ def dbbutton_clicked_07(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         date1 = ui.db_lineEdittttt_07.text()
         date2 = ui.db_lineEdittttt_08.text()
@@ -122,6 +132,8 @@ def dbbutton_clicked_08(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         if ui.proc_chqs.is_alive():
             ui.database_control = True
@@ -134,6 +146,8 @@ def dbbutton_clicked_09(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.database_control:
         if ui.proc_chqs.is_alive():
             ui.database_control = True
@@ -146,6 +160,9 @@ def dbbutton_clicked_10(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.settings.setting_base import ui_num
+
     buttonReply = QMessageBox.warning(
         ui.dialog_db, f"{ui.market_info['마켓이름']} 거래기록 삭제", "체결목록, 잔고목록, 거래목록, 일별목록이 모두 삭제됩니다.\n계속하시겠습니까?\n",
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No

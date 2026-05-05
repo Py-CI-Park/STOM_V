@@ -1,9 +1,4 @@
 
-from traceback import format_exc
-from utility.settings.setting_base import ui_num
-from ui.create_widget.set_text import buy_signal, sell_signal, buy_signal_future, sell_signal_future
-
-
 def get_fix_strategy(ui, strategy, gubun):
     """전략에 시그널을 추가합니다.
     Args:
@@ -13,6 +8,8 @@ def get_fix_strategy(ui, strategy, gubun):
     Returns:
         수정된 전략 코드
     """
+    from ui.create_widget.set_text import buy_signal, sell_signal, buy_signal_future, sell_signal_future
+
     if gubun == '매수':
         if ui.market_gubun < 6:
             if '\nif 매수:' in strategy:
@@ -46,6 +43,9 @@ def get_optivars_to_gavars(ui, opti_vars_text):
     Returns:
         GA 변수 텍스트
     """
+    from traceback import format_exc
+    from utility.settings.setting_base import ui_num
+
     ga_vars_text = ''
     try:
         vars_ = {}
@@ -87,6 +87,9 @@ def get_gavars_to_optivars(ui, ga_vars_text):
     Returns:
         최적화 변수 텍스트
     """
+    from traceback import format_exc
+    from utility.settings.setting_base import ui_num
+
     opti_vars_text = ''
     try:
         vars_ = {}

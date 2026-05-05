@@ -648,6 +648,7 @@ class BackCodeTest(QThread):
             PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
         수익률, 매수가, 보유수량, 분할매수횟수, 분할매도횟수, 보유시간, 최고수익률, 최저수익률, 리스크점수 = 1, 1, 1, 1, 1, 1, 1, 1, 1
+        패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도 = 0, 0, 0, 0
         매수, 매도, BUY_LONG, SELL_LONG, SELL_SHORT, BUY_SHORT, 강제청산 = False, False, False, False, False, False, False
 
         try:

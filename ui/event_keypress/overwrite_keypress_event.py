@@ -1,21 +1,28 @@
 
-from PyQt5.QtCore import  QDate
-from ui.event_click.button_clicked_stg_editer import *
-from ui.event_click.button_clicked_stg_editer_ga import *
-from ui.event_click.button_clicked_stg_editer_buy import *
-from ui.event_click.button_clicked_stg_editer_sell import *
-from ui.event_click.button_clicked_stg_editer_opti import *
-from ui.event_click.button_clicked_stg_editer_backlog import ssbutton_clicked_06
-from utility.static_method.static import comma2int, comma2float, str_ymd, now_cme, now_utc
-from ui.event_click.button_clicked_show_dialog import show_dialog_graph, show_dialog, show_dialog_chart
-
-
 def key_press_event(ui, event):
     """키 누름 이벤트를 처리합니다.
     Args:
         ui: UI 클래스 인스턴스
         event: 키 이벤트
     """
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtCore import QDate
+    from PyQt5.QtWidgets import QMessageBox
+    from PyQt5.QtWidgets import QApplication
+    from ui.etcetera.process_alive import backtest_process_alive
+    from ui.event_click.button_clicked_stg_editer import backtest_start
+    from ui.event_click.button_clicked_stg_editer_backlog import ssbutton_clicked_06
+    from ui.event_click.button_clicked_stg_editer_buy import buy_stg_load, buy_stg_save
+    from ui.event_click.button_clicked_stg_editer_sell import sell_stg_load, sell_stg_save
+    from utility.static_method.static import comma2int, comma2float, str_ymd, now_cme, now_utc
+    from ui.event_click.button_clicked_show_dialog import show_dialog_graph, show_dialog, show_dialog_chart
+    from ui.event_click.button_clicked_stg_editer_ga import condbuy_load, condbuy_save, condsell_load, condsell_save, \
+        gavars_load, gavars_save
+    from ui.event_click.button_clicked_stg_editer_opti import opti_buy_load, opti_buy_save, opti_sell_load, opti_sell_save, \
+        opti_vars_load, opti_vars_save
+    from ui.event_click.button_clicked_stg_editer import stg_editer, opti_editer, opti_test_editer, rwf_test_editer, \
+        opti_ga_editer, opti_cond_editer, opti_vars_editer, opti_gavars_editer, backtest_log, backtest_detail
+
     if event.key() in (Qt.Key_Return, Qt.Key_Enter):
         if ui.dialog_scheduler.focusWidget() == ui.sd_dpushButtonn_01:
             return

@@ -1,7 +1,4 @@
 
-from PyQt5.QtCore import QRect, QParallelAnimationGroup, QPropertyAnimation, QEasingCurve
-
-
 def group_animation(ui, pushButton, textEdit, pushButton_qrect, textEdit_qrect):
     """그룹 애니메이션을 실행합니다.
     Args:
@@ -11,6 +8,8 @@ def group_animation(ui, pushButton, textEdit, pushButton_qrect, textEdit_qrect):
         pushButton_qrect: 푸시 버튼 지오메트리
         textEdit_qrect: 텍스트 에디터 지오메트리
     """
+    from PyQt5.QtCore import QParallelAnimationGroup, QPropertyAnimation, QEasingCurve
+
     current_geo_btn01 = pushButton.geometry()
     current_geo_tedt1 = textEdit.geometry()
 
@@ -39,6 +38,8 @@ def sz_button_clicked_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import QRect
+
     if ui.svj_pushButton_01.isVisible():
         if ui.szoo_pushButon_01.text() == '확대(esc)':
             visible = False
@@ -96,6 +97,8 @@ def sz_button_clicked_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import QRect
+
     if ui.svj_pushButton_01.isVisible():
         if ui.szoo_pushButon_02.text() == '확대(esc)':
             visible = False

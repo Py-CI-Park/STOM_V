@@ -1,12 +1,5 @@
 
-import random
-from difflib import SequenceMatcher
-from PyQt5.QtWidgets import QMessageBox
-from ui.create_widget.set_style import color_bf_dk
-from ui.create_widget.set_text import famous_saying
-from utility.static_method.static import qtest_qwait
 from utility.static_method.strategy_version_manager import StrategyVersionManager
-from ui.event_click.button_clicked_stg_editer import change_pre_button_edit, change_version_button_color
 
 
 SVM = StrategyVersionManager('stock', 'basic', 'buy', 'dummy')
@@ -87,6 +80,9 @@ def strategy_version(ui, gubun1, gubun2, strategy_name):
         gubun2: 두 번째 구분 (buy, sell, vars, gavars)
         strategy_name: 전략 이름
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.event_click.button_clicked_stg_editer import change_pre_button_edit, change_version_button_color
+
     not_visible_widjet1 = getattr(ui, 'svc_pushButton_21')
     not_visible_widjet2 = getattr(ui, 'svc_pushButton_24')
     not_visible_widjet3 = getattr(ui, 'ss_pushButtonn_08')
@@ -138,6 +134,11 @@ def sync_scroll(version_delete_btn, target_edit, value):
 
 def strategy_version_delete(ui):
     """버전 삭제 버튼 호출"""
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.create_widget.set_text import famous_saying
+    from utility.static_method.static import qtest_qwait
+
     global SVM
     comboBox1 = getattr(ui, 'ss_comboBoxxxx_41')
     comboBox2 = getattr(ui, 'ss_comboBoxxxx_42')
@@ -151,6 +152,9 @@ def strategy_version_delete(ui):
 
 def dactivated_04(ui):
     """버전 콤보박스 변경 시 호출 diff 표시"""
+    from difflib import SequenceMatcher
+    from ui.create_widget.set_style import color_bf_dk
+
     global SVM
     textEdit1, textEdit2, comboBox1, comboBox2 = get_widget(ui, SVM.gubun1, SVM.gubun2)
     version1   = comboBox1.currentText()

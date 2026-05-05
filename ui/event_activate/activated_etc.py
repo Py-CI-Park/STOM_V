@@ -1,7 +1,4 @@
 
-from utility.settings.setting_base import ui_num
-
-
 def dactivated_01(ui, combobox_no):
     """테이블 콤보박스 활성화 이벤트를 처리합니다.
     Args:
@@ -17,6 +14,7 @@ def dactivated_01(ui, combobox_no):
 
     table_name = comboBox.currentText()
     if table_name:
+        from utility.settings.setting_base import ui_num
         df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{table_name}'").set_index('index')
         ui.update_tablewidget.update_tablewidget((ui_num['상세기록'], df))
 

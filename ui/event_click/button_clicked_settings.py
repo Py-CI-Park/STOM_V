@@ -1,22 +1,11 @@
 
-import os
-import random
-import shutil
-from PyQt5.QtCore import QDate
-from ui.etcetera.etc import update_dictset
-from utility.settings.setting_base import DB_PATH
-from PyQt5.QtWidgets import QMessageBox, QLineEdit
-from ui.create_widget.set_style import style_bc_bt
-from ui.create_widget.set_text import famous_saying
-from utility.static_method.static import de_text, en_text, qtest_qwait
-from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
-
-
 def setting_load_01(ui):
     """기본 설정을 로드합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.static_method.static import de_text
+
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
     ui.sj_main_comBox_01.setCurrentText(df['거래소'][0])
     ui.sj_main_cheBox_01.setChecked(True) if df['모의투자'][0] else ui.sj_main_cheBox_01.setChecked(False)
@@ -33,6 +22,9 @@ def setting_load_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.static_method.static import de_text
+
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM account').set_index('index')
     no = int(ui.sj_main_comBox_01.currentText()[-2:])
     access_key = df['access_key'][no]
@@ -52,6 +44,9 @@ def setting_load_03(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.static_method.static import de_text
+
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM telegram').set_index('index')
     no = int(ui.sj_main_comBox_01.currentText()[-2:])
     bot_token = df['bot_token'][no]
@@ -71,6 +66,8 @@ def setting_load_04(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+
     df   = ui.dbreader.read_sql('설정디비', 'SELECT * FROM strategy').set_index('index')
     dfb  = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {ui.market_info['전략구분']}_buy").set_index('index')
     dfs  = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {ui.market_info['전략구분']}_sell").set_index('index')
@@ -134,8 +131,9 @@ def setting_load_05(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
+    from PyQt5.QtCore import QDate
 
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM back').set_index('index')
     ui.sj_back_cheBox_01.setChecked(True) if df['블랙리스트추가'][0] else ui.sj_back_cheBox_01.setChecked(False)
     ui.sj_back_cheBox_02.setChecked(True) if df['백테일괄로딩'][0] else ui.sj_back_cheBox_02.setChecked(False)
     ui.sj_back_cheBox_03.setChecked(True) if not df['백테일괄로딩'][0] else ui.sj_back_cheBox_03.setChecked(False)
@@ -143,18 +141,19 @@ def setting_load_05(ui):
     ui.sj_back_cheBox_05.setChecked(True) if df['백테주문관리적용'][0] else ui.sj_back_cheBox_05.setChecked(False)
     ui.sj_back_cheBox_06.setChecked(True) if df['교차검증가중치'][0] else ui.sj_back_cheBox_06.setChecked(False)
     ui.sj_back_cheBox_07.setChecked(True) if df['범위자동관리'][0] else ui.sj_back_cheBox_07.setChecked(False)
-    ui.sj_back_cheBox_08.setChecked(True) if df['패턴인식학습'][0] else ui.sj_back_cheBox_08.setChecked(False)
+    ui.sj_back_cheBox_08.setChecked(True) if df['자동학습'][0] else ui.sj_back_cheBox_08.setChecked(False)
     ui.sj_back_cheBox_09.setChecked(True) if df['백테스트로그기록안함'][0] else ui.sj_back_cheBox_09.setChecked(False)
     ui.sj_back_cheBox_10.setChecked(True) if df['시장미시구조분석'][0] else ui.sj_back_cheBox_10.setChecked(False)
-    ui.sj_back_cheBox_11.setChecked(True) if df['시장리스크분석'][0] else ui.sj_back_cheBox_11.setChecked(False)
-    ui.sj_back_cheBox_12.setChecked(True) if df['패턴인식분석'][0] else ui.sj_back_cheBox_12.setChecked(False)
-    ui.sj_back_cheBox_13.setChecked(True) if df['백테매수시간기준'][0] else ui.sj_back_cheBox_13.setChecked(False)
+    ui.sj_back_cheBox_11.setChecked(True) if df['리스크분석'][0] else ui.sj_back_cheBox_11.setChecked(False)
+    ui.sj_back_cheBox_12.setChecked(True) if df['패턴분석'][0] else ui.sj_back_cheBox_12.setChecked(False)
+    ui.sj_back_cheBox_13.setChecked(True) if df['가격대분석'][0] else ui.sj_back_cheBox_13.setChecked(False)
+    ui.sj_back_cheBox_14.setChecked(True) if df['백테매수시간기준'][0] else ui.sj_back_cheBox_14.setChecked(False)
     ui.sj_back_liEdit_01.setText(str(df['기준값최소상승률'][0]))
-    ui.sj_back_cheBox_14.setChecked(True) if df['그래프저장하지않기'][0] else ui.sj_back_cheBox_14.setChecked(False)
-    ui.sj_back_cheBox_15.setChecked(True) if df['그래프띄우지않기'][0] else ui.sj_back_cheBox_15.setChecked(False)
-    ui.sj_back_cheBox_16.setChecked(True) if df['백테스케쥴실행'][0] else ui.sj_back_cheBox_16.setChecked(False)
-    ui.sj_back_cheBox_17.setChecked(True) if not df['백테날짜고정'][0] else ui.sj_back_cheBox_17.setChecked(False)
-    ui.sj_back_cheBox_18.setChecked(True) if df['백테날짜고정'][0] else ui.sj_back_cheBox_18.setChecked(False)
+    ui.sj_back_cheBox_15.setChecked(True) if df['그래프저장하지않기'][0] else ui.sj_back_cheBox_15.setChecked(False)
+    ui.sj_back_cheBox_16.setChecked(True) if df['그래프띄우지않기'][0] else ui.sj_back_cheBox_16.setChecked(False)
+    ui.sj_back_cheBox_17.setChecked(True) if df['백테스케쥴실행'][0] else ui.sj_back_cheBox_17.setChecked(False)
+    ui.sj_back_cheBox_18.setChecked(True) if not df['백테날짜고정'][0] else ui.sj_back_cheBox_18.setChecked(False)
+    ui.sj_back_cheBox_19.setChecked(True) if df['백테날짜고정'][0] else ui.sj_back_cheBox_19.setChecked(False)
     ui.sj_back_comBox_02.clear()
     dfs = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
     indexs = list(dfs.index)
@@ -184,8 +183,9 @@ def setting_load_06(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM etc').set_index('index')
+    from utility.static_method.static import de_text
 
+    df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM etc').set_index('index')
     ui.sj_etc_comBoxx_01.setCurrentText(df['테마'][0])
     ui.sj_etc_checBox_02.setChecked(True) if df['저해상도'][0] else ui.sj_etc_checBox_02.setChecked(False)
     ui.sj_etc_checBox_03.setChecked(True) if df['스톰라이브'][0] else ui.sj_etc_checBox_03.setChecked(False)
@@ -205,6 +205,12 @@ def setting_save_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.etc import update_dictset
+    from ui.create_widget.set_text import famous_saying
+    from utility.static_method.static import en_text, qtest_qwait
+
     거래소 = ui.sj_main_comBox_01.currentText()
     모의투자 = 1 if ui.sj_main_cheBox_01.isChecked() else 0
     데이터저장 = 1 if ui.sj_main_cheBox_02.isChecked() else 0
@@ -253,6 +259,11 @@ def setting_save_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.static_method.static import en_text
+    from ui.create_widget.set_text import famous_saying
+
     access_key = ui.sj_accc_liEdit_01.text()
     secret_key = ui.sj_accc_liEdit_02.text()
 
@@ -278,6 +289,12 @@ def setting_save_03(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.etc import update_dictset
+    from utility.static_method.static import en_text
+    from ui.create_widget.set_text import famous_saying
+
     bot_token = ui.sj_tele_liEdit_01.text()
     chatingid = ui.sj_tele_liEdit_02.text()
 
@@ -304,6 +321,11 @@ def setting_save_04(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.etc import update_dictset
+    from ui.create_widget.set_text import famous_saying
+
     잔고청산 = 1 if ui.sj_strgy_ckBox_01.isChecked() else 0
     프로세스종료 = 1 if ui.sj_strgy_ckBox_02.isChecked() else 0
     컴퓨터종료 = 1 if ui.sj_strgy_ckBox_03.isChecked() else 0
@@ -357,6 +379,12 @@ def setting_save_05(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.etc import update_dictset
+    from ui.create_widget.set_text import famous_saying
+    from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
+
     블랙리스트추가 = 1 if ui.sj_back_cheBox_01.isChecked() else 0
     백테일괄로딩 = 1 if ui.sj_back_cheBox_02.isChecked() else 0
     # 백테분할로딩 = 1 if ui.sj_back_cheBox_03.isChecked() else 0
@@ -364,18 +392,19 @@ def setting_save_05(ui):
     백테주문관리적용 = 1 if ui.sj_back_cheBox_05.isChecked() else 0
     교차검증가중치 = 1 if ui.sj_back_cheBox_06.isChecked() else 0
     범위자동관리 = 1 if ui.sj_back_cheBox_07.isChecked() else 0
-    패턴인식학습 = 1 if ui.sj_back_cheBox_08.isChecked() else 0
+    자동학습 = 1 if ui.sj_back_cheBox_08.isChecked() else 0
     백테스트로그기록안함 = 1 if ui.sj_back_cheBox_09.isChecked() else 0
     기준값최소상승률 = ui.sj_back_liEdit_01.text()
     시장미시구조분석 = 1 if ui.sj_back_cheBox_10.isChecked() else 0
-    시장리스크분석 = 1 if ui.sj_back_cheBox_11.isChecked() else 0
-    패턴인식분석 = 1 if ui.sj_back_cheBox_12.isChecked() else 0
-    백테매수시간기준 = 1 if ui.sj_back_cheBox_13.isChecked() else 0
-    그래프저장하지않기 = 1 if ui.sj_back_cheBox_14.isChecked() else 0
-    그래프띄우지않기 = 1 if ui.sj_back_cheBox_15.isChecked() else 0
-    백테스케쥴실행 = 1 if ui.sj_back_cheBox_16.isChecked() else 0
-    # 백테날짜일전 = 1 if ui.sj_back_cheBox_17.isChecked() else 0
-    백테날짜고정 = 1 if ui.sj_back_cheBox_18.isChecked() else 0
+    리스크분석 = 1 if ui.sj_back_cheBox_11.isChecked() else 0
+    패턴분석 = 1 if ui.sj_back_cheBox_12.isChecked() else 0
+    가격대분석 = 1 if ui.sj_back_cheBox_13.isChecked() else 0
+    백테매수시간기준 = 1 if ui.sj_back_cheBox_14.isChecked() else 0
+    그래프저장하지않기 = 1 if ui.sj_back_cheBox_15.isChecked() else 0
+    그래프띄우지않기 = 1 if ui.sj_back_cheBox_16.isChecked() else 0
+    백테스케쥴실행 = 1 if ui.sj_back_cheBox_17.isChecked() else 0
+    # 백테날짜일전 = 1 if ui.sj_back_cheBox_18.isChecked() else 0
+    백테날짜고정 = 1 if ui.sj_back_cheBox_19.isChecked() else 0
 
     if ui.sj_back_comBox_01.currentText() == '금':   백테스케쥴요일 = 4
     elif ui.sj_back_comBox_01.currentText() == '토': 백테스케쥴요일 = 5
@@ -394,9 +423,9 @@ def setting_save_05(ui):
     else:
         백테스케쥴시간 = int(백테스케쥴시간)
         if ui.proc_chqs.is_alive():
-            columns = ['블랙리스트추가', '백테일괄로딩', '디비자동관리', '백테주문관리적용', '교차검증가중치', '범위자동관리', '패턴인식학습',
-                       '기준값최소상승률', '시장미시구조분석', '시장리스크분석', '패턴인식분석', '백테매수시간기준', '백테스트로그기록안함',
-                       '그래프저장하지않기', '그래프띄우지않기', '백테스케쥴실행', '백테스케쥴요일', '백테스케쥴시간',
+            columns = ['블랙리스트추가', '백테일괄로딩', '디비자동관리', '백테주문관리적용', '교차검증가중치', '범위자동관리', '자동학습',
+                       '기준값최소상승률', '시장미시구조분석', '리스크분석', '패턴분석', '가격대분석', '백테매수시간기준',
+                       '백테스트로그기록안함', '그래프저장하지않기', '그래프띄우지않기', '백테스케쥴실행', '백테스케쥴요일', '백테스케쥴시간',
                        '백테스케쥴명', '백테날짜고정', '백테날짜']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query   = f'UPDATE back SET {set_txt}'
@@ -420,6 +449,12 @@ def setting_save_06(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.etc import update_dictset
+    from utility.static_method.static import en_text
+    from ui.create_widget.set_text import famous_saying
+
     테마 = ui.sj_etc_comBoxx_01.currentText()
     저해상도 = 1 if ui.sj_etc_checBox_02.isChecked() else 0
     스톰라이브 = 1 if ui.sj_etc_checBox_03.isChecked() else 0
@@ -455,10 +490,13 @@ def setting_acc_view(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_bt
+
     if ui.sj_etc_pButton_01.text() == '계정 텍스트 보기':
         ui.pa_lineEditttt_01.clear()
         ui.dialog_pass.show() if not ui.dialog_pass.isVisible() else ui.dialog_pass.close()
     else:
+        from PyQt5.QtWidgets import QLineEdit
         ui.sj_main_liEdit_01.setEchoMode(QLineEdit.Password)
         ui.sj_accc_liEdit_01.setEchoMode(QLineEdit.Password)
         ui.sj_accc_liEdit_02.setEchoMode(QLineEdit.Password)
@@ -475,7 +513,6 @@ def setting_order_load_01(ui):
         ui: UI 클래스 인스턴스
     """
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM buyorder').set_index('index')
-
     ui.ss_buyy_checkBox_01.setChecked(True) if df['매수주문유형'][0] == '시장가' else ui.ss_buyy_checkBox_01.setChecked(False)
     ui.ss_buyy_checkBox_02.setChecked(True) if df['매수주문유형'][0] == '지정가' else ui.ss_buyy_checkBox_02.setChecked(False)
     ui.ss_buyy_checkBox_03.setChecked(True) if df['매수주문유형'][0] == '최유리지정가' else ui.ss_buyy_checkBox_03.setChecked(False)
@@ -549,7 +586,6 @@ def setting_order_load_02(ui):
         ui: UI 클래스 인스턴스
     """
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM sellorder').set_index('index')
-
     ui.ss_sell_checkBox_01.setChecked(True) if df['매도주문유형'][0] == '시장가' else ui.ss_sell_checkBox_01.setChecked(False)
     ui.ss_sell_checkBox_02.setChecked(True) if df['매도주문유형'][0] == '지정가' else ui.ss_sell_checkBox_02.setChecked(False)
     ui.ss_sell_checkBox_03.setChecked(True) if df['매도주문유형'][0] == '최유리지정가' else ui.ss_sell_checkBox_03.setChecked(False)
@@ -598,6 +634,11 @@ def setting_order_save_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.etc import update_dictset
+    from ui.create_widget.set_text import famous_saying
+
     매수주문유형 = ''
     if ui.ss_buyy_checkBox_01.isChecked(): 매수주문유형 = '시장가'
     if ui.ss_buyy_checkBox_02.isChecked(): 매수주문유형 = '지정가'
@@ -733,6 +774,11 @@ def setting_order_save_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.etcetera.etc import update_dictset
+    from ui.create_widget.set_text import famous_saying
+
     매도주문유형 = ''
     if ui.ss_sell_checkBox_01.isChecked(): 매도주문유형 = '시장가'
     if ui.ss_sell_checkBox_02.isChecked(): 매도주문유형 = '지정가'
@@ -845,6 +891,13 @@ def setting_all_app(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import os
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.settings.setting_base import DB_PATH
+    from ui.create_widget.set_text import famous_saying
+    from utility.static_method.static import qtest_qwait
+
     name = ui.sj_set_comBoxx_01.currentText()
     if name == '':
         QMessageBox.critical(ui, '오류 알림', '설정이름이 선택되지 않았습니다.\n')
@@ -884,6 +937,12 @@ def setting_all_del(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import os
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.settings.setting_base import DB_PATH
+    from ui.create_widget.set_text import famous_saying
+
     name = ui.sj_set_comBoxx_01.currentText()
     if name == '':
         QMessageBox.critical(ui, '오류 알림', '설정이름이 선택되지 않았습니다.\n')
@@ -900,6 +959,12 @@ def setting_all_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    import shutil
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.settings.setting_base import DB_PATH
+    from ui.create_widget.set_text import famous_saying
+
     name = ui.sj_set_liEditt_01.text()
     if name == '':
         QMessageBox.critical(ui, '오류 알림', '설정이름이 입력되지 않았습니다.\n')
@@ -925,6 +990,9 @@ def load_setting_file(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import os
+    from utility.settings.setting_base import DB_PATH
+
     ui.sj_set_comBoxx_01.clear()
     file_list = os.listdir(DB_PATH)
     file_list = [x for x in file_list if 'setting_' in x]

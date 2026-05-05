@@ -194,7 +194,7 @@ class OptimizeConditions:
         """조건 최적화를 시작합니다."""
         start_time = now()
         data = self.bq.get()
-        if self.market_gubun < 4:
+        if self.market_gubun in (1, 2, 3, 5):
             betting = float(data[0]) * 1000000
         else:
             betting = float(data[0])

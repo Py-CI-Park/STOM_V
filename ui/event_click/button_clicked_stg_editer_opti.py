@@ -1,20 +1,13 @@
 
-import random
-from PyQt5.QtCore import Qt
-from traceback import format_exc
-from ui.create_widget.set_text import *
-from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.static_method.static import text_not_in_special_characters
-from ui.event_click.button_clicked_varstext_change import get_fix_strategy
-from ui.event_click.button_clicked_strategy_version import strategy_version
-from utility.static_method.strategy_version_manager import stg_save_version
-
-
 def opti_buy_load(ui):
     """최적화 매수 전략을 로드합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.event_click.button_clicked_strategy_version import strategy_version
+
     if QApplication.keyboardModifiers() & Qt.ControlModifier:
         strategy_name = ui.svc_comboBoxxx_01.currentText()
         if strategy_name == '':
@@ -38,6 +31,14 @@ def opti_buy_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtCore import Qt
+    from ui.create_widget.set_text import famous_saying
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from utility.static_method.static import text_not_in_special_characters
+    from ui.event_click.button_clicked_varstext_change import get_fix_strategy
+    from utility.static_method.strategy_version_manager import stg_save_version
+
     if ui.ss_textEditttt_03.isVisible():
         strategy_name = ui.svc_lineEdittt_01.text()
         strategy = ui.ss_textEditttt_03.toPlainText()
@@ -70,6 +71,10 @@ def opti_vars_load(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.event_click.button_clicked_strategy_version import strategy_version
+
     if QApplication.keyboardModifiers() & Qt.ControlModifier:
         strategy_name = ui.svc_comboBoxxx_02.currentText()
         if strategy_name == '':
@@ -93,6 +98,13 @@ def opti_vars_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtCore import Qt
+    from ui.create_widget.set_text import famous_saying
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.strategy_version_manager import stg_save_version
+
     if ui.ss_textEditttt_05.isVisible():
         strategy_name = ui.svc_lineEdittt_02.text()
         strategy = ui.ss_textEditttt_05.toPlainText()
@@ -119,6 +131,10 @@ def opti_sell_load(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.event_click.button_clicked_strategy_version import strategy_version
+
     if QApplication.keyboardModifiers() & Qt.ControlModifier:
         strategy_name = ui.svc_comboBoxxx_08.currentText()
         if strategy_name == '':
@@ -142,6 +158,14 @@ def opti_sell_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtCore import Qt
+    from ui.create_widget.set_text import famous_saying
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from utility.static_method.static import text_not_in_special_characters
+    from ui.event_click.button_clicked_varstext_change import get_fix_strategy
+    from utility.static_method.strategy_version_manager import stg_save_version
+
     if ui.ss_textEditttt_04.isVisible():
         strategy_name = ui.svc_lineEdittt_03.text()
         strategy = ui.ss_textEditttt_04.toPlainText()
@@ -170,6 +194,14 @@ def opti_sample(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import example_stg_buy, example_stg_buy_future, example_stg_sell, \
+        example_stg_sell_future, example_stg_buy_vchange, example_stg_buy_vchange_future, example_stg_optibuy, \
+        example_stg_optibuy_min, example_stg_optibuy_future, example_stg_optibuy_future_min, example_stg_sell_vchange, \
+        example_stg_sell_vchange_future, example_stg_optisell, example_stg_optisell_min, example_stg_optisell_future, \
+        example_stg_optisell_future_min, example_opti_vars, example_opti_vars_min, example_opti_vars_future, \
+        example_opti_vars_future_min, example_gavars, example_gavars_min, example_gavars_future, example_gavars_future_min, \
+        example_buyconds, example_buyconds_future, example_sellconds, example_sellconds_future
+
     if ui.ss_textEditttt_01.isVisible():
         ui.ss_textEditttt_01.clear()
         ui.ss_textEditttt_01.append(example_stg_buy if ui.market_gubun < 6 else example_stg_buy_future)
@@ -226,6 +258,10 @@ def opti_to_buy_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from traceback import format_exc
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.static_method.static import text_not_in_special_characters
+
     tabl = f"{ui.market_info['전략구분']}_optivars" if not ui.sva_pushButton_01.isVisible() else f"{ui.market_info['전략구분']}_optigavars"
     stgy = ui.svc_comboBoxxx_01.currentText()
     opti = ui.svc_comboBoxxx_02.currentText() if not ui.sva_pushButton_01.isVisible() else ui.sva_comboBoxxx_01.currentText()
@@ -268,6 +304,10 @@ def opti_to_sell_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from traceback import format_exc
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.static_method.static import text_not_in_special_characters
+
     tabl = f"{ui.market_info['전략구분']}_optivars" if not ui.sva_pushButton_01.isVisible() else f"{ui.market_info['전략구분']}_optigavars"
     stgy = ui.svc_comboBoxxx_08.currentText()
     opti = ui.svc_comboBoxxx_02.currentText() if not ui.sva_pushButton_01.isVisible() else ui.sva_comboBoxxx_01.currentText()

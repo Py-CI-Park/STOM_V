@@ -1,18 +1,12 @@
 
-import random
-import sqlite3
-from ui.create_widget.set_text import famous_saying
-from utility.static_method.static import qtest_qwait
-from utility.settings.setting_base import DB_STRATEGY
-from PyQt5.QtWidgets import QMessageBox, QColorDialog
-from ui.create_widget.set_text_stg_button import dict_stg_name
-
-
 def formula_activated(ui):
     """수식을 활성화합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+    import sqlite3
+    from utility.settings.setting_base import DB_STRATEGY
+
     dict_style = {
         1: '1:실선',
         2: '2:대시선',
@@ -51,6 +45,14 @@ def formula_button_clicked(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    import sqlite3
+    from ui.create_widget.set_text import famous_saying
+    from utility.static_method.static import qtest_qwait
+    from utility.settings.setting_base import DB_STRATEGY
+    from PyQt5.QtWidgets import QMessageBox, QColorDialog
+    from ui.create_widget.set_text_stg_button import dict_stg_name
+
     button_text = ui.dialog_formula.focusWidget().text()
 
     if button_text == '불러오기':

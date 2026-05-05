@@ -10,6 +10,7 @@ from trade.stg_globals_func import StgGlobalsFunc
 from trade.manager_formula import get_formula_data
 from trade.analyzer_pattern import AnalyzerPattern
 from trade.analyzer_microstruc import AnalyzerMicrostructure
+from trade.analyzer_volume_profile import AnalyzerVolumeProfile
 from utility.settings.setting_base import indicator, DB_SETTING
 from utility.settings.setting_base import DB_STRATEGY, ui_num, dict_order_ratio
 # noinspection PyUnusedImports
@@ -116,6 +117,7 @@ class BaseStrategy(StgGlobalsFunc):
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], factor_list)
         self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], factor_list)
         self.pt_analyzer = AnalyzerPattern(self.market_info)
+        self.vf_analyzer = AnalyzerVolumeProfile(self.market_info)
 
         set_builtin_print(self.windowQ)
         self._set_formula_data()
@@ -403,7 +405,7 @@ class BaseStrategy(StgGlobalsFunc):
 
             if self.dict_set['시장미시구조분석']:
                 self.ms_analyzer.update_data(self.code, self.arry_code)
-            if self.dict_set['시장리스크분석']:
+            if self.dict_set['리스크분석']:
                 리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
 
         self._update_high_low(종목코드, 현재가)
@@ -615,9 +617,11 @@ class BaseStrategy(StgGlobalsFunc):
             if 데이터길이 >= self.rolling_window:
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
 
-            패턴점수, 패턴신뢰도 = 0, 0
-            if self.dict_set['패턴인식분석'] and 데이터길이 >= 5:
+            패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도 = 0, 0, 0, 0
+            if self.dict_set['패턴분석'] and 데이터길이 >= 5:
                 패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+            if self.dict_set['가격대분석']:
+                가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
 
             indicator_list = get_indicator(
                 self.arry_code[:, self.dict_findex['현재가']],
@@ -878,7 +882,7 @@ class BaseStrategy(StgGlobalsFunc):
 
             if self.dict_set['시장미시구조분석']:
                 self.ms_analyzer.update_data(self.code, self.arry_code)
-            if self.dict_set['시장리스크분석']:
+            if self.dict_set['리스크분석']:
                 리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
 
         self._update_high_low(종목코드, 현재가)
@@ -1111,9 +1115,11 @@ class BaseStrategy(StgGlobalsFunc):
             if 데이터길이 >= self.rolling_window:
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
 
-            패턴점수, 패턴신뢰도 = 0, 0
-            if self.dict_set['패턴인식분석'] and 데이터길이 >= 5:
+            패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도 = 0, 0, 0, 0
+            if self.dict_set['패턴분석'] and 데이터길이 >= 5:
                 패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+            if self.dict_set['가격대분석']:
+                가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
 
             indicator_list = get_indicator(
                 self.arry_code[:, self.dict_findex['현재가']],

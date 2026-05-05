@@ -81,15 +81,18 @@ class BackEngineBaseOms(BackEngineBase):
         self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
 
         리스크점수 = 0
-        if self.is_tick and self.tick_count >= 30:
+        if self.is_tick and 데이터길이 >= 30:
             if self.dict_set['시장미시구조분석']:
                 self.ms_analyzer.update_data(self.code, self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
-            if self.dict_set['시장리스크분석']:
+            if self.dict_set['리스크분석']:
                 리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
 
-        패턴점수, 패턴신뢰도 = 0, 0
-        if not self.is_tick and self.dict_set['패턴인식분석'] and 데이터길이 >= 5:
-            패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+        패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도 = 0, 0, 0, 0
+        if not self.is_tick:
+            if self.dict_set['패턴분석'] and 데이터길이 >= 5:
+                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+            if self.dict_set['가격대분석']:
+                가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
 
         self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
         self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]
@@ -172,7 +175,7 @@ class BackEngineBaseOms(BackEngineBase):
 
                     if '매수' in gubun:
                         if not 관심종목: continue
-                        if self._cancel_buy_order(현재가): continue
+                        if self._cancel_buy_order(): continue
                         if not 보유중:
                             exec(self.buystg)
                         else:
@@ -236,7 +239,7 @@ class BackEngineBaseOms(BackEngineBase):
 
                     if '매수' in gubun:
                         if not 관심종목: continue
-                        if self._cancel_buy_order(현재가): continue
+                        if self._cancel_buy_order(): continue
                         if not 보유중:
                             if self.back_type != '조건최적화':
                                 exec(self.buystg)
@@ -305,7 +308,7 @@ class BackEngineBaseOms(BackEngineBase):
 
             if '매수' in gubun:
                 if not 관심종목: return
-                if self._cancel_buy_order(현재가): return
+                if self._cancel_buy_order(): return
                 if not 보유중:
                     exec(self.buystg)
                 else:
@@ -401,10 +404,8 @@ class BackEngineBaseOms(BackEngineBase):
 
         return gubun
 
-    def _cancel_buy_order(self, 현재가):
+    def _cancel_buy_order(self):
         """매수 주문 취소 조건을 확인합니다.
-        Args:
-            현재가: 현재 가격
         Returns:
             취소 여부
         """
@@ -421,8 +422,6 @@ class BackEngineBaseOms(BackEngineBase):
         elif self.dict_set['매수금지간격'] and now_time <= 직전거래시간:
             cancel = True
         elif self.dict_set['매수금지손절간격'] and now_time <= 손절매도시간:
-            cancel = True
-        elif self.market_gubun in (3, 4) and self.dict_set['매수금지200원이하'] and 현재가 <= 200:
             cancel = True
         return cancel
 

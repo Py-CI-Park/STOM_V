@@ -1,14 +1,13 @@
 
-from ui.etcetera.etc import update_image
-from utility.settings.setting_base import ui_num
-
-
 class UpdateCrawlingData:
     """웹크롤링 스레드가 보내온 데이터를 처리합니다."""
     def __init__(self, ui):
         self.ui = ui
 
     def update_crawling_data(self, data):
+        from ui.etcetera.etc import update_image
+        from utility.settings.setting_base import ui_num
+
         if data[0] == ui_num['홈차트']:
             self.ui.draw_homechart.draw_home_chart(data)
 

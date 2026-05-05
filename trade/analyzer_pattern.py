@@ -7,9 +7,9 @@ import numpy as np
 from typing import Dict, List
 from PyQt5.QtWidgets import QMessageBox
 from multiprocessing import Pool, cpu_count
-from utility.static_method.static import now, thread_decorator
 from utility.settings.setting_base import ui_num
 from ui.create_widget.set_text import famous_saying
+from utility.static_method.static import now, thread_decorator
 
 
 PATTERN_DB = './_database/pattern_analysis.db'
@@ -28,8 +28,6 @@ PATTERN_FUNCTIONS = [
     'CDLTASUKIGAP', 'CDLTHRUSTING', 'CDLTRISTAR', 'CDLUNIQUE3RIVER', 'CDLUPSIDEGAP2CROWS',
     'CDLXSIDEGAP3METHODS'
 ]
-
-
 window_queue = None
 
 
@@ -53,8 +51,8 @@ class AnalyzerPattern:
     def analyze_patterns(self, code: str, realtime_data: np.ndarray) -> Dict[str, Dict[str, float]]:
         """
         실시간 패턴 분석 수행
-        :param code: 종목코드
-        :param realtime_data: 실시간 1분봉 데이터 (2차원 numpy 어레이)
+        code: 종목코드
+        realtime_data: 실시간 1분봉 데이터 (2차원 numpy 어레이)
         :return: 탐지된 패턴과 학습된 점수
         """
         return self.pattern_realtime.analyze_patterns(code, realtime_data)
@@ -67,7 +65,8 @@ class AnalyzerPattern:
         num_processes = cpu_count()
         code_chunks = self._split_codes(code_list, num_processes)
 
-        with Pool(processes=num_processes, initializer=init_worker, initargs=(windowQ,)) as pool:
+        actual_processes = min(num_processes, len(code_chunks))
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(windowQ,)) as pool:
             args = [(i, chunk, self.backtest_db_path, self.market_info, self.minute, self.pct)
                     for i, chunk in enumerate(code_chunks)]
             results = pool.starmap(self._train_code_chunk, args)
@@ -77,7 +76,7 @@ class AnalyzerPattern:
             for code, pattern_scores in chunk_results.items():
                 self.pattern_database.save_pattern_scores(code, pattern_scores)
                 total_processed += 1
-            windowQ.put((ui_num['패턴학습'], f"학습 데이터 저장 중 ... [{i+1}/{num_processes}]"))
+            windowQ.put((ui_num['패턴학습'], f"학습 데이터 저장 중 ... [{i+1}/{actual_processes}]"))
 
         windowQ.put((ui_num['패턴학습'], "학습 데이터 저장 완료"))
         windowQ.put((ui_num['패턴학습'], f"{PATTERN_DB} -> {self.pattern_database.table_name}"))
@@ -98,10 +97,13 @@ class AnalyzerPattern:
     def _split_codes(self, code_list: List[str], num_chunks: int) -> List[List[str]]:
         """
         종목 리스트를 CPU수만큼 분할
-        :param code_list: 종목코드 리스트
-        :param num_chunks: 분할할 청크 수 (CPU 코어 수)
-        :return: 분할된 종목코드 청크 리스트
+        code_list: 종목코드 리스트
+        num_chunks: 분할할 청크 수 (CPU 코어 수)
+        return: 분할된 종목코드 청크 리스트
         """
+        if len(code_list) <= num_chunks:
+            return [[code] for code in code_list]
+
         chunk_size = len(code_list) // num_chunks
         chunks = []
         for i in range(num_chunks):
@@ -115,12 +117,12 @@ class AnalyzerPattern:
                           market_info: dict, minute: int, pct: int) -> Dict[str, Dict[str, float]]:
         """
         종목 청크별 학습 (프로세스 내에서 실행)
-        :param code_chunk: 종목코드 청크
-        :param backtest_db_path: 백테디비 경로
-        :param market_info: 마켓 정보 딕셔너리
-        :param minute: 분봉 설정
-        :param pct: 퍼센트 설정
-        :return: 종목별 패턴 점수 딕셔너리 {code: pattern_scores}
+        code_chunk: 종목코드 청크
+        backtest_db_path: 백테디비 경로
+        market_info: 마켓 정보 딕셔너리
+        minute: 분봉 설정
+        pct: 퍼센트 설정
+        return: 종목별 패턴 점수 딕셔너리 {code: pattern_scores}
         """
         global window_queue
         pattern_learning = PatternLearning(market_info, minute, pct)
@@ -141,6 +143,7 @@ class AnalyzerPattern:
             except Exception as e:
                 # noinspection PyUnresolvedReferences
                 window_queue.put((ui_num['패턴학습'], f"[{i}][{code}] 패턴 학습 실패 - {e}"))
+
         return all_pattern_scores
 
 
@@ -162,8 +165,8 @@ class PatternLearning:
     def train_patterns(self, historical_data: np.ndarray) -> Dict[str, Dict[str, float]]:
         """
         종목별 과거데이터로 패턴 점수 학습 (순차 처리)
-        :param historical_data: 과거 1분봉 데이터 (2차원 numpy 어레이) 칼럼순서는 self.market_info['팩터목록'][0]에 따름
-        :return: 패턴별 점수 딕셔너리
+        historical_data: 과거 1분봉 데이터 (2차원 numpy 어레이) 칼럼순서는 self.market_info['팩터목록'][0]에 따름
+        return: 패턴별 점수 딕셔너리
         """
         open_price     = historical_data[:, self.idx_open]
         high_price     = historical_data[:, self.idx_high]
@@ -232,18 +235,15 @@ class PatternRealtime:
         if all_codes:
             for code in all_codes:
                 self.pattern_scores[code] = self.pattern_database.get_all_pattern_scores(code)
-            return True
-        return False
 
     def analyze_patterns(self, code: str, realtime_data: np.ndarray) -> Dict[str, Dict[str, float]]:
         """
         실시간 데이터에서 패턴 탐지 및 학습된 점수 반환
-        :param code: 종목코드
-        :param realtime_data: 실시간 1분봉 데이터 (2차원 numpy 어레이)
-                            칼럼순서는 self.market_info['팩터목록'][0]에 따름
-        :return: 탐지된 패턴과 학습된 점수
+        code: 종목코드
+        realtime_data: 실시간 1분봉 데이터 (2차원 numpy 어레이) 칼럼순서는 self.market_info['팩터목록'][0]에 따름
+        return: 패턴점수, 신뢰도
         """
-        pattern_score, reliability = 0, 0
+        pattern_score, confidence_score = 0, 0
 
         realtime_data = realtime_data[-5:]
         open_price    = realtime_data[:, self.idx_open]
@@ -259,15 +259,15 @@ class PatternRealtime:
                 learned_score = self.pattern_scores.get(code, {}).get(pattern_name)
                 if learned_score:
                     pattern_score = learned_score['avg_score']
-                    reliability = self._calculate_reliability(learned_score)
+                    confidence_score = self._calculate_reliability(learned_score)
 
-        return pattern_score, reliability
+        return pattern_score, confidence_score
 
     def _calculate_reliability(self, score_data: Dict[str, float]) -> float:
         """
         점수 데이터의 신뢰도 계산
-        :param score_data: 학습된 점수 데이터
-        :return: 신뢰도 (0 ~ 1)
+        score_data: 학습된 점수 데이터
+        return: 신뢰도 (0 ~ 1)
         """
         sample_factor = min(score_data['sample_count'] / 100.0, 1.0)
         std_factor = max(1.0 - score_data['std_score'] / 50.0, 0.0)
@@ -329,8 +329,8 @@ class PatternDatabase:
     def get_all_pattern_scores(self, code: str) -> Dict[str, Dict[str, float]]:
         """
         종목의 전체 패턴 점수 조회
-        :param code: 종목코드
-        :return: 패턴별 점수 딕셔너리
+        code: 종목코드
+        return: 패턴별 점수 딕셔너리
         """
         with sqlite3.connect(PATTERN_DB) as conn:
             cursor = conn.cursor()
@@ -355,8 +355,8 @@ class PatternDatabase:
     def save_pattern_scores(self, code: str, pattern_scores: Dict[str, Dict[str, float]]):
         """
         종목별 패턴 점수 저장
-        :param code: 종목코드
-        :param pattern_scores: 패턴별 점수 딕셔너리
+        code: 종목코드
+        pattern_scores: 패턴별 점수 딕셔너리
         """
         current_date = now().strftime('%Y-%m-%d')
 
@@ -379,21 +379,11 @@ class PatternDatabase:
                 ))
             conn.commit()
 
-    def delete_all_pattern_scores(self, code: str):
-        """
-        종목의 전체 패턴 점수 삭제
-        :param code: 종목코드
-        """
-        with sqlite3.connect(PATTERN_DB) as conn:
-            cursor = conn.cursor()
-            cursor.execute(f'DELETE FROM {self.table_name} WHERE code = ?', (code,))
-            conn.commit()
-
     def load_pattern_setting(self, market: int) -> tuple:
         """
         마켓번호로 패턴 설정값 불러오기
-        :param market: 마켓번호 (1~9)
-        :return: (minute, pct) 튜플, 데이터가 없으면 (30, 10) 반환
+        market: 마켓번호 (1~9)
+        return: (minute, pct) 튜플, 데이터가 없으면 (30, 10) 반환
         """
         with sqlite3.connect(PATTERN_DB) as conn:
             cursor = conn.cursor()
@@ -406,9 +396,9 @@ class PatternDatabase:
     def save_pattern_setting(self, market: int, minute: int, pct: int):
         """
         마켓번호로 패턴 설정값 저장
-        :param market: 마켓번호 (1~9)
-        :param minute: 분봉설정
-        :param pct: 퍼센트설정
+        market: 마켓번호 (1~9)
+        minute: 분봉설정
+        pct: 퍼센트설정
         """
         with sqlite3.connect(PATTERN_DB) as conn:
             cursor = conn.cursor()
@@ -418,6 +408,7 @@ class PatternDatabase:
 
 
 def pattern_setting_load(ui):
+    """두개의 콤보박스를 현재 거래소의 설정값으로 로딩한다."""
     pattern_database = PatternDatabase(ui.market_info['전략구분'])
     minute, pct = pattern_database.load_pattern_setting(ui.market_gubun)
     ui.ptn_comboBoxxx_01.setCurrentText(str(minute))
@@ -425,6 +416,7 @@ def pattern_setting_load(ui):
 
 
 def pattern_setting_save(ui):
+    """두개의 콤보박스 텍스트를 현재 거래소의 설정값으로 저장한다."""
     minute = int(ui.ptn_comboBoxxx_01.currentText())
     pct = int(ui.ptn_comboBoxxx_02.currentText())
     pattern_database = PatternDatabase(ui.market_info['전략구분'])
@@ -433,6 +425,7 @@ def pattern_setting_save(ui):
 
 
 def pattern_train(ui):
+    """패턴학습을 시작한다. 스레드로 구동하여 UI멈춤을 방지한다."""
     if ui.pattern_running:
         QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 패턴학습이 진행중입니다.\n')
         return
@@ -441,6 +434,7 @@ def pattern_train(ui):
 
 @thread_decorator
 def _pattern_train(ui):
+    """스레드로 패턴학습을 시작한다."""
     ui.pattern_running = True
     minute = int(ui.ptn_comboBoxxx_01.currentText())
     pct = int(ui.ptn_comboBoxxx_02.currentText())

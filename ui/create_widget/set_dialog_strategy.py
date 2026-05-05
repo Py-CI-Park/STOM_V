@@ -2,6 +2,7 @@
 from PyQt5.QtWidgets import QLabel, QGridLayout
 from ui.event_click.button_clicked_stg_module import *
 from ui.create_widget.set_style import qfont14, style_bc_dk
+from ui.create_widget.set_text_stg_button import dict_stg_name
 
 
 class SetDialogStrategy:
@@ -19,7 +20,7 @@ class SetDialogStrategy:
         self.ui.dialog_strategy.geometry().center()
 
         def color_number():
-            if idx in (66, 76, 86, 116):
+            if idx in (66, 71, 76, 86, 116):
                 return 2
             elif idx <= 30:
                 return 7

@@ -33,7 +33,7 @@ class BackTest:
         self.market_gubun = market_infos[0]
         self.market_info  = market_infos[1]
 
-        if self.market_gubun < 4:
+        if self.market_gubun in (1, 2, 3, 5):
             self.betting  = float(betting) * 1000000
         else:
             self.betting  = float(betting)

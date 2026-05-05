@@ -1,7 +1,4 @@
 
-import builtins
-
-
 class ImportProgressHook:
     """임포트 진행률 훅 클래스입니다.
     모듈 임포트 시 스플래시 화면에 진행률을 표시합니다.
@@ -77,10 +74,12 @@ class ImportProgressHook:
         return self.original_import(name, *args, **kwargs)
 
     def install(self):
+        import builtins
         """훅을 설치합니다."""
         self.original_import = builtins.__import__
         builtins.__import__ = self.custom_import
 
     def uninstall(self):
+        import builtins
         """훅을 제거합니다."""
         builtins.__import__ = self.original_import

@@ -1,15 +1,11 @@
 
-from PIL import Image
-from PyQt5.QtWidgets import QMessageBox
-from utility.settings.setting_base import ui_num, GRAPH_PATH
-from ui.event_click.button_clicked_backtest_engine import backtest_process_kill
-
-
 def ssbutton_clicked_01(ui):
     """백테스트 기록 테이블 목록을 로드합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_01.clear()
 
@@ -30,6 +26,8 @@ def ssbutton_clicked_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
+
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_02.clear()
 
@@ -52,6 +50,7 @@ def ssbutton_clicked_03(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import ui_num
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_03.clear()
 
@@ -74,6 +73,10 @@ def ssbutton_clicked_04(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PIL import Image
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.settings.setting_base import GRAPH_PATH
+
     comboBox = None
     if ui.focusWidget() == ui.ss_pushButtonn_02:
         comboBox = ui.ss_comboBoxxxx_01
@@ -128,6 +131,9 @@ def ssbutton_clicked_06(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.event_click.button_clicked_backtest_engine import backtest_process_kill
+
     buttonReply = QMessageBox.question(
         ui, '백테스트 중지', '진행중인 백테스트를 중지합니다.\n계속하시겠습니까?\n',
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No

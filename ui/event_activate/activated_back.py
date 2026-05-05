@@ -1,8 +1,4 @@
 
-from PyQt5.QtWidgets import QMessageBox
-from ui.create_widget.set_text import opti_standard, train_period, valid_period, test_period, optimized_count
-
-
 def bactivated_01(ui):
     """백테스트 스케줄러 그룹박스 활성화 이벤트를 처리합니다.
     Args:
@@ -80,6 +76,7 @@ def bactivated_01(ui):
                     ui.list_vcomboBoxxxxx[gubun].addItem(index)
             ui.list_alineEdittttt[gubun].setText('')
 
+        from ui.create_widget.set_text import opti_standard, train_period, valid_period, test_period, optimized_count
         for item in opti_standard:
             ui.list_tcomboBoxxxxx[gubun].addItem(item)
         for item in train_period:
@@ -129,6 +126,7 @@ def bactivated_02(ui):
     if ui.dialog_scheduler.focusWidget() in ui.list_p1comboBoxxxx:
         index = ui.list_p1comboBoxxxx.index(ui.dialog_scheduler.focusWidget())
         if '전진분석' in ui.list_gcomboBoxxxxx[index].currentText() and ui.list_p1comboBoxxxx[index].currentText() == 'ALL':
+            from PyQt5.QtWidgets import QMessageBox
             ui.list_p1comboBoxxxx[index].setCurrentText('3')
             QMessageBox.critical(ui.dialog_scheduler, '오류 알림', '전진분석은 학습기간을 전체로 설정할 수 없습니다.\n')
 

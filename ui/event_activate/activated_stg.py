@@ -1,8 +1,4 @@
 
-from PyQt5.QtWidgets import QMessageBox
-from ui.event_click.button_clicked_strategy_version import strategy_version
-
-
 # UI 타입별 설정 매핑
 UI_ACTIBATED_CONFIG = {
     'tables': [
@@ -40,9 +36,11 @@ UI_ACTIBATED_CONFIG = {
 }
 
 
-# noinspection PyUnresolvedReferences
 def _activated_common(ui, idx):
     """공통 activated 로직"""
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.event_click.button_clicked_strategy_version import strategy_version
+
     widgets = UI_ACTIBATED_CONFIG['widgets']
     table = UI_ACTIBATED_CONFIG['tables'][idx - 1]
 
@@ -164,6 +162,7 @@ def activated_09(ui):
 
 def activated_10(ui):
     """바이낸스 선물 마진타입 경고"""
+    from PyQt5.QtWidgets import QMessageBox
     if ui.sj_main_comBox_03.currentText() == '교차':
         ui.sj_main_comBox_03.setCurrentText('격리')
         QMessageBox.warning(ui, '경고', '현재 바이낸스 선물 마진타입은 격리타입만 지원합니다.\n')
@@ -171,6 +170,7 @@ def activated_10(ui):
 
 def activated_11(ui):
     """바이낸스 선물 포지션모드 경고"""
+    from PyQt5.QtWidgets import QMessageBox
     if ui.sj_main_comBox_04.currentText() == '양방향':
         ui.sj_main_comBox_04.setCurrentText('단방향')
         QMessageBox.warning(ui, '경고', '현재 바이낸스 선물 포지션모드는 단방향만 지원합니다.\n')

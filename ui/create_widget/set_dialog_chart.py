@@ -10,9 +10,9 @@ from ui.event_click.button_clicked_chart_count import chart_count_change
 from ui.create_widget.set_style import style_bc_dk, style_ck_bx, color_bg_bk
 from ui.event_change.changed_checkbox import checkbox_changed_02, checkbox_changed_09
 from ui.event_click.button_clicked_etc import hg_button_clicked_01, hg_button_clicked_02
-from ui.event_click.button_clicked_chart import indicator_setting_basic, indicator_setting_load, indicator_setting_save
-from ui.event_click.button_clicked_show_dialog import show_dialog_formula, show_dialog_factor, chart_size_change, \
-    chart_moneytop_list
+from ui.event_click.button_clicked_show_dialog import show_dialog_formula, show_dialog_factor
+from ui.event_click.button_clicked_chart import indicator_setting_basic, indicator_setting_load, indicator_setting_save, \
+    chart_size_change, chart_moneytop_list
 
 
 class SetDialogChart:

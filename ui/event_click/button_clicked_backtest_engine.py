@@ -1,17 +1,5 @@
 
-import sqlite3
-import numpy as np
-import pandas as pd
-from PyQt5.QtWidgets import QMessageBox
-from backtest.back_subtotal import BackSubTotal
-from backtest.back_code_test import BackCodeTest
-from concurrent.futures import ThreadPoolExecutor
-from ui.create_widget.set_style import style_bc_dk
-from backtest.back_static import get_moneytop_query
-from multiprocessing import Process, Queue, Value, Lock
-from ui.create_widget.dialog_animation import DialogAnimator
-from utility.settings.setting_base import ui_num, DB_STRATEGY, code_info_tables
-from utility.static_method.static import thread_decorator, str_hms, dt_hms, timedelta_sec
+from utility.static_method.static import thread_decorator
 
 
 def backengine_show(ui):
@@ -19,6 +7,12 @@ def backengine_show(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import sqlite3
+    import pandas as pd
+    from utility.settings.setting_base import code_info_tables
+    from ui.create_widget.dialog_animation import DialogAnimator
+    from utility.static_method.static import str_hms, dt_hms, timedelta_sec
+
     table_list = []
     con = sqlite3.connect(ui.market_info['백테디비'][ui.dict_set['타임프레임']])
     try:
@@ -57,7 +51,16 @@ def backengine_start(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import sqlite3
+    import numpy as np
+    import pandas as pd
+    from backtest.back_subtotal import BackSubTotal
+    from utility.settings.setting_base import ui_num
+    from concurrent.futures import ThreadPoolExecutor
+    from backtest.back_static import get_moneytop_query
+    from multiprocessing import Process, Queue, Value, Lock
     from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
+
     ui.backengine_starting = True
     ui.startday   = int(ui.be_dateEdittttt_01.date().toString('yyyyMMdd'))
     ui.endday     = int(ui.be_dateEdittttt_02.date().toString('yyyyMMdd'))
@@ -222,6 +225,10 @@ def back_code_test1(ui, stg, testQ):
     Returns:
         테스트 결과
     """
+    import sqlite3
+    from backtest.back_code_test import BackCodeTest
+    from utility.settings.setting_base import DB_STRATEGY
+
     while not testQ.empty():
         testQ.get()
 
@@ -248,6 +255,8 @@ def back_code_test2(ui, vars_code, ga, testQ):
     Returns:
         테스트 결과
     """
+    from backtest.back_code_test import BackCodeTest
+
     while not testQ.empty():
         testQ.get()
 
@@ -268,6 +277,8 @@ def back_code_test3(ui, gubun, conds_code, testQ):
     Returns:
         테스트 결과
     """
+    from backtest.back_code_test import BackCodeTest
+
     while not testQ.empty():
         testQ.get()
 
@@ -293,6 +304,10 @@ def formula_code_test(ui, stg, testQ):
     Returns:
         테스트 결과
     """
+    import sqlite3
+    from backtest.back_code_test import BackCodeTest
+    from utility.settings.setting_base import DB_STRATEGY
+
     while not testQ.empty():
         testQ.get()
 
@@ -318,6 +333,8 @@ def get_code_test_result(ui, gubun, testQ):
     Returns:
         테스트 성공 여부
     """
+    from utility.settings.setting_base import ui_num
+
     data = testQ.get()
     if data == '전략테스트오류':
         ui.windowQ.put((ui_num['시스템로그'], f'{gubun}에 오류가 있어 저장하지 못하였습니다.'))
@@ -346,7 +363,10 @@ def backtest_process_kill(ui, enginekill):
         ui: UI 클래스 인스턴스
         enginekill: 엔진 중지 여부
     """
+    from utility.settings.setting_base import ui_num
+
     if not ui.backengine_running:
+        from PyQt5.QtWidgets import QMessageBox
         QMessageBox.critical(ui, '오류 알림', '백테스트 엔진이 미실행중입니다.\n')
         return
 
@@ -363,6 +383,7 @@ def backtest_process_kill(ui, enginekill):
             if count == ui.multi:
                 break
 
+    from ui.create_widget.set_style import style_bc_dk
     ui.windowQ.put((ui_num['백테스트'], '백테스트 중지 완료'))
     ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
     ui.ssicon_alert = False

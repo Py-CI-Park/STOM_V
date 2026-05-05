@@ -26,7 +26,7 @@ class MonitorWindowQ(QThread):
             try:
                 data = self.windowQ.get()
                 if data[0].__class__ != str:
-                    if data[0] <= ui_num['패턴학습']:
+                    if data[0] <= ui_num['볼륨학습']:
                         self.signal1.emit(data)
                     elif ui_num['실현손익'] <= data[0] <= ui_num['상세기록']:
                         if data[0] == ui_num['관심종목']:

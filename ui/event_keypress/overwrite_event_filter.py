@@ -1,13 +1,4 @@
 
-from PyQt5.QtCore import QEvent, QTimer
-from ui.event_click.button_clicked_zoom import *
-from PyQt5.QtWidgets import QMainWindow, QTextEdit
-from ui.create_widget.set_style import color_bf_dk
-from PyQt5.QtGui import QTextCursor, QTextCharFormat
-from ui.create_widget.set_widget import PlainTextEdit
-from ui.event_click.button_clicked_stg_editer import *
-from ui.event_keypress.extend_window import extend_window
-
 syntax_highlighters = {}
 
 
@@ -39,6 +30,7 @@ def check_python_syntax(text):
 
 class SyntaxHighlighter:
     def __init__(self, widget):
+        from PyQt5.QtCore import QTimer
         self.widget = widget
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_syntax)
@@ -51,6 +43,10 @@ class SyntaxHighlighter:
         self.timer.start(300)
 
     def check_syntax(self):
+        from PyQt5.QtWidgets import QTextEdit
+        from ui.create_widget.set_style import color_bf_dk
+        from PyQt5.QtGui import QTextCursor, QTextCharFormat
+
         text = self.widget.toPlainText()
         error_msg, error_line = check_python_syntax(text)
         self.widget.setExtraSelections([])
@@ -75,6 +71,8 @@ def handle_auto_indent(widget):
     Args:
         widget: 텍스트 위젯
     """
+    from PyQt5.QtGui import QTextCursor
+
     cursor = widget.textCursor()
     cursor.movePosition(QTextCursor.StartOfLine)
     cursor.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
@@ -113,6 +111,15 @@ def event_filter(ui, widget, event):
     Returns:
         이벤트 처리 결과
     """
+    from PyQt5.QtCore import QEvent, Qt
+    from PyQt5.QtGui import QTextCursor
+    from ui.create_widget.set_widget import PlainTextEdit
+    from PyQt5.QtWidgets import QMainWindow, QApplication
+    from ui.event_keypress.extend_window import extend_window
+    from ui.event_click.button_clicked_zoom import sz_button_clicked_01, sz_button_clicked_02
+    from ui.event_click.button_clicked_stg_editer import stg_editer, opti_editer, opti_test_editer, rwf_test_editer, \
+        opti_ga_editer, opti_cond_editer, opti_vars_editer, opti_gavars_editer, backtest_log, backtest_detail
+
     if event.type() != QEvent.KeyPress:
         return QMainWindow.eventFilter(ui, widget, event)
 
@@ -249,6 +256,8 @@ def close_event(ui, a):
         ui: UI 클래스 인스턴스
         a: 이벤트
     """
+    from PyQt5.QtWidgets import QMessageBox
+
     buttonReply = QMessageBox.question(
         ui, "프로그램 종료", "프로그램을 종료합니다.",
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No

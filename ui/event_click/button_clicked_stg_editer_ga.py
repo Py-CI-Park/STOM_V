@@ -1,18 +1,13 @@
 
-import random
-from PyQt5.QtCore import Qt
-from ui.create_widget.set_text import famous_saying
-from PyQt5.QtWidgets import QMessageBox, QApplication
-from utility.static_method.static import text_not_in_special_characters
-from ui.event_click.button_clicked_strategy_version import strategy_version
-from utility.static_method.strategy_version_manager import stg_save_version
-
-
 def gavars_load(ui):
     """GA 변수 범위를 로드합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.event_click.button_clicked_strategy_version import strategy_version
+
     if QApplication.keyboardModifiers() & Qt.ControlModifier:
         strategy_name = ui.sva_comboBoxxx_01.currentText()
         if strategy_name == '':
@@ -36,6 +31,13 @@ def gavars_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtCore import Qt
+    from ui.create_widget.set_text import famous_saying
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.strategy_version_manager import stg_save_version
+
     strategy_name = ui.sva_lineEdittt_01.text()
     strategy = ui.ss_textEditttt_06.toPlainText()
     if strategy_name == '':
@@ -61,6 +63,10 @@ def condbuy_load(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.event_click.button_clicked_strategy_version import strategy_version
+
     if QApplication.keyboardModifiers() & Qt.ControlModifier:
         strategy_name = ui.svo_comboBoxxx_01.currentText()
         if strategy_name == '':
@@ -84,6 +90,12 @@ def condbuy_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.create_widget.set_text import famous_saying
+    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.strategy_version_manager import stg_save_version
+
     strategy_name = ui.svo_lineEdittt_01.text()
     strategy = ui.ss_textEditttt_07.toPlainText()
     if strategy_name == '':
@@ -109,6 +121,10 @@ def condsell_load(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.event_click.button_clicked_strategy_version import strategy_version
+
     if QApplication.keyboardModifiers() & Qt.ControlModifier:
         strategy_name = ui.svo_comboBoxxx_02.currentText()
         if strategy_name == '':
@@ -132,6 +148,12 @@ def condsell_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.create_widget.set_text import famous_saying
+    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.strategy_version_manager import stg_save_version
+
     strategy_name = ui.svo_lineEdittt_02.text()
     strategy = ui.ss_textEditttt_08.toPlainText()
     if strategy_name == '':

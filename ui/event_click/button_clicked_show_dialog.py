@@ -1,20 +1,5 @@
 
-import os
-import sqlite3
-import pandas as pd
-from PyQt5.QtCore import QUrl, Qt
-from multiprocessing import Process
-from ui.etcetera.etc import chart_clear
-from utility.settings.setting_base import columns_hc
-from utility.static_method.static import str_hms, dt_hms
-from ui.create_widget.dialog_animation import DialogAnimator
-from utility.sub_process_and_thread.kimp_upbit_binance import Kimp
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEnginePage
-from ui.event_click.button_clicked_chart import get_indicator_detail
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QMessageBox
-from ui.event_click.button_clicked_chart_count import chart_count_change
-from ui.create_widget.set_style import style_bc_bt, style_bc_bb, style_bc_st
-from ui.etcetera.process_alive import coinkimp_process_alive, strategy_process_alive, receiver_process_alive
+from PyQt5.QtWebEngineWidgets import QWebEnginePage
 
 
 class QuietPage(QWebEnginePage):
@@ -29,6 +14,8 @@ def show_dialog_graph(ui, df):
         ui: UI 클래스 인스턴스
         df: 데이터프레임
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_graph.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_graph, duration=250)
         ui.dialog_graph.show()
@@ -73,6 +60,8 @@ def show_dialog(ui, code, name, tickcount, searchdate, col):
         searchdate: 검색 일자
         col: 컬럼 인덱스
     """
+    from PyQt5.QtWidgets import QMessageBox
+
     if col == 0:
         if ui.market_gubun < 4:
             show_dialog_web(ui, True, code)
@@ -109,6 +98,9 @@ def show_dialog_web(ui, _show, code):
         _show: 표시 여부
         code: 코드
     """
+    from PyQt5.QtCore import QUrl
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if ui.webEngineView is None:
         webengineview_set(ui)
 
@@ -131,6 +123,9 @@ def webengineview_set(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QVBoxLayout
+    from PyQt5.QtWebEngineWidgets import QWebEngineView
+
     ui.webEngineView = QWebEngineView()
     p = QuietPage(ui.webEngineView)
     ui.webEngineView.setPage(p)
@@ -146,6 +141,8 @@ def show_dialog_hoga(ui, _show, code):
         _show: 표시 여부
         code: 코드
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if _show and not ui.dialog_hoga.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=250)
         ui.dialog_hoga.show()
@@ -158,6 +155,18 @@ def show_dialog_hoga(ui, _show, code):
         if name not in ui.order_combo_name_list:
             ui.od_comboBoxxxxx_01.addItem(name)
         ui.od_comboBoxxxxx_01.setCurrentText(name)
+
+
+def put_hoga_code(ui, code):
+    """호가 코드를 전송합니다.
+    Args:
+        ui: UI 클래스 인스턴스
+        code: 코드
+    """
+    from ui.etcetera.process_alive import receiver_process_alive
+
+    if receiver_process_alive(ui):
+        ui.receivQ.put(('호가종목코드', code))
 
 
 def show_dialog_chart(ui, real, code, tickcount=None, searchdate=None, starttime=None, endtime=None,
@@ -174,6 +183,11 @@ def show_dialog_chart(ui, real, code, tickcount=None, searchdate=None, starttime
         detail: 상세 정보
         buytimes: 매수 시간
     """
+
+    from ui.etcetera.etc import chart_clear
+    from ui.event_click.button_clicked_chart import get_indicator_detail
+    from ui.etcetera.process_alive import strategy_process_alive, receiver_process_alive
+
     if not ui.dialog_chart.isVisible():
         dialog_chart_show(ui)
     if ui.proc_chqs.is_alive():
@@ -201,6 +215,10 @@ def dialog_chart_show(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.static_method.static import str_hms, dt_hms
+    from ui.create_widget.dialog_animation import DialogAnimator
+    from ui.event_click.button_clicked_chart_count import chart_count_change
+
     ui.ct_pushButtonnn_05.setText('CHART III')
     chart_count_change(ui)
 
@@ -230,6 +248,8 @@ def show_qsize(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_bb, style_bc_st
+
     if not ui.showQsize:
         ui.qs_pushButton.setStyleSheet(style_bc_st)
         ui.showQsize = True
@@ -243,6 +263,8 @@ def show_dialog_formula(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_formula.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_formula, duration=250)
         ui.dialog_formula.show()
@@ -255,6 +277,8 @@ def show_dialog_factor(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_factor.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_factor, duration=250)
         ui.dialog_factor.show()
@@ -278,6 +302,9 @@ def show_hoga(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from utility.settings.setting_base import columns_hc
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_hoga.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=250)
         ui.dialog_hoga.setFixedSize(572, 355)
@@ -303,6 +330,9 @@ def show_giup(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import QUrl
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if ui.webEngineView is None:
         webengineview_set(ui)
 
@@ -326,6 +356,8 @@ def show_treemap(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_tree.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_tree, duration=250)
         ui.dialog_tree.show()
@@ -339,6 +371,10 @@ def show_db(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from ui.create_widget.dialog_animation import DialogAnimator
+    from PyQt5.QtWidgets import QTableWidgetItem
+
     if not ui.dialog_db.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_db, duration=250)
         ui.dialog_db.show()
@@ -409,6 +445,8 @@ def show_backscheduler(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_scheduler.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_scheduler, duration=250)
         ui.dialog_scheduler.show()
@@ -421,6 +459,11 @@ def show_kimp(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from multiprocessing import Process
+    from ui.create_widget.dialog_animation import DialogAnimator
+    from ui.etcetera.process_alive import coinkimp_process_alive
+    from utility.sub_process_and_thread.kimp_upbit_binance import Kimp
+
     if not ui.dialog_kimp.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_kimp, duration=250)
         ui.dialog_kimp.show()
@@ -438,6 +481,8 @@ def show_order(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
     if not ui.dialog_order.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_order, duration=250)
         ui.dialog_order.show()
@@ -461,98 +506,9 @@ def show_order(ui):
         ui.dialog_order.close()
 
 
-def put_hoga_code(ui, code):
-    """호가 코드를 전송합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-        code: 코드
-    """
-    if receiver_process_alive(ui):
-        ui.receivQ.put(('호가종목코드', code))
-
-
-def chart_moneytop_list(ui):
-    """차트 거래대금 순위 목록을 표시합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-    searchdate = ui.ct_dateEdittttt_02.date().toString('yyyyMMdd')
-    starttime  = ui.ct_lineEdittttt_01.text()
-    endtime    = ui.ct_lineEdittttt_02.text()
-
-    is_tick  = ui.dict_set['타임프레임']
-    db_name1 = f"{ui.market_info['일자디비경로'][is_tick]}_{searchdate}.db"
-    db_name2 = ui.market_info['백테디비'][is_tick]
-
-    if is_tick:
-        query = f"SELECT * FROM moneytop WHERE " \
-                f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
-                f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
-    else:
-        query = f"SELECT * FROM moneytop WHERE " \
-                f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
-                f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
-
-    df = None
-    try:
-        if os.path.isfile(db_name1):
-            con = sqlite3.connect(db_name1)
-            df = pd.read_sql(query, con)
-            con.close()
-        elif os.path.isfile(db_name2):
-            con = sqlite3.connect(db_name2)
-            df = pd.read_sql(query, con)
-            con.close()
-    except Exception:
-        pass
-
-    if df is None or len(df) == 0:
-        ui.ct_tableWidgett_01.clearContents()
-        return
-
-    table_list = list(set(';'.join(df['거래대금순위'].to_list()).split(';')))
-    name_list = [ui.dict_name.get(code, code) for code in table_list]
-    name_list.sort()
-
-    ui.ct_tableWidgett_01.setRowCount(len(name_list))
-    for i, name in enumerate(name_list):
-        item = QTableWidgetItem(name)
-        item.setTextAlignment(int(Qt.AlignVCenter | Qt.AlignLeft))
-        ui.ct_tableWidgett_01.setItem(i, 0, item)
-    if len(name_list) < 100:
-        ui.ct_tableWidgett_01.setRowCount(100)
-
-
-def chart_size_change(ui):
-    """차트 크기를 변경합니다.
-    Args:
-        ui: UI 클래스 인스턴스
-    """
-    if ui.ct_pushButtonnn_06.text() == '확장':
-        if ui.ct_pushButtonnn_05.text() == 'CHART I':
-            width = 1528
-        elif ui.ct_pushButtonnn_05.text() == 'CHART II':
-            width = 2213
-        else:
-            width = 2898
-        ui.dialog_chart.setFixedSize(width, 1370 if not ui.dict_set['저해상도'] else 1010)
-        ui.ct_pushButtonnn_06.setText('축소')
-        ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bb)
-        chart_moneytop_list(ui)
-
-    elif ui.ct_pushButtonnn_06.text() == '축소':
-        if ui.ct_pushButtonnn_05.text() == 'CHART I':
-            width = 1403
-        elif ui.ct_pushButtonnn_05.text() == 'CHART II':
-            width = 2088
-        else:
-            width = 2773
-        ui.dialog_chart.setFixedSize(width, 1370 if not ui.dict_set['저해상도'] else 1010)
-        ui.ct_pushButtonnn_06.setText('확장')
-        ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
-
-
 def show_pattern_dialog(ui):
+    from PyQt5.QtWidgets import QMessageBox
+
     if not ui.dialog_pattern.isVisible():
         if ui.dict_set['타임프레임']:
             QMessageBox.critical(ui, '오류 알림', '현재 타임프레임이 1초스냅샷 상태입니다.\n패턴학습은 1분봉 타임프레임만 지원합니다.\n')
@@ -560,3 +516,15 @@ def show_pattern_dialog(ui):
         ui.dialog_pattern.show()
     else:
         ui.dialog_pattern.close()
+
+
+def show_volume_dialog(ui):
+    from PyQt5.QtWidgets import QMessageBox
+
+    if not ui.dialog_volume.isVisible():
+        if ui.dict_set['타임프레임']:
+            QMessageBox.critical(ui, '오류 알림', '현재 타임프레임이 1초스냅샷 상태입니다.\n볼륨 프로파일 학습은 1분봉 타임프레임만 지원합니다.\n')
+            return
+        ui.dialog_volume.show()
+    else:
+        ui.dialog_volume.close()

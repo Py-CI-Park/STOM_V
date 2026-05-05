@@ -1,15 +1,4 @@
 
-from PyQt5.QtCore import QDate, QUrl
-from PyQt5.QtWidgets import QMessageBox
-from ui.event_change.changed_text import text_changed_05
-from ui.etcetera.process_alive import trader_process_alive
-from ui.event_click.button_clicked_chart import get_indicator_detail
-from utility.settings.setting_base import columns_jg, columns_jgf, columns_jgcf, ui_num
-from utility.static_method.static import comma2int, comma2float, now, str_ymd, now_utc, now_cme, qtest_qwait
-from ui.event_click.button_clicked_show_dialog import show_db, show_dialog_graph, show_dialog, show_dialog_web, \
-    show_dialog_chart
-
-
 def cell_clicked_01(ui, row, col):
     """테이블 셀 클릭 시 다이얼로그를 표시합니다.
     Args:
@@ -17,6 +6,9 @@ def cell_clicked_01(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from ui.event_click.button_clicked_show_dialog import show_dialog
+    from utility.static_method.static import str_ymd, now_utc, now_cme
+
     item = ui.focusWidget().item(row, 0)
     if item is None:
         return
@@ -46,6 +38,11 @@ def cell_clicked_02(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.static_method.static import comma2int, now
+    from ui.etcetera.process_alive import trader_process_alive
+    from utility.settings.setting_base import columns_jg, columns_jgf, columns_jgcf
+
     item = ui.jg_tableWidgettt.item(row, 0)
     if item is None:
         return
@@ -76,6 +73,9 @@ def cell_clicked_03(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from PyQt5.QtCore import QDate
+    from ui.event_click.button_clicked_show_dialog import show_dialog
+
     searchdate = ''
     if ui.focusWidget() == ui.ds_tableWidgetttt:
         searchdate = ui.calendarWidgetttt.selectedDate().toString('yyyyMMdd')
@@ -103,6 +103,8 @@ def cell_clicked_04(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from ui.event_click.button_clicked_show_dialog import show_dialog_graph
+
     item = ui.focusWidget().item(row, 0)
     if item is None:
         return
@@ -132,6 +134,11 @@ def cell_clicked_05(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from PyQt5.QtCore import QDate
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.static_method.static import comma2int, comma2float
+    from ui.event_click.button_clicked_show_dialog import show_dialog_chart
+
     tableWidget = None
     if ui.focusWidget() == ui.ss_tableWidget_01 or ui.focusWidget().parentWidget() == ui.ss_tableWidget_01:
         tableWidget = ui.ss_tableWidget_01
@@ -181,6 +188,11 @@ def cell_clicked_06(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from PyQt5.QtCore import QDate
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.event_click.button_clicked_chart import get_indicator_detail
+    from ui.event_click.button_clicked_show_dialog import show_dialog_web
+
     item = ui.ct_tableWidgett_01.item(row, 0)
     if item is None:
         return
@@ -214,6 +226,8 @@ def cell_clicked_07(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from PyQt5.QtCore import QUrl
+
     item = ui.dialog_info.focusWidget().item(row, 3)
     if item is None:
         return
@@ -228,6 +242,11 @@ def cell_clicked_08(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.settings.setting_base import ui_num
+    from utility.static_method.static import qtest_qwait
+    from ui.event_click.button_clicked_show_dialog import show_db
+
     if ui.dialog_db.focusWidget() == ui.db_tableWidgett_01:
         item = ui.db_tableWidgett_01.item(row, col)
         if item is None:
@@ -295,6 +314,9 @@ def cell_clicked_09(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from ui.event_change.changed_text import text_changed_05
+    from utility.static_method.static import comma2int, comma2float
+
     item = ui.hg_tableWidgett_01.item(row, col)
     if item is not None:
         text = item.text()
@@ -314,6 +336,8 @@ def cell_clicked_10(ui, row, col):
         row: 행 인덱스
         col: 열 인덱스
     """
+    from ui.event_click.button_clicked_show_dialog import show_dialog_graph
+
     table_name = ui.market_info['거래디비']
     df = ui.dbreader.read_sql('거래디비', f"SELECT * FROM {table_name}")
     df['index'] = df['index'].apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')

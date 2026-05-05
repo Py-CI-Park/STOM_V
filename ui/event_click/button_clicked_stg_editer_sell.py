@@ -1,20 +1,14 @@
 
-import random
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMessageBox, QApplication
-from ui.create_widget.set_style import style_bc_st, style_bc_dk
-from utility.static_method.static import text_not_in_special_characters
-from ui.event_click.button_clicked_varstext_change import get_fix_strategy
-from ui.event_click.button_clicked_strategy_version import strategy_version
-from utility.static_method.strategy_version_manager import stg_save_version
-from ui.create_widget.set_text import famous_saying, sell_signal, sell_signal_future, sell_text
-
-
 def sell_stg_load(ui):
     """매도 전략을 로드합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtCore import Qt
+    from ui.create_widget.set_style import style_bc_st
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from ui.event_click.button_clicked_strategy_version import strategy_version
+
     if QApplication.keyboardModifiers() & Qt.ControlModifier:
         strategy_name = ui.svjs_comboBoxx_01.currentText()
         if strategy_name == '':
@@ -39,6 +33,15 @@ def sell_stg_save(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import random
+    from PyQt5.QtCore import Qt
+    from ui.create_widget.set_style import style_bc_st
+    from ui.create_widget.set_text import famous_saying
+    from PyQt5.QtWidgets import QMessageBox, QApplication
+    from utility.static_method.static import text_not_in_special_characters
+    from ui.event_click.button_clicked_varstext_change import get_fix_strategy
+    from utility.static_method.strategy_version_manager import stg_save_version
+
     strategy_name = ui.svjs_lineEditt_01.text()
     strategy = ui.ss_textEditttt_02.toPlainText()
     strategy = get_fix_strategy(ui, strategy, '매도')
@@ -67,6 +70,9 @@ def sell_factor(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_st
+    from ui.create_widget.set_text import sell_text
+
     ui.ss_textEditttt_02.clear()
     ui.ss_textEditttt_02.append(sell_text if ui.dict_set['타임프레임'] else sell_text)
     ui.svjs_pushButon_04.setStyleSheet(style_bc_st)
@@ -77,6 +83,9 @@ def sell_stg_start(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.create_widget.set_style import style_bc_st, style_bc_dk
+
     strategy = ui.ss_textEditttt_02.toPlainText()
     if strategy == '':
         QMessageBox.critical(ui, '오류 알림', '매도전략의 코드가 공백 상태입니다.\n')
@@ -96,6 +105,8 @@ def sell_signal_insert(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_text import sell_signal, sell_signal_future
+
     signal = sell_signal if ui.market_gubun < 6 else sell_signal_future
     ui.ss_textEditttt_02.append(signal)
 
@@ -105,6 +116,8 @@ def sell_stg_stop(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_st, style_bc_dk
+
     ui.wdzservQ.put(('strategy', '매도전략중지'))
     ui.svjs_pushButon_14.setStyleSheet(style_bc_dk)
     ui.svjs_pushButon_04.setStyleSheet(style_bc_st)

@@ -1,13 +1,5 @@
 
-import os
-import pandas as pd
-from multiprocessing import Process
-from PyQt5.QtWidgets import QMessageBox
-from ui.etcetera.process_alive import receiver_process_alive
-from utility.settings.setting_base import GRAPH_PATH, ui_num
-from ui.create_widget.set_style import style_bc_bb, style_bc_st
-from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
-from utility.static_method.static import qtest_qwait, cme_normal_open, now, thread_decorator, get_inthms
+from utility.static_method.static import thread_decorator
 
 
 def mnbutton_c_clicked_01(ui, index):
@@ -16,6 +8,10 @@ def mnbutton_c_clicked_01(ui, index):
         ui: UI 클래스 인스턴스
         index: 탭 인덱스
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from ui.create_widget.set_style import style_bc_bb, style_bc_st
+    from PyQt5.QtCore import QTimer, QPropertyAnimation, QSize, QEasingCurve
+
     if ui.extend_window:
         QMessageBox.critical(ui, '오류 알림', '전략탭 확장 상태에서는 탭을 변경할 수 없습니다.')
         return
@@ -53,6 +49,8 @@ def mnbutton_c_clicked_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from PyQt5.QtWidgets import QMessageBox
+
     if ui.main_btn == 1:
         if not ui.calendarWidgetttt.isVisible():
             boolean1 = False
@@ -74,6 +72,12 @@ def mnbutton_c_clicked_03(ui, auto=False):
         ui: UI 클래스 인스턴스
         auto: 자동 시작 여부
     """
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.settings.setting_base import ui_num
+    from ui.create_widget.set_style import style_bc_st
+    from ui.etcetera.process_alive import receiver_process_alive
+    from utility.static_method.static import qtest_qwait, cme_normal_open, now, get_inthms
+
     if auto:
         buttonReply = QMessageBox.Yes
     else:
@@ -125,6 +129,8 @@ def mnbutton_c_clicked_04(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from ui.create_widget.set_style import style_bc_bb, style_bc_st
+
     if ui.geometry().width() > 1000:
         ui.setFixedSize(726, 384)
         ui.zo_pushButton.setStyleSheet(style_bc_st)
@@ -138,6 +144,10 @@ def mnbutton_c_clicked_05(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import os
+    from PyQt5.QtWidgets import QMessageBox
+    from utility.settings.setting_base import GRAPH_PATH
+
     buttonReply = QMessageBox.warning(
         ui, '백테기록삭제', '백테 그래프 및 기록 DB가 삭제됩니다.\n계속하시겠습니까?\n',
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
@@ -160,6 +170,9 @@ def mnbutton_c_clicked_06(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    import pandas as pd
+    from PyQt5.QtWidgets import QMessageBox
+
     buttonReply = QMessageBox.warning(
         ui, '계정 설정 초기화', '계정 설정 항목이 모두 초기화됩니다.\n계속하시겠습니까?\n',
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
@@ -197,6 +210,8 @@ def trade_process_start(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+    from multiprocessing import Process
+
     target = ui.market_info['프로세스'][0]
     ui.proc_receiver = Process(target=target, args=(ui.qlist, ui.dict_set, ui.market_infos))
     ui.proc_receiver.start()

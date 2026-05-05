@@ -2,6 +2,7 @@
 import re
 from ui.event_activate import activated_stg
 from ui.etcetera.etc import auto_back_schedule
+from utility.settings.setting_base import ui_num
 from ui.event_click.button_clicked_database import *
 from utility.static_method.static import now, qtest_qwait, now_cme
 from ui.event_click.button_clicked_stg_editer import backtest_detail
@@ -43,7 +44,7 @@ class UpdateTextedit:
                 log_ = data[1]
             text = f'[{time_}] {log_}' if '</font>' not in log_ else f'<font color=white>[{time_}]</font> {log_}'
 
-            if data[0] in (ui_num['기본로그'], ui_num['타임로그'], ui_num['시스템로그'], ui_num['패턴학습']):
+            if data[0] in (ui_num['기본로그'], ui_num['타임로그'], ui_num['시스템로그'], ui_num['패턴학습'], ui_num['볼륨학습']):
                 self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
             elif data[0] == ui_num['백테스트']:
                 if not self.ui.dict_set['백테스트로그기록안함']:
@@ -59,6 +60,11 @@ class UpdateTextedit:
             elif data[0] == ui_num['패턴학습']:
                 self.ui.ptn_textEdittt_01.append(text)
                 if self.ui.auto_mode and '전체 종목 패턴 학습 완료' in data[1]:
+                    qtest_qwait(2)
+                    auto_back_schedule(self.ui, 0.5)
+            elif data[0] == ui_num['볼륨학습']:
+                self.ui.vpf_textEdittt_01.append(text)
+                if self.ui.auto_mode and '전체 종목 볼륨 프로파일 학습 완료' in data[1]:
                     qtest_qwait(2)
                     auto_back_schedule(self.ui, 1)
             elif data[0] == ui_num['백테엔진']:
