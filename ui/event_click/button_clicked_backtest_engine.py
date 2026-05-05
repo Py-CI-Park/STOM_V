@@ -189,7 +189,7 @@ def backengine_start(ui):
         log_gubun = f'{log_gubun} 일자별'
 
     ui.windowQ.put((UI_NUM['백테엔진'], f'{log_gubun} 데이터 로딩 시작'))
-    data_list = code_set if log_gubun == '종목코드별' else day_list if log_gubun == '일자별' else code_days[one_code]
+    data_list = code_set if log_gubun == '종목코드별' else (day_list if log_gubun == '일자별' else code_days[one_code])
     data_lists = []
     for i in range(multi):
         data_lists.append([data for j, data in enumerate(data_list) if j % multi == i])

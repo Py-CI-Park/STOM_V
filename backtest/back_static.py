@@ -491,18 +491,52 @@ def get_optistd_text(optistd, std_list, result, pre_text):
     std = -float('inf')
     if tc > 0:
         sign = 1 if cagr >= 0 else -1
+
+        def get_tp():
+            return tpp
+
+        def get_pm():
+            return round(tpp / mdd, 2)
+
+        def get_p2m():
+            return sign * abs(round(tpp * tpp / mdd, 2))
+
+        def get_pam():
+            return sign * abs(round(tpp * app / mdd, 2))
+
+        def get_pwm():
+            return round(tpp * wr / mdd / 100, 2)
+
+        def get_tg():
+            return round(tsg / 1000, 2)
+
+        def get_gm():
+            return round(tsg / mdd_, 2)
+
+        def get_g2m():
+            return sign * abs(round(tsg * tsg / mdd_ / 1000, 2))
+
+        def get_gam():
+            return sign * abs(round(tsg * app / mdd_, 2))
+
+        def get_gwm():
+            return round(tsg * wr / mdd_ / 100, 2)
+
+        def get_cagr():
+            return cagr
+
         optistd_handlers = {
-            'TP':   lambda: tpp,
-            'PM':   lambda: round(tpp / mdd, 2),
-            'P2M':  lambda: sign * abs(round(tpp * tpp / mdd, 2)),
-            'PAM':  lambda: sign * abs(round(tpp * app / mdd, 2)),
-            'PWM':  lambda: round(tpp * wr / mdd / 100, 2),
-            'TG':   lambda: round(tsg / 1000, 2),
-            'GM':   lambda: round(tsg / mdd_, 2),
-            'G2M':  lambda: sign * abs(round(tsg * tsg / mdd_ / 1000, 2)),
-            'GAM':  lambda: sign * abs(round(tsg * app / mdd_, 2)),
-            'GWM':  lambda: round(tsg * wr / mdd_ / 100, 2),
-            'CAGR': lambda: cagr
+            'TP': get_tp,
+            'PM': get_pm,
+            'P2M': get_p2m,
+            'PAM': get_pam,
+            'PWM': get_pwm,
+            'TG': get_tg,
+            'GM': get_gm,
+            'G2M': get_g2m,
+            'GAM': get_gam,
+            'GWM': get_gwm,
+            'CAGR': get_cagr
         }
         if 'TRAIN' in pre_text or 'TOTAL' in pre_text:
             if std_true:
@@ -511,18 +545,51 @@ def get_optistd_text(optistd, std_list, result, pre_text):
             std = optistd_handlers[optistd]()
         if std == 0: std = -float('inf')
 
+    def get_text_tp():
+        return f'{pre_text}</font>'
+
+    def get_text_tg():
+        return f'{pre_text}</font>'
+
+    def get_text_cagr():
+        return f'{pre_text}</font>'
+
+    def get_text_pm():
+        return f'{pre_text} PM[{std:,.2f}]</font>'
+
+    def get_text_p2m():
+        return f'{pre_text} P2M[{std:,.2f}]</font>'
+
+    def get_text_pam():
+        return f'{pre_text} PAM[{std:,.2f}]</font>'
+
+    def get_text_pwm():
+        return f'{pre_text} PWM[{std:,.2f}]</font>'
+
+    def get_text_gm():
+        return f'{pre_text} GM[{std:,.2f}]</font>'
+
+    def get_text_g2m():
+        return f'{pre_text} G2M[{std:,.2f}]</font>'
+
+    def get_text_gam():
+        return f'{pre_text} GAM[{std:,.2f}]</font>'
+
+    def get_text_gwm():
+        return f'{pre_text} GWM[{std:,.2f}]</font>'
+
     text_handlers = {
-        'TP':   lambda: f'{pre_text}</font>',
-        'TG':   lambda: f'{pre_text}</font>',
-        'CAGR': lambda: f'{pre_text}</font>',
-        'PM':   lambda: f'{pre_text} PM[{std:,.2f}]</font>',
-        'P2M':  lambda: f'{pre_text} P2M[{std:,.2f}]</font>',
-        'PAM':  lambda: f'{pre_text} PAM[{std:,.2f}]</font>',
-        'PWM':  lambda: f'{pre_text} PWM[{std:,.2f}]</font>',
-        'GM':   lambda: f'{pre_text} GM[{std:,.2f}]</font>',
-        'G2M':  lambda: f'{pre_text} G2M[{std:,.2f}]</font>',
-        'GAM':  lambda: f'{pre_text} GAM[{std:,.2f}]</font>',
-        'GWM':  lambda: f'{pre_text} GWM[{std:,.2f}]</font>'
+        'TP': get_text_tp,
+        'TG': get_text_tg,
+        'CAGR': get_text_cagr,
+        'PM': get_text_pm,
+        'P2M': get_text_p2m,
+        'PAM': get_text_pam,
+        'PWM': get_text_pwm,
+        'GM': get_text_gm,
+        'G2M': get_text_g2m,
+        'GAM': get_text_gam,
+        'GWM': get_text_gwm
     }
     text = text_handlers[optistd]()
     return text, std
@@ -634,14 +701,32 @@ def plot_show(gubun, is_tick, teleQ, df_tsg, df_bct, market_gubun, seed, mdd, st
     sig_array = df_tsg['수익금'].values
     mdd_list, random_cumsums = calculate_mdd_bootstrap(sig_array, seed)
 
+    def map_dt_ymd(x):
+        return dt_ymd(x)
+
+    def map_dt_hm(x):
+        return dt_hm(x[8:12])
+
+    def map_str_ymdhms_ios(x):
+        return str_ymdhms_ios(x)
+
+    def map_weekday(x):
+        return dt_ymdhms(x).weekday() if is_tick else dt_ymdhm(x).weekday()
+
+    def format_index_tick(x):
+        return f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}'
+
+    def format_index_min(x):
+        return f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:]}'
+
     df_ts = df_tsg[['수익금']].copy()
-    df_ts.index = df_ts.index.map(lambda x: dt_ymd(x))
+    df_ts.index = df_ts.index.map(map_dt_ymd)
     df_ts = df_ts.resample('D').sum()
     df_ts['수익금합계'] = df_ts['수익금'].cumsum()
     df_ts['수익금합계'] = ((df_ts['수익금합계'] + seed) / seed - 1) * 100
 
     df_st = df_tsg[['수익금']].copy()
-    df_st.index = df_st.index.map(lambda x: dt_hm(x[8:12]))
+    df_st.index = df_st.index.map(map_dt_hm)
     start_time = dt_hms(str(starttime).zfill(6))
     end_time = dt_hms(str(endtime).zfill(6))
     total_sec = (end_time - start_time).total_seconds()
@@ -649,10 +734,10 @@ def plot_show(gubun, is_tick, teleQ, df_tsg, df_bct, market_gubun, seed, mdd, st
     df_st = df_st.resample(interval).sum()
     df_st['이익금액'] = df_st['수익금'].clip(lower=0)
     df_st['손실금액'] = df_st['수익금'].clip(upper=0)
-    df_st.index = df_st.index.map(lambda x: str_ymdhms_ios(x))
+    df_st.index = df_st.index.map(map_str_ymdhms_ios)
 
     df_wt = df_tsg[['수익금']].copy()
-    df_wt['요일'] = df_wt.index.map(lambda x: dt_ymdhms(x).weekday() if is_tick else dt_ymdhm(x).weekday())
+    df_wt['요일'] = df_wt.index.map(map_weekday)
     weekday_sums = df_wt.groupby('요일')['수익금'].sum()
     wt_index = ['월', '화', '수', '목', '금']
     wt_data = [weekday_sums.get(i, 0) for i in range(5)]
@@ -664,9 +749,9 @@ def plot_show(gubun, is_tick, teleQ, df_tsg, df_bct, market_gubun, seed, mdd, st
     wt_datam = np.where(wt_data_array < 0, wt_data_array, 0)
 
     if is_tick:
-        df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
+        df_tsg.index = df_tsg.index.map(format_index_tick)
     else:
-        df_tsg.index = df_tsg.index.map(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:]}')
+        df_tsg.index = df_tsg.index.map(format_index_min)
 
     endx_list = []
     if gubun == '최적화':

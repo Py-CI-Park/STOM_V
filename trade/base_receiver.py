@@ -279,12 +279,14 @@ class BaseReceiver:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, sgta, vi_dt, uvi, vi_hgunit]
             else:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, sgta, vi_dt, uvi, vi_hgunit, mo, mh, ml]
+
         elif self.market_gubun == 4:
             sgta = int(c * self.dict_info[code]['상장주식수'] / 100_000)
             if self.is_tick:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, sgta]
             else:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, sgta, mo, mh, ml]
+
         else:
             if self.is_tick:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks]
@@ -683,14 +685,22 @@ class BaseReceiver:
                 self.lvhp_time = timedelta_sec(300)
 
     def _money_top_search(self):
-        """머니 탑을 검색합니다."""
-        sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:self.mtop_rank]
+        """거래대금상위 종목을 검색합니다.
+        국내주식와 해외주식은 등락율 0% 이상으로 필터링
+        """
+        sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)
+        if self.market_gubun < 6:
+            sorted_daym = [(x, y) for x, y in sorted_daym if self.dict_data[x][4] > 0]
+        sorted_daym = sorted_daym[:self.mtop_rank]
+
         if self.market_gubun in (6, 7, 8):
             list_mtop = [self.dict_info[x]['종목명'] for x, y in sorted_daym]
         else:
             list_mtop = [x for x, y in sorted_daym]
+
         insert_set = set(list_mtop) - set(self.list_gsjm)
         delete_set = set(self.list_gsjm) - set(list_mtop)
+
         if insert_set:
             for code in insert_set:
                 self._insert_gsjm_list(code)
@@ -759,12 +769,12 @@ class BaseReceiver:
 
         if data == '프로세스종료' and self.dict_set['데이터저장']:
             self._save_moneytop()
-
-        if self.market_gubun in (1, 4):
+        elif self.market_gubun in (1, 4):
             for q in self.stgQs:
                 q.put(data)
         else:
             self.stgQ.put(data)
+
         self.traderQ.put(data)
 
         if data != '프로그램종료':

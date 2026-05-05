@@ -1435,7 +1435,7 @@ class BaseTrader:
         if self.dict_jg:
             df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
         else:
-            columns = COLUMNS_JG if self.market_gubun < 6 else COLUMNS_JGF if self.market_gubun < 8 else COLUMNS_JGCF
+            columns = COLUMNS_JG if self.market_gubun < 6 else (COLUMNS_JGF if self.market_gubun < 8 else COLUMNS_JGCF)
             df_jg = pd.DataFrame(columns=columns)
 
         df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')

@@ -41,7 +41,7 @@ def load_settings():
         if dialog_location and '^' in dialog_location and ';' in dialog_location:
             location_list = [x.split('^') for x in df_e['창위치'][no].split(';')]
         else:
-            location_list = [['0', '0'] for _ in range(11)]
+            location_list = [['0', '0'] for _ in range(20)]
 
         DICT_SET = {
             '키':            EN_KEY,

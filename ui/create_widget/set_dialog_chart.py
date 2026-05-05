@@ -7,6 +7,7 @@ from utility.settings.setting_base import DICT_INDICATOR_BASE
 from utility.static_method.static_datetime import str_hms, dt_hms
 from ui.event_keypress.overwrite_return_press import return_press_01
 from ui.event_click.button_clicked_chart_count import chart_count_change
+from ui.create_widget.dialog_radar_chart import MicrostructureRadarDialog
 from ui.create_widget.set_style import style_bc_dk, style_ck_bx, color_bg_bk
 from ui.event_change.changed_checkbox import checkbox_changed_02, checkbox_changed_09
 from ui.event_click.button_clicked_etc import hg_button_clicked_01, hg_button_clicked_02
@@ -26,6 +27,11 @@ class SetDialogChart:
 
     def set(self):
         """차트 다이얼로그를 설정합니다."""
+        rader_name = 'STOM MICROSTRUCTURE RADAR'
+        self.ui.radar_dialog = MicrostructureRadarDialog(rader_name)
+        self.ui.radar_dialog.finished.connect(lambda event: self.wc.location_save(event, rader_name))
+        self.ui.dialog_list.append(self.ui.radar_dialog)
+
         self.ui.dialog_chart = self.wc.setDialog('STOM CHART', location_save=True)
         self.ui.dialog_chart.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_chart)
@@ -123,52 +129,59 @@ class SetDialogChart:
             is_min = False
             checkbox_choice = []
 
-        if len(checkbox_choice) < 38: checkbox_choice = [1] * 38
+        if len(checkbox_choice) < 44:
+            checkbox_choice = [1] * 44
 
-        # 체크박스 데이터 정의 (텍스트, 변경 핸들러 인덱스)
-        checkbox_data = [
-            ('현재가', 10),
-            ('분당거래대금' if is_min else '초당거래대금', 18),
-            ('분당매도수금액' if is_min else '초당매도수금액', 18),
-            ('당일매도수금액', 18),
-            ('최고매도수금액', 18),
-            ('최고매도수가격', 18),
-            ('체결강도', 18),
-            ('분당체결수량' if is_min else '초당체결수량', 18),
-            ('등락율', 18),
-            ('고저평균대비등락율', 18),
-            ('저가대비고가등락율', 18),
-            ('호가총잔량', 18),
-            ('매도수호가잔량1', 18),
-            ('매도수5호가잔량합', 18),
-            ('당일거래대금', 18),
-            ('누적분당매도수수량' if is_min else '누적초당매도수수량', 18),
-            ('등락율각도', 18),
-            ('당일거래대금각도', 18),
-            ('AD', 18),
-            ('ADOSC', 18),
-            ('ADXR', 18),
-            ('APO', 18),
-            ('AROON', 18),
-            ('ATR', 18),
-            ('BBAND', 18),
-            ('CCI', 18),
-            ('DMI', 18),
-            ('MACD', 18),
-            ('MFI', 18),
-            ('MOM', 18),
-            ('OBV', 18),
-            ('PPO', 18),
-            ('ROC', 18),
-            ('RSI', 18),
-            ('SAR', 18),
-            ('STOCHS', 18),
-            ('STOCHF', 18),
-            ('WILLR', 18),
+        # 체크박스 리스트
+        checkbox_list = [
+            '현재가',
+            '분당거래대금' if is_min else '초당거래대금',
+            '분당매도수금액' if is_min else '초당매도수금액',
+            '당일매도수금액',
+            '최고매도수금액',
+            '최고매도수가격',
+            '체결강도',
+            '분당체결수량' if is_min else '초당체결수량',
+            '등락율',
+            '고저평균대비등락율',
+            '저가대비고가등락율',
+            '호가총잔량',
+            '매도수호가잔량1',
+            '매도수5호가잔량합',
+            '당일거래대금',
+            '누적분당매도수수량' if is_min else '누적초당매도수수량',
+            '등락율각도',
+            '당일거래대금각도',
+            '시장미시구조분석',
+            '패턴점수',
+            '리스크점수',
+            '가격대점수',
+            '거래량점수',
+            '변동성점수',
+            'AD',
+            'ADOSC',
+            'ADXR',
+            'APO',
+            'AROON',
+            'ATR',
+            'BBAND',
+            'CCI',
+            'DMI',
+            'MACD',
+            'MFI',
+            'MOM',
+            'OBV',
+            'PPO',
+            'ROC',
+            'RSI',
+            'SAR',
+            'STOCHS',
+            'STOCHF',
+            'WILLR'
         ]
 
         self.ui.factor_checkbox_list = []
-        for i, (text, handler_idx) in enumerate(checkbox_data, 1):
+        for i, text in enumerate(checkbox_list, 1):
             if i == 1:
                 checkbox = self.wc.setCheckBox(
                     text, self.ui.jp_groupBoxxxxx_01,
@@ -239,12 +252,18 @@ class SetDialogChart:
             setattr(self.ui, f'ft_lineEdittttt_{i:02d}', lineedit)
             self.ui.factor_linedit_list.append(lineedit)
 
+        self.ui.cf_labellllllll_01 = QLabel('등락율각도 계수', self.ui.jp_groupBoxxxxx_01)
+        self.ui.cf_labellllllll_02 = QLabel('거래대금각도 계수', self.ui.jp_groupBoxxxxx_01)
+        self.ui.cf_labellllllll_03 = QLabel('시장미시구조 매수신호 계수', self.ui.jp_groupBoxxxxx_01)
+        self.ui.cf_labellllllll_04 = QLabel('시장미시구조 매도신호 계수', self.ui.jp_groupBoxxxxx_01)
         # 36, 37번 라인에딧 (빈 값)
         self.ui.ft_lineEdittttt_36 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, style=style_bc_dk)
         self.ui.ft_lineEdittttt_37 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, style=style_bc_dk)
+        self.ui.ft_lineEdittttt_38 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext='0.2', style=style_bc_dk)
+        self.ui.ft_lineEdittttt_39 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext='0.2', style=style_bc_dk)
 
         text = '매수전략으로 설정된\n보조지표값 사용하기\n체크를 해제하면\n좌측 설정값으로 표시됨'
-        self.ui.ft_checkBoxxxxx_44 = self.wc.setCheckBox(text, self.ui.jp_groupBoxxxxx_01, checked=False, style=style_ck_bx)
+        self.ui.ft_checkBoxxxxx_45 = self.wc.setCheckBox(text, self.ui.jp_groupBoxxxxx_01, checked=False, style=style_ck_bx)
         self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_basic(self.ui))
         self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_load(self.ui))
         self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_save(self.ui))
@@ -309,10 +328,16 @@ class SetDialogChart:
         self.ui.ft_checkBoxxxxx_16.setGeometry(430, 75, 120, 20)
         self.ui.ft_checkBoxxxxx_17.setGeometry(570, 75, 120, 20)
         self.ui.ft_checkBoxxxxx_18.setGeometry(710, 75, 120, 20)
+        self.ui.ft_checkBoxxxxx_19.setGeometry(10, 100, 120, 20)
+        self.ui.ft_checkBoxxxxx_20.setGeometry(150, 100, 120, 20)
+        self.ui.ft_checkBoxxxxx_21.setGeometry(290, 100, 120, 20)
+        self.ui.ft_checkBoxxxxx_22.setGeometry(430, 100, 120, 20)
+        self.ui.ft_checkBoxxxxx_23.setGeometry(570, 100, 120, 20)
+        self.ui.ft_checkBoxxxxx_24.setGeometry(710, 100, 120, 20)
 
         for i in range(20):
             y = 125 + i * 25
-            getattr(self.ui, f'ft_checkBoxxxxx_{i+19}').setGeometry(10, y, 380, 20)
+            getattr(self.ui, f'ft_checkBoxxxxx_{i+25}').setGeometry(10, y, 380, 20)
 
         for i in range(18):
             y = 150 + i * 25 if i < 11 else 175 + i * 25
@@ -377,10 +402,17 @@ class SetDialogChart:
         self.ui.ft_lineEdittttt_30.setGeometry(630, 550, 40, 20)
         self.ui.ft_lineEdittttt_31.setGeometry(790, 550, 40, 20)
 
-        self.ui.ft_lineEdittttt_36.setGeometry(685, 150, 150, 20)
-        self.ui.ft_lineEdittttt_37.setGeometry(685, 175, 150, 20)
+        self.ui.cf_labellllllll_01.setGeometry(643, 150, 92, 20)
+        self.ui.cf_labellllllll_02.setGeometry(632, 175, 103, 20)
+        self.ui.cf_labellllllll_03.setGeometry(585, 200, 150, 20)
+        self.ui.cf_labellllllll_04.setGeometry(585, 225, 150, 20)
 
-        self.ui.ft_checkBoxxxxx_44.setGeometry(685, 325, 150, 80)
+        self.ui.ft_lineEdittttt_36.setGeometry(735, 150, 100, 20)
+        self.ui.ft_lineEdittttt_37.setGeometry(735, 175, 100, 20)
+        self.ui.ft_lineEdittttt_38.setGeometry(735, 200, 100, 20)
+        self.ui.ft_lineEdittttt_39.setGeometry(735, 225, 100, 20)
+
+        self.ui.ft_checkBoxxxxx_45.setGeometry(685, 325, 150, 80)
         self.ui.ft_pushButtonnn_01.setGeometry(685, 410, 150, 30)
         self.ui.ft_pushButtonnn_02.setGeometry(685, 445, 150, 30)
         self.ui.ft_pushButtonnn_03.setGeometry(685, 480, 150, 30)

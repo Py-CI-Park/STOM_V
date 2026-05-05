@@ -79,10 +79,13 @@ class BackEngineBase(StgGlobalsFunc):
         self.hoga_sidex      = None
         self.hoga_eidex      = None
         self.index_arry      = None
+
         self.ms_analyzer     = None
         self.rk_analyzer     = None
         self.pt_analyzer     = None
         self.vf_analyzer     = None
+        self.vs_analyzer     = None
+        self.vp_analyzer     = None
 
         self.code_list       = []
         self.vars_list       = []
@@ -165,14 +168,16 @@ class BackEngineBase(StgGlobalsFunc):
                 self.dict_findex['분당거래대금'], self.dict_findex['분봉고가'], self.dict_findex['분봉저가']
             ])
 
-        self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], factor_list)
-        self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], factor_list)
+        self._set_analyzer()
+        self._set_passticks_and_blacklist()
+
+    def _set_analyzer(self):
+        self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
+        self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], self.dict_findex)
         self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info, backtest=True)
         self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick, backtest=True)
         self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info, self.is_tick, backtest=True)
         self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info, self.is_tick, backtest=True)
-
-        self._set_passticks_and_blacklist()
 
     def _set_passticks_and_blacklist(self):
         """패스틱스 조건과 블랙리스트를 설정합니다.
@@ -365,6 +370,8 @@ class BackEngineBase(StgGlobalsFunc):
                 elif data[0] == '공유데이터':
                     self.shared_count = data[1]
                     self.shared_info  = data[2]
+                elif data == '분석설정변경':
+                    self._set_analyzer()
                 elif data == '백테중지':
                     self._back_stop(2)
             except Exception:

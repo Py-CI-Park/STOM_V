@@ -256,6 +256,8 @@ def trade_process_start(ui):
         # noinspection HttpUrlsUsage
         ui.teleQ.put(f'http://{get_ip()}:{port}')
 
+    ui.trading = True
+
 
 def trade_process_kill(ui):
     """매매용 프로세스를 종료합니다."""
@@ -276,3 +278,5 @@ def trade_process_kill(ui):
 
         if ui.dict_set['웹대시보드'] and ui.web_dashboard:
             ui.web_dashboard.stop()
+
+    ui.trading = False

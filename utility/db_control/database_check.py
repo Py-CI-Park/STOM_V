@@ -84,7 +84,7 @@ EXCLUSION_LIST = [
     '316140', '323410', '329180', '352820', '373220', '402340', '443060'
 ]
 ETC_DATA_BASE = [
-    '다크블루', 0, 1, 1, 1, 0, 3000, 1, 1, '', ';'.join(['1'] * 38), ';'.join(EXCLUSION_LIST), ''
+    '다크블루', 0, 1, 1, 1, 0, 3000, 1, 1, '', ';'.join(['1'] * 44), ';'.join(EXCLUSION_LIST), ''
 ]
 ETC_DATA = [[i+1] + ETC_DATA_BASE for i in range(18)]
 

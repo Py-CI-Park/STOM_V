@@ -96,16 +96,16 @@ class ManagerFormula(StgGlobalsFunc):
         globals().update(dict_add_func)
 
     # noinspection PyUnboundLocalVariable,PyUnusedLocal
-    def update_all_data(self, code, arry, market_gubun, w_unit):
+    def update_all_data(self, code, code_data, market_gubun, w_unit):
         """모든 데이터를 업데이트합니다.
         Args:
             code: 종목 코드
-            arry: 데이터 배열
+            code_data: 데이터 배열
             market_gubun: 마켓 구분
             w_unit: 시간 단위
         """
         self.code        = code
-        self.arry_code   = arry
+        self.arry_code   = code_data
         self.avg_list    = [w_unit]
         self.high_low: dict[str, list] = {}
         self.tick_count  = 0

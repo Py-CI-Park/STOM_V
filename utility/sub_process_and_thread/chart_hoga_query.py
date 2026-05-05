@@ -8,8 +8,14 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
+from strategy.analyzer_risk import AnalyzerRisk
+from strategy.analyzer_volume_spike import AnalyzerVolumeSpike
 from utility.static_method.static_numba import add_rolling_data
+from strategy.analyzer_volume_profile import AnalyzerVolumeProfile
+from strategy.analyzer_candle_pattern import AnalyzerCandlePattern
+from strategy.analyzer_microstructure import AnalyzerMicrostructure
 from strategy.manager_formula import ManagerFormula, get_formula_data
+from strategy.analyzer_volatility_pattern import AnalyzerVolatilityPattern
 from utility.static_method.static_datetime import timedelta_sec, str_ymdhms, dt_ymdhms, dt_ymdhm, str_ymdhm
 from utility.settings.setting_base import UI_NUM, DB_TRADELIST, DB_PATH, DB_BACKTEST, DB_CODE_INFO, DB_SETTING, \
     DB_STRATEGY, COLUMNS_HJ, CODE_INFO_TABLES
@@ -41,6 +47,13 @@ class ChartHogaQuery:
         self.dict_hc      = None
         self.dict_hg      = None
 
+        self.ms_analyzer  = None
+        self.rk_analyzer  = None
+        self.pt_analyzer  = None
+        self.vf_analyzer  = None
+        self.vs_analyzer  = None
+        self.vp_analyzer  = None
+
         self.con1 = sqlite3.connect(DB_SETTING)
         self.cur1 = self.con1.cursor()
         self.con2 = sqlite3.connect(DB_TRADELIST)
@@ -49,22 +62,28 @@ class ChartHogaQuery:
         self.cur3 = self.con3.cursor()
         self.con4 = sqlite3.connect(DB_CODE_INFO)
 
+        self._set_sub_vars()
+        self._set_analyzer()
         self._init_hoga()
-        self._update_dict_name()
-        self._set_dict_findex()
         self._main_loop()
 
-    def _update_dict_name(self):
-        """종목명 딕셔너리를 업데이트합니다."""
+    def __del__(self):
+        """소멸자입니다. 데이터베이스 연결을 닫습니다."""
+        self.con1.close()
+        self.con2.close()
+        self.con3.close()
+        self.con4.close()
+
+    def _set_sub_vars(self):
+        """변수 및 분석기를 설정합니다."""
+        from utility.settings.setting_market import DICT_MARKET_GUBUN, DICT_MARKET_INFO
+
         con = sqlite3.connect(DB_CODE_INFO)
         for table in CODE_INFO_TABLES:
             df = pd.read_sql(f'SELECT * FROM {table}', con).set_index('index')
             self.dict_name.update(df['종목명'].to_dict())
         con.close()
 
-    def _set_dict_findex(self):
-        """팩터 인덱스 딕셔너리를 설정합니다."""
-        from utility.settings.setting_market import DICT_MARKET_GUBUN, DICT_MARKET_INFO
         self.market_gubun = DICT_MARKET_GUBUN[self.dict_set['거래소']]
         self.market_info  = DICT_MARKET_INFO[self.market_gubun]
         self.is_tick      = self.dict_set['타임프레임']
@@ -83,12 +102,29 @@ class ChartHogaQuery:
                 self.dict_findex['분당거래대금'], self.dict_findex['분봉고가'], self.dict_findex['분봉저가']
             ])
 
-    def __del__(self):
-        """소멸자입니다. 데이터베이스 연결을 닫습니다."""
-        self.con1.close()
-        self.con2.close()
-        self.con3.close()
-        self.con4.close()
+    def _set_analyzer(self):
+        self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
+        self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], self.dict_findex)
+        self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info, backtest=True)
+        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick, backtest=True)
+        self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info, self.is_tick, backtest=True)
+        self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info, self.is_tick, backtest=True)
+
+    def _init_hoga(self):
+        """호가 딕셔너리를 초기화합니다."""
+        self.dict_hj = {
+            '종목명': '', '현재가': 0., '등락율': 0., '시가총액': 0, 'UVI': 0., '시가': 0., '고가': 0., '저가': 0.
+        }
+        self.dict_hc = {
+            '체결수량': [0.] * 12, '체결강도': [0.] * 12
+        }
+        self.dict_hg = {
+            '잔량': [0.] * 12, '호가': [0.] * 12
+        }
+        self.windowQ.put((UI_NUM['호가종목'], pd.DataFrame([self.dict_hj])))
+        self.windowQ.put((UI_NUM['호가체결'], pd.DataFrame(self.dict_hc)))
+        self.windowQ.put((UI_NUM['호가잔량'], pd.DataFrame(self.dict_hg)))
+        self.hoga_name = ''
 
     def _main_loop(self):
         """메인 루프를 실행합니다."""
@@ -154,31 +190,17 @@ class ChartHogaQuery:
                     data = self.chartQ.get()
                     if data[0] == '설정변경':
                         self.dict_set = data[1]
-                        self._set_dict_findex()
+                        self._set_sub_vars()
+                    elif data == '분석설정변경':
+                        self._set_analyzer()
                     elif data[0] == '그래프비교':
                         self._graph_comparison(data[1])
-                    elif len(data) >= 6:
+                    else:
                         self._update_chart(data)
 
                 time.sleep(0.01)
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
-
-    def _init_hoga(self):
-        """호가 딕셔너리를 초기화합니다."""
-        self.dict_hj = {
-            '종목명': '', '현재가': 0., '등락율': 0., '시가총액': 0, 'UVI': 0., '시가': 0., '고가': 0., '저가': 0.
-        }
-        self.dict_hc = {
-            '체결수량': [0.] * 12, '체결강도': [0.] * 12
-        }
-        self.dict_hg = {
-            '잔량': [0.] * 12, '호가': [0.] * 12
-        }
-        self.windowQ.put((UI_NUM['호가종목'], pd.DataFrame([self.dict_hj])))
-        self.windowQ.put((UI_NUM['호가체결'], pd.DataFrame(self.dict_hc)))
-        self.windowQ.put((UI_NUM['호가잔량'], pd.DataFrame(self.dict_hg)))
-        self.hoga_name = ''
 
     def _update_hoga_jongmok(self, data):
         """호가 종목 정보를 업데이트합니다.
@@ -709,19 +731,19 @@ class ChartHogaQuery:
         Args:
             data: 차트 데이터
         """
-        if len(data) == 6:
-            code, w_unit, searchdate, starttime, endtime, k = data
+        if len(data) == 8:
+            code, w_unit, searchdate, starttime, endtime, k, buy_cf, sell_cf = data
             detail, buytimes, cf1, cf2 = None, None, None, None
-        elif len(data) == 8:
-            code, w_unit, searchdate, starttime, endtime, k = data[:6]
-            if data[6].__class__ == list:
-                detail, buytimes = data[6:]
+        elif len(data) == 10:
+            code, w_unit, searchdate, starttime, endtime, k, buy_cf, sell_cf = data[:8]
+            if data[8].__class__ == list:
+                detail, buytimes = data[8:]
                 cf1, cf2 = None, None
             else:
                 detail, buytimes = None, None
-                cf1, cf2 = data[6:]
+                cf1, cf2 = data[8:]
         else:
-            code, w_unit, searchdate, starttime, endtime, k, detail, buytimes, cf1, cf2 = data
+            code, w_unit, searchdate, starttime, endtime, k, buy_cf, sell_cf, detail, buytimes, cf1, cf2 = data
 
         db_name  = None
         db_name1 = f"{self.market_info['일자디비경로'][self.is_tick]}_{searchdate}.db"
@@ -849,6 +871,27 @@ class ChartHogaQuery:
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 보조지표의 설정값이 잘못되었습니다.'))
                 return
+
+        arry = np.column_stack((arry, np.zeros((arry.shape[0], 10 if self.is_tick else 9))))
+
+        if self.is_tick and self.dict_set['시장미시구조분석']:
+            buy_cf, sell_cf = float(buy_cf), float(sell_cf)
+            arry[:, -10:-7] = self.ms_analyzer.analyze_batch_data(code, arry, buy_cf, sell_cf)
+
+        if not self.is_tick and self.dict_set['캔들분석']:
+            arry[:, -9:-7] = self.pt_analyzer.analyze_batch_data(code, arry)
+
+        if self.dict_set['리스크분석']:
+            arry[:, -7] = self.rk_analyzer.analyze_batch_data(arry)
+
+        if self.dict_set['가격대분석']:
+            arry[:, -6:-4] = self.vf_analyzer.analyze_batch_data(code, arry)
+
+        if self.dict_set['거래량분석']:
+            arry[:, -4:-2] = self.vs_analyzer.analyze_batch_data(code, arry)
+
+        if self.dict_set['변동성분석']:
+            arry[:, -2:] = self.vp_analyzer.analyze_batch_data(code, arry)
 
         fm_list, dict_fm, fm_tcnt = get_formula_data(True, arry.shape[1])
         if fm_tcnt > 0:

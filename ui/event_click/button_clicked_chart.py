@@ -144,7 +144,7 @@ def get_indicator_detail(ui):
 
     k_list = None
     if not ui.dict_set['타임프레임']:
-        if ui.ft_checkBoxxxxx_44.isChecked():
+        if ui.ft_checkBoxxxxx_45.isChecked():
             buystg = None
             vars_  = None
             try:

@@ -1063,6 +1063,9 @@ class WidgetCreater:
 
     # noinspection PyUnusedLocal
     def location_save(self, event, name):
+        if self.ui.window_closing:
+            return
+
         number = 0
         dialog = None
 
@@ -1096,10 +1099,17 @@ class WidgetCreater:
         elif name == 'STOM STRATEGY':
             number = 10
             dialog = self.ui.dialog_strategy
+        elif name == 'STOM MICROSTRUCTURE RADAR':
+            number = 11
+            dialog = self.ui.radar_dialog
 
         if number > 0 and dialog is not None:
             # noinspection PyUnresolvedReferences
-            self.ui.location_list[number] = [str(int(dialog.x())), str(int(dialog.y()))]
+            data = [str(int(dialog.x())), str(int(dialog.y()))]
+            try:
+                self.ui.location_list[number] = data
+            except Exception:
+                self.ui.location_list.append(data)
 
     # noinspection PyUnresolvedReferences
     def setTablewidget(self, parent, columns, rowcount, vscroll=False, visible=True, clicked=None, valuechanged=None,

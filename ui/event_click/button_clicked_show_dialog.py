@@ -67,15 +67,18 @@ def show_dialog(ui, code, name, tickcount, searchdate, col):
             show_dialog_web(ui, True, code)
         else:
             show_dialog_hoga(ui, True, code)
+
     elif col == 1:
         if ui.market_gubun < 4:
             show_dialog_web(ui, False, code)
         show_dialog_hoga(ui, True, code)
+
     elif col < 4 or ui.focusWidget() in (ui.gj_tableWidgettt, ui.cj_tableWidgettt):
         if ui.market_gubun < 4:
             show_dialog_web(ui, False, code)
         show_dialog_hoga(ui, False, code)
         show_dialog_chart(ui, True, code)
+
     else:
         starttime = ui.ct_lineEdittttt_01.text()
         endtime   = ui.ct_lineEdittttt_02.text()
@@ -204,7 +207,9 @@ def show_dialog_chart(ui, real, code, tickcount=None, searchdate=None, starttime
         else:
             chart_clear(ui)
             cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
-            data = (code, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui))
+            buy_cf, sell_cf = ui.ft_lineEdittttt_38.text(), ui.ft_lineEdittttt_39.text()
+            if buy_cf == '' or sell_cf == '': buy_cf, sell_cf = 0.2, 0.2
+            data = (code, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui), buy_cf, sell_cf)
             if detail is not None: data += (detail, buytimes)
             if cf1 and cf2:        data += (float(cf1), float(cf2))
             ui.chartQ.put(data)
@@ -229,6 +234,9 @@ def dialog_chart_show(ui):
     ui.ct_lineEdittttt_02.setText(endtime)
     DialogAnimator.setup_dialog_animation(ui.dialog_chart, duration=300)
     ui.dialog_chart.show()
+
+    if ui.trading and ui.dict_set['타임프레임'] and ui.dict_set['시장미시구조분석']:
+        ui.radar_dialog.show()
 
 
 def show_qsize(ui):

@@ -179,6 +179,32 @@ def get_label_text(ui, is_min, xpoint, factor, hms):
         text =     f"시간 {hms}\n" \
                    f"STOCHFK {ui.ctpg_arry[xpoint, fi('STOCHFK')]:,.2f}\n" \
                    f"STOCHFD {ui.ctpg_arry[xpoint, fi('STOCHFD')]:,.2f}"
+    elif factor == '시장미시구조분석':
+        시그널 = ui.ctpg_arry[xpoint, fi('시그널')]
+        시그널 = 'buy' if 시그널 == 1 else ('sell' if 시그널 == -1 else 'hold')
+        text =     f"시간 {hms}\n" \
+                   f"시그널 {시그널}\n" \
+                   f"신뢰도 {ui.ctpg_arry[xpoint, fi('신뢰도')]:,.2f}\n" \
+                   f"리스크 {ui.ctpg_arry[xpoint, fi('리스크')]:,.2f}"
+    elif factor == '패턴점수':
+        text =     f"시간 {hms}\n" \
+                   f"패턴점수 {ui.ctpg_arry[xpoint, fi('패턴점수')]:,.2f}\n" \
+                   f"패턴신뢰도 {ui.ctpg_arry[xpoint, fi('패턴신뢰도')]:,.2f}"
+    elif factor == '리스크점수':
+        text =     f"시간 {hms}\n" \
+                   f"리스크점수 {ui.ctpg_arry[xpoint, fi('리스크점수')]:,.2f}"
+    elif factor == '가격대점수':
+        text =     f"시간 {hms}\n" \
+                   f"가격대점수 {ui.ctpg_arry[xpoint, fi('가격대점수')]:,.2f}\n" \
+                   f"가격대신뢰도 {ui.ctpg_arry[xpoint, fi('가격대신뢰도')]:,.2f}"
+    elif factor == '거래량점수':
+        text =     f"시간 {hms}\n" \
+                   f"거래량점수 {ui.ctpg_arry[xpoint, fi('거래량점수')]:,.2f}\n" \
+                   f"거래량신뢰도 {ui.ctpg_arry[xpoint, fi('거래량신뢰도')]:,.2f}"
+    elif factor == '변동성점수':
+        text =     f"시간 {hms}\n" \
+                   f"변동성점수 {ui.ctpg_arry[xpoint, fi('변동성점수')]:,.2f}\n" \
+                   f"변동성신뢰도 {ui.ctpg_arry[xpoint, fi('변동성신뢰도')]:,.2f}"
     else:
         text =     f"시간 {hms}\n" \
                    f"{factor} {ui.ctpg_arry[xpoint, fi(factor)]:,.2f}"

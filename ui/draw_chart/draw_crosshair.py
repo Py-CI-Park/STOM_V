@@ -76,6 +76,9 @@ class CrossHair:
             vLines  += [vLine11, vLine12, vLine13]
             count_  += 3
 
+        [hLine.setZValue(29) for hLine in hLines]
+        [vLine.setZValue(29) for vLine in vLines]
+
         self.ui.ctpg_labels = []
 
         for k in range(count_):
@@ -183,20 +186,23 @@ class CrossHair:
                     lxmin, lxmax = self.ui.ctpg_cvb[n].state['viewRange'][0]
                     lymin, lymax = self.ui.ctpg_cvb[n].state['viewRange'][1]
                     if not real:
-                        if mousePoint.x() < lxmin + (lxmax - lxmin) * 0.15:
-                            if self.ui.ct_checkBoxxxxx_01.isChecked():
-                                labell.setAnchor((1, 1))
-                                labell.setPos(lxmax, lymin)
-                            if self.ui.ct_checkBoxxxxx_02.isChecked():
-                                self.ui.ctpg_legend[n].setAnchor((1, 0))
-                                self.ui.ctpg_legend[n].setPos(lxmax, lymax)
-                        else:
-                            if self.ui.ct_checkBoxxxxx_01.isChecked():
-                                labell.setAnchor((0, 1))
-                                labell.setPos(lxmin, lymin)
-                            if self.ui.ct_checkBoxxxxx_02.isChecked():
-                                self.ui.ctpg_legend[n].setAnchor((0, 0))
-                                self.ui.ctpg_legend[n].setPos(lxmin, lymax)
+                        try:
+                            if mousePoint.x() < lxmin + (lxmax - lxmin) * 0.15:
+                                if self.ui.ct_checkBoxxxxx_01.isChecked():
+                                    labell.setAnchor((1, 1))
+                                    labell.setPos(lxmax, lymin)
+                                if self.ui.ct_checkBoxxxxx_02.isChecked():
+                                    self.ui.ctpg_legend[n].setAnchor((1, 0))
+                                    self.ui.ctpg_legend[n].setPos(lxmax, lymax)
+                            else:
+                                if self.ui.ct_checkBoxxxxx_01.isChecked():
+                                    labell.setAnchor((0, 1))
+                                    labell.setPos(lxmin, lymin)
+                                if self.ui.ct_checkBoxxxxx_02.isChecked():
+                                    self.ui.ctpg_legend[n].setAnchor((0, 0))
+                                    self.ui.ctpg_legend[n].setPos(lxmin, lymax)
+                        except Exception:
+                            pass
 
                     if n == len(self.ui.ctpg_factors) - 1:
                         break

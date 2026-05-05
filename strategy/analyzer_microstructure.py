@@ -1,21 +1,20 @@
 
 import numpy as np
 from numba import njit
-from collections import defaultdict
-from typing import Dict, List, Tuple
+from collections import defaultdict, deque
+from typing import Dict, List, Tuple, Optional
 
 
-@njit(cache=True, fastmath=True, parallel=True)
+@njit(cache=True, fastmath=True)
 def _calc_analyze_price_levels(quantities: np.ndarray, multiplier: float, min_occurrences: int):
     """가격 레벨별 분석 (Numba JIT 최적화) - 튜플 대신 배열 반환"""
     n_rows, n_cols = quantities.shape
     if n_rows < 3:
         return np.empty((0, 5), dtype=np.float64)
 
-    # 5개 레벨 각각 계산
-    total_qtys = np.zeros(n_cols, dtype=np.float64)
+    total_qtys  = np.zeros(n_cols, dtype=np.float64)
     occurrences = np.zeros(n_cols, dtype=np.int32)
-    max_qtys = np.zeros(n_cols, np.float64)
+    max_qtys    = np.zeros(n_cols, np.float64)
 
     for col in range(n_cols):
         max_val = 0.0
@@ -127,8 +126,8 @@ def _calc_layering_confidence(levels: np.ndarray):
     if n == 0:
         return 0.0
 
-    max_suspicion = 0.0
-    sum_suspicion = 0.0
+    max_suspicion   = 0.0
+    sum_suspicion   = 0.0
     max_occurrences = 0.0
 
     for i in range(n):
@@ -357,10 +356,8 @@ def _calc_detect_pump_dump(prices: np.ndarray, volumes: np.ndarray, price_thresh
 
 class HistoryBuffer:
     """전처리 데이터 히스토리용 numpy ring buffer
-
     스칼라값과 5단계 호가 데이터를 효율적으로 저장
     """
-
     __slots__ = ['maxlen', 'ptr', 'count', 'curr_price', 'imbalance', 
                  'ask_prices', 'bid_prices', 'ask_qtys', 'bid_qtys',
                  'buy_volume', 'sell_volume', 'total_volume', 'weighted_depth_ratio']
@@ -477,15 +474,14 @@ class AnalyzerMicrostructure:
     """시장 미시구조 분석기 클래스입니다.
     호가 데이터를 분석하여 시장 조작 패턴을 탐지합니다.
     """
-    def __init__(self, market_type: str, columns: list, data_cnt: int = 1800, history_cnt: int = 30):
-        # 기본 설정
+    def __init__(self, market_type: str, dict_findex: dict, data_cnt: int = 1800, history_cnt: int = 30):
+        self.market_type       = market_type
+        self.dict_findex       = dict_findex
+        self.data_cnt          = data_cnt
+        self.history_cnt       = history_cnt
+        self.curr_data         = None
+        self.data_results      = []
         self._price_risk_cache = {}
-        self.market_type = market_type
-        self.columns = columns
-        self.data_cnt = data_cnt
-        self.history_cnt = history_cnt
-        self.curr_data = None
-        self.data_results = []
 
         # 데이터 타입별 파라미터 설정
         self._setup_parameters()
@@ -495,6 +491,13 @@ class AnalyzerMicrostructure:
 
         # 분석 히스토리 버퍼
         self.data_history = defaultdict(lambda: HistoryBuffer(self.history_cnt))
+
+        # 레이더 차트용 히스토리 저장소 (종목코드별 30개 8지표 저장)
+        self._radar_history: Dict[str, deque] = defaultdict(lambda: deque(maxlen=30))
+        self._radar_axis_names = [
+            'depth_ratio', 'weighted_depth_ratio', 'imbalance', 'pressure_level',
+            'layering', 'pump_dump', 'iceberg', 'stop_hunt'
+        ]
 
         # 상수 캐싱 (반복 생성 회피)
         self._depth_weights = np.array([0.35, 0.25, 0.20, 0.12, 0.08])  # 1~5단계 가중치
@@ -545,22 +548,21 @@ class AnalyzerMicrostructure:
     def _setup_columns(self):
         """컬럼을 설정합니다."""
         # 칼럼 인덱스 매핑 (빠른 접근용)
-        col_index = {col: idx for idx, col in enumerate(self.columns)}
-        self.idx_curr_price = col_index.get('현재가', 0)
-        self.idx_buy_vol    = col_index.get('초당매수수량', 0)
-        self.idx_sell_vol   = col_index.get('초당매도수량', 0)
-        self.idx_ask_price  = [col_index.get(f'매도호가{i}', 0) for i in range(1, 6)]
-        self.idx_ask_qty    = [col_index.get(f'매도잔량{i}', 0) for i in range(1, 6)]
-        self.idx_bid_price  = [col_index.get(f'매수호가{i}', 0) for i in range(1, 6)]
-        self.idx_bid_qty    = [col_index.get(f'매수잔량{i}', 0) for i in range(1, 6)]
+        self.idx_curr_price = self.dict_findex.get('현재가', 0)
+        self.idx_buy_vol    = self.dict_findex.get('초당매수수량', 0)
+        self.idx_sell_vol   = self.dict_findex.get('초당매도수량', 0)
+        self.idx_ask_price  = [self.dict_findex.get(f'매도호가{i}', 0) for i in range(1, 6)]
+        self.idx_ask_qty    = [self.dict_findex.get(f'매도잔량{i}', 0) for i in range(1, 6)]
+        self.idx_bid_price  = [self.dict_findex.get(f'매수호가{i}', 0) for i in range(1, 6)]
+        self.idx_bid_qty    = [self.dict_findex.get(f'매수잔량{i}', 0) for i in range(1, 6)]
 
-    def update_data(self, code: str, tick_data: np.ndarray):
+    def update_data(self, code: str, code_data: np.ndarray):
         """데이터를 업데이트합니다.
         Args:
             code: 종목 코드
-            tick_data: 틱 데이터
+            code_data: 틱 데이터
         """
-        self._calculate_processed_data(code, tick_data)
+        self._calculate_processed_data(code, code_data)
 
     def get_signal(self, buy_cf: float, sell_cf: float) -> Tuple[str, float, float]:
         """시그널을 반환합니다.
@@ -574,16 +576,16 @@ class AnalyzerMicrostructure:
         signal, confidence = self._analyze_signal(buy_cf, sell_cf)
         return signal, confidence, total_risk
 
-    def _calculate_processed_data(self, code: str, tick_data: np.ndarray):
+    def _calculate_processed_data(self, code: str, code_data: np.ndarray, real: bool = True):
         """전처리 데이터를 계산합니다.
         Args:
             code: 종목 코드
-            tick_data: 틱 데이터
+            code_data: 틱 데이터
         """
-        if len(tick_data) < self.history_cnt:
+        if len(code_data) < self.history_cnt:
             return
 
-        recent_data   = tick_data[-self.history_cnt:]
+        recent_data   = code_data[-self.history_cnt:]
         curr_price    = recent_data[-1, self.idx_curr_price]
         buy_volume    = recent_data[-1, self.idx_buy_vol]
         sell_volume   = recent_data[-1, self.idx_sell_vol]
@@ -670,6 +672,130 @@ class AnalyzerMicrostructure:
             'stop_hunt': stop_hunt,
             'overall_risk': overall_risk
         }
+
+        if real:
+            # 레이더 차트용 8지표 정규화 및 저장 (overall_risk 포함 9개)
+            radar_data = self._normalize_radar_data(self.curr_data)
+            self._radar_history[code].append(radar_data)
+
+    def analyze_batch_data(self, code: str, code_data: np.ndarray, buy_cf: float, sell_cf: float) -> np.ndarray:
+        """2차원 어레이 데이터 전체를 일괄 분석합니다.
+        Args:
+            code: 종목코드
+            code_data: 코드 데이터 2차원 어레이
+            buy_cf: 매수 신뢰도 계수
+            sell_cf: 매도 신뢰도 계수
+        Returns:
+            (N, 3) 형태의 2차원 어레이 - 시그널(숫자), 신뢰도, 리스크
+            시그널: buy=1, sell=-1, hold=0
+        """
+        self.clear_code_data(code)
+
+        n = len(code_data)
+        results = np.zeros((n, 3))  # [시그널, 신뢰도, 리스크]
+
+        for i in range(self.history_cnt, n):
+            recent_data = code_data[i - self.history_cnt:i]
+            self._calculate_processed_data(code, recent_data, real=False)
+            signal, confidence, total_risk = self.get_signal(buy_cf, sell_cf)
+            signal_num = 1 if signal == 'buy' else (-1 if signal == 'sell' else 0)
+            results[i] = [signal_num, confidence, total_risk]
+
+        return results
+
+    def _normalize_radar_data(self, curr_data: Dict) -> List[float]:
+        """curr_data의 8개 지표와 overall_risk를 0~1 범위로 정규화합니다.
+        Args:
+            curr_data: 현재 데이터 딕셔너리
+        Returns:
+            9개 정규화된 값의 리스트 (8지표 + overall_risk)
+        """
+        values = []
+        for key in self._radar_axis_names:
+            val = curr_data.get(key, 0)
+            normalized = self._normalize_radar_value(key, val)
+            values.append(normalized)
+
+        # overall_risk 정규화 (0~1 범위)
+        risk_data = curr_data.get('overall_risk', 0)
+        normalized_risk = self._normalize_radar_value('overall_risk', risk_data)
+        values.append(normalized_risk)
+
+        return values
+
+    def _normalize_radar_value(self, key: str, value) -> float:
+        """개별 지표값을 0~1 범위로 정규화합니다.
+        Args:
+            key: 지표명
+            value: 원시값
+        Returns:
+            0~1 범위의 정규화된 값
+        """
+        if value is None:
+            return 0.0
+        if key in ['depth_ratio', 'weighted_depth_ratio']:
+            return min(float(value) / 2.0, 1.0)
+        elif key in ['imbalance', 'pressure_level']:
+            return (float(value) + 1.0) / 2.0
+        elif key in ['layering', 'pump_dump', 'iceberg', 'stop_hunt']:
+            if isinstance(value, list) and len(value) > 0:
+                max_conf = 0.0
+                for item in value:
+                    if isinstance(item, (list, tuple)) and len(item) > 0:
+                        conf = float(item[-1]) if item[-1] is not None else 0.0
+                    elif isinstance(item, (int, float)):
+                        conf = float(item)
+                    else:
+                        conf = 0.0
+                    max_conf = max(max_conf, conf)
+                return min(max_conf, 1.0)
+            return 0.0
+        elif key == 'overall_risk':
+            # overall_risk는 dict, float, int 등 다양한 형태 가능
+            if isinstance(value, dict):
+                risk_level = value.get('risk_level', 'LOW')
+                max_conf = value.get('max_confidence', 0)
+                if risk_level == 'HIGH':
+                    base_risk = 0.8
+                elif risk_level == 'MEDIUM':
+                    base_risk = 0.5
+                else:
+                    base_risk = 0.2
+                return min(max(base_risk, max_conf * 0.5), 1.0)
+            elif isinstance(value, (int, float)):
+                return min(float(value), 1.0)
+            return 0.0
+        return 0.0
+
+    def get_radar_values(self, code: str) -> Tuple[Optional[List[float]], Optional[List[float]], Optional[float]]:
+        """특정 종목의 현재값, 평균값, overall_risk를 반환합니다.
+        Args:
+            code: 종목 코드
+        Returns:
+            (현재값 리스트[8개], 평균값 리스트[8개], overall_risk) 튜플, 데이터 없으면 (None, None, None)
+        """
+        if code not in self._radar_history or len(self._radar_history[code]) == 0:
+            return None, None, None
+
+        history = list(self._radar_history[code])
+        current_data = history[-1]  # 9개 값 (8지표 + overall_risk)
+
+        if len(history) == 0:
+            return current_data[:8], None, current_data[8] if len(current_data) > 8 else 0.0
+
+        # 현재값 (8개 지표만)
+        current_values = current_data[:8]
+
+        # overall_risk (마지막 값)
+        overall_risk = current_data[8] if len(current_data) > 8 else 0.0
+
+        # 30개 평균 계산 (8개 지표만)
+        avg_values = []
+        for i in range(8):
+            axis_values = [data[i] for data in history]
+            avg_values.append(np.mean(axis_values))
+
+        return current_values, avg_values, overall_risk
 
     def _detect_layering(self, hist_buffer: HistoryBuffer) -> List[Tuple]:
         """레이어링을 탐지합니다.

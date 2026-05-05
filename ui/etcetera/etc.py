@@ -2,7 +2,10 @@
 def dialog_move(ui):
     """다이얼로그를 이동합니다."""
     for i, dialog in enumerate(ui.move_dialog_list):
-        x, y = ui.dict_set['창위치'][i]
+        try:
+            x, y = ui.dict_set['창위치'][i]
+        except Exception:
+            x, y = 0, 0
         dialog.move(int(x), int(y))
 
 
@@ -79,6 +82,23 @@ def send_dict_set(ui):
     if ui.backengine_running:
         for bpq in ui.back_eques:
             bpq.put(('설정변경', ui.dict_set))
+
+
+def send_analyzer_setting_change(ui):
+    from ui.etcetera.process_alive import receiver_process_alive
+
+    ui.chartQ.put('분석설정변경')
+
+    if receiver_process_alive(ui):
+        if ui.market_gubun in (1, 4):
+            for q in ui.stgQs:
+                q.put('분석설정변경')
+        else:
+            ui.stgQs[0].put('분석설정변경')
+
+    if ui.backengine_running:
+        for bpq in ui.back_eques:
+            bpq.put('분석설정변경')
 
 
 def update_market_gubun(ui):

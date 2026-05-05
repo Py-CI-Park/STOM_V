@@ -173,8 +173,10 @@ def cell_clicked_05(ui, row, col):
     endtime   = ui.ct_lineEdittttt_02.text()
 
     if len(starttime) < 6 or len(endtime) < 6:
-        QMessageBox.critical(ui.dialog_chart, '오류 알림',
-                             '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
+        QMessageBox.critical(
+            ui.dialog_chart, '오류 알림',
+            '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n'
+        )
         return
 
     show_dialog_chart(ui, False, code, tickcount, searchdate, starttime, endtime, detail, buytimes)
@@ -214,8 +216,11 @@ def cell_clicked_06(ui, row, col):
     ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
 
     chart_key = name if ui.market_gubun in (6, 7) else code
-    data = (chart_key, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui))
     cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
+    buy_cf, sell_cf = ui.ft_lineEdittttt_38.text(), ui.ft_lineEdittttt_39.text()
+    if buy_cf == '' or sell_cf == '': buy_cf, sell_cf = 0.2, 0.2
+
+    data = (chart_key, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui), buy_cf, sell_cf)
     if cf1 and cf2: data += (float(cf1), float(cf2))
     ui.chartQ.put(data)
 

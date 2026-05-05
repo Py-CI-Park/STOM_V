@@ -1,6 +1,5 @@
 
 from PyQt5.QtCore import Qt
-
 from ui.event_activate import activated_etc
 from ui.event_click.button_clicked_etc import *
 from ui.etcetera.etc import pattern_setting_help
@@ -476,7 +475,7 @@ class SetDialogEtc:
             getattr(self.ui, f'lv_labelllllll_{i+1:02d}').setGeometry(65, y, 140, 25)
 
         for i in range(15):
-            x = 10 if i % 3 == 0 else 205 if i % 3 == 1 else 263
+            x = 10 if i % 3 == 0 else (205 if i % 3 == 1 else 263)
             y = 55 + i // 3 * 30
             getattr(self.ui, f'lv_lineEditttt_{i+2:02d}').setGeometry(x, y, 50, 25)
 

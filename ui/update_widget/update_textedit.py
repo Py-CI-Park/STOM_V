@@ -38,7 +38,6 @@ class UpdateTextedit:
             self.ui.fm_list = data[1]
             self.ui.dict_fm = data[2]
             self.ui.fm_tcnt = data[3]
-            self.ui.trading = True
 
         else:
             time_ = str(now())[:-3]

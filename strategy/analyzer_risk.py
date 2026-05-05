@@ -44,7 +44,7 @@ def _calculate_rsi(prices: np.ndarray, period: int = 14) -> float:
 def _calculate_volatility(prices: np.ndarray, window: int = 20) -> float:
     """변동성 계산 (Numba JIT 최적화)"""
     n = len(prices)
-    if n < window:
+    if n <= window:
         return 0.0
 
     returns = np.zeros(n - window, dtype=np.float64)
@@ -70,30 +70,29 @@ def _calculate_volatility(prices: np.ndarray, window: int = 20) -> float:
 class AnalyzerRisk:
     """리스크 분석을 수행하는 클래스입니다.
     RSI, 변동성 등 리스크 관련 지표를 계산합니다."""
-    def __init__(self, market_type: str, columns: list):
+    def __init__(self, market_type: str, dict_findex: dict):
         self.market_type = market_type
-        self.columns = columns
+        self.dict_findex = dict_findex
         self._setup_columns()
         self._setup_analysis_parameters()
 
     def _setup_columns(self):
         """시장 및 데이터 타입에 따른 칼럼 설정"""
-        col_index = {col: idx for idx, col in enumerate(self.columns)}
-        self.is_tick = '초당매수수량' in col_index
-        self.idx_curr_price        = col_index['현재가']
-        self.idx_volume            = col_index['당일거래대금']
-        self.idx_chegyeol_strength = col_index['체결강도']
+        self.is_tick = '초당매수수량' in self.dict_findex
+        self.idx_curr_price        = self.dict_findex['현재가']
+        self.idx_volume            = self.dict_findex['당일거래대금']
+        self.idx_chegyeol_strength = self.dict_findex['체결강도']
         if self.is_tick:
-            self.idx_buy_vol       = col_index['초당매수수량']
-            self.idx_sell_vol      = col_index['초당매도수량']
+            self.idx_buy_vol       = self.dict_findex['초당매수수량']
+            self.idx_sell_vol      = self.dict_findex['초당매도수량']
         else:
-            self.idx_buy_vol       = col_index['분당매수수량']
-            self.idx_sell_vol      = col_index['분당매도수량']
-        self.idx_high_low_ratio    = col_index['고저평균대비등락율']
-        self.idx_max_price         = col_index['최고현재가']
-        self.idx_min_price         = col_index['최저현재가']
-        self.idx_chegyeol_avg      = col_index['체결강도평균']
-        self.idx_change_angle      = col_index['등락율각도']
+            self.idx_buy_vol       = self.dict_findex['분당매수수량']
+            self.idx_sell_vol      = self.dict_findex['분당매도수량']
+        self.idx_high_low_ratio    = self.dict_findex['고저평균대비등락율']
+        self.idx_max_price         = self.dict_findex['최고현재가']
+        self.idx_min_price         = self.dict_findex['최저현재가']
+        self.idx_chegyeol_avg      = self.dict_findex['체결강도평균']
+        self.idx_change_angle      = self.dict_findex['등락율각도']
 
     def _setup_analysis_parameters(self):
         """분석 파라미터를 설정합니다.
@@ -324,38 +323,52 @@ class AnalyzerRisk:
                     'volume_large_change': 45                   # 더 낮은 변동 기준
                 }
 
-    def get_risk_score(self, arry_code: np.ndarray) -> float:
+    def get_risk_score(self, code_data: np.ndarray) -> float:
         """리스크 점수를 반환합니다.
         Args:
-            arry_code: 코드 데이터 배열
+            code_data: 코드 데이터 배열
         Returns:
             리스크 점수
         """
-        try:
-            analysis = self._analyze_market_data(arry_code)
-            risk_score = self._calculate_risk_score(analysis)
-            return risk_score
-        except Exception:
-            return 0.0
+        analysis = self._analyze_market_data(code_data)
+        risk_score = self._calculate_risk_score(analysis)
+        return risk_score
 
-    def _analyze_market_data(self, arry_code: np.ndarray) -> dict:
+    def analyze_batch_data(self, code_data: np.ndarray) -> np.ndarray:
+        """2차원 어레이 데이터 전체를 일괄 분석하여 리스크 점수를 반환합니다.
+        Args:
+            code_data: 코드 데이터 2차원 어레이
+        Returns:
+            (N) 형태의 1차원 어레이 - 리스크점수
+        """
+        n = len(code_data)
+        results = np.zeros(n)  # [리스크 점수]
+
+        for i in range(20, n):
+            window_data = code_data[:i]  # 0부터 i까지의 데이터 사용
+            risk_score = self.get_risk_score(window_data)
+            results[i] = risk_score
+
+        return results
+
+    def _analyze_market_data(self, code_data: np.ndarray) -> dict:
         """시장 데이터를 분석합니다.
         Args:
-            arry_code: 코드 데이터 배열
+            code_data: 코드 데이터 배열
         Returns:
             분석 결과 딕셔너리
         """
-        current_prices    = arry_code[:, self.idx_curr_price]   # 현재가
-        volumes           = arry_code[:, self.idx_volume]       # 거래대금
+        current_prices    = code_data[:, self.idx_curr_price]   # 현재가
+        volumes           = code_data[:, self.idx_volume]       # 거래대금
         rsi               = _calculate_rsi(current_prices)
         volatility        = _calculate_volatility(current_prices)
         trend             = self._analyze_trend(current_prices)
         momentum          = self._calculate_momentum(current_prices)
         volume_trend      = self._analyze_volume_trend(volumes)
-        chegyeol_strength = self._analyze_chegyeol_strength(arry_code)
-        suyang_imbalance  = self._analyze_suyang_imbalance(arry_code)
-        price_position    = self._analyze_price_position(arry_code)
-        angle_analysis    = self._analyze_angle_trend(arry_code)
+        chegyeol_strength = self._analyze_chegyeol_strength(code_data)
+        suyang_imbalance  = self._analyze_suyang_imbalance(code_data)
+        price_position    = self._analyze_price_position(code_data)
+        angle_analysis    = self._analyze_angle_trend(code_data)
 
         return {
             'rsi': rsi,
@@ -396,9 +409,21 @@ class AnalyzerRisk:
         else:
             direction = 'neutral'
 
-        x = np.arange(len(prices))
-        slope = np.polyfit(x, prices, 1)[0] / np.mean(prices) * 100
-        strength = abs(slope)
+        prices_clean = prices[~np.isnan(prices) & ~np.isinf(prices)]
+        
+        if len(prices_clean) < 2 or np.all(prices_clean == prices_clean[0]):
+            strength = 1e-10
+        else:
+            try:
+                x = np.arange(len(prices_clean))
+                mean_price = np.mean(prices_clean)
+                if mean_price == 0:
+                    strength = 1e-10
+                else:
+                    slope = np.polyfit(x, prices_clean, 1)[0] / mean_price * 100
+                    strength = abs(slope)
+            except (np.linalg.LinAlgError, ValueError, ZeroDivisionError):
+                strength = 1e-10
 
         return {
             'direction': direction,
@@ -433,15 +458,15 @@ class AnalyzerRisk:
             'momentum_trend': momentum_trend
         }
 
-    def _analyze_chegyeol_strength(self, arry_code: np.ndarray) -> dict:
+    def _analyze_chegyeol_strength(self, code_data: np.ndarray) -> dict:
         """체결 강도를 분석합니다.
         Args:
-            arry_code: 코드 데이터 배열
+            code_data: 코드 데이터 배열
         Returns:
             체결 강도 분석 결과 딕셔너리
         """
-        curr_strength = arry_code[-1, self.idx_chegyeol_strength]   # 체결강도
-        avg_strength  = arry_code[-1, self.idx_chegyeol_avg]        # 체결강도평균
+        curr_strength = code_data[-1, self.idx_chegyeol_strength]   # 체결강도
+        avg_strength  = code_data[-1, self.idx_chegyeol_avg]        # 체결강도평균
 
         if curr_strength > avg_strength * self.params['strength_spike_multiplier']:
             trend = 'spike'
@@ -455,15 +480,15 @@ class AnalyzerRisk:
             'deviation': abs(curr_strength - avg_strength) / avg_strength if avg_strength > 0 else 0
         }
 
-    def _analyze_suyang_imbalance(self, arry_code: np.ndarray) -> dict:
+    def _analyze_suyang_imbalance(self, code_data: np.ndarray) -> dict:
         """수급 불균형을 분석합니다.
         Args:
-            arry_code: 코드 데이터 배열
+            code_data: 코드 데이터 배열
         Returns:
             수급 불균형 분석 결과 딕셔너리
         """
-        current_buy  = arry_code[-1, self.idx_buy_vol]   # 초당매수수량
-        current_sell = arry_code[-1, self.idx_sell_vol]  # 초당매도수량
+        current_buy  = code_data[-1, self.idx_buy_vol]   # 초당매수수량
+        current_sell = code_data[-1, self.idx_sell_vol]  # 초당매도수량
 
         total = current_buy + current_sell
         if total > 0:
@@ -486,17 +511,17 @@ class AnalyzerRisk:
             'direction': direction
         }
 
-    def _analyze_price_position(self, arry_code: np.ndarray) -> dict:
+    def _analyze_price_position(self, code_data: np.ndarray) -> dict:
         """가격 위치를 분석합니다.
         Args:
-            arry_code: 코드 데이터 배열
+            code_data: 코드 데이터 배열
         Returns:
             가격 위치 분석 결과 딕셔너리
         """
-        current_price    = arry_code[-1, self.idx_curr_price]
-        current_high_low = arry_code[-1, self.idx_high_low_ratio]   # 고저평균대비등락율
-        max_price        = arry_code[-1, self.idx_max_price]        # 최고현재가
-        min_price        = arry_code[-1, self.idx_min_price]        # 최저현재가
+        current_price    = code_data[-1, self.idx_curr_price]
+        current_high_low = code_data[-1, self.idx_high_low_ratio]   # 고저평균대비등락율
+        max_price        = code_data[-1, self.idx_max_price]        # 최고현재가
+        min_price        = code_data[-1, self.idx_min_price]        # 최저현재가
 
         if abs(current_high_low) > self.params['price_extreme_threshold']:
             position = 'extreme'
@@ -519,14 +544,14 @@ class AnalyzerRisk:
             'price_range_position': price_range_position
         }
 
-    def _analyze_angle_trend(self, arry_code: np.ndarray) -> dict:
+    def _analyze_angle_trend(self, code_data: np.ndarray) -> dict:
         """각도 추세를 분석합니다.
         Args:
-            arry_code: 코드 데이터 배열
+            code_data: 코드 데이터 배열
         Returns:
             각도 추세 분석 결과 딕셔너리
         """
-        change_angle = arry_code[-1, self.idx_change_angle]    # 등락율각도
+        change_angle = code_data[-1, self.idx_change_angle]    # 등락율각도
 
         if change_angle > self.params['angle_strong_uptrend']:
             change_trend = 'strong_uptrend'

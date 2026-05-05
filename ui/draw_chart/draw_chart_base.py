@@ -40,6 +40,7 @@ class DrawChartBase:
         self.rgb_blue   = (100, 100, 200)
         self.rgb_green  = (100, 200, 100)
         self.rgb_cyan   = (100, 200, 200)
+        self.rgb_yellow = (200, 200, 100)
         self.rgb_gray   = (100, 100, 100)
         self.rgb_dgray  = (200, 200, 200)
         self.sma_colors = [
@@ -180,6 +181,12 @@ class DrawChartBase:
                 except Exception:
                     self.ymax, self.ymin = 0, 0
 
+            elif factor in ('시장미시구조분석', '패턴점수', '리스크점수', '가격대점수', '거래량점수', '변동성점수'):
+                fidx1 = self.fi('시그널') if factor == '시장미시구조분석' else self.fi(factor)
+                self.get_optimized_min_max(fidx1)
+                self.draw_area(i)
+                self.draw_line(i, fidx1, self.rgb_yellow)
+
             else:
                 fidx1 = self.fi(factor)
                 if len(self.ui.ctpg_data[fidx1]) > 0:
@@ -227,13 +234,15 @@ class DrawChartBase:
         if self.ui.ft_checkBoxxxxx_16.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_16.text())
         if self.ui.ft_checkBoxxxxx_17.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_17.text())
         if self.ui.ft_checkBoxxxxx_18.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_18.text())
-        if self.is_min:
+        if not self.is_min:
             if self.ui.ft_checkBoxxxxx_19.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_19.text())
+        if self.is_min:
             if self.ui.ft_checkBoxxxxx_20.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_20.text())
-            if self.ui.ft_checkBoxxxxx_21.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_21.text())
-            if self.ui.ft_checkBoxxxxx_22.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_22.text())
-            if self.ui.ft_checkBoxxxxx_23.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_23.text())
-            if self.ui.ft_checkBoxxxxx_24.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_24.text())
+        if self.ui.ft_checkBoxxxxx_21.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_21.text())
+        if self.ui.ft_checkBoxxxxx_22.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_22.text())
+        if self.ui.ft_checkBoxxxxx_23.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_23.text())
+        if self.ui.ft_checkBoxxxxx_24.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_24.text())
+        if self.is_min:
             if self.ui.ft_checkBoxxxxx_25.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_25.text())
             if self.ui.ft_checkBoxxxxx_26.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_26.text())
             if self.ui.ft_checkBoxxxxx_27.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_27.text())
@@ -248,6 +257,12 @@ class DrawChartBase:
             if self.ui.ft_checkBoxxxxx_36.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_36.text())
             if self.ui.ft_checkBoxxxxx_37.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_37.text())
             if self.ui.ft_checkBoxxxxx_38.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_38.text())
+            if self.ui.ft_checkBoxxxxx_39.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_39.text())
+            if self.ui.ft_checkBoxxxxx_40.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_40.text())
+            if self.ui.ft_checkBoxxxxx_41.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_41.text())
+            if self.ui.ft_checkBoxxxxx_42.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_42.text())
+            if self.ui.ft_checkBoxxxxx_43.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_43.text())
+            if self.ui.ft_checkBoxxxxx_44.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_44.text())
 
     def update_dict_idxs(self):
         """요소 인덱스 딕셔너리를 업데이트합니다."""

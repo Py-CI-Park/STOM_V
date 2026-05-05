@@ -16,6 +16,12 @@ class DrawRealChart(DrawChartBase):
         Args:
             data: 차트 데이터 튜플
         """
+        if type(data[1]) != str:
+            curr_values, avg_values, overall_risk = data[1:]
+            if self.ui.radar_dialog.isVisible():
+                self.ui.radar_dialog.update_radar(curr_values, avg_values, overall_risk)
+            return
+
         self.real = True
         self.is_min = not self.ui.dict_set['타임프레임']
 

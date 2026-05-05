@@ -455,7 +455,7 @@ class BackEngineBaseOms(BackEngineBase):
                     총수량 = 보유수량 + 주문수량
                     추가매수가 = self._get_order_price(거래금액, 주문수량)
                     평단가 = self._get_order_price(매수가 * 보유수량 + 거래금액, 총수량)
-                    주문포지션 = None if self.market_gubun < 6 else 'LONG' if buy_long else 'SHORT'
+                    주문포지션 = None if self.market_gubun < 6 else ('LONG' if buy_long else 'SHORT')
                     self.curr_trade_info.update({
                         '매수가': 평단가,
                         '보유수량': 총수량,
