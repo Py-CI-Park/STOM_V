@@ -99,3 +99,6 @@ backtest/graph/
 *.cert
 secrets/
 credentials/
+
+# Local agent/runtime state
+.omc/
