@@ -122,11 +122,6 @@ class UpdateTablewidget:
         self.columns_acenter = ('포지션', '거래횟수', '추정예탁자산', '추정예수금', '보유종목수', '정보제공', '언론사', '주문구분',
                                 '매수시간', '매도시간', '체결시간', '거래일자', '기간', '일자', '일자 및 시간', '구분', 'period', 'time')
 
-        self.uinums_hogatick = (ui_num['호가체결'], ui_num['호가체결'])
-        self.uinums_hogarem = (ui_num['호가잔량'], ui_num['호가잔량'])
-        self.uinums_detail1 = (ui_num['상세기록'], ui_num['상세기록'])
-        self.uinums_detail2 = (ui_num['당일상세'], ui_num['당일상세'])
-
         self.uinums_str = (ui_num['재무년도'], ui_num['재무분기'])
         self.uinums_giup = (ui_num['기업공시'], ui_num['기업뉴스'])
         self.uinums_jemu = (ui_num['재무년도'], ui_num['재무분기'])
@@ -184,7 +179,7 @@ class UpdateTablewidget:
             tableWidget.clearContents()
             return
 
-        if gubun in self.uinums_hogatick:
+        if gubun == ui_num['호가체결']:
             if not self.ui.dialog_hoga.isVisible():
                 if receiver_process_alive(self.ui):
                     self.ui.receivQ.put(('호가종목코드', '000000'))
@@ -217,6 +212,9 @@ class UpdateTablewidget:
                     cgtime = str(value)
                     if column == '체결시간':
                         cgtime = f'{cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
+                    elif gubun == ui_num['상세기록']:
+                        cgtime = \
+                            f'{cgtime[:4]}-{cgtime[4:6]}-{cgtime[6:8]} {cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
                     item = QTableWidgetItem(cgtime)
 
                 elif column in self.columns_day:
@@ -284,7 +282,7 @@ class UpdateTablewidget:
                 else:
                     item.setTextAlignment(int(Qt.AlignVCenter | Qt.AlignRight))
 
-                if gubun in self.uinums_hogatick and not self.ui.database_chart:
+                if gubun == ui_num['호가체결'] and not self.ui.database_chart:
                     if column == '체결수량':
                         if i == 0:    item.setIcon(self.ui.icon_totalb)
                         elif i == 11: item.setIcon(self.ui.icon_totals)
@@ -292,7 +290,7 @@ class UpdateTablewidget:
                         if i == 0:    item.setIcon(self.ui.icon_up)
                         elif i == 11: item.setIcon(self.ui.icon_down)
 
-                elif gubun in self.uinums_hogarem:
+                elif gubun == ui_num['호가잔량']:
                     if column == '잔량':
                         if i == 0:    item.setIcon(self.ui.icon_totalb)
                         elif i == 11: item.setIcon(self.ui.icon_totals)
@@ -312,23 +310,23 @@ class UpdateTablewidget:
                                     elif value == low: item.setIcon(self.ui.icon_low)
                                     elif value == uvi: item.setIcon(self.ui.icon_vi)
 
-                if '수익금' in columns_list and gubun not in self.uinums_detail1:
+                if '수익금' in columns_list and gubun != ui_num['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('수익금')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif '누적수익금' in columns_list and gubun not in self.uinums_detail1:
+                elif '누적수익금' in columns_list and gubun != ui_num['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('누적수익금')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif '수익금합계' in columns_list and gubun not in self.uinums_detail1:
+                elif '수익금합계' in columns_list and gubun != ui_num['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('수익금합계')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif '평가손익' in columns_list and gubun not in self.uinums_detail1:
+                elif '평가손익' in columns_list and gubun != ui_num['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('평가손익')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif '총평가손익' in columns_list and gubun not in self.uinums_detail1:
+                elif '총평가손익' in columns_list and gubun != ui_num['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('총평가손익')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
@@ -341,7 +339,7 @@ class UpdateTablewidget:
                     elif '취소' in order_gubun or 'CANCEL' in order_gubun:
                         item.setForeground(color_fg_bc)
 
-                elif gubun in self.uinums_hogatick and not self.ui.database_chart:
+                elif gubun == ui_num['호가체결'] and not self.ui.database_chart:
                     if column == '체결수량':
                         if i in (0, 11):
                             color = color_fg_bt if value > arry[11 if i == 0 else 0, 0] else color_fg_dk
@@ -363,7 +361,7 @@ class UpdateTablewidget:
                         color = color_fg_bt if value >= 100 else color_fg_dk
                         item.setForeground(color)
 
-                elif gubun in self.uinums_hogarem:
+                elif gubun == ui_num['호가잔량']:
                     if column == '잔량':
                         if i in (0, 11):
                             color = color_fg_bt if value > arry[11 if i == 0 else 0, 0] else color_fg_dk
@@ -400,8 +398,8 @@ class UpdateTablewidget:
 
         if gubun in self.col_auto_resize_uinums:
             header = tableWidget.horizontalHeader()
-            hwidth = header.width() if gubun in self.uinums_detail1 else 668
-            if gubun in self.uinums_detail1:
+            hwidth = header.width() if gubun == ui_num['상세기록'] else 668
+            if gubun == ui_num['상세기록']:
                 header_count = 12
             elif columns_cnt in (9, 11):
                 header_count = 7
@@ -457,7 +455,7 @@ class UpdateTablewidget:
         if tableWidget.columnCount() != columns_cnt:
             tableWidget.setColumnCount(columns_cnt)
             tableWidget.setHorizontalHeaderLabels(columns_list)
-            if gubun in self.uinums_detail2:
+            if gubun == ui_num['당일상세']:
                 if columns_cnt == 7:
                     tableWidget.setColumnWidth(0, 90)
                     tableWidget.setColumnWidth(1, 101)

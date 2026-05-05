@@ -293,10 +293,12 @@ class BaseReceiver:
                 self.dict_jgdt[code] = dt
 
         mo = mh = ml = c
-        code_data = self.dict_data[code]
         ymd = str(dt)[:8]
-        if ymd != self.dict_prec[code][0]:
-            self.dict_prec[code] = [ymd, code_data[0]]
+        code_data = self.dict_data[code]
+        code_prec = self.dict_prec[code]
+        if ymd != code_prec[0]:
+            code_prec[0] = ymd
+            code_prec[1] = code_data[0]
             bids, asks, pretbids, pretasks = 0, 0, 0, 0
             o, h, low = c, c, c
             dm = int(v * c)
@@ -323,7 +325,7 @@ class BaseReceiver:
         tbids = round(pretbids + bids_, 8)
         tasks = round(pretasks + asks_, 8)
         ch = min(500, round(tbids / tasks * 100, 2)) if tasks > 0 else 500
-        per = round((c / self.dict_prec[code][1] - 1) * 100, 2)
+        per = round((c / code_prec[1] - 1) * 100, 2)
 
         self.dict_daym[code] = dm
         if self.is_tick:

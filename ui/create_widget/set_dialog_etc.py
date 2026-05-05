@@ -29,6 +29,7 @@ class SetDialogEtc:
         """기타 다이얼로그를 설정합니다."""
         self.ui.dialog_hoga = self.wc.setDialog('STOM HOGA')
         self.ui.dialog_hoga.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_hoga)
 
         self.ui.hj_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_hoga, columns_hj, 1)
         self.ui.hc_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_hoga, columns_hc, 12)
@@ -43,6 +44,7 @@ class SetDialogEtc:
 
         self.ui.dialog_info = self.wc.setDialog('STOM INFO')
         self.ui.dialog_info.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_info)
 
         self.ui.gg_textEdittttt_01 = self.wc.setTextEdit(self.ui.dialog_info, font=qfont14)
         self.ui.gs_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_info, columns_gc, 20, clicked=lambda row, col: cell_clicked_07(self.ui, row, col))
@@ -52,15 +54,19 @@ class SetDialogEtc:
 
         self.ui.dialog_web = self.wc.setDialog('STOM WEB')
         self.ui.dialog_web.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_web)
 
         self.ui.dialog_tree = self.wc.setDialog('STOM TREEMAP')
         self.ui.dialog_tree.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_tree)
 
         self.ui.dialog_graph = self.wc.setDialog('STOM GRAPH')
         self.ui.dialog_graph.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_graph)
 
         self.ui.dialog_db = self.wc.setDialog('STOM DATABASE')
         self.ui.dialog_db.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_db)
 
         self.ui.dbs_tapWidgettt_01 = QTabWidget(self.ui.dialog_db)
         self.ui.dbs_tab1 = QWidget()
@@ -110,6 +116,7 @@ class SetDialogEtc:
 
         self.ui.dialog_order = self.wc.setDialog('STOM ORDER')
         self.ui.dialog_order.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_order)
 
         self.ui.od_groupBoxxxxx_01 = QGroupBox('', self.ui.dialog_order)
         self.ui.od_labellllllll_01 = QLabel('주문종목명', self.ui.od_groupBoxxxxx_01)
@@ -131,6 +138,8 @@ class SetDialogEtc:
 
         self.ui.dialog_optuna = self.wc.setDialog('STOM OPTUNA', parent=self.ui)
         self.ui.dialog_optuna.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_optuna)
+
         self.ui.op_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_optuna)
         text = '''
         "optuna의 범위설정은 최적화 범위
@@ -193,6 +202,8 @@ class SetDialogEtc:
 
         self.ui.dialog_pass = self.wc.setDialog('STOM PASSWARD', parent=self.ui)
         self.ui.dialog_pass.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_pass)
+
         self.ui.pa_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_pass)
         self.ui.pa_labelllllll_01 = QLabel('프로그램 비밀번호을 입력하십시오.\n미설정 시 입력없이 엔터!!\n', self.ui.pa_groupBoxxxx_01)
         self.ui.pa_labelllllll_01.setAlignment(Qt.AlignCenter)
@@ -200,16 +211,22 @@ class SetDialogEtc:
 
         self.ui.dialog_comp = self.wc.setDialog('STOM COMPARISON', parent=self.ui)
         self.ui.dialog_comp.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_comp)
+
         self.ui.cp_labelllllll_01 = QLabel('▣ 선택된 두개 이상의 그래프를 비교한다.', self.ui.dialog_comp)
         self.ui.cp_pushButtonn_01 = self.wc.setPushbutton('그래프 비교', parent=self.ui.dialog_comp, click=lambda: cpbutton_clicked_01(self.ui))
         self.ui.cp_tableWidget_01 = self.wc.setTablewidget(self.ui.dialog_comp, ['백테스트 상세기록'], 40, vscroll=True)
 
         self.ui.dialog_kimp = self.wc.setDialog('STOM KIMP')
         self.ui.dialog_kimp.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_kimp)
+
         self.ui.kp_tableWidget_01 = self.wc.setTablewidget(self.ui.dialog_kimp, columns_kp, 50, vscroll=True)
 
         self.ui.dialog_std = self.wc.setDialog('OPTIMIZ STD LIMIT', parent=self.ui)
         self.ui.dialog_std.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_std)
+
         self.ui.st_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_std, click=lambda: stbutton_clicked_01(self.ui))
         self.ui.st_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_std, click=lambda: stbutton_clicked_02(self.ui))
         self.ui.st_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_std)
@@ -226,6 +243,8 @@ class SetDialogEtc:
 
         self.ui.dialog_leverage = self.wc.setDialog('BINACE FUTURE LEVERAGE', parent=self.ui)
         self.ui.dialog_leverage.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_leverage)
+
         self.ui.lv_pushButtonn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_leverage, click=lambda: lvbutton_clicked_02(self.ui))
         self.ui.lv_pushButtonn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_leverage, click=lambda: lvbutton_clicked_03(self.ui))
         self.ui.lv_groupBoxxxx_01 = QGroupBox(' ', self.ui.dialog_leverage)
@@ -246,6 +265,8 @@ class SetDialogEtc:
 
         self.ui.dialog_setsj = self.wc.setDialog('STOM SETSJ', parent=self.ui)
         self.ui.dialog_setsj.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_setsj)
+
         self.ui.set_pushButton_01 = self.wc.setPushbutton('설정예제', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_sample(self.ui))
         self.ui.set_pushButton_02 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_load(self.ui))
         self.ui.set_pushButton_03 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_setsj, click=lambda: setting_passticks_save(self.ui))
@@ -274,6 +295,8 @@ class SetDialogEtc:
 
         self.ui.dialog_pattern = self.wc.setDialog('STOM PATTERN', parent=self.ui)
         self.ui.dialog_pattern.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_pattern)
+
         self.ui.ptn_labellllll_01 = QLabel('   패턴인식시간(분)                     등락율(%)', self.ui.dialog_pattern)
         self.ui.ptn_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, items=['30', '60', '90', '120', '150', '180'])
         self.ui.ptn_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, items=['5', '10', '15', '20', '25', '30'])
@@ -292,6 +315,8 @@ class SetDialogEtc:
 
         self.ui.dialog_volume = self.wc.setDialog('STOM VOLUME PROFILE', parent=self.ui)
         self.ui.dialog_volume.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_volume)
+
         self.ui.vpf_labellllll_01 = QLabel(' 가격대분할(%)                    돌파및반등기준(%)', self.ui.dialog_volume)
         self.ui.vpf_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_volume, items=['0.33', '0.5', '0.75', '1.0'])
         self.ui.vpf_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_volume, items=['0.33', '0.5', '0.75', '1.0'])

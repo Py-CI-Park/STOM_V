@@ -53,10 +53,11 @@ class StockReceiver(BaseReceiver):
             body  = data['body']
 
             if tr_cd == self.tr_cd_hoga:
-                int_hms = int(body['hotime'])
-                if int_hms < self.market_open:
+                str_hms = body['hotime']
+                if int(str_hms) < self.market_open:
                     return
-                dt = int(f"{self.str_today}{int_hms}")
+
+                dt = int(f"{self.str_today}{str_hms}")
                 code = body['shcode']
                 hoga_seprice = [
                     float(body['offerho1']), float(body['offerho2']), float(body['offerho3']), float(body['offerho4']),
@@ -89,10 +90,11 @@ class StockReceiver(BaseReceiver):
                 market = body['exchname']
                 if market != 'KRX':
                     return
-                int_hms = int(body['chetime'])
-                if int_hms < self.market_open:
+                str_hms = body['chetime']
+                if int(str_hms) < self.market_open:
                     return
-                dt = int(f"{self.str_today}{int_hms}")
+
+                dt = int(f"{self.str_today}{str_hms}")
                 code  = body['shcode']
                 c     = int(body['price'])
                 o     = int(body['open'])

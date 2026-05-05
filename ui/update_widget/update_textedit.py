@@ -56,6 +56,7 @@ class UpdateTextedit:
             if gubun == ui_num['기본로그']:
                 self.ui.log_trade_basic_textedit.append(text)
                 if '리시버 시작' in text:
+                    qtest_qwait(2)
                     mnbutton_c_clicked_01(self.ui, 1)
                 elif '전략연산 프로세스 데이터 저장 중 ...' in text:
                     self.data_save = True

@@ -426,7 +426,7 @@ def pattern_setting_save(ui):
 
 def pattern_train(ui):
     """패턴학습을 시작한다. 스레드로 구동하여 UI멈춤을 방지한다."""
-    if ui.pattern_running:
+    if ui.learn_running:
         QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 패턴학습이 진행중입니다.\n')
         return
     _pattern_train(ui)
@@ -435,9 +435,9 @@ def pattern_train(ui):
 @thread_decorator
 def _pattern_train(ui):
     """스레드로 패턴학습을 시작한다."""
-    ui.pattern_running = True
+    ui.learn_running = True
     minute = int(ui.ptn_comboBoxxx_01.currentText())
     pct = int(ui.ptn_comboBoxxx_02.currentText())
     pt_analyzer = AnalyzerPattern(ui.market_info, minute, pct)
     pt_analyzer.train_all_codes(ui.windowQ)
-    ui.pattern_running = False
+    ui.learn_running = False

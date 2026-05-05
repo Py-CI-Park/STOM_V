@@ -76,19 +76,15 @@ def cell_clicked_03(ui, row, col):
     from PyQt5.QtCore import QDate
     from ui.event_click.button_clicked_show_dialog import show_dialog
 
-    searchdate = ''
-    if ui.focusWidget() == ui.ds_tableWidgetttt:
-        searchdate = ui.calendarWidgetttt.selectedDate().toString('yyyyMMdd')
-    elif ui.focusWidget() == ui.ds_tableWidgetttt:
-        searchdate = ui.calendarWidgetttt.selectedDate().toString('yyyyMMdd')
     item = ui.focusWidget().item(row, 1)
     if item is None:
         return
 
-    name      = item.text()
-    linetext  = ui.ct_lineEdittttt_03.text()
-    tickcount = int(linetext) if linetext else 30
-    code      = ui.dict_code.get(name, name)
+    searchdate = ui.calendarWidgetttt.selectedDate().toString('yyyyMMdd')
+    name       = item.text()
+    linetext   = ui.ct_lineEdittttt_03.text()
+    tickcount  = int(linetext) if linetext else 30
+    code       = ui.dict_code.get(name, name)
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
     ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
@@ -150,14 +146,16 @@ def cell_clicked_05(ui, row, col):
         return
 
     name       = item.text()
-    searchdate = tableWidget.item(row, 2).text()[:8]
+    searchdate = str(comma2int(tableWidget.item(row, 2).text()[:10]))
     buytime    = comma2int(tableWidget.item(row, 2).text())
 
     if len(str(buytime)) > 12 and not ui.dict_set['타임프레임']:
-        QMessageBox.critical(ui, '오류 알림', '현재 데이터 형식의 설정은 1분봉 상태입니다.\n1초스냅샷용 백테결과는 차트에 표시할 수 없습니다.\n')
+        QMessageBox.critical(ui, '오류 알림',
+                             '현재 데이터 형식의 설정은 1분봉 상태입니다.\n1초스냅샷용 백테결과는 차트에 표시할 수 없습니다.\n')
         return
     elif len(str(buytime)) < 14 and ui.dict_set['타임프레임']:
-        QMessageBox.critical(ui, '오류 알림', '현재 데이터 형식의 설정 1초스냅샷 상태입니다.\n1분봉용 백테결과는 차트에 표시할 수 없습니다.\n')
+        QMessageBox.critical(ui, '오류 알림',
+                             '현재 데이터 형식의 설정 1초스냅샷 상태입니다.\n1분봉용 백테결과는 차트에 표시할 수 없습니다.\n')
         return
 
     selltime   = comma2int(tableWidget.item(row, 3).text())
@@ -174,7 +172,8 @@ def cell_clicked_05(ui, row, col):
     endtime   = ui.ct_lineEdittttt_02.text()
 
     if len(starttime) < 6 or len(endtime) < 6:
-        QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
+        QMessageBox.critical(ui.dialog_chart, '오류 알림',
+                             '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
         return
 
     show_dialog_chart(ui, False, code, tickcount, searchdate, starttime, endtime, detail, buytimes)
@@ -205,17 +204,21 @@ def cell_clicked_06(ui, row, col):
     endtime    = ui.ct_lineEdittttt_02.text()
 
     if len(starttime) < 6 or len(endtime) < 6:
-        QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
+        QMessageBox.critical(ui.dialog_chart, '오류 알림',
+                             '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
         return
 
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
     ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
+
     data = (code, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui))
     cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
     if cf1 and cf2: data += (float(cf1), float(cf2))
     ui.chartQ.put(data)
-    if ui.dialog_web.isVisible(): show_dialog_web(ui, False, code)
+
+    if ui.dialog_web.isVisible():
+        show_dialog_web(ui, False, code)
 
 
 # noinspection PyUnusedLocal
@@ -274,7 +277,8 @@ def cell_clicked_08(ui, row, col):
             return
         stg_name = item.text()
         buttonReply = QMessageBox.question(
-            ui.dialog_db, '범위 또는 조건 삭제', f"{ui.market_info['마켓이름']} 범위 또는 조건 '{stg_name}'을(를) 삭제합니다.\n계속하시겠습니까?\n",
+            ui.dialog_db, '범위 또는 조건 삭제',
+            f"{ui.market_info['마켓이름']} 범위 또는 조건 '{stg_name}'을(를) 삭제합니다.\n계속하시겠습니까?\n",
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No
         )
         if buttonReply == QMessageBox.Yes:
@@ -287,7 +291,8 @@ def cell_clicked_08(ui, row, col):
             else:
                 query = f"DELETE FROM {ui.market_info['전략구분']}_sellconds WHERE `index` = '{stg_name}'"
             ui.queryQ.put(('전략디비', query))
-            ui.windowQ.put((ui_num['DB관리'], f"DB 명령 실행 알림 - {ui.market_info['마켓이름']} 범위 또는 조건 '{stg_name}' 삭제 완료"))
+            ui.windowQ.put((ui_num['DB관리'],
+                            f"DB 명령 실행 알림 - {ui.market_info['마켓이름']} 범위 또는 조건 '{stg_name}' 삭제 완료"))
 
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_03:
         item = ui.db_tableWidgett_03.item(row, col)

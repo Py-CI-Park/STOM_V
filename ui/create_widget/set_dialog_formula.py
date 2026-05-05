@@ -18,6 +18,7 @@ class SetDialogFormula:
         """수식 관리자 다이얼로그를 설정합니다."""
         self.ui.dialog_formula = self.wc.setDialog('STOM FORMULA', parent=self.ui.dialog_chart)
         self.ui.dialog_formula.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_formula)
 
         self.ui.fm_groupBoxxxxx_01 = QGroupBox('', self.ui.dialog_formula)
         self.ui.fm_groupBoxxxxx_02 = QGroupBox('', self.ui.dialog_formula)

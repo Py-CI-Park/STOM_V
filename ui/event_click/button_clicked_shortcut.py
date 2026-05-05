@@ -211,32 +211,39 @@ def trade_process_start(ui):
         ui: UI 클래스 인스턴스
     """
     from multiprocessing import Process
+    from concurrent.futures import ThreadPoolExecutor
 
-    target = ui.market_info['프로세스'][0]
-    ui.proc_receiver = Process(target=target, args=(ui.qlist, ui.dict_set, ui.market_infos))
-    ui.proc_receiver.start()
+    def receiver_start():
+        target = ui.market_info['프로세스'][0]
+        ui.proc_receiver = Process(target=target, args=(ui.qlist, ui.dict_set, ui.market_infos))
+        ui.proc_receiver.start()
 
-    target = ui.market_info['프로세스'][1]
-    ui.proc_trader = Process(target=target, args=(ui.qlist, ui.dict_set, ui.market_infos))
-    ui.proc_trader.start()
+    def trader_start():
+        target = ui.market_info['프로세스'][1]
+        ui.proc_trader = Process(target=target, args=(ui.qlist, ui.dict_set, ui.market_infos))
+        ui.proc_trader.start()
 
-    target = ui.market_info['프로세스'][2]
-    if ui.market_gubun in (1, 4):
-        for i in range(8):
-            p = Process(target=target, args=(i, ui.qlist, ui.dict_set, ui.market_infos))
-            p.start()
-            ui.proc_strategys.append(p)
-    else:
-        p = Process(target=target, args=(0, ui.qlist, ui.dict_set, ui.market_infos))
+    def strategy_start(idx):
+        target = ui.market_info['프로세스'][2]
+        p = Process(target=target, args=(idx, ui.qlist, ui.dict_set, ui.market_infos))
         p.start()
         ui.proc_strategys.append(p)
+
+    proc_start_func_list = [receiver_start, trader_start]
+    for i in range(8 if ui.market_gubun in (1, 4) else 1):
+        proc_start_func_list.append(lambda idx=i: strategy_start(idx))
+
+    with ThreadPoolExecutor(max_workers=len(proc_start_func_list)) as executor:
+        [executor.submit(func) for func in proc_start_func_list]
 
     if ui.dict_set['웹대시보드']:
         from ui.ui_mainwindow import get_ip
         from dashboard.dashboard_starter import DashboardStarter
+
         port = ui.dict_set['웹대시보드포트번호']
         ui.web_dashboard = DashboardStarter(ui.market_gubun, port)
         ui.web_dashboard.log_received.connect(ui.web_dashboard_log)
         ui.web_dashboard.start()
+
         # noinspection HttpUrlsUsage
         ui.teleQ.put(f'http://{get_ip()}:{port}')

@@ -18,6 +18,7 @@ class SetDialogStrategy:
         """전략 다이얼로그를 설정합니다."""
         self.ui.dialog_strategy = self.wc.setDialog('STOM STRATEGY')
         self.ui.dialog_strategy.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_strategy)
 
         def color_number():
             if idx in (66, 71, 76, 86, 116):
@@ -65,6 +66,7 @@ class SetDialogStrategy:
 
         self.ui.dialog_stg_input1 = self.wc.setDialog('사용자 버튼 설정', self.ui.dialog_strategy)
         self.ui.dialog_stg_input1.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_stg_input1)
 
         self.ui.stginput_labelllll1 = QLabel(' ▣ 버튼의 이름과 전략조건을 입력하십시오.                            삭제하기 버튼을 누르면 아래의 원래 버튼으로 복구됩니다.', self.ui.dialog_stg_input1)
         self.ui.stginput_lineeditt1 = self.wc.setLineedit(self.ui.dialog_stg_input1, font=qfont14, acenter=True, style=style_bc_dk)
@@ -75,6 +77,7 @@ class SetDialogStrategy:
 
         self.ui.dialog_stg_input2 = self.wc.setDialog('사용자 버튼 설정', self.ui)
         self.ui.dialog_stg_input2.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_stg_input2)
 
         self.ui.stginput_labelllll2 = QLabel(' ▣ 버튼의 이름과 전략조건을 입력하십시오.                            삭제하기 버튼을 누르면 아래의 원래 버튼으로 복구됩니다.', self.ui.dialog_stg_input2)
         self.ui.stginput_lineeditt3 = self.wc.setLineedit(self.ui.dialog_stg_input2, font=qfont14, acenter=True, style=style_bc_dk)

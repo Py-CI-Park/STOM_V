@@ -11,21 +11,22 @@ def chart_moneytop_list(ui):
     from PyQt5.QtWidgets import QTableWidgetItem
 
     searchdate = ui.ct_dateEdittttt_02.date().toString('yyyyMMdd')
-    starttime  = ui.ct_lineEdittttt_01.text()
-    endtime    = ui.ct_lineEdittttt_02.text()
+    starttime  = int(ui.ct_lineEdittttt_01.text())
+    endtime    = int(ui.ct_lineEdittttt_02.text())
 
     is_tick  = ui.dict_set['타임프레임']
     db_name1 = f"{ui.market_info['일자디비경로'][is_tick]}_{searchdate}.db"
     db_name2 = ui.market_info['백테디비'][is_tick]
 
     if is_tick:
+        if starttime < 90030: starttime = 90030
         query = f"SELECT * FROM moneytop WHERE " \
-                f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
-                f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
+                f"`index` >= {int(searchdate) * 1000000 + starttime} and " \
+                f"`index` <= {int(searchdate) * 1000000 + endtime}"
     else:
         query = f"SELECT * FROM moneytop WHERE " \
-                f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
-                f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
+                f"`index` >= {int(searchdate) * 10000 + int(starttime / 100)} and " \
+                f"`index` <= {int(searchdate) * 10000 + int(endtime / 100)}"
 
     df = None
     try:
@@ -40,8 +41,8 @@ def chart_moneytop_list(ui):
     except Exception:
         pass
 
-    if df is None or len(df) == 0:
-        ui.ct_tableWidgett_01.clearContents()
+    ui.ct_tableWidgett_01.clearContents()
+    if df is None or df.empty:
         return
 
     table_list = list(set(';'.join(df['거래대금순위'].to_list()).split(';')))

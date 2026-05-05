@@ -54,6 +54,7 @@ class SetDialogBack:
         """백테스트 다이얼로그를 설정합니다."""
         self.ui.dialog_backengine = self.wc.setDialog('STOM BACKTEST ENGINE')
         self.ui.dialog_backengine.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_backengine)
 
         self.ui.be_groupBoxxxxx_01 = QGroupBox('', self.ui.dialog_backengine)
         self.ui.be_labellllllll_04 = QLabel('▣ 백테엔진의 데이터 로딩 시 분류 방법을 선택하십시오. 한종목 백테 시 우측 콤보박스 선택', self.ui.be_groupBoxxxxx_01)
@@ -83,6 +84,8 @@ class SetDialogBack:
 
         self.ui.dialog_scheduler = self.wc.setDialog('STOM BACKTEST SCHEDULER')
         self.ui.dialog_scheduler.geometry().center()
+        self.ui.dialog_list.append(self.ui.dialog_scheduler)
+
         self.ui.sd_groupBoxxxxx_01 = QGroupBox('', self.ui.dialog_scheduler)
         self.ui.sd_groupBoxxxxx_02 = QGroupBox('', self.ui.dialog_scheduler)
 

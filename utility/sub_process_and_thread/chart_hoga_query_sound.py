@@ -150,7 +150,7 @@ class ChartHogaQuerySound:
                         self._set_dict_findex()
                     elif data[0] == '그래프비교':
                         self._graph_comparison(data[1])
-                    elif len(data) >= 7:
+                    elif len(data) >= 6:
                         self._update_chart(data)
 
                 if not self.soundQ.empty():
@@ -720,45 +720,48 @@ class ChartHogaQuerySound:
         else:
             code, w_unit, searchdate, starttime, endtime, k, detail, buytimes, cf1, cf2 = data
 
-        if w_unit == '':
-            w_unit = self.dict_set['평균값계산틱수']
-
-        if starttime == '':
-            starttime = str(self.market_info['시작시간']).zfill(6)
-            endtime   = str(self.market_info['종료시간'][self.is_tick]).zfill(6)
-
+        db_name  = None
         db_name1 = f"{self.market_info['일자디비경로'][self.is_tick]}_{searchdate}.db"
         db_name2 = self.market_info['백테디비'][self.is_tick]
 
+        if os.path.isfile(db_name1):
+            db_name = db_name1
+        elif os.path.isfile(db_name2):
+            db_name = db_name2
+
+        if db_name is None:
+            self.windowQ.put((ui_num['차트'], '차트오류'))
+            return
+
+        if starttime == '':
+            starttime = str(self.market_info['시작시간']).zfill(6)
+            endtime = str(self.market_info['종료시간'][self.is_tick]).zfill(6)
+
+        starttime = int(starttime)
+        endtime = int(endtime)
+
         if self.is_tick:
-            query1 = f"SELECT * FROM '{code}' WHERE " \
-                     f"`index` >= {int(searchdate) * 1000000 + int(starttime)} and " \
-                     f"`index` <= {int(searchdate) * 1000000 + int(endtime)}"
+            query = f"SELECT * FROM '{code}' WHERE " \
+                    f"`index` >= {int(searchdate) * 1000000 + starttime} and " \
+                    f"`index` <= {int(searchdate) * 1000000 + endtime}"
         else:
-            query1 = f"SELECT * FROM '{code}' WHERE " \
-                     f"`index` >= {int(searchdate) * 10000 + int(int(starttime) / 100)} and " \
-                     f"`index` <= {int(searchdate) * 10000 + int(int(endtime) / 100)}"
+            query = f"SELECT * FROM '{code}' WHERE " \
+                    f"`index` >= {int(searchdate) * 10000 + int(starttime / 100)} and " \
+                    f"`index` <= {int(searchdate) * 10000 + int(endtime / 100)}"
 
-        df = None
-        query2 = f"SELECT * FROM '{code}' WHERE `index` LIKE '{searchdate}%'"
         try:
-            if os.path.isfile(db_name1):
-                con = sqlite3.connect(db_name1)
-                df = pd.read_sql(query1 if starttime and endtime else query2, con)
-                con.close()
-            elif os.path.isfile(db_name2):
-                con = sqlite3.connect(db_name2)
-                df = pd.read_sql(query1 if starttime and endtime else query2, con)
-                con.close()
+            con = sqlite3.connect(db_name)
+            df = pd.read_sql(query, con)
+            con.close()
         except Exception:
-            pass
-
-        if df is None or df.empty:
             self.windowQ.put((ui_num['차트'], '차트오류'))
             return
 
         round_unit = self.market_info['반올림단위']
         angle_cf_list = self.market_info['각도계수'][self.is_tick]
+        if w_unit == '':
+            w_unit = self.dict_set['평균값계산틱수']
+
         if cf1 is None:
             arry = add_rolling_data(df, round_unit, angle_cf_list, self.is_tick, [w_unit])
         else:
@@ -770,7 +773,7 @@ class ChartHogaQuerySound:
                 mc = arry[:, 1]
                 mh = arry[:, self.dict_findex['분봉고가']]
                 ml = arry[:, self.dict_findex['분봉저가']]
-                mv = arry[:, self.dict_findex['거래대금']]
+                mv = arry[:, self.dict_findex['분당거래대금']]
 
                 AD = talib.AD(mh, ml, mc, mv)
                 arry[:, -28] = AD
@@ -841,94 +844,93 @@ class ChartHogaQuerySound:
                     arry[:,  -1] = WILLR
                 arry = np.nan_to_num(arry)
             except Exception:
-                arry = None
                 self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 보조지표의 설정값이 잘못되었습니다.'))
+                return
 
-        if arry is not None:
-            fm_list, dict_fm, fm_tcnt = get_formula_data(True, arry.shape[1])
-            if fm_tcnt > 0:
-                arry = np.column_stack((arry, np.zeros((arry.shape[0], fm_tcnt))))
-                fm = ManagerFormula(deepcopy(fm_list), self.dict_set, self.is_tick, self.dict_findex)
-                fm.update_all_data(code, arry, self.market_gubun, w_unit)
+        fm_list, dict_fm, fm_tcnt = get_formula_data(True, arry.shape[1])
+        if fm_tcnt > 0:
+            arry = np.column_stack((arry, np.zeros((arry.shape[0], fm_tcnt))))
+            fm = ManagerFormula(deepcopy(fm_list), self.dict_set, self.is_tick, self.dict_findex)
+            fm.update_all_data(code, arry, self.market_gubun, w_unit)
 
-            buy_index  = []
-            sell_index = []
-            # noinspection PyUnresolvedReferences
+        buy_index  = []
+        sell_index = []
+        # noinspection PyUnresolvedReferences
+        arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
+        if self.market_gubun > 5:
             arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
-            if self.market_gubun > 5:
-                arry = np.column_stack((arry, np.zeros((arry.shape[0], 2))))
 
-            indices = arry[:, 0]
+        indices = arry[:, 0]
 
-            def get_cgidx_and_cgtime(cgtime_):
-                while cgtime_ not in indices:
-                    if self.is_tick:
-                        dt_cgtime = dt_ymdhms(str(cgtime_))
-                        onesecago = timedelta_sec(-1, dt_cgtime)
-                        cgtime_   = int(str_ymdhms(onesecago))
+        def get_cgidx_and_cgtime(cgtime_):
+            while cgtime_ not in indices:
+                if self.is_tick:
+                    dt_cgtime = dt_ymdhms(str(cgtime_))
+                    onesecago = timedelta_sec(-1, dt_cgtime)
+                    cgtime_   = int(str_ymdhms(onesecago))
+                else:
+                    dt_cgtime = dt_ymdhm(str(cgtime_))
+                    onesecago = timedelta_sec(-1, dt_cgtime)
+                    cgtime_   = int(str_ymdhm(onesecago))
+            cgidx_ = np.where(indices == cgtime_)[0][0]
+            return cgidx_, cgtime_
+
+        if detail is None:
+            name = self.dict_name.get(code, code)
+            chegeol_table = self.market_info['체결디비']
+            con = sqlite3.connect(DB_TRADELIST)
+            df = pd.read_sql(f"SELECT * FROM {chegeol_table} WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
+            con.close()
+
+            if len(df) > 0:
+                for index in df.index:
+                    cgtime = int(df['체결시간'][index] if self.is_tick else str(df['체결시간'][index])[:12])
+                    if cgtime < indices[0] or indices[-1] < cgtime:
+                        continue
+
+                    cgidx, cgtime = get_cgidx_and_cgtime(cgtime)
+                    if self.market_gubun < 6:
+                        if df['주문구분'][index] == '매수':
+                            buy_index.append(cgtime)
+                            arry[cgidx, -2] = df['체결가'][index]
+                        elif df['주문구분'][index] == '매도':
+                            sell_index.append(cgtime)
+                            arry[cgidx, -1] = df['체결가'][index]
                     else:
-                        dt_cgtime = dt_ymdhm(str(cgtime_))
-                        onesecago = timedelta_sec(-1, dt_cgtime)
-                        cgtime_   = int(str_ymdhm(onesecago))
-                cgidx_ = np.where(indices == cgtime_)[0][0]
-                return cgidx_, cgtime_
+                        if df['주문구분'][index] == 'BUY_LONG':
+                            buy_index.append(cgtime)
+                            arry[cgidx, -4] = df['체결가'][index]
+                        elif df['주문구분'][index] == 'SELL_LONG':
+                            sell_index.append(cgtime)
+                            arry[cgidx, -3] = df['체결가'][index]
+                        elif df['주문구분'][index] == 'SELL_SHORT':
+                            buy_index.append(cgtime)
+                            arry[cgidx, -2] = df['체결가'][index]
+                        elif df['주문구분'][index] == 'BUY_SHORT':
+                            sell_index.append(cgtime)
+                            arry[cgidx, -1] =  df['체결가'][index]
+        else:
+            매수시간, 매수가, 매도시간, 매도가 = detail
+            buy_cgidx, _  = get_cgidx_and_cgtime(매수시간)
+            sell_cgidx, _ = get_cgidx_and_cgtime(매도시간)
+            buy_index.append(매수시간)
+            sell_index.append(매도시간)
+            arry[buy_cgidx, -2] = 매수가
+            arry[sell_cgidx, -1] = 매도가
 
-            if detail is None:
-                name = self.dict_name.get(code, code)
-                chegeol_table = self.market_info['체결디비']
-                con = sqlite3.connect(DB_TRADELIST)
-                df = pd.read_sql(f"SELECT * FROM {chegeol_table} WHERE 체결시간 LIKE '{searchdate}%' and 종목명 = '{name}'", con).set_index('index')
-                con.close()
+            if buytimes:
+                # noinspection PyUnresolvedReferences
+                buytimes = buytimes.split('^')
+                buytimes = [x.split(';') for x in buytimes]
+                for x in buytimes:
+                    추가매수시간, 추가매수가 = int(x[0]), float(x[1])
+                    buy_cgidx, _  = get_cgidx_and_cgtime(추가매수시간)
+                    buy_index.append(추가매수시간)
+                    arry[buy_cgidx, -2] = 추가매수가
 
-                if len(df) > 0:
-                    for index in df.index:
-                        cgtime = int(df['체결시간'][index] if self.is_tick else str(df['체결시간'][index])[:12])
-                        if cgtime < indices[0] or indices[-1] < cgtime:
-                            continue
-
-                        cgidx, cgtime = get_cgidx_and_cgtime(cgtime)
-                        if self.market_gubun < 6:
-                            if df['주문구분'][index] == '매수':
-                                buy_index.append(cgtime)
-                                arry[cgidx, -2] = df['체결가'][index]
-                            elif df['주문구분'][index] == '매도':
-                                sell_index.append(cgtime)
-                                arry[cgidx, -1] = df['체결가'][index]
-                        else:
-                            if df['주문구분'][index] == 'BUY_LONG':
-                                buy_index.append(cgtime)
-                                arry[cgidx, -4] = df['체결가'][index]
-                            elif df['주문구분'][index] == 'SELL_LONG':
-                                sell_index.append(cgtime)
-                                arry[cgidx, -3] = df['체결가'][index]
-                            elif df['주문구분'][index] == 'SELL_SHORT':
-                                buy_index.append(cgtime)
-                                arry[cgidx, -2] = df['체결가'][index]
-                            elif df['주문구분'][index] == 'BUY_SHORT':
-                                sell_index.append(cgtime)
-                                arry[cgidx, -1] =  df['체결가'][index]
-            else:
-                매수시간, 매수가, 매도시간, 매도가 = detail
-                buy_cgidx, _  = get_cgidx_and_cgtime(매수시간)
-                sell_cgidx, _ = get_cgidx_and_cgtime(매도시간)
-                buy_index.append(매수시간)
-                sell_index.append(매도시간)
-                arry[buy_cgidx, -2] = 매수가
-                arry[sell_cgidx, -1] = 매도가
-
-                if buytimes:
-                    # noinspection PyUnresolvedReferences
-                    buytimes = buytimes.split('^')
-                    buytimes = [x.split(';') for x in buytimes]
-                    for x in buytimes:
-                        추가매수시간, 추가매수가 = int(x[0]), float(x[1])
-                        buy_cgidx, _  = get_cgidx_and_cgtime(추가매수시간)
-                        buy_index.append(추가매수시간)
-                        arry[buy_cgidx, -2] = 추가매수가
-
-            if self.is_tick: xticks = [dt_ymdhms(str(int(x))).timestamp() for x in arry[:, 0]]
-            else:            xticks = [dt_ymdhms(f'{int(x)}00').timestamp() for x in arry[:, 0]]
-            self.windowQ.put((ui_num['차트'], xticks, arry, buy_index, sell_index, fm_list, dict_fm, fm_tcnt))
+        if self.is_tick: xticks = [dt_ymdhms(str(int(x))).timestamp() for x in arry[:, 0]]
+        else:            xticks = [dt_ymdhms(f'{int(x)}00').timestamp() for x in arry[:, 0]]
+        self.windowQ.put((ui_num['차트'], xticks, arry, buy_index, sell_index, fm_list, dict_fm, fm_tcnt))
 
     @thread_decorator
     def _text_to_speak(self, data):

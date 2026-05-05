@@ -6,16 +6,13 @@ def key_press_event(ui, event):
         event: 키 이벤트
     """
     from PyQt5.QtCore import Qt
-    from PyQt5.QtCore import QDate
-    from PyQt5.QtWidgets import QMessageBox
     from PyQt5.QtWidgets import QApplication
     from ui.etcetera.process_alive import backtest_process_alive
     from ui.event_click.button_clicked_stg_editer import backtest_start
     from ui.event_click.button_clicked_stg_editer_backlog import ssbutton_clicked_06
     from ui.event_click.button_clicked_stg_editer_buy import buy_stg_load, buy_stg_save
     from ui.event_click.button_clicked_stg_editer_sell import sell_stg_load, sell_stg_save
-    from utility.static_method.static import comma2int, comma2float, str_ymd, now_cme, now_utc
-    from ui.event_click.button_clicked_show_dialog import show_dialog_graph, show_dialog, show_dialog_chart
+    from ui.event_click.table_cell_clicked import cell_clicked_05, cell_clicked_04, cell_clicked_03, cell_clicked_01
     from ui.event_click.button_clicked_stg_editer_ga import condbuy_load, condbuy_save, condsell_load, condsell_save, \
         gavars_load, gavars_save
     from ui.event_click.button_clicked_stg_editer_opti import opti_buy_load, opti_buy_save, opti_sell_load, opti_sell_save, \
@@ -37,97 +34,19 @@ def key_press_event(ui, event):
         elif ui.focusWidget() in (ui.td_tableWidgettt, ui.gj_tableWidgettt, ui.cj_tableWidgettt):
             row  = ui.focusWidget().currentIndex().row()
             col  = ui.focusWidget().currentIndex().column()
-            item = ui.focusWidget().item(row, 0)
-            if item is not None:
-                name       = item.text()
-                linetext   = ui.ct_lineEdittttt_03.text()
-                tickcount  = int(linetext) if linetext else 30
-                if ui.market_gubun < 4 or ui.market_gubun in (6, 7):
-                    searchdate = str_ymd()
-                elif ui.market_gubun in (4, 8):
-                    searchdate = str_ymd(now_cme())
-                else:
-                    searchdate = str_ymd(now_utc())
-                code = ui.dict_code.get(name, name)
-                ui.ct_lineEdittttt_04.setText(code)
-                ui.ct_lineEdittttt_05.setText(name)
-                show_dialog(ui, code, name, tickcount, searchdate, col)
+            cell_clicked_01(ui, row, col)
 
         elif ui.focusWidget() == ui.ds_tableWidgetttt:
-            if ui.focusWidget() == ui.ds_tableWidgetttt:
-                searchdate = ui.calendarWidgetttt.selectedDate().toString('yyyyMMdd')
-            else:
-                searchdate = ui.calendarWidgetttt.selectedDate().toString('yyyyMMdd')
-            row  = ui.focusWidget().currentIndex().row()
-            item = ui.focusWidget().item(row, 1)
-            if item is not None:
-                name      = item.text()
-                linetext  = ui.ct_lineEdittttt_03.text()
-                tickcount = int(linetext) if linetext else 30
-                code = ui.dict_code.get(name, name)
-                ui.ct_lineEdittttt_04.setText(code)
-                ui.ct_lineEdittttt_05.setText(name)
-                ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-                show_dialog(ui, code, name, tickcount, searchdate, 4)
+            row = ui.ds_tableWidgetttt.currentIndex().row()
+            cell_clicked_03(ui, row, 0)
 
         elif ui.focusWidget() == ui.ns_tableWidgetttt:
-            row  = ui.focusWidget().currentIndex().row()
-            item = ui.focusWidget().item(row, 0)
-            if item is not None:
-                date = item.text()
-                date = date.replace('.', '')
-                table_name = ui.market_info['거래디비']
-                df = ui.dbreader.read_sql('거래디비', f"SELECT * FROM {table_name} WHERE 체결시간 LIKE '{date}%'")
-
-                if len(date) == 6:
-                    df['구분용체결시간'] = df['체결시간'].str[:6]
-                    df = df[df['구분용체결시간'] == date]
-                elif len(date) == 4:
-                    df['구분용체결시간'] = df['체결시간'].str[:4]
-                    df = df[df['구분용체결시간'] == date]
-
-                df['index'] = df['index'].apply(lambda x: f'{x[:4]}-{x[4:6]}-{x[6:8]} {x[8:10]}:{x[10:12]}:{x[12:14]}')
-                df.set_index('index', inplace=True)
-                show_dialog_graph(ui, df)
+            row = ui.ns_tableWidgetttt.currentIndex().row()
+            cell_clicked_04(ui, row, 0)
 
         elif ui.focusWidget() == ui.ss_tableWidget_01:
-            tableWidget = ui.ss_tableWidget_01
-            row  = tableWidget.currentIndex().row()
-            item = tableWidget.item(row, 0)
-            if item is not None:
-                name       = item.text()
-                searchdate = tableWidget.item(row, 2).text()[:8]
-                buytime    = comma2int(tableWidget.item(row, 2).text())
-                if len(str(buytime)) > 12 and not ui.dict_set['타임프레임']:
-                    QMessageBox.critical(
-                        ui, '오류 알림',
-                        '현재 데이터 형식의 설정은 1분봉 상태입니다.\n1초스냅샷용 백테결과는 차트에 표시할 수 없습니다.\n'
-                    )
-                    return
-                if len(str(buytime)) < 14 and ui.dict_set['타임프레임']:
-                    QMessageBox.critical(
-                        ui, '오류 알림',
-                        '현재 데이터 형식의 설정은 1초스냅샷 상태입니다.\n1분봉용 백테결과는 차트에 표시할 수 없습니다.\n'
-                    )
-                    return
-                selltime   = comma2int(tableWidget.item(row, 3).text())
-                buyprice   = comma2float(tableWidget.item(row, 5).text())
-                sellprice  = comma2float(tableWidget.item(row, 6).text())
-                detail     = [buytime, buyprice, selltime, sellprice]
-                buytimes   = tableWidget.item(row, 13).text()
-                code       = ui.dict_code.get(name, name)
-                starttime  = ui.ct_lineEdittttt_01.text()
-                endtime    = ui.ct_lineEdittttt_02.text()
-                if len(starttime) < 6 or len(endtime) < 6:
-                    QMessageBox.critical(
-                        ui.dialog_chart, '오류 알림',
-                        '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n'
-                    )
-                    return
-                ui.ct_lineEdittttt_04.setText(code)
-                ui.ct_lineEdittttt_05.setText(name)
-                ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-                show_dialog_chart(ui, False, code, 30, searchdate, starttime, endtime, detail, buytimes)
+            row = ui.ss_tableWidget_01.currentIndex().row()
+            cell_clicked_05(ui, row, 0)
 
     elif ui.main_btn == 2:
         if (QApplication.keyboardModifiers() & Qt.AltModifier) and \

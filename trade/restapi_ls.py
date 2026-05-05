@@ -2,6 +2,7 @@
 import re
 import json
 import asyncio
+import sqlite3
 import requests
 import websockets
 from traceback import format_exc
@@ -82,21 +83,29 @@ class LsRestAPI:
         data['spac_gubun'] == 'N' - 구분 무관 공통사항 스펙 제외
         data['shcode'][-1] == '0' - 우선주 및 ETN 제외(ETN일 경우 확인X)"""
         try:
+            from utility.settings.setting_base import DB_SETTING
+            con = sqlite3.connect(DB_SETTING)
+            cur = con.cursor()
+            ret = cur.execute('SELECT 시가총액상위제외목록 FROM etc').fetchall()[0][0]
+            exclusion_list = ret.split(';')
+
             tr_name = '국내주식종목정보'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             data = self._post(tr_name, 구분='0')
             dict_data = {}
             for data in data[out_block]:
+                code = data['shcode']
                 gubun = int(data['etfgubun'])
-                if gubun == etfgubun and data['spac_gubun'] == 'N' and (etfgubun == 2 or data['shcode'][-1] == '0'):
-                    dict_data[data['shcode']] = {'종목명': data['hname']}
+                if code not in exclusion_list and gubun == etfgubun and data['spac_gubun'] == 'N' and \
+                        (etfgubun == 2 or code[-1] == '0'):
+                    dict_data[code] = {'종목명': data['hname']}
 
             tr_name = '국내주식상장주수'
             out_block = LsRestData.tr_data[tr_name]['out_block']
+            insert = False
             last = len(dict_data)
             for i, code in enumerate(dict_data.copy()):
                 data = self._post(tr_name, 종목코드=code, 거래소구분코드='')
-
                 data = data[out_block]
                 현재가 = int(data['price'])
                 상장주식수 = int(data['listing']) * 1000
@@ -106,12 +115,20 @@ class LsRestAPI:
                         '상장주식수': 상장주식수
                     })
                 else:
-                    del dict_data[code]
+                    insert = True
+                    exclusion_list.append(code)
 
                 if i % 100 == 0 or i == last - 1:
-                    self.windowQ.put((ui_num['기본로그'], f'국내주식 상장수식주 조회 중 ... [{i+1}/{last}]'))
+                    self.windowQ.put((ui_num['기본로그'], f'국내주식 상장주식수 조회 중 ... [{i+1}/{last}]'))
 
                 qtest_qwait(0.05)
+
+            if insert:
+                exclusion_text = ';'.join(exclusion_list)
+                cur.execute(f"UPDATE etc SET 시가총액상위제외목록 = '{exclusion_text}'")
+                con.commit()
+
+            con.close()
 
             return dict_data, list(dict_data.keys())
 

@@ -94,9 +94,12 @@ def update_dictset(ui):
     Args:
         ui: UI 객체
     """
+    from ui.event_click.button_clicked_show_dialog import change_chart_factors
     from ui.etcetera.process_alive import strategy_process_alive, trader_process_alive, receiver_process_alive
 
     update_market_gubun(ui)
+    change_chart_factors(ui)
+
     if receiver_process_alive(ui):
         ui.receivQ.put(('설정변경', ui.dict_set))
     if trader_process_alive(ui):

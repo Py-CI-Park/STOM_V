@@ -4,10 +4,8 @@ def return_press_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    from PyQt5.QtCore import QDate
-    from PyQt5.QtWidgets import QMessageBox
+    from ui.event_click.table_cell_clicked import cell_clicked_06
     from ui.event_click.button_clicked_show_dialog import show_dialog
-    from ui.event_click.button_clicked_chart import get_indicator_detail
 
     if ui.dialog_chart.focusWidget() in (ui.ct_lineEdittttt_04, ui.ct_lineEdittttt_05, ui.ct_pushButtonnn_01):
         searchdate = ui.ct_dateEdittttt_01.date().toString('yyyyMMdd')
@@ -25,29 +23,7 @@ def return_press_01(ui):
 
     elif ui.dialog_chart.focusWidget() == ui.ct_tableWidgett_01:
         row = ui.ct_tableWidgett_01.currentIndex().row()
-        item = ui.ct_tableWidgett_01.item(row, 0)
-        if item is None:
-            return
-        name       = item.text()
-        code       = ui.dict_code.get(name, name)
-        searchdate = ui.ct_dateEdittttt_02.date().toString('yyyyMMdd')
-        linetext   = ui.ct_lineEdittttt_03.text()
-        tickcount  = int(linetext) if linetext else 30
-        starttime  = ui.ct_lineEdittttt_01.text()
-        endtime    = ui.ct_lineEdittttt_02.text()
-        if len(starttime) < 6 or len(endtime) < 6:
-            QMessageBox.critical(
-                ui.dialog_chart, '오류 알림',
-                '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n'
-            )
-            return
-        ui.ct_lineEdittttt_04.setText(code)
-        ui.ct_lineEdittttt_05.setText(name)
-        ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-        data = (code, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui))
-        cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
-        if cf1 and cf2: data += (float(cf1), float(cf2))
-        ui.chartQ.put(data)
+        cell_clicked_06(ui, row, 0)
 
 
 def return_press_02(ui):

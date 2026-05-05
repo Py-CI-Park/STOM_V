@@ -115,6 +115,7 @@ def get_moneytop_query(is_tick, startday, endday, starttime, endtime):
         SQL 쿼리 문자열
     """
     if is_tick:
+        if starttime < 90030: starttime = 90030
         sindex = startday * 1000000 + starttime
         eindex = endday * 1000000 + endtime
     else:

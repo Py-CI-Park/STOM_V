@@ -89,6 +89,9 @@ class BinanceReceiver(BaseReceiver):
 
             if '@depth10' in stream_name:
                 dt = int(str_ymdhms_utc(data['T']))
+                if self.dict_set['전략종료시간'] < dt % 1000000:
+                    return
+
                 receivetime = now()
                 code = data['s']
                 asks_data = data['a']

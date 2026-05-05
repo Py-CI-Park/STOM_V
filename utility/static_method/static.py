@@ -691,6 +691,7 @@ def comma2int(t):
         정수
     """
     if '.' in t: t = t.split('.')[0]
+    if '-' in t: t = t.replace('-', '')
     if ':' in t: t = t.replace(':', '')
     if ' ' in t: t = t.replace(' ', '')
     if ',' in t: t = t.replace(',', '')
