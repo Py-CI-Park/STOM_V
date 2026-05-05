@@ -37,6 +37,7 @@ def opti_buy_save(ui):
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
+    from ui.event_click.button_clicked_backtest_engine import back_code_test1
     from ui.event_click.button_clicked_varstext_change import get_fix_strategy
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
@@ -52,7 +53,8 @@ def opti_buy_save(ui):
         elif strategy == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 매수전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
         else:
-            if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test1(strategy):
+            if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or \
+                    back_code_test1(ui, strategy):
                 if ui.proc_chqs.is_alive():
                     df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {ui.market_info['전략구분']}_optibuy WHERE `index` = '{strategy_name}'")
                     if len(df) > 0:
@@ -105,6 +107,7 @@ def opti_vars_save(ui):
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
+    from ui.event_click.button_clicked_backtest_engine import back_code_test2
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
     if ui.ss_textEditttt_05.isVisible():
@@ -117,7 +120,7 @@ def opti_vars_save(ui):
         elif strategy == '':
             QMessageBox.critical(ui, '오류 알림', '변수범위의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
         else:
-            if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test2(strategy):
+            if (QApplication.keyboardModifiers() & Qt.ControlModifier) or back_code_test2(ui, strategy):
                 if ui.proc_chqs.is_alive():
                     values = (strategy_name, strategy)
                     send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_optivars', values)
@@ -164,6 +167,7 @@ def opti_sell_save(ui):
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
+    from ui.event_click.button_clicked_backtest_engine import back_code_test1
     from ui.event_click.button_clicked_varstext_change import get_fix_strategy
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
@@ -179,7 +183,8 @@ def opti_sell_save(ui):
         elif strategy == '':
             QMessageBox.critical(ui, '오류 알림', '최적화 매도전략의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
         else:
-            if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test1(strategy):
+            if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or \
+                    back_code_test1(ui, strategy):
                 if ui.proc_chqs.is_alive():
                     values = (strategy_name, strategy)
                     send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_optisell', values)

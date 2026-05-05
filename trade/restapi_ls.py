@@ -9,7 +9,6 @@ from traceback import format_exc
 from trade.restapi_lsdata import LsRestData
 from PyQt5.QtCore import QThread, pyqtSignal
 from utility.settings.setting_base import UI_NUM
-from utility.static_method.static_datetime import now
 from utility.static_method.static_etcetera import qtest_qwait
 
 
@@ -78,7 +77,7 @@ class LsRestAPI:
             self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             return None
 
-    def get_code_info_stock(self, etfgubun=0):
+    def get_code_info_stock(self, etfgubun, dict_info=None):
         """국내주식종목정보 ['구분'], '국내주식상장주수' ['종목코드', '거래소구분코드']
         etfgubun: 0 (코스피 + 코스닥), 1 (ETF), 2 (ETN)
         data['spac_gubun'] == 'N' - 구분 무관 공통사항 스펙 제외
@@ -93,49 +92,53 @@ class LsRestAPI:
             tr_name = '국내주식종목정보'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             data = self._post(tr_name, 구분='0')
-            dict_data = {}
+
+            dict_data = dict_info if dict_info else {}
+            search_codes = []
             for data in data[out_block]:
                 code = data['shcode']
                 gubun = int(data['etfgubun'])
                 if code not in exclusion_list and gubun == etfgubun and data['spac_gubun'] == 'N' and \
                         (etfgubun == 2 or code[-1] == '0'):
-                    dict_data[code] = {'종목명': data['hname']}
+                    if code not in dict_data:
+                        search_codes.append(code)
+                        dict_data[code] = {'종목명': data['hname']}
 
-            tr_name = '국내주식상장주수'
-            out_block = LsRestData.tr_data[tr_name]['out_block']
-            insert = False
-            last = len(dict_data)
-            for i, code in enumerate(dict_data.copy()):
-                data = self._post(tr_name, 종목코드=code, 거래소구분코드='')
-                data = data[out_block]
-                현재가 = int(data['price'])
-                상장주식수 = int(data['listing']) * 1000
+            if search_codes:
+                tr_name = '국내주식상장주수'
+                out_block = LsRestData.tr_data[tr_name]['out_block']
+                insert = False
+                last = len(dict_data)
+                for i, code in enumerate(search_codes):
+                    data = self._post(tr_name, 종목코드=code, 거래소구분코드='')
+                    data = data[out_block]
+                    현재가 = int(data['price'])
+                    상장주식수 = int(data['listing']) * 1000
 
-                if 현재가 * 상장주식수 < 10_000_000_000_000:
-                    dict_data[code].update({
-                        '상장주식수': 상장주식수
-                    })
-                else:
-                    insert = True
-                    exclusion_list.append(code)
-                    dict_data.pop(code, None)
+                    if 현재가 * 상장주식수 < 10_000_000_000_000:
+                        dict_data[code].update({
+                            '상장주식수': 상장주식수
+                        })
+                    else:
+                        insert = True
+                        exclusion_list.append(code)
+                        dict_data.pop(code, None)
 
-                if i % 100 == 0 or i == last - 1:
-                    self.windowQ.put((UI_NUM['기본로그'], f'국내주식 상장주식수 조회 중 ... [{i+1:04d}/{last:04d}]'))
+                    if i % 100 == 0 or i == last - 1:
+                        self.windowQ.put((UI_NUM['기본로그'], f'국내주식 상장주식수 조회 중 ... [{i+1:04d}/{last:04d}]'))
 
-                qtest_qwait(0.05)
+                    qtest_qwait(0.1)
 
-            if insert:
-                exclusion_text = ';'.join(exclusion_list)
-                cur.execute(f"UPDATE etc SET 시가총액상위제외목록 = '{exclusion_text}'")
-                con.commit()
+                if insert:
+                    exclusion_text = ';'.join(exclusion_list)
+                    cur.execute(f"UPDATE etc SET 시가총액상위제외목록 = '{exclusion_text}'")
+                    con.commit()
 
             con.close()
 
             return dict_data, list(dict_data.keys())
 
         except Exception:
-            self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             return {}, []
 
     def get_code_info_stock_usa(self):
@@ -728,61 +731,3 @@ class MonitorWindowQ(QThread):
         while True:
             data = self.windowQ.get()
             self.signal.emit(data[1])
-
-
-if __name__ == "__main__":
-    """
-    테스트 코드
-    gubun_ 입력: 국내주식, 국내주식ETF, 국내주식ETN, 지수선물, 야간선물, 해외주식, 해외선물
-    """
-    import sys
-    from multiprocessing import Queue
-    from PyQt5.QtWidgets import QApplication
-
-    app = QApplication(sys.argv)
-
-    gubun_ = '지수선물'
-    access_key = ''
-    secret_key = ''
-
-    windowQ_ = Queue()
-
-    ls = LsRestAPI(windowQ_, access_key, secret_key)
-    token_ = ls.create_token()
-
-    dict_expcode_ = None
-    if gubun_ == '국내주식':
-        dict_info, symbols_ = ls.get_code_info_stock(etfgubun=0)
-    elif gubun_ == '국내주식ETF':
-        dict_info, symbols_ = ls.get_code_info_stock(etfgubun=1)
-    elif gubun_ == '국내주식ETN':
-        dict_info, symbols_ = ls.get_code_info_stock(etfgubun=2)
-    elif gubun_ == '지수선물':
-        dict_info, symbols_, dict_expcode_ = ls.get_code_info_future()
-    elif gubun_ == '야간선물':
-        dict_info, symbols_, dict_expcode_ = ls.get_code_info_future_night()
-    elif gubun_ == '해외주식':
-        dict_info, symbols_ = ls.get_code_info_stock_usa()
-    else:
-        dict_info, symbols_ = ls.get_code_info_future_oversea()
-
-    print(dict_info)
-    print()
-    print(symbols_)
-    print()
-    if dict_expcode_ is not None:
-        print(dict_expcode_)
-        print()
-
-    def real_data_print(data):
-        print(f'[{now()}] {data}')
-
-    writer = MonitorWindowQ(windowQ_)
-    writer.signal.connect(real_data_print)
-    writer.start()
-
-    ws_thread = LsWebSocketReceiver(gubun_, token_, symbols_, windowQ_)
-    ws_thread.signal.connect(real_data_print)
-    ws_thread.start()
-
-    app.exec_()

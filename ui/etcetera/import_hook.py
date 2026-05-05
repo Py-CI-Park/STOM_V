@@ -53,9 +53,9 @@ class ImportProgressHook:
             'ui.update_widget.update_crawling_data',
             'ui.event_keypress.overwrite_keypress_event',
             'ui.event_keypress.overwrite_event_filter',
-            'ui.etcetera.process_alive',
-            'ui.update_widget.update_progressbar',
             'ui.event_click.button_clicked_backtest_engine',
+            'ui.etcetera.process_alive',
+            'ui.update_widget.update_progressbar'
         ]
         self.total_modules = len(self.modules)
         self.current_index = 0

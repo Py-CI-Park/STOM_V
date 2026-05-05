@@ -17,7 +17,7 @@ class UpbitReceiver(BaseReceiver):
         super().__init__(qlist, dict_set, market_infos)
 
         self._get_code_info()
-        self._save_code_info_and_noti()
+        self._save_code_info()
 
         self.ws_thread = UpbitWebSocketReceiver(self.codes, self.windowQ)
         self.ws_thread.signal.connect(self._convert_real_data)

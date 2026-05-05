@@ -15,7 +15,6 @@ from utility.settings.setting_base import UI_NUM
 def get_symbols_info():
     dict_data = {}
     headers = {'accept': 'application/json'}
-
     url = 'https://api.upbit.com/v1/market/all'
     response = requests.get(url, headers=headers)
     datas = response.json()
@@ -25,16 +24,6 @@ def get_symbols_info():
             dict_data[symbol] = {
                 '종목명': data['korean_name']
             }
-
-    url = 'https://api.upbit.com/v1/ticker/all?quote_currencies=KRW'
-    response = requests.get(url, headers=headers)
-    datas = response.json()
-    for data in datas:
-        symbol = data['market']
-        dict_data[symbol].update({
-            '거래대금':  int(data['acc_trade_price'])
-        })
-
     return dict_data, list(dict_data.keys())
 
 

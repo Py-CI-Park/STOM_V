@@ -20,7 +20,7 @@ class BinanceReceiver(BaseReceiver):
         self.binance = binance.Client()
 
         self._get_code_info()
-        self._save_code_info_and_noti()
+        self._save_code_info()
 
         self.ws_thread = BinanceWebSocketReceiver(self.codes, self.windowQ)
         self.ws_thread.signal.connect(self._convert_real_data)

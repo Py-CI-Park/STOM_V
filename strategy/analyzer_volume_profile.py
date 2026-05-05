@@ -88,13 +88,13 @@ def _calculate_node_scores(close_price: np.ndarray, dates: np.ndarray, node_pric
 class AnalyzerVolumeProfile:
     """메인 볼륨 프로파일 분석 통합 클래스"""
     def __init__(self, market_gubun: int, market_info: dict, is_tick: bool,
-                 backtest: bool = False, top_nodes: int = 20):
+                 realtime: bool = False, top_nodes: int = 20):
         """
         초기화
         market_gubun: 마켓 구분 번호
         market_info: 마켓 정보 딕셔너리
         is_tick: 틱 데이터 여부
-        backtest: 백테스트 모드 여부
+        realtime: 실시간 모드 여부
         top_nodes: 상위 볼륨 노드 개수 (기본값 20)
         """
         self.volume_database = VolumeProfileDatabase(market_info['전략구분'], is_tick)
@@ -108,7 +108,8 @@ class AnalyzerVolumeProfile:
         self.idx_close   = self.factor_list.index('현재가')
         self.idx_volume  = self.factor_list.index('초당거래대금') if is_tick else self.factor_list.index('분당거래대금')
         self.volume_nodes: dict[str, dict[float, dict[str, float]]] = {}
-        if not backtest:
+
+        if realtime:
             self._load_volume_all_nodes()
 
     def _load_volume_all_nodes(self):
@@ -266,14 +267,17 @@ class AnalyzerVolumeProfile:
                         if len(date_data) < analysis_period * 2:
                             continue
 
-                        dates          = date_data[:, 0] // 1000000 if is_tick else date_data[:, 0] // 10000
-                        close_price    = date_data[:, idx_close]
-                        volume_data    = date_data[:, idx_volume]
-                        min_price      = close_price.min()
-                        max_price      = close_price.max()
-                        bin_size       = min_price * price_range_pct / 100
-                        num_bins       = int((max_price - min_price) / bin_size) + 1
-                        price_bins     = np.linspace(min_price, max_price, num_bins)
+                        dates       = date_data[:, 0] // 1000000 if is_tick else date_data[:, 0] // 10000
+                        close_price = date_data[:, idx_close]
+                        volume_data = date_data[:, idx_volume]
+                        min_price   = close_price.min()
+                        max_price   = close_price.max()
+                        bin_size    = min_price * price_range_pct / 100
+                        num_bins    = int((max_price - min_price) / bin_size) + 1
+                        price_bins  = np.linspace(min_price, max_price, num_bins)
+
+                        if len(price_bins) < 2:
+                            continue
 
                         volume_by_bin  = _calculate_volume_by_bin(close_price, volume_data, price_bins)
                         bin_centers    = (price_bins[:-1] + price_bins[1:]) / 2
@@ -307,7 +311,7 @@ class AnalyzerVolumeProfile:
                     window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 가격대분석 학습 중 ... [{k+1:02d}/{last:02d}]'))
                 except Exception:
                     # noinspection PyUnresolvedReferences
-                    window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 가격대분석 학습 실패 - {e}"))
+                    window_queue.put((UI_NUM['시스템로그'], format_exc()))
 
         return all_volume_scores
 
@@ -380,10 +384,7 @@ class VolumeProfileDatabase:
             for result in results:
                 volume_scores[result[0]] = {
                     'avg_score': result[1],
-                    'upward_strength': result[2],
-                    'downward_strength': result[3],
-                    'sample_count': result[4],
-                    'confidence_score': result[5]
+                    'confidence_score': result[2]
                 }
             return volume_scores
 
@@ -397,7 +398,7 @@ class VolumeProfileDatabase:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
-                SELECT price_level, avg_score, upward_strength, downward_strength, sample_count, confidence_score
+                SELECT price_level, avg_score, confidence_score
                 FROM {self.table_name}
                 WHERE code = ? AND setting_hash = ? AND last_update = 
                 (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update < ?)
@@ -408,10 +409,7 @@ class VolumeProfileDatabase:
             for result in results:
                 volume_scores[result[0]] = {
                     'avg_score': result[1],
-                    'upward_strength': result[2],
-                    'downward_strength': result[3],
-                    'sample_count': result[4],
-                    'confidence_score': result[5]
+                    'confidence_score': result[2]
                 }
             return volume_scores
 

@@ -64,7 +64,6 @@ class ManagerFormula(StgGlobalsFunc):
         self.is_tick      = is_tick
         self.dict_findex  = dict_findex
 
-        self.base_cnt     = self.dict_findex['관심종목'] + 1
         self.check        = None
         self.buy          = None
         self.sell         = None
@@ -72,11 +71,16 @@ class ManagerFormula(StgGlobalsFunc):
         self.up           = None
         self.down         = None
         self.hold         = False
+        self.base_cnt     = self.dict_findex['관심종목'] + 1
 
         if self.is_tick:
+            self.add_start = self.dict_findex['시그널']
+            self.add_end   = self.dict_findex['변손익신뢰도'] + 1
             self.dict_findex['초당매도수금액'] = self.dict_findex['초당매수금액']
             self.dict_findex['누적초당매도수수량'] = self.dict_findex['누적초당매수수량']
         else:
+            self.add_start = self.dict_findex['패턴점수']
+            self.add_end   = self.dict_findex['WILLR'] + 1
             self.dict_findex['분당매도수금액'] = self.dict_findex['분당매수금액']
             self.dict_findex['누적분당매도수수량'] = self.dict_findex['누적분당매수수량']
 
@@ -127,6 +131,9 @@ class ManagerFormula(StgGlobalsFunc):
                         매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                         매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                         매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[i, 1:self.base_cnt]
+                    시그널, 신뢰도, 리스크, \
+                        리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도, \
+                        예상수익률, 익절수익률, 손절수익률, 변손익신뢰도 = self.arry_code[i, self.add_start:self.add_end]
                 else:
                     현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, 시가총액, \
                         VI해제시간, VI가격, VI호가단위, \
@@ -136,6 +143,12 @@ class ManagerFormula(StgGlobalsFunc):
                         매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                         매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                         매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[i, 1:self.base_cnt]
+                    패턴점수, 패턴신뢰도, \
+                        리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도, \
+                        예상수익률, 익절수익률, 손절수익률, 변손익신뢰도, \
+                        AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, \
+                        MACDH, MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR, \
+                        = self.arry_code[i, self.add_start:self.add_end]
                 VI해제시간 = dt_ymdhms(str(int(VI해제시간)))
             elif market_gubun == 4:
                 if self.is_tick:
@@ -145,6 +158,9 @@ class ManagerFormula(StgGlobalsFunc):
                         매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                         매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                         매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[i, 1:self.base_cnt]
+                    시그널, 신뢰도, 리스크, \
+                        리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도, \
+                        예상수익률, 익절수익률, 손절수익률, 변손익신뢰도 = self.arry_code[i, self.add_start:self.add_end]
                 else:
                     현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, 시가총액, \
                         분봉시가, 분봉고가, 분봉저가, \
@@ -153,6 +169,12 @@ class ManagerFormula(StgGlobalsFunc):
                         매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                         매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                         매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[i, 1:self.base_cnt]
+                    패턴점수, 패턴신뢰도, \
+                        리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도, \
+                        예상수익률, 익절수익률, 손절수익률, 변손익신뢰도, \
+                        AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, \
+                        MACDH, MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR, \
+                        = self.arry_code[i, self.add_start:self.add_end]
             else:
                 if self.is_tick:
                     현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
@@ -161,6 +183,9 @@ class ManagerFormula(StgGlobalsFunc):
                         매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                         매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                         매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[i, 1:self.base_cnt]
+                    시그널, 신뢰도, 리스크, \
+                        리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도, \
+                        예상수익률, 익절수익률, 손절수익률, 변손익신뢰도 = self.arry_code[i, self.add_start:self.add_end]
                 else:
                     현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 분당매수수량, 분당매도수량, \
                         분봉시가, 분봉고가, 분봉저가, \
@@ -169,6 +194,12 @@ class ManagerFormula(StgGlobalsFunc):
                         매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                         매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                         매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[i, 1:self.base_cnt]
+                    패턴점수, 패턴신뢰도, \
+                        리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도, \
+                        예상수익률, 익절수익률, 손절수익률, 변손익신뢰도, \
+                        AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, \
+                        MACDH, MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR, \
+                        = self.arry_code[i, self.add_start:self.add_end]
 
             시분초 = int(str(self.index)[8:]) if self.is_tick else int(str(self.index)[8:] + '00')
             순매수금액 = 초당매수금액 - 초당매도금액 if self.is_tick else 분당매수금액 - 분당매도금액

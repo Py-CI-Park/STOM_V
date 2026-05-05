@@ -120,7 +120,7 @@ class StockUsaTrader(BaseTrader):
             체결가격 = float(body['sExecPrc'])
             주문가격 = float(body['sOrdPrc'])
             체결시간 = f"{self.str_today}{int(int(body['sExecTime']) / 1000)}"
-            주문번호 = body['sOrdNo']
+            주문번호 = int(body['sOrdNo'])
             self._update_chejan_data(
                 주문구분, 체결구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
             )

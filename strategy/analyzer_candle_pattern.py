@@ -72,12 +72,13 @@ def _calculate_pattern_scores(close_price: np.ndarray, dates: np.ndarray, detect
 
 class AnalyzerCandlePattern:
     """메인 패턴 분석 통합 클래스"""
-    def __init__(self, market_gubun: int, market_info: dict, backtest: bool = False,
+    def __init__(self, market_gubun: int, market_info: dict, realtime: bool = False,
                  min_candle: int = 15, min_samples: int = 20):
         """
         초기화
         market_gubun: 마켓 구분 번호
         market_info: 마켓 정보 딕셔너리
+        realtime: 실시간 모드 여부
         min_candle: 최소 캔들 수 (기본값 15)
         min_samples: 최소 샘플 수 (기본값 20)
         """
@@ -94,7 +95,7 @@ class AnalyzerCandlePattern:
         self.idx_close   = self.factor_list.index('현재가')
         self.pattern_scores: dict[str, dict[str, dict[str, float]]] = {}
 
-        if not backtest:
+        if realtime:
             self._load_pattern_all_scores()
 
     def _load_pattern_all_scores(self):
@@ -296,7 +297,7 @@ class AnalyzerCandlePattern:
                     window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 캔들분석 학습 중 ... [{k+1:02d}/{last:02d}]'))
                 except Exception:
                     # noinspection PyUnresolvedReferences
-                    window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 캔들분석 학습 실패 - {e}"))
+                    window_queue.put((UI_NUM['시스템로그'], format_exc()))
 
         return all_pattern_scores
 

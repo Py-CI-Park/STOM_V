@@ -216,12 +216,11 @@ def backengine_start(ui):
     ui.windowQ.put((UI_NUM['백테엔진'], '백테엔진 준비 완료'))
 
 
-def back_code_test1(ui, stg, testQ):
+def back_code_test1(ui, stg):
     """전략 코드를 테스트합니다.
     Args:
         ui: UI 클래스 인스턴스
         stg: 전략 코드
-        testQ: 테스트 큐
     Returns:
         테스트 결과
     """
@@ -229,8 +228,8 @@ def back_code_test1(ui, stg, testQ):
     from backtest.back_code_test import BackCodeTest
     from utility.settings.setting_base import DB_STRATEGY
 
-    while not testQ.empty():
-        testQ.get()
+    while not ui.testQ.empty():
+        ui.testQ.get()
 
     con = sqlite3.connect(DB_STRATEGY)
     cursor = con.cursor()
@@ -239,48 +238,46 @@ def back_code_test1(ui, stg, testQ):
     con.close()
     fm_list = {row[0]: lambda pre=0: 1 for row in rows if row[2]}
 
-    thread = BackCodeTest(testQ, ui.windowQ, stg, fm_list)
+    thread = BackCodeTest(ui.testQ, ui.windowQ, stg, fm_list)
     thread.start()
     thread.wait()
-    return get_code_test_result(ui, '전략', testQ)
+    return get_code_test_result(ui, '전략')
 
 
-def back_code_test2(ui, vars_code, ga, testQ):
+def back_code_test2(ui, vars_code, ga=False):
     """범위 코드를 테스트합니다.
     Args:
         ui: UI 클래스 인스턴스
         vars_code: 변수 코드
-        testQ: 테스트 큐
         ga: GA 최적화 여부
     Returns:
         테스트 결과
     """
     from backtest.back_code_test import BackCodeTest
 
-    while not testQ.empty():
-        testQ.get()
+    while not ui.testQ.empty():
+        ui.testQ.get()
 
-    thread = BackCodeTest(testQ, ui.windowQ, None, None, vars_code, ga)
+    thread = BackCodeTest(ui.testQ, ui.windowQ, None, None, vars_code, ga)
     thread.start()
     thread.wait()
 
-    return get_code_test_result(ui, '범위', testQ)
+    return get_code_test_result(ui, '범위')
 
 
-def back_code_test3(ui, gubun, conds_code, testQ):
+def back_code_test3(ui, gubun, conds_code):
     """조건 코드를 테스트합니다.
     Args:
         ui: UI 클래스 인스턴스
         gubun: 구분 (매수/매도)
         conds_code: 조건 코드
-        testQ: 테스트 큐
     Returns:
         테스트 결과
     """
     from backtest.back_code_test import BackCodeTest
 
-    while not testQ.empty():
-        testQ.get()
+    while not ui.testQ.empty():
+        ui.testQ.get()
 
     conds_code = conds_code.split('\n')
     conds_code = [x for x in conds_code if x and x[0] != '#']
@@ -289,18 +286,17 @@ def back_code_test3(ui, gubun, conds_code, testQ):
     else:
         conds_code = 'if ' + ':\n    매도 = True\nelif '.join(conds_code) + ':\n    매도 = True'
 
-    thread = BackCodeTest(testQ, ui.windowQ, conds_code)
+    thread = BackCodeTest(ui.testQ, ui.windowQ, conds_code)
     thread.start()
     thread.wait()
-    return get_code_test_result(ui, '조건', testQ)
+    return get_code_test_result(ui, '조건')
 
 
-def formula_code_test(ui, stg, testQ):
+def formula_code_test(ui, stg):
     """수식 코드를 테스트합니다.
     Args:
         ui: UI 클래스 인스턴스
         stg: 전략 코드
-        testQ: 테스트 큐
     Returns:
         테스트 결과
     """
@@ -308,8 +304,8 @@ def formula_code_test(ui, stg, testQ):
     from backtest.back_code_test import BackCodeTest
     from utility.settings.setting_base import DB_STRATEGY
 
-    while not testQ.empty():
-        testQ.get()
+    while not ui.testQ.empty():
+        ui.testQ.get()
 
     con = sqlite3.connect(DB_STRATEGY)
     cursor = con.cursor()
@@ -318,24 +314,23 @@ def formula_code_test(ui, stg, testQ):
     con.close()
     fm_list = {row[0]: lambda pre=0: 1 for row in rows}
 
-    thread = BackCodeTest(testQ, ui.windowQ, stg, fm_list)
+    thread = BackCodeTest(ui.testQ, ui.windowQ, stg, fm_list)
     thread.start()
     thread.wait()
-    return get_code_test_result(ui, '수식', testQ)
+    return get_code_test_result(ui, '수식')
 
 
-def get_code_test_result(ui, gubun, testQ):
+def get_code_test_result(ui, gubun):
     """코드 테스트 결과를 가져옵니다.
     Args:
         ui: UI 클래스 인스턴스
         gubun: 구분
-        testQ: 테스트 큐
     Returns:
         테스트 성공 여부
     """
     from utility.settings.setting_base import UI_NUM
 
-    data = testQ.get()
+    data = ui.testQ.get()
     if data == '전략테스트오류':
         ui.windowQ.put((UI_NUM['시스템로그'], f'{gubun}에 오류가 있어 저장하지 못하였습니다.'))
         return False

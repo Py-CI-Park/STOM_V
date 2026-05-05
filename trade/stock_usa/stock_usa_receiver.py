@@ -21,7 +21,7 @@ class StockUsaReceiver(BaseReceiver):
         self.token = self.ls.create_token()
 
         self._get_code_info()
-        self._save_code_info_and_noti()
+        self._save_code_info()
 
         self.ws_thread = LsWebSocketReceiver(self.market_info['마켓이름'], self.token, self.codes, self.windowQ)
         self.ws_thread.signal.connect(self._convert_real_data)

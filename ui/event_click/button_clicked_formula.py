@@ -53,6 +53,7 @@ def formula_button_clicked(ui):
     from utility.static_method.static_etcetera import qtest_qwait
     from ui.create_widget.set_text_stg_button import dict_stg_name
     from utility.static_method.static_etcetera import send_query_data
+    from ui.event_click.button_clicked_backtest_engine import formula_code_test
 
     button_text = ui.dialog_formula.focusWidget().text()
 
@@ -101,7 +102,7 @@ def formula_button_clicked(ui):
             QMessageBox.critical(ui.dialog_formula, '오류 알림', '화살표:매매는 전략연산 및 백테에 적용할 수 없습니다.\n')
             return
 
-        if ui.ui_formula_code_test(stg) and ui.proc_chqs.is_alive():
+        if formula_code_test(ui, stg) and ui.proc_chqs.is_alive():
             values = (name, check1, check2, fname, vtype, color, width, style, stg)
             send_query_data(ui.queryQ, '전략디비', 'formula', values)
             QMessageBox.information(ui.dialog_formula, '수식 저장 완료', random.choice(famous_saying))

@@ -160,8 +160,8 @@ class LsRestData:
         '국내주식호가': 'UH1',
         '국내주식VI': 'UVI',
 
-        '지수선물체결': 'FC0',
-        '지수선물호가': 'FH0',
+        '지수선물체결': 'FC9',
+        '지수선물호가': 'FH9',
 
         '야간선물체결': 'DC0',
         '야간선물호가': 'DH0',
@@ -234,11 +234,11 @@ class LsRestData:
         },
 
         '지수선물종목정보1': {
-            'tr_cd': 't8432',
-            'body_key': 't8432InBlock',
+            'tr_cd': 't8467',
+            'body_key': 't8467InBlock',
             'element_keys': ['gubun'],
             'element_values': ['구분'],
-            'out_block': 't8432OutBlock'
+            'out_block': 't8467OutBlock'
         },
         '지수선물종목정보2': {
             'tr_cd': 't8435',

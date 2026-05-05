@@ -219,20 +219,20 @@ def database_check():
         table_list = df['name'].to_list()
 
         if 'stock_info' not in table_list:
-            columns = ['index', '종목명']
-            data = ['005930', '삼성전자']
+            columns = ['index', '종목명', '상장주식수']
+            data = ['000020', '동화약품', 27931000]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stock_info', con)
 
         if 'stock_etf_info' not in table_list:
-            columns = ['index', '종목명']
-            data = ['005930', '삼성전자']
+            columns = ['index', '종목명', '상장주식수']
+            data = ['252670', 'KODEX 200선물인버스2', 5220500000]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stock_etf_info', con)
 
         if 'stock_etn_info' not in table_list:
-            columns = ['index', '종목명']
-            data = ['005930', '삼성전자']
+            columns = ['index', '종목명', '상장주식수']
+            data = ['530036', '삼성 인버스 2X WTI원', 2800000000]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stock_etn_info', con)
 
@@ -244,13 +244,13 @@ def database_check():
 
         if 'future_info' not in table_list:
             columns = ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수']
-            data = ['A0166000', '코스피200', 5000, 0.25, 20.0, 2]
+            data = ['A0166000', '코스피200', 39838185, 0.05, 250000, 2]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('future_info', con)
 
         if 'future_nt_info' not in table_list:
             columns = ['index', '종목명', '위탁증거금', '호가단위', '틱가치', '소숫점자리수']
-            data = ['A0166000', '코스피200', 5000, 0.25, 20.0, 2]
+            data = ['A0166000', '코스피200', 42612007, 0.05, 250000, 2]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('future_nt_info', con)
 
@@ -261,14 +261,14 @@ def database_check():
             df.to_sql('future_os_info', con)
 
         if 'coin_info' not in table_list:
-            columns = ['index', '종목명', '거래대금']
-            data = ['KRW-BTC', 'KRW-BTC', 5000]
+            columns = ['index', '종목명']
+            data = ['KRW-BTC', '비트코인']
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('coin_info', con)
 
         if 'coin_future_info' not in table_list:
             columns = ['index', '종목명', '호가단위', '가격소숫점자리수', '수량소숫점자리수']
-            data = ['BTSUSDT', 'BTSUSDT', 1, 1, 1]
+            data = ['BTSUSDT', 'BTSUSDT', 0.1, 1, 3]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('coin_future_info', con)
 

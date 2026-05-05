@@ -134,7 +134,7 @@ class FutureTrader(BaseTrader):
             체결수량 = int(body['chevol'])
             체결가격 = float(body['cheprice'])
             체결시간 = f"{self.str_today}{int(int(body['chetime']) / 1000)}"
-            주문번호 = body['ordno']
+            주문번호 = int(body['ordno'])
             self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
 
         elif tr_cd in ('H01', 'H02'):
@@ -144,7 +144,7 @@ class FutureTrader(BaseTrader):
             체결수량 = int(body['qty'])
             체결가격 = float(body['price'])
             체결시간 = f"{self.str_today}{int(int(body['ordacpttm']) / 1000)}"
-            주문번호 = body['ordno']
+            주문번호 = int(body['ordno'])
             self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):

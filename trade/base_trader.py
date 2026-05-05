@@ -148,7 +148,7 @@ class BaseTrader:
         return yesugm
 
     def _set_yesugm_and_noti(self, yesugm):
-        """예수금을 설정하고 알림을 보냅니다.
+        """예수금을 설정하고 트레이더 시작 알림을 보냅니다.
         Args:
             yesugm: 예수금
         """
@@ -469,6 +469,7 @@ class BaseTrader:
             )
 
     def _check_order_error(self, 주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
+        """주문 오류 및 실패 알림을 전송합니다."""
         if 주문번호 == 0:
             if 'Traceback' in 응답메시지:
                 self.windowQ.put((UI_NUM['시스템로그'], 응답메시지))
@@ -571,7 +572,7 @@ class BaseTrader:
             pass
 
     def _update_dict_info(self):
-        """정보 딕셔너리를 업데이트합니다."""
+        """종목정보 딕셔너리를 업데이트합니다."""
         dummy_time = timedelta_sec(-3600)
         for code in self.dict_info.copy():
             self.dict_info[code].update({
@@ -690,12 +691,12 @@ class BaseTrader:
                     )
 
     def _get_chejan_last_value(self, code, gubun):
-        """체결 마지막 값을 반환합니다.
+        """마지막 체결 데이터를 반환합니다.
         Args:
             code: 종목 코드
             gubun: 구분
         Returns:
-            체결 마지막 값
+            마지막 체결 데이터
         """
         if self.market_gubun < 6:
             return [v for v in self.dict_cj.values() if v['종목명'] == code and
@@ -749,9 +750,8 @@ class BaseTrader:
     def _sys_exit(self, data):
         """시스템을 종료합니다."""
         self._websocket_kill()
-        if data != '프로그램종료':
-            exit_text = '트레이더 종료' if data == '프로세스종료' else '트레이더 STOP'
-            self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
+        exit_text = '트레이더 종료' if data == '프로세스종료' else '트레이더 STOP'
+        self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
 
         import sys
         qtest_qwait(1)
@@ -1310,7 +1310,7 @@ class BaseTrader:
         self._update_totaltradelist()
 
     def _update_totaltradelist(self, first=False):
-        """전체 거래 리스트를 업데이트합니다.
+        """당일실현손익을 업데이트합니다.
         Args:
             first: 첫 번째 여부
         """

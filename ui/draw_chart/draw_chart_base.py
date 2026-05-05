@@ -80,31 +80,31 @@ class DrawChartBase:
             if not (self.same_code and self.same_time):
                 self.ui.ctpg[i].clear()
 
-            if factor == '현재가':
-                if self.is_min:
-                    fidx1, fidx2, fidx3, fidx4 = self.dict_idxs[factor]
-                    self.get_optimized_min_max((fidx3, fidx4))
-                    self.draw_area(i)
-                    for idx, color in zip(self.dict_idxs['이동평균'], self.sma_colors):
-                        self.draw_line(i, idx, color)
-                    self.draw_formula(i, factor)
-                    self.draw_candlestick(i, fidx1, fidx2, fidx3, fidx4)
-                    if self.real: self.draw_infinite_line(i, fidx1)
-                else:
-                    fidx1 = self.fi('현재가')
-                    self.get_optimized_min_max(fidx1)
-                    self.draw_area(i)
-                    for idx, color in zip(self.dict_idxs['이동평균'], self.sma_colors):
-                        self.draw_line(i, idx, color)
-                    self.draw_formula(i, factor)
-                    self.draw_line(i, fidx1, self.rgb_red)
-                    if self.real: self.draw_infinite_line(i, fidx1)
+            try:
+                if factor == '현재가':
+                    if self.is_min:
+                        fidx1, fidx2, fidx3, fidx4 = self.dict_idxs[factor]
+                        self.get_optimized_min_max((fidx3, fidx4))
+                        self.draw_area(i)
+                        for idx, color in zip(self.dict_idxs['이동평균'], self.sma_colors):
+                            self.draw_line(i, idx, color)
+                        self.draw_formula(i, factor)
+                        self.draw_candlestick(i, fidx1, fidx2, fidx3, fidx4)
+                        if self.real: self.draw_infinite_line(i, fidx1)
+                    else:
+                        fidx1 = self.fi('현재가')
+                        self.get_optimized_min_max(fidx1)
+                        self.draw_area(i)
+                        for idx, color in zip(self.dict_idxs['이동평균'], self.sma_colors):
+                            self.draw_line(i, idx, color)
+                        self.draw_formula(i, factor)
+                        self.draw_line(i, fidx1, self.rgb_red)
+                        if self.real: self.draw_infinite_line(i, fidx1)
 
-                if not self.real:
-                    self.draw_buy_or_sell_point(i)
+                    if not self.real:
+                        self.draw_buy_or_sell_point(i)
 
-            elif factor in ('초당거래대금', '분당거래대금'):
-                try:
+                elif factor in ('초당거래대금', '분당거래대금'):
                     fidx1, fidx2 = self.dict_idxs[factor]
                     self.get_optimized_min_max((fidx1, fidx2))
                     self.draw_area(i)
@@ -115,23 +115,17 @@ class DrawChartBase:
                     else:
                         self.draw_line(i, fidx1, self.rgb_red)
                     self.draw_line(i, fidx2, self.rgb_green)
-                except Exception:
-                    self.ymax, self.ymin = 0, 0
 
-            elif factor in ('초당체결수량', '분당체결수량', '누적초당매도수수량', '누적분당매도수수량', '초당매도수금액', '분당매도수금액',
-                            '당일매도수금액', '최고매도수금액', '최고매도수가격', '호가총잔량', '매도수호가잔량1'):
-                try:
+                elif factor in ('초당체결수량', '분당체결수량', '누적초당매도수수량', '누적분당매도수수량', '초당매도수금액', '분당매도수금액',
+                                '당일매도수금액', '최고매도수금액', '최고매도수가격', '호가총잔량', '매도수호가잔량1'):
                     fidx1, fidx2 = self.dict_idxs[factor]
                     self.get_optimized_min_max((fidx1, fidx2))
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx1, self.rgb_blue)
                     self.draw_line(i, fidx2, self.rgb_red)
-                except Exception:
-                    self.ymax, self.ymin = 0, 0
 
-            elif factor == '체결강도':
-                try:
+                elif factor == '체결강도':
                     fidx1, fidx2, fidx3, fidx4 = self.dict_idxs[factor]
                     self.get_optimized_min_max((fidx1, fidx2, fidx3))
                     self.draw_area(i)
@@ -140,11 +134,8 @@ class DrawChartBase:
                     self.draw_line(i, fidx3, self.rgb_red)
                     self.draw_line(i, fidx2, self.rgb_blue)
                     self.draw_line(i, fidx1, self.rgb_green)
-                except Exception:
-                    self.ymax, self.ymin = 0, 0
 
-            elif factor in ('AROON', 'DMI', 'STOCHS', 'STOCHF'):
-                try:
+                elif factor in ('AROON', 'DMI', 'STOCHS', 'STOCHF'):
                     fidx1, fidx2 = self.dict_idxs[factor]
                     color1 = self.rgb_blue if factor in ('AROON', 'DMI') else self.rgb_red
                     color2 = self.rgb_red if factor in ('AROON', 'DMI') else self.rgb_green
@@ -153,11 +144,8 @@ class DrawChartBase:
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx2, color1)
                     self.draw_line(i, fidx1, color2)
-                except Exception:
-                    self.ymax, self.ymin = 0, 0
 
-            elif factor == 'BBAND':
-                try:
+                elif factor == 'BBAND':
                     fidx1, fidx2, fidx3, fidx4 = self.dict_idxs[factor]
                     self.get_optimized_min_max((fidx1, fidx2, fidx3))
                     self.draw_area(i)
@@ -166,11 +154,8 @@ class DrawChartBase:
                     self.draw_line(i, fidx3, self.rgb_blue)
                     self.draw_line(i, fidx2, self.rgb_green)
                     self.draw_line(i, fidx1, self.rgb_red)
-                except Exception:
-                    self.ymax, self.ymin = 0, 0
 
-            elif factor == 'MACD':
-                try:
+                elif factor == 'MACD':
                     fidx1, fidx2, fidx3 = self.dict_idxs[factor]
                     self.get_optimized_min_max((fidx1, fidx2, fidx3))
                     self.draw_area(i)
@@ -178,21 +163,15 @@ class DrawChartBase:
                     self.draw_line(i, fidx3, self.rgb_gray)
                     self.draw_line(i, fidx2, self.rgb_red)
                     self.draw_line(i, fidx1, self.rgb_green)
-                except Exception:
-                    self.ymax, self.ymin = 0, 0
 
-            elif factor in ('시장미시구조분석', '패턴점수', '리스크점수', '거래량점수', '가격대점수', '변동성점수'):
-                try:
+                elif factor in ('시장미시구조분석', '패턴점수', '리스크점수', '거래량점수', '가격대점수', '변동성점수'):
                     fidx1 = self.fi('시그널') if factor == '시장미시구조분석' else self.fi(factor)
                     self.get_optimized_min_max(fidx1)
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx1, self.rgb_yellow)
-                except Exception:
-                    self.ymax, self.ymin = 0, 0
 
-            elif factor == '변손익분석':
-                try:
+                elif factor == '변손익분석':
                     fidx1, fidx2, fidx3 = self.dict_idxs[factor]
                     self.get_optimized_min_max((fidx1, fidx2, fidx3))
                     self.draw_area(i)
@@ -200,19 +179,17 @@ class DrawChartBase:
                     self.draw_line(i, fidx3, self.rgb_blue)
                     self.draw_line(i, fidx2, self.rgb_red)
                     self.draw_line(i, fidx1, self.rgb_green)
-                except Exception:
-                    self.ymax, self.ymin = 0, 0
 
-            else:
-                fidx1 = self.fi(factor)
-                if len(self.ui.ctpg_data[fidx1]) > 0:
+                else:
+                    fidx1 = self.fi(factor)
                     color = self.rgb_cyan if self.is_min and fidx1 > self.fi('AD') else self.rgb_green
                     self.get_optimized_min_max(fidx1)
                     self.draw_area(i)
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx1, color)
-                else:
-                    self.ymax, self.ymin = 0, 0
+
+            except Exception:
+                self.ymax, self.ymin = 0, 0
 
             self.draw_legend(i)
             if i == self.chart_cnt - 1: break
@@ -423,8 +400,6 @@ class DrawChartBase:
         if all_values:
             self.ymax = max(all_values)
             self.ymin = min(all_values)
-            if self.ymax == 0 and self.ymin == 0:
-                self.ymax, self.ymin = 100, -100
             self.cached_min_max[fidx_tuple] = (self.ymax, self.ymin)
         else:
             self.ymax, self.ymin = 0, 0

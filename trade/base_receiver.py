@@ -33,8 +33,7 @@ class MonitorReceivQ(QThread):
 
 class BaseReceiver:
     """실시간 데이터를 수신하고 처리하는 기본 클래스입니다.
-    다양한 큐를 통해 다른 모듈과 통신하며,
-    시장 데이터(체결, 호가)를 처리합니다."""
+    다양한 큐를 통해 다른 모듈과 통신하며, 실시간 데이터를 처리합니다."""
     def __init__(self, qlist, dict_set, market_infos):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ, testQ
@@ -124,28 +123,30 @@ class BaseReceiver:
         self.qtimer.timeout.connect(self._scheduler)
         self.qtimer.start()
 
-    def _save_code_info_and_noti(self):
-        """종목명 정보를 조회하고 저장 후 리시버 시작 알림을 보냅니다."""
+    def _get_code_info(self):
+        """종목명 정보를 조회합니다.
+        각 거래소 클래스에서 오버라이드되어 있음"""
+        pass
+
+    def _save_code_info(self, noti=True):
+        """종목정보를 저장하고 리시버 시작 알림을 보냅니다."""
         if self.dict_info:
-            dict_name = {code: value['종목명'] for code, value in self.dict_info.items()}
-            dict_code = {name: code for code, name in dict_name.items()}
-
-            self.windowQ.put((UI_NUM['종목명데이터'], dict_name, dict_code))
-            if self.market_gubun > 5:
-                self.stgQ.put(('종목정보', self.dict_info))
-
             df = pd.DataFrame.from_dict(self.dict_info, orient='index')
             self.queryQ.put(('종목디비', df, self.market_info['종목디비'], 'replace'))
 
-            text = f"{self.market_info['마켓이름']} 시스템을 시작하였습니다."
-            self.teleQ.put(text)
-            if self.dict_set['알림소리']:
-                self.soundQ.put(text)
+            if noti:
+                dict_name = {code: value['종목명'] for code, value in self.dict_info.items()}
+                dict_code = {name: code for code, name in dict_name.items()}
 
-            self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 리시버 시작"))
-        else:
-            self.windowQ.put((UI_NUM['시스템로그'], f"오류 알림 - 종목정보 조회 실패 매매 프로세스를 종료합니다."))
-            self._sys_exit('강제종료')
+                self.windowQ.put((UI_NUM['종목명데이터'], dict_name, dict_code))
+                if self.market_gubun > 5:
+                    self.stgQ.put(('종목정보', self.dict_info))
+
+                text = f"{self.market_info['마켓이름']} 시스템을 시작하였습니다."
+                self.teleQ.put(text)
+                if self.dict_set['알림소리']:
+                    self.soundQ.put(text)
+                self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 리시버 시작"))
 
     def _update_vi(self, code):
         """정적VI 발동을 기록합니다.
@@ -256,6 +257,8 @@ class BaseReceiver:
         if v is None:
             bids_ = round(tbids - pretbids, 8)
             asks_ = round(tasks - pretasks, 8)
+            if bids_ == tbids: bids_ = 0.0
+            if asks_ == tasks: asks_ = 0.0
         else:
             bids_ = v if cg == '+' else 0
             asks_ = v if cg == '-' else 0
@@ -686,11 +689,19 @@ class BaseReceiver:
 
     def _money_top_search(self):
         """거래대금상위 종목을 검색합니다.
-        국내주식와 해외주식은 등락율 0% 이상으로 필터링
+        국내주식와 해외주식은 순위 필터링 후에 등락율(0%초과) 필터링
+        국내주식ETF, ETN, 업비트는 등락율 필터링 후에 순위 필터링
+        그외 선물 거래소는 순위 필터링만
         """
-        sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:self.mtop_rank]
-        if self.market_gubun < 6:
+        sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)
+        if self.market_gubun in (1, 4):
+            sorted_daym = sorted_daym[:self.mtop_rank]
             sorted_daym = [(x, y) for x, y in sorted_daym if self.dict_data[x][4] > 0]
+        elif self.market_gubun in (2, 3, 5):
+            sorted_daym = [(x, y) for x, y in sorted_daym if self.dict_data[x][4] > 0]
+            sorted_daym = sorted_daym[:self.mtop_rank]
+        else:
+            sorted_daym = sorted_daym[:self.mtop_rank]
 
         if self.market_gubun in (6, 7, 8):
             list_mtop = [self.dict_info[x]['종목명'] for x, y in sorted_daym]
@@ -755,7 +766,7 @@ class BaseReceiver:
         elif gubun == '차트종목코드':
             self.chart_code = data
         elif gubun == '수동데이터저장':
-            self._save_moneytop()
+            self._sys_exit('프로세스종료')
         elif gubun == '설정변경':
             self.dict_set = data
 
@@ -763,28 +774,35 @@ class BaseReceiver:
         """시스템을 종료합니다.
         Args:
             data: 데이터
+            '프로세스종료' : 전략종료시간 이후 일반적인 종료
+            '프로그램종료' : 프로그램창 닫기 이벤트로 인한 종료
+            '강제종료' : Alt + X 단축키로 인한 종료
+            '전략연산 종료' : 전략연산 프로세스가 일반종료하면서 보낸 신호
+            '전략연산 STOP' : 전략연산 프로세스가 프로그램종료 또는 강제종료하면서 보낸 신호
         """
-        self._websocket_kill()
-
-        if data == '프로세스종료' and self.dict_set['데이터저장']:
-            self._save_moneytop()
-        elif self.market_gubun in (1, 4):
-            for q in self.stgQs:
-                q.put(data)
-        else:
-            self.stgQ.put(data)
-
-        self.traderQ.put(data)
-
-        if data != '프로그램종료':
-            exit_text = '리시버 종료' if data == '프로세스종료' else '리시버 STOP'
-            self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
-
         import sys
-        qtest_qwait(1)
-        self.receivQ.put('큐스레드종료')
-        self.updater.wait()
-        sys.exit()
+
+        if data not in ('전략연산 종료', '전략연산 STOP'):
+            self._websocket_kill()
+            if data == '프로세스종료' and self.dict_set['데이터저장']:
+                self._save_moneytop()
+            elif self.market_gubun in (1, 4):
+                for q in self.stgQs:
+                    q.put(data)
+            else:
+                self.stgQ.put(data)
+            self.traderQ.put(data)
+        else:
+            if data == '전략연산 종료' and self.market_gubun < 4:
+                self._get_code_info()
+                self._save_code_info(noti=False)
+
+            exit_text = '리시버 종료' if data == '전략연산 종료' else '리시버 STOP'
+            self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
+            qtest_qwait(1)
+            self.receivQ.put('큐스레드종료')
+            self.updater.wait()
+            sys.exit()
 
     def _save_moneytop(self):
         """거래대금 순위 데이터를 저장합니다."""

@@ -1,11 +1,12 @@
 
 import sys
+import sqlite3
 from trade.restapi_ls import LsRestData
 from PyQt5.QtWidgets import QApplication
 from trade.base_receiver import BaseReceiver
-from utility.settings.setting_base import UI_NUM
-from utility.static_method.static_datetime import now
 from trade.restapi_ls import LsRestAPI, LsWebSocketReceiver
+from utility.static_method.static_datetime import now, str_hms
+from utility.settings.setting_base import UI_NUM, DB_CODE_INFO
 from utility.static_method.static_decorator import error_decorator
 
 
@@ -21,7 +22,7 @@ class StockReceiver(BaseReceiver):
         self.token = self.ls.create_token()
 
         self._get_code_info()
-        self._save_code_info_and_noti()
+        self._save_code_info()
 
         self.ws_thread = LsWebSocketReceiver(self.market_info['마켓이름'], self.token, self.codes, self.windowQ)
         self.ws_thread.signal.connect(self._convert_real_data)
@@ -31,13 +32,27 @@ class StockReceiver(BaseReceiver):
 
     def _get_code_info(self):
         """종목 정보를 조회합니다."""
-        self.dict_info, self.codes = self.ls.get_code_info_stock(self.market_gubun-1)
-        if self.dict_info:
-            if self.market_gubun == 1:
-                self.dict_sgbn = {code: i % 8 for i, code in enumerate(self.dict_info)}
-                self.traderQ.put(('종목정보', (self.dict_info, self.dict_sgbn)))
-            else:
-                self.traderQ.put(('종목정보', self.dict_info))
+        if self.dict_set['전략종료시간'] < int(str_hms()):
+            self.dict_info, self.codes = self.ls.get_code_info_stock(self.market_gubun-1)
+        else:
+            con = sqlite3.connect(DB_CODE_INFO)
+            cur = con.cursor()
+            ret = cur.execute(f"SELECT * FROM {self.market_info['종목디비']}").fetchall()
+            con.close()
+            dict_info = {}
+            for r in ret:
+                dict_info[r[0]] = {
+                    '종목명': r[1],
+                    '상장주식수': r[2]
+                }
+            self.dict_info, self.codes = self.ls.get_code_info_stock(self.market_gubun-1, dict_info)
+
+            if self.dict_info:
+                if self.market_gubun == 1:
+                    self.dict_sgbn = {code: i % 8 for i, code in enumerate(self.dict_info)}
+                    self.traderQ.put(('종목정보', (self.dict_info, self.dict_sgbn)))
+                else:
+                    self.traderQ.put(('종목정보', self.dict_info))
 
     @error_decorator
     def _convert_real_data(self, data):
@@ -53,11 +68,11 @@ class StockReceiver(BaseReceiver):
         body  = data['body']
 
         if tr_cd == self.tr_cd_hoga:
-            str_hms = body['hotime']
-            if int(str_hms) < self.market_open:
+            hotime = body['hotime']
+            if int(hotime) < self.market_open:
                 return
 
-            dt   = int(f"{self.str_today}{str_hms}")
+            dt   = int(f"{self.str_today}{hotime}")
             code = body['shcode']
             hoga_seprice = [
                 int(body['offerho1']), int(body['offerho2']), int(body['offerho3']), int(body['offerho4']),
@@ -90,11 +105,11 @@ class StockReceiver(BaseReceiver):
             market = body['exchname']
             if market != 'KRX':
                 return
-            str_hms = body['chetime']
-            if int(str_hms) < self.market_open:
+            chetime = body['chetime']
+            if int(chetime) < self.market_open:
                 return
 
-            dt    = int(f"{self.str_today}{str_hms}")
+            dt    = int(f"{self.str_today}{chetime}")
             code  = body['shcode']
             c     = int(body['price'])
             o     = int(body['open'])

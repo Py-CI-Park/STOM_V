@@ -37,6 +37,7 @@ def gavars_save(ui):
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
+    from ui.event_click.button_clicked_backtest_engine import back_code_test2
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.sva_lineEdittt_01.text()
@@ -48,7 +49,7 @@ def gavars_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', 'GA범위의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test2(strategy, ga=True):
+        if (QApplication.keyboardModifiers() & Qt.ControlModifier) or back_code_test2(ui, strategy, ga=True):
             if ui.proc_chqs.is_alive():
                 values = (strategy_name, strategy)
                 send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_optigavars', values)
@@ -94,6 +95,7 @@ def condbuy_save(ui):
     from ui.create_widget.set_text import famous_saying
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
+    from ui.event_click.button_clicked_backtest_engine import back_code_test3
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.svo_lineEdittt_01.text()
@@ -105,7 +107,7 @@ def condbuy_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', '매수조건의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if ui.ui_back_code_test3('매수', strategy):
+        if back_code_test3(ui, '매수', strategy):
             if ui.proc_chqs.is_alive():
                 values = (strategy_name, strategy)
                 send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_buyconds', values)
@@ -151,6 +153,7 @@ def condsell_save(ui):
     from ui.create_widget.set_text import famous_saying
     from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.version_manager import stg_save_version
+    from ui.event_click.button_clicked_backtest_engine import back_code_test3
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.svo_lineEdittt_02.text()
@@ -162,7 +165,7 @@ def condsell_save(ui):
     elif strategy == '':
         QMessageBox.critical(ui, '오류 알림', '매도조건의 코드가 공백 상태입니다.\n코드를 작성하십시오.\n')
     else:
-        if ui.ui_back_code_test3('매도', strategy):
+        if back_code_test3(ui, '매도', strategy):
             if ui.proc_chqs.is_alive():
                 values = (strategy_name, strategy)
                 send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_sellconds', values)

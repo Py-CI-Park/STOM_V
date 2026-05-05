@@ -5,6 +5,7 @@ import hashlib
 import numpy as np
 import pandas as pd
 from numba import njit, prange
+from traceback import format_exc
 from PyQt5.QtWidgets import QMessageBox
 from typing import Dict, List, Tuple, Any
 from multiprocessing import Pool, cpu_count
@@ -162,13 +163,13 @@ def _calculate_volatility_scores(prices: np.ndarray, dates: np.ndarray, indices:
 class AnalyzerVolatilityPattern:
     """메인 변동성 패턴 분석 통합 클래스"""
     def __init__(self, market_gubun: int, market_info: dict, is_tick: bool,
-                 backtest: bool = False, min_samples: int = 20):
+                 realtime: bool = False, min_samples: int = 20):
         """
         초기화
         market_gubun: 마켓 구분 번호
         market_info: 마켓 정보 딕셔너리
         is_tick: 틱 데이터 여부
-        backtest: 백테스트 모드 여부
+        realtime: 실시간 모드 여부
         min_samples: 최소 샘플 수 (기본값 20)
         """
         self.volatility_database = VolatilityPatternDatabase(market_info['전략구분'], is_tick)
@@ -182,7 +183,7 @@ class AnalyzerVolatilityPattern:
         self.idx_close   = self.factor_list.index('현재가')
         self.volatility_scores: dict[str, dict[int, dict[str, float]]] = {}
 
-        if not backtest:
+        if realtime:
             self._load_volatility_all_scores()
 
     def _load_volatility_all_scores(self):
@@ -384,7 +385,7 @@ class AnalyzerVolatilityPattern:
                 window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 변동성분석 학습 중 ... [{k+1:02d}/{last:02d}]'))
             except Exception:
                 # noinspection PyUnresolvedReferences
-                window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 변동성분석 학습 실패 - {e}"))
+                window_queue.put((UI_NUM['시스템로그'], format_exc()))
 
         return all_volatility_scores
 

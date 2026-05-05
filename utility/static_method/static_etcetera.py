@@ -74,11 +74,14 @@ def change_format(text, float_point=2):
         포맷된 텍스트
     """
     text = str(text)
-    try:
-        format_data = f'{int(text):,}'
-    except Exception:
-        format_data = f'{float(text):,.{float_point}f}'
-    return format_data
+    if text:
+        try:
+            format_data = f'{int(text):,}'
+        except Exception:
+            format_data = f'{float(text):,.{float_point}f}'
+        return format_data
+    else:
+        return ''
 
 
 def comma2int(t):

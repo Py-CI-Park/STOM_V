@@ -27,6 +27,7 @@ class UpdateTextedit:
         self.db_up_last  = 0
         self.db_up_cnt   = 0
         self.data_save   = False
+        self.shut_down   = False
 
     @error_decorator
     def update_texedit(self, data):
@@ -90,7 +91,12 @@ class UpdateTextedit:
                     if self.data_save and self.ui.dict_set['디비자동관리']:
                         self._auto_database_control(1)
                     else:
+                        self.shut_down = True
+                elif '리시버 종료' in text:
+                    if self.shut_down:
                         self._shut_down_check()
+                    else:
+                        self.shut_down = True
                 elif '휴무 종료' in text:
                     self._shut_down_check(force=True)
 
@@ -136,7 +142,11 @@ class UpdateTextedit:
                         self.ui.dialog_pattern.close()
                     self.ui.teleQ.put('모든 분석 학습 완료')
                     self.ui.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 모든 분석 학습 완료'))
-                    self._shut_down_check()
+                    self.ui.auto_mode = False
+                    if self.shut_down:
+                        self._shut_down_check()
+                    else:
+                        self.shut_down = True
 
             elif gubun == UI_NUM['DB관리']:
                 if 'DB업데이트완료' in text:
@@ -253,12 +263,15 @@ class UpdateTextedit:
             self.ui.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 자동관리 완료'))
             if self.ui.dict_set['자동학습'] and (
                     self.ui.dict_set['캔들분석'] or self.ui.dict_set['가격대분석'] or
-                    self.ui.dict_set['거래량분석'] or self.ui.dict_set['변동성분석']
+                    self.ui.dict_set['거래량분석'] or self.ui.dict_set['변동성분석'] or self.ui.dict_set['변손익분석']
             ):
                 _auto_learn_running(self.ui, 1)
             else:
                 self.ui.auto_mode = False
-                self._shut_down_check()
+                if self.shut_down:
+                    self._shut_down_check()
+                else:
+                    self.shut_down = True
 
     def _shut_down_check(self, force=False):
         """시스템 종료 여부를 확인합니다.

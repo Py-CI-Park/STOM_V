@@ -10,11 +10,12 @@ def set_builtin_print(q):
     import builtins
     from utility.settings.setting_base import UI_NUM
 
-    # noinspection PyUnusedLocal,PyUnresolvedReferences
+    # noinspection PyUnusedLocal
     def ui_print(*args, sep=' ', end='\n', file=None):
         try:
             is_direct_print = False
             frame = inspect.currentframe()
+            # noinspection PyUnresolvedReferences
             caller_frame = frame.f_back.f_back
             if caller_frame:
                 caller_filename = caller_frame.f_code.co_filename

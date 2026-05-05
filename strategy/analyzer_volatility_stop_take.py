@@ -5,6 +5,7 @@ import hashlib
 import numpy as np
 import pandas as pd
 from numba import njit, prange
+from traceback import format_exc
 from PyQt5.QtWidgets import QMessageBox
 from typing import Tuple, List, Dict, Any
 from multiprocessing import Pool, cpu_count
@@ -165,12 +166,12 @@ def _simulate_stop_take(prices: np.ndarray, dates: np.ndarray, stop_loss_pct: fl
 class AnalyzerVolatilityStopTake:
     """변손익분석 분석 통합 클래스"""
     def __init__(self, market_gubun: int, market_info: dict, is_tick: bool,
-                 backtest: bool = False, min_samples: int = 20):
+                 realtime: bool = False, min_samples: int = 20):
         """초기화
         market_gubun: 마켓 구분 번호
         market_info: 마켓 정보 딕셔너리
         is_tick: 틱 데이터 여부
-        backtest: 백테스트 모드 여부
+        realtime: 실시간 모드 여부
         min_samples: 최소 샘플 수 (기본값 20)
         """
         self.volatility_database = VolatilityStopTakeDatabase(market_info['전략구분'], is_tick)
@@ -182,7 +183,7 @@ class AnalyzerVolatilityStopTake:
         self.idx_close   = self.factor_list.index('현재가')
         self.volatility_data: dict[str, dict[int, dict[str, float]]] = {}
 
-        if not backtest:
+        if realtime:
             self._load_volatility_all_data()
 
     def _load_volatility_all_data(self):
@@ -199,7 +200,7 @@ class AnalyzerVolatilityStopTake:
         """
         self.volatility_data[code] = self.volatility_database.get_volatility_code_scores(code, date)
 
-    def analyze_current_volatility(self, code: str, code_data: np.ndarray) -> Tuple[float, float, float]:
+    def analyze_current_volatility(self, code: str, code_data: np.ndarray) -> Tuple[float, float, float, float]:
         """실시간 변동성 변화율 분석 및 학습된 손절/익절 반환
         code: 종목코드
         code_data: 코드 데이터 2차원 어레이
@@ -208,7 +209,7 @@ class AnalyzerVolatilityStopTake:
         estimated_return = take_profit_pct = stop_loss_pct = confidence_score = 0.0
 
         len_min    = self.analysis_period * 2 + 1
-        group_data = self.volatility_data[code]
+        group_data = self.volatility_data.get(code)
         if group_data and len(code_data) >= len_min:
             close_price    = code_data[-len_min:, self.idx_close]
             vol_std_change = _calculate_volatility_change_rate_last(close_price, self.analysis_period)
@@ -412,9 +413,9 @@ class AnalyzerVolatilityStopTake:
 
                 # noinspection PyUnresolvedReferences
                 window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 변손익분석 학습 중 ... [{k+1:02d}/{last:02d}]'))
-            except Exception as e:
+            except Exception:
                 # noinspection PyUnresolvedReferences
-                window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 변손익분석 학습 실패 - {e}'))
+                window_queue.put((UI_NUM['시스템로그'], format_exc()))
 
         return all_volatility_scores
 
