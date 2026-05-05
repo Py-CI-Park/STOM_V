@@ -51,7 +51,7 @@ def Updater(gubun, file_list_):
                     df1.to_sql(code, con, if_exists='replace', chunksize=2000)
                     count += 1
                     llogger.info(f'[{gubun}] 데이터베이스 중복 제거 [{db_name}]')
-        llogger.info(f'[{gubun}] 데이터베이스 중복 확인 중 ... [{k + 1}/{last}]')
+        llogger.info(f'[{gubun}] 데이터베이스 중복 확인 중 ... [{k+1:03d}/{last:03d}]')
         con.close()
     llogger.info(f'[{gubun}] 데이터베이스 중복 제거 건수 [{count}]')
     llogger.info(f'[{gubun}] 데이터베이스 중복 확인 완료')

@@ -89,7 +89,10 @@ class UpdateTextedit:
                     auto_back_schedule(self.ui, 0.6)
                 elif self.ui.auto_mode and '변동성분석 학습 완료' in text:
                     qtest_qwait(2)
-                    auto_back_schedule(self.ui, 1)
+                    self._shut_down_check()
+                elif self.ui.auto_mode and '모든 분석 학습 완료' in text:
+                    qtest_qwait(2)
+                    self._shut_down_check()
 
             elif gubun == UI_NUM['백테엔진']:
                 self.ui.be_textEditxxxx_01.append(text)
@@ -192,8 +195,14 @@ class UpdateTextedit:
                 self.ui.dialog_db.close()
             self.ui.teleQ.put('데이터베이스 자동관리 완료')
             self.ui.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 자동관리 완료'))
-            self.ui.auto_mode = False
-            self._shut_down_check()
+            if not self.ui.dict_set['타임프레임'] and self.ui.dict_set['자동학습'] and (
+                    self.ui.dict_set['캔들분석'] or self.ui.dict_set['가격대분석'] or
+                    self.ui.dict_set['거래량분석'] or self.ui.dict_set['변동성분석']
+            ):
+                auto_back_schedule(self.ui, 0)
+            else:
+                self.ui.auto_mode = False
+                self._shut_down_check()
 
     def _shut_down_check(self, force=False):
         """시스템 종료 여부를 확인합니다.

@@ -341,7 +341,7 @@ class OptimizeConditions:
         for i in range(rcount):
             buy_conds, sell_conds = self._get_cond_list()
             if len(buy_conds) == 20:
-                self.wq.put((UI_NUM['백테스트'], f'{self.backname} 백테스트 [{i + 1}/{rcount}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
+                self.wq.put((UI_NUM['백테스트'], f'{self.backname} 백테스트 [{i+1}/{rcount}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
                 self.shared_cnt.value = 0
                 data = ('조건정보', is_long, buy_conds, sell_conds, 3)
                 for q in self.bstq_list:

@@ -200,7 +200,7 @@ def backengine_start(ui):
     for i in range(multi):
         shared_info_ = ui.backQ.get()
         ui.shared_info += shared_info_
-        ui.windowQ.put((UI_NUM['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i + 1}/{multi}]'))
+        ui.windowQ.put((UI_NUM['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i+1:02d}/{multi:02d}]'))
 
     ui.shared_info = sorted(ui.shared_info, key=lambda x: x['shape'][0], reverse=True)
     ui.back_tick_cunsum = [x['shape'][0] for x in ui.shared_info]

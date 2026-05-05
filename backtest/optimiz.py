@@ -843,7 +843,7 @@ class Optimize:
                     ratio = round((check_hstd / previous_high_std - 1) * 100, 2)
                 else:
                     ratio = round((1 - check_hstd / previous_high_std) * 100, 2)
-                self.wq.put((UI_NUM['백테스트'], f'최적값 조합 확인 중[{i + 1}/{last}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                self.wq.put((UI_NUM['백테스트'], f'최적값 조합 확인 중[{i+1:03d}/{last:03d}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
                 if ratio > high_ratio[0]:
                     high_ratio = [ratio, std, check_hstd]
         self.wq.put((UI_NUM['백테스트'], '최적값 조합 확인 완료'))

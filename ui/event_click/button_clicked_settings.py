@@ -140,8 +140,8 @@ def setting_load_05(ui):
     ui.sj_back_cheBox_02.setChecked(True) if df['백테일괄로딩'][no] else ui.sj_back_cheBox_02.setChecked(False)
     ui.sj_back_cheBox_03.setChecked(True) if not df['백테일괄로딩'][no] else ui.sj_back_cheBox_03.setChecked(False)
     ui.sj_back_cheBox_04.setChecked(True) if df['디비자동관리'][no] else ui.sj_back_cheBox_04.setChecked(False)
-    ui.sj_back_cheBox_05.setChecked(True) if df['백테스케쥴실행'][no] else ui.sj_back_cheBox_05.setChecked(False)
-    ui.sj_back_cheBox_06.setChecked(True) if df['자동학습'][no] else ui.sj_back_cheBox_06.setChecked(False)
+    ui.sj_back_cheBox_06.setChecked(True) if df['백테스케쥴실행'][no] else ui.sj_back_cheBox_06.setChecked(False)
+    ui.sj_back_cheBox_05.setChecked(True) if df['자동학습'][no] else ui.sj_back_cheBox_05.setChecked(False)
     ui.sj_back_cheBox_07.setChecked(True) if not df['백테날짜고정'][no] else ui.sj_back_cheBox_07.setChecked(False)
     ui.sj_back_cheBox_08.setChecked(True) if df['백테날짜고정'][no] else ui.sj_back_cheBox_08.setChecked(False)
     ui.sj_back_cheBox_09.setChecked(True) if df['백테주문관리적용'][no] else ui.sj_back_cheBox_09.setChecked(False)
@@ -192,13 +192,13 @@ def setting_load_06(ui):
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM etc').set_index('index')
     no = int(ui.dict_set['거래소'][-2:])
     ui.sj_etc_comBoxx_01.setCurrentText(df['테마'][no])
-    ui.sj_etc_checBox_02.setChecked(True) if df['저해상도'][no] else ui.sj_etc_checBox_02.setChecked(False)
-    ui.sj_etc_checBox_03.setChecked(True) if df['스톰라이브'][no] else ui.sj_etc_checBox_03.setChecked(False)
-    ui.sj_etc_checBox_04.setChecked(True) if df['휴무프로세스종료'][no] else ui.sj_etc_checBox_04.setChecked(False)
-    ui.sj_etc_checBox_05.setChecked(True) if df['휴무컴퓨터종료'][no] else ui.sj_etc_checBox_05.setChecked(False)
-    ui.sj_etc_checBox_06.setChecked(True) if df['웹대시보드'][no] else ui.sj_etc_checBox_06.setChecked(False)
-    ui.sj_etc_checBox_07.setChecked(True) if df['창위치기억'][no] else ui.sj_etc_checBox_07.setChecked(False)
-    ui.sj_etc_checBox_08.setChecked(True) if df['프로그램종료'][no] else ui.sj_etc_checBox_08.setChecked(False)
+    ui.sj_etc_checBox_01.setChecked(True) if df['저해상도'][no] else ui.sj_etc_checBox_01.setChecked(False)
+    ui.sj_etc_checBox_02.setChecked(True) if df['스톰라이브'][no] else ui.sj_etc_checBox_02.setChecked(False)
+    ui.sj_etc_checBox_03.setChecked(True) if df['휴무프로세스종료'][no] else ui.sj_etc_checBox_03.setChecked(False)
+    ui.sj_etc_checBox_04.setChecked(True) if df['휴무컴퓨터종료'][no] else ui.sj_etc_checBox_04.setChecked(False)
+    ui.sj_etc_checBox_05.setChecked(True) if df['웹대시보드'][no] else ui.sj_etc_checBox_05.setChecked(False)
+    ui.sj_etc_checBox_06.setChecked(True) if df['창위치기억'][no] else ui.sj_etc_checBox_06.setChecked(False)
+    ui.sj_etc_checBox_07.setChecked(True) if df['프로그램종료'][no] else ui.sj_etc_checBox_07.setChecked(False)
     ui.sj_etc_liEditt_01.setText(str(df['웹대시보드포트번호'][no]))
 
     if df['시리얼키'][no]:
@@ -398,8 +398,8 @@ def setting_save_05(ui):
     백테일괄로딩 = 1 if ui.sj_back_cheBox_02.isChecked() else 0
     # 백테분할로딩 = 1 if ui.sj_back_cheBox_03.isChecked() else 0
     디비자동관리 = 1 if ui.sj_back_cheBox_04.isChecked() else 0
-    백테스케쥴실행 = 1 if ui.sj_back_cheBox_05.isChecked() else 0
-    자동학습 = 1 if ui.sj_back_cheBox_06.isChecked() else 0
+    백테스케쥴실행 = 1 if ui.sj_back_cheBox_06.isChecked() else 0
+    자동학습 = 1 if ui.sj_back_cheBox_05.isChecked() else 0
     # 백테날짜일전 = 1 if ui.sj_back_cheBox_07.isChecked() else 0
     백테날짜고정 = 1 if ui.sj_back_cheBox_08.isChecked() else 0
     백테주문관리적용 = 1 if ui.sj_back_cheBox_09.isChecked() else 0
@@ -463,13 +463,13 @@ def setting_save_06(ui):
     from utility.static_method.static import en_text
 
     테마 = ui.sj_etc_comBoxx_01.currentText()
-    저해상도 = 1 if ui.sj_etc_checBox_02.isChecked() else 0
-    스톰라이브 = 1 if ui.sj_etc_checBox_03.isChecked() else 0
-    휴무프로세스종료 = 1 if ui.sj_etc_checBox_04.isChecked() else 0
-    휴무컴퓨터종료 = 1 if ui.sj_etc_checBox_05.isChecked() else 0
-    웹대시보드 = 1 if ui.sj_etc_checBox_06.isChecked() else 0
-    창위치기억 = 1 if ui.sj_etc_checBox_07.isChecked() else 0
-    프로그램종료 = 1 if ui.sj_etc_checBox_08.isChecked() else 0
+    저해상도 = 1 if ui.sj_etc_checBox_01.isChecked() else 0
+    스톰라이브 = 1 if ui.sj_etc_checBox_02.isChecked() else 0
+    휴무프로세스종료 = 1 if ui.sj_etc_checBox_03.isChecked() else 0
+    휴무컴퓨터종료 = 1 if ui.sj_etc_checBox_04.isChecked() else 0
+    웹대시보드 = 1 if ui.sj_etc_checBox_05.isChecked() else 0
+    창위치기억 = 1 if ui.sj_etc_checBox_06.isChecked() else 0
+    프로그램종료 = 1 if ui.sj_etc_checBox_07.isChecked() else 0
     시리얼키 = ui.sj_etc_liEditt_02.text()
 
     if 시리얼키 == '':

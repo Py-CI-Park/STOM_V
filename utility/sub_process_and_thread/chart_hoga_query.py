@@ -396,7 +396,7 @@ class ChartHogaQuery:
             for i, code in enumerate(table_list):
                 query_del = f"DELETE FROM '{code}' WHERE `index` LIKE '{data[1]}%'"
                 cur.execute(query_del)
-                self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{code}] 지정일자 데이터 삭제 중 ... [{i + 1}/{last}]'))
+                self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{code}] 지정일자 데이터 삭제 중 ... [{i+1}/{last}]'))
             con.commit()
             self.windowQ.put((UI_NUM['DB관리'], '백테DB 지정일자 데이터 삭제 완료'))
         else:
@@ -450,7 +450,7 @@ class ChartHogaQuery:
                         cur.execute(f'DROP TABLE "{code}"')
                 cur.execute('VACUUM;')
                 con.close()
-                self.windowQ.put((UI_NUM['DB관리'], f'일자DB [{db_name}] 지정시간 이후 데이터 삭제 중 ... [{i + 1}/{last}]'))
+                self.windowQ.put((UI_NUM['DB관리'], f'일자DB [{db_name}] 지정시간 이후 데이터 삭제 중 ... [{i+1}/{last}]'))
             self.windowQ.put((UI_NUM['DB관리'], '일자DB 지정시간 이후 데이터 삭제 완료'))
         else:
             self.windowQ.put((UI_NUM['DB관리'], '일자DB가 존재하지 않습니다.'))
@@ -490,7 +490,7 @@ class ChartHogaQuery:
                             cur.execute(f'DROP TABLE "{code}"')
                     elif code != 'moneytop':
                         cur.execute(f'DROP TABLE "{code}"')
-                    self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 지정시간 이후 데이터 삭제 중 ... [{i + 1}/{last}]'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 지정시간 이후 데이터 삭제 중 ... [{i+1}/{last}]'))
                 cur.execute('VACUUM;')
                 self.windowQ.put((UI_NUM['DB관리'], '당일DB 지정시간 이후 데이터 삭제 완료'))
             else:
@@ -518,7 +518,7 @@ class ChartHogaQuery:
                 else:
                     df['index'] = df['index'] - 100
                 df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
-                self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 체결시간 조정 중 ... [{i + 1}/{last}]'))
+                self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 체결시간 조정 중 ... [{i+1}/{last}]'))
             self.windowQ.put((UI_NUM['DB관리'], '당일DB 체결시간 조정 완료'))
         else:
             self.windowQ.put((UI_NUM['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
@@ -555,7 +555,7 @@ class ChartHogaQuery:
                         if len(df) > 0:
                             df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
                     con2.close()
-                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{db_name}] 데이터 추가 중 ... [{i + 1}/{last}]'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{db_name}] 데이터 추가 중 ... [{i+1}/{last}]'))
                 self.windowQ.put((UI_NUM['DB관리'], f'백테DB {BACK_FILE} 생성 완료'))
             else:
                 self.windowQ.put((UI_NUM['DB관리'], '지정한 기간의 일자DB가 존재하지 않습니다.'))
@@ -590,7 +590,7 @@ class ChartHogaQuery:
                         if len(df) > 0:
                             df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
                     con2.close()
-                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{db_name}] 데이터 추가 중 ... [{i + 1}/{last}]'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{db_name}] 데이터 추가 중 ... [{i+1}/{last}]'))
                 self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{data[1]} ~ {data[2]}] 데이터 추가 완료'))
             else:
                 self.windowQ.put((UI_NUM['DB관리'], '지정한 기간의 일자DB가 존재하지 않습니다.'))
@@ -634,7 +634,7 @@ class ChartHogaQuery:
                     df = pd.read_sql(f'SELECT * FROM "{code}"', con)
                     if len(df) > 0:
                         df.to_sql(code, con2, index=False, if_exists='append', chunksize=2000)
-                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{code}] 데이터 추가 중 ... [{i + 1}/{last}]'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{code}] 데이터 추가 중 ... [{i+1}/{last}]'))
                 self.windowQ.put((UI_NUM['DB관리'], '당일DB 데이터, 백테DB로 추가 완료'))
                 con2.close()
                 con.close()
@@ -667,7 +667,7 @@ class ChartHogaQuery:
                             con2 = sqlite3.connect(f'{DB_PATH}/{first_name}{day}.db')
                             df.to_sql(code, con2, index=False, if_exists='replace', chunksize=2000)
                             con2.close()
-                    self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 데이터 분리 중 ... [{i + 1}/{last}]'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 데이터 분리 중 ... [{i+1}/{last}]'))
                 self.windowQ.put((UI_NUM['DB관리'], '당일DB 데이터, 일자DB로 분리 완료'))
             else:
                 self.windowQ.put((UI_NUM['DB관리'], '일자DB에 데이터가 존재하지 않습니다.'))

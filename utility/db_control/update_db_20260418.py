@@ -150,7 +150,7 @@ def Updater(gubun, file_list):
             df_origin = pd.read_sql(f"SELECT * FROM '{code}'", con)
             df_converted = convert_dataframe(df_origin)
             df_converted.to_sql(code, con, index=False, if_exists='replace', chunksize=2000)
-        llogger.info(f'[{gubun}] 데이터베이스 칼럼 업데이트 중 ... [{k + 1}/{last}]')
+        llogger.info(f'[{gubun}] 데이터베이스 칼럼 업데이트 중 ... [{k+1:02d}/{last:02d}]')
         con.close()
 
     llogger.info(f'[{gubun}] 데이터베이스 칼럼 업데이트 완료')

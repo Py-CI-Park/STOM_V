@@ -44,7 +44,6 @@ def auto_back_schedule(ui, gubun):
 
     if gubun == 0:
         if ui.dict_set['캔들분석']:
-            ui.auto_mode = True
             if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
                 ui.soundQ.put('예약된 캔들분석 학습을 시작합니다.')
             if not ui.dialog_pattern.isVisible():
@@ -58,7 +57,6 @@ def auto_back_schedule(ui, gubun):
 
     elif gubun == 0.2:
         if ui.dict_set['가격대분석']:
-            ui.auto_mode = True
             if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
                 ui.soundQ.put('예약된 가격대분석 학습을 시작합니다.')
             if not ui.dialog_pattern.isVisible():
@@ -72,7 +70,6 @@ def auto_back_schedule(ui, gubun):
 
     elif gubun == 0.4:
         if ui.dict_set['거래량분석']:
-            ui.auto_mode = True
             if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
                 ui.soundQ.put('예약된 거래량분석 학습을 시작합니다.')
             if not ui.dialog_pattern.isVisible():
@@ -86,7 +83,6 @@ def auto_back_schedule(ui, gubun):
 
     elif gubun == 0.6:
         if ui.dict_set['변동성분석']:
-            ui.auto_mode = True
             if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
                 ui.soundQ.put('예약된 변동성분석 학습을 시작합니다.')
             if not ui.dialog_pattern.isVisible():
@@ -96,7 +92,8 @@ def auto_back_schedule(ui, gubun):
             qtest_qwait(2)
             volatility_train(ui)
         else:
-            auto_back_schedule(ui, 1)
+            from utility.settings.setting_base import UI_NUM
+            ui.windowQ.put((UI_NUM['학습로그'], '모든 분석 학습 완료'))
 
     elif gubun == 1:
         ui.auto_mode = True

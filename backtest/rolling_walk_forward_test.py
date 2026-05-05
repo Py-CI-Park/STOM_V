@@ -480,11 +480,11 @@ class RollingWalkForwardTest:
         list_days = self._get_list_days(startday, endday, weeks_train, weeks_valid, weeks_test, day_list)
         for i, days in enumerate(list_days):
             train_days, valid_days, test_days = days
-            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 학습기간 {i + 1} : {train_days[0]} ~ {train_days[1]}'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 학습기간 {i+1} : {train_days[0]} ~ {train_days[1]}'))
             if 'V' in self.backname:
                 for vsday, veday, _ in valid_days:
-                    self.wq.put((UI_NUM['백테스트'], f'{self.backname} 검증기간 {i + 1} : {vsday} ~ {veday}'))
-            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 확인기간 {i + 1} : {test_days[0]} ~ {test_days[1]}'))
+                    self.wq.put((UI_NUM['백테스트'], f'{self.backname} 검증기간 {i+1} : {vsday} ~ {veday}'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 확인기간 {i+1} : {test_days[0]} ~ {test_days[1]}'))
         self.wq.put((UI_NUM['백테스트'], f'{self.backname} 일자 추출 완료'))
 
         out_count = len(list_days)
@@ -790,7 +790,7 @@ class RollingWalkForwardTest:
                     ratio = round((check_hstd / previous_high_std - 1) * 100, 2)
                 else:
                     ratio = round((1 - check_hstd / previous_high_std) * 100, 2)
-                self.wq.put((UI_NUM['백테스트'], f'최적값 조합 확인 중[{i + 1}/{last}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                self.wq.put((UI_NUM['백테스트'], f'최적값 조합 확인 중[{i+1:03d}/{last:03d}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
                 if ratio > high_ratio[0]:
                     high_ratio = [ratio, std, check_hstd]
         self.wq.put((UI_NUM['백테스트'], '최적값 조합 확인 완료'))

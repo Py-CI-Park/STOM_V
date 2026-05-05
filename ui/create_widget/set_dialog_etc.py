@@ -298,7 +298,7 @@ class SetDialogEtc:
             self.ui.set_lineEdittt_19, self.ui.set_lineEdittt_20
         ]
 
-        self.ui.dialog_pattern = self.wc.setDialog('STOM PATTERN', self.ui)
+        self.ui.dialog_pattern = self.wc.setDialog('STOM ANALYZER', self.ui)
         self.ui.dialog_pattern.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_pattern)
 

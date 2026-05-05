@@ -1625,7 +1625,7 @@ class BaseStrategy(StgGlobalsFunc):
                     df.to_sql(name, con, index=False, if_exists='append', chunksize=2000)
                 else:
                     df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
-                log_text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... [{self.gubun + 1}]{i + 1}/{last}'
+                log_text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... [{self.gubun+1}]{i+1:02d}/{last:02d}'
                 self.windowQ.put((UI_NUM['기본로그'], log_text))
             save_time = (now() - start).total_seconds()
             self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'))

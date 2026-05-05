@@ -353,7 +353,7 @@ class OptimizeGeneticAlgorithm:
             for i in range(vc):
                 vars_lists = self._get_varslist()
                 if len(vars_lists) == 1000:
-                    self.wq.put((UI_NUM['백테스트'], f'{self.backname} 백테스트 [{k}][{i + 1}/{vc}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
+                    self.wq.put((UI_NUM['백테스트'], f'{self.backname} 백테스트 [{k}][{i+1}/{vc}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
 
                     self.shared_cnt.value = 0
                     data = ('변수정보', vars_lists, 3)
