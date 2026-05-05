@@ -1,8 +1,8 @@
 
-from utility.static_method.strategy_version_manager import StrategyVersionManager
+from utility.static_method.version_manager import VersionManager
 
 
-SVM = StrategyVersionManager('stock', 'basic', 'buy', 'dummy')
+SVM = VersionManager('stock', 'basic', 'buy', 'dummy')
 
 
 def visible_false(ui):
@@ -102,7 +102,7 @@ def strategy_version(ui, gubun1, gubun2, strategy_name):
         return
 
     global SVM
-    SVM = StrategyVersionManager(ui.market_info['전략구분'], gubun1, gubun2, strategy_name)
+    SVM = VersionManager(ui.market_info['전략구분'], gubun1, gubun2, strategy_name)
 
     visible_false(ui)
     version_widget_list = getattr(ui, 'version_list')

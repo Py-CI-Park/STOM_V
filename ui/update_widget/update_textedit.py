@@ -102,6 +102,9 @@ class UpdateTextedit:
                 elif self.ui.auto_mode and '변동성분석 학습 완료' in text:
                     qtest_qwait(2)
                     _auto_learn_running(self.ui, 5)
+                elif self.ui.auto_mode and '변손익분석 학습 완료' in text:
+                    qtest_qwait(2)
+                    _auto_learn_running(self.ui, 6)
                 elif self.ui.auto_mode and '모든 분석 학습 완료' in text:
                     qtest_qwait(2)
                     if self.ui.dialog_pattern.isVisible():
@@ -242,6 +245,7 @@ def _auto_learn_running(ui, gubun):
     from strategy.analyzer_candle_pattern import pattern_setting_load, pattern_train
     from strategy.analyzer_volume_profile import volume_setting_load, volume_profile_train
     from strategy.analyzer_volatility_pattern import volatility_setting_load, volatility_train
+    from strategy.analyzer_volatility_stop_take import volatility_stop_take_setting_load, volatility_stop_take_train
 
     if gubun == 1:
         if not ui.dict_set['타임프레임'] and ui.dict_set['캔들분석']:
@@ -294,6 +298,19 @@ def _auto_learn_running(ui, gubun):
             _auto_learn_running(ui, 5)
 
     elif gubun == 5:
+        if ui.dict_set['변손익분석']:
+            if ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 변손익분석 학습을 시작합니다.')
+            if not ui.dialog_pattern.isVisible():
+                ui.dialog_pattern.show()
+            qtest_qwait(2)
+            volatility_stop_take_setting_load(ui)
+            qtest_qwait(2)
+            volatility_stop_take_train(ui)
+        else:
+            _auto_learn_running(ui, 6)
+
+    elif gubun == 6:
         from utility.settings.setting_base import UI_NUM
         if ui.dialog_pattern.isVisible():
             ui.dialog_pattern.close()

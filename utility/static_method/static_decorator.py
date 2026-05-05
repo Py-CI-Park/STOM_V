@@ -12,12 +12,13 @@ def error_decorator(func):
             return func(*args, **kwargs)
         except Exception:
             if args:
+                data = (UI_NUM['시스템로그'], format_exc())
                 if hasattr(args[0], 'windowQ'):
-                    args[0].windowQ.put((UI_NUM['시스템로그'], format_exc()))
+                    args[0].windowQ.put(data)
                 elif hasattr(args[0], 'ui'):
-                    args[0].ui.windowQ.put((UI_NUM['시스템로그'], format_exc()))
+                    args[0].ui.windowQ.put(data)
                 elif hasattr(args[0], 'wq'):
-                    args[0].wq.put((UI_NUM['시스템로그'], format_exc()))
+                    args[0].wq.put(data)
             return None
     return wrapper
 

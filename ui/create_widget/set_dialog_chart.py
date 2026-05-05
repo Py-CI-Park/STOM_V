@@ -129,8 +129,8 @@ class SetDialogChart:
             is_min = False
             checkbox_choice = []
 
-        if len(checkbox_choice) < 44:
-            checkbox_choice = [1] * 44
+        if len(checkbox_choice) < 45:
+            checkbox_choice = [1] * 45
 
         # 체크박스 리스트
         checkbox_list = [
@@ -155,9 +155,10 @@ class SetDialogChart:
             '시장미시구조분석',
             '패턴점수',
             '리스크점수',
-            '가격대점수',
             '거래량점수',
+            '가격대점수',
             '변동성점수',
+            '변손익분석',
             'AD',
             'ADOSC',
             'ADXR',
@@ -263,7 +264,7 @@ class SetDialogChart:
         self.ui.ft_lineEdittttt_39 = self.wc.setLineedit(self.ui.jp_groupBoxxxxx_01, ltext='0.2', style=style_bc_dk)
 
         text = '매수전략으로 설정된\n보조지표값 사용하기\n체크를 해제하면\n좌측 설정값으로 표시됨'
-        self.ui.ft_checkBoxxxxx_45 = self.wc.setCheckBox(text, self.ui.jp_groupBoxxxxx_01, checked=False, style=style_ck_bx)
+        self.ui.ft_checkBoxxxxx_46 = self.wc.setCheckBox(text, self.ui.jp_groupBoxxxxx_01, checked=False, style=style_ck_bx)
         self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_basic(self.ui))
         self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_load(self.ui))
         self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_save(self.ui))
@@ -334,10 +335,11 @@ class SetDialogChart:
         self.ui.ft_checkBoxxxxx_22.setGeometry(430, 100, 120, 20)
         self.ui.ft_checkBoxxxxx_23.setGeometry(570, 100, 120, 20)
         self.ui.ft_checkBoxxxxx_24.setGeometry(710, 100, 120, 20)
+        self.ui.ft_checkBoxxxxx_25.setGeometry(710, 125, 120, 20)
 
         for i in range(20):
             y = 125 + i * 25
-            getattr(self.ui, f'ft_checkBoxxxxx_{i+25}').setGeometry(10, y, 380, 20)
+            getattr(self.ui, f'ft_checkBoxxxxx_{i+26}').setGeometry(10, y, 380, 20)
 
         for i in range(18):
             y = 150 + i * 25 if i < 11 else 175 + i * 25
@@ -412,7 +414,7 @@ class SetDialogChart:
         self.ui.ft_lineEdittttt_38.setGeometry(735, 200, 100, 20)
         self.ui.ft_lineEdittttt_39.setGeometry(735, 225, 100, 20)
 
-        self.ui.ft_checkBoxxxxx_45.setGeometry(685, 325, 150, 80)
+        self.ui.ft_checkBoxxxxx_46.setGeometry(685, 325, 150, 80)
         self.ui.ft_pushButtonnn_01.setGeometry(685, 410, 150, 30)
         self.ui.ft_pushButtonnn_02.setGeometry(685, 445, 150, 30)
         self.ui.ft_pushButtonnn_03.setGeometry(685, 480, 150, 30)

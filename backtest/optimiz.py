@@ -12,7 +12,7 @@ from multiprocessing import Process, Queue
 from backtest.optimiz_3d_visualization import Visualization3D
 from backtest.back_static_numba import get_result, bootstrap_test
 from utility.static_method.static_decorator import error_decorator
-from utility.static_method.strategy_version_manager import stg_save_version
+from utility.static_method.version_manager import stg_save_version
 from utility.static_method.static_datetime import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
 from backtest.back_static import send_result, plot_show, get_moneytop_query, get_result_dataframe, add_mdd
 from utility.settings.setting_base import UI_NUM, DB_STRATEGY, DB_BACKTEST, COLUMNS_BOS, DB_SETTING, DB_OPTUNA

@@ -5,8 +5,8 @@ import hashlib
 import numpy as np
 import pandas as pd
 from numba import njit, prange
-from typing import Dict, List, Tuple
 from PyQt5.QtWidgets import QMessageBox
+from typing import Dict, List, Tuple, Any
 from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
@@ -32,12 +32,20 @@ def _calculate_setting_hash(*args) -> str:
 @njit(cache=True, fastmath=True, parallel=True)
 def _calculate_log_volatility(close_price: np.ndarray, analysis_period: int) -> np.ndarray:
     """로그 수익률 기반 변동성 계산 (numba 최적화)"""
+    len_closes  = len(close_price)
+    volatility  = np.zeros(len_closes)
     log_returns = np.diff(np.log(close_price))
-    volatility  = np.zeros(len(close_price))
-    for idx in prange(analysis_period, len(close_price)):
-        if idx - analysis_period < len(log_returns):
-            volatility[idx] = np.std(log_returns[idx-analysis_period:idx])
+    for idx in prange(analysis_period, len_closes - 1):
+        volatility[idx] = np.std(log_returns[idx-analysis_period:idx])
     return volatility
+
+
+@njit(cache=True, fastmath=True, parallel=True)
+def _calculate_log_volatility_last(close_price: np.ndarray, analysis_period: int) -> float:
+    """로그 수익률 기반 마지막 변동성만 계산 (실시간용, numba 최적화)"""
+    last_price   = close_price[-(analysis_period + 1):]
+    last_returns = np.diff(np.log(last_price))
+    return np.std(last_returns)
 
 
 @njit(cache=True, fastmath=True, parallel=True)
@@ -52,6 +60,20 @@ def _calculate_atr(close_price: np.ndarray, high_price: np.ndarray, low_price: n
     for idx in prange(analysis_period, len(close_price)):
         atr[idx] = np.mean(tr[idx-analysis_period:idx])
     return atr
+
+
+@njit(cache=True, fastmath=True)
+def _calculate_atr_last(close_price: np.ndarray, high_price: np.ndarray, low_price: np.ndarray,
+                        analysis_period: int) -> float:
+    """ATR 마지막 값만 계산 (실시간용, numba 최적화)"""
+    close_price = close_price[-(analysis_period + 1):]
+    high_price  = high_price[-(analysis_period + 1):]
+    low_price   = low_price[-(analysis_period + 1):]
+    tr1 = high_price[1:] - low_price[1:]
+    tr2 = np.abs(high_price[1:] - close_price[:-1])
+    tr3 = np.abs(low_price[1:] - close_price[:-1])
+    tr  = np.maximum(tr1, tr2, tr3)
+    return np.mean(tr)
 
 
 @njit(cache=True, fastmath=True, parallel=True)
@@ -71,14 +93,14 @@ def _classify_volatility_levels(volatility_data: np.ndarray, level_boundaries: n
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _calculate_volatility_scores(close_price: np.ndarray, level_indices: np.ndarray,
+def _calculate_volatility_scores(close_price: np.ndarray, dates: np.ndarray, level_indices: np.ndarray,
                                  analysis_period: int, rate_threshold: float) -> np.ndarray:
     """변동성 점수 계산 (numba 최적화)"""
     max_scores = len(level_indices)
     scores = np.zeros(max_scores)
     for k in prange(max_scores):
         idx = level_indices[k]
-        if idx + analysis_period < len(close_price):
+        if idx + analysis_period < len(close_price) and dates[idx] == dates[idx + analysis_period]:
             entry_price    = close_price[idx]
             exit_max_price = close_price[idx:idx + analysis_period].max()
             exit_min_price = close_price[idx:idx + analysis_period].min()
@@ -108,15 +130,15 @@ class AnalyzerVolatilityPattern:
         self.analysis_period, self.rate_threshold, self.num_levels = \
             self.volatility_database.load_volatility_setting(market_gubun)
 
-        self.is_tick           = is_tick
         self.backtest_db       = market_info['백테디비'][is_tick]
         self.factor_list       = market_info['팩터목록'][is_tick]
+        self.is_tick           = is_tick
         self.min_samples       = min_samples
         self.idx_close         = self.factor_list.index('현재가')
         self.idx_high          = self.factor_list.index('분봉고가') if not is_tick else None
         self.idx_low           = self.factor_list.index('분봉저가') if not is_tick else None
-        self.volatility_scores = {}
-        self.level_boundaries  = {}
+        self.volatility_scores: dict[str, dict[str, float]] = {}
+        self.level_boundaries: dict[str, np.ndarray] = {}
 
         if not backtest:
             self._load_volatility_all_scores()
@@ -143,32 +165,29 @@ class AnalyzerVolatilityPattern:
         """
         volatility_score, confidence = 0.0, 0.0
 
-        if code in self.volatility_scores and code in self.level_boundaries and len(code_data) >= self.analysis_period:
-            boundaries = self.level_boundaries[code]
-            if boundaries is not None:
-                close_price = code_data[:, self.idx_close]
+        code_scores     = self.volatility_scores.get(code)
+        code_boundaries = self.level_boundaries.get(code)
+        if code_scores and code_boundaries and len(code_data) >= self.analysis_period + 1:
+            close_price = code_data[:, self.idx_close]
 
-                if self.is_tick:
-                    volatility_data = _calculate_log_volatility(close_price, self.analysis_period)
-                else:
-                    high_price      = code_data[:, self.idx_high]
-                    low_price       = code_data[:, self.idx_low]
-                    volatility_data = _calculate_atr(close_price, high_price, low_price, self.analysis_period)
+            if self.is_tick:
+                volatility_value = _calculate_log_volatility_last(close_price, self.analysis_period)
+            else:
+                high_price       = code_data[:, self.idx_high]
+                low_price        = code_data[:, self.idx_low]
+                volatility_value = _calculate_atr_last(close_price, high_price, low_price, self.analysis_period)
 
-                volatility_value = volatility_data[-1]
+            volatility_level = -1
+            for level in range(len(code_boundaries) - 1):
+                if code_boundaries[level] <= volatility_value < code_boundaries[level + 1]:
+                    volatility_level = level
+                    break
 
-                volatility_level = 0
-                for level in range(len(boundaries) - 1):
-                    if boundaries[level] <= volatility_value < boundaries[level + 1]:
-                        volatility_level = level
-                        break
-                if volatility_value >= boundaries[-1]:
-                    volatility_level = len(boundaries) - 2
-
-                if volatility_level in self.volatility_scores[code]:
-                    score_data       = self.volatility_scores[code][volatility_level]
-                    volatility_score = score_data['avg_score']
-                    confidence       = score_data['confidence_score']
+            level_scores = code_scores.get(volatility_level)
+            if level_scores:
+                score_data       = code_scores[volatility_level]
+                volatility_score = score_data['avg_score']
+                confidence       = score_data['confidence_score']
 
         return volatility_score, confidence
 
@@ -223,9 +242,9 @@ class AnalyzerVolatilityPattern:
         with Pool(processes=actual_processes, initializer=init_worker, initargs=(windowQ,)) as pool:
             args = [
                 (
-                    i, chunk, self.backtest_db, self.idx_close, self.idx_high, self.idx_low, self.analysis_period,
-                    self.rate_threshold, self.num_levels, self.min_samples, existing_dates_dict, self.is_tick,
-                    self.volatility_database.setting_hash
+                    i, chunk, self.backtest_db, self.idx_close, self.idx_high, self.idx_low,
+                    self.analysis_period, self.rate_threshold, self.num_levels, self.min_samples,
+                    existing_dates_dict, self.is_tick, self.volatility_database.setting_hash
                 )
                 for i, chunk in enumerate(code_chunks)
             ]
@@ -251,11 +270,9 @@ class AnalyzerVolatilityPattern:
             windowQ.put((UI_NUM['학습로그'], "이미 모든 데이터가 학습되어 있습니다."))
 
     @staticmethod
-    def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str,
-                          idx_close: int, idx_high: int, idx_low: int,
-                          analysis_period: int, rate_threshold: int, num_levels: int,
-                          min_samples: int, existing_dates_dict: Dict[str, set],
-                          is_tick: bool, setting_hash: str) -> Dict[str, Dict[str, float]]:
+    def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, idx_high: int, idx_low: int,
+                          analysis_period: int, rate_threshold: int, num_levels: int, min_samples: int,
+                          existing_dates_dict: Dict[str, set], is_tick: bool, setting_hash: str) -> List[Any]:
         """
         종목 청크별 학습 (프로세스 내에서 실행)
         code_chunk: 종목코드 청크
@@ -283,9 +300,8 @@ class AnalyzerVolatilityPattern:
                     results = cursor.fetchall()
                     historical_data = np.array(results)
 
-                datetime_data = historical_data[:, 0]
-                dates = datetime_data // 10000
-                target_dates = np.unique(dates)
+                all_dates = historical_data[:, 0] // 1000000 if is_tick else historical_data[:, 0] // 10000
+                target_dates = np.unique(all_dates)
                 target_dates.sort()
                 existing_dates = existing_dates_dict.get(code, set())
 
@@ -293,12 +309,13 @@ class AnalyzerVolatilityPattern:
                     if target_date in existing_dates:
                         continue
 
-                    mask = dates <= target_date
+                    mask = all_dates <= target_date
                     date_data = historical_data[mask]
 
                     if len(date_data) < analysis_period * 2:
                         continue
 
+                    dates       = date_data[:, 0] // 1000000 if is_tick else date_data[:, 0] // 10000
                     close_price = date_data[:, idx_close]
 
                     if is_tick:
@@ -322,7 +339,7 @@ class AnalyzerVolatilityPattern:
                     for level in range(num_levels):
                         level_indices = np.where(levels == level)[0]
                         if len(level_indices) >= min_samples:
-                            scores = _calculate_volatility_scores(close_price, level_indices,
+                            scores = _calculate_volatility_scores(close_price, dates, level_indices,
                                                                   analysis_period, rate_threshold)
 
                             if len(scores) >= min_samples:
@@ -357,8 +374,7 @@ class AnalyzerVolatilityPattern:
 class VolatilityPatternDatabase:
     """변동성 패턴 점수 데이터베이스 관리 클래스"""
     def __init__(self, strategy_gubun: str, is_tick: bool):
-        gubun = 'tick' if is_tick else 'min'
-        self.table_name   = f'{strategy_gubun}_volatility_pattern_{gubun}'
+        self.table_name   = f"{strategy_gubun}_volatility_pattern_{'tick' if is_tick else 'min'}"
         self.is_tick      = is_tick
         self.db_path      = VOLATILITY_PATTERN_DB
         self.setting_hash = None
@@ -494,11 +510,14 @@ class VolatilityPatternDatabase:
                 (market, 1 if self.is_tick else 0)
             )
             result = cursor.fetchone()
-            if not result:
-                result = 30, 5, 5
+            if result:
+                analysis_period, rate_threshold, num_levels = result
+            else:
+                analysis_period, rate_threshold, num_levels = 30, 3, 5
+                self.save_volatility_setting(market, analysis_period, rate_threshold, num_levels)
 
-            self.setting_hash = _calculate_setting_hash(result[0], result[1], result[2], self.is_tick)
-            return result
+            self.setting_hash = _calculate_setting_hash(analysis_period, rate_threshold, num_levels)
+            return analysis_period, rate_threshold, num_levels
 
     def save_volatility_setting(self, market: int, analysis_period: int, rate_threshold: str, num_levels: int):
         """

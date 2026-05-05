@@ -1,3 +1,4 @@
+from traceback import format_exc
 
 import pyqtgraph as pg
 from PyQt5.QtGui import QColor
@@ -181,11 +182,29 @@ class DrawChartBase:
                 except Exception:
                     self.ymax, self.ymin = 0, 0
 
-            elif factor in ('시장미시구조분석', '패턴점수', '리스크점수', '가격대점수', '거래량점수', '변동성점수'):
-                fidx1 = self.fi('시그널') if factor == '시장미시구조분석' else self.fi(factor)
-                self.get_optimized_min_max(fidx1)
-                self.draw_area(i)
-                self.draw_line(i, fidx1, self.rgb_yellow)
+            elif factor in ('시장미시구조분석', '패턴점수', '리스크점수', '거래량점수', '가격대점수', '변동성점수'):
+                try:
+                    fidx1 = self.fi('시그널') if factor == '시장미시구조분석' else self.fi(factor)
+                    self.get_optimized_min_max(fidx1)
+                    self.draw_area(i)
+                    self.draw_formula(i, factor)
+                    self.draw_line(i, fidx1, self.rgb_yellow)
+                except Exception:
+                    print(format_exc())
+                    self.ymax, self.ymin = 0, 0
+
+            elif factor == '변손익분석':
+                try:
+                    fidx1, fidx2, fidx3 = self.dict_idxs[factor]
+                    self.get_optimized_min_max((fidx1, fidx2, fidx3))
+                    self.draw_area(i)
+                    self.draw_formula(i, factor)
+                    self.draw_line(i, fidx3, self.rgb_blue)
+                    self.draw_line(i, fidx2, self.rgb_red)
+                    self.draw_line(i, fidx1, self.rgb_green)
+                except Exception:
+                    print(format_exc())
+                    self.ymax, self.ymin = 0, 0
 
             else:
                 fidx1 = self.fi(factor)
@@ -242,8 +261,8 @@ class DrawChartBase:
         if self.ui.ft_checkBoxxxxx_22.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_22.text())
         if self.ui.ft_checkBoxxxxx_23.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_23.text())
         if self.ui.ft_checkBoxxxxx_24.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_24.text())
+        if self.ui.ft_checkBoxxxxx_25.isChecked():     self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_25.text())
         if self.is_min:
-            if self.ui.ft_checkBoxxxxx_25.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_25.text())
             if self.ui.ft_checkBoxxxxx_26.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_26.text())
             if self.ui.ft_checkBoxxxxx_27.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_27.text())
             if self.ui.ft_checkBoxxxxx_28.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_28.text())
@@ -263,6 +282,7 @@ class DrawChartBase:
             if self.ui.ft_checkBoxxxxx_42.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_42.text())
             if self.ui.ft_checkBoxxxxx_43.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_43.text())
             if self.ui.ft_checkBoxxxxx_44.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_44.text())
+            if self.ui.ft_checkBoxxxxx_45.isChecked(): self.ui.ctpg_factors.append(self.ui.ft_checkBoxxxxx_45.text())
 
     def update_dict_idxs(self):
         """요소 인덱스 딕셔너리를 업데이트합니다."""
@@ -283,6 +303,7 @@ class DrawChartBase:
                 '분당체결수량': [self.fi('분당매도수량'), self.fi('분당매수수량')],
                 '분당매도수금액': [self.fi('분당매도금액'), self.fi('분당매수금액')],
                 '누적분당매도수수량': [self.fi('누적분당매도수량'), self.fi('누적분당매수수량')],
+                '변손익분석': [self.fi('예상수익률'), self.fi('익절수익률'), self.fi('손절수익률')],
 
                 '현재가': [self.fi('현재가'), self.fi('분봉시가'), self.fi('분봉고가'), self.fi('분봉저가')],
                 '양음봉구분': [self.fi('현재가'), self.fi('분봉시가')],
@@ -307,7 +328,8 @@ class DrawChartBase:
                 '초당거래대금': [self.fi('초당거래대금'), self.fi('초당거래대금평균')],
                 '초당체결수량': [self.fi('초당매도수량'), self.fi('초당매수수량')],
                 '초당매도수금액': [self.fi('초당매도금액'), self.fi('초당매수금액')],
-                '누적초당매도수수량': [self.fi('누적초당매도수량'), self.fi('누적초당매수수량')]
+                '누적초당매도수수량': [self.fi('누적초당매도수량'), self.fi('누적초당매수수량')],
+                '변손익분석': [self.fi('예상수익률'), self.fi('익절수익률'), self.fi('손절수익률')]
             }
 
     def update_ctpg_date(self):

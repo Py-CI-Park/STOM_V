@@ -15,6 +15,8 @@ from strategy.analyzer_volume_spike import spike_setting_load, spike_setting_sav
 from ui.event_click.table_cell_clicked import cell_clicked_09, cell_clicked_07, cell_clicked_08
 from strategy.analyzer_candle_pattern import pattern_setting_load, pattern_setting_save, pattern_train
 from strategy.analyzer_volume_profile import volume_setting_load, volume_setting_save, volume_profile_train
+from strategy.analyzer_volatility_stop_take import volatility_stop_take_setting_load, volatility_stop_take_train, \
+    volatility_stop_take_setting_save
 from strategy.analyzer_volatility_pattern import volatility_setting_load, volatility_setting_save, volatility_train
 from utility.settings.setting_base import COLUMNS_HJ, COLUMNS_HC, COLUMNS_HG, COLUMNS_GGS, COLUMNS_GNS, COLUMNS_JM1, \
     COLUMNS_JM2, COLUMNS_DSG, COLUMNS_DSV, COLUMNS_KIMP, COLUMNS_HC2
@@ -309,6 +311,14 @@ class SetDialogEtc:
         self.ui.ptn_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_save(self.ui))
         self.ui.ptn_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: pattern_train(self.ui))
 
+        self.ui.vsp_labellllll_01 = QLabel('  ▣ 거래량분석  |  분석시간(초/분)                     등락율(%)', self.ui.dialog_pattern)
+        self.ui.vsp_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['30', '60', '120', '180', '300', '600', '900', '1200'])
+        self.ui.vsp_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['3', '4', '5', '6', '7', '8', '9', '10', '15', '20'])
+        self.ui.vsp_pushButton_00 = self.wc.setPushbutton('도움말', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_help(self.ui))
+        self.ui.vsp_pushButton_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_pattern, click=lambda: spike_setting_load(self.ui))
+        self.ui.vsp_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: spike_setting_save(self.ui))
+        self.ui.vsp_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: spike_train(self.ui))
+
         self.ui.vpf_labellllll_01 = QLabel('  ▣ 가격대분석  |  분석시간(초/분)                     등락율(%)                     가격분할(%)', self.ui.dialog_pattern)
         self.ui.vpf_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['5', '10', '15', '20', '300', '600', '900', '1200'])
         self.ui.vpf_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['0.5', '1.0', '2.0', '3.0', '4.0', '5.0'])
@@ -318,23 +328,22 @@ class SetDialogEtc:
         self.ui.vpf_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: volume_setting_save(self.ui))
         self.ui.vpf_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: volume_profile_train(self.ui))
 
-        self.ui.vsp_labellllll_01 = QLabel('  ▣ 거래량분석  |  분석시간(초/분)                     등락율(%)                     평균대비배수', self.ui.dialog_pattern)
-        self.ui.vsp_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['30', '60', '120', '180', '300', '600', '900', '1200'])
-        self.ui.vsp_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['3', '4', '5', '6', '7', '8', '9', '10', '15', '20'])
-        self.ui.vsp_comboBoxxx_03 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['1', '2', '3', '4', '5'])
-        self.ui.vsp_pushButton_00 = self.wc.setPushbutton('도움말', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_help(self.ui))
-        self.ui.vsp_pushButton_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_pattern, click=lambda: spike_setting_load(self.ui))
-        self.ui.vsp_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: spike_setting_save(self.ui))
-        self.ui.vsp_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: spike_train(self.ui))
-
         self.ui.vlp_labellllll_01 = QLabel('  ▣ 변동성분석  |  분석시간(초/분)                     등락율(%)                     변동성레벨수', self.ui.dialog_pattern)
         self.ui.vlp_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['30', '60', '120', '180', '300', '600', '900', '1200'])
         self.ui.vlp_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['3', '4', '5', '6', '7', '8', '9', '10', '15', '20'])
-        self.ui.vlp_comboBoxxx_03 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['5', '10', '20', '30', '50'])
+        self.ui.vlp_comboBoxxx_03 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['10', '20', '30', '50'])
         self.ui.vlp_pushButton_00 = self.wc.setPushbutton('도움말', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_help(self.ui))
         self.ui.vlp_pushButton_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_pattern, click=lambda: volatility_setting_load(self.ui))
         self.ui.vlp_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: volatility_setting_save(self.ui))
         self.ui.vlp_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: volatility_train(self.ui))
+
+        self.ui.vst_labellllll_01 = QLabel('  ▣ 변손익분석  |  시작시간(초/분)                                                            변동성레벨수', self.ui.dialog_pattern)
+        self.ui.vst_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['30', '60', '120', '180'])
+        self.ui.vst_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['10', '20', '30', '50'])
+        self.ui.vst_pushButton_00 = self.wc.setPushbutton('도움말', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_help(self.ui))
+        self.ui.vst_pushButton_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_pattern, click=lambda: volatility_stop_take_setting_load(self.ui))
+        self.ui.vst_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: volatility_stop_take_setting_save(self.ui))
+        self.ui.vst_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: volatility_stop_take_train(self.ui))
 
         self.ui.ptn_groupBoxxx_01 = QGroupBox('', self.ui.dialog_pattern)
         self.ui.ptn_labellllll_02 = QLabel(pattern_text_list[0], self.ui.ptn_groupBoxxx_01)
@@ -493,7 +502,7 @@ class SetDialogEtc:
             xw = 100 if i < 10 else 675
             getattr(self.ui, f'set_lineEdittt_{i+1:02d}').setGeometry(x, y, xw, 25)
 
-        self.ui.dialog_pattern.setFixedSize(750, 490)
+        self.ui.dialog_pattern.setFixedSize(750, 520)
 
         self.ui.ptn_labellllll_01.setGeometry(5, 7, 420, 25)
         self.ui.ptn_comboBoxxx_01.setGeometry(180, 7, 50, 25)
@@ -503,23 +512,22 @@ class SetDialogEtc:
         self.ui.ptn_pushButton_02.setGeometry(615, 7, 60, 25)
         self.ui.ptn_pushButton_03.setGeometry(680, 7, 65, 25)
 
-        self.ui.vpf_labellllll_01.setGeometry(5, 37, 420, 25)
-        self.ui.vpf_comboBoxxx_01.setGeometry(180, 37, 50, 25)
-        self.ui.vpf_comboBoxxx_02.setGeometry(295, 37, 50, 25)
-        self.ui.vpf_comboBoxxx_03.setGeometry(425, 37, 55, 25)
-        self.ui.vpf_pushButton_00.setGeometry(485, 37, 60, 25)
-        self.ui.vpf_pushButton_01.setGeometry(550, 37, 60, 25)
-        self.ui.vpf_pushButton_02.setGeometry(615, 37, 60, 25)
-        self.ui.vpf_pushButton_03.setGeometry(680, 37, 65, 25)
+        self.ui.vsp_labellllll_01.setGeometry(5, 37, 420, 25)
+        self.ui.vsp_comboBoxxx_01.setGeometry(180, 37, 50, 25)
+        self.ui.vsp_comboBoxxx_02.setGeometry(295, 37, 50, 25)
+        self.ui.vsp_pushButton_00.setGeometry(485, 37, 60, 25)
+        self.ui.vsp_pushButton_01.setGeometry(550, 37, 60, 25)
+        self.ui.vsp_pushButton_02.setGeometry(615, 37, 60, 25)
+        self.ui.vsp_pushButton_03.setGeometry(680, 37, 65, 25)
 
-        self.ui.vsp_labellllll_01.setGeometry(5, 67, 420, 25)
-        self.ui.vsp_comboBoxxx_01.setGeometry(180, 67, 50, 25)
-        self.ui.vsp_comboBoxxx_02.setGeometry(295, 67, 50, 25)
-        self.ui.vsp_comboBoxxx_03.setGeometry(425, 67, 55, 25)
-        self.ui.vsp_pushButton_00.setGeometry(485, 67, 60, 25)
-        self.ui.vsp_pushButton_01.setGeometry(550, 67, 60, 25)
-        self.ui.vsp_pushButton_02.setGeometry(615, 67, 60, 25)
-        self.ui.vsp_pushButton_03.setGeometry(680, 67, 65, 25)
+        self.ui.vpf_labellllll_01.setGeometry(5, 67, 420, 25)
+        self.ui.vpf_comboBoxxx_01.setGeometry(180, 67, 50, 25)
+        self.ui.vpf_comboBoxxx_02.setGeometry(295, 67, 50, 25)
+        self.ui.vpf_comboBoxxx_03.setGeometry(425, 67, 55, 25)
+        self.ui.vpf_pushButton_00.setGeometry(485, 67, 60, 25)
+        self.ui.vpf_pushButton_01.setGeometry(550, 67, 60, 25)
+        self.ui.vpf_pushButton_02.setGeometry(615, 67, 60, 25)
+        self.ui.vpf_pushButton_03.setGeometry(680, 67, 65, 25)
 
         self.ui.vlp_labellllll_01.setGeometry(5, 97, 420, 25)
         self.ui.vlp_comboBoxxx_01.setGeometry(180, 97, 50, 25)
@@ -530,6 +538,14 @@ class SetDialogEtc:
         self.ui.vlp_pushButton_02.setGeometry(615, 97, 60, 25)
         self.ui.vlp_pushButton_03.setGeometry(680, 97, 65, 25)
 
-        self.ui.ptn_groupBoxxx_01.setGeometry(5, 127, 740, 358)
+        self.ui.vst_labellllll_01.setGeometry(5, 127, 420, 25)
+        self.ui.vst_comboBoxxx_01.setGeometry(180, 127, 50, 25)
+        self.ui.vst_comboBoxxx_02.setGeometry(425, 127, 55, 25)
+        self.ui.vst_pushButton_00.setGeometry(485, 127, 60, 25)
+        self.ui.vst_pushButton_01.setGeometry(550, 127, 60, 25)
+        self.ui.vst_pushButton_02.setGeometry(615, 127, 60, 25)
+        self.ui.vst_pushButton_03.setGeometry(680, 127, 65, 25)
+
+        self.ui.ptn_groupBoxxx_01.setGeometry(5, 157, 740, 358)
         self.ui.ptn_labellllll_02.setGeometry(5, 5, 730, 140)
         self.ui.ptn_textEdittt_01.setGeometry(7, 160, 727, 193)

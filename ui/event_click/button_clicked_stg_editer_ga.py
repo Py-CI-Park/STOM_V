@@ -36,7 +36,7 @@ def gavars_save(ui):
     from ui.create_widget.set_text import famous_saying
     from PyQt5.QtWidgets import QMessageBox, QApplication
     from utility.static_method.static_etcetera import send_query_data
-    from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.version_manager import stg_save_version
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.sva_lineEdittt_01.text()
@@ -93,7 +93,7 @@ def condbuy_save(ui):
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
     from utility.static_method.static_etcetera import send_query_data
-    from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.version_manager import stg_save_version
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.svo_lineEdittt_01.text()
@@ -150,7 +150,7 @@ def condsell_save(ui):
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
     from utility.static_method.static_etcetera import send_query_data
-    from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.version_manager import stg_save_version
     from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.svo_lineEdittt_02.text()

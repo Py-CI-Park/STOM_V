@@ -410,7 +410,7 @@ class AnalyzerRisk:
             direction = 'neutral'
 
         prices_clean = prices[~np.isnan(prices) & ~np.isinf(prices)]
-        
+
         if len(prices_clean) < 2 or np.all(prices_clean == prices_clean[0]):
             strength = 1e-10
         else:

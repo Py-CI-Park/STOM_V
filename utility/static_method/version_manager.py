@@ -5,7 +5,7 @@ from datetime import datetime
 from utility.settings.setting_base import DB_PATH
 
 
-class StrategyVersionManager:
+class VersionManager:
     """
     전략 버전 관리 클래스
     - 매수/매도 전략 별도 관리
@@ -125,5 +125,5 @@ class StrategyVersionManager:
 
 
 def stg_save_version(market, gubun1, gubun2, strategy_name, strategy):
-    svm = StrategyVersionManager(market, gubun1, gubun2, strategy_name)
+    svm = VersionManager(market, gubun1, gubun2, strategy_name)
     svm.save_version(strategy)

@@ -150,18 +150,22 @@ class SetSetupTap:
                    "RSI, 변동성, 모멘텀, 체결강도, 수량불균형, 가격위치,\n"\
                    "각도추세, 거래량추세를 분석하여 리스크점수(0~100)를 리턴합니다."
         self.ui.sj_back_cheBox_18 = self.wc.setCheckBox('전략에 리스크분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
-        tip_text = "가격대분석(volume_profile_analyzer)은 가격 데이터를 기반으로\n"\
-                   "단위 분할한 가격대에서 기준 등락율 이상의 돌파 및 반등 이벤트를 분석하여\n"\
-                   "가격대점수(+100~-100) 및 가격대신뢰도(0~1)를 리턴합니다."
-        self.ui.sj_back_cheBox_19 = self.wc.setCheckBox('전략에 가격대분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
         tip_text = "거래량분석(volume_spike_analyzer)은 거래량 데이터를 기반으로\n"\
                    "단위 분할한 거래량평균대비거래량별로 이후의 가격 움직임을 분석하여\n"\
                    "거래량점수(+100~-100) 및 거래량신뢰도(0~1)를 리턴합니다."
-        self.ui.sj_back_cheBox_20 = self.wc.setCheckBox('전략에 거래량분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
+        self.ui.sj_back_cheBox_19 = self.wc.setCheckBox('전략에 거래량분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
+        tip_text = "가격대분석(volume_profile_analyzer)은 가격 데이터를 기반으로\n"\
+                   "단위 분할한 가격대에서 기준 등락율 이상의 돌파 및 반등 이벤트를 분석하여\n"\
+                   "가격대점수(+100~-100) 및 가격대신뢰도(0~1)를 리턴합니다."
+        self.ui.sj_back_cheBox_20 = self.wc.setCheckBox('전략에 가격대분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
         tip_text = "변동성분석(volatility_analyzer)은 변동성 데이터를 기반으로\n"\
                    "단위 분할한 변동성별로 이후의 가격 움직임을 분석하여\n"\
                    "변동성점수(+100~-100) 및 변동성신뢰도(0~1)를 리턴합니다."
         self.ui.sj_back_cheBox_21 = self.wc.setCheckBox('전략에 변동성분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
+        tip_text = "변동성익절손절분석(volatility__stop_take_analyzer)은 변동성 데이터를 기반으로\n"\
+                   "단위 분할한 변동성별로 이후의 가격 움직임을 분석하여 예상수익률과 최적의 익절수익률, 손절수익률\n"\
+                   "값을 리턴합니다. 모든 틱(분) 마다 매수가정하여 계산한 평균값이니 반드시 DB 데이터 확인필요!!"
+        self.ui.sj_back_cheBox_22 = self.wc.setCheckBox('전략에 변손익분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
 
         # --------------------------------------------------------------------------------------------------------------
 
@@ -292,6 +296,7 @@ class SetSetupTap:
         self.ui.sj_back_cheBox_19.setGeometry(820, 105, 300, 20)
         self.ui.sj_back_cheBox_20.setGeometry(820, 130, 300, 20)
         self.ui.sj_back_cheBox_21.setGeometry(820, 155, 300, 20)
+        self.ui.sj_back_cheBox_22.setGeometry(820, 180, 300, 20)
 
         self.ui.sj_etc_labelll_01.setGeometry(10, 30, 490, 20)
         self.ui.sj_etc_comBoxx_01.setGeometry(100, 30, 85, 20)

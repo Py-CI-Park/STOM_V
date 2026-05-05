@@ -5,7 +5,7 @@
 """
 from typing import List
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QWidget
-from ui.draw_chart.draw_radar_microstructure import MicrostructureRadarChart
+from ui.draw_chart.draw_radar_chart import DrawRadarChart
 
 
 class MicrostructureRadarDialog(QDialog):
@@ -44,7 +44,7 @@ class MicrostructureRadarDialog(QDialog):
         chart_layout.setContentsMargins(0, 0, 0, 0)
 
         # 차트 생성
-        self.chart = MicrostructureRadarChart(size, parent=chart_container)
+        self.chart = DrawRadarChart(size, parent=chart_container)
         chart_layout.addWidget(self.chart.get_widget())
 
         layout.addWidget(chart_container)

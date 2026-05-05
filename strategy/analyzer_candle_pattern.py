@@ -6,8 +6,8 @@ import hashlib
 import numpy as np
 import pandas as pd
 from numba import njit, prange
-from typing import Dict, List, Tuple
 from PyQt5.QtWidgets import QMessageBox
+from typing import Dict, List, Tuple, Any
 from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
@@ -46,29 +46,26 @@ def _calculate_setting_hash(*args) -> str:
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _calculate_pattern_scores(close_price: np.ndarray, datetime_data: np.ndarray,
-                              detection_indices: np.ndarray, analysis_period: int,
-                              rate_threshold: float) -> np.ndarray:
+def _calculate_pattern_scores(close_price: np.ndarray, dates: np.ndarray, detection_indices: np.ndarray,
+                              analysis_period: int, rate_threshold: float) -> np.ndarray:
     """패턴 점수 계산 (numba 최적화)"""
     max_scores = len(detection_indices)
     scores = np.zeros(max_scores)
     for k in prange(max_scores):
         idx = detection_indices[k]
-        if idx + analysis_period < len(close_price):
-            entry_date = int(datetime_data[idx] // 10000)
-            exit_date  = int(datetime_data[idx + analysis_period] // 10000)
-            if entry_date == exit_date:
-                entry_price    = close_price[idx]
-                exit_max_price = close_price[idx:idx + analysis_period].max()
-                exit_min_price = close_price[idx:idx + analysis_period].min()
-                if abs(exit_max_price - entry_price) >= abs(exit_min_price - entry_price):
-                    exit_price = exit_max_price
-                else:
-                    exit_price = exit_min_price
-                price_change   = (exit_price - entry_price) / entry_price * 100
-                score = price_change / rate_threshold * 100
-                score = max(-100.0, min(100.0, score))
-                scores[k] = score
+        if dates[idx] == dates[idx + analysis_period] and \
+                idx + analysis_period < len(close_price):
+            entry_price    = close_price[idx]
+            exit_max_price = close_price[idx:idx + analysis_period].max()
+            exit_min_price = close_price[idx:idx + analysis_period].min()
+            if abs(exit_max_price - entry_price) >= abs(exit_min_price - entry_price):
+                exit_price = exit_max_price
+            else:
+                exit_price = exit_min_price
+            price_change   = (exit_price - entry_price) / entry_price * 100
+            score = price_change / rate_threshold * 100
+            score = max(-100.0, min(100.0, score))
+            scores[k] = score
     return scores[scores != 0.0]
 
 
@@ -100,15 +97,12 @@ class AnalyzerCandlePattern:
         """데이터베이스에서 모든 종목의 패턴 점수 로드"""
         all_codes = self.pattern_database.get_all_codes()
         if all_codes:
-            pattern_scores = {}
             for code in all_codes:
-                pattern_scores[code] = self.pattern_database.get_pattern_all_scores(code)
-            self.pattern_scores = pattern_scores
+                self.pattern_scores[code] = self.pattern_database.get_pattern_all_scores(code)
 
     def load_pattern_code_scores(self, code: str, date: int):
         """데이터베이스에서 종목코드의 패턴 점수 로드"""
-        pattern_scores = self.pattern_database.get_pattern_code_scores(code, date)
-        self.pattern_scores = {code: pattern_scores}
+        self.pattern_scores[code] = self.pattern_database.get_pattern_code_scores(code, date)
 
     def analyze_current_patterns(self, code: str, code_data: np.ndarray) -> Tuple[float, float]:
         """
@@ -192,9 +186,9 @@ class AnalyzerCandlePattern:
         with Pool(processes=actual_processes, initializer=init_worker, initargs=(windowQ,)) as pool:
             args = [
                 (
-                    i, chunk, self.backtest_db, self.idx_open, self.idx_high, self.idx_low, self.idx_close,
-                    self.analysis_period, self.rate_threshold, self.min_samples, existing_dates_dict,
-                    self.pattern_database.setting_hash
+                    i, chunk, self.backtest_db, self.idx_open, self.idx_high,
+                    self.idx_low, self.idx_close, self.analysis_period, self.rate_threshold,
+                    self.min_samples, existing_dates_dict, self.pattern_database.setting_hash
                 )
                 for i, chunk in enumerate(code_chunks)
             ]
@@ -220,11 +214,9 @@ class AnalyzerCandlePattern:
             windowQ.put((UI_NUM['학습로그'], "이미 모든 데이터가 학습되어 있습니다"))
 
     @staticmethod
-    def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str,
-                          idx_open: int, idx_high: int, idx_low: int, idx_close: int,
-                          analysis_period: int, rate_threshold: int,
-                          min_samples: int, existing_dates_dict: Dict[str, set],
-                          setting_hash: str) -> Dict[str, Dict[str, float]]:
+    def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_open: int, idx_high: int,
+                          idx_low: int, idx_close: int, analysis_period: int, rate_threshold: int,
+                          min_samples: int, existing_dates_dict: Dict[str, set], setting_hash: str) -> List[Any]:
         """
         종목 청크별 학습 (프로세스 내에서 실행)
         code_chunk: 종목코드 청크
@@ -252,9 +244,8 @@ class AnalyzerCandlePattern:
                     results = cursor.fetchall()
                     historical_data = np.array(results)
 
-                    datetime_data = historical_data[:, 0]
-                    dates = datetime_data // 10000
-                    target_dates = np.unique(dates)
+                    all_dates = historical_data[:, 0] // 10000
+                    target_dates = np.unique(all_dates)
                     target_dates.sort()
                     existing_dates = existing_dates_dict.get(code, set())
 
@@ -262,17 +253,17 @@ class AnalyzerCandlePattern:
                         if target_date in existing_dates:
                             continue
 
-                        mask = dates <= target_date
+                        mask = all_dates <= target_date
                         date_data = historical_data[mask]
 
                         if len(date_data) < analysis_period * 2:
                             continue
 
-                        open_price    = date_data[:, idx_open]
-                        high_price    = date_data[:, idx_high]
-                        low_price     = date_data[:, idx_low]
-                        close_price   = date_data[:, idx_close]
-                        date_datetime = date_data[:, 0]
+                        dates       = date_data[:, 0] // 10000
+                        open_price  = date_data[:, idx_open]
+                        high_price  = date_data[:, idx_high]
+                        low_price   = date_data[:, idx_low]
+                        close_price = date_data[:, idx_close]
 
                         for pattern_name in PATTERN_FUNCTIONS:
                             pattern_func      = getattr(talib, pattern_name)
@@ -280,7 +271,7 @@ class AnalyzerCandlePattern:
                             detection_indices = np.where(pattern_result != 0)[0]
 
                             if len(detection_indices) >= min_samples:
-                                scores = _calculate_pattern_scores(close_price, date_datetime, detection_indices,
+                                scores = _calculate_pattern_scores(close_price, dates, detection_indices,
                                                                    analysis_period, rate_threshold)
 
                                 if len(scores) >= min_samples:
@@ -436,11 +427,14 @@ class CandlePatternDatabase:
                 (market,)
             )
             result = cursor.fetchone()
-            if not result:
-                result = 30, 5
+            if result:
+                analysis_period, rate_threshold = result
+            else:
+                analysis_period, rate_threshold = 30, 5
+                self.save_pattern_setting(market, analysis_period, rate_threshold)
 
-            self.setting_hash = _calculate_setting_hash(result[0], result[1])
-            return result
+            self.setting_hash = _calculate_setting_hash(analysis_period, rate_threshold)
+            return analysis_period, rate_threshold
 
     def save_pattern_setting(self, market: int, analysis_period: int, rate_threshold: int):
         """

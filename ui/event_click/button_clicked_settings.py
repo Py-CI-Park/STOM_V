@@ -155,9 +155,10 @@ def setting_load_05(ui):
     ui.sj_back_cheBox_16.setChecked(True) if df['시장미시구조분석'][no] else ui.sj_back_cheBox_16.setChecked(False)
     ui.sj_back_cheBox_17.setChecked(True) if df['캔들분석'][no] else ui.sj_back_cheBox_17.setChecked(False)
     ui.sj_back_cheBox_18.setChecked(True) if df['리스크분석'][no] else ui.sj_back_cheBox_18.setChecked(False)
-    ui.sj_back_cheBox_19.setChecked(True) if df['가격대분석'][no] else ui.sj_back_cheBox_19.setChecked(False)
-    ui.sj_back_cheBox_20.setChecked(True) if df['거래량분석'][no] else ui.sj_back_cheBox_20.setChecked(False)
+    ui.sj_back_cheBox_19.setChecked(True) if df['거래량분석'][no] else ui.sj_back_cheBox_19.setChecked(False)
+    ui.sj_back_cheBox_20.setChecked(True) if df['가격대분석'][no] else ui.sj_back_cheBox_20.setChecked(False)
     ui.sj_back_cheBox_21.setChecked(True) if df['변동성분석'][no] else ui.sj_back_cheBox_21.setChecked(False)
+    ui.sj_back_cheBox_22.setChecked(True) if df['변손익분석'][no] else ui.sj_back_cheBox_22.setChecked(False)
     ui.sj_back_liEdit_03.setText(str(df['기준값최소상승률'][no]))
     ui.sj_back_comBox_02.clear()
 
@@ -425,9 +426,10 @@ def setting_save_05(ui):
     시장미시구조분석 = 1 if ui.sj_back_cheBox_16.isChecked() else 0
     캔들분석 = 1 if ui.sj_back_cheBox_17.isChecked() else 0
     리스크분석 = 1 if ui.sj_back_cheBox_18.isChecked() else 0
-    가격대분석 = 1 if ui.sj_back_cheBox_19.isChecked() else 0
-    거래량분석 = 1 if ui.sj_back_cheBox_20.isChecked() else 0
+    거래량분석 = 1 if ui.sj_back_cheBox_19.isChecked() else 0
+    가격대분석 = 1 if ui.sj_back_cheBox_20.isChecked() else 0
     변동성분석 = 1 if ui.sj_back_cheBox_21.isChecked() else 0
+    변손익분석 = 1 if ui.sj_back_cheBox_22.isChecked() else 0
     기준값최소상승률 = ui.sj_back_liEdit_03.text()
 
     if ui.sj_back_comBox_01.currentText() == '금':
@@ -462,7 +464,7 @@ def setting_save_05(ui):
         pre_bbg = ui.dict_set['백테주문관리적용']
         columns = ['블랙리스트추가', '백테일괄로딩', '디비자동관리', '자동학습', '백테주문관리적용', '교차검증가중치', '범위자동관리',
                    '백테매수시간기준', '백테스트로그기록안함', '그래프저장하지않기', '그래프띄우지않기', '시장미시구조분석', '리스크분석',
-                   '캔들분석', '가격대분석', '거래량분석', '변동성분석', '기준값최소상승률', '백테스케쥴실행', '백테스케쥴요일',
+                   '캔들분석', '거래량분석', '가격대분석', '변동성분석', '변손익분석', '기준값최소상승률', '백테스케쥴실행', '백테스케쥴요일',
                    '백테스케쥴시간', '백테스케쥴명', '백테날짜고정', '백테날짜']
         no      = ui.sj_main_comBox_01.currentText()[-2:]
         set_txt = ', '.join([f'{col} = ?' for col in columns])

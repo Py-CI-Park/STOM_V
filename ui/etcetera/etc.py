@@ -249,10 +249,12 @@ def pattern_setting_help(ui):
 
     if ui.dialog_pattern.focusWidget() == ui.ptn_pushButton_00:
         text = pattern_text_list[0]
-    elif ui.dialog_pattern.focusWidget() == ui.vpf_pushButton_00:
-        text = pattern_text_list[1]
     elif ui.dialog_pattern.focusWidget() == ui.vsp_pushButton_00:
+        text = pattern_text_list[1]
+    elif ui.dialog_pattern.focusWidget() == ui.vpf_pushButton_00:
         text = pattern_text_list[2]
-    else:
+    elif ui.dialog_pattern.focusWidget() == ui.vlp_pushButton_00:
         text = pattern_text_list[3]
+    else:
+        text = pattern_text_list[4]
     ui.ptn_labellllll_02.setText(text)

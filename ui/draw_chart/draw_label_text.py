@@ -193,18 +193,23 @@ def get_label_text(ui, is_min, xpoint, factor, hms):
     elif factor == '리스크점수':
         text =     f"시간 {hms}\n" \
                    f"리스크점수 {ui.ctpg_arry[xpoint, fi('리스크점수')]:,.2f}"
-    elif factor == '가격대점수':
-        text =     f"시간 {hms}\n" \
-                   f"가격대점수 {ui.ctpg_arry[xpoint, fi('가격대점수')]:,.2f}\n" \
-                   f"가격대신뢰도 {ui.ctpg_arry[xpoint, fi('가격대신뢰도')]:,.2f}"
     elif factor == '거래량점수':
         text =     f"시간 {hms}\n" \
                    f"거래량점수 {ui.ctpg_arry[xpoint, fi('거래량점수')]:,.2f}\n" \
                    f"거래량신뢰도 {ui.ctpg_arry[xpoint, fi('거래량신뢰도')]:,.2f}"
+    elif factor == '가격대점수':
+        text =     f"시간 {hms}\n" \
+                   f"가격대점수 {ui.ctpg_arry[xpoint, fi('가격대점수')]:,.2f}\n" \
+                   f"가격대신뢰도 {ui.ctpg_arry[xpoint, fi('가격대신뢰도')]:,.2f}"
     elif factor == '변동성점수':
         text =     f"시간 {hms}\n" \
                    f"변동성점수 {ui.ctpg_arry[xpoint, fi('변동성점수')]:,.2f}\n" \
                    f"변동성신뢰도 {ui.ctpg_arry[xpoint, fi('변동성신뢰도')]:,.2f}"
+    elif factor == '변손익분석':
+        text =     f"시간 {hms}\n" \
+                   f"예상수익률 {ui.ctpg_arry[xpoint, fi('예상수익률')]:,.2f}\n" \
+                   f"익절수익률 {ui.ctpg_arry[xpoint, fi('익절수익률')]:,.2f}\n" \
+                   f"손절수익률 {ui.ctpg_arry[xpoint, fi('손절수익률')]:,.2f}"
     else:
         text =     f"시간 {hms}\n" \
                    f"{factor} {ui.ctpg_arry[xpoint, fi(factor)]:,.2f}"

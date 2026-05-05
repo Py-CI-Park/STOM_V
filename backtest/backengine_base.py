@@ -5,6 +5,7 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import shared_memory
 from strategy.analyzer_risk import AnalyzerRisk
+from strategy.analyzer_volatility_stop_take import AnalyzerVolatilityStopTake
 from strategy.stg_globals_func import StgGlobalsFunc
 from strategy.manager_formula import get_formula_data
 from strategy.analyzer_volume_spike import AnalyzerVolumeSpike
@@ -86,6 +87,7 @@ class BackEngineBase(StgGlobalsFunc):
         self.vf_analyzer     = None
         self.vs_analyzer     = None
         self.vp_analyzer     = None
+        self.vt_analyzer     = None
 
         self.code_list       = []
         self.vars_list       = []
@@ -175,9 +177,10 @@ class BackEngineBase(StgGlobalsFunc):
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
         self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], self.dict_findex)
         self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info, backtest=True)
-        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick, backtest=True)
         self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info, self.is_tick, backtest=True)
+        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick, backtest=True)
         self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info, self.is_tick, backtest=True)
+        self.vt_analyzer = AnalyzerVolatilityStopTake(self.market_gubun, self.market_info, self.is_tick)
 
     def _set_passticks_and_blacklist(self):
         """패스틱스 조건과 블랙리스트를 설정합니다.
@@ -667,12 +670,14 @@ class BackEngineBase(StgGlobalsFunc):
                     date = int(str(indexs[start_idx])[:8])
                     if not self.is_tick and self.dict_set['캔들분석']:
                         self.pt_analyzer.load_pattern_code_scores(code, date)
-                    if self.dict_set['가격대분석']:
-                        self.vf_analyzer.load_volume_code_nodes(code, date)
                     if self.dict_set['거래량분석']:
                         self.vs_analyzer.load_spike_code_scores(code, date)
+                    if self.dict_set['가격대분석']:
+                        self.vf_analyzer.load_volume_code_nodes(code, date)
                     if self.dict_set['변동성분석']:
                         self.vp_analyzer.load_volatility_code_scores(code, date)
+                    if self.dict_set['변손익분석']:
+                        self.vt_analyzer.load_volatility_code_scores(code, date)
 
                     for i in range(start_idx, end_idx):
                         self.index = indexs[i]
@@ -787,7 +792,9 @@ class BackEngineBase(StgGlobalsFunc):
         종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
         self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
 
-        리스크점수 = 패턴점수 = 패턴신뢰도 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 0
+        리스크점수 = 패턴점수 = 패턴신뢰도 = 거래량점수 = 거래량신뢰도 = 가격대점수 = 가격대신뢰도 = 변동성점수 = 변동성신뢰도 = \
+            예상수익률 = 익절수익률 = 손절수익률 = 0
+
         current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
 
         if self.is_tick and self.dict_set['시장미시구조분석']:
@@ -799,14 +806,17 @@ class BackEngineBase(StgGlobalsFunc):
         if self.dict_set['리스크분석']:
             리스크점수 = self.rk_analyzer.get_risk_score(current_data)
 
-        if self.dict_set['가격대분석']:
-            가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
-
         if self.dict_set['거래량분석']:
             거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, current_data)
 
+        if self.dict_set['가격대분석']:
+            가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
+
         if self.dict_set['변동성분석']:
             변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, current_data)
+
+        if self.dict_set['변손익분석']:
+            예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, current_data)
 
         self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
         self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]

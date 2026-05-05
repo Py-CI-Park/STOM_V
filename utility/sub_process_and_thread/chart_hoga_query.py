@@ -16,6 +16,7 @@ from strategy.analyzer_candle_pattern import AnalyzerCandlePattern
 from strategy.analyzer_microstructure import AnalyzerMicrostructure
 from strategy.manager_formula import ManagerFormula, get_formula_data
 from strategy.analyzer_volatility_pattern import AnalyzerVolatilityPattern
+from strategy.analyzer_volatility_stop_take import AnalyzerVolatilityStopTake
 from utility.static_method.static_datetime import timedelta_sec, str_ymdhms, dt_ymdhms, dt_ymdhm, str_ymdhm
 from utility.settings.setting_base import UI_NUM, DB_TRADELIST, DB_PATH, DB_BACKTEST, DB_CODE_INFO, DB_SETTING, \
     DB_STRATEGY, COLUMNS_HJ, CODE_INFO_TABLES
@@ -53,6 +54,9 @@ class ChartHogaQuery:
         self.vf_analyzer  = None
         self.vs_analyzer  = None
         self.vp_analyzer  = None
+        self.vt_analyzer  = None
+
+        self.analyzer_cnt = 0
 
         self.con1 = sqlite3.connect(DB_SETTING)
         self.cur1 = self.con1.cursor()
@@ -101,14 +105,16 @@ class ChartHogaQuery:
                 self.dict_findex['당일거래대금'], self.dict_findex['분당매수수량'], self.dict_findex['분당매도수량'],
                 self.dict_findex['분당거래대금'], self.dict_findex['분봉고가'], self.dict_findex['분봉저가']
             ])
+        self.analyzer_cnt = self.dict_findex['손절수익률'] - self.dict_findex['당일거래대금각도']
 
     def _set_analyzer(self):
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
         self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], self.dict_findex)
         self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info, backtest=True)
-        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick, backtest=True)
         self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info, self.is_tick, backtest=True)
+        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick, backtest=True)
         self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info, self.is_tick, backtest=True)
+        self.vt_analyzer = AnalyzerVolatilityStopTake(self.market_gubun, self.market_info, self.is_tick, backtest=True)
 
     def _init_hoga(self):
         """호가 딕셔너리를 초기화합니다."""
@@ -792,6 +798,30 @@ class ChartHogaQuery:
         else:
             arry = add_rolling_data(df, round_unit, angle_cf_list, [w_unit], self.is_tick, self.index_arry, cf1=cf1, cf2=cf2)
 
+        arry = np.column_stack((arry, np.zeros((arry.shape[0], self.analyzer_cnt))))
+
+        if self.is_tick and self.dict_set['시장미시구조분석']:
+            buy_cf, sell_cf = float(buy_cf), float(sell_cf)
+            arry[:, -13:-10] = self.ms_analyzer.analyze_batch_data(code, arry, buy_cf, sell_cf)
+
+        if not self.is_tick and self.dict_set['캔들분석']:
+            arry[:, -12:-10] = self.pt_analyzer.analyze_batch_data(code, arry)
+
+        if self.dict_set['리스크분석']:
+            arry[:, -10] = self.rk_analyzer.analyze_batch_data(arry)
+
+        if self.dict_set['거래량분석']:
+            arry[:, -9:-7] = self.vs_analyzer.analyze_batch_data(code, arry)
+
+        if self.dict_set['가격대분석']:
+            arry[:, -7:-5] = self.vf_analyzer.analyze_batch_data(code, arry)
+
+        if self.dict_set['변동성분석']:
+            arry[:, -5:-3] = self.vp_analyzer.analyze_batch_data(code, arry)
+
+        if self.dict_set['변손익분석']:
+            arry[:, -3:] = self.vt_analyzer.analyze_batch_data(code, arry)
+
         if not self.is_tick:
             arry = np.column_stack((arry, np.zeros((arry.shape[0], 28))))
             try:
@@ -871,27 +901,6 @@ class ChartHogaQuery:
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 보조지표의 설정값이 잘못되었습니다.'))
                 return
-
-        arry = np.column_stack((arry, np.zeros((arry.shape[0], 10 if self.is_tick else 9))))
-
-        if self.is_tick and self.dict_set['시장미시구조분석']:
-            buy_cf, sell_cf = float(buy_cf), float(sell_cf)
-            arry[:, -10:-7] = self.ms_analyzer.analyze_batch_data(code, arry, buy_cf, sell_cf)
-
-        if not self.is_tick and self.dict_set['캔들분석']:
-            arry[:, -9:-7] = self.pt_analyzer.analyze_batch_data(code, arry)
-
-        if self.dict_set['리스크분석']:
-            arry[:, -7] = self.rk_analyzer.analyze_batch_data(arry)
-
-        if self.dict_set['가격대분석']:
-            arry[:, -6:-4] = self.vf_analyzer.analyze_batch_data(code, arry)
-
-        if self.dict_set['거래량분석']:
-            arry[:, -4:-2] = self.vs_analyzer.analyze_batch_data(code, arry)
-
-        if self.dict_set['변동성분석']:
-            arry[:, -2:] = self.vp_analyzer.analyze_batch_data(code, arry)
 
         fm_list, dict_fm, fm_tcnt = get_formula_data(True, arry.shape[1])
         if fm_tcnt > 0:

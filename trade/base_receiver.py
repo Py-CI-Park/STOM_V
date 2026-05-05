@@ -688,10 +688,9 @@ class BaseReceiver:
         """거래대금상위 종목을 검색합니다.
         국내주식와 해외주식은 등락율 0% 이상으로 필터링
         """
-        sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)
+        sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:self.mtop_rank]
         if self.market_gubun < 6:
             sorted_daym = [(x, y) for x, y in sorted_daym if self.dict_data[x][4] > 0]
-        sorted_daym = sorted_daym[:self.mtop_rank]
 
         if self.market_gubun in (6, 7, 8):
             list_mtop = [self.dict_info[x]['종목명'] for x, y in sorted_daym]

@@ -17,6 +17,7 @@ from strategy.analyzer_volume_profile import AnalyzerVolumeProfile
 from strategy.analyzer_microstructure import AnalyzerMicrostructure
 from utility.settings.setting_base import DICT_INDICATOR, DB_SETTING
 from strategy.analyzer_volatility_pattern import AnalyzerVolatilityPattern
+from strategy.analyzer_volatility_stop_take import AnalyzerVolatilityStopTake
 from utility.settings.setting_base import DB_STRATEGY, UI_NUM, DICT_ORDER_RATIO
 # noinspection PyUnusedImports
 from utility.static_method.static_datetime import now, timedelta_sec, str_ymdhms
@@ -57,6 +58,7 @@ class BaseStrategy(StgGlobalsFunc):
         self.vf_analyzer     = None
         self.vs_analyzer     = None
         self.vp_analyzer     = None
+        self.vt_analyzer     = None
 
         self.dict_data: dict[str, list] = {}
         self.dict_gj: dict[str, dict[str, int | float]] = {}
@@ -132,9 +134,10 @@ class BaseStrategy(StgGlobalsFunc):
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
         self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], self.dict_findex)
         self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info)
-        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick)
         self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info, self.is_tick)
+        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick)
         self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info, self.is_tick)
+        self.vt_analyzer = AnalyzerVolatilityStopTake(self.market_gubun, self.market_info, self.is_tick)
 
     def _set_formula_data(self):
         """공식 데이터를 설정합니다."""
@@ -420,7 +423,7 @@ class BaseStrategy(StgGlobalsFunc):
             self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
 
         시그널, 신뢰도, 리스크 = 'hold', 0., 0.
-        리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 0
+        리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 예상수익률 = 익절수익률 = 손절수익률 = 0
 
         if self.dict_set['시장미시구조분석']:
             self.ms_analyzer.update_data(self.code, self.arry_code)
@@ -428,14 +431,17 @@ class BaseStrategy(StgGlobalsFunc):
         if self.dict_set['리스크분석']:
             리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
 
-        if self.dict_set['가격대분석']:
-            가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
-
         if self.dict_set['거래량분석']:
             거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, self.arry_code)
 
+        if self.dict_set['가격대분석']:
+            가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
+
         if self.dict_set['변동성분석']:
             변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, self.arry_code)
+
+        if self.dict_set['변손익분석']:
+            예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, self.arry_code)
 
         self._update_high_low(종목코드, 현재가)
 
@@ -569,8 +575,10 @@ class BaseStrategy(StgGlobalsFunc):
                         self.Sell()
 
         시그널 = 1 if 시그널 == 'buy' else (-1 if 시그널 == 'sell' else 0)
-        self.arry_code[-1, self.area_cnt:] = \
-            [시그널, 신뢰도, 리스크, 리스크점수, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도]
+        self.arry_code[-1, self.area_cnt:] = [
+            시그널, 신뢰도, 리스크, 리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도,
+            예상수익률, 익절수익률, 손절수익률
+        ]
 
         if 관심종목:
             """['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']"""
@@ -653,7 +661,8 @@ class BaseStrategy(StgGlobalsFunc):
             if 데이터길이 >= self.rolling_window:
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
 
-            패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 0
+            패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = \
+                예상수익률 = 익절수익률 = 손절수익률 = 0
 
             if self.dict_set['캔들분석']:
                 패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, self.arry_code)
@@ -661,17 +670,22 @@ class BaseStrategy(StgGlobalsFunc):
             if self.dict_set['리스크분석']:
                 리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
 
-            if self.dict_set['가격대분석']:
-                가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
-
             if self.dict_set['거래량분석']:
                 거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, self.arry_code)
+
+            if self.dict_set['가격대분석']:
+                가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
 
             if self.dict_set['변동성분석']:
                 변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, self.arry_code)
 
-            self.arry_code[-1, self.area_cnt:self.patn_cnt] = \
-                [패턴점수, 패턴신뢰도, 리스크점수, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도]
+            if self.dict_set['변손익분석']:
+                예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, self.arry_code)
+
+            self.arry_code[-1, self.area_cnt:self.patn_cnt] = [
+                패턴점수, 패턴신뢰도, 리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도,
+                예상수익률, 익절수익률, 손절수익률
+            ]
 
             indicator_list = get_indicator(
                 self.arry_code[:, self.dict_findex['현재가']],
@@ -846,19 +860,24 @@ class BaseStrategy(StgGlobalsFunc):
                 new_data_tick[:self.base_cnt] = data[:self.base_cnt]
                 self.arry_code = np.concatenate([pre_data, [new_data_tick]])
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
-                패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 0
+                패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = \
+                    예상수익률 = 익절수익률 = 손절수익률 = 0
                 if self.dict_set['캔들분석']:
                     패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, self.arry_code)
                 if self.dict_set['리스크분석']:
                     리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
-                if self.dict_set['가격대분석']:
-                    가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
                 if self.dict_set['거래량분석']:
                     거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, self.arry_code)
+                if self.dict_set['가격대분석']:
+                    가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
                 if self.dict_set['변동성분석']:
                     변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, self.arry_code)
-                self.arry_code[-1, self.area_cnt:self.patn_cnt] = \
-                    [패턴점수, 패턴신뢰도, 리스크점수, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도]
+                if self.dict_set['변손익분석']:
+                    예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, self.arry_code)
+                self.arry_code[-1, self.area_cnt:self.patn_cnt] = [
+                    패턴점수, 패턴신뢰도, 리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도,
+                    예상수익률, 익절수익률, 손절수익률
+                ]
                 self.arry_code[-1, self.patn_cnt:] = get_indicator(
                     self.arry_code[:, self.dict_findex['현재가']],
                     self.arry_code[:, self.dict_findex['분봉고가']],
@@ -943,7 +962,7 @@ class BaseStrategy(StgGlobalsFunc):
             self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
 
         시그널, 신뢰도, 리스크 = 'hold', 0., 0.
-        리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 0
+        리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 예상수익률 = 익절수익률 = 손절수익률 = 0
 
         if self.dict_set['시장미시구조분석']:
             self.ms_analyzer.update_data(self.code, self.arry_code)
@@ -951,14 +970,17 @@ class BaseStrategy(StgGlobalsFunc):
         if self.dict_set['리스크분석']:
             리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
 
-        if self.dict_set['가격대분석']:
-            가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
-
         if self.dict_set['거래량분석']:
             거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, self.arry_code)
 
+        if self.dict_set['가격대분석']:
+            가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
+
         if self.dict_set['변동성분석']:
             변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, self.arry_code)
+
+        if self.dict_set['변손익분석']:
+            예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, self.arry_code)
 
         self._update_high_low(종목코드, 현재가)
 
@@ -1132,7 +1154,7 @@ class BaseStrategy(StgGlobalsFunc):
 
         시그널 = 1 if 시그널 == 'buy' else (-1 if 시그널 == 'sell' else 0)
         self.arry_code[-1, self.area_cnt:] = \
-            [시그널, 신뢰도, 리스크, 리스크점수, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도]
+            [시그널, 신뢰도, 리스크, 리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도]
 
         if 관심종목:
             """['종목명', 'per', 'hlp', 'lhp', 'ch', 'tm', 'dm', 'bm', 'sm']"""
@@ -1197,7 +1219,8 @@ class BaseStrategy(StgGlobalsFunc):
             if 데이터길이 >= self.rolling_window:
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
 
-            패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 0
+            패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = \
+                예상수익률 = 익절수익률 = 손절수익률 = 0
 
             if self.dict_set['캔들분석']:
                 패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, self.arry_code)
@@ -1205,17 +1228,22 @@ class BaseStrategy(StgGlobalsFunc):
             if self.dict_set['리스크분석']:
                 리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
 
-            if self.dict_set['가격대분석']:
-                가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
-
             if self.dict_set['거래량분석']:
                 거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, self.arry_code)
+
+            if self.dict_set['가격대분석']:
+                가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
 
             if self.dict_set['변동성분석']:
                 변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, self.arry_code)
 
-            self.arry_code[-1, self.area_cnt:self.patn_cnt] = \
-                [패턴점수, 패턴신뢰도, 리스크점수, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도]
+            if self.dict_set['변손익분석']:
+                예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, self.arry_code)
+
+            self.arry_code[-1, self.area_cnt:self.patn_cnt] = [
+                패턴점수, 패턴신뢰도, 리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도,
+                예상수익률, 익절수익률, 손절수익률
+            ]
 
             indicator_list = get_indicator(
                 self.arry_code[:, self.dict_findex['현재가']],
@@ -1437,19 +1465,24 @@ class BaseStrategy(StgGlobalsFunc):
                 new_data_tick[:self.base_cnt] = data[:self.base_cnt]
                 self.arry_code = np.concatenate([pre_data, [new_data_tick]])
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
-                패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 0
+                패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = \
+                    예상수익률 = 익절수익률 = 손절수익률 = 0
                 if self.dict_set['캔들분석']:
                     패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, self.arry_code)
                 if self.dict_set['리스크분석']:
                     리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code)
-                if self.dict_set['가격대분석']:
-                    가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
                 if self.dict_set['거래량분석']:
                     거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, self.arry_code)
+                if self.dict_set['가격대분석']:
+                    가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
                 if self.dict_set['변동성분석']:
                     변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, self.arry_code)
-                self.arry_code[-1, self.area_cnt:self.patn_cnt] = \
-                    [패턴점수, 패턴신뢰도, 리스크점수, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도]
+                if self.dict_set['변손익분석']:
+                    예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, self.arry_code)
+                self.arry_code[-1, self.area_cnt:self.patn_cnt] = [
+                    패턴점수, 패턴신뢰도, 리스크점수, 거래량점수, 거래량신뢰도, 가격대점수, 가격대신뢰도, 변동성점수, 변동성신뢰도,
+                    예상수익률, 익절수익률, 손절수익률
+                ]
                 self.arry_code[-1, self.patn_cnt:] = get_indicator(
                     self.arry_code[:, self.dict_findex['현재가']],
                     self.arry_code[:, self.dict_findex['분봉고가']],

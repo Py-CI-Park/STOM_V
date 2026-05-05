@@ -9,7 +9,7 @@ from typing import List, Tuple
 from ui.create_widget.set_style import color_bg_bk
 
 
-class MicrostructureRadarChart:
+class DrawRadarChart:
     """시장미시구조 레이더 차트 클래스입니다.
     8개 지표(depth_ratio, weighted_depth_ratio, imbalance, pressure_level,
     layering, pump_dump, iceberg, stop_hunt)를 레이더 차트로 시각화합니다.
