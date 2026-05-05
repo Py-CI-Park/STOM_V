@@ -22,7 +22,7 @@ class BackCodeTest(QThread):
         self.vars        = None
         self.var         = var
         self.ga          = ga
-        self.ms_analyzer = AnalyzerMicrostructure('stock', [])
+        self.ms_analyzer = AnalyzerMicrostructure('stock', {})
         self.indicator   = DICT_INDICATOR
 
     def run(self):

@@ -1,11 +1,11 @@
 
 import numpy as np
-from numba import njit, prange
+from numba import njit
 from collections import defaultdict, deque
 from typing import Dict, List, Tuple, Optional
 
 
-@njit(cache=True, fastmath=True, parallel=True)
+@njit(cache=True, fastmath=True)
 def _calc_analyze_price_levels(quantities: np.ndarray, multiplier: float, min_occurrences: int):
     """가격 레벨별 분석 (Numba JIT 최적화) - 튜플 대신 배열 반환"""
     n_rows, n_cols = quantities.shape
@@ -14,7 +14,7 @@ def _calc_analyze_price_levels(quantities: np.ndarray, multiplier: float, min_oc
     total_qtys  = np.zeros(n_cols, dtype=np.float64)
     occurrences = np.zeros(n_cols, dtype=np.int32)
     max_qtys    = np.zeros(n_cols, np.float64)
-    for col in prange(n_cols):
+    for col in range(n_cols):
         max_val = 0.0
         for row in range(n_rows):
             val = quantities[row, col]

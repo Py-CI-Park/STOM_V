@@ -150,6 +150,14 @@ def sbcheckbox_changed_01(ui, state):
             for widget in ui.sodb_checkbox_list1:
                 if widget != ui.focusWidget() and widget.isChecked():
                     widget.nextCheckState()
+        elif ui.market_gubun == 4:
+            for i, widget in enumerate(ui.sodb_checkbox_list1):
+                if widget == ui.focusWidget() and i != 1:
+                    widget.nextCheckState()
+                    QMessageBox.critical(ui, '오류 알림', f"{ui.market_info['마켓이름']} 거래소에서는 지정가 매수주문유형만 가능합니다.\n")
+                    break
+                elif widget != ui.focusWidget() and widget.isChecked():
+                    widget.nextCheckState()
         elif ui.market_gubun == 5:
             for i, widget in enumerate(ui.sodb_checkbox_list1):
                 if widget == ui.focusWidget() and i == 2:
@@ -158,7 +166,7 @@ def sbcheckbox_changed_01(ui, state):
                     break
                 elif widget != ui.focusWidget() and widget.isChecked():
                     widget.nextCheckState()
-        elif ui.market_gubun in (4, 8):
+        elif ui.market_gubun == 8:
             for i, widget in enumerate(ui.sodb_checkbox_list1):
                 if widget == ui.focusWidget() and i > 1:
                     widget.nextCheckState()
@@ -205,7 +213,7 @@ def sscheckbox_changed_01(ui, state):
                     widget.nextCheckState()
         elif ui.market_gubun == 5:
             for i, widget in enumerate(ui.sods_checkbox_list1):
-                if widget == ui.focusWidget() and widget.text() == '최유리지정가':
+                if widget == ui.focusWidget() and i == 2:
                     widget.nextCheckState()
                     QMessageBox.critical(ui, '오류 알림', f"{ui.market_info['마켓이름']} 거래소에서는 선택할 수 없는 주문유형입니다.\n")
                     break
@@ -213,8 +221,7 @@ def sscheckbox_changed_01(ui, state):
                     widget.nextCheckState()
         elif ui.market_gubun in (4, 8):
             for i, widget in enumerate(ui.sods_checkbox_list1):
-                if widget == ui.focusWidget() and \
-                        ('최유리' in widget.text() or 'IOC' in widget.text() or 'FOK' in widget.text()):
+                if widget == ui.focusWidget() and i > 1:
                     widget.nextCheckState()
                     QMessageBox.critical(ui, '오류 알림', f"{ui.market_info['마켓이름']} 거래소에서는 선택할 수 없는 주문유형입니다.\n")
                     break
@@ -222,7 +229,7 @@ def sscheckbox_changed_01(ui, state):
                     widget.nextCheckState()
         else:
             for i, widget in enumerate(ui.sods_checkbox_list1):
-                if widget == ui.focusWidget() and '최유리' in widget.text():
+                if widget == ui.focusWidget() and i in (2, 4, 6):
                     widget.nextCheckState()
                     QMessageBox.critical(ui, '오류 알림', f"{ui.market_info['마켓이름']} 거래소에서는 선택할 수 없는 주문유형입니다.\n")
                     break

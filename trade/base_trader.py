@@ -80,6 +80,7 @@ class BaseTrader:
             '예수금': 0,
             '추정예수금': 0,
             '추정예탁자산': 0,
+            '추정예탁자산캐시': 0,
             '종목당투자금': 0
         }
         self.dict_bool = {
@@ -1058,7 +1059,6 @@ class BaseTrader:
                 if self.dict_set['모의투자']:
                     self.dict_intg['추정예수금'] -= 위탁증거금
             else:
-                self.dict_intg['추정예탁자산'] += 수익금
                 self.dict_intg['예수금'] += 위탁증거금 + 수익금
                 self.dict_intg['추정예수금'] += 위탁증거금 + 수익금
 
@@ -1410,8 +1410,8 @@ class BaseTrader:
         당일평가손익 = 총평가손익 + 거래수익금합계
 
         if self.dict_set['손실중지']:
-            기준손실금 = self.dict_intg['추정예탁자산'] * self.dict_set['손실중지수익률'] / 100
-            if 기준손실금 < -당일평가손익:
+            기준손실금 = -self.dict_intg['추정예탁자산'] * self.dict_set['손실중지수익률'] / 100
+            if 기준손실금 > 당일평가손익:
                 self._strategy_stop()
 
         if self.dict_set['수익중지']:
@@ -1422,7 +1422,7 @@ class BaseTrader:
         if self.dict_set['투자금고정']:
             종목당투자금 = int(self.dict_set['투자금'] * (1_000_000 if self.market_gubun in (1, 2, 3, 5) else 1))
         else:
-            종목당투자금 = int(self.dict_intg['추정예탁자산'] * 0.98 / self.dict_set['최대매수종목수'])
+            종목당투자금 = int(추정예탁자산 * 0.98 / self.dict_set['최대매수종목수'])
 
         if self.dict_intg['종목당투자금'] != 종목당투자금:
             self.dict_intg['종목당투자금'] = 종목당투자금
@@ -1439,7 +1439,10 @@ class BaseTrader:
             df_jg = pd.DataFrame(columns=columns)
 
         df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
-        self.queryQ.put(('거래디비', df_jg, self.market_info['잔고디비'], 'replace'))
+
+        if self.dict_intg['추정예탁자산캐시'] != 추정예탁자산:
+            self.dict_intg['추정예탁자산캐시'] = 추정예탁자산
+            self.queryQ.put(('거래디비', df_jg, self.market_info['잔고디비'], 'replace'))
 
         self.windowQ.put((UI_NUM['잔고목록'], df_jg))
         self.windowQ.put((UI_NUM['잔고평가'], df_tj))

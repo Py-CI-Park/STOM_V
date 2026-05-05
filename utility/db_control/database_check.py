@@ -226,13 +226,13 @@ def database_check():
 
         if 'stock_etf_info' not in table_list:
             columns = ['index', '종목명', '상장주식수']
-            data = ['252670', 'KODEX 200선물인버스2', 5220500000]
+            data = ['411060', 'ACE KRX금현물', 154600000]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stock_etf_info', con)
 
         if 'stock_etn_info' not in table_list:
             columns = ['index', '종목명', '상장주식수']
-            data = ['530036', '삼성 인버스 2X WTI원', 2800000000]
+            data = ['570055', '한투 금선물 ETN', 1000000]
             df = pd.DataFrame([data], columns=columns).set_index('index')
             df.to_sql('stock_etn_info', con)
 
@@ -368,7 +368,7 @@ def database_check():
             for endname in endname_list:
                 table_name = f'{market}{endname}'
                 if table_name not in table_list:
-                    if table_name == '_chegeollist':
+                    if endname == '_chegeollist':
                         cur.execute(f'''
                             CREATE TABLE {table_name} (
                                 'index'	TEXT,
@@ -384,7 +384,7 @@ def database_check():
                                 PRIMARY KEY ('index')
                             )
                         ''')
-                    elif table_name == '_totaltradelist':
+                    elif endname == '_totaltradelist':
                         cur.execute(f'''
                             CREATE TABLE {table_name} (
                                 'index' TEXT,
@@ -398,7 +398,7 @@ def database_check():
                                 PRIMARY KEY ('index')
                             )
                         ''')
-                    elif table_name == '_jangolist':
+                    elif endname == '_jangolist':
                         if market == 'coin_future':
                             cur.execute(f'''
                                 CREATE TABLE {table_name} (

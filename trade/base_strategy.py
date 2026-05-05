@@ -126,20 +126,9 @@ class BaseStrategy(StgGlobalsFunc):
         self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
 
         set_builtin_print(self.windowQ)
-        self._set_analyzer()
         self._set_formula_data()
         self._set_strategy_and_blacklist()
         self._main_loop()
-
-    def _set_analyzer(self):
-        """분석시스템 객체를 설정합니다."""
-        self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
-        self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], self.dict_findex)
-        self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info, realtime=True)
-        self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info, self.is_tick, realtime=True)
-        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick, realtime=True)
-        self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info, self.is_tick, realtime=True)
-        self.vt_analyzer = AnalyzerVolatilityStopTake(self.market_gubun, self.market_info, self.is_tick, realtime=True)
 
     def _set_formula_data(self):
         """수식관리자 데이터를 설정합니다."""
@@ -177,7 +166,18 @@ class BaseStrategy(StgGlobalsFunc):
         if blacklist != '':
             self.black_list = blacklist.split(';')
 
+        self._set_analyzer()
         self.set_globals_func()
+
+    def _set_analyzer(self):
+        """분석시스템 객체를 설정합니다."""
+        self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
+        self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], self.dict_findex)
+        self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info, realtime=True)
+        self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info, self.is_tick, realtime=True)
+        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, self.is_tick, realtime=True)
+        self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info, self.is_tick, realtime=True)
+        self.vt_analyzer = AnalyzerVolatilityStopTake(self.market_gubun, self.market_info, self.is_tick, realtime=True)
 
     def _update_globals_func(self, dict_add_func):
         """전역 함수를 업데이트합니다.

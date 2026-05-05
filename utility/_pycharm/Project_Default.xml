@@ -2,9 +2,7 @@
   <profile version="1.0">
     <option name="myName" value="Project Default" />
     <inspection_tool class="NonAsciiCharacters" enabled="false" level="WARNING" enabled_by_default="false" />
-    <inspection_tool class="OutdatedRequirementInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="PyBroadExceptionInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
-    <inspection_tool class="PyInvalidEscapeSequenceInspection" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PyMethodMayBeStaticInspection" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
     <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredErrors">
@@ -38,11 +36,7 @@
     <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="ignoredIdentifiers">
         <list>
-          <option value="pandas.io.sql" />
-          <option value="pythoncom.PumpWaitingMessages" />
-          <option value="pywintypes.error" />
           <option value="PyQt5.QtCore.pyqtSignal.*" />
-          <option value="win32api.*" />
           <option value="PyQt5.QtCore.Qt.*" />
           <option value="PyQt5.QtCore.QEvent.*" />
         </list>
@@ -53,6 +47,5 @@
       <option name="processLiterals" value="true" />
       <option name="processComments" value="true" />
     </inspection_tool>
-    <inspection_tool class="UnsatisfiedRequirementInspection" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>

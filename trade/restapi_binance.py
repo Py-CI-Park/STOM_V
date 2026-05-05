@@ -17,98 +17,98 @@ class BinanceWebSocketReceiver(QThread):
         self.codes        = codes
         self.windowQ      = windowQ
         self.loop         = None
-        self.wsk_trade    = None
-        self.wsk_depth    = None
         self.async_client = None
         self.sock_manager = None
-        self.con_trade    = False
-        self.con_depth    = False
+        self.webs_cg      = None
+        self.webs_hg      = None
+        self.conn_cg      = False
+        self.conn_hg      = False
+        self.cg_streams   = []
+        self.hg_streams   = []
 
-        self.trade_stream_list = []
-        self.depth_stream_list = []
         for code in self.codes:
-            self.trade_stream_list.append(f'{code.lower()}@aggTrade')
-            self.depth_stream_list.append(f'{code.lower()}@depth10')
+            self.cg_streams.append(f'{code.lower()}@aggTrade')
+            self.hg_streams.append(f'{code.lower()}@depth10')
 
     def run(self):
         """웹소켓 루프를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.create_task(self.run_trade())
-        self.loop.create_task(self.run_order())
+        self.loop.create_task(self._run_cg())
+        self.loop.create_task(self._run_hg())
         self.loop.run_forever()
 
-    async def run_trade(self):
-        """거래 데이터를 수신합니다."""
+    async def _run_cg(self):
+        """체결 데이터를 수신합니다."""
         while True:
             try:
-                if not self.con_trade:
-                    await self.connect_trader()
-                await self.receive_trader()
+                if not self.conn_cg:
+                    await self._connect_cg()
+                await self._receive_msg_cg()
             except Exception:
                 self.windowQ.put(
                     (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 바이낸스 웹소켓 체결 수신 중 오류가 발생하여 재연결합니다.')
                 )
 
-            self.con_trade = False
+            self.conn_cg = False
             await asyncio.sleep(1)
 
-    async def run_order(self):
-        """주문 데이터를 수신합니다."""
+    async def _run_hg(self):
+        """호가 데이터를 수신합니다."""
         while True:
             try:
-                if not self.con_depth:
-                    await self.connect_order()
-                await self.receive_order()
+                if not self.conn_hg:
+                    await self._connect_hg()
+                await self._receive_msg_hg()
             except Exception:
                 self.windowQ.put(
                     (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 바이낸스 웹소켓 호가 수신 중 오류가 발생하여 재연결합니다.')
                 )
 
-            self.con_depth = False
+            self.conn_hg = False
             await asyncio.sleep(1)
 
-    async def connect_trader(self):
+    async def _connect_cg(self):
         """거래 웹소켓에 연결합니다."""
-        if self.wsk_trade:
+        if self.webs_cg:
             try:
-                await self.wsk_trade.__aexit__(None, None, None)
-            except:
+                await self.webs_cg.__aexit__(None, None, None)
+            except Exception:
                 pass
 
-        if self.async_client is None:
+        if self.async_client is None or self.sock_manager is None:
             self.async_client = await AsyncClient.create()
             self.sock_manager = BinanceSocketManager(self.async_client, max_queue_size=10000)
 
-        self.wsk_trade = self.sock_manager.futures_multiplex_socket(self.trade_stream_list, category='market')
-        self.con_trade = True
+        self.webs_cg = self.sock_manager.futures_multiplex_socket(self.cg_streams, category='market')
+        self.conn_cg = True
 
-    async def connect_order(self):
+    async def _connect_hg(self):
         """주문 웹소켓에 연결합니다."""
-        if self.wsk_depth:
+        if self.webs_hg:
             try:
-                await self.wsk_depth.__aexit__(None, None, None)
-            except:
+                await self.webs_hg.__aexit__(None, None, None)
+            except Exception:
                 pass
 
-        if self.async_client is None:
+        if self.async_client is None or self.sock_manager is None:
             self.async_client = await AsyncClient.create()
             self.sock_manager = BinanceSocketManager(self.async_client, max_queue_size=10000)
 
-        self.wsk_depth = self.sock_manager.futures_multiplex_socket(self.depth_stream_list, category='public')
-        self.con_depth = True
+        self.webs_hg = self.sock_manager.futures_multiplex_socket(self.hg_streams, category='public')
+        self.conn_hg = True
 
-    async def receive_trader(self):
+    async def _receive_msg_cg(self):
         """거래 데이터를 수신합니다."""
-        async with self.wsk_trade as ws:
-            while self.con_trade:
+        async with self.webs_cg as ws:
+            while self.conn_cg:
                 data = await ws.recv()
                 self.signal.emit(data)
 
-    async def receive_order(self):
+    async def _receive_msg_hg(self):
         """주문 데이터를 수신합니다."""
-        async with self.wsk_depth as ws:
-            while self.con_depth:
+        async with self.webs_hg as ws:
+            while self.conn_hg:
                 data = await ws.recv()
                 self.signal.emit(data)
 
@@ -126,29 +126,29 @@ class BinanceWebSocketTrader(QThread):
 
     def __init__(self, api_key, scret_key, windowQ):
         super().__init__()
-        self.api_key     = api_key
-        self.scret_key   = scret_key
-        self.windowQ     = windowQ
-        self.loop        = None
-        self.websocket   = None
-        self.connected   = False
+        self.api_key      = api_key
+        self.scret_key    = scret_key
+        self.windowQ      = windowQ
+        self.loop         = None
         self.async_client = None
         self.sock_manager = None
+        self.websocket    = None
+        self.connected    = False
 
     def run(self):
         """웹소켓 루프를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.create_task(self.run_user())
+        self.loop.create_task(self._run_user())
         self.loop.run_forever()
 
-    async def run_user(self):
+    async def _run_user(self):
         """유저 데이터를 수신합니다."""
         while True:
             try:
                 if not self.connected:
-                    await self.connect()
-                await self.receive_msgs()
+                    await self._connect()
+                await self._receive_msg()
             except Exception:
                 self.windowQ.put(
                     (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 바이낸스 웹소켓 체잔 수신 중 오류가 발생하여 재연결합니다.')
@@ -157,7 +157,7 @@ class BinanceWebSocketTrader(QThread):
             self.connected = False
             await asyncio.sleep(1)
 
-    async def connect(self):
+    async def _connect(self):
         """유저 웹소켓에 연결합니다."""
         if self.websocket:
             try:
@@ -172,7 +172,7 @@ class BinanceWebSocketTrader(QThread):
         self.websocket = self.sock_manager.futures_user_socket()
         self.connected = True
 
-    async def receive_msgs(self):
+    async def _receive_msg(self):
         """메시지를 수신합니다."""
         async with self.websocket as ws:
             while self.connected:

@@ -88,12 +88,12 @@ def _calculate_realized_volatility_change_rate(prices: np.ndarray, analysis_peri
     return change_rates
 
 
-@njit(cache=True, fastmath=True, parallel=True)
+@njit(cache=True, fastmath=True)
 def _calculate_realized_volatility_change_rate_last(prices: np.ndarray, analysis_period: int) -> float:
     """실현 변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
     n = len(prices)
     log_returns = np.zeros(2 * analysis_period, dtype=np.float64)
-    for i in prange(2 * analysis_period):
+    for i in range(2 * analysis_period):
         idx = n - 2 * analysis_period + i
         log_returns[i] = np.log(prices[idx] / prices[idx - 1])
     period_sqrt = np.sqrt(analysis_period)
@@ -122,12 +122,12 @@ def _calculate_absolute_change_rate_change(prices: np.ndarray, analysis_period: 
     return change_rates
 
 
-@njit(cache=True, fastmath=True, parallel=True)
+@njit(cache=True, fastmath=True)
 def _calculate_absolute_change_rate_change_last(prices: np.ndarray, analysis_period: int) -> float:
     """절대 변화율 기반 변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
     n = len(prices)
     abs_changes = np.zeros(2 * analysis_period, dtype=np.float64)
-    for i in prange(2 * analysis_period):
+    for i in range(2 * analysis_period):
         idx = n - 2 * analysis_period + i
         abs_changes[i] = abs(prices[idx] / prices[idx - 1] - 1) * 100
     prev_vol   = np.mean(abs_changes[:analysis_period])

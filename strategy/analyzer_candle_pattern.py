@@ -152,11 +152,10 @@ class AnalyzerCandlePattern:
         self.load_pattern_code_scores(code, date)
 
         n = len(code_data)
-        start_idx = 5
         results = np.zeros((n, 2))
 
-        for i in range(start_idx, n):
-            window_data = code_data[:i]
+        for i in range(self.min_candle - 1, n):
+            window_data = code_data[:i + 1]
             results[i] = list(self.analyze_current_patterns(code, window_data))
 
         return results

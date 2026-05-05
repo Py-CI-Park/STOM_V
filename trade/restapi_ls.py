@@ -81,7 +81,7 @@ class LsRestAPI:
         """국내주식종목정보 ['구분'], '국내주식상장주수' ['종목코드', '거래소구분코드']
         etfgubun: 0 (코스피 + 코스닥), 1 (ETF), 2 (ETN)
         data['spac_gubun'] == 'N' - 구분 무관 공통사항 스펙 제외
-        data['shcode'][-1] == '0' - 우선주 및 ETN 제외(ETN일 경우 확인X)"""
+        code[-1] == '0' - 우선주 및 ETN 제외(ETN일 경우 확인X)"""
         try:
             from utility.settings.setting_base import DB_SETTING
             con = sqlite3.connect(DB_SETTING)
@@ -548,77 +548,115 @@ class LsWebSocketReceiver(QThread):
 
     def __init__(self, gubun, token, symbols, windowQ):
         super().__init__()
-        self.gubun     = gubun
-        self.token     = token
-        self.symbols   = symbols
-        self.windowQ   = windowQ
-        self.loop      = None
-        self.websocket = None
-        self.connected = False
+        self.gubun   = gubun
+        self.token   = token
+        self.symbols = symbols
+        self.windowQ = windowQ
+        self.last    = len(symbols)
+        self.loop    = None
+        self.webs_cg = None
+        self.webs_hg = None
+        self.conn_cg = False
+        self.conn_hg = False
 
     def run(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.create_task(self._run())
+        self.loop.create_task(self._run_cg())
+        self.loop.create_task(self._run_hg())
         self.loop.run_forever()
 
-    async def _run(self):
+    # noinspection PyUnresolvedReferences
+    async def _run_cg(self):
+        reg_task = None
         while True:
             try:
-                if not self.connected:
-                    await self._connect()
-                    asyncio.create_task(self._real_reg())
-                await self._receive_message()
+                if not self.conn_cg:
+                    await self._connect_cg()
+                    if reg_task is not None and not reg_task.done():
+                        reg_task.cancel()
+                    reg_task = asyncio.create_task(self._real_reg_cg())
+                await self._receive_cg_msg()
             except Exception:
-                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketReceiver'))
+                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketReceiver Chegyeol'))
 
-            await self._disconnect()
+            await self._disconnect_cg()
 
-    async def _connect(self):
-        self.websocket = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
-        self.connected = True
+    # noinspection PyUnresolvedReferences
+    async def _run_hg(self):
+        reg_task = None
+        while True:
+            try:
+                if not self.conn_hg:
+                    await self._connect_hg()
+                    if reg_task is not None and not reg_task.done():
+                        reg_task.cancel()
+                    reg_task = asyncio.create_task(self._real_reg_hg())
+                await self._receive_hg_msg()
+            except Exception:
+                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketReceiver Hoga'))
 
-    async def _receive_message(self):
-        while self.connected:
-            data = await self.websocket.recv()
+            await self._disconnect_hg()
+
+    async def _connect_cg(self):
+        self.webs_cg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
+        self.conn_cg = True
+
+    async def _connect_hg(self):
+        self.webs_hg = await websockets.connect(LsRestData.웹소켓주소, ping_interval=60)
+        self.conn_hg = True
+
+    async def _receive_cg_msg(self):
+        while self.conn_cg:
+            data = await self.webs_cg.recv()
             data = json.loads(data)
             if data['body']:
                 self.signal.emit(data)
 
-    async def _real_reg(self):
-        while not self.connected:
+    async def _receive_hg_msg(self):
+        while self.conn_hg:
+            data = await self.webs_hg.recv()
+            data = json.loads(data)
+            if data['body']:
+                self.signal.emit(data)
+
+    async def _real_reg_cg(self):
+        while not self.conn_cg:
             await asyncio.sleep(0.1)
 
         data = self._get_send_data('장운영정보', '0')
-        await self.websocket.send(json.dumps(data))
+        await self.webs_cg.send(json.dumps(data))
         await asyncio.sleep(0.02)
         self.windowQ.put((UI_NUM['기본로그'], '장운영정보 실시간시세 등록'))
 
         if self.gubun == '국내주식':
             gubun = f'{self.gubun}VI'
             data = self._get_send_data(gubun, '0000000000')
-            await self.websocket.send(json.dumps(data))
+            await self.webs_cg.send(json.dumps(data))
             await asyncio.sleep(0.02)
             self.windowQ.put((UI_NUM['기본로그'], f'{gubun}발동해제 실시간시세 등록'))
 
-        last = len(self.symbols)
         gubun = f'{self.gubun}체결'
         for i, code in enumerate(self.symbols):
             data = self._get_send_data(gubun, code)
-            await self.websocket.send(json.dumps(data))
+            await self.webs_cg.send(json.dumps(data))
             await asyncio.sleep(0.02)
 
-            if i % 100 == 0 or i == last - 1:
-                self.windowQ.put((UI_NUM['기본로그'], f'{gubun} 실시간시세 등록 [{i+1:04d}/{last:04d}]'))
+            if (i + 1) % 100 == 0 or i == self.last - 1:
+                self.windowQ.put((UI_NUM['기본로그'], f'{gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]'))
+
+    async def _real_reg_hg(self):
+        while not self.conn_hg:
+            await asyncio.sleep(0.1)
 
         gubun = f'{self.gubun}호가'
         for i, code in enumerate(self.symbols):
             data = self._get_send_data(gubun, code)
-            await self.websocket.send(json.dumps(data))
+            await self.webs_hg.send(json.dumps(data))
             await asyncio.sleep(0.02)
 
-            if i % 100 == 0 or i == last - 1:
-                self.windowQ.put((UI_NUM['기본로그'], f'{gubun} 실시간시세 등록 [{i+1:04d}/{last:04d}]'))
+            if (i + 1) % 100 == 0 or i == self.last - 1:
+                self.windowQ.put((UI_NUM['기본로그'], f'{gubun} 실시간시세 등록 [{i+1:04d}/{self.last:04d}]'))
 
     def _get_send_data(self, gubun: str, code: str):
         if gubun in ('국내주식체결', '국내주식호가'):
@@ -640,10 +678,22 @@ class LsWebSocketReceiver(QThread):
         }
         return data
 
-    async def _disconnect(self):
-        self.connected = False
-        if self.websocket is not None:
-            await self.websocket.close()
+    async def _disconnect_cg(self):
+        self.conn_cg = False
+        if self.webs_cg is not None:
+            try:
+                await self.webs_cg.close()
+            except Exception:
+                pass
+        await asyncio.sleep(1)
+
+    async def _disconnect_hg(self):
+        self.conn_hg = False
+        if self.webs_hg is not None:
+            try:
+                await self.webs_hg.close()
+            except Exception:
+                pass
         await asyncio.sleep(1)
 
     def stop(self):
@@ -666,15 +716,15 @@ class LsWebSocketTrader(QThread):
     def run(self):
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.create_task(self._run())
+        self.loop.create_task(self._run_user())
         self.loop.run_forever()
 
-    async def _run(self):
+    async def _run_user(self):
         while True:
             try:
                 if not self.connected:
                     await self._connect()
-                await self._receive_message()
+                await self._receive_msg()
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - LsWebSocketTrader'))
 
@@ -689,7 +739,7 @@ class LsWebSocketTrader(QThread):
                 await self.websocket.send(json.dumps(data))
                 self.windowQ.put((UI_NUM['기본로그'], f'{k} 실시간시세 계좌등록'))
 
-    async def _receive_message(self):
+    async def _receive_msg(self):
         while self.connected:
             data = await self.websocket.recv()
             data = json.loads(data)
@@ -712,22 +762,12 @@ class LsWebSocketTrader(QThread):
     async def _disconnect(self):
         self.connected = False
         if self.websocket is not None:
-            await self.websocket.close()
+            try:
+                await self.websocket.close()
+            except Exception:
+                pass
         await asyncio.sleep(1)
 
     def stop(self):
         if self.loop and self.loop.is_running():
             self.loop.stop()
-
-
-class MonitorWindowQ(QThread):
-    signal = pyqtSignal(str)
-
-    def __init__(self, windowQ):
-        super().__init__()
-        self.windowQ = windowQ
-
-    def run(self):
-        while True:
-            data = self.windowQ.get()
-            self.signal.emit(data[1])

@@ -661,6 +661,7 @@ def plot_show(gubun, is_tick, teleQ, df_tsg, df_bct, market_gubun, seed, mdd, st
     """
     from utility.settings.setting_base import GRAPH_PATH
     from matplotlib import pyplot as plt, font_manager, gridspec
+    from backtest.back_static_numba import calculate_mdd_bootstrap
     from utility.static_method.static_datetime import dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, \
         str_ymdhms_ios
 
@@ -697,7 +698,6 @@ def plot_show(gubun, is_tick, teleQ, df_tsg, df_bct, market_gubun, seed, mdd, st
     df_tsg['이익금액'] = df_tsg['수익금'].clip(lower=0)
     df_tsg['손실금액'] = df_tsg['수익금'].clip(upper=0)
 
-    from backtest.back_static_numba import calculate_mdd_bootstrap
     sig_array = df_tsg['수익금'].values
     mdd_list, random_cumsums = calculate_mdd_bootstrap(sig_array, seed)
 

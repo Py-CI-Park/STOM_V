@@ -1,19 +1,19 @@
 
 import numpy as np
-from numba import njit, prange
+from numba import njit
 
 
 @njit(cache=True, fastmath=True)
-def _calculate_rsi(prices: np.ndarray, period: int = 14) -> float:
+def _calculate_rsi(prices: np.ndarray, period: int) -> float:
     """RSI 계산 (Numba JIT 최적화) - 마지막 period개만 계산"""
     n = len(prices)
     if n < period + 1:
         return 50.0
     avg_gain = 0.0
     avg_loss = 0.0
-    start_idx = n - period - 1
     for i in range(period):
-        delta = prices[start_idx + i + 1] - prices[start_idx + i]
+        idx = n - period + i
+        delta = prices[idx + 1] - prices[idx]
         if delta > 0:
             avg_gain += delta
         else:
@@ -30,29 +30,27 @@ def _calculate_rsi(prices: np.ndarray, period: int = 14) -> float:
         return rsi
 
 
-@njit(cache=True, fastmath=True, parallel=True)
-def _calculate_volatility(prices: np.ndarray, window: int = 20) -> float:
+@njit(cache=True, fastmath=True)
+def _calculate_volatility(prices: np.ndarray, window: int) -> float:
     """변동성 계산 (Numba JIT 최적화)"""
     n = len(prices)
-    if n <= window:
+    if n < window + 1:
         return 0.0
-    returns = np.zeros(n - window, dtype=np.float64)
-    for i in prange(n - window):
-        future1_price = prices[i + window]
-        future2_price = prices[i + window - 1]
-        returns[i] = (future1_price / future2_price - 1)
-    mean_return = np.mean(returns)
-    variance    = np.sum((returns - mean_return) ** 2) / (n - window)
-    volatility  = np.sqrt(variance) * np.sqrt(250.0) * 100.0
+    returns = np.zeros(window, dtype=np.float64)
+    for i in range(window):
+        idx = n - window + i
+        returns[i] = np.log(prices[idx] / prices[idx - 1])
+    volatility = np.std(returns) * np.sqrt(window) * 100.0
     return volatility
 
 
 class AnalyzerRisk:
     """리스크 분석을 수행하는 클래스입니다.
     RSI, 변동성 등 리스크 관련 지표를 계산합니다."""
-    def __init__(self, market_type: str, dict_findex: dict):
+    def __init__(self, market_type: str, dict_findex: dict, min_data: int = 30):
         self.market_type = market_type
         self.dict_findex = dict_findex
+        self.min_data    = min_data
         self._setup_columns()
         self._setup_analysis_parameters()
 
@@ -85,9 +83,15 @@ class AnalyzerRisk:
                     'rsi_oversold': 30,                         # 과매도 RSI
                     'volatility_threshold': 3.0,                # 변동성 임계값
                     # 추세 분석 기간
-                    'trend_short_period': 5,                    # 단기 이동평균 기간
-                    'trend_medium_period': 10,                  # 중기 이동평균 기간
-                    'trend_long_period': 20,                    # 장기 이동평균 기간
+                    'trend_short_period': 10,                   # 단기 이동평균 기간
+                    'trend_medium_period': 20,                  # 중기 이동평균 기간
+                    'trend_long_period': 30,                    # 장기 이동평균 기간
+                    # 모멘텀 분석 기간
+                    'momentum_short_period': 10,                # 단기 모멘텀 기간
+                    'momentum_medium_period': 20,               # 중기 모멘텀 기간
+                    # 거래량 분석 기간
+                    'volume_recent_period': 10,                 # 최근 거래량 기간
+                    'volume_previous_period': 10,               # 이전 거래량 기간
                     # 모멘텀 임계값
                     'momentum_strong_bullish_short': 2.0,       # 강세 상승 단기 모멘텀
                     'momentum_strong_bullish_medium': 1.0,      # 강세 상승 중기 모멘텀
@@ -122,9 +126,15 @@ class AnalyzerRisk:
                     'rsi_oversold': 28,                         # 과매도 RSI
                     'volatility_threshold': 2.5,                # 변동성 임계값
                     # 추세 분석 기간 (더 길게)
-                    'trend_short_period': 3,                    # 단기 이동평균 기간
-                    'trend_medium_period': 5,                   # 중기 이동평균 기간
-                    'trend_long_period': 10,                    # 장기 이동평균 기간
+                    'trend_short_period': 5,                    # 단기 이동평균 기간
+                    'trend_medium_period': 10,                  # 중기 이동평균 기간
+                    'trend_long_period': 15,                    # 장기 이동평균 기간
+                    # 모멘텀 분석 기간
+                    'momentum_short_period': 5,                 # 단기 모멘텀 기간
+                    'momentum_medium_period': 10,               # 중기 모멘텀 기간
+                    # 거래량 분석 기간
+                    'volume_recent_period': 5,                  # 최근 거래량 기간
+                    'volume_previous_period': 5,                # 이전 거래량 기간
                     # 모멘텀 임계값 (더 보수적)
                     'momentum_strong_bullish_short': 1.5,       # 강세 상승 단기 모멘텀
                     'momentum_strong_bullish_medium': 0.8,      # 강세 상승 중기 모멘텀
@@ -160,9 +170,15 @@ class AnalyzerRisk:
                     'rsi_oversold': 25,                         # 코인은 더 낮은 과매도 기준
                     'volatility_threshold': 5.0,                # 코인은 더 높은 변동성 허용
                     # 추세 분석 기간 (더 짧게)
-                    'trend_short_period': 3,                    # 더 짧은 단기 기간
-                    'trend_medium_period': 8,                   # 더 짧은 중기 기간
-                    'trend_long_period': 15,                    # 더 짧은 장기 기간
+                    'trend_short_period': 6,                    # 더 짧은 단기 기간
+                    'trend_medium_period': 15,                  # 더 짧은 중기 기간
+                    'trend_long_period': 25,                    # 더 짧은 장기 기간
+                    # 모멘텀 분석 기간
+                    'momentum_short_period': 6,                 # 단기 모멘텀 기간
+                    'momentum_medium_period': 15,               # 중기 모멘텀 기간
+                    # 거래량 분석 기간
+                    'volume_recent_period': 6,                  # 최근 거래량 기간
+                    'volume_previous_period': 6,                # 이전 거래량 기간
                     # 모멘텀 임계값 (더 민감하게)
                     'momentum_strong_bullish_short': 1.5,       # 더 낮은 기준
                     'momentum_strong_bullish_medium': 0.8,      # 더 낮은 기준
@@ -197,9 +213,15 @@ class AnalyzerRisk:
                     'rsi_oversold': 23,                         # 더 낮은 과매도 기준
                     'volatility_threshold': 4.0,                # 중간 변동성 허용
                     # 추세 분석 기간 (중간 수준)
-                    'trend_short_period': 2,                    # 중간 단기 기간
-                    'trend_medium_period': 5,                   # 중간 중기 기간
-                    'trend_long_period': 10,                    # 중간 장기 기간
+                    'trend_short_period': 4,                    # 중간 단기 기간
+                    'trend_medium_period': 10,                  # 중간 중기 기간
+                    'trend_long_period': 15,                    # 중간 장기 기간
+                    # 모멘텀 분석 기간
+                    'momentum_short_period': 4,                 # 단기 모멘텀 기간
+                    'momentum_medium_period': 10,               # 중기 모멘텀 기간
+                    # 거래량 분석 기간
+                    'volume_recent_period': 4,                  # 최근 거래량 기간
+                    'volume_previous_period': 4,                # 이전 거래량 기간
                     # 모멘텀 임계값 (보수적)
                     'momentum_strong_bullish_short': 1.2,       # 더 낮은 기준
                     'momentum_strong_bullish_medium': 0.6,      # 더 낮은 기준
@@ -235,9 +257,15 @@ class AnalyzerRisk:
                     'rsi_oversold': 28,                         # 중간 수준
                     'volatility_threshold': 4.0,                # 중간 변동성
                     # 추세 분석 기간 (중간 수준)
-                    'trend_short_period': 4,                    # 중간 단기 기간
-                    'trend_medium_period': 9,                   # 중간 중기 기간
-                    'trend_long_period': 18,                    # 중간 장기 기간
+                    'trend_short_period': 8,                    # 중간 단기 기간
+                    'trend_medium_period': 15,                  # 중간 중기 기간
+                    'trend_long_period': 25,                    # 중간 장기 기간
+                    # 모멘텀 분석 기간
+                    'momentum_short_period': 8,                 # 단기 모멘텀 기간
+                    'momentum_medium_period': 15,               # 중기 모멘텀 기간
+                    # 거래량 분석 기간
+                    'volume_recent_period': 8,                  # 최근 거래량 기간
+                    'volume_previous_period': 8,                # 이전 거래량 기간
                     # 모멘텀 임계값 (보수적)
                     'momentum_strong_bullish_short': 1.8,       # 중간 기준
                     'momentum_strong_bullish_medium': 0.9,      # 중간 기준
@@ -272,9 +300,15 @@ class AnalyzerRisk:
                     'rsi_oversold': 26,                         # 더 낮은 과매도 기준
                     'volatility_threshold': 3.5,                # 더 낮은 변동성
                     # 추세 분석 기간 (더 길게)
-                    'trend_short_period': 3,                    # 더 긴 단기 기간
-                    'trend_medium_period': 6,                   # 더 긴 중기 기간
-                    'trend_long_period': 12,                    # 더 긴 장기 기간
+                    'trend_short_period': 5,                    # 더 긴 단기 기간
+                    'trend_medium_period': 10,                  # 더 긴 중기 기간
+                    'trend_long_period': 15,                    # 더 긴 장기 기간
+                    # 모멘텀 분석 기간
+                    'momentum_short_period': 5,                 # 단기 모멘텀 기간
+                    'momentum_medium_period': 10,               # 중기 모멘텀 기간
+                    # 거래량 분석 기간
+                    'volume_recent_period': 5,                  # 최근 거래량 기간
+                    'volume_previous_period': 5,                # 이전 거래량 기간
                     # 모멘텀 임계값 (더 보수적)
                     'momentum_strong_bullish_short': 1.5,       # 더 낮은 기준
                     'momentum_strong_bullish_medium': 0.7,      # 더 낮은 기준
@@ -322,11 +356,10 @@ class AnalyzerRisk:
             (N) 형태의 1차원 어레이 - 리스크점수
         """
         n = len(code_data)
-        start_idx = 20
-        results = np.zeros(n)  # [리스크 점수]
+        results = np.zeros(n)
 
-        for i in range(start_idx, n):
-            window_data = code_data[:i]  # 0부터 i까지의 데이터 사용
+        for i in range(self.min_data, n):
+            window_data = code_data[:i + 1]
             risk_score = self.get_risk_score(window_data)
             results[i] = risk_score
 
@@ -341,8 +374,8 @@ class AnalyzerRisk:
         """
         current_prices    = code_data[:, self.idx_curr_price]   # 현재가
         volumes           = code_data[:, self.idx_volume]       # 거래대금
-        rsi               = _calculate_rsi(current_prices)
-        volatility        = _calculate_volatility(current_prices)
+        rsi               = _calculate_rsi(current_prices, self.min_data)
+        volatility        = _calculate_volatility(current_prices, self.min_data)
         trend             = self._analyze_trend(current_prices)
         momentum          = self._calculate_momentum(current_prices)
         volume_trend      = self._analyze_volume_trend(volumes)
@@ -422,9 +455,11 @@ class AnalyzerRisk:
         strong_bullish_medium = self.params['momentum_strong_bullish_medium']
         strong_bearish_short  = self.params['momentum_strong_bearish_short']
         strong_bearish_medium = self.params['momentum_strong_bearish_medium']
+        short_period  = self.params['momentum_short_period']
+        medium_period = self.params['momentum_medium_period']
 
-        short_momentum  = (prices[-1] - prices[-5]) / prices[-5] * 100 if len(prices) >= 5 else 0
-        medium_momentum = (prices[-1] - prices[-10]) / prices[-10] * 100 if len(prices) >= 10 else 0
+        short_momentum  = (prices[-1] - prices[-short_period]) / prices[-short_period] * 100 if len(prices) >= short_period else 0
+        medium_momentum = (prices[-1] - prices[-medium_period]) / prices[-medium_period] * 100 if len(prices) >= medium_period else 0
 
         if short_momentum > strong_bullish_short and medium_momentum > strong_bullish_medium:
             momentum_trend = 'bullish'
@@ -556,9 +591,12 @@ class AnalyzerRisk:
         Returns:
             거래량 추세 분석 결과 딕셔너리
         """
-        recent_avg    = np.mean(volumes[-5:])
-        previous_avg  = np.mean(volumes[-10:-5]) if len(volumes) >= 10 else recent_avg
-        volume_change = (recent_avg - previous_avg) / previous_avg * 100 if previous_avg > 0 else 0
+        recent_period   = self.params['volume_recent_period']
+        previous_period = self.params['volume_previous_period']
+        total_period    = recent_period + previous_period
+        recent_avg      = np.mean(volumes[-recent_period:])
+        previous_avg    = np.mean(volumes[-total_period:-recent_period]) if len(volumes) >= total_period else recent_avg
+        volume_change   = (recent_avg - previous_avg) / previous_avg * 100 if previous_avg > 0 else 0
 
         spike = recent_avg > previous_avg * self.params['volume_spike_multiplier']
 

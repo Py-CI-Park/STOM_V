@@ -678,7 +678,7 @@ class BackEngineBase(StgGlobalsFunc):
                     if self.dict_set['변동성분석']:
                         self.vp_analyzer.load_volatility_code_scores(code, date)
                     if self.dict_set['변손익분석']:
-                        self.vt_analyzer.load_volatility_code_scores(code, date)
+                        self.vt_analyzer.load_volatility_code_data(code, date)
 
                     for i in range(start_idx, end_idx):
                         self.index = indexs[i]

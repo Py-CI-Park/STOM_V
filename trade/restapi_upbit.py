@@ -171,91 +171,97 @@ class UpbitWebSocketReceiver(QThread):
 
     def __init__(self, codes, windowQ):
         super().__init__()
-        self.codes     = codes
-        self.windowQ   = windowQ
-        self.loop      = None
-        self.wsk_trade = None
-        self.wsk_order = None
-        self.con_trade = False
-        self.con_order = False
-        self.url       = 'wss://api.upbit.com/websocket/v1'
+        self.codes   = codes
+        self.windowQ = windowQ
+        self.loop    = None
+        self.webs_cg = None
+        self.webs_hg = None
+        self.conn_cg = False
+        self.conn_hg = False
+        self.url     = 'wss://api.upbit.com/websocket/v1'
 
     def run(self):
         """웹소켓 루프를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.create_task(self.run_trade())
-        self.loop.create_task(self.run_order())
+        self.loop.create_task(self._run_cg())
+        self.loop.create_task(self._run_hg())
         self.loop.run_forever()
 
-    async def run_trade(self):
+    async def _run_cg(self):
         """거래 데이터를 수신합니다."""
         while True:
             try:
-                if not self.con_trade:
-                    await self.connect_trader()
-                await self.receive_ticker()
+                if not self.conn_cg:
+                    await self._connect_cg()
+                await self._receive_cg_msg()
             except Exception:
                 self.windowQ.put(
                     (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간체결 수신 중 오류가 발생하여 재연결합니다.')
                 )
 
-            await self.disconnect_trader()
+            await self._disconnect_cg()
 
-    async def run_order(self):
+    async def _run_hg(self):
         """주문 데이터를 수신합니다."""
         while True:
             try:
-                if not self.con_order:
-                    await self.connect_order()
-                await self.receive_order()
+                if not self.conn_hg:
+                    await self._connect_hg()
+                await self._receive_hg_msg()
             except Exception:
                 self.windowQ.put(
                     (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간호가 수신 중 오류가 발생하여 재연결합니다.')
                 )
 
-            await self.disconnect_order()
+            await self._disconnect_hg()
 
-    async def connect_trader(self):
+    async def _connect_cg(self):
         """거래 웹소켓에 연결합니다."""
-        self.con_trade = True
-        self.wsk_trade = await websockets.connect(self.url, ping_interval=60)
+        self.conn_cg = True
+        self.webs_cg = await websockets.connect(self.url, ping_interval=60)
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'ticker', 'codes': self.codes, 'isOnlyRealtime': True}]
-        await self.wsk_trade.send(json.dumps(data))
+        await self.webs_cg.send(json.dumps(data))
 
-    async def connect_order(self):
+    async def _connect_hg(self):
         """주문 웹소켓에 연결합니다."""
-        self.con_order = True
-        self.wsk_order = await websockets.connect(self.url, ping_interval=60)
+        self.conn_hg = True
+        self.webs_hg = await websockets.connect(self.url, ping_interval=60)
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'orderbook', 'codes': self.codes, 'isOnlyRealtime': True}]
-        await self.wsk_order.send(json.dumps(data))
+        await self.webs_hg.send(json.dumps(data))
 
-    async def receive_ticker(self):
+    async def _receive_cg_msg(self):
         """티커 데이터를 수신합니다."""
-        while self.con_trade:
-            data = await self.wsk_trade.recv()
+        while self.conn_cg:
+            data = await self.webs_cg.recv()
             data = json.loads(data)
             self.signal.emit(data)
 
-    async def receive_order(self):
+    async def _receive_hg_msg(self):
         """주문 데이터를 수신합니다."""
-        while self.con_order:
-            data = await self.wsk_order.recv()
+        while self.conn_hg:
+            data = await self.webs_hg.recv()
             data = json.loads(data)
             self.signal.emit(data)
 
-    async def disconnect_trader(self):
+    async def _disconnect_cg(self):
         """거래 웹소켓 연결을 해제합니다."""
-        self.con_trade = False
-        if self.wsk_trade is not None:
-            await self.wsk_trade.close()
+        self.conn_cg = False
+        if self.webs_cg is not None:
+            try:
+                await self.webs_cg.close()
+            except Exception:
+                pass
         await asyncio.sleep(1)
 
-    async def disconnect_order(self):
+    async def _disconnect_hg(self):
         """주문 웹소켓 연결을 해제합니다."""
-        self.con_order = False
-        if self.wsk_order is not None:
-            await self.wsk_order.close()
+        self.conn_hg = False
+        if self.webs_hg is not None:
+            try:
+                await self.webs_hg.close()
+            except Exception:
+                pass
         await asyncio.sleep(1)
 
     def stop(self):
@@ -284,16 +290,16 @@ class UpbitWebSocketTrader(QThread):
         """웹소켓 루프를 실행합니다."""
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
-        self.loop.create_task(self._run())
+        self.loop.create_task(self._run_user())
         self.loop.run_forever()
 
-    async def _run(self):
+    async def _run_user(self):
         """메인 루프를 실행합니다."""
         while True:
             try:
                 if not self.connected:
                     await self._connect()
-                await self._receive_message()
+                await self._receive_msg()
             except Exception:
                 self.windowQ.put(
                     (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 주문체결 수신 중 오류가 발생하여 재연결합니다.')
@@ -318,7 +324,7 @@ class UpbitWebSocketTrader(QThread):
         data = [{'ticket': str(uuid.uuid4())}, {'type': 'myOrder'}]
         await self.websocket.send(json.dumps(data))
 
-    async def _receive_message(self):
+    async def _receive_msg(self):
         """메시지를 수신합니다."""
         while self.connected:
             data = await self.websocket.recv()
