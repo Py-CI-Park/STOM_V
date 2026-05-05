@@ -1,5 +1,12 @@
 # V3 official update intake plan
 
+> [!IMPORTANT]
+> ## Phase 6 Ralph fallback 보정 notice
+>
+> 이 문서의 `2026-04-18 V3.0` row에 적힌 `f6cb505720252be14849bb9c962ec75d29852cf5`는 **V3.0 marker 최초 등장 commit**으로만 유지한다.
+> 이후 byte-safe section 검증에서 최신 upstream `_update.txt`의 `V3.0` section 전문과 처음 일치하는 commit은 `ec7db11c1e6b4a4263327cdd5bf3b7514d4d62fb`로 보정되었다.
+> 또한 upstream `V3.00`는 Phase 5/6 기준 `9c8b3a16` 이후 `e42dcfd9e94731f09724c64c7568830854e1433d`까지 이동했다.
+> 다음 공식 `STOM V3.0` 반영 전에는 반드시 `docs/update_log/2026-05-05_v3_phase6_ralph_v30_gate_review.md`를 먼저 읽고, `ec7db11c` 기준 dry-run을 다시 수행한다.
 - 작성일: 2026-05-05
 - 작성 시각: 2026-05-05 16:42:48 +09:00
 - 작업 위치: `C:\System_Trading\STOM\STOM_V`

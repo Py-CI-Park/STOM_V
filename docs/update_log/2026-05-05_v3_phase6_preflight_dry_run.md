@@ -1,5 +1,11 @@
 # V3 Phase 6 preflight dry-run 기록
 
+> [!IMPORTANT]
+> ## Ralph fallback 이후 보정 notice
+>
+> 이 dry-run 문서는 당시 upstream `V3.00`가 `9c8b3a16`일 때의 preflight 결과다.
+> 이후 upstream은 `e42dcfd9e94731f09724c64c7568830854e1433d`까지 이동했고, `V3.0` commit body 기준도 `f6cb5057` marker-first-seen에서 `ec7db11c1e6b4a4263327cdd5bf3b7514d4d62fb` latest-section-match로 보정되었다.
+> 다음 source apply 전에 `docs/update_log/2026-05-05_v3_phase6_ralph_v30_gate_review.md`를 기준으로 `STOM V3.0` 전용 dry-run을 다시 수행한다.
 - 작성일: 2026-05-05
 - 작성 시각: 2026-05-05 16:55:40 +09:00
 - 작업 위치: `C:\System_Trading\STOM\STOM_V`
