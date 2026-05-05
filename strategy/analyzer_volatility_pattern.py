@@ -11,6 +11,7 @@ from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
+from utility.static_method.static_datetime import timedelta_day, dt_ymd, str_ymd
 
 VOLATILITY_PATTERN_DB = f'{DB_PATH}/volatility_pattern.db'
 
@@ -41,14 +42,6 @@ def _calculate_log_volatility(close_price: np.ndarray, analysis_period: int) -> 
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _calculate_log_volatility_last(close_price: np.ndarray, analysis_period: int) -> float:
-    """로그 수익률 기반 마지막 변동성만 계산 (실시간용, numba 최적화)"""
-    last_price   = close_price[-(analysis_period + 1):]
-    last_returns = np.diff(np.log(last_price))
-    return np.std(last_returns)
-
-
-@njit(cache=True, fastmath=True, parallel=True)
 def _calculate_atr(close_price: np.ndarray, high_price: np.ndarray, low_price: np.ndarray,
                    analysis_period: int) -> np.ndarray:
     """ATR 계산 (numba 최적화)"""
@@ -62,33 +55,91 @@ def _calculate_atr(close_price: np.ndarray, high_price: np.ndarray, low_price: n
     return atr
 
 
+@njit(cache=True, fastmath=True, parallel=True)
+def _calculate_volatility_change_rate(volatility_data: np.ndarray, analysis_period: int) -> np.ndarray:
+    """변동성 변화율 계산 (이전기간 대비 최근기간 변동성 변화, Numba 최적화)
+    analysis_period: 각 기간의 길이 (이전=period, 최근=period, 총 2*period 필요)
+    """
+    n = len(volatility_data)
+    change_rates = np.zeros(n, dtype=np.float64)
+    for i in prange(2 * analysis_period, n):
+        prev_vol   = np.mean(volatility_data[i - 2 * analysis_period:i - analysis_period])
+        recent_vol = np.mean(volatility_data[i - analysis_period:i])
+        if prev_vol > 0:
+            change_rates[i] = (recent_vol - prev_vol) / prev_vol * 100
+    return change_rates
+
+
 @njit(cache=True, fastmath=True)
-def _calculate_atr_last(close_price: np.ndarray, high_price: np.ndarray, low_price: np.ndarray,
-                        analysis_period: int) -> float:
-    """ATR 마지막 값만 계산 (실시간용, numba 최적화)"""
-    close_price = close_price[-(analysis_period + 1):]
-    high_price  = high_price[-(analysis_period + 1):]
-    low_price   = low_price[-(analysis_period + 1):]
-    tr1 = high_price[1:] - low_price[1:]
-    tr2 = np.abs(high_price[1:] - close_price[:-1])
-    tr3 = np.abs(low_price[1:] - close_price[:-1])
-    tr  = np.maximum(tr1, tr2, tr3)
-    return np.mean(tr)
+def _calculate_volatility_change_rate_last(volatility_data: np.ndarray, analysis_period: int) -> float:
+    """변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
+    n = len(volatility_data)
+    prev_vol   = np.mean(volatility_data[n - 2 * analysis_period:n - analysis_period])
+    recent_vol = np.mean(volatility_data[n - analysis_period:n])
+    if prev_vol > 0:
+        return (recent_vol - prev_vol) / prev_vol * 100
+    return 0.0
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _classify_volatility_levels(volatility_data: np.ndarray, level_boundaries: np.ndarray,
+def _calculate_change_rate_percentiles(change_rates: np.ndarray, num_levels: int) -> np.ndarray:
+    """변동성 변화율 백분위 계산 (마이너스/플러스 분리, Numba 최적화)
+    num_levels: 전체 그룹 수 (짝수 가정, 반반 분할)
+    그룹 0~half-1: 마이너스 변화율, 그룹 half~num_levels-1: 플러스 변화율
+    """
+    half = num_levels // 2
+    percentiles = np.zeros(num_levels, dtype=np.float64)
+    # 마이너스 변화율 백분위 계산 (0~half-1 그룹용)
+    negative_mask = change_rates < 0
+    negative_count = np.sum(negative_mask)
+    if negative_count > 0:
+        negative_rates = change_rates[negative_mask]
+        for i in prange(half):
+            p = (i + 1) / half * 100
+            percentiles[i] = np.percentile(negative_rates, p)
+    # 플러스 변화율 백분위 계산 (half~num_levels-1 그룹용)
+    positive_mask = change_rates >= 0
+    positive_count = np.sum(positive_mask)
+    if positive_count > 0:
+        positive_rates = change_rates[positive_mask]
+        for i in prange(half):
+            p = (i + 1) / half * 100
+            percentiles[half + i] = np.percentile(positive_rates, p)
+    return percentiles
+
+
+@njit(cache=True, fastmath=True, parallel=True)
+def _classify_volatility_levels(change_rates: np.ndarray, percentiles: np.ndarray,
                                 num_levels: int) -> np.ndarray:
-    """변동성 레벨 분류 (numba 최적화)"""
-    levels = np.zeros(len(volatility_data), dtype=np.int32)
-    for idx in prange(len(volatility_data)):
-        if volatility_data[idx] > 0:
-            for level in range(num_levels):
-                if level_boundaries[level] <= volatility_data[idx] < level_boundaries[level + 1]:
+    """변동성 변화율 레벨 분류 (numba 최적화, 마이너스/플러스 분리)"""
+    half = num_levels // 2
+    levels = np.zeros(len(change_rates), dtype=np.int32)
+    for idx in prange(len(change_rates)):
+        if change_rates[idx] < 0:
+            # 마이너스 변화율 그룹
+            for level in range(half):
+                if level == 0:
+                    cr_min = -999999.0
+                else:
+                    cr_min = percentiles[level - 1]
+                cr_max = percentiles[level]
+                if cr_min <= change_rates[idx] < cr_max:
                     levels[idx] = level
                     break
-            if volatility_data[idx] >= level_boundaries[-1]:
-                levels[idx] = num_levels - 1
+        else:
+            # 플러스 변화율 그룹
+            for level in range(half, num_levels):
+                if level == half:
+                    cr_min = 0.0
+                else:
+                    cr_min = percentiles[level - 1]
+                if level == num_levels - 1:
+                    cr_max = 999999.0
+                else:
+                    cr_max = percentiles[level]
+                if cr_min <= change_rates[idx] < cr_max:
+                    levels[idx] = level
+                    break
     return levels
 
 
@@ -108,7 +159,7 @@ def _calculate_volatility_scores(close_price: np.ndarray, dates: np.ndarray, lev
                 exit_price = exit_max_price
             else:
                 exit_price = exit_min_price
-            price_change   = (exit_price - entry_price) / entry_price * 100
+            price_change   = (exit_price / entry_price - 1) * 100
             score = price_change / rate_threshold * 100
             score = max(-100.0, min(100.0, score))
             scores[k] = score
@@ -130,14 +181,14 @@ class AnalyzerVolatilityPattern:
         self.analysis_period, self.rate_threshold, self.num_levels = \
             self.volatility_database.load_volatility_setting(market_gubun)
 
-        self.backtest_db       = market_info['백테디비'][is_tick]
-        self.factor_list       = market_info['팩터목록'][is_tick]
-        self.is_tick           = is_tick
-        self.min_samples       = min_samples
-        self.idx_close         = self.factor_list.index('현재가')
-        self.idx_high          = self.factor_list.index('분봉고가') if not is_tick else None
-        self.idx_low           = self.factor_list.index('분봉저가') if not is_tick else None
-        self.volatility_scores: dict[str, dict[str, float]] = {}
+        self.backtest_db = market_info['백테디비'][is_tick]
+        self.factor_list = market_info['팩터목록'][is_tick]
+        self.is_tick     = is_tick
+        self.min_samples = min_samples
+        self.idx_close   = self.factor_list.index('현재가')
+        self.idx_high    = self.factor_list.index('분봉고가') if not is_tick else None
+        self.idx_low     = self.factor_list.index('분봉저가') if not is_tick else None
+        self.volatility_scores: dict[str, dict[int, dict[str, float]]] = {}
         self.level_boundaries: dict[str, np.ndarray] = {}
 
         if not backtest:
@@ -158,38 +209,61 @@ class AnalyzerVolatilityPattern:
 
     def analyze_current_volatility(self, code: str, code_data: np.ndarray) -> Tuple[float, float]:
         """
-        실시간 변동성 분석 및 학습된 점수 반환
+        실시간 변동성 분석 및 학습된 점수 반환 (변동성 변화율 기반)
         code: 종목코드
         code_data: 실시간 데이터 (1분봉 또는 틱)
         return: 변동성점수, 변동성신뢰도
         """
-        volatility_score, confidence = 0.0, 0.0
+        volatility_score, confidence_score = 0.0, 0.0
 
-        code_scores     = self.volatility_scores.get(code)
-        code_boundaries = self.level_boundaries.get(code)
-        if code_scores and code_boundaries and len(code_data) >= self.analysis_period + 1:
+        code_scores = self.volatility_scores.get(code)
+        code_percentiles = self.level_boundaries.get(code)
+        if code_scores and code_percentiles is not None and len(code_data) >= self.analysis_period * 2:
             close_price = code_data[:, self.idx_close]
 
             if self.is_tick:
-                volatility_value = _calculate_log_volatility_last(close_price, self.analysis_period)
+                volatility_data = _calculate_log_volatility(close_price, self.analysis_period)
             else:
-                high_price       = code_data[:, self.idx_high]
-                low_price        = code_data[:, self.idx_low]
-                volatility_value = _calculate_atr_last(close_price, high_price, low_price, self.analysis_period)
+                high_price = code_data[:, self.idx_high]
+                low_price = code_data[:, self.idx_low]
+                volatility_data = _calculate_atr(close_price, high_price, low_price, self.analysis_period)
 
-            volatility_level = -1
-            for level in range(len(code_boundaries) - 1):
-                if code_boundaries[level] <= volatility_value < code_boundaries[level + 1]:
-                    volatility_level = level
-                    break
+            change_rate = _calculate_volatility_change_rate_last(volatility_data, self.analysis_period)
+            half = self.num_levels // 2
 
-            level_scores = code_scores.get(volatility_level)
-            if level_scores:
-                score_data       = code_scores[volatility_level]
-                volatility_score = score_data['avg_score']
-                confidence       = score_data['confidence_score']
+            if change_rate < 0:
+                # 마이너스 변화율 그룹
+                for level in range(half):
+                    if level == 0:
+                        cr_min = -999999.0
+                    else:
+                        cr_min = code_percentiles[level - 1]
+                    cr_max = code_percentiles[level]
+                    if cr_min <= change_rate < cr_max:
+                        score_data = code_scores.get(level)
+                        if score_data:
+                            volatility_score = score_data['avg_score']
+                            confidence_score = score_data['confidence_score']
+                        break
+            else:
+                # 플러스 변화율 그룹
+                for level in range(half, self.num_levels):
+                    if level == half:
+                        cr_min = 0.0
+                    else:
+                        cr_min = code_percentiles[level - 1]
+                    if level == self.num_levels - 1:
+                        cr_max = 999999.0
+                    else:
+                        cr_max = code_percentiles[level]
+                    if cr_min <= change_rate < cr_max:
+                        score_data = code_scores.get(level)
+                        if score_data:
+                            volatility_score = score_data['avg_score']
+                            confidence_score = score_data['confidence_score']
+                        break
 
-        return volatility_score, confidence
+        return volatility_score, confidence_score
 
     def analyze_batch_data(self, code: str, code_data: np.ndarray) -> np.ndarray:
         """2차원 어레이 데이터 전체를 일괄 분석합니다.
@@ -204,8 +278,8 @@ class AnalyzerVolatilityPattern:
         n = len(code_data)
         results = np.zeros((n, 2))
 
-        for i in range(self.analysis_period, n):
-            window_data = code_data[i-self.analysis_period:i]
+        for i in range(self.analysis_period * 2, n):
+            window_data = code_data[i - self.analysis_period * 2:i]
             results[i] = list(self.analyze_current_volatility(code, window_data))
 
         return results
@@ -253,7 +327,7 @@ class AnalyzerVolatilityPattern:
         total_processed = 0
         columns = [
             'code', 'volatility_level', 'avg_score', 'max_score', 'min_score', 'std_score',
-            'sample_count', 'confidence_score', 'level_boundaries', 'setting_hash', 'last_update'
+            'sample_count', 'confidence_score', 'change_rate_percentiles', 'setting_hash', 'last_update'
         ]
         for i, result in enumerate(results):
             if result:
@@ -309,10 +383,11 @@ class AnalyzerVolatilityPattern:
                     if target_date in existing_dates:
                         continue
 
-                    mask = all_dates <= target_date
+                    start_date = float(str_ymd(timedelta_day(-30, dt_ymd(str(int(target_date))))))
+                    mask = (start_date <= all_dates) & (all_dates <= target_date)
                     date_data = historical_data[mask]
 
-                    if len(date_data) < analysis_period * 2:
+                    if len(date_data) < analysis_period * 3:
                         continue
 
                     dates       = date_data[:, 0] // 1000000 if is_tick else date_data[:, 0] // 10000
@@ -325,16 +400,18 @@ class AnalyzerVolatilityPattern:
                         low_price       = date_data[:, idx_low]
                         volatility_data = _calculate_atr(close_price, high_price, low_price, analysis_period)
 
-                    valid_data = volatility_data[volatility_data > 0]
+                    # 변동성 변화율 계산
+                    change_rates = _calculate_volatility_change_rate(volatility_data, analysis_period)
+                    valid_mask = change_rates != 0
+                    valid_change_rates = change_rates[valid_mask]
 
-                    if len(valid_data) < num_levels:
-                        level_boundaries = np.linspace(0, 1, num_levels + 1)
+                    if len(valid_change_rates) < num_levels:
+                        percentiles = np.linspace(-50, 50, num_levels)
                     else:
-                        percentiles      = np.linspace(0, 100, num_levels + 1)
-                        level_boundaries = np.percentile(valid_data, percentiles)
+                        percentiles = _calculate_change_rate_percentiles(valid_change_rates, num_levels)
 
-                    levels = _classify_volatility_levels(volatility_data, level_boundaries, num_levels)
-                    level_boundaries = ','.join(map(str, level_boundaries))
+                    levels = _classify_volatility_levels(change_rates, percentiles, num_levels)
+                    percentiles_str = ','.join(map(str, percentiles))
 
                     for level in range(num_levels):
                         level_indices = np.where(levels == level)[0]
@@ -356,7 +433,7 @@ class AnalyzerVolatilityPattern:
                                     round(float(np.std(scores)), 2),
                                     len(scores),
                                     round(confidence, 2),
-                                    level_boundaries,
+                                    percentiles_str,
                                     setting_hash,
                                     target_date
                                 ]
@@ -404,7 +481,7 @@ class VolatilityPatternDatabase:
                     std_score REAL NOT NULL,
                     sample_count INTEGER NOT NULL,
                     confidence_score REAL NOT NULL,
-                    level_boundaries TEXT NOT NULL,
+                    change_rate_percentiles TEXT NOT NULL,
                     setting_hash TEXT NOT NULL,
                     last_update INTEGER NOT NULL,
                     PRIMARY KEY (code, volatility_level, setting_hash, last_update)
@@ -427,21 +504,21 @@ class VolatilityPatternDatabase:
         """
         종목의 전체 변동성 점수 조회 (최신 날짜 기준)
         code: 종목코드
-        return: (변동성 레벨별 점수 딕셔너리, 레벨 경계 배열)
+        return: (변동성 레벨별 점수 딕셔너리, 변화율 백분위 배열)
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
                 SELECT volatility_level, avg_score, max_score, min_score, std_score, sample_count,
-                confidence_score, level_boundaries
+                confidence_score, change_rate_percentiles
                 FROM {self.table_name}
-                WHERE code = ? AND setting_hash = ? AND last_update = 
+                WHERE code = ? AND setting_hash = ? AND last_update =
                 (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?)
             ''', (code, self.setting_hash, code, self.setting_hash))
             results = cursor.fetchall()
 
             volatility_scores = {}
-            level_boundaries = None
+            percentiles = None
             for result in results:
                 volatility_scores[result[0]] = {
                     'avg_score': result[1],
@@ -451,9 +528,9 @@ class VolatilityPatternDatabase:
                     'sample_count': result[5],
                     'confidence_score': result[6]
                 }
-                level_boundaries = np.array(list(map(float, result[7].split(','))))
+                percentiles = np.array(list(map(float, result[7].split(','))))
 
-            return volatility_scores, level_boundaries
+            return volatility_scores, percentiles
 
     def get_volatility_code_scores(self, code: str, date: int) -> \
             Tuple[Dict[int, Dict[str, float]], np.ndarray]:
@@ -461,21 +538,21 @@ class VolatilityPatternDatabase:
         백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 변동성 점수 조회
         code: 종목코드
         date: 백테스트 기준 날짜 (YYYYMMDD)
-        return: (변동성 레벨별 점수 딕셔너리, 레벨 경계 배열)
+        return: (변동성 레벨별 점수 딕셔너리, 변화율 백분위 배열)
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
                 SELECT volatility_level, avg_score, max_score, min_score, std_score, sample_count,
-                confidence_score, level_boundaries
+                confidence_score, change_rate_percentiles
                 FROM {self.table_name}
-                WHERE code = ? AND setting_hash = ? AND last_update = 
+                WHERE code = ? AND setting_hash = ? AND last_update =
                 (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update < ?)
             ''', (code, self.setting_hash, code, self.setting_hash, date))
             results = cursor.fetchall()
 
             volatility_scores = {}
-            level_boundaries = None
+            percentiles = None
             for result in results:
                 volatility_scores[result[0]] = {
                     'avg_score': result[1],
@@ -485,9 +562,9 @@ class VolatilityPatternDatabase:
                     'sample_count': result[5],
                     'confidence_score': result[6]
                 }
-                level_boundaries = np.array(list(map(float, result[7].split(','))))
+                percentiles = np.array(list(map(float, result[7].split(','))))
 
-            return volatility_scores, level_boundaries
+            return volatility_scores, percentiles
 
     def save_volatility_scores(self, df: pd.DataFrame):
         """종목별 변동성 점수 저장"""
@@ -563,7 +640,7 @@ def volatility_setting_save(ui):
 def volatility_train(ui):
     """변동성 패턴 학습을 시작한다. 스레드로 구동하여 UI멈춤을 방지한다."""
     if ui.learn_running:
-        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 변동성분석 학습이 진행중입니다.\n')
+        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 학습이 진행중입니다.\n')
         return
 
     _analysis_period = int(ui.vlp_comboBoxxx_01.currentText())

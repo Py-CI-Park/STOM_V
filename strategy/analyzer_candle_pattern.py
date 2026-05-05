@@ -12,6 +12,7 @@ from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
+from utility.static_method.static_datetime import timedelta_day, dt_ymd, str_ymd
 
 PATTERN_DB = f'{DB_PATH}/pattern_analysis.db'
 PATTERN_FUNCTIONS = [
@@ -53,8 +54,7 @@ def _calculate_pattern_scores(close_price: np.ndarray, dates: np.ndarray, detect
     scores = np.zeros(max_scores)
     for k in prange(max_scores):
         idx = detection_indices[k]
-        if dates[idx] == dates[idx + analysis_period] and \
-                idx + analysis_period < len(close_price):
+        if idx + analysis_period < len(close_price) and dates[idx] == dates[idx + analysis_period]:
             entry_price    = close_price[idx]
             exit_max_price = close_price[idx:idx + analysis_period].max()
             exit_min_price = close_price[idx:idx + analysis_period].min()
@@ -62,7 +62,7 @@ def _calculate_pattern_scores(close_price: np.ndarray, dates: np.ndarray, detect
                 exit_price = exit_max_price
             else:
                 exit_price = exit_min_price
-            price_change   = (exit_price - entry_price) / entry_price * 100
+            price_change   = (exit_price / entry_price - 1) * 100
             score = price_change / rate_threshold * 100
             score = max(-100.0, min(100.0, score))
             scores[k] = score
@@ -81,14 +81,14 @@ class AnalyzerCandlePattern:
         self.pattern_database = CandlePatternDatabase(market_info['전략구분'])
         self.analysis_period, self.rate_threshold = self.pattern_database.load_pattern_setting(market_gubun)
 
-        self.backtest_db    = market_info['백테디비'][0]
-        self.factor_list    = market_info['팩터목록'][0]
-        self.min_samples    = min_samples
-        self.idx_open       = self.factor_list.index('분봉시가')
-        self.idx_high       = self.factor_list.index('분봉고가')
-        self.idx_low        = self.factor_list.index('분봉저가')
-        self.idx_close      = self.factor_list.index('현재가')
-        self.pattern_scores = {}
+        self.backtest_db = market_info['백테디비'][0]
+        self.factor_list = market_info['팩터목록'][0]
+        self.min_samples = min_samples
+        self.idx_open    = self.factor_list.index('분봉시가')
+        self.idx_high    = self.factor_list.index('분봉고가')
+        self.idx_low     = self.factor_list.index('분봉저가')
+        self.idx_close   = self.factor_list.index('현재가')
+        self.pattern_scores: dict[str, dict[str, dict[str, float]]] = {}
 
         if not backtest:
             self._load_pattern_all_scores()
@@ -113,7 +113,8 @@ class AnalyzerCandlePattern:
         """
         pattern_score, confidence_score = 0.0, 0.0
 
-        if code in self.pattern_scores and len(code_data) >= 5:
+        pattern_scores = self.pattern_scores.get(code)
+        if pattern_scores and len(code_data) >= 5:
             code_data   = code_data[-5:]
             open_price  = code_data[:, self.idx_open]
             high_price  = code_data[:, self.idx_high]
@@ -126,7 +127,7 @@ class AnalyzerCandlePattern:
                 pattern_result = pattern_func(open_price, high_price, low_price, close_price)
 
                 if pattern_result[-1] != 0:
-                    learned_score = self.pattern_scores[code].get(pattern_name)
+                    learned_score = pattern_scores.get(pattern_name)
                     if learned_score:
                         avg_score = learned_score['avg_score']
                         if avg_score > high_avg_score:
@@ -253,7 +254,8 @@ class AnalyzerCandlePattern:
                         if target_date in existing_dates:
                             continue
 
-                        mask = all_dates <= target_date
+                        start_date = float(str_ymd(timedelta_day(-30, dt_ymd(str(int(target_date))))))
+                        mask = (start_date <= all_dates) & (all_dates <= target_date)
                         date_data = historical_data[mask]
 
                         if len(date_data) < analysis_period * 2:
@@ -482,7 +484,7 @@ def pattern_train(ui):
         return
 
     if ui.learn_running:
-        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 캔들분석 학습이 진행중입니다.\n')
+        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 학습이 진행중입니다.\n')
         return
 
     _analysis_period = int(ui.ptn_comboBoxxx_01.currentText())

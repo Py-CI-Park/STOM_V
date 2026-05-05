@@ -5,12 +5,13 @@ import hashlib
 import numpy as np
 import pandas as pd
 from numba import njit, prange
-from typing import Tuple, List, Dict, Any
 from PyQt5.QtWidgets import QMessageBox
+from typing import Tuple, List, Dict, Any
 from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
+from utility.static_method.static_datetime import timedelta_day, dt_ymd, str_ymd
 
 VOLATILITY_STOP_TAKE_DB = f'{DB_PATH}/volatility_stop_take.db'
 
@@ -30,92 +31,136 @@ def _calculate_setting_hash(*args) -> str:
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _calculate_std_volatility(prices: np.ndarray, period: int) -> np.ndarray:
-    """표준편차 기반 변동성 계산 (Numba 최적화)"""
+def _calculate_volatility_change_rate(prices: np.ndarray, analysis_period: int) -> np.ndarray:
+    """변동성 변화율 계산 (이전기간 대비 최근기간 변동성 변화, Numba 최적화)
+    period: 각 기간의 길이 (이전=period, 최근=period, 총 2*period 필요)
+    """
     n = len(prices)
-    volatility = np.zeros(n, dtype=np.float64)
-    for i in prange(period, n):
-        w    = prices[i-period:i]
-        mean = np.mean(w)
-        std  = np.std(w)
-        volatility[i] = std / mean * 100
-    return volatility
+    change_rates = np.zeros(n, dtype=np.float64)
+    for i in prange(2 * analysis_period, n):
+        prev_window   = prices[i - 2 * analysis_period:i - analysis_period]
+        prev_mean     = np.mean(prev_window)
+        prev_std      = np.std(prev_window)
+        prev_vol      = prev_std / prev_mean * 100 if prev_mean > 0 else 0.0
+        recent_window = prices[i - analysis_period:i]
+        recent_mean   = np.mean(recent_window)
+        recent_std    = np.std(recent_window)
+        recent_vol    = recent_std / recent_mean * 100 if recent_mean > 0 else 0.0
+        if prev_vol > 0:
+            change_rates[i] = (recent_vol - prev_vol) / prev_vol * 100
+    return change_rates
 
 
 @njit(cache=True, fastmath=True)
-def _calculate_std_volatility_last(prices: np.ndarray, period: int) -> float:
-    """표준편차 기반 마지막 변동성만 계산 (실시간용, Numba 최적화)"""
-    n    = len(prices)
-    w    = prices[n-period:n]
-    mean = np.mean(w)
-    std  = np.std(w)
-    return std / mean * 100
+def _calculate_volatility_change_rate_last(prices: np.ndarray, analysis_period: int) -> float:
+    """변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
+    n = len(prices)
+    prev_window   = prices[n - 2 * analysis_period:n - analysis_period]
+    prev_mean     = np.mean(prev_window)
+    prev_std      = np.std(prev_window)
+    prev_vol      = prev_std / prev_mean * 100 if prev_mean > 0 else 0.0
+    recent_window = prices[n - analysis_period:n]
+    recent_mean   = np.mean(recent_window)
+    recent_std    = np.std(recent_window)
+    recent_vol    = recent_std / recent_mean * 100 if recent_mean > 0 else 0.0
+    if prev_vol > 0:
+        return (recent_vol - prev_vol) / prev_vol * 100
+    return 0.0
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _calculate_realized_volatility_tick(prices: np.ndarray, period: int) -> np.ndarray:
-    """로그 수익률의 표준편차 기반 실현 변동성 (Numba 최적화)"""
+def _calculate_realized_volatility_change_rate(prices: np.ndarray, analysis_period: int) -> np.ndarray:
+    """실현 변동성 변화율 계산 (이전기간 대비 최근기간, Numba 최적화)"""
     n = len(prices)
-    returns = np.zeros(n-1, dtype=np.float64)
-    for i in prange(1, n):
-        returns[i-1] = np.log(prices[i] / prices[i-1])
-    rv = np.zeros(n, dtype=np.float64)
-    for i in prange(period, n):
-        window = returns[i-period:i]
-        rv[i] = np.std(window) * np.sqrt(period) * 100
-    return rv
+    change_rates = np.zeros(n, dtype=np.float64)
+    for i in prange(2 * analysis_period - 1, n):
+        prev_returns  = np.zeros(analysis_period, dtype=np.float64)
+        prev_base_idx = i - 2 * analysis_period - 1
+        for j in range(analysis_period):
+            prev_returns[j] = np.log(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j])
+        prev_vol = np.std(prev_returns) * np.sqrt(analysis_period) * 100
+        recent_returns  = np.zeros(analysis_period, dtype=np.float64)
+        recent_base_idx = i - analysis_period - 1
+        for j in range(analysis_period):
+            recent_returns[j] = np.log(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j])
+        recent_vol = np.std(recent_returns) * np.sqrt(analysis_period) * 100
+        if prev_vol > 0:
+            change_rates[i] = (recent_vol - prev_vol) / prev_vol * 100
+    return change_rates
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _calculate_realized_volatility_tick_last(prices: np.ndarray, period: int) -> float:
-    """로그 수익률 기반 마지막 실현 변동성만 계산 (실시간용, Numba 최적화)"""
+def _calculate_realized_volatility_change_rate_last(prices: np.ndarray, analysis_period: int) -> float:
+    """실현 변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
     n = len(prices)
-    returns = np.zeros(period)
-    base_idx = n - 1 - period
-    for i in prange(period):
-        returns[i] = np.log(prices[base_idx + i + 1] / prices[base_idx + i])
-    return np.std(returns) * np.sqrt(period) * 100
+    prev_returns  = np.zeros(analysis_period, dtype=np.float64)
+    prev_base_idx = n - 2 * analysis_period - 1
+    for j in prange(analysis_period):
+        prev_returns[j] = np.log(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j])
+    prev_vol = np.std(prev_returns) * np.sqrt(analysis_period) * 100
+    recent_returns  = np.zeros(analysis_period, dtype=np.float64)
+    recent_base_idx = n - analysis_period - 1
+    for j in prange(analysis_period):
+        recent_returns[j] = np.log(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j])
+    recent_vol = np.std(recent_returns) * np.sqrt(analysis_period) * 100
+    if prev_vol > 0:
+        return (recent_vol - prev_vol) / prev_vol * 100
+    return 0.0
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _calculate_absolute_change_rate(prices: np.ndarray, period: int) -> np.ndarray:
-    """절대 변화율 기반 변동성 (Numba 최적화)"""
+def _calculate_absolute_change_rate_change(prices: np.ndarray, analysis_period: int) -> np.ndarray:
+    """절대 변화율 기반 변동성 변화율 계산 (이전기간 대비 최근기간, Numba 최적화)"""
     n = len(prices)
-    abs_changes = np.zeros(n - 1, dtype=np.float64)
-    for i in prange(1, n):
-        abs_changes[i - 1] = abs(prices[i] - prices[i - 1]) / prices[i - 1] * 100
-    volatility = np.zeros(n, dtype=np.float64)
-    for i in prange(period - 1, n):
-        window = abs_changes[i - period + 1:i]
-        volatility[i] = np.mean(window)
-    return volatility
+    change_rates = np.zeros(n, dtype=np.float64)
+    for i in prange(2 * analysis_period - 1, n):
+        prev_abs_changes = np.zeros(analysis_period, dtype=np.float64)
+        prev_base_idx    = i - 2 * analysis_period - 1
+        for j in range(analysis_period):
+            prev_abs_changes[j] = abs(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j] - 1) * 100
+        prev_vol = np.mean(prev_abs_changes)
+        recent_abs_changes = np.zeros(analysis_period, dtype=np.float64)
+        recent_base_idx    = i - analysis_period - 1
+        for j in range(analysis_period):
+            recent_abs_changes[j] = abs(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j] - 1) * 100
+        recent_vol = np.mean(recent_abs_changes)
+        if prev_vol > 0:
+            change_rates[i] = (recent_vol - prev_vol) / prev_vol * 100
+    return change_rates
 
 
-@njit(cache=True, fastmath=True)
-def _calculate_absolute_change_rate_last(prices: np.ndarray, period: int) -> float:
-    """절대 변화율 기반 마지막 변동성만 계산 (실시간용, Numba 최적화)"""
+@njit(cache=True, fastmath=True, parallel=True)
+def _calculate_absolute_change_rate_change_last(prices: np.ndarray, analysis_period: int) -> float:
+    """절대 변화율 기반 변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
     n = len(prices)
-    if n < period + 1:
-        return 0.0
-    abs_changes = np.zeros(period)
-    base_idx = n - period
-    for i in range(period):
-        idx = base_idx + i
-        abs_changes[i] = abs(prices[idx] - prices[idx - 1]) / prices[idx - 1] * 100
-    return np.mean(abs_changes)
+    prev_abs_changes = np.zeros(analysis_period, dtype=np.float64)
+    prev_base_idx    = n - 2 * analysis_period - 1
+    for j in prange(analysis_period):
+        prev_abs_changes[j] = abs(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j] - 1) * 100
+    prev_vol = np.mean(prev_abs_changes)
+    recent_abs_changes = np.zeros(analysis_period, dtype=np.float64)
+    recent_base_idx    = n - analysis_period - 1
+    for j in prange(analysis_period):
+        recent_abs_changes[j] = abs(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j] - 1) * 100
+    recent_vol = np.mean(recent_abs_changes)
+    if prev_vol > 0:
+        return (recent_vol - prev_vol) / prev_vol * 100
+    return 0.0
 
 
 @njit(cache=True, fastmath=True, parallel=True)
 def _simulate_stop_take(prices: np.ndarray, dates: np.ndarray, stop_loss_pct: float,
-                        take_profit_pct: float, start_period: int):
+                        take_profit_pct: float, analysis_period: int, check_step: int):
     """손절/익절 시뮬레이션 (Numba 최적화)"""
     n = len(prices)
     returns = np.zeros(n, dtype=np.float64)
-    for i in prange(start_period, n - start_period):
+    total_iterations = (n - analysis_period - analysis_period + check_step - 1) // check_step
+    for idx in prange(total_iterations):
+        i = analysis_period + idx * check_step
         entry_price = prices[i]
         sl_price    = entry_price * (1 - stop_loss_pct / 100)
         tp_price    = entry_price * (1 + take_profit_pct / 100)
-        for j in range(i + 1, min(i + 1 + start_period, n)):
+        for j in range(i + 1, min(i + 1 + analysis_period, n)):
             if dates[i] == dates[j]:
                 if prices[j] <= sl_price:
                     returns[i] = -stop_loss_pct
@@ -130,12 +175,29 @@ def _simulate_stop_take(prices: np.ndarray, dates: np.ndarray, stop_loss_pct: fl
 
 
 @njit(cache=True, fastmath=True, parallel=True)
-def _calculate_volatility_percentiles(volatility_array: np.ndarray, group_count: int):
-    """변동성 백분위값 계산 (Numba 최적화)"""
+def _calculate_change_rate_percentiles(change_rates: np.ndarray, group_count: int):
+    """변동성 변화율 백분위 계산 (마이너스/플러스 분리, Numba 최적화)
+    group_count: 전체 그룹 수 (짝수 가정, 반반 분할)
+    그룹 0~half-1: 마이너스 변화율, 그룹 half~group_count-1: 플러스 변화율
+    """
+    half = group_count // 2
     percentiles = np.zeros(group_count, dtype=np.float64)
-    step = 100.0 / group_count
-    for i in prange(group_count):
-        percentiles[i] = np.percentile(volatility_array, (i + 1) * step)
+    # 마이너스 변화율 백분위 계산 (0~half-1 그룹용)
+    negative_mask = change_rates < 0
+    negative_count = np.sum(negative_mask)
+    if negative_count > 0:
+        negative_rates = change_rates[negative_mask]
+        for i in prange(half):
+            p = (i + 1) / half * 100
+            percentiles[i] = np.percentile(negative_rates, p)
+    # 플러스 변화율 백분위 계산 (half~group_count-1 그룹용)
+    positive_mask = change_rates >= 0
+    positive_count = np.sum(positive_mask)
+    if positive_count > 0:
+        positive_rates = change_rates[positive_mask]
+        for i in prange(half):
+            p = (i + 1) / half * 100
+            percentiles[half + i] = np.percentile(positive_rates, p)
     return percentiles
 
 
@@ -149,14 +211,13 @@ class AnalyzerVolatilityStopTake:
         backtest: 백테스트 모드 여부
         """
         self.volatility_database = VolatilityStopTakeDatabase(market_info['전략구분'], is_tick)
-        self.start_period, self.group_count = \
+        self.analysis_period, self.group_count = \
             self.volatility_database.load_volatility_stop_take_setting(market_gubun, is_tick)
-        self.backtest_db     = market_info['백테디비'][is_tick]
-        self.factor_list     = market_info['팩터목록'][is_tick]
-        self.is_tick         = is_tick
-        self.idx_close       = self.factor_list.index('현재가')
-        self.start_period    = 30
-        self.volatility_data = {}
+        self.backtest_db = market_info['백테디비'][is_tick]
+        self.factor_list = market_info['팩터목록'][is_tick]
+        self.is_tick     = is_tick
+        self.idx_close   = self.factor_list.index('현재가')
+        self.volatility_data: dict[str, dict[int, dict[str, float]]] = {}
 
         if not backtest:
             self._load_volatility_all_data()
@@ -176,23 +237,23 @@ class AnalyzerVolatilityStopTake:
         self.volatility_data[code] = self.volatility_database.get_volatility_code_scores(code, date)
 
     def analyze_current_volatility(self, code: str, code_data: np.ndarray) -> Tuple[float, float, float]:
-        """실시간 변동성 분석 및 학습된 손절/익절 반환
+        """실시간 변동성 변화율 분석 및 학습된 손절/익절 반환
         code: 종목코드
         code_data: 코드 데이터 2차원 어레이
-        return: (손절%, 익절%, 변동성, 그룹번호)
+        return: (에상수익률, 익절수익률, 손절수익률)
         """
         estimated_return, take_profit_pct, stop_loss_pct = 0.0, 0.0, 0.0
-        price_history = code_data[:, self.idx_close]
-        group_data = self.volatility_data[code]
 
-        if group_data and len(price_history) >= self.start_period:
-            vol_std = _calculate_std_volatility_last(price_history, self.start_period)
-            vol_abs = _calculate_absolute_change_rate_last(price_history, self.start_period)
-            vol_rv  = _calculate_realized_volatility_tick_last(price_history, self.start_period)
+        close_price = code_data[:, self.idx_close]
+        group_data  = self.volatility_data[code]
+        if group_data and len(close_price) >= self.analysis_period * 2 + 1:
+            vol_std_change = _calculate_volatility_change_rate_last(close_price, self.analysis_period)
+            vol_abs_change = _calculate_absolute_change_rate_change_last(close_price, self.analysis_period)
+            vol_rv_change  = _calculate_realized_volatility_change_rate_last(close_price, self.analysis_period)
+            vol_cur_change = vol_std_change * 0.4 + vol_rv_change * 0.4 + vol_abs_change * 0.2
 
-            current_volatility = vol_std * 0.4 + vol_rv * 0.4 + vol_abs * 0.2
             for _, v in group_data.items():
-                if v['volatility_min'] <= current_volatility < v['volatility_max']:
+                if v['change_rate_min'] <= vol_cur_change < v['change_rate_max']:
                     estimated_return = v['expected_return']
                     take_profit_pct  = v['multiplier_take']
                     stop_loss_pct    = -v['multiplier_stop']
@@ -204,15 +265,15 @@ class AnalyzerVolatilityStopTake:
         """2차원 어레이 데이터 전체를 일괄 분석
         code: 종목코드
         code_data: 코드 데이터 2차원 어레이
-        return: (N, 3) 형태 - 손절%, 익절%
+        return: (N, 3) 형태 - 에상수익률, 익절수익률, 손절수익률
         """
         date = int(str(code_data[0, 0])[:8])
         self.load_volatility_code_data(code, date)
 
         n = len(code_data)
         results = np.zeros((n, 3))
-        for i in range(self.start_period, n):
-            window_data = code_data[i-self.start_period:i]
+        for i in range(self.analysis_period * 2 + 1, n):
+            window_data = code_data[i - (self.analysis_period * 2 + 1):i]
             results[i] = list(self.analyze_current_volatility(code, window_data))
 
         return results
@@ -249,8 +310,9 @@ class AnalyzerVolatilityStopTake:
         with Pool(processes=actual_processes, initializer=init_worker, initargs=(windowQ,)) as pool:
             args = [
                 (
-                    i, chunk, self.backtest_db, self.idx_close, self.start_period,
-                    self.group_count, existing_dates_dict, self.is_tick, self.volatility_database.setting_hash
+                    i, chunk, self.backtest_db, self.idx_close, self.analysis_period,
+                    self.group_count, existing_dates_dict, self.is_tick,
+                    self.volatility_database.setting_hash
                 )
                 for i, chunk in enumerate(code_chunks)
             ]
@@ -258,9 +320,8 @@ class AnalyzerVolatilityStopTake:
 
         total_processed = 0
         columns = [
-            'code', 'volatility_group', 'volatility_min', 'volatility_max', 'avg_volatility',
-            'multiplier_stop', 'multiplier_take', 'expected_return', 'win_rate', 'sharpe_ratio',
-            'sample_count', 'setting_hash', 'last_update'
+            'code', 'volatility_group', 'change_rate_min', 'change_rate_max', 'multiplier_stop', 'multiplier_take',
+            'expected_return', 'win_rate', 'total_return', 'sample_count', 'setting_hash', 'last_update'
         ]
         for i, result in enumerate(results):
             if result:
@@ -277,8 +338,9 @@ class AnalyzerVolatilityStopTake:
             windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다'))
 
     @staticmethod
-    def _train_single_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, start_period: int,
-                            group_count: int, existing_dates_dict: Dict[str, set], is_tick: bool, setting_hash: str) -> List[Any]:
+    def _train_single_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, analysis_period: int,
+                            group_count: int, existing_dates_dict: Dict[str, set], is_tick: bool,
+                            setting_hash: str) -> List[Any]:
         """단일 종목 청크 학습 (멀티프로세싱용)"""
         all_volatility_scores = []
         last = len(code_chunk)
@@ -291,7 +353,7 @@ class AnalyzerVolatilityStopTake:
                     results = cursor.fetchall()
                     historical_data = np.array(results)
 
-                if len(historical_data) < start_period * 2:
+                if len(historical_data) < analysis_period * 3:
                     continue
 
                 all_dates = historical_data[:, 0] // 1000000 if is_tick else historical_data[:, 0] // 10000
@@ -303,67 +365,85 @@ class AnalyzerVolatilityStopTake:
                     if target_date in existing_dates:
                         continue
 
-                    mask = all_dates <= target_date
+                    start_date = float(str_ymd(timedelta_day(-30, dt_ymd(str(int(target_date))))))
+                    mask = (start_date <= all_dates) & (all_dates <= target_date)
                     date_data = historical_data[mask]
 
-                    if len(date_data) < start_period * 2:
+                    if len(date_data) < analysis_period * 3:
                         continue
 
-                    dates         = date_data[:, 0] // 1000000 if is_tick else date_data[:, 0] // 10000
-                    date_prices   = date_data[:, idx_close]
-                    vol_std       = _calculate_std_volatility(date_prices, start_period)
-                    vol_abs       = _calculate_absolute_change_rate(date_prices, start_period)
-                    vol_rv        = _calculate_realized_volatility_tick(date_prices, start_period)
+                    dates          = date_data[:, 0] // 1000000 if is_tick else date_data[:, 0] // 10000
+                    date_prices    = date_data[:, idx_close]
+                    vol_std_change = _calculate_volatility_change_rate(date_prices, analysis_period)
+                    vol_abs_change = _calculate_absolute_change_rate_change(date_prices, analysis_period)
+                    vol_rv_change  = _calculate_realized_volatility_change_rate(date_prices, analysis_period)
 
-                    volatility    = vol_std * 0.4 + vol_rv * 0.4 + vol_abs * 0.2
-                    valid_indices = ~np.isnan(volatility)
-                    volatility    = volatility[valid_indices]
-                    percentiles   = _calculate_volatility_percentiles(volatility, group_count)
+                    change_rate    = vol_std_change * 0.4 + vol_rv_change * 0.4 + vol_abs_change * 0.2
+                    valid_indices  = ~np.isnan(change_rate)
+                    change_rate    = change_rate[valid_indices]
+                    percentiles    = _calculate_change_rate_percentiles(change_rate, group_count)
 
+                    half = group_count // 2
                     for group_idx in range(group_count):
-                        vol_min = 0.0 if group_idx == 0 else percentiles[group_idx - 1]
-                        vol_max = percentiles[group_idx]
-                        if group_idx == group_count - 1:
-                            group_indices = np.where(volatility >= vol_min)[0]
+                        if group_idx < half:
+                            # 마이너스 변화율 그룹
+                            if group_idx == 0:
+                                cr_min = -999999.0
+                                cr_max = percentiles[0]
+                            else:
+                                cr_min = percentiles[group_idx - 1]
+                                cr_max = percentiles[group_idx]
+                            group_indices = np.where((change_rate >= cr_min) & (change_rate < cr_max))[0]
                         else:
-                            group_indices = np.where((volatility >= vol_min) & (volatility < vol_max))[0]
+                            # 플러스 변화율 그룹
+                            if group_idx == half:
+                                cr_min = 0.0
+                            else:
+                                cr_min = percentiles[group_idx - 1]
+                            if group_idx == group_count - 1:
+                                cr_max = 999999.0
+                                group_indices = np.where(change_rate >= cr_min)[0]
+                            else:
+                                cr_max = percentiles[group_idx]
+                                group_indices = np.where((change_rate >= cr_min) & (change_rate < cr_max))[0]
 
                         if len(group_indices) < 100:
                             continue
 
+                        check_step      = 60 if is_tick else 10
                         stop_mult_range = np.linspace(0.5, 10.0, 20)
                         take_mult_range = np.linspace(0.5, 10.0, 20)
-                        best_sharpe     = -float('inf')
+                        best_return     = -float('inf')
 
                         best_params  = None
                         for stop_mult in stop_mult_range:
                             for take_mult in take_mult_range:
-                                returns = _simulate_stop_take(date_prices, dates, stop_mult, take_mult, start_period)
+                                returns = _simulate_stop_take(date_prices, dates, stop_mult, take_mult,
+                                                              analysis_period, check_step)
                                 if len(returns) > 0:
-                                    sharpe = np.mean(returns) / np.std(returns) if np.std(returns) > 0 else 0
-                                    if sharpe > best_sharpe:
-                                        best_sharpe = sharpe
+                                    total_return = returns.sum()
+                                    if total_return > best_return:
+                                        best_return = total_return
                                         best_params = (stop_mult, take_mult)
 
                         if best_params:
                             stop_mult, take_mult = best_params
-                            returns    = _simulate_stop_take(date_prices, dates, stop_mult, take_mult, start_period)
+                            returns = _simulate_stop_take(date_prices, dates, stop_mult, take_mult,
+                                                          analysis_period, check_step)
                             avg_return = np.mean(returns)
                             # noinspection PyUnresolvedReferences
-                            win_rate   = (returns > 0).mean() * 100
-                            avg_vol    = np.mean(volatility[group_indices])
+                            win_rate = (returns > 0).mean() * 100
 
                             volatility_scores = [
                                 code,
                                 group_idx,
-                                round(float(vol_min), 4),
-                                round(float(vol_max), 4),
-                                round(float(avg_vol), 4),
+                                round(float(cr_min), 4),
+                                round(float(cr_max), 4),
                                 round(float(stop_mult), 2),
                                 round(float(take_mult), 2),
                                 round(float(avg_return), 4),
                                 round(float(win_rate), 2),
-                                round(float(best_sharpe), 4),
+                                round(float(best_return), 4),
                                 len(group_indices),
                                 setting_hash,
                                 target_date
@@ -395,7 +475,7 @@ class VolatilityStopTakeDatabase:
                 CREATE TABLE IF NOT EXISTS volatility_stop_take_setting (
                     market INTEGER NOT NULL,
                     is_tick INTEGER NOT NULL,
-                    start_period INTEGER NOT NULL,
+                    analysis_period INTEGER NOT NULL,
                     group_count INTEGER NOT NULL,
                     PRIMARY KEY (market, is_tick)
                 )
@@ -404,14 +484,13 @@ class VolatilityStopTakeDatabase:
                 CREATE TABLE IF NOT EXISTS {self.table_name} (
                     code TEXT NOT NULL,
                     volatility_group INTEGER NOT NULL,
-                    volatility_min REAL NOT NULL,
-                    volatility_max REAL NOT NULL,
-                    avg_volatility REAL NOT NULL,
+                    change_rate_min REAL NOT NULL,
+                    change_rate_max REAL NOT NULL,
                     multiplier_stop REAL NOT NULL,
                     multiplier_take REAL NOT NULL,
                     expected_return REAL NOT NULL,
                     win_rate REAL NOT NULL,
-                    sharpe_ratio REAL NOT NULL,
+                    total_return REAL NOT NULL,
                     sample_count INTEGER NOT NULL,
                     setting_hash TEXT NOT NULL,
                     last_update INTEGER NOT NULL,
@@ -432,12 +511,12 @@ class VolatilityStopTakeDatabase:
             return [row[0] for row in results]
 
     def get_volatility_all_scores(self, code: str) -> dict:
-        """종목의 모든 변동성 그룹 데이터 로드"""
+        """종목의 모든 변동성 변화율 그룹 데이터 로드"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                f'SELECT volatility_group, volatility_min, volatility_max, avg_volatility, '
-                f'multiplier_stop, multiplier_take, expected_return, win_rate, sharpe_ratio, sample_count '
+                f'SELECT volatility_group, change_rate_min, change_rate_max, multiplier_stop, '
+                f'multiplier_take, expected_return, win_rate, total_return, sample_count '
                 f'FROM {self.table_name} '
                 f'WHERE code = ? AND setting_hash = ? AND last_update = '
                 f'(SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?) '
@@ -448,29 +527,28 @@ class VolatilityStopTakeDatabase:
             scores = {}
             for row in results:
                 scores[row[0]] = {
-                    'volatility_min': row[1],
-                    'volatility_max': row[2],
-                    'avg_volatility': row[3],
-                    'multiplier_stop': row[4],
-                    'multiplier_take': row[5],
-                    'expected_return': row[6],
-                    'win_rate': row[7],
-                    'sharpe_ratio': row[8],
-                    'sample_count': row[9]
+                    'change_rate_min': row[1],
+                    'change_rate_max': row[2],
+                    'multiplier_stop': row[3],
+                    'multiplier_take': row[4],
+                    'expected_return': row[5],
+                    'win_rate': row[6],
+                    'total_return': row[7],
+                    'sample_count': row[8]
                 }
             return scores
 
     def get_volatility_code_scores(self, code: str, backtest_date: int) -> dict:
-        """백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 변동성 점수 조회
+        """백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 변동성 변화율 점수 조회
         code: 종목코드
         backtest_date: 백테스트 기준 날짜 (YYYYMMDD)
-        return: 변동성 그룹별 점수 딕셔너리
+        return: 변동성 변화율 그룹별 점수 딕셔너리
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                f'SELECT volatility_group, volatility_min, volatility_max, avg_volatility, '
-                f'multiplier_stop, multiplier_take, expected_return, win_rate, sharpe_ratio, sample_count '
+                f'SELECT volatility_group, change_rate_min, change_rate_max, multiplier_stop, '
+                f'multiplier_take, expected_return, win_rate, total_return, sample_count '
                 f'FROM {self.table_name} '
                 f'WHERE code = ? AND setting_hash = ? AND last_update = '
                 f'(SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update <= ?) '
@@ -481,15 +559,14 @@ class VolatilityStopTakeDatabase:
             scores = {}
             for row in results:
                 scores[row[0]] = {
-                    'volatility_min': row[1],
-                    'volatility_max': row[2],
-                    'avg_volatility': row[3],
-                    'multiplier_stop': row[4],
-                    'multiplier_take': row[5],
-                    'expected_return': row[6],
-                    'win_rate': row[7],
-                    'sharpe_ratio': row[8],
-                    'sample_count': row[9]
+                    'change_rate_min': row[1],
+                    'change_rate_max': row[2],
+                    'multiplier_stop': row[3],
+                    'multiplier_take': row[4],
+                    'expected_return': row[5],
+                    'win_rate': row[6],
+                    'total_return': row[7],
+                    'sample_count': row[8]
                 }
             return scores
 
@@ -502,12 +579,12 @@ class VolatilityStopTakeDatabase:
         """마켓번호로 설정값 불러오기
         market: 마켓번호 (1~9)
         is_tick: 틱 데이터 여부
-        return: (start_period, group_count) 튜플, 데이터가 없으면 (60, 10) 반환
+        return: (analysis_period, group_count) 튜플, 데이터가 없으면 (60, 10) 반환
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                'SELECT start_period, group_count '
+                'SELECT analysis_period, group_count '
                 'FROM volatility_stop_take_setting '
                 'WHERE market = ? AND is_tick = ?',
                 (market, 1 if is_tick else 0)
@@ -517,21 +594,21 @@ class VolatilityStopTakeDatabase:
                 self.setting_hash = _calculate_setting_hash(result[0], result[1])
                 return result[0], result[1]
             else:
-                start_period = 60
-                group_count  = 10
-                self.save_volatility_stop_take_setting(market, is_tick, start_period, group_count)
-                self.setting_hash = _calculate_setting_hash(start_period, group_count)
-                return start_period, group_count
+                analysis_period = 30
+                group_count     = 10
+                self.save_volatility_stop_take_setting(market, is_tick, analysis_period, group_count)
+                self.setting_hash = _calculate_setting_hash(analysis_period, group_count)
+                return analysis_period, group_count
 
-    def save_volatility_stop_take_setting(self, market: int, is_tick: bool, start_period: int, group_count: int):
+    def save_volatility_stop_take_setting(self, market: int, is_tick: bool, analysis_period: int, group_count: int):
         """설정값 저장"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(
                 'INSERT OR REPLACE INTO volatility_stop_take_setting '
-                '(market, is_tick, start_period, group_count) '
+                '(market, is_tick, analysis_period, group_count) '
                 'VALUES (?, ?, ?, ?)',
-                (market, 1 if is_tick else 0, start_period, group_count)
+                (market, 1 if is_tick else 0, analysis_period, group_count)
             )
             conn.commit()
 
@@ -539,18 +616,18 @@ class VolatilityStopTakeDatabase:
 def volatility_stop_take_setting_load(ui):
     """콤보박스를 현재 거래소의 설정값으로 로딩한다."""
     database = VolatilityStopTakeDatabase(ui.market_info['전략구분'], ui.dict_set['타임프레임'])
-    start_period, group_count = database.load_volatility_stop_take_setting(ui.market_gubun, ui.dict_set['타임프레임'])
-    ui.vst_comboBoxxx_01.setCurrentText(str(start_period))
+    analysis_period, group_count = database.load_volatility_stop_take_setting(ui.market_gubun, ui.dict_set['타임프레임'])
+    ui.vst_comboBoxxx_01.setCurrentText(str(analysis_period))
     ui.vst_comboBoxxx_02.setCurrentText(str(group_count))
 
 
 def volatility_stop_take_setting_save(ui):
     """콤보박스 텍스트를 현재 거래소의 설정값으로 저장한다."""
     from ui.etcetera.etc import send_analyzer_setting_change
-    start_period = int(ui.vst_comboBoxxx_01.currentText())
-    group_count  = int(ui.vst_comboBoxxx_02.currentText())
+    analysis_period = int(ui.vst_comboBoxxx_01.currentText())
+    group_count     = int(ui.vst_comboBoxxx_02.currentText())
     database = VolatilityStopTakeDatabase(ui.market_info['전략구분'], ui.dict_set['타임프레임'])
-    database.save_volatility_stop_take_setting(ui.market_gubun, ui.dict_set['타임프레임'], start_period, group_count)
+    database.save_volatility_stop_take_setting(ui.market_gubun, ui.dict_set['타임프레임'], analysis_period, group_count)
     send_analyzer_setting_change(ui)
     QMessageBox.information(ui.dialog_pattern, '저장완료', random.choice(famous_saying))
 
@@ -558,15 +635,15 @@ def volatility_stop_take_setting_save(ui):
 def volatility_stop_take_train(ui):
     """변동성 손절/익절 학습을 시작한다. 스레드로 구동하여 UI멈춤을 방지한다."""
     if ui.learn_running:
-        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 변동성 손절/익절 학습이 진행중입니다.\n')
+        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 학습이 진행중입니다.\n')
         return
 
-    _start_period = int(ui.vst_comboBoxxx_01.currentText())
-    _group_count  = int(ui.vst_comboBoxxx_02.currentText())
+    _analysis_period = int(ui.vst_comboBoxxx_01.currentText())
+    _group_count     = int(ui.vst_comboBoxxx_02.currentText())
     database = VolatilityStopTakeDatabase(ui.market_info['전략구분'], ui.dict_set['타임프레임'])
-    start_period, group_count = database.load_volatility_stop_take_setting(ui.market_gubun, ui.dict_set['타임프레임'])
+    analysis_period, group_count = database.load_volatility_stop_take_setting(ui.market_gubun, ui.dict_set['타임프레임'])
 
-    if _start_period != start_period or _group_count != group_count:
+    if _analysis_period != analysis_period or _group_count != group_count:
         QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 콤보박스 선택과 저장된 값이 다릅니다.\n저장 후 재실행하십시오.\n')
         return
 

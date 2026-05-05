@@ -113,7 +113,7 @@ class CandlestickItem(pg.GraphicsObject):
                 p.drawLine(QPointF(x - w, c), QPointF(x + w * 2, c))
 
         p = QPainter(self.picture)
-        w = min((xticks[1] - xticks[0]) / 3, (xticks[2] - xticks[1]) / 3)
+        w = min((xticks[1] - xticks[0]) / 3, (xticks[-1] - xticks[-2]) / 3)
         count = len(ar)
         if gubun == 0:
             for i in range(count):
@@ -174,7 +174,7 @@ class VolumeBarItem(pg.GraphicsObject):
             p.drawRect(QRectF(x - w, 0, w * 2, m))
 
         p = QPainter(self.picture)
-        w = min((xticks[1] - xticks[0]) / 3, (xticks[2] - xticks[1]) / 3)
+        w = min((xticks[1] - xticks[0]) / 3, (xticks[-1] - xticks[-2]) / 3)
         count = len(ar)
         if gubun == 0:
             for i in range(count):

@@ -181,7 +181,7 @@ def bactivated_03(ui):
                 ui.list_vcomboBoxxxxx[i].setCurrentText(values[12])
             else:
                 values = values_text.split(';')
-                ui.sd_scheckBoxxxx_02.setChecked(True) if values[0] == '1' else ui.sd_scheckBoxxxx_02.setChecked(False)
+                ui.sd_scheckBoxxxx_02.setChecked(True if values[0] == '1' else False)
                 ui.sd_oclineEdittt_01.setText(values[1])
                 ui.sd_oclineEdittt_02.setText(values[2])
                 ui.sd_oclineEdittt_03.setText(values[3])

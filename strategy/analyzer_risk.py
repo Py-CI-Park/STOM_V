@@ -1,35 +1,25 @@
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 
 @njit(cache=True, fastmath=True)
 def _calculate_rsi(prices: np.ndarray, period: int = 14) -> float:
-    """RSI 계산 (Numba JIT 최적화)"""
+    """RSI 계산 (Numba JIT 최적화) - 마지막 period개만 계산"""
     n = len(prices)
     if n < period + 1:
         return 50.0
-
-    deltas = np.zeros(n - 1, dtype=np.float64)
-    for i in range(n - 1):
-        deltas[i] = prices[i + 1] - prices[i]
-
-    gains = np.zeros(n - 1, dtype=np.float64)
-    losses = np.zeros(n - 1, dtype=np.float64)
-    for i in range(n - 1):
-        if deltas[i] > 0:
-            gains[i] = deltas[i]
-        else:
-            losses[i] = -deltas[i]
-
     avg_gain = 0.0
     avg_loss = 0.0
-    for i in range(n - 1 - period, n - 1):
-        avg_gain += gains[i]
-        avg_loss += losses[i]
+    start_idx = n - period - 1
+    for i in range(period):
+        delta = prices[start_idx + i + 1] - prices[start_idx + i]
+        if delta > 0:
+            avg_gain += delta
+        else:
+            avg_loss += -delta
     avg_gain /= period
     avg_loss /= period
-
     if avg_loss == 0.0:
         return 100.0
     elif avg_gain == 0.0:
@@ -40,30 +30,20 @@ def _calculate_rsi(prices: np.ndarray, period: int = 14) -> float:
         return rsi
 
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True, fastmath=True, parallel=True)
 def _calculate_volatility(prices: np.ndarray, window: int = 20) -> float:
     """변동성 계산 (Numba JIT 최적화)"""
     n = len(prices)
     if n <= window:
         return 0.0
-
     returns = np.zeros(n - window, dtype=np.float64)
-    for i in range(n - window):
-        if prices[i + window - 1] != 0:
-            returns[i] = (prices[i + window] - prices[i + window - 1]) / prices[i + window - 1]
-
-    mean_return = 0.0
-    for i in range(n - window):
-        mean_return += returns[i]
-    mean_return /= (n - window)
-
-    variance = 0.0
-    for i in range(n - window):
-        diff = returns[i] - mean_return
-        variance += diff * diff
-    variance /= (n - window)
-
-    volatility = np.sqrt(variance) * np.sqrt(252.0) * 100.0
+    for i in prange(n - window):
+        future1_price = prices[i + window]
+        future2_price = prices[i + window - 1]
+        returns[i] = (future1_price / future2_price - 1)
+    mean_return = np.mean(returns)
+    variance    = np.sum((returns - mean_return) ** 2) / (n - window)
+    volatility  = np.sqrt(variance) * np.sqrt(250.0) * 100.0
     return volatility
 
 

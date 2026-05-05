@@ -210,8 +210,8 @@ def lvbutton_clicked_02(ui):
         ui: UI 클래스 인스턴스
     """
     df = ui.dbreader.read_sql('설정디비', 'SELECT * FROM main').set_index('index')
-    ui.lv_checkBoxxxx_01.setChecked(True) if df['바이낸스선물고정레버리지'][0] else ui.lv_checkBoxxxx_01.setChecked(False)
-    ui.lv_checkBoxxxx_02.setChecked(True) if not df['바이낸스선물고정레버리지'][0] else ui.lv_checkBoxxxx_02.setChecked(False)
+    ui.lv_checkBoxxxx_01.setChecked(True if df['바이낸스선물고정레버리지'][0] else False)
+    ui.lv_checkBoxxxx_02.setChecked(True if not df['바이낸스선물고정레버리지'][0] else False)
     ui.lv_lineEditttt_01.setText(str(df['바이낸스선물고정레버리지값'][0]))
 
     binance_lvrg = []

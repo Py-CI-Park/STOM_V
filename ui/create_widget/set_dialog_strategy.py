@@ -21,7 +21,7 @@ class SetDialogStrategy:
         self.ui.dialog_list.append(self.ui.dialog_strategy)
 
         def color_number():
-            if idx in (1, 151, 156, 161, 166, 176):
+            if idx in (1, 151, 156, 166, 176):
                 return 2
             elif idx <= 70:
                 return 7

@@ -17,11 +17,16 @@ def get_opti_valid_std(train_stds, valid_stds, exponential):
     """
     count = len(train_stds)
     merge = np.zeros(count)
+    weight_btr = 0.7
+    weight_bva = 0.3
+    weight_max = 1.3
+    weight_min = 0.7
+    weight_cfc = (weight_min - weight_max) / (count - 1)
     for i in prange(count):
-        train_std = train_stds[i] * 0.7
-        valid_std = valid_stds[i] * 0.3
+        train_std = train_stds[i] * weight_btr
+        valid_std = valid_stds[i] * weight_bva
         if exponential and count > 1:
-            weight = 1.3 + (0.7 - 1.3) * i / (count - 1)
+            weight = weight_max + weight_cfc * i
             valid_std *= weight
         merge[i] = train_std + valid_std
     merge = round(merge.sum() / count, 2)

@@ -1,4 +1,3 @@
-from traceback import format_exc
 
 import pyqtgraph as pg
 from PyQt5.QtGui import QColor
@@ -190,7 +189,6 @@ class DrawChartBase:
                     self.draw_formula(i, factor)
                     self.draw_line(i, fidx1, self.rgb_yellow)
                 except Exception:
-                    print(format_exc())
                     self.ymax, self.ymin = 0, 0
 
             elif factor == '변손익분석':
@@ -203,7 +201,6 @@ class DrawChartBase:
                     self.draw_line(i, fidx2, self.rgb_red)
                     self.draw_line(i, fidx1, self.rgb_green)
                 except Exception:
-                    print(format_exc())
                     self.ymax, self.ymin = 0, 0
 
             else:
@@ -426,6 +423,8 @@ class DrawChartBase:
         if all_values:
             self.ymax = max(all_values)
             self.ymin = min(all_values)
+            if self.ymax == 0 and self.ymin == 0:
+                self.ymax, self.ymin = 100, -100
             self.cached_min_max[fidx_tuple] = (self.ymax, self.ymin)
         else:
             self.ymax, self.ymin = 0, 0

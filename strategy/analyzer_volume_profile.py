@@ -11,6 +11,7 @@ from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
+from utility.static_method.static_datetime import timedelta_day, dt_ymd, str_ymd
 
 VOLUME_PROFILE_DB = f'{DB_PATH}/volume_profile.db'
 
@@ -31,18 +32,20 @@ def _calculate_setting_hash(*args) -> str:
 
 @njit(cache=True, fastmath=True)
 def _calculate_volume_by_bin(close_price: np.ndarray, volume_data: np.ndarray, price_bins: np.ndarray) -> np.ndarray:
-    """가격대별 거래량 계산 (numba 최적화)"""
-    volume_by_bin = np.zeros(len(price_bins) - 1)
+    """가격대별 거래량 계산 - 균등분할 최적화 버전"""
+    bin_count = len(price_bins) - 1
+    volume_by_bin = np.zeros(bin_count, dtype=np.float64)
+    min_price = price_bins[0]
+    max_price = price_bins[-1]
+    bin_width = (max_price - min_price) / bin_count
     for idx in range(len(close_price)):
-        price   = close_price[idx]
-        volume  = volume_data[idx]
-        bin_idx = 0
-        for i in range(len(price_bins) - 1):
-            if price_bins[i] <= price < price_bins[i + 1]:
-                bin_idx = i
-                break
-        if 0 <= bin_idx < len(volume_by_bin):
-            volume_by_bin[bin_idx] += volume
+        price  = close_price[idx]
+        volume = volume_data[idx]
+        if price < max_price:
+            bin_idx = int((price - min_price) / bin_width)
+        else:
+            bin_idx = bin_count - 1
+        volume_by_bin[bin_idx] += volume
     return volume_by_bin
 
 
@@ -58,8 +61,7 @@ def _calculate_node_scores(close_price: np.ndarray, dates: np.ndarray, node_pric
     threshold = node_price * rate_threshold / 100
     for idx in range(len(close_price) - analysis_period):
         price = close_price[idx]
-        if dates[idx] == dates[idx + analysis_period] and \
-                abs(price - node_price) / node_price * 100 <= rate_threshold:
+        if abs(price - node_price) / node_price * 100 <= rate_threshold and dates[idx] == dates[idx + analysis_period]:
             total_count += 1
             future_prices = close_price[idx+1:idx+1+analysis_period]
             if future_prices.max() >= node_price + threshold:
@@ -97,13 +99,13 @@ class AnalyzerVolumeProfile:
         self.analysis_period, self.rate_threshold, self.price_range_pct = \
             self.volume_database.load_volume_setting(market_gubun)
 
-        self.backtest_db  = market_info['백테디비'][is_tick]
-        self.factor_list  = market_info['팩터목록'][is_tick]
-        self.is_tick      = is_tick
-        self.top_nodes    = top_nodes
-        self.idx_close    = self.factor_list.index('현재가')
-        self.idx_volume   = self.factor_list.index('초당거래대금') if is_tick else self.factor_list.index('분당거래대금')
-        self.volume_nodes = {}
+        self.backtest_db = market_info['백테디비'][is_tick]
+        self.factor_list = market_info['팩터목록'][is_tick]
+        self.is_tick     = is_tick
+        self.top_nodes   = top_nodes
+        self.idx_close   = self.factor_list.index('현재가')
+        self.idx_volume  = self.factor_list.index('초당거래대금') if is_tick else self.factor_list.index('분당거래대금')
+        self.volume_nodes: dict[str, dict[float, dict[str, float]]] = {}
         if not backtest:
             self._load_volume_all_nodes()
 
@@ -127,11 +129,12 @@ class AnalyzerVolumeProfile:
         """
         volume_profile_score, confidence_score = 0.0, 0.0
 
-        if code in self.volume_nodes:
+        volume_nodes = self.volume_nodes.get(code)
+        if volume_nodes:
             nearest_node = None
             min_distance = float('inf')
 
-            for node_price in self.volume_nodes[code].keys():
+            for node_price in volume_nodes.keys():
                 distance = abs(current_price - node_price)
                 if distance / node_price * 100 <= self.price_range_pct:
                     if distance < min_distance:
@@ -139,7 +142,7 @@ class AnalyzerVolumeProfile:
                         nearest_node = node_price
 
             if nearest_node:
-                node_data = self.volume_nodes[code][nearest_node]
+                node_data = volume_nodes[nearest_node]
                 volume_profile_score = node_data['avg_score']
                 confidence_score = node_data['confidence_score']
 
@@ -262,7 +265,8 @@ class AnalyzerVolumeProfile:
                         if target_date in existing_dates:
                             continue
 
-                        mask = all_dates <= target_date
+                        start_date = float(str_ymd(timedelta_day(-30, dt_ymd(str(int(target_date))))))
+                        mask = (start_date <= all_dates) & (all_dates <= target_date)
                         date_data = historical_data[mask]
 
                         if len(date_data) < analysis_period * 2:
@@ -486,7 +490,7 @@ def volume_setting_save(ui):
 def volume_profile_train(ui):
     """볼륨 프로파일 학습을 시작한다. 스레드로 구동하여 UI멈춤을 방지한다."""
     if ui.learn_running:
-        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 가격대분석 학습이 진행중입니다.\n')
+        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 학습이 진행중입니다.\n')
         return
 
     _analysis_period = int(ui.vpf_comboBoxxx_01.currentText())

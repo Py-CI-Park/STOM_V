@@ -5,17 +5,18 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import shared_memory
 from strategy.analyzer_risk import AnalyzerRisk
-from strategy.analyzer_volatility_stop_take import AnalyzerVolatilityStopTake
 from strategy.stg_globals_func import StgGlobalsFunc
 from strategy.manager_formula import get_formula_data
 from strategy.analyzer_volume_spike import AnalyzerVolumeSpike
 from utility.static_method.static_numba import add_rolling_data
+from utility.static_method.static_indicator import get_indicator
 from utility.static_method.builtin_print import set_builtin_print
 from strategy.analyzer_candle_pattern import AnalyzerCandlePattern
 from strategy.analyzer_volume_profile import AnalyzerVolumeProfile
 from strategy.analyzer_microstructure import AnalyzerMicrostructure
 from utility.static_method.static_datetime import dt_ymdhms, dt_ymdhm
 from strategy.analyzer_volatility_pattern import AnalyzerVolatilityPattern
+from strategy.analyzer_volatility_stop_take import AnalyzerVolatilityStopTake
 from utility.static_method.static_etcetera import pickle_read, pickle_write, get_ema_list
 from utility.settings.setting_base import DICT_INDICATOR, UI_NUM, BACK_TEMP, DB_STRATEGY, DB_SETTING
 from backtest.back_static import get_buy_stg, get_sell_stg, get_buy_conds, get_sell_conds, get_back_load_code_query, \
@@ -138,8 +139,8 @@ class BackEngineBase(StgGlobalsFunc):
         self.angle_dtm_cf  = angle_cf[1]
         factor_list        = self.market_info['팩터목록'][self.is_tick]
         self.dict_findex   = {factor: i for i, factor in enumerate(factor_list)}
-        self.base_cnt      = self.dict_findex['관심종목'] + 1
 
+        self.base_cnt      = self.dict_findex['관심종목'] + 1
         self.hoga_sidex    = self.dict_findex['매도호가1']
         self.hoga_eidex    = self.dict_findex['매수잔량5'] + 1
         self.add_cnt       = len(self.dict_findex) - self.dict_findex['최고현재가']
@@ -183,8 +184,8 @@ class BackEngineBase(StgGlobalsFunc):
         self.vt_analyzer = AnalyzerVolatilityStopTake(self.market_gubun, self.market_info, self.is_tick)
 
     def _set_passticks_and_blacklist(self):
-        """패스틱스 조건과 블랙리스트를 설정합니다.
-        데이터베이스에서 패스틱스 전략을 읽어 컴파일하고,
+        """경과틱수 조건과 블랙리스트를 설정합니다.
+        데이터베이스에서 경과틱수 전략을 읽어 컴파일하고,
         블랙리스트를 설정합니다."""
         def compile_condition(x):
             return compile(f"if {x}:\n    self.dict_cond_indexn[종목코드][k+self.turn_key] = self.indexn", '<string>', 'exec')
@@ -733,8 +734,7 @@ class BackEngineBase(StgGlobalsFunc):
     def _strategy(self):
         """전략을 실행합니다.
         현재 틱 데이터를 기반으로 매수/매도 전략을 실행합니다."""
-
-        초당매수금액, 초당매도금액, 분당매수금액, 분당매도금액 = 0, 0, 0, 0
+        초당매수금액 = 초당매도금액 = 분당매수금액 = 분당매도금액 = 분봉고가 = 분봉저가 = 0
         if self.market_gubun < 4:
             if self.is_tick:
                 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 시가총액, \
@@ -754,6 +754,7 @@ class BackEngineBase(StgGlobalsFunc):
                     매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                     매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
             VI해제시간 = dt_ymdhms(str(int(VI해제시간)))
+
         elif self.market_gubun == 4:
             if self.is_tick:
                 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 시가총액, \
@@ -770,6 +771,7 @@ class BackEngineBase(StgGlobalsFunc):
                     매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                     매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                     매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
+
         else:
             if self.is_tick:
                 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
@@ -792,29 +794,21 @@ class BackEngineBase(StgGlobalsFunc):
         종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
         self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
 
+        current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
         리스크점수 = 패턴점수 = 패턴신뢰도 = 거래량점수 = 거래량신뢰도 = 가격대점수 = 가격대신뢰도 = 변동성점수 = 변동성신뢰도 = \
             예상수익률 = 익절수익률 = 손절수익률 = 0
-
-        current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
-
         if self.is_tick and self.dict_set['시장미시구조분석']:
             self.ms_analyzer.update_data(self.code, current_data)
-
         if not self.is_tick and self.dict_set['캔들분석']:
             패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, current_data)
-
         if self.dict_set['리스크분석']:
             리스크점수 = self.rk_analyzer.get_risk_score(current_data)
-
         if self.dict_set['거래량분석']:
             거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, current_data)
-
         if self.dict_set['가격대분석']:
             가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
-
         if self.dict_set['변동성분석']:
             변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, current_data)
-
         if self.dict_set['변손익분석']:
             예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, current_data)
 
@@ -823,7 +817,17 @@ class BackEngineBase(StgGlobalsFunc):
         self.bhogainfo[:] = [매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5]
         self.bhreminfo[:] = [매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5]
 
-        self._update_highlow(현재가)
+        if self.is_tick:
+            self._update_highlow(현재가)
+        else:
+            self._update_highlow(분봉고가, 분봉저가)
+
+            start, end = self.indexn + 1 - self.tick_count, self.indexn + 1
+            arry_indi = self.arry_code[start:end, :]
+            self.mc = arry_indi[:, self.dict_findex['현재가']]
+            self.mh = arry_indi[:, self.dict_findex['분봉고가']]
+            self.ml = arry_indi[:, self.dict_findex['분봉저가']]
+            self.mv = arry_indi[:, self.dict_findex['분당거래대금']]
 
         if self.fm_list:
             for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
@@ -873,6 +877,14 @@ class BackEngineBase(StgGlobalsFunc):
                         for k, v in self.dict_condition.items():
                             exec(v)
 
+                    if not self.is_tick:
+                        if self.indistg is not None:
+                            exec(self.indistg)
+                        self.k = list(self.indicator.values())
+                        AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
+                            MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
+                            get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
                     self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
                     self.curr_trade_info = self.trade_info[vturn][vkey]
                     보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
@@ -882,7 +894,8 @@ class BackEngineBase(StgGlobalsFunc):
                     SELL_LONG, BUY_SHORT = False, False
 
                     if not 보유중:
-                        if not 관심종목: continue
+                        if not 관심종목:
+                            continue
                         exec(self.buystg)
                     else:
                         포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
@@ -912,6 +925,14 @@ class BackEngineBase(StgGlobalsFunc):
                         for k, v in self.dict_condition.items():
                             exec(v)
 
+                    if not self.is_tick:
+                        if self.indistg is not None:
+                            exec(self.indistg)
+                        self.k = list(self.indicator.values())
+                        AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
+                            MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
+                            get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
                     self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
                     self.curr_trade_info = self.trade_info[vturn][vkey]
                     보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
@@ -921,7 +942,8 @@ class BackEngineBase(StgGlobalsFunc):
                     SELL_LONG, BUY_SHORT = False, False
 
                     if not 보유중:
-                        if not 관심종목: continue
+                        if not 관심종목:
+                            continue
                         if self.back_type != '조건최적화':
                             exec(self.buystg)
                         else:
@@ -951,6 +973,14 @@ class BackEngineBase(StgGlobalsFunc):
                 for k, v in self.dict_condition.items():
                     exec(v)
 
+            if not self.is_tick:
+                if self.indistg is not None:
+                    exec(self.indistg)
+                self.k = list(self.indicator.values())
+                AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
+                    MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
+                    get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
             self.info_for_order = 현재가, 저가대비고가등락율, vturn, vkey
             self.curr_trade_info = self.trade_info[vturn][vkey]
             보유중, 매수가, _, _, 보유수량, 최고수익률, 최저수익률, 매수틱번호, 매수시간 = self.curr_trade_info.values()
@@ -960,7 +990,8 @@ class BackEngineBase(StgGlobalsFunc):
             SELL_LONG, BUY_SHORT = False, False
 
             if not 보유중:
-                if not 관심종목: return
+                if not 관심종목:
+                    return
                 exec(self.buystg)
             else:
                 포지션, 수익금, 수익률, 최고수익률, 최저수익률, 보유시간 = \
@@ -1056,6 +1087,7 @@ class BackEngineBase(StgGlobalsFunc):
                 betting = self.betting * self.set_weight[8]
             else:
                 betting = self.betting * self.set_weight[9]
+
         self.curr_trade_info['주문수량'] = self._set_buy_count(betting, 현재가, 0, 100)
 
     def _get_hold_info(self, 보유수량, 매수가, 현재가, 최고수익률, 최저수익률, 매수틱번호, 매수시간):

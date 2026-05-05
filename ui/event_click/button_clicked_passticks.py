@@ -1,6 +1,6 @@
 
 def setting_passticks_sample(ui):
-    """패스틱스 설정 샘플을 로드합니다.
+    """경과틱수 설정 샘플을 로드합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
@@ -11,7 +11,7 @@ def setting_passticks_sample(ui):
 
 
 def setting_passticks_load(ui):
-    """패스틱스 설정을 로드합니다.
+    """경과틱수 설정을 로드합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
@@ -31,7 +31,7 @@ def setting_passticks_load(ui):
 
 
 def setting_passticks_save(ui):
-    """패스틱스 설정을 저장합니다.
+    """경과틱수 설정을 저장합니다.
     Args:
         ui: UI 클래스 인스턴스
     """

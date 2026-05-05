@@ -56,7 +56,8 @@ class ChartHogaQuery:
         self.vp_analyzer  = None
         self.vt_analyzer  = None
 
-        self.analyzer_cnt = 0
+        self.analyzer_cnt  = 0
+        self.indicator_cnt = 0
 
         self.con1 = sqlite3.connect(DB_SETTING)
         self.cur1 = self.con1.cursor()
@@ -106,6 +107,8 @@ class ChartHogaQuery:
                 self.dict_findex['분당거래대금'], self.dict_findex['분봉고가'], self.dict_findex['분봉저가']
             ])
         self.analyzer_cnt = self.dict_findex['손절수익률'] - self.dict_findex['당일거래대금각도']
+        if not self.is_tick:
+            self.indicator_cnt = self.dict_findex['WILLR'] - self.dict_findex['손절수익률']
 
     def _set_analyzer(self):
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
@@ -823,7 +826,7 @@ class ChartHogaQuery:
             arry[:, -3:] = self.vt_analyzer.analyze_batch_data(code, arry)
 
         if not self.is_tick:
-            arry = np.column_stack((arry, np.zeros((arry.shape[0], 28))))
+            arry = np.column_stack((arry, np.zeros((arry.shape[0], self.indicator_cnt))))
             try:
                 mc = arry[:, 1]
                 mh = arry[:, self.dict_findex['분봉고가']]

@@ -2,6 +2,7 @@
 from backtest.back_static import get_trade_info
 from backtest.backengine_base import BackEngineBase
 from utility.settings.setting_base import DICT_ORDER_RATIO
+from utility.static_method.static_indicator import get_indicator
 from utility.static_method.static_datetime import timedelta_sec, dt_ymdhms, dt_ymdhm
 
 
@@ -21,8 +22,7 @@ class BackEngineBaseOms(BackEngineBase):
     def _strategy(self):
         """전략을 실행합니다 (OMS 버전).
         현재 데이터를 기반으로 전략 연산을 수행하고 매수/매도 시그널을 처리합니다."""
-
-        초당매수금액, 초당매도금액, 분당매수금액, 분당매도금액 = 0, 0, 0, 0
+        초당매수금액 = 초당매도금액 = 분당매수금액 = 분당매도금액 = 분봉고가 = 분봉저가 = 0
         if self.market_gubun < 4:
             if self.is_tick:
                 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 시가총액, \
@@ -42,6 +42,7 @@ class BackEngineBaseOms(BackEngineBase):
                     매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                     매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
             VI해제시간 = dt_ymdhms(str(int(VI해제시간)))
+
         elif self.market_gubun == 4:
             if self.is_tick:
                 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, 시가총액, \
@@ -58,6 +59,7 @@ class BackEngineBaseOms(BackEngineBase):
                     매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5, 매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5, \
                     매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5, 매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5, \
                     매도총잔량, 매수총잔량, 매도수5호가잔량합, 관심종목 = self.arry_code[self.indexn, 1:self.base_cnt]
+
         else:
             if self.is_tick:
                 현재가, 시가, 고가, 저가, 등락율, 당일거래대금, 체결강도, 초당매수수량, 초당매도수량, \
@@ -80,29 +82,21 @@ class BackEngineBaseOms(BackEngineBase):
         종목명, 종목코드, 데이터길이, 체결시간 = self.name, self.code, self.tick_count, self.index
         self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
 
+        current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
         리스크점수 = 패턴점수 = 패턴신뢰도 = 거래량점수 = 거래량신뢰도 = 가격대점수 = 가격대신뢰도 = 변동성점수 = 변동성신뢰도 = \
             예상수익률 = 익절수익률 = 손절수익률 = 0
-
-        current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
-
         if self.is_tick and self.dict_set['시장미시구조분석']:
             self.ms_analyzer.update_data(self.code, current_data)
-
         if not self.is_tick and self.dict_set['캔들분석']:
             패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, current_data)
-
         if self.dict_set['리스크분석']:
             리스크점수 = self.rk_analyzer.get_risk_score(current_data)
-
         if self.dict_set['거래량분석']:
             거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, current_data)
-
         if self.dict_set['가격대분석']:
             가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
-
         if self.dict_set['변동성분석']:
             변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, current_data)
-
         if self.dict_set['변손익분석']:
             예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, current_data)
 
@@ -111,7 +105,17 @@ class BackEngineBaseOms(BackEngineBase):
         self.bhogainfo[:] = [매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5]
         self.bhreminfo[:] = [매수잔량1, 매수잔량2, 매수잔량3, 매수잔량4, 매수잔량5]
 
-        self._update_highlow(현재가)
+        if self.is_tick:
+            self._update_highlow(현재가)
+        else:
+            self._update_highlow(분봉고가, 분봉저가)
+
+            start, end = self.indexn + 1 - self.tick_count, self.indexn + 1
+            arry_indi = self.arry_code[start:end, :]
+            self.mc = arry_indi[:, self.dict_findex['현재가']]
+            self.mh = arry_indi[:, self.dict_findex['분봉고가']]
+            self.ml = arry_indi[:, self.dict_findex['분봉저가']]
+            self.mv = arry_indi[:, self.dict_findex['분당거래대금']]
 
         if self.fm_list:
             for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
@@ -161,6 +165,14 @@ class BackEngineBaseOms(BackEngineBase):
                         for k, v in self.dict_condition.items():
                             exec(v)
 
+                    if not self.is_tick:
+                        if self.indistg is not None:
+                            exec(self.indistg)
+                        self.k = list(self.indicator.values())
+                        AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
+                            MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
+                            get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
                     self.curr_day_info = self.day_info[vturn][vkey]
                     self.curr_trade_info = self.trade_info[vturn][vkey]
 
@@ -179,15 +191,19 @@ class BackEngineBaseOms(BackEngineBase):
                     gubun = self._check_buy_or_sell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 매수가, 주문수량,
                                                     보유수량, 매수호가단위, 매수주문취소시간, 매도호가단위, 매도정정횟수,
                                                     매도주문취소시간, 주문포지션)
-                    if gubun is None: continue
+                    if gubun is None:
+                        continue
 
                     매수, 매도 = True, False
                     BUY_LONG, SELL_SHORT = True, True
                     SELL_LONG, BUY_SHORT = False, False
 
                     if '매수' in gubun:
-                        if not 관심종목: continue
-                        if self._cancel_buy_order(): continue
+                        if not 관심종목:
+                            continue
+                        if self._cancel_buy_order():
+                            continue
+
                         if not 보유중:
                             exec(self.buystg)
                         else:
@@ -195,8 +211,11 @@ class BackEngineBaseOms(BackEngineBase):
                                 exec(self.buystg)
 
                     if '매도' in gubun:
-                        if self._check_sonjeol(수익률, 수익금): continue
-                        if self._cancel_sell_order(매수분할횟수): continue
+                        if self._check_sonjeol(수익률, 수익금):
+                            continue
+                        if self._cancel_sell_order(매수분할횟수):
+                            continue
+
                         if self.dict_set['매도분할횟수'] == 1:
                             exec(self.sellstg)
                         else:
@@ -225,6 +244,14 @@ class BackEngineBaseOms(BackEngineBase):
                         for k, v in self.dict_condition.items():
                             exec(v)
 
+                    if not self.is_tick:
+                        if self.indistg is not None:
+                            exec(self.indistg)
+                        self.k = list(self.indicator.values())
+                        AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
+                            MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
+                            get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
                     self.curr_day_info = self.day_info[vturn][vkey]
                     self.curr_trade_info = self.trade_info[vturn][vkey]
 
@@ -243,15 +270,19 @@ class BackEngineBaseOms(BackEngineBase):
                     gubun = self._check_buy_or_sell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 매수가, 주문수량,
                                                     보유수량, 매수호가단위, 매수주문취소시간, 매도호가단위, 매도정정횟수,
                                                     매도주문취소시간, 주문포지션)
-                    if gubun is None: continue
+                    if gubun is None:
+                        continue
 
                     매수, 매도 = True, False
                     BUY_LONG, SELL_SHORT = True, True
                     SELL_LONG, BUY_SHORT = False, False
 
                     if '매수' in gubun:
-                        if not 관심종목: continue
-                        if self._cancel_buy_order(): continue
+                        if not 관심종목:
+                            continue
+                        if self._cancel_buy_order():
+                            continue
+
                         if not 보유중:
                             if self.back_type != '조건최적화':
                                 exec(self.buystg)
@@ -265,8 +296,11 @@ class BackEngineBaseOms(BackEngineBase):
                                     exec(self.dict_buystg[index_])
 
                     if '매도' in gubun:
-                        if self._check_sonjeol(수익률, 수익금): continue
-                        if self._cancel_sell_order(매수분할횟수): continue
+                        if self._check_sonjeol(수익률, 수익금):
+                            continue
+                        if self._cancel_sell_order(매수분할횟수):
+                            continue
+
                         if self.dict_set['매도분할횟수'] == 1:
                             if self.back_type != '조건최적화':
                                 exec(self.sellstg)
@@ -295,6 +329,14 @@ class BackEngineBaseOms(BackEngineBase):
                 for k, v in self.dict_condition.items():
                     exec(v)
 
+            if not self.is_tick:
+                if self.indistg is not None:
+                    exec(self.indistg)
+                self.k = list(self.indicator.values())
+                AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, \
+                    MFI, MOM, OBV, PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
+                    get_indicator(self.mc, self.mh, self.ml, self.mv, self.k)
+
             self.curr_day_info = self.day_info[vturn][vkey]
             self.curr_trade_info = self.trade_info[vturn][vkey]
 
@@ -312,15 +354,19 @@ class BackEngineBaseOms(BackEngineBase):
 
             gubun = self._check_buy_or_sell(보유중, 현재가, 매수분할횟수, 매수호가, 매도호가, 관심종목, 매수가, 주문수량, 보유수량,
                                             매수호가단위, 매수주문취소시간, 매도호가단위, 매도정정횟수, 매도주문취소시간, 주문포지션)
-            if gubun is None: return
+            if gubun is None:
+                return
 
             매수, 매도 = True, False
             BUY_LONG, SELL_SHORT = True, True
             SELL_LONG, BUY_SHORT = False, False
 
             if '매수' in gubun:
-                if not 관심종목: return
-                if self._cancel_buy_order(): return
+                if not 관심종목:
+                    return
+                if self._cancel_buy_order():
+                    return
+
                 if not 보유중:
                     exec(self.buystg)
                 else:
@@ -328,8 +374,11 @@ class BackEngineBaseOms(BackEngineBase):
                         exec(self.buystg)
 
             if '매도' in gubun:
-                if self._check_sonjeol(수익률, 수익금): return
-                if self._cancel_sell_order(매수분할횟수): return
+                if self._check_sonjeol(수익률, 수익금):
+                    return
+                if self._cancel_sell_order(매수분할횟수):
+                    return
+
                 if self.dict_set['매도분할횟수'] == 1:
                     exec(self.sellstg)
                 else:
