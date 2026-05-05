@@ -243,14 +243,14 @@ class BaseReceiver:
         self.dict_daym[code] = dm
 
         if self.market_gubun < 4:
-            sgta = int(c * self.dict_info[code]['상장주식수'])
+            sgta = int(c * self.dict_info[code]['상장주식수'] / 100_000_000)
             _, vi_dt, uvi, _, vi_hgunit = self.dict_vipr[code]
             if self.is_tick:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, sgta, vi_dt, uvi, vi_hgunit]
             else:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, sgta, vi_dt, uvi, vi_hgunit, mo, mh, ml]
         elif self.market_gubun == 4:
-            sgta = int(c * self.dict_info[code]['상장주식수'])
+            sgta = int(c * self.dict_info[code]['상장주식수'] / 100_000)
             if self.is_tick:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, sgta]
             else:
@@ -262,7 +262,8 @@ class BaseReceiver:
                 self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, mo, mh, ml]
 
         self._update_money_factor(code, c, int(c * bids_), int(c * asks_))
-        self._update_hoga_window_tick(dt, code, bids_, asks_, c, per, o, h, low, ch)
+        if self.hoga_code == code:
+            self._update_hoga_window_tick(dt, code, bids_, asks_, c, per, o, h, low, ch)
 
     def _update_tick_data_coin_future(self, dt, code, c, v, m):
         """코인 선물 틱 데이터를 업데이트합니다.
@@ -320,7 +321,8 @@ class BaseReceiver:
             self.dict_data[code] = [c, o, h, low, per, dm, ch, bids, asks, tbids, tasks, mo, mh, ml]
 
         self._update_money_factor(code, c, int(c * bids_), int(c * asks_))
-        self._update_hoga_window_tick(dt, code, bids_, asks_, c, per, o, h, low, ch)
+        if self.hoga_code == code:
+            self._update_hoga_window_tick(dt, code, bids_, asks_, c, per, o, h, low, ch)
 
         dt_ = int(str(dt)[:13])
         data_dlhp = self.dict_dlhp.get(code)
@@ -344,8 +346,8 @@ class BaseReceiver:
                       0               1            2          3          4          5          6          7"""
             self.dict_money[code] = [buy_money, sell_money, buy_money, buy_money, c, sell_money, sell_money, c]
             self.dict_index[code] = {c: 0}
-            self.dict_bmbyp[code] = np.zeros(1000, dtype=np.float64)
-            self.dict_smbyp[code] = np.zeros(1000, dtype=np.float64)
+            self.dict_bmbyp[code] = np.zeros(2000, dtype=np.float64)
+            self.dict_smbyp[code] = np.zeros(2000, dtype=np.float64)
             self.dict_bmbyp[code][0] = buy_money
             self.dict_smbyp[code][0] = sell_money
             self.dict_index[code]['count'] = 1
@@ -398,18 +400,17 @@ class BaseReceiver:
             low: 저가
             ch: 체결
         """
-        if self.hoga_code == code:
-            bids, asks = self.list_hgdt[2:4]
-            if bids_ > 0: bids += bids_
-            if asks_ > 0: asks += asks_
-            self.list_hgdt[2:4] = bids, asks
-            if dt > self.list_hgdt[0]:
-                name = self.dict_info[code]['종목명']
-                self.hogaQ.put((name, c, per, 0, -1, o, h, low))
-                if asks > 0: self.hogaQ.put((-asks, ch))
-                if bids > 0: self.hogaQ.put((bids, ch))
-                self.list_hgdt[0] = dt
-                self.list_hgdt[2:4] = [0, 0]
+        bids, asks = self.list_hgdt[2:4]
+        if bids_ > 0: bids += bids_
+        if asks_ > 0: asks += asks_
+        self.list_hgdt[2:4] = bids, asks
+        if dt > self.list_hgdt[0]:
+            name = self.dict_info[code]['종목명']
+            self.hogaQ.put((name, c, per, 0, -1, o, h, low))
+            if asks > 0: self.hogaQ.put((-asks, ch))
+            if bids > 0: self.hogaQ.put((bids, ch))
+            self.list_hgdt[0] = dt
+            self.list_hgdt[2:4] = [0, 0]
 
     def _update_hoga_data(self, dt, code, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount, hoga_tamount,
                           receivetime):
@@ -422,8 +423,7 @@ class BaseReceiver:
             hoga_samount: 호가 매도 수량
             hoga_bamount: 호가 매수 수량
             hoga_tamount: 호가 총 수량
-            hoga_srem1~5: 호가 매도 잔량 1~5
-            hoga_brem1~5: 호가 매수 잔량 1~5
+            receivetime: 호가 데이터 수신 시간
         """
         send = False
         dt_min = int(str(dt)[:12])
@@ -477,10 +477,12 @@ class BaseReceiver:
                     money_arr[0] = 0
                     money_arr[1] = 0
 
-                self._send_log(logt, dt_min, receivetime)
+                if logt != 0:
+                    self._send_log(dt_min, receivetime)
 
         self._update_money_top(dt_std)
-        self._update_hoga_window_rem(dt, code, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount)
+        if self.hoga_code == code and dt > self.list_hgdt[1]:
+            self._update_hoga_window_rem(dt, code, hoga_tamount, hoga_seprice, hoga_buprice, hoga_samount, hoga_bamount)
 
     def _correction_hoga_data(self, curr_price, hoga_seprice, hoga_samount, hoga_buprice, hoga_bamount):
         """호가 데이터를 보정합니다.
@@ -580,17 +582,15 @@ class BaseReceiver:
             hoga_samount + hoga_bamount + hoga_tamount + [hjt, gsjm, code, name, logt]
         return send_data, c, dm, logt
 
-    def _send_log(self, logt, dt_min, receivetime):
+    def _send_log(self, dt_min, receivetime):
         """로그를 전송합니다.
         Args:
-            logt: 로그 타입
             dt_min: 날짜시간 분
             receivetime: 수신 시간
         """
-        if logt != 0:
-            gap = (now() - receivetime).total_seconds()
-            self.windowQ.put((ui_num['타임로그'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
-            self.int_logt = dt_min
+        gap = (now() - receivetime).total_seconds()
+        self.windowQ.put((ui_num['타임로그'], f'리시버 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+        self.int_logt = dt_min
 
     def _update_money_top(self, dt_std):
         """거래대금 순위를 업데이트합니다.
@@ -614,17 +614,17 @@ class BaseReceiver:
             hoga_samount: 호가 매도 수량
             hoga_bamount: 호가 매수 수량
         """
-        if self.hoga_code == code and dt > self.list_hgdt[1]:
-            self.list_hgdt[1] = dt
-            name = self.dict_info[code]['종목명']
-            self.hogaQ.put(
-                [name] + hoga_tamount + hoga_seprice[:5][::-1] + hoga_buprice[:5] +
-                hoga_samount[:5][::-1] + hoga_bamount[:5]
-            )
+        self.list_hgdt[1] = dt
+        name = self.dict_info[code]['종목명']
+        self.hogaQ.put(
+            [name] + hoga_tamount + hoga_seprice[:5][::-1] + hoga_buprice[:5] +
+            hoga_samount[:5][::-1] + hoga_bamount[:5]
+        )
 
     def _scheduler(self):
         """스케줄러를 실행합니다."""
-        self._money_top_search()
+        if self.dict_daym:
+            self._money_top_search()
 
         inthms = get_inthms(self.market_gubun)
         A = self.dict_set['전략종료시간'] < inthms < self.dict_set['전략종료시간'] + 10 and self.dict_set['프로세스종료']
@@ -651,40 +651,37 @@ class BaseReceiver:
 
     def _money_top_search(self):
         """머니 탑을 검색합니다."""
-        if self.dict_daym:
-            sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:self.mtop_rank]
-            if self.market_gubun in (6, 7, 8):
-                list_mtop = [self.dict_info[x]['종목명'] for x, y in sorted_daym]
-            else:
-                list_mtop = [x for x, y in sorted_daym]
-            insert_set = set(list_mtop) - set(self.list_gsjm)
-            delete_set = set(self.list_gsjm) - set(list_mtop)
-            if insert_set:
-                for code in insert_set:
-                    self._insert_gsjm_list(code)
-            if delete_set:
-                for code in delete_set:
-                    self._delete_gsjm_list(code)
+        sorted_daym = sorted(self.dict_daym.items(), key=lambda x: x[1], reverse=True)[:self.mtop_rank]
+        if self.market_gubun in (6, 7, 8):
+            list_mtop = [self.dict_info[x]['종목명'] for x, y in sorted_daym]
+        else:
+            list_mtop = [x for x, y in sorted_daym]
+        insert_set = set(list_mtop) - set(self.list_gsjm)
+        delete_set = set(self.list_gsjm) - set(list_mtop)
+        if insert_set:
+            for code in insert_set:
+                self._insert_gsjm_list(code)
+        if delete_set:
+            for code in delete_set:
+                self._delete_gsjm_list(code)
 
     def _insert_gsjm_list(self, code):
         """관심종목 리스트에 추가합니다.
         Args:
             code: 종목코드
         """
-        if code not in self.list_gsjm:
-            self.list_gsjm.append(code)
-            if self.market_gubun not in (6, 7, 8) and self.dict_set['매도취소관심진입']:
-                self.traderQ.put(('관심진입', code))
+        self.list_gsjm.append(code)
+        if self.market_gubun not in (6, 7, 8) and self.dict_set['매도취소관심진입']:
+            self.traderQ.put(('관심진입', code))
 
     def _delete_gsjm_list(self, code):
         """관심종목 리스트에서 삭제합니다.
         Args:
             code: 종목코드
         """
-        if code in self.list_gsjm:
-            self.list_gsjm.remove(code)
-            if self.market_gubun in (6, 7, 8) and self.dict_set['매수취소관심이탈']:
-                self.traderQ.put(('관심이탈', code))
+        self.list_gsjm.remove(code)
+        if self.market_gubun not in (6, 7, 8) and self.dict_set['매수취소관심이탈']:
+            self.traderQ.put(('관심이탈', code))
 
     def _receiver_process_kill(self):
         """리시버 프로세스를 종료합니다."""

@@ -48,6 +48,7 @@ def ttbutton_clicked_01(ui, cmd):
         table = ui.market_info['손익디비']
         df = ui.dbreader.read_sql('거래디비', f'SELECT * FROM {table}')
         df = df[::-1]
+
         if len(df) > 0:
             pr = len(df)
             nsp = 100
@@ -63,10 +64,12 @@ def ttbutton_clicked_01(ui, cmd):
         else:
             QMessageBox.critical(ui, '오류 알림', '거래목록이 존재하지 않습니다.\n')
             return
+
         if cmd == '일별집계':
             df.rename(columns={'index': '일자'}, inplace=True)
             df.drop(columns=['거래횟수'], inplace=True)
             ui.update_tablewidget.update_tablewidget((ui_num['누적상세'], df))
+
         elif cmd == '월별집계':
             df['연월'] = df['index'].str[:6]
             df2 = pd.DataFrame(columns=columns_nd)
@@ -82,6 +85,7 @@ def ttbutton_clicked_01(ui, cmd):
                     df2.loc[month] = [month, tbg, tsg, tpg, tmg, sp, ttsg]
                 month = str(int(month) - 89) if int(month[4:]) == 1 else str(int(month) - 1)
             ui.update_tablewidget.update_tablewidget((ui_num['누적상세'], df2))
+
         elif cmd == '연도별집계':
             df['연도'] = df['index'].str[:4]
             df2 = pd.DataFrame(columns=columns_nd)
@@ -169,6 +173,7 @@ def stbutton_clicked_02(ui):
     std_text14 = ui.st_lineEditttt_14.text()
     std_list = [std_text1, std_text2, std_text3, std_text4, std_text5, std_text6, std_text7, std_text8, std_text9,
                 std_text10, std_text11, std_text12, std_text13, std_text14]
+
     if '' in std_list:
         QMessageBox.critical(ui.dialog_std, '오류 알림', '일부 제한값이 공백상태입니다.\n')
     else:
@@ -197,10 +202,12 @@ def lvbutton_clicked_02(ui):
     ui.lv_checkBoxxxx_01.setChecked(True) if df['바이낸스선물고정레버리지'][0] else ui.lv_checkBoxxxx_01.setChecked(False)
     ui.lv_checkBoxxxx_02.setChecked(True) if not df['바이낸스선물고정레버리지'][0] else ui.lv_checkBoxxxx_02.setChecked(False)
     ui.lv_lineEditttt_01.setText(str(df['바이낸스선물고정레버리지값'][0]))
+
     binance_lvrg = []
     for text in df['바이낸스선물변동레버리지값'][0].split('^'):
         lvrg_list = text.split(';')
         binance_lvrg.append(lvrg_list)
+
     ui.lv_lineEditttt_02.setText(binance_lvrg[0][0])
     ui.lv_lineEditttt_03.setText(binance_lvrg[0][1])
     ui.lv_lineEditttt_04.setText(binance_lvrg[0][2])
@@ -240,16 +247,23 @@ def lvbutton_clicked_03(ui):
     lv14 = ui.lv_lineEditttt_14.text()
     lv15 = ui.lv_lineEditttt_15.text()
     lv16 = ui.lv_lineEditttt_16.text()
+
     if '' in (lv1, lv2, lv3, lv4, lv5, lv6, lv7, lv8, lv9, lv10, lv11, lv12, lv13, lv14, lv15, lv16):
         QMessageBox.critical(ui.dialog_leverage, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
     else:
         lv2, lv3, lv5, lv6, lv8, lv9, lv11, lv12, lv14, lv15 = float(lv2), float(lv3), float(lv5), float(lv6), float(
             lv8), float(lv9), float(lv11), float(lv12), float(lv14), float(lv15)
         lv1, lv4, lv7, lv10, lv13, lv16 = int(lv1), int(lv4), int(lv7), int(lv10), int(lv13), int(lv16)
+
         if not (
-                1 <= lv1 <= 125 and 1 <= lv4 <= 125 and 1 <= lv7 <= 125 and 1 <= lv10 <= 125 and 1 <= lv13 <= 125 and 1 <= lv16 <= 125):
+                1 <= lv1 <= 125 and
+                1 <= lv4 <= 125 and
+                1 <= lv7 <= 125 and
+                1 <= lv10 <= 125 and
+                1 <= lv13 <= 125 and
+                1 <= lv16 <= 125
+        ):
             QMessageBox.critical(ui, '오류 알림', '레버리지 설정을 1부터 125사이로 입력하십시오.\n')
-            return
         else:
             if ui.proc_chqs.is_alive():
                 lvrg_text = f'{lv2};{lv3};{lv4}^{lv5};{lv6};{lv7}^{lv8};{lv9};{lv10}^{lv11};{lv12};{lv13}^{lv14};{lv15};{lv16}'
@@ -283,9 +297,13 @@ def hg_button_clicked_01(ui, gubun):
         ui: UI 클래스 인스턴스
         gubun: 구분 (이전/다음)
     """
-    if not ui.dialog_hoga.isVisible(): return
+    if not ui.dialog_hoga.isVisible():
+        return
+
     index = ui.hg_labellllllll_01.text()
-    if index == '': return
+    if index == '':
+        return
+
     code  = ui.ct_lineEdittttt_04.text()
     name  = ui.ct_lineEdittttt_05.text()
     index = index.replace('-', '').replace(' ', '').replace(':', '')
@@ -298,9 +316,13 @@ def hg_button_clicked_02(ui, gubun):
         ui: UI 클래스 인스턴스
         gubun: 구분 (매수/매도)
     """
-    if not ui.dialog_hoga.isVisible(): return
+    if not ui.dialog_hoga.isVisible():
+        return
+
     cindex = ui.hg_labellllllll_01.text()
-    if cindex == '': return
+    if cindex == '':
+        return
+
     code = ui.ct_lineEdittttt_04.text()
     name = ui.ct_lineEdittttt_05.text()
     cindex = int(cindex.replace('-', '').replace(' ', '').replace(':', ''))

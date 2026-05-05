@@ -111,12 +111,15 @@ def show_dialog_web(ui, _show, code):
     """
     if ui.webEngineView is None:
         webengineview_set(ui)
+
     if _show and not ui.dialog_web.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=250)
         ui.dialog_web.show()
+
     if _show and not ui.dialog_info.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=250)
         ui.dialog_info.show()
+
     if ui.dialog_web.isVisible() and ui.dialog_info.isVisible():
         # noinspection PyUnresolvedReferences
         ui.webEngineView.load(QUrl(f'https://finance.naver.com/item/main.naver?code={code}'))
@@ -146,8 +149,10 @@ def show_dialog_hoga(ui, _show, code):
     if _show and not ui.dialog_hoga.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=250)
         ui.dialog_hoga.show()
+
     if ui.dialog_hoga.isVisible():
         put_hoga_code(ui, code)
+
     if ui.dialog_order.isVisible():
         name = ui.dict_name.get(code, code)
         if name not in ui.order_combo_name_list:
@@ -300,6 +305,7 @@ def show_giup(ui):
     """
     if ui.webEngineView is None:
         webengineview_set(ui)
+
     if not ui.dialog_web.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=250)
         ui.dialog_web.show()
@@ -307,6 +313,7 @@ def show_giup(ui):
         ui.webEngineView.load(QUrl('https://finance.naver.com/sise/'))
     else:
         ui.dialog_web.close()
+
     if not ui.dialog_info.isVisible():
         DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=250)
         ui.dialog_info.show()
@@ -347,13 +354,16 @@ def show_db(ui):
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {stock_stg}')
         stg_names = df['index'].to_list()
         stg_names.sort()
+
         if len(df) > maxlow:
             maxlow = len(df)
             ui.db_tableWidgett_01.setRowCount(maxlow)
+
         for j, stg_name in enumerate(stg_names):
             item = QTableWidgetItem(stg_name)
             item.setTextAlignment(int(Qt.AlignVCenter | Qt.AlignCenter))
             ui.db_tableWidgett_01.setItem(j, i, item)
+
     if maxlow < 8:
         ui.db_tableWidgett_01.setRowCount(8)
 
@@ -364,26 +374,32 @@ def show_db(ui):
         df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM {stock_stg}')
         stg_names = df['index'].to_list()
         stg_names.sort()
+
         if len(df) > maxlow:
             maxlow = len(df)
             ui.db_tableWidgett_02.setRowCount(maxlow)
+
         for j, stg_name in enumerate(stg_names):
             item = QTableWidgetItem(stg_name)
             item.setTextAlignment(int(Qt.AlignVCenter | Qt.AlignCenter))
             ui.db_tableWidgett_02.setItem(j, i, item)
+
     if maxlow < 8:
         ui.db_tableWidgett_02.setRowCount(8)
 
     df = ui.dbreader.read_sql('전략디비', f'SELECT * FROM schedule')
     stg_names = df['index'].to_list()
     stg_names.sort()
+
     if len(df) > maxlow:
         maxlow = len(df)
         ui.db_tableWidgett_03.setRowCount(maxlow)
+
     for j, stg_name in enumerate(stg_names):
         item = QTableWidgetItem(stg_name)
         item.setTextAlignment(int(Qt.AlignVCenter | Qt.AlignCenter))
         ui.db_tableWidgett_03.setItem(j, 0, item)
+
     if maxlow < 8:
         ui.db_tableWidgett_03.setRowCount(8)
 
@@ -523,6 +539,7 @@ def chart_size_change(ui):
         ui.ct_pushButtonnn_06.setText('축소')
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bb)
         chart_moneytop_list(ui)
+
     elif ui.ct_pushButtonnn_06.text() == '축소':
         if ui.ct_pushButtonnn_05.text() == 'CHART I':
             width = 1403
@@ -533,3 +550,13 @@ def chart_size_change(ui):
         ui.dialog_chart.setFixedSize(width, 1370 if not ui.dict_set['저해상도'] else 1010)
         ui.ct_pushButtonnn_06.setText('확장')
         ui.ct_pushButtonnn_06.setStyleSheet(style_bc_bt)
+
+
+def show_pattern_dialog(ui):
+    if not ui.dialog_pattern.isVisible():
+        if ui.dict_set['타임프레임']:
+            QMessageBox.critical(ui, '오류 알림', '현재 타임프레임이 1초스냅샷 상태입니다.\n패턴학습은 1분봉 타임프레임만 지원합니다.\n')
+            return
+        ui.dialog_pattern.show()
+    else:
+        ui.dialog_pattern.close()

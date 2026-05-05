@@ -8,15 +8,13 @@ from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
 
 class UpdateTelegramMsg:
     """텔레그램 업데이트 클래스입니다.
-    텔레그램 버튼 메시지를 수신하여 버튼명에 맞는 스크린샷 보내기를 수행합니다.
-    """
+    텔레그램 버튼 메시지를 수신하여 버튼명에 맞는 스크린샷 보내기를 수행합니다."""
     def __init__(self, ui):
         self.ui = ui
 
     def send_screenshot(self, msg):
         """텔레그램으로 수신한 명령을 구분하여 스크린샷을 찍고 텔레그램큐로 전송합니다.
-        QBuffer를 사용하여 QPixmap을 바이트 배열로 변환 후 BytesIO로 감싸서 전송
-        """
+        QBuffer를 사용하여 QPixmap을 바이트 배열로 변환 후 BytesIO로 감싸서 전송"""
         rect = None
         prev_main_btn = None
 

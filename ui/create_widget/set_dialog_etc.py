@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
 from ui.event_keypress.overwrite_return_press import return_press_02
 from ui.create_widget.set_style import style_ck_bx, style_bc_dk, qfont14, style_fc_dk
 from ui.event_click.table_cell_clicked import cell_clicked_09, cell_clicked_07, cell_clicked_08
+from trade.analyzer_pattern import pattern_setting_load, pattern_setting_save, pattern_train
 from utility.settings.setting_base import columns_hj, columns_hc, columns_hg, columns_gc, columns_ns, columns_jm1, \
     columns_jm2, columns_stg1, columns_stg2, columns_kp, columns_hc2
 
@@ -269,6 +270,23 @@ class SetDialogEtc:
             self.ui.set_lineEdittt_19, self.ui.set_lineEdittt_20
         ]
 
+        self.ui.dialog_pattern = self.wc.setDialog('STOM PATTERN', parent=self.ui)
+        self.ui.dialog_pattern.geometry().center()
+        self.ui.ptn_labellllll_01 = QLabel('   패턴인식시간(분)                     등락율(%)', self.ui.dialog_pattern)
+        self.ui.ptn_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, items=['30', '60', '90', '120', '150', '180'])
+        self.ui.ptn_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, items=['5', '10', '15', '20', '25', '30'])
+        self.ui.ptn_pushButton_01 = self.wc.setPushbutton('설정불러오기', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_load(self.ui))
+        self.ui.ptn_pushButton_02 = self.wc.setPushbutton('설정저장하기', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_save(self.ui))
+        self.ui.ptn_pushButton_03 = self.wc.setPushbutton('패턴학습하기', parent=self.ui.dialog_pattern, click=lambda: pattern_train(self.ui))
+        self.ui.ptn_groupBoxxx_01 = QGroupBox('', self.ui.dialog_pattern)
+        text = '''
+        ▣ 패턴학습은 TALIB 라이브러리에 있는 60여개의 패턴을 기반으로 종목별로 각 패턴이 발생한 이후에\n
+        지정한 시간과 등락율 퍼센트를 기준으로 패턴별 점수를 학습니다. 30분, 10%로 설정 시 패턴 발생 이후\n
+        30분 동안의 최고등락율과 최저등락율을 구한 다음, 절대값이 큰 등락율 기준으로 패턴점수를 구합니다.\n
+        최고등락율이 10% 이상이라면 100점, 최저등락율이 -10% 이하라면 -100점이 됩니다.'''
+        self.ui.ptn_labellllll_02 = QLabel(text, self.ui.ptn_groupBoxxx_01)
+        self.ui.ptn_textEdittt_01 = self.wc.setTextEdit(self.ui.ptn_groupBoxxx_01, vscroll=True)
+
         self.ui.dialog_hoga.setFixedSize(572, 355)
         if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
             try:
@@ -451,3 +469,14 @@ class SetDialogEtc:
             y = 100 + i % 10 * 30
             xw = 100 if i < 10 else 675
             getattr(self.ui, f'set_lineEdittt_{i+1:02d}').setGeometry(x, y, xw, 25)
+
+        self.ui.dialog_pattern.setFixedSize(590, 400)
+        self.ui.ptn_labellllll_01.setGeometry(5, 7, 300, 25)
+        self.ui.ptn_comboBoxxx_01.setGeometry(105, 7, 50, 25)
+        self.ui.ptn_comboBoxxx_02.setGeometry(220, 7, 50, 25)
+        self.ui.ptn_pushButton_01.setGeometry(275, 7, 100, 25)
+        self.ui.ptn_pushButton_02.setGeometry(380, 7, 100, 25)
+        self.ui.ptn_pushButton_03.setGeometry(485, 7, 100, 25)
+        self.ui.ptn_groupBoxxx_01.setGeometry(5, 35, 580, 360)
+        self.ui.ptn_labellllll_02.setGeometry(7, 5, 568, 110)
+        self.ui.ptn_textEdittt_01.setGeometry(7, 130, 568, 225)

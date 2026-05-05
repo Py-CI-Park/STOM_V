@@ -230,10 +230,12 @@ def opti_to_buy_save(ui):
     stgy = ui.svc_comboBoxxx_01.currentText()
     opti = ui.svc_comboBoxxx_02.currentText() if not ui.sva_pushButton_01.isVisible() else ui.sva_comboBoxxx_01.currentText()
     name = ui.svc_lineEdittt_04.text()
+
     if stgy == '' or opti == '' or name == '':
         QMessageBox.critical(ui, '오류 알림', '전략 및 범위 코드를 선택하거나\n매수전략의 이름을 입력하십시오.\n')
         return
-    elif not text_not_in_special_characters(name):
+
+    if not text_not_in_special_characters(name):
         QMessageBox.critical(ui, '오류 알림', '매수전략의 이름에 특문이 포함되어 있습니다.\n언더바(_)를 제외한 특문을 제거하십시오.\n')
         return
 
@@ -273,7 +275,8 @@ def opti_to_sell_save(ui):
     if stgy == '' or opti == '' or name == '':
         QMessageBox.critical(ui, '오류 알림', '전략 및 범위 코드를 선택하거나\n매도전략의 이름을 입력하십시오.\n')
         return
-    elif not text_not_in_special_characters(name):
+
+    if not text_not_in_special_characters(name):
         QMessageBox.critical(ui, '오류 알림', '매도전략의 이름에 특문이 포함되어 있습니다.\n언더바(_)를 제외한 특문을 제거하십시오.\n')
         return
 

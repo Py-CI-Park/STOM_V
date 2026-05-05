@@ -7,9 +7,7 @@ def text_changed_01(ui):
     Args:
         ui: UI 객체
     """
-    if ui.dialog_scheduler.focusWidget() not in ui.list_slineEdittttt:
-        return
-    if ui.sd_scheckBoxxxx_01.isChecked():
+    if ui.dialog_scheduler.focusWidget() in ui.list_slineEdittttt and ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_slineEdittttt.index(ui.dialog_scheduler.focusWidget())
         text  = ui.list_slineEdittttt[gubun].text()
         for i, widget in enumerate(ui.list_slineEdittttt):
@@ -22,9 +20,7 @@ def text_changed_02(ui):
     Args:
         ui: UI 객체
     """
-    if ui.dialog_scheduler.focusWidget() not in ui.list_elineEdittttt:
-        return
-    if ui.sd_scheckBoxxxx_01.isChecked():
+    if ui.dialog_scheduler.focusWidget() in ui.list_elineEdittttt and ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_elineEdittttt.index(ui.dialog_scheduler.focusWidget())
         text  = ui.list_elineEdittttt[gubun].text()
         for i, widget in enumerate(ui.list_elineEdittttt):
@@ -37,9 +33,7 @@ def text_changed_03(ui):
     Args:
         ui: UI 객체
     """
-    if ui.dialog_scheduler.focusWidget() not in ui.list_blineEdittttt:
-        return
-    if ui.sd_scheckBoxxxx_01.isChecked():
+    if ui.dialog_scheduler.focusWidget() in ui.list_blineEdittttt and ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_blineEdittttt.index(ui.dialog_scheduler.focusWidget())
         text  = ui.list_blineEdittttt[gubun].text()
         for i, widget in enumerate(ui.list_blineEdittttt):
@@ -52,9 +46,7 @@ def text_changed_04(ui):
     Args:
         ui: UI 객체
     """
-    if ui.dialog_scheduler.focusWidget() not in ui.list_alineEdittttt:
-        return
-    if ui.sd_scheckBoxxxx_01.isChecked():
+    if ui.dialog_scheduler.focusWidget() in ui.list_alineEdittttt and ui.sd_scheckBoxxxx_01.isChecked():
         gubun = ui.list_alineEdittttt.index(ui.dialog_scheduler.focusWidget())
         text  = ui.list_alineEdittttt[gubun].text()
         for i, widget in enumerate(ui.list_alineEdittttt):

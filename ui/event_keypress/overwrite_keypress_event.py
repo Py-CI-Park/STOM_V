@@ -92,10 +92,16 @@ def key_press_event(ui, event):
                 searchdate = tableWidget.item(row, 2).text()[:8]
                 buytime    = comma2int(tableWidget.item(row, 2).text())
                 if len(str(buytime)) > 12 and not ui.dict_set['타임프레임']:
-                    QMessageBox.critical(ui, '오류 알림', '현재 데이터 형식의 설정은 1분봉 상태입니다.\n1초스냅샷용 백테결과는 차트에 표시할 수 없습니다.\n')
+                    QMessageBox.critical(
+                        ui, '오류 알림',
+                        '현재 데이터 형식의 설정은 1분봉 상태입니다.\n1초스냅샷용 백테결과는 차트에 표시할 수 없습니다.\n'
+                    )
                     return
                 if len(str(buytime)) < 14 and ui.dict_set['타임프레임']:
-                    QMessageBox.critical(ui, '오류 알림', '현재 데이터 형식의 설정은 1초스냅샷 상태입니다.\n1분봉용 백테결과는 차트에 표시할 수 없습니다.\n')
+                    QMessageBox.critical(
+                        ui, '오류 알림',
+                        '현재 데이터 형식의 설정은 1초스냅샷 상태입니다.\n1분봉용 백테결과는 차트에 표시할 수 없습니다.\n'
+                    )
                     return
                 selltime   = comma2int(tableWidget.item(row, 3).text())
                 buyprice   = comma2float(tableWidget.item(row, 5).text())
@@ -106,7 +112,10 @@ def key_press_event(ui, event):
                 starttime  = ui.ct_lineEdittttt_01.text()
                 endtime    = ui.ct_lineEdittttt_02.text()
                 if len(starttime) < 6 or len(endtime) < 6:
-                    QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
+                    QMessageBox.critical(
+                        ui.dialog_chart, '오류 알림',
+                        '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n'
+                    )
                     return
                 ui.ct_lineEdittttt_04.setText(code)
                 ui.ct_lineEdittttt_05.setText(name)
@@ -165,7 +174,8 @@ def key_press_event(ui, event):
         elif event.key() == Qt.Key_F4:
             if ui.svj_pushButton_01.isVisible():
                 buy_stg_save(ui)
-            elif ui.svc_pushButton_06.isVisible() or ui.svc_pushButton_15.isVisible() or ui.svc_pushButton_18.isVisible() or ui.sva_pushButton_01.isVisible():
+            elif ui.svc_pushButton_06.isVisible() or ui.svc_pushButton_15.isVisible() or \
+                    ui.svc_pushButton_18.isVisible() or ui.sva_pushButton_01.isVisible():
                 opti_buy_save(ui)
             elif ui.svo_pushButton_05.isVisible():
                 condbuy_save(ui)
@@ -197,7 +207,8 @@ def key_press_event(ui, event):
         elif event.key() == Qt.Key_F8:
             if ui.svj_pushButton_01.isVisible():
                 sell_stg_save(ui)
-            elif ui.svc_pushButton_06.isVisible() or ui.svc_pushButton_15.isVisible() or ui.svc_pushButton_18.isVisible() or ui.sva_pushButton_01.isVisible():
+            elif ui.svc_pushButton_06.isVisible() or ui.svc_pushButton_15.isVisible() or \
+                    ui.svc_pushButton_18.isVisible() or ui.sva_pushButton_01.isVisible():
                 opti_sell_save(ui)
             elif ui.svo_pushButton_05.isVisible():
                 condsell_save(ui)

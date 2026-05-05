@@ -63,6 +63,7 @@ def backtest_engine_kill(ui):
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>공유메모리 삭제 완료</font>'))
         else:
             ui.windowQ.put((ui_num['시스템로그'], '백테스트엔진 공유메모리 삭제 완료'))
+
     elif ui.shared_info and 'file_name' in ui.shared_info[0].keys():
         if ui.dialog_backengine.isVisible():
             ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>임시파일 삭제 중 ...</font>'))

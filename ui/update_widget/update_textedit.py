@@ -43,24 +43,24 @@ class UpdateTextedit:
                 log_ = data[1]
             text = f'[{time_}] {log_}' if '</font>' not in log_ else f'<font color=white>[{time_}]</font> {log_}'
 
-            if data[0] in (ui_num['기본로그'], ui_num['타임로그'], ui_num['시스템로그']):
+            if data[0] in (ui_num['기본로그'], ui_num['타임로그'], ui_num['시스템로그'], ui_num['패턴학습']):
                 self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
-
             elif data[0] == ui_num['백테스트']:
                 if not self.ui.dict_set['백테스트로그기록안함']:
                     self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
 
             if data[0] == ui_num['기본로그']:
                 self.ui.log_trade_basic_textedit.append(text)
-
             elif data[0] == ui_num['타임로그']:
                 self.ui.log_trade_error_textedit.append(text)
-
             elif data[0] == ui_num['시스템로그']:
-                ansi_escape = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
-                text = ansi_escape.sub('', text)
+                text = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
                 self.ui.log_system_textedit.append(text)
-
+            elif data[0] == ui_num['패턴학습']:
+                self.ui.ptn_textEdittt_01.append(text)
+                if self.ui.auto_mode and '전체 종목 패턴 학습 완료' in data[1]:
+                    qtest_qwait(2)
+                    auto_back_schedule(self.ui, 1)
             elif data[0] == ui_num['백테엔진']:
                 self.ui.be_textEditxxxx_01.append(text)
                 if data[1] == '백테엔진 준비 완료':
@@ -190,7 +190,7 @@ class UpdateTextedit:
         else:
             if self.ui.dict_set['프로그램종료']:
                 from PyQt5.QtCore import QTimer
-                QTimer.singleShot(180 * 1000, self.ui.process_kill)
+                QTimer.singleShot(60 * 1000, self.ui.process_kill)
             if self.ui.dict_set['컴퓨터종료'] or (
                 self.ui.dict_set['휴무컴퓨터종료'] and
                 (

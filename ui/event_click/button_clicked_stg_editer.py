@@ -1313,31 +1313,48 @@ def opti_cond_editer(ui):
     change_version_button_color(ui)
 
 
+def _check_backengine(ui):
+    from ui.event_click.button_clicked_backtest_engine import backengine_show
+
+    if ui.backengine_starting:
+        QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
+        return False
+
+    if ui.dialog_backengine.isVisible() and not ui.backengine_running:
+        QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
+        return False
+
+    if not ui.backengine_running or (
+            not (QApplication.keyboardModifiers() & Qt.ShiftModifier) and
+            not (QApplication.keyboardModifiers() & Qt.AltModifier) and
+            (QApplication.keyboardModifiers() & Qt.ControlModifier)
+    ):
+        backengine_show(ui)
+        return False
+
+    if ui.back_cancelling:
+        QMessageBox.critical(ui, '오류 알림', '이전 백테스트를 중지하고 있습니다.\n잠시 후 다시 시도하십시오.\n')
+        return False
+
+    return True
+
+
 def backtest_start(ui):
     """백테스트를 시작합니다.
     Args:
         ui: UI 클래스 인스턴스
     """
-    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ, backengine_show
+    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.backengine_starting:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
+        if not _check_backengine(ui):
             return
-        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
-            return
+
         back_club = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
                     QApplication.keyboardModifiers() & Qt.AltModifier) else False
         if back_club and not ui.backengine_running:
             QMessageBox.critical(ui, '오류 알림', '백테엔진을 먼저 구동하십시오.\n')
-            return
-        if not back_club and (not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier)):
-            backengine_show(ui)
-            return
-        if ui.back_cancelling:
-            QMessageBox.critical(ui, '오류 알림', '이전 백테스트를 중지하고 있습니다.\n잠시 후 다시 시도하십시오.\n')
             return
 
         startday = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
@@ -1353,9 +1370,11 @@ def backtest_start(ui):
         if int(avgtime) not in ui.avg_list:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 시작 시 포함되지 않은 평균값틱수를 사용하였습니다.\n현재의 틱수로 백테스팅하려면 백테엔진을 다시 시작하십시오.\n')
             return
+
         if '' in (startday, endday, starttime, endtime, betting, avgtime):
             QMessageBox.critical(ui, '오류 알림', '일부 설정값이 공백 상태입니다.\n')
             return
+
         if '' in (buystg, sellstg):
             QMessageBox.critical(ui, '오류 알림', '전략을 저장하고 콤보박스에서 선택하십시오.\n')
             return
@@ -1381,21 +1400,11 @@ def backfinder_start(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ, backengine_show
+    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.backengine_starting:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
-            return
-        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
-            return
-        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
-            backengine_show(ui)
-            return
-        if ui.back_cancelling:
-            QMessageBox.critical(ui, '오류 알림', '이전 백테스트를 중지하고 있습니다.\n잠시 후 다시 시도하십시오.\n')
+        if not _check_backengine(ui):
             return
 
         startday = ui.svjb_dateEditt_01.date().toString('yyyyMMdd')
@@ -1408,12 +1417,15 @@ def backfinder_start(ui):
         if int(avgtime) not in ui.avg_list:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 시작 시 포함되지 않은 평균값틱수를 사용하였습니다.\n현재의 틱수로 백테스팅하려면 백테엔진을 다시 시작하십시오.\n')
             return
+
         if '' in (startday, endday, starttime, endtime, avgtime):
             QMessageBox.critical(ui, '오류 알림', '일부 설정값이 공백 상태입니다.\n')
             return
+
         if buystg == '':
             QMessageBox.critical(ui, '오류 알림', '매수전략을 저장하고 콤보박스에서 선택하십시오.\n')
             return
+
         if 'self.tickcols' not in ui.ss_textEditttt_01.toPlainText():
             QMessageBox.critical(ui, '오류 알림', '현재 매수전략이 백파인더용이 아닙니다.\n')
             return
@@ -1450,23 +1462,11 @@ def opti_start(ui, back_name):
         ui: UI 클래스 인스턴스
         back_name: 백테스트 이름
     """
-    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ, backengine_show
+    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.backengine_starting:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
-            return
-        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
-            return
-        if not ui.backengine_running or (not (QApplication.keyboardModifiers() & Qt.ShiftModifier) and
-                                      not (QApplication.keyboardModifiers() & Qt.AltModifier) and
-                                      (QApplication.keyboardModifiers() & Qt.ControlModifier)):
-            backengine_show(ui)
-            return
-        if ui.back_cancelling:
-            QMessageBox.critical(ui, '오류 알림', '이전 백테스트를 중지하고 있습니다.\n잠시 후 다시 시도하십시오.\n')
+        if not _check_backengine(ui):
             return
 
         randomopti = True if not (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
@@ -1496,12 +1496,15 @@ def opti_start(ui, back_name):
         if 'VC' in back_name and weeks_train != 'ALL' and int(weeks_train) % int(weeks_valid) != 0:
             QMessageBox.critical(ui, '오류 알림', '교차검증의 학습기간은 검증기간의 배수로 선택하십시오.\n')
             return
+
         if '' in (starttime, endtime, betting):
             QMessageBox.critical(ui, '오류 알림', '일부 설정값이 공백 상태입니다.\n')
             return
+
         if '' in (buystg, sellstg):
             QMessageBox.critical(ui, '오류 알림', '전략을 저장하고 콤보박스에서 선택하십시오.\n')
             return
+
         if optivars == '':
             QMessageBox.critical(ui, '오류 알림', '변수를 설장하고 콤보박스에서 선택하십시오.\n')
             return
@@ -1611,21 +1614,11 @@ def opti_rwft_start(ui, back_name):
         ui: UI 클래스 인스턴스
         back_name: 백테스트 이름
     """
-    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ, backengine_show
+    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.backengine_starting:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
-            return
-        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
-            return
-        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
-            backengine_show(ui)
-            return
-        if ui.back_cancelling:
-            QMessageBox.critical(ui, '오류 알림', '이전 백테스트를 중지하고 있습니다.\n잠시 후 다시 시도하십시오.\n')
+        if not _check_backengine(ui):
             return
 
         randomopti  = True if (QApplication.keyboardModifiers() & Qt.AltModifier) and 'B' not in back_name else False
@@ -1652,15 +1645,19 @@ def opti_rwft_start(ui, back_name):
         if 'VC' in back_name and weeks_train != 'ALL' and int(weeks_train) % int(weeks_valid) != 0:
             QMessageBox.critical(ui, '오류 알림', '교차검증의 학습기간은 검증기간의 배수로 선택하십시오.\n')
             return
+
         if weeks_train == 'ALL':
             QMessageBox.critical(ui, '오류 알림', '전진분석 학습기간은 전체를 선택할 수 없습니다.\n')
             return
+
         if '' in (starttime, endtime, betting):
             QMessageBox.critical(ui, '오류 알림', '일부 설정값이 공백 상태입니다.\n')
             return
+
         if '' in (buystg, sellstg):
             QMessageBox.critical(ui, '오류 알림', '전략을 저장하고 콤보박스에서 선택하십시오.\n')
             return
+
         if optivars == '':
             QMessageBox.critical(ui, '오류 알림', '변수를 설장하고 콤보박스에서 선택하십시오.\n')
             return
@@ -1728,21 +1725,11 @@ def opti_ga_start(ui, back_name):
         ui: UI 클래스 인스턴스
         back_name: 백테스트 이름
     """
-    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ, backengine_show
+    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.backengine_starting:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
-            return
-        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
-            return
-        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
-            backengine_show(ui)
-            return
-        if ui.back_cancelling:
-            QMessageBox.critical(ui, '오류 알림', '이전 백테스트를 중지하고 있습니다.\n잠시 후 다시 시도하십시오.\n')
+        if not _check_backengine(ui):
             return
 
         starttime   = ui.svjb_lineEditt_02.text()
@@ -1761,12 +1748,15 @@ def opti_ga_start(ui, back_name):
         if 'VC' in back_name and weeks_train != 'ALL' and int(weeks_train) % int(weeks_valid) != 0:
             QMessageBox.critical(ui, '오류 알림', '교차검증의 학습기간은 검증기간의 배수로 선택하십시오.\n')
             return
+
         if '' in (starttime, endtime, betting):
             QMessageBox.critical(ui, '오류 알림', '일부 설정값이 공백 상태입니다.\n')
             return
+
         if '' in (buystg, sellstg):
             QMessageBox.critical(ui, '오류 알림', '전략을 저장하고 콤보박스에서 선택하십시오.\n')
             return
+
         if optivars == '':
             QMessageBox.critical(ui, '오류 알림', '변수를 설장하고 콤보박스에서 선택하십시오.\n')
             return
@@ -1812,21 +1802,11 @@ def opti_cond_start(ui, back_name):
         ui: UI 클래스 인스턴스
         back_name: 백테스트 이름
     """
-    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ, backengine_show
+    from ui.event_click.button_clicked_backtest_engine import clear_backtestQ
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.backengine_starting:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
-            return
-        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
-            QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
-            return
-        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
-            backengine_show(ui)
-            return
-        if ui.back_cancelling:
-            QMessageBox.critical(ui, '오류 알림', '이전 백테스트를 중지하고 있습니다.\n잠시 후 다시 시도하십시오.\n')
+        if not _check_backengine(ui):
             return
 
         starttime   = ui.svjb_lineEditt_02.text()
@@ -1848,12 +1828,15 @@ def opti_cond_start(ui, back_name):
         if 'VC' in back_name and weeks_train != 'ALL' and int(weeks_train) % int(weeks_valid) != 0:
             QMessageBox.critical(ui, '오류 알림', '교차검증의 학습기간은 검증기간의 배수로 선택하십시오.\n')
             return
+
         if int(avgtime) not in ui.avg_list:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 시작 시 포함되지 않은 평균값틱수를 사용하였습니다.\n현재의 틱수로 백테스팅하려면 백테엔진을 다시 시작하십시오.\n')
             return
+
         if '' in (starttime, endtime, betting, avgtime, bcount, scount, rcount):
             QMessageBox.critical(ui, '오류 알림', '일부 설정값이 공백 상태입니다.\n')
             return
+
         if '' in (buystg, sellstg):
             QMessageBox.critical(ui, '오류 알림', '조건을 저장하고 콤보박스에서 선택하십시오.\n')
             return

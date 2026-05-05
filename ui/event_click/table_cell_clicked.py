@@ -49,6 +49,7 @@ def cell_clicked_02(ui, row, col):
     item = ui.jg_tableWidgettt.item(row, 0)
     if item is None:
         return
+
     name = item.text()
     columns = columns_jg if ui.market_gubun < 6 else columns_jgf if ui.market_gubun < 9 else columns_jgcf
     oc = comma2int(ui.jg_tableWidgettt.item(row, columns.index('보유수량')).text())
@@ -83,6 +84,7 @@ def cell_clicked_03(ui, row, col):
     item = ui.focusWidget().item(row, 1)
     if item is None:
         return
+
     name      = item.text()
     linetext  = ui.ct_lineEdittttt_03.text()
     tickcount = int(linetext) if linetext else 30
@@ -143,12 +145,14 @@ def cell_clicked_05(ui, row, col):
     name       = item.text()
     searchdate = tableWidget.item(row, 2).text()[:8]
     buytime    = comma2int(tableWidget.item(row, 2).text())
+
     if len(str(buytime)) > 12 and not ui.dict_set['타임프레임']:
         QMessageBox.critical(ui, '오류 알림', '현재 데이터 형식의 설정은 1분봉 상태입니다.\n1초스냅샷용 백테결과는 차트에 표시할 수 없습니다.\n')
         return
     elif len(str(buytime)) < 14 and ui.dict_set['타임프레임']:
         QMessageBox.critical(ui, '오류 알림', '현재 데이터 형식의 설정 1초스냅샷 상태입니다.\n1분봉용 백테결과는 차트에 표시할 수 없습니다.\n')
         return
+
     selltime   = comma2int(tableWidget.item(row, 3).text())
     buyprice   = comma2float(tableWidget.item(row, 5).text())
     sellprice  = comma2float(tableWidget.item(row, 6).text())
@@ -161,6 +165,7 @@ def cell_clicked_05(ui, row, col):
     tickcount = int(ui.svjb_lineEditt_05.text())
     starttime = ui.ct_lineEdittttt_01.text()
     endtime   = ui.ct_lineEdittttt_02.text()
+
     if len(starttime) < 6 or len(endtime) < 6:
         QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
         return
@@ -186,9 +191,11 @@ def cell_clicked_06(ui, row, col):
     tickcount  = int(linetext) if linetext else 30
     starttime  = ui.ct_lineEdittttt_01.text()
     endtime    = ui.ct_lineEdittttt_02.text()
+
     if len(starttime) < 6 or len(endtime) < 6:
         QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
         return
+
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
     ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
@@ -241,6 +248,7 @@ def cell_clicked_08(ui, row, col):
                 query = f"DELETE FROM {ui.market_info['전략구분']}_optisell WHERE `index` = '{stg_name}'"
             ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f"DB 명령 실행 알림 - {ui.market_info['마켓이름']} 전략 '{stg_name}' 삭제 완료"))
+
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_02:
         item = ui.db_tableWidgett_02.item(row, col)
         if item is None:
@@ -261,6 +269,7 @@ def cell_clicked_08(ui, row, col):
                 query = f"DELETE FROM {ui.market_info['전략구분']}_sellconds WHERE `index` = '{stg_name}'"
             ui.queryQ.put(('전략디비', query))
             ui.windowQ.put((ui_num['DB관리'], f"DB 명령 실행 알림 - {ui.market_info['마켓이름']} 범위 또는 조건 '{stg_name}' 삭제 완료"))
+
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_03:
         item = ui.db_tableWidgett_03.item(row, col)
         if item is None:

@@ -87,6 +87,10 @@ class BackEngineBaseOms(BackEngineBase):
             if self.dict_set['시장리스크분석']:
                 리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
 
+        패턴점수, 패턴신뢰도 = 0, 0
+        if not self.is_tick and self.dict_set['패턴인식분석'] and 데이터길이 >= 5:
+            패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+
         self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
         self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]
         self.bhogainfo[:] = [매수호가1, 매수호가2, 매수호가3, 매수호가4, 매수호가5]

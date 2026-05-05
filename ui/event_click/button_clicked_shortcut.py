@@ -19,8 +19,11 @@ def mnbutton_c_clicked_01(ui, index):
     if ui.extend_window:
         QMessageBox.critical(ui, '오류 알림', '전략탭 확장 상태에서는 탭을 변경할 수 없습니다.')
         return
+
     prev_main_btn = ui.main_btn
-    if prev_main_btn == index: return
+    if prev_main_btn == index:
+        return
+
     ui.image_label1.setVisible(False)
     if index == 2:
         ui.svjb_lineEditt_04.setText(str(ui.dict_set['투자금']))

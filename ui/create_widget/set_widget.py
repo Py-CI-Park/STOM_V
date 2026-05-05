@@ -432,14 +432,17 @@ class HoverGroupBox(QGroupBox):
             QGroupBox {{
                 background-color: {bg_color};
                 font-family: "나눔고딕", "Malgun Gothic";
+                font-size: 12px;
             }}
             QGroupBox::title {{
                 subcontrol-origin: margin;
                 subcontrol-position: top left;
                 font-family: "나눔고딕", "Malgun Gothic";
+                font-size: 12px;
             }}
             QLabel, QCheckBox, QPushButton, QDateEdit, HoverComboBox {{
                 font-family: "나눔고딕", "Malgun Gothic";
+                font-size: 12px;
             }}
         """
 

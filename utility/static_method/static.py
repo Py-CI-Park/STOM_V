@@ -1,6 +1,7 @@
 
 import bisect
 import datetime
+import numpy as np
 from numba import njit
 
 
@@ -10,6 +11,7 @@ def set_builtin_print(q):
     Args:
         q: UI 큐
     """
+    import re
     import inspect
     import builtins
     from utility.settings.setting_base import ui_num
@@ -43,7 +45,7 @@ def set_builtin_print(q):
             message = sep.join(processed_args)
             message = message.lstrip()
             message = message.rstrip()
-
+            message = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', message)
             q.put((ui_num['시스템로그'], message))
         except Exception:
             pass
@@ -74,8 +76,6 @@ def add_rolling_data(df, round_unit, angle_cf_list, is_tick, avg_list, cf1=None,
     Returns:
         배열
     """
-    import numpy as np
-
     for window in get_ema_list(is_tick):
         df[f'이동평균{window}'] = df['현재가'].rolling(window=window).mean().round(round_unit)
 

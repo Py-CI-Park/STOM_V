@@ -5,6 +5,7 @@ from ui.event_click.button_clicked_settings import *
 from PyQt5.QtWidgets import QLabel, QTabWidget, QWidget
 from ui.event_activate import activated_etc, activated_stg
 from ui.event_click.button_clicked_etc import lvbutton_clicked_01
+from ui.event_click.button_clicked_show_dialog import show_pattern_dialog
 
 
 class SetSetupTap:
@@ -103,28 +104,35 @@ class SetSetupTap:
         self.ui.sj_back_labell_01 = QLabel(' ▣  그리드 최적화 기준값 최소상승률                    %', self.ui.sj_bs_groupBox_05)
         self.ui.sj_back_labell_01.setToolTip('그리드 최적화 시 직전 대비 기준값 상승률이 설정값보다 적을 경우 종료됩니다.\n0%로 설정 시 최고기준값을 갱신하지 못하면 최적화가 종료됩니다.')
         self.ui.sj_back_liEdit_01 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
+        self.ui.sj_back_cheBox_08 = self.wc.setCheckBox('스케쥴러 자동실행 전 패턴인식 자동학습하기', self.ui.sj_bs_groupBox_05)
+        self.ui.sj_back_cheBox_09 = self.wc.setCheckBox('백테스트로그 기록하지 않기', self.ui.sj_bs_groupBox_05)
 
         tip_text = "시장미시구조(microstructure) 분석은 호가데이터를 기반으로\n"\
                    "호가깊이비율, 불균형, 집중도, 압력레벨 및 각종 조작 패턴\n"\
                    "(레이어링, 펌프앤덤프, 아이스버그, 털기)을 분석하여\n"\
                    "시그널(buy, sell, hold), 신뢰도(0~1), 리스크(0~1) 세개의 값을 리턴합니다."
-        self.ui.sj_back_cheBox_08 = self.wc.setCheckBox('1초스냅샷 전략에 시장미시구조분석 적용하기', self.ui.sj_bs_groupBox_05, tip=tip_text)
+        self.ui.sj_back_cheBox_10 = self.wc.setCheckBox('1초스냅샷 전략에 시장미시구조분석 적용하기', self.ui.sj_bs_groupBox_05, tip=tip_text)
         tip_text = "시장리스크분석(risk_analyzer)은 체결데이터를 기반으로\n"\
                    "RSI, 변동성, 추세, 모멘텀, 체결강도, 수량불균형, 가격위치,\n"\
                    "각도추세, 거래량추세를 분석하여 리스크점수(0~100)를 리턴합니다."
-        self.ui.sj_back_cheBox_09 = self.wc.setCheckBox('1초스냅샷 전략에 시장리스크분석 적용하기', self.ui.sj_bs_groupBox_05, tip=tip_text)
-        self.ui.sj_back_cheBox_10 = self.wc.setCheckBox('백테스트 그래프 매수시간 기준으로 표시하기', self.ui.sj_bs_groupBox_05, tip='체크해제 시 매도시간 기준으로 표시됩니다.')
-        self.ui.sj_back_cheBox_11 = self.wc.setCheckBox('백테스트로그 기록하지 않기', self.ui.sj_bs_groupBox_05)
-        self.ui.sj_back_cheBox_12 = self.wc.setCheckBox('일반 백테스트 시 그래프 저장하지 않기', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_04(self.ui, state))
-        self.ui.sj_back_cheBox_13 = self.wc.setCheckBox('띄우지 않기', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_05(self.ui, state))
+        self.ui.sj_back_cheBox_11 = self.wc.setCheckBox('1초스냅샷 전략에 시장리스크분석 적용하기', self.ui.sj_bs_groupBox_05, tip=tip_text)
+        tip_text = "패턴인식(pattern_analyzer)은 talib 라이브러리에 있는\n"\
+                   "60여개의 패턴을 활용하여 종목별로 각 패턴의 점수(+100~-100)를 학습시키고\n"\
+                   "백테 및 전략연산에서 현재 캔들의 패턴점수 및 패턴신뢰도를 리턴합니다."
+        self.ui.sj_back_cheBox_12 = self.wc.setCheckBox('1분봉 전략에 패턴인식분석 적용하기', self.ui.sj_bs_groupBox_05, tip=tip_text)
+        self.ui.sj_back_cheBox_13 = self.wc.setCheckBox('백테스트 그래프 매수시간 기준으로 표시하기', self.ui.sj_bs_groupBox_05, tip='체크해제 시 매도시간 기준으로 표시됩니다.')
+        self.ui.sj_back_cheBox_14 = self.wc.setCheckBox('일반 백테스트 시 그래프 저장하지 않기', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_04(self.ui, state))
+        self.ui.sj_back_cheBox_15 = self.wc.setCheckBox('일반 백테스트 시 그래프 띄우지 않기', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_05(self.ui, state))
 
-        self.ui.sj_back_cheBox_14 = self.wc.setCheckBox('스케쥴러 자동실행  |  요일                    시간                                                                                        ▣  엔진시작일자', self.ui.sj_bs_groupBox_05, tip='백테 스케쥴러를 자동실행한다.')
+        self.ui.sj_back_cheBox_16 = self.wc.setCheckBox('스케쥴러 자동실행  |  요일                    시간', self.ui.sj_bs_groupBox_05, tip='백테 스케쥴러를 자동실행한다.')
         self.ui.sj_back_comBox_01 = self.wc.setCombobox(self.ui.sj_bs_groupBox_05, items=['금', '토', '일'])
         self.ui.sj_back_liEdit_02 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
-        self.ui.sj_back_comBox_03 = self.wc.setCombobox(self.ui.sj_bs_groupBox_05)
-        self.ui.sj_back_cheBox_15 = self.wc.setCheckBox('                  일전', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_07(self.ui, state))
+        self.ui.sj_back_comBox_02 = self.wc.setCombobox(self.ui.sj_bs_groupBox_05)
+
+        self.ui.sj_back_labell_02 = QLabel(' ▣  엔진시작일자', self.ui.sj_bs_groupBox_05)
+        self.ui.sj_back_cheBox_17 = self.wc.setCheckBox('                  일전', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_07(self.ui, state))
         self.ui.sj_back_liEdit_03 = self.wc.setLineedit(self.ui.sj_bs_groupBox_05)
-        self.ui.sj_back_cheBox_16 = self.wc.setCheckBox('고정', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_08(self.ui, state))
+        self.ui.sj_back_cheBox_18 = self.wc.setCheckBox('고정', self.ui.sj_bs_groupBox_05, changed=lambda state: checkbox_changed_08(self.ui, state))
         self.ui.sj_back_daEdit_01 = self.wc.setDateEdit(self.ui.sj_bs_groupBox_05)
 
         self.ui.sj_ilbunback_listtt = [self.ui.sj_back_cheBox_02, self.ui.sj_back_cheBox_03]
@@ -160,6 +168,7 @@ class SetSetupTap:
 
         self.ui.sj_etc_pButton_01 = self.wc.setPushbutton('계정 텍스트 보기', parent=self.ui.ssd_tab, click=lambda: setting_acc_view(self.ui))
         self.ui.sj_etc_pButton_02 = self.wc.setPushbutton('경과틱수 변수설정', parent=self.ui.sj_bs_groupBox_04, click=lambda: setting_passticks(self.ui))
+        self.ui.sj_etc_pButton_03 = self.wc.setPushbutton('패턴학습', parent=self.ui.sj_bs_groupBox_05, click=lambda: show_pattern_dialog(self.ui))
 
         self.ui.set_tapWidgett_01.setGeometry(7, 10, 1341, 742)
         self.ui.sj_set_labelll_01.setGeometry(847, 10, 50, 20)
@@ -174,8 +183,8 @@ class SetSetupTap:
         self.ui.sj_bs_groupBox_02.setGeometry(5, 100, 1326, 60)
         self.ui.sj_bs_groupBox_03.setGeometry(5, 170, 1326, 60)
         self.ui.sj_bs_groupBox_04.setGeometry(5, 240, 1326, 85)
-        self.ui.sj_bs_groupBox_05.setGeometry(5, 335, 1326, 160)
-        self.ui.sj_bs_groupBox_06.setGeometry(5, 505, 1326, 145)
+        self.ui.sj_bs_groupBox_05.setGeometry(5, 335, 1326, 185)
+        self.ui.sj_bs_groupBox_06.setGeometry(5, 530, 1326, 145)
 
         self.ui.sj_main_labell_01.setGeometry(10, 30, 90, 20)
         self.ui.sj_main_comBox_01.setGeometry(110, 30, 120, 20)
@@ -228,22 +237,26 @@ class SetSetupTap:
         self.ui.sj_back_cheBox_07.setGeometry(500, 80, 330, 20)
         self.ui.sj_back_labell_01.setGeometry(500, 105, 330, 20)
         self.ui.sj_back_liEdit_01.setGeometry(698, 105, 40, 20)
+        self.ui.sj_back_cheBox_08.setGeometry(500, 130, 330, 20)
+        self.ui.sj_back_cheBox_09.setGeometry(500, 155, 330, 20)
 
-        self.ui.sj_back_cheBox_08.setGeometry(880, 30, 250, 20)
-        self.ui.sj_back_cheBox_09.setGeometry(880, 55, 250, 20)
-        self.ui.sj_back_cheBox_10.setGeometry(880, 80, 300, 20)
-        self.ui.sj_back_cheBox_11.setGeometry(880, 105, 300, 20)
-        self.ui.sj_back_cheBox_12.setGeometry(880, 130, 300, 20)
-        self.ui.sj_back_cheBox_13.setGeometry(1100, 130, 300, 20)
+        self.ui.sj_back_cheBox_10.setGeometry(880, 30, 300, 20)
+        self.ui.sj_back_cheBox_11.setGeometry(880, 55, 300, 20)
+        self.ui.sj_back_cheBox_12.setGeometry(880, 80, 300, 20)
+        self.ui.sj_back_cheBox_13.setGeometry(880, 105, 300, 20)
+        self.ui.sj_back_cheBox_14.setGeometry(880, 130, 300, 20)
+        self.ui.sj_back_cheBox_15.setGeometry(880, 155, 300, 20)
 
-        self.ui.sj_back_cheBox_14.setGeometry(10, 130, 800, 20)
+        self.ui.sj_back_cheBox_16.setGeometry(10, 130, 800, 20)
         self.ui.sj_back_comBox_01.setGeometry(160, 130, 50, 20)
         self.ui.sj_back_liEdit_02.setGeometry(245, 130, 70, 20)
-        self.ui.sj_back_comBox_03.setGeometry(330, 130, 130, 20)
-        self.ui.sj_back_cheBox_15.setGeometry(595, 130, 110, 20)
-        self.ui.sj_back_liEdit_03.setGeometry(615, 130, 50, 20)
-        self.ui.sj_back_cheBox_16.setGeometry(700, 130, 220, 20)
-        self.ui.sj_back_daEdit_01.setGeometry(750, 130, 110, 20)
+        self.ui.sj_back_comBox_02.setGeometry(330, 130, 130, 20)
+
+        self.ui.sj_back_labell_02.setGeometry(10, 155, 130, 20)
+        self.ui.sj_back_cheBox_17.setGeometry(105, 155, 110, 20)
+        self.ui.sj_back_liEdit_03.setGeometry(125, 155, 50, 20)
+        self.ui.sj_back_cheBox_18.setGeometry(210, 155, 220, 20)
+        self.ui.sj_back_daEdit_01.setGeometry(260, 155, 110, 20)
 
         self.ui.sj_etc_labelll_01.setGeometry(10, 30, 490, 20)
         self.ui.sj_etc_comBoxx_01.setGeometry(100, 30, 85, 20)
@@ -275,3 +288,4 @@ class SetSetupTap:
 
         self.ui.sj_etc_pButton_01.setGeometry(1180, 95, 145, 20)
         self.ui.sj_etc_pButton_02.setGeometry(1175, 55, 145, 20)
+        self.ui.sj_etc_pButton_03.setGeometry(1175, 80, 145, 20)

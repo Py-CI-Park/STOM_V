@@ -12,9 +12,11 @@ def ssbutton_clicked_01(ui):
     """
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_01.clear()
+
     for table in df['name'].to_list()[::-1]:
         if ui.market_info['전략구분'] in table and '_bt_' in table:
             ui.ss_comboBoxxxx_01.addItem(table)
+
     try:
         df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.ss_comboBoxxxx_01.currentText()}'").set_index('index')
     except Exception:
@@ -30,11 +32,13 @@ def ssbutton_clicked_02(ui):
     """
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_02.clear()
+
     for table in df['name'].to_list()[::-1]:
         if ui.market_info['전략구분'] in table and \
                 ('o_' in table or 'ov_' in table or 'ovc_' in table or 'b_' in table or
                  'bv_' in table or 'bvc_' in table):
             ui.ss_comboBoxxxx_02.addItem(table)
+
     try:
         df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.ss_comboBoxxxx_02.currentText()}'").set_index('index')
     except Exception:
@@ -50,11 +54,13 @@ def ssbutton_clicked_03(ui):
     """
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_03.clear()
+
     for table in df['name'].to_list()[::-1]:
         if ui.market_info['전략구분'] in table and '_bt_' not in table and \
                 ('t_' in table or 'or_' in table or 'orv_' in table or 'orvc_' in table or 'br_' in table or
                  'brv_' in table or 'brvc_' in table):
             ui.ss_comboBoxxxx_03.addItem(table)
+
     try:
         df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{ui.ss_comboBoxxxx_03.currentText()}'").set_index('index')
     except Exception:

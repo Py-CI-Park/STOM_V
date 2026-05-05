@@ -250,9 +250,11 @@ def back_code_test2(ui, vars_code, ga, testQ):
     """
     while not testQ.empty():
         testQ.get()
+
     thread = BackCodeTest(testQ, ui.windowQ, None, None, vars_code, ga)
     thread.start()
     thread.wait()
+
     return get_code_test_result(ui, '범위', testQ)
 
 
@@ -268,12 +270,14 @@ def back_code_test3(ui, gubun, conds_code, testQ):
     """
     while not testQ.empty():
         testQ.get()
+
     conds_code = conds_code.split('\n')
     conds_code = [x for x in conds_code if x and x[0] != '#']
     if gubun == '매수':
         conds_code = 'if not (' + '):\n    매수 = False\nelif not ('.join(conds_code) + '):\n    매수 = False'
     else:
         conds_code = 'if ' + ':\n    매도 = True\nelif '.join(conds_code) + ':\n    매도 = True'
+
     thread = BackCodeTest(testQ, ui.windowQ, conds_code)
     thread.start()
     thread.wait()
@@ -330,6 +334,7 @@ def clear_backtestQ(ui):
     if not ui.backQ.empty():
         while not ui.backQ.empty():
             ui.backQ.get()
+
     if not ui.totalQ.empty():
         while not ui.totalQ.empty():
             ui.totalQ.get()

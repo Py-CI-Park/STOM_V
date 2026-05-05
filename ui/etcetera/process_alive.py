@@ -1,6 +1,6 @@
 
 def receiver_process_alive(ui):
-    """수신기 프로세스存活 상태를 확인합니다.
+    """수신기 프로세스 상태를 확인합니다.
     Args:
         ui: UI 객체
     Returns:
@@ -10,7 +10,7 @@ def receiver_process_alive(ui):
 
 
 def trader_process_alive(ui):
-    """트레이더 프로세스存活 상태를 확인합니다.
+    """트레이더 프로세活 상태를 확인합니다.
     Args:
         ui: UI 객체
     Returns:
@@ -20,7 +20,7 @@ def trader_process_alive(ui):
 
 
 def strategy_process_alive(ui):
-    """전략 프로세스存活 상태를 확인합니다.
+    """전략 프로세스 상태를 확인합니다.
     Args:
         ui: UI 객체
     Returns:
@@ -30,7 +30,7 @@ def strategy_process_alive(ui):
 
 
 def coinkimp_process_alive(ui):
-    """코인 김치 프리미엄 프로세스存活 상태를 확인합니다.
+    """코인 김치 프리미엄 프로세스 상태를 확인합니다.
     Args:
         ui: UI 객체
     Returns:
@@ -40,7 +40,7 @@ def coinkimp_process_alive(ui):
 
 
 def backtest_process_alive(ui):
-    """백테스트 프로세스存活 상태를 확인합니다.
+    """백테스트 프로세스 상태를 확인합니다.
     Args:
         ui: UI 객체
     Returns:

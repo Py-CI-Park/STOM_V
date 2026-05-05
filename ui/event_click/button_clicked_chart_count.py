@@ -12,6 +12,7 @@ def chart_count_change(ui):
     chart_clear(ui)
     ui.ctpg = {}
     ui.ctpg_cvb = {}
+
     if ui.ct_pushButtonnn_05.text() == 'CHART I':
         ui.ctpg_vboxLayout.removeWidget(ui.ctpg_layout)
         ui.dialog_chart.setFixedWidth(2088)
@@ -44,6 +45,7 @@ def chart_count_change(ui):
             ui.ctpg[8], ui.ctpg_cvb[8] = ui.wc.setaddPlot(ui.ctpg_layout, 2, 2)
             ui.ctpg[9], ui.ctpg_cvb[9] = ui.wc.setaddPlot(ui.ctpg_layout, 3, 2)
         ui.ctpg_vboxLayout.addWidget(ui.ctpg_layout)
+
     elif ui.ct_pushButtonnn_05.text() == 'CHART II':
         ui.ctpg_vboxLayout.removeWidget(ui.ctpg_layout)
         ui.dialog_chart.setFixedWidth(2773)
@@ -81,6 +83,7 @@ def chart_count_change(ui):
             ui.ctpg[11], ui.ctpg_cvb[11] = ui.wc.setaddPlot(ui.ctpg_layout, 2, 3)
             ui.ctpg[12], ui.ctpg_cvb[12] = ui.wc.setaddPlot(ui.ctpg_layout, 3, 3)
         ui.ctpg_vboxLayout.addWidget(ui.ctpg_layout)
+
     elif ui.ct_pushButtonnn_05.text() == 'CHART III':
         ui.ctpg_vboxLayout.removeWidget(ui.ctpg_layout)
         ui.dialog_chart.setFixedWidth(1403)

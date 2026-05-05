@@ -24,6 +24,7 @@ def return_press_01(ui):
         ui.ct_lineEdittttt_04.setText(code)
         ui.ct_lineEdittttt_05.setText(name)
         show_dialog(ui, code, name, tickcount, searchdate, 4)
+
     elif ui.dialog_chart.focusWidget() == ui.ct_tableWidgett_01:
         row = ui.ct_tableWidgett_01.currentIndex().row()
         item = ui.ct_tableWidgett_01.item(row, 0)
@@ -37,7 +38,10 @@ def return_press_01(ui):
         starttime  = ui.ct_lineEdittttt_01.text()
         endtime    = ui.ct_lineEdittttt_02.text()
         if len(starttime) < 6 or len(endtime) < 6:
-            QMessageBox.critical(ui.dialog_chart, '오류 알림', '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n')
+            QMessageBox.critical(
+                ui.dialog_chart, '오류 알림',
+                '차트의 시작 및 종료시간은 초단위까지로 입력하십시오.\n(예: 000000, 090000, 152000)\n'
+            )
             return
         ui.ct_lineEdittttt_04.setText(code)
         ui.ct_lineEdittttt_05.setText(name)

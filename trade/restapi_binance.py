@@ -114,8 +114,6 @@ class BinanceWebSocketReceiver(QThread):
 
     def stop(self):
         """웹소켓을 종료합니다."""
-        self.con_trade = False
-        self.con_depth = False
         if self.loop and self.loop.is_running():
             self.loop.stop()
 
@@ -183,6 +181,5 @@ class BinanceWebSocketTrader(QThread):
 
     def stop(self):
         """웹소켓을 종료합니다."""
-        self.connected = False
         if self.loop and self.loop.is_running():
             self.loop.stop()

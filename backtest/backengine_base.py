@@ -7,6 +7,7 @@ from multiprocessing import shared_memory
 from trade.analyzer_risk import AnalyzerRisk
 from trade.stg_globals_func import StgGlobalsFunc
 from trade.manager_formula import get_formula_data
+from trade.analyzer_pattern import AnalyzerPattern
 from trade.analyzer_microstruc import AnalyzerMicrostructure
 from utility.settings.setting_base import indicator, ui_num, BACK_TEMP, DB_STRATEGY, DB_SETTING
 from utility.static_method.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_ema_list, add_rolling_data, \
@@ -145,6 +146,7 @@ class BackEngineBase(StgGlobalsFunc):
 
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], factor_list)
         self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], factor_list)
+        self.pt_analyzer = AnalyzerPattern(self.market_info)
 
         self._set_passticks_and_blacklist()
 
@@ -391,13 +393,13 @@ class BackEngineBase(StgGlobalsFunc):
             code_list = set()
             for day in day_list:
                 code_list.update(day_codes[day])
-            for code in enumerate(code_list):
+            for code in code_list:
                 days = day_list
                 load_and_add_data()
 
         else:
             _, startday, endday, starttime, endtime, day_list, avg_list, _, _, code, _ = data
-            for day in enumerate(day_list):
+            for day in day_list:
                 days = [day]
                 load_and_add_data()
 
@@ -735,6 +737,10 @@ class BackEngineBase(StgGlobalsFunc):
                 self.ms_analyzer.update_data(self.code, self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
             if self.dict_set['시장리스크분석']:
                 리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
+
+        패턴점수, 패턴신뢰도 = 0, 0
+        if not self.is_tick and self.dict_set['패턴인식분석'] and 데이터길이 >= 5:
+            패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
 
         self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
         self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]
