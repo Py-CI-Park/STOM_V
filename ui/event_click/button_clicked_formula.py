@@ -101,10 +101,8 @@ def formula_button_clicked(ui):
             return
 
         if ui.ui_formula_code_test(stg) and ui.proc_chqs.is_alive():
-            delete_query  = f"DELETE FROM formula WHERE 수식명 = '{name}'"
-            insert_query  = 'INSERT INTO formula VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            insert_query  = 'INSERT OR REPLACE INTO formula VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
             insert_values = (name, check1, check2, fname, vtype, color, width, style, stg)
-            ui.queryQ.put(('전략디비', delete_query))
             ui.queryQ.put(('전략디비', insert_query, insert_values))
             QMessageBox.information(ui.dialog_formula, '수식 저장 완료', random.choice(famous_saying))
 

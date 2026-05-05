@@ -3,11 +3,11 @@ import re
 from ui.event_activate import activated_stg
 from ui.etcetera.etc import auto_back_schedule
 from utility.settings.setting_base import ui_num
-from utility.static_method.static import now, qtest_qwait, now_cme
 from ui.event_click.button_clicked_stg_editer import backtest_detail
 from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
 from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_02
 from ui.event_click.button_clicked_backtest_engine import backtest_process_kill
+from utility.static_method.static import now, qtest_qwait, now_cme, error_decorator
 from ui.create_widget.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
 from ui.event_click.button_clicked_database import dbbutton_clicked_08, dbbutton_clicked_09
 
@@ -20,6 +20,7 @@ class UpdateTextedit:
         self.ui        = ui
         self.data_save = False
 
+    @error_decorator
     def update_texedit(self, data):
         """텍스트 에디터를 업데이트합니다.
         수신된 데이터를 기반으로 로그 텍스트 에디터에 내용을 추가합니다.

@@ -1,5 +1,4 @@
 
-import bisect
 import datetime
 import numpy as np
 from numba import njit
@@ -127,18 +126,23 @@ def add_rolling_data(df, round_unit, angle_cf_list, is_tick, avg_list, cf1=None,
 
 def error_decorator(func):
     """에러 처리 데코레이터입니다.
-    Args:
-        func: 데코레이터를 적용할 함수
     Returns:
         래퍼 함수
     """
     from traceback import format_exc
+    from utility.settings.setting_base import ui_num
 
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception:
-            print(format_exc())
+            if args:
+                if hasattr(args[0], 'ui'):
+                    args[0].ui.windowQ.put((ui_num['시스템로그'], format_exc()))
+                elif hasattr(args[0], 'windowQ'):
+                    args[0].windowQ.put((ui_num['시스템로그'], format_exc()))
+                elif hasattr(args[0], 'wq'):
+                    args[0].wq.put((ui_num['시스템로그'], format_exc()))
             return None
     return wrapper
 
@@ -820,6 +824,7 @@ def get_hogaunit_coin(price):
     Returns:
         호가 단위
     """
+    import bisect
     idx = bisect.bisect_right(_UPBIT_HOGA_KEYS, price)
     return _UPBIT_HOGA_VALS[idx]
 
@@ -835,6 +840,7 @@ def get_hogaunit_stock(price):
     Returns:
         호가 단위
     """
+    import bisect
     idx = bisect.bisect_right(_HOGA_NEW_KEYS, price)
     return _HOGA_NEW_VALS[idx]
 

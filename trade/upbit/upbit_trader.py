@@ -1,12 +1,12 @@
 
 import sys
 from PyQt5.QtCore import QTimer
-from traceback import format_exc
 from trade.base_trader import BaseTrader
 from PyQt5.QtWidgets import QApplication
 from utility.settings.setting_base import ui_num
 from trade.restapi_upbit import UpbitRestAPI, UpbitWebSocketTrader
-from utility.static_method.static import now, timedelta_sec, get_hogaunit_coin, get_profit_coin, str_ymdhms_utc
+from utility.static_method.static import now, timedelta_sec, get_hogaunit_coin, get_profit_coin, str_ymdhms_utc, \
+    error_decorator
 
 
 class UpbitTrader(BaseTrader):
@@ -29,7 +29,7 @@ class UpbitTrader(BaseTrader):
         self._get_balances()
 
         if not self.dict_set['모의투자']:
-            self.ws_thread = UpbitWebSocketTrader(self.windowQ)
+            self.ws_thread = UpbitWebSocketTrader(self.access_key, self.secret_key, self.windowQ)
             self.ws_thread.signal.connect(self._convert_order_data)
             self.ws_thread.start()
 
@@ -53,6 +53,7 @@ class UpbitTrader(BaseTrader):
             return False
         return True
 
+    @error_decorator
     def _send_order(self, data):
         """주문을 전송합니다.
         Args:
@@ -111,31 +112,29 @@ class UpbitTrader(BaseTrader):
         self.order_time = timedelta_sec(0.2)
         self.receivQ.put(('주문목록', self._get_order_code_list()))
 
+    @error_decorator
     def _convert_order_data(self, data):
         """주문 데이터를 변환합니다.
         Args:
             data: 데이터
         """
-        try:
-            if data['type'] == 'myOrder':
-                체결유형 = data['state']
-                if 체결유형 in ('trade', 'cancel'):
-                    매매구분 = data['ask_bid']
-                    주문구분 = self.업비트체결코드[매매구분]
-                    체결구분 = self.업비트체결코드[체결유형]
-                    종목코드 = data['code']
-                    체결수량 = float(data['volume'])
-                    미체결수량 = float(data['remaining_volume'])
-                    체결된수량 = float(data['executed_volume'])
-                    주문수량 = round(미체결수량 + 체결된수량, 8)
-                    체결가격 = 주문가격 = float(data['price'])
-                    체결시간 = str_ymdhms_utc(data['timestamp'])
-                    주문번호 = data['uuid']
-                    self._update_chejan_data(
-                        주문구분, 체결구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
-                    )
-        except Exception:
-            self.windowQ.put((ui_num['시스템로그'], format_exc()))
+        if data['type'] == 'myOrder':
+            체결유형 = data['state']
+            if 체결유형 in ('trade', 'cancel'):
+                매매구분 = data['ask_bid']
+                주문구분 = self.업비트체결코드[매매구분]
+                체결구분 = self.업비트체결코드[체결유형]
+                종목코드 = data['code']
+                체결수량 = float(data['volume'])
+                미체결수량 = float(data['remaining_volume'])
+                체결된수량 = float(data['executed_volume'])
+                주문수량 = round(미체결수량 + 체결된수량, 8)
+                체결가격 = 주문가격 = float(data['price'])
+                체결시간 = str_ymdhms_utc(data['timestamp'])
+                주문번호 = data['uuid']
+                self._update_chejan_data(
+                    주문구분, 체결구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
+                )
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
         """매수 주문 가격을 반환합니다.

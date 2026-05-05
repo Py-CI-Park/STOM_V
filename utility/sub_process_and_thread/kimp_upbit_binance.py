@@ -13,17 +13,16 @@ from trade.restapi_upbit import get_symbols_info
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from binance import AsyncClient, BinanceSocketManager
 from utility.settings.setting_base import ui_num, columns_kp
-from utility.static_method.static import comma2float, thread_decorator
+from utility.static_method.static import comma2float, thread_decorator, error_decorator
 
 
 class Kimp:
     """김프(업비트-바이낸스 가격 차이) 계산 클래스입니다.
-    업비트와 바이낸스의 가격 차이를 계산하여 표시합니다.
-    """
+    업비트와 바이낸스의 가격 차이를 계산하여 표시합니다."""
     def __init__(self, qlist):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
-           0        1       2      3       4      5      6      7       8        9       10     11
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ, testQ
+           0        1       2      3       4      5      6      7       8        9       10     11    12
         """
         app = QApplication(sys.argv)
 
@@ -47,6 +46,7 @@ class Kimp:
 
         app.exec_()
 
+    @error_decorator
     def _update_upbit_data(self, data):
         """업비트 데이터를 업데이트합니다.
         Args:
@@ -56,6 +56,7 @@ class Kimp:
         c = data['trade_price']
         self.df.loc[code, ['종목명', '업비트(원)']] = [code, c]
 
+    @error_decorator
     def _update_binance_data(self, data):
         """바이낸스 데이터를 업데이트합니다.
         Args:
@@ -76,8 +77,7 @@ class Kimp:
 
     @thread_decorator
     def _converted_currency(self):
-        """환율을 변환합니다.
-        """
+        """환율을 변환합니다."""
         try:
             html = requests.get('https://finance.naver.com/marketindex/exchangeDetail.naver?marketindexCd=FX_USDKRW').text
             soup = BeautifulSoup(html, 'html.parser')
@@ -90,8 +90,7 @@ class Kimp:
 
 class KimpWebSocketManager(QThread):
     """김프 웹소켓 관리자 클래스입니다.
-    업비트와 바이낸스의 웹소켓을 관리하여 실시간 데이터를 수신합니다.
-    """
+    업비트와 바이낸스의 웹소켓을 관리하여 실시간 데이터를 수신합니다."""
     signal1 = pyqtSignal(object)
     signal2 = pyqtSignal(object)
 

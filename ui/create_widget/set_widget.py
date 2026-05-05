@@ -1,32 +1,12 @@
 
-import sys
 import pyqtgraph as pg
 from PyQt5.QtGui import QPen
-from traceback import format_exc
 from utility.static_method import syntax
 from ui.create_widget.set_style import *
 from utility.settings.setting_base import *
 from PyQt5.QtCore import Qt, QDate, QPropertyAnimation, QRect, QEasingCurve, QTimer, QEvent
 from PyQt5.QtWidgets import QPushButton, QFrame, QTextEdit, QComboBox, QCheckBox, QLineEdit, QDateEdit, QProgressBar, \
-    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QMessageBox, QTableWidgetItem, QSizePolicy
-
-
-def error_decorator(func):
-    """에러 처리 데코레이터입니다.
-    함수 실행 중 오류 발생 시 메시지 박스를 표시하고 시스템을 종료합니다.
-    Args:
-        func: 데코레이터를 적용할 함수
-    Returns:
-        래퍼 함수
-    """
-    def wrapper(*args, **kwargs):
-        try:
-            func(*args, **kwargs)
-        except Exception:
-            self_obj = args[0]
-            QMessageBox.critical(self_obj.ui.splash, '오류 알림', format_exc())
-            sys.exit()
-    return wrapper
+    QDialog, QTableWidget, QAbstractItemView, QGroupBox, QTableWidgetItem, QSizePolicy
 
 
 class CustomViewBox(pg.ViewBox):

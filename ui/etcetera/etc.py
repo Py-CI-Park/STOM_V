@@ -89,16 +89,38 @@ def auto_back_schedule(ui, gubun):
         ui.auto_mode = False
 
 
-def update_dictset(ui):
+def update_dictset(ui, force=False):
     """설정 딕셔너리를 업데이트합니다.
     Args:
         ui: UI 객체
+        force: 설정변경 시 DB 재로딩
     """
-    from ui.event_click.button_clicked_show_dialog import change_chart_factors
-    from ui.etcetera.process_alive import strategy_process_alive, trader_process_alive, receiver_process_alive
+    from utility.settings.setting_user import load_settings
+
+    if force:
+        ui.dict_set = load_settings()
+        change_chart_factors(ui)
+        send_dict_set(ui)
 
     update_market_gubun(ui)
-    change_chart_factors(ui)
+
+
+def change_chart_factors(ui):
+    is_min = not ui.dict_set['타임프레임']
+    if is_min:
+        if ui.ft_checkBoxxxxx_02.text() != '분당거래대금': ui.ft_checkBoxxxxx_02.setText('분당거래대금')
+        if ui.ft_checkBoxxxxx_03.text() != '분당매도수금액': ui.ft_checkBoxxxxx_03.setText('분당매도수금액')
+        if ui.ft_checkBoxxxxx_08.text() != '분당체결수량': ui.ft_checkBoxxxxx_08.setText('분당체결수량')
+        if ui.ft_checkBoxxxxx_16.text() != '누적분당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적분당매도수수량')
+    else:
+        if ui.ft_checkBoxxxxx_02.text() != '초당거래대금': ui.ft_checkBoxxxxx_02.setText('초당거래대금')
+        if ui.ft_checkBoxxxxx_03.text() != '초당매도수금액': ui.ft_checkBoxxxxx_03.setText('초당매도수금액')
+        if ui.ft_checkBoxxxxx_08.text() != '초당체결수량': ui.ft_checkBoxxxxx_08.setText('초당체결수량')
+        if ui.ft_checkBoxxxxx_16.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적초당매도수수량')
+
+
+def send_dict_set(ui):
+    from ui.etcetera.process_alive import strategy_process_alive, trader_process_alive, receiver_process_alive
 
     if receiver_process_alive(ui):
         ui.receivQ.put(('설정변경', ui.dict_set))

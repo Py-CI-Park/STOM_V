@@ -2,7 +2,7 @@
 from io import BytesIO
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QBuffer, QRect, QIODevice
-from utility.static_method.static import qtest_qwait
+from utility.static_method.static import qtest_qwait, error_decorator
 from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
 
 
@@ -12,6 +12,7 @@ class UpdateTelegramMsg:
     def __init__(self, ui):
         self.ui = ui
 
+    @error_decorator
     def send_screenshot(self, msg):
         """텔레그램으로 수신한 명령을 구분하여 스크린샷을 찍고 텔레그램큐로 전송합니다.
         QBuffer를 사용하여 QPixmap을 바이트 배열로 변환 후 BytesIO로 감싸서 전송"""

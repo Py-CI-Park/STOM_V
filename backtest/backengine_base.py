@@ -174,7 +174,7 @@ class BackEngineBase(StgGlobalsFunc):
         dfbl = pd.read_sql('SELECT * FROM strategy', con).set_index('index')
         con.close()
 
-        blacklist = dfbl['블랙리스트'][0]
+        blacklist = dfbl['블랙리스트'][int(self.dict_set['거래소'][-2:])]
         if blacklist != '':
             self.black_list = blacklist.split(';')
 

@@ -12,7 +12,7 @@ from multiprocessing import Process, Queue
 from backtest.optimiz_3d_visualization import Visualization3D
 from backtest.back_static_numba import get_result, bootstrap_test
 from utility.static_method.strategy_version_manager import stg_save_version
-from utility.static_method.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd
+from utility.static_method.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator
 from utility.settings.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, columns_vc, DB_SETTING, DB_OPTUNA
 from backtest.back_static import send_result, plot_show, get_moneytop_query, get_result_dataframe, add_mdd
 
@@ -320,7 +320,7 @@ class Total:
             con = sqlite3.connect(DB_SETTING)
             cur = con.cursor()
             df = pd.read_sql('SELECT * FROM strategy', con).set_index('index')
-            if self.buystg_name == df['매수전략'][0]:
+            if self.buystg_name == df['매수전략'][int(self.dict_set['거래소'][-2:])]:
                 cur.execute(f'UPDATE strategy SET 평균값계산틱수={self.vars[0]}')
             con.commit()
             con.close()
@@ -391,6 +391,7 @@ class Optimize:
             self.tq.put('백테중지')
 
     # noinspection PyUnresolvedReferences
+    @error_decorator
     def _start(self):
         """최적화를 시작합니다.
         """

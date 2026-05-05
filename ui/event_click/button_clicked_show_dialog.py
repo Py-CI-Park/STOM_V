@@ -221,7 +221,6 @@ def dialog_chart_show(ui):
 
     ui.ct_pushButtonnn_05.setText('CHART III')
     chart_count_change(ui)
-    change_chart_factors(ui)
 
     starttime = str(ui.market_info['시작시간']).zfill(6)
     endtime = str_hms(dt_hms(str(ui.dict_set['전략종료시간']))).zfill(6)
@@ -230,20 +229,6 @@ def dialog_chart_show(ui):
     ui.ct_lineEdittttt_02.setText(endtime)
     DialogAnimator.setup_dialog_animation(ui.dialog_chart, duration=300)
     ui.dialog_chart.show()
-
-
-def change_chart_factors(ui):
-    is_min = not ui.dict_set['타임프레임']
-    if is_min:
-        if ui.ft_checkBoxxxxx_02.text() != '분당거래대금': ui.ft_checkBoxxxxx_02.setText('분당거래대금')
-        if ui.ft_checkBoxxxxx_03.text() != '분당매도수금액': ui.ft_checkBoxxxxx_03.setText('분당매도수금액')
-        if ui.ft_checkBoxxxxx_08.text() != '분당체결수량': ui.ft_checkBoxxxxx_08.setText('분당체결수량')
-        if ui.ft_checkBoxxxxx_16.text() != '누적분당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적분당매도수수량')
-    else:
-        if ui.ft_checkBoxxxxx_02.text() != '초당거래대금': ui.ft_checkBoxxxxx_02.setText('초당거래대금')
-        if ui.ft_checkBoxxxxx_03.text() != '초당매도수금액': ui.ft_checkBoxxxxx_03.setText('초당매도수금액')
-        if ui.ft_checkBoxxxxx_08.text() != '초당체결수량': ui.ft_checkBoxxxxx_08.setText('초당체결수량')
-        if ui.ft_checkBoxxxxx_16.text() != '누적초당매도수수량': ui.ft_checkBoxxxxx_16.setText('누적초당매도수수량')
 
 
 def show_qsize(ui):

@@ -117,10 +117,8 @@ def opti_vars_save(ui):
         else:
             if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test2(strategy):
                 if ui.proc_chqs.is_alive():
-                    delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_optivars WHERE `index` = '{strategy_name}'"
-                    insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_optivars VALUES (?, ?)"
+                    insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_optivars VALUES (?, ?)"
                     insert_values = (strategy_name, strategy)
-                    ui.queryQ.put(('전략디비', delete_query))
                     ui.queryQ.put(('전략디비', insert_query, insert_values))
                     stg_save_version(ui.market_info['전략구분'], 'opti', 'vars', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
@@ -180,10 +178,8 @@ def opti_sell_save(ui):
         else:
             if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test1(strategy):
                 if ui.proc_chqs.is_alive():
-                    delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_optisell WHERE `index` = '{strategy_name}'"
-                    insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_optisell VALUES (?, ?)"
+                    insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_optisell VALUES (?, ?)"
                     insert_values = (strategy_name, strategy)
-                    ui.queryQ.put(('전략디비', delete_query))
                     ui.queryQ.put(('전략디비', insert_query, insert_values))
                     stg_save_version(ui.market_info['전략구분'], 'opti', 'sell', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
@@ -291,10 +287,8 @@ def opti_to_buy_save(ui):
         return
 
     if ui.proc_chqs.is_alive():
-        delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_buy WHERE `index` = '{name}'"
-        insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_buy VALUES (?, ?)"
+        insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_buy VALUES (?, ?)"
         insert_values = (name, stg)
-        ui.queryQ.put(('전략디비', delete_query))
         ui.queryQ.put(('전략디비', insert_query, insert_values))
         QMessageBox.information(ui, '저장 알림', '최적값으로 매수전략을 저장하였습니다.\n')
 
@@ -336,10 +330,8 @@ def opti_to_sell_save(ui):
         return
 
     if ui.proc_chqs.is_alive():
-        delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_sell WHERE `index` = '{name}'"
-        insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_sell VALUES (?, ?)"
+        insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_sell VALUES (?, ?)"
         insert_values = (name, stg)
-        ui.queryQ.put(('전략디비', delete_query))
         ui.queryQ.put(('전략디비', insert_query, insert_values))
         QMessageBox.information(ui, '저장 알림', '최적값으로 매도전략을 저장하였습니다.\n')
 

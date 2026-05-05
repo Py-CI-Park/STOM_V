@@ -1,6 +1,7 @@
 
 import pandas as pd
 from PyQt5.QtCore import Qt
+from utility.static_method.static import error_decorator
 from ui.draw_chart.draw_label_text import get_label_text
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from ui.etcetera.process_alive import receiver_process_alive
@@ -153,6 +154,7 @@ class UpdateTablewidget:
         ]
 
     # noinspection PyUnresolvedReferences
+    @error_decorator
     def update_tablewidget(self, data):
         """테이블 위젯을 업데이트합니다.
         수신된 데이터를 기반으로 테이블 위젯에 내용을 표시합니다.

@@ -1,6 +1,7 @@
 
 import pandas as pd
 from utility.settings.setting_base import ui_num
+from utility.static_method.static import error_decorator
 
 
 class DrawTremap:
@@ -19,6 +20,7 @@ class DrawTremap:
         self.tm_mc1  = 0
         self.tm_mc2  = 0
 
+    @error_decorator
     def draw_treemap(self, data):
         """트리맵을 그립니다.
         Args:

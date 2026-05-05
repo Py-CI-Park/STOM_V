@@ -2,12 +2,11 @@
 import sys
 import binance
 from PyQt5.QtCore import QTimer
-from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
 from trade.base_trader import BaseTrader
 from utility.settings.setting_base import ui_num
 from utility.static_method.static import now, timedelta_sec, get_profit_coin_future_short, get_profit_coin_future_long, \
-    get_str_ymdhms
+    get_str_ymdhms, error_decorator
 
 
 class BinanceTrader(BaseTrader):
@@ -39,6 +38,7 @@ class BinanceTrader(BaseTrader):
             yesugm = [float(data['balance']) for data in datas if data['asset'] == 'USDT'][0]
         self._set_yesugm_and_noti(yesugm)
 
+    @error_decorator
     def _send_order(self, data):
         """주문을 전송합니다.
         Args:
@@ -101,8 +101,7 @@ class BinanceTrader(BaseTrader):
                 self.dict_pos[종목코드] = 포지션
             else:
                 self.windowQ.put((
-                    ui_num['기본로그'],
-                    f'{format_exc()}\n주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'
+                    ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'
                 ))
 
         self.order_time = timedelta_sec(0.2)
@@ -162,38 +161,35 @@ class BinanceTrader(BaseTrader):
                 break
         return leverage
 
+    @error_decorator
     def _convert_order_data(self, data):
         """주문 데이터를 변환합니다.
         Args:
             data: 데이터
         """
-        try:
-            if data['e'] == 'ACCOUNT_UPDATE':
-                bal_list = data['a']['B']
-                for bal_dict in bal_list:
-                    if bal_dict['a'] == 'USDT':
-                        self.dict_intg['추정예탁자산'] = float(bal_dict['wb'])
-                        self.dict_intg['예수금'] = float(bal_dict['cw'])
-                        break
+        if data['e'] == 'ACCOUNT_UPDATE':
+            bal_list = data['a']['B']
+            for bal_dict in bal_list:
+                if bal_dict['a'] == 'USDT':
+                    self.dict_intg['추정예탁자산'] = float(bal_dict['wb'])
+                    self.dict_intg['예수금'] = float(bal_dict['cw'])
+                    break
 
-            elif data['e'] == 'ORDER_TRADE_UPDATE':
-                data = data['o']
-                code = data['s']
-                p = f"{data['S']}_{self.dict_pos[code]}"
-                if data['X'] == 'CANCELED':
-                    p = f'{p}_CANCEL'
-                oc = float(data['q'])
-                cc = float(data['l'])
-                mc = round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
-                cp = float(data['L'])
-                op = float(data['p'])
-                on = int(data['i'])
-                if cc > 0 or 'CANCEL' in p:
-                    ct = get_str_ymdhms(self.market_gubun)
-                    self._update_chejan_data_coin_future(p, code, oc, cc, mc, cp, op, ct, on)
-
-        except Exception:
-            self.windowQ.put((ui_num['시스템로그'], format_exc()))
+        elif data['e'] == 'ORDER_TRADE_UPDATE':
+            data = data['o']
+            code = data['s']
+            p = f"{data['S']}_{self.dict_pos[code]}"
+            if data['X'] == 'CANCELED':
+                p = f'{p}_CANCEL'
+            oc = float(data['q'])
+            cc = float(data['l'])
+            mc = round(oc - float(data['z']), self.dict_info[code]['소숫점자리수'])
+            cp = float(data['L'])
+            op = float(data['p'])
+            on = int(data['i'])
+            if cc > 0 or 'CANCEL' in p:
+                ct = get_str_ymdhms(self.market_gubun)
+                self._update_chejan_data_coin_future(p, code, oc, cc, mc, cp, op, ct, on)
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
         """매수 주문 가격을 반환합니다.

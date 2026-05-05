@@ -127,7 +127,8 @@ def indicator_setting_save(ui):
         k_list.append(linedit.text())
     k_list = ';'.join(k_list)
     if ui.proc_chqs.is_alive():
-        query = f"UPDATE back SET 보조지표설정 = '{k_list}'"
+        no = int(ui.dict_set['거래소'][-2:])
+        query = f"UPDATE back SET 보조지표설정 = '{k_list}' WHERE `index` = {no}"
         ui.queryQ.put(('설정디비', query))
         QMessageBox.information(ui.dialog_factor, '저장 완료', random.choice(famous_saying))
 

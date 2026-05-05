@@ -55,10 +55,8 @@ def sell_stg_save(ui):
     else:
         if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test1(strategy):
             if ui.proc_chqs.is_alive():
-                delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_sell WHERE `index` = '{strategy_name}'"
-                insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_sell VALUES (?, ?)"
+                insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_sell VALUES (?, ?)"
                 insert_values = (strategy_name, strategy)
-                ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
                 ui.svjs_pushButon_04.setStyleSheet(style_bc_st)
                 stg_save_version(ui.market_info['전략구분'], 'basic', 'sell', strategy_name, strategy)

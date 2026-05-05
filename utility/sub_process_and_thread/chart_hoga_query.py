@@ -4,32 +4,30 @@ import time
 import talib
 import shutil
 import sqlite3
-import pyttsx3
 import numpy as np
 import pandas as pd
 from copy import deepcopy
-from threading import Lock
 from traceback import format_exc
 from trade.manager_formula import ManagerFormula, get_formula_data
-from utility.static_method.static import timedelta_sec, str_ymdhms, dt_ymdhms, add_rolling_data, dt_ymdhm, str_ymdhm, \
-    thread_decorator
+from utility.static_method.static import timedelta_sec, str_ymdhms, dt_ymdhms, add_rolling_data, dt_ymdhm, str_ymdhm
 from utility.settings.setting_base import ui_num, DB_TRADELIST, DB_PATH, DB_BACKTEST, DB_CODE_INFO, DB_SETTING, \
     DB_STRATEGY, columns_hj, code_info_tables
 
 
-class ChartHogaQuerySound:
+class ChartHogaQuery:
     """차트 호가 쿼리 및 사운드 클래스입니다.
     호가 데이터를 처리하고 알림 소리를 재생합니다."""
     def __init__(self, qlist, dict_set):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
-           0        1       2      3       4      5      6      7       8        9       10     11
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ, testQ
+           0        1       2      3       4      5      6      7       8        9       10     11    12
         """
         self.windowQ      = qlist[0]
         self.soundQ       = qlist[1]
         self.queryQ       = qlist[2]
         self.chartQ       = qlist[4]
         self.hogaQ        = qlist[5]
+        self.testQ        = qlist[12]
         self.dict_set     = dict_set
         self.dict_name    = {}
         self.dict_findex  = {}
@@ -41,7 +39,6 @@ class ChartHogaQuerySound:
         self.dict_hj      = None
         self.dict_hc      = None
         self.dict_hg      = None
-        self.is_tick      = False
 
         self.con1 = sqlite3.connect(DB_SETTING)
         self.cur1 = self.con1.cursor()
@@ -50,11 +47,6 @@ class ChartHogaQuerySound:
         self.con3 = sqlite3.connect(DB_STRATEGY)
         self.cur3 = self.con3.cursor()
         self.con4 = sqlite3.connect(DB_CODE_INFO)
-
-        self.text2speak = pyttsx3.init()
-        self.text2speak.setProperty('rate', 170)
-        self.text2speak.setProperty('volume', 1.0)
-        self.tts_lock = Lock()
 
         self._init_hoga()
         self._update_dict_name()
@@ -113,6 +105,8 @@ class ChartHogaQuerySound:
                         self._settings_change(data)
                     elif data[0] == '설정디비':
                         self._execute_query(data, self.con1, self.cur1)
+                        if len(data) == 3:
+                            self.testQ.put('설정저장완료')
                     elif data[0] == '거래디비':
                         self._execute_query(data, self.con2, self.cur2)
                     elif data[0] == '전략디비':
@@ -152,10 +146,6 @@ class ChartHogaQuerySound:
                         self._graph_comparison(data[1])
                     elif len(data) >= 6:
                         self._update_chart(data)
-
-                if not self.soundQ.empty():
-                    data = self.soundQ.get()
-                    self._text_to_speak(data)
 
                 time.sleep(0.01)
             except Exception:
@@ -931,13 +921,3 @@ class ChartHogaQuerySound:
         if self.is_tick: xticks = [dt_ymdhms(str(int(x))).timestamp() for x in arry[:, 0]]
         else:            xticks = [dt_ymdhms(f'{int(x)}00').timestamp() for x in arry[:, 0]]
         self.windowQ.put((ui_num['차트'], xticks, arry, buy_index, sell_index, fm_list, dict_fm, fm_tcnt))
-
-    @thread_decorator
-    def _text_to_speak(self, data):
-        """텍스트를 음성으로 변환합니다.
-        Args:
-            data: 음성으로 변환할 텍스트
-        """
-        with self.tts_lock:
-            self.text2speak.say(data)
-            self.text2speak.runAndWait()

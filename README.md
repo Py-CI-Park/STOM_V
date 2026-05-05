@@ -83,6 +83,8 @@ STOM/
 ├── trade/                              # 실시간 트레이딩 모듈
 │   ├── analyzer_microstruc.py          # 시장미시구조 분석
 │   ├── analyzer_risk.py                # 리스크 분석
+│   ├── analyzer_pattern.py             # 패턴 분석
+│   ├── analyzer_volume_profile.py      # 가격대(볼륨 프로파일) 분석
 │   ├── stg_globals_func.py             # 전략 기반 클래스(230여개의 전략 모듈)
 │   ├── base_receiver.py                # 리시버용 베이스 클래스
 │   ├── base_strategy.py                # 전략연산용 베이스 클래스
@@ -112,11 +114,10 @@ STOM/
 ├── utility/                            # 공통 유틸리티
 │   ├── _imagefiles/                    # 각종 스크린샷
 │   ├── _pycharm/                       # 파이참 규칙 및 테마
-│   ├── ai_agent/                       # AI 에이전트용 rules 파일
-│   └── db_control/                     # 데이터베이스 관리 모듈
-│   └── settings/                       # 설정 관리 모듈
-│   └── static_method/                  # 공통 사용 모듈
-│   └── sub_process_and_thread/         # 서브 프로세스 및 서브 스레드 모듈
+│   ├── db_control/                     # 데이터베이스 관리 모듈
+│   ├── settings/                       # 설정 관리 모듈
+│   ├── static_method/                  # 공통 함수 사용 모듈
+│   └── sub_process_and_thread/         # 서브 프로세스 및 스레드 모듈
 │
 ├── ai_agent/                           # AI 에이전트
 │   ├── plan/                           # 작업 계획 저장 폴더
@@ -139,7 +140,7 @@ STOM/
 │   ├── tradelist.db                    # 체결목록, 거래목록, 당일실현손익, 잔고목록용 DB
 │   └── strategy_versions/              # 전략 버전 관리 시스템용 폴더
 │
-└── _log/                               # 로그용 폴더
+└── _log/                               # 로그 폴더
 ```
 ## 시스템 요구사항
 ### 트레이딩 용도

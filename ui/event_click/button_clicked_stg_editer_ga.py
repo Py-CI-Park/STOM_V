@@ -49,10 +49,8 @@ def gavars_save(ui):
     else:
         if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test2(strategy, ga=True):
             if ui.proc_chqs.is_alive():
-                delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_optigavars WHERE `index` = '{strategy_name}'"
-                insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_optigavars VALUES (?, ?)"
+                insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_optigavars VALUES (?, ?)"
                 insert_values = (strategy_name, strategy)
-                ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
                 stg_save_version(ui.market_info['전략구분'], 'opti', 'gavars', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
@@ -107,10 +105,8 @@ def condbuy_save(ui):
     else:
         if ui.ui_back_code_test3('매수', strategy):
             if ui.proc_chqs.is_alive():
-                delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_buyconds WHERE `index` = '{strategy_name}'"
-                insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_buyconds VALUES (?, ?)"
+                insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_buyconds VALUES (?, ?)"
                 insert_values = (strategy_name, strategy)
-                ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
                 stg_save_version(ui.market_info['전략구분'], 'cond', 'buy', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
@@ -165,10 +161,8 @@ def condsell_save(ui):
     else:
         if ui.ui_back_code_test3('매도', strategy):
             if ui.proc_chqs.is_alive():
-                delete_query  = f"DELETE FROM {ui.market_info['전략구분']}_sellconds WHERE `index` = '{strategy_name}'"
-                insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_sellconds VALUES (?, ?)"
+                insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_sellconds VALUES (?, ?)"
                 insert_values = (strategy_name, strategy)
-                ui.queryQ.put(('전략디비', delete_query))
                 ui.queryQ.put(('전략디비', insert_query, insert_values))
                 stg_save_version(ui.market_info['전략구분'], 'cond', 'sell', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))

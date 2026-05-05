@@ -10,9 +10,7 @@ from ui.create_widget.set_style import qfont12, color_fg_bt, color_bg_bt, color_
 
 class DrawChartBase:
     """차트 그리기 기본 클래스입니다.
-    PyQtGraph를 사용하여 차트를 그리는 기본 기능을 제공합니다.
-    """
-
+    PyQtGraph를 사용하여 차트를 그리는 기본 기능을 제공합니다."""
     def __init__(self, ui):
         self.ui         = ui
 
@@ -30,8 +28,8 @@ class DrawChartBase:
         self.last_index = None
         self.drop_zero_factors = None
 
-        self.is_min     = not self.ui.dict_set['타임프레임']
         self.real       = False
+        self.is_min     = False
         self.same_code  = False
         self.same_time  = False
 

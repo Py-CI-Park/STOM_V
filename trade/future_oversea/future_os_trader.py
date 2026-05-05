@@ -1,13 +1,13 @@
 
 import sys
 from PyQt5.QtCore import QTimer
-from traceback import format_exc
 from trade.restapi_ls import LsRestAPI
 from PyQt5.QtWidgets import QApplication
 from trade.base_trader import BaseTrader
 from trade.restapi_lsdata import LsRestData
 from utility.settings.setting_base import ui_num
-from utility.static_method.static import now, timedelta_sec, get_profit_future_os_long, get_profit_future_os_short
+from utility.static_method.static import now, timedelta_sec, get_profit_future_os_long, get_profit_future_os_short, \
+    error_decorator
 
 
 class FutureOsTrader(BaseTrader):
@@ -39,6 +39,7 @@ class FutureOsTrader(BaseTrader):
             yesugm = self.ls.get_balance_future_oversea()
         self._set_yesugm_and_noti(yesugm)
 
+    @error_decorator
     def _send_order(self, data):
         """주문을 전송합니다.
         Args:
@@ -98,6 +99,7 @@ class FutureOsTrader(BaseTrader):
         self.order_time = timedelta_sec(0.2)
         self.receivQ.put(('주문목록', self._get_order_code_list()))
 
+    @error_decorator
     def _convert_order_data(self, data):
         """주문 데이터를 변환합니다.
         Args:
@@ -107,18 +109,15 @@ class FutureOsTrader(BaseTrader):
         if body is None:
             return
 
-        try:
-            체결유형 = body['ordr_ccd']
-            if 체결유형 in ('1', '2', '3'):
-                체결구분 = LsRestData.선물주문체결코드[체결유형]
-                종목코드 = body['is_cd']
-                체결수량 = int(body['ccls_q'])
-                체결가격 = float(body['ccls_prc'])
-                체결시간 = f"{self.str_today}{int(int(body['ccls_tm']) / 1000)}"
-                주문번호 = body['ordr_no']
-                self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
-        except Exception:
-            self.windowQ.put((ui_num['시스템로그'], format_exc()))
+        체결유형 = body['ordr_ccd']
+        if 체결유형 in ('1', '2', '3'):
+            체결구분 = LsRestData.선물주문체결코드[체결유형]
+            종목코드 = body['is_cd']
+            체결수량 = int(body['ccls_q'])
+            체결가격 = float(body['ccls_prc'])
+            체결시간 = f"{self.str_today}{int(int(body['ccls_tm']) / 1000)}"
+            주문번호 = body['ordr_no']
+            self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
         """매수 주문 가격을 반환합니다.

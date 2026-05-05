@@ -17,8 +17,8 @@ class TelegramBot(QThread):
     """
     def __init__(self, qlist, dict_set):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
-           0        1       2      3       4      5      6      7       8        9       10     11
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ, testQ
+           0        1       2      3       4      5      6      7       8        9       10     11    12
         """
         super().__init__()
         self.windowQ       = qlist[0]
@@ -46,9 +46,8 @@ class TelegramBot(QThread):
         Thread(target=self.moniter_queue, daemon=True).start()
         self.loop.create_task(self.process_messages())
 
-        gubun = self.dict_set['거래소'][-2:]
-        self.token = self.dict_set[f'텔레그램봇토큰{gubun}']
-        self.chat_id = self.dict_set[f'텔레그램아이디{gubun}']
+        self.token   = self.dict_set['텔레그램봇토큰']
+        self.chat_id = self.dict_set['텔레그램아이디']
 
         if self.token and self.chat_id:
             request = HTTPXRequest(
@@ -160,11 +159,10 @@ class TelegramBot(QThread):
 
     async def restart_bot(self):
         change = False
-        gubun = self.dict_set['거래소'][-2:]
-        if self.token != self.dict_set[f'텔레그램봇토큰{gubun}'] or self.chat_id != self.dict_set[f'텔레그램아이디{gubun}']:
+        if self.token != self.dict_set['텔레그램봇토큰'] or self.chat_id != self.dict_set['텔레그램아이디']:
             change = True
-            self.token = self.dict_set[f'텔레그램봇토큰{gubun}']
-            self.chat_id = self.dict_set[f'텔레그램아이디{gubun}']
+            self.token   = self.dict_set['텔레그램봇토큰']
+            self.chat_id = self.dict_set['텔레그램아이디']
 
         if change:
             try:

@@ -72,6 +72,7 @@ class SetMainMenu:
         self.ui.uj_pushButton = self.wc.setPushbutton('U', color=6, click=lambda: show_treemap(self.ui),          shortcut='Alt+U',   animated=True, tip='트리맵')
         self.ui.qs_pushButton = self.wc.setPushbutton('Q', color=6, click=lambda: show_qsize(self.ui),            shortcut='Alt+Q',   animated=True, tip='큐사이즈')
         self.ui.bs_pushButton = self.wc.setPushbutton('B', color=6, click=lambda: show_backscheduler(self.ui),    shortcut='Alt+B',   animated=True, tip='백테스케쥴러')
+        self.ui.ex_pushButton = self.wc.setPushbutton('X', color=6, click=lambda: trade_process_kill(self.ui),    shortcut='Alt+X',   animated=True, tip='매매프로세스종료')
         self.ui.sf_pushButton = self.wc.setPushbutton('Shift', animated=True)
         self.ui.bb_pushButton = self.wc.setPushbutton('S', color=6, click=lambda: chart_screenshot(self.ui),      shortcut='Shift+S', animated=True, tip='차트창 스샷 텔레그램 전송')
         self.ui.ds_pushButton = self.wc.setPushbutton('Q', color=6, click=lambda: manual_save_and_exit(self.ui),  shortcut='Shift+Q', animated=True, tip='데이터 저장 및 수동 종료')
@@ -112,6 +113,7 @@ class SetMainMenu:
         self.ui.uj_pushButton.setGeometry(8, 350, 16, 15)
         self.ui.qs_pushButton.setGeometry(23, 350, 16, 15)
         self.ui.bs_pushButton.setGeometry(8, 370, 16, 15)
+        self.ui.ex_pushButton.setGeometry(23, 370, 16, 15)
 
         self.ui.sf_pushButton.setGeometry(5, 390, 35, 15)
         self.ui.bb_pushButton.setGeometry(8, 410, 16, 15)

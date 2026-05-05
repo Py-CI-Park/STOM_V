@@ -136,10 +136,8 @@ def button_clicked_strategy_save(ui):
         return
 
     if ui.proc_chqs.is_alive():
-        delete_query  = f"DELETE FROM custombutton WHERE `index` = {ui.stg_btn_number}"
-        insert_query  = 'INSERT INTO custombutton VALUES (?, ?, ?)'
+        insert_query  = 'INSERT OR REPLACE INTO custombutton VALUES (?, ?, ?)'
         insert_values = (ui.stg_btn_number, stg_name, stg_text)
-        ui.queryQ.put(('전략디비', delete_query))
         ui.queryQ.put(('전략디비', insert_query, insert_values))
         ui.dict_stg_btn[ui.stg_btn_number] = stg_text
         if ui.stg_btn_number <= 205:

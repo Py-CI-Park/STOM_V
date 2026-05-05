@@ -1,4 +1,7 @@
 
+from utility.static_method.static import error_decorator
+
+
 class DrawHomeChart:
     """홈 차트 그리기 클래스입니다.
     홈 화면에 시장 지표 차트를 그립니다.
@@ -24,6 +27,7 @@ class DrawHomeChart:
             'LINK/USDT': 15,
         }
 
+    @error_decorator
     def draw_home_chart(self, data):
         """홈 차트를 그립니다.
         Args:

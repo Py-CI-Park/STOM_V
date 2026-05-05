@@ -24,8 +24,8 @@ class BaseStrategy(StgGlobalsFunc):
     실시간 데이터를 기반으로 전략을 실행합니다."""
     def __init__(self, gubun, qlist, dict_set, market_info):
         """
-        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
-           0        1       2      3       4      5      6      7       8        9       10     11
+        windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ, testQ
+           0        1       2      3       4      5      6      7       8        9       10     11    12
         """
         super().__init__()
         self.gubun           = gubun
@@ -40,7 +40,6 @@ class BaseStrategy(StgGlobalsFunc):
         self.market_info     = market_info[1]
         self.is_etfn         = self.market_gubun in (2, 3)
 
-        self.is_running      = True
         self.buystrategy     = None
         self.sellstrategy    = None
         self.chart_code      = None
@@ -154,7 +153,7 @@ class BaseStrategy(StgGlobalsFunc):
         dfbl = pd.read_sql('SELECT * FROM strategy', con).set_index('index')
         con.close()
 
-        blacklist = dfbl['블랙리스트'][0]
+        blacklist = dfbl['블랙리스트'][int(self.dict_set['거래소'][-2:])]
         if blacklist != '':
             self.black_list = blacklist.split(';')
 
@@ -247,7 +246,7 @@ class BaseStrategy(StgGlobalsFunc):
     def _main_loop(self):
         """메인 루프를 실행합니다."""
         self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 전략 연산 시작"))
-        while self.is_running:
+        while True:
             try:
                 data = self.stgQ.get()
                 if data.__class__ == list:
@@ -268,10 +267,6 @@ class BaseStrategy(StgGlobalsFunc):
             except Exception:
                 from traceback import format_exc
                 self.windowQ.put((ui_num['시스템로그'], format_exc()))
-
-        import sys
-        time.sleep(1)
-        sys.exit()
 
     def _update_tuple(self, data):
         """튜플을 업데이트합니다.
@@ -342,9 +337,14 @@ class BaseStrategy(StgGlobalsFunc):
         elif data == '매도전략중지':
             self.sellstrategy = None
             self.teleQ.put('매도전략 중지 완료')
-        elif data == '프로세스종료':
-            self.is_running = False
-            self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 전략연산 종료"))
+        else:
+            if data != '프로그램종료':
+                exit_text = '전략연산 종료' if data == '프로세스종료' else '전략연산 STOP'
+                self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
+
+            import sys
+            time.sleep(1)
+            sys.exit()
 
     # noinspection PyUnusedLocal
     def _strategy_tick(self, data):

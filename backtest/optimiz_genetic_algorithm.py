@@ -11,7 +11,7 @@ from multiprocessing import Process, Queue
 from backtest.back_static import send_result, get_moneytop_query
 from utility.settings.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST
 from utility.static_method.strategy_version_manager import stg_save_version
-from utility.static_method.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
+from utility.static_method.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd, error_decorator
 
 
 class Total:
@@ -200,6 +200,7 @@ class OptimizeGeneticAlgorithm:
             self.tq.put('백테중지')
 
     # noinspection PyUnresolvedReferences
+    @error_decorator
     def _start(self):
         """유전 알고리즘 최적화를 시작합니다."""
         start_time = now()

@@ -6,8 +6,8 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from traceback import format_exc
-from utility.static_method.static import now, str_ymdhms
 from backtest.back_static_numba import get_result, bootstrap_test
+from utility.static_method.static import now, str_ymdhms, error_decorator
 from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj
 from backtest.back_static import plot_show, get_moneytop_query, get_result_dataframe, add_mdd
 
@@ -67,6 +67,7 @@ class BackTest:
             self._sys_exit(True)
 
     # noinspection PyUnresolvedReferences
+    @error_decorator
     def _start(self):
         """백테스트를 시작합니다.
         데이터를 로드하고 전략을 컴파일한 후 백테스트를 실행합니다.

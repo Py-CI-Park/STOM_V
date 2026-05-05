@@ -116,8 +116,7 @@ def mnbutton_c_clicked_03(ui, auto=False):
             qtest_qwait(3)
 
         mnbutton_c_clicked_01(ui, 4)
-        acc_no = ui.dict_set['거래소'][-2:]
-        if ui.dict_set[f'access_key{acc_no}'] is None or ui.dict_set[f'secret_key{acc_no}'] is None:
+        if ui.dict_set['access_key'] is None or ui.dict_set['secret_key'] is None:
             QMessageBox.critical(ui, '오류 알림', '계정이 설정되지 않아 매매시스템을 시작할 수 없습니다.\n계정 설정 후 다시 시작하십시오.\n')
         else:
             trade_process_start(ui)
@@ -213,6 +212,14 @@ def trade_process_start(ui):
     from multiprocessing import Process
     from concurrent.futures import ThreadPoolExecutor
 
+    while not ui.receivQ.empty():
+        ui.receivQ.get()
+    while not ui.traderQ.empty():
+        ui.traderQ.get()
+    for q in ui.stgQs:
+        while not q.empty():
+            q.get()
+
     def receiver_start():
         target = ui.market_info['프로세스'][0]
         ui.proc_receiver = Process(target=target, args=(ui.qlist, ui.dict_set, ui.market_infos))
@@ -247,3 +254,24 @@ def trade_process_start(ui):
 
         # noinspection HttpUrlsUsage
         ui.teleQ.put(f'http://{get_ip()}:{port}')
+
+
+def trade_process_kill(ui):
+    """매매용 프로세스를 종료합니다."""
+    from PyQt5.QtWidgets import QMessageBox
+
+    buttonReply = QMessageBox.warning(
+        ui, '매매 시스템 종료', '실행중인 매매용 프로세스를 종료합니다.\n계속하시겠습니까?\n',
+        QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+    )
+    if buttonReply == QMessageBox.Yes:
+        from ui.create_widget.set_style import style_bc_bb
+        from ui.etcetera.process_alive import receiver_process_alive
+
+        if receiver_process_alive(ui):
+            ui.receivQ.put('강제종료')
+            ui.ms_pushButton.setStyleSheet(style_bc_bb)
+            ui.proc_strategys = []
+
+        if ui.dict_set['웹대시보드'] and ui.web_dashboard:
+            ui.web_dashboard.stop()
