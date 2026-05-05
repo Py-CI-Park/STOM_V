@@ -11,20 +11,17 @@ from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
-from utility.static_method.static_datetime import now, dt_ymd, str_ymd, timedelta_sec, timedelta_day
+from utility.static_method.static_datetime import now, dt_ymd, str_ymd, timedelta_day
 
 VOLATILITY_STOP_TAKE_DB = f'{DB_PATH}/volatility_stop_take.db'
 
 window_queue = None
-total_queue  = None
 
 
-def init_worker(wndowQ, totalQ):
+def init_worker(wndowQ):
     """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
     global window_queue
-    global total_queue
     window_queue = wndowQ
-    total_queue  = totalQ
 
 
 def _calculate_setting_hash(*args) -> str:
@@ -41,11 +38,11 @@ def _calculate_volatility_change_rate(prices: np.ndarray, analysis_period: int) 
     n = len(prices)
     change_rates = np.zeros(n, dtype=np.float64)
     for i in prange(2 * analysis_period, n):
-        prev_window   = prices[i - 2 * analysis_period:i - analysis_period]
+        prev_window   = prices[i + 1 - 2 * analysis_period:i + 1 - analysis_period]
         prev_mean     = np.mean(prev_window)
         prev_std      = np.std(prev_window)
         prev_vol      = prev_std / prev_mean * 100 if prev_mean > 0 else 0.0
-        recent_window = prices[i - analysis_period:i]
+        recent_window = prices[i + 1 - analysis_period:i + 1]
         recent_mean   = np.mean(recent_window)
         recent_std    = np.std(recent_window)
         recent_vol    = recent_std / recent_mean * 100 if recent_mean > 0 else 0.0
@@ -75,18 +72,16 @@ def _calculate_volatility_change_rate_last(prices: np.ndarray, analysis_period: 
 def _calculate_realized_volatility_change_rate(prices: np.ndarray, analysis_period: int) -> np.ndarray:
     """실현 변동성 변화율 계산 (이전기간 대비 최근기간, Numba 최적화)"""
     n = len(prices)
+    log_returns = np.zeros(n, dtype=np.float64)
+    for i in prange(1, n):
+        log_returns[i] = np.log(prices[i] / prices[i - 1])
     change_rates = np.zeros(n, dtype=np.float64)
-    for i in prange(2 * analysis_period - 1, n):
-        prev_returns  = np.zeros(analysis_period, dtype=np.float64)
-        prev_base_idx = i - 2 * analysis_period - 1
-        for j in range(analysis_period):
-            prev_returns[j] = np.log(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j])
-        prev_vol = np.std(prev_returns) * np.sqrt(analysis_period) * 100
-        recent_returns  = np.zeros(analysis_period, dtype=np.float64)
-        recent_base_idx = i - analysis_period - 1
-        for j in range(analysis_period):
-            recent_returns[j] = np.log(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j])
-        recent_vol = np.std(recent_returns) * np.sqrt(analysis_period) * 100
+    for i in prange(2 * analysis_period, n):
+        period_sqrt = np.sqrt(analysis_period)
+        prev_std    = np.std(log_returns[i + 1 - 2 * analysis_period:i + 1 - analysis_period])
+        prev_vol    = prev_std * period_sqrt * 100
+        recent_std  = np.std(log_returns[i + 1 - analysis_period:i + 1])
+        recent_vol  = recent_std * period_sqrt * 100
         if prev_vol > 0:
             change_rates[i] = recent_vol / prev_vol
     return change_rates
@@ -96,16 +91,15 @@ def _calculate_realized_volatility_change_rate(prices: np.ndarray, analysis_peri
 def _calculate_realized_volatility_change_rate_last(prices: np.ndarray, analysis_period: int) -> float:
     """실현 변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
     n = len(prices)
-    prev_returns  = np.zeros(analysis_period, dtype=np.float64)
-    prev_base_idx = n - 2 * analysis_period - 1
-    for j in prange(analysis_period):
-        prev_returns[j] = np.log(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j])
-    prev_vol = np.std(prev_returns) * np.sqrt(analysis_period) * 100
-    recent_returns  = np.zeros(analysis_period, dtype=np.float64)
-    recent_base_idx = n - analysis_period - 1
-    for j in prange(analysis_period):
-        recent_returns[j] = np.log(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j])
-    recent_vol = np.std(recent_returns) * np.sqrt(analysis_period) * 100
+    log_returns = np.zeros(2 * analysis_period, dtype=np.float64)
+    for i in prange(2 * analysis_period):
+        idx = n - 2 * analysis_period + i
+        log_returns[i] = np.log(prices[idx] / prices[idx - 1])
+    period_sqrt = np.sqrt(analysis_period)
+    prev_std    = np.std(log_returns[:analysis_period])
+    prev_vol    = prev_std * period_sqrt * 100
+    recent_std  = np.std(log_returns[analysis_period:])
+    recent_vol  = recent_std * period_sqrt * 100
     if prev_vol > 0:
         return recent_vol / prev_vol
     return 0.0
@@ -115,18 +109,13 @@ def _calculate_realized_volatility_change_rate_last(prices: np.ndarray, analysis
 def _calculate_absolute_change_rate_change(prices: np.ndarray, analysis_period: int) -> np.ndarray:
     """절대 변화율 기반 변동성 변화율 계산 (이전기간 대비 최근기간, Numba 최적화)"""
     n = len(prices)
+    abs_changes = np.zeros(n, dtype=np.float64)
+    for i in prange(1, n):
+        abs_changes[i] = abs(prices[i] / prices[i - 1] - 1) * 100
     change_rates = np.zeros(n, dtype=np.float64)
-    for i in prange(2 * analysis_period - 1, n):
-        prev_abs_changes = np.zeros(analysis_period, dtype=np.float64)
-        prev_base_idx    = i - 2 * analysis_period - 1
-        for j in range(analysis_period):
-            prev_abs_changes[j] = abs(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j] - 1) * 100
-        prev_vol = np.mean(prev_abs_changes)
-        recent_abs_changes = np.zeros(analysis_period, dtype=np.float64)
-        recent_base_idx    = i - analysis_period - 1
-        for j in range(analysis_period):
-            recent_abs_changes[j] = abs(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j] - 1) * 100
-        recent_vol = np.mean(recent_abs_changes)
+    for i in prange(2 * analysis_period, n):
+        prev_vol   = np.mean(abs_changes[i + 1 - 2 * analysis_period:i + 1 - analysis_period])
+        recent_vol = np.mean(abs_changes[i + 1 - analysis_period:i + 1])
         if prev_vol > 0:
             change_rates[i] = recent_vol / prev_vol
     return change_rates
@@ -136,16 +125,12 @@ def _calculate_absolute_change_rate_change(prices: np.ndarray, analysis_period: 
 def _calculate_absolute_change_rate_change_last(prices: np.ndarray, analysis_period: int) -> float:
     """절대 변화율 기반 변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
     n = len(prices)
-    prev_abs_changes = np.zeros(analysis_period, dtype=np.float64)
-    prev_base_idx    = n - 2 * analysis_period - 1
-    for j in prange(analysis_period):
-        prev_abs_changes[j] = abs(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j] - 1) * 100
-    prev_vol = np.mean(prev_abs_changes)
-    recent_abs_changes = np.zeros(analysis_period, dtype=np.float64)
-    recent_base_idx    = n - analysis_period - 1
-    for j in prange(analysis_period):
-        recent_abs_changes[j] = abs(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j] - 1) * 100
-    recent_vol = np.mean(recent_abs_changes)
+    abs_changes = np.zeros(2 * analysis_period, dtype=np.float64)
+    for i in prange(2 * analysis_period):
+        idx = n - 2 * analysis_period + i
+        abs_changes[i] = abs(prices[idx] / prices[idx - 1] - 1) * 100
+    prev_vol   = np.mean(abs_changes[:analysis_period])
+    recent_vol = np.mean(abs_changes[analysis_period:])
     if prev_vol > 0:
         return recent_vol / prev_vol
     return 0.0
@@ -218,9 +203,9 @@ class AnalyzerVolatilityStopTake:
         """실시간 변동성 변화율 분석 및 학습된 손절/익절 반환
         code: 종목코드
         code_data: 코드 데이터 2차원 어레이
-        return: (에상수익률, 익절수익률, 손절수익률)
+        return: (에상수익률, 익절수익률, 손절수익률, 변손익신뢰도)
         """
-        estimated_return, take_profit_pct, stop_loss_pct = 0.0, 0.0, 0.0
+        estimated_return = take_profit_pct = stop_loss_pct = confidence_score = 0.0
 
         len_min    = self.analysis_period * 2 + 1
         group_data = self.volatility_data[code]
@@ -234,24 +219,25 @@ class AnalyzerVolatilityStopTake:
 
             score_data = group_data.get(rounded_rate)
             if score_data:
-                estimated_return = score_data['expected_return']
+                estimated_return = score_data['avg_return']
                 take_profit_pct  = score_data['level_take']
                 stop_loss_pct    = -score_data['level_stop']
+                confidence_score = score_data['confidence_score']
 
-        return estimated_return, take_profit_pct, stop_loss_pct
+        return estimated_return, take_profit_pct, stop_loss_pct, confidence_score
 
     def analyze_batch_data(self, code: str, code_data: np.ndarray) -> np.ndarray:
         """2차원 어레이 데이터 전체를 일괄 분석
         code: 종목코드
         code_data: 코드 데이터 2차원 어레이
-        return: (N, 3) 형태 - 에상수익률, 익절수익률, 손절수익률
+        return: (N, 4) 형태 - 에상수익률, 익절수익률, 손절수익률, 변손익신뢰도
         """
         date = int(str(code_data[0, 0])[:8])
         self.load_volatility_code_data(code, date)
 
         n = len(code_data)
         start_idx = self.analysis_period * 2 + 1
-        results = np.zeros((n, 3))
+        results = np.zeros((n, 4))
 
         for i in range(start_idx, n):
             window_data = code_data[:i]
@@ -261,7 +247,6 @@ class AnalyzerVolatilityStopTake:
 
     def train_all_codes(self, ui):
         """전체 종목 학습 수행 (종목 기반 멀티프로세싱)"""
-        start = now()
         with sqlite3.connect(self.backtest_db) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -289,24 +274,24 @@ class AnalyzerVolatilityStopTake:
             for i in range(multi):
                 code_chunks.append([code for j, code in enumerate(code_list) if j % multi == i])
 
-        self._monitor_totalQ(start, ui.windowQ, ui.totalQ, len_code_list)
-
+        start = now()
+        ui.windowQ.put((UI_NUM['학습로그'], (start, len_code_list)))
         actual_processes = min(multi, len(code_chunks))
-        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ, ui.totalQ)) as pool:
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ,)) as pool:
             args = [
                 (
-                    i, chunk, self.backtest_db, self.idx_close, self.analysis_period,
+                    i, code_chunk, self.backtest_db, self.idx_close, self.analysis_period,
                     self.min_samples, existing_dates_dict, self.is_tick,
                     self.volatility_database.setting_hash
                 )
-                for i, chunk in enumerate(code_chunks)
+                for i, code_chunk in enumerate(code_chunks)
             ]
             results = pool.starmap(self._train_single_chunk, args)
 
         total_processed = 0
         columns = [
-            'code', 'volatility_level', 'level_stop', 'level_take', 'expected_return',
-            'win_rate', 'total_return', 'sample_count', 'setting_hash', 'last_update'
+            'code', 'volatility_level', 'level_stop', 'level_take', 'avg_return', 'max_return', 'min_return',
+            'std_return', 'win_rate', 'sample_count', 'confidence_score', 'setting_hash', 'last_update'
         ]
         for i, result in enumerate(results):
             if result:
@@ -325,26 +310,12 @@ class AnalyzerVolatilityStopTake:
         else:
             ui.windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다'))
 
-    @thread_decorator
-    def _monitor_totalQ(self, start, windowQ, totalQ, last):
-        count = 0
-        windowQ.put((UI_NUM['학습로그'], (start, start, count, last)))
-        while count < last:
-            _ = totalQ.get()
-            count += 1
-            curr_time = now()
-            left_time = curr_time - start
-            left_secs = left_time.total_seconds()
-            remn_time = timedelta_sec(left_secs / count * (last - count)) - curr_time
-            windowQ.put((UI_NUM['학습로그'], (left_time, remn_time, count, last)))
-
     @staticmethod
     def _train_single_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, analysis_period: int,
                             min_samples: int, existing_dates_dict: Dict[str, set], is_tick: bool,
                             setting_hash: str) -> List[Any]:
         """단일 종목 청크 학습 (멀티프로세싱용)"""
         global window_queue
-        global total_queue
 
         all_volatility_scores = []
         last = len(code_chunk)
@@ -381,17 +352,15 @@ class AnalyzerVolatilityStopTake:
                     vol_std_change = _calculate_volatility_change_rate(date_prices, analysis_period)
                     vol_abs_change = _calculate_absolute_change_rate_change(date_prices, analysis_period)
                     vol_rv_change  = _calculate_realized_volatility_change_rate(date_prices, analysis_period)
-
                     change_rates   = vol_std_change * 0.4 + vol_rv_change * 0.4 + vol_abs_change * 0.2
-                    valid_indices  = ~np.isnan(change_rates)
-                    change_rates   = change_rates[valid_indices]
 
                     groups = {}
-                    for idx in range(len(change_rates)):
-                        rounded_level = round(change_rates[idx] * 2) / 2
-                        if rounded_level not in groups:
-                            groups[rounded_level] = []
-                        groups[rounded_level].append(idx)
+                    for idx, rate in enumerate(change_rates):
+                        if rate != 0.0:
+                            rounded_level = round(rate * 2) / 2
+                            if rounded_level not in groups:
+                                groups[rounded_level] = []
+                            groups[rounded_level].append(idx)
 
                     for level, indices in groups.items():
                         if len(indices) >= min_samples:
@@ -400,13 +369,13 @@ class AnalyzerVolatilityStopTake:
                             take_mult_range = np.linspace(0.5, 10.0, 20)
                             best_return     = -float('inf')
 
-                            best_params  = None
+                            best_params = None
                             for stop_mult in stop_mult_range:
                                 for take_mult in take_mult_range:
                                     returns = _simulate_stop_take(date_prices, dates, stop_mult, take_mult,
                                                                   analysis_period, check_step)
 
-                                    if len(returns) >= min_samples:
+                                    if len(returns) > 0:
                                         total_return = returns.sum()
                                         if total_return > best_return:
                                             best_return = total_return
@@ -414,21 +383,28 @@ class AnalyzerVolatilityStopTake:
 
                             if best_params:
                                 stop_mult, take_mult = best_params
-                                returns = _simulate_stop_take(date_prices, dates, stop_mult, take_mult,
-                                                              analysis_period, check_step)
-                                avg_return = np.mean(returns)
+                                scores = _simulate_stop_take(date_prices, dates, stop_mult, take_mult,
+                                                             analysis_period, check_step)
+                                len_scores    = len(scores)
+                                std_scores    = scores.std()
+                                sample_factor = min(len_scores / 100.0, 1.0)
+                                std_factor    = max(1.0 - std_scores / 5.0, 0.0)
+                                confidence    = (sample_factor + std_factor) / 2.0
                                 # noinspection PyUnresolvedReferences
-                                win_rate = (returns > 0).mean() * 100
+                                win_rate = (scores > 0).mean() * 100
 
                                 volatility_scores = [
                                     code,
                                     level,
-                                    round(float(stop_mult), 2),
-                                    round(float(take_mult), 2),
-                                    round(float(avg_return), 4),
-                                    round(float(win_rate), 2),
-                                    round(float(best_return), 4),
-                                    len(returns),
+                                    round(stop_mult, 2),
+                                    round(take_mult, 2),
+                                    round(scores.mean(), 2),
+                                    round(scores.max(), 2),
+                                    round(scores.min(), 2),
+                                    round(std_scores, 2),
+                                    round(win_rate, 2),
+                                    len_scores,
+                                    round(confidence, 2),
                                     setting_hash,
                                     target_date
                                 ]
@@ -439,9 +415,6 @@ class AnalyzerVolatilityStopTake:
             except Exception as e:
                 # noinspection PyUnresolvedReferences
                 window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 변손익분석 학습 실패 - {e}'))
-
-            # noinspection PyUnresolvedReferences
-            total_queue.put('학습완료')
 
         return all_volatility_scores
 
@@ -472,10 +445,13 @@ class VolatilityStopTakeDatabase:
                     volatility_level REAL NOT NULL,
                     level_stop REAL NOT NULL,
                     level_take REAL NOT NULL,
-                    expected_return REAL NOT NULL,
+                    avg_return REAL NOT NULL,
+                    max_return REAL NOT NULL,
+                    min_return REAL NOT NULL,
+                    std_return REAL NOT NULL,
                     win_rate REAL NOT NULL,
-                    total_return REAL NOT NULL,
                     sample_count INTEGER NOT NULL,
+                    confidence_score REAL NOT NULL,
                     setting_hash TEXT NOT NULL,
                     last_update INTEGER NOT NULL,
                     PRIMARY KEY (code, volatility_level, setting_hash, last_update)
@@ -487,9 +463,11 @@ class VolatilityStopTakeDatabase:
         """모든 종목코드 목록 조회"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                f'SELECT DISTINCT code FROM {self.table_name} WHERE setting_hash = ?',
-                (self.setting_hash,)
+            cursor.execute(f'''
+                SELECT DISTINCT code 
+                FROM {self.table_name} 
+                WHERE setting_hash = ?
+            ''', (self.setting_hash,)
             )
             results = cursor.fetchall()
             return [row[0] for row in results]
@@ -498,14 +476,12 @@ class VolatilityStopTakeDatabase:
         """종목의 모든 변동성 변화율 그룹 데이터 로드"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                f'SELECT volatility_level, level_stop, level_take, '
-                f'expected_return, win_rate, total_return, sample_count '
-                f'FROM {self.table_name} '
-                f'WHERE code = ? AND setting_hash = ? AND last_update = '
-                f'(SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?) '
-                f'ORDER BY volatility_level',
-                (code, self.setting_hash, code, self.setting_hash)
+            cursor.execute(f'''
+                SELECT volatility_level, level_stop, level_take, avg_return, confidence_score 
+                FROM {self.table_name} 
+                WHERE code = ? AND setting_hash = ? AND last_update = 
+                (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?)
+            ''', (code, self.setting_hash, code, self.setting_hash)
             )
             results = cursor.fetchall()
             scores = {}
@@ -513,10 +489,8 @@ class VolatilityStopTakeDatabase:
                 scores[row[0]] = {
                     'level_stop': row[1],
                     'level_take': row[2],
-                    'expected_return': row[3],
-                    'win_rate': row[4],
-                    'total_return': row[5],
-                    'sample_count': row[6]
+                    'avg_return': row[3],
+                    'confidence_score': row[4]
                 }
             return scores
 
@@ -528,14 +502,12 @@ class VolatilityStopTakeDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                f'SELECT volatility_level, level_stop, level_take, '
-                f'expected_return, win_rate, total_return, sample_count '
-                f'FROM {self.table_name} '
-                f'WHERE code = ? AND setting_hash = ? AND last_update = '
-                f'(SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update <= ?) '
-                f'ORDER BY volatility_level',
-                (code, self.setting_hash, code, self.setting_hash, backtest_date)
+            cursor.execute(f'''
+                SELECT volatility_level, level_stop, level_take, avg_return, confidence_score 
+                FROM {self.table_name} 
+                WHERE code = ? AND setting_hash = ? AND last_update = 
+                (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update <= ?)
+            ''', (code, self.setting_hash, code, self.setting_hash, backtest_date)
             )
             results = cursor.fetchall()
             scores = {}
@@ -543,10 +515,8 @@ class VolatilityStopTakeDatabase:
                 scores[row[0]] = {
                     'level_stop': row[1],
                     'level_take': row[2],
-                    'expected_return': row[3],
-                    'win_rate': row[4],
-                    'total_return': row[5],
-                    'sample_count': row[6]
+                    'avg_return': row[3],
+                    'confidence_score': row[4]
                 }
             return scores
 
@@ -563,11 +533,11 @@ class VolatilityStopTakeDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                'SELECT analysis_period '
-                'FROM volatility_stop_take_setting '
-                'WHERE market = ? AND is_tick = ?',
-                (market, 1 if is_tick else 0)
+            cursor.execute(f'''
+                SELECT analysis_period 
+                FROM volatility_stop_take_setting 
+                WHERE market = ? AND is_tick = ?
+            ''', (market, 1 if is_tick else 0)
             )
             result = cursor.fetchone()
             if result:
@@ -583,11 +553,11 @@ class VolatilityStopTakeDatabase:
         """설정값 저장"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                'INSERT OR REPLACE INTO volatility_stop_take_setting '
-                '(market, is_tick, analysis_period) '
-                'VALUES (?, ?, ?)',
-                (market, 1 if is_tick else 0, analysis_period)
+            cursor.execute(f'''
+                INSERT OR REPLACE INTO volatility_stop_take_setting 
+                (market, is_tick, analysis_period) 
+                VALUES (?, ?, ?)
+            ''', (market, 1 if is_tick else 0, analysis_period)
             )
             conn.commit()
 

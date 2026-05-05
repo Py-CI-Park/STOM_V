@@ -17,7 +17,7 @@ from strategy.analyzer_microstructure import AnalyzerMicrostructure
 from strategy.manager_formula import ManagerFormula, get_formula_data
 from strategy.analyzer_volatility_pattern import AnalyzerVolatilityPattern
 from strategy.analyzer_volatility_stop_take import AnalyzerVolatilityStopTake
-from utility.static_method.static_datetime import timedelta_sec, str_ymdhms, dt_ymdhms, dt_ymdhm, str_ymdhm
+from utility.static_method.static_datetime import timedelta_sec, str_ymdhms, dt_ymdhms, dt_ymdhm, str_ymdhm, now
 from utility.settings.setting_base import UI_NUM, DB_TRADELIST, DB_PATH, DB_BACKTEST, DB_CODE_INFO, DB_SETTING, \
     DB_STRATEGY, COLUMNS_HJ, CODE_INFO_TABLES
 
@@ -68,7 +68,6 @@ class ChartHogaQuery:
         self.con4 = sqlite3.connect(DB_CODE_INFO)
 
         self._set_sub_vars()
-        self._set_analyzer()
         self._init_hoga()
         self._main_loop()
 
@@ -106,9 +105,11 @@ class ChartHogaQuery:
                 self.dict_findex['당일거래대금'], self.dict_findex['분당매수수량'], self.dict_findex['분당매도수량'],
                 self.dict_findex['분당거래대금'], self.dict_findex['분봉고가'], self.dict_findex['분봉저가']
             ])
-        self.analyzer_cnt = self.dict_findex['손절수익률'] - self.dict_findex['당일거래대금각도']
+        self.analyzer_cnt = self.dict_findex['변손익신뢰도'] - self.dict_findex['당일거래대금각도']
         if not self.is_tick:
-            self.indicator_cnt = self.dict_findex['WILLR'] - self.dict_findex['손절수익률']
+            self.indicator_cnt = self.dict_findex['WILLR'] - self.dict_findex['변손익신뢰도']
+
+        self._set_analyzer()
 
     def _set_analyzer(self):
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], self.dict_findex)
@@ -424,7 +425,9 @@ class ChartHogaQuery:
         table_list = df['name'].to_list()
         if table_list:
             cur = con.cursor()
+            start = now()
             last = len(table_list)
+            self.windowQ.put((UI_NUM['DB관리'], (start, last)))
             for i, code in enumerate(table_list):
                 query_del = f"DELETE FROM '{code}' WHERE `index` LIKE '{data[1]}%'"
                 cur.execute(query_del)
@@ -456,7 +459,9 @@ class ChartHogaQuery:
         file_list = os.listdir(DB_PATH)
         file_list = [x for x in file_list if first_name in x and '.db' in x and 'back' not in x]
         if file_list:
+            start = now()
             last = len(file_list)
+            self.windowQ.put((UI_NUM['DB관리'], (start, last)))
             for i, db_name in enumerate(file_list):
                 con = sqlite3.connect(f'{DB_PATH}/{db_name}')
                 cur = con.cursor()
@@ -509,7 +514,9 @@ class ChartHogaQuery:
             df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
             table_list = df['name'].to_list()
             if table_list:
+                start = now()
                 last = len(table_list)
+                self.windowQ.put((UI_NUM['DB관리'], (start, last)))
                 for i, code in enumerate(table_list):
                     if code in mtlist:
                         df = pd.read_sql(f'SELECT * FROM "{code}"', con)
@@ -540,7 +547,9 @@ class ChartHogaQuery:
         table_list = df['name'].to_list()
         if table_list:
             cur = con.cursor()
+            start = now()
             last = len(table_list)
+            self.windowQ.put((UI_NUM['DB관리'], (start, last)))
             for i, code in enumerate(table_list):
                 df = pd.read_sql(f'SELECT * FROM "{code}" WHERE "index" LIKE "{data[1]}%"', con)
                 cur.execute(f'DELETE FROM "{code}" WHERE "index" LIKE "{data[1]}%"')
@@ -577,7 +586,9 @@ class ChartHogaQuery:
 
             file_list = [x for x in file_list if int(data[1]) <= int(x.split(first_name)[1].replace('.db', '')) <= int(data[2])]
             if file_list:
+                start = now()
                 last = len(file_list)
+                self.windowQ.put((UI_NUM['DB관리'], (start, last)))
                 for i, db_name in enumerate(file_list):
                     con2 = sqlite3.connect(f'{DB_PATH}/{db_name}')
                     df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con2)
@@ -612,7 +623,9 @@ class ChartHogaQuery:
 
             file_list = [x for x in file_list if int(data[1]) <= int(x.split(first_name)[1].replace('.db', '')) <= int(data[2])]
             if file_list:
+                start = now()
                 last = len(file_list)
+                self.windowQ.put((UI_NUM['DB관리'], (start, last)))
                 for i, db_name in enumerate(file_list):
                     con2 = sqlite3.connect(f'{DB_PATH}/{db_name}')
                     df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con2)
@@ -661,7 +674,9 @@ class ChartHogaQuery:
 
                 df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
                 table_list = df['name'].to_list()
+                start = now()
                 last = len(table_list)
+                self.windowQ.put((UI_NUM['DB관리'], (start, last)))
                 for i, code in enumerate(table_list):
                     df = pd.read_sql(f'SELECT * FROM "{code}"', con)
                     if len(df) > 0:
@@ -690,7 +705,9 @@ class ChartHogaQuery:
             df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
             table_list = df['name'].to_list()
             if table_list:
+                start = now()
                 last = len(table_list)
+                self.windowQ.put((UI_NUM['DB관리'], (start, last)))
                 first_name = f"{self.market_info['일자디비경로'][self.is_tick].split('/')[2]}_"
                 for i, code in enumerate(table_list):
                     for day in day_list:
@@ -805,101 +822,107 @@ class ChartHogaQuery:
 
         if self.is_tick and self.dict_set['시장미시구조분석']:
             buy_cf, sell_cf = float(buy_cf), float(sell_cf)
-            arry[:, -13:-10] = self.ms_analyzer.analyze_batch_data(code, arry, buy_cf, sell_cf)
+            arry[:, [self.dict_findex['시그널'], self.dict_findex['신뢰도'], self.dict_findex['리스크']]] = \
+                self.ms_analyzer.analyze_batch_data(code, arry, buy_cf, sell_cf)
 
         if not self.is_tick and self.dict_set['캔들분석']:
-            arry[:, -12:-10] = self.pt_analyzer.analyze_batch_data(code, arry)
+            arry[:, [self.dict_findex['패턴점수'], self.dict_findex['패턴신뢰도']]] = \
+                self.pt_analyzer.analyze_batch_data(code, arry)
 
         if self.dict_set['리스크분석']:
-            arry[:, -10] = self.rk_analyzer.analyze_batch_data(arry)
+            arry[:, self.dict_findex['리스크점수']] = self.rk_analyzer.analyze_batch_data(arry)
 
         if self.dict_set['거래량분석']:
-            arry[:, -9:-7] = self.vs_analyzer.analyze_batch_data(code, arry)
+            arry[:, [self.dict_findex['거래량점수'], self.dict_findex['거래량신뢰도']]] = \
+                self.vs_analyzer.analyze_batch_data(code, arry)
 
         if self.dict_set['가격대분석']:
-            arry[:, -7:-5] = self.vf_analyzer.analyze_batch_data(code, arry)
+            arry[:, [self.dict_findex['가격대점수'], self.dict_findex['가격대신뢰도']]] = \
+                self.vf_analyzer.analyze_batch_data(code, arry)
 
         if self.dict_set['변동성분석']:
-            arry[:, -5:-3] = self.vp_analyzer.analyze_batch_data(code, arry)
+            arry[:, [self.dict_findex['변동성점수'], self.dict_findex['변동성신뢰도']]] = \
+                self.vp_analyzer.analyze_batch_data(code, arry)
 
         if self.dict_set['변손익분석']:
-            arry[:, -3:] = self.vt_analyzer.analyze_batch_data(code, arry)
+            arry[:, [self.dict_findex['예상수익률'], self.dict_findex['익절수익률'], self.dict_findex['손절수익률'], self.dict_findex['변손익신뢰도']]] = \
+                self.vt_analyzer.analyze_batch_data(code, arry)
 
         if not self.is_tick:
             arry = np.column_stack((arry, np.zeros((arry.shape[0], self.indicator_cnt))))
             try:
-                mc = arry[:, 1]
+                mc = arry[:, self.dict_findex['현재가']]
                 mh = arry[:, self.dict_findex['분봉고가']]
                 ml = arry[:, self.dict_findex['분봉저가']]
                 mv = arry[:, self.dict_findex['분당거래대금']]
 
                 AD = talib.AD(mh, ml, mc, mv)
-                arry[:, -28] = AD
+                arry[:, self.dict_findex['AD']] = AD
                 if k[0] != 0:
                     ADOSC = talib.ADOSC(mh, ml, mc, mv, fastperiod=k[0], slowperiod=k[1])
-                    arry[:, -27] = ADOSC
+                    arry[:, self.dict_findex['ADOSC']] = ADOSC
                 if k[2] != 0:
                     ADXR = talib.ADXR(mh, ml, mc, timeperiod=k[2])
-                    arry[:, -26] = ADXR
+                    arry[:, self.dict_findex['ADXR']] = ADXR
                 if k[3] != 0:
                     APO = talib.APO(mc, fastperiod=k[3], slowperiod=k[4], matype=k[5])
-                    arry[:, -25] = APO
+                    arry[:, self.dict_findex['APO']] = APO
                 if k[6] != 0:
                     AROOND, AROONU = talib.AROON(mh, ml, timeperiod=k[6])
-                    arry[:, -24] = AROOND
-                    arry[:, -23] = AROONU
+                    arry[:, self.dict_findex['AROOND']] = AROOND
+                    arry[:, self.dict_findex['AROONU']] = AROONU
                 if k[7] != 0:
                     ATR = talib.ATR(mh, ml, mc, timeperiod=k[7])
-                    arry[:, -22] = ATR
+                    arry[:, self.dict_findex['ATR']] = ATR
                 if k[8] != 0:
                     BBU, BBM, BBL = talib.BBANDS(mc, timeperiod=k[8], nbdevup=k[9], nbdevdn=k[10], matype=k[11])
-                    arry[:, -21] = BBU
-                    arry[:, -20] = BBM
-                    arry[:, -19] = BBL
+                    arry[:, self.dict_findex['BBU']] = BBU
+                    arry[:, self.dict_findex['BBM']] = BBM
+                    arry[:, self.dict_findex['BBL']] = BBL
                 if k[12] != 0:
                     CCI = talib.CCI(mh, ml, mc, timeperiod=k[12])
-                    arry[:, -18] = CCI
+                    arry[:, self.dict_findex['CCI']] = CCI
                 if k[13] != 0:
                     DIM = talib.MINUS_DI(mh, ml, mc, timeperiod=k[13])
                     DIP = talib.PLUS_DI(mh, ml, mc, timeperiod=k[13])
-                    arry[:, -17] = DIM
-                    arry[:, -16] = DIP
+                    arry[:, self.dict_findex['DIM']] = DIM
+                    arry[:, self.dict_findex['DIP']] = DIP
                 if k[14] != 0:
                     MACD, MACDS, MACDH = talib.MACD(mc, fastperiod=k[14], slowperiod=k[15], signalperiod=k[16])
-                    arry[:, -15] = MACD
-                    arry[:, -14] = MACDS
-                    arry[:, -13] = MACDH
+                    arry[:, self.dict_findex['MACD']] = MACD
+                    arry[:, self.dict_findex['MACDS']] = MACDS
+                    arry[:, self.dict_findex['MACDH']] = MACDH
                 if k[17] != 0:
                     MFI = talib.MFI(mh, ml, mc, mv, timeperiod=k[17])
-                    arry[:, -12] = MFI
+                    arry[:, self.dict_findex['MFI']] = MFI
                 if k[18] != 0:
                     MOM = talib.MOM(mc, timeperiod=k[18])
-                    arry[:, -11] = MOM
+                    arry[:, self.dict_findex['MOM']] = MOM
                 OBV = talib.OBV(mc, mv)
-                arry[:, -10] = OBV
+                arry[:, self.dict_findex['OBV']] = OBV
                 if k[19] != 0:
                     PPO = talib.PPO(mc, fastperiod=k[19], slowperiod=k[20], matype=k[21])
-                    arry[:,  -9] = PPO
+                    arry[:, self.dict_findex['PPO']] = PPO
                 if k[22] != 0:
                     ROC = talib.ROC(mc, timeperiod=k[22])
-                    arry[:,  -8] = ROC
+                    arry[:, self.dict_findex['ROC']] = ROC
                 if k[23] != 0:
                     RSI = talib.RSI(mc, timeperiod=k[23])
-                    arry[:,  -7] = RSI
+                    arry[:, self.dict_findex['RSI']] = RSI
                 if k[24] != 0:
                     SAR = talib.SAR(mh, ml, acceleration=k[24], maximum=k[25])
-                    arry[:,  -6] = SAR
+                    arry[:, self.dict_findex['SAR']] = SAR
                 if k[26] != 0:
                     STOCHSK, STOCHSD = talib.STOCH(mh, ml, mc, fastk_period=k[26], slowk_period=k[27], slowk_matype=k[28], slowd_period=k[29], slowd_matype=k[30])
-                    arry[:,  -5] = STOCHSK
-                    arry[:,  -4] = STOCHSD
+                    arry[:, self.dict_findex['STOCHSK']] = STOCHSK
+                    arry[:, self.dict_findex['STOCHSD']] = STOCHSD
                 if k[31] != 0:
                     STOCHFK, STOCHFD = talib.STOCHF(mh, ml, mc, fastk_period=k[31], fastd_period=k[32], fastd_matype=k[33])
-                    arry[:,  -3] = STOCHFK
-                    arry[:,  -2] = STOCHFD
+                    arry[:, self.dict_findex['STOCHFK']] = STOCHFK
+                    arry[:, self.dict_findex['STOCHFD']] = STOCHFD
                 if k[34] != 0:
                     WILLR = talib.WILLR(mh, ml, mc, timeperiod=k[34])
-                    arry[:,  -1] = WILLR
+                    arry[:, self.dict_findex['WILLR']] = WILLR
                 arry = np.nan_to_num(arry)
             except Exception:
                 self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 보조지표의 설정값이 잘못되었습니다.'))

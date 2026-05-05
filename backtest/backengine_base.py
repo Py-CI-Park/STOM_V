@@ -796,7 +796,7 @@ class BackEngineBase(StgGlobalsFunc):
 
         current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
         리스크점수 = 패턴점수 = 패턴신뢰도 = 거래량점수 = 거래량신뢰도 = 가격대점수 = 가격대신뢰도 = 변동성점수 = 변동성신뢰도 = \
-            예상수익률 = 익절수익률 = 손절수익률 = 0
+            예상수익률 = 익절수익률 = 손절수익률 = 변손익신뢰도 = 0
         if self.is_tick and self.dict_set['시장미시구조분석']:
             self.ms_analyzer.update_data(self.code, current_data)
         if not self.is_tick and self.dict_set['캔들분석']:
@@ -810,7 +810,7 @@ class BackEngineBase(StgGlobalsFunc):
         if self.dict_set['변동성분석']:
             변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, current_data)
         if self.dict_set['변손익분석']:
-            예상수익률, 익절수익률, 손절수익률 = self.vt_analyzer.analyze_current_volatility(self.code, current_data)
+            예상수익률, 익절수익률, 손절수익률, 변손익신뢰도 = self.vt_analyzer.analyze_current_volatility(self.code, current_data)
 
         self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
         self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]

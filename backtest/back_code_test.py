@@ -648,7 +648,7 @@ class BackCodeTest(QThread):
             MFI = MOM = OBV = PPO = ROC = RSI = SAR = STOCHSK = STOCHSD = STOCHFK = STOCHFD = WILLR = 0
         수익률 = 매수가 = 보유수량 = 분할매수횟수 = 분할매도횟수 = 보유시간 = 최고수익률 = 최저수익률 = 1
         패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = \
-            예상수익률 = 익절수익률 = 손절수익률 = 0
+            예상수익률 = 익절수익률 = 손절수익률 = 변손익신뢰도 = 0
         매수 = 매도 = BUY_LONG = SELL_LONG = SELL_SHORT = BUY_SHORT = 강제청산 = False
 
         try:

@@ -66,7 +66,7 @@ class FutureOsTrader(BaseTrader):
             주문번호, 응답메시지 = self.ls.order_future_oversea(종목코드, 주문구분, 주문가격, 주문수량, 주문유형)
             if self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
                 index = self._get_index()
-                if 주문구분 == '매수':
+                if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
                     self.dict_intg['추정예수금'] -= 주문수량 * 주문가격
                     add_time = self.dict_set['매수취소시간초']
                 else:
@@ -77,11 +77,11 @@ class FutureOsTrader(BaseTrader):
                 ]
 
                 self._update_chegeollist(
-                    index, 종목코드, 종목명, f'{주문구분}접수', 주문수량, 0, 주문수량, 0, index[:14], 주문가격, 주문번호
+                    index, 종목코드, 종목명, f'{주문구분}_REG', 주문수량, 0, 주문수량, 0, index[:14], 주문가격, 주문번호
                 )
 
                 self.windowQ.put((
-                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목명} | {주문가격} | {주문수량}'
+                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_REG] {종목명} | {주문가격} | {주문수량}'
                 ))
 
         elif 'MODIFY' in 주문구분:

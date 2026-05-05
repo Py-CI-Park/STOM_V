@@ -11,9 +11,9 @@ from PyQt5.QtWidgets import QMessageBox
 from typing import Dict, List, Tuple, Any
 from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
+from utility.static_method.static_datetime import now
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
-from utility.static_method.static_datetime import now, timedelta_sec
 
 PATTERN_DB = f'{DB_PATH}/pattern_analysis.db'
 PATTERN_FUNCTIONS = [
@@ -33,15 +33,12 @@ PATTERN_FUNCTIONS = [
 ]
 
 window_queue = None
-total_queue  = None
 
 
-def init_worker(wndowQ, totalQ):
+def init_worker(wndowQ):
     """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
     global window_queue
-    global total_queue
     window_queue = wndowQ
-    total_queue  = totalQ
 
 
 def _calculate_setting_hash(*args) -> str:
@@ -75,11 +72,13 @@ def _calculate_pattern_scores(close_price: np.ndarray, dates: np.ndarray, detect
 
 class AnalyzerCandlePattern:
     """메인 패턴 분석 통합 클래스"""
-    def __init__(self, market_gubun: int, market_info: dict, backtest: bool = False, min_samples: int = 20):
+    def __init__(self, market_gubun: int, market_info: dict, backtest: bool = False,
+                 min_candle: int = 15, min_samples: int = 20):
         """
         초기화
         market_gubun: 마켓 구분 번호
         market_info: 마켓 정보 딕셔너리
+        min_candle: 최소 캔들 수 (기본값 15)
         min_samples: 최소 샘플 수 (기본값 20)
         """
         self.pattern_database = CandlePatternDatabase(market_info['전략구분'])
@@ -87,6 +86,7 @@ class AnalyzerCandlePattern:
 
         self.backtest_db = market_info['백테디비'][0]
         self.factor_list = market_info['팩터목록'][0]
+        self.min_candle  = min_candle
         self.min_samples = min_samples
         self.idx_open    = self.factor_list.index('분봉시가')
         self.idx_high    = self.factor_list.index('분봉고가')
@@ -115,11 +115,11 @@ class AnalyzerCandlePattern:
         code_data: 실시간 1분봉 데이터
         return: 패턴점수, 패턴신뢰도
         """
-        pattern_score, confidence_score = 0.0, 0.0
+        pattern_score = confidence_score = 0.0
 
         pattern_scores = self.pattern_scores.get(code)
-        if pattern_scores and len(code_data) >= 5:
-            code_data   = code_data[-5:]
+        if pattern_scores and len(code_data) >= self.min_candle:
+            code_data   = code_data[-self.min_candle:]
             open_price  = code_data[:, self.idx_open]
             high_price  = code_data[:, self.idx_high]
             low_price   = code_data[:, self.idx_low]
@@ -162,7 +162,6 @@ class AnalyzerCandlePattern:
 
     def train_all_codes(self, ui):
         """전체 종목 학습 수행 (종목 기반 멀티프로세싱)"""
-        start = now()
         with sqlite3.connect(self.backtest_db) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -189,17 +188,17 @@ class AnalyzerCandlePattern:
             for i in range(multi):
                 code_chunks.append([code for j, code in enumerate(code_list) if j % multi == i])
 
-        self._monitor_totalQ(start, ui.windowQ, ui.totalQ, len_code_list)
-
+        start = now()
+        ui.windowQ.put((UI_NUM['학습로그'], (start, len_code_list)))
         actual_processes = min(multi, len(code_chunks))
-        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ, ui.totalQ)) as pool:
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ,)) as pool:
             args = [
                 (
-                    i, chunk, self.backtest_db, self.idx_open, self.idx_high,
-                    self.idx_low, self.idx_close, self.analysis_period, self.rate_threshold,
-                    self.min_samples, existing_dates_dict, self.pattern_database.setting_hash
+                    i, code_chunk, self.backtest_db, self.idx_open, self.idx_high,
+                    self.idx_low, self.idx_close, self.analysis_period, self.rate_threshold, self.min_samples,
+                    existing_dates_dict, self.pattern_database.setting_hash
                 )
-                for i, chunk in enumerate(code_chunks)
+                for i, code_chunk in enumerate(code_chunks)
             ]
             results = pool.starmap(self._train_code_chunk, args)
 
@@ -225,26 +224,12 @@ class AnalyzerCandlePattern:
         else:
             ui.windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다'))
 
-    @thread_decorator
-    def _monitor_totalQ(self, start, windowQ, totalQ, last):
-        count = 0
-        windowQ.put((UI_NUM['학습로그'], (start, start, count, last)))
-        while count < last:
-            _ = totalQ.get()
-            count += 1
-            curr_time = now()
-            left_time = curr_time - start
-            left_secs = left_time.total_seconds()
-            remn_time = timedelta_sec(left_secs / count * (last - count)) - curr_time
-            windowQ.put((UI_NUM['학습로그'], (left_time, remn_time, count, last)))
-
     @staticmethod
     def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_open: int, idx_high: int,
-                          idx_low: int, idx_close: int, analysis_period: int, rate_threshold: int,
-                          min_samples: int, existing_dates_dict: Dict[str, set], setting_hash: str) -> List[Any]:
+                          idx_low: int, idx_close: int, analysis_period: int, rate_threshold: int, min_samples: int,
+                          existing_dates_dict: Dict[str, set], setting_hash: str) -> List[Any]:
         """단일 종목 청크 학습 (멀티프로세싱용)"""
         global window_queue
-        global total_queue
 
         all_pattern_scores = []
         last = len(code_chunk)
@@ -288,17 +273,18 @@ class AnalyzerCandlePattern:
                                                                    analysis_period, rate_threshold)
 
                                 if len(scores) >= min_samples:
+                                    std_scores    = scores.std()
                                     sample_factor = min(len(scores) / 100.0, 1.0)
-                                    std_factor    = max(1.0 - float(np.std(scores)) / 50.0, 0.0)
+                                    std_factor    = max(1.0 - float(std_scores) / 50.0, 0.0)
                                     confidence    = (sample_factor + std_factor) / 2.0
 
                                     pattern_scores = [
                                         code,
                                         pattern_name,
-                                        round(float(np.mean(scores)), 2),
-                                        round(float(np.max(scores)), 2),
-                                        round(float(np.min(scores)), 2),
-                                        round(float(np.std(scores)), 2),
+                                        round(scores.mean(), 2),
+                                        round(scores.max(), 2),
+                                        round(scores.min(), 2),
+                                        round(std_scores, 2),
                                         len(scores),
                                         round(confidence, 2),
                                         setting_hash,
@@ -311,9 +297,6 @@ class AnalyzerCandlePattern:
                 except Exception:
                     # noinspection PyUnresolvedReferences
                     window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 캔들분석 학습 실패 - {e}"))
-
-                # noinspection PyUnresolvedReferences
-                total_queue.put('학습완료')
 
         return all_pattern_scores
 
@@ -362,7 +345,12 @@ class CandlePatternDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(f'SELECT DISTINCT code FROM {self.table_name}')
+            cursor.execute(f'''
+                SELECT DISTINCT code 
+                FROM {self.table_name} 
+                WHERE setting_hash = ?
+            ''', (self.setting_hash,)
+            )
             results = cursor.fetchall()
             return [result[0] for result in results]
 
@@ -375,7 +363,7 @@ class CandlePatternDatabase:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
-                SELECT pattern_name, avg_score, max_score, min_score, std_score, sample_count, confidence_score
+                SELECT pattern_name, avg_score, confidence_score
                 FROM {self.table_name}
                 WHERE code = ? AND setting_hash = ? AND last_update = 
                 (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?)
@@ -386,11 +374,7 @@ class CandlePatternDatabase:
             for result in results:
                 pattern_scores[result[0]] = {
                     'avg_score': result[1],
-                    'max_score': result[2],
-                    'min_score': result[3],
-                    'std_score': result[4],
-                    'sample_count': result[5],
-                    'confidence_score': result[6]
+                    'confidence_score': result[2]
                 }
             return pattern_scores
 
@@ -404,7 +388,7 @@ class CandlePatternDatabase:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
-                SELECT pattern_name, avg_score, max_score, min_score, std_score, sample_count, confidence_score
+                SELECT pattern_name, avg_score, confidence_score 
                 FROM {self.table_name}
                 WHERE code = ? AND setting_hash = ? AND last_update = 
                 (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update < ?)
@@ -415,11 +399,7 @@ class CandlePatternDatabase:
             for result in results:
                 pattern_scores[result[0]] = {
                     'avg_score': result[1],
-                    'max_score': result[2],
-                    'min_score': result[3],
-                    'std_score': result[4],
-                    'sample_count': result[5],
-                    'confidence_score': result[6]
+                    'confidence_score': result[2]
                 }
             return pattern_scores
 
@@ -436,11 +416,11 @@ class CandlePatternDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                'SELECT analysis_period, rate_threshold '
-                'FROM pattern_setting '
-                'WHERE market = ?',
-                (market,)
+            cursor.execute(f'''
+                SELECT analysis_period, rate_threshold 
+                FROM pattern_setting 
+                WHERE market = ?
+            ''', (market,)
             )
             result = cursor.fetchone()
             if result:
@@ -461,10 +441,11 @@ class CandlePatternDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                'INSERT OR REPLACE INTO pattern_setting '
-                '(market, analysis_period, rate_threshold) VALUES (?, ?, ?)',
+            cursor.execute(f'''
+                INSERT OR REPLACE INTO pattern_setting 
                 (market, analysis_period, rate_threshold)
+                VALUES (?, ?, ?)
+            ''', (market, analysis_period, rate_threshold)
             )
             conn.commit()
 

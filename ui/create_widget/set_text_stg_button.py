@@ -205,7 +205,7 @@ dict_stg_button = {
     162: "elif not (거래량점수 > 60 and 거래량신뢰도 > 0.6):\n    매수 = False\nelif 거래량점수 < -60 and 거래량신뢰도 > 0.6:\n    매도 = True\n",
     163: "elif not (가격대점수 > 60 and 가격대신뢰도 > 0.6):\n    매수 = False\nelif 가격대점수 < -60 and 가격대신뢰도 > 0.6:\n    매도 = True\n",
     164: "elif not (변동성점수 > 60 and 변동성신뢰도 > 0.6):\n    매수 = False\nelif 변동성점수 < -60 and 변동성신뢰도 > 0.6:\n    매도 = True\n",
-    165: "elif not (예상수익률 > 3 and 익절수익률 > 3 and 손절수익률 <= -2):\n    매수 = False\nelif 수익률 >= 익절수익률 and 수익률 <= 손절수익률:\n    매도 = True\n",
+    165: "elif not (예상수익률 > 3 and 익절수익률 > 3 and 손절수익률 <= -2 and 변손익신뢰도 > 0.6):\n    매수 = False\nelif 수익률 >= 익절수익률 and 수익률 <= 손절수익률:\n    매도 = True\n",
 
     166: '# 매도 전략용 팩터: 매수전략에서는 사용할 수 없습니다.',
     167: '# 수익금이 -1_000_000원 이하 손실\nelif 수익금 <= -1_000_000:\n    매도 = True',

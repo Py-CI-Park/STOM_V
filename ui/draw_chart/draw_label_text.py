@@ -209,7 +209,8 @@ def get_label_text(ui, is_min, xpoint, factor, hms):
         text =     f"시간 {hms}\n" \
                    f"예상수익률 {ui.ctpg_arry[xpoint, fi('예상수익률')]:,.2f}\n" \
                    f"익절수익률 {ui.ctpg_arry[xpoint, fi('익절수익률')]:,.2f}\n" \
-                   f"손절수익률 {ui.ctpg_arry[xpoint, fi('손절수익률')]:,.2f}"
+                   f"손절수익률 {ui.ctpg_arry[xpoint, fi('손절수익률')]:,.2f}\n" \
+                   f"변손익신뢰도 {ui.ctpg_arry[xpoint, fi('변손익신뢰도')]:,.2f}"
     else:
         text =     f"시간 {hms}\n" \
                    f"{factor} {ui.ctpg_arry[xpoint, fi(factor)]:,.2f}"

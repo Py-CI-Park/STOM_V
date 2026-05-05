@@ -158,13 +158,13 @@ class SetSetupTap:
                    "단위 분할한 가격대에서 기준 등락율 이상의 돌파 및 반등 이벤트를 분석하여\n"\
                    "가격대점수(+100~-100) 및 가격대신뢰도(0~1)를 리턴합니다."
         self.ui.sj_back_cheBox_20 = self.wc.setCheckBox('전략에 가격대분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
-        tip_text = "변동성분석(volatility_analyzer)은 변동성 데이터를 기반으로\n"\
-                   "단위 분할한 변동성별로 이후의 가격 움직임을 분석하여\n"\
+        tip_text = "변동성분석(volatility_analyzer)은 변동성 변화 데이터를 기반으로\n"\
+                   "단위 분할한 변동성 변화 레벨별로 이후의 가격 움직임을 분석하여\n"\
                    "변동성점수(+100~-100) 및 변동성신뢰도(0~1)를 리턴합니다."
         self.ui.sj_back_cheBox_21 = self.wc.setCheckBox('전략에 변동성분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
-        tip_text = "변동성익절손절분석(volatility__stop_take_analyzer)은 변동성 데이터를 기반으로\n"\
-                   "단위 분할한 변동성별로 이후의 가격 움직임을 분석하여 예상수익률과 최적의 익절수익률, 손절수익률\n"\
-                   "값을 리턴합니다. 모든 틱(분) 마다 매수가정하여 계산한 평균값이니 반드시 DB 데이터 확인필요!!"
+        tip_text = "변동성익절손절분석(volatility__stop_take_analyzer)은 변동성 변화 데이터를\n"\
+                   "기반으로 단위 분할한 변동성 변화 레벨별로 이후의 가격 움직임을 분석하여\n"\
+                   "예상수익률, 익절수익률, 손절수익률, 변손익신뢰도(0~1) 값을 리턴합니다."
         self.ui.sj_back_cheBox_22 = self.wc.setCheckBox('전략에 변손익분석 적용하기 (1초스냅샷, 1분봉 공용)', self.ui.sj_bs_groupBox_05, tip=tip_text)
 
         # --------------------------------------------------------------------------------------------------------------

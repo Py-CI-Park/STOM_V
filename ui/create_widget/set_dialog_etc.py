@@ -119,6 +119,9 @@ class SetDialogEtc:
         self.ui.db_tableWidgett_02 = self.wc.setTablewidget(self.ui.dbs_tab2, COLUMNS_DSV, 8, clicked=lambda row, col: cell_clicked_08(self.ui, row, col))
         self.ui.db_tableWidgett_03 = self.wc.setTablewidget(self.ui.dbs_tab3, ['백테스트 스케쥴'], 8, clicked=lambda row, col: cell_clicked_08(self.ui, row, col))
         self.ui.db_textEdittttt_01 = self.wc.setTextEdit(self.ui.dialog_db, vscroll=True)
+        self.ui.db_progresBarrr_01 = self.wc.setProgressBar(self.ui.dialog_db, style=style_pgbar)
+        self.ui.db_progresBarrr_01.setFormat('%p%')
+        self.ui.db_progresBarrr_01.setValue(0)
 
         self.ui.dialog_order = self.wc.setDialog('STOM ORDER', location_save=True)
         self.ui.dialog_order.geometry().center()
@@ -375,11 +378,12 @@ class SetDialogEtc:
 
         self.ui.dialog_graph.setFixedSize(1403, 1010)
 
-        self.ui.dialog_db.setFixedSize(525, 670)
+        self.ui.dialog_db.setFixedSize(525, 700)
         self.ui.db_groupBoxxxxx_01.setGeometry(5, 5, 515, 260)
         self.ui.dbs_tapWidgettt_01.setGeometry(5, 270, 515, 250)
         self.ui.db_labellllllll_00.setGeometry(405, 270, 110, 20)
         self.ui.db_textEdittttt_01.setGeometry(5, 525, 515, 140)
+        self.ui.db_progresBarrr_01.setGeometry(5, 670, 515, 25)
 
         self.ui.db_labellllllll_18.setGeometry(10, 10, 320, 20)
         self.ui.db_lineEdittttt_16.setGeometry(345, 10, 80, 20)

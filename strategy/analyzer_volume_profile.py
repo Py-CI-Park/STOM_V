@@ -5,26 +5,24 @@ import hashlib
 import numpy as np
 import pandas as pd
 from numba import njit
+from traceback import format_exc
 from PyQt5.QtWidgets import QMessageBox
 from typing import Dict, List, Tuple, Any
 from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
+from utility.static_method.static_datetime import now
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
-from utility.static_method.static_datetime import now, timedelta_sec
 
 VOLUME_PROFILE_DB = f'{DB_PATH}/volume_profile.db'
 
 window_queue = None
-total_queue  = None
 
 
-def init_worker(wndowQ, totalQ):
+def init_worker(wndowQ):
     """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
     global window_queue
-    global total_queue
     window_queue = wndowQ
-    total_queue  = totalQ
 
 
 def _calculate_setting_hash(*args) -> str:
@@ -41,9 +39,9 @@ def _calculate_volume_by_bin(close_price: np.ndarray, volume_data: np.ndarray, p
     min_price = price_bins[0]
     max_price = price_bins[-1]
     bin_width = (max_price - min_price) / bin_count
-    for idx in range(len(close_price)):
-        price  = close_price[idx]
-        volume = volume_data[idx]
+    for i in range(len(close_price)):
+        price  = close_price[i]
+        volume = volume_data[i]
         if price < max_price:
             bin_idx = int((price - min_price) / bin_width)
         else:
@@ -62,11 +60,11 @@ def _calculate_node_scores(close_price: np.ndarray, dates: np.ndarray, node_pric
     bounce_down = 0
     total_count = 0
     threshold = node_price * rate_threshold / 100
-    for idx in range(len(close_price) - analysis_period):
-        price = close_price[idx]
-        if abs(price - node_price) / node_price * 100 <= rate_threshold and dates[idx] == dates[idx + analysis_period]:
+    for i in range(len(close_price) - analysis_period):
+        price = close_price[i]
+        if abs(price - node_price) / node_price * 100 <= rate_threshold and dates[i] == dates[i + analysis_period]:
             total_count += 1
-            future_prices = close_price[idx+1:idx+1+analysis_period]
+            future_prices = close_price[i + 1:i + 1 + analysis_period]
             if future_prices.max() >= node_price + threshold:
                 upward_penetration += 1
             elif future_prices.min() <= node_price - threshold:
@@ -131,7 +129,7 @@ class AnalyzerVolumeProfile:
         current_price: 현재가 데이터
         return: 가격대점수, 가격대신뢰도
         """
-        volume_profile_score, confidence_score = 0.0, 0.0
+        volume_profile_score = confidence_score = 0.0
 
         volume_nodes = self.volume_nodes.get(code)
         if volume_nodes:
@@ -172,7 +170,6 @@ class AnalyzerVolumeProfile:
 
     def train_all_codes(self, ui):
         """전체 종목 학습 수행 (종목 기반 멀티프로세싱)"""
-        start = now()
         with sqlite3.connect(self.backtest_db) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -199,17 +196,17 @@ class AnalyzerVolumeProfile:
             for i in range(multi):
                 code_chunks.append([code for j, code in enumerate(code_list) if j % multi == i])
 
-        self._monitor_totalQ(start, ui.windowQ, ui.totalQ, len_code_list)
-
+        start = now()
+        ui.windowQ.put((UI_NUM['학습로그'], (start, len_code_list)))
         actual_processes = min(multi, len(code_chunks))
-        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ, ui.totalQ)) as pool:
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ,)) as pool:
             args = [
                 (
-                    i, chunk, self.backtest_db, self.idx_close, self.idx_volume,
+                    i, code_chunk, self.backtest_db, self.idx_close, self.idx_volume,
                     self.analysis_period, self.rate_threshold, self.price_range_pct, self.top_nodes,
                     existing_dates_dict, self.is_tick, self.volume_database.setting_hash
                 )
-                for i, chunk in enumerate(code_chunks)
+                for i, code_chunk in enumerate(code_chunks)
             ]
             results = pool.starmap(self._train_code_chunk, args)
 
@@ -235,26 +232,12 @@ class AnalyzerVolumeProfile:
         else:
             ui.windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다.'))
 
-    @thread_decorator
-    def _monitor_totalQ(self, start, windowQ, totalQ, last):
-        count = 0
-        windowQ.put((UI_NUM['학습로그'], (start, start, count, last)))
-        while count < last:
-            _ = totalQ.get()
-            count += 1
-            curr_time = now()
-            left_time = curr_time - start
-            left_secs = left_time.total_seconds()
-            remn_time = timedelta_sec(left_secs / count * (last - count)) - curr_time
-            windowQ.put((UI_NUM['학습로그'], (left_time, remn_time, count, last)))
-
     @staticmethod
     def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, idx_volume: int,
                           analysis_period: int, rate_threshold: float, price_range_pct: float, top_nodes: int,
                           existing_dates_dict: Dict[str, set], is_tick: bool, setting_hash: str) -> List[Any]:
         """단일 종목 청크 학습 (멀티프로세싱용)"""
         global window_queue
-        global total_queue
 
         all_volume_scores = []
         last = len(code_chunk)
@@ -326,9 +309,6 @@ class AnalyzerVolumeProfile:
                     # noinspection PyUnresolvedReferences
                     window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 가격대분석 학습 실패 - {e}"))
 
-                # noinspection PyUnresolvedReferences
-                total_queue.put('학습완료')
-
         return all_volume_scores
 
 
@@ -375,7 +355,12 @@ class VolumeProfileDatabase:
         """데이터베이스에 저장된 전체 종목코드 조회"""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(f'SELECT DISTINCT code FROM {self.table_name}')
+            cursor.execute(f'''
+                SELECT DISTINCT code 
+                FROM {self.table_name} 
+                WHERE setting_hash = ?
+            ''', (self.setting_hash,)
+            )
             results = cursor.fetchall()
             return [result[0] for result in results]
 
@@ -384,7 +369,7 @@ class VolumeProfileDatabase:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
-                SELECT price_level, avg_score, upward_strength, downward_strength, sample_count, confidence_score
+                SELECT price_level, avg_score, confidence_score
                 FROM {self.table_name}
                 WHERE code = ? AND setting_hash = ? AND last_update = 
                 (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?)
@@ -444,11 +429,11 @@ class VolumeProfileDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                'SELECT analysis_period, rate_threshold, price_range_pct '
-                'FROM volume_setting '
-                'WHERE market = ? AND is_tick = ?',
-                (market, 1 if self.is_tick else 0)
+            cursor.execute(f'''
+                SELECT analysis_period, rate_threshold, price_range_pct 
+                FROM volume_setting 
+                WHERE market = ? AND is_tick = ?
+            ''', (market, 1 if self.is_tick else 0)
             )
             result = cursor.fetchone()
             if result:
@@ -471,11 +456,11 @@ class VolumeProfileDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                'INSERT OR REPLACE INTO volume_setting '
-                '(market, is_tick, analysis_period, rate_threshold, price_range_pct) '
-                'VALUES (?, ?, ?, ?, ?)',
-                (market, 1 if self.is_tick else 0, analysis_period, rate_threshold, price_range_pct)
+            cursor.execute(f'''
+                INSERT OR REPLACE INTO volume_setting 
+                (market, is_tick, analysis_period, rate_threshold, price_range_pct) 
+                VALUES (?, ?, ?, ?, ?)
+            ''', (market, 1 if self.is_tick else 0, analysis_period, rate_threshold, price_range_pct)
             )
             conn.commit()
 

@@ -1,3 +1,4 @@
+
 import re
 from ui.event_activate import activated_stg
 from utility.settings.setting_base import UI_NUM
@@ -5,10 +6,10 @@ from ui.etcetera.process_starter import auto_back_schedule
 from utility.static_method.static_etcetera import qtest_qwait
 from utility.static_method.static_decorator import error_decorator
 from ui.event_click.button_clicked_stg_editer import backtest_detail
-from utility.static_method.static_datetime import now, now_cme, str_hms
 from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
 from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_02
 from ui.event_click.button_clicked_backtest_engine import backtest_process_kill
+from utility.static_method.static_datetime import now, now_cme, str_hms, timedelta_sec
 from ui.create_widget.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
 from ui.event_click.button_clicked_database import dbbutton_clicked_08, dbbutton_clicked_09
 
@@ -18,8 +19,14 @@ class UpdateTextedit:
     로그 텍스트 에디터를 업데이트하고 데이터베이스 관리를 수행합니다.
     """
     def __init__(self, ui):
-        self.ui        = ui
-        self.data_save = False
+        self.ui          = ui
+        self.learn_start = 0
+        self.learn_last  = 0
+        self.learn_cnt   = 0
+        self.db_up_start = 0
+        self.db_up_last  = 0
+        self.db_up_cnt   = 0
+        self.data_save   = False
 
     @error_decorator
     def update_texedit(self, data):
@@ -40,14 +47,18 @@ class UpdateTextedit:
             self.ui.fm_tcnt = data[3]
 
         elif gubun == UI_NUM['학습로그'] and data[1].__class__ == tuple:
-            left_time, remn_time, count, last = data[1]
-            if count == 0:
-                self.ui.ptn_progresBar_01.setFormat('%p%')
-                self.ui.ptn_progresBar_01.setValue(0)
-            else:
-                self.ui.ptn_progresBar_01.setFormat(f'%p% | 경과 시간 {left_time} | 남은 시간 {remn_time}')
-                self.ui.ptn_progresBar_01.setValue(count)
-                self.ui.ptn_progresBar_01.setRange(0, last)
+            self.learn_start, self.learn_last = data[1]
+            self.learn_cnt = 0
+            self.ui.ptn_progresBar_01.setFormat('%p%')
+            self.ui.ptn_progresBar_01.setRange(0, self.learn_last)
+            self.ui.ptn_progresBar_01.setValue(0)
+
+        elif gubun == UI_NUM['DB관리'] and data[1].__class__ == tuple:
+            self.db_up_start, self.db_up_last = data[1]
+            self.db_up_cnt = 0
+            self.ui.db_progresBarrr_01.setFormat('%p%')
+            self.ui.db_progresBarrr_01.setRange(0, self.db_up_last)
+            self.ui.db_progresBarrr_01.setValue(0)
 
         else:
             time_ = str(now())[:-3]
@@ -58,7 +69,11 @@ class UpdateTextedit:
 
             text = f'[{time_}] {text}' if '</font>' not in text else f'<font color=white>[{time_}]</font> {text}'
 
-            if gubun in (UI_NUM['기본로그'], UI_NUM['시스템로그'], UI_NUM['DB관리']) and 'DB업데이트완료' not in text:
+            if gubun == UI_NUM['기본로그'] or (gubun == UI_NUM['DB관리'] and 'DB업데이트완료' not in text):
+                self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
+
+            elif gubun == UI_NUM['시스템로그']:
+                text = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
                 self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
 
             elif gubun == UI_NUM['백테스트'] and not self.ui.dict_set['백테스트로그기록안함']:
@@ -86,20 +101,20 @@ class UpdateTextedit:
                 text = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
                 self.ui.log_system_textedit.append(text)
 
-            elif gubun == UI_NUM['DB관리']:
-                if 'DB업데이트완료' in text:
-                    self.ui.database_control = False
-                else:
-                    self.ui.db_textEdittttt_01.append(text)
-
-                if self.ui.auto_mode:
-                    if '당일DB 데이터, 일자DB로 분리 완료' in text:
-                        self._auto_database_control(2)
-                    elif '당일DB 데이터, 백테DB로 추가 완료' in text:
-                        self._auto_database_control(3)
-
             elif gubun == UI_NUM['학습로그']:
                 self.ui.ptn_textEdittt_01.append(text)
+
+                if '학습 중 ...' in text:
+                    self.learn_cnt += 1
+                    curr_time = now()
+                    left_time = curr_time - self.learn_start
+                    left_secs = left_time.total_seconds()
+                    remn_time = timedelta_sec(left_secs / self.learn_cnt * (self.learn_last - self.learn_cnt)) - curr_time
+                    self.ui.ptn_progresBar_01.setFormat(
+                        f'%p% | 경과 시간 {str(left_time)[:-3]} | 남은 시간 {str(remn_time)[:-3]}'
+                    )
+                    self.ui.ptn_progresBar_01.setValue(self.learn_cnt)
+
                 if self.ui.auto_mode and '캔들분석 학습 완료' in text:
                     qtest_qwait(2)
                     _auto_learn_running(self.ui, 2)
@@ -122,6 +137,29 @@ class UpdateTextedit:
                     self.ui.teleQ.put('모든 분석 학습 완료')
                     self.ui.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 모든 분석 학습 완료'))
                     self._shut_down_check()
+
+            elif gubun == UI_NUM['DB관리']:
+                if 'DB업데이트완료' in text:
+                    self.ui.database_control = False
+                else:
+                    self.ui.db_textEdittttt_01.append(text)
+
+                if '중 ...' in text:
+                    self.db_up_cnt += 1
+                    curr_time = now()
+                    left_time = curr_time - self.db_up_start
+                    left_secs = left_time.total_seconds()
+                    remn_time = timedelta_sec(left_secs / self.db_up_cnt * (self.db_up_last - self.db_up_cnt)) - curr_time
+                    self.ui.db_progresBarrr_01.setFormat(
+                        f'%p% | 경과 시간 {str(left_time)[:-3]} | 남은 시간 {str(remn_time)[:-3]}'
+                    )
+                    self.ui.db_progresBarrr_01.setValue(self.db_up_cnt)
+
+                if self.ui.auto_mode:
+                    if '당일DB 데이터, 일자DB로 분리 완료' in text:
+                        self._auto_database_control(2)
+                    elif '당일DB 데이터, 백테DB로 추가 완료' in text:
+                        self._auto_database_control(3)
 
             elif gubun == UI_NUM['백테엔진']:
                 self.ui.be_textEditxxxx_01.append(text)

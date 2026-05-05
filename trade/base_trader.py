@@ -699,7 +699,7 @@ class BaseTrader:
         """
         if self.market_gubun < 6:
             return [v for v in self.dict_cj.values() if v['종목명'] == code and
-                    (v['주문구분'] == gubun or v['주문구분'] == f'{gubun} 접수')][-1]
+                    (v['주문구분'] == gubun or v['주문구분'] == f'{gubun}접수')][-1]
         else:
             return [v for v in self.dict_cj.values() if v['종목명'] == code and
                     (v['주문구분'] == gubun or v['주문구분'] == f'{gubun}_REG')][-1]

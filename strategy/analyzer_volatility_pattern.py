@@ -9,22 +9,19 @@ from PyQt5.QtWidgets import QMessageBox
 from typing import Dict, List, Tuple, Any
 from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
+from utility.static_method.static_datetime import now
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
-from utility.static_method.static_datetime import now, timedelta_sec
 
 VOLATILITY_PATTERN_DB = f'{DB_PATH}/volatility_pattern.db'
 
 window_queue = None
-total_queue  = None
 
 
-def init_worker(wndowQ, totalQ):
+def init_worker(wndowQ):
     """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
     global window_queue
-    global total_queue
     window_queue = wndowQ
-    total_queue  = totalQ
 
 
 def _calculate_setting_hash(*args) -> str:
@@ -41,11 +38,11 @@ def _calculate_volatility_change_rate(prices: np.ndarray, analysis_period: int) 
     n = len(prices)
     change_rates = np.zeros(n, dtype=np.float64)
     for i in prange(2 * analysis_period, n):
-        prev_window   = prices[i - 2 * analysis_period:i - analysis_period]
+        prev_window   = prices[i + 1 - 2 * analysis_period:i + 1 - analysis_period]
         prev_mean     = np.mean(prev_window)
         prev_std      = np.std(prev_window)
         prev_vol      = prev_std / prev_mean * 100 if prev_mean > 0 else 0.0
-        recent_window = prices[i - analysis_period:i]
+        recent_window = prices[i + 1 - analysis_period:i + 1]
         recent_mean   = np.mean(recent_window)
         recent_std    = np.std(recent_window)
         recent_vol    = recent_std / recent_mean * 100 if recent_mean > 0 else 0.0
@@ -75,18 +72,16 @@ def _calculate_volatility_change_rate_last(prices: np.ndarray, analysis_period: 
 def _calculate_realized_volatility_change_rate(prices: np.ndarray, analysis_period: int) -> np.ndarray:
     """실현 변동성 변화율 계산 (이전기간 대비 최근기간, Numba 최적화)"""
     n = len(prices)
+    log_returns = np.zeros(n, dtype=np.float64)
+    for i in prange(1, n):
+        log_returns[i] = np.log(prices[i] / prices[i - 1])
     change_rates = np.zeros(n, dtype=np.float64)
-    for i in prange(2 * analysis_period - 1, n):
-        prev_returns  = np.zeros(analysis_period, dtype=np.float64)
-        prev_base_idx = i - 2 * analysis_period - 1
-        for j in range(analysis_period):
-            prev_returns[j] = np.log(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j])
-        prev_vol = np.std(prev_returns) * np.sqrt(analysis_period) * 100
-        recent_returns  = np.zeros(analysis_period, dtype=np.float64)
-        recent_base_idx = i - analysis_period - 1
-        for j in range(analysis_period):
-            recent_returns[j] = np.log(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j])
-        recent_vol = np.std(recent_returns) * np.sqrt(analysis_period) * 100
+    for i in prange(2 * analysis_period, n):
+        period_sqrt = np.sqrt(analysis_period)
+        prev_std    = np.std(log_returns[i + 1 - 2 * analysis_period:i + 1 - analysis_period])
+        prev_vol    = prev_std * period_sqrt * 100
+        recent_std  = np.std(log_returns[i + 1 - analysis_period:i + 1])
+        recent_vol  = recent_std * period_sqrt * 100
         if prev_vol > 0:
             change_rates[i] = recent_vol / prev_vol
     return change_rates
@@ -96,16 +91,15 @@ def _calculate_realized_volatility_change_rate(prices: np.ndarray, analysis_peri
 def _calculate_realized_volatility_change_rate_last(prices: np.ndarray, analysis_period: int) -> float:
     """실현 변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
     n = len(prices)
-    prev_returns  = np.zeros(analysis_period, dtype=np.float64)
-    prev_base_idx = n - 2 * analysis_period - 1
-    for j in prange(analysis_period):
-        prev_returns[j] = np.log(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j])
-    prev_vol = np.std(prev_returns) * np.sqrt(analysis_period) * 100
-    recent_returns  = np.zeros(analysis_period, dtype=np.float64)
-    recent_base_idx = n - analysis_period - 1
-    for j in prange(analysis_period):
-        recent_returns[j] = np.log(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j])
-    recent_vol = np.std(recent_returns) * np.sqrt(analysis_period) * 100
+    log_returns = np.zeros(2 * analysis_period, dtype=np.float64)
+    for i in prange(2 * analysis_period):
+        idx = n - 2 * analysis_period + i
+        log_returns[i] = np.log(prices[idx] / prices[idx - 1])
+    period_sqrt = np.sqrt(analysis_period)
+    prev_std    = np.std(log_returns[:analysis_period])
+    prev_vol    = prev_std * period_sqrt * 100
+    recent_std  = np.std(log_returns[analysis_period:])
+    recent_vol  = recent_std * period_sqrt * 100
     if prev_vol > 0:
         return recent_vol / prev_vol
     return 0.0
@@ -115,18 +109,13 @@ def _calculate_realized_volatility_change_rate_last(prices: np.ndarray, analysis
 def _calculate_absolute_change_rate_change(prices: np.ndarray, analysis_period: int) -> np.ndarray:
     """절대 변화율 기반 변동성 변화율 계산 (이전기간 대비 최근기간, Numba 최적화)"""
     n = len(prices)
+    abs_changes = np.zeros(n, dtype=np.float64)
+    for i in prange(1, n):
+        abs_changes[i] = abs(prices[i] / prices[i - 1] - 1) * 100
     change_rates = np.zeros(n, dtype=np.float64)
-    for i in prange(2 * analysis_period - 1, n):
-        prev_abs_changes = np.zeros(analysis_period, dtype=np.float64)
-        prev_base_idx    = i - 2 * analysis_period - 1
-        for j in range(analysis_period):
-            prev_abs_changes[j] = abs(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j] - 1) * 100
-        prev_vol = np.mean(prev_abs_changes)
-        recent_abs_changes = np.zeros(analysis_period, dtype=np.float64)
-        recent_base_idx    = i - analysis_period - 1
-        for j in range(analysis_period):
-            recent_abs_changes[j] = abs(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j] - 1) * 100
-        recent_vol = np.mean(recent_abs_changes)
+    for i in prange(2 * analysis_period, n):
+        prev_vol   = np.mean(abs_changes[i + 1 - 2 * analysis_period:i + 1 - analysis_period])
+        recent_vol = np.mean(abs_changes[i + 1 - analysis_period:i + 1])
         if prev_vol > 0:
             change_rates[i] = recent_vol / prev_vol
     return change_rates
@@ -136,16 +125,12 @@ def _calculate_absolute_change_rate_change(prices: np.ndarray, analysis_period: 
 def _calculate_absolute_change_rate_change_last(prices: np.ndarray, analysis_period: int) -> float:
     """절대 변화율 기반 변동성 변화율 마지막 값만 계산 (실시간용, Numba 최적화)"""
     n = len(prices)
-    prev_abs_changes = np.zeros(analysis_period, dtype=np.float64)
-    prev_base_idx    = n - 2 * analysis_period - 1
-    for j in prange(analysis_period):
-        prev_abs_changes[j] = abs(prices[prev_base_idx + j + 1] / prices[prev_base_idx + j] - 1) * 100
-    prev_vol = np.mean(prev_abs_changes)
-    recent_abs_changes = np.zeros(analysis_period, dtype=np.float64)
-    recent_base_idx    = n - analysis_period - 1
-    for j in prange(analysis_period):
-        recent_abs_changes[j] = abs(prices[recent_base_idx + j + 1] / prices[recent_base_idx + j] - 1) * 100
-    recent_vol = np.mean(recent_abs_changes)
+    abs_changes = np.zeros(2 * analysis_period, dtype=np.float64)
+    for i in prange(2 * analysis_period):
+        idx = n - 2 * analysis_period + i
+        abs_changes[i] = abs(prices[idx] / prices[idx - 1] - 1) * 100
+    prev_vol   = np.mean(abs_changes[:analysis_period])
+    recent_vol = np.mean(abs_changes[analysis_period:])
     if prev_vol > 0:
         return recent_vol / prev_vol
     return 0.0
@@ -218,7 +203,7 @@ class AnalyzerVolatilityPattern:
         code_data: 실시간 데이터 (1분봉 또는 틱)
         return: 변동성점수, 변동성신뢰도
         """
-        volatility_score, confidence_score = 0.0, 0.0
+        volatility_score = confidence_score = 0.0
 
         len_min = self.analysis_period * 2 + 1
         group_data = self.volatility_scores.get(code)
@@ -259,7 +244,6 @@ class AnalyzerVolatilityPattern:
 
     def train_all_codes(self, ui):
         """전체 종목 학습 수행 (종목 기반 멀티프로세싱)"""
-        start = now()
         with sqlite3.connect(self.backtest_db) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -286,17 +270,17 @@ class AnalyzerVolatilityPattern:
             for i in range(multi):
                 code_chunks.append([code for j, code in enumerate(code_list) if j % multi == i])
 
-        self._monitor_totalQ(start, ui.windowQ, ui.totalQ, len_code_list)
-
+        start = now()
+        ui.windowQ.put((UI_NUM['학습로그'], (start, len_code_list)))
         actual_processes = min(multi, len(code_chunks))
-        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ, ui.totalQ)) as pool:
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ,)) as pool:
             args = [
                 (
-                    i, chunk, self.backtest_db, self.idx_close, self.analysis_period,
+                    i, code_chunk, self.backtest_db, self.idx_close, self.analysis_period,
                     self.rate_threshold, self.min_samples, existing_dates_dict,
                     self.is_tick, self.volatility_database.setting_hash
                 )
-                for i, chunk in enumerate(code_chunks)
+                for i, code_chunk in enumerate(code_chunks)
             ]
             results = pool.starmap(self._train_code_chunk, args)
 
@@ -322,26 +306,12 @@ class AnalyzerVolatilityPattern:
         else:
             ui.windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다.'))
 
-    @thread_decorator
-    def _monitor_totalQ(self, start, windowQ, totalQ, last):
-        count = 0
-        windowQ.put((UI_NUM['학습로그'], (start, start, count, last)))
-        while count < last:
-            _ = totalQ.get()
-            count += 1
-            curr_time = now()
-            left_time = curr_time - start
-            left_secs = left_time.total_seconds()
-            remn_time = timedelta_sec(left_secs / count * (last - count)) - curr_time
-            windowQ.put((UI_NUM['학습로그'], (left_time, remn_time, count, last)))
-
     @staticmethod
     def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, analysis_period: int,
                           rate_threshold: int, min_samples: int, existing_dates_dict: Dict[str, set],
                           is_tick: bool, setting_hash: str) -> List[Any]:
         """단일 종목 청크 학습 (멀티프로세싱용)"""
         global window_queue
-        global total_queue
 
         all_volatility_scores = []
         last = len(code_chunk)
@@ -374,17 +344,15 @@ class AnalyzerVolatilityPattern:
                     vol_std_change = _calculate_volatility_change_rate(date_prices, analysis_period)
                     vol_abs_change = _calculate_absolute_change_rate_change(date_prices, analysis_period)
                     vol_rv_change  = _calculate_realized_volatility_change_rate(date_prices, analysis_period)
-
                     change_rates   = vol_std_change * 0.4 + vol_rv_change * 0.4 + vol_abs_change * 0.2
-                    valid_indices  = ~np.isnan(change_rates)
-                    change_rates   = change_rates[valid_indices]
 
                     groups = {}
-                    for idx in range(len(change_rates)):
-                        rounded_level = round(change_rates[idx] * 2) / 2
-                        if rounded_level not in groups:
-                            groups[rounded_level] = []
-                        groups[rounded_level].append(idx)
+                    for idx, rate in enumerate(change_rates):
+                        if rate != 0.0:
+                            rounded_level = round(rate * 2) / 2
+                            if rounded_level not in groups:
+                                groups[rounded_level] = []
+                            groups[rounded_level].append(idx)
 
                     for level, indices in groups.items():
                         if len(indices) >= min_samples:
@@ -393,17 +361,18 @@ class AnalyzerVolatilityPattern:
                                                                   analysis_period, rate_threshold)
 
                             if len(scores) >= min_samples:
+                                std_scores    = scores.std()
                                 sample_factor = min(len(scores) / 100.0, 1.0)
-                                std_factor    = max(1.0 - float(np.std(scores)) / 50.0, 0.0)
+                                std_factor    = max(1.0 - std_scores / 100.0, 0.0)
                                 confidence    = (sample_factor + std_factor) / 2.0
 
                                 level_scores = [
                                     code,
                                     level,
-                                    round(float(np.mean(scores)), 2),
-                                    round(float(np.max(scores)), 2),
-                                    round(float(np.min(scores)), 2),
-                                    round(float(np.std(scores)), 2),
+                                    round(scores.mean(), 2),
+                                    round(scores.max(), 2),
+                                    round(scores.min(), 2),
+                                    round(std_scores, 2),
                                     len(scores),
                                     round(confidence, 2),
                                     setting_hash,
@@ -416,9 +385,6 @@ class AnalyzerVolatilityPattern:
             except Exception:
                 # noinspection PyUnresolvedReferences
                 window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 변동성분석 학습 실패 - {e}"))
-
-            # noinspection PyUnresolvedReferences
-            total_queue.put('학습완료')
 
         return all_volatility_scores
 
@@ -469,7 +435,12 @@ class VolatilityPatternDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(f'SELECT DISTINCT code FROM {self.table_name}')
+            cursor.execute(f'''
+                SELECT DISTINCT code 
+                FROM {self.table_name} 
+                WHERE setting_hash = ?
+            ''', (self.setting_hash,)
+            )
             results = cursor.fetchall()
             return [result[0] for result in results]
 
@@ -481,14 +452,12 @@ class VolatilityPatternDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                f'SELECT volatility_level, avg_score, max_score, '
-                f'min_score, std_score, sample_count, confidence_score '
-                f'FROM {self.table_name} '
-                f'WHERE code = ? AND setting_hash = ? AND last_update = '
-                f'(SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?) '
-                f'ORDER BY volatility_level',
-                (code, self.setting_hash, code, self.setting_hash)
+            cursor.execute(f'''
+                SELECT volatility_level, avg_score, confidence_score 
+                FROM {self.table_name} 
+                WHERE code = ? AND setting_hash = ? AND last_update = 
+                (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?)
+            ''', (code, self.setting_hash, code, self.setting_hash)
             )
             results = cursor.fetchall()
 
@@ -496,11 +465,7 @@ class VolatilityPatternDatabase:
             for result in results:
                 volatility_scores[result[0]] = {
                     'avg_score': result[1],
-                    'max_score': result[2],
-                    'min_score': result[3],
-                    'std_score': result[4],
-                    'sample_count': result[5],
-                    'confidence_score': result[6]
+                    'confidence_score': result[2]
                 }
 
             return volatility_scores
@@ -514,14 +479,12 @@ class VolatilityPatternDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                f'SELECT volatility_level, avg_score, max_score, '
-                f'min_score, std_score, sample_count, confidence_score '
-                f'FROM {self.table_name} '
-                f'WHERE code = ? AND setting_hash = ? AND last_update = '
-                f'(SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update <= ?) '
-                f'ORDER BY volatility_level',
-                (code, self.setting_hash, code, self.setting_hash, date)
+            cursor.execute(f'''
+                SELECT volatility_level, avg_score, confidence_score 
+                FROM {self.table_name} 
+                WHERE code = ? AND setting_hash = ? AND last_update = 
+                (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update <= ?)
+            ''', (code, self.setting_hash, code, self.setting_hash, date)
             )
             results = cursor.fetchall()
 
@@ -529,11 +492,7 @@ class VolatilityPatternDatabase:
             for result in results:
                 volatility_scores[result[0]] = {
                     'avg_score': result[1],
-                    'max_score': result[2],
-                    'min_score': result[3],
-                    'std_score': result[4],
-                    'sample_count': result[5],
-                    'confidence_score': result[6]
+                    'confidence_score': result[2]
                 }
 
             return volatility_scores
@@ -552,11 +511,11 @@ class VolatilityPatternDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                'SELECT analysis_period, rate_threshold '
-                'FROM volatility_setting '
-                'WHERE market = ? AND is_tick = ?',
-                (market, 1 if self.is_tick else 0)
+            cursor.execute(f'''
+                SELECT analysis_period, rate_threshold 
+                FROM volatility_setting 
+                WHERE market = ? AND is_tick = ?
+            ''', (market, 1 if self.is_tick else 0)
             )
             result = cursor.fetchone()
             if result:
@@ -578,11 +537,11 @@ class VolatilityPatternDatabase:
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            cursor.execute(
-                'INSERT OR REPLACE INTO volatility_setting '
-                '(market, is_tick, analysis_period, rate_threshold) '
-                'VALUES (?, ?, ?, ?)',
-                (market, 1 if self.is_tick else 0, analysis_period, rate_threshold)
+            cursor.execute(f'''
+                INSERT OR REPLACE INTO volatility_setting 
+                (market, is_tick, analysis_period, rate_threshold) 
+                VALUES (?, ?, ?, ?)
+            ''', (market, 1 if self.is_tick else 0, analysis_period, rate_threshold)
             )
             conn.commit()
 

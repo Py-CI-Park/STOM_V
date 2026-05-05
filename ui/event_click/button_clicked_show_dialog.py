@@ -17,7 +17,7 @@ def show_dialog_graph(ui, df):
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_graph.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_graph, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_graph, duration=300)
         ui.dialog_graph.show()
 
     df['이익금액'] = df['수익금'].clip(lower=0)
@@ -108,11 +108,11 @@ def show_dialog_web(ui, _show, code):
         webengineview_set(ui)
 
     if _show and not ui.dialog_web.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=300)
         ui.dialog_web.show()
 
     if _show and not ui.dialog_info.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=300)
         ui.dialog_info.show()
 
     if ui.dialog_web.isVisible() and ui.dialog_info.isVisible():
@@ -147,7 +147,7 @@ def show_dialog_hoga(ui, _show, code):
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if _show and not ui.dialog_hoga.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=300)
         ui.dialog_hoga.show()
 
     if ui.dialog_hoga.isVisible():
@@ -262,7 +262,7 @@ def show_dialog_formula(ui):
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_formula.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_formula, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_formula, duration=300)
         ui.dialog_formula.show()
     else:
         ui.dialog_formula.close()
@@ -276,7 +276,7 @@ def show_dialog_factor(ui):
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_factor.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_factor, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_factor, duration=300)
         ui.dialog_factor.show()
     else:
         ui.dialog_factor.close()
@@ -302,7 +302,7 @@ def show_hoga(ui):
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_hoga.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_hoga, duration=300)
         ui.dialog_hoga.setFixedSize(572, 355)
         ui.hj_tableWidgett_01.setGeometry(5, 5, 562, 42)
         ui.hj_tableWidgett_01.setColumnWidth(0, 140)
@@ -333,7 +333,7 @@ def show_giup(ui):
         webengineview_set(ui)
 
     if not ui.dialog_web.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_web, duration=300)
         ui.dialog_web.show()
         # noinspection PyUnresolvedReferences
         ui.webEngineView.load(QUrl('https://finance.naver.com/sise/'))
@@ -341,7 +341,7 @@ def show_giup(ui):
         ui.dialog_web.close()
 
     if not ui.dialog_info.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_info, duration=300)
         ui.dialog_info.show()
     else:
         ui.dialog_info.close()
@@ -355,7 +355,7 @@ def show_treemap(ui):
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_tree.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_tree, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_tree, duration=300)
         ui.dialog_tree.show()
         ui.webcQ.put(('트리맵', ''))
     else:
@@ -372,7 +372,7 @@ def show_db(ui):
     from PyQt5.QtWidgets import QTableWidgetItem
 
     if not ui.dialog_db.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_db, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_db, duration=300)
         ui.dialog_db.show()
 
     ui.db_tableWidgett_01.clearContents()
@@ -444,7 +444,7 @@ def show_backscheduler(ui):
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_scheduler.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_scheduler, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_scheduler, duration=300)
         ui.dialog_scheduler.show()
     else:
         ui.dialog_scheduler.close()
@@ -461,7 +461,7 @@ def show_kimp(ui):
     from utility.sub_process_and_thread.kimp_upbit_binance import Kimp
 
     if not ui.dialog_kimp.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_kimp, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_kimp, duration=300)
         ui.dialog_kimp.show()
         if not coinkimp_process_alive(ui):
             ui.proc_coin_kimp = Process(target=Kimp, args=(ui.qlist,))
@@ -480,7 +480,7 @@ def show_order(ui):
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_order.isVisible():
-        DialogAnimator.setup_dialog_animation(ui.dialog_order, duration=250)
+        DialogAnimator.setup_dialog_animation(ui.dialog_order, duration=300)
         ui.dialog_order.show()
 
         tableWidget = None
@@ -503,4 +503,14 @@ def show_order(ui):
 
 
 def show_pattern_dialog(ui):
-    ui.dialog_pattern.show() if not ui.dialog_pattern.isVisible() else ui.dialog_pattern.close()
+    """분석시스템 다이얼로그를 토글합니다.
+    Args:
+        ui: UI 클래스 인스턴스
+    """
+    from ui.create_widget.dialog_animation import DialogAnimator
+
+    if not ui.dialog_pattern.isVisible():
+        DialogAnimator.setup_dialog_animation(ui.dialog_pattern, duration=300)
+        ui.dialog_pattern.show()
+    else:
+        ui.dialog_pattern.close()
