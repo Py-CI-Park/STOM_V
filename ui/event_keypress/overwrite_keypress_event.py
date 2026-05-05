@@ -27,7 +27,7 @@ def key_press_event(ui, event):
                 if ui.svj_pushButton_01.isVisible():
                     backtest_start(ui)
 
-        elif ui.focusWidget() in (ui.td_tableWidgettt, ui.gj_tableWidgettt, ui.cj_tableWidgettt, ui.td_tableWidgettt, ui.gj_tableWidgettt, ui.cj_tableWidgettt):
+        elif ui.focusWidget() in (ui.td_tableWidgettt, ui.gj_tableWidgettt, ui.cj_tableWidgettt):
             row  = ui.focusWidget().currentIndex().row()
             col  = ui.focusWidget().currentIndex().column()
             item = ui.focusWidget().item(row, 0)
@@ -46,7 +46,7 @@ def key_press_event(ui, event):
                 ui.ct_lineEdittttt_05.setText(name)
                 show_dialog(ui, code, name, tickcount, searchdate, col)
 
-        elif ui.focusWidget() in (ui.ds_tableWidgetttt, ui.ds_tableWidgetttt):
+        elif ui.focusWidget() == ui.ds_tableWidgetttt:
             if ui.focusWidget() == ui.ds_tableWidgetttt:
                 searchdate = ui.calendarWidgetttt.selectedDate().toString('yyyyMMdd')
             else:
@@ -63,7 +63,7 @@ def key_press_event(ui, event):
                 ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
                 show_dialog(ui, code, name, tickcount, searchdate, 4)
 
-        elif ui.focusWidget() in (ui.ns_tableWidgetttt, ui.cns_tableWidgettt):
+        elif ui.focusWidget() == ui.ns_tableWidgetttt:
             row  = ui.focusWidget().currentIndex().row()
             item = ui.focusWidget().item(row, 0)
             if item is not None:

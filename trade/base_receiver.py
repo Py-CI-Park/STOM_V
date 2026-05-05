@@ -83,7 +83,6 @@ class BaseReceiver:
 
         self.lvhp_time    = now()
         self.int_logt     = 0
-        self.operation    = 0
 
         self.ls           = None
         self.token        = None
@@ -140,6 +139,9 @@ class BaseReceiver:
         Args:
             code: 종목 코드
         """
+        if code not in self.dict_info:
+            return
+
         if code in self.dict_vipr:
             self.dict_vipr[code][:2] = False, timedelta_sec(5)
         else:
@@ -456,7 +458,7 @@ class BaseReceiver:
                 if not self.is_tick:
                     send_data.append(send)
 
-                if self.market_gubun in (1, 2, 4):
+                if self.market_gubun in (1, 4):
                     self.stgQs[self.dict_sgbn[code]].put(send_data)
                 else:
                     self.stgQ.put(send_data)
@@ -633,7 +635,7 @@ class BaseReceiver:
         if self.market_gubun not in (6, 7, 8):
             current_gsjm = tuple(self.list_gsjm)
             if current_gsjm != self.last_gsjm:
-                if self.market_gubun in (1, 2, 4):
+                if self.market_gubun in (1, 4):
                     for q in self.stgQs:
                         q.put(('관심목록', current_gsjm))
                 else:
@@ -697,6 +699,7 @@ class BaseReceiver:
         if self.ws_thread:
             self.ws_thread.stop()
             self.ws_thread.terminate()
+            self.ws_thread = None
 
     def _update_tuple(self, data):
         """튜플을 업데이트합니다.
@@ -724,12 +727,13 @@ class BaseReceiver:
         """
         import sys
         from utility.static_method.static import qtest_qwait
+
         self._websocket_kill()
 
         if data == '프로세스종료' and self.dict_set['데이터저장']:
             self._save_moneytop()
         else:
-            if self.market_gubun in (1, 2, 4):
+            if self.market_gubun in (1, 4):
                 for q in self.stgQs:
                     q.put('프로세스종료')
             else:
@@ -758,7 +762,7 @@ class BaseReceiver:
 
             self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 거래대금순위 저장 완료"))
 
-        if self.market_gubun in (1, 2, 4):
+        if self.market_gubun in (1, 4):
             self.stgQs[0].put(('데이터저장', codes))
         else:
             self.stgQ.put(('데이터저장', codes))

@@ -46,7 +46,7 @@ class StockReceiver(BaseReceiver):
         """종목 정보를 조회합니다."""
         self.dict_info, self.codes = self.ls.get_code_info_stock(self.market_gubun-1)
         if self.dict_info:
-            if self.market_gubun < 3:
+            if self.market_gubun == 1:
                 self.dict_sgbn = {code: i % 8 for i, code in enumerate(self.dict_info)}
                 self.traderQ.put(('종목정보', (self.dict_info, self.dict_sgbn)))
             else:
@@ -128,8 +128,9 @@ class StockReceiver(BaseReceiver):
                 if body['jangubun'] == self.oper_gubun:
                     operation = int(body['jstatus'])
                     if operation in LsRestData.장운영상태:
-                        self.operation = operation
-                        self.soundQ.put(LsRestData.장운영상태[self.operation])
+                        text = LsRestData.장운영상태[operation]
+                        self.windowQ.put((ui_num['기본로그'], f'장운영 정보 수신 알림 - {text}'))
+                        self.soundQ.put(text)
 
         except Exception:
             self.windowQ.put((ui_num['시스템로그'], format_exc()))

@@ -113,8 +113,9 @@ class FutureReceiver(BaseReceiver):
                 if body['jangubun'] == self.oper_gubun:
                     operation = int(body['jstatus'])
                     if operation in LsRestData.장운영상태:
-                        self.operation = operation
-                        self.soundQ.put(LsRestData.장운영상태[self.operation])
+                        text = LsRestData.장운영상태[operation]
+                        self.windowQ.put((ui_num['기본로그'], f'장운영 정보 수신 알림 - {text}'))
+                        self.soundQ.put(text)
 
         except Exception:
             self.windowQ.put((ui_num['시스템로그'], format_exc()))

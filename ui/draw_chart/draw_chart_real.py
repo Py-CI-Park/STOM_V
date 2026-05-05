@@ -22,7 +22,7 @@ class DrawRealChart(DrawChartBase):
             if receiver_process_alive(self.ui):
                 self.ui.receivQ.put(('차트종목코드', None))
             if strategy_process_alive(self.ui):
-                if self.ui.market_gubun < 5:
+                if self.ui.market_gubun in (1, 4):
                     for q in self.ui.stgQs:
                         q.put(('차트종목코드', None))
                 else:
@@ -34,11 +34,12 @@ class DrawRealChart(DrawChartBase):
         self.same_time  = self.last_index == curr_last_index
         self.last_index = curr_last_index
 
-        if self.same_code and self.same_time:
-            if self.is_min:
-                self.ui.ctpg_xticks.append(dt_ymdhms(f'{str(int(curr_last_index))}00').timestamp())
-            else:
-                self.ui.ctpg_xticks.append(dt_ymdhms(str(int(curr_last_index))).timestamp())
+        if self.same_code:
+            if not self.same_time:
+                if self.is_min:
+                    self.ui.ctpg_xticks.append(dt_ymdhms(f'{str(int(curr_last_index))}00').timestamp())
+                else:
+                    self.ui.ctpg_xticks.append(dt_ymdhms(str(int(curr_last_index))).timestamp())
         else:
             if self.is_min:
                 self.ui.ctpg_xticks = [dt_ymdhms(f'{str(int(x))}00').timestamp() for x in self.ui.ctpg_arry[:, 0]]

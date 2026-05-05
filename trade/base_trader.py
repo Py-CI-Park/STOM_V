@@ -179,7 +179,7 @@ class BaseTrader:
     def _scheduler1(self):
         """스케줄러1을 실행합니다."""
         data = ('잔고목록', self.dict_jg.copy())
-        if self.market_gubun in (1, 2, 4):
+        if self.market_gubun in (1, 4):
             for q in self.stgQs:
                 q.put(data)
         else:
@@ -359,7 +359,7 @@ class BaseTrader:
             종목코드: 종목 코드
         """
         data = (주문구분, 종목코드)
-        if self.market_gubun in (1, 2, 4):
+        if self.market_gubun in (1, 4):
             self.stgQs[self.dict_sgbn[종목코드]].put(data)
         else:
             self.stgQ.put(data)
@@ -509,7 +509,7 @@ class BaseTrader:
             self.dict_set = data
             self.jgcs_time = self.get_jgcs_time()
         elif gubun == '종목정보':
-            if self.market_gubun in (1, 2, 4):
+            if self.market_gubun in (1, 4):
                 self.dict_info, self.dict_sgbn = data
             elif self.market_gubun in (6, 7):
                 self.dict_info, self.dict_expc = data
@@ -1413,7 +1413,7 @@ class BaseTrader:
 
         if self.dict_intg['종목당투자금'] != 종목당투자금:
             self.dict_intg['종목당투자금'] = 종목당투자금
-            if self.market_gubun in (1, 2, 4):
+            if self.market_gubun in (1, 4):
                 for q in self.stgQs:
                     q.put(('종목당투자금', self.dict_intg['종목당투자금']))
             else:
@@ -1431,7 +1431,7 @@ class BaseTrader:
 
     def _strategy_stop(self):
         """전략을 중지합니다."""
-        if self.market_gubun in (1, 2, 4):
+        if self.market_gubun in (1, 4):
             for q in self.stgQs:
                 q.put('매수전략중지')
         else:

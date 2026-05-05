@@ -1,9 +1,11 @@
 
 import sys
 from PyQt5.QtCore import QTimer
+from traceback import format_exc
 from trade.restapi_ls import LsRestData
 from PyQt5.QtWidgets import QApplication
 from utility.static_method.static import now
+from utility.settings.setting_base import ui_num
 from trade.restapi_ls import LsRestAPI, LsWebSocketReceiver
 from trade.base_receiver import BaseReceiver, MonitorReceivQ
 
@@ -107,8 +109,9 @@ class StockUsaReceiver(BaseReceiver):
                 if body['jangubun'] == self.oper_gubun:
                     operation = int(body['jstatus'])
                     if operation in LsRestData.장운영상태:
-                        self.operation = operation
-                        self.soundQ.put(LsRestData.장운영상태[self.operation])
+                        text = LsRestData.장운영상태[operation]
+                        self.windowQ.put((ui_num['기본로그'], f'장운영 정보 수신 알림 - {text}'))
+                        self.soundQ.put(text)
 
         except Exception:
             self.windowQ.put((ui_num['시스템로그'], format_exc()))

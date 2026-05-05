@@ -128,7 +128,7 @@ def backengine_start(ui):
         con.close()
     except Exception:
         if ui.market_gubun not in (6, 7, 8) and len(dict_info) < 100:
-            ui.windowQ.put((ui_num['백테엔진'], '종목명 테이블이 갱신되지 않았습니다. 수동로그인(Alt + S)을 1회 실행하시오.'))
+            ui.windowQ.put((ui_num['백테엔진'], '종목명 테이블이 갱신되지 않았습니다. 수동로그인(Alt + L)을 1회 실행하시오.'))
         else:
             ui.windowQ.put((ui_num['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
         backtest_engine_kill(ui)

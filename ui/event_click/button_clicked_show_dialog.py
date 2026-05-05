@@ -177,7 +177,7 @@ def show_dialog_chart(ui, real, code, tickcount=None, searchdate=None, starttime
             if receiver_process_alive(ui):
                 ui.receivQ.put(('차트종목코드', code))
             if strategy_process_alive(ui):
-                if ui.market_gubun < 5:
+                if ui.market_gubun in (1, 4):
                     for q in ui.stgQs:
                         q.put(('차트종목코드', code))
                 else:

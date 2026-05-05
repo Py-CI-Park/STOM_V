@@ -63,13 +63,13 @@ class SetStrategyTab:
     # =================================================================================================================
 
         self.ui.ss_tableWidget_01 = self.wc.setTablewidget(self.ui.st_tab, columns_bt, 32, vscroll=True, fixed=True, clicked=lambda row, col: cell_clicked_05(self.ui, row, col))
-        self.ui.ss_comboBoxxxx_01 = self.wc.setCombobox(self.ui.st_tab, font=qfont12, activated=lambda: activated_etc.dactivated_01(self.ui))
+        self.ui.ss_comboBoxxxx_01 = self.wc.setCombobox(self.ui.st_tab, font=qfont12, activated=lambda: activated_etc.dactivated_01(self.ui, 1))
         self.ui.ss_pushButtonn_01 = self.wc.setPushbutton('백테스트상세기록', parent=self.ui.st_tab, bounced=True, click=lambda: ssbutton_clicked_01(self.ui), tip='백테스트 상세기록을 불러온다.')
         self.ui.ss_pushButtonn_02 = self.wc.setPushbutton('그래프', parent=self.ui.st_tab, bounced=True, click=lambda: ssbutton_clicked_04(self.ui), tip='선택된 상세기록의 그래프를 표시한다.')
-        self.ui.ss_comboBoxxxx_02 = self.wc.setCombobox(self.ui.st_tab, font=qfont12, activated=lambda: activated_etc.dactivated_01(self.ui))
+        self.ui.ss_comboBoxxxx_02 = self.wc.setCombobox(self.ui.st_tab, font=qfont12, activated=lambda: activated_etc.dactivated_01(self.ui, 2))
         self.ui.ss_pushButtonn_03 = self.wc.setPushbutton('최적화상세기록', parent=self.ui.st_tab, bounced=True, click=lambda: ssbutton_clicked_02(self.ui), tip='최적화 상세기록을 불러온다.')
         self.ui.ss_pushButtonn_04 = self.wc.setPushbutton('그래프', parent=self.ui.st_tab, bounced=True, click=lambda: ssbutton_clicked_04(self.ui), tip='선택된 상세기록의 그래프를 표시한다.')
-        self.ui.ss_comboBoxxxx_03 = self.wc.setCombobox(self.ui.st_tab, font=qfont12, activated=lambda: activated_etc.dactivated_01(self.ui))
+        self.ui.ss_comboBoxxxx_03 = self.wc.setCombobox(self.ui.st_tab, font=qfont12, activated=lambda: activated_etc.dactivated_01(self.ui, 3))
         self.ui.ss_pushButtonn_05 = self.wc.setPushbutton('그외상세기록', parent=self.ui.st_tab, bounced=True, click=lambda: ssbutton_clicked_03(self.ui), tip='최적화 테스트 및 전진분석 상세기록을 불러온다.')
         self.ui.ss_pushButtonn_06 = self.wc.setPushbutton('그래프', parent=self.ui.st_tab, bounced=True, click=lambda: ssbutton_clicked_04(self.ui), tip='선택된 상세기록의 그래프를 표시한다.')
         self.ui.ss_pushButtonn_07 = self.wc.setPushbutton('비교', parent=self.ui.st_tab, bounced=True, color=4, click=lambda: ssbutton_clicked_05(self.ui), tip='두개 이상의 그래프를 선택 비교한다.')

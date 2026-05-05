@@ -31,7 +31,7 @@ class DrawDBChart(DrawChartBase):
             return
 
         self.code = self.ui.ct_lineEdittttt_04.text()
-        self.same_time = False
+        self.same_code, self.same_time = False, False
 
         if dict_fm:
             self.ui.fm_list = fm_list

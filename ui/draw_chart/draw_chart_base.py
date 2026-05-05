@@ -196,7 +196,7 @@ class DrawChartBase:
             self.draw_legend(i)
             if i == self.chart_cnt - 1: break
 
-        if self.ui.ct_checkBoxxxxx_01.isChecked():
+        if not (self.same_code and self.same_time) and self.ui.ct_checkBoxxxxx_01.isChecked():
             self.insert_crosshair()
 
         self.ui.ctpg_code = self.code
@@ -401,8 +401,15 @@ class DrawChartBase:
         Args:
             i: 차트 인덱스
         """
-        buy_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, self.fi('매수가')]) if price > 0]
-        sell_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, self.fi('매도가')]) if price > 0]
+        if self.ui.market_gubun < 6:
+            buy_index = -2
+            sell_index = -1
+        else:
+            buy_index = -4
+            sell_index = -3
+
+        buy_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, buy_index]) if price > 0]
+        sell_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, sell_index]) if price > 0]
         if buy_arrow_list:
             for j, price in buy_arrow_list:
                 arrow = pg.ArrowItem(angle=180, tipAngle=60, headLen=10, pen='w', brush='r')
@@ -415,8 +422,8 @@ class DrawChartBase:
                 self.ui.ctpg[i].addItem(arrow)
 
         if self.ui.market_gubun > 5:
-            buy_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, self.fi('매수가2')]) if price > 0]
-            sell_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, self.fi('매도가2')]) if price > 0]
+            buy_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, -2]) if price > 0]
+            sell_arrow_list = [(j, price) for j, price in enumerate(self.ui.ctpg_arry[:, -1]) if price > 0]
             if buy_arrow_list:
                 for j, price in buy_arrow_list:
                     arrow = pg.ArrowItem(angle=180, tipAngle=60, headLen=10, pen='w', brush='m')

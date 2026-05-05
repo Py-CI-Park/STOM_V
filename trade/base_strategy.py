@@ -1568,7 +1568,7 @@ class BaseStrategy(StgGlobalsFunc):
         if self.dict_gj:
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
-            if self.market_gubun < 5:
+            if self.market_gubun in (1, 4):
                 self.windowQ.put((ui_num['관심종목'], self.gubun, df_gj))
             else:
                 self.windowQ.put((ui_num['관심종목'], df_gj))
@@ -1605,7 +1605,7 @@ class BaseStrategy(StgGlobalsFunc):
             self.windowQ.put((ui_num['기본로그'], f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'))
         con.close()
 
-        if self.market_gubun in (1, 2, 4):
+        if self.market_gubun in (1, 4):
             if self.gubun != 7:
                 self.stgQs[self.gubun + 1].put(('데이터저장', codes))
             else:

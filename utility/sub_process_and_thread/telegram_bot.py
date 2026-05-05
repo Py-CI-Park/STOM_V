@@ -25,6 +25,7 @@ class TelegramBot(QThread):
         self.teleQ         = qlist[3]
         self.traderQ       = qlist[9]
         self.stgQs         = qlist[10]
+        self.stgQ          = qlist[10][0]
         self.dict_set      = dict_set
 
         self.token         = None
@@ -122,8 +123,11 @@ class TelegramBot(QThread):
         """
         cmd = update.message.text
         if cmd == '전략중지':
-            for q in self.stgQs:
-                q.put('매수전략중지')
+            if self.dict_set['거래소'][:-2] in ('국내주식', '해외주식'):
+                for q in self.stgQs:
+                    q.put('매수전략중지')
+            else:
+                self.stgQ.put('매수전략중지')
         else:
             self.windowQ.put(cmd)
 

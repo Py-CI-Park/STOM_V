@@ -126,7 +126,7 @@ class BackEngineBase(StgGlobalsFunc):
         self.dict_findex   = {factor: i for i, factor in enumerate(factor_list)}
         self.base_cnt      = self.dict_findex['관심종목'] + 1
 
-        self.hoga_sidex    = self.dict_findex['매도호가5']
+        self.hoga_sidex    = self.dict_findex['매도호가1']
         self.hoga_eidex    = self.dict_findex['매수잔량5'] + 1
         self.add_cnt       = len(self.dict_findex) - self.dict_findex['최고현재가']
 
@@ -1022,9 +1022,9 @@ class BackEngineBase(StgGlobalsFunc):
         """마지막 틱에서 매도를 처리합니다.
         일일 마지막 틱에서 보유 중인 포지션을 청산합니다."""
         호가데이터 = self.arry_code[self.indexn, self.hoga_sidex:self.hoga_eidex]
-        매도호가배열 = 호가데이터[:5][::-1]
+        매도호가배열 = 호가데이터[:5]
         매수호가배열 = 호가데이터[5:10]
-        매도잔량배열 = 호가데이터[10:15][::-1]
+        매도잔량배열 = 호가데이터[10:15]
         매수잔량배열 = 호가데이터[15:20]
 
         for vturn in self.trade_info:
@@ -1044,7 +1044,7 @@ class BackEngineBase(StgGlobalsFunc):
                     if not 체결완료:
                         거래금액 = 주문수량 * 호가배열[0]
 
-                    self.curr_trade_info['매도가'] = self._get_last_sell_price(거래금액, 주문수량, 0)
+                    self.curr_trade_info['매도가'] = self._get_order_price(거래금액, 주문수량)
                     self.curr_trade_info['주문수량'] = 주문수량
                     self.sell_cond = 0
                     self._calculation_eyun()
@@ -1098,17 +1098,6 @@ class BackEngineBase(StgGlobalsFunc):
             주문수량: 주문 수량
         Returns:
             주문 가격
-        """
-        return 0
-
-    def _get_last_sell_price(self, 매도금액, 보유수량, 미체결수량):
-        """마지막 매도 가격을 계산합니다.
-        Args:
-            매도금액: 매도 금액
-            보유수량: 보유 수량
-            미체결수량: 미체결 수량
-        Returns:
-            매도 가격
         """
         return 0
 

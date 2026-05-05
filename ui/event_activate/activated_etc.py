@@ -1,18 +1,22 @@
 
-from PyQt5.QtWidgets import QPushButton
 from utility.settings.setting_base import ui_num
-from ui.create_widget.set_widget import BounceButton
 
 
-def dactivated_01(ui):
+def dactivated_01(ui, combobox_no):
     """테이블 콤보박스 활성화 이벤트를 처리합니다.
     Args:
         ui: UI 객체
+        combobox_no: 콤보박스 번호
     """
-    if ui.focusWidget().__class__ not in (QPushButton, BounceButton):
-        table_name = ui.focusWidget().currentText()
-        if table_name is None:
-            return
+    if combobox_no == 1:
+        comboBox = ui.ss_comboBoxxxx_01
+    elif combobox_no == 2:
+        comboBox = ui.ss_comboBoxxxx_02
+    else:
+        comboBox = ui.ss_comboBoxxxx_03
+
+    table_name = comboBox.currentText()
+    if table_name:
         df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{table_name}'").set_index('index')
         ui.update_tablewidget.update_tablewidget((ui_num['상세기록'], df))
 

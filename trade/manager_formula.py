@@ -65,7 +65,6 @@ class ManagerFormula(StgGlobalsFunc):
         self.dict_findex  = dict_findex
 
         self.base_cnt     = self.dict_findex['관심종목'] + 1
-        self.base_cnt     = None
         self.check        = None
         self.buy          = None
         self.sell         = None

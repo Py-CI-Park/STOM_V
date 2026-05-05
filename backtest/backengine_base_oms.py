@@ -431,7 +431,7 @@ class BackEngineBaseOms(BackEngineBase):
         주문수량 = self.curr_trade_info['주문수량']
         if 주문수량 > 0:
             if self.dict_set['매수주문유형'] == '시장가':
-                if self.market_gubun in (1, 3) or buy_long:
+                if self.market_gubun < 6 or buy_long:
                     호가배열 = self.shogainfo[:self.buy_hj_limit]
                     잔량배열 = self.shreminfo[:self.buy_hj_limit]
                 else:
@@ -445,7 +445,7 @@ class BackEngineBaseOms(BackEngineBase):
                     총수량 = 보유수량 + 주문수량
                     추가매수가 = self._get_order_price(거래금액, 주문수량)
                     평단가 = self._get_order_price(매수가 * 보유수량 + 거래금액, 총수량)
-                    주문포지션 = None if self.market_gubun in (1, 3) else 'LONG' if buy_long else 'SHORT'
+                    주문포지션 = None if self.market_gubun < 6 else 'LONG' if buy_long else 'SHORT'
                     self.curr_trade_info.update({
                         '매수가': 평단가,
                         '보유수량': 총수량,
@@ -672,7 +672,7 @@ class BackEngineBaseOms(BackEngineBase):
         if self.dict_set['매도주문유형'] == '시장가':
             주문수량 = self.curr_trade_info['주문수량']
             if 주문수량 > 0:
-                if self.market_gubun in (1, 3) or sell_long:
+                if self.market_gubun < 6 or sell_long:
                     호가배열 = self.bhogainfo[:self.sell_hj_limit]
                     잔량배열 = self.bhreminfo[:self.sell_hj_limit]
                 else:

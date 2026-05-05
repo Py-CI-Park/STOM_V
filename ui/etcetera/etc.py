@@ -76,7 +76,7 @@ def update_dictset(ui):
     if trader_process_alive(ui):
         ui.traderQ.put(('설정변경', ui.dict_set))
     if strategy_process_alive(ui):
-        if ui.market_gubun < 5:
+        if ui.market_gubun in (1, 4):
             for q in ui.stgQs:
                 q.put(('설정변경', ui.dict_set))
         else:

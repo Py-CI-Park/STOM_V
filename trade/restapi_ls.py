@@ -559,6 +559,7 @@ class LsWebSocketReceiver(QThread):
         data = self._get_send_data('장운영정보', '실시간시세등록', '0')
         await self.websocket.send(json.dumps(data))
         await asyncio.sleep(0.02)
+        self.windowQ.put((ui_num['기본로그'], '장운영정보 실시간시세 등록'))
 
         if self.gubun == '국내주식':
             gubun = f'{self.gubun}VI'

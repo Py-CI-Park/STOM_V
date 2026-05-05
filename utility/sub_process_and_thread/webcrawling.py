@@ -108,9 +108,10 @@ class WebCrawling(QThread):
                 datas = [x.split('lensThumb')[0] for x in datas]
                 datas = [x.split('.jpg')[0] + '.jpg' for x in datas]
                 self.imagelist2 = [x for x in datas if '\\' not in x]
-            webimage1 = request.urlopen(random.choice(self.imagelist1)).read()
-            webimage2 = request.urlopen(random.choice(self.imagelist2)).read()
-            self.signal.emit((ui_num['풍경사진'], webimage1, webimage2))
+            if self.imagelist1 and self.imagelist2:
+                webimage1 = request.urlopen(random.choice(self.imagelist1)).read()
+                webimage2 = request.urlopen(random.choice(self.imagelist2)).read()
+                self.signal.emit((ui_num['풍경사진'], webimage1, webimage2))
         except Exception:
             self.signal.emit((ui_num['시스템로그'], format_exc()))
 

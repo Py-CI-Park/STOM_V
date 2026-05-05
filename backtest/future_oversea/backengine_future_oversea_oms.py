@@ -49,23 +49,6 @@ class BackEngineFutureOverseaOms(BackEngineFutureOms):
         """
         return round(거래금액 / 주문수량, self.dict_info[self.code]['소숫점자리수'])
 
-    def _get_last_sell_price(self, 매도금액, 보유수량, 미체결수량):
-        """최종 매도 가격을 계산합니다.
-        Args:
-            매도금액 (float): 매도 금액
-            보유수량 (int): 보유 수량
-            미체결수량 (int): 미체결 수량
-        Returns:
-            float: 최종 매도 가격
-        """
-        if 미체결수량 <= 0:
-            매도가 = round(매도금액 / 보유수량, self.dict_info[self.code]['소숫점자리수'])
-        elif 매도금액 == 0:
-            매도가 = self.arry_code[self.indexn, 1]
-        else:
-            매도가 = round(매도금액 / (보유수량 - 미체결수량), self.dict_info[self.code]['소숫점자리수'])
-        return 매도가
-
     def _get_profit_info(self, 현재가, 매수가, 보유수량):
         """수익 정보를 계산합니다.
         Args:
