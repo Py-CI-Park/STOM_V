@@ -33,9 +33,10 @@ V3 진입은 전략 kick-off가 완료된 상태이며, 아직 실제 V3 branch/
 
 V3 관련 작업을 시작하기 전에는 반드시 아래 문서를 순서대로 읽는다:
 1. `docs/V3_UPDATE_OPERATING_SYSTEM.md`
-2. `docs/update_log/2026-05-04_v3_transition_strategy_review.md`
-3. `docs/WORKTREE_STRATEGY.md`
-4. `docs/CARRY_FORWARD_REGISTRY.md`
+2. `docs/V3_KICKOFF_READINESS_PLAN.md`
+3. `docs/update_log/2026-05-04_v3_transition_strategy_review.md`
+4. `docs/WORKTREE_STRATEGY.md`
+5. `docs/CARRY_FORWARD_REGISTRY.md`
 
 V3 전환기 목표 worktree 지도:
 

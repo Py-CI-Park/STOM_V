@@ -18,6 +18,7 @@
 - V3 진입 상태: 전략 kick-off 완료, 실행 전 준비 단계
 - 직전 전략 기준선 커밋: `23924c8f V3 전환 전략 기준선을 문서화한다`
 - 핵심 전략 문서: `docs/update_log/2026-05-04_v3_transition_strategy_review.md`
+- 실행 준비 계획: `docs/V3_KICKOFF_READINESS_PLAN.md`
 - 아직 수행하지 않은 작업:
   - `STOM_Version_3` branch 생성
   - `STOM_V.wt-3` worktree 생성
