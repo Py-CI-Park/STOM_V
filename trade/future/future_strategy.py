@@ -9,13 +9,6 @@ class FutureStrategy(BaseStrategy):
     """
 
     def __init__(self, gubun, qlist, dict_set, market_info):
-        """전략을 초기화합니다.
-        Args:
-            gubun (int): 구분 번호
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_info (list): 마켓 정보 리스트
-        """
         super().__init__(gubun, qlist, dict_set, market_info)
 
     def _get_hogaunit(self, 종목코드):

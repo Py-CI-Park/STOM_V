@@ -18,11 +18,6 @@ class MonitorTraderQ(QThread):
     signal4 = pyqtSignal(str)
 
     def __init__(self, traderQ, market_gubun):
-        """모니터를 초기화합니다.
-        Args:
-            traderQ (multiprocessing.Queue): 트레이더 큐
-            market_gubun (int): 마켓 구분
-        """
         super().__init__()
         self.traderQ = traderQ
         self.market_gubun = market_gubun
@@ -50,11 +45,7 @@ class BaseTrader:
     """
 
     def __init__(self, qlist, dict_set, market_infos):
-        """트레이더를 초기화합니다.
-        Args:
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_infos (list): 마켓 정보 리스트 [마켓구분, 마켓정보]
+        """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
            0        1       2      3       4      5      6      7       8        9       10     11
         """

@@ -7,14 +7,14 @@ class BackEngineFutureOverseaOms(BackEngineFutureOms):
     """해외 선물 OMS 백테스트 엔진 클래스입니다.
     BackEngineFutureOms를 상속받아 해외 선물 시장 특화 OMS 로직을 구현합니다.
     """
-    def _get_hogaunit(self, 주문가격또는종목코드):
+    def _get_hogaunit(self, 종목코드):
         """호가 단위를 반환합니다.
         Args:
-            주문가격또는종목코드: 주문 가격 또는 종목 코드
+            종목코드: 종목 코드
         Returns:
             호가 단위
         """
-        return self.dict_info[주문가격또는종목코드]['호가단위']
+        return self.dict_info[종목코드]['호가단위']
 
     def _set_buy_count(self, betting, 현재가, 매수가, oc_ratio):
         """매수 수량을 설정합니다.

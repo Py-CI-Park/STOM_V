@@ -16,10 +16,6 @@ class MonitorReceivQ(QThread):
     signal2 = pyqtSignal(str)
 
     def __init__(self, receivQ):
-        """모니터를 초기화합니다.
-        Args:
-            receivQ (multiprocessing.Queue): 수신 큐
-        """
         super().__init__()
         self.receivQ = receivQ
 
@@ -40,7 +36,7 @@ class BaseReceiver:
     """
 
     def __init__(self, qlist, dict_set, market_infos):
-        """리시버를 초기화합니다.
+        """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
            0        1       2      3       4      5      6      7       8        9       10     11
         """

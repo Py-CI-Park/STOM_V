@@ -7,10 +7,6 @@ class AnimatedDialog(QDialog):
     """페이드인/페이드아웃 애니메이션이 적용된 다이얼로그 클래스"""
 
     def __init__(self, parent=None):
-        """애니메이션 다이얼로그를 초기화합니다.
-        Args:
-            parent: 부모 위젯
-        """
         super().__init__(parent)
         self.fade_animation = None
         self.animation_duration = 300

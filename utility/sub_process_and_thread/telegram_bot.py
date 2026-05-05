@@ -16,12 +16,9 @@ class TelegramBot(QThread):
     텔레그램 봇을 통해 메시지를 주고받습니다.
     """
     def __init__(self, qlist, dict_set):
-        """텔레그램 봇을 초기화합니다.
+        """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
            0        1       2      3       4      5      6      7       8        9       10     11
-        Args:
-            qlist: 큐 리스트
-            dict_set: 설정 딕셔너리
         """
         super().__init__()
         self.windowQ       = qlist[0]
@@ -146,7 +143,10 @@ class TelegramBot(QThread):
         while True:
             data = await self.message_queue.get()
             if data.__class__ == str:
-                await self.send_message(data)
+                if '.png' not in data:
+                    await self.send_message(data)
+                else:
+                    await self.send_photo(data)
             elif data.__class__ == tuple:
                 self.dict_set = data[1]
                 await self.restart_bot()
@@ -202,11 +202,18 @@ class TelegramBot(QThread):
     async def send_photo(self, photo_data):
         if not self.running:
             return
-        photo_data.seek(0)
-        await self.application.bot.send_photo(
-            chat_id=self.chat_id,
-            photo=photo_data
-        )
+        if photo_data.__class__ == str:
+            with open(photo_data, 'rb') as photo:
+                await self.application.bot.send_photo(
+                    chat_id=self.chat_id,
+                    photo=photo
+                )
+        else:
+            photo_data.seek(0)
+            await self.application.bot.send_photo(
+                chat_id=self.chat_id,
+                photo=photo_data
+            )
 
     def stop(self):
         self.teleQ.put('스레드종료')

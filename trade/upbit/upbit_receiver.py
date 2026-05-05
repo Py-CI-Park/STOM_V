@@ -1,7 +1,9 @@
 
 import sys
 from PyQt5.QtCore import QTimer
+from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
+from utility.settings.setting_base import ui_num
 from trade.restapi_upbit import get_symbols_info
 from trade.restapi_upbit import UpbitWebSocketReceiver
 from trade.base_receiver import BaseReceiver, MonitorReceivQ
@@ -14,12 +16,6 @@ class UpbitReceiver(BaseReceiver):
     """
 
     def __init__(self, qlist, dict_set, market_info):
-        """수신기를 초기화합니다.
-        Args:
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_info (list): 마켓 정보 리스트
-        """
         super().__init__(qlist, dict_set, market_info)
 
         app = QApplication(sys.argv)
@@ -58,52 +54,56 @@ class UpbitReceiver(BaseReceiver):
         Args:
             data: 데이터
         """
-        if data['type'] == 'orderbook':
-            dt = int(str_ymdhms_utc(data['timestamp']))
-            if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
-                return
+        try:
+            if data['type'] == 'orderbook':
+                dt = int(str_ymdhms_utc(data['timestamp']))
+                if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
+                    return
 
-            receivetime = now()
-            code = data['code']
-            hoga_tamount = [
-                data['total_ask_size'], data['total_bid_size']
-            ]
-            data = data['orderbook_units']
-            hoga_seprice = [
-                data[0]['ask_price'], data[1]['ask_price'], data[2]['ask_price'], data[3]['ask_price'],
-                data[4]['ask_price'], data[5]['ask_price'], data[6]['ask_price'], data[7]['ask_price'],
-                data[8]['ask_price'], data[9]['ask_price']
-            ]
-            hoga_buprice = [
-                data[0]['bid_price'], data[1]['bid_price'], data[2]['bid_price'], data[3]['bid_price'],
-                data[4]['bid_price'], data[5]['bid_price'], data[6]['bid_price'], data[7]['bid_price'],
-                data[8]['bid_price'], data[9]['bid_price']
-            ]
-            hoga_samount = [
-                data[0]['ask_size'], data[1]['ask_size'], data[2]['ask_size'], data[3]['ask_size'],
-                data[4]['ask_size'], data[5]['ask_size'], data[6]['ask_size'], data[7]['ask_size'],
-                data[8]['ask_size'], data[9]['ask_size']
-            ]
-            hoga_bamount = [
-                data[0]['bid_size'], data[1]['bid_size'], data[2]['bid_size'], data[3]['bid_size'],
-                data[4]['bid_size'], data[5]['bid_size'], data[6]['bid_size'], data[7]['bid_size'],
-                data[8]['bid_size'], data[9]['bid_size']
-            ]
-            self._update_hoga_data(dt, code, hoga_seprice, hoga_buprice, hoga_samount,
-                                   hoga_bamount, hoga_tamount, receivetime)
+                receivetime = now()
+                code = data['code']
+                hoga_tamount = [
+                    data['total_ask_size'], data['total_bid_size']
+                ]
+                data = data['orderbook_units']
+                hoga_seprice = [
+                    data[0]['ask_price'], data[1]['ask_price'], data[2]['ask_price'], data[3]['ask_price'],
+                    data[4]['ask_price'], data[5]['ask_price'], data[6]['ask_price'], data[7]['ask_price'],
+                    data[8]['ask_price'], data[9]['ask_price']
+                ]
+                hoga_buprice = [
+                    data[0]['bid_price'], data[1]['bid_price'], data[2]['bid_price'], data[3]['bid_price'],
+                    data[4]['bid_price'], data[5]['bid_price'], data[6]['bid_price'], data[7]['bid_price'],
+                    data[8]['bid_price'], data[9]['bid_price']
+                ]
+                hoga_samount = [
+                    data[0]['ask_size'], data[1]['ask_size'], data[2]['ask_size'], data[3]['ask_size'],
+                    data[4]['ask_size'], data[5]['ask_size'], data[6]['ask_size'], data[7]['ask_size'],
+                    data[8]['ask_size'], data[9]['ask_size']
+                ]
+                hoga_bamount = [
+                    data[0]['bid_size'], data[1]['bid_size'], data[2]['bid_size'], data[3]['bid_size'],
+                    data[4]['bid_size'], data[5]['bid_size'], data[6]['bid_size'], data[7]['bid_size'],
+                    data[8]['bid_size'], data[9]['bid_size']
+                ]
+                self._update_hoga_data(dt, code, hoga_seprice, hoga_buprice, hoga_samount,
+                                       hoga_bamount, hoga_tamount, receivetime)
 
-        elif data['type'] == 'ticker':
-            dt = int(str_ymdhms_utc(data['timestamp']))
-            if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
-                return
+            elif data['type'] == 'ticker':
+                dt = int(str_ymdhms_utc(data['timestamp']))
+                if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
+                    return
 
-            code  = data['code']
-            c     = data['trade_price']
-            o     = data['opening_price']
-            h     = data['high_price']
-            low   = data['low_price']
-            per   = round(data['signed_change_rate'] * 100, 2)
-            dm    = data['acc_trade_price']
-            tbids = data['acc_bid_volume']
-            tasks = data['acc_ask_volume']
-            self._update_tick_data(dt, code, c, o, h, low, per, dm, tbids=tbids, tasks=tasks)
+                code  = data['code']
+                c     = data['trade_price']
+                o     = data['opening_price']
+                h     = data['high_price']
+                low   = data['low_price']
+                per   = round(data['signed_change_rate'] * 100, 2)
+                dm    = data['acc_trade_price']
+                tbids = data['acc_bid_volume']
+                tasks = data['acc_ask_volume']
+                self._update_tick_data(dt, code, c, o, h, low, per, dm, tbids=tbids, tasks=tasks)
+
+        except Exception:
+            self.windowQ.put((ui_num['시스템로그'], format_exc()))

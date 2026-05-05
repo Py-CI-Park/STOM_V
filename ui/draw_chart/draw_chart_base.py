@@ -14,10 +14,6 @@ class DrawChartBase:
     """
 
     def __init__(self, ui):
-        """차트 그리기 기본 클래스를 초기화합니다.
-        Args:
-            ui: UI 객체
-        """
         self.ui         = ui
 
         self.last       = 0
@@ -29,7 +25,6 @@ class DrawChartBase:
 
         self.code       = None
         self.hms        = None
-        self.len_list   = None
         self.dict_idxs  = None
         self.gsjm_arry  = None
         self.last_index = None
@@ -311,7 +306,6 @@ class DrawChartBase:
 
         tlen = len(self.ui.ctpg_arry)
         self.last = tlen - 1
-        self.len_list = [tlen - len(x) for x in self.ui.ctpg_data.values()]
 
     def _incremental_update(self):
         """증분 업데이트를 수행합니다."""
@@ -441,10 +435,12 @@ class DrawChartBase:
             fidx1: 요소 인덱스
             color: 색상
         """
+        ydata = self.ui.ctpg_data[fidx1]
+        xdata = self.ui.ctpg_xticks[-len(ydata):]
         if self.same_code and self.same_time:
-            self.ui.ctpg_item[fidx1].setData(x=self.ui.ctpg_xticks[self.len_list[fidx1]:], y=self.ui.ctpg_data[fidx1])
+            self.ui.ctpg_item[fidx1].setData(x=xdata, y=ydata)
         else:
-            line = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks[self.len_list[fidx1]:], y=self.ui.ctpg_data[fidx1], pen=color)
+            line = self.ui.ctpg[i].plot(x=xdata, y=ydata, pen=color)
             line.setZValue(10)
             self.ui.ctpg_item[fidx1] = line
 
@@ -571,10 +567,12 @@ class DrawChartBase:
             width: 너비
             style: 스타일
         """
+        ydata = self.ui.ctpg_data[col_idx]
+        xdata = self.ui.ctpg_xticks
         if self.same_code and self.same_time:
-            self.ui.ctpg_item[col_idx].setData(x=self.ui.ctpg_xticks, y=self.ui.ctpg_data[col_idx])
+            self.ui.ctpg_item[col_idx].setData(x=xdata, y=ydata)
         else:
-            line = self.ui.ctpg[i].plot(x=self.ui.ctpg_xticks, y=self.ui.ctpg_data[col_idx], pen=pg.mkPen(color, width=width, style=style))
+            line = self.ui.ctpg[i].plot(x=xdata, y=ydata, pen=pg.mkPen(color, width=width, style=style))
             line.setZValue(15)
             self.ui.ctpg_item[col_idx] = line
 

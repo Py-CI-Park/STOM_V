@@ -366,10 +366,6 @@ class HistoryBuffer:
                  'buy_volume', 'sell_volume', 'total_volume', 'weighted_depth_ratio']
 
     def __init__(self, maxlen: int):
-        """히스토리 버퍼를 초기화합니다.
-        Args:
-            maxlen: 최대 길이
-        """
         self.maxlen = maxlen
         self.ptr = 0
         self.count = 0
@@ -484,13 +480,6 @@ class AnalyzerMicrostructure:
     호가 데이터를 분석하여 시장 조작 패턴을 탐지합니다.
     """
     def __init__(self, market_type: str, columns: list, data_cnt: int = 1800, history_cnt: int = 30):
-        """분석기를 초기화합니다.
-        Args:
-            market_type: 시장 타입
-            columns: 컬럼 리스트
-            data_cnt: 데이터 카운트
-            history_cnt: 히스토리 카운트
-        """
         # 기본 설정
         self._price_risk_cache = {}
         self.market_type = market_type

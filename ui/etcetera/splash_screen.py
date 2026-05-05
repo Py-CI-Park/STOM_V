@@ -10,7 +10,6 @@ class StomSplashScreen(QSplashScreen):
     애플리케이션 시작 시 로딩 화면을 표시합니다.
     """
     def __init__(self):
-        """스플래시 스크린을 초기화합니다."""
         super().__init__()
 
         self.setFixedSize(500, 300)

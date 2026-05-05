@@ -73,11 +73,6 @@ class AnalyzerRisk:
     """
 
     def __init__(self, market_type: str, columns: list):
-        """리스크 분석기를 초기화합니다.
-        Args:
-            market_type (str): 마켓 타입 ('stock', 'coin', 'future')
-            columns (list): 컬럼 리스트
-        """
         self.market_type = market_type
         self.columns = columns
         self._setup_analysis_parameters()

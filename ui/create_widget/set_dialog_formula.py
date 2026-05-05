@@ -10,11 +10,6 @@ class SetDialogFormula:
     사용자 수식을 관리하는 다이얼로그를 설정합니다.
     """
     def __init__(self, ui_class, wc):
-        """수식 관리자 다이얼로그 설정을 초기화합니다.
-        Args:
-            ui_class: UI 클래스
-            wc: 위젯 생성자
-        """
         self.ui = ui_class
         self.wc = wc
         self.set()

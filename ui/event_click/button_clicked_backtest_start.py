@@ -24,11 +24,11 @@ def bebutton_clicked_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    if ui.back_engining:
+    if ui.backengine_starting:
         QMessageBox.critical(ui.dialog_backengine, '오류 알림', '백테엔진 구동 중...\n')
         return
 
-    if not ui.backtest_engine:
+    if not ui.backengine_running:
         backengine_start(ui)
     else:
         buttonReply = QMessageBox.question(
@@ -94,8 +94,8 @@ def backtest_engine_kill(ui):
     ui.back_eques  = []
     ui.back_sques  = []
     ui.back_count  = 0
-    ui.back_engining   = False
-    ui.backtest_engine = False
+    ui.backengine_starting = False
+    ui.backengine_running  = False
     if ui.dialog_backengine.isVisible():
         ui.windowQ.put((ui_num['백테엔진'], '<font color=#54d2f9>백테스트 엔진 종료 완료</font>'))
 
@@ -108,11 +108,11 @@ def sdbutton_clicked_02(ui):
     if backtest_process_alive(ui):
         QMessageBox.critical(ui.dialog_scheduler, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.back_engining:
+        if ui.backengine_starting:
             QMessageBox.critical(ui.dialog_backengine, '오류 알림', '백테엔진 구동 중...\n')
             return
 
-        if not ui.backtest_engine or (QApplication.keyboardModifiers() & Qt.ControlModifier):
+        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
             backengine_show(ui)
             return
 

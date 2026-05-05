@@ -1,6 +1,7 @@
 
 import sys
 from PyQt5.QtCore import QTimer
+from traceback import format_exc
 from trade.restapi_ls import LsRestAPI
 from PyQt5.QtWidgets import QApplication
 from trade.restapi_lsdata import LsRestData
@@ -15,12 +16,6 @@ class FutureOsTrader(BaseTrader):
     """
 
     def __init__(self, qlist, dict_set, market_infos):
-        """트레이더를 초기화합니다.
-        Args:
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_infos (list): 마켓 정보 리스트
-        """
         super().__init__(qlist, dict_set, market_infos)
 
         app = QApplication(sys.argv)
@@ -131,15 +126,18 @@ class FutureOsTrader(BaseTrader):
         if body is None:
             return
 
-        체결유형 = body['ordr_ccd']
-        if 체결유형 in ('1', '2', '3'):
-            체결구분 = LsRestData.선물주문체결코드[체결유형]
-            종목코드 = body['is_cd']
-            체결수량 = int(body['ccls_q'])
-            체결가격 = float(body['ccls_prc'])
-            체결시간 = f"{self.str_today}{int(int(body['ccls_tm']) / 1000)}"
-            주문번호 = body['ordr_no']
-            self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
+        try:
+            체결유형 = body['ordr_ccd']
+            if 체결유형 in ('1', '2', '3'):
+                체결구분 = LsRestData.선물주문체결코드[체결유형]
+                종목코드 = body['is_cd']
+                체결수량 = int(body['ccls_q'])
+                체결가격 = float(body['ccls_prc'])
+                체결시간 = f"{self.str_today}{int(int(body['ccls_tm']) / 1000)}"
+                주문번호 = body['ordr_no']
+                self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
+        except Exception:
+            self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
         """매수 주문 가격을 반환합니다.

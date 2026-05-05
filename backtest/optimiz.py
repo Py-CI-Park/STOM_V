@@ -23,20 +23,6 @@ class Total:
     """
 
     def __init__(self, wq, sq, tq, teleQ, mq, lq, bstq_list, backname, market_gubun, market_info, dict_set):
-        """최적화 엔진을 초기화합니다.
-        Args:
-            wq: 윈도우 큐
-            sq: 전략 큐
-            tq: 트레이더 큐
-            teleQ: 텔레그램 큐
-            mq: 메시지 큐
-            lq: 로그 큐
-            bstq_list: 백테스트 전략 큐 리스트
-            backname: 백테스트 이름
-            market_gubun: 마켓 구분
-            market_info: 마켓 정보
-            dict_set: 설정 딕셔너리
-        """
         self.wq           = wq
         self.sq           = sq
         self.tq           = tq
@@ -375,22 +361,6 @@ class Optimize:
     파라미터 최적화를 수행합니다.
     """
     def __init__(self, sc, wq, bq, sq, tq, lq, teleQ, beq_list, bstq_list, multi, backname, dict_set, market_infos):
-        """최적화 엔진을 초기화합니다.
-        Args:
-            sc: 공유 카운터
-            wq: 윈도우 큐
-            bq: 백테스트 큐
-            sq: 전략 큐
-            tq: 트레이더 큐
-            lq: 로그 큐
-            teleQ: 텔레그램 큐
-            beq_list: 백테스트 엔진 큐 리스트
-            bstq_list: 백테스트 전략 큐 리스트
-            multi: 멀티프로세스 여부
-            backname: 백테스트 이름
-            dict_set: 설정 딕셔너리
-            market_infos: 마켓 정보 리스트
-        """
         self.shared_cnt   = sc
         self.wq           = wq
         self.bq           = bq
@@ -1100,12 +1070,6 @@ class StopWhenNotUpdateBestCallBack:
     최고 값이 업데이트되지 않으면 중단합니다.
     """
     def __init__(self, main, back_count, optuna_count):
-        """콜백을 초기화합니다.
-        Args:
-            main: 메인 객체
-            back_count: 백테스트 카운트
-            optuna_count: Optuna 카운트
-        """
         self.main         = main
         self.back_count   = back_count
         self.optuna_count = optuna_count

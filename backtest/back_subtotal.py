@@ -11,14 +11,6 @@ class BackSubTotal:
     여러 백테스트 결과를 수집하고 통합합니다.
     """
     def __init__(self, vkey, wq, tq, bstqs, buystd):
-        """백테스트 결과 집계기를 초기화합니다.
-        Args:
-            vkey: 키 값
-            wq: 윈도우 큐
-            tq: 트레이더 큐
-            bstqs: 백테스트 전략 큐 리스트
-            buystd: 매수 표준편차
-        """
         self.vkey         = vkey
         self.wq           = wq
         self.tq           = tq

@@ -21,11 +21,9 @@ class Kimp:
     업비트와 바이낸스의 가격 차이를 계산하여 표시합니다.
     """
     def __init__(self, qlist):
-        """김프 계산을 초기화합니다.
+        """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
            0        1       2      3       4      5      6      7       8        9       10     11
-        Args:
-            qlist: 큐 리스트
         """
         app = QApplication(sys.argv)
 
@@ -98,10 +96,6 @@ class KimpWebSocketManager(QThread):
     signal2 = pyqtSignal(object)
 
     def __init__(self, codes):
-        """웹소켓 관리자를 초기화합니다.
-        Args:
-            codes: 종목 코드 리스트
-        """
         super().__init__()
         self.codes       = codes
         self.loop        = None

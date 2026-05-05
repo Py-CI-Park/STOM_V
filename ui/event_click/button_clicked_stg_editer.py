@@ -1322,18 +1322,18 @@ def backtest_start(ui):
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.back_engining:
+        if ui.backengine_starting:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
             return
-        if ui.dialog_backengine.isVisible() and not ui.backtest_engine:
+        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
             QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
             return
         back_club = True if (QApplication.keyboardModifiers() & Qt.ControlModifier) and (
                     QApplication.keyboardModifiers() & Qt.AltModifier) else False
-        if back_club and not ui.backtest_engine:
+        if back_club and not ui.backengine_running:
             QMessageBox.critical(ui, '오류 알림', '백테엔진을 먼저 구동하십시오.\n')
             return
-        if not back_club and (not ui.backtest_engine or (QApplication.keyboardModifiers() & Qt.ControlModifier)):
+        if not back_club and (not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier)):
             backengine_show(ui)
             return
         if ui.back_cancelling:
@@ -1385,13 +1385,13 @@ def backfinder_start(ui):
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.back_engining:
+        if ui.backengine_starting:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
             return
-        if ui.dialog_backengine.isVisible() and not ui.backtest_engine:
+        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
             QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
             return
-        if not ui.backtest_engine or (QApplication.keyboardModifiers() & Qt.ControlModifier):
+        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
             backengine_show(ui)
             return
         if ui.back_cancelling:
@@ -1454,13 +1454,13 @@ def opti_start(ui, back_name):
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.back_engining:
+        if ui.backengine_starting:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
             return
-        if ui.dialog_backengine.isVisible() and not ui.backtest_engine:
+        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
             QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
             return
-        if not ui.backtest_engine or (not (QApplication.keyboardModifiers() & Qt.ShiftModifier) and
+        if not ui.backengine_running or (not (QApplication.keyboardModifiers() & Qt.ShiftModifier) and
                                       not (QApplication.keyboardModifiers() & Qt.AltModifier) and
                                       (QApplication.keyboardModifiers() & Qt.ControlModifier)):
             backengine_show(ui)
@@ -1615,13 +1615,13 @@ def opti_rwft_start(ui, back_name):
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.back_engining:
+        if ui.backengine_starting:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
             return
-        if ui.dialog_backengine.isVisible() and not ui.backtest_engine:
+        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
             QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
             return
-        if not ui.backtest_engine or (QApplication.keyboardModifiers() & Qt.ControlModifier):
+        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
             backengine_show(ui)
             return
         if ui.back_cancelling:
@@ -1732,13 +1732,13 @@ def opti_ga_start(ui, back_name):
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.back_engining:
+        if ui.backengine_starting:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
             return
-        if ui.dialog_backengine.isVisible() and not ui.backtest_engine:
+        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
             QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
             return
-        if not ui.backtest_engine or (QApplication.keyboardModifiers() & Qt.ControlModifier):
+        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
             backengine_show(ui)
             return
         if ui.back_cancelling:
@@ -1816,13 +1816,13 @@ def opti_cond_start(ui, back_name):
     if backtest_process_alive(ui):
         QMessageBox.critical(ui, '오류 알림', '현재 백테스트가 실행중입니다.\n중복 실행할 수 없습니다.\n')
     else:
-        if ui.back_engining:
+        if ui.backengine_starting:
             QMessageBox.critical(ui, '오류 알림', '백테엔진 구동 중...\n')
             return
-        if ui.dialog_backengine.isVisible() and not ui.backtest_engine:
+        if ui.dialog_backengine.isVisible() and not ui.backengine_running:
             QMessageBox.critical(ui, '오류 알림', '백테엔진이 구동되지 않았습니다.\n')
             return
-        if not ui.backtest_engine or (QApplication.keyboardModifiers() & Qt.ControlModifier):
+        if not ui.backengine_running or (QApplication.keyboardModifiers() & Qt.ControlModifier):
             backengine_show(ui)
             return
         if ui.back_cancelling:

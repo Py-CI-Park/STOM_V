@@ -9,8 +9,6 @@ class Visualization3D:
     최적화 진화 과정을 3D로 시각화합니다.
     """
     def __init__(self):
-        """3D 시각화를 초기화합니다.
-        """
         self.top_3_params = None
         self.optimization_3d_history = []
 

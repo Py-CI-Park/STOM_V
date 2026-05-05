@@ -20,12 +20,6 @@ class HomTapGroupBox(QGroupBox):
     홈 화면의 시장 지표 그룹박스를 관리합니다.
     """
     def __init__(self, title, parent, ui):
-        """홈 탭 그룹박스를 초기화합니다.
-        Args:
-            title: 제목
-            parent: 부모 위젯
-            ui: UI 객체
-        """
         super().__init__(title, parent)
         self.ui = ui
         self.move_gbox = None
@@ -125,11 +119,6 @@ class SetHomeTap:
     홈 화면의 시장 지표 탭을 설정합니다.
     """
     def __init__(self, ui_class, wc):
-        """홈 탭 설정을 초기화합니다.
-        Args:
-            ui_class: UI 클래스
-            wc: 위젯 생성자
-        """
         self.ui = ui_class
         self.wc = wc
         self.set()

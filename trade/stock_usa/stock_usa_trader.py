@@ -1,6 +1,7 @@
 
 import sys
 from PyQt5.QtCore import QTimer
+from traceback import format_exc
 from trade.restapi_ls import LsRestAPI
 from PyQt5.QtWidgets import QApplication
 from trade.restapi_lsdata import LsRestData
@@ -15,12 +16,6 @@ class StockUsaTrader(BaseTrader):
     """
 
     def __init__(self, qlist, dict_set, market_infos):
-        """트레이더를 초기화합니다.
-        Args:
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_infos (list): 마켓 정보 리스트
-        """
         super().__init__(qlist, dict_set, market_infos)
 
         app = QApplication(sys.argv)
@@ -131,20 +126,25 @@ class StockUsaTrader(BaseTrader):
         if body is None:
             return
 
-        체결유형 = body['sOrdxctPtnCode']
-        if 체결유형 in (11, 12, 13):
-            매매구분 = body['sOrdPtnCode']
-            주문구분 = LsRestData.해외주식주문체결코드[매매구분]
-            체결구분 = LsRestData.해외주식주문체결코드[체결유형]
-            종목코드 = body['sShtnIsuNo']
-            주문수량 = int(body['sOrdQty'])
-            체결수량 = int(body['sExecQty'])
-            미체결수량 = int(body['sUnercQty'])
-            체결가격 = float(body['sExecPrc'])
-            주문가격 = float(body['sOrdPrc'])
-            체결시간 = f"{self.str_today}{int(int(body['sExecTime']) / 1000)}"
-            주문번호 = body['sOrdNo']
-            self._update_chejan_data(주문구분, 체결구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호)
+        try:
+            체결유형 = body['sOrdxctPtnCode']
+            if 체결유형 in (11, 12, 13):
+                매매구분 = body['sOrdPtnCode']
+                주문구분 = LsRestData.해외주식주문체결코드[매매구분]
+                체결구분 = LsRestData.해외주식주문체결코드[체결유형]
+                종목코드 = body['sShtnIsuNo']
+                주문수량 = int(body['sOrdQty'])
+                체결수량 = int(body['sExecQty'])
+                미체결수량 = int(body['sUnercQty'])
+                체결가격 = float(body['sExecPrc'])
+                주문가격 = float(body['sOrdPrc'])
+                체결시간 = f"{self.str_today}{int(int(body['sExecTime']) / 1000)}"
+                주문번호 = body['sOrdNo']
+                self._update_chejan_data(
+                    주문구분, 체결구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
+                )
+        except Exception:
+            self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
         """매수 주문 가격을 반환합니다.

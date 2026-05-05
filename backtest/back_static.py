@@ -103,37 +103,6 @@ def get_back_load_code_query(is_tick, code, days, starttime, endtime):
     return query
 
 
-def get_back_load_code_query_batch(is_tick, code_list, days, starttime, endtime):
-    """여러 종목에 대한 배치 쿼리를 생성합니다 (UNION ALL).
-    Args:
-        is_tick: 틱 데이터 여부
-        code_list: 종목 코드 리스트
-        days: 일자 리스트
-        starttime: 시작 시간
-        endtime: 종료 시간
-    Returns:
-        배치 SQL 쿼리 문자열
-    """
-    conditions = []
-    for day in days:
-        if is_tick:
-            sindex = day * 1000000 + starttime
-            eindex = day * 1000000 + endtime
-        else:
-            sindex = day * 10000 + int(starttime / 100)
-            eindex = day * 10000 + int(endtime / 100)
-        conditions.append(f"(`index` >= {sindex} AND `index` <= {eindex})")
-    where_clause = " OR ".join(conditions)
-
-    subqueries = []
-    for code in code_list:
-        subquery = f"SELECT '{code}' as code, * FROM '{code}' WHERE {where_clause}"
-        subqueries.append(subquery)
-
-    query = " UNION ALL ".join(subqueries)
-    return query
-
-
 def get_moneytop_query(is_tick, startday, endday, starttime, endtime):
     """거래대금 순위 쿼리를 생성합니다.
     Args:

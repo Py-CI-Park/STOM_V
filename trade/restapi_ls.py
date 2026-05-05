@@ -203,7 +203,8 @@ class LsRestAPI:
             return {}, [], []
 
     def get_code_info_future_night(self):
-        """야간선물종목정보 ['구분'], 구분: 'NF' (코스피200선물), 'NQF' (코스닥150선물)"""
+        """야간선물종목정보 ['구분'], 파생상품증거금조회 ['종목대분류코드', '종목중분류코드']
+        구분: 'NF' (코스피200), 'NMF' (미니코스피200), 'NQF' (코스닥150)"""
         try:
             dict_data = {}
             dict_expcode = {}

@@ -11,10 +11,6 @@ class CrossHair:
     차트 위에 십자선을 표시합니다.
     """
     def __init__(self, ui):
-        """십자선을 초기화합니다.
-        Args:
-            ui: UI 객체
-        """
         self.ui = ui
 
     def crosshair(self, real, is_min, pg01, pg02, pg03, pg04, pg05, pg06, pg07=None, pg08=None,

@@ -43,12 +43,6 @@ class UpbitRestAPI:
     업비트 시장 데이터를 REST API로 수신합니다.
     """
     def __init__(self, access, secret, windowQ):
-        """RESTAPI를 초기화합니다.
-        Args:
-            access: 접근 키
-            secret: 시크릿 키
-            windowQ: 윈도우 큐
-        """
         self.access  = access
         self.secret  = secret
         self.windowQ = windowQ
@@ -191,11 +185,6 @@ class UpbitWebSocketReceiver(QThread):
     signal = pyqtSignal(dict)
 
     def __init__(self, codes, windowQ):
-        """수신기를 초기화합니다.
-        Args:
-            codes: 종목 코드 리스트
-            windowQ: 윈도우 큐
-        """
         super().__init__()
         self.codes     = codes
         self.windowQ   = windowQ
@@ -297,10 +286,6 @@ class UpbitWebSocketTrader(QThread):
     signal = pyqtSignal(dict)
 
     def __init__(self, windowQ):
-        """트레이더를 초기화합니다.
-        Args:
-            windowQ: 윈도우 큐
-        """
         super().__init__()
         self.windowQ   = windowQ
         self.loop      = None

@@ -34,11 +34,6 @@ class CustomViewBox(pg.ViewBox):
     마우스 우클릭 호가창정보표시, 좌드레그 확대, 우클릭 확대복귀, 우드레그 X축 이동 기능을 제공합니다.
     """
     def __init__(self, *args, **kwds):
-        """커스텀 뷰박스를 초기화합니다.
-        Args:
-            *args: 가변 인자
-            **kwds: 키워드 인자
-        """
         pg.ViewBox.__init__(self, *args, **kwds)
         self.setMouseMode(self.RectMode)
         self.setMouseEnabled(x=False, y=False)
@@ -245,11 +240,6 @@ class AnimatedPushButton(QPushButton):
     마우스 오버 시 확대 애니메이션을 제공합니다.
     """
     def __init__(self, text, parent=None):
-        """애니메이션 푸시버튼을 초기화합니다.
-        Args:
-            text: 버튼 텍스트
-            parent: 부모 위젯
-        """
         super().__init__(text, parent)
         self.hover_animation = None
         self.original_geometry = None
@@ -310,13 +300,6 @@ class BounceButton(QPushButton):
     클릭 시 버튼이 커졌다가 원래대로 돌아가는 애니메이션을 제공합니다.
     """
     def __init__(self, text, parent=None, scale=1.20, duration=300):
-        """바운스 버튼을 초기화합니다.
-        Args:
-            text: 버튼 텍스트
-            parent: 부모 위젯
-            scale: 확대 비율
-            duration: 애니메이션 지속 시간
-        """
         super().__init__(text, parent)
         self.scale_factor = scale
         self.anim_duration = duration
@@ -361,11 +344,6 @@ class HoverComboBox(QComboBox):
 
     # noinspection PyUnresolvedReferences
     def __init__(self, parent=None, delay_ms=100):
-        """호버 콤보박스를 초기화합니다.
-        Args:
-            parent: 부모 위젯
-            delay_ms: 닫기 지연 시간
-        """
         super().__init__(parent)
         self._is_open = False
         self._is_mouse_over = False
@@ -427,8 +405,7 @@ class HoverComboBox(QComboBox):
 
     def hidePopup(self):
         """드롭다운을 닫습니다.
-        드롭다운이 닫히면 상태를 초기화합니다.
-        """
+        드롭다운이 닫히면 상태를 초기화합니다."""
         super().hidePopup()
         self._is_open = False
 
@@ -438,12 +415,6 @@ class HoverGroupBox(QGroupBox):
     마우스 오버 시 배경색이 변경됩니다.
     """
     def __init__(self, title, parent=None, duration=100):
-        """호버 그룹박스를 초기화합니다.
-        Args:
-            title: 그룹박스 제목
-            parent: 부모 위젯
-            duration: 애니메이션 지속 시간
-        """
         super().__init__(title, parent)
         self._normal_color = f'rgb({color_gb_nm.red()}, {color_gb_nm.green()}, {color_gb_nm.blue()})'
         self._hover_color = f'rgb({color_gb_hv.red()}, {color_gb_hv.green()}, {color_gb_hv.blue()})'
@@ -510,11 +481,6 @@ class FixedColumnTableWidget(QTableWidget):
     첫번째 칼럼과 동일한 별도의 자식테이블을 만들어서 부모테이블과 동기화합니다.
     """
     def __init__(self, parent=None, clicked=None):
-        """고정 칼럼 테이블 위젯을 초기화합니다.
-        Args:
-            parent: 부모 위젯
-            clicked: 클릭 콜백 함수
-        """
         super().__init__(parent)
         self._first_column_table = None
         self._first_column_width = 0
@@ -755,10 +721,6 @@ class WidgetCreater:
     다양한 UI 위젯을 생성하고 설정합니다.
     """
     def __init__(self, ui_class):
-        """위젯 생성자를 초기화합니다.
-        Args:
-            ui_class: UI 클래스 인스턴스
-        """
         self.ui = ui_class
 
     def setQGroupBox(self, gname, parent, hover=False):

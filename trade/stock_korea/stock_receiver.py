@@ -1,9 +1,11 @@
 
 import sys
 from PyQt5.QtCore import QTimer
+from traceback import format_exc
 from trade.restapi_ls import LsRestData
 from PyQt5.QtWidgets import QApplication
 from utility.static_method.static import now
+from utility.settings.setting_base import ui_num
 from trade.restapi_ls import LsRestAPI, LsWebSocketReceiver
 from trade.base_receiver import BaseReceiver, MonitorReceivQ
 
@@ -14,12 +16,6 @@ class StockReceiver(BaseReceiver):
     """
 
     def __init__(self, qlist, dict_set, market_infos):
-        """수신기를 초기화합니다.
-        Args:
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_infos (list): 마켓 정보 리스트
-        """
         super().__init__(qlist, dict_set, market_infos)
 
         app = QApplication(sys.argv)
@@ -65,71 +61,75 @@ class StockReceiver(BaseReceiver):
         if body is None:
             return
 
-        start = now()
-        tr_cd = data['header']['tr_cd']
-        if tr_cd == self.tr_cd_hoga:
-            int_hms = int(body['hotime'])
-            if int_hms < self.market_open or self.dict_set['전략종료시간'] < int_hms:
-                return
-            dt = int(f"{self.str_today}{int_hms}")
-            code = body['shcode']
-            hoga_seprice = [
-                float(body['offerho1']), float(body['offerho2']), float(body['offerho3']), float(body['offerho4']),
-                float(body['offerho5']), float(body['offerho6']), float(body['offerho7']), float(body['offerho8']),
-                float(body['offerho9']), float(body['offerho10'])
-            ]
-            hoga_buprice = [
-                float(body['bidho1']), float(body['bidho2']), float(body['bidho3']), float(body['bidho4']),
-                float(body['bidho5']), float(body['bidho6']), float(body['bidho7']), float(body['bidho8']),
-                float(body['bidho9']), float(body['bidho10'])
-            ]
-            hoga_samount = [
-                float(body['krx_offerrem1']), float(body['krx_offerrem2']), float(body['krx_offerrem3']),
-                float(body['krx_offerrem4']), float(body['krx_offerrem5']), float(body['krx_offerrem6']),
-                float(body['krx_offerrem7']), float(body['krx_offerrem8']), float(body['krx_offerrem9']),
-                float(body['krx_offerrem10'])
-            ]
-            hoga_bamount = [
-                int(body['krx_bidrem1']), int(body['krx_bidrem2']), int(body['krx_bidrem3']), int(body['krx_bidrem4']),
-                int(body['krx_bidrem5']), int(body['krx_bidrem6']), int(body['krx_bidrem7']), int(body['krx_bidrem8']),
-                int(body['krx_bidrem9']), int(body['krx_bidrem10'])
-            ]
-            hoga_tamount = [
-                int(body['krx_totofferrem']), int(body['krx_totbidrem'])
-            ]
-            self._update_hoga_data(dt, code, hoga_seprice, hoga_buprice, hoga_samount,
-                                   hoga_bamount, hoga_tamount, start)
+        try:
+            start = now()
+            tr_cd = data['header']['tr_cd']
+            if tr_cd == self.tr_cd_hoga:
+                int_hms = int(body['hotime'])
+                if int_hms < self.market_open or self.dict_set['전략종료시간'] < int_hms:
+                    return
+                dt = int(f"{self.str_today}{int_hms}")
+                code = body['shcode']
+                hoga_seprice = [
+                    float(body['offerho1']), float(body['offerho2']), float(body['offerho3']), float(body['offerho4']),
+                    float(body['offerho5']), float(body['offerho6']), float(body['offerho7']), float(body['offerho8']),
+                    float(body['offerho9']), float(body['offerho10'])
+                ]
+                hoga_buprice = [
+                    float(body['bidho1']), float(body['bidho2']), float(body['bidho3']), float(body['bidho4']),
+                    float(body['bidho5']), float(body['bidho6']), float(body['bidho7']), float(body['bidho8']),
+                    float(body['bidho9']), float(body['bidho10'])
+                ]
+                hoga_samount = [
+                    float(body['krx_offerrem1']), float(body['krx_offerrem2']), float(body['krx_offerrem3']),
+                    float(body['krx_offerrem4']), float(body['krx_offerrem5']), float(body['krx_offerrem6']),
+                    float(body['krx_offerrem7']), float(body['krx_offerrem8']), float(body['krx_offerrem9']),
+                    float(body['krx_offerrem10'])
+                ]
+                hoga_bamount = [
+                    int(body['krx_bidrem1']), int(body['krx_bidrem2']), int(body['krx_bidrem3']), int(body['krx_bidrem4']),
+                    int(body['krx_bidrem5']), int(body['krx_bidrem6']), int(body['krx_bidrem7']), int(body['krx_bidrem8']),
+                    int(body['krx_bidrem9']), int(body['krx_bidrem10'])
+                ]
+                hoga_tamount = [
+                    int(body['krx_totofferrem']), int(body['krx_totbidrem'])
+                ]
+                self._update_hoga_data(dt, code, hoga_seprice, hoga_buprice, hoga_samount,
+                                       hoga_bamount, hoga_tamount, start)
 
-        elif tr_cd == self.tr_cd_trade:
-            market = body['exchname']
-            if market != 'KRX':
-                return
-            int_hms = int(body['chetime'])
-            if int_hms < self.market_open or self.dict_set['전략종료시간'] < int_hms:
-                return
-            dt = int(f"{self.str_today}{int_hms}")
-            code  = body['shcode']
-            c     = int(body['price'])
-            o     = int(body['open'])
-            h     = int(body['high'])
-            low   = int(body['low'])
-            v     = int(body['cvolume'])
-            per   = float(body['drate'])
-            dm    = int(body['value'])
-            cg    = body['cgubun']
-            tbids = int(body['msvolume'])
-            tasks = int(body['mdvolume'])
-            ch    = float(body['cpower'])
-            self._update_tick_data(dt, code, c, o, h, low, per, dm, v, cg, tbids, tasks, ch)
+            elif tr_cd == self.tr_cd_trade:
+                market = body['exchname']
+                if market != 'KRX':
+                    return
+                int_hms = int(body['chetime'])
+                if int_hms < self.market_open or self.dict_set['전략종료시간'] < int_hms:
+                    return
+                dt = int(f"{self.str_today}{int_hms}")
+                code  = body['shcode']
+                c     = int(body['price'])
+                o     = int(body['open'])
+                h     = int(body['high'])
+                low   = int(body['low'])
+                v     = int(body['cvolume'])
+                per   = float(body['drate'])
+                dm    = int(body['value'])
+                cg    = body['cgubun']
+                tbids = int(body['msvolume'])
+                tasks = int(body['mdvolume'])
+                ch    = float(body['cpower'])
+                self._update_tick_data(dt, code, c, o, h, low, per, dm, v, cg, tbids, tasks, ch)
 
-        elif tr_cd == self.tr_cd_vi:
-            if body['krx_vi_gubun'] in ('1', '3'):
-                code = body['ex_shcode'][-6:]
-                self._update_vi(code)
+            elif tr_cd == self.tr_cd_vi:
+                if body['krx_vi_gubun'] in ('1', '3'):
+                    code = body['ex_shcode'][-6:]
+                    self._update_vi(code)
 
-        elif tr_cd == self.tr_cd_oper:
-            if body['jangubun'] == self.oper_gubun:
-                operation = int(body['jstatus'])
-                if operation in LsRestData.장운영상태:
-                    self.operation = operation
-                    self.soundQ.put(LsRestData.장운영상태[self.operation])
+            elif tr_cd == self.tr_cd_oper:
+                if body['jangubun'] == self.oper_gubun:
+                    operation = int(body['jstatus'])
+                    if operation in LsRestData.장운영상태:
+                        self.operation = operation
+                        self.soundQ.put(LsRestData.장운영상태[self.operation])
+
+        except Exception:
+            self.windowQ.put((ui_num['시스템로그'], format_exc()))

@@ -58,7 +58,7 @@ def backengine_start(ui):
         ui: UI 클래스 인스턴스
     """
     from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
-    ui.back_engining = True
+    ui.backengine_starting = True
     ui.startday   = int(ui.be_dateEdittttt_01.date().toString('yyyyMMdd'))
     ui.endday     = int(ui.be_dateEdittttt_02.date().toString('yyyyMMdd'))
     ui.starttime  = int(ui.be_lineEdittttt_01.text())
@@ -208,8 +208,8 @@ def backengine_start(ui):
     for q in ui.back_eques:
         q.put(('공유데이터', ui.back_count, ui.shared_info))
 
-    ui.back_engining = False
-    ui.backtest_engine = True
+    ui.backengine_starting = False
+    ui.backengine_running  = True
     ui.windowQ.put((ui_num['백테엔진'], '백테엔진 준비 완료'))
 
 
@@ -335,14 +335,13 @@ def clear_backtestQ(ui):
             ui.totalQ.get()
 
 
-def backtest_process_kill(ui, coin, enginekill):
+def backtest_process_kill(ui, enginekill):
     """백테스트 프로세스를 중지합니다.
     Args:
         ui: UI 클래스 인스턴스
-        coin: 코인 여부
         enginekill: 엔진 중지 여부
     """
-    if not ui.backtest_engine:
+    if not ui.backengine_running:
         QMessageBox.critical(ui, '오류 알림', '백테스트 엔진이 미실행중입니다.\n')
         return
 
@@ -359,7 +358,7 @@ def backtest_process_kill(ui, coin, enginekill):
             if count == ui.multi:
                 break
 
-    ui.windowQ.put((ui_num['백테스트' if coin else '백테스트'], '백테스트 중지 완료'))
+    ui.windowQ.put((ui_num['백테스트'], '백테스트 중지 완료'))
     ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
     ui.ssicon_alert = False
     ui.main_btn_list[3].setIcon(ui.icon_stgs)

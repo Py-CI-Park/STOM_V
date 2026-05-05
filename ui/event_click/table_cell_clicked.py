@@ -133,8 +133,6 @@ def cell_clicked_05(ui, row, col):
     tableWidget = None
     if ui.focusWidget() == ui.ss_tableWidget_01 or ui.focusWidget().parentWidget() == ui.ss_tableWidget_01:
         tableWidget = ui.ss_tableWidget_01
-    elif ui.focusWidget() == ui.cs_tableWidget_01 or ui.focusWidget().parentWidget() == ui.cs_tableWidget_01:
-        tableWidget = ui.cs_tableWidget_01
     if tableWidget is None:
         return
 
@@ -160,7 +158,7 @@ def cell_clicked_05(ui, row, col):
     ui.ct_lineEdittttt_04.setText(code)
     ui.ct_lineEdittttt_05.setText(name)
     ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
-    tickcount = int(ui.cvjb_lineEditt_05.text()) if coin else int(ui.svjb_lineEditt_05.text())
+    tickcount = int(ui.svjb_lineEditt_05.text())
     starttime = ui.ct_lineEdittttt_01.text()
     endtime   = ui.ct_lineEdittttt_02.text()
     if len(starttime) < 6 or len(endtime) < 6:

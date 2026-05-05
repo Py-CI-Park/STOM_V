@@ -10,14 +10,6 @@ class AreaItem(pg.GraphicsObject):
     관심종목 영역을 그립니다.
     """
     def __init__(self, ar, ymin, ymax, xticks, gubun=0):
-        """영역 아이템을 초기화합니다.
-        Args:
-            ar: 관심종목 배열
-            ymin: 최소 y 좌표
-            ymax: 최대 y 좌표
-            xticks: x축 틱
-            gubun: 구분
-        """
         pg.GraphicsObject.__init__(self)
         self.setZValue(0)
         self.picture = QPicture()
@@ -91,13 +83,6 @@ class CandlestickItem(pg.GraphicsObject):
     캔들스틱 차트를 그립니다.
     """
     def __init__(self, ar, idxs, xticks, gubun=0):
-        """캔들스틱 아이템을 초기화합니다.
-        Args:
-            ar: 데이터 배열
-            idxs: 인덱스 리스트
-            xticks: x축 틱
-            gubun: 구분
-        """
         pg.GraphicsObject.__init__(self)
         self.setZValue(20)
         self.picture = QPicture()
@@ -163,13 +148,6 @@ class VolumeBarItem(pg.GraphicsObject):
     거래량 바 차트를 그립니다.
     """
     def __init__(self, ar, idxs, xticks, gubun=0):
-        """볼륨바 아이템을 초기화합니다.
-        Args:
-            ar: 데이터 배열
-            idxs: 인덱스 리스트
-            xticks: x축 틱
-            gubun: 구분
-        """
         pg.GraphicsObject.__init__(self)
         self.setZValue(20)
         self.picture = QPicture()

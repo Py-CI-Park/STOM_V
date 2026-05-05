@@ -8,14 +8,14 @@ class BackEngineBinanceOms(BackEngineFutureOms):
     BackEngineFutureOms를 상속받아 바이낸스 시장 특화 OMS 로직을 구현합니다.
     """
 
-    def _get_hogaunit(self, 호가빼기데이터):
+    def _get_hogaunit(self, 종목코드):
         """호가 단위를 반환합니다.
         Args:
-            호가빼기데이터: 호가 빼기 데이터
+            종목코드: 종목 코드
         Returns:
             호가 단위
         """
-        return min(x for x in 호가빼기데이터 if x > 0)
+        return self.dict_info[종목코드]['호가단위']
 
     def _set_buy_count(self, betting, 현재가, 매수가, oc_ratio):
         """매수 수량을 설정합니다.

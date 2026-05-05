@@ -13,11 +13,6 @@ class SetMainMenu:
     메인 윈도우의 메뉴 버튼 및 단축키를 설정합니다.
     """
     def __init__(self, ui_class, wc):
-        """메인 메뉴 설정을 초기화합니다.
-        Args:
-            ui_class: UI 클래스
-            wc: 위젯 생성자
-        """
         self.ui = ui_class
         self.wc = wc
         self.set()

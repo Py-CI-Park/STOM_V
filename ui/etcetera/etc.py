@@ -87,7 +87,7 @@ def update_dictset(ui):
     if ui.telegram.isRunning():
         ui.teleQ.put(('설정변경', ui.dict_set))
 
-    if ui.backtest_engine:
+    if ui.backengine_running:
         for bpq in ui.back_eques:
             bpq.put(('설정변경', ui.dict_set))
 

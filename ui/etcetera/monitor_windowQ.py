@@ -15,10 +15,6 @@ class MonitorWindowQ(QThread):
     signal5 = pyqtSignal(str)
 
     def __init__(self, windowQ):
-        """윈도우 큐 모니터 스레드를 초기화합니다.
-        Args:
-            windowQ: 윈도우 큐
-        """
         super().__init__()
         self.windowQ = windowQ
         self.df_list = [None, None, None, None, None, None, None, None]

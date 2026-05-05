@@ -24,11 +24,6 @@ class SetStrategyTab:
     매수/매도 전략 및 최적화 탭을 설정합니다.
     """
     def __init__(self, ui_class, wc):
-        """전략 탭 설정을 초기화합니다.
-        Args:
-            ui_class: UI 클래스
-            wc: 위젯 생성자
-        """
         self.ui = ui_class
         self.wc = wc
         self.set()

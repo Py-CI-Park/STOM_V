@@ -14,11 +14,6 @@ class SetTable:
     거래 내역, 집계, 라이브 데이터 등을 표시하는 테이블 위젯을 설정합니다.
     """
     def __init__(self, ui_class, wc):
-        """테이블 위젯 설정을 초기화합니다.
-        Args:
-            ui_class: UI 클래스
-            wc: 위젯 생성자
-        """
         self.ui = ui_class
         self.wc = wc
         self.set()

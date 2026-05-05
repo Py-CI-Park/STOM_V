@@ -1,6 +1,7 @@
 
 import sys
 from PyQt5.QtCore import QTimer
+from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
 from utility.settings.setting_base import ui_num
 from trade.base_trader import BaseTrader, MonitorTraderQ
@@ -13,12 +14,6 @@ class UpbitTrader(BaseTrader):
     BaseTrader를 상속받아 업비트 시장 주문을 실행합니다.
     """
     def __init__(self, qlist, dict_set, market_infos):
-        """트레이더를 초기화합니다.
-        Args:
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_infos (list): 마켓 정보 리스트
-        """
         super().__init__(qlist, dict_set, market_infos)
 
         app = QApplication(sys.argv)
@@ -139,21 +134,26 @@ class UpbitTrader(BaseTrader):
         Args:
             data: 데이터
         """
-        if data['type'] == 'myOrder':
-            체결유형 = data['state']
-            if 체결유형 in ('trade', 'cancel'):
-                매매구분 = data['ask_bid']
-                주문구분 = self.업비트체결코드[매매구분]
-                체결구분 = self.업비트체결코드[체결유형]
-                종목코드 = data['code']
-                체결수량 = float(data['volume'])
-                미체결수량 = float(data['remaining_volume'])
-                체결된수량 = float(data['executed_volume'])
-                주문수량 = round(미체결수량 + 체결된수량, 8)
-                체결가격 = 주문가격 = float(data['price'])
-                체결시간 = str_ymdhms_utc(data['timestamp'])
-                주문번호 = data['uuid']
-                self._update_chejan_data(주문구분, 체결구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호)
+        try:
+            if data['type'] == 'myOrder':
+                체결유형 = data['state']
+                if 체결유형 in ('trade', 'cancel'):
+                    매매구분 = data['ask_bid']
+                    주문구분 = self.업비트체결코드[매매구분]
+                    체결구분 = self.업비트체결코드[체결유형]
+                    종목코드 = data['code']
+                    체결수량 = float(data['volume'])
+                    미체결수량 = float(data['remaining_volume'])
+                    체결된수량 = float(data['executed_volume'])
+                    주문수량 = round(미체결수량 + 체결된수량, 8)
+                    체결가격 = 주문가격 = float(data['price'])
+                    체결시간 = str_ymdhms_utc(data['timestamp'])
+                    주문번호 = data['uuid']
+                    self._update_chejan_data(
+                        주문구분, 체결구분, 종목코드, 주문수량, 체결수량, 미체결수량, 체결가격, 주문가격, 체결시간, 주문번호
+                    )
+        except Exception:
+            self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
         """매수 주문 가격을 반환합니다.

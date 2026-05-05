@@ -7,10 +7,6 @@ class ImportProgressHook:
     모듈 임포트 시 스플래시 화면에 진행률을 표시합니다.
     """
     def __init__(self, splash):
-        """임포트 진행률 훅을 초기화합니다.
-        Args:
-            splash: 스플래시 화면 객체
-        """
         self.splash = splash
         self.original_import = None
         self.modules = [

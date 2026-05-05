@@ -17,14 +17,6 @@ class Total:
     다양한 조건 조합을 테스트하여 최적 조건을 찾습니다.
     """
     def __init__(self, wq, tq, mq, bstq_list, dict_set):
-        """조건 최적화를 초기화합니다.
-        Args:
-            wq: 윈도우 큐
-            tq: 트레이더 큐
-            mq: 메시지 큐
-            bstq_list: 백테스트 전략 큐 리스트
-            dict_set: 설정 딕셔너리
-        """
         self.wq           = wq
         self.tq           = tq
         self.mq           = mq
@@ -166,21 +158,6 @@ class OptimizeConditions:
     다양한 조건 조합을 테스트하여 최적 조건을 찾습니다.
     """
     def __init__(self, sc, wq, bq, sq, tq, lq, beq_list, bstq_list, multi, backname, dict_set, market_infos):
-        """조건 최적화 엔진을 초기화합니다.
-        Args:
-            sc: 공유 카운터
-            wq: 윈도우 큐
-            bq: 백테스트 큐
-            sq: 전략 큐
-            tq: 트레이더 큐
-            lq: 로그 큐
-            beq_list: 백테스트 엔진 큐 리스트
-            bstq_list: 백테스트 전략 큐 리스트
-            multi: 멀티프로세스 여부
-            backname: 백테스트 이름
-            dict_set: 설정 딕셔너리
-            market_infos: 마켓 정보 리스트
-        """
         self.shared_cnt   = sc
         self.wq           = wq
         self.bq           = bq

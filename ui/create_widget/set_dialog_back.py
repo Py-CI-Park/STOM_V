@@ -16,11 +16,6 @@ class SetDialogBack:
     백테스트 엔진과 스케줄러 다이얼로그를 설정합니다.
     """
     def __init__(self, ui_class, wc):
-        """백테스트 다이얼로그 설정을 초기화합니다.
-        Args:
-            ui_class: UI 클래스
-            wc: 위젯 생성자
-        """
         self.ui = ui_class
         self.wc = wc
         self.set()

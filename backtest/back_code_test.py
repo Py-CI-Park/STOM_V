@@ -14,15 +14,6 @@ class BackCodeTest(QThread):
     전략 코드의 문법을 검증합니다.
     """
     def __init__(self, testQ, windowQ, stg, fm_list=None, var=None, ga=False):
-        """백테스트 코드 테스트를 초기화합니다.
-        Args:
-            testQ: 테스트 큐
-            windowQ: 윈도우 큐
-            stg: 전략 코드
-            fm_list: 지표 리스트
-            var: 변수 코드
-            ga: 유전 알고리즘 여부
-        """
         super().__init__()
         self.testQ       = testQ
         self.windowQ     = windowQ

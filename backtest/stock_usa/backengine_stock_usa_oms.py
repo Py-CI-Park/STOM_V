@@ -7,10 +7,10 @@ class BackEngineStockUsaOms(BackEngineBaseOms):
     """미국 주식 OMS 백테스트 엔진 클래스입니다.
     BackEngineBaseOms를 상속받아 미국 주식 시장 특화 OMS 로직을 구현합니다.
     """
-    def _get_hogaunit(self, 주문가격또는종목코드):
+    def _get_hogaunit(self, 주문가격):
         """호가 단위를 반환합니다.
         Args:
-            주문가격또는종목코드: 주문 가격 또는 종목 코드
+            주문가격: 주문 가격
         Returns:
             호가 단위
         """

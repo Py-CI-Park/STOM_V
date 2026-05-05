@@ -28,10 +28,6 @@ class UpdateTablewidget:
     다양한 데이터를 테이블 위젯에 표시합니다.
     """
     def __init__(self, ui):
-        """테이블 위젯 업데이트를 초기화합니다.
-        Args:
-            ui: UI 클래스 인스턴스
-        """
         self.ui = ui
 
         self.dict_table = {

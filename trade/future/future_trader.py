@@ -1,6 +1,7 @@
 
 import sys
 from PyQt5.QtCore import QTimer
+from traceback import format_exc
 from trade.restapi_ls import LsRestAPI
 from PyQt5.QtWidgets import QApplication
 from trade.restapi_lsdata import LsRestData
@@ -15,12 +16,6 @@ class FutureTrader(BaseTrader):
     """
 
     def __init__(self, qlist, dict_set, market_infos):
-        """트레이더를 초기화합니다.
-        Args:
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_infos (list): 마켓 정보 리스트
-        """
         super().__init__(qlist, dict_set, market_infos)
 
         app = QApplication(sys.argv)
@@ -85,9 +80,15 @@ class FutureTrader(BaseTrader):
                     주문유형 = self.dict_set['매수주문유형' if 주문구분 in ('BUY_LONG', 'SELL_SHORT') else '매도주문유형']
                 else:
                     주문유형 = 수동주문유형
+            """
+            def order_future(self, 종목코드, 주문구분, 주문가격, 주문수량, 호가유형):
+            def order_future_night(self, 종목코드, 주문구분, 주문가격, 주문수량, 호가유형):
+            """
+            if self.market_gubun == 6:
+                주문번호, 응답메시지 = self.ls.order_future(종목코드, 주문구분, 주문가격, 주문수량, 주문유형)
+            else:
+                주문번호, 응답메시지 = self.ls.order_future_night(종목코드, 주문구분, 주문가격, 주문수량, 주문유형)
 
-            """def order_future(self, 종목코드, 주문구분, 주문가격, 주문수량, 호가유형):"""
-            주문번호, 응답메시지 = self.ls.order_future(종목코드, 주문구분, 주문가격, 주문수량, 주문유형)
             if self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
                 index = self._get_index()
                 if 주문구분 in ('BUY_LONG', 'SELL_SHORT'):
@@ -109,14 +110,26 @@ class FutureTrader(BaseTrader):
                 ))
 
         elif 'MODIFY' in 주문구분:
-            """def order_modify_future(self, 종목코드, 원주문번호, 주문가격, 주문수량, 호가유형):"""
+            """
+            def order_modify_future(self, 종목코드, 원주문번호, 주문가격, 주문수량, 호가유형):
+            def order_modify_future_night(self, 종목코드, 원주문번호, 주문가격, 주문수량, 호가유형):
+            """
             주문유형 = self.dict_set['매수주문유형' if 주문구분 in ('BUY_LONG_MODIFY', 'SELL_SHORT_MODIFY') else '매도주문유형']
-            주문번호, 응답메시지 = self.ls.order_modify_future(종목코드, 원주문번호, 주문가격, 주문수량, 주문유형)
+            if self.market_gubun == 6:
+                주문번호, 응답메시지 = self.ls.order_modify_future(종목코드, 원주문번호, 주문가격, 주문수량, 주문유형)
+            else:
+                주문번호, 응답메시지 = self.ls.order_modify_future_night(종목코드, 원주문번호, 주문가격, 주문수량, 주문유형)
             self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
 
         elif 'CANCEL' in 주문구분:
-            """def order_cancel_future(self, 종목코드, 원주문번호, 주문수량):"""
-            주문번호, 응답메시지 = self.ls.order_cancel_future(종목코드, 원주문번호, 주문수량)
+            """
+            def order_cancel_future(self, 종목코드, 원주문번호, 주문수량):
+            def order_cancel_future_night(self, 종목코드, 원주문번호, 주문수량):
+            """
+            if self.market_gubun == 6:
+                주문번호, 응답메시지 = self.ls.order_cancel_future(종목코드, 원주문번호, 주문수량)
+            else:
+                주문번호, 응답메시지 = self.ls.order_cancel_future_night(종목코드, 원주문번호, 주문수량)
             self._check_order_error(주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량)
 
         self.order_time = timedelta_sec(0.2)
@@ -131,25 +144,30 @@ class FutureTrader(BaseTrader):
         if body is None:
             return
 
-        tr_cd = body['tr_cd']
-        if tr_cd in ('C01', 'C02'):
-            체결유형 = '1'
-            체결구분 = LsRestData.선물주문체결코드[체결유형]
-            종목코드 = self.dict_expc[body['expcode']]
-            체결수량 = int(body['chevol'])
-            체결가격 = float(body['cheprice'])
-            체결시간 = f"{self.str_today}{int(int(body['chetime']) / 1000)}"
-            주문번호 = body['ordno']
-            self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
-        elif tr_cd in ('H01', 'H02'):
-            체결유형 = body['mocagb']
-            체결구분 = LsRestData.선물주문체결코드[체결유형]
-            종목코드 = self.dict_expc[body['expcode']]
-            체결수량 = int(body['qty'])
-            체결가격 = float(body['price'])
-            체결시간 = f"{self.str_today}{int(int(body['ordacpttm']) / 1000)}"
-            주문번호 = body['ordno']
-            self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
+        try:
+            tr_cd = body['tr_cd']
+            if tr_cd in ('C01', 'C02'):
+                체결유형 = '1'
+                체결구분 = LsRestData.선물주문체결코드[체결유형]
+                종목코드 = self.dict_expc[body['expcode']]
+                체결수량 = int(body['chevol'])
+                체결가격 = float(body['cheprice'])
+                체결시간 = f"{self.str_today}{int(int(body['chetime']) / 1000)}"
+                주문번호 = body['ordno']
+                self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
+
+            elif tr_cd in ('H01', 'H02'):
+                체결유형 = body['mocagb']
+                체결구분 = LsRestData.선물주문체결코드[체결유형]
+                종목코드 = self.dict_expc[body['expcode']]
+                체결수량 = int(body['qty'])
+                체결가격 = float(body['price'])
+                체결시간 = f"{self.str_today}{int(int(body['ordacpttm']) / 1000)}"
+                주문번호 = body['ordno']
+                self._update_chejan_data_future(체결구분, 종목코드, 체결수량, 체결가격, 체결시간, 주문번호)
+
+        except Exception:
+            self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def _get_order_buy_price(self, 종목코드, 주문구분, 주문가격):
         """매수 주문 가격을 반환합니다.

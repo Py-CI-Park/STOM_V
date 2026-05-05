@@ -83,8 +83,8 @@ def key_press_event(ui, event):
                 df.set_index('index', inplace=True)
                 show_dialog_graph(ui, df)
 
-        elif ui.focusWidget() in (ui.ss_tableWidget_01, ui.cs_tableWidget_01):
-            tableWidget = ui.ss_tableWidget_01 if ui.focusWidget() == ui.ss_tableWidget_01 else ui.cs_tableWidget_01
+        elif ui.focusWidget() == ui.ss_tableWidget_01:
+            tableWidget = ui.ss_tableWidget_01
             row  = tableWidget.currentIndex().row()
             item = tableWidget.item(row, 0)
             if item is not None:

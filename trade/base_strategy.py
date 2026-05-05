@@ -23,12 +23,7 @@ class BaseStrategy(StgGlobalsFunc):
     """
 
     def __init__(self, gubun, qlist, dict_set, market_info):
-        """전략 엔진을 초기화합니다.
-        Args:
-            gubun (int): 전략 구분 번호
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_info (list): 마켓 정보 리스트 [마켓구분, 마켓정보]
+        """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
            0        1       2      3       4      5      6      7       8        9       10     11
         """
@@ -1377,11 +1372,11 @@ class BaseStrategy(StgGlobalsFunc):
             self.windowQ.put((ui_num['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
 
     def _get_parameter_area(self, rw):
-        """파라미터 영역을 반환합니다.
+        """구간연산 팩터의 값을 계산합니다.
         Args:
-            rw: 로우
+            rw: 롤링윈도우
         Returns:
-            파라미터 영역
+            구간연산 팩터 리스트
         """
         if self.is_tick:
             return [
@@ -1405,7 +1400,7 @@ class BaseStrategy(StgGlobalsFunc):
             ]
 
     def _update_high_low(self, 종목코드, 현재가또는분봉고가, 분봉저가=None):
-        """고저를 업데이트합니다.
+        """고가 및 저가의 가격과 인덱스를 업데이트합니다.
         Args:
             종목코드: 종목 코드
             현재가또는분봉고가: 현재가 또는 분봉 고가

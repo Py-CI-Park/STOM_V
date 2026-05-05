@@ -9,7 +9,6 @@ from utility.static_method.static import read_key, write_key
 
 def database_check():
     """데이터베이스를 초기화하고 검사합니다.
-
     필요한 디렉토리와 데이터베이스 파일을 생성하고,
     설정 테이블을 초기화합니다.
     """

@@ -11,10 +11,6 @@ class UpdateTelegramMsg:
     텔레그램 버튼 메시지를 수신하여 버튼명에 맞는 스크린샷 보내기를 수행합니다.
     """
     def __init__(self, ui):
-        """텍스트 에디터 업데이트를 초기화합니다.
-        Args:
-            ui: UI 클래스 인스턴스
-        """
         self.ui = ui
 
     def send_screenshot(self, msg):

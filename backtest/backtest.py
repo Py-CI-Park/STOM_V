@@ -20,32 +20,6 @@ class BackTest:
     def __init__(self, sc, wq, sq, tq, lq, teleQ, beq_list, bstq_list, backname, dict_set, market_infos, betting,
                  avgtime, startday, endday, starttime, endtime, buystg_name, sellstg_name, back_count, blacklist,
                  schedul, back_club):
-        """백테스트를 초기화합니다.
-        Args:
-            sc: 공유 카운터
-            wq: 윈도우 큐
-            sq: 전략 큐
-            tq: 트레이더 큐
-            lq: 로그 큐
-            teleQ: 텔레그램 큐
-            beq_list: 백테스트 엔진 큐 리스트
-            bstq_list: 백테스트 전략 큐 리스트
-            backname: 백테스트 이름
-            dict_set: 설정 딕셔너리
-            market_infos: 마켓 정보 리스트
-            betting: 배팅 금액
-            avgtime: 평균 시간
-            startday: 시작 일자
-            endday: 종료 일자
-            starttime: 시작 시간
-            endtime: 종료 시간
-            buystg_name: 매수 전략 이름
-            sellstg_name: 매도 전략 이름
-            back_count: 백테스트 카운트
-            blacklist: 블랙리스트
-            schedul: 스케줄 여부
-            back_club: 백테스트 클럽
-        """
         self.shared_cnt   = sc
         self.wq           = wq
         self.sq           = sq

@@ -34,10 +34,6 @@ def update_back_progressbar(ui):
                 ui.ss_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
                 ui.ss_progressBar_01.setValue(curr_back_count)
                 ui.ss_progressBar_01.setRange(0, total_back_count)
-            else:
-                ui.cs_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
-                ui.cs_progressBar_01.setValue(curr_back_count)
-                ui.cs_progressBar_01.setRange(0, total_back_count)
 
 
 def update_progressbar(ui):
@@ -49,7 +45,7 @@ def update_progressbar(ui):
     ui.progressBarrr.setValue(ui.cpu_per)
     ui.counter = 0 if ui.counter == 599 else ui.counter + 1
 
-    ui.be_pushButtonnn_01.setStyleSheet(style_bc_by if ui.backtest_engine else style_bc_bt)
+    ui.be_pushButtonnn_01.setStyleSheet(style_bc_by if ui.backengine_running else style_bc_bt)
 
     ui.tt_pushButton.setStyleSheet(style_bc_bb if not ui.calendarWidgetttt.isVisible() and not ui.calendarWidgetttt.isVisible() else style_bc_st)
     ui.dd_pushButton.setStyleSheet(style_bc_bb if not ui.dialog_db.isVisible() else style_bc_st)

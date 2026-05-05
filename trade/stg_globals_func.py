@@ -10,7 +10,6 @@ class StgGlobalsFunc:
     """
 
     def __init__(self):
-        """전역 함수 클래스를 초기화합니다."""
         self.code             = None
         self.name             = None
         self.arry_code        = None

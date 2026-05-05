@@ -8,10 +8,6 @@ class SetIcon:
     UI에 사용되는 다양한 아이콘을 설정합니다.
     """
     def __init__(self, ui_class):
-        """아이콘 설정을 초기화합니다.
-        Args:
-            ui_class: UI 클래스
-        """
         self.ui = ui_class
         self.set()
 

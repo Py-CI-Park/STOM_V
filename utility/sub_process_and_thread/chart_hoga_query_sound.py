@@ -22,13 +22,9 @@ class ChartHogaQuerySound:
     호가 데이터를 처리하고 알림 소리를 재생합니다.
     """
     def __init__(self, qlist, dict_set, market_infos):
-        """차트 호가 쿼리 및 사운드를 초기화합니다.
+        """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
            0        1       2      3       4      5      6      7       8        9       10     11
-        Args:
-            qlist: 큐 리스트
-            dict_set: 설정 딕셔너리
-            market_infos: 시장 정보
         """
         self.windowQ      = qlist[0]
         self.soundQ       = qlist[1]
@@ -170,8 +166,7 @@ class ChartHogaQuerySound:
                 self.windowQ.put((ui_num['시스템로그'], format_exc()))
 
     def _init_hoga(self):
-        """호가 딕셔너리를 초기화합니다.
-        """
+        """호가 딕셔너리를 초기화합니다."""
         self.dict_hj = {
             '종목명': '', '현재가': 0., '등락율': 0., '시가총액': 0, 'UVI': 0., '시가': 0., '고가': 0., '저가': 0.
         }

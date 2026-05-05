@@ -13,7 +13,7 @@ def process_starter(ui):
     """
     inthms = int(str_hms())
 
-    if ui.dict_set['백테스케쥴실행'] and not ui.backtest_engine and now().weekday() == ui.dict_set['백테스케쥴요일']:
+    if ui.dict_set['백테스케쥴실행'] and not ui.backengine_running and now().weekday() == ui.dict_set['백테스케쥴요일']:
         if ui.int_time < ui.dict_set['백테스케쥴시간'] <= inthms:
             auto_back_schedule(ui, 1)
 

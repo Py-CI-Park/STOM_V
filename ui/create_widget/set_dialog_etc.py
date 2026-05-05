@@ -18,11 +18,6 @@ class SetDialogEtc:
     호가, 정보, 데이터베이스, 주문 등 다양한 다이얼로그를 설정합니다.
     """
     def __init__(self, ui_class, wc):
-        """기타 다이얼로그 설정을 초기화합니다.
-        Args:
-            ui_class: UI 클래스
-            wc: 위젯 생성자
-        """
         self.ui = ui_class
         self.wc = wc
         self.set()

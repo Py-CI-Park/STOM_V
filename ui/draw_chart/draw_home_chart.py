@@ -4,10 +4,6 @@ class DrawHomeChart:
     홈 화면에 시장 지표 차트를 그립니다.
     """
     def __init__(self, ui):
-        """홈 차트 그리기를 초기화합니다.
-        Args:
-            ui: UI 객체
-        """
         self.ui = ui
         self.pg_index = {
             '코스피': 0,

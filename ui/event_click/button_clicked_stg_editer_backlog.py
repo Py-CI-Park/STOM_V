@@ -127,4 +127,4 @@ def ssbutton_clicked_06(ui):
         QMessageBox.Yes | QMessageBox.No, QMessageBox.No
     )
     if buttonReply == QMessageBox.Yes:
-        backtest_process_kill(ui, False, False)
+        backtest_process_kill(ui, False)

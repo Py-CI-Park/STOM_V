@@ -3,7 +3,9 @@ import re
 import sys
 import binance
 from PyQt5.QtCore import QTimer
+from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
+from utility.settings.setting_base import ui_num
 from trade.restapi_binance import BinanceWebSocketReceiver
 from trade.base_receiver import BaseReceiver, MonitorReceivQ
 from utility.static_method.static import now, now_utc, str_ymd, str_ymdhms_utc
@@ -15,12 +17,6 @@ class BinanceReceiver(BaseReceiver):
     """
 
     def __init__(self, qlist, dict_set, market_info):
-        """수신기를 초기화합니다.
-        Args:
-            qlist (list): 큐 리스트
-            dict_set (dict): 설정 딕셔너리
-            market_info (list): 마켓 정보 리스트
-        """
         super().__init__(qlist, dict_set, market_info)
 
         app = QApplication(sys.argv)
@@ -100,48 +96,51 @@ class BinanceReceiver(BaseReceiver):
         if 'stream' not in data:
             return
 
-        stream_name = data['stream']
-        data = data['data']
+        try:
+            stream_name = data['stream']
+            data = data['data']
+            if '@depth10' in stream_name:
+                dt = int(str_ymdhms_utc(data['T']))
+                if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
+                    return
 
-        if '@depth10' in stream_name:
-            dt = int(str_ymdhms_utc(data['T']))
-            if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
-                return
+                receivetime = now()
+                code = data['s']
+                asks_data = data['a']
+                bids_data = data['b']
+                hoga_seprice = [
+                    float(asks_data[0][0]), float(asks_data[1][0]), float(asks_data[2][0]), float(asks_data[3][0]),
+                    float(asks_data[4][0]), float(asks_data[5][0]), float(asks_data[6][0]), float(asks_data[7][0]),
+                    float(asks_data[8][0]), float(asks_data[9][0])
+                ]
+                hoga_buprice = [
+                    float(bids_data[0][0]), float(bids_data[1][0]), float(bids_data[2][0]), float(bids_data[3][0]),
+                    float(bids_data[4][0]), float(bids_data[5][0]), float(bids_data[6][0]), float(bids_data[7][0]),
+                    float(bids_data[8][0]), float(bids_data[9][0])
+                ]
+                hoga_samount = [
+                    float(asks_data[0][1]), float(asks_data[1][1]), float(asks_data[2][1]), float(asks_data[3][1]),
+                    float(asks_data[4][1]), float(asks_data[5][1]), float(asks_data[6][1]), float(asks_data[7][1]),
+                    float(asks_data[8][1]), float(asks_data[9][1])
+                ]
+                hoga_bamount = [
+                    float(bids_data[0][1]), float(bids_data[1][1]), float(bids_data[2][1]), float(bids_data[3][1]),
+                    float(bids_data[4][1]), float(bids_data[5][1]), float(bids_data[6][1]), float(bids_data[7][1]),
+                    float(bids_data[8][1]), float(bids_data[9][1])
+                ]
+                hoga_tamount = [
+                    round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
+                ]
+                self._update_hoga_data(dt, code, hoga_seprice, hoga_buprice, hoga_samount,
+                                       hoga_bamount, hoga_tamount, receivetime)
 
-            receivetime = now()
-            code = data['s']
-            asks_data = data['a']
-            bids_data = data['b']
-            hoga_seprice = [
-                float(asks_data[0][0]), float(asks_data[1][0]), float(asks_data[2][0]), float(asks_data[3][0]),
-                float(asks_data[4][0]), float(asks_data[5][0]), float(asks_data[6][0]), float(asks_data[7][0]),
-                float(asks_data[8][0]), float(asks_data[9][0])
-            ]
-            hoga_buprice = [
-                float(bids_data[0][0]), float(bids_data[1][0]), float(bids_data[2][0]), float(bids_data[3][0]),
-                float(bids_data[4][0]), float(bids_data[5][0]), float(bids_data[6][0]), float(bids_data[7][0]),
-                float(bids_data[8][0]), float(bids_data[9][0])
-            ]
-            hoga_samount = [
-                float(asks_data[0][1]), float(asks_data[1][1]), float(asks_data[2][1]), float(asks_data[3][1]),
-                float(asks_data[4][1]), float(asks_data[5][1]), float(asks_data[6][1]), float(asks_data[7][1]),
-                float(asks_data[8][1]), float(asks_data[9][1])
-            ]
-            hoga_bamount = [
-                float(bids_data[0][1]), float(bids_data[1][1]), float(bids_data[2][1]), float(bids_data[3][1]),
-                float(bids_data[4][1]), float(bids_data[5][1]), float(bids_data[6][1]), float(bids_data[7][1]),
-                float(bids_data[8][1]), float(bids_data[9][1])
-            ]
-            hoga_tamount = [
-                round(sum(hoga_samount), 8), round(sum(hoga_bamount), 8)
-            ]
-            self._update_hoga_data(dt, code, hoga_seprice, hoga_buprice, hoga_samount,
-                                   hoga_bamount, hoga_tamount, receivetime)
+            elif '@aggTrade' in stream_name:
+                dt = int(str_ymdhms_utc(data['T']))
+                code = data['s']
+                c = float(data['p'])
+                v = float(data['q'])
+                m = data['m']
+                self._update_tick_data_coin_future(dt, code, c, v, m)
 
-        elif '@aggTrade' in stream_name:
-            dt = int(str_ymdhms_utc(data['T']))
-            code = data['s']
-            c = float(data['p'])
-            v = float(data['q'])
-            m = data['m']
-            self._update_tick_data_coin_future(dt, code, c, v, m)
+        except Exception:
+            self.windowQ.put((ui_num['시스템로그'], format_exc()))

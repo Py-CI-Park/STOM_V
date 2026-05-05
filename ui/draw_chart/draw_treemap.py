@@ -8,10 +8,6 @@ class DrawTremap:
     업종별/테마별 등락율 트리맵을 그립니다.
     """
     def __init__(self, ui):
-        """트리맵 그리기를 초기화합니다.
-        Args:
-            ui: UI 객체
-        """
         self.ui      = ui
         self.tm_ax1  = None
         self.tm_ax2  = None

@@ -15,10 +15,6 @@ class UpdateTextedit:
     로그 텍스트 에디터를 업데이트하고 데이터베이스 관리를 수행합니다.
     """
     def __init__(self, ui):
-        """텍스트 에디터 업데이트를 초기화합니다.
-        Args:
-            ui: UI 클래스 인스턴스
-        """
         self.ui        = ui
         self.data_save = False
 
@@ -99,7 +95,7 @@ class UpdateTextedit:
                 self.ui.ss_textEditttt_09.append(text)
 
                 if '백테스트 엔진 전략연산 오류, 자동 중지 중 ...' in data[1]:
-                    backtest_process_kill(self.ui, False, False)
+                    backtest_process_kill(self.ui, False)
 
                 elif 'COMPLETE' in data[1] or 'STOP' in data[1]:
                     if data[1] in ('최적화O COMPLETE', '최적화OV COMPLETE', '최적화OVC COMPLETE', '최적화B COMPLETE',
