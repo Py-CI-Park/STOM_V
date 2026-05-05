@@ -205,16 +205,29 @@ def setting_save_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
+
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.etcetera.etc import update_dictset
     from ui.create_widget.set_text import famous_saying
     from utility.static_method.static import en_text, qtest_qwait
 
+    이전거래소 = ui.dict_set['거래소']
+    이전타임프레임 = ui.dict_set['타임프레임']
+
     거래소 = ui.sj_main_comBox_01.currentText()
     모의투자 = 1 if ui.sj_main_cheBox_01.isChecked() else 0
     데이터저장 = 1 if ui.sj_main_cheBox_02.isChecked() else 0
     타임프레임 = 1 if ui.sj_main_comBox_02.currentText() == '1초스냅샷' else 0
+
+    if ui.trading and 이전거래소 != 거래소:
+        QMessageBox.critical(ui.dialog_chart, '오류 알림', '매매 중에는 거래소 설정을 변경할 수 없습니다.\n')
+        return
+
+    if ui.trading and 이전타임프레임 != 타임프레임:
+        QMessageBox.critical(ui.dialog_chart, '오류 알림', '매매 중에는 타임프레임 설정을 변경할 수 없습니다.\n')
+        return
+
     프로그램비밀번호_ = ui.sj_main_liEdit_01.text()
     바이낸스선물마진타입 = 'ISOLATED' if ui.sj_main_comBox_03.currentText() == '격리' else 'CROSSED'
     바이낸스선물포지션 = 'false' if ui.sj_main_comBox_04.currentText() == '단방향' else 'true'

@@ -3,12 +3,13 @@ import re
 from ui.event_activate import activated_stg
 from ui.etcetera.etc import auto_back_schedule
 from utility.settings.setting_base import ui_num
-from ui.event_click.button_clicked_database import *
 from utility.static_method.static import now, qtest_qwait, now_cme
 from ui.event_click.button_clicked_stg_editer import backtest_detail
+from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
 from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_02
 from ui.event_click.button_clicked_backtest_engine import backtest_process_kill
 from ui.create_widget.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
+from ui.event_click.button_clicked_database import dbbutton_clicked_08, dbbutton_clicked_09
 
 
 class UpdateTextedit:
@@ -25,11 +26,13 @@ class UpdateTextedit:
         Args:
             data: 데이터 (데이터 타입, 내용)
         """
-        if data[0] == ui_num['종목명데이터']:
+        gubun = data[0]
+
+        if gubun == ui_num['종목명데이터']:
             self.ui.dict_name.update(data[1])
             self.ui.dict_code.update(data[2])
 
-        elif data[0] == ui_num['사용자수식']:
+        elif gubun == ui_num['사용자수식']:
             self.ui.fm_list = data[1]
             self.ui.dict_fm = data[2]
             self.ui.fm_tcnt = data[3]
@@ -37,39 +40,55 @@ class UpdateTextedit:
 
         else:
             time_ = str(now())[:-3]
-            if '오류' in data[1] or '주문실패' in data[1] or 'Traceback' in data[1] or 'Error' in data[1]:
+            text  = data[1]
+            if '오류' in text or '주문실패' in text or 'Traceback' in text or 'Error' in text:
                 self.ui.lgicon_alert = True
-                log_ = f'<font color=#ffffa0>{data[1]}</font>'
-            else:
-                log_ = data[1]
-            text = f'[{time_}] {log_}' if '</font>' not in log_ else f'<font color=white>[{time_}]</font> {log_}'
+                text = f'<font color=#ffffa0>{text}</font>'
 
-            if data[0] in (ui_num['기본로그'], ui_num['타임로그'], ui_num['시스템로그'], ui_num['패턴학습'], ui_num['볼륨학습']):
+            text = f'[{time_}] {text}' if '</font>' not in text else f'<font color=white>[{time_}]</font> {text}'
+
+            if gubun in (ui_num['기본로그'], ui_num['시스템로그'], ui_num['DB관리']) and 'DB업데이트완료' not in text:
                 self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
-            elif data[0] == ui_num['백테스트']:
-                if not self.ui.dict_set['백테스트로그기록안함']:
-                    self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
 
-            if data[0] == ui_num['기본로그']:
+            elif gubun == ui_num['백테스트'] and not self.ui.dict_set['백테스트로그기록안함']:
+                self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
+
+            if gubun == ui_num['기본로그']:
                 self.ui.log_trade_basic_textedit.append(text)
-            elif data[0] == ui_num['타임로그']:
+                if '리시버 시작' in text:
+                    mnbutton_c_clicked_01(self.ui, 1)
+                elif '전략연산 프로세스 데이터 저장 중 ...' in text:
+                    self.data_save = True
+                elif '전략연산 종료' in text:
+                    if self.data_save and self.ui.dict_set['디비자동관리']:
+                        self._auto_database_control(1)
+                    else:
+                        self._shut_down_check()
+                elif '휴무 종료' in text:
+                    self._shut_down_check(force=True)
+
+            elif gubun == ui_num['타임로그']:
                 self.ui.log_trade_error_textedit.append(text)
-            elif data[0] == ui_num['시스템로그']:
+
+            elif gubun == ui_num['시스템로그']:
                 text = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
                 self.ui.log_system_textedit.append(text)
-            elif data[0] == ui_num['패턴학습']:
+
+            elif gubun == ui_num['패턴학습']:
                 self.ui.ptn_textEdittt_01.append(text)
-                if self.ui.auto_mode and '전체 종목 패턴 학습 완료' in data[1]:
+                if self.ui.auto_mode and '전체 종목 패턴 학습 완료' in text:
                     qtest_qwait(2)
                     auto_back_schedule(self.ui, 0.5)
-            elif data[0] == ui_num['볼륨학습']:
+
+            elif gubun == ui_num['볼륨학습']:
                 self.ui.vpf_textEdittt_01.append(text)
-                if self.ui.auto_mode and '전체 종목 볼륨 프로파일 학습 완료' in data[1]:
+                if self.ui.auto_mode and '전체 종목 볼륨 프로파일 학습 완료' in text:
                     qtest_qwait(2)
                     auto_back_schedule(self.ui, 1)
-            elif data[0] == ui_num['백테엔진']:
+
+            elif gubun == ui_num['백테엔진']:
                 self.ui.be_textEditxxxx_01.append(text)
-                if data[1] == '백테엔진 준비 완료':
+                if '백테엔진 준비 완료' in text:
                     if not self.ui.qtimer3.isActive():
                         self.ui.qtimer3.start()
                     if self.ui.auto_mode:
@@ -78,42 +97,42 @@ class UpdateTextedit:
                         qtest_qwait(2)
                         auto_back_schedule(self.ui, 2)
 
-            elif data[0] == ui_num['백테스트']:
-                if 'START' in data[1] or '그리드 최적화 시작' in data[1]:
+            elif gubun == ui_num['백테스트']:
+                if 'START' in text or '그리드 최적화 시작' in text:
                     self.ui.back_start_time = now()
-                elif 'OPTUNA INFO' in data[1]:
-                    self.ui.optuna_current_cnt = int(data[1].split('현재횟수[')[1].split(']')[0])
-                    self.ui.optuna_remain_cnt  = int(data[1].split('남은횟수[')[1].split(']')[0])
+                elif 'OPTUNA INFO' in text:
+                    self.ui.optuna_current_cnt = int(text.split('현재횟수[')[1].split(']')[0])
+                    self.ui.optuna_remain_cnt  = int(text.split('남은횟수[')[1].split(']')[0])
 
-                if ('self.vars' in data[1] and 'MERGE' not in data[1]) or '부트스트랩' in data[1]:
+                if ('self.vars' in text and 'MERGE' not in text) or '부트스트랩' in text:
                     color = color_bt_yl
-                elif '배팅금액' in data[1] or 'OUT' in data[1] or '결과' in data[1] or '백테스트 시작' in data[1] or \
-                        ']단계' in data[1] or '최적값' in data[1]:
+                elif '배팅금액' in text or 'OUT' in text or '결과' in text or '백테스트 시작' in text or \
+                        ']단계' in text or '최적값' in text:
                     color = color_fg_rt
-                elif ('AP' in data[1] and '-' in data[1].split('AP')[1]) or \
-                        ('수익률' in data[1] and '-' in data[1].split('수익률')[1]):
+                elif ('AP' in text and '-' in text.split('AP')[1]) or \
+                        ('수익률' in text and '-' in text.split('수익률')[1]):
                     color = color_fg_dk
                 else:
                     color = color_fg_bt
 
-                if '텍스트에디터 클리어' in data[1]:
-                    self.ui.ss_textEditttt_09.clear()
-
                 self.ui.ss_textEditttt_09.setTextColor(color)
                 self.ui.ss_textEditttt_09.append(text)
 
-                if '백테스트 엔진 전략연산 오류, 자동 중지 중 ...' in data[1]:
+                if '텍스트에디터 클리어' in text:
+                    self.ui.ss_textEditttt_09.clear()
+
+                elif '백테스트 엔진 전략연산 오류, 자동 중지 중 ...' in text:
                     backtest_process_kill(self.ui, False)
 
-                elif 'COMPLETE' in data[1] or 'STOP' in data[1]:
-                    if data[1] in ('최적화O COMPLETE', '최적화OV COMPLETE', '최적화OVC COMPLETE', '최적화B COMPLETE',
-                                   '최적화BV COMPLETE', '최적화BVC COMPLETE'):
+                elif 'COMPLETE' in text or 'STOP' in text:
+                    if text in ('최적화O COMPLETE', '최적화OV COMPLETE', '최적화OVC COMPLETE', '최적화B COMPLETE',
+                                '최적화BV COMPLETE', '최적화BVC COMPLETE'):
                         activated_stg.activated_04(self.ui)
 
-                    if data[1] in ('최적화OG COMPLETE', '최적화OGV COMPLETE', '최적화OGVC COMPLETE'):
+                    if text in ('최적화OG COMPLETE', '최적화OGV COMPLETE', '최적화OGVC COMPLETE'):
                         activated_stg.activated_06(self.ui)
 
-                    if not self.ui.dict_set['그래프띄우지않기'] and 'STOP' not in data[1] and data[1] not in \
+                    if not self.ui.dict_set['그래프띄우지않기'] and 'STOP' not in text and text not in \
                             ('백파인더 COMPLETE', '최적화OG COMPLETE', '최적화OGV COMPLETE', '최적화OGVC COMPLETE',
                              '최적화OC COMPLETE', '최적화OCV COMPLETE', '최적화OCVC COMPLETE'):
                         backtest_detail(self.ui)
@@ -129,33 +148,21 @@ class UpdateTextedit:
                     self.ui.optuna_current_cnt = 0
                     self.ui.optuna_remain_cnt = 0
 
-            elif data[0] == ui_num['기업개요']:
-                self.ui.gg_textEdittttt_01.clear()
-                self.ui.gg_textEdittttt_01.append(data[1])
-
-            if '전략연산 프로세스 데이터 저장 중 ...' in text:
-                self.data_save = True
-
-            elif data[0] == ui_num['기본로그'] and '전략연산 종료' in data[1]:
-                if self.data_save and self.ui.dict_set['디비자동관리']:
-                    self._auto_database_control(1)
-                else:
-                    self._shut_down_check()
-
-            elif '휴무 종료' in data[1]:
-                self._shut_down_check(force=True)
-
-            elif data[0] == ui_num['DB관리']:
-                if data[1] == 'DB업데이트완료':
+            elif gubun == ui_num['DB관리']:
+                if 'DB업데이트완료' in text:
                     self.ui.database_control = False
                 else:
                     self.ui.db_textEdittttt_01.append(text)
 
                 if self.ui.auto_mode:
-                    if '당일DB 데이터, 일자DB로 분리 완료' in data[1]:
+                    if '당일DB 데이터, 일자DB로 분리 완료' in text:
                         self._auto_database_control(2)
-                    elif '당일DB 데이터, 백테DB로 추가 완료' in data[1]:
+                    elif '당일DB 데이터, 백테DB로 추가 완료' in text:
                         self._auto_database_control(3)
+
+            elif gubun == ui_num['기업개요']:
+                self.ui.gg_textEdittttt_01.clear()
+                self.ui.gg_textEdittttt_01.append(text)
 
     def _auto_database_control(self, gubun):
         """데이터베이스 자동 관리를 수행합니다.

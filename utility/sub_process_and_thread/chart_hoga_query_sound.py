@@ -19,9 +19,8 @@ from utility.settings.setting_base import ui_num, DB_TRADELIST, DB_PATH, DB_BACK
 
 class ChartHogaQuerySound:
     """차트 호가 쿼리 및 사운드 클래스입니다.
-    호가 데이터를 처리하고 알림 소리를 재생합니다.
-    """
-    def __init__(self, qlist, dict_set, market_infos):
+    호가 데이터를 처리하고 알림 소리를 재생합니다."""
+    def __init__(self, qlist, dict_set):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
            0        1       2      3       4      5      6      7       8        9       10     11
@@ -32,10 +31,10 @@ class ChartHogaQuerySound:
         self.chartQ       = qlist[4]
         self.hogaQ        = qlist[5]
         self.dict_set     = dict_set
-        self.market_gubun = market_infos[0]
-        self.market_info  = market_infos[1]
         self.dict_name    = {}
         self.dict_findex  = {}
+        self.market_gubun = None
+        self.market_info  = None
         self.arry_kosp    = None
         self.arry_kosd    = None
         self.hoga_name    = None
@@ -63,8 +62,7 @@ class ChartHogaQuerySound:
         self._main_loop()
 
     def _update_dict_name(self):
-        """종목명 딕셔너리를 업데이트합니다.
-        """
+        """종목명 딕셔너리를 업데이트합니다."""
         con = sqlite3.connect(DB_CODE_INFO)
         for table in code_info_tables:
             df = pd.read_sql(f'SELECT * FROM {table}', con).set_index('index')
@@ -72,30 +70,28 @@ class ChartHogaQuerySound:
         con.close()
 
     def _set_dict_findex(self):
-        """팩터 인덱스 딕셔너리를 설정합니다.
-        """
-        self.is_tick = self.dict_set['타임프레임']
-        factor_list  = self.market_info['팩터목록'][self.is_tick]
-        self.dict_findex = {factor: i for i, factor in enumerate(factor_list)}
+        """팩터 인덱스 딕셔너리를 설정합니다."""
+        from utility.settings.setting_market import DICT_MARKET_GUBUN, DICT_MARKET_INFO
+        self.market_gubun = DICT_MARKET_GUBUN[self.dict_set['거래소']]
+        self.market_info  = DICT_MARKET_INFO[self.market_gubun]
+        self.is_tick      = self.dict_set['타임프레임']
+        factor_list       = self.market_info['팩터목록'][self.is_tick]
+        self.dict_findex  = {factor: i for i, factor in enumerate(factor_list)}
 
     def __del__(self):
-        """소멸자입니다. 데이터베이스 연결을 닫습니다.
-        """
+        """소멸자입니다. 데이터베이스 연결을 닫습니다."""
         self.con1.close()
         self.con2.close()
         self.con3.close()
         self.con4.close()
 
     def _main_loop(self):
-        """메인 루프를 실행합니다.
-        """
+        """메인 루프를 실행합니다."""
         while True:
             try:
                 if not self.hogaQ.empty():
                     data = self.hogaQ.get()
-                    if data[0] == '설정변경':
-                        self.dict_set = data[1]
-                    elif len(data) == 8:
+                    if len(data) == 8:
                         self._update_hoga_jongmok(data)
                     elif len(data) == 2:
                         self._update_chegeol_count(data)
@@ -566,7 +562,7 @@ class ChartHogaQuerySound:
             self.windowQ.put((ui_num['DB관리'], '일자DB가 존재하지 않습니다.'))
 
     def _db_back_area_add(self, data):
-        """백테스트 DB에 영역 데이터를 추가합니다.
+        """백테스트 DB에 일자 데이터를 추가합니다.
         Args:
             data: 데이터
         """

@@ -4,21 +4,19 @@ from PyQt5.QtCore import QTimer
 from traceback import format_exc
 from trade.restapi_ls import LsRestAPI
 from PyQt5.QtWidgets import QApplication
+from trade.base_trader import BaseTrader
 from trade.restapi_lsdata import LsRestData
 from utility.settings.setting_base import ui_num
-from trade.base_trader import BaseTrader, MonitorTraderQ
 from utility.static_method.static import now, timedelta_sec, get_profit_stock, get_hogaunit_stock
 
 
 class StockTrader(BaseTrader):
     """국내 주식 트레이더 클래스입니다.
-    BaseTrader를 상속받아 국내 주식 시장 주문을 실행합니다.
-    """
-
+    BaseTrader를 상속받아 국내 주식 시장 주문을 실행합니다."""
     def __init__(self, qlist, dict_set, market_infos):
-        super().__init__(qlist, dict_set, market_infos)
-
         app = QApplication(sys.argv)
+
+        super().__init__(qlist, dict_set, market_infos)
 
         self.ls = LsRestAPI(self.windowQ, self.access_key, self.secret_key)
         self.token = self.ls.create_token()
@@ -30,23 +28,6 @@ class StockTrader(BaseTrader):
             self.ws_thread = LsWebSocketTrader(self.market_info['마켓이름'], self.token, self.windowQ)
             self.ws_thread.signal.connect(self._convert_order_data)
             self.ws_thread.start()
-
-        self.qtimer1 = QTimer()
-        self.qtimer1.setInterval(500)
-        self.qtimer1.timeout.connect(self._scheduler1)
-        self.qtimer1.start()
-
-        self.qtimer2 = QTimer()
-        self.qtimer2.setInterval(1 * 1000)
-        self.qtimer2.timeout.connect(self._scheduler2)
-        self.qtimer2.start()
-
-        self.updater = MonitorTraderQ(self.traderQ, self.market_gubun)
-        self.updater.signal1.connect(self._check_order)
-        self.updater.signal2.connect(self._check_order_future)
-        self.updater.signal3.connect(self._update_tuple)
-        self.updater.signal4.connect(self._update_string)
-        self.updater.start()
 
         app.exec_()
 

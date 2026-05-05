@@ -94,16 +94,27 @@ class LsRestAPI:
             tr_name = '국내주식상장주수'
             out_block = LsRestData.tr_data[tr_name]['out_block']
             last = len(dict_data)
-            for i, code in enumerate(dict_data):
+            for i, code in enumerate(dict_data.copy()):
                 data = self._post(tr_name, 종목코드=code, 거래소구분코드='')
-                dict_data[code].update({
-                    '상장주식수': int(data[out_block]['listing']) * 1000
-                })
+
+                data = data[out_block]
+                현재가 = int(data['price'])
+                상장주식수 = int(data['listing']) * 1000
+
+                if 현재가 * 상장주식수 < 10_000_000_000_000:
+                    dict_data[code].update({
+                        '상장주식수': 상장주식수
+                    })
+                else:
+                    del dict_data[code]
+
                 if i % 100 == 0 or i == last - 1:
                     self.windowQ.put((ui_num['기본로그'], f'국내주식 상장수식주 조회 중 ... [{i+1}/{last}]'))
+
                 qtest_qwait(0.05)
 
             return dict_data, list(dict_data.keys())
+
         except Exception:
             self.windowQ.put((ui_num['시스템로그'], format_exc()))
             return {}, []

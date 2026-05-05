@@ -5,9 +5,7 @@ from utility.static_method.static import now, dt_ymdhms, get_profit_future_long,
 
 class FutureStrategy(BaseStrategy):
     """선물 전략 클래스입니다.
-    BaseStrategy를 상속받아 선물 시장 전략을 실행합니다.
-    """
-
+    BaseStrategy를 상속받아 선물 시장 전략을 실행합니다."""
     def __init__(self, gubun, qlist, dict_set, market_info):
         super().__init__(gubun, qlist, dict_set, market_info)
 

@@ -21,9 +21,7 @@ from utility.static_method.static import now, timedelta_sec, str_ymdhms, get_ema
 class BaseStrategy(StgGlobalsFunc):
     """실시간 전략 연산을 담당하는 기본 클래스입니다.
     매수/매도 전략을 컴파일하고, 보조지표를 설정하며,
-    실시간 데이터를 기반으로 전략을 실행합니다.
-    """
-
+    실시간 데이터를 기반으로 전략을 실행합니다."""
     def __init__(self, gubun, qlist, dict_set, market_info):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ

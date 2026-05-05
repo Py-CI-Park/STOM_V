@@ -2,24 +2,21 @@
 import re
 import sys
 import binance
-from PyQt5.QtCore import QTimer
 from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
+from trade.base_receiver import BaseReceiver
 from utility.settings.setting_base import ui_num
 from trade.restapi_binance import BinanceWebSocketReceiver
-from trade.base_receiver import BaseReceiver, MonitorReceivQ
 from utility.static_method.static import now, now_utc, str_ymd, str_ymdhms_utc
 
 
 class BinanceReceiver(BaseReceiver):
     """바이낸스 데이터 수신 클래스입니다.
-    BaseReceiver를 상속받아 바이낸스 시장 데이터를 수신합니다.
-    """
-
-    def __init__(self, qlist, dict_set, market_info):
-        super().__init__(qlist, dict_set, market_info)
-
+    BaseReceiver를 상속받아 바이낸스 시장 데이터를 수신합니다."""
+    def __init__(self, qlist, dict_set, market_infos):
         app = QApplication(sys.argv)
+
+        super().__init__(qlist, dict_set, market_infos)
 
         self.binance = binance.Client()
 
@@ -29,16 +26,6 @@ class BinanceReceiver(BaseReceiver):
         self.ws_thread = BinanceWebSocketReceiver(self.codes, self.windowQ)
         self.ws_thread.signal.connect(self._convert_real_data)
         self.ws_thread.start()
-
-        self.updater = MonitorReceivQ(self.receivQ)
-        self.updater.signal1.connect(self._update_tuple)
-        self.updater.signal2.connect(self._sys_exit)
-        self.updater.start()
-
-        self.qtimer = QTimer()
-        self.qtimer.setInterval(1 * 1000)
-        self.qtimer.timeout.connect(self._scheduler)
-        self.qtimer.start()
 
         app.exec_()
 
@@ -93,17 +80,15 @@ class BinanceReceiver(BaseReceiver):
         Args:
             data: 데이터
         """
-        if 'stream' not in data:
+        if self.dict_bool['프로세스종료']:
             return
 
         try:
             stream_name = data['stream']
             data = data['data']
+
             if '@depth10' in stream_name:
                 dt = int(str_ymdhms_utc(data['T']))
-                if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
-                    return
-
                 receivetime = now()
                 code = data['s']
                 asks_data = data['a']

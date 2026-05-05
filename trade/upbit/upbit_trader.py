@@ -2,21 +2,20 @@
 import sys
 from PyQt5.QtCore import QTimer
 from traceback import format_exc
+from trade.base_trader import BaseTrader
 from PyQt5.QtWidgets import QApplication
 from utility.settings.setting_base import ui_num
-from trade.base_trader import BaseTrader, MonitorTraderQ
 from trade.restapi_upbit import UpbitRestAPI, UpbitWebSocketTrader
 from utility.static_method.static import now, timedelta_sec, get_hogaunit_coin, get_profit_coin, str_ymdhms_utc
 
 
 class UpbitTrader(BaseTrader):
     """업비트 트레이더 클래스입니다.
-    BaseTrader를 상속받아 업비트 시장 주문을 실행합니다.
-    """
+    BaseTrader를 상속받아 업비트 시장 주문을 실행합니다."""
     def __init__(self, qlist, dict_set, market_infos):
-        super().__init__(qlist, dict_set, market_infos)
-
         app = QApplication(sys.argv)
+
+        super().__init__(qlist, dict_set, market_infos)
 
         self.업비트체결코드 = {
             'BID': '매수',
@@ -33,23 +32,6 @@ class UpbitTrader(BaseTrader):
             self.ws_thread = UpbitWebSocketTrader(self.windowQ)
             self.ws_thread.signal.connect(self._convert_order_data)
             self.ws_thread.start()
-
-        self.qtimer1 = QTimer()
-        self.qtimer1.setInterval(500)
-        self.qtimer1.timeout.connect(self._scheduler1)
-        self.qtimer1.start()
-
-        self.qtimer2 = QTimer()
-        self.qtimer2.setInterval(1 * 1000)
-        self.qtimer2.timeout.connect(self._scheduler2)
-        self.qtimer2.start()
-
-        self.updater = MonitorTraderQ(self.traderQ, self.market_gubun)
-        self.updater.signal1.connect(self._check_order)
-        self.updater.signal2.connect(self._check_order_future)
-        self.updater.signal3.connect(self._update_tuple)
-        self.updater.signal4.connect(self._update_string)
-        self.updater.start()
 
         app.exec_()
 

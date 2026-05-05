@@ -1,7 +1,10 @@
 
+import sys
 import sqlite3
 import pandas as pd
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
+from utility.static_method.static import qtest_qwait
+from utility.settings.setting_base import DB_TRADELIST
 from utility.settings.setting_base import ui_num, columns_cj, columns_jg, columns_td, columns_tdf, columns_jgf, \
     columns_jgcf
 from utility.static_method.static import now, str_hms, str_ymd, dt_hms, timedelta_sec, get_inthms, get_str_ymdhms, \
@@ -10,8 +13,7 @@ from utility.static_method.static import now, str_hms, str_ymd, dt_hms, timedelt
 
 class MonitorTraderQ(QThread):
     """트레이더 큐를 모니터링하는 스레드 클래스입니다.
-    트레이더 큐에서 데이터를 읽어와 시그널로 전송합니다.
-    """
+    트레이더 큐에서 데이터를 읽어와 시그널로 전송합니다."""
     signal1 = pyqtSignal(tuple)
     signal2 = pyqtSignal(tuple)
     signal3 = pyqtSignal(tuple)
@@ -41,9 +43,7 @@ class MonitorTraderQ(QThread):
 class BaseTrader:
     """주문 실행 및 관리를 담당하는 기본 클래스입니다.
     체결 목록, 잔고 목록, 거래 목록을 관리하며,
-    주문 생성, 취소, 정정 기능을 제공합니다.
-    """
-
+    주문 생성, 취소, 정정 기능을 제공합니다."""
     def __init__(self, qlist, dict_set, market_infos):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
@@ -114,6 +114,23 @@ class BaseTrader:
         self.order_time = now()
         self.jgcs_time  = self.get_jgcs_time()
 
+        self.qtimer1 = QTimer()
+        self.qtimer1.setInterval(500)
+        self.qtimer1.timeout.connect(self._scheduler1)
+        self.qtimer1.start()
+
+        self.qtimer2 = QTimer()
+        self.qtimer2.setInterval(1 * 1000)
+        self.qtimer2.timeout.connect(self._scheduler2)
+        self.qtimer2.start()
+
+        self.updater = MonitorTraderQ(self.traderQ, self.market_gubun)
+        self.updater.signal1.connect(self._check_order)
+        self.updater.signal2.connect(self._check_order_future)
+        self.updater.signal3.connect(self._update_tuple)
+        self.updater.signal4.connect(self._update_string)
+        self.updater.start()
+
         self._load_database()
 
     def _get_yesugm_for_paper_trading(self):
@@ -156,7 +173,6 @@ class BaseTrader:
 
     def _load_database(self):
         """데이터베이스를 로드합니다."""
-        from utility.settings.setting_base import DB_TRADELIST
         con = sqlite3.connect(DB_TRADELIST)
         df_cj = pd.read_sql(f"SELECT * FROM {self.market_info['체결디비']} WHERE 체결시간 LIKE '{self.str_today}%'", con)
         df_td = pd.read_sql(f"SELECT * FROM {self.market_info['거래디비']} WHERE 체결시간 LIKE '{self.str_today}%'", con)
@@ -733,8 +749,6 @@ class BaseTrader:
 
     def _sys_exit(self):
         """시스템을 종료합니다."""
-        import sys
-        from utility.static_method.static import qtest_qwait
         self._websocket_kill()
         self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 트레이더 종료"))
         qtest_qwait(1)
@@ -745,6 +759,7 @@ class BaseTrader:
         if self.ws_thread:
             self.ws_thread.stop()
             self.ws_thread.terminate()
+            self.ws_thread = None
 
     def _get_index(self):
         """체결목록용 인덱스를 반환합니다.

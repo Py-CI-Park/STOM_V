@@ -5,9 +5,7 @@ from utility.static_method.static import get_profit_coin, now_utc, dt_ymdhms, ge
 
 class UpbitStrategy(BaseStrategy):
     """업비트 전략 클래스입니다.
-    BaseStrategy를 상속받아 업비트 시장 전략을 실행합니다.
-    """
-
+    BaseStrategy를 상속받아 업비트 시장 전략을 실행합니다."""
     def __init__(self, gubun, qlist, dict_set, market_info):
         super().__init__(gubun, qlist, dict_set, market_info)
 

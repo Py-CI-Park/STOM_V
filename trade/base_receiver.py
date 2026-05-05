@@ -3,15 +3,14 @@ import sqlite3
 import numpy as np
 import pandas as pd
 from trade.restapi_ls import LsRestData
-from PyQt5.QtCore import QThread, pyqtSignal
 from utility.settings.setting_base import ui_num
-from utility.static_method.static import now, timedelta_sec, get_inthms, get_vi_price, threading_timer
+from PyQt5.QtCore import QThread, pyqtSignal, QTimer
+from utility.static_method.static import now, timedelta_sec, get_inthms, get_vi_price, qtest_qwait
 
 
 class MonitorReceivQ(QThread):
     """리시버 큐를 모니터링하는 스레드 클래스입니다.
-    수신 큐에서 데이터를 읽어와 시그널로 전송합니다.
-    """
+    수신 큐에서 데이터를 읽어와 시그널로 전송합니다."""
     signal1 = pyqtSignal(tuple)
     signal2 = pyqtSignal(str)
 
@@ -32,9 +31,7 @@ class MonitorReceivQ(QThread):
 class BaseReceiver:
     """실시간 데이터를 수신하고 처리하는 기본 클래스입니다.
     다양한 큐를 통해 다른 모듈과 통신하며,
-    시장 데이터(체결, 호가)를 처리합니다.
-    """
-
+    시장 데이터(체결, 호가)를 처리합니다."""
     def __init__(self, qlist, dict_set, market_infos):
         """
         windowQ, soundQ, queryQ, teleQ, chartQ, hogaQ, webcQ, backQ, receivQ, traderQ, stgQs, liveQ
@@ -115,24 +112,38 @@ class BaseReceiver:
             if self.market_gubun < 4:
                 self.tr_cd_vi = LsRestData.실시간거래코드['국내주식VI']
 
+        self.updater = MonitorReceivQ(self.receivQ)
+        self.updater.signal1.connect(self._update_tuple)
+        self.updater.signal2.connect(self._sys_exit)
+        self.updater.start()
+
+        self.qtimer = QTimer()
+        self.qtimer.setInterval(1 * 1000)
+        self.qtimer.timeout.connect(self._scheduler)
+        self.qtimer.start()
+
     def _save_code_info_and_noti(self):
         """종목명 정보를 조회하고 저장 후 리시버 시작 알림을 보냅니다."""
-        dict_name = {code: value['종목명'] for code, value in self.dict_info.items()}
-        dict_code = {name: code for code, name in dict_name.items()}
+        if self.dict_info:
+            dict_name = {code: value['종목명'] for code, value in self.dict_info.items()}
+            dict_code = {name: code for code, name in dict_name.items()}
 
-        self.windowQ.put((ui_num['종목명데이터'], dict_name, dict_code))
-        if self.market_gubun > 5:
-            self.stgQ.put(('종목정보', self.dict_info))
+            self.windowQ.put((ui_num['종목명데이터'], dict_name, dict_code))
+            if self.market_gubun > 5:
+                self.stgQ.put(('종목정보', self.dict_info))
 
-        df = pd.DataFrame.from_dict(self.dict_info, orient='index')
-        self.queryQ.put(('종목디비', df, self.market_info['종목디비'], 'replace'))
+            df = pd.DataFrame.from_dict(self.dict_info, orient='index')
+            self.queryQ.put(('종목디비', df, self.market_info['종목디비'], 'replace'))
 
-        text = f"{self.market_info['마켓이름']} 시스템을 시작하였습니다."
-        self.teleQ.put(text)
-        if self.dict_set['알림소리']:
-            self.soundQ.put(text)
+            text = f"{self.market_info['마켓이름']} 시스템을 시작하였습니다."
+            self.teleQ.put(text)
+            if self.dict_set['알림소리']:
+                self.soundQ.put(text)
 
-        self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 리시버 시작"))
+            self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 리시버 시작"))
+        else:
+            self.windowQ.put((ui_num['시스템로그'], f"오류 알림 - 종목정보 조회 실패 매매 프로세스를 종료합니다."))
+            self._sys_exit('종목정보조회실패종료')
 
     def _update_vi(self, code):
         """정적VI 발동을 기록합니다.
@@ -689,7 +700,7 @@ class BaseReceiver:
         self._websocket_kill()
         if self.dict_set['알림소리']:
             self.soundQ.put(f"{self.market_info['마켓이름']} 시스템을 3분 후 종료합니다.")
-        threading_timer(180, self.receivQ.put, '프로세스종료')
+        QTimer.singleShot(180 * 1000, lambda: self.receivQ.put('프로세스종료'))
 
     def _websocket_kill(self):
         """웹소켓을 종료합니다."""
@@ -723,7 +734,6 @@ class BaseReceiver:
             data: 데이터
         """
         import sys
-        from utility.static_method.static import qtest_qwait
 
         self._websocket_kill()
 

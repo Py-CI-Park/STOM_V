@@ -5,9 +5,7 @@ from utility.static_method.static import now_utc, dt_ymdhms, get_profit_coin_fut
 
 class BinanceStrategy(BaseStrategy):
     """바이낸스 전략 클래스입니다.
-    BaseStrategy를 상속받아 바이낸스 시장 전략을 실행합니다.
-    """
-
+    BaseStrategy를 상속받아 바이낸스 시장 전략을 실행합니다."""
     def __init__(self, gubun, qlist, dict_set, market_info):
         super().__init__(gubun, qlist, dict_set, market_info)
 

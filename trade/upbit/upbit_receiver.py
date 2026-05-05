@@ -1,24 +1,21 @@
 
 import sys
-from PyQt5.QtCore import QTimer
 from traceback import format_exc
 from PyQt5.QtWidgets import QApplication
+from trade.base_receiver import BaseReceiver
 from utility.settings.setting_base import ui_num
 from trade.restapi_upbit import get_symbols_info
 from trade.restapi_upbit import UpbitWebSocketReceiver
-from trade.base_receiver import BaseReceiver, MonitorReceivQ
 from utility.static_method.static import now, str_ymdhms_utc
 
 
 class UpbitReceiver(BaseReceiver):
     """업비트 데이터 수신 클래스입니다.
-    BaseReceiver를 상속받아 업비트 시장 데이터를 수신합니다.
-    """
-
-    def __init__(self, qlist, dict_set, market_info):
-        super().__init__(qlist, dict_set, market_info)
-
+    BaseReceiver를 상속받아 업비트 시장 데이터를 수신합니다."""
+    def __init__(self, qlist, dict_set, market_infos):
         app = QApplication(sys.argv)
+
+        super().__init__(qlist, dict_set, market_infos)
 
         self._get_code_info()
         self._save_code_info_and_noti()
@@ -26,16 +23,6 @@ class UpbitReceiver(BaseReceiver):
         self.ws_thread = UpbitWebSocketReceiver(self.codes, self.windowQ)
         self.ws_thread.signal.connect(self._convert_real_data)
         self.ws_thread.start()
-
-        self.updater = MonitorReceivQ(self.receivQ)
-        self.updater.signal1.connect(self._update_tuple)
-        self.updater.signal2.connect(self._sys_exit)
-        self.updater.start()
-
-        self.qtimer = QTimer()
-        self.qtimer.setInterval(1 * 1000)
-        self.qtimer.timeout.connect(self._scheduler)
-        self.qtimer.start()
 
         app.exec_()
 
@@ -54,12 +41,14 @@ class UpbitReceiver(BaseReceiver):
         Args:
             data: 데이터
         """
+        if self.dict_bool['프로세스종료']:
+            return
+
         try:
             if data['type'] == 'orderbook':
-                dt = int(str_ymdhms_utc(data['timestamp']))
-                if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
+                if self.dict_bool['프로세스종료']:
                     return
-
+                dt = int(str_ymdhms_utc(data['timestamp']))
                 receivetime = now()
                 code = data['code']
                 hoga_tamount = [
@@ -90,10 +79,9 @@ class UpbitReceiver(BaseReceiver):
                                        hoga_bamount, hoga_tamount, receivetime)
 
             elif data['type'] == 'ticker':
-                dt = int(str_ymdhms_utc(data['timestamp']))
-                if self.dict_set['전략종료시간'] < int(str(dt)[8:]):
+                if self.dict_bool['프로세스종료']:
                     return
-
+                dt    = int(str_ymdhms_utc(data['timestamp']))
                 code  = data['code']
                 c     = data['trade_price']
                 o     = data['opening_price']
