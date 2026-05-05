@@ -3,7 +3,7 @@ import numpy as np
 from numba import njit, prange
 
 
-@njit(cache=True, parallel=True)
+@njit(cache=True, fastmath=True, parallel=True)
 def get_opti_valid_std(train_stds, valid_stds, exponential):
     """최적화 유효 표준편차를 계산합니다.
     가중치(weight) 예제: 최고 1.3, 최저 0.7
@@ -28,7 +28,7 @@ def get_opti_valid_std(train_stds, valid_stds, exponential):
     return merge if merge != 0 else -float('inf')
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_result(arry_tsg, arry_bct, betting, market_gubun, day_count):
     """백테스트 결과를 계산합니다.
     arry_tsg dtype 'float64'
@@ -95,7 +95,7 @@ def get_result(arry_tsg, arry_bct, betting, market_gubun, day_count):
     )
 
 
-@njit(cache=True, parallel=True)
+@njit(cache=True, fastmath=True, parallel=True)
 def calculate_mdd_bootstrap(sig_array, seed, n_bootstrap=100):
     """부트스트랩 MDD를 계산합니다.
     Args:
@@ -132,7 +132,7 @@ def calculate_mdd_bootstrap(sig_array, seed, n_bootstrap=100):
     return mdd_list, random_cumsums
 
 
-@njit(cache=True, parallel=True)
+@njit(cache=True, fastmath=True, parallel=True)
 def bootstrap_test(returns, n_bootstrap=10000):
     """부트스트랩 테스트를 수행합니다.
     Args:

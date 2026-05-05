@@ -6,7 +6,7 @@ import sqlite3
 import pandas as pd
 from traceback import format_exc
 from utility.static_method.static import now, str_ymdhms
-from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num
+from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM
 
 
 class BackFinder:
@@ -37,7 +37,7 @@ class BackFinder:
         except SystemExit:
             sys.exit()
         except Exception:
-            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self._sys_exit(True)
 
     def _start(self):
@@ -58,13 +58,13 @@ class BackFinder:
             cols_count = len(re.findall(r"'[^']*'", cols_text)) + len(re.findall(r'"[^"]*"', cols_text))
             data_count = len([x for x in data_text if x.strip()])
             if cols_count != data_count:
-                self.wq.put((ui_num['백테스트'], 'self.tickcols의 개수와 self.tickdata의 개수가 일치하지 않습니다.'))
+                self.wq.put((UI_NUM['백테스트'], 'self.tickcols의 개수와 self.tickdata의 개수가 일치하지 않습니다.'))
                 self._sys_exit(True)
         else:
-            self.wq.put((ui_num['백테스트'], '선택된 전략이 백파인더용 전략이 아닙니다.'))
+            self.wq.put((UI_NUM['백테스트'], '선택된 전략이 백파인더용 전략이 아닙니다.'))
             self._sys_exit(True)
 
-        self.wq.put((ui_num['백테스트'], '백파인더 START'))
+        self.wq.put((UI_NUM['백테스트'], '백파인더 START'))
         self.shared_cnt.value = 0
         data = ('백테정보', self.avgtime, self.startday, self.endday, self.starttime, self.endtime, buystg, 2)
         for q in self.beq_list:
@@ -78,7 +78,7 @@ class BackFinder:
             data = self.tq.get()
             if data[0] == '백파결과':
                 _, data1, data2 = data
-                self.wq.put((ui_num['백테스트'], data2))
+                self.wq.put((UI_NUM['백테스트'], data2))
                 dict_back[index] = dict(zip(data1, data2))
                 index += 1
 
@@ -99,12 +99,12 @@ class BackFinder:
             df = pd.DataFrame.from_dict(dict_back, orient='index')
             df.to_sql(f"{self.market_info['전략구분']}_bf_{self.buystg_name}_{save_time}", con, if_exists='append', chunksize=2000)
             con.close()
-            self.wq.put((ui_num['백테스트'], '백파인터 결과값 저장 완료'))
+            self.wq.put((UI_NUM['백테스트'], '백파인터 결과값 저장 완료'))
         else:
-            self.wq.put((ui_num['백테스트'], '조건을 만족하는 종목이 없어 결과를 표시할 수 없습니다.'))
+            self.wq.put((UI_NUM['백테스트'], '조건을 만족하는 종목이 없어 결과를 표시할 수 없습니다.'))
 
         self.sq.put('백파인더를 완료하였습니다.')
-        self.wq.put((ui_num['백테스트'], f'백파인더 소요시간 {now() - self.start_time}'))
+        self.wq.put((UI_NUM['백테스트'], f'백파인더 소요시간 {now() - self.start_time}'))
         if self.dict_set['스톰라이브']: self.lq.put('백파인더')
         self._sys_exit(False)
 
@@ -114,8 +114,8 @@ class BackFinder:
             cancel: 취소 여부
         """
         if cancel:
-            self.wq.put((ui_num['백테스트'], '백파인더 STOP'))
+            self.wq.put((UI_NUM['백테스트'], '백파인더 STOP'))
         else:
-            self.wq.put((ui_num['백테스트'], '백파인더 COMPLETE'))
+            self.wq.put((UI_NUM['백테스트'], '백파인더 COMPLETE'))
         time.sleep(1)
         sys.exit()

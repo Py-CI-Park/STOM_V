@@ -2,8 +2,8 @@
 import re
 from traceback import format_exc
 from PyQt5.QtCore import QThread
-from utility.settings.setting_base import indicator, ui_num
-from trade.analyzer_microstruc import AnalyzerMicrostructure
+from strategy.analyzer_microstructure import AnalyzerMicrostructure
+from utility.settings.setting_base import DICT_INDICATOR, UI_NUM
 # noinspection PyUnresolvedReferences
 from utility.static_method.static import timedelta_sec, qtest_qwait, now
 
@@ -23,7 +23,7 @@ class BackCodeTest(QThread):
         self.var         = var
         self.ga          = ga
         self.ms_analyzer = AnalyzerMicrostructure('stock', [])
-        self.indicator   = indicator
+        self.indicator   = DICT_INDICATOR
 
     def run(self):
         """테스트를 실행합니다.
@@ -36,22 +36,22 @@ class BackCodeTest(QThread):
             try:
                 exec(compile(self.var, '<string>', 'exec'))
             except Exception:
-                self.windowQ.put((ui_num['시스템로그'], format_exc()))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
                 error = True
 
             for i, var in enumerate(self.vars.values()):
                 if len(var) != 2:
-                    self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 방법 오류'))
+                    self.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 방법 오류'))
                     error = True
                 if not self.ga:
                     if len(var[0]) != 3:
-                        self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 방법 오류'))
+                        self.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 방법 오류'))
                         error = True
                     if var[0][2] != 0 and (var[0][1] - var[0][0]) / var[0][2] + 1 > 20:
-                        self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 갯수 20개 초과'))
+                        self.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 설정 갯수 20개 초과'))
                         error = True
                     if (var[0][0] < var[0][1] and var[0][2] < 0) or (var[0][0] > var[0][1] and var[0][2] > 0):
-                        self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 간격 부호 오류'))
+                        self.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - self.vars[{i}]의 범위 간격 부호 오류'))
                         error = True
 
             if error:
@@ -69,7 +69,7 @@ class BackCodeTest(QThread):
             try:
                 self.stg = compile(self.stg, '<string>', 'exec')
             except Exception:
-                self.windowQ.put((ui_num['시스템로그'], format_exc()))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
                 error = True
 
             if error:
@@ -106,7 +106,7 @@ class BackCodeTest(QThread):
                 pattern = rf'(?<![0-9A-Za-z_가-힣]){re.escape(factor)}(?![0-9A-Za-z_가-힣])'
                 for m in re.finditer(pattern, line):
                     if not re.match(r'\s*\(', line[m.end():]):
-                        self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - 줄번호[{i+1}] : {factor}(30), {factor}(30, 1) 형태로 사용하십시오.'))
+                        self.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - 줄번호[{i + 1}] : {factor}(30), {factor}(30, 1) 형태로 사용하십시오.'))
                         error = True
         if error:
             return False
@@ -654,7 +654,7 @@ class BackCodeTest(QThread):
         try:
             exec(self.stg)
         except Exception:
-            self.windowQ.put((ui_num['시스템로그'], format_exc()))
+            self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
             self._error_end()
         else:
             self._no_error_end()

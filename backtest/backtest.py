@@ -8,7 +8,7 @@ import pandas as pd
 from traceback import format_exc
 from backtest.back_static_numba import get_result, bootstrap_test
 from utility.static_method.static import now, str_ymdhms, error_decorator
-from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, ui_num, columns_vj
+from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLUMNS_BBS
 from backtest.back_static import plot_show, get_moneytop_query, get_result_dataframe, add_mdd
 
 
@@ -63,7 +63,7 @@ class BackTest:
         except SystemExit:
             sys.exit()
         except Exception:
-            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self._sys_exit(True)
 
     # noinspection PyUnresolvedReferences
@@ -78,7 +78,7 @@ class BackTest:
         con.close()
 
         if len(df_mt) == 0 or self.back_count == 0:
-            self.wq.put((ui_num['백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
+            self.wq.put((UI_NUM['백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self._sys_exit(True)
 
         con = sqlite3.connect(DB_STRATEGY)
@@ -88,7 +88,7 @@ class BackTest:
 
         buystg = dfb['전략코드'][self.buystg_name]
         if 'self.ms_analyzer' in buystg and not self.dict_set['시장미시구조분석']:
-            self.wq.put((ui_num['백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
+            self.wq.put((UI_NUM['백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
             self._sys_exit(True)
 
         if self.is_tick:
@@ -96,11 +96,11 @@ class BackTest:
         else:
             df_mt['일자'] = (df_mt['index'].values // 10000).astype(np.int64)
         self.day_count = len(df_mt['일자'].unique())
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 기간 추출 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 기간 추출 완료'))
 
         self.buystg  = buystg
         self.sellstg = dfs['전략코드'][self.sellstg_name]
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 매도수전략 설정 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 매도수전략 설정 완료'))
 
         arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
@@ -108,7 +108,7 @@ class BackTest:
         for q in self.bstq_list:
             q.put(data)
 
-        self.wq.put((ui_num['백테스트'], f'{self.backname} START'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} START'))
         self.shared_cnt.value = 0
         data = ('백테정보', self.betting, self.avgtime, self.startday, self.endday, self.starttime, self.endtime,
                 self.buystg, self.sellstg, 2)
@@ -153,7 +153,7 @@ class BackTest:
             arry_bct: 보유 결과 배열
         """
         if not list_tsg:
-            self.wq.put((ui_num['백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
+            self.wq.put((UI_NUM['백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
             self._sys_exit(True)
 
         df_tsg, df_bct = get_result_dataframe(self.market_gubun, list_tsg, arry_bct)
@@ -205,8 +205,8 @@ class BackTest:
                      f'승률 {wr:.2f}%, 평균수익률 {app:.2f}%, 수익률합계 {tpp:.2f}%, 수익금합계 {tsg:,}{tsg_unit}, '\
                      f'최대낙폭금액 {mdd_:,.0f}{tsg_unit}, 최대낙폭률 {mdd:.2f}%, 매매성능지수 {tpi:.2f}, 연간예상수익률 {cagr:.2f}%'
 
-        self.wq.put((ui_num['백테스트'], '백테스팅 결과\n' + label_text))
-        self.wq.put((ui_num['백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
+        self.wq.put((UI_NUM['백테스트'], '백테스팅 결과\n' + label_text))
+        self.wq.put((UI_NUM['백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
 
         if self.dict_set['스톰라이브']:
             data_list = [
@@ -219,9 +219,9 @@ class BackTest:
         save_file_name = f'{self.savename}_{self.buystg_name}_{save_time}'
 
         if self.blacklist:
-            self.wq.put((ui_num['백테스트'], f'블랙리스트 추가 {self.insertblacklist}'))
+            self.wq.put((UI_NUM['백테스트'], f'블랙리스트 추가 {self.insertblacklist}'))
         self.sq.put(f'{self.backname}를 완료하였습니다.')
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 소요시간 {now() - self.start_time}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 소요시간 {now() - self.start_time}'))
 
         if self.back_club:
             buystg_text  = ('\n'.join([x for x in self.buystg.split('if 매수:')[0].split('\n') if x and x[0] != '#'])).split(' ')
@@ -247,25 +247,25 @@ class BackTest:
                 else:
                     sell_vars = f'{sell_vars}, {text}'
 
-            self.wq.put((ui_num['백테스트'], '결과 그래프 생성 중 ...'))
+            self.wq.put((UI_NUM['백테스트'], '결과 그래프 생성 중 ...'))
             plot_show('백테스트', self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.market_gubun, seed, mdd,
                       self.startday, self.endday, self.starttime, self.endtime, None, self.backname, back_text,
                       label_text + bootstrap_text, save_file_name, self.schedul, False,
                       buy_vars=buy_vars, sell_vars=sell_vars)
         else:
             if not self.dict_set['그래프저장하지않기']:
-                self.wq.put((ui_num['백테스트'], '결과 그래프 생성 중 ...'))
+                self.wq.put((UI_NUM['백테스트'], '결과 그래프 생성 중 ...'))
                 plot_show('백테스트', self.is_tick, self.teleQ, df_tsg.copy(), df_bct, self.market_gubun, seed, mdd,
                           self.startday, self.endday, self.starttime, self.endtime, None, self.backname, back_text,
                           label_text + bootstrap_text, save_file_name, self.schedul, self.dict_set['그래프띄우지않기'])
 
         data = [int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg]
-        df = pd.DataFrame([data], columns=columns_vj, index=[save_time])
+        df = pd.DataFrame([data], columns=COLUMNS_BBS, index=[save_time])
         con = sqlite3.connect(DB_BACKTEST)
         df.to_sql(self.savename, con, if_exists='append', chunksize=2000)
         df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=2000)
         con.close()
-        self.wq.put((ui_num['상세기록'], df_tsg))
+        self.wq.put((UI_NUM['상세기록'], df_tsg))
 
     def _insert_blacklist(self, df_tsg):
         """블랙리스트를 추가합니다."""
@@ -298,8 +298,8 @@ class BackTest:
             cancel: 취소 여부
         """
         if cancel:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} STOP'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} STOP'))
         else:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} COMPLETE'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} COMPLETE'))
         time.sleep(1)
         sys.exit()

@@ -41,14 +41,14 @@ def cell_clicked_02(ui, row, col):
     from PyQt5.QtWidgets import QMessageBox
     from utility.static_method.static import comma2int, now
     from ui.etcetera.process_alive import trader_process_alive
-    from utility.settings.setting_base import columns_jg, columns_jgf, columns_jgcf
+    from utility.settings.setting_base import COLUMNS_JG, COLUMNS_JGF, COLUMNS_JGCF
 
     item = ui.jg_tableWidgettt.item(row, 0)
     if item is None:
         return
 
     name = item.text()
-    columns = columns_jg if ui.market_gubun < 6 else columns_jgf if ui.market_gubun < 9 else columns_jgcf
+    columns = COLUMNS_JG if ui.market_gubun < 6 else COLUMNS_JGF if ui.market_gubun < 9 else COLUMNS_JGCF
     oc = comma2int(ui.jg_tableWidgettt.item(row, columns.index('보유수량')).text())
     c = comma2int(ui.jg_tableWidgettt.item(row, columns.index('현재가')).text())
     buttonReply = QMessageBox.question(
@@ -212,7 +212,8 @@ def cell_clicked_06(ui, row, col):
     ui.ct_lineEdittttt_05.setText(name)
     ui.ct_dateEdittttt_01.setDate(QDate.fromString(searchdate, 'yyyyMMdd'))
 
-    data = (code, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui))
+    chart_key = name if ui.market_gubun in (6, 7) else code
+    data = (chart_key, tickcount, searchdate, starttime, endtime, get_indicator_detail(ui))
     cf1, cf2 = ui.ft_lineEdittttt_36.text(), ui.ft_lineEdittttt_37.text()
     if cf1 and cf2: data += (float(cf1), float(cf2))
     ui.chartQ.put(data)
@@ -246,7 +247,7 @@ def cell_clicked_08(ui, row, col):
         col: 열 인덱스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
     from utility.static_method.static import qtest_qwait
     from ui.event_click.button_clicked_show_dialog import show_db
 
@@ -269,7 +270,7 @@ def cell_clicked_08(ui, row, col):
             else:
                 query = f"DELETE FROM {ui.market_info['전략구분']}_optisell WHERE `index` = '{stg_name}'"
             ui.queryQ.put(('전략디비', query))
-            ui.windowQ.put((ui_num['DB관리'], f"DB 명령 실행 알림 - {ui.market_info['마켓이름']} 전략 '{stg_name}' 삭제 완료"))
+            ui.windowQ.put((UI_NUM['DB관리'], f"DB 명령 실행 알림 - {ui.market_info['마켓이름']} 전략 '{stg_name}' 삭제 완료"))
 
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_02:
         item = ui.db_tableWidgett_02.item(row, col)
@@ -291,7 +292,7 @@ def cell_clicked_08(ui, row, col):
             else:
                 query = f"DELETE FROM {ui.market_info['전략구분']}_sellconds WHERE `index` = '{stg_name}'"
             ui.queryQ.put(('전략디비', query))
-            ui.windowQ.put((ui_num['DB관리'],
+            ui.windowQ.put((UI_NUM['DB관리'],
                             f"DB 명령 실행 알림 - {ui.market_info['마켓이름']} 범위 또는 조건 '{stg_name}' 삭제 완료"))
 
     elif ui.dialog_db.focusWidget() == ui.db_tableWidgett_03:
@@ -306,7 +307,7 @@ def cell_clicked_08(ui, row, col):
         if buttonReply == QMessageBox.Yes:
             query = f"DELETE FROM schedule WHERE `index` = '{stg_name}'"
             ui.queryQ.put(('전략디비', query))
-            ui.windowQ.put((ui_num['DB관리'], f'DB 명령 실행 알림 - 스케쥴 "{stg_name}" 삭제 완료'))
+            ui.windowQ.put((UI_NUM['DB관리'], f'DB 명령 실행 알림 - 스케쥴 "{stg_name}" 삭제 완료'))
 
     qtest_qwait(0.5)
     show_db(ui)

@@ -8,10 +8,10 @@ def load_database(ui):
     import sqlite3
     import pandas as pd
     from PyQt5.QtWidgets import QCompleter
-    from utility.settings.setting_base import DB_CODE_INFO, code_info_tables
+    from utility.settings.setting_base import DB_CODE_INFO, CODE_INFO_TABLES
 
     con = sqlite3.connect(DB_CODE_INFO)
-    for table in code_info_tables:
+    for table in CODE_INFO_TABLES:
         df = pd.read_sql(f'SELECT * FROM {table}', con).set_index('index')
         ui.dict_name.update(df['종목명'].to_dict())
     con.close()

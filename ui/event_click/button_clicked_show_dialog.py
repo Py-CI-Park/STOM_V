@@ -290,7 +290,7 @@ def show_hoga(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    from utility.settings.setting_base import columns_hc
+    from utility.settings.setting_base import COLUMNS_HC
     from ui.create_widget.dialog_animation import DialogAnimator
 
     if not ui.dialog_hoga.isVisible():
@@ -305,7 +305,7 @@ def show_hoga(ui):
         ui.hj_tableWidgett_01.setColumnWidth(5, 140)
         ui.hj_tableWidgett_01.setColumnWidth(6, 140)
         ui.hj_tableWidgett_01.setColumnWidth(7, 140)
-        ui.hc_tableWidgett_01.setHorizontalHeaderLabels(columns_hc)
+        ui.hc_tableWidgett_01.setHorizontalHeaderLabels(COLUMNS_HC)
         ui.hc_tableWidgett_02.setVisible(False)
         ui.hg_tableWidgett_01.setGeometry(285, 52, 282, 297)
         ui.dialog_hoga.show()
@@ -504,15 +504,3 @@ def show_pattern_dialog(ui):
         ui.dialog_pattern.show()
     else:
         ui.dialog_pattern.close()
-
-
-def show_volume_dialog(ui):
-    from PyQt5.QtWidgets import QMessageBox
-
-    if not ui.dialog_volume.isVisible():
-        if ui.dict_set['타임프레임']:
-            QMessageBox.critical(ui, '오류 알림', '현재 타임프레임이 1초스냅샷 상태입니다.\n볼륨 프로파일 학습은 1분봉 타임프레임만 지원합니다.\n')
-            return
-        ui.dialog_volume.show()
-    else:
-        ui.dialog_volume.close()

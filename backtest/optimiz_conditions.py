@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
-from utility.settings.setting_base import ui_num, DB_BACKTEST
+from utility.settings.setting_base import UI_NUM, DB_BACKTEST
 from backtest.back_static import send_result, get_moneytop_query
 from utility.static_method.static import factorial, now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd, \
     error_decorator
@@ -120,7 +120,7 @@ class Total:
                     time.sleep(1)
                     break
             except Exception:
-                self.wq.put((ui_num['시스템로그'], format_exc()))
+                self.wq.put((UI_NUM['시스템로그'], format_exc()))
                 self.mq.put('백테중지')
                 time.sleep(1)
                 break
@@ -187,7 +187,7 @@ class OptimizeConditions:
         except SystemExit:
             pass
         except Exception:
-            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
     # noinspection PyUnresolvedReferences
@@ -243,7 +243,7 @@ class OptimizeConditions:
             valid_days_ = None
 
         if int(backengin_sday) > startday:
-            self.wq.put((ui_num['백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 학습기간 만큼의 데이터가 필요합니다'))
+            self.wq.put((UI_NUM['백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 학습기간 만큼의 데이터가 필요합니다'))
             self._sys_exit(True)
 
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
@@ -252,7 +252,7 @@ class OptimizeConditions:
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
-            self.wq.put((ui_num['백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
+            self.wq.put((UI_NUM['백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self._sys_exit(True)
 
         con = sqlite3.connect(DB_STRATEGY)
@@ -270,7 +270,7 @@ class OptimizeConditions:
             elif '#' in self.buyconds[0] and 'SHORT' in self.buyconds[0] and '#' in self.sellconds[0] and 'SHORT' in self.sellconds[0]:
                 is_long = False
             if is_long is None:
-                self.wq.put((ui_num['백테스트'], '롱숏구분(#LONG 또는 #SHORT)이 없거나 매도수 구분이 다릅니다.\n'))
+                self.wq.put((UI_NUM['백테스트'], '롱숏구분(#LONG 또는 #SHORT)이 없거나 매도수 구분이 다릅니다.\n'))
                 self._sys_exit(True)
 
         if self.is_tick:
@@ -292,23 +292,23 @@ class OptimizeConditions:
                     tdaycnt = train_count - vdaycnt
                     valid_days.append([valid_days_list[0], valid_days_list[-1], tdaycnt, vdaycnt])
                 except Exception:
-                    self.wq.put((ui_num['백테스트'], f'[{vsday} ~ {veday}] 구간의 데이터가 존재하지 않습니다.'))
+                    self.wq.put((UI_NUM['백테스트'], f'[{vsday} ~ {veday}] 구간의 데이터가 존재하지 않습니다.'))
                     self._sys_exit(True)
             if not valid_days:
-                self.wq.put((ui_num['백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
+                self.wq.put((UI_NUM['백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
                 self._sys_exit(True)
 
-        self.wq.put((ui_num['백테스트'], '텍스트에디터 클리어'))
+        self.wq.put((UI_NUM['백테스트'], '텍스트에디터 클리어'))
 
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 학습 기간 {startday} ~ {endday}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 학습 기간 {startday} ~ {endday}'))
         if 'V' in self.backname:
             for vsday, veday, _, _ in valid_days:
-                self.wq.put((ui_num['백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 기간 추출 완료'))
+                self.wq.put((UI_NUM['백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 기간 추출 완료'))
 
         self.buyconds  = [x for x in self.buyconds if x and x[0] != '#']
         self.sellconds = [x for x in self.sellconds if x and x[0] != '#']
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 매도수조건 설정 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 매도수조건 설정 완료'))
 
         arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
@@ -322,7 +322,7 @@ class OptimizeConditions:
         if total_count < rcount:
             rcount = total_count
         rcount = int(rcount / 20)
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 전체 경우의 수 계산 완료 [{total_count:,.0f}]'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 전체 경우의 수 계산 완료 [{total_count:,.0f}]'))
 
         data = ('백테정보', betting, avgtime, startday, endday, starttime, endtime)
         for q in self.beq_list:
@@ -333,15 +333,15 @@ class OptimizeConditions:
 
         mq = Queue()
         Process(target=Total, args=(self.wq, self.tq, mq, self.bstq_list, self.dict_set)).start()
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 
-        self.wq.put((ui_num['백테스트'], f'{self.backname} START'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} START'))
 
         hstd = -float('inf')
         for i in range(rcount):
             buy_conds, sell_conds = self._get_cond_list()
             if len(buy_conds) == 20:
-                self.wq.put((ui_num['백테스트'], f'{self.backname} 백테스트 [{i+1}/{rcount}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
+                self.wq.put((UI_NUM['백테스트'], f'{self.backname} 백테스트 [{i + 1}/{rcount}]단계 시작, 최고 기준값[{hstd:,.2f}]'))
                 self.shared_cnt.value = 0
                 data = ('조건정보', is_long, buy_conds, sell_conds, 3)
                 for q in self.bstq_list:
@@ -363,16 +363,16 @@ class OptimizeConditions:
             else:
                 break
 
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 최적화 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 최적화 완료'))
         if self.result:
             self._show_top_condlist(5, is_long)
             self._show_top_conds()
         else:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} 기준값 0을 초과하는 조합이 없습니다.'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 기준값 0을 초과하는 조합이 없습니다.'))
 
         if self.dict_set['스톰라이브']: self.lq.put(self.backname)
         self.sq.put('조건 최적화가 완료되었습니다.')
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
         self._sys_exit(False)
 
     def _get_cond_list(self):
@@ -426,9 +426,9 @@ class OptimizeConditions:
                 buyconds  = 'if not (' + '):\n    매수 = False\nelif not ('.join(value[0]) + '):\n    매수 = False'
                 sellconds = 'if ' + ':\n    매도 = True\nelif '.join(value[1]) + ':\n    매도 = True'
 
-            self.wq.put((ui_num['백테스트'], f'{self.backname} 결과 - {self.optistandard}[{key:,.2f}]\n'))
-            self.wq.put((ui_num['백테스트'], f'{self.backname} 결과 - 매수조건\n{buyconds}\n'))
-            self.wq.put((ui_num['백테스트'], f'{self.backname} 결과 - 매도조건\n{sellconds}\n'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 결과 - {self.optistandard}[{key:,.2f}]\n'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 결과 - 매수조건\n{buyconds}\n'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 결과 - 매도조건\n{sellconds}\n'))
             data = [[self.optistandard, key, buyconds, sellconds]]
             df = pd.DataFrame(data, columns=['기준', '기준값', '매수코드', '매도코드'], index=[str_ymdhms()])
             con = sqlite3.connect(DB_BACKTEST)
@@ -457,16 +457,16 @@ class OptimizeConditions:
         sell_conds_freq = sorted(sell_conds_freq.items(), key=lambda x: x[1], reverse=True)
 
         text = '조건회적화 결과 - 매수조건 출현빈도\n'
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 결과 - 매수조건 출현빈도'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 결과 - 매수조건 출현빈도'))
         for key, value in buy_conds_freq:
             text += f'[{value}] {key}\n'
-            self.wq.put((ui_num['백테스트'], f'[{value}] {key}'))
+            self.wq.put((UI_NUM['백테스트'], f'[{value}] {key}'))
 
         text += '\n조건회적화 결과 - 매도조건 출현빈도\n'
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 결과 - 매도조건 출현빈도'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 결과 - 매도조건 출현빈도'))
         for key, value in sell_conds_freq:
             text += f'[{value}] {key}\n'
-            self.wq.put((ui_num['백테스트'], f'[{value}] {key}'))
+            self.wq.put((UI_NUM['백테스트'], f'[{value}] {key}'))
 
         df = pd.DataFrame({'조건별출현빈도': [text]}, index=[str_ymdhms()])
         con = sqlite3.connect(DB_BACKTEST)
@@ -479,9 +479,9 @@ class OptimizeConditions:
             cancel: 취소 여부
         """
         if cancel:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} STOP'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} STOP'))
         else:
             self.tq.put('백테완료중지')
-            self.wq.put((ui_num['백테스트'], f'{self.backname} COMPLETE'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} COMPLETE'))
         time.sleep(1)
         sys.exit()

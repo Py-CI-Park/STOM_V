@@ -8,7 +8,7 @@ from ui.event_click.button_clicked_stg_editer_buy import *
 from ui.event_click.button_clicked_stg_editer_opti import *
 from ui.event_click.button_clicked_stg_editer_sell import *
 from ui.event_click.button_clicked_stg_editer_backlog import *
-from utility.settings.setting_base import columns_bt
+from utility.settings.setting_base import COLUMNS_BRT
 from ui.event_activate import activated_etc, activated_stg
 from ui.event_click.table_cell_clicked import cell_clicked_05
 from utility.static_method.static import dt_hms, str_hms, timedelta_sec
@@ -62,7 +62,7 @@ class SetStrategyTab:
 
     # =================================================================================================================
 
-        self.ui.ss_tableWidget_01 = self.wc.setTablewidget(self.ui.st_tab, columns_bt, 32, vscroll=True, fixed=True, clicked=lambda row, col: cell_clicked_05(self.ui, row, col))
+        self.ui.ss_tableWidget_01 = self.wc.setTablewidget(self.ui.st_tab, COLUMNS_BRT, 32, vscroll=True, fixed=True, clicked=lambda row, col: cell_clicked_05(self.ui, row, col))
         self.ui.ss_comboBoxxxx_01 = self.wc.setCombobox(self.ui.st_tab, font=qfont12, activated=lambda: activated_etc.dactivated_01(self.ui, 1))
         self.ui.ss_pushButtonn_01 = self.wc.setPushbutton('백테스트상세기록', parent=self.ui.st_tab, bounced=True, click=lambda: ssbutton_clicked_01(self.ui), tip='백테스트 상세기록을 불러온다.')
         self.ui.ss_pushButtonn_02 = self.wc.setPushbutton('그래프', parent=self.ui.st_tab, bounced=True, click=lambda: ssbutton_clicked_04(self.ui), tip='선택된 상세기록의 그래프를 표시한다.')

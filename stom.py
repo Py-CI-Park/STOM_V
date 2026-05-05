@@ -29,7 +29,7 @@ if __name__ == '__main__':
     import_hook = ImportProgressHook(splash)
     import_hook.install()
 
-    from ui.ui_mainwindow import MainWindow
+    from ui.main_window import MainWindow
     from ui.create_widget.set_style import color_bg_bc, color_fg_bc, color_bg_dk, color_fg_bk, color_fg_hl, color_bg_bk
 
     palette = QPalette()

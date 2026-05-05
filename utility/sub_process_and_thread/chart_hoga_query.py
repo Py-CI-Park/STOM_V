@@ -8,10 +8,10 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
-from trade.manager_formula import ManagerFormula, get_formula_data
+from strategy.manager_formula import ManagerFormula, get_formula_data
 from utility.static_method.static import timedelta_sec, str_ymdhms, dt_ymdhms, add_rolling_data, dt_ymdhm, str_ymdhm
-from utility.settings.setting_base import ui_num, DB_TRADELIST, DB_PATH, DB_BACKTEST, DB_CODE_INFO, DB_SETTING, \
-    DB_STRATEGY, columns_hj, code_info_tables
+from utility.settings.setting_base import UI_NUM, DB_TRADELIST, DB_PATH, DB_BACKTEST, DB_CODE_INFO, DB_SETTING, \
+    DB_STRATEGY, COLUMNS_HJ, CODE_INFO_TABLES
 
 
 class ChartHogaQuery:
@@ -23,7 +23,6 @@ class ChartHogaQuery:
            0        1       2      3       4      5      6      7       8        9       10     11    12
         """
         self.windowQ      = qlist[0]
-        self.soundQ       = qlist[1]
         self.queryQ       = qlist[2]
         self.chartQ       = qlist[4]
         self.hogaQ        = qlist[5]
@@ -31,6 +30,7 @@ class ChartHogaQuery:
         self.dict_set     = dict_set
         self.dict_name    = {}
         self.dict_findex  = {}
+        self.index_arry   = None
         self.market_gubun = None
         self.market_info  = None
         self.arry_kosp    = None
@@ -56,7 +56,7 @@ class ChartHogaQuery:
     def _update_dict_name(self):
         """종목명 딕셔너리를 업데이트합니다."""
         con = sqlite3.connect(DB_CODE_INFO)
-        for table in code_info_tables:
+        for table in CODE_INFO_TABLES:
             df = pd.read_sql(f'SELECT * FROM {table}', con).set_index('index')
             self.dict_name.update(df['종목명'].to_dict())
         con.close()
@@ -69,6 +69,18 @@ class ChartHogaQuery:
         self.is_tick      = self.dict_set['타임프레임']
         factor_list       = self.market_info['팩터목록'][self.is_tick]
         self.dict_findex  = {factor: i for i, factor in enumerate(factor_list)}
+        if self.is_tick:
+            self.index_arry = np.array([
+                self.dict_findex['현재가'], self.dict_findex['체결강도'], self.dict_findex['등락율'],
+                self.dict_findex['당일거래대금'], self.dict_findex['초당매수수량'], self.dict_findex['초당매도수량'],
+                self.dict_findex['초당거래대금']
+            ])
+        else:
+            self.index_arry = np.array([
+                self.dict_findex['현재가'], self.dict_findex['체결강도'], self.dict_findex['등락율'],
+                self.dict_findex['당일거래대금'], self.dict_findex['분당매수수량'], self.dict_findex['분당매도수량'],
+                self.dict_findex['분당거래대금'], self.dict_findex['분봉고가'], self.dict_findex['분봉저가']
+            ])
 
     def __del__(self):
         """소멸자입니다. 데이터베이스 연결을 닫습니다."""
@@ -93,11 +105,11 @@ class ChartHogaQuery:
                         if self.hoga_name == data[0]:
                             self._update_hoga_jalryang(data)
                             if self.dict_hj is not None:
-                                self.windowQ.put((ui_num['호가종목'], pd.DataFrame([self.dict_hj])))
+                                self.windowQ.put((UI_NUM['호가종목'], pd.DataFrame([self.dict_hj])))
                             if self.dict_hc is not None:
-                                self.windowQ.put((ui_num['호가체결'], pd.DataFrame(self.dict_hc)))
+                                self.windowQ.put((UI_NUM['호가체결'], pd.DataFrame(self.dict_hc)))
                             if self.dict_hg is not None:
-                                self.windowQ.put((ui_num['호가잔량'], pd.DataFrame(self.dict_hg)))
+                                self.windowQ.put((UI_NUM['호가잔량'], pd.DataFrame(self.dict_hg)))
 
                 if not self.queryQ.empty():
                     data = self.queryQ.get()
@@ -135,7 +147,7 @@ class ChartHogaQuery:
                         self._db_now_day_divide()
                     elif data == '프로세스종료':
                         break
-                    self.windowQ.put((ui_num['DB관리'], 'DB업데이트완료'))
+                    self.windowQ.put((UI_NUM['DB관리'], 'DB업데이트완료'))
 
                 if not self.chartQ.empty():
                     data = self.chartQ.get()
@@ -149,7 +161,7 @@ class ChartHogaQuery:
 
                 time.sleep(0.01)
             except Exception:
-                self.windowQ.put((ui_num['시스템로그'], format_exc()))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
     def _init_hoga(self):
         """호가 딕셔너리를 초기화합니다."""
@@ -162,9 +174,9 @@ class ChartHogaQuery:
         self.dict_hg = {
             '잔량': [0.] * 12, '호가': [0.] * 12
         }
-        self.windowQ.put((ui_num['호가종목'], pd.DataFrame([self.dict_hj])))
-        self.windowQ.put((ui_num['호가체결'], pd.DataFrame(self.dict_hc)))
-        self.windowQ.put((ui_num['호가잔량'], pd.DataFrame(self.dict_hg)))
+        self.windowQ.put((UI_NUM['호가종목'], pd.DataFrame([self.dict_hj])))
+        self.windowQ.put((UI_NUM['호가체결'], pd.DataFrame(self.dict_hc)))
+        self.windowQ.put((UI_NUM['호가잔량'], pd.DataFrame(self.dict_hg)))
         self.hoga_name = ''
 
     def _update_hoga_jongmok(self, data):
@@ -317,10 +329,10 @@ class ChartHogaQuery:
                 저가
             ]
 
-            df_hj = pd.DataFrame([hj], columns=columns_hj)
+            df_hj = pd.DataFrame([hj], columns=COLUMNS_HJ)
             df_hg = pd.DataFrame({'잔량': jr, '호가': hg})
-            self.windowQ.put((ui_num['호가종목'], df_hj, str(int(data[0]))))
-            self.windowQ.put((ui_num['호가잔량'], df_hg))
+            self.windowQ.put((UI_NUM['호가종목'], df_hj, str(int(data[0]))))
+            self.windowQ.put((UI_NUM['호가잔량'], df_hg))
 
     def _settings_change(self, data):
         """설정을 변경합니다.
@@ -384,11 +396,11 @@ class ChartHogaQuery:
             for i, code in enumerate(table_list):
                 query_del = f"DELETE FROM '{code}' WHERE `index` LIKE '{data[1]}%'"
                 cur.execute(query_del)
-                self.windowQ.put((ui_num['DB관리'], f'백테DB [{code}] 지정일자 데이터 삭제 중 ... [{i + 1}/{last}]'))
+                self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{code}] 지정일자 데이터 삭제 중 ... [{i + 1}/{last}]'))
             con.commit()
-            self.windowQ.put((ui_num['DB관리'], '백테DB 지정일자 데이터 삭제 완료'))
+            self.windowQ.put((UI_NUM['DB관리'], '백테DB 지정일자 데이터 삭제 완료'))
         else:
-            self.windowQ.put((ui_num['DB관리'], '백테DB에 데이터가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '백테DB에 데이터가 존재하지 않습니다.'))
         con.close()
 
     def _db_day_day_delete(self, data):
@@ -399,9 +411,9 @@ class ChartHogaQuery:
         file_name = f"{self.market_info['일자디비경로'][self.is_tick]}_{data[1]}.db"
         if os.path.isfile(file_name):
             os.remove(file_name)
-            self.windowQ.put((ui_num['DB관리'], f'일자DB [{file_name}] 삭제 완료'))
+            self.windowQ.put((UI_NUM['DB관리'], f'일자DB [{file_name}] 삭제 완료'))
         else:
-            self.windowQ.put((ui_num['DB관리'], '지정한 일자의 일자DB가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '지정한 일자의 일자DB가 존재하지 않습니다.'))
 
     def _db_day_time_delete(self, data):
         """일자DB의 지정시간 이후 데이터를 삭제합니다.
@@ -438,10 +450,10 @@ class ChartHogaQuery:
                         cur.execute(f'DROP TABLE "{code}"')
                 cur.execute('VACUUM;')
                 con.close()
-                self.windowQ.put((ui_num['DB관리'], f'일자DB [{db_name}] 지정시간 이후 데이터 삭제 중 ... [{i + 1}/{last}]'))
-            self.windowQ.put((ui_num['DB관리'], '일자DB 지정시간 이후 데이터 삭제 완료'))
+                self.windowQ.put((UI_NUM['DB관리'], f'일자DB [{db_name}] 지정시간 이후 데이터 삭제 중 ... [{i + 1}/{last}]'))
+            self.windowQ.put((UI_NUM['DB관리'], '일자DB 지정시간 이후 데이터 삭제 완료'))
         else:
-            self.windowQ.put((ui_num['DB관리'], '일자DB가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '일자DB가 존재하지 않습니다.'))
 
     def _db_now_time_delete(self, data):
         """당일DB의 지정시간 이후 데이터를 삭제합니다.
@@ -453,7 +465,7 @@ class ChartHogaQuery:
         try:
             df = pd.read_sql('SELECT * FROM moneytop', con)
         except Exception:
-            self.windowQ.put((ui_num['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
         else:
             cur = con.cursor()
             df['시간'] = df['index'].apply(lambda x: int(str(x)[8:]))
@@ -478,11 +490,11 @@ class ChartHogaQuery:
                             cur.execute(f'DROP TABLE "{code}"')
                     elif code != 'moneytop':
                         cur.execute(f'DROP TABLE "{code}"')
-                    self.windowQ.put((ui_num['DB관리'], f'당일DB [{code}] 지정시간 이후 데이터 삭제 중 ... [{i + 1}/{last}]'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 지정시간 이후 데이터 삭제 중 ... [{i + 1}/{last}]'))
                 cur.execute('VACUUM;')
-                self.windowQ.put((ui_num['DB관리'], '당일DB 지정시간 이후 데이터 삭제 완료'))
+                self.windowQ.put((UI_NUM['DB관리'], '당일DB 지정시간 이후 데이터 삭제 완료'))
             else:
-                self.windowQ.put((ui_num['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
+                self.windowQ.put((UI_NUM['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
         con.close()
 
     def _db_now_time_change(self, data):
@@ -506,10 +518,10 @@ class ChartHogaQuery:
                 else:
                     df['index'] = df['index'] - 100
                 df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
-                self.windowQ.put((ui_num['DB관리'], f'당일DB [{code}] 체결시간 조정 중 ... [{i + 1}/{last}]'))
-            self.windowQ.put((ui_num['DB관리'], '당일DB 체결시간 조정 완료'))
+                self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 체결시간 조정 중 ... [{i + 1}/{last}]'))
+            self.windowQ.put((UI_NUM['DB관리'], '당일DB 체결시간 조정 완료'))
         else:
-            self.windowQ.put((ui_num['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
         con.close()
 
     def _db_back_create(self, data):
@@ -524,7 +536,7 @@ class ChartHogaQuery:
         if file_list:
             if os.path.isfile(BACK_FILE):
                 os.remove(BACK_FILE)
-                self.windowQ.put((ui_num['DB관리'], f'{BACK_FILE} 삭제 완료'))
+                self.windowQ.put((UI_NUM['DB관리'], f'{BACK_FILE} 삭제 완료'))
 
             con = sqlite3.connect(BACK_FILE)
             code_info_table_name = self.market_info['종목디비']
@@ -543,13 +555,13 @@ class ChartHogaQuery:
                         if len(df) > 0:
                             df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
                     con2.close()
-                    self.windowQ.put((ui_num['DB관리'], f'백테DB [{db_name}] 데이터 추가 중 ... [{i + 1}/{last}]'))
-                self.windowQ.put((ui_num['DB관리'], f'백테DB {BACK_FILE} 생성 완료'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{db_name}] 데이터 추가 중 ... [{i + 1}/{last}]'))
+                self.windowQ.put((UI_NUM['DB관리'], f'백테DB {BACK_FILE} 생성 완료'))
             else:
-                self.windowQ.put((ui_num['DB관리'], '지정한 기간의 일자DB가 존재하지 않습니다.'))
+                self.windowQ.put((UI_NUM['DB관리'], '지정한 기간의 일자DB가 존재하지 않습니다.'))
             con.close()
         else:
-            self.windowQ.put((ui_num['DB관리'], '일자DB가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '일자DB가 존재하지 않습니다.'))
 
     def _db_back_area_add(self, data):
         """백테스트 DB에 일자 데이터를 추가합니다.
@@ -578,13 +590,13 @@ class ChartHogaQuery:
                         if len(df) > 0:
                             df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
                     con2.close()
-                    self.windowQ.put((ui_num['DB관리'], f'백테DB [{db_name}] 데이터 추가 중 ... [{i + 1}/{last}]'))
-                self.windowQ.put((ui_num['DB관리'], f'백테DB [{data[1]} ~ {data[2]}] 데이터 추가 완료'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{db_name}] 데이터 추가 중 ... [{i + 1}/{last}]'))
+                self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{data[1]} ~ {data[2]}] 데이터 추가 완료'))
             else:
-                self.windowQ.put((ui_num['DB관리'], '지정한 기간의 일자DB가 존재하지 않습니다.'))
+                self.windowQ.put((UI_NUM['DB관리'], '지정한 기간의 일자DB가 존재하지 않습니다.'))
             con.close()
         else:
-            self.windowQ.put((ui_num['DB관리'], '일자DB가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '일자DB가 존재하지 않습니다.'))
 
     def _db_back_add(self):
         """백테스트 DB에 당일DB 데이터를 추가합니다.
@@ -594,7 +606,7 @@ class ChartHogaQuery:
         try:
             df = pd.read_sql('SELECT * FROM moneytop', con)
         except Exception:
-            self.windowQ.put((ui_num['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
             con.close()
         else:
             BACK_FILE = self.market_info['백테디비'][self.is_tick]
@@ -606,8 +618,8 @@ class ChartHogaQuery:
             file_day_list = [x.strip(first_name).strip('.db') for x in file_list if
                              first_name in x and '.db' in x and 'back' not in x]
             if len(set(day_list) - set(file_day_list)) > 0:
-                self.windowQ.put((ui_num['DB관리'], '경고! 추가 후 당일 DB가 삭제됩니다.'))
-                self.windowQ.put((ui_num['DB관리'], '일자별 분리 후 재실행하십시오.'))
+                self.windowQ.put((UI_NUM['DB관리'], '경고! 추가 후 당일 DB가 삭제됩니다.'))
+                self.windowQ.put((UI_NUM['DB관리'], '일자별 분리 후 재실행하십시오.'))
                 con2.close()
                 con.close()
             else:
@@ -622,14 +634,14 @@ class ChartHogaQuery:
                     df = pd.read_sql(f'SELECT * FROM "{code}"', con)
                     if len(df) > 0:
                         df.to_sql(code, con2, index=False, if_exists='append', chunksize=2000)
-                    self.windowQ.put((ui_num['DB관리'], f'백테DB [{code}] 데이터 추가 중 ... [{i + 1}/{last}]'))
-                self.windowQ.put((ui_num['DB관리'], '당일DB 데이터, 백테DB로 추가 완료'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'백테DB [{code}] 데이터 추가 중 ... [{i + 1}/{last}]'))
+                self.windowQ.put((UI_NUM['DB관리'], '당일DB 데이터, 백테DB로 추가 완료'))
                 con2.close()
                 con.close()
 
                 if os.path.isfile(DB_FILE):
                     os.remove(DB_FILE)
-                    self.windowQ.put((ui_num['DB관리'], f'당일DB {DB_FILE} 삭제 완료'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'당일DB {DB_FILE} 삭제 완료'))
 
     def _db_now_day_divide(self):
         """당일DB 데이터를 일자별로 분리합니다.
@@ -639,7 +651,7 @@ class ChartHogaQuery:
         try:
             df = pd.read_sql('SELECT * FROM moneytop', con)
         except Exception:
-            self.windowQ.put((ui_num['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
+            self.windowQ.put((UI_NUM['DB관리'], '당일DB에 데이터가 존재하지 않습니다.'))
         else:
             df['일자'] = df['index'].apply(lambda x: int(str(x)[:8]))
             day_list = df['일자'].unique()
@@ -655,10 +667,10 @@ class ChartHogaQuery:
                             con2 = sqlite3.connect(f'{DB_PATH}/{first_name}{day}.db')
                             df.to_sql(code, con2, index=False, if_exists='replace', chunksize=2000)
                             con2.close()
-                    self.windowQ.put((ui_num['DB관리'], f'당일DB [{code}] 데이터 분리 중 ... [{i + 1}/{last}]'))
-                self.windowQ.put((ui_num['DB관리'], '당일DB 데이터, 일자DB로 분리 완료'))
+                    self.windowQ.put((UI_NUM['DB관리'], f'당일DB [{code}] 데이터 분리 중 ... [{i + 1}/{last}]'))
+                self.windowQ.put((UI_NUM['DB관리'], '당일DB 데이터, 일자DB로 분리 완료'))
             else:
-                self.windowQ.put((ui_num['DB관리'], '일자DB에 데이터가 존재하지 않습니다.'))
+                self.windowQ.put((UI_NUM['DB관리'], '일자DB에 데이터가 존재하지 않습니다.'))
         con.close()
 
     @staticmethod
@@ -720,7 +732,7 @@ class ChartHogaQuery:
             db_name = db_name2
 
         if db_name is None:
-            self.windowQ.put((ui_num['차트'], '차트오류'))
+            self.windowQ.put((UI_NUM['차트'], '차트오류'))
             return
 
         if starttime == '':
@@ -744,7 +756,7 @@ class ChartHogaQuery:
             df = pd.read_sql(query, con)
             con.close()
         except Exception:
-            self.windowQ.put((ui_num['차트'], '차트오류'))
+            self.windowQ.put((UI_NUM['차트'], '차트오류'))
             return
 
         round_unit = self.market_info['반올림단위']
@@ -753,9 +765,9 @@ class ChartHogaQuery:
             w_unit = self.dict_set['평균값계산틱수']
 
         if cf1 is None:
-            arry = add_rolling_data(df, round_unit, angle_cf_list, self.is_tick, [w_unit])
+            arry = add_rolling_data(df, round_unit, angle_cf_list, [w_unit], self.is_tick, self.index_arry)
         else:
-            arry = add_rolling_data(df, round_unit, angle_cf_list, self.is_tick, [w_unit], cf1=cf1, cf2=cf2)
+            arry = add_rolling_data(df, round_unit, angle_cf_list, [w_unit], self.is_tick, self.index_arry, cf1=cf1, cf2=cf2)
 
         if not self.is_tick:
             arry = np.column_stack((arry, np.zeros((arry.shape[0], 28))))
@@ -834,7 +846,7 @@ class ChartHogaQuery:
                     arry[:,  -1] = WILLR
                 arry = np.nan_to_num(arry)
             except Exception:
-                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 보조지표의 설정값이 잘못되었습니다.'))
+                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 보조지표의 설정값이 잘못되었습니다.'))
                 return
 
         fm_list, dict_fm, fm_tcnt = get_formula_data(True, arry.shape[1])
@@ -920,4 +932,4 @@ class ChartHogaQuery:
 
         if self.is_tick: xticks = [dt_ymdhms(str(int(x))).timestamp() for x in arry[:, 0]]
         else:            xticks = [dt_ymdhms(f'{int(x)}00').timestamp() for x in arry[:, 0]]
-        self.windowQ.put((ui_num['차트'], xticks, arry, buy_index, sell_index, fm_list, dict_fm, fm_tcnt))
+        self.windowQ.put((UI_NUM['차트'], xticks, arry, buy_index, sell_index, fm_list, dict_fm, fm_tcnt))

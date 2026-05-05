@@ -16,26 +16,26 @@ class SetDialogStrategy:
 
     def set(self):
         """전략 다이얼로그를 설정합니다."""
-        self.ui.dialog_strategy = self.wc.setDialog('STOM STRATEGY')
+        self.ui.dialog_strategy = self.wc.setDialog('STOM STRATEGY', location_save=True)
         self.ui.dialog_strategy.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_strategy)
 
         def color_number():
-            if idx in (66, 71, 76, 86, 116):
+            if idx in (1, 151, 156, 161, 166, 176):
                 return 2
-            elif idx <= 30:
+            elif idx <= 70:
                 return 7
-            elif idx <= 45:
-                return 8
-            elif idx <= 65:
-                return 9
-            elif idx <= 75:
-                return 10
             elif idx <= 85:
-                return 11
+                return 8
             elif idx <= 115:
+                return 9
+            elif idx <= 130:
+                return 10
+            elif idx <= 150:
+                return 11
+            elif idx <= 165:
                 return 12
-            elif idx <= 185:
+            elif idx <= 175:
                 return 13
             return 14
 
@@ -47,14 +47,8 @@ class SetDialogStrategy:
             setattr(self.ui, f'stg_pushButton_{idx:03d}', pushButton)
 
         self.ui.dialog_strategy.resize(1050, 1365)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_strategy.move(self.ui.dict_set['창위치'][20], self.ui.dict_set['창위치'][21])
-            except Exception:
-                pass
 
-        self.ui.button_index_list = [x for x in range(116, 206)]
-        self.ui.button_index_list = self.ui.button_index_list + [x for x in range(1, 116)]
+        self.ui.button_index_list = [x for x in range(1, 206)]
         grid_layout = QGridLayout(self.ui.dialog_strategy)
         grid_layout.setSpacing(5)
         grid_layout.setContentsMargins(5, 5, 5, 5)

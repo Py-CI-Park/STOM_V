@@ -13,7 +13,7 @@ def set_builtin_print(q):
     import re
     import inspect
     import builtins
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
 
     # noinspection PyUnusedLocal,PyUnresolvedReferences
     def ui_print(*args, sep=' ', end='\n', file=None):
@@ -45,7 +45,7 @@ def set_builtin_print(q):
             message = message.lstrip()
             message = message.rstrip()
             message = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', message)
-            q.put((ui_num['시스템로그'], message))
+            q.put((UI_NUM['시스템로그'], message))
         except Exception:
             pass
 
@@ -62,66 +62,34 @@ def get_ema_list(is_tick):
     return (60, 150, 300, 600, 1200) if is_tick else (5, 10, 20, 60, 120)
 
 
-def add_rolling_data(df, round_unit, angle_cf_list, is_tick, avg_list, cf1=None, cf2=None):
-    """롤링 데이터를 추가합니다.
+def add_rolling_data(df, round_unit, angle_cf_list, avg_list, is_tick, index_arry, cf1=None, cf2=None):
+    """numba를 사용하여 롤링 데이터를 추가합니다.
     Args:
         df: 데이터프레임
         round_unit: 반올림 단위
         angle_cf_list: 각도 계수 리스트
-        is_tick: 틱 데이터 여부
         avg_list: 평균 리스트
-        cf1: 계수1
-        cf2: 계수2
+        is_tick: 틱 데이터 여부
+        index_arry: 칼럼인덱스 배열
+        cf1: 각도 계수1
+        cf2: 각도 계수2
     Returns:
         배열
     """
-    for window in get_ema_list(is_tick):
-        df[f'이동평균{window}'] = df['현재가'].rolling(window=window).mean().round(round_unit)
+    from utility.static_method.numba_rolling import numba_rolling_data_tick, numba_rolling_data_min
 
-    for avg in avg_list:
-        rolling_data = df['현재가'].rolling(window=avg)
-        df[f'최고현재가{avg}'] = rolling_data.max()
-        df[f'최저현재가{avg}'] = rolling_data.min()
+    if cf1 is None:
+        cf1, cf2 = angle_cf_list
 
-        if not is_tick:
-            df[f'최고분봉고가{avg}'] = df['분봉고가'].rolling(window=avg).max()
-            df[f'최저분봉저가{avg}'] = df['분봉저가'].rolling(window=avg).min()
+    input_array = df.values
+    ema_windows = get_ema_list(is_tick)
 
-        rolling_data = df['체결강도'].rolling(window=avg)
-        df[f'체결강도평균{avg}'] = rolling_data.mean().round(3)
-        df[f'최고체결강도{avg}'] = rolling_data.max()
-        df[f'최저체결강도{avg}'] = rolling_data.min()
+    if is_tick:
+        result_array = numba_rolling_data_tick(input_array, ema_windows, avg_list, cf1, cf2, round_unit, index_arry)
+    else:
+        result_array = numba_rolling_data_min(input_array, ema_windows, avg_list, cf1, cf2, round_unit, index_arry)
 
-        if is_tick:
-            rolling_data1 = df['초당매수수량'].rolling(window=avg)
-            rolling_data2 = df['초당매도수량'].rolling(window=avg)
-            df[f'최고초당매수수량{avg}'] = rolling_data1.max()
-            df[f'최고초당매도수량{avg}'] = rolling_data2.max()
-            df[f'누적초당매수수량{avg}'] = rolling_data1.sum()
-            df[f'누적초당매도수량{avg}'] = rolling_data2.sum()
-            df[f'초당거래대금평균{avg}'] = df['초당거래대금'].rolling(window=avg).mean().round(0)
-        else:
-            rolling_data1 = df['분당매수수량'].rolling(window=avg)
-            rolling_data2 = df['분당매도수량'].rolling(window=avg)
-            df[f'최고분당매수수량{avg}'] = rolling_data1.max()
-            df[f'최고분당매도수량{avg}'] = rolling_data2.max()
-            df[f'누적분당매수수량{avg}'] = rolling_data1.sum()
-            df[f'누적분당매도수량{avg}'] = rolling_data2.sum()
-            df[f'분당거래대금평균{avg}'] = df['분당거래대금'].rolling(window=avg).mean().round(0)
-
-        if cf1 is None:
-            cf1, cf2 = angle_cf_list
-
-        df2 = df[['등락율', '당일거래대금']].copy()
-        df2[f'등락율N{avg}'] = df2['등락율'].shift(avg - 1)
-        df2['등락율차이'] = df2['등락율'] - df2[f'등락율N{avg}']
-        df2[f'당일거래대금N{avg}'] = df2['당일거래대금'].shift(avg - 1)
-        df2['당일거래대금차이'] = df2['당일거래대금'] - df2[f'당일거래대금N{avg}']
-        df['등락율각도'] = round(np.arctan2(df2['등락율차이'] * cf1, avg) / (2 * np.pi) * 360, 2)
-        df['당일거래대금각도'] = round(np.arctan2(df2['당일거래대금차이'] * cf2, avg) / (2 * np.pi) * 360, 2)
-
-    arry = np.array(df)
-    return np.nan_to_num(arry)
+    return np.nan_to_num(result_array)
 
 
 def error_decorator(func):
@@ -130,19 +98,19 @@ def error_decorator(func):
         래퍼 함수
     """
     from traceback import format_exc
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
 
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
         except Exception:
             if args:
-                if hasattr(args[0], 'ui'):
-                    args[0].ui.windowQ.put((ui_num['시스템로그'], format_exc()))
-                elif hasattr(args[0], 'windowQ'):
-                    args[0].windowQ.put((ui_num['시스템로그'], format_exc()))
+                if hasattr(args[0], 'windowQ'):
+                    args[0].windowQ.put((UI_NUM['시스템로그'], format_exc()))
+                elif hasattr(args[0], 'ui'):
+                    args[0].ui.windowQ.put((UI_NUM['시스템로그'], format_exc()))
                 elif hasattr(args[0], 'wq'):
-                    args[0].wq.put((ui_num['시스템로그'], format_exc()))
+                    args[0].wq.put((UI_NUM['시스템로그'], format_exc()))
             return None
     return wrapper
 
@@ -845,7 +813,7 @@ def get_hogaunit_stock(price):
     return _HOGA_NEW_VALS[idx]
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_stock(bg, cg, etfn=False):
     """주식 수익을 계산합니다.
     Args:
@@ -865,7 +833,7 @@ def get_profit_stock(bg, cg, etfn=False):
     return pg, sg, sp
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_stock_os(bg, cg):
     """해외 주식 수익을 계산합니다.
     Args:
@@ -883,7 +851,7 @@ def get_profit_stock_os(bg, cg):
     return pg, sg, sp
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_future_long(bg, cg):
     """선물 롱 수익을 계산합니다.
     Args:
@@ -899,7 +867,7 @@ def get_profit_future_long(bg, cg):
     return pg, sg, sp
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_future_short(bg, cg):
     """선물 숏 수익을 계산합니다.
     Args:
@@ -915,7 +883,7 @@ def get_profit_future_short(bg, cg):
     return pg, sg, sp
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_future_os_long(mini, bg, cg):
     """해외 선물 롱 수익을 계산합니다.
     Args:
@@ -932,7 +900,7 @@ def get_profit_future_os_long(mini, bg, cg):
     return pg, sg, sp
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_future_os_short(mini, bg, cg):
     """해외 선물 숏 수익을 계산합니다.
     Args:
@@ -949,7 +917,7 @@ def get_profit_future_os_short(mini, bg, cg):
     return pg, sg, sp
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_coin(bg, cg):
     """코인 수익을 계산합니다.
     Args:
@@ -966,7 +934,7 @@ def get_profit_coin(bg, cg):
     return pg, sg, sp
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_coin_future_long(bg, cg, market1, market2):
     """코인 선물 롱 수익을 계산합니다.
     Args:
@@ -985,7 +953,7 @@ def get_profit_coin_future_long(bg, cg, market1, market2):
     return pg, sg, sp
 
 
-@njit(cache=True)
+@njit(cache=True, fastmath=True)
 def get_profit_coin_future_short(bg, cg, market1, market2):
     """코인 선물 숏 수익을 계산합니다.
     Args:

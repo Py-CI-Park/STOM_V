@@ -1,4 +1,11 @@
 
+def dialog_move(ui):
+    """다이얼로그를 이동합니다."""
+    for i, dialog in enumerate(ui.move_dialog_list):
+        x, y = ui.dict_set['창위치'][i]
+        dialog.move(int(x), int(y))
+
+
 def update_image(ui, data):
     """이미지를 업데이트합니다.
     Args:
@@ -27,52 +34,83 @@ def auto_back_schedule(ui, gubun):
         gubun (int): 구분 번호 (0: 패턴학습확인, 1: 시작, 2: 스케줄러 표시)
     """
     from utility.static_method.static import qtest_qwait
+    from strategy.analyzer_volume_spike import spike_setting_load, spike_train
+    from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
+    from strategy.analyzer_candle_pattern import pattern_setting_load, pattern_train
+    from strategy.analyzer_volume_profile import volume_setting_load, volume_profile_train
+    from strategy.analyzer_volatility_pattern import volatility_setting_load, volatility_train
+    from ui.event_click.button_clicked_backtest_engine import backengine_show, backengine_start
+    from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_04, sdbutton_clicked_02
 
     if gubun == 0:
-        from ui.event_click.button_clicked_show_dialog import show_pattern_dialog
-        from trade.analyzer_pattern import pattern_setting_load, pattern_train
+        if ui.dict_set['캔들분석']:
+            ui.auto_mode = True
+            if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 캔들분석 학습을 시작합니다.')
+            if not ui.dialog_pattern.isVisible():
+                ui.dialog_pattern.show()
+            qtest_qwait(2)
+            pattern_setting_load(ui)
+            qtest_qwait(2)
+            pattern_train(ui)
+        else:
+            auto_back_schedule(ui, 0.2)
 
-        ui.auto_mode = True
-        if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
-            ui.soundQ.put('예약된 패턴학습을 시작합니다.')
-        if not ui.dialog_pattern.isVisible():
-            show_pattern_dialog(ui)
-        qtest_qwait(2)
-        pattern_setting_load(ui)
-        qtest_qwait(2)
-        pattern_train(ui)
+    elif gubun == 0.2:
+        if ui.dict_set['가격대분석']:
+            ui.auto_mode = True
+            if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 가격대분석 학습을 시작합니다.')
+            if not ui.dialog_pattern.isVisible():
+                ui.dialog_pattern.show()
+            qtest_qwait(2)
+            volume_setting_load(ui)
+            qtest_qwait(2)
+            volume_profile_train(ui)
+        else:
+            auto_back_schedule(ui, 0.4)
 
-    elif gubun == 0.5:
-        from ui.event_click.button_clicked_show_dialog import show_volume_dialog
-        from trade.analyzer_volume_profile import volume_setting_load, volume_profile_train
+    elif gubun == 0.4:
+        if ui.dict_set['거래량분석']:
+            ui.auto_mode = True
+            if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 거래량분석 학습을 시작합니다.')
+            if not ui.dialog_pattern.isVisible():
+                ui.dialog_pattern.show()
+            qtest_qwait(2)
+            spike_setting_load(ui)
+            qtest_qwait(2)
+            spike_train(ui)
+        else:
+            auto_back_schedule(ui, 0.6)
 
-        ui.auto_mode = True
-        if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
-            ui.soundQ.put('예약된 볼륨 프로파일 학습을 시작합니다.')
-        if not ui.dialog_volume.isVisible():
-            show_volume_dialog(ui)
-        qtest_qwait(2)
-        volume_setting_load(ui)
-        qtest_qwait(2)
-        volume_profile_train(ui)
+    elif gubun == 0.6:
+        if ui.dict_set['변동성분석']:
+            ui.auto_mode = True
+            if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 변동성분석 학습을 시작합니다.')
+            if not ui.dialog_pattern.isVisible():
+                ui.dialog_pattern.show()
+            qtest_qwait(2)
+            volatility_setting_load(ui)
+            qtest_qwait(2)
+            volatility_train(ui)
+        else:
+            auto_back_schedule(ui, 1)
 
     elif gubun == 1:
-        from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
-        from ui.event_click.button_clicked_backtest_engine import backengine_show, backengine_start
-
         ui.auto_mode = True
+        if ui.dialog_pattern.isVisible():
+            ui.dialog_pattern.close()
         if ui.dict_set['알림소리'] or ui.dict_set['알림소리']:
             ui.soundQ.put('예약된 백테스트 스케쥴러를 시작합니다.')
-        if not ui.dialog_backengine.isVisible():
-            backengine_show(ui)
+        backengine_show(ui)
         qtest_qwait(2)
         backtest_engine_kill(ui)
         qtest_qwait(3)
         backengine_start(ui)
 
     elif gubun == 2:
-        from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_04, sdbutton_clicked_02
-
         if not ui.dialog_scheduler.isVisible():
             ui.dialog_scheduler.show()
         qtest_qwait(2)
@@ -98,7 +136,7 @@ def update_dictset(ui, force=False):
     from utility.settings.setting_user import load_settings
 
     if force:
-        ui.dict_set = load_settings()
+        ui.dict_set, _ = load_settings()
         change_chart_factors(ui)
         send_dict_set(ui)
 
@@ -180,7 +218,7 @@ def calendar_clicked(ui):
         ui: UI 객체
     """
     import pandas as pd
-    from utility.settings.setting_base import columns_dt, columns_dd, ui_num
+    from utility.settings.setting_base import COLUMNS_DTT, COLUMNS_DTD, UI_NUM
 
     table_name = ui.market_info['거래디비']
     searchday = ui.calendarWidgetttt.selectedDate().toString('yyyyMMdd')
@@ -194,13 +232,13 @@ def calendar_clicked(ui):
         nbg, nsg = df1['매수금액'].sum(), df1['매도금액'].sum()
         sp = round((nsg / nbg - 1) * 100, 2)
         npg, nmg, nsig = df1[df1['수익금'] > 0]['수익금'].sum(), df1[df1['수익금'] < 0]['수익금'].sum(), df1['수익금'].sum()
-        df2 = pd.DataFrame(columns=columns_dt)
+        df2 = pd.DataFrame(columns=COLUMNS_DTT)
         df2.loc[0] = [searchday, nbg, nsg, npg, nmg, sp, nsig]
     else:
-        df1 = pd.DataFrame(columns=columns_dd)
-        df2 = pd.DataFrame(columns=columns_dt)
-    ui.update_tablewidget.update_tablewidget((ui_num['당일합계'], df2))
-    ui.update_tablewidget.update_tablewidget((ui_num['당일상세'], df1))
+        df1 = pd.DataFrame(columns=COLUMNS_DTD)
+        df2 = pd.DataFrame(columns=COLUMNS_DTT)
+    ui.update_tablewidget.update_tablewidget((UI_NUM['당일합계'], df2))
+    ui.update_tablewidget.update_tablewidget((UI_NUM['당일상세'], df1))
 
 
 def chart_screenshot(ui):
@@ -284,3 +322,17 @@ def strategy_setting_label_change(ui):
     else:
         ui.sj_strgy_label_02.setText(
             '종목당투자금                          USDT                  ▣  전략중지 및 잔고청산   |')
+
+
+def pattern_setting_help(ui):
+    from ui.create_widget.set_text import pattern_text_list
+
+    if ui.dialog_pattern.focusWidget() == ui.ptn_pushButton_00:
+        text = pattern_text_list[0]
+    elif ui.dialog_pattern.focusWidget() == ui.vpf_pushButton_00:
+        text = pattern_text_list[1]
+    elif ui.dialog_pattern.focusWidget() == ui.vsp_pushButton_00:
+        text = pattern_text_list[2]
+    else:
+        text = pattern_text_list[3]
+    ui.ptn_labellllll_02.setText(text)

@@ -5,14 +5,16 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
-from trade.analyzer_risk import AnalyzerRisk
-from trade.stg_globals_func import StgGlobalsFunc
-from trade.manager_formula import get_formula_data
-from trade.analyzer_pattern import AnalyzerPattern
-from trade.analyzer_microstruc import AnalyzerMicrostructure
-from trade.analyzer_volume_profile import AnalyzerVolumeProfile
-from utility.settings.setting_base import indicator, DB_SETTING
-from utility.settings.setting_base import DB_STRATEGY, ui_num, dict_order_ratio
+from strategy.analyzer_risk import AnalyzerRisk
+from strategy.stg_globals_func import StgGlobalsFunc
+from strategy.manager_formula import get_formula_data
+from strategy.analyzer_volume_spike import AnalyzerVolumeSpike
+from strategy.analyzer_candle_pattern import AnalyzerCandlePattern
+from strategy.analyzer_volume_profile import AnalyzerVolumeProfile
+from strategy.analyzer_microstructure import AnalyzerMicrostructure
+from utility.settings.setting_base import DICT_INDICATOR, DB_SETTING
+from strategy.analyzer_volatility_pattern import AnalyzerVolatilityPattern
+from utility.settings.setting_base import DB_STRATEGY, UI_NUM, DICT_ORDER_RATIO
 # noinspection PyUnusedImports
 from utility.static_method.static import now, timedelta_sec, str_ymdhms, get_ema_list, set_builtin_print, \
     get_indicator
@@ -35,7 +37,7 @@ class BaseStrategy(StgGlobalsFunc):
         self.stgQs           = qlist[10]
         self.stgQ            = qlist[10][self.gubun]
         self.dict_set        = dict_set
-        self.indicator       = indicator
+        self.indicator       = DICT_INDICATOR
         self.market_gubun    = market_info[0]
         self.market_info     = market_info[1]
         self.is_etfn         = self.market_gubun in (2, 3)
@@ -113,8 +115,10 @@ class BaseStrategy(StgGlobalsFunc):
 
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], factor_list)
         self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], factor_list)
-        self.pt_analyzer = AnalyzerPattern(self.market_info)
-        self.vf_analyzer = AnalyzerVolumeProfile(self.market_info)
+        self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info)
+        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info)
+        self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info)
+        self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info)
 
         set_builtin_print(self.windowQ)
         self._set_formula_data()
@@ -124,7 +128,7 @@ class BaseStrategy(StgGlobalsFunc):
     def _set_formula_data(self):
         """공식 데이터를 설정합니다."""
         self.fm_list, dict_fm, self.fm_tcnt = get_formula_data(False, self.data_cnt)
-        self.windowQ.put((ui_num['사용자수식'], deepcopy(self.fm_list), dict_fm, self.fm_tcnt))
+        self.windowQ.put((UI_NUM['사용자수식'], deepcopy(self.fm_list), dict_fm, self.fm_tcnt))
         if self.fm_list:
             for fm in self.fm_list:
                 fm[8] = compile(fm[-2], '<string>', 'exec')
@@ -201,7 +205,7 @@ class BaseStrategy(StgGlobalsFunc):
             try:
                 exec(indistg)
             except Exception:
-                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - indistg'))
+                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - indistg'))
         self.indi_settings = list(self.indicator.values())
 
     def get_buy_indi_stg(self, buytxt):
@@ -245,7 +249,7 @@ class BaseStrategy(StgGlobalsFunc):
 
     def _main_loop(self):
         """메인 루프를 실행합니다."""
-        self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 전략 연산 시작"))
+        self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 전략 연산 시작"))
         while True:
             try:
                 data = self.stgQ.get()
@@ -266,7 +270,7 @@ class BaseStrategy(StgGlobalsFunc):
                     self._update_string(data)
             except Exception:
                 from traceback import format_exc
-                self.windowQ.put((ui_num['시스템로그'], format_exc()))
+                self.windowQ.put((UI_NUM['시스템로그'], format_exc()))
 
     def _update_tuple(self, data):
         """튜플을 업데이트합니다.
@@ -340,7 +344,7 @@ class BaseStrategy(StgGlobalsFunc):
         else:
             if data != '프로그램종료':
                 exit_text = '전략연산 종료' if data == '프로세스종료' else '전략연산 STOP'
-                self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
+                self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
 
             import sys
             time.sleep(1)
@@ -552,11 +556,11 @@ class BaseStrategy(StgGlobalsFunc):
             }
 
         if self.chart_code == 종목코드 and 데이터길이 >= self.rolling_window:
-            self.windowQ.put((ui_num['실시간차트'], 종목코드, self.arry_code))
+            self.windowQ.put((UI_NUM['실시간차트'], 종목코드, self.arry_code))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.windowQ.put((ui_num['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+            self.windowQ.put((UI_NUM['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
 
     # noinspection PyUnusedLocal
     def _strategy_min(self, data):
@@ -615,11 +619,15 @@ class BaseStrategy(StgGlobalsFunc):
             if 데이터길이 >= self.rolling_window:
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
 
-            패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도 = 0, 0, 0, 0
-            if self.dict_set['패턴분석'] and 데이터길이 >= 5:
-                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+            패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도 = 0, 0, 0, 0, 0, 0, 0, 0
+            if self.dict_set['캔들분석']:
+                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, self.arry_code)
             if self.dict_set['가격대분석']:
                 가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
+            if self.dict_set['거래량분석']:
+                거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, self.arry_code)
+            if self.dict_set['변동성분석']:
+                변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, self.arry_code)
 
             indicator_list = get_indicator(
                 self.arry_code[:, self.dict_findex['현재가']],
@@ -834,11 +842,11 @@ class BaseStrategy(StgGlobalsFunc):
                                     price = self.arry_code[self.indexn, self.dict_findex[fname]]
                                 self.arry_code[self.indexn, col_idx] = price
 
-            self.windowQ.put((ui_num['실시간차트'], 종목코드, self.arry_code))
+            self.windowQ.put((UI_NUM['실시간차트'], 종목코드, self.arry_code))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.windowQ.put((ui_num['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+            self.windowQ.put((UI_NUM['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
 
     # noinspection PyUnusedLocal
     def _strategy_future_tick(self, data):
@@ -1068,11 +1076,11 @@ class BaseStrategy(StgGlobalsFunc):
             }
 
         if self.chart_code == 종목코드 and 데이터길이 >= self.rolling_window:
-            self.windowQ.put((ui_num['실시간차트'], 종목코드, self.arry_code))
+            self.windowQ.put((UI_NUM['실시간차트'], 종목코드, self.arry_code))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.windowQ.put((ui_num['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+            self.windowQ.put((UI_NUM['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
 
     # noinspection PyUnusedLocal
     def _strategy_future_min(self, data):
@@ -1113,11 +1121,15 @@ class BaseStrategy(StgGlobalsFunc):
             if 데이터길이 >= self.rolling_window:
                 self.arry_code[-1, self.base_cnt:self.area_cnt] = self._get_parameter_area(self.rolling_window)
 
-            패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도 = 0, 0, 0, 0
-            if self.dict_set['패턴분석'] and 데이터길이 >= 5:
-                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+            패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도 = 0, 0, 0, 0, 0, 0, 0, 0
+            if self.dict_set['캔들분석']:
+                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, self.arry_code)
             if self.dict_set['가격대분석']:
                 가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
+            if self.dict_set['거래량분석']:
+                거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, self.arry_code)
+            if self.dict_set['변동성분석']:
+                변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, self.arry_code)
 
             indicator_list = get_indicator(
                 self.arry_code[:, self.dict_findex['현재가']],
@@ -1140,7 +1152,7 @@ class BaseStrategy(StgGlobalsFunc):
                     try:
                         exec(v)
                     except Exception:
-                        self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 경과틱수 연산오류'))
+                        self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 경과틱수 연산오류'))
 
             if 데이터길이 >= self.rolling_window and self.fm_list:
                 for name, _, _, fname, data_type, _, _, style, stg, col_idx in self.fm_list:
@@ -1227,7 +1239,7 @@ class BaseStrategy(StgGlobalsFunc):
                             try:
                                 exec(self.buystrategy)
                             except Exception:
-                                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
+                                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
                     elif D or E:
                         BUY_LONG, SELL_SHORT = False, False
                         분할매수기준수익률 = \
@@ -1291,7 +1303,7 @@ class BaseStrategy(StgGlobalsFunc):
                             try:
                                 exec(self.sellstrategy)
                             except Exception:
-                                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매도전략'))
+                                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 매도전략'))
 
                     elif D or E or 강제청산:
                         if H or K or M or P or R:
@@ -1379,11 +1391,11 @@ class BaseStrategy(StgGlobalsFunc):
                                     price = self.arry_code[self.indexn, self.dict_findex[fname]]
                                 self.arry_code[self.indexn, col_idx] = price
 
-            self.windowQ.put((ui_num['실시간차트'], 종목코드, self.arry_code))
+            self.windowQ.put((UI_NUM['실시간차트'], 종목코드, self.arry_code))
 
         if 틱수신시간 != 0:
             gap = (now() - 틱수신시간).total_seconds()
-            self.windowQ.put((ui_num['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
+            self.windowQ.put((UI_NUM['타임로그'], f'전략스 연산 시간 알림 - 수신시간과 연산시간의 차이는 [{gap:.6f}]초입니다.'))
 
     def _get_parameter_area(self, rw):
         """구간연산 팩터의 값을 계산합니다.
@@ -1516,7 +1528,7 @@ class BaseStrategy(StgGlobalsFunc):
             else:
                 betting = self.int_tujagm * self.dict_set['비중조절'][9]
 
-        oc_ratio = dict_order_ratio[self.dict_set['매수분할방법']][self.dict_set['매수분할횟수']][분할매수횟수]
+        oc_ratio = DICT_ORDER_RATIO[self.dict_set['매수분할방법']][self.dict_set['매수분할횟수']][분할매수횟수]
         매수수량 = self._set_buy_count(betting, 현재가, 매수가, oc_ratio)
         return 매수수량
 
@@ -1569,7 +1581,7 @@ class BaseStrategy(StgGlobalsFunc):
         if self.dict_set['매도분할횟수'] == 1:
             return 보유수량
         else:
-            dict_ratio = dict_order_ratio[self.dict_set['매도분할방법']][self.dict_set['매도분할횟수']]
+            dict_ratio = DICT_ORDER_RATIO[self.dict_set['매도분할방법']][self.dict_set['매도분할횟수']]
             oc_ratio = dict_ratio[분할매도횟수]
             보유비율 = sum(비율 for 횟수, 비율 in dict_ratio.items() if 횟수 >= 분할매도횟수)
             매도수량 = self._set_sell_count(보유수량, 보유비율, oc_ratio)
@@ -1583,9 +1595,9 @@ class BaseStrategy(StgGlobalsFunc):
             self.dict_gj = dict(sorted(self.dict_gj.items(), key=lambda x: x[1]['dm'], reverse=True))
             df_gj = pd.DataFrame.from_dict(self.dict_gj, orient='index')
             if self.market_gubun in (1, 4):
-                self.windowQ.put((ui_num['관심종목'], self.gubun, df_gj))
+                self.windowQ.put((UI_NUM['관심종목'], self.gubun, df_gj))
             else:
-                self.windowQ.put((ui_num['관심종목'], df_gj))
+                self.windowQ.put((UI_NUM['관심종목'], df_gj))
         if self.dict_profit:
             self.dict_profit = {k: v for k, v in self.dict_profit.items() if k in self.dict_jg}
 
@@ -1614,9 +1626,9 @@ class BaseStrategy(StgGlobalsFunc):
                 else:
                     df.to_sql(code, con, index=False, if_exists='append', chunksize=2000)
                 log_text = f'시스템 명령 실행 알림 - 전략연산 프로세스 데이터 저장 중 ... [{self.gubun + 1}]{i + 1}/{last}'
-                self.windowQ.put((ui_num['기본로그'], log_text))
+                self.windowQ.put((UI_NUM['기본로그'], log_text))
             save_time = (now() - start).total_seconds()
-            self.windowQ.put((ui_num['기본로그'], f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'))
+            self.windowQ.put((UI_NUM['기본로그'], f'시스템 명령 실행 알림 - 데이터 저장 쓰기소요시간은 [{save_time:.6f}]초입니다.'))
         con.close()
 
         if self.market_gubun in (1, 4):

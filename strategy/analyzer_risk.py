@@ -1,9 +1,9 @@
 
 import numpy as np
-from numba import jit
+from numba import njit
 
 
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def _calculate_rsi(prices: np.ndarray, period: int = 14) -> float:
     """RSI 계산 (Numba JIT 최적화)"""
     n = len(prices)
@@ -40,7 +40,7 @@ def _calculate_rsi(prices: np.ndarray, period: int = 14) -> float:
         return rsi
 
 
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def _calculate_volatility(prices: np.ndarray, window: int = 20) -> float:
     """변동성 계산 (Numba JIT 최적화)"""
     n = len(prices)

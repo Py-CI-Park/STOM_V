@@ -4,13 +4,15 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from multiprocessing import shared_memory
-from trade.analyzer_risk import AnalyzerRisk
-from trade.stg_globals_func import StgGlobalsFunc
-from trade.manager_formula import get_formula_data
-from trade.analyzer_pattern import AnalyzerPattern
-from trade.analyzer_microstruc import AnalyzerMicrostructure
-from trade.analyzer_volume_profile import AnalyzerVolumeProfile
-from utility.settings.setting_base import indicator, ui_num, BACK_TEMP, DB_STRATEGY, DB_SETTING
+from strategy.analyzer_risk import AnalyzerRisk
+from strategy.stg_globals_func import StgGlobalsFunc
+from strategy.manager_formula import get_formula_data
+from strategy.analyzer_volume_spike import AnalyzerVolumeSpike
+from strategy.analyzer_candle_pattern import AnalyzerCandlePattern
+from strategy.analyzer_volume_profile import AnalyzerVolumeProfile
+from strategy.analyzer_microstructure import AnalyzerMicrostructure
+from strategy.analyzer_volatility_pattern import AnalyzerVolatilityPattern
+from utility.settings.setting_base import DICT_INDICATOR, UI_NUM, BACK_TEMP, DB_STRATEGY, DB_SETTING
 from utility.static_method.static import pickle_read, pickle_write, dt_ymdhms, dt_ymdhm, get_ema_list, add_rolling_data, \
     set_builtin_print, get_profile_text
 from backtest.back_static import get_buy_stg, get_sell_stg, get_buy_conds, get_sell_conds, get_back_load_code_query, \
@@ -35,7 +37,7 @@ class BackEngineBase(StgGlobalsFunc):
         self.bstq_list       = bstq_list
         self.profile         = profile
         self.dict_set        = dict_set
-        self.indicator       = indicator
+        self.indicator       = DICT_INDICATOR
         self.backtest        = True
         self.update_formula  = False
 
@@ -74,8 +76,11 @@ class BackEngineBase(StgGlobalsFunc):
         self.add_cnt         = None
         self.hoga_sidex      = None
         self.hoga_eidex      = None
+        self.index_arry      = None
         self.ms_analyzer     = None
         self.rk_analyzer     = None
+        self.pt_analyzer     = None
+        self.vf_analyzer     = None
 
         self.code_list       = []
         self.vars_list       = []
@@ -145,10 +150,25 @@ class BackEngineBase(StgGlobalsFunc):
         self.dict_findex['호가총잔량'] = self.dict_findex['매수총잔량']
         self.dict_findex['매도수호가잔량1'] = self.dict_findex['매수잔량1']
 
+        if self.is_tick:
+            self.index_arry = np.array([
+                self.dict_findex['현재가'], self.dict_findex['체결강도'], self.dict_findex['등락율'],
+                self.dict_findex['당일거래대금'], self.dict_findex['초당매수수량'], self.dict_findex['초당매도수량'],
+                self.dict_findex['초당거래대금']
+            ])
+        else:
+            self.index_arry = np.array([
+                self.dict_findex['현재가'], self.dict_findex['체결강도'], self.dict_findex['등락율'],
+                self.dict_findex['당일거래대금'], self.dict_findex['분당매수수량'], self.dict_findex['분당매도수량'],
+                self.dict_findex['분당거래대금'], self.dict_findex['분봉고가'], self.dict_findex['분봉저가']
+            ])
+
         self.ms_analyzer = AnalyzerMicrostructure(self.market_info['마켓구분'], factor_list)
         self.rk_analyzer = AnalyzerRisk(self.market_info['마켓구분'], factor_list)
-        self.pt_analyzer = AnalyzerPattern(self.market_info)
-        self.vf_analyzer = AnalyzerVolumeProfile(self.market_info)
+        self.pt_analyzer = AnalyzerCandlePattern(self.market_gubun, self.market_info, backtest=True)
+        self.vf_analyzer = AnalyzerVolumeProfile(self.market_gubun, self.market_info, backtest=True)
+        self.vs_analyzer = AnalyzerVolumeSpike(self.market_gubun, self.market_info, backtest=True)
+        self.vp_analyzer = AnalyzerVolatilityPattern(self.market_gubun, self.market_info, backtest=True)
 
         self._set_passticks_and_blacklist()
 
@@ -321,7 +341,7 @@ class BackEngineBase(StgGlobalsFunc):
                                 self.buystg = compile(data[6], '<string>', 'exec')
                             except Exception:
                                 if self.gubun == 0:
-                                    self.wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
+                                    self.wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 매수전략'))
                                 self._back_stop()
                             else:
                                 self.opti_kind = data[7]
@@ -347,7 +367,7 @@ class BackEngineBase(StgGlobalsFunc):
                     self._back_stop(2)
             except Exception:
                 if self.gubun == 0:
-                    self.wq.put((ui_num['시스템로그'], format_exc()))
+                    self.wq.put((UI_NUM['시스템로그'], format_exc()))
 
     def _data_load(self, data):
         """백테스트 데이터를 로드합니다.
@@ -365,7 +385,7 @@ class BackEngineBase(StgGlobalsFunc):
                 pass
             else:
                 if len(df) > 0:
-                    arry = add_rolling_data(df, round_unit, angle_cf_list, self.is_tick, avg_list)
+                    arry = add_rolling_data(df, round_unit, angle_cf_list, avg_list, self.is_tick, self.index_arry)
                     all_data.append({
                         'code': code,
                         'data': arry,
@@ -467,8 +487,8 @@ class BackEngineBase(StgGlobalsFunc):
         """
         not_in_list = [x for x in avg_list if x not in self.avg_list]
         if len(not_in_list) > 0 and self.gubun == 0:
-            self.wq.put((ui_num['백테스트'], '백테엔진 구동 시 포함되지 않은 평균값 틱수를 사용하여 중지되었습니다.'))
-            self.wq.put((ui_num['백테스트'], '누락된 평균값 틱수를 추가하여 백테엔진을 재시작하십시오.'))
+            self.wq.put((UI_NUM['백테스트'], '백테엔진 구동 시 포함되지 않은 평균값 틱수를 사용하여 중지되었습니다.'))
+            self.wq.put((UI_NUM['백테스트'], '누락된 평균값 틱수를 추가하여 백테엔진을 재시작하십시오.'))
             self._back_stop()
 
     def _check_day_and_time(self):
@@ -492,11 +512,11 @@ class BackEngineBase(StgGlobalsFunc):
         """
         self.back_type = None
         if gubun in (0, 1):
-            if self.gubun == 0: self.wq.put((ui_num['백테스트'], '백테스트 엔진 중지 중 ...'))
+            if self.gubun == 0: self.wq.put((UI_NUM['백테스트'], '백테스트 엔진 중지 중 ...'))
         if gubun in (1, 2):
             self.bq.put('백테중지완료')
         if gubun == 3:
-            if self.gubun == 0: self.wq.put((ui_num['백테스트'], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
+            if self.gubun == 0: self.wq.put((UI_NUM['백테스트'], '백테스트 엔진 전략연산 오류, 자동 중지 중 ...'))
 
     def _init_trade_info(self):
         """거래 정보를 초기화합니다.
@@ -643,7 +663,7 @@ class BackEngineBase(StgGlobalsFunc):
                         try:
                             self._strategy()
                         except Exception:
-                            if self.gubun == 0: self.wq.put((ui_num['시스템로그'], format_exc()))
+                            if self.gubun == 0: self.wq.put((UI_NUM['시스템로그'], format_exc()))
                             self._back_stop(3)
                             return
 
@@ -668,7 +688,7 @@ class BackEngineBase(StgGlobalsFunc):
             return
 
         if self.gubun == 0 and self.profile:
-            self.wq.put((ui_num['시스템로그'], get_profile_text(self.pr)))
+            self.wq.put((UI_NUM['시스템로그'], get_profile_text(self.pr)))
 
     # noinspection PyUnusedLocal
     def _strategy(self):
@@ -734,18 +754,27 @@ class BackEngineBase(StgGlobalsFunc):
         self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
 
         리스크점수 = 0
-        if self.is_tick and 데이터길이 >= 30:
+        if self.is_tick and 데이터길이 >= 30 and (self.dict_set['시장미시구조분석'] or self.dict_set['리스크분석']):
+            current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
             if self.dict_set['시장미시구조분석']:
-                self.ms_analyzer.update_data(self.code, self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
+                self.ms_analyzer.update_data(self.code, current_data)
             if self.dict_set['리스크분석']:
-                리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
+                리스크점수 = self.rk_analyzer.get_risk_score(current_data)
 
-        패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도 = 0, 0, 0, 0
-        if not self.is_tick:
-            if self.dict_set['패턴분석'] and 데이터길이 >= 5:
-                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+        패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도 = 0, 0, 0, 0, 0, 0, 0, 0
+        if not self.is_tick and (
+                self.dict_set['캔들분석'] or self.dict_set['가격대분석'] or
+                self.dict_set['거래량분석'] or self.dict_set['변동성분석']
+        ):
+            current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
+            if self.dict_set['캔들분석']:
+                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, current_data)
             if self.dict_set['가격대분석']:
                 가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
+            if self.dict_set['거래량분석']:
+                거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, current_data)
+            if self.dict_set['변동성분석']:
+                변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, current_data)
 
         self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
         self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]

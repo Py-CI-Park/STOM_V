@@ -52,7 +52,7 @@ class SetDialogBack:
 
     def set(self):
         """백테스트 다이얼로그를 설정합니다."""
-        self.ui.dialog_backengine = self.wc.setDialog('STOM BACKTEST ENGINE')
+        self.ui.dialog_backengine = self.wc.setDialog('STOM BACKTEST ENGINE', location_save=True)
         self.ui.dialog_backengine.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_backengine)
 
@@ -82,7 +82,7 @@ class SetDialogBack:
         self.ui.be_pushButtonnn_01 = self.wc.setPushbutton('백테스트 엔진 시작', parent=self.ui.be_groupBoxxxxx_01, click=lambda: bebutton_clicked_01(self.ui))
         self.ui.be_textEditxxxx_01 = self.wc.setTextEdit(self.ui.be_groupBoxxxxx_01, vscroll=True)
 
-        self.ui.dialog_scheduler = self.wc.setDialog('STOM BACKTEST SCHEDULER')
+        self.ui.dialog_scheduler = self.wc.setDialog('STOM BACKTEST SCHEDULER', location_save=True)
         self.ui.dialog_scheduler.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_scheduler)
 
@@ -195,11 +195,6 @@ class SetDialogBack:
         )
 
         self.ui.dialog_backengine.setFixedSize(480, 600)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_backengine.move(self.ui.dict_set['창위치'][16], self.ui.dict_set['창위치'][17])
-            except Exception:
-                pass
         self.ui.be_groupBoxxxxx_01.setGeometry(5, 5, 470, 590)
         self.ui.be_labellllllll_04.setGeometry(10, 5, 450, 30)
         self.ui.be_comboBoxxxxx_01.setGeometry(15, 40, 220, 30)
@@ -217,11 +212,6 @@ class SetDialogBack:
         self.ui.be_textEditxxxx_01.setGeometry(10, 375, 450, 205)
 
         self.ui.dialog_scheduler.setFixedSize(1403, 575)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_scheduler.move(self.ui.dict_set['창위치'][4], self.ui.dict_set['창위치'][5])
-            except Exception:
-                pass
         self.ui.sd_groupBoxxxxx_01.setGeometry(5, 5, 1390, 40)
         self.ui.sd_groupBoxxxxx_02.setGeometry(5, 50, 1390, 520)
 

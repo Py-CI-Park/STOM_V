@@ -1,7 +1,7 @@
 
 import pandas as pd
 from PyQt5.QtCore import QThread, pyqtSignal
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 
 
 class MonitorWindowQ(QThread):
@@ -26,10 +26,10 @@ class MonitorWindowQ(QThread):
             try:
                 data = self.windowQ.get()
                 if data[0].__class__ != str:
-                    if data[0] <= ui_num['볼륨학습']:
+                    if data[0] <= UI_NUM['학습로그']:
                         self.signal1.emit(data)
-                    elif ui_num['실현손익'] <= data[0] <= ui_num['상세기록']:
-                        if data[0] == ui_num['관심종목']:
+                    elif UI_NUM['실현손익'] <= data[0] <= UI_NUM['상세기록']:
+                        if data[0] == UI_NUM['관심종목']:
                             if len(data) == 3:
                                 index = data[1]
                                 self.df_list[index] = data[2]
@@ -39,16 +39,16 @@ class MonitorWindowQ(QThread):
                                     df_list = [x for x in self.df_list if x is not None]
                                     df = pd.concat(df_list)
                                     df.sort_values(by=['dm'], ascending=False, inplace=True)
-                                    self.signal2.emit((ui_num['관심종목'], df))
+                                    self.signal2.emit((UI_NUM['관심종목'], df))
                             else:
                                 df = data[1]
                                 df.sort_values(by=['dm'], ascending=False, inplace=True)
-                                self.signal2.emit((ui_num['관심종목'], df))
+                                self.signal2.emit((UI_NUM['관심종목'], df))
                         else:
                             self.signal2.emit(data)
-                    elif data[0] == ui_num['차트']:
+                    elif data[0] == UI_NUM['차트']:
                         self.signal3.emit(data)
-                    elif data[0] == ui_num['실시간차트']:
+                    elif data[0] == UI_NUM['실시간차트']:
                         self.signal4.emit(data)
                 else:
                     self.signal5.emit(data)

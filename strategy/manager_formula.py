@@ -1,6 +1,6 @@
 
 import sqlite3
-from trade.stg_globals_func import StgGlobalsFunc
+from strategy.stg_globals_func import StgGlobalsFunc
 from utility.static_method.static import dt_ymdhms
 
 dict_fm_count = {

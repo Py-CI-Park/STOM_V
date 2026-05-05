@@ -10,7 +10,7 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.back_static_numba import get_result, bootstrap_test
-from utility.settings.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, DB_OPTUNA
+from utility.settings.setting_base import UI_NUM, DB_STRATEGY, DB_BACKTEST, DB_OPTUNA
 from utility.static_method.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator
 from backtest.back_static import send_result, get_moneytop_query, plot_show, get_result_dataframe, add_mdd
 
@@ -185,7 +185,7 @@ class Total:
             except SystemExit:
                 break
             except Exception:
-                self.wq.put((ui_num['시스템로그'], format_exc()))
+                self.wq.put((UI_NUM['시스템로그'], format_exc()))
                 self.mq.put('백테중지')
                 time.sleep(1)
                 break
@@ -258,8 +258,8 @@ class Total:
         else:
             text2 += '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'
 
-        self.wq.put((ui_num['백테스트'], text1))
-        self.wq.put((ui_num['백테스트'], text2))
+        self.wq.put((UI_NUM['백테스트'], text1))
+        self.wq.put((UI_NUM['백테스트'], text2))
         self.mq.put('아웃샘플 백테스트 완료')
 
         if oc == self.out_count:
@@ -288,7 +288,7 @@ class Total:
             bootstrap_pv   = round(np.mean(bootstrap_dist > 0) * 100, 2)
             bootstrap_text = f"\n부트스트랩 평균수익률: {bootstrap_avg}%, 예상최소수익률: {bootstrap_min}%, 예상최대수익률: {bootstrap_max}%, 전략유의확률(pv): {bootstrap_pv}%"
             bootstrap_cmt  = f"\n이 전략은 95%의 확률로 [{bootstrap_min}~{bootstrap_max}%]의 수익률이 예상되며, 수익일 확률은 [{bootstrap_pv}%]입니다."
-            self.wq.put((ui_num['백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
+            self.wq.put((UI_NUM['백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
 
             startday, endday = str(self.startday_), str(self.endday_)
             startday = f'{startday[:4]}-{startday[4:6]}-{startday[6:]}'
@@ -330,7 +330,7 @@ class Total:
             con = sqlite3.connect(DB_BACKTEST)
             df_all_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=2000)
             con.close()
-            self.wq.put((ui_num['상세기록'], df_all_tsg))
+            self.wq.put((UI_NUM['상세기록'], df_all_tsg))
 
             self.sq.put(f'{self.backname} 백테스트를 완료하였습니다.')
             self.mq.put('백테스트 완료')
@@ -372,7 +372,7 @@ class RollingWalkForwardTest:
         except SystemExit:
             sys.exit()
         except Exception:
-            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
     # noinspection PyUnresolvedReferences
@@ -422,7 +422,7 @@ class RollingWalkForwardTest:
             try:
                 optuna_fixvars = [int(x.strip()) for x in data[19].split(',')]
             except Exception:
-                self.wq.put((ui_num['백테스트'], '고정할 범위의 번호를 잘못입력하였습니다.'))
+                self.wq.put((UI_NUM['백테스트'], '고정할 범위의 번호를 잘못입력하였습니다.'))
                 self.sys_exit(True)
 
         optuna_count = int(data[20])
@@ -433,13 +433,13 @@ class RollingWalkForwardTest:
         int_day  = int(str_ymd(timedelta_day(-(weeks_train + weeks_test * 2) * 7 + plus_day, dt_ymd(str(endday)))))
 
         if int(backengin_sday) > int_day:
-            self.wq.put((ui_num['백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 확인기간 * 2)주 만큼의 데이터가 필요합니다'))
+            self.wq.put((UI_NUM['백테스트'], '백테엔진에 로딩된 데이터가 부족합니다. 최소 (학습기간 + 확인기간 * 2)주 만큼의 데이터가 필요합니다'))
             self.sys_exit(True)
         elif startday > int_day:
-            self.wq.put((ui_num['백테스트'], '전진분석 시작 일자가 잘못되었습니다. (학습기간 + 확인기간 * 2)주 이전 일자로 선택하십시오.'))
+            self.wq.put((UI_NUM['백테스트'], '전진분석 시작 일자가 잘못되었습니다. (학습기간 + 확인기간 * 2)주 이전 일자로 선택하십시오.'))
             self.sys_exit(True)
         elif endday > int(backengin_eday):
-            self.wq.put((ui_num['백테스트'], '전진분석 종료 일자가 잘못되었습니다. 백테엔진 데이터 로딩 마지막 일자로 선택하십시오.'))
+            self.wq.put((UI_NUM['백테스트'], '전진분석 종료 일자가 잘못되었습니다. 백테엔진 데이터 로딩 마지막 일자로 선택하십시오.'))
             self.sys_exit(True)
 
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
@@ -448,7 +448,7 @@ class RollingWalkForwardTest:
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
-            self.wq.put((ui_num['백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
+            self.wq.put((UI_NUM['백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self.sys_exit(True)
 
         con = sqlite3.connect(DB_STRATEGY)
@@ -463,10 +463,10 @@ class RollingWalkForwardTest:
         try:
             exec(compile(optivars, '<string>', 'exec'))
         except Exception:
-            self.wq.put((ui_num['백테스트'], f'{format_exc()}오류 알림 - 최적화 변수설정 1단계'))
+            self.wq.put((UI_NUM['백테스트'], f'{format_exc()}오류 알림 - 최적화 변수설정 1단계'))
             self.sys_exit(True)
 
-        self.wq.put((ui_num['백테스트'], '텍스트에디터 클리어'))
+        self.wq.put((UI_NUM['백테스트'], '텍스트에디터 클리어'))
 
         if self.is_tick:
             df_mt['일자'] = (df_mt['index'].values // 1000000).astype(np.int64)
@@ -480,17 +480,17 @@ class RollingWalkForwardTest:
         list_days = self._get_list_days(startday, endday, weeks_train, weeks_valid, weeks_test, day_list)
         for i, days in enumerate(list_days):
             train_days, valid_days, test_days = days
-            self.wq.put((ui_num['백테스트'], f'{self.backname} 학습기간 {i + 1} : {train_days[0]} ~ {train_days[1]}'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 학습기간 {i + 1} : {train_days[0]} ~ {train_days[1]}'))
             if 'V' in self.backname:
                 for vsday, veday, _ in valid_days:
-                    self.wq.put((ui_num['백테스트'], f'{self.backname} 검증기간 {i + 1} : {vsday} ~ {veday}'))
-            self.wq.put((ui_num['백테스트'], f'{self.backname} 확인기간 {i + 1} : {test_days[0]} ~ {test_days[1]}'))
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 일자 추출 완료'))
+                    self.wq.put((UI_NUM['백테스트'], f'{self.backname} 검증기간 {i + 1} : {vsday} ~ {veday}'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 확인기간 {i + 1} : {test_days[0]} ~ {test_days[1]}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 일자 추출 완료'))
 
         out_count = len(list_days)
         vars_type, avg_list = self._get_optomize_varslist(random_optivars)
         text = f'{self.backname} 매도수전략 및 변수 설정 완료' if not random_optivars else f'{self.backname} 매도수전략 및 변수 최적값 랜덤 설정 완료'
-        self.wq.put((ui_num['백테스트'], text))
+        self.wq.put((UI_NUM['백테스트'], text))
 
         arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
@@ -511,12 +511,12 @@ class RollingWalkForwardTest:
             args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.bstq_list, self.backname, self.market_gubun,
                   self.market_info, self.dict_set)
         ).start()
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 
         if 'B' in self.backname:
-            self.wq.put((ui_num['백테스트'], f'<font color=#54d2f9>OPTUNA Sampler : {optuna_sampler}</font>'))
-        self.wq.put((ui_num['백테스트'], f'{self.backname} START'))
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 인샘플 최적화 시작'))
+            self.wq.put((UI_NUM['백테스트'], f'<font color=#54d2f9>OPTUNA Sampler : {optuna_sampler}</font>'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} START'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 인샘플 최적화 시작'))
 
         hstd_list = []
         hvar_list = []
@@ -537,8 +537,8 @@ class RollingWalkForwardTest:
             hvar_list.append(copy.deepcopy(self.vars_))
             hstd_list.append([startday, endday, hstd])
 
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 인샘플 최적화 완료'))
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 아웃샘플 백테스트 시작'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 인샘플 최적화 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 아웃샘플 백테스트 시작'))
 
         self.tq.put(('최적화정보', hstd_list))
         for i, days in enumerate(list_days):
@@ -547,11 +547,11 @@ class RollingWalkForwardTest:
             self._back_start(('변수정보', hvar_list[i], 2, startday, endday, i))
             data = mq.get()
             if data != '아웃샘플 백테스트 완료': self.sys_exit(True)
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 아웃샘플 백테스트 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 아웃샘플 백테스트 완료'))
 
         data = mq.get()
         if data != '백테스트 완료': self.sys_exit(True)
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
         if self.dict_set['스톰라이브']: self.lq.put(self.backname.replace('O', '').replace('B', ''))
 
         data = mq.get()
@@ -635,16 +635,16 @@ class RollingWalkForwardTest:
         for i, var in enumerate(list(self.vars.values())):
             error = False
             if len(var) != 2:
-                self.wq.put((ui_num['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
+                self.wq.put((UI_NUM['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
                 error = True
             if len(var[0]) != 3:
-                self.wq.put((ui_num['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
+                self.wq.put((UI_NUM['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
                 error = True
             if var[0][0] < var[0][1] and var[0][2] < 0:
-                self.wq.put((ui_num['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
+                self.wq.put((UI_NUM['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
                 error = True
             if var[0][0] > var[0][1] and var[0][2] > 0:
-                self.wq.put((ui_num['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
+                self.wq.put((UI_NUM['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
                 error = True
             if error:
                 self.sys_exit(True)
@@ -699,7 +699,7 @@ class RollingWalkForwardTest:
         init_std          = -float('inf')
         for k in range(ccount if ccount != 0 else 100):
             self.wq.put((
-                ui_num['백테스트'],
+                UI_NUM['백테스트'],
                 f'{self.backname} 인샘플 [{in_count + 1}]구간 [{k + 1}]단계 그리드 최적화 시작, 최고 기준값[{hstd:,.2f}], 최적값 변경 개수 [{vars_change_count}]'
             ))
 
@@ -710,7 +710,7 @@ class RollingWalkForwardTest:
             dict_turn_hvar_hstd = {i: [x[1], init_std] for i, x in enumerate(self.vars_) if len(x[0]) > 1}
 
             if result_receiv_count == 0:
-                self.wq.put((ui_num['백테스트'], '모든 파라미터 고정, 최적화를 종료합니다.'))
+                self.wq.put((UI_NUM['백테스트'], '모든 파라미터 고정, 최적화를 종료합니다.'))
                 break
 
             self._back_start(('변수정보', self.vars_, 1, startday, endday, in_count))
@@ -746,11 +746,11 @@ class RollingWalkForwardTest:
                 self.adjust_vars_range()
 
             if not bool_changed_hstd:
-                self.wq.put((ui_num['백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
+                self.wq.put((UI_NUM['백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
                 break
 
             if previous_high_std > 0 and hstd > 0 and high_ratio[0] < self.dict_set['기준값최소상승률']:
-                self.wq.put((ui_num['백테스트'], f"기준값 상승률 {self.dict_set['기준값최소상승률']}% 미달성, 최적화를 종료합니다."))
+                self.wq.put((UI_NUM['백테스트'], f"기준값 상승률 {self.dict_set['기준값최소상승률']}% 미달성, 최적화를 종료합니다."))
                 break
 
             hstd = high_ratio[2]
@@ -768,7 +768,7 @@ class RollingWalkForwardTest:
             endday: 종료 일자
             in_count: 입력 카운트
         """
-        self.wq.put((ui_num['백테스트'], '최적값 조합 확인 시작'))
+        self.wq.put((UI_NUM['백테스트'], '최적값 조합 확인 시작'))
         high_ratio = [0, previous_high_std, previous_high_std]
         std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
         last = len(std_set)
@@ -790,10 +790,10 @@ class RollingWalkForwardTest:
                     ratio = round((check_hstd / previous_high_std - 1) * 100, 2)
                 else:
                     ratio = round((1 - check_hstd / previous_high_std) * 100, 2)
-                self.wq.put((ui_num['백테스트'], f'최적값 조합 확인 중[{i+1}/{last}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                self.wq.put((UI_NUM['백테스트'], f'최적값 조합 확인 중[{i + 1}/{last}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
                 if ratio > high_ratio[0]:
                     high_ratio = [ratio, std, check_hstd]
-        self.wq.put((ui_num['백테스트'], '최적값 조합 확인 완료'))
+        self.wq.put((UI_NUM['백테스트'], '최적값 조합 확인 완료'))
 
         text = '\n'
         high_ratio_std = high_ratio[1]
@@ -804,7 +804,7 @@ class RollingWalkForwardTest:
                 vars_change_count += 1
                 self.vars_[vturn][1] = cur_turn_hvar
                 text = f'{text}self.vars[{vturn}]의 최적값 변경 [{pre_turn_hvar} -> {cur_turn_hvar}]\n'
-        if text != '\n': self.wq.put((ui_num['백테스트'], text[:-1]))
+        if text != '\n': self.wq.put((UI_NUM['백테스트'], text[:-1]))
         return high_ratio, vars_change_count
 
     def adjust_vars_range(self, best_params=None):
@@ -831,7 +831,7 @@ class RollingWalkForwardTest:
                     prev_list = var[0] if len_var < 20 else var[0][1:]
                     self.vars_[i][0] = prev_list + [new]
                     text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
-        if text != '\n': self.wq.put((ui_num['백테스트'], text[:-1]))
+        if text != '\n': self.wq.put((UI_NUM['백테스트'], text[:-1]))
 
     def _optimize_optuna(self, mq, optuna_count, back_count, optuna_fixvars, optuna_autostep, buystg_name,
                          sampler, startday, endday, in_count):
@@ -853,7 +853,7 @@ class RollingWalkForwardTest:
 
         self.dict_simple_vars = {}
         self.tq.put(('경우의수', back_count, startday, endday, in_count))
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 인샘플 [{in_count + 1}]구간 OPTUNA 최적화 시작'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 인샘플 [{in_count + 1}]구간 OPTUNA 최적화 시작'))
 
         def objective(trial):
             optuna_vars = []
@@ -905,7 +905,7 @@ class RollingWalkForwardTest:
             pre_hvar = self.vars_[i][1]
             if high_var != pre_hvar:
                 self.vars_[i][1] = high_var
-                self.wq.put((ui_num['백테스트'], f'self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {high_var}]'))
+                self.wq.put((UI_NUM['백테스트'], f'self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {high_var}]'))
 
         return self.study.best_value
 
@@ -927,9 +927,9 @@ class RollingWalkForwardTest:
             cancel: 취소 여부
         """
         if cancel:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} STOP'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} STOP'))
         else:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} COMPLETE'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} COMPLETE'))
         time.sleep(1)
         sys.exit()
 
@@ -956,7 +956,7 @@ class StopWhenNotUpdateBestCallBack:
         curr_num = trial.number
         last_num = (best_num + self.len_vars) if self.optuna_count == 0 else (best_num + self.optuna_count)
         rema_num = last_num - curr_num
-        self.main.wq.put((ui_num[f'{self.main.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
+        self.main.wq.put((UI_NUM[f'{self.main.ui_gubun}백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
         if curr_num >= self.adjust_cnt and curr_num == best_num:
             self.main.adjust_vars_range(list(study.best_params.values()))
         if curr_num == last_num:

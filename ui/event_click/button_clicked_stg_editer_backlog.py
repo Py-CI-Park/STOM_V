@@ -4,7 +4,7 @@ def ssbutton_clicked_01(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
 
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_01.clear()
@@ -18,7 +18,7 @@ def ssbutton_clicked_01(ui):
     except Exception:
         pass
     else:
-        ui.update_tablewidget.update_tablewidget((ui_num['상세기록'], df))
+        ui.update_tablewidget.update_tablewidget((UI_NUM['상세기록'], df))
 
 
 def ssbutton_clicked_02(ui):
@@ -26,7 +26,7 @@ def ssbutton_clicked_02(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
 
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_02.clear()
@@ -42,7 +42,7 @@ def ssbutton_clicked_02(ui):
     except Exception:
         pass
     else:
-        ui.update_tablewidget.update_tablewidget((ui_num['상세기록'], df))
+        ui.update_tablewidget.update_tablewidget((UI_NUM['상세기록'], df))
 
 
 def ssbutton_clicked_03(ui):
@@ -50,7 +50,7 @@ def ssbutton_clicked_03(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
     df = ui.dbreader.read_sql('백테디비', "SELECT name FROM sqlite_master WHERE TYPE = 'table'")
     ui.ss_comboBoxxxx_03.clear()
 
@@ -65,7 +65,7 @@ def ssbutton_clicked_03(ui):
     except Exception:
         pass
     else:
-        ui.update_tablewidget.update_tablewidget((ui_num['상세기록'], df))
+        ui.update_tablewidget.update_tablewidget((UI_NUM['상세기록'], df))
 
 
 def ssbutton_clicked_04(ui):

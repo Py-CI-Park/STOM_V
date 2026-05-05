@@ -2,7 +2,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication
 from trade.base_receiver import BaseReceiver
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from utility.static_method.static import now, error_decorator
 from trade.restapi_ls import LsRestAPI, LsRestData, LsWebSocketReceiver
 
@@ -103,5 +103,5 @@ class FutureReceiver(BaseReceiver):
                 operation = int(body['jstatus'])
                 if operation in LsRestData.장운영상태:
                     text = LsRestData.장운영상태[operation]
-                    self.windowQ.put((ui_num['기본로그'], f'장운영 정보 수신 알림 - {text}'))
+                    self.windowQ.put((UI_NUM['기본로그'], f'장운영 정보 수신 알림 - {text}'))
                     self.soundQ.put(text)

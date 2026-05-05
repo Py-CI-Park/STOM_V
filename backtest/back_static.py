@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 from traceback import format_exc
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from utility.static_method.static import thread_decorator
 
 
@@ -142,7 +142,7 @@ def get_buy_stg(buytxt, gubun, wq):
             buystg = compile(buystg, '<string>', 'exec')
         except Exception:
             buystg = None
-            if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_buy_stg'))
+            if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_buy_stg'))
     else:
         buystg = None
     if indistg:
@@ -170,7 +170,7 @@ def get_sell_stg(sellstg, gubun, wq):
         sellstg = compile(sellstg, '<string>', 'exec')
     except Exception:
         sellstg = None
-        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_sell_stg'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_sell_stg'))
     return sellstg, dict_cond
 
 
@@ -190,7 +190,7 @@ def get_buy_conds(buy_conds, gubun, wq):
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except Exception:
         buy_conds = None
-        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_buy_conds'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_buy_conds'))
     return buy_conds
 
 
@@ -211,7 +211,7 @@ def get_sell_conds(sell_conds, gubun, wq):
         sell_conds = compile(sell_conds, '<string>', 'exec')
     except Exception:
         sell_conds = None
-        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_sell_conds'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_sell_conds'))
     return sell_conds, dict_cond
 
 
@@ -252,7 +252,7 @@ def get_buy_stg_future(buystg, gubun, wq):
             buystg = compile(buystg, '<string>', 'exec')
         except Exception:
             buystg = None
-            if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_buy_stg_future'))
+            if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_buy_stg_future'))
     else:
         buystg = None
     if indistg:
@@ -280,7 +280,7 @@ def get_sell_stg_future(sellstg, gubun, wq):
         sellstg = compile(sellstg, '<string>', 'exec')
     except Exception:
         sellstg = None
-        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_sell_stg_future'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_sell_stg_future'))
     return sellstg, dict_cond
 
 
@@ -306,7 +306,7 @@ def get_buy_conds_future(is_long, buy_conds, gubun, wq):
         buy_conds = compile(buy_conds, '<string>', 'exec')
     except Exception:
         buy_conds = None
-        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_buy_conds_future'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_buy_conds_future'))
     return buy_conds
 
 
@@ -331,7 +331,7 @@ def get_sell_conds_future(is_long, sell_conds, gubun, wq):
         sell_conds = compile(sell_conds, '<string>', 'exec')
     except Exception:
         sell_conds = None
-        if gubun == 0: wq.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - get_sell_conds_future'))
+        if gubun == 0: wq.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - get_sell_conds_future'))
     return sell_conds, dict_cond
 
 
@@ -405,11 +405,11 @@ def send_result(result, dict_train, dict_valid=None, exponential=False):
         text2, hstd, sendtext = get_text2(std, pre_hstd)
 
         if sendtext or opti_kind in (0, 4):
-            wq.put((ui_num['백테스트'], f'{text1}{text2}'))
+            wq.put((UI_NUM['백테스트'], f'{text1}{text2}'))
             for text3 in train_text:
-                wq.put((ui_num['백테스트'], text3))
+                wq.put((UI_NUM['백테스트'], text3))
             for text3 in valid_text:
-                wq.put((ui_num['백테스트'], text3))
+                wq.put((UI_NUM['백테스트'], text3))
 
     elif dict_train is not None:
         if gubun == '최적화테스트':
@@ -420,8 +420,8 @@ def send_result(result, dict_train, dict_valid=None, exponential=False):
             text2, hstd, sendtext = get_text2(std, pre_hstd)
 
         if sendtext or opti_kind in (2, 4):
-            wq.put((ui_num['백테스트'], f'{text1}{text2}'))
-            wq.put((ui_num['백테스트'], text3))
+            wq.put((UI_NUM['백테스트'], f'{text1}{text2}'))
+            wq.put((UI_NUM['백테스트'], text3))
 
     else:
         hstd = pre_hstd

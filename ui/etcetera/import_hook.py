@@ -7,7 +7,7 @@ class ImportProgressHook:
         self.splash = splash
         self.original_import = None
         self.modules = [
-            'ui.ui_mainwindow',
+            'ui.main_window',
             'ui.set_style',
 
             'utility.settings.setting_user',
@@ -17,7 +17,7 @@ class ImportProgressHook:
             'utility.sub_process_and_thread.webcrawling',
             'utility.sub_process_and_thread.telegram_bot',
             'utility.sub_process_and_thread.pyttsx_sound',
-            'utility.sub_process_and_thread.chart_hoga_query_sound',
+            'utility.sub_process_and_thread.chart_hoga_query',
             'utility.static_method.static',
 
             'ui.create_widget.set_icon',
@@ -35,7 +35,6 @@ class ImportProgressHook:
             'ui.create_widget.set_dialog_formula',
             'ui.create_widget.set_dialog_strategy',
 
-            'ui.etcetera.etc',
             'ui.draw_chart.draw_treemap',
             'ui.draw_chart.draw_chart_db',
             'ui.etcetera.load_database',
@@ -43,6 +42,7 @@ class ImportProgressHook:
             'ui.etcetera.process_starter',
             'ui.draw_chart.draw_home_chart',
             'ui.draw_chart.draw_chart_real',
+            'ui.etcetera.etc',
             'ui.update_widget.update_textedit',
             'ui.create_widget.set_text_stg_button',
             'ui.update_widget.update_tablewidget',

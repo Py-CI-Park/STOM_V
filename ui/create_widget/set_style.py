@@ -6,7 +6,7 @@
 from PyQt5.QtGui import QFont, QColor
 from utility.settings.setting_user import load_settings
 
-dict_set = load_settings()
+dict_set, _ = load_settings()
 if dict_set.__class__ != dict:
     dict_set = {'테마': '다크레드'}
 

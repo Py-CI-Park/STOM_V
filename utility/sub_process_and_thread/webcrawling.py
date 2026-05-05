@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from traceback import format_exc
 from fake_useragent import UserAgent
 from PyQt5.QtCore import QThread, pyqtSignal
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from utility.static_method.static import str_ymdhm, str_ymd_ios, dt_ymdhms_ios, timedelta_day, dt_ymd, str_hms, now, \
     str_ymd, thread_decorator, timedelta_sec
 
@@ -62,7 +62,7 @@ class WebCrawling(QThread):
 
             if self.thread_join == 16:
                 self.thread_join = 0
-                self.signal.emit((ui_num['홈차트'], self.dict_data))
+                self.signal.emit((UI_NUM['홈차트'], self.dict_data))
 
             time.sleep(0.01)
 
@@ -111,9 +111,9 @@ class WebCrawling(QThread):
             if self.imagelist1 and self.imagelist2:
                 webimage1 = request.urlopen(random.choice(self.imagelist1)).read()
                 webimage2 = request.urlopen(random.choice(self.imagelist2)).read()
-                self.signal.emit((ui_num['풍경사진'], webimage1, webimage2))
+                self.signal.emit((UI_NUM['풍경사진'], webimage1, webimage2))
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     @thread_decorator
     def _gugy_crawling(self, code):
@@ -131,9 +131,9 @@ class WebCrawling(QThread):
                 title = title.get_text(strip=True).replace('.', '. ')
                 if title:
                     gugy_result += title
-            self.signal.emit((ui_num['기업개요'], gugy_result))
+            self.signal.emit((UI_NUM['기업개요'], gugy_result))
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     @thread_decorator
     def _gugs_crawling(self, code):
@@ -159,9 +159,9 @@ class WebCrawling(QThread):
                 date_list += [date.get_text(strip=True) for date in soup.select('td.date')]
                 jbjg_list += [info.get_text(strip=True) for info in soup.select('td.info')]
             df = pd.DataFrame({'일자': date_list, '정보제공': jbjg_list, '공시': gygs_list, '링크': link_list})
-            self.signal.emit((ui_num['기업공시'], df))
+            self.signal.emit((UI_NUM['기업공시'], df))
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     # noinspection PyUnresolvedReferences
     @thread_decorator
@@ -194,9 +194,9 @@ class WebCrawling(QThread):
                         '링크': hlink
                     })
             df = pd.DataFrame(data_list)
-            self.signal.emit((ui_num['기업뉴스'], df))
+            self.signal.emit((UI_NUM['기업뉴스'], df))
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     @thread_decorator
     def _jmjp_crawling(self, code):
@@ -229,10 +229,10 @@ class WebCrawling(QThread):
             ]
             df1 = pd.DataFrame(dict(zip(columns1, data1)))
             df2 = pd.DataFrame(dict(zip(columns2, data2)))
-            self.signal.emit((ui_num['재무년도'], df1))
-            self.signal.emit((ui_num['재무분기'], df2))
+            self.signal.emit((UI_NUM['재무년도'], df1))
+            self.signal.emit((UI_NUM['재무분기'], df2))
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     @thread_decorator
     def _ujtm_crawling(self):
@@ -273,11 +273,11 @@ class WebCrawling(QThread):
             df2['등락율%'] = df2['등락율'].apply(lambda x: str(x) + '%')
             cl2 = [self.cmap(self.norm1(value)) for value in df2['등락율']]
 
-            self.signal.emit((ui_num['트리맵'], df1, df2, cl1, cl2))
+            self.signal.emit((UI_NUM['트리맵'], df1, df2, cl1, cl2))
             if self.treemap:
                 Timer(10, self._ujtm_crawling).start()
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     @thread_decorator
     def _ujtm_crawling_detail(self, url, gubun):
@@ -298,11 +298,11 @@ class WebCrawling(QThread):
             cl = [self.cmap(self.norm2(value)) for value in df['등락율']]
 
             if gubun == 1:
-                self.signal.emit((ui_num['트리맵1'], df, '', cl, ''))
+                self.signal.emit((UI_NUM['트리맵1'], df, '', cl, ''))
             else:
-                self.signal.emit((ui_num['트리맵2'], '', df, '', cl))
+                self.signal.emit((UI_NUM['트리맵2'], '', df, '', cl))
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     def _crawling_homtap_data(self):
         """모든 데이터를 수집합니다 (한국주식+암호화폐).
@@ -437,7 +437,7 @@ class WebCrawling(QThread):
                     self.dict_data[name] = df
                 self.thread_join += 1
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     @thread_decorator
     def get_market_indicator(self):
@@ -515,7 +515,7 @@ class WebCrawling(QThread):
                         self.dict_data[name] = df
                     self.thread_join += 1
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     @thread_decorator
     def get_crypto_data(self):
@@ -562,4 +562,4 @@ class WebCrawling(QThread):
 
                 time.sleep(0.1)
         except Exception:
-            self.signal.emit((ui_num['시스템로그'], format_exc()))
+            self.signal.emit((UI_NUM['시스템로그'], format_exc()))

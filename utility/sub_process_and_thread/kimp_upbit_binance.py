@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QApplication
 from trade.restapi_upbit import get_symbols_info
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from binance import AsyncClient, BinanceSocketManager
-from utility.settings.setting_base import ui_num, columns_kp
+from utility.settings.setting_base import UI_NUM, COLUMNS_KIMP
 from utility.static_method.static import comma2float, thread_decorator, error_decorator
 
 
@@ -30,7 +30,7 @@ class Kimp:
         self.usdtokrw  = None
         self.thread_ws = None
         _, self.codes  = get_symbols_info()
-        self.df        = pd.DataFrame(columns=columns_kp)
+        self.df        = pd.DataFrame(columns=COLUMNS_KIMP)
 
         self._converted_currency()
 
@@ -73,7 +73,7 @@ class Kimp:
             self.df['대비율(%)'] = self.df['대비(원)'] / self.df['업비트(원)'] * 100
             self.df.dropna(inplace=True)
             self.df.sort_values(by=['대비율(%)'], ascending=False, inplace=True)
-            self.windowQ.put((ui_num['김프'], self.df, self.usdtokrw))
+            self.windowQ.put((UI_NUM['김프'], self.df, self.usdtokrw))
 
     @thread_decorator
     def _converted_currency(self):

@@ -140,22 +140,24 @@ def setting_load_05(ui):
     ui.sj_back_cheBox_02.setChecked(True) if df['백테일괄로딩'][no] else ui.sj_back_cheBox_02.setChecked(False)
     ui.sj_back_cheBox_03.setChecked(True) if not df['백테일괄로딩'][no] else ui.sj_back_cheBox_03.setChecked(False)
     ui.sj_back_cheBox_04.setChecked(True) if df['디비자동관리'][no] else ui.sj_back_cheBox_04.setChecked(False)
-    ui.sj_back_cheBox_05.setChecked(True) if df['백테주문관리적용'][no] else ui.sj_back_cheBox_05.setChecked(False)
-    ui.sj_back_cheBox_06.setChecked(True) if df['교차검증가중치'][no] else ui.sj_back_cheBox_06.setChecked(False)
-    ui.sj_back_cheBox_07.setChecked(True) if df['범위자동관리'][no] else ui.sj_back_cheBox_07.setChecked(False)
-    ui.sj_back_cheBox_08.setChecked(True) if df['자동학습'][no] else ui.sj_back_cheBox_08.setChecked(False)
-    ui.sj_back_cheBox_09.setChecked(True) if df['백테스트로그기록안함'][no] else ui.sj_back_cheBox_09.setChecked(False)
-    ui.sj_back_cheBox_10.setChecked(True) if df['시장미시구조분석'][no] else ui.sj_back_cheBox_10.setChecked(False)
-    ui.sj_back_cheBox_11.setChecked(True) if df['리스크분석'][no] else ui.sj_back_cheBox_11.setChecked(False)
-    ui.sj_back_cheBox_12.setChecked(True) if df['패턴분석'][no] else ui.sj_back_cheBox_12.setChecked(False)
-    ui.sj_back_cheBox_13.setChecked(True) if df['가격대분석'][no] else ui.sj_back_cheBox_13.setChecked(False)
-    ui.sj_back_cheBox_14.setChecked(True) if df['백테매수시간기준'][no] else ui.sj_back_cheBox_14.setChecked(False)
-    ui.sj_back_liEdit_01.setText(str(df['기준값최소상승률'][no]))
-    ui.sj_back_cheBox_15.setChecked(True) if df['그래프저장하지않기'][no] else ui.sj_back_cheBox_15.setChecked(False)
-    ui.sj_back_cheBox_16.setChecked(True) if df['그래프띄우지않기'][no] else ui.sj_back_cheBox_16.setChecked(False)
-    ui.sj_back_cheBox_17.setChecked(True) if df['백테스케쥴실행'][no] else ui.sj_back_cheBox_17.setChecked(False)
-    ui.sj_back_cheBox_18.setChecked(True) if not df['백테날짜고정'][no] else ui.sj_back_cheBox_18.setChecked(False)
-    ui.sj_back_cheBox_19.setChecked(True) if df['백테날짜고정'][no] else ui.sj_back_cheBox_19.setChecked(False)
+    ui.sj_back_cheBox_05.setChecked(True) if df['백테스케쥴실행'][no] else ui.sj_back_cheBox_05.setChecked(False)
+    ui.sj_back_cheBox_06.setChecked(True) if df['자동학습'][no] else ui.sj_back_cheBox_06.setChecked(False)
+    ui.sj_back_cheBox_07.setChecked(True) if not df['백테날짜고정'][no] else ui.sj_back_cheBox_07.setChecked(False)
+    ui.sj_back_cheBox_08.setChecked(True) if df['백테날짜고정'][no] else ui.sj_back_cheBox_08.setChecked(False)
+    ui.sj_back_cheBox_09.setChecked(True) if df['백테주문관리적용'][no] else ui.sj_back_cheBox_09.setChecked(False)
+    ui.sj_back_cheBox_10.setChecked(True) if df['교차검증가중치'][no] else ui.sj_back_cheBox_10.setChecked(False)
+    ui.sj_back_cheBox_11.setChecked(True) if df['범위자동관리'][no] else ui.sj_back_cheBox_11.setChecked(False)
+    ui.sj_back_cheBox_12.setChecked(True) if df['백테매수시간기준'][no] else ui.sj_back_cheBox_12.setChecked(False)
+    ui.sj_back_cheBox_13.setChecked(True) if df['백테스트로그기록안함'][no] else ui.sj_back_cheBox_13.setChecked(False)
+    ui.sj_back_cheBox_14.setChecked(True) if df['그래프저장하지않기'][no] else ui.sj_back_cheBox_14.setChecked(False)
+    ui.sj_back_cheBox_15.setChecked(True) if df['그래프띄우지않기'][no] else ui.sj_back_cheBox_15.setChecked(False)
+    ui.sj_back_cheBox_16.setChecked(True) if df['시장미시구조분석'][no] else ui.sj_back_cheBox_16.setChecked(False)
+    ui.sj_back_cheBox_17.setChecked(True) if df['리스크분석'][no] else ui.sj_back_cheBox_17.setChecked(False)
+    ui.sj_back_cheBox_18.setChecked(True) if df['캔들분석'][no] else ui.sj_back_cheBox_18.setChecked(False)
+    ui.sj_back_cheBox_19.setChecked(True) if df['가격대분석'][no] else ui.sj_back_cheBox_19.setChecked(False)
+    ui.sj_back_cheBox_20.setChecked(True) if df['거래량분석'][no] else ui.sj_back_cheBox_20.setChecked(False)
+    ui.sj_back_cheBox_21.setChecked(True) if df['변동성분석'][no] else ui.sj_back_cheBox_21.setChecked(False)
+    ui.sj_back_liEdit_03.setText(str(df['기준값최소상승률'][no]))
     ui.sj_back_comBox_02.clear()
     dfs = ui.dbreader.read_sql('전략디비', 'SELECT * FROM schedule').set_index('index')
     indexs = list(dfs.index)
@@ -171,13 +173,13 @@ def setting_load_05(ui):
     elif df['백테스케쥴요일'][no] == 6:
         ui.sj_back_comBox_01.setCurrentText('일')
 
-    ui.sj_back_liEdit_02.setText(str(df['백테스케쥴시간'][no]))
+    ui.sj_back_liEdit_01.setText(str(df['백테스케쥴시간'][no]))
     ui.sj_back_comBox_02.setCurrentText(df['백테스케쥴명'][no])
 
     if df['백테날짜고정'][no]:
         ui.sj_back_daEdit_01.setDate(QDate.fromString(ui.dict_set['백테날짜'], 'yyyyMMdd'))
     else:
-        ui.sj_back_liEdit_03.setText(df['백테날짜'][no])
+        ui.sj_back_liEdit_02.setText(df['백테날짜'][no])
 
 
 def setting_load_06(ui):
@@ -197,10 +199,10 @@ def setting_load_06(ui):
     ui.sj_etc_checBox_06.setChecked(True) if df['웹대시보드'][no] else ui.sj_etc_checBox_06.setChecked(False)
     ui.sj_etc_checBox_07.setChecked(True) if df['창위치기억'][no] else ui.sj_etc_checBox_07.setChecked(False)
     ui.sj_etc_checBox_08.setChecked(True) if df['프로그램종료'][no] else ui.sj_etc_checBox_08.setChecked(False)
-    ui.sj_etc_liEditt_02.setText(str(df['웹대시보드포트번호'][no]))
+    ui.sj_etc_liEditt_01.setText(str(df['웹대시보드포트번호'][no]))
 
     if df['시리얼키'][no]:
-        ui.sj_etc_liEditt_01.setText(de_text(ui.dict_set['키'], df['시리얼키'][no]))
+        ui.sj_etc_liEditt_02.setText(de_text(ui.dict_set['키'], df['시리얼키'][no]))
 
 
 def settings_save_completed(ui):
@@ -228,6 +230,7 @@ def setting_save_01(ui):
     거래소 = ui.sj_main_comBox_01.currentText()
     모의투자 = 1 if ui.sj_main_cheBox_01.isChecked() else 0
     데이터저장 = 1 if ui.sj_main_cheBox_02.isChecked() else 0
+    알림소리 = 1 if ui.sj_main_cheBox_03.isChecked() else 0
     타임프레임 = 1 if ui.sj_main_comBox_02.currentText() == '1초스냅샷' else 0
 
     if ui.trading and 이전거래소 != 거래소:
@@ -255,7 +258,8 @@ def setting_save_01(ui):
     if pass_check:
         if ui.proc_chqs.is_alive():
             프로그램비밀번호 = en_text(ui.dict_set['키'], 프로그램비밀번호_) if 프로그램비밀번호_ else ''
-            columns = ['거래소', '모의투자', '데이터저장', '타임프레임', '프로그램비밀번호', '바이낸스선물마진타입', '바이낸스선물포지션']
+            columns = ['거래소', '타임프레임', '데이터저장', '모의투자', '알림소리', '프로그램비밀번호',
+                       '바이낸스선물마진타입', '바이낸스선물포지션']
             set_txt = ', '.join([f'{col} = ?' for col in columns])
             query = f'UPDATE main SET {set_txt}'
             localvs = locals()
@@ -336,18 +340,18 @@ def setting_save_04(ui):
     """
     from PyQt5.QtWidgets import QMessageBox
 
-    잔고청산 = 1 if ui.sj_strgy_ckBox_01.isChecked() else 0
-    프로세스종료 = 1 if ui.sj_strgy_ckBox_02.isChecked() else 0
-    컴퓨터종료 = 1 if ui.sj_strgy_ckBox_03.isChecked() else 0
-    투자금고정 = 1 if ui.sj_strgy_ckBox_04.isChecked() else 0
-    손실중지 = 1 if ui.sj_strgy_ckBox_05.isChecked() else 0
-    수익중지 = 1 if ui.sj_strgy_ckBox_06.isChecked() else 0
     매수전략 = ui.sj_strgy_cbBox_01.currentText()
     매도전략 = ui.sj_strgy_cbBox_02.currentText()
     평균값계산틱수 = ui.sj_strgy_lEdit_01.text()
     최대매수종목수 = ui.sj_strgy_lEdit_02.text()
     전략종료시간 = ui.sj_strgy_lEdit_03.text()
+    잔고청산 = 1 if ui.sj_strgy_ckBox_01.isChecked() else 0
+    프로세스종료 = 1 if ui.sj_strgy_ckBox_02.isChecked() else 0
+    컴퓨터종료 = 1 if ui.sj_strgy_ckBox_03.isChecked() else 0
+    투자금고정 = 1 if ui.sj_strgy_ckBox_04.isChecked() else 0
     투자금 = ui.sj_strgy_lEdit_04.text()
+    손실중지 = 1 if ui.sj_strgy_ckBox_05.isChecked() else 0
+    수익중지 = 1 if ui.sj_strgy_ckBox_06.isChecked() else 0
     손실중지수익률 = ui.sj_strgy_lEdit_05.text()
     수익중지수익률 = ui.sj_strgy_lEdit_06.text()
 
@@ -371,8 +375,8 @@ def setting_save_04(ui):
     if 매도전략 == '사용안함': 매도전략 = ''
 
     if ui.proc_chqs.is_alive():
-        columns = ['잔고청산', '프로세스종료', '컴퓨터종료', '투자금고정', '손실중지', '수익중지', '매수전략', '매도전략',
-                   '평균값계산틱수', '최대매수종목수', '전략종료시간', '투자금', '손실중지수익률', '수익중지수익률']
+        columns = ['매수전략', '매도전략', '평균값계산틱수', '최대매수종목수', '전략종료시간', '잔고청산', '프로세스종료', '컴퓨터종료',
+                   '투자금고정', '투자금', '손실중지', '손실중지수익률', '수익중지', '수익중지수익률']
         no      = ui.sj_main_comBox_01.currentText()[-2:]
         set_txt = ', '.join([f'{col} = ?' for col in columns])
         query   = f'UPDATE strategy SET {set_txt} WHERE `index` = ?'
@@ -394,22 +398,24 @@ def setting_save_05(ui):
     백테일괄로딩 = 1 if ui.sj_back_cheBox_02.isChecked() else 0
     # 백테분할로딩 = 1 if ui.sj_back_cheBox_03.isChecked() else 0
     디비자동관리 = 1 if ui.sj_back_cheBox_04.isChecked() else 0
-    백테주문관리적용 = 1 if ui.sj_back_cheBox_05.isChecked() else 0
-    교차검증가중치 = 1 if ui.sj_back_cheBox_06.isChecked() else 0
-    범위자동관리 = 1 if ui.sj_back_cheBox_07.isChecked() else 0
-    자동학습 = 1 if ui.sj_back_cheBox_08.isChecked() else 0
-    백테스트로그기록안함 = 1 if ui.sj_back_cheBox_09.isChecked() else 0
-    기준값최소상승률 = ui.sj_back_liEdit_01.text()
-    시장미시구조분석 = 1 if ui.sj_back_cheBox_10.isChecked() else 0
-    리스크분석 = 1 if ui.sj_back_cheBox_11.isChecked() else 0
-    패턴분석 = 1 if ui.sj_back_cheBox_12.isChecked() else 0
-    가격대분석 = 1 if ui.sj_back_cheBox_13.isChecked() else 0
-    백테매수시간기준 = 1 if ui.sj_back_cheBox_14.isChecked() else 0
-    그래프저장하지않기 = 1 if ui.sj_back_cheBox_15.isChecked() else 0
-    그래프띄우지않기 = 1 if ui.sj_back_cheBox_16.isChecked() else 0
-    백테스케쥴실행 = 1 if ui.sj_back_cheBox_17.isChecked() else 0
-    # 백테날짜일전 = 1 if ui.sj_back_cheBox_18.isChecked() else 0
-    백테날짜고정 = 1 if ui.sj_back_cheBox_19.isChecked() else 0
+    백테스케쥴실행 = 1 if ui.sj_back_cheBox_05.isChecked() else 0
+    자동학습 = 1 if ui.sj_back_cheBox_06.isChecked() else 0
+    # 백테날짜일전 = 1 if ui.sj_back_cheBox_07.isChecked() else 0
+    백테날짜고정 = 1 if ui.sj_back_cheBox_08.isChecked() else 0
+    백테주문관리적용 = 1 if ui.sj_back_cheBox_09.isChecked() else 0
+    교차검증가중치 = 1 if ui.sj_back_cheBox_10.isChecked() else 0
+    범위자동관리 = 1 if ui.sj_back_cheBox_11.isChecked() else 0
+    백테매수시간기준 = 1 if ui.sj_back_cheBox_12.isChecked() else 0
+    백테스트로그기록안함 = 1 if ui.sj_back_cheBox_13.isChecked() else 0
+    그래프저장하지않기 = 1 if ui.sj_back_cheBox_14.isChecked() else 0
+    그래프띄우지않기 = 1 if ui.sj_back_cheBox_15.isChecked() else 0
+    시장미시구조분석 = 1 if ui.sj_back_cheBox_16.isChecked() else 0
+    리스크분석 = 1 if ui.sj_back_cheBox_17.isChecked() else 0
+    캔들분석 = 1 if ui.sj_back_cheBox_18.isChecked() else 0
+    가격대분석 = 1 if ui.sj_back_cheBox_19.isChecked() else 0
+    거래량분석 = 1 if ui.sj_back_cheBox_20.isChecked() else 0
+    변동성분석 = 1 if ui.sj_back_cheBox_21.isChecked() else 0
+    기준값최소상승률 = ui.sj_back_liEdit_03.text()
 
     if ui.sj_back_comBox_01.currentText() == '금':
         백테스케쥴요일 = 4
@@ -418,13 +424,13 @@ def setting_save_05(ui):
     else:
         백테스케쥴요일 = 6
 
-    백테스케쥴시간 = ui.sj_back_liEdit_02.text()
+    백테스케쥴시간 = ui.sj_back_liEdit_01.text()
     백테스케쥴명 = ui.sj_back_comBox_02.currentText()
 
     if 백테날짜고정:
         백테날짜 = ui.sj_back_daEdit_01.date().toString('yyyyMMdd')
     else:
-        백테날짜 = ui.sj_back_liEdit_03.text()
+        백테날짜 = ui.sj_back_liEdit_02.text()
 
     if '' in (백테날짜, 백테스케쥴시간):
         QMessageBox.critical(ui, '오류 알림', '일부 설정값이 입력되지 않았습니다.\n')
@@ -433,10 +439,10 @@ def setting_save_05(ui):
     if ui.proc_chqs.is_alive():
         백테스케쥴시간 = int(백테스케쥴시간)
         pre_bbg = ui.dict_set['백테주문관리적용']
-        columns = ['블랙리스트추가', '백테일괄로딩', '디비자동관리', '백테주문관리적용', '교차검증가중치', '범위자동관리', '자동학습',
-                   '기준값최소상승률', '시장미시구조분석', '리스크분석', '패턴분석', '가격대분석', '백테매수시간기준',
-                   '백테스트로그기록안함', '그래프저장하지않기', '그래프띄우지않기', '백테스케쥴실행', '백테스케쥴요일', '백테스케쥴시간',
-                   '백테스케쥴명', '백테날짜고정', '백테날짜']
+        columns = ['블랙리스트추가', '백테일괄로딩', '디비자동관리', '자동학습', '백테주문관리적용', '교차검증가중치', '범위자동관리',
+                   '백테매수시간기준', '백테스트로그기록안함', '그래프저장하지않기', '그래프띄우지않기', '시장미시구조분석', '리스크분석',
+                   '캔들분석', '가격대분석', '거래량분석', '변동성분석', '기준값최소상승률', '백테스케쥴실행', '백테스케쥴요일',
+                   '백테스케쥴시간', '백테스케쥴명', '백테날짜고정', '백테날짜']
         no      = ui.sj_main_comBox_01.currentText()[-2:]
         set_txt = ', '.join([f'{col} = ?' for col in columns])
         query   = f'UPDATE back SET {set_txt} WHERE `index` = ?'
@@ -464,14 +470,14 @@ def setting_save_06(ui):
     웹대시보드 = 1 if ui.sj_etc_checBox_06.isChecked() else 0
     창위치기억 = 1 if ui.sj_etc_checBox_07.isChecked() else 0
     프로그램종료 = 1 if ui.sj_etc_checBox_08.isChecked() else 0
-    시리얼키 = ui.sj_etc_liEditt_01.text()
+    시리얼키 = ui.sj_etc_liEditt_02.text()
 
     if 시리얼키 == '':
         QMessageBox.critical(ui, '오류 알림', '시리얼키가 입력되지 않았습니다.\n')
         return
 
     시리얼키 = en_text(ui.dict_set['키'], 시리얼키)
-    웹대시보드포트번호 = int(ui.sj_etc_liEditt_02.text())
+    웹대시보드포트번호 = int(ui.sj_etc_liEditt_01.text())
 
     if ui.proc_chqs.is_alive():
         columns = ['테마', '저해상도', '스톰라이브', '휴무프로세스종료', '휴무컴퓨터종료', '웹대시보드', '웹대시보드포트번호',
@@ -504,7 +510,7 @@ def setting_acc_view(ui):
         ui.sj_accc_liEdit_02.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_01.setEchoMode(QLineEdit.Password)
         ui.sj_tele_liEdit_02.setEchoMode(QLineEdit.Password)
-        ui.sj_etc_liEditt_01.setEchoMode(QLineEdit.Password)
+        ui.sj_etc_liEditt_02.setEchoMode(QLineEdit.Password)
         ui.sj_etc_pButton_01.setText('계정 텍스트 보기')
         ui.sj_etc_pButton_01.setStyleSheet(style_bc_bt)
 

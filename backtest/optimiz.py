@@ -13,8 +13,8 @@ from backtest.optimiz_3d_visualization import Visualization3D
 from backtest.back_static_numba import get_result, bootstrap_test
 from utility.static_method.strategy_version_manager import stg_save_version
 from utility.static_method.static import now, timedelta_day, str_ymd, str_ymdhms, dt_ymd, error_decorator
-from utility.settings.setting_base import ui_num, DB_STRATEGY, DB_BACKTEST, columns_vc, DB_SETTING, DB_OPTUNA
 from backtest.back_static import send_result, plot_show, get_moneytop_query, get_result_dataframe, add_mdd
+from utility.settings.setting_base import UI_NUM, DB_STRATEGY, DB_BACKTEST, COLUMNS_BOS, DB_SETTING, DB_OPTUNA
 
 
 class Total:
@@ -177,7 +177,7 @@ class Total:
             except SystemExit:
                 break
             except Exception:
-                self.wq.put((ui_num['시스템로그'], format_exc()))
+                self.wq.put((UI_NUM['시스템로그'], format_exc()))
                 self.mq.put('백테중지')
                 time.sleep(1)
                 break
@@ -231,7 +231,7 @@ class Total:
             arry_bct: 보유 결과 배열
         """
         if not list_tsg:
-            self.wq.put((ui_num['백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
+            self.wq.put((UI_NUM['백테스트'], '매수전략을 만족하는 경우가 없어 결과를 표시할 수 없습니다.'))
             self.mq.put('백테스트 중지')
             time.sleep(1)
             sys.exit()
@@ -332,19 +332,19 @@ class Total:
             cur.execute(f"UPDATE {self.market_info['전략구분']}_optibuy SET 변수값 = '{vars_text}' WHERE `index` = '{self.buystg_name}'")
             con.commit()
             con.close()
-            self.wq.put((ui_num['백테스트'], f'최적화전략 {self.buystg_name}의 최적값 및 평균틱수 갱신 완료'))
+            self.wq.put((UI_NUM['백테스트'], f'최적화전략 {self.buystg_name}의 최적값 및 평균틱수 갱신 완료'))
 
-        self.wq.put((ui_num['백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
+        self.wq.put((UI_NUM['백테스트'], '부트스트랩 결과' + bootstrap_text + bootstrap_cmt))
 
         save_file_name = f'{self.savename}_{self.buystg_name}_{self.optistandard}_{self.file_name}'
         data = [f'{self.vars}', int(self.betting), seed, tc, atc, mhct, ah, pc, mc, wr, app, tpp, mdd, tsg, tpi, cagr, self.buystg, self.sellstg, self.optivars]
-        df = pd.DataFrame([data], columns=columns_vc, index=[self.file_name])
+        df = pd.DataFrame([data], columns=COLUMNS_BOS, index=[self.file_name])
         con = sqlite3.connect(DB_BACKTEST)
         df.to_sql(self.savename, con, if_exists='append', chunksize=2000)
         self.df_tsg.to_sql(save_file_name, con, if_exists='append', chunksize=2000)
         con.close()
 
-        self.wq.put((ui_num['상세기록'], self.df_tsg))
+        self.wq.put((UI_NUM['상세기록'], self.df_tsg))
         self.mq.put('백테스트 완료')
         self.sq.put(f'{self.backname} 백테스트를 완료하였습니다.')
         plot_show('최적화', self.is_tick, self.teleQ, self.df_tsg, self.df_bct, self.market_gubun, seed, mdd,
@@ -387,7 +387,7 @@ class Optimize:
         except SystemExit:
             sys.exit()
         except Exception:
-            self.wq.put((ui_num['시스템로그'], format_exc()))
+            self.wq.put((UI_NUM['시스템로그'], format_exc()))
             self.tq.put('백테중지')
 
     # noinspection PyUnresolvedReferences
@@ -436,7 +436,7 @@ class Optimize:
             try:
                 optuna_fixvars = [int(x.strip()) for x in data[17].split(',')]
             except Exception:
-                self.wq.put((ui_num['백테스트'], '고정할 범위의 번호를 잘못입력하였습니다.'))
+                self.wq.put((UI_NUM['백테스트'], '고정할 범위의 번호를 잘못입력하였습니다.'))
                 self._sys_exit(True)
 
         optuna_count = int(data[18])
@@ -464,7 +464,7 @@ class Optimize:
             perio_text = '학습시간'
             if 'T' in self.backname:
                 perio_text = f'{perio_text} + 확인기간'
-            self.wq.put((ui_num['백테스트'], f'백테엔진에 로딩된 데이터가 부족합니다. 최소 ({perio_text})주 만큼의 데이터가 필요합니다'))
+            self.wq.put((UI_NUM['백테스트'], f'백테엔진에 로딩된 데이터가 부족합니다. 최소 ({perio_text})주 만큼의 데이터가 필요합니다'))
             self._sys_exit(True)
 
         con   = sqlite3.connect(self.market_info['백테디비'][self.is_tick])
@@ -473,7 +473,7 @@ class Optimize:
         con.close()
 
         if len(df_mt) == 0 or back_count == 0:
-            self.wq.put((ui_num['백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
+            self.wq.put((UI_NUM['백테스트'], '날짜 지정이 잘못되었거나 데이터가 존재하지 않습니다.'))
             self._sys_exit(True)
 
         con = sqlite3.connect(DB_STRATEGY)
@@ -488,11 +488,11 @@ class Optimize:
         try:
             exec(compile(text_vars, '<string>', 'exec'))
         except Exception:
-            self.wq.put((ui_num['백테스트'], f'{format_exc()}오류 알림 - {self.backname} 변수설정'))
+            self.wq.put((UI_NUM['백테스트'], f'{format_exc()}오류 알림 - {self.backname} 변수설정'))
             self._sys_exit(True)
 
         if 'self.ms_analyzer' in buystg and not self.dict_set['시장미시구조분석']:
-            self.wq.put((ui_num['백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
+            self.wq.put((UI_NUM['백테스트'], '시장미시구조분석 미적용 상태입니다. 설정을 변경하십시오.'))
             self._sys_exit(True)
 
         if self.is_tick:
@@ -505,22 +505,22 @@ class Optimize:
         startday, endday = day_list[0], day_list[-1]
         list_days = self._get_list_days(startday, endday, dt_endday, day_list, weeks_train, weeks_valid, weeks_test)
 
-        self.wq.put((ui_num['백테스트'], '텍스트에디터 클리어'))
+        self.wq.put((UI_NUM['백테스트'], '텍스트에디터 클리어'))
 
         train_days, valid_days, test_days = list_days
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 학습 기간 {train_days[0]} ~ {train_days[1]}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 학습 기간 {train_days[0]} ~ {train_days[1]}'))
         if 'V' in self.backname:
             for vsday, veday, _ in valid_days:
-                self.wq.put((ui_num['백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
+                self.wq.put((UI_NUM['백테스트'], f'{self.backname} 검증 기간 {vsday} ~ {veday}'))
         if 'T' in self.backname:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} 확인 기간 {test_days[0]} ~ {test_days[1]}'))
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 기간 추출 완료'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} 확인 기간 {test_days[0]} ~ {test_days[1]}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 기간 추출 완료'))
 
         buy_num   = int(buystg.split('self.vars[')[1].split(']')[0])
         sell_num  = int(sellstg.split('self.vars[')[1].split(']')[0])
         buy_first = True if buy_num < sell_num else False
         text = f'{self.backname} 매도수전략 및 변수 설정 완료' if not random_optivars else f'{self.backname} 매도수전략 및 변수 최적값 랜덤 설정 완료'
-        self.wq.put((ui_num['백테스트'], text))
+        self.wq.put((UI_NUM['백테스트'], text))
 
         arry_bct = np.zeros((len(df_mt), 3), dtype='float64')
         arry_bct[:, 0] = df_mt['index'].values
@@ -542,14 +542,14 @@ class Optimize:
             args=(self.wq, self.sq, self.tq, self.teleQ, mq, self.lq, self.bstq_list, self.backname, self.market_gubun,
                   self.market_info, self.dict_set)
         ).start()
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 집계용 프로세스 생성 완료'))
 
         if 'B' in self.backname:
-            self.wq.put((ui_num['백테스트'], f'<font color=#54d2f9>OPTUNA Sampler : {optuna_sampler}</font>'))
+            self.wq.put((UI_NUM['백테스트'], f'<font color=#54d2f9>OPTUNA Sampler : {optuna_sampler}</font>'))
         if only_buy:    add_text = ', 매수전략의 변수만 최적화합니다.'
         elif only_sell: add_text = ', 매도전략의 변수만 최적화합니다.'
         else:           add_text = ''
-        self.wq.put((ui_num['백테스트'], f'{self.backname} START {add_text}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} START {add_text}'))
 
         if 'B' not in self.backname:
             self._optimize_grid(
@@ -562,13 +562,13 @@ class Optimize:
                 optuna_count, optuna_autostep, sampler, buystg_name
             )
 
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 최적화 완료'))
-        self.wq.put((ui_num['백테스트'], '최적값 백테스트 시작'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 최적화 완료'))
+        self.wq.put((UI_NUM['백테스트'], '최적값 백테스트 시작'))
         self._back_start(('변수정보', self.vars_, 2))
 
         data = mq.get()
         if data != '백테스트 완료': self._sys_exit(True)
-        self.wq.put((ui_num['백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 백테스트 소요시간 {now() - start_time}'))
 
         self._save_opti_vars(text_vars, optivars_name, only_buy, only_sell, buy_first, sell_num)
         if self.dict_set['스톰라이브']:
@@ -628,14 +628,14 @@ class Optimize:
                     total_vdays_count += vdays_count
                     valid_days.append([valid_days_list[0], valid_days_list[-1], vdays_count])
                 except Exception:
-                    self.wq.put((ui_num['백테스트'], f'[{vdays[0]} ~ {vdays[1]}] 구간의 데이터가 존재하지 않습니다.'))
+                    self.wq.put((UI_NUM['백테스트'], f'[{vdays[0]} ~ {vdays[1]}] 구간의 데이터가 존재하지 않습니다.'))
                     self._sys_exit(True)
             if valid_days:
                 avg_vdays_count = int(total_vdays_count / len(valid_days))
                 train_days = [train_days_list[0], train_days_list[-1], len(train_days_list) - avg_vdays_count]
             else:
                 train_days = []
-                self.wq.put((ui_num['백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
+                self.wq.put((UI_NUM['백테스트'], '백테엔진의 데이터 로딩 마지막 일자가 잘못되었거나 검증구간의 데이터가 존재하지 않습니다.'))
                 self._sys_exit(True)
         else:
             valid_days = None
@@ -664,16 +664,16 @@ class Optimize:
         for i, var in enumerate(list(self.vars.values())):
             error = False
             if len(var) != 2:
-                self.wq.put((ui_num['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
+                self.wq.put((UI_NUM['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
                 error = True
             if len(var[0]) != 3:
-                self.wq.put((ui_num['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
+                self.wq.put((UI_NUM['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 설정 오류'))
                 error = True
             if var[0][0] < var[0][1] and var[0][2] < 0:
-                self.wq.put((ui_num['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
+                self.wq.put((UI_NUM['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
                 error = True
             if var[0][0] > var[0][1] and var[0][2] > 0:
-                self.wq.put((ui_num['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
+                self.wq.put((UI_NUM['백테스트'], f'오류 알림 - self.vars[{i}]의 범위 간격 설정 오류'))
                 error = True
             if error:
                 self._sys_exit(True)
@@ -739,7 +739,7 @@ class Optimize:
 
         for k in range(ccount if ccount != 0 else 100):
             self.wq.put((
-                ui_num['백테스트'],
+                UI_NUM['백테스트'],
                 f'{self.backname} [{k+1}]단계 그리드 최적화 시작, 최고 기준값[{hstd:,.2f}], 최적값 변경 개수 [{vars_change_count}]'
             ))
 
@@ -752,7 +752,7 @@ class Optimize:
             delete_varlist      = [[] for _ in range(len_vars)]
 
             if result_receiv_count == 0:
-                self.wq.put((ui_num['백테스트'], '모든 파라미터 고정, 최적화를 종료합니다.'))
+                self.wq.put((UI_NUM['백테스트'], '모든 파라미터 고정, 최적화를 종료합니다.'))
                 break
 
             self._back_start(('변수정보', self.vars_, 1))
@@ -802,11 +802,11 @@ class Optimize:
                 self.adjust_vars_range(deleted_varlist=deleted_varlist)
 
             if not bool_changed_hstd:
-                self.wq.put((ui_num['백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
+                self.wq.put((UI_NUM['백테스트'], '최고기준값 갱신 없음, 최적화를 종료합니다.'))
                 break
 
             if previous_high_std > 0 and hstd > 0 and high_ratio[0] < self.dict_set['기준값최소상승률']:
-                self.wq.put((ui_num['백테스트'], f"기준값 상승률 {self.dict_set['기준값최소상승률']}% 미달성, 최적화를 종료합니다."))
+                self.wq.put((UI_NUM['백테스트'], f"기준값 상승률 {self.dict_set['기준값최소상승률']}% 미달성, 최적화를 종료합니다."))
                 break
 
             hstd = high_ratio[2]
@@ -821,7 +821,7 @@ class Optimize:
         Returns:
             (high_ratio, vars_change_count) 튜플
         """
-        self.wq.put((ui_num['백테스트'], '최적값 조합 확인 시작'))
+        self.wq.put((UI_NUM['백테스트'], '최적값 조합 확인 시작'))
         high_ratio = [0, previous_high_std, previous_high_std]
         std_set = sorted(set(v[1] for v in dict_turn_hvar_hstd.values()))
         last = len(std_set)
@@ -843,10 +843,10 @@ class Optimize:
                     ratio = round((check_hstd / previous_high_std - 1) * 100, 2)
                 else:
                     ratio = round((1 - check_hstd / previous_high_std) * 100, 2)
-                self.wq.put((ui_num['백테스트'], f'최적값 조합 확인 중[{i+1}/{last}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
+                self.wq.put((UI_NUM['백테스트'], f'최적값 조합 확인 중[{i + 1}/{last}] ... 조합기준값[{std:,.2f}] 기준값상승률[{ratio}%]'))
                 if ratio > high_ratio[0]:
                     high_ratio = [ratio, std, check_hstd]
-        self.wq.put((ui_num['백테스트'], '최적값 조합 확인 완료'))
+        self.wq.put((UI_NUM['백테스트'], '최적값 조합 확인 완료'))
 
         text = '\n'
         high_ratio_std = high_ratio[1]
@@ -857,7 +857,7 @@ class Optimize:
                 vars_change_count += 1
                 self.vars_[vturn][1] = cur_turn_hvar
                 text = f'{text}self.vars[{vturn}]의 최적값 변경 [{pre_turn_hvar} -> {cur_turn_hvar}]\n'
-        if text != '\n': self.wq.put((ui_num['백테스트'], text[:-1]))
+        if text != '\n': self.wq.put((UI_NUM['백테스트'], text[:-1]))
         return high_ratio, vars_change_count
 
     def _fix_and_delete_vars_range(self, hstd, dict_turn_var_std, delete_varlist, deleted_varlist):
@@ -893,7 +893,7 @@ class Optimize:
                     cur_turn_hvar = self.vars_[i][1]
                     self.vars_[i][0] = [cur_turn_hvar]
                     text = f'{text}self.vars[{i}]의 범위 고정 [{cur_turn_hvar}]\n'
-        if text != '\n': self.wq.put((ui_num['백테스트'], text[:-1]))
+        if text != '\n': self.wq.put((UI_NUM['백테스트'], text[:-1]))
         return deleted_varlist
 
     def adjust_vars_range(self, best_params=None, deleted_varlist=None):
@@ -922,7 +922,7 @@ class Optimize:
                         prev_list = var[0] if len_var < 20 else var[0][1:]
                         self.vars_[i][0] = prev_list + [new]
                         text = f'{text}self.vars[{i}]의 범위 추가 [{new}]\n'
-        if text != '\n': self.wq.put((ui_num['백테스트'], text[:-1]))
+        if text != '\n': self.wq.put((UI_NUM['백테스트'], text[:-1]))
 
     def _optimize_optuna(self, mq, back_count, only_buy, only_sell, buy_first, buy_num, sell_num,
                          optuna_fixvars, optuna_count, optuna_autostep, sampler, buystg_name):
@@ -943,7 +943,7 @@ class Optimize:
         """
 
         self.tq.put(('경우의수', back_count))
-        self.wq.put((ui_num['백테스트'], f'{self.backname} OPTUNA 최적화 시작'))
+        self.wq.put((UI_NUM['백테스트'], f'{self.backname} OPTUNA 최적화 시작'))
 
         def objective(trial):
             optuna_vars = []
@@ -997,7 +997,7 @@ class Optimize:
             pre_hvar = self.vars_[i][1]
             if high_var != pre_hvar:
                 self.vars_[i][1] = high_var
-                self.wq.put((ui_num['백테스트'], f'self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {high_var}]'))
+                self.wq.put((UI_NUM['백테스트'], f'self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {high_var}]'))
 
     def _save_opti_vars(self, text_vars, optivars_name, only_buy, only_sell, buy_first, sell_num):
         """최적화 변수를 저장합니다.
@@ -1020,7 +1020,7 @@ class Optimize:
                     cur_hvar = self.vars_[i][1]
                     if pre_hvar != cur_hvar:
                         change += 1
-                        self.wq.put((ui_num['백테스트'], f'{self.backname} 결과 self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {cur_hvar}]'))
+                        self.wq.put((UI_NUM['백테스트'], f'{self.backname} 결과 self.vars[{i}]의 최적값 변경 [{pre_hvar} -> {cur_hvar}]'))
                     first      = self.vars_[i][0][0]
                     last       = self.vars_[i][0][-1]
                     pre_gap    = self.vars[i][0][2]
@@ -1039,7 +1039,7 @@ class Optimize:
 
                 stg_save_version(self.market_info['전략구분'], 'opti', 'vars', optivars_name, text_vars)
 
-                self.wq.put((ui_num['백테스트'], f'{self.backname} {optivars_name}의 최적값 갱신 완료'))
+                self.wq.put((UI_NUM['백테스트'], f'{self.backname} {optivars_name}의 최적값 갱신 완료'))
 
     def _back_start(self, data):
         """백테스트를 시작합니다.
@@ -1059,9 +1059,9 @@ class Optimize:
             cancel: 취소 여부
         """
         if cancel:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} STOP'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} STOP'))
         else:
-            self.wq.put((ui_num['백테스트'], f'{self.backname} COMPLETE'))
+            self.wq.put((UI_NUM['백테스트'], f'{self.backname} COMPLETE'))
         time.sleep(1)
         sys.exit()
 
@@ -1088,7 +1088,7 @@ class StopWhenNotUpdateBestCallBack:
         curr_num = trial.number
         last_num = (best_num + self.len_vars) if self.optuna_count == 0 else (best_num + self.optuna_count)
         rema_num = last_num - curr_num
-        self.main.wq.put((ui_num['백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
+        self.main.wq.put((UI_NUM['백테스트'], f'<font color=#54d2f9>OPTUNA INFO 최고기준값[{best_opt:,}] 기준값갱신[{best_num}] 현재횟수[{curr_num}] 남은횟수[{rema_num}]</font>'))
         if curr_num >= self.adjust_cnt and curr_num == best_num:
             self.main.adjust_vars_range(best_params=list(study.best_params.values()))
         if curr_num == last_num:

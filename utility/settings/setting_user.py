@@ -31,11 +31,17 @@ def load_settings():
         lvrg_list_ = [float(x) for x in lvrg_list_]
         binance_leverage_.append(lvrg_list_)
 
+    location_list = None
     df_a_not_empty = True if len(df_a) > 0 else False
     df_t_not_empty  = True if len(df_t) > 0 else False
 
     try:
         no = int(df_m['거래소'][0][-2:])
+        dialog_location = df_e['창위치'][no]
+        if dialog_location and '^' in dialog_location and ';' in dialog_location:
+            location_list = [x.split('^') for x in df_e['창위치'][no].split(';')]
+        else:
+            location_list = [['0', '0'] for _ in range(11)]
 
         DICT_SET = {
             '키':            EN_KEY,
@@ -58,62 +64,65 @@ def load_settings():
             '텔레그램봇토큰':     de_text(EN_KEY, df_t['bot_token'][no])   if df_t_not_empty and df_t['bot_token'][no] else None,
             '텔레그램아이디': int(de_text(EN_KEY, df_t['chatingid'][no]))  if df_t_not_empty and df_t['chatingid'][no] else None,
 
-            '매수전략':     df_s['매수전략'][no],
-            '매도전략':     df_s['매도전략'][no],
-            '평균값계산틱수': df_s['평균값계산틱수'][no],
-            '최대매수종목수': df_s['최대매수종목수'][no],
-            '전략종료시간':  df_s['전략종료시간'][no],
-            '잔고청산':     df_s['잔고청산'][no],
-            '프로세스종료':  df_s['프로세스종료'][no],
-            '컴퓨터종료':   df_s['컴퓨터종료'][no],
-            '투자금고정':   df_s['투자금고정'][no],
-            '투자금':      df_s['투자금'][no],
-            '손실중지':     df_s['손실중지'][no],
-            '손실중지수익률': df_s['손실중지수익률'][no],
-            '수익중지':     df_s['수익중지'][no],
-            '수익중지수익률': df_s['수익중지수익률'][no],
+            '매수전략':          df_s['매수전략'][no],
+            '매도전략':          df_s['매도전략'][no],
+            '평균값계산틱수':     df_s['평균값계산틱수'][no],
+            '최대매수종목수':     df_s['최대매수종목수'][no],
+            '전략종료시간':      df_s['전략종료시간'][no],
+            '잔고청산':         df_s['잔고청산'][no],
+            '프로세스종료':      df_s['프로세스종료'][no],
+            '컴퓨터종료':        df_s['컴퓨터종료'][no],
+            '투자금고정':        df_s['투자금고정'][no],
+            '투자금':           df_s['투자금'][no],
+            '손실중지':         df_s['손실중지'][no],
+            '손실중지수익률':     df_s['손실중지수익률'][no],
+            '수익중지':          df_s['수익중지'][no],
+            '수익중지수익률':     df_s['수익중지수익률'][no],
 
             '블랙리스트추가':     df_b['블랙리스트추가'][no],
-            '백테주문관리적용':   df_b['백테주문관리적용'][no],
-            '백테매수시간기준':   df_b['백테매수시간기준'][no],
-            '백테일괄로딩':      df_b['백테일괄로딩'][no],
-            '그래프저장하지않기': df_b['그래프저장하지않기'][no],
-            '그래프띄우지않기':   df_b['그래프띄우지않기'][no],
-            '디비자동관리':      df_b['디비자동관리'][no],
-            '교차검증가중치':    df_b['교차검증가중치'][no],
-            '기준값최소상승률':  df_b['기준값최소상승률'][no],
-            '백테스케쥴실행':    df_b['백테스케쥴실행'][no],
-            '백테스케쥴요일':    df_b['백테스케쥴요일'][no],
-            '백테스케쥴시간':    df_b['백테스케쥴시간'][no],
+            '백테일괄로딩':       df_b['백테일괄로딩'][no],
+            '디비자동관리':       df_b['디비자동관리'][no],
+            '자동학습':          df_b['자동학습'][no],
+            '백테주문관리적용':    df_b['백테주문관리적용'][no],
+            '교차검증가중치':     df_b['교차검증가중치'][no],
+            '범위자동관리':       df_b['범위자동관리'][no],
+            '백테매수시간기준':    df_b['백테매수시간기준'][no],
+            '백테스트로그기록안함': df_b['백테스트로그기록안함'][no],
+            '그래프저장하지않기':  df_b['그래프저장하지않기'][no],
+            '그래프띄우지않기':    df_b['그래프띄우지않기'][no],
+            '시장미시구조분석':    df_b['시장미시구조분석'][no],
+            '리스크분석':        df_b['리스크분석'][no],
+            '캔들분석':          df_b['캔들분석'][no],
+            '가격대분석':        df_b['가격대분석'][no],
+            '거래량분석':        df_b['거래량분석'][no],
+            '변동성분석':        df_b['변동성분석'][no],
+            '기준값최소상승률':    df_b['기준값최소상승률'][no],
+
+            '백테스케쥴실행':     df_b['백테스케쥴실행'][no],
+            '백테스케쥴요일':     df_b['백테스케쥴요일'][no],
+            '백테스케쥴시간':     df_b['백테스케쥴시간'][no],
             '백테스케쥴명':      df_b['백테스케쥴명'][no],
             '백테날짜고정':      df_b['백테날짜고정'][no],
             '백테날짜':         df_b['백테날짜'][no],
-            '범위자동관리':      df_b['범위자동관리'][no],
-            '보조지표설정':      [int(x) if '.' not in x else float(x) for x in df_b['보조지표설정'][no].split(';')],
             '최적화기준값제한':   df_b['최적화기준값제한'][no],
             '백테엔진분류방법':   df_b['백테엔진분류방법'][no],
             '옵튜나샘플러':      df_b['옵튜나샘플러'][no],
             '옵튜나고정변수':     df_b['옵튜나고정변수'][no],
             '옵튜나실행횟수':     df_b['옵튜나실행횟수'][no],
             '옵튜나자동스탭':     df_b['옵튜나자동스탭'][no],
-            '백테스트로그기록안함': df_b['백테스트로그기록안함'][no],
-            '시장미시구조분석':    df_b['시장미시구조분석'][no],
-            '리스크분석':        df_b['리스크분석'][no],
-            '패턴분석':         df_b['패턴분석'][no],
-            '가격대분석':        df_b['가격대분석'][no],
-            '자동학습':         df_b['자동학습'][no],
+            '보조지표설정':      [int(x) if '.' not in x else float(x) for x in df_b['보조지표설정'][no].split(';')],
 
+            '테마': df_e['테마'][no],
             '저해상도':         df_e['저해상도'][no],
+            '스톰라이브':       df_e['스톰라이브'][no],
             '휴무프로세스종료':   df_e['휴무프로세스종료'][no],
             '휴무컴퓨터종료':    df_e['휴무컴퓨터종료'][no],
-            '창위치기억':       df_e['창위치기억'][no],
-            '창위치':          [int(x) for x in df_e['창위치'][no].split(';')] if df_e['창위치'][no] else None,
-            '스톰라이브':       df_e['스톰라이브'][no],
-            '프로그램종료':      df_e['프로그램종료'][no],
-            '테마':            df_e['테마'][no],
-            '팩터선택':         df_e['팩터선택'][no],
             '웹대시보드':       df_e['웹대시보드'][no],
             '웹대시보드포트번호': df_e['웹대시보드포트번호'][no],
+            '프로그램종료':      df_e['프로그램종료'][no],
+            '창위치기억':       df_e['창위치기억'][no],
+            '창위치':          location_list,
+            '팩터선택':         df_e['팩터선택'][no],
             '시리얼키':         de_text(EN_KEY, df_e['시리얼키'][no]) if len(df_e) > 0 and df_e['시리얼키'][no] else None,
 
             '매수주문유형':      df_bo['매수주문유형'][no],
@@ -186,8 +195,8 @@ def load_settings():
             '백테엔진프로파일링': False
         }
     except fernet.InvalidToken:
-        return 'fernet.InvalidToken'
+        return 'fernet.InvalidToken', location_list
     except Exception:
-        return format_exc()
+        return format_exc(), location_list
     else:
-        return DICT_SET
+        return DICT_SET, location_list

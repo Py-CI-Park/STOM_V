@@ -7,7 +7,7 @@ from traceback import format_exc
 from PyQt5.QtCore import QThread
 from telegram.request import HTTPXRequest
 from telegram import Update, ReplyKeyboardMarkup
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 
 
@@ -102,7 +102,7 @@ class TelegramBot(QThread):
         except asyncio.CancelledError:
             pass
         except Exception:
-            self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - start_bot'))
+            self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - start_bot'))
             self.running = False
 
     async def setup_application(self, application):
@@ -190,7 +190,7 @@ class TelegramBot(QThread):
                     self.application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message))
                     self.bot_task = self.loop.create_task(self.start_bot())
             except Exception:
-                self.windowQ.put((ui_num['시스템로그'], f'{format_exc()}오류 알림 - restart_bot'))
+                self.windowQ.put((UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - restart_bot'))
                 self.running = False
 
     async def send_message(self, text):

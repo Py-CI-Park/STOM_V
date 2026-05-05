@@ -14,9 +14,9 @@ def dactivated_01(ui, combobox_no):
 
     table_name = comboBox.currentText()
     if table_name:
-        from utility.settings.setting_base import ui_num
+        from utility.settings.setting_base import UI_NUM
         df = ui.dbreader.read_sql('백테디비', f"SELECT * FROM '{table_name}'").set_index('index')
-        ui.update_tablewidget.update_tablewidget((ui_num['상세기록'], df))
+        ui.update_tablewidget.update_tablewidget((UI_NUM['상세기록'], df))
 
 
 def dactivated_02(ui):

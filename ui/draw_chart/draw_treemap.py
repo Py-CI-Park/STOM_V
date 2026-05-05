@@ -1,6 +1,6 @@
 
 import pandas as pd
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from utility.static_method.static import error_decorator
 
 
@@ -33,7 +33,7 @@ class DrawTremap:
             return
 
         gubun, df1, df2, cl1, cl2 = data
-        if gubun == ui_num['트리맵'] and self.tm_dt:
+        if gubun == UI_NUM['트리맵'] and self.tm_dt:
             return
 
         def mouse_press(event):
@@ -96,7 +96,7 @@ class DrawTremap:
             tree_layout.setContentsMargins(0, 0, 0, 0)
             tree_layout.addWidget(self.ui.canvas)
 
-        if gubun == ui_num['트리맵']:
+        if gubun == UI_NUM['트리맵']:
             self.df_tm1 = df1
             self.df_tm2 = df2
             self.tm_cl1 = cl1
@@ -132,12 +132,12 @@ class DrawTremap:
                           color=self.tm_cl1, ax=self.tm_ax1, bar_kwargs=dict(linewidth=1, edgecolor='#000000'))
             squarify.plot(sizes=self.df_tm2['등락율'], label=self.df_tm2['테마명'], alpha=.9, value=self.df_tm2['등락율%'],
                           color=self.tm_cl2, ax=self.tm_ax2, bar_kwargs=dict(linewidth=1, edgecolor='#000000'))
-        elif gubun == ui_num['트리맵1']:
+        elif gubun == UI_NUM['트리맵1']:
             self.tm_ax1.clear()
             self.tm_ax1.axis('off')
             squarify.plot(sizes=df1['등락율'], label=df1['종목명'], alpha=.9, value=df1['등락율%'],
                           color=cl1, ax=self.tm_ax1, bar_kwargs=dict(linewidth=1, edgecolor='#000000'))
-        elif gubun == ui_num['트리맵2']:
+        elif gubun == UI_NUM['트리맵2']:
             self.tm_ax2.clear()
             self.tm_ax2.axis('off')
             squarify.plot(sizes=df2['등락율'], label=df2['종목명'], alpha=.9, value=df2['등락율%'],

@@ -4,6 +4,8 @@ from PyQt5.QtGui import QColor, QPixmap
 from PyQt5.QtWidgets import QSplashScreen, QApplication, QVBoxLayout, QLabel, QProgressBar, QWidget, QHBoxLayout, \
     QGraphicsDropShadowEffect
 
+from utility.settings.setting_base import ICON_PATH
+
 
 class StomSplashScreen(QSplashScreen):
     """STOM 스플래시 스크린 클래스입니다.
@@ -71,7 +73,7 @@ class StomSplashScreen(QSplashScreen):
         logo_container.setSpacing(15)
 
         icon_label = QLabel()
-        pixmap = QPixmap("ui/_icon/logo.png")
+        pixmap = QPixmap(f'{ICON_PATH}/logo.png')
         icon_label.setPixmap(pixmap.scaled(60, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         icon_label.setAlignment(Qt.AlignCenter)
         icon_label.setFixedSize(60, 50)

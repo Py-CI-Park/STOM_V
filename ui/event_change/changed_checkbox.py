@@ -46,9 +46,9 @@ def checkbox_changed_04(ui, state):
         state: 체크 상태
     """
     from PyQt5.QtCore import Qt
-    if ui.focusWidget() == ui.sj_back_cheBox_15 and state == Qt.Checked:
-        if not ui.sj_back_cheBox_16.isChecked():
-            ui.sj_back_cheBox_16.nextCheckState()
+    if ui.focusWidget() == ui.sj_back_cheBox_14 and state == Qt.Checked:
+        if not ui.sj_back_cheBox_15.isChecked():
+            ui.sj_back_cheBox_15.nextCheckState()
 
 
 def checkbox_changed_05(ui, state):
@@ -58,9 +58,9 @@ def checkbox_changed_05(ui, state):
         state: 체크 상태
     """
     from PyQt5.QtCore import Qt
-    if ui.focusWidget() == ui.sj_back_cheBox_16 and state != Qt.Checked:
-        if ui.sj_back_cheBox_15.isChecked():
-            ui.sj_back_cheBox_15.nextCheckState()
+    if ui.focusWidget() == ui.sj_back_cheBox_15 and state != Qt.Checked:
+        if ui.sj_back_cheBox_14.isChecked():
+            ui.sj_back_cheBox_14.nextCheckState()
 
 
 def checkbox_changed_06(ui, state):
@@ -101,13 +101,13 @@ def checkbox_changed_07(ui, state):
         state: 체크 상태
     """
     from PyQt5.QtCore import Qt
-    if ui.focusWidget() == ui.sj_back_cheBox_18:
+    if ui.focusWidget() == ui.sj_back_cheBox_07:
         if state == Qt.Checked:
-            if ui.sj_back_cheBox_19.isChecked():
-                ui.sj_back_cheBox_19.nextCheckState()
+            if ui.sj_back_cheBox_08.isChecked():
+                ui.sj_back_cheBox_08.nextCheckState()
         else:
-            if not ui.sj_back_cheBox_19.isChecked():
-                ui.sj_back_cheBox_19.nextCheckState()
+            if not ui.sj_back_cheBox_08.isChecked():
+                ui.sj_back_cheBox_08.nextCheckState()
 
 
 def checkbox_changed_08(ui, state):
@@ -117,13 +117,13 @@ def checkbox_changed_08(ui, state):
         state: 체크 상태
     """
     from PyQt5.QtCore import Qt
-    if ui.focusWidget() == ui.sj_back_cheBox_19:
+    if ui.focusWidget() == ui.sj_back_cheBox_08:
         if state == Qt.Checked:
-            if ui.sj_back_cheBox_18.isChecked():
-                ui.sj_back_cheBox_18.nextCheckState()
+            if ui.sj_back_cheBox_07.isChecked():
+                ui.sj_back_cheBox_07.nextCheckState()
         else:
-            if not ui.sj_back_cheBox_18.isChecked():
-                ui.sj_back_cheBox_18.nextCheckState()
+            if not ui.sj_back_cheBox_07.isChecked():
+                ui.sj_back_cheBox_07.nextCheckState()
 
 
 # noinspection PyUnusedLocal

@@ -5,7 +5,7 @@ from utility.static_method.static import error_decorator
 from ui.draw_chart.draw_label_text import get_label_text
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
 from ui.etcetera.process_alive import receiver_process_alive
-from utility.settings.setting_base import ui_num, columns_hg, columns_hj
+from utility.settings.setting_base import UI_NUM, COLUMNS_HG, COLUMNS_HJ
 from utility.static_method.static import change_format, comma2int, comma2float, dt_ymdhms
 from ui.create_widget.set_style import color_fg_bt, color_fg_dk, color_fg_bc, color_bf_bt, color_bf_dk, color_ct_hg
 
@@ -32,88 +32,88 @@ class UpdateTablewidget:
         self.ui = ui
 
         self.dict_table = {
-            ui_num['실현손익']: self.ui.tt_tableWidgettt,
-            ui_num['거래목록']: self.ui.td_tableWidgettt,
-            ui_num['잔고평가']: self.ui.tj_tableWidgettt,
-            ui_num['잔고목록']: self.ui.jg_tableWidgettt,
-            ui_num['체결목록']: self.ui.cj_tableWidgettt,
-            ui_num['당일합계']: self.ui.dt_tableWidgetttt,
-            ui_num['당일상세']: self.ui.ds_tableWidgetttt,
-            ui_num['누적합계']: self.ui.nt_tableWidgetttt,
-            ui_num['누적상세']: self.ui.ns_tableWidgetttt,
-            ui_num['관심종목']: self.ui.gj_tableWidgettt,
-            ui_num['상세기록']: self.ui.ss_tableWidget_01,
-            ui_num['호가종목']: self.ui.hj_tableWidgett_01,
-            ui_num['호가체결']: self.ui.hc_tableWidgett_01,
-            ui_num['호가체결2']: self.ui.hc_tableWidgett_02,
-            ui_num['호가잔량']: self.ui.hg_tableWidgett_01,
-            ui_num['기업공시']: self.ui.gs_tableWidgett_01,
-            ui_num['기업뉴스']: self.ui.ns_tableWidgett_01,
-            ui_num['재무년도']: self.ui.jm_tableWidgett_01,
-            ui_num['재무분기']: self.ui.jm_tableWidgett_02,
-            ui_num['스톰라이브1']: self.ui.slsd_tableWidgett,
-            ui_num['스톰라이브2']: self.ui.slsn_tableWidgett,
-            ui_num['스톰라이브3']: self.ui.sltd_tableWidgett,
-            ui_num['스톰라이브4']: self.ui.slcd_tableWidgett,
-            ui_num['스톰라이브5']: self.ui.slcn_tableWidgett,
-            ui_num['스톰라이브6']: self.ui.slct_tableWidgett,
-            ui_num['스톰라이브7']: self.ui.slfd_tableWidgett,
-            ui_num['스톰라이브8']: self.ui.slfn_tableWidgett,
-            ui_num['스톰라이브9']: self.ui.slft_tableWidgett,
-            ui_num['스톰라이브10']: self.ui.slbt_tableWidgett,
-            ui_num['스톰라이브11']: self.ui.slbd_tableWidgett,
-            ui_num['김프']: self.ui.kp_tableWidget_01
+            UI_NUM['실현손익']: self.ui.tt_tableWidgettt,
+            UI_NUM['거래목록']: self.ui.td_tableWidgettt,
+            UI_NUM['잔고평가']: self.ui.tj_tableWidgettt,
+            UI_NUM['잔고목록']: self.ui.jg_tableWidgettt,
+            UI_NUM['체결목록']: self.ui.cj_tableWidgettt,
+            UI_NUM['당일합계']: self.ui.dt_tableWidgetttt,
+            UI_NUM['당일상세']: self.ui.ds_tableWidgetttt,
+            UI_NUM['누적합계']: self.ui.nt_tableWidgetttt,
+            UI_NUM['누적상세']: self.ui.ns_tableWidgetttt,
+            UI_NUM['관심종목']: self.ui.gj_tableWidgettt,
+            UI_NUM['상세기록']: self.ui.ss_tableWidget_01,
+            UI_NUM['호가종목']: self.ui.hj_tableWidgett_01,
+            UI_NUM['호가체결']: self.ui.hc_tableWidgett_01,
+            UI_NUM['호가체결2']: self.ui.hc_tableWidgett_02,
+            UI_NUM['호가잔량']: self.ui.hg_tableWidgett_01,
+            UI_NUM['기업공시']: self.ui.gs_tableWidgett_01,
+            UI_NUM['기업뉴스']: self.ui.ns_tableWidgett_01,
+            UI_NUM['재무년도']: self.ui.jm_tableWidgett_01,
+            UI_NUM['재무분기']: self.ui.jm_tableWidgett_02,
+            UI_NUM['스톰라이브1']: self.ui.slsd_tableWidgett,
+            UI_NUM['스톰라이브2']: self.ui.slsn_tableWidgett,
+            UI_NUM['스톰라이브3']: self.ui.sltd_tableWidgett,
+            UI_NUM['스톰라이브4']: self.ui.slcd_tableWidgett,
+            UI_NUM['스톰라이브5']: self.ui.slcn_tableWidgett,
+            UI_NUM['스톰라이브6']: self.ui.slct_tableWidgett,
+            UI_NUM['스톰라이브7']: self.ui.slfd_tableWidgett,
+            UI_NUM['스톰라이브8']: self.ui.slfn_tableWidgett,
+            UI_NUM['스톰라이브9']: self.ui.slft_tableWidgett,
+            UI_NUM['스톰라이브10']: self.ui.slbt_tableWidgett,
+            UI_NUM['스톰라이브11']: self.ui.slbd_tableWidgett,
+            UI_NUM['김프']: self.ui.kp_tableWidget_01
         }
 
         self.dict_minrowcnt = {
-            ui_num['거래목록']: 13,
-            ui_num['잔고목록']: 13,
-            ui_num['체결목록']: 15,
-            ui_num['관심종목']: 15,
-            ui_num['당일상세']: 19,
-            ui_num['누적상세']: 28,
-            ui_num['상세기록']: 32,
-            ui_num['호가체결2']: 12,
-            ui_num['스톰라이브1']: 30,
-            ui_num['스톰라이브3']: 28,
-            ui_num['스톰라이브4']: 30,
-            ui_num['스톰라이브6']: 28,
-            ui_num['스톰라이브7']: 30,
-            ui_num['스톰라이브9']: 28,
-            ui_num['스톰라이브10']: 26,
-            ui_num['기업공시']: 20,
-            ui_num['기업뉴스']: 10,
-            ui_num['김프']: 50
+            UI_NUM['거래목록']: 13,
+            UI_NUM['잔고목록']: 13,
+            UI_NUM['체결목록']: 15,
+            UI_NUM['관심종목']: 15,
+            UI_NUM['당일상세']: 19,
+            UI_NUM['누적상세']: 28,
+            UI_NUM['상세기록']: 32,
+            UI_NUM['호가체결2']: 12,
+            UI_NUM['스톰라이브1']: 30,
+            UI_NUM['스톰라이브3']: 28,
+            UI_NUM['스톰라이브4']: 30,
+            UI_NUM['스톰라이브6']: 28,
+            UI_NUM['스톰라이브7']: 30,
+            UI_NUM['스톰라이브9']: 28,
+            UI_NUM['스톰라이브10']: 26,
+            UI_NUM['기업공시']: 20,
+            UI_NUM['기업뉴스']: 10,
+            UI_NUM['김프']: 50
         }
 
-        self.table_change_uinums = (ui_num['거래목록'], ui_num['잔고목록'], ui_num['당일상세'])
+        self.table_change_uinums = (UI_NUM['거래목록'], UI_NUM['잔고목록'], UI_NUM['당일상세'])
 
-        self.header_change_uinums = (ui_num['상세기록'], ui_num['재무년도'], ui_num['재무분기'])
+        self.header_change_uinums = (UI_NUM['상세기록'], UI_NUM['재무년도'], UI_NUM['재무분기'])
 
-        self.sorted_uinums = (ui_num['상세기록'], ui_num['관심종목'], ui_num['당일상세'], ui_num['김프'], ui_num['누적상세'],
-                              ui_num['스톰라이브1'], ui_num['스톰라이브3'], ui_num['스톰라이브4'],
-                              ui_num['스톰라이브6'], ui_num['스톰라이브7'], ui_num['스톰라이브9'], ui_num['스톰라이브10'])
+        self.sorted_uinums = (UI_NUM['상세기록'], UI_NUM['관심종목'], UI_NUM['당일상세'], UI_NUM['김프'], UI_NUM['누적상세'],
+                              UI_NUM['스톰라이브1'], UI_NUM['스톰라이브3'], UI_NUM['스톰라이브4'],
+                              UI_NUM['스톰라이브6'], UI_NUM['스톰라이브7'], UI_NUM['스톰라이브9'], UI_NUM['스톰라이브10'])
 
-        self.col_auto_resize_uinums = (ui_num['상세기록'], ui_num['잔고목록'], ui_num['체결목록'])
+        self.col_auto_resize_uinums = (UI_NUM['상세기록'], UI_NUM['잔고목록'], UI_NUM['체결목록'])
 
-        self.col_fixed_size_uinums = (ui_num['호가종목'], ui_num['호가잔량'], ui_num['기업공시'], ui_num['기업뉴스'],
-                                      ui_num['재무년도'], ui_num['재무분기'])
+        self.col_fixed_size_uinums = (UI_NUM['호가종목'], UI_NUM['호가잔량'], UI_NUM['기업공시'], UI_NUM['기업뉴스'],
+                                      UI_NUM['재무년도'], UI_NUM['재무분기'])
 
         self.columns_time = ('체결시간', '매수시간', '매도시간')
         self.columns_day = ('거래일자', '일자', '일자 및 시간')
 
-        self.uinums_dot4 = (ui_num['체결목록'], ui_num['잔고목록'], ui_num['잔고평가'], ui_num['거래목록'], ui_num['실현손익'])
+        self.uinums_dot4 = (UI_NUM['체결목록'], UI_NUM['잔고목록'], UI_NUM['잔고평가'], UI_NUM['거래목록'], UI_NUM['실현손익'])
         self.columns_dot4 = ('매입금액', '평가금액', '평가손익', '매수금액', '매도금액', '수익금', '총매수금액', '총매도금액',
                              '총수익금액', '총손실금액', '수익금합계', '총평가손익', '총매입금액', '총평가금액')
 
         self.columns_str = ('종목명', '포지션', '주문번호', '주문구분', '공시', '정보제공', '언론사', '제목', '링크', '구분',
                             'period', 'time', '추가매수시간')
 
-        self.uinums_dot8 = (ui_num['잔고목록'], ui_num['체결목록'], ui_num['거래목록'], ui_num['호가체결'], ui_num['호가잔량'])
+        self.uinums_dot8 = (UI_NUM['잔고목록'], UI_NUM['체결목록'], UI_NUM['거래목록'], UI_NUM['호가체결'], UI_NUM['호가잔량'])
 
-        self.uinums_numeric = (ui_num['관심종목'], ui_num['상세기록'], ui_num['당일상세'], ui_num['누적상세'],
-                               ui_num['스톰라이브1'], ui_num['스톰라이브3'], ui_num['스톰라이브4'], ui_num['스톰라이브6'],
-                               ui_num['스톰라이브7'], ui_num['스톰라이브9'], ui_num['스톰라이브10'], ui_num['김프'])
+        self.uinums_numeric = (UI_NUM['관심종목'], UI_NUM['상세기록'], UI_NUM['당일상세'], UI_NUM['누적상세'],
+                               UI_NUM['스톰라이브1'], UI_NUM['스톰라이브3'], UI_NUM['스톰라이브4'], UI_NUM['스톰라이브6'],
+                               UI_NUM['스톰라이브7'], UI_NUM['스톰라이브9'], UI_NUM['스톰라이브10'], UI_NUM['김프'])
 
         self.columns_numeric = ('수익률', '누적수익률', 'per', 'hlp', 'lhp', 'ch', '대비(원)',
                                 '대비율(%)', 'aht', 'wr', 'app', 'tpp', 'mdd', 'cagr')
@@ -123,9 +123,9 @@ class UpdateTablewidget:
         self.columns_acenter = ('포지션', '거래횟수', '추정예탁자산', '추정예수금', '보유종목수', '정보제공', '언론사', '주문구분',
                                 '매수시간', '매도시간', '체결시간', '거래일자', '기간', '일자', '일자 및 시간', '구분', 'period', 'time')
 
-        self.uinums_str = (ui_num['재무년도'], ui_num['재무분기'])
-        self.uinums_giup = (ui_num['기업공시'], ui_num['기업뉴스'])
-        self.uinums_jemu = (ui_num['재무년도'], ui_num['재무분기'])
+        self.uinums_str = (UI_NUM['재무년도'], UI_NUM['재무분기'])
+        self.uinums_giup = (UI_NUM['기업공시'], UI_NUM['기업뉴스'])
+        self.uinums_jemu = (UI_NUM['재무년도'], UI_NUM['재무분기'])
 
         self.columns_price1 = ('매수가', '현재가')
         self.columns_price2 = ('체결가', '주문가격')
@@ -181,13 +181,13 @@ class UpdateTablewidget:
             tableWidget.clearContents()
             return
 
-        if gubun == ui_num['호가체결']:
+        if gubun == UI_NUM['호가체결']:
             if not self.ui.dialog_hoga.isVisible():
                 if receiver_process_alive(self.ui):
                     self.ui.receivQ.put(('호가종목코드', '000000'))
                 return
 
-        elif gubun == ui_num['김프']:
+        elif gubun == UI_NUM['김프']:
             if not self.ui.dialog_kimp.isVisible():
                 return
 
@@ -214,7 +214,7 @@ class UpdateTablewidget:
                     cgtime = str(value)
                     if column == '체결시간':
                         cgtime = f'{cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
-                    elif gubun == ui_num['상세기록']:
+                    elif gubun == UI_NUM['상세기록']:
                         cgtime = \
                             f'{cgtime[:4]}-{cgtime[4:6]}-{cgtime[6:8]} {cgtime[8:10]}:{cgtime[10:12]}:{cgtime[12:14]}'
                     item = QTableWidgetItem(cgtime)
@@ -237,10 +237,10 @@ class UpdateTablewidget:
                     else:
                         item = QTableWidgetItem(change_format(value, 0))
 
-                elif (gubun == ui_num['잔고목록'] and column in self.columns_price1) or \
-                        (gubun == ui_num['체결목록'] and column in self.columns_price2) or \
-                        (gubun == ui_num['호가종목'] and column in self.columns_price3) or \
-                        (gubun == ui_num['호가잔량'] and column == '호가'):
+                elif (gubun == UI_NUM['잔고목록'] and column in self.columns_price1) or \
+                        (gubun == UI_NUM['체결목록'] and column in self.columns_price2) or \
+                        (gubun == UI_NUM['호가종목'] and column in self.columns_price3) or \
+                        (gubun == UI_NUM['호가잔량'] and column == '호가'):
                     if self.ui.market_gubun < 4:
                         item = QTableWidgetItem(change_format(value, 0))
                     elif self.ui.market_gubun in (5, 9):
@@ -252,7 +252,7 @@ class UpdateTablewidget:
                     value = str(value)
                     if column in self.columns_numeric:
                         item = NumericItem(change_format(value))
-                    elif gubun == ui_num['상세기록'] and column in self.columns_price4:
+                    elif gubun == UI_NUM['상세기록'] and column in self.columns_price4:
                         if self.ui.market_gubun < 4:
                             item = NumericItem(change_format(value, 0))
                         elif self.ui.market_gubun in (5, 9):
@@ -284,7 +284,7 @@ class UpdateTablewidget:
                 else:
                     item.setTextAlignment(int(Qt.AlignVCenter | Qt.AlignRight))
 
-                if gubun == ui_num['호가체결'] and not self.ui.database_chart:
+                if gubun == UI_NUM['호가체결'] and not self.ui.database_chart:
                     if column == '체결수량':
                         if i == 0:    item.setIcon(self.ui.icon_totalb)
                         elif i == 11: item.setIcon(self.ui.icon_totals)
@@ -292,7 +292,7 @@ class UpdateTablewidget:
                         if i == 0:    item.setIcon(self.ui.icon_up)
                         elif i == 11: item.setIcon(self.ui.icon_down)
 
-                elif gubun == ui_num['호가잔량']:
+                elif gubun == UI_NUM['호가잔량']:
                     if column == '잔량':
                         if i == 0:    item.setIcon(self.ui.icon_totalb)
                         elif i == 11: item.setIcon(self.ui.icon_totals)
@@ -301,38 +301,38 @@ class UpdateTablewidget:
                         elif i == 11: item.setIcon(self.ui.icon_down)
                         else:
                             if self.ui.hj_tableWidgett_01.item(0, 0) is not None:
-                                func = comma2int if gubun == ui_num['호가잔량'] else comma2float
-                                o    = func(self.ui.hj_tableWidgett_01.item(0, columns_hj.index('시가')).text())
-                                h    = func(self.ui.hj_tableWidgett_01.item(0, columns_hj.index('고가')).text())
-                                low  = func(self.ui.hj_tableWidgett_01.item(0, columns_hj.index('저가')).text())
-                                uvi  = func(self.ui.hj_tableWidgett_01.item(0, columns_hj.index('UVI')).text())
+                                func = comma2int if gubun == UI_NUM['호가잔량'] else comma2float
+                                o    = func(self.ui.hj_tableWidgett_01.item(0, COLUMNS_HJ.index('시가')).text())
+                                h    = func(self.ui.hj_tableWidgett_01.item(0, COLUMNS_HJ.index('고가')).text())
+                                low  = func(self.ui.hj_tableWidgett_01.item(0, COLUMNS_HJ.index('저가')).text())
+                                uvi  = func(self.ui.hj_tableWidgett_01.item(0, COLUMNS_HJ.index('UVI')).text())
                                 if o != 0:
                                     if value == o:     item.setIcon(self.ui.icon_open)
                                     elif value == h:   item.setIcon(self.ui.icon_high)
                                     elif value == low: item.setIcon(self.ui.icon_low)
                                     elif value == uvi: item.setIcon(self.ui.icon_vi)
 
-                if '수익금' in columns_list and gubun != ui_num['상세기록']:
+                if '수익금' in columns_list and gubun != UI_NUM['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('수익금')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif '누적수익금' in columns_list and gubun != ui_num['상세기록']:
+                elif '누적수익금' in columns_list and gubun != UI_NUM['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('누적수익금')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif '수익금합계' in columns_list and gubun != ui_num['상세기록']:
+                elif '수익금합계' in columns_list and gubun != UI_NUM['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('수익금합계')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif '평가손익' in columns_list and gubun != ui_num['상세기록']:
+                elif '평가손익' in columns_list and gubun != UI_NUM['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('평가손익')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif '총평가손익' in columns_list and gubun != ui_num['상세기록']:
+                elif '총평가손익' in columns_list and gubun != UI_NUM['상세기록']:
                     color = color_fg_bt if arry[i, columns_list.index('총평가손익')] >= 0 else color_fg_dk
                     item.setForeground(color)
 
-                elif gubun == ui_num['체결목록']:
+                elif gubun == UI_NUM['체결목록']:
                     order_gubun = arry[i, 1]
                     if order_gubun == '매수' or order_gubun == 'BUY_LONG' or order_gubun == 'SELL_SHORT':
                         item.setForeground(color_fg_bt)
@@ -341,15 +341,15 @@ class UpdateTablewidget:
                     elif '취소' in order_gubun or 'CANCEL' in order_gubun:
                         item.setForeground(color_fg_bc)
 
-                elif gubun == ui_num['호가체결'] and not self.ui.database_chart:
+                elif gubun == UI_NUM['호가체결'] and not self.ui.database_chart:
                     if column == '체결수량':
                         if i in (0, 11):
                             color = color_fg_bt if value > arry[11 if i == 0 else 0, 0] else color_fg_dk
                             item.setForeground(color)
                         else:
-                            if self.ui.market_gubun < 6 or gubun == ui_num['호가체결']:
-                                func = comma2int if gubun == ui_num['호가체결'] else comma2float
-                                c = func(self.ui.hg_tableWidgett_01.item(5, columns_hg.index('호가')).text())
+                            if self.ui.market_gubun < 6 or gubun == UI_NUM['호가체결']:
+                                func = comma2int if gubun == UI_NUM['호가체결'] else comma2float
+                                c = func(self.ui.hg_tableWidgett_01.item(5, COLUMNS_HG.index('호가')).text())
                                 if value > 0:
                                     item.setForeground(color_fg_bt)
                                     if value * c > (90_000_000 if self.ui.market_gubun != 4 else 60_000):
@@ -363,7 +363,7 @@ class UpdateTablewidget:
                         color = color_fg_bt if value >= 100 else color_fg_dk
                         item.setForeground(color)
 
-                elif gubun == ui_num['호가잔량']:
+                elif gubun == UI_NUM['호가잔량']:
                     if column == '잔량':
                         if i in (0, 11):
                             color = color_fg_bt if value > arry[11 if i == 0 else 0, 0] else color_fg_dk
@@ -375,8 +375,8 @@ class UpdateTablewidget:
                     elif column == '호가':
                         if column == '호가' and value != 0:
                             if self.ui.hj_tableWidgett_01.item(0, 0) is not None:
-                                func = comma2int if gubun == ui_num['호가잔량'] and self.ui.market_gubun < 4 else comma2float
-                                c    = func(self.ui.hj_tableWidgett_01.item(0, columns_hj.index('현재가')).text())
+                                func = comma2int if gubun == UI_NUM['호가잔량'] and self.ui.market_gubun < 4 else comma2float
+                                c    = func(self.ui.hj_tableWidgett_01.item(0, COLUMNS_HJ.index('현재가')).text())
                                 if i not in (0, 11) and value == c:
                                     item.setBackground(color_bf_bt)
 
@@ -400,8 +400,8 @@ class UpdateTablewidget:
 
         if gubun in self.col_auto_resize_uinums:
             header = tableWidget.horizontalHeader()
-            hwidth = header.width() if gubun == ui_num['상세기록'] else 668
-            if gubun == ui_num['상세기록']:
+            hwidth = header.width() if gubun == UI_NUM['상세기록'] else 668
+            if gubun == UI_NUM['상세기록']:
                 header_count = 12
             elif columns_cnt in (9, 11):
                 header_count = 7
@@ -457,7 +457,7 @@ class UpdateTablewidget:
         if tableWidget.columnCount() != columns_cnt:
             tableWidget.setColumnCount(columns_cnt)
             tableWidget.setHorizontalHeaderLabels(columns_list)
-            if gubun == ui_num['당일상세']:
+            if gubun == UI_NUM['당일상세']:
                 if columns_cnt == 7:
                     tableWidget.setColumnWidth(0, 90)
                     tableWidget.setColumnWidth(1, 101)
@@ -583,8 +583,8 @@ class UpdateTablewidget:
             data.append(self.ui.ctpg_arry[xpoint, fi(col_name)])
         df2 = pd.DataFrame({'체결수량': info, '체결강도': data})
 
-        self.ui.windowQ.put((ui_num['호가체결'], df1))
-        self.ui.windowQ.put((ui_num['호가체결2'], df2))
+        self.ui.windowQ.put((UI_NUM['호가체결'], df1))
+        self.ui.windowQ.put((UI_NUM['호가체결2'], df2))
 
         for i in range(len(self.ui.ctpg_legend)):
             self.ui.ctpg_legend[i].setText(get_label_text(self.ui, is_min, xpoint, self.ui.ctpg_factors[i], hms_text))

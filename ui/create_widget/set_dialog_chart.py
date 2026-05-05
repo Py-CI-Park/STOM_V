@@ -1,7 +1,7 @@
 
 import pyqtgraph as pg
 from ui.etcetera.etc import chart_screenshot2
-from utility.settings.setting_base import indi_base
+from utility.settings.setting_base import DICT_INDICATOR_BASE
 from utility.static_method.static import str_hms, dt_hms
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout
 from ui.event_click.table_cell_clicked import cell_clicked_06
@@ -26,7 +26,7 @@ class SetDialogChart:
 
     def set(self):
         """차트 다이얼로그를 설정합니다."""
-        self.ui.dialog_chart = self.wc.setDialog('STOM CHART')
+        self.ui.dialog_chart = self.wc.setDialog('STOM CHART', location_save=True)
         self.ui.dialog_chart.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_chart)
 
@@ -110,7 +110,7 @@ class SetDialogChart:
         self.ui.ctpg_vboxLayout.setContentsMargins(3, 6, 3, 3)
         self.ui.ctpg_vboxLayout.addWidget(self.ui.ctpg_layout)
 
-        self.ui.dialog_factor = self.wc.setDialog('STOM FACTOR', parent=self.ui.dialog_chart)
+        self.ui.dialog_factor = self.wc.setDialog('STOM FACTOR', self.ui.dialog_chart)
         self.ui.dialog_factor.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_factor)
 
@@ -226,7 +226,7 @@ class SetDialogChart:
 
         self.ui.ft_labellllllll_96 = QLabel('slowd_matype', self.ui.jp_groupBoxxxxx_01)
 
-        k = [str(x) for x in list(indi_base.values())]
+        k = [str(x) for x in list(DICT_INDICATOR_BASE.values())]
 
         # 35개 라인에딧 동적 생성
         self.ui.factor_linedit_list = []
@@ -251,11 +251,6 @@ class SetDialogChart:
 
         if self.ui.dict_set is not None:
             self.ui.dialog_chart.setFixedSize(1403, 1370 if not self.ui.dict_set['저해상도'] else 1010)
-            if self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-                try:
-                    self.ui.dialog_chart.move(self.ui.dict_set['창위치'][2], self.ui.dict_set['창위치'][3])
-                except Exception:
-                    pass
         else:
             self.ui.dialog_chart.setFixedSize(1403, 1370)
 

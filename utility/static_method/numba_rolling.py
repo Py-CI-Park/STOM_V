@@ -1,86 +1,132 @@
 
 import numpy as np
-from numba import jit, prange
+from numba import njit, prange
 
 
-@jit(nopython=True, parallel=True)
-def numba_rolling_mean(data, window):
+@njit(cache=True, fastmath=True, parallel=True)
+def numba_rolling_data_tick(input_array, ema_windows, avg_windows, angle_cf1, angle_cf2, round_unit, index_arry):
     """
-    Numba로 최적화된 롤링 평균 계산
-    병렬 처리로 속도 향상
+    틱 데이터용 배열 기반 롤링 데이터 계산
     """
-    n = len(data)
-    result = np.empty(n)
-    result[:window-1] = 0
-    for i in prange(window-1, n):
-        result[i] = np.mean(data[i-window+1:i+1])
-    return result
+    input_row_cnt     = input_array.shape[0]
+    input_col_cnt     = input_array.shape[1]
+    price_data        = input_array[:, index_arry[0]]
+    strength_data     = input_array[:, index_arry[1]]
+    rate_data         = input_array[:, index_arry[2]]
+    day_amount_data   = input_array[:, index_arry[3]]
+    buy_volume_data   = input_array[:, index_arry[4]]
+    sell_volume_data  = input_array[:, index_arry[5]]
+    trade_amount_data = input_array[:, index_arry[6]]
+
+    ema_cnt = len(ema_windows)
+    avg_cnt = len(avg_windows)
+    add_cnt = ema_cnt + 12 * avg_cnt
+
+    result_array = np.zeros((input_row_cnt, input_col_cnt + add_cnt))
+    result_array[:, :input_col_cnt] = input_array
+
+    offset = input_col_cnt
+
+    for idx in prange(ema_cnt):
+        window = ema_windows[idx]
+        for i in range(window-1, input_row_cnt):
+            result_array[i, offset + idx] = np.round(np.mean(price_data[i+1-window:i+1]), round_unit)
+
+    offset += ema_cnt
+
+    for idx in prange(avg_cnt):
+        window = avg_windows[idx]
+
+        for i in range(window-1, input_row_cnt):
+            price_window = price_data[i+1-window:i+1]
+            result_array[i, offset + 0] = np.max(price_window)
+            result_array[i, offset + 1] = np.min(price_window)
+
+            strength_window = strength_data[i+1-window:i+1]
+            result_array[i, offset + 2] = np.round(np.mean(strength_window), 3)
+            result_array[i, offset + 3] = np.max(strength_window)
+            result_array[i, offset + 4] = np.min(strength_window)
+
+            buy_window   = buy_volume_data[i+1-window:i+1]
+            sell_window  = sell_volume_data[i+1-window:i+1]
+            trade_window = trade_amount_data[i+1-window:i+1]
+            result_array[i, offset + 5] = np.max(buy_window)
+            result_array[i, offset + 6] = np.max(sell_window)
+            result_array[i, offset + 7] = np.sum(buy_window)
+            result_array[i, offset + 8] = np.sum(sell_window)
+            result_array[i, offset + 9] = np.round(np.mean(trade_window), 0)
+
+            rate_diff   = rate_data[i] - rate_data[i+1-window]
+            amount_diff = day_amount_data[i] - day_amount_data[i+1-window]
+            result_array[i, offset + 10] = np.arctan2(rate_diff * angle_cf1, window) / (2 * np.pi) * 360
+            result_array[i, offset + 11] = np.arctan2(amount_diff * angle_cf2, window) / (2 * np.pi) * 360
+
+    return result_array
 
 
-@jit(nopython=True, parallel=True)
-def numba_rolling_std(data, window):
+@njit(cache=True, fastmath=True, parallel=True)
+def numba_rolling_data_min(input_array, ema_windows, avg_windows, angle_cf1, angle_cf2, round_unit, index_arry):
     """
-    Numba로 최적화된 롤링 표준편차 계산
+    분봉 데이터용 배열 기반 롤링 데이터 계산
     """
-    n = len(data)
-    result = np.empty(n)
-    result[:window-1] = 0
-    for i in prange(window-1, n):
-        window_data = data[i-window+1:i+1]
-        result[i] = np.std(window_data)
-    return result
+    input_row_cnt     = input_array.shape[0]
+    input_col_cnt     = input_array.shape[1]
+    price_data        = input_array[:, index_arry[0]]
+    strength_data     = input_array[:, index_arry[1]]
+    rate_data         = input_array[:, index_arry[2]]
+    day_amount_data   = input_array[:, index_arry[3]]
+    buy_volume_data   = input_array[:, index_arry[4]]
+    sell_volume_data  = input_array[:, index_arry[5]]
+    trade_amount_data = input_array[:, index_arry[6]]
+    high_data         = input_array[:, index_arry[7]]
+    low_data          = input_array[:, index_arry[8]]
 
+    ema_cnt = len(ema_windows)
+    avg_cnt = len(avg_windows)
+    add_cnt = ema_cnt + 14 * avg_cnt
 
-@jit(nopython=True, parallel=True)
-def numba_rolling_max(data, window):
-    """
-    Numba로 최적화된 롤링 최대값 계산
-    """
-    n = len(data)
-    result = np.empty(n)
-    result[:window-1] = 0
-    for i in prange(window-1, n):
-        result[i] = np.max(data[i-window+1:i+1])
-    return result
+    result_array = np.zeros((input_row_cnt, input_col_cnt + add_cnt))
+    result_array[:, :input_col_cnt] = input_array
 
+    offset = input_col_cnt
 
-@jit(nopython=True, parallel=True)
-def numba_rolling_min(data, window):
-    """
-    Numba로 최적화된 롤링 최소값 계산
-    """
-    n = len(data)
-    result = np.empty(n)
-    result[:window-1] = 0
-    for i in prange(window-1, n):
-        result[i] = np.min(data[i-window+1:i+1])
-    return result
+    for idx in prange(ema_cnt):
+        window = ema_windows[idx]
+        for i in range(window-1, input_row_cnt):
+            result_array[i, offset + idx] = np.round(np.mean(price_data[i+1-window:i+1]), round_unit)
 
+    offset += ema_cnt
 
-@jit(nopython=True, parallel=True)
-def numba_rolling_sum(data, window):
-    """
-    Numba로 최적화된 롤링 합계 계산
-    """
-    n = len(data)
-    result = np.empty(n)
-    result[:window-1] = 0
-    for i in prange(window-1, n):
-        result[i] = np.sum(data[i-window+1:i+1])
-    return result
+    for idx in prange(avg_cnt):
+        window = avg_windows[idx]
 
+        for i in range(window-1, input_row_cnt):
+            price_window = price_data[i+1-window:i+1]
+            result_array[i, offset + 0] = np.max(price_window)
+            result_array[i, offset + 1] = np.min(price_window)
 
-@jit(nopython=True, parallel=True)
-def numba_multiple_rolling(data, windows):
-    """
-    여러 윈도우 크기에 대한 롤링 계산을 한 번에 처리
-    """
-    n = len(data)
-    num_windows = len(windows)
-    results = np.empty((num_windows, n))
-    for w_idx in prange(num_windows):
-        window = windows[w_idx]
-        for i in range(window-1, n):
-            results[w_idx, i] = np.mean(data[i-window+1:i+1])
-        results[w_idx, :window-1] = 0
-    return results
+            high_window = high_data[i+1-window:i+1]
+            low_window  = low_data[i+1-window:i+1]
+            result_array[i, offset + 2] = np.max(high_window)
+            result_array[i, offset + 3] = np.min(low_window)
+
+            strength_window = strength_data[i+1-window:i+1]
+            result_array[i, offset + 4] = np.round(np.mean(strength_window), 3)
+            result_array[i, offset + 5] = np.max(strength_window)
+            result_array[i, offset + 6] = np.min(strength_window)
+
+            buy_window   = buy_volume_data[i+1-window:i+1]
+            sell_window  = sell_volume_data[i+1-window:i+1]
+            trade_window = trade_amount_data[i+1-window:i+1]
+            result_array[i, offset + 7]  = np.max(buy_window)
+            result_array[i, offset + 8]  = np.max(sell_window)
+            result_array[i, offset + 9]  = np.sum(buy_window)
+            result_array[i, offset + 10] = np.sum(sell_window)
+            result_array[i, offset + 11] = np.round(np.mean(trade_window), 0)
+
+            rate_diff   = rate_data[i] - rate_data[i+1-window]
+            amount_diff = day_amount_data[i] - day_amount_data[i+1-window]
+            result_array[i, offset + 12] = np.arctan2(rate_diff * angle_cf1, window) / (2 * np.pi) * 360
+            result_array[i, offset + 13] = np.arctan2(amount_diff * angle_cf2, window) / (2 * np.pi) * 360
+
+    return result_array

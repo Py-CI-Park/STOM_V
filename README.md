@@ -13,8 +13,8 @@
 - 1초스냅샷 데이터 기반 전략과 백테스트에 시장미시구조분석과 리스크분석 시스템을 제공합니다.
 - 시장미시구조분석은 호가데이터를 기반으로 호가깊이비율, 불균형, 집중도, 압력레벨, 각종 조작 패턴을 분석합니다.
 - 리스크분석은 체결데이터를 기반으로 RSI, 변동성, 모멘텀, 체결강도, 수량불균형, 가격위치, 각종 추세를 분석합니다.
-- 1분봉 데이터 기반 전략과 백테스트에 패턴분석과 가격대분석 시스템을 제공합니다.
-- 패턴분석은 talib 라이브러리에 있는 60여개의 패턴을 활용하여 종목별 패턴 발생과 이후 등락율을 분석합니다.
+- 1분봉 데이터 기반 전략과 백테스트에 캔들분석과 가격대분석 시스템을 제공합니다.
+- 캔들분석은 talib 라이브러리에 있는 60여개의 패턴을 활용하여 종목별 패턴 발생과 이후 등락율을 분석합니다.
 - 가격대분석은 설정한 가격대분할 퍼센트로 분할한 가격대에서 기준퍼센트 이상의 돌파 및 반등 이벤트를 분석합니다.
 ### 접근성
 - 어렵고 복잡하며 단순 반복적인 코딩은 그만하시고 전략연구에 몰두하십시오.
@@ -51,85 +51,6 @@
 ### 프로젝트 구조
 ```
 STOM/
-├── stom.bat                            # 메인 실행용 배치 파일
-├── stom_login.bat                      # 자동 로그인 모드로 실행용 배치 파일
-├── stom.py                             # 메인 UI 실행 파일
-├── pip_install.bat                     # 라이브러리 설치
-├── pip_install_wd.bat                  # 웹대시보드용 라이브러리 설치
-├── _license.txt                        # 라이선스 파일
-├── _update.txt                         # 업데이트 목록
-│
-├── backtest/                           # 백테스트 엔진
-│   ├── backfinder.py                   # 백파인더
-│   ├── backtest.py                     # 백테스트
-│   ├── optimiz.py                      # 그리드, 검증, 교차검증, OPTUNA 최적화 및 최적화 테스트 
-│   ├── optimiz_conditions.py           # 조건 최적화
-│   ├── optimiz_genetic_algorithm.py    # 유전 알고리즘(GA) 최적화
-│   ├── rolling_walk_forward_test.py    # 전진분석
-│   ├── backengine_base.py              # 주문관리 미적용 백테스트 엔진 베이스 클래스
-│   ├── backengine_base_oms.py          # 주문관리 적용 백테스트 엔진 베이스 클래스
-│   ├── back_code_test.py               # 전략 문법 오류 및 변수 사용 오류 확인
-│   ├── back_static.py                  # 백테스트 공통 함수
-│   ├── back_subtotal.py                # 중간 집계용 프로세스 클래스
-│   ├── _graph/                         # 백테스트 결과 그래프 저장
-│   ├── _temp/                          # 분할로딩용 임시 폴더
-│   ├── stock_korea/                    # 국내주식 백테스트 엔진
-│   ├── stock_usa/                      # 해외주식 백테스트 엔진
-│   ├── upbit/                          # 업비트 백테스트 엔진
-│   ├── future/                         # 국내선물 백테스트 엔진
-│   ├── future_oversea/                 # 해외선물 백테스트 엔진
-│   └── binance/                        # 바이낸스선물 백테스트 엔진
-│
-├── trade/                              # 실시간 트레이딩 모듈
-│   ├── analyzer_microstruc.py          # 시장미시구조 분석
-│   ├── analyzer_risk.py                # 리스크 분석
-│   ├── analyzer_pattern.py             # 패턴 분석
-│   ├── analyzer_volume_profile.py      # 가격대(볼륨 프로파일) 분석
-│   ├── stg_globals_func.py             # 전략 기반 클래스(230여개의 전략 모듈)
-│   ├── base_receiver.py                # 리시버용 베이스 클래스
-│   ├── base_strategy.py                # 전략연산용 베이스 클래스
-│   ├── base_trader.py                  # 트레이더용 베이스 클래스
-│   ├── manager_formula.py              # 수식관리자
-│   ├── restapi_binance.py              # 바이낸스선물 API 연동
-│   ├── restapi_ls.py                   # LS증권 API 연동
-│   ├── restapi_upbit.py                # 업비트 API 연동
-│   ├── stock_korea/                    # 국내주식 API 연동
-│   ├── stock_usa/                      # 해외주식 API 연동
-│   ├── upbit/                          # 업비트 API 연동
-│   ├── future/                         # 국내선물 API 연동
-│   ├── future_oversea/                 # 해외선물 API 연동
-│   └── binance/                        # 바이낸스선물 API 연동
-│
-├── ui/                                 # UI
-│   ├── ui_mainwindow.pyd               # 메인 UI 및 시리얼키 인증 클래스
-│   ├── _icon/                          # 아이콘 리소스
-│   ├── create_widget/                  # 위젯 생성
-│   ├── draw_chart/                     # 차트 그리기
-│   ├── event_activate/                 # 콤보박스 액티브 처리
-│   ├── event_change/                   # 체인지 이벤트 처리
-│   ├── event_click/                    # 마우스 클릭 이벤트 처리
-│   ├── event_keypress/                 # 키보드 입력 이벤트 처리
-│   └── update_widget/                  # 웨젯 업데이트 처리
-│
-├── utility/                            # 공통 유틸리티
-│   ├── _imagefiles/                    # 각종 스크린샷
-│   ├── _pycharm/                       # 파이참 규칙 및 테마
-│   ├── db_control/                     # 데이터베이스 관리 모듈
-│   ├── settings/                       # 설정 관리 모듈
-│   ├── static_method/                  # 공통 함수 사용 모듈
-│   └── sub_process_and_thread/         # 서브 프로세스 및 스레드 모듈
-│
-├── ai_agent/                           # AI 에이전트
-│   ├── plan/                           # 작업 계획 저장 폴더
-│   ├── report/                         # 전략분석, 백태결과분석, 실매매분석 보고서 저장 폴더
-│   ├── strategy/                       # AI가 생성한 전략 저장 폴더
-│   ├── strategy.txt                    # 전략 작성 방법 및 변수 설명
-│   └── ruled.md                        # AI 에이전트 규칙용 파일
-│
-├── dashboard/                          # 웹대시보드
-│   ├── backend/                        # 백엔드
-│   ├── frontend/                       # 프론트엔드
-│   └── dashboard_starter.py            # 백엔드, 프론트엔드 실행
 │
 ├── _database/                          # 데이터베이스용 폴더
 │   ├── code_info.db                    # 거래소별 종목정보 저장용 DB
@@ -140,7 +61,93 @@ STOM/
 │   ├── tradelist.db                    # 체결목록, 거래목록, 당일실현손익, 잔고목록용 DB
 │   └── strategy_versions/              # 전략 버전 관리 시스템용 폴더
 │
-└── _log/                               # 로그 폴더
+├── _log/                               # 로그 폴더
+│
+├── ai_agent/                           # AI 에이전트
+│   ├── plan/                           # 작업 계획 저장 폴더
+│   ├── report/                         # 전략분석, 백태결과분석, 실매매분석 보고서 저장 폴더
+│   ├── strategy/                       # AI가 생성한 전략 저장 폴더
+│   ├── ruled.md                        # AI 에이전트 규칙용 파일
+│   └── strategy.txt                    # 전략 작성 방법 및 변수 설명
+│
+├── backtest/                           # 백테스트 엔진
+│   ├── _graph/                         # 백테스트 결과 그래프 저장
+│   ├── _temp/                          # 분할로딩용 임시 폴더
+│   ├── binance/                        # 바이낸스선물 백테스트 엔진
+│   ├── future/                         # 국내선물 백테스트 엔진
+│   ├── future_oversea/                 # 해외선물 백테스트 엔진
+│   ├── stock_korea/                    # 국내주식 백테스트 엔진
+│   ├── stock_usa/                      # 해외주식 백테스트 엔진
+│   ├── upbit/                          # 업비트 백테스트 엔진
+│   ├── back_code_test.py               # 전략 문법 오류 및 변수 사용 오류 확인
+│   ├── back_static.py                  # 백테스트 공통 함수
+│   ├── back_static_numba.py            # 백테스트엔진용 numba 함수
+│   ├── back_subtotal.py                # 중간 집계용 프로세스 클래스
+│   ├── backengine_base.py              # 주문관리 미적용 백테스트 엔진 베이스 클래스
+│   ├── backengine_base_oms.py          # 주문관리 적용 백테스트 엔진 베이스 클래스
+│   ├── backfinder.py                   # 백파인더
+│   ├── backtest.py                     # 백테스트
+│   ├── optimiz.py                      # 그리드, 검증, 교차검증, OPTUNA 최적화 및 최적화 테스트 
+│   ├── optimiz_3d_visualization.py     # 최적화용 3D 시각화
+│   ├── optimiz_conditions.py           # 조건 최적화
+│   ├── optimiz_genetic_algorithm.py    # 유전 알고리즘(GA) 최적화
+│   └── rolling_walk_forward_test.py    # 전진분석
+│
+├── dashboard/                          # 웹대시보드
+│   ├── backend/                        # 백엔드
+│   ├── frontend/                       # 프론트엔드
+│   └── dashboard_starter.py            # 백엔드, 프론트엔드 실행
+│
+├── strategy/                           # 전략 및 분석 모듈
+│   ├── analyzer_microstruc.py          # 시장미시구조 분석
+│   ├── analyzer_pattern.py             # 패턴 분석
+│   ├── analyzer_risk.py                # 리스크 분석
+│   ├── analyzer_volume_profile.py      # 가격대(볼륨 프로파일) 분석
+│   ├── manager_formula.py              # 수식관리자
+│   └── stg_globals_func.py             # 전략 기반 클래스(230여개의 전략 모듈)
+│
+├── trade/                              # 실시간 트레이딩 모듈
+│   ├── binance/                        # 바이낸스선물 API 연동
+│   ├── future/                         # 국내선물 API 연동
+│   ├── future_oversea/                 # 해외선물 API 연동
+│   ├── stock_korea/                    # 국내주식 API 연동
+│   ├── stock_usa/                      # 해외주식 API 연동
+│   ├── upbit/                          # 업비트 API 연동
+│   ├── base_receiver.py                # 리시버용 베이스 클래스
+│   ├── base_strategy.py                # 전략연산용 베이스 클래스
+│   ├── base_trader.py                  # 트레이더용 베이스 클래스
+│   ├── restapi_binance.py              # 바이낸스선물 API 연동
+│   ├── restapi_ls.py                   # LS증권 API 연동
+│   ├── restapi_lsdata.py               # LS증권 API 데이터
+│   └── restapi_upbit.py                # 업비트 API 연동
+│
+├── ui/                                 # UI
+│   ├── _icon/                          # 아이콘 리소스
+│   ├── create_widget/                  # 위젯 생성
+│   ├── draw_chart/                     # 차트 그리기
+│   ├── etcetera/                       # 기타 이벤트 처리
+│   ├── event_activate/                 # 콤보박스 액티브 이벤트 처리
+│   ├── event_change/                   # 체인지 이벤트 처리
+│   ├── event_click/                    # 마우스 클릭 이벤트 처리
+│   ├── event_keypress/                 # 키보드 입력 이벤트 처리
+│   ├── update_widget/                  # 웨젯 업데이트 이벤트 처리
+│   └── main_window.pyd                 # 메인 UI 및 시리얼키 인증 클래스
+│
+├── utility/                            # 공통 유틸리티
+│   ├── _imagefiles/                    # 각종 스크린샷
+│   ├── _pycharm/                       # 파이참 규칙 및 테마
+│   ├── db_control/                     # 데이터베이스 관리 모듈
+│   ├── settings/                       # 설정 관리 모듈
+│   ├── static_method/                  # 공통 함수 사용 모듈
+│   └── sub_process_and_thread/         # 서브 프로세스 및 스레드 모듈
+│
+├── _license.txt                        # 라이선스 파일
+├── _update.txt                         # 업데이트 목록
+├── pip_install.bat                     # 라이브러리 설치
+├── pip_install_wd.bat                  # 웹대시보드용 라이브러리 설치
+├── stom.bat                            # 메인 실행용 배치 파일
+├── stom.py                             # 메인 UI 실행 파일
+└── stom_login.bat                      # 자동 로그인 모드로 실행용 배치 파일
 ```
 ## 시스템 요구사항
 ### 트레이딩 용도

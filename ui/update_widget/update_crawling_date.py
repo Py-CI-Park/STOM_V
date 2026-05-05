@@ -6,22 +6,22 @@ class UpdateCrawlingData:
 
     def update_crawling_data(self, data):
         from ui.etcetera.etc import update_image
-        from utility.settings.setting_base import ui_num
+        from utility.settings.setting_base import UI_NUM
 
-        if data[0] == ui_num['홈차트']:
+        if data[0] == UI_NUM['홈차트']:
             self.ui.draw_homechart.draw_home_chart(data)
 
-        elif data[0] == ui_num['풍경사진']:
+        elif data[0] == UI_NUM['풍경사진']:
             update_image(self.ui, data)
 
-        elif data[0] == ui_num['기업개요']:
+        elif data[0] == UI_NUM['기업개요']:
             self.ui.update_textedit.update_texedit(data)
 
-        elif data[0] in (ui_num['기업공시'], ui_num['기업뉴스'], ui_num['재무년도'], ui_num['재무분기']):
+        elif data[0] in (UI_NUM['기업공시'], UI_NUM['기업뉴스'], UI_NUM['재무년도'], UI_NUM['재무분기']):
             self.ui.update_tablewidget.update_tablewidget(data)
 
-        elif data[0] in (ui_num['트리맵'], ui_num['트리맵1'], ui_num['트리맵2']):
+        elif data[0] in (UI_NUM['트리맵'], UI_NUM['트리맵1'], UI_NUM['트리맵2']):
             self.ui.draw_treemap.draw_treemap(data)
 
-        elif data[0] == ui_num['시스템로그']:
+        elif data[0] == UI_NUM['시스템로그']:
             self.ui.update_textedit.update_texedit(data)

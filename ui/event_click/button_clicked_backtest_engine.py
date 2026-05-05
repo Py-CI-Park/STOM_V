@@ -9,7 +9,7 @@ def backengine_show(ui):
     """
     import sqlite3
     import pandas as pd
-    from utility.settings.setting_base import code_info_tables
+    from utility.settings.setting_base import CODE_INFO_TABLES
     from ui.create_widget.dialog_animation import DialogAnimator
     from utility.static_method.static import str_hms, dt_hms, timedelta_sec
 
@@ -18,7 +18,7 @@ def backengine_show(ui):
     try:
         df = pd.read_sql("SELECT name FROM sqlite_master WHERE TYPE = 'table'", con)
         table_list = df['name'].to_list()
-        for table in code_info_tables:
+        for table in CODE_INFO_TABLES:
             if table in table_list:
                 table_list.remove(table)
     except Exception:
@@ -55,7 +55,7 @@ def backengine_start(ui):
     import numpy as np
     import pandas as pd
     from backtest.back_subtotal import BackSubTotal
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
     from concurrent.futures import ThreadPoolExecutor
     from backtest.back_static import get_moneytop_query
     from multiprocessing import Process, Queue, Value, Lock
@@ -95,7 +95,7 @@ def backengine_start(ui):
         )
         proc.start()
         ui.back_sprocs.append(proc)
-        ui.windowQ.put((ui_num['백테엔진'], f'중간집계 프로세스{j + 1} 생성 완료'))
+        ui.windowQ.put((UI_NUM['백테엔진'], f'중간집계 프로세스{j + 1} 생성 완료'))
 
     def create_backengine_process(j):
         profiling = j == 0 and ui.dict_set['백테엔진프로파일링']
@@ -107,7 +107,7 @@ def backengine_start(ui):
         )
         proc.start()
         ui.back_eprocs.append(proc)
-        ui.windowQ.put((ui_num['백테엔진'], f'엔진 프로세스{j + 1} 생성 완료'))
+        ui.windowQ.put((UI_NUM['백테엔진'], f'엔진 프로세스{j + 1} 생성 완료'))
 
     with ThreadPoolExecutor(max_workers=20) as executor:
         [executor.submit(create_backsubtotal_process, i) for i in range(20)]
@@ -131,14 +131,14 @@ def backengine_start(ui):
         con.close()
     except Exception:
         if ui.market_gubun not in (6, 7, 8) and len(dict_info) < 100:
-            ui.windowQ.put((ui_num['백테엔진'], '종목명 테이블이 갱신되지 않았습니다. 수동로그인(Alt + L)을 1회 실행하시오.'))
+            ui.windowQ.put((UI_NUM['백테엔진'], '종목명 테이블이 갱신되지 않았습니다. 수동로그인(Alt + L)을 1회 실행하시오.'))
         else:
-            ui.windowQ.put((ui_num['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
+            ui.windowQ.put((UI_NUM['백테엔진'], '백테디비에 데이터가 존재하지 않습니다. 디비관리창(Alt + D)에서 백테디비를 생성하십시오.'))
         backtest_engine_kill(ui)
         return
 
     if df_mt is None or df_mt.empty:
-        ui.windowQ.put((ui_num['백테엔진'], '시작 또는 종료일자가 잘못 선택되었거나 해당 일자에 데이터가 존재하지 않습니다.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], '시작 또는 종료일자가 잘못 선택되었거나 해당 일자에 데이터가 존재하지 않습니다.'))
         backtest_engine_kill(ui)
         return
 
@@ -161,34 +161,34 @@ def backengine_start(ui):
         code_days[code] = {day for day, codes in day_codes.items() if code in codes}
 
     if divid_mode == '종목코드별 분류' and len(code_set) < multi:
-        ui.windowQ.put((ui_num['백테엔진'], '선택한 일자의 종목의 개수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], '선택한 일자의 종목의 개수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
         backtest_engine_kill(ui)
         return
 
     if divid_mode == '일자별 분류' and len(day_list) < multi:
-        ui.windowQ.put((ui_num['백테엔진'], '선택한 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], '선택한 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
         backtest_engine_kill(ui)
         return
 
     if divid_mode == '한종목 로딩' and one_code not in code_days:
-        ui.windowQ.put((ui_num['백테엔진'], f'{one_name} 종목은 선택한 일자에 데이터가 존재하지 않습니다.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], f'{one_name} 종목은 선택한 일자에 데이터가 존재하지 않습니다.'))
         backtest_engine_kill(ui)
         return
 
     if divid_mode == '한종목 로딩' and len(code_days[one_code]) < multi:
-        ui.windowQ.put((ui_num['백테엔진'], f'{one_name} 선택한 종목의 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
+        ui.windowQ.put((UI_NUM['백테엔진'], f'{one_name} 선택한 종목의 일자의 수가 멀티수보다 작습니다. 일자를 늘리십시오.'))
         backtest_engine_kill(ui)
         return
 
     for q in ui.back_eques:
         q.put(('종목명', dict_info))
-    ui.windowQ.put((ui_num['백테엔진'], '거래대금순위 및 종목코드 추출 완료'))
+    ui.windowQ.put((UI_NUM['백테엔진'], '거래대금순위 및 종목코드 추출 완료'))
 
     log_gubun = divid_mode.split()[0]
     if log_gubun == '한종목':
         log_gubun = f'{log_gubun} 일자별'
 
-    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 시작'))
+    ui.windowQ.put((UI_NUM['백테엔진'], f'{log_gubun} 데이터 로딩 시작'))
     data_list = code_set if log_gubun == '종목코드별' else day_list if log_gubun == '일자별' else code_days[one_code]
     data_lists = []
     for i in range(multi):
@@ -200,12 +200,12 @@ def backengine_start(ui):
     for i in range(multi):
         shared_info_ = ui.backQ.get()
         ui.shared_info += shared_info_
-        ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i+1}/{multi}]'))
+        ui.windowQ.put((UI_NUM['백테엔진'], f'{log_gubun} 데이터 로딩 중 ... [{i + 1}/{multi}]'))
 
     ui.shared_info = sorted(ui.shared_info, key=lambda x: x['shape'][0], reverse=True)
     ui.back_tick_cunsum = [x['shape'][0] for x in ui.shared_info]
     ui.back_tick_cunsum = np.cumsum(ui.back_tick_cunsum)
-    ui.windowQ.put((ui_num['백테엔진'], f'{log_gubun} 데이터 로딩 완료'))
+    ui.windowQ.put((UI_NUM['백테엔진'], f'{log_gubun} 데이터 로딩 완료'))
 
     ui.back_count = len(ui.shared_info)
     for q in ui.back_eques:
@@ -213,7 +213,7 @@ def backengine_start(ui):
 
     ui.backengine_starting = False
     ui.backengine_running  = True
-    ui.windowQ.put((ui_num['백테엔진'], '백테엔진 준비 완료'))
+    ui.windowQ.put((UI_NUM['백테엔진'], '백테엔진 준비 완료'))
 
 
 def back_code_test1(ui, stg, testQ):
@@ -333,11 +333,11 @@ def get_code_test_result(ui, gubun, testQ):
     Returns:
         테스트 성공 여부
     """
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
 
     data = testQ.get()
     if data == '전략테스트오류':
-        ui.windowQ.put((ui_num['시스템로그'], f'{gubun}에 오류가 있어 저장하지 못하였습니다.'))
+        ui.windowQ.put((UI_NUM['시스템로그'], f'{gubun}에 오류가 있어 저장하지 못하였습니다.'))
         return False
     else:
         return True
@@ -363,7 +363,7 @@ def backtest_process_kill(ui, enginekill):
         ui: UI 클래스 인스턴스
         enginekill: 엔진 중지 여부
     """
-    from utility.settings.setting_base import ui_num
+    from utility.settings.setting_base import UI_NUM
 
     if not ui.backengine_running:
         from PyQt5.QtWidgets import QMessageBox
@@ -384,7 +384,7 @@ def backtest_process_kill(ui, enginekill):
                 break
 
     from ui.create_widget.set_style import style_bc_dk
-    ui.windowQ.put((ui_num['백테스트'], '백테스트 중지 완료'))
+    ui.windowQ.put((UI_NUM['백테스트'], '백테스트 중지 완료'))
     ui.ss_pushButtonn_08.setStyleSheet(style_bc_dk)
     ui.ssicon_alert = False
     ui.main_btn_list[3].setIcon(ui.icon_stgs)

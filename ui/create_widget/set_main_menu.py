@@ -88,11 +88,6 @@ class SetMainMenu:
         self.ui.image_label2.setVisible(False)
 
         self.ui.setFixedSize(1403, 763)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.move(self.ui.dict_set['창위치'][0], self.ui.dict_set['창위치'][1])
-            except Exception:
-                pass
 
         for i in range(6):
             y = 5 + i * 40

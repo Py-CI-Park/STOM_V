@@ -1,7 +1,7 @@
 
 from backtest.back_static import get_trade_info
 from backtest.backengine_base import BackEngineBase
-from utility.settings.setting_base import dict_order_ratio
+from utility.settings.setting_base import DICT_ORDER_RATIO
 from utility.static_method.static import timedelta_sec, dt_ymdhms, dt_ymdhm
 
 
@@ -81,18 +81,27 @@ class BackEngineBaseOms(BackEngineBase):
         self.hoga_unit = 호가단위 = self._get_hogaunit(현재가 if self.market_gubun < 6 else self.code)
 
         리스크점수 = 0
-        if self.is_tick and 데이터길이 >= 30:
+        if self.is_tick and 데이터길이 >= 30 and (self.dict_set['시장미시구조분석'] or self.dict_set['리스크분석']):
+            current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
             if self.dict_set['시장미시구조분석']:
-                self.ms_analyzer.update_data(self.code, self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
+                self.ms_analyzer.update_data(self.code, current_data)
             if self.dict_set['리스크분석']:
-                리스크점수 = self.rk_analyzer.get_risk_score(self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :])
+                리스크점수 = self.rk_analyzer.get_risk_score(current_data)
 
-        패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도 = 0, 0, 0, 0
-        if not self.is_tick:
-            if self.dict_set['패턴분석'] and 데이터길이 >= 5:
-                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_patterns(self.code, self.arry_code)
+        패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도 = 0, 0, 0, 0, 0, 0, 0, 0
+        if not self.is_tick and (
+                self.dict_set['캔들분석'] or self.dict_set['가격대분석'] or
+                self.dict_set['거래량분석'] or self.dict_set['변동성분석']
+        ):
+            current_data = self.arry_code[self.indexn + 1 - self.tick_count:self.indexn + 1, :]
+            if self.dict_set['캔들분석']:
+                패턴점수, 패턴신뢰도 = self.pt_analyzer.analyze_current_patterns(self.code, current_data)
             if self.dict_set['가격대분석']:
                 가격대점수, 가격대신뢰도 = self.vf_analyzer.analyze_current_price(self.code, 현재가)
+            if self.dict_set['거래량분석']:
+                거래량점수, 거래량신뢰도 = self.vs_analyzer.analyze_current_spike(self.code, current_data)
+            if self.dict_set['변동성분석']:
+                변동성점수, 변동성신뢰도 = self.vp_analyzer.analyze_current_volatility(self.code, current_data)
 
         self.shogainfo[:] = [매도호가1, 매도호가2, 매도호가3, 매도호가4, 매도호가5]
         self.shreminfo[:] = [매도잔량1, 매도잔량2, 매도잔량3, 매도잔량4, 매도잔량5]
@@ -499,7 +508,7 @@ class BackEngineBaseOms(BackEngineBase):
             else:
                 betting = self.betting * self.set_weight[9]
 
-        order_ratio = dict_order_ratio[self.dict_set['매수분할방법']][self.dict_set['매수분할횟수']]
+        order_ratio = DICT_ORDER_RATIO[self.dict_set['매수분할방법']][self.dict_set['매수분할횟수']]
         oc_ratio = order_ratio[매수분할횟수]
         self.curr_trade_info['주문수량'] = self._set_buy_count(betting, 현재가, 매수가, oc_ratio)
 
@@ -706,7 +715,7 @@ class BackEngineBaseOms(BackEngineBase):
         if self.dict_set['매도분할횟수'] == 1:
             self.curr_trade_info['주문수량'] = 보유수량
         else:
-            dict_ratio = dict_order_ratio[self.dict_set['매도분할방법']][self.dict_set['매도분할횟수']]
+            dict_ratio = DICT_ORDER_RATIO[self.dict_set['매도분할방법']][self.dict_set['매도분할횟수']]
             oc_ratio = dict_ratio[매도분할횟수]
             보유비율 = sum(비율 for 횟수, 비율 in dict_ratio.items() if 횟수 >= 매도분할횟수)
             매도수량 = self._set_sell_count(보유수량, 보유비율, oc_ratio)

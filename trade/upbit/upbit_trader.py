@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtCore import QTimer
 from trade.base_trader import BaseTrader
 from PyQt5.QtWidgets import QApplication
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from trade.restapi_upbit import UpbitRestAPI, UpbitWebSocketTrader
 from utility.static_method.static import now, timedelta_sec, get_hogaunit_coin, get_profit_coin, str_ymdhms_utc, \
     error_decorator
@@ -49,7 +49,7 @@ class UpbitTrader(BaseTrader):
             ret: 응답
         """
         if ret.__class__ == dict and list(ret)[0] == 'error':
-            self.windowQ.put((ui_num['시스템로그'], f"오류 알림 - {ret['error']['name']} : {ret['error']['message']}"))
+            self.windowQ.put((UI_NUM['시스템로그'], f"오류 알림 - {ret['error']['name']} : {ret['error']['message']}"))
             return False
         return True
 
@@ -95,18 +95,18 @@ class UpbitTrader(BaseTrader):
                     )
 
                     self.windowQ.put((
-                        ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목명} | {주문가격} | {주문수량}'
+                        UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목명} | {주문가격} | {주문수량}'
                     ))
             else:
                 self._put_order_complete(f'{주문구분}취소', 종목코드)
-                self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}실패] {종목명} | {주문가격} | {주문수량}'))
+                self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}실패] {종목명} | {주문가격} | {주문수량}'))
 
         elif 주문구분 in ('매수취소', '매도취소'):
             """def order_cancel(self, od_no):"""
             ret = self.upbit.order_cancel(원주문번호)
             if ret is None:
                 self.windowQ.put((
-                    ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}실패] {종목명} | {주문가격} | {주문수량}'
+                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}실패] {종목명} | {주문가격} | {주문수량}'
                 ))
 
         self.order_time = timedelta_sec(0.2)

@@ -9,7 +9,7 @@ import websockets
 from traceback import format_exc
 from urllib.parse import unquote, urlencode
 from PyQt5.QtCore import QThread, pyqtSignal
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 
 
 def get_symbols_info():
@@ -208,7 +208,7 @@ class UpbitWebSocketReceiver(QThread):
                 await self.receive_ticker()
             except Exception:
                 self.windowQ.put(
-                    (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간체결 수신 중 오류가 발생하여 재연결합니다.')
+                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간체결 수신 중 오류가 발생하여 재연결합니다.')
                 )
 
             await self.disconnect_trader()
@@ -222,7 +222,7 @@ class UpbitWebSocketReceiver(QThread):
                 await self.receive_order()
             except Exception:
                 self.windowQ.put(
-                    (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간호가 수신 중 오류가 발생하여 재연결합니다.')
+                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 실시간호가 수신 중 오류가 발생하여 재연결합니다.')
                 )
 
             await self.disconnect_order()
@@ -307,7 +307,7 @@ class UpbitWebSocketTrader(QThread):
                 await self._receive_message()
             except Exception:
                 self.windowQ.put(
-                    (ui_num['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 주문체결 수신 중 오류가 발생하여 재연결합니다.')
+                    (UI_NUM['시스템로그'], f'{format_exc()}오류 알림 - 업비트 웹소켓 주문체결 수신 중 오류가 발생하여 재연결합니다.')
                 )
 
             await self._disconnect()

@@ -2,7 +2,7 @@
 import re
 from ui.event_activate import activated_stg
 from ui.etcetera.etc import auto_back_schedule
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from ui.event_click.button_clicked_stg_editer import backtest_detail
 from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
 from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_02
@@ -29,11 +29,11 @@ class UpdateTextedit:
         """
         gubun = data[0]
 
-        if gubun == ui_num['종목명데이터']:
+        if gubun == UI_NUM['종목명데이터']:
             self.ui.dict_name.update(data[1])
             self.ui.dict_code.update(data[2])
 
-        elif gubun == ui_num['사용자수식']:
+        elif gubun == UI_NUM['사용자수식']:
             self.ui.fm_list = data[1]
             self.ui.dict_fm = data[2]
             self.ui.fm_tcnt = data[3]
@@ -48,13 +48,13 @@ class UpdateTextedit:
 
             text = f'[{time_}] {text}' if '</font>' not in text else f'<font color=white>[{time_}]</font> {text}'
 
-            if gubun in (ui_num['기본로그'], ui_num['시스템로그'], ui_num['DB관리']) and 'DB업데이트완료' not in text:
+            if gubun in (UI_NUM['기본로그'], UI_NUM['시스템로그'], UI_NUM['DB관리']) and 'DB업데이트완료' not in text:
                 self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
 
-            elif gubun == ui_num['백테스트'] and not self.ui.dict_set['백테스트로그기록안함']:
+            elif gubun == UI_NUM['백테스트'] and not self.ui.dict_set['백테스트로그기록안함']:
                 self.ui.log.info(re.sub('(<([^>]+)>)', '', text))
 
-            if gubun == ui_num['기본로그']:
+            if gubun == UI_NUM['기본로그']:
                 self.ui.log_trade_basic_textedit.append(text)
                 if '리시버 시작' in text:
                     qtest_qwait(2)
@@ -69,26 +69,29 @@ class UpdateTextedit:
                 elif '휴무 종료' in text:
                     self._shut_down_check(force=True)
 
-            elif gubun == ui_num['타임로그']:
+            elif gubun == UI_NUM['타임로그']:
                 self.ui.log_trade_error_textedit.append(text)
 
-            elif gubun == ui_num['시스템로그']:
+            elif gubun == UI_NUM['시스템로그']:
                 text = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
                 self.ui.log_system_textedit.append(text)
 
-            elif gubun == ui_num['패턴학습']:
+            elif gubun == UI_NUM['학습로그']:
                 self.ui.ptn_textEdittt_01.append(text)
-                if self.ui.auto_mode and '전체 종목 패턴 학습 완료' in text:
+                if self.ui.auto_mode and '캔들분석 학습 완료' in text:
                     qtest_qwait(2)
-                    auto_back_schedule(self.ui, 0.5)
-
-            elif gubun == ui_num['볼륨학습']:
-                self.ui.vpf_textEdittt_01.append(text)
-                if self.ui.auto_mode and '전체 종목 볼륨 프로파일 학습 완료' in text:
+                    auto_back_schedule(self.ui, 0.2)
+                elif self.ui.auto_mode and '가격대분석 학습 완료' in text:
+                    qtest_qwait(2)
+                    auto_back_schedule(self.ui, 0.4)
+                elif self.ui.auto_mode and '거래량분석 학습 완료' in text:
+                    qtest_qwait(2)
+                    auto_back_schedule(self.ui, 0.6)
+                elif self.ui.auto_mode and '변동성분석 학습 완료' in text:
                     qtest_qwait(2)
                     auto_back_schedule(self.ui, 1)
 
-            elif gubun == ui_num['백테엔진']:
+            elif gubun == UI_NUM['백테엔진']:
                 self.ui.be_textEditxxxx_01.append(text)
                 if '백테엔진 준비 완료' in text:
                     if not self.ui.qtimer3.isActive():
@@ -99,7 +102,7 @@ class UpdateTextedit:
                         qtest_qwait(2)
                         auto_back_schedule(self.ui, 2)
 
-            elif gubun == ui_num['백테스트']:
+            elif gubun == UI_NUM['백테스트']:
                 if 'START' in text or '그리드 최적화 시작' in text:
                     self.ui.back_start_time = now()
                 elif 'OPTUNA INFO' in text:
@@ -150,7 +153,7 @@ class UpdateTextedit:
                     self.ui.optuna_current_cnt = 0
                     self.ui.optuna_remain_cnt = 0
 
-            elif gubun == ui_num['DB관리']:
+            elif gubun == UI_NUM['DB관리']:
                 if 'DB업데이트완료' in text:
                     self.ui.database_control = False
                 else:
@@ -162,7 +165,7 @@ class UpdateTextedit:
                     elif '당일DB 데이터, 백테DB로 추가 완료' in text:
                         self._auto_database_control(3)
 
-            elif gubun == ui_num['기업개요']:
+            elif gubun == UI_NUM['기업개요']:
                 self.ui.gg_textEdittttt_01.clear()
                 self.ui.gg_textEdittttt_01.append(text)
 
@@ -188,7 +191,7 @@ class UpdateTextedit:
             if self.ui.dialog_db.isVisible():
                 self.ui.dialog_db.close()
             self.ui.teleQ.put('데이터베이스 자동관리 완료')
-            self.ui.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 자동관리 완료'))
+            self.ui.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 자동관리 완료'))
             self.ui.auto_mode = False
             self._shut_down_check()
 

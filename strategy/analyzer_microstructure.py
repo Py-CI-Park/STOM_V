@@ -1,11 +1,11 @@
 
 import numpy as np
-from numba import jit
+from numba import njit
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
 
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True, parallel=True)
 def _calc_analyze_price_levels(quantities: np.ndarray, multiplier: float, min_occurrences: int):
     """가격 레벨별 분석 (Numba JIT 최적화) - 튜플 대신 배열 반환"""
     n_rows, n_cols = quantities.shape
@@ -58,7 +58,7 @@ def _calc_analyze_price_levels(quantities: np.ndarray, multiplier: float, min_oc
 
 
 # noinspection PyUnresolvedReferences
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def _calc_detect_large_order_changes(quantities: np.ndarray, prices: np.ndarray, threshold: float):
     """대량 주문 변화 감지 (Numba JIT 최적화) - 배열 반환"""
     n_rows, n_cols = quantities.shape
@@ -120,7 +120,7 @@ def _calc_detect_large_order_changes(quantities: np.ndarray, prices: np.ndarray,
     return result
 
 
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def _calc_layering_confidence(levels: np.ndarray):
     """레이어링 신뢰도 계산 (Numba JIT) - levels: (N, 5) 배열"""
     n = levels.shape[0]
@@ -149,7 +149,7 @@ def _calc_layering_confidence(levels: np.ndarray):
     return confidence
 
 
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def _calc_spoofing_confidence(changes: np.ndarray):
     """스푸핑 신뢰도 계산 (Numba JIT) - changes: (N, 6) 배열"""
     n = changes.shape[0]
@@ -174,7 +174,7 @@ def _calc_spoofing_confidence(changes: np.ndarray):
     return confidence
 
 
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def _calc_detect_iceberg(qtys: np.ndarray, prices: np.ndarray, depletion_threshold: float,
                          price_stable_threshold: float, min_pattern_count: int):
     """아이스버그 주문 탐지 (Numba JIT) - 결과: (N, 6) 배열 (side_idx, level, avg_price, max_count, total_depletion, confidence)"""
@@ -254,7 +254,7 @@ def _calc_detect_iceberg(qtys: np.ndarray, prices: np.ndarray, depletion_thresho
     return results[:result_count]
 
 
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def _calc_detect_stop_hunt(prices: np.ndarray, volumes: np.ndarray, price_threshold: float, vol_threshold: float):
     """스탑로스 털기 패턴 감지 (Numba JIT) - 결과: (N, 6) 배열 (direction, price, change, vol, confidence, idx)"""
     n = len(prices)
@@ -309,7 +309,7 @@ def _calc_detect_stop_hunt(prices: np.ndarray, volumes: np.ndarray, price_thresh
     return results[:result_count]
 
 
-@jit(nopython=True, cache=True, fastmath=True)
+@njit(cache=True, fastmath=True)
 def _calc_detect_pump_dump(prices: np.ndarray, volumes: np.ndarray, price_threshold: float,
                            vol_threshold: float, window: int):
     """펌프 앤 덤프 탐지 (Numba JIT) - 결과: (N, 3) 배열 (price_change, volume_spike, confidence)"""
@@ -500,7 +500,7 @@ class AnalyzerMicrostructure:
 
         # 상수 캐싱 (반복 생성 회피)
         self._depth_weights = np.array([0.35, 0.25, 0.20, 0.12, 0.08])  # 1~5단계 가중치
-        self._log_depth_ratio_threshold = np.log(self.params['depth_ratio_threshold'])
+        self._log_depth_rate_threshold = np.log(self.params['depth_rate_threshold'])
 
     def _setup_parameters(self):
         """분석 파라미터를 설정합니다."""
@@ -512,9 +512,9 @@ class AnalyzerMicrostructure:
                 'order_change_threshold': 0.8,      # 80% 변화 (높은 임계값)
                 'pump_price_threshold': 0.06,       # 6% 가격 변동
                 'imbalance_threshold': 0.25,        # 25% 불균형
-                'volume_spike_threshold': 3.0,      # 3배 거래량 급증
+                'volume_rate_threshold': 3.0,      # 3배 거래량 급증
                 'concentration_threshold': 0.6,     # 60% 집중도
-                'depth_ratio_threshold': 2.0,       # 깊이 비율 2.0
+                'depth_rate_threshold': 2.0,       # 깊이 비율 2.0
                 'pressure_threshold': 0.7,          # 압력 레벨 0.7
             }
         # 코인 1초 스냅샷 파라미터 (고빈도, 고변동성, 24시간)
@@ -525,9 +525,9 @@ class AnalyzerMicrostructure:
                 'order_change_threshold': 0.7,      # 70% 변화
                 'pump_price_threshold': 0.10,       # 10% 가격 변동 (코인은 변동성 큼)
                 'imbalance_threshold': 0.20,        # 20% 불균형
-                'volume_spike_threshold': 3.5,      # 3.5배 거래량 급증
+                'volume_rate_threshold': 3.5,      # 3.5배 거래량 급증
                 'concentration_threshold': 0.55,    # 55% 집중도
-                'depth_ratio_threshold': 1.6,       # 깊이 비율 1.6
+                'depth_rate_threshold': 1.6,       # 깊이 비율 1.6
                 'pressure_threshold': 0.65          # 압력 레벨 0.65
             }
         # 해외선물 1초 스냅샷 파라미터 (고빈도, 중간변동성, 24시간+레버리지)
@@ -538,9 +538,9 @@ class AnalyzerMicrostructure:
                 'order_change_threshold': 0.75,     # 75% 변화 (높은 임계값)
                 'pump_price_threshold': 0.07,       # 7% 가격 변동 (레버리지 고려)
                 'imbalance_threshold': 0.22,        # 22% 불균형
-                'volume_spike_threshold': 3.2,      # 3.2배 거래량 급증
+                'volume_rate_threshold': 3.2,      # 3.2배 거래량 급증
                 'concentration_threshold': 0.58,    # 58% 집중도
-                'depth_ratio_threshold': 1.8,       # 깊이 비율 1.8
+                'depth_rate_threshold': 1.8,       # 깊이 비율 1.8
                 'pressure_threshold': 0.68          # 압력 레벨 0.68
             }
 
@@ -754,7 +754,7 @@ class AnalyzerMicrostructure:
 
         # Numba 함수용 파라미터
         price_threshold = self.params['pump_price_threshold']
-        vol_threshold = self.params['volume_spike_threshold']
+        vol_threshold = self.params['volume_rate_threshold']
         window = 5
 
         results = _calc_detect_pump_dump(prices, volumes, price_threshold, vol_threshold, window)
@@ -934,7 +934,7 @@ class AnalyzerMicrostructure:
         imbalance_risk = abs(self.curr_data['imbalance'])
 
         # 깊이 리스크 (깊이 비율이 임계값에서 멀어질수록 위험)
-        depth_risk = min(abs(1 - self.curr_data['depth_ratio']) / self.params['depth_ratio_threshold'], 1.0)
+        depth_risk = min(abs(1 - self.curr_data['depth_ratio']) / self.params['depth_rate_threshold'], 1.0)
 
         return (imbalance_risk + depth_risk) / 2
 
@@ -991,7 +991,7 @@ class AnalyzerMicrostructure:
         depth_ratio = self.curr_data['depth_ratio']
         bid_concentration = self.curr_data['bid_concentration']
         ask_concentration = self.curr_data['ask_concentration']
-        log_depth_ratio = np.log(depth_ratio) / self._log_depth_ratio_threshold if depth_ratio > 0 else 0
+        log_depth_ratio = np.log(depth_ratio) / self._log_depth_rate_threshold if depth_ratio > 0 else 0
         weighted_depth_ratio = self.curr_data['weighted_depth_ratio']
 
         # 매수 흐름 강도 계산 (연속적인 0.0~1.0 값)
@@ -1051,10 +1051,10 @@ class AnalyzerMicrostructure:
 
         if signal == 'buy':
             trend_confidence = min(max(0.01, imbalance_trend * (1 / (self.params['imbalance_threshold'] * 0.05))), 1.0) * 0.15
-            depth_confidence = min(max(0.01, depth_ratio * (self.params['depth_ratio_threshold'] * 0.1)), 1.0) * 0.15
+            depth_confidence = min(max(0.01, depth_ratio * (self.params['depth_rate_threshold'] * 0.1)), 1.0) * 0.15
         else:
             trend_confidence = min(max(0.01, -imbalance_trend * (1 / (self.params['imbalance_threshold'] * 0.05))), 1.0) * 0.15
-            depth_confidence = min(max(0.01, 1 - depth_ratio * (self.params['depth_ratio_threshold'] * 0.1)), 1.0) * 0.15
+            depth_confidence = min(max(0.01, 1 - depth_ratio * (self.params['depth_rate_threshold'] * 0.1)), 1.0) * 0.15
 
         pressure_confidence = min(max(0.01, pressure_level * (1 / self.params['pressure_threshold'])), 1.0) * 0.15
         risk_confidence = min(max(0.01, 1 - total_risk), 1.0) * 0.15

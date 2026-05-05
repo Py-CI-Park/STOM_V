@@ -5,7 +5,7 @@ from trade.restapi_ls import LsRestAPI
 from PyQt5.QtWidgets import QApplication
 from trade.base_trader import BaseTrader
 from trade.restapi_lsdata import LsRestData
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from utility.static_method.static import now, timedelta_sec, get_profit_stock, get_hogaunit_stock, error_decorator
 
 
@@ -78,7 +78,7 @@ class StockTrader(BaseTrader):
                 )
 
                 self.windowQ.put((
-                    ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목명} | {주문가격} | {주문수량}'
+                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}접수] {종목명} | {주문가격} | {주문수량}'
                 ))
 
         elif 주문구분 in ('매수정정', '매도정정'):

@@ -60,9 +60,9 @@ def text_changed_05(ui):
     name = ui.hj_tableWidgett_01.item(0, 0).text()
     if name:
         try:
-            from utility.settings.setting_base import columns_jg, columns_jgf, columns_jgcf
+            from utility.settings.setting_base import COLUMNS_JG, COLUMNS_JGF, COLUMNS_JGCF
             row_num = next((row for row in range(ui.jg_tableWidgettt.rowCount()) if ui.jg_tableWidgettt.item(row, 0).text() == name), None)
-            columns = columns_jg if ui.market_gubun < 6 else columns_jgf if ui.market_gubun < 9 else columns_jgcf
+            columns = COLUMNS_JG if ui.market_gubun < 6 else COLUMNS_JGF if ui.market_gubun < 9 else COLUMNS_JGCF
             col_num = columns.index('보유수량')
         except Exception:
             order_price = float(ui.od_lineEdittttt_01.text())

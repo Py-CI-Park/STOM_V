@@ -1,19 +1,24 @@
 
 from PyQt5.QtCore import Qt
+
 from ui.event_activate import activated_etc
 from ui.event_click.button_clicked_etc import *
+from ui.etcetera.etc import pattern_setting_help
 from ui.event_click.button_clicked_order import *
 from ui.event_click.button_clicked_database import *
 from ui.event_click.button_clicked_passticks import *
+from ui.create_widget.set_text import pattern_text_list
 from ui.event_change.changed_text import text_changed_05
 from PyQt5.QtWidgets import QGroupBox, QLabel, QTabWidget, QWidget
 from ui.event_keypress.overwrite_return_press import return_press_02
 from ui.create_widget.set_style import style_ck_bx, style_bc_dk, qfont14, style_fc_dk
-from trade.analyzer_pattern import pattern_setting_load, pattern_setting_save, pattern_train
+from strategy.analyzer_volume_spike import spike_setting_load, spike_setting_save, spike_train
 from ui.event_click.table_cell_clicked import cell_clicked_09, cell_clicked_07, cell_clicked_08
-from trade.analyzer_volume_profile import volume_setting_load, volume_setting_save, volume_profile_train
-from utility.settings.setting_base import columns_hj, columns_hc, columns_hg, columns_gc, columns_ns, columns_jm1, \
-    columns_jm2, columns_stg1, columns_stg2, columns_kp, columns_hc2
+from strategy.analyzer_candle_pattern import pattern_setting_load, pattern_setting_save, pattern_train
+from strategy.analyzer_volume_profile import volume_setting_load, volume_setting_save, volume_profile_train
+from strategy.analyzer_volatility_pattern import volatility_setting_load, volatility_setting_save, volatility_train
+from utility.settings.setting_base import COLUMNS_HJ, COLUMNS_HC, COLUMNS_HG, COLUMNS_GGS, COLUMNS_GNS, COLUMNS_JM1, \
+    COLUMNS_JM2, COLUMNS_DSG, COLUMNS_DSV, COLUMNS_KIMP, COLUMNS_HC2
 
 
 class SetDialogEtc:
@@ -27,14 +32,14 @@ class SetDialogEtc:
 
     def set(self):
         """기타 다이얼로그를 설정합니다."""
-        self.ui.dialog_hoga = self.wc.setDialog('STOM HOGA')
+        self.ui.dialog_hoga = self.wc.setDialog('STOM HOGA', location_save=True)
         self.ui.dialog_hoga.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_hoga)
 
-        self.ui.hj_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_hoga, columns_hj, 1)
-        self.ui.hc_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_hoga, columns_hc, 12)
-        self.ui.hc_tableWidgett_02 = self.wc.setTablewidget(self.ui.dialog_hoga, columns_hc2, 12, visible=False)
-        self.ui.hg_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_hoga, columns_hg, 12, clicked=lambda row, col: cell_clicked_09(self.ui, row, col))
+        self.ui.hj_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_hoga, COLUMNS_HJ, 1)
+        self.ui.hc_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_hoga, COLUMNS_HC, 12)
+        self.ui.hc_tableWidgett_02 = self.wc.setTablewidget(self.ui.dialog_hoga, COLUMNS_HC2, 12, visible=False)
+        self.ui.hg_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_hoga, COLUMNS_HG, 12, clicked=lambda row, col: cell_clicked_09(self.ui, row, col))
         self.ui.hg_lineeeeeeeee_01 = self.wc.setLine(self.ui.dialog_hoga, 1)
         self.ui.hg_labellllllll_01 = QLabel('', self.ui.dialog_hoga)
         self.ui.hg_pushButtonnn_01 = self.wc.setPushbutton('이전(Alt+left)', parent=self.ui.dialog_hoga, click=lambda: hg_button_clicked_01(self.ui, '이전'), shortcut='Alt+left')
@@ -42,21 +47,21 @@ class SetDialogEtc:
         self.ui.hg_pushButtonnn_03 = self.wc.setPushbutton('매수(Alt+up)', parent=self.ui.dialog_hoga, color=2, click=lambda: hg_button_clicked_02(self.ui, '매수'), shortcut='Alt+up')
         self.ui.hg_pushButtonnn_04 = self.wc.setPushbutton('매도(Alt+down)', parent=self.ui.dialog_hoga, color=3, click=lambda: hg_button_clicked_02(self.ui, '매도'), shortcut='Alt+down')
 
-        self.ui.dialog_info = self.wc.setDialog('STOM INFO')
+        self.ui.dialog_info = self.wc.setDialog('STOM INFO', location_save=True)
         self.ui.dialog_info.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_info)
 
         self.ui.gg_textEdittttt_01 = self.wc.setTextEdit(self.ui.dialog_info, font=qfont14)
-        self.ui.gs_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_info, columns_gc, 20, clicked=lambda row, col: cell_clicked_07(self.ui, row, col))
-        self.ui.ns_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_info, columns_ns, 10, clicked=lambda row, col: cell_clicked_07(self.ui, row, col))
-        self.ui.jm_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_info, columns_jm1, 13)
-        self.ui.jm_tableWidgett_02 = self.wc.setTablewidget(self.ui.dialog_info, columns_jm2, 13)
+        self.ui.gs_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_info, COLUMNS_GGS, 20, clicked=lambda row, col: cell_clicked_07(self.ui, row, col))
+        self.ui.ns_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_info, COLUMNS_GNS, 10, clicked=lambda row, col: cell_clicked_07(self.ui, row, col))
+        self.ui.jm_tableWidgett_01 = self.wc.setTablewidget(self.ui.dialog_info, COLUMNS_JM1, 13)
+        self.ui.jm_tableWidgett_02 = self.wc.setTablewidget(self.ui.dialog_info, COLUMNS_JM2, 13)
 
-        self.ui.dialog_web = self.wc.setDialog('STOM WEB')
+        self.ui.dialog_web = self.wc.setDialog('STOM WEB', location_save=True)
         self.ui.dialog_web.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_web)
 
-        self.ui.dialog_tree = self.wc.setDialog('STOM TREEMAP')
+        self.ui.dialog_tree = self.wc.setDialog('STOM TREEMAP', location_save=True)
         self.ui.dialog_tree.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_tree)
 
@@ -64,7 +69,7 @@ class SetDialogEtc:
         self.ui.dialog_graph.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_graph)
 
-        self.ui.dialog_db = self.wc.setDialog('STOM DATABASE')
+        self.ui.dialog_db = self.wc.setDialog('STOM DATABASE', self.ui)
         self.ui.dialog_db.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_db)
 
@@ -109,12 +114,12 @@ class SetDialogEtc:
         self.ui.db_labellllllll_09 = QLabel('거래기록 테이블 모두 삭제 (체결목록, 잔고목록, 거래목록, 일별실현손익)', self.ui.db_groupBoxxxxx_01)
         self.ui.db_pushButtonnn_09 = self.wc.setPushbutton('실행', parent=self.ui.db_groupBoxxxxx_01, click=lambda: dbbutton_clicked_10(self.ui))
 
-        self.ui.db_tableWidgett_01 = self.wc.setTablewidget(self.ui.dbs_tab1, columns_stg1, 8,    clicked=lambda row, col: cell_clicked_08(self.ui, row, col))
-        self.ui.db_tableWidgett_02 = self.wc.setTablewidget(self.ui.dbs_tab2, columns_stg2, 8,    clicked=lambda row, col: cell_clicked_08(self.ui, row, col))
+        self.ui.db_tableWidgett_01 = self.wc.setTablewidget(self.ui.dbs_tab1, COLUMNS_DSG, 8, clicked=lambda row, col: cell_clicked_08(self.ui, row, col))
+        self.ui.db_tableWidgett_02 = self.wc.setTablewidget(self.ui.dbs_tab2, COLUMNS_DSV, 8, clicked=lambda row, col: cell_clicked_08(self.ui, row, col))
         self.ui.db_tableWidgett_03 = self.wc.setTablewidget(self.ui.dbs_tab3, ['백테스트 스케쥴'], 8, clicked=lambda row, col: cell_clicked_08(self.ui, row, col))
         self.ui.db_textEdittttt_01 = self.wc.setTextEdit(self.ui.dialog_db, vscroll=True)
 
-        self.ui.dialog_order = self.wc.setDialog('STOM ORDER')
+        self.ui.dialog_order = self.wc.setDialog('STOM ORDER', location_save=True)
         self.ui.dialog_order.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_order)
 
@@ -136,7 +141,7 @@ class SetDialogEtc:
         self.ui.od_pushButtonnn_07 = self.wc.setPushbutton('매수취소', parent=self.ui.od_groupBoxxxxx_01, click=lambda: odbutton_clicked_07(self.ui))
         self.ui.od_pushButtonnn_08 = self.wc.setPushbutton('매도취소', parent=self.ui.od_groupBoxxxxx_01, click=lambda: odbutton_clicked_08(self.ui))
 
-        self.ui.dialog_optuna = self.wc.setDialog('STOM OPTUNA', parent=self.ui)
+        self.ui.dialog_optuna = self.wc.setDialog('STOM OPTUNA', self.ui)
         self.ui.dialog_optuna.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_optuna)
 
@@ -200,7 +205,7 @@ class SetDialogEtc:
         self.ui.op_labelllllll_05.setAlignment(Qt.AlignCenter)
         self.ui.op_pushButtonn_01 = self.wc.setPushbutton('OPTUNA DASHBOARD', parent=self.ui.op_groupBoxxxx_01, color=3, click=lambda: opbutton_clicked_01(self.ui))
 
-        self.ui.dialog_pass = self.wc.setDialog('STOM PASSWARD', parent=self.ui)
+        self.ui.dialog_pass = self.wc.setDialog('STOM PASSWARD', self.ui)
         self.ui.dialog_pass.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_pass)
 
@@ -209,7 +214,7 @@ class SetDialogEtc:
         self.ui.pa_labelllllll_01.setAlignment(Qt.AlignCenter)
         self.ui.pa_lineEditttt_01 = self.wc.setLineedit(self.ui.pa_groupBoxxxx_01, enter=lambda: return_press_02(self.ui), style=style_fc_dk)
 
-        self.ui.dialog_comp = self.wc.setDialog('STOM COMPARISON', parent=self.ui)
+        self.ui.dialog_comp = self.wc.setDialog('STOM COMPARISON', self.ui)
         self.ui.dialog_comp.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_comp)
 
@@ -217,13 +222,13 @@ class SetDialogEtc:
         self.ui.cp_pushButtonn_01 = self.wc.setPushbutton('그래프 비교', parent=self.ui.dialog_comp, click=lambda: cpbutton_clicked_01(self.ui))
         self.ui.cp_tableWidget_01 = self.wc.setTablewidget(self.ui.dialog_comp, ['백테스트 상세기록'], 40, vscroll=True)
 
-        self.ui.dialog_kimp = self.wc.setDialog('STOM KIMP')
+        self.ui.dialog_kimp = self.wc.setDialog('STOM KIMP', location_save=True)
         self.ui.dialog_kimp.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_kimp)
 
-        self.ui.kp_tableWidget_01 = self.wc.setTablewidget(self.ui.dialog_kimp, columns_kp, 50, vscroll=True)
+        self.ui.kp_tableWidget_01 = self.wc.setTablewidget(self.ui.dialog_kimp, COLUMNS_KIMP, 50, vscroll=True)
 
-        self.ui.dialog_std = self.wc.setDialog('OPTIMIZ STD LIMIT', parent=self.ui)
+        self.ui.dialog_std = self.wc.setDialog('OPTIMIZ STD LIMIT', self.ui)
         self.ui.dialog_std.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_std)
 
@@ -241,7 +246,7 @@ class SetDialogEtc:
             lineEdit = self.wc.setLineedit(self.ui.st_groupBoxxxx_01, style=style_bc_dk)
             setattr(self.ui, f'st_lineEditttt_{i+1:02d}', lineEdit)
 
-        self.ui.dialog_leverage = self.wc.setDialog('BINACE FUTURE LEVERAGE', parent=self.ui)
+        self.ui.dialog_leverage = self.wc.setDialog('BINACE FUTURE LEVERAGE', self.ui)
         self.ui.dialog_leverage.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_leverage)
 
@@ -263,7 +268,7 @@ class SetDialogEtc:
 
         self.ui.lv_checkbox_listt = [self.ui.lv_checkBoxxxx_01, self.ui.lv_checkBoxxxx_02]
 
-        self.ui.dialog_setsj = self.wc.setDialog('STOM SETSJ', parent=self.ui)
+        self.ui.dialog_setsj = self.wc.setDialog('STOM SETSJ', self.ui)
         self.ui.dialog_setsj.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_setsj)
 
@@ -293,52 +298,50 @@ class SetDialogEtc:
             self.ui.set_lineEdittt_19, self.ui.set_lineEdittt_20
         ]
 
-        self.ui.dialog_pattern = self.wc.setDialog('STOM PATTERN', parent=self.ui)
+        self.ui.dialog_pattern = self.wc.setDialog('STOM PATTERN', self.ui)
         self.ui.dialog_pattern.geometry().center()
         self.ui.dialog_list.append(self.ui.dialog_pattern)
 
-        self.ui.ptn_labellllll_01 = QLabel('   패턴인식시간(분)                     등락율(%)', self.ui.dialog_pattern)
-        self.ui.ptn_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, items=['30', '60', '90', '120', '150', '180'])
-        self.ui.ptn_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, items=['5', '10', '15', '20', '25', '30'])
-        self.ui.ptn_pushButton_01 = self.wc.setPushbutton('설정불러오기', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_load(self.ui))
-        self.ui.ptn_pushButton_02 = self.wc.setPushbutton('설정저장하기', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_save(self.ui))
+        self.ui.ptn_labellllll_01 = QLabel('  ▣ 캔들분석      |  분석기간(분)                     등락율(%)', self.ui.dialog_pattern)
+        self.ui.ptn_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['30', '60', '120', '180'])
+        self.ui.ptn_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['5', '10', '15', '20', '25', '30'])
+        self.ui.ptn_pushButton_00 = self.wc.setPushbutton('도움말', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_help(self.ui))
+        self.ui.ptn_pushButton_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_load(self.ui))
+        self.ui.ptn_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_save(self.ui))
         self.ui.ptn_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: pattern_train(self.ui))
+
+        self.ui.vpf_labellllll_01 = QLabel('  ▣ 가격대분석  |  분석기간(분)                     등락율(%)                     가격대분할(%)', self.ui.dialog_pattern)
+        self.ui.vpf_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['10', '15', '20', '25', '30'])
+        self.ui.vpf_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['0.5', '1.0', '2.0', '3.0', '4.0', '5.0'])
+        self.ui.vpf_comboBoxxx_03 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['0.33', '0.5', '0.75', '1.0'])
+        self.ui.vpf_pushButton_00 = self.wc.setPushbutton('도움말', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_help(self.ui))
+        self.ui.vpf_pushButton_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_pattern, click=lambda: volume_setting_load(self.ui))
+        self.ui.vpf_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: volume_setting_save(self.ui))
+        self.ui.vpf_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: volume_profile_train(self.ui))
+
+        self.ui.vsp_labellllll_01 = QLabel('  ▣ 거래량분석  |  분석기간(분)                     등락율(%)                     평균대비배수', self.ui.dialog_pattern)
+        self.ui.vsp_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['30', '60', '120', '180'])
+        self.ui.vsp_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['5', '10', '15', '20', '25', '30'])
+        self.ui.vsp_comboBoxxx_03 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['1', '2', '3', '4', '5'])
+        self.ui.vsp_pushButton_00 = self.wc.setPushbutton('도움말', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_help(self.ui))
+        self.ui.vsp_pushButton_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_pattern, click=lambda: spike_setting_load(self.ui))
+        self.ui.vsp_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: spike_setting_save(self.ui))
+        self.ui.vsp_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: spike_train(self.ui))
+
+        self.ui.vlp_labellllll_01 = QLabel('  ▣ 변동성분석  |  분석기간(분)                     등락율(%)                     변동성레벨수', self.ui.dialog_pattern)
+        self.ui.vlp_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['30', '60', '120', '180'])
+        self.ui.vlp_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['5', '10', '15', '20', '25', '30'])
+        self.ui.vlp_comboBoxxx_03 = self.wc.setCombobox(self.ui.dialog_pattern, hover=False, items=['10', '20', '30', '40', '50'])
+        self.ui.vlp_pushButton_00 = self.wc.setPushbutton('도움말', parent=self.ui.dialog_pattern, click=lambda: pattern_setting_help(self.ui))
+        self.ui.vlp_pushButton_01 = self.wc.setPushbutton('불러오기', parent=self.ui.dialog_pattern, click=lambda: volatility_setting_load(self.ui))
+        self.ui.vlp_pushButton_02 = self.wc.setPushbutton('저장하기', parent=self.ui.dialog_pattern, click=lambda: volatility_setting_save(self.ui))
+        self.ui.vlp_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_pattern, color=4, click=lambda: volatility_train(self.ui))
+
         self.ui.ptn_groupBoxxx_01 = QGroupBox('', self.ui.dialog_pattern)
-        text = '''
-        ▣ 패턴학습은 talib 라이브러리에 있는 60여개의 패턴을 기반으로 종목별로 각 패턴이 발생한 이후에\n
-        지정한 시간과 등락율 퍼센트를 기준으로 패턴별 점수를 학습합니다. 30분, 10%로 설정 시 패턴 발생 이후\n
-        30분 동안의 최고등락율과 최저등락율을 구한 다음, 절대값이 큰 등락율 기준으로 패턴점수를 구합니다.\n
-        최고등락율이 10% 이상이라면 100점, 최저등락율이 -10% 이하라면 -100점이 됩니다.\n
-        패턴신뢰도는 패턴 학습 횟수와 표준편차를 기반으로 계산한 0~1의 값입니다.'''
-        self.ui.ptn_labellllll_02 = QLabel(text, self.ui.ptn_groupBoxxx_01)
+        self.ui.ptn_labellllll_02 = QLabel(pattern_text_list[0], self.ui.ptn_groupBoxxx_01)
         self.ui.ptn_textEdittt_01 = self.wc.setTextEdit(self.ui.ptn_groupBoxxx_01, vscroll=True)
 
-        self.ui.dialog_volume = self.wc.setDialog('STOM VOLUME PROFILE', parent=self.ui)
-        self.ui.dialog_volume.geometry().center()
-        self.ui.dialog_list.append(self.ui.dialog_volume)
-
-        self.ui.vpf_labellllll_01 = QLabel(' 가격대분할(%)                    돌파및반등기준(%)', self.ui.dialog_volume)
-        self.ui.vpf_comboBoxxx_01 = self.wc.setCombobox(self.ui.dialog_volume, items=['0.33', '0.5', '0.75', '1.0'])
-        self.ui.vpf_comboBoxxx_02 = self.wc.setCombobox(self.ui.dialog_volume, items=['0.33', '0.5', '0.75', '1.0'])
-        self.ui.vpf_pushButton_01 = self.wc.setPushbutton('설정불러오기', parent=self.ui.dialog_volume, click=lambda: volume_setting_load(self.ui))
-        self.ui.vpf_pushButton_02 = self.wc.setPushbutton('설정저장하기', parent=self.ui.dialog_volume, click=lambda: volume_setting_save(self.ui))
-        self.ui.vpf_pushButton_03 = self.wc.setPushbutton('학습하기', parent=self.ui.dialog_volume, color=4, click=lambda: volume_profile_train(self.ui))
-        self.ui.vpf_groupBoxxx_01 = QGroupBox('', self.ui.dialog_volume)
-        text = '''
-        ▣ 볼륨 프로파일 학습은 최근 30일의 데이터를 기반으로 가장 거래가 많았던 20개의 가격대에서\n
-        상하방 돌파 및 상하방 반등 이벤트를 확인하여 가격대점수를 학습합니다. 0.33%, 0.5%로 설정 시\n
-        0.33%단위로 분할한 가장 거래가 많은 20개의 가격대 마다 0.5% 이상의 돌파와 0.5% 이하의 반등을\n
-        확인하여 가격대점수를 구합니다. 이벤트의 방향이 상방이 많으면 100, 하방이 많으면 -100에 가까워집니다.\n
-        가격대신뢰도는 해당 가격대에서 발생한 이벤트의 수를 기반으로 계산한 0~1의 값입니다.'''
-        self.ui.vpf_labellllll_02 = QLabel(text, self.ui.vpf_groupBoxxx_01)
-        self.ui.vpf_textEdittt_01 = self.wc.setTextEdit(self.ui.vpf_groupBoxxx_01, vscroll=True)
-
         self.ui.dialog_hoga.setFixedSize(572, 355)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_hoga.move(self.ui.dict_set['창위치'][14], self.ui.dict_set['창위치'][15])
-            except Exception:
-                pass
         self.ui.hj_tableWidgett_01.setGeometry(5, 5, 562, 42)
         self.ui.hc_tableWidgett_01.setGeometry(5, 52, 282, 297)
         self.ui.hc_tableWidgett_02.setGeometry(285, 52, 282, 297)
@@ -351,11 +354,6 @@ class SetDialogEtc:
         self.ui.hg_pushButtonnn_04.setGeometry(710, 354, 130, 30)
 
         self.ui.dialog_info.setFixedSize(1403, 570)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_info.move(self.ui.dict_set['창위치'][6], self.ui.dict_set['창위치'][7])
-            except Exception:
-                pass
         self.ui.gg_textEdittttt_01.setGeometry(7, 5, 692, 90)
         self.ui.gs_tableWidgett_01.setGeometry(7, 100, 692, 463)
         self.ui.ns_tableWidgett_01.setGeometry(704, 5, 693, 233)
@@ -363,18 +361,8 @@ class SetDialogEtc:
         self.ui.jm_tableWidgett_02.setGeometry(1024, 243, 373, 320)
 
         self.ui.dialog_web.resize(1000, 1000)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_web.move(self.ui.dict_set['창위치'][8], self.ui.dict_set['창위치'][9])
-            except Exception:
-                pass
 
         self.ui.dialog_tree.resize(1000, 1000)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_tree.move(self.ui.dict_set['창위치'][10], self.ui.dict_set['창위치'][11])
-            except Exception:
-                pass
 
         self.ui.dialog_graph.setFixedSize(1403, 1010)
 
@@ -419,11 +407,6 @@ class SetDialogEtc:
         self.ui.db_tableWidgett_03.setGeometry(5, 5, 500, 210)
 
         self.ui.dialog_order.setFixedSize(232, 303)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_order.move(self.ui.dict_set['창위치'][18], self.ui.dict_set['창위치'][19])
-            except Exception:
-                pass
         self.ui.od_groupBoxxxxx_01.setGeometry(5, 5, 222, 293)
         self.ui.od_labellllllll_01.setGeometry(10, 10, 100, 30)
         self.ui.od_comboBoxxxxx_01.setGeometry(115, 10, 100, 30)
@@ -463,11 +446,6 @@ class SetDialogEtc:
         self.ui.cp_tableWidget_01.setGeometry(5, 40, 340, 718)
 
         self.ui.dialog_kimp.setFixedSize(535, 763)
-        if self.ui.dict_set is not None and self.ui.dict_set['창위치기억'] and self.ui.dict_set['창위치'] is not None:
-            try:
-                self.ui.dialog_kimp.move(self.ui.dict_set['창위치'][12], self.ui.dict_set['창위치'][13])
-            except Exception:
-                pass
         self.ui.kp_tableWidget_01.setGeometry(5, 5, 525, 753)
 
         self.ui.dialog_std.setFixedSize(255, 260)
@@ -516,24 +494,43 @@ class SetDialogEtc:
             xw = 100 if i < 10 else 675
             getattr(self.ui, f'set_lineEdittt_{i+1:02d}').setGeometry(x, y, xw, 25)
 
-        self.ui.dialog_pattern.setFixedSize(590, 400)
-        self.ui.ptn_labellllll_01.setGeometry(5, 7, 215, 25)
-        self.ui.ptn_comboBoxxx_01.setGeometry(105, 7, 50, 25)
-        self.ui.ptn_comboBoxxx_02.setGeometry(220, 7, 50, 25)
-        self.ui.ptn_pushButton_01.setGeometry(275, 7, 100, 25)
-        self.ui.ptn_pushButton_02.setGeometry(380, 7, 100, 25)
-        self.ui.ptn_pushButton_03.setGeometry(485, 7, 100, 25)
-        self.ui.ptn_groupBoxxx_01.setGeometry(5, 35, 580, 360)
-        self.ui.ptn_labellllll_02.setGeometry(0, 5, 568, 140)
-        self.ui.ptn_textEdittt_01.setGeometry(7, 160, 568, 195)
+        self.ui.dialog_pattern.setFixedSize(750, 490)
 
-        self.ui.dialog_volume.setFixedSize(590, 400)
-        self.ui.vpf_labellllll_01.setGeometry(5, 7, 240, 25)
-        self.ui.vpf_comboBoxxx_01.setGeometry(85, 7, 55, 25)
-        self.ui.vpf_comboBoxxx_02.setGeometry(245, 7, 55, 25)
-        self.ui.vpf_pushButton_01.setGeometry(305, 7, 90, 25)
-        self.ui.vpf_pushButton_02.setGeometry(400, 7, 90, 25)
-        self.ui.vpf_pushButton_03.setGeometry(495, 7, 90, 25)
-        self.ui.vpf_groupBoxxx_01.setGeometry(5, 35, 580, 360)
-        self.ui.vpf_labellllll_02.setGeometry(0, 5, 568, 140)
-        self.ui.vpf_textEdittt_01.setGeometry(7, 160, 568, 195)
+        self.ui.ptn_labellllll_01.setGeometry(5, 7, 420, 25)
+        self.ui.ptn_comboBoxxx_01.setGeometry(165, 7, 50, 25)
+        self.ui.ptn_comboBoxxx_02.setGeometry(280, 7, 50, 25)
+        self.ui.ptn_pushButton_00.setGeometry(485, 7, 60, 25)
+        self.ui.ptn_pushButton_01.setGeometry(550, 7, 60, 25)
+        self.ui.ptn_pushButton_02.setGeometry(615, 7, 60, 25)
+        self.ui.ptn_pushButton_03.setGeometry(680, 7, 65, 25)
+
+        self.ui.vpf_labellllll_01.setGeometry(5, 37, 420, 25)
+        self.ui.vpf_comboBoxxx_01.setGeometry(165, 37, 50, 25)
+        self.ui.vpf_comboBoxxx_02.setGeometry(280, 37, 50, 25)
+        self.ui.vpf_comboBoxxx_03.setGeometry(420, 37, 60, 25)
+        self.ui.vpf_pushButton_00.setGeometry(485, 37, 60, 25)
+        self.ui.vpf_pushButton_01.setGeometry(550, 37, 60, 25)
+        self.ui.vpf_pushButton_02.setGeometry(615, 37, 60, 25)
+        self.ui.vpf_pushButton_03.setGeometry(680, 37, 65, 25)
+
+        self.ui.vsp_labellllll_01.setGeometry(5, 67, 420, 25)
+        self.ui.vsp_comboBoxxx_01.setGeometry(165, 67, 50, 25)
+        self.ui.vsp_comboBoxxx_02.setGeometry(280, 67, 50, 25)
+        self.ui.vsp_comboBoxxx_03.setGeometry(420, 67, 60, 25)
+        self.ui.vsp_pushButton_00.setGeometry(485, 67, 60, 25)
+        self.ui.vsp_pushButton_01.setGeometry(550, 67, 60, 25)
+        self.ui.vsp_pushButton_02.setGeometry(615, 67, 60, 25)
+        self.ui.vsp_pushButton_03.setGeometry(680, 67, 65, 25)
+
+        self.ui.vlp_labellllll_01.setGeometry(5, 97, 420, 25)
+        self.ui.vlp_comboBoxxx_01.setGeometry(165, 97, 50, 25)
+        self.ui.vlp_comboBoxxx_02.setGeometry(280, 97, 50, 25)
+        self.ui.vlp_comboBoxxx_03.setGeometry(420, 97, 60, 25)
+        self.ui.vlp_pushButton_00.setGeometry(485, 97, 60, 25)
+        self.ui.vlp_pushButton_01.setGeometry(550, 97, 60, 25)
+        self.ui.vlp_pushButton_02.setGeometry(615, 97, 60, 25)
+        self.ui.vlp_pushButton_03.setGeometry(680, 97, 65, 25)
+
+        self.ui.ptn_groupBoxxx_01.setGeometry(5, 127, 740, 358)
+        self.ui.ptn_labellllll_02.setGeometry(5, 5, 730, 140)
+        self.ui.ptn_textEdittt_01.setGeometry(7, 160, 727, 193)

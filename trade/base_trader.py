@@ -4,8 +4,8 @@ import pandas as pd
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from utility.static_method.static import qtest_qwait
 from utility.settings.setting_base import DB_TRADELIST
-from utility.settings.setting_base import ui_num, columns_cj, columns_jg, columns_td, columns_tdf, columns_jgf, \
-    columns_jgcf
+from utility.settings.setting_base import UI_NUM, COLUMNS_CG, COLUMNS_JG, COLUMNS_TD, COLUMNS_TDF, COLUMNS_JGF, \
+    COLUMNS_JGCF
 from utility.static_method.static import now, str_hms, str_ymd, dt_hms, timedelta_sec, get_inthms, get_str_ymdhms, \
     get_str_ymdhmsf
 
@@ -161,8 +161,8 @@ class BaseTrader:
         if self.dict_td:
             self._update_totaltradelist()
 
-        self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 예수금 조회 완료"))
-        self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 트레이더 시작"))
+        self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 예수금 조회 완료"))
+        self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 트레이더 시작"))
 
     def get_jgcs_time(self):
         """잔고청산 시간을 반환합니다.
@@ -182,15 +182,15 @@ class BaseTrader:
         df_jg.set_index('index', inplace=True)
         if len(df_cj) > 0:
             self.dict_cj = df_cj.to_dict('index')
-            self.windowQ.put((ui_num['체결목록'], df_cj[::-1]))
+            self.windowQ.put((UI_NUM['체결목록'], df_cj[::-1]))
         if len(df_td) > 0:
             self.dict_td = df_td.to_dict('index')
-            self.windowQ.put((ui_num['거래목록'], df_td[::-1]))
+            self.windowQ.put((UI_NUM['거래목록'], df_td[::-1]))
         if len(df_jg) > 0:
             self.dict_jg = df_jg.to_dict('index')
             self.receivQ.put(('잔고목록', tuple(self.dict_jg)))
         con.close()
-        self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 데이터베이스 불러오기 완료"))
+        self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 데이터베이스 불러오기 완료"))
 
     def _scheduler1(self):
         """스케줄러1을 실행합니다."""
@@ -411,7 +411,7 @@ class BaseTrader:
                     주문가격 = self._get_order_sell_price(종목코드, 주문구분, 주문가격)
 
         if self.market_gubun == 5 and 주문수량 * 주문가격 < 5000:
-            self.windowQ.put((ui_num['시스템로그'], f'오류 알림 - 주문금액이 5천원미만입니다.'))
+            self.windowQ.put((UI_NUM['시스템로그'], f'오류 알림 - 주문금액이 5천원미만입니다.'))
             self._put_order_complete(f'{주문구분}취소', 종목코드)
             return
 
@@ -472,11 +472,11 @@ class BaseTrader:
     def _check_order_error(self, 주문번호, 응답메시지, 주문구분, 종목명, 주문가격, 주문수량):
         if 주문번호 == 0:
             if 'Traceback' in 응답메시지:
-                self.windowQ.put((ui_num['시스템로그'], 응답메시지))
+                self.windowQ.put((UI_NUM['시스템로그'], 응답메시지))
             else:
                 주문구분기록 = f'{주문구분}실패' if self.market_gubun < 6 else f'{주문구분}_FAIL'
                 self.windowQ.put((
-                    ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분기록}] {종목명} | {주문가격} | {주문수량} | {응답메시지}'
+                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분기록}] {종목명} | {주문가격} | {주문수량} | {응답메시지}'
                 ))
             return False
         return True
@@ -487,7 +487,7 @@ class BaseTrader:
             signal_time: 시그널 시간
         """
         gap = (now() - signal_time).total_seconds()
-        self.windowQ.put((ui_num['타임로그'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
+        self.windowQ.put((UI_NUM['타임로그'], f'시그널 주문 시간 알림 - 발생시간과 주문시간의 차이는 [{gap:.6f}]초입니다.'))
 
     def _update_tuple(self, data):
         """튜플을 업데이트합니다.
@@ -742,7 +742,7 @@ class BaseTrader:
                     self._check_order((주문구분, 종목코드, 종목명, 현재가, 보유수량, now(), True))
             if self.dict_set['알림소리']:
                 self.soundQ.put(f"{self.market_info['마켓이름']} 잔고청산 주문을 전송하였습니다.")
-            self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 잔고청산 주문 완료"))
+            self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 잔고청산 주문 완료"))
         elif gubun == '수동':
             self.teleQ.put(f"현재는 {self.market_info['마켓이름']} 보유종목이 없습니다.")
         self.dict_bool['잔고청산'] = True
@@ -752,7 +752,7 @@ class BaseTrader:
         self._websocket_kill()
         if data != '프로그램종료':
             exit_text = '트레이더 종료' if data == '프로세스종료' else '트레이더 STOP'
-            self.windowQ.put((ui_num['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
+            self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} {exit_text}"))
 
         import sys
         qtest_qwait(1)
@@ -793,7 +793,7 @@ class BaseTrader:
             주문번호: 주문 번호
         """
         if 주문구분 != '시드부족' and 종목코드 not in self.dict_order[주문구분]:
-            self.windowQ.put((ui_num['시스템로그'], '오류 알림 - 수동 주문은 기록하지 않습니다.'))
+            self.windowQ.put((UI_NUM['시스템로그'], '오류 알림 - 수동 주문은 기록하지 않습니다.'))
             return
 
         index = self._get_index()
@@ -893,7 +893,7 @@ class BaseTrader:
             if self.dict_set['알림소리']:
                 self.soundQ.put(f'{종목명} {체결수량}주를 {주문구분[:2]}하였습니다')
 
-            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
+            self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
 
         elif 체결구분 in ('정정', '취소'):
             if 체결구분 == '정정':
@@ -913,7 +913,7 @@ class BaseTrader:
             if self.dict_set['알림소리']:
                 self.soundQ.put(f'{종목명} {주문수량}주를 {주문구분}하였습니다')
 
-            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
+            self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
 
         elif 주문구분 == '시드부족':
             self._update_chegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호)
@@ -932,7 +932,7 @@ class BaseTrader:
         """
         signal_data = self.dict_signal.get(종목코드)
         if signal_data is None:
-            self.windowQ.put((ui_num['시스템로그'], '오류 알림 - 수동 주문은 기록하지 않습니다.'))
+            self.windowQ.put((UI_NUM['시스템로그'], '오류 알림 - 수동 주문은 기록하지 않습니다.'))
             return
 
         index = self._get_index()
@@ -1066,7 +1066,7 @@ class BaseTrader:
             if self.dict_set['알림소리']:
                 self.soundQ.put(f'{종목명} {체결수량}주를 {주문구분}하였습니다')
 
-            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
+            self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
 
         elif 체결구분 in ('정정', '취소'):
             if 체결구분 == '정정':
@@ -1087,7 +1087,7 @@ class BaseTrader:
             if self.dict_set['알림소리']:
                 self.soundQ.put(f'{종목명} {주문수량}주를 {주문구분}하였습니다')
 
-            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
+            self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
 
         elif 주문구분 == '시드부족':
             self._update_chegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 체결수량, 체결가격, 체결시간, 주문가격, 주문번호)
@@ -1108,7 +1108,7 @@ class BaseTrader:
             주문번호: 주문 번호
         """
         if 주문구분 != '시드부족' and 종목코드 not in self.dict_order[주문구분]:
-            self.windowQ.put((ui_num['시스템로그'], '오류 알림 - 수동 주문은 기록하지 않습니다.'))
+            self.windowQ.put((UI_NUM['시스템로그'], '오류 알림 - 수동 주문은 기록하지 않습니다.'))
             return
 
         index = self._get_index()
@@ -1236,7 +1236,7 @@ class BaseTrader:
                 elif 주문구분 == 'BUY_SHORT':  text = '숏포지션을 청산'
                 self.soundQ.put(f"{종목코드} {text}하였습니다.")
 
-            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
+            self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {체결가격} | {체결수량}'))
 
         elif 주문구분 in ('BUY_LONG_CANCEL', 'SELL_SHORT_CANCEL', 'SELL_LONG_CANCEL', 'BUY_SHORT_CANCEL'):
             if 주문구분 in ('BUY_LONG_CANCEL', 'SELL_SHORT_CANCEL'):
@@ -1257,7 +1257,7 @@ class BaseTrader:
                 elif 주문구분 == 'BUY_SHORT_CANCEL':  text = '숏포지션 청산을 취소'
                 self.soundQ.put(f"{종목코드} {text}하였습니다.")
 
-            self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
+            self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}] {종목명} | {주문가격} | {주문수량}'))
 
         elif 주문구분 == '시드부족':
             self._update_chegeollist(index, 종목코드, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호)
@@ -1300,14 +1300,14 @@ class BaseTrader:
             }
 
         df_td = pd.DataFrame.from_dict(self.dict_td, orient='index')
-        self.windowQ.put((ui_num['거래목록'], df_td[::-1]))
+        self.windowQ.put((UI_NUM['거래목록'], df_td[::-1]))
 
         if 포지션 is None:
             data = [[종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]]
-            columns = columns_td
+            columns = COLUMNS_TD
         else:
             data = [[종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]]
-            columns = columns_tdf
+            columns = COLUMNS_TDF
         df = pd.DataFrame(data, columns=columns, index=[index])
         self.queryQ.put(('거래디비', df, self.market_info['거래디비'], 'append'))
 
@@ -1341,7 +1341,7 @@ class BaseTrader:
         delete_query = f"DELETE FROM {self.market_info['손익디비']} WHERE `index` = '{self.str_today}'"
         self.queryQ.put(('거래디비', delete_query))
         self.queryQ.put(('거래디비', df_tt, self.market_info['손익디비'], 'append'))
-        self.windowQ.put((ui_num['실현손익'], df_tt))
+        self.windowQ.put((UI_NUM['실현손익'], df_tt))
 
         if not first:
             QTimer.singleShot(1 * 1000, lambda: self.windowQ.put('매도완료'))
@@ -1381,11 +1381,11 @@ class BaseTrader:
 
         self.dict_cj = dict(sorted(self.dict_cj.items(), key=lambda x: x[0]))
         df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
-        self.windowQ.put((ui_num['체결목록'], df_cj[::-1]))
+        self.windowQ.put((UI_NUM['체결목록'], df_cj[::-1]))
 
         df = pd.DataFrame(
             [[종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]],
-            columns=columns_cj,
+            columns=COLUMNS_CG,
             index=[index]
         )
         self.queryQ.put(('거래디비', df, self.market_info['체결디비'], 'append'))
@@ -1443,11 +1443,11 @@ class BaseTrader:
         if self.dict_jg:
             df_jg = pd.DataFrame.from_dict(self.dict_jg, orient='index')
         else:
-            columns = columns_jg if self.market_gubun < 6 else columns_jgf if self.market_gubun < 8 else columns_jgcf
+            columns = COLUMNS_JG if self.market_gubun < 6 else COLUMNS_JGF if self.market_gubun < 8 else COLUMNS_JGCF
             df_jg = pd.DataFrame(columns=columns)
         df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
-        self.windowQ.put((ui_num['잔고목록'], df_jg))
-        self.windowQ.put((ui_num['잔고평가'], df_tj))
+        self.windowQ.put((UI_NUM['잔고목록'], df_jg))
+        self.windowQ.put((UI_NUM['잔고평가'], df_tj))
         self.queryQ.put(('거래디비', df_jg, self.market_info['잔고디비'], 'replace'))
 
     def _strategy_stop(self):

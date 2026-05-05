@@ -4,7 +4,7 @@ import binance
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication
 from trade.base_trader import BaseTrader
-from utility.settings.setting_base import ui_num
+from utility.settings.setting_base import UI_NUM
 from utility.static_method.static import now, timedelta_sec, get_profit_coin_future_short, get_profit_coin_future_long, \
     get_str_ymdhms, error_decorator
 
@@ -90,18 +90,18 @@ class BinanceTrader(BaseTrader):
                 index = self._get_index()
                 self._update_chegeollist(index, 종목코드, 종목명, f'{주문구분}_REG', 주문수량, 0, 주문수량, 0, index[:14], 주문가격, orderId)
                 self.windowQ.put((
-                    ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_REG] {종목코드} | {주문가격} | {주문수량}'
+                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_REG] {종목코드} | {주문가격} | {주문수량}'
                 ))
             else:
                 self._put_order_complete(f'{주문구분}_CANCEL', 종목코드)
-                self.windowQ.put((ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'))
+                self.windowQ.put((UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'))
         else:
             ret = self.binance.futures_cancel_order(symbol=종목코드, orderId=원주문번호)
             if ret is not None:
                 self.dict_pos[종목코드] = 포지션
             else:
                 self.windowQ.put((
-                    ui_num['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'
+                    UI_NUM['기본로그'], f'주문 관리 시스템 알림 - [{주문구분}_FAIL] {종목명} | {주문가격} | {주문수량}'
                 ))
 
         self.order_time = timedelta_sec(0.2)
@@ -129,7 +129,7 @@ class BinanceTrader(BaseTrader):
             except Exception:
                 pass
 
-        self.windowQ.put((ui_num['기본로그'], '시스템 명령 실행 알림 - 마진타입 및 레버리지 설정 완료'))
+        self.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 마진타입 및 레버리지 설정 완료'))
 
     def _set_leverage(self, dict_dlhp):
         """레버리지를 설정합니다.
