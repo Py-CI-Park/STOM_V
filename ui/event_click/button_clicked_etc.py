@@ -8,7 +8,7 @@ def opbutton_clicked_01(ui):
 
     import webbrowser
     from backtest.back_static import RunOptunaServer
-    from utility.static_method.static import qtest_qwait
+    from utility.static_method.static_etcetera import qtest_qwait
 
     RunOptunaServer()
     qtest_qwait(3)
@@ -42,7 +42,7 @@ def ttbutton_clicked_01(ui, cmd):
 
     import pandas as pd
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import strf_time
+    from utility.static_method.static_datetime import strf_time
     from utility.settings.setting_base import COLUMNS_NTT, UI_NUM, COLUMNS_NTD
 
     if '집계' in cmd:

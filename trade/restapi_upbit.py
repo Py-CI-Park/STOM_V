@@ -260,14 +260,14 @@ class UpbitWebSocketReceiver(QThread):
         self.con_trade = False
         if self.wsk_trade is not None:
             await self.wsk_trade.close()
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
 
     async def disconnect_order(self):
         """주문 웹소켓 연결을 해제합니다."""
         self.con_order = False
         if self.wsk_order is not None:
             await self.wsk_order.close()
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
 
     def stop(self):
         """웹소켓을 종료합니다."""
@@ -341,7 +341,7 @@ class UpbitWebSocketTrader(QThread):
         self.connected = False
         if self.websocket is not None:
             await self.websocket.close()
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
 
     def stop(self):
         """웹소켓을 종료합니다."""

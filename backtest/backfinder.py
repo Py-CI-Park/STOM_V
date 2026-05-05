@@ -5,7 +5,7 @@ import time
 import sqlite3
 import pandas as pd
 from traceback import format_exc
-from utility.static_method.static import now, str_ymdhms
+from utility.static_method.static_datetime import now, str_ymdhms
 from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM
 
 

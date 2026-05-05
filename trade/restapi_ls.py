@@ -9,7 +9,8 @@ from traceback import format_exc
 from trade.restapi_lsdata import LsRestData
 from PyQt5.QtCore import QThread, pyqtSignal
 from utility.settings.setting_base import UI_NUM
-from utility.static_method.static import now, qtest_qwait
+from utility.static_method.static_datetime import now
+from utility.static_method.static_etcetera import qtest_qwait
 
 
 class LsRestAPI:

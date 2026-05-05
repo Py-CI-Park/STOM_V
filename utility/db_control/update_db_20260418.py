@@ -1,10 +1,8 @@
 
 import os
-import sys
 import psutil
 import sqlite3
 import pandas as pd
-from loguru import logger
 from multiprocessing import Process
 
 DB_PATH = './_database'
@@ -48,20 +46,6 @@ list_basic_min = [
     '매도잔량1', '매도잔량2', '매도잔량3', '매도잔량4', '매도잔량5', '매수잔량1', '매수잔량2', '매수잔량3', '매수잔량4', '매수잔량5',
     '매도총잔량', '매수총잔량', '매도수5호가잔량합', '관심종목'
 ]
-
-
-def get_logger(name):
-    logger.remove()
-    logger.add(
-        sys.stderr,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-               "<level>{level: <5}</level> | "
-               f"<cyan>{name}</cyan> : "
-               "<level>{message}</level>",
-        level="DEBUG",
-        colorize=True
-    )
-    return logger
 
 
 def Updater(gubun, file_list):
@@ -137,8 +121,7 @@ def Updater(gubun, file_list):
 
         return df3
 
-    llogger = get_logger('UpdateDatabse')
-    llogger.info(f'[{gubun}] 데이터베이스 칼럼 업데이트 시작')
+    print(f'[{gubun}] 데이터베이스 칼럼 업데이트 시작')
 
     last = len(file_list)
     for k, db_name in enumerate(file_list):
@@ -150,10 +133,10 @@ def Updater(gubun, file_list):
             df_origin = pd.read_sql(f"SELECT * FROM '{code}'", con)
             df_converted = convert_dataframe(df_origin)
             df_converted.to_sql(code, con, index=False, if_exists='replace', chunksize=2000)
-        llogger.info(f'[{gubun}] 데이터베이스 칼럼 업데이트 중 ... [{k+1:02d}/{last:02d}]')
+        print(f'[{gubun}] 데이터베이스 칼럼 업데이트 중 ... [{k+1:02d}/{last:02d}]')
         con.close()
 
-    llogger.info(f'[{gubun}] 데이터베이스 칼럼 업데이트 완료')
+    print(f'[{gubun}] 데이터베이스 칼럼 업데이트 완료')
 
 
 if __name__ == '__main__':

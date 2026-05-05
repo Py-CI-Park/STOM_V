@@ -1,5 +1,5 @@
 
-from utility.static_method.static import thread_decorator
+from utility.static_method.static_decorator import thread_decorator
 
 
 def process_starter(ui):
@@ -8,8 +8,7 @@ def process_starter(ui):
     Args:
         ui: UI 객체
     """
-    from ui.etcetera.etc import auto_back_schedule
-    from utility.static_method.static import now, str_hms
+    from utility.static_method.static_datetime import now, str_hms
     from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_03
 
     inthms = int(str_hms())
@@ -28,12 +27,50 @@ def process_starter(ui):
     ui.int_time = inthms
 
 
+def auto_back_schedule(ui, gubun):
+    """자동 백테스트 스케줄러를 실행합니다.
+    Args:
+        ui: UI 객체
+        gubun (int): 구분 번호 (0: 패턴학습확인, 1: 시작, 2: 스케줄러 표시)
+    """
+    from utility.static_method.static_etcetera import qtest_qwait
+    from ui.event_click.button_clicked_backtest_start import backtest_engine_kill
+    from ui.event_click.button_clicked_backtest_engine import backengine_show, backengine_start
+    from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_04, sdbutton_clicked_02
+
+    if gubun == 1:
+        ui.auto_mode = True
+        if ui.dict_set['알림소리']:
+            ui.soundQ.put('예약된 백테스트 스케쥴러를 시작합니다.')
+        backengine_show(ui)
+        qtest_qwait(2)
+        backtest_engine_kill(ui)
+        qtest_qwait(3)
+        backengine_start(ui)
+
+    elif gubun == 2:
+        if not ui.dialog_scheduler.isVisible():
+            ui.dialog_scheduler.show()
+        qtest_qwait(2)
+        sdbutton_clicked_04(ui)
+        qtest_qwait(2)
+        ui.sd_dcomboBoxxxx_01.setCurrentText(ui.dict_set['백테스케쥴명'])
+        qtest_qwait(2)
+        sdbutton_clicked_02(ui)
+
+    elif gubun == 3:
+        if ui.dialog_scheduler.isVisible():
+            ui.dialog_scheduler.close()
+        ui.teleQ.put('백테스트 스케쥴러 완료')
+        ui.auto_mode = False
+
+
 def _update_window_title(ui):
     """윈도우 제목을 업데이트합니다.
     Args:
         ui: UI 객체
     """
-    from utility.static_method.static import now_utc, now_cme, str_ymdhms_ios
+    from utility.static_method.static_datetime import now_utc, now_cme, str_ymdhms_ios
     market_text = ui.dict_set['거래소']
     data_type = '1초스냅샷' if ui.dict_set['타임프레임'] else '1분봉'
     trade_type = '모의' if ui.dict_set['모의투자'] else '실전'

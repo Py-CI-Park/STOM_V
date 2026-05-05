@@ -1,6 +1,8 @@
 
 from trade.base_strategy import BaseStrategy
-from utility.static_method.static import get_profit_stock, now, dt_ymdhms, get_hogaunit_stock
+from utility.static_method.static_numba import get_profit_stock
+from utility.static_method.static_datetime import now, dt_ymdhms
+from utility.static_method.static_etcetera import get_hogaunit_stock
 
 
 class StockStrategy(BaseStrategy):

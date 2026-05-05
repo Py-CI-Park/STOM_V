@@ -11,7 +11,7 @@ from ui.event_click.button_clicked_stg_editer_backlog import *
 from utility.settings.setting_base import COLUMNS_BRT
 from ui.event_activate import activated_etc, activated_stg
 from ui.event_click.table_cell_clicked import cell_clicked_05
-from utility.static_method.static import dt_hms, str_hms, timedelta_sec
+from utility.static_method.static_datetime import dt_hms, str_hms, timedelta_sec
 from ui.event_click.button_clicked_zoom import sz_button_clicked_01, sz_button_clicked_02
 from ui.create_widget.set_style import qfont12, qfont13, qfont14, style_pgbar, style_bc_dk
 from ui.event_click.button_clicked_strategy_version import dactivated_04, strategy_version_delete

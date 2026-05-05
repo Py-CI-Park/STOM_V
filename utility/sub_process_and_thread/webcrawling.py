@@ -12,8 +12,9 @@ from traceback import format_exc
 from fake_useragent import UserAgent
 from PyQt5.QtCore import QThread, pyqtSignal
 from utility.settings.setting_base import UI_NUM
-from utility.static_method.static import str_ymdhm, str_ymd_ios, dt_ymdhms_ios, timedelta_day, dt_ymd, str_hms, now, \
-    str_ymd, thread_decorator, timedelta_sec
+from utility.static_method.static_decorator import thread_decorator
+from utility.static_method.static_datetime import str_ymdhm, str_ymd_ios, dt_ymdhms_ios, timedelta_day, dt_ymd, \
+    str_hms, now, str_ymd, timedelta_sec
 
 
 class WebCrawling(QThread):

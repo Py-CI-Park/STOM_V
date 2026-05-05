@@ -48,10 +48,11 @@ def formula_button_clicked(ui):
     import random
     import sqlite3
     from ui.create_widget.set_text import famous_saying
-    from utility.static_method.static import qtest_qwait
     from utility.settings.setting_base import DB_STRATEGY
     from PyQt5.QtWidgets import QMessageBox, QColorDialog
+    from utility.static_method.static_etcetera import qtest_qwait
     from ui.create_widget.set_text_stg_button import dict_stg_name
+    from utility.static_method.static_etcetera import send_query_data
 
     button_text = ui.dialog_formula.focusWidget().text()
 
@@ -101,9 +102,8 @@ def formula_button_clicked(ui):
             return
 
         if ui.ui_formula_code_test(stg) and ui.proc_chqs.is_alive():
-            insert_query  = 'INSERT OR REPLACE INTO formula VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
-            insert_values = (name, check1, check2, fname, vtype, color, width, style, stg)
-            ui.queryQ.put(('전략디비', insert_query, insert_values))
+            values = (name, check1, check2, fname, vtype, color, width, style, stg)
+            send_query_data(ui.queryQ, '전략디비', 'formula', values)
             QMessageBox.information(ui.dialog_formula, '수식 저장 완료', random.choice(famous_saying))
 
     elif button_text == '삭제하기':

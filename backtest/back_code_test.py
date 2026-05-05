@@ -2,10 +2,10 @@
 import re
 from traceback import format_exc
 from PyQt5.QtCore import QThread
-from strategy.analyzer_microstructure import AnalyzerMicrostructure
 from utility.settings.setting_base import DICT_INDICATOR, UI_NUM
+from strategy.analyzer_microstructure import AnalyzerMicrostructure
 # noinspection PyUnresolvedReferences
-from utility.static_method.static import timedelta_sec, qtest_qwait, now
+from utility.static_method.static_datetime import timedelta_sec, now
 
 
 # noinspection PyUnusedLocal,PyUnresolvedReferences
@@ -642,14 +642,13 @@ class BackCodeTest(QThread):
                 20220721090001, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, now(), 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, '005930', '삼성전자', now()
             ]
-        분당매수수량, 분당매도수량, 분봉시가, 분봉고가, 분봉저가, 분당거래대금, 분당매수금액, 분당매도금액 = 1, 1, 1, 1, 1, 1, 1, 1
         시분초, 데이터길이, 호가단위, 포지션 = int(str(체결시간)[8:]), 1800, 1, 'LONG'
-        AD, ADOSC, ADXR, APO, AROOND, AROONU, ATR, BBU, BBM, BBL, CCI, DIM, DIP, MACD, MACDS, MACDH, MFI, MOM, OBV, \
-            PPO, ROC, RSI, SAR, STOCHSK, STOCHSD, STOCHFK, STOCHFD, WILLR = \
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-        수익률, 매수가, 보유수량, 분할매수횟수, 분할매도횟수, 보유시간, 최고수익률, 최저수익률, 리스크점수 = 1, 1, 1, 1, 1, 1, 1, 1, 1
-        패턴점수, 패턴신뢰도, 가격대점수, 가격대신뢰도, 거래량점수, 거래량신뢰도, 변동성점수, 변동성신뢰도 = 0, 0, 0, 0, 0, 0, 0, 0
-        매수, 매도, BUY_LONG, SELL_LONG, SELL_SHORT, BUY_SHORT, 강제청산 = False, False, False, False, False, False, False
+        분당매수수량 = 분당매도수량 = 분봉시가 = 분봉고가 = 분봉저가 = 분당거래대금 = 분당매수금액 = 분당매도금액 = 1
+        AD = ADOSC = ADXR = APO = AROOND = AROONU = ATR = BBU = BBM = BBL = CCI = DIM = DIP = MACD = MACDS = MACDH = \
+            MFI = MOM = OBV = PPO = ROC = RSI = SAR = STOCHSK = STOCHSD = STOCHFK = STOCHFD = WILLR = 0
+        수익률 = 매수가 = 보유수량 = 분할매수횟수 = 분할매도횟수 = 보유시간 = 최고수익률 = 최저수익률 = 리스크점수 = 1
+        패턴점수 = 패턴신뢰도 = 리스크점수 = 가격대점수 = 가격대신뢰도 = 거래량점수 = 거래량신뢰도 = 변동성점수 = 변동성신뢰도 = 0
+        매수 = 매도 = BUY_LONG = SELL_LONG = SELL_SHORT = BUY_SHORT = 강제청산 = False
 
         try:
             exec(self.stg)

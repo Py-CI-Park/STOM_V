@@ -2,12 +2,11 @@
 import sqlite3
 import pandas as pd
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
-from utility.static_method.static import qtest_qwait
 from utility.settings.setting_base import DB_TRADELIST
-from utility.settings.setting_base import UI_NUM, COLUMNS_CG, COLUMNS_JG, COLUMNS_TD, COLUMNS_TDF, COLUMNS_JGF, \
-    COLUMNS_JGCF
-from utility.static_method.static import now, str_hms, str_ymd, dt_hms, timedelta_sec, get_inthms, get_str_ymdhms, \
-    get_str_ymdhmsf
+from utility.static_method.static_etcetera import qtest_qwait, send_query_data
+from utility.settings.setting_base import UI_NUM, COLUMNS_JG, COLUMNS_JGF, COLUMNS_JGCF
+from utility.static_method.static_datetime import now, str_hms, str_ymd, dt_hms, timedelta_sec, get_inthms, \
+    get_str_ymdhms, get_str_ymdhmsf
 
 
 class MonitorTraderQ(QThread):
@@ -112,7 +111,7 @@ class BaseTrader:
 
         self.str_today  = str_ymd()
         self.order_time = now()
-        self.jgcs_time  = self.get_jgcs_time()
+        self.jgcs_time  = self._get_jgcs_time()
 
         self.qtimer1 = QTimer()
         self.qtimer1.setInterval(500)
@@ -164,7 +163,7 @@ class BaseTrader:
         self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 예수금 조회 완료"))
         self.windowQ.put((UI_NUM['기본로그'], f"시스템 명령 실행 알림 - {self.market_info['마켓이름']} 트레이더 시작"))
 
-    def get_jgcs_time(self):
+    def _get_jgcs_time(self):
         """잔고청산 시간을 반환합니다.
         Returns:
             int: 잔고청산 시간 (HHMMSS)
@@ -523,7 +522,7 @@ class BaseTrader:
                     self._cancel_order(data, 'SELL_SHORT')
         elif gubun == '설정변경':
             self.dict_set = data
-            self.jgcs_time = self.get_jgcs_time()
+            self.jgcs_time = self._get_jgcs_time()
         elif gubun == '종목정보':
             if self.market_gubun in (1, 4):
                 self.dict_info, self.dict_sgbn = data
@@ -1303,14 +1302,11 @@ class BaseTrader:
         self.windowQ.put((UI_NUM['거래목록'], df_td[::-1]))
 
         if 포지션 is None:
-            data = [[종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]]
-            columns = COLUMNS_TD
+            values = (index, 종목명, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간)
         else:
-            data = [[종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간]]
-            columns = COLUMNS_TDF
-        df = pd.DataFrame(data, columns=columns, index=[index])
-        self.queryQ.put(('거래디비', df, self.market_info['거래디비'], 'append'))
+            values = (index, 종목명, 포지션, 매입금액, 평가금액, 체결수량, 수익률, 수익금, 주문시간)
 
+        send_query_data(self.queryQ, '거래디비', self.market_info['거래디비'], values)
         self._update_totaltradelist()
 
     def _update_totaltradelist(self, first=False):
@@ -1338,10 +1334,10 @@ class BaseTrader:
         }
 
         df_tt = pd.DataFrame.from_dict(self.dict_tt, orient='index')
-        delete_query = f"DELETE FROM {self.market_info['손익디비']} WHERE `index` = '{self.str_today}'"
-        self.queryQ.put(('거래디비', delete_query))
-        self.queryQ.put(('거래디비', df_tt, self.market_info['손익디비'], 'append'))
         self.windowQ.put((UI_NUM['실현손익'], df_tt))
+
+        values = (self.str_today, 거래횟수, 총매수금액, 총매도금액, 총수익금액, 총손실금액, 수익률, 수익금합계)
+        send_query_data(self.queryQ, '거래디비', self.market_info['손익디비'], values)
 
         if not first:
             QTimer.singleShot(1 * 1000, lambda: self.windowQ.put('매도완료'))
@@ -1383,12 +1379,8 @@ class BaseTrader:
         df_cj = pd.DataFrame.from_dict(self.dict_cj, orient='index')
         self.windowQ.put((UI_NUM['체결목록'], df_cj[::-1]))
 
-        df = pd.DataFrame(
-            [[종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호]],
-            columns=COLUMNS_CG,
-            index=[index]
-        )
-        self.queryQ.put(('거래디비', df, self.market_info['체결디비'], 'append'))
+        values = (index, 종목명, 주문구분, 주문수량, 체결수량, 미체결수량, 체결가격, 체결시간, 주문가격, 주문번호)
+        send_query_data(self.queryQ, '거래디비', self.market_info['체결디비'], values)
 
     def _update_totaljango(self):
         """잔고평가를 업데이트합니다."""
@@ -1445,10 +1437,12 @@ class BaseTrader:
         else:
             columns = COLUMNS_JG if self.market_gubun < 6 else COLUMNS_JGF if self.market_gubun < 8 else COLUMNS_JGCF
             df_jg = pd.DataFrame(columns=columns)
+
         df_tj = pd.DataFrame.from_dict(self.dict_tj, orient='index')
+        self.queryQ.put(('거래디비', df_jg, self.market_info['잔고디비'], 'replace'))
+
         self.windowQ.put((UI_NUM['잔고목록'], df_jg))
         self.windowQ.put((UI_NUM['잔고평가'], df_tj))
-        self.queryQ.put(('거래디비', df_jg, self.market_info['잔고디비'], 'replace'))
 
     def _strategy_stop(self):
         """전략을 중지합니다."""

@@ -1,6 +1,6 @@
 
 from backtest.backengine_base import BackEngineBase
-from utility.static_method.static import get_profit_future_long, get_profit_future_short
+from utility.static_method.static_numba import get_profit_future_long, get_profit_future_short
 
 
 class BackEngineFuture(BackEngineBase):

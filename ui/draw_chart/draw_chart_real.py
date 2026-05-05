@@ -1,7 +1,8 @@
 
 from ui.etcetera.etc import chart_clear
 from ui.draw_chart.draw_chart_base import DrawChartBase
-from utility.static_method.static import dt_ymdhms, error_decorator
+from utility.static_method.static_datetime import dt_ymdhms
+from utility.static_method.static_decorator import error_decorator
 from ui.etcetera.process_alive import strategy_process_alive, receiver_process_alive
 
 

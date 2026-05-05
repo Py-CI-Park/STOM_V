@@ -137,7 +137,7 @@ def strategy_version_delete(ui):
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
-    from utility.static_method.static import qtest_qwait
+    from utility.static_method.static_etcetera import qtest_qwait
 
     global SVM
     comboBox1 = getattr(ui, 'ss_comboBoxxxx_41')

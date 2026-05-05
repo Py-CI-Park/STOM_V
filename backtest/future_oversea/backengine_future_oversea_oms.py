@@ -1,6 +1,6 @@
 
 from backtest.future.backengine_future_oms import BackEngineFutureOms
-from utility.static_method.static import get_profit_future_os_long, get_profit_future_os_short
+from utility.static_method.static_numba import get_profit_future_os_long, get_profit_future_os_short
 
 
 class BackEngineFutureOverseaOms(BackEngineFutureOms):

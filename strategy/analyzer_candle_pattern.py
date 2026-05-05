@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QMessageBox
 from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
-from utility.static_method.static import thread_decorator
+from utility.static_method.static_decorator import thread_decorator
 
 PATTERN_DB = f'{DB_PATH}/pattern_analysis.db'
 PATTERN_FUNCTIONS = [
@@ -32,37 +32,37 @@ PATTERN_FUNCTIONS = [
 window_queue = None
 
 
-def calculate_setting_hash(*args) -> str:
-    """설정값들을 MD5 해시로 변환"""
-    hash_input = '_'.join(map(str, args))
-    return hashlib.md5(hash_input.encode()).hexdigest()
-
-
 def init_worker(q):
     """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
     global window_queue
     window_queue = q
 
 
+def _calculate_setting_hash(*args) -> str:
+    """설정값들을 MD5 해시로 변환"""
+    hash_input = '_'.join(map(str, args))
+    return hashlib.md5(hash_input.encode()).hexdigest()
+
+
 @njit(cache=True, fastmath=True)
-def calculate_pattern_scores(close_price: np.ndarray, datetime_data: np.ndarray,
-                             detection_indices: np.ndarray, analysis_period: int,
-                             rate_threshold: float) -> np.ndarray:
+def _calculate_pattern_scores(close_price: np.ndarray, datetime_data: np.ndarray,
+                              detection_indices: np.ndarray, analysis_period: int,
+                              rate_threshold: float) -> np.ndarray:
     """패턴 점수 계산 (numba 최적화)"""
     scores = []
     for idx in detection_indices:
         if idx + analysis_period < len(close_price):
             entry_date = int(datetime_data[idx] // 10000)
-            exit_date = int(datetime_data[idx + analysis_period] // 10000)
+            exit_date  = int(datetime_data[idx + analysis_period] // 10000)
             if entry_date == exit_date:
-                entry_price = close_price[idx]
+                entry_price    = close_price[idx]
                 exit_max_price = close_price[idx:idx + analysis_period].max()
                 exit_min_price = close_price[idx:idx + analysis_period].min()
                 if abs(exit_max_price - entry_price) >= abs(exit_min_price - entry_price):
                     exit_price = exit_max_price
                 else:
                     exit_price = exit_min_price
-                price_change = (exit_price - entry_price) / entry_price * 100
+                price_change   = (exit_price - entry_price) / entry_price * 100
                 score = price_change / rate_threshold * 100
                 score = max(-100.0, min(100.0, score))
                 scores.append(score)
@@ -124,13 +124,13 @@ class AnalyzerCandlePattern:
             close_price   = realtime_data[:, self.idx_close]
 
             for pattern_name in PATTERN_FUNCTIONS:
-                pattern_func = getattr(talib, pattern_name)
+                pattern_func   = getattr(talib, pattern_name)
                 pattern_result = pattern_func(open_price, high_price, low_price, close_price)
 
                 if pattern_result[-1] != 0:
                     learned_score = self.pattern_scores.get(code, {}).get(pattern_name)
                     if learned_score:
-                        pattern_score = learned_score['avg_score']
+                        pattern_score    = learned_score['avg_score']
                         confidence_score = learned_score['confidence_score']
 
         return pattern_score, confidence_score
@@ -253,8 +253,8 @@ class AnalyzerCandlePattern:
                         detection_indices = np.where(pattern_result != 0)[0]
 
                         if len(detection_indices) >= min_samples:
-                            scores = calculate_pattern_scores(close_price, date_datetime, detection_indices,
-                                                              analysis_period, rate_threshold)
+                            scores = _calculate_pattern_scores(close_price, date_datetime, detection_indices,
+                                                               analysis_period, rate_threshold)
 
                             if len(scores) >= min_samples:
                                 sample_factor = min(len(scores) / 100.0, 1.0)
@@ -431,12 +431,17 @@ class CandlePatternDatabase:
         """
         with sqlite3.connect(PATTERN_DB) as conn:
             cursor = conn.cursor()
-            cursor.execute('SELECT analysis_period, rate_threshold FROM pattern_setting WHERE market = ?', (market,))
+            cursor.execute(
+                'SELECT analysis_period, rate_threshold '
+                'FROM pattern_setting '
+                'WHERE market = ?',
+                (market,)
+            )
             result = cursor.fetchone()
             if not result:
                 result = 30, 5
 
-            self.setting_hash = calculate_setting_hash(*result)
+            self.setting_hash = _calculate_setting_hash(*result)
             return result
 
     def save_pattern_setting(self, market: int, analysis_period: int, rate_threshold: int):
@@ -449,7 +454,8 @@ class CandlePatternDatabase:
         with sqlite3.connect(PATTERN_DB) as conn:
             cursor = conn.cursor()
             cursor.execute(
-                'INSERT OR REPLACE INTO pattern_setting (market, analysis_period, rate_threshold) VALUES (?, ?, ?)',
+                'INSERT OR REPLACE INTO pattern_setting '
+                '(market, analysis_period, rate_threshold) VALUES (?, ?, ?)',
                 (market, analysis_period, rate_threshold)
             )
             conn.commit()
@@ -474,8 +480,15 @@ def pattern_setting_save(ui):
 
 def pattern_train(ui):
     """패턴학습을 시작한다. 스레드로 구동하여 UI멈춤을 방지한다."""
+    if ui.dict_set['타임프레임']:
+        QMessageBox.critical(
+            ui.dialog_pattern, '오류 알림',
+            '현재 타임프레임이 1초스냅샷 상태입니다.\n캔들분석 학습은 1분봉 타임프레임만 지원합니다.\n'
+        )
+        return
+
     if ui.learn_running:
-        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 패턴학습이 진행중입니다.\n')
+        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 캔들분석 학습이 진행중입니다.\n')
         return
 
     _analysis_period = int(ui.ptn_comboBoxxx_01.currentText())

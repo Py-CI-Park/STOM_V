@@ -1,7 +1,7 @@
 
 import pandas as pd
 from utility.settings.setting_base import UI_NUM
-from utility.static_method.static import error_decorator
+from utility.static_method.static_decorator import error_decorator
 
 
 class DrawTremap:

@@ -6,7 +6,7 @@ def update_back_progressbar(ui):
         ui: UI 클래스 인스턴스
     """
     if ui.back_start_time is not None:
-        from utility.static_method.static import now, timedelta_sec
+        from utility.static_method.static_datetime import now, timedelta_sec
 
         if ui.optuna_current_cnt == 0:
             total_back_count = ui.back_tick_cunsum[-1]

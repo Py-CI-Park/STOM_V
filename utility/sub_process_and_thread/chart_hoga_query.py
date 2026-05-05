@@ -8,8 +8,9 @@ import numpy as np
 import pandas as pd
 from copy import deepcopy
 from traceback import format_exc
+from utility.static_method.static_numba import add_rolling_data
 from strategy.manager_formula import ManagerFormula, get_formula_data
-from utility.static_method.static import timedelta_sec, str_ymdhms, dt_ymdhms, add_rolling_data, dt_ymdhm, str_ymdhm
+from utility.static_method.static_datetime import timedelta_sec, str_ymdhms, dt_ymdhms, dt_ymdhm, str_ymdhm
 from utility.settings.setting_base import UI_NUM, DB_TRADELIST, DB_PATH, DB_BACKTEST, DB_CODE_INFO, DB_SETTING, \
     DB_STRATEGY, COLUMNS_HJ, CODE_INFO_TABLES
 

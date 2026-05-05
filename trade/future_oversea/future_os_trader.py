@@ -1,13 +1,13 @@
 
 import sys
 from PyQt5.QtCore import QTimer
-from trade.restapi_ls import LsRestAPI
 from PyQt5.QtWidgets import QApplication
 from trade.base_trader import BaseTrader
 from trade.restapi_lsdata import LsRestData
 from utility.settings.setting_base import UI_NUM
-from utility.static_method.static import now, timedelta_sec, get_profit_future_os_long, get_profit_future_os_short, \
-    error_decorator
+from utility.static_method.static_decorator import error_decorator
+from utility.static_method.static_datetime import now, timedelta_sec
+from utility.static_method.static_numba import get_profit_future_os_long, get_profit_future_os_short
 
 
 class FutureOsTrader(BaseTrader):
@@ -18,16 +18,15 @@ class FutureOsTrader(BaseTrader):
 
         super().__init__(qlist, dict_set, market_infos)
 
-        self.ls = LsRestAPI(self.windowQ, self.access_key, self.secret_key)
-        self.token = self.ls.create_token()
-
-        self._get_balances()
-
         if not self.dict_set['모의투자']:
-            from trade.restapi_ls import LsWebSocketTrader
+            from trade.restapi_ls import LsRestAPI, LsWebSocketTrader
+            self.ls = LsRestAPI(self.windowQ, self.access_key, self.secret_key)
+            self.token = self.ls.create_token()
             self.ws_thread = LsWebSocketTrader(self.market_info['마켓이름'], self.token, self.windowQ)
             self.ws_thread.signal.connect(self._convert_order_data)
             self.ws_thread.start()
+
+        self._get_balances()
 
         app.exec_()
 

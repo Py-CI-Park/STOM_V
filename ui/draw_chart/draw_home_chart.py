@@ -1,5 +1,5 @@
 
-from utility.static_method.static import error_decorator
+from utility.static_method.static_decorator import error_decorator
 
 
 class DrawHomeChart:

@@ -3,7 +3,7 @@ import os
 import sqlite3
 import pandas as pd
 from traceback import format_exc
-from utility.static_method.static import read_key, write_key
+from utility.static_method.static_fernet_key import read_key, write_key
 from utility.settings.setting_base import CODE_INFO_TABLES, DB_PATH, LOG_PATH, BACK_TEMP, GRAPH_PATH, DB_SETTING, \
     DB_CODE_INFO, DB_STRATEGY, DB_TRADELIST
 
@@ -151,7 +151,7 @@ def database_check():
             df.to_sql('account', con)
         else:
             df = pd.read_sql('SELECT * FROM account', con)
-            if list(df.columns) != ACCOUNT_CLOUMNS:
+            if list(df.columns) != ACCOUNT_CLOUMNS or 1 not in df['index']:
                 df = pd.DataFrame(ACCOUNT_DATA, columns=ACCOUNT_CLOUMNS).set_index('index')
                 df.to_sql('account', con, if_exists='replace')
 
@@ -160,7 +160,7 @@ def database_check():
             df.to_sql('telegram', con)
         else:
             df = pd.read_sql('SELECT * FROM telegram', con)
-            if list(df.columns) != TELE_CLOUMNS:
+            if list(df.columns) != TELE_CLOUMNS or 1 not in df['index']:
                 df = pd.DataFrame(TELE_DATA, columns=TELE_CLOUMNS).set_index('index')
                 df.to_sql('telegram', con, if_exists='replace')
 
@@ -169,7 +169,7 @@ def database_check():
             df.to_sql('strategy', con)
         else:
             df = pd.read_sql('SELECT * FROM strategy', con)
-            if list(df.columns) != STG_CLOUMNS:
+            if list(df.columns) != STG_CLOUMNS or 1 not in df['index']:
                 df = pd.DataFrame(STG_DATA, columns=STG_CLOUMNS).set_index('index')
                 df.to_sql('strategy', con, if_exists='replace')
 
@@ -178,7 +178,7 @@ def database_check():
             df.to_sql('back', con)
         else:
             df = pd.read_sql('SELECT * FROM back', con)
-            if list(df.columns) != BACT_CLOUMNS:
+            if list(df.columns) != BACT_CLOUMNS or 1 not in df['index']:
                 df = pd.DataFrame(BACT_DATA, columns=BACT_CLOUMNS).set_index('index')
                 df.to_sql('back', con, if_exists='replace')
 
@@ -187,7 +187,7 @@ def database_check():
             df.to_sql('etc', con)
         else:
             df = pd.read_sql('SELECT * FROM etc', con)
-            if list(df.columns) != ETC_CLOUMNS:
+            if list(df.columns) != ETC_CLOUMNS or 1 not in df['index']:
                 df = pd.DataFrame(ETC_DATA, columns=ETC_CLOUMNS).set_index('index')
                 df.to_sql('etc', con, if_exists='replace')
 
@@ -196,7 +196,7 @@ def database_check():
             df.to_sql('buyorder', con)
         else:
             df = pd.read_sql('SELECT * FROM buyorder', con)
-            if list(df.columns) != BORDER_CLOUMNS:
+            if list(df.columns) != BORDER_CLOUMNS or 1 not in df['index']:
                 df = pd.DataFrame(BORDER_DATA, columns=BORDER_CLOUMNS).set_index('index')
                 df.to_sql('buyorder', con, if_exists='replace')
 
@@ -205,7 +205,7 @@ def database_check():
             df.to_sql('sellorder', con)
         else:
             df = pd.read_sql('SELECT * FROM sellorder', con)
-            if list(df.columns) != SORDER_CLOUMNS:
+            if list(df.columns) != SORDER_CLOUMNS or 1 not in df['index']:
                 df = pd.DataFrame(SORDER_DATA, columns=SORDER_CLOUMNS).set_index('index')
                 df.to_sql('sellorder', con, if_exists='replace')
 

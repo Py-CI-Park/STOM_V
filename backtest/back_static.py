@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from utility.settings.setting_base import UI_NUM
-from utility.static_method.static import thread_decorator
+from utility.static_method.static_decorator import thread_decorator
 
 
 @thread_decorator
@@ -27,7 +27,7 @@ def get_trade_info(gubun):
     Returns:
         거래 정보 딕셔너리
     """
-    from utility.static_method.static import dt_ymd
+    from utility.static_method.static_datetime import dt_ymd
     buy_time = dt_ymd('20000101')
     if gubun == 1:
         v = {
@@ -594,7 +594,8 @@ def plot_show(gubun, is_tick, teleQ, df_tsg, df_bct, market_gubun, seed, mdd, st
     """
     from utility.settings.setting_base import GRAPH_PATH
     from matplotlib import pyplot as plt, font_manager, gridspec
-    from utility.static_method.static import dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, str_ymdhms_ios
+    from utility.static_method.static_datetime import dt_hms, dt_hm, dt_ymd, dt_ymdhms, dt_ymdhm, str_ymd_ios, \
+        str_ymdhms_ios
 
     plt.rcParams['figure.max_open_warning'] = 0
     plt.rcParams['font.family'] = font_manager.FontProperties(fname='C:/Windows/Fonts/malgun.ttf').get_name()

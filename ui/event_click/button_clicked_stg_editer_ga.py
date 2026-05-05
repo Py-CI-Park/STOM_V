@@ -35,8 +35,9 @@ def gavars_save(ui):
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_text import famous_saying
     from PyQt5.QtWidgets import QMessageBox, QApplication
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.sva_lineEdittt_01.text()
     strategy = ui.ss_textEditttt_06.toPlainText()
@@ -49,9 +50,9 @@ def gavars_save(ui):
     else:
         if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test2(strategy, ga=True):
             if ui.proc_chqs.is_alive():
-                insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_optigavars VALUES (?, ?)"
-                insert_values = (strategy_name, strategy)
-                ui.queryQ.put(('전략디비', insert_query, insert_values))
+                values = (strategy_name, strategy)
+                send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_optigavars', values)
+
                 stg_save_version(ui.market_info['전략구분'], 'opti', 'gavars', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -91,8 +92,9 @@ def condbuy_save(ui):
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.svo_lineEdittt_01.text()
     strategy = ui.ss_textEditttt_07.toPlainText()
@@ -105,9 +107,9 @@ def condbuy_save(ui):
     else:
         if ui.ui_back_code_test3('매수', strategy):
             if ui.proc_chqs.is_alive():
-                insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_buyconds VALUES (?, ?)"
-                insert_values = (strategy_name, strategy)
-                ui.queryQ.put(('전략디비', insert_query, insert_values))
+                values = (strategy_name, strategy)
+                send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_buyconds', values)
+
                 stg_save_version(ui.market_info['전략구분'], 'cond', 'buy', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -147,8 +149,9 @@ def condsell_save(ui):
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.svo_lineEdittt_02.text()
     strategy = ui.ss_textEditttt_08.toPlainText()
@@ -161,8 +164,8 @@ def condsell_save(ui):
     else:
         if ui.ui_back_code_test3('매도', strategy):
             if ui.proc_chqs.is_alive():
-                insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_sellconds VALUES (?, ?)"
-                insert_values = (strategy_name, strategy)
-                ui.queryQ.put(('전략디비', insert_query, insert_values))
+                values = (strategy_name, strategy)
+                send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_sellconds', values)
+
                 stg_save_version(ui.market_info['전략구분'], 'cond', 'sell', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))

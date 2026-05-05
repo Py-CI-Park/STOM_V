@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 from traceback import format_exc
 from backtest.back_static_numba import get_result, bootstrap_test
-from utility.static_method.static import now, str_ymdhms, error_decorator
+from utility.static_method.static_datetime import now, str_ymdhms
+from utility.static_method.static_decorator import error_decorator
 from utility.settings.setting_base import DB_STRATEGY, DB_BACKTEST, UI_NUM, COLUMNS_BBS
 from backtest.back_static import plot_show, get_moneytop_query, get_result_dataframe, add_mdd
 

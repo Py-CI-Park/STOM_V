@@ -1,6 +1,7 @@
 
 from trade.base_strategy import BaseStrategy
-from utility.static_method.static import get_profit_stock_os, now_cme, dt_ymdhms
+from utility.static_method.static_numba import get_profit_stock_os
+from utility.static_method.static_datetime import now_cme, dt_ymdhms
 
 
 class StockUsaStrategy(BaseStrategy):

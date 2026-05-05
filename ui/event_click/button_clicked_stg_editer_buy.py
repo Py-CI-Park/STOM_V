@@ -38,9 +38,10 @@ def buy_stg_save(ui):
     from ui.create_widget.set_style import style_bc_st
     from ui.create_widget.set_text import famous_saying
     from PyQt5.QtWidgets import QMessageBox, QApplication
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
     from ui.event_click.button_clicked_varstext_change import get_fix_strategy
     from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     strategy_name = ui.svjb_lineEditt_01.text()
     strategy = ui.ss_textEditttt_01.toPlainText()
@@ -56,9 +57,9 @@ def buy_stg_save(ui):
     else:
         if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test1(strategy):
             if ui.proc_chqs.is_alive():
-                insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_buy VALUES (?, ?)"
                 insert_values = (strategy_name, strategy)
-                ui.queryQ.put(('전략디비', insert_query, insert_values))
+                send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_buy', insert_values)
+
                 ui.svjb_pushButon_04.setStyleSheet(style_bc_st)
                 stg_save_version(ui.market_info['전략구분'], 'basic', 'buy', strategy_name, strategy)
                 QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))

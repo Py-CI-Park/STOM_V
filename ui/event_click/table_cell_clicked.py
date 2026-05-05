@@ -7,7 +7,7 @@ def cell_clicked_01(ui, row, col):
         col: 열 인덱스
     """
     from ui.event_click.button_clicked_show_dialog import show_dialog
-    from utility.static_method.static import str_ymd, now_utc, now_cme
+    from utility.static_method.static_datetime import str_ymd, now_utc, now_cme
 
     item = ui.focusWidget().item(row, 0)
     if item is None:
@@ -39,8 +39,9 @@ def cell_clicked_02(ui, row, col):
         col: 열 인덱스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import comma2int, now
+    from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
+    from utility.static_method.static_etcetera import comma2int
     from utility.settings.setting_base import COLUMNS_JG, COLUMNS_JGF, COLUMNS_JGCF
 
     item = ui.jg_tableWidgettt.item(row, 0)
@@ -132,8 +133,8 @@ def cell_clicked_05(ui, row, col):
     """
     from PyQt5.QtCore import QDate
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import comma2int, comma2float
     from ui.event_click.button_clicked_show_dialog import show_dialog_chart
+    from utility.static_method.static_etcetera import comma2int, comma2float
 
     tableWidget = None
     if ui.focusWidget() == ui.ss_tableWidget_01 or ui.focusWidget().parentWidget() == ui.ss_tableWidget_01:
@@ -248,7 +249,7 @@ def cell_clicked_08(ui, row, col):
     """
     from PyQt5.QtWidgets import QMessageBox
     from utility.settings.setting_base import UI_NUM
-    from utility.static_method.static import qtest_qwait
+    from utility.static_method.static_etcetera import qtest_qwait
     from ui.event_click.button_clicked_show_dialog import show_db
 
     if ui.dialog_db.focusWidget() == ui.db_tableWidgett_01:
@@ -321,7 +322,7 @@ def cell_clicked_09(ui, row, col):
         col: 열 인덱스
     """
     from ui.event_change.changed_text import text_changed_05
-    from utility.static_method.static import comma2int, comma2float
+    from utility.static_method.static_etcetera import comma2int, comma2float
 
     item = ui.hg_tableWidgett_01.item(row, col)
     if item is not None:

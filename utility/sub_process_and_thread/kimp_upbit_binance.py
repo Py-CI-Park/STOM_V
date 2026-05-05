@@ -12,8 +12,9 @@ from PyQt5.QtWidgets import QApplication
 from trade.restapi_upbit import get_symbols_info
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 from binance import AsyncClient, BinanceSocketManager
+from utility.static_method.static_etcetera import comma2float
 from utility.settings.setting_base import UI_NUM, COLUMNS_KIMP
-from utility.static_method.static import comma2float, thread_decorator, error_decorator
+from utility.static_method.static_decorator import error_decorator, thread_decorator
 
 
 class Kimp:

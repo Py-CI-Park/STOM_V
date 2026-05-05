@@ -1,6 +1,7 @@
 
 from trade.base_strategy import BaseStrategy
-from utility.static_method.static import now_utc, dt_ymdhms, get_profit_coin_future_short, get_profit_coin_future_long
+from utility.static_method.static_datetime import now_utc, dt_ymdhms
+from utility.static_method.static_numba import get_profit_coin_future_short, get_profit_coin_future_long
 
 
 class BinanceStrategy(BaseStrategy):

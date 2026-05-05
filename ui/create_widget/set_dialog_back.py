@@ -4,8 +4,8 @@ from PyQt5.QtCore import QDate
 from PyQt5.QtWidgets import QGroupBox, QLabel
 from ui.event_click.button_clicked_backtest_start import *
 from ui.event_change.changed_checkbox import checkbox_changed_06
-from utility.static_method.static import str_hms, dt_hms, timedelta_sec
 from ui.create_widget.set_style import style_ck_bx, style_pgbar, style_bc_dk
+from utility.static_method.static_datetime import str_hms, dt_hms, timedelta_sec
 from ui.event_click.button_clicked_etc import change_back_sdate, change_back_edate
 from ui.event_activate.activated_back import bactivated_01, bactivated_02, bactivated_03
 from ui.event_change.changed_text import text_changed_01, text_changed_02, text_changed_03, text_changed_04

@@ -1,5 +1,5 @@
 
-from utility.static_method.static import thread_decorator
+from utility.static_method.static_decorator import thread_decorator
 
 
 def mnbutton_c_clicked_01(ui, index):
@@ -76,7 +76,8 @@ def mnbutton_c_clicked_03(ui, auto=False):
     from utility.settings.setting_base import UI_NUM
     from ui.create_widget.set_style import style_bc_st
     from ui.etcetera.process_alive import receiver_process_alive
-    from utility.static_method.static import qtest_qwait, cme_normal_open, now, get_inthms
+    from utility.static_method.static_etcetera import qtest_qwait
+    from utility.static_method.static_datetime import cme_normal_open, now, get_inthms
 
     if auto:
         buttonReply = QMessageBox.Yes

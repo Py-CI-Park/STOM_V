@@ -1,6 +1,8 @@
 
 from trade.base_strategy import BaseStrategy
-from utility.static_method.static import get_profit_coin, now_utc, dt_ymdhms, get_hogaunit_coin
+from utility.static_method.static_numba import get_profit_coin
+from utility.static_method.static_etcetera import get_hogaunit_coin
+from utility.static_method.static_datetime import now_utc, dt_ymdhms
 
 
 class UpbitStrategy(BaseStrategy):

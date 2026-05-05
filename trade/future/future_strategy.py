@@ -1,6 +1,7 @@
 
 from trade.base_strategy import BaseStrategy
-from utility.static_method.static import now, dt_ymdhms, get_profit_future_long, get_profit_future_short
+from utility.static_method.static_datetime import now, dt_ymdhms
+from utility.static_method.static_numba import get_profit_future_long, get_profit_future_short
 
 
 class FutureStrategy(BaseStrategy):

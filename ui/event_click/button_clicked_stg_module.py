@@ -123,6 +123,7 @@ def button_clicked_strategy_save(ui):
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
+    from utility.static_method.static_etcetera import send_query_data
 
     if ui.stg_btn_number <= 205:
         stg_name = ui.stginput_lineeditt1.text()
@@ -136,9 +137,9 @@ def button_clicked_strategy_save(ui):
         return
 
     if ui.proc_chqs.is_alive():
-        insert_query  = 'INSERT OR REPLACE INTO custombutton VALUES (?, ?, ?)'
-        insert_values = (ui.stg_btn_number, stg_name, stg_text)
-        ui.queryQ.put(('전략디비', insert_query, insert_values))
+        values = (ui.stg_btn_number, stg_name, stg_text)
+        send_query_data(ui.queryQ, '전략디비', 'custombutton', values)
+
         ui.dict_stg_btn[ui.stg_btn_number] = stg_text
         if ui.stg_btn_number <= 205:
             ui.dialog_strategy.focusWidget().setText(stg_name)

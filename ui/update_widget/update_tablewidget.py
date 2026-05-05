@@ -1,12 +1,13 @@
 
 import pandas as pd
 from PyQt5.QtCore import Qt
-from utility.static_method.static import error_decorator
 from ui.draw_chart.draw_label_text import get_label_text
 from PyQt5.QtWidgets import QTableWidgetItem, QHeaderView
+from utility.static_method.static_datetime import dt_ymdhms
 from ui.etcetera.process_alive import receiver_process_alive
+from utility.static_method.static_decorator import error_decorator
 from utility.settings.setting_base import UI_NUM, COLUMNS_HG, COLUMNS_HJ
-from utility.static_method.static import change_format, comma2int, comma2float, dt_ymdhms
+from utility.static_method.static_etcetera import change_format, comma2int, comma2float
 from ui.create_widget.set_style import color_fg_bt, color_fg_dk, color_fg_bc, color_bf_bt, color_bf_dk, color_ct_hg
 
 

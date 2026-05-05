@@ -35,9 +35,10 @@ def opti_buy_save(ui):
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_text import famous_saying
     from PyQt5.QtWidgets import QMessageBox, QApplication
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
     from ui.event_click.button_clicked_varstext_change import get_fix_strategy
     from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     if ui.ss_textEditttt_03.isVisible():
         strategy_name = ui.svc_lineEdittt_01.text()
@@ -55,13 +56,13 @@ def opti_buy_save(ui):
                 if ui.proc_chqs.is_alive():
                     df = ui.dbreader.read_sql('전략디비', f"SELECT * FROM {ui.market_info['전략구분']}_optibuy WHERE `index` = '{strategy_name}'")
                     if len(df) > 0:
-                        update_query  = f"UPDATE {ui.market_info['전략구분']}_optibuy SET 전략코드 = ? WHERE `index` = ?"
-                        update_vlaues = (strategy, strategy_name)
-                        ui.queryQ.put(('전략디비', update_query, update_vlaues))
+                        query  = f"UPDATE {ui.market_info['전략구분']}_optibuy SET 전략코드 = ? WHERE `index` = ?"
+                        values = (strategy, strategy_name)
+                        ui.queryQ.put(('전략디비', query, values))
                     else:
-                        insert_query  = f"INSERT INTO {ui.market_info['전략구분']}_optibuy VALUES (?, ?, ?)"
-                        insert_vlaues = (strategy_name, strategy, '')
-                        ui.queryQ.put(('전략디비', insert_query, insert_vlaues))
+                        values = (strategy_name, strategy, '')
+                        send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_optibuy', values)
+
                     stg_save_version(ui.market_info['전략구분'], 'opti', 'buy', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -102,8 +103,9 @@ def opti_vars_save(ui):
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_text import famous_saying
     from PyQt5.QtWidgets import QMessageBox, QApplication
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
     from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     if ui.ss_textEditttt_05.isVisible():
         strategy_name = ui.svc_lineEdittt_02.text()
@@ -117,9 +119,9 @@ def opti_vars_save(ui):
         else:
             if (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test2(strategy):
                 if ui.proc_chqs.is_alive():
-                    insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_optivars VALUES (?, ?)"
-                    insert_values = (strategy_name, strategy)
-                    ui.queryQ.put(('전략디비', insert_query, insert_values))
+                    values = (strategy_name, strategy)
+                    send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_optivars', values)
+
                     stg_save_version(ui.market_info['전략구분'], 'opti', 'vars', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -160,9 +162,10 @@ def opti_sell_save(ui):
     from PyQt5.QtCore import Qt
     from ui.create_widget.set_text import famous_saying
     from PyQt5.QtWidgets import QMessageBox, QApplication
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
     from ui.event_click.button_clicked_varstext_change import get_fix_strategy
     from utility.static_method.strategy_version_manager import stg_save_version
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     if ui.ss_textEditttt_04.isVisible():
         strategy_name = ui.svc_lineEdittt_03.text()
@@ -178,9 +181,9 @@ def opti_sell_save(ui):
         else:
             if 'self.tickcols' in strategy or (QApplication.keyboardModifiers() & Qt.ControlModifier) or ui.ui_back_code_test1(strategy):
                 if ui.proc_chqs.is_alive():
-                    insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_optisell VALUES (?, ?)"
-                    insert_values = (strategy_name, strategy)
-                    ui.queryQ.put(('전략디비', insert_query, insert_values))
+                    values = (strategy_name, strategy)
+                    send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_optisell', values)
+
                     stg_save_version(ui.market_info['전략구분'], 'opti', 'sell', strategy_name, strategy)
                     QMessageBox.information(ui, '저장 완료', random.choice(famous_saying))
 
@@ -256,7 +259,8 @@ def opti_to_buy_save(ui):
     """
     from traceback import format_exc
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     tabl = f"{ui.market_info['전략구분']}_optivars" if not ui.sva_pushButton_01.isVisible() else f"{ui.market_info['전략구분']}_optigavars"
     stgy = ui.svc_comboBoxxx_01.currentText()
@@ -287,9 +291,8 @@ def opti_to_buy_save(ui):
         return
 
     if ui.proc_chqs.is_alive():
-        insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_buy VALUES (?, ?)"
-        insert_values = (name, stg)
-        ui.queryQ.put(('전략디비', insert_query, insert_values))
+        values = (name, stg)
+        send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_buy', values)
         QMessageBox.information(ui, '저장 알림', '최적값으로 매수전략을 저장하였습니다.\n')
 
 
@@ -300,7 +303,8 @@ def opti_to_sell_save(ui):
     """
     from traceback import format_exc
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import text_not_in_special_characters
+    from utility.static_method.static_etcetera import send_query_data
+    from utility.static_method.static_etcetera import text_not_in_special_characters
 
     tabl = f"{ui.market_info['전략구분']}_optivars" if not ui.sva_pushButton_01.isVisible() else f"{ui.market_info['전략구분']}_optigavars"
     stgy = ui.svc_comboBoxxx_08.currentText()
@@ -330,9 +334,8 @@ def opti_to_sell_save(ui):
         return
 
     if ui.proc_chqs.is_alive():
-        insert_query  = f"INSERT OR REPLACE INTO {ui.market_info['전략구분']}_sell VALUES (?, ?)"
-        insert_values = (name, stg)
-        ui.queryQ.put(('전략디비', insert_query, insert_values))
+        values = (name, stg)
+        send_query_data(ui.queryQ, '전략디비', f'{ui.market_info['전략구분']}_sell', values)
         QMessageBox.information(ui, '저장 알림', '최적값으로 매도전략을 저장하였습니다.\n')
 
 

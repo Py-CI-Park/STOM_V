@@ -3,7 +3,8 @@ import sys
 from PyQt5.QtWidgets import QApplication
 from trade.base_receiver import BaseReceiver
 from utility.settings.setting_base import UI_NUM
-from utility.static_method.static import now, error_decorator
+from utility.static_method.static_datetime import now
+from utility.static_method.static_decorator import error_decorator
 from trade.restapi_ls import LsRestAPI, LsRestData, LsWebSocketReceiver
 
 

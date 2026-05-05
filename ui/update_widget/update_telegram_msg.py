@@ -2,7 +2,8 @@
 from io import BytesIO
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QBuffer, QRect, QIODevice
-from utility.static_method.static import qtest_qwait, error_decorator
+from utility.static_method.static_etcetera import qtest_qwait
+from utility.static_method.static_decorator import error_decorator
 from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
 
 

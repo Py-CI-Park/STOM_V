@@ -1,5 +1,5 @@
 
-from utility.static_method.static import str_ymd
+from utility.static_method.static_datetime import str_ymd
 
 
 class LsRestData:

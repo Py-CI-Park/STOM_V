@@ -2,7 +2,7 @@
 import os
 import subprocess
 from PyQt5.QtCore import QObject, pyqtSignal, QThread
-from utility.static_method.static import qtest_qwait
+from utility.static_method.static_etcetera import qtest_qwait
 
 
 # 마켓번호 -> 마켓코드 매핑

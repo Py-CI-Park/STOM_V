@@ -9,9 +9,10 @@ import pandas as pd
 from traceback import format_exc
 from multiprocessing import Process, Queue
 from backtest.back_static import send_result, get_moneytop_query
+from utility.static_method.static_decorator import error_decorator
 from utility.settings.setting_base import UI_NUM, DB_STRATEGY, DB_BACKTEST
 from utility.static_method.strategy_version_manager import stg_save_version
-from utility.static_method.static import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd, error_decorator
+from utility.static_method.static_datetime import now, timedelta_day, timedelta_sec, str_ymd, str_ymdhms, dt_ymd
 
 
 class Total:

@@ -1,7 +1,7 @@
 
-import pytz
 import asyncio
 from threading import Thread
+from zoneinfo import ZoneInfo
 from io import BufferedIOBase
 from traceback import format_exc
 from PyQt5.QtCore import QThread
@@ -110,7 +110,7 @@ class TelegramBot(QThread):
         Args:
             application: 애플리케이션
         """
-        korea_timezone = pytz.timezone('Asia/Seoul')
+        korea_timezone = ZoneInfo('Asia/Seoul')
         application.bot_data['timezone'] = korea_timezone
 
     # noinspection PyUnusedLocal,PyUnresolvedReferences

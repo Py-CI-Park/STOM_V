@@ -5,7 +5,8 @@ import pandas as pd
 from trade.restapi_ls import LsRestData
 from utility.settings.setting_base import UI_NUM
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
-from utility.static_method.static import now, timedelta_sec, get_inthms, get_vi_price, qtest_qwait
+from utility.static_method.static_datetime import now, timedelta_sec, get_inthms
+from utility.static_method.static_etcetera import qtest_qwait, get_hogaunit_stock
 
 
 class MonitorReceivQ(QThread):
@@ -180,7 +181,7 @@ class BaseReceiver:
             code: 종목 코드
             o: 시가
         """
-        uvi, dvi, vi_hgunit = get_vi_price(o)
+        uvi, dvi, vi_hgunit  = self._get_vi_price(o)
         self.dict_vipr[code] = [True, timedelta_sec(-3600), uvi, dvi, vi_hgunit]
 
     def _update_vi_price(self, code, price):
@@ -189,8 +190,25 @@ class BaseReceiver:
             code: 종목 코드
             price: 가격
         """
-        uvi, dvi, vi_hgunit = get_vi_price(price)
+        uvi, dvi, vi_hgunit  = self._get_vi_price(price)
         self.dict_vipr[code] = [True, timedelta_sec(5), uvi, dvi, vi_hgunit]
+
+    def _get_vi_price(self, std_price):
+        """VI 가격을 계산합니다.
+        Args:
+            std_price: 기준 가격
+        Returns:
+            (상단 VI, 하단 VI, 호가 단위)
+        """
+        uvi = int(std_price * 1.1)
+        x = get_hogaunit_stock(uvi)
+        if uvi % x != 0:
+            uvi += x - uvi % x
+        dvi = int(std_price * 0.9)
+        y = get_hogaunit_stock(dvi)
+        if dvi % y != 0:
+            dvi -= dvi % y
+        return int(uvi), int(dvi), int(x)
 
     def _update_tick_data(self, dt, code, c, o, h, low, per, dm, v=None, cg=None, tbids=None, tasks=None, ch=None):
         """틱 데이터를 업데이트합니다.
@@ -565,8 +583,8 @@ class BaseReceiver:
         """전송 데이터를 생성합니다.
         Args:
             code: 종목 코드
-            code_data: 코드 데이터
-            code_dtdm: 코드 데이터타임
+            code_data: 체결 데이터 리스트
+            code_dtdm: 당일거래대금 딕셔너리
             money_arr: 머니 배열
             hoga_samount: 호가 매도 수량
             hoga_bamount: 호가 매수 수량
@@ -577,7 +595,8 @@ class BaseReceiver:
             전송 데이터 튜플
         """
         c, _, h, low, _, dm, _, bids, asks = code_data[:9]
-        tm   = dm - code_dtdm[1]
+        tm = dm - code_dtdm[1]
+        if tm == dm: tm = 0
         hlp  = round((c / ((h + low) / 2) - 1) * 100, 2)
         lhp  = round((h / low - 1) * 100, 2)
         hjt  = sum(hoga_samount + hoga_bamount)

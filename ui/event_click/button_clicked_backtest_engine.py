@@ -1,5 +1,5 @@
 
-from utility.static_method.static import thread_decorator
+from utility.static_method.static_decorator import thread_decorator
 
 
 def backengine_show(ui):
@@ -11,7 +11,7 @@ def backengine_show(ui):
     import pandas as pd
     from utility.settings.setting_base import CODE_INFO_TABLES
     from ui.create_widget.dialog_animation import DialogAnimator
-    from utility.static_method.static import str_hms, dt_hms, timedelta_sec
+    from utility.static_method.static_datetime import str_hms, dt_hms, timedelta_sec
 
     table_list = []
     con = sqlite3.connect(ui.market_info['백테디비'][ui.dict_set['타임프레임']])

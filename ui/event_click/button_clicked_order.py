@@ -5,8 +5,9 @@ def odbutton_clicked_01(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import comma2float, now
+    from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
+    from utility.static_method.static_etcetera import comma2float
 
     name = ui.od_comboBoxxxxx_01.currentText()
     code = ui.dict_code.get(name)
@@ -30,7 +31,8 @@ def odbutton_clicked_02(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import comma2float, now
+    from utility.static_method.static_datetime import now
+    from utility.static_method.static_etcetera import comma2float
     from ui.etcetera.process_alive import trader_process_alive
 
     name = ui.od_comboBoxxxxx_01.currentText()
@@ -55,7 +57,8 @@ def odbutton_clicked_03(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import comma2float, now
+    from utility.static_method.static_datetime import now
+    from utility.static_method.static_etcetera import comma2float
     from ui.etcetera.process_alive import trader_process_alive
 
     name = ui.od_comboBoxxxxx_01.currentText()
@@ -80,8 +83,9 @@ def odbutton_clicked_04(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import comma2float, now
+    from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
+    from utility.static_method.static_etcetera import comma2float
 
     name = ui.od_comboBoxxxxx_01.currentText()
     code = ui.dict_code.get(name)
@@ -105,8 +109,9 @@ def odbutton_clicked_05(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import comma2float, now
+    from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
+    from utility.static_method.static_etcetera import comma2float
 
     name = ui.od_comboBoxxxxx_01.currentText()
     code = ui.dict_code.get(name)
@@ -130,8 +135,9 @@ def odbutton_clicked_06(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import comma2float, now
+    from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
+    from utility.static_method.static_etcetera import comma2float
 
     name = ui.od_comboBoxxxxx_01.currentText()
     code = ui.dict_code.get(name)
@@ -155,7 +161,7 @@ def odbutton_clicked_07(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import now
+    from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
 
     name = ui.od_comboBoxxxxx_01.currentText()
@@ -181,7 +187,7 @@ def odbutton_clicked_08(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import now
+    from utility.static_method.static_datetime import now
     from ui.etcetera.process_alive import trader_process_alive
 
     name = ui.od_comboBoxxxxx_01.currentText()

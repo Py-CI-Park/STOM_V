@@ -215,8 +215,8 @@ def dialog_chart_show(ui):
     Args:
         ui: UI 클래스 인스턴스
     """
-    from utility.static_method.static import str_hms, dt_hms
     from ui.create_widget.dialog_animation import DialogAnimator
+    from utility.static_method.static_datetime import str_hms, dt_hms
     from ui.event_click.button_clicked_chart_count import chart_count_change
 
     ui.ct_pushButtonnn_05.setText('CHART III')
@@ -495,12 +495,4 @@ def show_order(ui):
 
 
 def show_pattern_dialog(ui):
-    from PyQt5.QtWidgets import QMessageBox
-
-    if not ui.dialog_pattern.isVisible():
-        if ui.dict_set['타임프레임']:
-            QMessageBox.critical(ui, '오류 알림', '현재 타임프레임이 1초스냅샷 상태입니다.\n패턴학습은 1분봉 타임프레임만 지원합니다.\n')
-            return
-        ui.dialog_pattern.show()
-    else:
-        ui.dialog_pattern.close()
+    ui.dialog_pattern.show() if not ui.dialog_pattern.isVisible() else ui.dialog_pattern.close()

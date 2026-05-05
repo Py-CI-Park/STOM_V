@@ -1,8 +1,9 @@
 
 from backtest.backengine_base import BackEngineBase
-from utility.static_method.static import get_profit_stock, get_hogaunit_stock
+from utility.static_method.static_numba import get_profit_stock
+from utility.static_method.static_etcetera import get_hogaunit_stock
 # noinspection PyUnresolvedReferences
-from utility.static_method.static import timedelta_sec
+from utility.static_method.static_datetime import timedelta_sec
 
 
 class BackEngineStock(BackEngineBase):

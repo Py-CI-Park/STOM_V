@@ -10,7 +10,7 @@ def load_settings():
     from cryptography import fernet
     from traceback import format_exc
     from utility.settings.setting_base import DB_SETTING
-    from utility.static_method.static import read_key, de_text
+    from utility.static_method.static_fernet_key import read_key, de_text
 
     EN_KEY = read_key()
 

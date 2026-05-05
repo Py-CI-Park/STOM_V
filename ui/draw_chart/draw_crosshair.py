@@ -1,8 +1,8 @@
 
 import pyqtgraph as pg
 from PyQt5.QtCore import Qt
-from utility.static_method.static import from_timestamp
 from ui.draw_chart.draw_label_text import get_label_text
+from utility.static_method.static_datetime import from_timestamp
 from ui.create_widget.set_style import color_cs_hr, color_fg_bt, color_bg_bt, color_bg_ld, qfont12
 
 

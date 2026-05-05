@@ -5,7 +5,7 @@ def bebutton_clicked_01(ui):
         ui: UI 클래스 인스턴스
     """
     from PyQt5.QtWidgets import QMessageBox
-    from utility.static_method.static import qtest_qwait
+    from utility.static_method.static_etcetera import qtest_qwait
     from ui.event_click.button_clicked_backtest_engine import backengine_start
 
     if ui.backengine_starting:
@@ -504,7 +504,7 @@ def stop_scheduler(ui, gubun=False):
     """
     import os
     from PyQt5.QtCore import QTimer
-    from ui.etcetera.etc import auto_back_schedule
+    from ui.etcetera.process_starter import auto_back_schedule
 
     ui.back_scount = 0
     ui.back_schedul = False
@@ -553,6 +553,7 @@ def sdbutton_clicked_05(ui):
     import random
     from PyQt5.QtWidgets import QMessageBox
     from ui.create_widget.set_text import famous_saying
+    from utility.static_method.static_etcetera import send_query_data
 
     schedule_name = ui.sd_dlineEditttt_01.text()
     if schedule_name == '':
@@ -579,7 +580,6 @@ def sdbutton_clicked_05(ui):
         schedule += ui.sd_oclineEdittt_02.text() + ';'
         schedule += ui.sd_oclineEdittt_03.text()
         if ui.proc_chqs.is_alive():
-            insert_query  = 'INSERT OR REPLACE INTO schedule VALUES (?, ?)'
-            insert_values = (schedule_name, schedule)
-            ui.queryQ.put(('전략디비', insert_query, insert_values))
+            values = (schedule_name, schedule)
+            send_query_data(ui.queryQ, '전략디비', 'schedule', values)
             QMessageBox.information(ui.dialog_scheduler, '저장 완료', random.choice(famous_saying))

@@ -1,32 +1,10 @@
 
 import os
-import sys
 import sqlite3
 import pandas as pd
-from loguru import logger
 from multiprocessing import Process
 
 DB_PATH = '../../_database'
-
-
-def get_logger(name):
-    """로그거를 생성합니다.
-    Args:
-        name: 로거 이름
-    Returns:
-        설정된 로거 인스턴스
-    """
-    logger.remove()
-    logger.add(
-        sys.stderr,
-        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | "
-               "<level>{level: <5}</level> | "
-               f"<cyan>{name}</cyan> : "
-               "<level>{message}</level>",
-        level="DEBUG",
-        colorize=True
-    )
-    return logger
 
 
 def Updater(gubun, file_list_):
@@ -35,8 +13,7 @@ def Updater(gubun, file_list_):
         gubun: 구분
         file_list_: 파일 리스트
     """
-    llogger = get_logger('DBDistinct')
-    llogger.info(f'[{gubun}] 데이터베이스 중복 확인 시작')
+    print(f'[{gubun}] 데이터베이스 중복 확인 시작')
     last = len(file_list_)
     count = 0
     for k, db_name in enumerate(file_list_):
@@ -50,11 +27,11 @@ def Updater(gubun, file_list_):
                 if len(df1) != len(df2):
                     df1.to_sql(code, con, if_exists='replace', chunksize=2000)
                     count += 1
-                    llogger.info(f'[{gubun}] 데이터베이스 중복 제거 [{db_name}]')
-        llogger.info(f'[{gubun}] 데이터베이스 중복 확인 중 ... [{k+1:03d}/{last:03d}]')
+                    print(f'[{gubun}] 데이터베이스 중복 제거 [{db_name}]')
+        print(f'[{gubun}] 데이터베이스 중복 확인 중 ... [{k+1:03d}/{last:03d}]')
         con.close()
-    llogger.info(f'[{gubun}] 데이터베이스 중복 제거 건수 [{count}]')
-    llogger.info(f'[{gubun}] 데이터베이스 중복 확인 완료')
+    print(f'[{gubun}] 데이터베이스 중복 제거 건수 [{count}]')
+    print(f'[{gubun}] 데이터베이스 중복 확인 완료')
 
 
 if __name__ == '__main__':

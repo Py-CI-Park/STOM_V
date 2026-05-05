@@ -1,10 +1,10 @@
 
 import pyqtgraph as pg
 from ui.etcetera.etc import chart_screenshot2
-from utility.settings.setting_base import DICT_INDICATOR_BASE
-from utility.static_method.static import str_hms, dt_hms
 from PyQt5.QtWidgets import QGroupBox, QLabel, QVBoxLayout
 from ui.event_click.table_cell_clicked import cell_clicked_06
+from utility.settings.setting_base import DICT_INDICATOR_BASE
+from utility.static_method.static_datetime import str_hms, dt_hms
 from ui.event_keypress.overwrite_return_press import return_press_01
 from ui.event_click.button_clicked_chart_count import chart_count_change
 from ui.create_widget.set_style import style_bc_dk, style_ck_bx, color_bg_bk

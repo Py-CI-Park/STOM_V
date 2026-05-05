@@ -1,13 +1,14 @@
-
 import re
 from ui.event_activate import activated_stg
-from ui.etcetera.etc import auto_back_schedule
 from utility.settings.setting_base import UI_NUM
+from ui.etcetera.process_starter import auto_back_schedule
+from utility.static_method.static_etcetera import qtest_qwait
+from utility.static_method.static_decorator import error_decorator
 from ui.event_click.button_clicked_stg_editer import backtest_detail
+from utility.static_method.static_datetime import now, now_cme, str_hms
 from ui.event_click.button_clicked_shortcut import mnbutton_c_clicked_01
 from ui.event_click.button_clicked_backtest_start import sdbutton_clicked_02
 from ui.event_click.button_clicked_backtest_engine import backtest_process_kill
-from utility.static_method.static import now, qtest_qwait, now_cme, error_decorator
 from ui.create_widget.set_style import color_fg_rt, color_fg_dk, color_fg_bt, color_bt_yl
 from ui.event_click.button_clicked_database import dbbutton_clicked_08, dbbutton_clicked_09
 
@@ -76,22 +77,38 @@ class UpdateTextedit:
                 text = re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', text)
                 self.ui.log_system_textedit.append(text)
 
+            elif gubun == UI_NUM['DB관리']:
+                if 'DB업데이트완료' in text:
+                    self.ui.database_control = False
+                else:
+                    self.ui.db_textEdittttt_01.append(text)
+
+                if self.ui.auto_mode:
+                    if '당일DB 데이터, 일자DB로 분리 완료' in text:
+                        self._auto_database_control(2)
+                    elif '당일DB 데이터, 백테DB로 추가 완료' in text:
+                        self._auto_database_control(3)
+
             elif gubun == UI_NUM['학습로그']:
                 self.ui.ptn_textEdittt_01.append(text)
                 if self.ui.auto_mode and '캔들분석 학습 완료' in text:
                     qtest_qwait(2)
-                    auto_back_schedule(self.ui, 0.2)
+                    _auto_learn_running(self.ui, 2)
                 elif self.ui.auto_mode and '가격대분석 학습 완료' in text:
                     qtest_qwait(2)
-                    auto_back_schedule(self.ui, 0.4)
+                    _auto_learn_running(self.ui, 3)
                 elif self.ui.auto_mode and '거래량분석 학습 완료' in text:
                     qtest_qwait(2)
-                    auto_back_schedule(self.ui, 0.6)
+                    _auto_learn_running(self.ui, 4)
                 elif self.ui.auto_mode and '변동성분석 학습 완료' in text:
                     qtest_qwait(2)
-                    self._shut_down_check()
+                    _auto_learn_running(self.ui, 5)
                 elif self.ui.auto_mode and '모든 분석 학습 완료' in text:
                     qtest_qwait(2)
+                    if self.ui.dialog_pattern.isVisible():
+                        self.ui.dialog_pattern.close()
+                    self.ui.teleQ.put('모든 분석 학습 완료')
+                    self.ui.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 모든 분석 학습 완료'))
                     self._shut_down_check()
 
             elif gubun == UI_NUM['백테엔진']:
@@ -156,18 +173,6 @@ class UpdateTextedit:
                     self.ui.optuna_current_cnt = 0
                     self.ui.optuna_remain_cnt = 0
 
-            elif gubun == UI_NUM['DB관리']:
-                if 'DB업데이트완료' in text:
-                    self.ui.database_control = False
-                else:
-                    self.ui.db_textEdittttt_01.append(text)
-
-                if self.ui.auto_mode:
-                    if '당일DB 데이터, 일자DB로 분리 완료' in text:
-                        self._auto_database_control(2)
-                    elif '당일DB 데이터, 백테DB로 추가 완료' in text:
-                        self._auto_database_control(3)
-
             elif gubun == UI_NUM['기업개요']:
                 self.ui.gg_textEdittttt_01.clear()
                 self.ui.gg_textEdittttt_01.append(text)
@@ -191,15 +196,16 @@ class UpdateTextedit:
             qtest_qwait(2)
             dbbutton_clicked_08(self.ui)
         elif gubun == 3:
+            qtest_qwait(2)
             if self.ui.dialog_db.isVisible():
                 self.ui.dialog_db.close()
             self.ui.teleQ.put('데이터베이스 자동관리 완료')
             self.ui.windowQ.put((UI_NUM['기본로그'], '시스템 명령 실행 알림 - 데이터베이스 자동관리 완료'))
-            if not self.ui.dict_set['타임프레임'] and self.ui.dict_set['자동학습'] and (
+            if self.ui.dict_set['자동학습'] and (
                     self.ui.dict_set['캔들분석'] or self.ui.dict_set['가격대분석'] or
                     self.ui.dict_set['거래량분석'] or self.ui.dict_set['변동성분석']
             ):
-                auto_back_schedule(self.ui, 0)
+                _auto_learn_running(self.ui, 1)
             else:
                 self.ui.auto_mode = False
                 self._shut_down_check()
@@ -210,7 +216,6 @@ class UpdateTextedit:
         Args:
             force: 강제 종료 여부
         """
-        from utility.static_method.static import str_hms
         if self.ui.dict_set['백테스케쥴실행'] and now().weekday() == self.ui.dict_set['백테스케쥴요일']:
             if self.ui.dict_set['알림소리']:
                 self.ui.soundQ.put('오늘은 백테 스케쥴러의 실행이 예약되어 있어 프로그램을 종료하지 않습니다.')
@@ -230,3 +235,67 @@ class UpdateTextedit:
             ):
                 import os
                 os.system('shutdown /s /t 300')
+
+
+def _auto_learn_running(ui, gubun):
+    from utility.static_method.static_etcetera import qtest_qwait
+    from strategy.analyzer_volume_spike import spike_setting_load, spike_train
+    from strategy.analyzer_candle_pattern import pattern_setting_load, pattern_train
+    from strategy.analyzer_volume_profile import volume_setting_load, volume_profile_train
+    from strategy.analyzer_volatility_pattern import volatility_setting_load, volatility_train
+
+    if gubun == 1:
+        if not ui.dict_set['타임프레임'] and ui.dict_set['캔들분석']:
+            if ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 캔들분석 학습을 시작합니다.')
+            if not ui.dialog_pattern.isVisible():
+                ui.dialog_pattern.show()
+            qtest_qwait(2)
+            pattern_setting_load(ui)
+            qtest_qwait(2)
+            pattern_train(ui)
+        else:
+            _auto_learn_running(ui, 2)
+
+    elif gubun == 2:
+        if ui.dict_set['가격대분석']:
+            if ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 가격대분석 학습을 시작합니다.')
+            qtest_qwait(2)
+            volume_setting_load(ui)
+            qtest_qwait(2)
+            volume_profile_train(ui)
+        else:
+            _auto_learn_running(ui, 3)
+
+    elif gubun == 3:
+        if ui.dict_set['거래량분석']:
+            if ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 거래량분석 학습을 시작합니다.')
+            if not ui.dialog_pattern.isVisible():
+                ui.dialog_pattern.show()
+            qtest_qwait(2)
+            spike_setting_load(ui)
+            qtest_qwait(2)
+            spike_train(ui)
+        else:
+            _auto_learn_running(ui, 4)
+
+    elif gubun == 4:
+        if ui.dict_set['변동성분석']:
+            if ui.dict_set['알림소리']:
+                ui.soundQ.put('예약된 변동성분석 학습을 시작합니다.')
+            if not ui.dialog_pattern.isVisible():
+                ui.dialog_pattern.show()
+            qtest_qwait(2)
+            volatility_setting_load(ui)
+            qtest_qwait(2)
+            volatility_train(ui)
+        else:
+            _auto_learn_running(ui, 5)
+
+    elif gubun == 5:
+        from utility.settings.setting_base import UI_NUM
+        if ui.dialog_pattern.isVisible():
+            ui.dialog_pattern.close()
+        ui.windowQ.put((UI_NUM['학습로그'], '모든 분석 학습 완료'))

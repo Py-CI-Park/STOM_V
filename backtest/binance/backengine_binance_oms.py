@@ -1,13 +1,12 @@
 
-from backtest.future.backengine_future_oms import BackEngineFutureOms
-from utility.static_method.static import get_profit_coin_future_long, get_profit_coin_future_short
+from backtest.backengine_base_oms import BackEngineBaseOms
+from utility.static_method.static_numba import get_profit_coin_future_long, get_profit_coin_future_short
 
 
-class BackEngineBinanceOms(BackEngineFutureOms):
+class BackEngineBinanceOms(BackEngineBaseOms):
     """바이낸스 OMS 백테스트 엔진 클래스입니다.
-    BackEngineFutureOms를 상속받아 바이낸스 시장 특화 OMS 로직을 구현합니다.
+    BackEngineBaseOms를 상속받아 바이낸스 시장 특화 OMS 로직을 구현합니다.
     """
-
     def _get_hogaunit(self, 종목코드):
         """호가 단위를 반환합니다.
         Args:

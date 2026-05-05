@@ -371,18 +371,18 @@ class HistoryBuffer:
         self.count = 0
 
         # 스칼라 데이터용 배열
-        self.curr_price = np.zeros(maxlen, dtype=np.float64)
-        self.imbalance = np.zeros(maxlen, dtype=np.float64)
-        self.buy_volume = np.zeros(maxlen, dtype=np.float64)
-        self.sell_volume = np.zeros(maxlen, dtype=np.float64)
-        self.total_volume = np.zeros(maxlen, dtype=np.float64)
+        self.curr_price           = np.zeros(maxlen, dtype=np.float64)
+        self.imbalance            = np.zeros(maxlen, dtype=np.float64)
+        self.buy_volume           = np.zeros(maxlen, dtype=np.float64)
+        self.sell_volume          = np.zeros(maxlen, dtype=np.float64)
+        self.total_volume         = np.zeros(maxlen, dtype=np.float64)
         self.weighted_depth_ratio = np.zeros(maxlen, dtype=np.float64)
 
         # 5단계 호가 데이터용 배열 (maxlen x 5)
         self.ask_prices = np.zeros((maxlen, 5), dtype=np.float64)
         self.bid_prices = np.zeros((maxlen, 5), dtype=np.float64)
-        self.ask_qtys = np.zeros((maxlen, 5), dtype=np.float64)
-        self.bid_qtys = np.zeros((maxlen, 5), dtype=np.float64)
+        self.ask_qtys   = np.zeros((maxlen, 5), dtype=np.float64)
+        self.bid_qtys   = np.zeros((maxlen, 5), dtype=np.float64)
 
     def append(self, curr_price: float, imbalance: float, buy_volume: float, sell_volume: float,
                total_volume: float, weighted_depth_ratio: float, ask_prices: np.ndarray, bid_prices: np.ndarray,
@@ -401,18 +401,16 @@ class HistoryBuffer:
             weighted_depth_ratio: 가중 깊이 비율
         """
         idx = self.ptr
-
-        self.curr_price[idx] = curr_price
-        self.imbalance[idx] = imbalance
-        self.buy_volume[idx] = buy_volume
-        self.sell_volume[idx] = sell_volume
-        self.total_volume[idx] = total_volume
+        self.curr_price[idx]           = curr_price
+        self.imbalance[idx]            = imbalance
+        self.buy_volume[idx]           = buy_volume
+        self.sell_volume[idx]          = sell_volume
+        self.total_volume[idx]         = total_volume
         self.weighted_depth_ratio[idx] = weighted_depth_ratio
-
-        self.ask_prices[idx] = ask_prices
-        self.bid_prices[idx] = bid_prices
-        self.ask_qtys[idx] = ask_qtys
-        self.bid_qtys[idx] = bid_qtys
+        self.ask_prices[idx]           = ask_prices
+        self.bid_prices[idx]           = bid_prices
+        self.ask_qtys[idx]             = ask_qtys
+        self.bid_qtys[idx]             = bid_qtys
 
         self.ptr = (self.ptr + 1) % self.maxlen
         if self.count < self.maxlen:
@@ -585,17 +583,17 @@ class AnalyzerMicrostructure:
         if len(tick_data) < self.history_cnt:
             return
 
-        recent_data  = tick_data[-self.history_cnt:]
-        curr_price   = recent_data[-1, self.idx_curr_price]
-        buy_volume   = recent_data[-1, self.idx_buy_vol]
-        sell_volume  = recent_data[-1, self.idx_sell_vol]
-        total_volume = buy_volume + sell_volume
+        recent_data   = tick_data[-self.history_cnt:]
+        curr_price    = recent_data[-1, self.idx_curr_price]
+        buy_volume    = recent_data[-1, self.idx_buy_vol]
+        sell_volume   = recent_data[-1, self.idx_sell_vol]
+        total_volume  = buy_volume + sell_volume
 
         # 벡터화된 호가 데이터 추출 (리스트-배열 변환 제거)
-        ask_prices   = recent_data[-1, self.idx_ask_price]
-        ask_qtys     = recent_data[-1, self.idx_ask_qty]
-        bid_prices   = recent_data[-1, self.idx_bid_price]
-        bid_qtys     = recent_data[-1, self.idx_bid_qty]
+        ask_prices    = recent_data[-1, self.idx_ask_price]
+        ask_qtys      = recent_data[-1, self.idx_ask_qty]
+        bid_prices    = recent_data[-1, self.idx_bid_price]
+        bid_qtys      = recent_data[-1, self.idx_bid_qty]
 
         # 깊이 비율, 불균형, VWAP 계산 (벡터화 연산)
         total_ask_qty = np.sum(ask_qtys)
@@ -608,8 +606,8 @@ class AnalyzerMicrostructure:
         imbalance     = (total_bid_qty - total_ask_qty) / total_qty if total_qty > 0 else 0.0
 
         # 깊이별 가중치 계산 (벡터화 연산)
-        weighted_ask_qty = np.dot(ask_qtys, self._depth_weights)
-        weighted_bid_qty = np.dot(bid_qtys, self._depth_weights)
+        weighted_ask_qty     = np.dot(ask_qtys, self._depth_weights)
+        weighted_bid_qty     = np.dot(bid_qtys, self._depth_weights)
         weighted_depth_ratio = weighted_bid_qty / weighted_ask_qty if weighted_ask_qty > 0 else 1
 
         # 스프레드 트렌드 및 불균형 트렌드 계산 (HistoryBuffer 직접 사용)
@@ -699,16 +697,16 @@ class AnalyzerMicrostructure:
         layering_signals = []
 
         # Numba 함수용 파라미터 준비 (딕셔너리 접근 최소화)
-        multiplier = self.params['layering_multiplier']
+        multiplier      = self.params['layering_multiplier']
         min_occurrences = self.params['layering_occurrences']
-        threshold = self.params['order_change_threshold']
+        threshold       = self.params['order_change_threshold']
 
         # 양쪽을 한번에 처리
         for side_idx, qtys, prices in [(0, ask_qtys, ask_prices), (1, bid_qtys, bid_prices)]:
             if qtys.shape[0] < 3:
                 continue
 
-            suspicious_levels_arr = _calc_analyze_price_levels(qtys, multiplier, min_occurrences)
+            suspicious_levels_arr   = _calc_analyze_price_levels(qtys, multiplier, min_occurrences)
             large_order_changes_arr = _calc_detect_large_order_changes(qtys, prices, threshold)
 
             # 빠른 조건 체크 (배열 크기로)
@@ -720,8 +718,8 @@ class AnalyzerMicrostructure:
 
             # confidence 계산
             if has_suspicious and has_changes:
-                layering_conf = _calc_layering_confidence(suspicious_levels_arr)
-                spoofing_conf = _calc_spoofing_confidence(large_order_changes_arr)
+                layering_conf       = _calc_layering_confidence(suspicious_levels_arr)
+                spoofing_conf       = _calc_spoofing_confidence(large_order_changes_arr)
                 combined_confidence = min((layering_conf + spoofing_conf) / 2 * 1.2, 1.0)
             elif has_suspicious:
                 combined_confidence = _calc_layering_confidence(suspicious_levels_arr)
@@ -754,7 +752,7 @@ class AnalyzerMicrostructure:
 
         # Numba 함수용 파라미터
         price_threshold = self.params['pump_price_threshold']
-        vol_threshold = self.params['volume_rate_threshold']
+        vol_threshold   = self.params['volume_rate_threshold']
         window = 5
 
         results = _calc_detect_pump_dump(prices, volumes, price_threshold, vol_threshold, window)
@@ -782,12 +780,12 @@ class AnalyzerMicrostructure:
             return []
 
         # numpy 배열 직접 가져오기
-        ask_qtys, bid_qtys = hist_buffer.get_qtys_arrays()
+        ask_qtys, bid_qtys     = hist_buffer.get_qtys_arrays()
         ask_prices, bid_prices = hist_buffer.get_prices_arrays()
 
         # 최근 30개만 사용
         if n > 30:
-            ask_qtys, bid_qtys = ask_qtys[-30:], bid_qtys[-30:]
+            ask_qtys, bid_qtys     = ask_qtys[-30:], bid_qtys[-30:]
             ask_prices, bid_prices = ask_prices[-30:], bid_prices[-30:]
             n = 30
 
@@ -823,7 +821,7 @@ class AnalyzerMicrostructure:
         Returns:
             시그널 리스트
         """
-        prices = hist_buffer.get_prices_array()
+        prices  = hist_buffer.get_prices_array()
         volumes = hist_buffer.get_volumes_array()
         n = len(prices)
 
@@ -899,10 +897,10 @@ class AnalyzerMicrostructure:
         if self.curr_data['overall_risk']['risk_level'] == 'HIGH':
             self.curr_data['total_risk'] = 1.0
 
-        market_risk = self._calculate_market_risk()                     # 시장 리스크
-        manipulation_risk = self._calculate_manipulation_risk()         # 조작 리스크
-        liquidity_risk = self._calculate_liquidity_risk()               # 유동성 리스크
-        total_risk = round((market_risk + manipulation_risk + liquidity_risk) / 3, 2)
+        market_risk       = self._calculate_market_risk()           # 시장 리스크
+        manipulation_risk = self._calculate_manipulation_risk()     # 조작 리스크
+        liquidity_risk    = self._calculate_liquidity_risk()        # 유동성 리스크
+        total_risk        = round((market_risk + manipulation_risk + liquidity_risk) / 3, 2)
 
         self.curr_data['total_risk'] = total_risk
 
@@ -920,7 +918,7 @@ class AnalyzerMicrostructure:
             return 'hold', 0.0
 
         final_signal = self._analyze_order_flow(buy_cf, sell_cf)  # 주문 흐름 분석
-        confidence = self._calculate_confidence(final_signal, self.curr_data['total_risk'])  # 신뢰도
+        confidence   = self._calculate_confidence(final_signal, self.curr_data['total_risk'])  # 신뢰도
 
         return final_signal, confidence
 
@@ -986,12 +984,12 @@ class AnalyzerMicrostructure:
             시그널
         """
         # 시장 지표 추출
-        imbalance = self.curr_data['imbalance']
-        imbalance_trend = self.curr_data['imbalance_trend']
-        depth_ratio = self.curr_data['depth_ratio']
-        bid_concentration = self.curr_data['bid_concentration']
-        ask_concentration = self.curr_data['ask_concentration']
-        log_depth_ratio = np.log(depth_ratio) / self._log_depth_rate_threshold if depth_ratio > 0 else 0
+        imbalance            = self.curr_data['imbalance']
+        imbalance_trend      = self.curr_data['imbalance_trend']
+        depth_ratio          = self.curr_data['depth_ratio']
+        bid_concentration    = self.curr_data['bid_concentration']
+        ask_concentration    = self.curr_data['ask_concentration']
+        log_depth_ratio      = np.log(depth_ratio) / self._log_depth_rate_threshold if depth_ratio > 0 else 0
         weighted_depth_ratio = self.curr_data['weighted_depth_ratio']
 
         # 매수 흐름 강도 계산 (연속적인 0.0~1.0 값)
@@ -1039,14 +1037,14 @@ class AnalyzerMicrostructure:
             신뢰도
         """
         # 시장 상태에서 주요 지표 추출
-        imbalance = abs(self.curr_data['imbalance'])
-        imbalance_trend = self.curr_data['imbalance_trend']
-        depth_ratio = self.curr_data['depth_ratio']
-        pressure_level = self.curr_data['pressure_level']
+        imbalance        = abs(self.curr_data['imbalance'])
+        imbalance_trend      = self.curr_data['imbalance_trend']
+        depth_ratio          = self.curr_data['depth_ratio']
+        pressure_level       = self.curr_data['pressure_level']
         weighted_depth_ratio = self.curr_data['weighted_depth_ratio']
 
-        signal_adjustments = {'buy': 1.0, 'sell': 1.0, 'hold': 0.1}
-        base_confidence = signal_adjustments[signal] * 0.15
+        signal_adjustments   = {'buy': 1.0, 'sell': 1.0, 'hold': 0.1}
+        base_confidence      = signal_adjustments[signal] * 0.15
         imbalance_confidence = min(max(0.01, imbalance), 1.0) * 0.15
 
         if signal == 'buy':
@@ -1056,8 +1054,8 @@ class AnalyzerMicrostructure:
             trend_confidence = min(max(0.01, -imbalance_trend * (1 / (self.params['imbalance_threshold'] * 0.05))), 1.0) * 0.15
             depth_confidence = min(max(0.01, 1 - depth_ratio * (self.params['depth_rate_threshold'] * 0.1)), 1.0) * 0.15
 
-        pressure_confidence = min(max(0.01, pressure_level * (1 / self.params['pressure_threshold'])), 1.0) * 0.15
-        risk_confidence = min(max(0.01, 1 - total_risk), 1.0) * 0.15
+        pressure_confidence  = min(max(0.01, pressure_level * (1 / self.params['pressure_threshold'])), 1.0) * 0.15
+        risk_confidence      = min(max(0.01, 1 - total_risk), 1.0) * 0.15
 
         if signal == 'buy':
             weighted_depth_confidence = min(max(0.01, weighted_depth_ratio), 1.0) * 0.10
