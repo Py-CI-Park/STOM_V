@@ -79,7 +79,7 @@ class SetDialogBack:
                '설정탭 기타에서 설정한 일괄로딩 또는 분할로딩의 선택에 따라 공유메모리 또는 피클덤프의\n\n' \
                '형태로 데이터를 로드합니다. 백테엔진은 프로그램을 종료하기 전까지 종료되지 않습니다.'
         self.ui.be_labellllllll_03 = QLabel(text, self.ui.be_groupBoxxxxx_01)
-        self.ui.be_pushButtonnn_01 = self.wc.setPushbutton('백테스트 엔진 시작', parent=self.ui.be_groupBoxxxxx_01, click=lambda: bebutton_clicked_01(self.ui))
+        self.ui.be_pushButtonnn_01 = self.wc.setPushbutton('백테스트 엔진 시작', parent=self.ui.be_groupBoxxxxx_01, bounced=True, click=lambda: bebutton_clicked_01(self.ui))
         self.ui.be_textEditxxxx_01 = self.wc.setTextEdit(self.ui.be_groupBoxxxxx_01, vscroll=True)
 
         self.ui.dialog_scheduler = self.wc.setDialog('STOM BACKTEST SCHEDULER', location_save=True)
@@ -98,12 +98,12 @@ class SetDialogBack:
         self.ui.sd_scheckBoxxxx_02 = self.wc.setCheckBox('완료 후 컴퓨터 종료', self.ui.sd_groupBoxxxxx_01, style=style_ck_bx)
 
         self.ui.sd_dcomboBoxxxx_01 = self.wc.setCombobox(self.ui.sd_groupBoxxxxx_01, activated=lambda: bactivated_03(self.ui))
-        self.ui.sd_dpushButtonn_01 = self.wc.setPushbutton('스케쥴 로딩', parent=self.ui.sd_groupBoxxxxx_01, click=lambda: sdbutton_clicked_04(self.ui))
+        self.ui.sd_dpushButtonn_01 = self.wc.setPushbutton('스케쥴 로딩', parent=self.ui.sd_groupBoxxxxx_01, bounced=True, click=lambda: sdbutton_clicked_04(self.ui))
         self.ui.sd_dlineEditttt_01 = self.wc.setLineedit(self.ui.sd_groupBoxxxxx_01, style=style_bc_dk)
-        self.ui.sd_dpushButtonn_02 = self.wc.setPushbutton('스케쥴 저장', parent=self.ui.sd_groupBoxxxxx_01, click=lambda: sdbutton_clicked_05(self.ui))
+        self.ui.sd_dpushButtonn_02 = self.wc.setPushbutton('스케쥴 저장', parent=self.ui.sd_groupBoxxxxx_01, bounced=True, click=lambda: sdbutton_clicked_05(self.ui))
 
-        self.ui.sd_pushButtonnn_01 = self.wc.setPushbutton('시작', parent=self.ui.sd_groupBoxxxxx_01, color=2, click=lambda: sdbutton_clicked_02(self.ui))
-        self.ui.sd_pushButtonnn_02 = self.wc.setPushbutton('중지', parent=self.ui.sd_groupBoxxxxx_01, color=2, click=lambda: sdbutton_clicked_03(self.ui))
+        self.ui.sd_pushButtonnn_01 = self.wc.setPushbutton('시작', parent=self.ui.sd_groupBoxxxxx_01, color=2, bounced=True, click=lambda: sdbutton_clicked_02(self.ui))
+        self.ui.sd_pushButtonnn_02 = self.wc.setPushbutton('중지', parent=self.ui.sd_groupBoxxxxx_01, color=2, bounced=True, click=lambda: sdbutton_clicked_03(self.ui))
 
         text = '                           백테유형                           시작일자                   ' \
                '종료일자               시작시간      종료시간     배팅    틱수      ' \

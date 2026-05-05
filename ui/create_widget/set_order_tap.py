@@ -97,8 +97,8 @@ class SetOrderTap:
         self.ui.ss_buyy_comboBox_04 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_08, items=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
         self.ui.ss_buyy_labellll_08 = QLabel('▣ 정정주문 시 정정가격 선택 현재가(-)                    호가', self.ui.ss_od_groupBoxxx_08)
         self.ui.ss_buyy_comboBox_05 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_08, items=['0', '1', '2', '3', '4', '5'])
-        self.ui.ss_load_Button_01   = self.wc.setPushbutton('불러오기', parent=self.ui.ss_od_groupBoxxx_08, click=lambda: setting_order_load_01(self.ui))
-        self.ui.ss_save_Button_01   = self.wc.setPushbutton('저장하기', parent=self.ui.ss_od_groupBoxxx_08, click=lambda: setting_order_save_01(self.ui))
+        self.ui.ss_load_Button_01   = self.wc.setPushbutton('불러오기', parent=self.ui.ss_od_groupBoxxx_08, bounced=True, click=lambda: setting_order_load_01(self.ui))
+        self.ui.ss_save_Button_01   = self.wc.setPushbutton('저장하기', parent=self.ui.ss_od_groupBoxxx_08, bounced=True, click=lambda: setting_order_save_01(self.ui))
 
         bjjj_text = "사용자비중조절기준 선택 시 매수전략에서 아래의 예제와 같이 작성합니다.\n"\
                     "지정한 비중조절기준으로 오른쪽 배팅금액당 배수를 설정하면 적용됩니다.\n"\
@@ -194,8 +194,8 @@ class SetOrderTap:
         self.ui.ss_sell_comboBox_04 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_15, items=['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'])
         self.ui.ss_sell_labellll_08 = QLabel('▣ 정정주문 시 정정가격 선택 현재가(+)                    호가', self.ui.ss_od_groupBoxxx_15)
         self.ui.ss_sell_comboBox_05 = self.wc.setCombobox(self.ui.ss_od_groupBoxxx_15, items=['0', '1', '2', '3', '4', '5'])
-        self.ui.ss_load_Button_02 = self.wc.setPushbutton('불러오기', parent=self.ui.ss_od_groupBoxxx_15, click=lambda: setting_order_load_02(self.ui))
-        self.ui.ss_save_Button_02 = self.wc.setPushbutton('저장하기', parent=self.ui.ss_od_groupBoxxx_15, click=lambda: setting_order_save_02(self.ui))
+        self.ui.ss_load_Button_02 = self.wc.setPushbutton('불러오기', parent=self.ui.ss_od_groupBoxxx_15, bounced=True, click=lambda: setting_order_load_02(self.ui))
+        self.ui.ss_save_Button_02 = self.wc.setPushbutton('저장하기', parent=self.ui.ss_od_groupBoxxx_15, bounced=True, click=lambda: setting_order_save_02(self.ui))
 
         self.ui.ss_sell_checkBox_24 = self.wc.setCheckBox('수익률(+)', self.ui.ss_od_groupBoxxx_16)
         self.ui.ss_sell_lineEdit_11 = self.wc.setLineedit(self.ui.ss_od_groupBoxxx_16)

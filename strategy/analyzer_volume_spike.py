@@ -11,17 +11,20 @@ from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
-from utility.static_method.static_datetime import timedelta_day, dt_ymd, str_ymd
+from utility.static_method.static_datetime import now, timedelta_sec
 
 VOLUME_SPIKE_DB = f'{DB_PATH}/volume_spike.db'
 
 window_queue = None
+total_queue  = None
 
 
-def init_worker(q):
+def init_worker(wndowQ, totalQ):
     """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
     global window_queue
-    window_queue = q
+    global total_queue
+    window_queue = wndowQ
+    total_queue  = totalQ
 
 
 def _calculate_setting_hash(*args) -> str:
@@ -33,8 +36,9 @@ def _calculate_setting_hash(*args) -> str:
 @njit(cache=True, fastmath=True, parallel=True)
 def _calculate_ma_volume(volume_data: np.ndarray, analysis_period: int) -> np.ndarray:
     """이동평균 거래량 계산 (numba 최적화)"""
-    ma_volume = np.zeros(len(volume_data))
-    for idx in prange(analysis_period, len(volume_data)):
+    n = len(volume_data)
+    ma_volume = np.zeros(n, dtype=np.float64)
+    for idx in prange(analysis_period, n):
         ma_volume[idx] = np.mean(volume_data[idx-analysis_period:idx])
     return ma_volume
 
@@ -42,9 +46,10 @@ def _calculate_ma_volume(volume_data: np.ndarray, analysis_period: int) -> np.nd
 @njit(cache=True, fastmath=True, parallel=True)
 def _calculate_spike_indices(volume_data: np.ndarray, ma_volume: np.ndarray, analysis_period: int) -> np.ndarray:
     """거래량 급증 인덱스 계산 (numba 최적화)"""
-    max_indices = len(volume_data) - analysis_period
+    n = len(volume_data)
+    max_indices = n - analysis_period
     spike_indices = np.zeros(max_indices, dtype=np.int64)
-    for idx in prange(analysis_period, len(volume_data)):
+    for idx in prange(analysis_period, n):
         if ma_volume[idx] > 0:
             spike_indices[idx - analysis_period] = idx
     return spike_indices[spike_indices != 0]
@@ -55,7 +60,7 @@ def _calculate_spike_score_array(close_price: np.ndarray, dates: np.ndarray, ind
                                  analysis_period: int, rate_threshold: float) -> np.ndarray:
     """거래량 급증 점수 배열 계산 (numba 최적화)"""
     max_scores = len(indices)
-    scores = np.zeros(max_scores)
+    scores = np.zeros(max_scores, dtype=np.float64)
     for k in prange(max_scores):
         idx = indices[k]
         if idx + analysis_period < len(close_price) and dates[idx] == dates[idx + analysis_period]:
@@ -81,8 +86,9 @@ class AnalyzerVolumeSpike:
         초기화
         market_gubun: 마켓 구분 번호
         market_info: 마켓 정보 딕셔너리
+        is_tick: 틱 데이터 여부
+        backtest: 백테스트 모드 여부
         min_samples: 최소 샘플 수 (기본값 20)
-        is_tick: 틱 데이터 여부 (기본값 False)
         """
         self.spike_database = VolumeSpikeDatabase(market_info['전략구분'], is_tick)
         self.analysis_period, self.rate_threshold = self.spike_database.load_spike_setting(market_gubun)
@@ -125,9 +131,9 @@ class AnalyzerVolumeSpike:
             current_volume = volume_data[-1]
 
             if current_ma_volume > 0:
-                spike_multiplier   = current_volume / current_ma_volume
-                rounded_multiplier = round(spike_multiplier * 2) / 2
-                score_data = spike_scores.get(rounded_multiplier)
+                spike_level   = current_volume / current_ma_volume
+                rounded_level = round(spike_level * 2) / 2
+                score_data = spike_scores.get(rounded_level)
                 if score_data:
                     volume_spike_score = score_data['avg_score']
                     confidence_score   = score_data['confidence_score']
@@ -148,13 +154,14 @@ class AnalyzerVolumeSpike:
         results = np.zeros((n, 2))
 
         for i in range(self.analysis_period, n):
-            window_data = code_data[i-self.analysis_period:i]
+            window_data = code_data[:i]
             results[i] = list(self.analyze_current_spike(code, window_data))
 
         return results
 
-    def train_all_codes(self, windowQ):
+    def train_all_codes(self, ui):
         """전체 종목 학습 수행 (종목 기반 멀티프로세싱)"""
+        start = now()
         with sqlite3.connect(self.backtest_db) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -173,16 +180,18 @@ class AnalyzerVolumeSpike:
                 existing_dates_dict[code] = set([row[0] for row in cursor.fetchall()])
 
         multi = cpu_count()
-
-        if len(code_list) <= multi:
+        len_code_list = len(code_list)
+        if len_code_list <= multi:
             code_chunks = [[code] for code in code_list]
         else:
             code_chunks = []
             for i in range(multi):
                 code_chunks.append([code for j, code in enumerate(code_list) if j % multi == i])
 
+        self._monitor_totalQ(start, ui.windowQ, ui.totalQ, len_code_list)
+
         actual_processes = min(multi, len(code_chunks))
-        with Pool(processes=actual_processes, initializer=init_worker, initargs=(windowQ,)) as pool:
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ, ui.totalQ)) as pool:
             args = [
                 (
                     i, chunk, self.backtest_db, self.idx_close, self.idx_volume,
@@ -195,7 +204,7 @@ class AnalyzerVolumeSpike:
 
         total_processed = 0
         columns = [
-            'code', 'spike_multiplier', 'avg_score', 'max_score', 'min_score', 'std_score',
+            'code', 'spike_level', 'avg_score', 'max_score', 'min_score', 'std_score',
             'sample_count', 'confidence_score', 'setting_hash', 'last_update'
         ]
         for i, result in enumerate(results):
@@ -203,32 +212,38 @@ class AnalyzerVolumeSpike:
                 df = pd.DataFrame(result, columns=columns)
                 self.spike_database.save_spike_scores(df)
                 total_processed += 1
-                windowQ.put((UI_NUM['학습로그'], f"학습 데이터 저장 중 ... [{i+1:02d}/{actual_processes:02d}]"))
+                ui.windowQ.put((UI_NUM['학습로그'], f'학습 데이터 저장 중 ... [{i+1:02d}/{actual_processes:02d}]'))
 
         if total_processed > 0:
-            windowQ.put((UI_NUM['학습로그'], "학습 데이터 저장 완료"))
-            windowQ.put((UI_NUM['학습로그'], f"{self.spike_database.db_path} -> {self.spike_database.table_name}"))
-            windowQ.put((UI_NUM['학습로그'], '거래량분석 학습 완료'))
+            pass_time = now() - start
+            ui.windowQ.put((
+                UI_NUM['학습로그'],
+                f'학습 데이터 저장 완료, {self.spike_database.db_path} -> {self.spike_database.table_name}'
+            ))
+            ui.windowQ.put((UI_NUM['학습로그'], f'거래량분석 학습 완료, 소요시간[{pass_time}]'))
         else:
-            windowQ.put((UI_NUM['학습로그'], "이미 모든 데이터가 학습되어 있습니다."))
+            ui.windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다.'))
+
+    @thread_decorator
+    def _monitor_totalQ(self, start, windowQ, totalQ, last):
+        count = 0
+        windowQ.put((UI_NUM['학습로그'], (start, start, count, last)))
+        while count < last:
+            _ = totalQ.get()
+            count += 1
+            curr_time = now()
+            left_time = curr_time - start
+            left_secs = left_time.total_seconds()
+            remn_time = timedelta_sec(left_secs / count * (last - count)) - curr_time
+            windowQ.put((UI_NUM['학습로그'], (left_time, remn_time, count, last)))
 
     @staticmethod
     def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, idx_volume: int,
                           analysis_period: int, rate_threshold: int, min_samples: int,
                           existing_dates_dict: Dict[str, set], is_tick: bool, setting_hash: str) -> List[Any]:
-        """
-        종목 청크별 학습 (프로세스 내에서 실행)
-        code_chunk: 종목코드 청크
-        backtest_db: 백테디비 경로
-        idx_close: 현재가 인덱스
-        idx_volume: 거래량 인덱스
-        analysis_period: 분석 기간 분
-        rate_threshold: 등락율 임계값
-        min_samples: 최소 샘플 수
-        existing_dates_dict: 종목별 기존 저장 날짜 딕셔너리 {code: set(dates)}
-        return: 종목별 급증 점수 딕셔너리 {code: spike_scores}
-        """
+        """단일 종목 청크 학습 (멀티프로세싱용)"""
         global window_queue
+        global total_queue
 
         all_spike_scores = []
         last = len(code_chunk)
@@ -251,8 +266,7 @@ class AnalyzerVolumeSpike:
                     if target_date in existing_dates:
                         continue
 
-                    start_date = float(str_ymd(timedelta_day(-30, dt_ymd(str(int(target_date))))))
-                    mask = (start_date <= all_dates) & (all_dates <= target_date)
+                    mask = all_dates <= target_date
                     date_data = historical_data[mask]
 
                     if len(date_data) < analysis_period * 2:
@@ -264,34 +278,33 @@ class AnalyzerVolumeSpike:
                     ma_volume     = _calculate_ma_volume(volume_data, analysis_period)
                     spike_indices = _calculate_spike_indices(volume_data, ma_volume, analysis_period)
 
-                    spike_groups = {}
+                    groups = {}
                     for idx in spike_indices:
-                        multiplier = volume_data[idx] / ma_volume[idx]
-                        rounded_multiplier = round(multiplier * 2) / 2
-                        if rounded_multiplier not in spike_groups:
-                            spike_groups[rounded_multiplier] = []
-                        spike_groups[rounded_multiplier].append(idx)
+                        level = volume_data[idx] / ma_volume[idx]
+                        rounded_level = round(level * 2) / 2
+                        if rounded_level not in groups:
+                            groups[rounded_level] = []
+                        groups[rounded_level].append(idx)
 
-                    for multiplier, indices in spike_groups.items():
+                    for level, indices in groups.items():
                         if len(indices) >= min_samples:
                             indices_array = np.array(indices)
                             scores = _calculate_spike_score_array(close_price, dates, indices_array,
                                                                   analysis_period, rate_threshold)
-                            valid_scores = scores[scores != 0.0]
 
-                            if len(valid_scores) >= min_samples:
-                                sample_factor = min(len(valid_scores) / 100.0, 1.0)
-                                std_factor    = max(1.0 - float(np.std(valid_scores)) / 50.0, 0.0)
+                            if len(scores) >= min_samples:
+                                sample_factor = min(len(scores) / 100.0, 1.0)
+                                std_factor    = max(1.0 - float(np.std(scores)) / 50.0, 0.0)
                                 confidence    = (sample_factor + std_factor) / 2.0
 
                                 spike_scores = [
                                     code,
-                                    multiplier,
-                                    round(float(np.mean(valid_scores)), 2),
-                                    round(float(np.max(valid_scores)), 2),
-                                    round(float(np.min(valid_scores)), 2),
-                                    round(float(np.std(valid_scores)), 2),
-                                    len(valid_scores),
+                                    level,
+                                    round(float(np.mean(scores)), 2),
+                                    round(float(np.max(scores)), 2),
+                                    round(float(np.min(scores)), 2),
+                                    round(float(np.std(scores)), 2),
+                                    len(scores),
                                     round(confidence, 2),
                                     setting_hash,
                                     target_date
@@ -299,10 +312,13 @@ class AnalyzerVolumeSpike:
                                 all_spike_scores.append(spike_scores)
 
                 # noinspection PyUnresolvedReferences
-                window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 거래량분석 학습 중 ... [{k+1:02d}/{last:02d}]"))
-            except Exception as e:
+                window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 거래량분석 학습 중 ... [{k+1:02d}/{last:02d}]'))
+            except Exception:
                 # noinspection PyUnresolvedReferences
                 window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 거래량분석 학습 실패 - {e}"))
+
+            # noinspection PyUnresolvedReferences
+            total_queue.put('학습완료')
 
         return all_spike_scores
 
@@ -332,7 +348,7 @@ class VolumeSpikeDatabase:
             cursor.execute(f'''
                 CREATE TABLE IF NOT EXISTS {self.table_name} (
                     code TEXT NOT NULL,
-                    spike_multiplier REAL NOT NULL,
+                    spike_level REAL NOT NULL,
                     avg_score REAL NOT NULL,
                     max_score REAL NOT NULL,
                     min_score REAL NOT NULL,
@@ -341,7 +357,7 @@ class VolumeSpikeDatabase:
                     confidence_score REAL NOT NULL,
                     setting_hash TEXT NOT NULL,
                     last_update INTEGER NOT NULL,
-                    PRIMARY KEY (code, spike_multiplier, setting_hash, last_update)
+                    PRIMARY KEY (code, spike_level, setting_hash, last_update)
                 )
             ''')
             conn.commit()
@@ -366,7 +382,7 @@ class VolumeSpikeDatabase:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
-                SELECT spike_multiplier, avg_score, max_score, min_score, std_score, sample_count, confidence_score
+                SELECT spike_level, avg_score, max_score, min_score, std_score, sample_count, confidence_score
                 FROM {self.table_name}
                 WHERE code = ? AND setting_hash = ? AND last_update = 
                 (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?)
@@ -395,7 +411,7 @@ class VolumeSpikeDatabase:
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
             cursor.execute(f'''
-                SELECT spike_multiplier, avg_score, max_score, min_score, std_score, sample_count, confidence_score
+                SELECT spike_level, avg_score, max_score, min_score, std_score, sample_count, confidence_score
                 FROM {self.table_name}
                 WHERE code = ? AND setting_hash = ? AND last_update = 
                 (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update < ?)
@@ -438,7 +454,7 @@ class VolumeSpikeDatabase:
             if result:
                 analysis_period, rate_threshold = result
             else:
-                analysis_period, rate_threshold = 30, 3
+                analysis_period, rate_threshold = 10, 3
                 self.save_spike_setting(market, analysis_period, rate_threshold)
 
             self.setting_hash = _calculate_setting_hash(analysis_period, rate_threshold)
@@ -506,5 +522,5 @@ def _spike_train(ui):
     """스레드로 급증 패턴 학습을 시작한다."""
     ui.learn_running = True
     vs_analyzer = AnalyzerVolumeSpike(ui.market_gubun, ui.market_info, ui.dict_set['타임프레임'])
-    vs_analyzer.train_all_codes(ui.windowQ)
+    vs_analyzer.train_all_codes(ui)
     ui.learn_running = False

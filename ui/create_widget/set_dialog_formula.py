@@ -33,8 +33,8 @@ class SetDialogFormula:
 
         self.ui.fm_lineEdittttt_01 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, aleft=True, style=style_bc_dk)
         self.ui.fm_comboBoxxxxx_00 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, hover=False, activated=lambda: formula_activated(self.ui))
-        self.ui.fm_pushButtonnn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.fm_groupBoxxxxx_02, color=4, click=lambda: formula_button_clicked(self.ui))
-        self.ui.fm_pushButtonnn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.fm_groupBoxxxxx_02, color=4, click=lambda: formula_button_clicked(self.ui))
+        self.ui.fm_pushButtonnn_01 = self.wc.setPushbutton('불러오기', parent=self.ui.fm_groupBoxxxxx_02, color=4, bounced=True, click=lambda: formula_button_clicked(self.ui))
+        self.ui.fm_pushButtonnn_02 = self.wc.setPushbutton('저장하기', parent=self.ui.fm_groupBoxxxxx_02, color=4, bounced=True, click=lambda: formula_button_clicked(self.ui))
 
         self.ui.fm_checkBoxxxxx_01 = self.wc.setCheckBox('차트 표시 유무 선택', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
         self.ui.fm_checkBoxxxxx_02 = self.wc.setCheckBox('전략연산 및 백테 적용', self.ui.fm_groupBoxxxxx_02, style=style_ck_bx)
@@ -55,7 +55,7 @@ class SetDialogFormula:
         color_name = QColor(150, 150, 160).name()
         self.ui.fm_frameeeeeeee_01 = QFrame(self.ui.fm_groupBoxxxxx_02)
         self.ui.fm_frameeeeeeee_01.setStyleSheet('QWidget { background-color: %s }' % color_name)
-        self.ui.fm_pushButtonnn_03 = self.wc.setPushbutton('색상선택', parent=self.ui.fm_groupBoxxxxx_02, click=lambda: formula_button_clicked(self.ui))
+        self.ui.fm_pushButtonnn_03 = self.wc.setPushbutton('색상선택', parent=self.ui.fm_groupBoxxxxx_02, bounced=True, click=lambda: formula_button_clicked(self.ui))
         self.ui.fm_lineEdittttt_02 = self.wc.setLineedit(self.ui.fm_groupBoxxxxx_02, style=style_bc_dk, ltext=color_name)
 
         items = ['0.5', '1.0', '2.0', '3.0', '4.0', '5.0', '10.0', '20.0', '30.0', '40.0', '50.0']
@@ -64,8 +64,8 @@ class SetDialogFormula:
         items = ['1:실선', '2:대시선', '3:점선', '4:대시점선', '5:대시점점선', '6:위쪽화살표(↑)', '7:아래쪽화살표(↓)', '8:우측쪽화살표(→)', '9:좌쪽화살표(←)']
         self.ui.fm_comboBoxxxxx_04 = self.wc.setCombobox(self.ui.fm_groupBoxxxxx_02, hover=False, items=items, tip='선의 종류(1~5) 또는 화살표의 종류(6~9)를 선택하십시오.')
 
-        self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('삭제하기', parent=self.ui.fm_groupBoxxxxx_02, color=2, click=lambda: formula_button_clicked(self.ui))
-        self.ui.fm_pushButtonnn_05 = self.wc.setPushbutton('예제확인', parent=self.ui.fm_groupBoxxxxx_02, color=3, click=lambda: formula_button_clicked(self.ui))
+        self.ui.fm_pushButtonnn_04 = self.wc.setPushbutton('삭제하기', parent=self.ui.fm_groupBoxxxxx_02, color=2, bounced=True, click=lambda: formula_button_clicked(self.ui))
+        self.ui.fm_pushButtonnn_05 = self.wc.setPushbutton('예제확인', parent=self.ui.fm_groupBoxxxxx_02, color=3, bounced=True, click=lambda: formula_button_clicked(self.ui))
 
         self.ui.fm_textEdittttt_01 = self.wc.setTextEdit(self.ui.fm_groupBoxxxxx_03, vscroll=True, filter_=True, font=qfont14)
 

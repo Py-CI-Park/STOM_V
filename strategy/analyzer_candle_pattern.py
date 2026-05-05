@@ -6,13 +6,14 @@ import hashlib
 import numpy as np
 import pandas as pd
 from numba import njit, prange
+from traceback import format_exc
 from PyQt5.QtWidgets import QMessageBox
 from typing import Dict, List, Tuple, Any
 from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
-from utility.static_method.static_datetime import timedelta_day, dt_ymd, str_ymd
+from utility.static_method.static_datetime import now, timedelta_sec
 
 PATTERN_DB = f'{DB_PATH}/pattern_analysis.db'
 PATTERN_FUNCTIONS = [
@@ -32,12 +33,15 @@ PATTERN_FUNCTIONS = [
 ]
 
 window_queue = None
+total_queue  = None
 
 
-def init_worker(q):
+def init_worker(wndowQ, totalQ):
     """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
     global window_queue
-    window_queue = q
+    global total_queue
+    window_queue = wndowQ
+    total_queue  = totalQ
 
 
 def _calculate_setting_hash(*args) -> str:
@@ -147,16 +151,18 @@ class AnalyzerCandlePattern:
         self.load_pattern_code_scores(code, date)
 
         n = len(code_data)
+        start_idx = 5
         results = np.zeros((n, 2))
 
-        for i in range(5, n):
-            window_data = code_data[i-5:i]
+        for i in range(start_idx, n):
+            window_data = code_data[:i]
             results[i] = list(self.analyze_current_patterns(code, window_data))
 
         return results
 
-    def train_all_codes(self, windowQ):
+    def train_all_codes(self, ui):
         """전체 종목 학습 수행 (종목 기반 멀티프로세싱)"""
+        start = now()
         with sqlite3.connect(self.backtest_db) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -175,16 +181,18 @@ class AnalyzerCandlePattern:
                 existing_dates_dict[code] = set([row[0] for row in cursor.fetchall()])
 
         multi = cpu_count()
-
-        if len(code_list) <= multi:
+        len_code_list = len(code_list)
+        if len_code_list <= multi:
             code_chunks = [[code] for code in code_list]
         else:
             code_chunks = []
             for i in range(multi):
                 code_chunks.append([code for j, code in enumerate(code_list) if j % multi == i])
 
+        self._monitor_totalQ(start, ui.windowQ, ui.totalQ, len_code_list)
+
         actual_processes = min(multi, len(code_chunks))
-        with Pool(processes=actual_processes, initializer=init_worker, initargs=(windowQ,)) as pool:
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ, ui.totalQ)) as pool:
             args = [
                 (
                     i, chunk, self.backtest_db, self.idx_open, self.idx_high,
@@ -205,34 +213,38 @@ class AnalyzerCandlePattern:
                 df = pd.DataFrame(result, columns=columns)
                 self.pattern_database.save_pattern_scores(df)
                 total_processed += 1
-                windowQ.put((UI_NUM['학습로그'], f"학습 데이터 저장 중 ... [{i+1:02d}/{actual_processes:02d}]"))
+                ui.windowQ.put((UI_NUM['학습로그'], f'학습 데이터 저장 중 ... [{i+1:02d}/{actual_processes:02d}]'))
 
         if total_processed > 0:
-            windowQ.put((UI_NUM['학습로그'], "학습 데이터 저장 완료"))
-            windowQ.put((UI_NUM['학습로그'], f"{self.pattern_database.db_path} -> {self.pattern_database.table_name}"))
-            windowQ.put((UI_NUM['학습로그'], '캔들분석 학습 완료'))
+            pass_time = now() - start
+            ui.windowQ.put((
+                UI_NUM['학습로그'],
+                f'학습 데이터 저장 완료, {self.pattern_database.db_path} -> {self.pattern_database.table_name}'
+            ))
+            ui.windowQ.put((UI_NUM['학습로그'], f'캔들분석 학습 완료, 소요시간[{pass_time}]'))
         else:
-            windowQ.put((UI_NUM['학습로그'], "이미 모든 데이터가 학습되어 있습니다"))
+            ui.windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다'))
+
+    @thread_decorator
+    def _monitor_totalQ(self, start, windowQ, totalQ, last):
+        count = 0
+        windowQ.put((UI_NUM['학습로그'], (start, start, count, last)))
+        while count < last:
+            _ = totalQ.get()
+            count += 1
+            curr_time = now()
+            left_time = curr_time - start
+            left_secs = left_time.total_seconds()
+            remn_time = timedelta_sec(left_secs / count * (last - count)) - curr_time
+            windowQ.put((UI_NUM['학습로그'], (left_time, remn_time, count, last)))
 
     @staticmethod
     def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_open: int, idx_high: int,
                           idx_low: int, idx_close: int, analysis_period: int, rate_threshold: int,
                           min_samples: int, existing_dates_dict: Dict[str, set], setting_hash: str) -> List[Any]:
-        """
-        종목 청크별 학습 (프로세스 내에서 실행)
-        code_chunk: 종목코드 청크
-        backtest_db: 백테디비 경로
-        idx_open: 분봉시가 인덱스
-        idx_high: 분봉고가 인덱스
-        idx_low: 분봉저가 인덱스
-        idx_close: 현재가 인덱스
-        analysis_period: 분봉 설정
-        rate_threshold: 퍼센트 설정
-        min_samples: 최소 샘플 수 (기본값 10)
-        existing_dates_dict: 종목별 기존 저장 날짜 딕셔너리 {code: set(dates)}
-        return: 종목별 패턴 점수 딕셔너리 {code: pattern_scores}
-        """
+        """단일 종목 청크 학습 (멀티프로세싱용)"""
         global window_queue
+        global total_queue
 
         all_pattern_scores = []
         last = len(code_chunk)
@@ -254,8 +266,7 @@ class AnalyzerCandlePattern:
                         if target_date in existing_dates:
                             continue
 
-                        start_date = float(str_ymd(timedelta_day(-30, dt_ymd(str(int(target_date))))))
-                        mask = (start_date <= all_dates) & (all_dates <= target_date)
+                        mask = all_dates <= target_date
                         date_data = historical_data[mask]
 
                         if len(date_data) < analysis_period * 2:
@@ -296,10 +307,13 @@ class AnalyzerCandlePattern:
                                     all_pattern_scores.append(pattern_scores)
 
                     # noinspection PyUnresolvedReferences
-                    window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 캔들분석 학습 중 ... [{k+1:02d}/{last:02d}]"))
-                except Exception as e:
+                    window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 캔들분석 학습 중 ... [{k+1:02d}/{last:02d}]'))
+                except Exception:
                     # noinspection PyUnresolvedReferences
                     window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 캔들분석 학습 실패 - {e}"))
+
+                # noinspection PyUnresolvedReferences
+                total_queue.put('학습완료')
 
         return all_pattern_scores
 
@@ -432,7 +446,7 @@ class CandlePatternDatabase:
             if result:
                 analysis_period, rate_threshold = result
             else:
-                analysis_period, rate_threshold = 30, 5
+                analysis_period, rate_threshold = 10, 3
                 self.save_pattern_setting(market, analysis_period, rate_threshold)
 
             self.setting_hash = _calculate_setting_hash(analysis_period, rate_threshold)
@@ -505,5 +519,5 @@ def _pattern_train(ui):
     """스레드로 패턴학습을 시작한다."""
     ui.learn_running = True
     pt_analyzer = AnalyzerCandlePattern(ui.market_gubun, ui.market_info)
-    pt_analyzer.train_all_codes(ui.windowQ)
+    pt_analyzer.train_all_codes(ui)
     ui.learn_running = False

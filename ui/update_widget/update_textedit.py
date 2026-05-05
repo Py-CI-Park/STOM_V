@@ -39,6 +39,16 @@ class UpdateTextedit:
             self.ui.dict_fm = data[2]
             self.ui.fm_tcnt = data[3]
 
+        elif gubun == UI_NUM['학습로그'] and data[1].__class__ == tuple:
+            left_time, remn_time, count, last = data[1]
+            if count == 0:
+                self.ui.ptn_progresBar_01.setFormat('%p%')
+                self.ui.ptn_progresBar_01.setValue(0)
+            else:
+                self.ui.ptn_progresBar_01.setFormat(f'%p% | 경과 시간 {left_time} | 남은 시간 {remn_time}')
+                self.ui.ptn_progresBar_01.setValue(count)
+                self.ui.ptn_progresBar_01.setRange(0, last)
+
         else:
             time_ = str(now())[:-3]
             text  = data[1]

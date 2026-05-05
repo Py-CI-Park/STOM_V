@@ -39,9 +39,9 @@ class SetTable:
         self.ui.dt_tableWidgetttt = self.wc.setTablewidget(self.ui.td_tab, COLUMNS_DTT, 1)
         self.ui.ds_tableWidgetttt = self.wc.setTablewidget(self.ui.td_tab, COLUMNS_DTD, 19, clicked=lambda row, col: cell_clicked_03(self.ui, row, col))
 
-        self.ui.nt_pushButtonn_01 = self.wc.setPushbutton('일별집계', parent=self.ui.td_tab, animated=True, click=lambda: ttbutton_clicked_01(self.ui, '일별집계'))
-        self.ui.nt_pushButtonn_02 = self.wc.setPushbutton('월별집계', parent=self.ui.td_tab, animated=True, click=lambda: ttbutton_clicked_01(self.ui, '월별집계'))
-        self.ui.nt_pushButtonn_03 = self.wc.setPushbutton('연도별집계', parent=self.ui.td_tab, animated=True, click=lambda: ttbutton_clicked_01(self.ui, '연도별집계'))
+        self.ui.nt_pushButtonn_01 = self.wc.setPushbutton('일별집계', parent=self.ui.td_tab, bounced=True, click=lambda: ttbutton_clicked_01(self.ui, '일별집계'))
+        self.ui.nt_pushButtonn_02 = self.wc.setPushbutton('월별집계', parent=self.ui.td_tab, bounced=True, click=lambda: ttbutton_clicked_01(self.ui, '월별집계'))
+        self.ui.nt_pushButtonn_03 = self.wc.setPushbutton('연도별집계', parent=self.ui.td_tab, bounced=True, click=lambda: ttbutton_clicked_01(self.ui, '연도별집계'))
         self.ui.nt_tableWidgetttt = self.wc.setTablewidget(self.ui.td_tab, COLUMNS_NTT, 1, clicked=lambda row, col: cell_clicked_10(self.ui, row, col))
         self.ui.ns_tableWidgetttt = self.wc.setTablewidget(self.ui.td_tab, COLUMNS_NTD, 28, clicked=lambda row, col: cell_clicked_04(self.ui, row, col))
 

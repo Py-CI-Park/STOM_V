@@ -322,9 +322,10 @@ class AnalyzerRisk:
             (N) 형태의 1차원 어레이 - 리스크점수
         """
         n = len(code_data)
+        start_idx = 20
         results = np.zeros(n)  # [리스크 점수]
 
-        for i in range(20, n):
+        for i in range(start_idx, n):
             window_data = code_data[:i]  # 0부터 i까지의 데이터 사용
             risk_score = self.get_risk_score(window_data)
             results[i] = risk_score

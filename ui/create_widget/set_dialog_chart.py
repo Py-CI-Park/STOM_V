@@ -57,7 +57,7 @@ class SetDialogChart:
         self.ui.ct_lineEdittttt_04 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, enter=lambda: return_press_01(self.ui), style=style_bc_dk)
         self.ui.ct_labellllllll_05 = QLabel('종목명', self.ui.ct_groupBoxxxxx_01)
         self.ui.ct_lineEdittttt_05 = self.wc.setLineedit(self.ui.ct_groupBoxxxxx_01, enter=lambda: return_press_01(self.ui), style=style_bc_dk)
-        self.ui.ct_pushButtonnn_01 = self.wc.setPushbutton('검색하기', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: return_press_01(self.ui))
+        self.ui.ct_pushButtonnn_01 = self.wc.setPushbutton('검색하기', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: return_press_01(self.ui))
         self.ui.ct_checkBoxxxxx_01 = self.wc.setCheckBox('십자선', self.ui.ct_groupBoxxxxx_01, checked=True, style=style_ck_bx)
         self.ui.ct_checkBoxxxxx_02 = self.wc.setCheckBox('정보창', self.ui.ct_groupBoxxxxx_01, checked=False, style=style_ck_bx)
         text = '1. 시작시간과 종료시간을 설정하면 해당시간의 데이터만 표시됩니다.\n' \
@@ -73,10 +73,10 @@ class SetDialogChart:
                '11. 호가창이 열린 상태에서 마우스 좌클릭 시 해당 시간의 호가정보가 표시됩니다.\n' \
                '12. 팩터설정 창, 우측 빈칸에 등락율각도, 거래대금각도 계수를 입력하여 다른 계수값 기반 각도를 표시할 수 있습니다.'
         self.ui.ct_pushButtonnn_02 = self.wc.setPushbutton('도움말', parent=self.ui.ct_groupBoxxxxx_01, tip=text)
-        self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: show_dialog_formula(self.ui))
-        self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: show_dialog_factor(self.ui))
-        self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART I', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: chart_count_change(self.ui))
-        self.ui.ct_pushButtonnn_06 = self.wc.setPushbutton('확장', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: chart_size_change(self.ui))
+        self.ui.ct_pushButtonnn_03 = self.wc.setPushbutton('수식관리자', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: show_dialog_formula(self.ui))
+        self.ui.ct_pushButtonnn_04 = self.wc.setPushbutton('펙터설정', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: show_dialog_factor(self.ui))
+        self.ui.ct_pushButtonnn_05 = self.wc.setPushbutton('CHART I', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: chart_count_change(self.ui))
+        self.ui.ct_pushButtonnn_06 = self.wc.setPushbutton('확장', parent=self.ui.ct_groupBoxxxxx_01, bounced=True, click=lambda: chart_size_change(self.ui))
         self.ui.ct_pushButtonnn_07 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_01(self.ui, '이전'), shortcut='Alt+left')
         self.ui.ct_pushButtonnn_08 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_01(self.ui, '다음'), shortcut='Alt+right')
         self.ui.ct_pushButtonnn_09 = self.wc.setPushbutton('', parent=self.ui.ct_groupBoxxxxx_01, click=lambda: hg_button_clicked_02(self.ui, '매수'), shortcut='Alt+up')
@@ -265,9 +265,9 @@ class SetDialogChart:
 
         text = '매수전략으로 설정된\n보조지표값 사용하기\n체크를 해제하면\n좌측 설정값으로 표시됨'
         self.ui.ft_checkBoxxxxx_46 = self.wc.setCheckBox(text, self.ui.jp_groupBoxxxxx_01, checked=False, style=style_ck_bx)
-        self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_basic(self.ui))
-        self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_load(self.ui))
-        self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', parent=self.ui.jp_groupBoxxxxx_01, click=lambda: indicator_setting_save(self.ui))
+        self.ui.ft_pushButtonnn_01 = self.wc.setPushbutton('보조지표설정 기본값', parent=self.ui.jp_groupBoxxxxx_01, bounced=True, click=lambda: indicator_setting_basic(self.ui))
+        self.ui.ft_pushButtonnn_02 = self.wc.setPushbutton('보조지표설정 불러오기', parent=self.ui.jp_groupBoxxxxx_01, bounced=True, click=lambda: indicator_setting_load(self.ui))
+        self.ui.ft_pushButtonnn_03 = self.wc.setPushbutton('보조지표설정 저장하기', parent=self.ui.jp_groupBoxxxxx_01, bounced=True, click=lambda: indicator_setting_save(self.ui))
 
         if self.ui.dict_set is not None:
             self.ui.dialog_chart.setFixedSize(1403, 1370 if not self.ui.dict_set['저해상도'] else 1010)

@@ -11,17 +11,20 @@ from multiprocessing import Pool, cpu_count
 from ui.create_widget.set_text import famous_saying
 from utility.settings.setting_base import UI_NUM, DB_PATH
 from utility.static_method.static_decorator import thread_decorator
-from utility.static_method.static_datetime import timedelta_day, dt_ymd, str_ymd
+from utility.static_method.static_datetime import now, timedelta_sec
 
 VOLUME_PROFILE_DB = f'{DB_PATH}/volume_profile.db'
 
 window_queue = None
+total_queue  = None
 
 
-def init_worker(q):
+def init_worker(wndowQ, totalQ):
     """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
     global window_queue
-    window_queue = q
+    global total_queue
+    window_queue = wndowQ
+    total_queue  = totalQ
 
 
 def _calculate_setting_hash(*args) -> str:
@@ -92,8 +95,9 @@ class AnalyzerVolumeProfile:
         초기화
         market_gubun: 마켓 구분 번호
         market_info: 마켓 정보 딕셔너리
+        is_tick: 틱 데이터 여부
+        backtest: 백테스트 모드 여부
         top_nodes: 상위 볼륨 노드 개수 (기본값 20)
-        is_tick: 틱 데이터 여부 (기본값 False)
         """
         self.volume_database = VolumeProfileDatabase(market_info['전략구분'], is_tick)
         self.analysis_period, self.rate_threshold, self.price_range_pct = \
@@ -166,8 +170,9 @@ class AnalyzerVolumeProfile:
 
         return results
 
-    def train_all_codes(self, windowQ):
+    def train_all_codes(self, ui):
         """전체 종목 학습 수행 (종목 기반 멀티프로세싱)"""
+        start = now()
         with sqlite3.connect(self.backtest_db) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE TYPE = 'table'")
@@ -186,16 +191,18 @@ class AnalyzerVolumeProfile:
                 existing_dates_dict[code] = set([row[0] for row in cursor.fetchall()])
 
         multi = cpu_count()
-
-        if len(code_list) <= multi:
+        len_code_list = len(code_list)
+        if len_code_list <= multi:
             code_chunks = [[code] for code in code_list]
         else:
             code_chunks = []
             for i in range(multi):
                 code_chunks.append([code for j, code in enumerate(code_list) if j % multi == i])
 
+        self._monitor_totalQ(start, ui.windowQ, ui.totalQ, len_code_list)
+
         actual_processes = min(multi, len(code_chunks))
-        with Pool(processes=actual_processes, initializer=init_worker, initargs=(windowQ,)) as pool:
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ, ui.totalQ)) as pool:
             args = [
                 (
                     i, chunk, self.backtest_db, self.idx_close, self.idx_volume,
@@ -216,33 +223,38 @@ class AnalyzerVolumeProfile:
                 df = pd.DataFrame(result, columns=columns)
                 self.volume_database.save_volume_scores(df)
                 total_processed += 1
-                windowQ.put((UI_NUM['학습로그'], f"학습 데이터 저장 중 ... [{i+1:02d}/{actual_processes:02d}]"))
+                ui.windowQ.put((UI_NUM['학습로그'], f'학습 데이터 저장 중 ... [{i+1:02d}/{actual_processes:02d}]'))
 
         if total_processed > 0:
-            windowQ.put((UI_NUM['학습로그'], "학습 데이터 저장 완료"))
-            windowQ.put((UI_NUM['학습로그'], f"{self.volume_database.db_path} -> {self.volume_database.table_name}"))
-            windowQ.put((UI_NUM['학습로그'], '가격대분석 학습 완료'))
+            pass_time = now() - start
+            ui.windowQ.put((
+                UI_NUM['학습로그'],
+                f'학습 데이터 저장 완료, {self.volume_database.db_path} -> {self.volume_database.table_name}'
+            ))
+            ui.windowQ.put((UI_NUM['학습로그'], f'가격대분석 학습 완료, 소요시간[{pass_time}]'))
         else:
-            windowQ.put((UI_NUM['학습로그'], "이미 모든 데이터가 학습되어 있습니다."))
+            ui.windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다.'))
+
+    @thread_decorator
+    def _monitor_totalQ(self, start, windowQ, totalQ, last):
+        count = 0
+        windowQ.put((UI_NUM['학습로그'], (start, start, count, last)))
+        while count < last:
+            _ = totalQ.get()
+            count += 1
+            curr_time = now()
+            left_time = curr_time - start
+            left_secs = left_time.total_seconds()
+            remn_time = timedelta_sec(left_secs / count * (last - count)) - curr_time
+            windowQ.put((UI_NUM['학습로그'], (left_time, remn_time, count, last)))
 
     @staticmethod
     def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, idx_volume: int,
                           analysis_period: int, rate_threshold: float, price_range_pct: float, top_nodes: int,
                           existing_dates_dict: Dict[str, set], is_tick: bool, setting_hash: str) -> List[Any]:
-        """
-        종목 청크별 학습 (프로세스 내에서 실행)
-        code_chunk: 종목코드 청크
-        backtest_db: 백테디비 경로
-        idx_close: 현재가 인덱스
-        idx_volume: 거래량 인덱스
-        analysis_period: 분석 기간
-        rate_threshold: 등락율 임계값
-        price_range_pct: 가격대 분할 퍼센트
-        top_nodes: 상위 볼륨 노드 개수
-        existing_dates_dict: 종목별 기존 저장 날짜 딕셔너리 {code: set(dates)}
-        return: 종목별 패턴 점수 딕셔너리 {code: pattern_scores}
-        """
+        """단일 종목 청크 학습 (멀티프로세싱용)"""
         global window_queue
+        global total_queue
 
         all_volume_scores = []
         last = len(code_chunk)
@@ -265,8 +277,7 @@ class AnalyzerVolumeProfile:
                         if target_date in existing_dates:
                             continue
 
-                        start_date = float(str_ymd(timedelta_day(-30, dt_ymd(str(int(target_date))))))
-                        mask = (start_date <= all_dates) & (all_dates <= target_date)
+                        mask = all_dates <= target_date
                         date_data = historical_data[mask]
 
                         if len(date_data) < analysis_period * 2:
@@ -310,10 +321,13 @@ class AnalyzerVolumeProfile:
                                 all_volume_scores.append(node_scores)
 
                     # noinspection PyUnresolvedReferences
-                    window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 가격대분석 학습 중 ... [{k+1:02d}/{last:02d}]"))
-                except Exception as e:
+                    window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 가격대분석 학습 중 ... [{k+1:02d}/{last:02d}]'))
+                except Exception:
                     # noinspection PyUnresolvedReferences
                     window_queue.put((UI_NUM['학습로그'], f"[{i:02d}][{code}] 가격대분석 학습 실패 - {e}"))
+
+                # noinspection PyUnresolvedReferences
+                total_queue.put('학습완료')
 
         return all_volume_scores
 
@@ -512,5 +526,5 @@ def _volume_profile_train(ui):
     """스레드로 볼륨 프로파일 학습을 시작한다."""
     ui.learn_running = True
     vf_analyzer = AnalyzerVolumeProfile(ui.market_gubun, ui.market_info, ui.dict_set['타임프레임'])
-    vf_analyzer.train_all_codes(ui.windowQ)
+    vf_analyzer.train_all_codes(ui)
     ui.learn_running = False

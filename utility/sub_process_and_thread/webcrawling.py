@@ -306,8 +306,7 @@ class WebCrawling(QThread):
             self.signal.emit((UI_NUM['시스템로그'], format_exc()))
 
     def _crawling_homtap_data(self):
-        """모든 데이터를 수집합니다 (한국주식+암호화폐).
-        """
+        """모든 데이터를 수집합니다 (한국주식+암호화폐)"""
         search_time = now()
         weekday = search_time.weekday()
         before_open = int(str_hms(search_time)) < 90000

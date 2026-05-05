@@ -630,10 +630,11 @@ class AnalyzerMicrostructure:
         self.clear_code_data(code)
 
         n = len(code_data)
+        start_idx = self.history_cnt
         results = np.zeros((n, 3))  # [시그널, 신뢰도, 리스크]
 
-        for i in range(self.history_cnt, n):
-            recent_data = code_data[i - self.history_cnt:i]
+        for i in range(start_idx, n):
+            recent_data = code_data[i - start_idx:i]
             self._calculate_processed_data(code, recent_data, real=False)
             signal, confidence, total_risk = self.get_signal(buy_cf, sell_cf)
             signal_num = 1 if signal == 'buy' else (-1 if signal == 'sell' else 0)
