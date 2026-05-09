@@ -13,6 +13,63 @@ Custom edits are allowed in 2U_C, but any runtime difference from 2U must be rec
 
 This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py inference lane and should differ from `STOM_Version_2` only by pyd-to-py inference outputs and related verification scaffolding.
 
+## 2U_C V3 backport allowlist rule
+
+`STOM_Version_2U_C` may receive selected V3 features only as intentional documented backports. It remains a V2/Kiwoom-maintained custom lane, not a V3 branch.
+
+Backport entries must be recorded in this registry or in the active `docs/update_log/` backport queue/status document before the difference is treated as intentional.
+
+Minimum template:
+
+```text
+Backport ID:
+Source V3 version:
+Source upstream commit:
+Source files:
+Target branch: STOM_Version_2U_C
+Target worktree: C:/System_Trading/STOM/STOM_V.wt-dev
+Goal:
+Applied scope:
+Excluded LS dependency:
+Kiwoom 유지 보정:
+DB impact:
+UI impact:
+Verification commands:
+Verification result:
+Remaining risk:
+Rollback plan:
+```
+
+Default exclusions until separately designed:
+
+- LS API runtime assumptions
+- `trade/restapi_ls.py` / `trade/restapi_lsdata.py` direct runtime adoption
+- DB-incompatible schema/key changes without migration spec
+- Kiwoom file removal prerequisites
+- V3U pyd-free changes unrelated to the selected 2U_C backport
+
+
+## Active 2U_C V3 backport queue snapshot
+
+The active Phase 11.4 allowlist and verification plan is recorded in:
+
+- `docs/update_log/2026-05-06_2uc_v3_backport_allowlist_plan.md`
+
+Current allowlist IDs:
+
+- `2UC-V3-BP-001`: backtest engine stability fixes, broker-neutral only
+- `2UC-V3-BP-002`: chart / DB chart / crosshair stability fixes, path-mapped manually
+- `2UC-V3-BP-003`: Binance / Upbit stability fixes, LS-free only
+- `2UC-V3-BP-004`: webcrawling / sound / log small stability fixes
+- `2UC-V3-BP-005`: UI bounce / progress no-op or small improvement check
+
+Current hold IDs:
+
+- `HOLD-001`: V3 analysis-system expansion, requires separate design
+- `HOLD-002`: V3 DB structure changes, requires migration design
+
+No candidate may be treated as intentional 2U_C drift unless it is tied to one of these IDs or a later registry/update-log entry.
+
 ## Decision schema
 - Deferred because: the current wave did not touch the surface directly, or the known issue did not block official intake propagation in this cycle.
 - Reclassify when: a future wave changes the surface directly, the failure reproduces during blocker audit, or the affected branch becomes the active corrective-fix target.

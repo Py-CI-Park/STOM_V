@@ -27,32 +27,34 @@ Read in this order before official update work:
 5. latest cycle status under `docs/update_log/`
 
 
-## V3 Kick-off Entry Points
+## V3 / V3U / 2U_C Backport Entry Points
 
-V3 진입은 전략 kick-off가 완료된 상태이며, 아직 실제 V3 branch/worktree 생성이나 V3 파일 반영은 시작하지 않았다.
+V3 전략 kick-off, `STOM_Version_3` 공식 ingress, `STOM_Version_3U` pyd-free 전환, 3U vs 3 최종 parity audit은 완료된 상태다. 현재 후속 단계는 `STOM_Version_2U_C`에 V3 기능을 선별 backport하기 위한 queue 준비/시작 단계다.
 
-V3 관련 작업을 시작하기 전에는 반드시 아래 문서를 순서대로 읽는다:
+V3, 3U, 또는 2U_C V3 backport 관련 작업을 시작하기 전에는 반드시 아래 문서를 순서대로 읽는다:
 1. `docs/V3_UPDATE_OPERATING_SYSTEM.md`
-2. `docs/V3_KICKOFF_READINESS_PLAN.md`
+2. `docs/update_log/2026-05-06_v3_v3u_final_handoff.md`
 3. `docs/update_log/2026-05-04_v3_transition_strategy_review.md`
 4. `docs/WORKTREE_STRATEGY.md`
 5. `docs/CARRY_FORWARD_REGISTRY.md`
+6. 최신 2U_C backport queue/status 문서 under `docs/update_log/`
 
-V3 전환기 목표 worktree 지도:
+현재 전환기 worktree 지도:
 
 ```text
-STOM_V/          -> STOM_Version_2       # V2 공식 유지
+STOM_V/          -> STOM_Version_2       # V2 공식 유지 / root orchestration
 STOM_V.wt-2u/    -> STOM_Version_2U      # V2 pyd-free 유지
 STOM_V.wt-dev/   -> STOM_Version_2U_C    # Kiwoom 유지 custom/backport
-STOM_V.wt-3/     -> STOM_Version_3       # V3 공식 ingress, 신규 예정
-STOM_V.wt-3u/    -> STOM_Version_3U      # V3 pyd-free, 신규 예정
+STOM_V.wt-3/     -> STOM_Version_3       # V3 공식 ingress 완료
+STOM_V.wt-3u/    -> STOM_Version_3U      # V3 pyd-free 완료
 STOM_V.wt-2uc/   -> integration archive  # active lane 아님
 ```
 
-V3 공식 lane에는 upstream 파일과 `.pyd`를 보존한다. V3 pyd 제거는 `STOM_Version_3U`에서만 수행한다. `STOM_Version_2U_C`는 V3 branch가 아니라 Kiwoom 유지 custom lane이며, V3 기능은 선별 backport로만 반영한다. `STOM_Version_3U_C`는 아직 만들지 않는다.
+V3 공식 lane에는 upstream 파일과 `.pyd`를 보존한다. V3 pyd 제거는 `STOM_Version_3U`에서만 수행한다. `STOM_Version_3U_C`는 아직 만들지 않는다.
 
-새 V3/V3U worktree를 만든 뒤에는 ignored runtime directory인 `_database`와 `_log`를 별도로 생성한다. V3의 초기 DB seed는 필요 시 `STOM_V/_database`를 백업 후 복사하고, V3U는 준비된 `STOM_V.wt-3/_database`를 seed로 맞춘다. DB 파일은 커밋하지 않는다. 3U는 `STOM_Version_3`에서 분기하되, pyd 제거 구현은 `STOM_Version_2U`의 pyd-to-py 추론 산출물과 검증 도구를 참고해 이식한다.
+`STOM_Version_2U_C`는 V3 branch가 아니라 V2/Kiwoom 유지 custom lane이다. V3 기능은 broker-neutral 후보부터 선별 backport하고, LS API 전제/DB 비호환 변경은 migration spec과 별도 검토 전에는 제외한다. 각 backport는 source V3 version/commit, 제외한 LS 의존성, Kiwoom 유지 보정, 검증 결과를 `docs/CARRY_FORWARD_REGISTRY.md` 또는 active `docs/update_log/` 문서에 기록해야 한다.
 
+V3/V3U runtime `_database`, `_log`, `*.db` 파일은 커밋하지 않는다. 3U는 `STOM_Version_3`에서 분기했으며, pyd 제거 구현은 `STOM_Version_2U`의 pyd-to-py 추론 산출물과 검증 도구를 참고해 V3 구조에 맞게 이식한 상태다.
 Current resume context:
 `docs/update_log/2026-04-30_v279_update_resume_context.md`
 

@@ -1,4 +1,7 @@
 # STOM V3 진입 최종 검토 및 실행 준비 계획
+## 2026-05-06 상태 주석
+
+이 문서는 V3 branch/worktree 생성 직전의 역사적 readiness plan이다. 현재는 Phase 0~10이 완료되어 `STOM_Version_3` 공식 ingress와 `STOM_Version_3U` pyd-free 전환까지 끝났고, 남은 후속 단계는 Phase 11인 `STOM_Version_2U_C` V3 backport queue 시작이다. 현재 상태 판단은 `docs/update_log/2026-05-06_v3_v3u_final_handoff.md`, `docs/WORKTREE_STRATEGY.md`, `docs/CARRY_FORWARD_REGISTRY.md`를 우선한다.
 
 ## 문서 목적
 

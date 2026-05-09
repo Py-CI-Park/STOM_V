@@ -14,19 +14,23 @@
 
 ## 현재 상태
 
-- 기준일: 2026-05-05
-- V3 진입 상태: 전략 kick-off 완료, 실행 전 준비 단계
-- 직전 전략 기준선 커밋: `23924c8f V3 전환 전략 기준선을 문서화한다`
+- 기준일: 2026-05-06
+- V3 진입 상태: V3 공식 ingress와 V3U pyd-free 전환 완료, 2U_C V3 backport queue 준비 단계
+- 전략 기준선 커밋: `23924c8f V3 전환 전략 기준선을 문서화한다`
+- V3/V3U 최종 인수인계 문서: `docs/update_log/2026-05-06_v3_v3u_final_handoff.md`
 - 핵심 전략 문서: `docs/update_log/2026-05-04_v3_transition_strategy_review.md`
-- 실행 준비 계획: `docs/V3_KICKOFF_READINESS_PLAN.md`
-- 아직 수행하지 않은 작업:
-  - `STOM_Version_3` branch 생성
-  - `STOM_V.wt-3` worktree 생성
-  - V3 공식 update 반영
-  - `STOM_Version_3U` branch 생성
-  - `STOM_V.wt-3u` worktree 생성
-  - V3 pyd 제거
-
+- 실행 준비 계획: `docs/V3_KICKOFF_READINESS_PLAN.md`는 역사적 readiness plan이며, 현재 상태 판단은 최신 update log와 이 문서를 우선한다.
+- 완료된 작업:
+  - `STOM_Version_3` branch와 `STOM_V.wt-3` worktree 생성
+  - V3 공식 update 반영 through `STOM V3.18`
+  - V3 runtime DB/log bootstrap
+  - `STOM_Version_3U` branch와 `STOM_V.wt-3u` worktree 생성
+  - V3U runtime DB/log bootstrap
+  - V3U pyd removal plan, pyd-free 구현, 3U vs 3 parity audit
+- 남은 후속 작업:
+  - `STOM_Version_2U_C` V3 backport queue 시작
+  - backport별 source V3 version/commit, 제외한 LS 의존성, Kiwoom 보정, 검증 증거 기록
+  - 실제 GUI/runtime 검증 확장
 ## V3 진입 kick-off 정의
 
 이 저장소에서 V3 진입 kick-off는 다음을 의미한다.
@@ -276,18 +280,16 @@ V3 branch/worktree 생성 전에 다음 gate를 통과해야 한다.
 
 ## 직접 진행 가능성
 
-이 문서 기준으로 다음 작업은 직접 진행 가능하다.
+이 문서 기준으로 현재 직접 진행 가능한 후속 작업은 다음이다.
 
-1. V3 source ref 재확인
-2. `STOM_Version_3` branch 생성
-3. `STOM_V.wt-3` worktree 생성
-4. V3 official update plan 작성
-5. V3 official update를 version별로 반영
-6. `STOM_Version_3U` branch 생성
-7. `STOM_V.wt-3u` worktree 생성
-8. V3U pyd-free 검증 체계 설계
+1. `docs/WORKTREE_STRATEGY.md`와 `docs/CARRY_FORWARD_REGISTRY.md`의 V3/2U_C backport 기준 보정
+2. `STOM_Version_2U_C` V3 backport queue 문서 작성
+3. `STOM_V.wt-dev`의 clean preflight와 기존 custom diff inventory
+4. broker-neutral V3 기능 후보 목록 작성
+5. 후보별 source V3 version/commit/files와 제외할 LS 의존성 정리
+6. 코드 backport는 queue 항목, migration 판단, 검증 명령이 준비된 뒤 별도 커밋으로 수행
 
-다만 실제 V3 official update와 V3U pyd 제거는 변화량이 크므로 version별, gate별로 나누어 진행해야 한다.
+이미 완료된 V3 official update와 V3U pyd 제거를 다시 수행하지 않는다. 새 upstream V3 업데이트가 발견되면 먼저 `STOM_Version_3` 공식 lane에 version별로 반영하고, 이후 `STOM_Version_3U` pyd-free 차이를 재검증한다.
 ## runtime DB bootstrap 원칙
 
 Git worktree는 tracked file만 checkout한다. 현재 저장소의 `.gitignore`에는 `_database`, `_log`, `*.db`가 포함되어 있으므로, 새 worktree를 만들더라도 runtime DB 폴더와 DB 파일은 자동으로 생성되거나 복제되지 않는다.
