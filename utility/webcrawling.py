@@ -221,6 +221,7 @@ class WebCrawling(QThread):
         soup     = BeautifulSoup(resp.text, 'html.parser').select('div.section.cop_analysis > div.sub_section')[0]
         txt_list = [item.get_text(strip=True) for item in soup.select('th')]
         num_list = [item.get_text(strip=True) for item in soup.select('td')][:130]
+        num_list = [num.replace(',', '').replace('-', '') for num in num_list]
         columns1 = ['구분'] + txt_list[3:7]
         columns2 = txt_list[7:13]
         data1 = [

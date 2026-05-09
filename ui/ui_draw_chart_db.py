@@ -44,7 +44,7 @@ class DrawDBChart(DrawChartBase):
         self.gsjm_arry = self.ui.ctpg_arry[:, self.fi('관심종목')]
         self.xmin, self.xmax = self.ui.ctpg_xticks[0], self.ui.ctpg_xticks[-1]
         self.hms = from_timestamp(self.xmax).strftime('%H:%M' if self.is_min else '%H:%M:%S')
-        self.same_time = False
+        self.same_code, self.same_time = False, False
 
         self.draw_all_chart()
 
