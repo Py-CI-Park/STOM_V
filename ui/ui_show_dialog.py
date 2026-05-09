@@ -481,8 +481,8 @@ def chart_moneytop_list(ui):
     except:
         pass
 
-    if df is None or len(df) == 0:
-        ui.ct_tableWidgett_01.clearContents()
+    ui.ct_tableWidgett_01.clearContents()
+    if df is None or df.empty:
         return
 
     if is_min:

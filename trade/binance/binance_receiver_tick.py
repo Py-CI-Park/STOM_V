@@ -135,7 +135,9 @@ class BinanceReceiverTick:
 
     def UpdateTickData(self, data):
         try:
-            data = data['data']
+            data = data.get('data') if isinstance(data, dict) else None
+            if data is None:
+                return
             dt   = int(str_ymdhms_utc(data['T']))
             code = data['s']
             c    = float(data['p'])
@@ -234,7 +236,9 @@ class BinanceReceiverTick:
 
     def UpdateHogaData(self, data):
         try:
-            data = data['data']
+            data = data.get('data') if isinstance(data, dict) else None
+            if data is None:
+                return
             dt = int(str_ymdhms_utc(data['T']))
             if self.dict_set['코인전략종료시간'] < int(str(dt)[8:]):
                 return

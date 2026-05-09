@@ -1,8 +1,8 @@
 
 import time
-import pytz
 import asyncio
 import pandas as pd
+from zoneinfo import ZoneInfo
 from threading import Thread, Lock
 from traceback import format_exc
 from telegram import Update, ReplyKeyboardMarkup
@@ -121,7 +121,7 @@ class TelegramBot:
             self.running = False
 
     async def setup_application(self, application):
-        korea_timezone = pytz.timezone('Asia/Seoul')
+        korea_timezone = ZoneInfo('Asia/Seoul')
         application.bot_data['timezone'] = korea_timezone
 
     # noinspection PyUnusedLocal

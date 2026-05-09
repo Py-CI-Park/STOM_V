@@ -640,3 +640,210 @@ Final guard passed for `2UC-V3-BP-008A`.
 | remaining candidate queue | no additional safe micro-candidate opened after BP-008A |
 
 `2UC-V3-BP-008A` is closed as completed. Future timezone/dependency cleanup beyond `utility/static.py` requires a new BP-ID and separate Page 1 inventory.
+
+## 33. V3 -> 2U_C candidate inventory checkpoint
+
+BP-008A final guard 이후 사용자의 요청에 따라 V3 기능을 바로 구현하지 않고, 먼저 V3.0~V3.18 전체 기능군을 후보 inventory로 재정리했다.
+
+| 항목 | 내용 |
+|---|---|
+| inventory 문서 | `docs/update_log/2026-05-07_v3_2uc_candidate_inventory.md` |
+| 상태 | Page 4 공식 추적 문서 동기화 완료 |
+| code 변경 | 없음 |
+| 즉시 적용 safe 후보 | 없음 |
+| 다음 read-only 후보 | `2UC-V3-BP-009A` chart/UI 소규모 표시·예외 보정 inventory |
+| 유지되는 제외 원칙 | LS API, DB migration, pyd/UI broad merge, V3U 전용 pyd-free 구현, dashboard 전체 도입 제외 |
+
+이 checkpoint는 기존 `no-more-safe-candidates` 결론을 “구현 종료”가 아니라 “즉시 적용 후보 없음 / 다음 후보는 read-only로만 시작”으로 더 명확히 해석하기 위한 문서화이다.
+## 34. V3 -> 2U_C candidate inventory final guard
+
+```text
+candidate inventory [####################] 100.0% 5 / 5 pages
+remaining           [--------------------]   0.0% 0 / 5 pages
+```
+
+Final guard result:
+
+- root release sync: passed
+- 2U_C release sync: passed
+- root/2U_C status: clean before Page 5 append
+- forbidden runtime artifacts: none tracked
+- `STOM_Version_3U_C`: absent
+- runtime code change: none
+
+Next candidate is not a patch. It is `2UC-V3-BP-009A` read-only chart/UI inventory.
+## 35. `2UC-V3-BP-009A` Page 1 read-only inventory
+
+`2UC-V3-BP-009A`는 candidate inventory 이후 처음 여는 chart/UI 소규모 후보 조사 cycle이다. Page 1에서는 code를 변경하지 않고 V3.07, V3.12, V3.14, V3.17의 chart/UI 관련 diff를 2U_C 파일로 mapping했다.
+
+```text
+전체 V3->2U_C 진행률 [###################-]  95.1%  78 / 82 pages
+BP-009A 진행률       [####----------------]  20.0%   1 /  5 pages
+남은 page            [################----]  80.0%   4 /  5 pages
+```
+
+| 항목 | 내용 |
+|---|---|
+| Page 1 문서 | `docs/update_log/2026-05-07_v3_2uc_bp009a_chart_ui_page1_inventory.md` |
+| code 변경 | 없음 |
+| 가장 안전한 conditional | `BP-009A-C3` crosshair line zValue + legend anchor guard |
+| no-op | `BP-009A-C4` candle/volume width, 이미 2U_C에 반영됨 |
+| hold/excluded 우세 | return press dedupe, draw loop exception unify, chart_hoga_query broad simplification, dialog_list close, analysis/radar chart UI |
+| 다음 단계 | Page 2 scope decision |
+## 36. `2UC-V3-BP-009A` Page 2 scope decision
+
+Page 2에서는 Page 1 후보 C1~C8 중 실제 patch 후보를 하나로 좁혔다. code 변경은 없다.
+
+```text
+전체 V3->2U_C 진행률 [###################-]  96.3%  79 / 82 pages
+BP-009A 진행률       [########------------]  40.0%   2 /  5 pages
+남은 page            [############--------]  60.0%   3 /  5 pages
+```
+
+| 항목 | 내용 |
+|---|---|
+| Page 2 문서 | `docs/update_log/2026-05-07_v3_2uc_bp009a_chart_ui_page2_scope_decision.md` |
+| code 변경 | 없음 |
+| Page 3 patch 후보 | `BP-009A-C3` crosshair line zValue + legend anchor guard |
+| target file | `ui/ui_draw_crosshair.py` 단일 파일 |
+| C1 chart moneytop | 이번 cycle 제외, 별도 `BP-009B` 후보로 분리 검토 |
+| C4 candle/volume width | no-op 확정, 이미 2U_C 반영됨 |
+| C2/C5/C6/C7 | hold |
+| C8 radar/analysis chart UI | BP-009A 범위에서는 excluded |
+
+Page 3에서는 `ui/ui_draw_crosshair.py` 외 파일을 수정하지 않는다.
+## 37. `2UC-V3-BP-009A` Page 3 application record
+
+Page 3에서는 Page 2에서 허용한 `ui/ui_draw_crosshair.py` 단일 파일 최소 patch를 실제 2U_C code에 적용했다.
+
+```text
+전체 V3->2U_C 진행률 [####################]  97.6%  80 / 82 pages
+BP-009A 진행률       [############--------]  60.0%   3 /  5 pages
+남은 page            [########------------]  40.0%   2 /  5 pages
+```
+
+| 항목 | 내용 |
+|---|---|
+| Page 3 문서 | `docs/update_log/2026-05-07_v3_2uc_bp009a_chart_ui_page3_apply.md` |
+| 2U_C code commit | `f791c54a BP-009A crosshair 표시 경계를 보정한다` |
+| target file | `ui/ui_draw_crosshair.py` |
+| 적용 범위 | crosshair line `setZValue(29)`, 비실시간 label/legend anchor guard |
+| 제외 범위 | draw_chart_base, chart moneytop, chart_hoga_query_sound, dialog lifecycle, analysis/radar, LS API, DB migration, pyd/UI broad merge |
+| 검증 | py_compile, diff check, cached diff check, root/2U_C release sync 통과 |
+
+Page 4에서는 이 code commit을 carry-forward registry와 allowlist 공식 추적에 고정한다.
+## 38. `2UC-V3-BP-009A` Page 4 official sync
+
+Page 4에서는 BP-009A 적용 결과를 official tracking docs에 연결했다. code 변경은 없다.
+
+```text
+전체 V3->2U_C 진행률 [####################]  98.8%  81 / 82 pages
+BP-009A 진행률       [################----]  80.0%   4 /  5 pages
+남은 page            [####----------------]  20.0%   1 /  5 pages
+```
+
+| 항목 | 내용 |
+|---|---|
+| Page 4 문서 | `docs/update_log/2026-05-07_v3_2uc_bp009a_chart_ui_page4_sync.md` |
+| 2U_C code commit | `f791c54a BP-009A crosshair 표시 경계를 보정한다` |
+| registry status | `docs/CARRY_FORWARD_REGISTRY.md`에 BP-009A carry-forward 기록 추가 |
+| rollback | chart crosshair regression 시 `f791c54a` 단일 revert |
+
+Page 5에서는 final guard만 수행한다.
+## 39. `2UC-V3-BP-009A` final guard
+
+```text
+전체 V3->2U_C 진행률 [####################] 100.0%  82 / 82 pages
+BP-009A 진행률       [####################] 100.0%   5 /  5 pages
+남은 page            [--------------------]   0.0%   0 /  5 pages
+```
+
+Final guard result:
+
+- `ui/ui_draw_crosshair.py` py_compile: passed
+- root release sync: passed
+- 2U_C release sync: passed
+- root/2U_C status: clean before Page 5 doc append
+- forbidden runtime artifacts: none tracked
+- `STOM_Version_3U_C`: absent
+
+`2UC-V3-BP-009A`는 완료한다. 다음 후보는 `BP-009B` chart moneytop query/time/table clear read-only inventory로 분리한다.
+## 40. `2UC-V3-BP-009B` candidate batch complete
+
+BP-009B는 candidate batch-loop 방식으로 처리했다. Page 논리는 문서에 누적했고 commit은 후보 단위로 축소했다.
+
+```text
+전체 V3->2U_C 진행률 [####################] 100.0%  87 / 87 pages
+BP-009B 진행률       [####################] 100.0%   5 /  5 pages
+남은 page            [--------------------]   0.0%   0 /  5 pages
+```
+
+| 항목 | 내용 |
+|---|---|
+| batch 문서 | `docs/update_log/2026-05-07_v3_2uc_bp009b_moneytop_batch.md` |
+| 2U_C code commit | `cd35395f BP-009B moneytop 리스트 초기화를 보정한다` |
+| target file | `ui/ui_show_dialog.py` |
+| 적용 범위 | chart moneytop table stale 방지용 clear/empty check |
+| hold | `starttime < 90030`, query/time normalization, market별 default time 변경 |
+| 검증 | py_compile, root/2U_C release sync 통과 |
+| 다음 후보 | `2UC-V3-BP-010A` Binance/Upbit websocket guard read-only inventory |
+## 39. `2UC-V3` residual batch scan 완료 기록
+
+BP-009B final guard 이후 남은 후보를 개별 반복하지 않고 batch로 검토했다. 상세 문서는 `docs/update_log/2026-05-08_v3_2uc_residual_batch_scan.md`에 둔다.
+
+| 후보 | 판정 | 결과 |
+| --- | --- | --- |
+| `2UC-V3-BP-009C` | hold | chart moneytop time/query normalization은 stock session 전제가 있어 runtime evidence 전까지 보류 |
+| `2UC-V3-BP-010A` | 완료 | Binance 비정형 websocket payload guard 적용, 2U_C code commit `41a09d76` |
+| `2UC-V3-BP-011A` | 완료 | telegram timezone stdlib 전환 및 residual dependency pin 제거, 2U_C code commit `59ffaafc` |
+| `2UC-V3-BP-012A` | no-op/hold | 2U_C는 이미 BackCodeTest wrapper 경계를 보유, V3 pyd split 직접 이식 금지 |
+| `2UC-V3-BP-013A` | hold | strategy-test dummy microstructure는 analysis runtime/test spec 필요 |
+| `2UC-V3-BP-014A` | hold/excluded | 주문유형 guard는 broker별 matrix 설계 전까지 보류 |
+
+이번 batch 이후 즉시 적용 가능한 새 safe 후보는 남기지 않는다. 다음 단계는 final closure audit이며, 새 후보를 열려면 새 evidence와 BP-ID가 필요하다.
+
+## 40. final closure audit 완료 기록
+
+`BP-009B` 이후 residual batch와 `BP-010A`/`BP-011A` 적용 결과에 대해 final closure audit을 완료했다. 상세 문서는 `docs/update_log/2026-05-08_v3_2uc_final_closure_audit.md`에 둔다.
+
+| 항목 | 결과 |
+| --- | --- |
+| `BP-010A` | 완료 / Binance websocket non-data payload guard 적용 |
+| `BP-011A` | 완료 / telegram timezone stdlib 전환 및 residual dependency pin 제거 |
+| `BP-009C`, `BP-012A`, `BP-013A`, `BP-014A` | hold/no-op/excluded 유지 |
+| root/2U_C 문서 mirror | hash match 확인 |
+| release sync | root / 2U_C 통과 |
+| py_compile | 변경 code 파일 통과 |
+| forbidden artifact guard | 통과 |
+| `STOM_Version_3U_C` | 미생성 원칙 유지 |
+| 즉시 적용 가능한 새 safe 후보 | 없음 |
+
+이 기록 이후 기본 상태는 `no-more-safe-candidates`이다. 새 후보는 runtime evidence, mock test spec, broker matrix, DB migration spec, analysis wiring spec, 또는 V3.19 이상 신규 upstream source가 있을 때만 새 BP-ID로 연다.
+
+## 41. post-closure status check 기록
+
+final closure audit 이후 추천된 OMX 상태 확인 명령을 실행했다. 상세 문서는 `docs/update_log/2026-05-08_v3_2uc_post_closure_status_check.md`에 둔다.
+
+| 항목 | 결과 |
+| --- | --- |
+| root 최근 commit | `a17e59be V3 선별 백포트 종료 기준을 고정한다` 확인 |
+| 2U_C 최근 commit | `eb04a981 V3 선별 백포트 종료 기준을 2U_C에 미러링한다` 확인 |
+| root release sync | 통과 |
+| 2U_C release sync | 통과 |
+| root/2U_C status | clean |
+| 즉시 적용 가능한 새 safe 후보 | 없음 |
+
+이 기록은 새 backport 구현이 아니라 closure 상태 확인이다. 새 BP-ID는 새 evidence/spec 또는 신규 upstream source가 있을 때만 연다.
+## 42. post-closure recheck 002 기록
+
+직전 추천 OMX 상태 확인 명령을 다시 실행했다. 상세 문서는 `docs/update_log/2026-05-08_v3_2uc_post_closure_recheck_002.md`에 둔다.
+
+| 항목 | 결과 |
+| --- | --- |
+| root status | clean, `STOM_Version_2` ahead 83 |
+| 2U_C status | clean, `STOM_Version_2U_C` ahead 78 |
+| root release sync | 통과 |
+| 2U_C release sync | 통과 |
+| 즉시 적용 가능한 새 safe 후보 | 없음 |
+
+판정은 계속 `no-more-safe-candidates`이다. 새 BP-ID는 새 evidence/spec 또는 신규 upstream source가 있을 때만 연다.
