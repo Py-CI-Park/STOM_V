@@ -1,4 +1,4 @@
-# Carry Forward Registry
+﻿# Carry Forward Registry
 
 ## Purpose
 Tracks known issues that were intentionally not fixed in the current official update cycle.
@@ -569,3 +569,47 @@ Post-commit correction: `scripts/audit_v3k_verify_1a.py` must skip its own marke
 - Next: `V3K-VERIFY-1B` final closure audit before any GUI/runtime hook phase.
 
 Directive: Do not connect V3K settings surface to GUI wrappers or DB-backed settings without another OFF regression pass and explicit user approval for the GUI/runtime surface.
+
+## V3K-VERIFY-1B: final closure audit
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_verify_1b_final_closure_audit.md`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: The `STOM_Version_2U_C` V3K safe-staged goal is complete at the adapter/contract/read-only/no-op level.
+- Completed: DB/learning design and read-only scripts; analyzer module staging; AnalyzerRisk adapter smoke; backtest learning loader/hook; realtime learning boundary; formula/global facade; non-invasive settings surface; OFF regression and Kiwoom untouched audit.
+- Held for safety: direct LS broker dependency; core DB replacement/cutover; MainWindow/pyd wrapper integration; live runtime globals hook; live order/exit use of analyzer output; analyzer DB constructor runtime use; V3 microstructure engine replacement beyond existing 2U_C paths.
+- User approval required: DB shadow/cutover rehearsal; GUI setting surface connection; live Kiwoom runtime dry-run hook; production learning DB read; analyzer output use in actual strategy/order/exit logic.
+- Verification: py_compile passed; VERIFY-1B closure audit passed; VERIFY-1A audit passed; settings surface smoke passed; formula/global facade smoke passed; realtime learning boundary smoke passed; backtest learning hook smoke passed; learning loader smoke passed; analyzer module smoke passed; analyzer adapter OFF/ON smoke passed; forbidden artifact guard clean.
+- Next: default state is STOP / approval gate. Further GUI/runtime/DB cutover work must start only after explicit user approval and a new scoped phase document.
+
+Directive: Do not continue automatic V3K implementation loops after VERIFY-1B. Treat 2U_C V3K as safe-staged complete; new GUI, live runtime, or DB cutover work requires explicit approval and a fresh plan.
+
+## V3K-CLOSEOUT: safe-staged completion approval gate
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_closeout_safe_staged_completion.md`
+- Decision: V3K safe-staged implementation is complete and the default next state is STOP / approval gate.
+- Verification: VERIFY-1B closure audit passed; VERIFY-1A audit passed; settings surface smoke passed; release sync passed; forbidden artifact guard clean.
+- Completed scope: adapter/contract/read-only/no-op implementation for V3 non-LS learning, analyzer, formula/global, and settings surface features while preserving Kiwoom runtime.
+- Not completed by design: GUI wrapper connection, live Kiwoom runtime hook, DB cutover, production learning DB read, analyzer output use in live strategy/order/exit logic.
+- Next: no automatic implementation loop. Further GUI/runtime/DB work requires explicit user approval and a fresh phase plan.
+
+Directive: Stop automatic V3K implementation after this closeout. Use only read-only audits unless the user explicitly approves a new GUI, runtime, or DB cutover phase.
+
+## V3K activation gap review: safe-staged vs full activation
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_activation_gap_review.md`
+- Decision: V3K safe-staged implementation is complete, but full activation is intentionally not complete.
+- Reconfirmed: GUI wrapper connection, live Kiwoom runtime hook, runtime globals update, DB cutover, production learning DB read, analyzer output use in strategy/order/exit, analyzer DB constructor runtime use, and V3 microstructure replacement are not omissions. They are approval-gated activation phases.
+- Rationale: Each deferred item can alter GUI/pyd contracts, Kiwoom live runtime behavior, DB/schema state, latency, or live trading decisions. That exceeds the default-OFF/read-only/no-op safe-staged target.
+- Final judgment: Deferral is valid for the current V3K safe-staged goal. If the target changes to full production activation, those items must be handled as separate approved phases with dedicated tests, rollback plans, and user approval.
+- Verification: Based on prior closeout audits and current clean status; no runtime/code activation changes were made in this review.
+
+Directive: Do not reinterpret safe-staged completion as full production activation. Treat each deferred activation area as a new phase requiring explicit approval.
