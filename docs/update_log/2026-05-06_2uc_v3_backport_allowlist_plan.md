@@ -314,3 +314,140 @@ BP-002 차트 안정화 후보군의 세 번째 micro-candidate로 V3.03 실시�
 | 검증 | V3 HEAD 확인, 2U_C `same_code/same_time` drawing 조건 확인, chart producer 경로 grep, 상태 guard |
 
 다음 BP-002 후보를 진행할 경우 BP-002C를 즉시 코드 적용 대상으로 되돌리지 말고, 먼저 `ctpg_arry`가 rolling window인지 append-only인지 runtime evidence를 확보한다.
+## 18. `2UC-V3-BP-005A` 선정 기록
+
+재정렬 Page 3/4 결과 `2UC-V3-BP-005A`를 다음 safe micro-candidate로 선정했다. 이 기록은 실제 runtime 코드 적용이 아니라, 다음 적용 cycle을 시작하기 위한 공식 후보 등록이다.
+
+| 항목 | 내용 |
+|---|---|
+| 선정 후보 | `2UC-V3-BP-005A` |
+| 상위 후보 | `2UC-V3-BP-005` UI 버튼 바운스 / progress 표시 개선 |
+| V3 근거 | `66f90b1d STOM V3.16`, `ui/update_widget/update_progressbar.py` |
+| 2U_C 대상 | `ui/ui_update_progressbar.py` |
+| 후보 범위 | `setRange()` 후 `setValue()` 순서 보정, 경과/남은 시간 표시를 `str(... )[:-3]` 형식으로 축약 |
+| 2U_C 보정점 | 2U_C에는 `ss_progressBar_01`과 `cs_progressBar_01` 분기가 모두 있으므로 적용 시 stock/coin 양쪽을 일관되게 검토 |
+| no-op | `BounceButton`은 2U_C `ui/set_widget.py`에 이미 존재하므로 재적용하지 않음 |
+| 제외 범위 | DB관리 다이얼로그 progressbar 추가, 분석 시스템 progressbar, BounceButton 재적용, LS/API/DB/pyd 관련 변경 |
+| 다음 단계 | 별도 `2UC-V3-BP-005A` 적용 cycle에서 read-only diff 확인 후 최소 patch 여부 결정 |
+
+`2UC-V3-BP-005A`는 broker-neutral / DB-neutral / pyd-neutral 성격의 UI 표시 보정 후보로만 취급한다. 코드 적용 시에는 `ui/ui_update_progressbar.py` 단일 파일 변경을 원칙으로 하며, 적용 전후 `py_compile`, `git diff --check`, 변경 파일 guard를 통과해야 한다.
+
+## 19. `2UC-V3-BP-005A` 적용 완료 기록
+
+`2UC-V3-BP-005A`는 후속 적용 cycle Page 1~3에서 read-only 확인, 최소 patch 결정, 실제 적용 및 검증을 완료했다. 이 기록은 Page 4 공식 추적 문서 반영 단계이며, runtime code 변경은 이미 `STOM_Version_2U_C`의 별도 commit으로 고정했다.
+
+| 항목 | 내용 |
+|---|---|
+| 적용 상태 | 완료 |
+| 적용 branch | `STOM_Version_2U_C` |
+| 적용 worktree | `C:/System_Trading/STOM/STOM_V.wt-dev` |
+| 적용 commit | `f942ed2f BP-005A 프로그레스바 표시 보정을 적용한다` |
+| V3 근거 | `66f90b1d STOM V3.16`, `ui/update_widget/update_progressbar.py` |
+| 적용 파일 | `.gitignore`, `ui/ui_update_progressbar.py` |
+| 적용 범위 | progressbar `setRange()` / `setValue()` 호출 순서 보정, 경과/남은 시간 표시를 `str(... )[:-3]` 형식으로 단축 |
+| 2U_C 보정 | V3 diff의 stock 중심 변경을 2U_C의 stock/coin 분기(`ss_progressBar_01`, `cs_progressBar_01`)에 일관되게 수동 이식 |
+| `.gitignore` 보강 | `backtest/graph/` runtime graph 산출물을 stage하지 않도록 보호 규칙 추가 |
+| 제외 범위 | BounceButton 재적용, DB관리 다이얼로그 progressbar, 분석 시스템 progressbar, LS/API/DB/pyd 변경 |
+| 검증 | `py_compile`, `git diff --check`, `git diff --cached --check`, root/2U_C `verify_release_sync.py` 통과 |
+
+`2UC-V3-BP-005A`는 V3 파일 단위 cherry-pick이 아니라 2U_C 구조에 맞춘 최소 수동 이식으로 완료했다. 후속 BP-001/BP-003 재평가는 BP-005A final guard 이후 별도 read-only cycle에서 다시 판단한다.
+
+## 20. `2UC-V3-BP-005A` final guard 완료 기록
+
+`2UC-V3-BP-005A`는 Page 5 final guard에서 root와 2U_C 상태, release sync, runtime artifact guard, `STOM_Version_3U_C` 미생성 원칙을 최종 확인하고 종료한다.
+
+| 항목 | final guard 결과 |
+|---|---|
+| 최종 상태 | 완료 |
+| 2U_C code commit | `f942ed2f BP-005A 프로그레스바 표시 보정을 적용한다` |
+| root 추적 commit | `e5f10e19 BP-005A Page 4 공식 추적을 완료한다` 이후 Page 5 final guard commit |
+| 2U_C mirror commit | `97221a2a BP-005A Page 4 상태를 2U_C 미러에 남긴다` 이후 Page 5 mirror commit |
+| status guard | root clean, 2U_C clean |
+| release sync | root/2U_C 모두 `release sync preflight passed` |
+| runtime artifact guard | `_database`, `_log`, `*.db`, `backtest/graph/*` tracked 파일 없음 |
+| 3U_C guard | `STOM_Version_3U_C` branch 없음 |
+| 다음 후보 | BP-001/BP-003은 별도 read-only 재평가 cycle 전까지 후순위 조건부 유지 |
+
+이 final guard로 BP-005A는 공식 allowlist 상 완료 항목으로 닫는다. 후속 후보는 broad merge가 아니라 다시 micro-candidate 단위로만 재개한다.
+
+## 21. `2UC-V3-BP-001` / `2UC-V3-BP-003` read-only 재평가 Page 1 기록
+
+BP-005A final guard 이후 남은 큰 후보인 BP-001/BP-003을 바로 적용하지 않고, 먼저 read-only로 기존 판정과 V3 diff 규모를 재확인했다. 이 기록은 새 적용이 아니라 다음 Page 2 판단을 위한 근거 고정이다.
+
+| 항목 | 내용 |
+|---|---|
+| cycle | BP-001/BP-003 read-only 재평가 cycle Page 1 / 5 |
+| 코드 변경 | 없음 |
+| OMX 경로 | `omx explore` 시도 후 Windows harness 미준비로 실패, `omx sparkshell`로 fallback |
+| BP-001 근거 | V3 `backtest/` diff가 25 files, 1228 insertions, 1341 deletions로 넓고 V3.02~V3.18 전반에 걸침 |
+| BP-001 판정 | hold 우세 유지, 2U_C B/S/R custom과 legacy parity 보정 충돌 위험 때문에 broad merge 금지 |
+| BP-003 근거 | V3 trade diff가 8 files, 275 insertions, 374 deletions이며 V3 receiver/restapi 구조와 2U_C min/tick/websocket 구조가 다름 |
+| BP-003 판정 | 조건부 유지, Page 2에서 mock 가능한 단일 조건 후보만 분리 검토 |
+| 다음 단계 | BP-001 hold 유지 확정과 BP-003 micro-candidate 분리 가능성 판단 |
+
+Page 2에서도 V3 파일 단위 cherry-pick은 금지한다. 특히 root `trade/restapi_binance.py` / `trade/restapi_upbit.py` 전체 이식, V3 `binance_receiver.py` / `upbit_receiver.py` 직접 이식, 실거래 API 호출 순서 변경은 별도 테스트 설계 없이는 적용하지 않는다.
+
+## 22. `2UC-V3-BP-001` / `2UC-V3-BP-003` read-only 재평가 Page 2 판단 기록
+
+Page 2에서는 BP-001 hold 유지 여부와 BP-003 micro-candidate 분리 가능성을 판단했다. 이 단계에서도 runtime code는 변경하지 않았다.
+
+| 항목 | 내용 |
+|---|---|
+| cycle | BP-001/BP-003 read-only 재평가 cycle Page 2 / 5 |
+| 코드 변경 | 없음 |
+| BP-001 판단 | hold 확정. V3 backtest 변경 범위가 넓고 2U_C custom backtest 구조와 충돌 가능성이 큼 |
+| BP-003 판단 | 이번 cycle에서 적용 후보 미선정. V3 receiver/restapi/trader 변경이 2U_C min/tick/websocket 구조와 맞지 않음 |
+| 검토한 후보 | trader 주문 처리, websocket reconnect/close, Upbit 인증 header, REST API 변경 |
+| 제외 사유 | 각 후보가 V3 `UI_NUM`/BaseTrader/MonitorTraderQ 구조, root REST 파일 구조, 실거래 websocket 연결 흐름과 묶여 있음 |
+| 다음 단계 | Page 3에서 BP-001 hold 확정과 BP-003 미선정/hold 사유를 공식 기록으로 닫음 |
+
+향후 BP-003을 재개하려면 V3 파일 단위가 아니라 2U_C 파일 기준으로 더 작은 후보 ID를 새로 만든다. 예: `websocket close guard`, `REST 응답 예외 처리`, `주문 실패 로그 보정`처럼 mock test가 가능한 단일 조건이어야 한다.
+
+## 23. `2UC-V3-BP-001` / `2UC-V3-BP-003` hold 공식 기록
+
+Page 3에서는 Page 2 판단을 공식 hold 기록으로 고정했다. 이 기록은 적용 포기가 아니라, 현재 V3 diff 단위가 2U_C 안전 적용 단위보다 넓기 때문에 다음 후보를 새 ID로 재분리하기 전까지 적용하지 않는다는 의미다.
+
+| 항목 | 내용 |
+|---|---|
+| cycle | BP-001/BP-003 read-only 재평가 cycle Page 3 / 5 |
+| 코드 변경 | 없음 |
+| `2UC-V3-BP-001` | hold 확정 |
+| BP-001 hold 사유 | V3 backtest 변경이 25 files 규모이고 2U_C B/S/R custom 및 legacy parity 보정과 충돌 가능성이 큼 |
+| `2UC-V3-BP-003` | 이번 cycle 적용 후보 미선정 / hold |
+| BP-003 hold 사유 | V3 receiver/strategy/trader/REST API 변경이 한 묶음이며 2U_C min/tick/websocket 구조와 1:1 대응하지 않음 |
+| 재개 조건 | 2U_C 파일 기준의 mock 가능한 단일 조건 후보 ID가 있을 때만 새 cycle로 재개 |
+| 다음 단계 | Page 4에서 root 문서와 2U_C mirror checkpoint 동기화 검증 |
+
+BP-003의 미래 후보 예시는 `websocket close guard`, `REST 응답 예외 처리`, `주문 실패 로그 보정`이다. 단, 이 예시들도 실제 적용 전에는 별도 read-only Page 1부터 새 cycle로 시작한다.
+
+## 24. `2UC-V3-BP-001` / `2UC-V3-BP-003` 문서 동기화 검증 기록
+
+Page 4에서는 Page 3 hold 공식 기록이 root 공식 문서와 2U_C mirror checkpoint에 일관되게 반영되었는지 확인했다. 이 단계도 runtime code를 변경하지 않았다.
+
+| 항목 | 내용 |
+|---|---|
+| cycle | BP-001/BP-003 read-only 재평가 cycle Page 4 / 5 |
+| 코드 변경 | 없음 |
+| root 공식 문서 | checkpoint, allowlist, Phase 11 decision 모두 BP-001 hold / BP-003 hold 결론 포함 |
+| 2U_C mirror | Page 4 시작 시점 root checkpoint와 2U_C checkpoint SHA256 hash 일치 |
+| 동기화 결론 | 일치 |
+| 다음 단계 | Page 5 final guard에서 release sync, runtime artifact guard, 3U_C 미생성 원칙 확인 |
+
+이 기록 이후에도 BP-001/BP-003 결론은 변경하지 않는다. Page 5는 final guard와 다음 handoff 안내만 수행한다.
+
+## 25. `2UC-V3-BP-001` / `2UC-V3-BP-003` final guard 완료 기록
+
+Page 5 final guard에서 BP-001/BP-003 read-only 재평가 cycle을 hold 완료 상태로 닫았다. 이 단계에서도 runtime code는 변경하지 않았다.
+
+| 항목 | 내용 |
+|---|---|
+| cycle | BP-001/BP-003 read-only 재평가 cycle Page 5 / 5 |
+| 최종 상태 | hold 완료 |
+| `2UC-V3-BP-001` | hold 확정 |
+| `2UC-V3-BP-003` | 이번 cycle 적용 후보 미선정 / hold |
+| release sync | root/2U_C 모두 `release sync preflight passed` |
+| runtime artifact guard | `_database`, `_log`, `*.db`, `backtest/graph/*` tracked 파일 없음 |
+| 3U_C guard | `STOM_Version_3U_C` branch 없음 |
+| 재개 조건 | 새 후보 ID와 새 read-only cycle 없이는 재개하지 않음 |
+
+이 final guard로 BP-001/BP-003 재평가 cycle은 종료한다. 다음 안전한 기본값은 전체 handoff 점검이며, 새 코드 적용은 별도 후보 ID가 준비될 때만 시작한다.
