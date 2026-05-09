@@ -451,3 +451,49 @@ Page 5 final guard에서 BP-001/BP-003 read-only 재평가 cycle을 hold 완료 
 | 재개 조건 | 새 후보 ID와 새 read-only cycle 없이는 재개하지 않음 |
 
 이 final guard로 BP-001/BP-003 재평가 cycle은 종료한다. 다음 안전한 기본값은 전체 handoff 점검이며, 새 코드 적용은 별도 후보 ID가 준비될 때만 시작한다.
+
+## 26. `2UC-V3-BP-006A` 적용 완료 및 Page 4 문서 동기화 기록
+
+`2UC-V3-BP-006A`는 V3 `strategy/analyzer_risk.py`를 2U_C에 runtime wiring 없는 dormant module로 보존하는 후보이다. 이 기록은 Page 4 공식 문서 동기화 단계이며, runtime code 변경은 이미 `STOM_Version_2U_C`의 별도 code commit으로 고정했다.
+
+| 항목 | 내용 |
+|---|---|
+| cycle | `2UC-V3-BP-006A` Page 4 / 5 |
+| source version | `STOM V3.18` |
+| source file | `strategy/analyzer_risk.py` |
+| source blob | `d1f73368fb5ce82f5549a4b69eccd85f4c30f81d` |
+| target files | `strategy/__init__.py`, `strategy/analyzer_risk.py` |
+| 적용 성격 | dormant module 보존 |
+| 2U_C code commit | `15467b43 BP-006A risk analyzer를 dormant module로 보존한다` |
+| 2U_C whitespace fix commit | `0ea00ea4 BP-006A risk analyzer의 diff check 공백을 보정한다` |
+| root Page 3 문서 commit | `7aee8a52 BP-006A Page 3 적용 결과를 공식 checkpoint로 남긴다` |
+| 2U_C Page 3 mirror commit | `8234a84d BP-006A Page 3 적용 기록을 2U_C에 미러링한다` |
+| 검증 | `py_compile`, `git diff --check`, `verify_release_sync.py --root STOM_V.wt-dev` 통과 |
+| runtime wiring | 없음 / 별도 후보 ID와 test spec 없이는 금지 |
+| 다음 단계 | Page 5 final guard |
+
+적용 완료의 의미는 `strategy/analyzer_risk.py`가 2U_C repo에 보존되었다는 뜻이다. 기존 `research/analyzer/risk_analyzer.py`, `trade/*`, GUI, DB, LS/Kiwoom API 흐름에는 연결하지 않았다.
+
+BP-006A 후속 작업에서 runtime 연결을 검토하려면 새 후보 ID를 부여하고, 호출 지점, `dict_findex` mapping, array shape, mock 가능한 test spec을 별도 Page 1부터 다시 기록해야 한다.
+## 27. `2UC-V3-BP-006A` final guard 완료 기록
+
+`2UC-V3-BP-006A`는 Page 5 final guard에서 root와 2U_C 상태, py_compile, release sync, runtime artifact guard, `STOM_Version_3U_C` 미생성 원칙을 최종 확인하고 종료한다.
+
+| 항목 | 내용 |
+|---|---|
+| cycle | `2UC-V3-BP-006A` Page 5 / 5 |
+| 최종 상태 | 완료 |
+| 적용 의미 | dormant module 보존 완료 |
+| runtime wiring | 없음 / 별도 후보 ID 없이는 금지 |
+| 2U_C code commit | `15467b43 BP-006A risk analyzer를 dormant module로 보존한다` |
+| 2U_C whitespace fix commit | `0ea00ea4 BP-006A risk analyzer의 diff check 공백을 보정한다` |
+| Page 4 root commit | `f1b43ac8 BP-006A Page 4 공식 동기화로 적용 추적을 고정한다` |
+| Page 4 2U_C mirror commit | `f3e5840e BP-006A Page 4 동기화 상태를 2U_C에 미러링한다` |
+| py_compile | `strategy/analyzer_risk.py` passed |
+| release sync | root/2U_C 모두 `release sync preflight passed` |
+| runtime artifact guard | `_database`, `_log`, `*.db`, `backtest/graph/*` tracked 파일 없음 |
+| 3U_C guard | `STOM_Version_3U_C` branch 없음 |
+| 확장 진행률 | `61 / 61 page`, 100.0% |
+| 다음 처리 | 종료 / handoff 유지 또는 새 후보 ID 기반 별도 cycle |
+
+이 final guard로 BP-006A는 공식 allowlist 상 완료 항목으로 닫는다. `AnalyzerRisk` runtime 연결은 이 cycle의 범위가 아니며, 호출 지점과 test spec을 갖춘 별도 후보 ID 없이는 시작하지 않는다.
