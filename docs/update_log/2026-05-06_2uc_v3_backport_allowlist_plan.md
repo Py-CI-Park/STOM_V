@@ -847,3 +847,35 @@ final closure audit 이후 추천된 OMX 상태 확인 명령을 실행했다. �
 | 즉시 적용 가능한 새 safe 후보 | 없음 |
 
 판정은 계속 `no-more-safe-candidates`이다. 새 BP-ID는 새 evidence/spec 또는 신규 upstream source가 있을 때만 연다.
+
+## 43. V3K 완전 기능 이행 목표 재정의
+
+2026-05-08 사용자 목표가 명확히 재정의되었다. 기존 `no-more-safe-candidates`는 “safe micro-candidate 후보 소진”을 의미할 뿐, `STOM_Version_2U_C`에 V3의 LS증권 제외 신기능 전체가 반영되었다는 뜻이 아니다.
+
+새 목표는 다음과 같다.
+
+```text
+V3K = V3 기능 + Kiwoom 유지
+
+2U_C에서 Kiwoom증권을 유지하면서,
+V3의 LS증권 직접 의존성을 제외한 신기능을 가능한 한 모두 적용한다.
+여기에는 V3 학습/분석 시스템, V3 DB/학습 데이터 구조,
+백테스트 학습 데이터 사용, 실시간 거래 학습 데이터 사용이 포함된다.
+```
+
+새 기준 문서:
+
+- `docs/update_log/2026-05-08_v3k_full_feature_migration_goal_reset.md`
+- `docs/update_log/2026-05-08_v3_2uc_unmet_features_audit_and_research.md`
+
+운영 보정:
+
+| 이전 해석 | 새 해석 |
+| --- | --- |
+| `no-more-safe-candidates` | safe micro-candidate 종료 |
+| V3K 목표 | 아직 미달성 |
+| 다음 작업 | `V3K-DESIGN-0` Phase 0 사전 설계 |
+| 금지 | 새 evidence/spec 없이 기존 BP 루프 반복 |
+| 허용 | V3K 설계 트랙에서 DB/학습/분석/backtest/realtime을 명시적으로 다룸 |
+
+기존 BP-002A~BP-011A 작업은 폐기하지 않는다. 단, 그것들은 V3K 전체 달성의 일부 표면 보정으로만 인정한다.

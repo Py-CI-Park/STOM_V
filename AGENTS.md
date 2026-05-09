@@ -29,15 +29,17 @@ Read in this order before official update work:
 
 ## V3 / V3U / 2U_C Backport Entry Points
 
-V3 전략 kick-off, `STOM_Version_3` 공식 ingress, `STOM_Version_3U` pyd-free 전환, 3U vs 3 최종 parity audit은 완료된 상태다. 현재 후속 단계는 `STOM_Version_2U_C`에 V3 기능을 선별 backport하기 위한 queue 준비/시작 단계다.
+V3 전략 kick-off, `STOM_Version_3` 공식 ingress, `STOM_Version_3U` pyd-free 전환, 3U vs 3 최종 parity audit은 완료된 상태다. 기존 safe micro-candidate backport queue는 closure 되었지만, 이는 V3 신기능 전체 반영 완료가 아니다. 현재 새 목표는 `V3K = V3 기능 + Kiwoom 유지`로, `STOM_Version_2U_C`에 LS증권 직접 의존성을 제외한 V3 학습/분석/DB/backtest/realtime 기능을 설계 기반으로 이행하는 것이다.
 
 V3, 3U, 또는 2U_C V3 backport 관련 작업을 시작하기 전에는 반드시 아래 문서를 순서대로 읽는다:
 1. `docs/V3_UPDATE_OPERATING_SYSTEM.md`
 2. `docs/update_log/2026-05-06_v3_v3u_final_handoff.md`
-3. `docs/update_log/2026-05-04_v3_transition_strategy_review.md`
-4. `docs/WORKTREE_STRATEGY.md`
-5. `docs/CARRY_FORWARD_REGISTRY.md`
-6. 최신 2U_C backport queue/status 문서 under `docs/update_log/`
+3. `docs/update_log/2026-05-08_v3k_full_feature_migration_goal_reset.md`
+4. `docs/update_log/2026-05-08_v3_2uc_unmet_features_audit_and_research.md`
+5. `docs/update_log/2026-05-04_v3_transition_strategy_review.md`
+6. `docs/WORKTREE_STRATEGY.md`
+7. `docs/CARRY_FORWARD_REGISTRY.md`
+8. 최신 2U_C backport queue/status 문서 under `docs/update_log/`
 
 현재 전환기 worktree 지도:
 
@@ -53,6 +55,8 @@ STOM_V.wt-2uc/   -> integration archive  # active lane 아님
 V3 공식 lane에는 upstream 파일과 `.pyd`를 보존한다. V3 pyd 제거는 `STOM_Version_3U`에서만 수행한다. `STOM_Version_3U_C`는 아직 만들지 않는다.
 
 `STOM_Version_2U_C`는 V3 branch가 아니라 V2/Kiwoom 유지 custom lane이다. V3 기능은 broker-neutral 후보부터 선별 backport하고, LS API 전제/DB 비호환 변경은 migration spec과 별도 검토 전에는 제외한다. 각 backport는 source V3 version/commit, 제외한 LS 의존성, Kiwoom 유지 보정, 검증 결과를 `docs/CARRY_FORWARD_REGISTRY.md` 또는 active `docs/update_log/` 문서에 기록해야 한다.
+
+2026-05-08 이후 새 V3K 목표에서는 DB/학습/분석/backtest/realtime 기능도 적용 대상이다. 단, 즉시 broad merge하지 말고 `V3K-DESIGN-0`부터 시작해 DB migration spec, Kiwoom data-shape mapping, analyzer contract, feature flag, rollback plan, mock/regression tests를 먼저 작성한다. `DESIGN-LS`/`LS-IMPL` 명칭은 LS증권과 혼동되므로 사용하지 말고 `V3K-DESIGN`/`V3K-IMPL`을 사용한다.
 
 V3/V3U runtime `_database`, `_log`, `*.db` 파일은 커밋하지 않는다. 3U는 `STOM_Version_3`에서 분기했으며, pyd 제거 구현은 `STOM_Version_2U`의 pyd-to-py 추론 산출물과 검증 도구를 참고해 V3 구조에 맞게 이식한 상태다.
 Current resume context:
