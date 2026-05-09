@@ -497,3 +497,146 @@ BP-006A 후속 작업에서 runtime 연결을 검토하려면 새 후보 ID를 �
 | 다음 처리 | 종료 / handoff 유지 또는 새 후보 ID 기반 별도 cycle |
 
 이 final guard로 BP-006A는 공식 allowlist 상 완료 항목으로 닫는다. `AnalyzerRisk` runtime 연결은 이 cycle의 범위가 아니며, 호출 지점과 test spec을 갖춘 별도 후보 ID 없이는 시작하지 않는다.
+
+## 28. V3 -> 2U_C no-more-safe-candidates closure
+
+BP-006A final guard 이후 `STOM_Version_3`와 `STOM_Version_2U_C`의 남은 diff를 다시 조사했다. 결론은 새로 열 수 있는 안전한 Kiwoom 호환 micro-candidate가 없다는 것이다. 상세 handoff는 `docs/update_log/2026-05-07_v3_2uc_no_more_safe_candidates_handoff.md`에 남겼다.
+
+```text
+이전 baseline        [####################] 100.0%  61 / 61 page
+no-more closure      [####################] 100.0%   1 /  1 page
+전체 확장 진행률     [####################] 100.0%  62 / 62 page
+현재 page            [####################] 100.0%   1 /  1 page
+남은 page            [--------------------]   0.0%   0 /  0 page
+```
+
+| 항목 | 판정 |
+|---|---|
+| `2UC-V3-BP-007A` | 미개시 / gate 통과 후보 없음 |
+| BP-002/BP-004 잔여 | 이전 판단 유지, BP-002C hold와 BP-004C no-op 유지 |
+| sound split 잔여 | `pyttsx_sound.py` 추가만으로는 process/thread wiring 경계가 함께 움직여 안전한 micro-candidate가 아님 |
+| strategy analyzer runtime wiring | DB/settings/runtime wiring 필요, HOLD-001 또는 별도 BP-ID 없이는 시작하지 않음 |
+| dashboard/CLI/research/tests | 현재 2U_C Kiwoom runtime에 직접 반영할 기능 후보가 아님 |
+| 남은 queue | 제외/보류/no-op 항목뿐이므로 추가 safe candidate 없음 |
+
+추천 OMX 검증:
+
+```powershell
+omx sparkshell powershell -NoProfile -Command "python C:/System_Trading/STOM/STOM_V/scripts/verify_release_sync.py; python C:/System_Trading/STOM/STOM_V/scripts/verify_release_sync.py --root C:/System_Trading/STOM/STOM_V.wt-dev"
+```
+
+## 29. `2UC-V3-BP-007A` application record
+
+`2UC-V3-BP-007A` was opened during the 2026-05-07 re-audit after the previous 62/62 no-more baseline. The candidate is intentionally limited to the existing 2U_C `utility/timesync.py` file.
+
+```text
+total progress       [####################]  98.5%  66 / 67 pages
+BP-007A current      [################----]  80.0%   4 /  5 pages
+remaining pages      [####----------------]  20.0%   1 /  5 pages
+```
+
+Next OMX command:
+
+```powershell
+omx sparkshell powershell -NoProfile -Command "python C:/System_Trading/STOM/STOM_V/scripts/verify_release_sync.py; python C:/System_Trading/STOM/STOM_V/scripts/verify_release_sync.py --root C:/System_Trading/STOM/STOM_V.wt-dev; git -C C:/System_Trading/STOM/STOM_V status --short; git -C C:/System_Trading/STOM/STOM_V.wt-dev status --short"
+```
+
+| Item | Value |
+|---|---|
+| Status | applied in 2U_C |
+| Source V3 versions | `STOM V3.0`, `STOM V3.11` |
+| Source commits | `06b70418`, `dbab03b3` |
+| Source path | `utility/sub_process_and_thread/timesync.py` |
+| Target path | `utility/timesync.py` |
+| 2U_C code commit | `61e12951 BP-007A timesync log correction applied` |
+| Applied scope | docstring, local `dateutil.tz` removal, `astimezone()`, Korean queue logs, `except Exception` |
+| Kiwoom adjustment | preserved the 2U_C `utility.timesync` import path and `utility.static.thread_decorator` |
+| Excluded scope | V3 file move, `utility.static_method` split, settings/DB split, LS API, dashboard/CLI/test broad changes, pyd/UI restructuring |
+| Verification | `py_compile`, isolated mock, `git diff --check`, `git diff --cached --check` |
+| Remaining risk | live NTP/SystemTime behavior not exercised in this offline pass |
+
+## 30. `2UC-V3-BP-007A` final guard
+
+```text
+total progress       [####################] 100.0%  67 / 67 pages
+BP-007A current      [####################] 100.0%   5 /  5 pages
+remaining pages      [--------------------]   0.0%   0 /  0 pages
+```
+
+Next OMX command:
+
+```powershell
+omx cancel
+```
+
+Final guard passed for `2UC-V3-BP-007A`.
+
+| Guard | Result |
+|---|---|
+| root status | clean |
+| 2U_C status | clean |
+| py_compile | passed for `utility/timesync.py` |
+| release sync | passed for root and 2U_C |
+| forbidden runtime artifacts | none tracked |
+| `STOM_Version_3U_C` | absent |
+| remaining candidate queue | no additional safe micro-candidate opened |
+
+
+## 31. `2UC-V3-BP-008A` application record
+
+`2UC-V3-BP-008A` was opened after BP-007A final guard because the fresh post-BP-007A inventory found one smaller residual V3.11 dependency-cleanup sub-candidate in `utility/static.py`. This supersedes only the narrow `pytz` bootstrap residue; the broad no-more/hold conclusions remain in effect for LS API, DB migration, pyd/UI, static_method split, trade/backtest/dashboard/CLI/test broad changes, sound/process wiring, and AnalyzerRisk runtime wiring.
+
+```text
+total progress       [####################]  98.6%  71 / 72 pages
+BP-008A current      [################----]  80.0%   4 /  5 pages
+remaining pages      [####----------------]  20.0%   1 /  5 pages
+```
+
+Next OMX command:
+
+```powershell
+omx sparkshell powershell -NoProfile -Command "python C:/System_Trading/STOM/STOM_V/scripts/verify_release_sync.py; python C:/System_Trading/STOM/STOM_V/scripts/verify_release_sync.py --root C:/System_Trading/STOM/STOM_V.wt-dev; git -C C:/System_Trading/STOM/STOM_V status --short; git -C C:/System_Trading/STOM/STOM_V.wt-dev status --short"
+```
+
+| Item | Value |
+|---|---|
+| Status | applied in 2U_C |
+| Source V3 version | `STOM V3.11` |
+| Source commit | `dbab03b3` |
+| Source path | `utility/static_method/static_datetime.py` |
+| Target path | `utility/static.py` |
+| 2U_C code commit | `6e4c10a0 BP-008A static timezone dependency? ????` |
+| Applied scope | replace `pytz` UTC/CME bootstrap with `datetime.timezone.utc` and `zoneinfo.ZoneInfo` |
+| Kiwoom adjustment | preserved the existing 2U_C `utility.static` path and all exported names |
+| Excluded scope | V3 static module split, telegram bot timezone cleanup, requirements cleanup, LS API, DB migration, pyd/UI restructuring |
+| Verification | `py_compile`, DST equivalence mock, `git diff --check`, `git diff --cached --check` |
+| Remaining risk | full GUI/runtime launch not exercised in this offline pass |
+
+
+## 32. `2UC-V3-BP-008A` final guard
+
+```text
+total progress       [####################] 100.0%  72 / 72 pages
+BP-008A current      [####################] 100.0%   5 /  5 pages
+remaining pages      [--------------------]   0.0%   0 /  0 pages
+```
+
+Next OMX command:
+
+```powershell
+omx cancel
+```
+
+Final guard passed for `2UC-V3-BP-008A`.
+
+| Guard | Result |
+|---|---|
+| root status | clean before Page 5 doc append |
+| 2U_C status | clean before Page 5 doc append |
+| py_compile | passed for `utility/static.py` |
+| release sync | passed for root and 2U_C |
+| forbidden runtime artifacts | none tracked |
+| `STOM_Version_3U_C` | absent |
+| remaining candidate queue | no additional safe micro-candidate opened after BP-008A |
+
+`2UC-V3-BP-008A` is closed as completed. Future timezone/dependency cleanup beyond `utility/static.py` requires a new BP-ID and separate Page 1 inventory.

@@ -3,7 +3,7 @@ import os
 import re
 import sys
 import logging
-import pytz
+from zoneinfo import ZoneInfo
 try:
     import psutil
 except ImportError:
@@ -41,8 +41,8 @@ KEY_FALLBACK_FILE = os.path.join(
 )
 
 
-now_utc_ = datetime.datetime.now(pytz.utc)
-now_cme_ = now_utc_.astimezone(pytz.timezone('America/Chicago'))
+now_utc_ = datetime.datetime.now(datetime.timezone.utc)
+now_cme_ = now_utc_.astimezone(ZoneInfo('America/Chicago'))
 summer_t = int(now_cme_.dst().total_seconds())
 time_gap = int(summer_t - 50400)
 summer_time = summer_t
