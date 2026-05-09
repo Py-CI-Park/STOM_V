@@ -24,16 +24,20 @@ def update_back_progressbar(ui):
             remain_backtime = timedelta_sec(left_total_sec / curr_back_count * (total_back_count - curr_back_count)) - curr_time
             if ui.back_schedul:
                 ui.list_progressBarrr[ui.back_scount].setFormat('%p%')
-                ui.list_progressBarrr[ui.back_scount].setValue(curr_back_count)
                 ui.list_progressBarrr[ui.back_scount].setRange(0, total_back_count)
+                ui.list_progressBarrr[ui.back_scount].setValue(curr_back_count)
             if ui.ssicon_alert:
-                ui.ss_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
-                ui.ss_progressBar_01.setValue(curr_back_count)
+                ui.ss_progressBar_01.setFormat(
+                    f'%p% | 경과 시간 {str(left_backtime)[:-3]} | 남은 시간 {str(remain_backtime)[:-3]}'
+                )
                 ui.ss_progressBar_01.setRange(0, total_back_count)
+                ui.ss_progressBar_01.setValue(curr_back_count)
             else:
-                ui.cs_progressBar_01.setFormat(f'%p% | 경과 시간 {left_backtime} | 남은 시간 {remain_backtime}')
-                ui.cs_progressBar_01.setValue(curr_back_count)
+                ui.cs_progressBar_01.setFormat(
+                    f'%p% | 경과 시간 {str(left_backtime)[:-3]} | 남은 시간 {str(remain_backtime)[:-3]}'
+                )
                 ui.cs_progressBar_01.setRange(0, total_back_count)
+                ui.cs_progressBar_01.setValue(curr_back_count)
 
 
 @error_decorator
