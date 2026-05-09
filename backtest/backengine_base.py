@@ -8,6 +8,8 @@ from trade.risk_analyzer import RiskAnalyzer
 from trade.base_strategy import BaseStrategy
 from trade.formula_manager import get_formula_data
 from trade.microstructure_analyzer import MicrostructureAnalyzer
+from strategy.v3k_analyzer_adapter import ANALYZER_MODULE_CONTRACTS, FLAG_BACKTEST_LEARNING, LEARNING_DB_CONTRACTS, \
+    LearningLoadRequest, V3KLearningDataAdapter
 from backtest.back_static import GetBuyStg, GetSellStg, GetBuyConds, GetSellConds, GetBackloadCodeQuery, \
     get_trade_info, get_trade_result_snapshot, GetBuyStgFuture, GetSellStgFuture, GetBuyCondsFuture, \
     GetSellCondsFuture, TRADE_RESULT_B_COLUMNS, TRADE_RESULT_S_COLUMNS, TRADE_RESULT_EXTRA_COLUMNS
@@ -74,6 +76,7 @@ class BackEngineBase(BaseStrategy):
         self.hoga_eidex      = None
         self.ms_analyzer     = None
         self.rk_analyzer     = None
+        self.v3k_learning_loader = None
 
         self.code_list       = []
         self.vars_list       = []
@@ -92,6 +95,7 @@ class BackEngineBase(BaseStrategy):
         self.trade_snapshots = {}
         self.curr_trade_info = {}
         self.curr_day_info   = {}
+        self.v3k_learning_load_plan = {}
 
         self.shared_list     = []
         self.shared_count    = None
@@ -130,6 +134,7 @@ class BackEngineBase(BaseStrategy):
         else:                        gubun = 'coin'
         self.ms_analyzer = MicrostructureAnalyzer(gubun)
         self.rk_analyzer = RiskAnalyzer(gubun)
+        self.v3k_learning_loader = V3KLearningDataAdapter()
 
         if self.market_gubun == 1:
             factor_list = list_stock_tick if self.is_tick else list_stock_min
@@ -452,6 +457,46 @@ class BackEngineBase(BaseStrategy):
     def GetDayValues(indexs, is_tick):
         return indexs // 1_000_000 if is_tick else indexs // 10_000
 
+    def _v3k_strategy_gubun(self):
+        if self.market_gubun == 1:
+            return 'stock'
+        elif self.market_gubun == 2:
+            return 'future'
+        return 'coin'
+
+    def _v3k_learning_flags(self):
+        flags = {FLAG_BACKTEST_LEARNING: self.dict_set.get(FLAG_BACKTEST_LEARNING, False)}
+        for contract in ANALYZER_MODULE_CONTRACTS.values():
+            flags[contract.feature_flag] = self.dict_set.get(contract.feature_flag, False)
+        return flags
+
+    def _v3k_learning_kinds_for_current_timeframe(self):
+        for kind in LEARNING_DB_CONTRACTS:
+            if kind == 'candle_pattern' and self.is_tick:
+                continue
+            yield kind
+
+    def PrepareV3KLearningLoadPlan(self, code, backtest_date):
+        if not self.dict_set.get(FLAG_BACKTEST_LEARNING, False):
+            return ()
+        if self.v3k_learning_loader is None:
+            self.v3k_learning_loader = V3KLearningDataAdapter()
+
+        flags = self._v3k_learning_flags()
+        results = []
+        for kind in self._v3k_learning_kinds_for_current_timeframe():
+            request = LearningLoadRequest(
+                kind=kind,
+                code=code,
+                backtest_date=int(backtest_date),
+                strategy_gubun=self._v3k_strategy_gubun(),
+                is_tick=self.is_tick,
+                feature_flags=flags,
+            )
+            results.append(self.v3k_learning_loader.load_before_backtest(request))
+        self.v3k_learning_load_plan[(code, int(backtest_date))] = tuple(results)
+        return tuple(results)
+
     def SetHogaInfo(self):
         호가데이터 = self.arry_code[self.indexn, self.hoga_sidex:self.hoga_eidex]
         self.shogainfo = 호가데이터[:5][::-1]
@@ -632,6 +677,7 @@ class BackEngineBase(BaseStrategy):
             self.update_formula = True
 
         self.InitTradeInfo()
+        self.v3k_learning_load_plan = {}
         self.sell_count = 0
 
         j = 0
@@ -669,6 +715,7 @@ class BackEngineBase(BaseStrategy):
 
                 start_idx = 0
                 for end_idx in day_last_indexs:
+                    self.PrepareV3KLearningLoadPlan(code, day_vals[start_idx])
                     for i in range(start_idx, end_idx):
                         self.index = indexs[i]
                         self.indexn = i

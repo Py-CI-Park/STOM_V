@@ -212,8 +212,8 @@ Final guard: passed. Root and 2U_C release sync passed, both worktrees were clea
 
 ## Candidate inventory checkpoint: `2UC-V3-CANDIDATE-INVENTORY`
 
-Status: Page 4 official docs sync complete; no runtime code changed.  
-Date: 2026-05-07 KST  
+Status: Page 4 official docs sync complete; no runtime code changed.
+Date: 2026-05-07 KST
 Inventory doc: `docs/update_log/2026-05-07_v3_2uc_candidate_inventory.md`
 
 Purpose: before continuing V3 feature backports into `STOM_Version_2U_C`, map the full V3.0~V3.18 feature surface into completed, conditional, hold, and excluded queues.
@@ -367,3 +367,205 @@ Evidence:
 - No new immediate safe candidate was identified.
 
 Directive: Keep `no-more-safe-candidates` as the default state. Repeated status checks should not become new code backport loops without new evidence/spec.
+
+## Goal reset: V3K full feature migration for 2U_C
+
+Date: 2026-05-08
+
+The previous `no-more-safe-candidates` state is reinterpreted as closure of the safe micro-candidate backport queue only. It is not proof that all non-LS V3 features have been implemented in `STOM_Version_2U_C`.
+
+New target:
+
+- `V3K = V3 features + Kiwoom retained`.
+- Implement V3 non-LS features in `STOM_Version_2U_C`, including learning/analysis modules, V3-compatible learning DB/schema, backtest learning-data loading, and realtime learning-data usage.
+- Exclude direct LS Securities REST/TR/REAL broker dependency.
+
+Authoritative planning document:
+
+- `docs/update_log/2026-05-08_v3k_full_feature_migration_goal_reset.md`
+
+Directive: Do not continue blind BP micro-candidate loops for this goal. Start `V3K-DESIGN-0` first, then proceed through DB/schema, analyzer contract, backtest learning, realtime learning, UI, and verification phases. Do not rewrite existing V2/2U/2U_C history; use corrective commits and explicit migration specs.
+
+## V3K-DESIGN-1: DB/learning-data design
+
+- Date: 2026-05-09 KST
+- Root commit target: `STOM_Version_2`
+- Final implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_design_1_db_learning_design.md`
+  - `docs/superpowers/specs/2026-05-09-v3k-db-learning-migration-spec.md`
+- Decision: Preserve 2U_C/Kiwoom core DBs. Do not replace `setting.db`, `strategy.db`, `tradelist.db`, or `code_info.db` with V3 versions.
+- Decision: Start V3 analyzer learning DBs in a shadow/read-only design: `pattern_analysis.db`, `volume_spike.db`, `volume_profile.db`, `volatility_pattern.db`, `volatility_stop_take.db`, plus optional `v3k_meta.db` and `v3k_code_meta.db`.
+- Decision: Backtest learning data must default to `last_update < backtest_date`; same-day `<=` use remains hold until leakage safety is proven.
+- Next: `V3K-DESIGN-1B` read-only schema diff/dry-run scripts, then `V3K-DESIGN-2` analyzer/data contract.
+
+Directive: Do not create, modify, or commit `_database`, `_database_v3k_shadow`, `backup/_database_pre_v3k_*`, or `*.db` while executing DESIGN-1/1B. Runtime wiring belongs to later V3K-IMPL phases only.
+## V3K-DESIGN-1B: read-only schema/dry-run scripts
+
+- Date: 2026-05-09 KST
+- Root commit target: `STOM_Version_2`
+- Final implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_design_1b_readonly_scripts.md`
+  - `scripts/diff_v3_vs_2uc_db_schema.py`
+  - `scripts/init_v3k_shadow_db.py`
+  - `scripts/v3k_db_health.py`
+- Decision: DESIGN-1B scripts are verification scaffolding only. They must not create or modify `_database`, `_database_v3k_shadow`, `backup`, or `*.db`.
+- Verification: `py_compile` passed; schema diff, shadow manifest, and health reports were written only under `.omx/reports/`.
+- Next: `V3K-DESIGN-2` analyzer/data contract and Kiwoom data shape mapping.
+
+Directive: Keep the scripts read-only until a later V3K-VERIFY-approved cutover stage. Runtime analyzer wiring must not import these scripts directly.
+
+## V3K-DESIGN-2: analyzer/data contract
+
+- Date: 2026-05-09 KST
+- Root commit target: `STOM_Version_2`
+- Final implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_design_2_analyzer_data_contract.md`
+  - `docs/superpowers/specs/2026-05-09-v3k-analyzer-data-contract-spec.md`
+- Decision: V3 analyzer modules must enter 2U_C through a Kiwoom-preserving adapter boundary, not by direct broad runtime merge.
+- Decision: Feature flags default OFF. Analyzer output must not affect order/exit rules until a later explicitly verified facade stage.
+- Decision: `strategy/analyzer_risk.py` in 2U_C remains dormant until import, fixture, OFF-regression, ON-smoke, and registry evidence are satisfied.
+- Excluded: direct LS Securities REST/TR/REAL dependency, core DB replacement, `_database`/`*.db` artifacts, broad `manager_formula` or `stg_globals_func` replacement.
+- Next: `V3K-IMPL-2A` adapter skeleton + AnalyzerRisk dormant smoke fixture in `STOM_Version_2U_C`.
+
+Directive: Use this contract as the gate before implementing V3 analyzer learning/backtest/realtime wiring. If a future implementation needs to violate this boundary, create a new decision record before code changes.
+## V3K-IMPL-2A: adapter skeleton + AnalyzerRisk dormant smoke
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_impl_2a_adapter_risk_smoke.md`
+  - `strategy/v3k_analyzer_adapter.py`
+  - `scripts/smoke_v3k_analyzer_adapter.py`
+- Decision: V3K analyzer integration starts from a feature-flagged adapter boundary, not direct runtime wiring.
+- Decision: Dormant `strategy.analyzer_risk.AnalyzerRisk` can be smoke-tested through `V3KAnalyzerAdapter` only when `V3K_BACKTEST_LEARNING_ENABLED`, `V3K_RISK_ANALYZER_V3_ENGINE`, and `리스크분석` are all enabled.
+- Verification: py_compile passed; default OFF smoke passed; explicit ON AnalyzerRisk smoke passed for stock/coin tick/min synthetic fixtures.
+- Excluded: `backtest/backengine_base.py` runtime wiring, realtime receiver/order path, core DB changes, LS API dependency, formula/global replacement.
+- Next: `V3K-IMPL-2B` analyzer module staging and field-contract smoke.
+
+Directive: Keep V3K analyzer flags default OFF until OFF regression and explicit runtime wiring verification pass. Do not let AnalyzerRisk output affect order/exit rules before the formula/global facade stage.
+## V3K-IMPL-2B: analyzer module staging
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_impl_2b_analyzer_module_staging.md`
+  - `strategy/analyzer_candle_pattern.py`
+  - `strategy/analyzer_volume_spike.py`
+  - `strategy/analyzer_volume_profile.py`
+  - `strategy/analyzer_volatility_pattern.py`
+  - `strategy/analyzer_volatility_stop_take.py`
+  - `scripts/smoke_v3k_analyzer_modules.py`
+- Decision: V3 analyzer modules are staged for import/field-contract verification only. They remain disconnected from backtest/realtime runtime.
+- Decision: Analyzer constructors are not invoked in this phase because V3 analyzer DB classes initialize tables. DB use belongs to the later read-only/cutover gate.
+- Verification: py_compile passed; module import smoke passed; stock/coin tick/min field-contract smoke passed; IMPL-2A adapter OFF/ON smoke still passed; forbidden artifact guard clean.
+- Excluded: backtest runtime wiring, realtime receiver/order path, DB file/schema creation, formula/global facade, LS API dependency.
+- Next: `V3K-IMPL-3` backtest learning-data load path under feature flag default OFF and read-only DB policy.
+
+Directive: Do not instantiate staged analyzer classes from runtime until the V3K learning DB path, last_update policy, feature flags, and OFF regression guard are all verified.
+## V3K-IMPL-3: backtest learning-data read-only load path
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_impl_3_backtest_learning_loader.md`
+  - `strategy/v3k_analyzer_adapter.py`
+  - `scripts/smoke_v3k_learning_loader.py`
+- Decision: Backtest learning-data load policy uses strict `last_update < backtest_date`; same-day `<=` remains excluded to avoid leakage.
+- Decision: Learning DB access starts as read-only adapter path only. Missing DB returns diagnostics and never creates `_database_v3k_shadow` or `*.db`.
+- Decision: Feature flags default OFF. Actual read query requires `V3K_BACKTEST_LEARNING_ENABLED` plus analyzer-specific flag.
+- Verification: py_compile passed; learning loader smoke passed; analyzer module smoke passed; IMPL-2A adapter OFF/ON smoke passed; forbidden artifact guard clean.
+- Excluded: analyzer constructor invocation, DB file/schema creation, backtest loop output injection, realtime receiver/order path, formula/global facade, LS API dependency.
+- Next: `V3K-IMPL-3B` backtest dry-run/no-op hook under feature flag default OFF.
+
+Directive: Do not let backtest runtime instantiate analyzer DB classes or create learning DB files before the read-only load plan and OFF regression guard are wired and verified.
+## V3K-IMPL-3B: backtest learning-data dry-run/no-op hook
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_impl_3b_backtest_learning_hook.md`
+  - `backtest/backengine_base.py`
+  - `scripts/smoke_v3k_backtest_learning_hook.py`
+- Decision: `BackEngineBase` now has a `PrepareV3KLearningLoadPlan()` dry-run hook. With feature flags OFF it returns an empty tuple and does not mutate the load plan.
+- Decision: Flag ON still remains missing-DB/read-only no-op unless an approved learning DB exists; the hook stores load diagnostics only and does not instantiate analyzers or affect orders.
+- Verification: py_compile passed; backtest hook smoke passed; learning loader smoke passed; analyzer module smoke passed; adapter OFF/ON smoke passed; release sync passed; forbidden artifact guard clean.
+- Excluded: analyzer constructor invocation, learning DB/table creation, `Strategy()` globals injection, order/exit changes, realtime receiver/order path, formula/global facade, LS API dependency.
+- Next: `V3K-IMPL-4` realtime learning-data usage boundary under feature flag default OFF and missing-DB no-op.
+
+Directive: Do not use `v3k_learning_load_plan` to alter strategy decisions until formula/global facade and OFF/ON regression evidence exist.
+
+## V3K-IMPL-4: realtime learning-data boundary
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_impl_4_realtime_learning_boundary.md`
+  - `strategy/v3k_analyzer_adapter.py`
+  - `scripts/smoke_v3k_realtime_learning_boundary.py`
+- Decision: Realtime learning-data usage starts as an adapter-only preload boundary. It does not import or modify Kiwoom receiver, trader, order, or strategy decision paths.
+- Decision: `V3KRealtimeLearningAdapter` uses `V3K_REALTIME_LEARNING_ENABLED` as its master flag, while the existing backtest loader keeps `V3K_BACKTEST_LEARNING_ENABLED` by default.
+- Decision: Default OFF returns no load results. ON with missing learning DB returns diagnostics only and never creates `_database_v3k_shadow` or `*.db`.
+- Decision: Tick preload excludes `candle_pattern`; min preload includes it.
+- Verification: py_compile passed; realtime learning boundary smoke passed; backtest learning hook smoke passed; learning loader smoke passed; analyzer module smoke passed; adapter OFF/ON smoke passed; forbidden artifact guard clean.
+- Excluded: Kiwoom realtime receiver/order path changes, order/exit changes, formula/global facade injection, DB file/schema creation, core DB replacement, LS API dependency.
+- Next: `V3K-IMPL-5` formula/global facade under feature flag default OFF and no-op/diagnostic behavior.
+
+Directive: Do not call realtime preload results from live order/strategy decisions until the formula/global facade and OFF/ON regression evidence exist. Do not create learning DB files from this adapter boundary.
+
+## V3K-IMPL-5: formula/global facade
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_impl_5_formula_global_facade.md`
+  - `strategy/v3k_analyzer_adapter.py`
+  - `strategy/v3k_formula_facade.py`
+  - `scripts/smoke_v3k_formula_facade.py`
+- Decision: V3 analyzer output is prepared for formula/global consumption through a side-effect-free facade only. Runtime `globals().update(...)`, `trade/formula_manager.py`, and `trade/base_strategy.py` are not changed in this phase.
+- Decision: The implementation follows the existing design flag names: `V3K_FORMULA_MANAGER_ADAPTER` and `V3K_STG_GLOBALS_FACADE`. Both must be ON before prefixed globals are built.
+- Decision: Facade output uses `V3K_`-prefixed callable names, for example `V3K_리스크점수()`, to avoid collisions with existing strategy/formula names.
+- Verification: py_compile passed; formula/global facade smoke passed; realtime learning boundary smoke passed; backtest learning hook smoke passed; learning loader smoke passed; analyzer module smoke passed; analyzer adapter OFF/ON smoke passed; forbidden artifact guard clean.
+- Excluded: Kiwoom receiver/order/strategy path changes, order/exit changes, runtime globals update, analyzer constructor runtime calls, DB file/schema creation, core DB replacement, LS API dependency.
+- Next: `V3K-VERIFY-1A` OFF-regression and untouched-path audit before any UI/setting exposure or runtime dry-run hook.
+
+Directive: Do not call `globals().update(...)` with V3K facade output from live runtime until OFF-regression, ON synthetic smoke, and explicit runtime hook design evidence exist. Keep unprefixed analyzer names out of globals until collision safety is proven.
+
+## V3K-VERIFY-1A: OFF regression and untouched-path audit
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_verify_1a_off_regression_audit.md`
+  - `scripts/audit_v3k_verify_1a.py`
+- Decision: Before adding UI/setting exposure or runtime dry-run hooks, V3K implementation state is audited against OFF-regression and untouched-path invariants.
+- Decision: The audit base is the parent of `V3K 설계 문맥을 2U_C 구현 lane에 고정한다` (`090421c167be26b1a5d2c4ec55023f5f5064058a` at this run).
+- Verification: py_compile passed; VERIFY-1A audit passed; formula/global facade smoke passed; realtime learning boundary smoke passed; backtest learning hook smoke passed; learning loader smoke passed; analyzer module smoke passed; analyzer adapter OFF/ON smoke passed; forbidden artifact guard clean.
+- Evidence: Kiwoom/runtime untouched audit passed; V3K flags default-OFF audit passed; forbidden artifact guard passed; Python-code LS dependency marker audit passed.
+- Excluded: Kiwoom receiver/order/strategy path changes, `trade/base_strategy.py` runtime injection, `trade/formula_manager.py` runtime globals update, DB file/schema creation, core DB replacement, LS API dependency.
+- Next: `V3K-IMPL-6A` non-invasive settings/feature-flag surface contract before any MainWindow/pyd wrapper or live runtime hook.
+
+Directive: Treat VERIFY-1A as the gate for further V3K exposure. Do not add runtime globals update, live order/exit use, or GUI wrapper changes until the settings surface contract and another OFF regression pass are committed.
+
+Post-commit correction: `scripts/audit_v3k_verify_1a.py` must skip its own marker table when scanning Python code for LS dependency markers; otherwise the audit self-reports its forbidden-pattern constants as a false positive.
+
+## V3K-IMPL-6A: non-invasive settings surface contract
+
+- Date: 2026-05-09 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-09_v3k_impl_6a_settings_surface.md`
+  - `strategy/v3k_settings_surface.py`
+  - `scripts/smoke_v3k_settings_surface.py`
+  - `strategy/v3k_analyzer_adapter.py`
+  - `scripts/audit_v3k_verify_1a.py`
+- Decision: V3K setting exposure starts as a contract-only surface. It normalizes dict/JSON-like input and never reads or writes DB files.
+- Decision: `V3K_ANALYSIS_UI_ENABLED` is added as a default-OFF flag, but no MainWindow/pyd wrapper or GUI runtime code is changed in this phase.
+- Decision: All analyzer, learning, formula/global, and UI exposure keys remain default OFF and must stay aligned with `DEFAULT_FLAGS`.
+- Verification: py_compile passed; settings surface smoke passed; VERIFY-1A audit passed; formula/global facade smoke passed; realtime learning boundary smoke passed; backtest learning hook smoke passed; learning loader smoke passed; analyzer module smoke passed; analyzer adapter OFF/ON smoke passed; forbidden artifact guard clean.
+- Excluded: MainWindow/pyd wrapper changes, UI clicked/activated wrapper changes, Kiwoom receiver/order/strategy path changes, runtime globals update, DB file/schema creation, core DB replacement, LS API dependency.
+- Next: `V3K-VERIFY-1B` final closure audit before any GUI/runtime hook phase.
+
+Directive: Do not connect V3K settings surface to GUI wrappers or DB-backed settings without another OFF regression pass and explicit user approval for the GUI/runtime surface.

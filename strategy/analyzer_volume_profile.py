@@ -1,0 +1,515 @@
+# V3K staging note: this file is imported/compiled for analyzer module staging only.
+# Do not wire it into 2U_C runtime without the V3K feature-flag and DB migration gates.
+
+import random
+import sqlite3
+import hashlib
+import numpy as np
+import pandas as pd
+from numba import njit
+from traceback import format_exc
+from PyQt5.QtWidgets import QMessageBox
+from typing import Dict, List, Tuple, Any
+from multiprocessing import Pool, cpu_count
+from ui.set_text import famous_saying
+from utility.static import now
+from utility.setting_base import DB_PATH, ui_num as UI_NUM
+from utility.static import thread_decorator
+
+VOLUME_PROFILE_DB = f'{DB_PATH}/volume_profile.db'
+
+window_queue = None
+
+
+def init_worker(wndowQ):
+    """Pool worker 프로세스 초기화 함수: 윈도우 큐를 전역 변수로 설정"""
+    global window_queue
+    window_queue = wndowQ
+
+
+def _calculate_setting_hash(*args) -> str:
+    """설정값들을 MD5 해시로 변환"""
+    hash_input = '_'.join(map(str, args))
+    return hashlib.md5(hash_input.encode()).hexdigest()
+
+
+@njit(cache=True, fastmath=True)
+def _calculate_volume_by_bin(close_price: np.ndarray, volume_data: np.ndarray, price_bins: np.ndarray) -> np.ndarray:
+    """가격대별 거래량 계산 - 균등분할 최적화 버전"""
+    bin_count = len(price_bins) - 1
+    volume_by_bin = np.zeros(bin_count, dtype=np.float64)
+    min_price = price_bins[0]
+    max_price = price_bins[-1]
+    bin_width = (max_price - min_price) / bin_count
+    for i in range(len(close_price)):
+        price  = close_price[i]
+        volume = volume_data[i]
+        if price < max_price:
+            bin_idx = int((price - min_price) / bin_width)
+        else:
+            bin_idx = bin_count - 1
+        volume_by_bin[bin_idx] += volume
+    return volume_by_bin
+
+
+@njit(cache=True, fastmath=True)
+def _calculate_node_scores(close_price: np.ndarray, dates: np.ndarray, node_price: float,
+                           analysis_period: int, rate_threshold: float) -> tuple:
+    """노드별 점수 계산 (numba 최적화)"""
+    upward_penetration   = 0
+    downward_penetration = 0
+    bounce_up   = 0
+    bounce_down = 0
+    total_count = 0
+    threshold = node_price * rate_threshold / 100
+    for i in range(len(close_price) - analysis_period):
+        price = close_price[i]
+        if abs(price - node_price) / node_price * 100 <= rate_threshold and dates[i] == dates[i + analysis_period]:
+            total_count += 1
+            future_prices = close_price[i + 1:i + 1 + analysis_period]
+            if future_prices.max() >= node_price + threshold:
+                upward_penetration += 1
+            elif future_prices.min() <= node_price - threshold:
+                downward_penetration += 1
+            else:
+                if future_prices[-1] > future_prices[0]:
+                    bounce_up += 1
+                else:
+                    bounce_down += 1
+    if total_count == 0:
+        upward_strength   = 0.0
+        downward_strength = 0.0
+        sample_count      = 0
+    else:
+        upward_strength   = (upward_penetration + bounce_up) / total_count
+        downward_strength = (downward_penetration + bounce_down) / total_count
+        sample_count      = total_count
+    return upward_strength, downward_strength, sample_count
+
+
+class AnalyzerVolumeProfile:
+    """메인 볼륨 프로파일 분석 통합 클래스"""
+    def __init__(self, market_gubun: int, market_info: dict, is_tick: bool,
+                 realtime: bool = False, top_nodes: int = 20):
+        """
+        초기화
+        market_gubun: 마켓 구분 번호
+        market_info: 마켓 정보 딕셔너리
+        is_tick: 틱 데이터 여부
+        realtime: 실시간 모드 여부
+        top_nodes: 상위 볼륨 노드 개수 (기본값 20)
+        """
+        self.volume_database = VolumeProfileDatabase(market_info['전략구분'], is_tick)
+        self.analysis_period, self.rate_threshold, self.price_range_pct = \
+            self.volume_database.load_volume_setting(market_gubun)
+
+        self.backtest_db = market_info['백테디비'][is_tick]
+        self.factor_list = market_info['팩터목록'][is_tick]
+        self.is_tick     = is_tick
+        self.top_nodes   = top_nodes
+        self.idx_close   = self.factor_list.index('현재가')
+        self.idx_volume  = self.factor_list.index('초당거래대금') if is_tick else self.factor_list.index('분당거래대금')
+        self.volume_nodes: dict[str, dict[float, dict[str, float]]] = {}
+
+        if realtime:
+            self._load_volume_all_nodes()
+
+    def _load_volume_all_nodes(self):
+        """데이터베이스에서 모든 종목의 볼륨 노드 로드"""
+        all_codes = self.volume_database.get_all_codes()
+        if all_codes:
+            for code in all_codes:
+                self.volume_nodes[code] = self.volume_database.get_volume_all_scores(code)
+
+    def load_volume_code_nodes(self, code: str, date: int):
+        """데이터베이스에서 종목코드의 볼륨 노드 로드"""
+        self.volume_nodes[code] = self.volume_database.get_volume_code_scores(code, date)
+
+    def analyze_current_price(self, code: str, current_price: float) -> Tuple[float, float]:
+        """
+        실시간 가격대 분석 및 학습된 점수 반환
+        code: 종목코드
+        current_price: 현재가 데이터
+        return: 가격대점수, 가격대신뢰도
+        """
+        volume_profile_score = confidence_score = 0.0
+
+        volume_nodes = self.volume_nodes.get(code)
+        if volume_nodes:
+            nearest_node = None
+            min_distance = float('inf')
+
+            for node_price in volume_nodes.keys():
+                distance = abs(current_price - node_price)
+                if distance / node_price * 100 <= self.price_range_pct:
+                    if distance < min_distance:
+                        min_distance = distance
+                        nearest_node = node_price
+
+            if nearest_node:
+                node_data = volume_nodes[nearest_node]
+                volume_profile_score = node_data['avg_score']
+                confidence_score = node_data['confidence_score']
+
+        return volume_profile_score, confidence_score
+
+    def analyze_batch_data(self, code: str, code_data: np.ndarray) -> np.ndarray:
+        """2차원 어레이 데이터 전체를 일괄 분석합니다.
+        code: 종목코드
+        code_data: 코드 데이터 2차원 어레이
+        return:
+            (N, 2) 형태의 2차원 어레이 - 가격대점수, 가격대신뢰도
+        """
+        date = int(str(code_data[0, 0])[:8])
+        self.load_volume_code_nodes(code, date)
+
+        n = len(code_data)
+        results = np.zeros((n, 2))
+
+        for i, current_price in enumerate(code_data[:, 1]):
+            results[i] = list(self.analyze_current_price(code, current_price))
+
+        return results
+
+    def train_all_codes(self, ui):
+        """전체 종목 학습 수행 (종목 기반 멀티프로세싱)"""
+        with sqlite3.connect(self.backtest_db) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE TYPE = 'table'")
+            results = cursor.fetchall()
+            code_list = [result[0] for result in results if result[0] != 'moneytop' and '_info' not in result[0]]
+
+        existing_dates_dict = {}
+        with sqlite3.connect(self.volume_database.db_path) as conn:
+            cursor = conn.cursor()
+            for code in code_list:
+                cursor.execute(
+                    f'SELECT DISTINCT last_update FROM {self.volume_database.table_name} '
+                    f'WHERE code = ? and setting_hash = ?',
+                    (code, self.volume_database.setting_hash)
+                )
+                existing_dates_dict[code] = set([row[0] for row in cursor.fetchall()])
+
+        multi = cpu_count()
+        len_code_list = len(code_list)
+        if len_code_list <= multi:
+            code_chunks = [[code] for code in code_list]
+        else:
+            code_chunks = []
+            for i in range(multi):
+                code_chunks.append([code for j, code in enumerate(code_list) if j % multi == i])
+
+        start = now()
+        ui.windowQ.put((UI_NUM['학습로그'], (start, len_code_list)))
+        actual_processes = min(multi, len(code_chunks))
+        with Pool(processes=actual_processes, initializer=init_worker, initargs=(ui.windowQ,)) as pool:
+            args = [
+                (
+                    i, code_chunk, self.backtest_db, self.idx_close, self.idx_volume,
+                    self.analysis_period, self.rate_threshold, self.price_range_pct, self.top_nodes,
+                    existing_dates_dict, self.is_tick, self.volume_database.setting_hash
+                )
+                for i, code_chunk in enumerate(code_chunks)
+            ]
+            results = pool.starmap(self._train_code_chunk, args)
+
+        total_processed = 0
+        columns = [
+            'code', 'price_level', 'avg_score', 'upward_strength', 'downward_strength',
+            'sample_count', 'confidence_score', 'setting_hash', 'last_update'
+        ]
+        for i, result in enumerate(results):
+            if result:
+                df = pd.DataFrame(result, columns=columns)
+                self.volume_database.save_volume_scores(df)
+                total_processed += 1
+                ui.windowQ.put((UI_NUM['학습로그'], f'학습 데이터 저장 중 ... [{i+1:02d}/{actual_processes:02d}]'))
+
+        if total_processed > 0:
+            pass_time = now() - start
+            ui.windowQ.put((
+                UI_NUM['학습로그'],
+                f'학습 데이터 저장 완료, {self.volume_database.db_path} -> {self.volume_database.table_name}'
+            ))
+            ui.windowQ.put((UI_NUM['학습로그'], f'가격대분석 학습 완료, 소요시간[{pass_time}]'))
+        else:
+            ui.windowQ.put((UI_NUM['학습로그'], '이미 모든 데이터가 학습되어 있습니다.'))
+
+    @staticmethod
+    def _train_code_chunk(i: int, code_chunk: List[str], backtest_db: str, idx_close: int, idx_volume: int,
+                          analysis_period: int, rate_threshold: float, price_range_pct: float, top_nodes: int,
+                          existing_dates_dict: Dict[str, set], is_tick: bool, setting_hash: str) -> List[Any]:
+        """단일 종목 청크 학습 (멀티프로세싱용)"""
+        global window_queue
+
+        all_volume_scores = []
+        last = len(code_chunk)
+
+        with sqlite3.connect(backtest_db) as conn:
+            cursor = conn.cursor()
+            for k, code in enumerate(code_chunk):
+                try:
+                    cursor.execute(f'SELECT * FROM "{code}"')
+                    results = cursor.fetchall()
+                    historical_data = np.array(results)
+
+                    datetime_data = historical_data[:, 0]
+                    all_dates = datetime_data // 1000000 if is_tick else datetime_data // 10000
+                    target_dates = np.unique(all_dates)
+                    target_dates.sort()
+                    existing_dates = existing_dates_dict.get(code, set())
+
+                    for target_date in target_dates:
+                        if target_date in existing_dates:
+                            continue
+
+                        mask = all_dates <= target_date
+                        date_data = historical_data[mask]
+
+                        if len(date_data) < analysis_period * 2:
+                            continue
+
+                        dates       = date_data[:, 0] // 1000000 if is_tick else date_data[:, 0] // 10000
+                        close_price = date_data[:, idx_close]
+                        volume_data = date_data[:, idx_volume]
+                        min_price   = close_price.min()
+                        max_price   = close_price.max()
+                        bin_size    = min_price * price_range_pct / 100
+                        num_bins    = int((max_price - min_price) / bin_size) + 1
+                        price_bins  = np.linspace(min_price, max_price, num_bins)
+
+                        if len(price_bins) < 2:
+                            continue
+
+                        volume_by_bin  = _calculate_volume_by_bin(close_price, volume_data, price_bins)
+                        bin_centers    = (price_bins[:-1] + price_bins[1:]) / 2
+                        sorted_indices = np.argsort(volume_by_bin)[::-1]
+                        top_indices    = sorted_indices[:top_nodes]
+                        volume_nodes   = [float(bin_centers[idx]) for idx in top_indices]
+
+                        for node_price in volume_nodes:
+                            upward_strength, downward_strength, sample_count = \
+                                _calculate_node_scores(close_price, dates, node_price, analysis_period, rate_threshold)
+
+                            if sample_count >= 10:
+                                final_score = (upward_strength - downward_strength) * 100
+                                final_score = max(-100.0, min(100.0, final_score))
+                                confidence_score = min(1.0, sample_count / 100) if sample_count >= 10 else 0.0
+
+                                node_scores = [
+                                    code,
+                                    node_price,
+                                    round(final_score, 2),
+                                    round(upward_strength, 2),
+                                    round(downward_strength, 2),
+                                    sample_count,
+                                    round(confidence_score, 2),
+                                    setting_hash,
+                                    target_date
+                                ]
+                                all_volume_scores.append(node_scores)
+
+                    # noinspection PyUnresolvedReferences
+                    window_queue.put((UI_NUM['학습로그'], f'[{i:02d}][{code}] 가격대분석 학습 중 ... [{k+1:02d}/{last:02d}]'))
+                except Exception:
+                    # noinspection PyUnresolvedReferences
+                    window_queue.put((UI_NUM['시스템로그'], format_exc()))
+
+        return all_volume_scores
+
+
+class VolumeProfileDatabase:
+    """볼륨 프로파일 점수 데이터베이스 관리 클래스"""
+    def __init__(self, strategy_gubun: str, is_tick: bool):
+        self.table_name   = f"{strategy_gubun}_volume_score_{'tick' if is_tick else 'min'}"
+        self.is_tick      = is_tick
+        self.db_path      = VOLUME_PROFILE_DB
+        self.setting_hash = None
+        self._initialize_tables()
+
+    def _initialize_tables(self):
+        """데이터베이스 테이블 초기화"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                CREATE TABLE IF NOT EXISTS volume_setting (
+                    market INTEGER NOT NULL,
+                    is_tick INTEGER NOT NULL,
+                    analysis_period INTEGER NOT NULL,
+                    rate_threshold REAL NOT NULL,
+                    price_range_pct REAL NOT NULL,
+                    PRIMARY KEY (market, is_tick)
+                )
+            ''')
+            cursor.execute(f'''
+                CREATE TABLE IF NOT EXISTS {self.table_name} (
+                    code TEXT NOT NULL,
+                    price_level REAL NOT NULL,
+                    avg_score REAL NOT NULL,
+                    upward_strength REAL NOT NULL,
+                    downward_strength REAL NOT NULL,
+                    sample_count INTEGER NOT NULL,
+                    confidence_score REAL NOT NULL,
+                    setting_hash TEXT NOT NULL,
+                    last_update INTEGER NOT NULL,
+                    PRIMARY KEY (code, price_level, setting_hash, last_update)
+                )
+            ''')
+            conn.commit()
+
+    def get_all_codes(self) -> List[str]:
+        """데이터베이스에 저장된 전체 종목코드 조회"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                SELECT DISTINCT code
+                FROM {self.table_name}
+                WHERE setting_hash = ?
+            ''', (self.setting_hash,)
+            )
+            results = cursor.fetchall()
+            return [result[0] for result in results]
+
+    def get_volume_all_scores(self, code: str) -> Dict[str, Dict[str, float]]:
+        """종목의 전체 볼륨 프로파일 점수 조회 (최신 날짜 기준)"""
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                SELECT price_level, avg_score, confidence_score
+                FROM {self.table_name}
+                WHERE code = ? AND setting_hash = ? AND last_update =
+                (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ?)
+            ''', (code, self.setting_hash, code, self.setting_hash))
+            results = cursor.fetchall()
+
+            volume_scores = {}
+            for result in results:
+                volume_scores[result[0]] = {
+                    'avg_score': result[1],
+                    'confidence_score': result[2]
+                }
+            return volume_scores
+
+    def get_volume_code_scores(self, code: str, backtest_date: int) -> Dict[str, Dict[str, float]]:
+        """
+        백테스트 날짜 기준으로 해당 날짜 이전의 최신 날짜의 전체 볼륨 프로파일 점수 조회
+        code: 종목코드
+        backtest_date: 백테스트 기준 날짜 (YYYYMMDD)
+        return: 가격대별 점수 딕셔너리
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                SELECT price_level, avg_score, confidence_score
+                FROM {self.table_name}
+                WHERE code = ? AND setting_hash = ? AND last_update =
+                (SELECT MAX(last_update) FROM {self.table_name} WHERE code = ? AND setting_hash = ? AND last_update < ?)
+            ''', (code, self.setting_hash, code, self.setting_hash, backtest_date))
+            results = cursor.fetchall()
+
+            volume_scores = {}
+            for result in results:
+                volume_scores[result[0]] = {
+                    'avg_score': result[1],
+                    'confidence_score': result[2]
+                }
+            return volume_scores
+
+    def save_volume_scores(self, df: pd.DataFrame):
+        """종목별 볼륨 프로파일 점수 저장"""
+        with sqlite3.connect(self.db_path) as conn:
+            df.to_sql(self.table_name, conn, if_exists='append', index=False, chunksize=2000)
+
+    def load_volume_setting(self, market: int) -> tuple:
+        """
+        마켓번호로 설정값 불러오기
+        market: 마켓번호 (1~9)
+        is_tick: 틱 데이터 여부 (기본값 False)
+        return: (price_range_pct, rate_threshold) 튜플, 데이터가 없으면 (30, 10) 반환
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                SELECT analysis_period, rate_threshold, price_range_pct
+                FROM volume_setting
+                WHERE market = ? AND is_tick = ?
+            ''', (market, 1 if self.is_tick else 0)
+            )
+            result = cursor.fetchone()
+            if result:
+                analysis_period, rate_threshold, price_range_pct = result
+            else:
+                analysis_period, rate_threshold, price_range_pct = 5, 0.5, 0.33
+                self.save_volume_setting(market, analysis_period, rate_threshold, price_range_pct)
+
+            self.setting_hash = _calculate_setting_hash(analysis_period, rate_threshold, price_range_pct)
+            return analysis_period, rate_threshold, price_range_pct
+
+    def save_volume_setting(self, market: int, analysis_period: int, rate_threshold: float, price_range_pct: float):
+        """
+        마켓번호로 설정값 저장
+        market: 마켓번호 (1~9)
+        analysis_period: 분석기간설정
+        rate_threshold: 퍼센트설정
+        price_range_pct: 분봉설정
+        is_tick: 틱 데이터 여부 (기본값 False)
+        """
+        with sqlite3.connect(self.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(f'''
+                INSERT OR REPLACE INTO volume_setting
+                (market, is_tick, analysis_period, rate_threshold, price_range_pct)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (market, 1 if self.is_tick else 0, analysis_period, rate_threshold, price_range_pct)
+            )
+            conn.commit()
+
+
+def volume_setting_load(ui):
+    """두개의 콤보박스를 현재 거래소의 설정값으로 로딩한다."""
+    database = VolumeProfileDatabase(ui.market_info['전략구분'], ui.dict_set['타임프레임'])
+    analysis_period, rate_threshold, price_range_pct = database.load_volume_setting(ui.market_gubun)
+    ui.vpf_comboBoxxx_01.setCurrentText(str(analysis_period))
+    ui.vpf_comboBoxxx_02.setCurrentText(str(rate_threshold))
+    ui.vpf_comboBoxxx_03.setCurrentText(str(price_range_pct))
+
+
+def volume_setting_save(ui):
+    """두개의 콤보박스 텍스트를 현재 거래소의 설정값으로 저장한다."""
+    from ui.etcetera.etc import send_analyzer_setting_change
+    analysis_period = int(ui.vpf_comboBoxxx_01.currentText())
+    rate_threshold  = float(ui.vpf_comboBoxxx_02.currentText())
+    price_range_pct = float(ui.vpf_comboBoxxx_03.currentText())
+    database = VolumeProfileDatabase(ui.market_info['전략구분'], ui.dict_set['타임프레임'])
+    database.save_volume_setting(ui.market_gubun, analysis_period, rate_threshold, price_range_pct)
+    send_analyzer_setting_change(ui)
+    QMessageBox.information(ui.dialog_pattern, '저장완료', random.choice(famous_saying))
+
+
+def volume_profile_train(ui):
+    """볼륨 프로파일 학습을 시작한다. 스레드로 구동하여 UI멈춤을 방지한다."""
+    if ui.learn_running:
+        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 학습이 진행중입니다.\n')
+        return
+
+    _analysis_period = int(ui.vpf_comboBoxxx_01.currentText())
+    _rate_threshold  = float(ui.vpf_comboBoxxx_02.currentText())
+    _price_range_pct = float(ui.vpf_comboBoxxx_03.currentText())
+    database = VolumeProfileDatabase(ui.market_info['전략구분'], ui.dict_set['타임프레임'])
+    analysis_period, rate_threshold, price_range_pct = database.load_volume_setting(ui.market_gubun)
+
+    if _analysis_period != analysis_period or _rate_threshold != rate_threshold or _price_range_pct != price_range_pct:
+        QMessageBox.critical(ui.dialog_pattern, '오류 알림', '현재 콤보박스 선택과 저장된 값이 다릅니다.\n저장 후 재실행하십시오.\n')
+        return
+
+    ui.windowQ.put((UI_NUM['학습로그'], '가격대분석 학습을 시작합니다.'))
+    _volume_profile_train(ui)
+
+
+@thread_decorator
+def _volume_profile_train(ui):
+    """스레드로 볼륨 프로파일 학습을 시작한다."""
+    ui.learn_running = True
+    vf_analyzer = AnalyzerVolumeProfile(ui.market_gubun, ui.market_info, ui.dict_set['타임프레임'])
+    vf_analyzer.train_all_codes(ui)
+    ui.learn_running = False
