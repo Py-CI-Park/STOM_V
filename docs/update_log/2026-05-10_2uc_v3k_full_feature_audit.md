@@ -1,3 +1,5 @@
+> 2026-05-10 Python 3.13 update note: Section 11 supersedes the older Python 3.11 ABI-mismatch notes in this report. 2U and 2U_C were retested with Python 3.13.13.
+
 # 2U_C V3K 전체 기능 반영 재감사 보고서
 
 작성일: 2026-05-10 KST
@@ -315,3 +317,99 @@ Kiwoom증권 API/runtime 유지 원칙도 지켰다.
 다만 완전 활성화는 아직 아니며, GUI/runtime/DB/실거래 연결은 사용자 승인 후 별도 단계다.
 이번 보고서는 2U_C에만 commit하는 것이 맞다.
 ```
+
+## 11. Python 3.13 retest update (2026-05-10)
+
+This update was added after the local Python runtime was aligned to Python 3.13.13.
+It supersedes the earlier Python 3.11 / TA-Lib / NumPy ABI-mismatch notes in sections 1, 4.2, and 9.1.
+
+### 11.1 Checked heads and working-tree state
+
+| Lane | Head at retest time | State note |
+| --- | --- | --- |
+| `STOM_Version_2U` | `3b7a3aeb` | ahead of `origin/STOM_Version_2U` by 1 local commit; untracked `backtest/graph/` remains outside release input |
+| `STOM_Version_2U_C` | `765d4165` | ahead of `origin/STOM_Version_2U_C` by 2 local commits before this report update |
+
+### 11.2 Python runtime result
+
+Target runtime for the retest is the normal Python 3.13 interpreter:
+
+```text
+python --version -> Python 3.13.13
+python -c import sys; print(sys.executable) -> C:\Python\64\Python31313\python.exe
+```
+
+Dependency import checks passed on the normal Python 3.13 interpreter:
+
+```text
+numpy 2.4.4 OK
+PyQt5 OK
+talib 0.6.8 OK
+pandas OK
+```
+
+The free-threaded `py -3.13t` interpreter is not the active target for this project lane because NumPy C-extension import still fails there.
+The older Python 3.11 path is also not the target because it still shows the TA-Lib / NumPy ABI mismatch that motivated the Python 3.13 alignment.
+
+### 11.3 2U retest evidence
+
+Commands rerun in `STOM_V.wt-2u` with Python 3.13.13:
+
+```text
+python scripts/smoke_offline_gui.py --branch STOM_Version_2U --version V2.79 --offline --log-dir .omx/logs/v279
+python scripts/verify_pyd_gui_contract.py --branch STOM_Version_2U --version V2.79 --upstream-ref STOM_Version_2 --manifest .omx/logs/v279/python313_verify_pyd_gui_contract.json --log-dir .omx/logs/v279
+python scripts/verify_nonrelease_sync.py
+```
+
+Results:
+
+```text
+[OK] offline GUI smoke passed
+[OK] pyd GUI contract passed
+all nonrelease guardrails passed
+```
+
+Remaining caveats are warnings, not failed checks:
+
+- Qt font/OpenGL warnings were emitted during offline GUI smoke.
+- Offline smoke still reports that a KHOPENAPI-compatible live Kiwoom interpreter was not found; this is expected for offline verification and does not invalidate the pyd-free contract result.
+
+### 11.4 2U_C / V3K retest evidence
+
+Commands rerun in `STOM_V.wt-dev` with Python 3.13.13:
+
+```text
+python scripts/audit_v3k_verify_1a.py --base 57496d24
+python scripts/audit_v3k_verify_1b_closure.py
+python scripts/smoke_v3k_analyzer_modules.py
+python scripts/smoke_v3k_analyzer_adapter.py
+python scripts/smoke_v3k_learning_loader.py
+python scripts/smoke_v3k_backtest_learning_hook.py
+python scripts/smoke_v3k_realtime_learning_boundary.py
+python scripts/smoke_v3k_formula_facade.py
+python scripts/smoke_v3k_settings_surface.py
+python scripts/v3k_db_health.py --read-only --stdout
+python scripts/verify_nonrelease_sync.py
+```
+
+Results:
+
+```text
+audit_v3k_verify_1a.py passed; changed files audited: 52
+audit_v3k_verify_1b_closure.py passed
+all V3K smoke scripts passed
+verify_nonrelease_sync.py passed
+```
+
+`v3k_db_health.py --read-only --stdout` exited with code 0 but returned `ok: false` because `_database_v3k_shadow` and the V3K shadow DB files are intentionally not created during safe-staged review.
+This is still consistent with the documented gate policy: no DB cutover, no runtime DB creation, and no activation until explicit operator approval.
+
+### 11.5 Updated audit conclusion
+
+The Python 3.13 update removes the earlier local blocker for 2U pyd-free verification.
+Current state after retest:
+
+1. `STOM_Version_2U` is pyd-free and passes the offline GUI smoke, pyd GUI contract, and nonrelease sync checks under Python 3.13.13.
+2. `STOM_Version_2U_C` keeps the V3K implementation in a safe-staged state and passes the audit/smoke guardrails under Python 3.13.13.
+3. Full V3K operational activation is still not claimed because DB cutover, live Kiwoom integration, shadow DB creation, and feature-flag enablement remain intentionally gated.
+4. No change is needed to the conclusion that LS-only code must not be blindly merged into 2U_C; Kiwoom preservation remains the controlling constraint.
