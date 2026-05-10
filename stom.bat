@@ -1,5 +1,6 @@
 @echo off
 setlocal
+set "STOM_PY313=C:\Python\64\Python31313\python.exe"
 
 >nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
 
@@ -20,12 +21,20 @@ if "%errorlevel%" NEQ "0" (
 
 :gotAdmin
     pushd "%~dp0"
+    if not exist "%STOM_PY313%" (
+        echo ERROR: Python 3.13 executable not found: %STOM_PY313%
+        echo Install Python 3.13.13 to C:\Python\64\Python31313 or update STOM_PY313 in this file.
+        pause
+        popd
+        exit /B 1
+    )
     echo.
     echo [STOM] Starting...
     echo [STOM] Working directory: %CD%
-    echo [STOM] Command: python stom.py
+    echo [STOM] Python: %STOM_PY313%
+    echo [STOM] Command: "%STOM_PY313%" stom.py
     echo.
-    python stom.py
+    "%STOM_PY313%" stom.py
     set "EXIT_CODE=%errorlevel%"
     echo.
     echo [STOM] Command exited with code %EXIT_CODE%.
