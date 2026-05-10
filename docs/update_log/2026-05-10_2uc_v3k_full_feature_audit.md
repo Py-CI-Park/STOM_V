@@ -23,7 +23,7 @@
 | --- | --- |
 | V2 공식 lane은 정상인가 | `scripts/verify_release_sync.py` 통과. 현재 기준 정상으로 판단한다. |
 | V3 공식 lane은 정상인가 | `STOM V3.18` HEAD가 origin과 동기화되어 있다. 공식 V3 lane으로 보존된다. |
-| 2U pyd-free lane은 정상인가 | `.pyd`는 0개다. 다만 현 Python 3.11 환경에서 `talib`/`numpy` ABI mismatch 때문에 offline GUI smoke는 실패했다. 이는 코드 결함 확정보다 검증 환경 재정비 필요로 분류한다. |
+| 2U pyd-free lane은 정상인가 | `.pyd`는 0개이며 Python 3.13.13 기준 offline GUI smoke, pyd GUI contract, nonrelease sync가 통과했다. 이전 Python 3.11 `talib`/`numpy` ABI mismatch 메모는 11장 재검증 결과로 대체한다. |
 | 3U pyd-free lane은 정상인가 | `.pyd`는 0개이며 V3U smoke/contract 검증이 통과했다. |
 | 2U_C는 V3 기능을 모두 반영했는가 | **safe-staged 기준으로는 반영 완료**다. 단, **완전 활성화 기준으로는 완료가 아니다.** |
 | LS증권 기능은 어떻게 처리되었나 | LS Securities REST/TR/REAL 직접 의존은 2U_C 목표와 충돌하므로 “미반영”이 아니라 **명시적 제외/반영 금지**다. |
@@ -273,15 +273,23 @@ GUI/runtime/DB cutover는 사용자 승인 gate 필요.
 
 ### 9.1 2U 검증 환경 리스크
 
-2U는 `.pyd` 제거 구조는 맞지만, Python 3.11에서 `talib`/`numpy` ABI mismatch로 GUI smoke가 실패했다.
+Python 3.13.13 기준 재검증으로 2U의 이전 Python 3.11 `talib`/`numpy` ABI mismatch 리스크는 해소된 것으로 판단한다.
 
-후속 권장:
+현재 확인된 상태:
 
 ```text
-Python 3.11 환경의 numpy / TA-Lib binary compatibility를 맞춘 뒤 2U smoke 재실행
+python --version -> Python 3.13.13
+numpy / PyQt5 / talib / pandas import OK
+2U offline GUI smoke 통과
+2U pyd GUI contract 통과
+2U nonrelease sync 통과
 ```
 
-이 작업은 V3K 감사와 별도로 처리한다.
+남은 주의사항은 다음뿐이다.
+
+- `py -3.13t` free-threaded interpreter는 NumPy C-extension import 문제가 있어 대상 런타임으로 보지 않는다.
+- offline GUI smoke의 Qt font/OpenGL/KHOPENAPI 경고는 실패가 아니라 오프라인 검증 환경 caveat로 본다.
+- 실제 Kiwoom live runtime은 별도 KHOPENAPI 호환 환경에서 검증해야 한다.
 
 ### 9.2 2U_C full activation phase
 
@@ -413,3 +421,155 @@ Current state after retest:
 2. `STOM_Version_2U_C` keeps the V3K implementation in a safe-staged state and passes the audit/smoke guardrails under Python 3.13.13.
 3. Full V3K operational activation is still not claimed because DB cutover, live Kiwoom integration, shadow DB creation, and feature-flag enablement remain intentionally gated.
 4. No change is needed to the conclusion that LS-only code must not be blindly merged into 2U_C; Kiwoom preservation remains the controlling constraint.
+
+## 12. 의도적 미완료 항목의 반영 가능성 재검토
+
+이 장은 5장, 6장, 9장의 “완전 활성화 미완료” 항목을 다시 분해해, 실제로 앞으로 반영할 수 있는 항목인지와 반영하면 안 되는 항목인지를 구분하기 위해 추가한다.
+
+핵심 결론은 다음이다.
+
+```text
+LS Securities REST/TR/REAL 직접 의존은 2U_C 목표와 충돌하므로 반영 금지다.
+그 외 DB, read-only 검증, GUI flag, formula/global facade, Kiwoom dry-run, analyzer output 사용은 단계적으로 반영 가능하다.
+다만 safe-staged 완료와 operational activation 완료는 서로 다르므로, 각 항목은 별도 검증 gate를 통과해야 한다.
+```
+
+### 12.1 항목별 반영 가능성 테이블
+
+| 의도적 미완료 항목 | 반영 가능 여부 | 현재 코드/문서 근거 | 반영 시 선행 조건 | 권장 순서 |
+| --- | --- | --- | --- | --- |
+| `_database_v3k_shadow` 실제 생성 | 가능 | `scripts/init_v3k_shadow_db.py`가 shadow DB manifest와 schema 후보를 이미 정의한다. 현재는 `--dry-run`만 허용한다. | 운영 `_database`와 분리, DB 파일 미커밋, 생성 전/후 health report 저장 | 1 |
+| production learning DB read-only 검증 | 조건부 가능 | `V3KLearningDataAdapter`가 DB 존재 시 `?mode=ro` SQLite URI로만 읽는다. missing DB는 no-op diagnostic을 반환한다. | shadow DB 생성 rehearsal, 최소 샘플 row 또는 기존 학습 DB 복제본, `last_update < backtest_date` 유지 | 2 |
+| GUI settings surface 실제 연결 | 가능 | `strategy/v3k_settings_surface.py`가 default-OFF settings contract를 제공한다. smoke에서 모든 기본값 OFF를 강제한다. | MainWindow/pyd-free wrapper 영향 검토, UI event/DB setting persistence 분리, OFF 회귀 테스트 | 3 |
+| runtime `globals().update(...)` 연결 | 가능 | `strategy/v3k_formula_facade.py`가 `V3K_` prefix callable dict를 만든다. 현재는 실제 runtime globals update를 하지 않는다. | `V3K_` prefix 유지, 기존 전략식 이름 오염 금지, default-OFF, facade smoke와 전략식 compile smoke | 4 |
+| live Kiwoom runtime dry-run hook | 조건부 가능 | `V3KRealtimeLearningAdapter`는 Kiwoom receiver/trader/strategy를 import하지 않는 boundary다. 현재 live 경로에는 연결하지 않았다. | KHOPENAPI 호환 runtime, 주문/청산 경로 변경 금지, preload diagnostic-only mode, live dry-run log | 5 |
+| analyzer output을 전략식/주문/청산 판단에 사용 | 가능하지만 고위험 | `V3KAnalyzerAdapter`와 formula facade가 output을 만들 수 있지만, 현재 주문 판단에는 쓰지 않는다. | 충분한 backtest 회귀, feature flag 이중 gate, 손실/거래횟수/성능 기준, rollback plan | 6 |
+| V3 microstructure engine replacement | 가능하지만 대형 작업 | 현재 V3K safe-staged 범위에는 engine replacement가 아니라 adapter/contract/read-only boundary만 포함되어 있다. | 별도 설계 문서, Kiwoom data-shape mapping, 성능/메모리 benchmark, backtest parity 기준 | 7 |
+| LS Securities REST/TR/REAL 직접 의존 | 반영 금지 | 2U_C 목표는 “V3 기능 + Kiwoom 유지”다. audit script도 LS direct marker를 금지한다. | 해당 없음. 필요 시 별도 LS lane 또는 broker-neutral adapter 설계가 먼저 필요 | 제외 |
+
+### 12.2 왜 “반영 가능”과 “지금 완료”가 다른가
+
+현재 2U_C의 완료 기준은 V3K safe-staged 기준이다. 이 기준은 다음을 만족하면 완료로 본다.
+
+- Kiwoom runtime/order/receiver를 직접 변경하지 않는다.
+- V3 학습/분석/DB/backtest/realtime/formula/settings 기능을 adapter, contract, read-only loader, no-op boundary로 준비한다.
+- feature flag는 기본 OFF다.
+- missing DB는 실패나 자동 생성이 아니라 diagnostic no-op으로 처리한다.
+- LS 증권 직접 의존은 제외한다.
+
+반면 operational activation 기준은 다음을 추가로 요구한다.
+
+- 실제 shadow DB 생성과 schema 검증
+- 실제 read-only learning DB 조회
+- GUI 또는 설정 저장소를 통한 flag 노출
+- runtime hook 연결
+- live Kiwoom dry-run
+- analyzer output이 전략/주문/청산에 영향을 줄 때의 회귀 테스트
+
+따라서 지금 문서에서 “완전 활성화 미완료”라고 한 것은 실패가 아니라, 안전한 단계 분리다.
+
+### 12.3 다음 개발 phase 권장안
+
+의도적 미완료 항목을 반영하려면 다음 순서를 권장한다.
+
+#### Phase A: shadow DB rehearsal
+
+목표:
+
+```text
+_database_v3k_shadow를 운영 _database와 분리해 생성한다.
+DB 파일은 commit하지 않는다.
+생성 스크립트, health check, manifest report만 commit한다.
+```
+
+완료 조건:
+
+- `init_v3k_shadow_db.py` 또는 별도 apply script가 dry-run과 apply/rehearsal mode를 명확히 분리한다.
+- `_database_v3k_shadow` 생성 전/후 `v3k_db_health.py --read-only --stdout` 결과를 비교한다.
+- `.gitignore` 또는 audit guard가 DB 파일 commit을 차단한다.
+
+#### Phase B: read-only learning DB 검증
+
+목표:
+
+```text
+V3KLearningDataAdapter가 실제 shadow DB를 쓰지 않고 읽기만 하는지 검증한다.
+```
+
+완료 조건:
+
+- DB connection은 `mode=ro`를 유지한다.
+- `last_update < backtest_date` 정책을 유지한다.
+- missing DB no-op smoke와 existing DB read smoke가 모두 존재한다.
+
+#### Phase C: GUI/settings 연결
+
+목표:
+
+```text
+V3K setting contract를 실제 GUI 또는 설정 저장소에 노출하되 모든 기본값은 OFF로 유지한다.
+```
+
+완료 조건:
+
+- MainWindow/pyd-free wrapper contract를 깨지 않는다.
+- default-OFF smoke가 유지된다.
+- 사용자가 명시적으로 켜기 전에는 기존 backtest/realtime 결과가 변하지 않는다.
+
+#### Phase D: formula/global runtime 연결
+
+목표:
+
+```text
+V3K_ prefix가 붙은 formula/global callable만 runtime에 제한적으로 노출한다.
+```
+
+완료 조건:
+
+- 기존 전략식 이름과 충돌하지 않는다.
+- `V3K_` prefix 없는 값은 주입하지 않는다.
+- OFF일 때 globals가 생성되지 않는다.
+
+#### Phase E: live Kiwoom dry-run hook
+
+목표:
+
+```text
+Kiwoom live runtime에서 주문/청산 경로를 바꾸지 않고 V3K preload diagnostic만 남긴다.
+```
+
+완료 조건:
+
+- KHOPENAPI 호환 환경에서 실행한다.
+- 주문, 청산, 계좌, 체결 처리 경로를 변경하지 않는다.
+- dry-run log만 남긴다.
+
+#### Phase F: analyzer output 전략 반영
+
+목표:
+
+```text
+V3K analyzer output을 전략 판단에 쓰기 전, backtest 기준으로 안전성을 검증한다.
+```
+
+완료 조건:
+
+- 수익률, 손실, MDD, 거래횟수, 체결/미체결 변화 기준을 문서화한다.
+- 기존 전략 대비 parity 또는 의도한 차이를 검증한다.
+- rollback flag가 존재한다.
+
+### 12.4 다음 작업 지시문 후보
+
+다음 단계로 바로 진행한다면 아래처럼 시작하는 것이 가장 안전하다.
+
+```text
+V3K full activation Phase A를 시작한다.
+대상은 STOM_Version_2U_C만이다.
+목표는 _database_v3k_shadow 생성 rehearsal을 구현하고 검증하는 것이다.
+운영 _database, Kiwoom 주문/청산/live runtime, LS Securities 의존성은 변경하지 않는다.
+DB 파일은 commit하지 않는다.
+생성 스크립트/검증 스크립트/문서/registry만 commit한다.
+검증은 Python 3.13.13 기준으로 수행한다.
+```
+
+이 지시문은 safe-staged 완료 상태를 깨지 않고, 의도적 미완료 항목 중 가장 앞단인 DB shadow rehearsal부터 operational activation으로 전환하기 위한 출발점이다.
