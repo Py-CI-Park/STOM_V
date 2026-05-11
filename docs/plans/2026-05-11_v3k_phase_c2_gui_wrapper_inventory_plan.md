@@ -174,6 +174,20 @@ Page 012는 이 결정으로 완료한다. 다음은 Page 013 session-only V3K U
 
 ---
 
+## 5.5 C2-5 session-only UI preview skeleton
+
+2026-05-12 KST 기준 Page 013 / C2-5를 완료했다.
+
+| 항목 | 결과 |
+| --- | --- |
+| UI 경계 | 기존 groupBox가 아니라 별도 lazy dialog skeleton을 선택했다. |
+| 연결 방식 | MainWindow에 `ShowV3KSettingsPreview` opener method를 붙였다. |
+| 저장 정책 | session-only. 운영 DB/sidecar/shadow DB write 없음. |
+| 노출 정책 | visible launcher는 아직 추가하지 않았다. Page 014에서 geometry/shortcut/layout 충돌을 먼저 닫는다. |
+| 검증 | `smoke_v3k_gui_settings_preview.py`와 기존 C2 smoke를 통과했다. |
+
+---
+
 ## 6. 검증 계획
 
 문서-only C2-0 검증:
@@ -260,9 +274,9 @@ Page 012: [██████████] 5 / 5 steps = 100%
 ## 9. 다음 추천 OMX 명령
 
 ```powershell
-omx ralph "force: V3K Page 013 Phase C2-5 session-only V3K UI preview skeleton을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_013_session_only_ui_preview_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_4_persistent_storage_decision.md를 기준으로, 운영 _database/setting.db schema/write와 sidecar 파일 write 없이 MainWindow의 v3k_settings/v3k_feature_flags inert state를 표시하거나 session-only로 토글할 수 있는 가장 작은 별도 V3K 탭 또는 dialog skeleton을 검토하고 가능하면 구현한다. Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 완료 시 py_compile, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, verify_pyd_gui_contract.py, 가능한 경우 smoke_offline_gui.py, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록 후 한국어 Lore commit한다."
+omx ralph "force: V3K Page 014 Phase C2-6 session-only V3K preview launcher exposure를 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_014_preview_launcher_exposure_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_5_session_only_ui_preview.md를 기준으로 MainWindow에 붙은 ShowV3KSettingsPreview lazy opener를 사용자에게 노출할 가장 작은 안전 경계를 검토한다. 기존 main menu geometry/shortcut/layout 충돌을 먼저 확인하고, 가능하면 session-only V3K preview dialog를 여는 visible launcher 또는 명시적 manual entry를 구현한다. 운영 _database/setting.db schema/write, sidecar 파일 write, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 완료 시 py_compile, smoke_v3k_gui_settings_preview, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, verify_pyd_gui_contract.py, smoke_offline_gui.py, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록 후 한국어 Lore commit한다."
 ```
 
 현재 Codex 환경에서 `omx ralph`가 `stdin is not a terminal`로 실패하면, 같은 프롬프트를 현재 세션에서 직접 이어서 수행한다.
 
-연결된 다음 페이지 계획: `docs/plans/2026-05-12_v3k_page_013_session_only_ui_preview_plan.md`
+연결된 다음 페이지 계획: `docs/plans/2026-05-12_v3k_page_014_preview_launcher_exposure_plan.md`

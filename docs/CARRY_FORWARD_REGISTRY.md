@@ -760,3 +760,23 @@ Directive: Do not add V3K checkboxes to existing settings groupBoxes until persi
 - Next: Page 013 / `V3K-PHASE-C2-5` session-only V3K UI preview skeleton. No persistence in that phase.
 
 Directive: Treat Page 012 as complete. The next UI step may add a preview skeleton only if it remains session-only and does not create or mutate any persistent settings artifact.
+
+## V3K-PHASE-C2-5: session-only V3K UI preview skeleton
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_c2_5_session_only_ui_preview.md`
+  - `docs/plans/2026-05-12_v3k_page_013_session_only_ui_preview_plan.md`
+- Added:
+  - `ui/ui_v3k_settings_preview.py`
+  - `scripts/smoke_v3k_gui_settings_preview.py`
+- MainWindow integration: `attach_v3k_settings_preview(self)` is called after the V3K settings bridge and before `WidgetCreater(self)`.
+- Decision: Use a separate lazy dialog skeleton, not an existing settings groupBox.
+- Decision: Do not add a visible launcher yet; Page 014 must decide menu/shortcut/layout exposure safety.
+- Persistence: none. The preview only mutates `v3k_settings`, `v3k_feature_flags`, and diagnostics on the live MainWindow object.
+- Excluded: operating `setting.db` writes, sidecar files, shadow DB rows, Kiwoom live/order/exit runtime, formula globals runtime hook, analyzer trading decision, LS Securities direct dependency.
+- Verification: py_compile passed; `smoke_v3k_gui_settings_preview.py` passed; wrapper/settings/settings-surface smokes passed; diff check passed; DB artifact status stayed clean. Full C2 regression set is required before commit/final report.
+- Next: Page 014 / `V3K-PHASE-C2-6` session-only preview launcher exposure.
+
+Directive: Do not persist V3K GUI preview state. Any future visible launcher must still open a session-only preview unless a separate sidecar or DB migration phase is approved and verified.
