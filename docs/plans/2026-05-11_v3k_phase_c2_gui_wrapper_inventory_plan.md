@@ -144,6 +144,22 @@ C2-2는 실제 checkbox/widget 또는 persistent DB 저장이 아니다. MainWin
 
 ---
 
+## 5.3 C2-3 feasibility 결과
+
+2026-05-12 KST 기준 C2-3 GUI checkbox/layout feasibility 검토를 완료했다.
+
+| 검토 항목 | 결론 |
+| --- | --- |
+| 기존 일반설정 탭 내 삽입 | 고정 geometry와 기존 8개 groupBox가 촘촘해 즉시 삽입은 위험하다. |
+| 기타 groupBox 재사용 | 시리얼키 조건부 UI와 기존 `SettingSave_08`/`etc` table 저장 경계가 있어 부적합하다. |
+| 백테 groupBox 재사용 | 기존 백테 옵션이 이미 밀집되어 있고 V3K analyzer/formula flag까지 넣으면 의미가 섞인다. |
+| 별도 V3K 탭/dialog | 가장 안전한 후보. 기존 groupBox 재배치를 피하고 V3K settings contract metadata를 그대로 표시할 수 있다. |
+| persistent 저장 | 실제 사용자 토글을 제공하려면 필요할 수 있으나, 운영 `setting.db` schema/write 변경은 C2-4에서 별도 판단해야 한다. |
+
+C2-3에서는 실제 widget을 추가하지 않았다. 다음 단계는 C2-4 persistent 설정 저장 여부 재판단이다.
+
+---
+
 ## 6. 검증 계획
 
 문서-only C2-0 검증:
@@ -218,11 +234,11 @@ Page 012 현재 상태:
 | 012-1 | C2 wrapper inventory/plan | 완료 | 100% |
 | 012-2 | C2-1 no-GUI wrapper adapter smoke | 완료 | 100% |
 | 012-3 | C2-2 MainWindow in-memory helper 검토 | 완료 | 100% |
-| 012-4 | C2-3 GUI checkbox/layout 검토 | 대기 | 0% |
+| 012-4 | C2-3 GUI checkbox/layout 검토 | 완료 | 100% |
 | 012-5 | C2 persistent 설정 저장 여부 재판단 | 대기 | 0% |
 
 ```text
-Page 012: [██████░░░░] 3 / 5 steps = 60%
+Page 012: [████████░░] 4 / 5 steps = 80%
 ```
 
 ---
@@ -230,7 +246,7 @@ Page 012: [██████░░░░] 3 / 5 steps = 60%
 ## 9. 다음 추천 OMX 명령
 
 ```powershell
-omx ralph "force: V3K Page 012 Phase C2-3 GUI checkbox/layout feasibility 검토를 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md, ui/ui_mainwindow.py, ui/ui_v3k_settings_bridge.py, scripts/smoke_v3k_gui_wrapper_bridge.py를 기준으로 V3K settings를 실제 GUI checkbox/layout에 노출할 수 있는 최소 안전 경계를 조사하고 계획한다. 아직 실제 PyQt widget/checkbox 추가, 운영 _database/setting.db schema/write, _database_v3k_shadow row, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 결과는 docs/plans 또는 docs/update_log에 기록하고, py_compile, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시킨 뒤 한국어 Lore commit한다."
+omx ralph "force: V3K Page 012 Phase C2-4 persistent 설정 저장 여부 재판단을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_3_gui_checkbox_layout_feasibility.md를 기준으로 V3K GUI settings를 session-only로 둘지, sidecar 설정 저장소를 설계할지, 운영 _database/setting.db schema/write migration으로 갈지 비교하고 가장 안전한 다음 경계를 결정한다. 아직 실제 PyQt widget/checkbox 추가, 운영 _database/setting.db schema/write, _database_v3k_shadow row, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 결과는 docs/plans 또는 docs/update_log에 기록하고, py_compile, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시킨 뒤 한국어 Lore commit한다."
 ```
 
 현재 Codex 환경에서 `omx ralph`가 `stdin is not a terminal`로 실패하면, 같은 프롬프트를 현재 세션에서 직접 이어서 수행한다.

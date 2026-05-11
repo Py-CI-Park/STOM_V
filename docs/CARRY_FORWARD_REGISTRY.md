@@ -724,3 +724,22 @@ Directive: Keep C2-1 helper as the narrow bridge contract. Future MainWindow int
 - Next: `V3K-PHASE-C2-3` GUI checkbox/layout feasibility review. Do not add widgets until layout, wrapper alias, settings persistence, and GUI smoke boundaries are documented.
 
 Directive: Treat `v3k_settings`/`v3k_feature_flags` on MainWindow as inert default-OFF state. Do not read them from trading/order/runtime paths without a later approved phase.
+
+## V3K-PHASE-C2-3: GUI checkbox/layout feasibility review
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_c2_3_gui_checkbox_layout_feasibility.md`
+  - `docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md`
+  - `ui/set_setup_tap.py`
+  - `ui/ui_button_clicked_settings.py`
+  - `ui/ui_mainwindow.py`
+- Decision: Actual V3K checkbox/widget exposure is technically feasible but should not be inserted into the existing general settings groupBoxes immediately because fixed geometry, existing load/save buttons, serial-key conditional UI, and pyd-free wrapper aliases make the blast radius larger than C2-3 allows.
+- Decision: The safest future UI shape is a dedicated V3K tab or dialog that renders `v3k_settings_contract_rows()` metadata instead of crowding `sj_bs_groupBox_07` or `sj_bs_groupBox_08`.
+- Decision: Persistent setting policy must be decided before actual user-toggle widgets are added. Session-only display is possible, but persistent toggles need a C2-4 storage decision.
+- Verification: Read-only GUI/layout inventory completed; py_compile passed; wrapper/settings smokes passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
+- Excluded: PyQt checkbox/widget changes, persistent `_database/setting.db` writes, shadow DB rows, Kiwoom live/order/exit runtime, formula globals runtime hook, analyzer output trading decision, LS Securities direct dependency.
+- Next: `V3K-PHASE-C2-4` persistent settings storage decision before any real widget commit.
+
+Directive: Do not add V3K checkboxes to existing settings groupBoxes until persistent policy, layout target, wrapper alias impact, and GUI smoke strategy are documented.
