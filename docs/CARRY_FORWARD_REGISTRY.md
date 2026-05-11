@@ -817,3 +817,22 @@ Directive: Keep `Alt+V` as a session-only preview launcher. Do not reinterpret i
 - Verification: py_compile passed; V3K GUI preview/wrapper/settings/settings-surface smokes passed; formula facade smoke passed; offline GUI smoke passed; pyd GUI contract passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
 
 Directive: Treat C2 as closed. Do not reopen GUI persistence unless a dedicated sidecar/DB migration plan is created; next work should start from Phase D-0 design, not runtime injection.
+## V3K-PHASE-D0: formula/global runtime boundary design
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_d0_formula_global_boundary_design.md`
+  - `docs/plans/2026-05-12_v3k_page_016_phase_d_formula_global_boundary_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_017_phase_d1_formula_global_dryrun_plan.md`
+- Modified:
+  - `scripts/smoke_v3k_formula_boundary_contract.py`
+- Decision: Treat `trade/formula_manager.py::FormulaManager.UpdateGlobalsFunc` as the existing runtime `globals().update(dict_add_func)` boundary and do not modify it in Phase D-0.
+- Decision: Treat `trade/base_strategy.py` dynamic formula callable keys (`dict_add_func[fm[0]]`) as the collision surface that future V3K hook work must dry-run before runtime injection.
+- Decision: Keep `strategy/v3k_formula_facade.py` side-effect-free. V3K formula/global candidates must use the `V3K_` prefix and must not import/call trade runtime, Kiwoom order runtime, DB writes, or LS Securities dependencies.
+- Added verification: `scripts/smoke_v3k_formula_boundary_contract.py` checks existing update points, no V3K runtime hook/import, prefix/non-collision, default-OFF no-op, and runtime artifact status stability.
+- Excluded: `globals().update` runtime hook, `FormulaManager.UpdateGlobalsFunc` modification, Kiwoom live/order/exit runtime, analyzer trading decision, operating `setting.db` write, sidecar write, LS Securities direct dependency.
+- Verification: py_compile passed; formula boundary contract smoke passed; formula facade smoke passed; GUI preview smoke passed; settings-surface smoke passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
+- Next: Page 017 / `V3K-PHASE-D1` formula/global dry-run adapter.
+
+Directive: Do not connect V3K formula globals to `globals().update` directly. The next safe step is a dry-run adapter that returns candidate keys and collision diagnostics without mutating runtime globals.
