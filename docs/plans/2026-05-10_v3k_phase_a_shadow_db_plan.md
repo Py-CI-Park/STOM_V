@@ -19,6 +19,48 @@
 
 ---
 
+## 0. V3K 전체 미션과 Phase A–G 로드맵 (큰 그림 보존)
+
+> 본 절은 사용자 명시 요청에 따라 amendment commit에서 신설되었다. Phase A 단독 상세 계획을 미래의 작업자가 단독으로 읽더라도 V3K 전체 목적과 본 plan의 위치를 잃지 않도록 박는다. §0–§0.3은 `docs/update_log/2026-05-10_2uc_v3k_full_feature_audit.md` §0 TL;DR과 §6·§8 정본을 본 plan 안에 재현한 것이다.
+
+### 0.1 V3K 미션 statement
+
+```text
+V3K = V3 신기능을 STOM_Version_2U_C에 모두 반영한다.
+단, LS Securities REST/TR/REAL 직접 의존은 제외하고 Kiwoom증권 API/runtime을 유지한다.
+STOM CLI surface(init_v3k_shadow_db.py / backtest CLI / realtime CLI / 전체 STOM CLI 진입점)의 외부 동작도 유지한다.
+DB는 운영 _database/와 격리된 _database_v3k_shadow/로 separate 후 단계적 cutover한다.
+feature flag는 모든 phase에서 default-OFF로 유지하고, 명시적 사용자 승인 후에만 ON 전환을 허용한다.
+```
+
+### 0.2 Phase A–G 전체 로드맵 (audit §8 정본 재현)
+
+| Phase | 목표 1줄 | 본 plan scope | 후속 plan 작성 의무 | 의존 입력 |
+| --- | --- | --- | --- | --- |
+| **A** | shadow DB rehearsal — `_database_v3k_shadow/` 생성 + schema_hash invariant 고정 | **본 plan (V3K-PA)** | — | DESIGN-1, DESIGN-1B, migration spec |
+| B | read-only learning DB 검증 — `V3KLearningDataAdapter`의 `?mode=ro` smoke | scope 외 | `docs/plans/<YYYY-MM-DD>_v3k_phase_b_*.md` 별도 plan 필수 | Phase A 산출물(manifest, schema_hash, sentinel L3) |
+| C | GUI/settings 연결 — `v3k_settings_surface.py`를 MainWindow/pyd wrapper에 노출 (default-OFF 유지) | scope 외 | 별도 plan 필수 | Phase B 산출물 |
+| D | formula/global runtime 연결 — `V3K_` prefix callable만 runtime globals에 제한 노출 | scope 외 | 별도 plan 필수 | Phase B 산출물 |
+| E | live Kiwoom dry-run hook — KHOPENAPI 호환 환경에서 preload diagnostic only | scope 외 | 별도 plan 필수 | Phase C·D 산출물 |
+| F | analyzer output 전략 반영 — backtest 회귀 + rollback flag로 전략/주문/청산 판단에 통합 | scope 외 | 별도 plan 필수 (고위험) | Phase D·E 산출물 |
+| G | V3 microstructure engine replacement — adapter가 아닌 engine 자체 이식/재구현 | scope 외 | 별도 plan 필수 (대형, G-1/G-2/G-3 분해 권장) | Phase F 산출물 |
+
+> 본 plan은 **Phase A 한정**이다. Phase B 이후의 어떤 결정도 본 plan에서 정하지 않는다. 후속 plan은 각각 ralplan 합의 또는 동등 수준의 사전 검토를 거쳐야 한다(§K 참조).
+
+### 0.3 본 plan의 scope 경계
+
+| In scope (본 plan에서 다룬다) | Out of scope (본 plan에서 다루지 않는다) |
+| --- | --- |
+| `apply_v3k_shadow_db.py` 신규 작성 | Phase B의 `V3KLearningDataAdapter` read 동작 변경 |
+| `compute_schema_hash` 추가 + manifest stamp | sentinel `_v3kshadow_smokeA_` row의 INSERT (Phase B 이후) |
+| `_database_v3k_shadow/` 디렉터리 + 7 DB 생성 (DDL only) | DB 데이터 cutover, 운영 `_database/` 변경 |
+| `.gitignore` ephemeral 분리 + branch 가드 환경 변수 | GUI flag 연결, runtime hook 연결 |
+| `V3K-PHASE-A` carry-forward registry section | `V3K-PHASE-B`~`V3K-PHASE-G` registry section |
+| 회귀 테스트 3종, V01–V12 검증 자동화 | live Kiwoom runtime 호출, LS broker-neutral 설계 |
+| Phase A 한정 lane 정책 (V05–V09 = 2U_C 한정) | Phase B 이후의 lane 정책 재검토 |
+
+---
+
 ## A. RALPLAN-DR 요약
 
 ### A.1 Principles (5)
@@ -88,6 +130,7 @@ schema 회귀 테스트를 별도 contract test로 분리. → R1 회귀 3종에
 | L6 | `last_update < backtest_date` 학습 데이터 사용 규칙 | leakage 방지 |
 | L7 | LS Securities 직접 의존 금지 | V3K = V3 features + Kiwoom retained 정의 |
 | L8 | 운영 `_database/`, `*.db` 파일 git commit 금지 | `.gitignore` 정책 |
+| L9 | STOM CLI surface 보존 — `init_v3k_shadow_db.py` CLI 외에 backtest CLI, realtime CLI, 전체 STOM CLI 진입점의 외부 동작 무변경 | V2.67 CLI 통합 이력 보호, V3K 미션 "CLI surface 유지" 조항(§0.1), Kiwoom retained 조건의 일부 |
 
 ### B.2 Phase A 한정 결정 — Phase B에서 자유 변경 (5 항목)
 
@@ -513,6 +556,117 @@ A. (1) Python dict가 schema 단일 출처(L2 후행 결과)를 형성 — dual-
 
 ### QCrit3. WAL/SHM 잔재가 발생하면 어떻게 처리하는가?
 A. F.1/F.2 시나리오에 통합. `Get-ChildItem -Filter "*.db-*"`로 WAL/SHM 잔재를 명시적으로 정리한 뒤 verify_release_sync.
+
+---
+
+## K. Phase A 종료 후 다음 단계 전환 지침 (Phase B 착수 전 필수)
+
+> 본 절은 amendment commit에서 신설되었다. Phase A는 V3K 전체 7-phase 로드맵(§0.2)의 첫 단계일 뿐이다. Phase A 완료 즉시 Phase B를 시작하기 전에 본 §K의 전환 지침을 반드시 따라야 한다. 이를 통해 §0 미션 statement와 §0.2 로드맵, audit `2026-05-10_2uc_v3k_full_feature_audit.md` §8 정본이 phase 간 단절 없이 보존된다.
+
+### K.1 Phase A 완료 판정 체크리스트 (다음 단계 진입 gate)
+
+아래 9 체크가 모두 PASS여야 Phase B 착수 가능. 하나라도 FAIL이면 §F rollback 절차 적용 후 Phase A 보완.
+
+| # | 체크 | 판정 명령/근거 |
+| --- | --- | --- |
+| K1.1 | T01–T07 모든 task가 commit됨 | `git -C C:/System_Trading/STOM/STOM_V.wt-dev log --oneline | Select-String "V3K Phase A"`가 7건 이상 |
+| K1.2 | V01–V12 + V05b + V08b 모두 PASS | `.omx/reports/v3k-db-health.after.json`의 `"ok": true` |
+| K1.3 | `verify_release_sync.py` PASS | "release sync preflight passed" |
+| K1.4 | `_database_v3k_shadow/` 7 DB 생성 + manifest schema_hash stamp 완료 | V09 + V08b 결과 |
+| K1.5 | DB 파일 0건 commit | `git log --all -- '*.db'` 결과 없음 |
+| K1.6 | LS direct marker 0건 | `Select-String -Path scripts/ -Pattern "ls_securities\|LS_REST\|xingapi\|restapi_ls"` 0건 |
+| K1.7 | Kiwoom runtime/order/receiver 변경 0건 | `git diff <pre-phase-A> HEAD -- trade/ ui/ utility/` 빈 출력 |
+| K1.8 | STOM CLI surface 변경 0건 (L9) | `init_v3k_shadow_db.py --dry-run` manifest 키 set 변화 없음 + backtest/realtime CLI 진입점 시그니처 무변경 |
+| K1.9 | `CARRY_FORWARD_REGISTRY.md`에 `## V3K-PHASE-A` 섹션 + 산출물 등록 완료 | T05 검증 명령 |
+
+### K.2 V3K 전체 목적 재확인 체크리스트 (Phase B 착수 전 필수)
+
+Phase B로 넘어가기 전에 §0.1 미션 statement를 한 번 더 확인. 6개 중 하나라도 NO면 Phase B plan 작성 전에 audit 보고서 갱신 + ralplan 재합의 필요.
+
+- [ ] V3 신기능을 2U_C에 **모두** 반영하는 큰 목적이 그대로인가? (§0.1)
+- [ ] LS Securities 직접 의존이 본 phase에 새로 도입되지 않았는가? (L7)
+- [ ] Kiwoom증권 API/runtime 보존 원칙이 깨지지 않았는가? (P1, L4)
+- [ ] STOM CLI surface(`init_v3k_shadow_db.py` 외 backtest CLI/realtime CLI 포함)가 깨지지 않았는가? (L9)
+- [ ] DB 격리 원칙(`_database/`와 `_database_v3k_shadow/` 분리)이 유지되는가? (L4, L8)
+- [ ] Phase A의 lifetime invariant L1–L9가 Phase B에서 변경 불가임을 후속 plan에 명시할 준비가 되었는가? (§B.1)
+
+### K.3 Phase B 착수 전 재계획 절차 (ralplan 재실행 권장)
+
+다음 절차를 따라 Phase B plan을 작성한다. 본 plan과 동등한 합의 수준을 요구한다.
+
+1. **audit doc §8 Phase B 재확인**: `docs/update_log/2026-05-10_2uc_v3k_full_feature_audit.md` §8 "Phase B — read-only learning DB 검증" 절을 출처로 인용.
+2. **`/oh-my-claudecode:ralplan` 재실행**: Phase B 단독 상세 합의 워크플로 (Planner → Architect → Critic) short deliberation 모드를 본 plan과 동일하게 적용. 고위험 phase(F·G)인 경우 `--deliberate` 플래그 강제.
+3. **Phase B plan 신설**: `docs/plans/<YYYY-MM-DD>_v3k_phase_b_readonly_learning_db_plan.md` 신규 파일로 작성. **본 plan을 amend해서 Phase B를 추가하지 않는다**(§K.5).
+4. **§0.2 로드맵에서 Phase B 위치 갱신은 새 Phase B plan 안에서만** 한다. 본 plan의 §0.2는 freeze 상태로 유지하고, 새 plan이 §0.2를 인용·확장한다.
+5. **Phase A → Phase B 산출물 매핑 명시** (§K.4 참조).
+6. **Phase B-specific lifetime invariant 추가 여부 평가**. 새 invariant가 필요하면 본 plan §B.1에 L10+를 추가하지 않고 Phase B plan 안에 별도 invariant 표를 신설한다. 본 plan §B.1은 Phase A 종료 시점에 freeze.
+7. **carry-forward registry에 `## V3K-PHASE-B` 섹션 추가**: V3K-PHASE-A 패턴 follow.
+8. **사용자 명시 승인 후에만 Phase B 코드 commit 시작**.
+
+### K.4 Phase A → Phase B 산출물 입력 매핑
+
+Phase A가 만든 결과물 중 Phase B에서 사용되는 것을 명시한다. Phase B plan은 이 매핑을 인용하여 의존성을 추적해야 한다.
+
+| Phase A 산출물 | Phase B에서의 사용 | 보존 invariant |
+| --- | --- | --- |
+| `_database_v3k_shadow/` 7 DB | `V3KLearningDataAdapter`의 `?mode=ro` smoke 대상 (read-only) | L4, L8 |
+| `v3k_meta.db.v3k_schema_manifest` (stamped) | Phase B read-only adapter의 schema_hash 검증 baseline | L1 |
+| `compute_schema_hash` 함수 (`init_v3k_shadow_db.py`) | Phase B의 schema drift detection에서 재사용 (dual-source 금지) | L1, L2 |
+| sentinel `_v3kshadow_smokeA_` prefix | Phase B에서 read-only smoke fixture로만 사용. **INSERT는 여전히 금지** | L3, L5 |
+| `init_v3k_shadow_db.py`의 `LEARNING_DBS`/`META_DBS`/`create_table_sql` | Phase B의 adapter contract에서 직접 import. dual-source 금지 | L2 |
+| `.gitignore` ephemeral 패턴 | Phase B의 read-only smoke 결과물에도 동일 정책 적용 | P4, L8 |
+| `.omx/reports/v3k-shadow-manifest.json` | Phase B의 schema_hash 회귀 baseline (audit trail) | L1 |
+| Phase A 한정 lane 정책 (V05–V09 = 2U_C 한정) | Phase B에서는 read-only smoke이므로 양쪽 lane 허용 검토 가능 (A1 자유) | A1, A3 |
+
+### K.5 모든 후속 phase의 별도 plan 작성 의무
+
+Phase B–G 각각은 별도 plan 문서를 필수로 작성한다. **본 plan(`2026-05-10_v3k_phase_a_shadow_db_plan.md`)을 amend해서 Phase B–G를 추가하지 않는다**.
+
+| 후속 phase | 필수 산출 plan 파일명 형식 |
+| --- | --- |
+| Phase B | `docs/plans/<YYYY-MM-DD>_v3k_phase_b_readonly_learning_db_plan.md` |
+| Phase C | `docs/plans/<YYYY-MM-DD>_v3k_phase_c_gui_settings_plan.md` |
+| Phase D | `docs/plans/<YYYY-MM-DD>_v3k_phase_d_formula_global_plan.md` |
+| Phase E | `docs/plans/<YYYY-MM-DD>_v3k_phase_e_kiwoom_dryrun_plan.md` |
+| Phase F | `docs/plans/<YYYY-MM-DD>_v3k_phase_f_analyzer_strategy_plan.md` (고위험, `--deliberate` 권장) |
+| Phase G | `docs/plans/<YYYY-MM-DD>_v3k_phase_g_microstructure_engine_plan.md` (대형, G-1/G-2/G-3 분해 권장) |
+
+각 후속 plan은 다음을 반드시 포함:
+- §0 V3K 미션 statement 재인용 (§0.1 한 줄 변경 금지)
+- §0.2 Phase A–G 로드맵 표에서 본 phase 위치 표시
+- 직전 phase 산출물 입력 매핑 (Phase A의 §K.4 패턴 따름)
+- §K-equivalent 절: 다음 phase 전환 체크리스트 + 미션 재확인 체크리스트
+- audit `2026-05-10_2uc_v3k_full_feature_audit.md` §8 해당 Phase 절을 출처로 인용
+- Phase별 lifetime invariant 표 (필요 시 신설, 본 plan §B.1 freeze)
+
+### K.6 V3K 미션 완료 판정 (Phase G 종료 시점)
+
+Phase G까지 모두 완료되면 다음 8개를 만족해야 V3K 미션 완료로 본다(audit §6.2의 8개 의도적 미완료 항목 전체 해소).
+
+1. shadow DB가 운영 cutover됨 (Phase A·B 합산 결과)
+2. GUI flag로 사용자가 명시적 ON 가능 (Phase C, default-OFF 보존)
+3. `V3K_` prefix formula/global runtime 연결 (Phase D)
+4. live Kiwoom dry-run hook 실행 (Phase E)
+5. analyzer output이 전략/주문/청산 판단에 통합 (Phase F)
+6. V3 microstructure engine 동등 기능이 2U_C에서 작동 (Phase G)
+7. LS Securities 직접 의존 0건 (전 phase 보존, L7)
+8. Kiwoom API/runtime/CLI surface 무변경 (전 phase 보존, L7·L9)
+
+V3K 미션 완료 시 audit 보고서 갱신과 `## V3K-PHASE-G-CLOSURE` registry 등록이 필요하다. 이 시점에 `_database_v3k_shadow/`를 운영 `_database/`로 cutover하는 별도 phase(Phase H로 격상하거나 Phase G 내 종결 절로 흡수)에 대한 의사결정도 필요하다.
+
+### K.7 본 plan freeze 정책
+
+Phase A 종료(K.1 모든 체크 PASS 시점) 이후 본 plan은 **freeze 상태**가 된다. 다음만 허용:
+- 오탈자/포맷 정정 commit
+- audit 보고서 cross-reference 갱신
+- 본 §K의 후속 plan 파일명 갱신 (실제 파일명이 결정된 후)
+
+다음은 금지:
+- §A·B·C·D·E·F·G·H·I·J 본문 변경
+- Phase B–G 내용을 본 plan에 추가
+- lifetime invariant L1–L9 의미 변경
+
+본 freeze 정책은 lifetime invariant의 안정성을 후속 phase에서 보장하기 위함이다.
 
 ---
 
