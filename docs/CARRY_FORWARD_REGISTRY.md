@@ -780,3 +780,23 @@ Directive: Treat Page 012 as complete. The next UI step may add a preview skelet
 - Next: Page 014 / `V3K-PHASE-C2-6` session-only preview launcher exposure.
 
 Directive: Do not persist V3K GUI preview state. Any future visible launcher must still open a session-only preview unless a separate sidecar or DB migration phase is approved and verified.
+
+## V3K-PHASE-C2-6: session-only V3K preview launcher exposure
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_c2_6_preview_launcher_exposure.md`
+  - `docs/plans/2026-05-12_v3k_page_014_preview_launcher_exposure_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_015_gui_preview_closeout_plan.md`
+- Modified:
+  - `ui/set_main_menu.py`
+  - `scripts/smoke_v3k_gui_settings_preview.py`
+- Decision: Add a visible `V` launcher in the existing Alt button block.
+- Launcher: `v3_pushButton`, shortcut `Alt+V`, geometry `(23, 450, 16, 15)`, action `ShowV3KSettingsPreview()`.
+- Persistence: none. The launcher opens the existing session-only preview dialog and does not write `setting.db`, sidecar files, or shadow DB rows.
+- Excluded: existing settings groupBox insertion, operating `setting.db` writes, sidecar files, shadow DB rows, Kiwoom live/order/exit runtime, formula globals runtime hook, analyzer trading decision, LS Securities direct dependency.
+- Verification: py_compile passed; `smoke_v3k_gui_settings_preview.py` passed with launcher checks; wrapper/settings/settings-surface smokes passed; offline GUI smoke passed; pyd GUI contract passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
+- Next: Page 015 / `V3K-PHASE-C2-7` GUI preview closeout and sidecar persistence decision.
+
+Directive: Keep `Alt+V` as a session-only preview launcher. Do not reinterpret it as persisted feature activation without a separate sidecar or DB migration decision.

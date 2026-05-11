@@ -59,10 +59,20 @@ V3의 분석·학습·DB·백테스트·실시간 사전학습 기능은 안전�
 | 014-4 | no-GUI smoke 보강 | launcher source marker, persistence 부재, default-OFF 유지 확인 |
 | 014-5 | full C2 regression | pyd/offline/nonrelease/audit 검증 후 다음 page 결정 |
 
+2026-05-12 C2-6 구현 결과:
+
+| Step | 결과 |
+| ---: | --- |
+| 014-1 | `ui/set_main_menu.py`의 기존 left menu geometry를 확인했다. `Alt` block의 `(23, 450, 16, 15)` 위치가 비어 있어 기존 button과 겹치지 않는 후보로 선택했다. |
+| 014-2 | visible launcher button을 선택했다. shortcut-only/manual entry는 사용자 발견성이 낮아 제외했다. |
+| 014-3 | `v3_pushButton`을 추가하고 `Alt+V` shortcut으로 `ShowV3KSettingsPreview()`를 호출하게 했다. |
+| 014-4 | `scripts/smoke_v3k_gui_settings_preview.py`에 launcher source marker, geometry, shortcut, persistence 부재 검증을 추가했다. |
+| 014-5 | full C2 regression 통과 후 Page 015로 넘긴다. |
+
 현재 진행률:
 
 ```text
-Page 014: [░░░░░░░░░░] 0 / 5 = 0%
+Page 014: [██████████] 5 / 5 = 100%
 ```
 
 ---
@@ -70,5 +80,5 @@ Page 014: [░░░░░░░░░░] 0 / 5 = 0%
 ## 4. 추천 OMX 명령
 
 ```powershell
-omx ralph "force: V3K Page 014 Phase C2-6 session-only V3K preview launcher exposure를 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_014_preview_launcher_exposure_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_5_session_only_ui_preview.md를 기준으로 MainWindow에 붙은 ShowV3KSettingsPreview lazy opener를 사용자에게 노출할 가장 작은 안전 경계를 검토한다. 기존 main menu geometry/shortcut/layout 충돌을 먼저 확인하고, 가능하면 session-only V3K preview dialog를 여는 visible launcher 또는 명시적 manual entry를 구현한다. 운영 _database/setting.db schema/write, sidecar 파일 write, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 완료 시 py_compile, smoke_v3k_gui_settings_preview, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, verify_pyd_gui_contract.py, smoke_offline_gui.py, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록 후 한국어 Lore commit한다."
+omx ralph "force: V3K Page 015 Phase C2-7 V3K GUI preview closeout and sidecar persistence decision을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_015_gui_preview_closeout_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_6_preview_launcher_exposure.md를 기준으로 session-only V3K preview가 충분한지, 다음에 sidecar persistence 설계를 시작할지, 아니면 GUI는 session-only로 닫고 Phase D formula/analyzer runtime boundary로 넘어갈지 재판단한다. 운영 _database/setting.db schema/write, sidecar 파일 write, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 결과를 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록하고 필요한 경우 다음 page 계획을 추가한 뒤 py_compile, smoke_v3k_gui_settings_preview, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, verify_pyd_gui_contract.py, smoke_offline_gui.py, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 한국어 Lore commit한다."
 ```

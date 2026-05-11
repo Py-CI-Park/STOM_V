@@ -76,6 +76,7 @@ class SetMainMenu:
         self.ui.uj_pushButton = self.wc.setPushbutton('U', color=6, click=lambda: show_treemap(self.ui),          shortcut='Alt+U',   animated=True, tip='트리맵')
         self.ui.qs_pushButton = self.wc.setPushbutton('Q', color=6, click=lambda: show_qsize(self.ui),            shortcut='Alt+Q',   animated=True, tip='큐사이즈')
         self.ui.bs_pushButton = self.wc.setPushbutton('B', color=6, click=lambda: show_backscheduler(self.ui),    shortcut='Alt+B',   animated=True, tip='백테스케쥴러')
+        self.ui.v3_pushButton = self.wc.setPushbutton('V', color=6, click=lambda: self.ui.ShowV3KSettingsPreview(), shortcut='Alt+V',  animated=True, tip='V3K 미리보기(session-only, Alt+V)')
         self.ui.sf_pushButton = self.wc.setPushbutton('Shift', animated=True)
         self.ui.bb_pushButton = self.wc.setPushbutton('S', color=6, click=lambda: chart_screenshot(self.ui),      shortcut='Shift+S', animated=True, tip='차트창 스샷 텔레그램 전송')
         self.ui.ds_pushButton = self.wc.setPushbutton('Q', color=6, click=lambda: manual_save_and_exit(self.ui),  shortcut='Shift+Q', animated=True, tip='데이터 저장 및 수동 종료')
@@ -117,6 +118,7 @@ class SetMainMenu:
         self.ui.uj_pushButton.setGeometry(8, 430, 16, 15)
         self.ui.qs_pushButton.setGeometry(23, 430, 16, 15)
         self.ui.bs_pushButton.setGeometry(8, 450, 16, 15)
+        self.ui.v3_pushButton.setGeometry(23, 450, 16, 15)
 
         self.ui.sf_pushButton.setGeometry(5, 470, 35, 15)
         self.ui.bb_pushButton.setGeometry(8, 490, 16, 15)

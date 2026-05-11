@@ -133,6 +133,30 @@ def _assert_mainwindow_preview_integration_is_after_bridge_before_widget_setup()
     print("v3k settings preview MainWindow integration order ok")
 
 
+def _assert_launcher_exposure_is_session_only_and_non_persistent() -> None:
+    menu_text = (ROOT / "ui" / "set_main_menu.py").read_text(encoding="utf-8")
+    launcher_marker = "self.ui.v3_pushButton = self.wc.setPushbutton('V'"
+    call_marker = "click=lambda: self.ui.ShowV3KSettingsPreview()"
+    shortcut_marker = "shortcut='Alt+V'"
+    geometry_marker = "self.ui.v3_pushButton.setGeometry(23, 450, 16, 15)"
+    forbidden_markers = (
+        "queryQ.put",
+        "UPDATE etc",
+        "setting.db",
+        "_database_v3k_shadow",
+        "sqlite3",
+    )
+
+    assert launcher_marker in menu_text, "V3K launcher button must be visible in main menu"
+    assert call_marker in menu_text, "V3K launcher must call the session-only preview opener"
+    assert shortcut_marker in menu_text, "V3K launcher must use the documented Alt+V shortcut"
+    assert menu_text.count(shortcut_marker) == 1, "Alt+V shortcut assignment must not be duplicated"
+    assert geometry_marker in menu_text, "V3K launcher must use the reviewed empty menu slot"
+    found = [marker for marker in forbidden_markers if marker in menu_text]
+    assert not found, f"launcher must not add persistence writes; found {found}"
+    print("v3k settings preview visible launcher boundary ok")
+
+
 def main() -> None:
     before = _artifact_status()
     _assert_preview_helper_has_no_persistence_dependency()
@@ -140,6 +164,7 @@ def main() -> None:
     _assert_preview_model_is_default_off_and_ui_exposable_only()
     _assert_session_toggle_updates_attrs_only()
     _assert_mainwindow_preview_integration_is_after_bridge_before_widget_setup()
+    _assert_launcher_exposure_is_session_only_and_non_persistent()
     after = _artifact_status()
     assert before == after, f"runtime artifact status changed: before={before!r} after={after!r}"
     print("v3k settings preview smoke passed")
