@@ -856,3 +856,21 @@ Directive: Do not connect V3K formula globals to `globals().update` directly. Th
 - Next: Page 018 / `V3K-PHASE-D2` formula/global guarded runtime hook decision.
 
 Directive: Do not call `globals().update` from the V3K facade. If a future hook is approved, it must consume the dry-run `ready`/`collisions` contract and preserve default-OFF rollback behavior.
+## V3K-PHASE-D2: formula/global guarded runtime hook decision
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_d2_formula_runtime_hook_decision.md`
+  - `docs/plans/2026-05-12_v3k_page_018_phase_d2_formula_runtime_hook_decision_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_019_phase_e0_runtime_activation_gap_review_plan.md`
+- Modified:
+  - `scripts/smoke_v3k_formula_runtime_hook_decision.py`
+- Decision: Do not modify `FormulaManager.UpdateGlobalsFunc` or call `globals().update` in Phase D-2.
+- Decision: Keep `V3KFormulaGlobalFacade.dry_run()` as the formula/global activation boundary until runtime guard relaxation and rollback conditions are explicitly approved.
+- Decision: Keep VERIFY-1A runtime file guard for `trade/base_strategy.py` and `trade/formula_manager.py` unchanged.
+- Excluded: formula/global runtime hook, runtime file guard relaxation, Kiwoom live/order/exit runtime, analyzer trading decision, operating `setting.db` write, sidecar write, LS Securities direct dependency.
+- Verification: py_compile passed; formula runtime hook decision smoke passed; formula boundary contract smoke passed; formula facade smoke passed; GUI preview smoke passed; settings-surface smoke passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
+- Next: Page 019 / `V3K-PHASE-E0` runtime activation gap review.
+
+Directive: Do not treat dry-run readiness as approval for live global namespace mutation. Future runtime hook work must first update the guardrail plan and prove rollback with dedicated smoke/audit coverage.
