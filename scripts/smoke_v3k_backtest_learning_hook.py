@@ -9,6 +9,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+MISSING_SHADOW_DIR = ROOT / "_database_v3k_missing_smoke"
+
 if "talib" not in sys.modules:
     talib_stub = types.ModuleType("talib")
     talib_stub.stream = types.SimpleNamespace()
@@ -49,7 +51,7 @@ def _dummy_engine(*, enabled: bool, is_tick: bool) -> BackEngineBase:
     engine = object.__new__(BackEngineBase)
     engine.market_gubun = 1
     engine.is_tick = is_tick
-    engine.v3k_learning_loader = V3KLearningDataAdapter()
+    engine.v3k_learning_loader = V3KLearningDataAdapter(base_dir=MISSING_SHADOW_DIR)
     engine.v3k_learning_load_plan = {}
     engine.dict_set = {
         FLAG_BACKTEST_LEARNING: enabled,

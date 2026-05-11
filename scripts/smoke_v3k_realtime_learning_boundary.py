@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+MISSING_SHADOW_DIR = ROOT / "_database_v3k_missing_smoke"
+
 from strategy.v3k_analyzer_adapter import (  # noqa: E402
     FLAG_CANDLE_ANALYSIS,
     FLAG_REALTIME_LEARNING,
@@ -66,7 +68,7 @@ def _request(*, is_tick: bool, feature_flags: dict[str, bool] | None = None):
 
 def _assert_off_noop() -> None:
     before = _artifact_status()
-    result = V3KRealtimeLearningAdapter().preload(_request(is_tick=True))
+    result = V3KRealtimeLearningAdapter(base_dir=MISSING_SHADOW_DIR).preload(_request(is_tick=True))
     after = _artifact_status()
 
     assert before == after, "OFF path must not create or modify runtime artifacts"
@@ -80,6 +82,7 @@ def _assert_off_noop() -> None:
 
 def _assert_no_codes_noop() -> None:
     result = V3KRealtimeLearningAdapter(
+        base_dir=MISSING_SHADOW_DIR,
         feature_flags={FLAG_REALTIME_LEARNING: True},
     ).preload(
         RealtimeLearningPreloadRequest(
@@ -99,6 +102,7 @@ def _assert_no_codes_noop() -> None:
 def _assert_enabled_missing_db(is_tick: bool, expected_kinds_per_code: int) -> None:
     before = _artifact_status()
     result = V3KRealtimeLearningAdapter(
+        base_dir=MISSING_SHADOW_DIR,
         feature_flags=_all_feature_flags(),
     ).preload(_request(is_tick=is_tick))
     after = _artifact_status()

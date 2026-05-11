@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import re
+import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -206,13 +209,72 @@ def create_table_sql(table_name: str, table: dict[str, Any]) -> str:
     return f"CREATE TABLE IF NOT EXISTS {table_name} (\n    {inner}\n);"
 
 
+def _normalize_sql_token(value: Any) -> Any:
+    if value is None:
+        return None
+    return re.sub(r"\s+", " ", str(value).strip())
+
+
+def _pragma_equivalent_columns(table: dict[str, Any]) -> list[tuple[int, str, str, int, Any, int]]:
+    """Return PRAGMA table_info-equivalent rows for a schema dict.
+
+    Phase A keeps the schema definition in this module as the single source of
+    truth.  The hash intentionally uses a temporary in-memory table so SQLite
+    performs the same SQL/default normalization that later read-only health
+    checks observe from real shadow DB files.
+    """
+
+    with sqlite3.connect(":memory:") as con:
+        con.executescript(create_table_sql("_v3k_schema_hash_probe", table))
+        rows = con.execute("PRAGMA table_info('_v3k_schema_hash_probe')").fetchall()
+
+    normalized = []
+    for _, name, col_type, notnull, dflt_value, pk in rows:
+        normalized.append(
+            (
+                str(name),
+                _normalize_sql_token(col_type).upper(),
+                int(notnull),
+                _normalize_sql_token(dflt_value),
+                int(pk),
+            )
+        )
+    normalized.sort()
+    return [
+        (cid, name, col_type, notnull, dflt_value, pk)
+        for cid, (name, col_type, notnull, dflt_value, pk) in enumerate(normalized)
+    ]
+
+
+def compute_schema_hash(table_name: str, table: dict[str, Any]) -> str:
+    """Compute the Phase A lifetime schema hash for one table definition.
+
+    `table_name` is part of the public helper signature for audit readability,
+    but Phase A hashes the PRAGMA-equivalent column contract only.  This keeps
+    placeholder-expanded table names from changing the hash when their schema is
+    identical.
+    """
+
+    _ = table_name
+    payload = json.dumps(
+        _pragma_equivalent_columns(table),
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def build_manifest(shadow_dir: Path) -> dict[str, Any]:
     all_dbs = {**LEARNING_DBS, **META_DBS}
     dbs: dict[str, Any] = {}
     for db_name, db_spec in all_dbs.items():
         tables = {}
         for table_name, table in db_spec["tables"].items():
-            tables[table_name] = {**table, "create_sql": create_table_sql(table_name, table)}
+            tables[table_name] = {
+                **table,
+                "create_sql": create_table_sql(table_name, table),
+                "schema_hash": compute_schema_hash(table_name, table),
+            }
         dbs[db_name] = {
             "target_path": str(shadow_dir / db_name),
             "source_file": db_spec.get("source_file"),

@@ -613,3 +613,25 @@ Directive: Stop automatic V3K implementation after this closeout. Use only read-
 - Verification: Based on prior closeout audits and current clean status; no runtime/code activation changes were made in this review.
 
 Directive: Do not reinterpret safe-staged completion as full production activation. Treat each deferred activation area as a new phase requiring explicit approval.
+
+## V3K-PHASE-A: shadow DB rehearsal
+
+- Date: 2026-05-11 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/plans/2026-05-10_v3k_phase_a_shadow_db_plan.md`
+  - `docs/update_log/2026-05-11_v3k_phase_a_shadow_rehearsal.md`
+  - `scripts/init_v3k_shadow_db.py`
+  - `scripts/apply_v3k_shadow_db.py`
+  - `scripts/v3k_db_health.py`
+  - `tests/unit/test_v3k_shadow_schema_hash.py`
+  - `.omx/reports/v3k-shadow-manifest.json`
+- Decision: V3K operational activation starts from an isolated `_database_v3k_shadow/` rehearsal, not from operational `_database/` cutover.
+- Decision: `init_v3k_shadow_db.py` remains the schema single source for Phase A. `apply_v3k_shadow_db.py` imports the schema dictionaries and helpers instead of duplicating DDL.
+- Decision: `compute_schema_hash()` is the lifetime schema drift key for Phase B-G. It is stamped into dry-run manifest output and `v3k_meta.db.v3k_schema_manifest`.
+- Decision: Phase A applies DDL only. `v3k_feature_flags` and `v3k_listed_shares` stay empty, preserving default-OFF and no production data semantics.
+- Verification: py_compile passed; schema hash unit tests passed; dry-run manifest generated; pre/post DB health passed; default-OFF row counts passed; V3K audits passed; nonrelease sync passed.
+- Excluded: operational `_database/` changes, DB file commit, Kiwoom receiver/order/strategy changes, live runtime hook, analyzer output use in trading logic, LS Securities direct dependency.
+- Next: `V3K-PHASE-B` read-only learning DB verification plan. Do not start Phase B implementation without a new phase plan.
+
+Directive: Treat `_database_v3k_shadow/` as a local rehearsal artifact. Never commit DB files. Keep Phase B read-only and preserve Kiwoom runtime boundaries.

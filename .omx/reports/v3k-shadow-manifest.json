@@ -1,0 +1,286 @@
+{
+  "generated_at": "2026-05-11T04:33:49.397868Z",
+  "mode": "dry-run",
+  "creates_databases": false,
+  "creates_directories": false,
+  "shadow_dir": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database_v3k_shadow",
+  "dbs": {
+    "pattern_analysis.db": {
+      "target_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database_v3k_shadow\\pattern_analysis.db",
+      "source_file": "strategy/analyzer_candle_pattern.py",
+      "tables": {
+        "pattern_setting": {
+          "columns": [
+            "market INTEGER NOT NULL",
+            "analysis_period INTEGER NOT NULL",
+            "rate_threshold INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "market"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS pattern_setting (\n    market INTEGER NOT NULL,\n    analysis_period INTEGER NOT NULL,\n    rate_threshold INTEGER NOT NULL,\n    PRIMARY KEY (market)\n);",
+          "schema_hash": "d5661102b7d6c90b21fa0ad0c77056e2fc2b1bb3ae25459743154cbb11b75b78"
+        },
+        "{strategy_gubun}_pattern_score": {
+          "columns": [
+            "code TEXT NOT NULL",
+            "pattern_name TEXT NOT NULL",
+            "avg_score REAL NOT NULL",
+            "max_score REAL NOT NULL",
+            "min_score REAL NOT NULL",
+            "std_score REAL NOT NULL",
+            "sample_count INTEGER NOT NULL",
+            "confidence_score REAL NOT NULL",
+            "setting_hash TEXT NOT NULL",
+            "last_update INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "code",
+            "pattern_name",
+            "setting_hash",
+            "last_update"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS {strategy_gubun}_pattern_score (\n    code TEXT NOT NULL,\n    pattern_name TEXT NOT NULL,\n    avg_score REAL NOT NULL,\n    max_score REAL NOT NULL,\n    min_score REAL NOT NULL,\n    std_score REAL NOT NULL,\n    sample_count INTEGER NOT NULL,\n    confidence_score REAL NOT NULL,\n    setting_hash TEXT NOT NULL,\n    last_update INTEGER NOT NULL,\n    PRIMARY KEY (code, pattern_name, setting_hash, last_update)\n);",
+          "schema_hash": "8c34121bc7ca22791786a73e38dde966d67dcc050503c6de3f2daaa4a4a10676"
+        }
+      }
+    },
+    "volume_spike.db": {
+      "target_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database_v3k_shadow\\volume_spike.db",
+      "source_file": "strategy/analyzer_volume_spike.py",
+      "tables": {
+        "spike_setting": {
+          "columns": [
+            "market INTEGER NOT NULL",
+            "is_tick INTEGER NOT NULL",
+            "analysis_period INTEGER NOT NULL",
+            "rate_threshold INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "market",
+            "is_tick"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS spike_setting (\n    market INTEGER NOT NULL,\n    is_tick INTEGER NOT NULL,\n    analysis_period INTEGER NOT NULL,\n    rate_threshold INTEGER NOT NULL,\n    PRIMARY KEY (market, is_tick)\n);",
+          "schema_hash": "10d663bac266b6703adfad14dfb59644a0f35bf51c853e977b15a10039f312c6"
+        },
+        "{strategy_gubun}_volume_spike_{tick|min}": {
+          "columns": [
+            "code TEXT NOT NULL",
+            "spike_level REAL NOT NULL",
+            "avg_score REAL NOT NULL",
+            "max_score REAL NOT NULL",
+            "min_score REAL NOT NULL",
+            "std_score REAL NOT NULL",
+            "sample_count INTEGER NOT NULL",
+            "confidence_score REAL NOT NULL",
+            "setting_hash TEXT NOT NULL",
+            "last_update INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "code",
+            "spike_level",
+            "setting_hash",
+            "last_update"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS {strategy_gubun}_volume_spike_{tick|min} (\n    code TEXT NOT NULL,\n    spike_level REAL NOT NULL,\n    avg_score REAL NOT NULL,\n    max_score REAL NOT NULL,\n    min_score REAL NOT NULL,\n    std_score REAL NOT NULL,\n    sample_count INTEGER NOT NULL,\n    confidence_score REAL NOT NULL,\n    setting_hash TEXT NOT NULL,\n    last_update INTEGER NOT NULL,\n    PRIMARY KEY (code, spike_level, setting_hash, last_update)\n);",
+          "schema_hash": "9bd0927fb62856bdeaf235b2a5084c16f3e085099392b1260d66d83b1d98b8dc"
+        }
+      }
+    },
+    "volume_profile.db": {
+      "target_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database_v3k_shadow\\volume_profile.db",
+      "source_file": "strategy/analyzer_volume_profile.py",
+      "tables": {
+        "volume_setting": {
+          "columns": [
+            "market INTEGER NOT NULL",
+            "is_tick INTEGER NOT NULL",
+            "analysis_period INTEGER NOT NULL",
+            "rate_threshold REAL NOT NULL",
+            "price_range_pct REAL NOT NULL"
+          ],
+          "primary_key": [
+            "market",
+            "is_tick"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS volume_setting (\n    market INTEGER NOT NULL,\n    is_tick INTEGER NOT NULL,\n    analysis_period INTEGER NOT NULL,\n    rate_threshold REAL NOT NULL,\n    price_range_pct REAL NOT NULL,\n    PRIMARY KEY (market, is_tick)\n);",
+          "schema_hash": "008bf9d0e25157ce4cde5ada34b8a3f2eb943698ffbd7411307f08c0118ab5c4"
+        },
+        "{strategy_gubun}_volume_score_{tick|min}": {
+          "columns": [
+            "code TEXT NOT NULL",
+            "price_level REAL NOT NULL",
+            "avg_score REAL NOT NULL",
+            "upward_strength REAL NOT NULL",
+            "downward_strength REAL NOT NULL",
+            "sample_count INTEGER NOT NULL",
+            "confidence_score REAL NOT NULL",
+            "setting_hash TEXT NOT NULL",
+            "last_update INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "code",
+            "price_level",
+            "setting_hash",
+            "last_update"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS {strategy_gubun}_volume_score_{tick|min} (\n    code TEXT NOT NULL,\n    price_level REAL NOT NULL,\n    avg_score REAL NOT NULL,\n    upward_strength REAL NOT NULL,\n    downward_strength REAL NOT NULL,\n    sample_count INTEGER NOT NULL,\n    confidence_score REAL NOT NULL,\n    setting_hash TEXT NOT NULL,\n    last_update INTEGER NOT NULL,\n    PRIMARY KEY (code, price_level, setting_hash, last_update)\n);",
+          "schema_hash": "e9177afca915715ed44cc9f32b86d2afb828ba3712b0545318884b7e090353d0"
+        }
+      }
+    },
+    "volatility_pattern.db": {
+      "target_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database_v3k_shadow\\volatility_pattern.db",
+      "source_file": "strategy/analyzer_volatility_pattern.py",
+      "tables": {
+        "volatility_setting": {
+          "columns": [
+            "market INTEGER NOT NULL",
+            "is_tick INTEGER NOT NULL",
+            "analysis_period INTEGER NOT NULL",
+            "rate_threshold INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "market",
+            "is_tick"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS volatility_setting (\n    market INTEGER NOT NULL,\n    is_tick INTEGER NOT NULL,\n    analysis_period INTEGER NOT NULL,\n    rate_threshold INTEGER NOT NULL,\n    PRIMARY KEY (market, is_tick)\n);",
+          "schema_hash": "10d663bac266b6703adfad14dfb59644a0f35bf51c853e977b15a10039f312c6"
+        },
+        "{strategy_gubun}_volatility_pattern_{tick|min}": {
+          "columns": [
+            "code TEXT NOT NULL",
+            "volatility_level REAL NOT NULL",
+            "avg_score REAL NOT NULL",
+            "max_score REAL NOT NULL",
+            "min_score REAL NOT NULL",
+            "std_score REAL NOT NULL",
+            "sample_count INTEGER NOT NULL",
+            "confidence_score REAL NOT NULL",
+            "setting_hash TEXT NOT NULL",
+            "last_update INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "code",
+            "volatility_level",
+            "setting_hash",
+            "last_update"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS {strategy_gubun}_volatility_pattern_{tick|min} (\n    code TEXT NOT NULL,\n    volatility_level REAL NOT NULL,\n    avg_score REAL NOT NULL,\n    max_score REAL NOT NULL,\n    min_score REAL NOT NULL,\n    std_score REAL NOT NULL,\n    sample_count INTEGER NOT NULL,\n    confidence_score REAL NOT NULL,\n    setting_hash TEXT NOT NULL,\n    last_update INTEGER NOT NULL,\n    PRIMARY KEY (code, volatility_level, setting_hash, last_update)\n);",
+          "schema_hash": "dab90275779e94c89ce2682b81b6c97b92d2b86ca484817efae53e8203b2d16e"
+        }
+      }
+    },
+    "volatility_stop_take.db": {
+      "target_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database_v3k_shadow\\volatility_stop_take.db",
+      "source_file": "strategy/analyzer_volatility_stop_take.py",
+      "tables": {
+        "volatility_stop_take_setting": {
+          "columns": [
+            "market INTEGER NOT NULL",
+            "is_tick INTEGER NOT NULL",
+            "analysis_period INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "market",
+            "is_tick"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS volatility_stop_take_setting (\n    market INTEGER NOT NULL,\n    is_tick INTEGER NOT NULL,\n    analysis_period INTEGER NOT NULL,\n    PRIMARY KEY (market, is_tick)\n);",
+          "schema_hash": "1e769d8816cac810fa29376d6269246f87ce980f7c37450586a8e295dad6fe13"
+        },
+        "{strategy_gubun}_volatility_{tick|min}": {
+          "columns": [
+            "code TEXT NOT NULL",
+            "volatility_level REAL NOT NULL",
+            "level_stop REAL NOT NULL",
+            "level_take REAL NOT NULL",
+            "avg_return REAL NOT NULL",
+            "max_return REAL NOT NULL",
+            "min_return REAL NOT NULL",
+            "std_return REAL NOT NULL",
+            "win_rate REAL NOT NULL",
+            "sample_count INTEGER NOT NULL",
+            "confidence_score REAL NOT NULL",
+            "setting_hash TEXT NOT NULL",
+            "last_update INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "code",
+            "volatility_level",
+            "setting_hash",
+            "last_update"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS {strategy_gubun}_volatility_{tick|min} (\n    code TEXT NOT NULL,\n    volatility_level REAL NOT NULL,\n    level_stop REAL NOT NULL,\n    level_take REAL NOT NULL,\n    avg_return REAL NOT NULL,\n    max_return REAL NOT NULL,\n    min_return REAL NOT NULL,\n    std_return REAL NOT NULL,\n    win_rate REAL NOT NULL,\n    sample_count INTEGER NOT NULL,\n    confidence_score REAL NOT NULL,\n    setting_hash TEXT NOT NULL,\n    last_update INTEGER NOT NULL,\n    PRIMARY KEY (code, volatility_level, setting_hash, last_update)\n);",
+          "schema_hash": "4dea52f04890b846a189e34558e4199ebb3ded7b1ed4df8df432308c820f5e53"
+        }
+      }
+    },
+    "v3k_meta.db": {
+      "target_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database_v3k_shadow\\v3k_meta.db",
+      "source_file": null,
+      "tables": {
+        "v3k_feature_flags": {
+          "columns": [
+            "name TEXT PRIMARY KEY",
+            "enabled INTEGER NOT NULL DEFAULT 0",
+            "updated_at TEXT",
+            "note TEXT"
+          ],
+          "primary_key": [
+            "name"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS v3k_feature_flags (\n    name TEXT PRIMARY KEY,\n    enabled INTEGER NOT NULL DEFAULT 0,\n    updated_at TEXT,\n    note TEXT\n);",
+          "schema_hash": "c2d85e401924b7ec30d285fa44dab1221facc9e7f719a103ebdda826868d0332"
+        },
+        "v3k_schema_manifest": {
+          "columns": [
+            "db_name TEXT NOT NULL",
+            "table_name TEXT NOT NULL",
+            "schema_hash TEXT NOT NULL",
+            "source_file TEXT NOT NULL",
+            "source_commit TEXT",
+            "last_verified_at TEXT"
+          ],
+          "primary_key": [
+            "db_name",
+            "table_name"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS v3k_schema_manifest (\n    db_name TEXT NOT NULL,\n    table_name TEXT NOT NULL,\n    schema_hash TEXT NOT NULL,\n    source_file TEXT NOT NULL,\n    source_commit TEXT,\n    last_verified_at TEXT,\n    PRIMARY KEY (db_name, table_name)\n);",
+          "schema_hash": "8cec42f965cf935ebf5706019be2f16f34b468387011db86f5f070b61bc2adad"
+        }
+      }
+    },
+    "v3k_code_meta.db": {
+      "target_path": "C:\\System_Trading\\STOM\\STOM_V.wt-dev\\_database_v3k_shadow\\v3k_code_meta.db",
+      "source_file": null,
+      "tables": {
+        "v3k_listed_shares": {
+          "columns": [
+            "code TEXT NOT NULL",
+            "market TEXT NOT NULL",
+            "listed_shares INTEGER",
+            "source TEXT NOT NULL",
+            "as_of_date INTEGER NOT NULL"
+          ],
+          "primary_key": [
+            "code",
+            "market",
+            "as_of_date"
+          ],
+          "create_sql": "CREATE TABLE IF NOT EXISTS v3k_listed_shares (\n    code TEXT NOT NULL,\n    market TEXT NOT NULL,\n    listed_shares INTEGER,\n    source TEXT NOT NULL,\n    as_of_date INTEGER NOT NULL,\n    PRIMARY KEY (code, market, as_of_date)\n);",
+          "schema_hash": "8cca9da925640415b99552f38d897249dd85bd13554713db64882e49fe3562b6"
+        }
+      }
+    }
+  },
+  "policy": {
+    "feature_flags_default_off": true,
+    "backtest_date_rule": "last_update < backtest_date unless leakage safety is proven",
+    "forbidden_writes": [
+      "_database",
+      "_database_v3k_shadow",
+      "backup",
+      "*.db"
+    ]
+  }
+}

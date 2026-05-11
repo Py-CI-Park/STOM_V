@@ -8,6 +8,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+MISSING_SHADOW_DIR = ROOT / "_database_v3k_missing_smoke"
+
 from strategy.v3k_analyzer_adapter import (
     ANALYZER_MODULE_CONTRACTS,
     FLAG_BACKTEST_LEARNING,
@@ -90,7 +92,7 @@ def _assert_missing_db_path(request: LearningLoadRequest) -> None:
         },
         limit=request.limit,
     )
-    adapter = V3KLearningDataAdapter()
+    adapter = V3KLearningDataAdapter(base_dir=MISSING_SHADOW_DIR)
     result = adapter.load_before_backtest(enabled_request)
     if result.rows:
         raise AssertionError(f"{request.kind}: missing DB path returned rows")
