@@ -39,11 +39,14 @@ REQUIRED_CODE = (
     "strategy/analyzer_volatility_stop_take.py",
     "strategy/v3k_analyzer_adapter.py",
     "strategy/v3k_formula_facade.py",
+    "strategy/v3k_gui_sidecar.py",
     "strategy/v3k_settings_surface.py",
 )
 
 REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_verify_1a.py",
+    "scripts/audit_v3k_gui_sidecar_persistence_design.py",
+    "scripts/audit_v3k_runtime_activation_gap.py",
     "scripts/diff_v3_vs_2uc_db_schema.py",
     "scripts/init_v3k_shadow_db.py",
     "scripts/v3k_db_health.py",
@@ -53,6 +56,7 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_backtest_learning_hook.py",
     "scripts/smoke_v3k_realtime_learning_boundary.py",
     "scripts/smoke_v3k_formula_facade.py",
+    "scripts/smoke_v3k_gui_sidecar_schema_validator.py",
     "scripts/smoke_v3k_settings_surface.py",
 )
 
@@ -64,6 +68,7 @@ SAFE_STAGED_COMPLETED = (
     "Realtime learning-data preload boundary",
     "Formula/global facade with V3K_ prefixed globals",
     "Non-invasive settings surface contract",
+    "GUI sidecar persistence design and schema validator",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -82,6 +87,7 @@ USER_APPROVAL_REQUIRED = (
     "GUI setting surface connected to MainWindow/pyd wrappers",
     "Live Kiwoom runtime dry-run hook beyond contract-only adapters",
     "Production learning DB read with real contents",
+    "Actual GUI sidecar write implementation",
 )
 
 

@@ -912,3 +912,24 @@ Directive: Do not jump from this decision directly to sidecar writes. First comp
 - Next: Page 021 / `V3K-PHASE-E2` GUI sidecar schema validator.
 
 Directive: Do not implement sidecar writes before the schema validator proves valid/corrupt/default-OFF behavior without creating runtime artifacts.
+## V3K-PHASE-E2: GUI sidecar schema validator
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_e2_gui_sidecar_schema_validator.md`
+  - `docs/plans/2026-05-12_v3k_page_021_phase_e2_gui_sidecar_schema_validator_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_022_phase_e3_gui_sidecar_readonly_loader_plan.md`
+- Modified:
+  - `strategy/v3k_gui_sidecar.py`
+  - `scripts/smoke_v3k_gui_sidecar_schema_validator.py`
+  - `scripts/audit_v3k_gui_sidecar_persistence_design.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: Implement a pure V3K GUI sidecar schema validator that accepts mapping/JSON payloads without reading or writing files.
+- Decision: Missing/corrupt/unsupported payloads fall back to default-OFF with diagnostics and without overwrite.
+- Decision: Valid sidecar settings are lower priority than current session-only preview overrides.
+- Excluded: sidecar file read/write, operating `setting.db` write, formula/global runtime hook, Kiwoom live/order/exit runtime, analyzer trading decision, LS Securities direct dependency.
+- Verification: py_compile passed; GUI sidecar schema validator smoke passed; GUI sidecar persistence design audit passed; runtime activation gap audit passed; V3K smoke set passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB/sidecar artifact status stayed clean.
+- Next: Page 022 / `V3K-PHASE-E3` GUI sidecar read-only loader.
+
+Directive: Do not implement sidecar writes before read-only loading and fallback behavior are proven without creating repo `_v3k_sidecar` artifacts.

@@ -13,23 +13,27 @@ from strategy.v3k_settings_surface import (  # noqa: E402
     assert_v3k_settings_contract_aligned,
     v3k_setting_contract_keys,
 )
-
-
-SIDECAR_DIR = "_v3k_sidecar"
-SIDECAR_FILE = "_v3k_sidecar/v3k_gui_settings.json"
-SIDECAR_BACKUP_DIR = "_v3k_sidecar/backups"
-SIDECAR_SCHEMA_VERSION = 1
-SIDECAR_REQUIRED_FIELDS = (
-    "schema_version",
-    "surface_version",
-    "settings",
-    "updated_at",
-    "source",
+from strategy.v3k_gui_sidecar import (  # noqa: E402
+    V3K_GUI_SIDECAR_BACKUP_DIR,
+    V3K_GUI_SIDECAR_DIR,
+    V3K_GUI_SIDECAR_FILE,
+    V3K_GUI_SIDECAR_REQUIRED_FIELDS,
+    V3K_GUI_SIDECAR_SCHEMA_VERSION,
+    validate_v3k_gui_sidecar_payload,
 )
+
+
+SIDECAR_DIR = V3K_GUI_SIDECAR_DIR
+SIDECAR_FILE = V3K_GUI_SIDECAR_FILE
+SIDECAR_BACKUP_DIR = V3K_GUI_SIDECAR_BACKUP_DIR
+SIDECAR_SCHEMA_VERSION = V3K_GUI_SIDECAR_SCHEMA_VERSION
+SIDECAR_REQUIRED_FIELDS = V3K_GUI_SIDECAR_REQUIRED_FIELDS
 
 REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_e1_gui_sidecar_persistence_design.md",
+    "docs/update_log/2026-05-12_v3k_phase_e2_gui_sidecar_schema_validator.md",
     "docs/plans/2026-05-12_v3k_page_020_phase_e1_gui_sidecar_persistence_design_plan.md",
+    "docs/plans/2026-05-12_v3k_page_021_phase_e2_gui_sidecar_schema_validator_plan.md",
 )
 
 FORBIDDEN_RUNTIME_WRITE_MARKERS = (
@@ -90,6 +94,9 @@ def _assert_sidecar_schema_contract() -> None:
 
 def _assert_default_off_and_corruption_fallback_contract() -> None:
     assert_v3k_settings_contract_aligned()
+    missing = validate_v3k_gui_sidecar_payload(None)
+    if missing.valid or not missing.all_off:
+        raise AssertionError("missing sidecar payload must fall back to default-OFF")
     print(
         "v3k sidecar default-OFF fallback contract ok "
         f"({V3K_SETTINGS_SURFACE_VERSION})",
