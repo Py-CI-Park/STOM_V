@@ -955,3 +955,24 @@ Directive: Do not implement sidecar writes before read-only loading and fallback
 - Next: Page 023 / `V3K-PHASE-E4` GUI sidecar write guard/rollback decision.
 
 Directive: Do not implement sidecar writes until Page 023 has fixed atomic write, backup, rollback, corruption recovery, no-DB-sync, and artifact handling invariants. Read-only loading is not approval for persistence writes.
+
+## V3K-PHASE-E4: GUI sidecar write guard/rollback decision
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_e4_gui_sidecar_write_guard_decision.md`
+  - `docs/plans/2026-05-12_v3k_page_023_phase_e4_gui_sidecar_write_guard_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_024_phase_e5_readonly_sidecar_preview_init_plan.md`
+- Modified:
+  - `scripts/audit_v3k_gui_sidecar_write_guard.py`
+  - `scripts/audit_v3k_gui_sidecar_persistence_design.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: Keep actual GUI sidecar write deferred. Page 023 fixes the guard/rollback conditions but does not implement a writer.
+- Decision: Required future write conditions are atomic write, backup-before-replace, rollback, corruption recovery, no-DB-sync, session override priority, and artifact cleanliness.
+- Decision: `strategy/v3k_gui_sidecar.py` remains read-only and `Actual GUI sidecar write implementation` stays in `USER_APPROVAL_REQUIRED`.
+- Excluded: sidecar write implementation, operating `setting.db` write, formula/global runtime hook, Kiwoom live/order/exit runtime, analyzer trading decision, external broker direct dependency.
+- Verification: py_compile passed; GUI sidecar write guard audit passed; GUI sidecar persistence design audit passed; runtime activation gap audit passed; V3K smoke set passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB/sidecar artifact status stayed clean.
+- Next: Page 024 / `V3K-PHASE-E5` read-only sidecar preview initialization bridge.
+
+Directive: Do not convert the read-only sidecar loader into a writer without satisfying the Page 023 approval gate. The next safe step is read-only preview initialization, not persistence writes.

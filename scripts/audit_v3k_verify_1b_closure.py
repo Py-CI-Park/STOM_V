@@ -28,6 +28,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-09_v3k_impl_5_formula_global_facade.md",
     "docs/update_log/2026-05-09_v3k_verify_1a_off_regression_audit.md",
     "docs/update_log/2026-05-09_v3k_impl_6a_settings_surface.md",
+    "docs/update_log/2026-05-12_v3k_phase_e4_gui_sidecar_write_guard_decision.md",
 )
 
 REQUIRED_CODE = (
@@ -46,6 +47,7 @@ REQUIRED_CODE = (
 REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_verify_1a.py",
     "scripts/audit_v3k_gui_sidecar_persistence_design.py",
+    "scripts/audit_v3k_gui_sidecar_write_guard.py",
     "scripts/audit_v3k_runtime_activation_gap.py",
     "scripts/diff_v3_vs_2uc_db_schema.py",
     "scripts/init_v3k_shadow_db.py",
@@ -69,7 +71,7 @@ SAFE_STAGED_COMPLETED = (
     "Realtime learning-data preload boundary",
     "Formula/global facade with V3K_ prefixed globals",
     "Non-invasive settings surface contract",
-    "GUI sidecar persistence design, schema validator, and read-only loader",
+    "GUI sidecar persistence design, schema validator, read-only loader, and write guard",
     "OFF regression and Kiwoom untouched audit",
 )
 
