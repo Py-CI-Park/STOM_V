@@ -20,6 +20,7 @@ from ui.set_dialog_chart import SetDialogChart
 from ui.set_dialog_formula import SetDialogFormula
 from ui.set_home_tap import SetHomeTap
 from ui.set_style import dict_set
+from ui.ui_v3k_settings_bridge import attach_v3k_gui_settings_bridge
 
 from ui.ui_etc import *
 from ui.ui_draw_chart_db import *
@@ -356,6 +357,7 @@ class MainWindow(QMainWindow):
 
         self.auto_run = auto_run_
         self.dict_set = dict_set
+        self.v3k_settings_bridge_result = attach_v3k_gui_settings_bridge(self)
         self.main_btn = 0
         self.counter  = 0
         self.cpu_per  = 0

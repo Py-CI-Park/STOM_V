@@ -13,6 +13,7 @@ V3K_GUI_SETTINGS_ATTR = "v3k_settings"
 V3K_GUI_FEATURE_FLAGS_ATTR = "v3k_feature_flags"
 V3K_GUI_DIAGNOSTICS_ATTR = "v3k_settings_diagnostics"
 V3K_GUI_BRIDGED_DICT_SET_ATTR = "v3k_settings_bridge_dict_set"
+V3K_GUI_BRIDGE_RESULT_ATTR = "v3k_settings_bridge_result"
 
 V3K_GUI_BRIDGE_ATTRS: tuple[str, ...] = (
     V3K_GUI_SETTINGS_VERSION_ATTR,
@@ -20,6 +21,7 @@ V3K_GUI_BRIDGE_ATTRS: tuple[str, ...] = (
     V3K_GUI_FEATURE_FLAGS_ATTR,
     V3K_GUI_DIAGNOSTICS_ATTR,
     V3K_GUI_BRIDGED_DICT_SET_ATTR,
+    V3K_GUI_BRIDGE_RESULT_ATTR,
 )
 
 
@@ -46,6 +48,7 @@ def attach_v3k_gui_settings_bridge(
     setattr(ui_like, V3K_GUI_FEATURE_FLAGS_ATTR, dict(result.feature_flags))
     setattr(ui_like, V3K_GUI_DIAGNOSTICS_ATTR, tuple(result.diagnostics))
     setattr(ui_like, V3K_GUI_BRIDGED_DICT_SET_ATTR, dict(result.dict_set))
+    setattr(ui_like, V3K_GUI_BRIDGE_RESULT_ATTR, result)
 
     if replace_dict_set:
         setattr(ui_like, "dict_set", dict(result.dict_set))

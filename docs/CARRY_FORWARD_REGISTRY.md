@@ -705,3 +705,22 @@ Directive: Treat Page 011 completion as completion of the initial planning seque
 - Next: `V3K-PHASE-C2-2` MainWindow in-memory helper integration. Do not add GUI widgets or persistent DB writes in C2-2.
 
 Directive: Keep C2-1 helper as the narrow bridge contract. Future MainWindow integration should call this helper or preserve the same no-GUI/no-DB/default-OFF behavior.
+
+## V3K-PHASE-C2-2: MainWindow in-memory helper integration
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `ui/ui_mainwindow.py`
+  - `ui/ui_v3k_settings_bridge.py`
+  - `scripts/smoke_v3k_gui_wrapper_bridge.py`
+  - `docs/update_log/2026-05-12_v3k_phase_c2_2_mainwindow_in_memory_bridge.md`
+  - `docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md`
+- Decision: MainWindow now attaches V3K settings state in memory immediately after `self.dict_set = dict_set` and before `WidgetCreater(self)`/widget construction.
+- Decision: MainWindow integration does not use `replace_dict_set=True`; it preserves the existing `dict_set` object and adds only V3K in-memory attributes.
+- Decision: C2-2 remains a default-OFF state bridge. It is not GUI checkbox exposure, setting DB persistence, or live/runtime activation.
+- Verification: py_compile passed; `smoke_v3k_gui_wrapper_bridge.py` includes MainWindow source-level integration order checks and passed; existing V3K smoke suite passed; VERIFY-1A/1B passed; nonrelease sync passed; DB artifact status stayed clean.
+- Excluded: PyQt checkbox/layout changes, persistent `_database/setting.db` writes, shadow DB rows, Kiwoom live/order/exit runtime, formula globals runtime hook, analyzer output trading decision, LS Securities direct dependency.
+- Next: `V3K-PHASE-C2-3` GUI checkbox/layout feasibility review. Do not add widgets until layout, wrapper alias, settings persistence, and GUI smoke boundaries are documented.
+
+Directive: Treat `v3k_settings`/`v3k_feature_flags` on MainWindow as inert default-OFF state. Do not read them from trading/order/runtime paths without a later approved phase.

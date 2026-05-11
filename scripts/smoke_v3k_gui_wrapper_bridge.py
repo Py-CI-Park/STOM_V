@@ -17,6 +17,7 @@ from strategy.v3k_analyzer_adapter import (  # noqa: E402
 from strategy.v3k_settings_surface import v3k_setting_contract_keys  # noqa: E402
 from ui.ui_v3k_settings_bridge import (  # noqa: E402
     V3K_GUI_BRIDGED_DICT_SET_ATTR,
+    V3K_GUI_BRIDGE_RESULT_ATTR,
     V3K_GUI_BRIDGE_ATTRS,
     V3K_GUI_DIAGNOSTICS_ATTR,
     V3K_GUI_FEATURE_FLAGS_ATTR,
@@ -83,6 +84,7 @@ def _assert_default_off_attrs_without_dict_replacement() -> None:
     assert getattr(window, V3K_GUI_SETTINGS_ATTR) == result.settings
     assert getattr(window, V3K_GUI_FEATURE_FLAGS_ATTR) == result.feature_flags
     assert getattr(window, V3K_GUI_DIAGNOSTICS_ATTR) == ()
+    assert getattr(window, V3K_GUI_BRIDGE_RESULT_ATTR) == result
     assert getattr(window, V3K_GUI_BRIDGED_DICT_SET_ATTR)["legacy_setting"] == "preserve-me"
     assert set(v3k_setting_contract_keys()).issubset(
         getattr(window, V3K_GUI_BRIDGED_DICT_SET_ATTR),
@@ -143,6 +145,21 @@ def _assert_object_without_dict_set_is_supported() -> None:
     print("v3k GUI wrapper bridge missing-dict_set object ok")
 
 
+def _assert_mainwindow_integration_is_minimal_and_before_widget_setup() -> None:
+    mainwindow_text = (ROOT / "ui" / "ui_mainwindow.py").read_text(encoding="utf-8")
+    import_marker = "from ui.ui_v3k_settings_bridge import attach_v3k_gui_settings_bridge"
+    call_marker = "self.v3k_settings_bridge_result = attach_v3k_gui_settings_bridge(self)"
+    dict_marker = "self.dict_set = dict_set"
+    widget_marker = "self.wc       = WidgetCreater(self)"
+
+    assert import_marker in mainwindow_text, "MainWindow must import the V3K bridge helper"
+    assert call_marker in mainwindow_text, "MainWindow must attach V3K bridge state"
+    assert mainwindow_text.index(dict_marker) < mainwindow_text.index(call_marker)
+    assert mainwindow_text.index(call_marker) < mainwindow_text.index(widget_marker)
+    assert "replace_dict_set=True" not in mainwindow_text, "MainWindow integration must not replace dict_set"
+    print("v3k MainWindow in-memory bridge integration boundary ok")
+
+
 def main() -> None:
     before = _artifact_status()
     _assert_helper_has_no_gui_or_db_dependency()
@@ -150,6 +167,7 @@ def main() -> None:
     _assert_replace_dict_set_is_explicit_and_in_memory()
     _assert_raw_override_and_diagnostics_flow_to_window_attrs()
     _assert_object_without_dict_set_is_supported()
+    _assert_mainwindow_integration_is_minimal_and_before_widget_setup()
     after = _artifact_status()
     assert before == after, f"runtime artifact status changed: before={before!r} after={after!r}"
     print("v3k GUI wrapper bridge smoke passed")
