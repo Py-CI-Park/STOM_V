@@ -56,6 +56,7 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_backtest_learning_hook.py",
     "scripts/smoke_v3k_realtime_learning_boundary.py",
     "scripts/smoke_v3k_formula_facade.py",
+    "scripts/smoke_v3k_gui_sidecar_readonly_loader.py",
     "scripts/smoke_v3k_gui_sidecar_schema_validator.py",
     "scripts/smoke_v3k_settings_surface.py",
 )
@@ -68,7 +69,7 @@ SAFE_STAGED_COMPLETED = (
     "Realtime learning-data preload boundary",
     "Formula/global facade with V3K_ prefixed globals",
     "Non-invasive settings surface contract",
-    "GUI sidecar persistence design and schema validator",
+    "GUI sidecar persistence design, schema validator, and read-only loader",
     "OFF regression and Kiwoom untouched audit",
 )
 

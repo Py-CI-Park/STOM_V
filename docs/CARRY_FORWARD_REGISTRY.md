@@ -933,3 +933,25 @@ Directive: Do not implement sidecar writes before the schema validator proves va
 - Next: Page 022 / `V3K-PHASE-E3` GUI sidecar read-only loader.
 
 Directive: Do not implement sidecar writes before read-only loading and fallback behavior are proven without creating repo `_v3k_sidecar` artifacts.
+
+## V3K-PHASE-E3: GUI sidecar read-only loader
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_e3_gui_sidecar_readonly_loader.md`
+  - `docs/plans/2026-05-12_v3k_page_022_phase_e3_gui_sidecar_readonly_loader_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_023_phase_e4_gui_sidecar_write_guard_plan.md`
+- Modified:
+  - `strategy/v3k_gui_sidecar.py`
+  - `scripts/smoke_v3k_gui_sidecar_readonly_loader.py`
+  - `scripts/audit_v3k_gui_sidecar_persistence_design.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: Add a read-only loader for the `_v3k_sidecar/v3k_gui_settings.json` candidate path without creating directories, writing files, or touching operating setting DBs.
+- Decision: Missing/unreadable/corrupt files fall back to default-OFF diagnostics and never trigger overwrite or recovery writes in this phase.
+- Decision: Valid file settings remain lower priority than session-only preview overrides.
+- Excluded: sidecar write implementation, operating `setting.db` write, formula/global runtime hook, Kiwoom live/order/exit runtime, analyzer trading decision, external broker direct dependency.
+- Verification: py_compile passed; GUI sidecar read-only loader smoke passed; GUI sidecar persistence design audit passed; runtime activation gap audit passed; V3K smoke set passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB/sidecar artifact status stayed clean.
+- Next: Page 023 / `V3K-PHASE-E4` GUI sidecar write guard/rollback decision.
+
+Directive: Do not implement sidecar writes until Page 023 has fixed atomic write, backup, rollback, corruption recovery, no-DB-sync, and artifact handling invariants. Read-only loading is not approval for persistence writes.

@@ -19,6 +19,7 @@ from strategy.v3k_gui_sidecar import (  # noqa: E402
     V3K_GUI_SIDECAR_FILE,
     V3K_GUI_SIDECAR_REQUIRED_FIELDS,
     V3K_GUI_SIDECAR_SCHEMA_VERSION,
+    load_v3k_gui_sidecar_file,
     validate_v3k_gui_sidecar_payload,
 )
 
@@ -32,8 +33,10 @@ SIDECAR_REQUIRED_FIELDS = V3K_GUI_SIDECAR_REQUIRED_FIELDS
 REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_e1_gui_sidecar_persistence_design.md",
     "docs/update_log/2026-05-12_v3k_phase_e2_gui_sidecar_schema_validator.md",
+    "docs/update_log/2026-05-12_v3k_phase_e3_gui_sidecar_readonly_loader.md",
     "docs/plans/2026-05-12_v3k_page_020_phase_e1_gui_sidecar_persistence_design_plan.md",
     "docs/plans/2026-05-12_v3k_page_021_phase_e2_gui_sidecar_schema_validator_plan.md",
+    "docs/plans/2026-05-12_v3k_page_022_phase_e3_gui_sidecar_readonly_loader_plan.md",
 )
 
 FORBIDDEN_RUNTIME_WRITE_MARKERS = (
@@ -103,6 +106,15 @@ def _assert_default_off_and_corruption_fallback_contract() -> None:
     )
 
 
+def _assert_readonly_loader_contract() -> None:
+    missing = load_v3k_gui_sidecar_file(ROOT / "__missing_v3k_gui_sidecar__.json")
+    if missing.valid or not missing.all_off:
+        raise AssertionError("missing sidecar file must fall back to default-OFF")
+    if "sidecar file missing; default-OFF fallback" not in missing.diagnostics:
+        raise AssertionError(f"missing sidecar file diagnostic mismatch: {missing.diagnostics}")
+    print("v3k sidecar read-only loader contract ok")
+
+
 def _assert_runtime_preview_remains_session_only() -> None:
     preview = (ROOT / "ui" / "ui_v3k_settings_preview.py").read_text(
         encoding="utf-8",
@@ -156,6 +168,7 @@ def main() -> None:
     _assert_gitignore_contract()
     _assert_sidecar_schema_contract()
     _assert_default_off_and_corruption_fallback_contract()
+    _assert_readonly_loader_contract()
     _assert_runtime_preview_remains_session_only()
     _assert_no_runtime_sidecar_write_implementation()
     _assert_no_sidecar_or_db_artifacts_exist()

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Mapping
 
 from strategy.v3k_settings_surface import (
@@ -112,6 +113,24 @@ def validate_v3k_gui_sidecar_payload(
         source=source,
         diagnostics=diagnostics,
     )
+
+
+def load_v3k_gui_sidecar_file(
+    path: str | Path = V3K_GUI_SIDECAR_FILE,
+) -> V3KGuiSidecarValidationResult:
+    """Read a V3K GUI sidecar candidate file without creating or writing files."""
+
+    sidecar_path = Path(path)
+    try:
+        if not sidecar_path.is_file():
+            return _default_off_result("sidecar file missing; default-OFF fallback")
+        return validate_v3k_gui_sidecar_payload(sidecar_path.read_text(encoding="utf-8"))
+    except UnicodeDecodeError:
+        return _default_off_result("sidecar file unreadable; default-OFF fallback")
+    except OSError as exc:
+        return _default_off_result(
+            f"sidecar file read failed; default-OFF fallback: {exc.__class__.__name__}",
+        )
 
 
 def apply_v3k_sidecar_session_override(
