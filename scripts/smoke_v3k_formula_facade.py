@@ -123,10 +123,83 @@ def _assert_enabled_synthetic_outputs() -> None:
     print("formula/global facade ON synthetic globals ok")
 
 
+def _assert_dry_run_disabled_noop() -> None:
+    before = _artifact_status()
+    result = V3KFormulaGlobalFacade().dry_run(
+        V3KFormulaGlobalRequest(
+            analyzer_values={"risk": V3KAnalyzerOutput(risk_score=9.5)},
+        ),
+        existing={"기존공식": object()},
+    )
+    after = _artifact_status()
+
+    assert before == after, "dry-run OFF path must not create runtime artifacts"
+    assert not result.enabled
+    assert not result.ready
+    assert result.candidate_keys == ()
+    assert result.collisions == ()
+    assert result.globals_dict == {}
+    assert result.diagnostics == (
+        "formula/global facade disabled by V3K feature flags",
+    )
+    print("formula/global dry-run OFF no-op ok")
+
+
+def _assert_dry_run_ready_without_collision() -> None:
+    before = _artifact_status()
+    result = V3KFormulaGlobalFacade().dry_run(
+        V3KFormulaGlobalRequest(
+            feature_flags={
+                FLAG_FORMULA_GLOBAL_FACADE: True,
+                FLAG_STG_GLOBALS_FACADE: True,
+            },
+            analyzer_values={"risk": V3KAnalyzerOutput(risk_score=3.25)},
+        ),
+        existing=("기존공식", "매수"),
+    )
+    after = _artifact_status()
+
+    assert before == after, "dry-run ready path must not create runtime artifacts"
+    assert result.enabled
+    assert result.ready
+    assert result.collisions == ()
+    assert result.existing_keys == ("기존공식", "매수")
+    assert set(result.candidate_keys) == {
+        f"{V3K_FORMULA_GLOBAL_PREFIX}{name}" for name in V3K_ANALYZER_FORMULA_FIELDS
+    }
+    assert result.globals_dict[f"{V3K_FORMULA_GLOBAL_PREFIX}리스크점수"]() == 3.25
+    assert result.diagnostics[-1] == "formula/global dry-run ready"
+    print("formula/global dry-run ready no-collision ok")
+
+
+def _assert_dry_run_collision_blocks_ready() -> None:
+    collision_key = f"{V3K_FORMULA_GLOBAL_PREFIX}{V3K_ANALYZER_FORMULA_FIELDS[0]}"
+    result = V3KFormulaGlobalFacade(
+        feature_flags={
+            FLAG_FORMULA_GLOBAL_FACADE: True,
+            FLAG_STG_GLOBALS_FACADE: True,
+        },
+    ).dry_run(
+        V3KFormulaGlobalRequest(),
+        existing={collision_key: object()},
+    )
+
+    assert result.enabled
+    assert not result.ready
+    assert result.collisions == (collision_key,)
+    assert result.candidate_keys
+    assert result.globals_dict[collision_key]() == 0.0
+    assert result.diagnostics[-1] == f"formula/global dry-run collision: {collision_key}"
+    print("formula/global dry-run collision blocks ready ok")
+
+
 def main() -> None:
     _assert_default_off_noop()
     _assert_enabled_empty_defaults()
     _assert_enabled_synthetic_outputs()
+    _assert_dry_run_disabled_noop()
+    _assert_dry_run_ready_without_collision()
+    _assert_dry_run_collision_blocks_ready()
     print("v3k formula/global facade smoke passed")
 
 

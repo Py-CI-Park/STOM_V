@@ -836,3 +836,23 @@ Directive: Treat C2 as closed. Do not reopen GUI persistence unless a dedicated 
 - Next: Page 017 / `V3K-PHASE-D1` formula/global dry-run adapter.
 
 Directive: Do not connect V3K formula globals to `globals().update` directly. The next safe step is a dry-run adapter that returns candidate keys and collision diagnostics without mutating runtime globals.
+## V3K-PHASE-D1: formula/global dry-run adapter
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_d1_formula_global_dryrun_adapter.md`
+  - `docs/plans/2026-05-12_v3k_page_017_phase_d1_formula_global_dryrun_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_018_phase_d2_formula_runtime_hook_decision_plan.md`
+- Modified:
+  - `strategy/v3k_formula_facade.py`
+  - `scripts/smoke_v3k_formula_facade.py`
+  - `scripts/smoke_v3k_formula_boundary_contract.py`
+- Decision: Add `V3KFormulaGlobalFacade.dry_run()` as a side-effect-free adapter that returns candidate keys, collisions, diagnostics, and candidate globals without mutating runtime globals.
+- Decision: Keep `FormulaManager.UpdateGlobalsFunc`, `trade/base_strategy.py`, and any live Kiwoom order/exit runtime untouched in Phase D-1.
+- Decision: Treat collisions as not-ready state. Future hook work must require `result.ready` and feature flags default-OFF must remain unchanged.
+- Excluded: `globals().update` runtime hook, runtime file guard relaxation, Kiwoom live/order/exit runtime, analyzer trading decision, operating `setting.db` write, sidecar write, LS Securities direct dependency.
+- Verification: py_compile passed; formula boundary contract smoke passed; formula facade smoke passed; dry-run OFF no-op/ready/collision smokes passed; GUI preview smoke passed; settings-surface smoke passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
+- Next: Page 018 / `V3K-PHASE-D2` formula/global guarded runtime hook decision.
+
+Directive: Do not call `globals().update` from the V3K facade. If a future hook is approved, it must consume the dry-run `ready`/`collisions` contract and preserve default-OFF rollback behavior.

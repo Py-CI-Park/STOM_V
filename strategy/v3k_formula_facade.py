@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -63,6 +64,29 @@ class V3KFormulaGlobalResult:
     @property
     def has_globals(self) -> bool:
         return bool(self.globals_dict)
+
+
+@dataclass(frozen=True)
+class V3KFormulaGlobalDryRunResult:
+    """Collision-aware preview for future formula/global runtime injection."""
+
+    formula_result: V3KFormulaGlobalResult
+    existing_keys: tuple[str, ...] = ()
+    candidate_keys: tuple[str, ...] = ()
+    collisions: tuple[str, ...] = ()
+    diagnostics: tuple[str, ...] = ()
+
+    @property
+    def enabled(self) -> bool:
+        return self.formula_result.has_globals
+
+    @property
+    def ready(self) -> bool:
+        return self.enabled and not self.collisions
+
+    @property
+    def globals_dict(self) -> dict[str, Any]:
+        return self.formula_result.globals_dict
 
 
 class V3KFormulaGlobalFacade:
@@ -180,4 +204,42 @@ class V3KFormulaGlobalFacade:
             values=values,
             globals_dict=globals_dict,
             diagnostics=("formula/global facade dry-run built",) + diagnostics,
+        )
+
+    @staticmethod
+    def normalize_existing_keys(
+        existing: Iterable[str] | Mapping[str, Any] | None = None,
+    ) -> tuple[str, ...]:
+        if existing is None:
+            return ()
+        if isinstance(existing, Mapping):
+            keys = existing.keys()
+        else:
+            keys = existing
+        return tuple(sorted({key for key in keys if isinstance(key, str)}))
+
+    def dry_run(
+        self,
+        request: V3KFormulaGlobalRequest,
+        existing: Iterable[str] | Mapping[str, Any] | None = None,
+    ) -> V3KFormulaGlobalDryRunResult:
+        formula_result = self.build(request)
+        existing_keys = self.normalize_existing_keys(existing)
+        candidate_keys = tuple(sorted(formula_result.globals_dict))
+        collisions = tuple(sorted(set(existing_keys) & set(candidate_keys)))
+
+        diagnostics = list(formula_result.diagnostics)
+        if collisions:
+            diagnostics.append(
+                "formula/global dry-run collision: " + ", ".join(collisions),
+            )
+        elif formula_result.has_globals:
+            diagnostics.append("formula/global dry-run ready")
+
+        return V3KFormulaGlobalDryRunResult(
+            formula_result=formula_result,
+            existing_keys=existing_keys,
+            candidate_keys=candidate_keys,
+            collisions=collisions,
+            diagnostics=tuple(diagnostics),
         )

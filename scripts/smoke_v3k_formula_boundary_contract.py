@@ -86,6 +86,8 @@ def _assert_v3k_facade_has_no_runtime_injection() -> None:
                 runtime_hits.append("globals().update call")
             elif isinstance(func, ast.Name) and func.id == "FormulaManager":
                 runtime_hits.append("FormulaManager call")
+            elif isinstance(func, ast.Name) and func.id == "globals":
+                runtime_hits.append("globals() call")
 
     assert not runtime_hits, (
         "V3K facade must remain side-effect-free; "
@@ -151,6 +153,27 @@ def _assert_default_off_has_no_globals() -> None:
     print("v3k formula default-OFF no globals ok")
 
 
+def _assert_dry_run_adapter_is_collision_only() -> None:
+    collision_key = f"{V3K_FORMULA_GLOBAL_PREFIX}{V3K_ANALYZER_FORMULA_FIELDS[0]}"
+    result = V3KFormulaGlobalFacade(
+        feature_flags={
+            FLAG_FORMULA_GLOBAL_FACADE: True,
+            FLAG_STG_GLOBALS_FACADE: True,
+        },
+    ).dry_run(
+        V3KFormulaGlobalRequest(),
+        existing=(collision_key,),
+    )
+
+    assert result.enabled
+    assert not result.ready
+    assert result.collisions == (collision_key,)
+    assert result.candidate_keys
+    assert result.globals_dict[collision_key]() == 0.0
+    assert result.diagnostics[-1] == f"formula/global dry-run collision: {collision_key}"
+    print("v3k formula dry-run adapter collision-only ok")
+
+
 def main() -> None:
     before = _artifact_status()
     _assert_runtime_update_boundary_is_unchanged()
@@ -158,6 +181,7 @@ def main() -> None:
     _assert_trade_runtime_has_no_v3k_imports_yet()
     _assert_v3k_global_names_are_prefixed_and_non_colliding()
     _assert_default_off_has_no_globals()
+    _assert_dry_run_adapter_is_collision_only()
     after = _artifact_status()
     assert before == after, f"runtime artifact status changed: before={before!r} after={after!r}"
     print("v3k formula boundary contract smoke passed")
