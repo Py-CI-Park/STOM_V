@@ -892,3 +892,23 @@ Directive: Do not treat dry-run readiness as approval for live global namespace 
 - Next: Page 020 / `V3K-PHASE-E1` GUI sidecar persistence design.
 
 Directive: Do not jump from this decision directly to sidecar writes. First complete the Page 020 persistence design contract and prove default-OFF/corruption-recovery behavior with smoke coverage.
+## V3K-PHASE-E1: GUI sidecar persistence design
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_e1_gui_sidecar_persistence_design.md`
+  - `docs/plans/2026-05-12_v3k_page_020_phase_e1_gui_sidecar_persistence_design_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_021_phase_e2_gui_sidecar_schema_validator_plan.md`
+- Modified:
+  - `.gitignore`
+  - `scripts/audit_v3k_gui_sidecar_persistence_design.py`
+- Decision: Use `_v3k_sidecar/` as the ignored V3K GUI settings sidecar root and `_v3k_sidecar/v3k_gui_settings.json` as the future settings file candidate.
+- Decision: Keep Page 020 as design-only. Do not create sidecar files or implement writes yet.
+- Decision: Sidecar schema v1 requires `schema_version`, `surface_version`, `settings`, `updated_at`, and `source`; corrupt/missing/unknown schema must fall back to default-OFF without overwrite.
+- Decision: Current V3K GUI preview remains session-only. Future sidecar load should be lower priority than current session preview overrides.
+- Excluded: sidecar write implementation, operating `setting.db` write, formula/global runtime hook, Kiwoom live/order/exit runtime, analyzer trading decision, LS Securities direct dependency.
+- Verification: py_compile passed; GUI sidecar persistence design audit passed; runtime activation gap audit passed; V3K smoke set passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB/sidecar artifact status stayed clean.
+- Next: Page 021 / `V3K-PHASE-E2` GUI sidecar schema validator.
+
+Directive: Do not implement sidecar writes before the schema validator proves valid/corrupt/default-OFF behavior without creating runtime artifacts.
