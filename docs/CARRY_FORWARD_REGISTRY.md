@@ -687,3 +687,21 @@ Directive: Do not wire V3K flags into persistent setting DB writes or GUI wrappe
 - Next: `V3K-PHASE-C2-1` no-GUI wrapper adapter smoke. Do not persist V3K flags to `setting.db` or add GUI widgets in the first C2 implementation commit.
 
 Directive: Treat Page 011 completion as completion of the initial planning sequence only, not as full V3K production activation. Continue from Page 012 with narrow, default-OFF, no-GUI evidence before touching real GUI wrappers.
+
+## V3K-PHASE-C2-1: no-GUI GUI-wrapper adapter smoke
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `ui/ui_v3k_settings_bridge.py`
+  - `scripts/smoke_v3k_gui_wrapper_bridge.py`
+  - `docs/update_log/2026-05-12_v3k_phase_c2_1_gui_wrapper_bridge.md`
+  - `docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md`
+- Decision: C2 starts with a no-GUI/no-DB wrapper adapter helper, not with real GUI checkbox/layout or persistent setting DB writes.
+- Decision: `attach_v3k_gui_settings_bridge()` attaches normalized `v3k_settings`, `v3k_feature_flags`, diagnostics, version, and a bridged dict copy to a MainWindow-like object while preserving default-OFF semantics.
+- Decision: Existing `dict_set` is not replaced unless `replace_dict_set=True` is explicitly requested; even then, only an in-memory copy is assigned.
+- Verification: py_compile passed; `smoke_v3k_gui_wrapper_bridge.py` passed; existing GUI/settings bridge and V3K smoke suite passed; VERIFY-1A/1B passed; nonrelease sync passed; DB artifact status stayed clean.
+- Excluded: actual `ui/ui_mainwindow.py` runtime wiring, PyQt widget/checkbox exposure, operational `_database/setting.db` schema/write changes, shadow DB rows, Kiwoom live/order/exit runtime, formula globals runtime hook, analyzer output trading decision, LS Securities direct dependency.
+- Next: `V3K-PHASE-C2-2` MainWindow in-memory helper integration. Do not add GUI widgets or persistent DB writes in C2-2.
+
+Directive: Keep C2-1 helper as the narrow bridge contract. Future MainWindow integration should call this helper or preserve the same no-GUI/no-DB/default-OFF behavior.

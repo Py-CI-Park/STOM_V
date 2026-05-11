@@ -115,6 +115,20 @@ C2-1은 “실제 GUI 표시”가 아니라 “GUI wrapper가 안전하게 들�
 
 ---
 
+## 5.1 C2-1 구현 결과
+
+2026-05-12 KST 기준 C2-1 no-GUI wrapper adapter smoke를 완료했다.
+
+| 산출물 | 내용 |
+| --- | --- |
+| `ui/ui_v3k_settings_bridge.py` | `attach_v3k_gui_settings_bridge()` helper. PyQt/DB/subprocess/globals runtime 의존성 없이 MainWindow-like object에 V3K settings/feature_flags를 부착한다. |
+| `scripts/smoke_v3k_gui_wrapper_bridge.py` | FakeMainWindow 기반 no-GUI smoke. default-OFF, source mutation 없음, explicit in-memory dict replacement, diagnostics, missing dict_set object, artifact 불변성을 검증한다. |
+| `docs/update_log/2026-05-12_v3k_phase_c2_1_gui_wrapper_bridge.md` | C2-1 구현 기록과 보류 항목 기록. |
+
+C2-1은 실제 `ui/ui_mainwindow.py`를 아직 변경하지 않는다. 즉, “wrapper가 안전하게 보유할 수 있는 state contract”를 먼저 증명한 단계다. 실제 MainWindow 연결은 C2-2에서 별도 검토/구현한다.
+
+---
+
 ## 6. 검증 계획
 
 문서-only C2-0 검증:
@@ -187,13 +201,13 @@ Page 012 현재 상태:
 | Step | 이름 | 상태 | 진행률 |
 | ---: | --- | --- | ---: |
 | 012-1 | C2 wrapper inventory/plan | 완료 | 100% |
-| 012-2 | C2-1 no-GUI wrapper adapter smoke | 대기 | 0% |
+| 012-2 | C2-1 no-GUI wrapper adapter smoke | 완료 | 100% |
 | 012-3 | C2-2 MainWindow in-memory helper 검토 | 대기 | 0% |
 | 012-4 | C2-3 GUI checkbox/layout 검토 | 대기 | 0% |
 | 012-5 | C2 persistent 설정 저장 여부 재판단 | 대기 | 0% |
 
 ```text
-Page 012: [██░░░░░░░░] 1 / 5 steps = 20%
+Page 012: [████░░░░░░] 2 / 5 steps = 40%
 ```
 
 ---
@@ -201,7 +215,7 @@ Page 012: [██░░░░░░░░] 1 / 5 steps = 20%
 ## 9. 다음 추천 OMX 명령
 
 ```powershell
-omx ralph "force: V3K Page 012 Phase C2-1 no-GUI GUI-wrapper adapter smoke를 구현한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md를 기준으로 실제 PyQt widget, 운영 _database/setting.db schema/write, _database_v3k_shadow row, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. Phase C1의 bridge_v3k_settings_into_dict_set을 재사용하여 Fake/MainWindow-like object가 V3K settings와 feature_flags를 default-OFF로 안전 보유하는 no-GUI helper와 smoke를 추가한다. 완료 시 py_compile, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, Phase B read-only smoke, 기존 V3K smoke suite, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync를 통과시키고 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록 후 한국어 Lore commit한다."
+omx ralph "force: V3K Page 012 Phase C2-2 MainWindow in-memory helper integration을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md와 ui/ui_v3k_settings_bridge.py, scripts/smoke_v3k_gui_wrapper_bridge.py를 기준으로 실제 MainWindow/pyd-free wrapper가 V3K settings와 feature_flags를 default-OFF in-memory state로 안전 보유할 수 있는 최소 변경을 검토하고, 가능하면 구현한다. 실제 PyQt widget/checkbox 추가, 운영 _database/setting.db schema/write, _database_v3k_shadow row, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 완료 시 py_compile, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, Phase B read-only smoke, 기존 V3K smoke suite, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync를 통과시키고 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록 후 한국어 Lore commit한다."
 ```
 
 현재 Codex 환경에서 `omx ralph`가 `stdin is not a terminal`로 실패하면, 같은 프롬프트를 현재 세션에서 직접 이어서 수행한다.
