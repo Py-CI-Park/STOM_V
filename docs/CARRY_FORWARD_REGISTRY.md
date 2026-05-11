@@ -743,3 +743,20 @@ Directive: Treat `v3k_settings`/`v3k_feature_flags` on MainWindow as inert defau
 - Next: `V3K-PHASE-C2-4` persistent settings storage decision before any real widget commit.
 
 Directive: Do not add V3K checkboxes to existing settings groupBoxes until persistent policy, layout target, wrapper alias impact, and GUI smoke strategy are documented.
+
+## V3K-PHASE-C2-4: persistent settings storage decision
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_c2_4_persistent_storage_decision.md`
+  - `docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_013_session_only_ui_preview_plan.md`
+- Decision: The next UI implementation boundary is session-only V3K UI preview. Do not persist V3K GUI settings yet.
+- Decision: Sidecar settings storage remains the preferred persistence candidate before any operating `setting.db` migration, but it requires a separate file/path/ignore/backup/corruption policy phase.
+- Decision: Operating `_database/setting.db` schema/write migration is excluded until a dedicated DB migration/cutover/rollback plan exists.
+- Verification: py_compile passed; wrapper/settings smokes passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
+- Excluded: PyQt checkbox/widget changes, sidecar file/DB writes, operating `setting.db` writes, shadow DB rows, Kiwoom live/order/exit runtime, formula globals runtime hook, analyzer output trading decision, LS Securities direct dependency.
+- Next: Page 013 / `V3K-PHASE-C2-5` session-only V3K UI preview skeleton. No persistence in that phase.
+
+Directive: Treat Page 012 as complete. The next UI step may add a preview skeleton only if it remains session-only and does not create or mutate any persistent settings artifact.

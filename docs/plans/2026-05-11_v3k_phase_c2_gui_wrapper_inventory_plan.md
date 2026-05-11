@@ -1,9 +1,9 @@
 # V3K Page 012 — Phase C2 GUI wrapper inventory/plan
 
-작성일: 2026-05-11 KST  
-대상 worktree: `C:/System_Trading/STOM/STOM_V.wt-dev`  
-대상 branch: `STOM_Version_2U_C`  
-기준 commit: `88335424 V3K Phase C1에서 설정 bridge를 default-OFF로 고정한다`  
+작성일: 2026-05-11 KST
+대상 worktree: `C:/System_Trading/STOM/STOM_V.wt-dev`
+대상 branch: `STOM_Version_2U_C`
+기준 commit: `88335424 V3K Phase C1에서 설정 bridge를 default-OFF로 고정한다`
 연결 문서:
 - `docs/plans/2026-05-11_v3k_phase_c_activation_boundary_plan.md`
 - `docs/update_log/2026-05-11_v3k_phase_c1_gui_settings_bridge.md`
@@ -160,6 +160,20 @@ C2-3에서는 실제 widget을 추가하지 않았다. 다음 단계는 C2-4 per
 
 ---
 
+## 5.4 C2-4 persistent 저장 결정
+
+2026-05-12 KST 기준 C2-4 persistent 설정 저장 여부 재판단을 완료했다.
+
+| 선택지 | 판단 |
+| --- | --- |
+| session-only | **다음 구현 경계로 선택**. 운영 DB와 sidecar 파일을 만들지 않고 UI preview를 가장 작게 시작한다. |
+| sidecar 설정 저장소 | 운영 `setting.db`보다 안전한 장기 후보지만 파일 위치/ignore/backup/동기화 정책이 필요하므로 보류한다. |
+| 운영 `_database/setting.db` migration | 기존 설정 DB schema/write와 설정 파일 복사/적용 흐름을 바꾸므로 현재 제외한다. |
+
+Page 012는 이 결정으로 완료한다. 다음은 Page 013 session-only V3K UI preview skeleton이다.
+
+---
+
 ## 6. 검증 계획
 
 문서-only C2-0 검증:
@@ -235,10 +249,10 @@ Page 012 현재 상태:
 | 012-2 | C2-1 no-GUI wrapper adapter smoke | 완료 | 100% |
 | 012-3 | C2-2 MainWindow in-memory helper 검토 | 완료 | 100% |
 | 012-4 | C2-3 GUI checkbox/layout 검토 | 완료 | 100% |
-| 012-5 | C2 persistent 설정 저장 여부 재판단 | 대기 | 0% |
+| 012-5 | C2 persistent 설정 저장 여부 재판단 | 완료 | 100% |
 
 ```text
-Page 012: [████████░░] 4 / 5 steps = 80%
+Page 012: [██████████] 5 / 5 steps = 100%
 ```
 
 ---
@@ -246,7 +260,9 @@ Page 012: [████████░░] 4 / 5 steps = 80%
 ## 9. 다음 추천 OMX 명령
 
 ```powershell
-omx ralph "force: V3K Page 012 Phase C2-4 persistent 설정 저장 여부 재판단을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_3_gui_checkbox_layout_feasibility.md를 기준으로 V3K GUI settings를 session-only로 둘지, sidecar 설정 저장소를 설계할지, 운영 _database/setting.db schema/write migration으로 갈지 비교하고 가장 안전한 다음 경계를 결정한다. 아직 실제 PyQt widget/checkbox 추가, 운영 _database/setting.db schema/write, _database_v3k_shadow row, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 결과는 docs/plans 또는 docs/update_log에 기록하고, py_compile, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시킨 뒤 한국어 Lore commit한다."
+omx ralph "force: V3K Page 013 Phase C2-5 session-only V3K UI preview skeleton을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_013_session_only_ui_preview_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_4_persistent_storage_decision.md를 기준으로, 운영 _database/setting.db schema/write와 sidecar 파일 write 없이 MainWindow의 v3k_settings/v3k_feature_flags inert state를 표시하거나 session-only로 토글할 수 있는 가장 작은 별도 V3K 탭 또는 dialog skeleton을 검토하고 가능하면 구현한다. Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 완료 시 py_compile, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, verify_pyd_gui_contract.py, 가능한 경우 smoke_offline_gui.py, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록 후 한국어 Lore commit한다."
 ```
 
 현재 Codex 환경에서 `omx ralph`가 `stdin is not a terminal`로 실패하면, 같은 프롬프트를 현재 세션에서 직접 이어서 수행한다.
+
+연결된 다음 페이지 계획: `docs/plans/2026-05-12_v3k_page_013_session_only_ui_preview_plan.md`
