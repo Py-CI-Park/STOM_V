@@ -670,3 +670,20 @@ Directive: Keep production learning DB reads and live trading consumption behind
 - Next: Re-select the next activation boundary. The safest next candidate is Phase C2 GUI wrapper inventory/plan before any actual wrapper mutation.
 
 Directive: Do not wire V3K flags into persistent setting DB writes or GUI wrappers without a Phase C2 plan and GUI/wrapper smoke evidence. Keep all V3K flags default-OFF by default.
+
+## V3K-PHASE-C2-PLAN: GUI wrapper inventory/plan
+
+- Date: 2026-05-11 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md`
+  - `docs/update_log/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_selection.md`
+  - `docs/plans/2026-05-11_v3k_phase_c_activation_boundary_plan.md`
+- Decision: After Phase C1, the next activation boundary is Phase C2 GUI wrapper inventory/plan. This closes Page 011 and opens Page 012.
+- Decision: Phase C2 must not start with real checkbox/layout or persistent setting DB writes. The first executable step is a no-GUI wrapper adapter smoke that proves a MainWindow-like object can hold V3K settings/feature flags default-OFF.
+- Decision: `ui/set_setup_tap.py`, `ui/ui_mainwindow.py`, `ui/ui_button_clicked_settings.py`, `utility/setting.py`, and `utility/setting_user.py` are known risk boundaries. They must not be changed without C2 smoke evidence and rollback notes.
+- Verification: Read-only wrapper inventory completed; Page 011 progress updated to 5/5; audit_v3k_verify_1a, audit_v3k_verify_1b_closure, verify_nonrelease_sync, diff check, and DB artifact status were run before commit.
+- Excluded: operational `_database/` changes, settings DB schema/write migration, real PyQt widget exposure, Kiwoom receiver/order/strategy/live runtime changes, formula globals runtime hook, analyzer output use in trading decisions, LS Securities direct dependency.
+- Next: `V3K-PHASE-C2-1` no-GUI wrapper adapter smoke. Do not persist V3K flags to `setting.db` or add GUI widgets in the first C2 implementation commit.
+
+Directive: Treat Page 011 completion as completion of the initial planning sequence only, not as full V3K production activation. Continue from Page 012 with narrow, default-OFF, no-GUI evidence before touching real GUI wrappers.

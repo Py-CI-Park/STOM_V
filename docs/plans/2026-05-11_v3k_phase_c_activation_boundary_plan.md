@@ -223,7 +223,7 @@ python scripts/smoke_offline_gui.py
 
 ## 9. Page 011 진행률
 
-Page 011은 “Phase C-G 활성화 경계 선택 및 첫 활성화 phase 준비” 페이지다.
+Page 011은 “Phase C-G 활성화 경계 선택 및 첫 활성화 phase 준비” 페이지다. Phase C1 구현이 완료되었고, 마지막 단계인 “다음 경계 재선택”은 Phase C2 GUI wrapper inventory/plan으로 확정되었다.
 
 | Step | 이름 | 상태 | 진행률 |
 | ---: | --- | --- | ---: |
@@ -231,28 +231,35 @@ Page 011은 “Phase C-G 활성화 경계 선택 및 첫 활성화 phase 준비�
 | 011-2 | Phase C1 상세 inventory | 완료 | 100% |
 | 011-3 | Phase C1 GUI/settings bridge 구현 | 완료 | 100% |
 | 011-4 | Phase C1 회귀/audit/문서화 | 완료 | 100% |
-| 011-5 | Phase D/E/F/G 중 다음 경계 재선택 | 대기 | 0% |
+| 011-5 | Phase D/E/F/G 중 다음 경계 재선택 | 완료 — Phase C2 선택 | 100% |
 
 Page 011 내부 진행률:
 
 ```text
-[████████░░] 4 / 5 steps = 80%
+[██████████] 5 / 5 steps = 100%
 ```
 
-전체 11페이지 기준 진행률:
+초기 전체 11페이지 기준 진행률:
 
 ```text
-[███████████] 10.8 / 11 pages = 약 98.2%
+[███████████] 11 / 11 pages = 100%
 ```
+
+주의: 위 100%는 “초기 11페이지 계획”의 완료를 의미한다. V3K의 생산 활성화 전체가 완료되었다는 뜻은 아니다. 이후 작업은 Page 012 Phase C2부터 별도 페이지로 이어진다.
 
 ---
 
-## 10. 다음 실행 추천 명령
+## 10. Page 012 전환 및 다음 실행 추천 명령
 
-이 계획이 commit된 뒤 다음 구현 단계는 Phase C1이다.
+다음 구현 단계는 Phase C2-1이다. 실제 GUI checkbox 또는 persistent DB 저장이 아니라, no-GUI wrapper adapter smoke를 먼저 만든다.
+
+연결 문서:
+
+- `docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md`
+- `docs/update_log/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_selection.md`
 
 ```powershell
-omx ralph "force: V3K Phase C1 GUI/settings default-OFF bridge를 docs/plans/2026-05-11_v3k_phase_c_activation_boundary_plan.md에 따라 구현한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. 먼저 설정 저장/로드 및 MainWindow/pyd-free wrapper 경계를 inventory하고, 가능한 경우 no-GUI settings bridge smoke를 추가한다. 모든 V3K flag는 default-OFF로 유지하고 운영 _database, 실제 _database_v3k_shadow row, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 완료 시 settings smoke, Phase B read-only smoke, V3K smoke suite, VERIFY-1A/1B, verify_nonrelease_sync를 통과시키고 update_log/registry에 기록 후 commit한다."
+omx ralph "force: V3K Page 012 Phase C2-1 no-GUI GUI-wrapper adapter smoke를 구현한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-11_v3k_phase_c2_gui_wrapper_inventory_plan.md를 기준으로 실제 PyQt widget, 운영 _database/setting.db schema/write, _database_v3k_shadow row, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. Phase C1의 bridge_v3k_settings_into_dict_set을 재사용하여 Fake/MainWindow-like object가 V3K settings와 feature_flags를 default-OFF로 안전 보유하는 no-GUI helper와 smoke를 추가한다. 완료 시 py_compile, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, Phase B read-only smoke, 기존 V3K smoke suite, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync를 통과시키고 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록 후 한국어 Lore commit한다."
 ```
 
 현재 환경에서 `omx ralph`가 `stdin is not a terminal`로 실패하면, 동일 프롬프트를 현재 Codex 세션에서 직접 실행한다.
