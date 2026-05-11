@@ -874,3 +874,21 @@ Directive: Do not call `globals().update` from the V3K facade. If a future hook 
 - Next: Page 019 / `V3K-PHASE-E0` runtime activation gap review.
 
 Directive: Do not treat dry-run readiness as approval for live global namespace mutation. Future runtime hook work must first update the guardrail plan and prove rollback with dedicated smoke/audit coverage.
+## V3K-PHASE-E0: runtime activation gap review
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_e0_runtime_activation_gap_review.md`
+  - `docs/plans/2026-05-12_v3k_page_019_phase_e0_runtime_activation_gap_review_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_020_phase_e1_gui_sidecar_persistence_design_plan.md`
+- Modified:
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: Select `GUI setting persistence sidecar design` as the next runtime activation candidate.
+- Decision: Keep formula/global runtime hook, analyzer DB runtime constructor use, live order/exit rule consumption, production learning DB read, and DB cutover/migration deferred.
+- Decision: Page 020 is a sidecar persistence design page only. It must not write a sidecar file or operating `setting.db` before path, ignore, backup, corruption recovery, schema version, default-OFF rollback, and smoke policy are documented.
+- Excluded: sidecar write implementation, operating `setting.db` write, formula/global runtime hook, Kiwoom live/order/exit runtime, analyzer trading decision, LS Securities direct dependency.
+- Verification: py_compile passed; runtime activation gap audit passed; V3K smoke set passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
+- Next: Page 020 / `V3K-PHASE-E1` GUI sidecar persistence design.
+
+Directive: Do not jump from this decision directly to sidecar writes. First complete the Page 020 persistence design contract and prove default-OFF/corruption-recovery behavior with smoke coverage.
