@@ -800,3 +800,20 @@ Directive: Do not persist V3K GUI preview state. Any future visible launcher mus
 - Next: Page 015 / `V3K-PHASE-C2-7` GUI preview closeout and sidecar persistence decision.
 
 Directive: Keep `Alt+V` as a session-only preview launcher. Do not reinterpret it as persisted feature activation without a separate sidecar or DB migration decision.
+
+## V3K-PHASE-C2-7: GUI preview closeout and sidecar persistence decision
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_c2_7_gui_preview_closeout.md`
+  - `docs/plans/2026-05-12_v3k_page_015_gui_preview_closeout_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_016_phase_d_formula_global_boundary_plan.md`
+- Decision: Close C2 GUI activation lane as complete with session-only preview + `Alt+V` launcher.
+- Decision: Defer sidecar persistence. It remains a future option only after file path, ignore, backup, corruption recovery, and `setting_*.db` synchronization policy are written.
+- Decision: Keep operating `_database/setting.db` migration prohibited.
+- Next: Page 016 / Phase D-0 formula/global runtime boundary design.
+- Excluded: sidecar file/DB write, operating `setting.db` write, shadow DB rows, `globals().update` runtime hook, Kiwoom live/order/exit runtime, analyzer trading decision, LS Securities direct dependency.
+- Verification: py_compile passed; V3K GUI preview/wrapper/settings/settings-surface smokes passed; formula facade smoke passed; offline GUI smoke passed; pyd GUI contract passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB artifact status stayed clean.
+
+Directive: Treat C2 as closed. Do not reopen GUI persistence unless a dedicated sidecar/DB migration plan is created; next work should start from Phase D-0 design, not runtime injection.

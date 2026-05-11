@@ -64,10 +64,20 @@ Page 015의 목적은 C2 GUI preview를 어디에서 닫을지 결정하는 것�
 | 015-4 | registry/update_log 정리 | C2 closeout/보류 사유/다음 경계 기록 |
 | 015-5 | full regression | C2 smoke + pyd/offline/nonrelease/audit + DB artifact status 통과 |
 
+2026-05-12 C2-7 판단 결과:
+
+| Step | 결과 |
+| ---: | --- |
+| 015-1 | C2 목표 대비 현재 구현을 점검했다. settings bridge, MainWindow inert state, session-only preview dialog, `Alt+V` visible launcher, preview smoke가 모두 존재한다. |
+| 015-2 | sidecar persistence는 지금 설계/구현하지 않기로 했다. 이유는 file path, ignore, backup, corruption, 기존 `setting_*.db` 복사 흐름과의 동기화 정책이 아직 없기 때문이다. |
+| 015-3 | 다음 phase는 Phase D formula/global runtime boundary **계획**으로 선택했다. 단, 최초 Page 016은 runtime hook 구현이 아니라 충돌/경계 설계다. |
+| 015-4 | C2 closeout과 sidecar 보류 사유를 update_log와 registry에 기록한다. |
+| 015-5 | full regression을 통과한 뒤 C2를 session-only GUI activation lane으로 닫는다. |
+
 현재 진행률:
 
 ```text
-Page 015: [░░░░░░░░░░] 0 / 5 = 0%
+Page 015: [██████████] 5 / 5 = 100%
 ```
 
 ---
@@ -75,5 +85,5 @@ Page 015: [░░░░░░░░░░] 0 / 5 = 0%
 ## 5. 추천 OMX 명령
 
 ```powershell
-omx ralph "force: V3K Page 015 Phase C2-7 V3K GUI preview closeout and sidecar persistence decision을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_015_gui_preview_closeout_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_6_preview_launcher_exposure.md를 기준으로 session-only V3K preview가 충분한지, 다음에 sidecar persistence 설계를 시작할지, 아니면 GUI는 session-only로 닫고 Phase D formula/analyzer runtime boundary로 넘어갈지 재판단한다. 운영 _database/setting.db schema/write, sidecar 파일 write, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 결과를 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록하고 필요한 경우 다음 page 계획을 추가한 뒤 py_compile, smoke_v3k_gui_settings_preview, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, verify_pyd_gui_contract.py, smoke_offline_gui.py, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 한국어 Lore commit한다."
+omx ralph "force: V3K Page 016 Phase D-0 formula/global runtime boundary design을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_016_phase_d_formula_global_boundary_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_7_gui_preview_closeout.md를 기준으로 trade/formula_manager.py의 UpdateGlobalsFunc, trade/base_strategy.py의 formula function 생성, strategy/v3k_formula_facade.py의 V3K_ prefixed globals facade 사이 충돌/주입 경계를 설계한다. 첫 단계에서는 globals().update runtime hook, Kiwoom 주문/청산/live runtime, analyzer output trading decision, 운영 _database/setting.db schema/write, sidecar 파일 write, LS Securities 직접 의존성을 변경하지 않는다. 결과를 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록하고 필요한 경우 source-level collision smoke 계획을 추가한 뒤 py_compile, smoke_v3k_formula_facade.py, smoke_v3k_gui_settings_preview, smoke_v3k_settings_surface, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 한국어 Lore commit한다."
 ```

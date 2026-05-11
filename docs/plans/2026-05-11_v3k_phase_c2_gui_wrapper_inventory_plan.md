@@ -204,6 +204,21 @@ Page 012는 이 결정으로 완료한다. 다음은 Page 013 session-only V3K U
 
 ---
 
+## 5.7 C2-7 GUI preview closeout
+
+2026-05-12 KST 기준 Page 015 / C2-7을 완료했다.
+
+| 항목 | 결과 |
+| --- | --- |
+| C2 closeout | session-only preview dialog + `Alt+V` launcher로 C2 GUI activation lane을 완료 처리 |
+| sidecar persistence | 보류. file/path/ignore/backup/corruption/동기화 정책 page 전까지 구현하지 않음 |
+| operating `setting.db` | 계속 금지 |
+| 다음 phase | Page 016 / Phase D-0 formula/global runtime boundary design |
+
+C2는 닫혔다. 다음 작업은 GUI persistence가 아니라 Phase D 설계에서 시작한다.
+
+---
+
 ## 6. 검증 계획
 
 문서-only C2-0 검증:
@@ -290,9 +305,9 @@ Page 012: [██████████] 5 / 5 steps = 100%
 ## 9. 다음 추천 OMX 명령
 
 ```powershell
-omx ralph "force: V3K Page 015 Phase C2-7 V3K GUI preview closeout and sidecar persistence decision을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_015_gui_preview_closeout_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_6_preview_launcher_exposure.md를 기준으로 session-only V3K preview가 충분한지, 다음에 sidecar persistence 설계를 시작할지, 아니면 GUI는 session-only로 닫고 Phase D formula/analyzer runtime boundary로 넘어갈지 재판단한다. 운영 _database/setting.db schema/write, sidecar 파일 write, Kiwoom 주문/청산/live runtime, formula globals runtime hook, analyzer output trading decision, LS Securities 직접 의존성은 변경하지 않는다. 결과를 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록하고 필요한 경우 다음 page 계획을 추가한 뒤 py_compile, smoke_v3k_gui_settings_preview, smoke_v3k_gui_wrapper_bridge, smoke_v3k_gui_settings_bridge, smoke_v3k_settings_surface, verify_pyd_gui_contract.py, smoke_offline_gui.py, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 한국어 Lore commit한다."
+omx ralph "force: V3K Page 016 Phase D-0 formula/global runtime boundary design을 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_016_phase_d_formula_global_boundary_plan.md와 docs/update_log/2026-05-12_v3k_phase_c2_7_gui_preview_closeout.md를 기준으로 trade/formula_manager.py의 UpdateGlobalsFunc, trade/base_strategy.py의 formula function 생성, strategy/v3k_formula_facade.py의 V3K_ prefixed globals facade 사이 충돌/주입 경계를 설계한다. 첫 단계에서는 globals().update runtime hook, Kiwoom 주문/청산/live runtime, analyzer output trading decision, 운영 _database/setting.db schema/write, sidecar 파일 write, LS Securities 직접 의존성을 변경하지 않는다. 결과를 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록하고 필요한 경우 source-level collision smoke 계획을 추가한 뒤 py_compile, smoke_v3k_formula_facade.py, smoke_v3k_gui_settings_preview, smoke_v3k_settings_surface, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시키고 한국어 Lore commit한다."
 ```
 
 현재 Codex 환경에서 `omx ralph`가 `stdin is not a terminal`로 실패하면, 같은 프롬프트를 현재 세션에서 직접 이어서 수행한다.
 
-연결된 다음 페이지 계획: `docs/plans/2026-05-12_v3k_page_015_gui_preview_closeout_plan.md`
+연결된 다음 페이지 계획: `docs/plans/2026-05-12_v3k_page_016_phase_d_formula_global_boundary_plan.md`
