@@ -47,6 +47,19 @@ class V3KSettingsSurfaceResult:
         return not any(self.settings.values())
 
 
+@dataclass(frozen=True)
+class V3KSettingsBridgeResult:
+    version: str
+    dict_set: dict[str, Any]
+    settings: dict[str, bool]
+    feature_flags: dict[str, bool]
+    diagnostics: tuple[str, ...] = ()
+
+    @property
+    def all_off(self) -> bool:
+        return not any(self.settings.values())
+
+
 V3K_SETTING_CONTRACTS: tuple[V3KSettingContract, ...] = (
     V3KSettingContract(
         key=FLAG_ANALYSIS_UI,
@@ -226,3 +239,32 @@ def assert_v3k_settings_contract_aligned() -> None:
     ]
     if not_off:
         raise AssertionError(f"V3K setting defaults must stay OFF: {not_off}")
+
+def extract_v3k_settings_from_dict_set(
+    dict_set: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    if not dict_set:
+        return {}
+    known_keys = set(v3k_setting_contract_keys())
+    return {key: dict_set[key] for key in known_keys if key in dict_set}
+
+
+def bridge_v3k_settings_into_dict_set(
+    dict_set: Mapping[str, Any] | None = None,
+    raw_settings: Mapping[str, Any] | None = None,
+) -> V3KSettingsBridgeResult:
+    base = dict(dict_set or {})
+    merged_settings = extract_v3k_settings_from_dict_set(base)
+    if raw_settings:
+        merged_settings.update(raw_settings)
+
+    normalized = normalize_v3k_settings(merged_settings)
+    bridged = dict(base)
+    bridged.update(normalized.settings)
+    return V3KSettingsBridgeResult(
+        version=normalized.version,
+        dict_set=bridged,
+        settings=normalized.settings,
+        feature_flags=normalized.feature_flags,
+        diagnostics=normalized.diagnostics,
+    )

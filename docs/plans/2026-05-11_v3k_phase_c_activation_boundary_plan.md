@@ -228,21 +228,21 @@ Page 011은 “Phase C-G 활성화 경계 선택 및 첫 활성화 phase 준비�
 | Step | 이름 | 상태 | 진행률 |
 | ---: | --- | --- | ---: |
 | 011-1 | Phase C-G 후보 비교와 다음 경계 선택 | 완료 | 100% |
-| 011-2 | Phase C1 상세 inventory | 대기 | 0% |
-| 011-3 | Phase C1 GUI/settings bridge 구현 | 대기 | 0% |
-| 011-4 | Phase C1 회귀/audit/문서화 | 대기 | 0% |
+| 011-2 | Phase C1 상세 inventory | 완료 | 100% |
+| 011-3 | Phase C1 GUI/settings bridge 구현 | 완료 | 100% |
+| 011-4 | Phase C1 회귀/audit/문서화 | 완료 | 100% |
 | 011-5 | Phase D/E/F/G 중 다음 경계 재선택 | 대기 | 0% |
 
 Page 011 내부 진행률:
 
 ```text
-[██░░░░░░░░] 1 / 5 steps = 20%
+[████████░░] 4 / 5 steps = 80%
 ```
 
 전체 11페이지 기준 진행률:
 
 ```text
-[██████████░] 10.2 / 11 pages = 약 92.7%
+[███████████] 10.8 / 11 pages = 약 98.2%
 ```
 
 ---

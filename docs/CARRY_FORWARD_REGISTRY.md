@@ -653,3 +653,20 @@ Directive: Treat `_database_v3k_shadow/` as a local rehearsal artifact. Never co
 - Next: plan the next activation boundary separately before Phase C-G work. Candidate boundaries are GUI/settings connection, formula/global runtime hook, live Kiwoom dry-run preload diagnostic, and analyzer output strategy integration.
 
 Directive: Keep production learning DB reads and live trading consumption behind explicit feature flags and fresh phase plans. Do not reinterpret Phase B as DB cutover or live runtime activation.
+## V3K-PHASE-C1: GUI/settings default-OFF bridge
+
+- Date: 2026-05-11 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/plans/2026-05-11_v3k_phase_c_activation_boundary_plan.md`
+  - `docs/update_log/2026-05-11_v3k_phase_c1_gui_settings_bridge.md`
+  - `strategy/v3k_settings_surface.py`
+  - `scripts/smoke_v3k_gui_settings_bridge.py`
+- Decision: Phase C1 connects V3K settings to a dict-like settings boundary only. It does not change the real settings DB loader, MainWindow wrapper, or GUI layout.
+- Decision: `bridge_v3k_settings_into_dict_set()` inserts all V3K keys as default-OFF, preserves legacy dict_set keys, normalizes existing V3K values, and accepts explicit override input without mutating the source dict.
+- Decision: The first GUI/settings activation step is no-GUI and default-OFF. Real GUI wrapper exposure remains a separate Phase C2 candidate.
+- Verification: py_compile passed; GUI/settings bridge smoke passed; settings surface smoke passed; Phase B read-only DB smoke passed; existing V3K smoke suite passed; VERIFY-1A audit passed; VERIFY-1B closure audit passed; nonrelease sync passed; DB artifact status clean.
+- Excluded: operational `_database/` changes, settings DB write migration, MainWindow/pyd wrapper changes, formula globals runtime hook, live Kiwoom preload hook, analyzer output use in trading decisions, LS Securities direct dependency.
+- Next: Re-select the next activation boundary. The safest next candidate is Phase C2 GUI wrapper inventory/plan before any actual wrapper mutation.
+
+Directive: Do not wire V3K flags into persistent setting DB writes or GUI wrappers without a Phase C2 plan and GUI/wrapper smoke evidence. Keep all V3K flags default-OFF by default.
