@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 import sqlite3
+from contextlib import closing
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Literal
@@ -481,7 +482,7 @@ class V3KLearningDataAdapter:
 
         uri = db_path.resolve().as_uri() + "?mode=ro"
         try:
-            with sqlite3.connect(uri, uri=True) as conn:
+            with closing(sqlite3.connect(uri, uri=True)) as conn:
                 conn.row_factory = sqlite3.Row
                 rows = tuple(dict(row) for row in conn.execute(query, params).fetchall())
         except sqlite3.Error as exc:

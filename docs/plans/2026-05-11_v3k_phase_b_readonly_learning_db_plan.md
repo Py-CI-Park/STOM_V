@@ -348,19 +348,19 @@ omx ralph "force: V3K Phase B read-only learning DB 검증을 docs/plans/2026-05
 | 007 | commit history compact 및 lane 정리 | 완료 | 100% |
 | 008 | 활성 5개 worktree 재감사와 Python 3.13 재검증 | 완료 | 100% |
 | 009 | Phase A shadow DB rehearsal | 완료 | 100% |
-| 010 | Phase B read-only learning DB 검증 | **현재 계획 완료 / 구현 대기** | 20% |
+| 010 | Phase B read-only learning DB 검증 | **구현 완료 / 후속 활성화 계획 대기** | 100% |
 | 011 | Phase C–G GUI/runtime/cutover 전 단계별 실행 | 대기 | 0% |
 
 전체 기준 현재 위치:
 
 ```text
-[█████████░░] 9.2 / 11 pages = 약 83.6%
+[██████████░] 10 / 11 pages = 약 90.9%
 ```
 
 Phase B 내부 기준 현재 위치:
 
 ```text
-[██░░░░░░░░] 1 / 5 steps = 20%
+[██████████] 5 / 5 steps = 100%
 ```
 
 Phase B 내부 단계:
@@ -368,7 +368,7 @@ Phase B 내부 단계:
 | Step | 이름 | 상태 |
 | ---: | --- | --- |
 | B1 | read-only 검증 계획 작성 | 완료 |
-| B2 | fixture smoke/test 구현 | 대기 |
-| B3 | 실제 shadow DB read-only health/hash 검증 | 대기 |
-| B4 | smoke/audit 전체 회귀 | 대기 |
-| B5 | update_log/registry 기록 및 commit | 대기 |
+| B2 | fixture smoke/test 구현 | 완료 |
+| B3 | 실제 shadow DB read-only health/hash 검증 | 완료 |
+| B4 | smoke/audit 전체 회귀 | 완료 |
+| B5 | update_log/registry 기록 및 commit | 완료 |

@@ -1,4 +1,4 @@
-﻿# Carry Forward Registry
+# Carry Forward Registry
 
 ## Purpose
 Tracks known issues that were intentionally not fixed in the current official update cycle.
@@ -635,3 +635,21 @@ Directive: Do not reinterpret safe-staged completion as full production activati
 - Next: `V3K-PHASE-B` read-only learning DB verification plan. Do not start Phase B implementation without a new phase plan.
 
 Directive: Treat `_database_v3k_shadow/` as a local rehearsal artifact. Never commit DB files. Keep Phase B read-only and preserve Kiwoom runtime boundaries.
+
+## V3K-PHASE-B: read-only learning DB verification
+
+- Date: 2026-05-11 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/plans/2026-05-11_v3k_phase_b_readonly_learning_db_plan.md`
+  - `docs/update_log/2026-05-11_v3k_phase_b_readonly_learning_db.md`
+  - `scripts/smoke_v3k_learning_db_readonly_existing.py`
+  - `strategy/v3k_analyzer_adapter.py`
+- Decision: Phase B verifies the existing-learning-DB path without writing fixture rows into the real `_database_v3k_shadow/`. Real shadow DB files are used only for read-only health/hash/count checks.
+- Decision: Row-read, leakage cutoff, flag-OFF, missing-DB, limit, and write-rejection behavior are verified in a temp fixture DB that is deleted after the smoke.
+- Decision: `V3KLearningDataAdapter` now explicitly closes read-only SQLite connections with `contextlib.closing()` so Windows file handles do not outlive the read-only load.
+- Verification: py_compile passed; Phase B read-only learning DB smoke passed; pre/post shadow health passed; existing V3K smoke suite passed; VERIFY-1A audit passed; VERIFY-1B closure audit passed; nonrelease sync passed; DB artifact status clean.
+- Excluded: operational `_database/` changes, DB file commit, real shadow fixture row INSERT, Kiwoom receiver/order/strategy/live runtime changes, GUI wrapper integration, formula/global runtime hook, analyzer output use in trading decisions, LS Securities direct dependency.
+- Next: plan the next activation boundary separately before Phase C-G work. Candidate boundaries are GUI/settings connection, formula/global runtime hook, live Kiwoom dry-run preload diagnostic, and analyzer output strategy integration.
+
+Directive: Keep production learning DB reads and live trading consumption behind explicit feature flags and fresh phase plans. Do not reinterpret Phase B as DB cutover or live runtime activation.
