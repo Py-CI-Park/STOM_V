@@ -15,7 +15,7 @@
 - `docs/update_log/2026-05-09_v3k_design_1b_readonly_scripts.md`
 - `docs/superpowers/specs/2026-05-09-v3k-db-learning-migration-spec.md`
 
-본 v3 계획은 ralplan iteration 3의 Planner 산출물이다. v2 → Critic iteration 2의 3개 Required Revisions(G.1 commit boundary 정정, T01 회귀 3종 입력 layer 명확화, task별 worktree/lane 표 추가)와 3개 Optional Improvements(O1 V08b row count, O2 EXPECTED_DBS 라벨 비교, O3 V05 task 단계별 차등)를 흡수하여 v2를 부분 수정한다. v2의 보존 영역(A.1 Principles, A.2 Drivers, A.3 Options, B.1 Lifetime Invariants 8종, B.2 Phase A 한정 5종, E R1–R10, F rollback 3종, H commit sample 6종, I ADR 요지, J 핵심 설계 질문)은 재현하면서 변경 부위만 정정한다.
+본 v3 계획은 ralplan iteration 3의 Planner 산출물이다. v2 → Critic iteration 2의 3개 Required Revisions(G.1 commit boundary 정정, T01 회귀 3종 입력 layer 명확화, task별 worktree/lane 표 추가)와 3개 Optional Improvements(O1 V08b row count, O2 EXPECTED_DBS 라벨 비교, O3 V05 task 단계별 차등)를 흡수하여 v2를 부분 수정한다. v2의 보존 영역(A.1 Principles, A.2 Drivers, A.3 Options, B.1 Lifetime Invariants 기존 8종, B.2 Phase A 한정 5종, E R1–R10, F rollback 3종, H commit sample 6종, I ADR 요지, J 핵심 설계 질문)은 재현하면서 변경 부위만 정정한다. 이후 amendment에서 L9 CLI surface invariant가 추가되어 현재 lifetime invariant는 9종이다.
 
 ---
 
@@ -29,7 +29,7 @@
 V3K = V3 신기능을 STOM_Version_2U_C에 모두 반영한다.
 단, LS Securities REST/TR/REAL 직접 의존은 제외하고 Kiwoom증권 API/runtime을 유지한다.
 STOM CLI surface(init_v3k_shadow_db.py / backtest CLI / realtime CLI / 전체 STOM CLI 진입점)의 외부 동작도 유지한다.
-DB는 운영 _database/와 격리된 _database_v3k_shadow/로 separate 후 단계적 cutover한다.
+DB는 운영 _database/와 격리된 _database_v3k_shadow/로 separate 후 검증하며, 운영 cutover 여부는 별도 승인 phase에서 결정한다.
 feature flag는 모든 phase에서 default-OFF로 유지하고, 명시적 사용자 승인 후에만 ON 전환을 허용한다.
 ```
 
@@ -38,7 +38,7 @@ feature flag는 모든 phase에서 default-OFF로 유지하고, 명시적 사용
 | Phase | 목표 1줄 | 본 plan scope | 후속 plan 작성 의무 | 의존 입력 |
 | --- | --- | --- | --- | --- |
 | **A** | shadow DB rehearsal — `_database_v3k_shadow/` 생성 + schema_hash invariant 고정 | **본 plan (V3K-PA)** | — | DESIGN-1, DESIGN-1B, migration spec |
-| B | read-only learning DB 검증 — `V3KLearningDataAdapter`의 `?mode=ro` smoke | scope 외 | `docs/plans/<YYYY-MM-DD>_v3k_phase_b_*.md` 별도 plan 필수 | Phase A 산출물(manifest, schema_hash, sentinel L3) |
+| B | read-only learning DB 검증 — `V3KLearningDataAdapter`의 `?mode=ro` smoke | scope 외 | `docs/plans/<YYYY-MM-DD>_v3k_phase_b_*.md` 별도 plan 필수 | Phase A 산출물(manifest, schema_hash, sentinel prefix L3) |
 | C | GUI/settings 연결 — `v3k_settings_surface.py`를 MainWindow/pyd wrapper에 노출 (default-OFF 유지) | scope 외 | 별도 plan 필수 | Phase B 산출물 |
 | D | formula/global runtime 연결 — `V3K_` prefix callable만 runtime globals에 제한 노출 | scope 외 | 별도 plan 필수 | Phase B 산출물 |
 | E | live Kiwoom dry-run hook — KHOPENAPI 호환 환경에서 preload diagnostic only | scope 외 | 별도 plan 필수 | Phase C·D 산출물 |
@@ -52,12 +52,29 @@ feature flag는 모든 phase에서 default-OFF로 유지하고, 명시적 사용
 | In scope (본 plan에서 다룬다) | Out of scope (본 plan에서 다루지 않는다) |
 | --- | --- |
 | `apply_v3k_shadow_db.py` 신규 작성 | Phase B의 `V3KLearningDataAdapter` read 동작 변경 |
-| `compute_schema_hash` 추가 + manifest stamp | sentinel `_v3kshadow_smokeA_` row의 INSERT (Phase B 이후) |
+| `compute_schema_hash` 추가 + manifest stamp | sentinel `_v3kshadow_smokeA_` row의 INSERT (Phase A에서는 금지, Phase B 별도 plan에서 재결정) |
 | `_database_v3k_shadow/` 디렉터리 + 7 DB 생성 (DDL only) | DB 데이터 cutover, 운영 `_database/` 변경 |
 | `.gitignore` ephemeral 분리 + branch 가드 환경 변수 | GUI flag 연결, runtime hook 연결 |
 | `V3K-PHASE-A` carry-forward registry section | `V3K-PHASE-B`~`V3K-PHASE-G` registry section |
 | 회귀 테스트 3종, V01–V12 검증 자동화 | live Kiwoom runtime 호출, LS broker-neutral 설계 |
 | Phase A 한정 lane 정책 (V05–V09 = 2U_C 한정) | Phase B 이후의 lane 정책 재검토 |
+
+---
+
+### 0.4 경로·lane 표기 정본 규칙 (실행 전 필수 보정)
+
+본 계획의 실제 구현/commit lane은 `STOM_Version_2U_C`이며 절대경로는 다음이다.
+
+```text
+<WT_DEV> = C:/System_Trading/STOM/STOM_V.wt-dev
+branch   = STOM_Version_2U_C
+```
+
+`STOM_Version_2` root lane(`C:/System_Trading/STOM/STOM_V`)은 공식 V2 유지 lane이므로 Phase A 개발 코드 commit 대상이 아니다. 따라서 본 계획의 오래된 예시 명령에 `C:/System_Trading/STOM/STOM_V/...` 경로가 남아 있더라도, **변경 대상 파일·신규 파일·pytest/py_compile 대상은 `<WT_DEV>/...`로 치환해서 실행한다.**
+
+예외는 명시적으로 “V2 root read-only 검증”이라고 표시된 경우뿐이다. 이 예외에서도 root lane에 개발 파일을 생성하거나 commit하지 않는다.
+
+이 규칙은 `STOM_Version_2` 공식 lane에 V3K 개발 코드를 잘못 넣는 위험을 차단하기 위한 상위 실행 규칙이며, §C–§J의 개별 예시보다 우선한다.
 
 ---
 
@@ -118,7 +135,9 @@ schema 회귀 테스트를 별도 contract test로 분리. → R1 회귀 3종에
 
 ## B. V3K Lifetime Invariant 분류
 
-### B.1 Lifetime Invariant — Phase B–G 변경 금지 (8 항목)
+### B.1 Lifetime Invariant — Phase B–G 변경 금지 (9 항목)
+
+`Lifetime invariant`는 Phase A에서 한 번 정하면 Phase B–G 전체 기간 동안 깨면 안 되는 장기 계약이다. 단순 구현 취향이나 임시 결정이 아니라, 후속 phase가 같은 전제를 공유해야만 V3K 전체 목적을 잃지 않는 항목이다. 예를 들어 schema hash 정의, shadow DB 위치, default-OFF, LS 직접 의존 금지, CLI surface 보존은 뒤 단계에서 임의로 바꾸면 이전 검증과 문서가 무효화되므로 lifetime invariant로 묶는다.
 
 | # | Invariant | 근거 |
 | --- | --- | --- |
@@ -574,7 +593,7 @@ A. F.1/F.2 시나리오에 통합. `Get-ChildItem -Filter "*.db-*"`로 WAL/SHM �
 | K1.3 | `verify_release_sync.py` PASS | "release sync preflight passed" |
 | K1.4 | `_database_v3k_shadow/` 7 DB 생성 + manifest schema_hash stamp 완료 | V09 + V08b 결과 |
 | K1.5 | DB 파일 0건 commit | `git log --all -- '*.db'` 결과 없음 |
-| K1.6 | LS direct marker 0건 | `Select-String -Path scripts/ -Pattern "ls_securities\|LS_REST\|xingapi\|restapi_ls"` 0건 |
+| K1.6 | LS direct marker 0건 | `Get-ChildItem -Path <WT_DEV>/scripts,<WT_DEV>/strategy,<WT_DEV>/trade,<WT_DEV>/ui -Recurse -File -Include *.py \| Select-String -Pattern "ls_securities\|LS_REST\|xingapi\|restapi_ls"` 결과 0건 |
 | K1.7 | Kiwoom runtime/order/receiver 변경 0건 | `git diff <pre-phase-A> HEAD -- trade/ ui/ utility/` 빈 출력 |
 | K1.8 | STOM CLI surface 변경 0건 (L9) | `init_v3k_shadow_db.py --dry-run` manifest 키 set 변화 없음 + backtest/realtime CLI 진입점 시그니처 무변경 |
 | K1.9 | `CARRY_FORWARD_REGISTRY.md`에 `## V3K-PHASE-A` 섹션 + 산출물 등록 완료 | T05 검증 명령 |
@@ -595,7 +614,7 @@ Phase B로 넘어가기 전에 §0.1 미션 statement를 한 번 더 확인. 6�
 다음 절차를 따라 Phase B plan을 작성한다. 본 plan과 동등한 합의 수준을 요구한다.
 
 1. **audit doc §8 Phase B 재확인**: `docs/update_log/2026-05-10_2uc_v3k_full_feature_audit.md` §8 "Phase B — read-only learning DB 검증" 절을 출처로 인용.
-2. **`/oh-my-claudecode:ralplan` 재실행**: Phase B 단독 상세 합의 워크플로 (Planner → Architect → Critic) short deliberation 모드를 본 plan과 동일하게 적용. 고위험 phase(F·G)인 경우 `--deliberate` 플래그 강제.
+2. **`$ralplan` 또는 `omx ralplan` 재실행**: Phase B 단독 상세 합의 워크플로 (Planner → Architect → Critic) short deliberation 모드를 본 plan과 동일하게 적용. 고위험 phase(F·G)인 경우 `--deliberate` 플래그 강제.
 3. **Phase B plan 신설**: `docs/plans/<YYYY-MM-DD>_v3k_phase_b_readonly_learning_db_plan.md` 신규 파일로 작성. **본 plan을 amend해서 Phase B를 추가하지 않는다**(§K.5).
 4. **§0.2 로드맵에서 Phase B 위치 갱신은 새 Phase B plan 안에서만** 한다. 본 plan의 §0.2는 freeze 상태로 유지하고, 새 plan이 §0.2를 인용·확장한다.
 5. **Phase A → Phase B 산출물 매핑 명시** (§K.4 참조).
@@ -612,7 +631,7 @@ Phase A가 만든 결과물 중 Phase B에서 사용되는 것을 명시한다. 
 | `_database_v3k_shadow/` 7 DB | `V3KLearningDataAdapter`의 `?mode=ro` smoke 대상 (read-only) | L4, L8 |
 | `v3k_meta.db.v3k_schema_manifest` (stamped) | Phase B read-only adapter의 schema_hash 검증 baseline | L1 |
 | `compute_schema_hash` 함수 (`init_v3k_shadow_db.py`) | Phase B의 schema drift detection에서 재사용 (dual-source 금지) | L1, L2 |
-| sentinel `_v3kshadow_smokeA_` prefix | Phase B에서 read-only smoke fixture로만 사용. **INSERT는 여전히 금지** | L3, L5 |
+| sentinel `_v3kshadow_smokeA_` prefix | Phase B에서 fixture naming 예약값으로만 사용. **Phase A와 Phase B read-only 검증에서는 INSERT 금지**. 실제 sentinel row가 필요하면 Phase B 별도 plan 승인 후 생성 | L3, L5 |
 | `init_v3k_shadow_db.py`의 `LEARNING_DBS`/`META_DBS`/`create_table_sql` | Phase B의 adapter contract에서 직접 import. dual-source 금지 | L2 |
 | `.gitignore` ephemeral 패턴 | Phase B의 read-only smoke 결과물에도 동일 정책 적용 | P4, L8 |
 | `.omx/reports/v3k-shadow-manifest.json` | Phase B의 schema_hash 회귀 baseline (audit trail) | L1 |
@@ -643,7 +662,7 @@ Phase B–G 각각은 별도 plan 문서를 필수로 작성한다. **본 plan(`
 
 Phase G까지 모두 완료되면 다음 8개를 만족해야 V3K 미션 완료로 본다(audit §6.2의 8개 의도적 미완료 항목 전체 해소).
 
-1. shadow DB가 운영 cutover됨 (Phase A·B 합산 결과)
+1. shadow DB 생성과 read-only 검증이 완료됨. 운영 cutover는 Phase G 종료 후 별도 승인 phase(또는 Phase H)에서 결정
 2. GUI flag로 사용자가 명시적 ON 가능 (Phase C, default-OFF 보존)
 3. `V3K_` prefix formula/global runtime 연결 (Phase D)
 4. live Kiwoom dry-run hook 실행 (Phase E)
