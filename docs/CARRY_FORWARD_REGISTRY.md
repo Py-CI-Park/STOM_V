@@ -1024,3 +1024,33 @@ Directive: Do not treat preview initialization as persistence. The next safe wri
 - Next: Page 026 / `Phase H H-1` Kiwoom dry-run hook module design.
 
 Directive: Do not promote the tempfile writer prototype into a repo sidecar writer without a separate go/no-go document, user approval, and artifact/rollback verification. The next f51 step is H-1, not actual sidecar write.
+
+## V3K-PHASE-H-H1: Kiwoom dry-run hook contract-only staging
+
+- Branch/worktree: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook A2, Page 026 plan
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md`
+  - `docs/plans/2026-05-12_v3k_page_026_phase_h_h1_kiwoom_dryrun_hook_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_027_f5_production_learning_db_read_plan.md`
+- Modified/added:
+  - `strategy/v3k_kiwoom_dryrun_hook.py`
+  - `scripts/smoke_v3k_phase_h_hook_unit.py`
+  - `scripts/audit_v3k_phase_h_env_check.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Kiwoom adjustment: live Kiwoom runtime files are not imported or edited. The hook registers only to caller-supplied login/connect receiver methods and remains detached from order/exit/account mutation paths.
+- LS dependency exclusion: no LS Securities REST/TR/REAL dependency is introduced.
+- Feature flag: `V3K_PHASE_H_KIWOOM_DRYRUN` is default-OFF. H-1 smoke enables it only with a fake tempfile `khopenapi.dll` sentinel.
+- Gate decision:
+  - H-1 contract-only module/smoke/audit: completed.
+  - H-2 actual KHOPENAPI connect/login dry-run: held until compatible environment and explicit user approval.
+  - H-3 ON transition/rollback flag/live dry-run monitoring: held until H-2 evidence and explicit user approval.
+- Verification:
+  - `python -m py_compile strategy/v3k_kiwoom_dryrun_hook.py scripts/smoke_v3k_phase_h_hook_unit.py scripts/audit_v3k_phase_h_env_check.py`
+  - `python scripts/smoke_v3k_phase_h_hook_unit.py`
+  - `python scripts/audit_v3k_phase_h_env_check.py --stdout`
+  - full V3K smoke/audit set, `audit_v3k_verify_1a --base 57496d24`, `audit_v3k_verify_1b_closure`, `verify_nonrelease_sync`, `git diff --check`, DB/sidecar artifact status.
+- Next: Page 027 / F5 production learning DB read, with `mode=ro` SQLite read-only URI and DB write/commit prohibition.
+
+Directive: Do not connect this hook to real Kiwoom runtime, KHOPENAPI login, or ON flags without a separate H-2/H-3 user-approval cycle.

@@ -31,6 +31,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_e4_gui_sidecar_write_guard_decision.md",
     "docs/update_log/2026-05-12_v3k_phase_e5_readonly_sidecar_preview_init.md",
     "docs/update_log/2026-05-12_v3k_phase_e6_sidecar_tempfile_writer.md",
+    "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
 )
 
 REQUIRED_CODE = (
@@ -43,6 +44,7 @@ REQUIRED_CODE = (
     "strategy/v3k_analyzer_adapter.py",
     "strategy/v3k_formula_facade.py",
     "strategy/v3k_gui_sidecar.py",
+    "strategy/v3k_kiwoom_dryrun_hook.py",
     "strategy/v3k_settings_surface.py",
 )
 
@@ -61,6 +63,8 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_realtime_learning_boundary.py",
     "scripts/smoke_v3k_formula_facade.py",
     "scripts/smoke_v3k_gui_sidecar_tempfile_writer.py",
+    "scripts/smoke_v3k_phase_h_hook_unit.py",
+    "scripts/audit_v3k_phase_h_env_check.py",
     "scripts/smoke_v3k_gui_sidecar_preview_init.py",
     "scripts/smoke_v3k_gui_sidecar_readonly_loader.py",
     "scripts/smoke_v3k_gui_sidecar_schema_validator.py",
@@ -76,6 +80,7 @@ SAFE_STAGED_COMPLETED = (
     "Formula/global facade with V3K_ prefixed globals",
     "Non-invasive settings surface contract",
     "GUI sidecar persistence design, schema validator, read-only loader, write guard, read-only preview init, and tempfile-only writer prototype",
+    "Phase H H-1 Kiwoom dry-run hook contract-only module, sentinel audit, and unit smoke",
     "OFF regression and Kiwoom untouched audit",
 )
 

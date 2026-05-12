@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "gui-setting-sidecar-persistence-design"
+NEXT_CANDIDATE = "production-learning-db-read"
 
 HELD_ITEMS = (
     {
@@ -21,8 +21,14 @@ HELD_ITEMS = (
     {
         "item": "gui-setting-persistence",
         "risk": "medium",
-        "status": "next",
-        "reason": "Can be specified as sidecar design before any setting.db or runtime trade mutation.",
+        "status": "contract-staged-write-gated",
+        "reason": "Sidecar design/schema/read-only loader/preview init/tempfile writer are staged; actual write still needs approval.",
+    },
+    {
+        "item": "live-kiwoom-dryrun-hook",
+        "risk": "medium-high",
+        "status": "h1-contract-staged-h2-gated",
+        "reason": "H-1 hook/smoke/sentinel contract is staged without runtime connection; H-2/H-3 need KHOPENAPI environment and approval.",
     },
     {
         "item": "analyzer-db-constructor-runtime-use",
@@ -39,8 +45,8 @@ HELD_ITEMS = (
     {
         "item": "production-learning-db-read",
         "risk": "high",
-        "status": "defer",
-        "reason": "Needs read-only production DB lock/performance/rollback evidence.",
+        "status": "next",
+        "reason": "Next f51 playbook step; must use SQLite mode=ro and tolerate missing production DB as a gate/skip.",
     },
     {
         "item": "db-cutover-migration",
@@ -55,6 +61,9 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_e0_runtime_activation_gap_review.md",
     "docs/plans/2026-05-12_v3k_page_019_phase_e0_runtime_activation_gap_review_plan.md",
     "docs/plans/2026-05-12_v3k_page_020_phase_e1_gui_sidecar_persistence_design_plan.md",
+    "docs/plans/2026-05-12_v3k_page_026_phase_h_h1_kiwoom_dryrun_hook_plan.md",
+    "docs/plans/2026-05-12_v3k_page_027_f5_production_learning_db_read_plan.md",
+    "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
 )
 
 RUNTIME_GUARDED_FILES = (
@@ -84,9 +93,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["gui-setting-persistence"]:
+    if [item["item"] for item in next_items] != ["production-learning-db-read"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "gui-setting-sidecar-persistence-design":
+    if NEXT_CANDIDATE != "production-learning-db-read":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
