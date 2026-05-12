@@ -1151,3 +1151,21 @@ Directive: Do not interpret Page 029 approval as actual cutover approval. Only P
 - Next: Page 031 / `f1-actual-cutover-approval-gate`. 실제 cutover를 실행하지 말고 사용자 승인과 gate 충족 여부만 문서화한다.
 
 Directive: Do not treat the presence of cutover scripts as approval to run them against `_database/`. Actual cutover still requires a separate user-approved cycle with backup, health, and monitoring evidence.
+
+## V3K-F1-ACTUAL-CUTOVER-GATE: actual cutover 승인 대기
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook F1 actual cutover gate, Page 031 plan
+- Records:
+  - `docs/update_log/2026-05-12_v3k_f1_actual_cutover_approval_gate.md`
+  - `docs/plans/2026-05-12_v3k_page_031_f1_actual_cutover_approval_gate_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_032_phase_h_h2_h3_approval_gate_plan.md`
+- Decision: actual DB cutover는 현재 BLOCK 상태로 유지한다. Page 030의 script/dry-run PASS는 real `_database` write 승인으로 해석하지 않는다.
+- Missing gates: 사용자 명시 승인, `V3K_CUTOVER_USER_ACK=1`, 운영 `_database/` backup apply, backup checksum manifest, actual cutover apply, post-cutover health, 7일 monitoring.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 추가하지 않는다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, backup 디렉터리, DB 파일은 변경·커밋하지 않는다.
+- Next: Page 032 / `phase-h-h2-h3-approval-gate`. 실제 KHOPENAPI live dry-run이 아니라 환경/승인 gate 문서화만 수행한다.
+
+Directive: Do not run `cutover_v3k_shadow_to_database.py --apply` against the real `_database/` unless the user explicitly approves actual cutover in a separate cycle.

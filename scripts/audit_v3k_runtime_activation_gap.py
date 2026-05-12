@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "f1-actual-cutover-approval-gate"
+NEXT_CANDIDATE = "phase-h-h2-h3-approval-gate"
 
 HELD_ITEMS = (
     {
@@ -69,14 +69,20 @@ HELD_ITEMS = (
     {
         "item": "f1-actual-cutover-approval-gate",
         "risk": "critical",
-        "status": "next",
-        "reason": "Actual cutover is the next f51 gate, but only approval conditions may be documented until explicit user approval.",
+        "status": "blocked-awaiting-user-approval",
+        "reason": "Actual cutover requires explicit user approval, real backup apply, post-health, and 7-day monitoring; none were performed.",
     },
     {
         "item": "db-cutover-migration",
         "risk": "critical",
         "status": "approval-gated",
         "reason": "Needs migration scripts, backup verification, explicit user approval, rollback, and monitoring before operational execution.",
+    },
+    {
+        "item": "phase-h-h2-h3-approval-gate",
+        "risk": "critical",
+        "status": "next",
+        "reason": "Next f51 row is Phase H H-2/H-3, but only KHOPENAPI/user-approval gate documentation is allowed before live dry-run.",
     },
 )
 
@@ -91,11 +97,13 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_029_f1_db_cutover_pre_ralplan_plan.md",
     "docs/plans/2026-05-12_v3k_page_030_f1_cutover_scripts_dryrun_plan.md",
     "docs/plans/2026-05-12_v3k_page_031_f1_actual_cutover_approval_gate_plan.md",
+    "docs/plans/2026-05-12_v3k_page_032_phase_h_h2_h3_approval_gate_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
     "docs/update_log/2026-05-12_v3k_f1_cutover_scripts_dryrun.md",
+    "docs/update_log/2026-05-12_v3k_f1_actual_cutover_approval_gate.md",
 )
 
 REQUIRED_SCRIPTS = (
@@ -135,9 +143,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["f1-actual-cutover-approval-gate"]:
+    if [item["item"] for item in next_items] != ["phase-h-h2-h3-approval-gate"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "f1-actual-cutover-approval-gate":
+    if NEXT_CANDIDATE != "phase-h-h2-h3-approval-gate":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
