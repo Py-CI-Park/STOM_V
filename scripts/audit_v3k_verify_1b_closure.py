@@ -29,6 +29,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-09_v3k_verify_1a_off_regression_audit.md",
     "docs/update_log/2026-05-09_v3k_impl_6a_settings_surface.md",
     "docs/update_log/2026-05-12_v3k_phase_e4_gui_sidecar_write_guard_decision.md",
+    "docs/update_log/2026-05-12_v3k_phase_e5_readonly_sidecar_preview_init.md",
 )
 
 REQUIRED_CODE = (
@@ -58,6 +59,7 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_backtest_learning_hook.py",
     "scripts/smoke_v3k_realtime_learning_boundary.py",
     "scripts/smoke_v3k_formula_facade.py",
+    "scripts/smoke_v3k_gui_sidecar_preview_init.py",
     "scripts/smoke_v3k_gui_sidecar_readonly_loader.py",
     "scripts/smoke_v3k_gui_sidecar_schema_validator.py",
     "scripts/smoke_v3k_settings_surface.py",
@@ -71,7 +73,7 @@ SAFE_STAGED_COMPLETED = (
     "Realtime learning-data preload boundary",
     "Formula/global facade with V3K_ prefixed globals",
     "Non-invasive settings surface contract",
-    "GUI sidecar persistence design, schema validator, read-only loader, and write guard",
+    "GUI sidecar persistence design, schema validator, read-only loader, write guard, and read-only preview init",
     "OFF regression and Kiwoom untouched audit",
 )
 

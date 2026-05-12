@@ -1,4 +1,4 @@
-# V3K Page 024 — Phase E-5 read-only sidecar preview initialization bridge 계획
+# V3K Page 024 — Phase E-5 read-only sidecar preview initialization bridge 계획/완료 기록
 
 작성일: 2026-05-12 KST
 대상 worktree: `C:/System_Trading/STOM/STOM_V.wt-dev`
@@ -12,7 +12,7 @@
 
 ## 0. 목적
 
-Page 024의 목적은 actual sidecar write가 아니라, Page 022에서 만든 read-only loader를 session-only GUI preview 초기값에 연결할 수 있는지 검토하고 필요하면 최소 구현하는 것이다.
+Page 024의 목적은 actual sidecar write가 아니라, Page 022에서 만든 read-only loader를 session-only GUI preview 초기값에 연결할 수 있는지 검토하고 최소 구현하는 것이다.
 
 핵심 원칙:
 
@@ -24,25 +24,35 @@ Page 024의 목적은 actual sidecar write가 아니라, Page 022에서 만든 r
 
 ---
 
-## 1. In-scope
+## 1. 완료 범위
 
-| Step | 작업 | 완료 조건 |
-| ---: | --- | --- |
-| 024-1 | preview init 경계 조사 | `ui/ui_v3k_settings_preview.py`에서 초기 settings 주입 지점 확인 |
-| 024-2 | read-only bridge 설계 | loader 결과를 session-only preview 초기값으로만 넘기는 경로 설계 |
-| 024-3 | smoke 확장 | missing/corrupt/valid sidecar가 preview 초기값에 미치는 영향을 tempfile/monkeypatch로 검증 |
-| 024-4 | no-write guard | preview open 과정에서 sidecar/DB/runtime artifact가 생성되지 않음을 검증 |
-| 024-5 | 다음 후보 결정 | actual write 보류 유지 또는 tempfile-only writer prototype 재검토 |
+| Step | 작업 | 완료 조건 | 상태 |
+| ---: | --- | --- | --- |
+| 024-1 | preview init 경계 조사 | `ui/ui_v3k_settings_preview.py` 초기 settings 주입 지점 확인 | 완료 |
+| 024-2 | read-only bridge 설계 | loader 결과를 session-only preview 초기값으로만 넘기는 경로 설계 | 완료 |
+| 024-3 | smoke 확장 | missing/corrupt/valid sidecar가 preview 초기값에 미치는 영향을 tempfile로 검증 | 완료 |
+| 024-4 | no-write guard | preview open 과정에서 sidecar/DB/runtime artifact가 생성되지 않음을 검증 | 완료 |
+| 024-5 | 다음 후보 결정 | actual write는 계속 보류하고 Page 025를 tempfile-only writer prototype 검토로 결정 | 완료 |
 
-현재 진행률:
+진행률:
 
 ```text
-Page 024: [░░░░░░░░░░░░░░░░░░░░] 0 / 5 = 0%
+Page 024: [████████████████████] 5 / 5 = 100%
 ```
 
 ---
 
-## 2. Out-of-scope
+## 2. 구현 결정
+
+- `attach_v3k_settings_preview()`는 read-only sidecar loader를 통해 초기 preview state를 계산할 수 있다.
+- `initialize_v3k_preview_from_sidecar()`를 추가해 valid sidecar settings를 `v3k_settings`/`v3k_feature_flags`의 session-only 초기값으로만 반영한다.
+- missing/corrupt sidecar는 default-OFF fallback으로 닫는다.
+- sidecar initialization 자체는 session dirty 상태가 아니며, 사용자가 preview에서 toggle한 뒤에만 dirty가 된다.
+- `set_v3k_preview_session_flag()`와 reset은 계속 in-memory/session-only 변경만 수행한다.
+
+---
+
+## 3. Out-of-scope
 
 - 실제 repo `_v3k_sidecar/v3k_gui_settings.json` write/create
 - operating `_database/setting.db` schema/write
@@ -53,8 +63,8 @@ Page 024: [░░░░░░░░░░░░░░░░░░░░] 0 / 5 =
 
 ---
 
-## 3. 추천 OMX 명령
+## 4. 다음 단계
 
-```powershell
-omx ralph "force: V3K Page 024 Phase E-5 read-only sidecar preview initialization bridge를 진행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/plans/2026-05-12_v3k_page_024_phase_e5_readonly_sidecar_preview_init_plan.md와 docs/update_log/2026-05-12_v3k_phase_e4_gui_sidecar_write_guard_decision.md를 기준으로, actual sidecar write 없이 Page 022 read-only loader를 session-only GUI preview 초기값에 연결할 수 있는지 검토하고 필요하면 최소 구현한다. missing/corrupt/valid sidecar, session override 우선순위, default-OFF fallback, no-write/no-DB/no-runtime-artifact 조건을 tempfile 또는 monkeypatch 기반 smoke로 검증한다. 실제 repo `_v3k_sidecar` artifact, operating _database/setting.db schema/write, Kiwoom 주문/청산/live runtime, formula/global runtime hook, analyzer trading decision, 외부 broker 직접 의존성은 변경하지 않는다. 완료 시 py_compile, V3K smoke 전체, audit_v3k_gui_sidecar_persistence_design.py, audit_v3k_gui_sidecar_write_guard.py, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB/sidecar artifact status를 통과시키고 docs/update_log와 CARRY_FORWARD_REGISTRY에 기록 후 한국어 Lore commit한다."
-```
+Page 025는 `V3K-PHASE-E6: sidecar tempfile-only writer prototype`으로 계획한다.
+
+단, Page 025도 repo sidecar write가 아니다. Page 023 guard를 만족하기 위한 writer contract를 tempfile 안에서만 증명하는 단계다.

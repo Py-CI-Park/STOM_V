@@ -976,3 +976,28 @@ Directive: Do not implement sidecar writes until Page 023 has fixed atomic write
 - Next: Page 024 / `V3K-PHASE-E5` read-only sidecar preview initialization bridge.
 
 Directive: Do not convert the read-only sidecar loader into a writer without satisfying the Page 023 approval gate. The next safe step is read-only preview initialization, not persistence writes.
+
+## V3K-PHASE-E5: read-only sidecar preview initialization bridge
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_e5_readonly_sidecar_preview_init.md`
+  - `docs/update_log/2026-05-12_v3k_cd6f5bd_to_page024_flow_review.md`
+  - `docs/plans/2026-05-12_v3k_page_024_phase_e5_readonly_sidecar_preview_init_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_025_phase_e6_sidecar_tempfile_writer_plan.md`
+- Modified:
+  - `ui/ui_v3k_settings_preview.py`
+  - `scripts/smoke_v3k_gui_sidecar_preview_init.py`
+  - `scripts/smoke_v3k_gui_settings_preview.py`
+  - `scripts/audit_v3k_gui_sidecar_persistence_design.py`
+  - `scripts/audit_v3k_gui_sidecar_write_guard.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: Read-only sidecar values may initialize the session-only preview state, but actual sidecar writes remain deferred.
+- Decision: Missing/corrupt sidecars keep default-OFF preview behavior. Valid sidecars only populate in-memory `v3k_settings` / `v3k_feature_flags`.
+- Decision: User toggles remain session-only overrides and mark the preview state dirty only in memory.
+- Excluded: sidecar write implementation, operating `setting.db` write, formula/global runtime hook, Kiwoom live/order/exit runtime, analyzer trading decision, external broker direct dependency.
+- Verification: py_compile passed; GUI settings preview smoke passed; GUI sidecar preview init smoke passed; GUI sidecar write guard audit passed; GUI sidecar persistence design audit passed; runtime activation gap audit passed; V3K smoke set passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB/sidecar artifact status stayed clean.
+- Next: Page 025 / `V3K-PHASE-E6` sidecar tempfile-only writer prototype.
+
+Directive: Do not treat preview initialization as persistence. The next safe writer work must stay tempfile-only until atomic write, backup, rollback, and corruption recovery are proven.

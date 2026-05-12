@@ -35,10 +35,12 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_e2_gui_sidecar_schema_validator.md",
     "docs/update_log/2026-05-12_v3k_phase_e3_gui_sidecar_readonly_loader.md",
     "docs/update_log/2026-05-12_v3k_phase_e4_gui_sidecar_write_guard_decision.md",
+    "docs/update_log/2026-05-12_v3k_phase_e5_readonly_sidecar_preview_init.md",
     "docs/plans/2026-05-12_v3k_page_020_phase_e1_gui_sidecar_persistence_design_plan.md",
     "docs/plans/2026-05-12_v3k_page_021_phase_e2_gui_sidecar_schema_validator_plan.md",
     "docs/plans/2026-05-12_v3k_page_022_phase_e3_gui_sidecar_readonly_loader_plan.md",
     "docs/plans/2026-05-12_v3k_page_023_phase_e4_gui_sidecar_write_guard_plan.md",
+    "docs/plans/2026-05-12_v3k_page_024_phase_e5_readonly_sidecar_preview_init_plan.md",
 )
 
 FORBIDDEN_RUNTIME_WRITE_MARKERS = (

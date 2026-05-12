@@ -22,8 +22,10 @@ WRITE_GUARD_VERSION = "V3K_GUI_SIDECAR_WRITE_GUARD_V1"
 REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_e3_gui_sidecar_readonly_loader.md",
     "docs/update_log/2026-05-12_v3k_phase_e4_gui_sidecar_write_guard_decision.md",
+    "docs/update_log/2026-05-12_v3k_phase_e5_readonly_sidecar_preview_init.md",
     "docs/plans/2026-05-12_v3k_page_023_phase_e4_gui_sidecar_write_guard_plan.md",
     "docs/plans/2026-05-12_v3k_page_024_phase_e5_readonly_sidecar_preview_init_plan.md",
+    "docs/plans/2026-05-12_v3k_page_025_phase_e6_sidecar_tempfile_writer_plan.md",
 )
 
 REQUIRED_DECISION_MARKERS = (

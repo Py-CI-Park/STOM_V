@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from types import MethodType
 from typing import Any
 
+from strategy.v3k_gui_sidecar import load_v3k_gui_sidecar_file
 from strategy.v3k_settings_surface import (
+    V3KSettingsSurfaceResult,
     normalize_v3k_settings,
     v3k_settings_contract_rows,
     v3k_settings_defaults,
@@ -16,6 +19,9 @@ V3K_SETTINGS_PREVIEW_METHOD = "ShowV3KSettingsPreview"
 V3K_SETTINGS_PREVIEW_RESULT_ATTR = "v3k_settings_preview_result"
 V3K_SETTINGS_PREVIEW_SESSION_ONLY_ATTR = "v3k_settings_preview_session_only"
 V3K_SETTINGS_PREVIEW_DIALOG_ATTR = "dialog_v3k_settings_preview"
+V3K_SETTINGS_PREVIEW_SIDECAR_RESULT_ATTR = "v3k_settings_preview_sidecar_result"
+V3K_SETTINGS_PREVIEW_SIDECAR_PATH_ATTR = "v3k_settings_preview_sidecar_path"
+V3K_SETTINGS_PREVIEW_SESSION_DIRTY_ATTR = "v3k_settings_preview_session_dirty"
 
 
 @dataclass(frozen=True)
@@ -26,13 +32,46 @@ class V3KSettingsPreviewAttachResult:
     row_count: int
     ui_row_count: int
     persistent_writes: bool = False
+    sidecar_read_only: bool = True
+    sidecar_valid: bool = False
+    sidecar_diagnostics: tuple[str, ...] = ()
 
 
 def _preview_rows() -> tuple[dict[str, Any], ...]:
     return tuple(row for row in v3k_settings_contract_rows() if row["ui_exposable"])
 
 
-def attach_v3k_settings_preview(ui_like: Any) -> V3KSettingsPreviewAttachResult:
+def initialize_v3k_preview_from_sidecar(
+    ui_like: Any,
+    sidecar_path: str | Path | None = None,
+) -> V3KSettingsSurfaceResult:
+    """Initialize session-only preview state from a read-only sidecar candidate."""
+
+    sidecar_result = (
+        load_v3k_gui_sidecar_file()
+        if sidecar_path is None
+        else load_v3k_gui_sidecar_file(sidecar_path)
+    )
+    normalized = normalize_v3k_settings(sidecar_result.settings if sidecar_result.valid else {})
+
+    setattr(ui_like, V3K_SETTINGS_PREVIEW_SIDECAR_RESULT_ATTR, sidecar_result)
+    if sidecar_path is not None:
+        setattr(ui_like, V3K_SETTINGS_PREVIEW_SIDECAR_PATH_ATTR, str(sidecar_path))
+    setattr(ui_like, V3K_SETTINGS_PREVIEW_SESSION_DIRTY_ATTR, False)
+    setattr(ui_like, "v3k_settings", dict(normalized.settings))
+    setattr(ui_like, "v3k_feature_flags", dict(normalized.feature_flags))
+    setattr(
+        ui_like,
+        "v3k_settings_diagnostics",
+        tuple(normalized.diagnostics) + tuple(sidecar_result.diagnostics),
+    )
+    return normalized
+
+
+def attach_v3k_settings_preview(
+    ui_like: Any,
+    sidecar_path: str | Path | None = None,
+) -> V3KSettingsPreviewAttachResult:
     """Attach a session-only V3K settings preview opener to a MainWindow-like object.
 
     This helper intentionally does not create a widget at startup. It only adds a
@@ -41,12 +80,17 @@ def attach_v3k_settings_preview(ui_like: Any) -> V3KSettingsPreviewAttachResult:
     ``v3k_settings`` / ``v3k_feature_flags`` attributes on the supplied object.
     """
 
+    initialize_v3k_preview_from_sidecar(ui_like, sidecar_path)
+    sidecar_result = getattr(ui_like, V3K_SETTINGS_PREVIEW_SIDECAR_RESULT_ATTR)
+
     result = V3KSettingsPreviewAttachResult(
         version=V3K_SETTINGS_PREVIEW_VERSION,
         method_name=V3K_SETTINGS_PREVIEW_METHOD,
         session_only=True,
         row_count=len(v3k_settings_contract_rows()),
         ui_row_count=len(_preview_rows()),
+        sidecar_valid=sidecar_result.valid,
+        sidecar_diagnostics=tuple(sidecar_result.diagnostics),
     )
     setattr(ui_like, V3K_SETTINGS_PREVIEW_SESSION_ONLY_ATTR, True)
     setattr(ui_like, V3K_SETTINGS_PREVIEW_RESULT_ATTR, result)
@@ -87,6 +131,7 @@ def set_v3k_preview_session_flag(ui_like: Any, key: str, checked: bool) -> None:
     current_settings[key] = bool(checked)
 
     normalized = normalize_v3k_settings(current_settings)
+    setattr(ui_like, V3K_SETTINGS_PREVIEW_SESSION_DIRTY_ATTR, True)
     setattr(ui_like, "v3k_settings", dict(normalized.settings))
     setattr(ui_like, "v3k_feature_flags", dict(normalized.feature_flags))
     setattr(ui_like, "v3k_settings_diagnostics", tuple(normalized.diagnostics))
@@ -96,6 +141,7 @@ def reset_v3k_preview_session_flags(ui_like: Any) -> None:
     """Reset the preview state to default-OFF in memory only."""
 
     normalized = normalize_v3k_settings({})
+    setattr(ui_like, V3K_SETTINGS_PREVIEW_SESSION_DIRTY_ATTR, True)
     setattr(ui_like, "v3k_settings", dict(normalized.settings))
     setattr(ui_like, "v3k_feature_flags", dict(normalized.feature_flags))
     setattr(ui_like, "v3k_settings_diagnostics", tuple(normalized.diagnostics))

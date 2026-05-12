@@ -17,6 +17,7 @@ from ui.ui_v3k_settings_preview import (  # noqa: E402
     V3K_SETTINGS_PREVIEW_DIALOG_ATTR,
     V3K_SETTINGS_PREVIEW_METHOD,
     V3K_SETTINGS_PREVIEW_RESULT_ATTR,
+    V3K_SETTINGS_PREVIEW_SIDECAR_RESULT_ATTR,
     V3K_SETTINGS_PREVIEW_SESSION_ONLY_ATTR,
     attach_v3k_settings_preview,
     build_v3k_settings_preview_model,
@@ -78,8 +79,11 @@ def _assert_attach_adds_lazy_session_only_opener() -> None:
     assert bridge_result.all_off
     assert preview_result.session_only is True
     assert preview_result.persistent_writes is False
+    assert preview_result.sidecar_read_only is True
+    assert preview_result.sidecar_valid is False
     assert getattr(window, V3K_SETTINGS_PREVIEW_SESSION_ONLY_ATTR) is True
     assert getattr(window, V3K_SETTINGS_PREVIEW_RESULT_ATTR) == preview_result
+    assert getattr(window, V3K_SETTINGS_PREVIEW_SIDECAR_RESULT_ATTR).valid is False
     assert callable(getattr(window, V3K_SETTINGS_PREVIEW_METHOD))
     assert not hasattr(window, V3K_SETTINGS_PREVIEW_DIALOG_ATTR), "dialog must be lazy"
     assert window.dict_set is source, "preview attach must not replace dict_set"
