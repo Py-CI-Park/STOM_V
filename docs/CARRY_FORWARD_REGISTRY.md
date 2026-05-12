@@ -1086,3 +1086,21 @@ Directive: Do not connect this hook to real Kiwoom runtime, KHOPENAPI login, or 
 - Next: Page 028 / mid-checkpoint v3.
 
 Directive: Do not use production learning DB rows in live strategy/order/exit decisions before Phase F parity, explicit ON gate, rollback flag, and user approval.
+## V3K-MIDPOINT-V3: A1/A2/A3 완료 후 중간 점검
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Baseline: `cd6f5bd24bd41a190feb59a8cc65b921df84ca0d`
+- Reviewed HEAD: `bbb8975a V3K production learning DB read를 mode-ro 경계로 고정한다`
+- Records:
+  - `docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md`
+  - `docs/plans/2026-05-12_v3k_page_028_mid_checkpoint_v3_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_029_f1_db_cutover_pre_ralplan_plan.md`
+- Decision: v1/v2 checkpoint를 amend하지 않고 v3 snapshot으로 A1/A2/A3 완료 후 방향을 재고정한다.
+- Progress: F6 execution progress `225/700 = 32.1%` → `300/700 = 42.9%`; plan coverage `600/700 = 85.7%` → `700/700 = 100.0%`; f51 major step `4/13 = 30.8%`.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다. H-1은 contract-only hook이며 H-2/H-3는 KHOPENAPI 환경과 사용자 승인 전까지 gate로 남긴다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 계속 0건이어야 하며 V3K에서는 영구 금지 항목으로 유지한다.
+- DB boundary: F5 production read는 SQLite `mode=ro` + `PRAGMA query_only = ON` 경계만 허용한다. 운영 `_database/` write와 DB 파일 commit은 금지한다.
+- Next: Page 029 / `f1-db-cutover-pre-ralplan`. 실제 DB cutover가 아니라 LC1/LC2/LC3 재합의와 pre-mortem 문서화부터 수행한다.
+
+Directive: Do not jump from the v3 checkpoint directly to operational DB cutover. The next safe step is consensus/pre-mortem only; cutover scripts and actual cutover remain separate gated commits.
