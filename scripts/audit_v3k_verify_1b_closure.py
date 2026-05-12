@@ -35,6 +35,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
+    "docs/update_log/2026-05-12_v3k_f1_cutover_scripts_dryrun.md",
 )
 
 REQUIRED_CODE = (
@@ -75,6 +76,10 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_gui_sidecar_readonly_loader.py",
     "scripts/smoke_v3k_gui_sidecar_schema_validator.py",
     "scripts/smoke_v3k_settings_surface.py",
+    "scripts/backup_operational_database.py",
+    "scripts/cutover_v3k_shadow_to_database.py",
+    "scripts/smoke_v3k_cutover_dryrun.py",
+    "scripts/rollback_v3k_cutover.py",
 )
 
 SAFE_STAGED_COMPLETED = (
@@ -88,6 +93,7 @@ SAFE_STAGED_COMPLETED = (
     "Non-invasive settings surface contract",
     "GUI sidecar persistence design, schema validator, read-only loader, write guard, read-only preview init, and tempfile-only writer prototype",
     "Phase H H-1 Kiwoom dry-run hook contract-only module, sentinel audit, and unit smoke",
+    "F1 backup/cutover/rollback scripts with tempfile-only dry-run smoke and actual cutover approval gate",
     "OFF regression and Kiwoom untouched audit",
 )
 

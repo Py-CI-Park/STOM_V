@@ -1123,3 +1123,31 @@ Directive: Do not jump from the v3 checkpoint directly to operational DB cutover
 - Next: Page 030 / `f1-cutover-script-dryrun`. 실제 cutover가 아니라 script 신설과 tempfile-only dry-run 검증이다.
 
 Directive: Do not interpret Page 029 approval as actual cutover approval. Only Page 030 script/dry-run work is unlocked; T05 actual cutover still requires explicit user approval and a separate commit cycle.
+
+## V3K-F1-SCRIPT-DRYRUN: DB cutover script와 tempfile 검증
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook B2, Page 030 plan
+- Records:
+  - `docs/update_log/2026-05-12_v3k_f1_cutover_scripts_dryrun.md`
+  - `docs/plans/2026-05-12_v3k_page_030_f1_cutover_scripts_dryrun_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_031_f1_actual_cutover_approval_gate_plan.md`
+- Added/modified:
+  - `scripts/backup_operational_database.py`
+  - `scripts/cutover_v3k_shadow_to_database.py`
+  - `scripts/smoke_v3k_cutover_dryrun.py`
+  - `scripts/rollback_v3k_cutover.py`
+  - `.gitignore`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: Page 030은 actual cutover가 아니라 script + tempfile dry-run 검증이다.
+- Decision: apply 경로는 branch guard, `V3K_CUTOVER_USER_ACK=1`, backup-first, backup manifest checksum, real `_database` target extra flag를 요구한다.
+- Decision: `_database.backup.*/`는 commit 금지 artifact로 `.gitignore`에 추가한다.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 추가하지 않는다.
+- DB boundary: smoke는 `tempfile.TemporaryDirectory` fixture만 사용한다. 운영 `_database/`, `_database_v3k_shadow/`, backup 디렉터리, DB 파일은 변경·커밋하지 않는다.
+- Verification: py_compile passed; `smoke_v3k_cutover_dryrun.py` passed; runtime activation gap audit passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB/sidecar artifact status stayed clean.
+- Next: Page 031 / `f1-actual-cutover-approval-gate`. 실제 cutover를 실행하지 말고 사용자 승인과 gate 충족 여부만 문서화한다.
+
+Directive: Do not treat the presence of cutover scripts as approval to run them against `_database/`. Actual cutover still requires a separate user-approved cycle with backup, health, and monitoring evidence.

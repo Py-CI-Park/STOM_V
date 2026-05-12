@@ -97,6 +97,7 @@ backtest/graph/
 
 # V3K Phase A shadow DB rehearsal artifacts
 _database_v3k_shadow/
+_database.backup.*/
 .omx/reports/v3k-db-health.*.json
 .omx/reports/v3k-shadow-apply-report.json
 .omx/reports/v3k-phase-a-diff*.md

@@ -1,4 +1,4 @@
-# V3K Page 030 — F1 cutover scripts dry-run 계획
+# V3K Page 030 — F1 cutover scripts dry-run 완료 계획
 
 | 항목 | 값 |
 | --- | --- |
@@ -7,8 +7,9 @@
 | branch | `STOM_Version_2U_C` |
 | 이전 page | Page 029 / F1 DB cutover 사전 ralplan |
 | f51 단계 | B2 |
-| 위험도 | 높음(단, 본 page는 script + tempfile dry-run만 허용) |
+| page 상태 | 완료 |
 | 실제 cutover | 금지 |
+| 다음 page | Page 031 / F1 actual cutover approval gate |
 
 ---
 
@@ -18,15 +19,15 @@ Page 030은 F1 actual cutover가 아니라, actual cutover를 안전하게 실�
 
 ---
 
-## 1. In-scope
+## 1. 완료 산출
 
-| Step | 산출 | 제한 |
+| Step | 산출 | 결과 |
 | ---: | --- | --- |
-| 030-1 | `scripts/backup_operational_database.py` | dry-run 기본, 실제 apply는 별도 승인 전까지 guard |
-| 030-2 | `scripts/cutover_v3k_shadow_to_database.py` | apply는 branch/backup-first/ack guard 없으면 거부 |
-| 030-3 | `scripts/smoke_v3k_cutover_dryrun.py` | tempfile fixture만 사용 |
-| 030-4 | `scripts/rollback_v3k_cutover.py` | tempfile rollback 검증 |
-| 030-5 | `.gitignore` backup 정책 | `_database.backup.*` commit 금지 |
+| 030-1 | `scripts/backup_operational_database.py` | dry-run 기본, apply branch/ACK guard |
+| 030-2 | `scripts/cutover_v3k_shadow_to_database.py` | branch/ACK/backup-first/backup-dir/real-target guard |
+| 030-3 | `scripts/smoke_v3k_cutover_dryrun.py` | tempfile fixture smoke PASS |
+| 030-4 | `scripts/rollback_v3k_cutover.py` | branch/ACK/real-target guard |
+| 030-5 | `.gitignore` backup 정책 | `_database.backup.*/` commit 금지 |
 | 030-6 | update_log/registry 갱신 | actual cutover gate 유지 |
 
 ---
@@ -43,7 +44,7 @@ Page 030은 F1 actual cutover가 아니라, actual cutover를 안전하게 실�
 
 ---
 
-## 3. 검증
+## 3. 완료 검증
 
 ```powershell
 python -m py_compile scripts/backup_operational_database.py scripts/cutover_v3k_shadow_to_database.py scripts/smoke_v3k_cutover_dryrun.py scripts/rollback_v3k_cutover.py
@@ -58,8 +59,8 @@ git status --short -- _database _database_v3k_shadow _log backup *.db backtest/g
 
 ---
 
-## 4. 추천 OMX 명령
+## 4. 다음 OMX 명령
 
 ```powershell
-omx ralph "force: V3K F1 DB cutover script/dry-run 신설을 1단계만 수행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md, docs/plans/2026-05-12_v3k_page_030_f1_cutover_scripts_dryrun_plan.md, docs/plans/2026-05-12_v3k_db_cutover_plan.md, docs/CARRY_FORWARD_REGISTRY.md를 먼저 읽는다. scripts/backup_operational_database.py, scripts/cutover_v3k_shadow_to_database.py, scripts/smoke_v3k_cutover_dryrun.py, scripts/rollback_v3k_cutover.py를 신설하되 운영 _database write, 실제 cutover, DB 파일 commit, Kiwoom live runtime, LS Securities 직접 의존, feature flag ON 전환은 금지한다. 모든 apply 경로는 branch/backup-first/V3K_CUTOVER_USER_ACK guard로 막고 smoke는 tempfile fixture만 사용한다. 완료 시 docs/update_log와 registry를 갱신하고 py_compile, smoke_v3k_cutover_dryrun, audit_v3k_runtime_activation_gap, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시킨 뒤 한국어 Lore commit한다."
+omx ralph "force: V3K F1 actual cutover approval gate를 1단계만 수행한다. 대상은 C:/System_Trading/STOM/STOM_V.wt-dev 의 STOM_Version_2U_C branch다. docs/update_log/2026-05-12_v3k_f1_cutover_scripts_dryrun.md, docs/plans/2026-05-12_v3k_page_031_f1_actual_cutover_approval_gate_plan.md, docs/plans/2026-05-12_v3k_db_cutover_plan.md, docs/CARRY_FORWARD_REGISTRY.md를 먼저 읽는다. 사용자 명시 승인, 운영 _database backup apply, actual cutover, DB 파일 commit, Kiwoom live runtime, LS Securities 직접 의존, feature flag ON 전환은 수행하지 말고 gate 충족 여부와 승인 필요 조건만 문서화한다. 완료 시 update_log/registry/audit next candidate를 갱신하고 audit_v3k_runtime_activation_gap, audit_v3k_verify_1a --base 57496d24, audit_v3k_verify_1b_closure, verify_nonrelease_sync, git diff --check, DB artifact status를 통과시킨 뒤 한국어 Lore commit한다."
 ```

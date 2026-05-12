@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "f1-cutover-script-dryrun"
+NEXT_CANDIDATE = "f1-actual-cutover-approval-gate"
 
 HELD_ITEMS = (
     {
@@ -63,8 +63,14 @@ HELD_ITEMS = (
     {
         "item": "f1-cutover-script-dryrun",
         "risk": "high",
+        "status": "completed-script-dryrun",
+        "reason": "Backup/cutover/rollback scripts and tempfile-only dry-run smoke are staged without operating DB writes.",
+    },
+    {
+        "item": "f1-actual-cutover-approval-gate",
+        "risk": "critical",
         "status": "next",
-        "reason": "Next f51 B2 step may create backup/cutover/rollback scripts and tempfile-only dry-run smoke without operating DB writes.",
+        "reason": "Actual cutover is the next f51 gate, but only approval conditions may be documented until explicit user approval.",
     },
     {
         "item": "db-cutover-migration",
@@ -84,10 +90,19 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_028_mid_checkpoint_v3_plan.md",
     "docs/plans/2026-05-12_v3k_page_029_f1_db_cutover_pre_ralplan_plan.md",
     "docs/plans/2026-05-12_v3k_page_030_f1_cutover_scripts_dryrun_plan.md",
+    "docs/plans/2026-05-12_v3k_page_031_f1_actual_cutover_approval_gate_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
+    "docs/update_log/2026-05-12_v3k_f1_cutover_scripts_dryrun.md",
+)
+
+REQUIRED_SCRIPTS = (
+    "scripts/backup_operational_database.py",
+    "scripts/cutover_v3k_shadow_to_database.py",
+    "scripts/smoke_v3k_cutover_dryrun.py",
+    "scripts/rollback_v3k_cutover.py",
 )
 
 RUNTIME_GUARDED_FILES = (
@@ -113,13 +128,16 @@ def _assert_required_docs_exist() -> None:
     missing = [path for path in REQUIRED_DOCS if not (ROOT / path).is_file()]
     if missing:
         raise AssertionError(f"missing runtime activation review docs: {missing}")
+    missing_scripts = [path for path in REQUIRED_SCRIPTS if not (ROOT / path).is_file()]
+    if missing_scripts:
+        raise AssertionError(f"missing runtime activation scripts: {missing_scripts}")
 
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["f1-cutover-script-dryrun"]:
+    if [item["item"] for item in next_items] != ["f1-actual-cutover-approval-gate"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "f1-cutover-script-dryrun":
+    if NEXT_CANDIDATE != "f1-actual-cutover-approval-gate":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
