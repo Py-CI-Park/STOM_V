@@ -37,6 +37,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
     "docs/update_log/2026-05-12_v3k_f1_cutover_scripts_dryrun.md",
     "docs/update_log/2026-05-12_v3k_f1_actual_cutover_approval_gate.md",
+    "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
 )
 
 REQUIRED_CODE = (

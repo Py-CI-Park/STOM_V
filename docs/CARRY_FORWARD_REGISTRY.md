@@ -1169,3 +1169,21 @@ Directive: Do not treat the presence of cutover scripts as approval to run them 
 - Next: Page 032 / `phase-h-h2-h3-approval-gate`. 실제 KHOPENAPI live dry-run이 아니라 환경/승인 gate 문서화만 수행한다.
 
 Directive: Do not run `cutover_v3k_shadow_to_database.py --apply` against the real `_database/` unless the user explicitly approves actual cutover in a separate cycle.
+
+## V3K-PHASE-H-H2H3-GATE: KHOPENAPI live dry-run 승인 대기
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook B3, Page 032 plan
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md`
+  - `docs/plans/2026-05-12_v3k_page_032_phase_h_h2_h3_approval_gate_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_033_phase_f_analyzer_pre_ralplan_plan.md`
+- Decision: H-2/H-3 actual KHOPENAPI live dry-run과 ON 전환은 현재 BLOCK 상태로 유지한다.
+- Missing gates: KHOPENAPI 호환 환경, `V3K_PHASE_H_USER_ACK=1`, live dry-run 승인, 주문 API 0건 증거, post-health, ON 승인, 7일 monitoring.
+- Kiwoom adjustment: H-1 contract-only hook은 유지하지만 Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 추가하지 않는다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, sidecar, DB 파일은 변경·커밋하지 않는다.
+- Next: Page 033 / `phase-f-pre-ralplan`. Phase F analyzer 전략 반영 전 LF1~LF4 재합의만 수행한다.
+
+Directive: Do not run KHOPENAPI connect/login, live dry-run, or Phase H ON transition unless the user explicitly approves an H-2/H-3 execution cycle in a compatible environment.

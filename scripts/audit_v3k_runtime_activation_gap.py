@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-h-h2-h3-approval-gate"
+NEXT_CANDIDATE = "phase-f-pre-ralplan"
 
 HELD_ITEMS = (
     {
@@ -27,8 +27,8 @@ HELD_ITEMS = (
     {
         "item": "live-kiwoom-dryrun-hook",
         "risk": "medium-high",
-        "status": "h1-contract-staged-h2-gated",
-        "reason": "H-1 hook/smoke/sentinel contract is staged without runtime connection; H-2/H-3 need KHOPENAPI environment and approval.",
+        "status": "h1-contract-staged-h2-h3-blocked",
+        "reason": "H-1 hook/smoke/sentinel contract is staged; H-2/H-3 remain blocked until KHOPENAPI environment and explicit user approval.",
     },
     {
         "item": "analyzer-db-constructor-runtime-use",
@@ -81,8 +81,14 @@ HELD_ITEMS = (
     {
         "item": "phase-h-h2-h3-approval-gate",
         "risk": "critical",
+        "status": "blocked-awaiting-khopenapi-user-approval",
+        "reason": "H-2/H-3 gate documented no-go; KHOPENAPI environment, user ACK, live dry-run evidence, ON approval, and monitoring are missing.",
+    },
+    {
+        "item": "phase-f-pre-ralplan",
+        "risk": "high",
         "status": "next",
-        "reason": "Next f51 row is Phase H H-2/H-3, but only KHOPENAPI/user-approval gate documentation is allowed before live dry-run.",
+        "reason": "Next f51 C1 step is Phase F analyzer strategy consensus; planning only, no live order/exit consumption.",
     },
 )
 
@@ -98,7 +104,9 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_030_f1_cutover_scripts_dryrun_plan.md",
     "docs/plans/2026-05-12_v3k_page_031_f1_actual_cutover_approval_gate_plan.md",
     "docs/plans/2026-05-12_v3k_page_032_phase_h_h2_h3_approval_gate_plan.md",
+    "docs/plans/2026-05-12_v3k_page_033_phase_f_analyzer_pre_ralplan_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
+    "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
@@ -143,9 +151,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-h-h2-h3-approval-gate"]:
+    if [item["item"] for item in next_items] != ["phase-f-pre-ralplan"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-h-h2-h3-approval-gate":
+    if NEXT_CANDIDATE != "phase-f-pre-ralplan":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
