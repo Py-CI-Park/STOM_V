@@ -34,6 +34,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
+    "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
 )
 
 REQUIRED_CODE = (

@@ -1104,3 +1104,22 @@ Directive: Do not use production learning DB rows in live strategy/order/exit de
 - Next: Page 029 / `f1-db-cutover-pre-ralplan`. 실제 DB cutover가 아니라 LC1/LC2/LC3 재합의와 pre-mortem 문서화부터 수행한다.
 
 Directive: Do not jump from the v3 checkpoint directly to operational DB cutover. The next safe step is consensus/pre-mortem only; cutover scripts and actual cutover remain separate gated commits.
+
+## V3K-F1-PRE-RALPLAN: DB cutover 사전 합의와 pre-mortem
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook B1, Page 029 plan
+- Records:
+  - `docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md`
+  - `docs/plans/2026-05-12_v3k_page_029_f1_db_cutover_pre_ralplan_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_030_f1_cutover_scripts_dryrun_plan.md`
+- Decision: F1 cutover는 B1 사전 합의 → B2 script/dry-run → T05 actual cutover의 3단계로 분리한다.
+- Decision: Page 030에서는 backup/cutover/rollback script와 tempfile dry-run smoke만 허용하고, 운영 `_database/` write와 actual cutover는 금지한다.
+- Decision: LC1 backup-first, LC2 단일 commit + 사용자 명시 승인, LC3 7일 모니터링은 유지하되, `V3K_CUTOVER_USER_ACK`와 branch/backup-first guard를 script 단계에서 강제해야 한다.
+- Kiwoom adjustment: DB cutover 준비 단계는 Kiwoom 주문/청산/live runtime을 건드리지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 추가하지 않는다.
+- DB boundary: 본 단계는 문서/합의만 수행한다. 운영 `_database/`, `_database_v3k_shadow`, backup 디렉터리, DB 파일은 변경·커밋하지 않는다.
+- Next: Page 030 / `f1-cutover-script-dryrun`. 실제 cutover가 아니라 script 신설과 tempfile-only dry-run 검증이다.
+
+Directive: Do not interpret Page 029 approval as actual cutover approval. Only Page 030 script/dry-run work is unlocked; T05 actual cutover still requires explicit user approval and a separate commit cycle.

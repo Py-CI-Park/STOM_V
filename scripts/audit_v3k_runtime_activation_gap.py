@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "f1-db-cutover-pre-ralplan"
+NEXT_CANDIDATE = "f1-cutover-script-dryrun"
 
 HELD_ITEMS = (
     {
@@ -57,8 +57,14 @@ HELD_ITEMS = (
     {
         "item": "f1-db-cutover-pre-ralplan",
         "risk": "medium-high",
+        "status": "completed-consensus",
+        "reason": "B1 consensus/pre-mortem completed; actual DB cutover remains user-approval gated.",
+    },
+    {
+        "item": "f1-cutover-script-dryrun",
+        "risk": "high",
         "status": "next",
-        "reason": "Next f51 B1 step is consensus/pre-mortem only; actual DB cutover remains user-approval gated.",
+        "reason": "Next f51 B2 step may create backup/cutover/rollback scripts and tempfile-only dry-run smoke without operating DB writes.",
     },
     {
         "item": "db-cutover-migration",
@@ -77,9 +83,11 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_027_f5_production_learning_db_read_plan.md",
     "docs/plans/2026-05-12_v3k_page_028_mid_checkpoint_v3_plan.md",
     "docs/plans/2026-05-12_v3k_page_029_f1_db_cutover_pre_ralplan_plan.md",
+    "docs/plans/2026-05-12_v3k_page_030_f1_cutover_scripts_dryrun_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
+    "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
 )
 
 RUNTIME_GUARDED_FILES = (
@@ -109,9 +117,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["f1-db-cutover-pre-ralplan"]:
+    if [item["item"] for item in next_items] != ["f1-cutover-script-dryrun"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "f1-db-cutover-pre-ralplan":
+    if NEXT_CANDIDATE != "f1-cutover-script-dryrun":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
