@@ -40,6 +40,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f123_pre_on_work.md",
+    "docs/update_log/2026-05-13_v3k_phase_f_f4_approval_gate.md",
 )
 
 REQUIRED_CODE = (
@@ -103,6 +104,7 @@ SAFE_STAGED_COMPLETED = (
     "F1 backup/cutover/rollback scripts with tempfile-only dry-run smoke and actual cutover approval gate",
     "Phase F analyzer strategy pre-ralplan consensus with LF1-LF4, pre-mortem, expanded tests, and F-4 approval split",
     "Phase F F-1/F-2/F-3 pre-ON adapter, parity, dual gate, and rollback proof",
+    "Phase F F-4 approval gate documented as blocked before ON",
     "OFF regression and Kiwoom untouched audit",
 )
 

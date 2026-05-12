@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-f-f4-approval-gate"
+NEXT_CANDIDATE = "phase-g-g1-pre-ralplan"
 
 HELD_ITEMS = (
     {
@@ -99,8 +99,14 @@ HELD_ITEMS = (
     {
         "item": "phase-f-f4-approval-gate",
         "risk": "critical",
+        "status": "blocked-awaiting-user-approval",
+        "reason": "F-4 ON is blocked: explicit user ACK, V3K_PHASE_F_USER_ACK=1, F1/sidecar source-of-truth, V3K-PHASE-F-ENABLE registry, and 24h monitoring are missing.",
+    },
+    {
+        "item": "phase-g-g1-pre-ralplan",
+        "risk": "high",
         "status": "next",
-        "reason": "Next step is Phase F F-4 approval gate only; actual ON still requires explicit user ACK, registry, and monitoring evidence.",
+        "reason": "Next f51 C3 step is Phase G G-1 consensus only; no microstructure implementation before LG1-LG5 deliberate review.",
     },
 )
 
@@ -119,10 +125,12 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_033_phase_f_analyzer_pre_ralplan_plan.md",
     "docs/plans/2026-05-12_v3k_page_034_phase_f_f123_pre_on_work_plan.md",
     "docs/plans/2026-05-13_v3k_page_035_phase_f_f4_approval_gate_plan.md",
+    "docs/plans/2026-05-13_v3k_page_036_phase_g_g1_pre_ralplan_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f123_pre_on_work.md",
+    "docs/update_log/2026-05-13_v3k_phase_f_f4_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
@@ -170,9 +178,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-f-f4-approval-gate"]:
+    if [item["item"] for item in next_items] != ["phase-g-g1-pre-ralplan"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-f-f4-approval-gate":
+    if NEXT_CANDIDATE != "phase-g-g1-pre-ralplan":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

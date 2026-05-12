@@ -1237,3 +1237,21 @@ Directive: Do not treat Phase F pre-ralplan as approval to enable analyzer outpu
 - Next: Page 035 / `phase-f-f4-approval-gate`. 실제 ON이 아니라 사용자 승인과 운영 조건 충족 여부만 확인한다.
 
 Directive: Do not add `V3K-PHASE-F-ENABLE` or run F-4 ON from Page034 evidence alone. F-4 requires a separate explicit user-approved cycle with parity, rollback, registry, and monitoring evidence.
+
+## V3K-PHASE-F-F4-GATE: analyzer output ON 전환 승인 대기
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook C2 이후 F-4 approval gate, Page 035 plan
+- Records:
+  - `docs/update_log/2026-05-13_v3k_phase_f_f4_approval_gate.md`
+  - `docs/plans/2026-05-13_v3k_page_035_phase_f_f4_approval_gate_plan.md`
+  - `docs/plans/2026-05-13_v3k_page_036_phase_g_g1_pre_ralplan_plan.md`
+- Decision: F-4 ON 전환은 현재 `blocked-awaiting-user-approval`로 고정한다. Page034 pre-ON proof는 ON 승인으로 해석하지 않는다.
+- Missing gates: 사용자 명시 승인, `V3K_PHASE_F_USER_ACK=1`, F1 actual cutover 또는 sidecar source-of-truth 결정, `V3K-PHASE-F-ENABLE` registry, 24h monitoring 계획.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다. Analyzer output은 live order/exit rule 소비 경로에 연결하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 추가하지 않는다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, sidecar, DB 파일은 변경·커밋하지 않는다.
+- Next: Page 036 / `phase-g-g1-pre-ralplan`. Phase G microstructure engine 구현 전에 LG1~LG5 consensus, V3 engine inventory, Kiwoom OPT* mapping, expanded test plan을 먼저 문서화한다.
+
+Directive: Do not create `V3K-PHASE-F-ENABLE`, set `V3K_PHASE_F_USER_ACK=1`, or connect analyzer output to live/runtime decisions unless the user explicitly approves a separate F-4 ON cycle with registry and monitoring evidence.
