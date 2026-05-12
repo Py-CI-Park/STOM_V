@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-g-g1-engine-staging"
+NEXT_CANDIDATE = "phase-g-g2-parity-benchmark-plan"
 
 HELD_ITEMS = (
     {
@@ -111,8 +111,14 @@ HELD_ITEMS = (
     {
         "item": "phase-g-g1-engine-staging",
         "risk": "high",
+        "status": "completed-default-off-staging",
+        "reason": "G-1 T01-T05 completed: inventory, Kiwoom mapping, default-OFF engine staging, broker-marker audit, and unit smoke.",
+    },
+    {
+        "item": "phase-g-g2-parity-benchmark-plan",
+        "risk": "high",
         "status": "next",
-        "reason": "Next step is Page037 G-1 T01-T05 only: inventory, Kiwoom mapping, LS-free default-OFF engine staging, LS audit, and unit smoke.",
+        "reason": "Next step is Page038 G-2 parity/benchmark planning; Phase G ON remains blocked until separate G-3 approval.",
     },
 )
 
@@ -133,12 +139,16 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_035_phase_f_f4_approval_gate_plan.md",
     "docs/plans/2026-05-13_v3k_page_036_phase_g_g1_pre_ralplan_plan.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
+    "docs/plans/2026-05-13_v3k_page_038_phase_g_g2_parity_benchmark_plan.md",
+    "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f123_pre_on_work.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f4_approval_gate.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g1_pre_ralplan.md",
+    "docs/update_log/2026-05-13_v3k_kiwoom_opt_data_shape_mapping.md",
+    "docs/update_log/2026-05-13_v3k_phase_g_g1_engine_staging.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
@@ -154,6 +164,8 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_phase_f_default_off.py",
     "scripts/backtest_v3k_phase_f_parity.py",
     "scripts/audit_v3k_phase_f_rollback.py",
+    "scripts/audit_v3k_phase_g_ls_excise.py",
+    "scripts/smoke_v3k_phase_g_engine_unit.py",
 )
 
 RUNTIME_GUARDED_FILES = (
@@ -186,9 +198,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-g-g1-engine-staging"]:
+    if [item["item"] for item in next_items] != ["phase-g-g2-parity-benchmark-plan"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-g-g1-engine-staging":
+    if NEXT_CANDIDATE != "phase-g-g2-parity-benchmark-plan":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

@@ -1273,3 +1273,30 @@ Directive: Do not create `V3K-PHASE-F-ENABLE`, set `V3K_PHASE_F_USER_ACK=1`, or 
 - Next: Page 037 / `phase-g-g1-engine-staging`. T01~T05만 수행하고 G-2 parity/benchmark 및 G-3 ON은 섞지 않는다.
 
 Directive: Do not implement Phase G ON, `V3K-PHASE-G-ENABLE`, or live runtime consumption during G-1. G-1 may only create inventory, mapping, LS-free default-OFF engine staging, audit guard, and unit smoke.
+
+## V3K-PHASE-G-G1-STAGING: microstructure engine default-OFF staging
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 037 plan, Phase G G-1 T01~T05
+- Records:
+  - `docs/plans/v3k_phase_g_inventory.md`
+  - `docs/update_log/2026-05-13_v3k_kiwoom_opt_data_shape_mapping.md`
+  - `docs/update_log/2026-05-13_v3k_phase_g_g1_engine_staging.md`
+  - `docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md`
+  - `docs/plans/2026-05-13_v3k_page_038_phase_g_g2_parity_benchmark_plan.md`
+- Added/modified:
+  - `strategy/v3k_microstructure_engine.py`
+  - `scripts/audit_v3k_phase_g_ls_excise.py`
+  - `scripts/smoke_v3k_phase_g_engine_unit.py`
+  - `strategy/v3k_analyzer_adapter.py`
+  - `scripts/audit_v3k_verify_1a.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: G-1 T01~T05는 default-OFF/caller-owned data 전용 staging으로 완료한다. G-2 parity/benchmark와 G-3 ON은 별도 cycle로 분리한다.
+- Kiwoom adjustment: 기존 2U_C field name(`현재가`, `초당매수수량`, `매도호가1..5`, `매수잔량1..5`)을 mapping으로 사용하되, Kiwoom API/runtime을 직접 호출하지 않는다.
+- Broker dependency exclusion: broker runtime marker와 금지 import는 `scripts/audit_v3k_phase_g_ls_excise.py`에서 0건이어야 한다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, sidecar, DB 파일은 변경·커밋하지 않는다.
+- Next: Page 038 / `phase-g-g2-parity-benchmark-plan`. parity ±15%, 성능 ±20% 검증을 준비하되 ON은 하지 않는다.
+
+Directive: Do not connect `strategy/v3k_microstructure_engine.py` to live strategy/order/exit paths or create `V3K-PHASE-G-ENABLE` before G-2 proof and a separate G-3 user approval cycle.
