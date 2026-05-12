@@ -39,6 +39,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_f1_actual_cutover_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
+    "docs/update_log/2026-05-13_v3k_phase_f_f123_pre_on_work.md",
 )
 
 REQUIRED_CODE = (
@@ -83,6 +84,9 @@ REQUIRED_SCRIPTS = (
     "scripts/cutover_v3k_shadow_to_database.py",
     "scripts/smoke_v3k_cutover_dryrun.py",
     "scripts/rollback_v3k_cutover.py",
+    "scripts/smoke_v3k_phase_f_default_off.py",
+    "scripts/backtest_v3k_phase_f_parity.py",
+    "scripts/audit_v3k_phase_f_rollback.py",
 )
 
 SAFE_STAGED_COMPLETED = (
@@ -98,6 +102,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase H H-1 Kiwoom dry-run hook contract-only module, sentinel audit, and unit smoke",
     "F1 backup/cutover/rollback scripts with tempfile-only dry-run smoke and actual cutover approval gate",
     "Phase F analyzer strategy pre-ralplan consensus with LF1-LF4, pre-mortem, expanded tests, and F-4 approval split",
+    "Phase F F-1/F-2/F-3 pre-ON adapter, parity, dual gate, and rollback proof",
     "OFF regression and Kiwoom untouched audit",
 )
 

@@ -5,9 +5,14 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from strategy.v3k_analyzer_adapter import (
+    DB_FLAG_PHASE_F_ANALYZER_STRATEGY,
+    ENV_PHASE_F_DISABLE,
+    ENV_PHASE_F_ENABLE,
     FLAG_FORMULA_GLOBAL_FACADE,
     FLAG_STG_GLOBALS_FACADE,
+    V3KPhaseFAnalyzerGateResult,
     V3KAnalyzerOutput,
+    evaluate_phase_f_analyzer_gate,
     normalize_v3k_flags,
 )
 
@@ -83,6 +88,22 @@ class V3KFormulaGlobalDryRunResult:
     @property
     def ready(self) -> bool:
         return self.enabled and not self.collisions
+
+    @property
+    def globals_dict(self) -> dict[str, Any]:
+        return self.formula_result.globals_dict
+
+
+@dataclass(frozen=True)
+class V3KPhaseFFormulaResult:
+    """Phase F pre-ON formula result with explicit dual-gate evidence."""
+
+    gate: V3KPhaseFAnalyzerGateResult
+    formula_result: V3KFormulaGlobalResult
+
+    @property
+    def enabled(self) -> bool:
+        return self.gate.enabled and self.formula_result.has_globals
 
     @property
     def globals_dict(self) -> dict[str, Any]:
@@ -204,6 +225,53 @@ class V3KFormulaGlobalFacade:
             values=values,
             globals_dict=globals_dict,
             diagnostics=("formula/global facade dry-run built",) + diagnostics,
+        )
+
+    def build_phase_f(
+        self,
+        request: V3KFormulaGlobalRequest,
+        *,
+        env: Mapping[str, Any] | None = None,
+        db_flags: Mapping[str, Any] | None = None,
+    ) -> V3KPhaseFFormulaResult:
+        """Build Phase F analyzer formula candidates behind dual gate only.
+
+        Page034 remains a pre-ON boundary. This method does not mutate runtime
+        globals and does not read/write operating DB files. The caller must pass
+        explicit env/DB-flag mappings so tests can prove env-only, DB-only, and
+        rollback cases without touching live state.
+        """
+
+        gate = evaluate_phase_f_analyzer_gate(env=env, db_flags=db_flags)
+        if not gate.enabled:
+            return V3KPhaseFFormulaResult(
+                gate=gate,
+                formula_result=V3KFormulaGlobalResult(
+                    request=request,
+                    diagnostics=(
+                        "phase f analyzer formula facade disabled by dual gate",
+                    )
+                    + gate.diagnostics,
+                ),
+            )
+
+        phase_flags = dict(request.feature_flags)
+        phase_flags[FLAG_FORMULA_GLOBAL_FACADE] = True
+        phase_flags[FLAG_STG_GLOBALS_FACADE] = True
+        phase_request = V3KFormulaGlobalRequest(
+            analyzer_values=dict(request.analyzer_values),
+            feature_flags=phase_flags,
+            include_zero_defaults=request.include_zero_defaults,
+        )
+        formula_result = self.build(phase_request)
+        return V3KPhaseFFormulaResult(
+            gate=gate,
+            formula_result=V3KFormulaGlobalResult(
+                request=formula_result.request,
+                values=formula_result.values,
+                globals_dict=formula_result.globals_dict,
+                diagnostics=gate.diagnostics + formula_result.diagnostics,
+            ),
         )
 
     @staticmethod

@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-f-f123-pre-on-work"
+NEXT_CANDIDATE = "phase-f-f4-approval-gate"
 
 HELD_ITEMS = (
     {
@@ -93,8 +93,14 @@ HELD_ITEMS = (
     {
         "item": "phase-f-f123-pre-on-work",
         "risk": "high",
+        "status": "completed-pre-on-proof",
+        "reason": "F-1/F-2/F-3 pre-ON work completed: default-OFF adapter, parity, dual gate, and rollback proof are staged without live consumption.",
+    },
+    {
+        "item": "phase-f-f4-approval-gate",
+        "risk": "critical",
         "status": "next",
-        "reason": "Next f51 C2 step is Phase F F-1/F-2/F-3 pre-ON work; default-OFF adapter, parity, dual gate, and rollback proof only.",
+        "reason": "Next step is Phase F F-4 approval gate only; actual ON still requires explicit user ACK, registry, and monitoring evidence.",
     },
 )
 
@@ -112,9 +118,11 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_032_phase_h_h2_h3_approval_gate_plan.md",
     "docs/plans/2026-05-12_v3k_page_033_phase_f_analyzer_pre_ralplan_plan.md",
     "docs/plans/2026-05-12_v3k_page_034_phase_f_f123_pre_on_work_plan.md",
+    "docs/plans/2026-05-13_v3k_page_035_phase_f_f4_approval_gate_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
+    "docs/update_log/2026-05-13_v3k_phase_f_f123_pre_on_work.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
@@ -127,6 +135,9 @@ REQUIRED_SCRIPTS = (
     "scripts/cutover_v3k_shadow_to_database.py",
     "scripts/smoke_v3k_cutover_dryrun.py",
     "scripts/rollback_v3k_cutover.py",
+    "scripts/smoke_v3k_phase_f_default_off.py",
+    "scripts/backtest_v3k_phase_f_parity.py",
+    "scripts/audit_v3k_phase_f_rollback.py",
 )
 
 RUNTIME_GUARDED_FILES = (
@@ -159,9 +170,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-f-f123-pre-on-work"]:
+    if [item["item"] for item in next_items] != ["phase-f-f4-approval-gate"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-f-f123-pre-on-work":
+    if NEXT_CANDIDATE != "phase-f-f4-approval-gate":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

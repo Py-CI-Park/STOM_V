@@ -5,7 +5,7 @@ import sqlite3
 from contextlib import closing
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Mapping
 
 import numpy as np
 
@@ -24,6 +24,10 @@ FLAG_VOLUME_PROFILE_ANALYSIS = "가격대분석"
 FLAG_VOLATILITY_PATTERN_ANALYSIS = "변동성분석"
 FLAG_VOLATILITY_STOP_TAKE_ANALYSIS = "변손익분석"
 FLAG_RISK_ANALYSIS = "리스크분석"
+FLAG_PHASE_F_ANALYZER_STRATEGY = "V3K_PHASE_F_ANALYZER_STRATEGY"
+ENV_PHASE_F_ENABLE = "V3K_PHASE_F_ENABLE"
+ENV_PHASE_F_DISABLE = "V3K_PHASE_F_DISABLE"
+DB_FLAG_PHASE_F_ANALYZER_STRATEGY = "phase_f_analyzer_strategy.enabled"
 
 FIELD_INDEX = "index"
 FIELD_CURRENT_PRICE = "현재가"
@@ -66,6 +70,7 @@ DEFAULT_FLAGS = {
     FLAG_VOLATILITY_PATTERN_ANALYSIS: False,
     FLAG_VOLATILITY_STOP_TAKE_ANALYSIS: False,
     FLAG_RISK_ANALYSIS: False,
+    FLAG_PHASE_F_ANALYZER_STRATEGY: False,
 }
 
 RISK_COMMON_FIELDS = (
@@ -328,6 +333,17 @@ class V3KAnalyzerOutput:
         return self.risk_score is not None
 
 
+@dataclass(frozen=True)
+class V3KPhaseFAnalyzerGateResult:
+    """Phase F pre-ON dual-gate decision without touching runtime state."""
+
+    env_enabled: bool
+    db_enabled: bool
+    rollback_disabled: bool
+    enabled: bool
+    diagnostics: tuple[str, ...] = ()
+
+
 def normalize_v3k_flags(raw_flags: dict[str, Any] | None) -> dict[str, bool]:
     flags = dict(DEFAULT_FLAGS)
     if not raw_flags:
@@ -339,6 +355,61 @@ def normalize_v3k_flags(raw_flags: dict[str, Any] | None) -> dict[str, bool]:
         else:
             flags[key] = bool(value)
     return flags
+
+
+def _truthy(value: Any) -> bool:
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "on", "yes", "y"}
+    return bool(value)
+
+
+def evaluate_phase_f_analyzer_gate(
+    env: Mapping[str, Any] | None = None,
+    db_flags: Mapping[str, Any] | None = None,
+) -> V3KPhaseFAnalyzerGateResult:
+    """Evaluate the Phase F env+DB dual gate with rollback priority.
+
+    This is a pre-ON helper. It reads caller-provided mappings only; it does not
+    inspect or mutate ``os.environ`` or any SQLite DB. Runtime/live trading code
+    can only consume this later through a separately approved F-4 cycle.
+    """
+
+    env = env or {}
+    db_flags = db_flags or {}
+    env_enabled = _truthy(env.get(ENV_PHASE_F_ENABLE, False))
+    db_enabled = _truthy(db_flags.get(DB_FLAG_PHASE_F_ANALYZER_STRATEGY, False))
+    rollback_disabled = _truthy(env.get(ENV_PHASE_F_DISABLE, False))
+    enabled = env_enabled and db_enabled and not rollback_disabled
+
+    diagnostics: list[str] = []
+    if rollback_disabled:
+        diagnostics.append("phase f rollback flag disabled analyzer strategy")
+    elif enabled:
+        diagnostics.append("phase f analyzer strategy dual gate enabled")
+    else:
+        missing: list[str] = []
+        if not env_enabled:
+            missing.append(ENV_PHASE_F_ENABLE)
+        if not db_enabled:
+            missing.append(DB_FLAG_PHASE_F_ANALYZER_STRATEGY)
+        diagnostics.append("phase f analyzer strategy disabled: missing " + ", ".join(missing))
+
+    return V3KPhaseFAnalyzerGateResult(
+        env_enabled=env_enabled,
+        db_enabled=db_enabled,
+        rollback_disabled=rollback_disabled,
+        enabled=enabled,
+        diagnostics=tuple(diagnostics),
+    )
+
+
+def phase_f_formula_output_contract() -> dict[AnalyzerKind, tuple[str, ...]]:
+    """Return analyzer kind -> formula output fields for Phase F smoke/audit."""
+
+    return {
+        kind: contract.output_names
+        for kind, contract in ANALYZER_MODULE_CONTRACTS.items()
+    }
 
 
 def market_type_from_gubun(market_gubun: int) -> str:

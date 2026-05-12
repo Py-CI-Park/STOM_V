@@ -1208,3 +1208,32 @@ Directive: Do not run KHOPENAPI connect/login, live dry-run, or Phase H ON trans
 - Next: Page 034 / `phase-f-f123-pre-on-work`. Default-OFF adapter, parity, dual gate, rollback audit? ????.
 
 Directive: Do not treat Phase F pre-ralplan as approval to enable analyzer output in live strategy decisions. F-4 ON requires a separate explicit user-approved cycle with parity, rollback, registry, and monitoring evidence.
+
+## V3K-PHASE-F-F123-PRE-ON: analyzer output 사전 구현과 rollback proof
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook C2, Page 034 plan
+- Records:
+  - `docs/update_log/2026-05-13_v3k_phase_f_f123_pre_on_work.md`
+  - `docs/plans/2026-05-12_v3k_page_034_phase_f_f123_pre_on_work_plan.md`
+  - `docs/plans/2026-05-13_v3k_page_035_phase_f_f4_approval_gate_plan.md`
+- Added/modified:
+  - `strategy/v3k_analyzer_adapter.py`
+  - `strategy/v3k_formula_facade.py`
+  - `scripts/smoke_v3k_phase_f_default_off.py`
+  - `scripts/backtest_v3k_phase_f_parity.py`
+  - `scripts/audit_v3k_phase_f_rollback.py`
+  - `scripts/audit_v3k_verify_1a.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: F-1/F-2/F-3 pre-ON 작업은 완료한다. F-4 ON 전환은 별도 사용자 승인 gate로 남긴다.
+- Gate: `V3K_PHASE_F_ENABLE=1` env gate와 `phase_f_analyzer_strategy.enabled=1` DB-row gate가 모두 true일 때만 candidate callable을 만들 수 있다.
+- Rollback: `V3K_PHASE_F_DISABLE=1`은 env/DB enable보다 우선하며 즉시 OFF로 평가된다.
+- Parity: Page034 synthetic pre-ON parity는 loss 0.00%, MDD 0.00%, trade count 0.00% delta로 한계 내 PASS다. 이는 runtime hook 미연결 상태의 no-impact baseline이다.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 추가하지 않는다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, sidecar, DB 파일은 변경·커밋하지 않는다. `.omx/reports/v3k-phase-f-parity-latest.json`은 ignored local evidence다.
+- Next: Page 035 / `phase-f-f4-approval-gate`. 실제 ON이 아니라 사용자 승인과 운영 조건 충족 여부만 확인한다.
+
+Directive: Do not add `V3K-PHASE-F-ENABLE` or run F-4 ON from Page034 evidence alone. F-4 requires a separate explicit user-approved cycle with parity, rollback, registry, and monitoring evidence.
