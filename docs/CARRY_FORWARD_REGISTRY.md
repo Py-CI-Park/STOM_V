@@ -1255,3 +1255,21 @@ Directive: Do not add `V3K-PHASE-F-ENABLE` or run F-4 ON from Page034 evidence a
 - Next: Page 036 / `phase-g-g1-pre-ralplan`. Phase G microstructure engine 구현 전에 LG1~LG5 consensus, V3 engine inventory, Kiwoom OPT* mapping, expanded test plan을 먼저 문서화한다.
 
 Directive: Do not create `V3K-PHASE-F-ENABLE`, set `V3K_PHASE_F_USER_ACK=1`, or connect analyzer output to live/runtime decisions unless the user explicitly approves a separate F-4 ON cycle with registry and monitoring evidence.
+
+## V3K-PHASE-G-G1-PRE-RALPLAN: microstructure engine 이식 전 합의
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook C3, Page 036 plan
+- Records:
+  - `docs/update_log/2026-05-13_v3k_phase_g_g1_pre_ralplan.md`
+  - `docs/plans/2026-05-13_v3k_page_036_phase_g_g1_pre_ralplan_plan.md`
+  - `docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md`
+- Decision: Phase G G-1은 Option C, 즉 inventory/mapping-first default-OFF staging으로 진행한다.
+- LG invariant: LG1 LS excise audit 0건, LG2 Kiwoom OPT* mapping 선행, LG3 parity ±15%는 G-2에서 검증, LG4 성능 ±20%는 G-2에서 검증, LG5 ON은 사용자 승인 cycle로 분리.
+- Kiwoom adjustment: Page036은 문서 합의만 수행했으며 Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 추가하지 않는다. 다음 Page037에서 audit guard를 신설해야 한다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, sidecar, DB 파일은 변경·커밋하지 않는다.
+- Next: Page 037 / `phase-g-g1-engine-staging`. T01~T05만 수행하고 G-2 parity/benchmark 및 G-3 ON은 섞지 않는다.
+
+Directive: Do not implement Phase G ON, `V3K-PHASE-G-ENABLE`, or live runtime consumption during G-1. G-1 may only create inventory, mapping, LS-free default-OFF engine staging, audit guard, and unit smoke.

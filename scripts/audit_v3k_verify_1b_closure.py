@@ -41,6 +41,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f123_pre_on_work.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f4_approval_gate.md",
+    "docs/update_log/2026-05-13_v3k_phase_g_g1_pre_ralplan.md",
 )
 
 REQUIRED_CODE = (
@@ -105,6 +106,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase F analyzer strategy pre-ralplan consensus with LF1-LF4, pre-mortem, expanded tests, and F-4 approval split",
     "Phase F F-1/F-2/F-3 pre-ON adapter, parity, dual gate, and rollback proof",
     "Phase F F-4 approval gate documented as blocked before ON",
+    "Phase G G-1 pre-ralplan consensus with LG1-LG5, pre-mortem, expanded tests, and G-1/G-2/G-3 split",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -115,7 +117,7 @@ HELD_FOR_SAFETY = (
     "Runtime globals().update hook into live strategies",
     "Live order/exit rule consumption of V3K analyzer output",
     "Analyzer DB constructor use from runtime",
-    "V3 microstructure engine replacement beyond existing 2U_C analyzer paths",
+    "V3 microstructure engine runtime replacement or ON transition beyond default-OFF G-1 staging",
 )
 
 USER_APPROVAL_REQUIRED = (
@@ -125,6 +127,7 @@ USER_APPROVAL_REQUIRED = (
     "Production learning DB read with real contents",
     "Phase F F-4 ON transition and V3K-PHASE-F-ENABLE registry",
     "Actual GUI sidecar write implementation",
+    "Phase G G-3 ON transition and V3K-PHASE-G-ENABLE registry",
 )
 
 

@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-g-g1-pre-ralplan"
+NEXT_CANDIDATE = "phase-g-g1-engine-staging"
 
 HELD_ITEMS = (
     {
@@ -105,8 +105,14 @@ HELD_ITEMS = (
     {
         "item": "phase-g-g1-pre-ralplan",
         "risk": "high",
+        "status": "completed-consensus",
+        "reason": "C3 deliberate consensus is complete: LG1-LG5, pre-mortem, expanded test plan, and G-1/G-2/G-3 separation are documented.",
+    },
+    {
+        "item": "phase-g-g1-engine-staging",
+        "risk": "high",
         "status": "next",
-        "reason": "Next f51 C3 step is Phase G G-1 consensus only; no microstructure implementation before LG1-LG5 deliberate review.",
+        "reason": "Next step is Page037 G-1 T01-T05 only: inventory, Kiwoom mapping, LS-free default-OFF engine staging, LS audit, and unit smoke.",
     },
 )
 
@@ -126,11 +132,13 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_034_phase_f_f123_pre_on_work_plan.md",
     "docs/plans/2026-05-13_v3k_page_035_phase_f_f4_approval_gate_plan.md",
     "docs/plans/2026-05-13_v3k_page_036_phase_g_g1_pre_ralplan_plan.md",
+    "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f123_pre_on_work.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f4_approval_gate.md",
+    "docs/update_log/2026-05-13_v3k_phase_g_g1_pre_ralplan.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
@@ -178,9 +186,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-g-g1-pre-ralplan"]:
+    if [item["item"] for item in next_items] != ["phase-g-g1-engine-staging"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-g-g1-pre-ralplan":
+    if NEXT_CANDIDATE != "phase-g-g1-engine-staging":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
