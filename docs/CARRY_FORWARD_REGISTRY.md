@@ -1300,3 +1300,22 @@ Directive: Do not implement Phase G ON, `V3K-PHASE-G-ENABLE`, or live runtime co
 - Next: Page 038 / `phase-g-g2-parity-benchmark-plan`. parity ±15%, 성능 ±20% 검증을 준비하되 ON은 하지 않는다.
 
 Directive: Do not connect `strategy/v3k_microstructure_engine.py` to live strategy/order/exit paths or create `V3K-PHASE-G-ENABLE` before G-2 proof and a separate G-3 user approval cycle.
+
+## V3K-PHASE-G-G2-PARITY-BENCHMARK-PLAN: microstructure parity/benchmark 실행 전 계획
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 038 plan, Phase G G-2 planning boundary
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_038_phase_g_g2_parity_benchmark_plan.md`
+  - `docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_plan.md`
+  - `docs/plans/2026-05-13_v3k_page_039_phase_g_g2_parity_benchmark_work_plan.md`
+- Decision: Page038은 plan-only로 완료한다. `scripts/backtest_v3k_phase_g_parity.py`와 `scripts/benchmark_v3k_phase_g_engine.py` 구현은 Page039에서 수행한다.
+- Parity threshold: Phase G output contract 5개 값은 synthetic/caller-owned 기준 fixture 대비 ±15%를 넘지 않아야 한다.
+- Benchmark threshold: wall-clock 및 보조 memory 지표는 기준 budget 대비 ±20% 한계를 넘지 않아야 한다.
+- Kiwoom adjustment: Kiwoom field name mapping은 Page037 contract를 유지하되, Page039는 Kiwoom API/runtime을 호출하지 않고 caller-owned dict만 사용한다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 Page039 script에도 추가하지 않는다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, sidecar, DB 파일은 읽거나 쓰지 않는다. `.omx/reports/*latest.json`은 ignored local evidence로만 생성한다.
+- Next: Page 039 / `phase-g-g2-parity-benchmark-work`. 두 신규 script를 구현·실행하되 Phase G ON은 하지 않는다.
+
+Directive: Do not treat Page038 planning completion as permission to enable `V3K_PHASE_G_MICROSTRUCTURE_ENGINE` in runtime or create `V3K-PHASE-G-ENABLE`. Page039 must remain proof-only; Page040/G-3 handles approval gating.

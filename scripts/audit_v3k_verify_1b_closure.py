@@ -44,9 +44,11 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g1_pre_ralplan.md",
     "docs/update_log/2026-05-13_v3k_kiwoom_opt_data_shape_mapping.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g1_engine_staging.md",
+    "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
     "docs/plans/2026-05-13_v3k_page_038_phase_g_g2_parity_benchmark_plan.md",
+    "docs/plans/2026-05-13_v3k_page_039_phase_g_g2_parity_benchmark_work_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -116,6 +118,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase F F-4 approval gate documented as blocked before ON",
     "Phase G G-1 pre-ralplan consensus with LG1-LG5, pre-mortem, expanded tests, and G-1/G-2/G-3 split",
     "Phase G G-1 default-OFF microstructure engine staging with inventory, Kiwoom mapping, excise audit, and unit smoke",
+    "Phase G G-2 parity/benchmark plan with ±15% parity, ±20% performance, ignored report schema, and Page039 work boundary",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -126,7 +129,7 @@ HELD_FOR_SAFETY = (
     "Runtime globals().update hook into live strategies",
     "Live order/exit rule consumption of V3K analyzer output",
     "Analyzer DB constructor use from runtime",
-    "V3 microstructure engine G-2 parity/benchmark and G-3 ON transition beyond default-OFF G-1 staging",
+    "V3 microstructure engine G-2 parity/benchmark implementation and G-3 ON transition beyond Page038 plan",
 )
 
 USER_APPROVAL_REQUIRED = (
