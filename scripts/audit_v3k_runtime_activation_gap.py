@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-f-pre-ralplan"
+NEXT_CANDIDATE = "phase-f-f123-pre-on-work"
 
 HELD_ITEMS = (
     {
@@ -87,8 +87,14 @@ HELD_ITEMS = (
     {
         "item": "phase-f-pre-ralplan",
         "risk": "high",
+        "status": "completed-consensus",
+        "reason": "C1 consensus completed; LF1-LF4, pre-mortem, expanded tests, and F-4 approval split are documented.",
+    },
+    {
+        "item": "phase-f-f123-pre-on-work",
+        "risk": "high",
         "status": "next",
-        "reason": "Next f51 C1 step is Phase F analyzer strategy consensus; planning only, no live order/exit consumption.",
+        "reason": "Next f51 C2 step is Phase F F-1/F-2/F-3 pre-ON work; default-OFF adapter, parity, dual gate, and rollback proof only.",
     },
 )
 
@@ -105,8 +111,10 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_031_f1_actual_cutover_approval_gate_plan.md",
     "docs/plans/2026-05-12_v3k_page_032_phase_h_h2_h3_approval_gate_plan.md",
     "docs/plans/2026-05-12_v3k_page_033_phase_f_analyzer_pre_ralplan_plan.md",
+    "docs/plans/2026-05-12_v3k_page_034_phase_f_f123_pre_on_work_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
+    "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
@@ -151,9 +159,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-f-pre-ralplan"]:
+    if [item["item"] for item in next_items] != ["phase-f-f123-pre-on-work"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-f-pre-ralplan":
+    if NEXT_CANDIDATE != "phase-f-f123-pre-on-work":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

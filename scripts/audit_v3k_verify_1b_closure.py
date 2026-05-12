@@ -38,6 +38,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_f1_cutover_scripts_dryrun.md",
     "docs/update_log/2026-05-12_v3k_f1_actual_cutover_approval_gate.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
+    "docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md",
 )
 
 REQUIRED_CODE = (
@@ -96,6 +97,7 @@ SAFE_STAGED_COMPLETED = (
     "GUI sidecar persistence design, schema validator, read-only loader, write guard, read-only preview init, and tempfile-only writer prototype",
     "Phase H H-1 Kiwoom dry-run hook contract-only module, sentinel audit, and unit smoke",
     "F1 backup/cutover/rollback scripts with tempfile-only dry-run smoke and actual cutover approval gate",
+    "Phase F analyzer strategy pre-ralplan consensus with LF1-LF4, pre-mortem, expanded tests, and F-4 approval split",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -114,6 +116,7 @@ USER_APPROVAL_REQUIRED = (
     "GUI setting surface connected to MainWindow/pyd wrappers",
     "Live Kiwoom runtime dry-run hook beyond contract-only adapters",
     "Production learning DB read with real contents",
+    "Phase F F-4 ON transition and V3K-PHASE-F-ENABLE registry",
     "Actual GUI sidecar write implementation",
 )
 

@@ -1187,3 +1187,24 @@ Directive: Do not run `cutover_v3k_shadow_to_database.py --apply` against the re
 - Next: Page 033 / `phase-f-pre-ralplan`. Phase F analyzer 전략 반영 전 LF1~LF4 재합의만 수행한다.
 
 Directive: Do not run KHOPENAPI connect/login, live dry-run, or Phase H ON transition unless the user explicitly approves an H-2/H-3 execution cycle in a compatible environment.
+
+## V3K-PHASE-F-PRE-RALPLAN: analyzer output ?? ?? ?? ??
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook C1, Page 033 plan
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_f_analyzer_pre_ralplan.md`
+  - `docs/plans/2026-05-12_v3k_page_033_phase_f_analyzer_pre_ralplan_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_034_phase_f_f123_pre_on_work_plan.md`
+- Decision: Phase F? Option A? ????. F-1/F-2/F-3 pre-ON ??? ????, F-4 ON ??? ?? ??? ?? cycle? ????.
+- LF1: analyzer output ??? parity ?? ??? ON ????.
+- LF2: `V3K_PHASE_F_DISABLE=1` rollback flag? env/DB enable ???? ???? ??.
+- LF3: ?? ??? ?? ?5%, MDD ?3%, ???? ?10%? ??. Page034 parity report? ?? ??? ????.
+- LF4: `V3K-PHASE-F-ENABLE` registry? Page034?? ???? ???. F-4 ON ?? cycle ????.
+- Kiwoom adjustment: pre-ON ??? Kiwoom ??/??/live runtime? ???? ???.
+- LS dependency exclusion: LS Securities REST/TR/REAL ?? ??? ???? ???.
+- DB boundary: ?? `_database/`, `_database_v3k_shadow/`, sidecar, DB ??? ??????? ???.
+- Next: Page 034 / `phase-f-f123-pre-on-work`. Default-OFF adapter, parity, dual gate, rollback audit? ????.
+
+Directive: Do not treat Phase F pre-ralplan as approval to enable analyzer output in live strategy decisions. F-4 ON requires a separate explicit user-approved cycle with parity, rollback, registry, and monitoring evidence.
