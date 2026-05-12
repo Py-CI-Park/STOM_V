@@ -1001,3 +1001,26 @@ Directive: Do not convert the read-only sidecar loader into a writer without sat
 - Next: Page 025 / `V3K-PHASE-E6` sidecar tempfile-only writer prototype.
 
 Directive: Do not treat preview initialization as persistence. The next safe writer work must stay tempfile-only until atomic write, backup, rollback, and corruption recovery are proven.
+
+## V3K-PHASE-E6: sidecar tempfile-only writer prototype
+
+- Date: 2026-05-12 KST
+- Implementation lane: `STOM_Version_2U_C`
+- Trigger: f51 playbook A1, repeated stepwise V3K command
+- Records:
+  - `docs/update_log/2026-05-12_v3k_phase_e6_sidecar_tempfile_writer.md`
+  - `docs/plans/2026-05-12_v3k_page_025_phase_e6_sidecar_tempfile_writer_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_026_phase_h_h1_kiwoom_dryrun_hook_plan.md`
+- Modified:
+  - `scripts/smoke_v3k_gui_sidecar_tempfile_writer.py`
+  - `scripts/audit_v3k_gui_sidecar_write_guard.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: Prototype the future GUI sidecar writer contract inside tempfile directories only.
+- Decision: Keep `strategy/v3k_gui_sidecar.py` read-only. The prototype smoke may use `os.replace` and backup files only under `tempfile.TemporaryDirectory`.
+- Decision: Invalid payloads, simulated replace failures, and corrupt existing files must roll back or reject without mutating repo artifacts.
+- Decision: Actual repo `_v3k_sidecar/v3k_gui_settings.json` writes remain deferred and still require a separate approval gate.
+- Excluded: repo sidecar write implementation, operating `setting.db` write, formula/global runtime hook, Kiwoom live/order/exit runtime, analyzer trading decision, external broker direct dependency.
+- Verification: py_compile passed; GUI sidecar tempfile-only writer smoke passed; GUI sidecar write guard audit passed; V3K smoke set passed; VERIFY-1A/1B passed; nonrelease sync passed; diff check passed; DB/sidecar artifact status stayed clean.
+- Next: Page 026 / `Phase H H-1` Kiwoom dry-run hook module design.
+
+Directive: Do not promote the tempfile writer prototype into a repo sidecar writer without a separate go/no-go document, user approval, and artifact/rollback verification. The next f51 step is H-1, not actual sidecar write.

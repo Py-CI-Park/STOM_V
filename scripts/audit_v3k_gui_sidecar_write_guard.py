@@ -23,9 +23,11 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_e3_gui_sidecar_readonly_loader.md",
     "docs/update_log/2026-05-12_v3k_phase_e4_gui_sidecar_write_guard_decision.md",
     "docs/update_log/2026-05-12_v3k_phase_e5_readonly_sidecar_preview_init.md",
+    "docs/update_log/2026-05-12_v3k_phase_e6_sidecar_tempfile_writer.md",
     "docs/plans/2026-05-12_v3k_page_023_phase_e4_gui_sidecar_write_guard_plan.md",
     "docs/plans/2026-05-12_v3k_page_024_phase_e5_readonly_sidecar_preview_init_plan.md",
     "docs/plans/2026-05-12_v3k_page_025_phase_e6_sidecar_tempfile_writer_plan.md",
+    "docs/plans/2026-05-12_v3k_page_026_phase_h_h1_kiwoom_dryrun_hook_plan.md",
 )
 
 REQUIRED_DECISION_MARKERS = (
@@ -108,6 +110,23 @@ def _assert_actual_write_still_requires_approval() -> None:
         raise AssertionError("actual sidecar write must remain in USER_APPROVAL_REQUIRED")
 
 
+def _assert_tempfile_writer_prototype_contract() -> None:
+    prototype = (ROOT / "scripts" / "smoke_v3k_gui_sidecar_tempfile_writer.py").read_text(
+        encoding="utf-8",
+        errors="replace",
+    )
+    required = (
+        "tempfile.TemporaryDirectory",
+        "_assert_outside_repo",
+        "os.replace",
+        "backup-before-replace",
+        "corrupt existing file",
+    )
+    missing = [marker for marker in required if marker not in prototype]
+    if missing:
+        raise AssertionError(f"tempfile writer prototype markers missing: {missing}")
+
+
 def _assert_no_sidecar_or_runtime_artifacts() -> None:
     status = _run_git(
         "status",
@@ -133,6 +152,7 @@ def main() -> None:
     _assert_strategy_module_has_no_writer()
     _assert_readonly_loader_still_defaults_off()
     _assert_actual_write_still_requires_approval()
+    _assert_tempfile_writer_prototype_contract()
     _assert_no_sidecar_or_runtime_artifacts()
 
     print("V3K GUI sidecar write guard audit passed")
