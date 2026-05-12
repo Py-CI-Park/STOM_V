@@ -276,6 +276,22 @@ class LearningLoadResult:
 
 
 @dataclass(frozen=True)
+class ProductionLearningDbReadResult:
+    db_path: Path
+    table_name: str
+    uri: str | None
+    exists: bool
+    table_exists: bool = False
+    columns: tuple[dict[str, Any], ...] = ()
+    rows: tuple[dict[str, Any], ...] = ()
+    diagnostics: tuple[str, ...] = ()
+
+    @property
+    def has_rows(self) -> bool:
+        return bool(self.rows)
+
+
+@dataclass(frozen=True)
 class RealtimeLearningPreloadRequest:
     codes: tuple[str, ...]
     as_of_date: int | str
@@ -333,6 +349,19 @@ def safe_identifier(value: str) -> str:
     if not re.fullmatch(r"[A-Za-z0-9_]+", value):
         raise ValueError(f"unsafe SQL identifier: {value!r}")
     return value
+
+
+def safe_db_filename(value: str) -> str:
+    if Path(value).name != value or not re.fullmatch(r"[A-Za-z0-9_.-]+", value):
+        raise ValueError(f"unsafe DB filename: {value!r}")
+    if not value.endswith(".db"):
+        raise ValueError(f"production learning DB filename must end with .db: {value!r}")
+    return value
+
+
+def quoted_identifier(value: str) -> str:
+    safe = safe_identifier(value)
+    return f'"{safe}"'
 
 
 def resolve_field(
@@ -584,14 +613,120 @@ class V3KAnalyzerAdapter:
     realtime wiring.
     """
 
-    def __init__(self, feature_flags: dict[str, Any] | None = None):
+    def __init__(
+        self,
+        feature_flags: dict[str, Any] | None = None,
+        production_db_dir: str | Path = "_database",
+    ):
         self.feature_flags = normalize_v3k_flags(feature_flags)
+        self.production_db_dir = Path(production_db_dir)
 
     def _flags_for_context(self, context: V3KAnalyzerContext) -> dict[str, bool]:
         flags = dict(self.feature_flags)
         if context.feature_flags:
             flags.update(normalize_v3k_flags(context.feature_flags))
         return flags
+
+    def production_learning_db_path(self, db_name: str) -> Path:
+        return self.production_db_dir / safe_db_filename(db_name)
+
+    def read_production_learning_db(
+        self,
+        db_name: str,
+        table_name: str,
+        *,
+        sample_limit: int = 1,
+        retry_once: bool = True,
+    ) -> ProductionLearningDbReadResult:
+        """Read a production learning DB through SQLite ``mode=ro`` only.
+
+        This method is a F5 boundary helper. It never creates DB files, never
+        writes to ``_database/``, and intentionally returns diagnostics instead
+        of raising on missing DB/table/lock cases.
+        """
+
+        db_path = self.production_learning_db_path(db_name)
+        safe_table = quoted_identifier(table_name)
+        if sample_limit < 0:
+            raise ValueError("sample_limit must be non-negative")
+
+        if not db_path.exists():
+            return ProductionLearningDbReadResult(
+                db_path=db_path,
+                table_name=table_name,
+                uri=None,
+                exists=False,
+                diagnostics=("production learning DB missing; read-only production read skipped",),
+            )
+
+        uri = db_path.resolve().as_uri() + "?mode=ro"
+        attempts = 2 if retry_once else 1
+        last_error: sqlite3.Error | None = None
+        for attempt in range(attempts):
+            try:
+                with closing(sqlite3.connect(uri, uri=True, timeout=0.1)) as conn:
+                    conn.row_factory = sqlite3.Row
+                    conn.execute("PRAGMA query_only = ON")
+                    table_exists = (
+                        conn.execute(
+                            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?",
+                            (table_name,),
+                        ).fetchone()
+                        is not None
+                    )
+                    if not table_exists:
+                        return ProductionLearningDbReadResult(
+                            db_path=db_path,
+                            table_name=table_name,
+                            uri=uri,
+                            exists=True,
+                            table_exists=False,
+                            diagnostics=("production learning table missing; read-only production read skipped",),
+                        )
+
+                    columns = tuple(
+                        dict(row) for row in conn.execute(f"PRAGMA table_info({safe_table})").fetchall()
+                    )
+                    if sample_limit == 0:
+                        rows: tuple[dict[str, Any], ...] = ()
+                    else:
+                        rows = tuple(
+                            dict(row)
+                            for row in conn.execute(
+                                f"SELECT * FROM {safe_table} LIMIT ?",
+                                (int(sample_limit),),
+                            ).fetchall()
+                        )
+
+                return ProductionLearningDbReadResult(
+                    db_path=db_path,
+                    table_name=table_name,
+                    uri=uri,
+                    exists=True,
+                    table_exists=True,
+                    columns=columns,
+                    rows=rows,
+                    diagnostics=("read-only production learning DB read executed",),
+                )
+            except sqlite3.OperationalError as exc:
+                last_error = exc
+                if "locked" in str(exc).lower() and attempt + 1 < attempts:
+                    continue
+                break
+            except sqlite3.Error as exc:
+                last_error = exc
+                break
+
+        return ProductionLearningDbReadResult(
+            db_path=db_path,
+            table_name=table_name,
+            uri=uri,
+            exists=True,
+            diagnostics=(
+                "read-only production learning DB read failed; no-op fallback",
+                f"{type(last_error).__name__}: {last_error}",
+            ),
+        )
 
     @staticmethod
     def risk_is_enabled(flags: dict[str, bool]) -> bool:

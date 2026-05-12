@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "production-learning-db-read"
+NEXT_CANDIDATE = "mid-checkpoint-v3"
 
 HELD_ITEMS = (
     {
@@ -34,7 +34,7 @@ HELD_ITEMS = (
         "item": "analyzer-db-constructor-runtime-use",
         "risk": "high",
         "status": "defer",
-        "reason": "Needs production DB read boundary, locking policy, and rollback proof.",
+        "reason": "Production DB read-only boundary is staged, but runtime constructor use still needs Phase F/F1 proof.",
     },
     {
         "item": "live-order-exit-rule-consumption",
@@ -45,8 +45,14 @@ HELD_ITEMS = (
     {
         "item": "production-learning-db-read",
         "risk": "high",
+        "status": "read-only-staged",
+        "reason": "F5 read-only path uses SQLite mode=ro, leakage guard, missing/lock fallback, and no DB writes.",
+    },
+    {
+        "item": "mid-checkpoint-v3",
+        "risk": "low",
         "status": "next",
-        "reason": "Next f51 playbook step; must use SQLite mode=ro and tolerate missing production DB as a gate/skip.",
+        "reason": "Next f51 playbook governance step after A1/A2/A3 completion.",
     },
     {
         "item": "db-cutover-migration",
@@ -63,7 +69,9 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_020_phase_e1_gui_sidecar_persistence_design_plan.md",
     "docs/plans/2026-05-12_v3k_page_026_phase_h_h1_kiwoom_dryrun_hook_plan.md",
     "docs/plans/2026-05-12_v3k_page_027_f5_production_learning_db_read_plan.md",
+    "docs/plans/2026-05-12_v3k_page_028_mid_checkpoint_v3_plan.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
+    "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
 )
 
 RUNTIME_GUARDED_FILES = (
@@ -93,9 +101,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["production-learning-db-read"]:
+    if [item["item"] for item in next_items] != ["mid-checkpoint-v3"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "production-learning-db-read":
+    if NEXT_CANDIDATE != "mid-checkpoint-v3":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

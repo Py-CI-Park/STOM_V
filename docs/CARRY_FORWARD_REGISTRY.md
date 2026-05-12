@@ -1054,3 +1054,35 @@ Directive: Do not promote the tempfile writer prototype into a repo sidecar writ
 - Next: Page 027 / F5 production learning DB read, with `mode=ro` SQLite read-only URI and DB write/commit prohibition.
 
 Directive: Do not connect this hook to real Kiwoom runtime, KHOPENAPI login, or ON flags without a separate H-2/H-3 user-approval cycle.
+
+## V3K-F5-PROD-READ: production learning DB read-only boundary
+
+- Branch/worktree: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: f51de818 playbook A3, Page 027 plan
+- Records:
+  - `docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md`
+  - `docs/plans/2026-05-12_v3k_page_027_f5_production_learning_db_read_plan.md`
+  - `docs/plans/2026-05-12_v3k_page_028_mid_checkpoint_v3_plan.md`
+- Modified/added:
+  - `strategy/v3k_analyzer_adapter.py`
+  - `scripts/smoke_v3k_learning_db_production_read.py`
+  - `scripts/smoke_v3k_learning_db_leakage_guard.py`
+  - `scripts/smoke_v3k_learning_db_fallback.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: Production learning DB access is read-only only. `V3KAnalyzerAdapter.read_production_learning_db(...)` opens DB files only through SQLite `mode=ro` URI and applies `PRAGMA query_only = ON`.
+- Decision: Missing production learning DB/table is a successful no-op diagnostic, not a runtime failure.
+- Decision: `last_update < backtest_date` remains the leakage invariant. Same-day `<=` remains excluded.
+- Current local evidence: `_database` exists, but the five V3K production learning DB candidates are absent in this worktree, so the real production path returned missing-db no-op for all five candidates.
+- Kiwoom adjustment: no Kiwoom order/exit/live runtime file is changed. Production read results are not consumed by trading decisions.
+- LS dependency exclusion: no LS Securities REST/TR/REAL dependency is introduced.
+- Verification:
+  - `python -m py_compile strategy/v3k_analyzer_adapter.py scripts/smoke_v3k_learning_db_production_read.py scripts/smoke_v3k_learning_db_leakage_guard.py scripts/smoke_v3k_learning_db_fallback.py`
+  - `python -c "from strategy.v3k_analyzer_adapter import V3KAnalyzerAdapter; assert hasattr(V3KAnalyzerAdapter, 'read_production_learning_db')"`
+  - `python scripts/smoke_v3k_learning_db_production_read.py`
+  - `python scripts/smoke_v3k_learning_db_leakage_guard.py`
+  - `python scripts/smoke_v3k_learning_db_fallback.py`
+  - full V3K smoke/audit set, `audit_v3k_verify_1a --base 57496d24`, `audit_v3k_verify_1b_closure`, `verify_nonrelease_sync`, `git diff --check`, DB/sidecar artifact status.
+- Next: Page 028 / mid-checkpoint v3.
+
+Directive: Do not use production learning DB rows in live strategy/order/exit decisions before Phase F parity, explicit ON gate, rollback flag, and user approval.

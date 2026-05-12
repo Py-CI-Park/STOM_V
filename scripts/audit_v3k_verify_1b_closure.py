@@ -32,6 +32,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-12_v3k_phase_e5_readonly_sidecar_preview_init.md",
     "docs/update_log/2026-05-12_v3k_phase_e6_sidecar_tempfile_writer.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
+    "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
 )
 
 REQUIRED_CODE = (
@@ -59,6 +60,9 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_analyzer_adapter.py",
     "scripts/smoke_v3k_analyzer_modules.py",
     "scripts/smoke_v3k_learning_loader.py",
+    "scripts/smoke_v3k_learning_db_production_read.py",
+    "scripts/smoke_v3k_learning_db_leakage_guard.py",
+    "scripts/smoke_v3k_learning_db_fallback.py",
     "scripts/smoke_v3k_backtest_learning_hook.py",
     "scripts/smoke_v3k_realtime_learning_boundary.py",
     "scripts/smoke_v3k_formula_facade.py",
@@ -73,6 +77,7 @@ REQUIRED_SCRIPTS = (
 
 SAFE_STAGED_COMPLETED = (
     "DB/learning migration design and read-only dry-run scripts",
+    "Production learning DB read-only mode=ro boundary with leakage/fallback smokes",
     "V3 analyzer module staging and field-contract smoke",
     "AnalyzerRisk adapter smoke with feature flags default OFF",
     "Backtest learning-data loader and dry-run hook",
