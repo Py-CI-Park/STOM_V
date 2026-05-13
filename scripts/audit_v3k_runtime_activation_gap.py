@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "await-user-gate-approval"
+NEXT_CANDIDATE = "gui-sidecar-write-await-user-approval"
 
 HELD_ITEMS = (
     {
@@ -183,8 +183,14 @@ HELD_ITEMS = (
     {
         "item": "await-user-gate-approval",
         "risk": "critical",
+        "status": "completed-gate-prep-selection",
+        "reason": "Page049 prepared the lowest-risk GUI sidecar write approval packet without granting or executing the gate.",
+    },
+    {
+        "item": "gui-sidecar-write-await-user-approval",
+        "risk": "medium-high",
         "status": "next",
-        "reason": "The next step requires a user-selected gate plus explicit ACK before any implementation, ON, DB, or live runtime transition.",
+        "reason": "Actual sidecar write still needs explicit user approval, source-of-truth decision, rollback, monitoring, and green audits before implementation.",
     },
 )
 
@@ -216,6 +222,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_046_approval_gate_handoff_plan.md",
     "docs/plans/2026-05-13_v3k_page_047_mission_closeout_review_plan.md",
     "docs/plans/2026-05-13_v3k_page_048_approval_gate_selection_plan.md",
+    "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -236,6 +243,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_approval_gate_handoff.md",
     "docs/update_log/2026-05-13_v3k_mission_closeout_review.md",
     "docs/update_log/2026-05-13_v3k_approval_gate_selection.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -290,9 +298,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["await-user-gate-approval"]:
+    if [item["item"] for item in next_items] != ["gui-sidecar-write-await-user-approval"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "await-user-gate-approval":
+    if NEXT_CANDIDATE != "gui-sidecar-write-await-user-approval":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

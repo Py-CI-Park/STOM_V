@@ -28,6 +28,8 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_024_phase_e5_readonly_sidecar_preview_init_plan.md",
     "docs/plans/2026-05-12_v3k_page_025_phase_e6_sidecar_tempfile_writer_plan.md",
     "docs/plans/2026-05-12_v3k_page_026_phase_h_h1_kiwoom_dryrun_hook_plan.md",
+    "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
 )
 
 REQUIRED_DECISION_MARKERS = (

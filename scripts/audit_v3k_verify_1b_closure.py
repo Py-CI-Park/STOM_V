@@ -65,6 +65,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_approval_gate_handoff.md",
     "docs/update_log/2026-05-13_v3k_mission_closeout_review.md",
     "docs/update_log/2026-05-13_v3k_approval_gate_selection.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -79,6 +80,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_046_approval_gate_handoff_plan.md",
     "docs/plans/2026-05-13_v3k_page_047_mission_closeout_review_plan.md",
     "docs/plans/2026-05-13_v3k_page_048_approval_gate_selection_plan.md",
+    "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -163,6 +165,7 @@ SAFE_STAGED_COMPLETED = (
     "Approval gate decision matrix handoff completed without ON/DB/live runtime execution",
     "Mission closeout review completed with remaining work approval-gated only",
     "Approval gate selection plan completed without ON/DB/live runtime execution",
+    "GUI sidecar write approval preparation completed without actual write execution",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -411,6 +414,26 @@ def _assert_approval_gate_selection_policy() -> None:
         raise AssertionError(f"V3K approval gate selection docs missing tokens: {missing}")
 
 
+def _assert_gui_sidecar_write_approval_prep_policy() -> None:
+    docs = (
+        ROOT / "docs" / "update_log" / "2026-05-13_v3k_gui_sidecar_write_approval_prep.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    required_tokens = (
+        "GUI_SIDECAR_WRITE_APPROVAL_PREP",
+        "gui-sidecar-write-await-user-approval",
+        "Prompt-to-artifact checklist",
+        "No actual write execution",
+        "source-of-truth",
+        "rollback",
+        "monitoring",
+        "Kiwoom live runtime",
+        "LS Securities",
+    )
+    missing = [token for token in required_tokens if token not in docs]
+    if missing:
+        raise AssertionError(f"V3K GUI sidecar write approval prep docs missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -425,6 +448,7 @@ def main() -> None:
     _assert_approval_gate_handoff_policy()
     _assert_mission_closeout_review_policy()
     _assert_approval_gate_selection_policy()
+    _assert_gui_sidecar_write_approval_prep_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")

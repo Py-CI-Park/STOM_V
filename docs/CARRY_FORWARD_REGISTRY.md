@@ -1537,3 +1537,24 @@ Directive: `V3K_MISSION_CLOSEOUT_REVIEW`? safe-staged mission closed ? ?? ?? ???
 - Next: `await-user-gate-approval`. ???? gate? ????? ???? ?? ??? ???? ??.
 
 Directive: `V3K_APPROVAL_GATE_SELECTION`? gate ?? planning record??, Phase F/G/H ON, DB cutover, Kiwoom live runtime, GUI write, live order/exit consumption ???? ???? ? ??.
+
+## V3K-GUI-SIDECAR-WRITE-APPROVAL-PREP: actual write ? ?? ?? ??
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 049 plan, Page048 approval gate selection
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md`
+  - `docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_gui_sidecar_write_guard.py`
+- Decision: GUI actual sidecar write gate? source-of-truth, prompt-to-artifact checklist, rollback/monitoring, STOP condition? ?????. actual writer ??? sidecar artifact ??? ???? ???.
+- Current evidence: read-only sidecar loader, write guard audit, tempfile-only writer prototype, full V3K audit suite.
+- Kiwoom adjustment: Kiwoom ??/??/live runtime? ???? ???.
+- LS dependency exclusion: LS Securities REST/TR/REAL ?? broker dependency? ?? ??? ????.
+- DB boundary: ?? `_database/`, `_database_v3k_shadow/`, DB ??, sidecar artifact, `.omx/reports` raw artifact? write/commit?? ???.
+- Next: `gui-sidecar-write-await-user-approval`. ??? ?? ??, source-of-truth ??, rollback/monitoring ?? ??? actual writer ???? ???? ???.
+
+Directive: `GUI_SIDECAR_WRITE_APPROVAL_PREP`? ?? ?? ???? actual sidecar write, ON ??, USER_ACK, DB cutover, Kiwoom live runtime ???? ???? ? ??.
