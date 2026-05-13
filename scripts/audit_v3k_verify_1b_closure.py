@@ -67,6 +67,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_approval_gate_selection.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md",
+    "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -83,6 +84,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_048_approval_gate_selection_plan.md",
     "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_050_phase_f_f4_on_approval_prep_plan.md",
+    "docs/plans/2026-05-13_v3k_page_051_phase_g_g3_on_approval_prep_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -169,6 +171,7 @@ SAFE_STAGED_COMPLETED = (
     "Approval gate selection plan completed without ON/DB/live runtime execution",
     "GUI sidecar write approval preparation completed without actual write execution",
     "Phase F F-4 ON approval preparation completed without ON execution",
+    "Phase G G-3 ON approval preparation completed without ON execution",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -457,6 +460,26 @@ def _assert_phase_f_f4_on_approval_prep_policy() -> None:
         raise AssertionError(f"V3K Phase F F-4 approval prep docs missing tokens: {missing}")
 
 
+def _assert_phase_g_g3_on_approval_prep_policy() -> None:
+    docs = (
+        ROOT / "docs" / "update_log" / "2026-05-13_v3k_phase_g_g3_on_approval_prep.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    required_tokens = (
+        "PHASE_G_G3_ON_APPROVAL_PREP",
+        "phase-g-g3-on-await-user-approval",
+        "No ON execution",
+        "V3K_PHASE_G_USER_ACK=1",
+        "V3K-PHASE-G-ENABLE",
+        "V3K_PHASE_G_DISABLE=1",
+        "Prompt-to-artifact checklist",
+        "Kiwoom live runtime",
+        "LS Securities",
+    )
+    missing = [token for token in required_tokens if token not in docs]
+    if missing:
+        raise AssertionError(f"V3K Phase G G-3 approval prep docs missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -473,6 +496,7 @@ def main() -> None:
     _assert_approval_gate_selection_policy()
     _assert_gui_sidecar_write_approval_prep_policy()
     _assert_phase_f_f4_on_approval_prep_policy()
+    _assert_phase_g_g3_on_approval_prep_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")

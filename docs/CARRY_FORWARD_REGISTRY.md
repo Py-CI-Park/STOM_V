@@ -1578,3 +1578,23 @@ Directive: `GUI_SIDECAR_WRITE_APPROVAL_PREP`? ?? ?? ???? actual sidecar write, O
 - Next: `phase-f-f4-on-await-user-approval`. 사용자 명시 승인, `V3K_PHASE_F_USER_ACK=1` 또는 동등 승인 기록, `V3K-PHASE-F-ENABLE` registry, rollback/monitoring 확정 전에는 actual ON을 수행하지 않는다.
 
 Directive: `PHASE_F_F4_ON_APPROVAL_PREP`는 승인 준비 기록이며 Phase F ON, USER_ACK 생성, enable registry 생성, DB cutover, Kiwoom live runtime 변경으로 해석하면 안 된다.
+
+## V3K-PHASE-G-G3-ON-APPROVAL-PREP: microstructure engine ON 승인 전 준비
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 051 plan, Page039 Phase G G-2 parity/benchmark work, Page040 Phase G G-3 approval gate
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_051_phase_g_g3_on_approval_prep_plan.md`
+  - `docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: Phase G G-3 ON 전 USER_ACK, enable registry, rollback/kill switch, monitoring, parity/benchmark/default-OFF/LS-excise 검증 조건을 문서화한다. 실제 ON은 수행하지 않는다.
+- Current evidence: Phase G default-OFF unit smoke, Phase G parity proof, Phase G benchmark proof, Phase G LS excise audit, full V3K audit suite.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 broker dependency는 추가하지 않는다.
+- DB/artifact boundary: 운영 `_database/`, DB 파일, sidecar artifact, `.omx/reports` raw artifact는 write/commit하지 않는다.
+- Next: `phase-g-g3-on-await-user-approval`. 사용자 명시 승인, `V3K_PHASE_G_USER_ACK=1` 또는 동등 승인 기록, `V3K-PHASE-G-ENABLE` registry, rollback/monitoring 확정 전에는 actual ON을 수행하지 않는다.
+
+Directive: `PHASE_G_G3_ON_APPROVAL_PREP`는 승인 준비 기록이며 Phase G ON, USER_ACK 생성, enable registry 생성, DB cutover, Kiwoom live runtime 변경, live order/exit rule 연결로 해석하면 안 된다.

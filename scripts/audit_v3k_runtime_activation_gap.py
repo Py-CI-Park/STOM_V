@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-f-f4-on-await-user-approval"
+NEXT_CANDIDATE = "phase-g-g3-on-await-user-approval"
 
 HELD_ITEMS = (
     {
@@ -195,8 +195,14 @@ HELD_ITEMS = (
     {
         "item": "phase-f-f4-on-await-user-approval",
         "risk": "critical",
-        "status": "next",
+        "status": "blocked-awaiting-user-approval",
         "reason": "Page050 prepared Phase F F-4 ON approval requirements; actual ON still requires explicit user approval, USER_ACK, enable registry, rollback, monitoring, and green audits.",
+    },
+    {
+        "item": "phase-g-g3-on-await-user-approval",
+        "risk": "critical",
+        "status": "next",
+        "reason": "Page051 prepared Phase G G-3 ON approval requirements; actual ON still requires explicit user approval, USER_ACK, enable registry, rollback, monitoring, and green audits.",
     },
 )
 
@@ -230,6 +236,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_048_approval_gate_selection_plan.md",
     "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_050_phase_f_f4_on_approval_prep_plan.md",
+    "docs/plans/2026-05-13_v3k_page_051_phase_g_g3_on_approval_prep_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -252,6 +259,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_approval_gate_selection.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md",
+    "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -306,9 +314,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-f-f4-on-await-user-approval"]:
+    if [item["item"] for item in next_items] != ["phase-g-g3-on-await-user-approval"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-f-f4-on-await-user-approval":
+    if NEXT_CANDIDATE != "phase-g-g3-on-await-user-approval":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
