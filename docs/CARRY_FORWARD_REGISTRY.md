@@ -2003,3 +2003,22 @@ Directive: `V3K_WORKTREE_ENTRYPOINT_ALIGNMENT` is layout documentation only. Do 
 - Next: actual gate execution still requires exact one-gate approval. The first executable phrase remains `I approve gui-sidecar-write-await-user-approval only`.
 
 Directive: `V3K_REMAINING_GATE_STATUS_SUMMARY` is a no-side-effect status surface. It is not approval, not USER_ACK, not enable registry, and not final goal completion.
+
+## V3K-VERIFY1B-LATEST-COVERAGE: closure audit includes Page073-Page076 governance/status
+- Date: 2026-05-14 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page073-Page076 added goal completion checklist, agent entrypoint, worktree entrypoint alignment, and remaining gate status summary. VERIFY-1B needed to treat those as part of the closure inventory rather than only relying on the standalone V3K audit suite.
+- Records:
+  - `docs/plans/2026-05-14_v3k_page_077_verify1b_latest_coverage_plan.md`
+  - `docs/update_log/2026-05-14_v3k_verify1b_latest_coverage.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `docs/CARRY_FORWARD_REGISTRY.md`
+- Decision: VERIFY-1B closure now includes Page068 through Page076 governance/status artifacts, their scripts, audit-suite step names, and no-complete/no-side-effect tokens. The closure audit still reports actual approval gate execution as `0/6` and does not grant approval.
+- Current evidence: VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom API, order, exit, and live runtime remain unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created.
+- Next: actual gate execution still requires exact one-gate approval. The first executable phrase remains `I approve gui-sidecar-write-await-user-approval only`.
+
+Directive: `V3K_VERIFY1B_LATEST_COVERAGE` expands closure verification only. It is not approval, not USER_ACK, not enable registry, and not final goal completion.

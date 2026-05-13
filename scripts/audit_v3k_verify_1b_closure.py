@@ -84,6 +84,16 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-14_v3k_remaining_gate_approval_matrix.md",
     "docs/update_log/2026-05-14_v3k_goal_completion_authority_audit.md",
     "docs/update_log/2026-05-14_v3k_one_gate_sequence_guard.md",
+    "docs/update_log/2026-05-14_v3k_goal_skill_and_remaining_gate_completion_audit.md",
+    "docs/update_log/2026-05-14_v3k_goal_handoff_audit_suite_integration.md",
+    "docs/update_log/2026-05-14_v3k_gate_approval_phrase_intake_guard.md",
+    "docs/update_log/2026-05-14_v3k_gui_sidecar_first_gate_preflight.md",
+    "docs/update_log/2026-05-14_v3k_gui_sidecar_first_gate_blocker_snapshot.md",
+    "docs/update_log/2026-05-14_v3k_goal_completion_audit_checklist.md",
+    "docs/update_log/2026-05-14_v3k_agent_entrypoint_contract.md",
+    "docs/update_log/2026-05-14_v3k_worktree_entrypoint_alignment.md",
+    "docs/update_log/2026-05-14_v3k_remaining_gate_status_summary.md",
+    "docs/update_log/2026-05-14_v3k_verify1b_latest_coverage.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -117,6 +127,16 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-14_v3k_page_065_remaining_gate_approval_matrix_plan.md",
     "docs/plans/2026-05-14_v3k_page_066_goal_completion_authority_audit_plan.md",
     "docs/plans/2026-05-14_v3k_page_067_one_gate_sequence_guard_plan.md",
+    "docs/plans/2026-05-14_v3k_page_068_goal_skill_and_remaining_gate_execution_plan.md",
+    "docs/plans/2026-05-14_v3k_page_069_goal_handoff_audit_suite_plan.md",
+    "docs/plans/2026-05-14_v3k_page_070_gate_approval_phrase_intake_guard_plan.md",
+    "docs/plans/2026-05-14_v3k_page_071_gui_sidecar_first_gate_preflight_plan.md",
+    "docs/plans/2026-05-14_v3k_page_072_gui_sidecar_first_gate_blocker_snapshot_plan.md",
+    "docs/plans/2026-05-14_v3k_page_073_goal_completion_audit_checklist_plan.md",
+    "docs/plans/2026-05-14_v3k_page_074_agent_entrypoint_contract_plan.md",
+    "docs/plans/2026-05-14_v3k_page_075_worktree_entrypoint_alignment_plan.md",
+    "docs/plans/2026-05-14_v3k_page_076_remaining_gate_status_summary_plan.md",
+    "docs/plans/2026-05-14_v3k_page_077_verify1b_latest_coverage_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -147,6 +167,17 @@ REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_remaining_gate_approval_matrix.py",
     "scripts/audit_v3k_goal_completion_authority.py",
     "scripts/audit_v3k_one_gate_sequence_guard.py",
+    "scripts/audit_v3k_goal_skill_remaining_gate_handoff.py",
+    "scripts/audit_v3k_gate_approval_phrase_intake.py",
+    "scripts/preflight_v3k_gui_sidecar_write_gate.py",
+    "scripts/audit_v3k_gui_sidecar_first_gate_preflight.py",
+    "scripts/summarize_v3k_gui_sidecar_first_gate_blockers.py",
+    "scripts/audit_v3k_gui_sidecar_first_gate_blocker_snapshot.py",
+    "scripts/audit_v3k_goal_completion_objective_checklist.py",
+    "scripts/audit_v3k_agent_entrypoint_contract.py",
+    "scripts/audit_v3k_worktree_entrypoint_alignment.py",
+    "scripts/summarize_v3k_remaining_gate_status.py",
+    "scripts/audit_v3k_remaining_gate_status_summary.py",
     "scripts/diff_v3_vs_2uc_db_schema.py",
     "scripts/init_v3k_shadow_db.py",
     "scripts/v3k_db_health.py",
@@ -228,6 +259,16 @@ SAFE_STAGED_COMPLETED = (
     "Remaining gate approval matrix completed without actual gate execution",
     "Goal completion authority audit completed without actual gate execution",
     "One gate sequence guard completed without actual gate execution",
+    "Goal skill remaining gate handoff completed without actual gate execution",
+    "Goal handoff audit suite integration completed without actual gate execution",
+    "Gate approval phrase intake guard completed without actual gate execution",
+    "GUI sidecar first gate preflight completed with ready_for_execution=false",
+    "GUI sidecar first gate blocker snapshot completed with actual execution 0/6",
+    "Goal completion objective checklist completed with no-complete verdict",
+    "Agent entrypoint contract completed as routing guard only",
+    "Worktree entrypoint alignment completed for current five-worktree map",
+    "Remaining gate status summary completed as machine-readable no-go status",
+    "VERIFY-1B latest coverage includes Page073 through Page076 governance/status artifacts",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -358,6 +399,14 @@ def _assert_audit_runner_policy() -> None:
         "audit_v3k_remaining_gate_approval_matrix.py",
         "audit_v3k_goal_completion_authority.py",
         "audit_v3k_one_gate_sequence_guard.py",
+        "audit_v3k_goal_skill_remaining_gate_handoff.py",
+        "audit_v3k_gate_approval_phrase_intake.py",
+        "audit_v3k_gui_sidecar_first_gate_preflight.py",
+        "audit_v3k_gui_sidecar_first_gate_blocker_snapshot.py",
+        "audit_v3k_goal_completion_objective_checklist.py",
+        "audit_v3k_agent_entrypoint_contract.py",
+        "audit_v3k_worktree_entrypoint_alignment.py",
+        "audit_v3k_remaining_gate_status_summary.py",
     )
     missing = [token for token in required_tokens if token not in source]
     if missing:
@@ -1158,6 +1207,82 @@ def _assert_one_gate_sequence_guard_policy() -> None:
         raise AssertionError(f"V3K one gate sequence guard missing tokens: {missing}")
 
 
+def _assert_latest_v3k_governance_status_coverage_policy() -> None:
+    files = (
+        "docs/update_log/2026-05-14_v3k_goal_skill_and_remaining_gate_completion_audit.md",
+        "docs/update_log/2026-05-14_v3k_goal_handoff_audit_suite_integration.md",
+        "docs/update_log/2026-05-14_v3k_gate_approval_phrase_intake_guard.md",
+        "docs/update_log/2026-05-14_v3k_gui_sidecar_first_gate_preflight.md",
+        "docs/update_log/2026-05-14_v3k_gui_sidecar_first_gate_blocker_snapshot.md",
+        "docs/update_log/2026-05-14_v3k_goal_completion_audit_checklist.md",
+        "docs/update_log/2026-05-14_v3k_agent_entrypoint_contract.md",
+        "docs/update_log/2026-05-14_v3k_worktree_entrypoint_alignment.md",
+        "docs/update_log/2026-05-14_v3k_remaining_gate_status_summary.md",
+        "docs/update_log/2026-05-14_v3k_verify1b_latest_coverage.md",
+        "docs/plans/2026-05-14_v3k_page_077_verify1b_latest_coverage_plan.md",
+        "scripts/audit_v3k_goal_skill_remaining_gate_handoff.py",
+        "scripts/audit_v3k_gate_approval_phrase_intake.py",
+        "scripts/preflight_v3k_gui_sidecar_write_gate.py",
+        "scripts/audit_v3k_gui_sidecar_first_gate_preflight.py",
+        "scripts/audit_v3k_gui_sidecar_first_gate_blocker_snapshot.py",
+        "scripts/audit_v3k_goal_completion_objective_checklist.py",
+        "scripts/audit_v3k_agent_entrypoint_contract.py",
+        "scripts/audit_v3k_worktree_entrypoint_alignment.py",
+        "scripts/summarize_v3k_remaining_gate_status.py",
+        "scripts/audit_v3k_remaining_gate_status_summary.py",
+    )
+    combined = "\n".join(
+        (ROOT / path).read_text(encoding="utf-8", errors="replace")
+        for path in files
+    )
+    required_tokens = (
+        "V3K_GOAL_SKILL_AND_REMAINING_GATE_AUDIT",
+        "V3K_GOAL_HANDOFF_AUDIT_SUITE_INTEGRATION",
+        "V3K_GATE_APPROVAL_PHRASE_INTAKE_GUARD",
+        "V3K_GUI_SIDECAR_FIRST_GATE_PREFLIGHT",
+        "V3K_GUI_SIDECAR_FIRST_GATE_BLOCKER_SNAPSHOT",
+        "V3K_GOAL_COMPLETION_OBJECTIVE_CHECKLIST",
+        "V3K_2UC_AGENT_ENTRYPOINT_CONTRACT",
+        "V3K_WORKTREE_ENTRYPOINT_ALIGNMENT",
+        "V3K_REMAINING_GATE_STATUS_SUMMARY",
+        "V3K_VERIFY1B_LATEST_COVERAGE",
+        "V3 features + Kiwoom retained",
+        "LS Securities REST/TR/REAL direct",
+        "actual approval gate execution",
+        "0/6",
+        "about 96%",
+        "ready_for_execution=false",
+        "review_only",
+        "creates_user_ack",
+        "executes_runtime",
+        "I approve gui-sidecar-write-await-user-approval only",
+        "update_goal(status=\"complete\")",
+        "No USER_ACK creation",
+        "No ON/DB/live execution",
+    )
+    missing = [token for token in required_tokens if token not in combined]
+    if missing:
+        raise AssertionError(f"V3K latest governance/status coverage missing tokens: {missing}")
+
+    runner = (ROOT / "scripts" / "run_v3k_audit_suite.py").read_text(
+        encoding="utf-8",
+        errors="replace",
+    )
+    runner_tokens = (
+        "goal_skill_remaining_gate_handoff",
+        "gate_approval_phrase_intake",
+        "gui_sidecar_first_gate_preflight",
+        "gui_sidecar_first_gate_blocker_snapshot",
+        "goal_completion_objective_checklist",
+        "agent_entrypoint_contract",
+        "worktree_entrypoint_alignment",
+        "remaining_gate_status_summary",
+    )
+    missing_runner = [token for token in runner_tokens if token not in runner]
+    if missing_runner:
+        raise AssertionError(f"V3K audit suite missing latest coverage steps: {missing_runner}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -1192,6 +1317,7 @@ def main() -> None:
     _assert_remaining_gate_approval_matrix_policy()
     _assert_goal_completion_authority_audit_policy()
     _assert_one_gate_sequence_guard_policy()
+    _assert_latest_v3k_governance_status_coverage_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")
