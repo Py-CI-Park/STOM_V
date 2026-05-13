@@ -35,6 +35,8 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_goal_skill_remaining_gate_handoff.py",
     "scripts/check_v3k_gate_approval_phrase.py",
     "scripts/audit_v3k_gate_approval_phrase_intake.py",
+    "scripts/preflight_v3k_gui_sidecar_write_gate.py",
+    "scripts/audit_v3k_gui_sidecar_first_gate_preflight.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -156,6 +158,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "gate_approval_phrase_intake",
             _python("scripts/audit_v3k_gate_approval_phrase_intake.py"),
             "Check exact one-gate approval phrase intake while rejecting broad or out-of-order approvals.",
+        ),
+        AuditStep(
+            "gui_sidecar_first_gate_preflight",
+            _python("scripts/audit_v3k_gui_sidecar_first_gate_preflight.py"),
+            "Check the first GUI sidecar gate remains preflight-blocked before USER_ACK and writer creation.",
         ),
         AuditStep(
             "verify_1a",
