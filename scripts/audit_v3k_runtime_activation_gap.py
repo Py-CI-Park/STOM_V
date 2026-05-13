@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "mission-closeout-review"
+NEXT_CANDIDATE = "approval-gate-selection"
 
 HELD_ITEMS = (
     {
@@ -171,8 +171,14 @@ HELD_ITEMS = (
     {
         "item": "mission-closeout-review",
         "risk": "low",
+        "status": "completed-closeout",
+        "reason": "Page047 confirmed the safe-staged V3K mission is closed and remaining work is approval-gated only.",
+    },
+    {
+        "item": "approval-gate-selection",
+        "risk": "critical",
         "status": "next",
-        "reason": "Next safe step is a final mission closeout review that confirms only explicit approval gates remain.",
+        "reason": "No autonomous safe implementation page remains; a user must explicitly select and approve a gate before any ON, DB, or live runtime work.",
     },
 )
 
@@ -221,6 +227,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_m3_benchmark_archive_policy.md",
     "docs/update_log/2026-05-13_v3k_governance_closeout_and_approval_gate.md",
     "docs/update_log/2026-05-13_v3k_approval_gate_handoff.md",
+    "docs/update_log/2026-05-13_v3k_mission_closeout_review.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -275,9 +282,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["mission-closeout-review"]:
+    if [item["item"] for item in next_items] != ["approval-gate-selection"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "mission-closeout-review":
+    if NEXT_CANDIDATE != "approval-gate-selection":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

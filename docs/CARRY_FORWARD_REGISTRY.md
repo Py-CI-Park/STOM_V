@@ -1495,3 +1495,24 @@ Directive: `V3K_GOVERNANCE_CLOSEOUT` means the governance hardening queue is clo
 - Next: Page 047 / `mission-closeout-review`. ?? closeout review? ???? ON/DB/live runtime ??? ?? ???.
 
 Directive: `V3K_APPROVAL_GATE_HANDOFF` is a decision matrix only. It is not authorization for Phase F/G/H ON, DB cutover, live Kiwoom runtime wiring, live order/exit consumption, or raw artifact commits.
+
+## V3K-MISSION-CLOSEOUT-REVIEW: safe-staged mission closed ? approval gate ?? ??
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 047 plan, Page046 approval gate handoff
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_047_mission_closeout_review_plan.md`
+  - `docs/update_log/2026-05-13_v3k_mission_closeout_review.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: V3K safe-staged mission closed ??? ????, ?? ??? ?? page? ?? `approval-gate-selection` terminal hold? ????.
+- Closed scope: DB/learning read-only and tempfile-only tools, analyzer staging, backtest/realtime learning boundary, formula/global facade, GUI sidecar prototype, Kiwoom H-1 dryrun contract, Phase F/G pre-ON proof, M1/M2/M3 governance, approval gate handoff.
+- Remaining approval gates: Phase F F-4 ON, Phase G G-3 ON, F1 actual DB cutover, H-2/H-3 Kiwoom live dryrun, GUI actual sidecar write, live order/exit rule consumption.
+- Kiwoom adjustment: Kiwoom ??/??/live runtime? ???? ???. H-2/H-3 ?? ??? KHOPENAPI ??? ??? ??? ????.
+- LS dependency exclusion: LS Securities REST/TR/REAL ?? broker dependency? ?? ??? ????.
+- DB boundary: ?? `_database/`, `_database_v3k_shadow/`, DB ??, sidecar artifact, `.omx/reports` raw artifact? write/commit?? ???.
+- Next: `approval-gate-selection`. ??? ?? ?? ??? ? ?? ON/DB/live runtime ?? page? ???? ???.
+
+Directive: `V3K_MISSION_CLOSEOUT_REVIEW`? safe-staged mission closed ? ?? ?? ??? ???. ??? Phase F/G/H ON, DB cutover, Kiwoom live runtime, GUI write, live order/exit consumption ???? ???? ? ??.

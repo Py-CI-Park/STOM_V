@@ -1,0 +1,82 @@
+# V3K mission closeout review
+
+| ?? | ? |
+| --- | --- |
+| ??? | 2026-05-13 KST |
+| worktree | `C:/System_Trading/STOM/STOM_V.wt-dev` |
+| branch | `STOM_Version_2U_C` |
+| page | Page 047 |
+| source | Page046 approval gate handoff |
+| marker | `V3K_MISSION_CLOSEOUT_REVIEW` |
+| ?? | `completed-closeout` |
+| next candidate | `approval-gate-selection` |
+
+---
+
+## 1. ??
+
+V3K safe-staged mission closed. 2U_C? Kiwoom? ??? ???? V3? ??/??/DB/backtest/realtime ?? ??? default-OFF, read-only, tempfile-only, synthetic-proof, approval-gated ???? ??? ????.
+
+?? ?? ??? `approval-gated only`?. ?, ? ????? ???? ?? gate? ?? ????? ????, ?? gate? USER_ACK ?? ?? ??, rollback/monitoring, ?? ?? ??? ???? ??.
+
+No ON execution: ?? Page047??? Phase F/G/H ON, enable registry, USER_ACK, Kiwoom live runtime, ?? `_database/` write, DB ?? commit, `.omx/reports` raw artifact commit, live order/exit rule ??? ???? ???.
+
+---
+
+## 2. ?? safe-staged ??
+
+| ?? | closeout ?? | ?? |
+| --- | --- | --- |
+| DB/learning ??? shadow/dryrun ?? | completed-safe-staged | read-only, tempfile-only, actual cutover approval gate |
+| V3 analyzer module staging | completed-safe-staged | adapter contract, field contract smoke, default-OFF flags |
+| backtest/realtime learning boundary | completed-safe-staged | loader/preload boundary, leakage/fallback smokes |
+| formula/global facade | completed-safe-staged | V3K-prefixed facade, runtime hook defer |
+| GUI settings/sidecar prototype | completed-safe-staged | schema/read-only loader/write guard/tempfile writer; actual write gated |
+| Kiwoom live dryrun hook H-1 | completed-contract-only | hook unit/sentinel; H-2/H-3 live dryrun gated |
+| Phase F analyzer strategy | completed-pre-ON-proof | F-1/F-2/F-3 proof; F-4 ON gated |
+| Phase G microstructure engine | completed-pre-ON-proof | G-1 staging, G-2 parity/benchmark; G-3 ON gated |
+| Governance M1/M2/M3 | completed-hardening | adapter coupling, audit runner, evidence archive policy |
+| Approval gate handoff | completed-handoff | Page046 decision matrix and STOP condition |
+
+---
+
+## 3. ?? approval gate
+
+| Gate | ?? | ?? ?? |
+| --- | --- | --- |
+| Phase F F-4 ON | blocked-awaiting-user-approval | ?? ??, `V3K_PHASE_F_USER_ACK=1` ?? ?? ??, enable registry, rollback/monitoring |
+| Phase G G-3 ON | blocked-awaiting-user-approval | ?? ??, `V3K_PHASE_G_USER_ACK=1` ?? ?? ??, enable registry, parity/benchmark ??? |
+| F1 actual DB cutover | blocked-awaiting-user-approval | real backup apply, post-health, rollback, 7-day monitoring |
+| H-2/H-3 Kiwoom live dryrun | blocked-awaiting-khopenapi-user-approval | KHOPENAPI ??, ??? ACK, dryrun ??, live connection ?? |
+| GUI actual sidecar write | approval required | source-of-truth ??, schema/rollback, write path ?? |
+| live order/exit rule consumption | deferred critical | mock/backtest proof, explicit live decision approval, kill switch, staged rollout |
+
+---
+
+## 4. STOP condition
+
+?? ??? ?? ???? ??? ?? gate? ???? ???.
+
+1. ???? ?? gate? ????? ????.
+2. gate? USER_ACK ?? ?? ??? ????.
+3. rollback ? monitoring ??? gate? ??? ????.
+4. `python scripts/run_v3k_audit_suite.py`? PASS??.
+5. ?? DB/live runtime ?? ??? ????.
+6. gate ?? update_log? ????.
+
+---
+
+## 5. Kiwoom/LS/DB ??
+
+- Kiwoom ??: ?? ??/??/live runtime? ???? ???.
+- LS Securities ?? ??: REST/TR/REAL broker dependency? ????.
+- DB ??: ?? `_database/`, `_database_v3k_shadow/`, DB ??, sidecar artifact, `.omx/reports` raw artifact? write/commit?? ???.
+- feature flag: V3K ??? ?? default-OFF?.
+
+---
+
+## 6. ?? ??
+
+?? ??? ?? page? ??? `approval-gate-selection`??. ???? ?? gate? ????? ???? ?? ?, ????? ????? ON/DB/live runtime ??? ?? ???? ? ??.
+
+Directive: `V3K_MISSION_CLOSEOUT_REVIEW`? safe-staged mission closed ??? ???. ??? Phase F/G/H ON, DB cutover, Kiwoom live runtime, GUI write, live order/exit consumption ???? ???? ? ??.

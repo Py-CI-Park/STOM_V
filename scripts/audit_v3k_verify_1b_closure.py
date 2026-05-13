@@ -63,6 +63,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_m3_benchmark_archive_policy.md",
     "docs/update_log/2026-05-13_v3k_governance_closeout_and_approval_gate.md",
     "docs/update_log/2026-05-13_v3k_approval_gate_handoff.md",
+    "docs/update_log/2026-05-13_v3k_mission_closeout_review.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -158,6 +159,7 @@ SAFE_STAGED_COMPLETED = (
     "M3 Phase G benchmark/parity evidence archive policy staged without committing raw .omx reports",
     "M1/M2/M3 governance closeout completed with remaining work approval-gated only",
     "Approval gate decision matrix handoff completed without ON/DB/live runtime execution",
+    "Mission closeout review completed with remaining work approval-gated only",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -179,6 +181,7 @@ USER_APPROVAL_REQUIRED = (
     "Phase F F-4 ON transition and V3K-PHASE-F-ENABLE registry",
     "Actual GUI sidecar write implementation",
     "Phase G G-3 ON transition and V3K-PHASE-G-ENABLE registry",
+    "Approval gate selection before any ON/DB/live runtime transition",
 )
 
 
@@ -361,6 +364,29 @@ def _assert_approval_gate_handoff_policy() -> None:
         raise AssertionError(f"V3K approval gate handoff docs missing tokens: {missing}")
 
 
+def _assert_mission_closeout_review_policy() -> None:
+    docs = (
+        ROOT / "docs" / "update_log" / "2026-05-13_v3k_mission_closeout_review.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    required_tokens = (
+        "V3K_MISSION_CLOSEOUT_REVIEW",
+        "safe-staged mission closed",
+        "approval-gated only",
+        "approval-gate-selection",
+        "Phase F F-4 ON",
+        "Phase G G-3 ON",
+        "F1 actual DB cutover",
+        "H-2/H-3 Kiwoom live dryrun",
+        "GUI actual sidecar write",
+        "live order/exit rule consumption",
+        "STOP condition",
+        "No ON execution",
+    )
+    missing = [token for token in required_tokens if token not in docs]
+    if missing:
+        raise AssertionError(f"V3K mission closeout docs missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -373,6 +399,7 @@ def main() -> None:
     _assert_benchmark_archive_policy()
     _assert_governance_closeout_policy()
     _assert_approval_gate_handoff_policy()
+    _assert_mission_closeout_review_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")
