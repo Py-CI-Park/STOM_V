@@ -1,48 +1,65 @@
-# V3K Page 042 — M1 adapter coupling contract 계획
+# V3K Page 042 ? M1 adapter coupling contract ?? ??
 
-| 항목 | 값 |
+| ?? | ? |
 | --- | --- |
-| 작성일 | 2026-05-13 KST |
+| ??? | 2026-05-13 KST |
 | worktree | `C:/System_Trading/STOM/STOM_V.wt-dev` |
 | branch | `STOM_Version_2U_C` |
-| 이전 page | Page 041 / governance gap triage |
-| 현재 page | Page 042 / M1 adapter coupling contract |
-| 목적 | `v3k_analyzer_adapter.py`가 V3K staging module의 single point of coupling임을 명시하고, flag/contract 변경 정책을 고정한다. |
-| 위험도 | medium-low |
-| ON 여부 | 금지. contract/docstring/audit 보강만 수행한다. |
+| ?? page | Page 041 / governance gap triage |
+| ?? page | Page 042 / M1 adapter coupling contract |
+| ?? | `completed-contract` |
+| ?? | `v3k_analyzer_adapter.py`? V3K staging module? single point of coupling?? ????, flag/contract ?? ??? audit ???? ????. |
+| ??? | medium-low |
+| ON ?? | ??. contract/docstring/audit ??? ????. |
 
 ---
 
-## 1. 허용 범위
+## 1. ?? ??? ?? ??
 
-Page042에서 허용되는 작업은 다음으로 제한한다.
+Page042? Architect addendum? M1? ???? governance hardening ???. ??? ??? ?? ??? ???, ?? ??? ????.
 
-1. `strategy/v3k_analyzer_adapter.py` module docstring 추가 또는 보강
-2. FLAG/DEFAULT_FLAGS backward-compatible 정책 명시
-3. `V3KAnalyzerOutput`, `normalize_v3k_flags`, Phase F/G flag surface 제거·rename 금지 경고
-4. 필요한 경우 `scripts/audit_v3k_verify_1b_closure.py` 또는 별도 audit에 M1 contract 존재 검증 추가
-5. docs/update_log 및 `docs/CARRY_FORWARD_REGISTRY.md` 갱신
-
----
-
-## 2. 금지 범위
-
-- feature flag 기본값 ON 변경
-- Phase F/G/H ON 전환
-- enable registry 생성
-- USER_ACK 사용
-- Kiwoom live runtime 변경
-- 운영 DB 또는 `.omx/reports` commit
-- live order/exit rule 연결
-- LS Securities 직접 의존 추가
+1. `strategy/v3k_analyzer_adapter.py` module docstring? V3K adapter coupling contract? ????.
+2. `ADAPTER_COUPLING_CONTRACT_MARKERS`? ??? audit ??? marker surface? ????.
+3. FLAG/DEFAULT_FLAGS backward-compatible ??? ????.
+4. `DEFAULT_FLAGS` default-OFF invariant? ????? VERIFY-1B audit?? ????? ??.
+5. `V3KAnalyzerOutput`, `normalize_v3k_flags` stable surface ?? ??? ????.
+6. LS Securities ?? ?? ?? ? Kiwoom live runtime mutation ??? contract? ????.
+7. `scripts/audit_v3k_verify_1b_closure.py`? M1 adapter coupling contract guard? ????.
+8. `scripts/audit_v3k_runtime_activation_gap.py`?? ?? ??? M2 audit runner/policy? ????.
 
 ---
 
-## 3. 완료 조건
+## 2. ?? ??
 
-- `v3k_analyzer_adapter.py`가 V3K single point of coupling contract를 명시한다.
-- default-OFF 및 backward-compatible flag policy가 audit 가능한 형태로 남는다.
-- VERIFY-1A/VERIFY-1B, Phase G proof, nonrelease sync, artifact guard가 계속 PASS한다.
-- 다음 후보는 M2 audit runner/policy 또는 M3 evidence archive policy 중 더 안전한 항목으로 이동한다.
+?? ??? Page042?? ????? ???? ???.
 
-Directive: Page042는 governance contract 보강이지 ON 실행이 아니다. runtime path, DB, broker API, live decision은 변경하지 않는다.
+- feature flag ??? ON ??
+- Phase F/G/H ON ??
+- enable registry ??
+- USER_ACK ??
+- Kiwoom live runtime ??
+- ?? `_database/` write
+- DB ?? commit
+- `.omx/reports` commit
+- live order/exit rule ??
+- LS Securities ?? ?? ??
+
+---
+
+## 3. ?? ??
+
+- `v3k_analyzer_adapter.py`? V3K single point of coupling contract? ????.
+- default-OFF ? backward-compatible flag policy? audit ??? ??? ???.
+- VERIFY-1B? adapter contract marker, required flag surface, `V3KAnalyzerOutput.has_signal`, `normalize_v3k_flags`? ????.
+- Runtime activation gap? ?? ?? ??? `governance-m2-audit-runner-policy`? ????.
+- VERIFY-1A/VERIFY-1B, Phase G proof, nonrelease sync, artifact guard? ?? PASS??.
+
+---
+
+## 4. ?? ???
+
+?? ???? Page043 / `governance-m2-audit-runner-policy`?.
+
+Page043??? `.git/hooks` ?? ??? ?? CI ?? ??, repo-tracked audit runner/policy? ???? ?? ????. ?? CI/pre-commit ???? ??? ?? ?? ?? ?? ??? ????? ?? ???? ???.
+
+Directive: Page042? governance contract ???? ON ??? ???. runtime path, DB, broker API, live decision? ???? ???.

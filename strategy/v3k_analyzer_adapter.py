@@ -1,3 +1,28 @@
+"""V3K analyzer adapter coupling contract.
+
+V3K_SINGLE_POINT_OF_COUPLING: this module is the only approved 2U_C
+adapter surface for staging broker-neutral V3 analyzer, learning DB,
+Phase F analyzer-strategy, and Phase G microstructure features while the
+live broker remains Kiwoom.
+
+V3K_FLAGS_BACKWARD_COMPATIBLE: exported ``FLAG_*`` names and
+``DEFAULT_FLAGS`` keys are a compatibility surface. Do not remove or rename
+them without a migration plan, compatibility audit, and update-log entry.
+
+V3K_DEFAULT_FLAGS_MUST_REMAIN_OFF: every V3K feature flag stays default-OFF.
+No import of this module may enable runtime paths, write operational
+``_database/`` files, or connect live order/exit decisions.
+
+V3K_ANALYZER_OUTPUT_SURFACE_STABLE: ``V3KAnalyzerOutput`` and
+``normalize_v3k_flags`` are the stable staged interfaces consumed by tests,
+smokes, and later approval-gated wiring. Preserve their names and no-signal
+semantics unless a documented migration updates all callers.
+
+V3K_NO_BROKER_RUNTIME_SIDE_EFFECTS: this contract forbids direct LS
+Securities dependencies and also forbids Kiwoom live runtime mutation in this
+module. Live Kiwoom wiring still requires a separate user-approved ON gate.
+"""
+
 from __future__ import annotations
 
 import re
@@ -8,6 +33,15 @@ from pathlib import Path
 from typing import Any, Literal, Mapping
 
 import numpy as np
+
+
+ADAPTER_COUPLING_CONTRACT_MARKERS = (
+    "V3K_SINGLE_POINT_OF_COUPLING",
+    "V3K_FLAGS_BACKWARD_COMPATIBLE",
+    "V3K_DEFAULT_FLAGS_MUST_REMAIN_OFF",
+    "V3K_ANALYZER_OUTPUT_SURFACE_STABLE",
+    "V3K_NO_BROKER_RUNTIME_SIDE_EFFECTS",
+)
 
 
 FLAG_BACKTEST_LEARNING = "V3K_BACKTEST_LEARNING_ENABLED"

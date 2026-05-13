@@ -8,7 +8,17 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from strategy.v3k_analyzer_adapter import DEFAULT_FLAGS  # noqa: E402
+from strategy.v3k_analyzer_adapter import (  # noqa: E402
+    ADAPTER_COUPLING_CONTRACT_MARKERS,
+    DEFAULT_FLAGS,
+    FLAG_ANALYZER_MODULE_STAGING,
+    FLAG_BACKTEST_LEARNING,
+    FLAG_PHASE_F_ANALYZER_STRATEGY,
+    FLAG_PHASE_G_MICROSTRUCTURE_ENGINE,
+    FLAG_REALTIME_LEARNING,
+    V3KAnalyzerOutput,
+    normalize_v3k_flags,
+)
 from strategy.v3k_settings_surface import (  # noqa: E402
     assert_v3k_settings_contract_aligned,
 )
@@ -48,6 +58,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_work.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g3_approval_gate.md",
     "docs/update_log/2026-05-13_v3k_governance_gap_triage.md",
+    "docs/update_log/2026-05-13_v3k_m1_adapter_coupling_contract.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -56,6 +67,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_040_phase_g_g3_approval_gate_plan.md",
     "docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md",
     "docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md",
+    "docs/plans/2026-05-13_v3k_page_043_m2_audit_runner_policy_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -131,6 +143,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase G G-2 proof scripts for synthetic parity and benchmark without runtime ON",
     "Phase G G-3 approval gate documented as blocked before ON",
     "Architect M1/M2/M3 governance gaps triaged before later ON transitions",
+    "M1 adapter single point of coupling contract locked with audit guard",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -196,6 +209,46 @@ def _assert_forbidden_artifact_status_clean() -> None:
         raise AssertionError(f"forbidden runtime artifact status is not clean:\n{status}")
 
 
+def _assert_adapter_coupling_contract() -> None:
+    source = (ROOT / "strategy" / "v3k_analyzer_adapter.py").read_text(
+        encoding="utf-8",
+        errors="replace",
+    )
+    missing_markers = [
+        marker for marker in ADAPTER_COUPLING_CONTRACT_MARKERS if marker not in source
+    ]
+    if missing_markers:
+        raise AssertionError(
+            f"V3K adapter coupling contract markers missing: {missing_markers}"
+        )
+
+    required_default_off_flags = {
+        FLAG_BACKTEST_LEARNING,
+        FLAG_REALTIME_LEARNING,
+        FLAG_ANALYZER_MODULE_STAGING,
+        FLAG_PHASE_F_ANALYZER_STRATEGY,
+        FLAG_PHASE_G_MICROSTRUCTURE_ENGINE,
+    }
+    missing_flags = required_default_off_flags.difference(DEFAULT_FLAGS)
+    if missing_flags:
+        raise AssertionError(
+            f"V3K adapter DEFAULT_FLAGS missing required stable flags: {sorted(missing_flags)}"
+        )
+
+    enabled_required_flags = [
+        flag for flag in required_default_off_flags if DEFAULT_FLAGS[flag] is not False
+    ]
+    if enabled_required_flags:
+        raise AssertionError(
+            f"V3K adapter required flags must remain default-OFF: {enabled_required_flags}"
+        )
+
+    if not callable(normalize_v3k_flags):
+        raise AssertionError("normalize_v3k_flags must remain callable")
+    if not hasattr(V3KAnalyzerOutput, "has_signal"):
+        raise AssertionError("V3KAnalyzerOutput.has_signal surface is missing")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -203,6 +256,7 @@ def main() -> None:
     _assert_default_flags_off()
     assert_v3k_settings_contract_aligned()
     _assert_forbidden_artifact_status_clean()
+    _assert_adapter_coupling_contract()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")

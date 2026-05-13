@@ -1378,3 +1378,25 @@ Directive: Do not create `V3K-PHASE-G-ENABLE`, set `V3K_PHASE_G_USER_ACK=1`, or 
 - Next: Page 042 / `governance-m1-adapter-contract`.
 
 Directive: Do not use governance triage as authorization for Phase F/G/H ON. M1/M2/M3 are pre-ON hardening tasks only.
+
+## V3K-GOVERNANCE-M1-ADAPTER-CONTRACT: adapter single point of coupling ??
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 042 plan, Architect addendum M1
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md`
+  - `docs/update_log/2026-05-13_v3k_m1_adapter_coupling_contract.md`
+  - `docs/plans/2026-05-13_v3k_page_043_m2_audit_runner_policy_plan.md`
+- Added/modified:
+  - `strategy/v3k_analyzer_adapter.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: `strategy/v3k_analyzer_adapter.py`? V3K staging ??? single point of coupling?? ????, marker ?? VERIFY-1B guard? contract ??? ????.
+- Contract markers: `V3K_SINGLE_POINT_OF_COUPLING`, `V3K_FLAGS_BACKWARD_COMPATIBLE`, `V3K_DEFAULT_FLAGS_MUST_REMAIN_OFF`, `V3K_ANALYZER_OUTPUT_SURFACE_STABLE`, `V3K_NO_BROKER_RUNTIME_SIDE_EFFECTS`.
+- Kiwoom adjustment: Kiwoom live runtime, ??/??, live decision path? ???? ???. Adapter contract? staging surface? ????.
+- LS dependency exclusion: LS Securities REST/TR/REAL ?? ??? ?? ????.
+- DB boundary: ?? `_database/`, `_database_v3k_shadow/`, DB ??, `.omx/reports/`? commit?? ???.
+- Next: Page 043 / `governance-m2-audit-runner-policy`. `.git/hooks` ?? ?? ?? repo-tracked audit runner/policy? ????.
+
+Directive: M1 contract completion is not authorization for Phase F/G/H ON. Do not remove or rename V3K adapter flags or stable surfaces without a documented migration plan and updated audits.

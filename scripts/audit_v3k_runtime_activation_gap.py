@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "governance-m1-adapter-contract"
+NEXT_CANDIDATE = "governance-m2-audit-runner-policy"
 
 HELD_ITEMS = (
     {
@@ -141,8 +141,14 @@ HELD_ITEMS = (
     {
         "item": "governance-m1-adapter-contract",
         "risk": "medium-low",
+        "status": "completed-contract",
+        "reason": "Page042 locked the adapter as the single point of V3K coupling and added VERIFY-1B audit guards without runtime, DB, or ON changes.",
+    },
+    {
+        "item": "governance-m2-audit-runner-policy",
+        "risk": "medium",
         "status": "next",
-        "reason": "Next safe step is Page042 adapter coupling contract/docstring hardening without runtime, DB, or ON changes.",
+        "reason": "Next safe step is to design a tracked audit runner policy without writing .git/hooks or changing CI outside the repository contract.",
     },
 )
 
@@ -168,6 +174,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_040_phase_g_g3_approval_gate_plan.md",
     "docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md",
     "docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md",
+    "docs/plans/2026-05-13_v3k_page_043_m2_audit_runner_policy_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -181,6 +188,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_work.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g3_approval_gate.md",
     "docs/update_log/2026-05-13_v3k_governance_gap_triage.md",
+    "docs/update_log/2026-05-13_v3k_m1_adapter_coupling_contract.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -233,9 +241,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["governance-m1-adapter-contract"]:
+    if [item["item"] for item in next_items] != ["governance-m2-audit-runner-policy"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "governance-m1-adapter-contract":
+    if NEXT_CANDIDATE != "governance-m2-audit-runner-policy":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
