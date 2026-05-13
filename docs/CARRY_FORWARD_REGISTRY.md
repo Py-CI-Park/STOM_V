@@ -1558,3 +1558,23 @@ Directive: `V3K_APPROVAL_GATE_SELECTION`? gate ?? planning record??, Phase F/G/H
 - Next: `gui-sidecar-write-await-user-approval`. ??? ?? ??, source-of-truth ??, rollback/monitoring ?? ??? actual writer ???? ???? ???.
 
 Directive: `GUI_SIDECAR_WRITE_APPROVAL_PREP`? ?? ?? ???? actual sidecar write, ON ??, USER_ACK, DB cutover, Kiwoom live runtime ???? ???? ? ??.
+
+## V3K-PHASE-F-F4-ON-APPROVAL-PREP: analyzer strategy ON 승인 전 준비
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 050 plan, Page035 Phase F F-4 approval gate, Page048 approval gate selection
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_050_phase_f_f4_on_approval_prep_plan.md`
+  - `docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: Phase F F-4 ON 전 USER_ACK, enable registry, rollback, monitoring, parity/default-OFF/rollback 검증 조건을 문서화한다. 실제 ON은 수행하지 않는다.
+- Current evidence: Phase F default-OFF smoke, Phase F parity baseline, rollback audit, full V3K audit suite.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 broker dependency는 추가하지 않는다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, DB 파일, sidecar artifact, `.omx/reports` raw artifact는 write/commit하지 않는다.
+- Next: `phase-f-f4-on-await-user-approval`. 사용자 명시 승인, `V3K_PHASE_F_USER_ACK=1` 또는 동등 승인 기록, `V3K-PHASE-F-ENABLE` registry, rollback/monitoring 확정 전에는 actual ON을 수행하지 않는다.
+
+Directive: `PHASE_F_F4_ON_APPROVAL_PREP`는 승인 준비 기록이며 Phase F ON, USER_ACK 생성, enable registry 생성, DB cutover, Kiwoom live runtime 변경으로 해석하면 안 된다.
