@@ -1679,3 +1679,22 @@ Directive: `LIVE_ORDER_EXIT_RULE_CONSUMPTION_APPROVAL_PREP`는 승인 준비 기
 - Next: `live-order-exit-rule-consumption-await-user-approval` remains the single next candidate, but actual live decision wiring still requires explicit user approval, USER_ACK, enable registry, kill switch, shadow/dryrun proof, staged rollout, monitoring, and green audits.
 
 Directive: `APPROVAL_GATE_CLOSEOUT_REVIEW` is a review/guardrail record only. Do not interpret it as approval for actual ON, USER_ACK creation, enable registry creation, KHOPENAPI connect/login, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.
+
+## V3K-APPROVAL-GATE-FINAL-DECISION-TABLE: remaining gate user decision table
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page055 approval gate closeout review and remaining user approval gates.
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_056_approval_gate_final_decision_table_plan.md`
+  - `docs/update_log/2026-05-13_v3k_approval_gate_final_decision_table.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: The six remaining gates are fixed as a final user decision table: GUI actual sidecar write, Phase F F-4 ON, Phase G G-3 ON, Phase H H-2/H-3 Kiwoom live dry-run, F1 actual DB cutover, and live order/exit rule consumption. This does not grant or execute any gate.
+- Current evidence: runtime activation gap audit, VERIFY-1A, VERIFY-1B, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom order/exit/live runtime remains unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, sidecar artifacts, live artifacts, and raw `.omx/reports` artifacts were not committed.
+- Next: `live-order-exit-rule-consumption-await-user-approval` remains the single next candidate, but actual execution still requires explicit user approval, USER_ACK, enable registry, rollback/kill switch, monitoring owner, fallback trigger, and green audits.
+
+Directive: `APPROVAL_GATE_FINAL_DECISION_TABLE` is a user-decision aid only. Do not interpret it as approval for actual ON, USER_ACK creation, enable registry creation, KHOPENAPI connect/login, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.
