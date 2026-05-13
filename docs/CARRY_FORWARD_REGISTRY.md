@@ -1856,3 +1856,24 @@ Directive: `GUI_SIDECAR_WRITE_APPROVAL_TEMPLATE` is template-only. Do not create
 - Next: actual GUI sidecar writer implementation remains blocked until explicit approval, USER_ACK or equivalent approval record, owner acceptance, green pre-write audit, rollback implementation approval, rollback acceptance, and post-write validation owner are all present.
 
 Directive: `GUI_SIDECAR_PREAPPROVAL_COMPLETION_AUDIT` is not approval. Do not create USER_ACK, writer or rollback scripts, sidecar artifact, MainWindow wiring, DB cutover, KHOPENAPI login, or live decision wiring from this audit.
+
+## V3K-REMAINING-GATE-APPROVAL-MATRIX: six gate approval phrases and no-go verdicts
+- Date: 2026-05-14 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page056 final decision table, Page061 blocker audit, and Page064 GUI sidecar pre-approval completion audit.
+- Records:
+  - `docs/plans/2026-05-14_v3k_page_065_remaining_gate_approval_matrix_plan.md`
+  - `docs/update_log/2026-05-14_v3k_remaining_gate_approval_matrix.md`
+- Added/modified:
+  - `scripts/audit_v3k_remaining_gate_approval_matrix.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/run_v3k_audit_suite.py`
+- Decision: All six remaining V3K gates now have one matrix with gate order, risk, exact approval phrase, required USER_ACK or enable marker, missing execution condition, and current `not executable` verdict. This is a matrix-only record and does not grant actual gate execution.
+- Current evidence: remaining gate approval matrix audit, runtime activation gap audit, VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom order, exit, and live runtime remain unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created.
+- Next: the user must explicitly approve exactly one gate before any USER_ACK, enable registry, sidecar write, DB cutover, KHOPENAPI login, Kiwoom live runtime mutation, or live order/exit rule consumption can proceed. The first recommended approval gate remains `gui-sidecar-write-await-user-approval`.
+
+Directive: `REMAINING_GATE_APPROVAL_MATRIX` is not approval. Do not create USER_ACK, enable registry, writer or rollback scripts, sidecar artifact, MainWindow wiring, DB cutover, KHOPENAPI login, Kiwoom live runtime mutation, or live decision wiring from this matrix.

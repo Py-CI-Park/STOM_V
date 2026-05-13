@@ -29,6 +29,7 @@ PY_COMPILE_TARGETS = (
     "scripts/preview_v3k_gui_sidecar_default_payload.py",
     "scripts/audit_v3k_gui_sidecar_approval_template.py",
     "scripts/audit_v3k_gui_sidecar_preapproval_completion.py",
+    "scripts/audit_v3k_remaining_gate_approval_matrix.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -125,6 +126,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "gui_sidecar_preapproval_completion",
             _python("scripts/audit_v3k_gui_sidecar_preapproval_completion.py"),
             "Check the first GUI sidecar gate is review-ready but still execution-blocked.",
+        ),
+        AuditStep(
+            "remaining_gate_approval_matrix",
+            _python("scripts/audit_v3k_remaining_gate_approval_matrix.py"),
+            "Check all six remaining gate approval phrases exist while every gate stays blocked.",
         ),
         AuditStep(
             "verify_1a",
