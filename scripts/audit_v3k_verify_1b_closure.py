@@ -73,6 +73,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_live_order_exit_rule_consumption_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_approval_gate_closeout_review.md",
     "docs/update_log/2026-05-13_v3k_approval_gate_final_decision_table.md",
+    "docs/update_log/2026-05-13_v3k_gui_actual_sidecar_write_preflight.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -95,6 +96,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_054_live_order_exit_rule_consumption_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_055_approval_gate_closeout_review_plan.md",
     "docs/plans/2026-05-13_v3k_page_056_approval_gate_final_decision_table_plan.md",
+    "docs/plans/2026-05-13_v3k_page_057_gui_actual_sidecar_write_preflight_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -187,6 +189,7 @@ SAFE_STAGED_COMPLETED = (
     "Live order/exit rule consumption approval preparation completed without live decision wiring",
     "Approval gate closeout review completed without ON/DB/live execution",
     "Approval gate final decision table completed without actual gate execution",
+    "GUI actual sidecar write preflight completed without actual write execution",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -579,6 +582,7 @@ def _assert_approval_prep_docs_not_corrupted() -> None:
         "docs/plans/2026-05-13_v3k_page_054_live_order_exit_rule_consumption_approval_prep_plan.md",
         "docs/plans/2026-05-13_v3k_page_055_approval_gate_closeout_review_plan.md",
         "docs/plans/2026-05-13_v3k_page_056_approval_gate_final_decision_table_plan.md",
+        "docs/plans/2026-05-13_v3k_page_057_gui_actual_sidecar_write_preflight_plan.md",
         "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
         "docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md",
         "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
@@ -587,6 +591,7 @@ def _assert_approval_prep_docs_not_corrupted() -> None:
         "docs/update_log/2026-05-13_v3k_live_order_exit_rule_consumption_approval_prep.md",
         "docs/update_log/2026-05-13_v3k_approval_gate_closeout_review.md",
         "docs/update_log/2026-05-13_v3k_approval_gate_final_decision_table.md",
+        "docs/update_log/2026-05-13_v3k_gui_actual_sidecar_write_preflight.md",
     )
     corrupted: list[str] = []
     for path in doc_paths:
@@ -659,6 +664,32 @@ def _assert_approval_gate_final_decision_table_policy() -> None:
         raise AssertionError(f"V3K approval gate final decision table missing tokens: {missing}")
 
 
+def _assert_gui_actual_sidecar_write_preflight_policy() -> None:
+    docs = (
+        ROOT
+        / "docs"
+        / "update_log"
+        / "2026-05-13_v3k_gui_actual_sidecar_write_preflight.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    required_tokens = (
+        "GUI_ACTUAL_SIDECAR_WRITE_PREFLIGHT",
+        "gui-sidecar-write-await-user-approval",
+        "No actual sidecar write execution",
+        "_v3k_sidecar/v3k_gui_settings.json",
+        "V3K_GUI_SIDECAR_USER_ACK=1",
+        "source-of-truth",
+        "tempfile-only writer prototype",
+        "backup-before-replace",
+        "default-OFF fallback",
+        "artifact guard",
+        "Kiwoom live runtime",
+        "LS Securities",
+    )
+    missing = [token for token in required_tokens if token not in docs]
+    if missing:
+        raise AssertionError(f"V3K GUI actual sidecar write preflight missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -682,6 +713,7 @@ def main() -> None:
     _assert_approval_prep_docs_not_corrupted()
     _assert_approval_gate_closeout_review_policy()
     _assert_approval_gate_final_decision_table_policy()
+    _assert_gui_actual_sidecar_write_preflight_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")

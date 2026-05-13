@@ -29,7 +29,9 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_025_phase_e6_sidecar_tempfile_writer_plan.md",
     "docs/plans/2026-05-12_v3k_page_026_phase_h_h1_kiwoom_dryrun_hook_plan.md",
     "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
+    "docs/plans/2026-05-13_v3k_page_057_gui_actual_sidecar_write_preflight_plan.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
+    "docs/update_log/2026-05-13_v3k_gui_actual_sidecar_write_preflight.md",
 )
 
 REQUIRED_DECISION_MARKERS = (
@@ -112,6 +114,25 @@ def _assert_actual_write_still_requires_approval() -> None:
         raise AssertionError("actual sidecar write must remain in USER_APPROVAL_REQUIRED")
 
 
+def _assert_preflight_doc_contract() -> None:
+    preflight = (
+        ROOT / "docs" / "update_log" / "2026-05-13_v3k_gui_actual_sidecar_write_preflight.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    required = (
+        "GUI_ACTUAL_SIDECAR_WRITE_PREFLIGHT",
+        "No actual sidecar write execution",
+        "V3K_GUI_SIDECAR_USER_ACK=1",
+        V3K_GUI_SIDECAR_FILE,
+        "source-of-truth",
+        "rollback",
+        "monitoring",
+        "artifact guard",
+    )
+    missing = [marker for marker in required if marker not in preflight]
+    if missing:
+        raise AssertionError(f"GUI actual sidecar write preflight markers missing: {missing}")
+
+
 def _assert_tempfile_writer_prototype_contract() -> None:
     prototype = (ROOT / "scripts" / "smoke_v3k_gui_sidecar_tempfile_writer.py").read_text(
         encoding="utf-8",
@@ -154,6 +175,7 @@ def main() -> None:
     _assert_strategy_module_has_no_writer()
     _assert_readonly_loader_still_defaults_off()
     _assert_actual_write_still_requires_approval()
+    _assert_preflight_doc_contract()
     _assert_tempfile_writer_prototype_contract()
     _assert_no_sidecar_or_runtime_artifacts()
 

@@ -1698,3 +1698,23 @@ Directive: `APPROVAL_GATE_CLOSEOUT_REVIEW` is a review/guardrail record only. Do
 - Next: `live-order-exit-rule-consumption-await-user-approval` remains the single next candidate, but actual execution still requires explicit user approval, USER_ACK, enable registry, rollback/kill switch, monitoring owner, fallback trigger, and green audits.
 
 Directive: `APPROVAL_GATE_FINAL_DECISION_TABLE` is a user-decision aid only. Do not interpret it as approval for actual ON, USER_ACK creation, enable registry creation, KHOPENAPI connect/login, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.
+
+## V3K-GUI-ACTUAL-SIDECAR-WRITE-PREFLIGHT: actual write approval preflight
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page056 approval gate final decision table selected GUI actual sidecar write as the first recommended approval gate.
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_057_gui_actual_sidecar_write_preflight_plan.md`
+  - `docs/update_log/2026-05-13_v3k_gui_actual_sidecar_write_preflight.md`
+- Added/modified:
+  - `scripts/audit_v3k_gui_sidecar_write_guard.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: GUI actual sidecar write preflight is complete, but actual writer implementation/execution remains blocked. `_v3k_sidecar/v3k_gui_settings.json` is only the source-of-truth candidate until user approval. `V3K_GUI_SIDECAR_USER_ACK=1` was not created.
+- Current evidence: GUI sidecar write guard audit, tempfile-only writer smoke, runtime activation gap audit, VERIFY-1A, VERIFY-1B, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom order/exit/live runtime remains unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, DB files, raw `.omx/reports` artifacts, and live artifacts were not committed.
+- Next: actual GUI sidecar write still requires explicit user approval, `V3K_GUI_SIDECAR_USER_ACK=1` or equivalent approval record, writer call-site decision, rollback owner, monitoring owner, fallback trigger, and green audits.
+
+Directive: `GUI_ACTUAL_SIDECAR_WRITE_PREFLIGHT` is a preflight record only. Do not interpret it as approval for actual sidecar write, USER_ACK creation, writer implementation, MainWindow wiring, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.
