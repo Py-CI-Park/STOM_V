@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-g-g2-parity-benchmark-work"
+NEXT_CANDIDATE = "phase-g-g3-approval-gate"
 
 HELD_ITEMS = (
     {
@@ -123,8 +123,14 @@ HELD_ITEMS = (
     {
         "item": "phase-g-g2-parity-benchmark-work",
         "risk": "high",
+        "status": "completed-proof",
+        "reason": "Page039 implemented and ran synthetic/caller-owned parity and benchmark scripts without enabling Phase G.",
+    },
+    {
+        "item": "phase-g-g3-approval-gate",
+        "risk": "critical",
         "status": "next",
-        "reason": "Next step is Page039 G-2 synthetic/caller-owned parity and benchmark scripts only; Phase G ON remains blocked until G-3 approval.",
+        "reason": "Next step is Page040 approval gate documentation; Phase G ON still requires explicit user approval, registry, rollback, and monitoring.",
     },
 )
 
@@ -147,6 +153,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
     "docs/plans/2026-05-13_v3k_page_038_phase_g_g2_parity_benchmark_plan.md",
     "docs/plans/2026-05-13_v3k_page_039_phase_g_g2_parity_benchmark_work_plan.md",
+    "docs/plans/2026-05-13_v3k_page_040_phase_g_g3_approval_gate_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -157,6 +164,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_kiwoom_opt_data_shape_mapping.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g1_engine_staging.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_plan.md",
+    "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_work.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
     "docs/update_log/2026-05-12_v3k_f1_db_cutover_pre_ralplan.md",
@@ -174,6 +182,8 @@ REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_phase_f_rollback.py",
     "scripts/audit_v3k_phase_g_ls_excise.py",
     "scripts/smoke_v3k_phase_g_engine_unit.py",
+    "scripts/backtest_v3k_phase_g_parity.py",
+    "scripts/benchmark_v3k_phase_g_engine.py",
 )
 
 RUNTIME_GUARDED_FILES = (
@@ -206,9 +216,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-g-g2-parity-benchmark-work"]:
+    if [item["item"] for item in next_items] != ["phase-g-g3-approval-gate"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-g-g2-parity-benchmark-work":
+    if NEXT_CANDIDATE != "phase-g-g3-approval-gate":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

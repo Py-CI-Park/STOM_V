@@ -11,6 +11,8 @@ if str(ROOT) not in sys.path:
 CODE_TARGETS = (
     "strategy/v3k_microstructure_engine.py",
     "scripts/smoke_v3k_phase_g_engine_unit.py",
+    "scripts/backtest_v3k_phase_g_parity.py",
+    "scripts/benchmark_v3k_phase_g_engine.py",
 )
 
 FORBIDDEN_MARKERS = (
