@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "governance-gap-triage-plan"
+NEXT_CANDIDATE = "governance-m1-adapter-contract"
 
 HELD_ITEMS = (
     {
@@ -135,8 +135,14 @@ HELD_ITEMS = (
     {
         "item": "governance-gap-triage-plan",
         "risk": "medium",
+        "status": "completed-triage",
+        "reason": "Page041 triaged Architect addendum M1/M2/M3: M1 is next safe contract hardening, M2/M3 require separate policy design.",
+    },
+    {
+        "item": "governance-m1-adapter-contract",
+        "risk": "medium-low",
         "status": "next",
-        "reason": "Next safe step is Page041 triage of Architect addendum M1/M2/M3 governance gaps before any later ON transition.",
+        "reason": "Next safe step is Page042 adapter coupling contract/docstring hardening without runtime, DB, or ON changes.",
     },
 )
 
@@ -161,6 +167,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_039_phase_g_g2_parity_benchmark_work_plan.md",
     "docs/plans/2026-05-13_v3k_page_040_phase_g_g3_approval_gate_plan.md",
     "docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md",
+    "docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -173,6 +180,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_plan.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_work.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g3_approval_gate.md",
+    "docs/update_log/2026-05-13_v3k_governance_gap_triage.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -225,9 +233,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["governance-gap-triage-plan"]:
+    if [item["item"] for item in next_items] != ["governance-m1-adapter-contract"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "governance-gap-triage-plan":
+    if NEXT_CANDIDATE != "governance-m1-adapter-contract":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

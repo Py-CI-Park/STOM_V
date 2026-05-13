@@ -1358,3 +1358,23 @@ Directive: Do not treat G-2 parity/benchmark PASS as permission to enable `V3K_P
 - Next: Page 041 / `governance-gap-triage-plan`. Architect addendum M1/M2/M3를 ON 전 governance 후속으로 triage한다.
 
 Directive: Do not create `V3K-PHASE-G-ENABLE`, set `V3K_PHASE_G_USER_ACK=1`, or connect Phase G output to live order/exit decisions without a separate explicit user-approved ON cycle.
+
+## V3K-GOVERNANCE-GAP-TRIAGE: M1/M2/M3 ON 전 후속 분류
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 041 plan, Architect addendum M1/M2/M3
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md`
+  - `docs/update_log/2026-05-13_v3k_governance_gap_triage.md`
+  - `docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md`
+- Decision: M1은 즉시 안전 후보, M2/M3는 별도 설계/정책 page로 보류한다.
+- M1: `v3k_analyzer_adapter.py` single point of coupling contract를 Page042에서 docstring/audit 형태로 고정한다.
+- M2: audit guard CI/pre-commit 자동화는 tracked runner 또는 CI 정책 선택이 필요하므로 Page041에서 직접 hook 설치하지 않는다.
+- M3: `.omx/reports/` commit 금지 원칙과 충돌하므로 baseline evidence archive 정책은 별도 page에서 설계한다.
+- Kiwoom adjustment: Kiwoom live runtime, 주문/청산, live decision path는 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 계속 금지한다.
+- DB boundary: 운영 `_database/`, DB 파일, `.omx/reports/`는 commit하지 않는다.
+- Next: Page 042 / `governance-m1-adapter-contract`.
+
+Directive: Do not use governance triage as authorization for Phase F/G/H ON. M1/M2/M3 are pre-ON hardening tasks only.

@@ -47,6 +47,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_plan.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_work.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g3_approval_gate.md",
+    "docs/update_log/2026-05-13_v3k_governance_gap_triage.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -54,6 +55,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_039_phase_g_g2_parity_benchmark_work_plan.md",
     "docs/plans/2026-05-13_v3k_page_040_phase_g_g3_approval_gate_plan.md",
     "docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md",
+    "docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -128,6 +130,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase G G-2 parity/benchmark plan with ±15% parity, ±20% performance, ignored report schema, and Page039 work boundary",
     "Phase G G-2 proof scripts for synthetic parity and benchmark without runtime ON",
     "Phase G G-3 approval gate documented as blocked before ON",
+    "Architect M1/M2/M3 governance gaps triaged before later ON transitions",
     "OFF regression and Kiwoom untouched audit",
 )
 
