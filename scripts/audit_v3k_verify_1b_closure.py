@@ -78,6 +78,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_execution_packet.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_readiness_audit.md",
     "docs/update_log/2026-05-13_v3k_remaining_approval_gate_blocker_audit.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_default_payload_preview.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -105,6 +106,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_059_gui_sidecar_write_approval_execution_packet_plan.md",
     "docs/plans/2026-05-13_v3k_page_060_gui_sidecar_write_readiness_audit_plan.md",
     "docs/plans/2026-05-13_v3k_page_061_remaining_approval_gate_blocker_audit_plan.md",
+    "docs/plans/2026-05-13_v3k_page_062_gui_sidecar_default_payload_preview_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -129,6 +131,7 @@ REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_gui_sidecar_write_readiness.py",
     "scripts/audit_v3k_remaining_approval_gates.py",
     "scripts/audit_v3k_runtime_activation_gap.py",
+    "scripts/preview_v3k_gui_sidecar_default_payload.py",
     "scripts/diff_v3_vs_2uc_db_schema.py",
     "scripts/init_v3k_shadow_db.py",
     "scripts/v3k_db_health.py",
@@ -204,6 +207,7 @@ SAFE_STAGED_COMPLETED = (
     "GUI sidecar write approval execution packet completed without actual write execution",
     "GUI sidecar write readiness audit completed without actual write execution",
     "Remaining approval gate blocker audit completed without actual gate execution",
+    "GUI sidecar default-OFF payload preview completed without actual write execution",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -328,6 +332,7 @@ def _assert_audit_runner_policy() -> None:
         "summarize_v3k_phase_g_evidence.py",
         "audit_v3k_gui_sidecar_write_readiness.py",
         "audit_v3k_remaining_approval_gates.py",
+        "preview_v3k_gui_sidecar_default_payload.py",
     )
     missing = [token for token in required_tokens if token not in source]
     if missing:
@@ -865,6 +870,42 @@ def _assert_remaining_approval_gate_blocker_audit_policy() -> None:
         raise AssertionError(f"V3K remaining approval gate blocker audit missing tokens: {missing}")
 
 
+def _assert_gui_sidecar_default_payload_preview_policy() -> None:
+    docs = (
+        ROOT
+        / "docs"
+        / "update_log"
+        / "2026-05-13_v3k_gui_sidecar_default_payload_preview.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    plan = (
+        ROOT
+        / "docs"
+        / "plans"
+        / "2026-05-13_v3k_page_062_gui_sidecar_default_payload_preview_plan.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    script = (
+        ROOT / "scripts" / "preview_v3k_gui_sidecar_default_payload.py"
+    ).read_text(encoding="utf-8", errors="replace")
+    combined = docs + "\n" + plan + "\n" + script
+    required_tokens = (
+        "GUI_SIDECAR_DEFAULT_OFF_PAYLOAD_PREVIEW",
+        "completed-preview-only",
+        "build_default_off_payload",
+        "assert_default_off_payload",
+        "preview-only-user-approval-required",
+        "_v3k_sidecar/v3k_gui_settings.json",
+        "No ON/DB/live execution",
+        "No USER_ACK creation",
+        "No actual writer implementation",
+        "No MainWindow wiring",
+        "Kiwoom live runtime",
+        "LS Securities",
+    )
+    missing = [token for token in required_tokens if token not in combined]
+    if missing:
+        raise AssertionError(f"V3K GUI sidecar default payload preview missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -893,6 +934,7 @@ def main() -> None:
     _assert_gui_sidecar_write_approval_execution_packet_policy()
     _assert_gui_sidecar_write_readiness_audit_policy()
     _assert_remaining_approval_gate_blocker_audit_policy()
+    _assert_gui_sidecar_default_payload_preview_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")

@@ -274,6 +274,12 @@ HELD_ITEMS = (
         "status": "completed-blocker-audit",
         "reason": "Page061 centralizes no-go validation for all six remaining approval gates without granting any USER_ACK, enable registry, DB, sidecar, or live runtime action.",
     },
+    {
+        "item": "gui-sidecar-default-off-payload-preview",
+        "risk": "low",
+        "status": "completed-preview-only",
+        "reason": "Page062 fixes and validates the first default-OFF GUI sidecar payload through stdout-only preview without writer implementation, USER_ACK, sidecar artifact, DB, or live runtime action.",
+    },
 )
 
 REQUIRED_DOCS = (
@@ -317,6 +323,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_059_gui_sidecar_write_approval_execution_packet_plan.md",
     "docs/plans/2026-05-13_v3k_page_060_gui_sidecar_write_readiness_audit_plan.md",
     "docs/plans/2026-05-13_v3k_page_061_remaining_approval_gate_blocker_audit_plan.md",
+    "docs/plans/2026-05-13_v3k_page_062_gui_sidecar_default_payload_preview_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -350,6 +357,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_execution_packet.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_readiness_audit.md",
     "docs/update_log/2026-05-13_v3k_remaining_approval_gate_blocker_audit.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_default_payload_preview.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -374,6 +382,7 @@ REQUIRED_SCRIPTS = (
     "scripts/summarize_v3k_phase_g_evidence.py",
     "scripts/audit_v3k_gui_sidecar_write_readiness.py",
     "scripts/audit_v3k_remaining_approval_gates.py",
+    "scripts/preview_v3k_gui_sidecar_default_payload.py",
 )
 
 RUNTIME_GUARDED_FILES = (

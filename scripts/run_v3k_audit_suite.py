@@ -26,11 +26,13 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_verify_1b_closure.py",
     "scripts/audit_v3k_gui_sidecar_write_readiness.py",
     "scripts/audit_v3k_remaining_approval_gates.py",
+    "scripts/preview_v3k_gui_sidecar_default_payload.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
 
 ARTIFACT_GUARD_PATHS = (
+    "_v3k_sidecar",
     "_database",
     "_database_v3k_shadow",
     "_log",
@@ -106,6 +108,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "remaining_approval_gate_blocker",
             _python("scripts/audit_v3k_remaining_approval_gates.py"),
             "Check all remaining approval gates stay blocked before explicit approval.",
+        ),
+        AuditStep(
+            "gui_sidecar_payload_preview",
+            _python("scripts/preview_v3k_gui_sidecar_default_payload.py", "--format", "json"),
+            "Preview the first GUI sidecar default-OFF payload without writing artifacts.",
         ),
         AuditStep(
             "verify_1a",

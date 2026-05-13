@@ -1796,3 +1796,23 @@ Directive: `GUI_SIDECAR_WRITE_READINESS_AUDIT` is a blocked-readiness proof. Do 
 - Next: explicit user approval is required for exactly one gate at a time, starting with `gui-sidecar-write-await-user-approval` if the user chooses to proceed.
 
 Directive: `REMAINING_APPROVAL_GATE_BLOCKER_AUDIT` is a no-go guard. Passing it means gates are still blocked, not approved.
+## V3K-GUI-SIDECAR-DEFAULT-OFF-PAYLOAD-PREVIEW: first payload no-write proof
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page059 approval execution packet, Page060 readiness audit, and Page061 remaining approval gate blocker audit.
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_062_gui_sidecar_default_payload_preview_plan.md`
+  - `docs/update_log/2026-05-13_v3k_gui_sidecar_default_payload_preview.md`
+- Added/modified:
+  - `scripts/preview_v3k_gui_sidecar_default_payload.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/run_v3k_audit_suite.py`
+- Decision: The first GUI sidecar payload is now deterministic and reviewable before approval, but it is preview-only and stdout-only. It validates schema v1, current settings surface version, default-OFF settings, clean artifact status, and unchanged artifact status before/after preview.
+- Current evidence: payload preview script, runtime activation gap audit, VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom order/exit/live runtime remains unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created by the preview.
+- Next: actual GUI sidecar write still requires explicit user approval, USER_ACK or equivalent approval record, owner acceptance, immediate pre-write audit, rollback acceptance, and post-write validation.
+
+Directive: `GUI_SIDECAR_DEFAULT_OFF_PAYLOAD_PREVIEW` is not writer implementation and not approval. Do not create USER_ACK, enable registry, sidecar artifact, MainWindow wiring, DB cutover, KHOPENAPI login, or live decision wiring from this preview.
