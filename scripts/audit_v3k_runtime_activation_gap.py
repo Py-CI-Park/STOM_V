@@ -256,6 +256,12 @@ HELD_ITEMS = (
         "status": "completed-reconciliation",
         "reason": "Page058 separates recommended approval order first from runtime critical next candidate without granting any ON, DB, sidecar, or live runtime gate.",
     },
+    {
+        "item": "gui-sidecar-write-approval-execution-packet",
+        "risk": "low",
+        "status": "completed-approval-packet",
+        "reason": "Page059 defines source of truth, owner roles, rollback, monitoring, and fallback conditions for GUI sidecar write without creating USER_ACK, writer code, or runtime artifacts.",
+    },
 )
 
 REQUIRED_DOCS = (
@@ -296,6 +302,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_056_approval_gate_final_decision_table_plan.md",
     "docs/plans/2026-05-13_v3k_page_057_gui_actual_sidecar_write_preflight_plan.md",
     "docs/plans/2026-05-13_v3k_page_058_approval_order_runtime_next_reconciliation_plan.md",
+    "docs/plans/2026-05-13_v3k_page_059_gui_sidecar_write_approval_execution_packet_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -326,6 +333,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_approval_gate_final_decision_table.md",
     "docs/update_log/2026-05-13_v3k_gui_actual_sidecar_write_preflight.md",
     "docs/update_log/2026-05-13_v3k_approval_order_runtime_next_reconciliation.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_execution_packet.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
