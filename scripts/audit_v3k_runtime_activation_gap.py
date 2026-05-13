@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "f1-actual-db-cutover-await-user-approval"
+NEXT_CANDIDATE = "live-order-exit-rule-consumption-await-user-approval"
 
 HELD_ITEMS = (
     {
@@ -39,8 +39,8 @@ HELD_ITEMS = (
     {
         "item": "live-order-exit-rule-consumption",
         "risk": "critical",
-        "status": "defer",
-        "reason": "Touches live trading decisions and must follow mock/backtest proof.",
+        "status": "defer-approval-prep-completed",
+        "reason": "Page054 prepared live decision approval requirements; actual consumption still requires explicit user approval, USER_ACK, enable registry, kill switch, staged rollout, monitoring, and green audits.",
     },
     {
         "item": "production-learning-db-read",
@@ -213,8 +213,14 @@ HELD_ITEMS = (
     {
         "item": "f1-actual-db-cutover-await-user-approval",
         "risk": "critical",
-        "status": "next",
+        "status": "blocked-awaiting-user-approval",
         "reason": "Page053 prepared F1 actual DB cutover approval requirements; actual operating _database write still requires explicit user approval, USER_ACK, backup apply, checksum manifest, post-health, rollback, monitoring, and green audits.",
+    },
+    {
+        "item": "live-order-exit-rule-consumption-await-user-approval",
+        "risk": "critical",
+        "status": "next",
+        "reason": "Page054 prepared the final live order/exit rule consumption approval requirements; actual live decision wiring still requires explicit user approval, USER_ACK, enable registry, kill switch, shadow/dry-run proof, staged rollout, monitoring, and green audits.",
     },
 )
 
@@ -251,6 +257,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_051_phase_g_g3_on_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_052_phase_h_h2_h3_live_dryrun_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_053_f1_actual_db_cutover_approval_prep_plan.md",
+    "docs/plans/2026-05-13_v3k_page_054_live_order_exit_rule_consumption_approval_prep_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -276,6 +283,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_phase_h_h2_h3_live_dryrun_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_f1_actual_db_cutover_approval_prep.md",
+    "docs/update_log/2026-05-13_v3k_live_order_exit_rule_consumption_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -330,9 +338,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["f1-actual-db-cutover-await-user-approval"]:
+    if [item["item"] for item in next_items] != ["live-order-exit-rule-consumption-await-user-approval"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "f1-actual-db-cutover-await-user-approval":
+    if NEXT_CANDIDATE != "live-order-exit-rule-consumption-await-user-approval":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 

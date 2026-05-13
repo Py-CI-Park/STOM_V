@@ -70,6 +70,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_phase_h_h2_h3_live_dryrun_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_f1_actual_db_cutover_approval_prep.md",
+    "docs/update_log/2026-05-13_v3k_live_order_exit_rule_consumption_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -89,6 +90,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_051_phase_g_g3_on_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_052_phase_h_h2_h3_live_dryrun_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_053_f1_actual_db_cutover_approval_prep_plan.md",
+    "docs/plans/2026-05-13_v3k_page_054_live_order_exit_rule_consumption_approval_prep_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -178,6 +180,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase G G-3 ON approval preparation completed without ON execution",
     "Phase H H-2/H-3 Kiwoom live dry-run approval preparation completed without KHOPENAPI connect/login execution",
     "F1 actual DB cutover approval preparation completed without operating _database write",
+    "Live order/exit rule consumption approval preparation completed without live decision wiring",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -199,6 +202,7 @@ USER_APPROVAL_REQUIRED = (
     "Phase F F-4 ON transition and V3K-PHASE-F-ENABLE registry",
     "Actual GUI sidecar write implementation",
     "Phase G G-3 ON transition and V3K-PHASE-G-ENABLE registry",
+    "Live order/exit rule consumption and V3K-LIVE-ORDER-EXIT-ENABLE registry",
     "Approval gate selection before any ON/DB/live runtime transition",
 )
 
@@ -532,6 +536,33 @@ def _assert_f1_actual_db_cutover_approval_prep_policy() -> None:
         raise AssertionError(f"V3K F1 actual DB cutover approval prep docs missing tokens: {missing}")
 
 
+def _assert_live_order_exit_rule_consumption_approval_prep_policy() -> None:
+    docs = (
+        ROOT
+        / "docs"
+        / "update_log"
+        / "2026-05-13_v3k_live_order_exit_rule_consumption_approval_prep.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    required_tokens = (
+        "LIVE_ORDER_EXIT_RULE_CONSUMPTION_APPROVAL_PREP",
+        "live-order-exit-rule-consumption-await-user-approval",
+        "No live order/exit execution",
+        "V3K_LIVE_DECISION_USER_ACK=1",
+        "V3K-LIVE-ORDER-EXIT-ENABLE",
+        "V3K_LIVE_DECISION_DISABLE=1",
+        "kill switch",
+        "shadow/dryrun proof",
+        "Prompt-to-artifact checklist",
+        "Kiwoom live runtime",
+        "LS Securities",
+    )
+    missing = [token for token in required_tokens if token not in docs]
+    if missing:
+        raise AssertionError(
+            f"V3K live order/exit approval prep docs missing tokens: {missing}"
+        )
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -551,6 +582,7 @@ def main() -> None:
     _assert_phase_g_g3_on_approval_prep_policy()
     _assert_phase_h_h2_h3_live_dryrun_approval_prep_policy()
     _assert_f1_actual_db_cutover_approval_prep_policy()
+    _assert_live_order_exit_rule_consumption_approval_prep_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")

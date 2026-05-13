@@ -1638,3 +1638,23 @@ Directive: `PHASE_H_H2_H3_LIVE_DRYRUN_APPROVAL_PREP`는 승인 준비 기록이�
 - Next: `f1-actual-db-cutover-await-user-approval`. 사용자 명시 승인, backup apply, checksum manifest, rollback, post-health, 7-day monitoring 확정 전에는 actual cutover를 수행하지 않는다.
 
 Directive: `F1_ACTUAL_DB_CUTOVER_APPROVAL_PREP`는 승인 준비 기록이며 운영 DB write, actual cutover, USER_ACK 생성, backup apply, rollback apply, DB 파일 commit, Kiwoom live runtime 변경으로 해석하면 안 된다.
+
+## V3K-LIVE-ORDER-EXIT-RULE-CONSUMPTION-APPROVAL-PREP: live decision 연결 승인 전 준비
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 054 plan, Page050 Phase F F-4 ON approval prep, Page051 Phase G G-3 ON approval prep, Page052 Phase H H-2/H-3 approval prep, Page053 F1 actual DB cutover approval prep
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_054_live_order_exit_rule_consumption_approval_prep_plan.md`
+  - `docs/update_log/2026-05-13_v3k_live_order_exit_rule_consumption_approval_prep.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: V3K output의 live order/exit rule consumption 전 사용자 승인, `V3K_LIVE_DECISION_USER_ACK=1`, `V3K-LIVE-ORDER-EXIT-ENABLE`, `V3K_LIVE_DECISION_DISABLE=1`, kill switch, shadow/dryrun proof, staged rollout, monitoring 조건을 문서화한다. 실제 live decision wiring은 수행하지 않는다.
+- Current evidence: VERIFY-1A Kiwoom/runtime untouched audit, Phase F default-OFF/parity/rollback proof, Phase G parity/benchmark/LS-excise proof, Phase H env sentinel, full V3K audit suite.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 broker dependency는 추가하지 않는다.
+- DB/artifact boundary: 운영 `_database/`, DB 파일, live artifact, `.omx/reports` raw artifact는 write/commit하지 않는다.
+- Next: `live-order-exit-rule-consumption-await-user-approval`. 사용자 명시 승인, 선행 gate 승인, USER_ACK, enable registry, kill switch, shadow/dryrun proof, staged rollout, monitoring 확정 전에는 actual live order/exit consumption을 수행하지 않는다.
+
+Directive: `LIVE_ORDER_EXIT_RULE_CONSUMPTION_APPROVAL_PREP`는 승인 준비 기록이며 Kiwoom 주문/청산/live runtime 변경, live order/exit rule 연결, USER_ACK 생성, enable registry 생성, Phase F/G/H ON, DB cutover로 해석하면 안 된다.
