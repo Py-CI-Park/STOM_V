@@ -1982,3 +1982,24 @@ Directive: `V3K_2UC_AGENT_ENTRYPOINT_CONTRACT` is a routing and safety guard. It
 - Next: the layout is now aligned; actual V3K gate execution still requires exact one-gate approval.
 
 Directive: `V3K_WORKTREE_ENTRYPOINT_ALIGNMENT` is layout documentation only. Do not create/delete worktrees, check out branches, or execute approval gates from this record.
+
+## V3K-REMAINING-GATE-STATUS-SUMMARY: machine-readable six-gate no-go status
+- Date: 2026-05-14 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page075 aligned the worktree entrypoint. The remaining gate state now needs one machine-readable summary for future agents and progress reporting without executing any gate.
+- Records:
+  - `docs/plans/2026-05-14_v3k_page_076_remaining_gate_status_summary_plan.md`
+  - `docs/update_log/2026-05-14_v3k_remaining_gate_status_summary.md`
+- Added/modified:
+  - `scripts/summarize_v3k_remaining_gate_status.py`
+  - `scripts/audit_v3k_remaining_gate_status_summary.py`
+  - `scripts/run_v3k_audit_suite.py`
+  - `docs/CARRY_FORWARD_REGISTRY.md`
+- Decision: The six remaining approval gates now have a JSON/text/markdown status summary. It reports `actual_gate_execution_progress=0/6`, `safe_staged_progress=about 96%`, the next gate `gui-sidecar-write-await-user-approval`, and the exact first approval phrase while keeping `review_only=true`, `creates_user_ack=false`, `creates_artifacts=false`, and `executes_runtime=false`.
+- Current evidence: remaining gate status summary audit, worktree entrypoint alignment audit, agent entrypoint contract audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom API, order, exit, and live runtime remain unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created.
+- Next: actual gate execution still requires exact one-gate approval. The first executable phrase remains `I approve gui-sidecar-write-await-user-approval only`.
+
+Directive: `V3K_REMAINING_GATE_STATUS_SUMMARY` is a no-side-effect status surface. It is not approval, not USER_ACK, not enable registry, and not final goal completion.

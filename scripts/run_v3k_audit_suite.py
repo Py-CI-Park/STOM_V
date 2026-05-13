@@ -42,6 +42,8 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_goal_completion_objective_checklist.py",
     "scripts/audit_v3k_agent_entrypoint_contract.py",
     "scripts/audit_v3k_worktree_entrypoint_alignment.py",
+    "scripts/summarize_v3k_remaining_gate_status.py",
+    "scripts/audit_v3k_remaining_gate_status_summary.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -188,6 +190,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "worktree_entrypoint_alignment",
             _python("scripts/audit_v3k_worktree_entrypoint_alignment.py"),
             "Ensure AGENTS.md and git worktree list agree on the current five-worktree V3K layout.",
+        ),
+        AuditStep(
+            "remaining_gate_status_summary",
+            _python("scripts/audit_v3k_remaining_gate_status_summary.py"),
+            "Check the machine-readable remaining gate status summary remains review-only and at 0/6 execution.",
         ),
         AuditStep(
             "verify_1a",
