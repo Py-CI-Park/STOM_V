@@ -14,10 +14,20 @@ if str(ROOT) not in sys.path:
 
 from scripts.audit_v3k_remaining_gate_approval_matrix import GATES
 from scripts.audit_v3k_runtime_activation_gap import RECOMMENDED_APPROVAL_ORDER_FIRST
+from strategy.v3k_analyzer_adapter import FLAG_PHASE_F_ANALYZER_STRATEGY
+from strategy.v3k_gui_sidecar import V3K_GUI_SIDECAR_FILE, load_v3k_gui_sidecar_file
 
 FIRST_GATE = RECOMMENDED_APPROVAL_ORDER_FIRST
 FIRST_GATE_RECORD = next(gate for gate in GATES if gate["gate"] == FIRST_GATE)
 FIRST_GATE_PHRASE = str(FIRST_GATE_RECORD["phrase"])
+COMPLETION_MARKERS = {
+    "gui-sidecar-write-await-user-approval": "## V3K-GUI-SIDECAR-WRITE-ACTUAL-APPROVAL",
+    "phase-f-f4-on-await-user-approval": "## V3K-PHASE-F-ENABLE",
+    "phase-g-g3-on-await-user-approval": "## V3K-PHASE-G-ENABLE",
+    "phase-h-h2-h3-live-dryrun-await-user-approval": "## V3K-PHASE-H-LIVE-DRYRUN-ACTUAL-APPROVAL",
+    "f1-actual-db-cutover-await-user-approval": "## V3K-F1-ACTUAL-DB-CUTOVER-APPROVAL",
+    "live-order-exit-rule-consumption-await-user-approval": "## V3K-LIVE-ORDER-EXIT-ENABLE",
+}
 
 BROAD_APPROVAL_TOKENS = (
     "approve all",
@@ -52,6 +62,49 @@ def _squash_whitespace(value: str) -> str:
     return re.sub(r"\s+", " ", value.strip())
 
 
+def _registry_headings() -> set[str]:
+    registry = ROOT / "docs" / "CARRY_FORWARD_REGISTRY.md"
+    if not registry.is_file():
+        return set()
+    return {
+        line.strip()
+        for line in registry.read_text(encoding="utf-8", errors="replace").splitlines()
+        if line.startswith("## ")
+    }
+
+
+def _gate_has_completion_evidence(gate: str, headings: set[str]) -> bool:
+    marker = COMPLETION_MARKERS.get(gate)
+    if not marker or marker not in headings:
+        return False
+    if gate == "gui-sidecar-write-await-user-approval":
+        return (ROOT / V3K_GUI_SIDECAR_FILE).is_file()
+    if gate == "phase-f-f4-on-await-user-approval":
+        sidecar = load_v3k_gui_sidecar_file(ROOT / V3K_GUI_SIDECAR_FILE)
+        return sidecar.valid and sidecar.settings.get(FLAG_PHASE_F_ANALYZER_STRATEGY) is True
+    return True
+
+
+def completed_approval_gates() -> tuple[str, ...]:
+    headings = _registry_headings()
+    completed: list[str] = []
+    for gate in GATES:
+        gate_name = str(gate["gate"])
+        if _gate_has_completion_evidence(gate_name, headings):
+            completed.append(gate_name)
+        else:
+            break
+    return tuple(completed)
+
+
+def current_approval_gate_record() -> dict[str, object] | None:
+    completed = set(completed_approval_gates())
+    for gate in GATES:
+        if str(gate["gate"]) not in completed:
+            return gate
+    return None
+
+
 def evaluate_approval_phrase(phrase: str) -> ApprovalPhraseVerdict:
     """Evaluate a proposed V3K gate approval phrase without side effects.
 
@@ -78,21 +131,33 @@ def evaluate_approval_phrase(phrase: str) -> ApprovalPhraseVerdict:
             reason="broad or multi-gate approval is not accepted",
         )
 
-    if normalized == FIRST_GATE_PHRASE:
+    current_gate = current_approval_gate_record()
+    current_gate_name = str(current_gate["gate"]) if current_gate else None
+    current_phrase = str(current_gate["phrase"]) if current_gate else None
+
+    if current_gate and normalized == current_phrase:
         return ApprovalPhraseVerdict(
             accepted=True,
-            status="accepted-review-only-first-gate",
-            gate=FIRST_GATE,
-            reason="exact first gate phrase matched; execution still needs preflight and USER_ACK handling",
+            status="accepted-review-only-current-gate",
+            gate=current_gate_name,
+            reason="exact current gate phrase matched; execution still needs preflight and USER_ACK handling",
         )
 
     for gate in GATES:
         if normalized == gate["phrase"]:
+            gate_name = str(gate["gate"])
+            if gate_name in completed_approval_gates():
+                return ApprovalPhraseVerdict(
+                    accepted=False,
+                    status="rejected-already-completed-gate",
+                    gate=gate_name,
+                    reason=f"gate {gate_name} is already completed",
+                )
             return ApprovalPhraseVerdict(
                 accepted=False,
                 status="rejected-out-of-order-gate",
-                gate=str(gate["gate"]),
-                reason=f"gate {gate['gate']} is not the current first approval gate",
+                gate=gate_name,
+                reason=f"gate {gate['gate']} is not the current approval gate",
             )
 
     return ApprovalPhraseVerdict(

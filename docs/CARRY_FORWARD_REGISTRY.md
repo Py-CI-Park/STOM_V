@@ -2071,3 +2071,31 @@ Scope guard:
 - No direct LS Securities dependency
 
 Directive: This approval only covers the first GUI sidecar default-OFF seed write. Later Phase F/G/H ON, F1 actual DB cutover, and live order/exit consumption each require their own explicit one-gate approval cycle.
+
+## V3K-PHASE-F-ENABLE
+
+- Date: 2026-05-14 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Page: Page 080
+- Canonical approval phrase: `I approve phase-f-f4-on-await-user-approval only`
+- Gate: `phase-f-f4-on-await-user-approval`
+- Status: `completed-gate2-phase-f-sidecar-enable`
+- USER_ACK used during execution: `V3K_PHASE_F_USER_ACK=1`
+- Source-of-truth: `_v3k_sidecar/v3k_gui_settings.json` local ignored artifact; do not commit.
+- Enabled sidecar setting: `V3K_PHASE_F_ANALYZER_STRATEGY=true`
+- Writer: `scripts/write_v3k_phase_f_sidecar_enable.py`
+- Audit: `scripts/audit_v3k_phase_f_gate2_execution.py`
+- Rollback guard: `V3K_PHASE_F_DISABLE=1` still disables candidate formula output.
+- Progress: `2/6` approval gates executed.
+- Next gate: `phase-g-g3-on-await-user-approval`.
+
+Scope guard:
+
+- No DB cutover
+- No KHOPENAPI connect/login
+- No Phase G/H ON
+- No live order/exit wiring
+- No Kiwoom live runtime mutation
+- No direct LS Securities dependency
+
+Directive: This approval only enables Phase F analyzer strategy as a sidecar source-of-truth for approved candidate formula building. Live order/exit consumption, Phase G/H ON, and F1 actual DB cutover each require their own explicit one-gate approval cycle.
