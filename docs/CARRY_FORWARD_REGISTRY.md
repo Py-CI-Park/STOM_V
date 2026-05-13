@@ -1451,3 +1451,25 @@ Directive: Running `scripts/run_v3k_audit_suite.py` proves the staged safety che
 - Next: Page 045 / `governance-closeout-and-approval-gate`. M1/M2/M3 governance hardening? ?? ?? ??? approval gate? ????.
 
 Directive: M3 archive policy completion is not authorization for Phase G ON, `.omx/reports` raw artifact commits, live Kiwoom runtime wiring, or DB cutover.
+
+## V3K-GOVERNANCE-CLOSEOUT-APPROVAL-GATE: M1/M2/M3 closeout? approval-gated only ??
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 045 plan, Page041~Page044 governance hardening
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_045_governance_closeout_and_approval_gate_plan.md`
+  - `docs/update_log/2026-05-13_v3k_governance_closeout_and_approval_gate.md`
+  - `docs/plans/2026-05-13_v3k_page_046_approval_gate_handoff_plan.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: M1 adapter coupling contract, M2 audit runner policy, M3 benchmark archive policy? governance hardening ??? ??, ?? ??? ??? approval-gated only? ????.
+- Closed governance items: M1 `completed-contract`, M2 `completed-runner-policy`, M3 `completed-archive-policy`.
+- Remaining approval gates: Phase F F-4 ON, Phase G G-3 ON, F1 actual DB cutover, H-2/H-3 Kiwoom live dryrun, GUI actual sidecar write, live order/exit rule consumption.
+- Kiwoom adjustment: Kiwoom live runtime, ??/??, live decision path? ???? ???. ?? live ?? ??? ??? ??? KHOPENAPI ?? ??? ????.
+- LS dependency exclusion: LS Securities REST/TR/REAL ?? ??? ?? ????.
+- DB boundary: ?? `_database/`, `_database_v3k_shadow/`, DB ??, sidecar artifact, `.omx/reports` raw artifact? ??/commit?? ???.
+- Next: Page 046 / `approval-gate-handoff`. ??? ?? ??? decision matrix? ??? ON/DB/live runtime ??? ?? ???.
+
+Directive: `V3K_GOVERNANCE_CLOSEOUT` means the governance hardening queue is closed; it is not authorization for Phase F/G/H ON, DB cutover, live Kiwoom runtime wiring, or `.omx/reports` raw artifact commits.
