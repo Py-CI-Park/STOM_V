@@ -1776,3 +1776,23 @@ Directive: `GUI_SIDECAR_WRITE_APPROVAL_EXECUTION_PACKET` is a blocked approval p
 - Next: actual GUI sidecar write now requires explicit user approval, USER_ACK or equivalent approval record, owner acceptance, fallback acceptance, and green readiness audit immediately before execution.
 
 Directive: `GUI_SIDECAR_WRITE_READINESS_AUDIT` is a blocked-readiness proof. Do not interpret it as approval for actual sidecar write, USER_ACK creation, writer implementation, MainWindow wiring, ON transition, KHOPENAPI connect/login, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.
+## V3K-REMAINING-APPROVAL-GATE-BLOCKER-AUDIT: six gate no-go guard
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page056 final decision table and Page060 GUI sidecar readiness audit.
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_061_remaining_approval_gate_blocker_audit_plan.md`
+  - `docs/update_log/2026-05-13_v3k_remaining_approval_gate_blocker_audit.md`
+- Added/modified:
+  - `scripts/audit_v3k_remaining_approval_gates.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/run_v3k_audit_suite.py`
+- Decision: All six remaining approval gates now have one central blocker audit. The audit verifies absent USER_ACK env vars, absent enable registry headings, clean artifact status, stable approval order, and unchanged Kiwoom runtime guard files.
+- Current evidence: remaining approval gate blocker audit, runtime activation gap audit, VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom order/exit/live runtime remains unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed.
+- Next: explicit user approval is required for exactly one gate at a time, starting with `gui-sidecar-write-await-user-approval` if the user chooses to proceed.
+
+Directive: `REMAINING_APPROVAL_GATE_BLOCKER_AUDIT` is a no-go guard. Passing it means gates are still blocked, not approved.

@@ -25,6 +25,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_verify_1a.py",
     "scripts/audit_v3k_verify_1b_closure.py",
     "scripts/audit_v3k_gui_sidecar_write_readiness.py",
+    "scripts/audit_v3k_remaining_approval_gates.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -100,6 +101,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "gui_sidecar_write_readiness",
             _python("scripts/audit_v3k_gui_sidecar_write_readiness.py"),
             "Check GUI sidecar write readiness remains blocked before approval.",
+        ),
+        AuditStep(
+            "remaining_approval_gate_blocker",
+            _python("scripts/audit_v3k_remaining_approval_gates.py"),
+            "Check all remaining approval gates stay blocked before explicit approval.",
         ),
         AuditStep(
             "verify_1a",

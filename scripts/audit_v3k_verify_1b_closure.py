@@ -77,6 +77,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_approval_order_runtime_next_reconciliation.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_execution_packet.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_readiness_audit.md",
+    "docs/update_log/2026-05-13_v3k_remaining_approval_gate_blocker_audit.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -103,6 +104,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_058_approval_order_runtime_next_reconciliation_plan.md",
     "docs/plans/2026-05-13_v3k_page_059_gui_sidecar_write_approval_execution_packet_plan.md",
     "docs/plans/2026-05-13_v3k_page_060_gui_sidecar_write_readiness_audit_plan.md",
+    "docs/plans/2026-05-13_v3k_page_061_remaining_approval_gate_blocker_audit_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -125,6 +127,7 @@ REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_gui_sidecar_persistence_design.py",
     "scripts/audit_v3k_gui_sidecar_write_guard.py",
     "scripts/audit_v3k_gui_sidecar_write_readiness.py",
+    "scripts/audit_v3k_remaining_approval_gates.py",
     "scripts/audit_v3k_runtime_activation_gap.py",
     "scripts/diff_v3_vs_2uc_db_schema.py",
     "scripts/init_v3k_shadow_db.py",
@@ -200,6 +203,7 @@ SAFE_STAGED_COMPLETED = (
     "Approval order and runtime next candidate reconciliation completed without actual gate execution",
     "GUI sidecar write approval execution packet completed without actual write execution",
     "GUI sidecar write readiness audit completed without actual write execution",
+    "Remaining approval gate blocker audit completed without actual gate execution",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -323,6 +327,7 @@ def _assert_audit_runner_policy() -> None:
         "artifact_status",
         "summarize_v3k_phase_g_evidence.py",
         "audit_v3k_gui_sidecar_write_readiness.py",
+        "audit_v3k_remaining_approval_gates.py",
     )
     missing = [token for token in required_tokens if token not in source]
     if missing:
@@ -597,6 +602,7 @@ def _assert_approval_prep_docs_not_corrupted() -> None:
         "docs/plans/2026-05-13_v3k_page_058_approval_order_runtime_next_reconciliation_plan.md",
         "docs/plans/2026-05-13_v3k_page_059_gui_sidecar_write_approval_execution_packet_plan.md",
         "docs/plans/2026-05-13_v3k_page_060_gui_sidecar_write_readiness_audit_plan.md",
+        "docs/plans/2026-05-13_v3k_page_061_remaining_approval_gate_blocker_audit_plan.md",
         "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
         "docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md",
         "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
@@ -609,6 +615,7 @@ def _assert_approval_prep_docs_not_corrupted() -> None:
         "docs/update_log/2026-05-13_v3k_approval_order_runtime_next_reconciliation.md",
         "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_execution_packet.md",
         "docs/update_log/2026-05-13_v3k_gui_sidecar_write_readiness_audit.md",
+        "docs/update_log/2026-05-13_v3k_remaining_approval_gate_blocker_audit.md",
     )
     corrupted: list[str] = []
     for path in doc_paths:
@@ -819,6 +826,45 @@ def _assert_gui_sidecar_write_readiness_audit_policy() -> None:
         raise AssertionError(f"V3K GUI sidecar readiness audit missing tokens: {missing}")
 
 
+def _assert_remaining_approval_gate_blocker_audit_policy() -> None:
+    docs = (
+        ROOT
+        / "docs"
+        / "update_log"
+        / "2026-05-13_v3k_remaining_approval_gate_blocker_audit.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    plan = (
+        ROOT
+        / "docs"
+        / "plans"
+        / "2026-05-13_v3k_page_061_remaining_approval_gate_blocker_audit_plan.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    script = (
+        ROOT / "scripts" / "audit_v3k_remaining_approval_gates.py"
+    ).read_text(encoding="utf-8", errors="replace")
+    combined = docs + "\n" + plan + "\n" + script
+    required_tokens = (
+        "REMAINING_APPROVAL_GATE_BLOCKER_AUDIT",
+        "completed-blocker-audit",
+        "APPROVAL_GATES",
+        "V3K_GUI_SIDECAR_USER_ACK",
+        "V3K_PHASE_F_USER_ACK",
+        "V3K_PHASE_G_USER_ACK",
+        "V3K_PHASE_H_USER_ACK",
+        "V3K_CUTOVER_USER_ACK",
+        "V3K_LIVE_DECISION_USER_ACK",
+        "V3K-PHASE-F-ENABLE",
+        "V3K-PHASE-G-ENABLE",
+        "V3K-LIVE-ORDER-EXIT-ENABLE",
+        "No ON/DB/live execution",
+        "Kiwoom live runtime",
+        "LS Securities",
+    )
+    missing = [token for token in required_tokens if token not in combined]
+    if missing:
+        raise AssertionError(f"V3K remaining approval gate blocker audit missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -845,6 +891,8 @@ def main() -> None:
     _assert_gui_actual_sidecar_write_preflight_policy()
     _assert_approval_order_runtime_next_reconciliation_policy()
     _assert_gui_sidecar_write_approval_execution_packet_policy()
+    _assert_gui_sidecar_write_readiness_audit_policy()
+    _assert_remaining_approval_gate_blocker_audit_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")
