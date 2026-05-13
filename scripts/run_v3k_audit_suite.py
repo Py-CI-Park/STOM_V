@@ -41,6 +41,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_gui_sidecar_first_gate_blocker_snapshot.py",
     "scripts/audit_v3k_goal_completion_objective_checklist.py",
     "scripts/audit_v3k_agent_entrypoint_contract.py",
+    "scripts/audit_v3k_worktree_entrypoint_alignment.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -182,6 +183,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "agent_entrypoint_contract",
             _python("scripts/audit_v3k_agent_entrypoint_contract.py"),
             "Ensure AGENTS.md directs future 2U_C agents to the V3K objective, gate order, and no-complete guard.",
+        ),
+        AuditStep(
+            "worktree_entrypoint_alignment",
+            _python("scripts/audit_v3k_worktree_entrypoint_alignment.py"),
+            "Ensure AGENTS.md and git worktree list agree on the current five-worktree V3K layout.",
         ),
         AuditStep(
             "verify_1a",

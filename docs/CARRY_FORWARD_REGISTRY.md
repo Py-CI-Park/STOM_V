@@ -1961,3 +1961,24 @@ Directive: `V3K_GOAL_COMPLETION_OBJECTIVE_CHECKLIST` is not approval and not com
 - Next: future agents should start from `AGENTS.md` and Page073 before deciding whether to continue review-only work or wait for exact one-gate approval.
 
 Directive: `V3K_2UC_AGENT_ENTRYPOINT_CONTRACT` is a routing and safety guard. It does not approve any gate and must not be used to create USER_ACK, enable registry, sidecar artifact, DB cutover, KHOPENAPI login, or live decision wiring.
+
+## V3K-WORKTREE-ENTRYPOINT-ALIGNMENT: current five-worktree map in 2U_C AGENTS
+- Date: 2026-05-14 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page074 added the V3K entrypoint to `AGENTS.md`, but the same file still referenced the retired `STOM_V.wt-2uc/` archive layout. The current active map has five worktrees: V2, 2U, V3, 3U, and 2U_C.
+- Records:
+  - `docs/plans/2026-05-14_v3k_page_075_worktree_entrypoint_alignment_plan.md`
+  - `docs/update_log/2026-05-14_v3k_worktree_entrypoint_alignment.md`
+- Added/modified:
+  - `AGENTS.md`
+  - `scripts/audit_v3k_worktree_entrypoint_alignment.py`
+  - `scripts/run_v3k_audit_suite.py`
+  - `docs/CARRY_FORWARD_REGISTRY.md`
+- Decision: `AGENTS.md` now reflects the current five-worktree layout: `STOM_V`/2, `STOM_V.wt-2u`/2U, `STOM_V.wt-3`/3, `STOM_V.wt-3u`/3U, and `STOM_V.wt-dev`/2U_C. `STOM_V.wt-2uc/` is documented as retired/not active.
+- Current evidence: worktree entrypoint alignment audit, agent entrypoint contract audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom API, order, exit, and live runtime remain unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created.
+- Next: the layout is now aligned; actual V3K gate execution still requires exact one-gate approval.
+
+Directive: `V3K_WORKTREE_ENTRYPOINT_ALIGNMENT` is layout documentation only. Do not create/delete worktrees, check out branches, or execute approval gates from this record.

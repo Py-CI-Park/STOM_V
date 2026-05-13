@@ -17,8 +17,12 @@ This checkout is the active `STOM_Version_2U_C` lane for the current official V2
 
 Current execution state:
 
+- `STOM_V/` -> `STOM_Version_2`
+- `STOM_V.wt-2u/` -> `STOM_Version_2U`
+- `STOM_V.wt-3/` -> `STOM_Version_3`
+- `STOM_V.wt-3u/` -> `STOM_Version_3U`
 - `STOM_V.wt-dev/` -> `STOM_Version_2U_C`
-- `STOM_V.wt-2uc/` -> `integration/adopt-cli-v267-into-2uc` (archive/transition checkout kept off `STOM_Version_2U_C` to respect git worktree branch occupancy)
+- `STOM_V.wt-2uc/` is retired/not active in the current five-worktree layout.
 
 Active propagation chain:
 
@@ -32,14 +36,15 @@ Current active layout:
 
 ```text
 C:/System_Trading/STOM/
-├── STOM_V/       -> STOM_Version_2
-├── STOM_V.wt-2u/ -> STOM_Version_2U
-├── STOM_V.wt-2uc/-> integration/adopt-cli-v267-into-2uc
-├── STOM_V.wt-dev/-> STOM_Version_2U_C
+STOM_V/          -> STOM_Version_2
+STOM_V.wt-2u/    -> STOM_Version_2U
+STOM_V.wt-3/     -> STOM_Version_3
+STOM_V.wt-3u/    -> STOM_Version_3U
+STOM_V.wt-dev/   -> STOM_Version_2U_C
 ```
 
 - `STOM_Version_2U_C` must be checked out only in `STOM_V.wt-dev/` while this layout is active.
-- `STOM_V.wt-2uc/` keeps promotion history and execution logs on the integration/archive branch.
+- `STOM_V.wt-2uc/` is no longer an active worktree. Do not recreate it unless the user explicitly reopens an archive lane.
 
 ## Serial Key Policy
 
@@ -62,7 +67,9 @@ Current live sync flow:
 V2 -> 2U -> STOM_Version_2U_C
 ```
 
-`research/init` and V3 work are excluded from the current V2.78/V2.79 wave.
+`research/init` and V3 work are excluded from the current formal V2.78/V2.79 wave.
+The V3K section below is the separate active custom 2U_C V3-feature lane and does
+not change the formal V2 release-ingress rules.
 
 ## V3K / 2U_C V3 Feature Goal Entry Point
 
