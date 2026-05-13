@@ -82,6 +82,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_template.md",
     "docs/update_log/2026-05-14_v3k_gui_sidecar_preapproval_completion_audit.md",
     "docs/update_log/2026-05-14_v3k_remaining_gate_approval_matrix.md",
+    "docs/update_log/2026-05-14_v3k_goal_completion_authority_audit.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -113,6 +114,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_063_gui_sidecar_write_approval_template_plan.md",
     "docs/plans/2026-05-14_v3k_page_064_gui_sidecar_preapproval_completion_audit_plan.md",
     "docs/plans/2026-05-14_v3k_page_065_remaining_gate_approval_matrix_plan.md",
+    "docs/plans/2026-05-14_v3k_page_066_goal_completion_authority_audit_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -141,6 +143,7 @@ REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_gui_sidecar_approval_template.py",
     "scripts/audit_v3k_gui_sidecar_preapproval_completion.py",
     "scripts/audit_v3k_remaining_gate_approval_matrix.py",
+    "scripts/audit_v3k_goal_completion_authority.py",
     "scripts/diff_v3_vs_2uc_db_schema.py",
     "scripts/init_v3k_shadow_db.py",
     "scripts/v3k_db_health.py",
@@ -220,6 +223,7 @@ SAFE_STAGED_COMPLETED = (
     "GUI sidecar write approval template completed without actual write execution",
     "GUI sidecar pre-approval completion audit completed without actual write execution",
     "Remaining gate approval matrix completed without actual gate execution",
+    "Goal completion authority audit completed without actual gate execution",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -348,6 +352,7 @@ def _assert_audit_runner_policy() -> None:
         "audit_v3k_gui_sidecar_approval_template.py",
         "audit_v3k_gui_sidecar_preapproval_completion.py",
         "audit_v3k_remaining_gate_approval_matrix.py",
+        "audit_v3k_goal_completion_authority.py",
     )
     missing = [token for token in required_tokens if token not in source]
     if missing:
@@ -627,6 +632,7 @@ def _assert_approval_prep_docs_not_corrupted() -> None:
         "docs/plans/2026-05-13_v3k_page_063_gui_sidecar_write_approval_template_plan.md",
         "docs/plans/2026-05-14_v3k_page_064_gui_sidecar_preapproval_completion_audit_plan.md",
         "docs/plans/2026-05-14_v3k_page_065_remaining_gate_approval_matrix_plan.md",
+        "docs/plans/2026-05-14_v3k_page_066_goal_completion_authority_audit_plan.md",
         "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
         "docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md",
         "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
@@ -644,6 +650,7 @@ def _assert_approval_prep_docs_not_corrupted() -> None:
         "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_template.md",
         "docs/update_log/2026-05-14_v3k_gui_sidecar_preapproval_completion_audit.md",
         "docs/update_log/2026-05-14_v3k_remaining_gate_approval_matrix.md",
+        "docs/update_log/2026-05-14_v3k_goal_completion_authority_audit.md",
     )
     corrupted: list[str] = []
     for path in doc_paths:
@@ -1060,6 +1067,52 @@ def _assert_remaining_gate_approval_matrix_policy() -> None:
         raise AssertionError(f"V3K remaining gate approval matrix missing tokens: {missing}")
 
 
+def _assert_goal_completion_authority_audit_policy() -> None:
+    docs = (
+        ROOT
+        / "docs"
+        / "update_log"
+        / "2026-05-14_v3k_goal_completion_authority_audit.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    plan = (
+        ROOT
+        / "docs"
+        / "plans"
+        / "2026-05-14_v3k_page_066_goal_completion_authority_audit_plan.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    script = (
+        ROOT / "scripts" / "audit_v3k_goal_completion_authority.py"
+    ).read_text(encoding="utf-8", errors="replace")
+    combined = docs + "\n" + plan + "\n" + script
+    required_tokens = (
+        "V3K_GOAL_COMPLETION_AUTHORITY_AUDIT",
+        "not-complete-awaiting-explicit-gate-approval",
+        "Objective restatement",
+        "Prompt-to-artifact checklist",
+        "V3 features",
+        "Kiwoom API",
+        "Kiwoom live runtime",
+        "LS Securities",
+        "Feature flags remain default OFF",
+        "not final completion",
+        "not achieved",
+        "not executable",
+        "gui-sidecar-write-await-user-approval",
+        "phase-f-f4-on-await-user-approval",
+        "phase-g-g3-on-await-user-approval",
+        "phase-h-h2-h3-live-dryrun-await-user-approval",
+        "f1-actual-db-cutover-await-user-approval",
+        "live-order-exit-rule-consumption-await-user-approval",
+        "No ON/DB/live execution",
+        "No USER_ACK creation",
+        "No enable registry creation",
+        "No operating `_database/` write",
+    )
+    missing = [token for token in required_tokens if token not in combined]
+    if missing:
+        raise AssertionError(f"V3K goal completion authority audit missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -1092,6 +1145,7 @@ def main() -> None:
     _assert_gui_sidecar_write_approval_template_policy()
     _assert_gui_sidecar_preapproval_completion_audit_policy()
     _assert_remaining_gate_approval_matrix_policy()
+    _assert_goal_completion_authority_audit_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")

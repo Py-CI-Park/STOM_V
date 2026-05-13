@@ -298,6 +298,12 @@ HELD_ITEMS = (
         "status": "completed-matrix-only",
         "reason": "Page065 records all six remaining gate approval phrases, required markers, risks, and not-executable verdicts without USER_ACK, enable registry, DB, sidecar, or live runtime action.",
     },
+    {
+        "item": "goal-completion-authority-audit",
+        "risk": "low",
+        "status": "completed-not-complete-audit",
+        "reason": "Page066 maps the active V3K objective to concrete evidence and confirms final completion authority is still absent until explicit one-gate approvals and execution evidence exist.",
+    },
 )
 
 REQUIRED_DOCS = (
@@ -345,6 +351,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_063_gui_sidecar_write_approval_template_plan.md",
     "docs/plans/2026-05-14_v3k_page_064_gui_sidecar_preapproval_completion_audit_plan.md",
     "docs/plans/2026-05-14_v3k_page_065_remaining_gate_approval_matrix_plan.md",
+    "docs/plans/2026-05-14_v3k_page_066_goal_completion_authority_audit_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -382,6 +389,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_template.md",
     "docs/update_log/2026-05-14_v3k_gui_sidecar_preapproval_completion_audit.md",
     "docs/update_log/2026-05-14_v3k_remaining_gate_approval_matrix.md",
+    "docs/update_log/2026-05-14_v3k_goal_completion_authority_audit.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -410,6 +418,7 @@ REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_gui_sidecar_approval_template.py",
     "scripts/audit_v3k_gui_sidecar_preapproval_completion.py",
     "scripts/audit_v3k_remaining_gate_approval_matrix.py",
+    "scripts/audit_v3k_goal_completion_authority.py",
 )
 
 RUNTIME_GUARDED_FILES = (

@@ -30,6 +30,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_gui_sidecar_approval_template.py",
     "scripts/audit_v3k_gui_sidecar_preapproval_completion.py",
     "scripts/audit_v3k_remaining_gate_approval_matrix.py",
+    "scripts/audit_v3k_goal_completion_authority.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -131,6 +132,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "remaining_gate_approval_matrix",
             _python("scripts/audit_v3k_remaining_gate_approval_matrix.py"),
             "Check all six remaining gate approval phrases exist while every gate stays blocked.",
+        ),
+        AuditStep(
+            "goal_completion_authority",
+            _python("scripts/audit_v3k_goal_completion_authority.py"),
+            "Check the active V3K goal is not prematurely marked complete before explicit gate approvals.",
         ),
         AuditStep(
             "verify_1a",
