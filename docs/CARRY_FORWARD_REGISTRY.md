@@ -1473,3 +1473,25 @@ Directive: M3 archive policy completion is not authorization for Phase G ON, `.o
 - Next: Page 046 / `approval-gate-handoff`. ??? ?? ??? decision matrix? ??? ON/DB/live runtime ??? ?? ???.
 
 Directive: `V3K_GOVERNANCE_CLOSEOUT` means the governance hardening queue is closed; it is not authorization for Phase F/G/H ON, DB cutover, live Kiwoom runtime wiring, or `.omx/reports` raw artifact commits.
+
+## V3K-APPROVAL-GATE-HANDOFF: ??? ?? decision matrix ??
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 046 plan, Page045 governance closeout
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_046_approval_gate_handoff_plan.md`
+  - `docs/update_log/2026-05-13_v3k_approval_gate_handoff.md`
+  - `docs/plans/2026-05-13_v3k_page_047_mission_closeout_review_plan.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: ?? ??? ??? `approval decision matrix`? ????, ??? ?? ?? ??? ?? ON/DB/live runtime ??? ???? ?? STOP condition? ????.
+- Approval gates: Phase F F-4 ON, Phase G G-3 ON, F1 actual DB cutover, H-2/H-3 Kiwoom live dryrun, GUI actual sidecar write, live order/exit rule consumption.
+- STOP condition: ??? ?? ??, gate? USER_ACK ?? ?? equivalent, rollback/monitoring, `run_v3k_audit_suite.py` PASS, ?? ?? ?? ???, gate ?? ?? ??? ??? ???? ???.
+- Kiwoom adjustment: Kiwoom live runtime, ??/??, live decision path? ???? ???. H-2/H-3? live decision? ?? ??? ??? KHOPENAPI ?? ??? ????.
+- LS dependency exclusion: LS Securities REST/TR/REAL ?? ??? ?? ????.
+- DB boundary: ?? `_database/`, `_database_v3k_shadow/`, DB ??, sidecar artifact, `.omx/reports` raw artifact? ??/commit?? ???.
+- Next: Page 047 / `mission-closeout-review`. ?? closeout review? ???? ON/DB/live runtime ??? ?? ???.
+
+Directive: `V3K_APPROVAL_GATE_HANDOFF` is a decision matrix only. It is not authorization for Phase F/G/H ON, DB cutover, live Kiwoom runtime wiring, live order/exit consumption, or raw artifact commits.

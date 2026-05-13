@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "approval-gate-handoff"
+NEXT_CANDIDATE = "mission-closeout-review"
 
 HELD_ITEMS = (
     {
@@ -165,8 +165,14 @@ HELD_ITEMS = (
     {
         "item": "approval-gate-handoff",
         "risk": "medium",
+        "status": "completed-handoff",
+        "reason": "Page046 documented the user-facing approval decision matrix and kept all ON/DB/live runtime actions blocked.",
+    },
+    {
+        "item": "mission-closeout-review",
+        "risk": "low",
         "status": "next",
-        "reason": "Next safe step is to prepare a user-facing approval decision matrix without performing ON, DB cutover, or live Kiwoom runtime changes.",
+        "reason": "Next safe step is a final mission closeout review that confirms only explicit approval gates remain.",
     },
 )
 
@@ -196,6 +202,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_044_m3_benchmark_archive_policy_plan.md",
     "docs/plans/2026-05-13_v3k_page_045_governance_closeout_and_approval_gate_plan.md",
     "docs/plans/2026-05-13_v3k_page_046_approval_gate_handoff_plan.md",
+    "docs/plans/2026-05-13_v3k_page_047_mission_closeout_review_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -213,6 +220,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_m2_audit_runner_policy.md",
     "docs/update_log/2026-05-13_v3k_m3_benchmark_archive_policy.md",
     "docs/update_log/2026-05-13_v3k_governance_closeout_and_approval_gate.md",
+    "docs/update_log/2026-05-13_v3k_approval_gate_handoff.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -267,9 +275,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["approval-gate-handoff"]:
+    if [item["item"] for item in next_items] != ["mission-closeout-review"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "approval-gate-handoff":
+    if NEXT_CANDIDATE != "mission-closeout-review":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
