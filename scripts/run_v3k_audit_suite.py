@@ -27,6 +27,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_gui_sidecar_write_readiness.py",
     "scripts/audit_v3k_remaining_approval_gates.py",
     "scripts/preview_v3k_gui_sidecar_default_payload.py",
+    "scripts/audit_v3k_gui_sidecar_approval_template.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -113,6 +114,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "gui_sidecar_payload_preview",
             _python("scripts/preview_v3k_gui_sidecar_default_payload.py", "--format", "json"),
             "Preview the first GUI sidecar default-OFF payload without writing artifacts.",
+        ),
+        AuditStep(
+            "gui_sidecar_approval_template",
+            _python("scripts/audit_v3k_gui_sidecar_approval_template.py"),
+            "Check the GUI sidecar write approval template exists while writer remains blocked.",
         ),
         AuditStep(
             "verify_1a",
