@@ -1598,3 +1598,23 @@ Directive: `PHASE_F_F4_ON_APPROVAL_PREP`는 승인 준비 기록이며 Phase F O
 - Next: `phase-g-g3-on-await-user-approval`. 사용자 명시 승인, `V3K_PHASE_G_USER_ACK=1` 또는 동등 승인 기록, `V3K-PHASE-G-ENABLE` registry, rollback/monitoring 확정 전에는 actual ON을 수행하지 않는다.
 
 Directive: `PHASE_G_G3_ON_APPROVAL_PREP`는 승인 준비 기록이며 Phase G ON, USER_ACK 생성, enable registry 생성, DB cutover, Kiwoom live runtime 변경, live order/exit rule 연결로 해석하면 안 된다.
+
+## V3K-PHASE-H-H2-H3-LIVE-DRYRUN-APPROVAL-PREP: Kiwoom live dry-run 승인 전 준비
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 052 plan, Page026 Phase H H-1 contract-only hook, Page032 Phase H H-2/H-3 approval gate
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_052_phase_h_h2_h3_live_dryrun_approval_prep_plan.md`
+  - `docs/update_log/2026-05-13_v3k_phase_h_h2_h3_live_dryrun_approval_prep.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: H-2/H-3 Kiwoom live dry-run 전 KHOPENAPI compatible environment, USER_ACK, zero-order evidence, rollback/kill switch, post-health, monitoring 조건을 문서화한다. 실제 KHOPENAPI connect/login 또는 ON은 수행하지 않는다.
+- Current evidence: Phase H H-1 contract-only hook, hook unit smoke, env sentinel audit, full V3K audit suite.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 broker dependency는 추가하지 않는다.
+- DB/artifact boundary: 운영 `_database/`, DB 파일, live artifact, `.omx/reports` raw artifact는 write/commit하지 않는다.
+- Next: `phase-h-h2-h3-live-dryrun-await-user-approval`. 사용자 명시 승인, KHOPENAPI 환경 확인, `V3K_PHASE_H_USER_ACK=1` 또는 동등 승인 기록, zero-order evidence/post-health/monitoring 확정 전에는 actual live dry-run 또는 ON을 수행하지 않는다.
+
+Directive: `PHASE_H_H2_H3_LIVE_DRYRUN_APPROVAL_PREP`는 승인 준비 기록이며 KHOPENAPI connect/login, H-2 live dry-run, H-3 ON, USER_ACK 생성, Kiwoom live runtime 변경, live order/exit rule 연결로 해석하면 안 된다.

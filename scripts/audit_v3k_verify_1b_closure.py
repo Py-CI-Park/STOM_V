@@ -68,6 +68,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
+    "docs/update_log/2026-05-13_v3k_phase_h_h2_h3_live_dryrun_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -85,6 +86,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_050_phase_f_f4_on_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_051_phase_g_g3_on_approval_prep_plan.md",
+    "docs/plans/2026-05-13_v3k_page_052_phase_h_h2_h3_live_dryrun_approval_prep_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -172,6 +174,7 @@ SAFE_STAGED_COMPLETED = (
     "GUI sidecar write approval preparation completed without actual write execution",
     "Phase F F-4 ON approval preparation completed without ON execution",
     "Phase G G-3 ON approval preparation completed without ON execution",
+    "Phase H H-2/H-3 Kiwoom live dry-run approval preparation completed without KHOPENAPI connect/login execution",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -480,6 +483,30 @@ def _assert_phase_g_g3_on_approval_prep_policy() -> None:
         raise AssertionError(f"V3K Phase G G-3 approval prep docs missing tokens: {missing}")
 
 
+def _assert_phase_h_h2_h3_live_dryrun_approval_prep_policy() -> None:
+    docs = (
+        ROOT
+        / "docs"
+        / "update_log"
+        / "2026-05-13_v3k_phase_h_h2_h3_live_dryrun_approval_prep.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    required_tokens = (
+        "PHASE_H_H2_H3_LIVE_DRYRUN_APPROVAL_PREP",
+        "phase-h-h2-h3-live-dryrun-await-user-approval",
+        "No live dry-run execution",
+        "KHOPENAPI",
+        "V3K_PHASE_H_USER_ACK=1",
+        "V3K_PHASE_H_KIWOOM_DRYRUN",
+        "V3K_PHASE_H_DISABLE=1",
+        "Prompt-to-artifact checklist",
+        "zero-order evidence",
+        "LS Securities",
+    )
+    missing = [token for token in required_tokens if token not in docs]
+    if missing:
+        raise AssertionError(f"V3K Phase H H-2/H-3 approval prep docs missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -497,6 +524,7 @@ def main() -> None:
     _assert_gui_sidecar_write_approval_prep_policy()
     _assert_phase_f_f4_on_approval_prep_policy()
     _assert_phase_g_g3_on_approval_prep_policy()
+    _assert_phase_h_h2_h3_live_dryrun_approval_prep_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")
