@@ -15,6 +15,7 @@ from strategy.v3k_gui_sidecar import (  # noqa: E402
     V3K_GUI_SIDECAR_FILE,
     V3K_GUI_SIDECAR_SCHEMA_VERSION,
     V3K_GUI_SIDECAR_SOURCE,
+    load_v3k_gui_sidecar_file,
     validate_v3k_gui_sidecar_payload,
 )
 from strategy.v3k_settings_surface import (  # noqa: E402
@@ -80,8 +81,13 @@ def assert_artifact_status_clean() -> None:
     status = _run_git("status", "--short", "--", *FORBIDDEN_ARTIFACT_PATHS)
     if status:
         raise AssertionError(f"forbidden artifact status is not clean:\n{status}")
-    if (ROOT / V3K_GUI_SIDECAR_FILE).exists():
-        raise AssertionError(f"preview must not create actual sidecar file: {V3K_GUI_SIDECAR_FILE}")
+    sidecar_path = ROOT / V3K_GUI_SIDECAR_FILE
+    if sidecar_path.exists():
+        loaded = load_v3k_gui_sidecar_file(sidecar_path)
+        if not loaded.valid or not loaded.all_off:
+            raise AssertionError(
+                f"existing approved sidecar must validate default-OFF: {loaded.diagnostics}"
+            )
 
 
 def _format_markdown(payload: Mapping[str, Any]) -> str:

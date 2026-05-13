@@ -2044,3 +2044,30 @@ Directive: `V3K_VERIFY1B_LATEST_COVERAGE` expands closure verification only. It 
 - Next: wait for exact one-gate approval before any execution work. The first executable phrase remains `I approve gui-sidecar-write-await-user-approval only`.
 
 Directive: `V3K_PREAPPROVAL_STOP_CONDITION` is a stop/wait guard. Do not add more review-only execution packets unless new evidence, a new requirement, or exact one-gate approval changes the state.
+
+## V3K-GUI-SIDECAR-WRITE-ACTUAL-APPROVAL
+
+- Date: 2026-05-14 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Page: Page 079
+- User approval text: `gate 1 approved`
+- Canonical approval phrase: `I approve gui-sidecar-write-await-user-approval only`
+- Gate: `gui-sidecar-write-await-user-approval`
+- Status: `completed-gate1-default-off-sidecar-write`
+- Runtime artifact: `_v3k_sidecar/v3k_gui_settings.json` local ignored artifact; do not commit.
+- Writer: `scripts/write_v3k_gui_sidecar_from_preview.py`
+- Rollback: `scripts/rollback_v3k_gui_sidecar.py`
+- Audit: `scripts/audit_v3k_gui_sidecar_gate1_execution.py`
+- Progress: `1/6` approval gates executed.
+- Next gate: `phase-f-f4-on-await-user-approval`.
+
+Scope guard:
+
+- No DB cutover
+- No KHOPENAPI connect/login
+- No Phase F/G/H ON
+- No live order/exit wiring
+- No Kiwoom live runtime mutation
+- No direct LS Securities dependency
+
+Directive: This approval only covers the first GUI sidecar default-OFF seed write. Later Phase F/G/H ON, F1 actual DB cutover, and live order/exit consumption each require their own explicit one-gate approval cycle.

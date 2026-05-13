@@ -149,7 +149,7 @@ def build_preflight_report(phrase: str | None = None) -> GuiSidecarGatePreflight
         gate=FIRST_GATE,
         phrase_status=phrase_status,
         phrase_accepted=phrase_accepted,
-        ready_for_execution=False,
+        ready_for_execution=not reasons,
         review_only=True,
         blocked_reasons=reasons,
     )

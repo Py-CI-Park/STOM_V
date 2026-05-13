@@ -93,17 +93,21 @@ Before V3K work in this checkout, read:
 2. `docs/update_log/2026-05-08_v3_2uc_unmet_features_audit_and_research.md`
 3. `docs/CARRY_FORWARD_REGISTRY.md`
 4. `docs/update_log/2026-05-14_v3k_goal_completion_audit_checklist.md`
-5. `docs/update_log/2026-05-14_v3k_gui_sidecar_first_gate_blocker_snapshot.md`
+5. `docs/update_log/2026-05-14_v3k_gui_sidecar_gate1_execution.md`
 6. `docs/update_log/2026-05-14_v3k_gate_approval_phrase_intake_guard.md`
 
 Current approval-gated state:
 
-- Actual approval gate execution remains `0/6` before explicit one-gate approval.
+- Actual approval gate execution is `1/6`.
+- Gate 1 `gui-sidecar-write-await-user-approval` has been approved/executed as
+  a default-OFF local sidecar seed only.
+- `_v3k_sidecar/v3k_gui_settings.json` is a local ignored runtime artifact and
+  must not be committed.
 - Do not call `update_goal(status="complete")` until all six approval gates have
   concrete evidence.
-- Do not create USER_ACK, enable registry headings, `_v3k_sidecar` artifacts,
-  operating `_database/` writes, DB cutover, KHOPENAPI connect/login, or live
-  order/exit rule wiring without the exact approved gate phrase.
+- Do not create additional USER_ACK, enable registry headings, operating
+  `_database/` writes, DB cutover, KHOPENAPI connect/login, or live order/exit
+  rule wiring without the exact approved gate phrase for that later gate.
 - Do not create live order/exit rule wiring without the exact approved gate phrase.
 - feature flags must remain default-OFF.
 - For this 2U_C lane use `python scripts/verify_nonrelease_sync.py`, not
@@ -111,26 +115,26 @@ Current approval-gated state:
 
 Remaining gate order:
 
-1. `gui-sidecar-write-await-user-approval`
-2. `phase-f-f4-on-await-user-approval`
+1. `gui-sidecar-write-await-user-approval` — completed as default-OFF sidecar write
+2. `phase-f-f4-on-await-user-approval` — next approval gate
 3. `phase-g-g3-on-await-user-approval`
 4. `phase-h-h2-h3-live-dryrun-await-user-approval`
 5. `f1-actual-db-cutover-await-user-approval`
 6. `live-order-exit-rule-consumption-await-user-approval`
 
-The first executable approval phrase is exactly:
+The next executable approval phrase is exactly:
 
 ```text
-I approve gui-sidecar-write-await-user-approval only
+I approve phase-f-f4-on-await-user-approval only
 ```
 
-Review-only continuation must keep the V3K audit suite green:
+Continuation must keep gate-specific and nonrelease checks green:
 
 ```powershell
-python scripts/run_v3k_audit_suite.py
+python scripts/audit_v3k_gui_sidecar_gate1_execution.py
 python scripts/verify_nonrelease_sync.py
 git diff --check
-git status --short -- _v3k_sidecar _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
 ```
 
 ## Verification Rules
