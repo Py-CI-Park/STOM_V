@@ -32,6 +32,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_remaining_gate_approval_matrix.py",
     "scripts/audit_v3k_goal_completion_authority.py",
     "scripts/audit_v3k_one_gate_sequence_guard.py",
+    "scripts/audit_v3k_goal_skill_remaining_gate_handoff.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -143,6 +144,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "one_gate_sequence_guard",
             _python("scripts/audit_v3k_one_gate_sequence_guard.py"),
             "Check broad or out-of-order gate approval remains blocked before an explicit one-gate cycle.",
+        ),
+        AuditStep(
+            "goal_skill_remaining_gate_handoff",
+            _python("scripts/audit_v3k_goal_skill_remaining_gate_handoff.py"),
+            "Check Page068 goal/OMX handoff remains review-only and gate-blocked.",
         ),
         AuditStep(
             "verify_1a",

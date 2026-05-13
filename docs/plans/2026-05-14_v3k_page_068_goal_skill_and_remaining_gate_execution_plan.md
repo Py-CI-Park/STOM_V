@@ -6,44 +6,60 @@
 | worktree | `C:/System_Trading/STOM/STOM_V.wt-dev` |
 | branch | `STOM_Version_2U_C` |
 | page | Page 068 |
-| source | Page065 remaining gate matrix, Page066 goal completion authority audit, Page067 one-gate sequence guard, current user request about goal skill |
+| source | Page065 remaining gate matrix, Page066 goal completion authority audit, Page067 one-gate sequence guard, user question about goal skill |
 | status | review-only-command-handoff |
 
-## 1. Objective
+---
 
-Confirm the active mission before any approval-gate execution and preserve the correct continuation command.
+## 1. 목적
 
-The objective remains:
+현재 목표는 다음과 같이 고정한다.
 
 ```text
-Apply V3 features to STOM_Version_2U_C while excluding direct LS Securities dependency and preserving the current Kiwoom API, Kiwoom order/exit behavior, and Kiwoom live runtime.
+STOM_Version_2U_C에서 LS증권 직접 의존을 제외하고,
+현재 Kiwoom API와 Kiwoom 주문/청산/live runtime을 유지한 채
+V3의 DB/학습/분석/backtest/realtime/GUI 설정/sidecar/검증 체계를 반영한다.
 ```
 
-This page is not an execution approval. It is a review-only handoff that maps the objective, related documents, remaining gates, verification evidence, and the recommended OMX continuation command.
+이 page는 승인 gate 실행 문서가 아니다. Page068은 active Codex goal과 다음 `omx ralph` 실행 방향을 보존하는 review-only handoff다.
 
-## 2. Non-negotiable constraints
+---
 
-- Do not create `USER_ACK` markers before explicit one-gate approval.
-- Do not create enable registry headings before explicit approval.
-- Do not write operating `_database/` contents or commit DB files.
-- Do not create actual `_v3k_sidecar` runtime artifacts before approval.
-- Do not connect/login to KHOPENAPI or mutate live Kiwoom runtime before approval.
-- Do not wire live order/exit rule consumption before approval.
-- Do not adopt direct LS Securities REST/TR/REAL/order dependencies.
-- Keep V3K feature flags default-OFF until a gate-specific ON transition is approved.
-- In `STOM_Version_2U_C`, use `scripts/verify_nonrelease_sync.py`, not release-lane `verify_release_sync.py`.
+## 2. 실행 전 불변 조건
 
-## 3. Planned action
+- `USER_ACK` marker는 명시적인 one-gate 승인 전 생성하지 않는다.
+- enable registry heading은 명시적인 one-gate 승인 전 생성하지 않는다.
+- 운영 `_database/` 내용은 쓰지 않고 DB 파일도 commit하지 않는다.
+- 실제 `_v3k_sidecar` runtime artifact는 승인 전 생성하지 않는다.
+- KHOPENAPI connect/login/live dry-run은 승인 전 실행하지 않는다.
+- live order/exit rule consumption은 승인 전 연결하지 않는다.
+- LS Securities REST/TR/REAL/order 직접 의존성은 채택하지 않는다.
+- V3K feature flag는 승인 전 default-OFF를 유지한다.
+- `STOM_Version_2U_C`에서는 `scripts/verify_release_sync.py`가 아니라 `scripts/verify_nonrelease_sync.py`를 사용한다.
 
-1. Re-read Page065, Page066, Page067, and `docs/CARRY_FORWARD_REGISTRY.md`.
-2. Verify current repository evidence with:
+---
+
+## 3. Page068 작업 항목
+
+1. Page065, Page066, Page067, `docs/CARRY_FORWARD_REGISTRY.md`를 재확인한다.
+2. 현재 상태를 아래 명령으로 검증한다.
    - `python scripts/run_v3k_audit_suite.py`
    - `python scripts/verify_nonrelease_sync.py`
    - `git diff --check`
    - `git status --short -- _v3k_sidecar _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json`
-3. If no explicit single-gate approval exists, stop at review-only status and recommend the exact next approval phrase.
-4. If a later user approves exactly one gate, start only that gate cycle and re-run the full evidence pack before and after execution.
+3. 명시적인 단일 gate 승인 문구가 없으면 review-only 상태로 멈춘다.
+4. 이후 사용자가 정확히 하나의 gate를 승인하면 그 gate만 preflight → execution → post-audit → commit 순서로 진행한다.
 
-## 4. Stop condition
+---
 
-Stop this page when the audit confirms whether the final V3K objective is complete. If any approval gate is still not executable, do not mark the active Codex goal complete.
+## 4. 중단 기준
+
+남은 gate 중 하나라도 승인/실행 증거가 없으면 active goal을 완료 처리하지 않는다.
+
+현재 첫 승인 후보는 다음 하나다.
+
+```text
+I approve gui-sidecar-write-await-user-approval only
+```
+
+위 문구 없이 `approve all`, `all gates`, `turn everything on` 류의 broad approval은 수용하지 않는다.
