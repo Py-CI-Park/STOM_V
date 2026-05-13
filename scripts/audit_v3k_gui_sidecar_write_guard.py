@@ -30,8 +30,12 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-12_v3k_page_026_phase_h_h1_kiwoom_dryrun_hook_plan.md",
     "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_057_gui_actual_sidecar_write_preflight_plan.md",
+    "docs/plans/2026-05-13_v3k_page_059_gui_sidecar_write_approval_execution_packet_plan.md",
+    "docs/plans/2026-05-13_v3k_page_060_gui_sidecar_write_readiness_audit_plan.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_gui_actual_sidecar_write_preflight.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_execution_packet.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_write_readiness_audit.md",
 )
 
 REQUIRED_DECISION_MARKERS = (

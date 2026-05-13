@@ -262,6 +262,12 @@ HELD_ITEMS = (
         "status": "completed-approval-packet",
         "reason": "Page059 defines source of truth, owner roles, rollback, monitoring, and fallback conditions for GUI sidecar write without creating USER_ACK, writer code, or runtime artifacts.",
     },
+    {
+        "item": "gui-sidecar-write-readiness-audit",
+        "risk": "low",
+        "status": "completed-readiness-audit",
+        "reason": "Page060 adds a dedicated readiness audit proving GUI sidecar write is prepared but still blocked before USER_ACK, writer code, sidecar artifact, or MainWindow wiring.",
+    },
 )
 
 REQUIRED_DOCS = (
@@ -303,6 +309,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_057_gui_actual_sidecar_write_preflight_plan.md",
     "docs/plans/2026-05-13_v3k_page_058_approval_order_runtime_next_reconciliation_plan.md",
     "docs/plans/2026-05-13_v3k_page_059_gui_sidecar_write_approval_execution_packet_plan.md",
+    "docs/plans/2026-05-13_v3k_page_060_gui_sidecar_write_readiness_audit_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -334,6 +341,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_gui_actual_sidecar_write_preflight.md",
     "docs/update_log/2026-05-13_v3k_approval_order_runtime_next_reconciliation.md",
     "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_execution_packet.md",
+    "docs/update_log/2026-05-13_v3k_gui_sidecar_write_readiness_audit.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -356,6 +364,7 @@ REQUIRED_SCRIPTS = (
     "scripts/benchmark_v3k_phase_g_engine.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
+    "scripts/audit_v3k_gui_sidecar_write_readiness.py",
 )
 
 RUNTIME_GUARDED_FILES = (

@@ -24,6 +24,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_runtime_activation_gap.py",
     "scripts/audit_v3k_verify_1a.py",
     "scripts/audit_v3k_verify_1b_closure.py",
+    "scripts/audit_v3k_gui_sidecar_write_readiness.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -94,6 +95,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "runtime_activation_gap",
             _python("scripts/audit_v3k_runtime_activation_gap.py"),
             "Check remaining activation gates and next-candidate matrix.",
+        ),
+        AuditStep(
+            "gui_sidecar_write_readiness",
+            _python("scripts/audit_v3k_gui_sidecar_write_readiness.py"),
+            "Check GUI sidecar write readiness remains blocked before approval.",
         ),
         AuditStep(
             "verify_1a",

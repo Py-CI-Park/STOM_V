@@ -1755,3 +1755,24 @@ Directive: `APPROVAL_ORDER_RUNTIME_NEXT_RECONCILIATION` is a guardrail and meani
 - Next: actual GUI sidecar write still requires explicit user approval, USER_ACK or equivalent approval record, source of truth acceptance, rollback owner acceptance, monitoring owner acceptance, fallback trigger acceptance, and green audits.
 
 Directive: `GUI_SIDECAR_WRITE_APPROVAL_EXECUTION_PACKET` is a blocked approval packet. Do not interpret it as approval for actual sidecar write, USER_ACK creation, writer implementation, MainWindow wiring, ON transition, KHOPENAPI connect/login, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.
+## V3K-GUI-SIDECAR-WRITE-READINESS-AUDIT: actual write pre-approval blocked-readiness audit
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page057 preflight and Page059 approval execution packet.
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_060_gui_sidecar_write_readiness_audit_plan.md`
+  - `docs/update_log/2026-05-13_v3k_gui_sidecar_write_readiness_audit.md`
+- Added/modified:
+  - `scripts/audit_v3k_gui_sidecar_write_readiness.py`
+  - `scripts/audit_v3k_gui_sidecar_write_guard.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/run_v3k_audit_suite.py`
+- Decision: GUI actual sidecar write is prepared but remains blocked. The readiness audit verifies missing USER_ACK, absent sidecar artifact, read-only strategy module, no MainWindow wiring, default-OFF fallback, and clean artifact status.
+- Current evidence: GUI sidecar write readiness audit, runtime activation gap audit, VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom order/exit/live runtime remains unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed.
+- Next: actual GUI sidecar write now requires explicit user approval, USER_ACK or equivalent approval record, owner acceptance, fallback acceptance, and green readiness audit immediately before execution.
+
+Directive: `GUI_SIDECAR_WRITE_READINESS_AUDIT` is a blocked-readiness proof. Do not interpret it as approval for actual sidecar write, USER_ACK creation, writer implementation, MainWindow wiring, ON transition, KHOPENAPI connect/login, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.
