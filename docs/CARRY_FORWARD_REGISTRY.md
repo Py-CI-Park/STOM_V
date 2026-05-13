@@ -1836,3 +1836,23 @@ Directive: `GUI_SIDECAR_DEFAULT_OFF_PAYLOAD_PREVIEW` is not writer implementatio
 - Next: actual GUI sidecar writer implementation remains blocked until explicit approval, USER_ACK or equivalent approval record, owner acceptance, green pre-write audit, rollback acceptance, and post-write validation owner are all present.
 
 Directive: `GUI_SIDECAR_WRITE_APPROVAL_TEMPLATE` is template-only. Do not create USER_ACK, writer or rollback scripts, sidecar artifact, MainWindow wiring, DB cutover, KHOPENAPI login, or live decision wiring from this template.
+## V3K-GUI-SIDECAR-PREAPPROVAL-COMPLETION-AUDIT: first gate review-ready but execution-blocked
+- Date: 2026-05-14 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page059 approval packet, Page060 readiness audit, Page061 blocker audit, Page062 default-OFF payload preview, and Page063 approval template.
+- Records:
+  - `docs/plans/2026-05-14_v3k_page_064_gui_sidecar_preapproval_completion_audit_plan.md`
+  - `docs/update_log/2026-05-14_v3k_gui_sidecar_preapproval_completion_audit.md`
+- Added/modified:
+  - `scripts/audit_v3k_gui_sidecar_preapproval_completion.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/run_v3k_audit_suite.py`
+- Decision: The first GUI sidecar gate is review-ready but execution-blocked. Payload preview, approval template, and audit surface are complete; explicit approval, USER_ACK, writer implementation, rollback implementation, sidecar artifact, and owner acceptance remain intentionally absent.
+- Current evidence: pre-approval completion audit, approval template audit, payload preview, runtime activation gap audit, VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom order/exit/live runtime remains unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created.
+- Next: actual GUI sidecar writer implementation remains blocked until explicit approval, USER_ACK or equivalent approval record, owner acceptance, green pre-write audit, rollback implementation approval, rollback acceptance, and post-write validation owner are all present.
+
+Directive: `GUI_SIDECAR_PREAPPROVAL_COMPLETION_AUDIT` is not approval. Do not create USER_ACK, writer or rollback scripts, sidecar artifact, MainWindow wiring, DB cutover, KHOPENAPI login, or live decision wiring from this audit.
