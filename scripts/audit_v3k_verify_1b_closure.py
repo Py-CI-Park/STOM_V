@@ -94,6 +94,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-14_v3k_worktree_entrypoint_alignment.md",
     "docs/update_log/2026-05-14_v3k_remaining_gate_status_summary.md",
     "docs/update_log/2026-05-14_v3k_verify1b_latest_coverage.md",
+    "docs/update_log/2026-05-14_v3k_preapproval_stop_condition.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -137,6 +138,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-14_v3k_page_075_worktree_entrypoint_alignment_plan.md",
     "docs/plans/2026-05-14_v3k_page_076_remaining_gate_status_summary_plan.md",
     "docs/plans/2026-05-14_v3k_page_077_verify1b_latest_coverage_plan.md",
+    "docs/plans/2026-05-14_v3k_page_078_preapproval_stop_condition_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -178,6 +180,7 @@ REQUIRED_SCRIPTS = (
     "scripts/audit_v3k_worktree_entrypoint_alignment.py",
     "scripts/summarize_v3k_remaining_gate_status.py",
     "scripts/audit_v3k_remaining_gate_status_summary.py",
+    "scripts/audit_v3k_preapproval_stop_condition.py",
     "scripts/diff_v3_vs_2uc_db_schema.py",
     "scripts/init_v3k_shadow_db.py",
     "scripts/v3k_db_health.py",
@@ -268,7 +271,8 @@ SAFE_STAGED_COMPLETED = (
     "Agent entrypoint contract completed as routing guard only",
     "Worktree entrypoint alignment completed for current five-worktree map",
     "Remaining gate status summary completed as machine-readable no-go status",
-    "VERIFY-1B latest coverage includes Page073 through Page076 governance/status artifacts",
+    "VERIFY-1B latest coverage includes Page073 through Page078 governance/status artifacts",
+    "Preapproval stop condition completed; next meaningful action is exact one-gate approval",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -407,6 +411,7 @@ def _assert_audit_runner_policy() -> None:
         "audit_v3k_agent_entrypoint_contract.py",
         "audit_v3k_worktree_entrypoint_alignment.py",
         "audit_v3k_remaining_gate_status_summary.py",
+        "audit_v3k_preapproval_stop_condition.py",
     )
     missing = [token for token in required_tokens if token not in source]
     if missing:
@@ -1218,6 +1223,7 @@ def _assert_latest_v3k_governance_status_coverage_policy() -> None:
         "docs/update_log/2026-05-14_v3k_agent_entrypoint_contract.md",
         "docs/update_log/2026-05-14_v3k_worktree_entrypoint_alignment.md",
         "docs/update_log/2026-05-14_v3k_remaining_gate_status_summary.md",
+        "docs/update_log/2026-05-14_v3k_preapproval_stop_condition.md",
         "docs/update_log/2026-05-14_v3k_verify1b_latest_coverage.md",
         "docs/plans/2026-05-14_v3k_page_077_verify1b_latest_coverage_plan.md",
         "scripts/audit_v3k_goal_skill_remaining_gate_handoff.py",
@@ -1230,6 +1236,7 @@ def _assert_latest_v3k_governance_status_coverage_policy() -> None:
         "scripts/audit_v3k_worktree_entrypoint_alignment.py",
         "scripts/summarize_v3k_remaining_gate_status.py",
         "scripts/audit_v3k_remaining_gate_status_summary.py",
+        "scripts/audit_v3k_preapproval_stop_condition.py",
     )
     combined = "\n".join(
         (ROOT / path).read_text(encoding="utf-8", errors="replace")
@@ -1246,6 +1253,7 @@ def _assert_latest_v3k_governance_status_coverage_policy() -> None:
         "V3K_WORKTREE_ENTRYPOINT_ALIGNMENT",
         "V3K_REMAINING_GATE_STATUS_SUMMARY",
         "V3K_VERIFY1B_LATEST_COVERAGE",
+        "V3K_PREAPPROVAL_STOP_CONDITION",
         "V3 features + Kiwoom retained",
         "LS Securities REST/TR/REAL direct",
         "actual approval gate execution",
@@ -1256,6 +1264,7 @@ def _assert_latest_v3k_governance_status_coverage_policy() -> None:
         "creates_user_ack",
         "executes_runtime",
         "I approve gui-sidecar-write-await-user-approval only",
+        "Next meaningful action",
         "update_goal(status=\"complete\")",
         "No USER_ACK creation",
         "No ON/DB/live execution",
@@ -1277,6 +1286,7 @@ def _assert_latest_v3k_governance_status_coverage_policy() -> None:
         "agent_entrypoint_contract",
         "worktree_entrypoint_alignment",
         "remaining_gate_status_summary",
+        "preapproval_stop_condition",
     )
     missing_runner = [token for token in runner_tokens if token not in runner]
     if missing_runner:

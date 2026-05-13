@@ -2022,3 +2022,25 @@ Directive: `V3K_REMAINING_GATE_STATUS_SUMMARY` is a no-side-effect status surfac
 - Next: actual gate execution still requires exact one-gate approval. The first executable phrase remains `I approve gui-sidecar-write-await-user-approval only`.
 
 Directive: `V3K_VERIFY1B_LATEST_COVERAGE` expands closure verification only. It is not approval, not USER_ACK, not enable registry, and not final goal completion.
+
+## V3K-PREAPPROVAL-STOP-CONDITION: stop review-only loop before explicit approval
+- Date: 2026-05-14 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page076 created a machine-readable remaining gate status summary and Page077 added it to VERIFY-1B coverage. The next safety need is to prevent endless review-only expansion when no exact one-gate approval exists.
+- Records:
+  - `docs/plans/2026-05-14_v3k_page_078_preapproval_stop_condition_plan.md`
+  - `docs/update_log/2026-05-14_v3k_preapproval_stop_condition.md`
+- Added/modified:
+  - `scripts/audit_v3k_preapproval_stop_condition.py`
+  - `scripts/run_v3k_audit_suite.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `docs/update_log/2026-05-14_v3k_verify1b_latest_coverage.md`
+  - `docs/CARRY_FORWARD_REGISTRY.md`
+- Decision: V3K now has an explicit pre-approval stop condition: actual gate execution `0/6`, safe-staged progress `about 96%`, no USER_ACK, no sidecar writer/rollback/artifact, clean DB/runtime/live artifacts, and goal completion prohibited. The next meaningful action is the exact first gate approval phrase.
+- Current evidence: preapproval stop condition audit, VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom API, order, exit, and live runtime remain unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created.
+- Next: wait for exact one-gate approval before any execution work. The first executable phrase remains `I approve gui-sidecar-write-await-user-approval only`.
+
+Directive: `V3K_PREAPPROVAL_STOP_CONDITION` is a stop/wait guard. Do not add more review-only execution packets unless new evidence, a new requirement, or exact one-gate approval changes the state.

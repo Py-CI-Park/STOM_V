@@ -44,6 +44,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_worktree_entrypoint_alignment.py",
     "scripts/summarize_v3k_remaining_gate_status.py",
     "scripts/audit_v3k_remaining_gate_status_summary.py",
+    "scripts/audit_v3k_preapproval_stop_condition.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -195,6 +196,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "remaining_gate_status_summary",
             _python("scripts/audit_v3k_remaining_gate_status_summary.py"),
             "Check the machine-readable remaining gate status summary remains review-only and at 0/6 execution.",
+        ),
+        AuditStep(
+            "preapproval_stop_condition",
+            _python("scripts/audit_v3k_preapproval_stop_condition.py"),
+            "Check that the correct no-side-effect stop condition before approval is to wait for the exact first gate phrase.",
         ),
         AuditStep(
             "verify_1a",
