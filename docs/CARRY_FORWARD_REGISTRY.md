@@ -1400,3 +1400,28 @@ Directive: Do not use governance triage as authorization for Phase F/G/H ON. M1/
 - Next: Page 043 / `governance-m2-audit-runner-policy`. `.git/hooks` ?? ?? ?? repo-tracked audit runner/policy? ????.
 
 Directive: M1 contract completion is not authorization for Phase F/G/H ON. Do not remove or rename V3K adapter flags or stable surfaces without a documented migration plan and updated audits.
+
+## V3K-GOVERNANCE-M2-AUDIT-RUNNER-POLICY: repo-tracked audit runner ??
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 043 plan, Architect addendum M2
+- Records:
+  - `scripts/run_v3k_audit_suite.py`
+  - `docs/plans/2026-05-13_v3k_page_043_m2_audit_runner_policy_plan.md`
+  - `docs/update_log/2026-05-13_v3k_m2_audit_runner_policy.md`
+  - `docs/plans/2026-05-13_v3k_page_044_m3_benchmark_archive_policy_plan.md`
+- Added/modified:
+  - `scripts/run_v3k_audit_suite.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: `.git/hooks` ?? ??? ?? CI ?? ?? `scripts/run_v3k_audit_suite.py`? repo-tracked V3K audit entry point? ????.
+- Runner scope: py_compile, Phase G parity/benchmark, LS excise audit, Phase G unit smoke, runtime activation gap, VERIFY-1A, VERIFY-1B, nonrelease sync, `git diff --check`, artifact status guard.
+- Kiwoom adjustment: Kiwoom live runtime, ??/??, live decision path? ???? ???. Runner? ??? ????.
+- LS dependency exclusion: LS Securities REST/TR/REAL ?? ??? ?? ????.
+- DB boundary: ?? `_database/`, `_database_v3k_shadow/`, DB ??? ???? ???. `.omx/reports/*latest.json`? runner ? ??? ? ??? ignored local evidence?? ????.
+- Rejected: `.git/hooks` ?? ?? | git ?? ??? ??? ??? ???? ???? ?? Page043?? ???? ???.
+- Rejected: ?? CI ?? ?? | ?? CI ??? ???? ??? ?? ??? ??? ????.
+- Next: Page 044 / `governance-m3-benchmark-archive-policy`. `.omx/reports` raw artifact commit ?? evidence archive ??? ????.
+
+Directive: Running `scripts/run_v3k_audit_suite.py` proves the staged safety checks pass; it does not authorize Phase F/G/H ON, live Kiwoom runtime wiring, DB cutover, or `.omx/reports` commit.

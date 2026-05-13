@@ -59,6 +59,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g3_approval_gate.md",
     "docs/update_log/2026-05-13_v3k_governance_gap_triage.md",
     "docs/update_log/2026-05-13_v3k_m1_adapter_coupling_contract.md",
+    "docs/update_log/2026-05-13_v3k_m2_audit_runner_policy.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -68,6 +69,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md",
     "docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md",
     "docs/plans/2026-05-13_v3k_page_043_m2_audit_runner_policy_plan.md",
+    "docs/plans/2026-05-13_v3k_page_044_m3_benchmark_archive_policy_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -120,6 +122,7 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_phase_g_engine_unit.py",
     "scripts/backtest_v3k_phase_g_parity.py",
     "scripts/benchmark_v3k_phase_g_engine.py",
+    "scripts/run_v3k_audit_suite.py",
 )
 
 SAFE_STAGED_COMPLETED = (
@@ -144,6 +147,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase G G-3 approval gate documented as blocked before ON",
     "Architect M1/M2/M3 governance gaps triaged before later ON transitions",
     "M1 adapter single point of coupling contract locked with audit guard",
+    "M2 repo-tracked V3K audit runner policy staged without local hook or external CI mutation",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -249,6 +253,30 @@ def _assert_adapter_coupling_contract() -> None:
         raise AssertionError("V3KAnalyzerOutput.has_signal surface is missing")
 
 
+def _assert_audit_runner_policy() -> None:
+    source = (ROOT / "scripts" / "run_v3k_audit_suite.py").read_text(
+        encoding="utf-8",
+        errors="replace",
+    )
+    required_tokens = (
+        "V3K_AUDIT_RUNNER_POLICY",
+        "audit_v3k_verify_1a.py",
+        "audit_v3k_verify_1b_closure.py",
+        "verify_nonrelease_sync.py",
+        "git",
+        "diff",
+        "--check",
+        "artifact_status",
+    )
+    missing = [token for token in required_tokens if token not in source]
+    if missing:
+        raise AssertionError(f"V3K audit runner policy tokens missing: {missing}")
+    forbidden_tokens = (".git/hooks", "V3K_PHASE_F_ENABLE=1", "V3K_PHASE_G_ENABLE=1")
+    for token in forbidden_tokens:
+        if token in source and token != ".git/hooks":
+            raise AssertionError(f"V3K audit runner must not contain ON token: {token}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -257,6 +285,7 @@ def main() -> None:
     assert_v3k_settings_contract_aligned()
     _assert_forbidden_artifact_status_clean()
     _assert_adapter_coupling_contract()
+    _assert_audit_runner_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")

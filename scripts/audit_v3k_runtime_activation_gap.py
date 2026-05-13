@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "governance-m2-audit-runner-policy"
+NEXT_CANDIDATE = "governance-m3-benchmark-archive-policy"
 
 HELD_ITEMS = (
     {
@@ -147,8 +147,14 @@ HELD_ITEMS = (
     {
         "item": "governance-m2-audit-runner-policy",
         "risk": "medium",
+        "status": "completed-runner-policy",
+        "reason": "Page043 staged a repo-tracked V3K audit suite runner and policy without installing .git/hooks or mutating external CI.",
+    },
+    {
+        "item": "governance-m3-benchmark-archive-policy",
+        "risk": "medium",
         "status": "next",
-        "reason": "Next safe step is to design a tracked audit runner policy without writing .git/hooks or changing CI outside the repository contract.",
+        "reason": "Next safe step is to design benchmark/parity evidence archive policy without committing ignored .omx/reports artifacts by default.",
     },
 )
 
@@ -175,6 +181,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md",
     "docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md",
     "docs/plans/2026-05-13_v3k_page_043_m2_audit_runner_policy_plan.md",
+    "docs/plans/2026-05-13_v3k_page_044_m3_benchmark_archive_policy_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -189,6 +196,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g3_approval_gate.md",
     "docs/update_log/2026-05-13_v3k_governance_gap_triage.md",
     "docs/update_log/2026-05-13_v3k_m1_adapter_coupling_contract.md",
+    "docs/update_log/2026-05-13_v3k_m2_audit_runner_policy.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -209,6 +217,7 @@ REQUIRED_SCRIPTS = (
     "scripts/smoke_v3k_phase_g_engine_unit.py",
     "scripts/backtest_v3k_phase_g_parity.py",
     "scripts/benchmark_v3k_phase_g_engine.py",
+    "scripts/run_v3k_audit_suite.py",
 )
 
 RUNTIME_GUARDED_FILES = (
@@ -241,9 +250,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["governance-m2-audit-runner-policy"]:
+    if [item["item"] for item in next_items] != ["governance-m3-benchmark-archive-policy"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "governance-m2-audit-runner-policy":
+    if NEXT_CANDIDATE != "governance-m3-benchmark-archive-policy":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
