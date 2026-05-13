@@ -71,6 +71,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_h_h2_h3_live_dryrun_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_f1_actual_db_cutover_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_live_order_exit_rule_consumption_approval_prep.md",
+    "docs/update_log/2026-05-13_v3k_approval_gate_closeout_review.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -91,6 +92,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_052_phase_h_h2_h3_live_dryrun_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_053_f1_actual_db_cutover_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_054_live_order_exit_rule_consumption_approval_prep_plan.md",
+    "docs/plans/2026-05-13_v3k_page_055_approval_gate_closeout_review_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -181,6 +183,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase H H-2/H-3 Kiwoom live dry-run approval preparation completed without KHOPENAPI connect/login execution",
     "F1 actual DB cutover approval preparation completed without operating _database write",
     "Live order/exit rule consumption approval preparation completed without live decision wiring",
+    "Approval gate closeout review completed without ON/DB/live execution",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -563,6 +566,57 @@ def _assert_live_order_exit_rule_consumption_approval_prep_policy() -> None:
         )
 
 
+def _assert_approval_prep_docs_not_corrupted() -> None:
+    doc_paths = (
+        "docs/plans/2026-05-13_v3k_page_049_gui_sidecar_write_approval_prep_plan.md",
+        "docs/plans/2026-05-13_v3k_page_050_phase_f_f4_on_approval_prep_plan.md",
+        "docs/plans/2026-05-13_v3k_page_051_phase_g_g3_on_approval_prep_plan.md",
+        "docs/plans/2026-05-13_v3k_page_052_phase_h_h2_h3_live_dryrun_approval_prep_plan.md",
+        "docs/plans/2026-05-13_v3k_page_053_f1_actual_db_cutover_approval_prep_plan.md",
+        "docs/plans/2026-05-13_v3k_page_054_live_order_exit_rule_consumption_approval_prep_plan.md",
+        "docs/plans/2026-05-13_v3k_page_055_approval_gate_closeout_review_plan.md",
+        "docs/update_log/2026-05-13_v3k_gui_sidecar_write_approval_prep.md",
+        "docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md",
+        "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
+        "docs/update_log/2026-05-13_v3k_phase_h_h2_h3_live_dryrun_approval_prep.md",
+        "docs/update_log/2026-05-13_v3k_f1_actual_db_cutover_approval_prep.md",
+        "docs/update_log/2026-05-13_v3k_live_order_exit_rule_consumption_approval_prep.md",
+        "docs/update_log/2026-05-13_v3k_approval_gate_closeout_review.md",
+    )
+    corrupted: list[str] = []
+    for path in doc_paths:
+        text = (ROOT / path).read_text(encoding="utf-8", errors="replace")
+        if "?" in text or "\ufffd" in text:
+            corrupted.append(path)
+    if corrupted:
+        raise AssertionError(f"approval prep docs contain mojibake/question marks: {corrupted}")
+
+
+def _assert_approval_gate_closeout_review_policy() -> None:
+    docs = (
+        ROOT / "docs" / "update_log" / "2026-05-13_v3k_approval_gate_closeout_review.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    required_tokens = (
+        "APPROVAL_GATE_CLOSEOUT_REVIEW",
+        "Page049",
+        "Page054",
+        "live-order-exit-rule-consumption-await-user-approval",
+        "No ON/DB/live execution",
+        "USER_ACK",
+        "enable registry",
+        "KHOPENAPI",
+        "operating _database",
+        "Kiwoom live runtime",
+        "LS Securities",
+        "actual ON",
+        "live order/exit rule",
+        "Stop condition",
+    )
+    missing = [token for token in required_tokens if token not in docs]
+    if missing:
+        raise AssertionError(f"V3K approval gate closeout docs missing tokens: {missing}")
+
+
 def main() -> None:
     _assert_paths_exist(REQUIRED_DOCS, "V3K docs")
     _assert_paths_exist(REQUIRED_CODE, "V3K code files")
@@ -583,6 +637,8 @@ def main() -> None:
     _assert_phase_h_h2_h3_live_dryrun_approval_prep_policy()
     _assert_f1_actual_db_cutover_approval_prep_policy()
     _assert_live_order_exit_rule_consumption_approval_prep_policy()
+    _assert_approval_prep_docs_not_corrupted()
+    _assert_approval_gate_closeout_review_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")
