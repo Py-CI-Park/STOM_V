@@ -1425,3 +1425,29 @@ Directive: M1 contract completion is not authorization for Phase F/G/H ON. Do no
 - Next: Page 044 / `governance-m3-benchmark-archive-policy`. `.omx/reports` raw artifact commit ?? evidence archive ??? ????.
 
 Directive: Running `scripts/run_v3k_audit_suite.py` proves the staged safety checks pass; it does not authorize Phase F/G/H ON, live Kiwoom runtime wiring, DB cutover, or `.omx/reports` commit.
+
+## V3K-GOVERNANCE-M3-BENCHMARK-ARCHIVE-POLICY: Phase G evidence summary/hash ?? ??
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 044 plan, Architect addendum M3
+- Records:
+  - `scripts/summarize_v3k_phase_g_evidence.py`
+  - `docs/plans/2026-05-13_v3k_page_044_m3_benchmark_archive_policy_plan.md`
+  - `docs/update_log/2026-05-13_v3k_m3_benchmark_archive_policy.md`
+  - `docs/plans/2026-05-13_v3k_page_045_governance_closeout_and_approval_gate_plan.md`
+- Added/modified:
+  - `scripts/summarize_v3k_phase_g_evidence.py`
+  - `scripts/run_v3k_audit_suite.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: `.omx/reports` raw JSON? ?? ignored/local evidence? ????, commit ??? docs/update_log summary, threshold, command, SHA-256 hash, pass/fail, scenario/benchmark ???? ????.
+- Policy markers: `V3K_PHASE_G_EVIDENCE_ARCHIVE_POLICY`, `RAW_OMX_REPORTS_MUST_REMAIN_UNCOMMITTED`.
+- Kiwoom adjustment: Kiwoom live runtime, ??/??, live decision path? ???? ???. Evidence summarizer? local report? ??? ??.
+- LS dependency exclusion: LS Securities REST/TR/REAL ?? ??? ?? ????.
+- DB boundary: ?? `_database/`, `_database_v3k_shadow/`, DB ??, sidecar artifact? ???? ???. `.omx/reports/*latest.json`? raw commit?? ???.
+- Rejected: `.omx/reports/*.json` raw commit | ?? ignored artifact policy? ???? ? ???? timestamp/elapsed ?? ???? ?? ??? hash/summary ???? ????.
+- Rejected: benchmark threshold ?? | G-2 proof ??? ???? ???.
+- Next: Page 045 / `governance-closeout-and-approval-gate`. M1/M2/M3 governance hardening? ?? ?? ??? approval gate? ????.
+
+Directive: M3 archive policy completion is not authorization for Phase G ON, `.omx/reports` raw artifact commits, live Kiwoom runtime wiring, or DB cutover.

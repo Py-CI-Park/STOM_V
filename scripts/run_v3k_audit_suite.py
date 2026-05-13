@@ -25,6 +25,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_verify_1a.py",
     "scripts/audit_v3k_verify_1b_closure.py",
     "scripts/run_v3k_audit_suite.py",
+    "scripts/summarize_v3k_phase_g_evidence.py",
 )
 
 ARTIFACT_GUARD_PATHS = (
@@ -73,6 +74,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "phase_g_benchmark",
             _python("scripts/benchmark_v3k_phase_g_engine.py"),
             "Run synthetic Phase G benchmark proof.",
+        ),
+        AuditStep(
+            "phase_g_evidence_summary",
+            _python("scripts/summarize_v3k_phase_g_evidence.py", "--format", "json"),
+            "Print commit-safe Phase G evidence summary and hash raw local reports without committing them.",
         ),
         AuditStep(
             "phase_g_ls_excise",

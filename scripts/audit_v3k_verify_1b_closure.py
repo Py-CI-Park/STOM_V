@@ -60,6 +60,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_governance_gap_triage.md",
     "docs/update_log/2026-05-13_v3k_m1_adapter_coupling_contract.md",
     "docs/update_log/2026-05-13_v3k_m2_audit_runner_policy.md",
+    "docs/update_log/2026-05-13_v3k_m3_benchmark_archive_policy.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
@@ -70,6 +71,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_042_m1_adapter_coupling_contract_plan.md",
     "docs/plans/2026-05-13_v3k_page_043_m2_audit_runner_policy_plan.md",
     "docs/plans/2026-05-13_v3k_page_044_m3_benchmark_archive_policy_plan.md",
+    "docs/plans/2026-05-13_v3k_page_045_governance_closeout_and_approval_gate_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -123,6 +125,7 @@ REQUIRED_SCRIPTS = (
     "scripts/backtest_v3k_phase_g_parity.py",
     "scripts/benchmark_v3k_phase_g_engine.py",
     "scripts/run_v3k_audit_suite.py",
+    "scripts/summarize_v3k_phase_g_evidence.py",
 )
 
 SAFE_STAGED_COMPLETED = (
@@ -148,6 +151,7 @@ SAFE_STAGED_COMPLETED = (
     "Architect M1/M2/M3 governance gaps triaged before later ON transitions",
     "M1 adapter single point of coupling contract locked with audit guard",
     "M2 repo-tracked V3K audit runner policy staged without local hook or external CI mutation",
+    "M3 Phase G benchmark/parity evidence archive policy staged without committing raw .omx reports",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -267,6 +271,7 @@ def _assert_audit_runner_policy() -> None:
         "diff",
         "--check",
         "artifact_status",
+        "summarize_v3k_phase_g_evidence.py",
     )
     missing = [token for token in required_tokens if token not in source]
     if missing:
@@ -275,6 +280,38 @@ def _assert_audit_runner_policy() -> None:
     for token in forbidden_tokens:
         if token in source and token != ".git/hooks":
             raise AssertionError(f"V3K audit runner must not contain ON token: {token}")
+
+
+def _assert_benchmark_archive_policy() -> None:
+    source = (ROOT / "scripts" / "summarize_v3k_phase_g_evidence.py").read_text(
+        encoding="utf-8",
+        errors="replace",
+    )
+    required_tokens = (
+        "V3K_PHASE_G_EVIDENCE_ARCHIVE_POLICY",
+        "RAW_OMX_REPORTS_MUST_REMAIN_UNCOMMITTED",
+        "sha256",
+        "parity_limit",
+        "performance_limit",
+        "raw_reports_committed",
+    )
+    missing = [token for token in required_tokens if token not in source]
+    if missing:
+        raise AssertionError(f"V3K benchmark archive policy tokens missing: {missing}")
+
+    docs = (
+        ROOT / "docs" / "update_log" / "2026-05-13_v3k_m3_benchmark_archive_policy.md"
+    ).read_text(encoding="utf-8", errors="replace")
+    doc_tokens = (
+        "V3K_PHASE_G_EVIDENCE_ARCHIVE_POLICY",
+        "RAW_OMX_REPORTS_MUST_REMAIN_UNCOMMITTED",
+        ".omx/reports raw artifact commit ??",
+    )
+    missing_doc_tokens = [token for token in doc_tokens if token not in docs]
+    if missing_doc_tokens:
+        raise AssertionError(
+            f"V3K benchmark archive policy docs missing tokens: {missing_doc_tokens}"
+        )
 
 
 def main() -> None:
@@ -286,6 +323,7 @@ def main() -> None:
     _assert_forbidden_artifact_status_clean()
     _assert_adapter_coupling_contract()
     _assert_audit_runner_policy()
+    _assert_benchmark_archive_policy()
 
     print("V3K VERIFY-1B closure audit passed")
     print("Safe-staged completed items:")
