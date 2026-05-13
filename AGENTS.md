@@ -64,6 +64,68 @@ V2 -> 2U -> STOM_Version_2U_C
 
 `research/init` and V3 work are excluded from the current V2.78/V2.79 wave.
 
+## V3K / 2U_C V3 Feature Goal Entry Point
+
+`V3K_2UC_AGENT_ENTRYPOINT_CONTRACT`
+
+This branch is also the active custom V3K lane after the V2 official propagation
+work. V3K means:
+
+```text
+V3K = V3 features + Kiwoom retained
+```
+
+The goal is to bring V3 learning, analysis, DB, backtest, realtime, GUI setting,
+and live-decision features into `STOM_Version_2U_C` while preserving the current
+Kiwoom API/order/exit/live runtime and excluding LS Securities REST/TR/REAL direct
+broker dependency.
+
+Before V3K work in this checkout, read:
+
+1. `docs/update_log/2026-05-08_v3k_full_feature_migration_goal_reset.md`
+2. `docs/update_log/2026-05-08_v3_2uc_unmet_features_audit_and_research.md`
+3. `docs/CARRY_FORWARD_REGISTRY.md`
+4. `docs/update_log/2026-05-14_v3k_goal_completion_audit_checklist.md`
+5. `docs/update_log/2026-05-14_v3k_gui_sidecar_first_gate_blocker_snapshot.md`
+6. `docs/update_log/2026-05-14_v3k_gate_approval_phrase_intake_guard.md`
+
+Current approval-gated state:
+
+- Actual approval gate execution remains `0/6` before explicit one-gate approval.
+- Do not call `update_goal(status="complete")` until all six approval gates have
+  concrete evidence.
+- Do not create USER_ACK, enable registry headings, `_v3k_sidecar` artifacts,
+  operating `_database/` writes, DB cutover, KHOPENAPI connect/login, or live
+  order/exit rule wiring without the exact approved gate phrase.
+- Do not create live order/exit rule wiring without the exact approved gate phrase.
+- feature flags must remain default-OFF.
+- For this 2U_C lane use `python scripts/verify_nonrelease_sync.py`, not
+  `python scripts/verify_release_sync.py`.
+
+Remaining gate order:
+
+1. `gui-sidecar-write-await-user-approval`
+2. `phase-f-f4-on-await-user-approval`
+3. `phase-g-g3-on-await-user-approval`
+4. `phase-h-h2-h3-live-dryrun-await-user-approval`
+5. `f1-actual-db-cutover-await-user-approval`
+6. `live-order-exit-rule-consumption-await-user-approval`
+
+The first executable approval phrase is exactly:
+
+```text
+I approve gui-sidecar-write-await-user-approval only
+```
+
+Review-only continuation must keep the V3K audit suite green:
+
+```powershell
+python scripts/run_v3k_audit_suite.py
+python scripts/verify_nonrelease_sync.py
+git diff --check
+git status --short -- _v3k_sidecar _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
+```
+
 ## Verification Rules
 
 - After upstream sync or branch propagation, run `pytest tests/unit/ -q`.

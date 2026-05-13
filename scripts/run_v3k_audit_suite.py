@@ -40,6 +40,7 @@ PY_COMPILE_TARGETS = (
     "scripts/summarize_v3k_gui_sidecar_first_gate_blockers.py",
     "scripts/audit_v3k_gui_sidecar_first_gate_blocker_snapshot.py",
     "scripts/audit_v3k_goal_completion_objective_checklist.py",
+    "scripts/audit_v3k_agent_entrypoint_contract.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -176,6 +177,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "goal_completion_objective_checklist",
             _python("scripts/audit_v3k_goal_completion_objective_checklist.py"),
             "Map the active V3K objective to concrete evidence and confirm final completion remains blocked.",
+        ),
+        AuditStep(
+            "agent_entrypoint_contract",
+            _python("scripts/audit_v3k_agent_entrypoint_contract.py"),
+            "Ensure AGENTS.md directs future 2U_C agents to the V3K objective, gate order, and no-complete guard.",
         ),
         AuditStep(
             "verify_1a",
