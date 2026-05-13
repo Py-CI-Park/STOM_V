@@ -1618,3 +1618,23 @@ Directive: `PHASE_G_G3_ON_APPROVAL_PREP`는 승인 준비 기록이며 Phase G O
 - Next: `phase-h-h2-h3-live-dryrun-await-user-approval`. 사용자 명시 승인, KHOPENAPI 환경 확인, `V3K_PHASE_H_USER_ACK=1` 또는 동등 승인 기록, zero-order evidence/post-health/monitoring 확정 전에는 actual live dry-run 또는 ON을 수행하지 않는다.
 
 Directive: `PHASE_H_H2_H3_LIVE_DRYRUN_APPROVAL_PREP`는 승인 준비 기록이며 KHOPENAPI connect/login, H-2 live dry-run, H-3 ON, USER_ACK 생성, Kiwoom live runtime 변경, live order/exit rule 연결로 해석하면 안 된다.
+
+## V3K-F1-ACTUAL-DB-CUTOVER-APPROVAL-PREP: 운영 DB cutover 승인 전 준비
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 053 plan, Page029 F1 DB cutover pre-ralplan, Page030 cutover scripts dry-run, Page031 actual cutover approval gate
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_053_f1_actual_db_cutover_approval_prep_plan.md`
+  - `docs/update_log/2026-05-13_v3k_f1_actual_db_cutover_approval_prep.md`
+- Added/modified:
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+- Decision: F1 actual DB cutover 전 사용자 승인, `V3K_CUTOVER_USER_ACK=1`, backup checksum manifest, rollback, post-cutover health, 7-day monitoring 조건을 문서화한다. 실제 운영 `_database/` write 또는 cutover는 수행하지 않는다.
+- Current evidence: backup/cutover/rollback scripts, tempfile-only cutover dry-run smoke, read-only DB health helper, full V3K audit suite.
+- Kiwoom adjustment: Kiwoom 주문/청산/live runtime은 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 broker dependency는 추가하지 않는다.
+- DB/artifact boundary: 운영 `_database/`, `_database_v3k_shadow/`, DB 파일, backup directory, raw report artifact는 write/commit하지 않는다.
+- Next: `f1-actual-db-cutover-await-user-approval`. 사용자 명시 승인, backup apply, checksum manifest, rollback, post-health, 7-day monitoring 확정 전에는 actual cutover를 수행하지 않는다.
+
+Directive: `F1_ACTUAL_DB_CUTOVER_APPROVAL_PREP`는 승인 준비 기록이며 운영 DB write, actual cutover, USER_ACK 생성, backup apply, rollback apply, DB 파일 commit, Kiwoom live runtime 변경으로 해석하면 안 된다.

@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "phase-h-h2-h3-live-dryrun-await-user-approval"
+NEXT_CANDIDATE = "f1-actual-db-cutover-await-user-approval"
 
 HELD_ITEMS = (
     {
@@ -207,8 +207,14 @@ HELD_ITEMS = (
     {
         "item": "phase-h-h2-h3-live-dryrun-await-user-approval",
         "risk": "critical",
-        "status": "next",
+        "status": "blocked-awaiting-khopenapi-user-approval",
         "reason": "Page052 prepared Kiwoom H-2/H-3 live dry-run approval requirements; actual KHOPENAPI connect/login or ON still requires explicit user approval, USER_ACK, compatible environment, zero-order evidence, rollback, monitoring, and green audits.",
+    },
+    {
+        "item": "f1-actual-db-cutover-await-user-approval",
+        "risk": "critical",
+        "status": "next",
+        "reason": "Page053 prepared F1 actual DB cutover approval requirements; actual operating _database write still requires explicit user approval, USER_ACK, backup apply, checksum manifest, post-health, rollback, monitoring, and green audits.",
     },
 )
 
@@ -244,6 +250,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_050_phase_f_f4_on_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_051_phase_g_g3_on_approval_prep_plan.md",
     "docs/plans/2026-05-13_v3k_page_052_phase_h_h2_h3_live_dryrun_approval_prep_plan.md",
+    "docs/plans/2026-05-13_v3k_page_053_f1_actual_db_cutover_approval_prep_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -268,6 +275,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_f_f4_on_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g3_on_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_phase_h_h2_h3_live_dryrun_approval_prep.md",
+    "docs/update_log/2026-05-13_v3k_f1_actual_db_cutover_approval_prep.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -322,9 +330,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["phase-h-h2-h3-live-dryrun-await-user-approval"]:
+    if [item["item"] for item in next_items] != ["f1-actual-db-cutover-await-user-approval"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "phase-h-h2-h3-live-dryrun-await-user-approval":
+    if NEXT_CANDIDATE != "f1-actual-db-cutover-await-user-approval":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
