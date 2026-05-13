@@ -80,3 +80,15 @@ No actual gate execution: actual ON, USER_ACK 생성, enable registry 생성, KH
 - DB/sidecar/live artifact guard clean
 
 Directive: `APPROVAL_GATE_FINAL_DECISION_TABLE`은 사용자 결정을 돕는 표이며 actual ON, USER_ACK 생성, enable registry 생성, KHOPENAPI connect/login, 운영 DB write, Kiwoom live runtime 변경, live order/exit rule 연결 승인으로 해석하면 안 된다.
+---
+
+## Page058 reconciliation note
+
+Page058 separates recommended approval order first from runtime critical next candidate.
+
+- recommended approval order first: `gui-sidecar-write-await-user-approval`
+- runtime critical next candidate: `live-order-exit-rule-consumption-await-user-approval`
+
+The first value is the safest user approval order if an approval cycle begins. The second value is the highest risk remaining runtime activation candidate and must not be interpreted as approval to connect live order or exit decisions.
+
+No ON/DB/live execution is granted by this note. USER_ACK creation, enable registry creation, KHOPENAPI connect/login, operating `_database` write, sidecar artifact creation, Kiwoom live runtime modification, live order/exit rule connection, and LS Securities direct dependency remain blocked.

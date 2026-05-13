@@ -1718,3 +1718,22 @@ Directive: `APPROVAL_GATE_FINAL_DECISION_TABLE` is a user-decision aid only. Do 
 - Next: actual GUI sidecar write still requires explicit user approval, `V3K_GUI_SIDECAR_USER_ACK=1` or equivalent approval record, writer call-site decision, rollback owner, monitoring owner, fallback trigger, and green audits.
 
 Directive: `GUI_ACTUAL_SIDECAR_WRITE_PREFLIGHT` is a preflight record only. Do not interpret it as approval for actual sidecar write, USER_ACK creation, writer implementation, MainWindow wiring, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.
+## V3K-APPROVAL-ORDER-RUNTIME-NEXT-RECONCILIATION: approval order and runtime next split
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page056 final decision table, Page057 GUI actual sidecar write preflight, runtime activation gap audit.
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_058_approval_order_runtime_next_reconciliation_plan.md`
+  - `docs/update_log/2026-05-13_v3k_approval_order_runtime_next_reconciliation.md`
+- Added/modified:
+  - `docs/update_log/2026-05-13_v3k_approval_gate_final_decision_table.md`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+- Decision: `gui-sidecar-write-await-user-approval` remains recommended approval order first, while `live-order-exit-rule-consumption-await-user-approval` remains runtime critical next candidate. They are separate axes and neither value grants actual gate execution.
+- Current evidence: runtime activation gap audit, VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom order/exit/live runtime remains unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed.
+- Next: actual GUI sidecar write remains the first recommended approval cycle, but it still requires explicit user approval, USER_ACK or equivalent approval record, writer call-site decision, rollback owner, monitoring owner, fallback trigger, and green audits.
+
+Directive: `APPROVAL_ORDER_RUNTIME_NEXT_RECONCILIATION` is a guardrail and meaning split record only. Do not interpret it as approval for actual sidecar write, ON transition, USER_ACK creation, enable registry creation, KHOPENAPI connect/login, operating DB write, Kiwoom live runtime modification, or live order/exit rule connection.

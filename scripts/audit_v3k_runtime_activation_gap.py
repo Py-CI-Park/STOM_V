@@ -9,7 +9,17 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "live-order-exit-rule-consumption-await-user-approval"
+NEXT_RUNTIME_CANDIDATE = "live-order-exit-rule-consumption-await-user-approval"
+RECOMMENDED_APPROVAL_ORDER_FIRST = "gui-sidecar-write-await-user-approval"
+APPROVAL_ORDER = (
+    "gui-sidecar-write-await-user-approval",
+    "phase-f-f4-on-await-user-approval",
+    "phase-g-g3-on-await-user-approval",
+    "phase-h-h2-h3-live-dryrun-await-user-approval",
+    "f1-actual-db-cutover-await-user-approval",
+    "live-order-exit-rule-consumption-await-user-approval",
+)
+NEXT_CANDIDATE = NEXT_RUNTIME_CANDIDATE
 
 HELD_ITEMS = (
     {
@@ -240,6 +250,12 @@ HELD_ITEMS = (
         "status": "completed-preflight",
         "reason": "Page057 verified GUI actual sidecar write preflight conditions without creating USER_ACK, sidecar artifacts, writer implementation, or actual write execution.",
     },
+    {
+        "item": "approval-order-runtime-next-reconciliation",
+        "risk": "low",
+        "status": "completed-reconciliation",
+        "reason": "Page058 separates recommended approval order first from runtime critical next candidate without granting any ON, DB, sidecar, or live runtime gate.",
+    },
 )
 
 REQUIRED_DOCS = (
@@ -279,6 +295,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_055_approval_gate_closeout_review_plan.md",
     "docs/plans/2026-05-13_v3k_page_056_approval_gate_final_decision_table_plan.md",
     "docs/plans/2026-05-13_v3k_page_057_gui_actual_sidecar_write_preflight_plan.md",
+    "docs/plans/2026-05-13_v3k_page_058_approval_order_runtime_next_reconciliation_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -308,6 +325,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_approval_gate_closeout_review.md",
     "docs/update_log/2026-05-13_v3k_approval_gate_final_decision_table.md",
     "docs/update_log/2026-05-13_v3k_gui_actual_sidecar_write_preflight.md",
+    "docs/update_log/2026-05-13_v3k_approval_order_runtime_next_reconciliation.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -362,10 +380,18 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["live-order-exit-rule-consumption-await-user-approval"]:
+    if [item["item"] for item in next_items] != [NEXT_RUNTIME_CANDIDATE]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "live-order-exit-rule-consumption-await-user-approval":
+    if NEXT_CANDIDATE != NEXT_RUNTIME_CANDIDATE:
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
+    if RECOMMENDED_APPROVAL_ORDER_FIRST != "gui-sidecar-write-await-user-approval":
+        raise AssertionError(
+            f"unexpected first recommended approval gate: {RECOMMENDED_APPROVAL_ORDER_FIRST}"
+        )
+    if APPROVAL_ORDER[0] != RECOMMENDED_APPROVAL_ORDER_FIRST:
+        raise AssertionError(f"approval order first mismatch: {APPROVAL_ORDER}")
+    if APPROVAL_ORDER[-1] != NEXT_RUNTIME_CANDIDATE:
+        raise AssertionError(f"runtime critical gate must remain last in approval order: {APPROVAL_ORDER}")
 
 
 def _assert_trade_runtime_guard_still_active() -> None:
@@ -410,7 +436,8 @@ def main() -> None:
     _assert_no_runtime_artifacts_changed()
 
     print("V3K runtime activation gap audit passed")
-    print(f"Next candidate: {NEXT_CANDIDATE}")
+    print(f"Runtime critical next candidate: {NEXT_RUNTIME_CANDIDATE}")
+    print(f"Recommended approval order first: {RECOMMENDED_APPROVAL_ORDER_FIRST}")
     print("Held item matrix:")
     for item in HELD_ITEMS:
         print(f"  - {item['item']}: {item['status']} ({item['risk']})")
