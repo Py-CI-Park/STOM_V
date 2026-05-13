@@ -1898,3 +1898,25 @@ Directive: `REMAINING_GATE_APPROVAL_MATRIX` is not approval. Do not create USER_
 - Next: choose either review-only continuation or explicit approval for exactly one gate. The first recommended approval gate remains `gui-sidecar-write-await-user-approval`.
 
 Directive: `V3K_GOAL_COMPLETION_AUTHORITY_AUDIT` is not final completion and not approval. Do not call goal completion, create USER_ACK, enable registry, writer or rollback scripts, sidecar artifact, MainWindow wiring, DB cutover, KHOPENAPI login, Kiwoom live runtime mutation, or live decision wiring from this audit.
+
+
+## V3K-ONE-GATE-SEQUENCE-GUARD: single gate approval sequencing guard
+- Date: 2026-05-14 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page065 remaining gate approval matrix and Page066 goal completion authority audit.
+- Records:
+  - `docs/plans/2026-05-14_v3k_page_067_one_gate_sequence_guard_plan.md`
+  - `docs/update_log/2026-05-14_v3k_one_gate_sequence_guard.md`
+- Added/modified:
+  - `scripts/audit_v3k_one_gate_sequence_guard.py`
+  - `scripts/audit_v3k_runtime_activation_gap.py`
+  - `scripts/audit_v3k_verify_1b_closure.py`
+  - `scripts/run_v3k_audit_suite.py`
+- Decision: The remaining V3K gates now have a sequence guard. Exactly one gate may be approved and executed per cycle, the first recommended approval gate remains `gui-sidecar-write-await-user-approval`, and broad or out-of-order approval remains blocked.
+- Current evidence: one gate sequence guard audit, goal completion authority audit, remaining gate approval matrix audit, runtime activation gap audit, VERIFY-1B closure audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom API, order, exit, and live runtime remain unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created.
+- Next: continue review-only work or provide exactly one explicit approval phrase. The next executable approval phrase remains `I approve gui-sidecar-write-await-user-approval only`.
+
+Directive: `V3K_ONE_GATE_SEQUENCE_GUARD` is not approval. Do not accept broad approval, create USER_ACK, enable registry, writer or rollback scripts, sidecar artifact, MainWindow wiring, DB cutover, KHOPENAPI login, Kiwoom live runtime mutation, or live decision wiring from this guard.
