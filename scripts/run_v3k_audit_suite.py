@@ -39,6 +39,7 @@ PY_COMPILE_TARGETS = (
     "scripts/audit_v3k_gui_sidecar_first_gate_preflight.py",
     "scripts/summarize_v3k_gui_sidecar_first_gate_blockers.py",
     "scripts/audit_v3k_gui_sidecar_first_gate_blocker_snapshot.py",
+    "scripts/audit_v3k_goal_completion_objective_checklist.py",
     "scripts/run_v3k_audit_suite.py",
     "scripts/summarize_v3k_phase_g_evidence.py",
 )
@@ -170,6 +171,11 @@ def build_steps(base_ref: str) -> tuple[AuditStep, ...]:
             "gui_sidecar_first_gate_blocker_snapshot",
             _python("scripts/audit_v3k_gui_sidecar_first_gate_blocker_snapshot.py"),
             "Check the first GUI sidecar gate blocker snapshot remains explicit and side-effect free.",
+        ),
+        AuditStep(
+            "goal_completion_objective_checklist",
+            _python("scripts/audit_v3k_goal_completion_objective_checklist.py"),
+            "Map the active V3K objective to concrete evidence and confirm final completion remains blocked.",
         ),
         AuditStep(
             "verify_1a",

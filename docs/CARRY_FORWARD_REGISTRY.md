@@ -1920,3 +1920,23 @@ Directive: `V3K_GOAL_COMPLETION_AUTHORITY_AUDIT` is not final completion and not
 - Next: continue review-only work or provide exactly one explicit approval phrase. The next executable approval phrase remains `I approve gui-sidecar-write-await-user-approval only`.
 
 Directive: `V3K_ONE_GATE_SEQUENCE_GUARD` is not approval. Do not accept broad approval, create USER_ACK, enable registry, writer or rollback scripts, sidecar artifact, MainWindow wiring, DB cutover, KHOPENAPI login, Kiwoom live runtime mutation, or live decision wiring from this guard.
+
+## V3K-GOAL-COMPLETION-OBJECTIVE-CHECKLIST: active goal evidence map and no-complete verdict
+- Date: 2026-05-14 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: active goal continuation, Page068 goal skill handoff, Page069 audit-suite handoff, Page070 approval phrase intake, Page071 first gate preflight, and Page072 first gate blocker snapshot.
+- Records:
+  - `docs/plans/2026-05-14_v3k_page_073_goal_completion_audit_checklist_plan.md`
+  - `docs/update_log/2026-05-14_v3k_goal_completion_audit_checklist.md`
+- Added/modified:
+  - `scripts/audit_v3k_goal_completion_objective_checklist.py`
+  - `scripts/run_v3k_audit_suite.py`
+  - `docs/CARRY_FORWARD_REGISTRY.md`
+- Decision: The active V3K objective is now mapped to a prompt-to-artifact checklist. The objective remains `V3 기능 + Kiwoom 유지` with `LS Securities` direct dependency excluded, but final completion is explicitly blocked because actual approval gate execution remains `0/6`.
+- Current evidence: objective checklist audit, first gate blocker snapshot audit, first gate preflight audit, gate approval phrase intake audit, goal handoff audit, goal completion authority audit, V3K audit suite, nonrelease sync, diff check, and forbidden artifact status.
+- Kiwoom adjustment: Kiwoom API, order, exit, and live runtime remain unchanged.
+- LS dependency exclusion: LS Securities REST/TR/REAL direct broker dependency remains excluded.
+- DB/artifact boundary: `_v3k_sidecar`, operating `_database/`, `_database_v3k_shadow/`, DB files, backup directory, live artifacts, and raw `.omx/reports` artifacts were not committed or created.
+- Next: do not call `update_goal(status="complete")` until all six approval gates have concrete evidence. The first executable approval phrase remains `I approve gui-sidecar-write-await-user-approval only`.
+
+Directive: `V3K_GOAL_COMPLETION_OBJECTIVE_CHECKLIST` is not approval and not completion. Passing it means the goal is correctly understood and safely blocked before gate execution, not that V3K is fully activated.
