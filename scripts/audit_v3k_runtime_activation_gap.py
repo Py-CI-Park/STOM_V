@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 
-NEXT_CANDIDATE = "approval-gate-selection"
+NEXT_CANDIDATE = "await-user-gate-approval"
 
 HELD_ITEMS = (
     {
@@ -177,8 +177,14 @@ HELD_ITEMS = (
     {
         "item": "approval-gate-selection",
         "risk": "critical",
+        "status": "completed-selection-plan",
+        "reason": "Page048 ranked the remaining approval gates and kept all ON, DB, and live runtime actions blocked pending explicit user choice.",
+    },
+    {
+        "item": "await-user-gate-approval",
+        "risk": "critical",
         "status": "next",
-        "reason": "No autonomous safe implementation page remains; a user must explicitly select and approve a gate before any ON, DB, or live runtime work.",
+        "reason": "The next step requires a user-selected gate plus explicit ACK before any implementation, ON, DB, or live runtime transition.",
     },
 )
 
@@ -209,6 +215,7 @@ REQUIRED_DOCS = (
     "docs/plans/2026-05-13_v3k_page_045_governance_closeout_and_approval_gate_plan.md",
     "docs/plans/2026-05-13_v3k_page_046_approval_gate_handoff_plan.md",
     "docs/plans/2026-05-13_v3k_page_047_mission_closeout_review_plan.md",
+    "docs/plans/2026-05-13_v3k_page_048_approval_gate_selection_plan.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h1_kiwoom_dryrun_hook.md",
     "docs/update_log/2026-05-12_v3k_phase_h_h2_h3_approval_gate.md",
@@ -228,6 +235,7 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_governance_closeout_and_approval_gate.md",
     "docs/update_log/2026-05-13_v3k_approval_gate_handoff.md",
     "docs/update_log/2026-05-13_v3k_mission_closeout_review.md",
+    "docs/update_log/2026-05-13_v3k_approval_gate_selection.md",
     "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/update_log/2026-05-12_v3k_f5_production_learning_db_read.md",
     "docs/update_log/2026-05-12_v3k_midpoint_checkpoint_cd6f5bd_to_bbb8975a.md",
@@ -282,9 +290,9 @@ def _assert_required_docs_exist() -> None:
 
 def _assert_single_next_candidate() -> None:
     next_items = [item for item in HELD_ITEMS if item["status"] == "next"]
-    if [item["item"] for item in next_items] != ["approval-gate-selection"]:
+    if [item["item"] for item in next_items] != ["await-user-gate-approval"]:
         raise AssertionError(f"unexpected next runtime activation candidates: {next_items}")
-    if NEXT_CANDIDATE != "approval-gate-selection":
+    if NEXT_CANDIDATE != "await-user-gate-approval":
         raise AssertionError(f"unexpected next candidate slug: {NEXT_CANDIDATE}")
 
 
