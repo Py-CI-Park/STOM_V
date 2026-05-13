@@ -1340,3 +1340,21 @@ Directive: Do not treat Page038 planning completion as permission to enable `V3K
 - Next: Page 040 / `phase-g-g3-approval-gate`. G-2 proof 이후에도 ON은 사용자 승인 gate로 분리한다.
 
 Directive: Do not treat G-2 parity/benchmark PASS as permission to enable `V3K_PHASE_G_MICROSTRUCTURE_ENGINE` in runtime, create `V3K-PHASE-G-ENABLE`, or connect output to live order/exit decisions.
+
+## V3K-PHASE-G-G3-APPROVAL-GATE: microstructure ON 전환 승인 대기
+
+- Date: 2026-05-13 KST
+- Implementation lane: `STOM_Version_2U_C` / `C:/System_Trading/STOM/STOM_V.wt-dev`
+- Source/trigger: Page 040 plan, Phase G G-3 approval gate
+- Records:
+  - `docs/plans/2026-05-13_v3k_page_040_phase_g_g3_approval_gate_plan.md`
+  - `docs/update_log/2026-05-13_v3k_phase_g_g3_approval_gate.md`
+  - `docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md`
+- Decision: Page039 parity/benchmark proof는 통과했지만 Phase G ON은 `blocked-awaiting-user-approval`로 고정한다.
+- Missing gates: 사용자 명시 승인, `V3K_PHASE_G_USER_ACK=1`, `V3K-PHASE-G-ENABLE` registry, live order/exit 연결 승인, rollback 운영 승인, 24h monitoring 승인, benchmark/parity baseline archive 정책.
+- Kiwoom adjustment: Kiwoom field mapping proof는 유지되지만 Kiwoom API/runtime, 주문/청산/live decision path는 변경하지 않는다.
+- LS dependency exclusion: LS Securities REST/TR/REAL 직접 의존은 계속 금지한다.
+- DB boundary: 운영 `_database/`, `_database_v3k_shadow/`, sidecar, DB 파일, `.omx/reports/`는 commit 대상이 아니다.
+- Next: Page 041 / `governance-gap-triage-plan`. Architect addendum M1/M2/M3를 ON 전 governance 후속으로 triage한다.
+
+Directive: Do not create `V3K-PHASE-G-ENABLE`, set `V3K_PHASE_G_USER_ACK=1`, or connect Phase G output to live order/exit decisions without a separate explicit user-approved ON cycle.

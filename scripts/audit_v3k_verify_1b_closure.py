@@ -46,11 +46,14 @@ REQUIRED_DOCS = (
     "docs/update_log/2026-05-13_v3k_phase_g_g1_engine_staging.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_plan.md",
     "docs/update_log/2026-05-13_v3k_phase_g_g2_parity_benchmark_work.md",
+    "docs/update_log/2026-05-13_v3k_phase_g_g3_approval_gate.md",
+    "docs/update_log/2026-05-13_v3k_code_review_addendum_architect_iterate.md",
     "docs/plans/v3k_phase_g_inventory.md",
     "docs/plans/2026-05-13_v3k_page_037_phase_g_g1_engine_staging_plan.md",
     "docs/plans/2026-05-13_v3k_page_038_phase_g_g2_parity_benchmark_plan.md",
     "docs/plans/2026-05-13_v3k_page_039_phase_g_g2_parity_benchmark_work_plan.md",
     "docs/plans/2026-05-13_v3k_page_040_phase_g_g3_approval_gate_plan.md",
+    "docs/plans/2026-05-13_v3k_page_041_v3k_governance_gap_triage_plan.md",
 )
 
 REQUIRED_CODE = (
@@ -124,6 +127,7 @@ SAFE_STAGED_COMPLETED = (
     "Phase G G-1 default-OFF microstructure engine staging with inventory, Kiwoom mapping, excise audit, and unit smoke",
     "Phase G G-2 parity/benchmark plan with ±15% parity, ±20% performance, ignored report schema, and Page039 work boundary",
     "Phase G G-2 proof scripts for synthetic parity and benchmark without runtime ON",
+    "Phase G G-3 approval gate documented as blocked before ON",
     "OFF regression and Kiwoom untouched audit",
 )
 
@@ -134,7 +138,7 @@ HELD_FOR_SAFETY = (
     "Runtime globals().update hook into live strategies",
     "Live order/exit rule consumption of V3K analyzer output",
     "Analyzer DB constructor use from runtime",
-    "V3 microstructure engine G-3 ON transition beyond Page039 proof",
+    "V3 microstructure engine G-3 ON transition blocked after Page040 approval gate",
 )
 
 USER_APPROVAL_REQUIRED = (
