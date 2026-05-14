@@ -88,7 +88,33 @@ def _gate_has_completion_evidence(gate: str, headings: set[str]) -> bool:
     if gate == "phase-g-g3-on-await-user-approval":
         sidecar = load_v3k_gui_sidecar_file(ROOT / V3K_GUI_SIDECAR_FILE)
         return sidecar.valid and sidecar.settings.get(FLAG_PHASE_G_MICROSTRUCTURE_ENGINE) is True
+    if gate == "phase-h-h2-h3-live-dryrun-await-user-approval":
+        return _phase_h_live_dryrun_completion_evidence()
     return True
+
+
+def _phase_h_live_dryrun_completion_evidence() -> bool:
+    """Require concrete live-dryrun evidence before advancing past Phase H.
+
+    The registry marker alone is not enough for H because this gate depends on
+    a compatible KHOPENAPI environment and zero-order post-health proof.
+    """
+
+    required = (
+        "V3K_PHASE_H_GATE4_LIVE_DRYRUN_EXECUTION",
+        "khopenapi_compatible=true",
+        "live_connect_attempted=true",
+        "order_api_calls=0",
+        "post_health_passed=true",
+    )
+    update_log_dir = ROOT / "docs" / "update_log"
+    if not update_log_dir.is_dir():
+        return False
+    for path in update_log_dir.glob("*phase_h*gate4*execution*.md"):
+        text = path.read_text(encoding="utf-8", errors="replace")
+        if all(token in text for token in required):
+            return True
+    return False
 
 
 def completed_approval_gates() -> tuple[str, ...]:

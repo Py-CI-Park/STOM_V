@@ -2128,3 +2128,30 @@ Scope guard:
 - No direct LS Securities dependency
 
 Directive: This approval only enables Phase G microstructure engine as a sidecar source-of-truth for approved candidate output building. Live order/exit consumption, Phase H ON, and F1 actual DB cutover each require their own explicit one-gate approval cycle.
+
+## V3K-PHASE-H-LIVE-DRYRUN-APPROVAL-BLOCKED
+
+- Date: 2026-05-14 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Page: Page 082
+- Canonical approval phrase: `I approve phase-h-h2-h3-live-dryrun-await-user-approval only`
+- Gate: `phase-h-h2-h3-live-dryrun-await-user-approval`
+- Status: `blocked-after-approval-missing-khopenapi-environment`
+- Completion marker intentionally absent: `V3K-PHASE-H-LIVE-DRYRUN-ACTUAL-APPROVAL`
+- USER_ACK status: `V3K_PHASE_H_USER_ACK=1 not used`
+- Environment evidence: `khopenapi_compatible=false`
+- Live execution evidence: `live_connect_attempted=false`, `order_api_calls=0`, `post_health_passed=false`
+- Audit: `scripts/audit_v3k_phase_h_gate4_blocked_environment.py`
+- Progress: `3/6` approval gates executed.
+- Current gate remains: `phase-h-h2-h3-live-dryrun-await-user-approval`.
+
+Scope guard:
+
+- No DB cutover
+- No KHOPENAPI connect/login
+- No Phase H ON
+- No live order/exit wiring
+- No Kiwoom live runtime mutation
+- No direct LS Securities dependency
+
+Directive: This entry records that the user approval phrase was received but live dry-run completion is blocked by the missing KHOPENAPI environment. Do not advance to F1 cutover or live order/exit consumption until Phase H live dry-run evidence proves `khopenapi_compatible=true`, `live_connect_attempted=true`, `order_api_calls=0`, and `post_health_passed=true`.
