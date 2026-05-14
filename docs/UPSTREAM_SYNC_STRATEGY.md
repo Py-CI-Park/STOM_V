@@ -80,3 +80,47 @@ The preflight must pass before claiming the release sync is clean. A branch mism
 - Use `STOM_devstom` for convenient local inspection when network access is unavailable or when comparing file history locally.
 - Reconfirm against `https://github.com/devstom/STOM.git` before declaring the release lane current.
 - Keep `CLAUDE.md` and the local worktree strategy docs aligned with the promoted `2U_C` baseline, the archive role of `wt-2uc`, and the exclusion of `research/init`.
+
+## V3 Wave Source Of Truth
+
+V3 lane은 V2 lane과 별도 freshness 권원을 가진다. 그러나 본 V2.79 웨이브에서는 V3 ingress가 정지 상태이며, V3 wave가 시작될 때 본 절을 활성화한다.
+
+- 공식 freshness 권원: `https://github.com/devstom/STOM.git`
+- 로컬 reference mirror: `C:/System_Trading/STOM/STOM_devstom`
+- V3 wave source 후보: `refs/tags/V3.0` (현재 STOM_Version_3 head는 로컬 `7faec937 STOM V3.18`)
+
+V3 wave 시작 시 `git fetch https://github.com/devstom/STOM.git refs/tags/V3.0:refs/remotes/devstom_tmp/tags/V3.0`로 freshness 비교 후 흡수 결정한다.
+
+## V3 Wave Exclusion Note
+
+CLAUDE.md "Upstream Ingress Policy"에 따라 다음을 reaffirm한다.
+
+- 본 V2.79 웨이브에서는 `refs/heads/V3.00`, `refs/tags/V3.0`, V3 update section을 흡수하지 않는다.
+- V3 lane(`STOM_Version_3`, `STOM_Version_3U`)은 별도 운영되며, V2 propagation chain에 영향을 주지 않는다.
+- V3 wave 시작 시 본 문서의 "V3 Ingress Policy" 절을 적용한다.
+
+## V3 Ingress Policy
+
+V3 lane도 V2 lane과 동일하게 단일 ingress 원칙을 따른다.
+
+- V3 official 업데이트는 `STOM_Version_3`로만 진입한다.
+- `STOM_V.wt-3/`이 V3 release-ingress 워크트리.
+- `STOM_Version_3U`(pyd-free 추론 lane)는 `STOM_Version_3` 흡수 후에만 머지/리베이스로 흡수한다.
+- V3 흡수 후 다음 통합 게이트를 통과해야 V3U lane이 clean으로 판정된다.
+
+```bash
+python scripts/verify_v3u_pyd_gui_contract.py \
+    --branch STOM_Version_3U --version <V3.X> \
+    --upstream-ref STOM_Version_3 \
+    --manifest .omx/logs/v3u/verify_<date>.json
+```
+
+이 게이트는 V3 official source 0줄 수정 invariant를 자동 검증하며, 위반 시 즉시 fail 한다. fail 발생 시 `ui/main_window.py` 또는 `tests/v3u/`에서만 수정하고 V3 official 디렉토리(`backtest/`, `strategy/`, `trade/`, `utility/`, `stom.py`, `ui/create_widget/`, `ui/update_widget/`, `ui/draw_chart/`, `ui/event_click/`, `ui/etcetera/`)는 절대 수정하지 않는다.
+
+### V3 Release Overlay Boundaries (V2 동일 패턴 적용)
+
+V3 release overlay도 다음을 제외한다.
+
+- 보호 결과 데이터 경로: `backtest/graph/` (V2/V3 공통)
+- branch-only 표면: `tests/v3u/`, `scripts/v3u_*.py`, `docs/V3U_*`, `requirements-dev.txt`, `pytest.ini`
+- V3U 전용 추론 본체: `ui/main_window.py` (V3는 `ui/main_window.pyd` 보존)

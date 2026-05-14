@@ -56,3 +56,40 @@ This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py i
 
 ## Rule
 - If a future wave touches one of these surfaces directly, reclassify it through blocker audit before continuing.
+
+## V3U custom allowlist rule
+
+`STOM_Version_3U`는 `STOM_Version_3`(V3 official 보존 lane)에서 분기된 pyd-to-py 추론 lane이다. V2 lane의 `2U custom allowlist rule`과 동일 패턴으로 다음 차이만 허용한다.
+
+### 허용되는 V3U 전용 차이
+
+- `ui/main_window.py` — pyd(`ui/main_window.pyd`) 제거 후 Python 대체 본체 (V3U 전용)
+- `ui/main_window.pyd` — V3U에서 삭제 (V3는 보존)
+- `scripts/v3u_gui_contract_manifest.py` — V3U GUI contract inventory 도구
+- `scripts/v3u_smoke_offline_gui.py` — pyd-free 구조 smoke 도구
+- `scripts/verify_v3u_pyd_gui_contract.py` — pyd-free contract verifier (Phase 5에서 pytest 게이트 통합)
+- `tests/v3u/**` — pytest-qt 기반 자동 GUI 검증 시스템 (Phase 1~4)
+- `requirements-dev.txt` — V3U 전용 dev 의존성 (pytest, pytest-qt 등)
+- `pytest.ini` — V3U 전용 pytest 설정
+- `tests/__init__.py`, `tests/v3u/__init__.py`, `tests/v3u/fixtures/__init__.py` — 패키지화
+- `docs/V3U_*.md` 및 `docs/update_log/*v3u*.md` — V3U 계획·감사·핸드오프·자동화 가이드
+
+### 금지되는 차이
+
+- V3 official runtime source 디렉토리(`backtest/`, `strategy/`, `trade/`, `utility/`, `stom.py`, `ui/create_widget/`, `ui/update_widget/`, `ui/draw_chart/`, `ui/event_click/`, `ui/etcetera/`) 0줄 수정 invariant 위반.
+- V3U 전용 차이가 위 허용 목록에 없는 경로에 추가되는 경우.
+- V3 lane upstream `.pyd` 보존 위반 (`STOM_Version_3`에는 `ui/main_window.pyd`가 항상 존재해야 함).
+
+### 자동 검증 게이트
+
+`scripts/verify_v3u_pyd_gui_contract.py`(Phase 5 통합 후)가 위 invariants를 매 V3 흡수 시 자동 검증한다. 위반 시 `ui/main_window.py` 또는 `tests/v3u/`에서만 수정한다.
+
+## V3 lane carry-forward placeholder
+
+본 문서 작성 시점에 V3 lane 활성 carry-forward 항목은 없다. V3 wave가 시작되면 다음 카테고리로 항목을 추가한다.
+
+- V3 release-side upstream risks (V3.X 흡수 시 발견된 미해결 risk)
+- V3U pyd 추론 carry-forward (3U vs 3 verification에서 deferred 항목)
+- V3U_C custom carry-forward (향후 3U_C 생성 시)
+
+각 항목은 V2 패턴과 동일하게 `Deferred because:` / `Reclassify when:` 두 줄로 명시한다.
