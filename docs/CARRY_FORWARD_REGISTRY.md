@@ -2155,3 +2155,29 @@ Scope guard:
 - No direct LS Securities dependency
 
 Directive: This entry records that the user approval phrase was received but live dry-run completion is blocked by the missing KHOPENAPI environment. Do not advance to F1 cutover or live order/exit consumption until Phase H live dry-run evidence proves `khopenapi_compatible=true`, `live_connect_attempted=true`, `order_api_calls=0`, and `post_health_passed=true`.
+
+## V3K-GATE5-GATE6-REVIEW-ONLY-BLOCKED
+
+- Date: 2026-05-14 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Page: Page 083
+- Mode: `review-only`
+- Current gate: `phase-h-h2-h3-live-dryrun-await-user-approval`
+- Reviewed later gates: `f1-actual-db-cutover-await-user-approval`, `live-order-exit-rule-consumption-await-user-approval`
+- Status: `completed-review-only-later-gates-still-blocked`
+- Audit: `scripts/audit_v3k_gate5_gate6_review_only_blocked.py`
+- Progress: `3/6` approval gates executed.
+- Gate 5 phrase remains rejected as out-of-order: `I approve f1-actual-db-cutover-await-user-approval only`
+- Gate 6 phrase remains rejected as out-of-order: `I approve live-order-exit-rule-consumption-await-user-approval only`
+
+Scope guard:
+
+- No USER_ACK creation
+- No enable registry creation
+- No DB cutover
+- No KHOPENAPI connect/login
+- No live order/exit wiring
+- No Kiwoom live runtime mutation
+- No direct LS Securities dependency
+
+Directive: This entry is review-only. Gate 5 and Gate 6 remain blocked until Phase H live dry-run completion evidence exists. Do not create `V3K_CUTOVER_USER_ACK=1`, `V3K_LIVE_DECISION_USER_ACK=1`, `V3K-F1-ACTUAL-DB-CUTOVER-APPROVAL`, or `V3K-LIVE-ORDER-EXIT-ENABLE` from this review.

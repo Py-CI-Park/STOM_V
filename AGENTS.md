@@ -97,7 +97,8 @@ Before V3K work in this checkout, read:
 6. `docs/update_log/2026-05-14_v3k_phase_f_gate2_execution.md`
 7. `docs/update_log/2026-05-14_v3k_phase_g_gate3_execution.md`
 8. `docs/update_log/2026-05-14_v3k_phase_h_gate4_blocked_environment.md`
-9. `docs/update_log/2026-05-14_v3k_gate_approval_phrase_intake_guard.md`
+9. `docs/update_log/2026-05-14_v3k_gate5_gate6_review_only_blocked.md`
+10. `docs/update_log/2026-05-14_v3k_gate_approval_phrase_intake_guard.md`
 
 Current approval-gated state:
 
@@ -112,6 +113,10 @@ Current approval-gated state:
   received, but actual completion is blocked in this environment because
   KHOPENAPI sentinel evidence is absent (`khopenapi_compatible=false`).
   Progress therefore remains `3/6`.
+- Page083 reviewed Gate 5 F1 DB cutover and Gate 6 live decision consumption
+  in review-only mode. Both remain out-of-order and blocked while Gate 4 is
+  incomplete. This did not create USER_ACK, enable registry, DB cutover, or
+  live wiring.
 - `_v3k_sidecar/v3k_gui_settings.json` is a local ignored runtime artifact and
   must not be committed. It may carry `V3K_PHASE_F_ANALYZER_STRATEGY=true`
   and `V3K_PHASE_G_MICROSTRUCTURE_ENGINE=true` after gate 3.
@@ -144,7 +149,7 @@ I approve phase-h-h2-h3-live-dryrun-await-user-approval only
 Continuation must keep gate-specific and nonrelease checks green:
 
 ```powershell
-python scripts/audit_v3k_phase_h_gate4_blocked_environment.py
+python scripts/audit_v3k_gate5_gate6_review_only_blocked.py
 python scripts/verify_nonrelease_sync.py
 git diff --check
 git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json
