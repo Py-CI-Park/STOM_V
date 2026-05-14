@@ -15,6 +15,7 @@ from strategy.v3k_analyzer_adapter import (  # noqa: E402
     ENV_PHASE_F_DISABLE,
     ENV_PHASE_F_ENABLE,
     FLAG_PHASE_F_ANALYZER_STRATEGY,
+    FLAG_PHASE_G_MICROSTRUCTURE_ENGINE,
     V3KAnalyzerOutput,
 )
 from strategy.v3k_formula_facade import V3KFormulaGlobalFacade, V3KFormulaGlobalRequest  # noqa: E402
@@ -87,8 +88,15 @@ def _assert_sidecar_phase_f_enabled() -> dict[str, bool]:
     if not result.valid:
         raise AssertionError(f"Phase F sidecar invalid: {result.diagnostics}")
     enabled = {key: value for key, value in result.settings.items() if value}
-    if set(enabled) != {FLAG_PHASE_F_ANALYZER_STRATEGY}:
-        raise AssertionError(f"Phase F sidecar must enable only {FLAG_PHASE_F_ANALYZER_STRATEGY}: {enabled}")
+    allowed_after_later_gates = {
+        FLAG_PHASE_F_ANALYZER_STRATEGY,
+        FLAG_PHASE_G_MICROSTRUCTURE_ENGINE,
+    }
+    if FLAG_PHASE_F_ANALYZER_STRATEGY not in enabled:
+        raise AssertionError(f"Phase F approved sidecar no longer enables {FLAG_PHASE_F_ANALYZER_STRATEGY}: {enabled}")
+    unexpected = sorted(set(enabled) - allowed_after_later_gates)
+    if unexpected:
+        raise AssertionError(f"Phase F sidecar has unapproved enabled settings: {unexpected}")
     return result.settings
 
 
@@ -139,12 +147,15 @@ def main() -> None:
     if phase_f_verdict.status != "rejected-already-completed-gate":
         raise AssertionError(f"Phase F phrase should now be completed: {phase_f_verdict}")
     next_verdict = evaluate_approval_phrase("I approve phase-g-g3-on-await-user-approval only")
-    if not next_verdict.accepted or next_verdict.gate != NEXT_GATE:
-        raise AssertionError(f"Phase G phrase should now be the next accepted gate: {next_verdict}")
+    if next_verdict.status not in {
+        "accepted-review-only-current-gate",
+        "rejected-already-completed-gate",
+    } or next_verdict.gate != NEXT_GATE:
+        raise AssertionError(f"Phase G phrase should be current-or-completed after Phase F: {next_verdict}")
     print("V3K Phase F gate2 execution audit passed")
     print(f"Gate2 audit version: {PHASE_F_GATE2_AUDIT_VERSION}")
-    print("Actual gate execution progress: 2/6")
-    print(f"Next approval gate: {NEXT_GATE}")
+    print("Gate2 subset remains valid inside the current approved sidecar state")
+    print(f"Phase F remains rollback-guarded by {ENV_PHASE_F_DISABLE}; no live order/exit wiring")
 
 
 if __name__ == "__main__":

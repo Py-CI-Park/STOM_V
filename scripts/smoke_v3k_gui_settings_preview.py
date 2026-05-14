@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -74,7 +75,11 @@ def _assert_attach_adds_lazy_session_only_opener() -> None:
     source = {"legacy_setting": "preserve-me"}
     window = FakeMainWindow(source)
     bridge_result = attach_v3k_gui_settings_bridge(window)
-    preview_result = attach_v3k_settings_preview(window)
+    with TemporaryDirectory(prefix="v3k-preview-missing-sidecar-") as temp_dir:
+        preview_result = attach_v3k_settings_preview(
+            window,
+            sidecar_path=Path(temp_dir) / "missing-v3k-sidecar.json",
+        )
 
     assert bridge_result.all_off
     assert preview_result.session_only is True
@@ -94,7 +99,11 @@ def _assert_attach_adds_lazy_session_only_opener() -> None:
 def _assert_preview_model_is_default_off_and_ui_exposable_only() -> None:
     window = FakeMainWindow({})
     attach_v3k_gui_settings_bridge(window)
-    attach_v3k_settings_preview(window)
+    with TemporaryDirectory(prefix="v3k-preview-default-off-") as temp_dir:
+        attach_v3k_settings_preview(
+            window,
+            sidecar_path=Path(temp_dir) / "missing-v3k-sidecar.json",
+        )
     rows = build_v3k_settings_preview_model(window)
 
     assert rows, "preview model must expose at least one V3K UI row"
@@ -109,7 +118,11 @@ def _assert_session_toggle_updates_attrs_only() -> None:
     source = {"legacy_setting": "preserve-me"}
     window = FakeMainWindow(source)
     attach_v3k_gui_settings_bridge(window)
-    attach_v3k_settings_preview(window)
+    with TemporaryDirectory(prefix="v3k-preview-session-toggle-") as temp_dir:
+        attach_v3k_settings_preview(
+            window,
+            sidecar_path=Path(temp_dir) / "missing-v3k-sidecar.json",
+        )
 
     set_v3k_preview_session_flag(window, FLAG_BACKTEST_LEARNING, True)
     assert window.v3k_settings[FLAG_BACKTEST_LEARNING] is True
