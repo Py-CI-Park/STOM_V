@@ -1,0 +1,8 @@
+# V3U 자동 GUI 검증용 개발 의존성
+# Constraint: V3 official runtime 의존성과 분리. 본 파일은 V3U lane 전용.
+# 설치: python -m pip install -r requirements-dev.txt
+
+pytest>=8.0,<10.0
+pytest-qt>=4.4,<5.0
+pytest-timeout>=2.3,<3.0
+pytest-mock>=3.14,<4.0
