@@ -11,6 +11,7 @@ from strategy.v3k_analyzer_adapter import (
     FLAG_CANDLE_ANALYSIS,
     FLAG_FORMULA_GLOBAL_FACADE,
     FLAG_PHASE_F_ANALYZER_STRATEGY,
+    FLAG_PHASE_G_MICROSTRUCTURE_ENGINE,
     FLAG_REALTIME_LEARNING,
     FLAG_RISK_ANALYSIS,
     FLAG_RISK_ANALYZER_V3,
@@ -177,6 +178,16 @@ V3K_SETTING_CONTRACTS: tuple[V3KSettingContract, ...] = (
         description=(
             "Approved gate-2 source-of-truth for building Phase F analyzer "
             "formula candidates; live order/exit consumption remains separately gated."
+        ),
+    ),
+    V3KSettingContract(
+        key=FLAG_PHASE_G_MICROSTRUCTURE_ENGINE,
+        default=False,
+        group="approval-gate",
+        label="V3K Phase G microstructure engine",
+        description=(
+            "Approved gate-3 source-of-truth for building Phase G microstructure "
+            "engine candidates; live order/exit consumption remains separately gated."
         ),
     ),
 )

@@ -14,7 +14,10 @@ if str(ROOT) not in sys.path:
 
 from scripts.audit_v3k_remaining_gate_approval_matrix import GATES
 from scripts.audit_v3k_runtime_activation_gap import RECOMMENDED_APPROVAL_ORDER_FIRST
-from strategy.v3k_analyzer_adapter import FLAG_PHASE_F_ANALYZER_STRATEGY
+from strategy.v3k_analyzer_adapter import (
+    FLAG_PHASE_F_ANALYZER_STRATEGY,
+    FLAG_PHASE_G_MICROSTRUCTURE_ENGINE,
+)
 from strategy.v3k_gui_sidecar import V3K_GUI_SIDECAR_FILE, load_v3k_gui_sidecar_file
 
 FIRST_GATE = RECOMMENDED_APPROVAL_ORDER_FIRST
@@ -82,6 +85,9 @@ def _gate_has_completion_evidence(gate: str, headings: set[str]) -> bool:
     if gate == "phase-f-f4-on-await-user-approval":
         sidecar = load_v3k_gui_sidecar_file(ROOT / V3K_GUI_SIDECAR_FILE)
         return sidecar.valid and sidecar.settings.get(FLAG_PHASE_F_ANALYZER_STRATEGY) is True
+    if gate == "phase-g-g3-on-await-user-approval":
+        sidecar = load_v3k_gui_sidecar_file(ROOT / V3K_GUI_SIDECAR_FILE)
+        return sidecar.valid and sidecar.settings.get(FLAG_PHASE_G_MICROSTRUCTURE_ENGINE) is True
     return True
 
 

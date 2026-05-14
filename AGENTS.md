@@ -95,18 +95,21 @@ Before V3K work in this checkout, read:
 4. `docs/update_log/2026-05-14_v3k_goal_completion_audit_checklist.md`
 5. `docs/update_log/2026-05-14_v3k_gui_sidecar_gate1_execution.md`
 6. `docs/update_log/2026-05-14_v3k_phase_f_gate2_execution.md`
-7. `docs/update_log/2026-05-14_v3k_gate_approval_phrase_intake_guard.md`
+7. `docs/update_log/2026-05-14_v3k_phase_g_gate3_execution.md`
+8. `docs/update_log/2026-05-14_v3k_gate_approval_phrase_intake_guard.md`
 
 Current approval-gated state:
 
-- Actual approval gate execution is `2/6`.
+- Actual approval gate execution is `3/6`.
 - Gate 1 `gui-sidecar-write-await-user-approval` has been approved/executed as
   a default-OFF local sidecar seed only.
 - Gate 2 `phase-f-f4-on-await-user-approval` has been approved/executed as a
   Phase F analyzer-strategy sidecar enable only.
+- Gate 3 `phase-g-g3-on-await-user-approval` has been approved/executed as a
+  Phase G microstructure-engine sidecar enable only.
 - `_v3k_sidecar/v3k_gui_settings.json` is a local ignored runtime artifact and
   must not be committed. It may carry `V3K_PHASE_F_ANALYZER_STRATEGY=true`
-  after gate 2.
+  and `V3K_PHASE_G_MICROSTRUCTURE_ENGINE=true` after gate 3.
 - Do not call `update_goal(status="complete")` until all six approval gates have
   concrete evidence.
 - Do not create additional USER_ACK, enable registry headings, operating
@@ -121,21 +124,21 @@ Remaining gate order:
 
 1. `gui-sidecar-write-await-user-approval` — completed as default-OFF sidecar write
 2. `phase-f-f4-on-await-user-approval` — completed as Phase F sidecar enable
-3. `phase-g-g3-on-await-user-approval` — next approval gate
-4. `phase-h-h2-h3-live-dryrun-await-user-approval`
+3. `phase-g-g3-on-await-user-approval` — completed as Phase G sidecar enable
+4. `phase-h-h2-h3-live-dryrun-await-user-approval` — next approval gate
 5. `f1-actual-db-cutover-await-user-approval`
 6. `live-order-exit-rule-consumption-await-user-approval`
 
 The next executable approval phrase is exactly:
 
 ```text
-I approve phase-g-g3-on-await-user-approval only
+I approve phase-h-h2-h3-live-dryrun-await-user-approval only
 ```
 
 Continuation must keep gate-specific and nonrelease checks green:
 
 ```powershell
-python scripts/audit_v3k_phase_f_gate2_execution.py
+python scripts/audit_v3k_phase_g_gate3_execution.py
 python scripts/verify_nonrelease_sync.py
 git diff --check
 git status --short -- _database _database_v3k_shadow _log backup *.db backtest/graph .omx/reports v3k_settings*.json

@@ -2099,3 +2099,32 @@ Scope guard:
 - No direct LS Securities dependency
 
 Directive: This approval only enables Phase F analyzer strategy as a sidecar source-of-truth for approved candidate formula building. Live order/exit consumption, Phase G/H ON, and F1 actual DB cutover each require their own explicit one-gate approval cycle.
+
+## V3K-PHASE-G-ENABLE
+
+- Date: 2026-05-14 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Page: Page 081
+- Canonical approval phrase: `I approve phase-g-g3-on-await-user-approval only`
+- Gate: `phase-g-g3-on-await-user-approval`
+- Status: `completed-gate3-phase-g-sidecar-enable`
+- USER_ACK used during execution: `V3K_PHASE_G_USER_ACK=1`
+- Source-of-truth: `_v3k_sidecar/v3k_gui_settings.json` local ignored artifact; do not commit.
+- Enabled sidecar setting: `V3K_PHASE_G_MICROSTRUCTURE_ENGINE=true`
+- Preserved sidecar setting: `V3K_PHASE_F_ANALYZER_STRATEGY=true`
+- Writer: `scripts/write_v3k_phase_g_sidecar_enable.py`
+- Audit: `scripts/audit_v3k_phase_g_gate3_execution.py`
+- Rollback guard: `V3K_PHASE_G_DISABLE=1` still disables candidate microstructure engine output.
+- Progress: `3/6` approval gates executed.
+- Next gate: `phase-h-h2-h3-live-dryrun-await-user-approval`.
+
+Scope guard:
+
+- No DB cutover
+- No KHOPENAPI connect/login
+- No Phase H ON
+- No live order/exit wiring
+- No Kiwoom live runtime mutation
+- No direct LS Securities dependency
+
+Directive: This approval only enables Phase G microstructure engine as a sidecar source-of-truth for approved candidate output building. Live order/exit consumption, Phase H ON, and F1 actual DB cutover each require their own explicit one-gate approval cycle.
