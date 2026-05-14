@@ -319,3 +319,68 @@ V3U pyd-free 완료는 다음을 모두 만족할 때만 선언한다.
 - `STOM_Version_3U_C` 생성
 - 2U_C backport
 - DB 파일 commit
+
+## 11. 자동 검증 시스템 extension (2026-05-12 추가)
+
+본 절은 본래 계획(2026-05-05) 이후 단계적으로 도입된 자동 GUI 검증 시스템을 기록한다. pyd 제거 자체는 2026-05-06 commit `3d8f9c1e`로 완료되었고, 이후 `4aef1cce`(parity 감사) → `4a4d989c`(인수인계 체크리스트) → `e01a96bf`(확장 자동 감사) 사이클을 거쳐 본 시스템 도입에 도달했다.
+
+### 11.1 도입 동기
+
+선행 핸드오프 체크리스트(`docs/update_log/2026-05-07_v3u_handoff_verification_checklist.md`)에서 사용자 잔여 검증 25개 항목을 명시했다. 이 중 다음이 사용자 시각·수동에 의존했다.
+
+- 1순위: `python stom.py` 메인창 + 9개 탭 + strategy 아이콘 (5분)
+- 2순위: 백테스트 1회 + 차트 zoom/pan + 변손익분석 (15분)
+- 3순위: 18개 거래소 컨텍스트 + DB 자동 생성 (20분)
+
+매 V3 정규 업데이트마다 사용자가 동일 검증을 수동 반복하는 부담을 자동화로 줄이고, V3 official source 0줄 수정 invariant를 자동 게이트로 보강하기 위해 자동 검증 시스템을 추가한다.
+
+### 11.2 6 Phase 단계적 도입
+
+| Phase | 커밋 | 산출물 |
+|---|---|---|
+| Phase 1 | `1c794774` | requirements-dev.txt + pytest.ini + tests/v3u/conftest.py + 합성 OHLCV 픽스처 + V3.18 dict_findex 스냅샷 |
+| Phase 2 | `96787192` | tests/v3u/test_smoke.py 5 케이스 (1순위 자동화) |
+| Phase 3 | `4059ce36` | test_widgets.py + test_lifecycle.py + test_data_layer.py 14 케이스 (2·3순위 자동화) |
+| Phase 4 | `fc1870fe` | test_units.py + test_rest_api_contract.py + fixtures/mock_exchange.py 12 케이스 (분석기·REST 정적/mock) |
+| Phase 5 | `b43fef6e` | scripts/verify_v3u_pyd_gui_contract.py에 pytest 게이트 통합 |
+| Phase 6.1 | `096cc1a7` | WORKTREE_STRATEGY/UPSTREAM_SYNC_STRATEGY/CARRY_FORWARD_REGISTRY V3 lane 명문화 |
+| Phase 6.2 | (본 커밋) | V3U_PYD_REMOVAL_PLAN.md(본 절) + CLAUDE.md V3U 게이트 + V3U_TEST_AUTOMATION_GUIDE.md + 도입 감사 |
+
+### 11.3 통합 게이트 동작
+
+```bash
+python scripts/verify_v3u_pyd_gui_contract.py \
+    --branch STOM_Version_3U --version <V3.X> \
+    --upstream-ref STOM_Version_3 \
+    --manifest .omx/logs/v3u/verify_<date>.json
+```
+
+이 한 번이 다음 5단계를 통합 실행한다.
+
+1. upstream pyd evidence (V3 lane이 `ui/main_window.pyd` 보존)
+2. tracked .pyd 0건 (V3U lane)
+3. AST 정합성 (`ui/main_window.py`의 `MainWindow.__init__` 존재)
+4. import 정합성 (V3U entry가 참조하는 V3 모듈 모두 존재)
+5. **pytest tests/v3u/ 31 케이스 PASS (Phase 1~4)** — 신규 5단계
+
+### 11.4 V3 정규 업데이트 흡수 흐름 (본 시스템 도입 후)
+
+```
+1. V3 upstream V3.19 발표
+2. git merge STOM_Version_3 → STOM_Version_3U
+3. python scripts/verify_v3u_pyd_gui_contract.py … (위 통합 게이트)
+4. PASS → V3.19에서 pyd 인터페이스 변화 없음. 감사 증적만 추가.
+   FAIL → pytest 출력이 정확한 위치 지적. ui/main_window.py 또는
+          tests/v3u/에서만 수정 (V3 official source는 절대 수정 금지).
+```
+
+### 11.5 자동화 한계 (사용자 영역 영구 보존)
+
+본 시스템 도입 후에도 다음은 본질적 자동화 불가다 (자격증명·실 자금·정책 결정).
+
+- C1·C2·C3·C4: LS/바이낸스/업비트 실거래 (자격증명·영업시간·실 자금)
+- B3: LS 웹소켓 체결/호가 분리 라이브 수신 (라이브 시장)
+- D1: 사용자 실 DB 마이그레이션 (사용자 환경 고유)
+- F1: `STOM_Version_3U_C` 생성 시점 결정 (정책 판단)
+- E1·E2: V3 upstream V3.0 태그 reconcile (V3 wave 시작 시 별도 결정)
+- 시각 미적 판단 (UX는 사람만)

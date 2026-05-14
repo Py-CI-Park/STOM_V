@@ -99,3 +99,43 @@ Expect `release sync preflight passed` before claiming the lane is clean. If `ST
 
 - Keep docs, scripts, tests, CLI-only surfaces, and research-only surfaces out of release overlays unless the task explicitly targets them.
 - Keep this guide aligned with `docs/WORKTREE_STRATEGY.md` and `docs/UPSTREAM_SYNC_STRATEGY.md`.
+
+## V3U Test Automation Gate
+
+V3U lane(`STOM_V.wt-3u/`)은 V3 official(`STOM_V.wt-3/`) 흡수 시 자동 검증 게이트를 통과해야 lane이 clean으로 판정된다. 본 게이트는 pyd 추론 회귀를 자동 감지하고 V3 official source 0줄 수정 invariant를 보장한다.
+
+### 단일 명령 통합 게이트
+
+```bash
+python scripts/verify_v3u_pyd_gui_contract.py \
+    --branch STOM_Version_3U --version <V3.X> \
+    --upstream-ref STOM_Version_3 \
+    --manifest .omx/logs/v3u/verify_<date>.json
+```
+
+이 호출은 정적 + 구조 + 동적 5단계를 통합 실행한다 (`docs/V3U_PYD_REMOVAL_PLAN.md` §11 참조).
+
+### V3 흡수 시 작업 순서
+
+1. `git merge STOM_Version_3` → `STOM_Version_3U`
+2. 위 통합 게이트 실행
+3. PASS → 감사 증적 1개를 `docs/update_log/`에 한글 commit
+4. FAIL → `ui/main_window.py` 또는 `tests/v3u/`에서만 수정 (V3 official source 절대 수정 금지)
+
+### 허용 diff 경계
+
+V3U lane이 V3 lane과 가질 수 있는 차이는 `docs/CARRY_FORWARD_REGISTRY.md`의 "V3U custom allowlist rule"에 명문화돼 있다. 위반 시 통합 게이트가 자동 fail한다.
+
+### 자동화 한계
+
+다음은 본질적 자동화 불가이며 release 전 사용자 직접 검증이 필수다.
+
+- 실거래 (LS/바이낸스/업비트): 자격증명·실 자금
+- 사용자 실 DB 마이그레이션: 사용자 환경 고유 schema drift
+- `STOM_Version_3U_C` 생성 시점: 정책 판단
+
+상세는 `docs/V3U_TEST_AUTOMATION_GUIDE.md` 참조.
+
+### 한글 커밋 규칙 reaffirm
+
+자동 검증 시스템에 추가되는 모든 커밋도 본 문서 "Commit Language Rules"를 따른다.
