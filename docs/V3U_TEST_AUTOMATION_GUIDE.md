@@ -210,6 +210,7 @@ V3U <검증 영역> 자동 케이스를 추가한다
 
 ## 8. 관련 문서
 
+- `docs/V3U_INFERENCE_LESSONS.md` 결함 기록·근본 원인·재발 방지 진실 원천 (지속 갱신)
 - `.omc/plans/2026-05-12_v3u_test_automation_and_governance.md` 본 시스템 컨센서스 플랜
 - `docs/V3U_PYD_REMOVAL_PLAN.md` §11 자동 검증 시스템 extension
 - `docs/WORKTREE_STRATEGY.md` V3 Lane Branch Parity Invariants

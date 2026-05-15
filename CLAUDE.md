@@ -139,3 +139,14 @@ V3U lane이 V3 lane과 가질 수 있는 차이는 `docs/CARRY_FORWARD_REGISTRY.
 ### 한글 커밋 규칙 reaffirm
 
 자동 검증 시스템에 추가되는 모든 커밋도 본 문서 "Commit Language Rules"를 따른다.
+
+### 결함 발견·수정 4단계 워크플로우
+
+V3U 결함이 발견되면 다음 4단계를 반드시 수행한다 (`docs/V3U_INFERENCE_LESSONS.md` §8.1).
+
+1. 발견·진단 (사용자 보고 또는 자동 검증 fail)
+2. V3U 전용 파일에서만 수정 (V3 official source 0줄 수정 invariant 유지)
+3. 회귀 테스트 추가 (`tests/v3u/`)
+4. `docs/V3U_INFERENCE_LESSONS.md` §6에 결함 기록 + §7 통계 갱신 + 패턴 반복 시 §5 재발 방지 액션 갱신
+
+본 문서는 lane 종료 시까지 누적 갱신되는 진실 원천이다. 빠뜨리면 lessons learned가 휘발된다.
