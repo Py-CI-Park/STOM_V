@@ -89,12 +89,28 @@ class MainWindow(QMainWindow):
         self.splash = splash
         self.logger = logging.getLogger(self.__class__.__name__)
         self.log = self.logger
+        # V3U lane: runtime 에러를 사용자 cmd 창에서 직접 볼 수 있도록 stderr 핸들러를
+        # 한 번만 부착한다. 헤드리스 테스트 환경에서는 pytest가 캡처한다.
+        if not any(
+            isinstance(h, logging.StreamHandler) and getattr(h, "_v3u_console", False)
+            for h in logging.getLogger().handlers
+        ):
+            _console = logging.StreamHandler()
+            _console.setLevel(logging.INFO)
+            _console.setFormatter(
+                logging.Formatter("[%(asctime)s][%(levelname)s][%(name)s] %(message)s",
+                                   datefmt="%H:%M:%S")
+            )
+            setattr(_console, "_v3u_console", True)
+            logging.getLogger().addHandler(_console)
+            logging.getLogger().setLevel(logging.INFO)
 
         self.auto_run = auto_run
         self._offline_smoke = os.environ.get("STOM_OFFLINE_SMOKE") == "1"
         self._strict_widget_build = os.environ.get("STOM_V3U_STRICT_WIDGET_BUILD") == "1"
         self._widget_build_error: str | None = None
         self._missing_slot_calls: list[tuple[str, tuple[Any, ...], dict[str, Any]]] = []
+        self.logger.info("V3U MainWindow boot: auto_run=%s, offline=%s", auto_run, self._offline_smoke)
 
         self._init_queues()
         self._init_runtime_state()
@@ -179,9 +195,12 @@ class MainWindow(QMainWindow):
         self.trading = False
         self.back_engining = False
         self.backengine_running = False
+        self.backengine_starting = False
         self.backtest_engine = False
         self.extend_window = False
         self.back_cancelling = False
+        self.back_tick_cunsum = 0
+        self.ctpg_cvb = None
 
         self.animation = None
         self.webEngineView = None
@@ -401,6 +420,7 @@ class MainWindow(QMainWindow):
         self.qtimer3.timeout.connect(self.UpdateCpuper)
 
         if not self._offline_smoke:
+            self.qtimer1.start()
             self.qtimer2.start()
             self.qtimer3.start()
 

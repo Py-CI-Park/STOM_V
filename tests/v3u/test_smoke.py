@@ -97,6 +97,64 @@ def test_12_queues_initialized(main_window) -> None:
     )
 
 
+def test_runtime_state_attrs_initialized(main_window) -> None:
+    """V3U MainWindow가 외부 핸들러(`ui.event_click/`)에서 참조하는 boolean state attr을
+    모두 init한다. 누락 시 첫 사용자 클릭에서 AttributeError 또는 의미 없는 dialog 발생.
+
+    drift 발견 사례 (2026-05-12):
+    - backengine_starting: button_clicked_backtest_start.py:11/114에서 참조
+    - back_tick_cunsum: 백테 진행 카운터
+    - ctpg_cvb: 차트 chart_view 바인딩
+    """
+    required_state = {
+        # 백테엔진 라이프사이클
+        "backengine_starting": False,
+        "backengine_running": False,
+        "back_engining": False,
+        "backtest_engine": False,
+        "back_cancelling": False,
+        "back_tick_cunsum": 0,
+        # UI 모드
+        "back_schedul": False,
+        "showQsize": False,
+        "auto_mode": False,
+        "trading": False,
+    }
+    for attr, expected in required_state.items():
+        assert hasattr(main_window, attr), (
+            f"V3U runtime state 누락: {attr}. "
+            f"외부 핸들러가 참조하는 boolean/state attr은 _init_runtime_state에 명시 필요."
+        )
+        actual = getattr(main_window, attr)
+        assert actual == expected, (
+            f"{attr} 초기값 mismatch: 기대 {expected!r}, 실제 {actual!r}"
+        )
+
+    # ctpg_cvb는 init은 None이지만 widget builder가 dict로 채움. 둘 다 허용.
+    assert hasattr(main_window, "ctpg_cvb"), "ctpg_cvb attr 누락"
+    cvb = main_window.ctpg_cvb
+    assert cvb is None or isinstance(cvb, dict), (
+        f"ctpg_cvb는 None(init) 또는 dict(post-widget-build)여야 함, 실제 {type(cvb).__name__}"
+    )
+
+
+def test_qtimer1_auto_started_for_process_starter(main_window) -> None:
+    """qtimer1(process_starter 호출용)이 __init__ 시점에 자동 시작된다.
+
+    V3 pyd가 자동 시작했던 동작 — V3U도 동일해야 사용자가 별도 Qtimer1Start 호출 없이
+    백테 스케줄/auto_run/창 제목 갱신이 동작한다.
+    """
+    import os
+
+    assert hasattr(main_window, "qtimer1"), "qtimer1 누락"
+    if os.environ.get("STOM_OFFLINE_SMOKE") == "1":
+        # offline smoke 모드에서는 타이머 미시작이 정상
+        return
+    assert main_window.qtimer1.isActive(), (
+        "qtimer1이 자동 시작되지 않음. _init_timers에서 self.qtimer1.start() 누락 가능."
+    )
+
+
 def test_strategy_icons_render(qapp, project_root) -> None:
     """1순위 B8: strategy.png/strategy2.png가 ICON_PATH에서 로드되며 빈 픽스맵이 아니다."""
     from utility.settings.setting_base import ICON_PATH
