@@ -1,0 +1,51 @@
+{
+  "candidates": [
+    {
+      "exists": false,
+      "path": "C:\\OpenAPI\\khopenapi.dll",
+      "source": "default"
+    },
+    {
+      "exists": false,
+      "path": "C:\\Kiwoom\\OpenAPI\\khopenapi.dll",
+      "source": "default"
+    },
+    {
+      "exists": false,
+      "path": "C:\\OpenAPI-W\\khopenapi.dll",
+      "source": "default"
+    }
+  ],
+  "captured_at_utc": "2026-05-15T00:05:21.149353+00:00",
+  "contract_only": true,
+  "evidence_kind": "V3K-PHASE-H-T04B-LIVE-AUDIT",
+  "generated_at": "2026-05-15T00:05:21.156078+00:00",
+  "host_identifier": "9024e3b9",
+  "khopenapi_compatible": true,
+  "khopenapi_corroborating_signals": [
+    {
+      "dll_count": 6,
+      "exists": true,
+      "path": "C:\\OpenAPI",
+      "source": "OPENAPI_PATH directory"
+    },
+    {
+      "exists": false,
+      "path": "C:\\OpenAPI\\khopenapi.dll",
+      "source": "legacy DLL"
+    }
+  ],
+  "khopenapi_corroboration_count": 1,
+  "khopenapi_env_var": "V3K_KHOPENAPI_DLL",
+  "khopenapi_primary_signal": {
+    "exists": true,
+    "path": "HKEY_CLASSES_ROOT\\KHOPENAPI.KHOpenAPICtrl.1",
+    "source": "ActiveX ProgID"
+  },
+  "khopenapi_progid": "KHOPENAPI.KHOpenAPICtrl.1",
+  "live_connect_attempted": false,
+  "next_gate": "H-2/H-3 require KHOPENAPI-compatible environment and explicit user approval",
+  "order_or_exit_path_changed": false,
+  "phase": "V3K-PHASE-H-H1",
+  "schema_version": 2
+}

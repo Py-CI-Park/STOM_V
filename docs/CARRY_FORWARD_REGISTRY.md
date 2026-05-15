@@ -2181,3 +2181,54 @@ Scope guard:
 - No direct LS Securities dependency
 
 Directive: This entry is review-only. Gate 5 and Gate 6 remain blocked until Phase H live dry-run completion evidence exists. Do not create `V3K_CUTOVER_USER_ACK=1`, `V3K_LIVE_DECISION_USER_ACK=1`, `V3K-F1-ACTUAL-DB-CUTOVER-APPROVAL`, or `V3K-LIVE-ORDER-EXIT-ENABLE` from this review.
+
+## V3K-AUDIT-V2-COMPAT
+
+- Date: 2026-05-15 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Plan: `docs/plans/2026-05-14_v3k_audit_v2_compat_kiwoom_sentinel_plan.md` (ralplan iteration 2 합의 v2, `4d132139`)
+- Trigger: `docs/update_log/2026-05-14_v3k_gate4_blocked_root_cause_v2_compat.md` (`cdd77093`) Gate4 false-negative 발견
+- Tasks executed: T01 (hook 별도 메서드) + T02 (sentinel helper 모듈) + T03 (audit schema v2) + T04a (mock 4 scenario) + T04b (본 PC live audit)
+- Commits: `5da51dcd` (T01+T02), `696cc4b3` (T03), `2611ab61` (T04a), 본 commit (T04b + registry + update_log)
+
+### Records
+
+- 신규 파일: `strategy/v3k_kiwoom_sentinel.py` (T02 helper 모듈, 98줄)
+- 수정 파일: `strategy/v3k_kiwoom_dryrun_hook.py` (T01, +44줄 dataclass + 신규 메서드)
+- 수정 파일: `scripts/audit_v3k_phase_h_env_check.py` (T03, schema v2 + primary/corroborating)
+- 신규 파일: `scripts/smoke_v3k_kiwoom_sentinel_scenarios.py` (T04a, mock matrix 4종)
+- 신규 evidence: `docs/evidence/v3k-phase-h-env-host-9024e3b9.json` (T04b live audit, host hash trail)
+
+### Decision (Synthesis 1)
+
+1. `khopenapi_compatible` = primary signal S1 ActiveX ProgID 단독 산식 (V07 invariant)
+2. corroborating signals (S2 OPENAPI_PATH dir + S3 legacy DLL)는 evidence emit 전용, 결정에 직접 영향 없음
+3. audit JSON schema_version 1 → 2 bump, `candidates[]` backward compat 보존
+4. hook `resolve_khopenapi_path() -> Path | None` 시그니처 보존, 신규 `resolve_khopenapi_sentinel() -> V3KSentinelResult | None` 별도 메서드
+
+### Verification (V01–V08)
+
+- V01 PASS: `resolve_khopenapi_path` 시그니처 `Path | None` 보존 (정적 assertion)
+- V02 PASS: `resolve_khopenapi_sentinel` 신규 메서드 export + `V3KSentinelResult | None` 반환
+- V03a/V03b/V04a/V04b PASS: mock scenario matrix 4종 (R4 boundary 포함)
+- V05 SKIP: `gate4_blocked_environment` audit은 `primary exists → SKIP` 결정 룰 (plan §D.1)
+- V06 PASS: `schema_version == 2` + 신규 4 필드 + `candidates[]` 보존
+- V07 PASS: `khopenapi_compatible == khopenapi_primary_signal.exists` invariant
+- V08 PASS: 본 PC live audit `khopenapi_compatible=true`, host_identifier=`9024e3b9`, schema_version=2
+
+### Effect
+
+- **Gate4 BLOCKED 자연 해제**: 본 PC에서 `khopenapi_compatible: false → true` 전환
+- **`gate4_blocked_environment` audit의 의미 변경**: self-reject (compatible=true 환경이므로 적용 불가). plan v2 §D.1 V05 결정 룰의 코드 측면 자동 검증. 별도 분기 plan(`2026-05-XX_v3k_phase_h_lh4_clarification_plan.md`)에서 audit name/logic 정정 후속 처리.
+- Gate5/Gate6 unlock 가능성 회복 (단, 별도 사용자 승인 + Phase H 본체 실행 필요)
+
+Scope guard:
+
+- No Kiwoom runtime mutation (trade/utility/Kiwoom_OpenAPI 0건)
+- No operating `_database/` write
+- No direct LS Securities dependency
+- No `V3K_PHASE_H_USER_ACK=1` creation
+- No live connect/login attempted (hook still default-OFF)
+- No order/exit wiring
+
+Directive: 본 entry는 audit V2-compat sentinel 보강 완료를 기록한다. Phase H 본체(H-2 dry-run, H-3 ON) 진입은 별도 사용자 명시 승인과 H-2 plan 작성 후에만 진행한다. `gate4_blocked_environment` audit의 self-reject 의미 정정은 분기 plan에서 처리한다.
