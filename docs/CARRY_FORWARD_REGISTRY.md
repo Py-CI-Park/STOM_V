@@ -2385,3 +2385,62 @@ Scope guard:
 - 본 commit 은 plan 1건 + script 1건 + evidence 1건 + registry 1건 추가
 
 Directive: 본 mock execution 으로 Step 2~6 의 본 자동 세션 scope 내 진행 가능 layer 종결. Actual execution 의 trigger 매트릭스 (status plan `2026-05-15_v3k_step2_to_step6_progress_status_plan.md` §G) 은 사용자 명시 phrase + USER_ACK env var + GUI Kiwoom login + 24h/7-day/48h monitoring + transaction lock window 충족 후 별도 세션에서 진행한다.
+
+## V3K-PREPARATION-FIRST-SEQUENCE
+
+- Date: 2026-05-15 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Plan: `docs/plans/2026-05-15_v3k_preparation_first_execution_sequence_plan.md`
+- Trigger: 사용자 질의 — “페이지 1은 마지막으로 이동하고 2,3,4,5 진행 후 1은 나중에 가능한가 / 미리 준비는 코드 업데이트를 의미하는가”
+- Scope: 기준 변경 문서화 + 준비 선행 계획 정본화. 코드/runtime 변경 0건.
+
+### Decision
+
+1. **actual execution 순서는 변경하지 않는다.** Phase H H-2 live dry-run → F1 DB cutover → Phase F F-4 ON → Phase G G-3 ON → F7 closure 순서를 유지한다.
+2. **preparation 순서는 분리한다.** F1/F3/F4/F7의 default-OFF 준비 코드, read-only 검증 script, rollback/checksum/benchmark/closure checklist는 Phase H H-2 actual 전에 선행 가능하다.
+3. **준비 완료와 actual 완료를 분리 기록한다.** 준비 패키지 commit은 runtime activation 또는 closure progress로 계산하지 않는다.
+4. **준비 패키지 guard를 고정한다.** No operating `_database/` write, no live connect/login, no USER_ACK env var, no feature flag default-ON, no Kiwoom order/exit wiring, no LS direct dependency.
+
+### Records
+
+- 신규 파일: `docs/plans/2026-05-15_v3k_preparation_first_execution_sequence_plan.md`
+- 갱신 파일: `docs/CARRY_FORWARD_REGISTRY.md` (본 섹션)
+
+### Preparation-first plan
+
+| 순서 | 작업 | 상태 |
+| ---: | --- | --- |
+| P0 | 기준 변경 문서화 | 본 commit에서 수행 |
+| P1 | F1 cutover prep package (read-only parity/checksum/rollback/preflight) | 다음 추천 작업 |
+| P2 | Phase F F-4 prep package (default-OFF parity/approval/rollback) | P1 후 |
+| P3 | Phase G G-3 prep package (benchmark/parity/rollback) | P2 후 |
+| P4 | F7 closure prep package (manifest/checklist audit) | P3 후 |
+| P5 | 준비 선행 중간 점검 | P4 후 |
+
+### Actual execution dependency remains
+
+| 순서 | actual gate | 선행 조건 |
+| ---: | --- | --- |
+| A1 | Phase H H-2 live dry-run | 사용자 phrase + `V3K_PHASE_H_USER_ACK=1` + GUI Kiwoom login + gate4 audit PASS |
+| A2 | F1 DB cutover | A1 closure + 24h monitoring + `V3K_CUTOVER_USER_ACK=1` + transaction lock window |
+| A3 | Phase F F-4 ON | A2 closure + 7-day monitoring + `V3K_PHASE_F_USER_ACK=1` |
+| A4 | Phase G G-3 ON | A3 closure + 24h monitoring + `V3K_PHASE_G_USER_ACK=1` |
+| A5 | F7 closure | A1~A4 actual closure + final phrase |
+
+### Verification
+
+- Plan file created with explicit 기준 변경 / unchanged actual dependency / allowed preparation code table / P0~P5 plan / A1~A5 actual dependency.
+- Scope guard: docs-only change, runtime mutation 0건.
+- Required follow-up verification for subsequent P1~P5 packages: `audit_v3k_phase_h_gate4_environment_status`, `audit_v3k_verify_1a --base 9423735e`, `verify_nonrelease_sync`, `git diff --check`.
+
+Scope guard:
+
+- No Kiwoom runtime mutation (trade / utility / Kiwoom_OpenAPI 0건)
+- No operating `_database/` write
+- No direct LS Securities dependency
+- No live connect / login / 주문 경로 wiring
+- No USER_ACK env var 발급
+- No DB / log / shadow / sidecar artifact 커밋
+- 본 commit은 plan 1건 + registry 1건 문서 변경에 한정
+
+Directive: 다음 추천 작업은 P1 F1 cutover prep package다. 이 작업은 read-only/default-OFF 준비 코드만 허용하며, actual F1 cutover는 Phase H H-2 live dry-run actual + 24h monitoring evidence 후에만 가능하다.
