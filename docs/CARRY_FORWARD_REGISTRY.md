@@ -2232,3 +2232,55 @@ Scope guard:
 - No order/exit wiring
 
 Directive: 본 entry는 audit V2-compat sentinel 보강 완료를 기록한다. Phase H 본체(H-2 dry-run, H-3 ON) 진입은 별도 사용자 명시 승인과 H-2 plan 작성 후에만 진행한다. `gate4_blocked_environment` audit의 self-reject 의미 정정은 분기 plan에서 처리한다.
+
+## V3K-PHASE-H-LH4-CLARIFICATION
+
+- Date: 2026-05-15 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Plan: `docs/plans/2026-05-15_v3k_phase_h_lh4_clarification_plan.md` (ralplan iteration 2 APPROVE 합의 정본)
+- ralplan: iteration 1 (Architect ITERATE / Critic ITERATE 4 Rev + 4 Opt) → iteration 2 (Planner v2 흡수 / Architect APPROVE / Critic APPROVE)
+- Trigger: v4 mid-checkpoint `9423735e` §7.1 1순위 잔여 작업 + v2-compat sentinel plan `4d132139` §I.6 위임
+- Tasks executed: T01 (신규 environment_status audit 신설, Option B) + T02 (Phase H plan §K.5 amend) + T03 (본 plan commit)
+
+### Records
+
+- 신규 파일: `scripts/audit_v3k_phase_h_gate4_environment_status.py` (`V3K_PHASE_H_GATE4_ENV_STATUS_AUDIT_V1`, 159줄)
+- 신규 파일: `docs/plans/2026-05-15_v3k_phase_h_lh4_clarification_plan.md` (분기 plan, ralplan iteration 2 합의 정본)
+- 수정 파일: `docs/plans/2026-05-12_v3k_phase_h_live_kiwoom_dryrun_plan.md` (§K에 K.5 단일 절 amend, K.1–K.4 본문 무변경)
+- 무변경 (Option B historical 보존): `scripts/audit_v3k_phase_h_gate4_blocked_environment.py` (`b6327b30` historical audit trail)
+
+### Decision (분기 plan ADR §I.1)
+
+1. **Option B 채택**: historical script frozen 보존 + 신규 `environment_status` audit 병렬 추가. rename(Option A)은 audit immutability + docs freeze 충돌 우려로 명시 거부
+2. **§K.5 단일 절 amend**: K.6/K.7 신설 위임. K.1–K.4 본문 무변경
+3. **LH5 forward-only invariant**: `schema_version >= 2` audit artifact에만 적용. `b6327b30` `schema_version == 1` historical은 retroactive 재평가 배제
+
+### Verification (V01–V08)
+
+- V01 PASS: 신규 script `audit_v3k_phase_h_gate4_environment_status.py` 신설 (Test-Path)
+- V02 PASS: historical script `audit_v3k_phase_h_gate4_blocked_environment.py` unchanged (last commit `b6327b30`, no diff)
+- V03 PASS: 본 PC unblocked branch 실행 (`primary_signal.exists=True`, schema_version=2, AUDIT_VERSION=V3K_PHASE_H_GATE4_ENV_STATUS_AUDIT_V1)
+- V04 PASS: Phase H plan §K.1–K.4 본문 변경 0줄 + §K.5 단일 절 신설
+- V05 PASS: LH5 forward-only assertion (`schema_version < 2` 검출 시 AssertionError)
+- V06 PASS: Phase H plan amend target 명시 (docs/plans/2026-05-12_v3k_phase_h_live_kiwoom_dryrun_plan.md)
+- V07 PASS: docs freeze 충돌 0건 (page082 unchanged, V3K-PHASE-H-LIVE-DRYRUN-APPROVAL-BLOCKED heading 유지)
+- V08 PASS: audit_v3k_verify_1a + verify_nonrelease_sync 모두 PASS
+
+### Effect
+
+- **Gate4 environment_status audit가 양 branch 모두 PASS**: 본 PC에서 unblocked branch(`primary_signal.exists=True`) 동작 검증 완료
+- **historical audit identity 보존**: `b6327b30` audit trail self-reject 동작 유지 (Option B 채택으로 docs freeze 충돌 0건)
+- **LH5 신규 lifetime invariant**: future audit JSON schema bump 의무화 (forward-only 적용 범위 명문화)
+- **Phase H §K.6/K.7 위임**: 미래 freeze 예외 사안은 별도 분기 plan으로 처리
+
+Scope guard:
+
+- No Kiwoom runtime mutation (trade/utility/Kiwoom_OpenAPI 0건)
+- No operating `_database/` write
+- No direct LS Securities dependency
+- No `V3K_PHASE_H_USER_ACK=1` creation
+- No live connect/login attempted (hook still default-OFF)
+- No order/exit wiring
+- Historical audit script (`b6327b30`) unchanged
+
+Directive: Phase H §K.5 amend로 v4 mid-checkpoint §7.1 1순위 잔여 작업 종결. 다음 잔여 작업(우선 2: Phase H H-2 본체 dry-run plan)은 별도 ralplan + 사용자 명시 승인 + KHOPENAPI 환경 재확인 + V3K_PHASE_H_USER_ACK=1 필수.
