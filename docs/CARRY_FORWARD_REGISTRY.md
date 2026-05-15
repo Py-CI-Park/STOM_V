@@ -2444,3 +2444,66 @@ Scope guard:
 - 본 commit은 plan 1건 + registry 1건 문서 변경에 한정
 
 Directive: 다음 추천 작업은 P1 F1 cutover prep package다. 이 작업은 read-only/default-OFF 준비 코드만 허용하며, actual F1 cutover는 Phase H H-2 live dry-run actual + 24h monitoring evidence 후에만 가능하다.
+
+## V3K-PREPARATION-FIRST-SEQUENCE-EXECUTION
+
+- Date: 2026-05-15 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Plan: `docs/plans/2026-05-15_v3k_preparation_first_execution_sequence_plan.md`
+- Update log: `docs/update_log/2026-05-15_v3k_preparation_first_sequence_execution.md`
+- Evidence: `docs/evidence/v3k-preparation-first-sequence-9024e3b9.json`
+- Script: `scripts/audit_v3k_preparation_first_sequence.py`
+- Trigger: 사용자 `ralph` 요청 — `34f038c0` 문서를 기준으로 추천 순서대로 모두 진행
+
+### Result
+
+```text
+preparation_lane_complete: true
+actual_lane_complete: false
+next_actual_gate: phase-h-h2-h3-live-dryrun-await-user-approval
+```
+
+### P1~P5 status
+
+| 순서 | 작업 | 결과 |
+| ---: | --- | --- |
+| P1 | F1 cutover prep package | PASS — dry-run + guarded rollback policy, operating DB write 0건 |
+| P2 | Phase F F-4 prep package | PASS — default-OFF smoke + parity delta 0.00% |
+| P3 | Phase G G-3 prep package | PASS — parity + benchmark 통과 |
+| P4 | F7 closure prep package | PASS — actual evidence absent 시 closure disallow |
+| P5 | 준비 선행 checkpoint | PASS — P1~P4 ready, actual side effects all false |
+
+### Actual lane remains blocked
+
+Actual execution 순서는 변경하지 않는다.
+
+```text
+A1 Phase H H-2 live dry-run
+→ A2 F1 DB cutover
+→ A3 Phase F F-4 ON
+→ A4 Phase G G-3 ON
+→ A5 F7 closure
+```
+
+현재 A1은 사용자 phrase, `V3K_PHASE_H_USER_ACK=1`, GUI Kiwoom login, 24h monitoring evidence 전에는 실행하지 않는다.
+
+### Verification
+
+- `python scripts/audit_v3k_preparation_first_sequence.py --stdout`
+- `python scripts/audit_v3k_preparation_first_sequence.py --evidence docs/evidence/v3k-preparation-first-sequence-9024e3b9.json`
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`
+- `python scripts/verify_nonrelease_sync.py`
+- `git diff --check`
+
+Scope guard:
+
+- No Kiwoom runtime mutation
+- No operating `_database/` write
+- No live connect/login
+- No USER_ACK env var 발급
+- No feature flag default-ON 변경
+- No mission complete commit
+- No direct broker dependency 추가
+
+Directive: preparation lane은 완료되었다. 다음 작업은 A1 Phase H H-2 live dry-run actual이며, 사용자 명시 approval phrase + `V3K_PHASE_H_USER_ACK=1` + GUI Kiwoom login + 24h monitoring evidence 없이는 F1 actual cutover 또는 이후 actual gate로 진행하지 않는다.

@@ -1,0 +1,119 @@
+{
+  "actual_execution_order_unchanged": true,
+  "actual_lane_complete": false,
+  "basis_plan": "docs/plans/2026-05-15_v3k_preparation_first_execution_sequence_plan.md",
+  "evidence_kind": "v3k_preparation_first_sequence",
+  "host_identifier": "9024e3b9",
+  "prep_results": [
+    {
+      "actual_cutover_attempted": false,
+      "cutover_mode": "dry-run",
+      "name": "F1 cutover prep package",
+      "operating_database_write_attempted": false,
+      "ready": true,
+      "rollback_guard_present": true,
+      "shadow_dir_exists": false,
+      "shadow_file_count": 0,
+      "step": "P1",
+      "target_dir_exists": false,
+      "target_file_count": 0,
+      "user_ack_env_issued": false
+    },
+    {
+      "actual_flip_attempted": false,
+      "default_off_smoke_passed": true,
+      "deltas": {
+        "loss_pct": 0.0,
+        "mdd_pct": 0.0,
+        "trade_count_pct": 0.0
+      },
+      "limits": {
+        "loss_pct": 5.0,
+        "mdd_pct": 3.0,
+        "trade_count_pct": 10.0
+      },
+      "live_order_exit_consumption": false,
+      "name": "Phase F F-4 prep package",
+      "operating_database_written": false,
+      "parity_passed": true,
+      "ready": true,
+      "report_path": ".omx/reports/v3k-prep-phase-f-parity.json",
+      "runtime_hook_connected": false,
+      "stdout_tail": [
+        "v3k phase f parity baseline passed: C:\\System_Trading\\STOM\\STOM_V.wt-dev\\.omx\\reports\\v3k-prep-phase-f-parity.json",
+        "deltas: loss=0.00%/5.0%, mdd=0.00%/3.0%, trades=0.00%/10.0%"
+      ],
+      "step": "P2",
+      "user_ack_env_issued": false
+    },
+    {
+      "actual_flip_attempted": false,
+      "benchmark_passed": true,
+      "benchmark_report_path": ".omx/reports/v3k-prep-phase-g-benchmark.json",
+      "broker_runtime_called": false,
+      "elapsed_seconds": 2.306859,
+      "live_decision_consumption": false,
+      "max_peak_bytes": 9600000,
+      "max_seconds": 3.5999999999999996,
+      "name": "Phase G G-3 prep package",
+      "operating_store_written": false,
+      "parity_limit": 0.15,
+      "parity_passed": true,
+      "parity_report_path": ".omx/reports/v3k-prep-phase-g-parity.json",
+      "peak_bytes": 231223,
+      "performance_limit": 0.2,
+      "ready": true,
+      "runtime_hook_connected": false,
+      "step": "P3",
+      "user_ack_env_issued": false
+    },
+    {
+      "actual_evidence_complete": false,
+      "actual_evidence_files": [],
+      "blocked_as_expected": true,
+      "closure_ready": false,
+      "gate_audit_stdout_tail": [
+        "Audit version: V3K_GATE5_GATE6_REVIEW_ONLY_BLOCKED_AUDIT_V1",
+        "Actual gate execution progress remains: 3/6",
+        "Current executable gate remains: phase-h-h2-h3-live-dryrun-await-user-approval",
+        "Blocked review-only targets: f1-actual-db-cutover-await-user-approval, live-order-exit-rule-consumption-await-user-approval"
+      ],
+      "mission_complete_commit_allowed": false,
+      "name": "F7 closure prep package",
+      "ready": true,
+      "step": "P4"
+    },
+    {
+      "actual_execution_blocked_until_user_trigger": true,
+      "actual_side_effects": {
+        "feature_flag_default_on_changed": false,
+        "live_connect_attempted": false,
+        "mission_complete_commit_emitted": false,
+        "operating_database_write_attempted": false,
+        "user_ack_env_issued": false
+      },
+      "name": "Preparation-first checkpoint",
+      "next_actual_gate": "phase-h-h2-h3-live-dryrun-await-user-approval",
+      "prep_steps_ready": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "ready": true,
+      "step": "P5"
+    }
+  ],
+  "preparation_lane_complete": true,
+  "schema_version": 1,
+  "scope_guard": {
+    "feature_flag_default_on_changed": false,
+    "kiwoom_runtime_mutated": false,
+    "live_connect_attempted": false,
+    "mission_complete_commit_emitted": false,
+    "operating_database_write_attempted": false,
+    "user_ack_env_issued": false
+  },
+  "status_plan": "docs/plans/2026-05-15_v3k_step2_to_step6_progress_status_plan.md",
+  "timestamp_utc": "2026-05-15T12:12:04.625334Z"
+}
