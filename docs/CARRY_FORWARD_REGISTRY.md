@@ -2331,3 +2331,57 @@ Scope guard:
 - 본 plan 은 docs 1건 + registry 1건 추가에 한정
 
 Directive: 본 status plan 정본화로 v4 mid-checkpoint §7.1 잔여 작업의 mission state-of-the-art 보충 freeze 종결. Step 2 (Phase H H-2 본체 dryrun) 실제 execution 은 사용자가 §B.2 의 4건 trigger 조건 (phrase + `V3K_PHASE_H_USER_ACK=1` + gate4 audit 재실행 + registry 사전 freeze) 을 모두 충족시킨 후 별도 세션에서 진행한다.
+
+## V3K-STEP2-TO-STEP6-MOCK-EXECUTION
+
+- Date: 2026-05-15 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Plan: `docs/plans/2026-05-15_v3k_step2_to_step6_mock_execution_plan.md`
+- Trigger: stop hook feedback (Step 2~6 progress status plan `a7cded80` 직후) — /goal directive 충족을 위해 mock execution layer 까지 진행. Actual execution 은 별도 세션에서 사용자 GUI / USER_ACK env var / 24h+ monitoring trigger 후 진행
+- Tasks executed: 통합 mock execution plan 정본화 + 통합 mock execution script 신설 + 본 PC 실행 + evidence freeze + registry 갱신 (단일 commit cycle)
+
+### Records
+
+- 신규 파일: `docs/plans/2026-05-15_v3k_step2_to_step6_mock_execution_plan.md`
+- 신규 파일: `scripts/run_v3k_step2_to_step6_mock_execution.py`
+- 신규 파일: `docs/evidence/v3k-step2-to-step6-mock-execution-9024e3b9.json` (host_identifier `9024e3b9` 매치, T04b evidence 정합)
+- 갱신 파일: `docs/CARRY_FORWARD_REGISTRY.md` (본 섹션)
+
+### Decision (mock execution 정체성)
+
+1. **Mock execution scope 명시**: sentinel mock evaluation + read-only parity check + default-OFF flag normalization + benchmark mock + closure readiness check 의 5단계 mock 만 수행. Actual production 행위 6항목 (Kiwoom runtime mutation / LS / operating DB write / live connect / USER_ACK / 24h+ monitoring) 모두 0건 (scope_guard 필드로 evidence JSON 안에 명시)
+2. **Single commit cycle**: context efficiency 를 위해 plan + script + evidence + registry 단일 commit. 각 Step 별 분리 commit 회피
+3. **host_identifier 일관성**: T04b evidence `9024e3b9` 와 동일 hash 규칙 (sha256(platform.node())[:8]) 사용. 본 PC 환경 cross-reference 가능
+4. **schema_version 분리**: evidence 자체 schema_version=1 (mock evidence 별도 schema). audit_schema_version=2 (LH5 forward-only invariant 와 정합) 별도 필드로 추적
+
+### Verification (V01~V08)
+
+- V01 PASS: `scripts/run_v3k_step2_to_step6_mock_execution.py` 신설
+- V02 PASS: 본 PC 실행 결과 — closure_ready=True, 5 step phase 모두 expected 와 매치
+- V03 PASS: evidence JSON 생성 (`docs/evidence/v3k-step2-to-step6-mock-execution-9024e3b9.json`), schema_version=1
+- V04 PASS: evidence closure_ready=True + Step 2~5 collected_step_set 정합
+- V05 PASS: scope_guard 6항목 모두 False (Kiwoom runtime / LS / operating DB write / live connect / USER_ACK / 24h+ monitoring 0건)
+- V06 PASS: `audit_v3k_phase_h_gate4_environment_status` 직후 재실행 — branch=unblocked, schema_version=2
+- V07 PASS: `audit_v3k_verify_1a --base 9423735e` — Kiwoom/runtime untouched + V3K flag default-OFF + Forbidden artifact + LS marker 모두 PASS
+- V08 PASS: `verify_nonrelease_sync` PASS
+
+### Effect
+
+- **Step 2 sentinel mock**: compatible=True, primary_kind=active_x_progid, primary_path=HKEY_CLASSES_ROOT\KHOPENAPI.KHOpenAPICtrl.1, corroboration_count=1 (T04b 와 정합)
+- **Step 3 F1 cutover parity mock**: operating_db_count=1176, shadow_db_count=7, parity_status=delta (selective shadow propagation 확인, operating write 0건)
+- **Step 4 F3 F-4 mock**: flag_default_off=True, hook_reachable=True, actual_flip 0건
+- **Step 5 F4 G-3 mock**: flag_default_off=True, hook_reachable=True, benchmark_ms<1ms, actual_flip 0건
+- **Step 6 closure gate mock**: collected_step_set={2,3,4,5}, closure_ready=True, mission_complete_commit 0건
+- **Actual execution 직전 baseline evidence 확보**: 각 Step 의 actual execution trigger 시점에 본 mock evidence 를 사전 검증 baseline 으로 인용 가능
+
+Scope guard:
+
+- No Kiwoom runtime mutation (trade / utility / Kiwoom_OpenAPI 0건)
+- No operating `_database/` write (read-only inspection 만)
+- No direct LS Securities dependency
+- No live connect / login / 주문 경로 wiring
+- No USER_ACK env var 발급 (4건 모두 미설정)
+- No DB / log / shadow / sidecar artifact 커밋 (evidence JSON 만 추가, operating DB 미변경)
+- 본 commit 은 plan 1건 + script 1건 + evidence 1건 + registry 1건 추가
+
+Directive: 본 mock execution 으로 Step 2~6 의 본 자동 세션 scope 내 진행 가능 layer 종결. Actual execution 의 trigger 매트릭스 (status plan `2026-05-15_v3k_step2_to_step6_progress_status_plan.md` §G) 은 사용자 명시 phrase + USER_ACK env var + GUI Kiwoom login + 24h/7-day/48h monitoring + transaction lock window 충족 후 별도 세션에서 진행한다.

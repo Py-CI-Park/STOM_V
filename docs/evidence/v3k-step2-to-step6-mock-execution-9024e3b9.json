@@ -1,0 +1,78 @@
+{
+  "audit_schema_version": 2,
+  "closure_ready": true,
+  "evidence_kind": "v3k_step2_to_step6_mock_execution",
+  "host_identifier": "9024e3b9",
+  "khopenapi_compatible": true,
+  "schema_version": 1,
+  "scope_guard": {
+    "kiwoom_runtime_mutated": false,
+    "live_connect_attempted": false,
+    "ls_direct_dependency_added": false,
+    "monitoring_24h_or_more_collected": false,
+    "operating_database_write_attempted": false,
+    "user_ack_emitted": false
+  },
+  "step_results": [
+    {
+      "compatible": true,
+      "corroborating_signal_count": 2,
+      "corroboration_count": 1,
+      "hook_enabled_default_off": true,
+      "hook_reachable": true,
+      "live_connect_attempted": false,
+      "order_or_exit_path_changed": false,
+      "phase": "phase-h-h2-sentinel-mock",
+      "primary_exists": true,
+      "primary_kind": "active_x_progid",
+      "primary_path": "HKEY_CLASSES_ROOT\\KHOPENAPI.KHOpenAPICtrl.1",
+      "step": 2
+    },
+    {
+      "operating_db_count": 1176,
+      "operating_dir_exists": true,
+      "operating_write_attempted": false,
+      "parity_status": "delta",
+      "phase": "f1-cutover-shadow-parity-mock",
+      "shadow_db_count": 7,
+      "shadow_dir_exists": true,
+      "step": 3
+    },
+    {
+      "actual_flip_attempted": false,
+      "flag_default_off": true,
+      "flag_normalized": true,
+      "hook_reachable": true,
+      "phase": "f3-phase-f-f4-on-default-off-mock",
+      "step": 4
+    },
+    {
+      "actual_flip_attempted": false,
+      "benchmark_ms": 0.003,
+      "flag_default_off": true,
+      "flag_normalized": true,
+      "hook_reachable": true,
+      "phase": "f4-phase-g-g3-on-default-off-mock",
+      "step": 5
+    },
+    {
+      "closure_ready": true,
+      "collected_step_set": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "expected_step_set": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "mission_complete_commit_emitted": false,
+      "phase": "f7-closure-gate-plan-only",
+      "step": 6
+    }
+  ],
+  "timestamp_utc": "2026-05-15T02:28:31.739878+00:00"
+}
