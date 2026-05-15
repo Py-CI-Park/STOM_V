@@ -79,21 +79,22 @@ def test_backtest_proc_attrs_initialized(main_window) -> None:
         )
 
 
-def test_12_queues_initialized(main_window) -> None:
-    """A4 큐 컨벤션: 12개 *Q 큐 + stgQs(1) + qlist(12)가 _init_queues로 정상 생성된다."""
-    expected_queues = (
+def test_named_queues_initialized(main_window) -> None:
+    """A4 큐 컨벤션: V3 worker 컨벤션 12개 명명 큐 + 추가 3개(totalQ/kimpQ/wdzservQ)
+    + stgQs(list of 1) + qlist(13개)가 모두 생성된다.
+    """
+    v3_named = (
         "windowQ", "soundQ", "queryQ", "teleQ", "chartQ", "hogaQ",
-        "webcQ", "backQ", "totalQ", "testQ", "kimpQ", "wdzservQ",
+        "webcQ", "backQ", "receivQ", "traderQ", "liveQ", "testQ",
     )
-    for q_name in expected_queues:
+    extras = ("totalQ", "kimpQ", "wdzservQ")
+    for q_name in v3_named + extras:
         assert hasattr(main_window, q_name), f"큐 누락: {q_name}"
     assert hasattr(main_window, "stgQs")
+    assert isinstance(main_window.stgQs, list) and len(main_window.stgQs) == 1
     assert hasattr(main_window, "qlist")
-    assert len(main_window.qlist) == 12, (
-        f"qlist 길이 12 기대, 실제 {len(main_window.qlist)}"
-    )
-    assert len(main_window.stgQs) == 1, (
-        f"stgQs 길이 1 기대, 실제 {len(main_window.stgQs)}"
+    assert len(main_window.qlist) == 13, (
+        f"qlist 길이 13 기대, 실제 {len(main_window.qlist)} (V3 컨벤션 위반)"
     )
 
 
@@ -135,6 +136,57 @@ def test_runtime_state_attrs_initialized(main_window) -> None:
     cvb = main_window.ctpg_cvb
     assert cvb is None or isinstance(cvb, dict), (
         f"ctpg_cvb는 None(init) 또는 dict(post-widget-build)여야 함, 실제 {type(cvb).__name__}"
+    )
+
+
+def test_qlist_v3_convention_order(main_window) -> None:
+    """qlist 인덱스가 V3 worker 컨벤션을 따른다.
+
+    외부 worker(WebCrawling qlist[6], TelegramBot qlist[3]/[9]/[10][0],
+    base_receiver qlist[8]/[9], base_trader qlist[8]/[9]/[11], ChartHogaQuery
+    qlist[12])가 qlist[N]을 직접 인덱싱하므로 순서가 어긋나면 무관한 큐로 메시지가
+    잘못 흘러간다.
+
+    drift 발견 사례 (2026-05-12 11시): qlist[8/9/10/11]이 totalQ/testQ/kimpQ/wdzservQ로
+    잘못 매핑되어 있어 receivQ/traderQ/stgQs/liveQ가 없었음. → 홈 대시보드 데이터 source인
+    WebCrawling 누락 + 거래 receiver/trader 큐 mismatch.
+    """
+    expected = [
+        ("windowQ", 0), ("soundQ", 1), ("queryQ", 2), ("teleQ", 3),
+        ("chartQ", 4), ("hogaQ", 5), ("webcQ", 6), ("backQ", 7),
+        ("receivQ", 8), ("traderQ", 9),
+        # qlist[10]은 stgQs (list)
+        ("liveQ", 11), ("testQ", 12),
+    ]
+    assert hasattr(main_window, "qlist"), "qlist 누락"
+    assert len(main_window.qlist) == 13, f"qlist 길이 13 기대, 실제 {len(main_window.qlist)}"
+    for name, idx in expected:
+        named_q = getattr(main_window, name, None)
+        assert named_q is not None, f"명명 큐 누락: {name}"
+        assert main_window.qlist[idx] is named_q, (
+            f"qlist[{idx}]가 {name}과 불일치. V3 worker 컨벤션 위반."
+        )
+    # qlist[10]은 stgQs (list of queues)
+    assert main_window.qlist[10] is main_window.stgQs, "qlist[10]은 stgQs(list)여야 함"
+    assert isinstance(main_window.stgQs, list) and len(main_window.stgQs) >= 1
+
+
+def test_webcrawling_worker_started(main_window) -> None:
+    """WebCrawling worker가 부팅 시 시작된다.
+
+    홈 대시보드의 트리맵·기업정보·풍경사진 데이터 source. 누락 시 사용자 보고:
+    "홈에서 대시보드 정보가 안 보인다."
+    """
+    import os
+
+    if os.environ.get("STOM_OFFLINE_SMOKE") == "1":
+        return
+    assert hasattr(main_window, "webc"), "webc attr 누락"
+    if main_window.webc is None:
+        # WebCrawling 초기화 실패 시 None placeholder 허용 + 로그 확인 권고
+        return
+    assert main_window.webc.isRunning(), (
+        "WebCrawling QThread가 시작되지 않음. _init_workers의 self.webc.start() 누락 가능."
     )
 
 

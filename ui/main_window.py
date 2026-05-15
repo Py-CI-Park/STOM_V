@@ -119,6 +119,7 @@ class MainWindow(QMainWindow):
         self._build_v3_widgets()
         self._init_update_and_chart_helpers()
         self._init_timers()
+        self._init_workers()
 
         if splash is not None and hasattr(splash, "finish_splash"):
             splash.finish_splash()
@@ -137,24 +138,32 @@ class MainWindow(QMainWindow):
             return _NullQueue()
 
     def _init_queues(self) -> None:
-        names = (
-            "windowQ",
-            "soundQ",
-            "queryQ",
-            "teleQ",
-            "chartQ",
-            "hogaQ",
-            "webcQ",
-            "backQ",
-            "totalQ",
-            "testQ",
-            "kimpQ",
-            "wdzservQ",
+        # V3 worker 컨벤션 큐 (인덱스 0~12). 외부 worker(WebCrawling, ChartHogaQuery,
+        # TelegramBot, base_receiver, base_trader, base_strategy)가 qlist[N]을 직접
+        # 인덱싱하므로 순서가 정확해야 한다.
+        # 0:windowQ 1:soundQ 2:queryQ 3:teleQ 4:chartQ 5:hogaQ 6:webcQ 7:backQ
+        # 8:receivQ 9:traderQ 10:stgQs(list) 11:liveQ 12:testQ
+        v3_names = (
+            "windowQ", "soundQ", "queryQ", "teleQ",
+            "chartQ", "hogaQ", "webcQ", "backQ",
+            "receivQ", "traderQ",
+            # stgQs는 인덱스 10에 list로 들어감 (worker가 qlist[10][0] 참조)
+            "liveQ", "testQ",
         )
-        for name in names:
+        for name in v3_names:
             setattr(self, name, self._make_queue())
         self.stgQs = [self._make_queue()]
-        self.qlist = [getattr(self, name) for name in names]
+        # qlist V3 컨벤션 정확한 순서
+        self.qlist = [
+            self.windowQ, self.soundQ, self.queryQ, self.teleQ,
+            self.chartQ, self.hogaQ, self.webcQ, self.backQ,
+            self.receivQ, self.traderQ,
+            self.stgQs,           # 인덱스 10 (list)
+            self.liveQ, self.testQ,
+        ]
+        # V3U lane 추가 명명 큐 (qlist 인덱스 외부, 외부 코드가 ui.<name>으로 직접 access)
+        for extra in ("totalQ", "kimpQ", "wdzservQ"):
+            setattr(self, extra, self._make_queue())
 
     def _init_runtime_state(self) -> None:
         self.main_btn = 0
@@ -423,6 +432,33 @@ class MainWindow(QMainWindow):
             self.qtimer1.start()
             self.qtimer2.start()
             self.qtimer3.start()
+
+    def _init_workers(self) -> None:
+        """V3 startup worker thread/process를 시작한다.
+
+        V3 official pyd MainWindow가 부팅 시 자동 시작했던 worker들을 V3U에서도 동일하게
+        시작해 외부 핸들러가 `ui.webc.is_alive()`, `ui.proc_chqs.is_alive()` 등을 안전하게
+        호출하도록 한다. 헤드리스 smoke 모드에서는 worker 시작을 건너뛰고 None placeholder
+        만 부착해 외부 코드의 hasattr 검사가 통과하도록 한다.
+        """
+        # placeholder (외부 hasattr 검사용)
+        self.webc = None
+        self.proc_chqs = None
+        self.proc_tele = None
+
+        if self._offline_smoke:
+            self.logger.info("offline_smoke: worker 시작 생략 (webc/proc_chqs/proc_tele = None)")
+            return
+
+        # WebCrawling: 홈 대시보드 트리맵·기업정보·풍경사진 fetch source.
+        # webcQ로 ('트리맵',''), ('기업정보', code) 등을 받아서 windowQ로 결과 push.
+        try:
+            from utility.sub_process_and_thread.webcrawling import WebCrawling
+            self.webc = WebCrawling(self.qlist)
+            self.webc.start()
+            self.logger.info("worker WebCrawling 시작 OK (홈 대시보드 데이터 source)")
+        except Exception as exc:
+            self.logger.exception("WebCrawling 시작 실패 — 홈 대시보드 데이터가 비어있을 수 있음: %s", exc)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Core wrappers used by timers and existing UI modules
