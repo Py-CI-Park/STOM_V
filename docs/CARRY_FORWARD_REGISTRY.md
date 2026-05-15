@@ -2284,3 +2284,50 @@ Scope guard:
 - Historical audit script (`b6327b30`) unchanged
 
 Directive: Phase H §K.5 amend로 v4 mid-checkpoint §7.1 1순위 잔여 작업 종결. 다음 잔여 작업(우선 2: Phase H H-2 본체 dry-run plan)은 별도 ralplan + 사용자 명시 승인 + KHOPENAPI 환경 재확인 + V3K_PHASE_H_USER_ACK=1 필수.
+
+## V3K-STEP2-TO-STEP6-STATUS
+
+- Date: 2026-05-15 KST
+- Branch/lane: `STOM_Version_2U_C`
+- Plan: `docs/plans/2026-05-15_v3k_step2_to_step6_progress_status_plan.md` (status 보고서, implementation plan 아님)
+- Trigger: v4 mid-checkpoint `9423735e` §7.1 잔여 작업 + Step 1 closure (`f318d1c1` / `33aa50c5` / `0c1735d4`) 직후 보충 status freeze
+- Tasks executed: 본 progress status plan 정본화 + registry 갱신 (단일 commit)
+
+### Records
+
+- 신규 파일: `docs/plans/2026-05-15_v3k_step2_to_step6_progress_status_plan.md` (Step 2~6 진척 status 보고서)
+- 갱신 파일: `docs/CARRY_FORWARD_REGISTRY.md` (본 섹션 추가)
+
+### Decision
+
+1. **본 plan 정체성 명시**: Step 2~6 실제 implementation plan 의 대체물이 아닌, mission state-of-the-art freeze 의 status 보고서로 정본화
+2. **자동 vs 수동 경계 명문화**: Step 2~6 각 단계의 plan ralplan 은 자동, execution trigger (USER_ACK env var + 사용자 명시 phrase + GUI Kiwoom OCX login + 24h/7-day/48h monitoring + transaction lock window 등) 은 본질적으로 수동 사용자 개입 필수
+3. **다음 trigger 매트릭스 §G**: Step 2~6 의 의존 / 자동 가능 / 수동 trigger / 시간 경과 항목을 단일 표로 정리. 총 최소 monitoring 경과 시간 24h + 7-day + 24h + 48h ≈ 11일 (이상적 fast-path)
+4. **운영자 수동 개입 7항목 §H**: 본 자동 세션 scope 외 항목을 명시. 별도 세션에서 사용자 직접 trigger 후 진행
+5. **v5 mid-checkpoint 기준선 명시**: 본 plan 은 v4 mid-checkpoint `9423735e` 시점 진척률 50.0% 의 직후 보충 status 이며, 다음 v5 mid-checkpoint 가 정본화될 때까지 운영 기준선으로 사용
+
+### Verification
+
+- VS1 PASS: docs/plans/2026-05-15_v3k_step2_to_step6_progress_status_plan.md 작성 완료
+- VS2 PASS: 본 plan §J Scope guard 준수 (runtime mutation 0건, USER_ACK env var 발급 0건, DB/log/shadow/sidecar 미커밋)
+- VS3 PASS: docs/plans/2026-05-12_v3k_phase_h_live_kiwoom_dryrun_plan.md (H-2 본체) 기 정본화 사실 확인
+- VS4 PASS: docs/plans/2026-05-15_v3k_phase_h_lh4_clarification_plan.md (Step 1) 직후 freeze 확인
+- VS5 PASS: registry V3K-STEP2-TO-STEP6-STATUS 섹션 신설
+
+### Effect
+
+- **Mission state-of-the-art 보충 freeze**: v4 mid-checkpoint 이후 Step 1 closure 까지 반영한 진척 보고서로 다음 trigger 시점에 운영자가 즉시 참조 가능
+- **다음 trigger 조건 명확화**: 각 Step (2~6) 의 trigger 조건이 단일 매트릭스로 정리되어, 별도 세션에서 사용자가 trigger 단계를 진입할 때 누락/순서 오류 방지
+- **자동 vs 수동 경계 명문화**: 본 자동 세션 scope 외 항목 (GUI Kiwoom OCX login, USER_ACK env var, 24h/7-day/48h monitoring, transaction lock window, rollback 의사결정 등) 이 7건으로 한정되어 다음 세션 운영자 개입 범위 사전 합의
+
+Scope guard:
+
+- No Kiwoom runtime mutation (trade / utility / Kiwoom_OpenAPI 0건)
+- No operating `_database/` write
+- No direct LS Securities dependency
+- No USER_ACK env var 발급
+- No live connect / login / 주문 경로 wiring
+- No DB / log / shadow / sidecar artifact 커밋
+- 본 plan 은 docs 1건 + registry 1건 추가에 한정
+
+Directive: 본 status plan 정본화로 v4 mid-checkpoint §7.1 잔여 작업의 mission state-of-the-art 보충 freeze 종결. Step 2 (Phase H H-2 본체 dryrun) 실제 execution 은 사용자가 §B.2 의 4건 trigger 조건 (phrase + `V3K_PHASE_H_USER_ACK=1` + gate4 audit 재실행 + registry 사전 freeze) 을 모두 충족시킨 후 별도 세션에서 진행한다.
