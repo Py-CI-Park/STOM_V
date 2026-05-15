@@ -20,6 +20,10 @@ from strategy.v3k_kiwoom_dryrun_hook import (  # noqa: E402
     LOGIN_REGISTRATION_METHODS,
     V3KKiwoomDryrunHook,
 )
+from strategy.v3k_kiwoom_sentinel import KHOPENAPI_PROGID  # noqa: E402
+
+
+AUDIT_SCHEMA_VERSION = 2
 
 
 REPORT_DIR = ROOT / ".omx" / "reports"
@@ -116,14 +120,28 @@ def _assert_runtime_paths_clean() -> None:
 
 
 def build_report() -> dict[str, Any]:
-    candidates = _candidate_rows()
-    compatible = [row for row in candidates if row["exists"]]
+    # Synthesis 1 (plan §B.2 / §B.4): primary signal S1 ActiveX ProgID 단독
+    # = `khopenapi_compatible`. corroborating signals (S2 OPENAPI_PATH dir +
+    # S3 legacy DLL) are evidence-only, never affect compatibility (V07).
+    hook = V3KKiwoomDryrunHook()
+    sentinel = hook.resolve_khopenapi_sentinel()
+    primary_signal = {
+        "source": "ActiveX ProgID",
+        "path": sentinel.primary_path,
+        "exists": sentinel.primary_exists,
+    }
+    corroborating = list(sentinel.corroborating_signals)
+    candidates = _candidate_rows()  # backward-compat legacy DLL list (Rev3)
     return {
-        "schema_version": 1,
+        "schema_version": AUDIT_SCHEMA_VERSION,
         "phase": "V3K-PHASE-H-H1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "khopenapi_env_var": ENV_KHOPENAPI_DLL,
-        "khopenapi_compatible": bool(compatible),
+        "khopenapi_progid": KHOPENAPI_PROGID,
+        "khopenapi_compatible": sentinel.compatible,
+        "khopenapi_primary_signal": primary_signal,
+        "khopenapi_corroborating_signals": corroborating,
+        "khopenapi_corroboration_count": sentinel.corroboration_count,
         "candidates": candidates,
         "contract_only": True,
         "live_connect_attempted": False,
