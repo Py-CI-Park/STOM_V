@@ -430,6 +430,25 @@ Phase H H-3 ON commit 후 본 plan freeze.
 
 본 plan 실행 전 `--deliberate` ralplan 재합의 필수. live Kiwoom runtime 인접성으로 pre-mortem 3 시나리오(disconnect / OCX state 손상 / dry-run log 누설) + expanded test plan 보강 권장.
 
+### K.5 audit script identity policy + 분기 logic + LH5 schema invariant (amend, 분기 plan `2026-05-15_v3k_phase_h_lh4_clarification_plan.md` 합의 결과)
+
+본 절은 v2-compat sentinel plan(`4d132139`)에서 별도 분기 plan으로 위임된 §K.7 freeze 예외 사안의 통합 정정이며, 분기 plan(`docs/plans/2026-05-15_v3k_phase_h_lh4_clarification_plan.md`, ralplan iteration 2 APPROVE 합의)의 §K.5 amend 결정을 본 plan에 반영한다. K.1–K.4 본문은 무변경(추가만 허용).
+
+**audit script identity policy (Option B 채택)**: `scripts/audit_v3k_phase_h_gate4_blocked_environment.py`는 commit `b6327b30`의 historical audit trail로 frozen 보존한다. 신규 `scripts/audit_v3k_phase_h_gate4_environment_status.py`(`V3K_PHASE_H_GATE4_ENV_STATUS_AUDIT_V1`)를 병렬 추가하여 active polling을 담당한다. rename(Option A)은 audit immutability + docs freeze 충돌 우려로 명시 거부.
+
+**`primary_signal.exists` 분기 logic (LH4 ↔ V07 invariant)**:
+
+| `primary_signal.exists` | 활성 audit | 동작 |
+| --- | --- | --- |
+| `True` | `audit_v3k_phase_h_gate4_environment_status.py` (unblocked branch) | `khopenapi_compatible=True` 검증 + H-2 dry-run은 별도 사용자 명시 승인 + `V3K_PHASE_H_USER_ACK=1` 필수 |
+| `False` | `audit_v3k_phase_h_gate4_environment_status.py` (blocked_or_pending branch) + historical script | 기존 blocked 동작 검증 보존 |
+
+V05 결정 룰(분기 plan §D.1)과 정합. 어느 branch도 live connect/login 시도 + 주문/청산 경로 변경 0건을 자동 검증.
+
+**LH5 forward-only schema invariant (신규 lifetime invariant)**: audit JSON `schema_version >= 2` artifact에만 적용한다. `schema_version == 1` historical audit(예: `b6327b30` 시점 결과)은 적용 범위 외이며 retroactive 재평가하지 않는다. 신규 LH 추가 또는 audit JSON 구조 변경은 schema_version 정수 bump를 동반한다.
+
+**K.6/K.7 위임**: 미래 추가 freeze 예외/lifetime invariant 사안은 본 plan §K에 K.6/K.7로 amend하지 않고 별도 분기 plan으로 위임한다. 본 §K.5 단일 절 신설로 분기 plan §I.6 합의를 충족한다.
+
 ---
 
 ## L. 관련 문서 (Phase A plan §K.5 + F2 §3.3 의무 인용)
