@@ -3,9 +3,14 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping, Protocol
+from typing import Any, Callable, Literal, Mapping, Protocol
 
 from strategy.v3k_analyzer_adapter import normalize_v3k_flags
+from strategy.v3k_kiwoom_sentinel import (
+    collect_corroborating_signals,
+    corroboration_count,
+    probe_primary_signal,
+)
 
 
 FLAG_PHASE_H_KIWOOM_DRYRUN = "V3K_PHASE_H_KIWOOM_DRYRUN"
@@ -42,6 +47,31 @@ class V3KPhaseHRegisterResult:
     listener_method: str | None = None
     khopenapi_path: str | None = None
     diagnostics: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class V3KSentinelResult:
+    """V2-compat Kiwoom sentinel probe result (Synthesis 1, plan §B.5).
+
+    ``primary_kind`` reflects the primary signal definition (always ActiveX
+    ProgID in the current contract); ``"absent"`` is reserved for hosts where
+    winreg is unavailable. ``corroborating_signals`` holds S2/S3 evidence as
+    plain dict rows for audit JSON emit (L7). ``compatible`` is the V07
+    invariant: ``khopenapi_compatible == primary_exists`` (no OR/quorum).
+    """
+
+    primary_kind: Literal["active_x_progid", "openapi_path_dir", "legacy_dll", "absent"]
+    primary_path: str
+    primary_exists: bool
+    corroborating_signals: tuple[dict[str, Any], ...]
+
+    @property
+    def compatible(self) -> bool:
+        return self.primary_exists
+
+    @property
+    def corroboration_count(self) -> int:
+        return corroboration_count(self.corroborating_signals)
 
 
 class V3KKiwoomDryrunHook:
@@ -95,6 +125,38 @@ class V3KKiwoomDryrunHook:
         if found is None:
             raise SystemExit("KHOPENAPI environment required for Phase H")
         return found
+
+    def resolve_khopenapi_sentinel(self) -> V3KSentinelResult | None:
+        """V2-compat Kiwoom sentinel probe (Synthesis 1, plan §B.2 + §B.4).
+
+        Returns a frozen ``V3KSentinelResult`` whose ``compatible`` property is
+        the audit JSON's ``khopenapi_compatible`` source of truth. Primary
+        signal is the ActiveX ``KHOPENAPI.KHOpenAPICtrl.1`` ProgID; S2/S3 are
+        corroborating evidence only and never modify ``compatible`` (V07).
+
+        Caller routing: this method is intended for the audit emitter (plan
+        §B.5 caller routing). The existing ``resolve_khopenapi_path()`` and
+        ``require_khopenapi_environment()`` callers stay on ``Path | None`` and
+        are not affected.
+        """
+        primary = probe_primary_signal()
+        extra_legacy: tuple[str, ...] = ()
+        if self.khopenapi_path is not None:
+            extra_legacy = (str(self.khopenapi_path),)
+        else:
+            env_path = os.environ.get(ENV_KHOPENAPI_DLL)
+            if env_path:
+                extra_legacy = (env_path,)
+        corroborating = collect_corroborating_signals(extra_legacy)
+        primary_kind: Literal[
+            "active_x_progid", "openapi_path_dir", "legacy_dll", "absent"
+        ] = "active_x_progid"
+        return V3KSentinelResult(
+            primary_kind=primary_kind,
+            primary_path=str(primary["path"]),
+            primary_exists=bool(primary["exists"]),
+            corroborating_signals=corroborating,
+        )
 
     def register(self, receiver: LoginReceiver) -> V3KPhaseHRegisterResult:
         if not self.enabled:
