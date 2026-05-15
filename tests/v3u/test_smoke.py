@@ -171,6 +171,43 @@ def test_qlist_v3_convention_order(main_window) -> None:
     assert isinstance(main_window.stgQs, list) and len(main_window.stgQs) >= 1
 
 
+def test_v3_helper_attr_names(main_window) -> None:
+    """외부 코드가 참조하는 V3 expected helper attr 이름이 모두 존재한다.
+
+    drift 발견 (2026-05-12 11시): update_crawling_data.py가 ui.draw_homechart
+    (밑줄 없음)를 호출하나 V3U는 ui.draw_home_chart(밑줄)로만 부착했음.
+    → 홈 대시보드 데이터를 받아도 어디에 그릴지 모름 → "데이터 검색 중 ..." 영구 표시.
+    """
+    expected = (
+        "draw_chart", "draw_realchart", "draw_treemap",
+        "draw_homechart", "draw_home_chart",  # 둘 다 alias로 존재해야 함
+        "update_textedit", "update_tablewidget",
+        "update_crawling_data", "update_telegram_msg",
+    )
+    for attr in expected:
+        assert hasattr(main_window, attr), f"V3 helper attr 누락: ui.{attr}"
+
+
+def test_webcrawling_signal_connected(main_window) -> None:
+    """WebCrawling.signal이 update_crawling_data 핸들러에 연결된다.
+
+    누락 시 fetch는 일어나지만 결과를 받을 곳이 없어 home_label_001~009가
+    영원히 'placeholder'로 남는다.
+    """
+    import os
+
+    if os.environ.get("STOM_OFFLINE_SMOKE") == "1":
+        return
+    if main_window.webc is None:
+        return
+    # PyQt signal에는 receivers count 함수가 있음
+    receivers = main_window.webc.receivers(main_window.webc.signal)
+    assert receivers >= 1, (
+        "webc.signal에 connect된 핸들러가 0개. _init_workers에서 "
+        "self.webc.signal.connect(self.update_crawling_data.update_crawling_data) 누락 가능."
+    )
+
+
 def test_webcrawling_worker_started(main_window) -> None:
     """WebCrawling worker가 부팅 시 시작된다.
 

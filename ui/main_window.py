@@ -399,21 +399,30 @@ class MainWindow(QMainWindow):
             from ui.draw_chart.draw_treemap import DrawTremap
             from ui.update_widget.update_tablewidget import UpdateTablewidget
             from ui.update_widget.update_textedit import UpdateTextedit
+            from ui.update_widget.update_crawling_data import UpdateCrawlingData
+            from ui.update_widget.update_telegram_msg import UpdateTelegramMsg
 
             self.update_textedit = UpdateTextedit(self)
             self.update_tablewidget = UpdateTablewidget(self)
+            self.update_telegram_msg = UpdateTelegramMsg(self)
+            self.update_crawling_data = UpdateCrawlingData(self)
             self.draw_chart = DrawDBChart(self)
             self.draw_realchart = DrawRealChart(self)
             self.draw_treemap = DrawTremap(self)
-            self.draw_home_chart = DrawHomeChart(self)
+            # V3 expected attr 이름: draw_homechart (밑줄 없음). draw_home_chart는 alias.
+            self.draw_homechart = DrawHomeChart(self)
+            self.draw_home_chart = self.draw_homechart
         except Exception:
             self.logger.exception("failed to initialize update/chart helpers")
             self.update_textedit = _NullWorker()
             self.update_tablewidget = _NullWorker()
+            self.update_telegram_msg = _NullWorker()
+            self.update_crawling_data = _NullWorker()
             self.draw_chart = _NullWorker()
             self.draw_realchart = _NullWorker()
             self.draw_treemap = _NullWorker()
-            self.draw_home_chart = _NullWorker()
+            self.draw_homechart = _NullWorker()
+            self.draw_home_chart = self.draw_homechart
 
     def _init_timers(self) -> None:
         self.qtimer1 = QTimer(self)
@@ -451,10 +460,17 @@ class MainWindow(QMainWindow):
             return
 
         # WebCrawling: 홈 대시보드 트리맵·기업정보·풍경사진 fetch source.
-        # webcQ로 ('트리맵',''), ('기업정보', code) 등을 받아서 windowQ로 결과 push.
+        # webcQ로 ('트리맵',''), ('기업정보', code) 등을 받고, 결과는 pyqtSignal로 emit.
+        # V3 official MainWindow가 했어야 할 것: webc.signal.connect로 수신 핸들러 연결.
         try:
             from utility.sub_process_and_thread.webcrawling import WebCrawling
             self.webc = WebCrawling(self.qlist)
+            handler = getattr(self.update_crawling_data, "update_crawling_data", None)
+            if callable(handler):
+                self.webc.signal.connect(handler)
+                self.logger.info("worker WebCrawling.signal connected to update_crawling_data")
+            else:
+                self.logger.warning("update_crawling_data 핸들러 없음 — 홈차트 데이터가 표시되지 않을 수 있음")
             self.webc.start()
             self.logger.info("worker WebCrawling 시작 OK (홈 대시보드 데이터 source)")
         except Exception as exc:
