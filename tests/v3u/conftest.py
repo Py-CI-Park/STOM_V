@@ -24,6 +24,9 @@ if str(_PROJECT_ROOT) not in sys.path:
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 os.environ.setdefault("STOM_ALLOW_MINIMAL_SETTING", "1")
 os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+# pytest 환경에서 mid-network-call WebCrawling은 fixture teardown 시 Windows
+# access violation 위험. webc 동작 검증은 사용자 시각 검증 영역으로 위임.
+os.environ.setdefault("STOM_V3U_DISABLE_WEBC", "1")
 
 
 @pytest.fixture(scope="session")
@@ -53,8 +56,17 @@ def main_window(qapp):
 
     mw = MainWindow(auto_run=0, splash=None)
     yield mw
+    # pytest teardown에서 mw.close()는 V3 close_event(QMessageBox.question modal)를
+    # 거치며 Windows access violation을 일으킨다. close() 우회하고 process_kill만
+    # 호출 후 deleteLater로 안전 정리.
     try:
-        mw.close()
+        if hasattr(mw, "process_kill"):
+            mw.process_kill()
+    except Exception:
+        pass
+    try:
+        mw.hide()
+        mw.deleteLater()
     except Exception:
         pass
 

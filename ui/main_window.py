@@ -459,6 +459,12 @@ class MainWindow(QMainWindow):
             self.logger.info("offline_smoke: worker 시작 생략 (webc/proc_chqs/proc_tele = None)")
             return
 
+        # pytest 환경에서 mid-network-call WebCrawling이 fixture teardown에서
+        # Windows access violation을 일으키므로 명시적으로 비활성화 가능.
+        if os.environ.get("STOM_V3U_DISABLE_WEBC") == "1":
+            self.logger.info("STOM_V3U_DISABLE_WEBC=1: WebCrawling 시작 생략")
+            return
+
         # WebCrawling: 홈 대시보드 트리맵·기업정보·풍경사진 fetch source.
         # webcQ로 ('트리맵',''), ('기업정보', code) 등을 받고, 결과는 pyqtSignal로 emit.
         # V3 official MainWindow가 했어야 할 것: webc.signal.connect로 수신 핸들러 연결.
@@ -481,6 +487,57 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------------------------------------------------------------------------
     def Qtimer1Start(self) -> None:
         self.qtimer1.start()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Shutdown / cleanup (V3 close_event delegates here)
+    # -----------------------------------------------------------------------------------------------------------------
+    def process_kill(self) -> None:
+        """V3 ui/event_keypress/overwrite_event_filter.py:close_event가 호출하는 shutdown hook.
+
+        timer/worker를 안전하게 정지해 종료 시 multiprocessing.Queue 핸들 invalid OSError를
+        방지한다. 향후 추가 worker(proc_chqs, proc_tele 등) 시작되면 본 메서드에 종료 호출
+        추가 필요.
+        """
+        try:
+            for tname in ("qtimer1", "qtimer2", "qtimer3"):
+                t = getattr(self, tname, None)
+                if t is not None and t.isActive():
+                    t.stop()
+            self.logger.info("process_kill: timers stopped")
+        except Exception:
+            self.logger.exception("process_kill: timer stop 실패")
+
+        webc = getattr(self, "webc", None)
+        if webc is not None:
+            try:
+                if hasattr(webc, "isRunning") and webc.isRunning():
+                    # WebCrawling.run()은 while True + 네트워크 IO. mid-request
+                    # terminate()는 Windows access violation 발생 가능. quit() +
+                    # wait(short timeout)로 polite 종료 후 그래도 안 죽으면
+                    # silent skip — main process 종료 시 OS가 cleanup 처리.
+                    webc.quit()
+                    if hasattr(webc, "wait"):
+                        webc.wait(500)
+                    if webc.isRunning():
+                        self.logger.info(
+                            "process_kill: webc graceful 종료 timeout — main exit에 위임"
+                        )
+                    else:
+                        self.logger.info("process_kill: webc 종료 OK")
+            except Exception:
+                self.logger.exception("process_kill: webc 종료 실패")
+
+    def closeEvent(self, event) -> None:  # noqa: N802 (Qt API)
+        """창 닫기 이벤트. V3 close_event 핸들러로 위임 (없으면 process_kill 직접 호출)."""
+        try:
+            from ui.event_keypress.overwrite_event_filter import close_event
+            close_event(self, event)
+        except Exception:
+            self.logger.exception("closeEvent: V3 close_event 호출 실패 — process_kill 직접 호출")
+            try:
+                self.process_kill()
+            finally:
+                event.accept()
 
     def ProcessStarter(self) -> None:
         from ui.etcetera.process_starter import process_starter

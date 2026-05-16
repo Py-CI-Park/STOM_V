@@ -253,17 +253,37 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 결함 #10 (2026-05-16): closeEvent + process_kill 누락 → 종료 시 OSError
+
+- 카테고리: B (worker startup의 짝, lifecycle cleanup)
+- 발견 경로: 사용자 stom.py 종료 후 stderr Traceback
+- 외부 호출 site: `ui/event_keypress/overwrite_event_filter.py:266` `ui.process_kill()`,
+  `ui/event_click/button_clicked_backtest_start.py:514` `QTimer.singleShot(180*1000, ui.process_kill)`
+- 우리 누락 위치: `ui/main_window.py`에 `closeEvent`/`process_kill` 메서드 자체가 없음
+- 증상: WebCrawling.run()의 while 루프가 main 프로세스 종료 시점에도 계속 동작 →
+  multiprocessing.Queue.empty() 호출 중 핸들 invalid → `OSError [WinError 6]
+  핸들이 잘못되었습니다`. pytest fixture teardown에서도 동일 access violation.
+- 수정 커밋: (본 사이클)
+- 회귀 테스트: `tests/v3u/test_smoke.py::test_process_kill_method_present`,
+  `test_process_kill_stops_timers_only`
+- 부수 결함: pytest 환경에서 V3 close_event가 QMessageBox.question modal을 띄우며
+  access violation 유발. conftest의 main_window fixture가 `mw.close()` 대신
+  `process_kill() + hide() + deleteLater()`로 우회. `STOM_V3U_DISABLE_WEBC=1`
+  env var 추가로 pytest에서 webc start 자체를 건너뜀.
+- 근본 원인 매핑: §3-2 (2U process_kill 패턴 미반영), §3-5 (worker lifecycle wiring 누락)
+- 재발 방지 액션 매핑: §5-1 (2U lifecycle pattern import 필요)
+
 ---
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-12 11:30 시점) |
+| 측정 | 값 (2026-05-16 시점) |
 |---|---|
-| 총 발견 결함 | 9 |
-| 자동 회귀 테스트 추가 | 11 (사이클 1 추가분 4 + 갱신 2 + 신규 5) |
-| pytest 케이스 총수 | 37 |
-| 수정 커밋 누적 | 3 (72308bca, b72f0162, 25f61980) |
-| 사용자 시각 검증 사이클 | 3회 |
+| 총 발견 결함 | 10 |
+| 자동 회귀 테스트 추가 | 13 (사이클 1: 11, 사이클 2: +2 process_kill) |
+| pytest 케이스 총수 | 39 |
+| 수정 커밋 누적 | 4 (72308bca, b72f0162, 25f61980, 본 사이클) |
+| 사용자 시각 검증 사이클 | 4회 (3차 시각 + 1차 종료 후 stderr 추적) |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
 | 근본 원인 카테고리 | 5 (§3) |
 | 재발 방지 액션 | 5 (§5) — 적용 3, 미적용 2 |
