@@ -2507,3 +2507,68 @@ Scope guard:
 - No direct broker dependency 추가
 
 Directive: preparation lane은 완료되었다. 다음 작업은 A1 Phase H H-2 live dry-run actual이며, 사용자 명시 approval phrase + `V3K_PHASE_H_USER_ACK=1` + GUI Kiwoom login + 24h monitoring evidence 없이는 F1 actual cutover 또는 이후 actual gate로 진행하지 않는다.
+
+---
+
+## V3K-FEATURE-TO-PAGE-MAPPING
+
+Records: V3 신기능 8개 기능군과 잔여 5 페이지(Step 2~6) 사이의 1:N 매핑을 단일 지도로 정본화한다. prior `docs/update_log/2026-05-08_v3k_full_feature_migration_goal_reset.md` §4.1과 `docs/update_log/2026-05-15_v3k_midpoint_checkpoint_cd6f5bd_to_4dbac74f.md` §5.1을 합쳐 단일 표로 제공.
+
+Decision: 본 plan은 prior 두 문서를 supersede하지 않고 보완 공존한다. F6 산식 표기(`350/700 = 50.0%`)는 mid-checkpoint와 동일하게 유지한다. 페이지별 활성화되는 V3 기능과 sidecar source-of-truth, monitoring 기간, 사전 조건이 단일 지도에 명시된다.
+
+Plan: `docs/plans/2026-05-20_v3k_feature_to_page_mapping_overview_plan.md`
+
+Verification:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`
+- `python scripts/verify_nonrelease_sync.py`
+- `git diff --check`
+
+Effect: 잔여 5 페이지의 후속 plan들은 본 지도 §4.x를 baseline으로 인용한다. 부분반영 항목(#3 GUI setting persistence, #4 formula globals)은 페이지 3/4 sidecar 작업으로 자동 흡수된다.
+
+Scope guard:
+
+- No code change
+- No operating `_database/` write
+- No `_database_v3k_shadow/` 변경
+- No `_v3k_sidecar/` 토글 변경
+- No live connect/login
+- No USER_ACK env var 발급
+- No feature flag default-ON 변경
+
+Directive: 본 지도가 잔여 페이지 작업의 단일 baseline이다. 후속 page plan은 본 지도 §4.x 셀을 인용한다.
+
+---
+
+## V3K-PHASE-H-H2-RUNNER-PREP
+
+Records: `phase_h_live_kiwoom_dryrun_plan.md` §C T05/T06 task의 P-lane 실행 plan을 정본화한다. T05 runner(`scripts/run_v3k_phase_h_dryrun.py`) + T06 health smoke(`scripts/smoke_v3k_phase_h_post_health.py`) 코드 작성에 대한 분해, 가드 체인(G1~G5), 검증 시나리오, scope_guard를 단일 plan에 고정.
+
+Decision: T05 runner는 G1~G5 가드 체인(--ack 인자, --account-mode read-only, `V3K_PHASE_H_USER_ACK=1` env, T03 sentinel, host_identifier)을 통과해야만 실제 connect를 시도한다. 본 P-lane plan commit은 G3 가드에서 abort하도록 default-OFF 유지. A-lane(actual execution) 진입은 본 plan 종료 후 별도 사용자 phrase + USER_ACK 발급 시점.
+
+Plan: `docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md`
+
+Verification:
+
+- `python -m py_compile scripts/run_v3k_phase_h_dryrun.py`
+- `python -m py_compile scripts/smoke_v3k_phase_h_post_health.py`
+- G1~G5 abort 시나리오 5건 PASS
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`
+- `python scripts/verify_nonrelease_sync.py`
+- `git diff --check`
+
+Effect: 본 P-lane plan 종료 후 사용자 phrase + `V3K_PHASE_H_USER_ACK=1` 발급 시점에 A-lane 진입 가능. A1(Phase H H-2 actual)이 통과하면 24h monitoring 후 Step 3(F1 cutover)으로 진입.
+
+Scope guard:
+
+- No Kiwoom runtime mutation
+- No operating `_database/` write
+- No live connect/login (G3 가드에서 abort)
+- No USER_ACK env var 발급
+- No feature flag default-ON 변경
+- No LS direct dependency
+- No `_v3k_sidecar/` 토글 변경
+
+Directive: T05/T06 작성 후 G1~G5 가드 체인 abort 5건이 모두 PASS인 시점까지 P-lane이다. G3 가드를 통과시키는 환경 설정(USER_ACK env)을 발급하는 순간 A-lane 진입이므로, 본 P-lane plan commit 단계에서는 USER_ACK env를 절대 발급하지 않는다.
