@@ -318,6 +318,7 @@ V3U lane의 결함 이력·근본 원인·재발 방지 액션의 **유일한 �
 
 ## 9. 관련 문서
 
+- `docs/V3U_NEXT_STEPS.md` 미래 결정 진실 원천 (옵션 카탈로그 + 선택 이력)
 - `docs/V3U_PYD_REMOVAL_PLAN.md` §11 자동 검증 시스템 extension
 - `docs/V3U_TEST_AUTOMATION_GUIDE.md` 운영 매뉴얼
 - `docs/WORKTREE_STRATEGY.md` V3 Lane Branch Parity Invariants
