@@ -152,13 +152,13 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
   - 15번째 커밋(`0d6eb498`) NEXT_STEPS 신규
   - 16번째 커밋(본 사이클) A1 사전 정찰 결함 #11·#12 fix
   - 44 pytest 케이스 (사이클 시작 39 → §5 추가 3 → A1 추가 2)
-- 발견 신규 결함: A1 사전 정찰 2건
+- 발견 신규 결함: A1 사전 정찰 2건 + 시각 검증 종료 reactive 1건
   - #11 ui.telegram 미부착 (B+D 카테고리)
   - #12 ui.proc_chqs None placeholder (B 카테고리)
-  - 사용자 시각 검증 사이클 5 자체에서는 결함 미보고 (대기 중)
-- LESSONS.md 갱신: §6 결함 #11·#12 + §7 통계 (44/18/6/baseline 68, 결함 12건)
+  - #13 WebCrawling.run() OSError("handle is closed") main exit 누출 — 결함 #10 잔여
+- LESSONS.md 갱신: §6 결함 #11·#12·#13 + §7 통계 (45/19/7/baseline 68, 결함 13건)
 - NEXT_STEPS.md 갱신: 본 항목
-- 다음 사이클 후보: A2 (CRITICAL 정리) 또는 B1 (사용자 결과 reactive) 또는 C1 (DB 검증)
+- 다음 사이클 후보: A2 (CRITICAL 정리) 또는 C1 (DB 검증) 또는 사용자 다음 시각 사이클
 
 ---
 

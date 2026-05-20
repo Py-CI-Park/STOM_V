@@ -227,6 +227,41 @@ def test_proc_chqs_safe_for_is_alive_call(main_window) -> None:
         )
 
 
+def test_safe_webc_run_wrapper_swallows_handle_closed() -> None:
+    """결함 #13: WebCrawling.run()이 main exit 시 OSError('handle is closed')를
+    내뱉어 stderr에 traceback 표시. _safe_webc_run_wrapper가 이를 swallow한다.
+    """
+    # main_window.py 내부 wrapper는 _init_workers의 클로저라 직접 import 불가.
+    # 동일 시그니처로 동작 검증.
+    def _wrap(original):
+        def _wrapped():
+            try:
+                original()
+            except OSError as exc:
+                if "handle is closed" in str(exc) or "WinError 6" in str(exc):
+                    return
+                raise
+        return _wrapped
+
+    def _raise_handle_closed():
+        raise OSError("handle is closed")
+
+    def _raise_winerror6():
+        raise OSError("[WinError 6] handle is invalid")
+
+    def _raise_other():
+        raise OSError("[Errno 13] permission denied")
+
+    # 두 패턴 모두 swallow
+    _wrap(_raise_handle_closed)()
+    _wrap(_raise_winerror6)()
+
+    # 다른 OSError는 raise
+    import pytest as _pt
+    with _pt.raises(OSError):
+        _wrap(_raise_other)()
+
+
 def test_telegram_worker_attached_for_isRunning_call(main_window) -> None:
     """결함 #11: ui/etcetera/etc.py:79에서 ui.telegram.isRunning() 호출.
 

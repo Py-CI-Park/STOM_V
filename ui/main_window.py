@@ -503,6 +503,19 @@ class MainWindow(QMainWindow):
             self.logger.info("offline_smoke: worker 시작 생략 (webc/proc_chqs/telegram placeholder)")
             return
 
+        # WebCrawling.run()을 안전 wrapper로 감싸 main exit 시 발생하는
+        # OSError("handle is closed")를 swallow. V3 source 수정 금지 invariant를
+        # 유지하기 위해 monkey-patch 형태로 V3U lane에서만 적용 (결함 #13).
+        def _safe_webc_run_wrapper(original_run):
+            def _wrapped():
+                try:
+                    original_run()
+                except OSError as exc:
+                    if "handle is closed" in str(exc) or "WinError 6" in str(exc):
+                        return  # main exit 정상 흐름
+                    raise
+            return _wrapped
+
         # TelegramBot: ui.telegram.isRunning() 호출 site(`ui/etcetera/etc.py:79`)
         # 안전을 위해 QThread 인스턴스 부착. dict_set의 토큰/chat_id 비어있으면
         # run_forever만 하고 실제 봇 동작 안 함 (telegram_bot.py:65-70 참조).
@@ -526,6 +539,8 @@ class MainWindow(QMainWindow):
         try:
             from utility.sub_process_and_thread.webcrawling import WebCrawling
             self.webc = WebCrawling(self.qlist)
+            # 결함 #13 fix: run을 안전 wrapper로 감싸 종료 시 OSError swallow
+            self.webc.run = _safe_webc_run_wrapper(self.webc.run)
             handler = getattr(self.update_crawling_data, "update_crawling_data", None)
             if callable(handler):
                 self.webc.signal.connect(handler)

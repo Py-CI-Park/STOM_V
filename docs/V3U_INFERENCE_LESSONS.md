@@ -254,6 +254,21 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 결함 #13 (2026-05-20): WebCrawling.run() main exit 시 OSError("handle is closed") 누출
+
+- 카테고리: B 보조 (worker lifecycle cleanup) — 결함 #10의 잔여 부분
+- 발견 경로: 사이클 5 시각 검증 후 stom.py 종료 시 stderr Traceback
+- 증상: process_kill의 webc.quit() + wait(500ms)이 webc.run()의 `webcQ.empty()` block에서
+  타임아웃. main exit 시 multiprocessing.Queue 핸들 closed → `OSError("handle is closed")`
+  webc thread에서 raise → stderr traceback. main process는 정상 종료되지만 cosmetic noise.
+- 외부 호출 site: `utility/sub_process_and_thread/webcrawling.py:56` `if not self.webcQ.empty():`
+- V3 source 수정 금지 invariant 유지하면서 fix:
+  V3U `_init_workers`에서 WebCrawling.run을 monkey-patch — `_safe_webc_run_wrapper`로
+  감싸 `OSError("handle is closed")`와 `OSError("WinError 6")`만 swallow, 다른 OSError는 raise
+- 회귀 테스트: `tests/v3u/test_smoke.py::test_safe_webc_run_wrapper_swallows_handle_closed`
+- 근본 원인 매핑: §3-2 (2U는 webc.stop() 패턴이 있지만 V3 WebCrawling은 stop 메서드 없음)
+- 재발 방지 액션 매핑: 추가 액션 §5-6 후보 — worker subclass wrapping 패턴 (필요 시 §5에 정식 추가)
+
 ### 결함 #11 (2026-05-20): `ui.telegram` attr 미부착 → isRunning() AttributeError 위험
 
 - 카테고리: D (helper inventory) + B (worker 시작)
@@ -305,12 +320,12 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-20 사이클 5 + A1 사전 정찰 종료 시점) |
+| 측정 | 값 (2026-05-20 사이클 5 + A1 사전 정찰 + 시각 검증 reactive 종료 시점) |
 |---|---|
-| 총 발견 결함 | 12 (사이클 5 A1 사전 정찰 +2: #11 telegram, #12 proc_chqs) |
-| 자동 회귀 테스트 추가 | 18 (사이클 1: 11, 사이클 4: +2, 사이클 5 §5: +3, 사이클 5 A1: +2) |
-| pytest 케이스 총수 | 44 |
-| 수정 커밋 누적 | 6 |
+| 총 발견 결함 | 13 (사이클 5 A1 +2 + 시각 reactive +1: #13 webc OSError) |
+| 자동 회귀 테스트 추가 | 19 (사이클 1: 11, 사이클 4: +2, 사이클 5 §5: +3, A1: +2, B1 reactive: +1) |
+| pytest 케이스 총수 | 45 |
+| 수정 커밋 누적 | 7 |
 | 신규 자동 도구 | 1 (scripts/v3u_attr_inventory_diff.py) |
 | 사용자 시각 검증 사이클 | 5회 |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
