@@ -254,6 +254,33 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 결함 #11 (2026-05-20): `ui.telegram` attr 미부착 → isRunning() AttributeError 위험
+
+- 카테고리: D (helper inventory) + B (worker 시작)
+- 발견 경로: 사이클 5 A1 사전 정찰 (외부 ref grep)
+- 외부 호출 site: `ui/etcetera/etc.py:79` `if ui.telegram.isRunning():`
+- 우리 누락 위치: `_init_workers`에서 telegram attr 자체가 없음
+- 수정: TelegramBot(qlist, dict_set) 인스턴스화 + start. 자격증명 없으면 봇 run_forever만 (telegram_bot.py:65 자체 가드)
+- 회귀 테스트: `tests/v3u/test_smoke.py::test_telegram_worker_attached_for_isRunning_call`
+- 근본 원인 매핑: §3-2, §3-5
+- 재발 방지 액션 매핑: §5-1·§5-2(이미 적용, 사이클 5 사전 정찰이 이걸 추가로 잡음)
+
+### 결함 #12 (2026-05-20): `ui.proc_chqs` None placeholder → is_alive() AttributeError
+
+- 카테고리: B (worker placeholder 부재)
+- 발견 경로: 사이클 5 A1 사전 정찰 (외부 ref grep)
+- 외부 호출 site: `ui/etcetera/etc.py:77`, `ui/event_click/button_clicked_database.py:14/32/50/68/86/105/124/138/152/171`,
+  `button_clicked_backtest_start.py:582`, `button_clicked_chart.py:129`, `button_clicked_etc.py:190/281`,
+  `button_clicked_formula.py:105/115`, `button_clicked_passticks.py:49`, `button_clicked_settings.py:273/315`
+  → 총 20+ site에서 None 체크 없이 `ui.proc_chqs.is_alive()` 호출
+- 우리 누락 위치: `_init_workers`에서 proc_chqs를 None placeholder로 둠 → `None.is_alive()` AttributeError
+- 수정: `_NullProcess()` 클래스 신규 (`is_alive() → False`, terminate/join/start/pid/poll 인터페이스),
+  proc_chqs와 proc_tele 둘 다 _NullProcess() 인스턴스 부착
+- 회귀 테스트: `tests/v3u/test_smoke.py::test_proc_chqs_safe_for_is_alive_call`
+- 잔여 의무: V3 pyd가 실제로 어떻게 ChartHogaQuery를 spawn하는지 V3.X 흡수 시 reactive 학습 후 진짜 Process로 교체
+- 근본 원인 매핑: §3-1 (pyd 내부 spawn 메커니즘 미관찰), §3-2 (2U 패턴은 ChartHogaQuerySound callable이라 V3 직접 적용 불가)
+- 재발 방지 액션 매핑: §5-1·§5-2
+
 ### 결함 #10 (2026-05-16): closeEvent + process_kill 누락 → 종료 시 OSError
 
 - 카테고리: B (worker startup의 짝, lifecycle cleanup)
@@ -278,18 +305,19 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-20 사이클 5 시점) |
+| 측정 | 값 (2026-05-20 사이클 5 + A1 사전 정찰 종료 시점) |
 |---|---|
-| 총 발견 결함 | 10 |
-| 자동 회귀 테스트 추가 | 16 (사이클 1: 11, 사이클 4: +2 process_kill, 사이클 5: +3 attr inventory) |
-| pytest 케이스 총수 | 42 |
-| 수정 커밋 누적 | 5 (72308bca, b72f0162, 25f61980, 383a2fbe, 본 사이클) |
+| 총 발견 결함 | 12 (사이클 5 A1 사전 정찰 +2: #11 telegram, #12 proc_chqs) |
+| 자동 회귀 테스트 추가 | 18 (사이클 1: 11, 사이클 4: +2, 사이클 5 §5: +3, 사이클 5 A1: +2) |
+| pytest 케이스 총수 | 44 |
+| 수정 커밋 누적 | 6 |
 | 신규 자동 도구 | 1 (scripts/v3u_attr_inventory_diff.py) |
 | 사용자 시각 검증 사이클 | 5회 |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
 | 근본 원인 카테고리 | 5 (§3) |
 | 재발 방지 액션 | 5 (§5) — **적용 5, 미적용 0** |
 | CRITICAL drift baseline | 68 (max 허용 100, 사이클 진행 중 점진 감소 목표) |
+| A1 사전 정찰 효과 | 사용자 거래/DB 클릭 시 발견될 결함 2건 사전 차단 |
 
 ---
 

@@ -74,6 +74,47 @@ class _NullWorker:
     def is_alive(self) -> bool:
         return False
 
+    def isRunning(self) -> bool:  # noqa: N802 (QThread API 호환)
+        return False
+
+    def quit(self) -> None:
+        return None
+
+    def wait(self, *_args, **_kwargs) -> bool:
+        return True
+
+
+class _NullProcess:
+    """multiprocessing.Process placeholder.
+
+    외부 V3 코드(`ui/event_click/button_clicked_database.py` 등 20+ site)가
+    `ui.proc_chqs.is_alive()`를 None 체크 없이 호출한다. V3 pyd가 내부에서 spawn하는
+    Process를 V3U는 spawn 메커니즘 추론 못하므로 안전 placeholder를 부착해
+    AttributeError를 방지한다.
+
+    실제 ChartHogaQuery 동작은 사용자 환경 의존이며 V3.X 흡수 시 reactive로 패턴 학습
+    후 갱신한다 (LESSONS.md §6 결함 #12 참조).
+    """
+
+    def is_alive(self) -> bool:
+        return False
+
+    def terminate(self) -> None:
+        return None
+
+    def join(self, *_args, **_kwargs) -> None:
+        return None
+
+    def start(self) -> None:
+        return None
+
+    @property
+    def pid(self) -> int | None:
+        return None
+
+    def poll(self) -> int | None:
+        return -1
+
 
 class MainWindow(QMainWindow):
     """V3 MainWindow import contract implemented in Python for V3U.
@@ -450,14 +491,28 @@ class MainWindow(QMainWindow):
         호출하도록 한다. 헤드리스 smoke 모드에서는 worker 시작을 건너뛰고 None placeholder
         만 부착해 외부 코드의 hasattr 검사가 통과하도록 한다.
         """
-        # placeholder (외부 hasattr 검사용)
+        # placeholder. proc_chqs는 외부 코드가 .is_alive() 호출 시 AttributeError를
+        # 일으키지 않도록 _NullProcess 부착. telegram도 .isRunning() 안전 호출을 위해
+        # 실제 TelegramBot 인스턴스 부착 (자격증명 없으면 봇 동작 안 함, 단순 thread만).
         self.webc = None
-        self.proc_chqs = None
-        self.proc_tele = None
+        self.proc_chqs: object = _NullProcess()
+        self.proc_tele: object = _NullProcess()
+        self.telegram: object = _NullWorker()
 
         if self._offline_smoke:
-            self.logger.info("offline_smoke: worker 시작 생략 (webc/proc_chqs/proc_tele = None)")
+            self.logger.info("offline_smoke: worker 시작 생략 (webc/proc_chqs/telegram placeholder)")
             return
+
+        # TelegramBot: ui.telegram.isRunning() 호출 site(`ui/etcetera/etc.py:79`)
+        # 안전을 위해 QThread 인스턴스 부착. dict_set의 토큰/chat_id 비어있으면
+        # run_forever만 하고 실제 봇 동작 안 함 (telegram_bot.py:65-70 참조).
+        try:
+            from utility.sub_process_and_thread.telegram_bot import TelegramBot
+            self.telegram = TelegramBot(self.qlist, self.dict_set)
+            self.telegram.start()
+            self.logger.info("worker TelegramBot 시작 OK (자격증명 없으면 run_forever만)")
+        except Exception as exc:
+            self.logger.exception("TelegramBot 시작 실패 — placeholder 유지: %s", exc)
 
         # pytest 환경에서 mid-network-call WebCrawling이 fixture teardown에서
         # Windows access violation을 일으키므로 명시적으로 비활성화 가능.
@@ -506,6 +561,18 @@ class MainWindow(QMainWindow):
             self.logger.info("process_kill: timers stopped")
         except Exception:
             self.logger.exception("process_kill: timer stop 실패")
+
+        # TelegramBot cleanup (QThread)
+        telegram = getattr(self, "telegram", None)
+        if telegram is not None and hasattr(telegram, "isRunning"):
+            try:
+                if telegram.isRunning():
+                    telegram.quit()
+                    if hasattr(telegram, "wait"):
+                        telegram.wait(500)
+                    self.logger.info("process_kill: telegram 종료 OK")
+            except Exception:
+                self.logger.exception("process_kill: telegram 종료 실패")
 
         webc = getattr(self, "webc", None)
         if webc is not None:

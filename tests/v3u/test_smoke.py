@@ -207,6 +207,44 @@ def test_webcrawling_worker_attr_present(main_window) -> None:
     # pytest 환경(STOM_V3U_DISABLE_WEBC=1)에서는 None이 정상
 
 
+def test_proc_chqs_safe_for_is_alive_call(main_window) -> None:
+    """결함 #12: 외부 20+ site가 ui.proc_chqs.is_alive()를 None 체크 없이 호출.
+
+    _NullProcess placeholder가 부착되어 AttributeError 없이 False를 반환해야 한다.
+    """
+    assert hasattr(main_window, "proc_chqs"), "proc_chqs attr 누락"
+    # None이면 외부에서 .is_alive() 호출 시 AttributeError → V3U 결함
+    assert main_window.proc_chqs is not None, (
+        "proc_chqs가 None — 외부 코드가 .is_alive() 호출 시 AttributeError 발생. "
+        "_NullProcess placeholder 부착 필요."
+    )
+    assert hasattr(main_window.proc_chqs, "is_alive")
+    assert main_window.proc_chqs.is_alive() is False
+    # multiprocessing.Process 인터페이스 호환성
+    for method in ("terminate", "join", "start"):
+        assert callable(getattr(main_window.proc_chqs, method, None)), (
+            f"proc_chqs.{method} 누락 (Process 인터페이스 위반)"
+        )
+
+
+def test_telegram_worker_attached_for_isRunning_call(main_window) -> None:
+    """결함 #11: ui/etcetera/etc.py:79에서 ui.telegram.isRunning() 호출.
+
+    TelegramBot 인스턴스 또는 _NullWorker placeholder가 부착되어 있어야 한다.
+    """
+    assert hasattr(main_window, "telegram"), "telegram attr 누락"
+    assert main_window.telegram is not None, (
+        "telegram이 None — 외부 코드가 .isRunning() 호출 시 AttributeError. "
+        "TelegramBot 인스턴스 또는 _NullWorker placeholder 부착 필요."
+    )
+    # QThread.isRunning 또는 _NullWorker.is_alive 호환
+    isrunning = getattr(main_window.telegram, "isRunning", None)
+    isalive = getattr(main_window.telegram, "is_alive", None)
+    assert callable(isrunning) or callable(isalive), (
+        "telegram에 isRunning/is_alive 메서드 모두 없음 — etc.py:79 호출 시 AttributeError"
+    )
+
+
 def test_process_kill_method_present(main_window) -> None:
     """process_kill + closeEvent 메서드가 존재하고 callable.
 
