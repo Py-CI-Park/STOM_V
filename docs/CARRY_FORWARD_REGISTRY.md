@@ -2572,3 +2572,46 @@ Scope guard:
 - No `_v3k_sidecar/` 토글 변경
 
 Directive: T05/T06 작성 후 G1~G5 가드 체인 abort 5건이 모두 PASS인 시점까지 P-lane이다. G3 가드를 통과시키는 환경 설정(USER_ACK env)을 발급하는 순간 A-lane 진입이므로, 본 P-lane plan commit 단계에서는 USER_ACK env를 절대 발급하지 않는다.
+
+---
+
+## V3K-PHASE-H-H2-RUNNER-PREP-EXECUTION
+
+Records: `docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md` §3 Task 분해의 실제 실행 결과를 정본화한다. T05 runner `scripts/run_v3k_phase_h_dryrun.py` + T06 health smoke `scripts/smoke_v3k_phase_h_post_health.py` 신설, G1~G5 가드 체인 abort 시나리오 4건 + dry-mock 정상 흐름 1건 모두 PASS, T06 smoke baseline + mock archive 검증 모두 PASS, 회귀 audit suite(gate4 + verify_1a + verify_nonrelease_sync + git diff --check) 모두 PASS.
+
+Decision: host_identifier 산정 방식은 prior T04b / preparation-first / step2-to-step6 evidence 규칙(`sha256(platform.node().encode()).hexdigest()[:8]`)을 그대로 따라 `9024e3b9`로 정합 유지한다. 본 P-lane execution은 ad-hoc dry-mock archive(`.omx/reports/v3k-phase-h-dryrun-<utc>.json`)를 산출하지만 `.omx/` 디렉토리는 git exclude이므로 commit 외이고, 정본 evidence는 `docs/evidence/v3k-phase-h-h2-runner-prep-9024e3b9.json` 한 건으로 보존한다.
+
+Plan: `docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md`
+
+Evidence: `docs/evidence/v3k-phase-h-h2-runner-prep-9024e3b9.json`
+
+Verification:
+
+- `python -m py_compile scripts/run_v3k_phase_h_dryrun.py`: PASS
+- `python -m py_compile scripts/smoke_v3k_phase_h_post_health.py`: PASS
+- G1 abort (no --ack): exit 1, "Refused: --ack required"
+- G2 abort (wrong --account-mode full): exit 1, "Refused: --account-mode must be read-only"
+- G3 abort (no USER_ACK env): exit 1, "Refused: V3K_PHASE_H_USER_ACK env var not set"
+- G5 abort (host mismatch --expected-host deadbeef): exit 1, "Refused: host_identifier mismatch"
+- dry-mock all-guards-pass: exit 0, mock archive written
+- T06 smoke baseline (no archive): exit 0, graceful SKIP
+- T06 smoke against mock archive (--no-runtime-check): exit 0, PASS
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS (unblocked, schema v2)
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: V3K Phase H H-2 본 실행을 위한 runner + smoke 인프라가 P-lane으로 완성되었다. 다음 A-lane 진입(Phase H H-2 actual)은 사용자 명시 phrase + `V3K_PHASE_H_USER_ACK=1` 환경변수 발급 + 본 PC KHOPENAPI GUI 활성 + 24h monitoring 시작 시점에 가능하다. A-lane commit에서는 `--dry-mock` 인자를 제거하고 실제 OCX connect를 시도한다.
+
+Scope guard (P-lane execution 시점):
+
+- Kiwoom runtime mutation: 0건 (trade/, utility/, Kiwoom_OpenAPI/ 무변경)
+- operating `_database/` write: 0건
+- `_database_v3k_shadow/` 변경: 0건
+- `_v3k_sidecar/` 토글 변경: 0건
+- live connect/login: 0건 (G3 가드는 inline env로만 잠깐 통과시켜 mock 산출, child process 종료 시 자동 해제)
+- USER_ACK env var durable 발급: 0건 (mock 검증용 inline env만 사용)
+- feature flag default-ON 전환: 0건
+- LS direct dependency 추가: 0건
+
+Directive: 본 EXECUTION commit으로 P-T05/P-T06 task 종결. A-lane 진입은 별도 사용자 승인 commit으로 분리한다. A-lane commit 전까지 `--dry-mock` 인자 제거 또는 실제 OCX connect 호출을 절대 발생시키지 않는다.

@@ -1,0 +1,102 @@
+{
+  "captured_at_utc": "2026-05-20T01:16:14.166343+00:00",
+  "host_identifier": "9024e3b9",
+  "next_handoff": "A-lane entry requires explicit user phrase + V3K_PHASE_H_USER_ACK=1 (durable) + GUI Kiwoom OCX login + 24h monitoring evidence; the P-lane mock archive at .omx/reports/v3k-phase-h-dryrun-<utc>.json is dry-mock only and is not promoted to docs/evidence/.",
+  "phase": "V3K-PHASE-H-H2-RUNNER-PREP",
+  "plan_ref": "docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md",
+  "regression_audit": {
+    "audit_v3k_phase_h_gate4_environment_status": "PASS (unblocked, schema v2, primary_signal.exists=True)",
+    "audit_v3k_verify_1a_base_9423735e": "PASS (Kiwoom/runtime untouched + feature flags default-OFF + forbidden artifact + LS marker)",
+    "git_diff_check": "PASS",
+    "verify_nonrelease_sync": "PASS (sentinel checks)"
+  },
+  "related_documents": [
+    "docs/plans/2026-05-12_v3k_phase_h_live_kiwoom_dryrun_plan.md",
+    "docs/plans/2026-05-20_v3k_feature_to_page_mapping_overview_plan.md",
+    "docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md",
+    "docs/plans/2026-05-15_v3k_preparation_first_execution_sequence_plan.md"
+  ],
+  "schema_version": 1,
+  "scope_guard": {
+    "kiwoom_runtime_mutated": false,
+    "live_connect_attempted": false,
+    "ls_direct_dependency_added": false,
+    "monitoring_24h_or_more_collected": false,
+    "operating_database_write_attempted": false,
+    "sidecar_toggle_changed": false,
+    "user_ack_emitted_to_runtime": false
+  },
+  "static_compile": {
+    "run_v3k_phase_h_dryrun.py": "PASS (py_compile)",
+    "smoke_v3k_phase_h_post_health.py": "PASS (py_compile)"
+  },
+  "tasks": {
+    "P-T05-01": {
+      "artifact": "scripts/run_v3k_phase_h_dryrun.py",
+      "guard_chain_implemented": [
+        "G1 --ack",
+        "G2 --account-mode read-only",
+        "G3 V3K_PHASE_H_USER_ACK=1",
+        "G4 sentinel.compatible=True",
+        "G5 host_identifier match"
+      ],
+      "status": "PASS"
+    },
+    "P-T05-02": {
+      "guard_chain_results": [
+        {
+          "expected": "abort",
+          "guard": "G1",
+          "message": "Refused: --ack required",
+          "observed_exit": 1,
+          "scenario": "no --ack"
+        },
+        {
+          "expected": "abort",
+          "guard": "G2",
+          "message": "Refused: --account-mode must be read-only",
+          "observed_exit": 1,
+          "scenario": "wrong --account-mode (full)"
+        },
+        {
+          "expected": "abort",
+          "guard": "G3",
+          "message": "Refused: V3K_PHASE_H_USER_ACK env var not set",
+          "observed_exit": 1,
+          "scenario": "no V3K_PHASE_H_USER_ACK env"
+        },
+        {
+          "expected": "abort",
+          "guard": "G5",
+          "message_pattern": "Refused: host_identifier mismatch",
+          "observed_exit": 1,
+          "scenario": "host_identifier mismatch (--expected-host deadbeef)"
+        },
+        {
+          "archive": ".omx/reports/v3k-phase-h-dryrun-<utc>.json",
+          "expected": "archive",
+          "guard": "dry-mock",
+          "observed_exit": 0,
+          "scenario": "all guards pass + --dry-mock (skip OCX)"
+        }
+      ],
+      "status": "PASS"
+    },
+    "P-T06-01": {
+      "artifact": "scripts/smoke_v3k_phase_h_post_health.py",
+      "status": "PASS"
+    },
+    "P-T06-02": {
+      "expected": "graceful skip exit 0",
+      "observed": "SKIP message + exit 0",
+      "scenario": "no archive present",
+      "status": "PASS"
+    },
+    "P-T06-03": {
+      "expected": "PASS exit 0",
+      "observed": "PASS message + exit 0",
+      "scenario": "mock archive present (--no-runtime-check)",
+      "status": "PASS"
+    }
+  }
+}
