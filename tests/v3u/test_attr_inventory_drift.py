@@ -19,8 +19,11 @@ pytestmark = pytest.mark.smoke
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 _DIFF_SCRIPT = _REPO_ROOT / "scripts" / "v3u_attr_inventory_diff.py"
-# 2026-05-16 사이클 5 시작 시점 baseline (filter 보강 후 68 measured + 32 여유)
-_CRITICAL_BASELINE_MAX = 100
+# 2026-05-21 사이클 6 A2 완료 시점 baseline: 0 measured (filter 보강 + 5건 fix +
+# setattr/메서드 추출 패턴 추가). 새 외부 참조 추가 시 즉시 fail하는 strict 모드.
+# 향후 외부 V3 코드가 새 ui.X 추가 시 1~2건의 여유 허용 가능하나 사이클 6 종료 시점에는
+# 0을 유지. drift 발생 시 _CRITICAL_BASELINE_MAX 조정 + LESSONS.md §6에 결함 기록.
+_CRITICAL_BASELINE_MAX = 0
 
 
 def _run_diff_tool(tmp_path: Path) -> dict:

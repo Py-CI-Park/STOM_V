@@ -53,19 +53,29 @@ _BUILTIN_QOBJECT = frozenset({
 
 # 위젯 build로 생성되는 attr 접미사 패턴 (init 누락으로 분류하지 않는다)
 _WIDGET_SUFFIX_RE = re.compile(
-    r"(_pushButton|_pushButtonn|_pushButtonnn|_labellllllll|_labell|_labelllllll|"
-    r"_lineEdittttt|_textEditxxxx|_textEditttt|_textEdit|_comboBoxxxxx|_comboBoxxxx|"
-    r"_groupBoxxxxx|_groupBoxxx|_dateEdittttt|_checkBoxxxxx|_tableWidget|_dcomboBoxxxx|"
-    r"_dlineEdittt|_radioButton|_spinBoxxxxx|_progressBarrr|_progressBar|_treeWidget|"
-    r"_tabWidget|_listWidget|_scrollArea|_layout|_btnnn|_boxxxx|_pbtnnn|"
+    r"(_pushButton|_pushButtonn|_pushButtonnn|_Button_|_labellllllll|_labell|_labelllllll|"
+    r"_lineEdit|_lineEdittt|_lineEditttt|_lineEdittttt|_textEditxxxx|_textEditttt|_textEdit|"
+    r"_comboBoxxxxx|_comboBoxxxx|_groupBoxxxxx|_groupBoxxx|_groupBox|_dateEdittttt|"
+    r"_checkBoxxxxx|_tableWidget|_dcomboBoxxxx|_dlineEdittt|_radioButton|_spinBoxxxxx|"
+    r"_progressBarrr|_progressBar|_treeWidget|_tabWidget|_listWidget|_scrollArea|"
+    r"_layout|_btnnn|_boxxxx|_pbtnnn|"
     r"_label\b|_button\b|_widget\b|_combo\b|_check\b|_radio\b|_edit\b|_tab\b|"
     r"_panel\b|_frame\b|_groupbox\b|_layout\b)"
 )
 
-# Qt 내장 위젯 메서드 (focusWidget, etc)
+# Qt 내장 위젯 메서드 (focusWidget, setFixedSize, winId 등)
 _QT_INTERNAL = frozenset({
     "focusWidget", "activeWindow", "topLevelWidget", "parentWidget", "nativeParentWidget",
     "frameGeometry", "size", "pos", "rect", "frameSize", "minimumSize", "maximumSize",
+    "setFixedSize", "setFixedWidth", "setFixedHeight", "winId", "main_window",
+    "centralWidget", "menuBar", "statusBar",
+})
+
+# V3 모듈 namespace (`ui.etcetera`, `ui.event_click` 등 — 모듈 import path)
+_MODULE_NAMESPACES = frozenset({
+    "etcetera", "event_activate", "event_change", "event_click", "event_keypress",
+    "event_doubleclick", "set_style", "draw_chart", "create_widget", "update_widget",
+    "event_filter",
 })
 
 # 사용자 위젯 카테고리 prefix (Coin*, Stock*, Pyd*, Legacy* 등 V2/Kiwoom 메서드 패턴)
@@ -75,11 +85,28 @@ _V2_LEGACY_PREFIX_RE = re.compile(
 
 
 def extract_self_attrs(file_path: Path) -> set[str]:
-    """파이썬 파일에서 self.X attr 이름을 추출한다 (set)."""
+    """파이썬 파일에서 self.X attr 이름을 추출한다 (set).
+
+    정적 `self.X` + 동적 `setattr(self, "X", ...)` + 클래스 메서드 정의 모두 포함.
+    """
     if not file_path.is_file():
         return set()
     text = file_path.read_text(encoding="utf-8", errors="replace")
-    return {m.group(0) for m in re.finditer(r"self\.[a-zA-Z_][a-zA-Z0-9_]+", text)}
+    attrs = {m.group(0) for m in re.finditer(r"self\.[a-zA-Z_][a-zA-Z0-9_]+", text)}
+    # setattr(self, "name", ...) 또는 setattr(self, 'name', ...) 패턴
+    for m in re.finditer(r"setattr\(\s*self\s*,\s*['\"]([a-zA-Z_][a-zA-Z0-9_]+)['\"]", text):
+        attrs.add(f"self.{m.group(1)}")
+    # for name in ("a", "b"): setattr(self, name, ...)
+    for m in re.finditer(
+        r"for\s+\w+\s+in\s+\(([^)]+)\)\s*:\s*setattr\(\s*self",
+        text,
+    ):
+        for q in re.finditer(r"['\"]([a-zA-Z_][a-zA-Z0-9_]+)['\"]", m.group(1)):
+            attrs.add(f"self.{q.group(1)}")
+    # 클래스 메서드 정의 `def name(self, ...):` — instance attr로 접근 가능
+    for m in re.finditer(r"^\s+def\s+([a-zA-Z_][a-zA-Z0-9_]+)\s*\(\s*self\b", text, re.MULTILINE):
+        attrs.add(f"self.{m.group(1)}")
+    return attrs
 
 
 def extract_external_ui_refs(*dirs: Path) -> set[str]:
@@ -126,6 +153,8 @@ def extract_widget_builder_setattrs(*dirs: Path) -> set[str]:
 def is_builtin_or_widget(attr: str) -> bool:
     name = attr.split(".", 1)[1]
     if name in _BUILTIN_QOBJECT or name in _QT_INTERNAL:
+        return True
+    if name in _MODULE_NAMESPACES:
         return True
     if _WIDGET_SUFFIX_RE.search(attr):
         return True

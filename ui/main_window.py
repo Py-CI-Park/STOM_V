@@ -249,8 +249,22 @@ class MainWindow(QMainWindow):
         self.backtest_engine = False
         self.extend_window = False
         self.back_cancelling = False
+        self.window_closing = False
         self.back_tick_cunsum = 0
         self.ctpg_cvb = None
+        self.move_dialog_list: list[Any] = []
+        self.location_list: list[Any] = []
+        # dialog_stg_input: button_clicked_stg_module.py:136이 QMessageBox.critical
+        # 부모로 참조. dialog_stg_input1(suffix 1)은 widget builder가 만들지만 base
+        # 이름은 V3 pyd 내부에서 따로 부착하는 듯. placeholder로 self 사용.
+        self.dialog_stg_input = self
+        # DB read-only helper (외부 코드가 ui.dbreader.read_sql 호출)
+        try:
+            from utility.db_control.database_read_only import DatabaseReadOnly
+            self.dbreader = DatabaseReadOnly()
+        except Exception:
+            self.logger.exception("DatabaseReadOnly 부착 실패 — placeholder")
+            self.dbreader = _NullWorker()
 
         self.animation = None
         self.webEngineView = None
@@ -557,6 +571,21 @@ class MainWindow(QMainWindow):
     # -----------------------------------------------------------------------------------------------------------------
     def Qtimer1Start(self) -> None:
         self.qtimer1.start()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # V3 expected method stubs (외부 button click/signal handler 결선 대상)
+    # -----------------------------------------------------------------------------------------------------------------
+    def setting_serial_save(self, *_args, **_kwargs) -> None:
+        """결함 #14: ui/create_widget/set_setup_tap.py:201이 시리얼키 저장 버튼의
+        click 핸들러로 ui.setting_serial_save를 부착한다. V3 pyd 실 동작은 라이선스
+        검증이지만 V3U placeholder는 noop. release 전 사용자 환경에서 실제 동작 필요."""
+        self.logger.info("setting_serial_save (V3U stub) — release 전 V3 pyd 동작 확인 필요")
+
+    def web_dashboard_log(self, *_args, **_kwargs) -> None:
+        """결함 #14: ui/event_click/button_clicked_shortcut.py:253이
+        ui.web_dashboard.log_received.connect(ui.web_dashboard_log)로 결선한다.
+        V3U placeholder는 noop. 웹 대시보드 활성 시 실 동작 확인 필요."""
+        self.logger.debug("web_dashboard_log (V3U stub)", extra={"args": _args})
 
     # -----------------------------------------------------------------------------------------------------------------
     # Shutdown / cleanup (V3 close_event delegates here)

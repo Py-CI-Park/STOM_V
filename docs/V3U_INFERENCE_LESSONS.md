@@ -254,6 +254,27 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 결함 #14 (2026-05-21): A2 CRITICAL 정리 — 5건 일괄 발견·fix
+
+A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락 5건.
+
+| # | attr | 카테고리 | 외부 호출 site | fix |
+|---|---|---|---|---|
+| 14a | `self.dbreader` | B (DB helper) | `etcetera/etc.py:145`, `etcetera/load_database.py:23`, `event_activate/activated_back.py:23` | DatabaseReadOnly() 인스턴스 부착 |
+| 14b | `self.window_closing` | A (boolean state) | `set_widget.py:1066` | _init_runtime_state에 False 추가 |
+| 14c | `self.move_dialog_list` | A (list state) | `etcetera/etc.py:4` | _init_runtime_state에 [] 추가 |
+| 14d | `self.location_list` | A (list state) | `set_widget.py:1110-1112` | _init_runtime_state에 [] 추가 |
+| 14e | `self.setting_serial_save`, `self.web_dashboard_log`, `self.dialog_stg_input` | D (method/widget) | `set_setup_tap.py:201`, `button_clicked_shortcut.py:253`, `button_clicked_stg_module.py:136` | stub method + self placeholder |
+
+**도구 보강** (재발 방지 강화):
+- `_WIDGET_SUFFIX_RE`에 `_lineEdittt`/`_lineEditttt`/`_Button_`/`_groupBox` 추가 (45개 위젯 noise 정리)
+- `_QT_INTERNAL`에 setFixedSize/winId/main_window 추가
+- `_MODULE_NAMESPACES` 신규 (etcetera/event_*/set_style 등 6개 namespace)
+- `extract_self_attrs`에 setattr() + 클래스 메서드 def 패턴 추출 추가
+
+**baseline**: 68 → **0** (CRITICAL drift)
+**회귀 테스트 strict 모드**: `_CRITICAL_BASELINE_MAX = 0`으로 강화 → 향후 외부 코드 변경 시 즉시 fail
+
 ### 결함 #13 (2026-05-20): WebCrawling.run() main exit 시 OSError("handle is closed") 누출
 
 - 카테고리: B 보조 (worker lifecycle cleanup) — 결함 #10의 잔여 부분
@@ -320,19 +341,20 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-20 사이클 5 + A1 사전 정찰 + 시각 검증 reactive 종료 시점) |
+| 측정 | 값 (2026-05-21 사이클 6 A2 완료 시점) |
 |---|---|
-| 총 발견 결함 | 13 (사이클 5 A1 +2 + 시각 reactive +1: #13 webc OSError) |
-| 자동 회귀 테스트 추가 | 19 (사이클 1: 11, 사이클 4: +2, 사이클 5 §5: +3, A1: +2, B1 reactive: +1) |
+| 총 발견 결함 | 18 (사이클 6 A2 +5: #14a~e) |
+| 자동 회귀 테스트 추가 | 19 (변동 없음 — A2는 도구 보강 + baseline 강화로 처리) |
 | pytest 케이스 총수 | 45 |
-| 수정 커밋 누적 | 7 |
-| 신규 자동 도구 | 1 (scripts/v3u_attr_inventory_diff.py) |
+| 수정 커밋 누적 | 8 |
+| 신규 자동 도구 | 1 (scripts/v3u_attr_inventory_diff.py, A2에서 4건 보강) |
 | 사용자 시각 검증 사이클 | 5회 |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
 | 근본 원인 카테고리 | 5 (§3) |
 | 재발 방지 액션 | 5 (§5) — **적용 5, 미적용 0** |
-| CRITICAL drift baseline | 68 (max 허용 100, 사이클 진행 중 점진 감소 목표) |
+| CRITICAL drift baseline | **0** (사이클 6 A2 완료, strict 모드) |
 | A1 사전 정찰 효과 | 사용자 거래/DB 클릭 시 발견될 결함 2건 사전 차단 |
+| A2 CRITICAL 정리 효과 | 추가 5건 사전 차단 + filter 보강으로 노이즈 67→0 |
 
 ---
 
