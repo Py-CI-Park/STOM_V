@@ -157,6 +157,21 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
   - #12 ui.proc_chqs None placeholder (B 카테고리)
   - #13 WebCrawling.run() OSError("handle is closed") main exit 누출 — 결함 #10 잔여
 - LESSONS.md 갱신: §6 결함 #11·#12·#13 + §7 통계 (45/19/7/baseline 68, 결함 13건)
+- 다음 사이클 후보: A2 (CRITICAL 정리) 또는 C1 (DB 검증)
+
+### 사이클 6 (2026-05-21): A2 CRITICAL drift 0 달성
+
+- 사용자 선택: "A2 진행"
+- 실행 결과:
+  - 18번째 커밋(`0eba2a71`) CRITICAL 67 → 0
+  - 도구 보강 4건: filter 패턴 강화 (_lineEdittt/_Button_/_groupBox), Qt internal 추가,
+    모듈 namespace 카테고리, setattr/메서드 def 추출 추가
+  - 실 결함 5건 fix: dbreader, window_closing, move_dialog_list, location_list,
+    stub method 3개(setting_serial_save/web_dashboard_log/dialog_stg_input)
+- 발견 신규 결함: A2에서 5건 (#14a~e 통합)
+- LESSONS.md 갱신: §6 결함 #14 통합 항목 + §7 통계 (45/19/8/baseline **0**, 결함 18건)
+- 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
+- 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 - NEXT_STEPS.md 갱신: 본 항목
 - 다음 사이클 후보: A2 (CRITICAL 정리) 또는 C1 (DB 검증) 또는 사용자 다음 시각 사이클
 
