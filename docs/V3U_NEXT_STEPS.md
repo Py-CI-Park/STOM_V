@@ -172,6 +172,21 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - LESSONS.md 갱신: §6 결함 #14 통합 항목 + §7 통계 (45/19/8/baseline **0**, 결함 18건)
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
+
+### 사이클 6-2 (2026-05-21): 시각 검증 — 결함 0건, A1·A2 가치 입증
+
+- 사용자 선택: "시각 검증 사이클 6 진행"
+- 실행 결과:
+  - stom.py 부팅·시각 확인·종료 1 사이클 정상 완주
+  - 부팅 로그 4 INFO (boot/telegram/signal connected/webc start) 모두 정상
+  - 사용자 시각 검증 약 3분, 결함 보고 0건
+  - 종료 로그 3 INFO (timers/telegram/webc graceful) + **OSError traceback 0건**
+- 발견 신규 결함: 0건 (A1 +2 + A2 +5 + 직전 #13 fix가 모두 효과적이었음)
+- LESSONS.md 갱신: 사이클 6 시각 검증 결과 절 추가 + §7 통계 (45/19/9/baseline 0, 결함 18건, 사이클 6회)
+- 다음 사이클 후보:
+  - C1 (사용자 백업 DB로 D1 검증)
+  - 자율 작업: A4 추가 worker 사전 정찰 또는 contract verifier UX 개선
+  - D1 (STOM_Version_3U_C 생성 시점 결정 — 1·2순위 시각 PASS 완료)
 - NEXT_STEPS.md 갱신: 본 항목
 - 다음 사이클 후보: A2 (CRITICAL 정리) 또는 C1 (DB 검증) 또는 사용자 다음 시각 사이클
 

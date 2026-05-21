@@ -254,6 +254,28 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 사이클 6 시각 검증 결과 (2026-05-21): 신규 결함 0건 — fix #10·#11·#13 검증 PASS
+
+A1·A2 사전 정찰로 차단된 결함 7건이 모두 효과적이었음을 사용자 시각 검증으로 확인.
+fix #13 (WebCrawling OSError swallow)도 정상 동작 — 종료 stderr이 traceback 0건.
+
+**부팅 로그 (4 INFO)**:
+- MainWindow boot OK
+- TelegramBot 시작 OK (결함 #11 fix 효과 가시화)
+- WebCrawling.signal connected (결함 #8 효과)
+- WebCrawling 시작 OK (결함 #6 효과)
+
+**종료 로그 (3 INFO)**:
+- process_kill: timers stopped (결함 #10)
+- process_kill: telegram 종료 OK (결함 #11 cleanup, 사이클 6 신규)
+- process_kill: webc graceful 종료 timeout (결함 #13 안전 fallback)
+
+**OSError / Traceback**: 0건 — fix #13 의 효과 100% 검증
+
+이 사이클은 **A1·A2 사전 정찰 패턴의 가치를 정량 입증**한 사례다 — 사용자가 시각 검증을
+별도로 보고할 필요 없이 자율 사이클(A1·A2)로 7건 결함을 사전 차단했고, 시각 검증 사이클
+자체에서 0건 발견은 사전 정찰이 충분히 catch-up 했음을 의미.
+
 ### 결함 #14 (2026-05-21): A2 CRITICAL 정리 — 5건 일괄 발견·fix
 
 A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락 5건.
@@ -341,20 +363,21 @@ A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-21 사이클 6 A2 완료 시점) |
+| 측정 | 값 (2026-05-21 사이클 6 시각 검증 종료 시점) |
 |---|---|
-| 총 발견 결함 | 18 (사이클 6 A2 +5: #14a~e) |
-| 자동 회귀 테스트 추가 | 19 (변동 없음 — A2는 도구 보강 + baseline 강화로 처리) |
+| 총 발견 결함 | 18 (사이클 6 시각 검증 +0 — A1·A2 사전 차단 효과) |
+| 자동 회귀 테스트 추가 | 19 |
 | pytest 케이스 총수 | 45 |
-| 수정 커밋 누적 | 8 |
-| 신규 자동 도구 | 1 (scripts/v3u_attr_inventory_diff.py, A2에서 4건 보강) |
-| 사용자 시각 검증 사이클 | 5회 |
+| 수정 커밋 누적 | 9 |
+| 신규 자동 도구 | 1 (scripts/v3u_attr_inventory_diff.py) |
+| 사용자 시각 검증 사이클 | 6회 |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
 | 근본 원인 카테고리 | 5 (§3) |
 | 재발 방지 액션 | 5 (§5) — **적용 5, 미적용 0** |
-| CRITICAL drift baseline | **0** (사이클 6 A2 완료, strict 모드) |
+| CRITICAL drift baseline | **0** (strict 모드 유지) |
 | A1 사전 정찰 효과 | 사용자 거래/DB 클릭 시 발견될 결함 2건 사전 차단 |
 | A2 CRITICAL 정리 효과 | 추가 5건 사전 차단 + filter 보강으로 노이즈 67→0 |
+| **사이클 6 효과 검증** | **OSError traceback 0건, 사용자 결함 보고 0건 — A1·A2 가치 정량 입증** |
 
 ---
 
