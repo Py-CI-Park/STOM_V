@@ -2615,3 +2615,41 @@ Scope guard (P-lane execution 시점):
 - LS direct dependency 추가: 0건
 
 Directive: 본 EXECUTION commit으로 P-T05/P-T06 task 종결. A-lane 진입은 별도 사용자 승인 commit으로 분리한다. A-lane commit 전까지 `--dry-mock` 인자 제거 또는 실제 OCX connect 호출을 절대 발생시키지 않는다.
+
+---
+
+## V3K-PHASE-H-H2-LOGIN-ENV-RECOVERY
+
+Records: V3K 페이지 1(Phase H H-2 A-lane) 진입 직전 stom.bat 키움 로그인이 2026-05-20부터 30시간 동안 실패했고, 진짜 원인은 KOA Studio 모의투자 모드였음을 정본화한다. 사용자가 KOA Studio에서 모의투자 해제 + 업데이트 + 실거래 로그인 끝까지 진행한 후 2026-05-22 06:48:50 stom.bat "OpenAPI 로그인 완료" 확인.
+
+Decision: STOM 정규 운영(`STOM_Version_2` lane 포함)은 키움 실거래 모드를 가정하며, KOA Studio가 모의투자 모드일 때 `manuallogin.py`의 GetDlgItem(0x3E8/0x3E9/0x3EA)이 실거래 dialog control ID와 매핑되지 않아 invalid handle을 반환하는 것으로 추정된다. 향후 stom.bat 로그인 실패 시 가장 먼저 KOA Studio 모의투자 토글을 점검하는 것을 운영 매뉴얼 amend 의무로 등록한다. 본 환경 복구는 STOM/V3K 코드 변경 0건이며 V3K 보존 invariant L1~L9 + LH1~LH5 모두 보존된다.
+
+Plan: 없음 (외부 SDK 환경 복구이며 별도 plan 신설 없이 본 update_log 보고서로 정본화)
+
+Evidence:
+
+- `docs/update_log/2026-05-22_v3k_phase_h_h2_login_env_recovery.md` (timeline + 가설 검증 + 진짜 원인 + 해결 절차 + 학습 포인트)
+- 사용자 cmd 정상 로그인 로그 (2026-05-22 06:46:34 ~ 06:48:54) 본 보고서 §2.1에 인용 보존
+
+Verification:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS (unblocked, schema v2)
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS (trade/, utility/, Kiwoom_OpenAPI/ 무변경)
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+- stom.bat 정상 로그인 evidence ("업데이트 확인 완료" → "OpenAPI 로그인 완료" → "실시간 등록 완료"): 본 보고서 §2.1
+
+Effect: V3K Phase H H-2 A-lane 진입 차단 요인이 해소되었다. A-lane 진입 조건 4건 중 3건이 만족된 상태이며, 잔여 1건은 A-lane 실행 시점에 `V3K_PHASE_H_USER_ACK=1` env 발급으로 만족된다. 본 보고서 직후 사용자가 32-bit Python으로 `scripts/run_v3k_phase_h_dryrun.py --ack --account-mode read-only` 실행 가능 상태.
+
+Scope guard:
+
+- Kiwoom runtime mutation: 0건 (trade/, utility/, Kiwoom_OpenAPI/, receiver/ 무변경)
+- LS direct dependency: 0건
+- operating `_database/` write: 0건
+- `_database_v3k_shadow/` 변경: 0건
+- `_v3k_sidecar/` 토글 변경: 0건
+- V3K USER_ACK env var durable 발급: 0건
+- V3K feature flag default-ON 전환: 0건
+- live connect/login: 정규 STOM 운영 경로로만 발생 (V3K A-lane 측은 0건)
+
+Directive: 향후 stom.bat 로그인 첫 실패 시 다음 우선순위로 진단한다. (1) KOA Studio 모의투자 모드 토글 확인 → (2) 키움 OpenAPI 환경 점검(`opstarter` 실행) → (3) OCX 등록(`regsvr32`) → (4) 재설치. 본 trail은 V3K closeout audit(F7) 검출 대상에서 제외(외부 SDK 환경 복구로 V3K 미션과 직결되지 않음). V3K Phase H H-2 A-lane 본 실행 evidence는 별도 `docs/evidence/v3k-phase-h-h2-actual-9024e3b9.json`으로 산출 예정.
