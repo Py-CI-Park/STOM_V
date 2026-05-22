@@ -2745,3 +2745,46 @@ Effect: V3K Phase H가 본 PC KHOPENAPI 환경에서 default-OFF → 1회성 dry
 Scope guard: V3K-PHASE-H-H2-ACTUAL 섹션과 동일
 
 Directive: Phase H ENABLE 상태는 본 evidence가 baseline이고, 향후 Phase H 관련 모든 audit/closure는 본 commit hash를 참조한다.
+
+---
+
+## V3K-F1-DELIBERATE-RALPLAN-PLANNER-V1
+
+Records: V3K 페이지 2(Step 3, F1 DB cutover, CRITICAL risk)의 `--deliberate ralplan` 합의 plan Planner v1을 정본화한다. 본체 plan(`docs/plans/2026-05-12_v3k_db_cutover_plan.md`)과 approval prep(`docs/plans/2026-05-13_v3k_page_053_f1_actual_db_cutover_approval_prep_plan.md`)을 supersede하지 않고 합의 layer를 얹어 Pre-mortem 12건 + 확장 테스트 4축(unit/integration/e2e/observability) + Rollback drill 의무를 정본화한다.
+
+Decision:
+
+- ralplan iteration 1 (Planner v1)을 본 commit으로 종결. iteration 2(Architect review) + iteration 3(Critic review) + iteration 4(Planner v2) + iteration 5(APPROVE 합의)는 별도 후속 commit으로 분리한다.
+- 24h monitoring window(2026-05-22T03:02 UTC ~ 2026-05-23T03:02 UTC, V3K-PHASE-H-H2-ACTUAL 섹션 baseline) 동안 iteration 2-5를 병렬로 진행 가능하다.
+- A2 trigger 4건은 본 plan §9에서 확정: (1) A1 24h monitoring 종료 + (2) `V3K_CUTOVER_USER_ACK=1` durable env + (3) ralplan 합의 종결 + (4) transaction lock window 진입 시각 명시.
+- transaction lock window는 본 plan §3.3에서 명시: 한국 정규장 외 + 주말 + 키움 정기점검 회피, 권장은 토요일 자정~일요일 자정.
+- 5중 guard(branch/USER_ACK/--backup-first/--backup-dir/--allow-operating-target)는 `scripts/cutover_v3k_shadow_to_database.py:require_apply_guards`로 이미 구현되어 있으며 본 합의 plan은 이를 인용한다.
+
+Plan: `docs/plans/2026-05-22_v3k_f1_db_cutover_deliberate_ralplan_plan.md`
+
+Verification:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS (unblocked, schema v2)
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+- `git status --short -- _database _database_v3k_shadow _log backup *.db .omx/reports _v3k_sidecar`: 무변경
+
+Effect: F1 cutover의 `--deliberate ralplan` 의무 산출 3건(Pre-mortem 12건 / 확장 테스트 4축 / Rollback drill)이 baseline으로 정본화되었다. 24h monitoring window 동안 ralplan iteration 2-5를 진행해 합의 종결 후 A2(F1 cutover actual) 진입 가능 상태로 전이한다. F6 산식 진척률 영향 없음(53.6% 유지).
+
+Scope guard:
+
+- Kiwoom runtime mutation: 0건
+- LS direct dependency: 0건
+- operating `_database/` write: 0건
+- `_database_v3k_shadow/` 변경: 0건
+- `_v3k_sidecar/` 토글 변경: 0건
+- order/account API 호출: 0건
+- V3K USER_ACK env durable 발급: 0건
+- V3K_CUTOVER_USER_ACK env 발급: 0건
+- V3K feature flag default-ON 전환: 0건
+- cutover script `--apply` 실행: 0건
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 + LC1/LC2/LC3 모두 보존 (cutover 미실행)
+
+Directive: 24h monitoring window 종료 + ralplan iteration 5(APPROVE 합의) 종결 + USER_ACK env 발급 + transaction lock window 진입 시각 명시 4건이 모두 충족된 시점에만 A2 진입 가능. Architect review(iteration 2)와 Critic review(iteration 3)는 별도 commit으로 분리하며, 각 review가 본 Planner v1 §4(Architect baseline) / §5(Critic baseline)을 amend 또는 확장한다. iteration 4(Planner v2)는 Architect/Critic 피드백을 흡수해 plan을 amend하고 iteration 5에서 APPROVE 합의를 등록한다. cutover script `--apply` 실행은 iteration 5 합의 + A2 trigger 4건 모두 충족 시점에만 가능하다.
