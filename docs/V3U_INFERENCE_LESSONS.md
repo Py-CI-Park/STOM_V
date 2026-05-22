@@ -254,6 +254,32 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 사이클 8 거버넌스 작업 (2026-05-22): 3U_C 생성 Phase A·B 완료 — 결함 0건
+
+V3U_TRANSITION_AUDIT §5 Phase A·B 적용. 신규 결함 없이 거버넌스 + branch + worktree
+구축 완료. 3U_C lane이 V3U 안전망(45 pytest + baseline 0)을 자동 상속.
+
+**Phase A (commit 2ba974f8) 갱신 docs**:
+- CARRY_FORWARD_REGISTRY.md: V3U_C custom allowlist rule + V3U_C lane carry-forward 절
+- WORKTREE_STRATEGY.md: 3단계 Verification Order (3U vs 3 / 3U_C vs 3U / 3U_C vs 3)
+- V3U_NEXT_STEPS.md: 그룹 E (V3U_C 작업) 4 옵션 (E1~E4)
+
+**Phase B 워크트리 인벤토리** (2026-05-22 시점):
+| 경로 | branch | HEAD |
+|---|---|---|
+| STOM_V | STOM_Version_2 | adfe80c7 |
+| wt-2u | STOM_Version_2U | 3b7a3aeb |
+| wt-3 | STOM_Version_3 | 7faec937 |
+| wt-3u | STOM_Version_3U | 2ba974f8 |
+| **wt-3uc (신규)** | **STOM_Version_3U_C** | 2ba974f8 |
+| wt-dev | STOM_Version_2U_C | 6e8e23d0 |
+
+**3단계 verification 사전 검증**:
+- `3U vs 3U_C`: diff 비어있음 (Phase B 직후 invariant 유지)
+- 3U_C pytest collect: 46 케이스 정상 (V3U 안전망 자동 상속)
+
+**Remote sync**: origin/STOM_Version_3U_C 신규 push 완료.
+
 ### 결함 #15 (2026-05-22): ui.web_dashboard placeholder 사전 차단 (A4)
 
 - 카테고리: D (helper inventory, placeholder)
@@ -396,14 +422,16 @@ A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-22 사이클 7 A3·A4 완료 시점) |
+| 측정 | 값 (2026-05-22 사이클 8 3U_C 생성 완료 시점) |
 |---|---|
-| 총 발견 결함 | 19 (사이클 7 A4 +1: #15 web_dashboard placeholder) |
-| 자동 회귀 테스트 추가 | 20 (사이클 7 A4 +1) |
+| 총 발견 결함 | 19 (사이클 8은 거버넌스 작업, 신규 결함 0건) |
+| 자동 회귀 테스트 추가 | 20 |
 | pytest 케이스 총수 | 46 |
-| 수정 커밋 누적 | 10 |
+| 수정 커밋 누적 | 11 |
 | 신규 자동 도구 | 1 (attr_inventory_diff) + A3 verifier UX 분리 |
-| 사용자 시각 검증 사이클 | 6회 (사이클 7은 자율) |
+| 사용자 시각 검증 사이클 | 6회 |
+| **활성 워크트리** | **6** (STOM_V, wt-2u, wt-3, wt-3u, **wt-3uc 신규**, wt-dev) |
+| **활성 lane branch** | 6 (V2, 2U, V3, V3U, **V3U_C 신규**, 2U_C) |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
 | 근본 원인 카테고리 | 5 (§3) |
 | 재발 방지 액션 | 5 (§5) — **적용 5, 미적용 0** |

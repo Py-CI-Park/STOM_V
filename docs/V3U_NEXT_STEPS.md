@@ -197,6 +197,22 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 
+### 사이클 8 (2026-05-22): 3U_C 생성 Phase A·B 완료
+
+- 사용자 선택: "A 진행" (V3U_TRANSITION_AUDIT §7 우선순위 4번, 3U_C 생성)
+- 실행 결과:
+  - 23번째 커밋(`2ba974f8`) Phase A 거버넌스 사전 작업 (docs 3개 갱신)
+  - Phase B: STOM_Version_3U_C branch 생성 + wt-3uc 워크트리 + origin push
+  - 24번째 커밋(본 사이클) LESSONS/NEXT_STEPS 사이클 8 기록
+- 발견 신규 결함: 0건 (거버넌스 작업)
+- 3U_C lane 사전 검증:
+  - 3U vs 3U_C diff 비어있음 (invariant 유지)
+  - 3U_C 워크트리 pytest collect 46 케이스 정상 (V3U 안전망 자동 상속)
+  - origin/STOM_Version_3U_C remote push 완료
+- LESSONS.md 갱신: §6 사이클 8 거버넌스 작업 절 + §7 통계 (46/20/11/baseline 0, 활성 워크트리 6)
+- NEXT_STEPS.md 갱신: 본 항목
+- 다음 사이클 후보: 그룹 E (V3U_C custom 작업 X1~X4 중 선택) — 사용자 결정 필요
+
 ### 사이클 7 (2026-05-22): A3 verifier UX 분리 + A4 web_dashboard placeholder
 
 - 사용자 선택: "A 진행" (A3·A4 자율 묶음, 중간 점검 보고서 §7 우선순위 1번)
