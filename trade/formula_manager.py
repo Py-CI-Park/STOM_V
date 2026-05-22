@@ -11,6 +11,14 @@ from trade.base_strategy import BaseStrategy
 from utility.setting_base import list_stock_tick2, list_stock_min2, list_coin_tick2, list_coin_min2, list_future_tick2, \
     list_future_min2, DB_STRATEGY
 
+# V3K formula globals facade hook (default-OFF, side-effect-free)
+# Plan: docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.3 N3
+try:
+    from strategy.v3k_formula_facade import V3KFormulaGlobalFacade, V3KFormulaGlobalRequest
+    _V3K_FACADE_AVAILABLE = True
+except Exception:
+    _V3K_FACADE_AVAILABLE = False
+
 dict_fm_count = {
     '선:일반': 1,
     '선:조건': 1,
@@ -75,6 +83,16 @@ class FormulaManager(BaseStrategy):
         self.SetGlobalsFunc()
 
     def UpdateGlobalsFunc(self, dict_add_func):
+        # V3K formula globals hook (default-OFF 시 facade가 빈 dict 반환 → 기존 동작 보존)
+        if _V3K_FACADE_AVAILABLE:
+            try:
+                facade = V3KFormulaGlobalFacade()
+                v3k_result = facade.build(V3KFormulaGlobalRequest(analyzer_values={}))
+                if v3k_result.has_globals:
+                    dict_add_func = {**dict_add_func, **v3k_result.globals_dict}
+            except Exception:
+                # V3K facade 호출 예외 시 기존 동작 보존 (LH1 코드 invariant 보호)
+                pass
         globals().update(dict_add_func)
 
     # noinspection PyUnboundLocalVariable,PyUnusedLocal

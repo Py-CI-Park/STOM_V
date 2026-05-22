@@ -53,23 +53,25 @@ def _text(path: str) -> str:
 
 
 def _assert_verify_1a_still_blocks_direct_runtime_edits() -> None:
+    # N3 amend (2026-05-22): trade/formula_manager.py는 V3K hook 통합 허용으로 이동.
+    # plan: docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.3 N3
+    # trade/base_strategy.py + backtest/backengine_base.py는 여전히 FORBIDDEN.
     audit = _text("scripts/audit_v3k_verify_1a.py")
     assert "FORBIDDEN_CHANGED_FILES" in audit
     assert '"trade/base_strategy.py"' in audit
-    assert '"trade/formula_manager.py"' in audit
     assert '"backtest/backengine_base.py"' in audit
-    assert '"trade/formula_manager.py"' not in audit.split("ALLOWED_RUNTIME_CHANGED_FILES", 1)[1]
-    print("v3k formula hook decision verify-1a runtime guard ok")
+    print("v3k formula hook decision verify-1a runtime guard (base_strategy, backengine) ok")
 
 
 def _assert_trade_runtime_remains_unhooked() -> None:
+    # N3 amend (2026-05-22): trade/formula_manager.py만 V3K hook 통합 허용, base_strategy.py는 보존.
     runtime_hits: list[str] = []
-    for rel_path in ("trade/formula_manager.py", "trade/base_strategy.py"):
+    for rel_path in ("trade/base_strategy.py",):
         text = _text(rel_path)
         if "V3K" in text or "v3k_" in text.lower():
             runtime_hits.append(rel_path)
-    assert not runtime_hits, f"direct V3K runtime hook is not allowed yet: {runtime_hits}"
-    print("v3k formula hook decision trade runtime remains unhooked ok")
+    assert not runtime_hits, f"direct V3K runtime hook is not allowed in trade/base_strategy.py yet: {runtime_hits}"
+    print("v3k formula hook decision trade/base_strategy.py remains unhooked ok")
 
 
 def _assert_facade_has_no_globals_call() -> None:

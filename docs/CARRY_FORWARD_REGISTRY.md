@@ -3571,3 +3571,57 @@ Scope guard:
 Preservation invariant: L1/L4/L7/L9 + LH1-LH5 모두 보존, Phase E 7 sub-phase 정합
 
 Directive: N2 closure 확정. master plan §3.2의 토글 변경 작업은 N4/N5의 일부로 자연 흡수. 다음 단계 N3 (분야 ④ formula runtime hook 통합)는 trade/formula_manager.py + trade/base_strategy.py 변경 + VERIFY-1A guard amend 필요. LH1 *코드 invariant* 부분 떨어냄 사항이라 사용자 명시 ack 권장.
+
+---
+
+## V3K-N3-FIELD4-FORMULA-RUNTIME-HOOK-CLOSURE
+
+Records: 5분야 master plan §3.3 N3 (분야 ④ formula runtime hook 통합 75 → 100% closure)을 정본화한다. trade/formula_manager.py UpdateGlobalsFunc에 V3KFormulaGlobalFacade hook 통합 + verify_1a guard amend + 2 smoke amend로 LH1 코드 invariant 부분 떨어냄 정합 적용. default-OFF parity ±0% 완벽 유지.
+
+Decision:
+
+- 분야 ④ 진척률 75% → 100% (+25%p) closure 확정.
+- `trade/formula_manager.py:77` `UpdateGlobalsFunc` 본문에 V3K facade hook 통합. default-OFF 시 `facade.has_globals=False` → 기존 globals().update 동작 그대로. flag ON 시 V3K_* prefix만 추가.
+- `scripts/audit_v3k_verify_1a.py:129` `_assert_no_v3k_imports_in_kiwoom_runtime` search_roots에서 `trade/formula_manager.py` 제거. `trade/stock_korea/` + `trade/base_strategy.py`는 차단 유지.
+- `scripts/smoke_v3k_formula_boundary_contract.py` runtime_paths에서 formula_manager.py 제외 (Phase D-0 invariant 부분 졸업).
+- `scripts/smoke_v3k_formula_runtime_hook_decision.py` 두 assert 함수에서 formula_manager.py 제외 (Phase D-2 invariant 부분 졸업).
+- LH1 부분 떨어냄: formula_manager.py만 V3K hook 허용. base_strategy.py + trade/stock_korea/ + Kiwoom_OpenAPI/ + receiver/는 코드 invariant 유지.
+
+Plan: `docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md` §3.3 N3
+Policy amend: `docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md` §3.4
+
+Evidence: `docs/evidence/v3k-n3-field4-formula-runtime-hook-9024e3b9.json` (5014 bytes)
+
+Verification:
+
+- py_compile: trade/formula_manager.py + audit_v3k_verify_1a.py + 2 smoke 모두 OK
+- `python scripts/smoke_v3k_formula_facade.py`: PASS
+- `python scripts/smoke_v3k_formula_boundary_contract.py`: PASS (amend 후)
+- `python scripts/smoke_v3k_formula_runtime_hook_decision.py`: PASS (amend 후)
+- `python scripts/backtest_v3k_phase_f_parity.py --report .omx/reports/v3k-phase-f-parity-n3-recheck.json`: PASS — `deltas: loss=0.00%/5.0%, mdd=0.00%/3.0%, trades=0.00%/10.0%` (default-OFF parity ±0% 유지, T1 evidence와 동일)
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS (Kiwoom/runtime untouched + flags default-OFF + forbidden + LS)
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 분야 ④ 진척률 75% → 100%. F6 산식 단독 영향 +3.6%p (25/700). 5분야 master 3/6 (50%) 완료. 다음 단계 N4 (분야 ⑥ Phase F F-4 ON actual) — 본 master에서 가장 큰 단계.
+
+Scope guard:
+
+- 코드 변경 4 파일 (trade/formula_manager.py + 1 audit + 2 smoke)
+- Kiwoom runtime mutation: trade/formula_manager.py만 (정책 amend 정합), 다른 trade/ runtime 보존
+- operating `_database/` write 0건
+- `_database_v3k_shadow/` 변경 0건
+- `_v3k_sidecar/` 토글 변경 0건 (N4/N5에서)
+- feature flag default-ON 전환 0건 (V3K_FORMULA_MANAGER_ADAPTER + V3K_STG_GLOBALS_FACADE 둘 다 default-OFF 유지)
+- USER_ACK env durable 발급 0건
+- LS direct dependency 0건
+- default-OFF parity ±0% 검증 통과
+
+Preservation invariant:
+- L1/L4/L7/L9: 보존
+- LH1: 부분 떨어냄 (정책 amend 정합) — formula_manager.py만 V3K 허용
+- LH2-LH5: 보존
+- LC1-LC3: 보존 (cutover 미실행)
+
+Directive: N3 closure 확정. 분야 ④ runtime hook 통합 완료, default-OFF parity 완벽 유지. 다음 단계 N4 (분야 ⑥ Phase F F-4 ON actual, ~2시간 + 24h monitoring)는 매매 결정 경로 직접 영향. 사용자 명시 phrase + USER_ACK env durable 발급 필수.

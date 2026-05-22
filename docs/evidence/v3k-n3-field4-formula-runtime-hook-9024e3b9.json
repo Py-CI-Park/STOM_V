@@ -1,0 +1,94 @@
+{
+  "captured_at_utc": "2026-05-22T14:29:17.066811+00:00",
+  "code_changes": {
+    "scripts/audit_v3k_verify_1a.py": {
+      "change": "_assert_no_v3k_imports_in_kiwoom_runtime search_roots에서 trade/formula_manager.py 제거 (V3K hook 허용)",
+      "note": "trade/base_strategy.py + trade/stock_korea/는 여전히 V3K 차단"
+    },
+    "scripts/smoke_v3k_formula_boundary_contract.py": {
+      "change": "runtime_paths에서 trade/formula_manager.py 제외 (Phase D-0 invariant 부분 졸업)",
+      "note": "trade/base_strategy.py 차단 유지"
+    },
+    "scripts/smoke_v3k_formula_runtime_hook_decision.py": {
+      "change": "_assert_verify_1a_still_blocks + _assert_trade_runtime_remains_unhooked에서 formula_manager.py 제외",
+      "note": "base_strategy.py + backengine_base.py 차단 유지"
+    },
+    "trade/formula_manager.py": {
+      "change": "V3KFormulaGlobalFacade hook 통합 + default-OFF parity 보존",
+      "feature_flag_default_off": true,
+      "lines_added": "~13 (import + UpdateGlobalsFunc body amend)",
+      "side_effect_when_default_off": "no-op (facade.has_globals=False)"
+    }
+  },
+  "host_identifier": "9024e3b9",
+  "integration_design": {
+    "default_off_path": "facade.has_globals=False → dict_add_func 무변경 → 기존 globals().update 호출 그대로",
+    "exception_guard": "try/except으로 facade 호출 예외 시 기존 동작 보존 (LH1 코드 보호)",
+    "facade_call": "V3KFormulaGlobalFacade().build(V3KFormulaGlobalRequest(analyzer_values={}))",
+    "flag_on_path": "V3K_FORMULA_MANAGER_ADAPTER + V3K_STG_GLOBALS_FACADE 둘 다 ON → V3K_* prefix가 globals에 추가",
+    "hook_point": "trade/formula_manager.py FormulaManager.UpdateGlobalsFunc (line 77)"
+  },
+  "lane": "P-lane (코드 변경 4 파일, 매매 영향 잠재 - default-OFF parity ±0% 유지)",
+  "lh1_partial_amend": {
+    "amend_policy_ref": "docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md §3.4",
+    "lh1_amend_via_n3": "trade/formula_manager.py는 V3K facade hook 통합 허용 (default-OFF 시 no-op). trade/base_strategy.py + trade/stock_korea/ 보존 유지.",
+    "lh1_original": "Kiwoom 주문/청산/계좌/체결 처리 경로 코드 무변경"
+  },
+  "phase": "V3K-N3-FIELD4-FORMULA-RUNTIME-HOOK-INTEGRATION",
+  "plan_ref": "docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md",
+  "policy_amend_ref": "docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md",
+  "progress_impact": {
+    "after_percent": 100,
+    "before_percent": 75,
+    "delta_percent_points": 25,
+    "field": "④ 수식 전역값 공유",
+    "rationale": "trade/formula_manager.py에 V3K facade hook 통합 + default-OFF parity ±0% 검증 + verify_1a guard amend로 LH1 부분 떨어냄 정합 + 2 smoke amend로 N3 invariant 정합."
+  },
+  "related_documents": [
+    "docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.3 N3",
+    "docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md §3.4 LH1 부분 떨어냄",
+    "strategy/v3k_formula_facade.py (line 113 V3KFormulaGlobalFacade)",
+    "trade/formula_manager.py:77 UpdateGlobalsFunc (변경 위치)",
+    "scripts/audit_v3k_verify_1a.py line 129 _assert_no_v3k_imports_in_kiwoom_runtime (amend)",
+    "docs/evidence/v3k-phase-f-parity-t1-9024e3b9.json (T1 parity baseline cross-ref)"
+  ],
+  "schema_version": 1,
+  "scope_guard": {
+    "feature_flag_default_on_flipped": false,
+    "kiwoom_openapi_unchanged": true,
+    "kiwoom_runtime_mutated": false,
+    "lh1_code_invariant_full_break": false,
+    "lh1_partial_amend_per_n3_policy": true,
+    "ls_direct_dependency_added": false,
+    "operating_database_write_attempted": false,
+    "sidecar_toggle_changed": false,
+    "trade_base_strategy_unchanged": true,
+    "trade_stock_korea_unchanged": true
+  },
+  "task": "N3 분야 ④ formula runtime hook 통합 75 → 100% closure",
+  "verdict": "PASS — 분야 ④ formula runtime hook 100% closure. default-OFF parity 보존 + LH1 부분 amend 정합 + smoke amend 완료.",
+  "verification_results": {
+    "audit_v3k_phase_h_gate4_environment_status": "PASS",
+    "audit_v3k_verify_1a": "PASS (Kiwoom/runtime untouched + flags default-OFF + forbidden + LS)",
+    "backtest_v3k_phase_f_parity_n3_recheck": {
+      "deltas": {
+        "loss_pct": 0.0,
+        "mdd_pct": 0.0,
+        "trade_count_pct": 0.0
+      },
+      "limits": {
+        "loss_pct": 5.0,
+        "mdd_pct": 3.0,
+        "trade_count_pct": 10.0
+      },
+      "status": "PASS",
+      "verdict": "default-OFF parity ±0% 완벽 유지 (T1 evidence와 동일)"
+    },
+    "git_diff_check": "PASS",
+    "py_compile": "PASS (formula_manager + verify_1a + 2 smokes)",
+    "smoke_v3k_formula_boundary_contract": "PASS (amend 후)",
+    "smoke_v3k_formula_facade": "PASS",
+    "smoke_v3k_formula_runtime_hook_decision": "PASS (amend 후)",
+    "verify_nonrelease_sync": "PASS"
+  }
+}

@@ -110,8 +110,10 @@ def _assert_v3k_facade_has_no_runtime_injection() -> None:
 
 
 def _assert_trade_runtime_has_no_v3k_imports_yet() -> None:
+    # N3 amend (2026-05-22): trade/formula_manager.py에 V3KFormulaGlobalFacade hook 통합 허용.
+    # plan: docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.3 N3
+    # trade/base_strategy.py는 여전히 V3K import 금지 (Phase D-0 invariant 부분 보존).
     runtime_paths = (
-        "trade/formula_manager.py",
         "trade/base_strategy.py",
     )
     hits: list[str] = []
@@ -119,8 +121,8 @@ def _assert_trade_runtime_has_no_v3k_imports_yet() -> None:
         text = _text(path)
         if "v3k_" in text.lower() or "V3K" in text:
             hits.append(path)
-    assert not hits, f"Phase D-0 must not import V3K into runtime yet: {hits}"
-    print("v3k formula runtime remains unhooked ok")
+    assert not hits, f"Phase D-0 must not import V3K into trade/base_strategy.py yet: {hits}"
+    print("v3k formula runtime (base_strategy) remains unhooked ok")
 
 
 def _assert_v3k_global_names_are_prefixed_and_non_colliding() -> None:

@@ -127,10 +127,13 @@ def _assert_no_forbidden_changed_paths(changed: list[str]) -> None:
 
 
 def _assert_no_v3k_imports_in_kiwoom_runtime() -> None:
+    # N3 amend (2026-05-22): trade/formula_manager.py에 V3KFormulaGlobalFacade hook 통합 허용.
+    # plan: docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.3 N3
+    # policy: docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md §3.4 (LH1 부분 떨어냄)
+    # trade/formula_manager.py는 default-OFF facade hook만 추가, runtime 매매 영향은 N4/N5에서.
     search_roots = [
         ROOT / "trade" / "stock_korea",
         ROOT / "trade" / "base_strategy.py",
-        ROOT / "trade" / "formula_manager.py",
     ]
     hits: list[str] = []
     for path in search_roots:
