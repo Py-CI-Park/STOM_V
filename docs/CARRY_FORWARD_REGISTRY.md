@@ -3119,3 +3119,44 @@ Scope guard:
 - live broker / decision / sidecar 모두 무영향
 
 Directive: T2 완료. T1+T2 병렬 진행으로 5개 분야 중 2개 완전 진척. 다음 단계는 T3 (분야 ② F5 027-5 registry 등록 정리, 가장 짧은 ~15분). T4/T5는 진단 중심.
+
+---
+
+## V3K-T3-F5-REGISTRY-CLOSURE-CONFIRMED
+
+Records: 5개 분야 순차 plan §3.3 T3 (분야 ② F5 page 027-5 registry 등록 확인)을 수행한 결과를 정본화한다. F5 027-5 registry는 이미 `V3K-F5-PROD-READ: production learning DB read-only boundary` 섹션(`docs/CARRY_FORWARD_REGISTRY.md` line 1058)으로 등록 완료 상태였음을 확인. D2 진단(`272fff6b`)의 "027-5 미확인" 분류는 grep 키워드 차이(`V3K-F5-PROD-READ` 축약형을 직관적 이름 `F5-CLOSURE`/`F5-PRODUCTION-LEARNING-DB-READ`로 검색)로 인한 분류 오류였으며 본 commit으로 정정.
+
+Decision:
+
+- F5 page 027 5 step (027-1 메서드 / 027-2 production read smoke / 027-3 leakage guard / 027-4 fallback smoke / **027-5 registry**) 모두 closure 확정.
+- 기존 `V3K-F5-PROD-READ` 섹션은 그대로 유지 (supersede 아님). 본 섹션은 위에 amend 역할.
+- D2 진단 보고서는 그대로 유효하되 본 commit이 amend layer로 정확한 분류 추가.
+- 분야 ② 진척률 85% → 90% (+5%p).
+
+Plan: `docs/plans/2026-05-22_v3k_backtest_track_5fields_sequential_execution_plan.md` §3.3 T3
+
+Evidence: 추가 evidence 산출 없음 (확인 작업이므로). 기존 7건 V3K learning smoke evidence는 D2 진단에서 모두 PASS 확인 완료.
+
+Verification:
+
+- grep `V3K-F5|F5.*PRODUCTION|F5.*CLOSURE|production_learning_db|F5-CLOSURE|page_027` → `V3K-F5-PROD-READ` line 1058 매치
+- 섹션 본문 확인: Records 3건 / Modified 6건 / Decisions 5건 / Verification 7건 모두 등록 상태
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 분야 ② 진척률 90% (5개 분야 순차 plan T3 종결). F6 산식 +0.7%p (5/700). 5개 분야 순차 plan 3/5 완료 (60%). 다음 단계 T4 (분야 ④ 수식 전역값 진단).
+
+Scope guard:
+
+- 코드 변경 0건
+- registry 신규 등록 0건 (확인 작업이므로)
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- LS direct dependency 0건
+- V3K USER_ACK env 발급 0건
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존
+
+Directive: T3 완료. 5개 분야 순차 plan에서 ⑥/⑦/② 3개 분야 종결. 다음 단계는 T4 (분야 ④ 수식 전역값 공유 진단 + plan, ~45분) 또는 T5 (분야 ③ 사이드카 진단 + plan, ~35분). T4와 T5는 진단 중심 + 진척률 변동 없는 baseline 확정 작업.
