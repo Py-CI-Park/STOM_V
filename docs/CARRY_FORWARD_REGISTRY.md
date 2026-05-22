@@ -3160,3 +3160,67 @@ Scope guard:
 Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존
 
 Directive: T3 완료. 5개 분야 순차 plan에서 ⑥/⑦/② 3개 분야 종결. 다음 단계는 T4 (분야 ④ 수식 전역값 공유 진단 + plan, ~45분) 또는 T5 (분야 ③ 사이드카 진단 + plan, ~35분). T4와 T5는 진단 중심 + 진척률 변동 없는 baseline 확정 작업.
+
+---
+
+## V3K-T4-FORMULA-GLOBALS-DIAGNOSIS
+
+Records: 5개 분야 순차 plan §3.4 T4 (분야 ④ 수식 전역값 공유 진단)을 read-only로 수행한 결과를 정본화한다. `strategy/v3k_formula_facade.py` 본문(313줄, 5 클래스, 4 메서드) + Phase D0/D1/D2 3 sub-phase plan + Phase E0 이연 plan + V3K-IMPL-5 registry + 3건 smoke 직접 실행으로 진척 측정.
+
+Decision:
+
+- 분야 ④ 진척률 실측: master plan 추정 50% → **75%** (+25%p).
+- Phase D0/D1/D2 3 sub-phase 모두 100% closure 확정.
+- Phase D2 (Page 018) 결정: runtime hook 보류 + facade boundary 유지 (VERIFY-1A guardrail 보존). `trade/formula_manager.py`, `trade/base_strategy.py` 변경 금지.
+- 잔여 25%는 runtime hook (`globals().update()` 직접 통합 + `V3K_FORMULA_MANAGER_ADAPTER` ON + `V3K_STG_GLOBALS_FACADE` ON)으로, 매매 트랙 D 활성화 시점에 Phase E0 plan(`docs/plans/2026-05-12_v3k_page_019_phase_e0_runtime_activation_gap_review_plan.md`)으로 이연.
+- 분야 ④의 백테스트 영역은 사실상 완료. 진행 plan 별도 작성 불필요.
+- T1 (분야 ⑥ 분석기 parity)이 이미 `v3k_formula_facade`를 import해서 사용 중이므로 백테스트 read 경로는 검증됨.
+
+Plan: `docs/update_log/2026-05-22_v3k_t4_formula_globals_diagnosis.md`
+
+Smoke execution evidence (read-only):
+
+- `scripts/smoke_v3k_formula_facade.py`: PASS (dry-run ready + collision blocks)
+- `scripts/smoke_v3k_formula_boundary_contract.py`: PASS (default-OFF no globals + dry-run collision-only)
+- `scripts/smoke_v3k_formula_runtime_hook_decision.py`: PASS (facade side-effect-free + dry-run boundary)
+
+Module structure (`strategy/v3k_formula_facade.py`):
+
+- line 20: V3K_FORMULA_GLOBAL_PREFIX = "V3K_"
+- line 54: V3KFormulaGlobalRequest
+- line 63: V3KFormulaGlobalResult
+- line 75: V3KFormulaGlobalDryRunResult
+- line 98: V3KPhaseFFormulaResult
+- line 113: V3KFormulaGlobalFacade (메인)
+- line 181: build_values()
+- line 199: build_globals()
+- line 230: build_phase_f()
+- line 289: dry_run()
+
+Feature flag 2단 게이트 (V3K-IMPL-5 §Decision 인용):
+
+- `V3K_FORMULA_MANAGER_ADAPTER` (default-OFF)
+- `V3K_STG_GLOBALS_FACADE` (default-OFF)
+- **둘 다 ON 필요** (Both must be ON before prefixed globals are built)
+
+Verification:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 분야 ④ 진척률 50% → 75% (+25%p). F6 산식 단독 영향 +3.6%p (25/700). 5개 분야 순차 plan 4/5 완료 (80%).
+
+Scope guard:
+
+- 코드 변경 0건
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- `V3K_FORMULA_*` flag ON 전환 0건
+- `trade/formula_manager.py` / `trade/base_strategy.py` 변경 0건 (VERIFY-1A guard 보존)
+- LS direct dependency 0건
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존
+
+Directive: T4 완료. 분야 ④ runtime hook 통합은 Phase E0 plan(`page_019`)으로 이연, 매매 트랙 D 활성화 시점에 다룸. 5개 분야 순차 plan 다음 단계는 T5 (분야 ③ 사이드카 진단, 마지막 단계).
