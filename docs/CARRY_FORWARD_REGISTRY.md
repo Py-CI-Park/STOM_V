@@ -3292,3 +3292,47 @@ Scope guard:
 Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존
 
 Directive: T5 완료 + 5개 분야 순차 plan 5/5 (100%) 종결. 트랙 A 백테스트 강화 cycle closure. 다음 권장 작업: 트랙 B (CLI 확장 Phase 1 확장: ai_controller / strategy_generator 노출) 또는 v5 mid-checkpoint 정본화 (트랙 A closure summary + F6 산식 통일). 트랙 D (운영 매매) 재개는 사용자 명시 결정 시점.
+
+---
+
+## V3K-MIDPOINT-CHECKPOINT-V5
+
+Records: V3K v5 mid-checkpoint를 정본화한다. v4(`9423735e`, cd6f5bd → 4dbac74f, 110 commit, 50% 마일스톤) 이후 19 commit 누적으로 페이지 1 A-lane closure + 트랙 A 백테스트 강화 100% 종결 + F6 진척률 50% → 72.1% (+22.1%p) 달성을 단일 snapshot으로 freeze.
+
+Decision:
+
+- prior v1/v2/v3/v4 mid-checkpoint 모두 본문 무변경 + 보완 공존. v5는 v4의 후속 snapshot이며 F6 §3.2 명명 규칙 정합.
+- 검토 baseline `4dbac74f`, 검토 HEAD `1a8fdcde`, 검토 대상 19 commit.
+- 19 commit을 5-phase로 분류: ζ (Step 1 closure, 7건) / η (페이지 1 A-lane, 4건) / θ (방향 재정렬, 2건) / ι (M1 진단, 2건) / κ (트랙 A 5개 분야 100%, 5건). 본 commit 자체는 검토 외.
+- F6 산식 갱신: `(50+90+90+75+100+50+50)/700 = 505/700 = 72.1%`. 분야별 변동 표 §5.1 인용.
+- 보존 원칙 12건 (L1/L4/L7/L9 + LH1-LH5 + LC1-LC3) 모두 PASS.
+- Plan coverage 100% 유지.
+- 트랙 분류 갱신: A 100% 종결 / B ~60-70% (다음 작업) / C 90% (트랙 A에 흡수) / D 보류.
+- 다음 권장 작업: 트랙 B CLI Phase 1 확장 (ai_controller / strategy_generator 노출).
+
+Plan: `docs/update_log/2026-05-22_v3k_midpoint_checkpoint_v5_4dbac74f_to_1a8fdcde.md`
+
+Verification:
+
+- prior v4(`9423735e`) 본문 무변경 확인
+- F6 산식 8개 항목별 단계 갱신 표 §5.1 작성
+- 5개 분야 closure 매트릭스 §6.1 작성
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: v4 → v5 진척률 +22.1%p (50.0% → 72.1%). 트랙 A 백테스트 강화 cycle 종결 baseline 확정. 향후 트랙 B 진행 시 본 v5를 baseline으로 인용.
+
+Scope guard:
+
+- 코드 변경 0건
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- LS direct dependency 0건
+- V3K USER_ACK env 발급 0건
+- feature flag default-ON 0건
+
+Preservation invariant: L1/L4/L7/L9 + LH1-LH5 + LC1-LC3 모두 PASS
+
+Directive: v5 정본화 완료. 다음 mid-checkpoint(v6)는 트랙 B closure 또는 트랙 D 재개 시점에 새 파일로 신설. prior v1-v4 + 본 v5 본문 무변경 유지. v5 freeze 시점은 본 commit hash.
