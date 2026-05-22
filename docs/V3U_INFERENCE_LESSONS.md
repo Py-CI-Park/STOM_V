@@ -254,6 +254,35 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 사이클 9 (2026-05-22): 3U_C lane E1 V3.X 흡수 자동화 파이프라인 도입
+
+3U_C lane(`wt-3uc`)에서 첫 custom 작업 사이클. V3U_TRANSITION_AUDIT §6.3 옵션 E1 적용.
+V3U lane 결함이 아닌 3U_C 신규 산출이므로 `docs/V3U_C_INFERENCE_LESSONS.md`가 상세 기록 진실 원천.
+
+**3U_C 사이클 1 산출** (2 커밋 — origin/STOM_Version_3U_C):
+- `ebd9a8f3` 3U_C E1 V3.X 흡수 자동화 파이프라인을 도입한다
+- `9f565c3d` 3U_C CARRY_FORWARD_REGISTRY에 사이클 1 E1 항목을 등록한다
+
+**핵심 산출물**:
+- `scripts/v3uc_ingest_pipeline.py` (5 T-step 흡수 자동화)
+- `tests/v3uc/test_ingest_pipeline.py` (4 unit 케이스)
+- `docs/V3U_C_INGEST_PIPELINE.md` 운영 매뉴얼
+- `docs/V3U_C_INFERENCE_LESSONS.md` 3U_C 결함 진실 원천 (V3U와 별도)
+- `docs/V3U_C_NEXT_STEPS.md` 3U_C decision tree (V3U와 별도)
+
+**V3U lane 영향**: 0건. 3U_C 신규 파일만 추가. V3U 안전망(`tests/v3u/`, `scripts/v3u_*`, `ui/main_window.py`) 0줄 수정.
+
+**V3 official 영향**: 0건 (invariant 유지).
+
+**향후 운영 흐름** (V3.19 발표 시):
+```
+cd wt-3u
+python wt-3uc/scripts/v3uc_ingest_pipeline.py --version 19 --upstream-ref STOM_Version_3 --dry-run
+# PASS 확인 후
+python wt-3uc/scripts/v3uc_ingest_pipeline.py --version 19 --upstream-ref STOM_Version_3 --live
+# T01 merge → T02 verifier → T03 audit → T04 commit → T05 push 자동
+```
+
 ### 사이클 8 거버넌스 작업 (2026-05-22): 3U_C 생성 Phase A·B 완료 — 결함 0건
 
 V3U_TRANSITION_AUDIT §5 Phase A·B 적용. 신규 결함 없이 거버넌스 + branch + worktree
@@ -422,16 +451,20 @@ A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-22 사이클 8 3U_C 생성 완료 시점) |
+| 측정 | 값 (2026-05-22 사이클 9 3U_C E1 도입 완료 시점) |
 |---|---|
-| 총 발견 결함 | 19 (사이클 8은 거버넌스 작업, 신규 결함 0건) |
-| 자동 회귀 테스트 추가 | 20 |
-| pytest 케이스 총수 | 46 |
-| 수정 커밋 누적 | 11 |
-| 신규 자동 도구 | 1 (attr_inventory_diff) + A3 verifier UX 분리 |
+| 총 발견 결함 (V3U lane) | 19 (사이클 9는 3U_C 신규 작업, V3U 결함 0건) |
+| 자동 회귀 테스트 추가 (V3U lane) | 20 |
+| pytest 케이스 (V3U lane) | 46 |
+| 수정 커밋 누적 (V3U lane) | 11 |
+| 신규 자동 도구 (V3U lane) | 1 (attr_inventory_diff) + A3 verifier UX 분리 |
+| **3U_C lane 추가 자동 도구** | **1** (v3uc_ingest_pipeline 5 T-step) |
+| **3U_C lane 추가 회귀 테스트** | **4** |
+| **3U_C lane commit** | **2** (ebd9a8f3, 9f565c3d) |
+| **3U_C lane 신규 docs** | **3** (V3U_C_INGEST_PIPELINE/INFERENCE_LESSONS/NEXT_STEPS) |
 | 사용자 시각 검증 사이클 | 6회 |
-| **활성 워크트리** | **6** (STOM_V, wt-2u, wt-3, wt-3u, **wt-3uc 신규**, wt-dev) |
-| **활성 lane branch** | 6 (V2, 2U, V3, V3U, **V3U_C 신규**, 2U_C) |
+| **활성 워크트리** | 6 |
+| **활성 lane branch** | 6 |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
 | 근본 원인 카테고리 | 5 (§3) |
 | 재발 방지 액션 | 5 (§5) — **적용 5, 미적용 0** |

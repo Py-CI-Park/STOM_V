@@ -197,6 +197,28 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 
+### 사이클 9 (2026-05-22): 3U_C lane E1 V3.X 흡수 자동화 파이프라인 도입
+
+- 사용자 선택: "E1 진행" (V3U_C custom 작업 첫 사이클, 3U_C lane)
+- 실행 위치: wt-3uc (STOM_Version_3U_C)
+- 실행 결과:
+  - origin/STOM_Version_3U_C에 2 commit 추가 (ebd9a8f3·9f565c3d)
+  - scripts/v3uc_ingest_pipeline.py (5 T-step 흡수 자동화)
+  - tests/v3uc/test_ingest_pipeline.py (4 unit 케이스 PASS)
+  - docs/V3U_C_INGEST_PIPELINE.md (운영 매뉴얼)
+  - docs/V3U_C_INFERENCE_LESSONS.md (3U_C 결함 진실 원천 신규)
+  - docs/V3U_C_NEXT_STEPS.md (3U_C decision tree 신규)
+  - CARRY_FORWARD_REGISTRY 사이클 1 항목 등록
+- 발견 신규 결함 (V3U lane): 0건 (3U_C 신규 산출만)
+- LESSONS.md 갱신: 본 V3U LESSONS에 사이클 9 절 + §7 통계 (3U_C lane 통계 분리 표기)
+- NEXT_STEPS.md 갱신: 본 항목
+- 본 commit은 V3U lane에 머무름 (3U_C 사이클 진행 기록만, 3U_C 산출은 origin/STOM_Version_3U_C에 별도)
+- 다음 사이클 후보:
+  - V3.19 발표 시 E1 실 dry-run + live 검증
+  - 3U_C 그룹 E의 E2/E3/E4 중 선택
+  - V3U lane 사용자 2순위 시각 검증 (백테 1회·차트·변손익분석)
+  - C1 DB 마이그레이션 (사용자 백업 DB)
+
 ### 사이클 8 (2026-05-22): 3U_C 생성 Phase A·B 완료
 
 - 사용자 선택: "A 진행" (V3U_TRANSITION_AUDIT §7 우선순위 4번, 3U_C 생성)
