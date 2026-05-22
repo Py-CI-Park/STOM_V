@@ -129,4 +129,15 @@ This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py i
 
 3U_C 사이클 진행 중 발견되는 custom 차이·deferred 항목·carry-forward 위험을 본 절에 누적 기록한다.
 
-- (3U_C 사이클 시작 시점 비어있음. 첫 custom 작업 사이클부터 항목 추가.)
+### 사이클 1 (2026-05-22): E1 V3.X 흡수 자동화 파이프라인 도입
+
+- 추가 파일 (custom allowlist 등록):
+  - `scripts/v3uc_ingest_pipeline.py` (5 T-step 흡수 도구, ~270 lines)
+  - `tests/v3uc/__init__.py` + `tests/v3uc/test_ingest_pipeline.py` (4 회귀 케이스)
+  - `docs/V3U_C_INGEST_PIPELINE.md` (운영 매뉴얼)
+  - `docs/V3U_C_INFERENCE_LESSONS.md` (3U_C 결함 진실 원천)
+  - `docs/V3U_C_NEXT_STEPS.md` (3U_C decision tree)
+- carry-forward 위험: 없음 (dry-run 우선 + 단위 테스트 검증)
+- 잔여 의무:
+  - V3.19 발표 시 실 dry-run + live 검증 (사용자 환경)
+  - T01 merge conflict 자동 resolve는 별도 사이클 (현재 fail-fast로 사용자 위임)
