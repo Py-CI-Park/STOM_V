@@ -141,3 +141,19 @@ This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py i
 - 잔여 의무:
   - V3.19 발표 시 실 dry-run + live 검증 (사용자 환경)
   - T01 merge conflict 자동 resolve는 별도 사이클 (현재 fail-fast로 사용자 위임)
+
+### 사이클 2 (2026-05-22): E5 DB 마이그레이션 호환성 진단·자동 PK 추가 도구
+
+- 추가 파일 (custom allowlist 등록):
+  - `scripts/v3uc_db_compatibility_check.py` (~300 lines, --scan/--add-pk/--analyze-extra)
+  - `tests/v3uc/test_db_compatibility.py` (7 회귀 케이스, mock sqlite)
+  - `docs/V3U_C_DB_MIGRATION_PLAN.md` (종합 조사 + A++ 절차 정본화)
+- 동작 매트릭스:
+  - `--scan` read-only: PK 매트릭스 + V3.08 호환성 + JSON 매니페스트 출력
+  - `--add-pk`: 백업 보유 검증 후 CREATE+INSERT+DROP+RENAME 패턴으로 PK 자동 추가
+  - `--analyze-extra`: stock 외 DB(backtest/code_info/setting) schema 분석
+- carry-forward 위험: 없음 (백업 보유 검증 + mock sqlite 7건 PASS)
+- 잔여 의무:
+  - backtest.db / code_info.db / setting.db schema 변환 (별도 사이클)
+  - 분석 시스템 학습 DB(volume_spike·pattern 등) 폴리시 자동화
+  - V3.19+ 흡수 시 E1과 E5 통합 검토

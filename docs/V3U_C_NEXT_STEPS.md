@@ -44,7 +44,13 @@ V3U lane V3U_NEXT_STEPS.md 그룹 E의 V3U_C custom 작업 옵션 (E1~E4) + 3U_C
 - 후보 작업: 백테 결과 자동 분석 + GA + Optuna 자동 ranking
 - 2U_C V3K mapping 지도 패턴 참고
 
-### E5 (신규 후보): T-step extension (T06 pre-flight + T07 notification)
+### E5: DB 마이그레이션 호환성 진단·자동 PK 추가 도구 ✅ **사이클 2 완료** (2026-05-22)
+
+- 산출: scripts/v3uc_db_compatibility_check.py + tests/v3uc/test_db_compatibility.py + docs/V3U_C_DB_MIGRATION_PLAN.md
+- 동작: --scan (read-only PK 매트릭스) / --add-pk (자동 추가, 백업 검증) / --analyze-extra (기타 DB)
+- 운영: 사용자가 update_db_20260418.bat 후 호출 (V3.08+ 호환성 검증)
+
+### E6 (신규 후보): T-step extension (T06 pre-flight + T07 notification)
 
 - E1 운영하며 발견되는 패턴을 본 옵션으로 흡수
 - T06: V3 upstream fetch + delta 미리 보기 (사용자 결정 보조)
