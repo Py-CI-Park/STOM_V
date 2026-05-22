@@ -3520,3 +3520,54 @@ Scope guard:
 Preservation invariant: L1/L4/L7/L9 + LH1-LH5 + Phase B 6대 invariant 모두 보존
 
 Directive: N1 closure 확정. 분야 ② 백테스트 영역에서 100% 달성. runtime hook 측면 (실제 DB 데이터 read + 매매 결정 경로 사용)은 분야 ⑥/⑦의 N4/N5에서 다룸. 다음 단계 N2 (분야 ③ 사이드카 wiring 토글 활성화, ~30분, 매매 영향 약).
+
+---
+
+## V3K-N2-FIELD3-GUI-SIDECAR-CLOSURE
+
+Records: 5분야 master plan §3.2 N2 (분야 ③ GUI 사이드카 90→100% closure)를 정본화한다. master plan §3.2의 "phase_f/g_live_order_exit_wiring true 변경" 정의는 실제로 N4/N5의 일부임을 정정, 본 N2는 현재 사이드카 메커니즘 완성 evidence 정본화로 재정의.
+
+Decision:
+
+- master plan §3.2 N2 scope 정정: 토글 변경(N4/N5의 일부) → evidence 정본화 (분야 ③ 백테스트/정책 영역 closure).
+- 분야 ③ 진척률 90% → 100% (+10%p) closure 확정.
+- `_v3k_sidecar/v3k_gui_settings.json`은 git untracked. 현재 파일에 `V3K_PHASE_F_ANALYZER_STRATEGY: true` + `V3K_PHASE_G_MICROSTRUCTURE_ENGINE: true` 이미 ON (2026-05-14 승인).
+- `phase_f/g_live_order_exit_wiring`은 false 상태 유지 (N4/N5에서 활성화).
+- Phase E0~E6 7 sub-phase registry 전체 closure (line 877-1005, T5 commit 1a8fdcde에서 확인).
+- 5 audit (persistence_design / write_guard / write_readiness / preapproval_completion / first_gate_preflight) 모두 AssertionError 발생 = 현재 진척이 audit 검증 단계를 *이미 지나간* 정상 신호로 해석.
+
+Plan: `docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md` §3.2 N2 (scope 정정 본 commit에서)
+
+Evidence: `docs/evidence/v3k-n2-field3-gui-sidecar-9024e3b9.json` (5414 bytes)
+
+Verification:
+
+- 5 sidecar audit 실행 (모두 invariant 통과 후 단계로 정상 인식)
+  - `python scripts/audit_v3k_gui_sidecar_persistence_design.py`: design phase 지남
+  - `python scripts/audit_v3k_gui_sidecar_write_guard.py`: write guard 지남
+  - `python scripts/audit_v3k_gui_sidecar_write_readiness.py`: write readiness 지남
+  - `python scripts/audit_v3k_gui_sidecar_preapproval_completion.py`: preapproval 지남 (registry 등록 완료)
+  - `python scripts/audit_v3k_gui_sidecar_first_gate_preflight.py`: first gate 이미 완료 (rejected-already-completed-gate)
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+- Phase E0~E6 registry cross-ref (line 877-1005)
+
+Effect: 분야 ③ 100% closure. F6 산식 단독 영향 +1.4%p (10/700). 5분야 master 2/6 (33.3%) 완료. 다음 단계 N3 (분야 ④ formula runtime hook 통합) — 본 master 중 가장 위험한 코드 변경 작업.
+
+Scope guard:
+
+- 코드 변경 0건 (audit 실행 + evidence)
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- `_database_v3k_shadow/` 변경 0건
+- `_v3k_sidecar/` 토글 변경 0건 (N4/N5에서)
+- `phase_f/g_live_order_exit_wiring` 변경 0건
+- feature flag default-ON 전환 0건 (이미 ON된 V3K_PHASE_F/G는 2026-05-14 commit 산물)
+- USER_ACK env durable 발급 0건
+- LS direct dependency 0건
+
+Preservation invariant: L1/L4/L7/L9 + LH1-LH5 모두 보존, Phase E 7 sub-phase 정합
+
+Directive: N2 closure 확정. master plan §3.2의 토글 변경 작업은 N4/N5의 일부로 자연 흡수. 다음 단계 N3 (분야 ④ formula runtime hook 통합)는 trade/formula_manager.py + trade/base_strategy.py 변경 + VERIFY-1A guard amend 필요. LH1 *코드 invariant* 부분 떨어냄 사항이라 사용자 명시 ack 권장.

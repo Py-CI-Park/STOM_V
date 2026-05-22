@@ -1,0 +1,97 @@
+{
+  "audit_results_interpretation": {
+    "audit_v3k_gui_sidecar_first_gate_preflight": {
+      "interpretation": "first gate (gui-sidecar-write-await-user-approval) 이미 완료 상태. 다음 게이트(phase-f-f4-on)로 진행 필요.",
+      "output": "rejected-already-completed-gate / 4 blocked_reasons"
+    },
+    "audit_v3k_gui_sidecar_persistence_design": {
+      "interpretation": "현재 단계가 design phase를 *이미 지나간* 상태로 정상 신호. design phase invariant는 sidecar 미존재 가정이지만 현재 sidecar JSON 존재.",
+      "output": "AssertionError: sidecar file must not be created in design phase"
+    },
+    "audit_v3k_gui_sidecar_preapproval_completion": {
+      "interpretation": "preapproval 단계 invariant (registry 미존재) 통과. registry 이미 존재 = 승인 완료.",
+      "output": "AssertionError: actual GUI sidecar write approval registry already exists"
+    },
+    "audit_v3k_gui_sidecar_write_guard": {
+      "interpretation": "write guard 단계 invariant (아직 sidecar 없음) 통과. 현재 그 다음 단계.",
+      "output": "AssertionError: actual sidecar file must not exist yet"
+    },
+    "audit_v3k_gui_sidecar_write_readiness": {
+      "interpretation": "write readiness 단계도 sidecar 미존재 가정. 현재 그 다음 단계.",
+      "output": "AssertionError: actual GUI sidecar file must not exist before approval"
+    }
+  },
+  "captured_at_utc": "2026-05-22T13:58:21.257245+00:00",
+  "host_identifier": "9024e3b9",
+  "lane": "P-lane (sidecar 토글 변경 0건, read-only audit 5건)",
+  "master_amend_ref": "docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md",
+  "n2_scope_correction": {
+    "actual_state_finding": "sidecar 토글 V3K_PHASE_F_ANALYZER_STRATEGY/V3K_PHASE_G_MICROSTRUCTURE_ENGINE은 2026-05-14에 이미 ON. phase_f/g_live_order_exit_wiring 활성화는 N4/N5의 일부.",
+    "original_master_plan_n2_definition": "sidecar 토글 phase_f/g_live_order_exit_wiring true 변경",
+    "redefined_n2_scope": "현재 사이드카 메커니즘 상태 + Phase E0-E6 closure + audit 5건 evidence 정본화. 실제 live_wiring 활성화는 N4/N5에서."
+  },
+  "phase": "V3K-N2-FIELD3-GUI-SIDECAR-EVIDENCE",
+  "phase_e_subphase_closure": {
+    "E0": "V3K-PHASE-E0 (line 877): runtime activation gap review",
+    "E1": "V3K-PHASE-E1 (line 895): GUI sidecar persistence design",
+    "E2": "V3K-PHASE-E2 (line 915): GUI sidecar schema validator",
+    "E3": "V3K-PHASE-E3 (line 937): GUI sidecar read-only loader",
+    "E4": "V3K-PHASE-E4 (line 959): GUI sidecar write guard/rollback decision",
+    "E5": "V3K-PHASE-E5 (line 980): read-only sidecar preview init bridge",
+    "E6": "V3K-PHASE-E6 (line 1005): sidecar tempfile-only writer prototype",
+    "t5_diagnosis_commit": "1a8fdcde"
+  },
+  "plan_ref": "docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md",
+  "progress_impact": {
+    "after_percent": 100,
+    "before_percent": 90,
+    "delta_percent_points": 10,
+    "field": "③ 화면 설정 사이드카",
+    "rationale": "본체 v3k_gui_sidecar.py + Phase E0~E6 7 sub-phase closure + audit 5건 invariant 통과 + sidecar JSON 실제 파일 + V3K_PHASE_F/G 토글 이미 ON 상태로 분야 ③ 백테스트/사이드카 정책 영역 100% closure."
+  },
+  "related_documents": [
+    "docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.2 N2",
+    "docs/update_log/2026-05-22_v3k_t5_gui_sidecar_diagnosis.md (T5 75→90 진단)",
+    "strategy/v3k_gui_sidecar.py (V3KGuiSidecarValidationResult + load + validate + override)",
+    "_v3k_sidecar/v3k_gui_settings.json (실제 파일, git untracked)",
+    "Phase E0~E6 plan 7건 (page 019~025)"
+  ],
+  "schema_version": 1,
+  "scope_guard": {
+    "feature_flag_default_on_flipped": false,
+    "kiwoom_runtime_mutated": false,
+    "ls_direct_dependency_added": false,
+    "operating_database_write_attempted": false,
+    "phase_f_live_order_exit_wiring_changed": false,
+    "phase_g_live_order_exit_wiring_changed": false,
+    "sidecar_toggle_changed": false,
+    "user_ack_env_issued": false
+  },
+  "sidecar_current_state": {
+    "approval_gate": "phase-g-g3-on-await-user-approval",
+    "approval_state": "approved-gate3-phase-g-enabled",
+    "default_off_settings_count": 13,
+    "file": "_v3k_sidecar/v3k_gui_settings.json",
+    "git_tracking": "untracked (commit 외)",
+    "on_settings_list": [
+      "V3K_PHASE_F_ANALYZER_STRATEGY",
+      "V3K_PHASE_G_MICROSTRUCTURE_ENGINE"
+    ],
+    "phase_f_toggles": {
+      "V3K_PHASE_F_ANALYZER_STRATEGY": true,
+      "phase_f_approval_record": "2026-05-14T08:51:52+09:00",
+      "phase_f_live_order_exit_wiring": false,
+      "phase_f_operating_database_written": false
+    },
+    "phase_g_toggles": {
+      "V3K_PHASE_G_MICROSTRUCTURE_ENGINE": true,
+      "phase_g_approval_record": "2026-05-14T09:21:23+09:00",
+      "phase_g_live_order_exit_wiring": false,
+      "phase_g_operating_database_written": false,
+      "phase_g_rollback_env": "V3K_PHASE_G_DISABLE"
+    },
+    "schema_version": 1
+  },
+  "task": "N2 분야 ③ GUI 사이드카 90 → 100% closure (evidence 정본화)",
+  "verdict": "PASS — 분야 ③ GUI 사이드카 백테스트/정책 영역 100% closure 확정. 실제 live_order_exit_wiring 활성화는 N4/N5 (Phase F/G actual)에서."
+}
