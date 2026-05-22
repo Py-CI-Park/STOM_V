@@ -2962,3 +2962,62 @@ Scope guard:
 Preservation invariant: L1/L7/L9 + LH1-LH5 + Phase B 6대 invariant 모두 보존
 
 Directive: 본 D2 진단은 read-only이며 M1 진단 phase의 두 번째 commit이다. M1은 D1+D2 완료로 부분 종결 가능. D3 (유닛 테스트 720건 실패 카테고리) + D4 (sidecar 메커니즘)는 후속 옵션. M2 첫 cycle 진입 시 본 commit §5.1 우선순위 인용 — 권장 첫 작업: F5 027-5 registry 등록 확인 또는 Phase F/G default-OFF parity evidence 산출.
+
+---
+
+## V3K-PROGRESS-DASHBOARD-KOREAN
+
+Records: V3K 작업 전체 현황을 한글 중심·직관적 형식으로 보여주는 dashboard 문서를 정본화한다. 영어/약어 위주 진척 표시가 사용자에게 직관성 부족하다는 피드백(2026-05-22)에 따라 한글 표시를 기본 단위로 채택하고, 매 commit 직후 답변에 같은 형식을 유지하는 사용자 preference(`~/.claude/.../memory/feedback_progress_reporting.md`)와 정합.
+
+Decision:
+
+- dashboard 표시 단위: (1) 전체 진행률 (2) 8개 분야 진행도 (3) 5개 진입 페이지 상태 (4) 4개 작업 트랙 (5) 시간 흐름 + 누적 commit (6) 다음 작업 추천.
+- 8개 분야 한글 이름 표준화: ① 학습 DB 격리+전환 / ② 학습 데이터 백테스트 read / ③ 화면 설정 사이드카 / ④ 수식 전역값 공유 / ⑤ 키움 환경 시동 / ⑥ 분석기 7종 / ⑦ 마이크로 엔진 / ⑧ LS 보존.
+- 5단계 한글 이름: 1단계 키움 시동 / 2단계 운영 DB 전환 / 3단계 분석기 매매 활성 / 4단계 엔진 매매 활성 / 5단계 미션 완료 선언.
+- 4트랙 한글 이름: A 백테스트 강화 / B 명령줄(CLI) 확장 / C 화면 설정 / D 운영 매매(보류).
+- 영어 약어는 §8 용어 해석 표에 한 번 통합 등록.
+
+Plan: `docs/update_log/2026-05-22_v3k_progress_dashboard_korean.md`
+
+Verification: 본 commit과 함께 동반 plan(`5fields_sequential_execution_plan`)에 인용. 모든 audit suite (gate4, verify_1a, verify_nonrelease_sync) PASS.
+
+Effect: 사용자 답변 표시 형식이 영어/약어 중심에서 한글 중심으로 전환된다. F6 진척률 변동 없음 (53.6% 유지). 향후 모든 V3K commit 답변에 본 dashboard §1~§7 구성 유지.
+
+Scope guard: 코드 변경 0건, 모든 V3K invariant 보존.
+
+Directive: 사용자가 명시적으로 dashboard 표시 형식 해제를 지시할 때까지 매 commit 후 본 형식 유지.
+
+---
+
+## V3K-BACKTEST-5FIELDS-SEQUENTIAL-PLAN
+
+Records: 트랙 A(백테스트 강화)의 5개 분야(②③④⑥⑦) 순차 진행 master plan을 정본화한다. 분야 ①(운영 DB 전환, 매매 영향 큼)은 보류 유지. T1=⑥ → T2=⑦ → T3=② → T4=④ → T5=③ 추천 순서. 누적 예상 2시간 45분, F6 진척률 53.6% → 약 60~66% 예상.
+
+Decision:
+
+- 5개 분야 모두 백테스트 영역 + default-OFF + read-only이므로 매매 영향 0건.
+- 각 단계별 산출은 evidence(T1/T2/T3) 또는 진단 보고서+plan(T4/T5)으로 commit 분리.
+- T1+T2 병렬 진행 가능(가장 큰 진척률 변동, ~50분).
+- T3은 가장 짧음(~15분), F5 027-5 registry 등록 확인.
+- T4(수식 전역값)는 진단만, 진척률 변동 없음.
+- T5(사이드카)는 진단만, 진척률 변동 없음.
+
+Plan: `docs/plans/2026-05-22_v3k_backtest_track_5fields_sequential_execution_plan.md`
+
+Verification: 본 commit 시점에 다음 audit 통과:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 본 plan + dashboard 정본화 직후 T1 (분야 ⑥ 분석기 parity) 진입 가능. T1~T5 각 단계별 commit 분리. 트랙 A 진척률 +6.4%p 예상 (T1/T2/T3 evidence 산출 시).
+
+Scope guard:
+
+- 코드 변경 0건 (본 plan은 정본화만)
+- T1~T5 전체 진행 시 9건 guarantee: Kiwoom runtime mutation 0건 / LS 0건 / operating `_database/` write 0건 / shadow DB 구조 변경 0건 / sidecar 토글 ON 0건 / order/account API 0건 / USER_ACK durable 0건 / feature flag default-ON 0건 / cutover --apply 0건
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존, LC1-LC3 적용 외 (cutover 미진행)
+
+Directive: 분야 ①(F1 cutover)은 본 plan에서 진행하지 않는다. ① 자산(`6e8e23d0` ralplan Planner v1 + scripts)은 read-only 인용만. 분야 ② 가운데 F5 027-5 registry는 T3에서 확인. 분야 ③④는 T4/T5 진단 후 별도 plan에서 본 작업 진행. T1 진입은 본 commit 직후 사용자 확인 시점.
