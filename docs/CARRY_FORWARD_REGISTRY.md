@@ -2874,3 +2874,41 @@ Scope guard:
 Preservation invariant: L1/L7/L9 + LH1-LH5 + LC1/LC2/LC3 모두 보존
 
 Directive: 본 master plan은 M1 진단 phase의 baseline이다. M1 진단 4건 commit이 종결된 시점에 M2 첫 작업이 사용자 결정으로 선정된다. 트랙 D 자산은 §7의 4건 재개 조건 충족 시점까지 동결 유지.
+
+---
+
+## V3K-CLI-PHASE-PROGRESS-D1-DIAGNOSIS
+
+Records: M1 진단 phase의 D1 (CLI 확장 plan Phase 1~3 진척 진단)을 read-only로 수행한 결과를 정본화한다. 2026-03-24 plan 작성 후 2개월(2026-05-22 진단 시점)의 진척을 cli/subcommands.py 라우터 + 각 서브커맨드 --help 직접 실행으로 측정.
+
+Decision:
+
+- Phase 1 핵심 5건 (optimize / sweep / wfo / tune / db) **모두 노출 완료**. master plan §4.2 M2 milestone "Phase 1 라이브러리 5개 노출"이 이미 완료된 상태이므로 M2 작업이 자동 승격.
+- Phase 1 확장 (ai_controller / strategy_generator / monitor / history) **미노출 4건** 잔여.
+- Phase 2 (출력 표준화): 인프라(`cli/_safe_io.py`, exit code 상수, `--format` 옵션) 존재 + 30+ 서브커맨드 전체 일관성 audit 미수행. 진척률 ~50%.
+- Phase 3 (설정관리/리포트): `report` 서브커맨드 노출됨. `config` + `history` 잔여. 진척률 ~33%.
+- cli/ 모듈 수 30 → 58 (28건 증가, 주로 research_* 시리즈, 별도 트랙).
+- 총 노출 서브커맨드 (subcmd + sub-action) 30개+ (plan 작성 시점 19개 → +11개 이상 증가).
+- 종합 트랙 B 진척률 약 **60-70%**. M2~M4 milestone 약 1~2주 단축 가능.
+
+Plan: `docs/update_log/2026-05-22_cli_phase_progress_diagnosis.md`
+
+Verification:
+
+- read-only 진단 (코드 변경 0)
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+- 검증된 서브커맨드 6건 (`optimize`, `sweep`, `wfo`, `tune`, `db`, `report`) 직접 `--help` 실행으로 노출 확인
+
+Effect: 트랙 B master plan §4.2 milestone 재정의. M2 우선순위: ai_controller / strategy_generator 노출 + Phase 2 일관성 검증. M3: Phase 2 완료 + config/history. M4: Phase 3 완료 + V3K-IMPL-3 통합. F6 진척률 영향 없음 (53.6% 유지).
+
+Scope guard:
+
+- 코드 변경 0건
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- 모든 V3K invariant 보존
+
+Directive: 본 D1 진단은 read-only이며 M2 작업 선정 baseline이다. M2 진입 시 본 commit의 §5.1 우선순위 (ai_controller / strategy_generator / config / monitor / history / data_bridge / engine_tuner)를 인용한다. 다음 진단은 D2 (V3K-IMPL-3 백테스트 학습 데이터 진척).
