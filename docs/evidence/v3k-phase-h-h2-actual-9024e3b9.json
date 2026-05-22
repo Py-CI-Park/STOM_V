@@ -1,0 +1,94 @@
+{
+  "canonical_phrase": "I approve phase-h-h2-await-user-approval only",
+  "captured_at_utc": "2026-05-22T03:02:05.807413+00:00",
+  "environment_workaround": {
+    "env_var": "V3K_KHOPENAPI_DLL",
+    "followup": "Hook code amend (add .ocx to default candidates) deferred to separate P-lane work item.",
+    "reason": "V3KKiwoomDryrunHook.DEFAULT_KHOPENAPI_DLL_CANDIDATES only enumerates .dll paths, but Kiwoom ships khopenapi.ocx. The env var bypass is hook-supported via ENV_KHOPENAPI_DLL.",
+    "value": "C:/OpenAPI/khopenapi.ocx"
+  },
+  "f6_progress_update": {
+    "delta_overall": "+3.6%p",
+    "item_5_live_kiwoom_dryrun": {
+      "delta": "+50%p",
+      "new_stage": "S4 (100%)",
+      "previous_stage": "S2 (50%)"
+    },
+    "overall_new": "375/700 = 53.6%",
+    "overall_previous": "350/700 = 50.0%"
+  },
+  "host_identifier": "9024e3b9",
+  "lane": "A-lane",
+  "login_auth_mechanism": "Kiwoom OCX auto-login via cached session from prior user-driven login (KOA Studio + stom.bat on 2026-05-22 06:48:50). No new ID/PW prompt to user during this A-lane execution. OnEventConnect fired with account_info, hook.on_login executed diagnostic once.",
+  "monitoring": {
+    "baseline_utc": "2026-05-22T03:02:05.807413+00:00",
+    "next_actual_gate": "A2 F1 DB cutover",
+    "next_actual_gate_unblock_after_utc": "2026-05-23T03:02:05.807413+00:00",
+    "window_end_utc": "2026-05-23T03:02:05.807413+00:00",
+    "window_hours": 24
+  },
+  "phase": "V3K-PHASE-H-H2-ACTUAL",
+  "phrase_issued_date": "2026-05-20",
+  "plan_ref": "docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md",
+  "preservation_check": {
+    "L1_database_schema_unchanged": true,
+    "L7_no_ls_direct_dependency": true,
+    "L9_stom_cli_surface_preserved": true,
+    "LH1_kiwoom_order_exit_path_unchanged": true,
+    "LH2_dryrun_idempotent": true,
+    "LH3_dryrun_log_archived_in_omx_reports": true,
+    "LH4_khopenapi_compatible_environment_only": true,
+    "LH5_forward_only_schema_version": true
+  },
+  "recovery_doc_ref": "docs/update_log/2026-05-22_v3k_phase_h_h2_login_env_recovery.md",
+  "related_documents": [
+    "docs/plans/2026-05-12_v3k_phase_h_live_kiwoom_dryrun_plan.md",
+    "docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md",
+    "docs/plans/2026-05-20_v3k_feature_to_page_mapping_overview_plan.md",
+    "docs/plans/2026-05-15_v3k_preparation_first_execution_sequence_plan.md",
+    "docs/update_log/2026-05-22_v3k_phase_h_h2_login_env_recovery.md",
+    "docs/evidence/v3k-phase-h-h2-runner-prep-9024e3b9.json"
+  ],
+  "runner_result": {
+    "account_api_calls": 0,
+    "connect_attempted": true,
+    "connect_result_code": 0,
+    "diagnostic_steps": [
+      {
+        "account_info_seen": true,
+        "diagnostics": [
+          "Phase H contract-only diagnostic; no Kiwoom order/exit/runtime mutation"
+        ],
+        "result": "ok",
+        "step": "phase_h_diagnostic"
+      }
+    ],
+    "disconnect_clean": true,
+    "elapsed_sec": 30.982,
+    "login_succeeded": true,
+    "order_api_calls": 0
+  },
+  "schema_version": 1,
+  "scope_guard": {
+    "kiwoom_runtime_mutated": false,
+    "live_connect_attempted": true,
+    "ls_direct_dependency_added": false,
+    "monitoring_24h_or_more_collected": false,
+    "operating_database_write_attempted": false,
+    "sidecar_toggle_changed": false,
+    "user_ack_emitted": true
+  },
+  "sentinel": {
+    "corroboration_count": 2,
+    "primary_exists": true,
+    "primary_kind": "active_x_progid",
+    "primary_path": "HKEY_CLASSES_ROOT\\KHOPENAPI.KHOpenAPICtrl.1"
+  },
+  "smoke_result": {
+    "message": "[PASS] Phase H H-2 post-health smoke clean",
+    "status": "PASS",
+    "tool": "scripts/smoke_v3k_phase_h_post_health.py"
+  },
+  "source_archive": ".omx/reports/v3k-phase-h-dryrun-20260522T025930Z.json",
+  "user_ack_env": "V3K_PHASE_H_USER_ACK=1 (Claude session inline env, child process scope)"
+}

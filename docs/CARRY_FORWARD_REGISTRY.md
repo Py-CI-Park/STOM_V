@@ -2653,3 +2653,95 @@ Scope guard:
 - live connect/login: 정규 STOM 운영 경로로만 발생 (V3K A-lane 측은 0건)
 
 Directive: 향후 stom.bat 로그인 첫 실패 시 다음 우선순위로 진단한다. (1) KOA Studio 모의투자 모드 토글 확인 → (2) 키움 OpenAPI 환경 점검(`opstarter` 실행) → (3) OCX 등록(`regsvr32`) → (4) 재설치. 본 trail은 V3K closeout audit(F7) 검출 대상에서 제외(외부 SDK 환경 복구로 V3K 미션과 직결되지 않음). V3K Phase H H-2 A-lane 본 실행 evidence는 별도 `docs/evidence/v3k-phase-h-h2-actual-9024e3b9.json`으로 산출 예정.
+
+---
+
+## V3K-PHASE-H-H2-ACTUAL
+
+Records: V3K 페이지 1(Step 2, Phase H H-2 live dry-run)의 A-lane execution을 정본화한다. 2026-05-22 03:02 UTC에 `scripts/run_v3k_phase_h_dryrun.py --ack --account-mode read-only`를 32-bit Python(`C:\Python\32\Python3119\python32.EXE`)으로 실행하였고, `V3K_PHASE_H_USER_ACK=1` env + 사용자 명시 phrase `I approve phase-h-h2-await-user-approval only` 발급 + `V3K_KHOPENAPI_DLL=C:/OpenAPI/khopenapi.ocx` env workaround 적용 하에 키움 OCX OnEventConnect 이벤트가 정상 발생, `V3KKiwoomDryrunHook.on_login` 호출, Phase H contract-only diagnostic 1회 실행, 30초 timeout 후 `CommTerminate()` 정상 disconnect로 종료되었다.
+
+Decision:
+
+- canonical phrase: `I approve phase-h-h2-await-user-approval only` (2026-05-20 사용자 발급, page 080/081 패턴 정합)
+- USER_ACK env: Claude session inline env로 발급(child process scope, durable env 외)
+- 키움 로그인 인증: 사용자의 prior KOA Studio + stom.bat 로그인 세션의 자동 인증 cookie를 OCX가 재사용했고, A-lane runner는 OnEventConnect 시 account_info와 함께 hook callback 호출만 받음. 본 A-lane execution 시점에 새 ID/PW 입력 prompt는 발생하지 않음.
+- env workaround `V3K_KHOPENAPI_DLL=C:/OpenAPI/khopenapi.ocx`: `V3KKiwoomDryrunHook.DEFAULT_KHOPENAPI_DLL_CANDIDATES`가 `.dll` 확장자만 enumerate하나 키움은 `khopenapi.ocx`로 배포. hook은 `ENV_KHOPENAPI_DLL` env로 임의 경로 추가를 지원하므로 본 env 사용으로 정합 회피. 향후 hook 코드 amend(`.ocx` 디폴트 후보 추가)는 별도 P-lane work item으로 분리.
+
+Plan: `docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md`
+
+Evidence: `docs/evidence/v3k-phase-h-h2-actual-9024e3b9.json`
+
+Source archive: `.omx/reports/v3k-phase-h-dryrun-20260522T025930Z.json` (untracked, `.omx/` exclude)
+
+Runner result:
+
+- `connect_attempted`: True
+- `connect_result_code`: 0
+- `login_succeeded`: True
+- `account_info_seen`: True
+- `diagnostic_steps[0].step`: phase_h_diagnostic / `result`: ok
+- `elapsed_sec`: 30.982
+- `disconnect_clean`: True
+- `order_api_calls`: 0 (LH1 보존)
+- `account_api_calls`: 0 (LH1 보존)
+- `sentinel.primary_kind`: active_x_progid, `primary_exists`: True, `corroboration_count`: 2
+
+Verification:
+
+- runner stdout: `[OK] live dry-run archive: .omx\reports\v3k-phase-h-dryrun-20260522T025930Z.json`
+- `python scripts/smoke_v3k_phase_h_post_health.py`: `[PASS] Phase H H-2 post-health smoke clean`
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS (unblocked, schema v2)
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS (trade/, utility/, Kiwoom_OpenAPI/ 무변경)
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+F6 progress update:
+
+- 항목 #5 live Kiwoom dry-run (Gate4): S2 (50%) → **S4 (100%)** (+50%p)
+- 전체 실행 진척률: `350/700 = 50.0%` → **`375/700 = 53.6%`** (+3.6%p)
+- Plan coverage: 100% 유지
+
+Monitoring:
+
+- baseline UTC: 2026-05-22T03:02:05Z
+- window: 24h
+- window end UTC: 2026-05-23T03:02:05Z (KST 2026-05-23 12:02)
+- 24h 동안 키움 OCX runtime 안정성 + LH1 invariant 보존 + `_database/` 무변경 모니터링 의무
+
+Effect: V3K 잔여 5단계(페이지 1~5) 중 페이지 1(Step 2, Phase H H-2)이 closure되었다. F6 진척률 53.6%. 다음 actual gate는 A2(F1 DB cutover, 페이지 2)이며 본 A-lane closure + 24h monitoring evidence 통과 후에만 진입 가능. F1 cutover는 CRITICAL risk이므로 `--deliberate ralplan` + `V3K_CUTOVER_USER_ACK=1` + transaction lock window 추가 trigger 필요.
+
+Scope guard:
+
+- Kiwoom runtime mutation: 0건 (trade/, utility/, Kiwoom_OpenAPI/, receiver/ 무변경)
+- LS direct dependency: 0건
+- operating `_database/` write: 0건
+- `_database_v3k_shadow/` 변경: 0건
+- `_v3k_sidecar/` 토글 변경: 0건
+- order API 호출: 0건 (LH1)
+- account API 호출: 0건 (LH1)
+- V3K USER_ACK env durable 발급: 0건 (Claude session inline scope만)
+- V3K feature flag default-ON 전환: 0건
+
+Preservation invariant check (L1-L9, LH1-LH5): 전부 보존 (L1/L7/L9 + LH1/LH2/LH3/LH4/LH5)
+
+Directive: 본 A-lane closure 후 페이지 2(Step 3, F1 DB cutover) 진입은 24h monitoring window(2026-05-23T03:02 UTC 이후) + `V3K_CUTOVER_USER_ACK=1` durable env + `--deliberate ralplan` 합의 + transaction lock window evidence 4건이 모두 충족된 시점에만 가능하다. 본 trail에서 hook 코드의 `.ocx` 디폴트 누락 followup은 별도 P-lane work item으로 분리(`V3K-PHASE-H-HOOK-OCX-DEFAULT-AMEND`).
+
+---
+
+## V3K-PHASE-H-ENABLE
+
+Records: V3K Phase H sub-phase H-2 live dry-run hook이 본 PC KHOPENAPI 호환 환경에서 정상 가동되었음을 V3K-PHASE-H-ENABLE registry로 등록한다. Phase F/G의 sidecar toggle pattern(`V3K_PHASE_F_ANALYZER_STRATEGY`, `V3K_PHASE_G_MICROSTRUCTURE_ENGINE`)과 달리 Phase H는 sidecar toggle source-of-truth가 아니라 archive 기반 evidence trail이 source-of-truth다(page 082 Phase H gate4 plan 정합).
+
+Decision: Phase H ENABLE 등록은 본 A-lane evidence(`docs/evidence/v3k-phase-h-h2-actual-9024e3b9.json`)의 `login_succeeded=true` + `diagnostic_steps[0].result=ok` + scope_guard 통과 + smoke PASS를 기준으로 한다. 추가 sidecar toggle은 도입하지 않는다. Phase H 본 ENABLE은 1회성 evidence이며 24h monitoring 종료 후 mature 판정.
+
+Plan: `docs/plans/2026-05-20_v3k_phase_h_h2_runner_prep_lane_plan.md` §8 A-lane entry
+
+Evidence: `docs/evidence/v3k-phase-h-h2-actual-9024e3b9.json`
+
+Verification: V3K-PHASE-H-H2-ACTUAL 섹션 Verification 항목과 동일
+
+Effect: V3K Phase H가 본 PC KHOPENAPI 환경에서 default-OFF → 1회성 dry-run ON → 자동 disconnect 흐름으로 검증 완료. 향후 Phase H H-3 sub-phase(7일 모니터링 audit + feature flag 이중 gate)는 본 A-lane evidence를 baseline으로 인용한다.
+
+Scope guard: V3K-PHASE-H-H2-ACTUAL 섹션과 동일
+
+Directive: Phase H ENABLE 상태는 본 evidence가 baseline이고, 향후 Phase H 관련 모든 audit/closure는 본 commit hash를 참조한다.
