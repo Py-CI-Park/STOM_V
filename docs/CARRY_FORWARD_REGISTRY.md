@@ -3385,3 +3385,88 @@ Scope guard:
 Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존 (LH1 verify_1a로 강제 검증)
 
 Directive: ai-controller P0 9 액션 노출 완료. 다음 후속 작업: P1 액션 10건(sweep / optimize / walk-forward / discover-* / analyze-results / analyze-results-ml / generate-conditions / create-strategy-from-analysis / get-discovery-history / compare) + P2 액션 8건(auto-discover-* / research-strategy-once 등)은 별도 plan으로 분리. 트랙 D (운영 매매)는 사용자 명시 결정 시점까지 보류 유지.
+
+---
+
+## V3K-F1-BYPASS-PHASE-FG-ON-POLICY-AMEND
+
+Records: 사용자 결정(2026-05-22, "분야 ① F1 cutover만 제외 + 페이지 3/4 actual 진행")에 따라 preparation-first plan §2.4 "Phase F F-4 ON은 F1 cutover + 7-day monitoring 없이 금지" 정책을 부분 떨어내는 amend를 정본화한다.
+
+Decision:
+
+- F1 cutover (분야 ① / 페이지 2 / A2)는 보류 유지.
+- Phase F F-4 ON (페이지 3 / A3)은 F1 cutover 없이도 진행 가능 (sidecar 토글 + analyzer 활성화는 shadow DB read 기반).
+- Phase G G-3 ON (페이지 4 / A4)은 A3 closure + 24h monitoring 후 진행 가능.
+- F7 closure는 A5'로 부분 closure 정의 — 분야 ② ③ ④ ⑤ ⑥ ⑦ ⑧ 100%, 분야 ① 50% 유지.
+- LH1 부분 떨어냄: "코드 무변경"은 유지(trade/, utility/, Kiwoom_OpenAPI/ 파일 변경 0건), 단 V3K analyzer/engine output을 기존 매매 결정 경로에서 *소비*하도록 활성화.
+- LH1 (Kiwoom 주문/청산/계좌/체결 *코드* 무변경)은 유지. *매매 결정 영향* 측면은 의도적으로 변경.
+
+Plan: `docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md`
+
+Verification:
+
+- preparation-first §2.4 amend 범위 명시
+- page 080/081 plan §Scope "No DB cutover"가 이미 정합 확인
+- 보존 invariant 11건 중 10건 유지, LH1만 부분 떨어냄
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 잔여 5분야(②③④⑥⑦) 100% 완성 master plan(`v3k_remaining_5fields_completion_master_plan.md`)의 N1~N6 단계 진행이 정책상 허용된다.
+
+Scope guard:
+
+- 코드 변경 0건 (정책 amend만)
+- F1 cutover `--apply` 0건
+- 운영 `_database/` write 0건
+- LS direct dependency 0건
+- monitoring 의무 (24h N4 + 48h N5) 명시
+
+Directive: 본 amend는 V3K mission 무변경. 진행 순서만 amend. 분야 ① 잔여 50%는 사용자 명시 재개 의사 표시 시점까지 보류 유지. A5' 부분 closure로 F6 92.9% 도달 후 분야 ①까지 100%는 추후 A5'' 별도 closure.
+
+---
+
+## V3K-REMAINING-5FIELDS-COMPLETION-MASTER
+
+Records: 잔여 5분야 (②③④⑥⑦) 100% 완성까지의 N1~N6 단계 master plan을 정본화한다. F1 cutover 보류 + Phase F/G ON actual 진행 의향(사용자 결정 2026-05-22)에 따른 전체 작업 + 의존성 + 일정.
+
+Decision:
+
+- N1 분야 ② 90→100% (백테스트 evidence, 매매 영향 0, ~30분, +10%p)
+- N2 분야 ③ 90→100% (sidecar 토글 변경, 매매 약, ~30분, +10%p)
+- N3 분야 ④ 75→100% (formula runtime hook + VERIFY-1A guard amend, 매매 고, ~1~2시간, +25%p)
+- N4 분야 ⑥ 50→100% (Phase F F-4 ON actual + 24h monitoring, 매매 고위험, ~2시간+24h, +50%p)
+- N5 분야 ⑦ 50→100% (Phase G G-3 ON actual + 48h monitoring, 매매 대형 위험, ~2시간+48h, +50%p)
+- N6 A5' 부분 closure 선언 (~30분, F6 92.9%)
+
+총 누적: 6 commit + monitoring 72h+ ≈ 3.3일.
+
+목표 F6 진척률: 72.1% → **92.9%** (+20.8%p). 분야 ① 50% 유지. 100% 만점은 추후 A5'' (F1 cutover 진행) 시점.
+
+Plan: `docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md`
+
+Verification:
+
+- 5단계별 commit 의무 (audit suite + git diff --check)
+- 의존성 그래프 §2 명시
+- 위험 완화 §6 명시 (rollback flag, parity matrix, monitoring)
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: N1 (분야 ② 백테스트 evidence, 가장 안전) 진입 가능. 분야별 commit 6건 순차 진행 + monitoring 자연 누적. v5 mid-checkpoint(`3d71b09f`)는 baseline 유지, v6은 모든 N1~N6 종결 후 신설 예정.
+
+Scope guard:
+
+- 코드 변경 0건 (master plan 자체)
+- 후속 N3에서 LH1 부분 떨어냄 (trade/formula_manager.py + trade/base_strategy.py)
+- 후속 N4/N5에서 sidecar 토글 + 매매 결정 경로 wiring 활성화
+- F1 cutover `--apply` 0건 (분야 ① 보류 유지)
+- LS direct dependency 0건
+- monitoring 의무 (24h + 48h)
+
+Preservation invariant: L1/L4/L7/L9 + LH2-LH5 + LC1-LC3 보존, LH1만 N3 시점에 부분 떨어냄
+
+Directive: 본 master는 F6 92.9%까지의 단일 baseline. N1부터 순차 진행. monitoring 누적 동안 사용자는 다른 작업 가능. N6 후 v6 mid-checkpoint 정본화 권장. 분야 ① 100%는 사용자 명시 재개 의사 표시 시점.
