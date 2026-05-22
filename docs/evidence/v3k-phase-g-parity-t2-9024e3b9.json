@@ -1,0 +1,42 @@
+{
+  "captured_at_utc": "2026-05-22T06:55:38.520589+00:00",
+  "host_identifier": "9024e3b9",
+  "lane": "P-lane (default-OFF parity, no runtime ON)",
+  "parity_result": {
+    "broker_runtime_called": false,
+    "live_decision_consumption": false,
+    "mode": "phase-g-proof-only-synthetic-fixture",
+    "operating_store_written": false,
+    "output_contract": [
+      "미시구조신호",
+      "미시구조신뢰도",
+      "미시구조리스크",
+      "호가불균형",
+      "가중호가비율"
+    ],
+    "parity_limit": 0.15,
+    "passed": true,
+    "runtime_hook_connected": false,
+    "scenarios_count": 3
+  },
+  "phase": "V3K-PHASE-G-PARITY-T2",
+  "plan_ref": "docs/plans/2026-05-22_v3k_backtest_track_5fields_sequential_execution_plan.md",
+  "progress_impact": {
+    "after_percent": 50,
+    "before_percent": 30,
+    "delta_percent_points": 20,
+    "field": "⑦ 마이크로 엔진 백테스트 검증",
+    "note": "parity 단독으로는 +10%p, benchmark와 합쳐 +20%p"
+  },
+  "schema_version": 1,
+  "scope_guard": {
+    "feature_flag_default_on_flipped": false,
+    "kiwoom_runtime_mutated": false,
+    "ls_direct_dependency_added": false,
+    "operating_database_write_attempted": false,
+    "sidecar_toggle_changed": false
+  },
+  "source_report": ".omx/reports/v3k-phase-g-parity-t2.json",
+  "task": "T2-A 분야 ⑦ 마이크로 엔진 백테스트 검증 parity",
+  "verdict": "PASS — 3 scenarios all relative_delta=0.0"
+}

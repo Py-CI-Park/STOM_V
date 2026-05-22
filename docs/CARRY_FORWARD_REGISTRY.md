@@ -3021,3 +3021,101 @@ Scope guard:
 Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존, LC1-LC3 적용 외 (cutover 미진행)
 
 Directive: 분야 ①(F1 cutover)은 본 plan에서 진행하지 않는다. ① 자산(`6e8e23d0` ralplan Planner v1 + scripts)은 read-only 인용만. 분야 ② 가운데 F5 027-5 registry는 T3에서 확인. 분야 ③④는 T4/T5 진단 후 별도 plan에서 본 작업 진행. T1 진입은 본 commit 직후 사용자 확인 시점.
+
+---
+
+## V3K-T1-PHASE-F-PARITY
+
+Records: 5개 분야 순차 plan의 T1 (분야 ⑥ 분석기 7종 백테스트 검증)을 본 PC에서 실행한 결과를 정본화한다. `scripts/backtest_v3k_phase_f_parity.py` default-OFF parity 검증 완료, 모든 메트릭 delta 0%.
+
+Decision: T1 evidence를 `docs/evidence/v3k-phase-f-parity-t1-9024e3b9.json`으로 정본 승격. 어제 작성된 `.omx/reports/v3k-prep-phase-f-parity.json`은 untracked로 유지 (script의 --report는 "not a commit target" 명시).
+
+Plan: `docs/plans/2026-05-22_v3k_backtest_track_5fields_sequential_execution_plan.md` §3.1 T1
+
+Evidence: `docs/evidence/v3k-phase-f-parity-t1-9024e3b9.json`
+
+Result:
+
+- `loss_pct` delta: 0.00% / limit 5.0% (no breach)
+- `mdd_pct` delta: 0.00% / limit 3.0% (no breach)
+- `trade_count_pct` delta: 0.00% / limit 10.0% (no breach)
+- `enabled_metrics` == `disabled_metrics` (default-OFF 완전 일관성)
+- candidate_formula_values 13건 모두 V3 globals에서 정상 산출
+
+Verification:
+
+- `python scripts/backtest_v3k_phase_f_parity.py --report .omx/reports/v3k-phase-f-parity-t1.json`: PASS
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 분야 ⑥ 진척률 30% → 50% (+20%p). F6 산식 단독 영향 +2.86%p (20/700).
+
+Scope guard:
+
+- 코드 변경 0건
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- `_v3k_sidecar/` 변경 0건
+- feature flag default-ON 0건
+- LS direct dependency 0건
+
+Directive: T1 완료. 5개 분야 순차 plan의 다음 단계는 T3 (분야 ② F5 마지막 등록 정리) 또는 T4 (분야 ④ 수식 전역값 진단). T2 (분야 ⑦)는 본 commit과 동시 진행 (다음 섹션).
+
+---
+
+## V3K-T2-PHASE-G-PARITY-BENCHMARK
+
+Records: 5개 분야 순차 plan의 T2 (분야 ⑦ 마이크로 엔진 백테스트 검증)를 T1과 병렬 실행. parity + benchmark 두 사이드 모두 PASS.
+
+Decision: T2-A (parity) + T2-B (benchmark) evidence 각각 정본 승격. `phase-g-proof-only-synthetic-fixture` mode + `phase-g-proof-only-synthetic-benchmark` mode 모두 사용 (live runtime 0건).
+
+Plan: `docs/plans/2026-05-22_v3k_backtest_track_5fields_sequential_execution_plan.md` §3.2 T2
+
+Evidence:
+
+- `docs/evidence/v3k-phase-g-parity-t2-9024e3b9.json` (T2-A parity)
+- `docs/evidence/v3k-phase-g-benchmark-t2-9024e3b9.json` (T2-B benchmark)
+
+Result T2-A (parity):
+
+- mode: `phase-g-proof-only-synthetic-fixture`
+- parity_limit: 0.15 (15%)
+- 3 시나리오 (buy_flow / sell_flow / balanced_flow) 모두 worst_delta = 0.00%
+- 5 output (미시구조신호/신뢰도/리스크/호가불균형/가중호가비율) 모두 relative_delta=0
+- `broker_runtime_called`: False
+- `live_decision_consumption`: False
+- `runtime_hook_connected`: False
+- `operating_store_written`: False
+
+Result T2-B (benchmark):
+
+- elapsed_seconds: 2.796 / max 3.6 (78%)
+- peak_bytes: 231,223 / max 9,600,000 (2.4%)
+- seconds_delta: -0.068 (baseline 대비 -6.8%, 빠름)
+- peak_delta: -0.971 (baseline 대비 -97.1%, 메모리 효율 우수)
+- iterations 50, operations 6000
+
+Verification:
+
+- `python scripts/backtest_v3k_phase_g_parity.py --report .omx/reports/v3k-phase-g-parity-t2.json`: PASS
+- `python scripts/benchmark_v3k_phase_g_engine.py --report .omx/reports/v3k-phase-g-benchmark-t2.json`: PASS
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 분야 ⑦ 진척률 30% → 50% (+20%p, parity + benchmark 합산). F6 산식 단독 영향 +2.86%p (20/700). T1과 합쳐 +5.7%p.
+
+Scope guard:
+
+- 코드 변경 0건
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- `_v3k_sidecar/` 변경 0건
+- feature flag default-ON 0건
+- LS direct dependency 0건
+- live broker / decision / sidecar 모두 무영향
+
+Directive: T2 완료. T1+T2 병렬 진행으로 5개 분야 중 2개 완전 진척. 다음 단계는 T3 (분야 ② F5 027-5 registry 등록 정리, 가장 짧은 ~15분). T4/T5는 진단 중심.

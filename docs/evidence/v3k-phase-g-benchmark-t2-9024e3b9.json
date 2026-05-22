@@ -1,0 +1,41 @@
+{
+  "benchmark_result": {
+    "baseline_peak_bytes": 8000000,
+    "baseline_seconds": 3.0,
+    "broker_runtime_called": false,
+    "elapsed_seconds": 2.796177,
+    "generated_at_utc": "2026-05-22T06:54:34+00:00",
+    "iterations": 50,
+    "live_decision_consumption": false,
+    "max_peak_bytes": 9600000,
+    "max_seconds": 3.5999999999999996,
+    "mode": "phase-g-proof-only-synthetic-benchmark",
+    "operating_store_written": false,
+    "operations": 6000,
+    "passed": true,
+    "peak_bytes": 231223,
+    "peak_delta": -0.971097,
+    "performance_limit": 0.2,
+    "row_count": 120,
+    "runtime_hook_connected": false,
+    "schema": "v3k-phase-g-benchmark-v1",
+    "seconds_delta": -0.067941,
+    "seconds_per_operation": 0.00046603
+  },
+  "captured_at_utc": "2026-05-22T06:55:38.520589+00:00",
+  "host_identifier": "9024e3b9",
+  "lane": "P-lane (synthetic benchmark, no runtime ON)",
+  "phase": "V3K-PHASE-G-BENCHMARK-T2",
+  "plan_ref": "docs/plans/2026-05-22_v3k_backtest_track_5fields_sequential_execution_plan.md",
+  "schema_version": 1,
+  "scope_guard": {
+    "feature_flag_default_on_flipped": false,
+    "kiwoom_runtime_mutated": false,
+    "ls_direct_dependency_added": false,
+    "operating_database_write_attempted": false,
+    "sidecar_toggle_changed": false
+  },
+  "source_report": ".omx/reports/v3k-phase-g-benchmark-t2.json",
+  "task": "T2-B 분야 ⑦ 마이크로 엔진 성능 benchmark",
+  "verdict": "PASS — elapsed=2.796s/3.6s, peak=231KB/9.6MB"
+}

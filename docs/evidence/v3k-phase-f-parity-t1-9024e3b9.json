@@ -1,0 +1,67 @@
+{
+  "captured_at_utc": "2026-05-22T06:55:38.520589+00:00",
+  "host_identifier": "9024e3b9",
+  "lane": "P-lane (default-OFF parity, no runtime ON)",
+  "master_plan_ref": "docs/plans/2026-05-22_v3k_backtest_track_5fields_sequential_execution_plan.md",
+  "parity_result": {
+    "breaches": {
+      "loss_pct": false,
+      "mdd_pct": false,
+      "trade_count_pct": false
+    },
+    "candidate_formula_values": {
+      "가격대신뢰도": 0.5,
+      "가격대점수": 1.0,
+      "거래량신뢰도": 0.5,
+      "거래량점수": 1.0,
+      "리스크점수": 5.0,
+      "변동성신뢰도": 0.5,
+      "변동성점수": 1.0,
+      "변손익신뢰도": 0.5,
+      "손절수익률": 0.0,
+      "예상수익률": 0.0,
+      "익절수익률": 0.0,
+      "패턴신뢰도": 0.5,
+      "패턴점수": 1.0
+    },
+    "deltas": {
+      "loss_pct": 0.0,
+      "mdd_pct": 0.0,
+      "trade_count_pct": 0.0
+    },
+    "disabled_metrics": {
+      "loss": 100.0,
+      "mdd": 10.0,
+      "trade_count": 20.0
+    },
+    "enabled_metrics": {
+      "loss": 100.0,
+      "mdd": 10.0,
+      "trade_count": 20.0
+    },
+    "limits": {
+      "loss_pct": 5.0,
+      "mdd_pct": 3.0,
+      "trade_count_pct": 10.0
+    }
+  },
+  "phase": "V3K-PHASE-F-PARITY-T1",
+  "plan_ref": "docs/plans/2026-05-22_v3k_backtest_track_5fields_sequential_execution_plan.md",
+  "progress_impact": {
+    "after_percent": 50,
+    "before_percent": 30,
+    "delta_percent_points": 20,
+    "field": "⑥ 분석기 7종 백테스트 검증"
+  },
+  "schema_version": 1,
+  "scope_guard": {
+    "feature_flag_default_on_flipped": false,
+    "kiwoom_runtime_mutated": false,
+    "ls_direct_dependency_added": false,
+    "operating_database_write_attempted": false,
+    "sidecar_toggle_changed": false
+  },
+  "source_report": ".omx/reports/v3k-phase-f-parity-t1.json",
+  "task": "T1 분야 ⑥ 분석기 7종 백테스트 검증 parity",
+  "verdict": "PASS — all metrics delta = 0.0% under default-OFF"
+}
