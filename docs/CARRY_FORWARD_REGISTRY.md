@@ -2912,3 +2912,53 @@ Scope guard:
 - 모든 V3K invariant 보존
 
 Directive: 본 D1 진단은 read-only이며 M2 작업 선정 baseline이다. M2 진입 시 본 commit의 §5.1 우선순위 (ai_controller / strategy_generator / config / monitor / history / data_bridge / engine_tuner)를 인용한다. 다음 진단은 D2 (V3K-IMPL-3 백테스트 학습 데이터 진척).
+
+---
+
+## V3K-IMPL3-BACKTEST-LEARNING-D2-DIAGNOSIS
+
+Records: M1 진단 phase의 D2 (V3K-IMPL-3 백테스트 학습 데이터 진척 진단)을 read-only로 수행한 결과를 정본화한다. Phase B (`2026-05-11`) + F5 (page 027, `2026-05-12`) plan 본체 + adapter 구조 + 7개 smoke 직접 실행으로 측정.
+
+Decision:
+
+- Phase A (`1196946a`) 완료 확인: shadow DB 7개 + manifest + apply tool + schema hash invariant.
+- Phase B 6대 invariant (feature flag OFF / DB missing / mode=ro URI / last_update<backtest_date / 운영 DB+Kiwoom 무변경 / LS 0건) 모두 smoke 검증 PASS.
+- F5 page 027 5 step 중 1~4 완료(027-1 read_production_learning_db 메서드, 027-2~027-4 smoke). 027-5 registry 등록만 미확인.
+- 백테스트 엔진 (`backtest/backengine_base.py`)이 `normalize_v3k_flags`를 import해서 V3K feature flag 인식 능력 보유.
+- adapter 클래스 7개 + 핵심 boundary 메서드 `read_production_learning_db()` (line 740) 5중 안전망(운영 path / safe quoting / mode=ro URI / PRAGMA query_only / timeout+retry) 검증.
+- 트랙 A 항목별 진척률 실측: #2 production learning DB read **~85%**, #6 Phase F default-OFF parity **~30%**, #7 Phase G default-OFF parity **~30%**. master plan 추정보다 약간 높음.
+- 종합 V3K-IMPL-3 진척률: **약 75-85%**.
+
+Plan: `docs/update_log/2026-05-22_v3k_impl3_backtest_learning_progress.md`
+
+Smoke execution evidence (read-only, 본 PC `STOM_Version_2U_C`):
+
+- `scripts/smoke_v3k_learning_db_production_read.py`: PASS (mode=ro positive + 5개 production DB no-op)
+- `scripts/smoke_v3k_learning_db_leakage_guard.py`: PASS (`leakage guard PASS: checked=0, backtest_date=20260522`)
+- `scripts/smoke_v3k_learning_db_fallback.py`: PASS (missing + lock fallback)
+- `scripts/smoke_v3k_learning_db_readonly_existing.py`: PASS (Phase B existing)
+- `scripts/smoke_v3k_backtest_learning_hook.py`: PASS (backtest hook ON missing-DB no-op)
+- `scripts/smoke_v3k_learning_loader.py`: PASS (unsafe identifier guard 포함)
+- `scripts/smoke_v3k_realtime_learning_boundary.py`: PASS
+
+Verification:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 트랙 A 진척률 실측 완료. master plan §4.2 M2 milestone 재정의: V3K-IMPL-3 baseline은 이미 완성된 상태이므로 M2 작업은 **신규 인프라가 아닌 evidence 산출 + 일관성 검증**에 집중. F6 진척률은 변동 없음(53.6% 유지). 트랙 A 항목별 +25%p 추가는 evidence 산출 commit별 부분 인정 가능.
+
+Scope guard:
+
+- 코드 변경 0건
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건 (smoke 모두 missing-DB 또는 mode=ro 경로만)
+- `_database_v3k_shadow/` 변경 0건
+- V3K feature flag default-ON 0건
+- LS direct dependency 0건
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 + Phase B 6대 invariant 모두 보존
+
+Directive: 본 D2 진단은 read-only이며 M1 진단 phase의 두 번째 commit이다. M1은 D1+D2 완료로 부분 종결 가능. D3 (유닛 테스트 720건 실패 카테고리) + D4 (sidecar 메커니즘)는 후속 옵션. M2 첫 cycle 진입 시 본 commit §5.1 우선순위 인용 — 권장 첫 작업: F5 027-5 registry 등록 확인 또는 Phase F/G default-OFF parity evidence 산출.
