@@ -254,6 +254,28 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 사이클 10 (2026-05-22~23): 3U_C lane E5 + A++ DB 마이그레이션 끝까지 자동 실행
+
+V3 LS API 백테 가능하게 하는 DB 마이그레이션을 A++ 7단계로 진행. Step 1~5는 Claude 자율 완료, Step 6(시각 확인 1분)만 사용자 잔여.
+
+**3U_C lane 사이클 2 산출** (origin/STOM_Version_3U_C `c0c43958`):
+- `scripts/v3uc_db_compatibility_check.py` (300 lines, --scan/--add-pk/--analyze-extra)
+- `tests/v3uc/test_db_compatibility.py` (7 케이스 PASS)
+- `docs/V3U_C_DB_MIGRATION_PLAN.md` (종합 조사 + A++ 절차)
+
+**V3U lane 실행 결과** (Step 2~5 wt-3u에서):
+- Step 2: `_database_backup_2026-05-22` 백업 (1175 파일)
+- Step 3: `update_db_20260418.py` 19 worker 완료, V2→V3 컬럼 변환 (1166 stock DB)
+- Step 4: 사전 진단 — 89,699 stock 테이블 모두 PK 없음 → V3.08 호환 X
+- Step 5: 88,534 테이블 PK 추가 (에러 0), 잔여 1,165는 moneytop (update_db.py 동일 정책 skip)
+- Post-verification: stock data 테이블 PK 100% 적용
+
+**V3U lane 영향**: 0건 (도구·테스트·문서는 3U_C, 실 실행은 사용자 데이터 _database/ 변환).
+**V3 official 영향**: 0건.
+**카탈로그**:
+- 3U_C E5 옵션 ✅ 완료
+- 기타 DB(backtest/code_info/setting/strategy/tradelist) PK 누락 분 — 별도 사이클 후보
+
 ### 사이클 9 (2026-05-22): 3U_C lane E1 V3.X 흡수 자동화 파이프라인 도입
 
 3U_C lane(`wt-3uc`)에서 첫 custom 작업 사이클. V3U_TRANSITION_AUDIT §6.3 옵션 E1 적용.

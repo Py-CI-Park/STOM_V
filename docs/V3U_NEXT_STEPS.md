@@ -197,6 +197,26 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 
+### 사이클 10 (2026-05-22~23): 3U_C lane E5 + A++ DB 마이그레이션 끝까지 자동 실행
+
+- 사용자 선택: "위의 업무 내용 지금까지 조사 내용 먼저 문서로 아주 자세하게 남기고 한글로 아주 자세하개 commit 하고 A++ 진행"
+- 실행 흐름 (Claude 자율 Step 1~5 + 사용자 Step 6 시각 1분):
+  - Step 1: 3U_C에 진단 도구 + 종합 조사 문서 + 7 회귀 (c0c43958 push)
+  - Step 2: 백업 1175 파일
+  - Step 3: V2→V3 컬럼 변환 (1166 stock DB)
+  - Step 4: PK 진단 (89,699 stock 테이블 미호환 발견)
+  - Step 5: 88,534 PK 추가 (에러 0)
+- 발견 신규 결함: 0건 (백업 안전망 + 단위 테스트 + dry-run 검증)
+- LESSONS.md 갱신: 본 V3U LESSONS 사이클 10 + V3U_C LESSONS 사이클 2
+- NEXT_STEPS.md 갱신: 본 항목
+- 잔여:
+  - **Step 6 사용자 시각 확인 1분** (python stom.py → 백테 라이브 → 시작 → 결과 화면)
+  - 기타 DB(backtest/code_info/setting) PK 별도 사이클
+- 다음 사이클 후보:
+  - Step 6 결과 reactive (정상 PASS면 사이클 10 종료, 결함 발견 시 4단계 워크플로우)
+  - 기타 DB PK 자동 추가 도구 확장 (E5 v2)
+  - V3.19 발표 시 E1 실 dry-run
+
 ### 사이클 9 (2026-05-22): 3U_C lane E1 V3.X 흡수 자동화 파이프라인 도입
 
 - 사용자 선택: "E1 진행" (V3U_C custom 작업 첫 사이클, 3U_C lane)
