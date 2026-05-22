@@ -3224,3 +3224,71 @@ Scope guard:
 Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존
 
 Directive: T4 완료. 분야 ④ runtime hook 통합은 Phase E0 plan(`page_019`)으로 이연, 매매 트랙 D 활성화 시점에 다룸. 5개 분야 순차 plan 다음 단계는 T5 (분야 ③ 사이드카 진단, 마지막 단계).
+
+---
+
+## V3K-T5-GUI-SIDECAR-DIAGNOSIS
+
+Records: 5개 분야 순차 plan §3.5 T5 (분야 ③ GUI 사이드카 진단, **마지막 단계**)을 read-only로 수행한 결과를 정본화한다. `strategy/v3k_gui_sidecar.py` 본문(147줄) + Phase E0~E6 7 sub-phase + V3K-PHASE-E0~E6 7 registry 섹션 + 관련 plan 15건 + audit scripts 10건 + smoke 4건 + 실제 sidecar JSON 파일 read.
+
+Decision:
+
+- 분야 ③ 진척률 실측: master plan 추정 75% → **90%** (+15%p).
+- Phase E0~E6 7 sub-phase 모두 closure 확정.
+- `_v3k_sidecar/v3k_gui_settings.json` 실제 파일 존재 (2026-05-14T09:21 갱신, schema_version 1, approval_state="approved-gate3-phase-g-enabled").
+- **Phase F/G 토글 ON 상태** (`V3K_PHASE_F_ANALYZER_STRATEGY: true`, `V3K_PHASE_G_MICROSTRUCTURE_ENGINE: true`).
+- **live order/exit wiring + operating DB write는 모두 false** (매매 결정 경로 무영향).
+- 잔여 10%는 `phase_f/g_live_order_exit_wiring` true 전환 + `phase_f/g_operating_database_written` true 전환, 매매 트랙 D 활성화 시점에 이연.
+- 분야 ③ 진행 plan 별도 작성 불필요 (Phase E0~E6 + Page 049~071 plan 15건 이미 정본화).
+- 본 commit으로 **5개 분야 순차 plan 5/5 (100%) 완료**.
+
+Plan: `docs/update_log/2026-05-22_v3k_t5_gui_sidecar_diagnosis.md`
+
+Smoke execution evidence (read-only):
+
+- `scripts/smoke_v3k_gui_sidecar_schema_validator.py`: PASS (session override priority)
+- `scripts/smoke_v3k_gui_sidecar_readonly_loader.py`: PASS (missing/corrupt/valid/session-override)
+- `scripts/smoke_v3k_gui_sidecar_preview_init.py`: PASS (read-only preview init session-only)
+- `scripts/smoke_v3k_gui_settings_bridge.py`: PASS (GUI/settings extraction filter)
+
+Phase E sub-phase trail:
+
+- V3K-PHASE-E0 (line 877): runtime activation gap review
+- V3K-PHASE-E1 (line 895): GUI sidecar persistence design
+- V3K-PHASE-E2 (line 915): GUI sidecar schema validator
+- V3K-PHASE-E3 (line 937): GUI sidecar read-only loader
+- V3K-PHASE-E4 (line 959): GUI sidecar write guard/rollback decision
+- V3K-PHASE-E5 (line 980): read-only sidecar preview initialization bridge
+- V3K-PHASE-E6 (line 1005): sidecar tempfile-only writer prototype
+
+Module structure (`strategy/v3k_gui_sidecar.py`):
+
+- `V3K_GUI_SIDECAR_DIR/FILE/BACKUP_DIR/SCHEMA_VERSION/SOURCE/REQUIRED_FIELDS` 상수
+- `V3KGuiSidecarValidationResult` (line 31)
+- `_default_off_result()` (line 53)
+- `_payload_from_json_text()` (line 62)
+- `validate_v3k_gui_sidecar_payload()` (line 74)
+- `load_v3k_gui_sidecar_file()` (line 118)
+- `apply_v3k_sidecar_session_override()` (line 136)
+
+Verification:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 분야 ③ 진척률 75% → 90% (+15%p). F6 산식 단독 영향 +2.1%p (15/700). **5개 분야 순차 plan 5/5 (100%) 완료** — 트랙 A 백테스트 강화 cycle 종결.
+
+Scope guard:
+
+- 코드 변경 0건
+- `_v3k_sidecar/v3k_gui_settings.json` write 0건 (read만)
+- `phase_f/g_live_order_exit_wiring` 변경 0건
+- operating `_database/` write 0건
+- Kiwoom runtime mutation 0건
+- LS direct dependency 0건
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존
+
+Directive: T5 완료 + 5개 분야 순차 plan 5/5 (100%) 종결. 트랙 A 백테스트 강화 cycle closure. 다음 권장 작업: 트랙 B (CLI 확장 Phase 1 확장: ai_controller / strategy_generator 노출) 또는 v5 mid-checkpoint 정본화 (트랙 A closure summary + F6 산식 통일). 트랙 D (운영 매매) 재개는 사용자 명시 결정 시점.
