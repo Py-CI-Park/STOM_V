@@ -90,6 +90,43 @@ This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py i
 
 - V3 release-side upstream risks (V3.X 흡수 시 발견된 미해결 risk)
 - V3U pyd 추론 carry-forward (3U vs 3 verification에서 deferred 항목)
-- V3U_C custom carry-forward (향후 3U_C 생성 시)
+- V3U_C custom carry-forward (3U_C 사이클 진행 중 누적)
 
 각 항목은 V2 패턴과 동일하게 `Deferred because:` / `Reclassify when:` 두 줄로 명시한다.
+
+## V3U_C custom allowlist rule
+
+`STOM_Version_3U_C`는 `STOM_Version_3U`(V3 pyd-free 추론 lane)에서 분기된 custom 작업 lane이다. V2 lane의 `2U_C custom allowlist rule`과 동일 패턴으로 다음 차이만 허용한다.
+
+### 허용되는 V3U_C 전용 차이
+
+- 3U_C custom 기능 신규 파일 (`docs/V3U_C_*.md`, `scripts/v3uc_*.py`, `tests/v3uc/**`)
+- 본 registry §"V3U_C lane carry-forward"에 등록된 차이 항목
+- 3U_C에서만 사용하는 추가 worker·helper (V3U 안전망과 충돌 없는 신규 경로)
+- 3U_C 진행 사이클별 audit·plan 문서
+
+### 금지되는 차이
+
+- V3 official source 디렉토리 0줄 수정 invariant 위반 (V3U와 동일)
+- V3U 안전망(`tests/v3u/`, `scripts/v3u_*`, `ui/main_window.py`, `docs/V3U_*` 핵심)의 임의 수정 — V3U lane을 통해 backport
+- V3U_C 차이가 본 rule의 허용 카테고리에 없는 경로
+- V3U lane이 가진 `STOM_Version_3U` HEAD를 임의 rewind/force-push
+
+### 3단계 Verification Order
+
+1. `3U vs 3`: pyd 제거 + V3U 전용 추론/검증/문서 차이만 기대 (현재 안전망)
+2. `3U_C vs 3U`: V3U_C custom 차이가 본 registry에 모두 등록되어야 함
+3. `3U_C vs 3`: 1·2 합집합 — V3 official 0줄 + V3U 안전망 + V3U_C custom
+
+### 자동 검증 게이트
+
+3U_C에서도 `verify_v3u_pyd_gui_contract.py` 통합 게이트 자동 실행 (8 stage 모두 PASS).
+추가 게이트:
+- 3U_C vs 3U diff가 본 registry §"V3U_C lane carry-forward"의 허용 카테고리만 포함
+- 신규 worker·helper는 V3U `attr_inventory_diff` 도구로 동시 검증
+
+## V3U_C lane carry-forward (지속 갱신)
+
+3U_C 사이클 진행 중 발견되는 custom 차이·deferred 항목·carry-forward 위험을 본 절에 누적 기록한다.
+
+- (3U_C 사이클 시작 시점 비어있음. 첫 custom 작업 사이클부터 항목 추가.)

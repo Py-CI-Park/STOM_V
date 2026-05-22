@@ -62,10 +62,18 @@ V3 lane은 V2 lane과 별도 운영되며, V2.79 웨이브에서는 정규 propa
 - `STOM_Version_3U` is the V3 pyd-to-py 추론 lane. V3 official runtime source와 0줄 차이를 유지하며, 차이는 다음에 한정된다.
   - `ui/main_window.py` (pyd 추론 본체, V3U 전용)
   - `scripts/v3u_*.py` (검증 도구 3개)
-  - `tests/v3u/**` (자동 GUI 검증 시스템, Phase 1~4)
+  - `tests/v3u/**` (자동 GUI 검증 시스템, Phase 1~4 + drift 회귀 차단)
   - `docs/V3U_*` 및 `docs/update_log/*v3u*` (계획·감사·가이드)
   - `requirements-dev.txt`, `pytest.ini` (V3U 전용 dev 의존성)
-- `STOM_Version_3U_C`는 향후 custom lane이며 본 문서 작성 시점에 미생성. 사용자 시각 검증(1·2순위) 통과 후 별도 결정.
+- `STOM_Version_3U_C` is the V3U 위에 분기된 custom 작업 lane. V3U 안전망을 모두 상속하며 추가 차이는 `docs/CARRY_FORWARD_REGISTRY.md`의 "V3U_C custom allowlist rule"에 명시된 카테고리에 한정된다.
+  - 허용 차이: `docs/V3U_C_*.md`, `scripts/v3uc_*.py`, `tests/v3uc/**`, 3U_C 전용 신규 worker·helper
+  - 금지: V3 official source 수정, V3U 안전망 임의 수정
+
+### V3 Verification Order (3단계)
+
+1. `3U vs 3`: pyd 제거 + V3U 전용 추론/검증/문서 차이만 기대.
+2. `3U_C vs 3U`: V3U_C custom 차이가 carry-forward registry의 허용 카테고리에 모두 등록되어야 한다.
+3. `3U_C vs 3`: 1·2 합집합 — V3 official 0줄 + V3U 안전망 + V3U_C custom.
 
 ### V3 Verification Order
 
@@ -76,6 +84,7 @@ V3 lane은 V2 lane과 별도 운영되며, V2.79 웨이브에서는 정규 propa
 
 - `STOM_V.wt-3/`: V3 공식 보관 (V2.79 웨이브 제외 정책상 흡수 일시 정지).
 - `STOM_V.wt-3u/`: V3 pyd-free 추론 + 자동 검증 시스템 활성 lane.
+- `STOM_V.wt-3uc/`: V3U_C custom 작업 활성 lane (3U_C 생성 후).
 
 ### V3 Verification Gate
 

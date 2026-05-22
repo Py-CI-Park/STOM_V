@@ -95,6 +95,30 @@ stom.py 떠있는 상태에서 사용자 보고:
 
 **필요 환경**: LS 모의투자 / 바이낸스 테스트넷 / 업비트 실 최소금액.
 
+### 그룹 E — V3U_C custom 작업 (3U_C 생성 후, 사용자 선택)
+
+3U_C 생성 후 사용 가능한 custom 기능 도입 후보. V3U_TRANSITION_AUDIT_2026-05-22.md §6.3 참조.
+
+#### E1: V3.X 흡수 자동화 파이프라인
+2U_C T-step 패턴으로 V3.19 흡수 단계 분해 (T01 branch merge → T02 verifier → T03 audit 정본화 → T04 한글 commit → T05 push). mock execution + live dry-run.
+
+**ROI**: 매 V3.X 흡수가 명시적 게이트 시퀀스로 자동 진행. 사용자 개입 최소화.
+
+#### E2: STOM_CLI 자동화 + V3U 통합
+2U_C `STOM_CLI_AI_AUTOMATION_PLAN.md` 패턴 참고. V3U_C에 CLI 단축키 + 자동화 시나리오 추가.
+
+**ROI**: 자주 쓰는 V3U 동작 (테스트 실행·verifier·debug)을 단축키로 즉시 호출.
+
+#### E3: 실시간 모니터링 dashboard
+`ui.web_dashboard` 인스턴스 적극 활용. 별도 worker로 자체 web dashboard server. 2U_C 사이드카 승인 패턴.
+
+**ROI**: 운영 중 lane 상태 (큐 길이·worker 상태·결함 카운트)를 브라우저로 모니터.
+
+#### E4: 고급 백테 자동화
+2U_C V3K mapping 지도 참고. V3U_C에 백테 결과 자동 분석 + GA + Optuna 자동 ranking.
+
+**ROI**: 백테 결과 분석·전략 최적화 워크플로우 자동화.
+
 ### 그룹 D — 정책 판단 (사용자만)
 
 #### D1: `STOM_Version_3U_C` 생성 시점 결정
