@@ -220,6 +220,7 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 ## 7. 관련 문서
 
 - `docs/V3U_INFERENCE_LESSONS.md` 결함 기록 진실 원천
+- `docs/V3U_TRANSITION_AUDIT_2026-05-22.md` 3U_C 생성 전 중간 점검 v1 (lane 상태 종합 + 다른 워크트리 영향 + 2U_C 컨셉 흡수 가능성)
 - `docs/V3U_PYD_REMOVAL_PLAN.md` §11 자동 검증 시스템 extension
 - `docs/V3U_TEST_AUTOMATION_GUIDE.md` 운영 매뉴얼
 - `docs/WORKTREE_STRATEGY.md` V3 Lane Branch Parity Invariants
