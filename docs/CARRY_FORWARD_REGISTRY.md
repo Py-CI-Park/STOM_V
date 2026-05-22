@@ -2788,3 +2788,89 @@ Scope guard:
 Preservation invariant: L1/L7/L9 + LH1-LH5 + LC1/LC2/LC3 모두 보존 (cutover 미실행)
 
 Directive: 24h monitoring window 종료 + ralplan iteration 5(APPROVE 합의) 종결 + USER_ACK env 발급 + transaction lock window 진입 시각 명시 4건이 모두 충족된 시점에만 A2 진입 가능. Architect review(iteration 2)와 Critic review(iteration 3)는 별도 commit으로 분리하며, 각 review가 본 Planner v1 §4(Architect baseline) / §5(Critic baseline)을 amend 또는 확장한다. iteration 4(Planner v2)는 Architect/Critic 피드백을 흡수해 plan을 amend하고 iteration 5에서 APPROVE 합의를 등록한다. cutover script `--apply` 실행은 iteration 5 합의 + A2 trigger 4건 모두 충족 시점에만 가능하다.
+
+---
+
+## V3K-MIDCOURSE-REVIEW-2026-05-22
+
+Records: V3K 페이지 1(`4fd48ad2`) A-lane closure + F1 ralplan Planner v1(`6e8e23d0`) 직후 사용자가 진행 순서를 재정렬하기로 결정한 사실을 정본화한다. V3K mission(V3 8개 기능군을 2U_C에 모두 반영)은 변경하지 않고, 진행 순서만 운영 트랙(#1 cutover + 페이지 2~5 actual) 보류 + 백테스트 트랙(#2 production learning DB read + #4 formula globals + #6/#7 default-OFF parity) + CLI 트랙(2026-03-24 plan Phase 1~3) 우선 진입으로 재정렬한다.
+
+Decision:
+
+- V3K 항목 #1 (shadow DB + cutover) 보류. 본체 plan + ralplan Planner v1 + scripts 모두 자산 보존.
+- V3K 페이지 2~5 actual 보류. F1 ralplan iteration 2-5 미진행 상태 유지.
+- V3K 항목 #2, #4, #6, #7의 default-OFF / read-only 측면 우선 진행 가능.
+- CLI 확장 plan(2026-03-24)의 Phase 1~3 우선 진행 가능 (V3K LH9와 호환, 기존 동작 보존 + 신규 추가만).
+- V3K 항목 #3 (GUI setting persistence sidecar)은 보조 트랙으로 병행 가능.
+- mission 무변경: "단계적 cutover"의 *단계 순서*는 mission에 명시되지 않으므로 순서 재정렬은 mission 위반이 아님.
+
+Plan: `docs/update_log/2026-05-22_v3k_midcourse_review_backtest_cli_prioritization.md`
+
+Verification:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS (unblocked, schema v2)
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+- 인용 plan/update_log 파일 cross-ref 정합 확인 완료
+
+Effect: 트랙 D(운영) 자산은 보존된 채 보류되고 트랙 A(V3K 백테스트 강화) + 트랙 B(CLI 확장) + 트랙 C(sidecar)가 active로 전이된다. F6 산식 진척률은 변동 없음(53.6% 유지). 동반 master plan(`docs/plans/2026-05-22_v3k_backtest_cli_prioritization_master_plan.md`)에 4개 트랙별 우선순위 + 의존성 + milestone 정본화.
+
+Scope guard:
+
+- Kiwoom runtime mutation: 0건
+- LS direct dependency: 0건
+- operating `_database/` write: 0건 (트랙 D 보류)
+- `_database_v3k_shadow/` 변경: 0건
+- `_v3k_sidecar/` 토글 ON 발급: 0건
+- order/account API 호출: 0건
+- V3K USER_ACK env durable 발급: 0건
+- V3K feature flag default-ON 전환: 0건
+- cutover script `--apply` 실행: 0건
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 + LC1/LC2/LC3 모두 보존
+
+Directive: 본 검토는 V3K mission을 변경하지 않는다. 트랙 D 자산은 사용자가 명시적으로 재개 의사를 표시하는 시점에 본 commit 인용으로 깨워서 이어간다.
+
+---
+
+## V3K-BACKTEST-CLI-PRIORITIZATION-MASTER-PLAN
+
+Records: V3K 미션을 유지하면서 진행 순서를 재정렬한 사용자 결정(`V3K-MIDCOURSE-REVIEW-2026-05-22` 섹션)에 따른 전체 작업 계획 master를 정본화한다. 4개 트랙(A V3K 백테스트 강화 / B CLI 확장 / C Sidecar / D 운영 보류) 각각의 우선순위 + 의존성 + milestone + 검증 기준 + 보류 트랙 재개 조건을 단일 plan에 정본화한다.
+
+Decision:
+
+- 트랙 A (V3K 백테스트 강화): V3K #2 (production learning DB read 75%) + #4 (formula globals 50%) + #6 (Phase F default-OFF parity 25%) + #7 (Phase G default-OFF parity 25%)을 active로 전이.
+- 트랙 B (CLI 확장): 2026-03-24 plan의 Phase 1 (라이브러리 5개 노출) + Phase 2 (출력 표준화) + Phase 3 (설정관리/리포트 신규)을 active로 전이.
+- 트랙 C (Sidecar): V3K #3 (GUI setting persistence 75%) 보조 트랙으로 active.
+- 트랙 D (운영): V3K #1 (shadow DB + cutover) + 페이지 2~5 actual 보류, 4건 재개 조건 명시(§7).
+- 진행 순서: M1 진단 phase → M2 첫 cycle → M3 두 번째 cycle → M4 세 번째 cycle → M5 트랙 A closure → M6 사용자 결정 시점에 트랙 D 재개 여부 결정.
+- 즉시 시작 가능한 4건 진단 작업: CLI Phase 진척 / V3K-IMPL-3 진척 / 유닛 테스트 720건 실패 / sidecar 메커니즘 (각각 독립 read-only).
+
+Plan: `docs/plans/2026-05-22_v3k_backtest_cli_prioritization_master_plan.md`
+
+Verification:
+
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+- master plan cross-ref 8건 plan + 2건 update_log 모두 파일 존재 확인 완료
+
+Effect: M1 진단 phase 진입 가능 상태. 진단 4건 commit 산출 후 M2 첫 cycle(CLI Phase 1 첫 서브커맨드 또는 V3K-IMPL-3 baseline) 진입 시점에 사용자 작업 선택. F6 진척률은 트랙 A 항목별 +25%p 가능(실측치는 cycle별 확정).
+
+Scope guard:
+
+- Kiwoom runtime mutation: 0건
+- LS direct dependency: 0건
+- operating `_database/` write: 0건 (트랙 D 보류)
+- `_database_v3k_shadow/` 구조 변경: 0건 (read-only 사용만)
+- `_v3k_sidecar/` 토글 ON 발급: 0건 (트랙 C는 메커니즘만, ON 활성화 안 함)
+- order/account API 호출: 0건
+- V3K USER_ACK env durable 발급: 0건
+- V3K feature flag default-ON 전환: 0건
+- cutover script `--apply` 실행: 0건 (트랙 D 보류)
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 + LC1/LC2/LC3 모두 보존
+
+Directive: 본 master plan은 M1 진단 phase의 baseline이다. M1 진단 4건 commit이 종결된 시점에 M2 첫 작업이 사용자 결정으로 선정된다. 트랙 D 자산은 §7의 4건 재개 조건 충족 시점까지 동결 유지.
