@@ -254,6 +254,39 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 결함 #15 (2026-05-22): ui.web_dashboard placeholder 사전 차단 (A4)
+
+- 카테고리: D (helper inventory, placeholder)
+- 발견 경로: 사이클 7 A4 사전 정찰 (외부 ref grep)
+- 외부 호출 site: `ui/event_click/button_clicked_shortcut.py:252-254/279-280`
+  - 252: `ui.web_dashboard = DashboardStarter(...)` (부착)
+  - 253: `ui.web_dashboard.log_received.connect(ui.web_dashboard_log)` (signal connect)
+  - 254: `ui.web_dashboard.start()` (시작)
+  - 279: `if ui.dict_set['웹대시보드'] and ui.web_dashboard:` (None 체크 후 사용)
+  - 280: `ui.web_dashboard.stop()`
+- 위험: 사용자 단축키로 활성화 전 다른 site에서 `ui.web_dashboard` 참조 시 AttributeError
+- 우리 누락: `_init_runtime_state`에 placeholder 부재
+- 수정: `self.web_dashboard = None` 추가 (사용자가 단축키로 DashboardStarter 부착)
+- 회귀 테스트: `tests/v3u/test_smoke.py::test_web_dashboard_attr_present_for_safe_attribute_access`
+- 근본 원인 매핑: §3-1 (pyd 내부 spawn 메커니즘 미관찰), §3-2 (2U는 web_dashboard 컨셉 없음)
+
+### A3 보강 (2026-05-22): verifier UX 단계 분리
+
+`verify_v3u_pyd_gui_contract.py`가 8 stage 결과를 [PASS]/[FAIL]/[SKIP] 라인으로
+명시 출력. V3 흡수 시 어느 단계가 fail인지 즉시 파악 가능.
+
+신규 8 stage:
+1. upstream_pyd_evidence (V3 lane pyd 보존 검증)
+2. tracked_pyd_guard (V3U tracked .pyd 0건)
+3. mainwindow_ast (V3U main_window.py AST 정합성)
+4. imports (V3U import 누락 없음)
+5. contract_manifest (GUI contract inventory)
+6. offline_smoke (구조 smoke)
+7. pytest_gate (45 케이스 PASS)
+8. **attr_inventory_diff** (CRITICAL=0 strict, A3 신규 단계)
+
+`run_attr_inventory_diff(log_dir)` 신규 함수 — strict 모드 호출 + summary 파싱.
+
 ### 사이클 6 시각 검증 결과 (2026-05-21): 신규 결함 0건 — fix #10·#11·#13 검증 PASS
 
 A1·A2 사전 정찰로 차단된 결함 7건이 모두 효과적이었음을 사용자 시각 검증으로 확인.
@@ -363,14 +396,14 @@ A2(CRITICAL drift 정리) 사이클에서 추가로 발견된 init/method 누락
 
 ## 7. 통계 (지속 갱신)
 
-| 측정 | 값 (2026-05-21 사이클 6 시각 검증 종료 시점) |
+| 측정 | 값 (2026-05-22 사이클 7 A3·A4 완료 시점) |
 |---|---|
-| 총 발견 결함 | 18 (사이클 6 시각 검증 +0 — A1·A2 사전 차단 효과) |
-| 자동 회귀 테스트 추가 | 19 |
-| pytest 케이스 총수 | 45 |
-| 수정 커밋 누적 | 9 |
-| 신규 자동 도구 | 1 (scripts/v3u_attr_inventory_diff.py) |
-| 사용자 시각 검증 사이클 | 6회 |
+| 총 발견 결함 | 19 (사이클 7 A4 +1: #15 web_dashboard placeholder) |
+| 자동 회귀 테스트 추가 | 20 (사이클 7 A4 +1) |
+| pytest 케이스 총수 | 46 |
+| 수정 커밋 누적 | 10 |
+| 신규 자동 도구 | 1 (attr_inventory_diff) + A3 verifier UX 분리 |
+| 사용자 시각 검증 사이클 | 6회 (사이클 7은 자율) |
 | 평균 결함 발견·수정 사이클 시간 | 약 25분 |
 | 근본 원인 카테고리 | 5 (§3) |
 | 재발 방지 액션 | 5 (§5) — **적용 5, 미적용 0** |

@@ -254,6 +254,11 @@ class MainWindow(QMainWindow):
         self.ctpg_cvb = None
         self.move_dialog_list: list[Any] = []
         self.location_list: list[Any] = []
+        # web_dashboard: button_clicked_shortcut.py:252가 직접 DashboardStarter()를
+        # 부착·시작한다. 사용자가 단축키로 활성화하기 전에는 None. line 279가
+        # truthy 체크로 None을 안전 처리하므로 placeholder만 부착해 첫 참조 시
+        # AttributeError를 방지한다 (결함 #15 사전 차단).
+        self.web_dashboard = None
         # dialog_stg_input: button_clicked_stg_module.py:136이 QMessageBox.critical
         # 부모로 참조. dialog_stg_input1(suffix 1)은 widget builder가 만들지만 base
         # 이름은 V3 pyd 내부에서 따로 부착하는 듯. placeholder로 self 사용.

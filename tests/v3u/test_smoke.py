@@ -207,6 +207,21 @@ def test_webcrawling_worker_attr_present(main_window) -> None:
     # pytest 환경(STOM_V3U_DISABLE_WEBC=1)에서는 None이 정상
 
 
+def test_web_dashboard_attr_present_for_safe_attribute_access(main_window) -> None:
+    """결함 #15 사전 차단: button_clicked_shortcut.py:252 사용자가 단축키로
+    DashboardStarter를 부착하기 전에 ui.web_dashboard 참조 시 AttributeError를 방지한다.
+
+    None placeholder가 line 279의 truthy 체크에 의해 안전 처리됨.
+    """
+    assert hasattr(main_window, "web_dashboard"), (
+        "web_dashboard attr 누락 — button_clicked_shortcut.py:279 'if ui.dict_set[웹대시보드] "
+        "and ui.web_dashboard:' 체크 시 AttributeError 위험"
+    )
+    # None placeholder (사용자 단축키로 활성화 전) 또는 DashboardStarter 인스턴스
+    # 둘 다 허용 — 정적 검증은 attr 존재성만 확인
+    assert main_window.web_dashboard is None or hasattr(main_window.web_dashboard, "start")
+
+
 def test_proc_chqs_safe_for_is_alive_call(main_window) -> None:
     """결함 #12: 외부 20+ site가 ui.proc_chqs.is_alive()를 None 체크 없이 호출.
 

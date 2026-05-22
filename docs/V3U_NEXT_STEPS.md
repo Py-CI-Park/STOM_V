@@ -173,6 +173,19 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 
+### 사이클 7 (2026-05-22): A3 verifier UX 분리 + A4 web_dashboard placeholder
+
+- 사용자 선택: "A 진행" (A3·A4 자율 묶음, 중간 점검 보고서 §7 우선순위 1번)
+- 실행 결과:
+  - 22번째 커밋(본 사이클) A3·A4 통합
+  - A3: verify_v3u_pyd_gui_contract.py에 attr_inventory_diff 별도 단계 + 8 stage
+    [PASS]/[FAIL]/[SKIP] 라인 출력 UX
+  - A4: web_dashboard placeholder 부착 (결함 #15 사전 차단)
+- 발견 신규 결함: A4에서 1건 (#15 web_dashboard)
+- LESSONS.md 갱신: §6 결함 #15 + A3 보강 절 + §7 통계 (46/20/10/baseline 0, 결함 19건)
+- NEXT_STEPS.md 갱신: 본 항목
+- 다음 사이클 후보: 3U_C 생성 Phase A·B 또는 2순위 사용자 시각 검증 또는 다른 자율 작업
+
 ### 사이클 6-2 (2026-05-21): 시각 검증 — 결함 0건, A1·A2 가치 입증
 
 - 사용자 선택: "시각 검증 사이클 6 진행"

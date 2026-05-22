@@ -182,6 +182,11 @@ def evaluate(branch: str, version: str, upstream_ref: str, log_dir: Path, allow_
         if pytest_error:
             failures.append(pytest_error)
 
+    # A3: attr_inventory_diff 별도 단계 (CRITICAL drift 측정 + strict baseline 검증)
+    attr_inv_payload, attr_inv_error = run_attr_inventory_diff(log_dir)
+    if attr_inv_error:
+        failures.append(attr_inv_error)
+
     payload = {
         "branch": branch,
         "version": version,
@@ -197,10 +202,64 @@ def evaluate(branch: str, version: str, upstream_ref: str, log_dir: Path, allow_
         "smoke_log": str(smoke_log_path(log_dir, branch, version)),
         "smoke_status": smoke.get("status") if smoke else None,
         "pytest_gate": pytest_payload,
+        "attr_inventory_diff": attr_inv_payload,
+        "stage_results": {
+            "1_upstream_pyd_evidence": "passed" if not pyd_error else "failed",
+            "2_tracked_pyd_guard": "passed" if not (pyd_files and not allow_existing_pyd) else "failed",
+            "3_mainwindow_ast": "passed" if not ast_failures else "failed",
+            "4_imports": "passed" if not imports_missing else "failed",
+            "5_contract_manifest": "passed" if contract else "failed",
+            "6_offline_smoke": (smoke.get("status") if smoke else "missing"),
+            "7_pytest_gate": pytest_payload.get("status", "unknown"),
+            "8_attr_inventory_diff": attr_inv_payload.get("status", "unknown"),
+        },
         "result": "failed" if failures else "passed",
         "failures": failures,
     }
     return payload, failures
+
+
+def run_attr_inventory_diff(log_dir: Path) -> tuple[dict[str, object], str | None]:
+    """A3 신규 단계: attr_inventory_diff 자동 도구를 별도로 호출해 결과 분리 보고.
+
+    pytest 게이트가 test_attr_inventory_drift를 포함하지만 verifier 출력에 단계별
+    명시 표시를 위해 별도 stage로 분리. CRITICAL > baseline 시 명시적 fail.
+    """
+    diff_script = ROOT / "scripts" / "v3u_attr_inventory_diff.py"
+    if not diff_script.is_file():
+        return {"status": "missing", "reason": f"{diff_script} not found"}, None
+    out_rel = "attr_inventory_verifier_run.json"
+    output_abs = log_dir / out_rel
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(diff_script), "--strict",
+             "--output", str(output_abs.relative_to(ROOT))],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=False,
+            timeout=120,
+        )
+    except subprocess.TimeoutExpired:
+        return {"status": "timeout"}, "attr_inventory_diff timed out (120s)"
+    except FileNotFoundError as exc:
+        return {"status": "missing", "reason": str(exc)}, None
+    summary_line = ""
+    for line in (proc.stdout or "").splitlines():
+        if "critical=" in line:
+            summary_line = line.strip()
+            break
+    payload = {
+        "exit_code": proc.returncode,
+        "log_path": str(output_abs),
+        "status": "passed" if proc.returncode == 0 else "failed",
+        "summary_line": summary_line,
+    }
+    if proc.returncode != 0:
+        return payload, f"attr_inventory_diff strict mode fail: {summary_line or 'see log'}"
+    return payload, None
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -227,6 +286,15 @@ def main(argv: list[str] | None = None) -> int:
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
     manifest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"[INFO] V3U contract manifest: {manifest_path}")
+    # A3: 단계별 PASS/FAIL 명시 출력 (V3 흡수 시 fail 단계 즉시 파악)
+    stage_results = payload.get("stage_results", {})
+    if isinstance(stage_results, dict):
+        print("[STAGE] V3U 통합 게이트 단계별 결과:")
+        for stage_name, stage_status in stage_results.items():
+            tag = "PASS" if stage_status == "passed" else (
+                "SKIP" if stage_status == "skipped" else "FAIL"
+            )
+            print(f"  [{tag}] {stage_name}: {stage_status}")
     pytest_gate = payload.get("pytest_gate", {})
     if isinstance(pytest_gate, dict):
         status = pytest_gate.get("status")
@@ -236,11 +304,18 @@ def main(argv: list[str] | None = None) -> int:
             print("[INFO] pytest gate: skipped (--skip-pytest)")
         else:
             print(f"[INFO] pytest gate: {status} (log: {pytest_gate.get('log_path')})")
+    attr_inv = payload.get("attr_inventory_diff", {})
+    if isinstance(attr_inv, dict):
+        ai_status = attr_inv.get("status")
+        if ai_status == "passed":
+            print(f"[INFO] attr inventory: passed ({attr_inv.get('summary_line', '')})")
+        else:
+            print(f"[INFO] attr inventory: {ai_status} (log: {attr_inv.get('log_path')})")
     if failures:
         for failure in failures:
             print(f"[FAIL] {failure}")
         return 1
-    print("[OK] V3U pyd GUI contract + pytest gate passed")
+    print("[OK] V3U pyd GUI contract + pytest gate + attr inventory diff passed")
     return 0
 
 
