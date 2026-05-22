@@ -3470,3 +3470,53 @@ Scope guard:
 Preservation invariant: L1/L4/L7/L9 + LH2-LH5 + LC1-LC3 보존, LH1만 N3 시점에 부분 떨어냄
 
 Directive: 본 master는 F6 92.9%까지의 단일 baseline. N1부터 순차 진행. monitoring 누적 동안 사용자는 다른 작업 가능. N6 후 v6 mid-checkpoint 정본화 권장. 분야 ① 100%는 사용자 명시 재개 의사 표시 시점.
+
+---
+
+## V3K-N1-FIELD2-BACKTEST-LEARNING-CLOSURE
+
+Records: 5분야 master plan §3.1 N1 (분야 ② 학습 데이터 백테스트 read 90→100% closure)을 정본화한다. 근거 4축: (1) backtest/backengine_base.py V3K 통합 line 11/79/98/137/460-485 (2) 7 smoke 모두 PASS (3) F5 registry V3K-F5-PROD-READ 확인(T3, 397390f1) (4) Phase B 6대 invariant 모두 보존.
+
+Decision:
+
+- 분야 ② 진척률 90% → 100% (+10%p) closure 확정.
+- backengine_base.py가 V3KLearningDataAdapter import + 인스턴스 + flags 처리 helper 메서드 3건 보유 (line 460/467/473) 확인.
+- 7 smoke (backtest_learning_hook + learning_loader + learning_db_readonly_existing + realtime_learning_boundary + learning_db_production_read + learning_db_leakage_guard + learning_db_fallback) 모두 본 PC에서 PASS.
+- Phase B 6대 invariant (feature flag OFF / DB missing / mode=ro / leakage < / 운영 무영향 / LS 0건) 모두 evidence + smoke로 검증.
+- F5 registry V3K-F5-PROD-READ는 T3에서 이미 확인된 상태이며 본 N1 closure에서 cross-ref.
+- 분야 ② 학습 데이터가 분야 ⑥/⑦ parity evidence(T1/T2)에서도 정합성 확인 (candidate_formula_values 13건 정상).
+
+Plan: `docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md` §3.1 N1
+
+Evidence: `docs/evidence/v3k-n1-field2-backtest-learning-9024e3b9.json` (4309 bytes)
+
+Verification:
+
+- `python scripts/smoke_v3k_backtest_learning_hook.py`: PASS
+- `python scripts/smoke_v3k_learning_loader.py`: PASS
+- `python scripts/smoke_v3k_learning_db_readonly_existing.py`: PASS
+- `python scripts/smoke_v3k_realtime_learning_boundary.py`: PASS
+- `python scripts/smoke_v3k_learning_db_production_read.py`: PASS
+- `python scripts/smoke_v3k_learning_db_leakage_guard.py`: PASS
+- `python scripts/smoke_v3k_learning_db_fallback.py`: PASS
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+
+Effect: 분야 ② 진척률 90% → 100% closure. F6 산식 단독 영향 +1.4%p (10/700). 5분야 master plan 1/6 완료 (N1). 다음 단계 N2 (분야 ③ sidecar live wiring 토글 활성화).
+
+Scope guard:
+
+- 코드 변경 0건 (smoke 재실행 + evidence 정본화)
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- `_database_v3k_shadow/` 변경 0건
+- `_v3k_sidecar/` 토글 변경 0건 (N2에서)
+- feature flag default-ON 전환 0건
+- LS direct dependency 0건
+- 학습 DB 실제 데이터 read 0건 (smoke 모두 missing-DB no-op)
+
+Preservation invariant: L1/L4/L7/L9 + LH1-LH5 + Phase B 6대 invariant 모두 보존
+
+Directive: N1 closure 확정. 분야 ② 백테스트 영역에서 100% 달성. runtime hook 측면 (실제 DB 데이터 read + 매매 결정 경로 사용)은 분야 ⑥/⑦의 N4/N5에서 다룸. 다음 단계 N2 (분야 ③ 사이드카 wiring 토글 활성화, ~30분, 매매 영향 약).

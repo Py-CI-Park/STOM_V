@@ -1,0 +1,108 @@
+{
+  "backengine_integration": {
+    "file": "backtest/backengine_base.py",
+    "helper_methods": [
+      {
+        "line": 460,
+        "method": "_v3k_strategy_gubun"
+      },
+      {
+        "line": 467,
+        "method": "_v3k_learning_flags"
+      },
+      {
+        "line": 473,
+        "method": "_v3k_learning_kinds_for_current_timeframe"
+      }
+    ],
+    "imports": "ANALYZER_MODULE_CONTRACTS / FLAG_BACKTEST_LEARNING / LEARNING_DB_CONTRACTS / V3KLearningDataAdapter (line 11)",
+    "instance_create": "self.v3k_learning_loader = V3KLearningDataAdapter() (line 137, 483)",
+    "instance_init": "self.v3k_learning_loader = None (line 79), self.v3k_learning_load_plan = {} (line 98)"
+  },
+  "captured_at_utc": "2026-05-22T13:37:29.142100+00:00",
+  "f5_registry_match": {
+    "location": "docs/CARRY_FORWARD_REGISTRY.md line 1058",
+    "section": "V3K-F5-PROD-READ",
+    "t3_confirmation_commit": "397390f1"
+  },
+  "host_identifier": "9024e3b9",
+  "lane": "P-lane (smoke read-only, runtime ON 0건)",
+  "master_amend_ref": "docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md",
+  "parity_evidence_cross_ref": [
+    "docs/evidence/v3k-phase-f-parity-t1-9024e3b9.json (T1 분야 ⑥, T4 수식 facade 사용 검증)",
+    "docs/evidence/v3k-phase-g-parity-t2-9024e3b9.json",
+    "docs/evidence/v3k-phase-g-benchmark-t2-9024e3b9.json"
+  ],
+  "phase": "V3K-N1-FIELD2-BACKTEST-LEARNING-EVIDENCE",
+  "phase_b_invariants_check": {
+    "db_missing_diagnostic_safe_exit": true,
+    "feature_flag_off_no_read": true,
+    "leakage_invariant_last_update_lt_backtest_date": true,
+    "ls_direct_dependency_zero": true,
+    "mode_ro_uri_only": true,
+    "operating_database_unchanged": true
+  },
+  "plan_ref": "docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md",
+  "progress_impact": {
+    "after_percent": 100,
+    "before_percent": 90,
+    "delta_percent_points": 10,
+    "field": "② 학습 데이터 백테스트 read"
+  },
+  "related_documents": [
+    "docs/plans/2026-05-11_v3k_phase_b_readonly_learning_db_plan.md (Phase B 본체)",
+    "docs/plans/2026-05-12_v3k_page_027_f5_production_learning_db_read_plan.md (F5 본체)",
+    "docs/update_log/2026-05-22_v3k_impl3_backtest_learning_progress.md (D2 진단)",
+    "docs/update_log/2026-05-22_v3k_t3_f5_registry_closure_confirmation.md (T3 closure)",
+    "strategy/v3k_analyzer_adapter.py (V3KLearningDataAdapter line 560, read_production_learning_db line 740)",
+    "backtest/backengine_base.py (V3K 통합 line 11/79/98/137/460-485)"
+  ],
+  "schema_version": 1,
+  "scope_guard": {
+    "feature_flag_default_on_flipped": false,
+    "kiwoom_runtime_mutated": false,
+    "learning_db_real_data_read": false,
+    "ls_direct_dependency_added": false,
+    "operating_database_write_attempted": false,
+    "sidecar_toggle_changed": false
+  },
+  "smoke_results": [
+    {
+      "output": "backtest hook ON missing-DB no-op ok: tick / min",
+      "script": "smoke_v3k_backtest_learning_hook.py",
+      "status": "PASS"
+    },
+    {
+      "output": "unsafe identifier guard ok",
+      "script": "smoke_v3k_learning_loader.py",
+      "status": "PASS"
+    },
+    {
+      "output": "v3k Phase B read-only learning DB smoke passed",
+      "script": "smoke_v3k_learning_db_readonly_existing.py",
+      "status": "PASS"
+    },
+    {
+      "output": "realtime learning ON missing-DB no-op ok: min",
+      "script": "smoke_v3k_realtime_learning_boundary.py",
+      "status": "PASS"
+    },
+    {
+      "output": "mode=ro positive + production no-op",
+      "script": "smoke_v3k_learning_db_production_read.py",
+      "status": "PASS"
+    },
+    {
+      "output": "leakage guard PASS: checked=0, backtest_date=20260522",
+      "script": "smoke_v3k_learning_db_leakage_guard.py",
+      "status": "PASS"
+    },
+    {
+      "output": "missing + lock fallback ok",
+      "script": "smoke_v3k_learning_db_fallback.py",
+      "status": "PASS"
+    }
+  ],
+  "task": "N1 분야 ② 백테스트 학습 데이터 read 90% → 100% closure",
+  "verdict": "PASS — 분야 ② 백테스트 학습 데이터 read 100% closure. backengine_base 통합 + 7 smoke + F5 registry + Phase B invariants 6건 + parity evidence cross-ref 모두 확인."
+}
