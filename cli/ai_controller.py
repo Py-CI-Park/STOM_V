@@ -1,11 +1,14 @@
-"""AI 백테스트 컨트롤러 — 통합 파사드.
+"""AI 백테스트 컨트롤러 — 통합 파사드 + 공식 shipped CLI.
 
 AI가 하나의 인터페이스로 전체 백테스트 파이프라인을 제어한다.
 모든 메서드는 dict를 반환하며, 예외를 throw하지 않는다.
 
-주의:
-- 현재는 `stom_backtest.py` 의 공식 서브커맨드가 아니라 Python API 성격의 모듈이다.
-- shipped CLI 범위와 혼동하지 않도록 문서/계획서에서 library-only 로 구분한다.
+CLI 노출 (2026-05-22 promotion):
+- `stom_backtest ai-controller <action>` 서브커맨드로 P0 9개 액션 노출.
+- P0 노출: list-strategies / analyze-strategy / run / dry-run /
+  get-history / get-best / create-strategy / delete-strategy / system-info.
+- P1/P2 (sweep / optimize / walk_forward / discover_* / auto_discover_*)은 후속 plan으로 분리.
+- promotion plan: docs/plans/2026-05-22_v3k_cli_ai_controller_promotion_plan.md
 """
 
 import os

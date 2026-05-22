@@ -426,6 +426,74 @@ def create_subcommand_parser():
                              choices=['tick', 'min'],
                              help='복원할 DB 종류')
 
+    # --- ai-controller 서브커맨드 (2026-05-22 promotion) ---
+    ai_parser = sub.add_parser('ai-controller', help='AI 백테스트 컨트롤러 (P0 9개 액션)')
+    ai_sub = ai_parser.add_subparsers(dest='ai_action')
+
+    ai_ls = ai_sub.add_parser('list-strategies', help='사용 가능한 전략 목록')
+    ai_ls.add_argument('--format', choices=['json', 'text'], default='json',
+                        dest='output_format')
+
+    ai_an = ai_sub.add_parser('analyze-strategy', help='전략 AST 분석 + 타임프레임 감지')
+    ai_an.add_argument('name', help='전략명')
+    ai_an.add_argument('--type', choices=['buy', 'sell'], default='buy',
+                        dest='strategy_type')
+    ai_an.add_argument('--format', choices=['json', 'text'], default='json',
+                        dest='output_format')
+
+    ai_run = ai_sub.add_parser('run', help='백테스트 실행')
+    ai_run.add_argument('--buy', required=True, help='매수 전략명')
+    ai_run.add_argument('--sell', required=True, help='매도 전략명')
+    ai_run.add_argument('--start', type=int, required=True, help='시작일 YYYYMMDD')
+    ai_run.add_argument('--end', type=int, required=True, help='종료일 YYYYMMDD')
+    ai_run.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    ai_run.add_argument('--engines', type=int, default=4, help='엔진 개수')
+    ai_run.add_argument('--format', choices=['json', 'text'], default='json',
+                        dest='output_format')
+
+    ai_dry = ai_sub.add_parser('dry-run', help='백테스트 dry-run (설정 검증만)')
+    ai_dry.add_argument('--buy', required=True)
+    ai_dry.add_argument('--sell', required=True)
+    ai_dry.add_argument('--start', type=int, required=True)
+    ai_dry.add_argument('--end', type=int, required=True)
+    ai_dry.add_argument('--timeframe', choices=['tick', 'min'], default='tick')
+    ai_dry.add_argument('--engines', type=int, default=4)
+    ai_dry.add_argument('--format', choices=['json', 'text'], default='json',
+                        dest='output_format')
+
+    ai_hist = ai_sub.add_parser('get-history', help='백테스트 실행 히스토리 조회')
+    ai_hist.add_argument('--limit', type=int, default=20, help='최근 N건')
+    ai_hist.add_argument('--strategy', default=None, help='전략명 필터')
+    ai_hist.add_argument('--format', choices=['json', 'text'], default='json',
+                          dest='output_format')
+
+    ai_best = ai_sub.add_parser('get-best', help='최고 성과 백테스트 조회')
+    ai_best.add_argument('--metric', default='tpi', help='평가 지표 (기본 tpi)')
+    ai_best.add_argument('--order', choices=['desc', 'asc'], default='desc')
+    ai_best.add_argument('--limit', type=int, default=10)
+    ai_best.add_argument('--format', choices=['json', 'text'], default='json',
+                          dest='output_format')
+
+    ai_create = ai_sub.add_parser('create-strategy', help='조건식 list로 전략 생성')
+    ai_create.add_argument('name', help='새 전략명')
+    ai_create.add_argument('--conditions-file', required=True,
+                            help='조건식 JSON 파일 (list 형식)')
+    ai_create.add_argument('--type', choices=['buy', 'sell'], default='buy',
+                            dest='strategy_type')
+    ai_create.add_argument('--format', choices=['json', 'text'], default='json',
+                            dest='output_format')
+
+    ai_delete = ai_sub.add_parser('delete-strategy', help='전략 삭제')
+    ai_delete.add_argument('name', help='삭제할 전략명')
+    ai_delete.add_argument('--type', choices=['buy', 'sell'], default='buy',
+                            dest='strategy_type')
+    ai_delete.add_argument('--format', choices=['json', 'text'], default='json',
+                            dest='output_format')
+
+    ai_sys = ai_sub.add_parser('system-info', help='시스템 리소스 정보')
+    ai_sys.add_argument('--format', choices=['json', 'text'], default='json',
+                         dest='output_format')
+
     return parser
 
 
@@ -456,6 +524,8 @@ def handle_subcommand(args=None):
         return _handle_db(parsed)
     elif parsed.command == 'runtime-preflight':
         return _handle_runtime_preflight(parsed)
+    elif parsed.command == 'ai-controller':
+        return _handle_ai_controller(parsed)
     else:
         parser.print_help()
         return 0
@@ -1424,3 +1494,101 @@ def _handle_db(parsed):
     else:
         print(json.dumps({'status': 'error', 'message': 'db 하위 명령을 지정하세요: check, ensure, restore'}))
         return 1
+
+
+def _emit_ai_result(result, output_format):
+    if output_format == 'text':
+        if isinstance(result, dict):
+            for key, value in result.items():
+                print(f'{key}: {value}')
+        else:
+            print(result)
+    else:
+        print(json.dumps(result, ensure_ascii=False, indent=2, default=str))
+
+
+def _handle_ai_controller(parsed):
+    """ai-controller 서브커맨드 핸들러 (P0 9개 액션)."""
+    from cli.ai_controller import AIBacktestController
+
+    action = parsed.ai_action
+    if action is None:
+        print(json.dumps({
+            'status': 'error',
+            'message': 'ai-controller 하위 명령을 지정하세요: list-strategies, '
+                       'analyze-strategy, run, dry-run, get-history, get-best, '
+                       'create-strategy, delete-strategy, system-info',
+        }, ensure_ascii=False))
+        return 1
+
+    controller = AIBacktestController()
+    output_format = getattr(parsed, 'output_format', 'json')
+
+    if action == 'list-strategies':
+        result = controller.list_strategies()
+
+    elif action == 'analyze-strategy':
+        result = controller.analyze_strategy(parsed.name, parsed.strategy_type)
+
+    elif action == 'run':
+        config_dict = {
+            'buy_strategy': parsed.buy,
+            'sell_strategy': parsed.sell,
+            'start_date': parsed.start,
+            'end_date': parsed.end,
+            'is_tick': parsed.timeframe == 'tick',
+            'engine_count': parsed.engines,
+        }
+        result = controller.run(config_dict)
+
+    elif action == 'dry-run':
+        config_dict = {
+            'buy_strategy': parsed.buy,
+            'sell_strategy': parsed.sell,
+            'start_date': parsed.start,
+            'end_date': parsed.end,
+            'is_tick': parsed.timeframe == 'tick',
+            'engine_count': parsed.engines,
+        }
+        result = controller.dry_run(config_dict)
+
+    elif action == 'get-history':
+        result = controller.get_history(limit=parsed.limit, strategy=parsed.strategy)
+
+    elif action == 'get-best':
+        result = controller.get_best(metric=parsed.metric, order=parsed.order, limit=parsed.limit)
+
+    elif action == 'create-strategy':
+        try:
+            with open(parsed.conditions_file, 'r', encoding='utf-8') as fh:
+                conditions = json.load(fh)
+        except (OSError, json.JSONDecodeError) as exc:
+            result = {
+                'status': 'error',
+                'message': f'conditions-file 로드 실패: {exc}',
+            }
+        else:
+            if not isinstance(conditions, list):
+                result = {
+                    'status': 'error',
+                    'message': 'conditions-file은 JSON list 형식이어야 합니다',
+                }
+            else:
+                result = controller.create_strategy(
+                    parsed.name, conditions, strategy_type=parsed.strategy_type,
+                )
+
+    elif action == 'delete-strategy':
+        result = controller.delete_strategy(parsed.name, parsed.strategy_type)
+
+    elif action == 'system-info':
+        result = controller.system_info()
+
+    else:
+        result = {
+            'status': 'error',
+            'message': f'알 수 없는 ai-controller 액션: {action!r}',
+        }
+
+    _emit_ai_result(result, output_format)
+    return 0 if result.get('status') == 'ok' else 1

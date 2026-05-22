@@ -3336,3 +3336,52 @@ Scope guard:
 Preservation invariant: L1/L4/L7/L9 + LH1-LH5 + LC1-LC3 모두 PASS
 
 Directive: v5 정본화 완료. 다음 mid-checkpoint(v6)는 트랙 B closure 또는 트랙 D 재개 시점에 새 파일로 신설. prior v1-v4 + 본 v5 본문 무변경 유지. v5 freeze 시점은 본 commit hash.
+
+---
+
+## V3K-CLI-AI-CONTROLLER-PROMOTION
+
+Records: `cli/ai_controller.py`의 library-only 정책을 떨고 `stom_backtest ai-controller` 서브커맨드로 P0 9개 액션을 공식 노출하는 promotion을 정본화한다. 정책 plan(`2026-05-22_v3k_cli_ai_controller_promotion_plan.md`)과 실행 보고서(`2026-05-22_v3k_cli_ai_controller_promotion_execution.md`)로 분리.
+
+Decision:
+
+- `cli/ai_controller.py` docstring 갱신 — library-only → shipped CLI + P0 9개 액션 명시. 본문 코드 무변경.
+- `stom_backtest.py` SUBCOMMANDS 튜플에 `'ai-controller'` 추가.
+- `cli/subcommands.py`에 `ai-controller` 서브커맨드 + 9 액션(list-strategies / analyze-strategy / run / dry-run / get-history / get-best / create-strategy / delete-strategy / system-info) add_parser 추가.
+- `handle_subcommand` 라우터에 `elif parsed.command == 'ai-controller':` 분기 추가.
+- 신규 함수 `_emit_ai_result(result, output_format)` + `_handle_ai_controller(parsed)` 추가.
+- P1/P2 액션 17개는 후속 plan으로 분리.
+
+Plan: `docs/plans/2026-05-22_v3k_cli_ai_controller_promotion_plan.md`
+Execution log: `docs/update_log/2026-05-22_v3k_cli_ai_controller_promotion_execution.md`
+
+Verification:
+
+- `python -m py_compile cli/ai_controller.py`: OK
+- `python -m py_compile cli/subcommands.py`: OK
+- `python -m py_compile stom_backtest.py`: OK
+- `python stom_backtest.py ai-controller --help`: 9 액션 모두 노출 확인
+- `python stom_backtest.py ai-controller list-strategies --format json`: PASS (`{"status":"ok","strategies":{"stockbuy":[...]}}`)
+- `python stom_backtest.py ai-controller system-info --format json`: PASS (cpu_count=64, memory=254GB, recommended_engines=8)
+- `python stom_backtest.py setting list --format text`: PASS (기존 동작 보존, 271 keys)
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS (Kiwoom/runtime + flags default-OFF + forbidden + LS)
+- `python scripts/verify_nonrelease_sync.py`: PASS
+
+Effect: STOM CLI surface에 `ai-controller` 서브커맨드 9 액션 신규 추가. 기존 11 서브커맨드 동작 무변경 (L9 보존). 트랙 B 진척률 약 60-70% → 70-75% (+5~10%p). 서브커맨드 노출 수 30개+ → 39개+. F6 산식은 본 commit 영향 없음 (트랙 B는 V3K 8 분야 외 별도 트랙).
+
+Scope guard:
+
+- 코드 변경 3 파일 (docstring + SUBCOMMANDS + subcommands.py)
+- Kiwoom runtime mutation 0건 (trade/, utility/, Kiwoom_OpenAPI/, receiver/ 무변경)
+- operating `_database/` write 0건
+- `_database_v3k_shadow/` 변경 0건
+- `_v3k_sidecar/` 토글 변경 0건
+- LS direct dependency 0건
+- V3K USER_ACK env 0건
+- feature flag default-ON 0건
+- 기존 서브커맨드 동작 변경 0건
+
+Preservation invariant: L1/L7/L9 + LH1-LH5 모두 보존 (LH1 verify_1a로 강제 검증)
+
+Directive: ai-controller P0 9 액션 노출 완료. 다음 후속 작업: P1 액션 10건(sweep / optimize / walk-forward / discover-* / analyze-results / analyze-results-ml / generate-conditions / create-strategy-from-analysis / get-discovery-history / compare) + P2 액션 8건(auto-discover-* / research-strategy-once 등)은 별도 plan으로 분리. 트랙 D (운영 매매)는 사용자 명시 결정 시점까지 보류 유지.

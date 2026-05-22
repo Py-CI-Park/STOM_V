@@ -43,6 +43,7 @@ SUBCOMMANDS = (
     'formula', 'strategy', 'discovery',
     'optimize', 'sweep', 'wfo', 'tune', 'db',
     'setting', 'report', 'runtime-preflight',
+    'ai-controller',
 )
 
 
