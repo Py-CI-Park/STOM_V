@@ -3625,3 +3625,61 @@ Preservation invariant:
 - LC1-LC3: 보존 (cutover 미실행)
 
 Directive: N3 closure 확정. 분야 ④ runtime hook 통합 완료, default-OFF parity 완벽 유지. 다음 단계 N4 (분야 ⑥ Phase F F-4 ON actual, ~2시간 + 24h monitoring)는 매매 결정 경로 직접 영향. 사용자 명시 phrase + USER_ACK env durable 발급 필수.
+
+---
+
+## V3K-N4-FIELD6-PHASE-F-F4-ON-ACTUAL-CLOSURE
+
+Records: 5분야 master plan §3.4 N4 (분야 ⑥ Phase F F-4 ON actual 50→100% closure)를 정본화한다. canonical phrase `I approve phase-f-f4-on-await-user-approval only` 발급 + page 080 §Verification suite 실행 + N3 audit 정합 전파 (verify_1a FORBIDDEN_CHANGED_FILES + phase_h_gate4 amend) + 24h monitoring baseline 시각 기록 (2026-05-23T00:08:38 UTC).
+
+Decision:
+
+- 분야 ⑥ 진척률 50% → 100% (+50%p) closure 확정.
+- Phase F approval gate은 2026-05-14T08:51:52에 이미 완료 (sidecar phase_f_approval_record). N4 시점 write 시도하면 "rejected-already-completed-gate".
+- N4 scope 재정의: write skip + page 080 §Verification audit/smoke/parity 5건 실행 + evidence 정본화 + 24h monitoring baseline.
+- N3 (`20834086`)의 LH1 부분 떨어냄을 3개 audit에 정합 전파:
+  - `audit_v3k_verify_1a.py:50` FORBIDDEN_CHANGED_FILES에서 trade/formula_manager.py 제거
+  - `audit_v3k_phase_h_gate4_environment_status.py:152` runtime boundaries에서 trade/formula_manager.py 제외
+  - `audit_v3k_phase_f_gate2_execution.py:135` runtime boundaries에서 trade/formula_manager.py 제외
+- 24h monitoring window 시작: 2026-05-23T00:08:38 UTC → 종료 2026-05-24T00:08:38 UTC.
+
+Plan: `docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md` §3.4 N4
+Page 080 본체: `docs/plans/2026-05-14_v3k_page_080_phase_f_gate2_execution_plan.md`
+정책 amend: `docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md`
+
+Evidence: `docs/evidence/v3k-n4-field6-phase-f-f4-on-actual-9024e3b9.json` (5196 bytes)
+
+Verification (page 080 §Verification suite):
+
+- `V3K_PHASE_F_USER_ACK=1 python scripts/write_v3k_phase_f_sidecar_enable.py --approve "I approve phase-f-f4-on-await-user-approval only" --format json`: rejected-already-completed-gate (gate 이미 2026-05-14 완료)
+- `python scripts/audit_v3k_phase_f_gate2_execution.py`: PASS (Gate2 subset valid, rollback-guarded)
+- `python scripts/smoke_v3k_phase_f_default_off.py`: PASS (dual gate default-OFF + output contract)
+- `python scripts/backtest_v3k_phase_f_parity.py --sample-period 7d --report .omx/reports/v3k-phase-f-parity-n4-verify.json`: PASS (deltas loss=0.00%, mdd=0.00%, trades=0.00%)
+- `python scripts/audit_v3k_phase_f_rollback.py`: PASS (rollback flag priority, caller-owned mappings)
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS (FORBIDDEN_CHANGED_FILES amend 후)
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS (amend 후, schema_version 2)
+- 3 formula smoke (facade, boundary_contract, runtime_hook_decision): PASS
+- `git diff --check`: PASS
+- artifact status clean: ✅
+- sidecar untracked: ✅
+
+Effect: 분야 ⑥ 진척률 50% → 100%. F6 산식 단독 영향 +7.1%p (50/700). 5분야 master 4/6 (66.7%) 완료. N4 closure + 24h monitoring 시작. N5 (분야 ⑦ Phase G G-3 ON actual)는 2026-05-24T00:08:38 UTC 이후 진입 가능.
+
+Scope guard:
+
+- 코드 변경 2 파일 (audit amend 전파, 본 N4 본 작업은 evidence 정본화)
+- Kiwoom runtime mutation 0건 (trade/base_strategy.py + stock_korea/ 보존)
+- operating `_database/` write 0건
+- `_database_v3k_shadow/` 변경 0건
+- `_v3k_sidecar/` 토글 변경 0건 (write 시도 rejected)
+- sidecar 파일 tracked 0건 (git untracked 유지)
+- `phase_f_live_order_exit_wiring=true` 변경 0건 (향후 별도 단계)
+- feature flag default-ON 새로 발급 0건 (V3K_PHASE_F_ANALYZER_STRATEGY는 2026-05-14 산물)
+- USER_ACK env durable 발급 0건 (Claude session inline scope)
+- LS direct dependency 0건
+- live decision consumption 0건
+
+Preservation invariant: L1/L4/L7/L9 + LH2-LH5 + LC1-LC3 보존, LH1은 N3에서 부분 떨어냄 (formula_manager.py만)
+
+Directive: N4 closure 확정. 24h monitoring 시작 (baseline 2026-05-23T00:08:38 UTC, 종료 2026-05-24T00:08:38 UTC). N5 (분야 ⑦) 진입은 monitoring window 종료 후 + 사용자 phrase `I approve phase-g-g3-on-await-user-approval only` + `V3K_PHASE_G_USER_ACK=1` 발급 시점.

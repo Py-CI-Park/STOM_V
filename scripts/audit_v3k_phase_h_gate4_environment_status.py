@@ -149,7 +149,10 @@ def _assert_runtime_boundaries() -> None:
     tracked = _run_git("ls-files", V3K_GUI_SIDECAR_FILE)
     if tracked:
         raise AssertionError(f"runtime sidecar artifact must remain untracked: {tracked}")
-    for rel_path in ("trade/base_strategy.py", "trade/formula_manager.py"):
+    # N3 amend (2026-05-22): trade/formula_manager.py V3K hook 통합 허용.
+    # plan: docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.3 N3
+    # trade/base_strategy.py는 여전히 V3K wiring 차단.
+    for rel_path in ("trade/base_strategy.py",):
         text = (ROOT / rel_path).read_text(encoding="utf-8", errors="replace")
         if "V3K" in text or "v3k_" in text.lower():
             raise AssertionError(

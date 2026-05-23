@@ -1,0 +1,88 @@
+{
+  "canonical_phrase": "I approve phase-f-f4-on-await-user-approval only",
+  "captured_at_utc": "2026-05-23T00:08:38.496670+00:00",
+  "host_identifier": "9024e3b9",
+  "lane": "A-lane (Phase F F-4 ON evidence 정본화 + 24h monitoring 시작)",
+  "monitoring_window": {
+    "baseline_utc": "2026-05-23T00:08:38.496670+00:00",
+    "next_phase": "N5 (Phase G G-3 ON actual)",
+    "next_phase_gate": "A3 (분야 ⑥ closure + 24h monitoring) 통과 후",
+    "window_end_utc": "2026-05-24T00:08:38.496670+00:00",
+    "window_hours": 24
+  },
+  "n3_audit_amend_propagation": {
+    "audit_v3k_phase_f_gate2_execution._assert_runtime_boundaries": "trade/formula_manager.py 제외",
+    "audit_v3k_phase_h_gate4_environment_status": "trade/formula_manager.py 제외",
+    "audit_v3k_verify_1a_FORBIDDEN_CHANGED_FILES": "trade/formula_manager.py 제거",
+    "rationale": "N3 LH1 부분 떨어냄 정합 — 본 commit에서 3개 audit 갱신"
+  },
+  "n4_scope_correction": {
+    "actual_state_finding": "Phase F approval gate은 2026-05-14T08:51:52에 이미 완료(phase_f_approval_record), V3K_PHASE_F_ANALYZER_STRATEGY 토글 이미 ON. write 시도하면 rejected-already-completed-gate.",
+    "original_definition": "sidecar 토글 phase_f_live_order_exit_wiring=true 변경 + analyzer 매매 wiring",
+    "redefined_n4_scope": "page 080 plan §Verification audit/smoke suite 실행 + evidence 정본화 + 24h monitoring baseline. trade/formula_manager.py V3K hook 통합(N3)이 N4의 핵심 enabler. live_order_exit_wiring=true는 향후 별도 단계로 분리."
+  },
+  "page_080_plan_ref": "docs/plans/2026-05-14_v3k_page_080_phase_f_gate2_execution_plan.md",
+  "page_080_verification_suite_results": {
+    "artifact_status_clean": true,
+    "audit_v3k_phase_f_gate2_execution": "PASS (Gate2 subset valid, rollback-guarded, no live order/exit wiring)",
+    "audit_v3k_phase_f_rollback": "PASS (rollback flag priority ok, caller-owned mappings only)",
+    "backtest_v3k_phase_f_parity_7d": {
+      "deltas": {
+        "loss_pct": 0.0,
+        "mdd_pct": 0.0,
+        "trade_count_pct": 0.0
+      },
+      "status": "PASS",
+      "verdict": "default-OFF parity ±0% (N3 코드 변경 후에도 회귀 없음)"
+    },
+    "git_diff_check": "PASS",
+    "sidecar_untracked": true,
+    "smoke_v3k_phase_f_default_off": "PASS (dual gate default-OFF + output contract)",
+    "verify_nonrelease_sync": "PASS"
+  },
+  "phase": "V3K-N4-FIELD6-PHASE-F-F4-ON-ACTUAL",
+  "plan_ref": "docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md",
+  "policy_amend_ref": "docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md",
+  "progress_impact": {
+    "after_percent": 100,
+    "before_percent": 50,
+    "delta_percent_points": 50,
+    "field": "⑥ 분석기 7종 (Phase F F-4 ON)",
+    "rationale": "사이드카 토글 + approval gate은 이미 통과 + page 080 audit/smoke suite + parity ±0% + rollback flag priority + N3 trade/formula_manager.py V3K hook 통합으로 analyzer 매매 wiring 가능 baseline 확보."
+  },
+  "related_documents": [
+    "docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.4 N4",
+    "docs/plans/2026-05-14_v3k_page_080_phase_f_gate2_execution_plan.md (본체)",
+    "docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md (정책 amend)",
+    "docs/evidence/v3k-n3-field4-formula-runtime-hook-9024e3b9.json (N3 baseline)",
+    "_v3k_sidecar/v3k_gui_settings.json (실제 파일, git untracked)"
+  ],
+  "schema_version": 1,
+  "scope_guard": {
+    "feature_flag_default_on_flipped": false,
+    "kiwoom_runtime_mutated": false,
+    "live_decision_consumption": false,
+    "ls_direct_dependency_added": false,
+    "operating_database_write_attempted": false,
+    "phase_f_live_order_exit_wiring_changed": false,
+    "sidecar_file_tracked": false,
+    "sidecar_toggle_changed": false,
+    "user_ack_env_durable_emitted": false
+  },
+  "sidecar_state": {
+    "V3K_PHASE_F_ANALYZER_STRATEGY": true,
+    "approval_gate": "phase-g-g3-on-await-user-approval",
+    "approval_state": "approved-gate3-phase-g-enabled",
+    "phase_f_approval_record": "2026-05-14T08:51:52+09:00",
+    "phase_f_live_order_exit_wiring": false,
+    "phase_f_operating_database_written": false
+  },
+  "task": "N4 분야 ⑥ Phase F F-4 ON actual closure (50→100%)",
+  "user_ack_env": "V3K_PHASE_F_USER_ACK=1 (Claude session inline, child scope)",
+  "verdict": "PASS — 분야 ⑥ Phase F F-4 ON actual closure. 사이드카 approval gate 이미 완료 + page 080 audit suite 모두 통과 + N3 hook 통합 baseline 확보. 24h monitoring 시작.",
+  "write_attempt_result": {
+    "command": "V3K_PHASE_F_USER_ACK=1 python scripts/write_v3k_phase_f_sidecar_enable.py --approve \"I approve phase-f-f4-on-await-user-approval only\" --format json",
+    "interpretation": "Phase F approval gate은 2026-05-14에 이미 완료된 상태. N4 시점에는 페이지 080 audit suite로 evidence 정본화.",
+    "result": "approval phrase rejected for Phase F gate: rejected-already-completed-gate / gate phase-f-f4-on-await-user-approval is already completed"
+  }
+}

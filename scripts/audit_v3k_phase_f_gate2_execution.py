@@ -126,13 +126,16 @@ def _assert_phase_f_candidate_builds(settings: dict[str, bool]) -> None:
 
 
 def _assert_runtime_boundaries() -> None:
+    # N3 amend (2026-05-22): trade/formula_manager.py는 V3KFormulaGlobalFacade hook 통합 허용.
+    # plan: docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.3 N3
+    # trade/base_strategy.py는 여전히 V3K wiring 차단 유지.
     status = _run_git("status", "--short", "--", *FORBIDDEN_STATUS_PATHS)
     if status:
         raise AssertionError(f"forbidden runtime/DB artifact status is not clean:\n{status}")
     tracked = _run_git("ls-files", V3K_GUI_SIDECAR_FILE)
     if tracked:
         raise AssertionError(f"runtime sidecar artifact must remain untracked: {tracked}")
-    for rel_path in ("trade/base_strategy.py", "trade/formula_manager.py"):
+    for rel_path in ("trade/base_strategy.py",):
         text = (ROOT / rel_path).read_text(encoding="utf-8", errors="replace")
         if "V3K" in text or "v3k_" in text.lower():
             raise AssertionError(f"Phase F gate2 must not wire live runtime file: {rel_path}")

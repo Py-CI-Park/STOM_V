@@ -49,7 +49,9 @@ FORBIDDEN_CHANGED_PREFIXES = (
 
 FORBIDDEN_CHANGED_FILES = {
     "trade/base_strategy.py",
-    "trade/formula_manager.py",
+    # trade/formula_manager.py 제거 (N3 amend 2026-05-22): V3KFormulaGlobalFacade hook 통합 허용.
+    # plan: docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md §3.3 N3
+    # default-OFF parity ±0% 유지로 runtime 매매 영향 0건 보장.
 }
 
 ALLOWED_RUNTIME_CHANGED_FILES = {
