@@ -1,0 +1,108 @@
+{
+  "evidence_id": "v3k-a5prime-partial-closure-9024e3b9",
+  "host_identifier": "9024e3b9",
+  "created_utc": "2026-05-23T01:15:00Z",
+  "lane": "preparation-first P-lane (declaration only)",
+  "scope": "5분야 master plan §3.6 N6 — A5' 부분 closure 선언",
+  "baseline_head": "2fed47c9",
+  "commit_identity": "N6 A5' 부분 closure를 정본화한다 (F7 partial declaration)",
+  "declaration_kind": "partial_closure_declaration",
+  "code_change": "0 파일 (declaration only, F6 산식 변화 없음)",
+  "f7_partial_closure_conditions": {
+    "field_2_backtest_evidence": {"status": "closed", "commit": "baed54f9", "progress_percent": 100},
+    "field_3_sidecar_toggle": {"status": "closed", "commit": "e566044c", "progress_percent": 100},
+    "field_4_formula_runtime_hook": {"status": "closed", "commit": "20834086", "progress_percent": 100},
+    "field_5_page1_h2_dryrun": {"status": "closed", "commit": "8e08e3f1", "progress_percent": 100},
+    "field_6_analyzer_f4_on": {"status": "closed", "commit": "059f2648", "progress_percent": 100},
+    "field_7_microstructure_g3_on": {"status": "closed", "commit": "2fed47c9", "progress_percent": 100},
+    "field_8_ai_controller_p0": {"status": "closed", "commit": "df9e08b1", "progress_percent": 100},
+    "field_1_f1_cutover": {"status": "permanent_hold", "commit": null, "progress_percent": 0, "reason": "운영 _database/ 직접 변경 차단 (사용자 명시 §3.1 F1 cutover 제외)"}
+  },
+  "field_count_summary": {
+    "fields_at_100_percent": 7,
+    "fields_at_50_percent_hold": 0,
+    "fields_at_0_percent_hold": 1,
+    "total_fields": 8,
+    "f1_excluded_completion_ratio": "7/7 (100%)"
+  },
+  "f6_formula": {
+    "formula_definition": "(분야1 + 분야2 + 분야3 + 분야4 + 분야5 + 분야6 + 분야7) / 700",
+    "calculation": "(50 + 100 + 100 + 100 + 100 + 100 + 100) / 700",
+    "numerator": 650,
+    "denominator": 700,
+    "result_percent": 92.9,
+    "delta_from_n5": "0.0%p (declaration only, 산식 동일)"
+  },
+  "field_1_permanent_hold_rationale": [
+    "분야 ① F1 cutover는 운영 _database/ 직접 변경을 요구함",
+    "사용자가 5분야 master plan에서 '① 제외' 명시",
+    "본 V2.79 wave preparation-first §3 정합 (operating DB write 금지)",
+    "별도 F1 cutover 절차 (gate1~gate6 본격 실행)는 V2.80+ 또는 별도 master plan에서 진행",
+    "현 상태에서 F1 cutover phrase 'I approve f1-actual-db-cutover-await-user-approval only'는 Phase H 완료 의존 차단 상태"
+  ],
+  "a5prime_vs_a5_distinction": {
+    "a5prime_partial": {
+      "scope": "분야 ① 50% 유지, 나머지 7분야 100%",
+      "f6_score": 92.9,
+      "status": "본 N6 commit으로 선언",
+      "production_DB_change": false
+    },
+    "a5_full": {
+      "scope": "분야 ① 100% (F1 cutover 실행 후)",
+      "f6_score": 100.0,
+      "status": "V2.79 wave 범위 외 — 향후 별도 master plan",
+      "production_DB_change": true
+    }
+  },
+  "verification_suite_sanity": {
+    "audit_v3k_verify_1a.py": "PASS (N5 직후 상태 유지)",
+    "audit_v3k_phase_h_gate4_environment_status.py": "PASS (unblocked, schema 2)",
+    "audit_v3k_phase_f_gate2_execution.py": "PASS",
+    "audit_v3k_phase_g_gate3_execution.py": "PASS",
+    "verify_nonrelease_sync.py": "PASS"
+  },
+  "user_explicit_goal_status": {
+    "user_request_verbatim": "페이지 8개에서 1페이지 제외하고 모두 100%까지 될때까지 개발",
+    "achievement_status": "DELIVERED",
+    "achievement_date": "2026-05-23 KST",
+    "achievement_commit_chain": [
+      "baed54f9 N1 ②",
+      "e566044c N2 ③",
+      "20834086 N3 ④",
+      "8e08e3f1 페이지 1 A-lane",
+      "df9e08b1 ⑧ ai-controller",
+      "059f2648 N4 ⑥",
+      "2fed47c9 N5 ⑦",
+      "(본 N6 commit) A5' declaration"
+    ],
+    "total_elapsed_today_hours": 4.5
+  },
+  "scope_guard": {
+    "kiwoom_runtime_mutation": 0,
+    "operating_database_write": 0,
+    "sidecar_toggle_change": 0,
+    "sidecar_tracked": false,
+    "live_order_exit_wiring_change": 0,
+    "feature_flag_default_on_new": 0,
+    "user_ack_env_durable": 0,
+    "ls_direct_dependency": 0,
+    "live_decision_consumption": 0,
+    "f1_cutover_executed": false,
+    "f1_cutover_phrase_attempted": false
+  },
+  "preservation_invariants": {
+    "L1": "preserved",
+    "L4": "preserved",
+    "L7": "preserved",
+    "L9": "preserved",
+    "LH1": "N3에서 부분 떨어냄 (formula_manager.py만), N4/N5에서 4개 audit 정합 전파",
+    "LH2_LH5": "preserved",
+    "LC1_LC3": "preserved (cutover 미실행 — F1 영구 보류 일관성)"
+  },
+  "next_phase": {
+    "name": "5분야 master plan 6/6 (100%) — V2.79 wave 내 종결",
+    "trigger": "본 N6 commit 완료 직후 master plan 자체가 100% closure",
+    "future_scope": "V2.80+ 또는 별도 master plan에서 F1 cutover (A5 full) 검토",
+    "current_branch_status": "STOM_Version_2U_C는 V2.79 wave A5' partial closure 상태"
+  }
+}

@@ -3741,3 +3741,68 @@ Scope guard:
 Preservation invariant: L1/L4/L7/L9 + LH2-LH5 + LC1-LC3 보존, LH1은 N3에서 부분 떨어냄 (formula_manager.py만), N4/N5에서 4개 audit 모두 정합 전파 (verify_1a + phase_h_gate4 + phase_f_gate2 + phase_g_gate3).
 
 Directive: N5 closure 확정. 사용자 명시 목표 ("페이지 8개에서 1페이지 제외하고 모두 100%") 달성. 다음 인계 N6 (A5' 부분 closure)는 즉시 진입 가능, F7 declaration만이며 F6 산식 변화 없음 (92.9% 유지). 분야 ① F1 cutover는 영구 보류 상태 유지 (운영 DB 변경 차단).
+
+---
+
+## V3K-A5PRIME-PARTIAL-CLOSURE
+
+Records: 5분야 master plan §3.6 N6 (A5' 부분 closure 선언)을 정본화한다. 분야 ① F1 cutover 영구 보류 + 분야 ② ③ ④ ⑤ ⑥ ⑦ ⑧ 100% closure 선언. declaration only이며 코드/sidecar/database 변경 0건.
+
+Decision:
+
+- A5' partial closure 선언 확정. 분야 ① 50% 유지 (운영 `_database/` 직접 변경 차단으로 영구 보류).
+- 분야 ② ③ ④ ⑤ ⑥ ⑦ ⑧ 모두 100% closure 달성 — 7개 분야 모두 V2.79 wave 내 완료.
+- F6 산식: (50 + 100 + 100 + 100 + 100 + 100 + 100) / 700 = **92.9%** (N5 commit과 동일, declaration이므로 변화 없음).
+- A5' partial vs A5 full 구분 명시: A5' partial은 본 V2.79 wave 범위 (분야 ① 영구 보류), A5 full은 향후 V2.80+ 또는 별도 master plan 범위 (F1 cutover 실행, F6 100%).
+- 5분야 master plan **6/6 (100%) 종결**.
+
+Plan: `docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md` §3.6 N6
+페이지 7 본체: `docs/plans/2026-05-14_v3k_page_083_gate5_gate6_review_only_plan.md`
+정책 amend: `docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md`
+
+Evidence: `docs/evidence/v3k-a5prime-partial-closure-9024e3b9.json`
+
+Verification (N5 직후 상태 sanity):
+
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS (N4/N5 amend 유지)
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS (unblocked, schema 2)
+- `python scripts/audit_v3k_phase_f_gate2_execution.py`: PASS (N4 직후 상태)
+- `python scripts/audit_v3k_phase_g_gate3_execution.py`: PASS (N5 직후 상태, 3/6 gates)
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `git diff --check`: PASS
+- artifact status clean: ✅
+- sidecar untracked: ✅
+
+Effect: F6 산식 92.9% 정본화 (N5 commit과 동일, declaration이므로 변화 없음). 5분야 master plan 6/6 (100%) 종결. **사용자 명시 목표 "페이지 8개에서 1페이지 제외하고 모두 100%까지" 달성** — ① 제외 7/7 분야 100%. V2.79 wave 내 STOM_Version_2U_C는 **A5' partial closure 상태**로 안정화.
+
+commit chain (오늘 2026-05-23, 총 7건):
+
+- 8e08e3f1 페이지 1 A-lane closure (분야 ⑤)
+- df9e08b1 ⑧ ai-controller 9 P0 promotion (분야 ⑧)
+- baed54f9 N1 ② Backtest evidence
+- e566044c N2 ③ Sidecar toggle
+- 20834086 N3 ④ Formula runtime hook
+- 059f2648 N4 ⑥ Phase F F-4 ON
+- 2fed47c9 N5 ⑦ Phase G G-3 ON
+- (본 N6 commit) A5' partial declaration
+
+총 누적 소요: 약 4.5시간 (사용자 명시 목표 달성까지).
+
+Scope guard:
+
+- 코드 변경 0 파일 (declaration only)
+- Kiwoom runtime mutation 0건
+- operating `_database/` write 0건
+- `_v3k_sidecar/` 토글 변경 0건
+- sidecar 파일 tracked 0건 (git untracked 유지)
+- `phase_X_live_order_exit_wiring=true` 변경 0건
+- feature flag default-ON 새로 발급 0건
+- USER_ACK env durable 발급 0건
+- LS direct dependency 0건
+- live decision consumption 0건
+- F1 cutover 실행 False (영구 보류)
+- F1 cutover phrase 시도 False
+
+Preservation invariant: L1/L4/L7/L9 + LH2-LH5 + LC1-LC3 보존, LH1은 N3에서 부분 떨어냄 (formula_manager.py만), N4/N5에서 4개 audit 모두 정합 전파 (verify_1a + phase_h_gate4 + phase_f_gate2 + phase_g_gate3).
+
+Directive: A5' partial closure 확정 — V2.79 wave 종결. **5분야 master plan 6/6 (100%) 완료**. 사용자 명시 목표 달성. 향후 V2.80+ 또는 별도 master plan에서 (1) F1 cutover (A5 full closure, F6 92.9% → 100%), (2) wiring activation (`phase_F/G_live_order_exit_wiring=true`), (3) 본격 monitoring window 검토. 본 wave 동안 추가 작업 시에는 새로운 plan/master plan 발급으로 처리.
