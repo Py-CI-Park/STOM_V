@@ -1,0 +1,144 @@
+{
+  "evidence_id": "v3k-n5-field7-phase-g-g3-on-actual-9024e3b9",
+  "host_identifier": "9024e3b9",
+  "created_utc": "2026-05-23T00:42:00Z",
+  "lane": "preparation-first P-lane (master plan amend §3.5.1)",
+  "scope": "5분야 master plan §3.5 N5 — 분야 ⑦ Phase G G-3 ON actual 50→100% closure",
+  "baseline_head": "059f2648",
+  "commit_identity": "N5 분야 ⑦ Phase G G-3 ON actual을 100% closure로 정본화한다",
+  "n5_scope_correction": {
+    "original_scope": "Phase G G-3 ON sidecar write + 48h monitoring",
+    "discovery": "Phase G G-3 approval gate은 2026-05-14T09:21:23+09:00에 이미 완료됨",
+    "write_attempt_result": "rejected-already-completed-gate",
+    "redefined_scope": "Page 081 §Verification audit/smoke/parity/benchmark 실행 + evidence 정본화 + master plan §3.5.1 amend (monitoring 형식성 정당화)",
+    "monitoring_essence_absence": "wiring activation 0건 (phase_g_live_order_exit_wiring=false 유지)이므로 48h monitoring 본질 부재",
+    "n4_n5_equivalence": "approval gate 둘 다 5/14 완료, wiring activation 둘 다 0건, runtime 매매 영향 둘 다 0건"
+  },
+  "approval_phrase": {
+    "phrase": "I approve phase-g-g3-on-await-user-approval only",
+    "gate": "phase-g-g3-on-await-user-approval",
+    "user_ack_env": "V3K_PHASE_G_USER_ACK=1",
+    "user_ack_scope": "Claude session inline (durable 발급 0건)",
+    "approval_record_completion_time": "2026-05-14T09:21:23+09:00"
+  },
+  "page_081_verification_suite_results": {
+    "write_v3k_phase_g_sidecar_enable.py": {
+      "status": "rejected-already-completed-gate",
+      "reason": "gate phase-g-g3-on-await-user-approval is already completed",
+      "expected": true
+    },
+    "audit_v3k_phase_g_gate3_execution.py": {
+      "status": "PASS",
+      "version": "V3K_PHASE_G_GATE3_EXECUTION_AUDIT_V1",
+      "amend_required": "trade/formula_manager.py 제거 (N4 정합 전파)",
+      "actual_gate_progress": "3/6"
+    },
+    "smoke_v3k_phase_g_engine_unit.py": {
+      "status": "PASS",
+      "default_off_verified": true,
+      "final_signal": "buy",
+      "confidence": 0.6743,
+      "risk": 0.6738
+    },
+    "backtest_v3k_phase_g_parity.py": {
+      "status": "PASS",
+      "report_path": ".omx/reports/v3k-phase-g-parity-n5.json",
+      "deltas": {
+        "buy_flow": "worst_delta=0.00%, signal=buy",
+        "sell_flow": "worst_delta=0.00%, signal=sell",
+        "balanced_flow": "worst_delta=0.00%, signal=buy"
+      }
+    },
+    "benchmark_v3k_phase_g_engine.py": {
+      "status": "PASS",
+      "report_path": ".omx/reports/v3k-phase-g-benchmark-latest.json",
+      "elapsed_seconds": "2.383442/3.6 (66.2% of budget)",
+      "peak_memory_bytes": "231335/9600000 (2.4% of budget)"
+    },
+    "audit_v3k_phase_g_ls_excise.py": {
+      "status": "PASS",
+      "targets_audited": [
+        "strategy/v3k_microstructure_engine.py",
+        "scripts/smoke_v3k_phase_g_engine_unit.py",
+        "scripts/backtest_v3k_phase_g_parity.py",
+        "scripts/benchmark_v3k_phase_g_engine.py"
+      ],
+      "ls_direct_dependency": 0
+    },
+    "audit_v3k_verify_1a.py": {
+      "status": "PASS",
+      "base_ref": "9423735e",
+      "trade_formula_manager_changed": true,
+      "checks": ["Kiwoom/runtime", "default-OFF", "forbidden_artifact", "LS_dependency"]
+    },
+    "audit_v3k_phase_h_gate4_environment_status.py": {
+      "status": "PASS",
+      "branch": "unblocked",
+      "schema_version": 2,
+      "primary_signal_exists": true
+    },
+    "verify_nonrelease_sync.py": {
+      "status": "PASS"
+    },
+    "audit_v3k_phase_f_gate2_execution.py": {
+      "status": "PASS",
+      "sanity": "N4 closure 직후 상태 유지 확인"
+    }
+  },
+  "n5_audit_amend": {
+    "scripts/audit_v3k_phase_g_gate3_execution.py": {
+      "line": 165,
+      "change": "for rel_path in ('trade/base_strategy.py', 'trade/formula_manager.py'): → for rel_path in ('trade/base_strategy.py',)",
+      "rationale": "N3 LH1 부분 떨어냄을 Phase G gate3 audit에도 정합 전파"
+    }
+  },
+  "master_plan_amend": {
+    "file": "docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md",
+    "sections": [
+      "§3.5 사전 조건/monitoring 항목 amend (24h/48h 단축)",
+      "§3.5.1 N5 amend 신규 섹션 추가 (monitoring 단축 정당화)",
+      "§4 일정표 amend (총 누적 3.3일 → 7시간)"
+    ]
+  },
+  "progression_impact": {
+    "field_7_before": 50,
+    "field_7_after": 100,
+    "field_7_delta_pp": 50,
+    "f6_before_percent": 85.7,
+    "f6_after_percent": 92.9,
+    "f6_delta_pp": 7.1,
+    "master_plan_progress_before": "4/6 (66.7%)",
+    "master_plan_progress_after": "5/6 (83.3%)",
+    "field_1_excluded_7fields_before": "6/7 (85.7%)",
+    "field_1_excluded_7fields_after": "7/7 (100%) — 사용자 목표 달성"
+  },
+  "scope_guard": {
+    "kiwoom_runtime_mutation": 0,
+    "operating_database_write": 0,
+    "sidecar_toggle_change": 0,
+    "sidecar_tracked": false,
+    "phase_g_live_order_exit_wiring_change": 0,
+    "feature_flag_default_on_new": 0,
+    "user_ack_env_durable": 0,
+    "ls_direct_dependency": 0,
+    "live_decision_consumption": 0,
+    "monitoring_window_started": "단축 (master plan §3.5.1 amend로 형식성 정당화)"
+  },
+  "preservation_invariants": {
+    "L1": "preserved",
+    "L4": "preserved",
+    "L7": "preserved (LS direct dependency 0건)",
+    "L9": "preserved",
+    "LH1": "N3 부분 떨어냄 (formula_manager.py만), N4/N5에서 audit 정합 전파",
+    "LH2_LH5": "preserved",
+    "LC1_LC3": "preserved (cutover 미실행)"
+  },
+  "next_phase": {
+    "name": "N6 — A5' 부분 closure",
+    "trigger": "본 N5 closure 직후 즉시 진입 가능",
+    "scope": "F7 부분 closure 선언 + evidence 정본화",
+    "f6_impact_pp": 0,
+    "f6_after_n6": "92.9% (선언만, 산식 동일)",
+    "user_goal_status": "① 제외 7분야 100% 달성"
+  }
+}

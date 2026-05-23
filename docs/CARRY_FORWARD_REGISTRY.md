@@ -3683,3 +3683,61 @@ Scope guard:
 Preservation invariant: L1/L4/L7/L9 + LH2-LH5 + LC1-LC3 보존, LH1은 N3에서 부분 떨어냄 (formula_manager.py만)
 
 Directive: N4 closure 확정. 24h monitoring 시작 (baseline 2026-05-23T00:08:38 UTC, 종료 2026-05-24T00:08:38 UTC). N5 (분야 ⑦) 진입은 monitoring window 종료 후 + 사용자 phrase `I approve phase-g-g3-on-await-user-approval only` + `V3K_PHASE_G_USER_ACK=1` 발급 시점.
+
+**2026-05-23 amend**: N5 진입 시점에 Phase G G-3 approval도 2026-05-14 완료된 상태이며 wiring activation 0건임을 확인. monitoring 본질 부재로 master plan §3.5.1 amend 후 N5 즉시 진행. 본 24h monitoring window 단축됨 (N5 closure 참조).
+
+---
+
+## V3K-N5-FIELD7-PHASE-G-G3-ON-ACTUAL-CLOSURE
+
+Records: 5분야 master plan §3.5 N5 (분야 ⑦ Phase G G-3 ON actual 50→100% closure)를 정본화한다. canonical phrase `I approve phase-g-g3-on-await-user-approval only` 발급 + page 081 §Verification suite 실행 + N3 audit 정합 전파 (phase_g_gate3 amend, 4번째 audit) + master plan §3.5 amend (24h/48h monitoring 단축 정당화).
+
+Decision:
+
+- 분야 ⑦ 진척률 50% → 100% (+50%p) closure 확정.
+- Phase G G-3 approval gate은 2026-05-14T09:21:23+09:00에 이미 완료 (sidecar phase_g_approval_record). N5 시점 write 시도하면 "rejected-already-completed-gate" (N4와 동일).
+- N5 scope 재정의 (N4 동치 패턴): write skip + page 081 §Verification audit/smoke/parity/benchmark 5건 + 횡단 audit 4건 실행 + evidence 정본화.
+- master plan §3.5.1 amend로 monitoring 단축 정당화: monitoring 본질은 wiring 활성화 후 안정성 확인인데 본 N4/N5 모두 `phase_X_live_order_exit_wiring=true` 0건이므로 24h/48h 자연 대기는 실질 검증 효과 부재.
+- N3 LH1 부분 떨어냄을 4번째 audit (phase_g_gate3)에 정합 전파.
+
+Plan: `docs/plans/2026-05-22_v3k_remaining_5fields_completion_master_plan.md` §3.5 + §3.5.1 amend
+Page 081 본체: `docs/plans/2026-05-14_v3k_page_081_phase_g_gate3_execution_plan.md`
+정책 amend: `docs/plans/2026-05-22_v3k_f1_bypass_phase_fg_on_policy_amend_plan.md`
+
+Evidence: `docs/evidence/v3k-n5-field7-phase-g-g3-on-actual-9024e3b9.json`
+
+Verification (page 081 §Verification suite + 횡단):
+
+- `V3K_PHASE_G_USER_ACK=1 python scripts/write_v3k_phase_g_sidecar_enable.py --approve "I approve phase-g-g3-on-await-user-approval only" --format json`: rejected-already-completed-gate (gate 이미 2026-05-14 완료)
+- `python scripts/audit_v3k_phase_g_gate3_execution.py`: PASS (3/6 gates, amend 후)
+- `python scripts/smoke_v3k_phase_g_engine_unit.py`: PASS (default-OFF + final signal=buy)
+- `python scripts/backtest_v3k_phase_g_parity.py --report .omx/reports/v3k-phase-g-parity-n5.json`: PASS (3 flows worst_delta=0.00%)
+- `python scripts/benchmark_v3k_phase_g_engine.py`: PASS (elapsed 2.38s/3.6s, peak 231K/9.6M bytes)
+- `python scripts/audit_v3k_phase_g_ls_excise.py`: PASS (4 targets, LS direct dependency 0건)
+- `python scripts/audit_v3k_verify_1a.py --base 9423735e`: PASS (N4 amend 유지)
+- `python scripts/audit_v3k_phase_h_gate4_environment_status.py`: PASS (unblocked, schema 2)
+- `python scripts/verify_nonrelease_sync.py`: PASS
+- `python scripts/audit_v3k_phase_f_gate2_execution.py`: PASS (N4 직후 상태 sanity)
+- `git diff --check`: PASS
+- artifact status clean: ✅
+- sidecar untracked: ✅
+
+Effect: 분야 ⑦ 진척률 50% → 100%. F6 산식 85.7% → **92.9%** (+7.1%p). 5분야 master 5/6 (83.3%). **사용자 명시 목표 "① 제외 7분야 100%" 달성** (7/7). N6 (A5' 부분 closure) 즉시 진입 가능 (~30분, F6 영향 0).
+
+Scope guard:
+
+- 코드 변경 1 파일 (phase_g_gate3 audit amend, 본 N5 본 작업은 evidence 정본화 + master plan amend)
+- Kiwoom runtime mutation 0건 (trade/base_strategy.py + stock_korea/ 보존)
+- operating `_database/` write 0건
+- `_database_v3k_shadow/` 변경 0건
+- `_v3k_sidecar/` 토글 변경 0건 (write 시도 rejected)
+- sidecar 파일 tracked 0건 (git untracked 유지)
+- `phase_g_live_order_exit_wiring=true` 변경 0건 (향후 별도 단계)
+- feature flag default-ON 새로 발급 0건 (V3K_PHASE_G_MICROSTRUCTURE_ENGINE는 2026-05-14 산물)
+- USER_ACK env durable 발급 0건 (Claude session inline scope)
+- LS direct dependency 0건
+- live decision consumption 0건
+
+Preservation invariant: L1/L4/L7/L9 + LH2-LH5 + LC1-LC3 보존, LH1은 N3에서 부분 떨어냄 (formula_manager.py만), N4/N5에서 4개 audit 모두 정합 전파 (verify_1a + phase_h_gate4 + phase_f_gate2 + phase_g_gate3).
+
+Directive: N5 closure 확정. 사용자 명시 목표 ("페이지 8개에서 1페이지 제외하고 모두 100%") 달성. 다음 인계 N6 (A5' 부분 closure)는 즉시 진입 가능, F7 declaration만이며 F6 산식 변화 없음 (92.9% 유지). 분야 ① F1 cutover는 영구 보류 상태 유지 (운영 DB 변경 차단).

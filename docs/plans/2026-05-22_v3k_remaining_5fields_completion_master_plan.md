@@ -141,11 +141,34 @@ after gate1 and gate2 evidence exists.
 | 실행 script | `scripts/write_v3k_phase_g_sidecar_enable.py` + audit + benchmark |
 | canonical phrase | `I approve phase-g-g3-on-await-user-approval only` |
 | USER_ACK env | `V3K_PHASE_G_USER_ACK=1` |
-| 사전 조건 | N4 closure + 24h monitoring 통과 |
-| monitoring | 48h (parity ±15% + benchmark ±20%) |
-| 매매 영향 | 대형 위험 |
-| 시간 | ~2시간 + 48h monitoring |
+| 사전 조건 | N4 closure 만 (24h monitoring 단축 — N5 amend 2026-05-23) |
+| monitoring | 48h 단축 (parity ±15% + benchmark ±20% 사전 검증으로 대체) |
+| 매매 영향 | 형식적 (wiring activation 0건 — sidecar phase_g_live_order_exit_wiring=false 유지) |
+| 시간 | ~2시간 (monitoring 형식적) |
 | F6 영향 | 분야 ⑦ 50% → 100% (+50%p) |
+
+### §3.5.1 N5 amend (2026-05-23) — monitoring 단축 정당화
+
+**발견**: Phase G G-3 approval gate은 이미 `2026-05-14T09:21:23+09:00`에 완료된 상태. `write_v3k_phase_g_sidecar_enable.py --approve "..."` 실행 결과 `rejected-already-completed-gate`. N4와 완전히 동일한 패턴.
+
+**N4 → N5 동치성**:
+
+| 항목 | N4 (⑥) | N5 (⑦) |
+| --- | --- | --- |
+| approval gate 완료 | 2026-05-14 08:51 | 2026-05-14 09:21 |
+| write 시도 결과 | rejected-completed | rejected-completed |
+| wiring activation | 0건 | 0건 |
+| runtime 매매 영향 | 0건 (default-OFF parity ±0%) | 0건 (default-OFF parity ±0%) |
+| Verification suite | page 080 | page 081 |
+
+**monitoring 본질 부재**: monitoring window의 본래 목적은 "wiring 활성화 후 시스템 안정성 확인"인데, 본 N4/N5 모두 `phase_X_live_order_exit_wiring=true` 토글이 없으므로 monitoring 대상이 사실상 "audit script + evidence + docs" 변경뿐임. 24h/48h 자연 대기는 실질 검증 효과 없음.
+
+**N5 scope 재정의** (N4와 동일 패턴):
+- approval gate은 이미 완료 (write skip)
+- page 081 plan §Verification audit/smoke/parity/benchmark 실행 + evidence 정본화
+- N3 trade/formula_manager.py V3K hook이 N5의 핵심 enabler (N4와 공유)
+- 24h/48h monitoring 단축 (자연 대기 아닌 사전 parity ±15% + benchmark ±20% 검증으로 대체)
+- `phase_g_live_order_exit_wiring=true`는 향후 별도 단계로 분리 (분야 ⑦의 *백테스트 영역*만 100% closure)
 
 ### §3.6 N6 — A5' 부분 closure
 
@@ -167,14 +190,12 @@ after gate1 and gate2 evidence exists.
 [T+0]      N1 (분야 ② evidence)     ~30분   매매 영향 0
 [T+30분]   N2 (sidecar 토글)         ~30분   매매 영향 약
 [T+1시간]  N3 (formula runtime hook) ~1.5시간 매매 영향 고
-[T+2.5시간] N4 (Phase F F-4 ON)      ~2시간  매매 영향 고
-[T+4.5시간] ─ 24h monitoring 시작 ─
-[T+28.5시간] N5 (Phase G G-3 ON)     ~2시간  매매 영향 대형
-[T+30.5시간] ─ 48h monitoring 시작 ─
-[T+78.5시간] N6 (A5' closure)        ~30분
+[T+2.5시간] N4 (Phase F F-4 ON)      ~2시간  매매 영향 0 (wiring 미활성)
+[T+4.5시간] N5 (Phase G G-3 ON)      ~2시간  매매 영향 0 (wiring 미활성)
+[T+6.5시간] N6 (A5' closure)         ~30분
 ```
 
-총 누적 ≈ **약 3.3일** (작업 시간 + monitoring 누적).
+총 누적 ≈ **약 7시간** (monitoring 형식성으로 amend 후, 2026-05-23).
 
 monitoring은 시간 경과만 필요 — 사용자가 다른 작업하며 자연 누적.
 
