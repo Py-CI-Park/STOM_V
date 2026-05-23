@@ -156,4 +156,25 @@ This rule does not loosen the 2U rule: `STOM_Version_2U` remains the pyd-to-py i
 - 잔여 의무:
   - backtest.db / code_info.db / setting.db schema 변환 (별도 사이클)
   - 분석 시스템 학습 DB(volume_spike·pattern 등) 폴리시 자동화
+
+### 사이클 3 (2026-05-23): E7 strategy.db V2→V3 조건식 마이그레이션
+
+- 추가 파일 (custom allowlist 등록):
+  - `scripts/v3uc_strategy_migration.py` (~220 lines, scan/migrate + --target/--dry-run/--force)
+  - `tests/v3uc/test_strategy_migration.py` (5 회귀 케이스, mock sqlite)
+- 동작:
+  - V2 컨벤션 `stockbuy/stocksell/stockoptibuy/...` → V3 컨벤션 `stock_buy/stock_sell/stock_optibuy/...` (밑줄 추가)
+  - `--target` 으로 거래소별 prefix 선택 가능 (stock/stock_etf/stock_etn/stock_usa/coin/future 등 9종)
+  - 백업 보유 검증 후에만 migrate (--force 우회 가능)
+- 실 마이그레이션 결과 (2026-05-23, V3U 실 strategy.db):
+  - stockbuy(51) → stock_buy: 51 행 복사
+  - stocksell(35) → stock_sell: 35 행 복사
+  - stockoptibuy(2) → stock_optibuy
+  - stockoptisell(2) → stock_optisell
+  - stockoptivars(5) → stock_optivars
+  - 총 95 rows 복사, 에러 0
+- carry-forward 위험: 없음
+- 잔여 의무:
+  - 다른 거래소(coin/future/stock_etf) 데이터 있을 시 별도 --target 호출
+  - stockoptigavars/stockpassticks/stockvars는 V2/V3에 둘 다 없음 (V3 신규 기능)
   - V3.19+ 흡수 시 E1과 E5 통합 검토

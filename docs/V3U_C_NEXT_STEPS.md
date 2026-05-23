@@ -50,6 +50,13 @@ V3U lane V3U_NEXT_STEPS.md 그룹 E의 V3U_C custom 작업 옵션 (E1~E4) + 3U_C
 - 동작: --scan (read-only PK 매트릭스) / --add-pk (자동 추가, 백업 검증) / --analyze-extra (기타 DB)
 - 운영: 사용자가 update_db_20260418.bat 후 호출 (V3.08+ 호환성 검증)
 
+### E7: strategy.db V2→V3 조건식 마이그레이션 ✅ **사이클 3 완료** (2026-05-23)
+
+- 산출: scripts/v3uc_strategy_migration.py + tests/v3uc/test_strategy_migration.py
+- 동작: V2 `stockbuy/stocksell/...` → V3 `stock_buy/stock_sell/...` (밑줄 추가), 거래소별 target prefix
+- 운영: 사용자가 strategy.db V2 데이터 보유 시 호출 (백테 조건식 사전 사용 가능)
+- 실 실행 결과: 51 매수 + 35 매도 + 2/2/5 옵티 = 총 95 rows V2→V3 복사
+
 ### E6 (신규 후보): T-step extension (T06 pre-flight + T07 notification)
 
 - E1 운영하며 발견되는 패턴을 본 옵션으로 흡수
