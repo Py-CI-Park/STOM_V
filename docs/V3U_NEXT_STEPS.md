@@ -197,6 +197,23 @@ V3 upstream 새 버전 발표 시 통합 게이트 자동 실행 후 사용자 �
 - 회귀 테스트 strict 모드: `_CRITICAL_BASELINE_MAX = 0` → 새 외부 ui.X 참조 즉시 fail
 - 다음 사이클 후보: 사용자 시각 검증 reactive (fix #13/#14 효과 확인) 또는 C1 (DB 검증)
 
+### 사이클 11 (2026-05-23): 3U_C lane E7 strategy.db 조건식 V2→V3 마이그레이션
+
+- 사용자 통찰: "조건식이 저장안되있어서 아직 못하지 않나요? 조건식을 v2 공식에서 복사해서 적절하게 v3 v3U에 맞게 들고와야 진행가능 하지 않나요?"
+- 발견: V3U strategy.db에 V2 시절 stockbuy/stocksell 데이터 보존(51/35 rows)되어 있으나 V3 컨벤션(stock_buy 밑줄)으로 안 옮겨짐 → 백테 못 함
+- 실행 흐름 (Claude 자율 도구 + 실 변환):
+  - 3U_C E7 도구 작성 (87b6645b origin/STOM_Version_3U_C push)
+  - V3U 실 strategy.db scan: 95 rows 마이그레이션 후보 발견
+  - dry-run + 실 migrate: 95 rows 복사, 에러 0
+  - post-verification: V2 == V3 == 95 ✅
+- 발견 신규 결함: 0건 (사용자 통찰로 발견됐지만 도구 자체 결함은 아님 — 사용자 환경 마이그레이션 누락)
+- LESSONS.md 갱신: 사이클 11 + V3 거래소별 prefix 패턴 정본화
+- NEXT_STEPS.md 갱신: 본 항목
+- 다음 사이클 후보:
+  - **사용자 stom.py 백테 시각 확인** (사이클 10 Step 6과 통합)
+  - 사용자가 V2에서 다른 거래소(coin/future/stock_etf) 조건식 만들었다면 --target 별도 호출
+  - 기타 DB(backtest/code_info/setting) 마이그레이션 (E5 v2 또는 E8)
+
 ### 사이클 10 (2026-05-22~23): 3U_C lane E5 + A++ DB 마이그레이션 끝까지 자동 실행
 
 - 사용자 선택: "위의 업무 내용 지금까지 조사 내용 먼저 문서로 아주 자세하게 남기고 한글로 아주 자세하개 commit 하고 A++ 진행"

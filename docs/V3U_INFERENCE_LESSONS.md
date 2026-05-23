@@ -254,6 +254,31 @@ V3 worker(`trade/base_receiver.py`, `base_trader.py`, `base_strategy.py`, `utili
 - 회귀 테스트: `tests/v3u/test_smoke.py::test_v3_helper_attr_names`
 - 근본 원인 매핑: §3-2, §3-3
 
+### 사이클 11 (2026-05-23): 3U_C lane E7 strategy.db 조건식 V2→V3 마이그레이션
+
+사이클 10 끝 사용자 통찰 — "조건식(strategy.db)이 V2 시절 데이터인데 V3는 stock_buy(밑줄) 컨벤션이라 백테 못 함". 즉시 사이클 11 발동 + 4단계 워크플로우.
+
+**3U_C lane 사이클 3 산출** (origin/STOM_Version_3U_C `87b6645b`):
+- `scripts/v3uc_strategy_migration.py` (220 lines, scan/migrate + --target 9종 + dry-run/force)
+- `tests/v3uc/test_strategy_migration.py` (5 회귀 PASS)
+- carry-forward registry 사이클 3 등록
+
+**V3U lane 실 데이터 변환**:
+- V2 컨벤션 `stockbuy/stocksell/...` → V3 컨벤션 `stock_buy/stock_sell/...` (밑줄 추가)
+- 51 매수 + 35 매도 + 2/2/5 옵티 = **총 95 rows V2→V3 복사, 에러 0**
+- post-verification: V2 rows == V3 rows == 95 ✅
+
+**V3U lane / V3 official 영향**: 0건 (도구는 3U_C, 실 변환은 사용자 _database/strategy.db).
+
+**V3 거래소별 prefix 패턴 정본화**:
+- `stock` (국내주식01·02), `stock_etf` (ETF03·04), `stock_etn` (ETN05·06)
+- `stock_usa` (해외주식07·08)
+- `coin`, `future`, `future_nt` (야간), `future_os` (해외), `coin_future`
+
+**잔여**:
+- 사용자 백테 시각 확인 (사이클 10 Step 6과 통합 가능)
+- 사용자가 V2에서 다른 거래소(coin/future/stock_etf) 조건식 만들었다면 --target 별도 호출
+
 ### 사이클 10 (2026-05-22~23): 3U_C lane E5 + A++ DB 마이그레이션 끝까지 자동 실행
 
 V3 LS API 백테 가능하게 하는 DB 마이그레이션을 A++ 7단계로 진행. Step 1~5는 Claude 자율 완료, Step 6(시각 확인 1분)만 사용자 잔여.
