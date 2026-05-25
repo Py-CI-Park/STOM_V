@@ -540,7 +540,7 @@ def run_backtest(config):
 
         received_count = data_load_stats['received_count']
         received_lengths = data_load_stats['received_lengths']
-        shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)
+        shared_info[:] = sorted(shared_info, key=lambda x: x['shape'][0], reverse=True)
         checkpoint.mark('shared_data_loaded', detail={'back_count': len(shared_info)})
         checkpoint.mark('engine_data_load_completed', detail={
             'back_count': len(shared_info),

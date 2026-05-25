@@ -429,7 +429,7 @@ class TestCliSharedMemoryCleanup:
 
         assert 'shared_info = []' in content
         assert 'shared_info.clear()' in content
-        assert "shared_info[:] = sorted(shared_info, key=lambda x: x['len'], reverse=True)" in content
+        assert "shared_info[:] = sorted(shared_info, key=lambda x: x['shape'][0], reverse=True)" in content
         assert '_cleanup_shared_memory(shared_info)' in content
 
 
