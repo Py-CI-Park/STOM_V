@@ -95,6 +95,13 @@ class LoopState:
             );
             """
         )
+        # 기존 DB 마이그레이션: CREATE TABLE IF NOT EXISTS는 이미 존재하는
+        # 테이블의 컬럼을 추가하지 못하므로, 누락 컬럼을 멱등하게 보강한다.
+        # (구버전 loop_runs.db에 mdd/profit/strategy_gist가 없어 INSERT 실패하던 문제)
+        existing_cols = {row[1] for row in self._con.execute("PRAGMA table_info(generations)")}
+        for col, decl in (("mdd", "REAL"), ("profit", "REAL"), ("strategy_gist", "TEXT")):
+            if col not in existing_cols:
+                self._con.execute(f"ALTER TABLE generations ADD COLUMN {col} {decl}")
         self._con.commit()
 
     # ------------------------------------------------------------------

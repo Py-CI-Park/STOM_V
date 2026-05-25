@@ -136,6 +136,43 @@ def _select_single_stock(timeframe: str, window_days: int):
     return best_code, window[0], window[-1], len(window)
 
 
+def _default_subset_db() -> str:
+    """small_universe 기본 subset DB 경로 (config.bt_subset_db가 None일 때)."""
+    return os.path.join(REPO_ROOT, "ai_strategy_loop", "state", "min_subset.db")
+
+
+def _select_universe_window(subset_db: str, window_days: int):
+    """subset DB의 moneytop에서 백테 날짜 윈도우(앞쪽 window_days 거래일)를 산출한다.
+
+    subset DB의 moneytop은 N개 종목만 담은 curated 테이블이다. 그 등장 일자
+    (YYYYMMDD)들을 모아 정렬한 뒤 앞쪽 window_days 일을 윈도우로 잡는다.
+    one_code는 쓰지 않는다('종목코드별 분류'가 moneytop의 모든 코드를 로딩).
+
+    반환: (start_yyyymmdd, end_yyyymmdd, day_count).
+    """
+    import sqlite3  # noqa: PLC0415
+
+    con = sqlite3.connect(f"file:{subset_db}?mode=ro", uri=True)
+    try:
+        cur = con.cursor()
+        cur.execute("PRAGMA table_info(moneytop)")
+        cols = [r[1] for r in cur.fetchall()]
+        if len(cols) < 2:
+            raise RuntimeError("subset moneytop에 값 컬럼이 없습니다")
+        days = sorted(
+            {int(r[0]) // 10_000 for r in cur.execute('SELECT "index" FROM moneytop')}
+        )
+    finally:
+        con.close()
+
+    if len(days) < window_days:
+        raise RuntimeError(
+            f"subset moneytop 거래일 {len(days)}개 < window_days {window_days}"
+        )
+    window = days[:window_days]
+    return window[0], window[-1], len(window)
+
+
 def _parse_cli_json(stdout: str) -> dict:
     """CLI --format json stdout에서 결과 JSON 문서를 파싱한다 (e2e_smoke와 동일)."""
     text = stdout.strip()
@@ -163,42 +200,82 @@ def run_backtest_for(config: LoopConfig, buy_name: str, sell_name: str) -> Backt
 
     예외를 던지지 않고 항상 BacktestOutcome을 반환한다(여기서 1차 방어).
     """
-    bt_one = config.bt_one_code
-    bt_start = config.bt_start
-    bt_end = config.bt_end
-    if not (bt_one and bt_start and bt_end):
-        # 종목 자동 선택은 DB 접근(없는 파일/빈 moneytop 등)으로 raise할 수 있다.
-        #   run_backtest_for는 "절대 raise 안 함" 계약이므로 여기서 흡수해
-        #   구체 사유를 담은 실패 outcome으로 표준화한다.
-        try:
-            bt_one, bt_start, bt_end, _ = _select_single_stock(
-                timeframe=config.bt_timeframe, window_days=config.bt_window_days
-            )
-        except Exception as exc:  # noqa: BLE001 - DB/선택 실패도 outcome으로 표준화.
-            return BacktestOutcome(
-                False, "error", None, None, f"stock selection failed: {exc}"
-            )
-
     env = dict(os.environ)
     env["STOM_ALLOW_MINIMAL_SETTING"] = "1"
     env["STOM_CLI_DB_STRATEGY"] = str(bootstrap.LOOP_DB_STRATEGY)
     env["PYTHONUNBUFFERED"] = "1"
 
-    cmd = [
-        sys.executable,
-        os.path.join(REPO_ROOT, "stom_backtest.py"),
-        "--buy", buy_name,
-        "--sell", sell_name,
-        "--start", str(bt_start),
-        "--end", str(bt_end),
-        "--timeframe", config.bt_timeframe,
-        "--divid-mode", "한종목 로딩",
-        "--one-code", str(bt_one),
-        "--engines", str(config.bt_engine_count),
-        "--timeout", str(config.bt_timeout),
-        "--format", "json",
-        "--quiet",
-    ]
+    if config.bt_scope == "small_universe":
+        # 소형 다변화 유니버스: curated subset back-DB(N개 종목) + '종목코드별 분류'.
+        #   subset의 moneytop이 N개만 담으므로 엔진 무수정으로 그 N개 위에서 백테한다.
+        #   one_code는 쓰지 않는다. 날짜 윈도우는 subset moneytop에서 산출한다.
+        #   DB 접근/선택 실패도 "절대 raise 안 함" 계약대로 실패 outcome으로 표준화.
+        subset_db = config.bt_subset_db or _default_subset_db()
+        if not os.path.isfile(subset_db):
+            return BacktestOutcome(
+                False, "error", None, None,
+                f"subset DB 없음: {subset_db} (build_subset_db.py 먼저 실행)",
+            )
+        window_days = config.bt_window_days_universe
+        bt_start = config.bt_start
+        bt_end = config.bt_end
+        if not (bt_start and bt_end):
+            try:
+                bt_start, bt_end, _ = _select_universe_window(subset_db, window_days)
+            except Exception as exc:  # noqa: BLE001 - 선택 실패도 outcome으로 표준화.
+                return BacktestOutcome(
+                    False, "error", None, None,
+                    f"universe window selection failed: {exc}",
+                )
+        # 백테 서브프로세스가 subset DB를 back-min DB로 쓰도록 오버라이드.
+        env["STOM_CLI_DB_STOCK_BACK_MIN"] = str(subset_db)
+        cmd = [
+            sys.executable,
+            os.path.join(REPO_ROOT, "stom_backtest.py"),
+            "--buy", buy_name,
+            "--sell", sell_name,
+            "--start", str(bt_start),
+            "--end", str(bt_end),
+            "--timeframe", "min",  # subset은 min 분봉 back-DB.
+            "--divid-mode", "종목코드별 분류",  # moneytop의 모든(=N개) 코드 로딩.
+            "--engines", str(config.bt_engine_count),
+            "--timeout", str(config.bt_timeout),
+            "--format", "json",
+            "--quiet",
+        ]
+    else:
+        # single_stock (MVP fast): '한종목 로딩' 단일 종목 + 짧은 윈도우 (기존 경로).
+        bt_one = config.bt_one_code
+        bt_start = config.bt_start
+        bt_end = config.bt_end
+        if not (bt_one and bt_start and bt_end):
+            # 종목 자동 선택은 DB 접근(없는 파일/빈 moneytop 등)으로 raise할 수 있다.
+            #   run_backtest_for는 "절대 raise 안 함" 계약이므로 여기서 흡수해
+            #   구체 사유를 담은 실패 outcome으로 표준화한다.
+            try:
+                bt_one, bt_start, bt_end, _ = _select_single_stock(
+                    timeframe=config.bt_timeframe, window_days=config.bt_window_days
+                )
+            except Exception as exc:  # noqa: BLE001 - DB/선택 실패도 outcome으로 표준화.
+                return BacktestOutcome(
+                    False, "error", None, None, f"stock selection failed: {exc}"
+                )
+
+        cmd = [
+            sys.executable,
+            os.path.join(REPO_ROOT, "stom_backtest.py"),
+            "--buy", buy_name,
+            "--sell", sell_name,
+            "--start", str(bt_start),
+            "--end", str(bt_end),
+            "--timeframe", config.bt_timeframe,
+            "--divid-mode", "한종목 로딩",
+            "--one-code", str(bt_one),
+            "--engines", str(config.bt_engine_count),
+            "--timeout", str(config.bt_timeout),
+            "--format", "json",
+            "--quiet",
+        ]
     try:
         proc = subprocess.run(
             cmd, cwd=REPO_ROOT, env=env,

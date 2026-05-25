@@ -58,7 +58,13 @@ class LoopConfig:
     #   BackTest child 데드락)이 더 이상 발생하지 않는다. 검증된 빠른 스코프는
     #   단일 종목 MIN 5일 윈도우(~수십초)다.
     bt_timeframe: str = "min"  # 'min' | 'tick'
-    bt_scope: str = "single_stock"  # 'single_stock' (MVP fast) | 'universe' (느림)
+    # bt_scope:
+    #   'single_stock'  — '한종목 로딩' 단일 종목 + 짧은 윈도우 (MVP fast, 노이지).
+    #   'small_universe'— curated subset back-DB(N개 종목) + '종목코드별 분류'.
+    #                     단일 종목보다 fitness 신호가 안정적(다변화로 노이즈↓,
+    #                     과적합↓)이다. 비용은 ~N배 무거우므로 N과 윈도우를 작게 둔다.
+    #   'universe'      — 풀 유니버스(1379 종목). 세대 루프엔 너무 느림(~1시간).
+    bt_scope: str = "single_stock"  # 'single_stock' | 'small_universe' | 'universe'
     bt_one_code: Optional[str] = None  # None이면 런타임에 유동성 높은 종목 자동 선택
     bt_start: Optional[int] = None  # YYYYMMDD; None이면 min DB 거래일에서 자동 산출
     bt_end: Optional[int] = None  # YYYYMMDD; None이면 자동 산출
@@ -68,6 +74,22 @@ class LoopConfig:
     #   (1일 윈도우는 집계 프로토콜이 멈추는 경향이 있어 5일이 안전한 하한.
     #    검증된 단일 종목 5일 런은 ~수십초에 csv_detected까지 도달한다.)
     bt_timeout: int = 300  # 초; BOUNDED 스코프는 이 한참 아래에서 끝나야 한다
+
+    # --- small_universe 스코프 (다변화된 소형 유니버스) ---
+    # bt_subset_db: build_subset_db.py가 만드는 curated subset back-DB 경로.
+    #   small_universe 스코프에서 백테 서브프로세스의 STOM_CLI_DB_STRATEGY 와는
+    #   별개로 STOM_CLI_DB_STOCK_BACK_MIN 을 이 경로로 오버라이드한다(cli/paths.py).
+    #   그 subset의 moneytop이 N개 종목만 담으므로 '종목코드별 분류'가 정확히
+    #   그 N개 종목 위에서 백테한다(엔진/CLI 무수정).
+    bt_subset_db: Optional[str] = None  # None이면 런타임에 기본 경로(state/min_subset.db)
+    # bt_universe_size: subset 유니버스 종목 수 N (빌더 기본 12와 일치). engine_count는
+    #   '종목코드별 분류' 제약(distinct 종목 수 >= 엔진 수)을 만족하도록 N 이하로 둔다.
+    bt_universe_size: int = 12
+    # bt_window_days_universe: small_universe에서 쓰는 더 긴 윈도우(거래일).
+    #   더 많은 종목 × 더 긴 윈도우가 신호를 안정화한다. single_stock의
+    #   bt_window_days(5)는 그대로 두고, small_universe만 이 값(기본 20)을 쓴다.
+    #   속도/충실도: N×window가 클수록 1회 백테가 느려지므로 bt_timeout 아래로 유지.
+    bt_window_days_universe: int = 20
 
     # --- 루프 종료/비용 제어 (US-005 Phase 2b) ---
     # target_score: None이면 점수 기반 조기 종료 없음. 값이 있으면
